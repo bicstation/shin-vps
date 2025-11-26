@@ -3,22 +3,25 @@ version: '3.8'
 # サービス定義
 services:
 
-  # 1. PostgreSQL データベース (全サービスのデータストア)
+  # 1. MariaDB データベースへ切り替え (WordPress/Django対応)
   db:
-    image: postgres:15-alpine
-    container_name: postgres_db
+    image: mariadb:10.6-jammy # MariaDBの安定版を使用
+    container_name: mariadb_db # コンテナ名を変更
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      # ⚠️ MariaDB/MySQL用の環境変数に変更
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # rootパスワードを設定
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
-      # データを永続化（ローカルPCのディレクトリに保存）
-      - postgres_data:/var/lib/postgresql/data/
+      # ⚠️ 修正: 名前付きボリュームからローカルディレクトリ (./mariadb_data) へ変更
+      - ./mariadb_data:/var/lib/mysql 
     networks:
       - internal-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      # ⚠️ ヘルスチェックコマンドもMariaDB用に変更
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -29,18 +32,20 @@ services:
       context: ./wordpress
       dockerfile: Dockerfile
     container_name: headless_wordpress
-    # Djangoコンテナの起動を待つのではなく、DBコンテナの起動を待つ
+    ports:
+      - "9090:80"
     depends_on:
-      db:
+      db: # サービス名は 'db' のまま（ネットワーク上のホスト名として利用）
         condition: service_healthy
     environment:
+      # WordPressは自動でMySQL変数に接続します
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_USER: ${DB_USER}
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
       WORDPRESS_DB_NAME: ${DB_NAME}
     volumes:
-      # WordPressのコンテンツ（プラグイン、テーマなど）を永続化
-      - wp_content:/var/www/html/wp-content
+      # ⚠️ 修正: 名前付きボリュームからローカルディレクトリ (./wp_content_data) へ変更
+      - ./wp_content_data:/var/www/html/wp-content
     networks:
       - internal-net
 
@@ -51,7 +56,6 @@ services:
       dockerfile: Dockerfile
     container_name: api_django
     restart: always
-    # DBとWPの起動を待つ（WPのデータが必要な場合）
     depends_on:
       db:
         condition: service_healthy
@@ -60,9 +64,8 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      # 外部APIキーやシークレットキーもここに設定
       SECRET_KEY: ${DJANGO_SECRET_KEY}
-    command: gunicorn your_project.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
     networks:
       - internal-net
 
@@ -76,9 +79,8 @@ services:
       django:
         condition: service_started
     environment:
-      # Next.jsはDjango APIからデータを取得
       NEXT_PUBLIC_API_URL: http://django:8000
-      NODE_ENV: development # ローカル開発環境用
+      NODE_ENV: development
     networks:
       - internal-net
 
@@ -96,33 +98,29 @@ services:
       NODE_ENV: development
     networks:
       - internal-net
-      
+
   # 6. Nginx (リバースプロキシ) - ローカルテスト用
   nginx:
     image: nginx:stable-alpine
     container_name: reverse_proxy
-    # すべてのサービスが起動してからNginxを起動
     depends_on:
       - next-bicstation
       - next-tiper
       - django
       - wordpress
     ports:
-      # ローカルPCの80番ポートで外部に公開
-      - "80:80" 
+      - "8080:80" 
     volumes:
-      # Nginx設定ファイルをコンテナにマウント
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      # 静的配信するサイトのファイルをマウントする準備（bic-saving, avflash用）
-      # ローカル開発では Next.js コンテナから直接配信しても良い
     networks:
       - internal-net
 
 # ボリューム定義 (データの永続化用)
-volumes:
-  postgres_data:
-  wp_content:
+# ⚠️ 修正: ローカルディレクトリマウントに切り替えたため、名前付きボリュームの定義は削除します
+# volumes:
+#  postgres_data:
+#  wp_content:
 
 # ネットワーク定義
 networks:
