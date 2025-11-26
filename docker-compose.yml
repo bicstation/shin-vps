@@ -1,0 +1,130 @@
+version: '3.8'
+
+# サービス定義
+services:
+
+  # 1. PostgreSQL データベース (全サービスのデータストア)
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      # データを永続化（ローカルPCのディレクトリに保存）
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - internal-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. WordPress (Headless CMS)
+  wordpress:
+    build:
+      context: ./wordpress
+      dockerfile: Dockerfile
+    container_name: headless_wordpress
+    # Djangoコンテナの起動を待つのではなく、DBコンテナの起動を待つ
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${DB_NAME}
+    volumes:
+      # WordPressのコンテンツ（プラグイン、テーマなど）を永続化
+      - wp_content:/var/www/html/wp-content
+    networks:
+      - internal-net
+
+  # 3. Django API (データハブ & 認証サーバー)
+  django:
+    build:
+      context: ./django
+      dockerfile: Dockerfile
+    container_name: api_django
+    restart: always
+    # DBとWPの起動を待つ（WPのデータが必要な場合）
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # 外部APIキーやシークレットキーもここに設定
+      SECRET_KEY: ${DJANGO_SECRET_KEY}
+    command: gunicorn your_project.wsgi:application --bind 0.0.0.0:8000
+    networks:
+      - internal-net
+
+  # 4. Next.js - bicstation.com (ルートドメイン)
+  next-bicstation:
+    build:
+      context: ./next-bicstation
+      dockerfile: Dockerfile
+    container_name: next_bicstation
+    depends_on:
+      django:
+        condition: service_started
+    environment:
+      # Next.jsはDjango APIからデータを取得
+      NEXT_PUBLIC_API_URL: http://django:8000
+      NODE_ENV: development # ローカル開発環境用
+    networks:
+      - internal-net
+
+  # 5. Next.js - tiper.live (既存メインサイト)
+  next-tiper:
+    build:
+      context: ./next-tiper
+      dockerfile: Dockerfile
+    container_name: next_tiper
+    depends_on:
+      django:
+        condition: service_started
+    environment:
+      NEXT_PUBLIC_API_URL: http://django:8000
+      NODE_ENV: development
+    networks:
+      - internal-net
+      
+  # 6. Nginx (リバースプロキシ) - ローカルテスト用
+  nginx:
+    image: nginx:stable-alpine
+    container_name: reverse_proxy
+    # すべてのサービスが起動してからNginxを起動
+    depends_on:
+      - next-bicstation
+      - next-tiper
+      - django
+      - wordpress
+    ports:
+      # ローカルPCの80番ポートで外部に公開
+      - "80:80" 
+    volumes:
+      # Nginx設定ファイルをコンテナにマウント
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      # 静的配信するサイトのファイルをマウントする準備（bic-saving, avflash用）
+      # ローカル開発では Next.js コンテナから直接配信しても良い
+    networks:
+      - internal-net
+
+# ボリューム定義 (データの永続化用)
+volumes:
+  postgres_data:
+  wp_content:
+
+# ネットワーク定義
+networks:
+  internal-net:
+    driver: bridge
