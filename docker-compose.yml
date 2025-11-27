@@ -3,49 +3,58 @@ version: '3.8'
 # サービス定義
 services:
 
-  # 1. MariaDB データベースへ切り替え (WordPress/Django対応)
-  db:
-    image: mariadb:10.6-jammy # MariaDBの安定版を使用
-    container_name: mariadb_db # コンテナ名を変更
+  # 1. PostgreSQL データベース (Django/Strapi対応)
+  postgres_db: # サービス名を明示的に postgres_db に変更
+    image: postgres:15-alpine
+    container_name: postgres_db
     restart: always
     environment:
-      # ⚠️ MariaDB/MySQL用の環境変数に変更
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # rootパスワードを設定
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
-      # ⚠️ 修正: 名前付きボリュームからローカルディレクトリ (./mariadb_data) へ変更
-      - ./mariadb_data:/var/lib/mysql 
+      - postgres_data:/var/lib/postgresql/data # ボリューム名を変更
     networks:
       - internal-net
     healthcheck:
-      # ⚠️ ヘルスチェックコマンドもMariaDB用に変更
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
-      interval: 5s
+      # PostgreSQLのヘルスチェックコマンド
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
       timeout: 5s
       retries: 5
 
-  # 2. WordPress (Headless CMS)
-  wordpress:
+  # 2. ⚡️ Strapi Headless CMS (WordPressの代替)
+  strapi:
+    # image: strapi/base:latest # 公式のStrapiイメージを使用
     build:
-      context: ./wordpress
+      context: ./strapi # Dockerfileの場所を指定
       dockerfile: Dockerfile
-    container_name: headless_wordpress
+    container_name: headless_strapi
     ports:
-      - "9090:80"
+      - "1337:1337" # Strapiのデフォルトポート
     depends_on:
-      db: # サービス名は 'db' のまま（ネットワーク上のホスト名として利用）
+      # ⚠️ DBサービス名に合わせ postgres_db に変更
+      postgres_db:
         condition: service_healthy
     environment:
-      # WordPressは自動でMySQL変数に接続します
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: ${DB_USER}
-      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
-      WORDPRESS_DB_NAME: ${DB_NAME}
+      # ⚠️ StrapiがPostgreSQLに接続するための設定に全て変更
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres_db # DBサービスのコンテナ名/サービス名
+      DATABASE_PORT: 5432        # PostgreSQLのデフォルトポート
+      DATABASE_NAME: ${DB_NAME} 
+      DATABASE_USERNAME: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      NODE_ENV: development
+      APP_KEYS: ${APP_KEYS} # .envから読み込むように修正
+      STRAPI_URL: http://127.0.0.1:1337
+      
+      # 🔽 【重要】Strapiの管理画面の「真っ白」問題を解決するための設定
+      PUBLIC_URL: http://tiper.live:8080/strapi
+      ADMIN_PATH: /strapi/admin 
+      
     volumes:
-      # ⚠️ 修正: 名前付きボリュームからローカルディレクトリ (./wp_content_data) へ変更
-      - ./wp_content_data:/var/www/html/wp-content
+      - ./strapi:/opt/app
+      - /opt/app/node_modules
     networks:
       - internal-net
 
@@ -57,10 +66,12 @@ services:
     container_name: api_django
     restart: always
     depends_on:
-      db:
+      # ⚠️ DBサービス名に合わせ postgres_db に変更
+      postgres_db:
         condition: service_healthy
     environment:
-      DB_HOST: db
+      # DjangoがPostgreSQLに接続するための設定
+      DB_HOST: postgres_db
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -80,6 +91,7 @@ services:
         condition: service_started
     environment:
       NEXT_PUBLIC_API_URL: http://django:8000
+      NEXT_PUBLIC_STRAPI_API_URL: http://headless_strapi:1337 
       NODE_ENV: development
     networks:
       - internal-net
@@ -95,7 +107,28 @@ services:
         condition: service_started
     environment:
       NEXT_PUBLIC_API_URL: http://django:8000
+      NEXT_PUBLIC_STRAPI_API_URL: http://headless_strapi:1337 
       NODE_ENV: development
+    networks:
+      - internal-net
+  
+  # 新しい next-bic-saving サービスを追加
+  next-bic-saving:
+    build: 
+      context: ./next-bic-saving
+      dockerfile: Dockerfile
+    image: shin-vps-next-bic-saving
+    ports:
+      - "3003:3000"
+      # 外部から直接アクセスが必要な場合のため、一時的にポートを公開 (デバッグ用)
+    environment:
+      # 環境変数は必要に応じて設定
+      - NODE_ENV=development
+    volumes:
+      # - ./next-bic-saving:/app:rw  <-- 502エラー解決のためコメントアウト済み
+      - /app/node_modules # node_modulesはホストとの共有から除外
+    depends_on:
+      - django # バックエンドに依存する場合
     networks:
       - internal-net
 
@@ -107,7 +140,7 @@ services:
       - next-bicstation
       - next-tiper
       - django
-      - wordpress
+      - strapi
     ports:
       - "8080:80" 
     volumes:
@@ -116,13 +149,12 @@ services:
     networks:
       - internal-net
 
-# ボリューム定義 (データの永続化用)
-# ⚠️ 修正: ローカルディレクトリマウントに切り替えたため、名前付きボリュームの定義は削除します
-# volumes:
-#  postgres_data:
-#  wp_content:
+# ボリューム定義 (追加)
+volumes:
+  postgres_data:
+    driver: local
 
-# ネットワーク定義
+# ネットワーク定義 (変更なし)
 networks:
   internal-net:
     driver: bridge
