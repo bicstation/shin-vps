@@ -36,27 +36,31 @@ services:
       # ⚠️ DBサービス名に合わせ postgres_db に変更
       postgres_db:
         condition: service_healthy
+    env_file: # 👈 【新規追加】 .envファイルから環境変数を読み込む
+      - .env
     environment:
       # ⚠️ StrapiがPostgreSQLに接続するための設定に全て変更
       DATABASE_CLIENT: postgres
       DATABASE_HOST: postgres_db # DBサービスのコンテナ名/サービス名
-      DATABASE_PORT: 5432        # PostgreSQLのデフォルトポート
+      DATABASE_PORT: 5432 # PostgreSQLのデフォルトポート
       DATABASE_NAME: ${DB_NAME} 
       DATABASE_USERNAME: ${DB_USER}
       DATABASE_PASSWORD: ${DB_PASSWORD}
-      NODE_ENV: development
-      APP_KEYS: ${APP_KEYS} # .envから読み込むように修正
+      NODE_ENV: production # 👈 【修正】本番モードに変更
+      APP_KEYS: ${APP_KEYS} # .envから読み込む
       STRAPI_URL: http://127.0.0.1:1337
       
       # 🔽 【重要】Strapiの管理画面の「真っ白」問題を解決するための設定
       PUBLIC_URL: http://tiper.live:8080/strapi
       ADMIN_PATH: /strapi/admin 
+      # 🚨 ADMIN_JWT_SECRETとAPP_KEYSのハードコードされた値は削除しました
       
     volumes:
       - ./strapi:/opt/app
       - /opt/app/node_modules
     networks:
       - internal-net
+    command: npm run start # 👈 【新規追加】安定した本番モードで起動する
 
   # 3. Django API (データハブ & 認証サーバー)
   django:
@@ -125,7 +129,7 @@ services:
       # 環境変数は必要に応じて設定
       - NODE_ENV=development
     volumes:
-      # - ./next-bic-saving:/app:rw  <-- 502エラー解決のためコメントアウト済み
+      # - ./next-bic-saving:/app:rw  <-- 502エラー解決のためコメントアウト済み
       - /app/node_modules # node_modulesはホストとの共有から除外
     depends_on:
       - django # バックエンドに依存する場合
