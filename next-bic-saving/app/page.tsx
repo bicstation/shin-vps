@@ -1,14 +1,18 @@
-import React from 'react';
-import { headers } from 'next/headers'; // App Routerでヘッダーを読み込むためのユーティリティ
+// C:\dev\SHIN-VPS\next-bic-saving\app\page.tsx
 
-// App Routerでは、Pageファイルはデフォルトでasync Server Componentになります。
-// これにより、サーバー側でヘッダーの読み込みとレンダリングが実行されます。
+import React from 'react';
+// headers() のインポートは不要になりました
+// import { headers } from 'next/headers'; 
+
+// Pageファイルは async Server Component にします
 export default async function Page() {
   
-  // Nginxから送られるX-Demo-Titleヘッダーを読み込む
-  const headerList = headers();
-  // 以前Nginxで設定したカスタムヘッダー 'X-Demo-Title' を取得
-  const title = headerList.get('x-demo-title') || 'デモタイトルが見つかりません';
+  // ❌ 削除: headers() によるヘッダー取得ロジック
+  // const headerList = await headers(); 
+  
+  // 💡 修正: 環境変数からタイトルを取得
+  // NEXT_PUBLIC_から始まる変数はServer Componentでも利用可能
+  const title = process.env.NEXT_PUBLIC_APP_TITLE || 'デモタイトルが見つかりません';
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

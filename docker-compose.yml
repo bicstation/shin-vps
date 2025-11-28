@@ -16,11 +16,15 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal-net
+      
+    # --- 💡 ヘルスチェック: 正常動作を確認済み ---
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"] 
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s 
+    # ----------------------------------------------------
 
   # 4. Django API (データハブ & 認証サーバー)
   django:
@@ -47,14 +51,17 @@ services:
     build:
       context: ./next-bicstation
       dockerfile: Dockerfile
+      # --- 💡 修正: .env変数からタイトルを読み込む ---
+      args:
+        NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
+      # ----------------------------------------
     container_name: next_bicstation
     depends_on:
       django:
         condition: service_started
     environment:
       NEXT_PUBLIC_API_URL: http://django:8000
-      # 🚨 【削除】WordPress API URL の定義は不要
-      NODE_ENV: development
+      NODE_ENV: production
     networks:
       - internal-net
 
@@ -63,14 +70,17 @@ services:
     build:
       context: ./next-tiper
       dockerfile: Dockerfile
+      # --- 💡 修正: .env変数からタイトルを読み込む ---
+      args:
+        NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
+      # ----------------------------------------
     container_name: next_tiper
     depends_on:
       django:
         condition: service_started
     environment:
       NEXT_PUBLIC_API_URL: http://django:8000
-      # 🚨 【削除】WordPress API URL の定義は不要
-      NODE_ENV: development
+      NODE_ENV: production
     networks:
       - internal-net
   
@@ -79,15 +89,16 @@ services:
     build: 
       context: ./next-bic-saving
       dockerfile: Dockerfile
-    image: shin-vps-next-bic-saving
-    ports:
-      - "3003:3000"
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - /app/node_modules # node_modulesはホストとの共有から除外
+      # --- 💡 修正: .env変数からタイトルを読み込む ---
+      args:
+        NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
+      # ----------------------------------------
+    container_name: next_bic_saving 
     depends_on:
-      - django
+      django:
+        condition: service_started
+    environment:
+      NODE_ENV: production
     networks:
       - internal-net
 
@@ -100,12 +111,11 @@ services:
       - next-tiper
       - next-bic-saving
       - django
-      # 🚨 【削除】wordpress への依存を削除
     ports:
       - "8080:80" 
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro 
     networks:
       - internal-net
 
@@ -113,7 +123,6 @@ services:
 volumes:
   postgres_data:
     driver: local
-  # 🚨 【削除】mariadb_data と wordpress_data の定義を削除
 
 # ネットワーク定義
 networks:
