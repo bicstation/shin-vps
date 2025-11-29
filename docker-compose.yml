@@ -1,4 +1,4 @@
-version: '3.8'
+# docker-compose.yml
 
 # サービス定義
 services:
@@ -37,11 +37,30 @@ services:
       postgres_db:
         condition: service_healthy
     environment:
-      DB_HOST: postgres_db
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      SECRET_KEY: ${DJANGO_SECRET_KEY}
+      # 💡 修正: すべての環境変数をリスト形式に統一し、インデントを修正
+      - DB_HOST=postgres_db
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}  # SECRET_KEYをDJANGO_SECRET_KEYに変更
+      
+      # API設定
+      - DUGA_API_ID=${DUGA_API_ID}
+      - DUGA_AFFILIATE_ID=${DUGA_AFFILIATE_ID}
+      - DUGA_API_URL=${DUGA_API_URL}
+      - DUGA_TOTAL_LIMIT=${DUGA_TOTAL_LIMIT}
+      
+      - FANZA_API_ID=${FANZA_API_ID}
+      - FANZA_AFFILIATE_ID=${FANZA_AFFILIATE_ID}
+      - FANZA_API_URL=${FANZA_API_URL}
+      - FANZA_TOTAL_LIMIT=${FANZA_TOTAL_LIMIT}
+      # ----------------------------------------
+      
+    # ★ 静的ファイル用ボリュームを追加
+    volumes:
+      - ./django:/usr/src/app 
+      - static_volume:/usr/src/app/staticfiles # ✅ 静的ファイル収集先をボリュームにマウント
+        
     command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
     networks:
       - internal-net
@@ -98,6 +117,8 @@ services:
       django:
         condition: service_started
     environment:
+      # 💡 修正: API URLを追加
+      NEXT_PUBLIC_API_URL: http://django:8000
       NODE_ENV: production
     networks:
       - internal-net
@@ -110,21 +131,24 @@ services:
       - next-bicstation
       - next-tiper
       - next-bic-saving
-      - django
+      - django 
     ports:
       - "8080:80" 
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro 
+      - static_volume:/usr/src/app/staticfiles:ro # ✅ Nginxに静的ファイル配信用のボリュームをマウント
     networks:
       - internal-net
 
-# ボリューム定義
+# ボリューム定義 (最上位レベル - services, networks と同階層)
 volumes:
   postgres_data:
     driver: local
+  static_volume: 
+    driver: local
 
-# ネットワーク定義
+# ネットワーク定義 (最上位レベル)
 networks:
   internal-net:
     driver: bridge
