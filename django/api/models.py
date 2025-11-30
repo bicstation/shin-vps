@@ -23,6 +23,8 @@ class RawApiData(models.Model):
     api_floor = models.CharField(max_length=50, null=True, blank=True, verbose_name="APIフロアコード")
 
     # 追跡用フィールド
+    # ✅ 移行状態を追跡するための 'migrated' フィールドを追加
+    migrated = models.BooleanField(default=False, verbose_name="移行済み") 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
     
@@ -97,6 +99,14 @@ class Director(EntityBase):
         verbose_name = '監督'
         verbose_name_plural = '監督一覧'
 
+# Series モデル
+class Series(EntityBase):
+    """シリーズ (FANZAの「シリーズ名」に対応)"""
+    class Meta(EntityBase.Meta):
+        db_table = 'series'
+        verbose_name = 'シリーズ'
+        verbose_name_plural = 'シリーズ一覧'
+
 
 # --------------------------------------------------------------------------
 # 3. 商品モデル (Product)
@@ -134,7 +144,8 @@ class Product(models.Model):
     maker = models.ForeignKey(Maker, on_delete=models.SET_NULL, null=True, blank=True, related_name='products_made', verbose_name="メーカー")
     label = models.ForeignKey(Label, on_delete=models.SET_NULL, null=True, blank=True, related_name='products_labeled', verbose_name="レーベル")
     director = models.ForeignKey(Director, on_delete=models.SET_NULL, null=True, blank=True, related_name='products_directed', verbose_name="監督")
-    
+    series = models.ForeignKey(Series, on_delete=models.SET_NULL, null=True, blank=True, related_name='products_in_series', verbose_name="シリーズ")
+
     # リレーション (複数/ManyToManyField)
     genres = models.ManyToManyField(Genre, related_name='products', verbose_name="ジャンル")
     actresses = models.ManyToManyField(Actress, related_name='products', verbose_name="出演者")

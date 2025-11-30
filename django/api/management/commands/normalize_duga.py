@@ -3,8 +3,10 @@ import json
 from django.core.management.base import BaseCommand
 from django.db import transaction, models
 from django.db.models import F, Count, OuterRef, Subquery
-from django.db.models.functions import Coalesce # ★ Coalesce をインポート
+from django.db.models.functions import Coalesce
 
+# ★ 修正: constants と generate_product_unique_id をインポート
+from api.constants import generate_product_unique_id 
 from api.models import RawApiData, Product, Genre, Actress, Maker, Label, Director
 from api.utils import normalize_duga_data, get_or_create_entity 
 
@@ -16,6 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('--- DUGA API データ仕訳・正規化処理開始 ---'))
 
+        # DUGA のデータのみを対象
         raw_data_qs = RawApiData.objects.filter(api_source='DUGA').order_by('id')
         
         products_to_upsert = []
@@ -30,10 +33,24 @@ class Command(BaseCommand):
             # --------------------------------------------------------
             for raw_instance in raw_data_qs:
                 try:
+                    # utils の normalize_duga_data でエンティティIDなどを取得
                     normalized_data = normalize_duga_data(raw_instance)
                     
                     product_data = normalized_data['product_data']
                     relations = normalized_data['relations']
+                    
+                    # ------------------------------------------------------------------
+                    # ★ ID戦略の組み込み: product_id_unique を上書き生成
+                    # ------------------------------------------------------------------
+                    # RawDataから元のAPI IDを取得 (※ models.pyのフィールド名に依存)
+                    api_raw_id = product_data['product_id_unique'] 
+                    
+                    # 新しいユニークIDを生成: T-DG-xxxx の形式
+                    product_data['product_id_unique'] = generate_product_unique_id(
+                        api_source=raw_instance.api_source,
+                        api_raw_id=api_raw_id 
+                    )
+                    # ------------------------------------------------------------------
 
                     products_to_upsert.append(Product(**product_data))
                     relations_map[raw_instance.id] = relations
@@ -53,10 +70,11 @@ class Command(BaseCommand):
                     logger.error(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}")
                     self.stderr.write(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}")
                     try:
+                        # RawApiDataのraw_json_dataはJSONFieldであるため、dumpsは不要な場合もありますが、互換性のため残します
                         raw_json = json.dumps(raw_instance.raw_json_data, ensure_ascii=False)
-                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): {raw_json[:300]}...")
+                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): {raw_json[:300]}...")
                     except:
-                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): JSONのダンプに失敗")
+                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): JSONのダンプに失敗")
                     continue
                 
             # 残りのデータを保存・同期
@@ -92,12 +110,10 @@ class Command(BaseCommand):
                 # Product のフィールドから Foreign Key のフィールド名 (maker -> maker_id) を特定
                 fk_fields = [f.attname for f in Product._meta.fields if isinstance(f, models.ForeignKey)]
                 
-                # ★ 修正: 'raw_data' (オブジェクト) を update_fields から削除し、
-                # fk_fields に含まれる 'raw_data_id' (カラム) のみを使用する
                 update_fields = [
                     'title', 'release_date', 'affiliate_url', 'price', 
                     'image_url_list', 'updated_at', 'is_active', 
-                ] + fk_fields # fk_fields に 'raw_data_id' が含まれている
+                ] + fk_fields
                 
                 # 1. Productの一括UPSERT
                 Product.objects.bulk_create(
@@ -135,11 +151,13 @@ class Command(BaseCommand):
         # ------------------
         # Genre (ジャンル) の同期
         # ------------------
+        # 当該バッチで処理された製品のリレーションを削除
         Product.genres.through.objects.filter(product_id__in=product_db_ids).delete()
         
         genre_relations_to_insert = []
         for p in products_to_upsert:
-            raw_id = p.raw_data_id
+            # RawApiDataのID（リレーションマップのキー）を取得するためにraw_data_idを使用
+            raw_id = p.raw_data_id 
             db_id = product_db_id_map.get(p.product_id_unique)
             if db_id and raw_id in relations_map:
                 for genre_id in relations_map[raw_id]['genre_ids']:
@@ -153,6 +171,7 @@ class Command(BaseCommand):
         # ------------------
         # Actress (出演者) の同期
         # ------------------
+        # 当該バッチで処理された製品のリレーションを削除
         Product.actresses.through.objects.filter(product_id__in=product_db_ids).delete()
 
         actress_relations_to_insert = []
@@ -188,10 +207,11 @@ class Command(BaseCommand):
                 for Model, related_name in MAPPING:
                     
                     if related_name.startswith('products_'):
+                        # Maker, Label, Director (ForeignKey リレーション)
                         fk_field_name = f'{Model.__name__.lower()}_id'
                         
                         Model.objects.filter(api_source='DUGA').update(
-                            product_count=Coalesce( # ★ Coalesce を使用して NULL を 0 に置換
+                            product_count=Coalesce( 
                                 Subquery(
                                     Product.objects.filter(
                                         api_source='DUGA',
@@ -208,13 +228,14 @@ class Command(BaseCommand):
                         )
 
                     else:
+                        # Actress, Genre (ManyToMany リレーション)
                         ThroughModel = getattr(Product, related_name).through
                         
                         entity_fk_name = f'{Model.__name__.lower()}_id' 
                         filter_kwargs = {entity_fk_name: OuterRef('pk')}
 
                         Model.objects.filter(api_source='DUGA').update(
-                            product_count=Coalesce( # ★ Coalesce を使用して NULL を 0 に置換
+                            product_count=Coalesce( 
                                 Subquery(
                                     ThroughModel.objects.filter(**filter_kwargs)
                                     .values(entity_fk_name)
