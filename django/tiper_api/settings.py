@@ -36,7 +36,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*'] 
 
 # CORS設定
-# ⚠️ CORS_ALLOW_ALL_ORIGINS = True は削除し、明示的なリストを使用します。
 CORS_ALLOWED_ORIGINS = [ 
     # Next.js アプリケーションが Nginx 経由でアクセスする URL
     "http://localhost:8080",
@@ -46,8 +45,7 @@ CORS_ALLOWED_ORIGINS = [
     # Nginx経由でDockerコンテナに到達する際の、他の可能なホスト名をここに追記
 ]
 
-# ✅ 修正箇所: CSRF_TRUSTED_ORIGINS の追加
-# CSRFトークンをPOSTするオリジンを信頼する設定。CSRF 403エラーを解決します。
+# CSRFトークンをPOSTするオリジンを信頼する設定。
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8080',
     'http://127.0.0.1:8080',
@@ -112,7 +110,6 @@ WSGI_APPLICATION = 'tiper_api.wsgi.application'
 # ----------------------------------------------------
 # データベース設定 (PostgreSQL - 環境変数から読み込み) (統合)
 # ----------------------------------------------------
-# SQLiteの設定を削除し、PostgreSQLの設定のみを残します。
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -160,7 +157,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# 💡 修正: コメントの構文エラーを修正し、静的ファイルの収集先を指定
 # すべての静的ファイルをこのディレクトリに集めます
 # BASE_DIR は tiper_api の親ディレクトリ (django/) を指しています
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -189,4 +185,61 @@ API_CONFIG = {
         'API_URL': os.environ.get('FANZA_API_URL', 'https://api.dmm.com/affiliate/v3/ItemList'),
         'TOTAL_LIMIT': int(os.environ.get('FANZA_TOTAL_LIMIT', 10000)),
     },
+}
+
+# ====================================================
+# 💡 追加: ロギング設定 (LOGGING)
+# ====================================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+        'api_formatter': {
+            'format': '[{levelname}] {asctime} ({name}): {message}',
+            'style': '{',
+            'datefmt': '%H:%M:%S',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'api_formatter',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING', # デフォルトでは警告以上のみ出力
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO', # Djangoのコアなメッセージは情報レベルで
+            'propagate': False,
+        },
+        # api/utils で使用される共通ロガー
+        'api_utils': {
+            'handlers': ['console'],
+            'level': 'DEBUG', # 開発中は詳細なデバッグログを出力
+            'propagate': False,
+        },
+        # fetch_* や normalize_* コマンドのログ (特にロガー名を設定していない場合の管理コマンド用)
+        'django.server': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
 }

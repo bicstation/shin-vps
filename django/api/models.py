@@ -129,6 +129,14 @@ class Product(models.Model):
 
     # 必須フィールド
     api_source = models.CharField(max_length=10, verbose_name="APIソース (DUGA/FANZA)")
+    
+    # ★★★ 修正: api_product_id フィールドを追加 ★★★
+    api_product_id = models.CharField(
+        max_length=255, 
+        verbose_name="API提供元製品ID",
+        # NOTE: unique=True は product_id_unique が担うため、ここでは不要
+    )
+    
     product_id_unique = models.CharField(max_length=255, unique=True, verbose_name="統合ID")
     title = models.CharField(max_length=512, verbose_name="作品タイトル")
     release_date = models.DateField(null=True, blank=True, verbose_name="公開日")

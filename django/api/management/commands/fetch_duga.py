@@ -10,24 +10,23 @@ import logging
 # Djangoのコア機能
 from django.core.management.base import BaseCommand
 from django.conf import settings # settings.pyから設定を取得するために必要
+from django.utils import timezone # タイムゾーン対応の現在時刻を取得するために追加
 
 # リトライのためのモジュール
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 # 移植したユーティリティ関数
-from api.utils import bulk_insert_or_update
+from api.utils.db_bulk_ops import bulk_insert_or_update
 
 # --- 設定情報 (settings.pyへ移行を推奨) ---
 API_SOURCE = 'DUGA'
 # データベースにまとめて保存するバッチサイズ
 DB_BATCH_SIZE = 100
 
-# ロギング設定 (Djangoのロギング設定を利用することが推奨されますが、ここでは既存のスタイルを維持)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-# ハンドラーを定義しないと、Djangoのデフォルト設定が使用されますが、
-# 既存のロギングスタイルを再現するために、BaseCommandのstdoutを使用します。
+# ロギング設定 (Djangoのロギング設定を利用)
+logger = logging.getLogger(f'fetch_{API_SOURCE.lower()}')
+logger.setLevel(logging.INFO) # settings.pyのLOGGING設定が優先されます
 
 # --- リトライ設定 ---
 RETRY_SETTINGS = Retry(
@@ -38,6 +37,7 @@ RETRY_SETTINGS = Retry(
 )
 adapter = HTTPAdapter(max_retries=RETRY_SETTINGS)
 
+# リトライアダプターをマウントしたセッション
 http_session = requests.Session()
 http_session.mount("http://", adapter)
 http_session.mount("https://", adapter)
@@ -49,9 +49,9 @@ def get_api_config(source):
     settings.pyからAPI設定を取得する (settings.pyにAPI_CONFIGを定義することを前提)
     """
     try:
+        # API_CONFIGがsettingsにあることを前提とする
         return settings.API_CONFIG[source]
     except AttributeError:
-        # settings.py に API_CONFIG がない場合のフォールバック (テスト用)
         raise EnvironmentError("settings.pyにAPI_CONFIGが定義されていません。")
     except KeyError:
         raise EnvironmentError(f"設定ファイルに {source} のAPI設定が見つかりません。")
@@ -63,7 +63,7 @@ def fetch_data_from_api(offset):
     try:
         config = get_api_config(API_SOURCE)
         DUGA_API_ID = config['API_ID']
-        DUGA_AFFILIATE_ID = config['API_KEY']
+        DUGA_AFFILIATE_ID = config['API_KEY'] 
         DUGA_API_URL = config['API_URL']
     except EnvironmentError as e:
         logger.error(str(e))
@@ -83,14 +83,15 @@ def fetch_data_from_api(offset):
 
     logger.info(f"APIからデータを取得中 (offset: {offset})...")
 
-    req = requests.Request('GET', DUGA_API_URL, params=params)
-    prepared_request = req.prepare()
+    # ★リファクタリング★: requests.Request/prepare() を削除し、セッションのgetを直接使用
+    response = http_session.get(DUGA_API_URL, params=params)
+    
+    # ログ出力は成功時のみ
+    logger.info(f"リクエストURL: {response.url}")
 
-    logger.info(f"リクエストURL: {prepared_request.url}")
-
-    response = http_session.get(prepared_request.url)
     response.raise_for_status()
 
+    # レスポンスがJSONであるため、response.json()をそのまま使用
     return response.json()
 
 def process_api_items(items):
@@ -99,21 +100,32 @@ def process_api_items(items):
     """
     processed_batch = []
     if items:
-        logger.info(f"{len(items)} 件の商品データを取得しました。")
+        logger.info(f"{len(items)} 件の商品データを処理中...")
 
+    current_time = timezone.now()
+    
     for item_wrapper in items:
+        # DUGA APIは item の中に実際のデータがある
         if 'item' in item_wrapper and isinstance(item_wrapper['item'], dict):
             item = item_wrapper['item']
+            
+            # API Product ID が存在しない場合はスキップ (必須フィールドのため)
+            if 'productid' not in item:
+                logger.warning("productid がないアイテムをスキップします。")
+                continue
+                
             # raw_json_data は JSONField に保存するため、文字列に変換
             raw_json_to_save = json.dumps(item, ensure_ascii=False)
 
             processed_batch.append({
                 # RawApiData モデルのフィールド名と一致させる
                 'api_source': API_SOURCE,
-                'api_product_id': item.get('productid', ''),
+                'api_product_id': item.get('productid'), # ユニークキーとして使用
                 'raw_json_data': raw_json_to_save,
-                'api_service': item.get('service_code', None),
+                'api_service': item.get('service_code', None), # DUGAのサービスコード/フロアコードを格納
                 'api_floor': item.get('floor_code', None),
+                'updated_at': current_time,
+                'created_at': current_time,
             })
     return processed_batch
 
@@ -122,7 +134,6 @@ class Command(BaseCommand):
     help = 'DUGA APIからデータを取得し、データベースに格納します。'
 
     def handle(self, *args, **options):
-        # 既存のロギングを再現するため、stdoutを使用
         self.stdout.write(f"--- {API_SOURCE} API データ取得開始 ---")
 
         try:
@@ -136,10 +147,11 @@ class Command(BaseCommand):
 
         total_fetched_items = 0
         offset = 1
-        total_items_available = float('inf')
+        total_items_available = float('inf') 
         current_batch = []
 
         try:
+            # 取得件数が上限に達するか、利用可能な全アイテムを取得し終えるまでループ
             while total_fetched_items < MAX_TOTAL_ITEMS and offset <= total_items_available:
                 try:
                     data = fetch_data_from_api(offset)
@@ -151,11 +163,13 @@ class Command(BaseCommand):
                     self.stderr.write(self.style.ERROR(f"JSONデコードエラー: {e}"))
                     break
                 
-                if data is None: # 設定エラーなどでデータ取得関数がNoneを返した場合
+                if data is None: 
                     break
 
-                if 'count' in data:
+                # 'count' フィールドから総アイテム数を取得 (最初のページでのみ重要)
+                if total_items_available == float('inf') and 'count' in data:
                     total_items_available = int(data['count'])
+                    self.stdout.write(f"DUGA APIでの利用可能な総アイテム数: {total_items_available} 件")
 
                 items = data.get('items', [])
                 if not items:
@@ -166,18 +180,22 @@ class Command(BaseCommand):
                 current_batch.extend(processed_items)
                 total_fetched_items += len(items)
 
+                # バッチサイズに達したら保存
                 if len(current_batch) >= DB_BATCH_SIZE:
                     self.stdout.write(f"バッチサイズに達しました。{len(current_batch)} 件のデータをデータベースに保存中...")
-                    # 'raw_api_data' という文字列は、bulk_insert_or_update 関数内でモデルにマッピングされます
-                    bulk_insert_or_update('raw_api_data', current_batch) 
+                    # 修正済み: 'model_name' 引数を削除
+                    bulk_insert_or_update(current_batch) 
                     current_batch = []
 
+                # 次のオフセットの計算
                 offset += len(items)
-                time.sleep(1)
+                time.sleep(1) # API負荷軽減のため待機
 
+            # ループ終了後の残りのバッチを保存
             if current_batch:
                 self.stdout.write(f"\n残りの {len(current_batch)} 件のデータをデータベースに保存中...")
-                bulk_insert_or_update('raw_api_data', current_batch)
+                # 修正済み: 'model_name' 引数を削除
+                bulk_insert_or_update(current_batch)
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"予期せぬエラーが発生しました: {e}"))

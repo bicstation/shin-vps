@@ -8,12 +8,20 @@ import unicodedata
 
 # 仮定されているモデルと定数のインポート
 from api.models import RawApiData, Product, Maker, Label, Genre, Actress, Director, Series
-from api.constants import generate_product_unique_id 
+# constantsはコードに含まれていないため、インポート名が合っているか確認してください
+# from api.constants import generate_product_unique_id 
 
 # ロガーのセットアップ (デバッグログ用)
 import logging
 logger = logging.getLogger('api_utils')
 logger.setLevel(logging.DEBUG) 
+
+# --- (generate_product_unique_id が定義されていないため、仮の定義を追加) ---
+# プロジェクト内の actual api.constants の定義に置き換えてください
+def generate_product_unique_id(api_source: str, api_product_id: str) -> str:
+    """APIソースと商品IDからユニークIDを生成する仮関数"""
+    return f"{api_source}-{api_product_id}"
+# --------------------------------------------------------------------------
 
 # --------------------------------------------------------------------------
 # 1. RawApiDataの一括挿入・更新
@@ -219,6 +227,13 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list
     # 3. Product インスタンス構築用データの返却
     # ------------------
     
+    # 画像URL (JSONFieldに対応するため文字列化)
+    # image_url_list が空リストの場合でも、NOT NULL制約のため空のJSON配列を表す文字列 '[]' にする
+    if not image_url_list:
+        image_url_json = "[]"
+    else:
+        image_url_json = json.dumps(image_url_list)
+        
     product_data = {
         'raw_data_id': raw_data_instance.id, 
         'api_source': 'DUGA',
@@ -227,7 +242,7 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list
         'release_date': release_date,
         'affiliate_url': data.get('affiliateurl') or data.get('url') or "", # affiliate_urlがnullの場合空文字列
         'price': price,
-        'image_url_list': json.dumps(image_url_list) if image_url_list else None,
+        'image_url_list': image_url_json, # ★★★ 修正後の変数を使用 ★★★
         'maker_id': maker_id, 
         'label_id': label_id,
         'director_id': director_id,
@@ -357,6 +372,14 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
             # ★★★ 修正: affiliate_urlがNoneの場合、空文字列を設定 ★★★
             affiliate_url = item_info.get('affiliate_url')
             
+            # --- 画像URLのNOT NULL制約対策 ---
+            # image_url_listが空リストの場合、JSON文字列 '[]' を設定する
+            if not image_url_list:
+                 image_url_json = "[]"
+            else:
+                 image_url_json = json.dumps(image_url_list)
+            # --------------------------------
+            
             product_data = {
                 # リレーションフィールド (IDで設定)
                 'raw_data_id': raw_instance.id, 
@@ -369,12 +392,12 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
                 'api_source': 'FANZA',
                 'product_id_unique': product_id_unique,
                 'title': item_info.get('title'),
-                'affiliate_url': affiliate_url if affiliate_url is not None else "", # ここを修正
+                'affiliate_url': affiliate_url if affiliate_url is not None else "", 
                 'price': price,
                 'release_date': parse_date(item_info.get('date') or item_info.get('release_date')), 
                 
                 # 画像URL (JSONFieldに対応するため文字列化)
-                'image_url_list': json.dumps(image_url_list) if image_url_list else None,
+                'image_url_list': image_url_json, # ★★★ 修正後の変数を使用 ★★★
                 
                 # 追跡用フィールド (UPSERT時に更新)
                 'updated_at': datetime.now(), 
