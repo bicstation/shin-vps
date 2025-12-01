@@ -4,28 +4,32 @@ from datetime import datetime
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+# F, Count, OuterRef, Subquery, Coalesce など、集計に必要なモジュールをインポート
 from django.db.models import F, Count, OuterRef, Subquery, Value, IntegerField
 from django.db.models.functions import Coalesce 
 from django.utils import timezone
+# normalize_fanza_data は、RawApiDataインスタンスをそのまま受け取るシンプルなシグネチャを想定する
 from api.utils.fanza_normalizer import normalize_fanza_data
-# get_or_create_entity を使用してエンティティの作成・更新を行う
+# エンティティの作成・更新に使用するユーティリティをインポート
 from api.utils.entity_manager import get_or_create_entity 
 
 from api.models import RawApiData, Product, Genre, Actress, Director, Maker, Label, Series
-from django.db import connection # _synchronize_relations で使用
-
+from django.db import connection # _synchronize_relations で Raw SQL を使用
+import traceback # デバッグのためにインポート
 
 # ロガーのセットアップ
 logger = logging.getLogger('normalize_fanza')
 
-# エンティティモデルをマッピング
+# エンティティモデルをマッピング (管理コマンド内で使用)
 ENTITY_MAP = {
-    'maker_id': Maker,
-    'label_id': Label,
-    'series_id': Series,
-    'director_id': Director,
-    'genres': Genre,
-    'actresses': Actress,
+    # 単一リレーション (FK)
+    'maker': Maker, # 'maker_id' ではなくキー名をそのまま使用
+    'label': Label,
+    'series': Series,
+    'director': Director,
+    # 複数リレーション (M2M)
+    'genre': Genre, # M2Mでも単数形を使用
+    'actress': Actress,
 }
 
 
@@ -45,7 +49,7 @@ class Command(BaseCommand):
         """メインの処理ロジック"""
         
         # api_utilsロガーのレベルを強制的にDEBUGに設定
-        import logging
+        # ロギング設定は settings.py や環境変数で行うのが一般的だが、コマンド内での強制設定を維持
         logging.getLogger('api_utils').setLevel(logging.DEBUG) 
 
         self.stdout.write(self.style.NOTICE(f'--- {self.API_SOURCE} 正規化コマンドを開始します ---'))
@@ -55,7 +59,7 @@ class Command(BaseCommand):
         # 移行が完了していない RawApiData を取得
         raw_data_qs = RawApiData.objects.filter(
             api_source=self.API_SOURCE, 
-            migrated=False # ★ このフィルタリングで前回取得したデータを見つけます
+            migrated=False # 未移行のレコードのみをフィルタリング
         ).order_by('id')
 
         if limit:
@@ -64,6 +68,8 @@ class Command(BaseCommand):
         total_batches = raw_data_qs.count()
         if total_batches == 0:
             self.stdout.write(self.style.SUCCESS('処理すべきRawレコードがありません。'))
+            # 念のため、product_countは更新
+            self._update_all_product_counts()
             return
 
         self.stdout.write(self.style.NOTICE(f'処理対象のRawバッチデータ件数: {total_batches} 件'))
@@ -79,11 +85,13 @@ class Command(BaseCommand):
                     # --------------------------------------------------------
                     # 1. Rawバッチデータの処理と製品データの抽出
                     # --------------------------------------------------------
-                    # normalize_fanza_data は、エンティティの *名前* と *Product* のデータ（FKはまだNULL）を返す想定
-                    products_data_list, relations_data_list = normalize_fanza_data(raw_instance)
+                    
+                    # RawApiDataインスタンスをそのまま渡し、デコードは normalize_fanza_data 側で行う
+                    products_data_list, relations_data_list = normalize_fanza_data(raw_instance) 
                     
                     if not products_data_list:
                         # RawApiDataを移行済みとしてマーク
+                        # ※ normalize_fanza_data 側でエラーが発生し、処理がここで再開された場合も同様
                         raw_instance.migrated = True
                         raw_instance.updated_at = timezone.now()
                         raw_instance.save(update_fields=['migrated', 'updated_at'])
@@ -99,17 +107,20 @@ class Command(BaseCommand):
                     # すべてのエンティティ名を集約して一括処理するための辞書
                     all_entities = {'Maker': set(), 'Label': set(), 'Director': set(), 'Series': set(), 'Genre': set(), 'Actress': set()}
                     
+                    # 製品データから単一リレーションの名前を収集
                     for product_data in products_data_list:
-                        # 単一リレーション (Maker, Label, Director, Series) の名前を収集
                         for key_name in ['maker', 'label', 'director', 'series']:
                             entity_name = product_data.get(key_name)
                             if entity_name:
+                                # Maker, Label, Director, Series
                                 all_entities[key_name.capitalize()].add(entity_name)
 
+                    # リレーションデータから複数リレーションの名前を収集
                     for relation in relations_data_list:
-                        # 複数リレーション (Genre, Actress) の名前を収集
+                        # Genre
                         for genre_name in relation.get('genres', []):
                             all_entities['Genre'].add(genre_name)
+                        # Actress
                         for actress_name in relation.get('actresses', []):
                             all_entities['Actress'].add(actress_name)
                     
@@ -117,17 +128,21 @@ class Command(BaseCommand):
                     entity_pk_maps = {} # {'Maker': {'メーカーA': 1, ...}, 'Genre': {...}}
 
                     for entity_type, names in all_entities.items():
-                        if names:
-                            model = ENTITY_MAP[f'{entity_type.lower()}s'] if entity_type in ['Genre', 'Actress'] else ENTITY_MAP[f'{entity_type.lower()}_id']
-                            # api_utils.entity_manager.get_or_create_entity を使用してエンティティを作成/更新
-                            pk_map = get_or_create_entity(
-                                model=model, 
-                                names=list(names), 
-                                api_source=self.API_SOURCE
-                            )
-                            entity_pk_maps[entity_type] = pk_map
+                        if not names:
+                            continue
+                            
+                        # ENTITY_MAP から適切なモデルを取得
+                        model = ENTITY_MAP[entity_type.lower()]
+                        
+                        # api_utils.entity_manager.get_or_create_entity を使用してエンティティを作成/更新
+                        pk_map = get_or_create_entity(
+                            model=model, 
+                            names=list(names), 
+                            api_source=self.API_SOURCE
+                        )
+                        entity_pk_maps[entity_type] = pk_map
                     
-                    self.stdout.write(f'  -> {sum(len(v) for v in entity_pk_maps.values())} 件のエンティティを作成/更新しました。')
+                    self.stdout.write(f'  -> {sum(len(v) for v in entity_pk_maps.values())} 件のエンティティを作成/更新しました。')
 
                     # --------------------------------------------------------
                     # 3. Product モデルインスタンスの準備とリレーションIDの割り当て
@@ -137,13 +152,14 @@ class Command(BaseCommand):
                     for product_data in products_data_list:
                         # 外部キーIDを Product データに設定
                         for key_name in ['maker', 'label', 'director', 'series']:
+                            # 一時的なフィールドをポップし、FK IDを割り当て
                             entity_name = product_data.pop(key_name, None)
                             if entity_name:
                                 fk_key = f'{key_name}_id'
                                 # エンティティが作成/取得されていればPKを割り当てる
                                 pk = entity_pk_maps.get(key_name.capitalize(), {}).get(entity_name)
                                 product_data[fk_key] = pk
-                        
+                                
                         # Product インスタンスを生成
                         products_to_upsert.append(Product(**product_data))
 
@@ -151,17 +167,14 @@ class Command(BaseCommand):
                     # 4. Productテーブルへの一括UPSERT
                     # --------------------------------------------------------
                     
-                    # Product.objects.bulk_create を使用して一括 UPSERT を実行
                     unique_fields = ['product_id_unique']
+                    
                     update_fields = [
-                        'raw_data', 'title', 'affiliate_url', 'image_url_list',
+                        'raw_data_id', 'title', 'affiliate_url', 'image_url_list',
                         'release_date', 'price', 
-                        'maker', 'label', 'series', 'director', 
+                        'maker_id', 'label_id', 'series_id', 'director_id', 
                         'updated_at'
                     ]
-                    
-                    # raw_data_id, maker_id などのフィールド名に修正 (raw_data, makerなどではエラーになる)
-                    update_fields = [f'{f}_id' if f in ['raw_data', 'maker', 'label', 'series', 'director'] else f for f in update_fields]
                     
                     Product.objects.bulk_create(
                         products_to_upsert,
@@ -170,7 +183,7 @@ class Command(BaseCommand):
                         update_fields=update_fields,
                     )
                     
-                    self.stdout.write(self.style.NOTICE(f'  -> Productsテーブルに {len(products_to_upsert)} 件をUPSERTしました。'))
+                    self.stdout.write(self.style.NOTICE(f'  -> Productsテーブルに {len(products_to_upsert)} 件をUPSERTしました。'))
 
                     # --------------------------------------------------------
                     # 5. リレーションの同期 (Genre, Actress)
@@ -181,24 +194,26 @@ class Command(BaseCommand):
                     for relation in relations_data_list:
                         new_rel = {'api_product_id': relation['api_product_id']}
                         
-                        # Genre IDの割り当て
+                        # Genre IDの割り当て (名前をPKに変換)
                         new_rel['genre_ids'] = [
                             entity_pk_maps['Genre'].get(name) 
                             for name in relation.get('genres', []) 
-                            if entity_pk_maps['Genre'].get(name) is not None
+                            if entity_pk_maps.get('Genre', {}).get(name) is not None
                         ]
-                        # Actress IDの割り当て
+                        # Actress IDの割り当て (名前をPKに変換)
                         new_rel['actress_ids'] = [
                             entity_pk_maps['Actress'].get(name) 
                             for name in relation.get('actresses', [])
-                            if entity_pk_maps['Actress'].get(name) is not None
+                            if entity_pk_maps.get('Actress', {}).get(name) is not None
                         ]
                         final_relations_list.append(new_rel)
 
+                    # UPSERTされたProductのDB PKを取得
                     api_ids = [r['api_product_id'] for r in final_relations_list] 
-                    db_products = Product.objects.filter(api_source=self.API_SOURCE, product_id_unique__in=[
-                        f'{self.API_SOURCE}_{api_id}' for api_id in api_ids
-                    ])
+                    db_products = Product.objects.filter(
+                        api_source=self.API_SOURCE, 
+                        product_id_unique__in=[f'{self.API_SOURCE}_{api_id}' for api_id in api_ids]
+                    ).only('pk', 'product_id_unique') # 必要なフィールドのみ取得
                     
                     # {api_product_id: db_pk} のマップを作成
                     product_pk_map = {
@@ -219,18 +234,18 @@ class Command(BaseCommand):
             except Exception as e:
                 # この atomic ブロック内でエラーが発生した場合、このバッチはロールバックされる。
                 logger.error(f"Rawバッチ ID {raw_instance.id} の処理中に致命的なエラーが発生しました: {e}")
-                import traceback
                 logger.debug(f"Stack trace: {traceback.format_exc()}")
-                continue # 次の Raw バッチへ
+                
+                # 処理に失敗したバッチをスキップとしてマークするロジックをここで追加することも可能ですが、
+                # 現在は `products_data_list` が空でない限り、例外でロールバックされます。
+                # データ不備によるデコードエラーは `normalize_fanza_data` 側で適切に処理されることを期待します。
+                # ロールバック後に次の Raw バッチへ
+                continue 
 
         # --------------------------------------------------------
         # 7. 関連エンティティの product_count を更新 (独立したトランザクション内)
         # --------------------------------------------------------
-        try:
-            with transaction.atomic():
-                self.update_product_counts(self.stdout)
-        except Exception as e:
-            logger.error(f"product_count の更新中に致命的なエラーが発生しました: {e}")
+        self._update_all_product_counts()
         
         self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} 正規化コマンドが完了しました ---'))
 
@@ -238,6 +253,7 @@ class Command(BaseCommand):
     def _synchronize_relations(self, relations_list: list[dict], product_pk_map: dict):
         """
         GenreとActressのリレーションを同期します。
+        Raw SQL を使用して、既存リレーションを削除し、新規リレーションを一括挿入することで高速化を図ります。
         """
         product_pks = list(product_pk_map.values())
         
@@ -245,20 +261,23 @@ class Command(BaseCommand):
             return
 
         # --------------------------------------------------------
-        # 1. 既存リレーションの削除 (高速化のためRaw SQL風に実行)
+        # 1. 既存リレーションの削除 (Raw SQL を使用して高速化)
         # --------------------------------------------------------
         
-        from django.db import connection
+        # 中間テーブルの名前を取得
+        genre_through_table = Product.genres.through._meta.db_table
+        actress_through_table = Product.actresses.through._meta.db_table
+
         with connection.cursor() as cursor:
-            # PostgreSQLでIN句のプレースホルダにリストを渡す一般的な方法
+            # PostgreSQLの Unnest ではなく、通常の IN 句を使用
             placeholders = ','.join(['%s'] * len(product_pks))
             
             # product_genre
-            cursor.execute(f"DELETE FROM product_genre WHERE product_id IN ({placeholders})", product_pks)
+            cursor.execute(f"DELETE FROM {genre_through_table} WHERE product_id IN ({placeholders})", product_pks)
             # product_actress
-            cursor.execute(f"DELETE FROM product_actress WHERE product_id IN ({placeholders})", product_pks)
+            cursor.execute(f"DELETE FROM {actress_through_table} WHERE product_id IN ({placeholders})", product_pks)
         
-        self.stdout.write(f'  -> 既存リレーション（ジャンル, 女優）を {len(product_pks)} 製品分削除しました。')
+        self.stdout.write(f'  -> 既存リレーション（ジャンル, 女優）を {len(product_pks)} 製品分削除しました。')
 
         # --------------------------------------------------------
         # 2. 新規リレーションの一括挿入
@@ -288,7 +307,18 @@ class Command(BaseCommand):
         Product.genres.through.objects.bulk_create(genre_relations, ignore_conflicts=True)
         Product.actresses.through.objects.bulk_create(actress_relations, ignore_conflicts=True)
         
-        self.stdout.write(f'  -> リレーション（ジャンル: {len(genre_relations)} 件, 女優: {len(actress_relations)} 件）を挿入しました。')
+        self.stdout.write(f'  -> リレーション（ジャンル: {len(genre_relations)} 件, 女優: {len(actress_relations)} 件）を挿入しました。')
+
+
+    def _update_all_product_counts(self):
+        """
+        関連エンティティテーブルの product_count カラムを中間テーブルの件数に基づいて更新するラッパー
+        """
+        try:
+            with transaction.atomic():
+                self.update_product_counts(self.stdout)
+        except Exception as e:
+            logger.error(f"product_count の更新中に致命的なエラーが発生しました: {e}")
 
 
     def update_product_counts(self, stdout):
@@ -309,7 +339,7 @@ class Command(BaseCommand):
         Actress.objects.filter(api_source=self.API_SOURCE).update(
             product_count=Coalesce(actress_count_sq, Value(0), output_field=IntegerField())
         )
-        stdout.write(self.style.SUCCESS('  -> 女優のカウントを更新しました。'))
+        stdout.write(self.style.SUCCESS('  -> 女優のカウントを更新しました。'))
 
         # 2. ジャンル (Genre) のカウント更新
         genre_count_sq = Subquery(
@@ -323,7 +353,7 @@ class Command(BaseCommand):
         Genre.objects.filter(api_source=self.API_SOURCE).update(
             product_count=Coalesce(genre_count_sq, Value(0), output_field=IntegerField())
         )
-        stdout.write(self.style.SUCCESS('  -> ジャンルのカウントを更新しました。'))
+        stdout.write(self.style.SUCCESS('  -> ジャンルのカウントを更新しました。'))
 
         # 3. メーカー (Maker) のカウント更新
         maker_count_sq = Subquery(
@@ -337,7 +367,7 @@ class Command(BaseCommand):
         Maker.objects.filter(api_source=self.API_SOURCE).update(
             product_count=Coalesce(maker_count_sq, Value(0), output_field=IntegerField())
         )
-        stdout.write(self.style.SUCCESS('  -> メーカーのカウントを更新しました。'))
+        stdout.write(self.style.SUCCESS('  -> メーカーのカウントを更新しました。'))
         
         # 4. レーベル (Label) のカウント更新
         label_count_sq = Subquery(
@@ -351,7 +381,7 @@ class Command(BaseCommand):
         Label.objects.filter(api_source=self.API_SOURCE).update(
             product_count=Coalesce(label_count_sq, Value(0), output_field=IntegerField())
         )
-        stdout.write(self.style.SUCCESS('  -> レーベルのカウントを更新しました。'))
+        stdout.write(self.style.SUCCESS('  -> レーベルのカウントを更新しました。'))
 
         # 5. シリーズ (Series) のカウント更新
         series_count_sq = Subquery(
@@ -365,7 +395,7 @@ class Command(BaseCommand):
         Series.objects.filter(api_source=self.API_SOURCE).update(
             product_count=Coalesce(series_count_sq, Value(0), output_field=IntegerField())
         )
-        stdout.write(self.style.SUCCESS('  -> シリーズのカウントを更新しました。'))
+        stdout.write(self.style.SUCCESS('  -> シリーズのカウントを更新しました。'))
 
         # 6. 監督 (Director) のカウント更新
         director_count_sq = Subquery(
@@ -379,4 +409,4 @@ class Command(BaseCommand):
         Director.objects.filter(api_source=self.API_SOURCE).update(
             product_count=Coalesce(director_count_sq, Value(0), output_field=IntegerField())
         )
-        stdout.write(self.style.SUCCESS('  -> 監督のカウントを更新しました。'))
+        stdout.write(self.style.SUCCESS('  -> 監督のカウントを更新しました。'))
