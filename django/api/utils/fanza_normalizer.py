@@ -1,18 +1,18 @@
 import json
+import logging
 from datetime import datetime
 from django.utils.dateparse import parse_date
-import logging
+from typing import List, Tuple, Dict, Any, Optional
 
 # ログはutils全体で共通のロガーを使用
 logger = logging.getLogger('api_utils')
-# logger.setLevel(logging.DEBUG) # コマンド側で設定するためここでは不要だが、念のため残しておく
 
 # 必要なモデル (ここでは参照のみ)
+# 実際の環境に合わせてインポートパスを確認してください
 from api.models import RawApiData, Maker, Label, Series, Director, Actress, Genre 
 # 依存関係は新しい場所からインポート
-# get_or_create_entity は、このファイル内では使用しないが、外部の管理コマンドで必要
 from .entity_manager import get_or_create_entity
-from .common import generate_product_unique_id # 使用されていないが、依存関係として残す
+from .common import generate_product_unique_id 
 
 API_SOURCE = 'FANZA' # 定数として定義
 
@@ -39,22 +39,35 @@ def _safe_extract_single_entity(item_info_content: dict, key: str) -> tuple[str 
 def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dict]]:
     """
     RawApiData (FANZA: 1バッチ) のレコードを読み込み、Productモデルとリレーションに必要なデータに正規化する。
-    
-    【重要】管理コマンドのロジックに合わせて、PKではなくエンティティの「名前」を返すよう修正する。
     """
     products_data_list = []
     relations_list = []
     
     # Raw JSONデータのデコード
-    # RawApiDataのデータをデコードし、normalize_fanza_dataに渡す
     try:
-        raw_json_data = json.loads(raw_instance.data)
+        # ----------------------------------------------------------------------
+        # RawApiDataの実際のJSONデータフィールド名が 'raw_json_data' であると仮定
+        raw_data = getattr(raw_instance, 'raw_json_data', None)
+        
+        if raw_data is None:
+            logger.error(f"RawApiData ID {raw_instance.id} にデータ属性が見つかりません。")
+            return [], []
+
+        if isinstance(raw_data, dict):
+            raw_json_data = raw_data
+        elif isinstance(raw_data, str):
+            raw_json_data = json.loads(raw_data)
+        else:
+            logger.error(f"RawApiData ID {raw_instance.id} のデータ型が不正です (Type: {type(raw_data)})")
+            return [], []
+            
         items = raw_json_data.get('result', {}).get('items', [])
+        
     except json.JSONDecodeError as e:
         logger.error(f"RawApiData ID {raw_instance.id} のJSONデコードエラー: {e}")
-        return [], []
+        raise 
     except Exception as e:
-        logger.error(f"RawApiData ID {raw_instance.id} のデコード中にエラー: {e}")
+        logger.error(f"RawApiData ID {raw_instance.id} のデコード中にエラー: '{e}'")
         return [], []
 
     if not items:
@@ -110,26 +123,32 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
         
         # 画像URLリストの整形
         image_url_list = []
+        
+        # メインサムネイル (imageURL.list) を追加
         if data.get('imageURL', {}).get('list'):
              image_url_list.append(data['imageURL']['list'])
-        if data.get('imageURL', {}).get('sample', {}).get('s'):
-             image_url_list.extend(data['imageURL']['sample']['s'])
+             
+        # サンプル画像 (sampleImageURL.sample_s.image) を追加
+        # 生データに合わせてキーを修正
+        sample_image_data = data.get('sampleImageURL', {}).get('sample_s', {}).get('image')
+        if sample_image_data and isinstance(sample_image_data, list):
+             image_url_list.extend(sample_image_data)
         
-        # NOT NULL制約回避のため、空の場合は '[]' のJSON文字列を使用
+        # JSONFieldへの格納を想定し、json.dumps()は使用しない (前回の修正を維持)
         if not image_url_list:
-             image_url_json = "[]"
+             image_url_for_db = []
         else:
-             image_url_json = json.dumps(image_url_list)
+             image_url_for_db = image_url_list
 
         # 価格の整形 (価格情報がない場合があるため、Noneを許容)
         price_str = data.get('prices', {}).get('price')
         try:
-            price = int(price_str) if price_str else None
+            # "~" が含まれる場合があるため、数値部分のみ抽出
+            price = int(price_str.replace('~', '')) if price_str and price_str.replace('~', '').isdigit() else None
         except ValueError:
             price = None
         
         # 正規化された Product モデル用のデータ辞書
-        # ここではFKフィールド（maker_id, label_idなど）にエンティティの「名前」を一時的に設定する
         product_data = {
             'api_source': API_SOURCE,
             'api_product_id': api_product_id,
@@ -138,9 +157,9 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
             'release_date': release_date,
             'affiliate_url': data.get('affiliateURL') or "", 
             'price': price,
-            'image_url_list': image_url_json, # JSON文字列
+            'image_url_list': image_url_for_db, # Pythonのリストオブジェクトをそのまま格納
             
-            # ★ 修正: FK IDではなく、エンティティの「名前」を格納
+            # FK IDではなく、エンティティの「名前」を格納
             'maker': maker_name,
             'label': label_name,
             'series': series_name,
@@ -153,7 +172,7 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
         products_data_list.append(product_data)
         
         # リレーションシップ用のデータ辞書
-        # ★ 修正: PK IDではなく、エンティティの「名前」を格納
+        # PK IDではなく、エンティティの「名前」を格納
         relations_list.append({
             'api_product_id': api_product_id, # Product.product_id_uniqueと紐づけるためのキー
             'genres': genre_names,

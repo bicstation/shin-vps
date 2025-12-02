@@ -16,15 +16,18 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal-net
+    
+    # ホストPCからのアクセス用にポートマッピング
+    ports:
+      - "5432:5432"
       
-    # --- 💡 ヘルスチェック: 正常動作を確認済み ---
+    # ヘルスチェック
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"] 
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s 
-    # ----------------------------------------------------
 
   # 4. Django API (データハブ & 認証サーバー)
   django:
@@ -33,16 +36,17 @@ services:
       dockerfile: Dockerfile
     container_name: api_django
     restart: always
+    # DB接続を待つ
     depends_on:
       postgres_db:
         condition: service_healthy
     environment:
-      # 💡 修正: すべての環境変数をリスト形式に統一し、インデントを修正
+      # ✅ 修正済み: DBホスト名をサービス名 'postgres_db' に設定
       - DB_HOST=postgres_db
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}  # SECRET_KEYをDJANGO_SECRET_KEYに変更
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       
       # API設定
       - DUGA_API_ID=${DUGA_API_ID}
@@ -54,12 +58,11 @@ services:
       - FANZA_AFFILIATE_ID=${FANZA_AFFILIATE_ID}
       - FANZA_API_URL=${FANZA_API_URL}
       - FANZA_TOTAL_LIMIT=${FANZA_TOTAL_LIMIT}
-      # ----------------------------------------
       
-    # ★ 静的ファイル用ボリュームを追加
+    # ボリューム
     volumes:
       - ./django:/usr/src/app 
-      - static_volume:/usr/src/app/staticfiles # ✅ 静的ファイル収集先をボリュームにマウント
+      - static_volume:/usr/src/app/staticfiles
         
     command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
     networks:
@@ -70,63 +73,63 @@ services:
     build:
       context: ./next-bicstation
       dockerfile: Dockerfile
-      # --- 💡 修正: .env変数からタイトルを読み込む ---
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-      # ----------------------------------------
     container_name: next_bicstation
+    # Django起動を待つ
     depends_on:
       django:
         condition: service_started
     environment:
+      # Next.jsは内部APIへサービス名でアクセス (http://django:8000)
       NEXT_PUBLIC_API_URL: http://django:8000
       NODE_ENV: production
     networks:
       - internal-net
 
-  # 6. Next.js - tiper.live (既存メインサイト)
+  # 6. Next.js - tiper.live (サブディレクトリ /tiper)
   next-tiper:
     build:
       context: ./next-tiper
       dockerfile: Dockerfile
-      # --- 💡 修正: .env変数からタイトルを読み込む ---
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-      # ----------------------------------------
     container_name: next_tiper
+    # Django起動を待つ
     depends_on:
       django:
         condition: service_started
     environment:
+      # Next.jsは内部APIへサービス名でアクセス (http://django:8000)
       NEXT_PUBLIC_API_URL: http://django:8000
       NODE_ENV: production
     networks:
       - internal-net
   
-  # 7. Next.js - next-bic-saving サービス
+  # 7. Next.js - next-bic-saving サービス (サブディレクトリ /saving)
   next-bic-saving:
     build: 
       context: ./next-bic-saving
       dockerfile: Dockerfile
-      # --- 💡 修正: .env変数からタイトルを読み込む ---
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-      # ----------------------------------------
     container_name: next_bic_saving 
+    # Django起動を待つ
     depends_on:
       django:
         condition: service_started
     environment:
-      # 💡 修正: API URLを追加
+      # Next.jsは内部APIへサービス名でアクセス (http://django:8000)
       NEXT_PUBLIC_API_URL: http://django:8000
       NODE_ENV: production
     networks:
       - internal-net
 
-  # 8. Nginx (リバースプロキシ) - ローカルテスト用
+  # 8. Nginx (リバースプロキシ)
   nginx:
     image: nginx:stable-alpine
     container_name: reverse_proxy
+    # すべてのNext.jsとDjangoが起動するまで待つ
     depends_on:
       - next-bicstation
       - next-tiper
@@ -135,13 +138,17 @@ services:
     ports:
       - "8080:80" 
     volumes:
+      # Nginx設定ファイル
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro 
-      - static_volume:/usr/src/app/staticfiles:ro # ✅ Nginxに静的ファイル配信用のボリュームをマウント
+      # Django静的ファイル
+      - static_volume:/usr/src/app/staticfiles:ro 
     networks:
       - internal-net
 
-# ボリューム定義 (最上位レベル - services, networks と同階層)
+# ------------------------------------------------------------------
+
+# ボリューム定義 (最上位レベル)
 volumes:
   postgres_data:
     driver: local

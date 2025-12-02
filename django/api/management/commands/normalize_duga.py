@@ -4,30 +4,35 @@ from django.core.management.base import BaseCommand
 from django.db import transaction, models
 from django.db.models import F, Count, OuterRef, Subquery
 from django.db.models.functions import Coalesce
+from django.utils import timezone # django.utils.timezone をインポート
 
 # 関連エンティティのモデルをインポート
 from api.models import RawApiData, Product, Genre, Actress, Maker, Label, Director
 
-# ★ 修正: generate_product_unique_id のインポート元を utils に変更 (仮定)
+# ユーティリティのインポート
 from api.utils.common import generate_product_unique_id 
 from api.utils.duga_normalizer import normalize_duga_data 
 from api.utils.entity_manager import get_or_create_entity 
-from api.utils.db_bulk_ops import bulk_insert_or_update 
 
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = 'RawApiData (DUGA) を読み込み、Productモデルに正規化して保存します。'
+    API_SOURCE = 'DUGA'
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS('--- DUGA API データ仕訳・正規化処理開始 ---'))
+        self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} API データ仕訳・正規化処理開始 ---'))
 
-        # DUGA のデータのみを対象
-        raw_data_qs = RawApiData.objects.filter(api_source='DUGA').order_by('id')
+        # DUGA のデータで、まだ移行されていないレコードのみを対象
+        raw_data_qs = RawApiData.objects.filter(api_source=self.API_SOURCE, migrated=False).order_by('id')
         
         products_to_upsert = []
-        relations_map = {}
+        relations_map = {} 
+        processed_raw_ids = []
         total_processed = 0
+        
+        # ★修正ポイント1: 処理時間を統一するために、開始時に aware な時刻を取得★
+        current_time = timezone.now()
         
         try:
             self.stdout.write(f'処理対象のRawデータ件数: {raw_data_qs.count()} 件')
@@ -37,63 +42,59 @@ class Command(BaseCommand):
             # --------------------------------------------------------
             for raw_instance in raw_data_qs:
                 try:
-                    # utils の normalize_duga_data でエンティティIDなどを取得
-                    # NOTE: normalize_duga_data 内部で RawApiData.raw_json_data のデコードと処理が行われる
+                    # normalize_duga_data でエンティティIDなどを取得
                     normalized_data_list, relations_list = normalize_duga_data(raw_instance)
                     
                     if not normalized_data_list:
                         logger.warning(f"Raw ID {raw_instance.id} の DUGA データから product_data が抽出できませんでした。スキップします。")
                         continue
                         
-                    # DUGAは1つのRawApiDataにつき1つのProductが基本
                     product_data = normalized_data_list[0]
                     relations = relations_list[0]
                     
-                    # ------------------------------------------------------------------
-                    # ID戦略の組み込み: normalize_duga_data の結果をそのまま利用
-                    # ------------------------------------------------------------------
-                    # NOTE: ここで ID の再生成は行わず、normalizerが生成した 'DUGA_productid' 
-                    # 形式の product_id_unique を信頼する。
-                    # ------------------------------------------------------------------
-
-                    # Productインスタンスを作成
-                    products_to_upsert.append(Product(**product_data))
+                    # ★修正ポイント2: updated_at に aware な時刻を明示的にセット★
+                    product_data['updated_at'] = current_time 
                     
-                    # Product ID ではなく RawApiData ID をキーとしてリレーション情報を保存
-                    # (ManyToMany 同期のために、後で Product.id を取得する際のキーとなる)
+                    # Productインスタンスを作成
+                    product_instance = Product(**product_data)
+                    products_to_upsert.append(product_instance)
+                    
                     relations_map[raw_instance.id] = relations
+                    processed_raw_ids.append(raw_instance.id)
                     
                     total_processed += 1
                     
                     # 500件ごとにバッチ処理
                     if len(products_to_upsert) >= 500:
-                        self._bulk_upsert_and_sync(products_to_upsert, relations_map)
+                        self._bulk_upsert_and_sync(products_to_upsert, relations_map, processed_raw_ids)
+                        # 次のバッチのためにリストをクリア
                         products_to_upsert = []
                         relations_map = {}
+                        processed_raw_ids = []
+                        # 次のバッチのために時刻を更新
+                        current_time = timezone.now() 
                         
                 except ValueError as ve:
-                    # JSONデコードエラーや必須フィールド不足などがここで捕捉される
                     logger.warning(f"Raw ID {raw_instance.id} のデータが不完全なためスキップ: {ve}")
                     continue
                 except Exception as e:
                     logger.error(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}")
                     self.stderr.write(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}")
                     try:
-                        # 生のJSONデータの内容を出力
                         raw_json_data = raw_instance.raw_json_data
                         if isinstance(raw_json_data, dict):
                             raw_json = json.dumps(raw_json_data, ensure_ascii=False)
                         else:
                             raw_json = str(raw_json_data)
                             
-                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): {raw_json[:300]}...")
+                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): {raw_json[:300]}...")
                     except:
-                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): JSONのダンプ/文字列化に失敗")
+                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): JSONのダンプ/文字列化に失敗")
                     continue
                 
             # 残りのデータを保存・同期
             if products_to_upsert:
-                self._bulk_upsert_and_sync(products_to_upsert, relations_map)
+                self._bulk_upsert_and_sync(products_to_upsert, relations_map, processed_raw_ids)
 
             self.stdout.write(self.style.SUCCESS(f'✅ 合計処理件数: {total_processed} 件の製品データを正規化・保存/更新しました。'))
 
@@ -102,10 +103,9 @@ class Command(BaseCommand):
             # --------------------------------------------------------
             self.update_product_counts(self.stdout)
             
-            self.stdout.write(self.style.SUCCESS('--- DUGA API データ仕訳・正規化処理完了 (コミット済み) ---'))
+            self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} API データ仕訳・正規化処理完了 (コミット済み) ---'))
             
         except Exception as e:
-            # ループ外の致命的なエラーを捕捉
             self.stdout.write(self.style.ERROR(f"処理中に致命的なエラーが発生しました: {e}"))
             logger.critical(f"正規化処理中に致命的なエラー: {e}")
 
@@ -113,15 +113,40 @@ class Command(BaseCommand):
     # ヘルパーメソッド
     # --------------------------------------------------------
 
-    def _bulk_upsert_and_sync(self, products_to_upsert, relations_map):
+    def _bulk_upsert_and_sync(self, products_to_upsert, relations_map, processed_raw_ids):
         """
-        Productを一括でUPSERTし、その後にリレーションを一括で同期する。
+        Productを一括でUPSERTし、その後にリレーションを一括で同期し、RawApiDataを更新する。
         """
-        self.stdout.write(f'バッチサイズに達しました。{len(products_to_upsert)} 件の製品データを保存/更新中...')
+        num_products = len(products_to_upsert)
+        self.stdout.write(f'バッチ処理開始: {num_products} 件の製品データを保存/更新中...')
         
+        # product_id_unique のリストを取得
+        unique_ids = [p.product_id_unique for p in products_to_upsert]
+        
+        # データベースに既存のID (pk) と product_id_unique の両方を取得
+        existing_products_data = Product.objects.filter(product_id_unique__in=unique_ids).values('id', 'product_id_unique')
+
+        # マッピング辞書を作成 { product_id_unique: id }
+        id_map = {p['product_id_unique']: p['id'] for p in existing_products_data}
+        existing_unique_ids = set(id_map.keys())
+
+        products_to_create = []
+        products_to_update = []
+        
+        # 挿入/更新のインスタンスリストを分割し、更新対象には ID をセット
+        for p in products_to_upsert:
+            if p.product_id_unique in existing_unique_ids:
+                # 既存のレコードの場合、IDをセット
+                p.id = id_map.get(p.product_id_unique)
+                if p.id:
+                    products_to_update.append(p)
+                else:
+                    logger.error(f"IDマッピングエラー: product_id_unique {p.product_id_unique} の ID が見つかりませんでした。")
+            else:
+                products_to_create.append(p)
+
         try:
             with transaction.atomic():
-                # Product の Foreign Key フィールド名 (maker_id, label_id, ...) を動的に取得
                 fk_fields = [f.attname for f in Product._meta.fields if isinstance(f, models.ForeignKey)]
                 
                 # 更新対象フィールドリスト
@@ -130,26 +155,35 @@ class Command(BaseCommand):
                     'image_url_list', 'updated_at', 'is_active', 
                 ] + fk_fields
                 
-                # 1. Productの一括UPSERT
-                Product.objects.bulk_create(
-                    products_to_upsert, 
-                    update_conflicts=True, 
-                    unique_fields=['product_id_unique'],
-                    update_fields=update_fields,
-                    batch_size=500
-                )
+                # 1. 新規レコードの一括挿入
+                if products_to_create:
+                    # bulk_create の実行により、products_to_create のインスタンスにも id がセットされる
+                    Product.objects.bulk_create(products_to_create, batch_size=500)
+                    self.stdout.write(self.style.NOTICE(f'  - 新規作成: {len(products_to_create)} 件'))
                 
-                # 2. リレーション同期のために、更新/挿入されたProductのIDを取得
-                unique_ids = [p.product_id_unique for p in products_to_upsert]
+                # 2. 既存レコードの一括更新 (IDがセットされていることを確認済み)
+                if products_to_update:
+                    Product.objects.bulk_update(products_to_update, update_fields, batch_size=500)
+                    self.stdout.write(self.style.NOTICE(f'  - 既存更新: {len(products_to_update)} 件'))
                 
-                # product_id_unique から DB ID (pk) へのマッピングを辞書として作成
+                # 3. リレーション同期のために、すべてのProductの DB ID (pk) を取得/確認
+                
                 product_db_id_map = {
                     p.product_id_unique: p.id
-                    for p in Product.objects.filter(product_id_unique__in=unique_ids)
+                    for p in products_to_upsert if p.id is not None
                 }
                 
-                # 3. ManyToMany リレーションの同期
+                # 4. ManyToMany リレーションの同期
                 self._synchronize_many_to_many(products_to_upsert, product_db_id_map, relations_map)
+                
+                # 5. RawApiData の migrated フラグを更新 (トランザクション内)
+                # ★修正ポイント3: RawApiDataの更新時刻も aware な時刻を使用する (通常は timezone.now() で OK)★
+                RawApiData.objects.filter(id__in=processed_raw_ids).update(
+                    migrated=True, 
+                    updated_at=timezone.now() # django.utils.timezone.now() は通常 aware な時刻を返す
+                )
+                self.stdout.write(self.style.NOTICE(f'RawApiData {len(processed_raw_ids)} 件の migrated フラグを True に更新しました。'))
+
 
         except Exception as e:
             logger.error(f"バッチ処理中にDBエラーが発生しロールバック: {e}")
@@ -167,12 +201,10 @@ class Command(BaseCommand):
         # ------------------
         # Genre (ジャンル) の同期
         # ------------------
-        # 当該バッチで処理された製品のリレーションを削除 (リフレッシュ)
         Product.genres.through.objects.filter(product_id__in=product_db_ids).delete()
         
         genre_relations_to_insert = []
         for p in products_to_upsert:
-            # p.raw_data_id は Product インスタンス作成時に RawApiData.id から引き継がれていることを前提とする
             raw_id = p.raw_data_id 
             db_id = product_db_id_map.get(p.product_id_unique)
             if db_id and raw_id in relations_map:
@@ -187,7 +219,6 @@ class Command(BaseCommand):
         # ------------------
         # Actress (出演者) の同期
         # ------------------
-        # 当該バッチで処理された製品のリレーションを削除 (リフレッシュ)
         Product.actresses.through.objects.filter(product_id__in=product_db_ids).delete()
 
         actress_relations_to_insert = []
@@ -207,6 +238,7 @@ class Command(BaseCommand):
     def update_product_counts(self, stdout):
         """
         関連エンティティテーブルの product_count カラムを中間テーブルの件数に基づいて更新する。
+        DUGAソースの製品のみを対象とする。
         """
         stdout.write("\n--- 関連エンティティの product_count を更新中 ---")
         
@@ -221,7 +253,7 @@ class Command(BaseCommand):
                 ]
                 
                 # Product モデルからDUGAの製品IDのみをフィルタリングするための Subquery を準備
-                duga_product_ids = Product.objects.filter(api_source='DUGA').values('id')
+                duga_product_ids = Product.objects.filter(api_source=self.API_SOURCE).values('id')
 
                 for Model, related_name in MAPPING:
                     
@@ -233,7 +265,7 @@ class Command(BaseCommand):
                         count_subquery = (
                             Product.objects
                             .filter(
-                                api_source='DUGA',
+                                api_source=self.API_SOURCE,
                                 **{fk_field_name: OuterRef('pk')} 
                             )
                             .values(fk_field_name) 
@@ -241,7 +273,8 @@ class Command(BaseCommand):
                             .values('count')[:1]
                         )
                         
-                        Model.objects.filter(api_source='DUGA').update(
+                        # 対象エンティティの product_count を更新
+                        Model.objects.filter(api_source=self.API_SOURCE).update(
                             product_count=Coalesce( 
                                 Subquery(count_subquery, output_field=models.IntegerField()),
                                 0,
@@ -259,13 +292,14 @@ class Command(BaseCommand):
                         # ManyToMany 中間テーブル経由のカウントを Subquery で取得
                         count_subquery = (
                             ThroughModel.objects
-                            .filter(**filter_kwargs, product_id__in=Subquery(duga_product_ids))
+                            .filter(**filter_kwargs, product_id__in=Subquery(duga_product_ids.values('id')))
                             .values(entity_fk_name)
                             .annotate(count=Count('product_id'))
                             .values('count')[:1]
                         )
 
-                        Model.objects.filter(api_source='DUGA').update(
+                        # 対象エンティティの product_count を更新
+                        Model.objects.filter(api_source=self.API_SOURCE).update(
                             product_count=Coalesce( 
                                 Subquery(count_subquery, output_field=models.IntegerField()),
                                 0,

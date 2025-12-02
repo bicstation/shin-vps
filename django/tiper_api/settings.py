@@ -108,15 +108,15 @@ WSGI_APPLICATION = 'tiper_api.wsgi.application'
 
 
 # ----------------------------------------------------
-# データベース設定 (PostgreSQL - 環境変数から読み込み) (統合)
+# データベース設定 (PostgreSQL - ローカル接続に固定)
 # ----------------------------------------------------
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'), 
-        'USER': os.environ.get('DB_USER'), 
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),  # 'postgres_db' (Dockerサービス名)
+        'NAME': 'tiper_db',      
+        'USER': 'tiper_user',     
+        'PASSWORD': '1492nabe',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
@@ -186,6 +186,22 @@ API_CONFIG = {
         'TOTAL_LIMIT': int(os.environ.get('FANZA_TOTAL_LIMIT', 10000)),
     },
 }
+
+# ====================================================
+# 💡 追加: DRF 設定 (ページネーション設定を追加)
+# ====================================================
+REST_FRAMEWORK = {
+    # デフォルトの認証やパーミッションの設定
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    
+    # ★★★ ページネーション設定 ★★★
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20,  # 1ページあたりのデフォルトのアイテム数
+}
+
 
 # ====================================================
 # 💡 追加: ロギング設定 (LOGGING)

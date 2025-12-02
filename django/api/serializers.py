@@ -1,5 +1,8 @@
+# api/serializers.py
+
 from rest_framework import serializers
-from .models import Product, Maker, Genre, Actress
+# Productだけでなく、ネストするエンティティモデルもすべてインポート
+from .models import Product, Maker, Genre, Actress, Label, Director 
 
 # --------------------------------------------------------------------------
 # エンティティのネストされたシリアライザ
@@ -23,6 +26,19 @@ class ActressSerializer(serializers.ModelSerializer):
         model = Actress
         fields = ('id', 'name')
 
+# ★ 補足: LabelとDirectorもネストする可能性があるため追加
+class LabelSerializer(serializers.ModelSerializer):
+    """Labelモデル用のシンプルなシリアライザ"""
+    class Meta:
+        model = Label
+        fields = ('id', 'name', 'api_source')
+
+class DirectorSerializer(serializers.ModelSerializer):
+    """Directorモデル用のシンプルなシリアライザ"""
+    class Meta:
+        model = Director
+        fields = ('id', 'name', 'api_source')
+        
 # --------------------------------------------------------------------------
 # Productモデルのメインシリアライザ
 # --------------------------------------------------------------------------
@@ -30,6 +46,9 @@ class ActressSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     # ForeignKey (単一リレーション) はネストして表示
     maker = MakerSerializer(read_only=True)
+    # LabelとDirectorもForeignKeyであれば追加
+    label = LabelSerializer(read_only=True)
+    director = DirectorSerializer(read_only=True)
     
     # ManyToManyField (複数リレーション) はネストして表示
     genres = GenreSerializer(many=True, read_only=True)
@@ -46,10 +65,15 @@ class ProductSerializer(serializers.ModelSerializer):
             'affiliate_url',
             'price',
             'image_url_list',
-            # リレーション
+            'api_source', # api_sourceも通常公開します
+            
+            # リレーション (ネストされたオブジェクト)
             'maker',
+            'label',      # ★追加: Label
+            'director',   # ★追加: Director
             'genres',
             'actresses',
+            
             'is_active',
             'updated_at',
         )

@@ -1,90 +1,81 @@
 import hashlib
-from typing import Optional
+import logging
+from typing import Optional, List, Dict, Type
 from django.db import transaction, IntegrityError
 from django.db.models import Model
 from django.core.exceptions import ObjectDoesNotExist
 
 # ログ設定
-import logging
 logger = logging.getLogger('api_utils')
-# logger.setLevel(logging.DEBUG) # 実行環境の settings.py に依存させる
 
-def get_or_create_entity(model: type[Model], api_source: str, name: str, api_id: str | None = None) -> int | None:
+# ここに自己参照インポート（from .entity_manager import ...）が無いことを確認してください。
+
+def get_or_create_entity(model: Type[Model], names: List[str], api_source: str) -> Dict[str, int]:
     """
-    エンティティ（Maker, Genreなど）を取得または作成し、そのプライマリキー（ID）を返す。
+    エンティティ名リストを受け取り、一括でget_or_createを実行し、{name: pk} のマップを返す。
+    （中略：実際のget_or_createロジックがここにある）
+    """
     
-    Args:
-        model (type[Model]): 対象となるモデルクラス。
-        api_source (str): APIソース名 ('FANZA', 'DUGA'など)。
-        name (str): エンティティの名称。
-        api_id (str | None): API提供のID。
+    if not names:
+        return {}
         
-    Returns:
-        int | None: エンティティのデータベースID、またはエラー時はNone。
-    """
-    if not name or not api_source:
-        return None
+    # 重複を除去し、整形
+    unique_names = list(set(name.strip() for name in names if name.strip()))
+    if not unique_names:
+        return {}
+
+    pk_map: Dict[str, int] = {}
     
-    # -----------------------------------------------------------
-    # 1. api_id の決定 (GenreやAPI IDがない場合)
-    # -----------------------------------------------------------
-    api_id_to_use = api_id
-    # Genreかつapi_idがない場合、nameのMD5ハッシュ値を使用
-    if model.__name__ == 'Genre' and api_id is None:
-        api_id_to_use = hashlib.md5(name.encode('utf-8')).hexdigest()
+    # 1. 既存のレコードを一括で取得
+    existing_entities = model.objects.filter(name__in=unique_names, api_source=api_source).values('pk', 'name')
+    for entity in existing_entities:
+        pk_map[entity['name']] = entity['pk']
+
+    # 新規作成が必要な名前を特定
+    existing_names = set(pk_map.keys())
+    names_to_create = [name for name in unique_names if name not in existing_names]
     
-    # -----------------------------------------------------------
-    # 2. 検索条件の定義
-    # -----------------------------------------------------------
-    
-    # 基本的な検索条件は api_source と name
-    search_kwargs = {
-        'api_source': api_source,
-        'name': name,
-    }
-    
-    # デフォルト値
-    defaults_kwargs = {
-        'api_id': api_id_to_use,
-    }
-    
-    try:
-        # トランザクション内で get_or_create を実行
-        with transaction.atomic():
-            entity, created = model.objects.get_or_create(
-                **search_kwargs,
-                defaults=defaults_kwargs
+    if not names_to_create:
+        return pk_map
+
+    # 2. 新規インスタンスを準備
+    new_entities = []
+    for name in names_to_create:
+        api_id_to_use = None
+        if model.__name__ == 'Genre':
+            api_id_to_use = hashlib.md5(name.encode('utf-8')).hexdigest()
+            
+        new_entities.append(
+            model(
+                name=name, 
+                api_source=api_source, 
+                api_id=api_id_to_use, 
+                product_count=0
             )
-            
-            if created:
-                logger.info(f"[{api_source}:{model.__name__}] 新規エンティティを作成: {name}")
-                
-            return entity.id
-            
-    except IntegrityError:
-        # -----------------------------------------------------------
-        # 3. IntegrityError (競合) 発生時の処理
-        # -----------------------------------------------------------
-        # 競合により作成に失敗したが、レコードは既に存在しているはず。
-        # 再度検索して既存のレコードを取得する。
-        
-        logger.warning(
-            f"[{api_source}:{model.__name__}] Integrity Errorが発生 (名前: {name})。既存レコードを再取得します。"
         )
-        
-        try:
-            # 競合を起こしたフィールドを使ってレコードを再取得
-            # 検索条件を絞る必要がある (api_source と name で再検索)
-            entity = model.objects.get(**search_kwargs)
-            return entity.id
-        except ObjectDoesNotExist:
-            # まれに競合したレコードが消えている可能性、または検索条件が不十分な可能性
-            logger.error(f"[{api_source}:{model.__name__}] 競合後の再検索に失敗しました: {name}")
-            return None
-        except Exception as e:
-            logger.error(f"[{api_source}:{model.__name__}] 競合後の再検索中に予期せぬエラーが発生: {e}")
-            return None
+
+    # 3. 一括作成 (bulk_create)
+    try:
+        with transaction.atomic():
+            model.objects.bulk_create(new_entities)
             
+        # 作成されたエンティティをデータベースから再度取得
+        newly_created_entities = model.objects.filter(
+            name__in=names_to_create, 
+            api_source=api_source
+        ).values('pk', 'name')
+        
+        for entity in newly_created_entities:
+            pk_map[entity['name']] = entity['pk']
+            
+        logger.info(f"[{api_source}] {model.__name__}: 新規 {len(names_to_create)} 件を作成しました。")
+        
     except Exception as e:
-        logger.error(f"[{api_source}:{model.__name__}] エンティティの取得/作成中に予期せぬエラーが発生: {e}")
-        return None
+        logger.error(f"[{api_source}] {model.__name__} の一括作成中にエラー: {e}")
+        pass 
+
+    return pk_map
+
+# --------------------------------------------------------------------------
+# 注意: このファイルには normalize_duga_data 関数は含めないでください。
+# --------------------------------------------------------------------------

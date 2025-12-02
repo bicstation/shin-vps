@@ -96,7 +96,7 @@ def get_or_create_entity(model: type[Model], api_source: str, name: str, api_id:
         # IntegrityError（ユニーク制約違反など）が発生した場合
         logger.warning(f"[{api_source}:{model.__name__}] Integrity Errorが発生 (名前: {name})。Noneを返します。")
         return None
-             
+        
     except Exception as e:
         # その他の予期せぬエラー
         logger.error(f"[{api_source}:{model.__name__}] エンティティの取得/作成中にエラーが発生: {e}")
@@ -232,7 +232,8 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list
     if not image_url_list:
         image_url_json = "[]"
     else:
-        image_url_json = json.dumps(image_url_list)
+        # JSONFieldに保存するためにJSON文字列に変換
+        image_url_json = json.dumps(image_url_list) 
         
     product_data = {
         'raw_data_id': raw_data_instance.id, 
@@ -242,7 +243,7 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list
         'release_date': release_date,
         'affiliate_url': data.get('affiliateurl') or data.get('url') or "", # affiliate_urlがnullの場合空文字列
         'price': price,
-        'image_url_list': image_url_json, # ★★★ 修正後の変数を使用 ★★★
+        'image_url_list': image_url_json, # 修正後の変数を使用
         'maker_id': maker_id, 
         'label_id': label_id,
         'director_id': director_id,
@@ -369,16 +370,16 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
             if isinstance(sample_image_urls, dict):
                 image_url_list.extend(sample_image_urls.get('sample', []))
             
-            # ★★★ 修正: affiliate_urlがNoneの場合、空文字列を設定 ★★★
-            affiliate_url = item_info.get('affiliate_url')
-            
-            # --- 画像URLのNOT NULL制約対策 ---
+            # ★★★ 画像URLのNOT NULL制約対策 ★★★
             # image_url_listが空リストの場合、JSON文字列 '[]' を設定する
             if not image_url_list:
                  image_url_json = "[]"
             else:
                  image_url_json = json.dumps(image_url_list)
             # --------------------------------
+            
+            # ★★★ affiliate_urlがNoneの場合、空文字列を設定 ★★★
+            affiliate_url = item_info.get('affiliate_url')
             
             product_data = {
                 # リレーションフィールド (IDで設定)
@@ -392,12 +393,12 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
                 'api_source': 'FANZA',
                 'product_id_unique': product_id_unique,
                 'title': item_info.get('title'),
-                'affiliate_url': affiliate_url if affiliate_url is not None else "", 
+                'affiliate_url': affiliate_url if affiliate_url is not None else "", # None対策
                 'price': price,
                 'release_date': parse_date(item_info.get('date') or item_info.get('release_date')), 
                 
                 # 画像URL (JSONFieldに対応するため文字列化)
-                'image_url_list': image_url_json, # ★★★ 修正後の変数を使用 ★★★
+                'image_url_list': image_url_json, # 修正後の変数を使用
                 
                 # 追跡用フィールド (UPSERT時に更新)
                 'updated_at': datetime.now(), 
