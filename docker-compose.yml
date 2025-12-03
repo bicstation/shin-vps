@@ -101,7 +101,7 @@ services:
         condition: service_started
     environment:
       # Next.jsは内部APIへサービス名でアクセス (http://django:8000)
-      NEXT_PUBLIC_API_URL: http://django:8000
+      NEXT_PUBLIC_API_URL: http://django:8000/api
       NODE_ENV: production
     networks:
       - internal-net

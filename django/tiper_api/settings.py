@@ -116,7 +116,7 @@ DATABASES = {
         'NAME': 'tiper_db',      
         'USER': 'tiper_user',     
         'PASSWORD': '1492nabe',
-        'HOST': '127.0.0.1',
+        'HOST': os.environ.get('DB_HOST', 'postgres_db'),
         'PORT': '5432',
     }
 }
