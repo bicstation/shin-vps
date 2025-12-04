@@ -6,7 +6,11 @@
 venv/
 
 # Dockerの永続化ボリューム (DBデータなど)
+# PostgreSQL
 postgres_data/
+# MariaDB
+mariadb_data/
+# その他の永続化データ
 wp_content/
 
 # 環境変数ファイル (機密情報が含まれるため除外)
@@ -17,6 +21,8 @@ wp_content/
 *.log
 *.tmp
 tmp/
+# Docker Composeによる設定ファイル
+.docker-compose.yml.*
 
 # ------------------------------------
 # Python/Django
@@ -25,8 +31,8 @@ tmp/
 __pycache__/
 *.py[cod]
 
-# Djangoのマイグレーションファイル（不要な場合があるが、通常は含めることが多い）
-# /django/app_name/migrations/*.py
+# Djangoの静的ファイル収集ディレクトリ
+staticfiles/
 
 # IDE, OSファイル
 .idea/
@@ -35,15 +41,16 @@ __pycache__/
 Thumbs.db
 
 # ------------------------------------
-# Node/Next.js (各Next.jsプロジェクト内)
+# Node/Next.js & Strapi (各プロジェクト内)
 # ------------------------------------
 
-# ビルド出力ディレクトリ (SSGの結果)
+# 依存関係
 **/node_modules/
-**/.next/
 
+# Next.js ビルド出力ディレクトリ (SSGの結果)
+**/.next/
 # Next.js のキャッシュ
 .next/cache
 
-# Next.js のローカル開発用サーバーデータ
-# .next/development-build-state.json
+# Strapi が生成する作業用ファイル (Permission deniedエラー対策)
+strapi/.strapi-updater.json
