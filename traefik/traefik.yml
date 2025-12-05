@@ -1,0 +1,21 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+log:
+  level: INFO
+
+api:
+  insecure: true # ダッシュボード有効化
+
+entrypoints:
+  web:
+    address: ":80"
+
+providers:
+  docker:
+    # ★★★ ここで API バージョンを設定 ★★★
+    defaultAPIVersion: "1.44"
+    exposedByDefault: false
+    # localclient: false # WSL2で必要な場合があるが、まずはコメントアウト
+    network: internal-net # 使用するネットワークを明示的に指定
