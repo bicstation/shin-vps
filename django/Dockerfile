@@ -1,11 +1,14 @@
 # Python公式のイメージを使用
 FROM python:3.11-slim
 
-# OSの依存関係をインストール（psycopg2に必要なライブラリ）
+# OSの依存関係をインストール（psycopg2に必要なライブラリとncコマンド）
+# --- 変更箇所: netcat-openbsd を追加しました ---
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
+# --------------------------------------------------
 
 # 作業ディレクトリの設定
 WORKDIR /usr/src/app

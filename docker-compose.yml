@@ -1,286 +1,326 @@
-# docker-compose.yml (Traefik統合版 - WSLソケットマウント方式)
+# docker-compose.yml (Traefik統合版 - 最終修正案: ミドルウェア参照に @docker を追加)
 
 # サービス定義
 services:
 
- # 1. PostgreSQL データベース (Django専用)
- postgres_db:
-  image: postgres:15-alpine
-  container_name: postgres_db
-  restart: always
-  environment:
-   POSTGRES_USER: ${DB_USER}
-   POSTGRES_PASSWORD: ${DB_PASSWORD}
-   POSTGRES_DB: ${DB_NAME}
-  volumes:
-   - postgres_data:/var/lib/postgresql/data
-  networks:
-   - internal-net
-   
-  # ホストPCからのアクセス用にポートマッピング (5432ポート競合回避のため 5433 へ変更済み)
-  ports:
-   - "5433:5432"
-   
-  # ヘルスチェック
-  healthcheck:
-   test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"] 
-   interval: 10s
-   timeout: 5s
-   retries: 5
-   start_period: 10s 
+  # 1. PostgreSQL データベース (Django専用)
+  postgres_db_v2:
+    image: postgres:15-alpine
+    container_name: postgres_db_v2
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal-net
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s 
 
- # 4. Django API (データハブ & 認証サーバー)
- django:
-  build:
-   context: ./django
-   dockerfile: Dockerfile
-  container_name: api_django
-  restart: always
-  # DB接続を待つ
-  depends_on:
-   postgres_db:
-    condition: service_healthy
-  environment:
-   - DB_HOST=postgres_db
-   - DB_NAME=${DB_NAME}
-   - DB_USER=${DB_USER}
-   - DB_PASSWORD=${DB_PASSWORD}
-   - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-   # API設定 
-   - DUGA_API_ID=${DUGA_API_ID}
-   - DUGA_AFFILIATE_ID=${DUGA_AFFILIATE_ID}
-   - DUGA_API_URL=${DUGA_API_URL}
-   - DUGA_TOTAL_LIMIT=${DUGA_TOTAL_LIMIT}
-   - FANZA_API_ID=${FANZA_API_ID}
-   - FANZA_AFFILIATE_ID=${FANZA_AFFILIATE_ID}
-   - FANZA_API_URL=${FANZA_API_URL}
-   - FANZA_TOTAL_LIMIT=${FANZA_TOTAL_LIMIT}
+  # 4. Django API (データハブ & 認証サーバー)
+  django_v2:
+    build:
+      context: ./django
+      dockerfile: Dockerfile
+    container_name: api_django_v2
+    restart: always
+    depends_on:
+      postgres_db_v2:
+        condition: service_healthy
+    environment:
+      - DB_HOST=postgres_db_v2 
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DUGA_API_ID=${DUGA_API_ID}
+      - DUGA_AFFILIATE_ID=${DUGA_AFFILIATE_ID}
+      - DUGA_API_URL=${DUGA_API_URL}
+      - DUGA_TOTAL_LIMIT=${DUGA_TOTAL_LIMIT}
+      - FANZA_API_ID=${FANZA_API_ID}
+      - FANZA_AFFILIATE_ID=${FANZA_AFFILIATE_ID}
+      - FANZA_API_URL=${FANZA_API_URL}
+      - FANZA_TOTAL_LIMIT=${FANZA_TOTAL_LIMIT}
+      
+    # Traefik ルーティングラベル
+    labels:
+      - "traefik.enable=true"
+      
+      # 1. API ルーター: /api/
+      - "traefik.http.routers.api-v2.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.api-v2.entrypoints=web"
+      - "traefik.http.routers.api-v2.priority=100" 
+      
+      # 2. Admin ルーター: /admin/
+      - "traefik.http.routers.admin-v2.rule=PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin-v2.entrypoints=web"
+      - "traefik.http.routers.admin-v2.priority=100" 
+      
+      # 3. Django トップ確認用ルーター: /django/
+      - "traefik.http.routers.django-test-v2.rule=PathPrefix(`/django`)"
+      - "traefik.http.routers.django-test-v2.entrypoints=web"
+      - "**traefik.http.routers.django-test-v2.middlewares=django-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.middlewares.django-stripprefix-v2.stripprefix.prefixes=/django"
+      - "traefik.http.routers.django-test-v2.priority=100" 
+      
+      # 5. サービス定義 (内部ポートは8000)
+      - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
+      
+    entrypoint: /usr/src/app/entrypoint.sh 
+    command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
+    
+    volumes:
+      - ./django:/usr/src/app 
+      - static_volume:/usr/src/app/staticfiles
+      
+    networks:
+      - internal-net
+
+  # 5. Next.js - bicstation.com (メインサイト: ルートパス '/')
+  next-bicstation_v2:
+    build:
+      context: ./next-bicstation
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
+    container_name: next_bicstation_v2
+    depends_on:
+      django_v2:
+        condition: service_started
+    environment:
+      NEXT_PUBLIC_API_URL: http://django_v2:8000/api
+      NODE_ENV: production
+    networks:
+      - internal-net
+    # Traefik ルーティングラベル
+    labels:
+      - "traefik.enable=true"
+      # 1. ルーター定義: ルートパス '/' で受け付ける
+      # ★★★★ 一時的にコメントアウトして無効化 (この状態を維持) ★★★★
+      # - "traefik.http.routers.bicstation-v2.rule=PathPrefix(`/`)"
+      # - "traefik.http.routers.bicstation-v2.priority=1"
+      # ★★★★★★★★★★★★★★★★★★★★★★★★★★★
+      - "traefik.http.routers.bicstation-v2.entrypoints=web"
+      # 2. サービス定義 (内部ポートは3000)
+      - "traefik.http.services.bicstation-v2.loadbalancer.server.port=3000"
+
+  # 6. Next.js - tiper.live (サブディレクトリ /tiper)
+  next-tiper_v2:
+    build:
+      context: ./next-tiper
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
+    container_name: next_tiper_v2
+    depends_on:
+      django_v2:
+        condition: service_started
+    environment:
+      NEXT_PUBLIC_API_URL: http://django_v2:8000/api
+      NODE_ENV: production
+    networks:
+      - internal-net
+    # Traefik ルーティングラベル
+    labels:
+      - "traefik.enable=true"
+      # 1. ルーター定義: /tiper で受け付ける
+      - "traefik.http.routers.tiper-v2.rule=PathPrefix(`/tiper`)"
+      - "traefik.http.routers.tiper-v2.entrypoints=web"
+      - "traefik.http.routers.tiper-v2.priority=100"
+      # 2. ミドルウェア定義: /tiper/ というパスプレフィックスを削除
+      - "**traefik.http.routers.tiper-v2.middlewares=tiper-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.middlewares.tiper-stripprefix-v2.stripprefix.prefixes=/tiper"
+      # 3. サービス定義 (内部ポートは3000)
+      - "traefik.http.services.tiper-v2.loadbalancer.server.port=3000"
   
-  # 👇 Traefik ルーティングラベル
-  labels:
-   - "traefik.enable=true"
-   
-   # 1. API ルーター: /api/ 
-   - "traefik.http.routers.api.rule=Host(`localhost`) && PathPrefix(`/api`)"
-   - "traefik.http.routers.api.entrypoints=web"
-   - "traefik.http.routers.api.priority=10" 
-   
-   # 2. Admin ルーター: /admin/
-   - "traefik.http.routers.admin.rule=Host(`localhost`) && PathPrefix(`/admin`)"
-   - "traefik.http.routers.admin.entrypoints=web"
-   - "traefik.http.routers.admin.priority=10" 
-   
-   # 3. Django トップ確認用ルーター: /django/ 
-   - "traefik.http.routers.django-test.rule=Host(`localhost`) && PathPrefix(`/django`)"
-   - "traefik.http.routers.django-test.entrypoints=web"
-   - "traefik.http.routers.django-test.middlewares=django-stripprefix"
-   - "traefik.http.middlewares.django-stripprefix.stripprefix.prefixes=/django"
-   - "traefik.http.routers.django-test.priority=10" 
-   
-   # 5. サービス定義 (内部ポートは8000)
-   - "traefik.http.services.django.loadbalancer.server.port=8000"
-   
-  # ★修正/追加★: 起動時に migrate と collectstatic を実行するための entrypoint を設定
-  entrypoint: /usr/src/app/entrypoint.sh 
-  command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
+  # 7. Next.js - next-bic-saving サービス (サブディレクトリ /saving)
+  next-bic-saving_v2:
+    build: 
+      context: ./next-bic-saving
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
+    container_name: next_bic_saving_v2
+    depends_on:
+      django_v2:
+        condition: service_started
+    environment:
+      NEXT_PUBLIC_API_URL: http://django_v2:8000/api
+      NODE_ENV: production
+    networks:
+      - internal-net
+    # Traefik ルーティングラベル
+    labels:
+      - "traefik.enable=true"
+      # 1. ルーター定義: /saving で受け付ける
+      - "traefik.http.routers.saving-v2.rule=PathPrefix(`/saving`)"
+      - "traefik.http.routers.saving-v2.entrypoints=web"
+      - "traefik.http.routers.saving-v2.priority=100"
+      # 2. ミドルウェア定義: /saving/ というパスプレフィックスを削除
+      - "**traefik.http.routers.saving-v2.middlewares=saving-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.middlewares.saving-stripprefix-v2.stripprefix.prefixes=/saving"
+      # 3. サービス定義 (内部ポートは3000)
+      - "traefik.http.services.saving-v2.loadbalancer.server.port=3000"
+
+  # 8. Next.js - avflash.xyz サービス (サブディレクトリ /avflash) 
+  next-avflash_v2:
+    build: 
+      context: ./next-avflash 
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH} 
+    container_name: next_avflash_v2
+    depends_on:
+      django_v2:
+        condition: service_started
+    environment:
+      NEXT_PUBLIC_API_URL: http://django_v2:8000/api
+      NODE_ENV: production
+    networks:
+      - internal-net
+    # Traefik ルーティングラベル
+    labels:
+      - "traefik.enable=true"
+      # 1. ルーター定義: /avflash で受け付ける
+      - "traefik.http.routers.avflash-v2.rule=PathPrefix(`/avflash`)"
+      - "traefik.http.routers.avflash-v2.entrypoints=web"
+      - "traefik.http.routers.avflash-v2.priority=100"
+      # 2. ミドルウェア定義: /avflash/ というパスプレフィックスを削除
+      - "**traefik.http.routers.avflash-v2.middlewares=avflash-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.middlewares.avflash-stripprefix-v2.stripprefix.prefixes=/avflash"
+      # 3. サービス定義 (内部ポートは3000)
+      - "traefik.http.services.avflash-v2.loadbalancer.server.port=3000"
+
+  # 10. Nginx (静的ファイル配信専用)
+  nginx_v2:
+    image: nginx:alpine
+    container_name: nginx_static_v2
+    restart: always
+    volumes:
+      - static_volume:/usr/share/nginx/html/static:ro
+      - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - internal-net
+    # Traefik ルーティングラベル
+    labels:
+      - "traefik.enable=true"
+      # ルーター定義: /static/ で受け付ける
+      - "traefik.http.routers.static-v2.rule=PathPrefix(`/static`)"
+      - "traefik.http.routers.static-v2.entrypoints=web"
+      - "traefik.http.routers.static-v2.priority=200"
+      # サービス定義 (内部ポートは80)
+      - "traefik.http.services.nginx-v2.loadbalancer.server.port=80"
   
-  # ボリューム
-  volumes:
-   - ./django:/usr/src/app 
-   - static_volume:/usr/src/app/staticfiles # 静的ファイルの収集場所
-   
-  networks:
-   - internal-net
-
- # 5. Next.js - bicstation.com (ルートドメイン)
- next-bicstation:
-  build:
-   context: ./next-bicstation
-   dockerfile: Dockerfile
-   args:
-    NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-  container_name: next_bicstation
-  # Django起動を待つ
-  depends_on:
-   django:
-    condition: service_started
-  environment:
-   # Next.jsは内部APIへサービス名でアクセス (http://django:8000)
-   NEXT_PUBLIC_API_URL: http://django:8000
-   NODE_ENV: production
-  networks:
-   - internal-net
-  # 👇 Traefik ルーティングラベル
-  labels:
-   - "traefik.enable=true"
-   # 1. ルーター定義: ルートパス '/' で受け付ける
-   - "traefik.http.routers.bicstation.rule=Host(`localhost`)"
-   - "traefik.http.routers.bicstation.entrypoints=web"
-   - "traefik.http.routers.bicstation.priority=1" # 優先度を最も低く設定
-   # 2. サービス定義 (内部ポートは3000)
-   - "traefik.http.services.bicstation.loadbalancer.server.port=3000"
-
- # 6. Next.js - tiper.live (サブディレクトリ /tiper)
- next-tiper:
-  build:
-   context: ./next-tiper
-   dockerfile: Dockerfile
-   args:
-    NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-  container_name: next_tiper
-  # Django起動を待つ
-  depends_on:
-   django:
-    condition: service_started
-  environment:
-   # Next.jsは内部APIへサービス名でアクセス (http://django:8000)
-   NEXT_PUBLIC_API_URL: http://django:8000/api
-   NODE_ENV: production
-  networks:
-   - internal-net
-  # 👇 Traefik ルーティングラベル
-  labels:
-   - "traefik.enable=true"
-   # 1. ルーター定義: /tiper で受け付ける
-   - "traefik.http.routers.tiper.rule=Host(`localhost`) && PathPrefix(`/tiper`)"
-   - "traefik.http.routers.tiper.entrypoints=web"
-   - "traefik.http.routers.tiper.priority=10" # 優先度を上げる
-   # 2. ミドルウェア定義: /tiper/ というパスプレフィックスを削除
-   - "traefik.http.routers.tiper.middlewares=tiper-stripprefix"
-   - "traefik.http.middlewares.tiper-stripprefix.stripprefix.prefixes=/tiper"
-   # 3. サービス定義 (内部ポートは3000)
-   - "traefik.http.services.tiper.loadbalancer.server.port=3000"
- 
- # 7. Next.js - next-bic-saving サービス (サブディレクトリ /saving)
- next-bic-saving:
-  build: 
-   context: ./next-bic-saving
-   dockerfile: Dockerfile
-   args:
-    NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-  container_name: next_bic_saving 
-  # Django起動を待つ
-  depends_on:
-   django:
-    condition: service_started
-  environment:
-   # Next.jsは内部APIへサービス名でアクセス (http://django:8000)
-   NEXT_PUBLIC_API_URL: http://django:8000
-   NODE_ENV: production
-  networks:
-   - internal-net
-  # 👇 Traefik ルーティングラベル
-  labels:
-   - "traefik.enable=true"
-   # 1. ルーター定義: /saving で受け付ける
-   - "traefik.http.routers.saving.rule=Host(`localhost`) && PathPrefix(`/saving`)"
-   - "traefik.http.routers.saving.entrypoints=web"
-   - "traefik.http.routers.saving.priority=10" # 優先度を上げる
-   # 2. ミドルウェア定義: /saving/ というパスプレフィックスを削除
-   - "traefik.http.routers.saving.middlewares=saving-stripprefix"
-   - "traefik.http.middlewares.saving-stripprefix.stripprefix.prefixes=/saving"
-   # 3. サービス定義 (内部ポートは3000)
-   - "traefik.http.services.saving.loadbalancer.server.port=3000"
-
- # 8. Next.js - avflash.xyz サービス (サブディレクトリ /avflash) 
- next-avflash:
-  build: 
-   context: ./next-avflash 
-   dockerfile: Dockerfile
-   args:
-    NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH} 
-  container_name: next_avflash 
-  # Django起動を待つ
-  depends_on:
-   django:
-    condition: service_started
-  environment:
-   # Next.jsは内部APIへサービス名でアクセス (http://django:8000)
-   NEXT_PUBLIC_API_URL: http://django:8000
-   NODE_ENV: production
-  networks:
-   - internal-net
-  # 👇 Traefik ルーティングラベル
-  labels:
-   - "traefik.enable=true"
-   # 1. ルーター定義: /avflash で受け付ける
-   - "traefik.http.routers.avflash.rule=Host(`localhost`) && PathPrefix(`/avflash`)"
-   - "traefik.http.routers.avflash.entrypoints=web"
-   - "traefik.http.routers.avflash.priority=10" # 優先度を上げる
-   # 2. ミドルウェア定義: /avflash/ というパスプレフィックスを削除
-   - "traefik.http.routers.avflash.middlewares=avflash-stripprefix"
-   - "traefik.http.middlewares.avflash-stripprefix.stripprefix.prefixes=/avflash"
-   # 3. サービス定義 (内部ポートは3000)
-   - "traefik.http.services.avflash.loadbalancer.server.port=3000"
-
- # 10. Nginx (静的ファイル配信専用) ★新規追加サービス / 修正済み★
- nginx:
-  image: nginx:alpine
-  container_name: nginx_static
-  restart: always
-  volumes:
-   # Djangoが集めた静的ファイルボリュームを読み取り専用でマウント
-   - static_volume:/usr/share/nginx/html/static:ro
-   # カスタムNginx設定ファイル (ファイル名を修正: ./nginx/conf/default.conf へ)
-   - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
-  networks:
-   - internal-net
-   
-  # 👇 Traefik ルーティングラベル
-  labels:
-   - "traefik.enable=true"
-   # ルーター定義: /static/ で受け付ける
-   - "traefik.http.routers.static.rule=Host(`localhost`) && PathPrefix(`/static`)"
-   - "traefik.http.routers.static.entrypoints=web"
-   - "traefik.http.routers.static.priority=20" # 優先度を高く設定
-   # サービス定義 (内部ポートは80)
-   - "traefik.http.services.nginx.loadbalancer.server.port=80"
-
-
- # 9. Traefik (リバースプロキシ & ルーティング自動検出)
- traefik:
-  image: traefik:v3.5 # 最新版を使用
-  container_name: traefik_proxy
-  restart: always
+  # === ブログ (Headless CMS: WP) サービスの追加 ===
   
-  # DOCKER_API_VERSION 環境変数は不要
-   
-  command:
-   # Dockerプロバイダーを有効化し、ラベルが付いたコンテナのみ処理対象とする
-   - "--providers.docker=true"
-   - "--providers.docker.exposedbydefault=false"
-   
-   # Docker APIのエンドポイント指定は不要
-   
-   # エントリポイント (外部から受け付けるポート)
-   - "--entrypoints.web.address=:80"
-   
-   # APIダッシュボードを有効化 (開発用)
-   - "--api.insecure=true"
-  ports:
-   # Webトラフィック用 (http://localhost:8088)
-   - "8088:80"
-   # Traefikダッシュボード用 (http://localhost:8082/)
-   - "8082:8080" 
-   
-  # WSL上のDockerソケットをマウントする
-  volumes:
-   - /var/run/docker.sock:/var/run/docker.sock:ro
-   
-  # extra_hosts は不要
-   
-  networks:
-   - internal-net
+  # 11. MariaDB (WordPress専用DB)
+  mariadb_v2:
+    image: mariadb:10
+    container_name: mariadb_wp_v2
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${WP_DB_NAME}
+      MARIADB_USER: ${WP_DB_USER}
+      MARIADB_PASSWORD: ${WP_DB_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - internal-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MARIADB_USER", "-p$$MARIADB_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 12. WordPress (ブログのHeadless CMSとして使用)
+  wordpress_v2:
+    image: wordpress:6-fpm-alpine
+    container_name: wordpress_blog_v2
+    restart: always
+    depends_on:
+      mariadb_v2:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: mariadb_v2:3306
+      WORDPRESS_DB_NAME: ${WP_DB_NAME}
+      WORDPRESS_DB_USER: ${WP_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - internal-net
+
+  # 13. Nginx (WordPress用: PHP-FPMへのブリッジと静的ファイル配信)
+  nginx-wp_v2:
+    image: nginx:alpine
+    container_name: nginx_wp_v2
+    restart: always
+    depends_on:
+      wordpress_v2:
+        condition: service_started
+    volumes:
+      - wordpress_data:/var/www/html:ro
+      - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - internal-net
+    labels:
+      - "traefik.enable=true"
+      # 1. ルーター定義: /blog で受け付ける
+      - "traefik.http.routers.blog-v2.rule=PathPrefix(`/blog`)"
+      - "traefik.http.routers.blog-v2.entrypoints=web"
+      - "traefik.http.routers.blog-v2.priority=100"
+      # 2. ミドルウェア定義: /blog/ というパスプレフィックスを削除
+      - "**traefik.http.routers.blog-v2.middlewares=blog-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.middlewares.blog-stripprefix-v2.stripprefix.prefixes=/blog"
+      # 3. サービス定義 (内部ポートは80)
+      - "traefik.http.services.blog-v2.loadbalancer.server.port=80"
+      
+  # 9. Traefik (リバースプロキシ & ルーティング自動検出)
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik_proxy
+    restart: always
+    
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--accesslog=true"
+      - "--log.level=INFO" # INFOレベルにすることで詳細なログを確認
+      - "--entrypoints.web.address=:80"
+      - "--api.insecure=true" # 開発用ダッシュボード有効化
+    ports:
+      - "8088:80" # Webトラフィック用 (http://localhost:8088/)
+      - "8082:8080" # Traefikダッシュボード用 (http://localhost:8082/)
+      
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      
+    networks:
+      - internal-net
 # ------------------------------------------------------------------
 
 # ボリューム定義 (最上位レベル)
 volumes:
- postgres_data:
-  driver: local
- static_volume: 
-  driver: local # DjangoとNginxで共有する静的ファイル用ボリューム
+  postgres_data:
+    driver: local
+  static_volume: 
+    driver: local
+  # ブログ用ボリューム
+  wordpress_data:
+    driver: local
+  mariadb_data:
+    driver: local
 
 # ネットワーク定義 (最上位レベル)
 networks:
- internal-net:
-  driver: bridge
+  internal-net:
+    driver: bridge
