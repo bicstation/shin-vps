@@ -11,8 +11,8 @@ from api.models import RawApiData, AdultProduct, Genre, Actress, Maker, Label, D
 
 # ユーティリティのインポート
 from api.utils.common import generate_product_unique_id 
-from api.utils.duga_normalizer import normalize_duga_data 
-from api.utils.entity_manager import get_or_create_entity 
+from api.utils.adult.duga_normalizer import normalize_duga_data 
+from api.utils.adult.entity_manager import get_or_create_entity 
 
 logger = logging.getLogger(__name__)
 

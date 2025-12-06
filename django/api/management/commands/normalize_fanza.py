@@ -8,10 +8,10 @@ from django.db import transaction
 from django.db.models import F, Count, OuterRef, Subquery, Value, IntegerField
 from django.db.models.functions import Coalesce 
 from django.utils import timezone
-# normalize_fanza_data は、RawApiDataインスタンスをそのまま受け取るシンプルなシグネチャを想定する
-from api.utils.fanza_normalizer import normalize_fanza_data
+# ★修正: パスを api.utils.adult.fanza_normalizer に変更★
+from api.utils.adult.fanza_normalizer import normalize_fanza_data
 # エンティティの作成・更新に使用するユーティリティをインポート
-from api.utils.entity_manager import get_or_create_entity 
+from api.utils.adult.entity_manager import get_or_create_entity 
 
 # ★修正: Product を AdultProduct に変更★
 from api.models import RawApiData, AdultProduct, Genre, Actress, Director, Maker, Label, Series
