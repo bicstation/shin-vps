@@ -1,4 +1,4 @@
-# docker-compose.yml (Traefik統合版 - 最終修正案: ミドルウェア参照に @docker を追加)
+# docker-compose.yml (Traefik統合版 - 権限エラー対応版)
 
 # サービス定義
 services:
@@ -67,15 +67,16 @@ services:
       # 3. Django トップ確認用ルーター: /django/
       - "traefik.http.routers.django-test-v2.rule=PathPrefix(`/django`)"
       - "traefik.http.routers.django-test-v2.entrypoints=web"
-      - "**traefik.http.routers.django-test-v2.middlewares=django-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.routers.django-test-v2.middlewares=django-stripprefix-v2@docker"
       - "traefik.http.middlewares.django-stripprefix-v2.stripprefix.prefixes=/django"
       - "traefik.http.routers.django-test-v2.priority=100" 
       
       # 5. サービス定義 (内部ポートは8000)
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
       
-    entrypoint: /usr/src/app/entrypoint.sh 
-    command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
+    # entrypoint: /usr/src/app/entrypoint.sh  # <-- 削除 (権限エラー回避のため)
+    # ✅ command で sh -c を使用し、entrypoint.sh を実行
+    command: sh -c "/usr/src/app/entrypoint.sh && gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000"
     
     volumes:
       - ./django:/usr/src/app 
@@ -84,7 +85,7 @@ services:
     networks:
       - internal-net
 
-  # 5. Next.js - bicstation.com (メインサイト: ルートパス '/')
+  # 5. Next.js - bicstation.com (サブディレクトリ /bicstation に統一)
   next-bicstation_v2:
     build:
       context: ./next-bicstation
@@ -103,13 +104,14 @@ services:
     # Traefik ルーティングラベル
     labels:
       - "traefik.enable=true"
-      # 1. ルーター定義: ルートパス '/' で受け付ける
-      # ★★★★ 一時的にコメントアウトして無効化 (この状態を維持) ★★★★
-      # - "traefik.http.routers.bicstation-v2.rule=PathPrefix(`/`)"
-      # - "traefik.http.routers.bicstation-v2.priority=1"
-      # ★★★★★★★★★★★★★★★★★★★★★★★★★★★
+      # 1. ルーター定義: /bicstation で受け付ける
+      - "traefik.http.routers.bicstation-v2.rule=PathPrefix(`/bicstation`)"
       - "traefik.http.routers.bicstation-v2.entrypoints=web"
-      # 2. サービス定義 (内部ポートは3000)
+      - "traefik.http.routers.bicstation-v2.priority=100"
+      # 2. ミドルウェア定義: /bicstation/ というパスプレフィックスを削除
+      - "traefik.http.routers.bicstation-v2.middlewares=bicstation-stripprefix-v2@docker"
+      - "traefik.http.middlewares.bicstation-stripprefix-v2.stripprefix.prefixes=/bicstation"
+      # 3. サービス定義 (内部ポートは3000)
       - "traefik.http.services.bicstation-v2.loadbalancer.server.port=3000"
 
   # 6. Next.js - tiper.live (サブディレクトリ /tiper)
@@ -136,7 +138,7 @@ services:
       - "traefik.http.routers.tiper-v2.entrypoints=web"
       - "traefik.http.routers.tiper-v2.priority=100"
       # 2. ミドルウェア定義: /tiper/ というパスプレフィックスを削除
-      - "**traefik.http.routers.tiper-v2.middlewares=tiper-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.routers.tiper-v2.middlewares=tiper-stripprefix-v2@docker"
       - "traefik.http.middlewares.tiper-stripprefix-v2.stripprefix.prefixes=/tiper"
       # 3. サービス定義 (内部ポートは3000)
       - "traefik.http.services.tiper-v2.loadbalancer.server.port=3000"
@@ -165,7 +167,7 @@ services:
       - "traefik.http.routers.saving-v2.entrypoints=web"
       - "traefik.http.routers.saving-v2.priority=100"
       # 2. ミドルウェア定義: /saving/ というパスプレフィックスを削除
-      - "**traefik.http.routers.saving-v2.middlewares=saving-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.routers.saving-v2.middlewares=saving-stripprefix-v2@docker"
       - "traefik.http.middlewares.saving-stripprefix-v2.stripprefix.prefixes=/saving"
       # 3. サービス定義 (内部ポートは3000)
       - "traefik.http.services.saving-v2.loadbalancer.server.port=3000"
@@ -194,7 +196,7 @@ services:
       - "traefik.http.routers.avflash-v2.entrypoints=web"
       - "traefik.http.routers.avflash-v2.priority=100"
       # 2. ミドルウェア定義: /avflash/ というパスプレフィックスを削除
-      - "**traefik.http.routers.avflash-v2.middlewares=avflash-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.routers.avflash-v2.middlewares=avflash-stripprefix-v2@docker"
       - "traefik.http.middlewares.avflash-stripprefix-v2.stripprefix.prefixes=/avflash"
       # 3. サービス定義 (内部ポートは3000)
       - "traefik.http.services.avflash-v2.loadbalancer.server.port=3000"
@@ -254,6 +256,9 @@ services:
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', 'http://localhost:8088/blog');
+        define('WP_SITEURL', 'http://localhost:8088/blog');
     volumes:
       - wordpress_data:/var/www/html
     networks:
@@ -279,7 +284,7 @@ services:
       - "traefik.http.routers.blog-v2.entrypoints=web"
       - "traefik.http.routers.blog-v2.priority=100"
       # 2. ミドルウェア定義: /blog/ というパスプレフィックスを削除
-      - "**traefik.http.routers.blog-v2.middlewares=blog-stripprefix-v2@docker**" # ★修正: @docker を追加★
+      - "traefik.http.routers.blog-v2.middlewares=blog-stripprefix-v2@docker"
       - "traefik.http.middlewares.blog-stripprefix-v2.stripprefix.prefixes=/blog"
       # 3. サービス定義 (内部ポートは80)
       - "traefik.http.services.blog-v2.loadbalancer.server.port=80"

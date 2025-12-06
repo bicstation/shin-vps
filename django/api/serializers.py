@@ -1,11 +1,11 @@
 # api/serializers.py
 
 from rest_framework import serializers
-# Productだけでなく、ネストするエンティティモデルもすべてインポート
-from .models import Product, Maker, Genre, Actress, Label, Director 
+# 修正されたモデル名 (AdultProduct, NormalProduct, Series) をインポート
+from .models import AdultProduct, NormalProduct, Maker, Genre, Actress, Label, Director, Series 
 
 # --------------------------------------------------------------------------
-# エンティティのネストされたシリアライザ
+## 1. エンティティのネストされたシリアライザ
 # --------------------------------------------------------------------------
 
 class MakerSerializer(serializers.ModelSerializer):
@@ -15,18 +15,17 @@ class MakerSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'api_source')
 
 class GenreSerializer(serializers.ModelSerializer):
-    """Genreモデル用のシンプルなシリアライザ"""
+    """Genreモデル用のシンプルなシリアライザ (api_sourceを追加)"""
     class Meta:
         model = Genre
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'api_source') # api_sourceを追加
 
 class ActressSerializer(serializers.ModelSerializer):
-    """Actressモデル用のシンプルなシリアライザ"""
+    """Actressモデル用のシンプルなシリアライザ (api_sourceを追加)"""
     class Meta:
         model = Actress
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'api_source') # api_sourceを追加
 
-# ★ 補足: LabelとDirectorもネストする可能性があるため追加
 class LabelSerializer(serializers.ModelSerializer):
     """Labelモデル用のシンプルなシリアライザ"""
     class Meta:
@@ -39,23 +38,31 @@ class DirectorSerializer(serializers.ModelSerializer):
         model = Director
         fields = ('id', 'name', 'api_source')
         
+class SeriesSerializer(serializers.ModelSerializer):
+    """Seriesモデル用のシンプルなシリアライザ"""
+    class Meta:
+        model = Series
+        fields = ('id', 'name', 'api_source')
+        
+# --- 【修正点】: Python構文エラーの原因となる --- をコメントアウト
 # --------------------------------------------------------------------------
-# Productモデルのメインシリアライザ
+## 2. アダルト商品モデルのメインシリアライザ (AdultProductSerializer)
 # --------------------------------------------------------------------------
 
-class ProductSerializer(serializers.ModelSerializer):
+class AdultProductSerializer(serializers.ModelSerializer): 
+    
     # ForeignKey (単一リレーション) はネストして表示
     maker = MakerSerializer(read_only=True)
-    # LabelとDirectorもForeignKeyであれば追加
     label = LabelSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
+    series = SeriesSerializer(read_only=True) 
     
     # ManyToManyField (複数リレーション) はネストして表示
     genres = GenreSerializer(many=True, read_only=True)
     actresses = ActressSerializer(many=True, read_only=True)
 
     class Meta:
-        model = Product
+        model = AdultProduct 
         # APIで公開するフィールドを指定
         fields = (
             'id', 
@@ -65,15 +72,45 @@ class ProductSerializer(serializers.ModelSerializer):
             'affiliate_url',
             'price',
             'image_url_list',
-            'api_source', # api_sourceも通常公開します
+            'api_source',
             
             # リレーション (ネストされたオブジェクト)
             'maker',
-            'label',      # ★追加: Label
-            'director',   # ★追加: Director
+            'label',
+            'director',
+            'series', 
             'genres',
             'actresses',
             
             'is_active',
             'updated_at',
         )
+        # 読み取り専用APIとして利用する場合、安全のため fields 全体を read_only に指定
+        read_only_fields = fields 
+
+# --- 【修正点】: Python構文エラーの原因となる --- をコメントアウト
+# --------------------------------------------------------------------------
+## 3. ノーマル商品モデルのメインシリアライザ (NormalProductSerializer)
+# --------------------------------------------------------------------------
+
+class NormalProductSerializer(serializers.ModelSerializer):
+    """
+    NormalProductモデル用のシンプルなシリアライザ
+    """
+    class Meta:
+        model = NormalProduct
+        # NormalProductモデルで定義したフィールドを公開
+        fields = (
+            'id',
+            'sku_unique',
+            'title',
+            'price',
+            'in_stock',
+            'affiliate_url',
+            'image_url',
+            'api_source',
+            'is_active',
+            'updated_at',
+        )
+        # 読み取り専用APIとして利用する場合、安全のため fields 全体を read_only に指定
+        read_only_fields = fields

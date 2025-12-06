@@ -1,4 +1,4 @@
-# C:\dev\SHIN-VPS\django\api\management\commands\fetch_fanza.py
+# C:\dev\SHIN-VPS\django\api\management\commands\adult\fetch_fanza.py
 
 import requests
 import json
@@ -13,12 +13,13 @@ from django.utils import timezone
 from django.conf import settings # API_CONFIG を settings から読み込む
 
 # 共通モジュールからのインポート
-# ✅ 修正: raw_data_manager.py が utils/ 直下にあることを想定し、インポートパスを修正
+# ★修正点: db_bulk_ops は utils/ 直下にあることを想定し、インポートパスを修正します。★
 from api.utils.raw_data_manager import bulk_insert_or_update
 from api.models import RawApiData
 
 
 # ロガーのセットアップ
+# ファイルが adult/fetch_fanza.py に移動するため、ロガー名を adult.fetch_fanza に変更推奨
 logger = logging.getLogger('adult.fetch_fanza')
 
 # FANZA APIの設定を settings から取得
@@ -165,10 +166,11 @@ class Command(BaseCommand):
                         'api_service': service,
                         'api_floor': floor,
                         'updated_at': timezone.now(),
+                        # RawApiData は created_at を持っているはずなので、初回作成時のみ設定
                         # bulk_create の UPSERT では created_at は更新しないため、設定は不要だが、
                         # インスタンス生成のために含めておいても問題はない。
                         'created_at': timezone.now(),
-                        'migrated': False, # ✅ 修正: 'is_processed' を 'migrated' に変更
+                        'is_processed': False, # 新規取得データは未処理としてマーク
                     })
                     
                     saved_count = self._save_raw_data_batch(raw_data_batch) # 保存ヘルパーを呼び出す
@@ -179,7 +181,7 @@ class Command(BaseCommand):
                     self.stdout.write(f'{items_count} 件の商品データを取得しました。データベースに保存しました。')
                     
                     if items_count == 0 and offset != 1:
-                        break # アイテムが空であれば、ループを抜ける
+                         break # アイテムが空であれば、ループを抜ける
 
                     # 次のオフセットとページカウンターの更新
                     offset += hits
@@ -206,8 +208,6 @@ class Command(BaseCommand):
             return 0
         
         try:
-            # ✅ 修正: エラー原因となった model_class と unique_fields を削除
-            # bulk_insert_or_update は、内部で RawApiData モデルを処理することを前提としていると推測
             bulk_insert_or_update(batch=batch)
             return len(batch)
         except Exception as e:

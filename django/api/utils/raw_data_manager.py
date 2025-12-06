@@ -1,11 +1,14 @@
+# api/utils/raw_data_manager.py
+
 import logging
 from django.db import transaction
 # モデルのインポートは utils ファイル内で行う
 from api.models import RawApiData 
 from typing import List, Dict, Any
 
-# ロガーのセットアップ (共通の utils ロガーを使用)
-logger = logging.getLogger('api_utils')
+# ロガーのセットアップ
+# ★修正点: モジュール名に合わせてロガー名を修正
+logger = logging.getLogger('api_utils.raw_data_manager')
 # logger.setLevel(logging.DEBUG) # 実行環境の settings.py に依存させる
 
 def bulk_insert_or_update(batch: List[Dict[str, Any]]):

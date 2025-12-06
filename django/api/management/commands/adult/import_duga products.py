@@ -4,10 +4,10 @@ from django.core.management.base import BaseCommand
 from django.db import transaction, models
 from django.db.models import F, Count, OuterRef, Subquery
 from django.db.models.functions import Coalesce
-from django.utils import timezone # django.utils.timezone をインポート
+from django.utils import timezone 
 
 # 関連エンティティのモデルをインポート
-from api.models import RawApiData, Product, Genre, Actress, Maker, Label, Director
+from api.models import RawApiData, AdultProduct, Genre, Actress, Maker, Label, Director
 
 # ユーティリティのインポート
 from api.utils.common import generate_product_unique_id 
@@ -16,33 +16,96 @@ from api.utils.entity_manager import get_or_create_entity
 
 logger = logging.getLogger(__name__)
 
+# すべてのエンティティモデルをリスト化
+ENTITY_MODELS = [Maker, Label, Director, Genre, Actress]
+ENTITY_RELATION_KEYS = {
+    Maker: 'maker', Label: 'label', Director: 'director',
+    Genre: 'genres', Actress: 'actresses'
+}
+
 class Command(BaseCommand):
-    help = 'RawApiData (DUGA) を読み込み、Productモデルに正規化して保存します。'
+    help = 'RawApiData (DUGA) を読み込み、AdultProductモデルに正規化して保存します。'
     API_SOURCE = 'DUGA'
+
+    def _resolve_entity_names_to_pks(self, product_list, relations_map):
+        """
+        製品リストとリレーションマップに含まれるすべてのエンティティ名を
+        データベースのPKに解決する。
+        """
+        all_entity_names = {Model: set() for Model in ENTITY_MODELS}
+
+        # 1. すべてのエンティティ名を収集
+        for p in product_list:
+            # ForeignKey (Maker, Label, Director)
+            for Model in [Maker, Label, Director]:
+                key = ENTITY_RELATION_KEYS[Model]
+                name = p.get(key)
+                if name:
+                    all_entity_names[Model].add(name)
+
+            # ManyToMany (Genre, Actress)
+            raw_id = p['raw_data_id']
+            relations = relations_map.get(raw_id)
+            if relations:
+                for Model in [Genre, Actress]:
+                    key = ENTITY_RELATION_KEYS[Model]
+                    names = relations.get(key, [])
+                    all_entity_names[Model].update(names)
+
+        # 2. 収集したすべての名前に対して一括で PK を取得
+        pk_maps = {}
+        for Model, names in all_entity_names.items():
+            if names:
+                # get_or_create_entity は {name: pk} の辞書を返す
+                pk_maps[Model] = get_or_create_entity(Model, list(names), self.API_SOURCE)
+            else:
+                pk_maps[Model] = {}
+
+        # 3. Product インスタンスと Relations マップのフィールドを PK に置き換え
+        for p in product_list:
+            # ForeignKey の置き換え
+            for Model in [Maker, Label, Director]:
+                key = ENTITY_RELATION_KEYS[Model]
+                name = p.pop(key, None)
+                if name:
+                    # 'maker' (name) -> 'maker_id' (pk) にフィールド名を変更
+                    pk = pk_maps[Model].get(name)
+                    p[f'{key}_id'] = pk 
+                else:
+                    p[f'{key}_id'] = None
+
+            # ManyToMany の置き換え
+            raw_id = p['raw_data_id']
+            relations = relations_map.get(raw_id)
+            if relations:
+                for Model in [Genre, Actress]:
+                    key = ENTITY_RELATION_KEYS[Model]
+                    names = relations.pop(key, [])
+                    
+                    # 'genres' (names) -> 'genre_ids' (pks) にキーを変更
+                    pks = [pk_maps[Model].get(name) for name in names if pk_maps[Model].get(name) is not None]
+                    relations[f'{key}_ids'] = pks
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} API データ仕訳・正規化処理開始 ---'))
 
-        # DUGA のデータで、まだ移行されていないレコードのみを対象
         raw_data_qs = RawApiData.objects.filter(api_source=self.API_SOURCE, migrated=False).order_by('id')
         
-        products_to_upsert = []
+        products_data = [] # Product インスタンスではなく、データ辞書を保持する
         relations_map = {} 
         processed_raw_ids = []
         total_processed = 0
         
-        # ★修正ポイント1: 処理時間を統一するために、開始時に aware な時刻を取得★
         current_time = timezone.now()
         
         try:
             self.stdout.write(f'処理対象のRawデータ件数: {raw_data_qs.count()} 件')
 
             # --------------------------------------------------------
-            # 1. データの正規化とエンティティIDの取得 (トランザクション外)
+            # 1. データの正規化とエンティティ名の収集
             # --------------------------------------------------------
             for raw_instance in raw_data_qs:
                 try:
-                    # normalize_duga_data でエンティティIDなどを取得
                     normalized_data_list, relations_list = normalize_duga_data(raw_instance)
                     
                     if not normalized_data_list:
@@ -52,12 +115,10 @@ class Command(BaseCommand):
                     product_data = normalized_data_list[0]
                     relations = relations_list[0]
                     
-                    # ★修正ポイント2: updated_at に aware な時刻を明示的にセット★
                     product_data['updated_at'] = current_time 
                     
-                    # Productインスタンスを作成
-                    product_instance = Product(**product_data)
-                    products_to_upsert.append(product_instance)
+                    # Product インスタンスではなく、辞書をリストに追加
+                    products_data.append(product_data) 
                     
                     relations_map[raw_instance.id] = relations
                     processed_raw_ids.append(raw_instance.id)
@@ -65,13 +126,13 @@ class Command(BaseCommand):
                     total_processed += 1
                     
                     # 500件ごとにバッチ処理
-                    if len(products_to_upsert) >= 500:
-                        self._bulk_upsert_and_sync(products_to_upsert, relations_map, processed_raw_ids)
-                        # 次のバッチのためにリストをクリア
-                        products_to_upsert = []
+                    if len(products_data) >= 500:
+                        self._process_batch(products_data, relations_map, processed_raw_ids)
+                        
+                        # 次のバッチのためにリストとマップをクリア
+                        products_data = []
                         relations_map = {}
                         processed_raw_ids = []
-                        # 次のバッチのために時刻を更新
                         current_time = timezone.now() 
                         
                 except ValueError as ve:
@@ -79,22 +140,12 @@ class Command(BaseCommand):
                     continue
                 except Exception as e:
                     logger.error(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}")
-                    self.stderr.write(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}")
-                    try:
-                        raw_json_data = raw_instance.raw_json_data
-                        if isinstance(raw_json_data, dict):
-                            raw_json = json.dumps(raw_json_data, ensure_ascii=False)
-                        else:
-                            raw_json = str(raw_json_data)
-                            
-                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): {raw_json[:300]}...")
-                    except:
-                        self.stderr.write(f"  > 生JSONデータ (ID {raw_instance.id}): JSONのダンプ/文字列化に失敗")
+                    self.stderr.write(self.style.ERROR(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}"))
                     continue
                 
             # 残りのデータを保存・同期
-            if products_to_upsert:
-                self._bulk_upsert_and_sync(products_to_upsert, relations_map, processed_raw_ids)
+            if products_data:
+                self._process_batch(products_data, relations_map, processed_raw_ids)
 
             self.stdout.write(self.style.SUCCESS(f'✅ 合計処理件数: {total_processed} 件の製品データを正規化・保存/更新しました。'))
 
@@ -112,19 +163,35 @@ class Command(BaseCommand):
     # --------------------------------------------------------
     # ヘルパーメソッド
     # --------------------------------------------------------
+    
+    def _process_batch(self, products_data, relations_map, processed_raw_ids):
+        """
+        バッチ全体でエンティティ名をPKに解決し、その後バルクUPSERTと同期を実行する。
+        """
+        # 1. エンティティ名をPKに解決 (products_data と relations_map の中身がPKに置き換わる)
+        self.stdout.write(f'バッチ処理開始: {len(products_data)} 件の製品エンティティ名を解決中...')
+        self._resolve_entity_names_to_pks(products_data, relations_map)
+
+        # 2. Product インスタンスに変換
+        products_to_upsert = [AdultProduct(**data) for data in products_data]
+        
+        # 3. バルクUPSERTと同期を実行
+        self._bulk_upsert_and_sync(products_to_upsert, relations_map, processed_raw_ids)
+
 
     def _bulk_upsert_and_sync(self, products_to_upsert, relations_map, processed_raw_ids):
         """
-        Productを一括でUPSERTし、その後にリレーションを一括で同期し、RawApiDataを更新する。
+        AdultProductを一括でUPSERTし、その後にリレーションを一括で同期し、RawApiDataを更新する。
+        （元のコードからロジックの変更なし）
         """
         num_products = len(products_to_upsert)
-        self.stdout.write(f'バッチ処理開始: {num_products} 件の製品データを保存/更新中...')
+        self.stdout.write(f'製品UPSERT実行: {num_products} 件の製品データを保存/更新中...')
         
         # product_id_unique のリストを取得
         unique_ids = [p.product_id_unique for p in products_to_upsert]
         
         # データベースに既存のID (pk) と product_id_unique の両方を取得
-        existing_products_data = Product.objects.filter(product_id_unique__in=unique_ids).values('id', 'product_id_unique')
+        existing_products_data = AdultProduct.objects.filter(product_id_unique__in=unique_ids).values('id', 'product_id_unique')
 
         # マッピング辞書を作成 { product_id_unique: id }
         id_map = {p['product_id_unique']: p['id'] for p in existing_products_data}
@@ -136,7 +203,6 @@ class Command(BaseCommand):
         # 挿入/更新のインスタンスリストを分割し、更新対象には ID をセット
         for p in products_to_upsert:
             if p.product_id_unique in existing_unique_ids:
-                # 既存のレコードの場合、IDをセット
                 p.id = id_map.get(p.product_id_unique)
                 if p.id:
                     products_to_update.append(p)
@@ -147,7 +213,7 @@ class Command(BaseCommand):
 
         try:
             with transaction.atomic():
-                fk_fields = [f.attname for f in Product._meta.fields if isinstance(f, models.ForeignKey)]
+                fk_fields = [f.attname for f in AdultProduct._meta.fields if isinstance(f, models.ForeignKey)]
                 
                 # 更新対象フィールドリスト
                 update_fields = [
@@ -157,17 +223,15 @@ class Command(BaseCommand):
                 
                 # 1. 新規レコードの一括挿入
                 if products_to_create:
-                    # bulk_create の実行により、products_to_create のインスタンスにも id がセットされる
-                    Product.objects.bulk_create(products_to_create, batch_size=500)
-                    self.stdout.write(self.style.NOTICE(f'  - 新規作成: {len(products_to_create)} 件'))
+                    AdultProduct.objects.bulk_create(products_to_create, batch_size=500)
+                    self.stdout.write(self.style.NOTICE(f'  - 新規作成: {len(products_to_create)} 件'))
                 
                 # 2. 既存レコードの一括更新 (IDがセットされていることを確認済み)
                 if products_to_update:
-                    Product.objects.bulk_update(products_to_update, update_fields, batch_size=500)
-                    self.stdout.write(self.style.NOTICE(f'  - 既存更新: {len(products_to_update)} 件'))
+                    AdultProduct.objects.bulk_update(products_to_update, update_fields, batch_size=500)
+                    self.stdout.write(self.style.NOTICE(f'  - 既存更新: {len(products_to_update)} 件'))
                 
                 # 3. リレーション同期のために、すべてのProductの DB ID (pk) を取得/確認
-                
                 product_db_id_map = {
                     p.product_id_unique: p.id
                     for p in products_to_upsert if p.id is not None
@@ -177,10 +241,9 @@ class Command(BaseCommand):
                 self._synchronize_many_to_many(products_to_upsert, product_db_id_map, relations_map)
                 
                 # 5. RawApiData の migrated フラグを更新 (トランザクション内)
-                # ★修正ポイント3: RawApiDataの更新時刻も aware な時刻を使用する (通常は timezone.now() で OK)★
                 RawApiData.objects.filter(id__in=processed_raw_ids).update(
                     migrated=True, 
-                    updated_at=timezone.now() # django.utils.timezone.now() は通常 aware な時刻を返す
+                    updated_at=timezone.now() 
                 )
                 self.stdout.write(self.style.NOTICE(f'RawApiData {len(processed_raw_ids)} 件の migrated フラグを True に更新しました。'))
 
@@ -193,6 +256,7 @@ class Command(BaseCommand):
     def _synchronize_many_to_many(self, products_to_upsert, product_db_id_map, relations_map):
         """
         ManyToManyリレーション (Genre, Actress) を同期する。
+        （元のコードからロジックの変更なし）
         """
         product_db_ids = list(product_db_id_map.values())
         if not product_db_ids:
@@ -201,44 +265,48 @@ class Command(BaseCommand):
         # ------------------
         # Genre (ジャンル) の同期
         # ------------------
-        Product.genres.through.objects.filter(product_id__in=product_db_ids).delete()
+        AdultProduct.genres.through.objects.filter(adultproduct_id__in=product_db_ids).delete() 
         
         genre_relations_to_insert = []
         for p in products_to_upsert:
             raw_id = p.raw_data_id 
             db_id = product_db_id_map.get(p.product_id_unique)
+            
+            # relations_map は PK 解決後なので、'genre_ids' が入っている
             if db_id and raw_id in relations_map:
-                for genre_id in relations_map[raw_id]['genre_ids']:
+                for genre_id in relations_map[raw_id]['genres_ids']: 
                     genre_relations_to_insert.append(
-                        Product.genres.through(product_id=db_id, genre_id=genre_id)
+                        AdultProduct.genres.through(adultproduct_id=db_id, genre_id=genre_id) 
                     )
 
         if genre_relations_to_insert:
-            Product.genres.through.objects.bulk_create(genre_relations_to_insert, batch_size=500, ignore_conflicts=True)
+            AdultProduct.genres.through.objects.bulk_create(genre_relations_to_insert, batch_size=500, ignore_conflicts=True)
             
         # ------------------
         # Actress (出演者) の同期
         # ------------------
-        Product.actresses.through.objects.filter(product_id__in=product_db_ids).delete()
+        AdultProduct.actresses.through.objects.filter(adultproduct_id__in=product_db_ids).delete()
 
         actress_relations_to_insert = []
         for p in products_to_upsert:
             raw_id = p.raw_data_id
             db_id = product_db_id_map.get(p.product_id_unique)
+            
+            # relations_map は PK 解決後なので、'actress_ids' が入っている
             if db_id and raw_id in relations_map:
-                for actress_id in relations_map[raw_id]['actress_ids']:
+                for actress_id in relations_map[raw_id]['actresses_ids']:
                     actress_relations_to_insert.append(
-                        Product.actresses.through(product_id=db_id, actress_id=actress_id)
+                        AdultProduct.actresses.through(adultproduct_id=db_id, actress_id=actress_id)
                     )
 
         if actress_relations_to_insert:
-            Product.actresses.through.objects.bulk_create(actress_relations_to_insert, batch_size=500, ignore_conflicts=True)
+            AdultProduct.actresses.through.objects.bulk_create(actress_relations_to_insert, batch_size=500, ignore_conflicts=True)
 
 
     def update_product_counts(self, stdout):
         """
         関連エンティティテーブルの product_count カラムを中間テーブルの件数に基づいて更新する。
-        DUGAソースの製品のみを対象とする。
+        （元のコードからロジックの変更なし）
         """
         stdout.write("\n--- 関連エンティティの product_count を更新中 ---")
         
@@ -252,8 +320,8 @@ class Command(BaseCommand):
                     (Director, 'products_directed'), 
                 ]
                 
-                # Product モデルからDUGAの製品IDのみをフィルタリングするための Subquery を準備
-                duga_product_ids = Product.objects.filter(api_source=self.API_SOURCE).values('id')
+                # AdultProduct モデルからDUGAの製品IDのみをフィルタリングするための Subquery を準備
+                duga_product_ids = AdultProduct.objects.filter(api_source=self.API_SOURCE).values('id')
 
                 for Model, related_name in MAPPING:
                     
@@ -261,9 +329,8 @@ class Command(BaseCommand):
                         # Maker, Label, Director (ForeignKey リレーション)
                         fk_field_name = f'{Model.__name__.lower()}_id'
                         
-                        # ForeignKey 経由のカウントを Subquery で取得
                         count_subquery = (
-                            Product.objects
+                            AdultProduct.objects
                             .filter(
                                 api_source=self.API_SOURCE,
                                 **{fk_field_name: OuterRef('pk')} 
@@ -273,7 +340,6 @@ class Command(BaseCommand):
                             .values('count')[:1]
                         )
                         
-                        # 対象エンティティの product_count を更新
                         Model.objects.filter(api_source=self.API_SOURCE).update(
                             product_count=Coalesce( 
                                 Subquery(count_subquery, output_field=models.IntegerField()),
@@ -284,21 +350,19 @@ class Command(BaseCommand):
 
                     else:
                         # Actress, Genre (ManyToMany リレーション)
-                        ThroughModel = getattr(Product, related_name).through
+                        ThroughModel = getattr(AdultProduct, related_name).through
                         
                         entity_fk_name = f'{Model.__name__.lower()}_id' 
                         filter_kwargs = {entity_fk_name: OuterRef('pk')}
 
-                        # ManyToMany 中間テーブル経由のカウントを Subquery で取得
                         count_subquery = (
                             ThroughModel.objects
-                            .filter(**filter_kwargs, product_id__in=Subquery(duga_product_ids.values('id')))
+                            .filter(**filter_kwargs, adultproduct_id__in=Subquery(duga_product_ids.values('id')))
                             .values(entity_fk_name)
-                            .annotate(count=Count('product_id'))
+                            .annotate(count=Count('adultproduct_id'))
                             .values('count')[:1]
                         )
 
-                        # 対象エンティティの product_count を更新
                         Model.objects.filter(api_source=self.API_SOURCE).update(
                             product_count=Coalesce( 
                                 Subquery(count_subquery, output_field=models.IntegerField()),

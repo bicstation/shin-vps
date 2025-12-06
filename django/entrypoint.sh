@@ -1,11 +1,18 @@
 #!/bin/bash
 # entrypoint.sh
 
-# データベースが利用可能になるまで待機 (簡易版)
-echo "Waiting for PostgreSQL..."
-while ! nc -z postgres_db 5432; do
+# 環境変数からホスト名とポートを取得
+DB_HOST=${DB_HOST:-postgres_db_v2}  # DB_HOST が設定されていなければ postgres_db_v2 をデフォルトとする
+DB_PORT=5432
+
+# データベースが利用可能になるまで待機
+echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT ..."
+
+# ✅ 修正: ハードコードされたホスト名ではなく、環境変数 $DB_HOST を使用
+while ! nc -z $DB_HOST $DB_PORT; do 
   sleep 0.1
 done
+
 echo "PostgreSQL started."
 
 # 2. マイグレーション実行

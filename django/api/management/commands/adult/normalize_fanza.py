@@ -13,7 +13,8 @@ from api.utils.fanza_normalizer import normalize_fanza_data
 # エンティティの作成・更新に使用するユーティリティをインポート
 from api.utils.entity_manager import get_or_create_entity 
 
-from api.models import RawApiData, Product, Genre, Actress, Director, Maker, Label, Series
+# ★修正: Product を AdultProduct に変更★
+from api.models import RawApiData, AdultProduct, Genre, Actress, Director, Maker, Label, Series
 from django.db import connection # _synchronize_relations で Raw SQL を使用
 import traceback # デバッグのためにインポート
 
@@ -34,7 +35,7 @@ ENTITY_MAP = {
 
 
 class Command(BaseCommand):
-    help = 'FANZA APIから取得したRawデータをProductsテーブルに正規化し、リレーションを同期します。'
+    help = 'FANZA APIから取得したRawデータをAdultProductテーブルに正規化し、リレーションを同期します。' # ヘルプメッセージも変更
     API_SOURCE = 'FANZA'
     BATCH_SIZE = 100 
 
@@ -49,7 +50,6 @@ class Command(BaseCommand):
         """メインの処理ロジック"""
         
         # api_utilsロガーのレベルを強制的にDEBUGに設定
-        # ロギング設定は settings.py や環境変数で行うのが一般的だが、コマンド内での強制設定を維持
         logging.getLogger('api_utils').setLevel(logging.DEBUG) 
 
         self.stdout.write(self.style.NOTICE(f'--- {self.API_SOURCE} 正規化コマンドを開始します ---'))
@@ -91,7 +91,6 @@ class Command(BaseCommand):
                     
                     if not products_data_list:
                         # RawApiDataを移行済みとしてマーク
-                        # ※ normalize_fanza_data 側でエラーが発生し、処理がここで再開された場合も同様
                         raw_instance.migrated = True
                         raw_instance.updated_at = timezone.now()
                         raw_instance.save(update_fields=['migrated', 'updated_at'])
@@ -145,7 +144,7 @@ class Command(BaseCommand):
                     self.stdout.write(f'  -> {sum(len(v) for v in entity_pk_maps.values())} 件のエンティティを作成/更新しました。')
 
                     # --------------------------------------------------------
-                    # 3. Product モデルインスタンスの準備とリレーションIDの割り当て
+                    # 3. AdultProduct モデルインスタンスの準備とリレーションIDの割り当て
                     # --------------------------------------------------------
                     products_to_upsert = []
                     
@@ -161,10 +160,11 @@ class Command(BaseCommand):
                                 product_data[fk_key] = pk
                                 
                         # Product インスタンスを生成
-                        products_to_upsert.append(Product(**product_data))
+                        # ★修正: AdultProduct に変更★
+                        products_to_upsert.append(AdultProduct(**product_data))
 
                     # --------------------------------------------------------
-                    # 4. Productテーブルへの一括UPSERT
+                    # 4. AdultProductテーブルへの一括UPSERT
                     # --------------------------------------------------------
                     
                     unique_fields = ['product_id_unique']
@@ -176,14 +176,15 @@ class Command(BaseCommand):
                         'updated_at'
                     ]
                     
-                    Product.objects.bulk_create(
+                    # ★修正: AdultProduct に変更★
+                    AdultProduct.objects.bulk_create(
                         products_to_upsert,
                         update_conflicts=True,
                         unique_fields=unique_fields,
                         update_fields=update_fields,
                     )
                     
-                    self.stdout.write(self.style.NOTICE(f'  -> Productsテーブルに {len(products_to_upsert)} 件をUPSERTしました。'))
+                    self.stdout.write(self.style.NOTICE(f'  -> AdultProductsテーブルに {len(products_to_upsert)} 件をUPSERTしました。'))
 
                     # --------------------------------------------------------
                     # 5. リレーションの同期 (Genre, Actress)
@@ -208,9 +209,10 @@ class Command(BaseCommand):
                         ]
                         final_relations_list.append(new_rel)
 
-                    # UPSERTされたProductのDB PKを取得
+                    # UPSERTされたAdultProductのDB PKを取得
                     api_ids = [r['api_product_id'] for r in final_relations_list] 
-                    db_products = Product.objects.filter(
+                    # ★修正: AdultProduct を参照★
+                    db_products = AdultProduct.objects.filter(
                         api_source=self.API_SOURCE, 
                         product_id_unique__in=[f'{self.API_SOURCE}_{api_id}' for api_id in api_ids]
                     ).only('pk', 'product_id_unique') # 必要なフィールドのみ取得
@@ -236,9 +238,6 @@ class Command(BaseCommand):
                 logger.error(f"Rawバッチ ID {raw_instance.id} の処理中に致命的なエラーが発生しました: {e}")
                 logger.debug(f"Stack trace: {traceback.format_exc()}")
                 
-                # 処理に失敗したバッチをスキップとしてマークするロジックをここで追加することも可能ですが、
-                # 現在は `products_data_list` が空でない限り、例外でロールバックされます。
-                # データ不備によるデコードエラーは `normalize_fanza_data` 側で適切に処理されることを期待します。
                 # ロールバック後に次の Raw バッチへ
                 continue 
 
@@ -265,17 +264,23 @@ class Command(BaseCommand):
         # --------------------------------------------------------
         
         # 中間テーブルの名前を取得
-        genre_through_table = Product.genres.through._meta.db_table
-        actress_through_table = Product.actresses.through._meta.db_table
+        # ★修正: AdultProduct の中間テーブルを参照★
+        genre_through_table = AdultProduct.genres.through._meta.db_table
+        actress_through_table = AdultProduct.actresses.through._meta.db_table
+
+        # ★注意: AdultProduct の FK フィールド名は adultproduct_id に変わっている可能性があります★
+        adult_product_fk_name = 'adultproduct_id' # AdultProduct の中間テーブルでの FK 名
 
         with connection.cursor() as cursor:
             # PostgreSQLの Unnest ではなく、通常の IN 句を使用
             placeholders = ','.join(['%s'] * len(product_pks))
             
-            # product_genre
-            cursor.execute(f"DELETE FROM {genre_through_table} WHERE product_id IN ({placeholders})", product_pks)
-            # product_actress
-            cursor.execute(f"DELETE FROM {actress_through_table} WHERE product_id IN ({placeholders})", product_pks)
+            # product_genre -> adultproduct_genre
+            # ★修正: product_id -> adultproduct_id に変更して Raw SQL を実行★
+            cursor.execute(f"DELETE FROM {genre_through_table} WHERE {adult_product_fk_name} IN ({placeholders})", product_pks)
+            # product_actress -> adultproduct_actress
+            # ★修正: product_id -> adultproduct_id に変更して Raw SQL を実行★
+            cursor.execute(f"DELETE FROM {actress_through_table} WHERE {adult_product_fk_name} IN ({placeholders})", product_pks)
         
         self.stdout.write(f'  -> 既存リレーション（ジャンル, 女優）を {len(product_pks)} 製品分削除しました。')
 
@@ -284,6 +289,10 @@ class Command(BaseCommand):
         # --------------------------------------------------------
         genre_relations = []
         actress_relations = []
+        
+        # ★修正: AdultProduct の中間テーブルを参照★
+        GenreThroughModel = AdultProduct.genres.through
+        ActressThroughModel = AdultProduct.actresses.through
         
         for rel in relations_list:
             # product_pk_map のキーは api_product_id (例: 'yss124')
@@ -294,18 +303,21 @@ class Command(BaseCommand):
             # ジャンル
             for genre_id in rel['genre_ids']: # ここはID（PK）である必要がある
                 genre_relations.append(
-                    Product.genres.through(product_id=product_pk, genre_id=genre_id)
+                    # ★修正: AdultProduct の中間テーブルを参照し、フィールド名を adultproduct_id に変更★
+                    GenreThroughModel(**{adult_product_fk_name: product_pk, 'genre_id': genre_id})
                 )
 
             # 女優
             for actress_id in rel['actress_ids']: # ここはID（PK）である必要がある
                 actress_relations.append(
-                    Product.actresses.through(product_id=product_pk, actress_id=actress_id)
+                    # ★修正: AdultProduct の中間テーブルを参照し、フィールド名を adultproduct_id に変更★
+                    ActressThroughModel(**{adult_product_fk_name: product_pk, 'actress_id': actress_id})
                 )
 
         # 衝突は無視して挿入
-        Product.genres.through.objects.bulk_create(genre_relations, ignore_conflicts=True)
-        Product.actresses.through.objects.bulk_create(actress_relations, ignore_conflicts=True)
+        # ★修正: AdultProduct の中間テーブルを参照★
+        GenreThroughModel.objects.bulk_create(genre_relations, ignore_conflicts=True)
+        ActressThroughModel.objects.bulk_create(actress_relations, ignore_conflicts=True)
         
         self.stdout.write(f'  -> リレーション（ジャンル: {len(genre_relations)} 件, 女優: {len(actress_relations)} 件）を挿入しました。')
 
@@ -327,12 +339,18 @@ class Command(BaseCommand):
         """
         stdout.write(self.style.NOTICE('\n--- 関連エンティティの product_count を更新中 ---'))
         
+        # --------------------------------------------------------
+        # 中間テーブルの AdultProduct 側の FK 名を取得
+        # --------------------------------------------------------
+        adult_product_fk_name = 'adultproduct_id'
+        
         # 1. 女優 (Actress) のカウント更新
+        # ★修正: AdultProduct の中間テーブルを参照し、フィルタリングフィールドも変更★
         actress_count_sq = Subquery(
-            Product.actresses.through.objects
+            AdultProduct.actresses.through.objects
             .filter(actress_id=OuterRef('pk'))
             .values('actress_id')
-            .annotate(count=Count('product_id'))
+            .annotate(count=Count(adult_product_fk_name)) # カウント対象も adultproduct_id に変更
             .values('count'),
             output_field=IntegerField()
         )
@@ -342,11 +360,12 @@ class Command(BaseCommand):
         stdout.write(self.style.SUCCESS('  -> 女優のカウントを更新しました。'))
 
         # 2. ジャンル (Genre) のカウント更新
+        # ★修正: AdultProduct の中間テーブルを参照し、フィルタリングフィールドも変更★
         genre_count_sq = Subquery(
-            Product.genres.through.objects
+            AdultProduct.genres.through.objects
             .filter(genre_id=OuterRef('pk'))
             .values('genre_id')
-            .annotate(count=Count('product_id'))
+            .annotate(count=Count(adult_product_fk_name)) # カウント対象も adultproduct_id に変更
             .values('count'),
             output_field=IntegerField()
         )
@@ -356,8 +375,9 @@ class Command(BaseCommand):
         stdout.write(self.style.SUCCESS('  -> ジャンルのカウントを更新しました。'))
 
         # 3. メーカー (Maker) のカウント更新
+        # ★修正: AdultProduct を参照★
         maker_count_sq = Subquery(
-            Product.objects
+            AdultProduct.objects
             .filter(maker_id=OuterRef('pk'), api_source=self.API_SOURCE)
             .values('maker_id')
             .annotate(count=Count('id'))
@@ -370,8 +390,9 @@ class Command(BaseCommand):
         stdout.write(self.style.SUCCESS('  -> メーカーのカウントを更新しました。'))
         
         # 4. レーベル (Label) のカウント更新
+        # ★修正: AdultProduct を参照★
         label_count_sq = Subquery(
-            Product.objects
+            AdultProduct.objects
             .filter(label_id=OuterRef('pk'), api_source=self.API_SOURCE)
             .values('label_id')
             .annotate(count=Count('id'))
@@ -384,8 +405,9 @@ class Command(BaseCommand):
         stdout.write(self.style.SUCCESS('  -> レーベルのカウントを更新しました。'))
 
         # 5. シリーズ (Series) のカウント更新
+        # ★修正: AdultProduct を参照★
         series_count_sq = Subquery(
-            Product.objects
+            AdultProduct.objects
             .filter(series_id=OuterRef('pk'), api_source=self.API_SOURCE)
             .values('series_id')
             .annotate(count=Count('id'))
@@ -398,8 +420,9 @@ class Command(BaseCommand):
         stdout.write(self.style.SUCCESS('  -> シリーズのカウントを更新しました。'))
 
         # 6. 監督 (Director) のカウント更新
+        # ★修正: AdultProduct を参照★
         director_count_sq = Subquery(
-            Product.objects
+            AdultProduct.objects
             .filter(director_id=OuterRef('pk'), api_source=self.API_SOURCE)
             .values('director_id')
             .annotate(count=Count('id'))

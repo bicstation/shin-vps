@@ -1,3 +1,5 @@
+# api/utils/adult/fanza_normalizer.py
+
 import json
 import logging
 from datetime import datetime
@@ -8,11 +10,13 @@ from typing import List, Tuple, Dict, Any, Optional
 logger = logging.getLogger('api_utils')
 
 # 必要なモデル (ここでは参照のみ)
-# 実際の環境に合わせてインポートパスを確認してください
 from api.models import RawApiData, Maker, Label, Series, Director, Actress, Genre 
-# 依存関係は新しい場所からインポート
+# 依存関係を新しい場所からインポート
 from .entity_manager import get_or_create_entity
-from .common import generate_product_unique_id 
+
+# 🚨 【インポート修正点】: 相対インポートを絶対インポートに修正
+# generate_product_unique_id は、api.utils.common にあると仮定
+from api.utils.common import generate_product_unique_id 
 
 API_SOURCE = 'FANZA' # 定数として定義
 
@@ -129,12 +133,11 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
              image_url_list.append(data['imageURL']['list'])
              
         # サンプル画像 (sampleImageURL.sample_s.image) を追加
-        # 生データに合わせてキーを修正
         sample_image_data = data.get('sampleImageURL', {}).get('sample_s', {}).get('image')
         if sample_image_data and isinstance(sample_image_data, list):
              image_url_list.extend(sample_image_data)
         
-        # JSONFieldへの格納を想定し、json.dumps()は使用しない (前回の修正を維持)
+        # JSONFieldへの格納を想定
         if not image_url_list:
              image_url_for_db = []
         else:
@@ -152,7 +155,8 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
         product_data = {
             'api_source': API_SOURCE,
             'api_product_id': api_product_id,
-            'product_id_unique': f'{API_SOURCE}_{api_product_id}', 
+            # generate_product_unique_id 関数を呼び出す
+            'product_id_unique': generate_product_unique_id(API_SOURCE, api_product_id), 
             'title': title,
             'release_date': release_date,
             'affiliate_url': data.get('affiliateURL') or "", 
@@ -175,6 +179,7 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
         # PK IDではなく、エンティティの「名前」を格納
         relations_list.append({
             'api_product_id': api_product_id, # Product.product_id_uniqueと紐づけるためのキー
+            'product_id_unique': generate_product_unique_id(API_SOURCE, api_product_id), # 紐付け用にユニークIDを追加
             'genres': genre_names,
             'actresses': actress_names,
         })

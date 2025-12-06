@@ -10,7 +10,7 @@ logger = logging.getLogger('api_utils')
 
 
 # --------------------------------------------------------------------------
-# 2. 商品のユニークID生成 (Product.product_id_unique フィールド用)
+# 2. 商品のユニークID生成 (AdultProduct.product_id_unique フィールド用)
 # --------------------------------------------------------------------------
 
 def generate_product_unique_id(api_source: str, api_raw_id: str, prefix_type: Optional[str] = None) -> str:
