@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     # 追加したアプリ
     'rest_framework', 
     'api',
+    # 'data', # 存在しないため削除しました
 ]
 
 MIDDLEWARE = [
@@ -113,8 +114,8 @@ WSGI_APPLICATION = 'tiper_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'tiper_db',      
-        'USER': 'tiper_user',     
+        'NAME': 'tiper_db', 
+        'USER': 'tiper_user', 
         'PASSWORD': '1492nabe',
         'HOST': os.environ.get('DB_HOST', 'postgres_db'),
         'PORT': '5432',
@@ -199,7 +200,7 @@ REST_FRAMEWORK = {
     
     # ★★★ ページネーション設定 ★★★
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 20,  # 1ページあたりのデフォルトのアイテム数
+    'PAGE_SIZE': 20, # 1ページあたりのデフォルトのアイテム数
 }
 
 

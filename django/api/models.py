@@ -1,23 +1,26 @@
 from django.db import models
 from django.utils import timezone
 
-# --------------------------------------------------------------------------
-# 1. API生データモデル (RawApiData) - 変更なし
-# --------------------------------------------------------------------------
+# ==========================================================================
+# 1. API生データモデル (RawApiData)
+# ==========================================================================
 
 class RawApiData(models.Model):
     """
-    FANZAやDUGAなどのAPIから取得した生データをそのまま格納するモデル。
+    FANZA, DUGA, LinkShareなどのAPI/FTPから取得した
+    生データ（JSONやCSV行）をそのまま格納するモデル。
     """
     API_CHOICES = [
         ('DUGA', 'DUGA API'),
         ('FANZA', 'FANZA API'),
-        # ★ NormalProduct 用に LINKSHARE を追加しても良いが、ここではAdultProductのソースに限定
+        ('LINKSHARE', 'LinkShare FTP'), # ★ 追加
     ]
 
-    api_source = models.CharField(max_length=10, choices=API_CHOICES, verbose_name="APIソース")
-    api_product_id = models.CharField(max_length=255, verbose_name="API商品ID")
-    raw_json_data = models.JSONField(verbose_name="生JSONデータ")
+    api_source = models.CharField(max_length=15, choices=API_CHOICES, verbose_name="APIソース")
+    api_product_id = models.CharField(max_length=255, verbose_name="API商品ID/リンクID")
+    
+    # JSONFieldはPostgreSQLで推奨。CSVデータもJSON化して保存可能
+    raw_json_data = models.JSONField(verbose_name="生データ(JSON)")
     
     api_service = models.CharField(max_length=50, null=True, blank=True, verbose_name="APIサービスコード")
     api_floor = models.CharField(max_length=50, null=True, blank=True, verbose_name="APIフロアコード")
@@ -27,7 +30,7 @@ class RawApiData(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
     
     class Meta:
-        db_table = 'raw_api_data'
+        db_table = 'site_raw_api_data' # 共通プレフィックス
         verbose_name = 'API生データ'
         verbose_name_plural = 'API生データ一覧'
         unique_together = ('api_source', 'api_product_id')
@@ -36,15 +39,14 @@ class RawApiData(models.Model):
         return f"{self.api_source}: {self.api_product_id}"
 
 
-# --------------------------------------------------------------------------
-# 2. エンティティモデル群の基底クラス (EntityBase) - 変更なし
-# --------------------------------------------------------------------------
+# ==========================================================================
+# 2. アダルト系エンティティモデル群 (EntityBase)
+# ==========================================================================
 
 class EntityBase(models.Model):
     """
     メーカー、ジャンル、女優などの共通フィールドを持つ基底クラス
     """
-    # ★ EntityBase は主に AdultProduct が使用するため、api_sourceは残す
     api_source = models.CharField(max_length=10, verbose_name="APIソース (DUGA/FANZA)")
     api_id = models.CharField(max_length=255, null=True, blank=True, unique=False, verbose_name="API固有ID")
     name = models.CharField(max_length=255, verbose_name="名称")
@@ -64,49 +66,49 @@ class EntityBase(models.Model):
 class Maker(EntityBase):
     """メーカー"""
     class Meta(EntityBase.Meta):
-        db_table = 'maker'
+        db_table = 'adult_maker'
         verbose_name = 'メーカー'
         verbose_name_plural = 'メーカー一覧'
 
 class Label(EntityBase):
     """レーベル"""
     class Meta(EntityBase.Meta):
-        db_table = 'label'
+        db_table = 'adult_label'
         verbose_name = 'レーベル'
         verbose_name_plural = 'レーベル一覧'
 
 class Genre(EntityBase):
     """ジャンル/カテゴリ"""
     class Meta(EntityBase.Meta):
-        db_table = 'genre'
+        db_table = 'adult_genre'
         verbose_name = 'ジャンル'
         verbose_name_plural = 'ジャンル一覧'
 
 class Actress(EntityBase):
     """女優/出演者"""
     class Meta(EntityBase.Meta):
-        db_table = 'actress'
+        db_table = 'adult_actress'
         verbose_name = '女優'
         verbose_name_plural = '女優一覧'
 
 class Director(EntityBase):
     """監督"""
     class Meta(EntityBase.Meta):
-        db_table = 'director'
+        db_table = 'adult_director'
         verbose_name = '監督'
         verbose_name_plural = '監督一覧'
 
 class Series(EntityBase):
-    """シリーズ (FANZAの「シリーズ名」に対応)"""
+    """シリーズ"""
     class Meta(EntityBase.Meta):
-        db_table = 'series'
+        db_table = 'adult_series'
         verbose_name = 'シリーズ'
         verbose_name_plural = 'シリーズ一覧'
 
 
-# --------------------------------------------------------------------------
-# 3. 商品モデル (AdultProduct) - 既存のProductをリネーム
-# --------------------------------------------------------------------------
+# ==========================================================================
+# 3. アダルト商品モデル (AdultProduct)
+# ==========================================================================
 
 class AdultProduct(models.Model):
     """
@@ -118,11 +120,11 @@ class AdultProduct(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='adult_products', # related_name を修正
+        related_name='adult_products',
         verbose_name="生データソース"
     )
 
-    api_source = models.CharField(max_length=10, verbose_name="APIソース (DUGA/FANZA)")
+    api_source = models.CharField(max_length=10, verbose_name="APIソース")
     api_product_id = models.CharField(max_length=255, verbose_name="API提供元製品ID")
     product_id_unique = models.CharField(max_length=255, unique=True, verbose_name="統合ID")
     title = models.CharField(max_length=512, verbose_name="作品タイトル")
@@ -132,22 +134,21 @@ class AdultProduct(models.Model):
     price = models.IntegerField(null=True, blank=True, verbose_name="販売価格 (円)")
     image_url_list = models.JSONField(default=list, verbose_name="画像URLリスト")
 
-    # リレーション (単一/ForeignKey)
-    maker = models.ForeignKey(Maker, on_delete=models.SET_NULL, null=True, blank=True, related_name='adult_products_made', verbose_name="メーカー") # related_name を修正
-    label = models.ForeignKey(Label, on_delete=models.SET_NULL, null=True, blank=True, related_name='adult_products_labeled', verbose_name="レーベル") # related_name を修正
-    director = models.ForeignKey(Director, on_delete=models.SET_NULL, null=True, blank=True, related_name='adult_products_directed', verbose_name="監督") # related_name を修正
-    series = models.ForeignKey(Series, on_delete=models.SET_NULL, null=True, blank=True, related_name='adult_products_in_series', verbose_name="シリーズ") # related_name を修正
+    # リレーション
+    maker = models.ForeignKey(Maker, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="メーカー")
+    label = models.ForeignKey(Label, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="レーベル")
+    director = models.ForeignKey(Director, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="監督")
+    series = models.ForeignKey(Series, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="シリーズ")
 
-    # リレーション (複数/ManyToManyField)
-    genres = models.ManyToManyField(Genre, related_name='adult_products', verbose_name="ジャンル") # related_name を修正
-    actresses = models.ManyToManyField(Actress, related_name='adult_products', verbose_name="出演者") # related_name を修正
+    genres = models.ManyToManyField(Genre, related_name='products', verbose_name="ジャンル")
+    actresses = models.ManyToManyField(Actress, related_name='products', verbose_name="出演者")
     
     is_active = models.BooleanField(default=True, verbose_name="有効/無効")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
     class Meta:
-        db_table = 'adult_product' # ★ テーブル名を変更
+        db_table = 'adult_product'
         verbose_name = 'アダルト商品'
         verbose_name_plural = 'アダルト商品一覧'
         ordering = ['-release_date']
@@ -156,46 +157,129 @@ class AdultProduct(models.Model):
         return self.title
 
 
-# --------------------------------------------------------------------------
-# 4. ノーマル商品モデル (NormalProduct) - 新規追加
-# --------------------------------------------------------------------------
+# ==========================================================================
+# 4. LinkShare商品モデル (LinkshareProduct) - ノーマル商品用
+# ==========================================================================
 
-class NormalProduct(models.Model):
+class LinkshareProduct(models.Model):
     """
-    LinkShare APIなどから取得したノーマル商品専用のデータ。
-    アダルト商品とは完全に分離して管理する。
+    LinkShareマーチャンダイザー(クロスデバイス)フォーマット(38フィールド)に対応した商品モデル。
+    BicCamera, BicSavingなどのノーマル商品データとして使用します。
+    参照: アフィリエイト様向けマーチャンダイザーご利用ガイド_Ver6.2.3.pdf
     """
-    # 外部キー: どの生データから生成されたか追跡する (LinkShare用RawApiDataが必要なら定義)
-    # raw_dataは省略または別途LinkShare専用のRawApiDataを定義
     
-    # ノーマル商品特有の必須フィールド
-    api_source = models.CharField(max_length=20, default='LINKSHARE', verbose_name="APIソース")
-    
-    # SKUやISBNなど、ノーマル商品に固有のユニークID
-    sku_unique = models.CharField(max_length=255, unique=True, verbose_name="SKU/統合ID")
-    title = models.CharField(max_length=512, verbose_name="商品名")
-    
-    # 価格・在庫
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="販売価格 (円)")
-    in_stock = models.BooleanField(default=True, verbose_name="在庫あり")
-
-    # リンク・URL
-    affiliate_url = models.URLField(max_length=2048, verbose_name="アフィリエイトURL")
-    image_url = models.URLField(max_length=2048, verbose_name="メイン画像URL")
-
-    # リレーション（ノーマル商品固有のエンティティを別途定義する場合）
-    # brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', verbose_name="ブランド")
-
-    # 追跡用フィールド
-    is_active = models.BooleanField(default=True, verbose_name="有効/無効")
+    # --- 管理用フィールド ---
+    merchant_id = models.CharField(max_length=32, verbose_name="マーチャントID (MID)", db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
+    # --- 1. 基本属性 (フィールド 1-28) ---
+    
+    # 1. リンク ID (半角数字)
+    link_id = models.CharField(max_length=64, verbose_name="リンクID", db_index=True)
+    
+    # 2. 商品名 (全半角 255文字)
+    product_name = models.CharField(max_length=512, verbose_name="商品名") # 余裕を持って512
+    
+    # 3. SKU (半角英数記号 64文字)
+    sku = models.CharField(max_length=128, verbose_name="SKU", db_index=True) # 余裕を持って128
+    
+    # 4. 主カテゴリ (全半角 50文字)
+    primary_category = models.CharField(max_length=255, blank=True, null=True, verbose_name="主カテゴリ")
+    
+    # 5. サブカテゴリ (全半角 2000文字)
+    sub_category = models.TextField(blank=True, null=True, verbose_name="サブカテゴリ")
+    
+    # 6. 商品 URL
+    product_url = models.URLField(max_length=2048, verbose_name="商品URL")
+    
+    # 7. 商品画像 URL
+    image_url = models.URLField(max_length=2048, blank=True, null=True, verbose_name="商品画像URL")
+    
+    # 8. 購買ボタンクリック後の URL
+    buy_url = models.URLField(max_length=2048, blank=True, null=True, verbose_name="購買URL")
+    
+    # 9. 商品概要
+    short_description = models.TextField(blank=True, null=True, verbose_name="商品概要")
+    
+    # 10. 商品詳細
+    description = models.TextField(blank=True, null=True, verbose_name="商品詳細")
+    
+    # 11. 値引金額（割合）
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, verbose_name="値引金額/率")
+    
+    # 12. 値引種別 (amount/percentage)
+    discount_type = models.CharField(max_length=50, blank=True, null=True, verbose_name="値引種別")
+    
+    # 13. 値引き後の価格 (売価)
+    sale_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, verbose_name="販売価格")
+    
+    # 14. 値引き前の価格 (定価)
+    retail_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, verbose_name="定価")
+    
+    # 15. リンク有効日
+    begin_date = models.DateTimeField(blank=True, null=True, verbose_name="リンク有効日")
+    
+    # 16. リンク無効日
+    end_date = models.DateTimeField(blank=True, null=True, verbose_name="リンク無効日")
+    
+    # 17. ブランド名
+    brand_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="ブランド名")
+    
+    # 18. 送料
+    shipping = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, verbose_name="送料")
+    
+    # 19. キーワード
+    keywords = models.TextField(blank=True, null=True, verbose_name="キーワード")
+    
+    # 20. 製造品番
+    manufacturer_part_number = models.CharField(max_length=100, blank=True, null=True, verbose_name="製造品番")
+    
+    # 21. メーカー名
+    manufacturer_name = models.CharField(max_length=255, blank=True, null=True, verbose_name="メーカー名")
+    
+    # 22. 配送追加情報
+    shipping_information = models.CharField(max_length=255, blank=True, null=True, verbose_name="配送追加情報")
+    
+    # 23. 在庫情報
+    availability = models.CharField(max_length=100, blank=True, null=True, verbose_name="在庫情報")
+    
+    # 24. 共通商品コード (JAN/UPC)
+    universal_product_code = models.CharField(max_length=50, blank=True, null=True, verbose_name="JAN/UPC")
+    
+    # 25. 追加属性コード (class_id)
+    class_id = models.CharField(max_length=50, blank=True, null=True, verbose_name="追加属性コード")
+    
+    # 26. 通貨単位
+    currency = models.CharField(max_length=10, default='JPY', verbose_name="通貨")
+    
+    # 27. M1
+    m1 = models.CharField(max_length=2000, blank=True, null=True, verbose_name="M1")
+    
+    # 28. インプレッション計測 URL
+    pixel_url = models.CharField(max_length=512, blank=True, null=True, verbose_name="Pixel URL")
+
+    # --- 2. 追加属性 (フィールド 29-38) ---
+    attribute_1 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性1")
+    attribute_2 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性2")
+    attribute_3 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性3")
+    attribute_4 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性4")
+    attribute_5 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性5")
+    attribute_6 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性6")
+    attribute_7 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性7")
+    attribute_8 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性8")
+    attribute_9 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性9")
+    attribute_10 = models.CharField(max_length=255, blank=True, null=True, verbose_name="追加属性10")
+
     class Meta:
-        db_table = 'normal_product'
-        verbose_name = 'ノーマル商品'
-        verbose_name_plural = 'ノーマル商品一覧'
-        ordering = ['-created_at']
+        # LinkShareデータのマスターテーブルとして 'ls_' プレフィックスを使用
+        db_table = 'ls_product_master'
+        verbose_name = 'LinkShare商品マスタ'
+        verbose_name_plural = 'LinkShare商品マスタ一覧'
+        unique_together = ('merchant_id', 'sku') 
+        indexes = [
+            models.Index(fields=['merchant_id', 'updated_at']),
+        ]
 
     def __str__(self):
-        return self.title
+        return f"[{self.merchant_id}] {self.product_name} ({self.sku})"

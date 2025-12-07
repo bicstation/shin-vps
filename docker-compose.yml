@@ -30,6 +30,11 @@ services:
       dockerfile: Dockerfile
     container_name: api_django_v2
     restart: always
+    # services: # <--- YAML構造として不要なので削除
+    deploy:
+      resources:
+        limits:
+          memory: 4096m  # 4GBに設定
     depends_on:
       postgres-db-v2:
         condition: service_healthy

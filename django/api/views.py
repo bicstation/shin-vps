@@ -3,9 +3,9 @@
 from django.http import JsonResponse
 from rest_framework import generics
 
-# ★★★ 修正: Product, ProductSerializer のインポートを修正 ★★★
-from .serializers import AdultProductSerializer, NormalProductSerializer 
-from .models import AdultProduct, NormalProduct
+# ★★★ 修正: NormalProduct と NormalProductSerializer を LinkshareProduct に変更 ★★★
+from .serializers import AdultProductSerializer, LinkshareProductSerializer 
+from .models import AdultProduct, LinkshareProduct # モデル名も修正
 
 # --------------------------------------------------------------------------
 # 0. /api/ ルートエンドポイントの追加
@@ -18,8 +18,8 @@ def api_root(request):
         "message": "Welcome to Tiper API Gateway", 
         "endpoints": {
             "status": "/api/status/",
-            "adult_products_list": "/api/adults/", # ★ 変更: エンドポイント名をアダルト系に合わせる
-            "normal_products_list": "/api/normals/", # ★ 追加: ノーマル系エンドポイント
+            "adult_products_list": "/api/adults/", 
+            "linkshare_products_list": "/api/linkshare/", # ★ エンドポイント名を Linkshare に変更
             "product_detail": "/api/adults/{id}/"
         }
     }, status=200)
@@ -29,60 +29,51 @@ def status_check(request):
     return JsonResponse({"status": "API is running and URLs are configured correctly"}, status=200)
 
 # --------------------------------------------------------------------------
-# 1. アダルト商品データ API ビュー (旧 Product)
+# 1. アダルト商品データ API ビュー (AdultProduct)
 # --------------------------------------------------------------------------
 
-class AdultProductListAPIView(generics.ListAPIView): # ★ 修正: AdultProductListAPIView にリネーム
+class AdultProductListAPIView(generics.ListAPIView):
     """
     アダルト商品リストを取得するためのビュー (/api/adults/)
     """
-    # ★ 修正: AdultProduct モデルを参照
     queryset = AdultProduct.objects.all().prefetch_related('maker', 'label', 'director', 'series', 'genres', 'actresses')
-    
-    # ★ 修正: AdultProductSerializer を使用
     serializer_class = AdultProductSerializer
-    
-    # ページネーション、フィルタリング、検索などをここに追加できます
 
-class AdultProductDetailAPIView(generics.RetrieveAPIView): # ★ 修正: AdultProductDetailAPIView にリネーム
+class AdultProductDetailAPIView(generics.RetrieveAPIView):
     """
     特定のユニークIDを持つアダルト商品を取得するためのビュー (/api/adults/<product_id_unique>/)
     """
-    # ★ 修正: AdultProduct モデルを参照
     queryset = AdultProduct.objects.all().prefetch_related('maker', 'label', 'director', 'series', 'genres', 'actresses')
-    
-    # ★ 修正: AdultProductSerializer を使用
     serializer_class = AdultProductSerializer
-    
-    # URLパスで指定されるフィールドを 'pk' の代わりに 'product_id_unique' に変更
     lookup_field = 'product_id_unique'
 
 
 # --------------------------------------------------------------------------
-# 2. ノーマル商品データ API ビュー (新規追加)
+# 2. Linkshare商品データ API ビュー
 # --------------------------------------------------------------------------
 
-class NormalProductListAPIView(generics.ListAPIView):
+# ★★★ 修正: クラス名を LinkshareProductListAPIView にリネーム ★★★
+class LinkshareProductListAPIView(generics.ListAPIView): 
     """
-    ノーマル商品リストを取得するためのビュー (/api/normals/)
+    LinkShare商品リストを取得するためのビュー (/api/linkshare/)
     """
-    # ★ 新規追加: NormalProduct モデルを参照
-    queryset = NormalProduct.objects.all()
+    # ★ 修正: LinkshareProduct モデルを参照
+    queryset = LinkshareProduct.objects.all()
     
-    # ★ 新規追加: NormalProductSerializer を使用
-    serializer_class = NormalProductSerializer
-    
-    # ページネーション、フィルタリング、検索などをここに追加できます
+    # ★ 修正: LinkshareProductSerializer を使用
+    serializer_class = LinkshareProductSerializer
 
-class NormalProductDetailAPIView(generics.RetrieveAPIView):
+# ★★★ 修正: クラス名を LinkshareProductDetailAPIView にリネーム ★★★
+class LinkshareProductDetailAPIView(generics.RetrieveAPIView): 
     """
-    特定のユニークIDを持つノーマル商品を取得するためのビュー (/api/normals/<sku_unique>/)
+    特定のSKUを持つLinkShare商品を取得するためのビュー (/api/linkshare/<sku>/)
     """
-    # ★ 新規追加: NormalProduct モデルを参照
-    queryset = NormalProduct.objects.all()
+    # ★ 修正: LinkshareProduct モデルを参照
+    queryset = LinkshareProduct.objects.all()
     
-    # ★ 新規追加: NormalProductSerializer を使用
-    serializer_class = NormalProductSerializer
+    # ★ 修正: LinkshareProductSerializer を使用
+    serializer_class = LinkshareProductSerializer
     
-    # URLパスで指定されるフィールドを 'sku_unique' に変更
-    lookup_field = 'sku_unique'
+    # ★ 修正: URLパスで指定されるフィールドを LinkshareProductのSKUフィールド 'sku' に変更
+    # (LinkshareProductでは sku_uniqueではなく sku がデータフィールドとして存在します)
+    lookup_field = 'sku'
