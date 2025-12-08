@@ -1,4 +1,7 @@
 # api/models/__init__.py
+
 from .raw_and_entities import RawApiData, Maker, Label, Genre, Actress, Director, Series, EntityBase
-# 🚨 修正が必要です: NormalProduct を LinkshareProduct に変更します
-from .products import AdultProduct, LinkshareProduct
+
+# 分割した新しいファイルから個別にインポートする
+from .adult_products import AdultProduct
+from .linkshare_products import LinkshareProduct

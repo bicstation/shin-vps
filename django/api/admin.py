@@ -84,10 +84,12 @@ class LinkshareProductAdmin(admin.ModelAdmin):
         'sale_price',   # 💡 修正: price -> sale_price
         'availability', # 💡 在庫情報
         'merchant_id',  # 💡 マーチャントID
+        'brand_name',
+        'manufacturer_name',
         'updated_at',
     )
     list_display_links = ('sku', 'product_name')
-    search_fields = ('product_name', 'sku', 'keywords')
+    search_fields = ('product_name', 'sku', 'keywords','brand_name')
     list_filter = ('merchant_id', 'availability') # 💡 フィルターを修正
 
 # ----------------------------------------------------
