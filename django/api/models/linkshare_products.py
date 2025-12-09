@@ -18,7 +18,10 @@ class LinkshareProduct(models.Model):
     sku = models.CharField(max_length=256, db_index=True, verbose_name="SKU")
     primary_category = models.CharField(max_length=255, null=True, blank=True, verbose_name="主カテゴリ")
     sub_category = models.TextField(null=True, blank=True, verbose_name="サブカテゴリ")
-    product_url = models.URLField(max_length=2048, verbose_name="商品URL")
+    
+    # 🚨 修正箇所: null=True, blank=True を追加して NOT NULL 制約違反を解消 🚨
+    product_url = models.URLField(max_length=2048, null=True, blank=True, verbose_name="商品URL")
+    
     image_url = models.URLField(max_length=2048, null=True, blank=True, verbose_name="商品画像URL")
     buy_url = models.URLField(max_length=2048, null=True, blank=True, verbose_name="購買URL")
     short_description = models.TextField(null=True, blank=True, verbose_name="商品概要")
@@ -32,10 +35,10 @@ class LinkshareProduct(models.Model):
     brand_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="ブランド名")
     shipping = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="送料")
     keywords = models.TextField(null=True, blank=True, verbose_name="キーワード")
-    manufacturer_part_number = models.CharField(max_length=100, null=True, blank=True, verbose_name="製造品番")
+    manufacturer_part_number = models.CharField(max_length=255, null=True, blank=True, verbose_name="製造品番")
     manufacturer_name = models.CharField(max_length=255, null=True, blank=True, verbose_name="メーカー名")
     shipping_information = models.CharField(max_length=255, null=True, blank=True, verbose_name="配送追加情報")
-    availability = models.CharField(max_length=100, null=True, blank=True, verbose_name="在庫情報")
+    availability = models.CharField(max_length=255, null=True, blank=True, verbose_name="在庫情報")
     universal_product_code = models.CharField(max_length=50, null=True, blank=True, verbose_name="JAN/UPC")
     class_id = models.CharField(max_length=50, null=True, blank=True, verbose_name="追加属性コード")
     currency = models.CharField(max_length=10, default='JPY', verbose_name="通貨")
@@ -54,7 +57,7 @@ class LinkshareProduct(models.Model):
 
     class Meta:
         # ここを既存のテーブル名に合わせる
-        db_table = 'normal_product' 
+        db_table = 'normal_product'
         verbose_name = 'LinkShare商品マスタ'
         verbose_name_plural = 'LinkShare商品マスタ一覧'
         unique_together = (('merchant_id', 'sku'),)

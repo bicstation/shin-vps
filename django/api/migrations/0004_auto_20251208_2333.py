@@ -8,64 +8,11 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        # 依存関係はそのまま (api', '0003_alter_linkshareproduct_link_id')
+        # 依存関係はそのまま
         ('api', '0003_alter_linkshareproduct_link_id'),
     ]
 
+    # **このリストを空にすることで、Djangoに「このマイグレーションでは何も操作しない」と伝えます**
     operations = [
-        # 1. 必須カラムの追加 (エラーの原因となっている merchant_id および sku)
-        migrations.AddField(
-            model_name='linkshareproduct',
-            name='merchant_id',
-            field=models.CharField(db_index=True, max_length=32, default='0000', verbose_name='マーチャントID (MID)'),
-            preserve_default=False,
-        ),
-        migrations.AddField(
-            model_name='linkshareproduct',
-            name='sku',
-            field=models.CharField(db_index=True, max_length=256, default='NON-SKU', verbose_name='SKU'),
-            preserve_default=False,
-        ),
-
-        # 2. 自動設定されるカラムの追加
-        # created_at: auto_now_add=True のため、初期値を設定する必要がある
-        migrations.AddField(
-            model_name='linkshareproduct',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now, verbose_name='作成日時'),
-            preserve_default=False,
-        ),
-        # updated_at: auto_now=True のため、初期値を設定する必要がある
-        migrations.AddField(
-            model_name='linkshareproduct',
-            name='updated_at',
-            field=models.DateTimeField(auto_now=True, default=django.utils.timezone.now, verbose_name='更新日時'),
-            preserve_default=False,
-        ),
-
-        # 3. その他の主要なLinkShareカラムの追加（DBに存在しない可能性が高いもの）
-        # CharField/TextField は default='' (空文字列) または適切なデフォルト値を設定
-        migrations.AddField(
-            model_name='linkshareproduct',
-            name='product_name',
-            field=models.CharField(max_length=512, default='', verbose_name='商品名'),
-        ),
-        migrations.AddField(
-            model_name='linkshareproduct',
-            name='product_url',
-            field=models.URLField(max_length=2048, default='http://default.url', verbose_name='商品URL'),
-        ),
-        migrations.AddField(
-            model_name='linkshareproduct',
-            name='sale_price',
-            field=models.DecimalField(blank=True, decimal_places=2, max_digits=12, null=True, verbose_name='販売価格'),
-        ),
-        # 🚨 他の LinkShare フィールドも、もし DB に存在しない場合はこのパターンで追加してください。
-        # 例: primary_category, sub_category, brand_name, shipping, keywords, manufacturer_part_number, etc.
-        # migrations.AddField(
-        #     model_name='linkshareproduct',
-        #     name='link_id',
-        #     field=models.CharField(db_index=True, max_length=128, default='0', verbose_name='リンクID'),
-        #     preserve_default=False,
-        # ),
+        
     ]

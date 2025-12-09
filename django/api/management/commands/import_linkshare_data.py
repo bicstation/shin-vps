@@ -23,10 +23,52 @@ class DummyModel:
     """handle実行前のグローバルスコープでのNameErrorを回避するためのダミー定義"""
     objects = None
     def __init__(self, **kwargs): pass
-
+    # LinkshareProduct が持つことが想定される属性を追加 (hasattrチェック用)
+    id = None
+    merchant_id = None
+    created_at = None
+    updated_at = None
+    link_id = None
+    product_name = None
+    sku = None
+    primary_category = None
+    sub_category = None
+    product_url = None
+    image_url = None
+    buy_url = None
+    short_description = None
+    description = None
+    discount_amount = None
+    discount_type = None
+    sale_price = None
+    retail_price = None
+    begin_date = None
+    end_date = None
+    brand_name = None
+    shipping = None
+    keywords = None
+    manufacturer_part_number = None
+    manufacturer_name = None
+    shipping_information = None
+    availability = None
+    universal_product_code = None
+    class_id = None
+    currency = None
+    m1 = None
+    pixel_url = None
+    attribute_1 = None
+    attribute_2 = None
+    attribute_3 = None
+    attribute_4 = None
+    attribute_5 = None
+    attribute_6 = None
+    attribute_7 = None
+    attribute_8 = None
+    attribute_9 = None
+    attribute_10 = None
+    # ❌ 修正: api_source フィールドはモデルにないため削除
+    
 LinkshareProduct = DummyModel
-# RawApiData は使用しないため定義を削除
-
 
 # ==============================================================================
 # 接続・ファイル設定 (定数)
@@ -47,47 +89,54 @@ DELTA_DATA_PATTERN = re.compile(r"(\d+)_3750988_delta\.txt\.gz$")
 
 FIXED_DELIMITER = '|'
 FIXED_DELIMITER_NAME = 'PIPE'
-
-# LinkShareの38カラムマッピング定義
 FIELD_MAPPING = {
     'C1': {'DB_FIELD': 'link_id', 'TYPE': 'str', 'DESCRIPTION': 'リンクID'},
-    'C2': {'DB_FIELD': 'manufacturer_name', 'TYPE': 'str', 'FALLBACK': True, 'DESCRIPTION': '旧マーチャント名 (C22が空の場合の代替)'},
+    # LinkshareProductモデルに manufacturer_name フィールドは一つ
+    'C2': {'DB_FIELD': 'product_name', 'TYPE': 'str', 'DESCRIPTION': '商品名 (旧メーカー名)'},
     'C3': {'DB_FIELD': 'sku', 'TYPE': 'str', 'PK': True, 'DESCRIPTION': '商品コード (SKU)'},
-    'C4': {'DB_FIELD': 'product_name', 'TYPE': 'str', 'DESCRIPTION': '商品名'},
+    'C4': {'DB_FIELD': 'sub_category', 'TYPE': 'str', 'DESCRIPTION': 'カテゴリ2 (旧商品名)'},
     'C5': {'DB_FIELD': 'primary_category', 'TYPE': 'str', 'DESCRIPTION': 'カテゴリ1'},
-    'C6': {'DB_FIELD': 'sub_category', 'TYPE': 'str', 'DESCRIPTION': 'カテゴリ2'},
-    'C7': {'DB_FIELD': 'product_url', 'TYPE': 'str', 'DESCRIPTION': '商品URL'},
-    'C8': {'DB_FIELD': 'image_url', 'TYPE': 'str', 'DESCRIPTION': '画像URL'},
-    'C9': {'DB_FIELD': 'buy_url', 'TYPE': 'str', 'DESCRIPTION': '購入URL'},
-    'C10': {'DB_FIELD': 'short_description', 'TYPE': 'str', 'DESCRIPTION': '短い商品説明'},
-    'C11': {'DB_FIELD': 'description', 'TYPE': 'str', 'DESCRIPTION': '詳細な商品説明'},
-    'C12': {'DB_FIELD': 'discount_amount', 'TYPE': 'Decimal', 'DESCRIPTION': '割引額'},
-    'C13': {'DB_FIELD': 'discount_type', 'TYPE': 'str', 'DESCRIPTION': '割引タイプ'},
-    'C14': {'DB_FIELD': 'sale_price', 'TYPE': 'Decimal', 'DESCRIPTION': '販売価格'},
-    'C15': {'DB_FIELD': 'retail_price', 'TYPE': 'Decimal', 'DESCRIPTION': '定価'},
-    'C16': {'DB_FIELD': 'begin_date', 'TYPE': 'datetime', 'DESCRIPTION': '販売開始日'},
-    'C17': {'DB_FIELD': 'end_date', 'TYPE': 'datetime', 'DESCRIPTION': '販売終了日'},
-    'C18': {'DB_FIELD': 'brand_name', 'TYPE': 'str', 'DESCRIPTION': 'ブランド名'},
-    'C19': {'DB_FIELD': 'shipping', 'TYPE': 'Decimal', 'DESCRIPTION': '送料'},
-    'C20': {'DB_FIELD': 'keywords', 'TYPE': 'str', 'DESCRIPTION': '検索キーワード (~~区切り)'},
-    'C21': {'DB_FIELD': 'manufacturer_sku', 'TYPE': 'str', 'DESCRIPTION': '製造品番'}, 
-    'C22': {'DB_FIELD': 'manufacturer_name', 'TYPE': 'str', 'PRIMARY': True, 'DESCRIPTION': '製造メーカー名 (C2より優先)'},
-    'C23': {'DB_FIELD': 'shipping_info', 'TYPE': 'str', 'DESCRIPTION': '配送追加情報'},
-    'C24': {'DB_FIELD': 'inventory_info', 'TYPE': 'str', 'DESCRIPTION': '在庫情報'},
-    'C25': {'DB_FIELD': 'class_id', 'TYPE': 'str', 'DESCRIPTION': '共通商品コード (UPC, JAN, EAN)'}, 
-    'C26': {'DB_FIELD': 'currency_unit', 'TYPE': 'str', 'DESCRIPTION': '通貨単位 (JPY, USD, etc.)'}, 
+    
+    # 🚨 修正ゾーン 1: URLと説明文のズレを解消
+    'C6': {'DB_FIELD': 'buy_url', 'TYPE': 'str', 'DESCRIPTION': '購入URL (旧カテゴリ2)'}, 
+    'C7': {'DB_FIELD': 'image_url', 'TYPE': 'str', 'DESCRIPTION': '画像URL (旧商品URL)'}, 
+    'C8': {'DB_FIELD': 'product_url', 'TYPE': 'str', 'DESCRIPTION': '商品URL (旧画像URL)'},
+    'C9': {'DB_FIELD': 'short_description', 'TYPE': 'str', 'DESCRIPTION': '短い商品説明 (旧購入URL)'},
+    'C10': {'DB_FIELD': 'description', 'TYPE': 'str', 'DESCRIPTION': '詳細な商品説明 (旧短い商品説明)'},
+    'C11': {'DB_FIELD': 'discount_amount', 'TYPE': 'str', 'DESCRIPTION': '値引金額/率'},
+    
+    # 🚨 修正ゾーン 2: 価格と割引情報のズレを解消 (C13とC15に数値が入っていたため)
+    'C12': {'DB_FIELD': 'discount_type', 'TYPE': 'str', 'DESCRIPTION': '割引タイプ (旧割引額)'}, 
+    'C13': {'DB_FIELD': 'retail_price', 'TYPE': 'Decimal', 'DESCRIPTION': '定価 (旧割引タイプ)'}, 
+    'C14': {'DB_FIELD': 'sale_price', 'TYPE': 'Decimal', 'DESCRIPTION': '販売価格 (旧販売価格, ズレ修正)'},
+    # 'C15': {'DB_FIELD': 'discount_amount', 'TYPE': 'Decimal', 'DESCRIPTION': '割引額 (旧定価)'},
+    
+    'C15': {'DB_FIELD': 'begin_date', 'TYPE': 'datetime', 'DESCRIPTION': '販売開始日'},
+    'C16': {'DB_FIELD': 'brand_name', 'TYPE': 'datetime', 'DESCRIPTION': 'ブランド名'},
+    'C17': {'DB_FIELD': 'brand_name', 'TYPE': 'str', 'DESCRIPTION': 'ブランド名'},
+    'C18': {'DB_FIELD': 'shipping', 'TYPE': 'Decimal', 'DESCRIPTION': '送料'},
+    'C19': {'DB_FIELD': 'keywords', 'TYPE': 'str', 'DESCRIPTION': '検索キーワード'},
+    'C20': {'DB_FIELD': 'manufacturer_part_number', 'TYPE': 'str', 'DESCRIPTION': '製造品番'}, 
+    # C22: manufacturer_name (C2より優先)
+    'C21': {'DB_FIELD': 'manufacturer_name', 'TYPE': 'str', 'PRIMARY': True, 'DESCRIPTION': '製造メーカー名'},
+    'C22': {'DB_FIELD': 'shipping_information', 'TYPE': 'str', 'DESCRIPTION': '配送追加情報'},
+    'C23': {'DB_FIELD': 'availability', 'TYPE': 'str', 'DESCRIPTION': '在庫情報'},
+    # 🚨 修正: C25を dual purpose のカスタムフィールドに
+    'C24': {'DB_FIELD': 'common_product_code_dual', 'TYPE': 'str', 'DESCRIPTION': 'JAN/UPC (universal_product_code と class_id の両方にマッピング)'}, 
+    'C25': {'DB_FIELD': 'class_id', 'TYPE': 'str', 'DESCRIPTION': '追加属性コード'}, 
+    'C26': {'DB_FIELD': 'currency', 'TYPE': 'str', 'DESCRIPTION': '通貨単位 (JPY, USD, etc.)'}, 
     'C27': {'DB_FIELD': 'm1', 'TYPE': 'str', 'DESCRIPTION': 'M1 フィールド (カスタム属性)'},
-    'C28': {'DB_FIELD': 'impression_url', 'TYPE': 'str', 'DESCRIPTION': 'インプレッション計測 URL'},
-    'C29': {'DB_FIELD': 'm2', 'TYPE': 'str', 'DESCRIPTION': 'M2 フィールド'},
-    'C30': {'DB_FIELD': 'm3', 'TYPE': 'str', 'DESCRIPTION': 'M3 フィールド'},
-    'C31': {'DB_FIELD': 'm4', 'TYPE': 'str', 'DESCRIPTION': 'M4 フィールド'},
-    'C32': {'DB_FIELD': 'm5', 'TYPE': 'str', 'DESCRIPTION': 'M5 フィールド'},
-    'C33': {'DB_FIELD': 'm6', 'TYPE': 'str', 'DESCRIPTION': 'M6 フィールド'},
-    'C34': {'DB_FIELD': 'm7', 'TYPE': 'str', 'DESCRIPTION': 'M7 フィールド'},
-    'C35': {'DB_FIELD': 'm8', 'TYPE': 'str', 'DESCRIPTION': 'M8 フィールド'},
-    'C36': {'DB_FIELD': 'm9', 'TYPE': 'str', 'DESCRIPTION': 'M9 フィールド'},
-    'C37': {'DB_FIELD': 'm10', 'TYPE': 'str', 'DESCRIPTION': 'M10 フィールド'},
-    'C38': {'DB_FIELD': 'm11', 'TYPE': 'str', 'DESCRIPTION': 'M11 フィールド'},
+    'C28': {'DB_FIELD': 'pixel_url', 'TYPE': 'str', 'DESCRIPTION': 'インプレッション計測 URL'},
+    'C29': {'DB_FIELD': 'attribute_1', 'TYPE': 'str', 'DESCRIPTION': '追加属性1 (旧M2)'}, 
+    'C30': {'DB_FIELD': 'attribute_2', 'TYPE': 'str', 'DESCRIPTION': '追加属性2 (旧M3)'},
+    'C31': {'DB_FIELD': 'attribute_3', 'TYPE': 'str', 'DESCRIPTION': '追加属性3 (旧M4)'},
+    'C32': {'DB_FIELD': 'attribute_4', 'TYPE': 'str', 'DESCRIPTION': '追加属性4 (旧M5)'},
+    'C33': {'DB_FIELD': 'attribute_5', 'TYPE': 'str', 'DESCRIPTION': '追加属性5 (旧M6)'},
+    'C34': {'DB_FIELD': 'attribute_6', 'TYPE': 'str', 'DESCRIPTION': '追加属性6 (旧M7)'},
+    'C35': {'DB_FIELD': 'attribute_7', 'TYPE': 'str', 'DESCRIPTION': '追加属性7 (旧M8)'},
+    'C36': {'DB_FIELD': 'attribute_8', 'TYPE': 'str', 'DESCRIPTION': '追加属性8 (旧M9)'},
+    'C37': {'DB_FIELD': 'attribute_9', 'TYPE': 'str', 'DESCRIPTION': '追加属性9 (旧M10)'},
+    'C38': {'DB_FIELD': 'attribute_10', 'TYPE': 'str', 'DESCRIPTION': '追加属性10 (旧M11)'},
 }
 EXPECTED_COLUMNS_COUNT = 38
 DATE_FORMAT = '%Y%m%d %H:%M:%S'
@@ -108,8 +157,8 @@ def human_readable_size(size_bytes: int) -> str:
         s = round(size_bytes / p, 2)
         
         if i >= len(size_name):
-             return f"{size_bytes} B"
-             
+            return f"{size_bytes} B"
+            
         return f"{s:,.2f} {size_name[i]}"
     except ValueError:
         return f"{size_bytes} B"
@@ -223,13 +272,19 @@ def _display_mapping_for_first_row(row_list: List[str]):
     print("\n--- 最初のデータ行のパースマッピング (デバッグ出力: LinkShare Column -> DB Field -> Raw Value) ---", file=sys.stdout, flush=True)
     print(f"総カラム数: {len(row_list)} / 期待値: {EXPECTED_COLUMNS_COUNT}", file=sys.stdout, flush=True)
     
-    print(f"{'LS-COL':<7} | {'DB FIELD':<25} | {'RAW VALUE (先頭50文字)':<50}", file=sys.stdout, flush=True)
-    print("-" * 88, file=sys.stdout, flush=True)
+    print(f"{'LS-COL':<7} | {'DB FIELD':<35} | {'RAW VALUE (先頭50文字)':<50}", file=sys.stdout, flush=True)
+    print("-" * 98, file=sys.stdout, flush=True)
     
     for i in range(EXPECTED_COLUMNS_COUNT):
         col_name = f'C{i+1}'
         mapping = FIELD_MAPPING.get(col_name, {'DB_FIELD': 'N/A', 'TYPE': 'str'})
         db_field = mapping.get('DB_FIELD', 'N/A')
+        
+        # manufacturer_name_fallback は DB フィールドではないため、実際の manufacturer_name を表示
+        if db_field == 'manufacturer_name_fallback':
+            db_field = 'manufacturer_name (fallback)'
+        elif db_field == 'common_product_code_dual': # 💡 修正: C25 の表示を明確に
+            db_field = 'universal_product_code & class_id'
         
         raw_value = row_list[i] if i < len(row_list) else ""
         
@@ -237,8 +292,8 @@ def _display_mapping_for_first_row(row_list: List[str]):
         if len(display_value) > 50:
             display_value = display_value[:47] + "..."
             
-        print(f"{col_name:<7} | {db_field:<25} | '{display_value}'", file=sys.stdout, flush=True)
-    print("--------------------------------------------------------------------------------", file=sys.stdout, flush=True)
+        print(f"{col_name:<7} | {db_field:<35} | '{display_value}'", file=sys.stdout, flush=True)
+    print("--------------------------------------------------------------------------------------------------", file=sys.stdout, flush=True)
 
 
 def _parse_single_row(row_list: List[str], mid: str, advertiser_name: str) -> Optional[Dict[str, Any]]:
@@ -247,11 +302,13 @@ def _parse_single_row(row_list: List[str], mid: str, advertiser_name: str) -> Op
         return None 
 
     data: Dict[str, Any] = {
-        'mid': mid, 
-        'advertiser_name': advertiser_name, 
+        'merchant_id': mid, 
         'created_at': timezone.now(), 
-        'updated_at': timezone.now()
+        'updated_at': timezone.now(),
+        # ❌ 修正: api_source フィールドを明示的に設定する行を削除
     }
+    
+    # manufacturer_name の初期値は C22 (PRIMARY) が設定され、C2 (FALLBACK) はその後に設定される
 
     for i, (col_name, mapping) in enumerate(FIELD_MAPPING.items()):
         raw_value = row_list[i]
@@ -260,17 +317,31 @@ def _parse_single_row(row_list: List[str], mid: str, advertiser_name: str) -> Op
 
         if not db_field:
             continue
-
-        if db_field == 'manufacturer_name':
-            if 'PRIMARY' in mapping and raw_value.strip():
-                data[db_field] = raw_value.strip()
+        
+        # manufacturer_name の特殊処理
+        if db_field == 'manufacturer_name' and 'PRIMARY' in mapping:
+            # C22 (PRIMARY) の値が存在すればそれを採用
+            if raw_value.strip():
+                data['manufacturer_name'] = raw_value.strip()
                 continue
-            elif 'FALLBACK' in mapping and raw_value.strip() and db_field not in data:
-                data[db_field] = raw_value.strip()
+            
+        # manufacturer_name_fallback の特殊処理
+        elif db_field == 'manufacturer_name_fallback' and 'FALLBACK' in mapping:
+            # C2 (FALLBACK) の値があり、かつ PRIMARY (C22) の値がセットされていない場合のみ採用
+            if raw_value.strip() and 'manufacturer_name' not in data:
+                data['manufacturer_name'] = raw_value.strip()
                 continue
-            elif db_field not in data:
-                data[db_field] = raw_value.strip()
-        else:
+            
+        # 💡 修正: C25 の二重マッピング処理 (universal_product_code と class_id)
+        elif db_field == 'common_product_code_dual':
+            casted_value = safe_cast(raw_value, data_type, db_field)
+            if casted_value:
+                data['universal_product_code'] = casted_value
+                data['class_id'] = casted_value
+            continue
+            
+        # 通常のフィールド処理
+        elif db_field and db_field != 'manufacturer_name_fallback':
             data[db_field] = safe_cast(raw_value, data_type, db_field)
 
     return data
@@ -292,46 +363,67 @@ def _bulk_import_products(mid: str, product_data_list: List[Dict[str, Any]]) -> 
     to_create_linkshare: List[LinkshareProduct] = []
     to_update_linkshare: List[LinkshareProduct] = []
 
-    # 1. RawApiData へのバルク挿入処理は、ユーザーの要望に基づき完全に削除
-
-    # 2. LinkshareProduct の Upsert 準備
+    # 1. LinkshareProduct の Upsert 準備
     existing_products = LinkshareProduct.objects.filter(
+        merchant_id=mid,
         sku__in=skus_to_check
     )
     
+    # merchant_id と sku の複合ユニークキーで検索
     existing_sku_map = {p.sku: p for p in existing_products}
     
+    # 🚨 修正: update_fields リストから 'api_source' を削除
     update_fields = [
-        'link_id', 'manufacturer_name', 'product_name', 'primary_category', 'sub_category',
+        'link_id', 'product_name', 'primary_category', 'sub_category',
         'product_url', 'image_url', 'buy_url', 'short_description', 'description', 
         'discount_amount', 'discount_type', 'sale_price', 'retail_price', 'begin_date', 
-        'end_date', 'brand_name', 'shipping', 'keywords', 'class_id', 'currency_unit',
-        'manufacturer_sku', 'shipping_info', 'inventory_info', 'm1', 'impression_url',
-        'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10', 'm11', 'updated_at'
+        'end_date', 'brand_name', 'shipping', 'keywords', 
+        'manufacturer_part_number', 'manufacturer_name',
+        'shipping_information', 'availability', 
+        'universal_product_code', 'class_id', 
+        'currency', 'm1', 'pixel_url',
+        'attribute_1', 'attribute_2', 'attribute_3', 'attribute_4', 'attribute_5', 
+        'attribute_6', 'attribute_7', 'attribute_8', 'attribute_9', 'attribute_10',
+        'updated_at' 
     ]
 
     for sku, data in incoming_sku_map.items():
         # LinkshareProductが持つ属性のみをフィルタリング
-        clean_data = {k: v for k, v in data.items() if hasattr(LinkshareProduct, k)}
+        # 🚨 manufacturer_name_fallback や common_product_code_dual はモデルにないので、除外
+        clean_data = {
+            k: v for k, v in data.items() 
+            if hasattr(LinkshareProduct, k) and k not in ('manufacturer_name_fallback', 'common_product_code_dual')
+        }
         clean_data['updated_at'] = timezone.now() 
         
         if sku in existing_sku_map:
             product_instance = existing_sku_map[sku]
             is_updated = False
+            
             for key in update_fields:
-                # None同士の比較を避けるため、値が異なるかチェック
-                current_value = getattr(product_instance, key)
-                new_value = clean_data.get(key)
+                # clean_data にキーが存在しない場合、フィールド更新の対象外
+                if key not in clean_data:
+                    continue
                 
-                if current_value != new_value:
-                    # Decimal型の場合、Decimal('0')とDecimal('0.00')は異なるオブジェクトなので、値で比較する
-                    if isinstance(current_value, Decimal) and isinstance(new_value, Decimal):
-                         if current_value.compare(new_value) != 0:
-                            setattr(product_instance, key, new_value)
-                            is_updated = True
-                    elif key in clean_data:
-                        setattr(product_instance, key, clean_data[key])
-                        is_updated = True
+                current_value = getattr(product_instance, key)
+                new_value = clean_data[key]
+                
+                # Decimal型または datetime型の比較で、値が異なるかチェック
+                is_diff = True
+                if current_value == new_value:
+                    is_diff = False
+                elif isinstance(current_value, Decimal) and isinstance(new_value, Decimal):
+                     # Decimal型の比較: Decimal('0') と None が異なると判定されないように
+                     if current_value.compare(new_value) == 0:
+                         is_diff = False
+                elif current_value is None and new_value == '': # 空文字列とNoneの区別を無くす
+                     is_diff = False
+                elif new_value is None and current_value == '':
+                     is_diff = False
+                     
+                if is_diff:
+                    setattr(product_instance, key, new_value)
+                    is_updated = True
             
             if is_updated:
                 to_update_linkshare.append(product_instance)
@@ -341,6 +433,7 @@ def _bulk_import_products(mid: str, product_data_list: List[Dict[str, Any]]) -> 
     updated_count = 0
     if to_update_linkshare:
         try:
+            # `update_fields` にない `created_at` や `merchant_id`, `sku` は更新されない
             LinkshareProduct.objects.bulk_update(to_update_linkshare, update_fields, batch_size=5000)
             updated_count = len(to_update_linkshare)
         except Exception as e:
@@ -352,6 +445,7 @@ def _bulk_import_products(mid: str, product_data_list: List[Dict[str, Any]]) -> 
             LinkshareProduct.objects.bulk_create(to_create_linkshare, batch_size=5000)
             created_count = len(to_create_linkshare)
         except IntegrityError as e:
+            # 複合ユニークキー (merchant_id, sku) の重複が発生した場合
             print(f" ❌ [MID: {mid}] バルク作成中にIntegrityErrorが発生しました: {e}", file=sys.stderr)
             
     return created_count + updated_count, created_count, updated_count
@@ -398,6 +492,11 @@ def parse_and_process_file(local_path: str, mid: str) -> Tuple[bool, int]:
                     continue
                     
                 parsed_count += 1
+
+                # データベース書き込みとは別に、パース件数のみで進捗を出す
+                if parsed_count % 50000 == 0:
+                    print(f"🔄 [MID: {mid}] **現在パース済み {parsed_count:,} 件**。次のDB書き込みバッチを待機中...", file=sys.stdout, flush=True)
+                
                 
                 # 🚨 デバッグ出力: 最初のデータ行のみ、全カラムをデバッグ表示
                 if not first_row_logged:
@@ -407,7 +506,8 @@ def parse_and_process_file(local_path: str, mid: str) -> Tuple[bool, int]:
                 # 3. 単一行のパース
                 record = _parse_single_row(row, mid, advertiser_name)
                 
-                if not record or not record.get('sku'):
+                # LinkshareProductには 'merchant_id' フィールドを使用
+                if not record or not record.get('sku') or not record.get('merchant_id'):
                     continue
 
                 current_batch.append(record)
@@ -520,8 +620,8 @@ class Command(BaseCommand):
         # 🚨 モデルのインポートとグローバルスコープの置き換え
         try:
             # 実際のプロジェクト構造に合わせてインポートパスを修正してください
+            # 例: from app_name.models import LinkshareProduct as RealLinkshareProduct
             from api.models.linkshare_products import LinkshareProduct as RealLinkshareProduct
-            # RawApiData は使用しないため、インポートを削除
             
             globals()['LinkshareProduct'] = RealLinkshareProduct
             self.stdout.write("✅ モデル (LinkshareProduct) のインポート成功。")
