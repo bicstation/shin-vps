@@ -1,5 +1,3 @@
-# api/admin.py
-
 from django.contrib import admin
 from django import forms
 from django.utils.safestring import mark_safe 
@@ -75,22 +73,54 @@ class AdultProductAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 # 1.5 LinkshareProduct (ノーマル製品データ) のAdminクラス定義
 # ----------------------------------------------------
-# 💡 クラス名を NormalProductAdmin から LinkshareProductAdmin に変更
 class LinkshareProductAdmin(admin.ModelAdmin): 
     """LinkshareProduct用のAdminクラス"""
+    
+    # 💡 リスト表示: product_name を id の直後に配置
     list_display = (
-        'product_name', # 💡 修正: title -> product_name
-        'sku',          # 💡 修正: sku_unique -> sku
-        'sale_price',   # 💡 修正: price -> sale_price
-        'availability', # 💡 在庫情報
-        'merchant_id',  # 💡 マーチャントID
-        'brand_name',
-        'manufacturer_name',
+        'id', 
+        'product_name',   # 👈 product_name を追加
+        'sku_unique', 
+        'merchant_id', 
+        'merchant_name',  # merchant_name がモデルに残っていれば表示
+        'price',
+        'in_stock',       # 在庫状況を追加 (list_displayに追加されていなかったため)
+        'is_active', 
         'updated_at',
     )
-    list_display_links = ('sku', 'product_name')
-    search_fields = ('product_name', 'sku', 'keywords','brand_name')
-    list_filter = ('merchant_id', 'availability') # 💡 フィルターを修正
+    
+    list_display_links = ('id', 'product_name', 'sku_unique') 
+    
+    search_fields = ('product_name', 'sku_unique', 'merchant_name') 
+    
+    list_filter = ('merchant_id', 'is_active', 'in_stock') # 在庫フィルターを追加
+
+    # 🚨 修正: fieldsets に product_name を追加し、構成を整理 🚨
+    fieldsets = (
+        # 💡 None ではなく、明示的に '基本情報' という名前を割り当てます
+        ('基本情報', {
+            'fields': (
+                'product_name',  # 👈 詳細画面の先頭に表示されます
+                'sku_unique', 
+                'sku',           # sku も編集・確認可能に
+                'merchant_name', # マーチャント名
+                'merchant_id',   # マーチャントID
+            )
+        }),
+        ('価格・在庫・状態', {
+            'fields': ('price', 'in_stock', 'is_active', 'api_source',)
+        }),
+        ('データソース', {
+            'fields': ('affiliate_url', 'product_url', 'raw_csv_data',)
+        }),
+        ('日時', {
+            'fields': ('created_at', 'updated_at',),
+            'classes': ('collapse',),
+        }),
+    )
+
+    readonly_fields = ('created_at', 'updated_at') # 編集させないフィールドのみ残す
+
 
 # ----------------------------------------------------
 # 2. Genre (ジャンル) のAdminクラス定義
