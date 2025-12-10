@@ -62,7 +62,9 @@ FTP_PASS = os.getenv("LINKSHARE_BS_PASS", "u5NetPVZEAhABD7HuW2VRymP")
 FTP_PORT = 21
 FTP_TIMEOUT = 180
 
-MAX_SIZE_BYTES = 1073741824 # 1 GB のバイト値
+# 🚀 修正: 圧縮ファイルサイズ制限 (50 MB)
+MAX_COMPRESSED_SIZE_BYTES = 52428800 # 50 MB のバイト値 (1024 * 1024 * 50)
+
 DOWNLOAD_DIR = "/tmp/ftp_downloads"
 
 # LinkShareファイル名のパターン
@@ -309,8 +311,8 @@ def _parse_single_row(row_list: List[str], mid: str, advertiser_name: str) -> Op
     # 価格が格納される可能性のあるカラムのインデックスと、チェック優先順位 (C1 = index 0)
     # ユーザーのデバッグログに基づいて C14 を優先
     price_check_indices = {
-        'C14 (Price Candidate)': 13,   # ⬅️ 1. C14を最初に確認 (インデックス 13)
-        'C13 (Original Price)': 12,    # ⬅️ 2. C13を次に確認 (インデックス 12)
+        'C14 (Price Candidate)': 13,  # ⬅️ 1. C14を最初に確認 (インデックス 13)
+        'C13 (Original Price)': 12, # ⬅️ 2. C13を次に確認 (インデックス 12)
         'C12': 11,
         'C4 (Description/Price?)': 3,
         'C5 (Category/Price?)': 4,
@@ -738,6 +740,10 @@ class Command(BaseCommand):
 
         total_processed_files = 0
         total_saved_rows = 0
+        
+        # 最終結果記録用のリストを初期化
+        results: List[Dict[str, Any]] = [] 
+        
         mid_list: List[Tuple[str, str, str, Optional[datetime], int]] = [] 
 
         try:
@@ -771,8 +777,27 @@ class Command(BaseCommand):
             
             # --- ファイル処理ループの開始 ---
             for mid, filename, file_type, mtime_dt, file_size in mid_list:
+                
+                result = {
+                    'mid': mid, 
+                    'filename': filename, 
+                    'result': '❌', 
+                    'reason': '未処理', 
+                    'saved_rows': 0, 
+                    'size': human_readable_size(file_size)
+                }
+                
                 logger.info(f"\n--- [MID: {mid}] 処理開始 ({filename}) ---")
                 
+                # 🚨 新規追加: 圧縮ファイルサイズ制限のチェック
+                if file_size > MAX_COMPRESSED_SIZE_BYTES:
+                    size_hr = human_readable_size(file_size)
+                    max_hr = human_readable_size(MAX_COMPRESSED_SIZE_BYTES)
+                    logger.warning(f"⚠️ [MID: {mid}] ファイルサイズが大きすぎます。スキップしました。({size_hr} > {max_hr})")
+                    result.update({'result': '❌', 'reason': f'サイズ超過 ({size_hr})'})
+                    results.append(result)
+                    continue # 次のファイルへスキップ
+                    
                 # ローカルパスの決定
                 local_gz_path = os.path.join(DOWNLOAD_DIR, filename)
                 local_txt_path = local_gz_path.replace('.gz', '.txt')
@@ -781,6 +806,7 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     success = False
                     current_saved_rows = 0
+                    reason_msg = ""
                     try:
                         # 1. ダウンロードと解凍 (tqdm対応)
                         is_downloaded, downloaded_size = download_file(
@@ -800,19 +826,29 @@ class Command(BaseCommand):
                             if os.path.exists(local_txt_path):
                                 os.remove(local_txt_path)
                                 logger.info(f"🧹 [MID: {mid}] 処理済みファイル {os.path.basename(local_txt_path)} を削除しました。") 
-
+                            
+                            if not success:
+                                reason_msg = "パース/DB保存処理失敗"
+                        else:
+                            reason_msg = "FTPダウンロード失敗"
                         
                     except Exception as e:
                         # 処理中の致命的なエラーを捕捉し、ロールバック
+                        reason_msg = f"致命的な例外 ({type(e).__name__})"
                         logger.error(f"\n[MID: {mid}] 処理中に致命的な例外が発生しました。トランザクションはロールバックされます。", exc_info=True)
                         logger.error(f"エラータイプ: {type(e).__name__}, メッセージ: {str(e)}")
 
+                    # 結果を記録
                     if success:
                         total_processed_files += 1
                         total_saved_rows += current_saved_rows
                         self.stdout.write(self.style.SUCCESS(f"\n[MID: {mid}] 処理完了。DB保存件数: {current_saved_rows:,} 件"))
+                        result.update({'result': '✅', 'reason': 'DB保存完了', 'saved_rows': current_saved_rows})
                     else:
                         self.stdout.write(self.style.ERROR(f"\n[MID: {mid}] 処理失敗 (トランザクション ロールバック)。"))
+                        result.update({'result': '❌', 'reason': reason_msg})
+
+                results.append(result)
 
         finally:
             # FTP接続の終了処理
@@ -823,8 +859,23 @@ class Command(BaseCommand):
                 except ftplib.all_errors:
                     pass
             
-        self.stdout.write(f"\n==================================================================================")
-        self.stdout.write(f"--- 最終結果: インポートコマンド完了 ---")
-        self.stdout.write(f"正常処理ファイル数: {total_processed_files} / {len(mid_list)} 件")
-        self.stdout.write(self.style.SUCCESS(f"合計保存行数: {total_saved_rows:,} 行"))
-        self.stdout.write("==================================================================================")
+            # 最終結果の表示 (表形式 + 〇/✕)
+            self.stdout.write(f"\n==================================================================================")
+            self.stdout.write(self.style.NOTICE(f"--- 最終結果: インポートコマンド完了 ---"))
+            
+            self.stdout.write("-" * 80)
+            self.stdout.write(f"{'MID':<6} | {'結果':<4} | {'保存件数':<10} | {'サイズ':<10} | 理由")
+            self.stdout.write("-" * 80)
+            
+            for res in results:
+                result_mark = self.style.SUCCESS(res['result']) if res['result'] == '✅' else self.style.ERROR(res['result'])
+                saved_count = f"{res['saved_rows']:,}" if res['saved_rows'] > 0 else "-"
+                self.stdout.write(
+                    f"{res['mid']:<6} | {result_mark:<4} | {saved_count:<10} | {res['size']:<10} | {res['reason']}"
+                )
+            
+            self.stdout.write("-" * 80)
+            self.stdout.write(f"総ファイル数: {len(mid_list)} 件")
+            self.stdout.write(f"正常処理ファイル数: {total_processed_files} / {len(mid_list)} 件")
+            self.stdout.write(self.style.SUCCESS(f"合計保存行数: {total_saved_rows:,} 行"))
+            self.stdout.write("==================================================================================")
