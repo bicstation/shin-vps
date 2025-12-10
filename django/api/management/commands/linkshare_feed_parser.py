@@ -11,12 +11,21 @@ from datetime import datetime, timezone
 from typing import List, Tuple, Dict, Any, Optional, Set
 from decimal import Decimal, InvalidOperation
 import math 
+import logging 
+from logging import Logger
+
+# ⭐ tqdmのインポート
+from tqdm import tqdm 
 
 # Djangoのコア機能とモデルをインポート
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, IntegrityError 
 from django.utils import timezone
 from django.conf import settings 
+
+# ==============================================================================
+# グローバル設定と初期化
+# ==============================================================================
 
 # 🚨 モデルのダミー定義 (handle実行前のグローバルスコープでのNameErrorを回避するため)
 class DummyModel:
@@ -28,7 +37,6 @@ class DummyModel:
     merchant_id = None
     created_at = None
     updated_at = None
-    sku_unique = None 
     price = None
     in_stock = None
     is_active = None
@@ -37,9 +45,12 @@ class DummyModel:
     product_url = None
     raw_csv_data = None 
     merchant_name = None 
-    product_name = None # 👈 新しくDBに追加されたため、ダミーにも追加
+    product_name = None 
 
 LinkshareProduct = DummyModel
+
+# ロガーの初期化 (handle内で設定を上書き)
+logger: Logger = logging.getLogger(__name__)
 
 # ==============================================================================
 # 接続・ファイル設定 (定数)
@@ -61,16 +72,21 @@ DELTA_DATA_PATTERN = re.compile(r"(\d+)_3750988_delta\.txt\.gz$")
 FIXED_DELIMITER = '|'
 FIXED_DELIMITER_NAME = 'PIPE'
 
-# 🚀 修正: C4 (商品名) を DBフィールド 'product_name' にマッピング
+# 🚀 修正: メモリ効率化のためバッチサイズと報告頻度を削減
+BATCH_SIZE = 1000 # DBへのバルク処理件数
+ROWS_PER_REPORT = 10000 # 進行状況を報告する頻度 (現在は主にデバッグ用途)
 FIELD_MAPPING = {
-    # C3: SKU -> sku_unique (PKとして使用)
-    'C3': {'DB_FIELD': 'sku_unique', 'TYPE': 'str', 'PK': True, 'DESCRIPTION': '商品コード (SKU、新ユニークキー)'},
-    # 💡 修正: C4 を product_name フィールドにマッピング
+    # C3: SKU -> sku (新しいユニークキーの一部)
+    'C3': {'DB_FIELD': 'sku', 'TYPE': 'str', 'PK': True, 'DESCRIPTION': '商品コード (SKU、新ユニークキー)'},
+    # 💡 修正: C2 を product_name フィールドにマッピング
     'C2': {'DB_FIELD': 'product_name', 'TYPE': 'str', 'DESCRIPTION': '商品名'},
     'C13': {'DB_FIELD': 'price', 'TYPE': 'Decimal', 'DESCRIPTION': '価格 (旧定価)'},
     # C6: affiliate_url を DBフィールドとして復帰
     'C6': {'DB_FIELD': 'affiliate_url', 'TYPE': 'str', 'DESCRIPTION': 'アフィリエイトURL'}, 
-    # 'C9': {'DB_FIELD': 'product_url', 'TYPE': 'str', 'DESCRIPTION': '製品URL'}, # C9 は product_url に対応することが多いですが、ここでは省略されているためそのまま
+    # 'C9': {'DB_FIELD': 'product_url', 'TYPE': 'str', 'DESCRIPTION': '製品URL'}, 
+    # 追加: デバッグ強化のため、必須フィールド以外もマッピングに追加することが望ましい
+    'C4': {'DB_FIELD': 'description', 'TYPE': 'str', 'DESCRIPTION': '説明/補足価格'},
+    'C9': {'DB_FIELD': 'product_url', 'TYPE': 'str', 'DESCRIPTION': '製品URL'},
 }
 
 EXPECTED_COLUMNS_COUNT = 38 
@@ -94,8 +110,6 @@ def human_readable_size(size_bytes: int) -> str:
             return f"{size_bytes} B"
             
         return f"{s:,.2f} {size_name[i]}"
-    except ValueError:
-        return f"{size_bytes} B"
     except Exception:
         return f"{size_bytes} B"
 
@@ -111,18 +125,18 @@ def _get_ftp_client() -> Optional[ftplib.FTP]:
         return ftp_client
         
     except ftplib.all_errors as e:
-        print(f"❌ [ERROR] FTP接続またはログイン失敗: {e}", file=sys.stderr)
+        logger.error(f"❌ [ERROR] FTP接続またはログイン失敗: {e}", exc_info=False)
         return None
         
     except Exception as e:
-        print(f"❌ [ERROR] FTP接続処理中に予期せぬエラー: {e}", file=sys.stderr)
+        logger.error(f"❌ [ERROR] FTP接続処理中に予期せぬエラー: {e}", exc_info=False)
         return None
 
 def get_ftp_mid_list(ftp_client: ftplib.FTP) -> List[Tuple[str, str, str, Optional[datetime], int]]:
     file_list = []
     
     try:
-        print("📡 [FTP] ファイル一覧 (MLSD) を取得中...", file=sys.stdout, flush=True)
+        logger.info("📡 [FTP] ファイル一覧 (MLSD) を取得中...")
         # MLSDを使用してファイルの詳細情報を取得
         for filename, facts in ftp_client.mlsd():
             
@@ -151,10 +165,10 @@ def get_ftp_mid_list(ftp_client: ftplib.FTP) -> List[Tuple[str, str, str, Option
                         
                 file_list.append((mid, filename, file_type, mtime_dt, file_size))
                         
-        print(f"✅ [FTP] {len(file_list)} 件の対象ファイルが見つかりました。", file=sys.stdout, flush=True)
+        logger.info(f"✅ [FTP] {len(file_list)} 件の対象ファイルが見つかりました。")
                 
     except ftplib.all_errors as e:
-        print(f"❌ [ERROR] FTPファイルリスト取得失敗: {e}", file=sys.stderr)
+        logger.error(f"❌ [ERROR] FTPファイルリスト取得失敗: {e}", exc_info=False)
         return []
         
     return file_list
@@ -165,13 +179,18 @@ def safe_cast(value: str, target_type: str, field_name: str) -> Optional[Any]:
         
     stripped_value = value.strip()
     
+    # 💡 修正: 非破壊的な方法で不可視文字 (U+00A0など) を標準のスペースに置き換える
+    stripped_value = stripped_value.replace('\u00a0', ' ')
+    
     if target_type == 'Decimal':
         try:
-            temp_value = stripped_value.replace(',', '').replace('$', '').replace('¥', '')
+            # カンマ、通貨記号、スペースを取り除く
+            temp_value = stripped_value.replace(',', '').replace('$', '').replace('¥', '').strip()
             if not temp_value:
                 return None
             return Decimal(temp_value)
         except InvalidOperation:
+            # logger.debug(f"⚠️ [SAFE_CAST] Decimal変換失敗 ({field_name}): '{stripped_value}'")
             return None
             
     elif target_type == 'datetime':
@@ -192,18 +211,20 @@ def safe_cast(value: str, target_type: str, field_name: str) -> Optional[Any]:
 
 def _display_mapping_for_first_row(row_list: List[str]):
     """最初のデータ行のパース結果を表示し、カラムズレの確認を助ける。（デバッグ出力）"""
-    print("\n--- 最初のデータ行のパースマッピング (デバッグ出力: LinkShare Column -> DB Field -> Raw Value) ---", file=sys.stdout, flush=True)
-    print(f"総カラム数: {len(row_list)} / 期待値: {EXPECTED_COLUMNS_COUNT}", file=sys.stdout, flush=True)
     
-    print(f"{'LS-COL':<7} | {'DB FIELD':<35} | {'RAW VALUE (先頭50文字)':<50}", file=sys.stdout, flush=True)
-    print("-" * 98, file=sys.stdout, flush=True)
+    # 💡 修正: デバッグログとして出力
+    logger.debug("\n--- 最初のデータ行のパースマッピング (デバッグ出力: LinkShare Column -> DB Field -> Raw Value) ---")
+    logger.debug(f"総カラム数: {len(row_list)} / 期待値: {EXPECTED_COLUMNS_COUNT}")
+    
+    # 標準出力に直接書く（logging.debugでは表形式の整列が難しい場合があるため）
+    sys.stdout.write(f"{'LS-COL':<7} | {'DB FIELD':<35} | {'RAW VALUE (先頭50文字)':<50}\n")
+    sys.stdout.write("-" * 98 + "\n")
     
     # コアフィールドのパース表示
     for i in range(EXPECTED_COLUMNS_COUNT):
         col_name = f'C{i+1}'
         mapping = FIELD_MAPPING.get(col_name)
         
-        # 💡 修正: C4 (product_name) を通常のマッピングとして表示
         if mapping:
             db_field = mapping.get('DB_FIELD', 'N/A')
         else:
@@ -215,15 +236,17 @@ def _display_mapping_for_first_row(row_list: List[str]):
         if len(display_value) > 50:
             display_value = display_value[:47] + "..."
             
-        print(f"{col_name:<7} | {db_field:<35} | '{display_value}'", file=sys.stdout, flush=True)
+        sys.stdout.write(f"{col_name:<7} | {db_field:<35} | '{display_value}'\n")
             
-    print(f"{'ALL':<7} | {'raw_csv_data':<35} | '全カラムの生データ'", file=sys.stdout, flush=True)
-    print("--------------------------------------------------------------------------------------------------", file=sys.stdout, flush=True)
+    sys.stdout.write(f"{'ALL':<7} | {'raw_csv_data':<35} | '全カラムの生データ'\n")
+    sys.stdout.write("--------------------------------------------------------------------------------------------------\n")
+    sys.stdout.flush()
 
 
 def _parse_single_row(row_list: List[str], mid: str, advertiser_name: str) -> Optional[Dict[str, Any]]:
     """単一行のCSVデータをパースし、DB保存用の辞書形式に変換する。"""
     if len(row_list) != EXPECTED_COLUMNS_COUNT:
+        # この処理は parse_and_process_file で既にスキップされているが、念のため
         return None 
 
     data: Dict[str, Any] = {
@@ -232,19 +255,20 @@ def _parse_single_row(row_list: List[str], mid: str, advertiser_name: str) -> Op
         'updated_at': timezone.now(),
         'is_active': True,
         'in_stock': True, 
-        'sku': 'NON-SKU', 
+        'sku': None, 
         'product_url': '', 
-        'product_name': '', # 💡 修正: DB保存するため、初期値は残す
+        'product_name': None, 
         'affiliate_url': '', 
         'merchant_name': advertiser_name, 
+        'price': None, 
     }
     
     data['raw_csv_data'] = FIXED_DELIMITER.join(row_list)
 
-    # コアフィールドのパース
+    # コアフィールドのパース (price以外)
     for i in range(EXPECTED_COLUMNS_COUNT):
         col_name = f'C{i+1}'
-        raw_value = row_list[i]
+        raw_value = row_list[i] if i < len(row_list) else '' # インデックス範囲外の場合は空文字列
         
         mapping = FIELD_MAPPING.get(col_name)
         if not mapping:
@@ -253,42 +277,88 @@ def _parse_single_row(row_list: List[str], mid: str, advertiser_name: str) -> Op
         db_field = mapping.get('DB_FIELD')
         data_type = mapping.get('TYPE')
 
+        # C13 (price) は多重チェックのため、ここではスキップする
+        if db_field == 'price':
+             continue
+
         if not db_field:
             continue
         
-        # 'sku_unique' が存在すれば、'sku' フィールドにも同じ値を設定
-        if db_field == 'sku_unique':
-            casted_value = safe_cast(raw_value, data_type, db_field)
-            if casted_value:
-                data[db_field] = casted_value 
-                data['sku'] = casted_value 
-            continue
-            
-        # 💡 修正: product_name (C4) や price (C13), affiliate_url (C6) などのコアフィールド処理
-        data[db_field] = safe_cast(raw_value, data_type, db_field)
+        parsed_value = safe_cast(raw_value, data_type, db_field)
+        if parsed_value is not None:
+            data[db_field] = parsed_value
 
-    # 必須チェック: sku_unique, product_name, price は必須
-    if not data.get('sku_unique'):
+    # --- 必須チェック: sku, product_name は必須 ---
+    
+    # 1. SKUチェック (C3)
+    if not data.get('sku'):
+        raw_c3 = row_list[2] if len(row_list) > 2 else 'N/A'
+        raw_c3_clean = raw_c3.replace('\n', '\\n').replace('\r', '\\r')
+        logger.debug(f"[MID: {mid}] スキップ: SKU (C3) がNone。Raw C3: '{raw_c3_clean}'")
         return None
-    # 💡 修正: product_name の必須チェックを復帰/維持
+        
+    # 2. Product Nameチェック (C2)
     if not data.get('product_name'):
+        raw_c2 = row_list[1] if len(row_list) > 1 else 'N/A'
+        raw_c2_clean = raw_c2.replace('\n', '\\n').replace('\r', '\\r')
+        logger.debug(f"[MID: {mid}] スキップ: Product Name (C2) がNone。Raw C2: '{raw_c2_clean}'")
         return None
+        
+    # 3. Priceチェック (C13, C14) - 優先順位に従ってチェックし、データに格納
+    
+    # 価格が格納される可能性のあるカラムのインデックスと、チェック優先順位 (C1 = index 0)
+    # ユーザーのデバッグログに基づいて C14 を優先
+    price_check_indices = {
+        'C14 (Price Candidate)': 13,   # ⬅️ 1. C14を最初に確認 (インデックス 13)
+        'C13 (Original Price)': 12,    # ⬅️ 2. C13を次に確認 (インデックス 12)
+        'C12': 11,
+        'C4 (Description/Price?)': 3,
+        'C5 (Category/Price?)': 4,
+    }
+    
+    # 優先度順にカラムをチェックし、最初に見つかった有効な価格を採用
+    for name, index in price_check_indices.items():
+        if index < len(row_list):
+            raw_value = row_list[index]
+            # Priceには Decimal型を期待しているため、safe_castを使用
+            parsed_price = safe_cast(raw_value, 'Decimal', name)
+            
+            # 価格が有効な Decimal値としてパースされたら採用
+            if parsed_price is not None:
+                data['price'] = parsed_price
+                break # 価格が見つかったのでループを終了
+
+    # 4. Priceの最終チェック (必須フィールドとして)
     if data.get('price') is None:
+        
+        # ログ出力用の生データを収集
+        debug_info = {}
+        for name, index in price_check_indices.items():
+            if index < len(row_list):
+                # 特殊文字をエスケープし、長すぎる場合は切り詰める
+                raw_value = row_list[index].replace('\n', '\\n').replace('\r', '\\r')
+                debug_info[name] = raw_value[:30] + ('...' if len(raw_value) > 30 else '')
+            else:
+                debug_info[name] = 'INDEX_OUT_OF_BOUNDS'
+        
+        debug_log_str = " | ".join([f"{k}: '{v}'" for k, v in debug_info.items()])
+        
+        # ログメッセージを修正: C13だけでなく、価格全体がNoneであること示す
+        logger.debug(f"[MID: {mid}] スキップ: Price がNone。生データチェック: {debug_log_str}")
         return None
     
-    # 🚨 修正: DBに存在するようになったため、 product_name の削除 (del data['product_name']) は行わない
-    # del data['product_name'] 
-
     return data
 
 
 def _bulk_import_products(mid: str, product_data_list: List[Dict[str, Any]]) -> Tuple[int, int, int]:
     
     if not product_data_list or LinkshareProduct == DummyModel:
-        print(f"⚠️ [BULK] LinkshareProductモデル未定義のため、DB保存をスキップ。処理件数: {len(product_data_list)}", file=sys.stderr, flush=True)
+        # 💡 修正: ロギングに置き換え
+        logger.warning(f"⚠️ [BULK] LinkshareProductモデル未定義のため、DB保存をスキップ。処理件数: {len(product_data_list)}")
         return len(product_data_list), len(product_data_list), 0 
 
-    incoming_sku_map = {data['sku_unique']: data for data in product_data_list if data.get('sku_unique')}
+    # 辞書のキーは 'sku'
+    incoming_sku_map = {data['sku']: data for data in product_data_list if data.get('sku')} 
     skus_to_check = list(incoming_sku_map.keys())
     
     to_create_linkshare: List[LinkshareProduct] = []
@@ -296,17 +366,16 @@ def _bulk_import_products(mid: str, product_data_list: List[Dict[str, Any]]) -> 
 
     # 1. LinkshareProduct の Upsert 準備
     
-    # 🚨 修正: .only() に product_name を含める
+    # フィルタリングは 'sku__in'
     existing_products = LinkshareProduct.objects.filter(
         merchant_id=mid,
-        sku_unique__in=skus_to_check
+        sku__in=skus_to_check
     ).only(
-        'sku_unique', 
+        'sku', 
         'id', 
         'price', 
         'in_stock', 
         'is_active', 
-        'sku', 
         'product_url',
         'affiliate_url', 
         'raw_csv_data',
@@ -314,31 +383,31 @@ def _bulk_import_products(mid: str, product_data_list: List[Dict[str, Any]]) -> 
         'created_at',
         'updated_at',
         'merchant_name',
-        'product_name', # 👈 復帰/追加
+        'product_name',
     )
     
-    existing_sku_map = {p.sku_unique: p for p in existing_products}
+    existing_sku_map = {p.sku: p for p in existing_products}
     
-    # 💡 修正: update_fields に product_name を含める
+    # 更新対象フィールド
     update_fields = [
         'price', 'in_stock', 'is_active', 
         'sku', 'product_url', 'affiliate_url', 
         'raw_csv_data',
         'updated_at',
         'merchant_name',
-        'product_name', # 👈 復帰/追加
+        'product_name',
     ]
     
-    # 💡 修正: required_fields に product_name を含める
+    # 必須フィールド
     required_fields = [
         'price', 'in_stock', 'is_active', 'sku', 'product_url', 
         'raw_csv_data', 'affiliate_url', 'merchant_name', 'product_name'
     ] 
     
-    for sku_unique, data in incoming_sku_map.items():
+    for sku, data in incoming_sku_map.items():
         
         # Djangoモデルが持つフィールドのみを厳密にフィルタリング
-        allowed_fields = set(required_fields + ['merchant_id', 'created_at', 'updated_at', 'sku_unique'])
+        allowed_fields = set(required_fields + ['merchant_id', 'created_at', 'updated_at', 'sku']) 
         
         clean_data = {
             k: v for k, v in data.items() 
@@ -350,8 +419,8 @@ def _bulk_import_products(mid: str, product_data_list: List[Dict[str, Any]]) -> 
         if 'created_at' not in clean_data:
             clean_data['created_at'] = timezone.now() 
         
-        if sku_unique in existing_sku_map:
-            product_instance = existing_sku_map[sku_unique]
+        if sku in existing_sku_map:
+            product_instance = existing_sku_map[sku]
             is_updated = False
             
             for key in update_fields:
@@ -381,43 +450,42 @@ def _bulk_import_products(mid: str, product_data_list: List[Dict[str, Any]]) -> 
         else:
             # 新規インスタンスを作成
             new_instance = LinkshareProduct(**clean_data)
-            
-            # 🌟 修正点: delattr(new_instance, 'merchant_name') は以前の修正で削除済みのため、ここでは何もしない
-            # (merchant_name, product_name ともに DB カラムとして存在する)
-                
             to_create_linkshare.append(new_instance)
     
     updated_count = 0
     if to_update_linkshare:
         try:
-            LinkshareProduct.objects.bulk_update(to_update_linkshare, update_fields, batch_size=5000)
+            # bulk_update の batch_size を BATCH_SIZE (1000) に設定
+            LinkshareProduct.objects.bulk_update(to_update_linkshare, update_fields, batch_size=BATCH_SIZE)
             updated_count = len(to_update_linkshare)
         except Exception as e:
-            print(f" ❌ [MID: {mid}] バルク更新中にエラーが発生しました: {e}", file=sys.stderr)
+            logger.error(f" ❌ [MID: {mid}] バルク更新中にエラーが発生しました: {e}", exc_info=True)
             
     created_count = 0
     if to_create_linkshare:
         try:
+            # bulk_create の batch_size を BATCH_SIZE (1000) に設定
             LinkshareProduct.objects.bulk_create(
                 to_create_linkshare, 
-                batch_size=5000 
+                batch_size=BATCH_SIZE 
             )
-            created_count = len(to_create_linkshare)
+        # IntegrityError はバルク作成で捕捉されます
         except IntegrityError as e:
-            print(f" ❌ [MID: {mid}] バルク作成中にIntegrityErrorが発生しました: {e}", file=sys.stderr)
+            logger.error(f" ❌ [MID: {mid}] バルク作成中にIntegrityErrorが発生しました: {e}", exc_info=True)
+            
+        created_count = len(to_create_linkshare)
             
     return created_count + updated_count, created_count, updated_count
 
 
 # ==============================================================================
-# データパースと保存を統合したメイン処理 (変更なし)
+# データパースと保存を統合したメイン処理 (tqdm対応版)
 # ==============================================================================
 
 def parse_and_process_file(local_path: str, mid: str) -> Tuple[bool, int]:
     """CSVファイルをパースし、DBに保存する。"""
     
     current_batch: List[Dict[str, Any]] = []
-    parsed_count = 0
     total_saved_rows = 0
     advertiser_name: str = 'N/A'
     first_row_logged = False
@@ -425,71 +493,106 @@ def parse_and_process_file(local_path: str, mid: str) -> Tuple[bool, int]:
     delimiter = FIXED_DELIMITER 
     
     try:
+        # ファイルの全行数を取得 (tqdmのTotal設定のため)
+        # 💡 修正: 空のファイルを扱う際のエラー回避
+        try:
+            with open(local_path, 'r', encoding='utf-8') as f:
+                # 行数を正確に数える (HDR行や末尾の空行を考慮)
+                total_lines = sum(1 for line in f if line.strip())
+        except Exception as e:
+            logger.error(f"❌ [MID: {mid}] ファイルの行数カウント中にエラー: {e}")
+            return False, 0
+        
+        if total_lines == 0:
+            logger.warning(f"⚠️ [MID: {mid}] ファイルは空です。処理をスキップします。")
+            return True, 0
+
+        data_lines_to_process = total_lines # 初期値
+        
         with open(local_path, 'r', encoding='utf-8', newline='') as f:
             reader = csv.reader(f, delimiter=delimiter)
             
             # 1. HDR行の処理 (1行目)
             try:
                 hdr_row = next(reader)
-                if hdr_row[0].strip() == 'HDR':
+                
+                is_hdr_present = False
+                if hdr_row and hdr_row[0].strip() == 'HDR':
                     advertiser_name = hdr_row[2].strip() if len(hdr_row) > 2 else 'N/A'
-                    print(f"💡 [MID: {mid}] Advertiser Nameを取得: '{advertiser_name}'。次の行からデータ開始（カラム名無し）。", file=sys.stdout, flush=True)
+                    logger.info(f"💡 [MID: {mid}] Advertiser Nameを取得: '{advertiser_name}'。次の行からデータ開始。")
+                    is_hdr_present = True
                 else:
-                    print(f"⚠️ [MID: {mid}] HDR行が見つかりませんでした。ファイル先頭からデータとして処理します。", file=sys.stderr, flush=True)
-                    f.seek(0) 
+                    logger.warning(f"⚠️ [MID: {mid}] HDR行が見つかりませんでした。ファイル先頭からデータとして処理します。")
+                    f.seek(0) # ファイルポインタを先頭に戻す
                     reader = csv.reader(f, delimiter=delimiter)
-
+                    
+                if is_hdr_present:
+                    data_lines_to_process -= 1 # データ行の総数からHDR行を引く
+                    
             except StopIteration:
-                print(f"❌ [MID: {mid}] ファイルが空です。", file=sys.stderr, flush=True)
+                logger.error(f"❌ [MID: {mid}] ファイルが空です。")
                 return False, 0
                 
-            # 2. データ行の処理
-            for row in reader:
-                if len(row) != EXPECTED_COLUMNS_COUNT:
-                    continue
-                    
-                parsed_count += 1
-
-                if parsed_count % 50000 == 0:
-                    print(f"🔄 [MID: {mid}] **現在パース済み {parsed_count:,} 件**。次のDB書き込みバッチを待機中...", file=sys.stdout, flush=True)
+            # ⭐ 2. データ行の処理 (tqdmでラップ)
+            progress_bar = tqdm(
+                reader, # readerを直接渡す
+                desc=f"📦 Parsing MID {mid}",
+                unit=" lines",
+                file=sys.stdout,
+                total=data_lines_to_process, # totalを設定
+                leave=True, 
+            )
+            
+            for row in progress_bar:
                 
+                # 行が空だったり、カラム数が不正な場合はスキップ
+                if not row or not row[0].strip() or len(row) != EXPECTED_COLUMNS_COUNT:
+                    continue
                 
                 # 🚨 デバッグ出力: 最初のデータ行のみ、全カラムをデバッグ表示
-                if not first_row_logged:
+                # tqdmループの最初のイテレーション (progress_bar.n == 1) で表示
+                if not first_row_logged and progress_bar.n == 1 and logger.getEffectiveLevel() <= logging.DEBUG:
                     _display_mapping_for_first_row(row)
                     first_row_logged = True
                 
                 # 3. 単一行のパース
                 record = _parse_single_row(row, mid, advertiser_name)
                 
-                if not record or not record.get('sku_unique') or not record.get('merchant_id'):
+                # 必須チェックが失敗した場合、_parse_single_row内でログが出力され、ここでスキップされる
+                # priceのチェックは _parse_single_row の中で行われている
+                if not record or not record.get('sku') or not record.get('merchant_id') or record.get('price') is None:
                     continue
 
                 current_batch.append(record)
                 
-                # バッチ処理
-                if len(current_batch) >= 5000:
+                # 4. バッチ処理
+                if len(current_batch) >= BATCH_SIZE:
                     saved, created, updated = _bulk_import_products(mid, current_batch)
                     total_saved_rows += saved
-                    print(f"⏳ [MID: {mid}] 処理済み {parsed_count:,} 件。保存: {saved:,} (新規:{created:,}, 更新:{updated:,})", file=sys.stdout, flush=True)
+                    
+                    # ⭐ DB書き込み完了情報をプログレスバーの右側に表示
+                    progress_bar.set_postfix_str(f"DB Save: {saved:,} (New:{created:,}, Upd:{updated:,})")
+                    
                     current_batch = []
 
-            # 4. 最終バッチの処理
+            # 5. 最終バッチの処理
             if current_batch:
                 saved, created, updated = _bulk_import_products(mid, current_batch)
                 total_saved_rows += saved
+                # 最終バッチの処理完了ログ
+                logger.info(f"⏳ [MID: {mid}] 最終バッチ完了。保存: {saved:,} (新規:{created:,}, 更新:{updated:,})")
 
-            print(f"✅ [MID: {mid}] ファイルパース完了。総パース件数: {parsed_count:,} 件", file=sys.stdout, flush=True)
+            # 最終完了ログ (tqdmのカウントを使用)
+            logger.info(f"✅ [MID: {mid}] ファイルパース完了。総パース件数: {progress_bar.n:,} 件")
             return True, total_saved_rows
 
     except Exception as e:
-        print(f"❌ [MID: {mid}] パース処理中に予期せぬエラー: {e}", file=sys.stderr, flush=True)
-        print(traceback.format_exc(), file=sys.stderr, flush=True)
+        logger.error(f"❌ [MID: {mid}] パース処理中に予期せぬエラー: {e}", exc_info=True)
         return False, 0
 
 
 def download_file(ftp_client: ftplib.FTP, filename: str, local_path_gz: str, local_path_txt: str, mid: str, file_size: int) -> Tuple[bool, int]:
-    print(f"📡 [MID: {mid}] ファイル {filename} ({human_readable_size(file_size)}) のダウンロードを開始...", file=sys.stdout, flush=True)
+    logger.info(f"📡 [MID: {mid}] ファイル {filename} ({human_readable_size(file_size)}) のダウンロードを開始...")
     
     ENCODING = 'utf-8'
     ERROR_HANDLING = 'ignore' 
@@ -499,7 +602,7 @@ def download_file(ftp_client: ftplib.FTP, filename: str, local_path_gz: str, loc
         with open(local_path_gz, 'wb') as f:
             ftp_client.retrbinary(f'RETR {filename}', f.write)
 
-        print(f"📦 [MID: {mid}] ダウンロード完了。解凍中...", file=sys.stdout, flush=True)
+        logger.info(f"📦 [MID: {mid}] ダウンロード完了。解凍中...")
         
         # 2. GZファイルの解凍とデコード (エラー無視)
         decompressed_size = 0
@@ -508,17 +611,21 @@ def download_file(ftp_client: ftplib.FTP, filename: str, local_path_gz: str, loc
             with open(local_path_txt, 'w', encoding='utf-8', newline='') as f_out:
                 
                 buffer_size = 1024 * 1024 # 1MB chunk
-                while True:
-                    chunk = f_in.read(buffer_size)
-                    if not chunk:
-                        break
-                    
-                    text_chunk = chunk.decode(ENCODING, errors=ERROR_HANDLING) 
-                    f_out.write(text_chunk)
-                    
-                    decompressed_size += len(text_chunk)
+                
+                # GZファイルのサイズを approximate totalとして使用 
+                with tqdm(total=file_size, unit='B', unit_scale=True, desc=f"🔓 Decompressing {mid}", file=sys.stdout, leave=False) as t:
+                    while True:
+                        chunk = f_in.read(buffer_size)
+                        if not chunk:
+                            break
                         
-        print(f"✅ [MID: {mid}] 解凍・デコード完了 (エンコーディング: {ENCODING}, エラー処理: {ERROR_HANDLING})。TXTファイルサイズ: {human_readable_size(decompressed_size)}", file=sys.stdout, flush=True)
+                        text_chunk = chunk.decode(ENCODING, errors=ERROR_HANDLING) 
+                        f_out.write(text_chunk)
+                        
+                        decompressed_size += len(text_chunk)
+                        t.update(len(chunk)) # 圧縮されたバイト数でプログレスバーを更新
+                        
+        logger.info(f"✅ [MID: {mid}] 解凍・デコード完了 (エンコーディング: {ENCODING}, エラー処理: {ERROR_HANDLING})。TXTファイルサイズ: {human_readable_size(decompressed_size)}")
         
         # 3. GZファイルの削除
         os.remove(local_path_gz)
@@ -526,13 +633,12 @@ def download_file(ftp_client: ftplib.FTP, filename: str, local_path_gz: str, loc
         return True, decompressed_size
 
     except ftplib.all_errors as e:
-        print(f"❌ [MID: {mid}] FTPダウンロード失敗: {e}", file=sys.stderr)
+        logger.error(f"❌ [MID: {mid}] FTPダウンロード失敗: {e}")
         if os.path.exists(local_path_gz): os.remove(local_path_gz)
         if os.path.exists(local_path_txt): os.remove(local_path_txt)
         return False, 0
     except Exception as e:
-        print(f"❌ [MID: {mid}] ダウンロード/解凍中に予期せぬエラー: {e}", file=sys.stderr)
-        print(traceback.format_exc(), file=sys.stderr)
+        logger.error(f"❌ [MID: {mid}] ダウンロード/解凍中に予期せぬエラー: {e}", exc_info=True)
         if os.path.exists(local_path_gz): os.remove(local_path_gz)
         if os.path.exists(local_path_txt): os.remove(local_path_txt)
         return False, 0
@@ -558,32 +664,76 @@ class Command(BaseCommand):
             help='処理するファイルの最大数。デバッグやテスト時に便利です。',
             default=None
         )
+        # verbosityはBaseCommandにデフォルトで定義されています (0=ERROR, 1=INFO, 2=DEBUG, 3=TRACE)
 
     def handle(self, *args, **options):
         
-        self.stdout.write("--- LinkShare データインポートコマンド開始 (バルク処理) ---")
+        # 💡 ステップ 1: ロガーのレベル設定
+        verbosity = int(options.get('verbosity', 1)) # デフォルトは 1 (INFO)
+        
+        # ログレベルの調整 (verbosity=2 で DEBUG レベル)
+        if verbosity >= 2:
+            log_level = logging.DEBUG
+        elif verbosity == 1:
+            log_level = logging.INFO
+        else: # verbosity = 0
+            log_level = logging.ERROR
+
+        # ロガーとハンドラーを設定
+        logger.setLevel(log_level)
+        if not logger.handlers:
+            # Djangoのstdout/stderrを使用するハンドラー
+            class DjangoConsoleHandler(logging.StreamHandler):
+                def __init__(self, stdout, stderr):
+                    super().__init__(self._get_stream(stdout, stderr))
+                    self.stdout = stdout
+                    self.stderr = stderr
+                
+                def _get_stream(self, stdout, stderr):
+                    # INFO/DEBUGレベルのログを標準出力に送る
+                    return sys.stdout 
+                
+                def emit(self, record):
+                    # エラーレベルの場合、BaseCommandのstderrを利用
+                    if record.levelno >= logging.ERROR:
+                        stream = self.stderr
+                    else:
+                        stream = self.stdout
+                    self.stream = stream
+                    super().emit(record)
+
+
+            handler = DjangoConsoleHandler(self.stdout, self.stderr)
+            # フォーマットを変更してロギングから print と似た出力を得る
+            formatter = logging.Formatter('%(message)s')
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+        
+        logger.info("--- LinkShare データインポートコマンド開始 (バルク処理) ---")
 
         # 🚨 モデルのインポートとグローバルスコープの置き換え
         try:
-            from api.models.linkshare_products import LinkshareProduct as RealLinkshareProduct
+            # 適切なインポートパスに修正してください
+            # from api.models.linkshare_products import LinkshareProduct as RealLinkshareProduct
+            from api.models import LinkshareProduct as RealLinkshareProduct # 仮定
             
             globals()['LinkshareProduct'] = RealLinkshareProduct
-            self.stdout.write("✅ モデル (LinkshareProduct) のインポート成功。")
+            logger.info("✅ モデル (LinkshareProduct) のインポート成功。")
             
         except ImportError as e:
-            self.stdout.write(self.style.ERROR(f"🚨 CRITICAL: モデルのインポートに失敗しました。DBへの保存は行われません。"))
-            self.stderr.write(self.style.ERROR(f"エラー詳細: {e}"))
+            logger.error(f"🚨 CRITICAL: モデルのインポートに失敗しました。DBへの保存は行われません。")
+            logger.error(f"エラー詳細: {e}")
         
         # ダウンロードディレクトリの作成
         if not os.path.exists(DOWNLOAD_DIR):
             os.makedirs(DOWNLOAD_DIR)
-            self.stdout.write(f"📁 ダウンロードディレクトリ {DOWNLOAD_DIR} を作成しました。")
+            logger.info(f"📁 ダウンロードディレクトリ {DOWNLOAD_DIR} を作成しました。")
 
         # FTP接続
         ftp_client = _get_ftp_client()
 
         if not ftp_client:
-            self.stdout.write(self.style.ERROR("🚨 FTP接続に失敗しました。処理を終了します。"))
+            logger.error("🚨 FTP接続に失敗しました。処理を終了します。")
             return
 
         total_processed_files = 0
@@ -604,10 +754,10 @@ class Command(BaseCommand):
                 mid_list = mid_list[:limit]
 
             if not mid_list:
-                self.stdout.write(self.style.WARNING("❌ 処理対象となるLinkShareマーチャンダイザーファイルが見つかりませんでした。"))
+                logger.warning("❌ 処理対象となるLinkShareマーチャンダイザーファイルが見つかりませんでした。")
                 return
 
-            self.stdout.write(f"✅ {len(mid_list)} 件のMIDファイル処理を開始します。")
+            logger.info(f"✅ {len(mid_list)} 件のMIDファイル処理を開始します。")
 
             # FTPファイル一覧の表示
             self.stdout.write(self.style.NOTICE("\n--- 処理対象のLinkShare FTPファイル一覧 ---"))
@@ -621,7 +771,7 @@ class Command(BaseCommand):
             
             # --- ファイル処理ループの開始 ---
             for mid, filename, file_type, mtime_dt, file_size in mid_list:
-                self.stdout.write(f"\n--- [MID: {mid}] 処理開始 ({filename}) ---")
+                logger.info(f"\n--- [MID: {mid}] 処理開始 ({filename}) ---")
                 
                 # ローカルパスの決定
                 local_gz_path = os.path.join(DOWNLOAD_DIR, filename)
@@ -632,7 +782,7 @@ class Command(BaseCommand):
                     success = False
                     current_saved_rows = 0
                     try:
-                        # 1. ダウンロードと解凍
+                        # 1. ダウンロードと解凍 (tqdm対応)
                         is_downloaded, downloaded_size = download_file(
                             ftp_client, 
                             filename, 
@@ -643,20 +793,19 @@ class Command(BaseCommand):
                         )
                         
                         if is_downloaded:
-                            # 2. パースと保存 
+                            # 2. パースと保存 (tqdm対応)
                             success, current_saved_rows = parse_and_process_file(local_txt_path, mid) 
                             
                             # 3. 処理済みTXTファイルのクリーンアップ
                             if os.path.exists(local_txt_path):
                                 os.remove(local_txt_path)
-                                self.stdout.write(f"🧹 [MID: {mid}] 処理済みファイル {os.path.basename(local_txt_path)} を削除しました。") 
+                                logger.info(f"🧹 [MID: {mid}] 処理済みファイル {os.path.basename(local_txt_path)} を削除しました。") 
 
                         
                     except Exception as e:
                         # 処理中の致命的なエラーを捕捉し、ロールバック
-                        self.stderr.write(self.style.ERROR(f"\n[MID: {mid}] 処理中に致命的な例外が発生しました。トランザクションはロールバックされます。"))
-                        self.stderr.write(self.style.ERROR(f"エラータイプ: {type(e).__name__}, メッセージ: {str(e)}"))
-                        self.stderr.write(traceback.format_exc()) 
+                        logger.error(f"\n[MID: {mid}] 処理中に致命的な例外が発生しました。トランザクションはロールバックされます。", exc_info=True)
+                        logger.error(f"エラータイプ: {type(e).__name__}, メッセージ: {str(e)}")
 
                     if success:
                         total_processed_files += 1
@@ -670,7 +819,7 @@ class Command(BaseCommand):
             if ftp_client:
                 try:
                     ftp_client.quit()
-                    self.stdout.write("\n📡 FTP接続を閉じました。")
+                    logger.info("\n📡 FTP接続を閉じました。")
                 except ftplib.all_errors:
                     pass
             

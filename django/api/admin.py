@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django import forms
 from django.utils.safestring import mark_safe 
-# ★★★ 修正: NormalProduct を LinkshareProduct に変更 ★★★
 from .models import RawApiData, AdultProduct, LinkshareProduct, Genre, Actress, Maker, Label, Director, Series
 
 # ----------------------------------------------------
@@ -76,35 +75,36 @@ class AdultProductAdmin(admin.ModelAdmin):
 class LinkshareProductAdmin(admin.ModelAdmin): 
     """LinkshareProduct用のAdminクラス"""
     
-    # 💡 リスト表示: product_name を id の直後に配置
+    # 💡 修正: 'sku_unique' を 'sku' に置き換える
     list_display = (
         'id', 
-        'product_name',   # 👈 product_name を追加
-        'sku_unique', 
+        'product_name', 
+        'sku',            # 👈 修正: sku_unique -> sku
         'merchant_id', 
-        'merchant_name',  # merchant_name がモデルに残っていれば表示
+        'merchant_name',  
         'price',
-        'in_stock',       # 在庫状況を追加 (list_displayに追加されていなかったため)
+        'in_stock',       
         'is_active', 
         'updated_at',
     )
     
-    list_display_links = ('id', 'product_name', 'sku_unique') 
+    # 💡 修正: list_display_links から 'sku_unique' を削除または置換
+    list_display_links = ('id', 'product_name', 'sku') # 👈 修正: sku_unique -> sku
     
-    search_fields = ('product_name', 'sku_unique', 'merchant_name') 
+    # 💡 修正: search_fields から 'sku_unique' を削除または置換
+    search_fields = ('product_name', 'sku', 'merchant_name') # 👈 修正: sku_unique -> sku
     
-    list_filter = ('merchant_id', 'is_active', 'in_stock') # 在庫フィルターを追加
+    list_filter = ('merchant_id', 'is_active', 'in_stock')
 
-    # 🚨 修正: fieldsets に product_name を追加し、構成を整理 🚨
+    # 🚨 修正: fieldsets から 'sku_unique' を削除し、'sku' を使用
     fieldsets = (
-        # 💡 None ではなく、明示的に '基本情報' という名前を割り当てます
         ('基本情報', {
             'fields': (
-                'product_name',  # 👈 詳細画面の先頭に表示されます
-                'sku_unique', 
-                'sku',           # sku も編集・確認可能に
-                'merchant_name', # マーチャント名
-                'merchant_id',   # マーチャントID
+                'product_name', 
+                'sku',             # 👈 sku を使用
+                # 'sku_unique',    # 👈 削除済みのため、ここでは参照しない
+                'merchant_name', 
+                'merchant_id', 
             )
         }),
         ('価格・在庫・状態', {
@@ -119,7 +119,7 @@ class LinkshareProductAdmin(admin.ModelAdmin):
         }),
     )
 
-    readonly_fields = ('created_at', 'updated_at') # 編集させないフィールドのみ残す
+    readonly_fields = ('created_at', 'updated_at')
 
 
 # ----------------------------------------------------
@@ -153,7 +153,6 @@ class RawApiDataAdmin(admin.ModelAdmin):
 # 4. モデルとAdminクラスのペア登録
 # ----------------------------------------------------
 admin.site.register(AdultProduct, AdultProductAdmin)
-# 🚨 修正: NormalProduct と NormalProductAdmin を LinkshareProduct に変更
 admin.site.register(LinkshareProduct, LinkshareProductAdmin) 
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Actress, EntityAdmin)
