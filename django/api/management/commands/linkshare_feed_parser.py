@@ -62,8 +62,8 @@ FTP_PASS = os.getenv("LINKSHARE_BS_PASS", "u5NetPVZEAhABD7HuW2VRymP")
 FTP_PORT = 21
 FTP_TIMEOUT = 180
 
-# 🚀 修正: 圧縮ファイルサイズ制限 (50 MB)
-MAX_COMPRESSED_SIZE_BYTES = 52428800 # 50 MB のバイト値 (1024 * 1024 * 50)
+# 🚀 修正: 圧縮ファイルサイズ制限 (80 MB)
+MAX_COMPRESSED_SIZE_BYTES = 83886080 # 80 MB のバイト値 (1024 * 1024 * 80)
 
 DOWNLOAD_DIR = "/tmp/ftp_downloads"
 

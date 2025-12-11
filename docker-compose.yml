@@ -52,6 +52,11 @@ services:
       - FANZA_AFFILIATE_ID=${FANZA_AFFILIATE_ID}
       - FANZA_API_URL=${FANZA_API_URL}
       - FANZA_TOTAL_LIMIT=${FANZA_TOTAL_LIMIT}
+      - LS_CLIENT_ID=${LS_CLIENT_ID}
+      - LS_CLIENT_SECRET=${LS_CLIENT_SECRET}
+      - LS_ACCOUNT_ID=${LS_ACCOUNT_ID}
+      - LS_TOKEN_URL=${LS_TOKEN_URL}
+
       
     # Traefik ルーティングラベル
     labels:
