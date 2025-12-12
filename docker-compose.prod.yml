@@ -77,8 +77,26 @@ services:
       # 5. サービス定義
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
       
-    # 🎯 修正: entrypoint.sh の権限エラーを回避するため、sh経由で実行するように修正
-    command: /bin/sh -c "/usr/src/app/entrypoint.sh" 
+    # 🎯 最終修正: entrypoint.sh の全処理をcommandに直書きし、ファイル権限問題を完全に回避
+    command: >
+      /bin/sh -c "
+      DB_HOST=${DB_HOST:-postgres_db_v2};
+      DB_PORT=5432;
+      echo 'Waiting for PostgreSQL at '$DB_HOST:$DB_PORT' ...';
+      
+      # 環境変数参照に $$ を使用してホスト名を参照
+      # netcat (nc) でデータベースの準備が整うまで待機
+      while ! nc -z $$DB_HOST $$DB_PORT; do 
+        sleep 0.1;
+      done;
+      
+      echo 'PostgreSQL started.';
+      python manage.py migrate --noinput;
+      python manage.py collectstatic --noinput;
+      
+      # Gunicornを起動
+      exec gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
+      "
     
     volumes:
       - ./django:/usr/src/app 
