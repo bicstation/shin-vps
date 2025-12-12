@@ -77,7 +77,8 @@ services:
       # 5. サービス定義
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
       
-    command: sh -c "/usr/src/app/entrypoint.sh && gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000"
+    # 🎯 修正: entrypoint.sh の権限エラーを回避するため、sh経由で実行するように修正
+    command: /bin/sh -c "/usr/src/app/entrypoint.sh" 
     
     volumes:
       - ./django:/usr/src/app 
@@ -310,8 +311,8 @@ services:
       - "--certificatesresolvers.le.acme.tlschallenge=true" # ACMEチャレンジ方式
       - "--api.insecure=true"
     ports:
-      - "80:80"       # 👈 HTTPの標準ポートにバインド
-      - "443:443"     # 👈 HTTPSの標準ポートにバインド
+      - "80:80"      # 👈 HTTPの標準ポートにバインド
+      - "443:443"    # 👈 HTTPSの標準ポートにバインド
       - "8085:8080" # Traefikダッシュボード用 (デバッグ用として残す)
     
     volumes:

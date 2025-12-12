@@ -1,4 +1,3 @@
-#!/bin/sh
 # Python公式のイメージを使用
 FROM python:3.11-slim
 
