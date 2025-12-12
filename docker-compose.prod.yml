@@ -60,6 +60,9 @@ services:
     labels:
       - "traefik.enable=true"
       
+      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      - "traefik.docker.network=internal-net" 
+      
       # 1. API ルーター: /api/ 
       - "traefik.http.routers.api-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2.entrypoints=websecure" # HTTPSに変更
@@ -107,6 +110,10 @@ services:
     # Traefik ルーティングラベル
     labels:
       - "traefik.enable=true"
+      
+      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      - "traefik.docker.network=internal-net"
+      
       # 1. ルーター定義: stg.bicstation.com のルートで受け付ける
       - "traefik.http.routers.bicstation-v2.rule=Host(`stg.bicstation.com`)"
       - "traefik.http.routers.bicstation-v2.entrypoints=websecure" # HTTPSに変更
@@ -136,6 +143,10 @@ services:
     # Traefik ルーティングラベル
     labels:
       - "traefik.enable=true"
+      
+      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      - "traefik.docker.network=internal-net"
+      
       # 1. ルーター定義: stg.tiper.live のルートで受け付ける
       - "traefik.http.routers.tiper-v2.rule=Host(`stg.tiper.live`)"
       - "traefik.http.routers.tiper-v2.entrypoints=websecure" # HTTPSに変更
@@ -165,6 +176,10 @@ services:
     # Traefik ルーティングラベル
     labels:
       - "traefik.enable=true"
+      
+      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      - "traefik.docker.network=internal-net"
+      
       # 1. ルーター定義: stg.bic-saving.com のルートで受け付ける
       - "traefik.http.routers.saving-v2.rule=Host(`stg.bic-saving.com`)"
       - "traefik.http.routers.saving-v2.entrypoints=websecure" # HTTPSに変更
@@ -194,6 +209,10 @@ services:
     # Traefik ルーティングラベル
     labels:
       - "traefik.enable=true"
+      
+      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      - "traefik.docker.network=internal-net"
+      
       # 1. ルーター定義: stg.avflash.xyz のルートで受け付ける
       - "traefik.http.routers.avflash-v2.rule=Host(`stg.avflash.xyz`)"
       - "traefik.http.routers.avflash-v2.entrypoints=websecure" # HTTPSに変更
@@ -216,6 +235,10 @@ services:
     # Traefik ルーティングラベル
     labels:
       - "traefik.enable=true"
+      
+      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      - "traefik.docker.network=internal-net"
+      
       # ルーター定義: /static/ (stg.ドメイン + HTTPS)
       - "traefik.http.routers.static-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/static`)"
       - "traefik.http.routers.static-v2.entrypoints=websecure" # HTTPSに変更
@@ -284,6 +307,10 @@ services:
       - internal-net
     labels:
       - "traefik.enable=true"
+      
+      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      - "traefik.docker.network=internal-net"
+      
       # 1. ルーター定義: stg.blog.tiper.live のルートで受け付ける
       - "traefik.http.routers.blog-v2.rule=Host(`stg.blog.tiper.live`)"
       - "traefik.http.routers.blog-v2.entrypoints=websecure" # HTTPSに変更
@@ -311,8 +338,8 @@ services:
       - "--certificatesresolvers.le.acme.tlschallenge=true" # ACMEチャレンジ方式
       - "--api.insecure=true"
     ports:
-      - "80:80"      # 👈 HTTPの標準ポートにバインド
-      - "443:443"    # 👈 HTTPSの標準ポートにバインド
+      - "80:80"       # 👈 HTTPの標準ポートにバインド
+      - "443:443"     # 👈 HTTPSの標準ポートにバインド
       - "8085:8080" # Traefikダッシュボード用 (デバッグ用として残す)
     
     volumes:
