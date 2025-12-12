@@ -18,13 +18,15 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Djangoプロジェクトのコード全体をコンテナにコピー
-# ※ この時点でプロジェクトコードはまだ存在しない可能性がありますが、
-#   デプロイ時にこのディレクトリに配置されることを想定しています。
 COPY . .
+
+# --------------------------------------------
+# 🎯 追記する重要な行: entrypoint.sh に実行権限を付与
+RUN chmod +x /usr/src/app/entrypoint.sh
+# --------------------------------------------
 
 # Djangoのデフォルトポート（Gunicornで使用）
 EXPOSE 8000
 
 # コンテナ起動時にGunicornを起動
-# docker-compose.ymlで上書きされるため、ここは基本的な定義のみ
 CMD ["gunicorn", "your_project.wsgi:application", "--bind", "0.0.0.0:8000"]
