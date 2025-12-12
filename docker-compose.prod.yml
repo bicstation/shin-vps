@@ -77,18 +77,15 @@ services:
       # 5. サービス定義
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
       
-    # 🎯 最終修正: entrypoint.sh の全処理をcommandに直書きし、ファイル権限問題を完全に回避
+    # 🎯 構文エラー解消のための修正: whileループの記述方法を単一行シェルに厳密に合わせる
     command: >
       /bin/sh -c "
       DB_HOST=${DB_HOST:-postgres_db_v2};
       DB_PORT=5432;
       echo 'Waiting for PostgreSQL at '$DB_HOST:$DB_PORT' ...';
       
-      # 環境変数参照に $$ を使用してホスト名を参照
-      # netcat (nc) でデータベースの準備が整うまで待機
-      while ! nc -z $$DB_HOST $$DB_PORT; do 
-        sleep 0.1;
-      done;
+      # while ループのセミコロンとスペースを修正し、単一行形式にする
+      while ! nc -z $$DB_HOST $$DB_PORT; do sleep 0.1; done; 
       
       echo 'PostgreSQL started.';
       python manage.py migrate --noinput;
