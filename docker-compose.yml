@@ -30,7 +30,6 @@ services:
       dockerfile: Dockerfile
     container_name: api_django_v2
     restart: always
-    # services: # <--- YAML構造として不要なので削除
     deploy:
       resources:
         limits:
@@ -62,27 +61,29 @@ services:
     labels:
       - "traefik.enable=true"
       
-      # 1. API ルーター: /api/ 
-      - "traefik.http.routers.api-v2.rule=Host(`localhost`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.api-v2.entrypoints=web"
-      - "traefik.http.routers.api-v2.priority=105" # <-- Priorityを設定
+      # 1. API ルーター: /api/ (localhost + HTTP)
+      - "traefik.http.routers.api-v2.rule=Host(`localhost`) && PathPrefix(`/api`)" # 👈 Host/PathPrefixに戻す
+      - "traefik.http.routers.api-v2.entrypoints=web" # 👈 HTTPに変更
+      - "traefik.http.routers.api-v2.priority=105"
       - "traefik.http.routers.api-v2.service=django-v2@docker"
-      
-      # 2. Admin ルーター: /admin/ 
-      - "traefik.http.routers.admin-v2.rule=Host(`localhost`) && PathPrefix(`/admin`)"
-      - "traefik.http.routers.admin-v2.entrypoints=web"
-      - "traefik.http.routers.admin-v2.priority=105" # <-- Priorityを設定
+      # - "traefik.http.routers.api-v2.tls.certresolver=le" # 👈 削除
+
+      # 2. Admin ルーター: /admin/ (localhost + HTTP)
+      - "traefik.http.routers.admin-v2.rule=Host(`localhost`) && PathPrefix(`/admin`)" # 👈 Host/PathPrefixに戻す
+      - "traefik.http.routers.admin-v2.entrypoints=web" # 👈 HTTPに変更
+      - "traefik.http.routers.admin-v2.priority=105"
       - "traefik.http.routers.admin-v2.service=django-v2@docker"
+      # - "traefik.http.routers.admin-v2.tls.certresolver=le" # 👈 削除
       
-      # 3. Django トップ確認用ルーター: /django/ 
+      # 3. Django トップ確認用ルーター: /django/ (localhost + HTTP: ローカル検証用)
       - "traefik.http.routers.django-test-v2.rule=Host(`localhost`) && PathPrefix(`/django`)"
       - "traefik.http.routers.django-test-v2.entrypoints=web"
       - "traefik.http.routers.django-test-v2.middlewares=django-stripprefix-v2@docker"
       - "traefik.http.middlewares.django-stripprefix-v2.stripprefix.prefixes=/django"
-      - "traefik.http.routers.django-test-v2.priority=95" # <-- Priorityを設定 (最も低い)
+      - "traefik.http.routers.django-test-v2.priority=95"
       - "traefik.http.routers.django-test-v2.service=django-v2@docker"
       
-      # 5. サービス定義 (内部ポートを明示的に指定)
+      # 5. サービス定義
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
       
     command: sh -c "/usr/src/app/entrypoint.sh && gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000"
@@ -94,7 +95,7 @@ services:
     networks:
       - internal-net
 
-  # 5. Next.js - bicstation.com (サブディレクトリ /bicstation に統一)
+  # 5. Next.js - bicstation.com (PathPrefix(`/bicstation`)に戻す)
   next-bicstation-v2:
     build:
       context: ./next-bicstation
@@ -114,17 +115,18 @@ services:
     labels:
       - "traefik.enable=true"
       # 1. ルーター定義: /bicstation で受け付ける
-      - "traefik.http.routers.bicstation-v2.rule=Host(`localhost`) && PathPrefix(`/bicstation`)"
-      - "traefik.http.routers.bicstation-v2.entrypoints=web"
+      - "traefik.http.routers.bicstation-v2.rule=Host(`localhost`) && PathPrefix(`/bicstation`)" # 👈 Host/PathPrefixに戻す
+      - "traefik.http.routers.bicstation-v2.entrypoints=web" # 👈 HTTPに変更
       - "traefik.http.routers.bicstation-v2.priority=100" 
+      # - "traefik.http.routers.bicstation-v2.tls.certresolver=le" # 👈 削除
       # 2. ミドルウェア定義: /bicstation/ というパスプレフィックスを削除
-      - "traefik.http.routers.bicstation-v2.middlewares=bicstation-stripprefix-v2@docker"
-      - "traefik.http.middlewares.bicstation-stripprefix-v2.stripprefix.prefixes=/bicstation"
-      # 3. サービス定義 (内部ポートを明示的に指定)
+      - "traefik.http.routers.bicstation-v2.middlewares=bicstation-stripprefix-v2@docker" # 👈 復活
+      - "traefik.http.middlewares.bicstation-stripprefix-v2.stripprefix.prefixes=/bicstation" # 👈 復活
+      # 3. サービス定義
       - "traefik.http.services.next-bicstation-v2.loadbalancer.server.port=3000"
       - "traefik.http.routers.bicstation-v2.service=next-bicstation-v2@docker"
       
-  # 6. Next.js - tiper.live (サブディレクトリ /tiper)
+  # 6. Next.js - tiper.live (PathPrefix(`/tiper`)に戻す)
   next-tiper-v2:
     build:
       context: ./next-tiper
@@ -144,17 +146,18 @@ services:
     labels:
       - "traefik.enable=true"
       # 1. ルーター定義: /tiper で受け付ける
-      - "traefik.http.routers.tiper-v2.rule=Host(`localhost`) && PathPrefix(`/tiper`)"
-      - "traefik.http.routers.tiper-v2.entrypoints=web"
+      - "traefik.http.routers.tiper-v2.rule=Host(`localhost`) && PathPrefix(`/tiper`)" # 👈 Host/PathPrefixに戻す
+      - "traefik.http.routers.tiper-v2.entrypoints=web" # 👈 HTTPに変更
       - "traefik.http.routers.tiper-v2.priority=100"
+      # - "traefik.http.routers.tiper-v2.tls.certresolver=le" # 👈 削除
       # 2. ミドルウェア定義: /tiper/ というパスプレフィックスを削除
-      - "traefik.http.routers.tiper-v2.middlewares=tiper-stripprefix-v2@docker"
-      - "traefik.http.middlewares.tiper-stripprefix-v2.stripprefix.prefixes=/tiper"
-      # 3. サービス定義 (内部ポートを明示的に指定)
+      - "traefik.http.routers.tiper-v2.middlewares=tiper-stripprefix-v2@docker" # 👈 復活
+      - "traefik.http.middlewares.tiper-stripprefix-v2.stripprefix.prefixes=/tiper" # 👈 復活
+      # 3. サービス定義
       - "traefik.http.services.next-tiper-v2.loadbalancer.server.port=3000"
       - "traefik.http.routers.tiper-v2.service=next-tiper-v2@docker"
       
-  # 7. Next.js - next-bic-saving サービス (サブディレクトリ /saving)
+  # 7. Next.js - next-bic-saving サービス (PathPrefix(`/saving`)に戻す)
   next-bic-saving-v2:
     build: 
       context: ./next-bic-saving
@@ -174,17 +177,18 @@ services:
     labels:
       - "traefik.enable=true"
       # 1. ルーター定義: /saving で受け付ける
-      - "traefik.http.routers.saving-v2.rule=Host(`localhost`) && PathPrefix(`/saving`)"
-      - "traefik.http.routers.saving-v2.entrypoints=web"
+      - "traefik.http.routers.saving-v2.rule=Host(`localhost`) && PathPrefix(`/saving`)" # 👈 Host/PathPrefixに戻す
+      - "traefik.http.routers.saving-v2.entrypoints=web" # 👈 HTTPに変更
       - "traefik.http.routers.saving-v2.priority=100"
+      # - "traefik.http.routers.saving-v2.tls.certresolver=le" # 👈 削除
       # 2. ミドルウェア定義: /saving/ というパスプレフィックスを削除
-      - "traefik.http.routers.saving-v2.middlewares=saving-stripprefix-v2@docker"
-      - "traefik.http.middlewares.saving-stripprefix-v2.stripprefix.prefixes=/saving"
-      # 3. サービス定義 (内部ポートを明示的に指定)
+      - "traefik.http.routers.saving-v2.middlewares=saving-stripprefix-v2@docker" # 👈 復活
+      - "traefik.http.middlewares.saving-stripprefix-v2.stripprefix.prefixes=/saving" # 👈 復活
+      # 3. サービス定義
       - "traefik.http.services.next-bic-saving-v2.loadbalancer.server.port=3000"
       - "traefik.http.routers.saving-v2.service=next-bic-saving-v2@docker"
 
-  # 8. Next.js - avflash.xyz サービス (サブディレクトリ /avflash) 
+  # 8. Next.js - avflash.xyz サービス (PathPrefix(`/avflash`)に戻す) 
   next-avflash-v2:
     build: 
       context: ./next-avflash 
@@ -204,13 +208,14 @@ services:
     labels:
       - "traefik.enable=true"
       # 1. ルーター定義: /avflash で受け付ける
-      - "traefik.http.routers.avflash-v2.rule=Host(`localhost`) && PathPrefix(`/avflash`)"
-      - "traefik.http.routers.avflash-v2.entrypoints=web"
+      - "traefik.http.routers.avflash-v2.rule=Host(`localhost`) && PathPrefix(`/avflash`)" # 👈 Host/PathPrefixに戻す
+      - "traefik.http.routers.avflash-v2.entrypoints=web" # 👈 HTTPに変更
       - "traefik.http.routers.avflash-v2.priority=100"
+      # - "traefik.http.routers.avflash-v2.tls.certresolver=le" # 👈 削除
       # 2. ミドルウェア定義: /avflash/ というパスプレフィックスを削除
-      - "traefik.http.routers.avflash-v2.middlewares=avflash-stripprefix-v2@docker"
-      - "traefik.http.middlewares.avflash-stripprefix-v2.stripprefix.prefixes=/avflash"
-      # 3. サービス定義 (内部ポートを明示的に指定)
+      - "traefik.http.routers.avflash-v2.middlewares=avflash-stripprefix-v2@docker" # 👈 復活
+      - "traefik.http.middlewares.avflash-stripprefix-v2.stripprefix.prefixes=/avflash" # 👈 復活
+      # 3. サービス定義
       - "traefik.http.services.next-avflash-v2.loadbalancer.server.port=3000"
       - "traefik.http.routers.avflash-v2.service=next-avflash-v2@docker"
 
@@ -227,11 +232,12 @@ services:
     # Traefik ルーティングラベル
     labels:
       - "traefik.enable=true"
-      # ルーター定義: /static/ で受け付ける
-      - "traefik.http.routers.static-v2.rule=Host(`localhost`) && PathPrefix(`/static`)"
-      - "traefik.http.routers.static-v2.entrypoints=web"
-      - "traefik.http.routers.static-v2.priority=200" # <-- Priorityを設定 (最も高い)
-      # サービス定義 (内部ポートを明示的に指定)
+      # ルーター定義: /static/ (localhost + HTTP)
+      - "traefik.http.routers.static-v2.rule=Host(`localhost`) && PathPrefix(`/static`)" # 👈 Host/PathPrefixに戻す
+      - "traefik.http.routers.static-v2.entrypoints=web" # 👈 HTTPに変更
+      - "traefik.http.routers.static-v2.priority=200"
+      # - "traefik.http.routers.static-v2.tls.certresolver=le" # 👈 削除
+      # サービス定義
       - "traefik.http.services.nginx-v2.loadbalancer.server.port=80"
       - "traefik.http.routers.static-v2.service=nginx-v2@docker"
   
@@ -270,9 +276,10 @@ services:
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      # ローカル開発用の設定を復活
       WORDPRESS_CONFIG_EXTRA: |
-        define('WP_HOME', 'http://localhost:8083/blog');
-        define('WP_SITEURL', 'http://localhost:8083/blog');
+        define('WP_HOME', 'http://localhost:8083/blog'); # 👈 修正
+        define('WP_SITEURL', 'http://localhost:8083/blog'); # 👈 修正
     volumes:
       - wordpress_data:/var/www/html
     networks:
@@ -294,13 +301,14 @@ services:
     labels:
       - "traefik.enable=true"
       # 1. ルーター定義: /blog で受け付ける
-      - "traefik.http.routers.blog-v2.rule=Host(`localhost`) && PathPrefix(`/blog`)"
-      - "traefik.http.routers.blog-v2.entrypoints=web"
+      - "traefik.http.routers.blog-v2.rule=Host(`localhost`) && PathPrefix(`/blog`)" # 👈 Host/PathPrefixに戻す
+      - "traefik.http.routers.blog-v2.entrypoints=web" # 👈 HTTPに変更
       - "traefik.http.routers.blog-v2.priority=100"
+      # - "traefik.http.routers.blog-v2.tls.certresolver=le" # 👈 削除
       # 2. ミドルウェア定義: /blog/ というパスプレフィックスを削除
-      - "traefik.http.routers.blog-v2.middlewares=blog-stripprefix-v2@docker"
-      - "traefik.http.middlewares.blog-stripprefix-v2.stripprefix.prefixes=/blog"
-      # 3. サービス定義 (内部ポートを明示的に指定)
+      - "traefik.http.routers.blog-v2.middlewares=blog-stripprefix-v2@docker" # 👈 復活
+      - "traefik.http.middlewares.blog-stripprefix-v2.stripprefix.prefixes=/blog" # 👈 復活
+      # 3. サービス定義
       - "traefik.http.services.nginx-wp-v2.loadbalancer.server.port=80"
       - "traefik.http.routers.blog-v2.service=nginx-wp-v2@docker"
       
@@ -315,14 +323,20 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--accesslog=true"
       - "--log.level=INFO"
-      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.address=:80" # 👈 HTTPエントリーポイントのみ
+      # - "--entrypoints.websecure.address=:443" # 👈 削除
+      # - "--certificatesresolvers.le.acme.email=bicstation@gmail.com" # 👈 削除
+      # - "--certificatesresolvers.le.acme.storage=/etc/traefik/acme.json" # 👈 削除
+      # - "--certificatesresolvers.le.acme.tlschallenge=true" # 👈 削除
       - "--api.insecure=true"
     ports:
-      - "8083:80" # Webトラフィック用 (http://localhost:8083/)
-      - "8085:8080" # Traefikダッシュボード用 (http://localhost:8085/)
-      
+      - "8083:80"       # 👈 ローカル検証用のカスタムポート
+      # - "443:443"     # 👈 削除
+      - "8085:8080" # Traefikダッシュボード用
+    
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - traefik_certs:/etc/traefik # 👈 削除
       
     networks:
       - internal-net
@@ -339,6 +353,8 @@ volumes:
     driver: local
   mariadb_data:
     driver: local
+  # traefik_certs: # 👈 削除
+  #   driver: local
 
 # ネットワーク定義 (最上位レベル)
 networks:
