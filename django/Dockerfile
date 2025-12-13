@@ -21,12 +21,19 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # --------------------------------------------
-# 🎯 追記する重要な行: entrypoint.sh に実行権限を付与
+# 🎯 追記する重要な行: entrypoint.sh に実行権限を付与 (既に存在しますが、再確認のため残します)
 RUN chmod +x /usr/src/app/entrypoint.sh
 # --------------------------------------------
 
 # Djangoのデフォルトポート（Gunicornで使用）
 EXPOSE 8000
 
-# コンテナ起動時にGunicornを起動
+# --------------------------------------------
+# 🚨 修正箇所: entrypoint.sh を ENTRYPOINT に設定
+# CMDの権限エラーを回避し、entrypoint.shをメインプロセスとして確実に起動させます。
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+
+# CMDは、ENTRYPOINTに引数として渡されます ($@ に展開される)
+# Gunicornの起動は、entrypoint.shのスクリプト内で最終的に 'exec "$@"' によって実行される前提とします。
 CMD ["gunicorn", "your_project.wsgi:application", "--bind", "0.0.0.0:8000"]
+# --------------------------------------------
