@@ -22,6 +22,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           # VPS上で実行するコマンド
           script: |
             # 1. Docker Composeファイルがあるディレクトリへ移動　移動
