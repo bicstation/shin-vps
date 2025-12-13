@@ -1,4 +1,4 @@
-# ファイル名: .github/workflows/deploy_prod.yml
+# ファイル名: .github/workflows/deploy_prod.yml (最終版)
 
 name: Production Deployment
 
@@ -16,28 +16,38 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
+      # 1. 【🚨 変更点: scp-action を使用して、最新ファイルを VPS に確実に同期】
+      - name: Sync Files to VPS (rsync via SCP)
+        uses: appleboy/scp-action@v0.1.7 # scp-action に変更
+        with:
+          host: ${{ secrets.SSH_HOST_PROD }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          
+          # ローカルの全ファイルをVPSのプロジェクトディレクトリへ転送
+          source: "." 
+          target: "/home/maya/shin-vps"
+          # -r (再帰的) -t (タイムスタンプ保持) -z (圧縮) -q (静か) --delete (転送元にないファイルを削除)
+          flags: "-rtzq --delete" 
 
-      - name: Deploy to Production VPS via SSH (File Sync Mode)
+
+      # 2. 【🚨 変更点: ssh-action を使ってコマンドのみ実行】
+      - name: Deploy to Production VPS via SSH (Docker Compose Up)
         uses: appleboy/ssh-action@v1.0.3
         with:
+          # 【削除】ファイル転送関連のパラメータ (src, target, sync) は scp-action に移動したため削除
           host: ${{ secrets.SSH_HOST_PROD }} 
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           
-          # 【🚨 追加】Actions Runnerでチェックアウトした最新コードをVPSに転送
-          src: "." 
-          target: "/home/maya/shin-vps"
-          sync: true # rsyncを使用して差分のみ転送
-          
           # VPS上で実行するコマンド
           script: |
             # 1. Docker Composeファイルがあるディレクトリへ移動
-            # ※ ファイルは既にtargetディレクトリに転送されています
+            # ※ ファイルは scp-action によって最新に転送済みです
             cd /home/maya/shin-vps
-            
-            # 【🚨 削除】git pull は不要になりました（ファイル転送が代わりに行います）
-            # git pull origin main 
             
             # 2. 本番環境のコンテナを再ビルドし、再起動
             # --build フラグが、転送された最新コードを使って自動で再ビルドを強制します。
