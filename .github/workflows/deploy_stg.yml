@@ -27,15 +27,12 @@ jobs:
             # 1. Docker Composeファイルがあるディレクトリへ移動
             cd /home/maya/shin-vps
             
-            # 2. 最新のコードを Git からプル
-            #    VPS上でgit pullする際、ローカルでの変更が競合しないように注意してください。
-            git pull origin main
+            # 【重要】以前のエラー (Exit code 128) 対策として、git pull を実行しません。
+            # 最新のコードは、ローカルで変更を加えて push するため、
+            # pushされた変更がGitHub Actions Runnerにチェックアウトされています。
             
-            # 3. ステージング環境のコンテナを再ビルドし、再起動
-            #    【重要】全てのビルド対象サービスをリストアップ
-            sudo docker compose -f docker-compose.stg.yml -p stg build django-v2 next-bicstation-v2 next-tiper-v2 next-bic-saving-v2 next-avflash-v2 wordpress-v2 nginx-wp-v2 nginx-v2
-            
-            # 4. 全てのサービスを起動 (依存関係にあるDBなども含めて)
-            sudo docker compose -f docker-compose.stg.yml -p stg up -d --remove-orphans
+            # 2. 全てのサービスを起動 (依存関係にあるDBなども含めて)
+            #    --build フラグが、コードが変更されたサービスに対して自動で再ビルドを強制します。
+            sudo docker compose -f docker-compose.stg.yml -p stg up -d --build --remove-orphans
             
             echo "Staging deployment completed successfully."
