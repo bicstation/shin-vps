@@ -1,0 +1,43 @@
+# ファイル名: .github/workflows/deploy_prod.yml
+
+name: Production Deployment
+
+on:
+  # 本番環境へのデプロイは慎重に行うため、ステージングと同じく main ブランチへのプッシュをトリガーとします。
+  push:
+    branches:
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production # 📘 環境名を指定することで、デプロイ保護ルール（承認など）を適用できます
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Production VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          # 【🚨 変更点 1: 本番環境用のホストシークレットを使用】
+          host: ${{ secrets.SSH_HOST_PROD }} 
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          
+          # VPS上で実行するコマンド
+          script: |
+            # 1. Docker Composeファイルがあるディレクトリへ移動
+            cd /home/maya/shin-vps
+            
+            # 【🚨 変更点 2: git pull を復活】
+            # SSH認証が成功したので、VPS上のリポジトリを最新にします。
+            git pull origin main
+            
+            # 2. 本番環境のコンテナを再ビルドし、再起動
+            # 【🚨 変更点 3 & 4: docker-compose.prod.yml と -p prod を使用】
+            # --build フラグが、コードが変更されたサービスに対して自動で再ビルドを強制します。
+            sudo docker compose -f docker-compose.prod.yml -p prod up -d --build --remove-orphans
+            
+            echo "Production deployment completed successfully."

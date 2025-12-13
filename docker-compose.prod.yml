@@ -1,17 +1,18 @@
-# サービス定義 (VPS本番デプロイ用)
+# ファイル名: docker-compose.prod.yml
+
 services:
 
   # 1. PostgreSQL データベース (Django専用)
   postgres-db-v2:
     image: postgres:15-alpine
-    container_name: postgres_db_v2
+    container_name: postgres_db_v2_prod
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_prod:/var/lib/postgresql/data
     networks:
       - internal-net
     ports:
@@ -28,7 +29,7 @@ services:
     build:
       context: ./django
       dockerfile: Dockerfile
-    container_name: api_django_v2
+    container_name: api_django_v2_prod
     restart: always
     deploy:
       resources:
@@ -64,18 +65,20 @@ services:
       - "traefik.docker.network=internal-net" 
       
       # 1. API ルーター: /api/ 
-      - "traefik.http.routers.api-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.api-v2.entrypoints=websecure"
-      - "traefik.http.routers.api-v2.priority=105" 
-      - "traefik.http.routers.api-v2.service=django-v2@docker"
-      - "traefik.http.routers.api-v2.tls.certresolver=le"
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
+      - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
+      - "traefik.http.routers.api-v2-prod.priority=105" 
+      - "traefik.http.routers.api-v2-prod.service=django-v2@docker"
+      - "traefik.http.routers.api-v2-prod.tls.certresolver=le"
 
       # 2. Admin ルーター: /admin/ 
-      - "traefik.http.routers.admin-v2.rule=Host(`stg.tiper.live`) && PathPrefix(`/admin`)"
-      - "traefik.http.routers.admin-v2.entrypoints=websecure"
-      - "traefik.http.routers.admin-v2.priority=105"
-      - "traefik.http.routers.admin-v2.service=django-v2@docker"
-      - "traefik.http.routers.admin-v2.tls.certresolver=le"
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
+      - "traefik.http.routers.admin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin-v2-prod.entrypoints=websecure"
+      - "traefik.http.routers.admin-v2-prod.priority=105"
+      - "traefik.http.routers.admin-v2-prod.service=django-v2@docker"
+      - "traefik.http.routers.admin-v2-prod.tls.certresolver=le"
       
       # 5. サービス定義
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
@@ -85,24 +88,25 @@ services:
 
     volumes:
       - ./django:/usr/src/app 
-      - static_volume:/usr/src/app/staticfiles
+      - static_volume_prod:/usr/src/app/staticfiles
       
     networks:
       - internal-net
 
-  # 5. Next.js - bicstation.com (stg.bicstation.com ルートへルーティング)
+  # 5. Next.js - bicstation.com (bicstation.com ルートへルーティング)
   next-bicstation-v2:
     build:
       context: ./next-bicstation
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-    container_name: next_bicstation_v2
+    container_name: next_bicstation_v2_prod
     depends_on:
       django-v2:
         condition: service_started
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.bicstation.com/api
+      # 🚨 修正点: API_URLを本番環境のドメイン名に置き換え
+      NEXT_PUBLIC_API_URL: https://bicstation.com/api
       NODE_ENV: production
     networks:
       - internal-net
@@ -113,28 +117,30 @@ services:
       # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
-      # 1. ルーター定義: stg.bicstation.com のルートで受け付ける
-      - "traefik.http.routers.bicstation-v2.rule=Host(`stg.bicstation.com`)"
-      - "traefik.http.routers.bicstation-v2.entrypoints=websecure"
-      - "traefik.http.routers.bicstation-v2.priority=100" 
-      - "traefik.http.routers.bicstation-v2.tls.certresolver=le"
+      # 1. ルーター定義: bicstation.com のルートで受け付ける
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
+      - "traefik.http.routers.bicstation-v2-prod.rule=Host(`bicstation.com`)"
+      - "traefik.http.routers.bicstation-v2-prod.entrypoints=websecure"
+      - "traefik.http.routers.bicstation-v2-prod.priority=100" 
+      - "traefik.http.routers.bicstation-v2-prod.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.next-bicstation-v2.loadbalancer.server.port=3000"
-      - "traefik.http.routers.bicstation-v2.service=next-bicstation-v2@docker"
+      - "traefik.http.routers.bicstation-v2-prod.service=next-bicstation-v2@docker"
       
-  # 6. Next.js - tiper.live (stg.tiper.live ルートへルーティング)
+  # 6. Next.js - tiper.live (tiper.live ルートへルーティング)
   next-tiper-v2:
     build:
       context: ./next-tiper
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-    container_name: next_tiper_v2
+    container_name: next_tiper_v2_prod
     depends_on:
       django-v2:
         condition: service_started
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      # 🚨 修正点: API_URLを本番環境のドメイン名に置き換え
+      NEXT_PUBLIC_API_URL: https://tiper.live/api
       NODE_ENV: production
     networks:
       - internal-net
@@ -145,28 +151,30 @@ services:
       # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
-      # 1. ルーター定義: stg.tiper.live のルートで受け付ける
-      - "traefik.http.routers.tiper-v2.rule=Host(`stg.tiper.live`)"
-      - "traefik.http.routers.tiper-v2.entrypoints=websecure"
-      - "traefik.http.routers.tiper-v2.priority=100"
-      - "traefik.http.routers.tiper-v2.tls.certresolver=le"
+      # 1. ルーター定義: tiper.live のルートで受け付ける
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
+      - "traefik.http.routers.tiper-v2-prod.rule=Host(`tiper.live`)"
+      - "traefik.http.routers.tiper-v2-prod.entrypoints=websecure"
+      - "traefik.http.routers.tiper-v2-prod.priority=100"
+      - "traefik.http.routers.tiper-v2-prod.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.next-tiper-v2.loadbalancer.server.port=3000"
-      - "traefik.http.routers.tiper-v2.service=next-tiper-v2@docker"
+      - "traefik.http.routers.tiper-v2-prod.service=next-tiper-v2@docker"
       
-  # 7. Next.js - next-bic-saving サービス (stg.bic-saving.com ルートへルーティング)
+  # 7. Next.js - next-bic-saving サービス (bic-saving.com ルートへルーティング)
   next-bic-saving-v2:
     build: 
       context: ./next-bic-saving
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-    container_name: next_bic_saving_v2
+    container_name: next_bic_saving_v2_prod
     depends_on:
       django-v2:
         condition: service_started
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.bic-saving.com/api
+      # 🚨 修正点: API_URLを本番環境のドメイン名に置き換え
+      NEXT_PUBLIC_API_URL: https://bic-saving.com/api
       NODE_ENV: production
     networks:
       - internal-net
@@ -177,28 +185,30 @@ services:
       # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
-      # 1. ルーター定義: stg.bic-saving.com のルートで受け付ける
-      - "traefik.http.routers.saving-v2.rule=Host(`stg.bic-saving.com`)"
-      - "traefik.http.routers.saving-v2.entrypoints=websecure"
-      - "traefik.http.routers.saving-v2.priority=100"
-      - "traefik.http.routers.saving-v2.tls.certresolver=le"
+      # 1. ルーター定義: bic-saving.com のルートで受け付ける
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
+      - "traefik.http.routers.saving-v2-prod.rule=Host(`bic-saving.com`)"
+      - "traefik.http.routers.saving-v2-prod.entrypoints=websecure"
+      - "traefik.http.routers.saving-v2-prod.priority=100"
+      - "traefik.http.routers.saving-v2-prod.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.next-bic-saving-v2.loadbalancer.server.port=3000"
-      - "traefik.http.routers.saving-v2.service=next-bic-saving-v2@docker"
+      - "traefik.http.routers.saving-v2-prod.service=next-bic-saving-v2@docker"
 
-  # 8. Next.js - avflash.xyz サービス (stg.avflash.xyz ルートへルーティング) 
+  # 8. Next.js - avflash.xyz サービス (avflash.xyz ルートへルーティング) 
   next-avflash-v2:
     build: 
       context: ./next-avflash 
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH} 
-    container_name: next_avflash_v2
+    container_name: next_avflash_v2_prod
     depends_on:
       django-v2:
         condition: service_started
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.avflash.xyz/api
+      # 🚨 修正点: API_URLを本番環境のドメイン名に置き換え
+      NEXT_PUBLIC_API_URL: https://avflash.xyz/api
       NODE_ENV: production
     networks:
       - internal-net
@@ -209,22 +219,23 @@ services:
       # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
-      # 1. ルーター定義: stg.avflash.xyz のルートで受け付ける
-      - "traefik.http.routers.avflash-v2.rule=Host(`stg.avflash.xyz`)"
-      - "traefik.http.routers.avflash-v2.entrypoints=websecure"
-      - "traefik.http.routers.avflash-v2.priority=100"
-      - "traefik.http.routers.avflash-v2.tls.certresolver=le"
+      # 1. ルーター定義: avflash.xyz のルートで受け付ける
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
+      - "traefik.http.routers.avflash-v2-prod.rule=Host(`avflash.xyz`)"
+      - "traefik.http.routers.avflash-v2-prod.entrypoints=websecure"
+      - "traefik.http.routers.avflash-v2-prod.priority=100"
+      - "traefik.http.routers.avflash-v2-prod.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.next-avflash-v2.loadbalancer.server.port=3000"
-      - "traefik.http.routers.avflash-v2.service=next-avflash-v2@docker"
+      - "traefik.http.routers.avflash-v2-prod.service=next-avflash-v2@docker"
 
   # 10. Nginx (静的ファイル配信専用)
   nginx-v2:
     image: nginx:alpine
-    container_name: nginx_static_v2
+    container_name: nginx_static_v2_prod
     restart: always
     volumes:
-      - static_volume:/usr/share/nginx/html/static:ro
+      - static_volume_prod:/usr/share/nginx/html/static:ro
       - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - internal-net
@@ -235,21 +246,22 @@ services:
       # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
-      # ルーター定義: /static/ (stg.ドメイン + HTTPS)
-      - "traefik.http.routers.static-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/static`)"
-      - "traefik.http.routers.static-v2.entrypoints=websecure"
-      - "traefik.http.routers.static-v2.priority=200"
-      - "traefik.http.routers.static-v2.tls.certresolver=le"
+      # ルーター定義: /static/ (本番ドメイン + HTTPS)
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
+      - "traefik.http.routers.static-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/static`)"
+      - "traefik.http.routers.static-v2-prod.entrypoints=websecure"
+      - "traefik.http.routers.static-v2-prod.priority=200"
+      - "traefik.http.routers.static-v2-prod.tls.certresolver=le"
       # サービス定義
       - "traefik.http.services.nginx-v2.loadbalancer.server.port=80"
-      - "traefik.http.routers.static-v2.service=nginx-v2@docker"
+      - "traefik.http.routers.static-v2-prod.service=nginx-v2@docker"
   
   # === ブログ (Headless CMS: WP) サービスの追加 ===
   
   # 11. MariaDB (WordPress専用DB)
   mariadb-v2:
     image: mariadb:10
-    container_name: mariadb_wp_v2
+    container_name: mariadb_wp_v2_prod
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
@@ -257,7 +269,7 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - mariadb_data_prod:/var/lib/mysql
     networks:
       - internal-net
     healthcheck:
@@ -269,7 +281,7 @@ services:
   # 12. WordPress (ブログのHeadless CMSとして使用)
   wordpress-v2:
     image: wordpress:6-fpm-alpine
-    container_name: wordpress_blog_v2
+    container_name: wordpress_blog_v2_prod
     restart: always
     depends_on:
       mariadb-v2:
@@ -279,24 +291,25 @@ services:
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
       WORDPRESS_CONFIG_EXTRA: |
-        define('WP_HOME', 'https://stg.blog.tiper.live');
-        define('WP_SITEURL', 'https://stg.blog.tiper.live');
+        define('WP_HOME', 'https://blog.tiper.live');
+        define('WP_SITEURL', 'https://blog.tiper.live');
     volumes:
-      - wordpress_data:/var/www/html
+      - wordpress_data_prod:/var/www/html
     networks:
       - internal-net
 
   # 13. Nginx (WordPress用: PHP-FPMへのブリッジと静的ファイル配信)
   nginx-wp-v2:
     image: nginx:alpine
-    container_name: nginx_wp_v2
+    container_name: nginx_wp_v2_prod
     restart: always
     depends_on:
       wordpress-v2:
         condition: service_started
     volumes:
-      - wordpress_data:/var/www/html:ro
+      - wordpress_data_prod:/var/www/html:ro
       - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - internal-net
@@ -306,19 +319,20 @@ services:
       # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
-      # 1. ルーター定義: stg.blog.tiper.live のルートで受け付ける
-      - "traefik.http.routers.blog-v2.rule=Host(`stg.blog.tiper.live`)"
-      - "traefik.http.routers.blog-v2.entrypoints=websecure"
-      - "traefik.http.routers.blog-v2.priority=100"
-      - "traefik.http.routers.blog-v2.tls.certresolver=le"
+      # 1. ルーター定義: blog.tiper.live のルートで受け付ける
+      # 🚨 修正点: ホスト名を本番環境のドメイン名に置き換え
+      - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
+      - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
+      - "traefik.http.routers.blog-v2-prod.priority=100"
+      - "traefik.http.routers.blog-v2-prod.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.nginx-wp-v2.loadbalancer.server.port=80"
-      - "traefik.http.routers.blog-v2.service=nginx-wp-v2@docker"
+      - "traefik.http.routers.blog-v2-prod.service=nginx-wp-v2@docker"
       
   # 9. Traefik (リバースプロキシ & ルーティング自動検出)
   traefik:
     image: traefik:v2.11
-    container_name: traefik_proxy
+    container_name: traefik_proxy_prod
     restart: always
     
     command:
@@ -330,7 +344,7 @@ services:
       - "--log.level=INFO"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.le.acme.email=bicstation@gmail.com" # 👈 🚨 ここを必ず修正
+      - "--certificatesresolvers.le.acme.email=bicstation@gmail.com"
       - "--certificatesresolvers.le.acme.storage=/etc/traefik/acme.json"
       - "--certificatesresolvers.le.acme.tlschallenge=true"
       - "--api.insecure=true"
@@ -341,7 +355,7 @@ services:
     
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_certs:/etc/traefik
+      - traefik_certs_prod:/etc/traefik
       
     networks:
       - internal-net
@@ -349,16 +363,17 @@ services:
 
 # ボリューム定義 (最上位レベル)
 volumes:
-  postgres_data:
+  # 🚨 修正点: ボリューム名に _prod サフィックスを追加
+  postgres_data_prod:
     driver: local
-  static_volume: 
+  static_volume_prod: 
     driver: local
   # ブログ用ボリューム
-  wordpress_data:
+  wordpress_data_prod:
     driver: local
-  mariadb_data:
+  mariadb_data_prod:
     driver: local
-  traefik_certs:
+  traefik_certs_prod:
     driver: local
 
 # ネットワーク定義 (最上位レベル)
