@@ -80,7 +80,9 @@ services:
       # 5. サービス定義
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
       
-    command: /bin/sh -c "DB_HOST=${DB_HOST:-postgres_db_v2}; DB_PORT=5432; echo 'Waiting for PostgreSQL at '$DB_HOST:$DB_PORT' ...'; while ! nc -z $$DB_HOST $$DB_PORT; do sleep 0.1; done; echo 'PostgreSQL started.'; python manage.py migrate --noinput; python manage.py collectstatic --noinput; exec gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000"
+    # 🚨 修正した command 行 🚨
+    # 環境変数 DB_HOST (postgres-db-v2) が確実に使われるように修正
+    command: /bin/sh -c "DB_PORT=5432; echo 'Waiting for PostgreSQL at '${DB_HOST}:$$DB_PORT' ...'; while ! nc -z ${DB_HOST} $$DB_PORT; do sleep 0.1; done; echo 'PostgreSQL started.'; python manage.py migrate --noinput; python manage.py collectstatic --noinput; exec gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000"
     
     volumes:
       - ./django:/usr/src/app 
