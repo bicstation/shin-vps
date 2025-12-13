@@ -24,7 +24,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # VPS上で実行するコマンド
           script: |
-            # 1. Docker Composeファイルがあるディレクトリへ移動
+            # 1. Docker Composeファイルがあるディレクトリへ移動　移動　井戸
             cd /home/maya/shin-vps
             
             # 【重要】以前のエラー (Exit code 128) 対策として、git pull を実行しません。
