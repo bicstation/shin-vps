@@ -8,6 +8,7 @@ DB_PORT=5432
 # データベースが利用可能になるまで待機
 echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT ..."
 
+# ncを使用してデータベースへの接続を待つ
 while ! nc -z $DB_HOST $DB_PORT; do 
   sleep 0.1
 done
@@ -22,5 +23,5 @@ python manage.py collectstatic --noinput
 
 # 4. gunicornの起動 (コンテナを維持するため、exec でフォアグラウンド実行)
 echo "Starting Gunicorn server..."
-# 🚨 exec を使用して、GunicornプロセスをスクリプトのPID 1として実行します。
+# exec を使用して、GunicornプロセスをスクリプトのPID 1として実行します。
 exec gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000
