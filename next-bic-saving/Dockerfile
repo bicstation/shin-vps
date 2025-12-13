@@ -55,7 +55,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 # next.config.ts/mjs のファイル名はプロジェクトに合わせて適宜修正してください
-COPY --from=builder --chown=nextjs:nodejs /app/next.config.mjs ./next.config.mjs
+# COPY --from=builder --chown=nextjs:nodejs /app/next.config.mjs ./next.config.mjs
 COPY --from=builder --chown=nextjs:nodejs /app/next.config.ts ./next.config.ts 
 
 # Node.jsのエンコーディングをUTF-8に設定
