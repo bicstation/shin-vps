@@ -2,13 +2,14 @@
 # entrypoint.sh
 
 # 環境変数からホスト名とポートを取得
-DB_HOST=${DB_HOST:-postgres_db_v2}  # DB_HOST が設定されていなければ postgres_db_v2 をデフォルトとする
+# 🚨 修正: デフォルト値の定義を削除し、docker-compose.yml から渡される環境変数に完全に依存
+DB_HOST=${DB_HOST} 
 DB_PORT=5432
 
 # データベースが利用可能になるまで待機
 echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT ..."
 
-# ✅ 修正: ハードコードされたホスト名ではなく、環境変数 $DB_HOST を使用
+# ncを使用してデータベースへの接続を待つ
 while ! nc -z $DB_HOST $DB_PORT; do 
   sleep 0.1
 done
@@ -22,4 +23,5 @@ python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
 # 4. gunicornの起動
+# docker-compose.yml の command または Dockerfile の CMD を実行する
 exec "$@"
