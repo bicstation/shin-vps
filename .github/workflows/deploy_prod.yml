@@ -17,27 +17,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Production VPS via SSH
+      - name: Deploy to Production VPS via SSH (File Sync Mode)
         uses: appleboy/ssh-action@v1.0.3
         with:
-          # 【🚨 変更点 1: 本番環境用のホストシークレットを使用】
           host: ${{ secrets.SSH_HOST_PROD }} 
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           
+          # 【🚨 追加】Actions Runnerでチェックアウトした最新コードをVPSに転送
+          src: "." 
+          target: "/home/maya/shin-vps"
+          sync: true # rsyncを使用して差分のみ転送
+          
           # VPS上で実行するコマンド
           script: |
             # 1. Docker Composeファイルがあるディレクトリへ移動
+            # ※ ファイルは既にtargetディレクトリに転送されています
             cd /home/maya/shin-vps
             
-            # 【🚨 変更点 2: git pull を復活】
-            # SSH認証が成功したので、VPS上のリポジトリを最新にします。
-            git pull origin main
+            # 【🚨 削除】git pull は不要になりました（ファイル転送が代わりに行います）
+            # git pull origin main 
             
             # 2. 本番環境のコンテナを再ビルドし、再起動
-            # 【🚨 変更点 3 & 4: docker-compose.prod.yml と -p prod を使用】
-            # --build フラグが、コードが変更されたサービスに対して自動で再ビルドを強制します。
+            # --build フラグが、転送された最新コードを使って自動で再ビルドを強制します。
             sudo docker compose -f docker-compose.prod.yml -p prod up -d --build --remove-orphans
             
             echo "Production deployment completed successfully."
