@@ -1,4 +1,4 @@
-# ファイル名: .github/workflows/deploy_stg.yml
+# ファイル名: .github/workflows/deploy_stg.yml (修正案)
 
 name: Stage Deployment
 
@@ -16,24 +16,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Staging VPS via SSH
+      - name: Deploy to Staging VPS via SSH (File Sync Mode)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          
+          # 【🚨 追加】Actions Runnerでチェックアウトした最新コードをVPSに転送
+          src: "." 
+          target: "/home/maya/shin-vps"
+          sync: true # rsyncを使用して差分のみ転送
+          
           # VPS上で実行するコマンド
           script: |
-            # 1. Docker Composeファイルがあるディレクトリへ移動　移動
+            # 1. Docker Composeファイルがあるディレクトリへ移動
+            # ※ ファイルは既にtargetディレクトリに転送されています
             cd /home/maya/shin-vps
             
+            # 【🚨 削除】git pull は不要になりました
             # 【重要】以前のエラー (Exit code 128) 対策として、git pull を実行しません。
             # 最新のコードは、ローカルで変更を加えて push するため、
             # pushされた変更がGitHub Actions Runnerにチェックアウトされています。
             
             # 2. 全てのサービスを起動 (依存関係にあるDBなども含めて)
-            #    --build フラグが、コードが変更されたサービスに対して自動で再ビルドを強制します。
+            #    --build フラグが、転送された最新コードを使って自動で再ビルドを強制します。
             sudo docker compose -f docker-compose.stg.yml -p stg up -d --build --remove-orphans
             
             echo "Staging deployment completed successfully."
