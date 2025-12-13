@@ -31,7 +31,7 @@ jobs:
             #    VPS上でgit pullする際、ローカルでの変更が競合しないように注意してください。
             git pull origin main
             
-            # 3. ステージング環境のコンテナを再ビルドし、再起動
+            # 3. ステージング環境のコンテナを再ビルドし、再起動　再起動
             #    【重要】全てのビルド対象サービスをリストアップ
             sudo docker compose -f docker-compose.stg.yml -p stg build django-v2 next-bicstation-v2 next-tiper-v2 next-bic-saving-v2 next-avflash-v2 wordpress-v2 nginx-wp-v2 nginx-v2
             
