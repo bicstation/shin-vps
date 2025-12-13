@@ -56,7 +56,7 @@ services:
       - LS_ACCOUNT_ID=${LS_ACCOUNT_ID}
       - LS_TOKEN_URL=${LS_TOKEN_URL}
       
-    # Traefik ルーティングラベル (stg.ドメインベース & HTTPS)
+    # Traefik ルーティングラベル
     labels:
       - "traefik.enable=true"
       
@@ -65,22 +65,21 @@ services:
       
       # 1. API ルーター: /api/ 
       - "traefik.http.routers.api-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.api-v2.entrypoints=websecure" # HTTPSに変更
+      - "traefik.http.routers.api-v2.entrypoints=websecure"
       - "traefik.http.routers.api-v2.priority=105" 
       - "traefik.http.routers.api-v2.service=django-v2@docker"
-      - "traefik.http.routers.api-v2.tls.certresolver=le" # SSL証明書自動取得
+      - "traefik.http.routers.api-v2.tls.certresolver=le"
 
       # 2. Admin ルーター: /admin/ 
       - "traefik.http.routers.admin-v2.rule=Host(`stg.tiper.live`) && PathPrefix(`/admin`)"
-      - "traefik.http.routers.admin-v2.entrypoints=websecure" # HTTPSに変更
+      - "traefik.http.routers.admin-v2.entrypoints=websecure"
       - "traefik.http.routers.admin-v2.priority=105"
       - "traefik.http.routers.admin-v2.service=django-v2@docker"
-      - "traefik.http.routers.admin-v2.tls.certresolver=le" # SSL証明書自動取得
+      - "traefik.http.routers.admin-v2.tls.certresolver=le"
       
       # 5. サービス定義
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
       
-    # 🎯 最終修正: すべてのコマンドを単一行にまとめ、シェルエラーのリスクを最小化し、exec gunicornに確実に到達させる
     command: /bin/sh -c "DB_HOST=${DB_HOST:-postgres_db_v2}; DB_PORT=5432; echo 'Waiting for PostgreSQL at '$DB_HOST:$DB_PORT' ...'; while ! nc -z $$DB_HOST $$DB_PORT; do sleep 0.1; done; echo 'PostgreSQL started.'; python manage.py migrate --noinput; python manage.py collectstatic --noinput; exec gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000"
     
     volumes:
@@ -102,7 +101,6 @@ services:
       django-v2:
         condition: service_started
     environment:
-      # 🚨 修正: 外部アクセス可能なステージングドメイン (HTTPS) に変更
       NEXT_PUBLIC_API_URL: https://stg.bicstation.com/api
       NODE_ENV: production
     networks:
@@ -111,14 +109,14 @@ services:
     labels:
       - "traefik.enable=true"
       
-      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
       # 1. ルーター定義: stg.bicstation.com のルートで受け付ける
       - "traefik.http.routers.bicstation-v2.rule=Host(`stg.bicstation.com`)"
-      - "traefik.http.routers.bicstation-v2.entrypoints=websecure" # HTTPSに変更
+      - "traefik.http.routers.bicstation-v2.entrypoints=websecure"
       - "traefik.http.routers.bicstation-v2.priority=100" 
-      - "traefik.http.routers.bicstation-v2.tls.certresolver=le" # SSL証明書自動取得
+      - "traefik.http.routers.bicstation-v2.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.next-bicstation-v2.loadbalancer.server.port=3000"
       - "traefik.http.routers.bicstation-v2.service=next-bicstation-v2@docker"
@@ -135,7 +133,6 @@ services:
       django-v2:
         condition: service_started
     environment:
-      # 🚨 修正: 外部アクセス可能なステージングドメイン (HTTPS) に変更
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
       NODE_ENV: production
     networks:
@@ -144,14 +141,14 @@ services:
     labels:
       - "traefik.enable=true"
       
-      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
       # 1. ルーター定義: stg.tiper.live のルートで受け付ける
       - "traefik.http.routers.tiper-v2.rule=Host(`stg.tiper.live`)"
-      - "traefik.http.routers.tiper-v2.entrypoints=websecure" # HTTPSに変更
+      - "traefik.http.routers.tiper-v2.entrypoints=websecure"
       - "traefik.http.routers.tiper-v2.priority=100"
-      - "traefik.http.routers.tiper-v2.tls.certresolver=le" # SSL証明書自動取得
+      - "traefik.http.routers.tiper-v2.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.next-tiper-v2.loadbalancer.server.port=3000"
       - "traefik.http.routers.tiper-v2.service=next-tiper-v2@docker"
@@ -168,7 +165,6 @@ services:
       django-v2:
         condition: service_started
     environment:
-      # 🚨 修正: 外部アクセス可能なステージングドメイン (HTTPS) に変更
       NEXT_PUBLIC_API_URL: https://stg.bic-saving.com/api
       NODE_ENV: production
     networks:
@@ -177,14 +173,14 @@ services:
     labels:
       - "traefik.enable=true"
       
-      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
       # 1. ルーター定義: stg.bic-saving.com のルートで受け付ける
       - "traefik.http.routers.saving-v2.rule=Host(`stg.bic-saving.com`)"
-      - "traefik.http.routers.saving-v2.entrypoints=websecure" # HTTPSに変更
+      - "traefik.http.routers.saving-v2.entrypoints=websecure"
       - "traefik.http.routers.saving-v2.priority=100"
-      - "traefik.http.routers.saving-v2.tls.certresolver=le" # SSL証明書自動取得
+      - "traefik.http.routers.saving-v2.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.next-bic-saving-v2.loadbalancer.server.port=3000"
       - "traefik.http.routers.saving-v2.service=next-bic-saving-v2@docker"
@@ -201,7 +197,6 @@ services:
       django-v2:
         condition: service_started
     environment:
-      # 🚨 修正: 外部アクセス可能なステージングドメイン (HTTPS) に変更
       NEXT_PUBLIC_API_URL: https://stg.avflash.xyz/api
       NODE_ENV: production
     networks:
@@ -210,14 +205,14 @@ services:
     labels:
       - "traefik.enable=true"
       
-      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
       # 1. ルーター定義: stg.avflash.xyz のルートで受け付ける
       - "traefik.http.routers.avflash-v2.rule=Host(`stg.avflash.xyz`)"
-      - "traefik.http.routers.avflash-v2.entrypoints=websecure" # HTTPSに変更
+      - "traefik.http.routers.avflash-v2.entrypoints=websecure"
       - "traefik.http.routers.avflash-v2.priority=100"
-      - "traefik.http.routers.avflash-v2.tls.certresolver=le" # SSL証明書自動取得
+      - "traefik.http.routers.avflash-v2.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.next-avflash-v2.loadbalancer.server.port=3000"
       - "traefik.http.routers.avflash-v2.service=next-avflash-v2@docker"
@@ -236,14 +231,14 @@ services:
     labels:
       - "traefik.enable=true"
       
-      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
       # ルーター定義: /static/ (stg.ドメイン + HTTPS)
       - "traefik.http.routers.static-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/static`)"
-      - "traefik.http.routers.static-v2.entrypoints=websecure" # HTTPSに変更
+      - "traefik.http.routers.static-v2.entrypoints=websecure"
       - "traefik.http.routers.static-v2.priority=200"
-      - "traefik.http.routers.static-v2.tls.certresolver=le" # SSL証明書自動取得
+      - "traefik.http.routers.static-v2.tls.certresolver=le"
       # サービス定義
       - "traefik.http.services.nginx-v2.loadbalancer.server.port=80"
       - "traefik.http.routers.static-v2.service=nginx-v2@docker"
@@ -283,10 +278,9 @@ services:
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
-      # VPSデプロイ用のURLに修正 (HTTPS/標準ポート)
       WORDPRESS_CONFIG_EXTRA: |
-        define('WP_HOME', 'https://stg.blog.tiper.live'); # 👈 修正
-        define('WP_SITEURL', 'https://stg.blog.tiper.live'); # 👈 修正
+        define('WP_HOME', 'https://stg.blog.tiper.live');
+        define('WP_SITEURL', 'https://stg.blog.tiper.live');
     volumes:
       - wordpress_data:/var/www/html
     networks:
@@ -308,14 +302,14 @@ services:
     labels:
       - "traefik.enable=true"
       
-      # ★ 修正点: Traefikに接続ネットワークを明示 (IPアドレス検出エラー対策)
+      # ★ 修正点: Traefikに接続ネットワークを明示
       - "traefik.docker.network=internal-net"
       
       # 1. ルーター定義: stg.blog.tiper.live のルートで受け付ける
       - "traefik.http.routers.blog-v2.rule=Host(`stg.blog.tiper.live`)"
-      - "traefik.http.routers.blog-v2.entrypoints=websecure" # HTTPSに変更
+      - "traefik.http.routers.blog-v2.entrypoints=websecure"
       - "traefik.http.routers.blog-v2.priority=100"
-      - "traefik.http.routers.blog-v2.tls.certresolver=le" # SSL証明書自動取得
+      - "traefik.http.routers.blog-v2.tls.certresolver=le"
       # 3. サービス定義
       - "traefik.http.services.nginx-wp-v2.loadbalancer.server.port=80"
       - "traefik.http.routers.blog-v2.service=nginx-wp-v2@docker"
@@ -329,22 +323,24 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      # ★ 修正点: Traefikが監視すべきネットワークを明示
+      - "--providers.docker.network=internal-net" 
       - "--accesslog=true"
       - "--log.level=INFO"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443" # 👈 HTTPSエントリーポイント追加
+      - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.le.acme.email=bicstation@gmail.com" # 👈 🚨 ここを必ず修正
       - "--certificatesresolvers.le.acme.storage=/etc/traefik/acme.json"
-      - "--certificatesresolvers.le.acme.tlschallenge=true" # ACMEチャレンジ方式
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
       - "--api.insecure=true"
     ports:
-      - "80:80"       # 👈 HTTPの標準ポートにバインド
-      - "443:443"     # 👈 HTTPSの標準ポートにバインド
-      - "8085:8080" # Traefikダッシュボード用 (デバッグ用として残す)
+      - "80:80"
+      - "443:443"
+      - "8085:8080"
     
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_certs:/etc/traefik # 👈 認証情報と証明書を永続化するためのボリューム
+      - traefik_certs:/etc/traefik
       
     networks:
       - internal-net
@@ -361,7 +357,7 @@ volumes:
     driver: local
   mariadb_data:
     driver: local
-  traefik_certs: # 👈 Traefik証明書用ボリューム
+  traefik_certs:
     driver: local
 
 # ネットワーク定義 (最上位レベル)
