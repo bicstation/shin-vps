@@ -1,0 +1,41 @@
+# ファイル名: .github/workflows/deploy_stg.yml
+
+name: Stage Deployment
+
+on:
+  push:
+    branches:
+      # main ブランチに push されたときにデプロイを実行
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Staging VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # VPS上で実行するコマンド
+          script: |
+            # 1. Docker Composeファイルがあるディレクトリへ移動
+            cd /home/maya/shin-vps
+            
+            # 2. 最新のコードを Git からプル
+            #    VPS上でgit pullする際、ローカルでの変更が競合しないように注意してください。
+            git pull origin main
+            
+            # 3. ステージング環境のコンテナを再ビルドし、再起動
+            #    【重要】全てのビルド対象サービスをリストアップ
+            sudo docker compose -f docker-compose.stg.yml -p stg build django-v2 next-bicstation-v2 next-tiper-v2 next-bic-saving-v2 next-avflash-v2 wordpress-v2 nginx-wp-v2 nginx-v2
+            
+            # 4. 全てのサービスを起動 (依存関係にあるDBなども含めて)
+            sudo docker compose -f docker-compose.stg.yml -p stg up -d --remove-orphans
+            
+            echo "Staging deployment completed successfully."

@@ -1,4 +1,4 @@
-# サービス定義 (VPS本番デプロイ用)
+# サービス定義 (VPSステージングデプロイ用)
 services:
 
   # 1. PostgreSQL データベース (Django専用)
