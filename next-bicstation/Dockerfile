@@ -1,0 +1,60 @@
+# --- 💡 修正: ビルド時引数の受け取り (docker-compose.yml の args と連携) ---
+ARG NEXT_PUBLIC_APP_TITLE
+# --------------------------------------------------------------------------
+
+# --- ステージ 1: ビルドステージ ---
+FROM node:18-slim AS builder 
+
+# 実行ユーザーの定義 (node:slim は Debian ベース)
+RUN addgroup --gid 1001 nodejs || true
+RUN adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
+WORKDIR /app
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm install
+
+# ----------------------------------------------------
+# 🛑 最終修正: ARG の値を ENV にマッピング (Next.jsビルド用)
+# ----------------------------------------------------
+# ARGで受け取った変数を、ビルド時にNext.jsが読み取れる環境変数として設定する
+ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
+# ----------------------------------------------------
+
+# ----------------------------------------------------
+# 🛑 修正: Debian/Ubuntu (slim) 用の日本語フォントインストール
+# ----------------------------------------------------
+
+# (1) パッケージリストを更新し、(2) 日本語フォントパッケージをインストール
+RUN apt-get update && apt-get install -y fonts-ipafont-gothic
+
+# apt-get clean は、コンテナサイズを抑えるために推奨されます
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# ----------------------------------------------------
+# 🛑 ここまで修正
+# ----------------------------------------------------
+
+COPY . .
+RUN npm run build
+
+# --- ステージ 2: プロダクション (本番実行) ステージ ---
+FROM node:18-slim AS runner 
+
+# 実行ユーザーの定義 (builderステージと同じuid/gidを使用)
+RUN addgroup --gid 1001 nodejs || true
+RUN adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
+WORKDIR /app
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.mjs ./next.config.mjs
+
+# ----------------------------------------------------
+# 🛑 Node.jsのエンコーディングをUTF-8に設定
+# ----------------------------------------------------
+ENV LANG=C.UTF-8
+
+USER nextjs
+EXPOSE 3000
+CMD ["npm", "start"]

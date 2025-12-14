@@ -29,7 +29,8 @@ services:
       context: ./django
       dockerfile: Dockerfile
     container_name: api_django_v2
-    restart: always
+    # ✅ 修正: サービスが正常に起動するようになったため、restart: always を元に戻す
+    restart: always 
     deploy:
       resources:
         limits:
@@ -80,8 +81,9 @@ services:
       # 5. サービス定義
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
       
-    # 🚨 修正: command を削除し、entrypoint.sh を実行するように変更
+    # 🚨 修正: command を追加し、entrypoint.sh の起動ロジックを確実に実行させる
     entrypoint: ["/usr/src/app/entrypoint.sh"]
+    command: ["gunicorn"] 
 
     volumes:
       - ./django:/usr/src/app 
@@ -347,7 +349,7 @@ services:
       - internal-net
 # ------------------------------------------------------------------
 
-# ボリューム定義 (最上位レベル)   
+# ボリューム定義 (最上位レベル)   
 volumes:
   postgres_data:
     driver: local
