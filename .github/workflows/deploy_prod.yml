@@ -25,7 +25,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          portt: 2222
+          port: 2222
           
           # ローカルの全ファイルをVPSのプロジェクトディレクトリへ転送
           source: "." 
