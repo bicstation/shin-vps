@@ -40,10 +40,10 @@ export default async function Page() {
         {/* 4. メインエリア */}
         <main style={{ flexGrow: 1, padding: '20px' }}>
           <h2 style={{ color: '#007bff' }}>メインコンテンツエリア</h2>
-          <p>このエリアは、**{title}** の固有のロジックやデータを表示します。</p>
+          <p>このエリアは、**{title}** の固有のロジックやデータを表示します。(ビック的節約生活)</p>
           <div style={{ background: 'white', padding: '15px', border: '1px solid #ddd' }}>
             <p>ここに複雑なUIコンポーネントや動的なデータが表示されます。</p>
-            <p style={{ fontStyle: 'italic', color: '#999' }}>Next.jsコンテナ: {title} (App Router)</p>
+            <p style={{ fontStyle: 'italic', color: '#999' }}>Next.jsコンテナ: {title} (App Router：ビック的節約生活)</p>
           </div>
         </main>
       </div>

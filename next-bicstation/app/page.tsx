@@ -39,7 +39,7 @@ export default async function Page() {
           <p>このエリアは、**{title}** の固有のロジックやデータを表示します。</p>
           <div style={{ background: 'white', padding: '15px', border: '1px solid #ddd' }}>
             <p>ここに複雑なUIコンポーネントや動的なデータが表示されます。</p>
-            <p style={{ fontStyle: 'italic', color: '#999' }}>Next.jsコンテナ: {title} (App Router)</p>
+            <p style={{ fontStyle: 'italic', color: '#999' }}>Next.jsコンテナ: {title} (App Router:bicstation.com)</p>
           </div>
         </main>
       </div>
