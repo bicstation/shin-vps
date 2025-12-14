@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      # 1. 【🚨 変更点: scp-action を使用して、最新ファイルを VPS に確実に同期】
+      # 1. 【scp-action を使用して、最新ファイルを VPS に確実に同期】
       - name: Sync Files to VPS (rsync via SCP)
         uses: appleboy/scp-action@v0.1.7 # scp-action に変更
         with:
@@ -25,7 +25,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 2222
+          port: 2222 # ✅ scp-action にてポート 2222 を指定
           
           # ローカルの全ファイルをVPSのプロジェクトディレクトリへ転送
           source: "." 
@@ -34,20 +34,19 @@ jobs:
           flags: "-rtzq --delete" 
 
 
-      # 2. 【🚨 変更点: ssh-action を使ってコマンドのみ実行】
+      # 2. 【ssh-action を使ってコマンドのみ実行】
       - name: Deploy to Production VPS via SSH (Docker Compose Up)
         uses: appleboy/ssh-action@v1.0.3
         with:
-          # 【削除】ファイル転送関連のパラメータ (src, target, sync) は scp-action に移動したため削除
           host: ${{ secrets.SSH_HOST_PROD }} 
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: 2222 # ✅ 【重要】ssh-action にてポート 2222 を追記
           
           # VPS上で実行するコマンド
           script: |
             # 1. Docker Composeファイルがあるディレクトリへ移動
-            # ※ ファイルは scp-action によって最新に転送済みです
             cd /home/maya/shin-vps
             
             # 2. 本番環境のコンテナを再ビルドし、再起動
