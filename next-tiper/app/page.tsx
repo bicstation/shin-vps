@@ -1,67 +1,117 @@
-// ファイル名: C:\dev\SHIN-VPS\next-tiper\app\page.tsx (最終版)
+// ファイル名: C:\dev\SHIN-VPS\next-tiper\app\page.tsx (TOPページ - フルコード)
 
-import React from 'react';
-import Link from 'next/link'; // layout.tsxから移動しても問題ないですが、ここでは残します
+import Link from 'next/link';
+// 💡 作成したクライアントコンポーネントをインポート
+import FeaturedCard from './components/FeaturedCard'; 
 
-// Pageファイルは async Server Component にします
-export default async function Page() {
-    
-    // 💡 修正: 環境変数からタイトルを取得
-    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'デモタイトルが見つかりません';
+// TOPページコンポーネント
+export default function Home() {
 
-    return (
-        // layout.tsx の <main> の中に入るコンテンツ
-        <div style={{ padding: '0px' }}>
+  const sectionStyle: React.CSSProperties = {
+    padding: '60px 80px',
+    backgroundColor: '#111122', 
+    borderBottom: '1px solid #3d3d66',
+    color: 'white',
+  };
 
-            {/* 🚀 デプロイ成功確認用ブロック (目立つように赤色で強調) */}
-            <div style={{ 
-                backgroundColor: '#3a1f1f', // 暗めの赤背景で警告/成功を強調
-                padding: '30px', 
-                marginBottom: '30px',
-                borderRadius: '8px', 
-                textAlign: 'center',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.7)',
-                border: '1px solid #e94560'
+  const titleStyle: React.CSSProperties = {
+    color: '#e94560',
+    fontSize: '2.5em',
+    borderBottom: '2px solid #3d3d66',
+    paddingBottom: '10px',
+    marginBottom: '30px',
+  };
+
+  // --- ダミーデータ ---
+  const latestPosts = [
+    { id: 5, title: '【速報】Django API連携環境構築が完了', category: 'Dev', date: '2025/12/15' },
+    { id: 4, title: 'TOPページのレイアウト設計を開始', category: 'Layout', date: '2025/12/15' },
+    { id: 3, title: '静的ページ（/about）のルーティング設定', category: 'Dev', date: '2025/12/15' },
+    { id: 2, title: 'カテゴリページにサイドバーを実装', category: 'Layout', date: '2025/12/14' },
+  ];
+  const featuredCategories = [
+    { name: 'データ分析', link: '/category/data', color: '#99e0ff' },
+    { name: '開発ログ', link: '/category/dev', color: '#e94560' },
+    { name: 'マーケティング', link: '/category/marketing', color: '#00d1b2' },
+    { name: '技術トレンド', link: '/category/trend', color: '#ffdd57' },
+  ];
+
+  return (
+    <div style={{ backgroundColor: '#111122', minHeight: '80vh' }}>
+      
+      {/* ==================================== */}
+      {/* 1. ヒーローセクション (サイトのキャッチコピー) */}
+      {/* ==================================== */}
+      <section style={{...sectionStyle, textAlign: 'center', backgroundColor: '#1f1f3a', borderBottomColor: '#e94560'}}>
+        <h2 style={{ color: 'white', fontSize: '3.5em', margin: '0 0 10px 0' }}>
+            Tiper Live Data Hub
+        </h2>
+        <p style={{ color: '#99e0ff', fontSize: '1.5em', marginBottom: '30px' }}>
+            最新技術と市場データをリアルタイムで提供します。
+        </p>
+        <Link href="/category" style={{ 
+            display: 'inline-block', 
+            padding: '12px 30px', 
+            backgroundColor: '#e94560', 
+            color: 'white', 
+            textDecoration: 'none',
+            borderRadius: '5px',
+            fontWeight: 'bold',
+            fontSize: '1.1em'
+        }}>
+            記事一覧へ
+        </Link>
+      </section>
+
+
+      {/* ==================================== */}
+      {/* 2. ニュースフィード (最新記事リスト) */}
+      {/* ==================================== */}
+      <section style={sectionStyle}>
+        <h2 style={titleStyle}>🆕 最新ニュースフィード</h2>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {latestPosts.map(post => (
+            <li key={post.id} style={{ 
+                padding: '15px 0', 
+                borderBottom: '1px dotted #3d3d66',
+                display: 'flex',
+                justifyContent: 'space-between'
             }}>
-                <h2 style={{ 
-                    color: '#e94560', 
-                    fontSize: '2.5em', 
-                    margin: '0 0 10px 0',
-                    textShadow: '0 0 8px rgba(233, 69, 96, 0.9)' // ネオン風
-                }}>
-                    ✅ デプロイ成功確認済み v2.0
-                </h2>
-                <p style={{ 
-                    fontSize: '1.2em', 
-                    color: '#ffffff', 
-                    margin: 0 
-                }}>
-                    この変更がVPSのステージング環境に反映されました！GitHub Actions フローは安定しています。
-                </p>
-            </div>
-            
-            {/* ------------------------------------------------------------- */}
-            {/* 既存のコンテンツエリア */}
-            {/* ------------------------------------------------------------- */}
-
-            <h2 style={{ color: '#99e0ff', borderBottom: '1px solid #3d3d66', paddingBottom: '10px' }}>
-                メインコンテンツエリア
-            </h2>
-            <p style={{ color: '#ccc' }}>
-                このエリアは、<strong style={{color: '#fff'}}>{title}</strong> の固有のロジックやデータを表示します。
-            </p>
-            
-            {/* 💡 修正: Linkコンポーネントはレイアウト側にあるため、ここでは単なるデモリンクに戻します */}
-            <div style={{ marginTop: '15px' }}>
-                <p style={{ color: '#fff' }}>リンクデモ:</p>
-                <Link href="/tiper/" style={{ textDecoration: 'none', color: '#99e0ff', display: 'block', padding: '5px 0' }}>Tiperトップへ</Link>
-                <Link href="/saving/" style={{ textDecoration: 'none', color: '#99e0ff', display: 'block', padding: '5px 0' }}>Savingへ</Link>
-            </div>
-            
-            <div style={{ background: '#2b2b4d', padding: '15px', border: '1px solid #3d3d66', borderRadius: '5px', marginTop: '20px' }}>
-                <p style={{ margin: 0 }}>ここに複雑なUIコンポーネントや動的なデータが表示されます。</p>
-                <p style={{ fontStyle: 'italic', color: '#aaa', margin: '5px 0 0 0' }}>Next.jsコンテナ: {title} (App Router)</p>
-            </div>
+              <Link href={`/post/${post.id}`} style={{ color: 'white', textDecoration: 'none', fontSize: '1.1em' }}>
+                {post.title}
+              </Link>
+              <span style={{ color: '#aaa', fontSize: '0.9em' }}>
+                <span style={{ color: '#e94560', marginRight: '10px' }}>[{post.category}]</span> 
+                {post.date}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <div style={{ textAlign: 'right', marginTop: '20px' }}>
+             <Link href="/category" style={{ color: '#99e0ff', textDecoration: 'none', fontWeight: 'bold' }}>
+                → 全ての記事を見る
+            </Link>
         </div>
-    );
-};
+      </section>
+      
+      {/* ==================================== */}
+      {/* 3. 注目カテゴリ (カード形式) */}
+      {/* ==================================== */}
+      <section style={sectionStyle}>
+        <h2 style={titleStyle}>✨ 注目カテゴリ</h2>
+        <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          {/* 💡 クライアントコンポーネントを使用 */}
+          {featuredCategories.map((cat) => (
+            <FeaturedCard 
+                key={cat.name} 
+                name={cat.name} 
+                link={cat.link} 
+                color={cat.color} 
+            />
+          ))}
+        </div>
+      </section>
+
+    </div>
+  );
+}
