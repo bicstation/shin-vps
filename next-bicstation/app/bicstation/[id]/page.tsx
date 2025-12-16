@@ -40,12 +40,12 @@ interface PostPageProps {
 
 // 💡 データを取得するサーバー関数 (WordPress API向け)
 async function fetchPostData(postSlug: string): Promise<WpPost | null> {
-    // 🚨 修正点1: カスタム投稿タイプ 'bicstation_post' をスラッグで検索
+    // 🚨 カスタム投稿タイプ 'bicstation_post' をスラッグで検索
     const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/bicstation_post?slug=${postSlug}&_embed&per_page=1`; 
 
     try {
         const res = await fetch(WP_API_URL, {
-            // 🚨 修正点2: Hostヘッダーを「Bicstation」のドメインに設定
+            // 🚨 Hostヘッダーを「Bicstation」のドメインに設定
             headers: {
                 'Host': 'stg.blog.bicstation.com' 
             },
@@ -75,6 +75,45 @@ async function fetchPostData(postSlug: string): Promise<WpPost | null> {
         return null; 
     }
 }
+
+
+// ===============================================
+// 💡 追加: generateStaticParams 関数 
+// ビルド時にアクセスする全ての記事スラッグを取得し、静的生成します
+// ===============================================
+export async function generateStaticParams() {
+    // 🚨 記事スラッグのみを効率的に取得 (bicstation_post)
+    const WP_SLUGS_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/bicstation_post?_fields=slug&per_page=100`; 
+
+    try {
+        const res = await fetch(WP_SLUGS_API_URL, {
+            headers: {
+                // 🚨 Hostヘッダーを設定
+                'Host': 'stg.blog.bicstation.com' 
+            },
+            // ビルド時に実行されるため、キャッシュなしでOK
+            cache: 'no-store', 
+        });
+        
+        if (!res.ok) {
+            console.error(`generateStaticParams API Error: ${res.status} ${res.statusText}`);
+            return [];
+        }
+
+        const slugs: { slug: string }[] = await res.json();
+        
+        // 戻り値の形式を Next.js の要件 { id: string } に変換
+        return slugs.map((post) => ({
+            // URLパラメータ名が [id] なので、キーは id にする
+            id: post.slug, 
+        }));
+
+    } catch (error) {
+        console.error("Failed to fetch slugs for generateStaticParams:", error);
+        return [];
+    }
+}
+
 
 // ユーティリティ関数: HTMLエンティティをデコード
 const decodeHtml = (html: string) => {

@@ -1,4 +1,4 @@
-// ファイル名: C:\dev\SHIN-VPS\next-bic-saving\app\saving\[id]\page.tsx
+// ファイル名: C:\dev\SHIN-VPS\next-tiper\app\tiper\[id]\page.tsx
 
 // 💡 Linter と TypeScript のチェックを無効化 (赤線対策)
 /* eslint-disable react/no-unescaped-entities */
@@ -19,7 +19,7 @@ interface WpPost {
     content: {
         rendered: string; // 記事本文のHTML
     };
-    author: string; // 著者名
+    author: string; // 著者名を取得するロジックは後述
     _embedded?: {
         'wp:term'?: {
             name: string;
@@ -34,20 +34,19 @@ interface WpPost {
 // Next.jsの動的ルートからパラメータを受け取るための型定義
 interface PostPageProps {
     params: {
-        id: string; // URLから渡される記事スラッグ
+        id: string; // URLから渡される記事スラッグ (例: 'post-slug', '%E3%83%86%E3%82%B9%E3%83%88')
     };
 }
 
 // 💡 データを取得するサーバー関数 (WordPress API向け)
 async function fetchPostData(postSlug: string): Promise<WpPost | null> {
-    // 🚨 カスタム投稿タイプ 'saving_post' をスラッグで検索
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/saving_post?slug=${postSlug}&_embed&per_page=1`; 
+    // Tiper.live のカスタム投稿タイプ 'tiper' をスラッグで検索
+    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?slug=${postSlug}&_embed&per_page=1`; 
 
     try {
         const res = await fetch(WP_API_URL, {
-            // 🚨 Hostヘッダーを「ビック的節約生活」のドメインに設定
             headers: {
-                'Host': 'stg.blog.bic-saving.com' 
+                'Host': 'stg.blog.tiper.live' 
             },
             next: { revalidate: 3600 } 
         });
@@ -60,14 +59,11 @@ async function fetchPostData(postSlug: string): Promise<WpPost | null> {
         const data: WpPost[] = await res.json();
         
         if (data.length === 0) {
-            return null; // 記事が見つからない
+            return null;
         }
 
         const post = data[0];
-
-        // 著者名を取得 (なければ '不明な著者' とする)
         const authorName = post._embedded?.author?.[0]?.name || '不明な著者';
-
         return { ...post, author: authorName };
 
     } catch (error) {
@@ -82,14 +78,13 @@ async function fetchPostData(postSlug: string): Promise<WpPost | null> {
 // ビルド時にアクセスする全ての記事スラッグを取得し、静的生成します
 // ===============================================
 export async function generateStaticParams() {
-    // 🚨 記事スラッグのみを効率的に取得 (saving_post)
-    const WP_SLUGS_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/saving_post?_fields=slug&per_page=100`; 
+    // 記事スラッグのみを効率的に取得 (tiper_post)
+    const WP_SLUGS_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?_fields=slug&per_page=100`; 
 
     try {
         const res = await fetch(WP_SLUGS_API_URL, {
             headers: {
-                // 🚨 Hostヘッダーを設定
-                'Host': 'stg.blog.bic-saving.com' 
+                'Host': 'stg.blog.tiper.live' 
             },
             // ビルド時に実行されるため、キャッシュなしでOK
             cache: 'no-store', 
@@ -115,13 +110,13 @@ export async function generateStaticParams() {
 }
 
 
-// ユーティリティ関数: HTMLエンティティをデコード
+// ユーティリティ関数: HTMLエンティティをデコード (省略なし)
 const decodeHtml = (html: string) => {
     const map: { [key: string]: string } = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
     return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (match) => map[match] || match);
 };
 
-// ユーティリティ関数: 日付フォーマット (例: 2025/12/16)
+// ユーティリティ関数: 日付フォーマット (省略なし)
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
         year: 'numeric',
@@ -134,9 +129,10 @@ const formatDate = (dateString: string) => {
 // Next.js Server Component (async function)
 export default async function PostPage({ params }: PostPageProps) {
     
-    // URLから取得したエンコード済みのID (スラッグ) をデコード
+    // 🚨 修正点: URLから取得したエンコード済みのID (スラッグ) をデコードする
     const postSlug = decodeURIComponent(params.id);
     
+    // データを取得 (デコードされたスラッグを使用)
     const post = await fetchPostData(postSlug);
 
     // 記事が見つからなかった場合は 404 ページを表示
@@ -147,38 +143,36 @@ export default async function PostPage({ params }: PostPageProps) {
     const postTitle = decodeHtml(post.title.rendered);
     const postDate = formatDate(post.date);
 
-    // サイトカラー: #ffcc00 (page.tsxと合わせる)
-    const SITE_COLOR = '#ffcc00'; 
-
     return (
-        <div style={{ padding: '40px 80px', maxWidth: '1000px', margin: '0 auto', backgroundColor: '#fff' }}>
+        <div style={{ padding: '40px 80px', maxWidth: '1000px', margin: '0 auto' }}>
 
             {/* 1. 記事タイトルとメタ情報 */}
             <h1 style={{ 
-                color: SITE_COLOR, 
+                color: '#e94560', 
                 fontSize: '2.5em', 
-                borderBottom: `3px solid ${SITE_COLOR}`, 
+                borderBottom: '3px solid #3d3d66', 
                 paddingBottom: '10px' 
             }}>
                 {postTitle}
             </h1>
-            <div style={{ color: '#666', fontSize: '0.9em', marginBottom: '30px' }}>
+            <div style={{ color: '#aaa', fontSize: '0.9em', marginBottom: '30px' }}>
                 <span>著者: {post.author}</span>
                 <span style={{ marginLeft: '20px' }}>公開日: {postDate}</span>
                 {/* スラッグを表示 */}
-                <span style={{ marginLeft: '20px', color: '#999' }}>スラッグ: {post.slug}</span>
+                <span style={{ marginLeft: '20px', color: '#99e0ff' }}>スラッグ: {post.slug}</span>
             </div>
 
             {/* 2. 記事コンテンツ */}
+            {/* WordPressの content.rendered には記事本文の HTML が含まれる */}
             <div 
-                style={{ fontSize: '1.05em', lineHeight: '1.7', color: '#333' }}
+                style={{ fontSize: '1.05em', lineHeight: '1.7', color: '#ccc' }}
                 dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
             />
             
             {/* 3. コメントや関連情報のプレースホルダー */}
-            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #ccc' }}>
-                <h3 style={{ color: SITE_COLOR }}>コメントセクション (仮)</h3>
-                <p style={{ color: '#666' }}>この下にコメントフォームや関連記事が表示されます。</p>
+            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #3d3d66' }}>
+                <h3 style={{ color: '#99e0ff' }}>コメントセクション (仮)</h3>
+                <p style={{ color: '#ccc' }}>この下にコメントフォームや関連記事が表示されます。</p>
             </div>
 
         </div>
