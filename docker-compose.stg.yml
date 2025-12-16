@@ -277,7 +277,8 @@ services:
       mariadb-v2:
         condition: service_healthy
     environment:
-      WORDPRESS_DB_HOST: mariadb-v2:3306
+      # 🚨 修正済み: ポート番号を削除し、サービス名のみに
+      WORDPRESS_DB_HOST: mariadb-v2 
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
@@ -316,6 +317,31 @@ services:
       # 3. サービス定義
       - "traefik.http.services.nginx-wp-v2.loadbalancer.server.port=80"
       - "traefik.http.routers.blog-v2.service=nginx-wp-v2@docker"
+
+  # 14. phpMyAdmin (MariaDB管理ツール) 
+  phpmyadmin-v2:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_v2
+    restart: always
+    depends_on:
+      mariadb-v2:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mariadb-v2 
+      PMA_USER: ${WP_DB_USER}
+      PMA_PASSWORD: ${WP_DB_PASSWORD}
+    networks:
+      - internal-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=internal-net"
+      # Traefik ルーティング定義: /phpmyadmin/ パスでアクセス可能にする
+      - "traefik.http.routers.phpmyadmin-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/phpmyadmin`)"
+      - "traefik.http.routers.phpmyadmin-v2.entrypoints=websecure"
+      - "traefik.http.routers.phpmyadmin-v2.priority=200" 
+      - "traefik.http.routers.phpmyadmin-v2.tls.certresolver=le"
+      - "traefik.http.services.phpmyadmin-v2.loadbalancer.server.port=80"
+      - "traefik.http.routers.phpmyadmin-v2.service=phpmyadmin-v2@docker"
       
   # 9. Traefik (リバースプロキシ & ルーティング自動検出)
   traefik:
