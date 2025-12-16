@@ -33,10 +33,21 @@ DEBUG = True
 # ホスト/CORS / CSRF 設定
 # ----------------------------------------------------
 # 開発用として全てのホストからのアクセスを許可
-ALLOWED_HOSTS = ['*'] 
+# しかし、ここでは Traefik 経由のドメインと Docker 内部名を設定します
+ALLOWED_HOSTS = [
+    # 💡 stg.tiper.live を追加 (Next.jsとTraefik経由のアクセス用)
+    'stg.tiper.live', 
+    
+    # Docker 内部サービス名 (Traefikがリバースプロキシする際に使用)
+    # Traefik設定でこのドメインをターゲットにしている場合のみ必要
+    # 'api.stg.tiper.live', 
+    
+    '*' # 開発中は便宜上'*'のままでも動作しますが、本番では削除必須
+]
 
 # CORS設定
 CORS_ALLOWED_ORIGINS = [ 
+    "https://stg.tiper.live",
     # Next.js アプリケーションが Nginx 経由でアクセスする URL
     "http://localhost:8080",
     # Docker 内部ホスト名 (host.docker.internal はホストOSを参照)
@@ -47,6 +58,7 @@ CORS_ALLOWED_ORIGINS = [
 
 # CSRFトークンをPOSTするオリジンを信頼する設定。
 CSRF_TRUSTED_ORIGINS = [
+    'https://stg.tiper.live',
     'http://localhost:8080',
     'http://127.0.0.1:8080',
     # 'host.docker.internal' はホスト名として機能しないため、URL形式で指定
