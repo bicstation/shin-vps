@@ -12,6 +12,7 @@ DB_USER=tiper_user
 DB_PASSWORD=1492nabe 
 
 # --- WordPress用 (MariaDB/MySQL) ---
+WORDPRESS_DB_HOST=mariadb-v2
 WP_DB_ROOT_PASSWORD=1492nabe
 WP_DB_NAME=wp_tiper_db
 WP_DB_USER=wp_tiper_user
@@ -66,16 +67,16 @@ VALUECOMMERCE_API_URL="[YOUR_VC_API_ENDPOINT]"
 # ====================================================
 
 # --- サイト 1: Bic-saving (bs_) ---
-SITE_PREFIX_SAVING=bs_          
-LINKSHARE_BS_SID=3750988        
-LINKSHARE_BS_USER=rkp_3750988  
+SITE_PREFIX_SAVING=bs_ 
+LINKSHARE_BS_SID=3750988
+LINKSHARE_BS_USER=rkp_3750988
 LINKSHARE_BS_PASS=u5NetPVZEAhABD7HuW2VRymP
 LINKSHARE_BS_DATA_PATH="/"
 
 # --- サイト 2: Bicstation (bc_) ---
-SITE_PREFIX_BICSTATION=bc_      
-LINKSHARE_BC_SID=3273700        
-LINKSHARE_BC_USER=rkp_3273700  
+SITE_PREFIX_BICSTATION=bc_
+LINKSHARE_BC_SID=3273700
+LINKSHARE_BC_USER=rkp_3273700
 LINKSHARE_BC_PASS=5OqF1NfuruvJlmuJXKQDRuzh
 LINKSHARE_BC_DATA_PATH="/"
 
@@ -100,4 +101,5 @@ TITLE_AVFLASH="Avflash デモ"
 ## 6. 🛡️ Traefik/デプロイ設定 (VPS用)
 # ====================================================
 # Let's Encrypt (ACME) 証明書発行に使用するメールアドレス
-TRAEFIK_ACME_EMAIL=[YOUR_VALID_EMAIL_ADDRESS] # 🚨 ここにご自身の有効なアドレスを設定
+TRAEFIK_ACME_EMAIL=bicstation@gmail.com
+# 🚨 ここにご自身の有効なアドレスを設定

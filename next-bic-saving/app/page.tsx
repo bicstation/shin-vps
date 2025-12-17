@@ -24,14 +24,14 @@ interface WpPost {
 // 💡 データを取得するサーバー関数 (記事一覧向け)
 async function fetchPostList(): Promise<WpPost[]> {
     // 🚨 修正点: カスタム投稿タイプ 'saving_post' を指定
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/saving_post?_embed&per_page=5`; // 最新5件を取得
+    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/saving?_embed&per_page=5`; // 最新5件を取得
 
     try {
         const res = await fetch(WP_API_URL, {
             // 修正箇所: Hostヘッダーを追加して、WordPressに正しいドメイン名を伝える
             // 節約生活のドメイン名を設定
             headers: {
-                'Host': 'stg.blog.bic-saving.com' 
+                'Host': 'stg.blog.tiper.live' 
             },
             // リバリデートを長めに設定 (例: 3600秒 = 1時間)
             next: { revalidate: 3600 } 

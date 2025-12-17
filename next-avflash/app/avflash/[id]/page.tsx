@@ -83,7 +83,7 @@ async function fetchPostData(postSlug: string): Promise<WpPost | null> {
 // ===============================================
 export async function generateStaticParams() {
     // 🚨 記事スラッグのみを効率的に取得 (avflash_post)
-    const WP_SLUGS_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash_post?_fields=slug&per_page=100`; 
+    const WP_SLUGS_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_fields=slug&per_page=100`; 
 
     try {
         const res = await fetch(WP_SLUGS_API_URL, {

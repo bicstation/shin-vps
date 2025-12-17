@@ -41,13 +41,13 @@ interface PostPageProps {
 // 💡 データを取得するサーバー関数 (WordPress API向け)
 async function fetchPostData(postSlug: string): Promise<WpPost | null> {
     // 🚨 カスタム投稿タイプ 'saving_post' をスラッグで検索
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/saving_post?slug=${postSlug}&_embed&per_page=1`; 
+    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/saving?slug=${postSlug}&_embed&per_page=1`; 
 
     try {
         const res = await fetch(WP_API_URL, {
             // 🚨 Hostヘッダーを「ビック的節約生活」のドメインに設定
             headers: {
-                'Host': 'stg.blog.bic-saving.com' 
+                'Host': 'stg.blog.tiper.live' 
             },
             next: { revalidate: 3600 } 
         });
