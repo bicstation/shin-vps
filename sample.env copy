@@ -5,26 +5,28 @@
 # ====================================================
 
 # --- Django API用 (PostgreSQL) ---
-# DB_HOST を docker-compose.prod.yml のサービス名 (postgres-db-v2) に合わせる
 DB_HOST=postgres-db-v2 
 DB_PORT=5432
 DB_NAME=tiper_db
 DB_USER=tiper_user
-DB_PASSWORD=1492nabe # ★ 強力なパスワードに変更推奨
+DB_PASSWORD=1492nabe 
 
 # --- WordPress用 (MariaDB/MySQL) ---
-WP_DB_ROOT_PASSWORD=1492nabe # ★ 強力なパスワードに変更推奨
+WP_DB_ROOT_PASSWORD=1492nabe
 WP_DB_NAME=wp_tiper_db
 WP_DB_USER=wp_tiper_user
-WP_DB_PASSWORD=1492nabe # ★ 強力なパスワードに変更推奨
+WP_DB_PASSWORD=1492nabe
 
+# pgAdmin ログイン用 (ブラウザでログインする際の ID/PASS)
+PGADMIN_EMAIL=bicstation@gmail.com
+PGADMIN_PASSWORD=1492nabe
 
 # ====================================================
 ## 2. 🔐 アプリケーション共通シークレット
 # ====================================================
-DJANGO_SECRET_KEY='a_very_secure_secret_key_for_django_123456789' # ★ 本番環境では必ず変更
-ADMIN_JWT_SECRET="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY="
-APP_KEYS="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY="
+DJANGO_SECRET_KEY='a_very_secure_secret_key_for_django_123456789'  
+ADMIN_JWT_SECRET="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY=" # (必要に応じて変更)
+APP_KEYS="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY=" # (必要に応じて変更)
 
 
 # ====================================================
@@ -46,11 +48,11 @@ FANZA_API_URL="https://api.dmm.com/affiliate/v3/ItemList"
 FANZA_TOTAL_LIMIT=1000
 
 # --- LinkShare (楽天マーケティング) API/FTP 共通設定 ---
-LINKSHARE_FTP_HOST=aftp.linksynergy.com # 共通FTPホスト
-LS_CLIENT_ID="ybRFc2fz6l9Wc1rDgywekOuMfBRzOyUO" # 共通 OAuth 2.0 Client ID
-LS_CLIENT_SECRET="2J72oAHLaIbSocWC2RaA2Wm3oZ7TuLhL" # 共通 OAuth 2.0 Secret
-LS_TOKEN_URL="https://api.linksynergy.com/token" # ★ 追加: トークン取得エンドポイント
-LS_ACCOUNT_ID=3750988 # ★ 追加: トークン取得 scope に使用する SID (bs_の値を流用)
+LINKSHARE_FTP_HOST=aftp.linksynergy.com 
+LS_CLIENT_ID="ybRFc2fz6l9Wc1rDgywekOuMfBRzOyUO"
+LS_CLIENT_SECRET="2J72oAHLaIbSocWC2RaA2Wm3oZ7TuLhL"
+LS_TOKEN_URL="https://api.linksynergy.com/token"
+LS_ACCOUNT_ID=3750988 
 
 # --- バリューコマース API 設定 (プレフィックス: vc_) ---
 VALUECOMMERCE_PREFIX=vc_
@@ -64,18 +66,18 @@ VALUECOMMERCE_API_URL="[YOUR_VC_API_ENDPOINT]"
 # ====================================================
 
 # --- サイト 1: Bic-saving (bs_) ---
-SITE_PREFIX_SAVING=bs_          # DBテーブル/ファイル名プレフィックス
-LINKSHARE_BS_SID=3750988        # LinkShare レポート用 SID
-LINKSHARE_BS_USER=rkp_3750988   # LinkShare FTP ユーザー
-LINKSHARE_BS_PASS=u5NetPVZEAhABD7HuW2VRymP # LinkShare FTP パスワード
-LINKSHARE_BS_DATA_PATH="/" # 実際のFTP上のデータ格納パス
+SITE_PREFIX_SAVING=bs_          
+LINKSHARE_BS_SID=3750988        
+LINKSHARE_BS_USER=rkp_3750988  
+LINKSHARE_BS_PASS=u5NetPVZEAhABD7HuW2VRymP
+LINKSHARE_BS_DATA_PATH="/"
 
 # --- サイト 2: Bicstation (bc_) ---
-SITE_PREFIX_BICSTATION=bc_      # DBテーブル/ファイル名プレフィックス
-LINKSHARE_BC_SID=3273700        # LinkShare レポート用 SID
-LINKSHARE_BC_USER=rkp_3273700   # LinkShare FTP ユーザー
-LINKSHARE_BC_PASS=5OqF1NfuruvJlmuJXKQDRuzh # LinkShare FTP パスワード
-LINKSHARE_BC_DATA_PATH="/" # 実際のFTP上のデータ格納パス
+SITE_PREFIX_BICSTATION=bc_      
+LINKSHARE_BC_SID=3273700        
+LINKSHARE_BC_USER=rkp_3273700  
+LINKSHARE_BC_PASS=5OqF1NfuruvJlmuJXKQDRuzh
+LINKSHARE_BC_DATA_PATH="/"
 
 # --- その他サイト ---
 SITE_PREFIX_TIPER=ts_
@@ -86,13 +88,16 @@ SITE_PREFIX_AVFLASH=af_
 ## 5. 🖥️ Next.js/フロントエンド設定
 # ====================================================
 
-# --- API接続先設定 ---
-# Next.jsはブラウザで動作するため、Nginxを経由した外部URLを使用
-# Traefik/Nginxの公開ポート (8083) を使用
-NEXT_PUBLIC_API_URL=http://localhost:8083/api
+# NEXT_PUBLIC_API_URL=http://localhost:8083/api # 👈 デプロイ用構成では不要なためコメントアウト
 
 # --- サイトタイトル ---
 TITLE_BICSTATION="メインの Bicstation"
 TITLE_TIPER="Tiper デモ"
 TITLE_SAVING="Saving デモ"
 TITLE_AVFLASH="Avflash デモ"
+
+# ====================================================
+## 6. 🛡️ Traefik/デプロイ設定 (VPS用)
+# ====================================================
+# Let's Encrypt (ACME) 証明書発行に使用するメールアドレス
+TRAEFIK_ACME_EMAIL=[YOUR_VALID_EMAIL_ADDRESS] # 🚨 ここにご自身の有効なアドレスを設定
