@@ -94,6 +94,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 💡 ここに追加！
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,7 +108,10 @@ ROOT_URLCONF = 'tiper_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            # 💡 BASE_DIR (/django/) の中にある api/templates を明示的に指定
+            BASE_DIR / 'api' / 'templates',
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -158,6 +162,11 @@ USE_TZ = True
 # 静的ファイル (CSS, JavaScript, 画像)
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # デフォルトの主キー
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

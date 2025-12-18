@@ -1,23 +1,34 @@
 from django.contrib import admin
 from django import forms
-from django.utils.safestring import mark_safe 
-from .models import RawApiData, AdultProduct, LinkshareProduct, Genre, Actress, Maker, Label, Director, Series
+from django.utils.safestring import mark_safe
+from django.core.management import call_command
+from django.http import HttpResponseRedirect
+from django.urls import path
+from django.contrib import messages
+
+# 既存モデルのインポート（DugaProductを追加）
+from .models import (
+    RawApiData, AdultProduct, LinkshareProduct, 
+    Genre, Actress, Maker, Label, Director, Series
+)
 
 # ----------------------------------------------------
-# 0. AdultProduct 用カスタムフォームの定義
+# 0. AdultProduct 用カスタムフォーム
 # ----------------------------------------------------
-
 class AdultProductAdminForm(forms.ModelForm):
     class Meta:
         model = AdultProduct
         fields = '__all__'
 
 # ----------------------------------------------------
-# 1. AdultProduct (アダルト製品データ) のAdminクラス定義
+# 1. AdultProduct (アダルト製品データ) のAdminクラス
 # ----------------------------------------------------
 class AdultProductAdmin(admin.ModelAdmin):
     form = AdultProductAdminForm
     
+    # ボタンを表示するためのカスタムテンプレートを指定
+    change_list_template = "admin/adult_product_changelist.html"
+
     list_display = (
         'product_id_unique', 
         'title', 
@@ -54,103 +65,94 @@ class AdultProductAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_at', 'updated_at', 'product_id_unique', 'api_source', 'raw_data')
 
+    # --- ヘルパーメソッド ---
     def image_count(self, obj):
         if obj.image_url_list:
             return len(obj.image_url_list)
         return 0
     image_count.short_description = '画像件数'
-    image_count.admin_order_field = 'image_url_list'
     
     def display_first_image(self, obj):
         if obj.image_url_list and obj.image_url_list[0]:
             first_url = obj.image_url_list[0]
             return mark_safe(f'<img src="{first_url}" width="60" height="40" style="object-fit: cover; border-radius: 3px;" />')
         return "N/A"
-    
     display_first_image.short_description = '画像'
-    
+
+    # --- カスタムURL・アクション（ボタン用ロジック） ---
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('fetch-fanza/', self.fetch_fanza_action, name='fetch_fanza'),
+            path('fetch-duga/', self.fetch_duga_action, name='fetch_duga'),
+            path('normalize-data/', self.normalize_action, name='normalize_data'),
+            path('full-update/', self.full_update_action, name='full_update'),
+        ]
+        return custom_urls + urls
+
+    def fetch_fanza_action(self, request):
+        call_command('fetch_fanza')
+        self.message_user(request, "FANZAデータの取得が完了しました。")
+        return HttpResponseRedirect("../")
+
+    def fetch_duga_action(self, request):
+        call_command('fetch_duga')
+        self.message_user(request, "DUGAデータの取得が完了しました。")
+        return HttpResponseRedirect("../")
+
+    def normalize_action(self, request):
+        call_command('normalize_fanza') # もしDUGA用も共通ならここに追加
+        self.message_user(request, "データの正規化（仕分け）が完了しました。")
+        return HttpResponseRedirect("../")
+
+    def full_update_action(self, request):
+        self.message_user(request, "全データの一括更新を開始します...", messages.INFO)
+        call_command('fetch_fanza')
+        call_command('fetch_duga')
+        call_command('normalize_fanza')
+        self.message_user(request, "FANZA・DUGA・正規化のすべての工程が完了しました！")
+        return HttpResponseRedirect("../")
+
 # ----------------------------------------------------
-# 1.5 LinkshareProduct (ノーマル製品データ) のAdminクラス定義
+# 2. LinkshareProduct (ノーマル製品データ)
 # ----------------------------------------------------
 class LinkshareProductAdmin(admin.ModelAdmin): 
-    """LinkshareProduct用のAdminクラス"""
-    
-    # 💡 修正: 'sku_unique' を 'sku' に置き換える
     list_display = (
-        'id', 
-        'product_name', 
-        'sku',            # 👈 修正: sku_unique -> sku
-        'merchant_id', 
-        'merchant_name',  
-        'price',
-        'in_stock',       
-        'is_active', 
-        'updated_at',
+        'id', 'product_name', 'sku', 'merchant_id', 
+        'merchant_name', 'price', 'in_stock', 'is_active', 'updated_at',
     )
-    
-    # 💡 修正: list_display_links から 'sku_unique' を削除または置換
-    list_display_links = ('id', 'product_name', 'sku') # 👈 修正: sku_unique -> sku
-    
-    # 💡 修正: search_fields から 'sku_unique' を削除または置換
-    search_fields = ('product_name', 'sku', 'merchant_name') # 👈 修正: sku_unique -> sku
-    
+    list_display_links = ('id', 'product_name', 'sku')
+    search_fields = ('product_name', 'sku', 'merchant_name')
     list_filter = ('merchant_id', 'is_active', 'in_stock')
 
-    # 🚨 修正: fieldsets から 'sku_unique' を削除し、'sku' を使用
     fieldsets = (
-        ('基本情報', {
-            'fields': (
-                'product_name', 
-                'sku',             # 👈 sku を使用
-                # 'sku_unique',    # 👈 削除済みのため、ここでは参照しない
-                'merchant_name', 
-                'merchant_id', 
-            )
-        }),
-        ('価格・在庫・状態', {
-            'fields': ('price', 'in_stock', 'is_active', 'api_source',)
-        }),
-        ('データソース', {
-            'fields': ('affiliate_url', 'product_url', 'raw_csv_data',)
-        }),
-        ('日時', {
-            'fields': ('created_at', 'updated_at',),
-            'classes': ('collapse',),
-        }),
+        ('基本情報', {'fields': ('product_name', 'sku', 'merchant_name', 'merchant_id')}),
+        ('価格・在庫・状態', {'fields': ('price', 'in_stock', 'is_active', 'api_source')}),
+        ('データソース', {'fields': ('affiliate_url', 'product_url', 'raw_csv_data')}),
+        ('日時', {'fields': ('created_at', 'updated_at'), 'classes': ('collapse',)}),
     )
-
     readonly_fields = ('created_at', 'updated_at')
 
-
 # ----------------------------------------------------
-# 2. Genre (ジャンル) のAdminクラス定義
+# 3. ジャンル・その他マスター
 # ----------------------------------------------------
 class GenreAdmin(admin.ModelAdmin):
-    list_display = (
-        'name', 
-        'product_count', 
-        'api_source',
-        'created_at',
-    )
+    list_display = ('name', 'product_count', 'api_source', 'created_at')
     list_filter = ('api_source',)
     search_fields = ('name',)
-    
-# ----------------------------------------------------
-# 3. その他のモデルのAdminクラス定義
-# ----------------------------------------------------
+
 class EntityAdmin(admin.ModelAdmin):
     list_display = ('name', 'product_count', 'api_source', 'created_at')
     list_filter = ('api_source',)
     search_fields = ('name',)
-    
+
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'created_at')
     list_filter = ('api_source',)
     search_fields = ('id',)
 
-
 # ----------------------------------------------------
-# 4. モデルとAdminクラスのペア登録
+# 4. 登録
 # ----------------------------------------------------
 admin.site.register(AdultProduct, AdultProductAdmin)
 admin.site.register(LinkshareProduct, LinkshareProductAdmin) 
