@@ -21,11 +21,15 @@ COPY package.json ./
 COPY package-lock.json ./
 RUN npm install
 
+# ★ここに追加！これがないと日本のネットワークでは低速で止まります
+RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list
+
 # ----------------------------------------------------
 # 🛑 追加: Debianベースで日本語フォントをインストール (RUN 1行で最適化)
 # ----------------------------------------------------
 # パッケージリストを更新し、日本語フォントをインストール後、キャッシュをクリーンアップ
-RUN apt-get update \
+RUN apt-get update || true \
     && apt-get install -y fonts-ipafont-gothic \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

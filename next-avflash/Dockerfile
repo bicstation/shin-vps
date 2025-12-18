@@ -8,6 +8,10 @@ FROM node:20-slim AS builder
 RUN addgroup --gid 1001 nodejs || true
 RUN adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
 WORKDIR /app
+# --- ここに追加！ ---
+RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list
+# ------------------
 COPY package.json ./
 COPY package-lock.json ./
 RUN npm install
@@ -24,7 +28,7 @@ ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
 # ----------------------------------------------------
 
 # パッケージリストを更新し、日本語フォントをインストール後、キャッシュをクリーンアップ
-RUN apt-get update \
+RUN apt-get update || true \
     && apt-get install -y fonts-ipafont-gothic \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

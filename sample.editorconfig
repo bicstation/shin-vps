@@ -1,0 +1,23 @@
+# http://editorconfig.org
+root = true
+
+[*]
+# 基本設定：スペース2つで統一（Next.js/TSX向け）
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.py]
+# Python (Django) 用の設定：PEP8に基づきスペース4つ
+indent_size = 4
+
+[*.{js,jsx,ts,tsx,json,css,scss}]
+# フロントエンド関連：スペース2つを明示
+indent_size = 2
+
+[Makefile]
+# Makefileはタブである必要があるため例外設定
+indent_style = tab

@@ -1,9 +1,13 @@
-# Python公式のイメージを使用
+# Python公式のイメージを使用w
 FROM python:3.11-slim
+
+# 変更：セキュリティリポジトリの置換をより正確にし、かつエラーを無視するように修正
+RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list
 
 # OSの依存関係をインストール（psycopg2に必要なライブラリとncコマンド）
 # --- 変更箇所: netcat-openbsd を追加しました ---
-RUN apt-get update && apt-get install -y \
+RUN apt-get update || true && apt-get install -y \
     libpq-dev \
     gcc \
     netcat-openbsd \
