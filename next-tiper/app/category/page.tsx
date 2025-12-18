@@ -1,32 +1,40 @@
-// ファイル名: C:\dev\SHIN-VPS\next-tiper\app\category\page.tsx
+// E:\shin-vps\next-tiper\app\category\page.tsx
 
-import CategoryLayout from '../components/CategoryLayout'; // 作成したレイアウトをインポート
+/* eslint-disable react/no-unescaped-entities */
+// @ts-nocheck
+import React from 'react';
 import Link from 'next/link';
 
-// カテゴリページのメタデータ
 export const metadata = {
     title: 'カテゴリ一覧 | Tiper Live',
     description: '記事のカテゴリ一覧ページです。',
 };
 
-// カテゴリのトップページ
 export default function CategoryPage() {
+  const containerStyle: React.CSSProperties = {
+    padding: '60px 20px',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    backgroundColor: '#111122',
+    color: 'white',
+    minHeight: '100vh',
+  };
+
   return (
-    <CategoryLayout>
-        {/* CategoryLayout の children として渡される内容 */}
-        <h2 style={{ color: '#e94560', borderBottom: '2px solid #3d3d66', paddingBottom: '10px' }}>
-            記事カテゴリのトップ
-        </h2>
-        <p style={{ color: '#ccc', fontSize: '1.1em' }}>
-            サイドバーが適用されました。ここはカテゴリ一覧や最新記事が表示されるエリアです。
-        </p>
-        
-        {/* 個別ページへのダミーリンク */}
-        <div style={{ marginTop: '20px' }}>
-            <Link href="/post/1" style={{ color: '#99e0ff', textDecoration: 'none', fontWeight: 'bold' }}>
-                → 個別記事ページへ移動 (次のステップで作成)
-            </Link>
+    <div style={containerStyle}>
+        <div style={{ backgroundColor: '#1f1f3a', padding: '30px', borderRadius: '10px' }}>
+            <h2 style={{ color: '#e94560', borderBottom: '2px solid #3d3d66', paddingBottom: '10px' }}>
+                記事カテゴリのトップ
+            </h2>
+            <p style={{ color: '#ccc', marginTop: '20px' }}>
+                現在、カテゴリページを再構成中です。最新情報はトップページをご確認ください。
+            </p>
+            <div style={{ marginTop: '20px' }}>
+                <Link href="/" style={{ color: '#99e0ff', textDecoration: 'none' }}>
+                    ← TOPページへ戻る
+                </Link>
+            </div>
         </div>
-    </CategoryLayout>
+    </div>
   );
 }

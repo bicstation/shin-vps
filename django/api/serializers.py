@@ -1,48 +1,47 @@
 # api/serializers.py
 
 from rest_framework import serializers
-# ★★★ 修正: NormalProduct を LinkshareProduct に変更 ★★★
 from .models import AdultProduct, LinkshareProduct, Maker, Genre, Actress, Label, Director, Series 
 
 # --------------------------------------------------------------------------
-## 1. エンティティのネストされたシリアライザ
+## 1. エンティティ（マスターデータ）のシリアライザ
 # --------------------------------------------------------------------------
 
 class MakerSerializer(serializers.ModelSerializer):
-    """Makerモデル用のシンプルなシリアライザ"""
+    """Makerモデル用のシリアライザ (既存のproduct_countカラムを表示)"""
     class Meta:
         model = Maker
-        fields = ('id', 'name', 'api_source')
+        fields = ('id', 'name', 'api_source', 'product_count')
 
 class GenreSerializer(serializers.ModelSerializer):
-    """Genreモデル用のシンプルなシリアライザ (api_sourceを追加)"""
+    """Genreモデル用のシリアライザ (既存のproduct_countカラムを表示)"""
     class Meta:
         model = Genre
-        fields = ('id', 'name', 'api_source')
+        fields = ('id', 'name', 'api_source', 'product_count')
 
 class ActressSerializer(serializers.ModelSerializer):
-    """Actressモデル用のシンプルなシリアライザ (api_sourceを追加)"""
+    """Actressモデル用のシリアライザ (既存のproduct_countカラムを表示)"""
     class Meta:
         model = Actress
-        fields = ('id', 'name', 'api_source')
+        fields = ('id', 'name', 'api_source', 'product_count')
 
 class LabelSerializer(serializers.ModelSerializer):
-    """Labelモデル用のシンプルなシリアライザ"""
+    """Labelモデル用のシリアライザ (既存のproduct_countカラムを表示)"""
     class Meta:
         model = Label
-        fields = ('id', 'name', 'api_source')
+        fields = ('id', 'name', 'api_source', 'product_count')
 
 class DirectorSerializer(serializers.ModelSerializer):
-    """Directorモデル用のシンプルなシリアライザ"""
+    """Directorモデル用のシリアライザ (既存のproduct_countカラムを表示)"""
     class Meta:
         model = Director
-        fields = ('id', 'name', 'api_source')
+        fields = ('id', 'name', 'api_source', 'product_count')
         
 class SeriesSerializer(serializers.ModelSerializer):
-    """Seriesモデル用のシンプルなシリアライザ"""
+    """Seriesモデル用のシリアライザ (既存のproduct_countカラムを表示)"""
     class Meta:
         model = Series
-        fields = ('id', 'name', 'api_source')
+        fields = ('id', 'name', 'api_source', 'product_count')
         
 # --------------------------------------------------------------------------
 ## 2. アダルト商品モデルのメインシリアライザ (AdultProductSerializer)
@@ -88,30 +87,26 @@ class AdultProductSerializer(serializers.ModelSerializer):
         read_only_fields = fields 
 
 # --------------------------------------------------------------------------
-## 3. ノーマル商品モデルのメインシリアライザ (LinkshareProductSerializer)
+## 3. Linkshare商品モデルのメインシリアライザ (LinkshareProductSerializer)
 # --------------------------------------------------------------------------
 
-# ★★★ 修正: クラス名を LinkshareProductSerializer に変更 ★★★
 class LinkshareProductSerializer(serializers.ModelSerializer):
     """
     LinkshareProductモデル用のシンプルなシリアライザ
     """
     class Meta:
-        # ★★★ 修正: model を LinkshareProduct に変更 ★★★
         model = LinkshareProduct 
         # NormalProductモデルで定義したフィールドを公開
         fields = (
             'id',
-            # 💡 LinkshareProductのフィールド名に合わせる
             'sku', 
             'product_name', 
-            'sale_price', # 💡 LinkshareProductは sale_price を持つ
-            'availability', # 💡 LinkshareProductは availability (在庫) を持つ
+            'sale_price', 
+            'availability', 
             'affiliate_url',
             'image_url',
-            'merchant_id', # 💡 LinkshareProductは merchant_id を持つ
+            'merchant_id', 
             'updated_at',
-            # 管理用フィールドは省略し、LinkshareProductの核となるフィールドを表示
         )
         # 読み取り専用APIとして利用する場合、安全のため fields 全体を read_only に指定
         read_only_fields = fields

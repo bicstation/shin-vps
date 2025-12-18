@@ -4,7 +4,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # ★★★ 0. /api/ ルートエンドポイントの追加 ★★★
+    # -----------------------------------------------------------
+    # 0. /api/ ルートエンドポイント
+    # -----------------------------------------------------------
     path('', views.api_root, name='api_root'), 
 
     # 1. サーバーの稼働確認用
@@ -12,7 +14,7 @@ urlpatterns = [
     path('status/', views.status_check, name='status_check'),
     
     # -----------------------------------------------------------
-    # ★★★ 2. アダルト商品データ エンドポイント (AdultProduct) ★★★
+    # 2. アダルト商品データ エンドポイント (AdultProduct)
     # -----------------------------------------------------------
     # GET /api/adults/
     path('adults/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
@@ -21,14 +23,32 @@ urlpatterns = [
     path('adults/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # -----------------------------------------------------------
-    # ★★★ 3. Linkshare商品データ エンドポイント (LinkshareProduct) ★★★
+    # 3. Linkshare商品データ エンドポイント (LinkshareProduct)
     # -----------------------------------------------------------
-    # ★★★ 修正: URLパス、ビュークラス、nameを Normal -> Linkshare に変更 ★★★
     # GET /api/linkshare/
     path('linkshare/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_list'),
     
-    # ★★★ 修正: URLパス、ビュークラス、URLパラメータを Linkshare/sku に変更 ★★★
     # GET /api/linkshare/SKU-98765/
-    # LinkshareProductの lookup_field は 'sku' に設定されているため、パラメータ名も 'sku' に変更します。
     path('linkshare/<str:sku>/', views.LinkshareProductDetailAPIView.as_view(), name='linkshare_product_detail'),
+
+    # -----------------------------------------------------------
+    # 4. マスターデータ (仕分け項目) エンドポイント
+    # -----------------------------------------------------------
+    # GET /api/actresses/
+    path('actresses/', views.ActressListAPIView.as_view(), name='actress_list'),
+
+    # GET /api/genres/
+    path('genres/', views.GenreListAPIView.as_view(), name='genre_list'),
+
+    # GET /api/makers/
+    path('makers/', views.MakerListAPIView.as_view(), name='maker_list'),
+
+    # GET /api/labels/
+    path('labels/', views.LabelListAPIView.as_view(), name='label_list'),
+
+    # GET /api/directors/
+    path('directors/', views.DirectorListAPIView.as_view(), name='director_list'),
+
+    # GET /api/series/
+    path('series/', views.SeriesListAPIView.as_view(), name='series_list'),
 ]
