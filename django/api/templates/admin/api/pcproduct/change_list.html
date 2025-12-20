@@ -1,0 +1,19 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {# --- PC製品専用のカスタムボタン --- #}
+    <li>
+        <a href="fetch-acer/" class="addlink" style="background-color: #4caf50; color: white;">Acer取得</a>
+    </li>
+    {# 将来的に他のショップを追加する場合の予備 #}
+    <li>
+        <a href="fetch-other-shop/" class="addlink" style="background-color: #03a9f4; color: white;">ショップ巡回</a>
+    </li>
+    <li>
+        <a href="generate-ai-article/" class="addlink" style="background-color: #9c27b0; color: white;">AI記事生成</a>
+    </li>
+    <li>
+        <a href="full-update-pc/" class="addlink" style="background-color: #e53935; color: white; font-weight: bold;">🚀 PCデータ一括更新</a>
+    </li>
+{% endblock %}

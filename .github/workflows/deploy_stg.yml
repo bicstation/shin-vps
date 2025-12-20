@@ -1,0 +1,55 @@
+# ファイル名: .github/workflows/deploy_stg.yml (最終版)
+
+name: Stage Deployment
+
+on:
+  push:
+    branches:
+      # main ブランチに push されたときにデプロイを実行
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. 【scp-action を使用して、最新ファイルを VPS に確実に同期】
+      - name: Sync Files to VPS (rsync via SCP)
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: 2222 # ✅ scp-action にてポート 2222 を指定
+          
+          # ローカルの全ファイルをVPSのプロジェクトディレクトリへ転送
+          source: "." 
+          target: "/home/maya/shin-vps"
+          # -r (再帰的) -t (タイムスタンプ保持) -z (圧縮) -q (静か) --delete (転送元にないファイルを削除)
+          flags: "-rtzq --delete" 
+
+
+      # 2. 【ssh-action を使ってコマンドのみ実行】
+      - name: Deploy to Staging VPS via SSH (Docker Compose Up)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: 2222 # ✅ 【重要】ssh-action にてポート 2222 を追記
+          
+          # VPS上で実行するコマンド
+          script: |
+            # 1. Docker Composeファイルがあるディレクトリへ移動
+            cd /home/maya/shin-vps
+            
+            # 2. 全てのサービスを起動 (依存関係にあるDBなども含めて)
+            # --build フラグが、転送された最新コードを使って自動で再ビルドを強制します。
+            sudo docker compose -f docker-compose.stg.yml -p stg up -d --build --remove-orphans
+            
+            echo "Staging deployment completed successfully."

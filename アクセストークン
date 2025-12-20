@@ -1,0 +1,18 @@
+maya@Marya:/mnt/e/shin-vps$ git push
+Username for 'https://github.com': bicstation
+Password for 'https://bicstation@github.com': 
+Enumerating objects: 125, done.
+Counting objects: 100% (125/125), done.
+Delta compression using up to 24 threads
+Compressing objects: 100% (48/48), done.
+Writing objects: 100% (65/65), 24.61 KiB | 68.00 KiB/s, done.
+Total 65 (delta 41), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (41/41), completed with 36 local objects.
+To https://github.com/bicstation/shin-vps.git
+   b610ae0..e6ac788  main -> main
+maya@Marya:/mnt/e/shin-vps$ 
+
+
+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
+
+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

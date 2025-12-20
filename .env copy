@@ -1,0 +1,98 @@
+# .env (Docker Compose 環境用 - 統合/整理版)
+# ====================================================
+
+## 1. 🐘 データベース設定 (PostgreSQL & MariaDB)
+# ====================================================
+
+# --- Django API用 (PostgreSQL) ---
+DB_HOST=postgres_db 
+DB_PORT=5432
+DB_NAME=tiper_db
+DB_USER=tiper_user
+DB_PASSWORD=1492nabe # ★ 強力なパスワードに変更推奨
+
+# --- WordPress用 (MariaDB/MySQL) ---
+WP_DB_ROOT_PASSWORD=1492nabe # ★ 強力なパスワードに変更推奨
+WP_DB_NAME=wp_tiper_db
+WP_DB_USER=wp_tiper_user
+WP_DB_PASSWORD=1492nabe # ★ 強力なパスワードに変更推奨
+
+
+# ====================================================
+## 2. 🔐 アプリケーション共通シークレット
+# ====================================================
+DJANGO_SECRET_KEY='a_very_secure_secret_key_for_django_123456789' # ★ 本番環境では必ず変更
+ADMIN_JWT_SECRET="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY="
+APP_KEYS="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY="
+
+
+# ====================================================
+## 3. 🔑 外部API認証情報 (データソース別)
+# ====================================================
+
+# --- DUGA API 設定 (プレフィックス: dg_) ---
+DUGA_PREFIX=dg_
+DUGA_API_ID="HJtCqdpgl8tVorhyz7Lr"
+DUGA_AFFILIATE_ID="48043" 
+DUGA_API_URL="http://affapi.duga.jp/search"
+DUGA_TOTAL_LIMIT=1000 
+
+# --- FANZA API 設定 (プレフィックス: fz_) ---
+FANZA_PREFIX=fz_
+FANZA_API_ID="GkGxcxhcMKUgQGWzPnp9"
+FANZA_AFFILIATE_ID="bicbic-990"
+FANZA_API_URL="https://api.dmm.com/affiliate/v3/ItemList"
+FANZA_TOTAL_LIMIT=1000
+
+# --- LinkShare (楽天マーケティング) API/FTP 共通設定 ---
+LINKSHARE_FTP_HOST=aftp.linksynergy.com # 共通FTPホスト
+LS_TOKEN_URL="https://api.linksynergy.com/token"
+LS_CLIENT_ID="ybRFc2fz6l9Wc1rDgywekOuMfBRzOyUO" # 共通 OAuth 2.0 Client ID
+LS_CLIENT_SECRET="2J72oAHLaIbSocWC2RaA2Wm3oZ7TuLhL" # 共通 OAuth 2.0 Secret
+
+# --- バリューコマース API 設定 (プレフィックス: vc_) ---
+VALUECOMMERCE_PREFIX=vc_
+VALUECOMMERCE_API_ID="[YOUR_VC_ID]" # ★ 認証情報を入力
+VALUECOMMERCE_API_PASS="[YOUR_VC_PASSWORD]" # ★ 認証情報を入力
+VALUECOMMERCE_API_URL="[YOUR_VC_API_ENDPOINT]"
+
+
+# ====================================================
+## 4. 🌐 サイト別設定 (LinkShare FTP & Next.js プレフィックス)
+# ====================================================
+
+# --- サイト 1: Bic-saving (bs_) ---
+SITE_PREFIX_SAVING=bs_          # DBテーブル/ファイル名プレフィックス
+LINKSHARE_BS_SID=3750988        # LinkShare レポート用 SID
+LINKSHARE_BS_USER=rkp_3750988   # LinkShare FTP ユーザー
+LINKSHARE_BS_PASS=u5NetPVZEAhABD7HuW2VRymP # LinkShare FTP パスワード
+LINKSHARE_BS_DATA_PATH="/" # 実際のFTP上のデータ格納パス
+LS_ACCOUNT_BS_ID=3750988
+LS_ACCOUNT_ID=3750988
+
+# --- サイト 2: Bicstation (bc_) ---
+SITE_PREFIX_BICSTATION=bc_      # DBテーブル/ファイル名プレフィックス
+LINKSHARE_BC_SID=3273700        # LinkShare レポート用 SID
+LINKSHARE_BC_USER=rkp_3273700   # LinkShare FTP ユーザー
+LINKSHARE_BC_PASS=5OqF1NfuruvJlmuJXKQDRuzh # LinkShare FTP パスワード
+LINKSHARE_BC_DATA_PATH="/" # 実際のFTP上のデータ格納パス
+
+# --- その他サイト ---
+SITE_PREFIX_TIPER=ts_
+SITE_PREFIX_AVFLASH=af_
+
+
+# ====================================================
+## 5. 🖥️ Next.js/フロントエンド設定
+# ====================================================
+
+# --- API接続先設定 ---
+# Next.jsはブラウザで動作するため、Nginxを経由した外部URLを使用
+# Traefik/Nginxの公開ポート (8083) を使用
+NEXT_PUBLIC_API_URL=http://localhost:8083/api
+
+# --- サイトタイトル ---
+TITLE_BICSTATION="メインの Bicstation"
+TITLE_TIPER="Tiper デモ"
+TITLE_SAVING="Saving デモ"
+TITLE_AVFLASH="Avflash デモ"
