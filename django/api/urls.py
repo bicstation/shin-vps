@@ -23,7 +23,16 @@ urlpatterns = [
     path('adults/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # -----------------------------------------------------------
-    # 3. Linkshare商品データ エンドポイント (LinkshareProduct)
+    # 3. PC製品データ エンドポイント (PCProduct) ★追加
+    # -----------------------------------------------------------
+    # GET /api/pc-products/
+    path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
+
+    # GET /api/pc-products/4515777630658/ (unique_idで取得)
+    path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
+
+    # -----------------------------------------------------------
+    # 4. Linkshare商品データ エンドポイント (LinkshareProduct)
     # -----------------------------------------------------------
     # GET /api/linkshare/
     path('linkshare/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_list'),
@@ -32,7 +41,7 @@ urlpatterns = [
     path('linkshare/<str:sku>/', views.LinkshareProductDetailAPIView.as_view(), name='linkshare_product_detail'),
 
     # -----------------------------------------------------------
-    # 4. マスターデータ (仕分け項目) エンドポイント
+    # 5. マスターデータ (仕分け項目) エンドポイント
     # -----------------------------------------------------------
     # GET /api/actresses/
     path('actresses/', views.ActressListAPIView.as_view(), name='actress_list'),

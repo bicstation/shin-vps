@@ -1,5 +1,3 @@
-# api/views.py
-
 from django.http import JsonResponse
 from rest_framework import generics
 
@@ -7,6 +5,7 @@ from rest_framework import generics
 from .serializers import (
     AdultProductSerializer, 
     LinkshareProductSerializer,
+    PCProductSerializer,  # 💡 追記
     ActressSerializer,
     GenreSerializer,
     MakerSerializer,
@@ -26,19 +25,22 @@ from .models import (
     Director, 
     Series
 )
+from .models.pc_products import PCProduct  # 💡 追記
 
 # --------------------------------------------------------------------------
 # 0. /api/ ルートエンドポイント
 # --------------------------------------------------------------------------
 def api_root(request):
     """
-    /api/ へのアクセス時に、利用可能なエンドポイントを提示する (404/500解消用)
+    /api/ へのアクセス時に、利用可能なエンドポイントを提示する
     """
     return JsonResponse({
         "message": "Welcome to Tiper API Gateway", 
         "endpoints": {
             "status": "/api/status/",
             "products": {
+                "pc_products_list": "/api/pc-products/", # 💡 追記
+                "pc_product_detail": "/api/pc-products/{unique_id}/", # 💡 追記
                 "adult_products_list": "/api/adults/",
                 "linkshare_products_list": "/api/linkshare/",
                 "adult_product_detail": "/api/adults/{product_id_unique}/",
@@ -62,21 +64,13 @@ def status_check(request):
 # --------------------------------------------------------------------------
 # 1. アダルト商品データ API ビュー (AdultProduct)
 # --------------------------------------------------------------------------
-
 class AdultProductListAPIView(generics.ListAPIView):
-    """
-    アダルト商品リストを取得するためのビュー (/api/adults/)
-    """
-    # prefetch_related を使用してリレーションデータのクエリを最適化
     queryset = AdultProduct.objects.all().prefetch_related(
         'maker', 'label', 'director', 'series', 'genres', 'actresses'
     )
     serializer_class = AdultProductSerializer
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
-    """
-    特定のユニークIDを持つアダルト商品を取得するためのビュー (/api/adults/<product_id_unique>/)
-    """
     queryset = AdultProduct.objects.all().prefetch_related(
         'maker', 'label', 'director', 'series', 'genres', 'actresses'
     )
@@ -87,52 +81,58 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 # --------------------------------------------------------------------------
 # 2. Linkshare商品データ API ビュー (LinkshareProduct)
 # --------------------------------------------------------------------------
-
 class LinkshareProductListAPIView(generics.ListAPIView): 
-    """
-    LinkShare商品リストを取得するためのビュー (/api/linkshare/)
-    """
     queryset = LinkshareProduct.objects.all()
     serializer_class = LinkshareProductSerializer
 
 class LinkshareProductDetailAPIView(generics.RetrieveAPIView): 
-    """
-    特定のSKUを持つLinkShare商品を取得するためのビュー (/api/linkshare/<sku>/)
-    """
     queryset = LinkshareProduct.objects.all()
     serializer_class = LinkshareProductSerializer
     lookup_field = 'sku'
 
-# --------------------------------------------------------------------------
-# 3. マスターデータ API ビュー (JSON表示用)
-# --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------
+# 3. PC製品データ API ビュー (PCProduct) 💡 追記
+# --------------------------------------------------------------------------
+class PCProductListAPIView(generics.ListAPIView):
+    """
+    PC製品（Acer等）のリストを取得するビュー (/api/pc-products/)
+    """
+    queryset = PCProduct.objects.all().order_by('-updated_at')
+    serializer_class = PCProductSerializer
+
+class PCProductDetailAPIView(generics.RetrieveAPIView):
+    """
+    特定のJAN/型番を持つPC製品を取得するビュー (/api/pc-products/<unique_id>/)
+    """
+    queryset = PCProduct.objects.all()
+    serializer_class = PCProductSerializer
+    lookup_field = 'unique_id'
+
+
+# --------------------------------------------------------------------------
+# 4. マスターデータ API ビュー (JSON表示用)
+# --------------------------------------------------------------------------
 class ActressListAPIView(generics.ListAPIView):
-    """女優一覧を表示: /api/actresses/"""
     queryset = Actress.objects.all().order_by('name')
     serializer_class = ActressSerializer
 
 class GenreListAPIView(generics.ListAPIView):
-    """ジャンル一覧を表示: /api/genres/"""
     queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
 
 class MakerListAPIView(generics.ListAPIView):
-    """メーカー一覧を表示: /api/makers/"""
     queryset = Maker.objects.all().order_by('name')
     serializer_class = MakerSerializer
 
 class LabelListAPIView(generics.ListAPIView):
-    """レーベル一覧を表示: /api/labels/"""
     queryset = Label.objects.all().order_by('name')
     serializer_class = LabelSerializer
 
 class DirectorListAPIView(generics.ListAPIView):
-    """監督一覧を表示: /api/directors/"""
     queryset = Director.objects.all().order_by('name')
     serializer_class = DirectorSerializer
 
 class SeriesListAPIView(generics.ListAPIView):
-    """シリーズ一覧を表示: /api/series/"""
     queryset = Series.objects.all().order_by('name')
     serializer_class = SeriesSerializer

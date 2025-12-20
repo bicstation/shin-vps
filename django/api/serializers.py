@@ -110,3 +110,30 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
         )
         # 読み取り専用APIとして利用する場合、安全のため fields 全体を read_only に指定
         read_only_fields = fields
+        
+# --------------------------------------------------------------------------
+## 4. PC製品モデルのシリアライザ (PCProductSerializer)
+# --------------------------------------------------------------------------
+from .models.pc_products import PCProduct  # 💡 インポートを追加
+
+class PCProductSerializer(serializers.ModelSerializer):
+    """
+    Acer等のPC製品データを公開するためのシリアライザ
+    """
+    class Meta:
+        model = PCProduct
+        fields = (
+            'id',
+            'unique_id',      # JANコードまたは型番
+            'site_prefix',    # 'acer' など
+            'maker',
+            'genre',
+            'name',
+            'price',
+            'url',
+            'image_url',
+            'description',
+            'is_active',
+            'updated_at',
+        )
+        read_only_fields = fields

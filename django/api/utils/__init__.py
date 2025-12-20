@@ -1,4 +1,2 @@
 # api/utils/__init__.py
-
-# (中身は空にする。これにより、このパッケージがインポートされたときに、
-# 存在しない 'api.utils.utils' モジュールのインポートを試みなくなる)
+from .common import *

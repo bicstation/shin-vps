@@ -6,3 +6,6 @@ from .raw_and_entities import RawApiData, Maker, Label, Genre, Actress, Director
 from .adult_products import AdultProduct
 from .linkshare_products import LinkshareProduct
 from .linkshare_api_product import LinkshareApiProduct # 💡 この行のみを有効化
+
+# 💡 PC製品用モデルを新しく追加
+from .pc_products import PCProduct

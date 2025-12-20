@@ -62,12 +62,12 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net" 
       - "traefik.http.routers.api-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.api-v2.entrypoints=websecure"
+      - "traefik.http.routers.api-v2.entrypoints=web,websecure"
       - "traefik.http.routers.api-v2.priority=105" 
       - "traefik.http.routers.api-v2.service=django-v2@docker"
       - "traefik.http.routers.api-v2.tls.certresolver=le"
       - "traefik.http.routers.admin-v2.rule=Host(`stg.tiper.live`) && PathPrefix(`/admin`)"
-      - "traefik.http.routers.admin-v2.entrypoints=websecure"
+      - "traefik.http.routers.admin-v2.entrypoints=web,websecure"
       - "traefik.http.routers.admin-v2.priority=105"
       - "traefik.http.routers.admin-v2.service=django-v2@docker"
       - "traefik.http.routers.admin-v2.tls.certresolver=le"
@@ -92,7 +92,7 @@ services:
       django-v2:
         condition: service_started
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.bicstation.com/api
+      NEXT_PUBLIC_API_URL: https://stg.tiper.live.com/api
       NODE_ENV: production
     networks:
       - internal-net
@@ -100,7 +100,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net"
       - "traefik.http.routers.bicstation-v2.rule=Host(`stg.bicstation.com`)"
-      - "traefik.http.routers.bicstation-v2.entrypoints=websecure"
+      - "traefik.http.routers.bicstation-v2.entrypoints=web,websecure"
       - "traefik.http.routers.bicstation-v2.priority=100" 
       - "traefik.http.routers.bicstation-v2.tls.certresolver=le"
       - "traefik.http.services.next-bicstation-v2.loadbalancer.server.port=3000"
@@ -126,7 +126,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net"
       - "traefik.http.routers.tiper-v2.rule=Host(`stg.tiper.live`)"
-      - "traefik.http.routers.tiper-v2.entrypoints=websecure"
+      - "traefik.http.routers.tiper-v2.entrypoints=web,websecure"
       - "traefik.http.routers.tiper-v2.priority=100"
       - "traefik.http.routers.tiper-v2.tls.certresolver=le"
       - "traefik.http.services.next-tiper-v2.loadbalancer.server.port=3000"
@@ -144,7 +144,7 @@ services:
       django-v2:
         condition: service_started
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.bic-saving.com/api
+      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
       NODE_ENV: production
     networks:
       - internal-net
@@ -152,7 +152,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net"
       - "traefik.http.routers.saving-v2.rule=Host(`stg.bic-saving.com`)"
-      - "traefik.http.routers.saving-v2.entrypoints=websecure"
+      - "traefik.http.routers.saving-v2.entrypoints=web,websecure"
       - "traefik.http.routers.saving-v2.priority=100"
       - "traefik.http.routers.saving-v2.tls.certresolver=le"
       - "traefik.http.services.next-bic-saving-v2.loadbalancer.server.port=3000"
@@ -170,7 +170,7 @@ services:
       django-v2:
         condition: service_started
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.avflash.xyz/api
+      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
       NODE_ENV: production
     networks:
       - internal-net
@@ -178,7 +178,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net"
       - "traefik.http.routers.avflash-v2.rule=Host(`stg.avflash.xyz`)"
-      - "traefik.http.routers.avflash-v2.entrypoints=websecure"
+      - "traefik.http.routers.avflash-v2.entrypoints=web,websecure"
       - "traefik.http.routers.avflash-v2.priority=100"
       - "traefik.http.routers.avflash-v2.tls.certresolver=le"
       - "traefik.http.services.next-avflash-v2.loadbalancer.server.port=3000"
@@ -198,7 +198,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net"
       - "traefik.http.routers.static-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/static`)"
-      - "traefik.http.routers.static-v2.entrypoints=websecure"
+      - "traefik.http.routers.static-v2.entrypoints=web,websecure"
       - "traefik.http.routers.static-v2.priority=200"
       - "traefik.http.routers.static-v2.tls.certresolver=le"
       - "traefik.http.services.nginx-v2.loadbalancer.server.port=80"
@@ -264,7 +264,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net"
       - "traefik.http.routers.blog-v2.rule=Host(`stg.blog.tiper.live`)"
-      - "traefik.http.routers.blog-v2.entrypoints=websecure"
+      - "traefik.http.routers.blog-v2.entrypoints=web,websecure"
       - "traefik.http.routers.blog-v2.priority=100"
       - "traefik.http.routers.blog-v2.tls.certresolver=le"
       - "traefik.http.services.nginx-wp-v2.loadbalancer.server.port=80"
@@ -289,7 +289,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net"
       - "traefik.http.routers.phpmyadmin-v2.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/phpmyadmin`)"
-      - "traefik.http.routers.phpmyadmin-v2.entrypoints=websecure"
+      - "traefik.http.routers.phpmyadmin-v2.entrypoints=web,websecure"
       - "traefik.http.routers.phpmyadmin-v2.priority=200" 
       - "traefik.http.routers.phpmyadmin-v2.tls.certresolver=le"
       - "traefik.http.middlewares.pma-stripprefix.stripprefix.prefixes=/phpmyadmin"
@@ -317,7 +317,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=internal-net"
       - "traefik.http.routers.pgadmin-v2.rule=Host(`stg.tiper.live`) && PathPrefix(`/pgadmin`)"
-      - "traefik.http.routers.pgadmin-v2.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin-v2.entrypoints=web,websecure"
       - "traefik.http.routers.pgadmin-v2.tls.certresolver=le"
       - "traefik.http.routers.pgadmin-v2.priority=250"
       - "traefik.http.services.pgadmin-v2.loadbalancer.server.port=80"
@@ -335,6 +335,9 @@ services:
       - "--accesslog=true"
       - "--log.level=INFO"
       - "--entrypoints.web.address=:80"
+      # 80番(web)から443番(websecure)へのグローバルリダイレクト設定
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.le.acme.email=bicstation@gmail.com"
       - "--certificatesresolvers.le.acme.storage=/etc/traefik/acme.json"
