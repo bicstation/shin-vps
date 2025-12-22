@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# /mnt/c/dev/SHIN-VPS/rebuild.sh
+
 # 設定: 共通で使用するファイルパス
-COMPOSE_FILE="/mnt/e/shin-vps/docker-compose.stg.yml"
+# COMPOSE_FILE="/mnt/e/shin-vps/docker-compose.stg.yml"
+COMPOSE_FILE="/mnt/c/dev/SHIN-VPS/docker-compose.stg.yml"
 
 echo "🚀 [1/4] コンテナを停止中..."
 docker compose -f $COMPOSE_FILE down
