@@ -23,7 +23,6 @@ class AdultProductAdminForm(forms.ModelForm):
 # ----------------------------------------------------
 # 1. PCProduct (PC製品・Acer等) のAdminクラス
 # ----------------------------------------------------
-# @admin.registerを使わず、最後に一括で登録する方式に統一します
 class PCProductAdmin(admin.ModelAdmin):
     # Djangoが自動的に最優先で探すパス形式
     change_list_template = "admin/api/pcproduct/change_list.html"
@@ -33,18 +32,26 @@ class PCProductAdmin(admin.ModelAdmin):
         'display_thumbnail',
         'name',
         'price',
+        'unified_genre',  # 💡 統合ジャンルを表示
+        'raw_genre',      # 💡 サイト別分類を表示
         'site_prefix',
         'is_active',
         'updated_at',
     )
     list_display_links = ('name',)
-    list_filter = ('maker', 'site_prefix', 'is_active', 'genre')
+    
+    # 💡 genreを unified_genre と raw_genre に修正
+    list_filter = ('maker', 'site_prefix', 'is_active', 'unified_genre', 'raw_genre')
+    
     search_fields = ('name', 'unique_id', 'description')
     ordering = ('-updated_at',)
 
     fieldsets = (
         ('基本情報', {
-            'fields': ('unique_id', 'site_prefix', 'maker', 'genre', 'is_active'),
+            'fields': ('unique_id', 'site_prefix', 'maker', 'is_active'),
+        }),
+        ('仕分け情報', {
+            'fields': ('unified_genre', 'raw_genre'),
         }),
         ('製品詳細', {
             'fields': ('name', 'price', 'description'),
@@ -155,7 +162,7 @@ class RawApiDataAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 # 5. 登録（ここで一括して登録します）
 # ----------------------------------------------------
-admin.site.register(PCProduct, PCProductAdmin)  # ここでPCProductを登録
+admin.site.register(PCProduct, PCProductAdmin)
 admin.site.register(AdultProduct, AdultProductAdmin)
 admin.site.register(LinkshareProduct, LinkshareProductAdmin) 
 admin.site.register(Genre, CommonAdmin)

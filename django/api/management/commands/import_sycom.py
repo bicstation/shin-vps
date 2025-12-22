@@ -1,45 +1,40 @@
 import csv
-import re
+import os
+import hashlib
 from django.core.management.base import BaseCommand
-# プロジェクト構造に合わせて修正済み
 from api.models.pc_products import PCProduct
 
 class Command(BaseCommand):
     help = 'Import Sycom products from CSV'
 
     def handle(self, *args, **options):
-        # コンテナ内のCSVパス
-        file_path = '/usr/src/app/scrapers/sycom_products.csv'
+        csv_file_path = '/usr/src/app/scrapers/sycom_products.csv'
         
-        try:
-            with open(file_path, 'r', encoding='utf-8-sig') as f:
-                reader = csv.DictReader(f)
-                count = 0
-                for row in reader:
-                    # 💡 URLから商品番号（no=001000など）を抽出して unique_id に割り当てる
-                    # これにより api_pcproduct_unique_id_key の重複エラーを回避します
-                    url = row['url']
-                    match = re.search(r'no=(\d+)', url)
-                    if match:
-                        u_id = f"sycom_{match.group(1)}"
-                    else:
-                        # 万が一番号が取れない場合は名前から生成
-                        u_id = f"sycom_{row['name']}"
+        if not os.path.exists(csv_file_path):
+            self.stdout.write(self.style.ERROR(f'File not found: {csv_file_path}'))
+            return
 
-                    # 💡 unique_id を識別キー（第一引数）として作成・更新
-                    PCProduct.objects.update_or_create(
-                        unique_id=u_id,
-                        defaults={
-                            'name': row['name'],
-                            'genre': row['category'], # row['category'] を genre フィールドへ
-                            'price': int(row['price']),
-                            'url': url,
-                        }
-                    )
-                    count += 1
-            self.stdout.write(self.style.SUCCESS(f'Successfully imported {count} products from Sycom'))
-        except FileNotFoundError:
-            self.stdout.write(self.style.ERROR(f'File not found: {file_path}'))
-        except Exception as e:
-            # 詳細なエラー内容を表示
-            self.stdout.write(self.style.ERROR(f'An error occurred: {e}'))
+        count = 0
+        with open(csv_file_path, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # URLから固有IDを生成
+                unique_id = hashlib.md5(row['url'].encode()).hexdigest()
+
+                PCProduct.objects.update_or_create(
+                    unique_id=unique_id,
+                    defaults={
+                        'site_prefix': 'SY',
+                        'maker': 'Sycom',
+                        'genre': 'Desktop',
+                        'name': row['name'],
+                        'price': int(row['price']),
+                        'url': row['url'],
+                        'image_url': row['image_url'],
+                        'description': row['description'],
+                        'is_active': True,
+                    }
+                )
+                count += 1
+
+        self.stdout.write(self.style.SUCCESS(f'Successfully imported {count} products from Sycom'))

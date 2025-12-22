@@ -10,8 +10,8 @@ class Command(BaseCommand):
     help = 'Import Acer PC data and purge legacy pixel image records'
 
     def handle(self, *args, **options):
-        # 💡 コンテナ内のパスを確認
-        file_path = '/usr/src/app/acer_detailed_final.csv'
+        # 💡 スクレイパー側の転送先パスと一致させます
+        file_path = '/usr/src/app/scrapers/acer_products_final.csv'
         
         if not os.path.exists(file_path):
             self.stdout.write(self.style.ERROR(f'File not found: {file_path}'))
@@ -34,20 +34,19 @@ class Command(BaseCommand):
         # ---------------------------------------------------------
         # 💡 ステップ2: 共通モデルのフィールド名に合わせてインポート
         # ---------------------------------------------------------
-        with open(file_path, mode='r', encoding='utf-8') as f:
+        with open(file_path, mode='r', encoding='utf-8-sig') as f: # sig付きCSVに対応
             reader = csv.DictReader(f)
             for row in reader:
                 try:
                     # ユーティリティでデータを正規化
                     raw_data = normalize_pc_data(row, site_prefix='acer')
 
-                    # 💡 モデルの定義 (genre, site_prefix) に合わせてデータを再マッピング
-                    # もし normalize_pc_data が古いキーを返す場合はここで調整します
+                    # 💡 モデルの定義に合わせてマッピング
                     data = {
                         'unique_id': raw_data['unique_id'],
-                        'site_prefix': 'acer',                   # site_name ではなく site_prefix
+                        'site_prefix': 'acer',
                         'maker': 'Acer',
-                        'genre': raw_data.get('category', 'laptop'), # category ではなく genre
+                        'genre': row.get('category', 'laptop').lower(), # CSVのcategory列を使用
                         'name': raw_data['name'],
                         'price': raw_data['price'],
                         'url': raw_data['url'],
@@ -57,9 +56,8 @@ class Command(BaseCommand):
                     }
 
                     # ---------------------------------------------------------
-                    # 💡 インポート / 更新ロジック (Upsert)
+                    # 💡 Upsertロジック
                     # ---------------------------------------------------------
-                    # update_or_create を使うことで、filter().first() よりも安全に更新・作成が可能です
                     obj, created = PCProduct.objects.update_or_create(
                         unique_id=data['unique_id'],
                         defaults=data

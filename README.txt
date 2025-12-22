@@ -1,3 +1,15 @@
+scrapers/
+├── src/               # スクレイピングの実行プログラム (.py)
+│   ├── manufacturers/ # メーカー別 (acer, msi, frontier...)
+│   ├── shops/         # ショップ別 (koubou, tsukumo...)
+│   └── common/        # 共通処理 (utils.py, constants.py)
+├── data/              # 出力されたCSVなどの一時保管 (.csv, .txt, .xml)
+│   ├── raw/           # 取得したままのデータ
+│   └── processed/     # 加工済み、またはインポート待ちデータ
+└── logs/              # 実行ログ（エラー確認用）
+
+
+
 --- 最初のデータ行のパースマッピング (デバッグ出力: LinkShare Column -> DB Field -> Raw Value) ---
 総カラム数: 38 / 期待値: 38
 LS-COL  | DB FIELD                            | RAW VALUE (先頭50文字)

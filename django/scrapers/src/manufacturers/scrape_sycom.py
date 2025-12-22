@@ -1,3 +1,6 @@
+# サイコムはHTMLの生データをコピペしてテキストに貼り付けてデータをゲットします
+
+
 import csv
 import os
 import subprocess
@@ -9,7 +12,6 @@ def run_docker_import_sycom(csv_path):
     print(f"🚀 Dockerコンテナへデータを転送・DB更新中...")
     try:
         subprocess.run(["docker", "cp", csv_path, f"{container_name}:/usr/src/app/scrapers/sycom_products.csv"], check=True)
-        # 指定された docker-compose.stg.yml を使用して実行
         import_cmd = [
             "docker", "compose", "-f", "docker-compose.stg.yml", 
             "exec", "django-v2", 
@@ -21,13 +23,11 @@ def run_docker_import_sycom(csv_path):
         print(f"❌ Docker連携エラー: {e}")
 
 def scrape_sycom_from_html_source():
-    # ブラウザから保存したHTMLファイル
     input_file = os.path.join(os.path.dirname(__file__), "sycom_data.txt")
     output_csv = os.path.join(os.path.dirname(__file__), "sycom_products.csv")
     
     if not os.path.exists(input_file):
         print(f"❌ {input_file} が見つかりません。")
-        print("ブラウザでソースを表示し、sycom_page.html という名前で保存してください。")
         return
 
     print(f"📖 {input_file} を解析中...")
@@ -35,21 +35,28 @@ def scrape_sycom_from_html_source():
         soup = BeautifulSoup(f, "html.parser")
 
     all_data = []
-
-    # 💡 共有いただいたHTML構造に基づき、各商品アイテム(div.item)をループ
     items = soup.find_all("div", class_="item")
     
     for item in items:
-        # 1. 商品名を取得 (<p class="name01">)
+        # 1. 商品名
         name_tag = item.find("p", class_="name01")
-        # 2. 価格を取得 (<span id="model_xxxxxx">)
+        # 2. 価格
         price_tag = item.find("span", id=lambda x: x and x.startswith('model_'))
-        # 3. カスタマイズURLを取得
+        # 3. URL
         link_tag = item.find("a", href=True)
+        # 4. 画像URL (imgタグのsrcを取得)
+        img_tag = item.find("img")
+        # 5. スペック詳細 (p.spec や div.spec_box などのテキストを収集)
+        # サイコムの構造に合わせ、複数のスペックテキストを取得して「 / 」で結合
+        spec_tags = item.find_all("p", class_="spec") # もし spec クラスに詳細がある場合
+        if not spec_tags:
+            # specクラスがない場合は、item内のテキスト情報を探る
+            spec_text = item.get_text(" / ", strip=True) 
+        else:
+            spec_text = " / ".join([s.get_text(strip=True) for s in spec_tags])
 
         if name_tag and price_tag:
             name = name_tag.get_text(strip=True)
-            # カンマを除去して数値化
             price_text = price_tag.get_text(strip=True).replace(",", "")
             price = int(price_text)
             
@@ -57,11 +64,20 @@ def scrape_sycom_from_html_source():
             if not url.startswith("http"):
                 url = "https://www.sycom.co.jp" + url
 
-            all_data.append(["Desktop", f"[Sycom] {name}", price, url, "", ""])
+            image_url = ""
+            if img_tag and img_tag.get("src"):
+                image_url = img_tag["src"]
+                if not image_url.startswith("http"):
+                    image_url = "https://www.sycom.co.jp/" + image_url.lstrip("/")
+
+            # descriptionにスペックを入れる
+            description = spec_text
+
+            all_data.append(["Desktop", f"[Sycom] {name}", price, url, image_url, description])
             print(f"   ✅ 抽出成功: {name} | {price}円")
 
     if all_data:
-        # 重複削除
+        # 名前をキーにして重複削除
         unique_data = {d[1]: d for d in all_data}.values()
         with open(output_csv, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.writer(f)
@@ -71,7 +87,7 @@ def scrape_sycom_from_html_source():
         print(f"✨ 合計 {len(unique_data)} 件を抽出しました。")
         run_docker_import_sycom(output_csv)
     else:
-        print("❌ 商品情報を特定できませんでした。HTMLの保存形式（Ctrl+S）を確認してください。")
+        print("❌ 商品情報を特定できませんでした。")
 
 if __name__ == "__main__":
     scrape_sycom_from_html_source()
