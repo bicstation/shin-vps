@@ -84,6 +84,8 @@ INSTALLED_APPS = [
     # サードパーティ製アプリ
     'rest_framework', 
     'django_extensions', # ← show_urls を使うために追加
+    'scrapers',  # ここが抜けていると「No installed app...」になります
+    
     
     # 自分のアプリ 下記のように書き換えた
     'api.apps.ApiConfig',
