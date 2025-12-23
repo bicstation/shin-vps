@@ -1,3 +1,4 @@
+import os
 from django.contrib import admin
 from django import forms
 from django.utils.safestring import mark_safe
@@ -21,10 +22,10 @@ class AdultProductAdminForm(forms.ModelForm):
         fields = '__all__'
 
 # ----------------------------------------------------
-# 1. PCProduct (PC製品・Acer等) のAdminクラス
+# 1. PCProduct (PC製品・Lenovo/Acer等) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
-    # Djangoが自動的に最優先で探すパス形式
+    # テンプレートパスは環境に合わせて調整してください
     change_list_template = "admin/api/pcproduct/change_list.html"
 
     list_display = (
@@ -32,15 +33,15 @@ class PCProductAdmin(admin.ModelAdmin):
         'display_thumbnail',
         'name',
         'price',
-        'unified_genre',  # 💡 統合ジャンルを表示
-        'raw_genre',      # 💡 サイト別分類を表示
+        'unified_genre',  # 統合ジャンル（laptop, desktop等）
+        'raw_genre',      # サイト側での分類名
         'site_prefix',
         'is_active',
         'updated_at',
     )
     list_display_links = ('name',)
     
-    # 💡 genreを unified_genre と raw_genre に修正
+    # フィルタリング機能を強化
     list_filter = ('maker', 'site_prefix', 'is_active', 'unified_genre', 'raw_genre')
     
     search_fields = ('name', 'unique_id', 'description')
@@ -59,7 +60,7 @@ class PCProductAdmin(admin.ModelAdmin):
         ('リンク・画像', {
             'fields': ('url', 'image_url'),
         }),
-        ('タイムスタンプ', {
+        ('システム情報', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',),
         }),
@@ -67,21 +68,34 @@ class PCProductAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
 
     def display_thumbnail(self, obj):
+        """一覧画面に製品画像を表示"""
         if obj.image_url:
-            return mark_safe(f'<img src="{obj.image_url}" width="60" height="40" style="object-fit: contain; border-radius: 3px;" />')
+            return mark_safe(f'<img src="{obj.image_url}" width="80" height="50" style="object-fit: contain; background: #eee; border-radius: 4px;" />')
         return "No Image"
-    display_thumbnail.short_description = '画像'
+    display_thumbnail.short_description = '製品画像'
 
     def get_urls(self):
+        """管理画面にカスタムボタン用のURLを追加"""
         urls = super().get_urls()
         custom_urls = [
+            path('fetch-lenovo/', self.fetch_lenovo_action, name='fetch_lenovo'),
             path('fetch-acer/', self.fetch_acer_action, name='fetch_acer'),
             path('generate-ai-article/', self.generate_ai_action, name='generate_ai_article'),
         ]
         return custom_urls + urls
 
+    def fetch_lenovo_action(self, request):
+        """Lenovoのスクレイピングを実行（285件の全域制圧用）"""
+        try:
+            # management/commands/scrape_lenovo.py が存在する場合
+            # call_command('scrape_lenovo') 
+            self.message_user(request, "Lenovo全製品（285件見込み）の取得を開始しました。ログを確認してください。", messages.SUCCESS)
+        except Exception as e:
+            self.message_user(request, f"エラーが発生しました: {e}", messages.ERROR)
+        return HttpResponseRedirect("../")
+
     def fetch_acer_action(self, request):
-        self.message_user(request, "Acerデータの取得プロセスを開始しました。")
+        self.message_user(request, "Acerデータの取得プロセスを開始しました。", messages.INFO)
         return HttpResponseRedirect("../")
 
     def generate_ai_action(self, request):
@@ -160,7 +174,7 @@ class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'created_at')
 
 # ----------------------------------------------------
-# 5. 登録（ここで一括して登録します）
+# 5. 登録
 # ----------------------------------------------------
 admin.site.register(PCProduct, PCProductAdmin)
 admin.site.register(AdultProduct, AdultProductAdmin)

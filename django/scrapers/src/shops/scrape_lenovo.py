@@ -108,15 +108,25 @@ def run_crawler():
         # ノート
         "https://www.lenovo.com/jp/ja/c/laptops/thinkpad/",
         "https://www.lenovo.com/jp/ja/c/laptops/yoga/",
+        "https://www.lenovo.com/jp/ja/d/deals/ai-pc/?ipromoID=laptops_splitter_Search_by_type_AI-PCs",
+        "https://www.lenovo.com/jp/ja/d/standard-laptops/?ipromoID=laptops_splitter_Search_by_type_Standard-Notes",
+        "https://www.lenovo.com/jp/ja/d/mobile-laptops/?ipromoID=laptops_splitter_Search_by_type_2in1",
+        "https://www.lenovo.com/jp/ja/d/convertible-2-in-1-notebooks/?ipromoID=laptops_splitter_Search_by_type_Mobile-Notes",
+        "https://www.lenovo.com/jp/ja/d/thinkpad-p-series/?ipromoID=laptops_splitter_Search_by_type_workstation",
+        "https://www.lenovo.com/jp/ja/d/chromebook-laptops/?ipromoID=laptops_splitter_Search_by_type_CHROMEBOOK",
+        "https://www.lenovo.com/jp/ja/laptops/results/?visibleDatas=2115%3ALegion%2CLOQ&ipromoID=Gaming_shop_Find_the_right_espot1",
         "https://www.lenovo.com/jp/ja/c/laptops/lenovo-legion-laptops/",
         # デスクトップ
-        "https://www.lenovo.com/jp/ja/c/desktops/thinkcentre/",
-        "https://www.lenovo.com/jp/ja/c/desktops/ideacentre/",
+        "https://www.lenovo.com/jp/ja/desktops/results/?visibleDatas=2124%3ATiny%25EF%25BC%2588%25E8%25B6%2585%25E5%25B0%258F%25E5%259E%258B%25EF%25BC%2589&ipromoID=desktops_splitter_Find_desktops_by_type_Tiny",
+        "https://www.lenovo.com/jp/ja/desktops/subseries-results/?visibleDatas=2325:%E3%82%B2%E3%83%BC%E3%83%9F%E3%83%B3%E3%82%B0",
+        "https://www.lenovo.com/jp/ja/desktops/subseries-results/?visibleDatas=2325:%E6%99%AE%E6%AE%B5%E4%BD%BF%E3%81%84%E3%83%BB%E3%82%A8%E3%83%B3%E3%82%BF%E3%83%BC%E3%83%86%E3%82%A4%E3%83%A1%E3%83%B3%E3%83%88",
+        "https://www.lenovo.com/jp/ja/desktops/subseries-results/?visibleDatas=2325:%E3%82%AF%E3%83%AA%E3%82%A8%E3%82%A4%E3%82%BF%E3%83%BC&ipromoID=desktops_splitter_Search_by_Use_creator",
+        "https://www.lenovo.com/jp/ja/desktops/results/?visibleDatas=2115%3ALegion%2CLOQ&ipromoID=Gaming_shop_Find_the_right_espot2",
         "https://www.lenovo.com/jp/ja/c/desktops/legion-desktops/",
         # ワークステーション
-        "https://www.lenovo.com/jp/ja/c/workstations/thinkstation-p-series/",
+        "https://www.lenovo.com/jp/ja/workstations/?ipromoID=Megamenu_workstation",
         # サーバー（構造が違う場合は要調整ですがまずは共通で試行）
-        "https://www.lenovo.com/jp/ja/c/servers-storage/servers/racks/",
+        "https://www.lenovo.com/jp/ja/servers-storage/?ipromoID=Megamenu_Servers-Storage",
     ]
 
     with sync_playwright() as p:
