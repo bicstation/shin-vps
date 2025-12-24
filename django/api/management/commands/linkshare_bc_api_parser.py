@@ -1,3 +1,5 @@
+# /mnt/c/dev/SHIN-VPS/django/api/management/commands/linkshare_bc_api_parser.py
+
 import json 
 import os
 import socket
@@ -7,11 +9,11 @@ from django.utils import timezone
 from django.conf import settings
 from tqdm import tqdm 
 
-# 💡 LinkShareAPIProduct モデルのインポート
+# 💡 インポート先を新しいモデル BcLinkshareProduct に変更
 try:
-    from api.models import LinkshareApiProduct 
+    from api.models import BcLinkshareProduct 
 except ImportError:
-    class LinkshareApiProduct:
+    class BcLinkshareProduct:
         objects = None
         def __init__(self):
             pass
@@ -29,12 +31,13 @@ except ImportError:
 
 
 class Command(BaseCommand):
-    help = 'Bicstation(SID:3273700)名義でLinkShare APIからデータを取得し、DB保存またはJSON出力します。'
+    help = 'Bicstation名義でLinkShare APIからデータを取得し、DB保存またはJSON出力します。'
 
     def add_arguments(self, parser):
         parser.add_argument('--mid-list', action='store_true', help='提携広告主のMID一覧を取得します。')
         parser.add_argument('--keyword', type=str, default=None, help='キーワード検索。')
-        parser.add_argument('--mid', type=str, default=None, help='特定の広告主ID。')
+        # 💡 nargs='+' により、複数のMIDを受け取れるように設定
+        parser.add_argument('--mid', type=str, nargs='+', help='MIDを1つ以上指定。例: --mid 36508 2662')
         parser.add_argument('--all-mids', action='store_true', help='提携中の全広告主を巡回。')
         parser.add_argument('--cat', type=str, default=None, help='カテゴリ絞り込み。')
         parser.add_argument('--page-size', type=int, default=100, help='1ページあたりの件数（最大100）。')
@@ -43,8 +46,8 @@ class Command(BaseCommand):
         parser.add_argument('--save-db', action='store_true', help='データベースに保存。')
 
     def _save_products_to_db(self, mids_data: list):
-        """LinkshareApiProduct モデルにAPIレスポンスを保存"""
-        if LinkshareApiProduct.objects is None:
+        """BcLinkshareProduct モデルにAPIレスポンスを保存"""
+        if BcLinkshareProduct.objects is None:
             tqdm.write(self.style.ERROR('❌ モデルが見つからないため、DB保存をスキップします。'))
             return 0, 0
             
@@ -52,17 +55,19 @@ class Command(BaseCommand):
         total_created = 0
         items_to_save = []
 
+        # データのフラット化
         for mid_data in mids_data:
-            current_mid = mid_data['mid']
+            current_mid = str(mid_data['mid']) # 確実に単一の文字列にする
             for page_result in mid_data['page_results']:
                 for item in page_result.get('items', []):
-                    item['mid'] = current_mid 
+                    # 💡 item 側の mid を確実に現在のループの mid に固定
+                    item['mid'] = current_mid
                     items_to_save.append(item)
         
         if not items_to_save:
             return 0, 0
 
-        # 保存開始前にスキーマパスを再確認（コネクション断絶対策）
+        # 💡 保存開始前にスキーマを public に固定
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO public;")
 
@@ -76,9 +81,10 @@ class Command(BaseCommand):
                     continue
 
                 try:
-                    obj, created = LinkshareApiProduct.objects.update_or_create(
+                    # 💡 BcLinkshareProduct モデルを使用して保存
+                    obj, created = BcLinkshareProduct.objects.update_or_create(
                         linkid=link_id,
-                        mid=mid,
+                        mid=mid, # ここがリスト文字列 ['...'] にならないことが重要
                         defaults={
                             'sku': product_sku,
                             'api_response_json': item, 
@@ -140,7 +146,7 @@ class Command(BaseCommand):
                             
                     if page_results_to_save and current_mid_fetched > 0:
                         mid_data = {
-                            'mid': mid,
+                            'mid': str(mid),
                             'merchantname': mid_name,
                             'query_parameters': {
                                 'keyword': keyword,
@@ -185,32 +191,32 @@ class Command(BaseCommand):
             self.stdout.write(json.dumps(final_data, ensure_ascii=False, indent=4))
 
     def handle(self, *args, **options):
-        # --- 💡 接続先自動調整ロジック (WSLホスト実行 vs Docker内実行) ---
+        # --- DB接続設定 ---
         db_config = settings.DATABASES['default']
         target_host = db_config.get('HOST', '')
+        db_name = db_config.get('NAME', '')
         
         try:
-            # 現在のHOST設定で名前解決できるかテスト
             socket.gethostbyname(target_host)
         except (socket.gaierror, TypeError):
-            # 解決できない場合、または Dockerサービス名(postgres_db_v2)の場合
             if target_host in ['postgres-db-v2', 'postgres_db_v2']:
-                self.stdout.write(self.style.WARNING(f"⚠️ ホスト '{target_host}' を解決できません。WSL用の localhost:5433 に切り替えます。"))
                 db_config['HOST'] = '127.0.0.1'
                 db_config['PORT'] = '5433'
         
-        # --- 💡 追加: スキーマパスの固定とテーブル生存確認 ---
+        self.stdout.write(self.style.NOTICE(f"🛠️ DB接続確認中: HOST={db_config.get('HOST')}, DB={db_name}"))
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute("SET search_path TO public;")
-                cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'linkshare_api_product');")
+                cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'bc_linkshare_product');")
                 if cursor.fetchone()[0]:
-                    self.stdout.write(self.style.SUCCESS("✅ DB接続確認: テーブル 'linkshare_api_product' を検出しました。"))
+                    cursor.execute("SELECT count(*) FROM bc_linkshare_product;")
+                    count = cursor.fetchone()[0]
+                    self.stdout.write(self.style.SUCCESS(f"✅ DB接続確認: 'bc_linkshare_product' を検出 (現在 {count} 件)。"))
                 else:
-                    self.stdout.write(self.style.ERROR("🚨 DB接続確認: テーブルが見つかりません。"))
+                    self.stdout.write(self.style.ERROR("🚨 DB接続確認: テーブルが見わたりません。"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"🚨 DB接続初期化エラー: {e}"))
-        # -------------------------------------------------------------
 
         self.stdout.write(self.style.NOTICE('--- LinkShare API Parser (Bicstation) 開始 ---'))
         
@@ -220,16 +226,18 @@ class Command(BaseCommand):
             
             mid_list_to_process = []
 
+            # 💡 MIDの振り分けロジック
             if options['all_mids']:
                 self.stdout.write(self.style.NOTICE('🆔 全提携広告主リストを取得中...'))
                 mid_list_to_process = client.get_advertiser_list()
             
-            elif options['keyword'] or options['mid'] or options['cat']:
-                target_mid = options['mid']
-                if target_mid:
-                    mid_list_to_process = [{'mid': target_mid, 'merchantname': '単一指定'}]
-                else:
-                    mid_list_to_process = [{'mid': None, 'merchantname': '全広告主検索'}]
+            elif options['mid']:
+                # 💡 リストとして渡される mid を一つずつ処理用リストに追加
+                for m in options['mid']:
+                    mid_list_to_process.append({'mid': m, 'merchantname': f'指定MID:{m}'})
+            
+            elif options['keyword'] or options['cat']:
+                mid_list_to_process = [{'mid': None, 'merchantname': '全広告主検索'}]
             
             elif options['mid_list']:
                 advertisers = client.get_advertiser_list()
@@ -240,7 +248,7 @@ class Command(BaseCommand):
             if mid_list_to_process:
                 self._fetch_and_output_products(client, mid_list_to_process, options)
             else:
-                self.stderr.write(self.style.WARNING('⚠️ オプションを指定してください。'))
+                self.stderr.write(self.style.WARNING('⚠️ オプション（--mid, --all-mids, --keyword 等）を指定してください。'))
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f'致命的なエラー: {e}'))
