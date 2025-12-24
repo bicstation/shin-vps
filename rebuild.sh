@@ -5,6 +5,7 @@
 # 設定: 共通で使用するファイルパス
 # COMPOSE_FILE="/mnt/e/shin-vps/docker-compose.stg.yml"
 COMPOSE_FILE="/mnt/c/dev/SHIN-VPS/docker-compose.stg.yml"
+# COMPOSE_FILE="/home/maya/shin-vps/docker-compose.stg.yml"
 
 # docker compose -f docker-compose.stg.yml ps -a 
 

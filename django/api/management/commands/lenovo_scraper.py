@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from api.models import PCProduct
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"  # 💡 これを追記
 
 class Command(BaseCommand):
     help = 'Lenovo公式サイトから製品情報をスクレイピングしてDBに保存します'
