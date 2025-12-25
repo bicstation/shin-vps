@@ -1,4 +1,4 @@
-# /mnt/e/shin-vps/docker-compose.yml (ローカル開発専用)
+# /mnt/c/dev/SHIN-VPS/docker-compose.yml (ローカル開発環境・最終安定版)
 services:
 
   # 1. PostgreSQL データベース (Django専用)
@@ -23,7 +23,7 @@ services:
       retries: 5
       start_period: 10s 
 
-  # 4. Django API
+  # 2. Django API
   django-v2:
     build:
       context: ./django
@@ -58,12 +58,10 @@ services:
       - DJANGO_ALLOW_ASYNC_UNSAFE=true
     labels:
       - "traefik.enable=true"
-      # API: http://localhost:8083/api
       - "traefik.http.routers.api-v2.rule=Host(`localhost`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2.entrypoints=web"
       - "traefik.http.routers.api-v2.priority=105"
       - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
-      # Admin: http://localhost:8083/admin
       - "traefik.http.routers.admin-v2.rule=Host(`localhost`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2.entrypoints=web"
       - "traefik.http.routers.admin-v2.priority=105"
@@ -74,7 +72,7 @@ services:
     networks:
       - internal-net
 
-  # 5. Next.js - bicstation
+  # 3. Next.js - bicstation
   next-bicstation-v2:
     build:
       context: ./next-bicstation
@@ -98,7 +96,7 @@ services:
       - "traefik.http.middlewares.bicstation-strip.stripprefix.prefixes=/bicstation"
       - "traefik.http.services.next-bicstation-v2.loadbalancer.server.port=3000"
 
-  # 6. Next.js - tiper
+  # 4. Next.js - tiper
   next-tiper-v2:
     build:
       context: ./next-tiper
@@ -122,7 +120,7 @@ services:
       - "traefik.http.middlewares.tiper-strip.stripprefix.prefixes=/tiper"
       - "traefik.http.services.next-tiper-v2.loadbalancer.server.port=3000"
 
-  # 7. Next.js - bic-saving
+  # 5. Next.js - bic-saving
   next-bic-saving-v2:
     build: 
       context: ./next-bic-saving
@@ -146,7 +144,7 @@ services:
       - "traefik.http.middlewares.saving-strip.stripprefix.prefixes=/saving"
       - "traefik.http.services.next-bic-saving-v2.loadbalancer.server.port=3000"
 
-  # 8. Next.js - avflash
+  # 6. Next.js - avflash
   next-avflash-v2:
     build: 
       context: ./next-avflash 
@@ -170,7 +168,7 @@ services:
       - "traefik.http.middlewares.avflash-strip.stripprefix.prefixes=/avflash"
       - "traefik.http.services.next-avflash-v2.loadbalancer.server.port=3000"
 
-  # 10. Nginx (静的ファイル)
+  # 7. Nginx (静的ファイル用)
   nginx-v2:
     image: nginx:alpine
     container_name: nginx_static_v2
@@ -187,7 +185,7 @@ services:
       - "traefik.http.routers.static-v2.priority=200"
       - "traefik.http.services.nginx-v2.loadbalancer.server.port=80"
 
-  # 11. MariaDB (WordPress用)
+  # 8. MariaDB (WordPress用)
   mariadb-v2:
     image: mariadb:10
     container_name: mariadb_wp_v2
@@ -207,7 +205,7 @@ services:
       timeout: 5s
       retries: 3
 
-  # 12. WordPress
+  # 9. WordPress
   wordpress-v2:
     image: wordpress:6-fpm-alpine
     container_name: wordpress_blog_v2
@@ -228,7 +226,7 @@ services:
     networks:
       - internal-net
 
-  # 13. Nginx (WordPressブリッジ)
+  # 10. Nginx (WordPress用ブリッジ)
   nginx-wp-v2:
     image: nginx:alpine
     container_name: nginx_wp_v2
@@ -249,7 +247,67 @@ services:
       - "traefik.http.middlewares.blog-strip.stripprefix.prefixes=/blog"
       - "traefik.http.services.nginx-wp-v2.loadbalancer.server.port=80"
 
-  # 9. Traefik
+  # 11. phpMyAdmin (MariaDB管理)
+  phpmyadmin-v2:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin_v2
+    restart: always
+    environment:
+      PMA_HOST: mariadb-v2
+      PMA_ARBITRARY: 1
+    networks:
+      - internal-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pma-v2.rule=Host(`localhost`) && PathPrefix(`/phpmyadmin`)"
+      - "traefik.http.routers.pma-v2.entrypoints=web"
+      - "traefik.http.routers.pma-v2.priority=110"
+      - "traefik.http.routers.pma-v2.middlewares=pma-strip"
+      - "traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin"
+      - "traefik.http.services.phpmyadmin-v2.loadbalancer.server.port=80"
+
+# 12. pgAdmin (PostgreSQL管理)
+  pgadmin-v2:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_v2
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      # ↓ IPv4で確実に受け付けるように修正
+      PGADMIN_LISTEN_ADDRESS: 0.0.0.0
+      # ↓ サブディレクトリとして認識させるための魔法の変数
+      SCRIPT_NAME: /pgadmin
+    networks:
+      - internal-net
+    labels:
+      - "traefik.enable=true"
+      # ルール: /pgadmin で始まるリクエストを拾う
+      - "traefik.http.routers.pgadmin-v2.rule=Host(`localhost`) && PathPrefix(`/pgadmin`)"
+      - "traefik.http.routers.pgadmin-v2.entrypoints=web"
+      - "traefik.http.routers.pgadmin-v2.priority=200"
+      # 重要: SCRIPT_NAMEを使っているので、Traefik側でPathを削る(StripPrefix)必要はなくなりました
+      - "traefik.http.services.pgadmin-v2.loadbalancer.server.port=80"
+
+  # 13. Dozzle (リアルタイムログ監視)
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    restart: always
+    environment:
+      - DOZZLE_BASE=/logs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - internal-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dozzle-v2.rule=Host(`localhost`) && PathPrefix(`/logs`)"
+      - "traefik.http.routers.dozzle-v2.entrypoints=web"
+      - "traefik.http.routers.dozzle-v2.priority=150"
+      - "traefik.http.services.dozzle-v2.loadbalancer.server.port=8080"
+
+  # 14. Traefik (リバースプロキシ)
   traefik:
     image: traefik:v2.11
     container_name: traefik_proxy

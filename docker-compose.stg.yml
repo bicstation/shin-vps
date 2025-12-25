@@ -1,4 +1,6 @@
 # サービス定義 (VPSステージングデプロイ用 - 本番共存対応版)
+# ファイルパス: /mnt/c/dev/SHIN-VPS/docker-compose.stg.yml
+
 services:
 
   # 1. PostgreSQL データベース (Django専用)
@@ -17,19 +19,19 @@ services:
     ports:
       - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"] 
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s 
+      start_period: 10s
 
-  # 4. Django API
+  # 2. Django API
   django-v2:
     build:
       context: ./django
       dockerfile: Dockerfile
     container_name: api_django_v2_stg
-    restart: always 
+    restart: always
     deploy:
       resources:
         limits:
@@ -58,10 +60,10 @@ services:
       - DJANGO_ALLOW_ASYNC_UNSAFE=true
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy" 
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.api-v2-stg.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.api-v2-stg.priority=105" 
+      - "traefik.http.routers.api-v2-stg.priority=105"
       - "traefik.http.routers.api-v2-stg.tls.certresolver=le"
       - "traefik.http.routers.admin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-stg.entrypoints=websecure"
@@ -70,13 +72,13 @@ services:
       - "traefik.http.services.django-v2-stg.loadbalancer.server.port=8000"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
-      - ./django:/usr/src/app 
+      - ./django:/usr/src/app
       - ./data/staticfiles:/usr/src/app/staticfiles
     networks:
       - internal-net
       - shared-proxy
 
-  # 5. Next.js - bicstation.com
+  # 3. Next.js - bicstation.com
   next-bicstation-v2:
     build:
       context: ./next-bicstation
@@ -97,11 +99,11 @@ services:
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bicstation-v2-stg.rule=Host(`stg.bicstation.com`)"
       - "traefik.http.routers.bicstation-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.bicstation-v2-stg.priority=100" 
+      - "traefik.http.routers.bicstation-v2-stg.priority=100"
       - "traefik.http.routers.bicstation-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-bicstation-v2-stg.loadbalancer.server.port=3000"
 
-  # 6. Next.js - tiper.live
+  # 4. Next.js - tiper.live
   next-tiper-v2:
     build:
       context: ./next-tiper
@@ -126,9 +128,9 @@ services:
       - "traefik.http.routers.tiper-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-tiper-v2-stg.loadbalancer.server.port=3000"
 
-  # 7. Next.js - bic-saving
+  # 5. Next.js - bic-saving
   next-bic-saving-v2:
-    build: 
+    build:
       context: ./next-bic-saving
       dockerfile: Dockerfile
       args:
@@ -151,13 +153,13 @@ services:
       - "traefik.http.routers.saving-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-bic-saving-v2-stg.loadbalancer.server.port=3000"
 
-  # 8. Next.js - avflash.xyz
+  # 6. Next.js - avflash.xyz
   next-avflash-v2:
-    build: 
-      context: ./next-avflash 
+    build:
+      context: ./next-avflash
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH} 
+        NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH}
     container_name: next_avflash_v2_stg
     depends_on:
       - django-v2
@@ -176,7 +178,7 @@ services:
       - "traefik.http.routers.avflash-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-avflash-v2-stg.loadbalancer.server.port=3000"
 
-  # 10. Nginx (静的ファイル配信)
+  # 7. Nginx (静的ファイル配信)
   nginx-v2:
     image: nginx:alpine
     container_name: nginx_static_v2_stg
@@ -195,8 +197,8 @@ services:
       - "traefik.http.routers.static-v2-stg.priority=200"
       - "traefik.http.routers.static-v2-stg.tls.certresolver=le"
       - "traefik.http.services.nginx-v2-stg.loadbalancer.server.port=80"
-  
-  # 11. MariaDB (WordPress専用DB)
+
+  # 8. MariaDB (WordPress専用DB)
   mariadb-v2:
     image: mariadb:10
     container_name: mariadb_wp_v2_stg
@@ -216,7 +218,7 @@ services:
       timeout: 5s
       retries: 3
 
-  # 12. WordPress (CMS)
+  # 9. WordPress (CMS)
   wordpress-v2:
     image: wordpress:6-fpm-alpine
     container_name: wordpress_blog_v2_stg
@@ -225,7 +227,7 @@ services:
       mariadb-v2:
         condition: service_healthy
     environment:
-      WORDPRESS_DB_HOST: mariadb-v2 
+      WORDPRESS_DB_HOST: mariadb-v2
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
@@ -237,7 +239,7 @@ services:
     networks:
       - internal-net
 
-  # 13. Nginx (WordPressブリッジ)
+  # 10. Nginx (WordPressブリッジ)
   nginx-wp-v2:
     image: nginx:alpine
     container_name: nginx_wp_v2_stg
@@ -259,7 +261,7 @@ services:
       - "traefik.http.routers.blog-v2-stg.tls.certresolver=le"
       - "traefik.http.services.nginx-wp-v2-stg.loadbalancer.server.port=80"
 
-  # 14. phpMyAdmin
+  # 11. phpMyAdmin
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin_v2_stg
@@ -268,7 +270,7 @@ services:
       mariadb-v2:
         condition: service_healthy
     environment:
-      PMA_HOST: mariadb-v2 
+      PMA_HOST: mariadb-v2
       PMA_USER: ${WP_DB_USER}
       PMA_PASSWORD: ${WP_DB_PASSWORD}
       PMA_ABSOLUTE_URI: https://stg.tiper.live/phpmyadmin/
@@ -280,13 +282,13 @@ services:
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.phpmyadmin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/phpmyadmin`)"
       - "traefik.http.routers.phpmyadmin-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.phpmyadmin-v2-stg.priority=200" 
+      - "traefik.http.routers.phpmyadmin-v2-stg.priority=200"
       - "traefik.http.routers.phpmyadmin-v2-stg.tls.certresolver=le"
       - "traefik.http.middlewares.stg-pma-strip.stripprefix.prefixes=/phpmyadmin"
       - "traefik.http.routers.phpmyadmin-v2-stg.middlewares=stg-pma-strip"
       - "traefik.http.services.phpmyadmin-v2-stg.loadbalancer.server.port=80"
-  
-  # 15. pgAdmin
+
+  # 12. pgAdmin
   pgadmin-v2:
     image: dpage/pgadmin4
     container_name: pgadmin_v2_stg
@@ -311,7 +313,27 @@ services:
       - "traefik.http.routers.pgadmin-v2-stg.priority=250"
       - "traefik.http.services.pgadmin-v2-stg.loadbalancer.server.port=80"
 
-  # 9. Traefik (共通の玄関口)
+  # 13. Dozzle (リアルタイムログビューアー)
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle_v2_stg
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - shared-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+      - "traefik.http.routers.dozzle-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/logs`)"
+      - "traefik.http.routers.dozzle-stg.entrypoints=websecure"
+      - "traefik.http.routers.dozzle-stg.tls.certresolver=le"
+      - "traefik.http.routers.dozzle-stg.priority=300"
+      - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
+      - "traefik.http.routers.dozzle-stg.middlewares=dozzle-strip"
+      - "traefik.http.services.dozzle-stg.loadbalancer.server.port=8080"
+
+  # 14. Traefik (共通の玄関口)
   traefik:
     image: traefik:v2.11
     container_name: traefik_proxy_stg
@@ -319,7 +341,7 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=shared-proxy" # shared-proxyを見るように変更
+      - "--providers.docker.network=shared-proxy"
       - "--accesslog=true"
       - "--log.level=INFO"
       - "--entrypoints.web.address=:80"
@@ -339,14 +361,14 @@ services:
       - ./data/traefik_certs:/etc/traefik
     networks:
       - internal-net
-      - shared-proxy # 共通ネットワークに参加
+      - shared-proxy
 
 # ボリューム定義
 volumes:
   postgres_data_home:
   mariadb_data_home:
   wordpress_data_home:
-  static_volume: 
+  static_volume:
   traefik_certs:
 
 # ネットワーク定義
@@ -354,4 +376,4 @@ networks:
   internal-net:
     driver: bridge
   shared-proxy:
-    external: true # 事前に作成したネットワークを使用
+    external: true
