@@ -8,6 +8,68 @@ scrapers/
 │   └── processed/     # 加工済み、またはインポート待ちデータ
 └── logs/              # 実行ログ（エラー確認用）
 
+# 🚀 開発・デプロイワークフロー
+
+本プロジェクトは、1台のVPS上で **ステージング環境** と **本番環境** を完全に分離して運用しています。
+
+---
+
+### 1. 開発と検証（ステージング環境）
+ローカルでの修正をステージング環境で確認する手順です。
+
+* **操作方法**:  
+  `main` ブランチへ `push` すると自動でデプロイされます。
+  ```bash
+  git add .
+  git commit -m "修正内容のメモ"
+  git push origin main
+
+動作:GitHub Actions の Stage Deployment が実行されます。
+
+確認URL:https://stg.tiper.live目的:本番公開前に、実際のサーバー環境で動作（Next.js / Django / DB）に問題がないか最終確認を行います。
+
+2. 本番公開（本番環境）ステージングでの確認が完了し、本番サイトを更新する「リリース」の手順です。
+操作方法:バージョンタグ（v*）を作成して push します。
+
+Bash# 例: 新しいバージョン（v1.0.1）をリリースする場合
+git tag v1.0.1
+git push origin v1.0.1
+
+動作:GitHub Actions の Production Deployment が起動します。
+
+確認URL:https://tiper.livehttps://bicstation.comhttps://bic-saving.comhttps://avflash.xyz
+
+注意点:main ブランチへの通常の push では、本番環境は一切更新されません。
+
+必ずタグを打ってください。
+
+🛠️ 管理ツールとデータベース構成項目本番環境 (Production)ステージング (Staging)
+接続ドメインtiper.live 等
+stg.tiper.liveDB
+コンテナ名
+postgres_db_v2_prod
+postgres_db_v2_stg
+外部接続ポート
+5434
+5433
+管理画面URL
+(非推奨)stg.tiper.live/pgadmin
+データベースの分離:本番とステージングのDBは完全に別物です。
+ステージングでデータを削除しても本番には影響しません。
+セキュリティ:pgAdmin や phpMyAdmin は、ステージング用ドメインからのみアクセスする運用としています。
+
+⚠️ トラブルシューティング
+Permission Denied エラー:デプロイ直後に Django が起動しない場合、VPSにログインして以下を実行してください。
+chmod +x /home/maya/shin-vps/django/entrypoint.sh
+
+反映されない場合:GitHub の「Actions」タブでエラーが出ていないか確認してください。
+---
+
+これをREADMEに貼り付けておけば、今後の運用がとてもスムーズになるはずです。
+他に追加したい項目（バックアップ手順など）が必要になったら、いつでも声をかけてくださいね！
+
+
+
 
 生データをデータベースのカラムに保存して、その後スクレイピングしてデータベースに保存するというひらめき
 

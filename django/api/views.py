@@ -5,7 +5,7 @@ from rest_framework import generics
 from .serializers import (
     AdultProductSerializer, 
     LinkshareProductSerializer,
-    PCProductSerializer,  # 💡 追記
+    PCProductSerializer,  
     ActressSerializer,
     GenreSerializer,
     MakerSerializer,
@@ -25,7 +25,7 @@ from .models import (
     Director, 
     Series
 )
-from .models.pc_products import PCProduct  # 💡 追記
+from .models.pc_products import PCProduct  
 
 # --------------------------------------------------------------------------
 # 0. /api/ ルートエンドポイント
@@ -39,8 +39,8 @@ def api_root(request):
         "endpoints": {
             "status": "/api/status/",
             "products": {
-                "pc_products_list": "/api/pc-products/", # 💡 追記
-                "pc_product_detail": "/api/pc-products/{unique_id}/", # 💡 追記
+                "pc_products_list": "/api/pc-products/", 
+                "pc_product_detail": "/api/pc-products/{unique_id}/", 
                 "adult_products_list": "/api/adults/",
                 "linkshare_products_list": "/api/linkshare/",
                 "adult_product_detail": "/api/adults/{product_id_unique}/",
@@ -92,18 +92,35 @@ class LinkshareProductDetailAPIView(generics.RetrieveAPIView):
 
 
 # --------------------------------------------------------------------------
-# 3. PC製品データ API ビュー (PCProduct) 💡 追記
+# 3. PC製品データ API ビュー (PCProduct)
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
     """
-    PC製品（Acer等）のリストを取得するビュー (/api/pc-products/)
+    PC製品（Lenovo, HP, Acer等）のリストを取得するビュー (/api/pc-products/)
+    クエリパラメータでサイトやジャンルの絞り込みが可能
+    例: /api/pc-products/?site=lenovo&genre=gaming
     """
-    queryset = PCProduct.objects.all().order_by('-updated_at')
     serializer_class = PCProductSerializer
+
+    def get_queryset(self):
+        # 掲載中(is_active=True)のものを基本とし、更新順で並べる
+        queryset = PCProduct.objects.filter(is_active=True).order_by('-updated_at')
+        
+        # クエリパラメータを取得
+        site = self.request.query_params.get('site')
+        genre = self.request.query_params.get('genre')
+
+        # フィルタリングの適用
+        if site:
+            queryset = queryset.filter(site_prefix=site)
+        if genre:
+            queryset = queryset.filter(unified_genre=genre)
+            
+        return queryset
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
     """
-    特定のJAN/型番を持つPC製品を取得するビュー (/api/pc-products/<unique_id>/)
+    特定の固有IDを持つPC製品を取得するビュー (/api/pc-products/<unique_id>/)
     """
     queryset = PCProduct.objects.all()
     serializer_class = PCProductSerializer

@@ -7,6 +7,7 @@ urlpatterns = [
     # -----------------------------------------------------------
     # 0. /api/ ルートエンドポイント
     # -----------------------------------------------------------
+    # APIの全体マップを表示
     path('', views.api_root, name='api_root'), 
 
     # 1. サーバーの稼働確認用
@@ -23,9 +24,10 @@ urlpatterns = [
     path('adults/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # -----------------------------------------------------------
-    # 3. PC製品データ エンドポイント (PCProduct) ★追加
+    # 3. PC製品データ エンドポイント (PCProduct)
     # -----------------------------------------------------------
     # GET /api/pc-products/
+    # 💡 QueryParams (?site=lenovo等) による絞り込みに対応
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # GET /api/pc-products/4515777630658/ (unique_idで取得)
