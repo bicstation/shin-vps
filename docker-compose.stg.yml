@@ -364,13 +364,24 @@ services:
       - internal-net
       - shared-proxy
 
-# ボリューム定義
+# ボリューム定義を修正
 volumes:
+  # 名前を自動生成させず、既存の「48M」のボリュームを強制指定
   postgres_data_home:
+    external: true
+    name: shin-vps_postgres_data
   mariadb_data_home:
+    external: true
+    name: shin-vps_mariadb_data
   wordpress_data_home:
+    external: true
+    name: shin-vps_wordpress_data
   static_volume:
+    external: true
+    name: shin-vps_static_volume
   traefik_certs:
+    external: true
+    name: shin-vps_traefik_certs
 
 # ネットワーク定義
 networks:
