@@ -313,7 +313,7 @@ services:
       - "traefik.http.routers.pgadmin-v2-stg.priority=250"
       - "traefik.http.services.pgadmin-v2-stg.loadbalancer.server.port=80"
 
-  # 13. Dozzle (修正済み：DOZZLE_BASEを追加)
+  # 13. Dozzle (404対策：stripprefixを削除しDOZZLE_BASEのみ使用)
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle_v2_stg
@@ -331,8 +331,7 @@ services:
       - "traefik.http.routers.dozzle-stg.entrypoints=websecure"
       - "traefik.http.routers.dozzle-stg.tls.certresolver=le"
       - "traefik.http.routers.dozzle-stg.priority=300"
-      - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
-      - "traefik.http.routers.dozzle-stg.middlewares=dozzle-strip"
+      # stripprefix ミドルウェアを削除。Dozzleが自ら /logs を解釈するようにします
       - "traefik.http.services.dozzle-stg.loadbalancer.server.port=8080"
 
   # 14. Traefik (共通の玄関口)
