@@ -1,5 +1,4 @@
-# ファイル名: docker-compose.prod.yml
-# 本番環境用：フル構成 (SSL/TLS, 本番ドメイン, 永続化ボリューム)
+# 本番環境用：フル構成 (ステージングと共存設定)
 
 services:
 
@@ -17,7 +16,7 @@ services:
     networks:
       - internal-net
     ports:
-      - "5433:5432"
+      - "5434:5432" # ステージング(5433)と被らないよう変更
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"] 
       interval: 10s
@@ -60,26 +59,25 @@ services:
       - DJANGO_ALLOW_ASYNC_UNSAFE=true
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=internal-net" 
-      # API ルーター
+      - "traefik.docker.network=shared-proxy" 
+      # API ルーター (本番ドメイン)
       - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.api-v2-prod.priority=105" 
-      - "traefik.http.routers.api-v2-prod.service=django-v2@docker"
       - "traefik.http.routers.api-v2-prod.tls.certresolver=le"
       # Admin ルーター
       - "traefik.http.routers.admin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.admin-v2-prod.priority=105"
-      - "traefik.http.routers.admin-v2-prod.service=django-v2@docker"
       - "traefik.http.routers.admin-v2-prod.tls.certresolver=le"
-      - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
+      - "traefik.http.services.django-v2-prod.loadbalancer.server.port=8000"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
       - ./django:/usr/src/app 
       - static_volume_prod:/usr/src/app/staticfiles
     networks:
       - internal-net
+      - shared-proxy
 
   # 3. Next.js - bicstation.com
   next-bicstation-v2:
@@ -90,22 +88,21 @@ services:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
     container_name: next_bicstation_v2_prod
     depends_on:
-      django-v2:
-        condition: service_started
+      - django-v2
     environment:
       NEXT_PUBLIC_API_URL: https://bicstation.com/api
       NODE_ENV: production
     networks:
       - internal-net
+      - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=internal-net"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bicstation-v2-prod.rule=Host(`bicstation.com`)"
       - "traefik.http.routers.bicstation-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.bicstation-v2-prod.priority=100" 
       - "traefik.http.routers.bicstation-v2-prod.tls.certresolver=le"
-      - "traefik.http.services.next-bicstation-v2.loadbalancer.server.port=3000"
-      - "traefik.http.routers.bicstation-v2-prod.service=next-bicstation-v2@docker"
+      - "traefik.http.services.next-bicstation-v2-prod.loadbalancer.server.port=3000"
 
   # 4. Next.js - tiper.live
   next-tiper-v2:
@@ -116,22 +113,21 @@ services:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
     container_name: next_tiper_v2_prod
     depends_on:
-      django-v2:
-        condition: service_started
+      - django-v2
     environment:
       NEXT_PUBLIC_API_URL: https://tiper.live/api
       NODE_ENV: production
     networks:
       - internal-net
+      - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=internal-net"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.tiper-v2-prod.rule=Host(`tiper.live`)"
       - "traefik.http.routers.tiper-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.tiper-v2-prod.priority=100"
       - "traefik.http.routers.tiper-v2-prod.tls.certresolver=le"
-      - "traefik.http.services.next-tiper-v2.loadbalancer.server.port=3000"
-      - "traefik.http.routers.tiper-v2-prod.service=next-tiper-v2@docker"
+      - "traefik.http.services.next-tiper-v2-prod.loadbalancer.server.port=3000"
 
   # 5. Next.js - bic-saving.com
   next-bic-saving-v2:
@@ -142,22 +138,21 @@ services:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
     container_name: next_bic_saving_v2_prod
     depends_on:
-      django-v2:
-        condition: service_started
+      - django-v2
     environment:
       NEXT_PUBLIC_API_URL: https://bic-saving.com/api
       NODE_ENV: production
     networks:
       - internal-net
+      - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=internal-net"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.saving-v2-prod.rule=Host(`bic-saving.com`)"
       - "traefik.http.routers.saving-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.saving-v2-prod.priority=100"
       - "traefik.http.routers.saving-v2-prod.tls.certresolver=le"
-      - "traefik.http.services.next-bic-saving-v2.loadbalancer.server.port=3000"
-      - "traefik.http.routers.saving-v2-prod.service=next-bic-saving-v2@docker"
+      - "traefik.http.services.next-bic-saving-v2-prod.loadbalancer.server.port=3000"
 
   # 6. Next.js - avflash.xyz
   next-avflash-v2:
@@ -168,22 +163,21 @@ services:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH} 
     container_name: next_avflash_v2_prod
     depends_on:
-      django-v2:
-        condition: service_started
+      - django-v2
     environment:
       NEXT_PUBLIC_API_URL: https://avflash.xyz/api
       NODE_ENV: production
     networks:
       - internal-net
+      - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=internal-net"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.avflash-v2-prod.rule=Host(`avflash.xyz`)"
       - "traefik.http.routers.avflash-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.avflash-v2-prod.priority=100"
       - "traefik.http.routers.avflash-v2-prod.tls.certresolver=le"
-      - "traefik.http.services.next-avflash-v2.loadbalancer.server.port=3000"
-      - "traefik.http.routers.avflash-v2-prod.service=next-avflash-v2@docker"
+      - "traefik.http.services.next-avflash-v2-prod.loadbalancer.server.port=3000"
 
   # 7. Nginx (静的ファイル配信)
   nginx-v2:
@@ -195,15 +189,15 @@ services:
       - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - internal-net
+      - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=internal-net"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.static-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/static`)"
       - "traefik.http.routers.static-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.static-v2-prod.priority=200"
       - "traefik.http.routers.static-v2-prod.tls.certresolver=le"
-      - "traefik.http.services.nginx-v2.loadbalancer.server.port=80"
-      - "traefik.http.routers.static-v2-prod.service=nginx-v2@docker"
+      - "traefik.http.services.nginx-v2-prod.loadbalancer.server.port=80"
   
   # 8. MariaDB (WordPress用)
   mariadb-v2:
@@ -252,51 +246,21 @@ services:
     container_name: nginx_wp_v2_prod
     restart: always
     depends_on:
-      wordpress-v2:
-        condition: service_started
+      - wordpress-v2
     volumes:
       - wordpress_data_prod:/var/www/html:ro
       - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - internal-net
+      - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=internal-net"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.blog-v2-prod.priority=100"
       - "traefik.http.routers.blog-v2-prod.tls.certresolver=le"
-      - "traefik.http.services.nginx-wp-v2.loadbalancer.server.port=80"
-      - "traefik.http.routers.blog-v2-prod.service=nginx-wp-v2@docker"
-      
-  # 11. Traefik (リバースプロキシ)
-  traefik:
-    image: traefik:v2.11
-    container_name: traefik_proxy_prod
-    restart: always
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=internal-net" 
-      - "--accesslog=true"
-      - "--log.level=INFO"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.le.acme.email=bicstation@gmail.com"
-      - "--certificatesresolvers.le.acme.storage=/etc/traefik/acme.json"
-      - "--certificatesresolvers.le.acme.tlschallenge=true"
-      - "--api.insecure=true"
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8085:8080"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_certs_prod:/etc/traefik
-    networks:
-      - internal-net
+      - "traefik.http.services.nginx-wp-v2-prod.loadbalancer.server.port=80"
 
 # ------------------------------------------------------------------
 
@@ -315,3 +279,6 @@ volumes:
 networks:
   internal-net:
     driver: bridge
+  # ステージングと共有するための外部ネットワーク
+  shared-proxy:
+    external: true
