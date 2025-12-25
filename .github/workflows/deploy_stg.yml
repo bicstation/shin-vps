@@ -45,11 +45,15 @@ jobs:
           
           # VPS上で実行するコマンド
           script: |
-            # 1. Docker Composeファイルがあるディレクトリへ移動
             cd /home/maya/shin-vps
             
-            # 2. 全てのサービスを起動 (依存関係にあるDBなども含めて)
-            # --build フラグが、転送された最新コードを使って自動で再ビルドを強制します。
+            # 1. 共通ネットワークが存在しない場合のみ作成（エラー回避用）
+            sudo docker network inspect shared-proxy >/dev/null 2>&1 || sudo docker network create shared-proxy
+            
+            # 2. ステージング環境のデプロイ
             sudo docker compose -f docker-compose.stg.yml -p stg up -d --build --remove-orphans
+            
+            # 3. (オプション) もし本番も自動で更新したいなら以下を追加
+            # sudo docker compose -f docker-compose.prod.yml -p prod up -d --build --remove-orphans
             
             echo "Staging deployment completed successfully."

@@ -1,9 +1,6 @@
-# ファイル名: .github/workflows/deploy_prod.yml (最終版)
-
 name: Production Deployment
 
 on:
-  # 本番環境へのデプロイは慎重に行うため、ステージングと同じく main ブランチへのプッシュをトリガーとします。
   push:
     branches:
       - main 
@@ -11,30 +8,29 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production # 📘 環境名を指定することで、デプロイ保護ルール（承認など）を適用できます
+    environment: production # GitHub上で承認ルールを設定している場合に有効
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      # 1. 【scp-action を使用して、最新ファイルを VPS に確実に同期】
+      # 1. ローカルの最新ファイルを VPS に同期
       - name: Sync Files to VPS (rsync via SCP)
-        uses: appleboy/scp-action@v0.1.7 # scp-action に変更
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST_PROD }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 2222 # ✅ scp-action にてポート 2222 を指定
-          
-          # ローカルの全ファイルをVPSのプロジェクトディレクトリへ転送
+          port: 2222
           source: "." 
           target: "/home/maya/shin-vps"
-          # -r (再帰的) -t (タイムスタンプ保持) -z (圧縮) -q (静か) --delete (転送元にないファイルを削除)
+          # 注意: --delete は VPS 側にしかないファイル（手動で作った .env など）を消す可能性があります。
+          # もし .env を VPS に直接置いているなら、flags から --delete を外すか、
+          # リポジトリに .env.example 等を含めて管理してください。
           flags: "-rtzq --delete" 
 
-
-      # 2. 【ssh-action を使ってコマンドのみ実行】
+      # 2. SSH 経由で Docker Compose コマンドを実行
       - name: Deploy to Production VPS via SSH (Docker Compose Up)
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -42,15 +38,16 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 2222 # ✅ 【重要】ssh-action にてポート 2222 を追記
-          
-          # VPS上で実行するコマンド
+          port: 2222
           script: |
-            # 1. Docker Composeファイルがあるディレクトリへ移動
             cd /home/maya/shin-vps
             
-            # 2. 本番環境のコンテナを再ビルドし、再起動
-            # --build フラグが、転送された最新コードを使って自動で再ビルドを強制します。
+            # 1. 共通ネットワーク shared-proxy が存在しない場合のみ作成
+            # これがないと docker-compose.prod.yml の起動に失敗します
+            sudo docker network inspect shared-proxy >/dev/null 2>&1 || sudo docker network create shared-proxy
+            
+            # 2. 本番環境のコンテナを再ビルドし、バックグラウンドで起動
+            # -p prod を指定することでステージング(-p stg)と分離されます
             sudo docker compose -f docker-compose.prod.yml -p prod up -d --build --remove-orphans
             
             echo "Production deployment completed successfully."
