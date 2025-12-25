@@ -1,11 +1,10 @@
-# ファイル名: .github/workflows/deploy_stg.yml (最終版)
+# ファイル名: .github/workflows/deploy_stg.yml (修正版)
 
 name: Stage Deployment
 
 on:
   push:
     branches:
-      # main ブランチに push されたときにデプロイを実行
       - main 
 
 jobs:
@@ -16,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. 【scp-action を使用して、最新ファイルを VPS に確実に同期】
+      # 1. ファイルを VPS に同期
       - name: Sync Files to VPS (rsync via SCP)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -24,16 +23,12 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 2222 # ✅ scp-action にてポート 2222 を指定
-          
-          # ローカルの全ファイルをVPSのプロジェクトディレクトリへ転送
+          port: 2222
           source: "." 
           target: "/home/maya/shin-vps"
-          # -r (再帰的) -t (タイムスタンプ保持) -z (圧縮) -q (静か) --delete (転送元にないファイルを削除)
           flags: "-rtzq --delete" 
 
-
-      # 2. 【ssh-action を使ってコマンドのみ実行】
+      # 2. SSH経由でデプロイコマンド実行
       - name: Deploy to Staging VPS via SSH (Docker Compose Up)
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -41,19 +36,16 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 2222 # ✅ 【重要】ssh-action にてポート 2222 を追記
-          
-          # VPS上で実行するコマンド
+          port: 2222
           script: |
             cd /home/maya/shin-vps
             
-            # 1. 共通ネットワークが存在しない場合のみ作成（エラー回避用）
-            sudo docker network inspect shared-proxy >/dev/null 2>&1 || sudo docker network create shared-proxy
+            # 1. 共通ネットワークが存在しない場合のみ作成
+            docker network inspect shared-proxy >/dev/null 2>&1 || docker network create shared-proxy
             
             # 2. ステージング環境のデプロイ
-            sudo docker compose -f docker-compose.stg.yml -p stg up -d --build --remove-orphans
+            # -p stg を削除することで、ディレクトリ名(shin-vps)をプロジェクト名として使用
+            # これにより手動実行分との競合を回避し、既存コンテナを正しく更新します
+            docker compose -f docker-compose.stg.yml up -d --build --remove-orphans
             
-            # 3. (オプション) もし本番も自動で更新したいなら以下を追加
-            # sudo docker compose -f docker-compose.prod.yml -p prod up -d --build --remove-orphans
-            
-            echo "Staging deployment completed successfully."
+            echo "Staging deployment with Dozzle completed successfully."
