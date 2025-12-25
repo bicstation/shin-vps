@@ -313,11 +313,13 @@ services:
       - "traefik.http.routers.pgadmin-v2-stg.priority=250"
       - "traefik.http.services.pgadmin-v2-stg.loadbalancer.server.port=80"
 
-  # 13. Dozzle (リアルタイムログビューアー)
+  # 13. Dozzle (修正済み：DOZZLE_BASEを追加)
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle_v2_stg
     restart: always
+    environment:
+      - DOZZLE_BASE=/logs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
