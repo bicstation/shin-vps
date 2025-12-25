@@ -1,3 +1,5 @@
+# /mnt/c/dev/SHIN-VPS/django/api/models/linkshare_products.py
+
 from django.db import models
 from django.utils import timezone
 
