@@ -65,7 +65,7 @@ services:
       - "traefik.http.routers.api-v2-stg.tls.certresolver=le"
       - "traefik.http.routers.admin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.admin-v2-stg.priority=105"
+      - "traefik.http.routers.admin-v2-stg.priority=120"
       - "traefik.http.routers.admin-v2-stg.tls.certresolver=le"
       - "traefik.http.services.django-v2-stg.loadbalancer.server.port=8000"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
