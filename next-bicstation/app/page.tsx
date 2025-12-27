@@ -29,8 +29,8 @@ interface PCProduct {
     price: number;
     image_url: string;
     url: string;
-    stock_status: string; // 💡 追加：在庫/受注状況
-    unified_genre: string; // 💡 追加：統合ジャンル
+    stock_status: string;
+    unified_genre: string;
 }
 
 interface PCProductResponse {
@@ -61,11 +61,12 @@ async function fetchPostList(): Promise<WpPost[]> {
 
 /**
  * Django APIからPC製品一覧を取得
- * 💡 site=lenovo パラメータを付与してフィルタリング
+ * 💡 修正ポイント：
+ * 1. ホスト名を実際のコンテナ名 'api_django_v2_stg' に変更
+ * 2. site パラメータをDBの値に合わせて 'Lenovo' (大文字) に変更
  */
 async function fetchPCProducts(offset = 0): Promise<PCProductResponse | null> {
-    // Bicstation用なので lenovo を指定。全体を見たい場合は site パラメータを外す
-    const DJANGO_API_URL = `http://django-v2:8000/api/pc-products/?site=lenovo&limit=10&offset=${offset}`;
+    const DJANGO_API_URL = `http://api_django_v2_stg:8000/api/pc-products/?site=Lenovo&limit=10&offset=${offset}`;
     
     try {
         const res = await fetch(DJANGO_API_URL, { 
@@ -76,7 +77,10 @@ async function fetchPCProducts(offset = 0): Promise<PCProductResponse | null> {
             } 
         });
 
-        if (!res.ok) return null;
+        if (!res.ok) {
+            console.error(`Django API Error: ${res.status} ${res.statusText}`);
+            return null;
+        }
         return await res.json();
     } catch (error) {
         console.error("Django API Fetch Exception:", error);
@@ -166,7 +170,7 @@ export default async function Page({ searchParams }: { searchParams: { offset?: 
                         </h2>
                         
                         {!pcData || pcData.results.length === 0 ? (
-                            <p>製品データを取得中、またはデータがありません。</p>
+                            <p>製品データを取得中、またはデータがありません。 (Case-sensitive check: Lenovo)</p>
                         ) : (
                             <>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '25px' }}>
@@ -178,7 +182,6 @@ export default async function Page({ searchParams }: { searchParams: { offset?: 
                                             
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                                                 <span style={{ fontSize: '0.75em', fontWeight: 'bold', color: SITE_COLOR, textTransform: 'uppercase' }}>{product.maker}</span>
-                                                {/* 💡 受注ステータスの表示ロジック */}
                                                 <span style={{ 
                                                     fontSize: '0.7em', 
                                                     padding: '2px 8px', 
