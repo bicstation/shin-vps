@@ -1,5 +1,6 @@
 # --- 💡 ビルド時引数の受け取り ---
 ARG NEXT_PUBLIC_APP_TITLE
+ARG NEXT_PUBLIC_BASE_BICSTATION
 
 # --- ステージ 1: ビルドステージ ---
 # Node.js 20 へのアップグレードを推奨しますが、18を維持する場合は libc6 が必須です
