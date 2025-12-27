@@ -1,10 +1,10 @@
-# /mnt/c/dev/SHIN-VPS/docker-compose.yml (ローカル開発環境・最終安定版)
+# /mnt/c/dev/SHIN-VPS/docker-compose.yml (ローカル開発環境・ハイフン統一版)
 services:
 
   # 1. PostgreSQL データベース (Django専用)
   postgres-db-v2:
     image: postgres:15-alpine
-    container_name: postgres_db_v2
+    container_name: postgres-db-v2
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -28,7 +28,7 @@ services:
     build:
       context: ./django
       dockerfile: Dockerfile
-    container_name: api_django_v2
+    container_name: django-v2
     restart: always
     deploy:
       resources:
@@ -79,7 +79,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-    container_name: next_bicstation_v2
+    container_name: next-bicstation-v2
     depends_on:
       - django-v2
     environment:
@@ -103,7 +103,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-    container_name: next_tiper_v2
+    container_name: next-tiper-v2
     depends_on:
       - django-v2
     environment:
@@ -127,7 +127,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-    container_name: next_bic_saving_v2
+    container_name: next-bic-saving-v2
     depends_on:
       - django-v2
     environment:
@@ -151,7 +151,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH} 
-    container_name: next_avflash_v2
+    container_name: next-avflash-v2
     depends_on:
       - django-v2
     environment:
@@ -171,7 +171,7 @@ services:
   # 7. Nginx (静的ファイル用)
   nginx-v2:
     image: nginx:alpine
-    container_name: nginx_static_v2
+    container_name: nginx-v2
     restart: always
     volumes:
       - static_volume:/usr/share/nginx/html/static:ro
@@ -188,7 +188,7 @@ services:
   # 8. MariaDB (WordPress用)
   mariadb-v2:
     image: mariadb:10
-    container_name: mariadb_wp_v2
+    container_name: mariadb-v2
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
@@ -208,7 +208,7 @@ services:
   # 9. WordPress
   wordpress-v2:
     image: wordpress:6-fpm-alpine
-    container_name: wordpress_blog_v2
+    container_name: wordpress-v2
     restart: always
     depends_on:
       mariadb-v2:
@@ -229,7 +229,7 @@ services:
   # 10. Nginx (WordPress用ブリッジ)
   nginx-wp-v2:
     image: nginx:alpine
-    container_name: nginx_wp_v2
+    container_name: nginx-wp-v2
     restart: always
     depends_on:
       - wordpress-v2
@@ -250,7 +250,7 @@ services:
   # 11. phpMyAdmin (MariaDB管理)
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin:latest
-    container_name: phpmyadmin_v2
+    container_name: phpmyadmin-v2
     restart: always
     environment:
       PMA_HOST: mariadb-v2
@@ -266,27 +266,23 @@ services:
       - "traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin"
       - "traefik.http.services.phpmyadmin-v2.loadbalancer.server.port=80"
 
-# 12. pgAdmin (PostgreSQL管理)
+  # 12. pgAdmin (PostgreSQL管理)
   pgadmin-v2:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin_v2
+    container_name: pgadmin-v2
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
-      # ↓ IPv4で確実に受け付けるように修正
       PGADMIN_LISTEN_ADDRESS: 0.0.0.0
-      # ↓ サブディレクトリとして認識させるための魔法の変数
       SCRIPT_NAME: /pgadmin
     networks:
       - internal-net
     labels:
       - "traefik.enable=true"
-      # ルール: /pgadmin で始まるリクエストを拾う
       - "traefik.http.routers.pgadmin-v2.rule=Host(`localhost`) && PathPrefix(`/pgadmin`)"
       - "traefik.http.routers.pgadmin-v2.entrypoints=web"
       - "traefik.http.routers.pgadmin-v2.priority=200"
-      # 重要: SCRIPT_NAMEを使っているので、Traefik側でPathを削る(StripPrefix)必要はなくなりました
       - "traefik.http.services.pgadmin-v2.loadbalancer.server.port=80"
 
   # 13. Dozzle (リアルタイムログ監視)
@@ -310,7 +306,7 @@ services:
   # 14. Traefik (リバースプロキシ)
   traefik:
     image: traefik:v2.11
-    container_name: traefik_proxy
+    container_name: traefik-proxy
     restart: always
     command:
       - "--providers.docker=true"

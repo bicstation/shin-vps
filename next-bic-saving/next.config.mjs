@@ -1,14 +1,19 @@
-// next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // サーバーサイドでの環境変数を定義
   env: {
-    // コンテナ内部のネットワーク名とポートでDjango APIを指定
-    API_URL_INTERNAL: 'http://django:8000', 
-    // 公開用のURL（デプロイ後に変更が必要）
+    // ✅ 修正：環境変数から取得し、なければデフォルト値（本番名）を使用
+    // これにより、yml側の environment: DB_HOST 設定が反映されます
+    API_URL_INTERNAL: process.env.DB_HOST 
+      ? `http://${process.env.DB_HOST}:8000` 
+      : 'http://django-v2-prod:8000', 
+    
+    // 公開用のURL（ブラウザからアクセスするURL）
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   },
-  // ... その他の設定
+  
+  // Docker環境でのビルド安定化のため、念のため output を指定（任意）
+  // output: 'standalone', 
 };
 
 export default nextConfig;
