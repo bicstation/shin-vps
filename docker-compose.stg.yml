@@ -1,4 +1,5 @@
-# /mnt/c/dev/SHIN-VPS/docker-compose.stg.yml (ステージング環境・ハイフン統一版)
+# /mnt/c/dev/SHIN-VPS/docker-compose.stg.yml
+
 services:
 
   # 1. PostgreSQL データベース (Django専用)
@@ -83,11 +84,13 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
+        NEXT_PUBLIC_BASE_BICSTATION: /bicstation
     container_name: next-bicstation-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      NEXT_PUBLIC_BASE_BICSTATION: /bicstation
       NODE_ENV: production
     networks:
       - internal-net
@@ -108,11 +111,13 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
+        NEXT_PUBLIC_BASE_TIPER: /tiper
     container_name: next-tiper-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      NEXT_PUBLIC_BASE_TIPER: /tiper
       NODE_ENV: production
     networks:
       - internal-net
@@ -133,11 +138,13 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
+        NEXT_PUBLIC_BASE_SAVING: /saving
     container_name: next-bic-saving-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      NEXT_PUBLIC_BASE_SAVING: /saving
       NODE_ENV: production
     networks:
       - internal-net
@@ -158,11 +165,13 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH}
+        NEXT_PUBLIC_BASE_AVFLASH: /avflash
     container_name: next-avflash-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      NEXT_PUBLIC_BASE_AVFLASH: /avflash
       NODE_ENV: production
     networks:
       - internal-net
@@ -298,4 +307,47 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_LISTEN_PORT: 80
-      SCRIPT_
+      SCRIPT_NAME: /pgadmin
+    networks:
+      - internal-net
+      - shared-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+      - "traefik.http.routers.pgadmin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/pgadmin`)"
+      - "traefik.http.routers.pgadmin-v2-stg.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin-v2-stg.priority=200"
+      - "traefik.http.routers.pgadmin-v2-stg.tls.certresolver=le"
+      - "traefik.http.services.pgadmin-v2-stg.loadbalancer.server.port=80"
+
+  # 13. Dozzle (ログ確認ツール)
+  dozzle-stg:
+    image: amir20/dozzle:latest
+    container_name: dozzle-stg
+    restart: always
+    environment:
+      - DOZZLE_BASE=/logs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - shared-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+      - "traefik.http.routers.dozzle-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/logs`)"
+      - "traefik.http.routers.dozzle-stg.entrypoints=websecure"
+      - "traefik.http.routers.dozzle-stg.priority=150"
+      - "traefik.http.routers.dozzle-stg.tls.certresolver=le"
+      - "traefik.http.services.dozzle-stg.loadbalancer.server.port=8080"
+
+networks:
+  internal-net:
+    driver: bridge
+  shared-proxy:
+    external: true
+
+volumes:
+  postgres_data_home:
+  static_volume:
+  wordpress_data_home:
+  mariadb_data_home:

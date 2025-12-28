@@ -100,7 +100,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ o
 
     const currentPage = Math.floor(currentOffset / limit) + 1;
     const totalPages = pcData ? Math.ceil(pcData.count / limit) : 0;
-
+    
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
             

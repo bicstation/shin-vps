@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 // リンク先を環境変数 + パス で構成する
-const basePath = process.env.NEXT_PUBLIC_BASE_BICSTATION || '';
+const basePath = process.env.NEXT_PUBLIC_BASE_BICSTATION || '/bicstation';
 console.log("Current BasePath:", basePath); // ビルドログ、またはブラウザのコンソールで確認
 
 export default function ProductCard({ product }: any) {

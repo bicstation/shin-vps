@@ -1,7 +1,7 @@
-# /mnt/c/dev/SHIN-VPS/docker-compose.yml
+# /mnt/c/dev/SHIN-VPS/docker-compose.yml (ローカル開発環境・ハイフン統一版)
 services:
 
-  # 1. PostgreSQL (Django専用)
+  # 1. PostgreSQL データベース (Django専用)
   postgres-db-v2:
     image: postgres:15-alpine
     container_name: postgres-db-v2
@@ -72,20 +72,18 @@ services:
     networks:
       - internal-net
 
-  # 3. Next.js - bicstation (★環境変数追加)
+  # 3. Next.js - bicstation
   next-bicstation-v2:
     build:
       context: ./next-bicstation
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-        NEXT_PUBLIC_BASE_BICSTATION: /bicstation
     container_name: next-bicstation-v2
     depends_on:
       - django-v2
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8083/api
-      NEXT_PUBLIC_BASE_BICSTATION: /bicstation
       NODE_ENV: production
     networks:
       - internal-net
@@ -98,20 +96,18 @@ services:
       - "traefik.http.middlewares.bicstation-strip.stripprefix.prefixes=/bicstation"
       - "traefik.http.services.next-bicstation-v2.loadbalancer.server.port=3000"
 
-  # 4. Next.js - tiper (★環境変数追加)
+  # 4. Next.js - tiper
   next-tiper-v2:
     build:
       context: ./next-tiper
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-        NEXT_PUBLIC_BASE_TIPER: /tiper
     container_name: next-tiper-v2
     depends_on:
       - django-v2
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8083/api
-      NEXT_PUBLIC_BASE_TIPER: /tiper
       NODE_ENV: production
     networks:
       - internal-net
@@ -124,20 +120,18 @@ services:
       - "traefik.http.middlewares.tiper-strip.stripprefix.prefixes=/tiper"
       - "traefik.http.services.next-tiper-v2.loadbalancer.server.port=3000"
 
-  # 5. Next.js - bic-saving (★環境変数追加)
+  # 5. Next.js - bic-saving
   next-bic-saving-v2:
     build: 
       context: ./next-bic-saving
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-        NEXT_PUBLIC_BASE_SAVING: /saving
     container_name: next-bic-saving-v2
     depends_on:
       - django-v2
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8083/api
-      NEXT_PUBLIC_BASE_SAVING: /saving
       NODE_ENV: production
     networks:
       - internal-net
@@ -150,20 +144,18 @@ services:
       - "traefik.http.middlewares.saving-strip.stripprefix.prefixes=/saving"
       - "traefik.http.services.next-bic-saving-v2.loadbalancer.server.port=3000"
 
-  # 6. Next.js - avflash (★環境変数追加)
+  # 6. Next.js - avflash
   next-avflash-v2:
     build: 
       context: ./next-avflash 
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH} 
-        NEXT_PUBLIC_BASE_AVFLASH: /avflash
     container_name: next-avflash-v2
     depends_on:
       - django-v2
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8083/api
-      NEXT_PUBLIC_BASE_AVFLASH: /avflash
       NODE_ENV: production
     networks:
       - internal-net
@@ -255,7 +247,7 @@ services:
       - "traefik.http.middlewares.blog-strip.stripprefix.prefixes=/blog"
       - "traefik.http.services.nginx-wp-v2.loadbalancer.server.port=80"
 
-  # 11. phpMyAdmin
+  # 11. phpMyAdmin (MariaDB管理)
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin:latest
     container_name: phpmyadmin-v2
@@ -274,7 +266,7 @@ services:
       - "traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin"
       - "traefik.http.services.phpmyadmin-v2.loadbalancer.server.port=80"
 
-  # 12. pgAdmin
+  # 12. pgAdmin (PostgreSQL管理)
   pgadmin-v2:
     image: dpage/pgadmin4:latest
     container_name: pgadmin-v2
@@ -293,7 +285,7 @@ services:
       - "traefik.http.routers.pgadmin-v2.priority=200"
       - "traefik.http.services.pgadmin-v2.loadbalancer.server.port=80"
 
-  # 13. Dozzle
+  # 13. Dozzle (リアルタイムログ監視)
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
@@ -311,7 +303,7 @@ services:
       - "traefik.http.routers.dozzle-v2.priority=150"
       - "traefik.http.services.dozzle-v2.loadbalancer.server.port=8080"
 
-  # 14. Traefik
+  # 14. Traefik (リバースプロキシ)
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy
@@ -331,12 +323,14 @@ services:
     networks:
       - internal-net
 
+# ボリューム定義
 volumes:
   postgres_data:
   static_volume:
   wordpress_data:
   mariadb_data:
 
+# ネットワーク定義
 networks:
   internal-net:
     driver: bridge
