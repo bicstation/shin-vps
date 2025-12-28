@@ -1,4 +1,4 @@
-# api/management/commands/adult/fetch_duga.py
+# api/management/commands/import_t_duga.py
 
 import os
 import sys

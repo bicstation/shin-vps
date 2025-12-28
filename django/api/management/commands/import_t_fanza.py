@@ -1,4 +1,4 @@
-# C:\dev\SHIN-VPS\django\api\management\commands\fetch_fanza.py
+# django\api\management\commands\import_t_fanza.py
 
 import requests
 import json

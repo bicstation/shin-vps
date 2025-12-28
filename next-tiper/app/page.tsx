@@ -1,16 +1,12 @@
-// E:\shin-vps\next-tiper\app\page.tsx
-
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react/no-danger-to-js */
 // @ts-nocheck
 
 import React from 'react';
 import Link from 'next/link';
-// FeaturedCard のインポートを削除しました（存在しないため）
 import ProductCard from './components/ProductCard'; 
 import { getAdultProducts } from '../lib/api'; 
 
-// ページ全体を常に最新の状態で生成
 export const dynamic = 'force-dynamic';
 
 // --- 型定義 (WordPress) ---
@@ -53,17 +49,25 @@ const formatDate = (dateString: string) => {
 // ====================================================
 // TOPページコンポーネント
 // ====================================================
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: { page?: string } }) {
+  // ページング設定
+  const currentPage = Number(searchParams.page) || 1;
+  const limit = 20;
+  const offset = (currentPage - 1) * limit;
+
   const [latestPosts, productData] = await Promise.all([
     getLatestPosts(),
-    getAdultProducts({ limit: 10 })
+    getAdultProducts({ limit, offset })
   ]);
 
   const products = productData?.results || [];
+  const totalCount = productData?.count || 0;
+  const totalPages = Math.ceil(totalCount / limit);
+  const basePath = process.env.NEXT_PUBLIC_BASE_TIPER || '';
 
   // --- スタイル定義 ---
   const sectionStyle: React.CSSProperties = {
-    padding: '60px 80px',
+    padding: '40px 5%',
     backgroundColor: '#111122',
     borderBottom: '1px solid #3d3d66',
     color: 'white',
@@ -71,102 +75,89 @@ export default async function Home() {
 
   const titleStyle: React.CSSProperties = {
     color: '#e94560',
-    fontSize: '2.5em',
+    fontSize: '2em',
     borderBottom: '2px solid #3d3d66',
     paddingBottom: '10px',
     marginBottom: '30px',
   };
 
-  const featuredCategories = [
-    { name: 'データ分析', link: '/category/data', color: '#99e0ff' },
-    { name: '開発ログ', link: '/category/dev', color: '#e94560' },
-    { name: 'マーケティング', link: '/category/marketing', color: '#00d1b2' },
-    { name: '技術トレンド', link: '/category/trend', color: '#ffdd57' },
-  ];
+  const paginationButtonStyle: React.CSSProperties = {
+    padding: '10px 20px',
+    backgroundColor: '#1f1f3a',
+    color: 'white',
+    borderRadius: '5px',
+    textDecoration: 'none',
+    border: '1px solid #3d3d66'
+  };
 
   return (
-    <div style={{ backgroundColor: '#111122', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: '#111122', minHeight: '100vh', fontFamily: 'sans-serif' }}>
       
       {/* 1. ヒーローセクション */}
       <section style={{...sectionStyle, textAlign: 'center', backgroundColor: '#1f1f3a', borderBottomColor: '#e94560'}}>
-        <h2 style={{ color: 'white', fontSize: '3.5em', margin: '0 0 10px 0' }}>Tiper Live Hub</h2>
-        <p style={{ color: '#99e0ff', fontSize: '1.5em', marginBottom: '30px' }}>
-          WordPress ニュースと Django リアルタイム商品データの統合
+        <h1 style={{ color: 'white', fontSize: '3em', margin: '0 0 10px 0' }}>Tiper Live</h1>
+        <p style={{ color: '#99e0ff', fontSize: '1.2em', marginBottom: '30px' }}>
+          Django V2 API Data Integration
         </p>
-        <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-          <Link href="/tiper" style={{ padding: '12px 30px', backgroundColor: '#e94560', color: 'white', borderRadius: '5px', fontWeight: 'bold', textDecoration: 'none' }}>記事一覧</Link>
-          <Link href="/adults" style={{ padding: '12px 30px', backgroundColor: '#00d1b2', color: 'white', borderRadius: '5px', fontWeight: 'bold', textDecoration: 'none' }}>作品を探す</Link>
-        </div>
       </section>
 
-      {/* 2. Django 商品データセクション */}
+      {/* 2. Django 商品データセクション (ページング付き) */}
       <section style={sectionStyle}>
-        <h2 style={{...titleStyle, color: '#00d1b2', borderBottomColor: '#00d1b2'}}>🔥 最新アダルトコンテンツ</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{...titleStyle, borderBottom: 'none', marginBottom: 0, color: '#00d1b2'}}>🔥 最新コンテンツ ({totalCount}件)</h2>
+          <div style={{ color: '#aaa' }}>Page {currentPage} / {totalPages}</div>
+        </div>
+
         {products.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '24px' }}>
-            {products.map((product: any) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+              gap: '20px' 
+            }}>
+              {products.map((product: any) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+
+            {/* ページングナビゲーション */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '40px' }}>
+              {currentPage > 1 && (
+                <Link href={`${basePath}/?page=${currentPage - 1}`} style={paginationButtonStyle}>← 前のページ</Link>
+              )}
+              {currentPage < totalPages && (
+                <Link href={`${basePath}/?page=${currentPage + 1}`} style={{...paginationButtonStyle, backgroundColor: '#e94560', border: 'none'}}>次のページ →</Link>
+              )}
+            </div>
+          </>
         ) : (
           <div style={{ textAlign: 'center', padding: '40px', background: '#1a1a2e', borderRadius: '10px' }}>
-            <p style={{ color: '#ccc' }}>Django API (api_django_v2) との通信を確立中、またはデータがありません。</p>
+            <p style={{ color: '#ccc' }}>データが取得できませんでした。</p>
           </div>
         )}
       </section>
 
       {/* 3. WordPress ニュースフィード */}
       <section style={sectionStyle}>
-        <h2 style={titleStyle}>🆕 最新ニュースフィード</h2>
+        <h2 style={titleStyle}>🆕 最新ブログ記事</h2>
         <ul style={{ listStyle: 'none', padding: 0 }}>
-          {latestPosts.length > 0 ? (
-            latestPosts.map(post => {
-              const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || '未分類';
-              const decodedSlug = decodeURIComponent(post.slug);
-              return (
-                <li key={post.id} style={{ padding: '15px 0', borderBottom: '1px solid #3d3d66', display: 'flex', justifyContent: 'space-between' }}>
-                  <Link href={`/tiper/${decodedSlug}`} style={{ color: 'white', textDecoration: 'none', fontSize: '1.1em' }}>
-                    {decodeHtml(post.title.rendered)}
-                  </Link>
-                  <span style={{ color: '#aaa', fontSize: '0.9em' }}>
-                    <span style={{ color: '#99e0ff', marginRight: '10px' }}>[{categoryName}]</span> 
-                    {formatDate(post.date)}
-                  </span>
-                </li>
-              );
-            })
-          ) : (
-            <li style={{ padding: '20px 0', textAlign: 'center', color: '#ccc' }}>WordPress 記事が見つかりません。</li>
-          )}
+          {latestPosts.map(post => {
+            const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || '未分類';
+            return (
+              <li key={post.id} style={{ padding: '15px 0', borderBottom: '1px solid #3d3d66', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Link href={`/tiper/${decodeURIComponent(post.slug)}`} style={{ color: 'white', textDecoration: 'none', fontSize: '1.1em' }}>
+                  {decodeHtml(post.title.rendered)}
+                </Link>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ color: '#99e0ff', fontSize: '0.8em', display: 'block' }}>{categoryName}</span>
+                  <span style={{ color: '#aaa', fontSize: '0.8em' }}>{formatDate(post.date)}</span>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </section>
-      
-      {/* 4. 注目カテゴリ (FeaturedCard の代わりのインライン実装) */}
-      <section style={sectionStyle}>
-        <h2 style={titleStyle}>✨ 注目カテゴリ</h2>
-        <div style={{ display: 'flex', gap: '20px', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          {featuredCategories.map((cat) => (
-            <Link 
-              key={cat.name} 
-              href={cat.link} 
-              style={{
-                flex: '1',
-                minWidth: '200px',
-                padding: '30px',
-                backgroundColor: '#1f1f3a',
-                borderRadius: '10px',
-                border: `1px solid ${cat.color}`,
-                textDecoration: 'none',
-                textAlign: 'center',
-                transition: 'transform 0.2s'
-              }}
-            >
-              <h3 style={{ color: cat.color, margin: '0 0 10px 0' }}>{cat.name}</h3>
-              <p style={{ color: '#ccc', fontSize: '0.9em' }}>関連情報をチェック →</p>
-            </Link>
-          ))}
-        </div>
-      </section>
+
     </div>
   );
 }
