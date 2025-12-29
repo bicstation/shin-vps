@@ -1,72 +1,74 @@
-# --- 💡 ビルド時引数の受け取り ---
+# 💡 1. 最初のステージよりも前に ARG を定義することで、ビルド全体で参照可能にします
 ARG NEXT_PUBLIC_APP_TITLE
-ARG NEXT_PUBLIC_BASE_BICSTATION
 
 # --- ステージ 1: ビルドステージ ---
-# Node.js 20 へのアップグレードを推奨しますが、18を維持する場合は libc6 が必須です
 FROM node:18-slim AS builder 
 
-RUN addgroup --gid 1001 nodejs || true
-RUN adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
+# 💡 builder ステージ内でも再度宣言することで、ビルドプロセス（npm run build）に環境変数を焼き込みます
+ARG NEXT_PUBLIC_APP_TITLE
+ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
+
 WORKDIR /app
 
-# ----------------------------------------------------
-# ✅ リポジトリ設定の最適化
-# ----------------------------------------------------
-# 1. まず標準リポジトリを日本ミラーに切り替え
+# ✅ リポジトリ設定の修正（404エラー対策：ビルドステージ用）
+# メインリポジトリを日本ミラーに切り替え
 RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources || \
     sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list
 
-# 2. セキュリティリポジトリのパス問題を修正（ここをより汎用的に）
-# bookworm-security の 404 エラーを回避するため、ミラーではなく公式の正しいパスを指定し直します
-RUN sed -i 's|http://ftp.jp.debian.org/debian-security|http://deb.debian.org/debian-security|g' /etc/apt/sources.list.d/debian.sources || true
+# セキュリティリポジトリは日本ミラー側のパス不整合を避けるため、公式(deb.debian.org)に強制固定
+RUN sed -i 's|ftp.jp.debian.org/debian-security|deb.debian.org/debian-security|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|http://ftp.jp.debian.org/debian-security|http://deb.debian.org/debian-security|g' /etc/apt/sources.list || true
 
-# 3. アップデートとインストール
+# 必要なパッケージのインストール
 RUN apt-get update && \
     apt-get install -y libc6 libstdc++6 fonts-ipafont-gothic && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# ----------------------------------------------------
-# ✅ 依存関係のインストール
-# ----------------------------------------------------
-COPY package.json ./
-COPY package-lock.json ./
-# --include=optional を付けることで Linux 用バイナリを確実に取得
+# 依存関係のインストール（キャッシュ効率のため package ファイルを先にコピー）
+COPY package.json package-lock.json ./
 RUN npm install --include=optional
 
-# ビルド引数を環境変数にマッピング
-ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
-
-# アプリケーションコードをコピーしてビルド
+# ソースコードをコピーしてビルド実行
 COPY . .
+# ※ next.config.mjs で output: 'standalone' が設定されている必要があります
 RUN npm run build
 
-# --- ステージ 2: プロダクションステージ ---
+# --- ステージ 2: プロダクションステージ (実行環境) ---
 FROM node:18-slim AS runner 
 
-RUN addgroup --gid 1001 nodejs || true
-RUN adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
 WORKDIR /app
 
-# 実行環境にも最低限のライブラリを追加
-RUN apt-get update || true && \
-    apt-get install -y libc6 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# 💡 実行環境(runner)でも apt-get update が失敗しないよう同様にリポジトリ修正を実施
+RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
 
-# ビルド成果物のコピー (所有権を nextjs ユーザーに変更)
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-# ファイル名がプロジェクトにより異なるためワイルドカードで対応
-COPY --from=builder --chown=nextjs:nodejs /app/next.config.* ./
+RUN sed -i 's|ftp.jp.debian.org/debian-security|deb.debian.org/debian-security|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|http://ftp.jp.debian.org/debian-security|http://deb.debian.org/debian-security|g' /etc/apt/sources.list || true
 
-# Node.jsのエンコーディングをUTF-8に設定
+# 本番実行に必要な最小限のライブラリ（libc6）をインストール
+RUN apt-get update && apt-get install -y libc6 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 実行ユーザーの定義
+RUN addgroup --gid 1001 nodejs || true && \
+    adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
+
+# 環境変数の設定
 ENV LANG=C.UTF-8
 ENV NODE_ENV=production
+ENV PORT 3000
+# 💡 コンテナ外（Traefik等）からの通信を受け付けるために必須の設定
+ENV HOSTNAME "0.0.0.0"
+
+# ✅ Standalone モード用の成果物をコピー（権限を nextjs ユーザーに変更）
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
-CMD ["npm", "start"]
+
+# ✅ Standalone モードの起動コマンド
+# server.js は .next/standalone ディレクトリの直下に生成されています
+CMD ["node", "server.js"]

@@ -13,7 +13,7 @@ const nextConfig = {
 
   // 🛑 スタンドアロンモード（Dockerでの実行に最適化）
   // もしDockerfileのrunnerステージで起動に失敗する場合は、ここを有効にしてみてください
-  // output: 'standalone',
+  output: 'standalone',
 };
 
 export default nextConfig;

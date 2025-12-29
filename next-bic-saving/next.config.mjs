@@ -13,7 +13,7 @@ const nextConfig = {
   },
   
   // Docker環境でのビルド安定化のため、念のため output を指定（任意）
-  // output: 'standalone', 
+  output: 'standalone', 
 };
 
 export default nextConfig;

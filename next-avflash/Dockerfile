@@ -1,72 +1,70 @@
-# /next-xxx/Dockerfile
-ARG NEXT_PUBLIC_APP_TITLE
-
 # --- ステージ 1: ビルドステージ ---
 FROM node:20-slim AS builder 
 
-# 実行ユーザーの定義
-RUN addgroup --gid 1001 nodejs || true
-RUN adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
-
 WORKDIR /app
 
-# ----------------------------------------------------
-# ✅ リポジトリ設定の最適化
-# ----------------------------------------------------
-# 1. まず標準リポジトリを日本ミラーに切り替え
+# ✅ APT リポジトリの修正（ビルドステージ用：404エラー対策）
+# 1. すべてのリポジトリを一旦日本ミラー(ftp.jp)に向けます
 RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources || \
     sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list
 
-# 2. セキュリティリポジトリのパス問題を修正（ここをより汎用的に）
-# bookworm-security の 404 エラーを回避するため、ミラーではなく公式の正しいパスを指定し直します
-RUN sed -i 's|http://ftp.jp.debian.org/debian-security|http://deb.debian.org/debian-security|g' /etc/apt/sources.list.d/debian.sources || true
+# 2. セキュリティリポジトリは日本ミラー側にパスが存在しないことが多いため、公式(deb.debian.org)に強制固定します
+RUN sed -i 's|ftp.jp.debian.org/debian-security|deb.debian.org/debian-security|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|ftp.jp.debian.org/debian-security|deb.debian.org/debian-security|g' /etc/apt/sources.list || true
 
-# 3. アップデートとインストール
+# 必要なパッケージのインストール
 RUN apt-get update && \
     apt-get install -y libc6 libstdc++6 fonts-ipafont-gothic && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY package.json ./
-COPY package-lock.json ./
+# 依存関係のインストール
+COPY package.json package-lock.json ./
+RUN npm ci --include=optional
 
-# 🛑 補足: npm install 時、プラットフォームに合ったバイナリを強制取得させる
-RUN npm install --include=optional
-
-# ARGの値をENVにマッピング
+# ビルド引数の受け取り
+ARG NEXT_PUBLIC_APP_TITLE
 ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
 
+# ソースコードのコピー
 COPY . .
 
-# 🛑 ステップ1の追加設定: Turbopackのエラーを避けるため、念のため環境変数を付与
-# (もしpackage.jsonのbuildに--turboがついている場合の対策)
+# ビルド実行（output: 'standalone' が設定されている前提）
 RUN npm run build
 
 # --- ステージ 2: プロダクション (本番実行) ステージ ---
 FROM node:20-slim AS runner 
 
-# 実行ユーザーの定義
-RUN addgroup --gid 1001 nodejs || true
-RUN adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
-
 WORKDIR /app
 
-# 実行時にも最低限必要なライブラリを追加
-RUN apt-get update && apt-get install -y \
-    libc6 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# 実行ユーザーの定義
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/public ./public
-# ファイル名が.mjsか.jsかプロジェクトに合わせて確認してください
-COPY --from=builder /app/next.config.* ./ 
+# ✅ APT リポジトリの修正（ランナーステージ用：ここでエラーが発生していたため修正）
+# ビルドステージと同様に、ミラー設定後にセキュリティを公式に戻す処理を徹底します
+RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
 
-ENV LANG=C.UTF-8
+RUN sed -i 's|ftp.jp.debian.org/debian-security|deb.debian.org/debian-security|g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's|ftp.jp.debian.org/debian-security|deb.debian.org/debian-security|g' /etc/apt/sources.list || true
+
+# 本番実行に必要なライブラリをインストール
+RUN apt-get update && apt-get install -y libc6 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 ENV NODE_ENV=production
+ENV LANG=C.UTF-8
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+# Standalone モードの成果物をコピー
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
-CMD ["npm", "start"]
+
+# スタンドアロン実行
+CMD ["node", "server.js"]
