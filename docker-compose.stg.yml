@@ -264,7 +264,10 @@ services:
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
-      WORDPRESS_CONFIG_EXTRA: "if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $_SERVER['HTTPS'] = 'on'; } \n define('WP_HOME', 'https://stg.blog.tiper.live'); \n define('WP_SITEURL', 'https://stg.blog.tiper.live');"
+      # 一旦、エラーの原因である if文 を削除し、URL定義のみにします
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', 'https://stg.blog.tiper.live');
+        define('WP_SITEURL', 'https://stg.blog.tiper.live');
     volumes:
       - wordpress_data_home:/var/www/html
     networks:
