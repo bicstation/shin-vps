@@ -272,6 +272,10 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'https://stg.blog.tiper.live');
         define('WP_SITEURL', 'https://stg.blog.tiper.live');
+        /* 💡 ここから追加：プロキシ経由のHTTPSを認識させる設定 */
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            $_SERVER['HTTPS'] = 'on';
+        }
     volumes:
       - wordpress_data_home:/var/www/html
     networks:

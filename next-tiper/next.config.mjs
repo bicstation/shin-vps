@@ -19,7 +19,7 @@ const nextConfig = {
   // 3. 環境変数
   env: {
     API_URL_INTERNAL: 'http://django-v2-prod:8000', 
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api/',
   },
 
   // 4. Dockerビルド最適化
