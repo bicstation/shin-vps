@@ -84,7 +84,7 @@ services:
       - DJANGO_ALLOW_ASYNC_UNSAFE=true
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.api-v2-stg.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.api-v2-stg.priority=105"
@@ -111,20 +111,20 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-        NEXT_PUBLIC_BASE_BICSTATION: /bicstation
+        NEXT_PUBLIC_BASE_BICSTATION: ""
     container_name: next-bicstation-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
-      NEXT_PUBLIC_BASE_BICSTATION: /bicstation
+      NEXT_PUBLIC_BASE_BICSTATION: ""
       NODE_ENV: production
     networks:
       - internal-net
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.bicstation-v2-stg.rule=Host(`stg.bicstation.com`)"
       - "traefik.http.routers.bicstation-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.bicstation-v2-stg.priority=100"
@@ -140,20 +140,20 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-        NEXT_PUBLIC_BASE_TIPER: /tiper
+        NEXT_PUBLIC_BASE_TIPER: ""
     container_name: next-tiper-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
-      NEXT_PUBLIC_BASE_TIPER: /tiper
+      NEXT_PUBLIC_BASE_TIPER: ""
       NODE_ENV: production
     networks:
       - internal-net
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.tiper-v2-stg.rule=Host(`stg.tiper.live`)"
       - "traefik.http.routers.tiper-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.tiper-v2-stg.priority=100"
@@ -169,20 +169,20 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-        NEXT_PUBLIC_BASE_SAVING: /saving
+        NEXT_PUBLIC_BASE_SAVING: ""
     container_name: next-bic-saving-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
-      NEXT_PUBLIC_BASE_SAVING: /saving
+      NEXT_PUBLIC_BASE_SAVING: ""
       NODE_ENV: production
     networks:
       - internal-net
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.saving-v2-stg.rule=Host(`stg.bic-saving.com`)"
       - "traefik.http.routers.saving-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.saving-v2-stg.priority=100"
@@ -198,20 +198,20 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH}
-        NEXT_PUBLIC_BASE_AVFLASH: /avflash
+        NEXT_PUBLIC_BASE_AVFLASH: ""
     container_name: next-avflash-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
-      NEXT_PUBLIC_BASE_AVFLASH: /avflash
+      NEXT_PUBLIC_BASE_AVFLASH: ""
       NODE_ENV: production
     networks:
       - internal-net
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.avflash-v2-stg.rule=Host(`stg.avflash.xyz`)"
       - "traefik.http.routers.avflash-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.avflash-v2-stg.priority=100"
@@ -233,7 +233,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.static-v2-stg.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/static`)"
       - "traefik.http.routers.static-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.static-v2-stg.priority=200"
@@ -296,13 +296,13 @@ services:
       - wordpress-v2-stg
     volumes:
       - wordpress_data_home:/var/www/html:ro
-      - ./nginx/conf/wp-stg.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       - internal-net
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.blog-v2-stg.rule=Host(`stg.blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.blog-v2-stg.priority=100"
@@ -329,7 +329,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.phpmyadmin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/phpmyadmin`)"
       - "traefik.http.routers.phpmyadmin-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.phpmyadmin-v2-stg.priority=200"
@@ -358,7 +358,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.pgadmin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/pgadmin`)"
       - "traefik.http.routers.pgadmin-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.pgadmin-v2-stg.priority=200"
@@ -382,7 +382,7 @@ services:
       - "8003:8080"
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.dozzle-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-stg.entrypoints=websecure"
       - "traefik.http.routers.dozzle-stg.priority=150"
@@ -396,7 +396,6 @@ networks:
   internal-net:
     driver: bridge
   shared-proxy:
-    # 既存のネットワーク名「shin-vps_shared-proxy」として認識させる
     name: shin-vps_shared-proxy
     external: true
 
