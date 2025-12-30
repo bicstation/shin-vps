@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    basePath: '/saving',
+  // VPS環境（本番/ステージング）では空、ローカル開発時のみ指定するようにする
+  basePath: process.env.NODE_ENV === 'production' ? '' : '/saving',
+  // basePath: '/saving',
   // サーバーサイドでの環境変数を定義
   env: {
     // ✅ 修正：環境変数から取得し、なければデフォルト値（本番名）を使用

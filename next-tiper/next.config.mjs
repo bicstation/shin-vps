@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // VPS環境（本番/ステージング）では空、ローカル開発時のみ指定するようにする
   // 1. サブディレクトリ運用のための設定
-  basePath: '/tiper',
+  basePath: process.env.NODE_ENV === 'production' ? '' : '/tiper',
+  // basePath: '/tiper',
   
   // 2. 画像許可設定
   images: {

@@ -1,7 +1,9 @@
 // next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: '/avflash',
+  // VPS環境（本番/ステージング）では空、ローカル開発時のみ指定するようにする
+  basePath: process.env.NODE_ENV === 'production' ? '' : '/avflash',
+  // basePath: '/avflash',
   // サーバーサイドでの環境変数を定義
   env: {
     // ✅ 修正：本番環境のコンテナ名に合わせる
