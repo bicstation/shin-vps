@@ -1,6 +1,6 @@
 # /mnt/c/dev/SHIN-VPS/docker-compose.stg.yml
 # =====================================================================
-# 🚀 SHIN-VPS ステージング環境 (SSL/TLS対応・マルチドメイン版)
+# 🚀 SHIN-VPS ステージング環境 (SSL/TLS対応・マルチドメイン・直結ポート開放版)
 # =====================================================================
 
 services:
@@ -21,7 +21,7 @@ services:
     networks:
       - internal-net
     ports:
-      - "5433:5432" # 外部からのデバッグ用
+      - "5433:5432" # 外部からのデバッグ・データ移行用
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -67,12 +67,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      # APIルーティング: 複数ドメインで /api を受け付ける
       - "traefik.http.routers.api-v2-stg.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.api-v2-stg.priority=105"
       - "traefik.http.routers.api-v2-stg.tls.certresolver=le"
-      # Adminルーティング: stg.tiper.live のみ /admin を受け付ける
       - "traefik.http.routers.admin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.admin-v2-stg.priority=120"
@@ -115,9 +113,7 @@ services:
       - "traefik.http.routers.bicstation-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-bicstation-v2-stg.loadbalancer.server.port=3000"
 
-  # ---------------------------------------------------------------------
   # 4. Next.js - tiper.live
-  # ---------------------------------------------------------------------
   next-tiper-v2-stg:
     build:
       context: ./next-tiper
@@ -144,9 +140,7 @@ services:
       - "traefik.http.routers.tiper-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-tiper-v2-stg.loadbalancer.server.port=3000"
 
-  # ---------------------------------------------------------------------
   # 5. Next.js - bic-saving.com
-  # ---------------------------------------------------------------------
   next-bic-saving-v2-stg:
     build:
       context: ./next-bic-saving
@@ -173,9 +167,7 @@ services:
       - "traefik.http.routers.saving-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-bic-saving-v2-stg.loadbalancer.server.port=3000"
 
-  # ---------------------------------------------------------------------
   # 6. Next.js - avflash.xyz
-  # ---------------------------------------------------------------------
   next-avflash-v2-stg:
     build:
       context: ./next-avflash
@@ -362,6 +354,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - shared-proxy
+    # --- 修正箇所：ホストの8085を直接開放 ---
+    ports:
+      - "8085:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
