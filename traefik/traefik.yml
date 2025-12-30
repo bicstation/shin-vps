@@ -1,3 +1,5 @@
+# ~/shin-vps/traefik/traefik.yml
+
 global:
   checkNewVersion: false
   sendAnonymousUsage: false
@@ -6,16 +8,31 @@ log:
   level: INFO
 
 api:
-  insecure: true # ダッシュボード有効化
+  dashboard: true
+  insecure: true # ポート 8085 (docker-composeで指定) でダッシュボードが見れます
 
-entrypoints:
+entryPoints:
   web:
     address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: ":443"
 
 providers:
   docker:
-    # ★★★ ここで API バージョンを設定 ★★★
-    defaultAPIVersion: "1.44"
+    endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    # localclient: false # WSL2で必要な場合があるが、まずはコメントアウト
-    network: internal-net # 使用するネットワークを明示的に指定
+    # ステージングの各サービスが共通で所属しているネットワークを指定します
+    network: shared-proxy 
+
+certificatesResolvers:
+  le:
+    acme:
+      email: bicstation@gmail.com
+      storage: "/letsencrypt/acme.json"
+      httpChallenge:
+        entryPoint: web
