@@ -354,9 +354,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - shared-proxy
-    # --- 修正箇所：ホストの8085を直接開放 ---
+    # --- 修正箇所：8085をTraefikダッシュボード用に空け、8003に移動 ---
     ports:
-      - "8085:8080"
+      - "8003:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
