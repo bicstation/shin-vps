@@ -165,6 +165,7 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'http://localhost:8083/blog');
         define('WP_SITEURL', 'http://localhost:8083/blog');
+        
     volumes:
       - ${WP_DATA_PATH:-wordpress_data}:/var/www/html
     networks:

@@ -268,7 +268,8 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'https://stg.blog.tiper.live');
         define('WP_SITEURL', 'https://stg.blog.tiper.live');
-        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        /* HTTPSリダイレクトループ対策（より安全な書き方） */
+        if (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') {
             $_SERVER['HTTPS'] = 'on';
         }
     volumes:
