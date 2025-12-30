@@ -1,33 +1,39 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS 高機能再構築スクリプト (環境自動判別 & 安全ガード機能付き)
+# 🚀 SHIN-VPS 高機能再構築スクリプト (判定ロジック修正版)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_NAME="shin-vps"
 CURRENT_HOSTNAME=$(hostname)
+CURRENT_USER=$USER
 
-# 💡 VPSかどうかの判定ロジック
-# ホスト名に 'x162-43' が含まれるか、ユーザー名が VPS 標準の 'maya' である場合に VPS とみなす
-if [[ "$CURRENT_HOSTNAME" == *"x162-43"* || "$USER" == "maya" ]]; then
+# 💡 VPSかどうかの判定ロジック (より確実に)
+# ホスト名に 'x162-43' が含まれる、または環境が Linux かつユーザー名が 'maya' (VPS側) の場合
+if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]] || [[ "$CURRENT_USER" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
     IS_VPS=true
 else
     IS_VPS=false
 fi
 
-# 2. パスに基づいたデフォルト環境の判定 (home / work)
+# 2. パスに基づいたデフォルト環境の判定
 if [[ "$SCRIPT_DIR" == *"/mnt/e/"* ]]; then
     DEFAULT_ENV="work"
 elif [[ "$SCRIPT_DIR" == *"/mnt/c/"* ]]; then
     DEFAULT_ENV="home"
 else
-    DEFAULT_ENV="vps"
+    # パスで判別できない場合は IS_VPS の結果に従う
+    if [ "$IS_VPS" = true ]; then
+        DEFAULT_ENV="vps-manual-required"
+    else
+        DEFAULT_ENV="home"
+    fi
 fi
 
-# 3. 引数の解析 (環境名、オプション、サービス名)
-TARGET=$DEFAULT_ENV
+# 3. 引数の解析
+TARGET=""
 NO_CACHE=""
 SERVICES=""
 
@@ -43,36 +49,39 @@ for arg in "$@"; do
     esac
 done
 
+# 引数がない場合はデフォルトを適用
+[ -z "$TARGET" ] && TARGET=$DEFAULT_ENV
+
 # ---------------------------------------------------------
 # 🚨 4. 安全装置 (Environment Guard)
 # ---------------------------------------------------------
-echo "🔍 実行環境をチェックしています... (Host: $CURRENT_HOSTNAME)"
+echo "🔍 実行環境チェック: Host=$CURRENT_HOSTNAME, User=$CURRENT_USER, Detected_Target=$TARGET"
 
 if [ "$IS_VPS" = true ]; then
-    # 【VPS環境の場合】stg か prod 指定が必須
+    # 【VPS環境】stg か prod 指定が必須
     if [[ "$TARGET" != "stg" && "$TARGET" != "prod" ]]; then
-        echo "❌ エラー: VPS上では 'stg' または 'prod' を明示的に指定してください。"
-        echo "   例: ./rebuild.sh stg"
+        echo "❌ エラー: VPS上では 'stg' または 'prod' を指定してください。"
         exit 1
     fi
 else
-    # 【ローカルPC環境の場合】stg/prod を指定しても home/work に強制変換
+    # 【ローカルPC環境】
     if [[ "$TARGET" == "stg" || "$TARGET" == "prod" ]]; then
-        echo "⚠️  警告: ローカルPCで '$TARGET' が指定されました。"
-        echo "   安全のため、ローカル用設定 (docker-compose.yml) を使用します。"
-        TARGET=$DEFAULT_ENV
+        echo "⚠️  ローカルPCのため、本番設定を回避して 'home' 設定を使用します。"
+        TARGET="home"
+    fi
+    # デフォルト値が未設定なら home にする
+    if [[ "$TARGET" == "vps-manual-required" || -z "$TARGET" ]]; then
+        TARGET="home"
     fi
 fi
 # ---------------------------------------------------------
 
-# 5. 設定ファイルのパスを決定 (カレントディレクトリを最優先)
+# 5. 設定ファイルのパス決定
 if [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
     COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
-    # stg/prod の場合は専用ファイルがあればそれを使う
     [[ "$TARGET" == "stg" && -f "$SCRIPT_DIR/docker-compose.stg.yml" ]] && COMPOSE_FILE="$SCRIPT_DIR/docker-compose.stg.yml"
     [[ "$TARGET" == "prod" && -f "$SCRIPT_DIR/docker-compose.prod.yml" ]] && COMPOSE_FILE="$SCRIPT_DIR/docker-compose.prod.yml"
 else
-    # ファイルが見つからない場合のフォールバックパス
     case $TARGET in
         "work") COMPOSE_FILE="/mnt/e/dev/shin-vps/docker-compose.yml" ;;
         "home") COMPOSE_FILE="/mnt/c/dev/SHIN-VPS/docker-compose.yml" ;;
@@ -81,7 +90,7 @@ else
     esac
 fi
 
-# 指定された設定ファイルが存在するか最終確認
+# 最終チェック
 if [ ! -f "$COMPOSE_FILE" ]; then
     echo "❌ エラー: 設定ファイルが見つかりません: $COMPOSE_FILE"
     exit 1
@@ -89,10 +98,8 @@ fi
 
 # 6. 実行セクション
 cd "$SCRIPT_DIR"
-
 echo "---------------------------------------"
 echo "🎯 Target Env : $TARGET"
-echo "📂 Script Dir : $SCRIPT_DIR"
 echo "📄 Config File: $COMPOSE_FILE"
 echo "🛠️  Services   : ${SERVICES:-全サービス}"
 echo "---------------------------------------"
@@ -101,7 +108,7 @@ echo "🚀 [1/4] 既存コンテナの停止..."
 docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" stop $SERVICES
 
 if [ -n "$NO_CACHE" ]; then
-    echo "🧹 [2/4] 未使用イメージのクリーンアップ (--no-cache 有効)..."
+    echo "🧹 [2/4] 未使用イメージのクリーンアップ..."
     docker system prune -f
 else
     echo "⏭️  [2/4] キャッシュを利用してビルドします。"
@@ -110,10 +117,9 @@ fi
 echo "🛠️  [3/4] ビルド開始..."
 docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" build $NO_CACHE $SERVICES
 
-echo "✨ [4/4] コンテナの作成と起動..."
-# --build を付けることで、イメージが更新されている場合に確実に反映させます
+echo "✨ [4/4] コンテナ起動..."
 docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d --build $SERVICES
 
 echo "---------------------------------------"
-echo "✅ 再構築が完了しました！"
+echo "✅ 再構築完了！"
 docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" ps $SERVICES

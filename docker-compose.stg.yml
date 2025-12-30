@@ -1,243 +1,32 @@
 # =====================================================================
-# 🚀 SHIN-VPS ステージング環境 (SSL/TLS対応・マルチドメイン・本体統合版)
+# 🛠️ SHIN-VPS ローカル開発・統合環境 (ベストプラクティス反映版)
 # =====================================================================
 
 services:
-
   # ---------------------------------------------------------------------
-  # 0. Traefik (門番 - リバースプロキシ)
+  # 1. データベース層 (PostgreSQL & MariaDB)
   # ---------------------------------------------------------------------
-  traefik:
-    image: traefik:v2.11
-    container_name: traefik-proxy
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-      - "8085:8080" # ダッシュボード用
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/letsencrypt:/letsencrypt
-    networks:
-      - shared-proxy
-
-  # ---------------------------------------------------------------------
-  # 1. PostgreSQL データベース (Django専用)
-  # ---------------------------------------------------------------------
-  postgres-db-v2-stg:
+  postgres-db-v2:
     image: postgres:15-alpine
-    container_name: postgres-db-v2-stg
+    container_name: postgres-db-v2
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - postgres_data_home:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH:-postgres_data}:/var/lib/postgresql/data
     networks:
       - internal-net
-    ports:
-      - "5433:5432" # 外部からのデバッグ・データ移行用
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
 
-  # ---------------------------------------------------------------------
-  # 2. Django API (Back-end)
-  # ---------------------------------------------------------------------
-  django-v2-stg:
-    build:
-      context: ./django
-      dockerfile: Dockerfile
-    container_name: django-v2-stg
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 4096m
-    depends_on:
-      postgres-db-v2-stg:
-        condition: service_healthy
-    environment:
-      - DB_HOST=postgres-db-v2-stg
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DUGA_API_ID=${DUGA_API_ID}
-      - DUGA_AFFILIATE_ID=${DUGA_AFFILIATE_ID}
-      - DUGA_API_URL=${DUGA_API_URL}
-      - DUGA_TOTAL_LIMIT=${DUGA_TOTAL_LIMIT}
-      - FANZA_API_ID=${FANZA_API_ID}
-      - FANZA_AFFILIATE_ID=${FANZA_AFFILIATE_ID}
-      - FANZA_API_URL=${FANZA_API_URL}
-      - FANZA_TOTAL_LIMIT=${FANZA_TOTAL_LIMIT}
-      - LS_CLIENT_ID=${LS_CLIENT_ID}
-      - LS_CLIENT_SECRET=${LS_CLIENT_SECRET}
-      - LS_ACCOUNT_ID=${LS_ACCOUNT_ID}
-      - LS_TOKEN_URL=${LS_TOKEN_URL}
-      - DJANGO_ALLOW_ASYNC_UNSAFE=true
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.api-v2-stg.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.api-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.api-v2-stg.priority=105"
-      - "traefik.http.routers.api-v2-stg.tls.certresolver=le"
-      - "traefik.http.routers.admin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/admin`)"
-      - "traefik.http.routers.admin-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.admin-v2-stg.priority=120"
-      - "traefik.http.routers.admin-v2-stg.tls.certresolver=le"
-      - "traefik.http.services.django-v2-stg.loadbalancer.server.port=8000"
-    entrypoint: ["/usr/src/app/entrypoint.sh"]
-    volumes:
-      - ./django:/usr/src/app
-      - static_volume:/usr/src/app/staticfiles
-    networks:
-      - internal-net
-      - shared-proxy
-
-  # ---------------------------------------------------------------------
-  # 3. Next.js - bicstation.com
-  # ---------------------------------------------------------------------
-  next-bicstation-v2-stg:
-    build:
-      context: ./next-bicstation
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-    container_name: next-bicstation-v2-stg
-    depends_on:
-      - django-v2-stg
-    environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api/
-      NODE_ENV: production
-    networks:
-      - internal-net
-      - shared-proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.bicstation-v2-stg.rule=Host(`stg.bicstation.com`)"
-      - "traefik.http.routers.bicstation-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.bicstation-v2-stg.priority=100"
-      - "traefik.http.routers.bicstation-v2-stg.tls.certresolver=le"
-      - "traefik.http.services.next-bicstation-v2-stg.loadbalancer.server.port=3000"
-
-  # ---------------------------------------------------------------------
-  # 4. Next.js - tiper.live
-  # ---------------------------------------------------------------------
-  next-tiper-v2-stg:
-    build:
-      context: ./next-tiper
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-    container_name: next-tiper-v2-stg
-    depends_on:
-      - django-v2-stg
-    environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api/
-      NODE_ENV: production
-    networks:
-      - internal-net
-      - shared-proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.tiper-v2-stg.rule=Host(`stg.tiper.live`)"
-      - "traefik.http.routers.tiper-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.tiper-v2-stg.priority=100"
-      - "traefik.http.routers.tiper-v2-stg.tls.certresolver=le"
-      - "traefik.http.services.next-tiper-v2-stg.loadbalancer.server.port=3000"
-
-  # ---------------------------------------------------------------------
-  # 5. Next.js - bic-saving.com
-  # ---------------------------------------------------------------------
-  next-bic-saving-v2-stg:
-    build:
-      context: ./next-bic-saving
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-    container_name: next-bic-saving-v2-stg
-    depends_on:
-      - django-v2-stg
-    environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api/
-      NODE_ENV: production
-    networks:
-      - internal-net
-      - shared-proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.saving-v2-stg.rule=Host(`stg.bic-saving.com`)"
-      - "traefik.http.routers.saving-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.saving-v2-stg.priority=100"
-      - "traefik.http.routers.saving-v2-stg.tls.certresolver=le"
-      - "traefik.http.services.next-bic-saving-v2-stg.loadbalancer.server.port=3000"
-
-  # ---------------------------------------------------------------------
-  # 6. Next.js - avflash.xyz (修正: basePath '/avflash' 対応)
-  # ---------------------------------------------------------------------
-  next-avflash-v2-stg:
-    build:
-      context: ./next-avflash
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH}
-    container_name: next-avflash-v2-stg
-    depends_on:
-      - django-v2-stg
-    environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api/
-      NODE_ENV: production
-    networks:
-      - internal-net
-      - shared-proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      # ルートドメインへのアクセスを許可し、Next.js内のbasePathで制御
-      - "traefik.http.routers.avflash-v2-stg.rule=Host(`stg.avflash.xyz`)"
-      - "traefik.http.routers.avflash-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.avflash-v2-stg.priority=100"
-      - "traefik.http.routers.avflash-v2-stg.tls.certresolver=le"
-      - "traefik.http.services.next-avflash-v2-stg.loadbalancer.server.port=3000"
-
-  # ---------------------------------------------------------------------
-  # 7. Nginx (静的ファイル配信)
-  # ---------------------------------------------------------------------
-  nginx-v2-stg:
-    image: nginx:alpine
-    container_name: nginx-v2-stg
-    restart: always
-    volumes:
-      - static_volume:/usr/share/nginx/html/static:ro
-      - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      - internal-net
-      - shared-proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.static-v2-stg.rule=Host(`stg.tiper.live`, `stg.bic-saving.com`, `stg.bicstation.com`, `stg.avflash.xyz`, `stg.blog.tiper.live`) && PathPrefix(`/static`)"
-      - "traefik.http.routers.static-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.static-v2-stg.priority=200"
-      - "traefik.http.routers.static-v2-stg.tls.certresolver=le"
-      - "traefik.http.services.nginx-v2-stg.loadbalancer.server.port=80"
-
-  # ---------------------------------------------------------------------
-  # 8. MariaDB (WordPress専用DB)
-  # ---------------------------------------------------------------------
-  mariadb-v2-stg:
+  mariadb-v2:
     image: mariadb:10
-    container_name: mariadb-v2-stg
+    container_name: mariadb-v2
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
@@ -245,158 +34,226 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - mariadb_data_home:/var/lib/mysql
+      - ${MARIADB_DATA_PATH:-mariadb_data}:/var/lib/mysql
     networks:
       - internal-net
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$MARIADB_USER", "-p$$MARIADB_PASSWORD"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   # ---------------------------------------------------------------------
-  # 9. WordPress (CMS)
+  # 2. アプリケーション層 (Django API)
   # ---------------------------------------------------------------------
-  wordpress-v2-stg:
-    image: wordpress:6-fpm-alpine
-    container_name: wordpress-v2-stg
+  django-v2:
+    env_file:
+      - .env
+    build:
+      context: ./django
+    container_name: django-v2
     restart: always
     depends_on:
-      mariadb-v2-stg:
+      postgres-db-v2:
         condition: service_healthy
     environment:
-      WORDPRESS_DB_HOST: mariadb-v2-stg
+      - DB_HOST=postgres-db-v2
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_internal-net"
+      # ✅ 修正: HostとPathの優先順位を明確化
+      - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/admin`))"
+      - "traefik.http.routers.django-v2-api.entrypoints=web"
+      - "traefik.http.routers.django-v2-api.priority=110"
+      - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
+    volumes:
+      - ./django:/usr/src/app
+      - static_volume:/usr/src/app/staticfiles
+    networks:
+      - internal-net
+
+  # ---------------------------------------------------------------------
+  # 3. フロントエンド層 (Next.js 4サイト)
+  # ---------------------------------------------------------------------
+  next-bicstation-v2:
+    build:
+      context: ./next-bicstation
+    container_name: next-bicstation-v2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.bic-v2-router.rule=Host(`localhost`) && PathPrefix(`/bicstation`)"
+      - "traefik.http.routers.bic-v2-router.entrypoints=web"
+      - "traefik.http.routers.bic-v2-router.priority=100"
+      - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
+    networks:
+      - internal-net
+
+  next-tiper-v2:
+    build:
+      context: ./next-tiper
+    container_name: next-tiper-v2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.tiper-v2-router.rule=Host(`localhost`) && PathPrefix(`/tiper`)"
+      - "traefik.http.routers.tiper-v2-router.entrypoints=web"
+      - "traefik.http.routers.tiper-v2-router.priority=100"
+      - "traefik.http.services.tiper-v2-svc.loadbalancer.server.port=3000"
+    networks:
+      - internal-net
+
+  next-bic-saving-v2:
+    build:
+      context: ./next-bic-saving
+    container_name: next-bic-saving-v2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.saving-v2-router.rule=Host(`localhost`) && PathPrefix(`/saving`)"
+      - "traefik.http.routers.saving-v2-router.entrypoints=web"
+      - "traefik.http.routers.saving-v2-router.priority=100"
+      - "traefik.http.services.saving-v2-svc.loadbalancer.server.port=3000"
+    networks:
+      - internal-net
+
+  next-avflash-v2:
+    build:
+      context: ./next-avflash
+    container_name: next-avflash-v2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.avflash-v2-router.rule=Host(`localhost`) && PathPrefix(`/avflash`)"
+      - "traefik.http.routers.avflash-v2-router.entrypoints=web"
+      - "traefik.http.routers.avflash-v2-router.priority=100"
+      - "traefik.http.services.avflash-v2-svc.loadbalancer.server.port=3000"
+    networks:
+      - internal-net
+
+  # ---------------------------------------------------------------------
+  # 4. WordPress & 静的配信層
+  # ---------------------------------------------------------------------
+  nginx-wp-v2:
+    image: nginx:alpine
+    container_name: nginx-wp-v2
+    volumes:
+      - ${WP_DATA_PATH:-wordpress_data}:/var/www/html:ro
+      - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.blog-v2-router.rule=Host(`localhost`) && PathPrefix(`/blog`)"
+      - "traefik.http.routers.blog-v2-router.entrypoints=web"
+      # ✅ 修正: strip-blog ミドルウェアを削除 (ベストな選択)
+      - "traefik.http.routers.blog-v2-router.priority=100"
+      - "traefik.http.services.nginx-wp-v2-svc.loadbalancer.server.port=80"
+    networks:
+      - internal-net
+
+  wordpress-v2:
+    image: wordpress:6-fpm-alpine
+    container_name: wordpress-v2
+    environment:
+      WORDPRESS_DB_HOST: mariadb-v2
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
       WORDPRESS_CONFIG_EXTRA: |
-        define('WP_HOME', 'https://stg.blog.tiper.live');
-        define('WP_SITEURL', 'https://stg.blog.tiper.live');
-        /* 💡 ここから追加：プロキシ経由のHTTPSを認識させる設定 */
-        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
-            $_SERVER['HTTPS'] = 'on';
-        }
+        define('WP_HOME', 'http://localhost:8083/blog');
+        define('WP_SITEURL', 'http://localhost:8083/blog');
     volumes:
-      - wordpress_data_home:/var/www/html
+      - ${WP_DATA_PATH:-wordpress_data}:/var/www/html
     networks:
       - internal-net
 
   # ---------------------------------------------------------------------
-  # 10. Nginx (WordPressブリッジ)
+  # 5. 管理ツール層 (DB管理・ログ)
   # ---------------------------------------------------------------------
-  nginx-wp-v2-stg:
-    image: nginx:alpine
-    container_name: nginx-wp-v2-stg
-    restart: always
-    depends_on:
-      - wordpress-v2-stg
-    volumes:
-      - wordpress_data_home:/var/www/html:ro
-      - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      - internal-net
-      - shared-proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.blog-v2-stg.rule=Host(`stg.blog.tiper.live`)"
-      - "traefik.http.routers.blog-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.blog-v2-stg.priority=100"
-      - "traefik.http.routers.blog-v2-stg.tls.certresolver=le"
-      - "traefik.http.services.nginx-wp-v2-stg.loadbalancer.server.port=80"
-
-  # ---------------------------------------------------------------------
-  # 11. phpMyAdmin
-  # ---------------------------------------------------------------------
-  phpmyadmin-v2-stg:
+  phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin-v2-stg
-    restart: always
-    depends_on:
-      mariadb-v2-stg:
-        condition: service_healthy
+    container_name: phpmyadmin-v2
     environment:
-      PMA_HOST: mariadb-v2-stg
-      PMA_USER: ${WP_DB_USER}
-      PMA_PASSWORD: ${WP_DB_PASSWORD}
-      PMA_ABSOLUTE_URI: https://stg.tiper.live/phpmyadmin/
-    networks:
-      - internal-net
-      - shared-proxy
+      PMA_HOST: mariadb-v2
+      PMA_ABSOLUTE_URI: http://localhost:8083/phpmyadmin/
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.phpmyadmin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/phpmyadmin`)"
-      - "traefik.http.routers.phpmyadmin-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.phpmyadmin-v2-stg.priority=200"
-      - "traefik.http.routers.phpmyadmin-v2-stg.tls.certresolver=le"
-      - "traefik.http.middlewares.stg-pma-strip.stripprefix.prefixes=/phpmyadmin"
-      - "traefik.http.routers.phpmyadmin-v2-stg.middlewares=stg-pma-strip"
-      - "traefik.http.services.phpmyadmin-v2-stg.loadbalancer.server.port=80"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.pma-v2-router.rule=Host(`localhost`) && PathPrefix(`/phpmyadmin`)"
+      - "traefik.http.routers.pma-v2-router.priority=100"
+      # ✅ 修正: ここも削らずにそのまま渡す構成に統一
+      - "traefik.http.services.pma-v2-svc.loadbalancer.server.port=80"
+    networks:
+      - internal-net
 
-  # ---------------------------------------------------------------------
-  # 12. pgAdmin
-  # ---------------------------------------------------------------------
-  pgadmin-v2-stg:
+  pgadmin-v2:
     image: dpage/pgadmin4
-    container_name: pgadmin-v2-stg
-    restart: always
-    depends_on:
-      postgres-db-v2-stg:
-        condition: service_healthy
+    container_name: pgadmin-v2
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_LISTEN_PORT: 80
       SCRIPT_NAME: /pgadmin
-    networks:
-      - internal-net
-      - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.pgadmin-v2-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/pgadmin`)"
-      - "traefik.http.routers.pgadmin-v2-stg.entrypoints=websecure"
-      - "traefik.http.routers.pgadmin-v2-stg.priority=200"
-      - "traefik.http.routers.pgadmin-v2-stg.tls.certresolver=le"
-      - "traefik.http.services.pgadmin-v2-stg.loadbalancer.server.port=80"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.pgadmin-v2-router.rule=Host(`localhost`) && PathPrefix(`/pgadmin`)"
+      - "traefik.http.routers.pgadmin-v2-router.priority=100"
+      - "traefik.http.services.pgadmin-v2-svc.loadbalancer.server.port=80"
+    networks:
+      - internal-net
 
-  # ---------------------------------------------------------------------
-  # 13. Dozzle (ログ確認ツール)
-  # ---------------------------------------------------------------------
-  dozzle-stg:
+  dozzle:
     image: amir20/dozzle:latest
-    container_name: dozzle-stg
-    restart: always
+    container_name: dozzle
     environment:
       - DOZZLE_BASE=/logs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - shared-proxy
-    ports:
-      - "8003:8080"
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.dozzle-stg.rule=Host(`stg.tiper.live`) && PathPrefix(`/logs`)"
-      - "traefik.http.routers.dozzle-stg.entrypoints=websecure"
-      - "traefik.http.routers.dozzle-stg.priority=150"
-      - "traefik.http.routers.dozzle-stg.tls.certresolver=le"
-      - "traefik.http.services.dozzle-stg.loadbalancer.server.port=8080"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.dozzle-v2-router.rule=Host(`localhost`) && PathPrefix(`/logs`)"
+      - "traefik.http.routers.dozzle-v2-router.priority=100"
+      - "traefik.http.services.dozzle-v2-svc.loadbalancer.server.port=8080"
+    networks:
+      - internal-net
+
+  # ---------------------------------------------------------------------
+  # 6. ゲートウェイ (Traefik)
+  # ---------------------------------------------------------------------
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik-proxy
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.watch=true"
+      - "--providers.docker.network=shin-vps_internal-net"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8083:80"      # アプリアクセス用
+      - "8085:8080"    # ダッシュボード
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:rw"
+    networks:
+      - internal-net
 
 # ---------------------------------------------------------------------
-# ネットワーク・リソース定義
+# リソース定義
 # ---------------------------------------------------------------------
+volumes:
+  postgres_data:
+  static_volume:
+  wordpress_data:
+  mariadb_data:
+  postgres_data_home:
+  mariadb_data_home:
+  wordpress_data_home:
+
 networks:
   internal-net:
+    name: shin-vps_internal-net
     driver: bridge
-  shared-proxy:
-    name: shin-vps_shared-proxy
-    external: true
-
-volumes:
-  postgres_data_home:
-  static_volume:
-  wordpress_data_home:
-  mariadb_data_home:
