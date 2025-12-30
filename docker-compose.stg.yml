@@ -114,7 +114,7 @@ services:
     depends_on:
       - django-v2-stg
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api/
       NODE_ENV: production
     networks:
       - internal-net
@@ -141,7 +141,7 @@ services:
     depends_on:
       - django-v2-stg
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api/
       NODE_ENV: production
     networks:
       - internal-net
@@ -168,7 +168,7 @@ services:
     depends_on:
       - django-v2-stg
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api/
       NODE_ENV: production
     networks:
       - internal-net
@@ -195,7 +195,7 @@ services:
     depends_on:
       - django-v2-stg
     environment:
-      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
+      NEXT_PUBLIC_API_URL: https://stg.tiper.live/api/
       NODE_ENV: production
     networks:
       - internal-net

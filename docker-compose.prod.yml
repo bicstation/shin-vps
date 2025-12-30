@@ -98,7 +98,7 @@ services:
     depends_on:
       - django-v2-prod
     environment:
-      NEXT_PUBLIC_API_URL: https://bicstation.com/api
+      NEXT_PUBLIC_API_URL: https://bicstation.com/api/
       NEXT_PUBLIC_BASE_BICSTATION: /bicstation
       NODE_ENV: production
     networks:
@@ -125,7 +125,7 @@ services:
     depends_on:
       - django-v2-prod
     environment:
-      NEXT_PUBLIC_API_URL: https://tiper.live/api
+      NEXT_PUBLIC_API_URL: https://tiper.live/api/
       NEXT_PUBLIC_BASE_TIPER: /tiper
       NODE_ENV: production
     networks:
@@ -152,7 +152,7 @@ services:
     depends_on:
       - django-v2-prod
     environment:
-      NEXT_PUBLIC_API_URL: https://bic-saving.com/api
+      NEXT_PUBLIC_API_URL: https://bic-saving.com/api/
       NEXT_PUBLIC_BASE_SAVING: /saving
       NODE_ENV: production
     networks:
@@ -179,7 +179,7 @@ services:
     depends_on:
       - django-v2-prod
     environment:
-      NEXT_PUBLIC_API_URL: https://avflash.xyz/api
+      NEXT_PUBLIC_API_URL: https://avflash.xyz/api/
       NEXT_PUBLIC_BASE_AVFLASH: /avflash
       NODE_ENV: production
     networks:
