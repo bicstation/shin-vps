@@ -1,5 +1,3 @@
-# ファイル名: .github/workflows/deploy_stg.yml (修正版)
-
 name: Stage Deployment
 
 on:
@@ -16,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       # 1. ファイルを VPS に同期
-      - name: Sync Files to VPS (rsync via SCP)
+      - name: Sync Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -26,10 +24,13 @@ jobs:
           port: 2222
           source: "." 
           target: "/home/maya/shin-vps"
-          flags: "-rtzq --delete" 
+          # strip_components: 0 を明示するか、targetの構造に注意
+          strip_components: 0
+          # --delete 相当の動きをさせるには rm: true も検討（環境によります）
+          overwrite: true
 
       # 2. SSH経由でデプロイコマンド実行
-      - name: Deploy to Staging VPS via SSH (Docker Compose Up)
+      - name: Deploy to Staging VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -38,14 +39,17 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
           script: |
+            # ディレクトリへ移動
             cd /home/maya/shin-vps
             
-            # 1. 共通ネットワークが存在しない場合のみ作成
+            # 1. 共通ネットワークの確認
             docker network inspect shared-proxy >/dev/null 2>&1 || docker network create shared-proxy
             
-            # 2. ステージング環境のデプロイ
-            # -p stg を削除することで、ディレクトリ名(shin-vps)をプロジェクト名として使用
-            # これにより手動実行分との競合を回避し、既存コンテナを正しく更新します
+            # 2. Docker Compose 実行
+            # --build を入れることで、コードの変更を確実に反映させます
             docker compose -f docker-compose.stg.yml up -d --build --remove-orphans
             
-            echo "Staging deployment with Dozzle completed successfully."
+            # 3. 未使用な古いイメージを掃除（クリーンな状態を維持）
+            docker image prune -f
+            
+            echo "Staging deployment completed successfully."

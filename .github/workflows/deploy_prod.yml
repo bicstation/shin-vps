@@ -3,18 +3,19 @@ name: Production Deployment
 on:
   push:
     tags:
-      - 'v*'  # v1.0 や v2.1 などのタグをPushした時だけ本番デプロイを実行
+      - 'v*'  # v1.0, v2.0 などのタグ時に実行
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production # GitHub上で承認ルールを設定している場合に有効
+    environment: production
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      # 1. ローカルの最新ファイルを VPS に同期
-      - name: Sync Files to VPS (rsync via SCP)
+
+      # 1. ファイルを VPS に同期
+      - name: Sync Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST_PROD }}
@@ -23,14 +24,13 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
           source: "." 
-          target: "/home/maya/shin-vps"
-          # 注意: --delete は VPS 側にしかないファイル（手動で作った .env など）を消す可能性があります。
-          # もし .env を VPS に直接置いているなら、flags から --delete を外すか、
-          # リポジトリに .env.example 等を含めて管理してください。
+          target: "/home/maya/shin-vps-prod" # 本番専用ディレクトリを推奨
+          # .env ファイルを消さないように、rsyncの除外設定を検討するか --delete に注意
+          # flags: "-rtzq" # 安全策をとるなら --delete を外す
           flags: "-rtzq --delete" 
 
-      # 2. SSH 経由で Docker Compose コマンドを実行
-      - name: Deploy to Production VPS via SSH (Docker Compose Up)
+      # 2. SSH 経由でデプロイ
+      - name: Deploy to Production VPS via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST_PROD }} 
@@ -39,14 +39,15 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
           script: |
-            cd /home/maya/shin-vps
+            cd /home/maya/shin-vps-prod
             
-            # 1. 共通ネットワーク shared-proxy が存在しない場合のみ作成
-            # これがないと docker-compose.prod.yml の起動に失敗します
+            # 共通ネットワークの確認
             sudo docker network inspect shared-proxy >/dev/null 2>&1 || sudo docker network create shared-proxy
             
-            # 2. 本番環境のコンテナを再ビルドし、バックグラウンドで起動
-            # -p prod を指定することでステージング(-p stg)と分離されます
+            # 本番デプロイ
             sudo docker compose -f docker-compose.prod.yml -p prod up -d --build --remove-orphans
             
-            echo "Production deployment completed successfully."
+            # 古いイメージの掃除
+            sudo docker image prune -f
+            
+            echo "Production deployment v${GITHUB_REF_NAME} completed successfully."

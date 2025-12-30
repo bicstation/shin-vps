@@ -113,7 +113,9 @@ services:
       - "traefik.http.routers.bicstation-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-bicstation-v2-stg.loadbalancer.server.port=3000"
 
+  # ---------------------------------------------------------------------
   # 4. Next.js - tiper.live
+  # ---------------------------------------------------------------------
   next-tiper-v2-stg:
     build:
       context: ./next-tiper
@@ -140,7 +142,9 @@ services:
       - "traefik.http.routers.tiper-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-tiper-v2-stg.loadbalancer.server.port=3000"
 
+  # ---------------------------------------------------------------------
   # 5. Next.js - bic-saving.com
+  # ---------------------------------------------------------------------
   next-bic-saving-v2-stg:
     build:
       context: ./next-bic-saving
@@ -167,7 +171,9 @@ services:
       - "traefik.http.routers.saving-v2-stg.tls.certresolver=le"
       - "traefik.http.services.next-bic-saving-v2-stg.loadbalancer.server.port=3000"
 
+  # ---------------------------------------------------------------------
   # 6. Next.js - avflash.xyz
+  # ---------------------------------------------------------------------
   next-avflash-v2-stg:
     build:
       context: ./next-avflash
@@ -354,7 +360,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - shared-proxy
-    # --- 修正箇所：8085をTraefikダッシュボード用に空け、8003に移動 ---
+    # --- 8085を空け、8003に移動 ---
     ports:
       - "8003:8080"
     labels:
