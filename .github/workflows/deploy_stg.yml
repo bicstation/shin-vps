@@ -38,7 +38,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
-        script: |
+          script: |
             # エラーが発生した時点でスクリプトを中断させる
             set -e
 
