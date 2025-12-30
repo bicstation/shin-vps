@@ -2,9 +2,10 @@ name: Production Deployment
 
 on:
   push:
-    tags:
-      - 'v*'  # v1.0, v2.0 などのタグ時に実行
-
+    # tags:
+    #   - 'v*'  # v1.0, v2.0 などのタグ時に実行
+    branches:
+      - main 
 jobs:
   deploy:
     runs-on: ubuntu-latest

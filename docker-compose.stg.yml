@@ -396,7 +396,9 @@ networks:
   internal-net:
     driver: bridge
   shared-proxy:
-    driver: bridge
+    # 既存のネットワーク名「shin-vps_shared-proxy」として認識させる
+    name: shin-vps_shared-proxy
+    external: true
 
 volumes:
   postgres_data_home:

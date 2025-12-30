@@ -66,7 +66,7 @@ services:
       - DJANGO_ALLOW_ASYNC_UNSAFE=true
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.api-v2-prod.priority=105"
@@ -106,7 +106,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.bicstation-v2-prod.rule=Host(`bicstation.com`)"
       - "traefik.http.routers.bicstation-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.bicstation-v2-prod.priority=100"
@@ -133,7 +133,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.tiper-v2-prod.rule=Host(`tiper.live`)"
       - "traefik.http.routers.tiper-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.tiper-v2-prod.priority=100"
@@ -160,7 +160,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.saving-v2-prod.rule=Host(`bic-saving.com`)"
       - "traefik.http.routers.saving-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.saving-v2-prod.priority=100"
@@ -187,7 +187,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.avflash-v2-prod.rule=Host(`avflash.xyz`)"
       - "traefik.http.routers.avflash-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.avflash-v2-prod.priority=100"
@@ -209,7 +209,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.static-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/static`)"
       - "traefik.http.routers.static-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.static-v2-prod.priority=200"
@@ -278,7 +278,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.blog-v2-prod.priority=100"
@@ -305,7 +305,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.phpmyadmin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/phpmyadmin`)"
       - "traefik.http.routers.phpmyadmin-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.phpmyadmin-v2-prod.priority=200"
@@ -331,7 +331,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.pgadmin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/pgadmin`)"
       - "traefik.http.routers.pgadmin-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.pgadmin-v2-prod.priority=200"
@@ -351,12 +351,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - shared-proxy
-    # --- 重要：8085はTraefik用に空け、本番Dozzle直結は8004に割り当て ---
     ports:
       - "8004:8080"
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.dozzle-prod.rule=Host(`tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-prod.entrypoints=websecure"
       - "traefik.http.routers.dozzle-prod.priority=150"
@@ -370,6 +369,7 @@ networks:
   internal-net:
     driver: bridge
   shared-proxy:
+    name: shin-vps_shared-proxy
     external: true
 
 volumes:
