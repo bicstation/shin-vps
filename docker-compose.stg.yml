@@ -16,7 +16,6 @@ services:
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      # ✅ 重要: Traefikがコンテナを探す際の基準ネットワークを明示的に指定
       - "--providers.docker.network=shin-vps_shared-proxy"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
@@ -111,7 +110,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 3. Next.js - 各サイト (bicstation, tiper, saving, avflash)
+  # 3. Next.js - 各サイト
   # ---------------------------------------------------------------------
   next-bicstation-v2-stg:
     build:
@@ -268,7 +267,7 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'https://stg.blog.tiper.live');
         define('WP_SITEURL', 'https://stg.blog.tiper.live');
-        /* HTTPSリダイレクトループ対策（より安全な書き方） */
+        /* HTTPSリダイレクトループ対策 ($$を使ってエスケープ) */
         if (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') {
             $_SERVER['HTTPS'] = 'on';
         }
