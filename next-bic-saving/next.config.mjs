@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    basePath: '/saving',
   // サーバーサイドでの環境変数を定義
   env: {
     // ✅ 修正：環境変数から取得し、なければデフォルト値（本番名）を使用

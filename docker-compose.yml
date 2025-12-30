@@ -45,6 +45,8 @@ services:
   # 2. アプリケーション層 (Django API)
   # ---------------------------------------------------------------------
   django-v2:
+    env_file:
+      - .env
     build:
       context: ./django
     container_name: django-v2
@@ -61,7 +63,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
-      - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && PathPrefix(`/api`) || PathPrefix(`/admin`)"
       - "traefik.http.routers.django-v2-api.entrypoints=web"
       - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
     volumes:
@@ -82,8 +84,7 @@ services:
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.bic-v2-router.rule=Host(`localhost`) && PathPrefix(`/bicstation`)"
       - "traefik.http.routers.bic-v2-router.entrypoints=web"
-      - "traefik.http.middlewares.strip-bic.stripprefix.prefixes=/bicstation"
-      - "traefik.http.routers.bic-v2-router.middlewares=strip-bic"
+      # 【修正】stripprefixミドルウェアを削除 (Next.jsのbasePathに任せるため)
       - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
@@ -97,9 +98,7 @@ services:
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.tiper-v2-router.rule=Host(`localhost`) && PathPrefix(`/tiper`)"
       - "traefik.http.routers.tiper-v2-router.entrypoints=web"
-      # パスを削る（Next.js側でbasePathを設定していない場合の標準）
-      - "traefik.http.middlewares.strip-tiper.stripprefix.prefixes=/tiper"
-      - "traefik.http.routers.tiper-v2-router.middlewares=strip-tiper"
+      # 【修正】stripprefixミドルウェアを削除
       - "traefik.http.services.tiper-v2-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
@@ -113,8 +112,7 @@ services:
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.saving-v2-router.rule=Host(`localhost`) && PathPrefix(`/saving`)"
       - "traefik.http.routers.saving-v2-router.entrypoints=web"
-      - "traefik.http.middlewares.strip-saving.stripprefix.prefixes=/saving"
-      - "traefik.http.routers.saving-v2-router.middlewares=strip-saving"
+      # 【修正】stripprefixミドルウェアを削除
       - "traefik.http.services.saving-v2-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
@@ -128,8 +126,7 @@ services:
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.avflash-v2-router.rule=Host(`localhost`) && PathPrefix(`/avflash`)"
       - "traefik.http.routers.avflash-v2-router.entrypoints=web"
-      - "traefik.http.middlewares.strip-avflash.stripprefix.prefixes=/avflash"
-      - "traefik.http.routers.avflash-v2-router.middlewares=strip-avflash"
+      # 【修正】stripprefixミドルウェアを削除
       - "traefik.http.services.avflash-v2-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net

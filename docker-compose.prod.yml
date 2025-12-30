@@ -1,8 +1,13 @@
 # /mnt/c/dev/SHIN-VPS/docker-compose.prod.yml
+# =====================================================================
+# 💎 SHIN-VPS 本番環境 (Production Mode - Full SSL/TLS)
+# =====================================================================
 
 services:
 
-  # 1. PostgreSQL データベース (Django専用)
+  # ---------------------------------------------------------------------
+  # 1. PostgreSQL データベース (Django専用 - 本番用ボリューム)
+  # ---------------------------------------------------------------------
   postgres-db-v2-prod:
     image: postgres:15-alpine
     container_name: postgres-db-v2-prod
@@ -16,7 +21,7 @@ services:
     networks:
       - internal-net
     ports:
-      - "5434:5432"
+      - "5434:5432" # 必要に応じて外部接続を制限
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -24,7 +29,9 @@ services:
       retries: 5
       start_period: 10s
 
+  # ---------------------------------------------------------------------
   # 2. Django API (データハブ & 認証サーバー)
+  # ---------------------------------------------------------------------
   django-v2-prod:
     build:
       context: ./django
@@ -60,10 +67,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
+      # APIルーティング: 本番全ドメインの /api パスをカバー
       - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.api-v2-prod.priority=105"
       - "traefik.http.routers.api-v2-prod.tls.certresolver=le"
+      # 管理画面: tiper.live/admin のみ
       - "traefik.http.routers.admin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.admin-v2-prod.priority=120"
@@ -77,7 +86,9 @@ services:
       - internal-net
       - shared-proxy
 
+  # ---------------------------------------------------------------------
   # 3. Next.js - bicstation.com
+  # ---------------------------------------------------------------------
   next-bicstation-v2-prod:
     build:
       context: ./next-bicstation
@@ -104,7 +115,9 @@ services:
       - "traefik.http.routers.bicstation-v2-prod.tls.certresolver=le"
       - "traefik.http.services.next-bicstation-v2-prod.loadbalancer.server.port=3000"
 
+  # ---------------------------------------------------------------------
   # 4. Next.js - tiper.live
+  # ---------------------------------------------------------------------
   next-tiper-v2-prod:
     build:
       context: ./next-tiper
@@ -131,7 +144,9 @@ services:
       - "traefik.http.routers.tiper-v2-prod.tls.certresolver=le"
       - "traefik.http.services.next-tiper-v2-prod.loadbalancer.server.port=3000"
 
+  # ---------------------------------------------------------------------
   # 5. Next.js - bic-saving.com
+  # ---------------------------------------------------------------------
   next-bic-saving-v2-prod:
     build:
       context: ./next-bic-saving
@@ -158,7 +173,9 @@ services:
       - "traefik.http.routers.saving-v2-prod.tls.certresolver=le"
       - "traefik.http.services.next-bic-saving-v2-prod.loadbalancer.server.port=3000"
 
+  # ---------------------------------------------------------------------
   # 6. Next.js - avflash.xyz
+  # ---------------------------------------------------------------------
   next-avflash-v2-prod:
     build:
       context: ./next-avflash
@@ -185,7 +202,9 @@ services:
       - "traefik.http.routers.avflash-v2-prod.tls.certresolver=le"
       - "traefik.http.services.next-avflash-v2-prod.loadbalancer.server.port=3000"
 
-  # 7. Nginx (静的ファイル配信)
+  # ---------------------------------------------------------------------
+  # 7. Nginx (静的ファイル配信 - 管理画面・API用)
+  # ---------------------------------------------------------------------
   nginx-v2-prod:
     image: nginx:alpine
     container_name: nginx-v2-prod
@@ -205,7 +224,9 @@ services:
       - "traefik.http.routers.static-v2-prod.tls.certresolver=le"
       - "traefik.http.services.nginx-v2-prod.loadbalancer.server.port=80"
 
+  # ---------------------------------------------------------------------
   # 8. MariaDB (WordPress用)
+  # ---------------------------------------------------------------------
   mariadb-v2-prod:
     image: mariadb:10
     container_name: mariadb-v2-prod
@@ -225,7 +246,9 @@ services:
       timeout: 5s
       retries: 3
 
-  # 9. WordPress
+  # ---------------------------------------------------------------------
+  # 9. WordPress (PHP-FPM)
+  # ---------------------------------------------------------------------
   wordpress-v2-prod:
     image: wordpress:6-fpm-alpine
     container_name: wordpress-v2-prod
@@ -246,7 +269,9 @@ services:
     networks:
       - internal-net
 
-  # 10. Nginx (WordPress用)
+  # ---------------------------------------------------------------------
+  # 10. Nginx (WordPressリバースプロキシ)
+  # ---------------------------------------------------------------------
   nginx-wp-v2-prod:
     image: nginx:alpine
     container_name: nginx-wp-v2-prod
@@ -268,7 +293,9 @@ services:
       - "traefik.http.routers.blog-v2-prod.tls.certresolver=le"
       - "traefik.http.services.nginx-wp-v2-prod.loadbalancer.server.port=80"
 
+  # ---------------------------------------------------------------------
   # 11. phpMyAdmin
+  # ---------------------------------------------------------------------
   phpmyadmin-v2-prod:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin-v2-prod
@@ -295,7 +322,9 @@ services:
       - "traefik.http.routers.phpmyadmin-v2-prod.middlewares=prod-pma-strip"
       - "traefik.http.services.phpmyadmin-v2-prod.loadbalancer.server.port=80"
 
+  # ---------------------------------------------------------------------
   # 12. pgAdmin
+  # ---------------------------------------------------------------------
   pgadmin-v2-prod:
     image: dpage/pgadmin4
     container_name: pgadmin-v2-prod
@@ -320,7 +349,9 @@ services:
       - "traefik.http.routers.pgadmin-v2-prod.tls.certresolver=le"
       - "traefik.http.services.pgadmin-v2-prod.loadbalancer.server.port=80"
 
+  # ---------------------------------------------------------------------
   # 13. Dozzle
+  # ---------------------------------------------------------------------
   dozzle-prod:
     image: amir20/dozzle:latest
     container_name: dozzle-prod
@@ -340,6 +371,9 @@ services:
       - "traefik.http.routers.dozzle-prod.tls.certresolver=le"
       - "traefik.http.services.dozzle-prod.loadbalancer.server.port=8080"
 
+# ---------------------------------------------------------------------
+# ネットワーク・ボリューム定義
+# ---------------------------------------------------------------------
 networks:
   internal-net:
     driver: bridge

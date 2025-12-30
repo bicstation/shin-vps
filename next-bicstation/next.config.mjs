@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    basePath: '/bicstation',
   // サーバーサイド（SSR/SSG）実行時の環境変数を定義
   env: {
     // ✅ 修正：Djangoコンテナのホスト名

@@ -12,7 +12,6 @@ from pathlib import Path
 # プロジェクト内のパスを BASE_DIR / 'subdir' の形式で構築します。
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - 本番環境には不向きです
 # 詳細は https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/ を参照してください
 
@@ -183,7 +182,7 @@ API_CONFIG = {
         'API_KEY': os.environ.get('DUGA_AFFILIATE_ID', 'dummy_aff_id'), 
         'API_URL': os.environ.get('DUGA_API_URL', 'http://affapi.duga.jp/search'),
         'TOTAL_LIMIT': int(os.environ.get('DUGA_TOTAL_LIMIT', 1000)),
-    },
+    },   
     'FANZA': {
         'API_ID': os.environ.get('FANZA_API_ID', 'dummy_fanza_id'),
         'API_KEY': os.environ.get('FANZA_AFFILIATE_ID', 'dummy_fanza_aff_id'),

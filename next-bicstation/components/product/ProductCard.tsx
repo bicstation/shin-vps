@@ -21,7 +21,7 @@ export default function ProductCard({ product }: any) {
         {product.price > 0 ? `¥${product.price.toLocaleString()}` : "価格不明"}
       </p>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: 'auto' }}>
-        <Link href={`${basePath}/product/${product.unique_id}`} style={{ textAlign: 'center', padding: '10px', background: '#007bff', color: 'white', textDecoration: 'none', borderRadius: '8px', fontSize: '0.8em', fontWeight: 'bold' }}>
+        <Link href={`product/${product.unique_id}`} style={{ textAlign: 'center', padding: '10px', background: '#007bff', color: 'white', textDecoration: 'none', borderRadius: '8px', fontSize: '0.8em', fontWeight: 'bold' }}>
           詳細スペック
         </Link>
         <a href={cleanUrl(product.url)} target="_blank" rel="noopener noreferrer" style={{ textAlign: 'center', padding: '10px', background: '#333', color: 'white', textDecoration: 'none', borderRadius: '8px', fontSize: '0.8em' }}>

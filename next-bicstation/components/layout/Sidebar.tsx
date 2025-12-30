@@ -7,7 +7,7 @@ export default function Sidebar({ activeMenu }: { activeMenu?: string }) {
       <h3 style={{ fontSize: '0.8em', color: '#aaa', marginBottom: '15px', letterSpacing: '1px' }}>MENU</h3>
       <ul style={{ listStyle: 'none', padding: 0, lineHeight: '3' }}>
         <li>
-          <Link href="/bicstation" style={{ 
+          <Link href="/s\" style={{ 
             color: activeMenu === 'lenovo' ? SITE_COLOR : '#444', 
             textDecoration: 'none', 
             fontWeight: 'bold',

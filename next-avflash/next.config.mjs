@@ -1,6 +1,7 @@
 // next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: '/avflash',
   // サーバーサイドでの環境変数を定義
   env: {
     // ✅ 修正：本番環境のコンテナ名に合わせる

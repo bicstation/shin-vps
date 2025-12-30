@@ -148,11 +148,11 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ o
                             {/* ページネーション */}
                             <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
                                 {pcData.previous && (
-                                    <Link href={`/bicstation?offset=${currentOffset - limit}`} style={{ padding: '8px 20px', background: '#fff', border: '1px solid #ddd', borderRadius: '6px', textDecoration: 'none', color: '#666' }}>← 前へ</Link>
+                                    <Link href={`/?offset=${currentOffset - limit}`} style={{ padding: '8px 20px', background: '#fff', border: '1px solid #ddd', borderRadius: '6px', textDecoration: 'none', color: '#666' }}>← 前へ</Link>
                                 )}
                                 <span style={{ fontSize: '0.9em', color: '#888' }}>{currentPage} / {totalPages}</span>
                                 {pcData.next && (
-                                    <Link href={`/bicstation?offset=${currentOffset + limit}`} style={{ padding: '8px 20px', background: '#fff', border: '1px solid #ddd', borderRadius: '6px', textDecoration: 'none', color: '#666' }}>次へ →</Link>
+                                    <Link href={`/?offset=${currentOffset + limit}`} style={{ padding: '8px 20px', background: '#fff', border: '1px solid #ddd', borderRadius: '6px', textDecoration: 'none', color: '#666' }}>次へ →</Link>
                                 )}
                             </div>
                         </>
