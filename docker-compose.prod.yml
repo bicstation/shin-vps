@@ -1,6 +1,5 @@
-# /mnt/c/dev/SHIN-VPS/docker-compose.prod.yml
 # =====================================================================
-# 💎 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ログ直結ポート開放版)
+# 💎 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・本体統合版)
 # =====================================================================
 
 services:
@@ -66,6 +65,7 @@ services:
       - DJANGO_ALLOW_ASYNC_UNSAFE=true
     labels:
       - "traefik.enable=true"
+      # ✅ 重要: Traefikにこのネットワークを使うよう強制
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
@@ -85,7 +85,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 3. Next.js - bicstation.com
+  # 3. Next.js 各サイト (bicstation, tiper, saving, avflash)
   # ---------------------------------------------------------------------
   next-bicstation-v2-prod:
     build:
@@ -93,13 +93,11 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-        NEXT_PUBLIC_BASE_BICSTATION: /bicstation
     container_name: next-bicstation-v2-prod
     depends_on:
       - django-v2-prod
     environment:
       NEXT_PUBLIC_API_URL: https://bicstation.com/api/
-      NEXT_PUBLIC_BASE_BICSTATION: /bicstation
       NODE_ENV: production
     networks:
       - internal-net
@@ -113,20 +111,17 @@ services:
       - "traefik.http.routers.bicstation-v2-prod.tls.certresolver=le"
       - "traefik.http.services.next-bicstation-v2-prod.loadbalancer.server.port=3000"
 
-  # 4. Next.js - tiper.live
   next-tiper-v2-prod:
     build:
       context: ./next-tiper
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-        NEXT_PUBLIC_BASE_TIPER: /tiper
     container_name: next-tiper-v2-prod
     depends_on:
       - django-v2-prod
     environment:
       NEXT_PUBLIC_API_URL: https://tiper.live/api/
-      NEXT_PUBLIC_BASE_TIPER: /tiper
       NODE_ENV: production
     networks:
       - internal-net
@@ -140,20 +135,17 @@ services:
       - "traefik.http.routers.tiper-v2-prod.tls.certresolver=le"
       - "traefik.http.services.next-tiper-v2-prod.loadbalancer.server.port=3000"
 
-  # 5. Next.js - bic-saving.com
   next-bic-saving-v2-prod:
     build:
       context: ./next-bic-saving
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-        NEXT_PUBLIC_BASE_SAVING: /saving
     container_name: next-bic-saving-v2-prod
     depends_on:
       - django-v2-prod
     environment:
       NEXT_PUBLIC_API_URL: https://bic-saving.com/api/
-      NEXT_PUBLIC_BASE_SAVING: /saving
       NODE_ENV: production
     networks:
       - internal-net
@@ -167,20 +159,17 @@ services:
       - "traefik.http.routers.saving-v2-prod.tls.certresolver=le"
       - "traefik.http.services.next-bic-saving-v2-prod.loadbalancer.server.port=3000"
 
-  # 6. Next.js - avflash.xyz
   next-avflash-v2-prod:
     build:
       context: ./next-avflash
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH}
-        NEXT_PUBLIC_BASE_AVFLASH: /avflash
     container_name: next-avflash-v2-prod
     depends_on:
       - django-v2-prod
     environment:
       NEXT_PUBLIC_API_URL: https://avflash.xyz/api/
-      NEXT_PUBLIC_BASE_AVFLASH: /avflash
       NODE_ENV: production
     networks:
       - internal-net
@@ -256,6 +245,9 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'https://blog.tiper.live');
         define('WP_SITEURL', 'https://blog.tiper.live');
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+            $_SERVER['HTTPS'] = 'on';
+        }
     volumes:
       - wordpress_data_prod:/var/www/html
     networks:
@@ -352,7 +344,7 @@ services:
     networks:
       - shared-proxy
     ports:
-      - "8004:8080"
+      - "8004:8080" # 本番ログ用ポート
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
