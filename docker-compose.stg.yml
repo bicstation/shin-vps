@@ -1,9 +1,27 @@
 # /mnt/c/dev/SHIN-VPS/docker-compose.stg.yml
 # =====================================================================
-# 🚀 SHIN-VPS ステージング環境 (SSL/TLS対応・マルチドメイン・直結ポート開放版)
+# 🚀 SHIN-VPS ステージング環境 (SSL/TLS対応・マルチドメイン・本体統合版)
 # =====================================================================
 
 services:
+
+  # ---------------------------------------------------------------------
+  # 0. Traefik (門番 - リバースプロキシ)
+  # ---------------------------------------------------------------------
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8085:8080" # ダッシュボード用
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/letsencrypt:/letsencrypt
+    networks:
+      - shared-proxy
 
   # ---------------------------------------------------------------------
   # 1. PostgreSQL データベース (Django専用)
@@ -360,7 +378,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - shared-proxy
-    # --- 8085を空け、8003に移動 ---
     ports:
       - "8003:8080"
     labels:
@@ -379,7 +396,7 @@ networks:
   internal-net:
     driver: bridge
   shared-proxy:
-    external: true
+    driver: bridge
 
 volumes:
   postgres_data_home:
