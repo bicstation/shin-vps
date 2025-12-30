@@ -38,18 +38,31 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
-          script: |
-            # ディレクトリへ移動
+        script: |
+            # エラーが発生した時点でスクリプトを中断させる
+            set -e
+
             cd /home/maya/shin-vps
             
-            # 1. 共通ネットワークの確認
-            docker network inspect shared-proxy >/dev/null 2>&1 || docker network create shared-proxy
+            echo "======================================================="
+            echo "🧪 ステージング環境へのデプロイを開始します"
+            echo "======================================================="
+
+            echo "🌐 [1/4] ネットワーク設定を確認中..."
+            # ymlで指定した「shin-vps_shared-proxy」が存在するか確認し、なければ作成
+            docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || docker network create shin-vps_shared-proxy
             
-            # 2. Docker Compose 実行
-            # --build を入れることで、コードの変更を確実に反映させます
-            docker compose -f docker-compose.stg.yml up -d --build --remove-orphans
+            echo "🏗️ [2/4] Next.js (bicstation) をキャッシュなしで再ビルド中..."
+            # 環境変数の変更を確実に反映させるため --no-cache を使用
+            docker compose -f docker-compose.stg.yml build --no-cache next-bicstation-v2-stg
             
-            # 3. 未使用な古いイメージを掃除（クリーンな状態を維持）
+            echo "🚀 [3/4] コンテナを起動・更新中..."
+            docker compose -f docker-compose.stg.yml up -d --remove-orphans
+            
+            echo "🧹 [4/4] 不要なイメージとビルドキャッシュを掃除中..."
             docker image prune -f
+            docker builder prune -f
             
-            echo "Staging deployment completed successfully."
+            echo "======================================================="
+            echo "✅ ステージング環境のデプロイが完了しました！"
+            echo "======================================================="
