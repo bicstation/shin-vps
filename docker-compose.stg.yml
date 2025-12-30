@@ -1,4 +1,3 @@
-# /mnt/c/dev/SHIN-VPS/docker-compose.stg.yml
 # =====================================================================
 # 🚀 SHIN-VPS ステージング環境 (SSL/TLS対応・マルチドメイン・本体統合版)
 # =====================================================================
@@ -111,13 +110,11 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
-        NEXT_PUBLIC_BASE_BICSTATION: ""
     container_name: next-bicstation-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
-      NEXT_PUBLIC_BASE_BICSTATION: ""
       NODE_ENV: production
     networks:
       - internal-net
@@ -140,13 +137,11 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
-        NEXT_PUBLIC_BASE_TIPER: ""
     container_name: next-tiper-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
-      NEXT_PUBLIC_BASE_TIPER: ""
       NODE_ENV: production
     networks:
       - internal-net
@@ -169,13 +164,11 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
-        NEXT_PUBLIC_BASE_SAVING: ""
     container_name: next-bic-saving-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
-      NEXT_PUBLIC_BASE_SAVING: ""
       NODE_ENV: production
     networks:
       - internal-net
@@ -190,7 +183,7 @@ services:
       - "traefik.http.services.next-bic-saving-v2-stg.loadbalancer.server.port=3000"
 
   # ---------------------------------------------------------------------
-  # 6. Next.js - avflash.xyz
+  # 6. Next.js - avflash.xyz (修正: basePath '/avflash' 対応)
   # ---------------------------------------------------------------------
   next-avflash-v2-stg:
     build:
@@ -198,13 +191,11 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH}
-        NEXT_PUBLIC_BASE_AVFLASH: ""
     container_name: next-avflash-v2-stg
     depends_on:
       - django-v2-stg
     environment:
       NEXT_PUBLIC_API_URL: https://stg.tiper.live/api
-      NEXT_PUBLIC_BASE_AVFLASH: ""
       NODE_ENV: production
     networks:
       - internal-net
@@ -212,6 +203,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
+      # ルートドメインへのアクセスを許可し、Next.js内のbasePathで制御
       - "traefik.http.routers.avflash-v2-stg.rule=Host(`stg.avflash.xyz`)"
       - "traefik.http.routers.avflash-v2-stg.entrypoints=websecure"
       - "traefik.http.routers.avflash-v2-stg.priority=100"
