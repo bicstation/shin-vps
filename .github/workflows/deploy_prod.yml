@@ -51,18 +51,18 @@ jobs:
 
             echo "📦 [1/4] ネットワークの整合性を確認中..."
             # yml側のname属性に合わせてネットワークを確認・作成
-            sudo docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || sudo docker network create shin-vps_shared-proxy
+            docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || sudo docker network create shin-vps_shared-proxy
             
             echo "🛠️ [2/4] Dockerイメージをクリーンビルド中 (キャッシュなし)..."
             # 先にビルドを行うことで、コンテナ入れ替え時のダウンタイムを最小化します
-            sudo docker compose -f docker-compose.prod.yml -p prod build --no-cache
+            docker compose -f docker-compose.prod.yml -p prod build --no-cache
             
             echo "🔄 [3/4] コンテナを最新イメージへ差し替え中..."
-            sudo docker compose -f docker-compose.prod.yml -p prod up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml -p prod up -d --remove-orphans
             
             echo "🧹 [4/4] 不要になった古いイメージとキャッシュを掃除中..."
-            sudo docker image prune -af
-            sudo docker builder prune -f
+            docker image prune -af
+            docker builder prune -f
             
             echo "-------------------------------------------------------"
             echo "✅ 本番環境のデプロイが正常に完了しました！"
