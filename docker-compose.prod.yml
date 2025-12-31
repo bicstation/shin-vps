@@ -5,7 +5,35 @@
 services:
 
   # ---------------------------------------------------------------------
-  # 1. PostgreSQL データベース (Django専用 - 本番用ボリューム)
+  # 0. Traefik (リバースプロキシ & SSL自動更新)
+  # ---------------------------------------------------------------------
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # 本番専用の証明書ファイルを指定
+      - ./traefik/letsencrypt/acme-prod.json:/letsencrypt/acme.json
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.email=${SSL_EMAIL:-bicstation@gmail.com}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+    networks:
+      - shared-proxy
+
+  # ---------------------------------------------------------------------
+  # 1. PostgreSQL データベース (Django専用)
   # ---------------------------------------------------------------------
   postgres-db-v2-prod:
     image: postgres:15-alpine
@@ -20,7 +48,7 @@ services:
     networks:
       - internal-net
     ports:
-      - "5434:5432" # 外部からのデバッグ用
+      - "5434:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -29,7 +57,7 @@ services:
       start_period: 10s
 
   # ---------------------------------------------------------------------
-  # 2. Django API (データハブ & 認証サーバー)
+  # 2. Django API (Back-end)
   # ---------------------------------------------------------------------
   django-v2-prod:
     build:
@@ -45,9 +73,7 @@ services:
       postgres-db-v2-prod:
         condition: service_healthy
     environment:
-      # ✅ ここを修正: docker-compose内のサービス名に直接合わせます
-      - DB_HOST=postgres-db-v2-prod 
-      - DB_PORT=${DB_PORT}
+      - DB_HOST=postgres-db-v2-prod
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -68,12 +94,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # APIの優先順位を2000に設定
       - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.api-v2-prod.priority=2000"
       - "traefik.http.routers.api-v2-prod.tls.certresolver=le"
-      # 管理画面の優先順位も2000に設定
       - "traefik.http.routers.admin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.admin-v2-prod.priority=2000"
@@ -343,8 +367,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - shared-proxy
-    ports:
-      - "8004:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -362,7 +384,7 @@ networks:
     driver: bridge
   shared-proxy:
     name: shin-vps_shared-proxy
-    external: true
+    driver: bridge
 
 volumes:
   postgres_data_prod:
