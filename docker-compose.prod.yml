@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ダッシュボード有効版)
+# 🚀 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ネットワーク修正済み完全版)
 # =====================================================================
 
 services:
@@ -30,7 +30,7 @@ services:
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
-      - "traefik.http.routers.traefik-dash.priority=2500" # 最優先で評価
+      - "traefik.http.routers.traefik-dash.priority=2500" # 他のサービスより優先
     ports:
       - "80:80"
       - "443:443"
@@ -302,6 +302,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      # TraefikがIPを見つけられるようネットワークを明示
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
