@@ -1,0 +1,70 @@
+name: Stage Deployment
+
+on:
+  push:
+    branches:
+    # tags:
+    #   - 'v*'  # v1.0, v2.0 などのタグ時に実行
+      - main 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. ファイルを VPS に同期
+      - name: Sync Files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: 2222
+          source: "." 
+          target: "/home/maya/shin-vps"
+          # strip_components: 0 を明示するか、targetの構造に注意
+          strip_components: 0
+          # --delete 相当の動きをさせるには rm: true も検討（環境によります）
+          overwrite: true
+
+      # 2. SSH経由でデプロイコマンド実行
+      - name: Deploy to Staging VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: 2222
+          script: |
+            # エラーが発生した時点でスクリプトを中断させる
+            set -e
+
+            cd /home/maya/shin-vps
+            
+            echo "======================================================="
+            echo "🧪 ステージング環境へのデプロイを開始します"
+            echo "======================================================="
+
+            echo "🌐 [1/4] ネットワーク設定を確認中..."
+            # ymlで指定した「shin-vps_shared-proxy」が存在するか確認し、なければ作成
+            docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || docker network create shin-vps_shared-proxy
+            
+            echo "🏗️ [2/4] Next.js (bicstation) をキャッシュなしで再ビルド中..."
+            # 環境変数の変更を確実に反映させるため --no-cache を使用
+            docker compose -f docker-compose.stg.yml build --no-cache next-bicstation-v2-stg
+            
+            echo "🚀 [3/4] コンテナを起動・更新中..."
+            docker compose -f docker-compose.stg.yml up -d --remove-orphans
+            
+            echo "🧹 [4/4] 不要なイメージとビルドキャッシュを掃除中..."
+            docker image prune -f
+            docker builder prune -f
+            
+            echo "======================================================="
+            echo "✅ ステージング環境のデプロイが完了しました！"
+            echo "======================================================="

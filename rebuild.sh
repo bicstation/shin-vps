@@ -1,25 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS 高機能再構築スクリプト (フル・クリーンビルド対応版)
-# ==============================================================================
-# 【使い方 / Usage】
-#  1. 通常の再構築 (環境を自動判別して再起動):
-#     ./rebuild.sh
-#
-#  2. 特定の環境を指定して再構築:
-#     ./rebuild.sh work  (職場の Eドライブ環境)
-#     ./rebuild.sh home  (自宅の Cドライブ環境)
-#
-#  3. まっさらな状態からやり直す (クリーンビルド):
-#     ./rebuild.sh --clean
-#     ※ 既存コンテナ、匿名ボリューム、ビルドキャッシュを全削除してからビルドします。
-#
-#  4. キャッシュを使わずにビルドのみ実行:
-#     ./rebuild.sh --no-cache
-#
-#  5. 特定のサービスのみ再構築:
-#     ./rebuild.sh wordpress-v2
+# 🚀 SHIN-VPS 高機能再構築スクリプト (VPS一本化・クリーンビルド対応版)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
@@ -35,20 +17,7 @@ else
     IS_VPS=false
 fi
 
-# 2. パスに基づいたデフォルト環境の判定
-if [[ "$SCRIPT_DIR" == *"/mnt/e/"* ]]; then
-    DEFAULT_ENV="work"
-elif [[ "$SCRIPT_DIR" == *"/mnt/c/"* ]]; then
-    DEFAULT_ENV="home"
-else
-    if [ "$IS_VPS" = true ]; then
-        DEFAULT_ENV="vps-manual-required"
-    else
-        DEFAULT_ENV="home"
-    fi
-fi
-
-# 3. 引数の解析
+# 2. 引数の解析
 TARGET=""
 NO_CACHE=""
 CLEAN_ALL=false
@@ -56,57 +25,58 @@ SERVICES=""
 
 for arg in "$@"; do
     case $arg in
-        "home"|"work"|"stg"|"prod") TARGET=$arg ;;
+        "home"|"work"|"prod") TARGET=$arg ;;
+        "stg") 
+            echo "❌ エラー: ステージング(stg)環境は廃止されました。prod を使用してください。"
+            exit 1 
+            ;;
         "--no-cache") NO_CACHE="--no-cache" ;;
         "--clean") CLEAN_ALL=true ;;
         "--help"|"-h") 
-            echo "Usage: ./rebuild.sh [home|work|stg|prod] [service_name] [--no-cache] [--clean]"
-            echo ""
-            echo "Options:"
-            echo "  --no-cache : Dockerのビルドキャッシュを使用せずにビルドします。"
-            echo "  --clean    : コンテナ、ネットワーク、匿名ボリューム、ビルドキャッシュを完全に削除してから再構築します。"
+            echo "Usage: ./rebuild.sh [home|work|prod] [service_name] [--no-cache] [--clean]"
             exit 0 
             ;;
         *) SERVICES="$SERVICES $arg" ;;
     esac
 done
 
-# 引数がない場合はデフォルトを適用
-[ -z "$TARGET" ] && TARGET=$DEFAULT_ENV
-
 # ---------------------------------------------------------
-# 🚨 4. 安全装置 (Environment Guard)
+# 🚨 3. ターゲット自動決定 & 安全装置
 # ---------------------------------------------------------
-echo "🔍 実行環境チェック: Host=$CURRENT_HOSTNAME, User=$CURRENT_USER, Detected_Target=$TARGET"
-
 if [ "$IS_VPS" = true ]; then
-    if [[ "$TARGET" != "stg" && "$TARGET" != "prod" ]]; then
-        echo "❌ エラー: VPS上では 'stg' または 'prod' を指定してください。"
-        exit 1
+    # VPSなら、何が何でも prod 
+    if [ -z "$TARGET" ] || [ "$TARGET" != "prod" ]; then
+        echo "🌐 VPS環境を検知しました。自動的に 'prod' 設定を適用します。"
+        TARGET="prod"
     fi
 else
-    if [[ "$TARGET" == "stg" || "$TARGET" == "prod" ]]; then
-        echo "⚠️  ローカルPCのため、安全のため 'home' 設定へリダイレクトします。"
+    # ローカルPCの場合
+    if [ "$TARGET" == "prod" ]; then
+        echo "⚠️  ローカルPCで 'prod' は実行できません。安全のため 'home' に切り替えます。"
         TARGET="home"
     fi
-    if [[ "$TARGET" == "vps-manual-required" || -z "$TARGET" ]]; then
-        TARGET="home"
+    # 未指定ならディレクトリ名から判定
+    if [ -z "$TARGET" ]; then
+        if [[ "$SCRIPT_DIR" == *"/mnt/e/"* ]]; then
+            TARGET="work"
+        else
+            TARGET="home"
+        fi
     fi
 fi
 
 # ---------------------------------------------------------
-# 5. 設定ファイルのパス決定
+# 4. 設定ファイルのパス決定
 # ---------------------------------------------------------
+# 優先順位1: スクリプトと同じ階層の docker-compose.[target].yml
 if [ -f "$SCRIPT_DIR/docker-compose.$TARGET.yml" ]; then
     COMPOSE_FILE="$SCRIPT_DIR/docker-compose.$TARGET.yml"
-elif [ -f "$SCRIPT_DIR/docker-compose.yml" ] && [ "$TARGET" != "work" ]; then
-    COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
+# 優先順位2: 特定の絶対パス（念のため残す）
 else
     case $TARGET in
         "work") COMPOSE_FILE="/mnt/e/dev/shin-vps/docker-compose.work.yml" ;;
-        "home") COMPOSE_FILE="/mnt/c/dev/SHIN-VPS/docker-compose.yml" ;;
-        "stg")  COMPOSE_FILE="/home/maya/shin-vps/docker-compose.stg.yml" ;;
         "prod") COMPOSE_FILE="/home/maya/shin-vps/docker-compose.prod.yml" ;;
+        *)      COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml" ;;
     esac
 fi
 
@@ -117,37 +87,38 @@ if [ ! -f "$COMPOSE_FILE" ]; then
 fi
 
 # ---------------------------------------------------------
-# 6. 実行セクション
+# 5. 実行セクション
 # ---------------------------------------------------------
 cd "$SCRIPT_DIR"
 echo "---------------------------------------"
-echo "🎯 Target Env : $TARGET"
-echo "📄 Config File: $COMPOSE_FILE"
-echo "🛠️  Services   : ${SERVICES:-全サービス}"
-[ "$CLEAN_ALL" = true ] && echo "🧹 Mode       : FULL CLEAN (更地にしてからビルド)"
+echo "🎯 実行環境   : $TARGET"
+echo "📄 設定ファイル : $COMPOSE_FILE"
+echo "🛠️  対象サービス : ${SERVICES:-全サービス}"
+[ "$CLEAN_ALL" = true ] && echo "🧹 モード     : FULL CLEAN (全消去後に再構築)"
 echo "---------------------------------------"
 
 # ステップ1: 停止とクリーンアップ
 if [ "$CLEAN_ALL" = true ]; then
-    echo "🚨 [1/4] 強制クリーンアップ中 (Down & Remove Volumes)..."
+    echo "🚨 [1/4] 強制クリーンアップ開始..."
     docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" down --volumes --remove-orphans
-    echo "🧹 ビルドキャッシュの物理削除..."
+    echo "🧹 ビルドキャッシュを破棄..."
     docker builder prune -af
 else
-    echo "🚀 [1/4] 既存コンテナの停止..."
+    echo "🚀 [1/4] 既存コンテナを停止..."
+    # $SERVICES が空なら全停止、あれば特定サービスのみ
     docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" stop $SERVICES
 fi
 
-# ステップ2: システム全体のクリーンアップ
+# ステップ2: システム最適化
 if [ -n "$NO_CACHE" ] || [ "$CLEAN_ALL" = true ]; then
-    echo "🧹 [2/4] 未使用イメージのクリーンアップ..."
+    echo "🧹 [2/4] 未使用イメージを削除..."
     docker system prune -f
 else
-    echo "⏭️  [2/4] キャッシュを利用してビルドを開始します。"
+    echo "⏭️  [2/4] キャッシュを利用して高速ビルドします。"
 fi
 
 # ステップ3: ビルド
-echo "🛠️  [3/4] ビルド開始..."
+echo "🛠️  [3/4] Dockerビルド実行..."
 FINAL_NO_CACHE=$NO_CACHE
 [ "$CLEAN_ALL" = true ] && FINAL_NO_CACHE="--no-cache"
 
@@ -155,8 +126,9 @@ docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" build $FINAL_NO_CACHE $SERV
 
 # ステップ4: 起動
 echo "✨ [4/4] コンテナ起動..."
-docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d --build $SERVICES
+# --build を付けることで、ビルドした最新イメージを確実に反映させます
+docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d --build --remove-orphans $SERVICES
 
 echo "---------------------------------------"
-echo "✅ 再構築完了！"
+echo "✅ 再構築が完了しました！"
 docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" ps $SERVICES

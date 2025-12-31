@@ -1,0 +1,69 @@
+name: Production Deployment
+
+on:
+  push:
+    # tags:
+    #   - 'v*'  # v1.0, v2.0 などのタグ時に実行
+    branches:
+      - main 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. ファイルを VPS に同期
+      - name: Sync Files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST_PROD }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: 2222
+          source: "." 
+          target: "/home/maya/shin-vps-prod" # 本番専用ディレクトリを推奨
+          # .env ファイルを消さないように、rsyncの除外設定を検討するか --delete に注意
+          # flags: "-rtzq" # 安全策をとるなら --delete を外す
+          flags: "-rtzq --delete" 
+
+      # 2. SSH 経由でデプロイ
+      - name: Deploy to Production VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST_PROD }} 
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: 2222
+          script: |
+            # エラーが発生したら即座に停止
+            set -e
+
+            cd /home/maya/shin-vps-prod
+            
+            echo "-------------------------------------------------------"
+            echo "🚀 本番環境のデプロイを開始します: v${GITHUB_REF_NAME}"
+            echo "-------------------------------------------------------"
+
+            echo "📦 [1/4] ネットワークの整合性を確認中..."
+            # yml側のname属性に合わせてネットワークを確認・作成
+            docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || sudo docker network create shin-vps_shared-proxy
+            
+            echo "🛠️ [2/4] Dockerイメージをクリーンビルド中 (キャッシュなし)..."
+            # 先にビルドを行うことで、コンテナ入れ替え時のダウンタイムを最小化します
+            docker compose -f docker-compose.prod.yml -p prod build --no-cache
+            
+            echo "🔄 [3/4] コンテナを最新イメージへ差し替え中..."
+            docker compose -f docker-compose.prod.yml -p prod up -d --remove-orphans
+            
+            echo "🧹 [4/4] 不要になった古いイメージとキャッシュを掃除中..."
+            docker image prune -af
+            docker builder prune -f
+            
+            echo "-------------------------------------------------------"
+            echo "✅ 本番環境のデプロイが正常に完了しました！"
+            echo "-------------------------------------------------------"
