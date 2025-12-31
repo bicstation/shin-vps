@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ステージングベース安定版)
+# 🚀 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ネットワーク修正版)
 # =====================================================================
 
 services:
@@ -27,7 +27,6 @@ services:
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      # 本番専用の証明書保存ファイル
       - ./traefik/letsencrypt/acme-prod.json:/letsencrypt/acme.json
     networks:
       - shared-proxy
@@ -294,6 +293,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      # Traefikにこのコンテナを探させるための明示的指定
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
@@ -377,14 +377,13 @@ services:
       - "traefik.http.services.dozzle-prod.loadbalancer.server.port=8080"
 
 # ---------------------------------------------------------------------
-# ネットワーク・ボリューム定義 (本番用)
+# ネットワーク・ボリューム定義 (外部ネットワーク指定版)
 # ---------------------------------------------------------------------
 networks:
   internal-net:
     driver: bridge
   shared-proxy:
     name: shin-vps_shared-proxy
-    driver: bridge
     external: true
 
 volumes:

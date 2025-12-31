@@ -2,7 +2,7 @@ name: Production Deployment
 
 on:
   push:
-    # v1.0.0 などのタグがプッシュされた時だけ動作（mainへの直接プッシュでは動かない）
+    # v1.0.0 などのタグがプッシュされた時だけ動作
     tags:
       - 'v*'
 
@@ -28,7 +28,7 @@ jobs:
           strip_components: 0
           overwrite: true
 
-      # 2. SSH経由で本番（prod）設定のみを起動
+      # 2. SSH経由でネットワーク構築とDocker起動を実行
       - name: Deploy to Production via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -41,16 +41,26 @@ jobs:
             set -e
             cd /home/maya/shin-vps
             
-            echo "🚀 本番環境(prod)を起動します..."
+            echo "🔧 ネットワーク環境を整備します..."
 
-            # ネットワークがなければ作成
-            docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || docker network create shin-vps_shared-proxy
+            # 既存ネットワークのラベル不一致問題を回避するため、
+            # もし存在していても「プロジェクト外」で作られたものなら一度削除して作り直します。
+            if docker network inspect shin-vps_shared-proxy >/dev/null 2>&1; then
+                echo "既存のネットワークをクリーンアップします..."
+                # コンテナが接続されていて削除できない場合を考慮し、trueを返して続行
+                docker network rm shin-vps_shared-proxy || true
+            fi
             
+            # ネットワークを新規作成（これによりラベル問題が解消されます）
+            docker network create shin-vps_shared-proxy || echo "Network already exists, skipping creation."
+
+            echo "🚀 本番環境(prod)をビルド・起動します..."
+
             # 本番用(prod)のymlを指定してビルド・起動
-            # --remove-orphans を付けることで、古い不要なコンテナを掃除します
-            docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
+            # プロジェクト名を -p で明示することで、コンテナ名の一貫性を保ちます
+            docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans
             
-            # 未使用の古いイメージを削除（ディスク節約）
-            docker image prune -f
+            # 未使用の古いイメージや、ビルド用の一時イメージを削除
+            docker image prune -af
             
             echo "✅ デプロイが完了しました！"
