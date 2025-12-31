@@ -1,20 +1,50 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS データインポート専用マネージャー
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (ホスト名判定版)
 # ==============================================================================
 
-# 設定
-CONTAINER_NAME="django-v2"
-IMPORT_DIR="/usr/src/app/data"
+# 1. 実行ディレクトリ・ホスト情報の取得
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CURRENT_HOSTNAME=$(hostname)
+CURRENT_USER=$USER
 
-echo "---------------------------------------"
-echo "🚀 SHIN-VPS Data Import Tool"
-echo "---------------------------------------"
-echo "カレントディレクトリ: $(pwd)"
-echo "---------------------------------------"
+# 💡 VPSかどうかの判定ロジック (提示いただいた条件を採用)
+if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]] || [[ "$CURRENT_USER" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
+    IS_VPS=true
+    ENV_TYPE="PRODUCTION (VPS)"
+    COMPOSE_FILE="docker-compose.prod.yml"
+    CONTAINER_NAME="django-v2-prod"
+    COLOR="\e[32m" # 緑（本番）
+else
+    IS_VPS=false
+    ENV_TYPE="LOCAL (Development)"
+    COMPOSE_FILE="docker-compose.yml"
+    CONTAINER_NAME="django-v2"
+    COLOR="\e[36m" # 水色（ローカル）
+fi
 
-# メニュー表示
+RESET="\e[0m"
+
+echo -e "---------------------------------------"
+echo -e "🚀 SHIN-VPS Data Import Tool"
+echo -e "環境: ${COLOR}${ENV_TYPE}${RESET}"
+echo -e "ホスト: ${CURRENT_HOSTNAME} / ユーザー: ${CURRENT_USER}"
+echo -e "ファイル: ${COMPOSE_FILE}"
+echo -e "対象: ${CONTAINER_NAME}"
+echo -e "---------------------------------------"
+
+# 2. 実行用関数の定義
+run_cmd() {
+    # 念のためファイルが存在するかチェック
+    if [ ! -f "$SCRIPT_DIR/$COMPOSE_FILE" ]; then
+        echo -e "\e[31m[ERROR] $COMPOSE_FILE が見つかりません。\e[0m"
+        exit 1
+    fi
+    docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec "$CONTAINER_NAME" $@
+}
+
+# 3. メニュー表示
 echo "1) [DB]     マイグレーション実行 (テーブル作成)"
 echo "2) [Import] Tiper データのインポート"
 echo "3) [Import] Bic-saving データのインポート"
@@ -28,32 +58,33 @@ read -p "実行する操作を選択してください: " CHOICE
 case $CHOICE in
     1)
         echo "⚙️  マイグレーションを実行中..."
-        docker compose exec $CONTAINER_NAME python manage.py migrate
+        run_cmd python manage.py migrate
         ;;
     2)
-        echo "⚙️  Tiperデータのインポートを実行中..." 
-        docker compose exec $CONTAINER_NAME python manage.py import_t_duga
-        docker compose exec $CONTAINER_NAME python manage.py import_t_fanza
-        docker compose exec $CONTAINER_NAME python manage.py normalize_duga
-        docker compose exec $CONTAINER_NAME python manage.py normalize_fanza
+        echo "⚙️  Tiperデータのインポート..." 
+        run_cmd python manage.py import_t_duga
+        run_cmd python manage.py import_t_fanza
+        run_cmd python manage.py normalize_duga
+        run_cmd python manage.py normalize_fanza
         ;;
     3)
-        echo "⚙️  Bic-savingデータのインポートを実行中..."
-        docker compose exec $CONTAINER_NAME env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
+        echo "⚙️  Bic-savingスクレイピング実行..."
+        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
         ;;
     4)
-        echo "⚙️  Bicstationデータのインポートを実行中..."
-        docker compose exec $CONTAINER_NAME env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
+        echo "⚙️  Bicstationスクレイピング実行..."
+        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
         ;;
     5)
-        echo "⚙️  AV-Flashデータのインポートを実行中..."
-        docker compose exec $CONTAINER_NAME python manage.py import_av $IMPORT_DIR/$FILE
+        echo "⚙️  AV-Flashインポート..."
+        read -p "ファイル名を入力: " FILE_NAME
+        run_cmd python manage.py import_av "/usr/src/app/data/$FILE_NAME"
         ;;
     6)
-        echo "👤 管理者アカウントを作成します..."
-        docker compose exec $CONTAINER_NAME python manage.py createsuperuser
+        echo "👤 管理者作成..."
+        run_cmd python manage.py createsuperuser
         ;;
-    q)
+    7)
         echo "終了します。"
         exit 0
         ;;
