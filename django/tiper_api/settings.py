@@ -22,43 +22,70 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-default-key-please-change-in-prod')
 
 # SECURITY WARNING: 本番環境では DEBUG を True にして実行しないでください!
+# 本番デプロイ時は False にすることを推奨しますが、一旦現状の True を維持します。
 DEBUG = True
 
 # ----------------------------------------------------
 # ホスト / CORS / CSRF 設定
 # ----------------------------------------------------
 ALLOWED_HOSTS = [
+    # ステージング
     'stg.tiper.live', 
     'stg.bic-saving.com',
     'stg.bicstation.com',
     'stg.avflash.xyz',
     'stg.blog.tiper.live',
-    'django-v2',  # 💡 Docker 内部ネットワーク経由のアクセスを明示的に許可
+    # ✅ 本番環境
+    'tiper.live',
+    'bic-saving.com',
+    'bicstation.com',
+    'avflash.xyz',
+    'blog.tiper.live',
+    # システム・ローカル
+    'django-v2',
+    'django-v2-prod',
+    'django-v2-stg',
     'localhost',
     '127.0.0.1',
-    '*' # 開発中は便宜上'*'のままでも動作しますが、本番ではドメインを厳定してください
+    '*' # 全許可設定
 ]
 
-# CORS設定
+# CORS設定 (ブラウザからのAPIアクセスを許可)
 CORS_ALLOWED_ORIGINS = [ 
+    # ステージング
     "https://stg.tiper.live",
     "https://stg.bic-saving.com",
     "https://stg.bicstation.com",
     "https://stg.avflash.xyz",
     "https://stg.blog.tiper.live",
-    "http://localhost:3000", # Next.js 開発用
+    # ✅ 本番環境
+    "https://tiper.live",
+    "https://bic-saving.com",
+    "https://bicstation.com",
+    "https://avflash.xyz",
+    "https://blog.tiper.live",
+    # ローカル
+    "http://localhost:3000",
     "http://localhost:8080",
     "http://host.docker.internal",
     "http://127.0.0.1:8080",
 ]
 
-# CSRFトークンを信頼するオリジン
+# CSRFトークンを信頼するオリジン (POST等の操作に必要)
 CSRF_TRUSTED_ORIGINS = [
+    # ステージング
     'https://stg.tiper.live',
     'https://stg.bic-saving.com',
     'https://stg.bicstation.com',
     'https://stg.avflash.xyz',
     'https://stg.blog.tiper.live',
+    # ✅ 本番環境
+    'https://tiper.live',
+    'https://bic-saving.com',
+    'https://bicstation.com',
+    'https://avflash.xyz',
+    'https://blog.tiper.live',
+    # ローカル
     'http://localhost:8080',
     'http://127.0.0.1:8080',
     'http://host.docker.internal', 
@@ -82,11 +109,10 @@ INSTALLED_APPS = [
     
     # サードパーティ製アプリ
     'rest_framework', 
-    'django_extensions', # ← show_urls を使うために追加
-    'scrapers',  # ここが抜けていると「No installed app...」になります
+    'django_extensions',
+    'scrapers', 
     
-    
-    # 自分のアプリ 下記のように書き換えた
+    # 自分のアプリ
     'api.apps.ApiConfig',
 ]
 
@@ -95,7 +121,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # 💡 ここに追加！
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 💡 静的ファイル配信用
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -136,7 +162,7 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'tiper_db'),
         'USER': os.environ.get('DB_USER', 'tiper_user'),
         'PASSWORD': os.environ.get('DB_PASSWORD', '1492nabe'),
-        'HOST': os.environ.get('DB_HOST', 'postgres-db-v2'), # docker-compose のサービス名に一致させる
+        'HOST': os.environ.get('DB_HOST', 'postgres-db-v2'), # docker-compose のサービス名に一致
         'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
