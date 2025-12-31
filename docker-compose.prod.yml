@@ -385,6 +385,7 @@ networks:
   shared-proxy:
     name: shin-vps_shared-proxy
     driver: bridge
+    external: true
 
 volumes:
   postgres_data_prod:
