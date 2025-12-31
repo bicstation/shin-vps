@@ -1,5 +1,5 @@
 # =====================================================================
-# 💎 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・本体統合版)
+# 🚀 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ステージングベース安定版)
 # =====================================================================
 
 services:
@@ -11,29 +11,24 @@ services:
     image: traefik:v2.11
     container_name: traefik-proxy
     restart: always
-    environment:
-      - DOCKER_API_VERSION=1.44  # 👈 Docker APIの互換性問題を解消
-      - SSL_EMAIL=${SSL_EMAIL:-bicstation@gmail.com}
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.email=${SSL_EMAIL:-bicstation@gmail.com}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      # 証明書保存ファイルのパス
+      # 本番専用の証明書保存ファイル
       - ./traefik/letsencrypt/acme-prod.json:/letsencrypt/acme.json
-    command:
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.endpoint=unix:///var/run/docker.sock" # 👈 明示的に指定
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-      # SSL証明書 (Let's Encrypt) 設定
-      - "--certificatesresolvers.le.acme.tlschallenge=true"
-      - "--certificatesresolvers.le.acme.email=${SSL_EMAIL:-bicstation@gmail.com}"
-      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
     networks:
       - shared-proxy
 
