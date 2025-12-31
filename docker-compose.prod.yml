@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (完全版: Traefikダッシュボード表示修正済)
+# 🚀 SHIN-VPS 本番環境 (完全版: サービス名統一・Traefik修正済)
 # =====================================================================
 
 services:
@@ -12,9 +12,9 @@ services:
     container_name: traefik-proxy
     restart: always
     command:
-      # - "--log.level=DEBUG"
-      - "--api.dashboard=true"           # ダッシュボードを有効化
-      - "--api.insecure=false"           # SSL経由にするためinsecureはfalse
+      # - "--log.level=DEBUG" # 安定したらコメントアウト
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
@@ -27,12 +27,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # 【修正】ダッシュボードが必要とするAPIエンドポイントをすべて網羅
       - "traefik.http.routers.traefik-dash.rule=Host(`tiper.live`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api/overview`) || PathPrefix(`/api/http`) || PathPrefix(`/api/entrypoints`) || PathPrefix(`/api/version`) || PathPrefix(`/api/rawdata`))"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
-      # 【重要】Django(2000)に横取りされないよう、優先順位を5000に設定
       - "traefik.http.routers.traefik-dash.priority=5000"
     ports:
       - "80:80"
@@ -44,7 +42,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 1. PostgreSQL データベース (Django専用)
+  # 1. PostgreSQL (Django専用)
   # ---------------------------------------------------------------------
   postgres-db-v2-prod:
     image: postgres:15-alpine
@@ -68,9 +66,9 @@ services:
       start_period: 10s
 
   # ---------------------------------------------------------------------
-  # 2. Django API (Back-end)
+  # 2. Django API (Back-end) - 💡 サービス名を共通化
   # ---------------------------------------------------------------------
-  django-v2-prod:
+  django-v2:
     build:
       context: ./django
       dockerfile: Dockerfile
@@ -105,15 +103,18 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
+      # APIルーター
       - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.api-v2-prod.priority=2000"
       - "traefik.http.routers.api-v2-prod.tls.certresolver=le"
+      # Adminルーター
       - "traefik.http.routers.admin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.admin-v2-prod.priority=2000"
       - "traefik.http.routers.admin-v2-prod.tls.certresolver=le"
-      - "traefik.http.services.django-v2-prod.loadbalancer.server.port=8000"
+      # サービス定義
+      - "traefik.http.services.django-v2.loadbalancer.server.port=8000"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
       - ./django:/usr/src/app
@@ -133,10 +134,10 @@ services:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_BICSTATION}
     container_name: next-bicstation-v2-prod
     depends_on:
-      - django-v2-prod
+      - django-v2
     environment:
-      NEXT_PUBLIC_API_URL: https://bicstation.com/api/
-      NODE_ENV: production
+      - NEXT_PUBLIC_API_URL=https://bicstation.com/api/
+      - NODE_ENV=production
     networks:
       - internal-net
       - shared-proxy
@@ -157,10 +158,10 @@ services:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_TIPER}
     container_name: next-tiper-v2-prod
     depends_on:
-      - django-v2-prod
+      - django-v2
     environment:
-      NEXT_PUBLIC_API_URL: https://tiper.live/api/
-      NODE_ENV: production
+      - NEXT_PUBLIC_API_URL=https://tiper.live/api/
+      - NODE_ENV=production
     networks:
       - internal-net
       - shared-proxy
@@ -181,10 +182,10 @@ services:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_SAVING}
     container_name: next-bic-saving-v2-prod
     depends_on:
-      - django-v2-prod
+      - django-v2
     environment:
-      NEXT_PUBLIC_API_URL: https://bic-saving.com/api/
-      NODE_ENV: production
+      - NEXT_PUBLIC_API_URL=https://bic-saving.com/api/
+      - NODE_ENV=production
     networks:
       - internal-net
       - shared-proxy
@@ -205,10 +206,10 @@ services:
         NEXT_PUBLIC_APP_TITLE: ${TITLE_AVFLASH}
     container_name: next-avflash-v2-prod
     depends_on:
-      - django-v2-prod
+      - django-v2
     environment:
-      NEXT_PUBLIC_API_URL: https://avflash.xyz/api/
-      NODE_ENV: production
+      - NEXT_PUBLIC_API_URL=https://avflash.xyz/api/
+      - NODE_ENV=production
     networks:
       - internal-net
       - shared-proxy
@@ -244,7 +245,7 @@ services:
       - "traefik.http.services.nginx-v2-prod.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
-  # 5. MariaDB (WordPress用)
+  # 5. MariaDB & WordPress & Nginx(WP)
   # ---------------------------------------------------------------------
   mariadb-v2-prod:
     image: mariadb:10
@@ -265,9 +266,6 @@ services:
       timeout: 5s
       retries: 3
 
-  # ---------------------------------------------------------------------
-  # 6. WordPress (CMS)
-  # ---------------------------------------------------------------------
   wordpress-v2-prod:
     image: wordpress:6-fpm-alpine
     container_name: wordpress-v2-prod
@@ -288,9 +286,6 @@ services:
     networks:
       - internal-net
 
-  # ---------------------------------------------------------------------
-  # 7. Nginx (WordPressブリッジ)
-  # ---------------------------------------------------------------------
   nginx-wp-v2-prod:
     image: nginx:alpine
     container_name: nginx-wp-v2-prod
@@ -313,7 +308,7 @@ services:
       - "traefik.http.services.nginx-wp-v2-prod.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
-  # 8. データベース管理ツール
+  # 8. Admin Tools (phpMyAdmin, pgAdmin, Dozzle)
   # ---------------------------------------------------------------------
   phpmyadmin-v2-prod:
     image: phpmyadmin/phpmyadmin
@@ -365,9 +360,6 @@ services:
       - "traefik.http.routers.pgadmin-v2-prod.tls.certresolver=le"
       - "traefik.http.services.pgadmin-v2-prod.loadbalancer.server.port=80"
 
-  # ---------------------------------------------------------------------
-  # 9. Dozzle (ログ確認ツール)
-  # ---------------------------------------------------------------------
   dozzle-prod:
     image: amir20/dozzle:latest
     container_name: dozzle-prod
