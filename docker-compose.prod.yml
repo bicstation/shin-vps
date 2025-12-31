@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ネットワーク修正版)
+# 🚀 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ダッシュボード有効版)
 # =====================================================================
 
 services:
@@ -12,7 +12,8 @@ services:
     container_name: traefik-proxy
     restart: always
     command:
-      - "--api.insecure=false"
+      - "--api.dashboard=true"           # ダッシュボードを有効化
+      - "--api.insecure=false"           # SSL経由にするためinsecureはfalse
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
@@ -22,6 +23,14 @@ services:
       - "--certificatesresolvers.le.acme.tlschallenge=true"
       - "--certificatesresolvers.le.acme.email=${SSL_EMAIL:-bicstation@gmail.com}"
       - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+    labels:
+      - "traefik.enable=true"
+      # Djangoの /api と競合しないよう、Traefik専用APIパス (/api/rawdata) を指定
+      - "traefik.http.routers.traefik-dash.rule=Host(`tiper.live`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api/rawdata`))"
+      - "traefik.http.routers.traefik-dash.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dash.tls.certresolver=le"
+      - "traefik.http.routers.traefik-dash.service=api@internal"
+      - "traefik.http.routers.traefik-dash.priority=2500" # 最優先で評価
     ports:
       - "80:80"
       - "443:443"
@@ -293,7 +302,6 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      # Traefikにこのコンテナを探させるための明示的指定
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
@@ -377,7 +385,7 @@ services:
       - "traefik.http.services.dozzle-prod.loadbalancer.server.port=8080"
 
 # ---------------------------------------------------------------------
-# ネットワーク・ボリューム定義 (外部ネットワーク指定版)
+# ネットワーク・ボリューム定義
 # ---------------------------------------------------------------------
 networks:
   internal-net:
