@@ -55,15 +55,25 @@ const decodeHtml = (html: string) => {
 // --- データ取得関数 (サーバーサイド) ---
 
 async function fetchPostList(): Promise<WpPost[]> {
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/posts?_embed&per_page=5`;
+    // 💡 修正ポイント：エンドポイントを 'posts' から 'bicstation' に変更
+    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/bicstation?_embed&per_page=5`;
+
     try {
         const res = await fetch(WP_API_URL, {
-            headers: { 'Host': 'stg.blog.tiper.live' },
+            // Hostヘッダーは本番ドメイン
+            headers: { 'Host': 'blog.tiper.live' },
             cache: 'no-store'
         });
-        return res.ok ? await res.json() : [];
+
+        if (!res.ok) {
+            console.error(`WordPress API Error: ${res.status} (Endpoint may be wrong)`);
+            return [];
+        }
+
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
     } catch (error) {
-        console.error("WordPress API Error:", error);
+        console.error("WordPress API Fetch Error:", error);
         return [];
     }
 }
