@@ -45,7 +45,9 @@ services:
       postgres-db-v2-prod:
         condition: service_healthy
     environment:
-      - DB_HOST=postgres-db-v2-prod
+      # ✅ ここを修正: docker-compose内のサービス名に直接合わせます
+      - DB_HOST=postgres-db-v2-prod 
+      - DB_PORT=${DB_PORT}
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -66,12 +68,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ✅ APIの優先順位を2000に引き上げ (Next.jsの100より高く設定)
+      # APIの優先順位を2000に設定
       - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.api-v2-prod.priority=2000"
       - "traefik.http.routers.api-v2-prod.tls.certresolver=le"
-      # ✅ 管理画面の優先順位も2000に引き上げ
+      # 管理画面の優先順位も2000に設定
       - "traefik.http.routers.admin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-prod.entrypoints=websecure"
       - "traefik.http.routers.admin-v2-prod.priority=2000"
