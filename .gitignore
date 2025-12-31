@@ -72,4 +72,4 @@ desktop.ini
 *.log
 # デバッグ用の画像や一時的なHTMLも除外対象にする場合
 debug_*.png
-debug_*.html
+debug_*.htmltraefik/letsencrypt/*.json
