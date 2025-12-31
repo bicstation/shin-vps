@@ -20,7 +20,7 @@ services:
     networks:
       - internal-net
     ports:
-      - "5434:5432" # 外部からのデバッグ用（ステージング5433と分離）
+      - "5434:5432" # 外部からのデバッグ用
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -65,15 +65,16 @@ services:
       - DJANGO_ALLOW_ASYNC_UNSAFE=true
     labels:
       - "traefik.enable=true"
-      # ✅ 重要: Traefikにこのネットワークを使うよう強制
       - "traefik.docker.network=shin-vps_shared-proxy"
+      # ✅ APIの優先順位を2000に引き上げ (Next.jsの100より高く設定)
       - "traefik.http.routers.api-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/api`)"
       - "traefik.http.routers.api-v2-prod.entrypoints=websecure"
-      - "traefik.http.routers.api-v2-prod.priority=105"
+      - "traefik.http.routers.api-v2-prod.priority=2000"
       - "traefik.http.routers.api-v2-prod.tls.certresolver=le"
+      # ✅ 管理画面の優先順位も2000に引き上げ
       - "traefik.http.routers.admin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-v2-prod.entrypoints=websecure"
-      - "traefik.http.routers.admin-v2-prod.priority=120"
+      - "traefik.http.routers.admin-v2-prod.priority=2000"
       - "traefik.http.routers.admin-v2-prod.tls.certresolver=le"
       - "traefik.http.services.django-v2-prod.loadbalancer.server.port=8000"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
@@ -85,7 +86,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 3. Next.js 各サイト (bicstation, tiper, saving, avflash)
+  # 3. Next.js 各サイト
   # ---------------------------------------------------------------------
   next-bicstation-v2-prod:
     build:
@@ -201,7 +202,7 @@ services:
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.static-v2-prod.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/static`)"
       - "traefik.http.routers.static-v2-prod.entrypoints=websecure"
-      - "traefik.http.routers.static-v2-prod.priority=200"
+      - "traefik.http.routers.static-v2-prod.priority=2100"
       - "traefik.http.routers.static-v2-prod.tls.certresolver=le"
       - "traefik.http.services.nginx-v2-prod.loadbalancer.server.port=80"
 
@@ -270,7 +271,7 @@ services:
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
-      - "traefik.http.routers.blog-v2-prod.priority=100"
+      - "traefik.http.routers.blog-v2-prod.priority=1000"
       - "traefik.http.routers.blog-v2-prod.tls.certresolver=le"
       - "traefik.http.services.nginx-wp-v2-prod.loadbalancer.server.port=80"
 
@@ -297,7 +298,7 @@ services:
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.phpmyadmin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/phpmyadmin`)"
       - "traefik.http.routers.phpmyadmin-v2-prod.entrypoints=websecure"
-      - "traefik.http.routers.phpmyadmin-v2-prod.priority=200"
+      - "traefik.http.routers.phpmyadmin-v2-prod.priority=2200"
       - "traefik.http.routers.phpmyadmin-v2-prod.tls.certresolver=le"
       - "traefik.http.middlewares.prod-pma-strip.stripprefix.prefixes=/phpmyadmin"
       - "traefik.http.routers.phpmyadmin-v2-prod.middlewares=prod-pma-strip"
@@ -323,7 +324,7 @@ services:
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.pgadmin-v2-prod.rule=Host(`tiper.live`) && PathPrefix(`/pgadmin`)"
       - "traefik.http.routers.pgadmin-v2-prod.entrypoints=websecure"
-      - "traefik.http.routers.pgadmin-v2-prod.priority=200"
+      - "traefik.http.routers.pgadmin-v2-prod.priority=2200"
       - "traefik.http.routers.pgadmin-v2-prod.tls.certresolver=le"
       - "traefik.http.services.pgadmin-v2-prod.loadbalancer.server.port=80"
 
@@ -341,13 +342,13 @@ services:
     networks:
       - shared-proxy
     ports:
-      - "8004:8080" # 本番ログ用ポート
+      - "8004:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.dozzle-prod.rule=Host(`tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-prod.entrypoints=websecure"
-      - "traefik.http.routers.dozzle-prod.priority=150"
+      - "traefik.http.routers.dozzle-prod.priority=2200"
       - "traefik.http.routers.dozzle-prod.tls.certresolver=le"
       - "traefik.http.services.dozzle-prod.loadbalancer.server.port=8080"
 
