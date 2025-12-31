@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (完全版: SSL/TLS・マルチドメイン・ネットワーク修正済)
+# 🚀 SHIN-VPS 本番環境 (完全版: Traefikダッシュボード表示修正済)
 # =====================================================================
 
 services:
@@ -26,11 +26,14 @@ services:
       - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik-dash.rule=Host(`tiper.live`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api/rawdata`))"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      # 【修正】ダッシュボードが必要とするAPIエンドポイントをすべて網羅
+      - "traefik.http.routers.traefik-dash.rule=Host(`tiper.live`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api/overview`) || PathPrefix(`/api/http`) || PathPrefix(`/api/entrypoints`) || PathPrefix(`/api/version`) || PathPrefix(`/api/rawdata`))"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
-      - "traefik.http.routers.traefik-dash.priority=2500"
+      # 【重要】Django(2000)に横取りされないよう、優先順位を5000に設定
+      - "traefik.http.routers.traefik-dash.priority=5000"
     ports:
       - "80:80"
       - "443:443"
@@ -302,7 +305,6 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      # 【修正済】ネットワークを明示してIP解決エラーを解消
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
