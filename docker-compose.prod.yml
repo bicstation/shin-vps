@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL/TLS対応・マルチドメイン・ネットワーク修正済み完全版)
+# 🚀 SHIN-VPS 本番環境 (完全版: SSL/TLS・マルチドメイン・ネットワーク修正済)
 # =====================================================================
 
 services:
@@ -25,12 +25,11 @@ services:
       - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
     labels:
       - "traefik.enable=true"
-      # Djangoの /api と競合しないよう、Traefik専用APIパス (/api/rawdata) を指定
       - "traefik.http.routers.traefik-dash.rule=Host(`tiper.live`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api/rawdata`))"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
-      - "traefik.http.routers.traefik-dash.priority=2500" # 他のサービスより優先
+      - "traefik.http.routers.traefik-dash.priority=2500"
     ports:
       - "80:80"
       - "443:443"
@@ -219,7 +218,7 @@ services:
       - "traefik.http.services.next-avflash-v2-prod.loadbalancer.server.port=3000"
 
   # ---------------------------------------------------------------------
-  # 7. Nginx (静的ファイル配信)
+  # 4. Nginx (静的ファイル配信)
   # ---------------------------------------------------------------------
   nginx-v2-prod:
     image: nginx:alpine
@@ -241,7 +240,7 @@ services:
       - "traefik.http.services.nginx-v2-prod.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
-  # 8. MariaDB (WordPress用)
+  # 5. MariaDB (WordPress用)
   # ---------------------------------------------------------------------
   mariadb-v2-prod:
     image: mariadb:10
@@ -263,7 +262,7 @@ services:
       retries: 3
 
   # ---------------------------------------------------------------------
-  # 9. WordPress (CMS)
+  # 6. WordPress (CMS)
   # ---------------------------------------------------------------------
   wordpress-v2-prod:
     image: wordpress:6-fpm-alpine
@@ -286,7 +285,7 @@ services:
       - internal-net
 
   # ---------------------------------------------------------------------
-  # 10. Nginx (WordPressブリッジ)
+  # 7. Nginx (WordPressブリッジ)
   # ---------------------------------------------------------------------
   nginx-wp-v2-prod:
     image: nginx:alpine
@@ -302,7 +301,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      # TraefikがIPを見つけられるようネットワークを明示
+      # 【修正済】ネットワークを明示してIP解決エラーを解消
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.blog-v2-prod.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-v2-prod.entrypoints=websecure"
@@ -311,7 +310,7 @@ services:
       - "traefik.http.services.nginx-wp-v2-prod.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
-  # 11. データベース管理ツール
+  # 8. データベース管理ツール
   # ---------------------------------------------------------------------
   phpmyadmin-v2-prod:
     image: phpmyadmin/phpmyadmin
@@ -364,7 +363,7 @@ services:
       - "traefik.http.services.pgadmin-v2-prod.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
-  # 13. Dozzle (ログ確認ツール)
+  # 9. Dozzle (ログ確認ツール)
   # ---------------------------------------------------------------------
   dozzle-prod:
     image: amir20/dozzle:latest
