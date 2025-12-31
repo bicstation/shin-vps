@@ -11,16 +11,16 @@ services:
     image: traefik:v2.10
     container_name: traefik-proxy
     restart: always
-    # --- 💡 ここを追加 ---
     environment:
+      # 💡 VPSのDocker APIバージョンが古いため明示的に指定
       - DOCKER_API_VERSION=1.24
-    #
+      - SSL_EMAIL=${SSL_EMAIL:-bicstation@gmail.com}
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      # 本番専用の証明書ファイルを指定
+      # 証明書保存ファイルのパス
       - ./traefik/letsencrypt/acme-prod.json:/letsencrypt/acme.json
     command:
       - "--api.insecure=false"
@@ -30,6 +30,7 @@ services:
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
+      # SSL証明書 (Let's Encrypt) 設定
       - "--certificatesresolvers.le.acme.tlschallenge=true"
       - "--certificatesresolvers.le.acme.email=${SSL_EMAIL:-bicstation@gmail.com}"
       - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
