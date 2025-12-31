@@ -12,6 +12,7 @@ services:
     container_name: traefik-proxy
     restart: always
     environment:
+      - DOCKER_API_VERSION=1.44  # 👈 Docker APIの互換性問題を解消
       - SSL_EMAIL=${SSL_EMAIL:-bicstation@gmail.com}
     ports:
       - "80:80"
@@ -24,6 +25,7 @@ services:
       - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock" # 👈 明示的に指定
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
