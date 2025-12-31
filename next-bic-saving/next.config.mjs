@@ -1,7 +1,10 @@
+// /mnt/e/dev/shin-vps/next-bic-saving/next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // VPS環境（本番/ステージング）では空、ローカル開発時のみ指定するようにする
-  basePath: process.env.NODE_ENV === 'production' ? '' : '/saving',
+  // basePath: process.env.NODE_ENV === 'production' ? '' : '/saving',
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  // basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/saving',
   // basePath: '/saving',
   // サーバーサイドでの環境変数を定義
   env: {

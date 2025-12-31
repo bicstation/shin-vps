@@ -1,6 +1,6 @@
-# /mnt/e/shin-ssg/docker-compose.yml
+# /mnt/c/dev/SHIN-VPS/docker-compose.yml
 # =====================================================================
-# 🛠️ SHIN-VPS ローカル開発・統合環境 (WSL2 Integration 完全対応版)
+# 🏠 SHIN-VPS ローカル開発・統合環境 (自宅PC専用: WSL2 Integration)
 # =====================================================================
 
 services:
@@ -16,8 +16,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # .env の POSTGRES_DATA_PATH を使用
-      - ${POSTGRES_DATA_PATH:-postgres_data}:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH:-postgres_data_home}:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
@@ -36,8 +35,7 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      # .env の MARIADB_DATA_PATH を使用
-      - ${MARIADB_DATA_PATH:-mariadb_data}:/var/lib/mysql
+      - ${MARIADB_DATA_PATH:-mariadb_data_home}:/var/lib/mysql
     networks:
       - internal-net
 
@@ -68,23 +66,29 @@ services:
       - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
     volumes:
       - ./django:/usr/src/app
-      - static_volume:/usr/src/app/staticfiles
+      - static_volume_home:/usr/src/app/staticfiles
     networks:
       - internal-net
 
   # ---------------------------------------------------------------------
   # 3. フロントエンド層 (Next.js 4サイト)
+  # 💡 自宅環境でもビルド時にパスを焼き付け、404を防止する
   # ---------------------------------------------------------------------
   next-bicstation-v2:
     build:
       context: ./next-bicstation
+      args:
+        - NODE_ENV=development
+        - NEXT_PUBLIC_BASE_PATH=/bicstation
     container_name: next-bicstation-v2
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BASE_PATH=/bicstation
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.bic-v2-router.rule=Host(`localhost`) && PathPrefix(`/bicstation`)"
       - "traefik.http.routers.bic-v2-router.entrypoints=web"
-      # 【修正】stripprefixミドルウェアを削除 (Next.jsのbasePathに任せるため)
       - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
@@ -92,13 +96,18 @@ services:
   next-tiper-v2:
     build:
       context: ./next-tiper
+      args:
+        - NODE_ENV=development
+        - NEXT_PUBLIC_BASE_PATH=/tiper
     container_name: next-tiper-v2
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BASE_PATH=/tiper
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.tiper-v2-router.rule=Host(`localhost`) && PathPrefix(`/tiper`)"
       - "traefik.http.routers.tiper-v2-router.entrypoints=web"
-      # 【修正】stripprefixミドルウェアを削除
       - "traefik.http.services.tiper-v2-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
@@ -106,13 +115,18 @@ services:
   next-bic-saving-v2:
     build:
       context: ./next-bic-saving
+      args:
+        - NODE_ENV=development
+        - NEXT_PUBLIC_BASE_PATH=/saving
     container_name: next-bic-saving-v2
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BASE_PATH=/saving
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.saving-v2-router.rule=Host(`localhost`) && PathPrefix(`/saving`)"
       - "traefik.http.routers.saving-v2-router.entrypoints=web"
-      # 【修正】stripprefixミドルウェアを削除
       - "traefik.http.services.saving-v2-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
@@ -120,13 +134,18 @@ services:
   next-avflash-v2:
     build:
       context: ./next-avflash
+      args:
+        - NODE_ENV=development
+        - NEXT_PUBLIC_BASE_PATH=/avflash
     container_name: next-avflash-v2
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BASE_PATH=/avflash
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.avflash-v2-router.rule=Host(`localhost`) && PathPrefix(`/avflash`)"
       - "traefik.http.routers.avflash-v2-router.entrypoints=web"
-      # 【修正】stripprefixミドルウェアを削除
       - "traefik.http.services.avflash-v2-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
@@ -138,16 +157,13 @@ services:
     image: nginx:alpine
     container_name: nginx-wp-v2
     volumes:
-      # .env の WP_DATA_PATH を使用
-      - ${WP_DATA_PATH:-wordpress_data}:/var/www/html:ro
-      # 【重要】用意された wp.conf をマウントして PHP-FPM と連携
+      - ${WP_DATA_PATH:-wordpress_data_home}:/var/www/html:ro
       - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.blog-v2-router.rule=Host(`localhost`) && PathPrefix(`/blog`)"
       - "traefik.http.routers.blog-v2-router.entrypoints=web"
-      # Nginx(wp.conf)側でrootを /var/www/html にしているので、/blog は削って渡す
       - "traefik.http.middlewares.strip-blog.stripprefix.prefixes=/blog"
       - "traefik.http.routers.blog-v2-router.middlewares=strip-blog"
       - "traefik.http.services.nginx-wp-v2-svc.loadbalancer.server.port=80"
@@ -165,9 +181,8 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'http://localhost:8083/blog');
         define('WP_SITEURL', 'http://localhost:8083/blog');
-        
     volumes:
-      - ${WP_DATA_PATH:-wordpress_data}:/var/www/html
+      - ${WP_DATA_PATH:-wordpress_data_home}:/var/www/html
     networks:
       - internal-net
 
@@ -237,26 +252,21 @@ services:
       - "--providers.docker.network=shin-vps_internal-net"
       - "--entrypoints.web.address=:80"
     ports:
-      - "8083:80"      # アプリアクセス用
-      - "8085:8080"    # ダッシュボード
+      - "8083:80"
+      - "8085:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:rw"
     networks:
       - internal-net
 
 # ---------------------------------------------------------------------
-# リソース定義
+# リソース定義 (自宅PC用ボリューム名)
 # ---------------------------------------------------------------------
 volumes:
-  # 自宅PCの回避設定が .env にある場合、名前付きボリュームとして定義
-  postgres_data:
-  static_volume:
-  wordpress_data:
-  mariadb_data:
-  # 名前付きボリュームも .env の変数でカバーされる場合は、以下のように定義を維持
   postgres_data_home:
-  mariadb_data_home:
+  static_volume_home:
   wordpress_data_home:
+  mariadb_data_home:
 
 networks:
   internal-net:

@@ -1,27 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // VPS環境（本番/ステージング）では空、ローカル開発時のみ指定するようにする
-  basePath: process.env.NODE_ENV === 'production' ? '' : '/bicstation',
-  // basePath: '/bicstation',
+  // ✅ ビルド引数で渡されたパス、または空（VPS本番用）を使用
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+
+  // 🛑 重要：404回避のための設定
+  trailingSlash: true,
+
   // サーバーサイド（SSR/SSG）実行時の環境変数を定義
   env: {
-    // ✅ 修正：Djangoコンテナのホスト名
-    // Docker内部ネットワークでDjangoと通信するためのURLです。
-
-    // ステージングと共存するため、本番用コンテナ名を指定します。
-    API_URL_INTERNAL: 'http://django-v2-prod:8000', 
+    // 職場のコンテナ名に合わせる
+    API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000', 
     
-    // 公開用API URL（ブラウザからアクセスする用）
-    // docker-compose.ymlの環境変数を優先し、なければデフォルト値を使用
+    // 公開用API URL
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   },
 
-  // 🛑 重要：Dockerでのビルド・デプロイを安定させる設定
-  // 依存関係を最小限にまとめて起動を速くします
+  // Docker用設定
   output: 'standalone', 
   
-  // Reactの厳密モード（必要に応じて）
   reactStrictMode: true,
 };
 
+// .mjs ファイルなので export default を使用します
 export default nextConfig;
