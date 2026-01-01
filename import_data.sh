@@ -14,7 +14,7 @@ if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" 
     IS_VPS=true
     ENV_TYPE="PRODUCTION (VPS)"
     COMPOSE_FILE="docker-compose.prod.yml"
-    CONTAINER_NAME="django-v2-prod"
+    CONTAINER_NAME="django-v2"
     COLOR="\e[32m" # 緑（本番）
 else
     IS_VPS=false
