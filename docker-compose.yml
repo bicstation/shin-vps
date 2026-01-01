@@ -14,7 +14,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - ./data/home/postgres:/var/lib/postgresql/data
+      # 💡 修正箇所: Windowsフォルダ直接指定から名前付きボリュームに変更
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
@@ -33,14 +34,15 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - ./data/home/mysql:/var/lib/mysql
+      # 💡 MariaDBも同様に名前付きボリュームにすることを強く推奨します
+      - mariadb_data:/var/lib/mysql
     networks:
       - internal-net
 
   # --- 2. アプリケーション層 (Django) ---
   django-v2:
     env_file:
-     - .env
+      - .env
     build:
       context: ./django
     container_name: django-v2
@@ -67,7 +69,6 @@ services:
       - internal-net
 
   # --- 3. フロントエンド層 (Next.js) ---
-  # (各サービスは現状維持のため中略 ... 構造に変更はありません)
   next-bicstation-v2:
     build: { context: ./next-bicstation, args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/bicstation"] }
     container_name: next-bicstation-v2
@@ -136,7 +137,6 @@ services:
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
-      # 💡 安全な3行設定
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'http://localhost:8083/blog');
         define('WP_SITEURL', 'http://localhost:8083/blog');
@@ -215,8 +215,11 @@ services:
     networks:
       - internal-net
 
+# 💡 修正箇所: 外部ボリュームを定義
 volumes:
   static_volume_home:
+  postgres_data:  # 追加
+  mariadb_data:   # 追加（MariaDBのエラー防止用）
 
 networks:
   internal-net:
