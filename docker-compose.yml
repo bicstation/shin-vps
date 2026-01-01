@@ -4,6 +4,7 @@
 # =====================================================================
 
 services:
+
   # --- 1. データベース層 ---
   postgres-db-v2:
     image: postgres:15-alpine
@@ -14,7 +15,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # 💡 修正箇所: Windowsフォルダ直接指定から名前付きボリュームに変更
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal-net
@@ -34,7 +34,6 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      # 💡 MariaDBも同様に名前付きボリュームにすることを強く推奨します
       - mariadb_data:/var/lib/mysql
     networks:
       - internal-net
@@ -59,8 +58,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
-      - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/admin`))"
+      - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && PathPrefix(`/api`)"
       - "traefik.http.routers.django-v2-api.entrypoints=web"
+      - "traefik.http.routers.django-v2-api.priority=2000"
+      - "traefik.http.routers.django-v2-admin.rule=Host(`localhost`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.django-v2-admin.entrypoints=web"
+      - "traefik.http.routers.django-v2-admin.priority=2000"
       - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
     volumes:
       - ./django:/usr/src/app
@@ -70,43 +73,63 @@ services:
 
   # --- 3. フロントエンド層 (Next.js) ---
   next-bicstation-v2:
-    build: { context: ./next-bicstation, args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/bicstation"] }
+    build: 
+      context: ./next-bicstation
+      args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/bicstation"]
     container_name: next-bicstation-v2
-    networks: [internal-net]
+    networks: 
+      - internal-net
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.bic-v2-router.rule=Host(`localhost`) && PathPrefix(`/bicstation`)"
+      - "traefik.http.routers.bic-v2-router.entrypoints=web"
+      - "traefik.http.routers.bic-v2-router.priority=100"
       - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
 
   next-tiper-v2:
-    build: { context: ./next-tiper, args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/tiper"] }
+    build: 
+      context: ./next-tiper
+      args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/tiper"]
     container_name: next-tiper-v2
-    networks: [internal-net]
+    networks: 
+      - internal-net
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.tiper-v2-router.rule=Host(`localhost`) && PathPrefix(`/tiper`)"
+      - "traefik.http.routers.tiper-v2-router.entrypoints=web"
+      - "traefik.http.routers.tiper-v2-router.priority=100"
       - "traefik.http.services.tiper-v2-svc.loadbalancer.server.port=3000"
 
   next-bic-saving-v2:
-    build: { context: ./next-bic-saving, args: ["NODE_ENV=development","NEXT_PUBLIC_BASE_PATH=/saving"] }
+    build: 
+      context: ./next-bic-saving
+      args: ["NODE_ENV=development","NEXT_PUBLIC_BASE_PATH=/saving"]
     container_name: next-bic-saving-v2
-    networks: [internal-net]
+    networks: 
+      - internal-net
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.saving-v2-router.rule=Host(`localhost`) && PathPrefix(`/saving`)"
+      - "traefik.http.routers.saving-v2-router.entrypoints=web"
+      - "traefik.http.routers.saving-v2-router.priority=100"
       - "traefik.http.services.saving-v2-svc.loadbalancer.server.port=3000"
 
   next-avflash-v2:
-    build: { context: ./next-avflash, args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/avflash"] }
+    build: 
+      context: ./next-avflash
+      args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/avflash"]
     container_name: next-avflash-v2
-    networks: [internal-net]
+    networks: 
+      - internal-net
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.avflash-v2-router.rule=Host(`localhost`) && PathPrefix(`/avflash`)"
+      - "traefik.http.routers.avflash-v2-router.entrypoints=web"
+      - "traefik.http.routers.avflash-v2-router.priority=100"
       - "traefik.http.services.avflash-v2-svc.loadbalancer.server.port=3000"
 
   # --- 4. WordPress & 静的配信層 ---
@@ -122,6 +145,7 @@ services:
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.blog-v2-router.rule=Host(`localhost`) && PathPrefix(`/blog`)"
       - "traefik.http.routers.blog-v2-router.entrypoints=web"
+      - "traefik.http.routers.blog-v2-router.priority=1000"
       - "traefik.http.middlewares.strip-blog.stripprefix.prefixes=/blog"
       - "traefik.http.routers.blog-v2-router.middlewares=strip-blog"
       - "traefik.http.services.nginx-wp-v2-svc.loadbalancer.server.port=80"
@@ -157,6 +181,8 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.pma-v2-router.rule=Host(`localhost`) && PathPrefix(`/phpmyadmin`)"
+      - "traefik.http.routers.pma-v2-router.entrypoints=web"
+      - "traefik.http.routers.pma-v2-router.priority=2200"
       - "traefik.http.middlewares.strip-pma.stripprefix.prefixes=/phpmyadmin"
       - "traefik.http.routers.pma-v2-router.middlewares=strip-pma"
       - "traefik.http.services.pma-v2-svc.loadbalancer.server.port=80"
@@ -175,6 +201,8 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.pgadmin-v2-router.rule=Host(`localhost`) && PathPrefix(`/pgadmin`)"
+      - "traefik.http.routers.pgadmin-v2-router.entrypoints=web"
+      - "traefik.http.routers.pgadmin-v2-router.priority=2200"
       - "traefik.http.services.pgadmin-v2-svc.loadbalancer.server.port=80"
     networks:
       - internal-net
@@ -190,6 +218,8 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.dozzle-v2-router.rule=Host(`localhost`) && PathPrefix(`/logs`)"
+      - "traefik.http.routers.dozzle-v2-router.entrypoints=web"
+      - "traefik.http.routers.dozzle-v2-router.priority=2200"
       - "traefik.http.services.dozzle-v2-svc.loadbalancer.server.port=8080"
     networks:
       - internal-net
@@ -215,11 +245,11 @@ services:
     networks:
       - internal-net
 
-# 💡 修正箇所: 外部ボリュームを定義
+# 外部ボリューム・ネットワーク定義
 volumes:
   static_volume_home:
-  postgres_data:  # 追加
-  mariadb_data:   # 追加（MariaDBのエラー防止用）
+  postgres_data:
+  mariadb_data:
 
 networks:
   internal-net:
