@@ -69,7 +69,7 @@ services:
   # --- 3. フロントエンド層 (Next.js) ---
   # (各サービスは現状維持のため中略 ... 構造に変更はありません)
   next-bicstation-v2:
-    build: { context: ./next-bicstation, args: [- NODE_ENV=development, - NEXT_PUBLIC_BASE_PATH=/bicstation] }
+    build: { context: ./next-bicstation, args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/bicstation"] }
     container_name: next-bicstation-v2
     networks: [internal-net]
     labels:
@@ -79,7 +79,7 @@ services:
       - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
 
   next-tiper-v2:
-    build: { context: ./next-tiper, args: [- NODE_ENV=development, - NEXT_PUBLIC_BASE_PATH=/tiper] }
+    build: { context: ./next-tiper, args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/tiper"] }
     container_name: next-tiper-v2
     networks: [internal-net]
     labels:
@@ -89,7 +89,7 @@ services:
       - "traefik.http.services.tiper-v2-svc.loadbalancer.server.port=3000"
 
   next-bic-saving-v2:
-    build: { context: ./next-bic-saving, args: [- NODE_ENV=development, - NEXT_PUBLIC_BASE_PATH=/saving] }
+    build: { context: ./next-bic-saving, args: ["NODE_ENV=development","NEXT_PUBLIC_BASE_PATH=/saving"] }
     container_name: next-bic-saving-v2
     networks: [internal-net]
     labels:
@@ -99,7 +99,7 @@ services:
       - "traefik.http.services.saving-v2-svc.loadbalancer.server.port=3000"
 
   next-avflash-v2:
-    build: { context: ./next-avflash, args: [- NODE_ENV=development, - NEXT_PUBLIC_BASE_PATH=/avflash] }
+    build: { context: ./next-avflash, args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/avflash"] }
     container_name: next-avflash-v2
     networks: [internal-net]
     labels:
