@@ -1,6 +1,7 @@
 # /mnt/e/dev/shin-vps/docker-compose.work.yml
 # =====================================================================
 # 🛠️ SHIN-VPS ローカル開発・統合環境(職場専用: Intel i7 Optimal)
+# 💡 永続化設定: データをホストの ./data/work に直接保存
 # =====================================================================
 
 services:
@@ -16,7 +17,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - ${POSTGRES_DATA_PATH:-postgres_data_work}:/var/lib/postgresql/data
+      - ./data/work/postgres:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
@@ -35,7 +36,7 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - ${MARIADB_DATA_PATH:-mariadb_data_work}:/var/lib/mysql
+      - ./data/work/mysql:/var/lib/mysql
     networks:
       - internal-net
 
@@ -44,7 +45,7 @@ services:
   # ---------------------------------------------------------------------
   django-v2:
     env_file:
-      - .env
+     - .env
     build:
       context: ./django
     container_name: django-v2
@@ -61,7 +62,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
-      - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && PathPrefix(`/api`) || PathPrefix(`/admin`)"
+      - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/admin`))"
       - "traefik.http.routers.django-v2-api.entrypoints=web"
       - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
     volumes:
@@ -72,7 +73,6 @@ services:
 
   # ---------------------------------------------------------------------
   # 3. フロントエンド層 (Next.js 4サイト)
-  # 💡 ビルド時に NEXT_PUBLIC_BASE_PATH を焼き付け、Next.jsのパスを確定させる
   # ---------------------------------------------------------------------
   next-bicstation-v2:
     build:
@@ -156,8 +156,10 @@ services:
   nginx-wp-v2:
     image: nginx:alpine
     container_name: nginx-wp-v2
+    restart: always
     volumes:
-      - ${WP_DATA_PATH:-wordpress_data_work}:/var/www/html:ro
+      # 💡 物理フォルダをマウント（Nginxは読み取り専用 :ro）
+      - ./data/work/wp-content:/var/www/html:ro
       - ./nginx/conf/wp-work.conf:/etc/nginx/conf.d/default.conf:ro
     labels:
       - "traefik.enable=true"
@@ -173,16 +175,20 @@ services:
   wordpress-v2:
     image: wordpress:6-fpm-alpine
     container_name: wordpress-v2
+    restart: always
     environment:
       WORDPRESS_DB_HOST: mariadb-v2
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      # 💡 構文エラーを修正し、判定をより堅牢にしました
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'http://localhost:8083/blog');
         define('WP_SITEURL', 'http://localhost:8083/blog');
+        define('FORCE_SSL_ADMIN', false);
     volumes:
-      - ${WP_DATA_PATH:-wordpress_data_work}:/var/www/html
+      # 💡 物理フォルダをマウント（WordPress本体が書き込みを行う）
+      - ./data/work/wp-content:/var/www/html
     networks:
       - internal-net
 
@@ -247,9 +253,6 @@ services:
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
-      - "--providers.docker.watch=true"
-      - "--providers.docker.network=shin-vps_internal-net"
       - "--entrypoints.web.address=:80"
     ports:
       - "8083:80"
@@ -263,10 +266,7 @@ services:
 # リソース定義
 # ---------------------------------------------------------------------
 volumes:
-  postgres_data_work:
   static_volume_work:
-  wordpress_data_work:
-  mariadb_data_work:
 
 networks:
   internal-net:

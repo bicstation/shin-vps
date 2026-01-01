@@ -66,7 +66,8 @@ async function fetchPostList(): Promise<WpPost[]> {
         const res = await fetch(WP_API_URL, {
             headers: { 
                 // 💡 Nginxが識別できるよう本番ドメインをHostに指定
-                'Host': 'blog.tiper.live' 
+                'Host': 'blog.tiper.live',
+                'Accept': 'application/json'
             },
             cache: 'no-store'
         });
