@@ -4,13 +4,15 @@
 # 🚀 Git 統合スクリプト (メニュー改良版)
 # ==============================================================================
 
-# 1. PC環境の自動判定とディレクトリ移動
-CURRENT_HOSTNAME=$(hostname)
-if [[ "$CURRENT_HOSTNAME" == "Marya" ]]; then
-    PROJECT_ROOT="/mnt/c/dev/SHIN-VPS"
-elif [[ -d "/mnt/e/dev/shin-vps" ]]; then
+# 1. ディレクトリの存在優先でプロジェクトルートを判定
+if [[ -d "/mnt/e/dev/shin-vps" ]]; then
+    # 職場PC (Eドライブ)
     PROJECT_ROOT="/mnt/e/dev/shin-vps"
+elif [[ -d "/mnt/c/dev/SHIN-VPS" ]]; then
+    # 自宅PC (Cドライブ)
+    PROJECT_ROOT="/mnt/c/dev/SHIN-VPS"
 else
+    # その他（VPSやデフォルト）
     PROJECT_ROOT="/home/maya/shin-vps"
 fi
 
