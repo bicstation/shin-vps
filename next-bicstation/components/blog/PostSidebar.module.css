@@ -1,0 +1,54 @@
+.sidebarCard {
+  background: var(--white);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 100px;
+}
+
+.indexTitle {
+  font-size: 1.2rem;
+  font-weight: 900;
+  margin-bottom: 25px;
+  border-bottom: 4px solid var(--primary-color);
+  padding-bottom: 12px;
+  color: var(--text-main);
+}
+
+.tocItem {
+  display: block;
+  padding: 12px 0;
+  font-size: 0.95rem;
+  color: #444;
+  border-bottom: 1px solid #f9f9f9;
+  line-height: 1.4;
+}
+
+.tocNumber {
+  color: var(--primary-color);
+  margin-right: 12px;
+  font-weight: 900;
+  opacity: 0.4;
+}
+
+.promotionCard {
+  margin-top: 50px;
+  padding: 30px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  box-shadow: 0 10px 20px rgba(0, 123, 255, 0.2);
+}
+
+.promoTitle {
+  font-weight: 900;
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.promoText {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}

@@ -6,6 +6,8 @@
   --text-main: #222222;
   --text-muted: #666666;
   --white: #ffffff;
+  --border-color: #dee2e6;
+  --marker-color: #ffdf65; /* 強調マーカー用 */
 }
 
 /* 基本リセット & HTML設定 */
@@ -29,22 +31,23 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, color 0.2s;
 }
 
 a:hover {
   opacity: 0.8;
+  color: var(--primary-color);
 }
 
 /* ============================================================
-   💡 WordPress記事本文 (.wp-content) 用のスタイル
-   dangerouslySetInnerHTML で出力されるタグを装飾します
+    💡 WordPress記事本文 (.wp-content) 用のスタイル
+    dangerouslySetInnerHTML で出力されるタグを装飾します
    ============================================================ */
 
 .wp-content {
   line-height: 1.8;
   font-size: 1.1rem;
-  color: #333;
+  color: var(--text-main); /* 変数を使用 */
 }
 
 /* 見出し */
@@ -69,7 +72,9 @@ a:hover {
 }
 
 .wp-content strong {
-  background: linear-gradient(transparent 70%, #ffdf65 70%); /* 黄色のマーカー風 */
+  /* 変数を使用した黄色のマーカー風 */
+  background: linear-gradient(transparent 70%, var(--marker-color) 70%); 
+  font-weight: bold;
 }
 
 /* リスト */
@@ -105,10 +110,10 @@ a:hover {
 
 /* 引用 */
 .wp-content blockquote {
-  border-left: 4px solid #ddd;
+  border-left: 4px solid var(--border-color);
   padding: 10px 20px;
-  color: #555;
-  background: #f9f9f9;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.02);
   font-style: italic;
   margin: 2em 0;
 }
@@ -118,27 +123,31 @@ a:hover {
   width: 100%;
   border-collapse: collapse;
   margin: 2em 0;
+  background: var(--white);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .wp-content th, 
 .wp-content td {
   padding: 12px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color);
   text-align: left;
 }
 
 .wp-content th {
-  background-color: #f1f3f5;
+  background-color: rgba(0, 0, 0, 0.05);
+  font-weight: bold;
 }
 
-/* ダークモード対応 (必要に応じて) */
+/* ダークモード対応 */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-color: #0a0a0a;
     --text-main: #ededed;
-    --text-muted: #aaa;
+    --text-muted: #aaaaaa;
+    --white: #1a1a1a;
+    --border-color: #333333;
+    --marker-color: #665500; /* ダークモード用の落ち着いたマーカー色 */
   }
-  .wp-content { color: #ccc; }
-  .wp-content h2, .wp-content h3 { color: #fff; }
-  .wp-content blockquote { background: #1a1a1a; border-color: #444; }
 }

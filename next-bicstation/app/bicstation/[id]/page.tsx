@@ -1,148 +1,88 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/no-danger-to-js */
-// @ts-nocheck 
 
-import React from 'react';
 import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import Link from 'next/link';
+import { PostHeader } from '@/components/blog/PostHeader';
+import { PostSidebar } from '@/components/blog/PostSidebar';
+import { COLORS } from '@/constants';
+import { fetchPostData } from '@/lib/api'; // ✅ APIをインポート
+import styles from './PostPage.module.css';
 
-// --- 型定義 ---
-interface WpPost {
-    id: number;
-    slug: string;
-    title: { rendered: string };
-    date: string;
-    content: { rendered: string };
-    author_name: string;
-}
-
-const SITE_COLOR = '#007bff';
-
-// --- データ取得関数 ---
-async function fetchPostData(postSlug: string): Promise<WpPost | null> {
-    // カスタム投稿タイプ 'posts' (または 'bicstation') を想定
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/posts?slug=${postSlug}&_embed&per_page=1`; 
-
-    try {
-        const res = await fetch(WP_API_URL, {
-            headers: { 'Host': 'stg.blog.tiper.live' },
-            next: { revalidate: 3600 } 
-        });
-
-        if (!res.ok) return null;
-        
-        const data = await res.json();
-        if (data.length === 0) return null;
-
-        const post = data[0];
-        return {
-            ...post,
-            author_name: post._embedded?.author?.[0]?.name || 'BICSTATION 編集部'
-        };
-    } catch (error) {
-        return null; 
-    }
-}
+// --- ユーティリティ ---
 
 /**
- * 💡 SEO対策: 記事タイトルをメタデータに反映
+ * HTMLデコード用
  */
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-    const post = await fetchPostData(decodeURIComponent(params.id));
-    if (!post) return { title: "記事が見つかりません" };
-
-    return {
-        title: decodeHtml(post.title.rendered),
-        description: post.content.rendered.replace(/<[^>]*>/g, '').substring(0, 120) + '...',
-    };
-}
-
-// ユーティリティ
 const decodeHtml = (html: string) => {
     if (!html) return '';
-    return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
-               .replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    const map: { [key: string]: string } = { 
+        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
+    };
+    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
+               .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
 };
 
+/**
+ * 日付フォーマット用
+ */
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
-        year: 'numeric', month: '2-digit', day: '2-digit'
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
     });
 };
 
 /**
- * ブログ記事詳細ページ
+ * 目次生成ロジック
  */
-export default async function PostPage({ params }: { params: { id: string } }) {
-    const postSlug = decodeURIComponent(params.id);
-    const post = await fetchPostData(postSlug);
+function getTableOfContents(content: string) {
+    const h2Matches = content.match(/<h2[^>]*>(.*?)<\/h2>/g) || [];
+    return h2Matches.map(tag => tag.replace(/<[^>]*>/g, ''));
+}
 
-    if (!post) notFound(); 
+// --- メインのコンポーネント ---
+
+export default async function PostPage(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     
-    return (
-        <article style={{ backgroundColor: '#fff', minHeight: '100vh' }}>
-            {/* 記事ヘッダーエリア */}
-            <header style={{ 
-                background: '#f8f9fa', 
-                padding: '60px 20px', 
-                borderBottom: '1px solid #eee',
-                textAlign: 'center' 
-            }}>
-                <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-                    <div style={{ color: SITE_COLOR, fontWeight: 'bold', marginBottom: '15px', fontSize: '0.9em' }}>
-                        NEWS & COLUMN
-                    </div>
-                    <h1 style={{ 
-                        fontSize: '2.2em', 
-                        lineHeight: '1.4', 
-                        color: '#222', 
-                        margin: '0 0 20px 0',
-                        fontWeight: '800'
-                    }}>
-                        {decodeHtml(post.title.rendered)}
-                    </h1>
-                    <div style={{ color: '#888', fontSize: '0.9em', display: 'flex', justifyContent: 'center', gap: '20px' }}>
-                        <span>👤 {post.author_name}</span>
-                        <span>📅 {formatDate(post.date)}</span>
-                    </div>
-                </div>
-            </header>
+    // ✅ lib/api.ts からデータを取得
+    const post = await fetchPostData(decodeURIComponent(params.id));
+    
+    if (!post) notFound();
 
-            {/* 記事本文エリア */}
-            <div style={{ 
-                padding: '60px 20px', 
-                maxWidth: '800px', 
-                margin: '0 auto',
-                lineHeight: '1.8',
-                fontSize: '1.1em',
-                color: '#333'
-            }}>
-                {/* 💡 WordPressからのHTMLをレンダリング 
-                    実際の運用では、globals.css に .wp-content p { ... } のような
-                    スタイルを定義しておくと綺麗になります。
-                */}
-                <div 
-                    className="wp-content"
-                    dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
-                />
+    // 目次の生成
+    const toc = getTableOfContents(post.content.rendered);
+
+    return (
+        <article className={styles.article} style={{ backgroundColor: COLORS.BACKGROUND }}>
+            
+            {/* 記事ヘッダー（タイトル・カテゴリ・投稿日） */}
+            <PostHeader 
+                post={post} 
+                decodeHtml={decodeHtml} 
+                formatDate={formatDate} 
+                SITE_COLOR={COLORS.SITE_COLOR} 
+            />
+            
+            <div className={styles.container}>
+                {/* メインコンテンツ（本文） */}
+                <main className={styles.mainContent}>
+                    <div 
+                        className={`${styles.wpContent} animate-in`} 
+                        dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
+                    />
+                </main>
                 
-                {/* 戻るボタン */}
-                <div style={{ marginTop: '60px', textAlign: 'center' }}>
-                    <Link href="/bicstation" style={{ 
-                        display: 'inline-block',
-                        padding: '12px 30px',
-                        border: `2px solid ${SITE_COLOR}`,
-                        color: SITE_COLOR,
-                        textDecoration: 'none',
-                        borderRadius: '30px',
-                        fontWeight: 'bold',
-                        transition: '0.2s'
-                    }}>
-                        ← 記事一覧に戻る
-                    </Link>
-                </div>
+                {/* サイドバー（目次・バナー等） */}
+                <aside className={styles.sidebarWrapper}>
+                    <PostSidebar 
+                        toc={toc} 
+                        SITE_COLOR={COLORS.SITE_COLOR} 
+                        ACCENT_COLOR={COLORS.ACCENT_COLOR} 
+                    />
+                </aside>
             </div>
         </article>
     );
-};
+}

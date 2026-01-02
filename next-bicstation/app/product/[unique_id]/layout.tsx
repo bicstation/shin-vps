@@ -1,26 +1,50 @@
 import React from "react";
 import Link from "next/link";
+// ✅ 共通カラー設定をインポート
+import { COLORS } from "@/constants";
 
 export default function ProductLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // 共通のカラーを使用（未定義時はデフォルト値）
+  const primaryColor = COLORS?.SITE_COLOR || '#007bff';
+  const bgColor = COLORS?.BACKGROUND || '#f4f7f9';
+
   return (
-    <div style={{ minHeight: "100vh" }}>
-      {/* 🚩 詳細ページ共通のバナーや告知をここに追加できる */}
-      <div style={{ background: '#eef6ff', padding: '10px', textAlign: 'center', fontSize: '0.8em', color: '#0056b3' }}>
+    <div style={{ minHeight: "100vh", backgroundColor: bgColor }}>
+      {/* 🚩 詳細ページ共通のバナー：背景色をプライマリカラーの透過色に変更 */}
+      <div style={{ 
+        background: `${primaryColor}10`, // プライマリカラーに透明度(10)を付与
+        padding: '10px', 
+        textAlign: 'center', 
+        fontSize: '0.85em', 
+        color: primaryColor,
+        borderBottom: `1px solid ${primaryColor}20`
+      }}>
         📢 期間限定：今なら公式サイトでクーポン配布中！
       </div>
       
       {/* ページ本体 */}
       {children}
       
-      {/* 🚩 詳細ページ下部に必ず出したい「お問い合わせ」などを共通化できる */}
-      <div style={{ maxWidth: '1100px', margin: '40px auto', padding: '20px', textAlign: 'center' }}>
-        <p style={{ color: '#888' }}>お探しのスペックが見つかりませんか？</p>
-        <Link href="/contact" style={{ color: '#007bff', fontWeight: 'bold' }}>
-          コンシェルジュに相談する
+      {/* 🚩 詳細ページ下部の共通セクション */}
+      <div style={{ 
+        maxWidth: '1100px', 
+        margin: '60px auto 40px', 
+        padding: '40px 20px', 
+        textAlign: 'center',
+        borderTop: '1px solid #eee'
+      }}>
+        <p style={{ color: '#888', marginBottom: '12px' }}>お探しのスペックが見つかりませんか？</p>
+        <Link href="/contact" style={{ 
+          color: primaryColor, 
+          fontWeight: 'bold',
+          fontSize: '1.1em',
+          textDecoration: 'none'
+        }}>
+          コンシェルジュに相談する →
         </Link>
       </div>
     </div>

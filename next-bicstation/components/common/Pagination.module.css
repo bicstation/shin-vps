@@ -1,0 +1,29 @@
+.pagination {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.pageButton {
+  padding: 10px 24px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #444;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.pageButton:hover {
+  border-color: #bbb;
+  background-color: #f9f9f9;
+}
+
+.pageInfo {
+  font-size: 0.95em;
+  color: #666;
+  font-weight: bold;
+}

@@ -183,6 +183,7 @@ services:
   wordpress-v2:
     image: wordpress:6-fpm-alpine
     container_name: wordpress-v2
+    user: "1000:1000"
     restart: always
     environment:
       WORDPRESS_DB_HOST: mariadb-v2

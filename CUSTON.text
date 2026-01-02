@@ -18,6 +18,7 @@ alias vps-rebuild='(cd $VPS_PATH && ./rebuild.sh)'
 
 # その他のコマンドも絶対パスやcd連携に強化
 alias vps-import='(cd $VPS_PATH && ./import_data.sh)'
+alias vps-rebuild='(cd $VPS_PATH && ./rebuild.sh)'
 alias vps-up='docker compose -f $VPS_PATH/docker-compose.work.yml up -d'
 alias vps-down='docker compose -f $VPS_PATH/docker-compose.work.yml down'
 alias vps-ps='docker compose -f $VPS_PATH/docker-compose.work.yml ps'

@@ -1,0 +1,9 @@
+/* app/globals.css の :root に追加、または styles/variables.css として作成 */
+:root {
+  --primary-color: #007bff;
+  --accent-color: #00c6ff;
+  --text-main: #222222;
+  --text-muted: #888888;
+  --bg-light: #f4f7f9;
+  --white: #ffffff;
+}

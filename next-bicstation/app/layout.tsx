@@ -1,12 +1,15 @@
-import type { Metadata } from "next"; // Viewportのインポートを削除
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-// 💡 コンポーネントのインポート（相対パスで確実に指定）
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
+// ✅ パス・エイリアス (@/) を使用してインポート
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
-// Inter フォントを定義
+// ✅ 共通カラー設定をインポート（constants.ts がある場合）
+// もし作成していない場合は、直接 "#007bff" と書いてもOKです
+import { COLORS } from "@/constants";
+
 const inter = Inter({ 
   subsets: ["latin"],
 });
@@ -51,14 +54,13 @@ export const metadata: Metadata = {
 
 /**
  * 💡 ビューポート設定
- * 型定義(Viewport)を使わずにエクスポートすることで、
- * バージョンによる型未定義エラーを回避します。
  */
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#007bff",
+  // ✅ 共通カラーから取得
+  themeColor: COLORS?.SITE_COLOR || "#007bff",
 };
 
 export default function RootLayout({
@@ -73,7 +75,8 @@ export default function RootLayout({
         style={{ 
           margin: 0, 
           padding: 0, 
-          backgroundColor: "#f4f7f9", 
+          // ✅ 背景色も共通設定に合わせると統一感が出ます
+          backgroundColor: COLORS?.BACKGROUND || "#f4f7f9", 
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column"
