@@ -5,7 +5,7 @@
 const IS_SERVER = typeof window === 'undefined';
 const API_BASE_URL = IS_SERVER 
   ? "http://django-v2:8000/api"  // Docker内部用URL
-  : "https://stg.tiper.live/api"; // ブラウザ用URL
+  : "https://tiper.live/api"; // ブラウザ用URL
 
 /**
  * アダルト商品一覧を取得 (ページング・フィルタ対応)
