@@ -1,24 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #111122; /* ベースの紺色 */
+  --foreground: #ededed;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 基本設定 */
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -35,8 +33,57 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* --- Tiper Live 専用カスタムコンポーネント --- */
+@layer components {
+  /* 共通：ページネーションボタン */
+  .btn-pagination {
+    @apply px-6 py-2 bg-[#1a1a2e] border border-[#3d3d66] text-white text-xs font-bold 
+           rounded transition-all duration-200 
+           hover:bg-[#e94560] hover:border-[#e94560] active:scale-95 disabled:opacity-50;
+  }
+
+  /* 共通：ニュースカード（トップページ用） */
+  .news-card {
+    @apply block p-5 bg-[#16162d] rounded-lg border-l-4 border-gray-800 
+           transition-all duration-300 hover:border-[#e94560] hover:translate-x-1;
+  }
+
+  /* 共通：セクション見出しの装飾ライン */
+  .section-title-line {
+    @apply flex justify-between items-end mb-8 border-l-4 border-[#00d1b2] pl-4;
+  }
+
+  /* 追加：カテゴリ一覧ページのヘッダー装飾 */
+  .category-header-box {
+    @apply flex flex-col md:flex-row justify-between items-end mb-10 border-l-4 border-[#e94560] pl-5 py-2;
+  }
+
+  /* 追加：ソートボタン（共通） */
+  .btn-sort {
+    @apply px-4 py-1 text-[11px] font-bold rounded-full border transition-all duration-200;
+  }
+  
+  /* アクティブなソート状態 */
+  .btn-sort-active {
+    @apply bg-[#e94560] border-[#e94560] text-white shadow-lg shadow-[#e94560]/20;
+  }
+
+  /* 非アクティブなソート状態 */
+  .btn-sort-inactive {
+    @apply border-gray-700 text-gray-500 hover:border-gray-400 hover:text-gray-300;
+  }
+}
+
+
+/* app/globals.css の @layer components 内に追記 */
+@layer components {
+  /* 静的ページのタイトル */
+  .static-title {
+    @apply text-3xl font-bold text-[#99e0ff] border-b-2 border-[#3d3d66] pb-3 mb-8 tracking-wider;
+  }
+
+  /* 静的ページのサブタイトル */
+  .static-subtitle {
+    @apply text-xl font-bold text-[#e94560] mt-12 mb-4 border-b border-[#3d3d66] pb-2;
   }
 }

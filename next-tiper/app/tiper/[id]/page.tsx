@@ -1,180 +1,189 @@
-// ファイル名: C:\dev\SHIN-VPS\next-tiper\app\tiper\[id]\page.tsx
-
-// 💡 Linter と TypeScript のチェックを無効化 (赤線対策)
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react/no-danger-to-js */
 // @ts-nocheck 
 
 import React from 'react';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { getAdultProducts } from '../../../lib/api'; 
+import ProductCard from '../../components/ProductCard';
+import styles from './page.module.css';
 
-// 💡 WordPress APIから取得する記事データの型定義 (簡略化)
-interface WpPost {
-    id: number;
-    slug: string; // 記事のパーマリンクに使用されるスラッグ
-    title: {
-        rendered: string; // HTMLタグを含むタイトル
-    };
-    date: string; // 記事の公開日時 (YYYY-MM-DDTHH:MM:SS)
-    content: {
-        rendered: string; // 記事本文のHTML
-    };
-    author: string; // 著者名を取得するロジックは後述
-    _embedded?: {
-        'wp:term'?: {
-            name: string;
-        }[][];
-        // 著者情報が含まれる場合
-        author?: {
-            name: string;
-        }[];
-    };
-}
-
-// Next.jsの動的ルートからパラメータを受け取るための型定義
-interface PostPageProps {
-    params: {
-        id: string; // URLから渡される記事スラッグ (例: 'post-slug', '%E3%83%86%E3%82%B9%E3%83%88')
-    };
-}
-
-// 💡 データを取得するサーバー関数 (WordPress API向け)
-async function fetchPostData(postSlug: string): Promise<WpPost | null> {
-    // Tiper.live のカスタム投稿タイプ 'tiper' をスラッグで検索
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?slug=${postSlug}&_embed&per_page=1`; 
-
+/**
+ * 💡 個別記事データ取得（カテゴリーIDを含めるため _embed を使用）
+ */
+async function fetchPostData(postSlug: string) {
+    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?slug=${postSlug}&_embed&per_page=1&_t=${Date.now()}`; 
     try {
         const res = await fetch(WP_API_URL, {
-            headers: {
-                'Host': 'stg.blog.tiper.live' 
-            },
-            next: { revalidate: 3600 } 
+            headers: { 'Host': 'localhost:8083', 'Accept': 'application/json' },
+            cache: 'no-store' 
         });
-
-        if (!res.ok) {
-            console.error(`WordPress API Error: ${res.status} ${res.statusText}`);
-            return null;
-        }
-        
-        const data: WpPost[] = await res.json();
-        
-        if (data.length === 0) {
-            return null;
-        }
-
-        const post = data[0];
-        const authorName = post._embedded?.author?.[0]?.name || '不明な著者';
-        return { ...post, author: authorName };
-
-    } catch (error) {
-        console.error("Failed to fetch post from WordPress API:", error);
-        return null; 
-    }
+        if (!res.ok) return null;
+        const data = await res.json();
+        return (Array.isArray(data) && data.length > 0) ? data[0] : null;
+    } catch (error) { return null; }
 }
 
+/**
+ * 💡 サイドバー用：同じカテゴリーの人気・最新記事を取得
+ */
+async function fetchRelatedCategoryPosts(categories: number[], excludeId: number) {
+    // カテゴリーが指定されている場合はそのカテゴリーを優先、なければ最新
+    const categoryQuery = categories && categories.length > 0 ? `&categories=${categories.join(',')}` : '';
+    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?_embed&per_page=5&exclude=${excludeId}${categoryQuery}`;
+    
+    try {
+        const res = await fetch(WP_API_URL, {
+            headers: { 'Host': 'localhost:8083' },
+            cache: 'no-store'
+        });
+        return res.ok ? await res.json() : [];
+    } catch { return []; }
+}
 
-// ===============================================
-// 💡 追加: generateStaticParams 関数 
-// ビルド時にアクセスする全ての記事スラッグを取得し、静的生成します
-// ===============================================
-export async function generateStaticParams() {
-    // 記事スラッグのみを効率的に取得 (tiper_post)
-    const WP_SLUGS_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?_fields=slug&per_page=100`; 
+/**
+ * 💡 前後の記事を取得
+ */
+async function fetchNeighborPosts(currentDate: string) {
+    const headers = { 'Host': 'localhost:8083', 'Accept': 'application/json' };
+    const nextUrl = `http://nginx-wp-v2/wp-json/wp/v2/tiper?after=${currentDate}&order=asc&per_page=1`;
+    const prevUrl = `http://nginx-wp-v2/wp-json/wp/v2/tiper?before=${currentDate}&order=desc&per_page=1`;
 
     try {
-        const res = await fetch(WP_SLUGS_API_URL, {
-            headers: {
-                'Host': 'stg.blog.tiper.live' 
-            },
-            // ビルド時に実行されるため、キャッシュなしでOK
-            cache: 'no-store', 
-        });
-        
-        if (!res.ok) {
-            console.error(`generateStaticParams API Error: ${res.status} ${res.statusText}`);
-            return [];
-        }
-
-        const slugs: { slug: string }[] = await res.json();
-        
-        // 戻り値の形式を Next.js の要件 { id: string } に変換
-        return slugs.map((post) => ({
-            // URLパラメータ名が [id] なので、キーは id にする
-            id: post.slug, 
-        }));
-
-    } catch (error) {
-        console.error("Failed to fetch slugs for generateStaticParams:", error);
-        return [];
-    }
+        const [nextRes, prevRes] = await Promise.all([
+            fetch(nextUrl, { headers, cache: 'no-store' }),
+            fetch(prevUrl, { headers, cache: 'no-store' })
+        ]);
+        const [nextData, prevData] = await Promise.all([
+            nextRes.ok ? nextRes.json() : [],
+            prevRes.ok ? prevRes.json() : []
+        ]);
+        return { next: nextData[0] || null, prev: prevData[0] || null };
+    } catch { return { next: null, prev: null }; }
 }
 
-
-// ユーティリティ関数: HTMLエンティティをデコード (省略なし)
 const decodeHtml = (html: string) => {
-    const map: { [key: string]: string } = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
-    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (match) => map[match] || match);
+    if (!html) return '';
+    const map = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
+    return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (m) => map[m] || m);
 };
 
-// ユーティリティ関数: 日付フォーマット (省略なし)
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    }).replace(/\//g, '/');
-};
-
-
-// Next.js Server Component (async function)
-export default async function PostPage({ params }: PostPageProps) {
-    
-    // 🚨 修正点: URLから取得したエンコード済みのID (スラッグ) をデコードする
+export default async function PostPage({ params }: { params: { id: string } }) {
     const postSlug = decodeURIComponent(params.id);
-    
-    // データを取得 (デコードされたスラッグを使用)
     const post = await fetchPostData(postSlug);
+    if (!post) notFound();
 
-    // 記事が見つからなかった場合は 404 ページを表示
-    if (!post) {
-        notFound(); 
-    }
-    
+    // カテゴリーIDを抽出
+    const categoryIds = post.categories || [];
+    // 💡 並列フェッチ
+    const [neighbors, relatedPosts, productData] = await Promise.all([
+        fetchNeighborPosts(post.date),
+        fetchRelatedCategoryPosts(categoryIds, post.id),
+        getAdultProducts({ limit: 4 })
+    ]);
+
     const postTitle = decodeHtml(post.title.rendered);
-    const postDate = formatDate(post.date);
+    const featuredImageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+    const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || "MAGAZINE";
 
     return (
-        <div style={{ padding: '40px 80px', maxWidth: '1000px', margin: '0 auto' }}>
-
-            {/* 1. 記事タイトルとメタ情報 */}
-            <h1 style={{ 
-                color: '#e94560', 
-                fontSize: '2.5em', 
-                borderBottom: '3px solid #3d3d66', 
-                paddingBottom: '10px' 
-            }}>
-                {postTitle}
-            </h1>
-            <div style={{ color: '#aaa', fontSize: '0.9em', marginBottom: '30px' }}>
-                <span>著者: {post.author}</span>
-                <span style={{ marginLeft: '20px' }}>公開日: {postDate}</span>
-                {/* スラッグを表示 */}
-                <span style={{ marginLeft: '20px', color: '#99e0ff' }}>スラッグ: {post.slug}</span>
-            </div>
-
-            {/* 2. 記事コンテンツ */}
-            {/* WordPressの content.rendered には記事本文の HTML が含まれる */}
-            <div 
-                style={{ fontSize: '1.05em', lineHeight: '1.7', color: '#ccc' }}
-                dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
-            />
+        <div className={styles.container}>
             
-            {/* 3. コメントや関連情報のプレースホルダー */}
-            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #3d3d66' }}>
-                <h3 style={{ color: '#99e0ff' }}>コメントセクション (仮)</h3>
-                <p style={{ color: '#ccc' }}>この下にコメントフォームや関連記事が表示されます。</p>
+            {/* 1. ヒーローセクション */}
+            <header className={styles.header}>
+                <div className={styles.decoration} />
+                <div className={styles.headerContent}>
+                    <Link href="/" className={styles.backLink}><span>«</span> BACK TO LIST</Link>
+                    <div className={styles.categoryBadge}>{categoryName}</div>
+                    <h1 className={styles.title}>{postTitle}</h1>
+                    <div className={styles.metaInfo}>
+                        <div className={styles.author}>
+                            <img src={post._embedded?.author?.[0]?.avatar_urls?.['48'] || ''} className={styles.authorAvatar} alt="" />
+                            <span>{post._embedded?.author?.[0]?.name || 'Admin'}</span>
+                        </div>
+                        <div className={styles.divider} />
+                        <span>{new Date(post.date).toLocaleDateString('ja-JP')}</span>
+                    </div>
+                </div>
+            </header>
+
+            {featuredImageUrl && (
+                <div className={styles.featuredImageWrapper}>
+                    <div className={styles.featuredImage}><img src={featuredImageUrl} alt={postTitle} /></div>
+                </div>
+            )}
+
+            <div className={styles.mainLayout}>
+                <article>
+                    <div className={styles.tiperBody} dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+
+                    {/* 前後ナビゲーション */}
+                    <nav className={styles.postNavigation}>
+                        {neighbors.prev ? (
+                            <Link href={`/tiper/${neighbors.prev.slug}`} className={styles.navCard}>
+                                <span className={styles.navLabel}>PREVIOUS</span>
+                                <span className={styles.navTitle}>{decodeHtml(neighbors.prev.title.rendered)}</span>
+                            </Link>
+                        ) : <div />}
+                        {neighbors.next ? (
+                            <Link href={`/tiper/${neighbors.next.slug}`} className={`${styles.navCard} ${styles.navNext}`}>
+                                <span className={styles.navLabel}>NEXT</span>
+                                <span className={styles.navTitle}>{decodeHtml(neighbors.next.title.rendered)}</span>
+                            </Link>
+                        ) : <div />}
+                    </nav>
+                </article>
+
+                {/* 右側：サイドバー */}
+                <aside className={styles.sidebar}>
+                    <div className={styles.sidebarSection}>
+                        <h3 className={styles.sidebarTitle}>
+                            RELATED <small>in {categoryName}</small>
+                        </h3>
+                        <div className={styles.latestList}>
+                            {relatedPosts.map((rp) => (
+                                <div key={rp.id} className={styles.latestItem}>
+                                    <Link href={`/tiper/${rp.slug}`} className={styles.latestLink}>
+                                        <span className={styles.sidebarCategoryBadge}>
+                                            {rp._embedded?.['wp:term']?.[0]?.[0]?.name}
+                                        </span>
+                                        <span className={styles.latestText}>{decodeHtml(rp.title.rendered)}</span>
+                                        <span className={styles.latestDate}>{new Date(rp.date).toLocaleDateString('ja-JP')}</span>
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className={styles.sidebarWidget}>
+                        <h3 style={{ fontSize: '0.9em', color: '#fff', marginBottom: '20px', borderLeft: '3px solid #00d1b2', paddingLeft: '12px' }}>SHARE</h3>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            {['X', 'FB', 'LINE'].map(sns => (
+                                <div key={sns} style={{ flex: 1, textAlign: 'center', padding: '10px', backgroundColor: '#1f1f3a', border: '1px solid #333', borderRadius: '8px', fontSize: '0.75em', fontWeight: 'bold' }}>{sns}</div>
+                            ))}
+                        </div>
+                    </div>
+                </aside>
             </div>
 
+            {/* 関連商品セクション */}
+            {productData?.results?.length > 0 && (
+                <section className={styles.relatedSection}>
+                    <div className={styles.relatedContainer}>
+                        <div className={styles.relatedHeader}>
+                            <div>
+                                <h2 style={{ fontSize: '2em', fontWeight: '800', color: '#fff', marginBottom: '10px' }}>Recommended</h2>
+                                <p style={{ color: '#888' }}>この記事を読んだ人におすすめの作品</p>
+                            </div>
+                            <Link href="/" style={{ color: '#00d1b2', fontSize: '0.8em', textDecoration: 'none', fontWeight: 'bold' }}>VIEW ALL →</Link>
+                        </div>
+                        <div className={styles.relatedGrid}>
+                            {productData.results.map((p) => <ProductCard key={p.id} product={p} />)}
+                        </div>
+                    </div>
+                </section>
+            )}
         </div>
     );
-};
+}

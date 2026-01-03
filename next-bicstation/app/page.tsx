@@ -10,7 +10,7 @@ import Link from 'next/link';
 import ProductCard from '@/components/product/ProductCard';
 import Sidebar from '@/components/layout/Sidebar';
 import Pagination from '@/components/common/Pagination';
-import { fetchPostList, fetchPCProducts } from '@/lib/api'; // ✅ APIをインポート
+import { fetchPostList, fetchPCProducts } from '@/lib/api'; 
 import styles from './MainPage.module.css';
 
 // --- ユーティリティ ---
@@ -29,11 +29,14 @@ export default async function Page(props: { searchParams: Promise<{ offset?: str
     const currentOffset = parseInt(searchParams.offset || '0', 10);
     const limit = 10;
 
-    // ✅ 分離したAPI関数を使用
-    const [posts, pcData] = await Promise.all([
+    // ✅ 両方のAPIを並列取得 (戻り値の形式に合わせて修正)
+    const [wpData, pcData] = await Promise.all([
         fetchPostList(5),
         fetchPCProducts('Lenovo', currentOffset, limit)
     ]);
+
+    const posts = wpData.results || [];
+    const wpDebugUrl = wpData.debugUrl || 'URL not found';
 
     return (
         <div className={styles.wrapper}>
@@ -42,11 +45,19 @@ export default async function Page(props: { searchParams: Promise<{ offset?: str
 
             <main className={styles.main}>
                 
-                {/* 🛠️ デバッグパネル */}
-                <div className={styles.debugPanel}>
-                    <strong>API Status:</strong> {pcData.results.length > 0 ? `✅ OK (${pcData.count} items)` : '❌ Failed'} | 
-                    <strong> WP Posts:</strong> {posts.length > 0 ? `✅ ${posts.length} items` : '⚠️ No data'} |
-                    <strong> URL:</strong> <code>{pcData.debugUrl}</code>
+                {/* 🛠️ デバッグパネル (DjangoとWordPressの両方のURLを表示) */}
+                <div className={styles.debugPanel} style={{ backgroundColor: '#f0f4f8', padding: '15px', borderRadius: '8px', fontSize: '12px', marginBottom: '20px', border: '1px solid #ccc', lineHeight: '1.6' }}>
+                    <div>
+                        <strong style={{ color: '#2b6cb0' }}>🛒 Django API:</strong> {pcData.results.length > 0 ? `✅ OK (${pcData.count} items)` : '❌ Failed'}
+                        <br />
+                        <code> {pcData.debugUrl}</code>
+                    </div>
+                    <hr style={{ margin: '10px 0', border: '0', borderTop: '1px solid #ddd' }} />
+                    <div>
+                        <strong style={{ color: '#c53030' }}>📝 WP Status:</strong> {posts.length > 0 ? `✅ ${posts.length} items` : '⚠️ No data'}
+                        <br />
+                        <strong style={{ color: '#c53030' }}>🔗 WP URL:</strong> <code style={{ color: '#d63384', fontWeight: 'bold' }}>{wpDebugUrl}</code>
+                    </div>
                 </div>
 
                 {/* WordPress お知らせセクション */}
@@ -56,7 +67,12 @@ export default async function Page(props: { searchParams: Promise<{ offset?: str
                     </h2>
                     <div className={styles.newsContainer}>
                         {posts.length === 0 ? (
-                            <p style={{ padding: '20px', color: '#999' }}>現在、新しいお知らせはありません。</p>
+                            <div style={{ padding: '20px', color: '#666', background: '#fffbe6', border: '1px dashed #ffe58f', borderRadius: '8px' }}>
+                                <p style={{ fontWeight: 'bold', color: '#856404' }}>現在、表示できるお知らせはありません。</p>
+                                <p style={{ fontSize: '12px', marginTop: '10px' }}>
+                                    表示されている <strong>WP URL</strong> をコピーしてブラウザで直接開き、データが出るか確認してください。
+                                </p>
+                            </div>
                         ) : (
                             posts.map((post) => (
                                 <Link 
@@ -87,14 +103,12 @@ export default async function Page(props: { searchParams: Promise<{ offset?: str
                         </div>
                     ) : (
                         <>
-                            {/* 商品グリッド */}
                             <div className={styles.productGrid}>
                                 {pcData.results.map((product) => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
 
-                            {/* ページネーションパーツ */}
                             <Pagination 
                                 currentOffset={currentOffset}
                                 limit={limit}

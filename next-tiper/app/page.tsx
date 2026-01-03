@@ -5,159 +5,125 @@
 import React from 'react';
 import Link from 'next/link';
 import ProductCard from './components/ProductCard'; 
-import { getAdultProducts } from '../lib/api'; 
+import { getAdultProducts, fetchPostList } from '../lib/api'; 
 
 export const dynamic = 'force-dynamic';
 
-// --- 型定義 (WordPress) ---
-interface WpPost {
-  id: number;
-  slug: string;
-  title: { rendered: string };
-  date: string;
-  _embedded?: {
-    'wp:term'?: { name: string }[][];
-  };
-}
-
-// WordPress 記事取得関数
-async function getLatestPosts(): Promise<WpPost[]> {
-  const WP_API_URL = "http://nginx-wp-v2/wp-json/wp/v2/tiper?_embed&per_page=5";
-  try {
-    const res = await fetch(WP_API_URL, {
-      headers: { 'Host': 'stg.blog.tiper.live' },
-      cache: 'no-store' 
-    });
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (error) {
-    console.error("WordPress API Error:", error);
-    return [];
-  }
-}
-
-// --- ユーティリティ ---
+// --- ユーティリティ関数 ---
 const decodeHtml = (html: string) => {
+  if (!html) return '';
   const map: { [key: string]: string } = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
-  return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (match) => map[match] || map[match] || match);
+  return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (match) => map[match] || match);
 };
 
 const formatDate = (dateString: string) => {
+  if (!dateString) return '';
   return new Date(dateString).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
 };
 
-// ====================================================
-// TOPページコンポーネント
-// ====================================================
 export default async function Home({ searchParams }: { searchParams: { page?: string } }) {
-  // ページング設定
+  // 💡 ページネーション計算
   const currentPage = Number(searchParams.page) || 1;
   const limit = 20;
   const offset = (currentPage - 1) * limit;
 
+  // 💡 データフェッチ (最新順をリクエスト)
   const [latestPosts, productData] = await Promise.all([
-    getLatestPosts(),
-    getAdultProducts({ limit, offset })
+    fetchPostList(5).catch(() => []), 
+    getAdultProducts({ limit, offset, ordering: '-id' }).catch(() => ({ results: [], count: 0 }))
   ]);
 
   const products = productData?.results || [];
   const totalCount = productData?.count || 0;
   const totalPages = Math.ceil(totalCount / limit);
-  const basePath = process.env.NEXT_PUBLIC_BASE_TIPER || '';
-
-  // --- スタイル定義 ---
-  const sectionStyle: React.CSSProperties = {
-    padding: '40px 5%',
-    backgroundColor: '#111122',
-    borderBottom: '1px solid #3d3d66',
-    color: 'white',
-  };
-
-  const titleStyle: React.CSSProperties = {
-    color: '#e94560',
-    fontSize: '2em',
-    borderBottom: '2px solid #3d3d66',
-    paddingBottom: '10px',
-    marginBottom: '30px',
-  };
-
-  const paginationButtonStyle: React.CSSProperties = {
-    padding: '10px 20px',
-    backgroundColor: '#1f1f3a',
-    color: 'white',
-    borderRadius: '5px',
-    textDecoration: 'none',
-    border: '1px solid #3d3d66'
-  };
 
   return (
-    <div style={{ backgroundColor: '#111122', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+    <div className="pb-16">
       
       {/* 1. ヒーローセクション */}
-      <section style={{...sectionStyle, textAlign: 'center', backgroundColor: '#1f1f3a', borderBottomColor: '#e94560'}}>
-        <h1 style={{ color: 'white', fontSize: '3em', margin: '0 0 10px 0' }}>Tiper Live</h1>
-        <p style={{ color: '#99e0ff', fontSize: '1.2em', marginBottom: '30px' }}>
-          Django V2 API Data Integration
+      <section className="py-24 px-[5%] text-center bg-gradient-to-b from-[#1f1f3a] to-[#111122] border-b border-gray-900">
+        <h1 className="text-5xl md:text-7xl font-black tracking-[0.2em] text-white uppercase drop-shadow-2xl">
+          TIPER LIVE
+        </h1>
+        <p className="text-[#e94560] mt-6 text-lg md:text-2xl font-bold tracking-widest">
+          Premium Media & Django Integration
         </p>
       </section>
 
-      {/* 2. Django 商品データセクション (ページング付き) */}
-      <section style={sectionStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{...titleStyle, borderBottom: 'none', marginBottom: 0, color: '#00d1b2'}}>🔥 最新コンテンツ ({totalCount}件)</h2>
-          <div style={{ color: '#aaa' }}>Page {currentPage} / {totalPages}</div>
+      {/* 2. Django 商品セクション */}
+      <section className="py-12 px-[5%]">
+        <div className="section-title-line">
+          <div>
+            <h2 className="text-white text-2xl md:text-3xl font-bold">🔥 最新コンテンツ</h2>
+            <p className="text-gray-500 text-sm mt-1">新着アイテムを毎日更新中</p>
+          </div>
+          <span className="text-gray-600 text-sm font-mono">{totalCount} ITEMS</span>
         </div>
 
-        {products.length > 0 ? (
-          <>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
-              gap: '20px' 
-            }}>
-              {products.map((product: any) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+        {/* 商品グリッド */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {products.length > 0 ? (
+            products.map((product: any) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          ) : (
+            <div className="col-span-full py-32 text-center text-gray-700 font-bold">
+              NO PRODUCTS FOUND.
+            </div>
+          )}
+        </div>
+
+        {/* ページネーション (globals.css の btn-pagination を使用) */}
+        {totalPages > 1 && (
+          <div className="mt-16 flex justify-center items-center gap-8">
+            {currentPage > 1 && (
+              <Link href={`?page=${currentPage - 1}`} className="btn-pagination">
+                PREV
+              </Link>
+            )}
+            
+            <div className="text-xl font-black tracking-widest">
+              <span className="text-[#e94560]">{currentPage}</span>
+              <span className="mx-3 text-gray-800">/</span>
+              <span className="text-gray-600">{totalPages}</span>
             </div>
 
-            {/* ページングナビゲーション */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '40px' }}>
-              {currentPage > 1 && (
-                <Link href={`${basePath}/?page=${currentPage - 1}`} style={paginationButtonStyle}>← 前のページ</Link>
-              )}
-              {currentPage < totalPages && (
-                <Link href={`${basePath}/?page=${currentPage + 1}`} style={{...paginationButtonStyle, backgroundColor: '#e94560', border: 'none'}}>次のページ →</Link>
-              )}
-            </div>
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px', background: '#1a1a2e', borderRadius: '10px' }}>
-            <p style={{ color: '#ccc' }}>データが取得できませんでした。</p>
+            {currentPage < totalPages && (
+              <Link href={`?page=${currentPage + 1}`} className="btn-pagination">
+                NEXT
+              </Link>
+            )}
           </div>
         )}
       </section>
 
       {/* 3. WordPress ニュースフィード */}
-      <section style={sectionStyle}>
-        <h2 style={titleStyle}>🆕 最新ブログ記事</h2>
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {latestPosts.map(post => {
-            const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || '未分類';
-            return (
-              <li key={post.id} style={{ padding: '15px 0', borderBottom: '1px solid #3d3d66', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Link href={`/tiper/${decodeURIComponent(post.slug)}`} style={{ color: 'white', textDecoration: 'none', fontSize: '1.1em' }}>
-                  {decodeHtml(post.title.rendered)}
-                </Link>
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ color: '#99e0ff', fontSize: '0.8em', display: 'block' }}>{categoryName}</span>
-                  <span style={{ color: '#aaa', fontSize: '0.8em' }}>{formatDate(post.date)}</span>
+      <section className="py-20 px-[5%] bg-[#0c0c1a] border-t border-gray-900">
+        <h2 className="text-[#e94560] mb-12 text-3xl font-black text-center tracking-[0.3em] uppercase">
+          Tiper News
+        </h2>
+        
+        <div className="max-w-4xl mx-auto space-y-4">
+          {Array.isArray(latestPosts) && latestPosts.length > 0 ? (
+            latestPosts.map((post) => (
+              <Link 
+                key={post.id} 
+                href={`/tiper/${post.slug}`} 
+                className="news-card"
+              >
+                <div className="font-bold text-xl text-gray-100 mb-2 group-hover:text-[#e94560]">
+                  {decodeHtml(post.title?.rendered)}
                 </div>
-              </li>
-            );
-          })}
-        </ul>
+                <div className="text-gray-600 text-sm flex items-center gap-2">
+                  <span className="text-[#e94560]">DATE:</span> {formatDate(post.date)}
+                </div>
+              </Link>
+            ))
+          ) : (
+            <p className="text-center text-gray-700 italic">No announcements at the moment.</p>
+          )}
+        </div>
       </section>
-
     </div>
   );
 }

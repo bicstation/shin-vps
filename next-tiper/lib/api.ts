@@ -1,42 +1,37 @@
 /**
  * =====================================================================
  * 💡 SHIN-VPS API サービス層 (lib/api.ts) - tiper.live 職場開発環境版
+ * アダルト商品・ジャンル・WPカスタム投稿(tiper)の全コンテンツ対応
  * =====================================================================
  */
 
 const IS_SERVER = typeof window === 'undefined';
 
 /**
- * 🔗 Django API ベースURL (アダルト商品用)
+ * 🔗 WordPress / Django 設定取得
+ * 💡 修正ポイント: 成功した bicstation のロジックをベースに、
+ * Hostを localhost:8083 に固定してリダイレクトを防止。
  */
-const getDjangoBaseUrl = () => {
-  if (IS_SERVER) return 'http://django-v2:8000';
-  
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:8083'; // 職場ローカル外線
-  }
-  return 'https://tiper.live'; // 本番
+const getApiConfig = () => {
+    if (IS_SERVER) {
+        return {
+            wpBase: 'http://nginx-wp-v2', // 内線通信
+            djangoBase: 'http://django-v2:8000',
+            hostHeader: 'localhost:8083' // WPのWP_HOME設定と一致させる
+        };
+    }
+    
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    return {
+        wpBase: isLocal ? 'http://localhost:8083/tiper' : 'https://tiper.live/tiper',
+        djangoBase: isLocal ? 'http://localhost:8083' : 'https://tiper.live',
+        hostHeader: 'localhost:8083'
+    };
 };
-
-/**
- * 🔗 WordPress API ベースURL
- * 💡 修正ポイント: tiper.liveではブログパスが /tiper となっている仕様を反映
- */
-const getWpBaseUrl = () => {
-  if (IS_SERVER) return 'http://nginx-wp-v2/tiper'; // 内線
-  
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:8083/tiper'; // 外線
-  }
-  return 'https://tiper.live/tiper';
-};
-
-const API_BASE_URL = `${getDjangoBaseUrl()}/api`;
-const WP_BASE_URL = `${getWpBaseUrl()}/wp-json/wp/v2`;
 
 /**
  * =====================================================================
- * 🔞 [Django] アダルト商品 API
+ * 🔞 [Django] アダルト商品 API (元のロジックを維持)
  * =====================================================================
  */
 
@@ -44,110 +39,145 @@ const WP_BASE_URL = `${getWpBaseUrl()}/wp-json/wp/v2`;
  * 商品一覧取得
  */
 export async function getAdultProducts(params?: { limit?: number; offset?: number; genre?: string }) {
-  const query = new URLSearchParams();
-  if (params?.limit) query.append('limit', params.limit.toString());
-  if (params?.offset) query.append('offset', params.offset.toString());
-  if (params?.genre) query.append('genres', params.genre);
+    const { djangoBase } = getApiConfig();
+    const query = new URLSearchParams();
+    if (params?.limit) query.append('limit', params.limit.toString());
+    if (params?.offset) query.append('offset', params.offset.toString());
+    if (params?.genre) query.append('genres', params.genre);
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/adults/?${query.toString()}`, {
-      cache: 'no-store',
-      signal: AbortSignal.timeout(5000),
-      headers: { 'Host': 'localhost' } // Traefik振り分け用
-    });
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    return await res.json();
-  } catch (error: any) {
-    console.error("Failed to fetch adult products:", error?.message);
-    return { results: [], count: 0 }; 
-  }
+    const url = `${djangoBase}/api/adults/?${query.toString()}`;
+
+    try {
+        const res = await fetch(url, {
+            cache: 'no-store',
+            headers: { 'Host': 'localhost' } // Django側は標準的なHostを期待
+        });
+        if (!res.ok) throw new Error(`Status: ${res.status}`);
+        return await res.json();
+    } catch (error: any) {
+        console.error("[Django API Error]", error?.message);
+        return { results: [], count: 0 };
+    }
 }
 
 /**
- * 詳細取得
+ * 商品詳細取得
  */
 export async function getAdultProductById(id: string) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/adults/${id}/`, {
-      cache: 'no-store',
-      signal: AbortSignal.timeout(5000),
-      headers: { 'Host': 'localhost' }
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (error: any) {
-    return null;
-  }
-}
-
-/**
- * メーカー別取得
- */
-export async function getAdultProductsByMaker(makerId: string, limit: number = 4) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/adults/?maker=${makerId}`, {
-      cache: 'no-store',
-      headers: { 'Host': 'localhost' }
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results ? data.results.slice(0, limit) : [];
-  } catch (error) {
-    return [];
-  }
+    const { djangoBase } = getApiConfig();
+    try {
+        const res = await fetch(`${djangoBase}/api/adults/${id}/`, {
+            cache: 'no-store',
+            headers: { 'Host': 'localhost' }
+        });
+        return res.ok ? await res.json() : null;
+    } catch (error) {
+        return null;
+    }
 }
 
 /**
  * ジャンル一覧取得
  */
 export async function getGenres() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/genres/`, {
-      cache: 'no-store',
-      signal: AbortSignal.timeout(5000),
-      headers: { 'Host': 'localhost' }
-    });
-    if (!res.ok) throw new Error('Failed to fetch genres');
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data.results || []);
-  } catch (error: any) {
-    return [];
-  }
+    const { djangoBase } = getApiConfig();
+    try {
+        const res = await fetch(`${djangoBase}/api/genres/`, {
+            cache: 'no-store',
+            headers: { 'Host': 'localhost' }
+        });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.results || []);
+    } catch (error) {
+        return [];
+    }
 }
 
 /**
  * =====================================================================
- * 📝 [WordPress] 記事取得 API (tiper用)
+ * 📝 [WordPress] 記事取得 API (tiper カスタム投稿専用)
  * =====================================================================
  */
 
 /**
- * 記事一覧取得
- * ※ tiper側がカスタム投稿ではなく標準の 'posts' を使う場合の例
+ * 💡 記事一覧取得 (カスタム投稿 'tiper' を使用するように変更)
  */
 export async function fetchPostList(perPage = 5) {
-  try {
-    const res = await fetch(`${WP_BASE_URL}/posts?_embed&per_page=${perPage}`, {
-      headers: { 'Host': 'localhost' },
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(5000)
-    });
-    return res.ok ? await res.json() : [];
-  } catch (error) {
-    return [];
-  }
+    const { wpBase, hostHeader } = getApiConfig();
+    // 💡 エンドポイントを /posts から /tiper に変更
+    const url = `${wpBase}/wp-json/wp/v2/tiper?_embed&per_page=${perPage}&_t=${Date.now()}`;
+
+    try {
+        const res = await fetch(url, {
+            headers: { 
+                'Host': hostHeader,
+                'Accept': 'application/json' 
+            },
+            // キャッシュによる混同を防ぐため、開発環境では revalidate ではなく no-store を推奨
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            console.error(`[WP API Error] Status: ${res.status}`);
+            return [];
+        }
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error("[WP API Error]", error);
+        return [];
+    }
 }
 
+/**
+ * 💡 個別記事取得 (カスタム投稿 'tiper' を使用するように変更)
+ */
 export async function fetchPostData(slug: string) {
-  try {
-    const res = await fetch(`${WP_BASE_URL}/posts?slug=${slug}&_embed`, {
-      headers: { 'Host': 'localhost' },
-      next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(5000)
-    });
-    const posts = await res.json();
-    return Array.isArray(posts) && posts.length > 0 ? posts[0] : null;
-  } catch (error) {
-    return null;
-  }
+    const { wpBase, hostHeader } = getApiConfig();
+    const cleanSlug = encodeURIComponent(decodeURIComponent(slug));
+    // 💡 エンドポイントを /posts から /tiper に変更
+    const url = `${wpBase}/wp-json/wp/v2/tiper?slug=${cleanSlug}&_embed&_t=${Date.now()}`;
+
+    try {
+        const res = await fetch(url, {
+            headers: { 
+                'Host': hostHeader,
+                'Accept': 'application/json' 
+            },
+            cache: 'no-store'
+        });
+
+        if (!res.ok) return null;
+        const posts = await res.json();
+        
+        // tiper 投稿であることを確認し、配列の最初の1件を返す
+        return Array.isArray(posts) && posts.length > 0 ? posts[0] : null;
+    } catch (error) {
+        console.error("[WP API Error]", error);
+        return null;
+    }
+}
+
+/**
+ * =====================================================================
+ * 🛠 追加: ビルドエラー解消用 (既存ロジックには影響しません)
+ * =====================================================================
+ */
+export async function getAdultProductsByMaker(maker: string, params?: { limit?: number; offset?: number }) {
+    const { djangoBase } = getApiConfig();
+    const query = new URLSearchParams();
+    query.append('maker', maker);
+    if (params?.limit) query.append('limit', params.limit.toString());
+    if (params?.offset) query.append('offset', params.offset.toString());
+
+    try {
+        const res = await fetch(`${djangoBase}/api/adults/?${query.toString()}`, {
+            cache: 'no-store',
+            headers: { 'Host': 'localhost' }
+        });
+        return res.ok ? await res.json() : { results: [], count: 0 };
+    } catch (error) {
+        return { results: [], count: 0 };
+    }
 }

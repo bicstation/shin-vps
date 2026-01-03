@@ -4,14 +4,11 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { getAdultProductById, getAdultProductsByMaker } from '../../../lib/api';
-import { constructMetadata } from '../../../lib/metadata'; // SEO用ユーティリティ
+import { constructMetadata } from '../../../lib/metadata'; 
 import ProductGallery from '../../components/ProductGallery';
-
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_TIPER || '';
 
 /**
  * 💡 SEO対策: 動的メタデータの生成
- * ページごとに異なるタイトル、ディスクリプション、OGP画像を生成します
  */
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const product = await getAdultProductById(params.id);
@@ -21,15 +18,17 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 
   return constructMetadata(
-    product.title,
+    product.title || "商品詳細",
     `${product.maker?.name || '人気メーカー'}の作品: ${product.title}。詳細・価格情報はこちら。`,
     product.image_url_list?.[0]
   );
 }
 
 export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+  // 商品データの取得
   const product = await getAdultProductById(params.id);
 
+  // 商品が見つからない場合のエラーハンドリング
   if (!product) {
     return (
       <div style={{ backgroundColor: '#111122', minHeight: '80vh', color: 'white', padding: '50px', textAlign: 'center' }}>
@@ -41,14 +40,25 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
     );
   }
 
+  // 💡 画像リストの取得と整形（確実に配列であることを保証する）
+  const imageList = Array.isArray(product.image_url_list) ? product.image_url_list : [];
+
   // 同じメーカーの関連商品を取得
-  const relatedProducts = product.maker ? await getAdultProductsByMaker(product.maker.id, 4) : [];
-  const imageList = product.image_url_list || [];
+  let relatedProducts = [];
+  try {
+    relatedProducts = product.maker ? await getAdultProductsByMaker(product.maker.id, 4) : [];
+    // APIの返却形式が { results: [] } の場合に対応
+    if (!Array.isArray(relatedProducts) && relatedProducts?.results) {
+        relatedProducts = relatedProducts.results;
+    }
+  } catch (e) {
+    relatedProducts = [];
+  }
 
   return (
     <div style={{ backgroundColor: '#111122', minHeight: '100vh', color: 'white' }}>
       
-      {/* ページ内ナビゲーション（LayoutのHeaderとは別） */}
+      {/* ページ内ナビゲーション */}
       <nav style={{ padding: '15px 5%', borderBottom: '1px solid #3d3d66', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8em' }}>
         <Link href="/" style={{ color: '#00d1b2', textDecoration: 'none' }}>
           ← 商品一覧へ戻る
@@ -59,14 +69,22 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px', alignItems: 'start' }}>
           
-          {/* 左側：画像ギャラリーコンポーネント */}
-          <ProductGallery images={imageList} title={product.title} />
+          {/* 左側：画像ギャラリーコンポーネント (imageListを渡す) */}
+          <section>
+            {imageList.length > 0 ? (
+                <ProductGallery images={imageList} title={product.title} />
+            ) : (
+                <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#1f1f3a', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px' }}>
+                    <p style={{ color: '#666' }}>No Images Available</p>
+                </div>
+            )}
+          </section>
 
           {/* 右側：詳細情報・スペック */}
           <section>
             <div style={{ marginBottom: '15px' }}>
               <span style={{ backgroundColor: '#e94560', color: 'white', padding: '4px 12px', borderRadius: '4px', fontSize: '0.7em', fontWeight: 'bold' }}>
-                {product.api_source}
+                {product.api_source || 'PREMIUM'}
               </span>
             </div>
             
@@ -75,7 +93,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             </h1>
             
             <div style={{ fontSize: '2.2em', color: '#00d1b2', fontWeight: 'bold', marginBottom: '30px', display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-              ¥{product.price?.toLocaleString() || '---'}
+              ¥{(product.price || 0).toLocaleString()}
               <span style={{ fontSize: '0.4em', color: '#aaa', fontWeight: 'normal' }}>税込</span>
             </div>
 
@@ -127,7 +145,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         </div>
 
         {/* 💡 おすすめセクション (同一メーカー作品) */}
-        {relatedProducts.length > 0 && (
+        {relatedProducts && relatedProducts.length > 0 && (
           <section style={{ marginTop: '100px', borderTop: '2px solid #3d3d66', paddingTop: '50px' }}>
             <h2 style={{ fontSize: '1.5em', marginBottom: '35px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ color: '#e94560', fontSize: '1.2em' }}>◆</span> このメーカーの注目作品
@@ -140,7 +158,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
                       <img src={p.image_url_list?.[0] || '/no-image.png'} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div style={{ padding: '15px' }}>
-                      <p style={{ fontSize: '0.75em', color: '#00d1b2', marginBottom: '8px', fontWeight: 'bold' }}>{p.maker?.name}</p>
+                      <p style={{ fontSize: '0.75em', color: '#00d1b2', marginBottom: '8px', fontWeight: 'bold' }}>{p.maker?.name || '---'}</p>
                       <p style={{ fontSize: '0.9em', lineHeight: '1.5', height: '3em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                         {p.title}
                       </p>

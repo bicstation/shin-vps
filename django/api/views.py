@@ -1,5 +1,6 @@
 from django.http import JsonResponse
-from rest_framework import generics
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend # 追加
 from django.shortcuts import get_object_or_404
 import logging
 
@@ -58,10 +59,28 @@ def status_check(request):
 # 1. アダルト商品データ API ビュー (AdultProduct)
 # --------------------------------------------------------------------------
 class AdultProductListAPIView(generics.ListAPIView):
+    # .order_by('-id') または '-created_at' を追加してデフォルトを最新順に
     queryset = AdultProduct.objects.all().prefetch_related(
         'maker', 'label', 'director', 'series', 'genres', 'actresses'
-    )
+    ).order_by('-id') 
+    
     serializer_class = AdultProductSerializer
+    
+    # 💡 フィルタと並び替えの機能を有効化
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    
+    # 💡 どの項目で絞り込みを許可するか（Next.jsのURLパラメータに対応）
+    filterset_fields = {
+        'genres': ['exact'],
+        'actresses': ['exact'],
+        'maker': ['exact'],
+        'series': ['exact'],
+        'label': ['exact'],
+    }
+    
+    # 💡 どの項目で並び替えを許可するか
+    ordering_fields = ['id', 'price'] 
+    # ※もしモデルに created_at があれば追加してください
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
     queryset = AdultProduct.objects.all().prefetch_related(

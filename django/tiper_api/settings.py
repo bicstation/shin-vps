@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic', # WhiteNoiseで開発サーバーでも静的ファイルを扱う
     'django.contrib.staticfiles',
+    'django_filters', # 追加
     'rest_framework', 
     'django_extensions',
     'scrapers', 
@@ -166,13 +167,20 @@ API_CONFIG = {
 # ====================================================
 # DRF 設定
 # ====================================================
+# settings.py の下の方にある REST_FRAMEWORK を以下に書き換えて1つにまとめます
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 💡 Next.js側で扱いやすい「ページ番号式」に統一します
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20, 
+    # 💡 フィルタ（ジャンル絞り込み等）を有効化するために必須
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
+    ),
 }
 
 # ====================================================
