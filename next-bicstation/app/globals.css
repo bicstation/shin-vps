@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* BICSTATION - 全体テーマカラー */
 :root {
   --primary-color: #007bff;
