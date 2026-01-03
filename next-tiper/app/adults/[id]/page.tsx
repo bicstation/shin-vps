@@ -10,7 +10,7 @@ import ProductGallery from '../../components/ProductGallery';
 /**
  * 💡 SEO対策: 動的メタデータの生成
  */
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { category: string, id: string } }): Promise<Metadata> {
   const product = await getAdultProductById(params.id);
   
   if (!product) {
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   );
 }
 
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+export default async function ProductDetailPage({ params }: { params: { category: string, id: string } }) {
   // 商品データの取得
   const product = await getAdultProductById(params.id);
 
@@ -103,11 +103,19 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
                 <tbody>
                   <tr style={{ borderBottom: '1px solid #333' }}>
                     <td style={{ padding: '15px 0', color: '#99e0ff' }}>メーカー</td>
-                    <td style={{ textAlign: 'right', padding: '15px 0' }}>{product.maker?.name || '---'}</td>
+                    <td style={{ textAlign: 'right', padding: '15px 0' }}>
+                      <Link href={`/maker/${product.maker?.id}`} style={{ color: 'white', textDecoration: 'none' }}>
+                        {product.maker?.name || '---'}
+                      </Link>
+                    </td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid #333' }}>
                     <td style={{ padding: '15px 0', color: '#99e0ff' }}>シリーズ</td>
-                    <td style={{ textAlign: 'right', padding: '15px 0' }}>{product.series?.name || '---'}</td>
+                    <td style={{ textAlign: 'right', padding: '15px 0' }}>
+                      <Link href={`/series/${product.series?.id}`} style={{ color: 'white', textDecoration: 'none' }}>
+                        {product.series?.name || '---'}
+                      </Link>
+                    </td>
                   </tr>
                   <tr>
                     <td style={{ padding: '15px 0', color: '#99e0ff' }}>配信開始</td>
@@ -125,7 +133,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
                   {product.genres.map((genre) => (
                     <Link 
                       key={genre.id} 
-                      href={`/adults/genre/${genre.id}`}
+                      href={`/genre/${genre.id}`}
                       style={{ padding: '6px 14px', backgroundColor: '#252545', border: '1px solid #3d3d66', color: '#00d1b2', borderRadius: '6px', fontSize: '0.85em', textDecoration: 'none', transition: '0.2s' }}
                     >
                       #{genre.name}
@@ -152,7 +160,7 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '25px' }}>
               {relatedProducts.map((p) => (
-                <Link key={p.id} href={`/adults/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link key={p.id} href={`/${params.category}/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div style={{ backgroundColor: '#1f1f3a', borderRadius: '12px', overflow: 'hidden', border: '1px solid #3d3d66', transition: 'transform 0.2s' }}>
                     <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
                       <img src={p.image_url_list?.[0] || '/no-image.png'} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

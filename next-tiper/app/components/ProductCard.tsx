@@ -12,9 +12,12 @@ export default function ProductCard({ product }: { product: any }) {
   const series = product.series || null;
   const maker = product.maker || null;
   
-  // 💡 パスの修正: 新しいディレクトリ構造に合わせて /genre をベースにします
-  const basePath = '/genre'; 
-  // 詳細ページは既存のまま（app/adults/[id]がある場合）か、適宜変更してください
+  /**
+   * 💡 パスの修正ロジック
+   * 意図: /tiper/adults/93/ のような形式にする
+   * next.config.mjs の basePath: '/tiper' が自動付与されるため、
+   * ここでは '/tiper' を含めないパスを指定します。
+   */
   const detailPath = '/adults'; 
 
   /**
@@ -75,23 +78,23 @@ export default function ProductCard({ product }: { product: any }) {
           </Link>
         </h3>
 
-        {/* 1. メーカー情報 - 修正点: /genre/maker/[id] */}
+        {/* 1. メーカー情報 - パス修正: /maker/[id] */}
         <div className="mt-3 flex items-center gap-2">
           <span className="text-[10px] text-gray-500 font-black uppercase tracking-wider min-w-[40px]">Maker</span>
           <Link 
-            href={`${basePath}/maker/${maker?.id}`}
+            href={`/maker/${maker?.id}`}
             className="truncate text-[11px] font-bold text-[#99e0ff] hover:text-[#00d1b2] transition-colors"
           >
             {maker?.name || 'Exclusive Studio'}
           </Link>
         </div>
 
-        {/* 2. シリーズ情報 - 修正点: /genre/series/[id] */}
+        {/* 2. シリーズ情報 - パス修正: /series/[id] */}
         {series && (
           <div className="mt-1 flex items-center gap-2">
             <span className="text-[10px] text-gray-500 font-black uppercase tracking-wider min-w-[40px]">Series</span>
             <Link 
-              href={`${basePath}/series/${series.id}`}
+              href={`/series/${series.id}`}
               className="truncate text-[11px] font-bold text-amber-400/90 hover:underline transition-colors"
             >
               {series.name}
@@ -99,7 +102,7 @@ export default function ProductCard({ product }: { product: any }) {
           </div>
         )}
 
-        {/* 3. 出演者 - 修正点: /genre/actor/[id] */}
+        {/* 3. 出演者 - パス修正: /actor/[id] */}
         {actors.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5 overflow-hidden">
             {actors.slice(0, 2).map((actor: any) => {
@@ -107,7 +110,7 @@ export default function ProductCard({ product }: { product: any }) {
               return (
                 <Link
                   key={actor.id}
-                  href={`${basePath}/actor/${actor.id}`}
+                  href={`/actor/${actor.id}`}
                   className={`text-[10px] font-bold px-2 py-0.5 rounded border ${style.bg} ${style.text} ${style.border} transition-all hover:brightness-125`}
                 >
                   👤 {actor.name}
@@ -117,14 +120,14 @@ export default function ProductCard({ product }: { product: any }) {
           </div>
         )}
 
-        {/* 4. ジャンルタグ - 修正点: /genre/genre/[id] */}
+        {/* 4. ジャンルタグ - パス修正: /genre/[id] */}
         <div className="mt-3 flex flex-wrap gap-1.5 h-12 overflow-hidden content-start">
           {genres.slice(0, 4).map((genre: any) => {
             const style = getTagStyle(genre.name, 'genre');
             return (
               <Link
                 key={genre.id}
-                href={`${basePath}/genre/${genre.id}`}
+                href={`/genre/${genre.id}`}
                 className={`text-[9px] font-black px-2 py-0.5 rounded border ${style.bg} ${style.text} ${style.border} transition-all hover:brightness-125 hover:scale-105`}
               >
                 #{genre.name}

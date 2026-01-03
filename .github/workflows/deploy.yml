@@ -61,6 +61,6 @@ jobs:
             docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans
             
             # 未使用の古いイメージや、ビルド用の一時イメージを削除
-            docker image prune -af
+            docker image prune -f
             
             echo "✅ デプロイが完了しました！"
