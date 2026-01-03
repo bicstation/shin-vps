@@ -62,12 +62,19 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
+      # --- 既存の API ルール ---
       - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && PathPrefix(`/api`)"
       - "traefik.http.routers.django-v2-api.entrypoints=web"
       - "traefik.http.routers.django-v2-api.priority=2000"
+      # --- 既存の Admin ルール ---
       - "traefik.http.routers.django-v2-admin.rule=Host(`localhost`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.django-v2-admin.entrypoints=web"
       - "traefik.http.routers.django-v2-admin.priority=2000"
+      # --- ✨ 追加: 静的ファイル (CSS/JS) 用のルール ---
+      - "traefik.http.routers.django-v2-static.rule=Host(`localhost`) && PathPrefix(`/static`)"
+      - "traefik.http.routers.django-v2-static.entrypoints=web"
+      - "traefik.http.routers.django-v2-static.priority=2000"
+      # --- サービス設定 ---
       - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
     volumes:
       - ./django:/usr/src/app
