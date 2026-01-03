@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'; // 👈 これを追加！
 
 import React from 'react';
-import ProductCard from '../../../components/ProductCard';
+import ProductCard from '../../components/ProductCard';
 import Link from 'next/link';
 import styles from './category.module.css'; // CSS Modulesをインポート
 
