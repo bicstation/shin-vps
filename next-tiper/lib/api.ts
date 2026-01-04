@@ -38,12 +38,18 @@ const getApiConfig = () => {
 /**
  * 商品一覧取得
  */
-export async function getAdultProducts(params?: { limit?: number; offset?: number; genre?: string }) {
+export async function getAdultProducts(params?: { 
+    limit?: number; 
+    offset?: number; 
+    genre?: string; 
+    sort?: string;
+    }) {
     const { djangoBase } = getApiConfig();
     const query = new URLSearchParams();
     if (params?.limit) query.append('limit', params.limit.toString());
     if (params?.offset) query.append('offset', params.offset.toString());
-    if (params?.genre) query.append('genres', params.genre);
+    if (params?.genre) query.append('genre', params.genre);
+    if (params?.sort) query.append('ordering', params.sort);
 
     const url = `${djangoBase}/api/adults/?${query.toString()}`;
 

@@ -11,7 +11,8 @@ import ProductGallery from '../../components/ProductGallery';
  * 💡 SEO対策: 動的メタデータの生成
  */
 export async function generateMetadata({ params }: { params: { category: string, id: string } }): Promise<Metadata> {
-  const product = await getAdultProductById(params.id);
+  const { id } = await params;
+  const product = await getAdultProductById(id);
   
   if (!product) {
     return constructMetadata("商品未検出", "お探しの商品は見つかりませんでした。");
@@ -25,8 +26,10 @@ export async function generateMetadata({ params }: { params: { category: string,
 }
 
 export default async function ProductDetailPage({ params }: { params: { category: string, id: string } }) {
+  const { category, id } = await params;
+  
   // 商品データの取得
-  const product = await getAdultProductById(params.id);
+  const product = await getAdultProductById(id);
 
   // 商品が見つからない場合のエラーハンドリング
   if (!product) {
@@ -40,14 +43,13 @@ export default async function ProductDetailPage({ params }: { params: { category
     );
   }
 
-  // 💡 画像リストの取得と整形（確実に配列であることを保証する）
+  // 💡 画像リストの取得と整形
   const imageList = Array.isArray(product.image_url_list) ? product.image_url_list : [];
 
   // 同じメーカーの関連商品を取得
   let relatedProducts = [];
   try {
     relatedProducts = product.maker ? await getAdultProductsByMaker(product.maker.id, 4) : [];
-    // APIの返却形式が { results: [] } の場合に対応
     if (!Array.isArray(relatedProducts) && relatedProducts?.results) {
         relatedProducts = relatedProducts.results;
     }
@@ -63,13 +65,13 @@ export default async function ProductDetailPage({ params }: { params: { category
         <Link href="/" style={{ color: '#00d1b2', textDecoration: 'none' }}>
           ← 商品一覧へ戻る
         </Link>
-        <span style={{ color: '#555' }}>PRODUCT ID: {params.id}</span>
+        <span style={{ color: '#555' }}>PRODUCT ID: {id}</span>
       </nav>
 
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px', alignItems: 'start' }}>
           
-          {/* 左側：画像ギャラリーコンポーネント (imageListを渡す) */}
+          {/* 左側：画像ギャラリー */}
           <section>
             {imageList.length > 0 ? (
                 <ProductGallery images={imageList} title={product.title} />
@@ -80,7 +82,7 @@ export default async function ProductDetailPage({ params }: { params: { category
             )}
           </section>
 
-          {/* 右側：詳細情報・スペック */}
+          {/* 右側：詳細情報 */}
           <section>
             <div style={{ marginBottom: '15px' }}>
               <span style={{ backgroundColor: '#e94560', color: 'white', padding: '4px 12px', borderRadius: '4px', fontSize: '0.7em', fontWeight: 'bold' }}>
@@ -97,7 +99,7 @@ export default async function ProductDetailPage({ params }: { params: { category
               <span style={{ fontSize: '0.4em', color: '#aaa', fontWeight: 'normal' }}>税込</span>
             </div>
 
-            {/* スペックテーブル */}
+            {/* スペックテーブル (URLパスを /[category]/[id] に修正) */}
             <div style={{ backgroundColor: '#1f1f3a', padding: '25px', borderRadius: '12px', border: '1px solid #3d3d66', marginBottom: '35px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
                 <tbody>
@@ -125,7 +127,7 @@ export default async function ProductDetailPage({ params }: { params: { category
               </table>
             </div>
 
-            {/* ジャンルタグリスト */}
+            {/* ジャンルタグリスト (URLパスを /genres/[id] に修正) */}
             {product.genres && product.genres.length > 0 && (
               <div style={{ marginTop: '30px' }}>
                 <h3 style={{ fontSize: '0.9em', color: '#aaa', marginBottom: '15px', borderLeft: '3px solid #e94560', paddingLeft: '10px' }}>関連ジャンル</h3>
@@ -133,7 +135,7 @@ export default async function ProductDetailPage({ params }: { params: { category
                   {product.genres.map((genre) => (
                     <Link 
                       key={genre.id} 
-                      href={`/genre/${genre.id}`}
+                      href={`/genres/${genre.id}`}
                       style={{ padding: '6px 14px', backgroundColor: '#252545', border: '1px solid #3d3d66', color: '#00d1b2', borderRadius: '6px', fontSize: '0.85em', textDecoration: 'none', transition: '0.2s' }}
                     >
                       #{genre.name}
@@ -152,7 +154,7 @@ export default async function ProductDetailPage({ params }: { params: { category
           </section>
         </div>
 
-        {/* 💡 おすすめセクション (同一メーカー作品) */}
+        {/* 💡 おすすめセクション (リンク先を /[category]/[id] に修正) */}
         {relatedProducts && relatedProducts.length > 0 && (
           <section style={{ marginTop: '100px', borderTop: '2px solid #3d3d66', paddingTop: '50px' }}>
             <h2 style={{ fontSize: '1.5em', marginBottom: '35px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -160,7 +162,7 @@ export default async function ProductDetailPage({ params }: { params: { category
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '25px' }}>
               {relatedProducts.map((p) => (
-                <Link key={p.id} href={`/${params.category}/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link key={p.id} href={`/${category}/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div style={{ backgroundColor: '#1f1f3a', borderRadius: '12px', overflow: 'hidden', border: '1px solid #3d3d66', transition: 'transform 0.2s' }}>
                     <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
                       <img src={p.image_url_list?.[0] || '/no-image.png'} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
