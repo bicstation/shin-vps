@@ -12,12 +12,11 @@ import styles from './category.module.css';
 async function getCategoryProducts(category: string, id: string, page: string = '1', sort: string = '-created_at') {
   const pageSize = 20;
 
-  // 💡 Django側の filterset_fields に定義されている正確なキー名にマッピング
-  // あなたのDjango環境では 'genres=135' でデータが返ることが確認できたので、ここを確実に合わせます
+  // 💡 Django側の filterset_fields に対応するキー名へのマッピング
   const categoryMap: { [key: string]: string } = {
-    'genre': 'genres',      // URLが genre の時は APIには genres で送る
+    'genre': 'genres',
     'genres': 'genres',
-    'actress': 'actresses', // URLが actress の時は APIには actresses で送る
+    'actress': 'actresses',
     'actresses': 'actresses',
     'maker': 'maker',
     'makers': 'maker',
@@ -25,7 +24,6 @@ async function getCategoryProducts(category: string, id: string, page: string = 
     'label': 'label',
   };
 
-  // マップにあれば変換、なければURLの値をそのままクエリキーにする
   const queryKey = categoryMap[category] || category;
 
   const query = new URLSearchParams({
@@ -35,29 +33,37 @@ async function getCategoryProducts(category: string, id: string, page: string = 
     page_size: pageSize.toString(),
   });
 
-  // 💡 確実に Django が反応する URL を構築
-  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/adults/?${query.toString()}`;
+  // 💡 環境変数の末尾に / があってもなくても正しく結合するための処理
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api';
+  // 末尾のスラッシュをすべて削除
+  baseUrl = baseUrl.replace(/\/+$/, "");
   
-  // ターミナルでこのURLをクリックしてデータが出るか最終確認できます
-  console.log("🚀 Calling Django API:", apiUrl);
+  // スラッシュを1つだけ挟んで結合
+  const apiUrl = `${baseUrl}/adults/?${query.toString()}`;
+  
+  console.log("-----------------------------------------");
+  console.log("🚀 Requesting Django API:", apiUrl);
+  console.log("-----------------------------------------");
 
   try {
-    const res = await fetch(apiUrl, { next: { revalidate: 60 } });
+    const res = await fetch(apiUrl, { 
+      cache: 'no-store', 
+    });
     
     if (!res.ok) {
-      console.error(`API Error: ${res.status}`);
+      console.error(`❌ API Error: ${res.status} ${res.statusText}`);
       return { results: [], count: 0 };
     }
     
     const data = await res.json();
+    console.log(`✅ API Success: Found ${data.count} items`);
     
-    // Djangoの標準的なレスポンス形式 { count: X, results: [...] } を受け取る
     return {
       results: data.results || [],
       count: data.count || 0
     };
   } catch (error) {
-    console.error("Fetch Error:", error);
+    console.error("❌ Fetch Error:", error);
     return { results: [], count: 0 };
   }
 }
@@ -123,10 +129,16 @@ export default async function CategoryListPage({
           </div>
         ) : (
           <div className={styles.emptyState}>
-            <p>No products found in this category.</p>
-            <p style={{ fontSize: '0.8em', color: '#666', marginTop: '10px' }}>
-              Checked API for: {category}={id}
-            </p>
+            <p className="text-xl font-bold">No products found.</p>
+            <div className="mt-4 p-4 bg-gray-900 border border-gray-700 rounded text-left text-xs font-mono">
+              <p className="text-blue-400 font-bold mb-2 underline">DEBUG INFO</p>
+              <p><span className="text-gray-400">Category:</span> {category}</p>
+              <p><span className="text-gray-400">ID:</span> {id}</p>
+              <p><span className="text-gray-400">Request URL:</span> <span className="text-yellow-200">{process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "")}/adults/?{category === 'genre' ? 'genres' : category}={id}</span></p>
+            </div>
+            <Link href="/" className="mt-6 inline-block text-[#00d1b2] hover:underline">
+              ← Back to TOP
+            </Link>
           </div>
         )}
 
