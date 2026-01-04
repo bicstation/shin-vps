@@ -33,12 +33,13 @@ async function getCategoryProducts(category: string, id: string, page: string = 
     page_size: pageSize.toString(),
   });
 
-  // 💡 環境変数の末尾に / があってもなくても正しく結合するための処理
-  let baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api';
-  // 末尾のスラッシュをすべて削除
-  baseUrl = baseUrl.replace(/\/+$/, "");
+  // 💡 WSL環境では localhost だと自分自身を指してエラーになることが多いため、
+  // 明示的に 127.0.0.1 を優先します。
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8083/api';
   
-  // スラッシュを1つだけ挟んで結合
+  // スラッシュの重複を掃除し、localhost を IP に置換して通信の確実性を上げる
+  baseUrl = baseUrl.replace(/\/+$/, "").replace('localhost', '127.0.0.1');
+  
   const apiUrl = `${baseUrl}/adults/?${query.toString()}`;
   
   console.log("-----------------------------------------");
@@ -47,7 +48,7 @@ async function getCategoryProducts(category: string, id: string, page: string = 
 
   try {
     const res = await fetch(apiUrl, { 
-      cache: 'no-store', 
+      cache: 'no-store', // 開発時は常に最新を取得
     });
     
     if (!res.ok) {
@@ -63,7 +64,7 @@ async function getCategoryProducts(category: string, id: string, page: string = 
       count: data.count || 0
     };
   } catch (error) {
-    console.error("❌ Fetch Error:", error);
+    console.error("❌ Fetch Error (Possible Network Issue):", error);
     return { results: [], count: 0 };
   }
 }
@@ -78,10 +79,14 @@ export default async function CategoryListPage({
   params: Promise<{ category: string, id: string }>,
   searchParams: Promise<{ page?: string, sort?: string }>
 }) {
-  const { category, id } = await params;
-  const sParams = await searchParams;
-  const currentPage = sParams.page || '1';
-  const currentSort = sParams.sort || '-created_at'; 
+  // 💡 Next.jsの最新仕様に合わせ、params と searchParams を await する
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  
+  const category = resolvedParams.category;
+  const id = resolvedParams.id;
+  const currentPage = resolvedSearchParams.page || '1';
+  const currentSort = resolvedSearchParams.sort || '-created_at'; 
 
   const data = await getCategoryProducts(category, id, currentPage, currentSort);
   
@@ -130,12 +135,19 @@ export default async function CategoryListPage({
         ) : (
           <div className={styles.emptyState}>
             <p className="text-xl font-bold">No products found.</p>
+            
             <div className="mt-4 p-4 bg-gray-900 border border-gray-700 rounded text-left text-xs font-mono">
-              <p className="text-blue-400 font-bold mb-2 underline">DEBUG INFO</p>
+              <p className="text-blue-400 font-bold mb-2 underline">NETWORK DEBUG INFO</p>
               <p><span className="text-gray-400">Category:</span> {category}</p>
               <p><span className="text-gray-400">ID:</span> {id}</p>
-              <p><span className="text-gray-400">Request URL:</span> <span className="text-yellow-200">{process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "")}/adults/?{category === 'genre' ? 'genres' : category}={id}</span></p>
+              <p><span className="text-gray-400">Final API URL:</span> 
+                <span className="text-yellow-200 ml-1">
+                  {process.env.NEXT_PUBLIC_API_URL?.replace('localhost', '127.0.0.1') || 'http://127.0.0.1:8083/api'}/adults/?{category === 'genre' ? 'genres' : category}={id}
+                </span>
+              </p>
+              <p className="mt-2 text-gray-500 italic">※ブラウザで上のURLを直接開き、データが出るか確認してください。</p>
             </div>
+
             <Link href="/" className="mt-6 inline-block text-[#00d1b2] hover:underline">
               ← Back to TOP
             </Link>
