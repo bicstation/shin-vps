@@ -5,23 +5,28 @@
 import React from 'react';
 import Link from 'next/link';
 
+/**
+ * ProductCard コンポーネント
+ * Django API から取得した製品データをカード形式で表示します。
+ */
 export default function ProductCard({ product }: { product: any }) {
+  // 画像リストの先頭を使用
   const thumbnail = product.image_url_list?.[0] || '/no-image.png';
+  
+  // JSONのキー名に合わせて定義を修正
   const genres = product.genres || [];
-  const actors = product.actors || [];
+  const actors = product.actresses || []; // JSONのキー名 "actresses" に修正
   const series = product.series || null;
   const maker = product.maker || null;
   
   /**
-   * 💡 パスの修正ロジック
-   * 意図: /tiper/adults/93/ のような形式にする
-   * next.config.mjs の basePath: '/tiper' が自動付与されるため、
-   * ここでは '/tiper' を含めないパスを指定します。
+   * 💡 パスの設定
+   * next.config.mjs の basePath 設定に合わせて調整
    */
   const detailPath = '/adults'; 
 
   /**
-   * 💡 各種カテゴリタグの色分けロジック
+   * 💡 タグの色分けロジック
    */
   const getTagStyle = (name: string, type: 'genre' | 'actor' | 'series') => {
     const genreColors = [
@@ -43,6 +48,7 @@ export default function ProductCard({ product }: { product: any }) {
     if (type === 'actor') palette = actorColors;
     if (type === 'series') palette = seriesColors;
 
+    // 名前からハッシュ値を生成して色を固定
     const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % palette.length;
     return palette[index];
   };
@@ -72,24 +78,29 @@ export default function ProductCard({ product }: { product: any }) {
       {/* 💡 コンテンツセクション */}
       <div className="flex flex-grow flex-col p-4">
         
+        {/* タイトル */}
         <h3 className="line-clamp-2 min-h-[2.8rem] text-[14px] font-bold leading-tight text-white transition-colors group-hover:text-[#00d1b2]">
           <Link href={`${detailPath}/${product.id}`}>
             {product.title}
           </Link>
         </h3>
 
-        {/* 1. メーカー情報 - パス修正: /maker/[id] */}
+        {/* 1. メーカー情報 */}
         <div className="mt-3 flex items-center gap-2">
           <span className="text-[10px] text-gray-500 font-black uppercase tracking-wider min-w-[40px]">Maker</span>
-          <Link 
-            href={`/maker/${maker?.id}`}
-            className="truncate text-[11px] font-bold text-[#99e0ff] hover:text-[#00d1b2] transition-colors"
-          >
-            {maker?.name || 'Exclusive Studio'}
-          </Link>
+          {maker ? (
+            <Link 
+              href={`/maker/${maker.id}`}
+              className="truncate text-[11px] font-bold text-[#99e0ff] hover:text-[#00d1b2] transition-colors"
+            >
+              {maker.name}
+            </Link>
+          ) : (
+            <span className="text-[11px] text-gray-600 italic">Unknown</span>
+          )}
         </div>
 
-        {/* 2. シリーズ情報 - パス修正: /series/[id] */}
+        {/* 2. シリーズ情報 */}
         {series && (
           <div className="mt-1 flex items-center gap-2">
             <span className="text-[10px] text-gray-500 font-black uppercase tracking-wider min-w-[40px]">Series</span>
@@ -102,7 +113,7 @@ export default function ProductCard({ product }: { product: any }) {
           </div>
         )}
 
-        {/* 3. 出演者 - パス修正: /actor/[id] */}
+        {/* 3. 出演者 (actresses) */}
         {actors.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5 overflow-hidden">
             {actors.slice(0, 2).map((actor: any) => {
@@ -110,7 +121,7 @@ export default function ProductCard({ product }: { product: any }) {
               return (
                 <Link
                   key={actor.id}
-                  href={`/actor/${actor.id}`}
+                  href={`/actress/${actor.id}`}
                   className={`text-[10px] font-bold px-2 py-0.5 rounded border ${style.bg} ${style.text} ${style.border} transition-all hover:brightness-125`}
                 >
                   👤 {actor.name}
@@ -120,7 +131,7 @@ export default function ProductCard({ product }: { product: any }) {
           </div>
         )}
 
-        {/* 4. ジャンルタグ - パス修正: /genre/[id] */}
+        {/* 4. ジャンルタグ */}
         <div className="mt-3 flex flex-wrap gap-1.5 h-12 overflow-hidden content-start">
           {genres.slice(0, 4).map((genre: any) => {
             const style = getTagStyle(genre.name, 'genre');

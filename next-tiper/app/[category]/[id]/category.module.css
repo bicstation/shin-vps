@@ -1,4 +1,4 @@
-/* app/genre/[category]/[id]/category.module.css */
+/* app/[category]/[id]/category.module.css */
 .container {
   min-height: 100vh;
   background-color: #0f0f1e;
@@ -7,24 +7,24 @@
 }
 
 .inner {
-  max-width: 80rem; /* 7xl */
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 80rem; /* 7xl相当 */
+  margin: 0 auto;
 }
 
 .header {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: flex-start; /* 左寄せに変更し、境界線を目立たせる */
   margin-bottom: 2rem;
   border-left: 4px solid #e94560;
-  padding-left: 1rem;
+  padding-left: 1.5rem;
 }
 
 @media (min-width: 768px) {
   .header {
     flex-direction: row;
+    align-items: flex-end;
   }
 }
 
@@ -34,6 +34,7 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #e94560;
+  margin: 0;
 }
 
 .titleMain {
@@ -41,7 +42,7 @@
 }
 
 .itemCount {
-  color: #9ca3af; /* gray-400 */
+  color: #9ca3af;
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
@@ -59,12 +60,12 @@
 }
 
 .sortButton {
-  padding: 0.25rem 0.75rem;
+  padding: 0.35rem 1rem;
   font-size: 0.75rem;
   border-radius: 9999px;
   border: 1px solid #3d3d66;
   color: #9ca3af;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   text-decoration: none;
 }
 
@@ -72,21 +73,24 @@
   background-color: #e94560;
   border-color: #e94560;
   color: #ffffff;
+  font-weight: bold;
 }
 
 .sortButton:hover:not(.sortButtonActive) {
   border-color: #9ca3af;
+  background-color: #1a1a2e;
 }
 
+/* 💡 グリッド修正ポイント: columnsに直しました */
 .grid {
   display: grid;
-  grid-template-cols: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
 }
 
-@media (min-width: 768px) { .grid { grid-template-cols: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1024px) { .grid { grid-template-cols: repeat(4, minmax(0, 1fr)); } }
-@media (min-width: 1280px) { .grid { grid-template-cols: repeat(5, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1280px) { .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 
 .emptyState {
   text-align: center;
@@ -95,30 +99,33 @@
 }
 
 .pagination {
-  margin-top: 3rem;
+  margin-top: 4rem;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 1rem;
+  padding-bottom: 2rem;
 }
 
 .pageLink {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.25rem;
   background-color: #1a1a2e;
   border: 1px solid #3d3d66;
   border-radius: 0.25rem;
   color: #ffffff;
   text-decoration: none;
-  transition: background-color 0.2s;
+  font-weight: bold;
+  transition: all 0.2s;
 }
 
 .pageLink:hover {
-  background-color: #2a2a4a;
+  background-color: #e94560;
+  border-color: #e94560;
 }
 
 .pageDisabled {
-  padding: 0.5rem 1rem;
-  color: #4b5563; /* gray-600 */
+  padding: 0.5rem 1.25rem;
+  color: #4b5563;
   border: 1px solid transparent;
 }
 
@@ -129,5 +136,6 @@
 }
 
 .currentPage {
-  color: #ffffff;
+  color: #e94560;
+  font-weight: bold;
 }

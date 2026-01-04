@@ -43,13 +43,15 @@ export default async function ProductDetailPage({ params }: { params: { category
     );
   }
 
-  // 💡 画像リストの取得と整形
+  // 💡 データの整形（JSONの構造 actresses に合わせる）
   const imageList = Array.isArray(product.image_url_list) ? product.image_url_list : [];
+  const actresses = product.actresses || []; // actors から actresses に修正
+  const genres = product.genres || [];
 
   // 同じメーカーの関連商品を取得
   let relatedProducts = [];
   try {
-    relatedProducts = product.maker ? await getAdultProductsByMaker(product.maker.id, 4) : [];
+    relatedProducts = product.maker ? await getAdultProductsByMaker(product.maker.id, 8) : [];
     if (!Array.isArray(relatedProducts) && relatedProducts?.results) {
         relatedProducts = relatedProducts.results;
     }
@@ -99,10 +101,25 @@ export default async function ProductDetailPage({ params }: { params: { category
               <span style={{ fontSize: '0.4em', color: '#aaa', fontWeight: 'normal' }}>税込</span>
             </div>
 
-            {/* スペックテーブル (URLパスを /[category]/[id] に修正) */}
+            {/* スペックテーブル */}
             <div style={{ backgroundColor: '#1f1f3a', padding: '25px', borderRadius: '12px', border: '1px solid #3d3d66', marginBottom: '35px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
                 <tbody>
+                  {/* 出演者 (actresses) の追加 */}
+                  <tr style={{ borderBottom: '1px solid #333' }}>
+                    <td style={{ padding: '15px 0', color: '#99e0ff' }}>出演者</td>
+                    <td style={{ textAlign: 'right', padding: '15px 0' }}>
+                      {actresses.length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', justifyContent: 'flex-end' }}>
+                          {actresses.map((act) => (
+                            <Link key={act.id} href={`/actress/${act.id}`} style={{ color: '#00d1b2', textDecoration: 'none' }}>
+                              {act.name}
+                            </Link>
+                          ))}
+                        </div>
+                      ) : '---'}
+                    </td>
+                  </tr>
                   <tr style={{ borderBottom: '1px solid #333' }}>
                     <td style={{ padding: '15px 0', color: '#99e0ff' }}>メーカー</td>
                     <td style={{ textAlign: 'right', padding: '15px 0' }}>
@@ -114,9 +131,11 @@ export default async function ProductDetailPage({ params }: { params: { category
                   <tr style={{ borderBottom: '1px solid #333' }}>
                     <td style={{ padding: '15px 0', color: '#99e0ff' }}>シリーズ</td>
                     <td style={{ textAlign: 'right', padding: '15px 0' }}>
-                      <Link href={`/series/${product.series?.id}`} style={{ color: 'white', textDecoration: 'none' }}>
-                        {product.series?.name || '---'}
-                      </Link>
+                      {product.series ? (
+                        <Link href={`/series/${product.series.id}`} style={{ color: 'white', textDecoration: 'none' }}>
+                          {product.series.name}
+                        </Link>
+                      ) : '---'}
                     </td>
                   </tr>
                   <tr>
@@ -127,15 +146,15 @@ export default async function ProductDetailPage({ params }: { params: { category
               </table>
             </div>
 
-            {/* ジャンルタグリスト (URLパスを /genres/[id] に修正) */}
-            {product.genres && product.genres.length > 0 && (
+            {/* ジャンルタグリスト */}
+            {genres.length > 0 && (
               <div style={{ marginTop: '30px' }}>
                 <h3 style={{ fontSize: '0.9em', color: '#aaa', marginBottom: '15px', borderLeft: '3px solid #e94560', paddingLeft: '10px' }}>関連ジャンル</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                  {product.genres.map((genre) => (
+                  {genres.map((genre) => (
                     <Link 
                       key={genre.id} 
-                      href={`/genres/${genre.id}`}
+                      href={`/genre/${genre.id}`}
                       style={{ padding: '6px 14px', backgroundColor: '#252545', border: '1px solid #3d3d66', color: '#00d1b2', borderRadius: '6px', fontSize: '0.85em', textDecoration: 'none', transition: '0.2s' }}
                     >
                       #{genre.name}
@@ -154,7 +173,7 @@ export default async function ProductDetailPage({ params }: { params: { category
           </section>
         </div>
 
-        {/* 💡 おすすめセクション (リンク先を /[category]/[id] に修正) */}
+        {/* 💡 おすすめセクション */}
         {relatedProducts && relatedProducts.length > 0 && (
           <section style={{ marginTop: '100px', borderTop: '2px solid #3d3d66', paddingTop: '50px' }}>
             <h2 style={{ fontSize: '1.5em', marginBottom: '35px', display: 'flex', alignItems: 'center', gap: '12px' }}>
