@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS 高機能再構築スクリプト (VPS一本化・クリーンビルド対応版)
+# 🚀 SHIN-VPS 高機能再構築スクリプト (ネットワーク自動生成・完全統合版)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
@@ -68,10 +68,8 @@ fi
 # ---------------------------------------------------------
 # 4. 設定ファイルのパス決定
 # ---------------------------------------------------------
-# 優先順位1: スクリプトと同じ階層の docker-compose.[target].yml
 if [ -f "$SCRIPT_DIR/docker-compose.$TARGET.yml" ]; then
     COMPOSE_FILE="$SCRIPT_DIR/docker-compose.$TARGET.yml"
-# 優先順位2: 特定の絶対パス（念のため残す）
 else
     case $TARGET in
         "work") COMPOSE_FILE="/mnt/e/dev/shin-vps/docker-compose.work.yml" ;;
@@ -90,12 +88,25 @@ fi
 # 5. 実行セクション
 # ---------------------------------------------------------
 cd "$SCRIPT_DIR"
+
 echo "---------------------------------------"
-echo "🎯 実行環境   : $TARGET"
+echo "🎯 実行環境     : $TARGET"
 echo "📄 設定ファイル : $COMPOSE_FILE"
 echo "🛠️  対象サービス : ${SERVICES:-全サービス}"
-[ "$CLEAN_ALL" = true ] && echo "🧹 モード     : FULL CLEAN (全消去後に再構築)"
+[ "$CLEAN_ALL" = true ] && echo "🧹 モード       : FULL CLEAN (全消去後に再構築)"
 echo "---------------------------------------"
+
+# =========================================================
+# ✨ 【追加】外部ネットワークの自動作成
+# =========================================================
+EXTERNAL_NET="shin-vps_shared-proxy"
+echo "🌐 ネットワークの整合性を確認中..."
+if ! docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1; then
+    echo "💡 ネットワーク '$EXTERNAL_NET' が見つかりません。作成します..."
+    docker network create "$EXTERNAL_NET"
+else
+    echo "✅ ネットワーク '$EXTERNAL_NET' は準備済みです。"
+fi
 
 # ステップ1: 停止とクリーンアップ
 if [ "$CLEAN_ALL" = true ]; then
@@ -105,7 +116,6 @@ if [ "$CLEAN_ALL" = true ]; then
     docker builder prune -af
 else
     echo "🚀 [1/4] 既存コンテナを停止..."
-    # $SERVICES が空なら全停止、あれば特定サービスのみ
     docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" stop $SERVICES
 fi
 

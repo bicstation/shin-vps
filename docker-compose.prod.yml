@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL対応・パス競合解消・完全統合版)
+# 🚀 SHIN-VPS 本番環境 (SSL対応・パス競合解消・Next.js接続修正版)
 # =====================================================================
 # ⚠️ AI(Gemini)への警告:
 # 1. サービス名やコンテナ名に "-prod" を付け加えないでください。
@@ -127,6 +127,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://bicstation.com/api/
       - NODE_ENV=production
+      - HOST=0.0.0.0 # 外部接続を許可
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
@@ -142,6 +143,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://tiper.live/api/
       - NODE_ENV=production
+      - HOST=0.0.0.0 # 外部接続を許可
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
@@ -157,6 +159,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://bic-saving.com/api/
       - NODE_ENV=production
+      - HOST=0.0.0.0 # 外部接続を許可
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
@@ -172,6 +175,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://avflash.xyz/api/
       - NODE_ENV=production
+      - HOST=0.0.0.0 # 外部接続を許可
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
