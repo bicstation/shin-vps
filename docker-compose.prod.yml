@@ -131,6 +131,7 @@ services:
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.bicstation-router.rule=Host(`bicstation.com`)"
       - "traefik.http.routers.bicstation-router.entrypoints=websecure"
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
@@ -147,6 +148,7 @@ services:
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.tiper-router.rule=Host(`tiper.live`)"
       - "traefik.http.routers.tiper-router.entrypoints=websecure"
       - "traefik.http.routers.tiper-router.tls.certresolver=le"
@@ -163,6 +165,7 @@ services:
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.saving-router.rule=Host(`bic-saving.com`)"
       - "traefik.http.routers.saving-router.entrypoints=websecure"
       - "traefik.http.routers.saving-router.tls.certresolver=le"
@@ -179,6 +182,7 @@ services:
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.avflash-router.rule=Host(`avflash.xyz`)"
       - "traefik.http.routers.avflash-router.entrypoints=websecure"
       - "traefik.http.routers.avflash-router.tls.certresolver=le"
@@ -253,6 +257,7 @@ services:
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.pma-router.rule=Host(`tiper.live`) && PathPrefix(`/phpmyadmin`)"
       - "traefik.http.routers.pma-router.entrypoints=websecure"
       - "traefik.http.routers.pma-router.tls.certresolver=le"
@@ -271,6 +276,7 @@ services:
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.pgadmin-router.rule=Host(`tiper.live`) && PathPrefix(`/pgadmin`)"
       - "traefik.http.routers.pgadmin-router.entrypoints=websecure"
       - "traefik.http.routers.pgadmin-router.tls.certresolver=le"
@@ -284,6 +290,7 @@ services:
     networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.dozzle-router.rule=Host(`tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-router.entrypoints=websecure"
       - "traefik.http.routers.dozzle-router.tls.certresolver=le"
