@@ -44,18 +44,15 @@ done
 # 🚨 3. ターゲット自動決定 & 安全装置
 # ---------------------------------------------------------
 if [ "$IS_VPS" = true ]; then
-    # VPSなら、何が何でも prod 
     if [ -z "$TARGET" ] || [ "$TARGET" != "prod" ]; then
         echo "🌐 VPS環境を検知しました。自動的に 'prod' 設定を適用します。"
         TARGET="prod"
     fi
 else
-    # ローカルPCの場合
     if [ "$TARGET" == "prod" ]; then
         echo "⚠️  ローカルPCで 'prod' は実行できません。安全のため 'home' に切り替えます。"
         TARGET="home"
     fi
-    # 未指定ならディレクトリ名から判定
     if [ -z "$TARGET" ]; then
         if [[ "$SCRIPT_DIR" == *"/mnt/e/"* ]]; then
             TARGET="work"
@@ -78,7 +75,6 @@ else
     esac
 fi
 
-# 最終チェック
 if [ ! -f "$COMPOSE_FILE" ]; then
     echo "❌ エラー: 設定ファイルが見つかりません: $COMPOSE_FILE"
     exit 1
@@ -96,18 +92,6 @@ echo "🛠️  対象サービス : ${SERVICES:-全サービス}"
 [ "$CLEAN_ALL" = true ] && echo "🧹 モード       : FULL CLEAN (全消去後に再構築)"
 echo "---------------------------------------"
 
-# =========================================================
-# ✨ 【追加】外部ネットワークの自動作成
-# =========================================================
-EXTERNAL_NET="shin-vps_shared-proxy"
-echo "🌐 ネットワークの整合性を確認中..."
-if ! docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1; then
-    echo "💡 ネットワーク '$EXTERNAL_NET' が見つかりません。作成します..."
-    docker network create "$EXTERNAL_NET"
-else
-    echo "✅ ネットワーク '$EXTERNAL_NET' は準備済みです。"
-fi
-
 # ステップ1: 停止とクリーンアップ
 if [ "$CLEAN_ALL" = true ]; then
     echo "🚨 [1/4] 強制クリーンアップ開始..."
@@ -117,6 +101,19 @@ if [ "$CLEAN_ALL" = true ]; then
 else
     echo "🚀 [1/4] 既存コンテナを停止..."
     docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" stop $SERVICES
+fi
+
+# =========================================================
+# ✨ 【重要：移動】外部ネットワークの自動作成
+# ステップ1の「down」の後に実行することで、確実に存在を保証します
+# =========================================================
+EXTERNAL_NET="shin-vps_shared-proxy"
+echo "🌐 ネットワークの整合性を確認中..."
+if ! docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1; then
+    echo "💡 ネットワーク '$EXTERNAL_NET' が見つかりません。作成します..."
+    docker network create "$EXTERNAL_NET"
+else
+    echo "✅ ネットワーク '$EXTERNAL_NET' は準備済みです。"
 fi
 
 # ステップ2: システム最適化
@@ -136,7 +133,6 @@ docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" build $FINAL_NO_CACHE $SERV
 
 # ステップ4: 起動
 echo "✨ [4/4] コンテナ起動..."
-# --build を付けることで、ビルドした最新イメージを確実に反映させます
 docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d --build --remove-orphans $SERVICES
 
 echo "---------------------------------------"
