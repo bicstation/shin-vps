@@ -1,14 +1,10 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL対応・ローカル名称完全統合版)
+# 🚀 SHIN-VPS 本番環境 (SSL対応・パス競合解消・完全統合版)
 # =====================================================================
-# ⚠️ ATTENTION TO AI / Gemini:
-# 1. DO NOT ADD "-prod" SUFFIX TO SERVICE NAMES OR CONTAINER NAMES.
-# 2. KEEP NAMES IDENTICAL TO LOCAL PC (e.g., "django-v2", "postgres-db-v2").
-# 3. These names are tied to shared scripts; changing them will break the system.
 # ⚠️ AI(Gemini)への警告:
 # 1. サービス名やコンテナ名に "-prod" を付け加えないでください。
 # 2. 必ずローカルPCの設定と「完全に一致」させてください (例: "django-v2")。
-# 3. これらの名前は共通スクリプトで使用されているため、変更は厳禁です。
+# 3. 共通スクリプトで使用されているため、名前の変更は厳禁です。
 # =====================================================================
 
 services:
@@ -21,11 +17,11 @@ services:
     container_name: traefik-proxy
     restart: always
     command:
-      - "--api.dashboard=true"          # ダッシュボードを有効化
-      - "--api.insecure=false"         # 本番環境なので非セキュアアクセスは無効
-      - "--providers.docker=true"      # Dockerコンテナを自動検知
+      - "--api.dashboard=true"           # ダッシュボードを有効化
+      - "--api.insecure=false"          # 本番環境なので非セキュアアクセスは無効
+      - "--providers.docker=true"       # Dockerコンテナを自動検知
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80" # 80番ポート受付け
+      - "--entrypoints.web.address=:80"  # 80番ポート受付け
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure" # HTTPSへ強制リダイレクト
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.address=:443" # 443番ポート(SSL)受付け
@@ -35,11 +31,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # tiper.live 経由でダッシュボードにアクセスする設定
-      - "traefik.http.routers.traefik-dash.rule=Host(`tiper.live`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
+      # 【重要】Traefik自身のダッシュボード設定（Djangoの/apiとの競合を避けるため優先度を調整）
+      - "traefik.http.routers.traefik-dash.rule=Host(`tiper.live`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api/overview`) || PathPrefix(`/api/entrypoints`))"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
+      - "traefik.http.routers.traefik-dash.priority=1500"
     ports:
       - "80:80"
       - "443:443"
@@ -61,12 +58,11 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # VPS固有の絶対パスで永続化 (GitHub同期の影響を受けない場所)
       - /home/maya/docker_volumes/postgres:/var/lib/postgresql/data
     networks:
       - internal-net
     ports:
-      - "5434:5432" # 外部からのDB管理用ポート
+      - "5434:5432" 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -108,8 +104,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # 各ドメインからの API / Admin アクセスを一括受付け
-      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
+      # Djangoは Admin, Static, および明示的な API リクエストを処理
+      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.priority=2000"
       - "traefik.http.routers.django-router.tls.certresolver=le"
@@ -137,6 +133,7 @@ services:
       - "traefik.http.routers.bicstation-router.rule=Host(`bicstation.com`)"
       - "traefik.http.routers.bicstation-router.entrypoints=websecure"
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
+      - "traefik.http.routers.bicstation-router.priority=100"
       - "traefik.http.services.bicstation-svc.loadbalancer.server.port=3000"
 
   next-tiper-v2:
@@ -151,6 +148,7 @@ services:
       - "traefik.http.routers.tiper-router.rule=Host(`tiper.live`)"
       - "traefik.http.routers.tiper-router.entrypoints=websecure"
       - "traefik.http.routers.tiper-router.tls.certresolver=le"
+      - "traefik.http.routers.tiper-router.priority=100"
       - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
 
   next-bic-saving-v2:
@@ -165,6 +163,7 @@ services:
       - "traefik.http.routers.saving-router.rule=Host(`bic-saving.com`)"
       - "traefik.http.routers.saving-router.entrypoints=websecure"
       - "traefik.http.routers.saving-router.tls.certresolver=le"
+      - "traefik.http.routers.saving-router.priority=100"
       - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
 
   next-avflash-v2:
@@ -179,6 +178,7 @@ services:
       - "traefik.http.routers.avflash-router.rule=Host(`avflash.xyz`)"
       - "traefik.http.routers.avflash-router.entrypoints=websecure"
       - "traefik.http.routers.avflash-router.tls.certresolver=le"
+      - "traefik.http.routers.avflash-router.priority=100"
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
 
   # ---------------------------------------------------------------------
@@ -210,7 +210,7 @@ services:
     depends_on:
       mariadb-v2: { condition: service_healthy }
     environment:
-      WORDPRESS_DB_HOST: mariadb-v2 # サービス名一致を確認
+      WORDPRESS_DB_HOST: mariadb-v2
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
@@ -293,7 +293,7 @@ networks:
     driver: bridge
   shared-proxy:
     name: shin-vps_shared-proxy
-    external: true # Traefik用の外部共通ネットワーク
+    external: true
 
 volumes:
-  static_volume_prod: # Django静的ファイル用
+  static_volume_prod:
