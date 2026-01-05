@@ -68,7 +68,7 @@ services:
     networks:
       - internal-net
     ports:
-      - "5434:5432" # 外部ツール接続用。内部は5432。
+      - "5434:5432" # 外部ツール接続用
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -269,8 +269,8 @@ services:
     container_name: dozzle
     restart: always
     environment: 
-      # 👇 修正ポイント: 正しいパス指定用環境変数
-      - DOZZLE_BASE_PATH=/logs
+      # 👇 修正: 最新の変数名は DOZZLE_BASE です。
+      - DOZZLE_BASE=/logs
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks: 
@@ -278,18 +278,14 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ルーティング設定: https://tiper.live/logs/
       - "traefik.http.routers.dozzle-router.rule=Host(`tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-router.entrypoints=websecure"
       - "traefik.http.routers.dozzle-router.tls.certresolver=le"
       - "traefik.http.routers.dozzle-router.priority=3500"
       
-      # ⚠️ 注意: Dozzle自身がBASE_PATHを解釈するため、StripPrefixは不要にするのが安全です。
-      # もし表示されない場合は middleware 指定を外してください。
-      # - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
-      # - "traefik.http.routers.dozzle-router.middlewares=dozzle-strip"
-      
-      # Dozzleの内部ポート
+      # ⚠️ 修正: Dozzle側で /logs を処理させるため、Traefikでの StripPrefix は行いません。
+      # これにより、CSS/JSのパス不一致（真っ白画面）を防ぎます。
+
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 # ---------------------------------------------------------------------
