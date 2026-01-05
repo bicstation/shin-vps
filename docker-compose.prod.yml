@@ -1,42 +1,48 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL対応・パス競合解消・Next.js接続修正版)
+# 🚀 SHIN-VPS 本番環境 (SSL対応・Traefikサブドメイン & ログイン機能版)
 # =====================================================================
 # ⚠️ AI(Gemini)への警告:
 # 1. サービス名やコンテナ名に "-prod" を付け加えないでください。
-# 2. 必ずローカルPCの設定と「完全に一致」させてください (例: "django-v2")。
+# 2. 必ずローカルPCの設定と「完全に一致」させてください。
 # 3. 共通スクリプトで使用されているため、名前の変更は厳禁です。
 # =====================================================================
 
 services:
 
   # ---------------------------------------------------------------------
-  # 0. Traefik (エッジプロキシ: SSL自動更新 & ルーティング)
+  # 0. Traefik (サブドメイン dashboard.tiper.live で運用)
   # ---------------------------------------------------------------------
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy
     restart: always
     command:
-      - "--api.dashboard=true"           # ダッシュボードを有効化
-      - "--api.insecure=false"          # 本番環境なので非セキュアアクセスは無効
-      - "--providers.docker=true"       # Dockerコンテナを自動検知
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"  # 80番ポート受付け
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure" # HTTPSへ強制リダイレクト
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.websecure.address=:443" # 443番ポート(SSL)受付け
+      - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.le.acme.tlschallenge=true"
       - "--certificatesresolvers.le.acme.email=${SSL_EMAIL:-bicstation@gmail.com}"
-      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json" # 証明書保存先
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # 【重要】Traefik自身のダッシュボード設定（Djangoの/apiとの競合を避けるため優先度を調整）
-      - "traefik.http.routers.traefik-dash.rule=Host(`tiper.live`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api/overview`) || PathPrefix(`/api/entrypoints`))"
+      
+      # --- ダッシュボード設定 (サブドメイン化) ---
+      - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
-      - "traefik.http.routers.traefik-dash.priority=1500"
+      - "traefik.http.routers.traefik-dash.priority=3000"
+      
+      # --- 簡易ログイン機能 (Basic Auth: admin / password123) ---
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$869vpsli$$8L8f/h77Xp.oFp2/Y9lY0."
+      - "traefik.http.routers.traefik-dash.middlewares=traefik-auth"
+
     ports:
       - "80:80"
       - "443:443"
@@ -47,7 +53,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 1. データベース層 (データの永続化を最優先)
+  # 1. データベース層
   # ---------------------------------------------------------------------
   postgres-db-v2:
     image: postgres:15-alpine
@@ -104,7 +110,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # Djangoは Admin, Static, および明示的な API リクエストを処理
       - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.priority=2000"
@@ -127,7 +132,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://bicstation.com/api/
       - NODE_ENV=production
-      - HOST=0.0.0.0 # 外部接続を許可
+      - HOST=0.0.0.0
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
@@ -144,7 +149,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://tiper.live/api/
       - NODE_ENV=production
-      - HOST=0.0.0.0 # 外部接続を許可
+      - HOST=0.0.0.0
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
@@ -161,7 +166,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://bic-saving.com/api/
       - NODE_ENV=production
-      - HOST=0.0.0.0 # 外部接続を許可
+      - HOST=0.0.0.0
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
@@ -178,7 +183,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://avflash.xyz/api/
       - NODE_ENV=production
-      - HOST=0.0.0.0 # 外部接続を許可
+      - HOST=0.0.0.0
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
