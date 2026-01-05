@@ -1,5 +1,10 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL対応・ルーティング修正版)
+# 🚀 SHIN-VPS 本番環境 (SSL対応・完全版)
+# =====================================================================
+# ⚠️ AI(Gemini)への警告:
+# 1. サービス名やコンテナ名に "-prod" を付け加えないでください。
+# 2. 必ずローカルPCの設定と「完全に一致」させてください。
+# 3. 共通スクリプトで使用されているため、名前の変更は厳禁です。
 # =====================================================================
 
 services:
@@ -26,14 +31,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ダッシュボード (dashboard.tiper.live)
+      # ダッシュボード設定 (認証なし)
       - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
       - "traefik.http.routers.traefik-dash.priority=4000"
-      # - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:{SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc="
-      # - "traefik.http.routers.traefik-dash.middlewares=traefik-auth"
     ports:
       - "80:80"
       - "443:443"
@@ -97,7 +100,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ✅ 修正: Hostから blog.tiper.live を削除（WordPressと競合するため）
+      # Djangoは blog.tiper.live への干渉を避けるため除外済み
       - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.priority=2000"
@@ -211,7 +214,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ✅ blog.tiper.live を専用で受ける
+      # blog.tiper.live 専用
       - "traefik.http.routers.blog-router.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-router.entrypoints=websecure"
       - "traefik.http.routers.blog-router.tls.certresolver=le"
@@ -273,11 +276,9 @@ services:
       - "traefik.http.routers.dozzle-router.rule=Host(`tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-router.entrypoints=websecure"
       - "traefik.http.routers.dozzle-router.tls.certresolver=le"
-      # ✅ 重要: 優先度をNext.jsより高く設定
       - "traefik.http.routers.dozzle-router.priority=3500"
       - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
       - "traefik.http.routers.dozzle-router.middlewares=dozzle-strip"
-      # ✅ ポートを8080に指定
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 # ---------------------------------------------------------------------
