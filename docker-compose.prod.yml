@@ -31,7 +31,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ダッシュボード設定 (認証なし)
+      # ダッシュボード (dashboard.tiper.live)
       - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
@@ -100,7 +100,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # Djangoは blog.tiper.live への干渉を避けるため除外済み
       - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.priority=2000"
@@ -214,7 +213,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # blog.tiper.live 専用
       - "traefik.http.routers.blog-router.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-router.entrypoints=websecure"
       - "traefik.http.routers.blog-router.tls.certresolver=le"
