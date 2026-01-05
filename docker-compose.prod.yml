@@ -1,10 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL対応・完全版)
-# =====================================================================
-# ⚠️ AI(Gemini)への警告:
-# 1. サービス名やコンテナ名に "-prod" を付け加えないでください。
-# 2. 必ずローカルPCの設定と「完全に一致」させてください。
-# 3. 共通スクリプトで使用されているため、名前の変更は厳禁です。
+# 🚀 SHIN-VPS 本番環境 (SSL対応・ルーティング修正版)
 # =====================================================================
 
 services:
@@ -31,12 +26,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ダッシュボード設定
+      # ダッシュボード (dashboard.tiper.live)
       - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
-      - "traefik.http.routers.traefik-dash.priority=3000"
+      - "traefik.http.routers.traefik-dash.priority=4000"
       - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:{SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc="
       - "traefik.http.routers.traefik-dash.middlewares=traefik-auth"
     ports:
@@ -102,7 +97,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
+      # ✅ 修正: Hostから blog.tiper.live を削除（WordPressと競合するため）
+      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.priority=2000"
       - "traefik.http.routers.django-router.tls.certresolver=le"
@@ -186,7 +182,7 @@ services:
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.static-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/static`)"
       - "traefik.http.routers.static-router.entrypoints=websecure"
-      - "traefik.http.routers.static-router.priority=2100"
+      - "traefik.http.routers.static-router.priority=2500"
       - "traefik.http.routers.static-router.tls.certresolver=le"
       - "traefik.http.services.nginx-svc.loadbalancer.server.port=80"
 
@@ -215,6 +211,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
+      # ✅ blog.tiper.live を専用で受ける
       - "traefik.http.routers.blog-router.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-router.entrypoints=websecure"
       - "traefik.http.routers.blog-router.tls.certresolver=le"
@@ -222,7 +219,7 @@ services:
       - "traefik.http.services.nginx-wp-svc.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
-  # 5. 管理ツール層 (パス解決・ネットワーク修正)
+  # 5. 管理ツール層 (パス解決)
   # ---------------------------------------------------------------------
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin
@@ -237,7 +234,7 @@ services:
       - "traefik.http.routers.pma-router.rule=Host(`tiper.live`) && PathPrefix(`/phpmyadmin`)"
       - "traefik.http.routers.pma-router.entrypoints=websecure"
       - "traefik.http.routers.pma-router.tls.certresolver=le"
-      - "traefik.http.routers.pma-router.priority=2500"
+      - "traefik.http.routers.pma-router.priority=3100"
       - "traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin"
       - "traefik.http.routers.pma-router.middlewares=pma-strip"
       - "traefik.http.services.pma-svc.loadbalancer.server.port=80"
@@ -257,7 +254,7 @@ services:
       - "traefik.http.routers.pgadmin-router.rule=Host(`tiper.live`) && PathPrefix(`/pgadmin`)"
       - "traefik.http.routers.pgadmin-router.entrypoints=websecure"
       - "traefik.http.routers.pgadmin-router.tls.certresolver=le"
-      - "traefik.http.routers.pgadmin-router.priority=2500"
+      - "traefik.http.routers.pgadmin-router.priority=3100"
       - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
 
   dozzle:
@@ -276,10 +273,11 @@ services:
       - "traefik.http.routers.dozzle-router.rule=Host(`tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-router.entrypoints=websecure"
       - "traefik.http.routers.dozzle-router.tls.certresolver=le"
-      # 重要: Next.js(100)より優先度を高くし、確実にこのルールを先に評価させる
-      - "traefik.http.routers.dozzle-router.priority=3000"
+      # ✅ 重要: 優先度をNext.jsより高く設定
+      - "traefik.http.routers.dozzle-router.priority=3500"
       - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
       - "traefik.http.routers.dozzle-router.middlewares=dozzle-strip"
+      # ✅ ポートを8080に指定
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 # ---------------------------------------------------------------------
