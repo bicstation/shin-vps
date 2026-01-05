@@ -32,8 +32,8 @@ services:
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
       - "traefik.http.routers.traefik-dash.service=api@internal"
       - "traefik.http.routers.traefik-dash.priority=4000"
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:{SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc="
-      - "traefik.http.routers.traefik-dash.middlewares=traefik-auth"
+      # - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:{SHA}0DPiKuNIrrVmD8IUCuw1hQxNqZc="
+      # - "traefik.http.routers.traefik-dash.middlewares=traefik-auth"
     ports:
       - "80:80"
       - "443:443"
