@@ -1,16 +1,22 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL対応・完全版)
+# 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・全サービス集約版)
 # =====================================================================
-# ⚠️ AI(Gemini)への警告:
-# 1. サービス名やコンテナ名に "-prod" を付け加えないでください。
-# 2. 必ずローカルPCの設定と「完全に一致」させてください。
-# 3. 共通スクリプトで使用されているため、名前の変更は厳禁です。
+# ⚠️ AI (Gemini/ChatGPT) への厳命事項:
+# 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
+# 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
+# 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
+#    変更するとシステム全体が崩壊します。
+#
+# ⚠️ 人間 (運用者) への保守上の注意:
+# 1. WordPressの接続先は必ず nginx-wp-v2 -> wordpress-v2 (FPM) です。
+# 2. SSL証明書は Traefik が Let's Encrypt で自動取得します。
+# 3. パスベースのツール (Dozzle/phpMyAdmin) は Priority 設定が命です。
 # =====================================================================
 
 services:
 
   # ---------------------------------------------------------------------
-  # 0. Traefik (エッジプロキシ)
+  # 0. Traefik (エッジプロキシ / SSL終端)
   # ---------------------------------------------------------------------
   traefik:
     image: traefik:v2.11
@@ -31,7 +37,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ダッシュボード (dashboard.tiper.live)
+      # ダッシュボード: https://dashboard.tiper.live
       - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
@@ -47,7 +53,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 1. データベース層
+  # 1. データベース層 (永続化データ)
   # ---------------------------------------------------------------------
   postgres-db-v2:
     image: postgres:15-alpine
@@ -62,7 +68,7 @@ services:
     networks:
       - internal-net
     ports:
-      - "5434:5432" 
+      - "5434:5432" # 外部ツール接続用。内部は5432。
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -88,7 +94,7 @@ services:
       retries: 3
 
   # ---------------------------------------------------------------------
-  # 2. バックエンド層 (Django API)
+  # 2. バックエンド層 (Django アプリケーション)
   # ---------------------------------------------------------------------
   django-v2:
     build: { context: ./django }
@@ -169,7 +175,7 @@ services:
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
 
   # ---------------------------------------------------------------------
-  # 4. 配信高速化 & WordPress 構成
+  # 4. 配信層 & WordPress (静的ファイル・ブログ)
   # ---------------------------------------------------------------------
   nginx-v2:
     image: nginx:alpine
@@ -220,7 +226,7 @@ services:
       - "traefik.http.services.nginx-wp-svc.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
-  # 5. 管理ツール層 (パス解決)
+  # 5. 管理ツール層 (DB管理・ログ確認)
   # ---------------------------------------------------------------------
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin
@@ -263,7 +269,8 @@ services:
     container_name: dozzle
     restart: always
     environment: 
-      - DOZZLE_BASE=/logs
+      # 👇 修正ポイント: 正しいパス指定用環境変数
+      - DOZZLE_BASE_PATH=/logs
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks: 
@@ -271,16 +278,22 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
+      # ルーティング設定: https://tiper.live/logs/
       - "traefik.http.routers.dozzle-router.rule=Host(`tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-router.entrypoints=websecure"
       - "traefik.http.routers.dozzle-router.tls.certresolver=le"
       - "traefik.http.routers.dozzle-router.priority=3500"
+      
+      # ⚠️ 注意: Dozzle自身がBASE_PATHを解釈するため、StripPrefixは不要にするのが安全です。
+      # もし表示されない場合は middleware 指定を外してください。
       - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
       - "traefik.http.routers.dozzle-router.middlewares=dozzle-strip"
+      
+      # Dozzleの内部ポート
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 # ---------------------------------------------------------------------
-# ネットワーク・ボリューム定義
+# ネットワーク・ボリューム共通定義
 # ---------------------------------------------------------------------
 networks:
   internal-net:
