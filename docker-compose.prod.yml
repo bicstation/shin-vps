@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境 (SSL対応・全サービス接続修正版)
+# 🚀 SHIN-VPS 本番環境 (SSL対応・完全版)
 # =====================================================================
 # ⚠️ AI(Gemini)への警告:
 # 1. サービス名やコンテナ名に "-prod" を付け加えないでください。
@@ -31,7 +31,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ダッシュボード (SHA形式認証)
+      # ダッシュボード設定
       - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
@@ -218,6 +218,7 @@ services:
       - "traefik.http.routers.blog-router.rule=Host(`blog.tiper.live`)"
       - "traefik.http.routers.blog-router.entrypoints=websecure"
       - "traefik.http.routers.blog-router.tls.certresolver=le"
+      - "traefik.http.routers.blog-router.priority=2200"
       - "traefik.http.services.nginx-wp-svc.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
@@ -237,7 +238,6 @@ services:
       - "traefik.http.routers.pma-router.entrypoints=websecure"
       - "traefik.http.routers.pma-router.tls.certresolver=le"
       - "traefik.http.routers.pma-router.priority=2500"
-      # パスから /phpmyadmin を削ってコンテナに渡す設定
       - "traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin"
       - "traefik.http.routers.pma-router.middlewares=pma-strip"
       - "traefik.http.services.pma-svc.loadbalancer.server.port=80"
@@ -263,17 +263,21 @@ services:
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
-    environment: { DOZZLE_BASE: /logs }
-    volumes: [/var/run/docker.sock:/var/run/docker.sock:ro]
-    networks: [shared-proxy]
+    restart: always
+    environment: 
+      - DOZZLE_BASE=/logs
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: 
+      - shared-proxy
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.dozzle-router.rule=Host(`tiper.live`) && PathPrefix(`/logs`)"
       - "traefik.http.routers.dozzle-router.entrypoints=websecure"
       - "traefik.http.routers.dozzle-router.tls.certresolver=le"
-      - "traefik.http.routers.dozzle-router.priority=2500"
-      # /logs を削って内部の / に繋ぐ設定
+      # 重要: Next.js(100)より優先度を高くし、確実にこのルールを先に評価させる
+      - "traefik.http.routers.dozzle-router.priority=3000"
       - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
       - "traefik.http.routers.dozzle-router.middlewares=dozzle-strip"
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
