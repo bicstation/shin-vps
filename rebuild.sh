@@ -81,6 +81,19 @@ if [ ! -f "$COMPOSE_FILE" ]; then
 fi
 
 # ---------------------------------------------------------
+# ✨ 【最優先：追加】外部ネットワークの強制確保
+# どのDocker Compose操作よりも先に実行することで、externalエラーを防止します。
+# ---------------------------------------------------------
+EXTERNAL_NET="shin-vps_shared-proxy"
+echo "🌐 ネットワークの整合性を確認中..."
+if ! docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1; then
+    echo "💡 ネットワーク '$EXTERNAL_NET' が見つかりません。作成します..."
+    docker network create "$EXTERNAL_NET"
+else
+    echo "✅ ネットワーク '$EXTERNAL_NET' は準備済みです。"
+fi
+
+# ---------------------------------------------------------
 # 5. 実行セクション
 # ---------------------------------------------------------
 cd "$SCRIPT_DIR"
@@ -95,25 +108,14 @@ echo "---------------------------------------"
 # ステップ1: 停止とクリーンアップ
 if [ "$CLEAN_ALL" = true ]; then
     echo "🚨 [1/4] 強制クリーンアップ開始..."
+    # ネットワークが存在しないと down すら失敗するため、事前に作成済みである必要があります
     docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" down --volumes --remove-orphans
     echo "🧹 ビルドキャッシュを破棄..."
     docker builder prune -af
 else
     echo "🚀 [1/4] 既存コンテナを停止..."
+    # 引数がある場合はそのサービスだけ、ない場合は全停止
     docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" stop $SERVICES
-fi
-
-# =========================================================
-# ✨ 【重要：移動】外部ネットワークの自動作成
-# ステップ1の「down」の後に実行することで、確実に存在を保証します
-# =========================================================
-EXTERNAL_NET="shin-vps_shared-proxy"
-echo "🌐 ネットワークの整合性を確認中..."
-if ! docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1; then
-    echo "💡 ネットワーク '$EXTERNAL_NET' が見つかりません。作成します..."
-    docker network create "$EXTERNAL_NET"
-else
-    echo "✅ ネットワーク '$EXTERNAL_NET' は準備済みです。"
 fi
 
 # ステップ2: システム最適化
