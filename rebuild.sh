@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS 高機能再構築スクリプト (ネットワーク自動生成・完全統合版)
+# 🚀 SHIN-VPS 高機能再構築スクリプト (ネットワーク整合性・完全版)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_NAME="shin-vps"
+# ⚠️ プロジェクト名を空にすることで、ディレクトリ名(shin-vps)に基づいた標準的な命名規則に従わせます。
+PROJECT_NAME="" 
 CURRENT_HOSTNAME=$(hostname)
 CURRENT_USER=$USER
 
@@ -81,8 +82,7 @@ if [ ! -f "$COMPOSE_FILE" ]; then
 fi
 
 # ---------------------------------------------------------
-# ✨ 【最優先：追加】外部ネットワークの強制確保
-# どのDocker Compose操作よりも先に実行することで、externalエラーを防止します。
+# ✨ 【最優先】外部ネットワークの強制確保
 # ---------------------------------------------------------
 EXTERNAL_NET="shin-vps_shared-proxy"
 echo "🌐 ネットワークの整合性を確認中..."
@@ -98,24 +98,26 @@ fi
 # ---------------------------------------------------------
 cd "$SCRIPT_DIR"
 
+# プロジェクト名のオプションを構築（空の場合は指定しない）
+P_OPT=""
+if [ -n "$PROJECT_NAME" ]; then
+    P_OPT="-p $PROJECT_NAME"
+fi
+
 echo "---------------------------------------"
 echo "🎯 実行環境     : $TARGET"
 echo "📄 設定ファイル : $COMPOSE_FILE"
 echo "🛠️  対象サービス : ${SERVICES:-全サービス}"
-[ "$CLEAN_ALL" = true ] && echo "🧹 モード       : FULL CLEAN (全消去後に再構築)"
 echo "---------------------------------------"
 
-# ステップ1: 停止とクリーンアップ
+# ステップ1: 停止
 if [ "$CLEAN_ALL" = true ]; then
     echo "🚨 [1/4] 強制クリーンアップ開始..."
-    # ネットワークが存在しないと down すら失敗するため、事前に作成済みである必要があります
-    docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" down --volumes --remove-orphans
-    echo "🧹 ビルドキャッシュを破棄..."
+    docker compose -f "$COMPOSE_FILE" $P_OPT down --volumes --remove-orphans
     docker builder prune -af
 else
     echo "🚀 [1/4] 既存コンテナを停止..."
-    # 引数がある場合はそのサービスだけ、ない場合は全停止
-    docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" stop $SERVICES
+    docker compose -f "$COMPOSE_FILE" $P_OPT stop $SERVICES
 fi
 
 # ステップ2: システム最適化
@@ -123,7 +125,7 @@ if [ -n "$NO_CACHE" ] || [ "$CLEAN_ALL" = true ]; then
     echo "🧹 [2/4] 未使用イメージを削除..."
     docker system prune -f
 else
-    echo "⏭️  [2/4] キャッシュを利用して高速ビルドします。"
+    echo "⏭️  [2/4] 高速ビルドを実行します。"
 fi
 
 # ステップ3: ビルド
@@ -131,12 +133,12 @@ echo "🛠️  [3/4] Dockerビルド実行..."
 FINAL_NO_CACHE=$NO_CACHE
 [ "$CLEAN_ALL" = true ] && FINAL_NO_CACHE="--no-cache"
 
-docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" build $FINAL_NO_CACHE $SERVICES
+docker compose -f "$COMPOSE_FILE" $P_OPT build $FINAL_NO_CACHE $SERVICES
 
 # ステップ4: 起動
 echo "✨ [4/4] コンテナ起動..."
-docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" up -d --build --remove-orphans $SERVICES
+docker compose -f "$COMPOSE_FILE" $P_OPT up -d --build --remove-orphans $SERVICES
 
 echo "---------------------------------------"
 echo "✅ 再構築が完了しました！"
-docker compose -f "$COMPOSE_FILE" -p "$PROJECT_NAME" ps $SERVICES
+docker compose -f "$COMPOSE_FILE" $P_OPT ps $SERVICES
