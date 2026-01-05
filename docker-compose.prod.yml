@@ -286,8 +286,8 @@ services:
       
       # ⚠️ 注意: Dozzle自身がBASE_PATHを解釈するため、StripPrefixは不要にするのが安全です。
       # もし表示されない場合は middleware 指定を外してください。
-      - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
-      - "traefik.http.routers.dozzle-router.middlewares=dozzle-strip"
+      # - "traefik.http.middlewares.dozzle-strip.stripprefix.prefixes=/logs"
+      # - "traefik.http.routers.dozzle-router.middlewares=dozzle-strip"
       
       # Dozzleの内部ポート
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
