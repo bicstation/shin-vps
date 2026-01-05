@@ -40,8 +40,7 @@ services:
       - "traefik.http.routers.traefik-dash.priority=3000"
       
       # --- 簡易ログイン機能 (Basic Auth: admin / password123) ---
-      # - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$869vpsli$$8L8f/h77Xp.oFp2/Y9lY0."
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$S879f6mY$$6D8T19688v19688v19688."
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=admin:$$apr1$$869vpsli$$8L8f/h77Xp.oFp2/Y9lY0."
       - "traefik.http.routers.traefik-dash.middlewares=traefik-auth"
 
     ports:
