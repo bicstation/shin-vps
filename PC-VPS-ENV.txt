@@ -1,0 +1,14 @@
+wordpress自動投稿パスワード
+
+9re0 t3de WCe1 u1IL MudX 31IY
+
+
+
+curl -X POST https://blog.tiper.live/wp-json/wp/v2/posts \
+    -u "bicstation:9re0 t3de WCe1 u1IL MudX 31IY" \
+    -H "Content-Type: application/json" \
+    -d '{
+        "title": "VPSからのテスト投稿",
+        "content": "この投稿はVPSのターミナルからAPI経由で送信されました。成功です！",
+        "status": "publish"
+    }'
