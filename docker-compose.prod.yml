@@ -5,12 +5,13 @@
 # 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
 # 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
 # 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
-#    変更するとシステム全体が崩壊します。
+#     変更するとシステム全体が崩壊します。
 #
 # ⚠️ 人間 (運用者) への保守上の注意:
 # 1. WordPressの接続先は必ず nginx-wp-v2 -> wordpress-v2 (FPM) です。
 # 2. SSL証明書は Traefik が Let's Encrypt で自動取得します。
 # 3. パスベースのツール (Dozzle/phpMyAdmin) は Priority 設定が命です。
+# 4. Ofelia による定期投稿ジョブは django-v2 サービスのラベルで管理しています。
 # =====================================================================
 
 services:
@@ -51,6 +52,21 @@ services:
       - /home/maya/docker_volumes/traefik/acme.json:/letsencrypt/acme.json
     networks:
       - shared-proxy
+
+  # ---------------------------------------------------------------------
+  # 0.5 Ofelia (ジョブスケジューラ / 定期実行)
+  # ---------------------------------------------------------------------
+  scheduler:
+    image: mcuadros/ofelia:latest
+    container_name: bicstation-scheduler
+    restart: always
+    depends_on:
+      - django-v2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - shared-proxy
+    command: daemon --docker
 
   # ---------------------------------------------------------------------
   # 1. データベース層 (永続化データ)
@@ -111,6 +127,11 @@ services:
       - "traefik.http.routers.django-router.priority=2000"
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
+      # 👇 Ofelia 設定: AI記事の毎日自動投稿
+      - "ofelia.enabled=true"
+      - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
+      - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
+      - "ofelia.job-exec.ai_blog_post.no-overlap=true"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
       - ./django:/usr/src/app
@@ -269,7 +290,6 @@ services:
     container_name: dozzle
     restart: always
     environment: 
-      # 👇 修正: 最新の変数名は DOZZLE_BASE です。
       - DOZZLE_BASE=/logs
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -282,10 +302,6 @@ services:
       - "traefik.http.routers.dozzle-router.entrypoints=websecure"
       - "traefik.http.routers.dozzle-router.tls.certresolver=le"
       - "traefik.http.routers.dozzle-router.priority=3500"
-      
-      # ⚠️ 修正: Dozzle側で /logs を処理させるため、Traefikでの StripPrefix は行いません。
-      # これにより、CSS/JSのパス不一致（真っ白画面）を防ぎます。
-
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 # ---------------------------------------------------------------------
