@@ -8,7 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DBから製品情報を取得し、GeminiでAIレビュー記事を生成してWordPressへ自動投稿します'
+    help = 'DBから製品情報を取得し、スペック詳細を含めたAIレビュー記事を生成してカテゴリー・タグ付きでWordPressへ自動投稿します'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -25,10 +25,14 @@ class Command(BaseCommand):
         
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
+        # WordPress ID設定
+        CAT_LENOVO = 4     # カテゴリーID: レノボ
+        TAG_DESKTOP = 5    # タグID: デスクトップ
+        TAG_LAPTOP = 6     # タグID: ノートブック
+
         # ==========================================
         # 2. 投稿対象商品の選定 (DB操作)
         # ==========================================
-        # Lenovo製品かつ有効(is_active)で、受注停止中ではないものをランダムに1つ取得
         products = PCProduct.objects.filter(
             maker__icontains='Lenovo',
             is_active=True
@@ -41,11 +45,19 @@ class Command(BaseCommand):
         product = random.choice(products)
         self.stdout.write(self.style.SUCCESS(f"ターゲット商品確定: {product.name} (ID: {product.unique_id})"))
 
-        # 自社サイト(Bicstation)の製品詳細ページURLを生成
+        # 商品名からデスクトップかノートブックかを判定してタグを決定
+        target_tags = []
+        name_lower = product.name.lower()
+        if any(keyword in name_lower for keyword in ["desktop", "tower", "station", "aio", "tiny", "center"]):
+            target_tags.append(TAG_DESKTOP)
+        else:
+            target_tags.append(TAG_LAPTOP)
+
+        # 自社サイトURL生成
         bic_detail_url = f"https://bicstation.com/product/{product.unique_id}/"
 
         # ==========================================
-        # 3. 商品画像のアップロード (WordPress Media API)
+        # 3. 商品画像のアップロード
         # ==========================================
         media_id = None
         media_url = ""
@@ -77,12 +89,11 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
         # ==========================================
-        # 4. Geminiプロンプトの構築 (拒否回避用最適化)
+        # 4. Geminiプロンプトの構築 (詳細スペック重視版)
         # ==========================================
-        # 役割を「客観的な技術解説者」にすることで、AIの広告フィルターを回避します
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
-        以下の製品データに基づき、ITニュースサイト向けの「HTMLソースコードのみ」を出力してください。
+        以下の製品データに基づき、ITニュースサイト向けの深く鋭い「HTMLソースコードのみ」を出力してください。
 
         【製品データ】
         メーカー: {product.maker}
@@ -93,16 +104,22 @@ class Command(BaseCommand):
         【出力ルール】
         - 1行目は「記事のタイトル」のみ（HTMLタグ不要）。
         - 2行目から「本文のHTML」を開始してください。
-        - 挨拶や"承知いたしました"等の前置き、メタ情報は一切不要です。
-        - 見出しは <h2> または <h3>、スペックは <ul> を使用してください。
+        - 以下の構成で2000文字以上の情報量を目指してください：
+          1. この製品の概要と市場における立ち位置。
+          2. CPU、グラフィックス(GPU)、メモリ、SSD/ストレージの各仕様に対する技術的解説。
+             (具体的にどのような作業に耐えうるか、前世代や競合と比較して何が優れているか)
+          3. 筐体のデザイン、インターフェース、拡張性についての考察。
+          4. どのようなユーザー（クリエイター、ゲーマー、ビジネスマン等）に最適か。
+        - 見出しは <h2> または <h3>、リストは <ul> を使用してください。
+        - 挨拶や余計な前置きは一切不要です。
         - 文末は必ず「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締めてください。
-        - 広告的な勧誘表現を避け、スペックに基づいた客観的な特徴を解説してください。
+        - 出力は必ず日本語で行ってください。
         """
 
         # ==========================================
         # 5. Gemini API 実行
         # ==========================================
-        self.stdout.write("GeminiがHTML記事を生成中...")
+        self.stdout.write("Geminiが詳細レビュー記事を生成中...")
         
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
@@ -115,14 +132,11 @@ class Command(BaseCommand):
         }
 
         try:
-            response = requests.post(GEMINI_URL, json=payload, timeout=30)
+            response = requests.post(GEMINI_URL, json=payload, timeout=40)
             res_json = response.json()
             
             if 'candidates' not in res_json:
-                reason = res_json.get('promptFeedback', {}).get('blockReason', 'UNKNOWN')
-                self.stdout.write(self.style.ERROR(f"Geminiが回答を拒否しました。理由: {reason}"))
-                # 拒否された場合のみ生レスポンスを出力して原因を特定しやすくする
-                self.stdout.write(f"詳細レスポンス: {res_json}")
+                self.stdout.write(self.style.ERROR(f"Gemini拒否: {res_json}"))
                 return
 
             ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
@@ -131,17 +145,15 @@ class Command(BaseCommand):
             clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
             lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
             
-            # メタ情報の除外フィルター
+            # フィルタリング
             filtered_lines = []
-            exclude_keywords = ["執筆者:", "カテゴリ:", "構成:", "ターゲット:", "思考プロセス", "Persona:", "メタ情報"]
-            
+            exclude_keywords = ["執筆者:", "カテゴリ:", "構成:", "思考プロセス", "Persona:"]
             for line in lines:
                 if any(k in line for k in exclude_keywords): continue
-                if re.match(r'^(\d+\.|タイトル：|Title:)', line): continue
                 filtered_lines.append(line)
 
             if not filtered_lines:
-                self.stdout.write(self.style.ERROR("有効なコンテンツが生成されませんでした。"))
+                self.stdout.write(self.style.ERROR("コンテンツ生成失敗"))
                 return
 
             title = filtered_lines[0].replace('#', '').strip()
@@ -164,11 +176,11 @@ class Command(BaseCommand):
                         <p style="color: #ef4444; font-weight: bold; font-size: 1.3em; margin: 10px 0;">価格：{product.price}円</p>
                         <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
                             <a href="{product.url}" target="_blank" rel="noopener noreferrer" 
-                               style="flex: 1; min-width: 140px; background-color: #0062ff; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.95em;">
+                               style="flex: 1; min-width: 140px; background-color: #0062ff; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
                                公式サイト ＞
                             </a>
                             <a href="{bic_detail_url}" target="_blank" rel="noopener"
-                               style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.95em;">
+                               style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
                                Bicstation詳細 ＞
                             </a>
                         </div>
@@ -188,13 +200,15 @@ class Command(BaseCommand):
             full_content = f"{top_img_html}\n{main_body_html}\n{custom_card_html}"
 
             # ==========================================
-            # 7. WordPress 投稿実行
+            # 7. WordPress 投稿実行 (カテゴリーとタグを適用)
             # ==========================================
             wp_payload = {
                 "title": title,
                 "content": full_content,
                 "status": "publish",
-                "featured_media": media_id
+                "featured_media": media_id,
+                "categories": [CAT_LENOVO], # レノボ カテゴリー
+                "tags": target_tags           # デスクトップ or ノートブック タグ
             }
             
             wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
