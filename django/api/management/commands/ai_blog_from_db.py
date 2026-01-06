@@ -1,23 +1,28 @@
 from django.core.management.base import BaseCommand
-# 正しいインポートパス：ファイル名が pc_products なので .pc_products になります
 from api.models.pc_products import PCProduct 
 import requests
 import random
+import os
 from requests.auth import HTTPBasicAuth
+from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DB内のLenovo製品情報を元にGeminiで商品紹介記事を生成します'
+    help = 'DB内のLenovo製品情報を元に、画像（アイキャッチ）付きでGemini記事を生成しWordPressに投稿します'
 
     def handle(self, *args, **options):
-        # --- 設定 ---
+        # --- 設定エリア ---
         GEMINI_API_KEY = "AIzaSyA-o3ZZUGLIscJJnD0HTnlxWqniLuwZhR8"
-        WP_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
+        # 投稿用エンドポイントとメディア用エンドポイントを分ける
+        WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
+        WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
+        
+        AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
         GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
 
-        # 1. DBから在庫があり、Lenovoの製品をランダムに取得
-        # モデル定義に合わせて 'PCProduct' を使用
+        # 1. DBから対象商品を取得
+        # 在庫があり、掲載中(is_active)のLenovo製品をランダムに1つ選ぶ
         products = PCProduct.objects.filter(
             maker__icontains='Lenovo',
             is_active=True
@@ -30,7 +35,38 @@ class Command(BaseCommand):
         product = random.choice(products)
         self.stdout.write(self.style.SUCCESS(f"ターゲット商品確定: {product.name}"))
 
-        # 2. プロンプト作成（モデルのフィールドをフル活用）
+        # 2. 商品画像をWordPressへアップロード
+        media_id = None
+        if product.image_url:
+            self.stdout.write(f"画像をアップロード中: {product.image_url}")
+            try:
+                img_res = requests.get(product.image_url, timeout=15)
+                if img_res.status_code == 200:
+                    # 一時ファイルを作成して送信
+                    with NamedTemporaryFile(delete=True) as img_temp:
+                        img_temp.write(img_res.content)
+                        img_temp.flush()
+                        
+                        files = {
+                            'file': (f"{product.unique_id}.jpg", open(img_temp.name, 'rb'), 'image/jpeg')
+                        }
+                        # WordPressメディアライブラリへ登録
+                        media_upload_res = requests.post(
+                            WP_MEDIA_URL,
+                            auth=AUTH,
+                            files=files,
+                            headers={'Content-Disposition': f'attachment; filename={product.unique_id}.jpg'}
+                        )
+                        
+                        if media_upload_res.status_code == 201:
+                            media_id = media_upload_res.json().get('id')
+                            self.stdout.write(self.style.SUCCESS(f"メディア登録完了 (ID: {media_id})"))
+                        else:
+                            self.stdout.write(self.style.WARNING(f"メディア登録失敗: {media_upload_res.text}"))
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
+
+        # 3. Geminiによる執筆プロンプト作成
         prompt = f"""
         あなたはテック系ブログ『Bicstation』の専門レビュアーです。
         以下の実在するPC製品データに基づき、読者が購入したくなる魅力的な紹介記事を日本語で書いてください。
@@ -50,14 +86,14 @@ class Command(BaseCommand):
         5. 最後に必ず以下の形式でリンクを含めてください：
            [詳しくはこちら： {product.url} ]
 
-        挨拶や「承知いたしました」等の発言は一切不要です。
+        挨拶やメタ発言（「承知しました」等）は一切不要です。
         """
 
-        # 3. Gemini API 呼び出し
+        # 4. Gemini API 呼び出し
+        self.stdout.write("Geminiが記事を執筆中...")
         payload = { "contents": [{ "parts": [{"text": prompt}] }] }
         
         try:
-            self.stdout.write("Geminiが記事を執筆中...")
             response = requests.post(GEMINI_URL, json=payload)
             res_json = response.json()
             
@@ -70,17 +106,18 @@ class Command(BaseCommand):
             title = lines[0].replace('#', '').strip()
             content = '\n'.join(lines[1:]).strip()
 
-            # 4. WordPress 投稿
+            # 5. WordPress 投稿（アイキャッチ画像を紐付け）
             wp_payload = {
                 "title": title,
                 "content": content,
-                "status": "publish"
+                "status": "publish",
+                "featured_media": media_id  # 取得したメディアIDをセット
             }
             
             wp_res = requests.post(
-                WP_URL, 
+                WP_POST_URL, 
                 json=wp_payload, 
-                auth=HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
+                auth=AUTH
             )
             
             if wp_res.status_code == 201:
@@ -90,4 +127,4 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"予期せヌエラー: {e}"))
+            self.stdout.write(self.style.ERROR(f"実行時エラー: {e}"))
