@@ -7,7 +7,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DB内のLenovo製品情報を元に、ブログカードと画像付きの豪華な記事を生成しWordPressに投稿します'
+    help = 'DB内のLenovo製品情報を元に、HTML見出しとブログカード付きの豪華な記事を生成しWordPressに投稿します'
 
     def handle(self, *args, **options):
         # --- 設定エリア ---
@@ -65,10 +65,10 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
-        # 3. Geminiによる執筆プロンプト作成（ブログカード形式を指定）
+        # 3. Geminiによる執筆プロンプト作成（HTMLタグとブログカードを明示）
         prompt = f"""
         あなたはテック系ブログ『Bicstation』の専門レビュアーです。
-        以下の実在するPC製品データに基づき、読者が購入したくなる魅力的な紹介記事を日本語で書いてください。
+        以下の実在するPC製品データに基づき、WordPressでそのまま公開できるリッチな紹介記事を書いてください。
 
         【商品データ】
         メーカー: {product.maker}
@@ -76,19 +76,19 @@ class Command(BaseCommand):
         価格: {product.price}円
         スペック詳細: {product.description}
         
-        【構成ルール】
-        1. 1行目：キャッチーなタイトル（商品名を含み、ベネフィットを強調）
-        2. 導入：このPCがどんな悩みを解決するか
-        3. 特徴：スペック（CPUやメモリ等）を分かりやすく解説
-        4. おすすめユーザー：どんな人に最適か
+        【構成・装飾ルール】
+        1. 1行目：キャッチーなタイトル（タグ不要、テキストのみ）
+        2. 2行目以降：本文
+        3. 本文中の見出しは必ず <h2> または <h3> タグで囲ってください。
+        4. 箇条書きが必要な場合は <ul><li> タグを使用してください。
         5. 最後に必ず以下のショートコードのみを配置してください。
            [blogcard url="{product.url}"]
 
-        挨拶やメタ発言（「承知しました」等）は一切不要です。記事本文のみを出力してください。
+        ※挨拶や「承知しました」などの発言は一切不要です。HTML構造を含んだ本文のみを出力してください。
         """
 
         # 4. Gemini API 呼び出し
-        self.stdout.write("Geminiが記事を執筆中...")
+        self.stdout.write("GeminiがHTML形式で記事を執筆中...")
         payload = { "contents": [{ "parts": [{"text": prompt}] }] }
         
         try:
@@ -100,16 +100,19 @@ class Command(BaseCommand):
                 return
 
             ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
-            lines = ai_text.strip().split('\n')
+            
+            # AIが返してくるMarkdownのコードブロック（```html ... ```）を除去
+            clean_text = ai_text.replace('```html', '').replace('```', '').strip()
+            
+            lines = clean_text.split('\n')
             title = lines[0].replace('#', '').strip()
             
             # 本文の整形（冒頭に画像を挿入し、2行目以降の本文を結合）
-            # media_urlがある場合は、本文のトップに画像を配置するHTMLを追加
-            img_html = f'<img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" />' if media_url else ""
+            img_html = f'<img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="margin-bottom: 20px;" />' if media_url else ""
             main_content = '\n'.join(lines[1:]).strip()
             full_content = f"{img_html}\n\n{main_content}"
 
-            # 5. WordPress 投稿（アイキャッチ画像を紐付け）
+            # 5. WordPress 投稿
             wp_payload = {
                 "title": title,
                 "content": full_content,
