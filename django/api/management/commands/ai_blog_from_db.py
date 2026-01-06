@@ -14,7 +14,7 @@ class Command(BaseCommand):
         # ==========================================
         # 1. 基本設定・認証情報
         # ==========================================
-        GEMINI_API_KEY = "AIzaSyA-o3ZZUGLIscJJnD0HTnlxWqniLuwZhR8"
+        GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
