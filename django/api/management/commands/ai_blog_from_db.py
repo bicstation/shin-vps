@@ -21,10 +21,9 @@ class Command(BaseCommand):
         # APIエンドポイント設定
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
-        # GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
-        # GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-        # GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}"
+        
+        # 【修正ポイント】最も安定して動作するv1betaのパスを指定
+        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
@@ -92,7 +91,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
         # ==========================================
-        # 4. Geminiプロンプトの構築 (詳細スペック重視版)
+        # 4. Geminiプロンプトの構築
         # ==========================================
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
@@ -110,11 +109,10 @@ class Command(BaseCommand):
         - 以下の構成で2000文字以上の情報量を目指してください：
           1. この製品の概要と市場における立ち位置。
           2. CPU、グラフィックス(GPU)、メモリ、SSD/ストレージの各仕様に対する技術的解説。
-             (具体的にどのような作業に耐えうるか、前世代や競合と比較して何が優れているか)
           3. 筐体のデザイン、インターフェース、拡張性についての考察。
-          4. どのようなユーザー（クリエイター、ゲーマー、ビジネスマン等）に最適か。
+          4. どのようなユーザーに最適か。
         - 見出しは <h2> または <h3>、リストは <ul> を使用してください。
-        - 挨拶や余計な前置きは一切不要です。
+        - 挨拶や前置きは一切不要です。
         - 文末は必ず「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締めてください。
         - 出力は必ず日本語で行ってください。
         """
@@ -122,7 +120,7 @@ class Command(BaseCommand):
         # ==========================================
         # 5. Gemini API 実行
         # ==========================================
-        self.stdout.write("Geminiが詳細レビュー記事を生成中...")
+        self.stdout.write("Gemini 1.5 Flashで詳細レビュー記事を生成中...")
         
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
@@ -135,11 +133,12 @@ class Command(BaseCommand):
         }
 
         try:
-            response = requests.post(GEMINI_URL, json=payload, timeout=40)
+            # タイムアウトを少し長めに設定
+            response = requests.post(GEMINI_URL, json=payload, timeout=60)
             res_json = response.json()
             
             if 'candidates' not in res_json:
-                self.stdout.write(self.style.ERROR(f"Gemini拒否: {res_json}"))
+                self.stdout.write(self.style.ERROR(f"Geminiエラー詳細: {res_json}"))
                 return
 
             ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
@@ -203,21 +202,21 @@ class Command(BaseCommand):
             full_content = f"{top_img_html}\n{main_body_html}\n{custom_card_html}"
 
             # ==========================================
-            # 7. WordPress 投稿実行 (カテゴリーとタグを適用)
+            # 7. WordPress 投稿実行
             # ==========================================
             wp_payload = {
                 "title": title,
                 "content": full_content,
                 "status": "publish",
                 "featured_media": media_id,
-                "categories": [CAT_LENOVO], # レノボ カテゴリー
-                "tags": target_tags           # デスクトップ or ノートブック タグ
+                "categories": [CAT_LENOVO], 
+                "tags": target_tags           
             }
             
             wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
             
             if wp_res.status_code == 201:
-                self.stdout.write(self.style.SUCCESS(f"【投稿成功】: {title}"))
+                self.stdout.write(self.style.SUCCESS(f"【投稿成功】: {title} (TagID: {target_tags})"))
             else:
                 self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
 
