@@ -3,11 +3,12 @@ from api.models.pc_products import PCProduct
 import requests
 import random
 import os
+import re
 from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DB内のLenovo製品情報を元に、HTML見出しとブログカード付きの豪華な記事を生成しWordPressに投稿します'
+    help = 'DB内の製品情報を元に、HTML見出しとブログカード付きの豪華な記事を生成しWordPressに投稿します'
 
     def handle(self, *args, **options):
         # --- 設定エリア ---
@@ -65,10 +66,12 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
-        # 3. Geminiによる執筆プロンプト作成（HTMLタグとブログカードを明示）
+        # 3. Geminiによる執筆プロンプト作成（出力を厳格に制御）
         prompt = f"""
+        【重要】「思考プロセス」などは一切不要です。記事本文のみを出力してください。
+
         あなたはテック系ブログ『Bicstation』の専門レビュアーです。
-        以下の実在するPC製品データに基づき、WordPressでそのまま公開できるリッチな紹介記事を書いてください。
+        以下の製品データに基づき、WordPress用のHTML記事を書いてください。
 
         【商品データ】
         メーカー: {product.maker}
@@ -79,16 +82,14 @@ class Command(BaseCommand):
         【構成・装飾ルール】
         1. 1行目：キャッチーなタイトル（タグ不要、テキストのみ）
         2. 2行目以降：本文
-        3. 本文中の見出しは必ず <h2> または <h3> タグで囲ってください。
+        3. 見出しは必ず <h2> または <h3> タグで囲ってください。
         4. 箇条書きが必要な場合は <ul><li> タグを使用してください。
-        5. 最後に必ず以下のショートコードのみを配置してください。
+        5. 最後に必ず以下のショートコードを1つだけ配置してください。
            [blogcard url="{product.url}"]
-
-        ※挨拶や「承知しました」などの発言は一切不要です。HTML構造を含んだ本文のみを出力してください。
         """
 
         # 4. Gemini API 呼び出し
-        self.stdout.write("GeminiがHTML形式で記事を執筆中...")
+        self.stdout.write("Geminiが記事を執筆中...")
         payload = { "contents": [{ "parts": [{"text": prompt}] }] }
         
         try:
@@ -101,16 +102,31 @@ class Command(BaseCommand):
 
             ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
             
-            # AIが返してくるMarkdownのコードブロック（```html ... ```）を除去
-            clean_text = ai_text.replace('```html', '').replace('```', '').strip()
+            # クリーニング：コードブロック記号を除去
+            clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
             
             lines = clean_text.split('\n')
-            title = lines[0].replace('#', '').strip()
             
-            # 本文の整形（冒頭に画像を挿入し、2行目以降の本文を結合）
+            # 思考プロセスなどの不要行をフィルタリング
+            exclude_keywords = ["思考プロセス", "執筆者", "カテゴリ", "ペルソナ"]
+            filtered_lines = [l for l in lines if not any(k in l for k in exclude_keywords) and l.strip() != ""]
+
+            if not filtered_lines:
+                self.stdout.write(self.style.ERROR("記事内容が空になりました。"))
+                return
+
+            title = filtered_lines[0].replace('#', '').strip()
+            
+            # 本文の整形
+            # AIが本文中に書いてしまったショートコードを一旦削除して、確実に最後に1つだけ結合する
+            target_shortcode = f'[blogcard url="{product.url}"]'
+            main_body_text = '\n'.join(filtered_lines[1:]).replace(target_shortcode, "").strip()
+
             img_html = f'<img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="margin-bottom: 20px;" />' if media_url else ""
-            main_content = '\n'.join(lines[1:]).strip()
-            full_content = f"{img_html}\n\n{main_content}"
+            
+            # 【重要】ショートコードを独立した行として末尾に結合
+            # 前後に改行を入れることでWordPressのオートフォーマットによる破壊を防ぐ
+            full_content = f"{img_html}\n\n{main_body_text}\n\n{target_shortcode}"
 
             # 5. WordPress 投稿
             wp_payload = {
