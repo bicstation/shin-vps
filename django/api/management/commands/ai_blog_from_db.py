@@ -21,7 +21,8 @@ class Command(BaseCommand):
         # APIエンドポイント設定
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
-        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
+        # GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
+        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
