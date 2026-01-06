@@ -8,7 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DB内の製品情報を元に、HTML見出しとブログカード付きの豪華な記事を生成しWordPressに投稿します'
+    help = 'DB内の製品情報を元に、思考プロセスを排除し、独自デザインのリンクカードを含むリッチな記事を投稿します'
 
     def handle(self, *args, **options):
         # --- 設定エリア ---
@@ -68,10 +68,13 @@ class Command(BaseCommand):
 
         # 3. Geminiによる執筆プロンプト作成（出力を厳格に制御）
         prompt = f"""
-        【重要】「思考プロセス」などは一切不要です。記事本文のみを出力してください。
-
         あなたはテック系ブログ『Bicstation』の専門レビュアーです。
         以下の製品データに基づき、WordPress用のHTML記事を書いてください。
+
+        【重要命令】
+        - 「思考プロセス」「タイトル作成」「執筆者」などの説明は一切不要です。
+        - 返信の1行目からいきなり「記事のタイトル」を書き始めてください。
+        - 挨拶や確認の言葉（「承知しました」等）は一切禁止します。
 
         【商品データ】
         メーカー: {product.maker}
@@ -82,10 +85,9 @@ class Command(BaseCommand):
         【構成・装飾ルール】
         1. 1行目：キャッチーなタイトル（タグ不要、テキストのみ）
         2. 2行目以降：本文
-        3. 見出しは必ず <h2> または <h3> タグで囲ってください。
-        4. 箇条書きが必要な場合は <ul><li> タグを使用してください。
-        5. 最後に必ず以下のショートコードを1つだけ配置してください。
-           [blogcard url="{product.url}"]
+        3. 見出しは <h2> または <h3> タグを使用。
+        4. 箇条書きは <ul><li> タグを使用。
+        5. 文末に必ず「この製品の詳細は公式サイトで確認してください」という趣旨の結びの言葉を入れてください。
         """
 
         # 4. Gemini API 呼び出し
@@ -107,28 +109,46 @@ class Command(BaseCommand):
             
             lines = clean_text.split('\n')
             
-            # 思考プロセスなどの不要行をフィルタリング
-            exclude_keywords = ["思考プロセス", "執筆者", "カテゴリ", "ペルソナ"]
-            filtered_lines = [l for l in lines if not any(k in l for k in exclude_keywords) and l.strip() != ""]
+            # メタ情報（思考プロセス等）や数字から始まる箇条書き（1. タイトルなど）を徹底排除
+            filtered_lines = []
+            exclude_keywords = ["思考プロセス", "執筆者", "カテゴリ", "ペルソナ", "ターゲット", "構成"]
+            
+            for line in lines:
+                l_strip = line.strip()
+                if not l_strip: continue
+                # メタ情報のキーワードを含む行をスキップ
+                if any(k in l_strip for k in exclude_keywords): continue
+                # 「1. タイトル」のようなAIの自己解説パターンを正規表現で排除
+                if re.match(r'^\d+\.\s+.*', l_strip): continue
+                
+                filtered_lines.append(l_strip)
 
             if not filtered_lines:
                 self.stdout.write(self.style.ERROR("記事内容が空になりました。"))
                 return
 
+            # 1行目をタイトルとして取得
             title = filtered_lines[0].replace('#', '').strip()
-            
-            # 本文の整形
-            # AIが本文中に書いてしまったショートコードを一旦削除して、確実に最後に1つだけ結合する
-            target_shortcode = f'[blogcard url="{product.url}"]'
-            main_body_text = '\n'.join(filtered_lines[1:]).replace(target_shortcode, "").strip()
+            main_body_text = '\n'.join(filtered_lines[1:]).strip()
 
-            img_html = f'<img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="margin-bottom: 20px;" />' if media_url else ""
-            
-            # 【重要】ショートコードを独立した行として末尾に結合
-            # 前後に改行を入れることでWordPressのオートフォーマットによる破壊を防ぐ
-            full_content = f"{img_html}\n\n{main_body_text}\n\n{target_shortcode}"
+            # 5. 独自デザインの「リッチリンクカード」HTML作成
+            # プラグインに頼らず、インラインスタイルで確実に表示させます。
+            custom_card_html = f"""
+            <div style="margin: 40px 0; padding: 25px; border: 2px solid #0062ff; border-radius: 15px; background-color: #f8faff; text-align: center; font-family: sans-serif;">
+                <h3 style="margin-top: 0; color: #333;">今回ご紹介したモデルはこちら</h3>
+                <p style="font-size: 1.1em; font-weight: bold; color: #555; margin-bottom: 20px;">{product.name}</p>
+                <a href="{product.url}" target="_blank" rel="noopener noreferrer" 
+                   style="display: inline-block; background-color: #0062ff; color: #fff; padding: 15px 40px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 1.1em; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,98,255,0.3);">
+                   公式サイトで詳細を見る ＞
+                </a>
+            </div>
+            """
 
-            # 5. WordPress 投稿
+            # 画像と本文の結合
+            img_html = f'<img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="margin-bottom: 20px; border-radius: 10px;" />' if media_url else ""
+            full_content = f"{img_html}\n\n{main_body_text}\n\n{custom_card_html}"
+
+            # 6. WordPress 投稿
             wp_payload = {
                 "title": title,
                 "content": full_content,
@@ -136,11 +156,7 @@ class Command(BaseCommand):
                 "featured_media": media_id
             }
             
-            wp_res = requests.post(
-                WP_POST_URL, 
-                json=wp_payload, 
-                auth=AUTH
-            )
+            wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
             
             if wp_res.status_code == 201:
                 self.stdout.write(self.style.SUCCESS(f"【投稿成功】 ID: {wp_res.json().get('id')}"))
