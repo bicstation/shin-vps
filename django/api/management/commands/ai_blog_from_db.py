@@ -16,7 +16,7 @@ class Command(BaseCommand):
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
-        # WordPress APIエンドポイント（blog.tiper.live 側）
+        # WordPress APIエンドポイント
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
         
@@ -36,14 +36,14 @@ class Command(BaseCommand):
         product = random.choice(products)
         self.stdout.write(self.style.SUCCESS(f"ターゲット商品確定: {product.name} (ID: {product.unique_id})"))
 
-        # Bicstation（本サイト）の個別詳細ページURLを構築
+        # Bicstation（本サイト）の個別詳細ページURL
         bic_detail_url = f"https://bicstation.com/product/{product.unique_id}/"
 
         # 2. 商品画像をWordPressへアップロード
         media_id = None
         media_url = ""
         if product.image_url:
-            self.stdout.write(f"画像をWordPressへアップロード中: {product.image_url}")
+            self.stdout.write(f"画像をWordPressへアップロード中...")
             try:
                 img_res = requests.get(product.image_url, timeout=15)
                 if img_res.status_code == 200:
@@ -65,19 +65,22 @@ class Command(BaseCommand):
                             media_data = media_upload_res.json()
                             media_id = media_data.get('id')
                             media_url = media_data.get('source_url')
-                            self.stdout.write(self.style.SUCCESS(f"メディア登録完了 (ID: {media_id})"))
+                            self.stdout.write(self.style.SUCCESS(f"メディア登録完了"))
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
-        # 3. Geminiプロンプト（メタ情報を厳格に排除）
+        # 3. Geminiプロンプト（さらに厳格化）
         prompt = f"""
         あなたはテック系ブログ『Bicstation』の専門レビュアーです。
-        以下の製品データに基づき、WordPress用のHTML記事を書いてください。
+        以下の製品データに基づき、WordPress用の「HTMLソースコードのみ」を出力してください。
 
-        【重要命令】
-        - 「思考プロセス」「タイトル作成」などのメタ情報は絶対に入れないでください。
-        - 1行目からいきなり「タイトル」を書き始めてください。
-        - 挨拶は不要です。
+        【絶対遵守の命令】
+        - 1行目は「記事のタイトル」のみを記述してください（HTMLタグは不要）。
+        - 2行目から「本文のHTML」を開始してください。
+        - 「執筆者」「カテゴリ」「構成」「思考プロセス」などのメタ情報は絶対に出力しないでください。
+        - 挨拶、解説、"承知いたしました"等の言葉も一切不要です。
+        - 本文の見出しは必ず <h2> または <h3> タグを使用してください。
+        - スペック表などは <table> または <ul> タグを使用してください。
 
         【商品データ】
         メーカー: {product.maker}
@@ -85,46 +88,48 @@ class Command(BaseCommand):
         価格: {product.price}円
         スペック詳細: {product.description}
         
-        【構成ルール】
-        1. 1行目：キャッチーなタイトル
-        2. 2行目以降：本文（<h2> <h3>, <ul> <li>を使用）
-        3. 最後に必ず「詳細は以下のリンクからチェックしてください」という締めの言葉を入れてください。
+        【記事の締め】
+        文末は必ず「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締めてください。
         """
 
         # 4. Gemini API 実行
-        self.stdout.write("Geminiが記事を執筆中...")
+        self.stdout.write("GeminiがHTML記事を生成中...")
         try:
             response = requests.post(GEMINI_URL, json={ "contents": [{ "parts": [{"text": prompt}] }] })
             ai_text = response.json()['candidates'][0]['content']['parts'][0]['text']
             
-            # 不要なコードブロック記号を掃除
+            # クリーニング：マークダウンのコードブロック(```html)を完全に除去
             clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
             lines = clean_text.split('\n')
             
-            # メタ情報の除去フィルター
+            # 不要なメタ情報の徹底除去フィルター
             filtered_lines = []
-            exclude_keywords = ["思考プロセス", "執筆者", "カテゴリ", "ペルソナ", "構成", "ターゲット"]
+            exclude_keywords = ["執筆者:", "カテゴリ:", "構成:", "ターゲット:", "思考プロセス", "Persona:", "メタ情報"]
+            
             for line in lines:
                 l_strip = line.strip()
                 if not l_strip: continue
+                # 特定キーワードで始まる、または含む行を排除（特に冒頭のゴミ対策）
                 if any(k in l_strip for k in exclude_keywords): continue
-                if re.match(r'^\d+\.\s+.*', l_strip): continue
+                # AIが勝手につける「1. タイトル」などの番号付き見出しを排除
+                if re.match(r'^(\d+\.|タイトル：|Title:)', l_strip): continue
+                
                 filtered_lines.append(l_strip)
 
             if not filtered_lines:
+                self.stdout.write(self.style.ERROR("有効なコンテンツが生成されませんでした。"))
                 return
 
             title = filtered_lines[0].replace('#', '').strip()
-            main_body_text = '\n'.join(filtered_lines[1:]).strip()
+            main_body_html = '\n'.join(filtered_lines[1:]).strip()
 
             # 5. 画像・リンク先修正済みのリッチリンクカード作成
-            # 画像自体にも aタグで bic_detail_url を設定
             custom_card_html = f"""
             <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
                 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
                     <div style="flex: 1; min-width: 200px; text-align: center;">
                         <a href="{bic_detail_url}" target="_blank" rel="noopener">
-                            <img src="{media_url}" alt="{product.name}" style="max-width: 100%; height: auto; border-radius: 10px; cursor: pointer;">
+                            <img src="{media_url}" alt="{product.name}" style="max-width: 100%; height: auto; border-radius: 10px;">
                         </a>
                     </div>
                     <div style="flex: 2; min-width: 250px;">
@@ -147,14 +152,17 @@ class Command(BaseCommand):
             </div>
             """
 
-            # 冒頭画像（ここもBicstationへのリンクに設定）
+            # 記事冒頭の画像（Bicstationへのリンク付き）
             top_img_html = f"""
-            <a href="{bic_detail_url}" target="_blank" rel="noopener">
-                <img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="margin-bottom: 30px; border-radius: 12px; cursor: pointer;" />
-            </a>
+            <div style="margin-bottom: 30px;">
+                <a href="{bic_detail_url}" target="_blank" rel="noopener">
+                    <img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="border-radius: 12px; width: 100%; height: auto;" />
+                </a>
+            </div>
             """ if media_url else ""
             
-            full_content = f"{top_img_html}\n\n{main_body_text}\n\n{custom_card_html}"
+            # 全コンテンツ結合
+            full_content = f"{top_img_html}\n{main_body_html}\n{custom_card_html}"
 
             # 6. WordPress 投稿
             wp_payload = {
@@ -168,7 +176,6 @@ class Command(BaseCommand):
             
             if wp_res.status_code == 201:
                 self.stdout.write(self.style.SUCCESS(f"【投稿成功】: {title}"))
-                self.stdout.write(f"本サイト誘導URL: {bic_detail_url}")
             else:
                 self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
 
