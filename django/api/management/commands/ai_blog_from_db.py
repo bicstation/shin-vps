@@ -8,7 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DB内の製品情報を元に、思考プロセスを排除し、独自デザインのリンクカードを含むリッチな記事を投稿します'
+    help = '画像とWリンクボタン（公式サイト・個別ページ）付きの豪華な記事を生成しWordPressに投稿します'
 
     def handle(self, *args, **options):
         # --- 設定エリア ---
@@ -35,6 +35,10 @@ class Command(BaseCommand):
 
         product = random.choice(products)
         self.stdout.write(self.style.SUCCESS(f"ターゲット商品確定: {product.name}"))
+
+        # Bicstation内の個別ページURL（DBのunique_idを利用）
+        # ※URL構造に合わせて適宜修正してください
+        bic_detail_url = f"https://blog.tiper.live/product/{product.unique_id}/"
 
         # 2. 商品画像をWordPressへアップロード
         media_id = None
@@ -66,15 +70,14 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
-        # 3. Geminiによる執筆プロンプト作成（出力を厳格に制御）
+        # 3. Geminiプロンプト
         prompt = f"""
         あなたはテック系ブログ『Bicstation』の専門レビュアーです。
         以下の製品データに基づき、WordPress用のHTML記事を書いてください。
 
         【重要命令】
-        - 「思考プロセス」「タイトル作成」「執筆者」などの説明は一切不要です。
-        - 返信の1行目からいきなり「記事のタイトル」を書き始めてください。
-        - 挨拶や確認の言葉（「承知しました」等）は一切禁止します。
+        - 「思考プロセス」「タイトル作成」などのメタ情報は一切不要です。
+        - 1行目からいきなり「記事のタイトル」を書き始めてください。
 
         【商品データ】
         メーカー: {product.maker}
@@ -82,81 +85,77 @@ class Command(BaseCommand):
         価格: {product.price}円
         スペック詳細: {product.description}
         
-        【構成・装飾ルール】
-        1. 1行目：キャッチーなタイトル（タグ不要、テキストのみ）
-        2. 2行目以降：本文
-        3. 見出しは <h2> または <h3> タグを使用。
-        4. 箇条書きは <ul><li> タグを使用。
-        5. 文末に必ず「この製品の詳細は公式サイトで確認してください」という趣旨の結びの言葉を入れてください。
+        【構成ルール】
+        1. 1行目：キャッチーなタイトル
+        2. 2行目以降：本文（<h2> <h3>, <ul> <li>を使用）
+        3. 最後に必ず「詳細は以下のリンクからチェックしてください」という締めの言葉を入れてください。
         """
 
         # 4. Gemini API 呼び出し
         self.stdout.write("Geminiが記事を執筆中...")
-        payload = { "contents": [{ "parts": [{"text": prompt}] }] }
-        
         try:
-            response = requests.post(GEMINI_URL, json=payload)
-            res_json = response.json()
+            response = requests.post(GEMINI_URL, json={ "contents": [{ "parts": [{"text": prompt}] }] })
+            ai_text = response.json()['candidates'][0]['content']['parts'][0]['text']
             
-            if 'error' in res_json:
-                self.stdout.write(self.style.ERROR(f"Gemini APIエラー: {res_json['error']['message']}"))
-                return
-
-            ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
-            
-            # クリーニング：コードブロック記号を除去
+            # クリーニング
             clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
-            
             lines = clean_text.split('\n')
             
-            # メタ情報（思考プロセス等）や数字から始まる箇条書き（1. タイトルなど）を徹底排除
+            # メタ情報フィルタリング
+            exclude_keywords = ["思考プロセス", "執筆者", "カテゴリ", "ペルソナ", "構成", "ステップ"]
             filtered_lines = []
-            exclude_keywords = ["思考プロセス", "執筆者", "カテゴリ", "ペルソナ", "ターゲット", "構成"]
-            
             for line in lines:
                 l_strip = line.strip()
                 if not l_strip: continue
-                # メタ情報のキーワードを含む行をスキップ
                 if any(k in l_strip for k in exclude_keywords): continue
-                # 「1. タイトル」のようなAIの自己解説パターンを正規表現で排除
                 if re.match(r'^\d+\.\s+.*', l_strip): continue
-                
                 filtered_lines.append(l_strip)
 
             if not filtered_lines:
-                self.stdout.write(self.style.ERROR("記事内容が空になりました。"))
+                self.stdout.write(self.style.ERROR("記事が空です。"))
                 return
 
-            # 1行目をタイトルとして取得
             title = filtered_lines[0].replace('#', '').strip()
-            main_body_text = '\n'.join(filtered_lines[1:]).strip()
+            main_body = '\n'.join(filtered_lines[1:]).strip()
 
-            # 5. 独自デザインの「リッチリンクカード」HTML作成
-            # プラグインに頼らず、インラインスタイルで確実に表示させます。
+            # 5. 【改良版】画像＆Wボタン付きリッチカード
+            # PCでは横並び、スマホでは縦並びになるレスポンシブなHTMLです
             custom_card_html = f"""
-            <div style="margin: 40px 0; padding: 25px; border: 2px solid #0062ff; border-radius: 15px; background-color: #f8faff; text-align: center; font-family: sans-serif;">
-                <h3 style="margin-top: 0; color: #333;">今回ご紹介したモデルはこちら</h3>
-                <p style="font-size: 1.1em; font-weight: bold; color: #555; margin-bottom: 20px;">{product.name}</p>
-                <a href="{product.url}" target="_blank" rel="noopener noreferrer" 
-                   style="display: inline-block; background-color: #0062ff; color: #fff; padding: 15px 40px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 1.1em; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,98,255,0.3);">
-                   公式サイトで詳細を見る ＞
-                </a>
+            <div style="margin: 40px 0; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: 'Helvetica Neue', Arial, sans-serif;">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px;">
+                    <div style="flex: 1; min-width: 180px; text-align: center;">
+                        <img src="{media_url}" alt="{product.name}" style="max-width: 100%; height: auto; border-radius: 8px;">
+                    </div>
+                    <div style="flex: 2; min-width: 250px;">
+                        <h3 style="margin: 0 0 10px 0; font-size: 1.3em; color: #333; line-height: 1.4;">{product.name}</h3>
+                        <p style="color: #d32f2f; font-weight: bold; font-size: 1.2em; margin: 10px 0;">価格：{product.price}円</p>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                            <a href="{product.url}" target="_blank" rel="noopener noreferrer" 
+                               style="flex: 1; background-color: #0062ff; color: #fff; text-align: center; padding: 12px 5px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 2px 5px rgba(0,98,255,0.3);">
+                               公式サイト ＞
+                            </a>
+                            <a href="{bic_detail_url}" 
+                               style="flex: 1; background-color: #444; color: #fff; text-align: center; padding: 12px 5px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9em; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                               Bicstation詳細 ＞
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
             """
 
-            # 画像と本文の結合
-            img_html = f'<img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="margin-bottom: 20px; border-radius: 10px;" />' if media_url else ""
-            full_content = f"{img_html}\n\n{main_body_text}\n\n{custom_card_html}"
+            # 結合
+            img_html = f'<img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="margin-bottom: 25px; border-radius: 10px;" />' if media_url else ""
+            full_content = f"{img_html}\n\n{main_body}\n\n{custom_card_html}"
 
             # 6. WordPress 投稿
-            wp_payload = {
+            wp_res = requests.post(WP_POST_URL, json={
                 "title": title,
                 "content": full_content,
                 "status": "publish",
                 "featured_media": media_id
-            }
-            
-            wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
+            }, auth=AUTH)
             
             if wp_res.status_code == 201:
                 self.stdout.write(self.style.SUCCESS(f"【投稿成功】 ID: {wp_res.json().get('id')}"))
@@ -165,4 +164,4 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
 
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"実行時エラー: {e}"))
+            self.stdout.write(self.style.ERROR(f"エラー: {e}"))
