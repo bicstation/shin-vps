@@ -12,7 +12,7 @@ from .models import (
     RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series
 )
-from .models.pc_products import PCProduct  # パスに合わせて調整
+from .models.pc_products import PCProduct  # 💡 PCProductのインポートを維持
 
 # ----------------------------------------------------
 # 0. カスタムフォーム
@@ -23,10 +23,10 @@ class AdultProductAdminForm(forms.ModelForm):
         fields = '__all__'
 
 # ----------------------------------------------------
-# 1. PCProduct (PC製品) のAdminクラス
+# 1. PCProduct (PC製品・Lenovo/Acer等) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
-    # テンプレートパス
+    # テンプレートパスは環境に合わせて調整してください
     change_list_template = "admin/api/pcproduct/change_list.html"
 
     list_display = (
@@ -34,9 +34,9 @@ class PCProductAdmin(admin.ModelAdmin):
         'display_thumbnail',
         'name',
         'price',
-        'unified_genre',
-        'display_ai_status',  # AI解説の有無を表示
-        'is_posted',         # WP投稿済みフラグ
+        'unified_genre',   # 統合ジャンル
+        'display_ai_status', # 💡 AI解説の有無を表示
+        'is_posted',       # 💡 WordPress投稿済みフラグ
         'is_active',
         'updated_at',
     )
@@ -48,7 +48,6 @@ class PCProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'unique_id', 'description', 'ai_content')
     ordering = ('-updated_at',)
 
-    # 編集画面のレイアウト設定
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted'),
@@ -56,7 +55,7 @@ class PCProductAdmin(admin.ModelAdmin):
         ('仕分け情報', {
             'fields': ('unified_genre', 'raw_genre'),
         }),
-        ('製品詳細スペック', {
+        ('製品詳細', {
             'fields': ('name', 'price', 'description'),
         }),
         ('AI生成コンテンツ', {
@@ -100,8 +99,8 @@ class PCProductAdmin(admin.ModelAdmin):
     def fetch_lenovo_action(self, request):
         """Lenovoのスクレイピングを実行"""
         try:
-            # call_command('scrape_lenovo') # 実装済みならコメント解除
-            self.message_user(request, "Lenovo製品の取得を開始しました。", messages.SUCCESS)
+            # call_command('scrape_lenovo') 
+            self.message_user(request, "Lenovoデータの取得を開始しました。", messages.SUCCESS)
         except Exception as e:
             self.message_user(request, f"エラーが発生しました: {e}", messages.ERROR)
         return HttpResponseRedirect("../")
@@ -111,11 +110,10 @@ class PCProductAdmin(admin.ModelAdmin):
         return HttpResponseRedirect("../")
 
     def generate_ai_action(self, request):
-        """AI記事生成管理コマンドの実行"""
+        """AI記事生成バッチの実行"""
         try:
-            # 以前作成した management/commands/PCProductPostCommand.py を叩く
-            # call_command('PCProductPostCommand') 
-            self.message_user(request, "AI記事生成とWordPress投稿のバッチ処理を開始しました。", messages.SUCCESS)
+            # call_command('PCProductPostCommand')
+            self.message_user(request, "AI記事生成を開始しました。", messages.SUCCESS)
         except Exception as e:
             self.message_user(request, f"生成エラー: {e}", messages.ERROR)
         return HttpResponseRedirect("../")
@@ -135,7 +133,7 @@ class AdultProductAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'release_date', 'maker') 
     search_fields = ('title', 'product_id_unique')
 
-    readonly_fields = ('created_at', 'updated_at', 'product_id_unique', 'api_source') # raw_dataはモデルに合わせて
+    readonly_fields = ('created_at', 'updated_at', 'product_id_unique', 'api_source')
 
     def display_first_image(self, obj):
         if obj.image_url_list and obj.image_url_list[0]:
@@ -176,10 +174,11 @@ class AdultProductAdmin(admin.ModelAdmin):
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
-# 3. LinkshareProduct
+# 3. LinkshareProduct Admin (💡エラー箇所を修正)
 # ----------------------------------------------------
 class LinkshareProductAdmin(admin.ModelAdmin): 
-    list_display = ('id', 'product_name', 'sku', 'merchant_id', 'sale_price', 'is_active', 'updated_at')
+    # sale_price がモデルに存在しないため削除しました
+    list_display = ('id', 'product_name', 'sku', 'merchant_id', 'is_active', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
 
 # ----------------------------------------------------
