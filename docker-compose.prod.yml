@@ -38,7 +38,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ダッシュボード: https://dashboard.tiper.live
       - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
       - "traefik.http.routers.traefik-dash.entrypoints=websecure"
       - "traefik.http.routers.traefik-dash.tls.certresolver=le"
@@ -84,7 +83,7 @@ services:
     networks:
       - internal-net
     ports:
-      - "5434:5432" # 外部ツール接続用
+      - "5434:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -116,8 +115,10 @@ services:
     build: { context: ./django }
     container_name: django-v2
     restart: always
+    # ✅ 修正: 互換性の高い depends_on 形式
     depends_on:
-      - postgres-db-v2: { condition: service_healthy }
+      postgres-db-v2:
+        condition: service_healthy
     env_file: [.env]
     labels:
       - "traefik.enable=true"
@@ -127,7 +128,6 @@ services:
       - "traefik.http.routers.django-router.priority=2000"
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
-      # 👇 Ofelia 設定: AI記事の毎日自動投稿
       - "ofelia.enabled=true"
       - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
       - "ofelia.job-exec.ai_blog_post.command=python manage.py post_wp"
@@ -219,13 +219,15 @@ services:
     image: wordpress:6-fpm-alpine
     container_name: wordpress-v2
     restart: always
-    depends_on: { mariadb-v2: { condition: service_healthy } }
+    # ✅ 修正: 互換性の高い depends_on 形式
+    depends_on:
+      mariadb-v2:
+        condition: service_healthy
     environment:
       WORDPRESS_DB_HOST: mariadb-v2
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
-      # ✅ 修正: 413エラー対策およびCocoon等のテーマアップロード容量制限の緩和
       WORDPRESS_CONFIG_EXTRA: |
         @ini_set( 'upload_max_filesize', '100M' );
         @ini_set( 'post_max_size', '100M' );
@@ -309,9 +311,6 @@ services:
       - "traefik.http.routers.dozzle-router.priority=3500"
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
-# ---------------------------------------------------------------------
-# ネットワーク・ボリューム共通定義
-# ---------------------------------------------------------------------
 networks:
   internal-net:
     driver: bridge
