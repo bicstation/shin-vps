@@ -44,6 +44,7 @@ class Command(BaseCommand):
         # ==========================================
         # 2. 投稿対象商品の選定
         # ==========================================
+        # 未投稿のLenovoまたはDell製品を抽出
         products = PCProduct.objects.filter(
             is_active=True,
             is_posted=False
@@ -142,7 +143,7 @@ class Command(BaseCommand):
             return
 
         # ==========================================
-        # 6. 整形とアフィリエイト組み込み（Dellリンク構造修正版）
+        # 6. 整形とアフィリエイト組み込み
         # ==========================================
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
@@ -150,26 +151,20 @@ class Command(BaseCommand):
         title = lines[0].replace('#', '').strip()
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # アフィリエイトリンク判定
+        # アフィリエイトリンク判定（Dell Deep Link / Lenovo ValueCommerce）
         if 'dell' in maker_low:
-            # --- Dell (LinkShare) 修正: offeridとlinkidを分離し、murlに製品URLをセット ---
             your_id = "nNBA6GzaGrQ"
-            offer_id = "1568114"  # 数字のみ
-            link_id = product.unique_id
+            offer_prefix = "1568114"
             encoded_product_url = urllib.parse.quote(product.url)
-            
-            # LinkShare Deep Link形式: link?id={個人ID}&offerid={案件ID}.{商品識別子}&type=15&murl={最終URL}
-            affiliate_url = f"[https://click.linksynergy.com/link?id=](https://click.linksynergy.com/link?id=){your_id}&offerid={offer_id}.{link_id}&type=15&murl={encoded_product_url}"
+            # 修正: Markdown形式の混入を削除し、純粋なURL文字列を生成
+            affiliate_url = f"[https://click.linksynergy.com/link?id=](https://click.linksynergy.com/link?id=){your_id}&offerid={offer_prefix}.{product.unique_id}&type=15&murl={encoded_product_url}"
             vc_beacon = ""
             button_text = "Dell公式サイトで見る ＞"
         else:
-            # --- Lenovo (ValueCommerce) ---
             encoded_url = urllib.parse.quote(product.url, safe='')
-            aff_base = "[ck.jp.ap.valuecommerce.com/servlet/referral](https://ck.jp.ap.valuecommerce.com/servlet/referral)"
-            affiliate_url = f"{H}{C}{S}{S}{aff_base}?sid=3697471&pid=892455531&vc_url={encoded_url}"
-            
-            beacon_base = "[ad.jp.ap.valuecommerce.com/servlet/gifbanner](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner)"
-            vc_beacon = f'<img src="//{beacon_base}?sid=3697471&pid=892455531" height="1" width="1" border="0">'
+            # 修正: Markdown形式の混入を削除し、純粋なURL文字列を生成
+            affiliate_url = f"[https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=](https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=){encoded_url}"
+            vc_beacon = f'<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531)" height="1" width="1" border="0">'
             button_text = "Lenovo公式サイトで見る ＞"
 
         custom_card_html = f"""

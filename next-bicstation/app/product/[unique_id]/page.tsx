@@ -51,13 +51,13 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     if (isDell) {
         // --- Dell (LinkShare) 修正版：正しいofferid構造とDeep Link(murl)の適用 ---
         const yourId = "nNBA6GzaGrQ";
-        const offerId = "1568114"; // 案件ID（ドットを含まない）
-        const linkId = product.unique_id; // 商品識別子
+        const offerId = "1568114"; // 案件ID（固定）
+        const linkId = product.unique_id; // 商品識別子（英数字ID）
         
         // 商品URLをエンコードしてmurlにセット
         const encodedProductUrl = encodeURIComponent(product.url);
         
-        // link?id={個人ID}&offerid={案件ID}.{識別子}&type=15&murl={遷移先}
+        // 修正ポイント：offeridを「案件ID.個別ID」の形式に結合し、Markdown記法を排除
         finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerId}.${linkId}&type=15&murl=${encodedProductUrl}`;
         beacon = null; 
     } else if (isLenovo) {
