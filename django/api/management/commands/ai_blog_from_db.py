@@ -31,6 +31,10 @@ class Command(BaseCommand):
             "gemini-1.5-flash",
             "gemini-2.0-flash-exp",
             "gemini-1.5-pro",
+            "gemini-3-flash-preview",  # 最先端・超軽量（期待大）
+            "gemini-2.5-flash",        # 現在の標準モデル
+            "gemini-2.0-flash",        # 安定版
+            "gemini-flash-latest",     # エイリアス（1.5または2.0の最新を指す）
         ]
 
         CAT_LENOVO, CAT_DELL = 4, 7
