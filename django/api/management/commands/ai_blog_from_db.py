@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = 'スペック要約の自動補完と、WPブログ・自社DB解説の同時生成を行う（エラーログ強化版）'
+    help = 'スペック要約の自動補完と、WPブログ・自社DB解説の同時生成を行う（デル・アフィリエイト対応版）'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -26,7 +26,7 @@ class Command(BaseCommand):
         WP_MEDIA_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # 優先順位を変更（1.5-flashは比較的制限が緩い傾向にあります）
+        # 優先順位を最新モデルへ調整
         MODELS = [
             "gemini-1.5-flash",
             "gemini-2.0-flash-exp",
@@ -123,7 +123,7 @@ class Command(BaseCommand):
         """
 
         # ==========================================
-        # 5. AI実行（エラー詳細出力・ループ改善版）
+        # 5. AI実行（最新モデル対応・ループ改善版）
         # ==========================================
         ai_text, selected_model = None, None
         
@@ -132,7 +132,8 @@ class Command(BaseCommand):
             return
 
         for model_id in MODELS:
-            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+            # 最新モデル対応のため v1 エンドポイントを使用
+            api_url = f"https://generativelanguage.googleapis.com/v1/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
             self.stdout.write(f"🤖 試行中: {model_id}...")
             
             try:
@@ -145,20 +146,17 @@ class Command(BaseCommand):
                         selected_model = model_id
                         self.stdout.write(self.style.SUCCESS(f"✅ {model_id} で生成成功"))
                         break
-                    else:
-                        self.stdout.write(self.style.WARNING(f"⚠️ {model_id} 応答構造が不正です: {res_json}"))
                 else:
-                    # 429(制限)や400(不正)などの理由を具体的に出力
                     err_msg = res_json.get('error', {}).get('message', '詳細不明なエラー')
                     self.stdout.write(self.style.WARNING(f"⚠️ {model_id} 失敗 (HTTP {response.status_code}): {err_msg}"))
-                    continue # 次のモデルへ
+                    continue
 
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"❌ {model_id} 通信エラー: {str(e)}"))
                 continue
 
         if not ai_text: 
-            self.stdout.write(self.style.ERROR("💀 全てのAIモデルの試行に失敗しました。本日のAPI利用制限に達している可能性があります。"))
+            self.stdout.write(self.style.ERROR("💀 全てのAIモデルの試行に失敗しました。"))
             return
 
         # ==========================================
@@ -174,12 +172,32 @@ class Command(BaseCommand):
             return
 
         # ==========================================
-        # 7. WordPress投稿 & DB保存
+        # 7. アフィリエイトリンクの判定・生成
+        # ==========================================
+        if 'dell' in maker_low:
+            # --- デル専用：LinkShare リンク生成 ---
+            # product.unique_id が 2557... の形式であることを前提
+            link_id = product.unique_id
+            your_id = "nNBA6GzaGrQ"
+            offer_prefix = "1568114"
+            murl_tracking = "https://ad.doubleclick.net/ddm/trackclk/N1153793.2372504AF_LINKSHARE/B23732657.265944707;dc_trk_aid=461028128;dc_trk_cid=127759547;VEN1=;dc_lat=;dc_rdid=;tag_for_child_directed_treatment=;tfua=?"
+            
+            aff_url = (
+                f"https://click.linksynergy.com/link?id={your_id}"
+                f"&offerid={offer_prefix}.{link_id}&type=15"
+                f"&murl={urllib.parse.quote(murl_tracking)}"
+            )
+            beacon = "" 
+        else:
+            # --- デル以外（レノボ含む）：ValueCommerce ---
+            encoded_url = urllib.parse.quote(product.url, safe='')
+            aff_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url={encoded_url}"
+            beacon = f'<img src="https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531" height="1" width="1" border="0">'
+
+        # ==========================================
+        # 8. WordPress投稿 & DB保存
         # ==========================================
         top_image_html = f'<div style="text-align:center;margin-bottom:30px;"><img src="{media_url}" style="width:100%;border-radius:12px;"></div>' if media_url else ""
-        encoded_url = urllib.parse.quote(product.url, safe='')
-        aff_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url={encoded_url}"
-        beacon = '<img src="https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531" height="1" width="1" border="0">'
 
         card_html = f"""
         <div class="affiliate-card" style="margin:40px 0;padding:25px;border-radius:16px;background:#fff;border:1px solid #eee;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
@@ -189,7 +207,7 @@ class Command(BaseCommand):
                     <h3 style="margin:0 0 10px 0;">{product.name}</h3>
                     <p style="color:#d9534f;font-weight:bold;font-size:1.4em;">税込 {product.price:,}円〜</p>
                     <div style="display:flex;gap:10px;margin-top:15px;">
-                        <a href="{aff_url}" target="_blank" style="flex:1;background:#d9534f;color:#fff;text-align:center;padding:12px;border-radius:6px;text-decoration:none;font-weight:bold;">公式サイト {beacon}</a>
+                        <a href="{aff_url}" target="_blank" style="flex:1;background:#d9534f;color:#fff;text-align:center;padding:12px;border-radius:6px;text-decoration:none;font-weight:bold;">公式サイトで購入 {beacon}</a>
                         <a href="{bic_detail_url}" style="flex:1;background:#333;color:#fff;text-align:center;padding:12px;border-radius:6px;text-decoration:none;font-weight:bold;">製品詳細</a>
                     </div>
                 </div>
