@@ -8,7 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DBから製品情報を取得し、スペック詳細を含めたAIレビュー記事を生成してカテゴリー・タグ付きでWordPressへ自動投稿します'
+    help = 'Gemini 1.5 Flash (1500回/日枠) を使用し、404エラーを回避してWP投稿する最終スクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -22,12 +22,12 @@ class Command(BaseCommand):
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
         
-        # 【修正ポイント】最も安定して動作するv1betaのパスを指定
-        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+        # 【最重要】404エラーと20回制限を回避するための安定版URL
+        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # WordPress ID設定
+        # WordPress ID設定 (スクショより)
         CAT_LENOVO = 4     # カテゴリーID: レノボ
         TAG_DESKTOP = 5    # タグID: デスクトップ
         TAG_LAPTOP = 6     # タグID: ノートブック
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         product = random.choice(products)
         self.stdout.write(self.style.SUCCESS(f"ターゲット商品確定: {product.name} (ID: {product.unique_id})"))
 
-        # 商品名からデスクトップかノートブックかを判定してタグを決定
+        # 商品名からタグを決定
         target_tags = []
         name_lower = product.name.lower()
         if any(keyword in name_lower for keyword in ["desktop", "tower", "station", "aio", "tiny", "center"]):
@@ -106,11 +106,7 @@ class Command(BaseCommand):
         【出力ルール】
         - 1行目は「記事のタイトル」のみ（HTMLタグ不要）。
         - 2行目から「本文のHTML」を開始してください。
-        - 以下の構成で2000文字以上の情報量を目指してください：
-          1. この製品の概要と市場における立ち位置。
-          2. CPU、グラフィックス(GPU)、メモリ、SSD/ストレージの各仕様に対する技術的解説。
-          3. 筐体のデザイン、インターフェース、拡張性についての考察。
-          4. どのようなユーザーに最適か。
+        - 2000文字以上の情報量で、CPU・GPU・メモリ・筐体設計について技術的に詳しく解説してください。
         - 見出しは <h2> または <h3>、リストは <ul> を使用してください。
         - 挨拶や前置きは一切不要です。
         - 文末は必ず「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締めてください。
@@ -120,25 +116,22 @@ class Command(BaseCommand):
         # ==========================================
         # 5. Gemini API 実行
         # ==========================================
-        self.stdout.write("Gemini 1.5 Flashで詳細レビュー記事を生成中...")
+        self.stdout.write("Gemini 1.5 Flash (Stable v1) で詳細レビュー記事を生成中...")
         
         payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "safetySettings": [
-                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
-                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
-                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
-                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"}
-            ]
+            "contents": [{"parts": [{"text": prompt}]}]
         }
 
         try:
-            # タイムアウトを少し長めに設定
             response = requests.post(GEMINI_URL, json=payload, timeout=60)
             res_json = response.json()
             
+            if 'error' in res_json:
+                self.stdout.write(self.style.ERROR(f"APIエラー詳細: {res_json['error']['message']}"))
+                return
+
             if 'candidates' not in res_json:
-                self.stdout.write(self.style.ERROR(f"Geminiエラー詳細: {res_json}"))
+                self.stdout.write(self.style.ERROR(f"レスポンス形式異常: {res_json}"))
                 return
 
             ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
@@ -147,19 +140,12 @@ class Command(BaseCommand):
             clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
             lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
             
-            # フィルタリング
-            filtered_lines = []
-            exclude_keywords = ["執筆者:", "カテゴリ:", "構成:", "思考プロセス", "Persona:"]
-            for line in lines:
-                if any(k in line for k in exclude_keywords): continue
-                filtered_lines.append(line)
-
-            if not filtered_lines:
+            if not lines:
                 self.stdout.write(self.style.ERROR("コンテンツ生成失敗"))
                 return
 
-            title = filtered_lines[0].replace('#', '').strip()
-            main_body_html = '\n'.join(filtered_lines[1:]).strip()
+            title = lines[0].replace('#', '').strip()
+            main_body_html = '\n'.join(lines[1:]).strip()
 
             # ==========================================
             # 6. HTMLパーツの組み立て
