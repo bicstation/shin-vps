@@ -42,18 +42,16 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
         const pid = "892455531";
         const encodedUrl = encodeURIComponent(product.url);
         
-        // バリューコマースのリンク構造
         finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${sid}&pid=${pid}&vc_url=${encodedUrl}`;
         
-        // 計測用ビーコン
+        // エラー箇所の修正：border属性を削除し、styleで対応。height/widthを数値に。
         beacon = (
             <img 
                 src={`//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=${sid}&pid=${pid}`} 
-                height="1" 
-                width="1" 
-                border="0" 
+                height={1} 
+                width={1} 
                 alt="" 
-                style={{ display: 'none' }} 
+                style={{ display: 'none', border: 'none' }} 
             />
         );
     }
@@ -114,7 +112,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             </div>
                         </div>
 
-                        {/* 公式サイトボタン（Lenovoの場合はアフィリエイト化） */}
                         <a 
                             href={finalUrl} 
                             target="_blank" 
