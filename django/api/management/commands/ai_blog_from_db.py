@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = '集客用WPブログと信頼用自社DB(Next.js)の両方に、役割の異なる解説を同時生成・保存する'
+    help = 'スペック要約の自動補完と、WPブログ・自社DB解説の同時生成を行う'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -27,17 +27,16 @@ class Command(BaseCommand):
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
         MODELS = [
-            "gemini-3-flash-preview",
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite",
-            "gemma-3-12b-it" 
+            "gemini-2.0-flash-exp",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
         ]
 
         CAT_LENOVO, CAT_DELL = 4, 7
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
         # ==========================================
-        # 2. 投稿対象商品の選定
+        # 2. 投稿対象商品の選定（未投稿 or AI解説未作成の商品）
         # ==========================================
         products = PCProduct.objects.filter(
             is_active=True,
@@ -79,29 +78,42 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"画像処理スキップ: {e}"))
 
         # ==========================================
-        # 4. AIプロンプト（役割分担の強化）
+        # 4. AIプロンプト（スペック要約＋解説の生成）
         # ==========================================
+        # 💡 スペックが不足している場合、製品名からAIに推測させる指示を追加
+        current_spec = product.description if product.description and "配信はありません" not in product.description else "詳細不明（製品名から主要スペックを推測してください）"
+
         prompt = f"""
         あなたはPCの技術仕様とマーケティングに精通したエキスパートです。
-        以下の製品データから、ITニュースサイト向けの【ブログ記事】と、自社カタログサイト向けの【製品解説】を同時に作成してください。
+        以下の製品データから、【1.スペック要約】【2.ブログ記事タイトル】【3.詳細解説HTML】の3点を作成してください。
 
-        【データ】メーカー:{product.maker} | 名称:{product.name} | 価格:{product.price}円 | スペック:{product.description}
+        【データ】メーカー:{product.maker} | 名称:{product.name} | 価格:{product.price}円 | 現在のスペック:{current_spec}
 
-        【出力ルール】
-        - 1行目: 読者を惹きつけるブログタイトル
-        - 2行目以降: 本文HTML
-        - 内容には必ず以下を含めてください:
-            1. 専門家から見たこのモデルの最大の特徴（性能・冷却・筐体など）
-            2. 競合他社（DELLならLenovo、LenovoならHP等）と比較した際の強み
-            3. このスペックが「本当に必要になる」具体的なユーザー像
-        - ブログ向けには「語りかけるような熱量のある文章」を。
-        - カタログ（製品詳細）向けには「スペックを論理的に裏付ける客観的な解説」を意識。
+        ---
+        【出力項目1：スペック要約】
+        「OS / CPU / メモリ / ストレージ / その他特徴」の形式で、スラッシュ区切りで1行で出力してください。
+        データが不足している場合は、製品名から一般的・標準的な構成を推測して埋めてください。
+        例: Windows 11 / Core i5-1335U / 16GB RAM / 512GB SSD / 高色域ディスプレイ
 
-        ※Markdown(```html)は厳禁。純粋なHTMLタグのみを出力してください。
+        【出力項目2：ブログタイトル】
+        読者がクリックしたくなる熱量のあるタイトルを1行で出力してください。
+
+        【出力項目3：詳細解説HTML】
+        カタログサイトにふさわしい論理的な製品解説をHTML（<h3>, <p>のみ）で作成してください。
+        専門家目線での特徴、競合比較、推奨ユーザーを含めてください。
+        ---
+
+        出力は必ず以下のタグで区切って出力してください：
+        [SUMMARY]
+        (ここにスペック要約)
+        [TITLE]
+        (ここにブログタイトル)
+        [BODY]
+        (ここに詳細解説HTML)
         """
 
         # ==========================================
-        # 5. AI実行（ローテーション）
+        # 5. AI実行
         # ==========================================
         ai_text, selected_model = None, None
         for model_id in MODELS:
@@ -115,24 +127,31 @@ class Command(BaseCommand):
                     break
             except: continue
 
-        if not ai_text: return
+        if not ai_text: 
+            self.stdout.write(self.style.ERROR("AIの応答が得られませんでした。"))
+            return
 
         # ==========================================
-        # 6. 整形とアフィリエイトカードの構築
+        # 6. 応答のパース（解析）と整形
         # ==========================================
-        clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
-        lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
-        if len(lines) < 2: return
+        try:
+            # タグで分割して内容を抽出
+            new_spec = re.search(r'\[SUMMARY\](.*?)\[TITLE\]', ai_text, re.S).group(1).strip()
+            title = re.search(r'\[TITLE\](.*?)\[BODY\]', ai_text, re.S).group(1).strip()
+            main_body_html = re.search(r'\[BODY\](.*)', ai_text, re.S).group(1).strip()
+            
+            # Markdownの除去
+            main_body_html = re.sub(r'```(html)?', '', main_body_html).replace('```', '').strip()
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"パースエラー: {e}"))
+            return
 
-        title = lines[0].replace('#', '').strip()
-        main_body_html = '\n'.join(lines[1:]).strip()
-
-        # WordPress用のフルセット
+        # WordPress用コンテンツの構築
         top_image_html = f'<div style="text-align:center;margin-bottom:30px;"><img src="{media_url}" style="width:100%;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);"></div>' if media_url else ""
         
         encoded_url = urllib.parse.quote(product.url, safe='')
         aff_url = f"{H}{C}{S}{S}ck.jp.ap.valuecommerce.com{S}servlet/referral?sid=3697471&pid=892455531&vc_url={encoded_url}"
-        beacon = '<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531)" height="1" width="1" border="0">'
+        beacon = '<img src="https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531" height="1" width="1" border="0">'
 
         card_html = f"""
         <div class="affiliate-card" style="margin:40px 0;padding:25px;border-radius:16px;background:#fff;border:1px solid #eee;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
@@ -152,13 +171,23 @@ class Command(BaseCommand):
         full_wp_content = f"{top_image_html}\n{main_body_html}\n{card_html}"
 
         # ==========================================
-        # 7. 実行
+        # 7. WordPress投稿 & 自社DB保存
         # ==========================================
-        wp_res = requests.post(WP_POST_URL, json={"title":title, "content":full_wp_content, "status":"publish", "featured_media":media_id, "categories":target_cats, "tags":target_tags}, auth=AUTH)
+        wp_res = requests.post(WP_POST_URL, json={
+            "title": title, 
+            "content": full_wp_content, 
+            "status": "publish", 
+            "featured_media": media_id, 
+            "categories": target_cats, 
+            "tags": target_tags
+        }, auth=AUTH)
         
         if wp_res.status_code == 201:
-            # Next.js用には「アイキャッチ」や「カード」を含めない、純粋なプロの解説のみを保存
+            # 💡 自社DB（Next.js側）のデータを更新
+            product.description = new_spec   # AIが生成した綺麗なスペックで上書き
             product.ai_content = main_body_html
             product.is_posted = True
             product.save()
-            self.stdout.write(self.style.SUCCESS(f"【成功】{selected_model}によりWP/自社DBの両方を最適化しました。"))
+            self.stdout.write(self.style.SUCCESS(f"【成功】{selected_model}によりスペック補完と記事生成を完了しました。"))
+        else:
+            self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.status_code} {wp_res.text}"))
