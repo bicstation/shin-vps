@@ -117,7 +117,7 @@ services:
     container_name: django-v2
     restart: always
     depends_on:
-      postgres-db-v2: { condition: service_healthy }
+      - postgres-db-v2: { condition: service_healthy }
     env_file: [.env]
     labels:
       - "traefik.enable=true"
@@ -130,7 +130,7 @@ services:
       # 👇 Ofelia 設定: AI記事の毎日自動投稿
       - "ofelia.enabled=true"
       - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
-      - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
+      - "ofelia.job-exec.ai_blog_post.command=python manage.py post_wp"
       - "ofelia.job-exec.ai_blog_post.no-overlap=true"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
@@ -225,6 +225,11 @@ services:
       WORDPRESS_DB_NAME: ${WP_DB_NAME}
       WORDPRESS_DB_USER: ${WP_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      # ✅ 修正: 413エラー対策およびCocoon等のテーマアップロード容量制限の緩和
+      WORDPRESS_CONFIG_EXTRA: |
+        @ini_set( 'upload_max_filesize', '100M' );
+        @ini_set( 'post_max_size', '100M' );
+        @ini_set( 'memory_limit', '256M' );
     volumes:
       - /home/maya/docker_volumes/wp-content:/var/www/html
     networks: [internal-net]
