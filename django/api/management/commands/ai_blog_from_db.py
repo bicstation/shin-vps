@@ -8,7 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'Gemini 1.5 Flash を使用し、安定した無料枠で404/クォータエラーを回避してWP投稿する最終スクリプト'
+    help = 'リストにある正確なモデル名 (gemini-3-flash-preview) を使用してWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -22,17 +22,17 @@ class Command(BaseCommand):
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
         
-        # 【最重要修正】無料枠が最も安定している gemini-1.5-flash を使用
-        # 404エラーを回避するため、リストで確認済みのパス構造を適用します
-        MODEL_NAME = "gemini-1.5-flash"
+        # 【最重要修正】リストにある正確なモデル名「gemini-3-flash-preview」を使用
+        # リストの models/ 以降の部分を指定します。
+        MODEL_NAME = "gemini-3-flash-preview"
         GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={GEMINI_API_KEY}"
         
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
         # WordPress ID設定
-        CAT_LENOVO = 4     # カテゴリーID: レノボ
-        TAG_DESKTOP = 5    # タグID: デスクトップ
-        TAG_LAPTOP = 6     # タグID: ノートブック
+        CAT_LENOVO = 4
+        TAG_DESKTOP = 5
+        TAG_LAPTOP = 6
 
         # ==========================================
         # 2. 投稿対象商品の選定 (DB操作)
@@ -118,7 +118,7 @@ class Command(BaseCommand):
         # ==========================================
         # 5. Gemini API 実行
         # ==========================================
-        self.stdout.write(f"Gemini 1.5 Flash で詳細レビュー記事を生成中...")
+        self.stdout.write(f"モデル {MODEL_NAME} でレビュー記事を生成中...")
         
         payload = {
             "contents": [{"parts": [{"text": prompt}]}]
