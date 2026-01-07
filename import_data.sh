@@ -72,8 +72,9 @@ case $CHOICE in
         run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
         ;;
     4)
-        echo "⚙️  Bicstationスクレイピング実行..."
-        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
+        echo "⚙️  Bicstationスクレイピング実行...(DELLのみ)"
+        # run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
+        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_dell.py
         ;;
     5)
         echo "⚙️  AV-Flashインポート..."
