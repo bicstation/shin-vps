@@ -8,7 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = '3つのモデルをローテーションして1日最大60回の投稿枠をフル活用する自動投稿スクリプト'
+    help = 'Gemini 3/2.5とGemma 3をローテーションし、制限を回避して確実にWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -24,14 +24,15 @@ class Command(BaseCommand):
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
         # 【戦略】使用するモデルの優先順位リスト
-        # 各モデル20回ずつの無料枠を順番に試行します
+        # Gemini系の20回枠を使い切った後、14,400回枠のGemma 3が控える最強の布陣です。
         MODELS = [
             "gemini-3-flash-preview",
             "gemini-2.5-flash",
-            "gemini-2.5-flash-lite"
+            "gemini-2.5-flash-lite",
+            "gemma-3-12b-it" 
         ]
 
-        # WordPress ID設定
+        # WordPress カテゴリ・タグID
         CAT_LENOVO = 4
         TAG_DESKTOP = 5
         TAG_LAPTOP = 6
@@ -95,7 +96,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
         # ==========================================
-        # 4. Gemini API 実行 (モデルローテーション)
+        # 4. AIプロンプトの構築
         # ==========================================
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
@@ -117,60 +118,63 @@ class Command(BaseCommand):
         - 出力は必ず日本語で行ってください。
         """
 
+        # ==========================================
+        # 5. AI実行 (モデルローテーション)
+        # ==========================================
         ai_text = None
         selected_model = None
 
         for model_id in MODELS:
             self.stdout.write(f"モデル {model_id} で記事を生成中...")
-            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
             
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}]
             }
 
             try:
-                response = requests.post(gemini_url, json=payload, timeout=60)
+                # Gemmaは計算に時間がかかる場合があるため、タイムアウトを90秒に設定
+                response = requests.post(api_url, json=payload, timeout=90)
                 res_json = response.json()
                 
                 if 'error' in res_json:
                     error_msg = res_json['error'].get('message', '')
-                    # クォータ（回数制限）エラーの場合
+                    # クォータ（回数制限）エラー 429 の場合
                     if res_json['error'].get('code') == 429 or "quota" in error_msg.lower():
-                        self.stdout.write(self.style.WARNING(f"モデル {model_id} の利用枠が終了しています。次のモデルへ切り替えます。"))
+                        self.stdout.write(self.style.WARNING(f"モデル {model_id} は制限中です。次のモデルへ移行します。"))
                         continue
                     else:
                         self.stdout.write(self.style.ERROR(f"APIエラー ({model_id}): {error_msg}"))
                         continue
 
-                # 成功した場合
-                ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
-                selected_model = model_id
-                break # 成功したのでループを抜ける
+                # 生成成功
+                if 'candidates' in res_json and len(res_json['candidates']) > 0:
+                    ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
+                    selected_model = model_id
+                    break 
 
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f"実行時エラー ({model_id}): {e}"))
+                self.stdout.write(self.style.ERROR(f"通信エラー ({model_id}): {e}"))
                 continue
 
         if not ai_text:
-            self.stdout.write(self.style.ERROR("すべてのモデルで制限に達したか、生成に失敗しました。"))
+            self.stdout.write(self.style.ERROR("利用可能なすべてのモデルで生成に失敗しました。"))
             return
 
         # ==========================================
-        # 5. コンテンツのクリーニング
+        # 6. コンテンツのクリーニング・整形
         # ==========================================
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
         if not lines:
-            self.stdout.write(self.style.ERROR("生成されたコンテンツが空です。"))
+            self.stdout.write(self.style.ERROR("コンテンツの抽出に失敗しました。"))
             return
 
         title = lines[0].replace('#', '').strip()
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # ==========================================
-        # 6. HTMLパーツの組み立て
-        # ==========================================
+        # HTMLカードの組み立て
         custom_card_html = f"""
         <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
@@ -223,6 +227,6 @@ class Command(BaseCommand):
         wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
         
         if wp_res.status_code == 201:
-            self.stdout.write(self.style.SUCCESS(f"【投稿成功】モデル: {selected_model} / 記事: {title}"))
+            self.stdout.write(self.style.SUCCESS(f"【投稿成功】使用モデル: {selected_model} / 記事: {title}"))
         else:
             self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
