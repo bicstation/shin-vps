@@ -1,8 +1,6 @@
-# api/serializers.py
-
 from rest_framework import serializers
 from .models import AdultProduct, LinkshareProduct, Maker, Genre, Actress, Label, Director, Series 
-from .models.pc_products import PCProduct  # 💡 正しいパスからインポート
+from .models.pc_products import PCProduct
 
 # --------------------------------------------------------------------------
 ## 1. エンティティ（マスターデータ）のシリアライザ
@@ -79,7 +77,7 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
 
 class PCProductSerializer(serializers.ModelSerializer):
     """
-    最新の PCProduct モデル（統合ジャンル、在庫ステータス対応）用シリアライザ
+    最新の PCProduct モデル（AI解説、統合ジャンル、在庫ステータス対応）用シリアライザ
     """
     class Meta:
         model = PCProduct
@@ -96,9 +94,10 @@ class PCProductSerializer(serializers.ModelSerializer):
             'image_url',      # 画像URL
             'description',    # 詳細スペック
             'stock_status',   # 在庫/受注状況（自動判定対応）
+            'ai_content',     # 💡 ここにAI解説を追加
+            'is_posted',      # 💡 投稿フラグを追加
             'is_active',      # 掲載フラグ
             'created_at',
             'updated_at',
-            # 'raw_html' はデータ量削減のため除外
         )
         read_only_fields = fields

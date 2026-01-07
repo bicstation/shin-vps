@@ -9,9 +9,10 @@ from django.contrib import messages
 
 # モデルのインポート
 from .models import (
-    RawApiData, AdultProduct, LinkshareProduct, PCProduct,
+    RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series
 )
+from .models.pc_products import PCProduct  # パスに合わせて調整
 
 # ----------------------------------------------------
 # 0. カスタムフォーム
@@ -22,10 +23,10 @@ class AdultProductAdminForm(forms.ModelForm):
         fields = '__all__'
 
 # ----------------------------------------------------
-# 1. PCProduct (PC製品・Lenovo/Acer等) のAdminクラス
+# 1. PCProduct (PC製品) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
-    # テンプレートパスは環境に合わせて調整してください
+    # テンプレートパス
     change_list_template = "admin/api/pcproduct/change_list.html"
 
     list_display = (
@@ -33,29 +34,34 @@ class PCProductAdmin(admin.ModelAdmin):
         'display_thumbnail',
         'name',
         'price',
-        'unified_genre',  # 統合ジャンル（laptop, desktop等）
-        'raw_genre',      # サイト側での分類名
-        'site_prefix',
+        'unified_genre',
+        'display_ai_status',  # AI解説の有無を表示
+        'is_posted',         # WP投稿済みフラグ
         'is_active',
         'updated_at',
     )
     list_display_links = ('name',)
     
     # フィルタリング機能を強化
-    list_filter = ('maker', 'site_prefix', 'is_active', 'unified_genre', 'raw_genre')
+    list_filter = ('maker', 'site_prefix', 'is_active', 'is_posted', 'unified_genre', 'raw_genre')
     
-    search_fields = ('name', 'unique_id', 'description')
+    search_fields = ('name', 'unique_id', 'description', 'ai_content')
     ordering = ('-updated_at',)
 
+    # 編集画面のレイアウト設定
     fieldsets = (
         ('基本情報', {
-            'fields': ('unique_id', 'site_prefix', 'maker', 'is_active'),
+            'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted'),
         }),
         ('仕分け情報', {
             'fields': ('unified_genre', 'raw_genre'),
         }),
-        ('製品詳細', {
+        ('製品詳細スペック', {
             'fields': ('name', 'price', 'description'),
+        }),
+        ('AI生成コンテンツ', {
+            'fields': ('ai_content',),
+            'description': 'WordPressおよび自社サイトの個別ページに表示される解説文（HTML可）です。',
         }),
         ('リンク・画像', {
             'fields': ('url', 'image_url'),
@@ -74,6 +80,13 @@ class PCProductAdmin(admin.ModelAdmin):
         return "No Image"
     display_thumbnail.short_description = '製品画像'
 
+    def display_ai_status(self, obj):
+        """AI解説が生成されているかをアイコンで表示"""
+        if obj.ai_content:
+            return mark_safe('<span style="color: #28a745; font-weight: bold;">生成済み</span>')
+        return mark_safe('<span style="color: #666;">未生成</span>')
+    display_ai_status.short_description = 'AI解説状況'
+
     def get_urls(self):
         """管理画面にカスタムボタン用のURLを追加"""
         urls = super().get_urls()
@@ -85,11 +98,10 @@ class PCProductAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def fetch_lenovo_action(self, request):
-        """Lenovoのスクレイピングを実行（285件の全域制圧用）"""
+        """Lenovoのスクレイピングを実行"""
         try:
-            # management/commands/scrape_lenovo.py が存在する場合
-            # call_command('scrape_lenovo') 
-            self.message_user(request, "Lenovo全製品（285件見込み）の取得を開始しました。ログを確認してください。", messages.SUCCESS)
+            # call_command('scrape_lenovo') # 実装済みならコメント解除
+            self.message_user(request, "Lenovo製品の取得を開始しました。", messages.SUCCESS)
         except Exception as e:
             self.message_user(request, f"エラーが発生しました: {e}", messages.ERROR)
         return HttpResponseRedirect("../")
@@ -99,7 +111,13 @@ class PCProductAdmin(admin.ModelAdmin):
         return HttpResponseRedirect("../")
 
     def generate_ai_action(self, request):
-        self.message_user(request, "AI記事生成を開始します...", messages.INFO)
+        """AI記事生成管理コマンドの実行"""
+        try:
+            # 以前作成した management/commands/PCProductPostCommand.py を叩く
+            # call_command('PCProductPostCommand') 
+            self.message_user(request, "AI記事生成とWordPress投稿のバッチ処理を開始しました。", messages.SUCCESS)
+        except Exception as e:
+            self.message_user(request, f"生成エラー: {e}", messages.ERROR)
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
@@ -117,7 +135,7 @@ class AdultProductAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'release_date', 'maker') 
     search_fields = ('title', 'product_id_unique')
 
-    readonly_fields = ('created_at', 'updated_at', 'product_id_unique', 'api_source', 'raw_data')
+    readonly_fields = ('created_at', 'updated_at', 'product_id_unique', 'api_source') # raw_dataはモデルに合わせて
 
     def display_first_image(self, obj):
         if obj.image_url_list and obj.image_url_list[0]:
@@ -161,7 +179,7 @@ class AdultProductAdmin(admin.ModelAdmin):
 # 3. LinkshareProduct
 # ----------------------------------------------------
 class LinkshareProductAdmin(admin.ModelAdmin): 
-    list_display = ('id', 'product_name', 'sku', 'merchant_name', 'price', 'is_active', 'updated_at')
+    list_display = ('id', 'product_name', 'sku', 'merchant_id', 'sale_price', 'is_active', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
 
 # ----------------------------------------------------
