@@ -28,6 +28,8 @@ class PCProduct(models.Model):
         default="在庫あり", 
         verbose_name="在庫/受注状況"
     ) # 「受注停止中」「最短2週間」などを格納
+    
+    is_posted = models.BooleanField(default=False, verbose_name="WP投稿済み")
 
     # 状態管理
     is_active = models.BooleanField(default=True, verbose_name="掲載中")

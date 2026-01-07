@@ -8,23 +8,24 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'Gemini 3/2.5とGemma 3をローテーションし、制限を回避して確実にWP投稿するスクリプト'
+    help = 'Gemini 3/2.5とGemma 3をローテーションし、2重投稿を防ぎながらWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
         # 1. 基本設定・認証情報
         # ==========================================
+        # Docker環境変数または.envから取得
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
-        # APIエンドポイント設定
+        # エンドポイント
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # 【戦略】使用するモデルの優先順位リスト
-        # Gemini系の20回枠を使い切った後、14,400回枠のGemma 3が控える最強の布陣です。
+        # モデルの優先順位リスト
+        # 各Geminiの制限(20回)を超えると、14,400回枠のGemma 3へ切り替わります
         MODELS = [
             "gemini-3-flash-preview",
             "gemini-2.5-flash",
@@ -38,21 +39,24 @@ class Command(BaseCommand):
         TAG_LAPTOP = 6
 
         # ==========================================
-        # 2. 投稿対象商品の選定 (DB操作)
+        # 2. 投稿対象商品の選定 (2重投稿防止)
         # ==========================================
+        # is_posted=False を条件に加え、一度投稿した商品は除外します
         products = PCProduct.objects.filter(
             maker__icontains='Lenovo',
-            is_active=True
+            is_active=True,
+            is_posted=False
         ).exclude(stock_status="受注停止中")
         
         if not products.exists():
-            self.stdout.write(self.style.ERROR("有効なLenovo製品がDBに見当たりませんでした。"))
+            self.stdout.write(self.style.ERROR("未投稿の有効なLenovo製品がDBに見当たりませんでした。"))
             return
 
+        # ランダムに1件選定
         product = random.choice(products)
-        self.stdout.write(self.style.SUCCESS(f"ターゲット商品確定: {product.name} (ID: {product.unique_id})"))
+        self.stdout.write(self.style.SUCCESS(f"ターゲット確定: {product.name} (ID: {product.unique_id})"))
 
-        # 商品名からタグを決定
+        # 商品名からデスクトップかノートPCかを自動タグ付け
         target_tags = []
         name_lower = product.name.lower()
         if any(keyword in name_lower for keyword in ["desktop", "tower", "station", "aio", "tiny", "center"]):
@@ -64,7 +68,7 @@ class Command(BaseCommand):
         bic_detail_url = f"https://bicstation.com/product/{product.unique_id}/"
 
         # ==========================================
-        # 3. 商品画像のアップロード (1回だけ実行)
+        # 3. 商品画像のアップロード
         # ==========================================
         media_id = None
         media_url = ""
@@ -100,7 +104,8 @@ class Command(BaseCommand):
         # ==========================================
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
-        以下の製品データに基づき、ITニュースサイト向けの深く鋭い「HTMLソースコードのみ」を出力してください。
+        以下の製品データに基づき、ITニュースサイト向けの深く鋭い、純粋な「HTMLソースコードのみ」を出力してください。
+        出力の最初から最後まで、Markdownの装飾(```htmlなど)や解説文を一切含めないでください。
 
         【製品データ】
         メーカー: {product.maker}
@@ -109,13 +114,13 @@ class Command(BaseCommand):
         スペック詳細: {product.description}
 
         【出力ルール】
-        - 1行目は「記事のタイトル」のみ（HTMLタグ不要）。
-        - 2行目から「本文のHTML」を開始してください。
-        - 2000文字以上の情報量で、CPU・GPU・メモリ・筐体設計について技術的に詳しく解説してください。
-        - 見出しは <h2> または <h3>、リストは <ul> を使用してください。
-        - 挨拶や前置きは一切不要です。
-        - 文末は必ず「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締めてください。
-        - 出力は必ず日本語で行ってください。
+        - 1行目は「記事のタイトル」のみ。
+        - 2行目から「本文のHTML」を開始。
+        - 2000文字以上の情報量で、CPU・GPU・メモリ・筐体設計について技術的に詳しく解説。
+        - 見出しは <h2> または <h3>、リストは <ul> を使用。
+        - 挨拶や前置きは一切不要。
+        - 文末は必ず「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締めること。
+        - 出力は必ず日本語。
         """
 
         # ==========================================
@@ -126,28 +131,26 @@ class Command(BaseCommand):
 
         for model_id in MODELS:
             self.stdout.write(f"モデル {model_id} で記事を生成中...")
-            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+            api_url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_id}:generateContent?key={GEMINI_API_KEY}"
             
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}]
             }
 
             try:
-                # Gemmaは計算に時間がかかる場合があるため、タイムアウトを90秒に設定
+                # タイムアウトを90秒に設定
                 response = requests.post(api_url, json=payload, timeout=90)
                 res_json = response.json()
                 
                 if 'error' in res_json:
                     error_msg = res_json['error'].get('message', '')
-                    # クォータ（回数制限）エラー 429 の場合
                     if res_json['error'].get('code') == 429 or "quota" in error_msg.lower():
-                        self.stdout.write(self.style.WARNING(f"モデル {model_id} は制限中です。次のモデルへ移行します。"))
+                        self.stdout.write(self.style.WARNING(f"モデル {model_id} は制限中です。次へ移行します。"))
                         continue
                     else:
                         self.stdout.write(self.style.ERROR(f"APIエラー ({model_id}): {error_msg}"))
                         continue
 
-                # 生成成功
                 if 'candidates' in res_json and len(res_json['candidates']) > 0:
                     ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
                     selected_model = model_id
@@ -158,17 +161,18 @@ class Command(BaseCommand):
                 continue
 
         if not ai_text:
-            self.stdout.write(self.style.ERROR("利用可能なすべてのモデルで生成に失敗しました。"))
+            self.stdout.write(self.style.ERROR("すべてのモデルで生成に失敗しました。"))
             return
 
         # ==========================================
-        # 6. コンテンツのクリーニング・整形
+        # 6. コンテンツの整形
         # ==========================================
+        # 余計なMarkdown装飾を削除
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
-        if not lines:
-            self.stdout.write(self.style.ERROR("コンテンツの抽出に失敗しました。"))
+        if len(lines) < 2:
+            self.stdout.write(self.style.ERROR("生成されたコンテンツが不十分です。"))
             return
 
         title = lines[0].replace('#', '').strip()
@@ -213,7 +217,7 @@ class Command(BaseCommand):
         full_content = f"{top_img_html}\n{main_body_html}\n{custom_card_html}"
 
         # ==========================================
-        # 7. WordPress 投稿実行
+        # 7. WordPress 投稿実行 ＋ フラグ更新
         # ==========================================
         wp_payload = {
             "title": title,
@@ -227,6 +231,9 @@ class Command(BaseCommand):
         wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
         
         if wp_res.status_code == 201:
-            self.stdout.write(self.style.SUCCESS(f"【投稿成功】使用モデル: {selected_model} / 記事: {title}"))
+            # 投稿が成功した場合のみ、DBのフラグを更新
+            product.is_posted = True
+            product.save()
+            self.stdout.write(self.style.SUCCESS(f"【投稿成功】モデル: {selected_model} / 記事: {title} (フラグ更新済)"))
         else:
             self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
