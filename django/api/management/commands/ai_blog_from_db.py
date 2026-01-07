@@ -22,8 +22,9 @@ class Command(BaseCommand):
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
         
-        # 【最重要】404エラーと20回制限を回避するための安定版URL
-        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+        # 【最重要修正】v1beta を使用し、パスを正確に構築。
+        # 404エラーを回避するために、Google AI Studioの標準ドキュメントに準拠した形式です。
+        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
         
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
@@ -116,17 +117,19 @@ class Command(BaseCommand):
         # ==========================================
         # 5. Gemini API 実行
         # ==========================================
-        self.stdout.write("Gemini 1.5 Flash (Stable v1) で詳細レビュー記事を生成中...")
+        self.stdout.write("Gemini 1.5 Flash (v1beta) で詳細レビュー記事を生成中...")
         
         payload = {
             "contents": [{"parts": [{"text": prompt}]}]
         }
 
         try:
+            # 修正したURL（v1beta）を使用
             response = requests.post(GEMINI_URL, json=payload, timeout=60)
             res_json = response.json()
             
             if 'error' in res_json:
+                # 404やその他の詳細エラーを表示
                 self.stdout.write(self.style.ERROR(f"APIエラー詳細: {res_json['error']['message']}"))
                 return
 
