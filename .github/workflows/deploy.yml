@@ -54,11 +54,11 @@ jobs:
             
             echo "📦 データベースを更新します..."
             # 構造変更がない場合でも「No migrations to apply」と出るだけで安全です
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T backend python manage.py migrate --noinput
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py migrate --noinput
 
             echo "🎨 静的ファイルを収集します..."
             # CSS/JSの更新を反映させるために必須のステップです
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T backend python manage.py collectstatic --noinput
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py collectstatic --noinput
 
             echo "🧹 不要な資産を掃除します..."
             docker image prune -f
