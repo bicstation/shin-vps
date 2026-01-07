@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { COLORS } from '@/constants';
-import { fetchProductDetail } from '@/lib/api'; // ✅ 作成した共通関数をインポート
+import { fetchProductDetail } from '@/lib/api';
 import styles from './ProductDetail.module.css';
 
 export async function generateMetadata(props: { params: Promise<{ unique_id: string }> }): Promise<Metadata> {
@@ -33,7 +33,31 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     const siteColor = COLORS?.SITE_COLOR || '#007bff';
     const bgColor = COLORS?.BACKGROUND || '#f4f7f9';
 
-    // CSS変数としてサイトカラーを渡す
+    // --- アフィリエイトリンク生成ロジック ---
+    let finalUrl = product.url;
+    let beacon: React.ReactNode = null;
+
+    if (product.maker.toLowerCase().includes('lenovo')) {
+        const sid = "3697471";
+        const pid = "892455531";
+        const encodedUrl = encodeURIComponent(product.url);
+        
+        // バリューコマースのリンク構造
+        finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${sid}&pid=${pid}&vc_url=${encodedUrl}`;
+        
+        // 計測用ビーコン
+        beacon = (
+            <img 
+                src={`//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=${sid}&pid=${pid}`} 
+                height="1" 
+                width="1" 
+                border="0" 
+                alt="" 
+                style={{ display: 'none' }} 
+            />
+        );
+    }
+
     const dynamicStyle = {
         '--site-color': siteColor,
         backgroundColor: bgColor
@@ -90,14 +114,19 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             </div>
                         </div>
 
+                        {/* 公式サイトボタン（Lenovoの場合はアフィリエイト化） */}
                         <a 
-                            href={product.url} 
+                            href={finalUrl} 
                             target="_blank" 
-                            rel="noopener noreferrer"
+                            rel="nofollow noopener noreferrer"
                             className={styles.ctaButton}
-                            style={{ boxShadow: `0 4px 15px ${siteColor}4d` }}
+                            style={{ 
+                                boxShadow: `0 4px 15px ${siteColor}4d`,
+                                backgroundColor: product.maker.toLowerCase().includes('lenovo') ? '#ef4444' : siteColor 
+                            }}
                         >
-                            公式サイトで最新価格を確認
+                            Lenovo公式サイトで詳細を見る
+                            {beacon}
                         </a>
                     </div>
                 </div>
