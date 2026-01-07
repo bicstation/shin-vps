@@ -49,14 +49,16 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     const isDell = makerLower.includes('dell');
 
     if (isDell) {
-        // --- Dell (LinkShare) 修正版：murlに製品URLを直接指定してDeep Link化 ---
+        // --- Dell (LinkShare) 修正版：正しいofferid構造とDeep Link(murl)の適用 ---
         const yourId = "nNBA6GzaGrQ";
-        const offerPrefix = "1568114";
-        const linkId = product.unique_id; 
+        const offerId = "1568114"; // 案件ID（ドットを含まない）
+        const linkId = product.unique_id; // 商品識別子
         
-        // 計測URLではなく、製品の個別URLをエンコードしてmurlにセットすることで詳細ページへ飛ばします
+        // 商品URLをエンコードしてmurlにセット
         const encodedProductUrl = encodeURIComponent(product.url);
-        finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerPrefix}.${linkId}&type=15&murl=${encodedProductUrl}`;
+        
+        // link?id={個人ID}&offerid={案件ID}.{識別子}&type=15&murl={遷移先}
+        finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerId}.${linkId}&type=15&murl=${encodedProductUrl}`;
         beacon = null; 
     } else if (isLenovo) {
         // --- Lenovo (ValueCommerce) リンク構築 ---
