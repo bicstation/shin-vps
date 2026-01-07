@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. ファイルを VPS の shin-vps ディレクトリへ同期
+      # 1. ファイルを VPS のディレクトリへ同期
       - name: Sync Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -28,7 +28,7 @@ jobs:
           strip_components: 0
           overwrite: true
 
-      # 2. SSH経由でネットワーク構築とDocker起動を実行
+      # 2. SSH経由でネットワーク構築・Docker起動・DBマイグレーションを実行
       - name: Deploy to Production via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -42,25 +42,25 @@ jobs:
             cd /home/maya/shin-vps
             
             echo "🔧 ネットワーク環境を整備します..."
-
-            # 既存ネットワークのラベル不一致問題を回避するため、
-            # もし存在していても「プロジェクト外」で作られたものなら一度削除して作り直します。
             if docker network inspect shin-vps_shared-proxy >/dev/null 2>&1; then
                 echo "既存のネットワークをクリーンアップします..."
-                # コンテナが接続されていて削除できない場合を考慮し、trueを返して続行
                 docker network rm shin-vps_shared-proxy || true
             fi
-            
-            # ネットワークを新規作成（これによりラベル問題が解消されます）
-            docker network create shin-vps_shared-proxy || echo "Network already exists, skipping creation."
+            docker network create shin-vps_shared-proxy || echo "Network already exists."
 
             echo "🚀 本番環境(prod)をビルド・起動します..."
-
-            # 本番用(prod)のymlを指定してビルド・起動
-            # プロジェクト名を -p で明示することで、コンテナ名の一貫性を保ちます
-            docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans
+            # --wait フラグを使うことで、コンテナがReady状態になるまで待機します
+            docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans --wait
             
-            # 未使用の古いイメージや、ビルド用の一時イメージを削除
+            echo "📦 データベースを更新します..."
+            # 構造変更がない場合でも「No migrations to apply」と出るだけで安全です
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T backend python manage.py migrate --noinput
+
+            echo "🎨 静的ファイルを収集します..."
+            # CSS/JSの更新を反映させるために必須のステップです
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T backend python manage.py collectstatic --noinput
+
+            echo "🧹 不要な資産を掃除します..."
             docker image prune -f
             
-            echo "✅ デプロイが完了しました！"
+            echo "✅ デプロイ成功！全ての処理が完了しました。"
