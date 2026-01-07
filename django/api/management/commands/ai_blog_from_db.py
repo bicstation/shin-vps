@@ -19,7 +19,7 @@ class Command(BaseCommand):
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
-        # 記号を分離して定義することで、エディタによる自動リンク化を物理的に阻止します
+        # URL自動リンク化対策（文字列結合）
         H = "https"
         C = ":"
         S = "/"
@@ -120,26 +120,21 @@ class Command(BaseCommand):
         """
 
         # ==========================================
-        # 5. AI実行 (URL自動変換対策版)
+        # 5. AI実行
         # ==========================================
         ai_text = None
         selected_model = None
-        
-        # API URLの構成要素を完全に分離
         G_DOM = "generativelanguage.googleapis.com"
         G_PATH = "v1beta/models"
 
         for model_id in MODELS:
             self.stdout.write(f"モデル {model_id} で記事を生成中...")
-            # ここでURLを動的に組み立てることで、貼り付け時の自動変換を回避します
             api_url = f"{H}{C}{S}{S}{G_DOM}{S}{G_PATH}{S}{model_id}:generateContent?key={GEMINI_API_KEY}"
-            
             payload = {"contents": [{"parts": [{"text": prompt}]}]}
 
             try:
                 response = requests.post(api_url, json=payload, timeout=90)
                 res_json = response.json()
-                
                 if 'candidates' in res_json and len(res_json['candidates']) > 0:
                     ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
                     selected_model = model_id
@@ -151,29 +146,33 @@ class Command(BaseCommand):
                 continue
 
         if not ai_text:
-            self.stdout.write(self.style.ERROR("すべてのモデルで生成に失敗しました。"))
             return
 
         # ==========================================
-        # 6. 整形とアフィリエイト組み込み
+        # 6. 整形とアフィリエイト・画像挿入
         # ==========================================
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
         if len(lines) < 2:
-            self.stdout.write(self.style.ERROR("生成内容が不十分です。"))
             return
 
         title = lines[0].replace('#', '').strip()
         main_body_html = '\n'.join(lines[1:]).strip()
 
+        # 【追加】本文のトップにアイキャッチ画像を表示するHTML
+        top_image_html = ""
+        if media_url:
+            top_image_html = f"""
+            <div class="post-featured-image" style="margin-bottom: 30px; text-align: center;">
+                <img src="{media_url}" alt="{product.name}" style="width: 100%; max-width: 800px; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            </div>
+            """
+
         encoded_url = urllib.parse.quote(product.url, safe='')
-        
-        # アフィリエイトURLの構築（自動リンク化対策）
         VC_DOM = "ck.jp.ap.valuecommerce.com"
         VC_PATH = "servlet/referral"
         affiliate_url = f"{H}{C}{S}{S}{VC_DOM}{S}{VC_PATH}?sid=3697471&pid=892455531&vc_url={encoded_url}"
-        
         BC_DOM = "ad.jp.ap.valuecommerce.com"
         BC_PATH = "servlet/gifbanner"
         vc_beacon = f'<img src="//{BC_DOM}/{BC_PATH}?sid=3697471&pid=892455531" height="1" width="1" border="0">'
@@ -204,7 +203,8 @@ class Command(BaseCommand):
         </div>
         """
 
-        full_content = f"{main_body_html}\n{custom_card_html}"
+        # 本文の組み立て： [トップ画像] + [AI生成本文] + [下部アフィリエイトカード]
+        full_content = f"{top_image_html}\n{main_body_html}\n{custom_card_html}"
 
         # ==========================================
         # 7. WordPress 投稿実行
