@@ -8,7 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'リストにある正確なモデル名 (gemini-3-flash-preview) を使用してWP投稿するスクリプト'
+    help = '3つのモデルをローテーションして1日最大60回の投稿枠をフル活用する自動投稿スクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -21,13 +21,15 @@ class Command(BaseCommand):
         # APIエンドポイント設定
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
-        
-        # 【最重要修正】リストにある正確なモデル名「gemini-3-flash-preview」を使用
-        # リストの models/ 以降の部分を指定します。
-        MODEL_NAME = "gemini-3-flash-preview"
-        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={GEMINI_API_KEY}"
-        
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
+
+        # 【戦略】使用するモデルの優先順位リスト
+        # 各モデル20回ずつの無料枠を順番に試行します
+        MODELS = [
+            "gemini-3-flash-preview",
+            "gemini-2.5-flash",
+            "gemini-2.5-flash-lite"
+        ]
 
         # WordPress ID設定
         CAT_LENOVO = 4
@@ -61,7 +63,7 @@ class Command(BaseCommand):
         bic_detail_url = f"https://bicstation.com/product/{product.unique_id}/"
 
         # ==========================================
-        # 3. 商品画像のアップロード
+        # 3. 商品画像のアップロード (1回だけ実行)
         # ==========================================
         media_id = None
         media_url = ""
@@ -93,7 +95,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
         # ==========================================
-        # 4. Geminiプロンプトの構築
+        # 4. Gemini API 実行 (モデルローテーション)
         # ==========================================
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
@@ -115,98 +117,112 @@ class Command(BaseCommand):
         - 出力は必ず日本語で行ってください。
         """
 
+        ai_text = None
+        selected_model = None
+
+        for model_id in MODELS:
+            self.stdout.write(f"モデル {model_id} で記事を生成中...")
+            gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+            
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}]
+            }
+
+            try:
+                response = requests.post(gemini_url, json=payload, timeout=60)
+                res_json = response.json()
+                
+                if 'error' in res_json:
+                    error_msg = res_json['error'].get('message', '')
+                    # クォータ（回数制限）エラーの場合
+                    if res_json['error'].get('code') == 429 or "quota" in error_msg.lower():
+                        self.stdout.write(self.style.WARNING(f"モデル {model_id} の利用枠が終了しています。次のモデルへ切り替えます。"))
+                        continue
+                    else:
+                        self.stdout.write(self.style.ERROR(f"APIエラー ({model_id}): {error_msg}"))
+                        continue
+
+                # 成功した場合
+                ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
+                selected_model = model_id
+                break # 成功したのでループを抜ける
+
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"実行時エラー ({model_id}): {e}"))
+                continue
+
+        if not ai_text:
+            self.stdout.write(self.style.ERROR("すべてのモデルで制限に達したか、生成に失敗しました。"))
+            return
+
         # ==========================================
-        # 5. Gemini API 実行
+        # 5. コンテンツのクリーニング
         # ==========================================
-        self.stdout.write(f"モデル {MODEL_NAME} でレビュー記事を生成中...")
+        clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
+        lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}]
-        }
+        if not lines:
+            self.stdout.write(self.style.ERROR("生成されたコンテンツが空です。"))
+            return
 
-        try:
-            response = requests.post(GEMINI_URL, json=payload, timeout=60)
-            res_json = response.json()
-            
-            if 'error' in res_json:
-                self.stdout.write(self.style.ERROR(f"APIエラー詳細: {res_json['error']['message']}"))
-                return
+        title = lines[0].replace('#', '').strip()
+        main_body_html = '\n'.join(lines[1:]).strip()
 
-            if 'candidates' not in res_json:
-                self.stdout.write(self.style.ERROR(f"レスポンス形式異常: {res_json}"))
-                return
-
-            ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
-            
-            # クリーニング
-            clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
-            lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
-            
-            if not lines:
-                self.stdout.write(self.style.ERROR("コンテンツ生成失敗"))
-                return
-
-            title = lines[0].replace('#', '').strip()
-            main_body_html = '\n'.join(lines[1:]).strip()
-
-            # ==========================================
-            # 6. HTMLパーツの組み立て
-            # ==========================================
-            custom_card_html = f"""
-            <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
-                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
-                    <div style="flex: 1; min-width: 200px; text-align: center;">
-                        <a href="{bic_detail_url}" target="_blank" rel="noopener">
-                            <img src="{media_url}" alt="{product.name}" style="max-width: 100%; height: auto; border-radius: 10px;">
+        # ==========================================
+        # 6. HTMLパーツの組み立て
+        # ==========================================
+        custom_card_html = f"""
+        <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
+                <div style="flex: 1; min-width: 200px; text-align: center;">
+                    <a href="{bic_detail_url}" target="_blank" rel="noopener">
+                        <img src="{media_url}" alt="{product.name}" style="max-width: 100%; height: auto; border-radius: 10px;">
+                    </a>
+                </div>
+                <div style="flex: 2; min-width: 250px;">
+                    <h3 style="margin: 0 0 12px 0; font-size: 1.4em; color: #111827; line-height: 1.4;">{product.name}</h3>
+                    <p style="color: #4b5563; font-size: 0.95em; margin-bottom: 8px;">メーカー：{product.maker}</p>
+                    <p style="color: #ef4444; font-weight: bold; font-size: 1.3em; margin: 10px 0;">価格：{product.price}円</p>
+                    <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
+                        <a href="{product.url}" target="_blank" rel="noopener noreferrer" 
+                           style="flex: 1; min-width: 140px; background-color: #0062ff; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                           公式サイト ＞
                         </a>
-                    </div>
-                    <div style="flex: 2; min-width: 250px;">
-                        <h3 style="margin: 0 0 12px 0; font-size: 1.4em; color: #111827; line-height: 1.4;">{product.name}</h3>
-                        <p style="color: #4b5563; font-size: 0.95em; margin-bottom: 8px;">メーカー：{product.maker}</p>
-                        <p style="color: #ef4444; font-weight: bold; font-size: 1.3em; margin: 10px 0;">価格：{product.price}円</p>
-                        <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
-                            <a href="{product.url}" target="_blank" rel="noopener noreferrer" 
-                               style="flex: 1; min-width: 140px; background-color: #0062ff; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                               公式サイト ＞
-                            </a>
-                            <a href="{bic_detail_url}" target="_blank" rel="noopener"
-                               style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                               Bicstation詳細 ＞
-                            </a>
-                        </div>
+                        <a href="{bic_detail_url}" target="_blank" rel="noopener"
+                           style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                           Bicstation詳細 ＞
+                        </a>
                     </div>
                 </div>
             </div>
-            """
+        </div>
+        """
 
-            top_img_html = f"""
-            <div style="margin-bottom: 30px;">
-                <a href="{bic_detail_url}" target="_blank" rel="noopener">
-                    <img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="border-radius: 12px; width: 100%; height: auto;" />
-                </a>
-            </div>
-            """ if media_url else ""
-            
-            full_content = f"{top_img_html}\n{main_body_html}\n{custom_card_html}"
+        top_img_html = f"""
+        <div style="margin-bottom: 30px;">
+            <a href="{bic_detail_url}" target="_blank" rel="noopener">
+                <img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="border-radius: 12px; width: 100%; height: auto;" />
+            </a>
+        </div>
+        """ if media_url else ""
+        
+        full_content = f"{top_img_html}\n{main_body_html}\n{custom_card_html}"
 
-            # ==========================================
-            # 7. WordPress 投稿実行
-            # ==========================================
-            wp_payload = {
-                "title": title,
-                "content": full_content,
-                "status": "publish",
-                "featured_media": media_id,
-                "categories": [CAT_LENOVO], 
-                "tags": target_tags           
-            }
-            
-            wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
-            
-            if wp_res.status_code == 201:
-                self.stdout.write(self.style.SUCCESS(f"【投稿成功】: {title} (TagID: {target_tags})"))
-            else:
-                self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
-
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f"実行時重大エラー: {e}"))
+        # ==========================================
+        # 7. WordPress 投稿実行
+        # ==========================================
+        wp_payload = {
+            "title": title,
+            "content": full_content,
+            "status": "publish",
+            "featured_media": media_id,
+            "categories": [CAT_LENOVO], 
+            "tags": target_tags           
+        }
+        
+        wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
+        
+        if wp_res.status_code == 201:
+            self.stdout.write(self.style.SUCCESS(f"【投稿成功】モデル: {selected_model} / 記事: {title}"))
+        else:
+            self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
