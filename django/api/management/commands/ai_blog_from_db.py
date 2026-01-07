@@ -19,10 +19,15 @@ class Command(BaseCommand):
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
-        # URLを文字列結合で定義（自動リンク化対策）
-        PROT = "https://"
-        WP_POST_URL = PROT + "blog.tiper.live/wp-json/wp/v2/bicstation"
-        WP_MEDIA_URL = PROT + "blog.tiper.live/wp-json/wp/v2/media"
+        # 記号を分離して定義することで、エディタによる自動リンク化を物理的に阻止します
+        H = "https"
+        C = ":"
+        S = "/"
+        
+        # WordPress設定
+        W_DOM = "blog.tiper.live"
+        WP_POST_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}bicstation"
+        WP_MEDIA_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
         # モデルの優先順位リスト
@@ -61,7 +66,7 @@ class Command(BaseCommand):
         else:
             target_tags.append(TAG_LAPTOP)
 
-        bic_detail_url = PROT + f"bicstation.com/product/{product.unique_id}/"
+        bic_detail_url = f"{H}{C}{S}{S}bicstation.com{S}product{S}{product.unique_id}{S}"
 
         # ==========================================
         # 3. 商品画像のアップロード
@@ -115,17 +120,19 @@ class Command(BaseCommand):
         """
 
         # ==========================================
-        # 5. AI実行 (URL完全プレーン化版)
+        # 5. AI実行 (URL自動変換対策版)
         # ==========================================
         ai_text = None
         selected_model = None
         
-        # API URLのパーツを完全に分離
-        API_BASE = PROT + "[generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/)"
+        # API URLの構成要素を完全に分離
+        G_DOM = "generativelanguage.googleapis.com"
+        G_PATH = "v1beta/models"
 
         for model_id in MODELS:
             self.stdout.write(f"モデル {model_id} で記事を生成中...")
-            api_url = API_BASE + model_id + ":generateContent?key=" + GEMINI_API_KEY
+            # ここでURLを動的に組み立てることで、貼り付け時の自動変換を回避します
+            api_url = f"{H}{C}{S}{S}{G_DOM}{S}{G_PATH}{S}{model_id}:generateContent?key={GEMINI_API_KEY}"
             
             payload = {"contents": [{"parts": [{"text": prompt}]}]}
 
@@ -153,17 +160,23 @@ class Command(BaseCommand):
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
+        if len(lines) < 2:
+            self.stdout.write(self.style.ERROR("生成内容が不十分です。"))
+            return
+
         title = lines[0].replace('#', '').strip()
         main_body_html = '\n'.join(lines[1:]).strip()
 
         encoded_url = urllib.parse.quote(product.url, safe='')
         
-        # アフィリエイトURLとビーコンも同様に分割結合
-        VC_BASE = PROT + "[ck.jp.ap.valuecommerce.com/servlet/referral](https://ck.jp.ap.valuecommerce.com/servlet/referral)"
-        affiliate_url = VC_BASE + "?sid=3697471&pid=892455531&vc_url=" + encoded_url
+        # アフィリエイトURLの構築（自動リンク化対策）
+        VC_DOM = "ck.jp.ap.valuecommerce.com"
+        VC_PATH = "servlet/referral"
+        affiliate_url = f"{H}{C}{S}{S}{VC_DOM}{S}{VC_PATH}?sid=3697471&pid=892455531&vc_url={encoded_url}"
         
-        BC_SRC = "//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531)"
-        vc_beacon = f'<img src="{BC_SRC}" height="1" width="1" border="0">'
+        BC_DOM = "ad.jp.ap.valuecommerce.com"
+        BC_PATH = "servlet/gifbanner"
+        vc_beacon = f'<img src="//{BC_DOM}/{BC_PATH}?sid=3697471&pid=892455531" height="1" width="1" border="0">'
 
         custom_card_html = f"""
         <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
