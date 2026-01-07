@@ -9,6 +9,13 @@ import { COLORS } from '@/constants';
 import { fetchProductDetail } from '@/lib/api';
 import styles from './ProductDetail.module.css';
 
+/**
+ * ISR (Incremental Static Regeneration)
+ * 3600秒（1時間）ごとにバックグラウンドで再ビルドを行い、
+ * Python側で更新された ai_content や価格を自動で反映させます。
+ */
+export const revalidate = 3600;
+
 export async function generateMetadata(props: { params: Promise<{ unique_id: string }> }): Promise<Metadata> {
     const params = await props.params;
     const product = await fetchProductDetail(params.unique_id);
@@ -41,20 +48,15 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     const isLenovo = makerLower.includes('lenovo');
     const isDell = makerLower.includes('dell');
 
-    // ValueCommerce用設定（Lenovo/Dell共通のSID/PIDを使用する場合）
     if (isLenovo || isDell) {
         const sid = "3697471";
         const pid = "892455531";
         const encodedUrl = encodeURIComponent(product.url);
-        
         finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${sid}&pid=${pid}&vc_url=${encodedUrl}`;
-        
         beacon = (
             <img 
                 src={`//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=${sid}&pid=${pid}`} 
-                height={1} 
-                width={1} 
-                alt="" 
+                height={1} width={1} alt="" 
                 style={{ display: 'none', border: 'none' }} 
             />
         );
@@ -65,10 +67,11 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
         backgroundColor: bgColor
     } as React.CSSProperties;
 
+    const buttonLabel = `${product.maker}公式サイトで詳細を見る`;
+
     return (
         <div className={styles.wrapper} style={dynamicStyle}>
             
-            {/* ナビゲーション（パン屑リスト） */}
             <div className={styles.breadcrumb}>
                 <nav>
                     <Link href="/" className={styles.breadcrumbLink} style={{ color: siteColor }}>カタログトップ</Link>
@@ -79,10 +82,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
 
             <main className={styles.mainContainer}>
                 
-                {/* メインセクション：製品画像と価格 */}
                 <div className={styles.topSection}>
-                    
-                    {/* 左側：商品画像 */}
                     <div className={styles.imageWrapper}>
                         <img 
                             src={product.image_url || 'https://via.placeholder.com/500x400?text=No+Image'} 
@@ -91,20 +91,13 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                         />
                     </div>
 
-                    {/* 右側：基本情報 */}
                     <div>
                         <div className={styles.badgeContainer}>
-                            <span className={styles.makerBadge}>
-                                {product.maker.toUpperCase()}
-                            </span>
-                            <span className={styles.genreBadge}>
-                                {product.unified_genre}
-                            </span>
+                            <span className={styles.makerBadge}>{product.maker.toUpperCase()}</span>
+                            <span className={styles.genreBadge}>{product.unified_genre}</span>
                         </div>
 
-                        <h1 className={styles.productTitle}>
-                            {product.name}
-                        </h1>
+                        <h1 className={styles.productTitle}>{product.name}</h1>
 
                         <div className={styles.priceBox}>
                             <div className={styles.priceLabel}>参考価格 (税込)</div>
@@ -117,39 +110,31 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                         </div>
 
                         <a 
-                            href={finalUrl} 
-                            target="_blank" 
-                            rel="nofollow noopener noreferrer"
+                            href={finalUrl} target="_blank" rel="nofollow noopener noreferrer"
                             className={styles.ctaButton}
                             style={{ 
                                 boxShadow: `0 4px 15px ${siteColor}4d`,
                                 backgroundColor: isLenovo ? '#ef4444' : siteColor 
                             }}
                         >
-                            {product.maker}公式サイトで詳細を見る
+                            {buttonLabel}
                             {beacon}
                         </a>
                     </div>
                 </div>
 
-                {/* スペック詳細セクション */}
                 <div className={styles.specSection}>
-                    <h2 className={styles.specTitle}>
-                        スペック詳細・構成内容
-                    </h2>
-                    
+                    <h2 className={styles.specTitle}>スペック詳細・構成内容</h2>
                     <div className={styles.specTable}>
                         {product.description ? (
                             product.description.split('/').map((spec: string, i: number) => (
                                 <div key={i} className={styles.specRow}>
                                     <span className={styles.specCheck}>✓</span>
-                                    <span style={{ color: '#444' }}>{spec.trim()}</span>
+                                    <span>{spec.trim()}</span>
                                 </div>
                             ))
                         ) : (
-                            <p style={{ color: '#999', textAlign: 'center', padding: '40px', background: '#fff' }}>
-                                詳細スペック情報の配信はありません。
-                            </p>
+                            <p className={styles.noSpec}>詳細スペック情報の配信はありません。</p>
                         )}
                     </div>
                 </div>
@@ -157,9 +142,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                 {/* AI詳細解説セクション */}
                 {product.ai_content && (
                     <div className={styles.aiContentSection}>
-                        <h2 className={styles.specTitle}>
-                            エキスパートによる製品解説
-                        </h2>
+                        <h2 className={styles.specTitle}>エキスパートによる製品解説</h2>
                         <div 
                             className={styles.aiContentBody}
                             dangerouslySetInnerHTML={{ __html: product.ai_content }} 
@@ -174,18 +157,16 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             最新の在庫状況やカスタマイズオプションは公式サイトをご確認ください。
                         </p>
                         <a 
-                            href={finalUrl} 
-                            target="_blank" 
-                            rel="nofollow noopener noreferrer"
+                            href={finalUrl} target="_blank" rel="nofollow noopener noreferrer"
                             className={styles.ctaButton}
                             style={{ 
                                 margin: '0 auto',
-                                maxWidth: '400px',
+                                maxWidth: '450px',
                                 boxShadow: `0 4px 15px ${siteColor}4d`,
                                 backgroundColor: isLenovo ? '#ef4444' : siteColor 
                             }}
                         >
-                            {product.maker}公式サイトで注文・詳細確認
+                            {buttonLabel}
                             {beacon}
                         </a>
                     </div>

@@ -1,7 +1,7 @@
 /* ページ全体の背景 */
 .wrapper {
   min-height: 100vh;
-  padding-bottom: 60px;
+  padding-bottom: 80px;
 }
 
 /* パン屑リスト */
@@ -16,6 +16,10 @@
 .breadcrumbLink {
   text-decoration: none;
   transition: opacity 0.2s;
+}
+
+.breadcrumbLink:hover {
+  opacity: 0.7;
 }
 
 /* メインコンテナ */
@@ -34,6 +38,7 @@
   padding: 40px;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
 }
 
 /* 画像エリア */
@@ -82,6 +87,7 @@
   color: #222;
   margin-bottom: 20px;
   font-weight: bold;
+  line-height: 1.3;
 }
 
 /* 価格ボックス */
@@ -105,18 +111,16 @@
   color: #d9534f;
 }
 
-/* 購入ボタン */
+/* 共通購入ボタン */
 .ctaButton {
   display: block;
   text-align: center;
-  background: var(--site-color);
   color: white;
   padding: 18px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: bold;
   font-size: 1.1em;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -125,9 +129,9 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* スペックセクション */
-.specSection {
-  marginTop: 40px;
+/* スペック・AI解説共通セクション */
+.specSection, .aiContentSection {
+  margin-top: 30px;
   background: #fff;
   padding: 40px;
   border-radius: 16px;
@@ -143,6 +147,7 @@
   font-weight: bold;
 }
 
+/* スペックリスト */
 .specTable {
   display: grid;
   gap: 1px;
@@ -156,6 +161,7 @@
   display: flex;
   align-items: center;
   font-size: 1em;
+  color: #444;
 }
 
 .specCheck {
@@ -164,12 +170,66 @@
   font-weight: bold;
 }
 
+.noSpec {
+  background: #fff;
+  padding: 30px;
+  text-align: center;
+  color: #999;
+}
+
+/* AI解説文の装飾（HTML流し込み用） */
+.aiContentBody {
+  line-height: 1.8;
+  color: #444;
+}
+
+.aiContentBody h3 {
+  margin-top: 1.5em;
+  color: #222;
+  font-size: 1.2em;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.aiContentBody p {
+  margin-bottom: 1.2em;
+}
+
+/* 下部CTAカード */
+.bottomCtaSection {
+  margin-top: 50px;
+  padding: 0;
+}
+
+.bottomCtaCard {
+  background: #fff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  border: 2px solid var(--site-color);
+  text-align: center;
+}
+
+.bottomCtaText {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 25px;
+  color: #333;
+}
+
 /* モバイル対応 */
 @media (max-width: 768px) {
   .topSection {
     padding: 20px;
+    grid-template-columns: 1fr;
   }
   .priceValue {
     font-size: 2rem;
+  }
+  .specSection, .aiContentSection, .bottomCtaCard {
+    padding: 25px;
+  }
+  .productTitle {
+    font-size: 1.5em;
   }
 }
