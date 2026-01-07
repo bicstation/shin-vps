@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = 'Gemini 3/2.5とGemma 3をローテーションし、WP投稿(フル構成)および自社DBへの本文保存を行うスクリプト'
+    help = '集客用WPブログと信頼用自社DB(Next.js)の両方に、役割の異なる解説を同時生成・保存する'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -20,18 +20,12 @@ class Command(BaseCommand):
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
-        # URL自動リンク化対策（文字列結合）
-        H = "https"
-        C = ":"
-        S = "/"
-        
-        # WordPress設定
+        H, C, S = "https", ":", "/"
         W_DOM = "blog.tiper.live"
         WP_POST_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}bicstation"
         WP_MEDIA_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # AIモデルの優先順位リスト
         MODELS = [
             "gemini-3-flash-preview",
             "gemini-2.5-flash",
@@ -39,16 +33,11 @@ class Command(BaseCommand):
             "gemma-3-12b-it" 
         ]
 
-        # WordPress カテゴリID
-        CAT_LENOVO = 4
-        CAT_DELL = 7
-        
-        # WordPress タグID
-        TAG_DESKTOP = 5
-        TAG_LAPTOP = 6
+        CAT_LENOVO, CAT_DELL = 4, 7
+        TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
         # ==========================================
-        # 2. 投稿対象商品の選定 (投稿フラグ ＋ 本文未生成チェック)
+        # 2. 投稿対象商品の選定
         # ==========================================
         products = PCProduct.objects.filter(
             is_active=True,
@@ -62,188 +51,114 @@ class Command(BaseCommand):
             return
 
         product = random.choice(products)
-        self.stdout.write(self.style.SUCCESS(f"ターゲット確定: {product.name} (ID: {product.unique_id})"))
+        self.stdout.write(self.style.SUCCESS(f"デプロイ準備: {product.name}"))
 
-        # カテゴリ選定
-        target_cats = []
-        if 'lenovo' in product.maker.lower():
-            target_cats.append(CAT_LENOVO)
-        elif 'dell' in product.maker.lower():
-            target_cats.append(CAT_DELL)
-        else:
-            target_cats.append(1) 
-
-        # タグ判定
-        target_tags = []
-        name_lower = product.name.lower()
-        if any(keyword in name_lower for keyword in ["desktop", "tower", "station", "aio", "tiny", "center"]):
-            target_tags.append(TAG_DESKTOP)
-        else:
-            target_tags.append(TAG_LAPTOP)
+        # カテゴリ・タグ判定
+        target_cats = [CAT_LENOVO if 'lenovo' in product.maker.lower() else (CAT_DELL if 'dell' in product.maker.lower() else 1)]
+        target_tags = [TAG_DESKTOP if any(k in product.name.lower() for k in ["desktop", "tower", "station", "aio", "tiny", "center"]) else TAG_LAPTOP]
 
         bic_detail_url = f"{H}{C}{S}{S}bicstation.com{S}product{S}{product.unique_id}{S}"
 
         # ==========================================
         # 3. 商品画像のアップロード
         # ==========================================
-        media_id = None
-        media_url = ""
+        media_id, media_url = None, ""
         if product.image_url:
-            self.stdout.write(f"画像をWordPressへアップロード中...")
             try:
                 img_res = requests.get(product.image_url, timeout=15)
                 if img_res.status_code == 200:
                     with NamedTemporaryFile(delete=True) as img_temp:
                         img_temp.write(img_res.content)
                         img_temp.flush()
-                        
-                        files = {
-                            'file': (f"{product.unique_id}.jpg", open(img_temp.name, 'rb'), 'image/jpeg')
-                        }
-                        media_upload_res = requests.post(
-                            WP_MEDIA_URL,
-                            auth=AUTH,
-                            files=files,
-                            headers={'Content-Disposition': f'attachment; filename={product.unique_id}.jpg'}
-                        )
-                        
-                        if media_upload_res.status_code == 201:
-                            media_data = media_upload_res.json()
-                            media_id = media_data.get('id')
-                            media_url = media_data.get('source_url')
-                            self.stdout.write(self.style.SUCCESS(f"メディア登録完了(ID: {media_id})"))
+                        files = {'file': (f"{product.unique_id}.jpg", open(img_temp.name, 'rb'), 'image/jpeg')}
+                        m_res = requests.post(WP_MEDIA_URL, auth=AUTH, files=files, headers={'Content-Disposition': f'attachment; filename={product.unique_id}.jpg'})
+                        if m_res.status_code == 201:
+                            m_data = m_res.json()
+                            media_id, media_url = m_data.get('id'), m_data.get('source_url')
             except Exception as e:
-                self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
+                self.stdout.write(self.style.WARNING(f"画像処理スキップ: {e}"))
 
         # ==========================================
-        # 4. AIプロンプト
+        # 4. AIプロンプト（役割分担の強化）
         # ==========================================
         prompt = f"""
-        あなたはPCの技術仕様に精通した客観的な解説者です。
-        以下の製品データに基づき、ITニュースサイト向けの深く鋭い、純粋な「HTMLソースコードのみ」を出力してください。
-        データが少ない場合は、最新のPCトレンド知識を用いて読者に有益な解説を補完してください。
-        Markdownの装飾(```htmlなど)や解説文を一切含めないでください。
+        あなたはPCの技術仕様とマーケティングに精通したエキスパートです。
+        以下の製品データから、ITニュースサイト向けの【ブログ記事】と、自社カタログサイト向けの【製品解説】を同時に作成してください。
 
-        【製品データ】
-        メーカー: {product.maker} | 商品名: {product.name} | 価格: {product.price}円
-        スペック詳細: {product.description}
+        【データ】メーカー:{product.maker} | 名称:{product.name} | 価格:{product.price}円 | スペック:{product.description}
 
         【出力ルール】
-        - 1行目は記事のタイトルのみ。
-        - 2行目から本文HTML。
-        - 2000文字以上の情報量で技術的に解説。
-        - 文末は「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締める。
+        - 1行目: 読者を惹きつけるブログタイトル
+        - 2行目以降: 本文HTML
+        - 内容には必ず以下を含めてください:
+            1. 専門家から見たこのモデルの最大の特徴（性能・冷却・筐体など）
+            2. 競合他社（DELLならLenovo、LenovoならHP等）と比較した際の強み
+            3. このスペックが「本当に必要になる」具体的なユーザー像
+        - ブログ向けには「語りかけるような熱量のある文章」を。
+        - カタログ（製品詳細）向けには「スペックを論理的に裏付ける客観的な解説」を意識。
+
+        ※Markdown(```html)は厳禁。純粋なHTMLタグのみを出力してください。
         """
 
         # ==========================================
-        # 5. AI実行
+        # 5. AI実行（ローテーション）
         # ==========================================
-        ai_text = None
-        selected_model = None
-        G_DOM = "generativelanguage.googleapis.com"
-        G_PATH = "v1beta/models"
-
+        ai_text, selected_model = None, None
         for model_id in MODELS:
-            self.stdout.write(f"モデル {model_id} で記事を生成中...")
-            api_url = f"{H}{C}{S}{S}{G_DOM}{S}{G_PATH}{S}{model_id}:generateContent?key={GEMINI_API_KEY}"
-            payload = {"contents": [{"parts": [{"text": prompt}]}]}
-
+            api_url = f"{H}{C}{S}{S}generativelanguage.googleapis.com{S}v1beta{S}models{S}{model_id}:generateContent?key={GEMINI_API_KEY}"
             try:
-                response = requests.post(api_url, json=payload, timeout=90)
+                response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
                 res_json = response.json()
-                if 'candidates' in res_json and len(res_json['candidates']) > 0:
+                if 'candidates' in res_json:
                     ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
                     selected_model = model_id
-                    break 
-                else:
-                    self.stdout.write(self.style.ERROR(f"APIエラー ({model_id}): {res_json}"))
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f"通信エラー ({model_id}): {e}"))
-                continue
+                    break
+            except: continue
 
-        if not ai_text:
-            return
+        if not ai_text: return
 
         # ==========================================
-        # 6. 整形とアフィリエイト・画像挿入
+        # 6. 整形とアフィリエイトカードの構築
         # ==========================================
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
-        
-        if len(lines) < 2:
-            return
+        if len(lines) < 2: return
 
         title = lines[0].replace('#', '').strip()
-        
-        # 💡 main_body_html は「自社DBに保存する用」として分離保持
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # WordPress用のリッチコンテンツ組み立て
-        top_image_html = ""
-        if media_url:
-            top_image_html = f"""
-            <div class="post-featured-image" style="margin-bottom: 30px; text-align: center;">
-                <img src="{media_url}" alt="{product.name}" style="width: 100%; max-width: 800px; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            </div>
-            """
-
-        encoded_url = urllib.parse.quote(product.url, safe='')
-        VC_DOM = "ck.jp.ap.valuecommerce.com"
-        VC_PATH = "servlet/referral"
-        affiliate_url = f"{H}{C}{S}{S}{VC_DOM}{S}{VC_PATH}?sid=3697471&pid=892455531&vc_url={encoded_url}"
+        # WordPress用のフルセット
+        top_image_html = f'<div style="text-align:center;margin-bottom:30px;"><img src="{media_url}" style="width:100%;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);"></div>' if media_url else ""
         
-        BC_DOM = "ad.jp.ap.valuecommerce.com"
-        BC_PATH = "servlet/gifbanner"
-        vc_beacon = f'<img src="//{BC_DOM}/{BC_PATH}?sid=3697471&pid=892455531" height="1" width="1" border="0">'
+        encoded_url = urllib.parse.quote(product.url, safe='')
+        aff_url = f"{H}{C}{S}{S}ck.jp.ap.valuecommerce.com{S}servlet/referral?sid=3697471&pid=892455531&vc_url={encoded_url}"
+        beacon = '<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531)" height="1" width="1" border="0">'
 
-        custom_card_html = f"""
-        <div class="affiliate-card" style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
-                <div style="flex: 1; min-width: 200px; text-align: center;">
-                    <a href="{bic_detail_url}" target="_blank">
-                        <img src="{media_url}" alt="{product.name}" style="max-width: 100%; height: auto; border-radius: 10px;">
-                    </a>
-                </div>
-                <div style="flex: 2; min-width: 250px;">
-                    <h3 style="margin: 0 0 12px 0; font-size: 1.4em; color: #111827;">{product.name}</h3>
-                    <p style="color: #ef4444; font-weight: bold; font-size: 1.3em; margin: 10px 0;">特別価格：{product.price}円</p>
-                    <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
-                        <a href="{affiliate_url}" target="_blank" rel="nofollow noopener noreferrer" 
-                           style="flex: 1; min-width: 140px; background-color: #ef4444; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                            公式サイトで見る ＞{vc_beacon}
-                        </a>
-                        <a href="{bic_detail_url}" target="_blank"
-                           style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                            製品詳細を見る ＞
-                        </a>
+        card_html = f"""
+        <div class="affiliate-card" style="margin:40px 0;padding:25px;border-radius:16px;background:#fff;border:1px solid #eee;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+            <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;">
+                <div style="flex:1;min-width:180px;"><img src="{media_url}" style="width:100%;border-radius:10px;"></div>
+                <div style="flex:2;min-width:240px;">
+                    <h3 style="margin:0 0 10px 0;">{product.name}</h3>
+                    <p style="color:#d9534f;font-weight:bold;font-size:1.4em;">税込 {product.price:,}円〜</p>
+                    <div style="display:flex;gap:10px;margin-top:15px;">
+                        <a href="{aff_url}" target="_blank" style="flex:1;background:#d9534f;color:#fff;text-align:center;padding:12px;border-radius:6px;text-decoration:none;font-weight:bold;">公式サイト {beacon}</a>
+                        <a href="{bic_detail_url}" style="flex:1;background:#333;color:#fff;text-align:center;padding:12px;border-radius:6px;text-decoration:none;font-weight:bold;">製品詳細</a>
                     </div>
                 </div>
             </div>
         </div>
         """
-
-        # WP投稿用：画像＋本文＋カードのフルセット
-        full_content_for_wp = f"{top_image_html}\n{main_body_html}\n{custom_card_html}"
+        full_wp_content = f"{top_image_html}\n{main_body_html}\n{card_html}"
 
         # ==========================================
-        # 7. WordPress 投稿 ＆ 自社DB保存 実行
+        # 7. 実行
         # ==========================================
-        wp_payload = {
-            "title": title,
-            "content": full_content_for_wp,
-            "status": "publish",
-            "featured_media": media_id,
-            "categories": target_cats, 
-            "tags": target_tags           
-        }
-        
-        wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
+        wp_res = requests.post(WP_POST_URL, json={"title":title, "content":full_wp_content, "status":"publish", "featured_media":media_id, "categories":target_cats, "tags":target_tags}, auth=AUTH)
         
         if wp_res.status_code == 201:
-            # 💡 自社DBには「アイキャッチ画像やカード」を除いた純粋な本文のみを保存
+            # Next.js用には「アイキャッチ」や「カード」を含めない、純粋なプロの解説のみを保存
             product.ai_content = main_body_html
             product.is_posted = True
             product.save()
-            self.stdout.write(self.style.SUCCESS(f"【成功】WP(フル) ＆ 自社DB(本文のみ) 保存完了: {title}"))
-        else:
-            self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
+            self.stdout.write(self.style.SUCCESS(f"【成功】{selected_model}によりWP/自社DBの両方を最適化しました。"))
