@@ -3,11 +3,12 @@ from django.utils.timezone import now
 
 class PCProduct(models.Model):
     """
-    PC製品を管理する汎用モデル（2重仕分け ＋ 生HTMLマッピング対応版）
+    PC製品を管理する汎用モデル
+    （2重仕分け ＋ 生HTMLマッピング ＋ AIコンテンツ保持対応版）
     """
     # 識別用
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
-    site_prefix = models.CharField(max_length=20, verbose_name="サイト接頭辞") # 'lenovo', 'hp' など
+    site_prefix = models.CharField(max_length=20, verbose_name="サイト接頭辞") # 'lenovo', 'hp', 'dell' など
     maker = models.CharField(max_length=100, db_index=True, verbose_name="メーカー")
     
     # 💡 2重仕分け用カラム
@@ -21,7 +22,11 @@ class PCProduct(models.Model):
     image_url = models.URLField(max_length=1000, null=True, blank=True, verbose_name="画像URL")
     description = models.TextField(null=True, blank=True, verbose_name="詳細スペック")
 
-    # 🚀 今回追加：自動マッピング・受注停止管理用
+    # 🚀 AI生成コンテンツ（今回の重要追加項目）
+    # WordPressに投稿した内容と同じ、または自社サイト用に最適化されたHTMLを保存します
+    ai_content = models.TextField(null=True, blank=True, verbose_name="AI生成記事本文")
+
+    # 🚀 自動マッピング・受注停止管理用
     raw_html = models.TextField(null=True, blank=True, verbose_name="生のHTML内容")
     stock_status = models.CharField(
         max_length=100, 
@@ -50,9 +55,9 @@ class PCProduct(models.Model):
         if not self.unified_genre and self.raw_genre:
             self.unified_genre = self.raw_genre
         
-        # 2. 受注停止ワードが含まれているかHTMLから自動チェック（簡易実装）
+        # 2. 受注停止ワードが含まれているかHTMLから自動チェック
         if self.raw_html:
-            stop_words = ["現在ご注文いただけません", "受注停止", "販売終了"]
+            stop_words = ["現在ご注文いただけません", "受注停止", "販売終了", "品切れ"]
             if any(word in self.raw_html for word in stop_words):
                 self.stock_status = "受注停止中"
         

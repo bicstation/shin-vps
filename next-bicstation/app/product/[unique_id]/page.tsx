@@ -37,14 +37,18 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     let finalUrl = product.url;
     let beacon: React.ReactNode = null;
 
-    if (product.maker.toLowerCase().includes('lenovo')) {
+    const makerLower = product.maker.toLowerCase();
+    const isLenovo = makerLower.includes('lenovo');
+    const isDell = makerLower.includes('dell');
+
+    // ValueCommerce用設定（Lenovo/Dell共通のSID/PIDを使用する場合）
+    if (isLenovo || isDell) {
         const sid = "3697471";
         const pid = "892455531";
         const encodedUrl = encodeURIComponent(product.url);
         
         finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${sid}&pid=${pid}&vc_url=${encodedUrl}`;
         
-        // エラー箇所の修正：border属性を削除し、styleで対応。height/widthを数値に。
         beacon = (
             <img 
                 src={`//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=${sid}&pid=${pid}`} 
@@ -119,10 +123,10 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             className={styles.ctaButton}
                             style={{ 
                                 boxShadow: `0 4px 15px ${siteColor}4d`,
-                                backgroundColor: product.maker.toLowerCase().includes('lenovo') ? '#ef4444' : siteColor 
+                                backgroundColor: isLenovo ? '#ef4444' : siteColor 
                             }}
                         >
-                            Lenovo公式サイトで詳細を見る
+                            {product.maker}公式サイトで詳細を見る
                             {beacon}
                         </a>
                     </div>
@@ -136,7 +140,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                     
                     <div className={styles.specTable}>
                         {product.description ? (
-                            product.description.split('/').map((spec, i) => (
+                            product.description.split('/').map((spec: string, i: number) => (
                                 <div key={i} className={styles.specRow}>
                                     <span className={styles.specCheck}>✓</span>
                                     <span style={{ color: '#444' }}>{spec.trim()}</span>
@@ -147,6 +151,43 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                                 詳細スペック情報の配信はありません。
                             </p>
                         )}
+                    </div>
+                </div>
+
+                {/* AI詳細解説セクション */}
+                {product.ai_content && (
+                    <div className={styles.aiContentSection}>
+                        <h2 className={styles.specTitle}>
+                            エキスパートによる製品解説
+                        </h2>
+                        <div 
+                            className={styles.aiContentBody}
+                            dangerouslySetInnerHTML={{ __html: product.ai_content }} 
+                        />
+                    </div>
+                )}
+
+                {/* ページ下部：最終コンバージョンボタン */}
+                <div className={styles.bottomCtaSection}>
+                    <div className={styles.bottomCtaCard}>
+                        <p className={styles.bottomCtaText}>
+                            最新の在庫状況やカスタマイズオプションは公式サイトをご確認ください。
+                        </p>
+                        <a 
+                            href={finalUrl} 
+                            target="_blank" 
+                            rel="nofollow noopener noreferrer"
+                            className={styles.ctaButton}
+                            style={{ 
+                                margin: '0 auto',
+                                maxWidth: '400px',
+                                boxShadow: `0 4px 15px ${siteColor}4d`,
+                                backgroundColor: isLenovo ? '#ef4444' : siteColor 
+                            }}
+                        >
+                            {product.maker}公式サイトで注文・詳細確認
+                            {beacon}
+                        </a>
                     </div>
                 </div>
             </main>

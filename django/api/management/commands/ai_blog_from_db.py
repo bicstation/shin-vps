@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from api.models.pc_products import PCProduct 
+from django.db.models import Q
 import requests
 import random
 import os
@@ -9,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = 'Gemini 3/2.5とGemma 3をローテーションし、アフィリエイトリンク付きでWP投稿するスクリプト'
+    help = 'Gemini 3/2.5とGemma 3をローテーションし、WP投稿(フル構成)および自社DBへの本文保存を行うスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -30,7 +31,7 @@ class Command(BaseCommand):
         WP_MEDIA_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # モデルの優先順位リスト
+        # AIモデルの優先順位リスト
         MODELS = [
             "gemini-3-flash-preview",
             "gemini-2.5-flash",
@@ -38,27 +39,41 @@ class Command(BaseCommand):
             "gemma-3-12b-it" 
         ]
 
-        # WordPress カテゴリ・タグID
+        # WordPress カテゴリID
         CAT_LENOVO = 4
+        CAT_DELL = 7
+        
+        # WordPress タグID
         TAG_DESKTOP = 5
         TAG_LAPTOP = 6
 
         # ==========================================
-        # 2. 投稿対象商品の選定
+        # 2. 投稿対象商品の選定 (投稿フラグ ＋ 本文未生成チェック)
         # ==========================================
         products = PCProduct.objects.filter(
-            maker__icontains='Lenovo',
             is_active=True,
             is_posted=False
+        ).filter(
+            Q(ai_content__isnull=True) | Q(ai_content="")
         ).exclude(stock_status="受注停止中")
         
         if not products.exists():
-            self.stdout.write(self.style.ERROR("未投稿の有効なLenovo製品がDBに見当たりませんでした。"))
+            self.stdout.write(self.style.ERROR("対象製品がDBに見当たりませんでした。"))
             return
 
         product = random.choice(products)
         self.stdout.write(self.style.SUCCESS(f"ターゲット確定: {product.name} (ID: {product.unique_id})"))
 
+        # カテゴリ選定
+        target_cats = []
+        if 'lenovo' in product.maker.lower():
+            target_cats.append(CAT_LENOVO)
+        elif 'dell' in product.maker.lower():
+            target_cats.append(CAT_DELL)
+        else:
+            target_cats.append(1) 
+
+        # タグ判定
         target_tags = []
         name_lower = product.name.lower()
         if any(keyword in name_lower for keyword in ["desktop", "tower", "station", "aio", "tiny", "center"]):
@@ -106,6 +121,7 @@ class Command(BaseCommand):
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
         以下の製品データに基づき、ITニュースサイト向けの深く鋭い、純粋な「HTMLソースコードのみ」を出力してください。
+        データが少ない場合は、最新のPCトレンド知識を用いて読者に有益な解説を補完してください。
         Markdownの装飾(```htmlなど)や解説文を一切含めないでください。
 
         【製品データ】
@@ -158,9 +174,11 @@ class Command(BaseCommand):
             return
 
         title = lines[0].replace('#', '').strip()
+        
+        # 💡 main_body_html は「自社DBに保存する用」として分離保持
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # 【追加】本文のトップにアイキャッチ画像を表示するHTML
+        # WordPress用のリッチコンテンツ組み立て
         top_image_html = ""
         if media_url:
             top_image_html = f"""
@@ -173,12 +191,13 @@ class Command(BaseCommand):
         VC_DOM = "ck.jp.ap.valuecommerce.com"
         VC_PATH = "servlet/referral"
         affiliate_url = f"{H}{C}{S}{S}{VC_DOM}{S}{VC_PATH}?sid=3697471&pid=892455531&vc_url={encoded_url}"
+        
         BC_DOM = "ad.jp.ap.valuecommerce.com"
         BC_PATH = "servlet/gifbanner"
         vc_beacon = f'<img src="//{BC_DOM}/{BC_PATH}?sid=3697471&pid=892455531" height="1" width="1" border="0">'
 
         custom_card_html = f"""
-        <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
+        <div class="affiliate-card" style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
                 <div style="flex: 1; min-width: 200px; text-align: center;">
                     <a href="{bic_detail_url}" target="_blank">
@@ -186,16 +205,16 @@ class Command(BaseCommand):
                     </a>
                 </div>
                 <div style="flex: 2; min-width: 250px;">
-                    <h3 style="margin: 0 0 12px 0; font-size: 1.4em;">{product.name}</h3>
+                    <h3 style="margin: 0 0 12px 0; font-size: 1.4em; color: #111827;">{product.name}</h3>
                     <p style="color: #ef4444; font-weight: bold; font-size: 1.3em; margin: 10px 0;">特別価格：{product.price}円</p>
                     <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
                         <a href="{affiliate_url}" target="_blank" rel="nofollow noopener noreferrer" 
                            style="flex: 1; min-width: 140px; background-color: #ef4444; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                            Lenovo公式サイトで見る ＞{vc_beacon}
+                            公式サイトで見る ＞{vc_beacon}
                         </a>
                         <a href="{bic_detail_url}" target="_blank"
                            style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                            Bicstation詳細 ＞
+                            製品詳細を見る ＞
                         </a>
                     </div>
                 </div>
@@ -203,26 +222,28 @@ class Command(BaseCommand):
         </div>
         """
 
-        # 本文の組み立て： [トップ画像] + [AI生成本文] + [下部アフィリエイトカード]
-        full_content = f"{top_image_html}\n{main_body_html}\n{custom_card_html}"
+        # WP投稿用：画像＋本文＋カードのフルセット
+        full_content_for_wp = f"{top_image_html}\n{main_body_html}\n{custom_card_html}"
 
         # ==========================================
-        # 7. WordPress 投稿実行
+        # 7. WordPress 投稿 ＆ 自社DB保存 実行
         # ==========================================
         wp_payload = {
             "title": title,
-            "content": full_content,
+            "content": full_content_for_wp,
             "status": "publish",
             "featured_media": media_id,
-            "categories": [CAT_LENOVO], 
+            "categories": target_cats, 
             "tags": target_tags           
         }
         
         wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
         
         if wp_res.status_code == 201:
+            # 💡 自社DBには「アイキャッチ画像やカード」を除いた純粋な本文のみを保存
+            product.ai_content = main_body_html
             product.is_posted = True
             product.save()
-            self.stdout.write(self.style.SUCCESS(f"【投稿成功】モデル: {selected_model} / 記事: {title}"))
+            self.stdout.write(self.style.SUCCESS(f"【成功】WP(フル) ＆ 自社DB(本文のみ) 保存完了: {title}"))
         else:
             self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
