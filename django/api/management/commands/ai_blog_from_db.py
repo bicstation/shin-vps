@@ -129,6 +129,7 @@ class Command(BaseCommand):
 
         for model_id in MODELS:
             self.stdout.write(f"モデル {model_id} で記事を生成中...")
+            # URL内のMarkdown装飾を削除した純粋なURL
             api_url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_id}:generateContent?key={GEMINI_API_KEY}"
             
             payload = {
@@ -179,8 +180,8 @@ class Command(BaseCommand):
         encoded_url = urllib.parse.quote(product.url, safe='')
         # バリューコマース用URLの組み立て
         affiliate_url = f"[https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=](https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=){encoded_url}"
-        # 計測用透明画像（ビーコン）
-        vc_beacon = '<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531)" height="1" width="0" border="0">'
+        # 計測用透明画像（ビーコン）: border="0" はHTMLとして許可
+        vc_beacon = '<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531)" height="1" width="1" border="0">'
 
         # HTMLカードの組み立て
         custom_card_html = f"""
@@ -198,11 +199,11 @@ class Command(BaseCommand):
                     <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
                         <a href="{affiliate_url}" target="_blank" rel="nofollow noopener noreferrer" 
                            style="flex: 1; min-width: 140px; background-color: #ef4444; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                           Lenovo公式サイトで見る ＞{vc_beacon}
+                            Lenovo公式サイトで見る ＞{vc_beacon}
                         </a>
                         <a href="{bic_detail_url}" target="_blank" rel="noopener"
                            style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                           Bicstation詳細 ＞
+                            Bicstation詳細 ＞
                         </a>
                     </div>
                 </div>
@@ -232,7 +233,7 @@ class Command(BaseCommand):
             "tags": target_tags           
         }
         
-        wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
+        wp_res = requests.post(wp_payload_url if 'wp_payload_url' in locals() else WP_POST_URL, json=wp_payload, auth=AUTH)
         
         if wp_res.status_code == 201:
             product.is_posted = True
