@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = 'スペック要約の自動補完と、WPブログ・自社DB解説の同時生成を行う'
+    help = 'スペック要約の自動補完と、WPブログ・自社DB解説の同時生成を行う（エラーログ強化版）'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -26,9 +26,10 @@ class Command(BaseCommand):
         WP_MEDIA_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
+        # 優先順位を変更（1.5-flashは比較的制限が緩い傾向にあります）
         MODELS = [
-            "gemini-2.0-flash-exp",
             "gemini-1.5-flash",
+            "gemini-2.0-flash-exp",
             "gemini-1.5-pro",
         ]
 
@@ -36,7 +37,7 @@ class Command(BaseCommand):
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
         # ==========================================
-        # 2. 投稿対象商品の選定（未投稿 or AI解説未作成の商品）
+        # 2. 投稿対象商品の選定
         # ==========================================
         products = PCProduct.objects.filter(
             is_active=True,
@@ -50,11 +51,14 @@ class Command(BaseCommand):
             return
 
         product = random.choice(products)
-        self.stdout.write(self.style.SUCCESS(f"デプロイ準備: {product.name}"))
+        self.stdout.write(self.style.SUCCESS(f"🚀 デプロイ準備: {product.name} ({product.maker})"))
 
         # カテゴリ・タグ判定
-        target_cats = [CAT_LENOVO if 'lenovo' in product.maker.lower() else (CAT_DELL if 'dell' in product.maker.lower() else 1)]
-        target_tags = [TAG_DESKTOP if any(k in product.name.lower() for k in ["desktop", "tower", "station", "aio", "tiny", "center"]) else TAG_LAPTOP]
+        maker_low = product.maker.lower()
+        target_cats = [CAT_LENOVO if 'lenovo' in maker_low else (CAT_DELL if 'dell' in maker_low else 1)]
+        
+        name_low = product.name.lower()
+        target_tags = [TAG_DESKTOP if any(k in name_low for k in ["desktop", "tower", "station", "aio", "tiny", "center"]) else TAG_LAPTOP]
 
         bic_detail_url = f"{H}{C}{S}{S}bicstation.com{S}product{S}{product.unique_id}{S}"
 
@@ -70,17 +74,21 @@ class Command(BaseCommand):
                         img_temp.write(img_res.content)
                         img_temp.flush()
                         files = {'file': (f"{product.unique_id}.jpg", open(img_temp.name, 'rb'), 'image/jpeg')}
-                        m_res = requests.post(WP_MEDIA_URL, auth=AUTH, files=files, headers={'Content-Disposition': f'attachment; filename={product.unique_id}.jpg'})
+                        m_res = requests.post(
+                            WP_MEDIA_URL, 
+                            auth=AUTH, 
+                            files=files, 
+                            headers={'Content-Disposition': f'attachment; filename={product.unique_id}.jpg'}
+                        )
                         if m_res.status_code == 201:
                             m_data = m_res.json()
                             media_id, media_url = m_data.get('id'), m_data.get('source_url')
             except Exception as e:
-                self.stdout.write(self.style.WARNING(f"画像処理スキップ: {e}"))
+                self.stdout.write(self.style.WARNING(f"⚠️ 画像処理スキップ: {e}"))
 
         # ==========================================
-        # 4. AIプロンプト（スペック要約＋解説の生成）
+        # 4. AIプロンプト作成
         # ==========================================
-        # 💡 スペックが不足している場合、製品名からAIに推測させる指示を追加
         current_spec = product.description if product.description and "配信はありません" not in product.description else "詳細不明（製品名から主要スペックを推測してください）"
 
         prompt = f"""
@@ -91,19 +99,17 @@ class Command(BaseCommand):
 
         ---
         【出力項目1：スペック要約】
-        「OS / CPU / メモリ / ストレージ / その他特徴」の形式で、スラッシュ区切りで1行で出力してください。
-        データが不足している場合は、製品名から一般的・標準的な構成を推測して埋めてください。
-        例: Windows 11 / Core i5-1335U / 16GB RAM / 512GB SSD / 高色域ディスプレイ
+        「OS / CPU / メモリ / ストレージ / その他特徴」の形式で、スラッシュ区切りで1行で出力。
+        データ不足時は製品名から標準的構成を推測。
 
         【出力項目2：ブログタイトル】
-        読者がクリックしたくなる熱量のあるタイトルを1行で出力してください。
+        読者がクリックしたくなる熱量のあるタイトル。
 
         【出力項目3：詳細解説HTML】
-        カタログサイトにふさわしい論理的な製品解説をHTML（<h3>, <p>のみ）で作成してください。
-        専門家目線での特徴、競合比較、推奨ユーザーを含めてください。
+        <h3>, <p>のみ。専門家目線の特徴、競合比較、推奨ユーザー。
         ---
 
-        出力は必ず以下のタグで区切って出力してください：
+        出力は必ず以下のタグで区切ること：
         [SUMMARY]
         (ここにスペック要約)
         [TITLE]
@@ -113,44 +119,62 @@ class Command(BaseCommand):
         """
 
         # ==========================================
-        # 5. AI実行
+        # 5. AI実行（エラー詳細出力・ループ改善版）
         # ==========================================
         ai_text, selected_model = None, None
+        
+        if not GEMINI_API_KEY:
+            self.stdout.write(self.style.ERROR("🚨 GEMINI_API_KEY が設定されていません。"))
+            return
+
         for model_id in MODELS:
-            api_url = f"{H}{C}{S}{S}generativelanguage.googleapis.com{S}v1beta{S}models{S}{model_id}:generateContent?key={GEMINI_API_KEY}"
+            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+            self.stdout.write(f"🤖 試行中: {model_id}...")
+            
             try:
-                response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
+                response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
                 res_json = response.json()
-                if 'candidates' in res_json:
-                    ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
-                    selected_model = model_id
-                    break
-            except: continue
+
+                if response.status_code == 200:
+                    if 'candidates' in res_json and len(res_json['candidates']) > 0:
+                        ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
+                        selected_model = model_id
+                        self.stdout.write(self.style.SUCCESS(f"✅ {model_id} で生成成功"))
+                        break
+                    else:
+                        self.stdout.write(self.style.WARNING(f"⚠️ {model_id} 応答構造が不正です: {res_json}"))
+                else:
+                    # 429(制限)や400(不正)などの理由を具体的に出力
+                    err_msg = res_json.get('error', {}).get('message', '詳細不明なエラー')
+                    self.stdout.write(self.style.WARNING(f"⚠️ {model_id} 失敗 (HTTP {response.status_code}): {err_msg}"))
+                    continue # 次のモデルへ
+
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"❌ {model_id} 通信エラー: {str(e)}"))
+                continue
 
         if not ai_text: 
-            self.stdout.write(self.style.ERROR("AIの応答が得られませんでした。"))
+            self.stdout.write(self.style.ERROR("💀 全てのAIモデルの試行に失敗しました。本日のAPI利用制限に達している可能性があります。"))
             return
 
         # ==========================================
-        # 6. 応答のパース（解析）と整形
+        # 6. 応答のパース
         # ==========================================
         try:
-            # タグで分割して内容を抽出
             new_spec = re.search(r'\[SUMMARY\](.*?)\[TITLE\]', ai_text, re.S).group(1).strip()
             title = re.search(r'\[TITLE\](.*?)\[BODY\]', ai_text, re.S).group(1).strip()
             main_body_html = re.search(r'\[BODY\](.*)', ai_text, re.S).group(1).strip()
-            
-            # Markdownの除去
             main_body_html = re.sub(r'```(html)?', '', main_body_html).replace('```', '').strip()
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"パースエラー: {e}"))
+            self.stdout.write(self.style.ERROR(f"パースエラー (AIの出力形式不正): {e}"))
             return
 
-        # WordPress用コンテンツの構築
-        top_image_html = f'<div style="text-align:center;margin-bottom:30px;"><img src="{media_url}" style="width:100%;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);"></div>' if media_url else ""
-        
+        # ==========================================
+        # 7. WordPress投稿 & DB保存
+        # ==========================================
+        top_image_html = f'<div style="text-align:center;margin-bottom:30px;"><img src="{media_url}" style="width:100%;border-radius:12px;"></div>' if media_url else ""
         encoded_url = urllib.parse.quote(product.url, safe='')
-        aff_url = f"{H}{C}{S}{S}ck.jp.ap.valuecommerce.com{S}servlet/referral?sid=3697471&pid=892455531&vc_url={encoded_url}"
+        aff_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url={encoded_url}"
         beacon = '<img src="https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531" height="1" width="1" border="0">'
 
         card_html = f"""
@@ -170,9 +194,6 @@ class Command(BaseCommand):
         """
         full_wp_content = f"{top_image_html}\n{main_body_html}\n{card_html}"
 
-        # ==========================================
-        # 7. WordPress投稿 & 自社DB保存
-        # ==========================================
         wp_res = requests.post(WP_POST_URL, json={
             "title": title, 
             "content": full_wp_content, 
@@ -183,11 +204,10 @@ class Command(BaseCommand):
         }, auth=AUTH)
         
         if wp_res.status_code == 201:
-            # 💡 自社DB（Next.js側）のデータを更新
-            product.description = new_spec   # AIが生成した綺麗なスペックで上書き
+            product.description = new_spec
             product.ai_content = main_body_html
             product.is_posted = True
             product.save()
-            self.stdout.write(self.style.SUCCESS(f"【成功】{selected_model}によりスペック補完と記事生成を完了しました。"))
+            self.stdout.write(self.style.SUCCESS(f"【成功】{selected_model}により自動投稿を完了しました。"))
         else:
             self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.status_code} {wp_res.text}"))
