@@ -49,15 +49,15 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     const isDell = makerLower.includes('dell');
 
     if (isDell) {
-        // --- Dell (LinkShare) 専用リンク構築 ---
+        // --- Dell (LinkShare) 修正版：murlに製品URLを直接指定してDeep Link化 ---
         const yourId = "nNBA6GzaGrQ";
         const offerPrefix = "1568114";
-        const linkId = product.unique_id; // DBのunique_idをLinkIDとして使用
-        const murlTracking = "https://ad.doubleclick.net/ddm/trackclk/N1153793.2372504AF_LINKSHARE/B23732657.265944707;dc_trk_aid=461028128;dc_trk_cid=127759547;VEN1=;dc_lat=;dc_rdid=;tag_for_child_directed_treatment=;tfua=?";
+        const linkId = product.unique_id; 
         
-        const encodedMurl = encodeURIComponent(murlTracking);
-        finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerPrefix}.${linkId}&type=15&murl=${encodedMurl}`;
-        beacon = null; // LinkShareは通常ビーコン画像不要
+        // 計測URLではなく、製品の個別URLをエンコードしてmurlにセットすることで詳細ページへ飛ばします
+        const encodedProductUrl = encodeURIComponent(product.url);
+        finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerPrefix}.${linkId}&type=15&murl=${encodedProductUrl}`;
+        beacon = null; 
     } else if (isLenovo) {
         // --- Lenovo (ValueCommerce) リンク構築 ---
         const sid = "3697471";
