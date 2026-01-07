@@ -6,15 +6,15 @@ import os
 import re
 from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
+import urllib.parse
 
 class Command(BaseCommand):
-    help = 'Gemini 3/2.5とGemma 3をローテーションし、2重投稿を防ぎながらWP投稿するスクリプト'
+    help = 'Gemini 3/2.5とGemma 3をローテーションし、アフィリエイトリンク付きでWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
         # 1. 基本設定・認証情報
         # ==========================================
-        # Docker環境変数または.envから取得
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
@@ -25,7 +25,6 @@ class Command(BaseCommand):
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
         # モデルの優先順位リスト
-        # 各Geminiの制限(20回)を超えると、14,400回枠のGemma 3へ切り替わります
         MODELS = [
             "gemini-3-flash-preview",
             "gemini-2.5-flash",
@@ -41,7 +40,6 @@ class Command(BaseCommand):
         # ==========================================
         # 2. 投稿対象商品の選定 (2重投稿防止)
         # ==========================================
-        # is_posted=False を条件に加え、一度投稿した商品は除外します
         products = PCProduct.objects.filter(
             maker__icontains='Lenovo',
             is_active=True,
@@ -138,7 +136,6 @@ class Command(BaseCommand):
             }
 
             try:
-                # タイムアウトを90秒に設定
                 response = requests.post(api_url, json=payload, timeout=90)
                 res_json = response.json()
                 
@@ -165,9 +162,8 @@ class Command(BaseCommand):
             return
 
         # ==========================================
-        # 6. コンテンツの整形
+        # 6. コンテンツの整形（アフィリエイトリンク組み込み）
         # ==========================================
-        # 余計なMarkdown装飾を削除
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
@@ -177,6 +173,14 @@ class Command(BaseCommand):
 
         title = lines[0].replace('#', '').strip()
         main_body_html = '\n'.join(lines[1:]).strip()
+
+        # --- アフィリエイトリンク生成ロジック ---
+        # リンク先URLをエンコード
+        encoded_url = urllib.parse.quote(product.url, safe='')
+        # バリューコマース用URLの組み立て
+        affiliate_url = f"[https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=](https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892455531&vc_url=){encoded_url}"
+        # 計測用透明画像（ビーコン）
+        vc_beacon = '<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=3697471&pid=892455531)" height="1" width="0" border="0">'
 
         # HTMLカードの組み立て
         custom_card_html = f"""
@@ -190,11 +194,11 @@ class Command(BaseCommand):
                 <div style="flex: 2; min-width: 250px;">
                     <h3 style="margin: 0 0 12px 0; font-size: 1.4em; color: #111827; line-height: 1.4;">{product.name}</h3>
                     <p style="color: #4b5563; font-size: 0.95em; margin-bottom: 8px;">メーカー：{product.maker}</p>
-                    <p style="color: #ef4444; font-weight: bold; font-size: 1.3em; margin: 10px 0;">価格：{product.price}円</p>
+                    <p style="color: #ef4444; font-weight: bold; font-size: 1.3em; margin: 10px 0;">特別価格：{product.price}円</p>
                     <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
-                        <a href="{product.url}" target="_blank" rel="noopener noreferrer" 
-                           style="flex: 1; min-width: 140px; background-color: #0062ff; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                           公式サイト ＞
+                        <a href="{affiliate_url}" target="_blank" rel="nofollow noopener noreferrer" 
+                           style="flex: 1; min-width: 140px; background-color: #ef4444; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
+                           Lenovo公式サイトで見る ＞{vc_beacon}
                         </a>
                         <a href="{bic_detail_url}" target="_blank" rel="noopener"
                            style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
@@ -208,7 +212,7 @@ class Command(BaseCommand):
 
         top_img_html = f"""
         <div style="margin-bottom: 30px;">
-            <a href="{bic_detail_url}" target="_blank" rel="noopener">
+            <a href="{affiliate_url}" target="_blank" rel="nofollow noopener">
                 <img src="{media_url}" alt="{product.name}" class="wp-image-{media_id} size-large" style="border-radius: 12px; width: 100%; height: auto;" />
             </a>
         </div>
@@ -231,9 +235,8 @@ class Command(BaseCommand):
         wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH)
         
         if wp_res.status_code == 201:
-            # 投稿が成功した場合のみ、DBのフラグを更新
             product.is_posted = True
             product.save()
-            self.stdout.write(self.style.SUCCESS(f"【投稿成功】モデル: {selected_model} / 記事: {title} (フラグ更新済)"))
+            self.stdout.write(self.style.SUCCESS(f"【投稿成功】モデル: {selected_model} / 記事: {title} (アフィリエイトリンク適用済)"))
         else:
             self.stdout.write(self.style.ERROR(f"WP投稿失敗: {wp_res.text}"))
