@@ -8,7 +8,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'Gemini 2.0 Flash (1500回/日枠) を使用し、404エラーを回避してWP投稿する最新スクリプト'
+    help = 'Gemini 1.5 Flash を使用し、安定した無料枠で404/クォータエラーを回避してWP投稿する最終スクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -22,9 +22,10 @@ class Command(BaseCommand):
         WP_POST_URL = "https://blog.tiper.live/wp-json/wp/v2/bicstation"
         WP_MEDIA_URL = "https://blog.tiper.live/wp-json/wp/v2/media"
         
-        # 【最重要修正】現在1500回/日の無料枠がある「gemini-2.0-flash-exp」を明示的に指定
-        # 以前のエラーを回避するため、最新の v1beta エンドポイントを使用します
-        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={GEMINI_API_KEY}"
+        # 【最重要修正】無料枠が最も安定している gemini-1.5-flash を使用
+        # 404エラーを回避するため、リストで確認済みのパス構造を適用します
+        MODEL_NAME = "gemini-1.5-flash"
+        GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL_NAME}:generateContent?key={GEMINI_API_KEY}"
         
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
@@ -117,7 +118,7 @@ class Command(BaseCommand):
         # ==========================================
         # 5. Gemini API 実行
         # ==========================================
-        self.stdout.write("Gemini 2.0 Flash (Experimental) で詳細レビュー記事を生成中...")
+        self.stdout.write(f"Gemini 1.5 Flash で詳細レビュー記事を生成中...")
         
         payload = {
             "contents": [{"parts": [{"text": prompt}]}]
