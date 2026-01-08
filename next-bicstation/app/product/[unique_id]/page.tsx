@@ -47,6 +47,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     const makerLower = product.maker.toLowerCase();
     const isLenovo = makerLower.includes('lenovo');
     const isDell = makerLower.includes('dell');
+    const isHP = makerLower.includes('hp');
 
     if (isDell) {
         // --- Dell (LinkShare) 修正版：正しいofferid構造とDeep Link(murl)の適用 ---
@@ -57,11 +58,24 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
         // 商品URLをエンコードしてmurlにセット
         const encodedProductUrl = encodeURIComponent(product.url);
         
-        // 修正ポイント：offeridを「案件ID.個別ID」の形式に結合し、Markdown記法を排除
+        // 修正ポイント：offeridを「案件ID.個別ID」の形式に結合し、純粋なURL文字列を構築
         finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerId}.${linkId}&type=15&murl=${encodedProductUrl}`;
         beacon = null; 
+    } else if (isHP) {
+        // --- HP (ValueCommerce) MyLink構築 ---
+        const sid = "3697471";
+        const pid = "892455531";
+        const encodedUrl = encodeURIComponent(product.url);
+        finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${sid}&pid=${pid}&vc_url=${encodedUrl}`;
+        beacon = (
+            <img 
+                src={`//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=${sid}&pid=${pid}`} 
+                height={1} width={1} alt="" 
+                style={{ display: 'none', border: 'none' }} 
+            />
+        );
     } else if (isLenovo) {
-        // --- Lenovo (ValueCommerce) リンク構築 ---
+        // --- Lenovo (ValueCommerce) MyLink構築 ---
         const sid = "3697471";
         const pid = "892455531";
         const encodedUrl = encodeURIComponent(product.url);
@@ -127,7 +141,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             className={styles.ctaButton}
                             style={{ 
                                 boxShadow: `0 4px 15px ${siteColor}4d`,
-                                backgroundColor: isLenovo ? '#ef4444' : siteColor 
+                                backgroundColor: (isLenovo || isHP) ? '#ef4444' : siteColor 
                             }}
                         >
                             {buttonLabel}
@@ -176,7 +190,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                                 margin: '0 auto',
                                 maxWidth: '450px',
                                 boxShadow: `0 4px 15px ${siteColor}4d`,
-                                backgroundColor: isLenovo ? '#ef4444' : siteColor 
+                                backgroundColor: (isLenovo || isHP) ? '#ef4444' : siteColor 
                             }}
                         >
                             {buttonLabel}
