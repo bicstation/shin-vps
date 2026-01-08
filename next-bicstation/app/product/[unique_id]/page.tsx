@@ -43,6 +43,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     // --- アフィリエイトリンク生成ロジック ---
     let finalUrl = product.url;
     let beacon: React.ReactNode = null;
+    let linkSource = "Original URL"; // デバッグ用
 
     const makerLower = product.maker.toLowerCase();
     const isLenovo = makerLower.includes('lenovo');
@@ -50,17 +51,22 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     const isHP = makerLower.includes('hp');
 
     if (isDell) {
-        // --- Dell (LinkShare) 修正版：二重エンコード防止とDeep Link最適化 ---
-        const yourId = "nNBA6GzaGrQ";
-        const offerId = "1568114"; 
-        const linkId = product.unique_id;
-        
-        // 1. まず元のURLをデコードして生の状態に戻す（二重エンコード防止）
-        const decodedUrl = product.url.includes('%') ? decodeURIComponent(product.url) : product.url;
-        // 2. 改めて完全にエンコードする
-        const encodedProductUrl = encodeURIComponent(decodedUrl);
-        
-        finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerId}.${linkId}&type=15&murl=${encodedProductUrl}`;
+        // --- Dell (LinkShare) 修正版 ---
+        // 1. まずDBにアフィリエイトURL（affiliate_url）があるか確認
+        if (product.affiliate_url) {
+            finalUrl = product.affiliate_url;
+            linkSource = "DB Affiliate URL";
+        } else {
+            // 2. なければ従来通りDeepLinkを生成（フォールバック）
+            const yourId = "nNBA6GzaGrQ";
+            const offerId = "1568114"; 
+            const linkId = product.unique_id;
+            const decodedUrl = product.url.includes('%') ? decodeURIComponent(product.url) : product.url;
+            const encodedProductUrl = encodeURIComponent(decodedUrl);
+            
+            finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerId}.${linkId}&type=15&murl=${encodedProductUrl}`;
+            linkSource = "Generated DeepLink";
+        }
         beacon = null; 
     } else if (isHP || isLenovo) {
         // --- HP / Lenovo (ValueCommerce) MyLink構築 ---
@@ -69,7 +75,8 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
         const decodedUrl = product.url.includes('%') ? decodeURIComponent(product.url) : product.url;
         const encodedUrl = encodeURIComponent(decodedUrl);
         
-        finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${sid}&pid=${pid}&vc_url=${encodedUrl}`;
+        finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encodedUrl}`;
+        linkSource = "ValueCommerce MyLink";
         beacon = (
             <img 
                 src={`//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=${sid}&pid=${pid}`} 
@@ -99,7 +106,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
             wordBreak: 'break-all',
             fontFamily: 'monospace'
         }}>
-            <strong>[DEBUG] 生成URL (DeepLink修正済):</strong><br />
+            <strong>[DEBUG] Source: {linkSource}</strong><br />
             {finalUrl}
         </div>
     );

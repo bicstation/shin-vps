@@ -4,7 +4,7 @@ from django.utils.timezone import now
 class PCProduct(models.Model):
     """
     PC製品を管理する汎用モデル
-    （2重仕分け ＋ 生HTMLマッピング ＋ AIコンテンツ保持対応版）
+    （2重仕分け ＋ 生HTMLマッピング ＋ AIコンテンツ保持 ＋ 正式アフィリエイトURL対応版）
     """
     # 識別用
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
@@ -22,8 +22,23 @@ class PCProduct(models.Model):
     image_url = models.URLField(max_length=1000, null=True, blank=True, verbose_name="画像URL")
     description = models.TextField(null=True, blank=True, verbose_name="詳細スペック")
 
-    # 🚀 AI生成コンテンツ（今回の重要追加項目）
-    # WordPressに投稿した内容と同じ、または自社サイト用に最適化されたHTMLを保存します
+    # 🚀 アフィリエイトURL管理 (追加項目)
+    # APIから取得したDoubleClick等を含む正式な1円報酬対象URLを格納
+    affiliate_url = models.URLField(
+        max_length=2000, 
+        null=True, 
+        blank=True, 
+        verbose_name="正式アフィリエイトURL"
+    )
+    # リンクがいつ取得されたものか、または有効期限切れチェック用
+    affiliate_updated_at = models.DateTimeField(
+        null=True, 
+        blank=True, 
+        verbose_name="アフィリエイトURL最終更新"
+    )
+
+    # 🚀 AI生成コンテンツ
+    # WordPressに投稿した内容と同じ、または自社サイト用に最適化されたHTMLを保存
     ai_content = models.TextField(null=True, blank=True, verbose_name="AI生成記事本文")
 
     # 🚀 自動マッピング・受注停止管理用

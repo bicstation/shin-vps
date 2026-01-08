@@ -9,14 +9,16 @@ from django.utils import timezone
 from django.conf import settings
 from tqdm import tqdm 
 
-# 💡 インポート先を新しいモデル BcLinkshareProduct に変更
+# 💡 インポート先を新しいモデル BcLinkshareProduct および同期先の PCProduct に設定
 try:
-    from api.models import BcLinkshareProduct 
+    from api.models import BcLinkshareProduct, PCProduct 
 except ImportError:
     class BcLinkshareProduct:
         objects = None
-        def __init__(self):
-            pass
+        def __init__(self): pass
+    class PCProduct:
+        objects = None
+        def __init__(self): pass
 
 # 💡 LinkShareAPIClient (Bicstation用) のインポート
 try:
@@ -31,43 +33,42 @@ except ImportError:
 
 
 class Command(BaseCommand):
-    help = 'Bicstation名義でLinkShare APIからデータを取得し、DB保存またはJSON出力します。'
+    help = 'Bicstation名義でLinkShare APIからデータを取得し、生データ保存およびPCProductへのリンク同期を行います。'
 
     def add_arguments(self, parser):
         parser.add_argument('--mid-list', action='store_true', help='提携広告主のMID一覧を取得します。')
         parser.add_argument('--keyword', type=str, default=None, help='キーワード検索。')
-        # 💡 nargs='+' により、複数のMIDを受け取れるように設定
         parser.add_argument('--mid', type=str, nargs='+', help='MIDを1つ以上指定。例: --mid 36508 2662')
         parser.add_argument('--all-mids', action='store_true', help='提携中の全広告主を巡回。')
         parser.add_argument('--cat', type=str, default=None, help='カテゴリ絞り込み。')
         parser.add_argument('--page-size', type=int, default=100, help='1ページあたりの件数（最大100）。')
         parser.add_argument('--max-pages', type=int, default=0, help='取得最大ページ数。')
         parser.add_argument('--limit', type=int, default=0, help='MIDごとの取得上限件数。')
-        parser.add_argument('--save-db', action='store_true', help='データベースに保存。')
+        parser.add_argument('--save-db', action='store_true', help='データベースに保存し、PCProductに同期。')
 
     def _save_products_to_db(self, mids_data: list):
-        """BcLinkshareProduct モデルにAPIレスポンスを保存"""
+        """BcLinkshareProduct モデルに生レスポンスを保存し、PCProduct にリンクを同期"""
         if BcLinkshareProduct.objects is None:
             tqdm.write(self.style.ERROR('❌ モデルが見つからないため、DB保存をスキップします。'))
             return 0, 0
             
         total_saved = 0
         total_created = 0
+        sync_count = 0
         items_to_save = []
 
         # データのフラット化
         for mid_data in mids_data:
-            current_mid = str(mid_data['mid']) # 確実に単一の文字列にする
+            current_mid = str(mid_data['mid'])
             for page_result in mid_data['page_results']:
                 for item in page_result.get('items', []):
-                    # 💡 item 側の mid を確実に現在のループの mid に固定
                     item['mid'] = current_mid
                     items_to_save.append(item)
         
         if not items_to_save:
             return 0, 0
 
-        # 💡 保存開始前にスキーマを public に固定
+        # スキーマを public に固定
         with connection.cursor() as cursor:
             cursor.execute("SET search_path TO public;")
 
@@ -76,15 +77,16 @@ class Command(BaseCommand):
                 mid = item.get('mid')
                 link_id = item.get('linkid')
                 product_sku = item.get('sku', 'N/A')
+                link_url = item.get('linkurl') # 🚀 1円報酬等を含む正式アフィリンク
                 
                 if not link_id:
                     continue
 
                 try:
-                    # 💡 BcLinkshareProduct モデルを使用して保存
+                    # 1. BcLinkshareProduct (API生データ) を保存・更新
                     obj, created = BcLinkshareProduct.objects.update_or_create(
                         linkid=link_id,
-                        mid=mid, # ここがリスト文字列 ['...'] にならないことが重要
+                        mid=mid,
                         defaults={
                             'sku': product_sku,
                             'api_response_json': item, 
@@ -94,8 +96,22 @@ class Command(BaseCommand):
                     total_saved += 1
                     if created:
                         total_created += 1
+                    
+                    # 2. 🚀 PCProduct への同期ロジック (追加箇所)
+                    if product_sku and product_sku != 'N/A' and PCProduct.objects is not None:
+                        # unique_id(SKU) が一致するレコードを探してアフィリンクを書き込む
+                        updated_rows = PCProduct.objects.filter(unique_id=product_sku).update(
+                            affiliate_url=link_url,
+                            affiliate_updated_at=timezone.now()
+                        )
+                        if updated_rows > 0:
+                            sync_count += updated_rows
+
                 except Exception as e:
-                    tqdm.write(self.style.ERROR(f'❌ DB保存エラー (linkid: {link_id}, MID: {mid}): {e}'))
+                    tqdm.write(self.style.ERROR(f'❌ DB処理エラー (linkid: {link_id}, SKU: {product_sku}): {e}'))
+        
+        if sync_count > 0:
+            tqdm.write(self.style.SUCCESS(f'   🔗 PCProductへのリンク同期: {sync_count} 件完了'))
                             
         return total_saved, total_created
 
@@ -117,7 +133,6 @@ class Command(BaseCommand):
             mid_name = mid_item.get('merchantname', 'N/A')
             
             self.stderr.write(self.style.NOTICE(f'\n--- 🔄 MID巡回開始: {mid} ({mid_name}) ---'))
-            
             current_mid_fetched = 0
             
             try:
@@ -158,9 +173,9 @@ class Command(BaseCommand):
                         }
                         
                         if save_db:
-                            self.stderr.write(self.style.NOTICE(f'💾 MID {mid} のデータ {current_mid_fetched} 件を DB に保存中...'))
+                            self.stderr.write(self.style.NOTICE(f'💾 MID {mid} のデータ {current_mid_fetched} 件を処理中...'))
                             total_saved, total_created = self._save_products_to_db([mid_data])
-                            self.stderr.write(self.style.SUCCESS(f'✅ DB保存完了: {total_saved} 件処理 ({total_created} 件新規作成)。'))
+                            self.stderr.write(self.style.SUCCESS(f'✅ DB保存・同期完了: {total_saved} 件処理 ({total_created} 件新規作成)。'))
                         
                         if not save_db:
                             all_mids_data_for_json.append(mid_data)
@@ -194,7 +209,6 @@ class Command(BaseCommand):
         # --- DB接続設定 ---
         db_config = settings.DATABASES['default']
         target_host = db_config.get('HOST', '')
-        db_name = db_config.get('NAME', '')
         
         try:
             socket.gethostbyname(target_host)
@@ -203,21 +217,6 @@ class Command(BaseCommand):
                 db_config['HOST'] = '127.0.0.1'
                 db_config['PORT'] = '5433'
         
-        self.stdout.write(self.style.NOTICE(f"🛠️ DB接続確認中: HOST={db_config.get('HOST')}, DB={db_name}"))
-
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("SET search_path TO public;")
-                cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'bc_linkshare_product');")
-                if cursor.fetchone()[0]:
-                    cursor.execute("SELECT count(*) FROM bc_linkshare_product;")
-                    count = cursor.fetchone()[0]
-                    self.stdout.write(self.style.SUCCESS(f"✅ DB接続確認: 'bc_linkshare_product' を検出 (現在 {count} 件)。"))
-                else:
-                    self.stdout.write(self.style.ERROR("🚨 DB接続確認: テーブルが見わたりません。"))
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f"🚨 DB接続初期化エラー: {e}"))
-
         self.stdout.write(self.style.NOTICE('--- LinkShare API Parser (Bicstation) 開始 ---'))
         
         try:
@@ -226,13 +225,11 @@ class Command(BaseCommand):
             
             mid_list_to_process = []
 
-            # 💡 MIDの振り分けロジック
             if options['all_mids']:
                 self.stdout.write(self.style.NOTICE('🆔 全提携広告主リストを取得中...'))
                 mid_list_to_process = client.get_advertiser_list()
             
             elif options['mid']:
-                # 💡 リストとして渡される mid を一つずつ処理用リストに追加
                 for m in options['mid']:
                     mid_list_to_process.append({'mid': m, 'merchantname': f'指定MID:{m}'})
             

@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = 'Gemini/Gemmaをローテーションし、クリーンなタイトルとDeepLink修正版でWP投稿するスクリプト'
+    help = 'Gemini/Gemmaをローテーションし、DBからリンクを取得してWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -139,10 +139,9 @@ class Command(BaseCommand):
         # ==========================================
         # 6. 整形とアフィリエイト組み込み
         # ==========================================
-        # タイトルからHTMLタグやMarkdown記号を完全に除去する関数
         def clean_title(text):
-            text = re.sub(r'<[^>]*?>', '', text) # HTMLタグ除去
-            text = text.replace('#', '').strip() # Markdown記号除去
+            text = re.sub(r'<[^>]*?>', '', text)
+            text = text.replace('#', '').strip()
             return text
 
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
@@ -151,17 +150,25 @@ class Command(BaseCommand):
         title = clean_title(lines[0])
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # アフィリエイトリンク生成（DeepLink修正版）
+        # --- アフィリエイトリンク生成ロジックの修正 ---
+        vc_beacon = ""
+        
         if 'dell' in maker_low:
-            your_id = "nNBA6GzaGrQ"
-            offer_prefix = "1568114"
-            # 二重エンコード防止：一度デコードしてから、safe=''で全エンコード
-            raw_url = urllib.parse.unquote(product.url)
-            encoded_product_url = urllib.parse.quote(raw_url, safe='')
+            # テーブル（DB）にアフィリエイトリンクがある場合はそれを使用
+            if hasattr(product, 'affiliate_url') and product.affiliate_url:
+                affiliate_url = product.affiliate_url
+                self.stdout.write(f"🔗 Dellリンク: DBから取得しました。")
+            else:
+                # DBにない場合のフォールバック（DeepLink生成）
+                your_id = "nNBA6GzaGrQ"
+                offer_prefix = "1568114"
+                raw_url = urllib.parse.unquote(product.url)
+                encoded_product_url = urllib.parse.quote(raw_url, safe='')
+                affiliate_url = f"https://click.linksynergy.com/link?id={your_id}&offerid={offer_prefix}.{product.unique_id}&type=15&murl={encoded_product_url}"
+                self.stdout.write(f"🔗 Dellリンク: 手動生成しました。")
             
-            affiliate_url = f"https://click.linksynergy.com/link?id={your_id}&offerid={offer_prefix}.{product.unique_id}&type=15&murl={encoded_product_url}"
-            vc_beacon = ""
             button_text = "Dell公式サイトで見る ＞"
+
         elif 'hp' in maker_low:
             sid, pid = "3697471", "892455531"
             raw_url = urllib.parse.unquote(product.url)
@@ -177,15 +184,13 @@ class Command(BaseCommand):
             vc_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
             button_text = "Lenovo公式サイトで見る ＞"
 
-        # デバッグ用リンク先URL表示セクション
         debug_info_html = f"""
         <div style="margin-top: 15px; padding: 10px; background: #f3f4f6; border-radius: 6px; font-size: 0.8em; color: #4b5563; word-break: break-all; border: 1px dashed #d1d5db;">
-            <strong>【デバッグ用】生成リンク先URL（DeepLink修正済）:</strong><br>
+            <strong>【デバッグ用】リンクソース:</strong><br>
             {affiliate_url}
         </div>
         """
 
-        # 商品紹介カードの組み立て
         custom_card_html = f"""
         <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">

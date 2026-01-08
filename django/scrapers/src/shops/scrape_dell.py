@@ -4,7 +4,7 @@ import re
 import json
 import time
 import random
-import hashlib  # 回避策用に追加
+import hashlib
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from django.db import transaction
@@ -15,10 +15,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tiper_api.settings')
 django.setup()
 
 from api.models import PCProduct
+from api.utils.affiliate_manager_ls import AffiliateManagerLS
+
+# 汎用アフィリエイトマネージャーの初期化
+aff_ls = AffiliateManagerLS()
+DELL_MID = "2557"
 
 def get_refined_genre(url, name):
     """
-    製品名とURLからジャンルを日本語・英語両方で高精度に判定する
+    製品名とURLからジャンルを判定
     """
     text = (url + " " + name).lower()
     
@@ -78,18 +83,14 @@ def scrape_detail_page(page, url, current_index, total_count):
     url = url.split('#')[0].split('?')[0].rstrip('/')
     
     try:
-        # --- 日本語排除ロジック ---
+        # --- ID生成ロジック ---
         raw_last_part = url.split('/')[-1]
-        # 英数字以外を削除（これで日本語URL対策完了）
         safe_last_part = re.sub(r'[^a-zA-Z0-9-]', '', raw_last_part)
-        
-        # IDが空になった場合（日本語だけのURL末尾など）はURLのハッシュをIDにする
         if not safe_last_part:
             safe_last_part = hashlib.md5(url.encode()).hexdigest()[:12]
-            
         unique_id = "dell-" + safe_last_part
-        # ------------------------
 
+        # ページ遷移
         page.goto(url, wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(2500)
         
@@ -115,6 +116,10 @@ def scrape_detail_page(page, url, current_index, total_count):
                 src = img_handle.get_attribute("src")
                 image_url = "https:" + src if src and src.startswith('//') else src
 
+        # 💡 アフィリエイトリンクの取得（オンザフライ・マッチング）
+        aff_url = aff_ls.get_best_link(mid=DELL_MID, product_name=name)
+
+        # DB保存
         with transaction.atomic():
             PCProduct.objects.update_or_create(
                 unique_id=unique_id,
@@ -126,6 +131,7 @@ def scrape_detail_page(page, url, current_index, total_count):
                     'name': name,
                     'price': price,
                     'url': url,
+                    'affiliate_url': aff_url, # 💡 ここに追加
                     'image_url': image_url,
                     'description': f"Dell公式 {genre} カテゴリ製品 - {name}",
                     'stock_status': '在庫あり' if price > 0 else '詳細確認',
@@ -133,8 +139,8 @@ def scrape_detail_page(page, url, current_index, total_count):
                 }
             )
         
-        price_display = f"¥{price:,}" if price > 0 else "価格不明"
-        print(f"🔎 [{current_index + 1}/{total_count}] ✅ 保存完了 [ID: {unique_id}]: {name[:30]}...")
+        status_icon = "🔗" if aff_url else "⚠️"
+        print(f"🔎 [{current_index + 1}/{total_count}] {status_icon} 保存完了: {name[:30]}... (Price: {price})")
         return True
     except Exception as e:
         print(f"   ❌ エラー: {url} -> {e}")
@@ -158,6 +164,8 @@ def run_crawler():
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         )
         page = context.new_page()
+        
+        # 不要なリソースをブロックして高速化
         page.route("**/*.{png,jpg,jpeg,gif,webp,svg,woff,woff2,css}", 
                    lambda route: route.abort() if route.request.resource_type != "document" else route.continue_())
 
@@ -183,12 +191,16 @@ def run_crawler():
         
         url_list = sorted(list(all_product_urls))
         total_count = len(url_list)
+        
+        print(f"🚀 合計 {total_count} 件の製品ページを処理します。")
+        
         for i, url in enumerate(url_list): 
             scrape_detail_page(page, url, i, total_count)
+            # サーバー負荷軽減のためのランダムウェイト
             time.sleep(random.uniform(0.5, 1.0))
             
         browser.close()
-        print(f"✨ 完了しました。")
+        print(f"✨ 全ての処理が完了しました。")
 
 if __name__ == "__main__":
     run_crawler()
