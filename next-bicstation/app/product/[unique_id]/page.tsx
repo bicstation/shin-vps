@@ -50,22 +50,25 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     const isHP = makerLower.includes('hp');
 
     if (isDell) {
-        // --- Dell (LinkShare) 修正版：正しいofferid構造とDeep Link(murl)の適用 ---
+        // --- Dell (LinkShare) 修正版：二重エンコード防止とDeep Link最適化 ---
         const yourId = "nNBA6GzaGrQ";
-        const offerId = "1568114"; // 案件ID（固定）
-        const linkId = product.unique_id; // 商品識別子（英数字ID）
+        const offerId = "1568114"; 
+        const linkId = product.unique_id;
         
-        // 商品URLをエンコードしてmurlにセット
-        const encodedProductUrl = encodeURIComponent(product.url);
+        // 1. まず元のURLをデコードして生の状態に戻す（二重エンコード防止）
+        const decodedUrl = product.url.includes('%') ? decodeURIComponent(product.url) : product.url;
+        // 2. 改めて完全にエンコードする
+        const encodedProductUrl = encodeURIComponent(decodedUrl);
         
-        // offeridを「案件ID.個別ID」の形式に結合
         finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerId}.${linkId}&type=15&murl=${encodedProductUrl}`;
         beacon = null; 
     } else if (isHP || isLenovo) {
         // --- HP / Lenovo (ValueCommerce) MyLink構築 ---
         const sid = "3697471";
         const pid = "892455531";
-        const encodedUrl = encodeURIComponent(product.url);
+        const decodedUrl = product.url.includes('%') ? decodeURIComponent(product.url) : product.url;
+        const encodedUrl = encodeURIComponent(decodedUrl);
+        
         finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${sid}&pid=${pid}&vc_url=${encodedUrl}`;
         beacon = (
             <img 
@@ -96,7 +99,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
             wordBreak: 'break-all',
             fontFamily: 'monospace'
         }}>
-            <strong>[DEBUG] 生成URL:</strong><br />
+            <strong>[DEBUG] 生成URL (DeepLink修正済):</strong><br />
             {finalUrl}
         </div>
     );
@@ -153,7 +156,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             {beacon}
                         </a>
                         
-                        {/* デバッグ表示の追加 */}
+                        {/* デバッグ表示 */}
                         <DebugLinkBox />
                     </div>
                 </div>
@@ -202,7 +205,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             {buttonLabel}
                             {beacon}
                         </a>
-                        {/* ページ下部にもデバッグ表示を追加 */}
                         <div style={{ maxWidth: '450px', margin: '0 auto' }}>
                             <DebugLinkBox />
                         </div>

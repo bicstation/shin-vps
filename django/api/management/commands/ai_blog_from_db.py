@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = 'Gemini/Gemmaをローテーションし、Hタグ構造化記事とデバッグ用リンク表示付きでWP投稿するスクリプト'
+    help = 'Gemini/Gemmaをローテーションし、クリーンなタイトルとDeepLink修正版でWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -106,8 +106,8 @@ class Command(BaseCommand):
         スペック詳細: {product.description}
 
         【出力構成ルール】
-        1. 1行目は記事のタイトル（h1相当のテキスト）。
-        2. 本文は必ず <h2> や <h3> タグを使用。
+        1. 1行目は記事のタイトル（装飾なし、テキストのみ。h1タグなどは含めない）。
+        2. 本文は必ず <h2> や <h3> タグを使用して構成してください。
         3. 2000文字以上の情報量で記述。
         4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締める。
         """
@@ -137,31 +137,42 @@ class Command(BaseCommand):
             return
 
         # ==========================================
-        # 6. 整形とアフィリエイト組み込み（デバッグ表示版）
+        # 6. 整形とアフィリエイト組み込み
         # ==========================================
+        # タイトルからHTMLタグやMarkdown記号を完全に除去する関数
+        def clean_title(text):
+            text = re.sub(r'<[^>]*?>', '', text) # HTMLタグ除去
+            text = text.replace('#', '').strip() # Markdown記号除去
+            return text
+
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
-        title = lines[0].replace('#', '').strip()
+        
+        title = clean_title(lines[0])
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # アフィリエイトリンク生成
+        # アフィリエイトリンク生成（DeepLink修正版）
         if 'dell' in maker_low:
             your_id = "nNBA6GzaGrQ"
             offer_prefix = "1568114"
-            encoded_product_url = urllib.parse.quote(product.url)
-            # 修正: Markdownを完全に排除した純粋なURL
+            # 二重エンコード防止：一度デコードしてから、safe=''で全エンコード
+            raw_url = urllib.parse.unquote(product.url)
+            encoded_product_url = urllib.parse.quote(raw_url, safe='')
+            
             affiliate_url = f"https://click.linksynergy.com/link?id={your_id}&offerid={offer_prefix}.{product.unique_id}&type=15&murl={encoded_product_url}"
             vc_beacon = ""
             button_text = "Dell公式サイトで見る ＞"
         elif 'hp' in maker_low:
             sid, pid = "3697471", "892455531"
-            encoded_url = urllib.parse.quote(product.url, safe='')
+            raw_url = urllib.parse.unquote(product.url)
+            encoded_url = urllib.parse.quote(raw_url, safe='')
             affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
             vc_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
             button_text = "HP公式サイトで見る ＞"
         else:
             sid, pid = "3697471", "892455531"
-            encoded_url = urllib.parse.quote(product.url, safe='')
+            raw_url = urllib.parse.unquote(product.url)
+            encoded_url = urllib.parse.quote(raw_url, safe='')
             affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
             vc_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
             button_text = "Lenovo公式サイトで見る ＞"
@@ -169,7 +180,7 @@ class Command(BaseCommand):
         # デバッグ用リンク先URL表示セクション
         debug_info_html = f"""
         <div style="margin-top: 15px; padding: 10px; background: #f3f4f6; border-radius: 6px; font-size: 0.8em; color: #4b5563; word-break: break-all; border: 1px dashed #d1d5db;">
-            <strong>【デバッグ用】生成リンク先URL:</strong><br>
+            <strong>【デバッグ用】生成リンク先URL（DeepLink修正済）:</strong><br>
             {affiliate_url}
         </div>
         """
