@@ -58,24 +58,11 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
         // 商品URLをエンコードしてmurlにセット
         const encodedProductUrl = encodeURIComponent(product.url);
         
-        // 修正ポイント：offeridを「案件ID.個別ID」の形式に結合し、純粋なURL文字列を構築
+        // offeridを「案件ID.個別ID」の形式に結合
         finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerId}.${linkId}&type=15&murl=${encodedProductUrl}`;
         beacon = null; 
-    } else if (isHP) {
-        // --- HP (ValueCommerce) MyLink構築 ---
-        const sid = "3697471";
-        const pid = "892455531";
-        const encodedUrl = encodeURIComponent(product.url);
-        finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=${sid}&pid=${pid}&vc_url=${encodedUrl}`;
-        beacon = (
-            <img 
-                src={`//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=${sid}&pid=${pid}`} 
-                height={1} width={1} alt="" 
-                style={{ display: 'none', border: 'none' }} 
-            />
-        );
-    } else if (isLenovo) {
-        // --- Lenovo (ValueCommerce) MyLink構築 ---
+    } else if (isHP || isLenovo) {
+        // --- HP / Lenovo (ValueCommerce) MyLink構築 ---
         const sid = "3697471";
         const pid = "892455531";
         const encodedUrl = encodeURIComponent(product.url);
@@ -95,6 +82,24 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     } as React.CSSProperties;
 
     const buttonLabel = `${product.maker}公式サイトで詳細を見る`;
+
+    // デバッグ用表示コンポーネント
+    const DebugLinkBox = () => (
+        <div style={{
+            marginTop: '15px',
+            padding: '10px',
+            background: '#f8f9fa',
+            border: '1px dashed #ced4da',
+            borderRadius: '6px',
+            fontSize: '11px',
+            color: '#6c757d',
+            wordBreak: 'break-all',
+            fontFamily: 'monospace'
+        }}>
+            <strong>[DEBUG] 生成URL:</strong><br />
+            {finalUrl}
+        </div>
+    );
 
     return (
         <div className={styles.wrapper} style={dynamicStyle}>
@@ -147,6 +152,9 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             {buttonLabel}
                             {beacon}
                         </a>
+                        
+                        {/* デバッグ表示の追加 */}
+                        <DebugLinkBox />
                     </div>
                 </div>
 
@@ -166,7 +174,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                     </div>
                 </div>
 
-                {/* AI詳細解説セクション */}
                 {product.ai_content && (
                     <div className={styles.aiContentSection}>
                         <h2 className={styles.specTitle}>エキスパートによる製品解説</h2>
@@ -177,7 +184,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                     </div>
                 )}
 
-                {/* ページ下部：最終コンバージョンボタン */}
                 <div className={styles.bottomCtaSection}>
                     <div className={styles.bottomCtaCard}>
                         <p className={styles.bottomCtaText}>
@@ -196,6 +202,10 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             {buttonLabel}
                             {beacon}
                         </a>
+                        {/* ページ下部にもデバッグ表示を追加 */}
+                        <div style={{ maxWidth: '450px', margin: '0 auto' }}>
+                            <DebugLinkBox />
+                        </div>
                     </div>
                 </div>
             </main>

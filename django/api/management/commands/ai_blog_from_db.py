@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = 'Gemini/Gemmaをローテーションし、Hタグ構造化記事とドメイン別アフィリエイトリンク付きでWP投稿するスクリプト'
+    help = 'Gemini/Gemmaをローテーションし、Hタグ構造化記事とデバッグ用リンク表示付きでWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -20,16 +20,12 @@ class Command(BaseCommand):
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
-        # URL難読化回避用の分離定義
         H, C, S = "https", ":", "/"
-        
-        # WordPress設定（実行環境に応じてここを調整）
         W_DOM = "blog.tiper.live"
         WP_POST_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}bicstation"
         WP_MEDIA_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # AIモデルの優先順位リスト
         MODELS = [
             "gemini-3-flash-preview",
             "gemini-2.5-flash",
@@ -37,14 +33,12 @@ class Command(BaseCommand):
             "gemma-3-12b-it" 
         ]
 
-        # カテゴリID設定（ドメインのWP設定に合わせて調整）
-        CAT_LENOVO, CAT_DELL, CAT_HP = 4, 7, 8 # HP用カテゴリID（仮）を追加
+        CAT_LENOVO, CAT_DELL, CAT_HP = 4, 7, 8
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
         # ==========================================
         # 2. 投稿対象商品の選定
         # ==========================================
-        # 未投稿かつ、Lenovo, Dell, HPのいずれか
         products = PCProduct.objects.filter(
             is_active=True,
             is_posted=False
@@ -60,7 +54,6 @@ class Command(BaseCommand):
         maker_low = product.maker.lower()
         self.stdout.write(self.style.SUCCESS(f"🚀 ターゲット確定: {product.name} ({product.maker})"))
 
-        # カテゴリ判定
         if 'lenovo' in maker_low:
             target_cats = [CAT_LENOVO]
         elif 'dell' in maker_low:
@@ -68,12 +61,11 @@ class Command(BaseCommand):
         elif 'hp' in maker_low:
             target_cats = [CAT_HP]
         else:
-            target_cats = [1] # 未分類
+            target_cats = [1]
         
         name_lower = product.name.lower()
         target_tags = [TAG_DESKTOP if any(k in name_lower for k in ["desktop", "tower", "station", "aio", "tiny", "center"]) else TAG_LAPTOP]
 
-        # 公式サイト詳細URL（ユニークIDを使用）
         bic_detail_url = f"{H}{C}{S}{S}bicstation.com{S}product{S}{product.unique_id}{S}"
 
         # ==========================================
@@ -107,16 +99,16 @@ class Command(BaseCommand):
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
         以下の製品データに基づき、ITニュースサイト向けの深く鋭い、純粋な「HTMLソースコードのみ」を出力してください。
-        Markdown(```htmlなど)や解説文は一切不要です。
+        Markdownや解説文は一切不要です。
 
         【製品データ】
         メーカー: {product.maker} | 商品名: {product.name} | 価格: {product.price}円
         スペック詳細: {product.description}
 
         【出力構成ルール】
-        1. 1行目は記事のタイトル（h1相当のテキストのみ）。
-        2. 本文は必ず <h2> や <h3> タグを使用してセクションを分け、目次に対応させてください。
-        3. 2000文字以上の情報量で、製品のターゲット、性能、競合比較、専門家視点の評価を記述。
+        1. 1行目は記事のタイトル（h1相当のテキスト）。
+        2. 本文は必ず <h2> や <h3> タグを使用。
+        3. 2000文字以上の情報量で記述。
         4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締める。
         """
 
@@ -129,7 +121,6 @@ class Command(BaseCommand):
         for model_id in MODELS:
             self.stdout.write(f"🤖 モデル {model_id} で生成中...")
             api_url = f"{H}{C}{S}{S}{G_DOM}{S}{G_PATH}{S}{model_id}:generateContent?key={GEMINI_API_KEY}"
-            
             try:
                 response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
                 res_json = response.json()
@@ -146,51 +137,42 @@ class Command(BaseCommand):
             return
 
         # ==========================================
-        # 6. 整形とアフィリエイト組み込み
+        # 6. 整形とアフィリエイト組み込み（デバッグ表示版）
         # ==========================================
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
-        
         title = lines[0].replace('#', '').strip()
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # アフィリエイトリンク生成（ドメイン別ID管理）
-        # ※ W_DOM（実行ドメイン）に基づきIDを切り替える準備
+        # アフィリエイトリンク生成
         if 'dell' in maker_low:
-            # Dell: リンクサイナジー (Deep Link)
-            dell_ids = {
-                "blog.tiper.live": "nNBA6GzaGrQ",
-                "other-domain.com": "OTHER_DELL_ID"
-            }
-            your_id = dell_ids.get(W_DOM, "nNBA6GzaGrQ")
+            your_id = "nNBA6GzaGrQ"
             offer_prefix = "1568114"
             encoded_product_url = urllib.parse.quote(product.url)
-            
-            # 修正ポイント: 純粋なURLのみを生成（Markdownリンク記法を完全に排除）
-            affiliate_url = f"[https://click.linksynergy.com/link?id=](https://click.linksynergy.com/link?id=){your_id}&offerid={offer_prefix}.{product.unique_id}&type=15&murl={encoded_product_url}"
+            # 修正: Markdownを完全に排除した純粋なURL
+            affiliate_url = f"https://click.linksynergy.com/link?id={your_id}&offerid={offer_prefix}.{product.unique_id}&type=15&murl={encoded_product_url}"
             vc_beacon = ""
             button_text = "Dell公式サイトで見る ＞"
-
         elif 'hp' in maker_low:
-            # HP: バリューコマース (MyLink)
-            hp_sids = {"blog.tiper.live": "3697471"}
-            hp_pids = {"blog.tiper.live": "892455531"}
-            sid = hp_sids.get(W_DOM, "3697471")
-            pid = hp_pids.get(W_DOM, "892455531")
-            encoded_url = urllib.parse.quote(product.url, safe='')
-            
-            affiliate_url = f"[https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=](https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=){sid}&pid={pid}&vc_url={encoded_url}"
-            vc_beacon = f'<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=){sid}&pid={pid}" height="1" width="1" border="0">'
-            button_text = "HP公式サイトで見る ＞"
-
-        else:
-            # Lenovo: バリューコマース (MyLink)
             sid, pid = "3697471", "892455531"
             encoded_url = urllib.parse.quote(product.url, safe='')
-            
-            affiliate_url = f"[https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=](https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=){sid}&pid={pid}&vc_url={encoded_url}"
-            vc_beacon = f'<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=){sid}&pid={pid}" height="1" width="1" border="0">'
+            affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
+            vc_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
+            button_text = "HP公式サイトで見る ＞"
+        else:
+            sid, pid = "3697471", "892455531"
+            encoded_url = urllib.parse.quote(product.url, safe='')
+            affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
+            vc_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
             button_text = "Lenovo公式サイトで見る ＞"
+
+        # デバッグ用リンク先URL表示セクション
+        debug_info_html = f"""
+        <div style="margin-top: 15px; padding: 10px; background: #f3f4f6; border-radius: 6px; font-size: 0.8em; color: #4b5563; word-break: break-all; border: 1px dashed #d1d5db;">
+            <strong>【デバッグ用】生成リンク先URL:</strong><br>
+            {affiliate_url}
+        </div>
+        """
 
         # 商品紹介カードの組み立て
         custom_card_html = f"""
@@ -214,6 +196,7 @@ class Command(BaseCommand):
                             詳細スペックを見る ＞
                         </a>
                     </div>
+                    {debug_info_html}
                 </div>
             </div>
         </div>
