@@ -93,9 +93,7 @@ def extract_correct_price(soup, product_data):
 
 def extract_best_image(soup, product_data):
     """
-    【重要修正】
-    画像URLを抽出し、ドメイン欠落を防ぎつつ、
-    正しい Shopify CDN パス（https://www.minisforum.jp/cdn/shop/files/...）を生成する
+    画像URLを抽出し、正しい Shopify CDN パスを補正して生成する
     """
     img = product_data.get('image')
     img_url = img[0] if isinstance(img, list) and img else img
@@ -116,38 +114,16 @@ def extract_best_image(soup, product_data):
     if not img_url:
         return ""
 
-    # --- 画像URLの補正ロジック (強化版) ---
-    
-    # 1. // から始まるプロトコル相対パス
+    # URL補正
     if img_url.startswith('//'):
         img_url = "https:" + img_url
-    
-    # 2. ユーザー指摘の「files/」で始まるパス、またはドメイン欠落状態の補正
     elif "files/" in img_url and "cdn/shop" not in img_url:
-        # files/ 以降をすべて抽出して、正しいCDNドメインと結合
         path_part = img_url.split('files/')[-1]
         img_url = f"https://{BASE_DOMAIN}/cdn/shop/files/{path_part}"
-    
-    # 3. 通常のドメイン内相対パス
     elif img_url.startswith('/') and not img_url.startswith('//'):
         img_url = f"https://{BASE_DOMAIN}{img_url}"
     
-    # URLからクエリパラメータ（?v=... 等）を除去
-    img_url = img_url.split('?')[0]
-    
-    return img_url
-
-def generate_affiliate_html(url, name):
-    """Minisforum公式サイト用のアフィリエイトリンクHTML生成"""
-    clean_url = url.split('?')[0].rstrip('/')
-    aff_url = f"{clean_url}?aff={AFFILIATE_ID}"
-    
-    html = f'<div class="affiliate-link-container" style="margin: 20px 0; text-align: center;">'
-    html += f'<a href="{aff_url}" target="_blank" rel="nofollow noopener" class="affiliate-button" '
-    html += f'style="display:inline-block;background:#004bb1;color:#fff;padding:12px 25px;text-decoration:none;border-radius:30px;font-weight:bold;box-shadow:0 4px 6px rgba(0,0,0,0.1);">'
-    html += f'<span>{name} を公式サイトで詳細を見る</span>'
-    html += '</a></div>'
-    return html
+    return img_url.split('?')[0]
 
 def scrape_minis_page(page, url, current_index, total_count):
     url_clean = url.split('?')[0].split('#')[0].rstrip('/')
@@ -182,8 +158,8 @@ def scrape_minis_page(page, url, current_index, total_count):
             print(f" ⏩ スキップ: {name}")
             return False
 
-        # 2. ジャンル判定 (修正: desktop を mini-pc または motherboard に適正化)
-        if "マザーボード" in name or "Motherboard" in name or "BD790i" in name or "BD770i" in name:
+        # 2. ジャンル判定 (mini-pc または motherboard に分類)
+        if any(kw in name for kw in ["マザーボード", "Motherboard", "BD790", "BD770"]):
             raw_genre = "motherboard"
             unified_genre = "motherboard"
         else:
@@ -194,10 +170,11 @@ def scrape_minis_page(page, url, current_index, total_count):
         price = extract_correct_price(soup, product_data)
         image_url = extract_best_image(soup, product_data)
         description = extract_detailed_specs(soup, name)
-        affiliate_url = f"{url_clean}?aff={AFFILIATE_ID}"
-        affiliate_link_html = generate_affiliate_html(url_clean, name)
+        
+        # 4. アフィリエイトURLの生成 (既存のカラム 'affiliate_url' に格納)
+        final_affiliate_url = f"{url_clean}?aff={AFFILIATE_ID}"
 
-        # 4. 在庫ステータス判定
+        # 5. 在庫ステータス判定
         offers = product_data.get('offers', {})
         if isinstance(offers, list): offers = offers[0]
         is_instock = offers.get('availability') == 'http://schema.org/InStock'
@@ -205,11 +182,10 @@ def scrape_minis_page(page, url, current_index, total_count):
 
         print(f" 📦 製品名 : {name}")
         print(f" 💰 価  格 : ¥{price:,}" if price > 0 else " 💰 価  格 : 価格未定")
-        print(f" 🖼️ 画像URL: {image_url}")
-        print(f" 🏷️ ジャンル: {unified_genre}")
+        print(f" 🏷️ ｼﾞｬﾝﾙ : {unified_genre}")
         print("-" * 50)
 
-        # 5. Djangoモデルへ保存
+        # 6. Djangoモデルへ保存
         unique_id = "minis-" + hashlib.md5(url_clean.encode()).hexdigest()[:12]
         PCProduct.objects.update_or_create(
             unique_id=unique_id,
@@ -219,8 +195,7 @@ def scrape_minis_page(page, url, current_index, total_count):
                 'name': name,
                 'price': price,
                 'url': url_clean,
-                'affiliate_url': affiliate_url,
-                'affiliate_link_html': affiliate_link_html,
+                'affiliate_url': final_affiliate_url,
                 'image_url': image_url,
                 'description': description,
                 'is_active': True,
@@ -249,9 +224,8 @@ def run_minis_crawler():
         )
         page = context.new_page()
         
-        print(f"📂 MINISFORUM 全製品スキャン開始 (画像・ジャンル適正化版)")
+        print(f"📂 MINISFORUM 全製品同期開始 (カラム構成適正化版)")
         try:
-            # networkidle ではなく domcontentloaded を使用してタイムアウトを回避
             page.goto(list_url, wait_until="domcontentloaded", timeout=60000)
             page.wait_for_timeout(3000) 
             
@@ -261,13 +235,11 @@ def run_minis_crawler():
                 return links.map(a => a.href);
             }''')
             
-            # "/products/" を含み、重複を除去してソート
             product_urls = sorted(list(set([h.split('?')[0] for h in hrefs if "/products/" in h])))
             print(f"📊 解析対象URL: {len(product_urls)}件")
 
             for i, url in enumerate(product_urls):
                 scrape_minis_page(page, url, i, len(product_urls))
-                # サーバー負荷軽減のためランダム待機
                 time.sleep(random.uniform(2.0, 4.0))
 
         except Exception as e:
