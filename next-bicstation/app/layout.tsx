@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -6,8 +6,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
-// ✅ 共通カラー設定をインポート（constants.ts がある場合）
-// もし作成していない場合は、直接 "#007bff" と書いてもOKです
+// ✅ 共通カラー設定をインポート
 import { COLORS } from "@/constants";
 
 const inter = Inter({ 
@@ -53,13 +52,12 @@ export const metadata: Metadata = {
 };
 
 /**
- * 💡 ビューポート設定
+ * 💡 ビューポート設定 (最新のNext.js 14+形式)
  */
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  // ✅ 共通カラーから取得
+  maximumScale: 5, // ユーザーがピンチズーム（拡大）できるようにし、アクセシビリティを向上
   themeColor: COLORS?.SITE_COLOR || "#007bff",
 };
 
@@ -70,23 +68,48 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
+      <head>
+        {/* スマホ特有の横揺れを根本から防ぐためのグローバルスタイル */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          html, body {
+            overflow-x: hidden;
+            width: 100%;
+            -webkit-text-size-adjust: 100%; /* iOSの勝手なフォントサイズ変更を防止 */
+          }
+          main {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+          }
+          /* モバイル環境でのタップ時の青い枠線を消す */
+          * {
+            -webkit-tap-highlight-color: transparent;
+          }
+        `}} />
+      </head>
       <body 
         className={inter.className} 
         style={{ 
           margin: 0, 
           padding: 0, 
-          // ✅ 背景色も共通設定に合わせると統一感が出ます
           backgroundColor: COLORS?.BACKGROUND || "#f4f7f9", 
           minHeight: "100vh",
           display: "flex",
-          flexDirection: "column"
+          flexDirection: "column",
+          position: "relative"
         }}
       >
         {/* 全ページ共通ヘッダー */}
         <Header />
 
-        {/* メインコンテンツエリア */}
-        <main style={{ flexGrow: 1 }}>
+        {/* メインコンテンツエリア 
+            スマホ時に左右に適度な余白ができるよう、各ページのコンテナ側で制御するのが理想ですが、
+            ここでは全体を包む flex コンテナとして定義します */}
+        <main style={{ 
+          flexGrow: 1, 
+          display: "flex", 
+          flexDirection: "column" 
+        }}>
           {children}
         </main>
 

@@ -39,12 +39,17 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
     
     if (!post) notFound();
 
-    // 関連商品の取得（WordPressのACF等から取得）
+    // WordPressのACFから関連商品IDを取得して詳細データを取得
     const productId = post.acf?.related_product_id || null;
     const relatedProduct = productId ? await fetchProductDetail(productId) : null;
 
     const toc = getTableOfContents(post.content.rendered);
     const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
+
+    // アフィリエイトURLの決定ロジック
+    const finalAffiliateUrl = (relatedProduct?.affiliate_url && relatedProduct.affiliate_url.trim() !== '') 
+        ? relatedProduct.affiliate_url 
+        : relatedProduct?.url || '#';
 
     return (
         <article className={styles.article} style={{ backgroundColor: COLORS.BACKGROUND }}>
@@ -84,7 +89,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                             dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
                         />
 
-                        {/* 3. 記事末尾の商品紹介プレミアムカード（スペック目次付き） */}
+                        {/* 3. 記事末尾の商品紹介カード（スペック2列修正版） */}
                         {relatedProduct && (
                             <section className={styles.relatedProductCard}>
                                 <div className={styles.cardTag}>RECOMMENDED ITEM</div>
@@ -104,21 +109,31 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                         <span className={styles.cardMaker}>{relatedProduct.maker}</span>
                                         <h3 className={styles.cardTitle}>{relatedProduct.name}</h3>
                                         
-                                        {/* スペック目次 (Descriptionから抜粋) */}
                                         <div className={styles.productSpecSummary}>
                                             <p className={styles.specSummaryTitle}>このモデルの主要スペック</p>
                                             <ul className={styles.specMiniList}>
-                                                {relatedProduct.description?.split('/').slice(0, 4).map((spec: string, i: number) => (
-                                                    <li key={i} className={styles.specMiniItem}>
-                                                        <span className={styles.specIcon}>⚡</span>
-                                                        {spec.trim()}
-                                                    </li>
-                                                ))}
+                                                {/* 空文字を除外して確実に2列グリッドを維持 */}
+                                                {relatedProduct.description?.split('/')
+                                                    .map(s => s.trim())
+                                                    .filter(s => s !== '')
+                                                    .slice(0, 4)
+                                                    .map((spec: string, i: number) => (
+                                                        <li key={i} className={styles.specMiniItem}>
+                                                            <span className={styles.specIcon}>⚡</span>
+                                                            <span className={styles.specText}>{spec}</span>
+                                                        </li>
+                                                    ))
+                                                }
                                             </ul>
                                         </div>
 
                                         <div className={styles.cardButtons}>
-                                            <a href={relatedProduct.affiliate_url || relatedProduct.url} target="_blank" rel="nofollow noopener" className={styles.affiliateBtn}>
+                                            <a 
+                                                href={finalAffiliateUrl} 
+                                                target="_blank" 
+                                                rel="nofollow noopener" 
+                                                className={styles.affiliateBtn}
+                                            >
                                                 公式サイトで詳細・納期を確認
                                             </a>
                                             <Link href={`/product/${relatedProduct.unique_id}`} className={styles.detailBtn}>

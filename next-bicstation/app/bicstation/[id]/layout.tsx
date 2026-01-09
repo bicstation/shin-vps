@@ -7,49 +7,73 @@ export default function PostLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // 共通のプライマリカラーを適用（未定義時はデフォルト色）
-  const primaryColor = COLORS?.SITE_COLOR || '#007bff';
+  // 共通のプライマリカラーを適用
+  const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
   return (
     <section>
-      {/* 💡 記事ページ専用の高度な装飾スタイル */}
+      {/* 💡 スマホ対応を強化した共通スタイル定義 */}
       <style dangerouslySetInnerHTML={{ __html: `
+        :root {
+          --site-color: ${primaryColor};
+        }
+
         @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(30px); }
+          from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
         
         .animate-in {
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
-        
-        /* 記事本文内の見出しデザインを詳細ページ用に強化 */
-        .wp-content h2 {
-          font-size: 1.8rem;
-          border-left: 8px solid ${primaryColor};
-          padding: 0.5em 0.8em;
-          margin: 2.5em 0 1.2em;
-          background: linear-gradient(90deg, rgba(0, 123, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
-          font-weight: 800;
-          line-height: 1.4;
-          display: flex;
-          align-items: center;
+          animation: fadeInUp 0.6s ease-out forwards;
         }
 
-        /* 記事内のリンクにアクセントカラーを適用 */
+        /* --- スマホ・PC共通の基本ルール --- */
+        .wp-content {
+          word-break: break-word; /* 長い英単語などが画面外にはみ出すのを防ぐ */
+          overflow-wrap: break-word;
+        }
+
         .wp-content a {
-          color: ${primaryColor};
+          color: var(--site-color);
           text-decoration: underline;
-          font-weight: 500;
+          transition: opacity 0.2s;
         }
 
-        .wp-content a:hover {
-          opacity: 0.7;
-          text-decoration: none;
+        /* --- スマホ専用の調整 (メディアクエリ) --- */
+        @media (max-width: 768px) {
+          /* スマホでは文字サイズを少し落として読みやすくする */
+          .wp-content {
+            font-size: 1rem;
+            line-height: 1.8;
+          }
+
+          /* 見出しがスマホで巨大化しないように調整 */
+          .wp-content h2 {
+            font-size: 1.4rem !important; /* module.cssより優先させたい場合 */
+            margin: 2em 0 1em !important;
+          }
+
+          .wp-content h3 {
+            font-size: 1.25rem !important;
+          }
+
+          /* スマホでの画像余白を最適化 */
+          .wp-content img {
+            margin: 1.5rem 0;
+            border-radius: 12px;
+          }
+
+          /* 表（Table）がはみ出す場合の対策 */
+          .wp-content table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+          }
         }
       `}} />
       
-      {/* ページの中身を表示 */}
+      {/* ページの中身（PostPage）を表示 */}
       {children}
     </section>
   );
