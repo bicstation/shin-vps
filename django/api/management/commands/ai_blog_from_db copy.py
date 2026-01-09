@@ -103,23 +103,29 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
         # ==========================================
-        # 4. AIプロンプト
+        # 4. AIプロンプト（外部ファイルから読み込み）
         # ==========================================
-        prompt = f"""
-        あなたはPCの技術仕様に精通した客観的な解説者です。
-        以下の製品データに基づき、ITニュースサイト向けの深く鋭い、純粋な「HTMLソースコードのみ」を出力してください。
-        Markdownや解説文、```html などの囲みは一切不要です。
+        # スクリプトと同じディレクトリにある ai_prompt.txt を探す
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        prompt_path = os.path.join(base_dir, "ai_prompt.txt")
 
-        【製品データ】
-        メーカー: {product.maker} | 商品名: {product.name} | 価格: {product.price}円
-        スペック詳細: {product.description}
-
-        【出力構成ルール】
-        1. 1行目は記事のタイトル（タグなし、プレーンテキストのみ）。
-        2. 本文は必ず <h2> や <h3> タグを使用して構成してください。
-        3. 2000文字以上の情報量で記述。
-        4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締める。
-        """
+        try:
+            with open(prompt_path, "r", encoding="utf-8") as f:
+                template = f.read()
+            
+            # 変数を流し込む
+            prompt = template.format(
+                maker=product.maker,
+                name=product.name,
+                price=f"{product.price:,}", # カンマ区切りにする
+                description=product.description
+            )
+        except FileNotFoundError:
+            self.stdout.write(self.style.ERROR(f"エラー: {prompt_path} が見つかりません。"))
+            return
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"プロンプト読み込みエラー: {e}"))
+            return
 
         # ==========================================
         # 5. AI実行 (ローテーション)

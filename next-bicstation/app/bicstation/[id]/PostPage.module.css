@@ -1,53 +1,219 @@
-/* 記事全体のコンテナ */
+/* 1. 記事全体のコンテナ */
 .article {
   min-height: 100vh;
+  background-color: #f9fafb; /* 薄いグレー背景で白背景の本文を浮かせる */
 }
 
-/* 2カラムレイアウト（本文 + サイドバー） */
+/* 2. アイキャッチ・ヒーローセクション */
+.heroSection {
+  position: relative;
+  width: 100%;
+  height: 500px; /* PC時の高さ */
+  background: #111; /* 画像がない場合のベースカラー */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.eyeCatchWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.eyeCatchImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5; /* 文字を読みやすくするために透過 */
+  filter: blur(8px); /* ぼかしを入れて高級感を演出 */
+  transform: scale(1.1); /* ぼかしの縁が白くならないように少し拡大 */
+}
+
+.eyeCatchOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(17, 24, 39, 0.4) 0%,
+    rgba(17, 24, 39, 0.8) 100%
+  );
+  z-index: 2;
+}
+
+.headerInner {
+  position: relative;
+  z-index: 10;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+  color: #fff;
+  text-align: center;
+}
+
+/* 3. レイアウトコンテナ */
 .container {
   display: grid;
   grid-template-columns: 1fr 340px;
   max-width: 1240px;
-  margin: 0 auto;
-  padding: 40px 20px;
+  margin: -80px auto 0; /* ヒーローセクションに少し被せて立体感を出す */
+  padding: 0 20px 80px;
   gap: 40px;
+  position: relative;
+  z-index: 20;
 }
 
-/* 本文エリア */
+.contentLayout {
+  display: contents; /* Grid子要素を親のGridに従わせる */
+}
+
+/* 4. 本文エリア */
 .mainContent {
-  min-width: 0; /* Flex/Grid内のはみ出し防止 */
+  min-width: 0; 
+  background: #fff;
+  padding: 50px 60px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
 }
 
-/* WordPressの投稿本文全体の装飾 */
+.entryInfo {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: right;
+}
+
+.readingTime {
+  font-size: 0.85rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-weight: 600;
+}
+
+/* 5. WordPress本文の装飾 */
 .wpContent {
-  line-height: 1.8;
-  color: #333;
-  font-size: 1.1rem;
+  line-height: 2;
+  color: #1e293b;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
 }
 
-/* 本文内の見出し(h2)の自動装飾 */
 .wpContent h2 {
-  font-size: 1.8rem;
-  margin: 2em 0 1em;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #eee;
-  font-weight: bold;
+  font-size: 2rem;
+  margin: 2.5em 0 1.2em;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #f1f5f9;
+  color: #0f172a;
+  font-weight: 800;
+  position: relative;
 }
 
-/* 本文内の画像 */
+.wpContent h2::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 80px;
+  height: 3px;
+  background-color: var(--site-color, #3b82f6);
+}
+
+.wpContent h3 {
+  font-size: 1.5rem;
+  margin: 2em 0 1em;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.wpContent p {
+  margin-bottom: 1.8em;
+}
+
 .wpContent img {
   max-width: 100%;
   height: auto;
-  border-radius: 12px;
-  margin: 20px 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-radius: 16px;
+  margin: 40px 0;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
 }
 
-/* モバイル対応：1024px以下で1カラム化 */
+/* リストの装飾 */
+.wpContent ul, .wpContent ol {
+  background: #f8fafc;
+  padding: 25px 25px 25px 50px;
+  border-radius: 12px;
+  margin-bottom: 2em;
+}
+
+.wpContent li {
+  margin-bottom: 0.5em;
+}
+
+/* 6. 記事フッター */
+.postFooter {
+  margin-top: 60px;
+  padding-top: 30px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.updateDate {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  text-align: right;
+}
+
+/* 7. サイドバー */
+.sidebarWrapper {
+  position: relative;
+}
+
+.stickySidebar {
+  position: sticky;
+  top: 100px;
+}
+
+/* 8. モバイル対応 */
 @media (max-width: 1024px) {
+  .heroSection {
+    height: 350px;
+  }
+
   .container {
     grid-template-columns: 1fr;
-    padding: 20px;
+    margin-top: -40px;
     gap: 30px;
+  }
+
+  .mainContent {
+    padding: 35px 25px;
+    border-radius: 16px;
+  }
+
+  .wpContent {
+    font-size: 1.05rem;
+  }
+
+  .wpContent h2 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroSection {
+    height: 300px;
+  }
+  
+  .headerInner h1 {
+    font-size: 1.5rem;
   }
 }
