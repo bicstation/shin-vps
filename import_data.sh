@@ -72,10 +72,18 @@ case $CHOICE in
         run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
         ;;
     4)
-        echo "⚙️  Bicstationスクレイピング実行...(DELLのみ)"
+        echo -e "${COLOR}⚙️  Bicstationデータのインポートを開始します...${RESET}"
         # run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
-        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_dell.py
+        # A. Dell専用インポーター (FTP方式) を実行
+        echo "   >> [1/2] Dell製品のスペック解析(FTP)を実行中..."
+        run_cmd python manage.py import_dell_ftp # 最初はテスト用にlimitを付けてもOK
+        
+        # B. 既存のAPIパーサーを実行
+        echo "   >> [2/2] その他のBicstation加盟店(API)を取得中..."
+        # CONTAINER_NAMEがdjango-v2なので、run_cmd経由で実行するのが安全です
+        # run_cmd python manage.py linkshare_bc_api_parser --mid-list
         ;;
+        
     5)
         echo "⚙️  AV-Flashインポート..."
         read -p "ファイル名を入力: " FILE_NAME

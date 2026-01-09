@@ -93,6 +93,28 @@ class LinkShareAPIClient:
         """外部からトークンが必要な場合に呼び出し"""
         if not self.access_token:
             self._fetch_access_token()
+
+    def fetch_raw_xml(self, keyword=None, mid=None, cat=None, pagenumber=1, max_results=1):
+        """
+        💡 新規追加: APIレスポンスのXMLを一切加工せず、生の文字列のまま取得する。
+        デバッグや解析用。
+        """
+        self.refresh_token_if_expired()
+        endpoint = urljoin(self.BASE_URL, 'productsearch/1.0')
+        headers = {'Authorization': f'Bearer {self.access_token}'}
+        
+        params = {'max': max_results, 'pagenumber': pagenumber}
+        if keyword: params['keyword'] = keyword
+        if mid: params['mid'] = mid
+        if cat: params['cat'] = cat
+        
+        try:
+            response = requests.get(endpoint, headers=headers, params=params)
+            response.raise_for_status()
+            return response.text
+        except Exception as e:
+            tqdm.write(f"❌ 生データ取得エラー: {e}")
+            return str(e)
             
     def get_advertiser_list(self):
         """広告主一覧（マーチャント）を取得"""

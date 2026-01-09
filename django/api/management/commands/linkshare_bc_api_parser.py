@@ -3,6 +3,7 @@
 import json 
 import os
 import socket
+import xml.dom.minidom # 💡 生XMLを整形表示するために追加
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
 from django.utils import timezone
@@ -30,6 +31,7 @@ except ImportError:
         def get_access_token(self): pass
         def get_advertiser_list(self): return []
         def search_products(self, keyword, mid, cat, page_size, max_pages): return []
+        def fetch_raw_xml(self, keyword=None, mid=None, cat=None, pagenumber=1, max_results=1): return ""
 
 
 class Command(BaseCommand):
@@ -45,6 +47,8 @@ class Command(BaseCommand):
         parser.add_argument('--max-pages', type=int, default=0, help='取得最大ページ数。')
         parser.add_argument('--limit', type=int, default=0, help='MIDごとの取得上限件数。')
         parser.add_argument('--save-db', action='store_true', help='データベースに保存し、PCProductに同期。')
+        # 💡 新規追加: 生のXMLを表示するデバッグオプション
+        parser.add_argument('--show-raw', action='store_true', help='APIから返ってきた生のXMLを整形してそのまま表示します。')
 
     def _save_products_to_db(self, mids_data: list):
         """BcLinkshareProduct モデルに生レスポンスを保存し、PCProduct にリンクを同期"""
@@ -111,7 +115,7 @@ class Command(BaseCommand):
                     tqdm.write(self.style.ERROR(f'❌ DB処理エラー (linkid: {link_id}, SKU: {product_sku}): {e}'))
         
         if sync_count > 0:
-            tqdm.write(self.style.SUCCESS(f'   🔗 PCProductへのリンク同期: {sync_count} 件完了'))
+            tqdm.write(self.style.SUCCESS(f'    🔗 PCProductへのリンク同期: {sync_count} 件完了'))
                             
         return total_saved, total_created
 
@@ -222,7 +226,35 @@ class Command(BaseCommand):
         try:
             client = LinkShareAPIClient()
             client.get_access_token() 
-            
+
+            # 💡 1. 生XML表示オプション (--show-raw) の処理
+            if options['show_raw']:
+                self.stdout.write(self.style.WARNING('\n--- 🛠️ LinkShare API 生レスポンス (Raw XML) 表示 ---'))
+                target_mid = options['mid'][0] if options['mid'] else None
+                
+                raw_xml = client.fetch_raw_xml(
+                    keyword=options['keyword'], 
+                    mid=target_mid, 
+                    cat=options['cat']
+                )
+                
+                if raw_xml:
+                    try:
+                        # XMLを綺麗に整形
+                        dom = xml.dom.minidom.parseString(raw_xml)
+                        pretty_xml = dom.toprettyxml(indent="  ")
+                        self.stdout.write(pretty_xml)
+                    except Exception as parse_err:
+                        # 整形に失敗した場合はそのまま表示
+                        self.stdout.write(raw_xml)
+                        self.stderr.write(self.style.ERROR(f"XMLの整形に失敗しました: {parse_err}"))
+                else:
+                    self.stdout.write(self.style.WARNING("データが空でした。"))
+                
+                self.stdout.write(self.style.NOTICE('--- Raw表示完了 ---'))
+                return # 生表示が終わったら終了
+
+            # 💡 2. 通常の取得・保存処理
             mid_list_to_process = []
 
             if options['all_mids']:
@@ -245,7 +277,7 @@ class Command(BaseCommand):
             if mid_list_to_process:
                 self._fetch_and_output_products(client, mid_list_to_process, options)
             else:
-                self.stderr.write(self.style.WARNING('⚠️ オプション（--mid, --all-mids, --keyword 等）を指定してください。'))
+                self.stderr.write(self.style.WARNING('⚠️ オプション（--mid, --all-mids, --keyword, --show-raw 等）を指定してください。'))
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f'致命的なエラー: {e}'))
