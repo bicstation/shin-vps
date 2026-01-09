@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CURRENT_HOSTNAME=$(hostname)
 CURRENT_USER=$USER
 
-# 💡 VPSかどうかの判定ロジック (提示いただいた条件を採用)
+# 💡 VPSかどうかの判定ロジック
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]] || [[ "$CURRENT_USER" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
     IS_VPS=true
     ENV_TYPE="PRODUCTION (VPS)"
@@ -36,7 +36,6 @@ echo -e "---------------------------------------"
 
 # 2. 実行用関数の定義
 run_cmd() {
-    # 念のためファイルが存在するかチェック
     if [ ! -f "$SCRIPT_DIR/$COMPOSE_FILE" ]; then
         echo -e "\e[31m[ERROR] $COMPOSE_FILE が見つかりません。\e[0m"
         exit 1
@@ -48,7 +47,7 @@ run_cmd() {
 echo "1) [DB]     マイグレーション実行 (テーブル作成)"
 echo "2) [Import] Tiper データのインポート"
 echo "3) [Import] Bic-saving データのインポート"
-echo "4) [Import] Bicstation データのインポート"
+echo "4) [Import] Bicstation データの同期 (API取得 + マッピング)"
 echo "5) [Import] AV-Flash データのインポート"
 echo "6) [Admin]  スーパーユーザー(管理者)の作成"
 echo "7) 終了"
@@ -72,16 +71,22 @@ case $CHOICE in
         run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
         ;;
     4)
-        echo -e "${COLOR}⚙️  Bicstationデータのインポートを開始します...${RESET}"
-        # run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
-        # A. Dell専用インポーター (FTP方式) を実行
-        echo "   >> [1/2] Dell製品のスペック解析(FTP)を実行中..."
-        run_cmd python manage.py import_dell_ftp # 最初はテスト用にlimitを付けてもOK
+        echo -e "${COLOR}⚙️  Bicstation同期プロセスを開始します...${RESET}"
         
-        # B. 既存のAPIパーサーを実行
-        echo "   >> [2/2] その他のBicstation加盟店(API)を取得中..."
-        # CONTAINER_NAMEがdjango-v2なので、run_cmd経由で実行するのが安全です
-        # run_cmd python manage.py linkshare_bc_api_parser --mid-list
+        # ステップ1: APIから生データを取得してBcLinkshareProductに保存
+        # 35909 は HP Directplus
+        echo "   >> [1/2] APIから最新の製品情報を取得中 (HP)..."
+        run_cmd python manage.py linkshare_bc_api_parser --mid 35909 --save-db
+        # run_cmd python manage.py linkshare_bc_api_parser --mid 35909 --show-raw
+
+        # ステップ2: 保存された生データからPCProductへマッピング同期
+        # --maker HP 引数でHP製品のみを対象に実行
+        echo "   >> [2/2] 生データからカタログ(PCProduct)への同期を実行中 (HP)..."
+        run_cmd python manage.py sync_products_from_raw --maker HP
+
+        # 必要に応じてDell等も追加可能
+        # echo "   >> Dellの同期を実行中..."
+        # run_cmd python manage.py sync_products_from_raw --maker DELL
         ;;
         
     5)

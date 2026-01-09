@@ -1,0 +1,124 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
+// @ts-nocheck 
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+import React from 'react';
+import Link from 'next/link';
+import ProductCard from '@/components/product/ProductCard';
+import Sidebar from '@/components/layout/Sidebar';
+import Pagination from '@/components/common/Pagination';
+import { fetchPostList, fetchPCProducts } from '@/lib/api'; 
+import styles from './MainPage.module.css';
+
+// --- ユーティリティ ---
+const decodeHtml = (html: string) => {
+    if (!html) return '';
+    const map: { [key: string]: string } = { 
+        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
+    };
+    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
+        .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
+};
+
+// --- メインページコンポーネント ---
+export default async function Page(props: { searchParams: Promise<{ offset?: string }> }) {
+    const searchParams = await props.searchParams;
+    const currentOffset = parseInt(searchParams.offset || '0', 10);
+    const limit = 10;
+
+    // ✅ 両方のAPIを並列取得 (戻り値の形式に合わせて修正)
+    const [wpData, pcData] = await Promise.all([
+        fetchPostList(5),
+        fetchPCProducts('Lenovo', currentOffset, limit)
+    ]);
+
+    const posts = wpData.results || [];
+    const wpDebugUrl = wpData.debugUrl || 'URL not found';
+
+    return (
+        <div className={styles.wrapper}>
+            
+            <Sidebar activeMenu="lenovo" />
+
+            <main className={styles.main}>
+                
+                {/* 🛠️ デバッグパネル (DjangoとWordPressの両方のURLを表示) */}
+                <div className={styles.debugPanel} style={{ backgroundColor: '#f0f4f8', padding: '15px', borderRadius: '8px', fontSize: '12px', marginBottom: '20px', border: '1px solid #ccc', lineHeight: '1.6' }}>
+                    <div>
+                        <strong style={{ color: '#2b6cb0' }}>🛒 Django API:</strong> {pcData.results.length > 0 ? `✅ OK (${pcData.count} items)` : '❌ Failed'}
+                        <br />
+                        <code> {pcData.debugUrl}</code>
+                    </div>
+                    <hr style={{ margin: '10px 0', border: '0', borderTop: '1px solid #ddd' }} />
+                    <div>
+                        <strong style={{ color: '#c53030' }}>📝 WP Status:</strong> {posts.length > 0 ? `✅ ${posts.length} items` : '⚠️ No data'}
+                        <br />
+                        <strong style={{ color: '#c53030' }}>🔗 WP URL:</strong> <code style={{ color: '#d63384', fontWeight: 'bold' }}>{wpDebugUrl}</code>
+                    </div>
+                </div>
+
+                {/* WordPress お知らせセクション */}
+                <section style={{ marginBottom: '50px' }}>
+                    <h2 className={styles.sectionTitle}>
+                        <span style={{ marginRight: '8px' }}>📢</span> 最新のお知らせ
+                    </h2>
+                    <div className={styles.newsContainer}>
+                        {posts.length === 0 ? (
+                            <div style={{ padding: '20px', color: '#666', background: '#fffbe6', border: '1px dashed #ffe58f', borderRadius: '8px' }}>
+                                <p style={{ fontWeight: 'bold', color: '#856404' }}>現在、表示できるお知らせはありません。</p>
+                                <p style={{ fontSize: '12px', marginTop: '10px' }}>
+                                    表示されている <strong>WP URL</strong> をコピーしてブラウザで直接開き、データが出るか確認してください。
+                                </p>
+                            </div>
+                        ) : (
+                            posts.map((post) => (
+                                <Link 
+                                    href={`/bicstation/${post.slug}`} 
+                                    key={post.id} 
+                                    className={styles.newsLink}
+                                >
+                                    <div className={styles.newsDate}>
+                                        {new Date(post.date).toLocaleDateString('ja-JP')}
+                                    </div>
+                                    <div style={{ fontWeight: '500' }}>{decodeHtml(post.title.rendered)}</div>
+                                </Link>
+                            ))
+                        )}
+                    </div>
+                </section>
+
+                {/* Django 製品一覧セクション */}
+                <section>
+                    <h2 className={styles.productGridTitle}>
+                        <span className={styles.titleIndicator}></span>
+                        Lenovo 製品ラインナップ
+                    </h2>
+
+                    {pcData.results.length === 0 ? (
+                        <div style={{ padding: '40px', textAlign: 'center', color: '#666', background: '#fff', borderRadius: '10px' }}>
+                            <p>データを読み込み中、または取得に失敗しました。</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className={styles.productGrid}>
+                                {pcData.results.map((product) => (
+                                    <ProductCard key={product.id} product={product} />
+                                ))}
+                            </div>
+
+                            <Pagination 
+                                currentOffset={currentOffset}
+                                limit={limit}
+                                totalCount={pcData.count}
+                                baseUrl="/"
+                            />
+                        </>
+                    )}
+                </section>
+            </main>
+        </div>
+    );
+}

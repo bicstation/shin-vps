@@ -20,46 +20,33 @@ const decodeHtml = (html: string) => {
         '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
     };
     return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
-        .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
+        .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || map[match] || match);
 };
 
 // --- メインページコンポーネント ---
 export default async function Page(props: { searchParams: Promise<{ offset?: string }> }) {
-    const searchParams = await props.searchParams;
-    const currentOffset = parseInt(searchParams.offset || '0', 10);
+    const searchParams = await props.params; // Next.jsの最新仕様に合わせる場合はawait
+    const params = await props.searchParams;
+    const currentOffset = parseInt(params.offset || '0', 10);
     const limit = 10;
 
-    // ✅ 両方のAPIを並列取得 (戻り値の形式に合わせて修正)
+    // ✅ 両方のAPIを並列取得
+    // デフォルトのトップページ表示として 'Dell' を指定する構成にしています
     const [wpData, pcData] = await Promise.all([
         fetchPostList(5),
-        fetchPCProducts('Lenovo', currentOffset, limit)
+        fetchPCProducts('Dell', currentOffset, limit) 
     ]);
 
     const posts = wpData.results || [];
-    const wpDebugUrl = wpData.debugUrl || 'URL not found';
 
     return (
         <div className={styles.wrapper}>
             
-            <Sidebar activeMenu="lenovo" />
+            {/* サイドバーのactiveMenuをdellに設定 */}
+            <Sidebar activeMenu="dell" />
 
             <main className={styles.main}>
-                
-                {/* 🛠️ デバッグパネル (DjangoとWordPressの両方のURLを表示) */}
-                <div className={styles.debugPanel} style={{ backgroundColor: '#f0f4f8', padding: '15px', borderRadius: '8px', fontSize: '12px', marginBottom: '20px', border: '1px solid #ccc', lineHeight: '1.6' }}>
-                    <div>
-                        <strong style={{ color: '#2b6cb0' }}>🛒 Django API:</strong> {pcData.results.length > 0 ? `✅ OK (${pcData.count} items)` : '❌ Failed'}
-                        <br />
-                        <code> {pcData.debugUrl}</code>
-                    </div>
-                    <hr style={{ margin: '10px 0', border: '0', borderTop: '1px solid #ddd' }} />
-                    <div>
-                        <strong style={{ color: '#c53030' }}>📝 WP Status:</strong> {posts.length > 0 ? `✅ ${posts.length} items` : '⚠️ No data'}
-                        <br />
-                        <strong style={{ color: '#c53030' }}>🔗 WP URL:</strong> <code style={{ color: '#d63384', fontWeight: 'bold' }}>{wpDebugUrl}</code>
-                    </div>
-                </div>
-
+               
                 {/* WordPress お知らせセクション */}
                 <section style={{ marginBottom: '50px' }}>
                     <h2 className={styles.sectionTitle}>
@@ -67,11 +54,8 @@ export default async function Page(props: { searchParams: Promise<{ offset?: str
                     </h2>
                     <div className={styles.newsContainer}>
                         {posts.length === 0 ? (
-                            <div style={{ padding: '20px', color: '#666', background: '#fffbe6', border: '1px dashed #ffe58f', borderRadius: '8px' }}>
-                                <p style={{ fontWeight: 'bold', color: '#856404' }}>現在、表示できるお知らせはありません。</p>
-                                <p style={{ fontSize: '12px', marginTop: '10px' }}>
-                                    表示されている <strong>WP URL</strong> をコピーしてブラウザで直接開き、データが出るか確認してください。
-                                </p>
+                            <div style={{ padding: '20px', color: '#666', background: '#f9f9f9', border: '1px solid #ddd', borderRadius: '8px' }}>
+                                <p>現在、表示できるお知らせはありません。</p>
                             </div>
                         ) : (
                             posts.map((post) => (
@@ -94,17 +78,20 @@ export default async function Page(props: { searchParams: Promise<{ offset?: str
                 <section>
                     <h2 className={styles.productGridTitle}>
                         <span className={styles.titleIndicator}></span>
-                        Lenovo 製品ラインナップ
+                        製品ラインナップ
                     </h2>
 
                     {pcData.results.length === 0 ? (
                         <div style={{ padding: '40px', textAlign: 'center', color: '#666', background: '#fff', borderRadius: '10px' }}>
-                            <p>データを読み込み中、または取得に失敗しました。</p>
+                            <p>製品データを読み込み中、または取得できる製品がありません。</p>
                         </div>
                     ) : (
                         <>
                             <div className={styles.productGrid}>
                                 {pcData.results.map((product) => (
+                                    /* ProductCard内部でデル判定が行われ、
+                                       適切なアフィリエイトリンク（個別またはデフォルト）が生成されます
+                                    */
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>

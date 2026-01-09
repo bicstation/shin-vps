@@ -11,8 +11,8 @@ import styles from './ProductDetail.module.css';
 
 /**
  * ISR (Incremental Static Regeneration)
- * 3600秒（1時間）ごとにバックグラウンドで再ビルドを行い、
- * Python側で更新された ai_content や価格を自動で反映させます。
+ * 1時間ごとにバックグラウンドで再ビルドを行い、
+ * 価格やAI生成コンテンツの更新を反映させます。
  */
 export const revalidate = 3600;
 
@@ -43,45 +43,57 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     // --- アフィリエイトリンク生成ロジック ---
     let finalUrl = product.url;
     let beacon: React.ReactNode = null;
-    let linkSource = "Original URL"; // デバッグ用
 
     const makerLower = product.maker.toLowerCase();
     const isLenovo = makerLower.includes('lenovo');
     const isDell = makerLower.includes('dell');
     const isHP = makerLower.includes('hp');
 
+    // ビーコン共通スタイル（ビルドエラー回避と非表示化）
+    const beaconStyle: React.CSSProperties = { 
+        border: 'none', 
+        display: 'none',
+        visibility: 'hidden'
+    };
+
     if (isDell) {
-        // --- Dell (LinkShare) 修正版 ---
-        // 1. まずDBにアフィリエイトURL（affiliate_url）があるか確認
+        // --- Dell (LinkShare) ---
         if (product.affiliate_url) {
             finalUrl = product.affiliate_url;
-            linkSource = "DB Affiliate URL";
+            const bidMatch = product.affiliate_url.match(/bids=([^&]+)/);
+            if (bidMatch) {
+                beacon = (
+                    <img 
+                        src={`https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=${bidMatch[1]}&type=15&subid=0`} 
+                        width="1" height="1" alt="" 
+                        style={beaconStyle}
+                    />
+                );
+            }
         } else {
-            // 2. なければ従来通りDeepLinkを生成（フォールバック）
-            const yourId = "nNBA6GzaGrQ";
-            const offerId = "1568114"; 
-            const linkId = product.unique_id;
-            const decodedUrl = product.url.includes('%') ? decodeURIComponent(product.url) : product.url;
-            const encodedProductUrl = encodeURIComponent(decodedUrl);
-            
-            finalUrl = `https://click.linksynergy.com/link?id=${yourId}&offerid=${offerId}.${linkId}&type=15&murl=${encodedProductUrl}`;
-            linkSource = "Generated DeepLink";
+            // デフォルト: 今週のおすすめ製品
+            finalUrl = "https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0";
+            beacon = (
+                <img 
+                    src="https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0" 
+                    width="1" height="1" alt="" 
+                    style={beaconStyle}
+                />
+            );
         }
-        beacon = null; 
     } else if (isHP || isLenovo) {
-        // --- HP / Lenovo (ValueCommerce) MyLink構築 ---
+        // --- HP / Lenovo (ValueCommerce) ---
         const sid = "3697471";
         const pid = "892455531";
         const decodedUrl = product.url.includes('%') ? decodeURIComponent(product.url) : product.url;
         const encodedUrl = encodeURIComponent(decodedUrl);
         
-        finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encodedUrl}`;
-        linkSource = "ValueCommerce MyLink";
+        finalUrl = `https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url=${encodedUrl}`;
         beacon = (
             <img 
                 src={`//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=${sid}&pid=${pid}`} 
                 height={1} width={1} alt="" 
-                style={{ display: 'none', border: 'none' }} 
+                style={beaconStyle} 
             />
         );
     }
@@ -92,24 +104,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     } as React.CSSProperties;
 
     const buttonLabel = `${product.maker}公式サイトで詳細を見る`;
-
-    // デバッグ用表示コンポーネント
-    const DebugLinkBox = () => (
-        <div style={{
-            marginTop: '15px',
-            padding: '10px',
-            background: '#f8f9fa',
-            border: '1px dashed #ced4da',
-            borderRadius: '6px',
-            fontSize: '11px',
-            color: '#6c757d',
-            wordBreak: 'break-all',
-            fontFamily: 'monospace'
-        }}>
-            <strong>[DEBUG] Source: {linkSource}</strong><br />
-            {finalUrl}
-        </div>
-    );
 
     return (
         <div className={styles.wrapper} style={dynamicStyle}>
@@ -162,9 +156,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             {buttonLabel}
                             {beacon}
                         </a>
-                        
-                        {/* デバッグ表示 */}
-                        <DebugLinkBox />
                     </div>
                 </div>
 
@@ -212,9 +203,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             {buttonLabel}
                             {beacon}
                         </a>
-                        <div style={{ maxWidth: '450px', margin: '0 auto' }}>
-                            <DebugLinkBox />
-                        </div>
                     </div>
                 </div>
             </main>

@@ -10,7 +10,7 @@ from django.core.files.temp import NamedTemporaryFile
 import urllib.parse
 
 class Command(BaseCommand):
-    help = 'Gemini/Gemmaをローテーションし、DBからリンクを取得してWP投稿するスクリプト'
+    help = 'Gemini/Gemmaをローテーションし、デルのデフォルトリンクを考慮してWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -27,10 +27,9 @@ class Command(BaseCommand):
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
         MODELS = [
-            "gemini-3-flash-preview",
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite",
-            "gemma-3-12b-it" 
+            "gemini-1.5-flash",  # 最新の安定版識別子を推奨
+            "gemini-1.5-pro",
+            "gemma-2-27b-it" 
         ]
 
         CAT_LENOVO, CAT_DELL, CAT_HP = 4, 7, 8
@@ -64,8 +63,9 @@ class Command(BaseCommand):
             target_cats = [1]
         
         name_lower = product.name.lower()
-        target_tags = [TAG_DESKTOP if any(k in name_lower for k in ["desktop", "tower", "station", "aio", "tiny", "center"]) else TAG_LAPTOP]
+        target_tags = [TAG_DESKTOP if any(k in name_lower for k in ["desktop", "tower", "station", "aio", "tiny", "center", "poweredge"]) else TAG_LAPTOP]
 
+        # 自社サイト（Next.js側）の詳細ページURL
         bic_detail_url = f"{H}{C}{S}{S}bicstation.com{S}product{S}{product.unique_id}{S}"
 
         # ==========================================
@@ -144,6 +144,7 @@ class Command(BaseCommand):
             text = text.replace('#', '').strip()
             return text
 
+        # AIの回答から不要なマークダウン記号を削除
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
@@ -151,46 +152,36 @@ class Command(BaseCommand):
         main_body_html = '\n'.join(lines[1:]).strip()
 
         # --- アフィリエイトリンク生成ロジックの修正 ---
-        vc_beacon = ""
+        affiliate_url = ""
+        tracking_beacon = ""
+        button_text = ""
         
         if 'dell' in maker_low:
-            # テーブル（DB）にアフィリエイトリンクがある場合はそれを使用
             if hasattr(product, 'affiliate_url') and product.affiliate_url:
+                # 1. DBに個別URLがある場合
                 affiliate_url = product.affiliate_url
-                self.stdout.write(f"🔗 Dellリンク: DBから取得しました。")
+                # リンクからbidsを抽出してビーコンを生成（任意）
+                bid_match = re.search(r'bids=([^&]+)', affiliate_url)
+                if bid_match:
+                    bid = bid_match.group(1)
+                    tracking_beacon = f'<img border="0" width="1" height="1" src="https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids={bid}&type=15&subid=0" >'
             else:
-                # DBにない場合のフォールバック（DeepLink生成）
-                your_id = "nNBA6GzaGrQ"
-                offer_prefix = "1568114"
-                raw_url = urllib.parse.unquote(product.url)
-                encoded_product_url = urllib.parse.quote(raw_url, safe='')
-                affiliate_url = f"https://click.linksynergy.com/link?id={your_id}&offerid={offer_prefix}.{product.unique_id}&type=15&murl={encoded_product_url}"
-                self.stdout.write(f"🔗 Dellリンク: 手動生成しました。")
+                # 2. フォールバック: 「今週のおすすめ製品」デフォルトリンク
+                affiliate_url = "https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0"
+                tracking_beacon = '<img border="0" width="1" height="1" src="https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0" >'
             
             button_text = "Dell公式サイトで見る ＞"
 
-        elif 'hp' in maker_low:
+        elif 'hp' in maker_low or 'lenovo' in maker_low:
+            # ValueCommerce MyLink
             sid, pid = "3697471", "892455531"
             raw_url = urllib.parse.unquote(product.url)
             encoded_url = urllib.parse.quote(raw_url, safe='')
             affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
-            vc_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
-            button_text = "HP公式サイトで見る ＞"
-        else:
-            sid, pid = "3697471", "892455531"
-            raw_url = urllib.parse.unquote(product.url)
-            encoded_url = urllib.parse.quote(raw_url, safe='')
-            affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
-            vc_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
-            button_text = "Lenovo公式サイトで見る ＞"
+            tracking_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
+            button_text = f"{product.maker}公式サイトで見る ＞"
 
-        debug_info_html = f"""
-        <div style="margin-top: 15px; padding: 10px; background: #f3f4f6; border-radius: 6px; font-size: 0.8em; color: #4b5563; word-break: break-all; border: 1px dashed #d1d5db;">
-            <strong>【デバッグ用】リンクソース:</strong><br>
-            {affiliate_url}
-        </div>
-        """
-
+        # --- 投稿用パーツ作成 ---
         custom_card_html = f"""
         <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
@@ -205,14 +196,13 @@ class Command(BaseCommand):
                     <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
                         <a href="{affiliate_url}" target="_blank" rel="nofollow noopener noreferrer" 
                            style="flex: 1; min-width: 140px; background-color: #ef4444; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                            {button_text}{vc_beacon}
+                            {button_text}{tracking_beacon}
                         </a>
                         <a href="{bic_detail_url}" target="_blank"
                            style="flex: 1; min-width: 140px; background-color: #1f2937; color: #ffffff; text-align: center; padding: 14px 10px; border-radius: 8px; text-decoration: none; font-weight: bold;">
                             詳細スペックを見る ＞
                         </a>
                     </div>
-                    {debug_info_html}
                 </div>
             </div>
         </div>
