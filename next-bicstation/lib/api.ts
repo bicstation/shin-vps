@@ -34,11 +34,21 @@ const getDjangoBaseUrl = () => {
     return 'http://localhost:8083';
 };
 
-// --- 型定義 ---
+// --- 型定義の修正 ---
 export interface PCProduct {
-    id: number; unique_id: string; site_prefix: string; maker: string;
-    name: string; price: number; image_url: string; url: string;
-    description: string; stock_status: string; unified_genre: string;
+    id: number;
+    unique_id: string;
+    site_prefix: string;
+    maker: string;
+    name: string;
+    price: number;
+    image_url: string;
+    url: string;           // 直リンクURL
+    affiliate_url: string; // 🚀 追加：正式アフィリエイトURL
+    description: string;
+    ai_content: string;    // 🚀 追加：AI生成コンテンツ
+    stock_status: string;
+    unified_genre: string;
 }
 
 /**
@@ -101,11 +111,14 @@ export async function fetchPCProducts(maker = 'lenovo', offset = 0, limit = 10) 
     } catch (e) { return { results: [], count: 0 }; }
 }
 
-export async function fetchProductDetail(unique_id: string) {
+export async function fetchProductDetail(unique_id: string): Promise<PCProduct | null> {
     const rootUrl = getDjangoBaseUrl();
     const url = `${rootUrl}/api/pc-products/${unique_id}/`;
     try {
-        const res = await fetch(url, { headers: { 'Host': 'localhost' } });
+        const res = await fetch(url, { 
+            headers: { 'Host': 'localhost' },
+            next: { revalidate: 3600 } 
+        });
         return res.ok ? await res.json() : null;
     } catch (e) { return null; }
 }
