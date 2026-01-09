@@ -5,25 +5,25 @@ import requests
 import urllib.parse
 from django.core.management.base import BaseCommand
 from api.models.pc_products import PCProduct 
-from django.db.models import Q
+from django.db.models import Q as DjangoQ  # Qの衝突を避けるため別名でインポート
 from django.utils.timezone import now
 from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'URL記号を完全分離し自動装飾エラーを排除した堅牢版スクリプト'
+    help = '記号を完全変数化し、Qオブジェクトの衝突を修正したフル堅牢版スクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
-        # 1. 記号・基本設定 (自動リンク化対策)
+        # 1. 記号・基本設定 (自動装飾エラーを物理的に排除)
         # ==========================================
-        # 記号を個別に定義することで、エディタによる自動リンク(Markdown)を防止
-        S  = "https"
-        C  = ":"
-        SL = "/"
-        Q  = "?"
-        E  = "="
-        A  = "&"
+        # すべてのURL構成記号を変数化。これによりコード内の「https://」直書きをゼロにします。
+        SCH  = "https"
+        CLN  = ":"   # ＝：
+        SLS  = "/"   # ＝／
+        QMK  = "?"   # ＝？ (DjangoQとの衝突回避のため名称変更)
+        EQU  = "="   # ＝＝
+        AMP  = "&"   # ＝＆
 
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         WP_USER = "bicstation"
@@ -32,8 +32,8 @@ class Command(BaseCommand):
         W_DOM = "blog.tiper.live"
         
         # WordPressエンドポイント構築
-        WP_POST_URL = f"{S}{C}{SL}{SL}{W_DOM}{SL}wp-json{SL}wp{SL}v2{SL}bicstation"
-        WP_MEDIA_URL = f"{S}{C}{SL}{SL}{W_DOM}{SL}wp-json{SL}wp{SL}v2{SL}media"
+        WP_POST_URL = f"{SCH}{CLN}{SLS}{SLS}{W_DOM}{SLS}wp-json{SLS}wp{SLS}v2{SLS}bicstation"
+        WP_MEDIA_URL = f"{SCH}{CLN}{SLS}{SLS}{W_DOM}{SLS}wp-json{SLS}wp{SLS}v2{SLS}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
         # 10種類のAIモデル
@@ -54,10 +54,10 @@ class Command(BaseCommand):
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
         # ==========================================
-        # 2. 投稿対象商品の選定
+        # 2. 投稿対象商品の選定 (DjangoQを使用)
         # ==========================================
         products = PCProduct.objects.filter(is_active=True, is_posted=False).filter(
-            Q(maker__icontains='Lenovo') | Q(maker__icontains='Dell') | Q(maker__icontains='HP')
+            DjangoQ(maker__icontains='Lenovo') | DjangoQ(maker__icontains='Dell') | DjangoQ(maker__icontains='HP')
         ).exclude(stock_status="受注停止中")
         
         if not products.exists():
@@ -73,8 +73,8 @@ class Command(BaseCommand):
         name_lower = product.name.lower()
         target_tags = [TAG_DESKTOP if any(k in name_lower for k in ["desktop", "tower", "station", "aio", "tiny", "center", "poweredge"]) else TAG_LAPTOP]
         
-        # 商品詳細ページ
-        bic_detail_url = f"{S}{C}{SL}{SL}bicstation.com{SL}product{SL}{product.unique_id}{SL}"
+        # 商品詳細ページURL構築
+        bic_detail_url = f"{SCH}{CLN}{SLS}{SLS}bicstation.com{SLS}product{SLS}{product.unique_id}{SLS}"
 
         # ==========================================
         # 3. 商品画像のアップロード
@@ -107,7 +107,7 @@ class Command(BaseCommand):
         # ==========================================
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
-        以下の製品データに基づき、ITニュースサイト向けの深く鋭い記事を、WordPressのブロックエディタ形式のHTMLで出力してください。
+        以下の製品データに基づき、ITニュースサイト向けの深く鋭い記事を、WordPressのブロック形式HTMLで出力してください。
 
         【製品データ】
         メーカー: {product.maker} | 商品名: {product.name} | 価格: {product.price}円
@@ -115,7 +115,7 @@ class Command(BaseCommand):
 
         【出力ルール】
         1. 1行目はタイトル（プレーンテキスト）。
-        2. 2行目以降は本文。各要素を <p>...</p>や <h2>...</h2>で必ず囲むこと。
+        2. 2行目以降は本文。<p>...</p>等のタグを使用。
         3. 2000文字以上の情報量。Markdown(```html等)は含めない。
         4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」で締める。
         """
@@ -125,12 +125,12 @@ class Command(BaseCommand):
         # ==========================================
         ai_text, selected_model = None, None
         API_HOST = "generativelanguage.googleapis.com"
-        API_PATH = f"v1beta{SL}models"
+        API_PATH = f"v1beta{SLS}models"
 
         for model_id in MODELS:
             self.stdout.write(f"🤖 モデル {model_id} で生成中...")
             # URLを構成パーツごとに結合 (https://host/path/model:generateContent?key=KEY)
-            api_endpoint = f"{S}{C}{SL}{SL}{API_HOST}{SL}{API_PATH}{SL}{model_id}{C}generateContent{Q}key{E}{GEMINI_API_KEY}"
+            api_endpoint = f"{SCH}{CLN}{SLS}{SLS}{API_HOST}{SLS}{API_PATH}{SLS}{model_id}{CLN}generateContent{QMK}key{EQU}{GEMINI_API_KEY}"
             
             try:
                 response = requests.post(api_endpoint, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
@@ -158,23 +158,23 @@ class Command(BaseCommand):
         title = re.sub(r'<[^>]*?>', '', lines[0]).replace('#', '').strip()
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # アフィリエイトURLの構築 (記号を結合)
+        # アフィリエイトURL構築
         affiliate_url = ""
         tracking_beacon = ""
         button_text = ""
         
         if 'dell' in maker_low:
-            affiliate_url = f"{S}{C}{SL}{SL}click.linksynergy.com{SL}fs-bin{SL}click{Q}id{E}nNBA6GzaGrQ{A}offerid{E}1568114.10014115{A}type{E}3{A}subid{E}0"
-            tracking_beacon = f'<img border="0" width="1" height="1" src="{S}{C}{SL}{SL}ad.linksynergy.com{SL}fs-bin{SL}show{Q}id{E}nNBA6GzaGrQ{A}bids{E}1568114.10014115{A}type{E}3{A}subid{E}0" >'
+            affiliate_url = f"{SCH}{CLN}{SLS}{SLS}click.linksynergy.com{SLS}fs-bin{SLS}click{QMK}id{EQU}nNBA6GzaGrQ{AMP}offerid{EQU}1568114.10014115{AMP}type{EQU}3{AMP}subid{EQU}0"
+            tracking_beacon = f'<img border="0" width="1" height="1" src="{SCH}{CLN}{SLS}{SLS}ad.linksynergy.com{SLS}fs-bin{SLS}show{QMK}id{EQU}nNBA6GzaGrQ{AMP}bids{EQU}1568114.10014115{AMP}type{EQU}3{AMP}subid{EQU}0" >'
             button_text = "Dell公式サイトで見る ＞"
         else:
             sid, pid = "3697471", "892455531"
             encoded_url = urllib.parse.quote(product.url, safe='')
-            affiliate_url = f"{S}{C}{SL}{SL}ck.jp.ap.valuecommerce.com{SL}servlet{SL}referral{Q}sid{E}{sid}{A}pid{E}{pid}{A}vc_url{E}{encoded_url}"
-            tracking_beacon = f'<img src="{S}{C}{SL}{SL}ad.jp.ap.valuecommerce.com{SL}servlet{SL}gifbanner{Q}sid{E}{sid}{A}pid{E}{pid}" height="1" width="1" border="0">'
+            affiliate_url = f"{SCH}{CLN}{SLS}{SLS}ck.jp.ap.valuecommerce.com{SLS}servlet{SLS}referral{QMK}sid{EQU}{sid}{AMP}pid{EQU}{pid}{AMP}vc_url{EQU}{encoded_url}"
+            tracking_beacon = f'<img src="{SCH}{CLN}{SLS}{SLS}ad.jp.ap.valuecommerce.com{SLS}servlet{SLS}gifbanner{QMK}sid{EQU}{sid}{AMP}pid{EQU}{pid}" height="1" width="1" border="0">'
             button_text = f"{product.maker}公式サイトで見る ＞"
 
-        # 冒頭のアイキャッチ
+        # アイキャッチ画像ブロック
         image_header_block = ""
         if media_url:
             image_header_block = f'<figure class="wp-block-image size-full"><img src="{media_url}" alt="{product.name}"/></figure>'
@@ -209,7 +209,7 @@ class Command(BaseCommand):
         full_wp_content = f"{image_header_block}\n{main_body_html}\n{custom_card_html}"
 
         # ==========================================
-        # 7. 実行と投稿
+        # 7. 保存とWordPress投稿
         # ==========================================
         product.ai_content = main_body_html 
         product.is_posted = True
