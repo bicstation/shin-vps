@@ -11,7 +11,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'Gemini/Gemmaをローテーションし、AI記事をDB保存しつつWP投稿するスクリプト'
+    help = 'Gemini/Gemma 6種類をローテーションし、AI記事をDB保存しつつWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -21,18 +21,20 @@ class Command(BaseCommand):
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
-        H, C, S = "https", ":", "/"
         W_DOM = "blog.tiper.live"
-        WP_POST_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}bicstation"
-        WP_MEDIA_URL = f"{H}{C}{S}{S}{W_DOM}{S}wp-json{S}wp/v2{S}media"
+        WP_POST_URL = f"https://{W_DOM}/wp-json/wp/v2/bicstation"
+        WP_MEDIA_URL = f"https://{W_DOM}/wp-json/wp/v2/media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # モデルのローテーション設定
+        # 💡 6種類のモデルローテーション設定
+        # 最新の2.0系から安定版、プレビュー版までを網羅
         MODELS = [
-            "gemini-2.0-flash",       # 高速・最新
-            "gemini-2.0-flash-lite",  # 軽量版
-            "gemini-3-flash-preview",  # 次世代プレビュー
-            "gemma-3-27b-it",
+            "gemini-2.0-flash",           # 最新・超高速
+            "gemini-2.0-flash-lite",      # 最新・軽量
+            "gemma-3-27b-it",             # 最新Gemma
+            "gemini-1.5-flash",           # 安定版
+            "gemini-1.5-pro",             # 高精度版
+            "gemini-3-flash-preview",     # 次世代プレビュー
         ]
 
         # WordPress側のカテゴリID・タグID設定
@@ -42,7 +44,6 @@ class Command(BaseCommand):
         # ==========================================
         # 2. 投稿対象商品の選定
         # ==========================================
-        # 未投稿かつ掲載中の製品からランダムに1つ抽出
         products = PCProduct.objects.filter(
             is_active=True,
             is_posted=False
@@ -68,12 +69,12 @@ class Command(BaseCommand):
         else:
             target_cats = [1]
         
-        # タグ判定（デスクトップ vs ノート）
+        # タグ判定
         name_lower = product.name.lower()
         target_tags = [TAG_DESKTOP if any(k in name_lower for k in ["desktop", "tower", "station", "aio", "tiny", "center", "poweredge"]) else TAG_LAPTOP]
 
-        # 自社サイト（Next.js側）の詳細ページURL
-        bic_detail_url = f"{H}{C}{S}{S}bicstation.com{S}product{S}{product.unique_id}{S}"
+        # 詳細ページURL
+        bic_detail_url = f"https://bicstation.com/product/{product.unique_id}/"
 
         # ==========================================
         # 3. 商品画像のアップロード
@@ -107,14 +108,14 @@ class Command(BaseCommand):
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
         以下の製品データに基づき、ITニュースサイト向けの深く鋭い、純粋な「HTMLソースコードのみ」を出力してください。
-        Markdownや解説文は一切不要です。
+        Markdownや解説文、```html などの囲みは一切不要です。
 
         【製品データ】
         メーカー: {product.maker} | 商品名: {product.name} | 価格: {product.price}円
         スペック詳細: {product.description}
 
         【出力構成ルール】
-        1. 1行目は記事のタイトル（装飾なし、テキストのみ。h1タグなどは含めない）。
+        1. 1行目は記事のタイトル（タグなし、プレーンテキストのみ）。
         2. 本文は必ず <h2> や <h3> タグを使用して構成してください。
         3. 2000文字以上の情報量で記述。
         4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締める。
@@ -124,39 +125,47 @@ class Command(BaseCommand):
         # 5. AI実行 (ローテーション)
         # ==========================================
         ai_text, selected_model = None, None
-        G_DOM, G_PATH = "generativelanguage.googleapis.com", "v1/models"
 
         for model_id in MODELS:
             self.stdout.write(f"🤖 モデル {model_id} で生成中...")
-            api_url = f"{H}{C}{S}{S}{G_DOM}{S}{G_PATH}{S}{model_id}:generateContent?key={GEMINI_API_KEY}"
+            # エンドポイントは汎用性の高い v1beta を使用
+            api_url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_id}:generateContent?key={GEMINI_API_KEY}"
+            
             try:
                 response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
                 res_json = response.json()
+                
                 if 'candidates' in res_json and len(res_json['candidates']) > 0:
                     ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
                     selected_model = model_id
+                    self.stdout.write(self.style.SUCCESS(f"✨ {model_id} での生成に成功しました。"))
                     break
+                else:
+                    error_msg = res_json.get('error', {}).get('message', 'Unknown Error')
+                    self.stdout.write(self.style.WARNING(f"⚠️ {model_id} 失敗: {error_msg}"))
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f"通信エラー ({model_id}): {e}"))
+                self.stdout.write(self.style.ERROR(f"❌ 通信エラー ({model_id}): {e}"))
                 continue
 
         if not ai_text:
-            self.stdout.write(self.style.ERROR("すべてのモデルで生成に失敗しました。"))
+            self.stdout.write(self.style.ERROR("🚨 すべてのモデルで生成に失敗しました。"))
             return
 
         # ==========================================
         # 6. 整形とアフィリエイト組み込み
         # ==========================================
-        def clean_title(text):
-            text = re.sub(r'<[^>]*?>', '', text)
-            text = text.replace('#', '').strip()
-            return text
+        def clean_tags(text):
+            return re.sub(r'<[^>]*?>', '', text).replace('#', '').strip()
 
         # AIの回答から不要なマークダウン記号を削除
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
-        title = clean_title(lines[0])
+        if not lines:
+            self.stdout.write(self.style.ERROR("生成されたテキストが空です。"))
+            return
+
+        title = clean_tags(lines[0])
         main_body_html = '\n'.join(lines[1:]).strip()
 
         # アフィリエイトリンク生成
@@ -165,29 +174,26 @@ class Command(BaseCommand):
         button_text = ""
         
         if 'dell' in maker_low:
-            # Dell LinkShare対応
             if hasattr(product, 'affiliate_url') and product.affiliate_url:
                 affiliate_url = product.affiliate_url
                 bid_match = re.search(r'bids=([^&]+)', affiliate_url)
                 if bid_match:
                     bid = bid_match.group(1)
-                    tracking_beacon = f'<img border="0" width="1" height="1" src="https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids={bid}&type=15&subid=0" >'
+                    tracking_beacon = f'<img border="0" width="1" height="1" src="[https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=](https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=){bid}&type=15&subid=0" >'
             else:
-                # デフォルトリンク
-                affiliate_url = "https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0"
-                tracking_beacon = '<img border="0" width="1" height="1" src="https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0" >'
+                affiliate_url = "[https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0](https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0)"
+                tracking_beacon = '<img border="0" width="1" height="1" src="[https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0](https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0)" >'
             button_text = "Dell公式サイトで見る ＞"
 
         elif 'hp' in maker_low or 'lenovo' in maker_low:
-            # ValueCommerce MyLink対応
             sid, pid = "3697471", "892455531"
             raw_url = urllib.parse.unquote(product.url)
             encoded_url = urllib.parse.quote(raw_url, safe='')
-            affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
-            tracking_beacon = f'<img src="//ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
+            affiliate_url = f"[https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=](https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=){sid}&pid={pid}&vc_url={encoded_url}"
+            tracking_beacon = f'<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=){sid}&pid={pid}" height="1" width="1" border="0">'
             button_text = f"{product.maker}公式サイトで見る ＞"
 
-        # --- WordPress投稿用のアフィリエイトカード作成 ---
+        # WordPress用カードHTML
         custom_card_html = f"""
         <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
@@ -217,9 +223,8 @@ class Command(BaseCommand):
         full_wp_content = f"{main_body_html}\n{custom_card_html}"
 
         # ==========================================
-        # 7. Django DBへの保存 (個別ページ表示用)
+        # 7. Django DBへの保存
         # ==========================================
-        # 💡 ここで ai_content に生成されたHTMLを保存します
         product.ai_content = main_body_html 
         product.is_posted = True
         product.save()
