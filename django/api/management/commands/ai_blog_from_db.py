@@ -11,22 +11,32 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'Gemini/Gemma 10種ローテーション・URLエラー修正・スペックカード画像維持版'
+    help = 'URL記号を完全分離し自動装飾エラーを排除した堅牢版スクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
-        # 1. 基本設定・認証情報
+        # 1. 記号・基本設定 (自動リンク化対策)
         # ==========================================
+        # 記号を個別に定義することで、エディタによる自動リンク(Markdown)を防止
+        S  = "https"
+        C  = ":"
+        SL = "/"
+        Q  = "?"
+        E  = "="
+        A  = "&"
+
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         
         W_DOM = "blog.tiper.live"
-        WP_POST_URL = f"https://{W_DOM}/wp-json/wp/v2/bicstation"
-        WP_MEDIA_URL = f"https://{W_DOM}/wp-json/wp/v2/media"
+        
+        # WordPressエンドポイント構築
+        WP_POST_URL = f"{S}{C}{SL}{SL}{W_DOM}{SL}wp-json{SL}wp{SL}v2{SL}bicstation"
+        WP_MEDIA_URL = f"{S}{C}{SL}{SL}{W_DOM}{SL}wp-json{SL}wp{SL}v2{SL}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # 💡 失敗に強い10種類のモデルローテーション
+        # 10種類のAIモデル
         MODELS = [
             "gemma-3-27b-it",
             "gemini-2.0-flash",
@@ -46,15 +56,12 @@ class Command(BaseCommand):
         # ==========================================
         # 2. 投稿対象商品の選定
         # ==========================================
-        products = PCProduct.objects.filter(
-            is_active=True,
-            is_posted=False
-        ).filter(
+        products = PCProduct.objects.filter(is_active=True, is_posted=False).filter(
             Q(maker__icontains='Lenovo') | Q(maker__icontains='Dell') | Q(maker__icontains='HP')
         ).exclude(stock_status="受注停止中")
         
         if not products.exists():
-            self.stdout.write(self.style.ERROR("未投稿の対象製品がDBに見当たりませんでした。"))
+            self.stdout.write(self.style.ERROR("未投稿の対象製品が見つかりません。"))
             return
 
         product = random.choice(products)
@@ -65,9 +72,9 @@ class Command(BaseCommand):
         target_cats = [CAT_LENOVO if 'lenovo' in maker_low else CAT_DELL if 'dell' in maker_low else CAT_HP if 'hp' in maker_low else 1]
         name_lower = product.name.lower()
         target_tags = [TAG_DESKTOP if any(k in name_lower for k in ["desktop", "tower", "station", "aio", "tiny", "center", "poweredge"]) else TAG_LAPTOP]
-
-        # 詳細ページURL
-        bic_detail_url = f"https://bicstation.com/product/{product.unique_id}/"
+        
+        # 商品詳細ページ
+        bic_detail_url = f"{S}{C}{SL}{SL}bicstation.com{SL}product{SL}{product.unique_id}{SL}"
 
         # ==========================================
         # 3. 商品画像のアップロード
@@ -96,33 +103,34 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
         # ==========================================
-        # 4. AIプロンプト (Gutenberg最適化)
+        # 4. AIプロンプト
         # ==========================================
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
-        以下の製品データに基づき、ITニュースサイト向けの深く鋭い記事を、WordPressのブロックエディタ形式のHTMLのみで出力してください。
+        以下の製品データに基づき、ITニュースサイト向けの深く鋭い記事を、WordPressのブロックエディタ形式のHTMLで出力してください。
 
         【製品データ】
         メーカー: {product.maker} | 商品名: {product.name} | 価格: {product.price}円
         スペック詳細: {product.description}
 
         【出力ルール】
-        1. 1行目は記事のタイトル（プレーンテキスト）。
+        1. 1行目はタイトル（プレーンテキスト）。
         2. 2行目以降は本文。各要素を <p>...</p>や <h2>...</h2>で必ず囲むこと。
-        3. 2000文字以上の情報量で記述。
-        4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締める。
-        5. 解説やMarkdownの囲み(```html等)は一切含めない。
+        3. 2000文字以上の情報量。Markdown(```html等)は含めない。
+        4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」で締める。
         """
 
         # ==========================================
-        # 5. AI実行 (ローテーション)
+        # 5. AI実行 (記号分離型URL構築)
         # ==========================================
         ai_text, selected_model = None, None
+        API_HOST = "generativelanguage.googleapis.com"
+        API_PATH = f"v1beta{SL}models"
 
         for model_id in MODELS:
             self.stdout.write(f"🤖 モデル {model_id} で生成中...")
-            # ⚠️ URLに余計な記号が混じらないよう、純粋なf-stringで構築
-            api_endpoint = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_id}:generateContent?key={GEMINI_API_KEY}"
+            # URLを構成パーツごとに結合 (https://host/path/model:generateContent?key=KEY)
+            api_endpoint = f"{S}{C}{SL}{SL}{API_HOST}{SL}{API_PATH}{SL}{model_id}{C}generateContent{Q}key{E}{GEMINI_API_KEY}"
             
             try:
                 response = requests.post(api_endpoint, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
@@ -134,57 +142,46 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(f"✨ {model_id} 生成成功"))
                     break
                 else:
-                    error_msg = res_json.get('error', {}).get('message', 'Unknown Error')
-                    self.stdout.write(self.style.WARNING(f"⚠️ {model_id} 失敗: {error_msg[:50]}"))
+                    self.stdout.write(self.style.WARNING(f"⚠️ {model_id} 失敗"))
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f"❌ 通信エラー ({model_id}): {e}"))
+                self.stdout.write(self.style.ERROR(f"❌ 通信エラー ({model_id})"))
                 continue
 
         if not ai_text:
-            self.stdout.write(self.style.ERROR("🚨 すべてのモデルで生成に失敗しました。"))
             return
 
         # ==========================================
-        # 6. 整形とアフィリエイトURLの浄化
+        # 6. 整形とアフィリエイトURLの構築
         # ==========================================
-        # 不要な記号のクリーンアップ
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
-        
-        if not lines:
-            return
-
         title = re.sub(r'<[^>]*?>', '', lines[0]).replace('#', '').strip()
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # アフィリエイトURLの生成（URLのノイズをreplaceで除去）
+        # アフィリエイトURLの構築 (記号を結合)
         affiliate_url = ""
         tracking_beacon = ""
         button_text = ""
         
         if 'dell' in maker_low:
-            raw_url = product.affiliate_url if hasattr(product, 'affiliate_url') and product.affiliate_url else "[https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0](https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0)"
-            affiliate_url = raw_url.strip().replace('(', '').replace(')', '').replace('[', '').replace(']', '')
-            tracking_beacon = '<img border="0" width="1" height="1" src="[https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0](https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0)" >'
+            affiliate_url = f"{S}{C}{SL}{SL}click.linksynergy.com{SL}fs-bin{SL}click{Q}id{E}nNBA6GzaGrQ{A}offerid{E}1568114.10014115{A}type{E}3{A}subid{E}0"
+            tracking_beacon = f'<img border="0" width="1" height="1" src="{S}{C}{SL}{SL}ad.linksynergy.com{SL}fs-bin{SL}show{Q}id{E}nNBA6GzaGrQ{A}bids{E}1568114.10014115{A}type{E}3{A}subid{E}0" >'
             button_text = "Dell公式サイトで見る ＞"
         else:
             sid, pid = "3697471", "892455531"
-            raw_url = product.url
-            encoded_url = urllib.parse.quote(raw_url, safe='')
-            affiliate_url = f"[https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=](https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=){sid}&pid={pid}&vc_url={encoded_url}"
-            tracking_beacon = f'<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=){sid}&pid={pid}" height="1" width="1" border="0">'
+            encoded_url = urllib.parse.quote(product.url, safe='')
+            affiliate_url = f"{S}{C}{SL}{SL}ck.jp.ap.valuecommerce.com{SL}servlet{SL}referral{Q}sid{E}{sid}{A}pid{E}{pid}{A}vc_url{E}{encoded_url}"
+            tracking_beacon = f'<img src="{S}{C}{SL}{SL}ad.jp.ap.valuecommerce.com{SL}servlet{SL}gifbanner{Q}sid{E}{sid}{A}pid{E}{pid}" height="1" width="1" border="0">'
             button_text = f"{product.maker}公式サイトで見る ＞"
 
-        # 冒頭のアイキャッチ画像（WordPress標準の画像ブロック形式）
+        # 冒頭のアイキャッチ
         image_header_block = ""
         if media_url:
-            image_header_block = f"""
-            <figure class="wp-block-image size-full"><img src="{media_url}" alt="{product.name}" class="wp-image-{media_id}"/></figure>
-            """
+            image_header_block = f'<figure class="wp-block-image size-full"><img src="{media_url}" alt="{product.name}"/></figure>'
 
-        # スペックカードHTML（画像は必須として維持）
+        # スペックカード
         custom_card_html = f"""
-        <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
+        <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
                 <div style="flex: 1; min-width: 200px; text-align: center;">
                     <a href="{bic_detail_url}" target="_blank">
@@ -212,16 +209,12 @@ class Command(BaseCommand):
         full_wp_content = f"{image_header_block}\n{main_body_html}\n{custom_card_html}"
 
         # ==========================================
-        # 7. Django DBへの保存 (以前のロジック維持)
+        # 7. 実行と投稿
         # ==========================================
         product.ai_content = main_body_html 
         product.is_posted = True
         product.save()
-        self.stdout.write(self.style.SUCCESS(f"💾 Django DBにAI記事を保存しました。"))
 
-        # ==========================================
-        # 8. WordPress 投稿実行
-        # ==========================================
         wp_payload = {
             "title": title,
             "content": full_wp_content,
@@ -234,8 +227,8 @@ class Command(BaseCommand):
         try:
             wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH, timeout=30)
             if wp_res.status_code == 201:
-                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿成功】モデル: {selected_model} / 記事: {title}"))
+                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿成功】モデル: {selected_model} / {title}"))
             else:
-                self.stdout.write(self.style.ERROR(f"❌ WP投稿失敗: {wp_res.status_code} - {wp_res.text}"))
+                self.stdout.write(self.style.ERROR(f"❌ WP投稿失敗: {wp_res.status_code}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"WP投稿通信エラー: {e}"))
