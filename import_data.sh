@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (ホスト名判定版)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (最終完全版)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
@@ -27,7 +27,7 @@ fi
 RESET="\e[0m"
 
 echo -e "---------------------------------------"
-echo -e "🚀 SHIN-VPS Data Import Tool"
+echo -e "🚀 SHIN-VPS Data Import & WP Automation Tool"
 echo -e "環境: ${COLOR}${ENV_TYPE}${RESET}"
 echo -e "ホスト: ${CURRENT_HOSTNAME} / ユーザー: ${CURRENT_USER}"
 echo -e "ファイル: ${COMPOSE_FILE}"
@@ -50,7 +50,8 @@ echo "3) [Import] Bic-saving データのインポート"
 echo "4) [Import] Bicstation データの同期 (API取得 + マッピング)"
 echo "5) [Import] AV-Flash データのインポート"
 echo "6) [Admin]  スーパーユーザー(管理者)の作成"
-echo "7) 終了"
+echo -e "7) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
+echo "8) 終了"
 echo "---------------------------------------"
 read -p "実行する操作を選択してください: " CHOICE
 
@@ -72,23 +73,14 @@ case $CHOICE in
         ;;
     4)
         echo -e "${COLOR}⚙️  Bicstation同期プロセスを開始します...${RESET}"
-        
         # ステップ1: APIから生データを取得してBcLinkshareProductに保存
-        # 35909 は HP Directplus
         echo "   >> [1/2] APIから最新の製品情報を取得中 (HP)..."
         run_cmd python manage.py linkshare_bc_api_parser --mid 35909 --save-db
-        # run_cmd python manage.py linkshare_bc_api_parser --mid 35909 --show-raw
 
         # ステップ2: 保存された生データからPCProductへマッピング同期
-        # --maker HP 引数でHP製品のみを対象に実行
         echo "   >> [2/2] 生データからカタログ(PCProduct)への同期を実行中 (HP)..."
         run_cmd python manage.py sync_products_from_raw --maker HP
-
-        # 必要に応じてDell等も追加可能
-        # echo "   >> Dellの同期を実行中..."
-        # run_cmd python manage.py sync_products_from_raw --maker DELL
         ;;
-        
     5)
         echo "⚙️  AV-Flashインポート..."
         read -p "ファイル名を入力: " FILE_NAME
@@ -99,6 +91,27 @@ case $CHOICE in
         run_cmd python manage.py createsuperuser
         ;;
     7)
+        echo -e "${COLOR}🤖 AI Blog Generation & WP Posting${RESET}"
+        echo "1: 1件のみ実行 (ランダム抽出)"
+        echo "2: 5件連続実行"
+        read -p "実行モードを選択してください: " WP_CHOICE
+        
+        if [ "$WP_CHOICE" == "1" ]; then
+            echo "⚙️  AI記事生成中 (1件)..."
+            run_cmd python manage.py ai_blog_from_db
+        elif [ "$WP_CHOICE" == "2" ]; then
+            echo "⚙️  AI記事生成中 (5件連続ループ)..."
+            for i in {1..5}; do
+                echo "--- [$i / 5 件目] ---"
+                run_cmd python manage.py ai_blog_from_db
+                echo "Waiting for 10 seconds to avoid API limit..."
+                sleep 10
+            done
+        else
+            echo "キャンセルしました。"
+        fi
+        ;;
+    8)
         echo "終了します。"
         exit 0
         ;;

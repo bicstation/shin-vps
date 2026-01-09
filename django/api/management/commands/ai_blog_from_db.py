@@ -29,9 +29,9 @@ class Command(BaseCommand):
 
         # モデルのローテーション設定
         MODELS = [
-            "gemini-1.5-flash",
-            "gemini-1.5-pro",
-            "gemma-2-27b-it" 
+            "gemini-2.0-flash",       # 高速・最新
+            "gemini-2.0-flash-lite",  # 軽量版
+            "gemini-3-flash-preview"  # 次世代プレビュー
         ]
 
         # WordPress側のカテゴリID・タグID設定
