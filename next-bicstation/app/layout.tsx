@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next"; // Viewportのインポートを削除
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -52,9 +52,10 @@ export const metadata: Metadata = {
 };
 
 /**
- * 💡 ビューポート設定 (最新のNext.js 14+形式)
+ * 💡 ビューポート設定
+ * 型指定 (: Viewport) を削除してビルドエラーを回避
  */
-export const viewport: Viewport = {
+export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5, // ユーザーがピンチズーム（拡大）できるようにし、アクセシビリティを向上
