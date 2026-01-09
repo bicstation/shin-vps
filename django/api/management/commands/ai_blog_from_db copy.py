@@ -11,7 +11,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'Gemini/Gemma 10種ローテーション・Gutenberg対応・自動投稿スクリプト'
+    help = 'Gemini/Gemma 6種類をローテーションし、AI記事をDB保存しつつWP投稿するスクリプト'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -26,20 +26,18 @@ class Command(BaseCommand):
         WP_MEDIA_URL = f"https://{W_DOM}/wp-json/wp/v2/media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        # 💡 10種類のモデルローテーション設定
+        # 💡 6種類のモデルローテーション設定
+        # 最新の2.0系から安定版、プレビュー版までを網羅
         MODELS = [
-            "gemma-3-27b-it",             # 現在の主力
-            "gemini-2.0-flash",           # 最新高速
-            "gemini-2.0-flash-lite",      # 最新軽量
-            "gemini-2.0-pro-exp-02-05",   # 最新プロ(実験)
-            "gemini-1.5-flash",           # 安定
-            "gemini-1.5-pro",             # 高精度
-            "gemini-2.0-flash-thinking-exp-01-21",
-            "gemini-1.5-flash-8b",
-            "gemini-exp-1206",
-            "learnlm-1.5-pro-experimental"
+            "gemini-2.0-flash",           # 最新・超高速
+            "gemini-2.0-flash-lite",      # 最新・軽量
+            "gemma-3-27b-it",             # 最新Gemma
+            "gemini-1.5-flash",           # 安定版
+            "gemini-1.5-pro",             # 高精度版
+            "gemini-3-flash-preview",     # 次世代プレビュー
         ]
 
+        # WordPress側のカテゴリID・タグID設定
         CAT_LENOVO, CAT_DELL, CAT_HP = 4, 7, 8
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
@@ -54,17 +52,28 @@ class Command(BaseCommand):
         ).exclude(stock_status="受注停止中")
         
         if not products.exists():
-            self.stdout.write(self.style.ERROR("未投稿の対象製品がありません。"))
+            self.stdout.write(self.style.ERROR("未投稿の対象製品がDBに見当たりませんでした。"))
             return
 
         product = random.choice(products)
         maker_low = product.maker.lower()
         self.stdout.write(self.style.SUCCESS(f"🚀 ターゲット確定: {product.name} ({product.maker})"))
 
-        # カテゴリ・タグ判定
-        target_cats = [CAT_LENOVO if 'lenovo' in maker_low else CAT_DELL if 'dell' in maker_low else CAT_HP if 'hp' in maker_low else 1]
+        # カテゴリ判定
+        if 'lenovo' in maker_low:
+            target_cats = [CAT_LENOVO]
+        elif 'dell' in maker_low:
+            target_cats = [CAT_DELL]
+        elif 'hp' in maker_low:
+            target_cats = [CAT_HP]
+        else:
+            target_cats = [1]
+        
+        # タグ判定
         name_lower = product.name.lower()
         target_tags = [TAG_DESKTOP if any(k in name_lower for k in ["desktop", "tower", "station", "aio", "tiny", "center", "poweredge"]) else TAG_LAPTOP]
+
+        # 詳細ページURL
         bic_detail_url = f"https://bicstation.com/product/{product.unique_id}/"
 
         # ==========================================
@@ -78,8 +87,14 @@ class Command(BaseCommand):
                     with NamedTemporaryFile(delete=True) as img_temp:
                         img_temp.write(img_res.content)
                         img_temp.flush()
+                        
                         files = {'file': (f"{product.unique_id}.jpg", open(img_temp.name, 'rb'), 'image/jpeg')}
-                        m_res = requests.post(WP_MEDIA_URL, auth=AUTH, files=files, headers={'Content-Disposition': f'attachment; filename={product.unique_id}.jpg'})
+                        m_res = requests.post(
+                            WP_MEDIA_URL, 
+                            auth=AUTH, 
+                            files=files, 
+                            headers={'Content-Disposition': f'attachment; filename={product.unique_id}.jpg'}
+                        )
                         if m_res.status_code == 201:
                             m_data = m_res.json()
                             media_id, media_url = m_data.get('id'), m_data.get('source_url')
@@ -88,79 +103,97 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"画像処理エラー: {e}"))
 
         # ==========================================
-        # 4. AIプロンプト (Gutenberg対応)
+        # 4. AIプロンプト
         # ==========================================
         prompt = f"""
         あなたはPCの技術仕様に精通した客観的な解説者です。
-        以下の製品データに基づき、ITニュースサイト向けの深く鋭い記事をWordPressの「ブロックエディタ（Gutenberg）」形式のHTMLで出力してください。
+        以下の製品データに基づき、ITニュースサイト向けの深く鋭い、純粋な「HTMLソースコードのみ」を出力してください。
+        Markdownや解説文、```html などの囲みは一切不要です。
 
         【製品データ】
         メーカー: {product.maker} | 商品名: {product.name} | 価格: {product.price}円
         スペック詳細: {product.description}
 
-        【出力ルール】
-        1. 1行目はタイトル（タグなしプレーンテキスト）。
-        2. 2行目以降は本文。各要素を <p>...</p>や <h2>...</h2>などのブロックタグで必ず囲んでください。
-        3. 2000文字以上の情報量。Markdown(```html等)は絶対に入れないこと。
-        4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」で締める。
+        【出力構成ルール】
+        1. 1行目は記事のタイトル（タグなし、プレーンテキストのみ）。
+        2. 本文は必ず <h2> や <h3> タグを使用して構成してください。
+        3. 2000文字以上の情報量で記述。
+        4. 文末は「この製品の詳細は、以下のリンクからご確認いただけます」という一文で締める。
         """
 
         # ==========================================
         # 5. AI実行 (ローテーション)
         # ==========================================
         ai_text, selected_model = None, None
+
         for model_id in MODELS:
             self.stdout.write(f"🤖 モデル {model_id} で生成中...")
+            # エンドポイントは汎用性の高い v1beta を使用
             api_url = f"[https://generativelanguage.googleapis.com/v1beta/models/](https://generativelanguage.googleapis.com/v1beta/models/){model_id}:generateContent?key={GEMINI_API_KEY}"
+            
             try:
                 response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=120)
                 res_json = response.json()
+                
                 if 'candidates' in res_json and len(res_json['candidates']) > 0:
                     ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
                     selected_model = model_id
-                    self.stdout.write(self.style.SUCCESS(f"✨ {model_id} 生成成功"))
+                    self.stdout.write(self.style.SUCCESS(f"✨ {model_id} での生成に成功しました。"))
                     break
                 else:
-                    self.stdout.write(self.style.WARNING(f"⚠️ {model_id} スキップ"))
+                    error_msg = res_json.get('error', {}).get('message', 'Unknown Error')
+                    self.stdout.write(self.style.WARNING(f"⚠️ {model_id} 失敗: {error_msg}"))
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"❌ 通信エラー ({model_id}): {e}"))
+                continue
 
         if not ai_text:
+            self.stdout.write(self.style.ERROR("🚨 すべてのモデルで生成に失敗しました。"))
             return
 
         # ==========================================
-        # 6. 整形とアフィリエイトURLの「浄化」
+        # 6. 整形とアフィリエイト組み込み
         # ==========================================
+        def clean_tags(text):
+            return re.sub(r'<[^>]*?>', '', text).replace('#', '').strip()
+
+        # AIの回答から不要なマークダウン記号を削除
         clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
-        title = re.sub(r'<[^>]*?>', '', lines[0]).replace('#', '').strip()
+        
+        if not lines:
+            self.stdout.write(self.style.ERROR("生成されたテキストが空です。"))
+            return
+
+        title = clean_tags(lines[0])
         main_body_html = '\n'.join(lines[1:]).strip()
 
-        # アフィリエイトURL生成とリンク浄化（カッコ等のノイズを除去）
+        # アフィリエイトリンク生成
         affiliate_url = ""
         tracking_beacon = ""
         button_text = ""
         
         if 'dell' in maker_low:
-            raw_url = product.affiliate_url if hasattr(product, 'affiliate_url') and product.affiliate_url else "[https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0](https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0)"
-            affiliate_url = raw_url.strip().replace('(', '').replace(')', '').replace('[', '').replace(']', '')
-            tracking_beacon = '<img border="0" width="1" height="1" src="[https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0](https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0)" >'
+            if hasattr(product, 'affiliate_url') and product.affiliate_url:
+                affiliate_url = product.affiliate_url
+                bid_match = re.search(r'bids=([^&]+)', affiliate_url)
+                if bid_match:
+                    bid = bid_match.group(1)
+                    tracking_beacon = f'<img border="0" width="1" height="1" src="[https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=](https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=){bid}&type=15&subid=0" >'
+            else:
+                affiliate_url = "[https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0](https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0)"
+                tracking_beacon = '<img border="0" width="1" height="1" src="[https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0](https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0)" >'
             button_text = "Dell公式サイトで見る ＞"
-        else:
+
+        elif 'hp' in maker_low or 'lenovo' in maker_low:
             sid, pid = "3697471", "892455531"
-            encoded_url = urllib.parse.quote(product.url, safe='')
+            raw_url = urllib.parse.unquote(product.url)
+            encoded_url = urllib.parse.quote(raw_url, safe='')
             affiliate_url = f"[https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=](https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=){sid}&pid={pid}&vc_url={encoded_url}"
             tracking_beacon = f'<img src="//[ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=](https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid=){sid}&pid={pid}" height="1" width="1" border="0">'
             button_text = f"{product.maker}公式サイトで見る ＞"
 
-        # 冒頭のアイキャッチ画像ブロック
-        image_block = ""
-        if media_url:
-            image_block = f"""
-            <figure class="wp-block-image size-full"><img src="{media_url}" alt="{product.name}" class="wp-image-{media_id}"/></figure>
-            """
-
-        # スペックカードHTML (画像を維持)
+        # WordPress用カードHTML
         custom_card_html = f"""
         <div style="margin: 40px 0; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); font-family: sans-serif;">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
@@ -187,7 +220,7 @@ class Command(BaseCommand):
         </div>
         """
 
-        full_wp_content = f"{image_block}\n{main_body_html}\n{custom_card_html}"
+        full_wp_content = f"{main_body_html}\n{custom_card_html}"
 
         # ==========================================
         # 7. Django DBへの保存
@@ -212,7 +245,7 @@ class Command(BaseCommand):
         try:
             wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH, timeout=30)
             if wp_res.status_code == 201:
-                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿成功】モデル: {selected_model} / {title}"))
+                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿成功】モデル: {selected_model} / 記事: {title}"))
             else:
                 self.stdout.write(self.style.ERROR(f"❌ WP投稿失敗: {wp_res.status_code} - {wp_res.text}"))
         except Exception as e:
