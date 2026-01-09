@@ -31,7 +31,8 @@ class Command(BaseCommand):
         MODELS = [
             "gemini-2.0-flash",       # 高速・最新
             "gemini-2.0-flash-lite",  # 軽量版
-            "gemini-3-flash-preview"  # 次世代プレビュー
+            "gemini-3-flash-preview",  # 次世代プレビュー
+            "gemma-3-27b-it",
         ]
 
         # WordPress側のカテゴリID・タグID設定
