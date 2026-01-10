@@ -32,10 +32,9 @@ def frontier_text_fixer(text):
         '鴻': 'スレッド',
         'ｃ激': 'キャッシュ',
         '祉': 'プロセッサー',
-        '泣': '', # プロセッサーの後に続くゴミ
+        '泣': '', 
         'ｃ': 'キャ',
         '激': 'ッシュ',
-        '': '', # 不明な記号
     }
     
     for k, v in replace_map.items():
@@ -58,7 +57,7 @@ def run_frontier_crawler():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
 
-    print(f"\n🚀 {SITE_PREFIX} 最終決戦クローラ（文字化け置換マップ搭載）起動...")
+    print(f"\n🚀 {SITE_PREFIX} 最終決戦クローラ（画像取得強化・文字化け修正）起動...")
 
     product_links = set()
     for start_url in target_urls:
@@ -82,11 +81,11 @@ def run_frontier_crawler():
             decoded_html = p_res.content.decode('euc-jp', errors='ignore')
             p_soup = BeautifulSoup(decoded_html, 'html.parser')
 
-            # --- 商品名 ---
+            # --- A. 商品名 ---
             name_el = p_soup.find("input", id="hidden_goods_name")
             name = frontier_text_fixer(name_el["value"]) if name_el else "FRONTIER PC"
 
-            # --- 価格 ---
+            # --- B. 価格 ---
             price = 0
             price_el = p_soup.select_one('.iw-price .iw-number')
             if price_el:
@@ -94,7 +93,20 @@ def run_frontier_crawler():
                 if price_val: price = int(price_val)
             if price == 0: continue
 
-            # --- スペック抽出 ---
+            # --- C. 画像URL取得 (VPS対策強化) ---
+            image_url = ""
+            # 個別ページのスライドショー、メイン画像、一覧用の順に探す
+            img_el = p_soup.select_one('.iw-goods-detail-slideshow-thumbnav img') or \
+                     p_soup.select_one('#goods_image') or \
+                     p_soup.select_one('.iw-goods-img img')
+            
+            if img_el:
+                # data-src属性（Lazy Load）を優先し、なければsrc
+                raw_img_path = img_el.get('data-src') or img_el.get('src') or img_el.get('data-lazy')
+                if raw_img_path:
+                    image_url = urllib.parse.urljoin(base_domain, raw_img_path)
+
+            # --- D. スペック抽出 ---
             specs = {}
             for row in p_soup.select('.underLine'):
                 k_el = row.select_one('.leftBox')
@@ -111,8 +123,12 @@ def run_frontier_crawler():
             
             spec_summary = f"{cpu} / {gpu} / {mem} / {ssd}"
 
-            # --- 保存 ---
+            # --- E. 保存 ---
             uid = "frontier-" + hashlib.md5(p_url.encode()).hexdigest()[:12]
+            # アフィリエイトURL生成
+            encoded_url = urllib.parse.quote(p_url, safe='')
+            aff_url = f"{AFFILIATE_BASE_URL}{encoded_url}"
+
             PCProduct.objects.update_or_create(
                 unique_id=uid,
                 defaults={
@@ -121,19 +137,21 @@ def run_frontier_crawler():
                     'name': name,
                     'price': price,
                     'url': p_url,
+                    'affiliate_url': aff_url,
+                    'image_url': image_url,
                     'description': spec_summary,
                     'is_active': True,
                     'stock_status': "在庫あり",
                     'raw_genre': 'gaming-pc',
                 }
             )
-            print(f"💎 [修正成功] {name} | {price:,}円")
+            print(f"💎 [保存] {name} | {price:,}円 | 画像: {'OK' if image_url else 'NG'}")
             total_saved += 1
 
         except Exception as e:
-            print(f"⚠️ 解析エラー: {e}")
+            print(f"⚠️ 解析エラー ({p_url}): {e}")
 
-    print(f"\n✨ 完了！ {total_saved} 件のデータをクリーンな状態で保存しました。")
+    print(f"\n✨ 完了！ {total_saved} 件のデータを保存しました。")
 
 if __name__ == "__main__":
     run_frontier_crawler()
