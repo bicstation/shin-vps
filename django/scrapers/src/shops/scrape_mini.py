@@ -5,6 +5,7 @@ import hashlib
 import time
 import random
 import json
+import urllib.parse
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 
@@ -14,13 +15,14 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tiper_api.settings')
 django.setup()
 
-from api.models import PCProduct
+from api.models.pc_products import PCProduct
 
 # ==========================================
-# 🔑 1. 設定情報
+# 🔑 1. 設定情報 (A8.net & Maker設定)
 # ==========================================
-AFFILIATE_ID = "389"
-MAKER_NAME = "MINISFORUM"
+# ご提示いただいたMinisforum用A8.netベースURL
+A8_BASE_URL = "https://px.a8.net/svt/ejp?a8mat=459XR1+CDE9SY+5O6K+BW0YB&a8ejpredirect="
+MAKER_NAME = "Minisforum"
 BASE_DOMAIN = "www.minisforum.jp"
 
 # ==========================================
@@ -48,12 +50,14 @@ def extract_detailed_specs(soup, product_name):
         specs.append("CPU未確認")
 
     # 2. GPU抽出
-    gpu_pattern = r'(RTX\s?\d{4}(?:\s?Ti)?|Radeon\s?\d{2,3}[A-Z]?)'
+    gpu_pattern = r'(RTX\s?\d{4}(?:\s?Ti)?|Radeon\s?\d{2,3}[A-Z]?|Iris\s?Xe|Intel\s?Graphics|AMD\s?Radeon\s?\d{2,3}M)'
     gpu_match = re.search(gpu_pattern, search_target, re.I)
     if gpu_match:
         specs.append(gpu_match.group(1).strip())
     elif "G1" in product_name or "ゲーミング" in search_target:
         specs.append("外部GPU対応可")
+    else:
+        specs.append("内蔵グラフィックス")
 
     # 3. メモリ(RAM)抽出
     ram_pattern = r'(\d{1,3}GB\s?(?:DDR\d|LPDDR\d|統合メモリ|RAM))'
@@ -76,7 +80,8 @@ def extract_correct_price(soup, product_data):
         '.price-item--regular', 
         'sale-price', 
         '.product-form__price',
-        '.price__last .price-item'
+        '.price__last .price-item',
+        '.product-single__price'
     ]
     
     for selector in price_selectors:
@@ -88,8 +93,11 @@ def extract_correct_price(soup, product_data):
 
     offers = product_data.get('offers', {})
     if isinstance(offers, list): offers = offers[0]
-    raw_price = int(float(offers.get('price', 0)))
-    return raw_price if raw_price > 1000 else 0
+    try:
+        raw_price = int(float(offers.get('price', 0)))
+        return raw_price if raw_price > 1000 else 0
+    except:
+        return 0
 
 def extract_best_image(soup, product_data):
     """
@@ -144,7 +152,12 @@ def scrape_minis_page(page, url, current_index, total_count):
         for script in scripts:
             try:
                 data = json.loads(script.string)
-                if isinstance(data, dict) and data.get('@type') == 'Product':
+                if isinstance(data, list):
+                    for item in data:
+                        if item.get('@type') == 'Product':
+                            product_data = item
+                            break
+                elif isinstance(data, dict) and data.get('@type') == 'Product':
                     product_data = data
                     break
             except: continue
@@ -153,13 +166,13 @@ def scrape_minis_page(page, url, current_index, total_count):
         name = product_data.get('name') or (soup.select_one('h1').get_text().strip() if soup.select_one('h1') else "不明な製品")
         
         # 除外キーワード
-        blacklist = ["配送保護", "保険", "サービス", "延長保証", "クーポン", "送料"]
+        blacklist = ["配送保護", "保険", "サービス", "延長保証", "クーポン", "送料", "ギフトカード"]
         if any(word in name for word in blacklist):
             print(f" ⏩ スキップ: {name}")
             return False
 
         # 2. ジャンル判定 (mini-pc または motherboard に分類)
-        if any(kw in name for kw in ["マザーボード", "Motherboard", "BD790", "BD770"]):
+        if any(kw in name for kw in ["マザーボード", "Motherboard", "BD790", "BD770", "AR900"]):
             raw_genre = "motherboard"
             unified_genre = "motherboard"
         else:
@@ -171,8 +184,10 @@ def scrape_minis_page(page, url, current_index, total_count):
         image_url = extract_best_image(soup, product_data)
         description = extract_detailed_specs(soup, name)
         
-        # 4. アフィリエイトURLの生成 (既存のカラム 'affiliate_url' に格納)
-        final_affiliate_url = f"{url_clean}?aff={AFFILIATE_ID}"
+        # 4. ✨ A8.net アフィリエイトURLの生成
+        # 商品URLをエンコードしてA8のベースURLと結合
+        encoded_url = urllib.parse.quote(url_clean, safe='')
+        final_affiliate_url = f"{A8_BASE_URL}{encoded_url}"
 
         # 5. 在庫ステータス判定
         offers = product_data.get('offers', {})
@@ -181,7 +196,7 @@ def scrape_minis_page(page, url, current_index, total_count):
         stock_status = '在庫あり' if price > 0 and is_instock else '未発売・予約受付中'
 
         print(f" 📦 製品名 : {name}")
-        print(f" 💰 価  格 : ¥{price:,}" if price > 0 else " 💰 価  格 : 価格未定")
+        print(f" 💰 価  格 : ¥{price:,}" if price > 0 else " 💰 価  格 : 価格未定")
         print(f" 🏷️ ｼﾞｬﾝﾙ : {unified_genre}")
         print("-" * 50)
 
@@ -215,7 +230,8 @@ def scrape_minis_page(page, url, current_index, total_count):
 # ==========================================
 
 def run_minis_crawler():
-    list_url = "https://www.minisforum.jp/collections/all-product?page=1"
+    # Minisforum Japanの全製品コレクションページ
+    list_url = "https://www.minisforum.jp/collections/all-product"
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -224,7 +240,7 @@ def run_minis_crawler():
         )
         page = context.new_page()
         
-        print(f"📂 MINISFORUM 全製品同期開始 (カラム構成適正化版)")
+        print(f"📂 MINISFORUM 全製品同期開始 (A8.netアフィリエイト対応版)")
         try:
             page.goto(list_url, wait_until="domcontentloaded", timeout=60000)
             page.wait_for_timeout(3000) 
@@ -235,11 +251,13 @@ def run_minis_crawler():
                 return links.map(a => a.href);
             }''')
             
-            product_urls = sorted(list(set([h.split('?')[0] for h in hrefs if "/products/" in h])))
+            # /products/ を含み、重複を除去したURLリストを作成
+            product_urls = sorted(list(set([h.split('?')[0].rstrip('/') for h in hrefs if "/products/" in h])))
             print(f"📊 解析対象URL: {len(product_urls)}件")
 
             for i, url in enumerate(product_urls):
                 scrape_minis_page(page, url, i, len(product_urls))
+                # サーバー負荷軽減のためのランダムウェイト
                 time.sleep(random.uniform(2.0, 4.0))
 
         except Exception as e:
