@@ -130,7 +130,7 @@ services:
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
       - "ofelia.enabled=true"
       - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
-      - "ofelia.job-exec.ai_blog_post.command=python manage.py post_wp"
+      - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
       - "ofelia.job-exec.ai_blog_post.no-overlap=true"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
