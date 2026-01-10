@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (GEEKOM対応版)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (VSPEC対応版)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
@@ -49,11 +49,12 @@ echo "2) [Import] Tiper データのインポート"
 echo "3) [Import] Bic-saving (Lenovo) スクレイピング"
 echo "4) [Import] Bicstation (HP) 同期 (API + マッピング)"
 echo "5) [Import] Bicstation (Minisforum) スクレイピング"
-echo "6) [Import] GEEKOM (Intel/AMD/Game/Office) スクレイピング ✨NEW"
-echo "7) [Import] AV-Flash データのインポート"
-echo "8) [Admin]  スーパーユーザー(管理者)の作成"
-echo -e "9) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
-echo "10) 終了"
+echo "6) [Import] GEEKOM (Intel/AMD/Game/Office) スクレイピング"
+echo -e "7) ${COLOR}[Import] VSPEC (BTO PC/Custom) スクレイピング ✨UPDATE${RESET}"
+echo "8) [Import] AV-Flash データのインポート"
+echo "9) [Admin]  スーパーユーザー(管理者)の作成"
+echo -e "10) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
+echo "11) 終了"
 echo "---------------------------------------"
 read -p "実行する操作を選択してください: " CHOICE
 
@@ -84,19 +85,23 @@ case $CHOICE in
         ;;
     6)
         echo -e "${COLOR}⚙️  GEEKOM (日本公式) スクレイピングを開始します...${RESET}"
-        # 指定されたパスにあるGEEKOMスクレイパーを実行
         run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py
         ;;
     7)
+        echo -e "${COLOR}⚙️  VSPEC (BTO/Custom PC) スクレイピングを開始します...${RESET}"
+        # 💡 ここを VSPEC のファイルパスに変更しました
+        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_vspec.py
+        ;;
+    8)
         echo "⚙️  AV-Flashインポート..."
         read -p "ファイル名を入力: " FILE_NAME
         run_cmd python manage.py import_av "/usr/src/app/data/$FILE_NAME"
         ;;
-    8)
+    9)
         echo "👤 管理者作成..."
         run_cmd python manage.py createsuperuser
         ;;
-    9)
+    10)
         echo -e "${COLOR}🤖 AI Blog Generation & WP Posting${RESET}"
         echo "1: 1件のみ実行 (ランダム抽出)"
         echo "2: 5件連続実行"
@@ -114,7 +119,7 @@ case $CHOICE in
             echo "キャンセルしました。"
         fi
         ;;
-    10)
+    11)
         echo "終了します。"
         exit 0
         ;;
