@@ -11,7 +11,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'Gemini優先・Gutenberg対応・要約POINT4抽出・外部プロンプト完全版'
+    help = 'アイキャッチ画像対応・Gutenbergブロック・要約POINT4抽出・外部プロンプト完全版'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -40,12 +40,9 @@ class Command(BaseCommand):
         CAT_LENOVO, CAT_DELL, CAT_HP = 4, 7, 8
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
-        # --- 外部プロンプトファイルの読み込み（パス解決を強化） ---
-        # スクリプトと同じディレクトリにある ai_prompt.txt を探す
+        # --- 外部プロンプトファイルの読み込み（パス解決） ---
         current_dir = os.path.dirname(os.path.abspath(__file__))
         PROMPT_FILE_PATH = os.path.join(current_dir, "ai_prompt.txt")
-        
-        # 万が一上記で見つからない場合の予備パス（絶対パス）
         FALLBACK_PATH = "/mnt/c/dev/SHIN-VPS/django/api/management/commands/ai_prompt.txt"
 
         base_prompt_template = ""
@@ -115,7 +112,7 @@ class Command(BaseCommand):
         bic_detail_url = f"{SCH}{CLN}{SLS}{SLS}bicstation.com{SLS}product{SLS}{product.unique_id}{SLS}"
 
         # ==========================================
-        # 3. 画像アップロード
+        # 3. 画像アップロード (アイキャッチ画像用)
         # ==========================================
         media_id, media_url = None, ""
         if product.image_url:
@@ -130,7 +127,9 @@ class Command(BaseCommand):
                         if m_res.status_code == 201:
                             m_data = m_res.json()
                             media_id, media_url = m_data.get('id'), m_data.get('source_url')
-            except: pass
+                            self.stdout.write(self.style.SUCCESS(f"🖼️ 画像アップロード成功: ID {media_id}"))
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f"画像アップロード失敗: {e}"))
 
         # ==========================================
         # 4. AI実行
@@ -177,9 +176,7 @@ class Command(BaseCommand):
 
         # Gutenberg用ブロックコメント付与関数
         def convert_to_blocks(html):
-            # 見出しブロック
             html = re.sub(r'(<h[23]>.*?</h[23]>)', r'\1', html)
-            # 段落ブロック
             html = re.sub(r'(<p>.*?</p>)', r'\1', html, flags=re.DOTALL)
             return html
 
@@ -217,15 +214,17 @@ class Command(BaseCommand):
                     <p style="color: #ef4444; font-weight: bold; font-size: 1.4em; margin: 15px 0;">特別価格：{product.price:,}円（税込）</p>
                     <div style="display: flex; gap: 12px; margin-top: 25px; flex-wrap: wrap;">
                         <a href="{affiliate_url}" target="_blank" rel="nofollow noopener" style="flex: 1; min-width: 160px; background: #ef4444; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">{button_text}{tracking_beacon}</a>
-                        <a href="{bic_detail_url}" target="_blank" style="flex: 1; min-width: 160px; background: #1f2937; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">スペック詳細 ＞</a>
+                        <a href="{bic_detail_url}" target="_blank" style="flex: 1; min-width: 160px; background: #1f2937; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">詳細スペックを確認 ＞</a>
                     </div>
                 </div>
             </div>
         </div>"""
 
-        # 全体コンテンツ結合
-        image_header = f'<figure class="wp-block-image size-full"><img src="{media_url if media_url else product.image_url}"/></figure>'
-        full_wp_content = f"{image_header}\n{summary_html}\n{main_body_blocks}\n{custom_card_html}"
+        # --- コンテンツ結合 (最上部に画像ブロックを配置) ---
+        img_id_attr = f' "id":{media_id},' if media_id else ""
+        image_header_block = f'\n<figure class="wp-block-image size-full"><img src="{media_url if media_url else product.image_url}" alt="{product.name}"/></figure>\n'
+        
+        full_wp_content = f"{image_header_block}\n{summary_html}\n{main_body_blocks}\n{custom_card_html}"
 
         # ==========================================
         # 7. WordPress投稿
@@ -234,7 +233,7 @@ class Command(BaseCommand):
             "title": title,
             "content": full_wp_content,
             "status": "publish",
-            "featured_media": media_id,
+            "featured_media": media_id, # ここでアイキャッチ画像（Featured Image）をセット
             "categories": target_cats, 
             "tags": target_tags 
         }
@@ -245,7 +244,7 @@ class Command(BaseCommand):
                 product.ai_content = main_body_raw 
                 product.is_posted = True
                 product.save()
-                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿完了】モデル: {selected_model} / タイトル: {title}"))
+                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿完了】アイキャッチ設定済 / タイトル: {title}"))
             else:
                 self.stdout.write(self.style.ERROR(f"❌ WordPress投稿失敗: {wp_res.status_code}"))
         except Exception as e:
