@@ -8,6 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CURRENT_HOSTNAME=$(hostname)
 CURRENT_USER=$USER
 
+# 環境判別
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]] || [[ "$CURRENT_USER" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
     IS_VPS=true
     ENV_TYPE="PRODUCTION (VPS)"
@@ -29,6 +30,7 @@ echo -e "🚀 SHIN-VPS Data Import & WP Automation Tool"
 echo -e "環境: ${COLOR}${ENV_TYPE}${RESET}"
 echo -e "---------------------------------------"
 
+# 共通コマンド実行関数
 run_cmd() {
     if [ ! -f "$SCRIPT_DIR/$COMPOSE_FILE" ]; then
         echo -e "\e[31m[ERROR] $COMPOSE_FILE が見つかりません。\e[0m"
@@ -104,5 +106,17 @@ case $CHOICE in
     14) exit 0 ;;
 esac
 
+# ==============================================================================
+# 🔄 VPS環境のみ：スケジューラーの自動更新
+# ==============================================================================
+if [ "$IS_VPS" = true ]; then
+    # 9, 10 (スクレイピング) または 13 (WP投稿テスト) の場合に実行
+    if [[ "$CHOICE" =~ ^(9|10|13)$ ]]; then
+        echo -e "\n${COLOR}🔄 [VPS] 設定変更を反映するためスケジューラーを再起動します...${RESET}"
+        docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
+        echo -e "✨ スケジュール同期が完了しました。"
+    fi
+fi
+
 echo "---------------------------------------"
-echo "✅ 完了しました！"
+echo -e "✅ 完了しました！"
