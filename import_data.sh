@@ -103,8 +103,18 @@ case $CHOICE in
         ;;
     10)
         echo -e "${COLOR}🤖 AI Blog Generation & WP Posting${RESET}"
+        
+        # モデルリストの表示 (ai_models.txt を読み込んで表示)
+        MODELS_PATH="$SCRIPT_DIR/django/api/management/commands/ai_models.txt"
+        if [ -f "$MODELS_PATH" ]; then
+            echo "--- 現在の利用可能モデル ---"
+            cat "$MODELS_PATH" | sed 's/^/- /'
+            echo "--------------------------"
+        fi
+
         echo "1: 1件のみ実行 (ランダム抽出)"
         echo "2: 5件連続実行"
+        echo "3: 利用可能なモデルリストをAPIから確認 (ai_model_name.py相当)"
         read -p "実行モードを選択してください: " WP_CHOICE
         
         if [ "$WP_CHOICE" == "1" ]; then
@@ -115,6 +125,10 @@ case $CHOICE in
                 run_cmd python manage.py ai_blog_from_db
                 sleep 10
             done
+        elif [ "$WP_CHOICE" == "3" ]; then
+             echo -e "${COLOR}📡 Google APIから利用可能なモデルを取得中...${RESET}"
+             # ファイル名が ai_model_name.py なので、コマンド名は ai_model_name
+             run_cmd python manage.py ai_model_name
         else
             echo "キャンセルしました。"
         fi

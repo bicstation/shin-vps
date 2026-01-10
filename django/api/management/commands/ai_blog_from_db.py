@@ -11,11 +11,11 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'アイキャッチ画像対応・Gutenbergブロック・要約POINT4抽出・外部プロンプト完全版'
+    help = 'モデル/プロンプト外部化・アイキャッチ画像表示対応・Gutenberg完全版'
 
     def handle(self, *args, **options):
         # ==========================================
-        # 1. 基本設定と記号定義
+        # 1. 基本設定
         # ==========================================
         SCH, CLN, SLS, QMK, EQU, AMP = "https", ":", "/", "?", "=", "&"
 
@@ -29,30 +29,30 @@ class Command(BaseCommand):
         WP_MEDIA_URL = f"{WP_API_BASE}{SLS}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
-        MODELS = [
-            "gemini-2.0-pro-exp-02-05", 
-            "gemini-2.0-flash", 
-            "gemini-2.0-flash-thinking-exp-01-21",
-            "gemini-1.5-pro", 
-            "gemini-1.5-flash"
-        ]
-
         CAT_LENOVO, CAT_DELL, CAT_HP = 4, 7, 8
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
-        # --- 外部プロンプトファイルの読み込み（パス解決） ---
+        # --- 外部ファイルの読み込み（パス解決） ---
         current_dir = os.path.dirname(os.path.abspath(__file__))
         PROMPT_FILE_PATH = os.path.join(current_dir, "ai_prompt.txt")
-        FALLBACK_PATH = "/mnt/c/dev/SHIN-VPS/django/api/management/commands/ai_prompt.txt"
+        MODELS_FILE_PATH = os.path.join(current_dir, "ai_models.txt")
 
-        base_prompt_template = ""
+        # プロンプト読み込み
         try:
-            target_path = PROMPT_FILE_PATH if os.path.exists(PROMPT_FILE_PATH) else FALLBACK_PATH
-            with open(target_path, 'r', encoding='utf-8') as f:
+            with open(PROMPT_FILE_PATH, 'r', encoding='utf-8') as f:
                 base_prompt_template = f.read()
-            self.stdout.write(self.style.SUCCESS(f"📖 プロンプト読み込み成功: {target_path}"))
+            self.stdout.write(self.style.SUCCESS(f"📖 プロンプト読み込み成功"))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルの読み込みに失敗しました: {e}"))
+            self.stdout.write(self.style.ERROR(f"❌ プロンプト読み込み失敗: {e}"))
+            return
+
+        # モデルリスト読み込み
+        try:
+            with open(MODELS_FILE_PATH, 'r', encoding='utf-8') as f:
+                MODELS = [line.strip() for line in f if line.strip()]
+            self.stdout.write(self.style.SUCCESS(f"📋 モデルリスト読み込み成功 (計{len(MODELS)}種)"))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"❌ モデルリスト読み込み失敗: {e}"))
             return
 
         # --- 内部関数: ターム（カテゴリ/タグ）の取得・作成 ---
@@ -112,7 +112,7 @@ class Command(BaseCommand):
         bic_detail_url = f"{SCH}{CLN}{SLS}{SLS}bicstation.com{SLS}product{SLS}{product.unique_id}{SLS}"
 
         # ==========================================
-        # 3. 画像アップロード (アイキャッチ画像用)
+        # 3. 画像アップロード (アイキャッチ画像・本文用)
         # ==========================================
         media_id, media_url = None, ""
         if product.image_url:
@@ -141,23 +141,26 @@ class Command(BaseCommand):
             description=product.description
         )
 
-        ai_raw_text, selected_model = None, None
+        ai_raw_text = None
         for model_id in MODELS:
             self.stdout.write(f"🤖 モデル {model_id} で生成を試行中...")
             api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
             try:
                 response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=180)
                 res_json = response.json()
-                if 'candidates' in res_json:
+                if 'candidates' in res_json and res_json['candidates'][0]['content']['parts'][0]['text']:
                     ai_raw_text = res_json['candidates'][0]['content']['parts'][0]['text']
-                    selected_model = model_id
+                    self.stdout.write(self.style.SUCCESS(f"✅ AI生成成功: {model_id}"))
                     break
-            except: continue
+            except:
+                continue
 
-        if not ai_raw_text: return
+        if not ai_raw_text:
+            self.stdout.write(self.style.ERROR("❌ 全モデルで生成に失敗しました。"))
+            return
 
         # ==========================================
-        # 5. テキスト解析とGutenbergブロック化
+        # 5. テキスト解析と整形
         # ==========================================
         clean_text = re.sub(r'```(html)?', '', ai_raw_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
@@ -174,13 +177,13 @@ class Command(BaseCommand):
         if summary_match:
             main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()
 
-        # Gutenberg用ブロックコメント付与関数
-        def convert_to_blocks(html):
+        # Gutenbergブロック風にラップ（HTMLとして直接挿入可能に）
+        def wrap_blocks(html):
             html = re.sub(r'(<h[23]>.*?</h[23]>)', r'\1', html)
             html = re.sub(r'(<p>.*?</p>)', r'\1', html, flags=re.DOTALL)
             return html
 
-        main_body_blocks = convert_to_blocks(main_body_raw)
+        main_body_blocks = wrap_blocks(main_body_raw)
 
         # ==========================================
         # 6. アフィリエイトとデザイン構築
@@ -196,34 +199,33 @@ class Command(BaseCommand):
             tracking_beacon = f'<img src="{SCH}{CLN}{SLS}{SLS}ad.jp.ap.valuecommerce.com{SLS}servlet{SLS}gifbanner{QMK}sid{EQU}{sid}{AMP}pid{EQU}{pid}" height="1" width="1" border="0">'
             button_text = f"{product.maker}公式サイトで詳細を見る ＞"
 
-        # 要約ボックスHTML
+        # 要約ボックス
         summary_items = "".join([f"<li>{l.strip()}</li>" for l in summary_raw.splitlines() if ":" in l])
         summary_html = f"""<div style="background:#f0f9ff; padding:20px; border-left:5px solid #0ea5e9; border-radius:4px; margin-bottom:30px;">
             <h4 style="margin-top:0; color:#0369a1;">⚡ この製品の注目ポイント</h4>
             <ul style="margin-bottom:0; font-size:0.95em; line-height:1.8;">{summary_items}</ul>
         </div>"""
 
-        # 商品カードHTML
-        custom_card_html = f"""<div style="margin: 40px 0; padding: 25px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        # 本文最上部の画像表示
+        image_header_block = f'\n<figure class="wp-block-image size-full"><img src="{media_url if media_url else product.image_url}" alt="{product.name}"/></figure>\n'
+
+        # 商品カード
+        custom_card_html = f"""<div style="margin: 40px 0; padding: 25px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #ffffff;">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
                 <div style="flex: 1; min-width: 200px; text-align: center;">
                     <img src="{media_url if media_url else product.image_url}" style="max-width: 100%; height: auto; border-radius: 12px;">
                 </div>
                 <div style="flex: 2; min-width: 250px;">
-                    <h3 style="margin: 0 0 12px 0; color: #1e3a8a;">{product.name}</h3>
-                    <p style="color: #ef4444; font-weight: bold; font-size: 1.4em; margin: 15px 0;">特別価格：{product.price:,}円（税込）</p>
-                    <div style="display: flex; gap: 12px; margin-top: 25px; flex-wrap: wrap;">
-                        <a href="{affiliate_url}" target="_blank" rel="nofollow noopener" style="flex: 1; min-width: 160px; background: #ef4444; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">{button_text}{tracking_beacon}</a>
-                        <a href="{bic_detail_url}" target="_blank" style="flex: 1; min-width: 160px; background: #1f2937; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">詳細スペックを確認 ＞</a>
+                    <h3 style="margin: 0 0 12px 0;">{product.name}</h3>
+                    <p style="color: #ef4444; font-weight: bold; font-size: 1.4em;">特別価格：{product.price:,}円（税込）</p>
+                    <div style="display: flex; gap: 12px; margin-top: 25px;">
+                        <a href="{affiliate_url}" target="_blank" rel="nofollow noopener" style="flex: 1; background: #ef4444; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">{button_text}{tracking_beacon}</a>
+                        <a href="{bic_detail_url}" target="_blank" style="flex: 1; background: #1f2937; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">詳細スペック ＞</a>
                     </div>
                 </div>
             </div>
         </div>"""
 
-        # --- コンテンツ結合 (最上部に画像ブロックを配置) ---
-        img_id_attr = f' "id":{media_id},' if media_id else ""
-        image_header_block = f'\n<figure class="wp-block-image size-full"><img src="{media_url if media_url else product.image_url}" alt="{product.name}"/></figure>\n'
-        
         full_wp_content = f"{image_header_block}\n{summary_html}\n{main_body_blocks}\n{custom_card_html}"
 
         # ==========================================
@@ -233,7 +235,7 @@ class Command(BaseCommand):
             "title": title,
             "content": full_wp_content,
             "status": "publish",
-            "featured_media": media_id, # ここでアイキャッチ画像（Featured Image）をセット
+            "featured_media": media_id,
             "categories": target_cats, 
             "tags": target_tags 
         }
@@ -246,6 +248,6 @@ class Command(BaseCommand):
                 product.save()
                 self.stdout.write(self.style.SUCCESS(f"✅ 【投稿完了】アイキャッチ設定済 / タイトル: {title}"))
             else:
-                self.stdout.write(self.style.ERROR(f"❌ WordPress投稿失敗: {wp_res.status_code}"))
+                self.stdout.write(self.style.ERROR(f"❌ WordPress投稿失敗: {wp_res.status_code} - {wp_res.text}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"WordPress通信エラー: {e}"))
