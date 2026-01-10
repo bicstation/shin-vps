@@ -12,7 +12,7 @@ from .models import (
     RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series
 )
-from .models.pc_products import PCProduct  # 💡 PCProductのインポート
+from .models.pc_products import PCProduct
 
 # ----------------------------------------------------
 # 0. カスタムフォーム
@@ -26,29 +26,41 @@ class AdultProductAdminForm(forms.ModelForm):
 # 1. PCProduct (PC製品・Minisforum/Lenovo/Acer等) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
-    # テンプレートパスを指定（カスタムボタンを表示するHTML）
+    # テンプレートパスを指定
     change_list_template = "admin/api/pcproduct/change_list.html"
 
+    # 一覧画面の表示項目
     list_display = (
         'maker',
         'display_thumbnail',
         'name_summary',
         'price_display',
         'unified_genre',
-        'stock_status',      # 💡 在庫状況を表示
-        'display_ai_status', # 💡 AI解説の有無を表示
-        'is_posted',         # 💡 WordPress投稿済みフラグ
-        'is_active',
-        'updated_at',
+        'stock_status',      # 在庫状況
+        'display_ai_status', # AI解説の有無 (生成済み/未生成)
+        'is_posted',         # WordPress投稿済みフラグ (✅/❌表示)
+        'is_active',         # 掲載中フラグ
+        'updated_at',        # 更新日時
     )
     list_display_links = ('name_summary',)
     
-    # フィルタリング機能を強化
-    list_filter = ('maker', 'site_prefix', 'is_active', 'is_posted', 'stock_status', 'unified_genre')
+    # フィルタリング機能を強化 (右側のサイドバー)
+    list_filter = (
+        'is_posted',      # 投稿済みかどうかで絞り込み
+        'is_active',      # アクティブかどうか
+        'maker',          # メーカー別
+        'stock_status',   # 在庫状況別
+        'site_prefix',    # 取得元サイト別
+        'unified_genre',  # ジャンル別
+    )
     
+    # 検索窓の対象
     search_fields = ('name', 'unique_id', 'description', 'ai_content')
+    
+    # 並び順 (新しい更新を上に)
     ordering = ('-updated_at',)
 
+    # 詳細編集画面のレイアウト
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
@@ -103,7 +115,7 @@ class PCProductAdmin(admin.ModelAdmin):
         return mark_safe('<span style="color: #666;">未生成</span>')
     display_ai_status.short_description = 'AI解説'
 
-    # --- カスタムURLとアクション (Templateのhrefと一致させる) ---
+    # --- カスタムURLとアクション ---
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -116,31 +128,22 @@ class PCProductAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def fetch_minisforum_action(self, request):
-        """Minisforumの同期"""
-        try:
-            # call_command('scrape_minisforum')
-            self.message_user(request, "Minisforumデータの同期を開始しました。", messages.SUCCESS)
-        except Exception as e:
-            self.message_user(request, f"エラー: {e}", messages.ERROR)
+        self.message_user(request, "Minisforumデータの同期を開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def fetch_lenovo_action(self, request):
-        """Lenovoの同期"""
         self.message_user(request, "Lenovoデータの取得を開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def fetch_acer_action(self, request):
-        """Acerの同期"""
         self.message_user(request, "Acerデータの取得を開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def generate_ai_action(self, request):
-        """AI記事生成バッチ"""
         self.message_user(request, "AI記事生成プロセスを開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def full_update_pc_action(self, request):
-        """PC全ショップ一括更新"""
         try:
             # call_command('fetch_all_pc')
             self.message_user(request, "全PCショップの一括更新プロセスを開始しました。", messages.WARNING)
