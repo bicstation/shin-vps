@@ -11,11 +11,11 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'Gemini優先・外部プロンプト・カテゴリー＆タグ自動生成・Cocoon最適化フルスクリプト'
+    help = 'Gemini優先・Gutenberg対応・要約POINT4抽出・外部プロンプト完全版'
 
     def handle(self, *args, **options):
         # ==========================================
-        # 1. 記号・基本設定
+        # 1. 基本設定と記号定義
         # ==========================================
         SCH, CLN, SLS, QMK, EQU, AMP = "https", ":", "/", "?", "=", "&"
 
@@ -34,20 +34,26 @@ class Command(BaseCommand):
             "gemini-2.0-flash", 
             "gemini-2.0-flash-thinking-exp-01-21",
             "gemini-1.5-pro", 
-            "gemini-1.5-flash",
-            "gemini-2.0-flash-lite",
-            "gemma-3-27b-it"
+            "gemini-1.5-flash"
         ]
 
         CAT_LENOVO, CAT_DELL, CAT_HP = 4, 7, 8
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
-        # --- 外部プロンプトファイルの読み込み ---
-        PROMPT_FILE_PATH = "/mnt/c/dev/SHIN-VPS/django/api/management/commands/ai_prompt.txt"
+        # --- 外部プロンプトファイルの読み込み（パス解決を強化） ---
+        # スクリプトと同じディレクトリにある ai_prompt.txt を探す
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        PROMPT_FILE_PATH = os.path.join(current_dir, "ai_prompt.txt")
+        
+        # 万が一上記で見つからない場合の予備パス（絶対パス）
+        FALLBACK_PATH = "/mnt/c/dev/SHIN-VPS/django/api/management/commands/ai_prompt.txt"
+
+        base_prompt_template = ""
         try:
-            with open(PROMPT_FILE_PATH, 'r', encoding='utf-8') as f:
+            target_path = PROMPT_FILE_PATH if os.path.exists(PROMPT_FILE_PATH) else FALLBACK_PATH
+            with open(target_path, 'r', encoding='utf-8') as f:
                 base_prompt_template = f.read()
-            self.stdout.write(self.style.SUCCESS(f"📖 プロンプトファイルを読み込みました: {PROMPT_FILE_PATH}"))
+            self.stdout.write(self.style.SUCCESS(f"📖 プロンプト読み込み成功: {target_path}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルの読み込みに失敗しました: {e}"))
             return
@@ -127,9 +133,8 @@ class Command(BaseCommand):
             except: pass
 
         # ==========================================
-        # 4. AIプロンプトの構築（外部ファイルを埋め込み）
+        # 4. AI実行
         # ==========================================
-        # テキストファイル内の {maker}, {name}, {price}, {description} などの変数を置換
         prompt = base_prompt_template.format(
             maker=product.maker,
             name=product.name,
@@ -137,10 +142,7 @@ class Command(BaseCommand):
             description=product.description
         )
 
-        # ==========================================
-        # 5. AI実行
-        # ==========================================
-        ai_text, selected_model = None, None
+        ai_raw_text, selected_model = None, None
         for model_id in MODELS:
             self.stdout.write(f"🤖 モデル {model_id} で生成を試行中...")
             api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
@@ -148,22 +150,44 @@ class Command(BaseCommand):
                 response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=180)
                 res_json = response.json()
                 if 'candidates' in res_json:
-                    ai_text = res_json['candidates'][0]['content']['parts'][0]['text']
+                    ai_raw_text = res_json['candidates'][0]['content']['parts'][0]['text']
                     selected_model = model_id
                     break
             except: continue
 
-        if not ai_text: return
+        if not ai_raw_text: return
 
         # ==========================================
-        # 6. 整形とアフィリエイト構築
+        # 5. テキスト解析とGutenbergブロック化
         # ==========================================
-        clean_text = re.sub(r'```(html)?', '', ai_text).replace('```', '').strip()
+        clean_text = re.sub(r'```(html)?', '', ai_raw_text).replace('```', '').strip()
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
+        
+        # 1行目はタイトル
         title = re.sub(r'<[^>]*?>', '', lines[0]).replace('#', '').strip()
-        main_body_html = '\n'.join(lines[1:]).strip()
+        
+        # 要約データの抽出
+        summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', clean_text, re.DOTALL)
+        summary_raw = summary_match.group(1).strip() if summary_match else ""
+        
+        # 本文の抽出（タイトルとSUMMARYを除去）
+        main_body_raw = '\n'.join(lines[1:])
+        if summary_match:
+            main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()
 
-        # アフィリエイト設定
+        # Gutenberg用ブロックコメント付与関数
+        def convert_to_blocks(html):
+            # 見出しブロック
+            html = re.sub(r'(<h[23]>.*?</h[23]>)', r'\1', html)
+            # 段落ブロック
+            html = re.sub(r'(<p>.*?</p>)', r'\1', html, flags=re.DOTALL)
+            return html
+
+        main_body_blocks = convert_to_blocks(main_body_raw)
+
+        # ==========================================
+        # 6. アフィリエイトとデザイン構築
+        # ==========================================
         if 'dell' in maker_low:
             affiliate_url = f"{SCH}{CLN}{SLS}{SLS}click.linksynergy.com{SLS}fs-bin{SLS}click{QMK}id{EQU}nNBA6GzaGrQ{AMP}offerid{EQU}1568114.10014115{AMP}type{EQU}3{AMP}subid{EQU}0"
             tracking_beacon = f'<img border="0" width="1" height="1" src="{SCH}{CLN}{SLS}{SLS}ad.linksynergy.com{SLS}fs-bin{SLS}show{QMK}id{EQU}nNBA6GzaGrQ{AMP}bids{EQU}1568114.10014115{AMP}type{EQU}3{AMP}subid{EQU}0" >'
@@ -175,27 +199,33 @@ class Command(BaseCommand):
             tracking_beacon = f'<img src="{SCH}{CLN}{SLS}{SLS}ad.jp.ap.valuecommerce.com{SLS}servlet{SLS}gifbanner{QMK}sid{EQU}{sid}{AMP}pid{EQU}{pid}" height="1" width="1" border="0">'
             button_text = f"{product.maker}公式サイトで詳細を見る ＞"
 
-        image_header_block = f'\n<figure class="wp-block-image size-full"><img src="{media_url if media_url else product.image_url}"/></figure>\n'
+        # 要約ボックスHTML
+        summary_items = "".join([f"<li>{l.strip()}</li>" for l in summary_raw.splitlines() if ":" in l])
+        summary_html = f"""<div style="background:#f0f9ff; padding:20px; border-left:5px solid #0ea5e9; border-radius:4px; margin-bottom:30px;">
+            <h4 style="margin-top:0; color:#0369a1;">⚡ この製品の注目ポイント</h4>
+            <ul style="margin-bottom:0; font-size:0.95em; line-height:1.8;">{summary_items}</ul>
+        </div>"""
 
-        custom_card_html = f"""
-        <div style="margin: 40px 0; padding: 25px; border: 2px solid #3b82f6; border-radius: 20px; background-color: #f8fafc; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        # 商品カードHTML
+        custom_card_html = f"""<div style="margin: 40px 0; padding: 25px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
-                <div style="flex: 1; min-width: 220px; text-align: center;">
-                    <img src="{media_url if media_url else product.image_url}" style="max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #ddd;">
+                <div style="flex: 1; min-width: 200px; text-align: center;">
+                    <img src="{media_url if media_url else product.image_url}" style="max-width: 100%; height: auto; border-radius: 12px;">
                 </div>
                 <div style="flex: 2; min-width: 250px;">
-                    <h3 style="margin: 0 0 12px 0; color: #1e3a8a; font-size: 1.5em; border-bottom: 2px solid #3b82f6; padding-bottom: 8px;">{product.name}</h3>
+                    <h3 style="margin: 0 0 12px 0; color: #1e3a8a;">{product.name}</h3>
                     <p style="color: #ef4444; font-weight: bold; font-size: 1.4em; margin: 15px 0;">特別価格：{product.price:,}円（税込）</p>
                     <div style="display: flex; gap: 12px; margin-top: 25px; flex-wrap: wrap;">
-                        <a href="{affiliate_url}" target="_blank" rel="nofollow noopener" style="flex: 1; min-width: 160px; background: linear-gradient(135deg, #ef4444, #b91c1c); color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 10px; text-decoration: none; font-weight: bold;">{button_text}{tracking_beacon}</a>
-                        <a href="{bic_detail_url}" target="_blank" style="flex: 1; min-width: 160px; background: linear-gradient(135deg, #1f2937, #111827); color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 10px; text-decoration: none; font-weight: bold;">詳細スペックを確認する ＞</a>
+                        <a href="{affiliate_url}" target="_blank" rel="nofollow noopener" style="flex: 1; min-width: 160px; background: #ef4444; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">{button_text}{tracking_beacon}</a>
+                        <a href="{bic_detail_url}" target="_blank" style="flex: 1; min-width: 160px; background: #1f2937; color: #ffffff; text-align: center; padding: 15px 10px; border-radius: 9999px; text-decoration: none; font-weight: bold;">スペック詳細 ＞</a>
                     </div>
                 </div>
             </div>
-        </div>
-        """
+        </div>"""
 
-        full_wp_content = f"{image_header_block}\n{main_body_html}\n{custom_card_html}"
+        # 全体コンテンツ結合
+        image_header = f'<figure class="wp-block-image size-full"><img src="{media_url if media_url else product.image_url}"/></figure>'
+        full_wp_content = f"{image_header}\n{summary_html}\n{main_body_blocks}\n{custom_card_html}"
 
         # ==========================================
         # 7. WordPress投稿
@@ -212,7 +242,7 @@ class Command(BaseCommand):
         try:
             wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH, timeout=30)
             if wp_res.status_code == 201:
-                product.ai_content = main_body_html 
+                product.ai_content = main_body_raw 
                 product.is_posted = True
                 product.save()
                 self.stdout.write(self.style.SUCCESS(f"✅ 【投稿完了】モデル: {selected_model} / タイトル: {title}"))
