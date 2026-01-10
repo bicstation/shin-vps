@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (STORM追加版)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (FRONTIER対応版)
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -44,11 +44,12 @@ echo "4) [Import] Bicstation (HP) 同期"
 echo "5) [Import] Bicstation (Minisforum) スクレイピング"
 echo "6) [Import] GEEKOM (Intel/AMD) スクレイピング"
 echo "7) [Import] VSPEC (BTO PC) スクレイピング"
-echo -e "8) ${COLOR}[Import] STORM (Gaming PC) スクレイピング ✨NEW${RESET}"
-echo "9) [Import] AV-Flash データのインポート"
-echo "10) [Admin]  スーパーユーザーの作成"
-echo -e "11) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
-echo "12) 終了"
+echo "8) [Import] STORM (Gaming PC) スクレイピング"
+echo -e "9) ${COLOR}[Import] FRONTIER (Sale PC) スクレイピング ✨NEW${RESET}"
+echo "10) [Import] AV-Flash データのインポート"
+echo "11) [Admin]  スーパーユーザーの作成"
+echo -e "12) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
+echo "13) 終了"
 echo "---------------------------------------"
 read -p "選択してください: " CHOICE
 
@@ -76,11 +77,15 @@ case $CHOICE in
         run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py
         ;;
     9)
+        echo -e "${COLOR}⚙️  FRONTIER スクレイピングを開始します...${RESET}"
+        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py
+        ;;
+    10)
         read -p "ファイル名を入力: " FILE_NAME
         run_cmd python manage.py import_av "/usr/src/app/data/$FILE_NAME"
         ;;
-    10) run_cmd python manage.py createsuperuser ;;
-    11)
+    11) run_cmd python manage.py createsuperuser ;;
+    12)
         MODELS_PATH="$SCRIPT_DIR/django/api/management/commands/ai_models.txt"
         [ -f "$MODELS_PATH" ] && cat "$MODELS_PATH" | sed 's/^/- /'
         echo "1: 1件 / 2: 5件 / 3: モデル確認"
@@ -91,7 +96,7 @@ case $CHOICE in
         elif [ "$WP_CHOICE" == "3" ]; then run_cmd python manage.py ai_model_name
         fi
         ;;
-    12) exit 0 ;;
+    13) exit 0 ;;
 esac
 
 echo "---------------------------------------"
