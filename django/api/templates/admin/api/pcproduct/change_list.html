@@ -1,19 +1,39 @@
 {% extends "admin/change_list.html" %}
 
 {% block object-tools-items %}
+    {# デフォルトの「PC製品を追加」ボタンを表示 #}
     {{ block.super }}
-    {# --- PC製品専用のカスタムボタン --- #}
+
+    {# --- ショップ別取得ボタン --- #}
     <li>
-        <a href="fetch-acer/" class="addlink" style="background-color: #4caf50; color: white;">Acer取得</a>
+        <a href="fetch-minisforum/" class="addlink" style="background-color: #004bb1; color: white;">
+            Minisforum取得
+        </a>
     </li>
-    {# 将来的に他のショップを追加する場合の予備 #}
+
     <li>
-        <a href="fetch-other-shop/" class="addlink" style="background-color: #03a9f4; color: white;">ショップ巡回</a>
+        <a href="fetch-lenovo/" class="addlink" style="background-color: #e2231a; color: white;">
+            Lenovo取得
+        </a>
     </li>
+
     <li>
-        <a href="generate-ai-article/" class="addlink" style="background-color: #9c27b0; color: white;">AI記事生成</a>
+        <a href="fetch-acer/" class="addlink" style="background-color: #4caf50; color: white;">
+            Acer取得
+        </a>
     </li>
+
+    {# --- コンテンツ生成・処理系 --- #}
     <li>
-        <a href="full-update-pc/" class="addlink" style="background-color: #e53935; color: white; font-weight: bold;">🚀 PCデータ一括更新</a>
+        <a href="generate-ai-article/" class="addlink" style="background-color: #9c27b0; color: white;">
+            AI記事生成
+        </a>
+    </li>
+
+    {# --- 一括更新アクション --- #}
+    <li>
+        <a href="full-update-pc/" class="addlink" style="background-color: #e53935; color: white; font-weight: bold;">
+            🚀 PCデータ一括更新
+        </a>
     </li>
 {% endblock %}

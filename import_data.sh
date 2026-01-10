@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (最終完全版 + MINISFORUM対応)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (GEEKOM対応版)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
@@ -48,11 +48,12 @@ echo "1) [DB]     マイグレーション実行 (テーブル作成)"
 echo "2) [Import] Tiper データのインポート"
 echo "3) [Import] Bic-saving (Lenovo) スクレイピング"
 echo "4) [Import] Bicstation (HP) 同期 (API + マッピング)"
-echo "5) [Import] Bicstation (Minisforum) スクレイピング ✨NEW"
-echo "6) [Import] AV-Flash データのインポート"
-echo "7) [Admin]  スーパーユーザー(管理者)の作成"
-echo -e "8) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
-echo "9) 終了"
+echo "5) [Import] Bicstation (Minisforum) スクレイピング"
+echo "6) [Import] GEEKOM (Intel/AMD/Game/Office) スクレイピング ✨NEW"
+echo "7) [Import] AV-Flash データのインポート"
+echo "8) [Admin]  スーパーユーザー(管理者)の作成"
+echo -e "9) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
+echo "10) 終了"
 echo "---------------------------------------"
 read -p "実行する操作を選択してください: " CHOICE
 
@@ -74,47 +75,46 @@ case $CHOICE in
         ;;
     4)
         echo -e "${COLOR}⚙️  Bicstation (HP) 同期プロセスを開始します...${RESET}"
-        echo "   >> [1/2] APIから最新の製品情報を取得中 (HP)..."
         run_cmd python manage.py linkshare_bc_api_parser --mid 35909 --save-db
-        echo "   >> [2/2] 生データからカタログ(PCProduct)への同期を実行中 (HP)..."
         run_cmd python manage.py sync_products_from_raw --maker HP
         ;;
     5)
         echo -e "${COLOR}⚙️  Bicstation (Minisforum) スクレイピングを開始します...${RESET}"
-        # 先ほど修正した、価格補正・詳細スペック取得版のスクリプトを実行
         run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py
         ;;
     6)
+        echo -e "${COLOR}⚙️  GEEKOM (日本公式) スクレイピングを開始します...${RESET}"
+        # 指定されたパスにあるGEEKOMスクレイパーを実行
+        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py
+        ;;
+    7)
         echo "⚙️  AV-Flashインポート..."
         read -p "ファイル名を入力: " FILE_NAME
         run_cmd python manage.py import_av "/usr/src/app/data/$FILE_NAME"
         ;;
-    7)
+    8)
         echo "👤 管理者作成..."
         run_cmd python manage.py createsuperuser
         ;;
-    8)
+    9)
         echo -e "${COLOR}🤖 AI Blog Generation & WP Posting${RESET}"
         echo "1: 1件のみ実行 (ランダム抽出)"
         echo "2: 5件連続実行"
         read -p "実行モードを選択してください: " WP_CHOICE
         
         if [ "$WP_CHOICE" == "1" ]; then
-            echo "⚙️  AI記事生成中 (1件)..."
             run_cmd python manage.py ai_blog_from_db
         elif [ "$WP_CHOICE" == "2" ]; then
-            echo "⚙️  AI記事生成中 (5件連続ループ)..."
             for i in {1..5}; do
                 echo "--- [$i / 5 件目] ---"
                 run_cmd python manage.py ai_blog_from_db
-                echo "Waiting for 10 seconds to avoid API limit..."
                 sleep 10
             done
         else
             echo "キャンセルしました。"
         fi
         ;;
-    9)
+    10)
         echo "終了します。"
         exit 0
         ;;

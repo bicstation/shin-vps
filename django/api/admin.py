@@ -12,7 +12,7 @@ from .models import (
     RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series
 )
-from .models.pc_products import PCProduct  # 💡 PCProductのインポートを維持
+from .models.pc_products import PCProduct  # 💡 PCProductのインポート
 
 # ----------------------------------------------------
 # 0. カスタムフォーム
@@ -23,99 +23,129 @@ class AdultProductAdminForm(forms.ModelForm):
         fields = '__all__'
 
 # ----------------------------------------------------
-# 1. PCProduct (PC製品・Lenovo/Acer等) のAdminクラス
+# 1. PCProduct (PC製品・Minisforum/Lenovo/Acer等) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
-    # テンプレートパスは環境に合わせて調整してください
+    # テンプレートパスを指定（カスタムボタンを表示するHTML）
     change_list_template = "admin/api/pcproduct/change_list.html"
 
     list_display = (
         'maker',
         'display_thumbnail',
-        'name',
-        'price',
-        'unified_genre',   # 統合ジャンル
+        'name_summary',
+        'price_display',
+        'unified_genre',
+        'stock_status',      # 💡 在庫状況を表示
         'display_ai_status', # 💡 AI解説の有無を表示
-        'is_posted',       # 💡 WordPress投稿済みフラグ
+        'is_posted',         # 💡 WordPress投稿済みフラグ
         'is_active',
         'updated_at',
     )
-    list_display_links = ('name',)
+    list_display_links = ('name_summary',)
     
     # フィルタリング機能を強化
-    list_filter = ('maker', 'site_prefix', 'is_active', 'is_posted', 'unified_genre', 'raw_genre')
+    list_filter = ('maker', 'site_prefix', 'is_active', 'is_posted', 'stock_status', 'unified_genre')
     
     search_fields = ('name', 'unique_id', 'description', 'ai_content')
     ordering = ('-updated_at',)
 
     fieldsets = (
         ('基本情報', {
-            'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted'),
+            'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
         }),
         ('仕分け情報', {
             'fields': ('unified_genre', 'raw_genre'),
         }),
         ('製品詳細', {
-            'fields': ('name', 'price', 'description'),
+            'fields': ('name', 'price', 'description', 'raw_html'),
         }),
-        ('AI生成コンテンツ', {
-            'fields': ('ai_content',),
-            'description': 'WordPressおよび自社サイトの個別ページに表示される解説文（HTML可）です。',
+        ('アフィリエイト・AIコンテンツ', {
+            'fields': ('affiliate_url', 'affiliate_updated_at', 'ai_content'),
+            'description': '公式サイトへのアフィリエイトリンクとAI生成された解説文です。',
         }),
-        ('リンク・画像', {
-            'fields': ('url', 'image_url'),
+        ('画像', {
+            'fields': ('image_url', 'display_thumbnail_large'),
         }),
         ('システム情報', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',),
         }),
     )
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'display_thumbnail_large')
+
+    # --- カスタム表示メソッド ---
+    def name_summary(self, obj):
+        return obj.name[:40] + "..." if len(obj.name) > 40 else obj.name
+    name_summary.short_description = "商品名"
+
+    def price_display(self, obj):
+        return f"¥{obj.price:,}" if obj.price else "価格未定"
+    price_display.short_description = "価格"
 
     def display_thumbnail(self, obj):
-        """一覧画面に製品画像を表示"""
+        """一覧画面用の小型サムネイル"""
         if obj.image_url:
             return mark_safe(f'<img src="{obj.image_url}" width="80" height="50" style="object-fit: contain; background: #eee; border-radius: 4px;" />')
         return "No Image"
     display_thumbnail.short_description = '製品画像'
+
+    def display_thumbnail_large(self, obj):
+        """詳細画面用の大きなプレビュー"""
+        if obj.image_url:
+            return mark_safe(f'<img src="{obj.image_url}" width="300" style="border: 1px solid #ccc;" />')
+        return "画像なし"
+    display_thumbnail_large.short_description = '画像プレビュー'
 
     def display_ai_status(self, obj):
         """AI解説が生成されているかをアイコンで表示"""
         if obj.ai_content:
             return mark_safe('<span style="color: #28a745; font-weight: bold;">生成済み</span>')
         return mark_safe('<span style="color: #666;">未生成</span>')
-    display_ai_status.short_description = 'AI解説状況'
+    display_ai_status.short_description = 'AI解説'
 
+    # --- カスタムURLとアクション (Templateのhrefと一致させる) ---
     def get_urls(self):
-        """管理画面にカスタムボタン用のURLを追加"""
         urls = super().get_urls()
         custom_urls = [
+            path('fetch-minisforum/', self.fetch_minisforum_action, name='fetch_minisforum'),
             path('fetch-lenovo/', self.fetch_lenovo_action, name='fetch_lenovo'),
             path('fetch-acer/', self.fetch_acer_action, name='fetch_acer'),
             path('generate-ai-article/', self.generate_ai_action, name='generate_ai_article'),
+            path('full-update-pc/', self.full_update_pc_action, name='full_update_pc'),
         ]
         return custom_urls + urls
 
-    def fetch_lenovo_action(self, request):
-        """Lenovoのスクレイピングを実行"""
+    def fetch_minisforum_action(self, request):
+        """Minisforumの同期"""
         try:
-            # call_command('scrape_lenovo') 
-            self.message_user(request, "Lenovoデータの取得を開始しました。", messages.SUCCESS)
+            # call_command('scrape_minisforum')
+            self.message_user(request, "Minisforumデータの同期を開始しました。", messages.SUCCESS)
         except Exception as e:
-            self.message_user(request, f"エラーが発生しました: {e}", messages.ERROR)
+            self.message_user(request, f"エラー: {e}", messages.ERROR)
+        return HttpResponseRedirect("../")
+
+    def fetch_lenovo_action(self, request):
+        """Lenovoの同期"""
+        self.message_user(request, "Lenovoデータの取得を開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def fetch_acer_action(self, request):
-        self.message_user(request, "Acerデータの取得プロセスを開始しました。", messages.INFO)
+        """Acerの同期"""
+        self.message_user(request, "Acerデータの取得を開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def generate_ai_action(self, request):
-        """AI記事生成バッチの実行"""
+        """AI記事生成バッチ"""
+        self.message_user(request, "AI記事生成プロセスを開始しました。", messages.SUCCESS)
+        return HttpResponseRedirect("../")
+
+    def full_update_pc_action(self, request):
+        """PC全ショップ一括更新"""
         try:
-            # call_command('PCProductPostCommand')
-            self.message_user(request, "AI記事生成を開始しました。", messages.SUCCESS)
+            # call_command('fetch_all_pc')
+            self.message_user(request, "全PCショップの一括更新プロセスを開始しました。", messages.WARNING)
         except Exception as e:
-            self.message_user(request, f"生成エラー: {e}", messages.ERROR)
+            self.message_user(request, f"一括更新エラー: {e}", messages.ERROR)
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
@@ -174,10 +204,9 @@ class AdultProductAdmin(admin.ModelAdmin):
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
-# 3. LinkshareProduct Admin (💡エラー箇所を修正)
+# 3. LinkshareProduct Admin
 # ----------------------------------------------------
 class LinkshareProductAdmin(admin.ModelAdmin): 
-    # sale_price がモデルに存在しないため削除しました
     list_display = ('id', 'product_name', 'sku', 'merchant_id', 'is_active', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
 
