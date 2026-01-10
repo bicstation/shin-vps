@@ -32,23 +32,23 @@ export default async function Page(props: {
     const currentOffset = parseInt(params.offset || '0', 10);
     const limit = 10;
 
-    // ✅ 両方のAPIを並列取得
+    // ✅ 第1引数を '' にすることで全メーカーを取得するように修正
     const [wpData, pcData] = await Promise.all([
         fetchPostList(5),
-        fetchPCProducts('Dell', currentOffset, limit) 
+        fetchPCProducts('', currentOffset, limit) 
     ]);
 
     const posts = wpData.results || [];
 
     return (
         <div className={styles.wrapper}>
-            {/* サイドバー：スマホ時はCSSで非表示または調整 */}
+            {/* サイドバー：activeMenuを 'all' に変更 */}
             <aside className={styles.sidebarSection}>
-                <Sidebar activeMenu="dell" />
+                <Sidebar activeMenu="all" />
             </aside>
 
             <main className={styles.main}>
-               
+                
                 {/* WordPress お知らせセクション */}
                 <section className={styles.newsSection}>
                     <h2 className={styles.sectionTitle}>

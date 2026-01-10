@@ -79,10 +79,8 @@ class AdultProductListAPIView(generics.ListAPIView):
     
     serializer_class = AdultProductSerializer
     
-    # フィルタと並び替えの機能を有効化
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
-    # 絞り込み許可（Next.jsのURLパラメータに対応）
     filterset_fields = {
         'genres': ['exact'],
         'actresses': ['exact'],
@@ -91,7 +89,6 @@ class AdultProductListAPIView(generics.ListAPIView):
         'label': ['exact'],
     }
     
-    # 並び替え許可
     ordering_fields = ['id', 'price', 'release_date'] 
     search_fields = ['title']
 
@@ -106,16 +103,11 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
         lookup_value = self.kwargs[lookup_url_kwarg]
 
-        # デバッグログをコンソールに出力
-        print(f"DEBUG: Detailed request for value: '{lookup_value}' (Type: {type(lookup_value)})")
-
         if lookup_value.isdigit():
             target_id = int(lookup_value)
-            print(f"DEBUG: Attempting to find by ID: {target_id}")
             obj = get_object_or_404(AdultProduct, id=target_id)
             return obj
         
-        print(f"DEBUG: Attempting to find by product_id_unique: {lookup_value}")
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
 
 # --------------------------------------------------------------------------
@@ -123,24 +115,33 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
     """
-    PC製品一覧取得：site_prefixやunified_genreでのフィルタリングに対応
+    PC製品一覧取得：メーカー名が指定されている場合のみフィルタリングを行う
     """
-    queryset = PCProduct.objects.filter(is_active=True).order_by('-updated_at')
     serializer_class = PCProductSerializer
-    
-    # 💡 フィルタリング機能をAdultProduct同様に共通化して強化
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
-    # Next.js 側から ?site_prefix=lenovo&unified_genre=gaming 等でアクセス可能
-    filterset_fields = ['site_prefix', 'maker', 'unified_genre', 'stock_status', 'is_posted']
+    # query_params.get('maker') を手動で処理するため filterset_fields からは 'maker' を外す
+    filterset_fields = ['site_prefix', 'unified_genre', 'stock_status', 'is_posted']
     
-    # 検索・並び替え設定
     search_fields = ['name', 'description', 'ai_content']
     ordering_fields = ['price', 'updated_at', 'created_at']
 
+    def get_queryset(self):
+        # 基本クエリ（公開中のものを更新順に）
+        queryset = PCProduct.objects.filter(is_active=True)
+        
+        # URLの ?maker=xxx を取得
+        maker = self.request.query_params.get('maker', None)
+        
+        # 💡 指定がある場合のみフィルタを適用（空文字やNoneなら全件）
+        if maker and maker.strip() != "":
+            queryset = queryset.filter(maker__iexact=maker)
+            
+        return queryset.order_by('-updated_at')
+
 class PCProductDetailAPIView(generics.RetrieveAPIView):
     """
-    PC製品詳細取得：unique_id（JANや型番）で取得
+    PC製品詳細取得
     """
     queryset = PCProduct.objects.all()
     serializer_class = PCProductSerializer

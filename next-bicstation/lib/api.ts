@@ -14,7 +14,6 @@ const getWpConfig = () => {
     if (IS_SERVER) {
         // Next.jsサーバー内部（Dockerネットワーク）からの通信
         return {
-            // wp-config.php で自動的に /blog が付与されるため baseUrl には含めない
             baseUrl: 'http://nginx-wp-v2', 
             host: 'localhost:8083' // WP_HOME / WP_SITEURL と一致させる
         };
@@ -46,14 +45,13 @@ export interface PCProduct {
     url: string;           // 直リンクURL
     affiliate_url: string; // 正式アフィリエイトURL
     description: string;
-    ai_content: string;    // AI生成コンテンツ（詳細解説）
+    ai_content: string;    // AI生成コンテンツ
     stock_status: string;
     unified_genre: string;
 }
 
 /**
  * 📝 [WordPress] 記事一覧取得
- * カスタム投稿タイプ 'bicstation' を取得
  */
 export async function fetchPostList(perPage = 5) {
     const { baseUrl, host } = getWpConfig();
@@ -102,18 +100,28 @@ export async function fetchPostData(slug: string) {
 
 /**
  * 💻 [Django API] 商品一覧取得
+ * ✅ 修正点: maker のデフォルトを空文字にし、revalidateを0に設定
  */
-export async function fetchPCProducts(maker = 'lenovo', offset = 0, limit = 10) {
+export async function fetchPCProducts(maker = '', offset = 0, limit = 10) {
     const rootUrl = getDjangoBaseUrl();
     const url = `${rootUrl}/api/pc-products/?maker=${maker.toLowerCase()}&limit=${limit}&offset=${offset}`;
+    
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            next: { revalidate: 3600 }
+            // キャッシュを無効化して最新のVSPECデータを取得
+            next: { revalidate: 0 } 
         });
+
+        if (!res.ok) {
+            console.error(`[Django API Error]: Status ${res.status}`);
+            return { results: [], count: 0, debugUrl: url };
+        }
+
         const data = await res.json();
         return { results: data.results || [], count: data.count || 0, debugUrl: url };
     } catch (e) { 
+        console.error(`[Django API ERROR]:`, e);
         return { results: [], count: 0 }; 
     }
 }
@@ -127,7 +135,7 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            next: { revalidate: 3600 } 
+            next: { revalidate: 0 } 
         });
         return res.ok ? await res.json() : null;
     } catch (e) { 
@@ -136,12 +144,10 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
 }
 
 /**
- * 💻 [Django API] 関連商品の取得 (ビルドエラー修正分)
- * 表示中の商品と同じメーカーの商品を取得し、自分自身を除外します。
+ * 💻 [Django API] 関連商品の取得
  */
 export async function fetchRelatedProducts(maker: string, excludeId: string, limit = 4) {
     const rootUrl = getDjangoBaseUrl();
-    // 除外分を含めて1つ多めに取得
     const url = `${rootUrl}/api/pc-products/?maker=${maker.toLowerCase()}&limit=${limit + 1}`;
 
     try {
@@ -155,7 +161,6 @@ export async function fetchRelatedProducts(maker: string, excludeId: string, lim
         const data = await res.json();
         const results: PCProduct[] = data.results || [];
 
-        // 現在の商品を除外してlimit数に調整
         return results
             .filter((product) => product.unique_id !== excludeId)
             .slice(0, limit);
