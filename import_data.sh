@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (FRONTIER対応版)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (Sycom & FRONTIER 対応版)
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -13,13 +13,13 @@ if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" 
     ENV_TYPE="PRODUCTION (VPS)"
     COMPOSE_FILE="docker-compose.prod.yml"
     CONTAINER_NAME="django-v2"
-    COLOR="\e[32m"
+    COLOR="\e[32m" # 緑（本番）
 else
     IS_VPS=false
     ENV_TYPE="LOCAL (Development)"
     COMPOSE_FILE="docker-compose.yml"
     CONTAINER_NAME="django-v2"
-    COLOR="\e[36m"
+    COLOR="\e[36m" # 水色（ローカル）
 fi
 
 RESET="\e[0m"
@@ -45,11 +45,12 @@ echo "5) [Import] Bicstation (Minisforum) スクレイピング"
 echo "6) [Import] GEEKOM (Intel/AMD) スクレイピング"
 echo "7) [Import] VSPEC (BTO PC) スクレイピング"
 echo "8) [Import] STORM (Gaming PC) スクレイピング"
-echo -e "9) ${COLOR}[Import] FRONTIER (Sale PC) スクレイピング ✨NEW${RESET}"
-echo "10) [Import] AV-Flash データのインポート"
-echo "11) [Admin]  スーパーユーザーの作成"
-echo -e "12) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
-echo "13) 終了"
+echo "9) [Import] FRONTIER (Sale PC) スクレイピング"
+echo -e "10) ${COLOR}[Import] Sycom (Craftsmanship PC) スクレイピング ✨NEW${RESET}"
+echo "11) [Import] AV-Flash データのインポート"
+echo "12) [Admin]  スーパーユーザーの作成"
+echo -e "13) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
+echo "14) 終了"
 echo "---------------------------------------"
 read -p "選択してください: " CHOICE
 
@@ -81,11 +82,15 @@ case $CHOICE in
         run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py
         ;;
     10)
+        echo -e "${COLOR}⚙️  Sycom 職人スペック解析スクレイピングを開始します...${RESET}"
+        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py
+        ;;
+    11)
         read -p "ファイル名を入力: " FILE_NAME
         run_cmd python manage.py import_av "/usr/src/app/data/$FILE_NAME"
         ;;
-    11) run_cmd python manage.py createsuperuser ;;
-    12)
+    12) run_cmd python manage.py createsuperuser ;;
+    13)
         MODELS_PATH="$SCRIPT_DIR/django/api/management/commands/ai_models.txt"
         [ -f "$MODELS_PATH" ] && cat "$MODELS_PATH" | sed 's/^/- /'
         echo "1: 1件 / 2: 5件 / 3: モデル確認"
@@ -96,7 +101,7 @@ case $CHOICE in
         elif [ "$WP_CHOICE" == "3" ]; then run_cmd python manage.py ai_model_name
         fi
         ;;
-    13) exit 0 ;;
+    14) exit 0 ;;
 esac
 
 echo "---------------------------------------"
