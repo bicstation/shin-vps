@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (Dell FTP / Sycom / FRONTIER 対応版)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (Acer対応・階層化版)
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -30,7 +30,6 @@ echo -e "🚀 SHIN-VPS Data Import & WP Automation Tool"
 echo -e "環境: ${COLOR}${ENV_TYPE}${RESET}"
 echo -e "---------------------------------------"
 
-# 共通コマンド実行関数
 run_cmd() {
     if [ ! -f "$SCRIPT_DIR/$COMPOSE_FILE" ]; then
         echo -e "\e[31m[ERROR] $COMPOSE_FILE が見つかりません。\e[0m"
@@ -40,20 +39,12 @@ run_cmd() {
 }
 
 echo "1) [DB]     マイグレーション実行"
-echo "2) [Import] Tiper データのインポート"
-echo "3) [Import] Bic-saving (Lenovo) スクレイピング"
-echo -e "4) ${COLOR}[Import] Dell (FTP Data) インポート ✨NEW${RESET}"
-echo "5) [Import] Bicstation (HP) 同期"
-echo "6) [Import] Bicstation (Minisforum) スクレイピング"
-echo "7) [Import] GEEKOM (Intel/AMD) スクレイピング"
-echo "8) [Import] VSPEC (BTO PC) スクレイピング"
-echo "9) [Import] STORM (Gaming PC) スクレイピング"
-echo "10) [Import] FRONTIER (Sale PC) スクレイピング"
-echo -e "11) ${COLOR}[Import] Sycom (Craftsmanship PC) スクレイピング${RESET}"
-echo "12) [Import] AV-Flash データのインポート"
-echo "13) [Admin]  スーパーユーザーの作成"
-echo -e "14) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
-echo "15) 終了"
+echo "2) [Import] Tiper データ (Fanza/Duga) インポート"
+echo -e "3) ${COLOR}[Import] メーカー別スクレイピング・同期 ✨${RESET}"
+echo "4) [Import] AV-Flash データのインポート"
+echo "5) [Admin]  スーパーユーザーの作成"
+echo -e "6) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
+echo "7) 終了"
 echo "---------------------------------------"
 read -p "選択してください: " CHOICE
 
@@ -66,38 +57,42 @@ case $CHOICE in
         run_cmd python manage.py normalize_fanza
         ;;
     3)
-        echo "⚙️  Lenovo実行中..."
-        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
+        echo -e "\n--- どのメーカーを実行しますか？ ---"
+        echo "1) Lenovo (Bic-saving)"
+        echo "2) HP (Linkshare/Bicstation)"
+        echo "3) Dell (FTP Data)"
+        echo "4) Acer (Official Store) ✨"
+        echo "5) Minisforum"
+        echo "6) GEEKOM"
+        echo "7) VSPEC (BTO)"
+        echo "8) STORM"
+        echo "9) FRONTIER"
+        echo "10) Sycom"
+        echo "11) 戻る"
+        read -p ">> " SUB_CHOICE
+        case $SUB_CHOICE in
+            1) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
+            2)
+                run_cmd python manage.py linkshare_bc_api_parser --mid 35909 --save-db
+                run_cmd python manage.py sync_products_from_raw --maker HP
+                ;;
+            3) run_cmd python manage.py import_dell_ftp ;;
+            4) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_acer.py ;;
+            5) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
+            6) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py ;;
+            7) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_vspec.py ;;
+            8) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py ;;
+            9) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py ;;
+            10) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
+            *) exit 0 ;;
+        esac
         ;;
     4)
-        echo -e "${COLOR}⚙️  Dell FTP データのインポートを開始します...${RESET}"
-        run_cmd python manage.py import_dell_ftp
-        ;;
-    5)
-        run_cmd python manage.py linkshare_bc_api_parser --mid 35909 --save-db
-        run_cmd python manage.py sync_products_from_raw --maker HP
-        ;;
-    6) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
-    7) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py ;;
-    8) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_vspec.py ;;
-    9)
-        echo -e "${COLOR}⚙️  STORM スクレイピングを開始します...${RESET}"
-        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py
-        ;;
-    10)
-        echo -e "${COLOR}⚙️  FRONTIER スクレイピングを開始します...${RESET}"
-        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py
-        ;;
-    11)
-        echo -e "${COLOR}⚙️  Sycom 職人スペック解析スクレイピングを開始します...${RESET}"
-        run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py
-        ;;
-    12)
         read -p "ファイル名を入力: " FILE_NAME
         run_cmd python manage.py import_av "/usr/src/app/data/$FILE_NAME"
         ;;
-    13) run_cmd python manage.py createsuperuser ;;
-    14)
+    5) run_cmd python manage.py createsuperuser ;;
+    6)
         MODELS_PATH="$SCRIPT_DIR/django/api/management/commands/ai_models.txt"
         [ -f "$MODELS_PATH" ] && cat "$MODELS_PATH" | sed 's/^/- /'
         echo "1: 1件 / 2: 5件 / 3: モデル確認"
@@ -108,15 +103,12 @@ case $CHOICE in
         elif [ "$WP_CHOICE" == "3" ]; then run_cmd python manage.py ai_model_name
         fi
         ;;
-    15) exit 0 ;;
+    7) exit 0 ;;
 esac
 
-# ==============================================================================
 # 🔄 VPS環境のみ：スケジューラーの自動更新
-# ==============================================================================
 if [ "$IS_VPS" = true ]; then
-    # 4 (Dell FTP), 10, 11 (スクレイピング) または 14 (WP投稿テスト) の場合に実行
-    if [[ "$CHOICE" =~ ^(4|10|11|14)$ ]]; then
+    if [[ "$CHOICE" =~ ^(3|6)$ ]]; then
         echo -e "\n${COLOR}🔄 [VPS] 設定変更を反映するためスケジューラーを再起動します...${RESET}"
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
         echo -e "✨ スケジュール同期が完了しました。"
