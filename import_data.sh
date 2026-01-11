@@ -40,7 +40,7 @@ run_cmd() {
 
 echo "1) [DB]     マイグレーション実行"
 echo "2) [Import] Tiper データ (Fanza/Duga) インポート"
-echo -e "3) ${COLOR}[Import] メーカー別スクレイピング・同期 ✨${RESET}"
+echo -e "3) ${COLOR}[Import] メーカー別インポート・同期 ✨${RESET}"
 echo "4) [Import] AV-Flash データのインポート"
 echo "5) [Admin]  スーパーユーザーの作成"
 echo -e "6) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
@@ -61,7 +61,7 @@ case $CHOICE in
         echo "1) Lenovo (Bic-saving)"
         echo "2) HP (Linkshare/Bicstation)"
         echo "3) Dell (FTP Data)"
-        echo "4) Acer (Official Store) ✨"
+        echo "4) Acer (JSON Import from Windows) ✨"
         echo "5) Minisforum"
         echo "6) GEEKOM"
         echo "7) VSPEC (BTO)"
@@ -77,13 +77,14 @@ case $CHOICE in
                 run_cmd python manage.py sync_products_from_raw --maker HP
                 ;;
             3) run_cmd python manage.py import_dell_ftp ;;
-            4) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_acer.py ;;
+            4) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_acer.py ;;
             5) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
             6) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py ;;
             7) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_vspec.py ;;
             8) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py ;;
             9) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py ;;
             10) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
+            11) : ;;
             *) exit 0 ;;
         esac
         ;;

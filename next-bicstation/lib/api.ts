@@ -100,7 +100,7 @@ export async function fetchPostData(slug: string) {
 
 /**
  * 💻 [Django API] 商品一覧取得
- * ✅ 修正点: maker のデフォルトを空文字にし、revalidateを0に設定
+ * ✅ 修正点: Next.js 15のキャッシュ対策として cache: 'no-store' を追加
  */
 export async function fetchPCProducts(maker = '', offset = 0, limit = 10) {
     const rootUrl = getDjangoBaseUrl();
@@ -109,19 +109,30 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10) {
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            // キャッシュを無効化して最新のVSPECデータを取得
+            // 💡 ページ送り（offset）を確実に反映させるためキャッシュを無効化
+            cache: 'no-store',
             next: { revalidate: 0 } 
         });
 
         if (!res.ok) {
-            console.error(`[Django API Error]: Status ${res.status}`);
+            console.error(`[Django API Error]: Status ${res.status} for URL: ${url}`);
             return { results: [], count: 0, debugUrl: url };
         }
 
         const data = await res.json();
-        return { results: data.results || [], count: data.count || 0, debugUrl: url };
-    } catch (e) { 
-        console.error(`[Django API ERROR]:`, e);
+        
+        // 開発時のデバッグ用ログ
+        if (IS_SERVER) {
+            console.log(`[API Fetch Success]: offset=${offset}, items=${data.results?.length}`);
+        }
+
+        return { 
+            results: data.results || [], 
+            count: data.count || 0, 
+            debugUrl: url 
+        };
+    } catch (e: any) { 
+        console.error(`[Django API ERROR]: ${e.message}`);
         return { results: [], count: 0 }; 
     }
 }
@@ -135,6 +146,7 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
+            cache: 'no-store', // 詳細ページも常に最新を取得
             next: { revalidate: 0 } 
         });
         return res.ok ? await res.json() : null;
@@ -153,7 +165,7 @@ export async function fetchRelatedProducts(maker: string, excludeId: string, lim
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            next: { revalidate: 3600 } 
+            next: { revalidate: 3600 } // 関連商品はある程度キャッシュしてOK
         });
 
         if (!res.ok) return [];

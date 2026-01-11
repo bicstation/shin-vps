@@ -12,7 +12,6 @@ import Pagination from '@/components/common/Pagination';
 import { fetchPostList, fetchPCProducts } from '@/lib/api'; 
 import styles from './MainPage.module.css';
 
-// --- ユーティリティ ---
 const decodeHtml = (html: string) => {
     if (!html) return '';
     const map: { [key: string]: string } = { 
@@ -22,17 +21,21 @@ const decodeHtml = (html: string) => {
         .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
 };
 
-// --- メインページコンポーネント ---
-export default async function Page(props: { 
-    params: Promise<{ id?: string }>; 
-    searchParams: Promise<{ offset?: string }> 
-}) {
-    // Next.js 15+ の非同期 params / searchParams に対応
-    const params = await props.searchParams;
-    const currentOffset = parseInt(params.offset || '0', 10);
+// 型定義を修正
+interface PageProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function Page({ searchParams }: PageProps) {
+    // searchParams を確実に await する
+    const sParams = await searchParams;
+    
+    // offset の取得 (文字列の可能性を考慮)
+    const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
+    const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 10;
 
-    // ✅ 第1引数を '' にすることで全メーカーを取得するように修正
+    // API呼び出し (currentOffset が正しく反映されているか確認)
     const [wpData, pcData] = await Promise.all([
         fetchPostList(5),
         fetchPCProducts('', currentOffset, limit) 
@@ -42,14 +45,11 @@ export default async function Page(props: {
 
     return (
         <div className={styles.wrapper}>
-            {/* サイドバー：activeMenuを 'all' に変更 */}
             <aside className={styles.sidebarSection}>
                 <Sidebar activeMenu="all" />
             </aside>
 
             <main className={styles.main}>
-                
-                {/* WordPress お知らせセクション */}
                 <section className={styles.newsSection}>
                     <h2 className={styles.sectionTitle}>
                         <span className={styles.emoji}>📢</span> 最新のお知らせ
@@ -60,7 +60,7 @@ export default async function Page(props: {
                                 <p>現在、表示できるお知らせはありません。</p>
                             </div>
                         ) : (
-                            posts.map((post) => (
+                            posts.map((post: any) => (
                                 <Link 
                                     href={`/bicstation/${post.slug}`} 
                                     key={post.id} 
@@ -78,7 +78,6 @@ export default async function Page(props: {
                     </div>
                 </section>
 
-                {/* Django 製品一覧セクション */}
                 <section className={styles.productSection}>
                     <h2 className={styles.productGridTitle}>
                         <span className={styles.titleIndicator}></span>
@@ -87,12 +86,12 @@ export default async function Page(props: {
 
                     {pcData.results.length === 0 ? (
                         <div className={styles.noDataLarge}>
-                            <p>製品データを読み込み中、または取得できる製品がありません。</p>
+                            <p>製品データがありません。(Offset: {currentOffset})</p>
                         </div>
                     ) : (
                         <>
                             <div className={styles.productGrid}>
-                                {pcData.results.map((product) => (
+                                {pcData.results.map((product: any) => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
@@ -102,7 +101,7 @@ export default async function Page(props: {
                                     currentOffset={currentOffset}
                                     limit={limit}
                                     totalCount={pcData.count}
-                                    baseUrl="/"
+                                    baseUrl="/" // ここが "/" で offset パラメータが付与されるか確認
                                 />
                             </div>
                         </>
