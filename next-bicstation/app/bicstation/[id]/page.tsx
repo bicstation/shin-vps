@@ -3,7 +3,6 @@
 
 import { notFound } from 'next/navigation';
 import { PostHeader } from '@/components/blog/PostHeader';
-import { PostSidebar } from '@/components/blog/PostSidebar';
 import { COLORS } from '@/constants';
 import { fetchPostData, fetchProductDetail } from '@/lib/api';
 import Link from 'next/link';
@@ -27,6 +26,7 @@ const formatDate = (dateString: string) => {
 };
 
 function getTableOfContents(content: string) {
+    // h2タグを抽出して目次を作成
     const h2Matches = content.match(/<h2[^>]*>(.*?)<\/h2>/g) || [];
     return h2Matches.map(tag => tag.replace(/<[^>]*>/g, ''));
 }
@@ -39,14 +39,12 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
     
     if (!post) notFound();
 
-    // WordPressのACFから関連商品IDを取得して詳細データを取得
     const productId = post.acf?.related_product_id || null;
     const relatedProduct = productId ? await fetchProductDetail(productId) : null;
 
     const toc = getTableOfContents(post.content.rendered);
     const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
 
-    // アフィリエイトURLの決定ロジック
     const finalAffiliateUrl = (relatedProduct?.affiliate_url && relatedProduct.affiliate_url.trim() !== '') 
         ? relatedProduct.affiliate_url 
         : relatedProduct?.url || '#';
@@ -54,7 +52,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
     return (
         <article className={styles.article} style={{ backgroundColor: COLORS.BACKGROUND }}>
             
-            {/* 1. ヒーローセクション */}
+            {/* 1. ヒーローセクション (アイキャッチ) */}
             <div className={styles.heroSection}>
                 {eyeCatchUrl ? (
                     <div className={styles.eyeCatchWrapper}>
@@ -74,93 +72,103 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                 </div>
             </div>
             
-            <div className={styles.container}>
-                <div className={styles.contentLayout}>
-                    {/* 2. メインコンテンツ */}
-                    <main className={styles.mainContent}>
-                        <div className={styles.entryInfo}>
-                            <span className={styles.readingTime}>
-                                推定読了時間: 約 {Math.ceil(post.content.rendered.length / 800)} 分
-                            </span>
+            <div className={styles.singleColumnContainer}>
+                {/* 2. 記事冒頭の目次セクション (サイドバーから移動) */}
+                {toc.length > 0 && (
+                    <section className={styles.inlineToc}>
+                        <div className={styles.tocHeader}>
+                            <span className={styles.tocIcon}>📋</span>
+                            <h2 className={styles.tocTitle}>この記事の目次</h2>
                         </div>
+                        <ul className={styles.tocList}>
+                            {toc.map((text, index) => (
+                                <li key={index} className={styles.tocItem}>
+                                    <a href={`#toc-${index}`} className={styles.tocLink}>
+                                        <span className={styles.tocNumber}>{index + 1}</span>
+                                        {text}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
 
-                        <div 
-                            className={`${styles.wpContent} animate-in`} 
-                            dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
-                        />
+                <main className={styles.mainContentFull}>
+                    <div className={styles.entryInfo}>
+                        <span className={styles.readingTime}>
+                            ⏱️ 推定読了時間: 約 {Math.ceil(post.content.rendered.length / 800)} 分
+                        </span>
+                    </div>
 
-                        {/* 3. 記事末尾の商品紹介カード（スペック2列修正版） */}
-                        {relatedProduct && (
-                            <section className={styles.relatedProductCard}>
-                                <div className={styles.cardTag}>RECOMMENDED ITEM</div>
-                                <div className={styles.cardMain}>
-                                    <div className={styles.cardLeft}>
-                                        <div className={styles.cardImage}>
-                                            <img src={relatedProduct.image_url || '/no-image.png'} alt={relatedProduct.name} />
-                                        </div>
-                                        <div className={styles.cardPriceBox}>
-                                            <span className={styles.cardPriceLabel}>販売価格</span>
-                                            <span className={styles.cardPrice}>¥{relatedProduct.price.toLocaleString()}</span>
-                                            <span className={styles.taxIn}>(税込)</span>
-                                        </div>
+                    {/* WordPressコンテンツ本体 */}
+                    <div 
+                        className={`${styles.wpContent} animate-in`} 
+                        dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
+                    />
+
+                    {/* 3. 記事末尾の商品紹介カード */}
+                    {relatedProduct && (
+                        <section className={styles.relatedProductCard}>
+                            <div className={styles.cardTag}>RECOMMENDED ITEM</div>
+                            <div className={styles.cardMain}>
+                                <div className={styles.cardLeft}>
+                                    <div className={styles.cardImage}>
+                                        <img src={relatedProduct.image_url || '/no-image.png'} alt={relatedProduct.name} />
                                     </div>
-
-                                    <div className={styles.cardRight}>
-                                        <span className={styles.cardMaker}>{relatedProduct.maker}</span>
-                                        <h3 className={styles.cardTitle}>{relatedProduct.name}</h3>
-                                        
-                                        <div className={styles.productSpecSummary}>
-                                            <p className={styles.specSummaryTitle}>このモデルの主要スペック</p>
-                                            <ul className={styles.specMiniList}>
-                                                {/* 空文字を除外して確実に2列グリッドを維持 */}
-                                                {relatedProduct.description?.split('/')
-                                                    .map(s => s.trim())
-                                                    .filter(s => s !== '')
-                                                    .slice(0, 4)
-                                                    .map((spec: string, i: number) => (
-                                                        <li key={i} className={styles.specMiniItem}>
-                                                            <span className={styles.specIcon}>⚡</span>
-                                                            <span className={styles.specText}>{spec}</span>
-                                                        </li>
-                                                    ))
-                                                }
-                                            </ul>
-                                        </div>
-
-                                        <div className={styles.cardButtons}>
-                                            <a 
-                                                href={finalAffiliateUrl} 
-                                                target="_blank" 
-                                                rel="nofollow noopener" 
-                                                className={styles.affiliateBtn}
-                                            >
-                                                公式サイトで詳細・納期を確認
-                                            </a>
-                                            <Link href={`/product/${relatedProduct.unique_id}`} className={styles.detailBtn}>
-                                                徹底解説レビューを見る
-                                            </Link>
-                                        </div>
+                                    <div className={styles.cardPriceBox}>
+                                        <span className={styles.cardPriceLabel}>販売価格</span>
+                                        <span className={styles.cardPrice}>¥{relatedProduct.price.toLocaleString()}</span>
+                                        <span className={styles.taxIn}>(税込)</span>
                                     </div>
                                 </div>
-                            </section>
-                        )}
 
-                        <footer className={styles.postFooter}>
-                            <p className={styles.updateDate}>最終更新日: {formatDate(post.modified)}</p>
-                        </footer>
-                    </main>
-                    
-                    {/* 4. サイドバー */}
-                    <aside className={styles.sidebarWrapper}>
-                        <div className={styles.stickySidebar}>
-                            <PostSidebar 
-                                toc={toc} 
-                                SITE_COLOR={COLORS.SITE_COLOR} 
-                                ACCENT_COLOR={COLORS.ACCENT_COLOR} 
-                            />
-                        </div>
-                    </aside>
-                </div>
+                                <div className={styles.cardRight}>
+                                    <span className={styles.cardMaker}>{relatedProduct.maker}</span>
+                                    <h3 className={styles.cardTitle}>{relatedProduct.name}</h3>
+                                    
+                                    <div className={styles.productSpecSummary}>
+                                        <p className={styles.specSummaryTitle}>主要スペック</p>
+                                        <ul className={styles.specMiniList}>
+                                            {relatedProduct.description?.split('/')
+                                                .map(s => s.trim())
+                                                .filter(s => s !== '')
+                                                .slice(0, 4)
+                                                .map((spec: string, i: number) => (
+                                                    <li key={i} className={styles.specMiniItem}>
+                                                        <span className={styles.specIcon}>⚡</span>
+                                                        <span className={styles.specText}>{spec}</span>
+                                                    </li>
+                                                ))
+                                            }
+                                        </ul>
+                                    </div>
+
+                                    <div className={styles.cardButtons}>
+                                        <a 
+                                            href={finalAffiliateUrl} 
+                                            target="_blank" 
+                                            rel="nofollow noopener" 
+                                            className={styles.affiliateBtn}
+                                        >
+                                            公式サイトで詳細を確認
+                                        </a>
+                                        <Link href={`/product/${relatedProduct.unique_id}`} className={styles.detailBtn}>
+                                            徹底解説レビュー
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    <footer className={styles.postFooter}>
+                        <div className={styles.footerDivider}></div>
+                        <p className={styles.updateDate}>最終更新日: {formatDate(post.modified)}</p>
+                        <Link href="/blog" className={styles.backLink}>
+                            ← 記事一覧に戻る
+                        </Link>
+                    </footer>
+                </main>
             </div>
         </article>
     );

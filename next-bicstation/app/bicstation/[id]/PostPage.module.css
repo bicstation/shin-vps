@@ -1,15 +1,15 @@
 /* 1. 記事全体のコンテナ */
 .article {
   min-height: 100vh;
-  background-color: #f9fafb; /* 薄いグレー背景で白背景の本文を浮かせる */
+  background-color: #f9fafb;
 }
 
 /* 2. アイキャッチ・ヒーローセクション */
 .heroSection {
   position: relative;
   width: 100%;
-  height: 500px; /* PC時の高さ */
-  background: #111; /* 画像がない場合のベースカラー */
+  height: 500px;
+  background: #111;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -29,9 +29,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.5; /* 文字を読みやすくするために透過 */
-  filter: blur(8px); /* ぼかしを入れて高級感を演出 */
-  transform: scale(1.1); /* ぼかしの縁が白くならないように少し拡大 */
+  opacity: 0.5;
+  filter: blur(8px);
+  transform: scale(1.1);
 }
 
 .eyeCatchOverlay {
@@ -51,7 +51,7 @@
 .headerInner {
   position: relative;
   z-index: 10;
-  max-width: 900px;
+  max-width: 1200px; /* ヘッダー幅に合わせる */
   width: 100%;
   margin: 0 auto;
   padding: 0 20px;
@@ -59,33 +59,108 @@
   text-align: center;
 }
 
-/* 3. レイアウトコンテナ */
-.container {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  max-width: 1240px;
-  margin: -80px auto 0; /* ヒーローセクションに少し被せて立体感を出す */
+/* 3. シングルカラム・レイアウトコンテナ */
+.singleColumnContainer {
+  max-width: 1200px; /* ヘッダー幅と完全に同期 */
+  margin: -80px auto 0;
   padding: 0 20px 80px;
-  gap: 40px;
   position: relative;
   z-index: 20;
 }
 
-.contentLayout {
-  display: contents; /* Grid子要素を親のGridに従わせる */
+/* 4. インライン目次セクション */
+.inlineToc {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f6;
 }
 
-/* 4. 本文エリア */
-.mainContent {
-  min-width: 0; 
+.tocHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.tocIcon {
+  font-size: 1.5rem;
+}
+
+.tocTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.tocList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr; /* デフォルトは1列 */
+  gap: 12px;
+}
+
+/* PC表示では目次を2列にしてスペースを有効活用 */
+@media (min-width: 768px) {
+  .tocList {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px 40px;
+  }
+}
+
+.tocItem {
+  font-size: 1.05rem;
+}
+
+.tocLink {
+  text-decoration: none;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.tocLink:hover {
+  background: #f8fafc;
+  color: #3b82f6;
+  transform: translateX(5px);
+}
+
+.tocNumber {
+  background: #f1f5f9;
+  color: #64748b;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* 5. 本文エリア */
+.mainContentFull {
   background: #fff;
-  padding: 50px 60px;
+  /* 横幅を広げた分、左右の余白を大きくして1行あたりの文字数を調整 */
+  padding: 60px 100px; 
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
 }
 
 .entryInfo {
-  margin-bottom: 30px;
+  margin-bottom: 40px;
   padding-bottom: 20px;
   border-bottom: 1px solid #f1f5f9;
   text-align: right;
@@ -95,17 +170,17 @@
   font-size: 0.85rem;
   color: #64748b;
   background: #f1f5f9;
-  padding: 4px 12px;
+  padding: 6px 16px;
   border-radius: 50px;
   font-weight: 600;
 }
 
-/* 5. WordPress本文の装飾 */
+/* 6. WordPress本文の装飾 */
 .wpContent {
-  line-height: 2;
+  line-height: 2.1;
   color: #1e293b;
   font-size: 1.15rem;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 .wpContent h2 {
@@ -125,7 +200,7 @@
   left: 0;
   width: 80px;
   height: 3px;
-  background-color: var(--site-color, #3b82f6);
+  background-color: #3b82f6;
 }
 
 .wpContent h3 {
@@ -133,10 +208,12 @@
   margin: 2em 0 1em;
   color: #1e293b;
   font-weight: 700;
+  padding-left: 15px;
+  border-left: 5px solid #3b82f6;
 }
 
 .wpContent p {
-  margin-bottom: 1.8em;
+  margin-bottom: 2em;
 }
 
 .wpContent img {
@@ -147,20 +224,9 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
 }
 
-.wpContent ul, .wpContent ol {
-  background: #f8fafc;
-  padding: 25px 25px 25px 50px;
-  border-radius: 12px;
-  margin-bottom: 2em;
-}
-
-.wpContent li {
-  margin-bottom: 0.5em;
-}
-
-/* 6. 記事末尾の商品紹介プレミアムカード (修正版) */
+/* 7. 商品紹介プレミアムカード */
 .relatedProductCard {
-  margin: 80px 0 40px;
+  margin: 100px 0 40px;
   padding: 40px;
   background: #ffffff;
   border-radius: 24px;
@@ -189,7 +255,7 @@
 }
 
 .cardLeft {
-  flex: 0 0 220px;
+  flex: 0 0 240px;
   text-align: center;
 }
 
@@ -228,7 +294,7 @@
 
 .cardRight {
   flex: 1;
-  min-width: 0; /* 子要素のGrid崩れ防止に必須 */
+  min-width: 0;
 }
 
 .cardMaker {
@@ -239,26 +305,25 @@
 }
 
 .cardTitle {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 4px 0 20px;
+  margin: 4px 0 24px;
   line-height: 1.3;
 }
 
-/* スペック目次 (ここを厳格化) */
 .productSpecSummary {
   background: #f1f5f9;
-  padding: 20px;
+  padding: 25px;
   border-radius: 12px;
-  margin-bottom: 25px;
+  margin-bottom: 30px;
 }
 
 .specSummaryTitle {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: #475569;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
 }
 
 .specMiniList {
@@ -266,18 +331,18 @@
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 確実に2列 */
-  gap: 12px 15px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px 25px;
 }
 
 .specMiniItem {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #334155;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 0; /* Gridはみ出し防止 */
+  gap: 10px;
+  min-width: 0;
 }
 
 .specText {
@@ -291,10 +356,9 @@
   flex-shrink: 0;
 }
 
-/* ボタンエリア */
 .cardButtons {
   display: flex;
-  gap: 15px;
+  gap: 20px;
 }
 
 .affiliateBtn {
@@ -302,8 +366,8 @@
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: #fff;
   text-align: center;
-  padding: 16px;
-  border-radius: 10px;
+  padding: 18px;
+  border-radius: 12px;
   font-weight: 800;
   text-decoration: none;
   transition: all 0.3s;
@@ -315,8 +379,8 @@
   color: #1e293b;
   border: 1px solid #e2e8f0;
   text-align: center;
-  padding: 16px;
-  border-radius: 10px;
+  padding: 18px;
+  border-radius: 12px;
   font-weight: 700;
   text-decoration: none;
   transition: all 0.2s;
@@ -325,13 +389,23 @@
 .affiliateBtn:hover {
   transform: translateY(-2px);
   filter: brightness(1.1);
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
 }
 
-/* 7. 記事フッター */
+/* 8. 記事フッター */
 .postFooter {
   margin-top: 60px;
-  padding-top: 30px;
+  padding-top: 40px;
   border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footerDivider {
+  width: 100%;
+  height: 1px;
+  background: #f1f5f9;
 }
 
 .updateDate {
@@ -340,14 +414,17 @@
   text-align: right;
 }
 
-/* 8. サイドバー */
-.sidebarWrapper {
-  position: relative;
+.backLink {
+  display: inline-block;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: color 0.2s;
 }
 
-.stickySidebar {
-  position: sticky;
-  top: 100px;
+.backLink:hover {
+  color: #3b82f6;
 }
 
 /* 9. モバイル対応 */
@@ -356,24 +433,17 @@
     height: 350px;
   }
 
-  .container {
-    grid-template-columns: 1fr;
+  .singleColumnContainer {
     margin-top: -40px;
-    gap: 30px;
+    padding: 0 15px 60px;
   }
 
-  .mainContent {
-    padding: 35px 25px;
-    border-radius: 16px;
+  .mainContentFull {
+    padding: 40px 30px;
   }
 
-  .cardMain {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .cardLeft {
-    flex: 0 0 auto;
+  .inlineToc {
+    padding: 25px;
   }
 }
 
@@ -381,13 +451,27 @@
   .heroSection {
     height: 300px;
   }
-  
-  .headerInner h1 {
-    font-size: 1.5rem;
+
+  .mainContentFull {
+    padding: 30px 20px;
+    border-radius: 0;
+  }
+
+  .wpContent {
+    font-size: 1.05rem;
   }
 
   .specMiniList {
-    grid-template-columns: 1fr; /* スマホでは1列に */
+    grid-template-columns: 1fr;
+  }
+
+  .cardMain {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .cardLeft {
+    flex: 0 0 auto;
   }
 
   .cardButtons {
