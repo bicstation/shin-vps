@@ -2,9 +2,9 @@ import os
 import django
 import json
 import sys
+import urllib.parse  # 💡 URLエンコード用にインポート
 
 # --- Django設定 ---
-# プロジェクトのルートディレクトリをパスに追加
 sys.path.append('/usr/src/app')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tiper_api.settings')
 django.setup()
@@ -12,9 +12,13 @@ django.setup()
 from api.models import PCProduct
 
 def import_acer_data():
-    # 💡 あなたが置いたパスを指定
+    # 💡 パスを指定
     json_path = "/usr/src/app/scrapers/src/json/acer_results.json"
     
+    # 💡 A8.net アフィリエイトベースURL (Acer専用)
+    # 提示されたURLの末尾（a8ejpredirect=）に直リンクを結合する
+    A8_BASE_URL = "https://px.a8.net/svt/ejp?a8mat=3Z0VI7+20OX42+5G54+BW0YB&a8ejpredirect="
+
     if not os.path.exists(json_path):
         print(f"❌ JSONファイルが見つかりません: {json_path}")
         return
@@ -22,12 +26,18 @@ def import_acer_data():
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    print(f"📥 {len(data)}件のデータをインポート開始...")
+    print(f"📥 {len(data)}件のデータをインポート開始（アフィリエイトリンク生成込）...")
 
     success_count = 0
     for item in data:
-        # URLの末尾などから一意のIDを作成（重複登録防止）
-        unique_id = f"ACR_{item['url'].split('/')[-1].replace('.html', '')}"
+        # URLの末尾から一意のIDを作成
+        product_url = item['url']
+        unique_id = f"ACR_{product_url.split('/')[-1].replace('.html', '')}"
+        
+        # 💡 アフィリエイトURLの生成
+        # 直リンクをURLエンコードしてベースURLと結合
+        encoded_url = urllib.parse.quote(product_url, safe='')
+        affiliate_url = f"{A8_BASE_URL}{encoded_url}"
         
         try:
             PCProduct.objects.update_or_create(
@@ -37,9 +47,10 @@ def import_acer_data():
                     'maker': 'Acer',
                     'name': item['name'],
                     'price': item['price'],
-                    'url': item['url'],
+                    'url': product_url,              # オリジナルのURL
+                    'affiliate_url': affiliate_url,  # ✨ A8.net経由のURL
                     'image_url': item.get('image_url', ''),
-                    'description': item.get('description', ''), # 詳細スペックを丸ごと保存
+                    'description': item.get('description', ''),
                     'raw_genre': item['genre'],
                     'unified_genre': item['genre'],
                     'stock_status': '在庫あり' if item['price'] > 0 else '在庫切れ',
@@ -51,6 +62,7 @@ def import_acer_data():
             print(f"   ❌ エラー ({unique_id}): {e}")
 
     print(f"✨ 完了！ {success_count} 件のデータを更新/作成しました。")
+    print(f"🔗 すべての商品に A8.net アフィリエイトリンクを設定しました。")
 
 if __name__ == "__main__":
     import_acer_data()
