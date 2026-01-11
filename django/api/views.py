@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from rest_framework import generics, filters
+from rest_framework import generics, filters, pagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 import logging
@@ -32,6 +32,16 @@ from .models import (
     Series
 )
 from .models.pc_products import PCProduct  
+
+# --------------------------------------------------------------------------
+# 💡 カスタムページネーション
+# --------------------------------------------------------------------------
+class PCProductLimitOffsetPagination(pagination.LimitOffsetPagination):
+    """
+    Next.jsの ?offset=x&limit=y に対応するためのページネーション
+    """
+    default_limit = 10
+    max_limit = 100
 
 # --------------------------------------------------------------------------
 # 0. /api/ ルートエンドポイント
@@ -118,6 +128,9 @@ class PCProductListAPIView(generics.ListAPIView):
     PC製品一覧取得：メーカー名が指定されている場合のみフィルタリングを行う
     """
     serializer_class = PCProductSerializer
+    # 💡 ページネーションクラスを上書き指定
+    pagination_class = PCProductLimitOffsetPagination
+    
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
     # query_params.get('maker') を手動で処理するため filterset_fields からは 'maker' を外す
@@ -137,7 +150,8 @@ class PCProductListAPIView(generics.ListAPIView):
         if maker and maker.strip() != "":
             queryset = queryset.filter(maker__iexact=maker)
             
-        return queryset.order_by('-updated_at')
+        # 💡 ページネーションのバグを防ぐため、確定的な順序で返す
+        return queryset.order_by('-updated_at', 'id')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
     """

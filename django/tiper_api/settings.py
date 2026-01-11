@@ -174,9 +174,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-    # 💡 Next.js側で扱いやすい「ページ番号式」に統一
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20, 
+    # 💡 修正：Next.jsの limit/offset リクエストに対応させるため変更
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10, 
+    
     # 💡 フィルタ（ジャンル絞り込み等）を有効化
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
