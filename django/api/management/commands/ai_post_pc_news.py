@@ -38,7 +38,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルが見つかりません: {PROMPT_FILE}"))
             return
 
-        # 履歴の読み込み（URLとタイトルの重複チェック用）
+        # 履歴の読み込み（ローカルファイルによる重複チェック）
         posted_links = set()
         posted_titles = []
         if os.path.exists(HISTORY_FILE):
@@ -55,7 +55,20 @@ class Command(BaseCommand):
         with open(PROMPT_FILE, "r", encoding='utf-8') as f:
             PROMPT_TEMPLATE = f.read()
 
-        # --- 2. 記事候補の取得 ---
+        # --- 2. 重複チェック関数 (WordPress APIへの直接問い合わせ) ---
+        def is_already_on_wp(title):
+            try:
+                # 完全に同じタイトルの記事が既にWPに公開されているか検索
+                search_url = f"{WP_API_BASE}/posts?search={urllib.parse.quote(title)}&status=publish"
+                r = requests.get(search_url, auth=AUTH, timeout=10).json()
+                for p in r:
+                    if p['title']['rendered'] == title:
+                        return True
+                return False
+            except:
+                return False
+
+        # --- 3. 記事候補の取得 ---
         target_url = options.get('url')
         target_image_url = options.get('image')
         candidates = []
@@ -72,11 +85,10 @@ class Command(BaseCommand):
                 feed = feedparser.parse(source['url'])
                 for entry in feed.entries:
                     link = entry.link.strip()
-                    if link in posted_links:
-                        continue
-                    candidates.append({"url": link})
+                    if link not in posted_links:
+                        candidates.append({"url": link})
 
-        # --- 3. 投稿メインループ ---
+        # --- 4. 投稿メインループ ---
         success = False
         for item in candidates:
             current_url = item['url']
@@ -92,9 +104,9 @@ class Command(BaseCommand):
                 
                 raw_title = soup.title.string.split('|')[0].strip() if soup.title else "最新ニュース"
                 
-                # タイトル類似度チェック (重複投稿防止)
-                if any(difflib.SequenceMatcher(None, raw_title, t).ratio() > 0.8 for t in posted_titles):
-                    self.stdout.write(f"⏩ タイトル重複のためスキップ: {raw_title}")
+                # 投稿前にWP側でタイトル重複を最終チェック (連投防止)
+                if is_already_on_wp(raw_title):
+                    self.stdout.write(f"⏩ WPに既に存在するためスキップ: {raw_title}")
                     continue
 
                 # OGP画像取得
@@ -113,7 +125,7 @@ class Command(BaseCommand):
                 self.stdout.write(f"解析エラー: {e}")
                 continue
 
-            # --- 4. AI記事生成 ---
+            # --- 5. AI記事生成 ---
             self.stdout.write(f"🤖 AI執筆中...")
             prompt = PROMPT_TEMPLATE.replace("{raw_title}", raw_title).replace("{page_content[:3500]}", page_content[:3500])
 
@@ -128,7 +140,7 @@ class Command(BaseCommand):
                 except: continue
             if not ai_response: continue
 
-            # --- 5. 本文成形とHTML変換ロジック ---
+            # --- 6. 本文成形とHTML変換ロジック ---
             lines = ai_response.strip().split('\n')
             # タイトルから不要な記号を除去
             final_title = re.sub(r'^[#*\s・]+|[#*\s・]+$', '', lines[0])
@@ -141,9 +153,9 @@ class Command(BaseCommand):
             tag_m = re.search(r'\[TAG\]\s*(.*?)\s*\[/TAG\]', ai_response, re.IGNORECASE)
             tag_names = [t.strip() for t in tag_m.group(1).split(',') if t.strip()] if tag_m else []
 
+            html_body = ""
             # 要約抽出
             sum_m = re.search(r'\[SUMMARY\](.*?)\[/SUMMARY\]', ai_response, re.DOTALL | re.IGNORECASE)
-            html_body = ""
             if sum_m:
                 html_body += '<div style="background:#f1f5f9;border-left:5px solid #0f172a;padding:20px;margin-bottom:30px;border-radius:4px;">'
                 html_body += '<h4 style="margin:0 0 10px 0;color:#0f172a;font-size:1.1em;">📝 ニュースの要約ポイント</h4><ul style="margin-bottom:0;padding-left:20px;">'
@@ -166,10 +178,12 @@ class Command(BaseCommand):
                         html_body += '<table style="width:100%; border-collapse:collapse; margin:20px 0; border:1px solid #e2e8f0; font-size:0.95em;">'
                         in_table = True
                     key, val = spec_match.groups()
+                    # キーと値の両方から**を消去
+                    key = key.replace('**', '').strip()
+                    val = val.replace('**', '').strip()
                     html_body += f'<tr style="border-bottom:1px solid #e2e8f0;"><td style="background:#f8fafc; padding:12px; font-weight:bold; width:35%; color:#334155;">{key}</td><td style="padding:12px; color:#1e293b;">{val}</td></tr>'
                     continue
                 
-                # テーブル終了判定
                 if in_table:
                     html_body += '</table>'
                     in_table = False
@@ -187,16 +201,23 @@ class Command(BaseCommand):
             
             if in_table: html_body += '</table>'
 
-            # --- 6. 商品カード：自社URL（site_prefix_unique_id） ---
-            search_keyword = cat_name if len(cat_name) > 1 else final_title[:10]
+            # --- 7. 商品マッチング改善 (タイトルからキーワード抽出) ---
+            search_keyword = final_title[:10]
+            if "電気毛布" in final_title: search_keyword = "電気毛布"
+            elif "ケーブル" in final_title: search_keyword = "ケーブル"
+            elif "SSD" in final_title: search_keyword = "SSD"
+            elif "RTX" in final_title: search_keyword = "RTX"
+            
             related_products = PCProduct.objects.filter(is_active=True, name__icontains=search_keyword).exclude(stock_status="受注停止中").order_by('-created_at')[:3]
+
+            if not related_products:
+                related_products = PCProduct.objects.filter(is_active=True, name__icontains=cat_name).exclude(stock_status="受注停止中").order_by('-created_at')[:3]
 
             if related_products:
                 html_body += '<h2 class="wp-block-heading" style="margin-top:50px;text-align:center;">🛠 関連おすすめモデル</h2>'
                 for prod in related_products:
                     amazon_url = f"https://www.amazon.co.jp/s?k={urllib.parse.quote(prod.name)}"
                     official_url = prod.affiliate_url or prod.url
-                    # 自社URLの正規化連結
                     bic_url = f"https://bicstation.com/product/{prod.site_prefix}_{prod.unique_id}/"
 
                     html_body += f'''
@@ -218,7 +239,7 @@ class Command(BaseCommand):
 
             html_body += f'<p style="font-size:0.8em;margin-top:30px;color:#94a3b8;border-top:1px dotted #ccc;padding-top:10px;">出典: <a href="{current_url}" target="_blank" rel="nofollow">{raw_title}</a></p>'
 
-            # --- 7. アイキャッチ画像の処理 ---
+            # --- 8. アイキャッチ画像の処理 ---
             featured_media_id = 0
             final_img_url = target_image_url or og_image_url or f"https://images.unsplash.com/featured/?{urllib.parse.quote(final_title[:15])}"
             try:
@@ -230,7 +251,7 @@ class Command(BaseCommand):
                         featured_media_id = m_res.json().get('id', 0)
             except: pass
 
-            # --- 8. WordPressカテゴリ・タグ同期 ---
+            # --- 9. WordPressカテゴリ・タグ同期 ---
             def get_wp_id(path, name):
                 try:
                     r = requests.get(f"{WP_API_BASE}/{path}?search={urllib.parse.quote(name)}", auth=AUTH).json()
@@ -242,7 +263,12 @@ class Command(BaseCommand):
             cid = get_wp_id("categories", cat_name)
             tids = [get_wp_id("tags", tn) for tn in tag_names]
 
-            # --- 9. WordPress投稿 ---
+            # --- 10. WordPress最終投稿 ---
+            # 投稿直前に、もう一度だけWP側で重複がないか再確認
+            if is_already_on_wp(final_title):
+                self.stdout.write(f"⏩ 直前チェックで重複を検知したためスキップ: {final_title}")
+                continue
+
             post_payload = {
                 "title": final_title,
                 "content": html_body,
@@ -258,7 +284,7 @@ class Command(BaseCommand):
                 with open(HISTORY_FILE, "a", encoding='utf-8') as f:
                     f.write(f"{current_url}\t{final_title}\n")
                 success = True
-                break
+                break # 1回の実行で1記事投稿とし、連投を防ぐ
 
         if not success:
             self.stdout.write("新しい記事は投稿されませんでした。")
