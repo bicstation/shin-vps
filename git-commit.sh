@@ -1,19 +1,19 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 Git 統合スクリプト (ローカル専用・タグ自動修正版)
+# 🚀 Git 統合スクリプト (ローカル専用・タグ衝突回避・ガードレール強化版)
 # ==============================================================================
 
-# --- [追加] VPS上での実行を禁止するチェック ---
+# --- [ガードレール] VPS上での実行を禁止するチェック ---
 CURRENT_HOST=$(hostname)
 if [[ "$CURRENT_HOST" == *"x162-43-73-204"* ]] || [[ -f "/.dockerenv" ]]; then
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "⚠️  警告: VPS環境 (またはコンテナ内) での実行を検知しました。"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "このスクリプトは【ローカルPC】専用です。"
-    echo "VPSでの修正は禁止されています。修正は必ずローカルで行い、"
-    echo "デプロイ（タグプッシュ）機能を使って反映させてください。"
-    echo ""
+    echo "VPSでのソース直接修正は、デプロイ管理の整合性を壊すため禁止されています。"
+    echo "修正は必ずローカルで行い、デプロイ機能（タグプッシュ）を使って反映させてください。"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     exit 1
 fi
 
@@ -23,7 +23,7 @@ if [[ -d "/mnt/e/dev/shin-vps" ]]; then
 elif [[ -d "/mnt/c/dev/SHIN-VPS" ]]; then
     PROJECT_ROOT="/mnt/c/dev/SHIN-VPS"
 else
-    # 基本的にここは通らないはずですが、保険として設定
+    # デフォルト設定
     PROJECT_ROOT="/home/maya/shin-vps"
 fi
 
@@ -31,18 +31,19 @@ cd "$PROJECT_ROOT" || exit 1
 
 # 2. 最新のタグを取得・計算する関数
 refresh_tag() {
-    git fetch --tags > /dev/null 2>&1
+    # -f を付けてリモートのタグを強制的に上書き取得し、不整合を防ぐ
+    git fetch --tags -f > /dev/null 2>&1
     LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
     
-    BASE_VERSION=$(echo $LATEST_TAG | cut -d. -f1-2)
-    PATCH_VERSION=$(echo $LATEST_TAG | cut -d. -f3)
+    BASE_VERSION=$(echo "$LATEST_TAG" | cut -d. -f1-2)
+    PATCH_VERSION=$(echo "$LATEST_TAG" | cut -d. -f3)
     SUGGESTED_TAG="${BASE_VERSION}.$((PATCH_VERSION + 1))"
 }
 
 # 初回タグ取得
 refresh_tag
 
-# 3. SSHエージェント
+# 3. SSHエージェントのセットアップ
 if ! ssh-add -l > /dev/null 2>&1; then
     eval "$(ssh-agent -s)" > /dev/null 2>&1
     ssh-add ~/.ssh/id_ed25519 > /dev/null 2>&1
@@ -73,6 +74,7 @@ else
         *) TYPE="chore" ;;
     esac
 
+    # コミット直前に最新タグを再計算
     refresh_tag
 
     read -p "具体的に何をしたか入力してください: " USER_MSG
@@ -86,6 +88,7 @@ fi
 
 # 5. 本番デプロイ（タグ打ち）
 if [ "$BRANCH" = "main" ]; then
+    # デプロイ直前に最新タグを最終確認
     refresh_tag
     
     echo ""
@@ -93,21 +96,26 @@ if [ "$BRANCH" = "main" ]; then
     read -p "🚀 【本番環境】へ $SUGGESTED_TAG としてデプロイしますか？ (y/N): " DEPLOY_CONFIRM
     
     if [[ "$DEPLOY_CONFIRM" =~ ^[yY]$ ]]; then
-        # 重複タグのローカルクリーニング
+        # ローカルに同じタグがあれば事前に削除して衝突を回避
         if git rev-parse "$SUGGESTED_TAG" >/dev/null 2>&1; then
             git tag -d "$SUGGESTED_TAG" > /dev/null 2>&1
         fi
         
         git tag "$SUGGESTED_TAG"
         
+        # タグのプッシュ実行
         if git push origin "$SUGGESTED_TAG"; then
             echo "---------------------------------------"
             echo "✅ デプロイ成功！ バージョン: $SUGGESTED_TAG"
-            echo "📡 GitHub Actions 経由で VPS にファイルが転送されます。"
+            echo "📡 GitHub Actions が起動しました。完了まで数分お待ちください。"
         else
-            echo "❌ プッシュ失敗。GitHub Actions は起動しませんでした。"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "❌ 失敗: リモートでタグ $SUGGESTED_TAG が既に存在しています。"
+            echo "解決策: 手動で git fetch --tags -f を実行するか、"
+            echo "        さらに上のバージョン（v1.0.xxx）を手動で push してください。"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         fi
     else
-        echo "☕ 終了します。"
+        echo "☕ 処理を中断しました。"
     fi
 fi
