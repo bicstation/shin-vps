@@ -11,10 +11,10 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
-from api.models import PCProduct  # 商品カード用モデル
+from api.models import PCProduct  # モデルから情報を取得
 
 class Command(BaseCommand):
-    help = 'ニュース記事を解析・生成し、OGP画像と関連商品カードを伴ってWordPressへ投稿する'
+    help = 'ニュース記事を生成し、PCProductモデルから3連リンク付きカードを挿入して投稿する'
 
     def add_arguments(self, parser):
         parser.add_argument('--url', type=str, help='特定の記事URLを直接指定')
@@ -29,7 +29,6 @@ class Command(BaseCommand):
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
         WP_API_BASE = f"https://{W_DOM}/wp-json/wp/v2"
 
-        # パス設定
         current_dir = os.path.dirname(os.path.abspath(__file__))
         MODELS_FILE = os.path.join(current_dir, "ai_models.txt")
         PROMPT_FILE = os.path.join(current_dir, "ai_prompt_news.txt")
@@ -80,21 +79,17 @@ class Command(BaseCommand):
                 res.encoding = res.apparent_encoding
                 soup = BeautifulSoup(res.text, 'html.parser')
                 
-                # --- [NEW] アイキャッチ画像URLの抽出ロジック ---
+                # OGP画像取得
                 og_image_url = None
-                # 1. OGPタグを優先
                 og_tag = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
                 if og_tag:
                     og_image_url = og_tag.get("content")
-                
-                # 2. 記事内の最初の画像を探す
                 if not og_image_url:
                     img_tag = soup.find('article').find('img') if soup.find('article') else soup.find('img')
                     if img_tag and img_tag.get('src'):
                         og_image_url = urllib.parse.urljoin(current_url, img_tag.get('src'))
 
                 raw_title = soup.title.string.split('|')[0].strip() if soup.title else "最新ニュース"
-                
                 for s in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'ins']):
                     s.decompose()
                 
@@ -107,9 +102,7 @@ class Command(BaseCommand):
 
             # --- 4. AI記事生成 ---
             self.stdout.write(f"🤖 AI執筆中...")
-            prompt = PROMPT_TEMPLATE.replace("{raw_title}", raw_title)\
-                                   .replace("{page_content[:3500]}", page_content[:3500])\
-                                   .replace("{current_url}", current_url)
+            prompt = PROMPT_TEMPLATE.replace("{raw_title}", raw_title).replace("{page_content[:3500]}", page_content[:3500]).replace("{current_url}", current_url)
 
             ai_response = ""
             for model in MODELS:
@@ -120,10 +113,9 @@ class Command(BaseCommand):
                         ai_response = r.json()['candidates'][0]['content']['parts'][0]['text']
                         break
                 except: continue
-            
             if not ai_response: continue
 
-            # --- 5. AI応答の解析 & 本文成形 ---
+            # --- 5. 本文成形 ---
             lines = ai_response.strip().split('\n')
             final_title = re.sub(r'^[#*\s・]+|[#*\s・]+$', '', lines[0])
 
@@ -140,8 +132,8 @@ class Command(BaseCommand):
             html_body = ""
             sum_m = re.search(r'\[SUMMARY\](.*?)\[/SUMMARY\]', body_only, re.DOTALL | re.IGNORECASE)
             if sum_m:
-                html_body += '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:20px;">'
-                html_body += '<h4 style="margin-top:0;color:#1e293b;">📝 専門ライターの要約ポイント</h4><ul>'
+                html_body += '<div style="background:#f1f5f9;border-left:5px solid #0f172a;padding:20px;margin-bottom:30px;border-radius:4px;">'
+                html_body += '<h4 style="margin-top:0;color:#0f172a;font-size:1.1em;">📝 ニュースの要約ポイント</h4><ul style="margin-bottom:0;">'
                 for line in sum_m.group(1).strip().split('\n'):
                     p = line.strip().lstrip('*-・• ')
                     if p: html_body += f"<li>{p}</li>"
@@ -151,56 +143,63 @@ class Command(BaseCommand):
             for line in main_text.split('\n'):
                 l = line.strip()
                 if not l or l == final_title: continue
-                if l.startswith('##'): html_body += f'<h2 class="wp-block-heading">{l.replace("##","").strip()}</h2>'
-                elif l.startswith('###'): html_body += f'<h3 class="wp-block-heading">{l.replace("###","").strip()}</h3>'
+                if l.startswith('##'): html_body += f'<h2 class="wp-block-heading" style="border-bottom:2px solid #333;padding-bottom:10px;margin-top:40px;">{l.replace("##","").strip()}</h2>'
+                elif l.startswith('###'): html_body += f'<h3 class="wp-block-heading" style="color:#2563eb;">{l.replace("###","").strip()}</h3>'
                 else: html_body += f'<p>{l}</p>'
 
-            # --- 6. 【商品カード挿入】 ---
-            # カテゴリ名やタイトルから商品を検索
+            # --- 6. 【3連リンク商品カードの挿入】 ---
+            # カテゴリ名またはタイトルから商品を3件抽出
             search_keyword = cat_name if len(cat_name) > 1 else final_title[:10]
             related_products = PCProduct.objects.filter(
+                is_active=True,
                 name__icontains=search_keyword
-            ).order_by('-created_at')[:3]
+            ).exclude(stock_status="受注停止中").order_by('-created_at')[:3]
 
             if related_products:
-                html_body += '<h2 class="wp-block-heading">🛠 関連おすすめパーツ</h2>'
+                html_body += '<h2 class="wp-block-heading" style="margin-top:50px;text-align:center;">🛠 関連おすすめモデル</h2>'
                 for prod in related_products:
+                    # モデルに基づいたリンク
+                    amazon_search_url = f"https://www.amazon.co.jp/s?k={urllib.parse.quote(prod.name)}"
+                    official_url = prod.affiliate_url or prod.url
+                    bic_url = f"https://{W_DOM}/products/{prod.unique_id}/"  # unique_idを使用
+
                     html_body += f'''
-                    <div style="display:flex; border:1px solid #ddd; border-radius:8px; padding:15px; margin-bottom:15px; background:#fff; align-items:center;">
-                        <div style="flex:0 0 120px; margin-right:15px;">
-                            <img src="{prod.image_url}" style="width:100%; height:auto; border-radius:4px;">
-                        </div>
-                        <div style="flex:1;">
-                            <h4 style="margin:0 0 10px 0; font-size:1.1em; color:#333;">{prod.name}</h4>
-                            <p style="color:#e47911; font-weight:bold; font-size:1.2em; margin-bottom:10px;">¥{prod.price:,}</p>
-                            <a href="{prod.affiliate_url}" target="_blank" style="display:inline-block; background:#f0c14b; border:1px solid #a88734; padding:8px 20px; text-decoration:none; color:#111; border-radius:4px; font-size:0.9em; font-weight:bold;">Amazonでチェック</a>
+                    <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:30px; background:#fff; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
+                            <div style="flex:1; min-width:200px;">
+                                <img src="{prod.image_url}" style="width:100%; height:auto; border-radius:8px; object-fit:contain; max-height:200px;">
+                            </div>
+                            <div style="flex:2; min-width:250px;">
+                                <span style="background:#0f172a; color:#fff; padding:3px 8px; font-size:0.75em; border-radius:4px; text-transform:uppercase;">{prod.maker}</span>
+                                <h4 style="margin:10px 0; font-size:1.2em; color:#1e293b;">{prod.name}</h4>
+                                <p style="color:#b91c1c; font-weight:bold; font-size:1.4em; margin-bottom:15px;">¥{prod.price:,} <span style="font-size:0.6em; color:#64748b; font-weight:normal;">(税込〜)</span></p>
+                                
+                                <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
+                                    <a href="{amazon_search_url}" target="_blank" style="text-align:center; background:#ff9900; color:#fff; padding:10px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:0.9em;">Amazonで価格を確認</a>
+                                    <a href="{official_url}" target="_blank" style="text-align:center; background:#2563eb; color:#fff; padding:10px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:0.9em;">公式サイトでカスタマイズ</a>
+                                    <a href="{bic_url}" style="text-align:center; background:#fff; color:#2563eb; border:1px solid #2563eb; padding:10px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:0.9em;">BicStationで詳細を見る</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     '''
 
-            html_body += f'<p style="font-size:0.8em;margin-top:20px;color:#64748b;">出典: <a href="{current_url}" target="_blank">{raw_title}</a></p>'
+            html_body += f'<p style="font-size:0.8em;margin-top:30px;color:#94a3b8;border-top:1px dotted #ccc;padding-top:10px;">出典: <a href="{current_url}" target="_blank" rel="nofollow">{raw_title}</a></p>'
 
-            # --- 7. アイキャッチ画像の処理 (OGP優先・バイナリPOST) ---
+            # --- 7. アイキャッチ画像の処理 ---
             featured_media_id = 0
-            # 優先順位: 実行引数 > 記事のOGP画像 > Unsplash
             final_img_url = target_image_url or og_image_url or f"https://images.unsplash.com/featured/?{urllib.parse.quote(final_title[:15])}"
-            
-            self.stdout.write(f"🖼 画像取得中: {final_img_url}")
             try:
                 img_res = requests.get(final_img_url, timeout=20, allow_redirects=True, headers=headers)
                 if img_res.status_code == 200:
-                    media_headers = {
-                        'Content-Disposition': f'attachment; filename="eyecatch_{int(time.time())}.jpg"',
-                        'Content-Type': img_res.headers.get('Content-Type', 'image/jpeg')
-                    }
-                    m_res = requests.post(f"{WP_API_BASE}/media", auth=AUTH, headers=media_headers, data=img_res.content)
+                    m_headers = {'Content-Disposition': f'attachment; filename="news_{int(time.time())}.jpg"', 'Content-Type': img_res.headers.get('Content-Type', 'image/jpeg')}
+                    m_res = requests.post(f"{WP_API_BASE}/media", auth=AUTH, headers=m_headers, data=img_res.content)
                     if m_res.status_code == 201:
                         featured_media_id = m_res.json().get('id', 0)
-                        self.stdout.write(f"✅ メディア登録成功 ID: {featured_media_id}")
             except Exception as e:
-                self.stdout.write(f"⚠️ 画像エラー: {e}")
+                self.stdout.write(f"⚠️ 画像取得エラー: {e}")
 
-            # --- 8. カテゴリ・タグ同期 ---
+            # --- 8. WordPressカテゴリ・タグ同期 ---
             def get_or_create_wp_id(path, name):
                 try:
                     search_res = requests.get(f"{WP_API_BASE}/{path}?search={urllib.parse.quote(name)}", auth=AUTH).json()
@@ -231,7 +230,7 @@ class Command(BaseCommand):
                 success = True
                 break
             else:
-                self.stdout.write(self.style.ERROR(f"❌ 投稿失敗: {final_res.status_code} - {final_res.text[:100]}"))
+                self.stdout.write(self.style.ERROR(f"❌ 投稿失敗: {final_res.status_code}"))
 
         if not success:
-            self.stdout.write("新着記事の投稿は行われませんでした。")
+            self.stdout.write("新しい記事は投稿されませんでした。")
