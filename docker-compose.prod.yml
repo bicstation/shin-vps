@@ -129,9 +129,15 @@ services:
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
       - "ofelia.enabled=true"
+      # 【既存ジョブ】30分に1回実行
       - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
       - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
       - "ofelia.job-exec.ai_blog_post.no-overlap=true"
+      # 【新規ジョブ】2時間に1回実行 (毎時0分、2時間おき)
+      - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
+      - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
+      - "ofelia.job-exec.ai_rss_news_post.no-overlap=true"
+
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
       - ./django:/usr/src/app

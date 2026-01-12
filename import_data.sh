@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (Acer対応・階層化版)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (Acer & News対応版)
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -40,11 +40,12 @@ run_cmd() {
 
 echo "1) [DB]     マイグレーション実行"
 echo "2) [Import] Tiper データ (Fanza/Duga) インポート"
-echo -e "3) ${COLOR}[Import] メーカー別スクレイピング・同期 ✨${RESET}"
+echo -e "3) ${COLOR}[Import] メーカー別インポート・同期 ✨${RESET}"
 echo "4) [Import] AV-Flash データのインポート"
 echo "5) [Admin]  スーパーユーザーの作成"
-echo -e "6) ${COLOR}[WP]     AI記事生成 & WordPress自動投稿${RESET}"
-echo "7) 終了"
+echo -e "6) ${COLOR}[WP]     商品AI記事生成 & WordPress自動投稿${RESET}"
+echo -e "7) ${COLOR}[News]   PCパーツ最新ニュース自動投稿 (PC Watch) 🆕${RESET}"
+echo "8) 終了"
 echo "---------------------------------------"
 read -p "選択してください: " CHOICE
 
@@ -61,7 +62,7 @@ case $CHOICE in
         echo "1) Lenovo (Bic-saving)"
         echo "2) HP (Linkshare/Bicstation)"
         echo "3) Dell (FTP Data)"
-        echo "4) Acer (Official Store) ✨"
+        echo "4) Acer (JSON Import from Windows) ✨"
         echo "5) Minisforum"
         echo "6) GEEKOM"
         echo "7) VSPEC (BTO)"
@@ -77,13 +78,14 @@ case $CHOICE in
                 run_cmd python manage.py sync_products_from_raw --maker HP
                 ;;
             3) run_cmd python manage.py import_dell_ftp ;;
-            4) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_acer.py ;;
+            4) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_acer.py ;;
             5) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
             6) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py ;;
             7) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_vspec.py ;;
             8) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py ;;
             9) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py ;;
             10) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
+            11) : ;;
             *) exit 0 ;;
         esac
         ;;
@@ -103,12 +105,22 @@ case $CHOICE in
         elif [ "$WP_CHOICE" == "3" ]; then run_cmd python manage.py ai_model_name
         fi
         ;;
-    7) exit 0 ;;
+    7)
+        echo -e "\n--- PCパーツ最新ニュース自動投稿 ---"
+        echo "1) 今すぐ最新の1件を投稿する"
+        echo "2) 戻る"
+        read -p ">> " NEWS_CHOICE
+        if [ "$NEWS_CHOICE" == "1" ]; then
+            run_cmd python manage.py ai_post_pc_news
+        fi
+        ;;
+    8) exit 0 ;;
 esac
 
 # 🔄 VPS環境のみ：スケジューラーの自動更新
 if [ "$IS_VPS" = true ]; then
-    if [[ "$CHOICE" =~ ^(3|6)$ ]]; then
+    # インポート(3)、ブログ(6)、ニュース(7)を実行した際にスケジューラーを同期
+    if [[ "$CHOICE" =~ ^(3|6|7)$ ]]; then
         echo -e "\n${COLOR}🔄 [VPS] 設定変更を反映するためスケジューラーを再起動します...${RESET}"
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
         echo -e "✨ スケジュール同期が完了しました。"

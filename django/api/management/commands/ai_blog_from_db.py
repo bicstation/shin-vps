@@ -11,7 +11,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DBのaffiliate_urlを優先利用し、AI記事をWordPressへ自動投稿する完全版'
+    help = 'DBのaffiliate_urlを優先利用し、bicstationへAI記事を自動投稿する完全版'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -25,6 +25,7 @@ class Command(BaseCommand):
         W_DOM = "blog.tiper.live"
         
         WP_API_BASE = f"{SCH}{CLN}{SLS}{SLS}{W_DOM}{SLS}wp-json{SLS}wp{SLS}v2"
+        # 💡 エンドポイントを bicstation に固定
         WP_POST_URL = f"{WP_API_BASE}{SLS}bicstation"
         WP_MEDIA_URL = f"{WP_API_BASE}{SLS}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
@@ -94,17 +95,29 @@ class Command(BaseCommand):
         media_id, media_url = None, ""
         if product.image_url:
             try:
-                img_res = requests.get(product.image_url, timeout=15)
+                img_res = requests.get(product.image_url, timeout=20)
                 if img_res.status_code == 200:
-                    with NamedTemporaryFile(delete=True) as img_temp:
+                    with NamedTemporaryFile(delete=False, suffix=".jpg") as img_temp:
                         img_temp.write(img_res.content)
-                        img_temp.flush()
-                        files = {'file': (f"{product.unique_id}.jpg", open(img_temp.name, 'rb'), 'image/jpeg')}
-                        m_res = requests.post(WP_MEDIA_URL, auth=AUTH, files=files)
-                        if m_res.status_code == 201:
-                            media_id = m_res.json().get('id')
-                            media_url = m_res.json().get('source_url')
-                            self.stdout.write(self.style.SUCCESS(f"🖼️ 画像UP成功: ID {media_id}"))
+                        temp_path = img_temp.name
+                    
+                    with open(temp_path, 'rb') as f:
+                        files = {'file': (f"{product.unique_id}.jpg", f, 'image/jpeg')}
+                        # 💡 ヘッダーにファイル名を指定してWP側の認識精度を上げる
+                        m_res = requests.post(
+                            WP_MEDIA_URL, 
+                            auth=AUTH, 
+                            files=files, 
+                            headers={'Content-Disposition': f'attachment; filename={product.unique_id}.jpg'}
+                        )
+                    
+                    if os.path.exists(temp_path):
+                        os.unlink(temp_path)
+
+                    if m_res.status_code == 201:
+                        media_id = m_res.json().get('id')
+                        media_url = m_res.json().get('source_url')
+                        self.stdout.write(self.style.SUCCESS(f"🖼️ 画像UP成功: ID {media_id}"))
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f"画像UP失敗: {e}"))
 
@@ -134,38 +147,34 @@ class Command(BaseCommand):
             return
 
         # ==========================================
-        # 5. テキスト解析とGutenbergラップ
+        # 5. テキスト解析とタイトル抽出の強化
         # ==========================================
         clean_text = re.sub(r'```(html)?', '', ai_raw_text).replace('```', '').strip()
+        # 💡 空行を除外してリスト化
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
+        
+        if not lines:
+            self.stdout.write(self.style.ERROR("生成テキストが空です。"))
+            return
+
+        # 💡 最初の有効な行をタイトルとして採用し、記号を削除
         title = re.sub(r'<[^>]*?>', '', lines[0]).replace('#', '').strip()
         
         summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', clean_text, re.DOTALL)
         summary_raw = summary_match.group(1).strip() if summary_match else ""
         
+        # 本文：タイトル行を除いた残りから構築
         main_body_raw = '\n'.join(lines[1:])
-        if summary_match: main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()
-
-        # ブロックエディタ形式への変換
-        def wrap_gutenberg(text):
-            text = re.sub(r'(<h[23]>.*?</h[23]>)', r'\1', text)
-            text = re.sub(r'(<p>.*?</p>)', r'\1', text, flags=re.DOTALL)
-            return text
-
-        main_body_blocks = wrap_gutenberg(main_body_raw)
+        if summary_match: 
+            main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()
 
         # ==========================================
-        # 6. アフィリエイトURLの決定 (DB優先ロジック)
+        # 6. アフィリエイトURLの決定
         # ==========================================
         tracking_beacon = ""
-        
-        # モデルの affiliate_url カラムを確認
         if product.affiliate_url:
             final_affiliate_url = product.affiliate_url
-            self.stdout.write(self.style.SUCCESS("🔗 DBの正式アフィリエイトURLを使用します"))
         else:
-            # カラムが空の場合はメーカー別動的生成（フォールバック）
-            self.stdout.write(self.style.WARNING("⚠️ DBのURLが空のため、動的生成を行います"))
             if 'dell' in maker_low:
                 final_affiliate_url = f"https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0"
                 tracking_beacon = f'<img border="0" width="1" height="1" src="https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0" >'
@@ -188,8 +197,8 @@ class Command(BaseCommand):
             <ul style="margin-bottom:0; font-size:0.95em; line-height:1.8;">{summary_items}</ul>
         </div>"""
 
-        # 本文冒頭の画像
-        image_header_block = f'<figure class="wp-block-image size-full"><img src="{media_url if media_url else product.image_url}" alt="{product.name}"/></figure>'
+        # 💡 本文冒頭の画像 (Gutenbergコメント付き)
+        image_header_block = f'<figure class="wp-block-image size-large"><img src="{media_url if media_url else product.image_url}" alt="{product.name}" class="wp-image-{media_id if media_id else ""}"/></figure>'
 
         # 特製商品カード
         card_block = f"""<div style="margin: 40px 0; padding: 25px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
@@ -208,14 +217,18 @@ class Command(BaseCommand):
             </div>
         </div>"""
 
-        full_wp_content = f"{image_header_block}\n{summary_block}\n{main_body_blocks}\n{card_block}"
+        full_wp_content = f"{image_header_block}\n{summary_block}\n{main_body_raw}\n{card_block}"
 
         # ==========================================
         # 8. WordPress投稿実行
         # ==========================================
         wp_payload = {
-            "title": title, "content": full_wp_content, "status": "publish",
-            "featured_media": media_id, "categories": target_cats, "tags": target_tags 
+            "title": title, 
+            "content": full_wp_content, 
+            "status": "publish",
+            "featured_media": media_id, 
+            "categories": target_cats, 
+            "tags": target_tags 
         }
         
         try:
@@ -224,7 +237,7 @@ class Command(BaseCommand):
                 product.ai_content = main_body_raw 
                 product.is_posted = True
                 product.save()
-                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿完了】タイトル: {title}"))
+                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿完了】タイトル: {title} / 画像ID: {media_id}"))
             else:
                 self.stdout.write(self.style.ERROR(f"❌ WP投稿失敗: {wp_res.status_code} - {wp_res.text}"))
         except Exception as e:
