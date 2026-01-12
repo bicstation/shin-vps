@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /usr/src/app/api/management/commands/ai_post_pc_news.py
+# /home/maya/shin-vps/django/api/management/commands/ai_post_pc_news.py
 
 import os
 import re
@@ -11,9 +11,10 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
+from api.models import PCProduct  # 商品カード復活のためにインポート
 
 class Command(BaseCommand):
-    help = '外部プロンプトを使用して専門ライター風に記事を生成し、カテゴリ・画像を自動反映する'
+    help = 'ニュース記事を生成し、関連するPCパーツ商品をカード形式で挿入して投稿する'
 
     def add_arguments(self, parser):
         parser.add_argument('--url', type=str, help='特定の記事URLを直接指定')
@@ -28,14 +29,12 @@ class Command(BaseCommand):
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
         WP_API_BASE = f"https://{W_DOM}/wp-json/wp/v2"
 
-        # ファイルパスの設定（実行ファイルのあるディレクトリを基準にする）
+        # パス設定
         current_dir = os.path.dirname(os.path.abspath(__file__))
         MODELS_FILE = os.path.join(current_dir, "ai_models.txt")
-        # プロンプトファイルも同じディレクトリから読み込む
         PROMPT_FILE = os.path.join(current_dir, "ai_prompt_news.txt")
         HISTORY_FILE = os.path.join(current_dir, "post_history.txt")
 
-        # 設定ファイルの存在確認
         if not os.path.exists(PROMPT_FILE):
             self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルが見つかりません: {PROMPT_FILE}"))
             return
@@ -93,9 +92,7 @@ class Command(BaseCommand):
                 continue
 
             # --- 4. AI記事生成 ---
-            self.stdout.write(f"🤖 AI執筆中 (プロンプトファイル使用)...")
-            
-            # 安全な置換方法: PROMPT_TEMPLATE 内のプレースホルダーを実際の値に置き換える
+            self.stdout.write(f"🤖 AI執筆中...")
             prompt = PROMPT_TEMPLATE.replace("{raw_title}", raw_title)\
                                    .replace("{page_content[:3500]}", page_content[:3500])\
                                    .replace("{current_url}", current_url)
@@ -112,12 +109,10 @@ class Command(BaseCommand):
             
             if not ai_response: continue
 
-            # --- 5. AI応答の解析 & HTML成形 ---
+            # --- 5. AI応答の解析 & 本文成形 ---
             lines = ai_response.strip().split('\n')
-            # 1行目をタイトルとして取得（記号等を除去）
             final_title = re.sub(r'^[#*\s・]+|[#*\s・]+$', '', lines[0])
 
-            # カテゴリとタグの抽出
             cat_name = "PCパーツ"
             tag_names = []
             cat_m = re.search(r'\[CAT\]\s*(.*?)\s*\[/CAT\]', ai_response, re.IGNORECASE)
@@ -126,10 +121,8 @@ class Command(BaseCommand):
             tag_m = re.search(r'\[TAG\]\s*(.*?)\s*\[/TAG\]', ai_response, re.IGNORECASE)
             if tag_m: tag_names = [t.strip() for t in tag_m.group(1).split(',') if t.strip()]
 
-            # メタタグ部分を本文から除去
             body_only = re.sub(r'\[CAT\].*?\[/CAT\]|\[TAG\].*?\[/TAG\]', '', ai_response, flags=re.DOTALL | re.IGNORECASE)
 
-            # SUMMARYセクションを抽出してHTML装飾
             html_body = ""
             sum_m = re.search(r'\[SUMMARY\](.*?)\[/SUMMARY\]', body_only, re.DOTALL | re.IGNORECASE)
             if sum_m:
@@ -140,7 +133,6 @@ class Command(BaseCommand):
                     if p: html_body += f"<li>{p}</li>"
                 html_body += '</ul></div>'
             
-            # SUMMARYタグを除去した後のメインテキストを処理
             main_text = re.sub(r'\[SUMMARY\].*?\[/SUMMARY\]', '', body_only, flags=re.DOTALL | re.IGNORECASE)
             for line in main_text.split('\n'):
                 l = line.strip()
@@ -148,28 +140,50 @@ class Command(BaseCommand):
                 if l.startswith('##'): html_body += f'<h2 class="wp-block-heading">{l.replace("##","").strip()}</h2>'
                 elif l.startswith('###'): html_body += f'<h3 class="wp-block-heading">{l.replace("###","").strip()}</h3>'
                 else: html_body += f'<p>{l}</p>'
-            
+
+            # --- 6. 【商品カード復活】PCProductテーブルから関連商品を検索 ---
+            keywords = [final_title[:10], cat_name]
+            related_products = PCProduct.objects.filter(
+                name__icontains=keywords[0]
+            ).order_by('-created_at')[:3]
+
+            if related_products:
+                html_body += '<h2 class="wp-block-heading">🛠 関連おすすめパーツ</h2>'
+                for prod in related_products:
+                    html_body += f'''
+                    <div style="display:flex; border:1px solid #ddd; border-radius:8px; padding:15px; margin-bottom:15px; background:#fff;">
+                        <div style="flex:0 0 120px; margin-right:15px;">
+                            <img src="{prod.image_url}" style="width:100%; height:auto; border-radius:4px;">
+                        </div>
+                        <div style="flex:1;">
+                            <h4 style="margin:0 0 10px 0; font-size:1.1em;">{prod.name}</h4>
+                            <p style="color:#e47911; font-weight:bold; font-size:1.2em; margin-bottom:10px;">¥{prod.price:,}</p>
+                            <a href="{prod.affiliate_url}" target="_blank" style="background:#f0c14b; border:1px solid #a88734; padding:8px 15px; text-decoration:none; color:#111; border-radius:4px; font-size:0.9em;">詳細を見る</a>
+                        </div>
+                    </div>
+                    '''
+
             html_body += f'<p style="font-size:0.8em;margin-top:20px;color:#64748b;">出典: <a href="{current_url}" target="_blank">{raw_title}</a></p>'
 
-            # --- 6. アイキャッチ画像の処理 ---
+            # --- 7. アイキャッチ画像の処理 (バイナリPOST方式) ---
             featured_media_id = 0
             img_query = urllib.parse.quote(final_title[:15])
             img_url = target_image_url or f"https://images.unsplash.com/featured/?{img_query}"
             
             try:
-                img_res = requests.get(img_url, timeout=20)
+                img_res = requests.get(img_url, timeout=20, allow_redirects=True)
                 if img_res.status_code == 200:
-                    with NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-                        tmp.write(img_res.content)
-                        tmp_path = tmp.name
-                    with open(tmp_path, 'rb') as f:
-                        m_res = requests.post(f"{WP_API_BASE}/media", auth=AUTH, files={'file': ('eyecatch.jpg', f, 'image/jpeg')}, data={'title': final_title})
+                    media_headers = {
+                        'Content-Disposition': f'attachment; filename="news_{int(time.time())}.jpg"',
+                        'Content-Type': 'image/jpeg'
+                    }
+                    m_res = requests.post(f"{WP_API_BASE}/media", auth=AUTH, headers=media_headers, data=img_res.content)
+                    if m_res.status_code == 201:
                         featured_media_id = m_res.json().get('id', 0)
-                    if os.path.exists(tmp_path): os.remove(tmp_path)
             except Exception as e:
-                self.stdout.write(f"⚠️ 画像取得エラー: {e}")
+                self.stdout.write(f"⚠️ 画像エラー: {e}")
 
-            # --- 7. WordPressカテゴリ・タグの同期 ---
+            # --- 8. カテゴリ・タグ同期 ---
             def get_or_create_wp_id(path, name):
                 try:
                     search_res = requests.get(f"{WP_API_BASE}/{path}?search={urllib.parse.quote(name)}", auth=AUTH).json()
@@ -182,7 +196,7 @@ class Command(BaseCommand):
             cid = get_or_create_wp_id("categories", cat_name)
             tids = [get_or_create_wp_id("tags", tn) for tn in tag_names if tn]
 
-            # --- 8. WordPress投稿 ---
+            # --- 9. WordPress投稿 ---
             post_payload = {
                 "title": final_title,
                 "content": html_body,
@@ -200,7 +214,7 @@ class Command(BaseCommand):
                 success = True
                 break
             else:
-                self.stdout.write(self.style.ERROR(f"❌ 投稿失敗: {final_res.status_code} - {final_res.text[:100]}"))
+                self.stdout.write(self.style.ERROR(f"❌ 投稿失敗: {final_res.status_code}"))
 
         if not success:
             self.stdout.write("新着記事の投稿は行われませんでした。")
