@@ -28,16 +28,16 @@ class Command(BaseCommand):
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
         WP_API_BASE = f"https://{W_DOM}/wp-json/wp/v2"
 
-        # ファイルパスの設定
+        # ファイルパスの設定（実行ファイルのあるディレクトリを基準にする）
         current_dir = os.path.dirname(os.path.abspath(__file__))
         MODELS_FILE = os.path.join(current_dir, "ai_models.txt")
-        # 指定されたプロンプトファイルパス
-        PROMPT_FILE = "/mnt/c/dev/SHIN-VPS/django/api/management/commands/ai_prompt_news.txt"
+        # プロンプトファイルも同じディレクトリから読み込む
+        PROMPT_FILE = os.path.join(current_dir, "ai_prompt_news.txt")
         HISTORY_FILE = os.path.join(current_dir, "post_history.txt")
 
-        # 設定ファイルの読み込み
+        # 設定ファイルの存在確認
         if not os.path.exists(PROMPT_FILE):
-            self.stdout.write(self.style.ERROR(f"プロンプトファイルが見つかりません: {PROMPT_FILE}"))
+            self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルが見つかりません: {PROMPT_FILE}"))
             return
 
         with open(MODELS_FILE, "r", encoding='utf-8') as f:
@@ -94,12 +94,11 @@ class Command(BaseCommand):
 
             # --- 4. AI記事生成 ---
             self.stdout.write(f"🤖 AI執筆中 (プロンプトファイル使用)...")
-            # プロンプト内の変数を置換
-            prompt = PROMPT_TEMPLATE.format(
-                raw_title=raw_title,
-                page_content=page_content[:3500],
-                current_url=current_url
-            )
+            
+            # 安全な置換方法: PROMPT_TEMPLATE 内のプレースホルダーを実際の値に置き換える
+            prompt = PROMPT_TEMPLATE.replace("{raw_title}", raw_title)\
+                                   .replace("{page_content[:3500]}", page_content[:3500])\
+                                   .replace("{current_url}", current_url)
 
             ai_response = ""
             for model in MODELS:
@@ -115,8 +114,8 @@ class Command(BaseCommand):
 
             # --- 5. AI応答の解析 & HTML成形 ---
             lines = ai_response.strip().split('\n')
-            # 1行目をタイトルとして取得（装飾を除去）
-            final_title = re.sub(r'^[#*\s]+|[#*\s]+$', '', lines[0])
+            # 1行目をタイトルとして取得（記号等を除去）
+            final_title = re.sub(r'^[#*\s・]+|[#*\s・]+$', '', lines[0])
 
             # カテゴリとタグの抽出
             cat_name = "PCパーツ"
@@ -127,21 +126,21 @@ class Command(BaseCommand):
             tag_m = re.search(r'\[TAG\]\s*(.*?)\s*\[/TAG\]', ai_response, re.IGNORECASE)
             if tag_m: tag_names = [t.strip() for t in tag_m.group(1).split(',') if t.strip()]
 
-            # メタ情報の除去
+            # メタタグ部分を本文から除去
             body_only = re.sub(r'\[CAT\].*?\[/CAT\]|\[TAG\].*?\[/TAG\]', '', ai_response, flags=re.DOTALL | re.IGNORECASE)
 
-            # SUMMARYセクションの装飾
+            # SUMMARYセクションを抽出してHTML装飾
             html_body = ""
             sum_m = re.search(r'\[SUMMARY\](.*?)\[/SUMMARY\]', body_only, re.DOTALL | re.IGNORECASE)
             if sum_m:
                 html_body += '<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:20px;">'
-                html_body += '<h4 style="margin-top:0;">📝 専門ライターの要約ポイント</h4><ul>'
+                html_body += '<h4 style="margin-top:0;color:#1e293b;">📝 専門ライターの要約ポイント</h4><ul>'
                 for line in sum_m.group(1).strip().split('\n'):
                     p = line.strip().lstrip('*-・• ')
                     if p: html_body += f"<li>{p}</li>"
                 html_body += '</ul></div>'
             
-            # メインコンテンツの抽出とHTML変換
+            # SUMMARYタグを除去した後のメインテキストを処理
             main_text = re.sub(r'\[SUMMARY\].*?\[/SUMMARY\]', '', body_only, flags=re.DOTALL | re.IGNORECASE)
             for line in main_text.split('\n'):
                 l = line.strip()
@@ -150,7 +149,7 @@ class Command(BaseCommand):
                 elif l.startswith('###'): html_body += f'<h3 class="wp-block-heading">{l.replace("###","").strip()}</h3>'
                 else: html_body += f'<p>{l}</p>'
             
-            html_body += f'<p style="font-size:0.8em;margin-top:20px;color:#666;">出典: <a href="{current_url}" target="_blank">{raw_title}</a></p>'
+            html_body += f'<p style="font-size:0.8em;margin-top:20px;color:#64748b;">出典: <a href="{current_url}" target="_blank">{raw_title}</a></p>'
 
             # --- 6. アイキャッチ画像の処理 ---
             featured_media_id = 0
@@ -168,9 +167,9 @@ class Command(BaseCommand):
                         featured_media_id = m_res.json().get('id', 0)
                     if os.path.exists(tmp_path): os.remove(tmp_path)
             except Exception as e:
-                self.stdout.write(f"画像取得エラー: {e}")
+                self.stdout.write(f"⚠️ 画像取得エラー: {e}")
 
-            # --- 7. カテゴリ・タグのID取得（存在しなければ作成） ---
+            # --- 7. WordPressカテゴリ・タグの同期 ---
             def get_or_create_wp_id(path, name):
                 try:
                     search_res = requests.get(f"{WP_API_BASE}/{path}?search={urllib.parse.quote(name)}", auth=AUTH).json()
@@ -183,7 +182,7 @@ class Command(BaseCommand):
             cid = get_or_create_wp_id("categories", cat_name)
             tids = [get_or_create_wp_id("tags", tn) for tn in tag_names if tn]
 
-            # --- 8. WordPressへ投稿 ---
+            # --- 8. WordPress投稿 ---
             post_payload = {
                 "title": final_title,
                 "content": html_body,
