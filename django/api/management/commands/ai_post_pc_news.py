@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# 特徴：RSS未投稿選別（複数ソース） ＋ AI生成 ＋ アイキャッチ補完 ＋ bicstation内部リンク付きリッチカード
-# 指示：同一ディレクトリ内の ai_models.txt と ai_prompt.txt を使用
+# /mnt/e/dev/shin-vps/django/api/management/commands/ai_post_pc_news.py
+# 特徴：RSS未投稿選別 ＋ 動的アイキャッチ（Unsplash） ＋ カテゴリ・タグ自動抽出 ＋ 商品カード
 
 import os
 import re
@@ -14,7 +14,7 @@ from api.models.pc_products import PCProduct
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'RSS(複数ソース)から未投稿記事を投稿し、商品カードにbicstation内部リンクを挿入するフルロジック'
+    help = 'RSSから未投稿記事を投稿し、タイトルに関連する画像を自動生成して投稿するフルロジック'
 
     def handle(self, *args, **options):
         # --- 1. 基本設定 ---
@@ -44,7 +44,7 @@ class Command(BaseCommand):
             with open(HISTORY_FILE, "r", encoding='utf-8') as f:
                 posted_links = set(line.strip() for line in f if line.strip())
 
-        # --- 2. RSSフィードの取得（複数ソース対応） ---
+        # --- 2. RSSフィードの取得 ---
         RSS_SOURCES = [
             {"name": "PC Watch", "url": "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf"},
             {"name": "ASCII.jp", "url": "https://ascii.jp/pc/rss.xml"},
@@ -75,7 +75,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f"\n未投稿記事を特定: 【{source_name}】 {target_entry.title}")
 
-        # --- 4. AI記事生成 ---
+        # --- 3. AI記事生成 ---
         prompt = PROMPT_TEMPLATE.replace("{title}", target_entry.title).replace("{description}", target_entry.description).replace("{link}", target_entry.link)
         ai_response = ""
         for model in MODELS:
@@ -93,19 +93,21 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("AI生成に失敗しました。"))
             return
 
-        # --- 5. クリーンアップ処理 ---
-        ai_response = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', ai_response, flags=re.DOTALL)
+        # --- 4. カテゴリ・タグ・クリーニング処理 ---
+        # HTMLタグの除去など
         ai_response = ai_response.replace('```html', '').replace('```', '')
 
+        # カテゴリ抽出
         cat_name = "PCパーツ"
         c_m = re.search(r'\[CAT\](.*?)\[/CAT\]', ai_response)
         if c_m: cat_name = c_m.group(1).strip()
         
+        # タグ抽出
         tag_names = []
         t_m = re.search(r'\[TAG\](.*?)\[/TAG\]', ai_response)
         if t_m: tag_names = [t.strip() for t in t_m.group(1).split(',')]
 
-        # --- 6. HTML本文の組み立て ---
+        # --- 5. HTML本文の組み立て ---
         html_body = ""
         s_m = re.search(r'\[SUMMARY\](.*?)\[/SUMMARY\]', ai_response, re.DOTALL)
         if s_m:
@@ -116,7 +118,9 @@ class Command(BaseCommand):
                 if point: html_body += f"<li>{point}</li>"
             html_body += '</ul></div>'
 
+        # AIの回答からメタタグ部分を除去して本文のみにする
         clean_content = re.sub(r'\[CAT\].*?\[/CAT\]|\[TAG\].*?\[/TAG\]|\[SUMMARY\].*?\[/SUMMARY\]', '', ai_response, flags=re.DOTALL)
+        
         for line in clean_content.strip().split('\n'):
             l = line.strip()
             if not l or l == target_entry.title: continue
@@ -127,19 +131,26 @@ class Command(BaseCommand):
             else:
                 html_body += f'<p>{l}</p>'
         
-        # 出典元を動的に表示
         html_body += f'<p>出典: <a href="{target_entry.link}" target="_blank">{source_name}</a></p>'
 
-        # --- 7. アイキャッチ画像の処理 ---
+        # --- 6. アイキャッチ画像の動的処理 ---
         featured_media_id = 0
         img_url = None
+        
+        # RSSに画像があるか確認
         if 'links' in target_entry:
             for link in target_entry.links:
                 if 'image' in link.get('type', ''):
                     img_url = link.get('href')
                     break
+        
+        # RSSに画像がない、または取得に失敗しそうな場合はUnsplashから動的に取得
         if not img_url:
-            img_url = "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop"
+            # タイトルから英単語を抽出して検索クエリにする
+            search_keywords = re.findall(r'[a-zA-Z0-9]{3,}', target_entry.title)
+            query = ",".join(search_keywords[:3]) if search_keywords else "computer,technology"
+            img_url = f"https://source.unsplash.com/featured/1200x630/?{query}"
+            self.stdout.write(f"アイキャッチを動的に生成中（キーワード: {query}）")
 
         try:
             headers = {'User-Agent': 'Mozilla/5.0'}
@@ -149,7 +160,12 @@ class Command(BaseCommand):
                     tmp.write(img_res.content)
                     tmp_path = tmp.name
                 with open(tmp_path, 'rb') as f:
-                    media_res = requests.post(f"{WP_API_BASE}/media", auth=AUTH, files={'file': (f"eyecatch_{int(time.time())}.jpg", f, 'image/jpeg')}, data={'title': target_entry.title})
+                    media_res = requests.post(
+                        f"{WP_API_BASE}/media", 
+                        auth=AUTH, 
+                        files={'file': (f"eyecatch_{int(time.time())}.jpg", f, 'image/jpeg')}, 
+                        data={'title': target_entry.title}
+                    )
                 if os.path.exists(tmp_path): os.remove(tmp_path)
                 if media_res.status_code == 201:
                     featured_media_id = media_res.json().get('id')
@@ -157,13 +173,11 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"画像処理エラー: {str(e)}"))
 
-        # --- 8. 特製商品カード（bicstation内部リンク統合版） ---
+        # --- 7. 商品カード（bicstation内部リンク） ---
         prod = PCProduct.objects.filter(is_active=True).order_by('?').first()
         card_html = ""
         if prod:
-            # bicstationの個別詳細ページURLを生成
             bic_detail_url = f"https://bicstation.com/product/{prod.unique_id}/"
-            # アフィリエイトURL（なければデフォルトURL）
             final_affiliate_url = prod.affiliate_url if prod.affiliate_url else prod.url
             p_price = f"{prod.price:,}円〜" if prod.price else "公式サイトへ"
 
@@ -185,7 +199,7 @@ class Command(BaseCommand):
                 </div>
             </div>"""
 
-        # --- 9. WordPressへ投稿 ---
+        # --- 8. WordPressへ投稿 ---
         def get_wp_id(path, name):
             try:
                 r = requests.get(f"{WP_API_BASE}/{path}?search={urllib.parse.quote(name)}", auth=AUTH)
