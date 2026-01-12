@@ -46,7 +46,7 @@ else
     # メニューを縦長で分かりやすく表示
     echo "📝 変更種別を選んでください:"
     echo "1) fix   (バグ修正・調整)"
-    echo "2) feat  (新機能追加)"
+    echo "2) feat  (新機能追加: 機能拡張)"
     echo "3) docs  (設定変更・ドキュメント)"
     echo "4) chore (その他・整理)"
     read -p "番号を選択 (1-4): " TYPE_NUM
