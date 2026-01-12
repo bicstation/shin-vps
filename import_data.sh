@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (Acer & News対応版)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (MSI/Ark/News対応版)
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -69,7 +69,8 @@ case $CHOICE in
         echo "8) STORM"
         echo "9) FRONTIER"
         echo "10) Sycom"
-        echo "11) 戻る"
+        echo -e "11) ${COLOR}MSI (Import from Ark/VC) 🆕${RESET}"
+        echo "12) 戻る"
         read -p ">> " SUB_CHOICE
         case $SUB_CHOICE in
             1) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
@@ -85,7 +86,8 @@ case $CHOICE in
             8) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py ;;
             9) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py ;;
             10) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
-            11) : ;;
+            11) run_cmd env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py ;;
+            12) : ;;
             *) exit 0 ;;
         esac
         ;;
@@ -119,7 +121,6 @@ esac
 
 # 🔄 VPS環境のみ：スケジューラーの自動更新
 if [ "$IS_VPS" = true ]; then
-    # インポート(3)、ブログ(6)、ニュース(7)を実行した際にスケジューラーを同期
     if [[ "$CHOICE" =~ ^(3|6|7)$ ]]; then
         echo -e "\n${COLOR}🔄 [VPS] 設定変更を反映するためスケジューラーを再起動します...${RESET}"
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
