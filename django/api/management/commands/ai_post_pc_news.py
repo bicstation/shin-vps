@@ -7,7 +7,7 @@ import requests
 import feedparser
 import urllib.parse
 import time
-import difflib
+import random
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from requests.auth import HTTPBasicAuth
@@ -38,27 +38,23 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルが見つかりません: {PROMPT_FILE}"))
             return
 
-        # 履歴の読み込み（ローカルファイルによる重複チェック）
+        # 履歴の読み込み
         posted_links = set()
-        posted_titles = []
         if os.path.exists(HISTORY_FILE):
             with open(HISTORY_FILE, "r", encoding='utf-8') as f:
                 for line in f:
                     parts = line.strip().split('\t')
                     if parts:
                         posted_links.add(parts[0].strip())
-                        if len(parts) > 1:
-                            posted_titles.append(parts[1].strip())
 
         with open(MODELS_FILE, "r", encoding='utf-8') as f:
             MODELS = [line.strip() for line in f if line.strip()]
         with open(PROMPT_FILE, "r", encoding='utf-8') as f:
             PROMPT_TEMPLATE = f.read()
 
-        # --- 2. 重複チェック関数 (WordPress APIへの直接問い合わせ) ---
+        # --- 2. 重複チェック関数 (WordPress API) ---
         def is_already_on_wp(title):
             try:
-                # 完全に同じタイトルの記事が既にWPに公開されているか検索
                 search_url = f"{WP_API_BASE}/posts?search={urllib.parse.quote(title)}&status=publish"
                 r = requests.get(search_url, auth=AUTH, timeout=10).json()
                 for p in r:
@@ -68,7 +64,7 @@ class Command(BaseCommand):
             except:
                 return False
 
-        # --- 3. 記事候補の取得 ---
+        # --- 3. 記事候補の取得（ランダム選定ロジック） ---
         target_url = options.get('url')
         target_image_url = options.get('image')
         candidates = []
@@ -81,15 +77,30 @@ class Command(BaseCommand):
                 {"name": "ASCII.jp", "url": "https://ascii.jp/pc/rss.xml"},
                 {"name": "ITmedia", "url": "https://rss.itmedia.co.jp/rss/2.0/pcuser.xml"}
             ]
+            # RSSソース自体をランダムにシャッフル
+            random.shuffle(RSS_SOURCES)
+            
             for source in RSS_SOURCES:
+                self.stdout.write(f"📡 RSS読み込み中: {source['name']}")
                 feed = feedparser.parse(source['url'])
-                for entry in feed.entries:
+                entries = feed.entries
+                # 記事リストもランダムにシャッフル
+                random.shuffle(entries)
+                
+                for entry in entries:
                     link = entry.link.strip()
                     if link not in posted_links:
                         candidates.append({"url": link})
+                
+                # すでに未投稿の候補が見つかっていれば、他のRSSソースの読み込みを最小限にする
+                if len(candidates) > 5:
+                    break
 
         # --- 4. 投稿メインループ ---
         success = False
+        # 候補を再度全体でシャッフル
+        random.shuffle(candidates)
+
         for item in candidates:
             current_url = item['url']
             if current_url in posted_links:
@@ -104,9 +115,10 @@ class Command(BaseCommand):
                 
                 raw_title = soup.title.string.split('|')[0].strip() if soup.title else "最新ニュース"
                 
-                # 投稿前にWP側でタイトル重複を最終チェック (連投防止)
+                # WordPress側での最終重複チェック
                 if is_already_on_wp(raw_title):
                     self.stdout.write(f"⏩ WPに既に存在するためスキップ: {raw_title}")
+                    posted_links.add(current_url) # 履歴には追加して次回から飛ばす
                     continue
 
                 # OGP画像取得
@@ -140,12 +152,10 @@ class Command(BaseCommand):
                 except: continue
             if not ai_response: continue
 
-            # --- 6. 本文成形とHTML変換ロジック ---
+            # --- 6. HTML変換と記号除去ロジック ---
             lines = ai_response.strip().split('\n')
-            # タイトルから不要な記号を除去
             final_title = re.sub(r'^[#*\s・]+|[#*\s・]+$', '', lines[0])
 
-            # 特殊タグ抽出
             cat_name = "PCパーツ"
             cat_m = re.search(r'\[CAT\]\s*(.*?)\s*\[/CAT\]', ai_response, re.IGNORECASE)
             if cat_m: cat_name = cat_m.group(1).strip()
@@ -154,7 +164,6 @@ class Command(BaseCommand):
             tag_names = [t.strip() for t in tag_m.group(1).split(',') if t.strip()] if tag_m else []
 
             html_body = ""
-            # 要約抽出
             sum_m = re.search(r'\[SUMMARY\](.*?)\[/SUMMARY\]', ai_response, re.DOTALL | re.IGNORECASE)
             if sum_m:
                 html_body += '<div style="background:#f1f5f9;border-left:5px solid #0f172a;padding:20px;margin-bottom:30px;border-radius:4px;">'
@@ -171,14 +180,13 @@ class Command(BaseCommand):
                 line = line.strip()
                 if not line or line == final_title: continue
 
-                # 【スペック表・箇条書きの検知とテーブル化】
+                # スペック表テーブル化（アスタリスク除去を強化）
                 spec_match = re.match(r'^[*-]\s*(?:\*\*)?(.*?)(?:\*\*)?[:：]\s*(.*)', line)
                 if spec_match:
                     if not in_table:
                         html_body += '<table style="width:100%; border-collapse:collapse; margin:20px 0; border:1px solid #e2e8f0; font-size:0.95em;">'
                         in_table = True
                     key, val = spec_match.groups()
-                    # キーと値の両方から**を消去
                     key = key.replace('**', '').strip()
                     val = val.replace('**', '').strip()
                     html_body += f'<tr style="border-bottom:1px solid #e2e8f0;"><td style="background:#f8fafc; padding:12px; font-weight:bold; width:35%; color:#334155;">{key}</td><td style="padding:12px; color:#1e293b;">{val}</td></tr>'
@@ -188,7 +196,6 @@ class Command(BaseCommand):
                     html_body += '</table>'
                     in_table = False
 
-                # 【見出し処理：# 記号を完全に除去】
                 if line.startswith('#'):
                     level = line.count('#')
                     clean_text = line.replace('#', '').strip()
@@ -201,12 +208,10 @@ class Command(BaseCommand):
             
             if in_table: html_body += '</table>'
 
-            # --- 7. 商品マッチング改善 (タイトルからキーワード抽出) ---
-            search_keyword = final_title[:10]
-            if "電気毛布" in final_title: search_keyword = "電気毛布"
-            elif "ケーブル" in final_title: search_keyword = "ケーブル"
-            elif "SSD" in final_title: search_keyword = "SSD"
-            elif "RTX" in final_title: search_keyword = "RTX"
+            # --- 7. 商品マッチング (キーワード抽出精度向上) ---
+            # 記事タイトルから重要語句を優先抽出
+            keywords = ["電気毛布", "SSD", "RTX", "モニター", "キーボード", "ケーブル", "充電器", "ノートPC"]
+            search_keyword = next((k for k in keywords if k in final_title), final_title[:10])
             
             related_products = PCProduct.objects.filter(is_active=True, name__icontains=search_keyword).exclude(stock_status="受注停止中").order_by('-created_at')[:3]
 
@@ -263,10 +268,9 @@ class Command(BaseCommand):
             cid = get_wp_id("categories", cat_name)
             tids = [get_wp_id("tags", tn) for tn in tag_names]
 
-            # --- 10. WordPress最終投稿 ---
-            # 投稿直前に、もう一度だけWP側で重複がないか再確認
+            # --- 10. WordPress最終投稿（直前重複確認付き） ---
             if is_already_on_wp(final_title):
-                self.stdout.write(f"⏩ 直前チェックで重複を検知したためスキップ: {final_title}")
+                self.stdout.write(f"⏩ 投稿直前に重複を検知したためスキップ: {final_title}")
                 continue
 
             post_payload = {
@@ -284,7 +288,7 @@ class Command(BaseCommand):
                 with open(HISTORY_FILE, "a", encoding='utf-8') as f:
                     f.write(f"{current_url}\t{final_title}\n")
                 success = True
-                break # 1回の実行で1記事投稿とし、連投を防ぐ
+                break # 1回の実行で1記事投稿
 
         if not success:
-            self.stdout.write("新しい記事は投稿されませんでした。")
+            self.stdout.write("新しい未投稿の記事は見つかりませんでした。")
