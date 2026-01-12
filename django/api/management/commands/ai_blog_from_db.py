@@ -1,3 +1,12 @@
+"""
+【自動投稿スクリプト: bicstation 完全版】
+このスクリプトは、以下の2つの外部ファイルを同じディレクトリ内に必要とします。
+1. ai_models.txt : 使用するGeminiモデル名（gemini-1.5-proなど）を1行ずつ記述
+2. ai_prompt.txt : AIへの指示（プロンプト）。{maker}, {name}, {price}, {description} の変数を埋め込む形式
+
+実行コマンド: python manage.py ai_post_pc_news
+"""
+
 import os
 import re
 import random
@@ -11,28 +20,34 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DBのaffiliate_urlを優先利用し、bicstationへAI記事を自動投稿する完全版'
+    help = 'DBの製品情報を元にAI記事を生成し、WordPress(blog.tiper.live)へ自動投稿します'
 
     def handle(self, *args, **options):
         # ==========================================
-        # 1. 基本設定と外部ファイル読み込み
+        # 1. 基本設定と認証情報の定義
         # ==========================================
+        # 文字列結合用の定数（URL構築時に使用）
         SCH, CLN, SLS, QMK, EQU, AMP = "https", ":", "/", "?", "=", "&"
 
+        # 環境変数およびWordPress接続情報
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         W_DOM = "blog.tiper.live"
         
+        # WordPress API エンドポイント
         WP_API_BASE = f"{SCH}{CLN}{SLS}{SLS}{W_DOM}{SLS}wp-json{SLS}wp{SLS}v2"
-        # 💡 エンドポイントを bicstation に固定
-        WP_POST_URL = f"{WP_API_BASE}{SLS}bicstation"
+        WP_POST_URL = f"{WP_API_BASE}{SLS}bicstation" # カスタム投稿タイプまたは特定ルート
         WP_MEDIA_URL = f"{WP_API_BASE}{SLS}media"
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
 
+        # WordPress上のカテゴリID / タグID (環境に合わせて調整)
         CAT_LENOVO, CAT_DELL, CAT_HP = 4, 7, 8
         TAG_DESKTOP, TAG_LAPTOP = 5, 6
 
+        # ==========================================
+        # 2. 外部設定ファイルの読み込み
+        # ==========================================
         current_dir = os.path.dirname(os.path.abspath(__file__))
         PROMPT_FILE_PATH = os.path.join(current_dir, "ai_prompt.txt")
         MODELS_FILE_PATH = os.path.join(current_dir, "ai_models.txt")
@@ -44,10 +59,11 @@ class Command(BaseCommand):
                 MODELS = [line.strip() for line in f if line.strip()]
             self.stdout.write(self.style.SUCCESS(f"📖 設定ファイル読み込み成功 (モデル数: {len(MODELS)})"))
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"❌ ファイル読み込み失敗: {e}"))
+            self.stdout.write(self.style.ERROR(f"❌ 設定ファイルの読み込みに失敗しました: {e}"))
             return
 
         def get_or_create_term(taxonomy, name):
+            """WP上のカテゴリやタグを名前で検索し、なければ作成してIDを返す"""
             try:
                 search_url = f"{WP_API_BASE}/{taxonomy}{QMK}search{EQU}{urllib.parse.quote(name)}"
                 res = requests.get(search_url, auth=AUTH, timeout=10)
@@ -56,14 +72,16 @@ class Command(BaseCommand):
                     for t in terms:
                         if t['name'].lower() == name.lower(): return t['id']
                 
+                # 見つからない場合は新規作成
                 create_res = requests.post(f"{WP_API_BASE}/{taxonomy}", json={"name": name}, auth=AUTH, timeout=10)
                 if create_res.status_code == 201: return create_res.json().get('id')
             except: pass
             return None
 
         # ==========================================
-        # 2. ターゲット商品の選定
+        # 3. 投稿対象（商品）の選定
         # ==========================================
+        # 未投稿かつアクティブ、かつ受注停止ではない商品をランダムに1つ取得
         products = PCProduct.objects.filter(is_active=True, is_posted=False).exclude(stock_status="受注停止中")
         
         if not products.exists():
@@ -74,7 +92,7 @@ class Command(BaseCommand):
         maker_low = product.maker.lower()
         self.stdout.write(self.style.SUCCESS(f"🚀 ターゲット確定: {product.name} ({product.maker})"))
 
-        # カテゴリ/タグ設定
+        # メーカー名に基づいたカテゴリ割り当て
         target_cats = []
         if 'lenovo' in maker_low: target_cats.append(CAT_LENOVO)
         elif 'dell' in maker_low: target_cats.append(CAT_DELL)
@@ -83,14 +101,17 @@ class Command(BaseCommand):
             new_cat_id = get_or_create_term('categories', product.maker.upper())
             target_cats.append(new_cat_id if new_cat_id else 1)
 
+        # 製品名からデスクトップかノートPCか判定してタグ付け
         is_desktop = any(k in product.name.lower() for k in ["desktop", "tower", "station", "aio", "tiny", "center", "poweredge"])
         target_tags = [TAG_DESKTOP if is_desktop else TAG_LAPTOP]
+        
+        # 特定のキーワード(RTXなど)があればタグを追加
         if "rtx" in product.description.lower():
             t_id = get_or_create_term('tags', "GeForce RTX")
             if t_id: target_tags.append(t_id)
 
         # ==========================================
-        # 3. 画像アップロード
+        # 4. アイキャッチ画像のアップロード
         # ==========================================
         media_id, media_url = None, ""
         if product.image_url:
@@ -103,7 +124,6 @@ class Command(BaseCommand):
                     
                     with open(temp_path, 'rb') as f:
                         files = {'file': (f"{product.unique_id}.jpg", f, 'image/jpeg')}
-                        # 💡 ヘッダーにファイル名を指定してWP側の認識精度を上げる
                         m_res = requests.post(
                             WP_MEDIA_URL, 
                             auth=AUTH, 
@@ -117,12 +137,12 @@ class Command(BaseCommand):
                     if m_res.status_code == 201:
                         media_id = m_res.json().get('id')
                         media_url = m_res.json().get('source_url')
-                        self.stdout.write(self.style.SUCCESS(f"🖼️ 画像UP成功: ID {media_id}"))
+                        self.stdout.write(self.style.SUCCESS(f"🖼️ 画像アップロード成功: ID {media_id}"))
             except Exception as e:
-                self.stdout.write(self.style.WARNING(f"画像UP失敗: {e}"))
+                self.stdout.write(self.style.WARNING(f"画像アップロード失敗(スキップします): {e}"))
 
         # ==========================================
-        # 4. AI文章生成
+        # 5. AIによる本文生成 (Gemini API)
         # ==========================================
         prompt = base_prompt_template.format(
             maker=product.maker, name=product.name,
@@ -130,6 +150,7 @@ class Command(BaseCommand):
         )
 
         ai_raw_text = None
+        # ai_models.txtに記載されたモデルを順に試行
         for model_id in MODELS:
             self.stdout.write(f"🤖 モデル {model_id} で生成を試行中...")
             api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
@@ -143,68 +164,88 @@ class Command(BaseCommand):
             except: continue
 
         if not ai_raw_text:
-            self.stdout.write(self.style.ERROR("❌ 全モデルで生成に失敗しました。"))
+            self.stdout.write(self.style.ERROR("❌ 全てのAIモデルで生成に失敗しました。"))
             return
 
         # ==========================================
-        # 5. テキスト解析とタイトル抽出の強化
+        # 6. 生成テキストの解析とクリーニング
         # ==========================================
+        # マークダウンの装飾記号を除去
         clean_text = re.sub(r'```(html)?', '', ai_raw_text).replace('```', '').strip()
-        # 💡 空行を除外してリスト化
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
         if not lines:
-            self.stdout.write(self.style.ERROR("生成テキストが空です。"))
+            self.stdout.write(self.style.ERROR("生成されたテキストが空です。"))
             return
 
-        # 💡 最初の有効な行をタイトルとして採用し、記号を削除
-        title = re.sub(r'<[^>]*?>', '', lines[0]).replace('#', '').strip()
-        
+        # --- タイトル抽出ロジックの強化 ---
+        title = ""
+        body_start_index = 0
+        for i, line in enumerate(lines[:3]): # 最初の3行からタイトルを探す
+            # 記号を除去
+            candidate = re.sub(r'<[^>]*?>', '', line).replace('#', '').replace('*', '').strip()
+            # 「タイトル：」というラベルがあれば消す
+            candidate = re.sub(r'^タイトル[:：]\s*', '', candidate)
+            
+            if candidate and len(candidate) > 5:
+                title = candidate
+                body_start_index = i + 1
+                break
+
+        # タイトルが取れなかった場合のバックアップ
+        if not title:
+            title = f"{product.maker} {product.name} 実機スペック解説と最新価格情報"
+            body_start_index = 0
+
+        # [SUMMARY_DATA] セクション（注目ポイント）の抽出
         summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', clean_text, re.DOTALL)
         summary_raw = summary_match.group(1).strip() if summary_match else ""
         
-        # 本文：タイトル行を除いた残りから構築
-        main_body_raw = '\n'.join(lines[1:])
+        # 本文の組み立て（タイトル行を除去したもの）
+        main_body_raw = '\n'.join(lines[body_start_index:])
         if summary_match: 
             main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()
 
         # ==========================================
-        # 6. アフィリエイトURLの決定
+        # 7. アフィリエイトURLおよび広告タグの構築
         # ==========================================
         tracking_beacon = ""
         if product.affiliate_url:
             final_affiliate_url = product.affiliate_url
         else:
+            # 各メーカー用のアフィリエイトリンク生成
             if 'dell' in maker_low:
                 final_affiliate_url = f"https://click.linksynergy.com/fs-bin/click?id=nNBA6GzaGrQ&offerid=1568114.10014115&type=3&subid=0"
                 tracking_beacon = f'<img border="0" width="1" height="1" src="https://ad.linksynergy.com/fs-bin/show?id=nNBA6GzaGrQ&bids=1568114.10014115&type=3&subid=0" >'
             else:
+                # バリューコマース用
                 sid, pid = "3697471", "892455531"
                 encoded_url = urllib.parse.quote(product.url, safe='')
                 final_affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
                 tracking_beacon = f'<img src="https://ad.jp.ap.valuecommerce.com/servlet/gifbanner?sid={sid}&pid={pid}" height="1" width="1" border="0">'
 
         # ==========================================
-        # 7. デザイン構築 (HTMLブロック)
+        # 8. HTMLデザインの構築
         # ==========================================
         bic_detail_url = f"https://bicstation.com/product/{product.unique_id}/"
         button_text = f"{product.maker}公式で詳細を見る ＞"
 
-        # 注目ポイントBOX
-        summary_items = "".join([f"<li>{l.strip()}</li>" for l in summary_raw.splitlines() if ":" in l])
+        # 注目ポイントのリスト表示用BOX
+        summary_items = "".join([f"<li>{l.strip()}</li>" for l in summary_raw.splitlines() if ":" in l or "-" in l])
         summary_block = f"""<div style="background:#f0f9ff; padding:20px; border-left:5px solid #0ea5e9; border-radius:4px; margin-bottom:30px;">
             <h4 style="margin-top:0; color:#0369a1;">⚡ この製品の注目ポイント</h4>
             <ul style="margin-bottom:0; font-size:0.95em; line-height:1.8;">{summary_items}</ul>
         </div>"""
 
-        # 💡 本文冒頭の画像 (Gutenbergコメント付き)
-        image_header_block = f'<figure class="wp-block-image size-large"><img src="{media_url if media_url else product.image_url}" alt="{product.name}" class="wp-image-{media_id if media_id else ""}"/></figure>'
+        # 冒頭のメイン画像ブロック
+        img_src = media_url if media_url else product.image_url
+        image_header_block = f'<figure class="wp-block-image size-large"><img src="{img_src}" alt="{product.name}" class="wp-image-{media_id if media_id else ""}"/></figure>'
 
-        # 特製商品カード
+        # 記事末尾の商品購入カード
         card_block = f"""<div style="margin: 40px 0; padding: 25px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
             <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px;">
                 <div style="flex: 1; min-width: 200px; text-align: center;">
-                    <img src="{media_url if media_url else product.image_url}" style="max-width: 100%; height: auto; border-radius: 12px;">
+                    <img src="{img_src}" style="max-width: 100%; height: auto; border-radius: 12px;">
                 </div>
                 <div style="flex: 2; min-width: 250px;">
                     <h3 style="margin: 0 0 12px 0; color: #1e3a8a;">{product.name}</h3>
@@ -217,10 +258,11 @@ class Command(BaseCommand):
             </div>
         </div>"""
 
+        # WordPressに送る最終的なHTMLコンテンツ
         full_wp_content = f"{image_header_block}\n{summary_block}\n{main_body_raw}\n{card_block}"
 
         # ==========================================
-        # 8. WordPress投稿実行
+        # 9. WordPressへの投稿リクエスト
         # ==========================================
         wp_payload = {
             "title": title, 
@@ -234,11 +276,12 @@ class Command(BaseCommand):
         try:
             wp_res = requests.post(WP_POST_URL, json=wp_payload, auth=AUTH, timeout=30)
             if wp_res.status_code == 201:
+                # 投稿成功時はDBを更新して二重投稿を防止
                 product.ai_content = main_body_raw 
                 product.is_posted = True
                 product.save()
-                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿完了】タイトル: {title} / 画像ID: {media_id}"))
+                self.stdout.write(self.style.SUCCESS(f"✅ 【投稿完了】タイトル: {title}"))
             else:
-                self.stdout.write(self.style.ERROR(f"❌ WP投稿失敗: {wp_res.status_code} - {wp_res.text}"))
+                self.stdout.write(self.style.ERROR(f"❌ WordPress投稿失敗: {wp_res.status_code} - {wp_res.text}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"WordPress通信エラー: {e}"))
