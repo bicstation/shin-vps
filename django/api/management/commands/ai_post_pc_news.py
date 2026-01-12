@@ -14,7 +14,7 @@ from requests.auth import HTTPBasicAuth
 from api.models import PCProduct
 
 class Command(BaseCommand):
-    help = 'ニュース記事を生成し、スペック表の自動装飾と重複回避機能を備えて投稿する（3連リンク対応版）'
+    help = 'ニュース記事を生成し、記号除去・スペック表変換・自社URL最適化・重複回避機能を備えて投稿する'
 
     def add_arguments(self, parser):
         parser.add_argument('--url', type=str, help='特定の記事URLを直接指定')
@@ -38,7 +38,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルが見つかりません: {PROMPT_FILE}"))
             return
 
-        # 履歴の読み込み（URLとタイトルの両方をチェック可能にする）
+        # 履歴の読み込み
         posted_links = []
         posted_titles = []
         if os.path.exists(HISTORY_FILE):
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         candidates = []
 
         if target_url:
-            candidates.append({"url": target_url, "source": "直接指定"})
+            candidates.append({"url": target_url})
         else:
             RSS_SOURCES = [
                 {"name": "PC Watch", "url": "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf"},
@@ -72,7 +72,7 @@ class Command(BaseCommand):
                 feed = feedparser.parse(source['url'])
                 for entry in feed.entries:
                     if entry.link not in posted_links:
-                        candidates.append({"url": entry.link, "source": source['name']})
+                        candidates.append({"url": entry.link})
 
         # --- 3. 投稿メインループ ---
         success = False
@@ -86,17 +86,11 @@ class Command(BaseCommand):
                 res.encoding = res.apparent_encoding
                 soup = BeautifulSoup(res.text, 'html.parser')
                 
-                # タイトルの取得と重複チェック（類似度）
                 raw_title = soup.title.string.split('|')[0].strip() if soup.title else "最新ニュース"
                 
-                is_duplicate = False
-                for old_title in posted_titles:
-                    # 類似度が80%以上ならスキップ
-                    if difflib.SequenceMatcher(None, raw_title, old_title).ratio() > 0.8:
-                        is_duplicate = True
-                        break
-                if is_duplicate:
-                    self.stdout.write(f"⏩ 重複の可能性があるためスキップ: {raw_title}")
+                # タイトル類似度チェック
+                if any(difflib.SequenceMatcher(None, raw_title, t).ratio() > 0.8 for t in posted_titles):
+                    self.stdout.write(f"⏩ タイトル重複のためスキップ: {raw_title}")
                     continue
 
                 # OGP画像取得
@@ -104,10 +98,6 @@ class Command(BaseCommand):
                 og_tag = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
                 if og_tag:
                     og_image_url = og_tag.get("content")
-                if not og_image_url:
-                    img_tag = soup.find('article').find('img') if soup.find('article') else soup.find('img')
-                    if img_tag and img_tag.get('src'):
-                        og_image_url = urllib.parse.urljoin(current_url, img_tag.get('src'))
 
                 for s in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'ins']):
                     s.decompose()
@@ -134,8 +124,9 @@ class Command(BaseCommand):
                 except: continue
             if not ai_response: continue
 
-            # --- 5. 本文成形とスペック表変換 ---
+            # --- 5. 本文成形とHTML変換ロジック ---
             lines = ai_response.strip().split('\n')
+            # タイトルから不要な記号を除去
             final_title = re.sub(r'^[#*\s・]+|[#*\s・]+$', '', lines[0])
 
             cat_name = "PCパーツ"
@@ -151,7 +142,7 @@ class Command(BaseCommand):
             html_body = ""
             in_table = False
             
-            # 要約セクションの抽出
+            # 要約セクション
             sum_m = re.search(r'\[SUMMARY\](.*?)\[/SUMMARY\]', body_only, re.DOTALL | re.IGNORECASE)
             if sum_m:
                 html_body += '<div style="background:#f1f5f9;border-left:5px solid #0f172a;padding:20px;margin-bottom:30px;border-radius:4px;">'
@@ -163,34 +154,44 @@ class Command(BaseCommand):
             
             main_text = re.sub(r'\[SUMMARY\].*?\[/SUMMARY\]', '', body_only, flags=re.DOTALL | re.IGNORECASE)
 
-            # 各行をループしてHTML化（スペック表変換含む）
+            # 行単位のパース処理
             for line in main_text.split('\n'):
                 line = line.strip()
                 if not line or line == final_title: continue
 
-                # スペック箇条書き（* **項目:** 値）を検知
-                spec_match = re.match(r'^\*\s*\*\*(.*?):\*\*\s*(.*)', line)
+                # スペック表の検知
+                spec_match = re.match(r'^\*\s*\*\?(.*?):\*\*\s*(.*)', line)
                 if spec_match:
                     if not in_table:
-                        html_body += '<table style="width:100%; border-collapse:collapse; margin:20px 0; border:1px solid #e2e8f0; font-size:0.95em; box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
+                        html_body += '<table style="width:100%; border-collapse:collapse; margin:20px 0; border:1px solid #e2e8f0; font-size:0.95em;">'
                         in_table = True
                     key, val = spec_match.groups()
-                    html_body += f'<tr style="border-bottom:1px solid #e2e8f0;"><td style="background:#f8fafc; padding:12px; font-weight:bold; width:30%; color:#475569;">{key}</td><td style="padding:12px; color:#1e293b;">{val}</td></tr>'
+                    html_body += f'<tr style="border-bottom:1px solid #e2e8f0;"><td style="background:#f8fafc; padding:12px; font-weight:bold; width:30%;">{key}</td><td style="padding:12px;">{val}</td></tr>'
+                    continue
+
+                # スペック表が終わった場合の処理
+                if in_table:
+                    html_body += '</table>'
+                    in_table = False
+
+                # タイトル行（Markdown記号の除去とHTML化）
+                if line.startswith('###'):
+                    clean_line = line.replace('###', '').replace('#', '').strip()
+                    html_body += f'<h3 class="wp-block-heading" style="color:#2563eb;margin-top:30px;">{clean_line}</h3>'
+                elif line.startswith('##'):
+                    clean_line = line.replace('##', '').replace('#', '').strip()
+                    html_body += f'<h2 class="wp-block-heading" style="border-bottom:2px solid #333;padding-bottom:10px;margin-top:40px;">{clean_line}</h2>'
+                elif line.startswith('#'):
+                    # 行頭の単一#も除去してh2相当に
+                    clean_line = line.replace('#', '').strip()
+                    html_body += f'<h2 class="wp-block-heading" style="border-bottom:2px solid #333;padding-bottom:10px;margin-top:40px;">{clean_line}</h2>'
                 else:
-                    if in_table:
-                        html_body += '</table>'
-                        in_table = False
-                    
-                    if line.startswith('##'):
-                        html_body += f'<h2 class="wp-block-heading" style="border-bottom:2px solid #333;padding-bottom:10px;margin-top:40px;">{line.replace("##","").strip()}</h2>'
-                    elif line.startswith('###'):
-                        html_body += f'<h3 class="wp-block-heading" style="color:#2563eb;">{line.replace("###","").strip()}</h3>'
-                    else:
-                        html_body += f'<p>{line}</p>'
+                    # 通常の段落（文中の**太字**などはブラウザがある程度解釈しますが、念のため置換も可能）
+                    html_body += f'<p>{line}</p>'
             
             if in_table: html_body += '</table>'
 
-            # --- 6. 【3連リンク商品カードの挿入】 ---
+            # --- 6. 【商品カード：自社URL正規化版】 ---
             search_keyword = cat_name if len(cat_name) > 1 else final_title[:10]
             related_products = PCProduct.objects.filter(
                 is_active=True,
@@ -202,7 +203,8 @@ class Command(BaseCommand):
                 for prod in related_products:
                     amazon_search_url = f"https://www.amazon.co.jp/s?k={urllib.parse.quote(prod.name)}"
                     official_url = prod.affiliate_url or prod.url
-                    bic_url = f"https://{W_DOM}/products/{prod.unique_id}/"
+                    # 自社URLの正規化連結
+                    bic_url = f"https://bicstation.com/product/{prod.site_prefix}_{prod.unique_id}/"
 
                     html_body += f'''
                     <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:30px; background:#fff; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
@@ -264,7 +266,6 @@ class Command(BaseCommand):
             final_res = requests.post(f"{WP_API_BASE}/posts", json=post_payload, auth=AUTH)
             if final_res.status_code == 201:
                 self.stdout.write(self.style.SUCCESS(f"🚀 投稿成功: {final_title}"))
-                # 履歴にURLとタイトルを保存
                 with open(HISTORY_FILE, "a", encoding='utf-8') as f:
                     f.write(f"{current_url}\t{final_title}\n")
                 success = True
