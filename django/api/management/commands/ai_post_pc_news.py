@@ -7,14 +7,14 @@ import requests
 import feedparser
 import urllib.parse
 import time
+import difflib
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from requests.auth import HTTPBasicAuth
-from django.core.files.temp import NamedTemporaryFile
-from api.models import PCProduct  # モデルから情報を取得
+from api.models import PCProduct
 
 class Command(BaseCommand):
-    help = 'ニュース記事を生成し、PCProductモデルから3連リンク付きカードを挿入して投稿する'
+    help = 'ニュース記事を生成し、スペック表の自動装飾と重複回避機能を備えて投稿する（3連リンク対応版）'
 
     def add_arguments(self, parser):
         parser.add_argument('--url', type=str, help='特定の記事URLを直接指定')
@@ -38,15 +38,22 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルが見つかりません: {PROMPT_FILE}"))
             return
 
+        # 履歴の読み込み（URLとタイトルの両方をチェック可能にする）
+        posted_links = []
+        posted_titles = []
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE, "r", encoding='utf-8') as f:
+                for line in f:
+                    parts = line.strip().split('\t')
+                    if parts:
+                        posted_links.append(parts[0])
+                        if len(parts) > 1:
+                            posted_titles.append(parts[1])
+
         with open(MODELS_FILE, "r", encoding='utf-8') as f:
             MODELS = [line.strip() for line in f if line.strip()]
         with open(PROMPT_FILE, "r", encoding='utf-8') as f:
             PROMPT_TEMPLATE = f.read()
-
-        posted_links = set()
-        if os.path.exists(HISTORY_FILE):
-            with open(HISTORY_FILE, "r", encoding='utf-8') as f:
-                posted_links = set(line.strip() for line in f if line.strip())
 
         # --- 2. 記事候補の取得 ---
         target_url = options.get('url')
@@ -79,6 +86,19 @@ class Command(BaseCommand):
                 res.encoding = res.apparent_encoding
                 soup = BeautifulSoup(res.text, 'html.parser')
                 
+                # タイトルの取得と重複チェック（類似度）
+                raw_title = soup.title.string.split('|')[0].strip() if soup.title else "最新ニュース"
+                
+                is_duplicate = False
+                for old_title in posted_titles:
+                    # 類似度が80%以上ならスキップ
+                    if difflib.SequenceMatcher(None, raw_title, old_title).ratio() > 0.8:
+                        is_duplicate = True
+                        break
+                if is_duplicate:
+                    self.stdout.write(f"⏩ 重複の可能性があるためスキップ: {raw_title}")
+                    continue
+
                 # OGP画像取得
                 og_image_url = None
                 og_tag = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
@@ -89,7 +109,6 @@ class Command(BaseCommand):
                     if img_tag and img_tag.get('src'):
                         og_image_url = urllib.parse.urljoin(current_url, img_tag.get('src'))
 
-                raw_title = soup.title.string.split('|')[0].strip() if soup.title else "最新ニュース"
                 for s in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'ins']):
                     s.decompose()
                 
@@ -115,7 +134,7 @@ class Command(BaseCommand):
                 except: continue
             if not ai_response: continue
 
-            # --- 5. 本文成形 ---
+            # --- 5. 本文成形とスペック表変換 ---
             lines = ai_response.strip().split('\n')
             final_title = re.sub(r'^[#*\s・]+|[#*\s・]+$', '', lines[0])
 
@@ -130,6 +149,9 @@ class Command(BaseCommand):
             body_only = re.sub(r'\[CAT\].*?\[/CAT\]|\[TAG\].*?\[/TAG\]', '', ai_response, flags=re.DOTALL | re.IGNORECASE)
 
             html_body = ""
+            in_table = False
+            
+            # 要約セクションの抽出
             sum_m = re.search(r'\[SUMMARY\](.*?)\[/SUMMARY\]', body_only, re.DOTALL | re.IGNORECASE)
             if sum_m:
                 html_body += '<div style="background:#f1f5f9;border-left:5px solid #0f172a;padding:20px;margin-bottom:30px;border-radius:4px;">'
@@ -140,15 +162,35 @@ class Command(BaseCommand):
                 html_body += '</ul></div>'
             
             main_text = re.sub(r'\[SUMMARY\].*?\[/SUMMARY\]', '', body_only, flags=re.DOTALL | re.IGNORECASE)
+
+            # 各行をループしてHTML化（スペック表変換含む）
             for line in main_text.split('\n'):
-                l = line.strip()
-                if not l or l == final_title: continue
-                if l.startswith('##'): html_body += f'<h2 class="wp-block-heading" style="border-bottom:2px solid #333;padding-bottom:10px;margin-top:40px;">{l.replace("##","").strip()}</h2>'
-                elif l.startswith('###'): html_body += f'<h3 class="wp-block-heading" style="color:#2563eb;">{l.replace("###","").strip()}</h3>'
-                else: html_body += f'<p>{l}</p>'
+                line = line.strip()
+                if not line or line == final_title: continue
+
+                # スペック箇条書き（* **項目:** 値）を検知
+                spec_match = re.match(r'^\*\s*\*\*(.*?):\*\*\s*(.*)', line)
+                if spec_match:
+                    if not in_table:
+                        html_body += '<table style="width:100%; border-collapse:collapse; margin:20px 0; border:1px solid #e2e8f0; font-size:0.95em; box-shadow:0 1px 3px rgba(0,0,0,0.05);">'
+                        in_table = True
+                    key, val = spec_match.groups()
+                    html_body += f'<tr style="border-bottom:1px solid #e2e8f0;"><td style="background:#f8fafc; padding:12px; font-weight:bold; width:30%; color:#475569;">{key}</td><td style="padding:12px; color:#1e293b;">{val}</td></tr>'
+                else:
+                    if in_table:
+                        html_body += '</table>'
+                        in_table = False
+                    
+                    if line.startswith('##'):
+                        html_body += f'<h2 class="wp-block-heading" style="border-bottom:2px solid #333;padding-bottom:10px;margin-top:40px;">{line.replace("##","").strip()}</h2>'
+                    elif line.startswith('###'):
+                        html_body += f'<h3 class="wp-block-heading" style="color:#2563eb;">{line.replace("###","").strip()}</h3>'
+                    else:
+                        html_body += f'<p>{line}</p>'
+            
+            if in_table: html_body += '</table>'
 
             # --- 6. 【3連リンク商品カードの挿入】 ---
-            # カテゴリ名またはタイトルから商品を3件抽出
             search_keyword = cat_name if len(cat_name) > 1 else final_title[:10]
             related_products = PCProduct.objects.filter(
                 is_active=True,
@@ -158,22 +200,20 @@ class Command(BaseCommand):
             if related_products:
                 html_body += '<h2 class="wp-block-heading" style="margin-top:50px;text-align:center;">🛠 関連おすすめモデル</h2>'
                 for prod in related_products:
-                    # モデルに基づいたリンク
                     amazon_search_url = f"https://www.amazon.co.jp/s?k={urllib.parse.quote(prod.name)}"
                     official_url = prod.affiliate_url or prod.url
-                    bic_url = f"https://{W_DOM}/products/{prod.unique_id}/"  # unique_idを使用
+                    bic_url = f"https://{W_DOM}/products/{prod.unique_id}/"
 
                     html_body += f'''
                     <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:30px; background:#fff; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
                         <div style="display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
-                            <div style="flex:1; min-width:200px;">
+                            <div style="flex:1; min-width:180px;">
                                 <img src="{prod.image_url}" style="width:100%; height:auto; border-radius:8px; object-fit:contain; max-height:200px;">
                             </div>
                             <div style="flex:2; min-width:250px;">
-                                <span style="background:#0f172a; color:#fff; padding:3px 8px; font-size:0.75em; border-radius:4px; text-transform:uppercase;">{prod.maker}</span>
+                                <span style="background:#0f172a; color:#fff; padding:3px 8px; font-size:0.75em; border-radius:4px;">{prod.maker}</span>
                                 <h4 style="margin:10px 0; font-size:1.2em; color:#1e293b;">{prod.name}</h4>
                                 <p style="color:#b91c1c; font-weight:bold; font-size:1.4em; margin-bottom:15px;">¥{prod.price:,} <span style="font-size:0.6em; color:#64748b; font-weight:normal;">(税込〜)</span></p>
-                                
                                 <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
                                     <a href="{amazon_search_url}" target="_blank" style="text-align:center; background:#ff9900; color:#fff; padding:10px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:0.9em;">Amazonで価格を確認</a>
                                     <a href="{official_url}" target="_blank" style="text-align:center; background:#2563eb; color:#fff; padding:10px; text-decoration:none; border-radius:6px; font-weight:bold; font-size:0.9em;">公式サイトでカスタマイズ</a>
@@ -196,8 +236,7 @@ class Command(BaseCommand):
                     m_res = requests.post(f"{WP_API_BASE}/media", auth=AUTH, headers=m_headers, data=img_res.content)
                     if m_res.status_code == 201:
                         featured_media_id = m_res.json().get('id', 0)
-            except Exception as e:
-                self.stdout.write(f"⚠️ 画像取得エラー: {e}")
+            except: pass
 
             # --- 8. WordPressカテゴリ・タグ同期 ---
             def get_or_create_wp_id(path, name):
@@ -224,13 +263,12 @@ class Command(BaseCommand):
             
             final_res = requests.post(f"{WP_API_BASE}/posts", json=post_payload, auth=AUTH)
             if final_res.status_code == 201:
-                self.stdout.write(self.style.SUCCESS(f"🚀 投稿成功: [{cat_name}] {final_title}"))
+                self.stdout.write(self.style.SUCCESS(f"🚀 投稿成功: {final_title}"))
+                # 履歴にURLとタイトルを保存
                 with open(HISTORY_FILE, "a", encoding='utf-8') as f:
-                    f.write(current_url + "\n")
+                    f.write(f"{current_url}\t{final_title}\n")
                 success = True
                 break
-            else:
-                self.stdout.write(self.style.ERROR(f"❌ 投稿失敗: {final_res.status_code}"))
 
         if not success:
             self.stdout.write("新しい記事は投稿されませんでした。")
