@@ -11,10 +11,10 @@ from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
-from api.models import PCProduct  # 商品カード復活のためにインポート
+from api.models import PCProduct  # 商品カード用モデル
 
 class Command(BaseCommand):
-    help = 'ニュース記事を生成し、関連するPCパーツ商品をカード形式で挿入して投稿する'
+    help = 'ニュース記事を解析・生成し、OGP画像と関連商品カードを伴ってWordPressへ投稿する'
 
     def add_arguments(self, parser):
         parser.add_argument('--url', type=str, help='特定の記事URLを直接指定')
@@ -79,6 +79,20 @@ class Command(BaseCommand):
                 res = requests.get(current_url, timeout=15, headers=headers)
                 res.encoding = res.apparent_encoding
                 soup = BeautifulSoup(res.text, 'html.parser')
+                
+                # --- [NEW] アイキャッチ画像URLの抽出ロジック ---
+                og_image_url = None
+                # 1. OGPタグを優先
+                og_tag = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
+                if og_tag:
+                    og_image_url = og_tag.get("content")
+                
+                # 2. 記事内の最初の画像を探す
+                if not og_image_url:
+                    img_tag = soup.find('article').find('img') if soup.find('article') else soup.find('img')
+                    if img_tag and img_tag.get('src'):
+                        og_image_url = urllib.parse.urljoin(current_url, img_tag.get('src'))
+
                 raw_title = soup.title.string.split('|')[0].strip() if soup.title else "最新ニュース"
                 
                 for s in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe', 'ins']):
@@ -141,45 +155,48 @@ class Command(BaseCommand):
                 elif l.startswith('###'): html_body += f'<h3 class="wp-block-heading">{l.replace("###","").strip()}</h3>'
                 else: html_body += f'<p>{l}</p>'
 
-            # --- 6. 【商品カード復活】PCProductテーブルから関連商品を検索 ---
-            keywords = [final_title[:10], cat_name]
+            # --- 6. 【商品カード挿入】 ---
+            # カテゴリ名やタイトルから商品を検索
+            search_keyword = cat_name if len(cat_name) > 1 else final_title[:10]
             related_products = PCProduct.objects.filter(
-                name__icontains=keywords[0]
+                name__icontains=search_keyword
             ).order_by('-created_at')[:3]
 
             if related_products:
                 html_body += '<h2 class="wp-block-heading">🛠 関連おすすめパーツ</h2>'
                 for prod in related_products:
                     html_body += f'''
-                    <div style="display:flex; border:1px solid #ddd; border-radius:8px; padding:15px; margin-bottom:15px; background:#fff;">
+                    <div style="display:flex; border:1px solid #ddd; border-radius:8px; padding:15px; margin-bottom:15px; background:#fff; align-items:center;">
                         <div style="flex:0 0 120px; margin-right:15px;">
                             <img src="{prod.image_url}" style="width:100%; height:auto; border-radius:4px;">
                         </div>
                         <div style="flex:1;">
-                            <h4 style="margin:0 0 10px 0; font-size:1.1em;">{prod.name}</h4>
+                            <h4 style="margin:0 0 10px 0; font-size:1.1em; color:#333;">{prod.name}</h4>
                             <p style="color:#e47911; font-weight:bold; font-size:1.2em; margin-bottom:10px;">¥{prod.price:,}</p>
-                            <a href="{prod.affiliate_url}" target="_blank" style="background:#f0c14b; border:1px solid #a88734; padding:8px 15px; text-decoration:none; color:#111; border-radius:4px; font-size:0.9em;">詳細を見る</a>
+                            <a href="{prod.affiliate_url}" target="_blank" style="display:inline-block; background:#f0c14b; border:1px solid #a88734; padding:8px 20px; text-decoration:none; color:#111; border-radius:4px; font-size:0.9em; font-weight:bold;">Amazonでチェック</a>
                         </div>
                     </div>
                     '''
 
             html_body += f'<p style="font-size:0.8em;margin-top:20px;color:#64748b;">出典: <a href="{current_url}" target="_blank">{raw_title}</a></p>'
 
-            # --- 7. アイキャッチ画像の処理 (バイナリPOST方式) ---
+            # --- 7. アイキャッチ画像の処理 (OGP優先・バイナリPOST) ---
             featured_media_id = 0
-            img_query = urllib.parse.quote(final_title[:15])
-            img_url = target_image_url or f"https://images.unsplash.com/featured/?{img_query}"
+            # 優先順位: 実行引数 > 記事のOGP画像 > Unsplash
+            final_img_url = target_image_url or og_image_url or f"https://images.unsplash.com/featured/?{urllib.parse.quote(final_title[:15])}"
             
+            self.stdout.write(f"🖼 画像取得中: {final_img_url}")
             try:
-                img_res = requests.get(img_url, timeout=20, allow_redirects=True)
+                img_res = requests.get(final_img_url, timeout=20, allow_redirects=True, headers=headers)
                 if img_res.status_code == 200:
                     media_headers = {
-                        'Content-Disposition': f'attachment; filename="news_{int(time.time())}.jpg"',
-                        'Content-Type': 'image/jpeg'
+                        'Content-Disposition': f'attachment; filename="eyecatch_{int(time.time())}.jpg"',
+                        'Content-Type': img_res.headers.get('Content-Type', 'image/jpeg')
                     }
                     m_res = requests.post(f"{WP_API_BASE}/media", auth=AUTH, headers=media_headers, data=img_res.content)
                     if m_res.status_code == 201:
                         featured_media_id = m_res.json().get('id', 0)
+                        self.stdout.write(f"✅ メディア登録成功 ID: {featured_media_id}")
             except Exception as e:
                 self.stdout.write(f"⚠️ 画像エラー: {e}")
 
@@ -214,7 +231,7 @@ class Command(BaseCommand):
                 success = True
                 break
             else:
-                self.stdout.write(self.style.ERROR(f"❌ 投稿失敗: {final_res.status_code}"))
+                self.stdout.write(self.style.ERROR(f"❌ 投稿失敗: {final_res.status_code} - {final_res.text[:100]}"))
 
         if not success:
             self.stdout.write("新着記事の投稿は行われませんでした。")
