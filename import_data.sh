@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別インポートツール (MSI/Ark/News対応版)
+# 📦 SHIN-VPS & Local 環境自動判別インポートツール (URL指定投稿対応版)
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -44,7 +44,7 @@ echo -e "3) ${COLOR}[Import] メーカー別インポート・同期 ✨${RESET}
 echo "4) [Import] AV-Flash データのインポート"
 echo "5) [Admin]  スーパーユーザーの作成"
 echo -e "6) ${COLOR}[WP]     商品AI記事生成 & WordPress自動投稿${RESET}"
-echo -e "7) ${COLOR}[News]   PCパーツ最新ニュース自動投稿 (PC Watch) 🆕${RESET}"
+echo -e "7) ${COLOR}[News]   PCパーツ最新ニュース投稿 (URL指定対応) 🆕${RESET}"
 echo "8) 終了"
 echo "---------------------------------------"
 read -p "選択してください: " CHOICE
@@ -108,12 +108,22 @@ case $CHOICE in
         fi
         ;;
     7)
-        echo -e "\n--- PCパーツ最新ニュース自動投稿 ---"
-        echo "1) 今すぐ最新の1件を投稿する"
-        echo "2) 戻る"
+        echo -e "\n--- PCパーツ最新ニュース投稿 ---"
+        echo "1) RSSから最新の1件を自動投稿"
+        echo "2) URLを指定して手動投稿"
+        echo "3) 戻る"
         read -p ">> " NEWS_CHOICE
         if [ "$NEWS_CHOICE" == "1" ]; then
             run_cmd python manage.py ai_post_pc_news
+        elif [ "$NEWS_CHOICE" == "2" ]; then
+            read -p "対象URLを入力してください: " TARGET_URL
+            read -p "アイキャッチ画像URL (任意、空エンターで自動生成): " IMAGE_URL
+            
+            if [ -z "$IMAGE_URL" ]; then
+                run_cmd python manage.py ai_post_pc_news --url "$TARGET_URL"
+            else
+                run_cmd python manage.py ai_post_pc_news --url "$TARGET_URL" --image "$IMAGE_URL"
+            fi
         fi
         ;;
     8) exit 0 ;;
