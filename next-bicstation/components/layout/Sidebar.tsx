@@ -1,8 +1,8 @@
-'use client'; // 🚀 クライアントコンポーネントであることを明示（useState, useEffect使用のため）
+'use client'; // 🚀 クライアントコンポーネントであることを明示
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation'; // 🚀 App Router用のフックに変更
+import { usePathname, useSearchParams } from 'next/navigation';
 import { COLORS } from '@/constants';
 import { MakerCount } from '@/lib/api'; 
 import styles from './Sidebar.module.css';
@@ -26,22 +26,27 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: SidebarProps) {
-  const pathname = usePathname(); // 🚀 現在のURLパスを取得
-  const searchParams = useSearchParams(); // 🚀 現在のクエリパラメータを取得
+  const pathname = usePathname(); 
+  const searchParams = useSearchParams(); 
   
-  // 現在選択されている attribute を取得
   const attribute = searchParams.get('attribute');
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
-  // 🚀 スペック統計用のステート
   const [specStats, setSpecStats] = useState<SidebarData | null>(null);
 
   // 🚀 Django APIから統計情報を取得
   useEffect(() => {
     async function fetchSpecStats() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083'}/api/pc-sidebar-stats/`);
-        if (!res.ok) throw new Error('Network response was not ok');
+        /**
+         * 💡 重要修正ポイント:
+         * ブラウザ(8083)からDjangoへTraefik経由でアクセスするため、
+         * 相対パス '/api/...' を使用します。これにより、Next.jsが動作しているドメインと
+         * ポートを自動的に継承し、接続拒否(ERR_CONNECTION_REFUSED)を防ぎます。
+         */
+        const res = await fetch('/api/pc-sidebar-stats/');
+        
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
         setSpecStats(data);
       } catch (error) {
@@ -53,14 +58,10 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
 
   /**
    * 🚀 リンク先URLを動的に生成する関数
-   * 現在メーカーページ (/brand/[slug]) にいればそのパスを維持し、
-   * それ以外なら全製品一覧 (/pc-products) へ飛ばす
    */
   const getFilterHref = (attrSlug: string) => {
-    // 現在のパスが /brand/ 配下かどうか判定
     const isBrandPage = pathname.startsWith('/brand');
     
-    // メーカーページなら、現在のメーカーパスを維持してパラメータを付与
     if (isBrandPage && activeMenu) {
       return {
         pathname: `/brand/${activeMenu.toLowerCase()}`,
@@ -68,7 +69,6 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
       };
     }
     
-    // それ以外は全製品ページで絞り込み
     return {
       pathname: '/pc-products',
       query: { attribute: attrSlug },
@@ -76,8 +76,7 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
   };
 
   /**
-   * 🚀 Linkコンポーネントに渡すhrefを文字列に変換するヘルパー
-   * Next.js 13以降のLinkはオブジェクトも受け取れますが、型安全のため整形
+   * 🚀 Linkコンポーネントに渡すhrefを整形するヘルパー
    */
   const formatHref = (hrefObj: { pathname: string; query: { attribute: string } }) => {
     return `${hrefObj.pathname}?attribute=${hrefObj.query.attribute}`;
@@ -128,7 +127,8 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {items.map((item) => {
               const isActive = attribute === item.slug;
-              // カテゴリに応じたアイコン
+              
+              // カテゴリに応じたアイコンの動的決定
               const icon = category.includes('CPU') ? '🚀' : 
                            category.includes('メモリ') ? '🧠' : 
                            category.includes('NPU') ? '🤖' : '✨';
