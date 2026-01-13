@@ -176,7 +176,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                     <footer className={styles.postFooter}>
                         <div className={styles.footerDivider}></div>
                         <p className={styles.updateDate}>最終更新日: {formatDate(post.modified)}</p>
-                        <Link href="/blog" className={styles.backLink}>
+                        <Link href="/" className={styles.backLink}>
                             ← 記事一覧に戻る
                         </Link>
                     </footer>

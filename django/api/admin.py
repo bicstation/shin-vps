@@ -10,7 +10,8 @@ from django.contrib import messages
 # モデルのインポート
 from .models import (
     RawApiData, AdultProduct, LinkshareProduct,
-    Genre, Actress, Maker, Label, Director, Series
+    Genre, Actress, Maker, Label, Director, Series,
+    PCAttribute # 新規追加
 )
 from .models.pc_products import PCProduct
 
@@ -23,7 +24,22 @@ class AdultProductAdminForm(forms.ModelForm):
         fields = '__all__'
 
 # ----------------------------------------------------
-# 1. PCProduct (PC製品・Minisforum/Lenovo/Acer等) のAdminクラス
+# 1. PCAttribute (スペック属性: CPU/メモリ/NPU等) のAdminクラス
+# ----------------------------------------------------
+@admin.register(PCAttribute)
+class PCAttributeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'attr_type', 'slug', 'get_product_count', 'id')
+    list_filter = ('attr_type',)
+    search_fields = ('name', 'slug')
+    ordering = ('attr_type', 'name')
+
+    def get_product_count(self, obj):
+        """この属性に紐付いている製品数を表示"""
+        return obj.products.count()
+    get_product_count.short_description = '紐付け製品数'
+
+# ----------------------------------------------------
+# 2. PCProduct (PC製品・Minisforum/Lenovo/Acer等) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
     # テンプレートパスを指定
@@ -44,11 +60,12 @@ class PCProductAdmin(admin.ModelAdmin):
     )
     list_display_links = ('name_summary',)
     
-    # フィルタリング機能を強化 (右側のサイドバー)
+    # フィルタリング機能を強化 (属性フィルタを追加)
     list_filter = (
-        'is_posted',      # 投稿済みかどうかで絞り込み
+        'is_posted',      # 投稿済みかどうか
         'is_active',      # アクティブかどうか
         'maker',          # メーカー別
+        'attributes__attr_type', # 🚀 属性タイプ（CPU/NPUなど）でフィルタ
         'stock_status',   # 在庫状況別
         'site_prefix',    # 取得元サイト別
         'unified_genre',  # ジャンル別
@@ -60,13 +77,17 @@ class PCProductAdmin(admin.ModelAdmin):
     # 並び順 (新しい更新を上に)
     ordering = ('-updated_at',)
 
+    # 🚀 多対多の属性選択を使いやすくするUI（横並びの選択ボックス）
+    filter_horizontal = ('attributes',)
+
     # 詳細編集画面のレイアウト
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
         }),
-        ('仕分け情報', {
-            'fields': ('unified_genre', 'raw_genre'),
+        ('仕分け・スペック属性', {
+            'fields': ('unified_genre', 'raw_genre', 'attributes'),
+            'description': '統合ジャンルおよび、CPU/メモリ/NPUなどの詳細タグを設定します。',
         }),
         ('製品詳細', {
             'fields': ('name', 'price', 'description', 'raw_html'),
@@ -152,7 +173,7 @@ class PCProductAdmin(admin.ModelAdmin):
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
-# 2. AdultProduct (アダルト製品データ) のAdminクラス
+# 3. AdultProduct (アダルト製品データ) のAdminクラス
 # ----------------------------------------------------
 class AdultProductAdmin(admin.ModelAdmin):
     form = AdultProductAdminForm
@@ -207,14 +228,14 @@ class AdultProductAdmin(admin.ModelAdmin):
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
-# 3. LinkshareProduct Admin
+# 4. LinkshareProduct Admin
 # ----------------------------------------------------
 class LinkshareProductAdmin(admin.ModelAdmin): 
     list_display = ('id', 'product_name', 'sku', 'merchant_id', 'is_active', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
 
 # ----------------------------------------------------
-# 4. その他マスター・共通設定
+# 5. その他マスター・共通設定
 # ----------------------------------------------------
 class CommonAdmin(admin.ModelAdmin):
     list_display = ('name', 'product_count', 'api_source', 'created_at')
@@ -223,7 +244,7 @@ class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'created_at')
 
 # ----------------------------------------------------
-# 5. 登録
+# 6. 登録
 # ----------------------------------------------------
 admin.site.register(PCProduct, PCProductAdmin)
 admin.site.register(AdultProduct, AdultProductAdmin)
@@ -235,3 +256,4 @@ admin.site.register(Label, CommonAdmin)
 admin.site.register(Director, CommonAdmin)
 admin.site.register(Series, CommonAdmin)
 admin.site.register(RawApiData, RawApiDataAdmin)
+# PCAttribute は @admin.register(PCAttribute) で登録済み

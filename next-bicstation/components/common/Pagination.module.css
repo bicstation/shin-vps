@@ -3,27 +3,86 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 12px; /* 少し間隔を詰めるとスマートです */
 }
 
+/* 前へ・次へボタンの基本スタイル */
 .pageButton {
-  padding: 10px 24px;
+  padding: 10px 20px;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
   text-decoration: none;
   color: #444;
   font-weight: 500;
+  font-size: 0.9em;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.pageButton:hover {
-  border-color: #bbb;
-  background-color: #f9f9f9;
+.pageButton:hover:not(.disabled) {
+  border-color: #007bff;
+  background-color: #f0f7ff;
+  color: #007bff;
 }
 
-.pageInfo {
-  font-size: 0.95em;
+/* 無効状態のスタイル */
+.disabled {
+  color: #ccc;
+  border-color: #eee;
+  cursor: not-allowed;
+  background-color: #fafafa;
+}
+
+/* 🚀 数字ボタンのスタイル */
+.pageNumber {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
   color: #666;
+  font-weight: 600;
+  border-radius: 50%; /* 円形にする */
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.pageNumber:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* 🚀 現在のページ（アクティブ）のスタイル */
+.active {
+  background-color: #007bff !important;
+  color: #fff !important;
+  border-color: #007bff;
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+}
+
+/* 三点リーダー（...）のスタイル */
+.dots {
+  color: #999;
   font-weight: bold;
+  padding: 0 4px;
+}
+
+/* スマホ閲覧時：ボタンを少し小さく */
+@media (max-width: 600px) {
+  .pagination {
+    gap: 6px;
+  }
+  .pageButton {
+    padding: 8px 12px;
+    font-size: 0.8em;
+  }
+  .pageNumber {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85em;
+  }
 }

@@ -1,0 +1,119 @@
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.imageArea {
+  height: 180px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.metaInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.makerBadge {
+  font-size: 0.7em;
+  color: #777;
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.stockStatus {
+  font-size: 0.7em;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.productName {
+  font-size: 0.95em;
+  margin: 0 0 10px 0;
+  height: 2.8em;
+  overflow: hidden;
+  line-height: 1.4;
+  color: #222;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.attributeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 15px;
+  min-height: 25px;
+}
+
+.attrBadge {
+  font-size: 0.65em;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  cursor: pointer; /* クリック可能であることを示す */
+  transition: opacity 0.2s;
+  text-decoration: none;
+}
+
+.attrBadge:hover {
+  opacity: 0.8;
+}
+
+.price {
+  color: #d9534f;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0 0 20px 0;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.detailBtn {
+  text-align: center;
+  padding: 10px;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.buyBtn {
+  text-align: center;
+  padding: 10px;
+  background: #e41313;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 0.8em;
+  font-weight: bold;
+}

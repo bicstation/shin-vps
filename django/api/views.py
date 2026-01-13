@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from rest_framework import generics, filters, pagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -34,7 +35,7 @@ from .models import (
     Director, 
     Series
 )
-from .models.pc_products import PCProduct  
+from .models.pc_products import PCProduct, PCAttribute  # 💡 PCAttribute を追加
 
 # --------------------------------------------------------------------------
 # 💡 カスタムページネーション
@@ -60,6 +61,7 @@ def api_root(request):
             "products": {
                 "pc_products_list": "/api/pc-products/", 
                 "pc_product_makers": "/api/pc-makers/",
+                "pc_sidebar_stats": "/api/pc-sidebar-stats/", # 🚀 追加
                 "pc_product_detail": "/api/pc-products/{unique_id}/", 
                 "adult_products_list": "/api/adults/",
                 "linkshare_products_list": "/api/linkshare/",
@@ -129,7 +131,7 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
     """
-    PC製品一覧取得：メーカー名が指定されている場合のみフィルタリングを行う
+    PC製品一覧取得：メーカー名やスペック属性でのフィルタリングに対応
     """
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
@@ -142,12 +144,19 @@ class PCProductListAPIView(generics.ListAPIView):
     ordering_fields = ['price', 'updated_at', 'created_at']
 
     def get_queryset(self):
-        queryset = PCProduct.objects.filter(is_active=True)
+        # 🚀 attributesをprefetchしてクエリ回数を削減
+        queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
         
+        # 💡 クエリパラメータによるフィルタリング
         maker = self.request.query_params.get('maker', None)
+        attribute_slug = self.request.query_params.get('attribute', None)
         
         if maker and maker.strip() != "":
             queryset = queryset.filter(maker__iexact=maker)
+            
+        if attribute_slug:
+            # 指定されたスラッグを持つ属性が紐付いている製品を抽出
+            queryset = queryset.filter(attributes__slug=attribute_slug)
             
         return queryset.order_by('-updated_at', 'id')
 
@@ -155,16 +164,15 @@ class PCProductDetailAPIView(generics.RetrieveAPIView):
     """
     PC製品詳細取得
     """
-    queryset = PCProduct.objects.all()
+    queryset = PCProduct.objects.all().prefetch_related('attributes')
     serializer_class = PCProductSerializer
     lookup_field = 'unique_id'
 
 class PCProductMakerListView(APIView):
     """
-    🔥 [NEW] PCProductモデルからメーカー名と製品数をカウントして取得する
+    PCProductモデルからメーカー名と製品数をカウントして取得する
     """
     def get(self, request):
-        # 有効な製品からメーカーごとに集計
         maker_counts = PCProduct.objects.filter(is_active=True) \
             .exclude(maker__isnull=True) \
             .exclude(maker='') \
@@ -172,8 +180,33 @@ class PCProductMakerListView(APIView):
             .annotate(count=Count('id')) \
             .order_by('maker')
         
-        # リスト形式で返却: [{"maker": "Dell", "count": 10}, ...]
         return Response(list(maker_counts))
+
+@api_view(['GET'])
+def pc_sidebar_stats(request):
+    """
+    🚀 [NEW] サイドバー用にスペック属性（CPU、メモリ等）ごとの統計を返す
+    """
+    # 製品が1件以上紐付いている属性を取得
+    attrs = PCAttribute.objects.annotate(
+        product_count=Count('products')
+    ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
+    
+    sidebar_data = {}
+    for attr in attrs:
+        # get_attr_type_display() を使って "cpu" -> "CPU" のように取得
+        type_display = attr.get_attr_type_display()
+        if type_display not in sidebar_data:
+            sidebar_data[type_display] = []
+        
+        sidebar_data[type_display].append({
+            'id': attr.id,
+            'name': attr.name,
+            'slug': attr.slug,
+            'count': attr.product_count
+        })
+    
+    return Response(sidebar_data)
 
 # --------------------------------------------------------------------------
 # 3. Linkshare商品データ API ビュー (LinkshareProduct)

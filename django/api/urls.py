@@ -26,15 +26,19 @@ urlpatterns = [
     # -----------------------------------------------------------
     # 3. PC製品データ エンドポイント (PCProduct)
     # -----------------------------------------------------------
-    # 最新版：AI解説(ai_content)・在庫ステータス(stock_status)・アフィリエイトURL対応版
+    # 最新版：AI解説(ai_content)・在庫ステータス(stock_status)・アフィリエイトURL・スペック属性対応版
     
     # GET /api/pc-products/
-    # 💡 QueryParams (?site=lenovo, ?maker=acer, ?genre=gaming等) による絞り込みに対応
+    # 💡 QueryParams (?site=lenovo, ?maker=acer, ?attribute=core-i7 等) による絞り込みに対応
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # GET /api/pc-makers/
     # 💡 PC製品テーブルに存在するメーカー名の一覧を重複なく取得
     path('pc-makers/', views.PCProductMakerListView.as_view(), name='pc_maker_list'),
+
+    # GET /api/pc-sidebar-stats/
+    # 🚀 [NEW] スペック属性（CPU, メモリ等）ごとの統計情報を取得
+    path('pc-sidebar-stats/', views.pc_sidebar_stats, name='pc_sidebar_stats'),
 
     # GET /api/pc-products/4515777630658/
     # 💡 unique_id（JANコードやメーカー固有ID）で個別の詳細データを取得
@@ -60,7 +64,7 @@ urlpatterns = [
     path('genres/', views.GenreListAPIView.as_view(), name='genre_list'),
 
     # GET /api/makers/
-    # 💡 これは AdultProduct 用の Maker モデルを参照
+    # 💡 これは AdultProduct 用 of Maker モデルを参照
     path('makers/', views.MakerListAPIView.as_view(), name='maker_list'),
 
     # GET /api/labels/

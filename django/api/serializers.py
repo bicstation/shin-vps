@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import AdultProduct, LinkshareProduct, Maker, Genre, Actress, Label, Director, Series 
-from .models.pc_products import PCProduct
+from .models.pc_products import PCProduct, PCAttribute  # 💡 PCAttribute を追加
 
 # --------------------------------------------------------------------------
 # 1. エンティティ（マスターデータ）のシリアライザ
@@ -36,6 +36,15 @@ class SeriesSerializer(serializers.ModelSerializer):
         model = Series
         fields = ('id', 'name', 'api_source', 'product_count')
 
+# 💡 新規追加: PCスペック属性用のシリアライザ
+class PCAttributeSerializer(serializers.ModelSerializer):
+    # attr_type の表示名（例: "cpu" -> "CPU"）を取得
+    attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
+
+    class Meta:
+        model = PCAttribute
+        fields = ('id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order')
+
 # --------------------------------------------------------------------------
 # 2. アダルト商品モデル (AdultProductSerializer)
 # --------------------------------------------------------------------------
@@ -69,18 +78,19 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
             'id', 'sku', 'product_name', 'availability', 
             'affiliate_url', 'image_url', 'merchant_id', 'updated_at',
         )
-        # 💡 Admin側でエラーが出ていた 'sale_price' はモデルに存在しないため、
-        # シリアライザのフィールドからも除外しました。
         read_only_fields = fields
 
 # --------------------------------------------------------------------------
-# 4. PC製品モデル (PCProductSerializer) - 💡最新ロジック対応版
+# 4. PC製品モデル (PCProductSerializer) - 🚀 属性連携対応版
 # --------------------------------------------------------------------------
 
 class PCProductSerializer(serializers.ModelSerializer):
     """
-    最新の PCProduct モデル（AI解説、統合ジャンル、在庫ステータス、アフィリエイトURL対応）用
+    最新の PCProduct モデル（AI解説、スペック属性タグ、統合ジャンル、在庫ステータス対応）用
     """
+    # 🚀 スペック属性タグをネストして取得 (Many-to-Many なので many=True)
+    attributes = PCAttributeSerializer(many=True, read_only=True)
+
     class Meta:
         model = PCProduct
         fields = (
@@ -89,17 +99,18 @@ class PCProductSerializer(serializers.ModelSerializer):
             'site_prefix',         # 'lenovo', 'hp' 等
             'maker',               # メーカー名
             'raw_genre',           # サイト別分類
-            'unified_genre',       # 統合ジャンル（自動補完対応）
+            'unified_genre',       # 統合ジャンル
             'name',                # 商品名
             'price',               # 価格
             'url',                 # 商品URL
             'image_url',           # 画像URL
             'description',         # 詳細スペック
-            'affiliate_url',       # 🚀 追加：正式アフィリエイトURL
-            'affiliate_updated_at',# 🚀 追加：URL更新日時
-            'stock_status',        # 在庫/受注状況（自動判定対応）
-            'ai_content',          # 💡 AI解説
-            'is_posted',           # 💡 投稿フラグ
+            'attributes',          # 🚀 追記: スペック属性タグリスト
+            'affiliate_url',       # 正式アフィリエイトURL
+            'affiliate_updated_at',# URL更新日時
+            'stock_status',        # 在庫/受注状況
+            'ai_content',          # AI解説
+            'is_posted',           # 投稿フラグ
             'is_active',           # 掲載フラグ
             'created_at',
             'updated_at',

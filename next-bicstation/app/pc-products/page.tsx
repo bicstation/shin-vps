@@ -9,11 +9,8 @@ import ProductCard from '@/components/product/ProductCard';
 import Sidebar from '@/components/layout/Sidebar';
 import Pagination from '@/components/common/Pagination';
 import { fetchPCProducts, fetchPostList, fetchMakers } from '@/lib/api';
-import styles from './BrandPage.module.css';
+import styles from './BrandPage.module.css'; // 既存のスタイルを継承
 
-/**
- * HTMLエンティティをデコードするユーティリティ
- */
 const decodeHtml = (html: string) => {
     if (!html) return '';
     const map: { [key: string]: string } = { 
@@ -24,46 +21,48 @@ const decodeHtml = (html: string) => {
 };
 
 interface PageProps {
-    params: Promise<{ slug: string }>;
+    // pc-products配下には slug がないので params は空になります
+    params: Promise<{ slug?: string }>;
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function BrandPage({ params, searchParams }: PageProps) {
-    // 💡 params (メーカー) と searchParams (クエリ) を await で取得
-    const { slug } = await params;
+export default async function PCProductsPage({ params, searchParams }: PageProps) {
+    // 💡 searchParams を await してクエリを取得
     const sParams = await searchParams;
     
-    // 💡 ページネーション用の offset と スペック絞り込み用の attribute を取得
+    // 💡 各種クエリパラメータの抽出
     const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
+    const makerQuery = Array.isArray(sParams.maker) ? sParams.maker[0] : sParams.maker;
     
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 20;
 
-    // 💡 並列フェッチ実行
-    // fetchPCProducts の引数に「メーカー(slug)」と「属性(attribute)」の両方を渡す
+    // 💡 並列データ取得
+    // fetchPCProducts の第一引数(maker)には、URLに ?maker=xxx があればそれを渡し、なければ空にします
     const [wpData, pcData, makersData] = await Promise.all([
         fetchPostList(5),
-        fetchPCProducts(slug, currentOffset, limit, attribute || ''), 
+        fetchPCProducts(makerQuery || '', currentOffset, limit, attribute || ''), 
         fetchMakers() 
     ]);
 
     const posts = wpData.results || [];
 
-    // 表示用メーカー名の整形
-    const displayMakerName = slug.toUpperCase();
-    
-    // 現在の絞り込み条件を表示するためのテキスト（例: " > CORE-I7"）
-    const activeFilterLabel = attribute ? ` > ${attribute.toUpperCase()}` : "";
+    // 表示用タイトルの動的決定
+    const pageTitle = makerQuery 
+        ? `${makerQuery.toUpperCase()} の製品一覧` 
+        : attribute 
+            ? `${attribute} 搭載モデル一覧` 
+            : "すべてのPC製品一覧";
 
     return (
         <div className={styles.wrapper}>
             <aside className={styles.sidebarSection}>
-                {/* Sidebarに現在のslugを渡し、ハイライトを有効化。
-                  makersDataを渡してメーカー別カウントを表示。
+                {/* Sidebarに現在のメーカー(makerQuery)を渡し、ハイライトを有効化。
+                    APIから取得した makersData で件数付きリストを表示。
                 */}
                 <Sidebar 
-                    activeMenu={slug} 
+                    activeMenu={makerQuery || ''} 
                     makers={makersData} 
                     recentPosts={posts.map((p: any) => ({
                         id: p.id,
@@ -78,10 +77,7 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                     <div className={styles.brandInfo}>
                         <h1 className={styles.brandTitle}>
                             <span className={styles.titleLine}></span>
-                            {displayMakerName} の製品一覧
-                            <span style={{ fontSize: '0.7em', color: '#007bff', marginLeft: '10px' }}>
-                                {activeFilterLabel}
-                            </span>
+                            {pageTitle}
                         </h1>
                         <p className={styles.productCount}>
                             該当件数: <strong>{pcData.count}</strong> 件
@@ -92,17 +88,10 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                 <section className={styles.productSection}>
                     {pcData.results.length === 0 ? (
                         <div className={styles.noDataLarge}>
-                            <p>{displayMakerName} の中で、指定された条件に一致する製品が見つかりませんでした。</p>
-                            {attribute && (
-                                <a href={`/brand/${slug}`} className={styles.resetLink} style={{ 
-                                    display: 'inline-block', 
-                                    marginTop: '15px', 
-                                    color: '#007bff', 
-                                    textDecoration: 'underline' 
-                                }}>
-                                    絞り込みを解除して全件表示する
-                                </a>
-                            )}
+                            <p>該当する製品データが見つかりませんでした。</p>
+                            <p style={{fontSize: '0.9rem', color: '#999', marginTop: '10px'}}>
+                                条件をクリアして再度お試しください。
+                            </p>
                         </div>
                     ) : (
                         <>
@@ -117,8 +106,8 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                                     currentOffset={currentOffset}
                                     limit={limit}
                                     totalCount={pcData.count}
-                                    // 💡 attributeを維持したままページ遷移できるようにベースURLを構築
-                                    baseUrl={`/brand/${slug}`} 
+                                    // 💡 全製品ページなのでベースURLは固定
+                                    baseUrl={`/pc-products`} 
                                 />
                             </div>
                         </>

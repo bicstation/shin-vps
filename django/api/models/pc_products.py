@@ -1,10 +1,48 @@
 from django.db import models
 from django.utils.timezone import now
 
+class PCAttribute(models.Model):
+    """
+    CPU、メモリ、NPUなどのスペック情報を管理するマスターモデル
+    """
+    TYPE_CHOICES = [
+        ('cpu', 'CPU'),
+        ('memory', 'メモリ'),
+        ('storage', 'ストレージ'),
+        ('gpu', 'グラフィック'),
+        ('npu', 'AIプロセッサ(NPU)'),
+        ('os', 'OS'),
+    ]
+    
+    attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES)
+    name = models.CharField('表示名', max_length=100) # 例: "Core i7", "16GB", "40 TOPS以上"
+    slug = models.SlugField('スラッグ', max_length=100, unique=True) # 例: "core-i7", "mem-16gb"
+    
+    # 🚀 追加: 表記揺れ対策用の検索キーワード
+    # カンマ区切りで入力（例: "i7-13, 13700K, 14700"）
+    search_keywords = models.TextField(
+        '検索キーワード', 
+        blank=True, 
+        help_text="検索時に使用する別名です。複数の場合はカンマ(,)で区切ってください。"
+    )
+    
+    # 🚀 サイドバー等での表示順を制御
+    order = models.PositiveIntegerField('並び順', default=0, help_text="数字が小さいほど上に表示されます")
+
+    class Meta:
+        verbose_name = 'スペック属性'
+        verbose_name_plural = 'スペック属性一覧'
+        # タイプごとにまとめ、その中で設定した並び順、名前順にする
+        ordering = ['attr_type', 'order', 'name']
+
+    def __str__(self):
+        return f"[{self.get_attr_type_display()}] {self.name}"
+
+
 class PCProduct(models.Model):
     """
     PC製品を管理する汎用モデル
-    （2重仕分け ＋ 生HTMLマッピング ＋ AIコンテンツ保持 ＋ 正式アフィリエイトURL対応版）
+    （2重仕分け ＋ 生HTMLマッピング ＋ AIコンテンツ保持 ＋ 正式アフィリエイトURL対応 ＋ スペック属性連携版）
     """
     # 識別用
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
@@ -22,15 +60,21 @@ class PCProduct(models.Model):
     image_url = models.URLField(max_length=1000, null=True, blank=True, verbose_name="画像URL")
     description = models.TextField(null=True, blank=True, verbose_name="詳細スペック")
 
-    # 🚀 アフィリエイトURL管理 (追加項目)
-    # APIから取得したDoubleClick等を含む正式な1円報酬対象URLを格納
+    # 🚀 スペック属性（多対多リレーション）
+    attributes = models.ManyToManyField(
+        PCAttribute, 
+        blank=True, 
+        related_name='products',
+        verbose_name="スペック属性タグ"
+    )
+
+    # 🚀 アフィリエイトURL管理
     affiliate_url = models.URLField(
         max_length=2000, 
         null=True, 
         blank=True, 
         verbose_name="正式アフィリエイトURL"
     )
-    # リンクがいつ取得されたものか、または有効期限切れチェック用
     affiliate_updated_at = models.DateTimeField(
         null=True, 
         blank=True, 
@@ -38,7 +82,6 @@ class PCProduct(models.Model):
     )
 
     # 🚀 AI生成コンテンツ
-    # WordPressに投稿した内容と同じ、または自社サイト用に最適化されたHTMLを保存
     ai_content = models.TextField(null=True, blank=True, verbose_name="AI生成記事本文")
 
     # 🚀 自動マッピング・受注停止管理用
@@ -47,7 +90,7 @@ class PCProduct(models.Model):
         max_length=100, 
         default="在庫あり", 
         verbose_name="在庫/受注状況"
-    ) # 「受注停止中」「最短2週間」などを格納
+    ) 
     
     is_posted = models.BooleanField(default=False, verbose_name="WP投稿済み")
 
@@ -59,7 +102,7 @@ class PCProduct(models.Model):
     class Meta:
         verbose_name = "PC製品"
         verbose_name_plural = "PC製品一覧"
-        ordering = ['price']
+        ordering = ['-updated_at']
 
     def __str__(self):
         return f"[{self.maker}] {self.name[:30]}"

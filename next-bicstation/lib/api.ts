@@ -52,7 +52,7 @@ export interface PCProduct {
 }
 
 /**
- * ✨ [NEW] メーカーと製品数の型定義
+ * ✨ メーカーと製品数の型定義
  */
 export interface MakerCount {
     maker: string;
@@ -109,10 +109,19 @@ export async function fetchPostData(slug: string) {
 
 /**
  * 💻 [Django API] 商品一覧取得
+ * 🚀 [UPDATE]: attribute パラメータ（スペック絞り込み）に対応
  */
-export async function fetchPCProducts(maker = '', offset = 0, limit = 10) {
+export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attribute = '') {
     const rootUrl = getDjangoBaseUrl();
-    const url = `${rootUrl}/api/pc-products/?maker=${maker.toLowerCase()}&limit=${limit}&offset=${offset}`;
+    
+    // URLSearchParams を使ってクリーンにクエリを構築
+    const params = new URLSearchParams();
+    if (maker) params.append('maker', maker.toLowerCase());
+    if (attribute) params.append('attribute', attribute);
+    params.append('limit', limit.toString());
+    params.append('offset', offset.toString());
+
+    const url = `${rootUrl}/api/pc-products/?${params.toString()}`;
     
     try {
         const res = await fetch(url, { 
@@ -129,7 +138,7 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10) {
         const data = await res.json();
         
         if (IS_SERVER) {
-            console.log(`[API Fetch Success]: offset=${offset}, items=${data.results?.length}`);
+            console.log(`[API Fetch Success]: offset=${offset}, attribute=${attribute}, items=${data.results?.length}`);
         }
 
         return { 
@@ -191,7 +200,6 @@ export async function fetchRelatedProducts(maker: string, excludeId: string, lim
 
 /**
  * 💻 [Django API] メーカー一覧取得 (製品数カウント付き)
- * ✅ Django の PCProductMakerListView から集計データを取得
  */
 export async function fetchMakers(): Promise<MakerCount[]> {
     const rootUrl = getDjangoBaseUrl();
@@ -209,7 +217,6 @@ export async function fetchMakers(): Promise<MakerCount[]> {
             return [];
         }
 
-        // [{maker: "Dell", count: 10}, ...] という形式のJSONを返す
         return await res.json();
     } catch (e) {
         console.error(`[Makers API ERROR]:`, e);
