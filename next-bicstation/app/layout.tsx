@@ -1,4 +1,4 @@
-import type { Metadata } from "next"; // Viewportのインポートを削除
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -17,6 +17,8 @@ const inter = Inter({
  * 💡 SEOメタデータの設定
  */
 export const metadata: Metadata = {
+  // metadataBase を設定することで、相対パスの画像URLなどが正しく解決されます
+  metadataBase: new URL("https://bicstation.com"),
   title: {
     template: "%s | BICSTATION PCカタログ",
     default: "BICSTATION - 最安PC・スペック比較ポータル",
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
     url: "https://bicstation.com/", 
     siteName: "BICSTATION",
     title: "BICSTATION - 最安PC・スペック比較ポータル",
-    description: "メーカー直販サイトをスクレイピングし, 最新のPC情報を集約。あなたの最適な1台が見つかる比較サイト。",
+    description: "メーカー直販サイトをスクレイピングし、最新のPC情報を集約。あなたの最適な1台が見つかる比較サイト。",
     images: [
       {
         url: "/og-image.png", 
@@ -53,7 +55,6 @@ export const metadata: Metadata = {
 
 /**
  * 💡 ビューポート設定
- * 型指定 (: Viewport) を削除してビルドエラーを回避
  */
 export const viewport = {
   width: "device-width",
@@ -103,9 +104,7 @@ export default function RootLayout({
         {/* 全ページ共通ヘッダー */}
         <Header />
 
-        {/* メインコンテンツエリア 
-            スマホ時に左右に適度な余白ができるよう、各ページのコンテナ側で制御するのが理想ですが、
-            ここでは全体を包む flex コンテナとして定義します */}
+        {/* メインコンテンツエリア */}
         <main style={{ 
           flexGrow: 1, 
           display: "flex", 
