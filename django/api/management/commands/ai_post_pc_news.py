@@ -177,7 +177,7 @@ class Command(BaseCommand):
                     html_body += f'<p>{line}</p>'
             if in_table: html_body += '</table>'
 
-            # --- 7. 商品マッチング（デザイン強化版） ---
+            # --- 7. 商品マッチング（縦並び・スタイリッシュ版） ---
             keywords = ["ノートPC","デスクトップ", "ワークステーション","SSD", "RTX", "モニター", "キーボード", "ケーブル", "充電器", "マウス"]
             search_keyword = next((k for k in keywords if k in final_title), final_title[:10])
             related_products = PCProduct.objects.filter(is_active=True, name__icontains=search_keyword).exclude(stock_status="受注停止中").order_by('-created_at')[:3]
@@ -186,43 +186,45 @@ class Command(BaseCommand):
                 related_products = PCProduct.objects.filter(is_active=True, name__icontains=cat_name).exclude(stock_status="受注停止中").order_by('-created_at')[:3]
 
             if related_products:
-                html_body += '<h2 class="wp-block-heading" style="margin-top:50px;text-align:center;font-weight:bold;color:#1e293b;">🛠 関連おすすめモデル</h2>'
+                html_body += '<h2 class="wp-block-heading" style="margin-top:50px; text-align:center; font-weight:bold; color:#1e293b; border-bottom:none;">🛠 関連おすすめモデル</h2>'
                 for prod in related_products:
                     # リンク生成
                     encoded_name = urllib.parse.quote(prod.name)
-                    # Amazon A8リンク (リダイレクト形式)
                     amazon_a8_url = f"https://px.a8.net/svt/ejp?a8mat=1NWETK+A4FFE2+249K+BWGDT&a8ejpredirect=https%3A%2F%2Fwww.amazon.co.jp%2Fs%3Fk%3D{encoded_name}%26tag%3Da8-affi-321713-22"
                     official_url = prod.affiliate_url or prod.url
                     bic_url = f"https://bicstation.com/product/{prod.site_prefix}_{prod.unique_id}/"
-                    
-                    # トラッキングピクセル
                     a8_pixel = '<img border="0" width="1" height="1" src="https://www15.a8.net/0.gif?a8mat=1NWETK+A4FFE2+249K+BWGDT" alt="">'
 
                     html_body += f'''
-                    <div style="border:1px solid #e5e7eb; border-radius:16px; padding:24px; margin-bottom:32px; background:#ffffff; box-shadow:0 10px 15px -3px rgba(0,0,0,0.05);">
-                        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:24px;">
+                    <div style="border:1px solid #e5e7eb; border-radius:18px; padding:28px; margin-bottom:40px; background:#ffffff; box-shadow:0 15px 30px -10px rgba(0,0,0,0.1);">
+                        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:24px; margin-bottom:24px;">
                             <div style="flex:1; min-width:200px; text-align:center;">
-                                <img src="{prod.image_url}" style="width:100%; max-width:220px; height:auto; border-radius:12px; object-fit:contain;">
+                                <img src="{prod.image_url}" style="width:100%; max-width:240px; height:auto; border-radius:12px; object-fit:contain;">
                             </div>
-                            <div style="flex:2; min-width:280px;">
-                                <div style="font-size:0.85em; color:#6b7280; margin-bottom:4px;">{prod.maker}</div>
-                                <h4 style="margin:0 0 12px 0; color:#111827; font-size:1.25em; font-weight:700; line-height:1.4;">{prod.name}</h4>
-                                <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:20px;">
-                                    <span style="color:#dc2626; font-weight:800; font-size:1.6em;">¥{prod.price:,}</span>
-                                    <span style="font-size:0.8em; color:#9ca3af;">(税込)</span>
+                            <div style="flex:1.5; min-width:260px;">
+                                <div style="font-size:0.85em; color:#6b7280; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">{prod.maker}</div>
+                                <h4 style="margin:0 0 12px 0; color:#111827; font-size:1.4em; font-weight:800; line-height:1.4;">{prod.name}</h4>
+                                <div style="display:flex; align-items:baseline; gap:6px;">
+                                    <span style="color:#dc2626; font-weight:900; font-size:1.8em;">¥{prod.price:,}</span>
+                                    <span style="font-size:0.9em; color:#6b7280;">(税込)</span>
                                 </div>
-                                
-                                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
-                                    <a href="{amazon_a8_url}" target="_blank" rel="nofollow" style="background:#FF9900; color:#fff; text-align:center; padding:12px 8px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:0.9em; box-shadow:0 2px 4px rgba(255,153,0,0.2);">Amazonで探す</a>
-                                    <a href="{official_url}" target="_blank" rel="nofollow" style="background:#e41313; color:#fff; text-align:center; padding:12px 8px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:0.9em; box-shadow:0 2px 4px rgba(228,19,19,0.2);">公式サイト</a>
-                                    <a href="{bic_url}" style="background:#2563eb; color:#fff; text-align:center; padding:12px 8px; text-decoration:none; border-radius:8px; font-weight:bold; font-size:0.9em; box-shadow:0 2px 4px rgba(37,99,235,0.2);">BicStation詳細</a>
-                                </div>
-                                {a8_pixel}
                             </div>
                         </div>
+
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <a href="{amazon_a8_url}" target="_blank" rel="nofollow" style="display:block; background:#FF9900; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #cc7a00; transition:all 0.2s;">
+                                <span style="margin-right:8px;">🛒</span> Amazonで最安値をチェック
+                            </a>
+                            <a href="{official_url}" target="_blank" rel="nofollow" style="display:block; background:#e41313; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #b30f0f; transition:all 0.2s;">
+                                <span style="margin-right:8px;">🏢</span> 公式サイトで購入
+                            </a>
+                            <a href="{bic_url}" style="display:block; background:#2563eb; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #1d4ed8; transition:all 0.2s;">
+                                <span style="margin-right:8px;">🔍</span> BicStationで詳細スペックを見る
+                            </a>
+                        </div>
+                        {a8_pixel}
                     </div>
                     '''
-
             html_body += f'<p style="font-size:0.8em;margin-top:40px;color:#94a3b8;border-top:1px dotted #ccc;padding-top:10px;">出典: <a href="{current_url}" target="_blank" rel="nofollow">{raw_title}</a></p>'
 
             # --- 8. アイキャッチ画像の処理 ---
