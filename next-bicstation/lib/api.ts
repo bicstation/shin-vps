@@ -34,6 +34,7 @@ const getDjangoBaseUrl = () => {
 };
 
 // --- 型定義 ---
+
 export interface PCProduct {
     id: number;
     unique_id: string;
@@ -48,6 +49,14 @@ export interface PCProduct {
     ai_content: string;    // AI生成コンテンツ
     stock_status: string;
     unified_genre: string;
+}
+
+/**
+ * ✨ [NEW] メーカーと製品数の型定義
+ */
+export interface MakerCount {
+    maker: string;
+    count: number;
 }
 
 /**
@@ -100,7 +109,6 @@ export async function fetchPostData(slug: string) {
 
 /**
  * 💻 [Django API] 商品一覧取得
- * ✅ 修正点: Next.js 15のキャッシュ対策として cache: 'no-store' を追加
  */
 export async function fetchPCProducts(maker = '', offset = 0, limit = 10) {
     const rootUrl = getDjangoBaseUrl();
@@ -109,7 +117,6 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10) {
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            // 💡 ページ送り（offset）を確実に反映させるためキャッシュを無効化
             cache: 'no-store',
             next: { revalidate: 0 } 
         });
@@ -121,7 +128,6 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10) {
 
         const data = await res.json();
         
-        // 開発時のデバッグ用ログ
         if (IS_SERVER) {
             console.log(`[API Fetch Success]: offset=${offset}, items=${data.results?.length}`);
         }
@@ -146,7 +152,7 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            cache: 'no-store', // 詳細ページも常に最新を取得
+            cache: 'no-store',
             next: { revalidate: 0 } 
         });
         return res.ok ? await res.json() : null;
@@ -165,7 +171,7 @@ export async function fetchRelatedProducts(maker: string, excludeId: string, lim
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            next: { revalidate: 3600 } // 関連商品はある程度キャッシュしてOK
+            next: { revalidate: 3600 }
         });
 
         if (!res.ok) return [];
@@ -179,6 +185,34 @@ export async function fetchRelatedProducts(maker: string, excludeId: string, lim
             
     } catch (e) {
         console.error(`[Related Products API ERROR]:`, e);
+        return [];
+    }
+}
+
+/**
+ * 💻 [Django API] メーカー一覧取得 (製品数カウント付き)
+ * ✅ Django の PCProductMakerListView から集計データを取得
+ */
+export async function fetchMakers(): Promise<MakerCount[]> {
+    const rootUrl = getDjangoBaseUrl();
+    const url = `${rootUrl}/api/pc-makers/`;
+
+    try {
+        const res = await fetch(url, {
+            headers: { 'Host': 'localhost' },
+            cache: 'no-store',
+            next: { revalidate: 0 }
+        });
+
+        if (!res.ok) {
+            console.error(`[Django Makers API Error]: Status ${res.status}`);
+            return [];
+        }
+
+        // [{maker: "Dell", count: 10}, ...] という形式のJSONを返す
+        return await res.json();
+    } catch (e) {
+        console.error(`[Makers API ERROR]:`, e);
         return [];
     }
 }

@@ -32,6 +32,10 @@ urlpatterns = [
     # 💡 QueryParams (?site=lenovo, ?maker=acer, ?genre=gaming等) による絞り込みに対応
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
+    # GET /api/pc-makers/
+    # 💡 PC製品テーブルに存在するメーカー名の一覧を重複なく取得
+    path('pc-makers/', views.PCProductMakerListView.as_view(), name='pc_maker_list'),
+
     # GET /api/pc-products/4515777630658/
     # 💡 unique_id（JANコードやメーカー固有ID）で個別の詳細データを取得
     path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
@@ -52,9 +56,11 @@ urlpatterns = [
     path('actresses/', views.ActressListAPIView.as_view(), name='actress_list'),
 
     # GET /api/genres/
+    # 💡 これは AdultProduct 用の Genre モデルを参照
     path('genres/', views.GenreListAPIView.as_view(), name='genre_list'),
 
     # GET /api/makers/
+    # 💡 これは AdultProduct 用の Maker モデルを参照
     path('makers/', views.MakerListAPIView.as_view(), name='maker_list'),
 
     # GET /api/labels/

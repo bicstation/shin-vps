@@ -1,5 +1,8 @@
 from django.http import JsonResponse
 from rest_framework import generics, filters, pagination
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 import logging
@@ -56,6 +59,7 @@ def api_root(request):
             "status": "/api/status/",
             "products": {
                 "pc_products_list": "/api/pc-products/", 
+                "pc_product_makers": "/api/pc-makers/",
                 "pc_product_detail": "/api/pc-products/{unique_id}/", 
                 "adult_products_list": "/api/adults/",
                 "linkshare_products_list": "/api/linkshare/",
@@ -128,29 +132,23 @@ class PCProductListAPIView(generics.ListAPIView):
     PC製品一覧取得：メーカー名が指定されている場合のみフィルタリングを行う
     """
     serializer_class = PCProductSerializer
-    # 💡 ページネーションクラスを上書き指定
     pagination_class = PCProductLimitOffsetPagination
     
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
-    # query_params.get('maker') を手動で処理するため filterset_fields からは 'maker' を外す
     filterset_fields = ['site_prefix', 'unified_genre', 'stock_status', 'is_posted']
     
     search_fields = ['name', 'description', 'ai_content']
     ordering_fields = ['price', 'updated_at', 'created_at']
 
     def get_queryset(self):
-        # 基本クエリ（公開中のものを更新順に）
         queryset = PCProduct.objects.filter(is_active=True)
         
-        # URLの ?maker=xxx を取得
         maker = self.request.query_params.get('maker', None)
         
-        # 💡 指定がある場合のみフィルタを適用（空文字やNoneなら全件）
         if maker and maker.strip() != "":
             queryset = queryset.filter(maker__iexact=maker)
             
-        # 💡 ページネーションのバグを防ぐため、確定的な順序で返す
         return queryset.order_by('-updated_at', 'id')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
@@ -160,6 +158,22 @@ class PCProductDetailAPIView(generics.RetrieveAPIView):
     queryset = PCProduct.objects.all()
     serializer_class = PCProductSerializer
     lookup_field = 'unique_id'
+
+class PCProductMakerListView(APIView):
+    """
+    🔥 [NEW] PCProductモデルからメーカー名と製品数をカウントして取得する
+    """
+    def get(self, request):
+        # 有効な製品からメーカーごとに集計
+        maker_counts = PCProduct.objects.filter(is_active=True) \
+            .exclude(maker__isnull=True) \
+            .exclude(maker='') \
+            .values('maker') \
+            .annotate(count=Count('id')) \
+            .order_by('maker')
+        
+        # リスト形式で返却: [{"maker": "Dell", "count": 10}, ...]
+        return Response(list(maker_counts))
 
 # --------------------------------------------------------------------------
 # 3. Linkshare商品データ API ビュー (LinkshareProduct)

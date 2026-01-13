@@ -9,7 +9,7 @@ import Link from 'next/link';
 import ProductCard from '@/components/product/ProductCard';
 import Sidebar from '@/components/layout/Sidebar';
 import Pagination from '@/components/common/Pagination';
-import { fetchPostList, fetchPCProducts } from '@/lib/api'; 
+import { fetchPostList, fetchPCProducts, fetchMakers } from '@/lib/api'; 
 import styles from './MainPage.module.css';
 
 const decodeHtml = (html: string) => {
@@ -32,12 +32,11 @@ export default async function Page({ searchParams }: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 10;
 
-    const makers = ['Lenovo', 'HP', 'Dell'];
-
-    // API呼び出し（サイドバー用にお知らせは常に取得）
-    const [wpData, pcData] = await Promise.all([
+    // API呼び出し（お知らせ、製品一覧、および動的メーカーリストを並列取得）
+    const [wpData, pcData, makersData] = await Promise.all([
         fetchPostList(5),
-        fetchPCProducts('', currentOffset, limit) 
+        fetchPCProducts('', currentOffset, limit),
+        fetchMakers() // 🔥 Djangoから件数付きメーカーリストを取得
     ]);
 
     const posts = wpData.results || [];
@@ -47,7 +46,7 @@ export default async function Page({ searchParams }: PageProps) {
             <aside className={styles.sidebarSection}>
                 <Sidebar 
                     activeMenu="all" 
-                    makers={makers} 
+                    makers={makersData} // 🔥 取得した動的データをサイドバーに渡す
                     recentPosts={posts.map((p: any) => ({
                         id: p.id,
                         title: decodeHtml(p.title.rendered),

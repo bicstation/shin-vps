@@ -8,7 +8,7 @@ import React from 'react';
 import ProductCard from '@/components/product/ProductCard';
 import Sidebar from '@/components/layout/Sidebar';
 import Pagination from '@/components/common/Pagination';
-import { fetchPCProducts, fetchPostList } from '@/lib/api'; // お知らせ取得を追加
+import { fetchPCProducts, fetchPostList, fetchMakers } from '@/lib/api'; // fetchMakersを追加
 import styles from './BrandPage.module.css';
 
 const decodeHtml = (html: string) => {
@@ -35,14 +35,14 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 20;
 
-    // サイドバー用のデータと製品データを並列取得
-    const [wpData, pcData] = await Promise.all([
+    // サイドバー用のデータ、製品データ、および動的メーカーリストを並列取得
+    const [wpData, pcData, makersData] = await Promise.all([
         fetchPostList(5),
-        fetchPCProducts(slug, currentOffset, limit) 
+        fetchPCProducts(slug, currentOffset, limit),
+        fetchMakers() // 🔥 Djangoから件数付きメーカーリストを取得
     ]);
 
     const posts = wpData.results || [];
-    const makers = ['Lenovo', 'HP', 'Dell']; // 将来的にAPI化
 
     // 表示用メーカー名の整形（dell -> DELL）
     const displayMakerName = slug.toUpperCase();
@@ -51,11 +51,11 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
         <div className={styles.wrapper}>
             <aside className={styles.sidebarSection}>
                 {/* Sidebarに現在のslugを渡し、ハイライトを有効化。
-                  お知らせデータも渡してサイドバーを最新状態にする。
+                    APIから取得した makersData を渡すことで、件数表示を反映。
                 */}
                 <Sidebar 
                     activeMenu={slug} 
-                    makers={makers}
+                    makers={makersData} // 🔥 静的な配列から動的なAPIデータに変更
                     recentPosts={posts.map((p: any) => ({
                         id: p.id,
                         title: decodeHtml(p.title.rendered),
