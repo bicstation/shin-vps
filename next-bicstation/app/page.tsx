@@ -21,21 +21,20 @@ const decodeHtml = (html: string) => {
         .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
 };
 
-// 型定義を修正
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function Page({ searchParams }: PageProps) {
-    // searchParams を確実に await する
     const sParams = await searchParams;
     
-    // offset の取得 (文字列の可能性を考慮)
     const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 10;
 
-    // API呼び出し (currentOffset が正しく反映されているか確認)
+    const makers = ['Lenovo', 'HP', 'Dell'];
+
+    // API呼び出し（サイドバー用にお知らせは常に取得）
     const [wpData, pcData] = await Promise.all([
         fetchPostList(5),
         fetchPCProducts('', currentOffset, limit) 
@@ -46,42 +45,53 @@ export default async function Page({ searchParams }: PageProps) {
     return (
         <div className={styles.wrapper}>
             <aside className={styles.sidebarSection}>
-                <Sidebar activeMenu="all" />
+                <Sidebar 
+                    activeMenu="all" 
+                    makers={makers} 
+                    recentPosts={posts.map((p: any) => ({
+                        id: p.id,
+                        title: decodeHtml(p.title.rendered),
+                        slug: p.slug
+                    }))}
+                />
             </aside>
 
             <main className={styles.main}>
-                <section className={styles.newsSection}>
-                    <h2 className={styles.sectionTitle}>
-                        <span className={styles.emoji}>📢</span> 最新のお知らせ
-                    </h2>
-                    <div className={styles.newsContainer}>
-                        {posts.length === 0 ? (
-                            <div className={styles.noData}>
-                                <p>現在、表示できるお知らせはありません。</p>
-                            </div>
-                        ) : (
-                            posts.map((post: any) => (
-                                <Link 
-                                    href={`/bicstation/${post.slug}`} 
-                                    key={post.id} 
-                                    className={styles.newsLink}
-                                >
-                                    <span className={styles.newsDate}>
-                                        {new Date(post.date).toLocaleDateString('ja-JP')}
-                                    </span>
-                                    <span className={styles.newsTitle}>
-                                        {decodeHtml(post.title.rendered)}
-                                    </span>
-                                </Link>
-                            ))
-                        )}
-                    </div>
-                </section>
+                {/* 🚩 currentOffset が 0 の時（1ページ目）だけお知らせを表示 */}
+                {currentOffset === 0 && (
+                    <section className={styles.newsSection}>
+                        <h2 className={styles.sectionTitle}>
+                            <span className={styles.emoji}>📢</span> 最新のお知らせ
+                        </h2>
+                        <div className={styles.newsContainer}>
+                            {posts.length === 0 ? (
+                                <div className={styles.noData}>
+                                    <p>現在、表示できるお知らせはありません。</p>
+                                </div>
+                            ) : (
+                                posts.map((post: any) => (
+                                    <Link 
+                                        href={`/bicstation/${post.slug}`} 
+                                        key={post.id} 
+                                        className={styles.newsLink}
+                                    >
+                                        <span className={styles.newsDate}>
+                                            {new Date(post.date).toLocaleDateString('ja-JP')}
+                                        </span>
+                                        <span className={styles.newsTitle}>
+                                            {decodeHtml(post.title.rendered)}
+                                        </span>
+                                    </Link>
+                                ))
+                            )}
+                        </div>
+                    </section>
+                )}
 
                 <section className={styles.productSection}>
                     <h2 className={styles.productGridTitle}>
                         <span className={styles.titleIndicator}></span>
-                        製品ラインナップ
+                        {currentOffset === 0 ? "製品ラインナップ" : `製品ラインナップ (${currentOffset / limit + 1}ページ目)`}
                     </h2>
 
                     {pcData.results.length === 0 ? (
@@ -101,7 +111,7 @@ export default async function Page({ searchParams }: PageProps) {
                                     currentOffset={currentOffset}
                                     limit={limit}
                                     totalCount={pcData.count}
-                                    baseUrl="/" // ここが "/" で offset パラメータが付与されるか確認
+                                    baseUrl="/" 
                                 />
                             </div>
                         </>

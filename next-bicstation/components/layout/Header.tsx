@@ -47,7 +47,7 @@ export default function Header() {
 
           <nav style={{ display: 'flex', gap: '20px', fontSize: '0.95em', fontWeight: '500' }}>
             <Link href="/" style={{ color: '#eee', textDecoration: 'none' }}>PCカタログ</Link>
-            <Link href="/bicstation" style={{ color: '#aaa', textDecoration: 'none' }}>特集・ブログ</Link>
+            <Link href="https://blog.tiper.live" style={{ color: '#aaa', textDecoration: 'none' }}>特集・ブログ</Link>
           </nav>
         </div>
 

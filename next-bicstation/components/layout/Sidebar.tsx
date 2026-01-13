@@ -1,14 +1,15 @@
 import React from 'react';
 import Link from 'next/link';
-// ✅ 共通カラー設定をインポート
 import { COLORS } from '@/constants';
 
 interface SidebarProps {
   activeMenu?: string;
-  recentPosts?: { id: string; title: string }[]; // 外部から記事一覧を渡せるように拡張
+  // メーカーリストを外部（Page）から渡せるように拡張
+  makers?: string[]; 
+  recentPosts?: { id: string; title: string; slug?: string }[];
 }
 
-export default function Sidebar({ activeMenu, recentPosts = [] }: SidebarProps) {
+export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: SidebarProps) {
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
   // サブタイトル用の共通スタイル
@@ -23,7 +24,7 @@ export default function Sidebar({ activeMenu, recentPosts = [] }: SidebarProps) 
     paddingBottom: '5px'
   };
 
-  // リンクの共通スタイル
+  // リンクの共通スタイル（判定を小文字で行う）
   const linkStyle = (isActive: boolean): React.CSSProperties => ({
     color: isActive ? siteColor : '#444',
     textDecoration: 'none',
@@ -36,6 +37,9 @@ export default function Sidebar({ activeMenu, recentPosts = [] }: SidebarProps) 
     transition: 'color 0.2s'
   });
 
+  // デフォルトの表示用メーカーリスト（データが空の場合のバックアップ）
+  const displayMakers = makers.length > 0 ? makers : ['lenovo', 'hp', 'dell'];
+
   return (
     <aside style={{ 
       width: '260px', 
@@ -44,18 +48,30 @@ export default function Sidebar({ activeMenu, recentPosts = [] }: SidebarProps) 
       borderRight: '1px solid #eee',
       height: 'fit-content',
       position: 'sticky',
-      top: '90px' // ヘッダーの高さ + 余白
+      top: '90px'
     }}>
       
-      {/* 1. メーカー別 */}
+      {/* 1. メーカー別（動的生成） */}
       <h3 style={{ ...sectionTitleStyle, marginTop: 0 }}>BRANDS</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        <li><Link href="/brand/lenovo" style={linkStyle(activeMenu === 'lenovo')}>💻 Lenovo (レノボ)</Link></li>
-        <li><Link href="/brand/hp" style={linkStyle(activeMenu === 'hp')}>💻 HP (ヒューレット・パッカード)</Link></li>
-        <li><Link href="/brand/dell" style={linkStyle(activeMenu === 'dell')}>💻 DELL (デル)</Link></li>
+        {displayMakers.map((maker) => {
+          const lowerMaker = maker.toLowerCase();
+          const isActive = activeMenu?.toLowerCase() === lowerMaker;
+          
+          return (
+            <li key={maker}>
+              <Link 
+                href={`/brand/${lowerMaker}`} 
+                style={linkStyle(isActive)}
+              >
+                💻 {maker.toUpperCase()}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
 
-      {/* 2. スペック・カテゴリ別 */}
+      {/* 2. スペック・カテゴリ別 (既存) */}
       <h3 style={sectionTitleStyle}>SPECS & CATEGORY</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         <li><Link href="/search?cpu=core-i7" style={linkStyle(false)}>🚀 Core i7 / Ryzen 7 以上</Link></li>
@@ -65,40 +81,28 @@ export default function Sidebar({ activeMenu, recentPosts = [] }: SidebarProps) 
         <li><Link href="/category/workstation" style={linkStyle(activeMenu === 'workstation')}>🏗️ ワークステーション</Link></li>
       </ul>
 
-      {/* 3. ブログ・特集記事 (動的に表示) */}
+      {/* 3. 最新記事 (既存) */}
       <h3 style={sectionTitleStyle}>LATEST ARTICLES</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {recentPosts.length > 0 ? (
           recentPosts.map((post) => (
             <li key={post.id} style={{ marginBottom: '10px', lineHeight: '1.4' }}>
-              <Link href={`/bicstation/${post.id}`} style={{ ...linkStyle(false), fontSize: '0.85rem' }}>
+              <Link href={`/bicstation/${post.slug || post.id}`} style={linkStyle(false)}>
                 📄 {post.title}
               </Link>
             </li>
           ))
         ) : (
-          <>
-            <li style={{ marginBottom: '10px', lineHeight: '1.4' }}>
-              <Link href="/bicstation/pc-choose-2024" style={{ ...linkStyle(false), fontSize: '0.85rem' }}>
-                📄 失敗しない！2024年PCの選び方ガイド
-              </Link>
-            </li>
-            <li style={{ marginBottom: '10px', lineHeight: '1.4' }}>
-              <Link href="/bicstation/lenovo-sale-info" style={linkStyle(false)}>
-                📄 Lenovo最新セール情報まとめ
-              </Link>
-            </li>
-          </>
+           <li style={{ color: '#ccc', fontSize: '0.8rem' }}>記事を読み込み中...</li>
         )}
       </ul>
 
-      {/* 4. その他 */}
+      {/* 4. その他 (既存) */}
       <h3 style={sectionTitleStyle}>OTHERS</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        <li><Link href="/" style={linkStyle(false)}>🏠 ホームに戻る</Link></li>
+        <li><Link href="/" style={linkStyle(activeMenu === 'all')}>🏠 ホームに戻る</Link></li>
         <li><Link href="/contact" style={linkStyle(false)}>✉️ スペック相談</Link></li>
       </ul>
-
     </aside>
   );
 }

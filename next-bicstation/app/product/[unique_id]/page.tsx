@@ -14,6 +14,9 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     const relatedProducts = await fetchRelatedProducts(product.maker, params.unique_id);
     const finalUrl = product.affiliate_url || product.url;
 
+    // 価格チェック変数
+    const isPriceAvailable = product.price > 0;
+
     /**
      * AIコンテンツの解析（目次、要約データ、本文の分離）
      */
@@ -63,20 +66,39 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             <span className={styles.genreBadge}>{product.unified_genre}</span>
                         </div>
                         <h1 className={styles.productTitle}>{product.name}</h1>
+                        
                         <div className={styles.priceContainer}>
-                            <span className={styles.priceLabel}>メーカー直販特別価格</span>
+                            <span className={styles.priceLabel}>
+                                {isPriceAvailable ? "メーカー直販特別価格" : "販売価格・在庫状況"}
+                            </span>
                             <div className={styles.priceValue}>
-                                ¥{product.price.toLocaleString()}<span className={styles.taxLabel}>(税込)</span>
+                                {isPriceAvailable ? (
+                                    <>
+                                        ¥{product.price.toLocaleString()}<span className={styles.taxLabel}>(税込)</span>
+                                    </>
+                                ) : (
+                                    <span style={{ fontSize: '0.8em', color: '#e67e22', fontWeight: 'bold' }}>
+                                        公式サイトで最新価格を確認 
+                                    </span>
+                                )}
                             </div>
                         </div>
-                        <a href={finalUrl} target="_blank" rel="nofollow noopener noreferrer" className={styles.mainCtaButton}>
+
+                        {/* 価格がないときはボタンをオレンジ(#f39c12)に強調 */}
+                        <a 
+                            href={finalUrl} 
+                            target="_blank" 
+                            rel="nofollow noopener noreferrer" 
+                            className={styles.mainCtaButton}
+                            style={!isPriceAvailable ? { background: 'linear-gradient(135deg, #f39c12, #e67e22)', boxShadow: '0 4px 15px rgba(230, 126, 34, 0.4)' } : {}}
+                        >
                             {product.maker}公式サイトで詳細・構成を見る
                             <span className={styles.ctaSub}>※最短翌日お届け・分割手数料無料対象</span>
                         </a>
                     </div>
                 </div>
 
-                {/* 2. 【新設】クイックハイライト（3つのポイント） */}
+                {/* 2. クイックハイライト（3つのポイント） */}
                 {summary && (
                     <section className={styles.highlightSection}>
                         <div className={styles.sectionInner}>
@@ -156,12 +178,23 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             <h3>後悔しない、最高の一台を。</h3>
                             <p className={styles.finalProductName}>{product.name}</p>
                             <div className={styles.finalPrice}>
-                                <span className={styles.finalPriceLabel}>価格</span>
-                                ¥{product.price.toLocaleString()}〜
+                                <span className={styles.finalPriceLabel}>
+                                    {isPriceAvailable ? "価格" : "最新ステータス"}
+                                </span>
+                                {isPriceAvailable 
+                                    ? `¥${product.price.toLocaleString()}〜` 
+                                    : "公式サイトにて公開中"
+                                }
                             </div>
                         </div>
                         <div className={styles.finalCtaAction}>
-                            <a href={finalUrl} target="_blank" rel="nofollow noopener noreferrer" className={styles.premiumButton}>
+                            <a 
+                                href={finalUrl} 
+                                target="_blank" 
+                                rel="nofollow noopener noreferrer" 
+                                className={styles.premiumButton}
+                                style={!isPriceAvailable ? { background: '#e67e22', borderColor: '#d35400' } : {}}
+                            >
                                 公式サイトで最新の在庫を確認
                             </a>
                             <p className={styles.ctaNote}>※カスタマイズ・周辺機器の同時購入もこちらから</p>
@@ -184,7 +217,12 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                                     </div>
                                     <div className={styles.relatedInfo}>
                                         <p className={styles.relatedName}>{item.name}</p>
-                                        <p className={styles.relatedPrice}>¥{item.price.toLocaleString()}</p>
+                                        <p className={styles.relatedPrice}>
+                                            {item.price > 0 
+                                                ? `¥${item.price.toLocaleString()}` 
+                                                : "価格は公式サイトへ"
+                                            }
+                                        </p>
                                     </div>
                                 </Link>
                             ))}
