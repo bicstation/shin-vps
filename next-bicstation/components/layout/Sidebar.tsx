@@ -40,7 +40,7 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
   useEffect(() => {
     async function fetchSpecStats() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/pc-sidebar-stats/`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083'}/api/pc-sidebar-stats/`);
         if (!res.ok) throw new Error('Network response was not ok');
         const data = await res.json();
         setSpecStats(data);
