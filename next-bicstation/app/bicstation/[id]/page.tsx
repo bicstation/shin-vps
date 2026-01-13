@@ -49,6 +49,9 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
         ? relatedProduct.affiliate_url 
         : relatedProduct?.url || '#';
 
+    // 価格表示の判定ロジック
+    const hasValidPrice = relatedProduct && relatedProduct.price && Number(relatedProduct.price) > 0;
+
     return (
         <article className={styles.article} style={{ backgroundColor: COLORS.BACKGROUND }}>
             
@@ -73,7 +76,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
             </div>
             
             <div className={styles.singleColumnContainer}>
-                {/* 2. 記事冒頭の目次セクション (サイドバーから移動) */}
+                {/* 2. 記事冒頭の目次セクション */}
                 {toc.length > 0 && (
                     <section className={styles.inlineToc}>
                         <div className={styles.tocHeader}>
@@ -106,7 +109,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                         dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
                     />
 
-                    {/* 3. 記事末尾の商品紹介カード */}
+                    {/* 3. 記事末尾の商品紹介カード (0円表示対策済み) */}
                     {relatedProduct && (
                         <section className={styles.relatedProductCard}>
                             <div className={styles.cardTag}>RECOMMENDED ITEM</div>
@@ -115,11 +118,20 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                     <div className={styles.cardImage}>
                                         <img src={relatedProduct.image_url || '/no-image.png'} alt={relatedProduct.name} />
                                     </div>
-                                    <div className={styles.cardPriceBox}>
-                                        <span className={styles.cardPriceLabel}>販売価格</span>
-                                        <span className={styles.cardPrice}>¥{relatedProduct.price.toLocaleString()}</span>
-                                        <span className={styles.taxIn}>(税込)</span>
-                                    </div>
+                                    
+                                    {/* 価格が有効な場合のみ表示 */}
+                                    {hasValidPrice ? (
+                                        <div className={styles.cardPriceBox}>
+                                            <span className={styles.cardPriceLabel}>販売価格</span>
+                                            <span className={styles.cardPrice}>¥{Number(relatedProduct.price).toLocaleString()}</span>
+                                            <span className={styles.taxIn}>(税込)</span>
+                                        </div>
+                                    ) : (
+                                        <div className={styles.cardPriceBox}>
+                                            <span className={styles.cardPriceLabel} style={{ marginBottom: '5px' }}>価格・在庫状況</span>
+                                            <span className={styles.taxIn} style={{ fontSize: '0.85rem' }}>公式サイトにてご確認ください</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className={styles.cardRight}>
