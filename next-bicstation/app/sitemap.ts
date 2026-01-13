@@ -1,5 +1,10 @@
 import { MetadataRoute } from 'next';
 
+/**
+ * 💡 キャッシュの完全無効化設定
+ * force-dynamic: 常に動的レンダリングを強制
+ * revalidate = 0: 1秒たりともキャッシュせず、リクエストごとにAPIを叩く
+ */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -35,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 2. Django商品データ (PC製品)
   try {
     const productsRes = await fetch(`${DJANGO_INTERNAL_API}?limit=500`, { 
-      cache: 'no-store' 
+      cache: 'no-store' // Next.jsのData Cacheを使用せず、毎回Djangoから取得
     });
 
     if (productsRes.ok) {
@@ -60,7 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const postsRes = await fetch(`${WP_INTERNAL_API}?per_page=100`, { 
       headers: { 'Host': 'blog.tiper.live' }, 
-      cache: 'no-store' 
+      cache: 'no-store' // WordPressからも最新情報を取得
     });
 
     if (postsRes.ok) {
@@ -70,9 +75,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       postRoutes = posts.map((post: any) => ({
         /**
          * ブログ記事のURL構造
-         * ローカルの場合は baseUrl (/bicstation) の外にある /blog を参照する必要があるか、
-         * 同一ディレクトリ内にあるかで変わりますが、
-         * bicstation.com直下 (/slug) で表示させている現在の仕様を維持します。
+         * 本番環境では bicstation.com 直下 (/slug) 形式
+         * ローカル環境では baseUrl (/bicstation) に基づき生成
          */
         url: `${baseUrl}/${post.slug}`, 
         lastModified: new Date(post.modified || post.date),
