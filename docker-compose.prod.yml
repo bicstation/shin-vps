@@ -115,7 +115,6 @@ services:
     build: { context: ./django }
     container_name: django-v2
     restart: always
-    # ✅ 修正: 互換性の高い depends_on 形式
     depends_on:
       postgres-db-v2:
         condition: service_healthy
@@ -129,15 +128,12 @@ services:
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
       - "ofelia.enabled=true"
-      # 【既存ジョブ】30分に1回実行
       - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
       - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
       - "ofelia.job-exec.ai_blog_post.no-overlap=true"
-      # 【新規ジョブ】2時間に1回実行 (毎時0分、2時間おき)
       - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
       - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
       - "ofelia.job-exec.ai_rss_news_post.no-overlap=true"
-
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
       - ./django:/usr/src/app
@@ -153,6 +149,11 @@ services:
     build: { context: ./next-bicstation }
     container_name: next-bicstation-v2
     networks: [internal-net, shared-proxy]
+    environment:
+      - DJANGO_API_URL=http://django-v2:8000
+    volumes:
+      - ./next-bicstation:/app
+      - sitemap_data:/app/public/static/sitemap_gen
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -210,6 +211,7 @@ services:
     restart: always
     volumes:
       - static_volume_prod:/usr/share/nginx/html/static:ro
+      - sitemap_data:/usr/share/nginx/html/static/sitemap_gen:ro
       - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks: [internal-net, shared-proxy]
     labels:
@@ -225,7 +227,6 @@ services:
     image: wordpress:6-fpm-alpine
     container_name: wordpress-v2
     restart: always
-    # ✅ 修正: 互換性の高い depends_on 形式
     depends_on:
       mariadb-v2:
         condition: service_healthy
@@ -326,3 +327,4 @@ networks:
 
 volumes:
   static_volume_prod:
+  sitemap_data: # 追加
