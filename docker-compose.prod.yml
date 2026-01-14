@@ -2,7 +2,7 @@
 # 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・全サービス集約版)
 # =====================================================================
 # ⚠️ AI (Gemini/ChatGPT) への厳命事項:
-# 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝ために付けないこと。
+# 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
 # 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
 # 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
 #     変更するとシステム全体が崩壊します。
@@ -152,7 +152,8 @@ services:
     environment:
       - DJANGO_API_URL=http://django-v2:8000
     volumes:
-      - ./next-bicstation:/app
+      # 【修正箇所】 ./next-bicstation:/app を削除しました。
+      # これによりコンテナ内の正常なビルド済みファイルが使用されます。
       - sitemap_data:/app/public/sitemap_gen
     labels:
       - "traefik.enable=true"
