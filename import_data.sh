@@ -128,9 +128,10 @@ case $CHOICE in
         case $SUB_CHOICE in
             1) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
             2)
-                run_django python manage.py linkshare_bc_api_parser --mid 35909 --save-db
-                run_django python manage.py sync_products_from_raw --maker HP
-                ;;
+                # run_django python manage.py linkshare_bc_api_parser --mid 35909 --save-db
+                # run_django python manage.py sync_products_from_raw --maker HP
+                # run_django python manage.py sync_api_to_json --maker HP
+                run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_hp.py ;;
             3) run_django python manage.py import_dell_ftp ;;
             4) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_acer.py ;;
             5) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
