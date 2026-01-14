@@ -4,7 +4,7 @@ import path from 'path';
 async function generate() {
   const baseUrl = 'https://bicstation.com';
   const outputPath = path.join(process.cwd(), 'public', 'sitemap_gen', 'sitemap.xml');
-  const tsvPath = '/usr/src/app/master_data/attributes.tsv'; // Djangoから共有されたマスタパス
+  const tsvPath = '/usr/src/app/master_data/attributes.tsv'; // Djangoからマウントされたパス
   const allUrls = [];
   const lastMod = new Date().toISOString();
 
@@ -31,7 +31,7 @@ async function generate() {
       });
       console.log(`✅ TSVよりスペック属性ページを抽出しました。`);
     } else {
-      console.error(`⚠️ TSVファイルが見つかりません: ${tsvPath}`);
+      console.warn(`⚠️ TSVファイルが見つかりません: ${tsvPath}`);
     }
   } catch (e) {
     console.error("❌ TSV解析エラー:", e.message);
@@ -96,20 +96,23 @@ async function generate() {
   }
 
   // --- 6. XML生成と書き出し ---
+  // 重複したURLを削除して一意にする
+  const uniqueUrls = [...new Set(allUrls)];
+
   const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allUrls.map(url => `  <url><loc>${url}</loc><lastmod>${lastMod}</lastmod></url>`).join('\n')}
+${uniqueUrls.map(url => `  <url><loc>${url}</loc><lastmod>${lastMod}</lastmod></url>`).join('\n')}
 </urlset>`;
 
   try {
-    // ディレクトリがなければ作成
-    if (!fs.existsSync(path.dirname(outputPath))) {
-      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    const dir = path.dirname(outputPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
     fs.writeFileSync(outputPath, xmlContent);
-    console.log(`✨ 成功！ 合計 ${allUrls.length} 件のURLを含むサイトマップを更新しました。`);
+    console.log(`✨ 成功！ 合計 ${uniqueUrls.length} 件のURLを含むサイトマップを更新しました。`);
   } catch (e) {
-    console.error("❌ サイトマップ書き込み失敗:", e.message);
+    console.error("❌ サイトマップ書き出し失敗:", e.message);
   }
 }
 
