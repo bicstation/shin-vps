@@ -2,7 +2,7 @@
 # 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・全サービス集約版)
 # =====================================================================
 # ⚠️ AI (Gemini/ChatGPT) への厳命事項:
-# 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
+# 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝ために付けないこと。
 # 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
 # 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
 #     変更するとシステム全体が崩壊します。
@@ -153,7 +153,7 @@ services:
       - DJANGO_API_URL=http://django-v2:8000
     volumes:
       - ./next-bicstation:/app
-      - sitemap_data:/app/public/static/sitemap_gen
+      - sitemap_data:/app/public/sitemap_gen
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -211,7 +211,7 @@ services:
     restart: always
     volumes:
       - static_volume_prod:/usr/share/nginx/html/static:ro
-      - sitemap_data:/usr/share/nginx/html/static/sitemap_gen:ro
+      - sitemap_data:/usr/share/nginx/html/sitemap_gen:ro
       - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks: [internal-net, shared-proxy]
     labels:
@@ -327,4 +327,4 @@ networks:
 
 volumes:
   static_volume_prod:
-  sitemap_data: # 追加
+  sitemap_data:
