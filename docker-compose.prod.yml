@@ -152,8 +152,7 @@ services:
     environment:
       - DJANGO_API_URL=http://django-v2:8000
     volumes:
-      # 【修正箇所】 ./next-bicstation:/app を削除しました。
-      # これによりコンテナ内の正常なビルド済みファイルが使用されます。
+      # Next.jsはビルド済みコンテナを使用するためソース全マウントは解除
       - sitemap_data:/app/public/sitemap_gen
     labels:
       - "traefik.enable=true"
@@ -218,7 +217,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.static-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && PathPrefix(`/static`)"
+      # 【修正箇所】 PathPrefix に `/sitemap_gen` を追加してルーティングを確保
+      - "traefik.http.routers.static-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && (PathPrefix(`/static`) || PathPrefix(`/sitemap_gen`))"
       - "traefik.http.routers.static-router.entrypoints=websecure"
       - "traefik.http.routers.static-router.priority=2500"
       - "traefik.http.routers.static-router.tls.certresolver=le"
