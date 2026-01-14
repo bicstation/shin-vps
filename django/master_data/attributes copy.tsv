@@ -1,0 +1,21 @@
+attr_type	name	slug	search_keywords	order
+cpu	Ryzen AI 300	ryzen-ai-300	Ryzen AI PRO 300,Ryzen AI 9,Strix Point	10
+cpu	Core Ultra	intel-core-ultra	Core™ Ultra,Core Ultra,Meteor Lake,Lunar Lake,インテル® Core™ Ultra	11
+cpu	Core i7	intel-core-i7	Core i7,Core™ i7,i7-13,i7-14	12
+gpu	GeForce RTX 50	rtx-50-series	RTX 50,RTX 5090,RTX 5080,RTX 5070	50
+gpu	GeForce RTX 40	rtx-40-series	RTX 40,RTX 4060,RTX 4070,RTX 4050	51
+npu	AIプロセッサ(NPU)	npu-all	Ryzen™ AI,Ryzen AI,AI Boost,統合AIエンジン,NPU搭載	100
+os	Windows 11 Pro	win-11-pro	Windows 11 Pro,Win11 Pro,11 Pro 64bit	300
+storage	SSD 512GB	ssd-512gb	512GB SSD,512 GB SSD,512GB（PCIe）	400
+mem	メモリ 16GB	mem-16gb	16GB,16 GB,8GBx2,16GB（LPDDR5）	210
+mem	メモリ 32GB	mem-32gb	32GB,32 GB,16GBx2,32GB（LPDDR5）	211
+disp	高リフレッシュレート(144Hz+)	high-refresh-rate	144Hz,165Hz,240Hz,360Hz	500
+disp	高画質(OLED/4K)	high-res-disp	OLED,4K,3840x2160,有機EL	501
+spec	ゲーミングモデル	gaming-pc	ゲーミング,Legion,Nitro,RTX 40,RTX 50	600
+disp	超高速(240Hz-360Hz)	extreme-refresh	240Hz,280Hz,320Hz,360Hz	505
+disp	WQHD解像度	res-wqhd	WQHD,2560×1440,2560x1440	510
+disp	4K解像度	res-4k	4K,3840×2160,3840x2160	511
+disp	湾曲パネル	curved-panel	湾曲,1500R,カーブ	520
+disp	IPSパネル	panel-ips	IPS方式,IPSパネル,IPS、	530
+disp	裸眼立体視	spatial-labs	SpatialLabs,裸眼立体視	550
+spec	モバイルモニター	portable-monitor	モバイルモニター,モバイルディスプレイ	610
