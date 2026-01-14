@@ -45,7 +45,7 @@ run_next() {
 update_sitemap() {
     echo -e "\n${COLOR}🌐 サイトマップを更新中...${RESET}"
     
-    # ホスト側のスクリプトパス（manage.shと同じ階層のnext-bicstationディレクトリ内を想定）
+    # ホスト側のスクリプトパス
     MJS_SRC="$SCRIPT_DIR/next-bicstation/generate-sitemap.mjs"
     
     # 1. スクリプトファイルの存在確認と転送
@@ -59,7 +59,7 @@ update_sitemap() {
         return 1
     fi
 
-    # 2. ディレクトリ権限修正（書き込み許可）
+    # 2. ディレクトリ権限修正
     docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec -u root "$NEXT_CON" chmod -R 777 /app/public/sitemap_gen
     
     # 3. 実行
@@ -121,8 +121,9 @@ case $CHOICE in
         echo "8) STORM"
         echo "9) FRONTIER"
         echo "10) Sycom"
-        echo -e "11) ${COLOR}MSI (Import from Ark/VC)${RESET}"
-        echo "12) 戻る"
+        echo "11) MSI (Import from Ark/VC)"
+        echo -e "12) ${COLOR}Mouse Computer (High-Precision) 🐭${RESET}"
+        echo "13) 戻る"
         read -p ">> " SUB_CHOICE
         case $SUB_CHOICE in
             1) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
@@ -139,7 +140,8 @@ case $CHOICE in
             9) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py ;;
             10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
             11) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py ;;
-            12) : ;;
+            12) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mouse.py ;;
+            13) : ;;
             *) exit 0 ;;
         esac
         echo -e "\n${COLOR}💡 ヒント: データの更新後は 14番 で属性紐付け、15番 でサイトマップ更新を推奨します。${RESET}"
