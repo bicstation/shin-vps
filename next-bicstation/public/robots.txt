@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bicstation.com/sitemap_gen/sitemap.xml

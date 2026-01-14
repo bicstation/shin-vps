@@ -6,12 +6,6 @@
 # 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
 # 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
 #     変更するとシステム全体が崩壊します。
-#
-# ⚠️ 人間 (運用者) への保守上の注意:
-# 1. WordPressの接続先は必ず nginx-wp-v2 -> wordpress-v2 (FPM) です。
-# 2. SSL証明書は Traefik が Let's Encrypt で自動取得します。
-# 3. パスベースのツール (Dozzle/phpMyAdmin) は Priority 設定が命です。
-# 4. Ofelia による定期投稿ジョブは django-v2 サービスのラベルで管理しています。
 # =====================================================================
 
 services:
@@ -152,8 +146,9 @@ services:
     environment:
       - DJANGO_API_URL=http://django-v2:8000
     volumes:
-      # Next.jsはビルド済みコンテナを使用するためソース全マウントは解除
       - sitemap_data:/app/public/sitemap_gen
+      # 【重要】TSV読み込みのためDjangoソースをマウント(読み取り専用)
+      - ./django:/usr/src/app:ro
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -162,6 +157,11 @@ services:
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
       - "traefik.http.routers.bicstation-router.priority=100"
       - "traefik.http.services.bicstation-svc.loadbalancer.server.port=3000"
+      # 【新設】サイトマップ自動更新スケジュール (毎日午前4時)
+      - "ofelia.enabled=true"
+      - "ofelia.job-exec.update_sitemap.schedule=0 0 4 * * *"
+      - "ofelia.job-exec.update_sitemap.command=node /app/generate-sitemap.mjs"
+      - "ofelia.job-exec.update_sitemap.no-overlap=true"
 
   next-tiper-v2:
     build: { context: ./next-tiper }
@@ -217,7 +217,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # 【修正箇所】 PathPrefix に `/sitemap_gen` を追加してルーティングを確保
       - "traefik.http.routers.static-router.rule=Host(`tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`, `blog.tiper.live`) && (PathPrefix(`/static`) || PathPrefix(`/sitemap_gen`))"
       - "traefik.http.routers.static-router.entrypoints=websecure"
       - "traefik.http.routers.static-router.priority=2500"
