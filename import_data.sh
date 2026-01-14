@@ -44,9 +44,25 @@ run_next() {
 # --- サイトマップ更新処理 ---
 update_sitemap() {
     echo -e "\n${COLOR}🌐 サイトマップを更新中...${RESET}"
-    # 権限修正
+    
+    # ホスト側のスクリプトパス（manage.shと同じ階層のnext-bicstationディレクトリ内を想定）
+    MJS_SRC="$SCRIPT_DIR/next-bicstation/generate-sitemap.mjs"
+    
+    # 1. スクリプトファイルの存在確認と転送
+    if [ -f "$MJS_SRC" ]; then
+        echo "🔄 スクリプトをコンテナに同期中..."
+        docker cp "$MJS_SRC" "$NEXT_CON":/app/generate-sitemap.mjs
+        echo "✅ 同期完了。"
+    else
+        echo -e "\e[31m[ERROR] $MJS_SRC が見つかりません。\e[0m"
+        echo "ファイルの場所を確認してください。"
+        return 1
+    fi
+
+    # 2. ディレクトリ権限修正（書き込み許可）
     docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec -u root "$NEXT_CON" chmod -R 777 /app/public/sitemap_gen
-    # スクリプト実行
+    
+    # 3. 実行
     run_next node /app/generate-sitemap.mjs
 }
 
