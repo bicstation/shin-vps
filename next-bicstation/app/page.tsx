@@ -13,16 +13,28 @@ import { fetchPostList, fetchPCProducts, fetchMakers } from '@/lib/api';
 import styles from './MainPage.module.css';
 
 /**
- * HTMLエンティティをデコードするユーティリティ
+ * 💡 SEOメタデータの動的生成
+ * layout.tsx で設定した template (%s | BICSTATION...) に基づき生成されます。
+ * トップページでは、より具体的なキーワードを盛り込んでクリック率を高めます。
  */
-const decodeHtml = (html: string) => {
-    if (!html) return '';
-    const map: { [key: string]: string } = { 
-        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
+export async function generateMetadata({ searchParams }: PageProps) {
+    const sParams = await searchParams;
+    const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
+    
+    // 絞り込みがない（＝純粋なトップページ）場合は、サイトのブランドを強調
+    if (!attribute) {
+        return {
+            title: "BICSTATION - 最安PC・スペック比較ポータル",
+            description: "Lenovo, Dell, HP, Mouseなど主要メーカーのノートPC・デスクトップPCをリアルタイムに比較。最新の価格、在庫状況、詳細スペックを網羅したPC専門ポータルサイトです。",
+        };
+    }
+
+    // 絞り込みがある場合（例：DELL 搭載製品）
+    return {
+        title: `${attribute.toUpperCase()} 搭載製品`,
+        description: `${attribute.toUpperCase()} の最新PCスペック比較と価格情報をリアルタイムで更新。メーカー直販モデルから最適な1台を探せます。`,
     };
-    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
-        .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
-};
+}
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -31,14 +43,12 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
     const sParams = await searchParams;
     
-    // 💡 クエリパラメータの抽出（offset と attribute）
     const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 10;
 
-    // 💡 fetchPCProducts に attribute を渡して絞り込みを有効化
     const [wpData, pcData, makersData] = await Promise.all([
         fetchPostList(5),
         fetchPCProducts('', currentOffset, limit, attribute || ''), 
@@ -47,10 +57,26 @@ export default async function Page({ searchParams }: PageProps) {
 
     const posts = wpData.results || [];
 
-    // 表示用タイトルの動的決定
+    // 表示用タイトルの動的決定（ページ内見出し）
     const listTitle = attribute 
         ? `${attribute.toUpperCase()} 搭載製品一覧` 
         : "製品ラインナップ";
+
+    /**
+     * 💡 重要：decodeHtml 関数は外部JS (common-utils.js) に移動したため削除しました。
+     * サーバーサイド(このPageコンポーネント)で最低限必要なエスケープ解除を行うための
+     * 簡易的なユーティリティです。
+     */
+    const safeDecode = (str: string) => {
+        if (!str) return '';
+        return str
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'")
+            .replace(/&nbsp;/g, ' ');
+    };
 
     return (
         <div className={styles.wrapper}>
@@ -60,14 +86,14 @@ export default async function Page({ searchParams }: PageProps) {
                     makers={makersData} 
                     recentPosts={posts.map((p: any) => ({
                         id: p.id,
-                        title: decodeHtml(p.title.rendered),
+                        title: safeDecode(p.title.rendered),
                         slug: p.slug
                     }))}
                 />
             </aside>
 
             <main className={styles.main}>
-                {/* 🚩 絞り込み(attribute)がない時かつ1ページ目の時だけお知らせを表示 */}
+                {/* 🚩 絞り込みがない時かつ1ページ目の時だけお知らせを表示 */}
                 {!attribute && currentOffset === 0 && (
                     <section className={styles.newsSection}>
                         <h2 className={styles.sectionTitle}>
@@ -89,7 +115,7 @@ export default async function Page({ searchParams }: PageProps) {
                                             {new Date(post.date).toLocaleDateString('ja-JP')}
                                         </span>
                                         <span className={styles.newsTitle}>
-                                            {decodeHtml(post.title.rendered)}
+                                            {safeDecode(post.title.rendered)}
                                         </span>
                                     </Link>
                                 ))

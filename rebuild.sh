@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS 高機能再構築スクリプト (安全・完全版 + ステータス確認)
+# 🚀 SHIN-VPS 高機能再構築スクリプト (安全・完全版 + サービス一括指定対応)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
@@ -22,7 +22,7 @@ TARGET=""
 NO_CACHE=""
 CLEAN=false
 CLEAN_ALL=false
-SERVICES=""
+RAW_SERVICES=""
 
 # ---------------------------------------------------------
 # 🚨 3. 引数の解析 & ヘルプ表示
@@ -31,26 +31,29 @@ show_help() {
     echo "================================================================"
     echo "🛠  SHIN-VPS REBUILD SCRIPT HELP"
     echo "================================================================"
-    echo "Usage: ./rebuild.sh [TARGET] [SERVICE...] [OPTIONS]"
+    echo "Usage: ./rebuild.sh [TARGET] [SERVICE_KEYWORD...] [OPTIONS]"
     echo ""
     echo "TARGET (自動判定されます):"
-    echo "  home          家環境 (Local)"
-    echo "  work          仕事環境 (WSL/mnt/e/)"
-    echo "  prod          本番環境 (VPS)"
+    echo "  home           家環境 (Local)"
+    echo "  work           仕事環境 (WSL/mnt/e/)"
+    echo "  prod           本番環境 (VPS)"
+    echo ""
+    echo "SERVICE_KEYWORDS (ショートカット対応):"
+    echo "  bicstation   -> next-bicstation-v2"
+    echo "  tiper        -> next-tiper-v2"
+    echo "  saving       -> next-bic-saving-v2"
+    echo "  avflash      -> next-avflash-v2"
+    echo "  (その他、docker-compose.yml内のサービス名を直接指定可能)"
     echo ""
     echo "OPTIONS:"
-    echo "  --clean       コンテナとイメージを削除 (ボリュームは保持: DBデータは安全)"
-    echo "  --clean-all   ボリュームを含む全てを強制削除 (DBデータも消えます：危険)"
-    echo "  --no-cache    キャッシュを使わずにビルド"
-    echo "  -h, --help    このヘルプを表示"
-    echo ""
-    echo "FEATURES:"
-    echo "  - 実行後に自動的に 'docker ps' で稼働状況を表示します"
-    echo "  - ビルド時に '--pull' を行い、常に最新のベースイメージを使用します"
+    echo "  --clean        コンテナとイメージを削除 (ボリュームは保持)"
+    echo "  --clean-all    ボリュームを含む全てを強制削除 (危険)"
+    echo "  --no-cache     キャッシュを使わずにビルド"
+    echo "  -h, --help     このヘルプを表示"
     echo ""
     echo "EXAMPLES:"
-    echo "  ./rebuild.sh prod frontend --no-cache  # 本番のfrontendを最新状態で更新"
-    echo "  ./rebuild.sh --clean                   # データを守りつつリフレッシュ"
+    echo "  ./rebuild.sh bicstation tiper         # Next2つを高速再構築"
+    echo "  ./rebuild.sh prod saving --no-cache   # 本番のsavingをクリーンビルド"
     echo "================================================================"
 }
 
@@ -68,9 +71,23 @@ for arg in "$@"; do
             show_help
             exit 0 
             ;;
-        *) SERVICES="$SERVICES $arg" ;;
+        *) RAW_SERVICES="$RAW_SERVICES $arg" ;;
     esac
 done
+
+# 🚀 サービス名のエイリアス変換ロジック
+SERVICES=""
+for s in $RAW_SERVICES; do
+    case $s in
+        "bicstation") SERVICES="$SERVICES next-bicstation-v2" ;;
+        "tiper")       SERVICES="$SERVICES next-tiper-v2" ;;
+        "saving")      SERVICES="$SERVICES next-bic-saving-v2" ;;
+        "avflash")     SERVICES="$SERVICES next-avflash-v2" ;;
+        *)             SERVICES="$SERVICES $s" ;;
+    esac
+done
+# 重複を削除
+SERVICES=$(echo "$SERVICES" | tr ' ' '\n' | sort -u | tr '\n' ' ')
 
 # ---------------------------------------------------------
 # 4. ターゲット自動決定
@@ -144,6 +161,7 @@ elif [ "$CLEAN" = true ]; then
     docker image prune -f
 else
     echo "🚀 [1/4] コンテナを停止中..."
+    # 指定されたサービスのみを停止
     docker compose -f "$COMPOSE_FILE" $P_OPT stop $SERVICES
 fi
 
@@ -164,6 +182,7 @@ docker compose -f "$COMPOSE_FILE" $P_OPT build --pull $FINAL_NO_CACHE $SERVICES
 
 # ステップ4: 起動
 echo "✨ [4/4] コンテナ起動..."
+# --buildを付けているので、個別指定時はそのサービスだけが最短で起動します
 docker compose -f "$COMPOSE_FILE" $P_OPT up -d --build --remove-orphans $SERVICES
 
 # =========================================================
@@ -174,9 +193,10 @@ echo "---------------------------------------"
 echo "🎉 再構築が完了しました！"
 echo "📊 現在のコンテナ稼働状況:"
 echo "---------------------------------------"
-# プロジェクトに関連するコンテナのみを表示
 docker compose -f "$COMPOSE_FILE" $P_OPT ps ${SERVICES}
 
 echo ""
 echo "🚀 全システム稼働状況 (docker ps):"
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "Name|$PROJECT_NAME|$(echo $SERVICES | sed 's/ /|/g')"
+# サービス名からプレフィックスを除去してgrepしやすく調整
+SERVICE_PATTERN=$(echo $SERVICES | sed 's/ /|/g')
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "Name|$PROJECT_NAME|$SERVICE_PATTERN"

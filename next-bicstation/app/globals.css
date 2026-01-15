@@ -1,1 +1,69 @@
 @import "tailwindcss";
+/* --- レイアウトとモバイル最適化の設定 --- */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  -webkit-text-size-adjust: 100%; /* iOSの勝手なフォントサイズ変更を防止 */
+}
+
+main {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* モバイル環境でのタップ時の青い枠線を消す */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* --- ブログ記事用の共通スタイル --- */
+:root {
+  --site-color: #3b82f6; /* デフォルトカラー。constantsから渡す場合はここは予備 */
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.wp-content {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.wp-content a {
+  color: var(--site-color);
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+  .wp-content {
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+  .wp-content h2 {
+    font-size: 1.4rem !important;
+    margin: 2em 0 1em !important;
+  }
+  .wp-content h3 {
+    font-size: 1.25rem !important;
+  }
+  .wp-content img {
+    margin: 1.5rem 0;
+    border-radius: 12px;
+  }
+  .wp-content table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}

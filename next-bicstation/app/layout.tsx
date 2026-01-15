@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
+// ✅ 外部JS読み込み用の Script コンポーネントをインポート
+import Script from "next/script";
+
 // ✅ パス・エイリアス (@/) を使用してインポート
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -15,9 +18,10 @@ const inter = Inter({
 
 /**
  * 💡 SEOメタデータの設定
+ * metadataBaseを設定することで、OGP画像などの相対パスが正しく解決されます。
+ * title.templateにより、各個別ページのタイトルが自動的に「製品名 | BICSTATION...」の形式になります。
  */
 export const metadata: Metadata = {
-  // metadataBase を設定することで、相対パスの画像URLなどが正しく解決されます
   metadataBase: new URL("https://bicstation.com"),
   title: {
     template: "%s | BICSTATION PCカタログ",
@@ -70,25 +74,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <head>
-        {/* スマホ特有の横揺れを根本から防ぐためのグローバルスタイル */}
-        <style dangerouslySetInnerHTML={{ __html: `
-          html, body {
-            overflow-x: hidden;
-            width: 100%;
-            -webkit-text-size-adjust: 100%; /* iOSの勝手なフォントサイズ変更を防止 */
-          }
-          main {
-            width: 100%;
-            max-width: 100vw;
-            overflow-x: hidden;
-          }
-          /* モバイル環境でのタップ時の青い枠線を消す */
-          * {
-            -webkit-tap-highlight-color: transparent;
-          }
-        `}} />
-      </head>
+      {/* 🚩 headタグは書きません。Next.jsがmetadataオブジェクトから自動生成し、適切な順序で挿入します */}
       <body 
         className={inter.className} 
         style={{ 
@@ -109,12 +95,21 @@ export default function RootLayout({
           flexGrow: 1, 
           display: "flex", 
           flexDirection: "column" 
-        }}>
+        }}
+        >
           {children}
         </main>
 
         {/* 全ページ共通フッター */}
         <Footer />
+
+        {/* ✅ 外部JSの読み込み (common-utils.js) 
+            strategy="afterInteractive" を指定することで、メインコンテンツの表示を妨げずに読み込みます。
+        */}
+        <Script 
+          src="/scripts/common-utils.js" 
+          strategy="afterInteractive" 
+        />
       </body>
     </html>
   );

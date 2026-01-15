@@ -10,13 +10,20 @@ import styles from './PostPage.module.css';
 
 // --- ユーティリティ ---
 
-const decodeHtml = (html: string) => {
-    if (!html) return '';
-    const map: { [key: string]: string } = { 
-        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
-    };
-    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
-                .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
+/**
+ * 💡 サーバーサイド用の簡易デコード
+ * 本格的なデコードはクライアント側の common-utils.js が行いますが、
+ * タイトルタグなどで必要最小限の記号を直します。
+ */
+const safeDecode = (str: string) => {
+    if (!str) return '';
+    return str
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/&nbsp;/g, ' ');
 };
 
 const formatDate = (dateString: string) => {
@@ -26,9 +33,24 @@ const formatDate = (dateString: string) => {
 };
 
 function getTableOfContents(content: string) {
-    // h2タグを抽出して目次を作成
     const h2Matches = content.match(/<h2[^>]*>(.*?)<\/h2>/g) || [];
     return h2Matches.map(tag => tag.replace(/<[^>]*>/g, ''));
+}
+
+/**
+ * 💡 動的メタデータの生成
+ * これにより「記事タイトル | BICSTATION」が検索結果に正しく表示されます。
+ */
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
+    const post = await fetchPostData(decodeURIComponent(params.id));
+    
+    if (!post) return { title: "記事が見つかりません" };
+
+    return {
+        title: safeDecode(post.title.rendered),
+        description: post.excerpt?.rendered?.replace(/<[^>]*>/g, '').slice(0, 120) || "BICSTATIONの最新PCニュース・レビュー記事です。",
+    };
 }
 
 // --- メインコンポーネント ---
@@ -49,7 +71,6 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
         ? relatedProduct.affiliate_url 
         : relatedProduct?.url || '#';
 
-    // 価格表示の判定ロジック
     const hasValidPrice = relatedProduct && relatedProduct.price && Number(relatedProduct.price) > 0;
 
     return (
@@ -59,7 +80,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
             <div className={styles.heroSection}>
                 {eyeCatchUrl ? (
                     <div className={styles.eyeCatchWrapper}>
-                        <img src={eyeCatchUrl} alt={decodeHtml(post.title.rendered)} className={styles.eyeCatchImage} />
+                        <img src={eyeCatchUrl} alt={safeDecode(post.title.rendered)} className={styles.eyeCatchImage} />
                         <div className={styles.eyeCatchOverlay}></div>
                     </div>
                 ) : (
@@ -68,7 +89,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                 <div className={styles.headerInner}>
                     <PostHeader 
                         post={post} 
-                        decodeHtml={decodeHtml} 
+                        decodeHtml={safeDecode} 
                         formatDate={formatDate} 
                         SITE_COLOR={COLORS.SITE_COLOR} 
                     />
@@ -88,7 +109,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                 <li key={index} className={styles.tocItem}>
                                     <a href={`#toc-${index}`} className={styles.tocLink}>
                                         <span className={styles.tocNumber}>{index + 1}</span>
-                                        {text}
+                                        {safeDecode(text)}
                                     </a>
                                 </li>
                             ))}
@@ -109,7 +130,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                         dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
                     />
 
-                    {/* 3. 記事末尾の商品紹介カード (0円表示対策済み) */}
+                    {/* 3. 記事末尾の商品紹介カード */}
                     {relatedProduct && (
                         <section className={styles.relatedProductCard}>
                             <div className={styles.cardTag}>RECOMMENDED ITEM</div>
@@ -119,7 +140,6 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                         <img src={relatedProduct.image_url || '/no-image.png'} alt={relatedProduct.name} />
                                     </div>
                                     
-                                    {/* 価格が有効な場合のみ表示 */}
                                     {hasValidPrice ? (
                                         <div className={styles.cardPriceBox}>
                                             <span className={styles.cardPriceLabel}>販売価格</span>
@@ -142,8 +162,8 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                         <p className={styles.specSummaryTitle}>主要スペック</p>
                                         <ul className={styles.specMiniList}>
                                             {relatedProduct.description?.split('/')
-                                                .map(s => s.trim())
-                                                .filter(s => s !== '')
+                                                .map((s: string) => s.trim())
+                                                .filter((s: string) => s !== '')
                                                 .slice(0, 4)
                                                 .map((spec: string, i: number) => (
                                                     <li key={i} className={styles.specMiniItem}>
