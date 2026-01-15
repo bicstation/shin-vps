@@ -10,11 +10,6 @@ import styles from './PostPage.module.css';
 
 // --- ユーティリティ ---
 
-/**
- * 💡 サーバーサイド用の簡易デコード
- * 本格的なデコードはクライアント側の common-utils.js が行いますが、
- * タイトルタグなどで必要最小限の記号を直します。
- */
 const safeDecode = (str: string) => {
     if (!str) return '';
     return str
@@ -32,42 +27,50 @@ const formatDate = (dateString: string) => {
     });
 };
 
-function getTableOfContents(content: string) {
-    const h2Matches = content.match(/<h2[^>]*>(.*?)<\/h2>/g) || [];
-    return h2Matches.map(tag => tag.replace(/<[^>]*>/g, ''));
+/**
+ * 💡 本文を解析して目次用データを作成し、本文のH2にIDを注入する
+ */
+function processContent(content: string) {
+    const toc: string[] = [];
+    let processedContent = content;
+
+    // 1. 本文中のh2タグを探して、IDを付与したタグに置換する
+    let index = 0;
+    processedContent = content.replace(/<h2[^>]*>(.*?)<\/h2>/g, (match, title) => {
+        const cleanTitle = title.replace(/<[^>]*>/g, ''); // タグを除去してテキストのみ抽出
+        toc.push(cleanTitle);
+        const id = `toc-${index}`;
+        index++;
+        return `<h2 id="${id}">${title}</h2>`; // ID付きのH2に書き換え
+    });
+
+    return { toc, processedContent };
 }
 
-/**
- * 💡 動的メタデータの生成
- * これにより「記事タイトル | BICSTATION」が検索結果に正しく表示されます。
- */
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const post = await fetchPostData(decodeURIComponent(params.id));
-    
     if (!post) return { title: "記事が見つかりません" };
 
     return {
-        title: safeDecode(post.title.rendered),
-        description: post.excerpt?.rendered?.replace(/<[^>]*>/g, '').slice(0, 120) || "BICSTATIONの最新PCニュース・レビュー記事です。",
+        title: `${safeDecode(post.title.rendered)} | BICSTATION`,
+        description: post.excerpt?.rendered?.replace(/<[^>]*>/g, '').slice(0, 120),
     };
 }
-
-// --- メインコンポーネント ---
 
 export default async function PostPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const post = await fetchPostData(decodeURIComponent(params.id));
-    
     if (!post) notFound();
+
+    // 💡 コンテンツの加工（目次抽出とID注入）
+    const { toc, processedContent } = processContent(post.content.rendered);
 
     const productId = post.acf?.related_product_id || null;
     const relatedProduct = productId ? await fetchProductDetail(productId) : null;
-
-    const toc = getTableOfContents(post.content.rendered);
     const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
 
-    const finalAffiliateUrl = (relatedProduct?.affiliate_url && relatedProduct.affiliate_url.trim() !== '') 
+    const finalAffiliateUrl = relatedProduct?.affiliate_url?.trim() 
         ? relatedProduct.affiliate_url 
         : relatedProduct?.url || '#';
 
@@ -76,7 +79,6 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
     return (
         <article className={styles.article} style={{ backgroundColor: COLORS.BACKGROUND }}>
             
-            {/* 1. ヒーローセクション (アイキャッチ) */}
             <div className={styles.heroSection}>
                 {eyeCatchUrl ? (
                     <div className={styles.eyeCatchWrapper}>
@@ -97,7 +99,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
             </div>
             
             <div className={styles.singleColumnContainer}>
-                {/* 2. 記事冒頭の目次セクション */}
+                {/* 💡 目次セクション */}
                 {toc.length > 0 && (
                     <section className={styles.inlineToc}>
                         <div className={styles.tocHeader}>
@@ -124,13 +126,12 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                         </span>
                     </div>
 
-                    {/* WordPressコンテンツ本体 */}
+                    {/* 💡 加工済みの(ID付き)コンテンツを表示 */}
                     <div 
                         className={`${styles.wpContent} animate-in`} 
-                        dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
+                        dangerouslySetInnerHTML={{ __html: processedContent }} 
                     />
 
-                    {/* 3. 記事末尾の商品紹介カード */}
                     {relatedProduct && (
                         <section className={styles.relatedProductCard}>
                             <div className={styles.cardTag}>RECOMMENDED ITEM</div>
@@ -139,7 +140,6 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                     <div className={styles.cardImage}>
                                         <img src={relatedProduct.image_url || '/no-image.png'} alt={relatedProduct.name} />
                                     </div>
-                                    
                                     {hasValidPrice ? (
                                         <div className={styles.cardPriceBox}>
                                             <span className={styles.cardPriceLabel}>販売価格</span>
@@ -157,7 +157,6 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                 <div className={styles.cardRight}>
                                     <span className={styles.cardMaker}>{relatedProduct.maker}</span>
                                     <h3 className={styles.cardTitle}>{relatedProduct.name}</h3>
-                                    
                                     <div className={styles.productSpecSummary}>
                                         <p className={styles.specSummaryTitle}>主要スペック</p>
                                         <ul className={styles.specMiniList}>
@@ -174,14 +173,8 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                             }
                                         </ul>
                                     </div>
-
                                     <div className={styles.cardButtons}>
-                                        <a 
-                                            href={finalAffiliateUrl} 
-                                            target="_blank" 
-                                            rel="nofollow noopener" 
-                                            className={styles.affiliateBtn}
-                                        >
+                                        <a href={finalAffiliateUrl} target="_blank" rel="nofollow noopener" className={styles.affiliateBtn}>
                                             公式サイトで詳細を確認
                                         </a>
                                         <Link href={`/product/${relatedProduct.unique_id}`} className={styles.detailBtn}>
