@@ -5,43 +5,52 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import React from 'react';
+import Link from 'next/link';
+import { Metadata } from 'next';
 import ProductCard from '@/components/product/ProductCard';
 import Sidebar from '@/components/layout/Sidebar';
 import Pagination from '@/components/common/Pagination';
 import { fetchPCProducts, fetchPostList, fetchMakers } from '@/lib/api';
+import { COLORS } from "@/constants";
 import styles from './BrandPage.module.css';
-
-/**
- * HTMLエンティティをデコードするユーティリティ
- */
-const decodeHtml = (html: string) => {
-    if (!html) return '';
-    const map: { [key: string]: string } = { 
-        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
-    };
-    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
-        .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
-};
 
 interface PageProps {
     params: Promise<{ slug: string }>;
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function BrandPage({ params, searchParams }: PageProps) {
-    // 💡 params (メーカー) と searchParams (クエリ) を await で取得
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
     const { slug } = await params;
     const sParams = await searchParams;
+    const brandName = slug.toUpperCase();
+    const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
+    const titleSuffix = attribute ? ` > ${attribute.toUpperCase()}` : "";
     
-    // 💡 ページネーション用の offset と スペック絞り込み用の attribute を取得
+    return {
+        title: `${brandName}${titleSuffix} の製品一覧`,
+        description: `${brandName}の最新PCスペック情報をリアルタイム更新。メーカー公式ストアの情報を網羅しています。`,
+    };
+}
+
+const safeDecode = (str: string) => {
+    if (!str) return '';
+    return str
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+};
+
+export default async function BrandPage({ params, searchParams }: PageProps) {
+    const { slug } = await params;
+    const sParams = await searchParams;
     const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
-    
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 20;
 
-    // 💡 並列フェッチ実行
-    // fetchPCProducts の引数に「メーカー(slug)」と「属性(attribute)」の両方を渡す
     const [wpData, pcData, makersData] = await Promise.all([
         fetchPostList(5),
         fetchPCProducts(slug, currentOffset, limit, attribute || ''), 
@@ -49,25 +58,19 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
     ]);
 
     const posts = wpData.results || [];
-
-    // 表示用メーカー名の整形
     const displayMakerName = slug.toUpperCase();
-    
-    // 現在の絞り込み条件を表示するためのテキスト（例: " > CORE-I7"）
     const activeFilterLabel = attribute ? ` > ${attribute.toUpperCase()}` : "";
+    const primaryColor = COLORS?.SITE_COLOR || '#007bff';
 
     return (
         <div className={styles.wrapper}>
             <aside className={styles.sidebarSection}>
-                {/* Sidebarに現在のslugを渡し、ハイライトを有効化。
-                  makersDataを渡してメーカー別カウントを表示。
-                */}
                 <Sidebar 
                     activeMenu={slug} 
                     makers={makersData} 
                     recentPosts={posts.map((p: any) => ({
                         id: p.id,
-                        title: decodeHtml(p.title.rendered),
+                        title: safeDecode(p.title.rendered),
                         slug: p.slug
                     }))}
                 />
@@ -77,9 +80,9 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                 <header className={styles.brandHeader}>
                     <div className={styles.brandInfo}>
                         <h1 className={styles.brandTitle}>
-                            <span className={styles.titleLine}></span>
+                            <span className={styles.titleLine} style={{ backgroundColor: primaryColor }}></span>
                             {displayMakerName} の製品一覧
-                            <span style={{ fontSize: '0.7em', color: '#007bff', marginLeft: '10px' }}>
+                            <span style={{ fontSize: '0.7em', color: primaryColor, marginLeft: '10px' }}>
                                 {activeFilterLabel}
                             </span>
                         </h1>
@@ -94,14 +97,9 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                         <div className={styles.noDataLarge}>
                             <p>{displayMakerName} の中で、指定された条件に一致する製品が見つかりませんでした。</p>
                             {attribute && (
-                                <a href={`/brand/${slug}`} className={styles.resetLink} style={{ 
-                                    display: 'inline-block', 
-                                    marginTop: '15px', 
-                                    color: '#007bff', 
-                                    textDecoration: 'underline' 
-                                }}>
+                                <Link href={`/brand/${slug}`} className={styles.resetLink}>
                                     絞り込みを解除して全件表示する
-                                </a>
+                                </Link>
                             )}
                         </div>
                     ) : (
@@ -111,13 +109,11 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
-
                             <div className={styles.paginationWrapper}>
                                 <Pagination 
                                     currentOffset={currentOffset}
                                     limit={limit}
                                     totalCount={pcData.count}
-                                    // 💡 attributeを維持したままページ遷移できるようにベースURLを構築
                                     baseUrl={`/brand/${slug}`} 
                                 />
                             </div>

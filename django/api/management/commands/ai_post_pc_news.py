@@ -125,6 +125,14 @@ class Command(BaseCommand):
                 except: continue
             if not ai_response: continue
 
+            # --- 4.5 【重要】HTML二重構造ガードロジック ---
+            if "<html" in ai_response.lower():
+                self.stdout.write(self.style.WARNING("⚠️ AIがDOCTYPE等を出力したためクレンジングします"))
+                body_match = re.search(r'<body[^>]*>([\s\S]*?)<\/body>', ai_response, re.IGNORECASE)
+                if body_match:
+                    ai_response = body_match.group(1).strip()
+                ai_response = re.sub(r'<!DOCTYPE html>|<html[^>]*>|<\/html>|<head>[\s\S]*?<\/head>|<body[^>]*>|<\/body>', '', ai_response, flags=re.IGNORECASE)
+
             # --- 5. カテゴリー・タグの洗浄 ---
             cat_name = "PCパーツ"
             cat_m = re.search(r'\[CAT\]\s*(.*?)\s*\[/CAT\]', ai_response, re.IGNORECASE)
@@ -140,7 +148,10 @@ class Command(BaseCommand):
             tag_names = list(set(initial_tags))
 
             # --- 6. 本文成形 ---
+            ai_response = re.sub(r'```(html)?', '', ai_response).replace('```', '').strip()
             lines = ai_response.strip().split('\n')
+            if not lines: continue
+            
             final_title = re.sub(r'^[#*\s・]+|[#*\s・]+$', '', lines[0])
 
             html_body = ""
@@ -159,6 +170,8 @@ class Command(BaseCommand):
             for line in main_text.split('\n'):
                 line = line.strip()
                 if not line or line == final_title: continue
+                
+                # スペック表の正規表現を強化
                 spec_match = re.match(r'^[*-]\s*(?:\*\*)?(.*?)(?:\*\*)?[:：]\s*(.*)', line)
                 if spec_match:
                     if not in_table:
@@ -167,17 +180,22 @@ class Command(BaseCommand):
                     k, v = spec_match.groups()
                     html_body += f'<tr style="border-bottom:1px solid #e2e8f0;"><td style="background:#f8fafc; padding:12px; font-weight:bold; width:35%; color:#334155;">{k.replace("**","")}</td><td style="padding:12px; color:#1e293b;">{v.replace("**","")}</td></tr>'
                     continue
+                
                 if in_table:
                     html_body += '</table>'
                     in_table = False
+                
                 if line.startswith('#'):
                     clean = line.replace('#', '').strip()
                     html_body += f'<h2 class="wp-block-heading" style="border-bottom:2px solid #333;padding-bottom:10px;margin-top:40px;font-weight:bold;">{clean}</h2>'
+                elif line.startswith('<'): # 既にHTMLタグの場合はそのまま
+                    html_body += line
                 else:
                     html_body += f'<p>{line}</p>'
+            
             if in_table: html_body += '</table>'
 
-            # --- 7. 商品マッチング（縦並び・スタイリッシュ版） ---
+            # --- 7. 商品マッチング ---
             keywords = ["ノートPC","デスクトップ", "ワークステーション","SSD", "RTX", "モニター", "キーボード", "ケーブル", "充電器", "マウス"]
             search_keyword = next((k for k in keywords if k in final_title), final_title[:10])
             related_products = PCProduct.objects.filter(is_active=True, name__icontains=search_keyword).exclude(stock_status="受注停止中").order_by('-created_at')[:3]
@@ -188,7 +206,6 @@ class Command(BaseCommand):
             if related_products:
                 html_body += '<h2 class="wp-block-heading" style="margin-top:50px; text-align:center; font-weight:bold; color:#1e293b; border-bottom:none;">🛠 関連おすすめモデル</h2>'
                 for prod in related_products:
-                    # リンク生成
                     encoded_name = urllib.parse.quote(prod.name)
                     amazon_a8_url = f"https://px.a8.net/svt/ejp?a8mat=1NWETK+A4FFE2+249K+BWGDT&a8ejpredirect=https%3A%2F%2Fwww.amazon.co.jp%2Fs%3Fk%3D{encoded_name}%26tag%3Da8-affi-321713-22"
                     official_url = prod.affiliate_url or prod.url
@@ -210,17 +227,10 @@ class Command(BaseCommand):
                                 </div>
                             </div>
                         </div>
-
                         <div style="display:flex; flex-direction:column; gap:12px;">
-                            <a href="{amazon_a8_url}" target="_blank" rel="nofollow" style="display:block; background:#FF9900; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #cc7a00; transition:all 0.2s;">
-                                <span style="margin-right:8px;">🛒</span> Amazonで最安値をチェック
-                            </a>
-                            <a href="{official_url}" target="_blank" rel="nofollow" style="display:block; background:#e41313; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #b30f0f; transition:all 0.2s;">
-                                <span style="margin-right:8px;">🏢</span> 公式サイトで購入
-                            </a>
-                            <a href="{bic_url}" style="display:block; background:#2563eb; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #1d4ed8; transition:all 0.2s;">
-                                <span style="margin-right:8px;">🔍</span> BicStationで詳細スペックを見る
-                            </a>
+                            <a href="{amazon_a8_url}" target="_blank" rel="nofollow" style="display:block; background:#FF9900; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #cc7a00; transition:all 0.2s;">🛒 Amazonで最安値をチェック</a>
+                            <a href="{official_url}" target="_blank" rel="nofollow" style="display:block; background:#e41313; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #b30f0f; transition:all 0.2s;">🏢 公式サイトで購入</a>
+                            <a href="{bic_url}" style="display:block; background:#2563eb; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #1d4ed8; transition:all 0.2s;">🔍 BicStationで詳細スペックを見る</a>
                         </div>
                         {a8_pixel}
                     </div>

@@ -1,0 +1,5 @@
+.container { min-height: 100vh; }
+.promoBanner { padding: 10px; text-align: center; font-size: 0.85em; font-weight: 500; }
+.footerSection { max-width: 1100px; margin: 60px auto; padding: 40px 20px; text-align: center; border-top: 1px solid #eee; }
+.footerText { color: #888; margin-bottom: 12px; }
+.consultLink { font-weight: bold; text-decoration: none; }

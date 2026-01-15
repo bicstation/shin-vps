@@ -1,0 +1,6 @@
+.container { min-height: 100vh; }
+.banner { padding: 12px; text-align: center; font-size: 0.9em; }
+.ctaSection { max-width: 1200px; margin: 60px auto; padding: 60px 20px; text-align: center; background: #fff; border-radius: 16px; }
+.ctaTitle { font-size: 1.4rem; margin-bottom: 16px; }
+.ctaDescription { color: #666; margin-bottom: 24px; }
+.ctaButton { display: inline-block; color: #fff; padding: 12px 32px; border-radius: 30px; text-decoration: none; font-weight: bold; }

@@ -10,13 +10,13 @@
 }
 
 .sidebarSection {
-    width: 260px; /* Sidebarの内部設定に合わせて微調整 */
+    width: 260px;
     flex-shrink: 0;
 }
 
 .main {
     flex-grow: 1;
-    min-width: 0; /* Flex内の崩れ防止 */
+    min-width: 0; 
 }
 
 /* ---------------------------------------------------------
@@ -44,7 +44,7 @@
 .titleLine {
     width: 6px;
     height: 32px;
-    background: #007bff; /* サイトカラーと統一、またはブランド毎に可変 */
+    background: #007bff; 
     border-radius: 3px;
 }
 
@@ -69,7 +69,6 @@
 
 .productGrid {
     display: grid;
-    /* 画面幅に合わせてカードの数を自動調整 */
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
 }
@@ -94,6 +93,13 @@
     font-size: 1.1rem;
 }
 
+.resetLink {
+    display: inline-block;
+    margin-top: 15px;
+    color: #007bff;
+    text-decoration: underline;
+}
+
 /* ---------------------------------------------------------
    Responsive (Mobile & Tablet)
 --------------------------------------------------------- */
@@ -106,7 +112,7 @@
 
     .sidebarSection {
         width: 100%;
-        position: static; /* スティッキー解除 */
+        position: static;
     }
 
     .brandHeader {
@@ -129,6 +135,6 @@
     }
     
     .productGrid {
-        grid-template-columns: 1fr; /* スマホは1枚表示 */
+        grid-template-columns: 1fr;
     }
 }

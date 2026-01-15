@@ -1,35 +1,40 @@
+/* eslint-disable @next/next/no-img-element */
 import React from 'react';
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { fetchProductDetail, fetchRelatedProducts } from '@/lib/api';
 import Link from 'next/link';
-import styles from './ProductDetail.module.css';
+import { fetchProductDetail, fetchRelatedProducts } from '@/lib/api';
+import { COLORS } from "@/constants";
+import styles from './ProductDetail.module.css'; // 🚩 ご提示いただいた最新CSS
+
+interface PageProps {
+    params: Promise<{ unique_id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { unique_id } = await params;
+    const product = await fetchProductDetail(unique_id);
+    if (!product) return { title: "製品が見つかりません" };
+    return { title: `${product.name} | BICSTATION` };
+}
 
 export default async function ProductDetailPage(props: { params: Promise<{ unique_id: string }> }) {
     const params = await props.params;
     const product = await fetchProductDetail(params.unique_id);
-
     if (!product) notFound();
 
-    // 関連商品の取得
     const relatedProducts = await fetchRelatedProducts(product.maker, params.unique_id);
     const finalUrl = product.affiliate_url || product.url;
-
-    // 価格チェック変数
     const isPriceAvailable = product.price > 0;
+    const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
-    /**
-     * AIコンテンツの解析（目次、要約データ、本文の分離）
-     */
     const parseContent = (html: string) => {
-        // 目次（h2）の抽出
         const h2RegExp = /<h2.*?>(.*?)<\/h2>/g;
         const tocItems = [];
         let match;
         while ((match = h2RegExp.exec(html)) !== null) {
             tocItems.push(match[1].replace(/<[^>]*>?/gm, ''));
         }
-
-        // [SUMMARY_DATA] の抽出
         const summaryRegex = /\[SUMMARY_DATA\]([\s\S]*?)\[\/SUMMARY_DATA\]/;
         const summaryMatch = html.match(summaryRegex);
         let summary = null;
@@ -42,10 +47,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                 target: data.match(/TARGET:\s*(.*)/)?.[1],
             };
         }
-
-        // タグを消去したクリーンな本文
         const cleanBody = html.replace(summaryRegex, '').trim();
-
         return { tocItems, summary, cleanBody };
     };
 
@@ -54,8 +56,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
     return (
         <div className={styles.wrapper}>
             <main className={styles.mainContainer}>
-                
-                {/* 1. ヒーローセクション（商品概要） */}
+                {/* 1. ヒーローセクション */}
                 <div className={styles.heroSection}>
                     <div className={styles.imageWrapper}>
                         <img src={product.image_url || '/no-image.png'} alt={product.name} className={styles.productImage} />
@@ -66,169 +67,91 @@ export default async function ProductDetailPage(props: { params: Promise<{ uniqu
                             <span className={styles.genreBadge}>{product.unified_genre}</span>
                         </div>
                         <h1 className={styles.productTitle}>{product.name}</h1>
-                        
                         <div className={styles.priceContainer}>
-                            <span className={styles.priceLabel}>
-                                {isPriceAvailable ? "メーカー直販特別価格" : "販売価格・在庫状況"}
-                            </span>
+                            <span className={styles.priceLabel}>{isPriceAvailable ? "メーカー直販特別価格" : "販売価格・在庫状況"}</span>
                             <div className={styles.priceValue}>
                                 {isPriceAvailable ? (
-                                    <>
-                                        ¥{product.price.toLocaleString()}<span className={styles.taxLabel}>(税込)</span>
-                                    </>
+                                    <>¥{product.price.toLocaleString()}<span className={styles.taxLabel}>(税込)</span></>
                                 ) : (
-                                    <span style={{ fontSize: '0.8em', color: '#e67e22', fontWeight: 'bold' }}>
-                                        公式サイトで最新価格を確認 
-                                    </span>
+                                    <span style={{ fontSize: '0.6em', color: '#e67e22' }}>公式サイトで確認</span>
                                 )}
                             </div>
                         </div>
-
-                        {/* 価格がないときはボタンをオレンジ(#f39c12)に強調 */}
-                        <a 
-                            href={finalUrl} 
-                            target="_blank" 
-                            rel="nofollow noopener noreferrer" 
-                            className={styles.mainCtaButton}
-                            style={!isPriceAvailable ? { background: 'linear-gradient(135deg, #f39c12, #e67e22)', boxShadow: '0 4px 15px rgba(230, 126, 34, 0.4)' } : {}}
-                        >
-                            {product.maker}公式サイトで詳細・構成を見る
+                        <a href={finalUrl} target="_blank" rel="nofollow" className={styles.mainCtaButton}
+                           style={!isPriceAvailable ? { background: 'linear-gradient(135deg, #f39c12, #e67e22)' } : {}}>
+                            {product.maker}公式サイトで詳細を見る
                             <span className={styles.ctaSub}>※最短翌日お届け・分割手数料無料対象</span>
                         </a>
                     </div>
                 </div>
 
-                {/* 2. クイックハイライト（3つのポイント） */}
+                {/* 2. クイックハイライト */}
                 {summary && (
                     <section className={styles.highlightSection}>
-                        <div className={styles.sectionInner}>
-                            <h2 className={styles.minimalTitle}>このモデルが選ばれる理由</h2>
-                            <div className={styles.highlightGrid}>
-                                <div className={styles.highlightCard}>
-                                    <span className={styles.highlightIcon}>🚀</span>
-                                    <p>{summary.p1}</p>
-                                </div>
-                                <div className={styles.highlightCard}>
-                                    <span className={styles.highlightIcon}>💎</span>
-                                    <p>{summary.p2}</p>
-                                </div>
-                                <div className={styles.highlightCard}>
-                                    <span className={styles.highlightIcon}>🔋</span>
-                                    <p>{summary.p3}</p>
-                                </div>
-                            </div>
-                            <div className={styles.targetBox}>
-                                <span className={styles.targetLabel}>Recommend</span>
-                                <p className={styles.targetText}>{summary.target}</p>
-                            </div>
+                        <h2 className={styles.minimalTitle}>このモデルが選ばれる理由</h2>
+                        <div className={styles.highlightGrid}>
+                            <div className={styles.highlightCard}><span className={styles.highlightIcon}>🚀</span><p>{summary.p1}</p></div>
+                            <div className={styles.highlightCard}><span className={styles.highlightIcon}>💎</span><p>{summary.p2}</p></div>
+                            <div className={styles.highlightCard}><span className={styles.highlightIcon}>🔋</span><p>{summary.p3}</p></div>
+                        </div>
+                        <div className={styles.targetBox}>
+                            <span className={styles.targetLabel}>Recommend</span>
+                            <p className={styles.targetText}>{summary.target}</p>
                         </div>
                     </section>
                 )}
 
-                {/* 3. エキスパート解説 & 目次 */}
+                {/* 3. エキスパート解説 */}
                 {cleanBody && (
                     <section className={styles.aiContentSection}>
                         <div className={styles.sectionHeader}>
                             <h2 className={styles.specTitle}>エキスパートによる製品解説</h2>
                             <span className={styles.aiBadge}>AI分析レポート</span>
                         </div>
-
                         {tocItems.length > 0 && (
                             <div className={styles.tocContainer}>
-                                <div className={styles.tocTitle}>
-                                    <span className={styles.tocIcon}>📋</span>目次
-                                </div>
+                                <div className={styles.tocTitle}>📋 目次</div>
                                 <ul className={styles.tocList}>
-                                    {tocItems.map((item, index) => (
-                                        <li key={index} className={styles.tocItem}>
-                                            <span className={styles.tocNumber}>{index + 1}</span> {item}
-                                        </li>
+                                    {tocItems.map((item, i) => (
+                                        <li key={i} className={styles.tocItem}><span className={styles.tocNumber}>{i + 1}</span> {item}</li>
                                     ))}
                                 </ul>
                             </div>
                         )}
-
-                        <div 
-                            className={styles.aiContentBody} 
-                            dangerouslySetInnerHTML={{ __html: cleanBody }} 
-                        />
+                        <div className={styles.aiContentBody} dangerouslySetInnerHTML={{ __html: cleanBody }} />
                     </section>
                 )}
 
-                {/* 4. スペック詳細（表形式） */}
+                {/* 4. スペック詳細 */}
                 <section className={styles.specSection}>
                     <h2 className={styles.specTitle}>構成・スペック詳細</h2>
                     <div className={styles.specGrid}>
-                        {product.description?.split('/').map((spec, i) => (
+                        {product.description?.split('/').map((spec: string, i: number) => (
                             <div key={i} className={styles.specRow}>
-                                <span className={styles.specCheck}>✓</span>
-                                <span className={styles.specText}>{spec.trim()}</span>
+                                <span className={styles.specCheck}>✓</span><span className={styles.specText}>{spec.trim()}</span>
                             </div>
                         ))}
                     </div>
                 </section>
 
-                {/* 5. 【ダメ押し】プレミアムCTAセクション */}
+                {/* 5. プレミアムCTA */}
                 <section className={styles.finalCtaSection}>
                     <div className={styles.finalCtaCard}>
-                        <div className={styles.finalCtaImage}>
-                            <img src={product.image_url || '/no-image.png'} alt={product.name} />
-                        </div>
+                        <div className={styles.finalCtaImage}><img src={product.image_url || '/no-image.png'} alt="" /></div>
                         <div className={styles.finalCtaInfo}>
                             <h3>後悔しない、最高の一台を。</h3>
                             <p className={styles.finalProductName}>{product.name}</p>
                             <div className={styles.finalPrice}>
-                                <span className={styles.finalPriceLabel}>
-                                    {isPriceAvailable ? "価格" : "最新ステータス"}
-                                </span>
-                                {isPriceAvailable 
-                                    ? `¥${product.price.toLocaleString()}〜` 
-                                    : "公式サイトにて公開中"
-                                }
+                                <span className={styles.finalPriceLabel}>{isPriceAvailable ? "価格" : "最新ステータス"}</span>
+                                {isPriceAvailable ? `¥${product.price.toLocaleString()}〜` : "公式サイトで公開中"}
                             </div>
                         </div>
                         <div className={styles.finalCtaAction}>
-                            <a 
-                                href={finalUrl} 
-                                target="_blank" 
-                                rel="nofollow noopener noreferrer" 
-                                className={styles.premiumButton}
-                                style={!isPriceAvailable ? { background: '#e67e22', borderColor: '#d35400' } : {}}
-                            >
-                                公式サイトで最新の在庫を確認
-                            </a>
-                            <p className={styles.ctaNote}>※カスタマイズ・周辺機器の同時購入もこちらから</p>
+                            <a href={finalUrl} target="_blank" rel="nofollow" className={styles.premiumButton}>公式サイトで最新の在庫を確認</a>
+                            <p className={styles.ctaNote}>※カスタマイズ・周辺機器の購入もこちらから</p>
                         </div>
                     </div>
                 </section>
-
-                {/* 6. 関連商品（回遊性向上） */}
-                {relatedProducts && relatedProducts.length > 0 && (
-                    <section className={styles.relatedSection}>
-                        <h2 className={styles.relatedTitle}>
-                            <span className={styles.relatedTitleLine}></span>
-                            こちらも注目：{product.maker} の人気モデル
-                        </h2>
-                        <div className={styles.relatedGrid}>
-                            {relatedProducts.map((item) => (
-                                <Link href={`/product/${item.unique_id}`} key={item.unique_id} className={styles.relatedCard}>
-                                    <div className={styles.relatedImage}>
-                                        <img src={item.image_url || '/no-image.png'} alt={item.name} />
-                                    </div>
-                                    <div className={styles.relatedInfo}>
-                                        <p className={styles.relatedName}>{item.name}</p>
-                                        <p className={styles.relatedPrice}>
-                                            {item.price > 0 
-                                                ? `¥${item.price.toLocaleString()}` 
-                                                : "価格は公式サイトへ"
-                                            }
-                                        </p>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    </section>
-                )}
             </main>
         </div>
     );
