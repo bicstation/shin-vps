@@ -1,0 +1,105 @@
+/* components/Header.module.css */
+
+.header {
+  background: #1a1a1a;
+  color: white;
+  padding: 0 20px;
+  height: 70px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+}
+
+.container {
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* PC用ナビゲーション */
+.desktopNav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* スマホ用トグルボタン */
+.menuToggle {
+  display: none; /* 基本は非表示 */
+  background: none;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 5px;
+}
+
+/* 📱 スマホ用展開メニュー（サイドバー要素を統合） */
+.mobileMenu {
+  display: none; /* デフォルト非表示 */
+  position: absolute;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  max-height: calc(100vh - 70px); /* 画面からはみ出さないよう調整 */
+  overflow-y: auto; /* メニュー内スクロール可能に */
+  background: #1a1a1a;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 999;
+}
+
+.mobileMenu.open {
+  display: block; /* 開いている時だけ表示 */
+}
+
+/* メニュー内のセクション分け */
+.menuSection {
+  margin-bottom: 25px;
+}
+
+.sectionTitle {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+}
+
+.mobileMenu a {
+  display: block;
+  padding: 12px 0;
+  color: #eee;
+  text-decoration: none;
+  font-size: 1rem;
+  border-bottom: 1px solid #222;
+}
+
+/* 検索窓（サイドバーからの移植） */
+.searchBox {
+  width: 100%;
+  padding: 12px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.searchBox:focus {
+  border-color: var(--site-color);
+}
+
+@media (max-width: 768px) {
+  .desktopNav { display: none !important; }
+  .menuToggle { display: block !important; }
+}
