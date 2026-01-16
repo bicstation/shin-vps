@@ -40,14 +40,18 @@ PC形状	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT,
 GPUモデル	プロ向け (NVIDIA RTX / Quadro)	gpu-professional	NVIDIA RTX, Quadro, A2000, A4000	67
 GPUモデル	Intel Graphics (内蔵)	gpu-intel-graphics	Intel UHD, Intel Iris, Intel Graphics, 内蔵グラフィックス	68
 GPUモデル	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内蔵グラフィックス	69
-disp	高リフレッシュレート(144Hz+)	high-refresh-rate	144Hz,165Hz,240Hz,360Hz	500
-disp	高画質(OLED/4K)	high-res-disp	OLED,4K,3840x2160,有機EL	501
-disp	超高速(240Hz-360Hz)	extreme-refresh	240Hz,280Hz,320Hz,360Hz	505
-disp	WQHD解像度	res-wqhd	WQHD,2560×1440,2560x1440	510
-disp	4K解像度	res-4k	4K,3840×2160,3840x2160	511
-disp	湾曲パネル	curved-panel	湾曲,1500R,カーブ	520
-disp	IPSパネル	panel-ips	IPS方式,IPSパネル,IPS、	530
-disp	裸眼立体視	spatial-labs	SpatialLabs,裸眼立体視	550
+1. 画面サイズ	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, モバイルモニター	510
+1. 画面サイズ	24-25インチ (標準)	size-standard	23.8型, 24.5型, 標準サイズ	511
+1. 画面サイズ	27インチ (大画面)	size-large	27型, 27-inch	512
+1. 画面サイズ	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上	513
+2. 解像度軸	WQHD	res-wqhd	WQHD, 2560x1440	520
+2. 解像度軸	4K	res-4k	4K, 3840x2160, UHD	521
+3. リフレッシュレート軸	高速 (144Hz-165Hz)	high-refresh	144Hz, 165Hz	530
+3. リフレッシュレート軸	超高速 (240Hz+)	extreme-refresh	240Hz, 360Hz, 500Hz	531
+4. パネル・付加価値	有機EL	panel-oled	OLED, 有機EL	540
+4. パネル・付加価値	IPSパネル	panel-ips	IPS方式, 広視野角	541
+4. パネル・付加価値	湾曲・ウルトラワイド	curved-wide	湾曲, 1500R, 21:9	542
+4. パネル・付加価値	裸眼立体視	spatial-labs	SpatialLabs, 3Dモニター	543
 mem	メモリ 16GB	mem-16gb	16GB,16 GB,8GBx2,16GB（LPDDR5）	210
 mem	メモリ 32GB	mem-32gb	32GB,32 GB,16GBx2,32GB（LPDDR5）	211
 npu	AIプロセッサ(NPU)	npu-all	Ryzen™ AI,Ryzen AI,AI Boost,統合AIエンジン,NPU搭載	100
