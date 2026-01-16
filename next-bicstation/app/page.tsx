@@ -14,13 +14,11 @@ import styles from './MainPage.module.css';
 
 /**
  * 💡 SEOメタデータの動的生成
- * 検索結果でのクリック率を高めるため、キーワードを動的に挿入します。
  */
 export async function generateMetadata({ searchParams }: PageProps) {
     const sParams = await searchParams;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     
-    // Canonical URLの設定（重複コンテンツ対策：評価の分散を防ぐ）
     const baseUrl = "https://bicstation.com";
     const canonical = attribute ? `${baseUrl}/?attribute=${attribute}` : baseUrl;
 
@@ -52,7 +50,6 @@ export default async function Page({ searchParams }: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 10;
 
-    // WordPress APIからアイキャッチ画像（_embed）を含むデータを取得
     const [wpData, pcData, makersData] = await Promise.all([
         fetchPostList(6), 
         fetchPCProducts('', currentOffset, limit, attribute || ''), 
@@ -64,9 +61,6 @@ export default async function Page({ searchParams }: PageProps) {
         ? `${attribute.toUpperCase()} 搭載製品一覧` 
         : "製品ラインナップ";
 
-    /**
-     * エンティティのデコード処理
-     */
     const safeDecode = (str: string) => {
         if (!str) return '';
         return str
@@ -74,9 +68,50 @@ export default async function Page({ searchParams }: PageProps) {
             .replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, ' ');
     };
 
+    /**
+     * 🚀 JSON-LD 構造化データの生成
+     * Google検索結果をリッチにし、専門性をアピールします。
+     */
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "name": "BICSTATION",
+                "url": "https://bicstation.com",
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://bicstation.com/?attribute={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                }
+            },
+            {
+                "@type": "Organization",
+                "name": "BICSTATION",
+                "url": "https://bicstation.com",
+                "logo": "https://bicstation.com/logo.png" // 実際のロゴURLがあれば差し替えてください
+            },
+            {
+                "@type": "ItemList",
+                "name": listTitle,
+                "itemListElement": pcData.results.map((product: any, index: number) => ({
+                    "@type": "ListItem",
+                    "position": currentOffset + index + 1,
+                    "url": `https://bicstation.com/product/${product.unique_id}`,
+                    "name": product.name
+                }))
+            }
+        ]
+    };
+
     return (
         <div className={styles.wrapper}>
-            {/* サイドバーセクション */}
+            {/* 🚩 構造化データの挿入 */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+
             <aside className={styles.sidebarSection}>
                 <Sidebar 
                     activeMenu="all" 
@@ -89,10 +124,7 @@ export default async function Page({ searchParams }: PageProps) {
                 />
             </aside>
 
-            {/* メインコンテンツエリア */}
             <main className={styles.main}>
-                
-                {/* 🚩 1. H1タグ: ページ固有の最重要キーワードを配置 */}
                 <header className={styles.pageHeader}>
                     {!attribute ? (
                         <h1 className={styles.mainTitle}>
@@ -106,8 +138,6 @@ export default async function Page({ searchParams }: PageProps) {
                     </p>
                 </header>
 
-                {/* 🚩 2. 最新記事セクション: アイキャッチ画像付きカード形式 */}
-                {/* 1ページ目かつ絞り込みなしの場合のみ表示（コンテンツの鮮度をアピール） */}
                 {!attribute && currentOffset === 0 && (
                     <section className={styles.newsSection}>
                         <h2 className={styles.sectionTitle}>
@@ -119,7 +149,6 @@ export default async function Page({ searchParams }: PageProps) {
                             ) : (
                                 posts.map((post: any) => {
                                     const imageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png';
-                                    
                                     return (
                                         <Link 
                                             href={`/bicstation/${post.slug}`} 
@@ -150,7 +179,6 @@ export default async function Page({ searchParams }: PageProps) {
                     </section>
                 )}
 
-                {/* 🚩 3. 製品グリッドセクション: レスポンシブ対応のコンテナ */}
                 <section className={styles.productSection}>
                     <h2 className={styles.productGridTitle}>
                         <span className={styles.titleIndicator}></span>
@@ -166,14 +194,12 @@ export default async function Page({ searchParams }: PageProps) {
                         </div>
                     ) : (
                         <>
-                            {/* CSS Gridを適用する親要素 */}
                             <div className={styles.productGrid}>
                                 {pcData.results.map((product: any) => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
 
-                            {/* ページネーション */}
                             <div className={styles.paginationWrapper}>
                                 <Pagination 
                                     currentOffset={currentOffset}
