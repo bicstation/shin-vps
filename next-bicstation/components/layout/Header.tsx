@@ -30,7 +30,7 @@ export default function Header() {
               background: siteColor, color: 'white', padding: '4px 8px', 
               borderRadius: '4px', fontWeight: '900', fontSize: '1.2em'
             }}>B</span>
-            <h1 style={{ margin: 0, fontSize: '1.2em', fontWeight: 'bold', letterSpacing: '1px' }}>BICSTATION</h1>
+            <div style={{ margin: 0, fontSize: '1.2em', fontWeight: 'bold', letterSpacing: '1px' }}>BICSTATION</div>
           </div>
         </Link>
 

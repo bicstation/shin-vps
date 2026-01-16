@@ -14,25 +14,28 @@ import styles from './MainPage.module.css';
 
 /**
  * 💡 SEOメタデータの動的生成
- * layout.tsx で設定した template (%s | BICSTATION...) に基づき生成されます。
- * トップページでは、より具体的なキーワードを盛り込んでクリック率を高めます。
+ * 検索結果でのクリック率を高めるため、キーワードを動的に挿入します。
  */
 export async function generateMetadata({ searchParams }: PageProps) {
     const sParams = await searchParams;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     
-    // 絞り込みがない（＝純粋なトップページ）場合は、サイトのブランドを強調
+    // Canonical URLの設定（重複コンテンツ対策：評価の分散を防ぐ）
+    const baseUrl = "https://bicstation.com";
+    const canonical = attribute ? `${baseUrl}/?attribute=${attribute}` : baseUrl;
+
     if (!attribute) {
         return {
-            title: "BICSTATION - 最安PC・スペック比較ポータル",
-            description: "Lenovo, Dell, HP, Mouseなど主要メーカーのノートPC・デスクトップPCをリアルタイムに比較。最新の価格、在庫状況、詳細スペックを網羅したPC専門ポータルサイトです。",
+            title: "BICSTATION - 最新PCスペック比較・最安価格カタログ",
+            description: "Lenovo, Dell, HP, Mouseなど主要メーカーのノートPC・デスクトップPCをリアルタイムに比較。最新のNPU搭載モデルや価格情報を網羅したPC専門ポータルです。",
+            alternates: { canonical }
         };
     }
 
-    // 絞り込みがある場合（例：DELL 搭載製品）
     return {
-        title: `${attribute.toUpperCase()} 搭載製品`,
-        description: `${attribute.toUpperCase()} の最新PCスペック比較と価格情報をリアルタイムで更新。メーカー直販モデルから最適な1台を探せます。`,
+        title: `${attribute.toUpperCase()} 搭載製品の一覧・比較`,
+        description: `${attribute.toUpperCase()} を搭載した最新PCのスペックと価格をリアルタイムで更新。メーカー直販モデルから最適な1台を探せます。`,
+        alternates: { canonical }
     };
 }
 
@@ -49,37 +52,31 @@ export default async function Page({ searchParams }: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 10;
 
+    // WordPress APIからアイキャッチ画像（_embed）を含むデータを取得
     const [wpData, pcData, makersData] = await Promise.all([
-        fetchPostList(5),
+        fetchPostList(6), 
         fetchPCProducts('', currentOffset, limit, attribute || ''), 
         fetchMakers() 
     ]);
 
     const posts = wpData.results || [];
-
-    // 表示用タイトルの動的決定（ページ内見出し）
     const listTitle = attribute 
         ? `${attribute.toUpperCase()} 搭載製品一覧` 
         : "製品ラインナップ";
 
     /**
-     * 💡 重要：decodeHtml 関数は外部JS (common-utils.js) に移動したため削除しました。
-     * サーバーサイド(このPageコンポーネント)で最低限必要なエスケープ解除を行うための
-     * 簡易的なユーティリティです。
+     * エンティティのデコード処理
      */
     const safeDecode = (str: string) => {
         if (!str) return '';
         return str
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .replace(/&#039;/g, "'")
-            .replace(/&nbsp;/g, ' ');
+            .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, ' ');
     };
 
     return (
         <div className={styles.wrapper}>
+            {/* サイドバーセクション */}
             <aside className={styles.sidebarSection}>
                 <Sidebar 
                     activeMenu="all" 
@@ -92,38 +89,68 @@ export default async function Page({ searchParams }: PageProps) {
                 />
             </aside>
 
+            {/* メインコンテンツエリア */}
             <main className={styles.main}>
-                {/* 🚩 絞り込みがない時かつ1ページ目の時だけお知らせを表示 */}
+                
+                {/* 🚩 1. H1タグ: ページ固有の最重要キーワードを配置 */}
+                <header className={styles.pageHeader}>
+                    {!attribute ? (
+                        <h1 className={styles.mainTitle}>
+                            BICSTATION <span className={styles.subTitle}>PCスペック比較・最安価格カタログ</span>
+                        </h1>
+                    ) : (
+                        <h1 className={styles.mainTitle}>{attribute.toUpperCase()} 搭載PCの比較・一覧</h1>
+                    )}
+                    <p className={styles.leadText}>
+                        主要メーカーの最新モデルをスペック別・価格別にリアルタイム集計。
+                    </p>
+                </header>
+
+                {/* 🚩 2. 最新記事セクション: アイキャッチ画像付きカード形式 */}
+                {/* 1ページ目かつ絞り込みなしの場合のみ表示（コンテンツの鮮度をアピール） */}
                 {!attribute && currentOffset === 0 && (
                     <section className={styles.newsSection}>
                         <h2 className={styles.sectionTitle}>
-                            <span className={styles.emoji}>📢</span> 最新のお知らせ
+                            <span className={styles.emoji}>🚀</span> 注目のPCトピック
                         </h2>
-                        <div className={styles.newsContainer}>
+                        <div className={styles.newsGrid}>
                             {posts.length === 0 ? (
-                                <div className={styles.noData}>
-                                    <p>現在、表示できるお知らせはありません。</p>
-                                </div>
+                                <p className={styles.noData}>記事を読み込み中...</p>
                             ) : (
-                                posts.map((post: any) => (
-                                    <Link 
-                                        href={`/bicstation/${post.slug}`} 
-                                        key={post.id} 
-                                        className={styles.newsLink}
-                                    >
-                                        <span className={styles.newsDate}>
-                                            {new Date(post.date).toLocaleDateString('ja-JP')}
-                                        </span>
-                                        <span className={styles.newsTitle}>
-                                            {safeDecode(post.title.rendered)}
-                                        </span>
-                                    </Link>
-                                ))
+                                posts.map((post: any) => {
+                                    const imageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png';
+                                    
+                                    return (
+                                        <Link 
+                                            href={`/bicstation/${post.slug}`} 
+                                            key={post.id} 
+                                            className={styles.newsCard}
+                                        >
+                                            <div className={styles.imageWrapper}>
+                                                <img 
+                                                    src={imageUrl} 
+                                                    alt={safeDecode(post.title.rendered)} 
+                                                    className={styles.eyecatch}
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                            <div className={styles.contentBody}>
+                                                <span className={styles.postDate}>
+                                                    {new Date(post.date).toLocaleDateString('ja-JP')}
+                                                </span>
+                                                <h3 className={styles.articleTitle}>
+                                                    {safeDecode(post.title.rendered)}
+                                                </h3>
+                                            </div>
+                                        </Link>
+                                    );
+                                })
                             )}
                         </div>
                     </section>
                 )}
 
+                {/* 🚩 3. 製品グリッドセクション: レスポンシブ対応のコンテナ */}
                 <section className={styles.productSection}>
                     <h2 className={styles.productGridTitle}>
                         <span className={styles.titleIndicator}></span>
@@ -134,19 +161,19 @@ export default async function Page({ searchParams }: PageProps) {
                         <div className={styles.noDataLarge}>
                             <p>該当する製品データがありません。</p>
                             {attribute && (
-                                <Link href="/" className={styles.resetLink} style={{ color: '#007bff', textDecoration: 'underline', marginTop: '10px', display: 'block' }}>
-                                    絞り込みを解除する
-                                </Link>
+                                <Link href="/" className={styles.resetLink}>絞り込みを解除する</Link>
                             )}
                         </div>
                     ) : (
                         <>
+                            {/* CSS Gridを適用する親要素 */}
                             <div className={styles.productGrid}>
                                 {pcData.results.map((product: any) => (
                                     <ProductCard key={product.id} product={product} />
                                 ))}
                             </div>
 
+                            {/* ページネーション */}
                             <div className={styles.paginationWrapper}>
                                 <Pagination 
                                     currentOffset={currentOffset}

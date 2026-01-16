@@ -1,0 +1,93 @@
+.footer {
+  background: #1a1a1a;
+  color: #bbb;
+  padding: 60px 20px;
+  /* borderTop はインラインで siteColor を適用するためここには書きません */
+}
+
+.container {
+  maxWidth: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gridTemplateColumns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+}
+
+.sectionTitle {
+  color: #fff;
+  marginBottom: 20px;
+  fontSize: 1.1em;
+}
+
+.siteTitle {
+  color: #fff;
+  marginBottom: 20px;
+  fontSize: 1.2em;
+}
+
+.description {
+  fontSize: 0.9em;
+  lineHeight: 1.6;
+  color: #888;
+}
+
+.linkList {
+  listStyle: none;
+  padding: 0;
+  fontSize: 0.95em;
+}
+
+.linkItem {
+  marginBottom: 12px;
+}
+
+.linkItem a {
+  color: inherit;
+  textDecoration: none;
+  transition: color 0.2s;
+}
+
+.linkItem a:hover {
+  color: #fff;
+}
+
+.brandTitle {
+  color: #fff;
+  marginTop: 25px;
+  marginBottom: 12px;
+  fontSize: 1.0em;
+}
+
+.brandGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  fontSize: 0.85em;
+  lineHeight: 1.8;
+}
+
+.brandLink {
+  color: #888;
+  textDecoration: none;
+}
+
+.brandSeparator {
+  color: #444;
+}
+
+.note {
+  marginTop: 20px;
+  fontSize: 0.8rem;
+  color: #666;
+  lineHeight: 1.5;
+}
+
+.bottomBar {
+  maxWidth: 1100px;
+  margin: 40px auto 0;
+  paddingTop: 20px;
+  borderTop: 1px solid #333;
+  textAlign: center;
+  fontSize: 0.85em;
+  color: #666;
+}

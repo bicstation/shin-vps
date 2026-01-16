@@ -1,66 +1,77 @@
 import React from 'react';
 import Link from 'next/link';
-// ✅ 共通カラー設定をインポート
 import { COLORS } from '@/constants';
+import styles from './Footer.module.css'; // 🚀 CSSインポート
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
+  const mainBrands = [
+    { name: 'Lenovo', slug: 'lenovo' },
+    { name: 'DELL', slug: 'dell' },
+    { name: 'HP', slug: 'hp' },
+    { name: 'Apple', slug: 'apple' },
+    { name: 'Mouse', slug: 'mouse' },
+    { name: 'ASUS', slug: 'asus' },
+    { name: 'MSI', slug: 'msi' },
+  ];
+
   return (
-    <footer style={{ 
-      background: '#1a1a1a', 
-      color: '#bbb', 
-      padding: '60px 20px', 
-      borderTop: `4px solid ${siteColor}` 
-    }}>
-      <div style={{ 
-        maxWidth: '1100px', 
-        margin: '0 auto',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', // 3列表示
-        gap: '40px'
-      }}>
+    <footer className={styles.footer} style={{ borderTop: `4px solid ${siteColor}` }}>
+      <div className={styles.container}>
         
         {/* 1列目：サイト情報 */}
         <div>
-          <h3 style={{ color: '#fff', marginBottom: '20px', fontSize: '1.2em' }}>BICSTATION</h3>
-          <p style={{ fontSize: '0.9em', lineHeight: '1.6', color: '#888' }}>
+          <h3 className={styles.siteTitle}>BICSTATION</h3>
+          <p className={styles.description}>
             最新のPCスペックと価格をリアルタイムに比較。
             メーカー直販サイトの情報を集約し、あなたに最適な1台を見つけるお手伝いをします。
           </p>
         </div>
 
-        {/* 2列目：クイックリンク */}
+        {/* 2列目：クイックリンク ＆ 主要ブランド */}
         <div>
-          <h3 style={{ color: '#fff', marginBottom: '20px', fontSize: '1.1em' }}>コンテンツ</h3>
-          <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.95em' }}>
-            <li style={{ marginBottom: '12px' }}>
-              <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>🏠 カタログトップ</Link>
+          <h3 className={styles.sectionTitle}>コンテンツ</h3>
+          <ul className={styles.linkList}>
+            <li className={styles.linkItem}>
+              <Link href="/">🏠 カタログトップ</Link>
             </li>
-            <li style={{ marginBottom: '12px' }}>
-              <Link href="/bicstation" style={{ color: 'inherit', textDecoration: 'none' }}>📝 特集記事・ブログ</Link>
+            <li className={styles.linkItem}>
+              <Link href="/bicstation">📝 特集記事・ブログ</Link>
             </li>
-            <li style={{ marginBottom: '12px' }}>
-              <Link href="/about" style={{ color: 'inherit', textDecoration: 'none' }}>ℹ️ BICSTATIONについて</Link>
-            </li>
-            <li style={{ marginBottom: '12px' }}>
-              <Link href="/contact" style={{ color: 'inherit', textDecoration: 'none' }}>📧 お問い合わせ</Link>
+            <li className={styles.linkItem}>
+              <Link href="/about">ℹ️ BICSTATIONについて</Link>
             </li>
           </ul>
+
+          <h4 className={styles.brandTitle}>主要ブランド</h4>
+          <div className={styles.brandGrid}>
+            {mainBrands.map((brand, index) => (
+              <React.Fragment key={brand.slug}>
+                <Link href={`/brand/${brand.slug}`} className={styles.brandLink}>
+                  {brand.name}
+                </Link>
+                {index < mainBrands.length - 1 && <span className={styles.brandSeparator}>/</span>}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
 
-        {/* 3列目：法的情報・SNS */}
+        {/* 3列目：法的情報 */}
         <div>
-          <h3 style={{ color: '#fff', marginBottom: '20px', fontSize: '1.1em' }}>インフォメーション</h3>
-          <ul style={{ listStyle: 'none', padding: 0, fontSize: '0.95em' }}>
-            <li style={{ marginBottom: '12px' }}>
-              <Link href="/privacy-policy" style={{ color: '#888', textDecoration: 'none' }}>プライバシーポリシー</Link>
+          <h3 className={styles.sectionTitle}>インフォメーション</h3>
+          <ul className={styles.linkList}>
+            <li className={styles.linkItem}>
+              <Link href="/contact">📧 お問い合わせ</Link>
             </li>
-            <li style={{ marginBottom: '12px' }}>
-              <Link href="/terms" style={{ color: '#888', textDecoration: 'none' }}>利用規約</Link>
+            <li className={styles.linkItem}>
+              <Link href="/privacy-policy" style={{ color: '#888' }}>プライバシーポリシー</Link>
             </li>
-            <li style={{ marginBottom: '12px', fontSize: '0.85em', color: '#666', lineHeight: '1.5' }}>
+            <li className={styles.linkItem}>
+              <Link href="/terms" style={{ color: '#888' }}>利用規約</Link>
+            </li>
+            <li className={styles.note}>
               ※掲載情報の正確性には万全を期していますが、最新情報は必ず各メーカー公式サイトをご確認ください。
             </li>
           </ul>
@@ -68,15 +79,7 @@ export default function Footer() {
       </div>
 
       {/* 下部コピーライト */}
-      <div style={{ 
-        maxWidth: '1100px', 
-        margin: '40px auto 0', 
-        paddingTop: '20px', 
-        borderTop: '1px solid #333', 
-        textAlign: 'center',
-        fontSize: '0.85em',
-        color: '#666'
-      }}>
+      <div className={styles.bottomBar}>
         <p>&copy; {currentYear} BICSTATION. All Rights Reserved.</p>
       </div>
     </footer>
