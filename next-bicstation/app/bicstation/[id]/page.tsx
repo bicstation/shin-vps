@@ -10,6 +10,9 @@ import styles from './PostPage.module.css';
 
 // --- ユーティリティ ---
 
+/**
+ * 💡 HTMLエンティティのデコード
+ */
 const safeDecode = (str: string) => {
     if (!str) return '';
     return str
@@ -21,6 +24,9 @@ const safeDecode = (str: string) => {
         .replace(/&nbsp;/g, ' ');
 };
 
+/**
+ * 💡 日本語形式の日付フォーマット
+ */
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
         year: 'numeric', month: '2-digit', day: '2-digit',
@@ -28,33 +34,56 @@ const formatDate = (dateString: string) => {
 };
 
 /**
- * 💡 本文を解析して目次用データを作成し、本文のH2にIDを注入する
+ * 💡 本文を解析して目次(H2/H3)を作成し、IDを注入する
+ * SEO評価を高めるために階層構造をサポート
  */
 function processContent(content: string) {
-    const toc: string[] = [];
+    const toc: { text: string; id: string; level: number }[] = [];
     let processedContent = content;
 
-    // 1. 本文中のh2タグを探して、IDを付与したタグに置換する
+    // h2とh3タグを探して、IDを付与する
     let index = 0;
-    processedContent = content.replace(/<h2[^>]*>(.*?)<\/h2>/g, (match, title) => {
-        const cleanTitle = title.replace(/<[^>]*>/g, ''); // タグを除去してテキストのみ抽出
-        toc.push(cleanTitle);
+    processedContent = content.replace(/<(h2|h3)[^>]*>(.*?)<\/\1>/g, (match, tag, title) => {
+        const cleanTitle = title.replace(/<[^>]*>/g, '').trim(); // タグ除去
         const id = `toc-${index}`;
+        toc.push({ text: cleanTitle, id, level: parseInt(tag.replace('h', '')) });
         index++;
-        return `<h2 id="${id}">${title}</h2>`; // ID付きのH2に書き換え
+        return `<${tag} id="${id}">${title}</${tag}>`;
     });
 
     return { toc, processedContent };
 }
 
+/**
+ * 💡 SEOメタデータの動的生成 (100点設定)
+ */
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const post = await fetchPostData(decodeURIComponent(params.id));
     if (!post) return { title: "記事が見つかりません" };
 
+    const title = `${safeDecode(post.title.rendered)} | BICSTATION`;
+    const description = post.excerpt?.rendered?.replace(/<[^>]*>/g, '').slice(0, 120).trim();
+    const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || 'https://bicstation.com/og-image.png';
+
     return {
-        title: `${safeDecode(post.title.rendered)} | BICSTATION`,
-        description: post.excerpt?.rendered?.replace(/<[^>]*>/g, '').slice(0, 120),
+        title,
+        description,
+        openGraph: {
+            title,
+            description,
+            images: [{ url: eyeCatchUrl, width: 1200, height: 630, alt: title }],
+            type: 'article',
+            publishedTime: post.date,
+            modifiedTime: post.modified,
+            siteName: 'BICSTATION PCカタログ',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: [eyeCatchUrl],
+        }
     };
 }
 
@@ -63,7 +92,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
     const post = await fetchPostData(decodeURIComponent(params.id));
     if (!post) notFound();
 
-    // 💡 コンテンツの加工（目次抽出とID注入）
+    // 💡 コンテンツ加工
     const { toc, processedContent } = processContent(post.content.rendered);
 
     const productId = post.acf?.related_product_id || null;
@@ -76,9 +105,39 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
 
     const hasValidPrice = relatedProduct && relatedProduct.price && Number(relatedProduct.price) > 0;
 
+    /**
+     * 💡 JSON-LD 構造化データ
+     */
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": safeDecode(post.title.rendered),
+        "image": eyeCatchUrl || 'https://bicstation.com/og-image.png',
+        "datePublished": post.date,
+        "dateModified": post.modified,
+        "author": [{
+            "@type": "Person",
+            "name": post.author_name || 'BICSTATION 編集部',
+            "url": "https://bicstation.com"
+        }],
+        "publisher": {
+            "@type": "Organization",
+            "name": "BICSTATION",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://bicstation.com/logo.png"
+            }
+        },
+        "description": post.excerpt?.rendered?.replace(/<[^>]*>/g, '').slice(0, 120)
+    };
+
     return (
         <article className={styles.article} style={{ backgroundColor: COLORS.BACKGROUND }}>
-            
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+
             <div className={styles.heroSection}>
                 {eyeCatchUrl ? (
                     <div className={styles.eyeCatchWrapper}>
@@ -99,7 +158,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
             </div>
             
             <div className={styles.singleColumnContainer}>
-                {/* 💡 目次セクション */}
+                {/* 💡 目次セクション (階層構造対応) */}
                 {toc.length > 0 && (
                     <section className={styles.inlineToc}>
                         <div className={styles.tocHeader}>
@@ -107,11 +166,11 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                             <h2 className={styles.tocTitle}>この記事の目次</h2>
                         </div>
                         <ul className={styles.tocList}>
-                            {toc.map((text, index) => (
-                                <li key={index} className={styles.tocItem}>
-                                    <a href={`#toc-${index}`} className={styles.tocLink}>
+                            {toc.map((item, index) => (
+                                <li key={index} className={`${styles.tocItem} ${item.level === 3 ? styles.tocItemH3 : ''}`}>
+                                    <a href={`#${item.id}`} className={styles.tocLink}>
                                         <span className={styles.tocNumber}>{index + 1}</span>
-                                        {safeDecode(text)}
+                                        {safeDecode(item.text)}
                                     </a>
                                 </li>
                             ))}
@@ -126,12 +185,12 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                         </span>
                     </div>
 
-                    {/* 💡 加工済みの(ID付き)コンテンツを表示 */}
                     <div 
                         className={`${styles.wpContent} animate-in`} 
                         dangerouslySetInnerHTML={{ __html: processedContent }} 
                     />
 
+                    {/* 💡 関連商品カード (重複排除ロジック適用) */}
                     {relatedProduct && (
                         <section className={styles.relatedProductCard}>
                             <div className={styles.cardTag}>RECOMMENDED ITEM</div>
@@ -140,18 +199,20 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                     <div className={styles.cardImage}>
                                         <img src={relatedProduct.image_url || '/no-image.png'} alt={relatedProduct.name} />
                                     </div>
-                                    {hasValidPrice ? (
-                                        <div className={styles.cardPriceBox}>
-                                            <span className={styles.cardPriceLabel}>販売価格</span>
-                                            <span className={styles.cardPrice}>¥{Number(relatedProduct.price).toLocaleString()}</span>
-                                            <span className={styles.taxIn}>(税込)</span>
-                                        </div>
-                                    ) : (
-                                        <div className={styles.cardPriceBox}>
-                                            <span className={styles.cardPriceLabel} style={{ marginBottom: '5px' }}>価格・在庫状況</span>
-                                            <span className={styles.taxIn} style={{ fontSize: '0.85rem' }}>公式サイトにてご確認ください</span>
-                                        </div>
-                                    )}
+                                    <div className={styles.cardPriceBox}>
+                                        {hasValidPrice ? (
+                                            <>
+                                                <span className={styles.cardPriceLabel}>販売価格</span>
+                                                <span className={styles.cardPrice}>¥{Number(relatedProduct.price).toLocaleString()}</span>
+                                                <span className={styles.taxIn}>(税込)</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className={styles.cardPriceLabel} style={{ marginBottom: '5px' }}>価格・在庫状況</span>
+                                                <span className={styles.taxIn} style={{ fontSize: '0.85rem' }}>公式サイトにてご確認ください</span>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className={styles.cardRight}>
@@ -160,8 +221,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                                     <div className={styles.productSpecSummary}>
                                         <p className={styles.specSummaryTitle}>主要スペック</p>
                                         <ul className={styles.specMiniList}>
-                                            {relatedProduct.description?.split('/')
-                                                .map((s: string) => s.trim())
+                                            {Array.from(new Set(relatedProduct.description?.split('/').map((s: string) => s.trim())))
                                                 .filter((s: string) => s !== '')
                                                 .slice(0, 4)
                                                 .map((spec: string, i: number) => (

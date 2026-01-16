@@ -13,6 +13,7 @@ interface AttributeItem {
   name: string;
   slug: string;
   count: number;
+  order?: number; // ✅ Django側から渡される並び順プロパティ
 }
 
 interface SidebarData {
@@ -39,10 +40,7 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
     async function fetchSpecStats() {
       try {
         /**
-         * 💡 重要修正ポイント:
-         * ブラウザ(8083)からDjangoへTraefik経由でアクセスするため、
-         * 相対パス '/api/...' を使用します。これにより、Next.jsが動作しているドメインと
-         * ポートを自動的に継承し、接続拒否(ERR_CONNECTION_REFUSED)を防ぎます。
+         * 💡 Traefik経由でのアクセスを安定させるため相対パスを使用
          */
         const res = await fetch('/api/pc-sidebar-stats/');
         
@@ -120,34 +118,48 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
         )}
       </ul>
 
-      {/* 2. 🚀 スペック・属性別（APIから動的生成） */}
-      {specStats && Object.entries(specStats).map(([category, items]) => (
+      {/* 2. 🚀 スペック・属性別（APIから動的生成 ＆ 表示順ソート適用） */}
+      {specStats && Object.entries(specStats)
+        /**
+         * 💡 カテゴリ自体の並び順を安定させる処理
+         * CPU -> メモリ -> NPU のようにカテゴリ名で並び替え
+         */
+        .sort((a, b) => a[0].localeCompare(b[0], 'ja'))
+        .map(([category, items]) => (
         <div key={category}>
           <h3 className={styles.sectionTitle}>{category}</h3>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {items.map((item) => {
-              const isActive = attribute === item.slug;
-              
-              // カテゴリに応じたアイコンの動的決定
-              const icon = category.includes('CPU') ? '🚀' : 
-                           category.includes('メモリ') ? '🧠' : 
-                           category.includes('NPU') ? '🤖' : '✨';
-              
-              return (
-                <li key={item.id}>
-                  <Link 
-                    href={formatHref(getFilterHref(item.slug))}
-                    className={styles.link}
-                    style={{ 
-                      color: isActive ? siteColor : undefined,
-                      fontWeight: isActive ? 'bold' : 'normal'
-                    }}
-                  >
-                    <span>{icon} {item.name}</span>
-                    <span className={styles.badge}>{item.count}</span>
-                  </Link>
-                </li>
-              );
+            {items
+              /**
+               * ✅ 【重要】Django側の order フィールドでアイテムをソート
+               * orderが設定されていない場合は 0 とみなして計算
+               */
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+              .map((item) => {
+                const isActive = attribute === item.slug;
+                
+                // カテゴリに応じたアイコンの動的決定
+                const icon = category.includes('CPU') ? '🚀' : 
+                             category.includes('メモリ') ? '🧠' : 
+                             category.includes('NPU') ? '🤖' : '✨';
+                
+                return (
+                  <li key={item.id}>
+                    <Link 
+                      href={formatHref(getFilterHref(item.slug))}
+                      className={styles.link}
+                      style={{ 
+                        color: isActive ? siteColor : undefined,
+                        fontWeight: isActive ? 'bold' : 'normal'
+                      }}
+                    >
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {icon} {item.name}
+                      </span>
+                      <span className={styles.badge}>{item.count}</span>
+                    </Link>
+                  </li>
+                );
             })}
           </ul>
         </div>

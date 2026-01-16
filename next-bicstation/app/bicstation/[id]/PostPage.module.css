@@ -1,7 +1,7 @@
 /* 1. 記事全体のコンテナ */
 .article {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: #f9fafb; /* COLORS.BACKGROUND に対応 */
 }
 
 /* 2. アイキャッチ・ヒーローセクション */
@@ -51,7 +51,7 @@
 .headerInner {
   position: relative;
   z-index: 10;
-  max-width: 1200px; /* ヘッダー幅に合わせる */
+  max-width: 1200px;
   width: 100%;
   margin: 0 auto;
   padding: 0 20px;
@@ -61,14 +61,14 @@
 
 /* 3. シングルカラム・レイアウトコンテナ */
 .singleColumnContainer {
-  max-width: 1200px; /* ヘッダー幅と完全に同期 */
+  max-width: 1200px;
   margin: -80px auto 0;
   padding: 0 20px 80px;
   position: relative;
   z-index: 20;
 }
 
-/* 4. インライン目次セクション */
+/* 4. インライン目次セクション（階層対応） */
 .inlineToc {
   background: #ffffff;
   border-radius: 20px;
@@ -103,20 +103,32 @@
   padding: 0;
   margin: 0;
   display: grid;
-  grid-template-columns: 1fr; /* デフォルトは1列 */
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 8px;
 }
 
-/* PC表示では目次を2列にしてスペースを有効活用 */
+/* PC表示では目次を2列にする */
 @media (min-width: 768px) {
   .tocList {
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px 40px;
+    gap: 10px 40px;
   }
 }
 
 .tocItem {
-  font-size: 1.05rem;
+  font-size: 1rem;
+}
+
+/* 💡 H3（小見出し）の場合は少しインデントを下げる */
+.tocItemH3 {
+  padding-left: 20px;
+  font-size: 0.95rem;
+}
+
+.tocItemH3 .tocNumber {
+  background: transparent;
+  color: #94a3b8;
+  font-weight: normal;
 }
 
 .tocLink {
@@ -153,7 +165,6 @@
 /* 5. 本文エリア */
 .mainContentFull {
   background: #fff;
-  /* 横幅を広げた分、左右の余白を大きくして1行あたりの文字数を調整 */
   padding: 60px 100px; 
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
@@ -402,12 +413,6 @@
   gap: 20px;
 }
 
-.footerDivider {
-  width: 100%;
-  height: 1px;
-  background: #f1f5f9;
-}
-
 .updateDate {
   font-size: 0.9rem;
   color: #94a3b8;
@@ -432,18 +437,12 @@
   .heroSection {
     height: 350px;
   }
-
   .singleColumnContainer {
     margin-top: -40px;
     padding: 0 15px 60px;
   }
-
   .mainContentFull {
     padding: 40px 30px;
-  }
-
-  .inlineToc {
-    padding: 25px;
   }
 }
 
@@ -451,30 +450,27 @@
   .heroSection {
     height: 300px;
   }
-
   .mainContentFull {
     padding: 30px 20px;
-    border-radius: 0;
+    border-radius: 10px; /* モバイルでも少し角を丸く */
   }
-
   .wpContent {
     font-size: 1.05rem;
   }
-
   .specMiniList {
     grid-template-columns: 1fr;
   }
-
   .cardMain {
     flex-direction: column;
     gap: 30px;
   }
-
   .cardLeft {
     flex: 0 0 auto;
   }
-
   .cardButtons {
     flex-direction: column;
+  }
+  .tocItemH3 {
+    padding-left: 15px;
   }
 }
