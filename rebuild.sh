@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS 高機能再構築スクリプト (安全・完全版 + サービス一括指定対応)
+# 🚀 SHIN-VPS 高機能再構築スクリプト (安全・完全版 + ウォッチモード統合)
 # ==============================================================================
 
 # 1. 実行ディレクトリ・ホスト情報の取得
@@ -22,6 +22,7 @@ TARGET=""
 NO_CACHE=""
 CLEAN=false
 CLEAN_ALL=false
+WATCH_MODE=false
 RAW_SERVICES=""
 
 # ---------------------------------------------------------
@@ -40,20 +41,20 @@ show_help() {
     echo ""
     echo "SERVICE_KEYWORDS (ショートカット対応):"
     echo "  bicstation   -> next-bicstation-v2"
-    echo "  tiper        -> next-tiper-v2"
-    echo "  saving       -> next-bic-saving-v2"
-    echo "  avflash      -> next-avflash-v2"
-    echo "  (その他、docker-compose.yml内のサービス名を直接指定可能)"
+    echo "  tiper         -> next-tiper-v2"
+    echo "  saving        -> next-bic-saving-v2"
+    echo "  avflash       -> next-avflash-v2"
     echo ""
     echo "OPTIONS:"
+    echo "  -w, --watch    🚀 ローカル専用: ファイル変更を監視して自動再構築"
     echo "  --clean        コンテナとイメージを削除 (ボリュームは保持)"
     echo "  --clean-all    ボリュームを含む全てを強制削除 (危険)"
     echo "  --no-cache     キャッシュを使わずにビルド"
     echo "  -h, --help     このヘルプを表示"
     echo ""
     echo "EXAMPLES:"
-    echo "  ./rebuild.sh bicstation tiper         # Next2つを高速再構築"
-    echo "  ./rebuild.sh prod saving --no-cache   # 本番のsavingをクリーンビルド"
+    echo "  ./rebuild.sh bicstation -w          # bicstationを監視モードで開発"
+    echo "  ./rebuild.sh prod --clean           # 本番環境を掃除して再構築"
     echo "================================================================"
 }
 
@@ -67,6 +68,7 @@ for arg in "$@"; do
         "--no-cache") NO_CACHE="--no-cache" ;;
         "--clean") CLEAN=true ;;
         "--clean-all") CLEAN_ALL=true ;;
+        "-w"|"--watch") WATCH_MODE=true ;;
         "--help"|"-h") 
             show_help
             exit 0 
@@ -105,6 +107,32 @@ else
     if [ -z "$TARGET" ]; then
         if [[ "$SCRIPT_DIR" == *"/mnt/e/"* ]]; then TARGET="work"; else TARGET="home"; fi
     fi
+fi
+
+# ---------------------------------------------------------
+# 🚀 ウォッチモード (nodemon) の実行判定
+# ---------------------------------------------------------
+if [ "$WATCH_MODE" = true ]; then
+    if [ "$TARGET" == "prod" ]; then
+        echo "❌ エラー: 本番環境(prod)でウォッチモードは実行できません。"
+        exit 1
+    fi
+
+    if ! command -v nodemon &> /dev/null; then
+        echo "💡 nodemon が見つかりません。nvm等でインストールしてください (npm install -g nodemon)"
+        exit 1
+    fi
+
+    echo "👀 ウォッチモード起動: $SERVICES の変更を監視します..."
+    # 引数から -w や --watch を除外して再帰実行
+    NEXT_ARGS=$(echo "$@" | sed 's/-w//g' | sed 's/--watch//g')
+    
+    nodemon --watch "$SCRIPT_DIR" -e ts,tsx,js,jsx,css,scss,json,html \
+            --ignore 'node_modules/**' \
+            --ignore '.next/**' \
+            --delay 2 \
+            --exec "$0 $NEXT_ARGS"
+    exit 0
 fi
 
 # 5. 設定ファイルのパス決定
@@ -161,7 +189,6 @@ elif [ "$CLEAN" = true ]; then
     docker image prune -f
 else
     echo "🚀 [1/4] コンテナを停止中..."
-    # 指定されたサービスのみを停止
     docker compose -f "$COMPOSE_FILE" $P_OPT stop $SERVICES
 fi
 
@@ -182,7 +209,6 @@ docker compose -f "$COMPOSE_FILE" $P_OPT build --pull $FINAL_NO_CACHE $SERVICES
 
 # ステップ4: 起動
 echo "✨ [4/4] コンテナ起動..."
-# --buildを付けているので、個別指定時はそのサービスだけが最短で起動します
 docker compose -f "$COMPOSE_FILE" $P_OPT up -d --build --remove-orphans $SERVICES
 
 # =========================================================
@@ -197,6 +223,5 @@ docker compose -f "$COMPOSE_FILE" $P_OPT ps ${SERVICES}
 
 echo ""
 echo "🚀 全システム稼働状況 (docker ps):"
-# サービス名からプレフィックスを除去してgrepしやすく調整
 SERVICE_PATTERN=$(echo $SERVICES | sed 's/ /|/g')
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep -E "Name|$PROJECT_NAME|$SERVICE_PATTERN"
