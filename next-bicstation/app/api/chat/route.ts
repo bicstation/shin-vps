@@ -8,22 +8,21 @@ export async function POST(req: Request) {
         // 1. APIキーの確認
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
-            console.error("🚨 GEMINI_API_KEY is missing");
-            return NextResponse.json({ text: "システム設定エラーです。" }, { status: 500 });
+            console.error("🚨 GEMINI_API_KEY is missing in env");
+            return NextResponse.json({ text: "システム設定エラー（APIキー未設定）です。" }, { status: 500 });
         }
 
-        // 2. Django API 接続先の設定 (環境変数から取得、なければデフォルト)
-        // ローカルなら http://localhost:8000, Dockerなら http://django-v2:8000 など
+        // 2. Django API から在庫を取得
         const DJANGO_URL = process.env.DJANGO_API_URL || "http://django-v2:8000";
-        
-        let productListContext = "在庫リスト取得不可";
+        let productListContext = "現在、最新の在庫リストを取得できませんでした。";
         let allProducts: any[] = [];
 
         try {
             const djangoRes = await fetch(`${DJANGO_URL}/api/pc-products/`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
-                next: { revalidate: 300 }
+                // 💡 警告回避のため cache: 'no-store' のみに統合
+                cache: 'no-store'
             });
 
             if (djangoRes.ok) {
@@ -39,15 +38,22 @@ export async function POST(req: Request) {
             }
         } catch (error) {
             console.error("⚠️ Django接続失敗:", error);
+            // 在庫取得に失敗してもAI回答自体は継続させる
         }
 
-        // 3. Geminiの設定
+        // 3. Gemini / Gemma の設定と生成（Python版のループ試行ロジックを移植）
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemma-3-27b-it" });
+        
+        // 💡 試行するモデルの優先順位リスト
+        const MODEL_CANDIDATES = [
+            "gemma-3-27b-it",   // 本命（ローカルで成功したモデル）
+            "gemini-1.5-flash", // 高速フォールバック
+            "gemini-1.5-pro"    // 高性能フォールバック
+        ];
 
         const prompt = `
 あなたはPC専門ポータルサイト「BICSTATION」の公認コンシェルジュです。
-【当店の在庫リスト】から最適な1台を選んで提案してください。
+【当店の在庫リスト】からユーザーの要望に最適な1台を選んで提案してください。
 
 【当店の在庫リスト】
 ${productListContext}
@@ -56,34 +62,60 @@ ${productListContext}
 1. 提案するPCの名前を必ず <b>製品名</b> のように太字で含めてください。
 2. その製品が在庫リストにある場合、回答の最後に必ず「RECOMMENDED_PRODUCT:製品名」という形式で1行追加してください。
 3. 改行を活用し、読みやすくHTML（<b>等）を使って装飾してください。
+4. 在庫リストにぴったりのものがない場合は、リストの中から最も条件に近いものを勧めてください。
 
 質問: ${message}
         `;
 
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
+        let aiText = "";
+        let usedModel = "";
+
+        // Pythonスクリプト同様にモデルを順に試す
+        for (const modelId of MODEL_CANDIDATES) {
+            try {
+                console.log(`🤖 AI試行中: ${modelId}`);
+                const model = genAI.getGenerativeModel({ model: modelId });
+                const result = await model.generateContent(prompt);
+                aiText = result.response.text();
+                
+                if (aiText) {
+                    usedModel = modelId;
+                    console.log(`✅ AI生成成功 (${usedModel})`);
+                    break; 
+                }
+            } catch (err: any) {
+                console.warn(`❌ モデル ${modelId} でエラー:`, err.message);
+                continue; // 次のモデルへ
+            }
+        }
+
+        if (!aiText) {
+            throw new Error("全てのAIモデルで生成に失敗しました。");
+        }
 
         // 4. AIの回答から「提案された製品名」を抽出して、画像とURLを紐付け
         let productName = null;
         let productUrl = null;
         let productImage = null;
 
-        // AIが末尾に出力したタグを検索
-        const match = text.match(/RECOMMENDED_PRODUCT:(.*)/);
+        const match = aiText.match(/RECOMMENDED_PRODUCT:(.*)/);
         if (match && match[1]) {
             const recommendedName = match[1].trim();
-            // 在庫データから詳細情報を検索
-            const found = allProducts.find(p => recommendedName.includes(p.name) || p.name.includes(recommendedName));
+            // 在庫データから部分一致で詳細情報を検索
+            const found = allProducts.find(p => 
+                recommendedName.toLowerCase().includes(p.name.toLowerCase()) || 
+                p.name.toLowerCase().includes(recommendedName.toLowerCase())
+            );
+
             if (found) {
                 productName = found.name;
                 productUrl = found.url;
-                // DjangoのAPIがimage_urlを返している場合はそれを、なければnull
                 productImage = found.image_url || found.image || null;
             }
         }
 
         // 余分なタグを消してクリーンなテキストにする
-        const cleanText = text.replace(/RECOMMENDED_PRODUCT:.*/, '').trim();
+        const cleanText = aiText.replace(/RECOMMENDED_PRODUCT:.*/, '').trim();
 
         return NextResponse.json({ 
             text: cleanText,
@@ -93,6 +125,9 @@ ${productListContext}
         });
 
     } catch (error: any) {
-        return NextResponse.json({ text: "通信エラーが発生しました。" }, { status: 500 });
+        console.error("🚨 Final Chat Error:", error.message);
+        return NextResponse.json({ 
+            text: "申し訳ありません。コンシェルジュとの通信に失敗しました。時間をおいて再度お試しください。" 
+        }, { status: 500 });
     }
 }
