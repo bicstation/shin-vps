@@ -1,6 +1,6 @@
 /**
  * =====================================================================
- * 💡 SHIN-VPS API サービス層 (lib/api.ts) - 最終完全版
+ * 💡 SHIN-VPS API サービス層 (lib/api.ts) - 修正版
  * WordPress(bicstation) & Django(pc-products) 統合データアクセス層
  * =====================================================================
  */
@@ -61,10 +61,12 @@ export interface MakerCount {
 
 /**
  * 📝 [WordPress] 記事一覧取得
+ * 🛠️ 修正: offset パラメータを追加し、レスポンスヘッダーから総記事数を取得するように変更
  */
-export async function fetchPostList(perPage = 5) {
+export async function fetchPostList(perPage = 12, offset = 0) {
     const { baseUrl, host } = getWpConfig();
-    const url = `${baseUrl}/wp-json/wp/v2/bicstation?_embed&per_page=${perPage}`;
+    // WordPress API に offset を渡すよう修正
+    const url = `${baseUrl}/wp-json/wp/v2/bicstation?_embed&per_page=${perPage}&offset=${offset}`;
 
     try {
         const res = await fetch(url, {
@@ -75,12 +77,25 @@ export async function fetchPostList(perPage = 5) {
             next: { revalidate: 60 }
         });
 
-        if (!res.ok) return { results: [], debugUrl: url, status: res.status };
+        if (!res.ok) return { results: [], count: 0, debugUrl: url, status: res.status };
+
         const data = await res.json();
-        return { results: Array.isArray(data) ? data : [], debugUrl: url, status: res.status };
+        
+        /**
+         * 💡 WordPressはヘッダー 'X-WP-Total' に全記事数を格納しています。
+         * これを取得することで Pagination コンポーネントが正しく動作します。
+         */
+        const totalCount = parseInt(res.headers.get('X-WP-Total') || '0', 10);
+
+        return { 
+            results: Array.isArray(data) ? data : [], 
+            count: totalCount, // Pagination用の総件数
+            debugUrl: url, 
+            status: res.status 
+        };
     } catch (error: any) {
         console.error(`[WP API ERROR]: ${error.message}`);
-        return { results: [], debugUrl: url };
+        return { results: [], count: 0, debugUrl: url };
     }
 }
 
@@ -109,12 +124,10 @@ export async function fetchPostData(slug: string) {
 
 /**
  * 💻 [Django API] 商品一覧取得
- * 🚀 [UPDATE]: attribute パラメータ（スペック絞り込み）に対応
  */
 export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attribute = '') {
     const rootUrl = getDjangoBaseUrl();
     
-    // URLSearchParams を使ってクリーンにクエリを構築
     const params = new URLSearchParams();
     if (maker) params.append('maker', maker.toLowerCase());
     if (attribute) params.append('attribute', attribute);

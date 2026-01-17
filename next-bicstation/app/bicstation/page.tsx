@@ -16,7 +16,7 @@ interface PageProps {
 
 /**
  * 💡 SEOメタデータの動的生成
- * 重複コンテンツを避け、検索エンジンにページネーションの構造を正しく伝えます。
+ * ページ番号に応じてタイトルを変化させ、正規URL（canonical）を正しく設定します。
  */
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
     const sParams = await searchParams;
@@ -54,18 +54,18 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
     const limit = 12;
 
     /**
-     * 🛠️ ビルドエラー修正:
-     * fetchPostList の戻り値を一度 any にキャストすることで、
-     * 型定義に含まれていない count プロパティへのアクセスによるエラーを回避します。
+     * 🛠️ 修正ポイント:
+     * fetchPostList に limit と currentOffset の両方を渡します。
+     * lib/api.ts 側で offset パラメータを処理するようにしたため、これでページが切り替わります。
      */
     const [wpDataResponse, makersData] = await Promise.all([
-        fetchPostList(limit) as any, 
+        fetchPostList(limit, currentOffset) as any, 
         fetchMakers()
     ]);
 
     const posts = wpDataResponse.results || [];
-    // APIから総件数が返ってこない場合のフォールバックとして現在の配列数を使用
-    const totalCount = wpDataResponse.count || posts.length || 0;
+    // APIのレスポンスヘッダーから取得した全記事数（count）を使用します
+    const totalCount = wpDataResponse.count || 0;
 
     const safeDecode = (str: string) => {
         if (!str) return '';
@@ -75,7 +75,7 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
     };
 
     /**
-     * 🚀 JSON-LD 構造化データの生成 (Google検索用)
+     * 🚀 JSON-LD 構造化データの生成
      */
     const jsonLd = {
         "@context": "https://schema.org",
