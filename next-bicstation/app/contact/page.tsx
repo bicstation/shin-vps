@@ -56,7 +56,7 @@ export default function ContactPage() {
         try {
             // 本番・ローカル両対応のため相対パスを使用
             // Next.jsのAPI Routesが /api/chat または /bicstation/api/chat で動いていることを前提とします
-            const response = await fetch('./../api/chat', { 
+            const response = await fetch('/bicstation/api/chat', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMsg }),
