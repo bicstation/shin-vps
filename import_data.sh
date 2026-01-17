@@ -35,6 +35,7 @@ show_help() {
     echo "3. [反映] 13番でマスターを登録し、14番で全製品にタグを自動付与します。"
     echo "4. [SEO]  15番で最新の状態を Google 用サイトマップに反映します。"
     echo "5. [維持] 新製品のインポート(3番)後は、必ず14番と15番を実行してください。"
+    echo -e "6. ${COLOR}[AI]   16番でAIコンシェルジュが使用可能なモデル一覧を確認できます。${RESET}"
     echo "---------------------------------------"
     echo "オプション引数:"
     echo "  -h, --help    このヘルプメッセージを表示して終了します。"
@@ -103,6 +104,8 @@ echo -e "12) [Analysis] 製品データをTSV出力 (分析用)"
 echo -e "13) [Master]   属性マスター(TSV)をインポート"
 echo -e "14) ${COLOR}[Auto]     属性自動マッピング実行 ⚡${RESET}"
 echo -e "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
+echo -e "16) ${COLOR}[AI]       AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
+echo "---------------------------------------"
 echo "h) [Help]     使い方の説明"
 echo "8) 終了"
 echo "---------------------------------------"
@@ -193,11 +196,15 @@ case $CHOICE in
     15)
         update_sitemap
         ;;
+    16)
+        echo -e "\n${COLOR}🤖 利用可能な AI モデル一覧を取得します...${RESET}"
+        run_django python manage.py ai_model_name
+        ;;
     h) show_help ;;
     8) exit 0 ;;
 esac
 
-# 🔄 VPS環境のみ：変更があった場合にスケジューラーを再起動、またはサイトマップ更新の提案
+# 🔄 VPS環境のみ：変更があった場合にスケジューラーを再起動
 if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14)$ ]]; then
     echo -e "\n${COLOR}🔄 設定反映のためスケジューラーを再起動しています...${RESET}"
     docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
