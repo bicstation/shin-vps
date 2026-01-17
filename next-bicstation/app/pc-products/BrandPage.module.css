@@ -1,75 +1,114 @@
 /* ---------------------------------------------------------
    Layout Base
 --------------------------------------------------------- */
+.pageContainer {
+    width: 100%;
+    background-color: #f8f9fa; /* サイト全体の背景 */
+    min-height: 100vh;
+}
+
+/* 💡 全幅ヘッダー（SEO・UX向上のためのブランドエリア） */
+.fullWidthHeader {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 30px 0 25px;
+    width: 100%;
+}
+
+.headerInner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    line-height: 1.2;
+}
+
+/* タイトル横の装飾ライン */
+.titleIndicator {
+    width: 6px;
+    height: 36px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.lead {
+    margin-top: 10px;
+    color: #475569;
+    font-size: 1rem;
+    max-width: 800px;
+    line-height: 1.6;
+}
+
+/* ---------------------------------------------------------
+   Main Content Layout (Sidebar + Main)
+--------------------------------------------------------- */
 .wrapper {
     display: flex;
     max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 40px 20px;
     gap: 30px;
+    box-sizing: border-box;
 }
 
 .sidebarSection {
-    width: 260px; /* Sidebarの内部設定に合わせて微調整 */
+    width: 260px;
     flex-shrink: 0;
 }
 
 .main {
     flex-grow: 1;
-    min-width: 0; /* Flex内の崩れ防止 */
+    min-width: 0; /* Flexボックス内の崩れ防止 */
 }
 
 /* ---------------------------------------------------------
-   Brand Header (Hero Section)
+   Product Section Area (Grid Title & Info)
 --------------------------------------------------------- */
-.brandHeader {
-    background: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-    border: 1px solid #f0f0f0;
+.productSection {
+    margin-top: 0;
 }
 
-.brandTitle {
-    font-size: 1.8rem;
-    color: #2c3e50;
-    margin: 0 0 10px 0;
+.productGridTitle {
     display: flex;
     align-items: center;
-    gap: 15px;
-    font-weight: bold;
+    gap: 10px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
 }
 
-.titleLine {
-    width: 6px;
-    height: 32px;
-    background: #007bff; /* サイトカラーと統一、またはブランド毎に可変 */
-    border-radius: 3px;
+.countDetail {
+    margin-left: auto;
+    font-size: 0.95rem;
+    color: #64748b;
+    font-weight: 400;
 }
 
-.productCount {
-    color: #7f8c8d;
-    font-size: 1rem;
-    margin: 0;
-}
-
-.productCount strong {
-    color: #2c3e50;
-    font-size: 1.2rem;
-    margin: 0 4px;
+.countDetail strong {
+    color: #0f172a;
+    font-size: 1.1rem;
+    margin: 0 2px;
 }
 
 /* ---------------------------------------------------------
    Product Grid Area
 --------------------------------------------------------- */
-.productSection {
-    margin-top: 20px;
-}
-
 .productGrid {
     display: grid;
-    /* 画面幅に合わせてカードの数を自動調整 */
+    /* カードの最小幅280pxで自動フィリング */
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
 }
@@ -78,57 +117,69 @@
    Pagination & Feedback
 --------------------------------------------------------- */
 .paginationWrapper {
-    margin-top: 50px;
-    margin-bottom: 50px;
+    margin-top: 60px;
+    margin-bottom: 60px;
     display: flex;
     justify-content: center;
 }
 
 .noDataLarge {
-    padding: 80px 20px;
+    padding: 100px 20px;
     text-align: center;
-    background: #fdfdfd;
-    border: 2px dashed #eee;
-    border-radius: 12px;
-    color: #95a5a6;
+    background: #ffffff;
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
+    color: #64748b;
     font-size: 1.1rem;
 }
 
 /* ---------------------------------------------------------
-   Responsive (Mobile & Tablet)
+   Responsive (Desktop to Tablet)
 --------------------------------------------------------- */
 @media (max-width: 1024px) {
+    .fullWidthHeader {
+        padding: 25px 0 20px;
+    }
+
+    .title {
+        font-size: 1.8rem;
+    }
+
     .wrapper {
         flex-direction: column;
-        padding: 15px;
-        gap: 20px;
+        padding: 20px 15px;
+        gap: 30px;
     }
 
     .sidebarSection {
         width: 100%;
-        position: static; /* スティッキー解除 */
     }
 
-    .brandHeader {
-        padding: 20px;
+    .productGridTitle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 
-    .brandTitle {
+    .countDetail {
+        margin-left: 0;
+    }
+}
+
+/* ---------------------------------------------------------
+   Responsive (Mobile)
+--------------------------------------------------------- */
+@media (max-width: 480px) {
+    .title {
         font-size: 1.5rem;
     }
 
     .productGrid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: 1fr; /* スマホでは縦1列 */
         gap: 16px;
     }
-}
 
-@media (max-width: 480px) {
-    .brandTitle {
-        font-size: 1.3rem;
-    }
-    
-    .productGrid {
-        grid-template-columns: 1fr; /* スマホは1枚表示 */
+    .fullWidthHeader {
+        padding: 20px 0;
     }
 }
