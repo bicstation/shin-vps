@@ -18,22 +18,25 @@ export default function ContactPage() {
     const [messages, setMessages] = useState<Message[]>([
         { 
             role: 'ai', 
-            text: '<b>BICSTATIONへようこそ！</b><br />公認コンシェルジュです。あなたに最適なPCをご提案します。' 
+            text: '<b>BICSTATIONへようこそ！</b><br />公認コンシェルジュです。ご予算や用途、重視するポイントなど、あなたに最適なPCをご提案します。' 
         }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     
     // スクロール制御用の参照
-    const scrollEndRef = useRef<HTMLDivElement>(null);
     const messageListRef = useRef<HTMLDivElement>(null);
 
-    // メッセージ更新時に「リスト内」だけをスクロールさせる関数
+    // メッセージ更新時、およびローディング状態の変化時に「リスト内」だけをスクロールさせる
     const scrollToBottom = () => {
         if (messageListRef.current) {
-            messageListRef.current.scrollTo({
-                top: messageListRef.current.scrollHeight,
-                behavior: 'smooth'
-            });
+            const scrollContainer = messageListRef.current;
+            // 短い遅延を入れることで、DOMの描画完了後にスクロールさせる
+            setTimeout(() => {
+                scrollContainer.scrollTo({
+                    top: scrollContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
         }
     };
 
@@ -42,7 +45,7 @@ export default function ContactPage() {
     }, [messages, isLoading]);
 
     const handleSend = async (e?: React.FormEvent) => {
-        if (e) e.preventDefault(); // フォームのデフォルト動作（リロード）を防止
+        if (e) e.preventDefault(); 
         if (!input.trim() || isLoading) return;
 
         const userMsg = input.trim();
@@ -51,18 +54,21 @@ export default function ContactPage() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/bicstation/api/chat', {
+            // 本番・ローカル両対応のため相対パスを使用
+            // Next.jsのAPI Routesが /api/chat または /bicstation/api/chat で動いていることを前提とします
+            const response = await fetch('./../api/chat', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMsg }),
             });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+
             const data = await response.json();
 
-            // AIの回答を追加
             setMessages(prev => [...prev, { 
                 role: 'ai', 
                 text: data.text,
-                // APIから商品データが返ってきた場合のみセット
                 product: data.productName ? {
                     name: data.productName,
                     url: data.productUrl,
@@ -70,7 +76,8 @@ export default function ContactPage() {
                 } : undefined
             }]);
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'ai', text: '通信エラーが発生しました。' }]);
+            console.error("Chat error:", error);
+            setMessages(prev => [...prev, { role: 'ai', text: '申し訳ありません。コンシェルジュとの通信に失敗しました。時間をおいて再度お試しください。' }]);
         } finally {
             setIsLoading(false);
         }
@@ -84,15 +91,14 @@ export default function ContactPage() {
                     <p>AIがあなたに最適なPCをリアルタイムで提案します</p>
                 </div>
 
-                {/* メッセージ表示エリア (ここをスクロールさせる) */}
                 <div className={styles.messageList} ref={messageListRef}>
                     {messages.map((msg, index) => (
                         <div key={index} className={msg.role === 'user' ? styles.userRow : styles.aiRow}>
-                            {/* アイコン表示 */}
                             <img 
                                 src={msg.role === 'ai' ? '/bicstation/images/ai_concierge.png' : '/bicstation/images/user_icon.png'} 
                                 alt="avatar" 
-                                className={styles.avatar} 
+                                className={styles.avatar}
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }} // 画像がない場合のフォールバック
                             />
                             
                             <div className={msg.role === 'user' ? styles.userBubble : styles.aiBubble}>
@@ -100,7 +106,6 @@ export default function ContactPage() {
                                     __html: msg.text.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') 
                                 }} />
 
-                                {/* 商品カードの表示 (AIかつ商品データがある場合) */}
                                 {msg.role === 'ai' && msg.product && (
                                     <div className={styles.productCard}>
                                         <img src={msg.product.image} alt={msg.product.name} className={styles.productImage} />
@@ -115,16 +120,21 @@ export default function ContactPage() {
                             </div>
                         </div>
                     ))}
-                    {isLoading && <div className={styles.loading}>コンシェルジュが回答を作成中...</div>}
-                    <div ref={scrollEndRef} />
+                    {isLoading && (
+                        <div className={styles.aiRow}>
+                            <img src="/bicstation/images/ai_concierge.png" alt="ai" className={styles.avatar} />
+                            <div className={styles.loadingBubble}>
+                                <span>.</span><span>.</span><span>.</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* 入力セクション */}
                 <form className={styles.inputSection} onSubmit={handleSend}>
                     <input 
                         type="text" 
                         className={styles.mainInput}
-                        placeholder="例：動画編集に強いおすすめのPCは？"
+                        placeholder="例：20万円以内で動画編集ができるPCを教えてください"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         disabled={isLoading}

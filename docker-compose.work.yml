@@ -62,19 +62,15 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
-      # --- 既存の API ルール ---
       - "traefik.http.routers.django-v2-api.rule=Host(`localhost`) && PathPrefix(`/api`)"
       - "traefik.http.routers.django-v2-api.entrypoints=web"
       - "traefik.http.routers.django-v2-api.priority=2000"
-      # --- 既存の Admin ルール ---
       - "traefik.http.routers.django-v2-admin.rule=Host(`localhost`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.django-v2-admin.entrypoints=web"
       - "traefik.http.routers.django-v2-admin.priority=2000"
-      # --- ✨ 追加: 静的ファイル (CSS/JS) 用のルール ---
       - "traefik.http.routers.django-v2-static.rule=Host(`localhost`) && PathPrefix(`/static`)"
       - "traefik.http.routers.django-v2-static.entrypoints=web"
       - "traefik.http.routers.django-v2-static.priority=2000"
-      # --- サービス設定 ---
       - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
     volumes:
       - ./django:/usr/src/app
@@ -97,6 +93,7 @@ services:
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_BASE_PATH=/bicstation
+      - DJANGO_API_URL=http://django-v2:8000  # ✨ 追加: AIチャットの在庫取得に必要
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
@@ -104,6 +101,9 @@ services:
       - "traefik.http.routers.bic-v2-router.entrypoints=web"
       - "traefik.http.routers.bic-v2-router.priority=100"
       - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
+    volumes:
+      - ./next-bicstation:/app  # ホストのコード変更を即時反映
+      - /app/node_modules
     networks:
       - internal-net
 

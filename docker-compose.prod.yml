@@ -142,12 +142,14 @@ services:
   next-bicstation-v2:
     build: { context: ./next-bicstation }
     container_name: next-bicstation-v2
+    restart: always
     networks: [internal-net, shared-proxy]
+    env_file:
+      - .env
     environment:
       - DJANGO_API_URL=http://django-v2:8000
     volumes:
       - sitemap_data:/app/public/sitemap_gen
-      # 【重要】TSV読み込みのためDjangoソースをマウント(読み取り専用)
       - ./django:/usr/src/app:ro
     labels:
       - "traefik.enable=true"
@@ -157,7 +159,6 @@ services:
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
       - "traefik.http.routers.bicstation-router.priority=100"
       - "traefik.http.services.bicstation-svc.loadbalancer.server.port=3000"
-      # 【新設】サイトマップ自動更新スケジュール (毎日午前4時)
       - "ofelia.enabled=true"
       - "ofelia.job-exec.update_sitemap.schedule=0 0 4 * * *"
       - "ofelia.job-exec.update_sitemap.command=node /app/generate-sitemap.mjs"
@@ -166,6 +167,7 @@ services:
   next-tiper-v2:
     build: { context: ./next-tiper }
     container_name: next-tiper-v2
+    restart: always
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
@@ -179,6 +181,7 @@ services:
   next-bic-saving-v2:
     build: { context: ./next-bic-saving }
     container_name: next-bic-saving-v2
+    restart: always
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
@@ -192,6 +195,7 @@ services:
   next-avflash-v2:
     build: { context: ./next-avflash }
     container_name: next-avflash-v2
+    restart: always
     networks: [internal-net, shared-proxy]
     labels:
       - "traefik.enable=true"
