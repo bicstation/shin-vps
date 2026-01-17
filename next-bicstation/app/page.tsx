@@ -50,13 +50,18 @@ export default async function Page({ searchParams }: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 10;
 
+    // 💡 取得件数を20件に増やし、注目記事とアーカイブに分割します
     const [wpData, pcData, makersData] = await Promise.all([
-        fetchPostList(6), 
+        fetchPostList(20), 
         fetchPCProducts('', currentOffset, limit, attribute || ''), 
         fetchMakers() 
     ]);
 
-    const posts = wpData.results || [];
+    const allPosts = wpData.results || [];
+    // 最初の6件をグリッド表示、7件目以降をリスト表示
+    const featuredPosts = allPosts.slice(0, 6);
+    const archivePosts = allPosts.slice(6);
+
     const listTitle = attribute 
         ? `${attribute.toUpperCase()} 搭載製品一覧` 
         : "製品ラインナップ";
@@ -70,7 +75,6 @@ export default async function Page({ searchParams }: PageProps) {
 
     /**
      * 🚀 JSON-LD 構造化データの生成
-     * Google検索結果をリッチにし、専門性をアピールします。
      */
     const jsonLd = {
         "@context": "https://schema.org",
@@ -89,7 +93,7 @@ export default async function Page({ searchParams }: PageProps) {
                 "@type": "Organization",
                 "name": "BICSTATION",
                 "url": "https://bicstation.com",
-                "logo": "https://bicstation.com/logo.png" // 実際のロゴURLがあれば差し替えてください
+                "logo": "https://bicstation.com/logo.png"
             },
             {
                 "@type": "ItemList",
@@ -106,7 +110,6 @@ export default async function Page({ searchParams }: PageProps) {
 
     return (
         <div className={styles.wrapper}>
-            {/* 🚩 構造化データの挿入 */}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -116,7 +119,7 @@ export default async function Page({ searchParams }: PageProps) {
                 <Sidebar 
                     activeMenu="all" 
                     makers={makersData} 
-                    recentPosts={posts.map((p: any) => ({
+                    recentPosts={allPosts.slice(0, 10).map((p: any) => ({
                         id: p.id,
                         title: safeDecode(p.title.rendered),
                         slug: p.slug
@@ -139,44 +142,73 @@ export default async function Page({ searchParams }: PageProps) {
                 </header>
 
                 {!attribute && currentOffset === 0 && (
-                    <section className={styles.newsSection}>
-                        <h2 className={styles.sectionTitle}>
-                            <span className={styles.emoji}>🚀</span> 注目のPCトピック
-                        </h2>
-                        <div className={styles.newsGrid}>
-                            {posts.length === 0 ? (
-                                <p className={styles.noData}>記事を読み込み中...</p>
-                            ) : (
-                                posts.map((post: any) => {
-                                    const imageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png';
-                                    return (
-                                        <Link 
-                                            href={`/bicstation/${post.slug}`} 
-                                            key={post.id} 
-                                            className={styles.newsCard}
-                                        >
-                                            <div className={styles.imageWrapper}>
-                                                <img 
-                                                    src={imageUrl} 
-                                                    alt={safeDecode(post.title.rendered)} 
-                                                    className={styles.eyecatch}
-                                                    loading="lazy"
-                                                />
-                                            </div>
-                                            <div className={styles.contentBody}>
-                                                <span className={styles.postDate}>
-                                                    {new Date(post.date).toLocaleDateString('ja-JP')}
-                                                </span>
-                                                <h3 className={styles.articleTitle}>
-                                                    {safeDecode(post.title.rendered)}
-                                                </h3>
-                                            </div>
-                                        </Link>
-                                    );
-                                })
-                            )}
-                        </div>
-                    </section>
+                    <>
+                        {/* 🚩 注目のPCトピック (グリッド表示) */}
+                        <section className={styles.newsSection}>
+                            <h2 className={styles.sectionTitle}>
+                                <span className={styles.emoji}>🚀</span> 注目のPCトピック
+                            </h2>
+                            <div className={styles.newsGrid}>
+                                {featuredPosts.length === 0 ? (
+                                    <p className={styles.noData}>記事を読み込み中...</p>
+                                ) : (
+                                    featuredPosts.map((post: any) => {
+                                        const imageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png';
+                                        return (
+                                            <Link 
+                                                href={`/bicstation/${post.slug}`} 
+                                                key={post.id} 
+                                                className={styles.newsCard}
+                                            >
+                                                <div className={styles.imageWrapper}>
+                                                    <img 
+                                                        src={imageUrl} 
+                                                        alt={safeDecode(post.title.rendered)} 
+                                                        className={styles.eyecatch}
+                                                        loading="lazy"
+                                                    />
+                                                </div>
+                                                <div className={styles.contentBody}>
+                                                    <span className={styles.postDate}>
+                                                        {new Date(post.date).toLocaleDateString('ja-JP')}
+                                                    </span>
+                                                    <h3 className={styles.articleTitle}>
+                                                        {safeDecode(post.title.rendered)}
+                                                    </h3>
+                                                </div>
+                                            </Link>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </section>
+
+                        {/* 🚩 過去の記事アーカイブ (テキストリスト表示) */}
+                        {archivePosts.length > 0 && (
+                            <section className={styles.archiveSection}>
+                                <h2 className={styles.sectionTitleSmall}>
+                                    <span className={styles.emoji}>📝</span> 以前の記事を読む
+                                </h2>
+                                <ul className={styles.archiveList}>
+                                    {archivePosts.map((post: any) => (
+                                        <li key={post.id} className={styles.archiveItem}>
+                                            <span className={styles.archiveDate}>
+                                                {new Date(post.date).toLocaleDateString('ja-JP').replace(/\//g, '.')}
+                                            </span>
+                                            <Link href={`/bicstation/${post.slug}`} className={styles.archiveLink}>
+                                                {safeDecode(post.title.rendered)}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className={styles.archiveFooter}>
+                                    <Link href="/bicstation" className={styles.viewAllButton}>
+                                        すべての記事一覧へ
+                                    </Link>
+                                </div>
+                            </section>
+                        )}
+                    </>
                 )}
 
                 <section className={styles.productSection}>
