@@ -1,4 +1,7 @@
-/* 変数定義（プロジェクトのベースカラーに合わせて調整してください） */
+/* ======================================================
+   PostHeader スタイル設定
+   ====================================================== */
+
 .header {
   --white: #ffffff;
   --f0f0f0: #f0f0f0;
@@ -69,7 +72,29 @@
   font-size: 1.1rem;
 }
 
-/* モバイル対応（画面が小さい時の調整） */
+/* ------------------------------------------------------
+   ✅ ビルドエラー対策（修正済）：
+   Pure selector ルールを遵守するため、
+   ローカルセレクタ(.container)の後に :global を記述します。
+   ------------------------------------------------------ */
+.container :global(.animate-in) {
+  animation: fadeInDown 0.8s ease-out forwards;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ------------------------------------------------------
+   モバイル対応（画面が小さい時の調整）
+   ------------------------------------------------------ */
 @media (max-width: 768px) {
   .header {
     padding: 80px 20px 50px;
@@ -89,21 +114,5 @@
   .categoryTag {
     padding: 4px 14px;
     font-size: 0.75rem;
-  }
-}
-
-/* アニメーション（PostPage.tsxで指定されている animate-in 用） */
-:global(.animate-in) {
-  animation: fadeInDown 0.8s ease-out forwards;
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
