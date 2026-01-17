@@ -18,11 +18,11 @@ export async function POST(req: Request) {
         let allProducts: any[] = [];
 
         try {
+            // 💡 修正ポイント: next: { revalidate: 0 } を削除し cache: 'no-store' に一本化
             const djangoRes = await fetch(`${DJANGO_URL}/api/pc-products/`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
-                // 💡 警告回避のため cache: 'no-store' のみに統合
-                cache: 'no-store'
+                cache: 'no-store' 
             });
 
             if (djangoRes.ok) {
@@ -38,17 +38,17 @@ export async function POST(req: Request) {
             }
         } catch (error) {
             console.error("⚠️ Django接続失敗:", error);
-            // 在庫取得に失敗してもAI回答自体は継続させる
         }
 
-        // 3. Gemini / Gemma の設定と生成（Python版のループ試行ロジックを移植）
+        // 3. AIモデルの設定（最新リストに基づき更新）
         const genAI = new GoogleGenerativeAI(apiKey);
         
-        // 💡 試行するモデルの優先順位リスト
+        // 💡 試行するモデルの優先順位リスト (2026年最新版)
         const MODEL_CANDIDATES = [
-            "gemma-3-27b-it",   // 本命（ローカルで成功したモデル）
-            "gemini-1.5-flash", // 高速フォールバック
-            "gemini-1.5-pro"    // 高性能フォールバック
+            "gemini-2.5-flash",    // 最優先：高速・高精度
+            "gemma-3-27b-it",      // 本命：オープンモデル
+            "gemini-2.0-flash",    // 安定版フォールバック
+            "gemini-1.5-flash"     // 旧世代フォールバック
         ];
 
         const prompt = `
@@ -70,7 +70,7 @@ ${productListContext}
         let aiText = "";
         let usedModel = "";
 
-        // Pythonスクリプト同様にモデルを順に試す
+        // モデルを順に試行
         for (const modelId of MODEL_CANDIDATES) {
             try {
                 console.log(`🤖 AI試行中: ${modelId}`);
@@ -85,7 +85,7 @@ ${productListContext}
                 }
             } catch (err: any) {
                 console.warn(`❌ モデル ${modelId} でエラー:`, err.message);
-                continue; // 次のモデルへ
+                continue; 
             }
         }
 
@@ -93,7 +93,7 @@ ${productListContext}
             throw new Error("全てのAIモデルで生成に失敗しました。");
         }
 
-        // 4. AIの回答から「提案された製品名」を抽出して、画像とURLを紐付け
+        // 4. AIの回答から製品情報を抽出
         let productName = null;
         let productUrl = null;
         let productImage = null;
@@ -101,7 +101,6 @@ ${productListContext}
         const match = aiText.match(/RECOMMENDED_PRODUCT:(.*)/);
         if (match && match[1]) {
             const recommendedName = match[1].trim();
-            // 在庫データから部分一致で詳細情報を検索
             const found = allProducts.find(p => 
                 recommendedName.toLowerCase().includes(p.name.toLowerCase()) || 
                 p.name.toLowerCase().includes(recommendedName.toLowerCase())
@@ -114,8 +113,11 @@ ${productListContext}
             }
         }
 
-        // 余分なタグを消してクリーンなテキストにする
-        const cleanText = aiText.replace(/RECOMMENDED_PRODUCT:.*/, '').trim();
+        // 余分なタグやAI特有のコードブロック記法を消してクリーンにする
+        const cleanText = aiText
+            .replace(/RECOMMENDED_PRODUCT:.*/g, '')
+            .replace(/```html|```/g, '')
+            .trim();
 
         return NextResponse.json({ 
             text: cleanText,
