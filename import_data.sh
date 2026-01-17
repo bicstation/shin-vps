@@ -27,6 +27,25 @@ fi
 
 RESET="\e[0m"
 
+# --- ヘルプ表示関数 ---
+show_help() {
+    echo -e "\n${COLOR}【運用フローのガイド】${RESET}"
+    echo "1. [分析] 12番で現状の製品データを抽出し、キーワードを検討します。"
+    echo "2. [定義] django/master_data/attributes.tsv にキーワードを記述します。"
+    echo "3. [反映] 13番でマスターを登録し、14番で全製品にタグを自動付与します。"
+    echo "4. [SEO]  15番で最新の状態を Google 用サイトマップに反映します。"
+    echo "5. [維持] 新製品のインポート(3番)後は、必ず14番と15番を実行してください。"
+    echo "---------------------------------------"
+    echo "オプション引数:"
+    echo "  -h, --help    このヘルプメッセージを表示して終了します。"
+}
+
+# --- コマンドライン引数の処理 ---
+if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
+    show_help
+    exit 0
+fi
+
 # --- Djangoコンテナ用コマンド実行関数 ---
 run_django() {
     if [ ! -f "$SCRIPT_DIR/$COMPOSE_FILE" ]; then
@@ -66,17 +85,6 @@ update_sitemap() {
     run_next node /app/generate-sitemap.mjs
 }
 
-# --- ヘルプ表示 ---
-show_help() {
-    echo -e "\n${COLOR}【運用フローのガイド】${RESET}"
-    echo "1. [分析] 12番で現状の製品データを抽出し、キーワードを検討します。"
-    echo "2. [定義] django/master_data/attributes.tsv にキーワードを記述します。"
-    echo "3. [反映] 13番でマスターを登録し、14番で全製品にタグを自動付与します。"
-    echo "4. [SEO]  15番で最新の状態を Google 用サイトマップに反映します。"
-    echo "5. [維持] 新製品のインポート(3番)後は、必ず14番と15番を実行してください。"
-    echo "---------------------------------------"
-}
-
 # --- メインメニュー ---
 echo -e "---------------------------------------"
 echo -e "🚀 SHIN-VPS Data Import & Automation Tool"
@@ -95,7 +103,7 @@ echo -e "12) [Analysis] 製品データをTSV出力 (分析用)"
 echo -e "13) [Master]   属性マスター(TSV)をインポート"
 echo -e "14) ${COLOR}[Auto]     属性自動マッピング実行 ⚡${RESET}"
 echo -e "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
-echo "h) [Help]    使い方の説明"
+echo "h) [Help]     使い方の説明"
 echo "8) 終了"
 echo "---------------------------------------"
 
@@ -127,11 +135,7 @@ case $CHOICE in
         read -p ">> " SUB_CHOICE
         case $SUB_CHOICE in
             1) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
-            2)
-                # run_django python manage.py linkshare_bc_api_parser --mid 35909 --save-db
-                # run_django python manage.py sync_products_from_raw --maker HP
-                # run_django python manage.py sync_api_to_json --maker HP
-                run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_hp.py ;;
+            2) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_hp.py ;;
             3) run_django python manage.py import_dell_ftp ;;
             4) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_acer.py ;;
             5) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
