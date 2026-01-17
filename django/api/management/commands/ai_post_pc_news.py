@@ -116,13 +116,25 @@ class Command(BaseCommand):
             prompt = PROMPT_TEMPLATE.replace("{raw_title}", raw_title).replace("{page_content[:3500]}", page_content[:3500])
             ai_response = ""
             for model in MODELS:
+                self.stdout.write(f"🤖 モデル {model} で生成を試行中...")
                 api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
                 try:
-                    r = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
+                    r = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=180)
+                    
+                    # --- 残り回数（レート制限）の抽出表示 ---
+                    rem = r.headers.get('x-ratelimit-remaining-requests', '-')
+                    lim = r.headers.get('x-ratelimit-limit-requests', '-')
+                    
                     if r.status_code == 200:
                         ai_response = r.json()['candidates'][0]['content']['parts'][0]['text']
+                        self.stdout.write(self.style.SUCCESS(f"✅ AI生成成功: {model} (残り目安: {rem}/{lim})"))
                         break
-                except: continue
+                    elif r.status_code == 429:
+                        self.stdout.write(self.style.ERROR(f"⚠️ {model} の制限に達しました。"))
+                        continue
+                except Exception as e:
+                    self.stdout.write(self.style.ERROR(f"通信エラー: {e}"))
+                    continue
             if not ai_response: continue
 
             # --- 4.5 【重要】HTML二重構造ガードロジック ---

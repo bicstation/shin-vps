@@ -4,7 +4,7 @@
 1. ai_models.txt : 使用するGeminiモデル名（gemini-1.5-proなど）を1行ずつ記述
 2. ai_prompt.txt : AIへの指示（プロンプト）。{maker}, {name}, {price}, {description} の変数を埋め込む形式
 
-実行コマンド: python manage.py ai_post_pc_news
+実行コマンド: python manage.py ai_blog_from_db
 """
 
 import os
@@ -20,7 +20,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DBの製品情報を元にAI記事を生成し、WordPress(blog.tiper.live)へ自動投稿します'
+    help = 'DB의製品情報を元にAI記事を生成し、WordPress(blog.tiper.live)へ自動投稿します'
 
     def handle(self, *args, **options):
         # ==========================================
@@ -156,11 +156,19 @@ class Command(BaseCommand):
             api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
             try:
                 response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=180)
+                
+                # --- ★ ここに「残り回数」の表示を追加 ---
+                rem = response.headers.get('x-ratelimit-remaining-requests', '-')
+                lim = response.headers.get('x-ratelimit-limit-requests', '-')
+                
                 res_json = response.json()
                 if 'candidates' in res_json:
                     ai_raw_text = res_json['candidates'][0]['content']['parts'][0]['text']
-                    self.stdout.write(self.style.SUCCESS(f"✅ AI生成成功: {model_id}"))
+                    self.stdout.write(self.style.SUCCESS(f"✅ AI生成成功: {model_id} (残り目安: {rem}/{lim})"))
                     break
+                elif response.status_code == 429:
+                    self.stdout.write(self.style.ERROR(f"⚠️ {model_id} は制限に達しました。"))
+                    continue
             except: continue
 
         if not ai_raw_text:
