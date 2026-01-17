@@ -45,7 +45,7 @@ export default function ChatBot() {
         setIsLoading(true);
 
         try {
-            // ✅ 重要: TraefikのPathPrefixに合わせて /bicstation を付与
+            // ✅ TraefikのPathPrefixに合わせて /bicstation を付与
             const response = await fetch('/bicstation/api/chat', {
                 method: 'POST',
                 headers: {
@@ -55,12 +55,12 @@ export default function ChatBot() {
             });
 
             if (!response.ok) {
-                throw new Error('ネットワークレスポンスが正常ではありませんでした。');
+                throw new Error(`エラーが発生しました。ステータス: ${response.status}`);
             }
 
             const data = await response.json();
             
-            // Geminiからの回答を画面に追加
+            // AIからの回答を画面に追加
             setMessages(prev => [...prev, { role: 'ai', text: data.text }]);
         } catch (error) {
             console.error('Error:', error);
@@ -113,9 +113,15 @@ export default function ChatBot() {
                                 key={index} 
                                 className={msg.role === 'user' ? styles.userMessageRow : styles.aiMessageRow}
                             >
-                                <div className={msg.role === 'user' ? styles.userBubble : styles.aiBubble}>
-                                    {msg.text}
-                                </div>
+                                <div 
+                                    className={msg.role === 'user' ? styles.userBubble : styles.aiBubble}
+                                    style={{ whiteSpace: 'pre-wrap' }} // ✅ 改行を反映させる
+                                    dangerouslySetInnerHTML={{ 
+                                        __html: msg.text
+                                            .replace(/\n/g, '<br />') // 改行コードをBRタグに変換
+                                            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // **太字** を <b>タグに変換
+                                    }}
+                                />
                             </div>
                         ))}
                         {isLoading && (
@@ -123,7 +129,6 @@ export default function ChatBot() {
                                 <div className={styles.loadingBubble}>考え中...</div>
                             </div>
                         )}
-                        {/* スクロール用ターゲット */}
                         <div ref={scrollEndRef} />
                     </div>
 
