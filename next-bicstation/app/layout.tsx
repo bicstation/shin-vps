@@ -9,6 +9,9 @@ import Script from "next/script";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
+// ✅ AIチャットコンシェルジュコンポーネントをインポート
+import ChatBot from "@/components/common/ChatBot";
+
 // ✅ 共通カラー設定をインポート
 import { COLORS } from "@/constants";
 
@@ -102,6 +105,9 @@ export default function RootLayout({
 
         {/* 全ページ共通フッター */}
         <Footer />
+
+        {/* ✅ AIチャットコンシェルジュを全ページに配置 */}
+        <ChatBot />
 
         {/* ✅ 外部JSの読み込み (common-utils.js) 
             strategy="afterInteractive" を指定することで、メインコンテンツの表示を妨げずに読み込みます。

@@ -92,6 +92,8 @@ services:
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/bicstation
     container_name: next-bicstation-v2
+    env_file:
+      - .env
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_BASE_PATH=/bicstation
