@@ -5,7 +5,6 @@ from django.utils.timezone import now
 class PCAttribute(models.Model):
     """
     CPU、メモリ、NPUなどのスペック情報を管理するマスターモデル
-    （既存のまま維持）
     """
     TYPE_CHOICES = [
         ('cpu', 'CPU'),
@@ -20,7 +19,6 @@ class PCAttribute(models.Model):
     name = models.CharField('表示名', max_length=100)
     slug = models.SlugField('スラッグ', max_length=100, unique=True)
     
-    # 追加カラム（既存運用には影響なし）
     search_keywords = models.TextField(
         '検索キーワード', 
         blank=True, 
@@ -40,7 +38,7 @@ class PCAttribute(models.Model):
 class PCProduct(models.Model):
     """
     PC製品を管理する汎用モデル
-    既存のテーブル構造を完全に維持し、AI処理用の新カラムを追加
+    既存のテーブル構造を維持しつつ、自作PC提案・AI解析用の新カラムを追加
     """
     # === 1. 既存カラム（一切変更なし） ===
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
@@ -77,10 +75,8 @@ class PCProduct(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
 
-    # === 2. 🚀 新規追加カラム（AI処理・構造化データ用） ===
-    # JSONや生テキストからAIが抽出したデータを保存する場所
-    # すべて null=True, blank=True で既存データへの影響を回避
-    
+    # === 2. 🚀 新規追加カラム（AI解析・自作PC相性用） ===
+    # 基本スペックの数値化
     memory_gb = models.IntegerField(null=True, blank=True, verbose_name="メモリ(GB数値)")
     storage_gb = models.IntegerField(null=True, blank=True, verbose_name="ストレージ(GB数値)")
     npu_tops = models.FloatField(null=True, blank=True, verbose_name="NPU性能(TOPS)")
@@ -88,7 +84,14 @@ class PCProduct(models.Model):
     cpu_model = models.CharField(max_length=255, null=True, blank=True, verbose_name="CPUモデル詳細")
     gpu_model = models.CharField(max_length=255, null=True, blank=True, verbose_name="GPUモデル詳細")
     display_info = models.CharField(max_length=255, null=True, blank=True, verbose_name="ディスプレイ情報")
-    
+
+    # --- 自作PC提案に特化したカラム ---
+    cpu_socket = models.CharField(max_length=50, null=True, blank=True, verbose_name="CPUソケット(推論)") # 例: LGA1700, AM5
+    motherboard_chipset = models.CharField(max_length=50, null=True, blank=True, verbose_name="推奨チップセット") # 例: B760, Z790
+    ram_type = models.CharField(max_length=20, null=True, blank=True, verbose_name="メモリ規格") # 例: DDR5, DDR4
+    power_recommendation = models.IntegerField(null=True, blank=True, verbose_name="推奨電源容量(W)")
+
+    # 解析メタ情報
     target_segment = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI判定ターゲット層")
     is_ai_pc = models.BooleanField(default=False, verbose_name="AI PC該当フラグ")
     spec_score = models.IntegerField(default=0, verbose_name="性能評価スコア(0-100)")
@@ -105,23 +108,22 @@ class PCProduct(models.Model):
     def __str__(self):
         return f"[{self.maker}] {self.name[:30]}"
 
-    # 💡 保存時の自動処理（既存ロジックを完全維持）
+    # 💡 保存時の自動処理
     def save(self, *args, **kwargs):
-        # 1. 統合ジャンルのフォールバック（既存）
+        # 1. 統合ジャンルのフォールバック
         if not self.unified_genre and self.raw_genre:
             self.unified_genre = self.raw_genre
         
-        # 2. 受注停止ワードの自動チェック（既存）
+        # 2. 受注停止ワードの自動チェック
         if self.raw_html:
             stop_words = ["現在ご注文いただけません", "受注停止", "販売終了", "品切れ", "在庫切れ"]
             if any(word in self.raw_html for word in stop_words):
                 self.stock_status = "受注停止中"
             else:
-                # 既存の状態を壊さないよう、明示的な「在庫あり」上書きが必要な場合のみ実施
                 if self.stock_status == "受注停止中":
                     self.stock_status = "在庫あり"
         
-        # 3. 新機能：AI PC判定（既存運用を邪魔しない範囲で追加）
+        # 3. AI PC判定（説明文から推測）
         if self.description:
             ai_keywords = ["NPU", "Ryzen AI", "Core Ultra", "TOPS", "Copilot+"]
             if any(key.lower() in self.description.lower() for key in ai_keywords):

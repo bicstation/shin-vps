@@ -27,26 +27,6 @@ fi
 
 RESET="\e[0m"
 
-# --- ヘルプ表示関数 ---
-show_help() {
-    echo -e "\n${COLOR}【運用フローのガイド】${RESET}"
-    echo "1. [分析] 12番で現状の製品データを抽出し、キーワードを検討します。"
-    echo "2. [定義] django/master_data/attributes.tsv にキーワードを記述します。"
-    echo "3. [反映] 13番でマスターを登録し、14番で全製品にタグを自動付与します。"
-    echo "4. [SEO]  15番で最新の状態を Google 用サイトマップに反映します。"
-    echo "5. [維持] 新製品のインポート(3番)後は、必ず14番と15番を実行してください。"
-    echo -e "6. ${COLOR}[AI]   16番でAIコンシェルジュが使用可能なモデル一覧を確認できます。${RESET}"
-    echo "---------------------------------------"
-    echo "オプション引数:"
-    echo "  -h, --help    このヘルプメッセージを表示して終了します。"
-}
-
-# --- コマンドライン引数の処理 ---
-if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
-    show_help
-    exit 0
-fi
-
 # --- Djangoコンテナ用コマンド実行関数 ---
 run_django() {
     if [ ! -f "$SCRIPT_DIR/$COMPOSE_FILE" ]; then
@@ -64,25 +44,14 @@ run_next() {
 # --- サイトマップ更新処理 ---
 update_sitemap() {
     echo -e "\n${COLOR}🌐 サイトマップを更新中...${RESET}"
-    
-    # ホスト側のスクリプトパス
     MJS_SRC="$SCRIPT_DIR/next-bicstation/generate-sitemap.mjs"
-    
-    # 1. スクリプトファイルの存在確認と転送
     if [ -f "$MJS_SRC" ]; then
-        echo "🔄 スクリプトをコンテナに同期中..."
         docker cp "$MJS_SRC" "$NEXT_CON":/app/generate-sitemap.mjs
-        echo "✅ 同期完了。"
     else
         echo -e "\e[31m[ERROR] $MJS_SRC が見つかりません。\e[0m"
-        echo "ファイルの場所を確認してください。"
         return 1
     fi
-
-    # 2. ディレクトリ権限修正
     docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec -u root "$NEXT_CON" chmod -R 777 /app/public/sitemap_gen
-    
-    # 3. 実行
     run_next node /app/generate-sitemap.mjs
 }
 
@@ -104,16 +73,19 @@ echo -e "12) [Analysis] 製品データをTSV出力 (分析用)"
 echo -e "13) [Master]   属性マスター(TSV)をインポート"
 echo -e "14) ${COLOR}[Auto]     属性自動マッピング実行 ⚡${RESET}"
 echo -e "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
-echo -e "16) ${COLOR}[AI]       AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
+echo -e "16) ${COLOR}[AI-M]     AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
+echo -e "17) ${COLOR}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
 echo "---------------------------------------"
-echo "h) [Help]     使い方の説明"
 echo "8) 終了"
 echo "---------------------------------------"
 
 read -p "選択してください: " CHOICE
 
 case $CHOICE in
-    1) run_django python manage.py migrate ;;
+    1) 
+        run_django python manage.py makemigrations api
+        run_django python manage.py migrate
+        ;;
     2)
         run_django python manage.py import_t_duga
         run_django python manage.py import_t_fanza
@@ -121,100 +93,59 @@ case $CHOICE in
         run_django python manage.py normalize_fanza
         ;;
     3)
-        echo -e "\n--- どのメーカーを実行しますか？ ---"
-        echo "1) Lenovo (Bic-saving)"
-        echo "2) HP (Linkshare/Bicstation)"
-        echo "3) Dell (FTP Data)"
-        echo "4) Acer (JSON Import from Windows)"
-        echo "5) Minisforum"
-        echo "6) GEEKOM"
-        echo "7) VSPEC (BTO)"
-        echo "8) STORM"
-        echo "9) FRONTIER"
-        echo "10) Sycom"
-        echo "11) MSI (Import from Ark/VC)"
-        echo -e "12) ${COLOR}Mouse Computer (High-Precision) 🐭${RESET}"
-        echo "13) 戻る"
+        echo -e "\n--- メーカー選択 ---"
+        echo "12) Mouse Computer (High-Precision) 🐭"
         read -p ">> " SUB_CHOICE
         case $SUB_CHOICE in
-            1) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
-            2) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_hp.py ;;
-            3) run_django python manage.py import_dell_ftp ;;
-            4) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_acer.py ;;
-            5) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
-            6) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py ;;
-            7) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_vspec.py ;;
-            8) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py ;;
-            9) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py ;;
-            10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
-            11) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py ;;
-            12) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
-            13) : ;;
-            *) exit 0 ;;
+            12) 
+                run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py
+                echo -e "\n${COLOR}🐭 マウスのインポートが完了しました。${RESET}"
+                read -p "AIによる詳細解析を実行しますか？(y/n): " AI_CONFIRM
+                if [ "$AI_CONFIRM" == "y" ]; then
+                    read -p "解析件数を入力 (all または 空欄で全件, 数値指定も可): " AI_LIMIT
+                    # 「すべて」のロジック
+                    if [[ -z "$AI_LIMIT" || "$AI_LIMIT" == "all" ]]; then
+                        AI_LIMIT=999999
+                        echo ">> 全件解析モードで実行します。"
+                    fi
+                    run_django python manage.py analyze_pc_spec --maker mouse --limit "$AI_LIMIT"
+                fi
+                ;;
         esac
-        echo -e "\n${COLOR}💡 ヒント: データの更新後は 14番 で属性紐付け、15番 でサイトマップ更新を推奨します。${RESET}"
         ;;
-    4)
-        read -p "ファイル名を入力: " FILE_NAME
-        run_django python manage.py import_av "/usr/src/app/data/$FILE_NAME"
-        ;;
-    5) run_django python manage.py createsuperuser ;;
-    6)
-        echo "1: 1件 / 2: 5件 / 3: モデル確認"
-        read -p "モード: " WP_CHOICE
-        if [ "$WP_CHOICE" == "1" ]; then run_django python manage.py ai_blog_from_db
-        elif [ "$WP_CHOICE" == "2" ]; then
-            for i in {1..5}; do run_django python manage.py ai_blog_from_db; sleep 10; done
-        elif [ "$WP_CHOICE" == "3" ]; then run_django python manage.py ai_model_name
-        fi
-        ;;
-    7)
-        echo "1) RSSから自動投稿 / 2) URL指定手動投稿"
-        read -p ">> " NEWS_CHOICE
-        if [ "$NEWS_CHOICE" == "1" ]; then
-            run_django python manage.py ai_post_pc_news
-        elif [ "$NEWS_CHOICE" == "2" ]; then
-            read -p "対象URL: " TARGET_URL
-            run_django python manage.py ai_post_pc_news --url "$TARGET_URL"
-        fi
-        ;;
-    12)
-        run_django python manage.py export_products
-        echo -e "\n${COLOR}成功: pc_products_analysis.tsv を作成しました。${RESET}"
-        echo "ローカルに取り出すコマンド:"
-        echo "docker cp ${DJANGO_CON}:/usr/src/app/pc_products_analysis.tsv ./"
-        ;;
-    13)
-        echo -e "\n--- [Master] 属性マスターのインポート ---"
-        read -p "ファイル名 (例: master_data/attributes.tsv): " TSV_FILE
+    12) run_django python manage.py export_products ;;
+    13) 
+        read -p "ファイル名: " TSV_FILE
         run_django python manage.py import_specs "/usr/src/app/$TSV_FILE"
         ;;
-    14)
-        echo -e "\n--- [Auto] 属性自動マッピング実行 ---"
-        run_django python manage.py auto_map_attributes
+    14) run_django python manage.py auto_map_attributes ;;
+    15) update_sitemap ;;
+    16) run_django python manage.py ai_model_name ;;
+    17)
+        echo -e "\n--- [AI-Spec] AI詳細スペック解析 ---"
+        read -p "メーカー (mouse/dell等, 空欄で全件): " MK_ARG
+        read -p "解析件数 (all または 空欄で全件, 数値指定も可): " LM_ARG
+        
+        # 「すべて」のロジック
+        if [[ -z "$LM_ARG" || "$LM_ARG" == "all" ]]; then
+            LM_ARG=999999
+            echo ">> 全件解析モードで実行します。"
+        fi
+
+        CMD="python manage.py analyze_pc_spec"
+        [[ -n "$MK_ARG" ]] && CMD="$CMD --maker $MK_ARG"
+        CMD="$CMD --limit $LM_ARG"
+        run_django $CMD
         ;;
-    15)
-        update_sitemap
-        ;;
-    16)
-        echo -e "\n${COLOR}🤖 利用可能な AI モデル一覧を取得します...${RESET}"
-        run_django python manage.py ai_model_name
-        ;;
-    h) show_help ;;
     8) exit 0 ;;
 esac
 
-# 🔄 VPS環境のみ：変更があった場合にスケジューラーを再起動
-if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14)$ ]]; then
+# 🔄 連携処理（VPS環境）
+if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14|17)$ ]]; then
     echo -e "\n${COLOR}🔄 設定反映のためスケジューラーを再起動しています...${RESET}"
     docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
-    
-    read -p "続けてサイトマップ(Sitemap.xml)も更新しますか？ (y/n): " CONFIRM
-    if [ "$CONFIRM" == "y" ]; then
-        update_sitemap
-    fi
-    echo -e "✨ すべての同期作業が完了しました。"
+    read -p "続けてサイトマップを更新しますか？ (y/n): " CONFIRM
+    [[ "$CONFIRM" == "y" ]] && update_sitemap
 fi
 
-echo "---------------------------------------"
-echo -e "✅ 完了しました！"
+echo -e "\n✅ 処理が完了しました！"

@@ -101,9 +101,9 @@ services:
       - "traefik.http.routers.bic-v2-router.entrypoints=web"
       - "traefik.http.routers.bic-v2-router.priority=100"
       - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
-    volumes:
-      - ./next-bicstation:/app  # ホストのコード変更を即時反映
-      - /app/node_modules
+    # volumes:
+    #   - ./next-bicstation:/app  # ホストのコード変更を即時反映
+    #   - /app/node_modules
     networks:
       - internal-net
 

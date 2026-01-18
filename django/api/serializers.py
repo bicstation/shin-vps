@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 from .models import AdultProduct, LinkshareProduct, Maker, Genre, Actress, Label, Director, Series 
-from .models.pc_products import PCProduct, PCAttribute  # 💡 PCAttribute を追加
+from .models.pc_products import PCProduct, PCAttribute
 
 # --------------------------------------------------------------------------
 # 1. エンティティ（マスターデータ）のシリアライザ
@@ -36,9 +37,7 @@ class SeriesSerializer(serializers.ModelSerializer):
         model = Series
         fields = ('id', 'name', 'api_source', 'product_count')
 
-# 💡 新規追加: PCスペック属性用のシリアライザ
 class PCAttributeSerializer(serializers.ModelSerializer):
-    # attr_type の表示名（例: "cpu" -> "CPU"）を取得
     attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
 
     class Meta:
@@ -81,37 +80,56 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 # --------------------------------------------------------------------------
-# 4. PC製品モデル (PCProductSerializer) - 🚀 属性連携対応版
+# 4. PC製品モデル (PCProductSerializer)
 # --------------------------------------------------------------------------
 
 class PCProductSerializer(serializers.ModelSerializer):
-    """
-    最新の PCProduct モデル（AI解説、スペック属性タグ、統合ジャンル、在庫ステータス対応）用
-    """
-    # 🚀 スペック属性タグをネストして取得 (Many-to-Many なので many=True)
     attributes = PCAttributeSerializer(many=True, read_only=True)
 
     class Meta:
         model = PCProduct
         fields = (
             'id',
-            'unique_id',           # 固有ID
-            'site_prefix',         # 'lenovo', 'hp' 等
-            'maker',               # メーカー名
-            'raw_genre',           # サイト別分類
-            'unified_genre',       # 統合ジャンル
-            'name',                # 商品名
-            'price',               # 価格
-            'url',                 # 商品URL
-            'image_url',           # 画像URL
-            'description',         # 詳細スペック
-            'attributes',          # 🚀 追記: スペック属性タグリスト
-            'affiliate_url',       # 正式アフィリエイトURL
-            'affiliate_updated_at',# URL更新日時
-            'stock_status',        # 在庫/受注状況
-            'ai_content',          # AI解説
-            'is_posted',           # 投稿フラグ
-            'is_active',           # 掲載フラグ
+            'unique_id',
+            'site_prefix',
+            'maker',
+            'raw_genre',
+            'unified_genre',
+            'name',
+            'price',
+            'url',
+            'image_url',
+            'description',
+            
+            # --- AI解析抽出スペック ---
+            'cpu_model',
+            'gpu_model',
+            'memory_gb',
+            'storage_gb',
+            'display_info',
+            'npu_tops',
+            
+            # --- 🚀 自作PC提案・相性用データ（追加分） ---
+            'cpu_socket',           # CPUソケット (LGA1700等)
+            'motherboard_chipset',  # 推奨チップセット
+            'ram_type',             # メモリ規格 (DDR5等)
+            'power_recommendation', # 推奨電源容量
+            
+            # --- AI判定・スコアリング ---
+            'target_segment',
+            'is_ai_pc',
+            'spec_score',
+            'ai_summary',           # 記事要約
+            'ai_content',           # 記事本文
+            
+            # --- ステータス・メタ情報 ---
+            'attributes',
+            'affiliate_url',
+            'affiliate_updated_at',
+            'stock_status',
+            'is_posted',
+            'is_active',
+            'last_spec_parsed_at',  # スペック解析実行日
             'created_at',
             'updated_at',
         )

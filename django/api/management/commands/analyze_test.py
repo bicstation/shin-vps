@@ -1,91 +1,127 @@
 import json
 import requests
+import re
 from django.core.management.base import BaseCommand
-from api.models import PCProduct
+from api.models.pc_products import PCProduct  # 💡 正しいパスに合わせて調整
 from django.utils import timezone
 
-# ここにAPIキーを直接セット
+# APIキー
 GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
 
 class Command(BaseCommand):
+    help = 'Gemma-3/Geminiを使用して製品スペックを解析し、DBを更新する（解説文付き）'
+
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
+        parser.add_argument('--limit', type=int, default=1, help='処理する最大件数')
 
     def handle(self, *args, **options):
         unique_id = options['unique_id']
-        if unique_id:
-            product = PCProduct.objects.filter(unique_id=unique_id).first()
-        else:
-            product = PCProduct.objects.filter(last_spec_parsed_at__isnull=True).first()
+        limit = options['limit']
 
-        if not product:
-            self.stdout.write("対象製品なし")
+        if unique_id:
+            products = PCProduct.objects.filter(unique_id=unique_id)
+        else:
+            # 解析未完了のものを取得
+            products = PCProduct.objects.filter(last_spec_parsed_at__isnull=True)[:limit]
+
+        if not products.exists():
+            self.stdout.write(self.style.WARNING("対象製品が見つかりませんでした。"))
             return
 
-        self.stdout.write(f"🔍 解析中: {product.name}")
+        for product in products:
+            self.analyze_product(product)
 
-        # モデルを安定版に変更
-        model = "gemma-3-27b-it"
-        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
-        
+    def analyze_product(self, product):
+        self.stdout.write(f"\n🔍 解析＆解説生成開始: {product.name} (ID: {product.unique_id})")
+
+        # ブランドルールの設定
+        brand_rules = ""
+        name_lower = product.name.lower()
+        id_lower = product.unique_id.lower()
+
+        if "mouse" in name_lower or "mouse" in id_lower:
+            brand_rules = """
+            【マウスコンピューター専用ルール】
+            1. CPU: 型番の「A」はAMD、「I/i」はIntel。
+            2. GPU: G-TUNE/NEXTGEARならゲーミング。型番Uは内蔵グラフィックス。
+            3. 画面: A4/B4/G4=14型、A5/B5=15.6型。
+            """
+        else:
+            brand_rules = "【標準ルール】名称からメーカーの命名規則を推測してください。"
+
+        # 💡 プロンプトに "ai_description" を追加
         prompt = f"""
-        以下のスペック情報を解析し、指定のJSONフォーマットで回答してください。
+        あなたはPC専門家です。以下の製品情報を解析し、指定のJSON形式で出力してください。
         
-        【スペック情報】
-        {product.description}
+        {brand_rules}
         
-        【出力フォーマット】
+        製品名: {product.name}
+        価格: {product.price}円
+        説明文: {product.description}
+        
+        要求事項:
+        1. 数値スペック（メモリ、ストレージ等）を正確に抽出してください。
+        2. 「ai_description」項目には、このPCの魅力を伝える200文字程度のプロ並みの解説文を作成してください。
+        
+        フォーマット:
         {{
             "memory_gb": 16,
             "storage_gb": 512,
-            "npu_tops": 40.0,
-            "cpu_model": "Intel Core Ultra 5 125U",
-            "gpu_model": "Intel Graphics",
-            "display_info": "13.3インチ フルHD 液晶",
-            "target_segment": "ビジネス・モバイル",
-            "is_ai_pc": true,
-            "spec_score": 75
+            "npu_tops": 0.0,
+            "cpu_model": "CPU名",
+            "gpu_model": "GPU名",
+            "display_info": "画面情報",
+            "target_segment": "一般事務/ゲーミング/クリエイター等",
+            "is_ai_pc": false,
+            "spec_score": 70,
+            "ai_description": "ここに魅力的な解説文を入力"
         }}
         """
 
-        # JSONのみを確実に返させるためのペイロード
+        # URLの組み立て
+        host = "generativelanguage.googleapis.com"
+        # 💡 モデル名は gemma-3 または gemini-1.5-flash/pro などが使えます
+        path = "v1beta/models/gemini-1.5-flash:generateContent" 
+        api_url = f"https://{host}/{path}?key={GEMINI_API_KEY}"
+        
         payload = {
-            "contents": [{
-                "parts": [{"text": prompt}]
-            }],
+            "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
-                "response_mime_type": "application/json",
+                "temperature": 0.2, # 解説文に少し表現力を持たせるため0.1より微増
+                "response_mime_type": "application/json" # JSON出力を強制
             }
         }
 
         try:
-            response = requests.post(api_url, json=payload, timeout=30)
+            response = requests.post(api_url, json=payload, timeout=40)
             response.raise_for_status()
             result = response.json()
             
-            # テキスト抽出
-            answer_text = result['candidates'][0]['content']['parts'][0]['text']
+            # JSONのパース
+            answer_text = result['candidates'][0]['content']['parts'][0]['text'].strip()
             spec_data = json.loads(answer_text)
 
-            self.stdout.write(self.style.SUCCESS("--- 解析成功 ---"))
-            self.stdout.write(json.dumps(spec_data, indent=4, ensure_ascii=False))
+            self.stdout.write(self.style.SUCCESS("--- 解析＆生成成功 ---"))
 
-            # DB保存
+            # 💡 DBへの保存処理（スペック数値 + 解説文）
             product.memory_gb = spec_data.get('memory_gb')
             product.storage_gb = spec_data.get('storage_gb')
             product.npu_tops = spec_data.get('npu_tops')
             product.cpu_model = spec_data.get('cpu_model')
             product.gpu_model = spec_data.get('gpu_model')
+            product.display_info = spec_data.get('display_info')
             product.target_segment = spec_data.get('target_segment')
             product.is_ai_pc = spec_data.get('is_ai_pc', False)
             product.spec_score = spec_data.get('spec_score', 0)
+            
+            # 💡 ここでAI解説文を保存（モデルのフィールド名に合わせてください）
+            product.ai_content = spec_data.get('ai_description')
+            
             product.last_spec_parsed_at = timezone.now()
             product.save()
-
-            self.stdout.write(self.style.SUCCESS("✅ DB保存完了"))
+            
+            self.stdout.write(self.style.SUCCESS(f"✅ スペックと解説文を保存しました: {product.unique_id}"))
 
         except Exception as e:
-            # 詳細なエラーを出力
-            if 'response' in locals() and response.text:
-                self.stdout.write(self.style.ERROR(f"APIエラー詳細: {response.text}"))
-            self.stdout.write(self.style.ERROR(f"エラー: {str(e)}"))
+            self.stdout.write(self.style.ERROR(f"❌ エラー発生 ({product.unique_id}): {str(e)}"))

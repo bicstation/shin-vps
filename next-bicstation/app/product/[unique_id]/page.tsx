@@ -62,9 +62,10 @@ export default async function ProductDetailPage(props: PageProps) {
         notFound();
     }
 
+    // AI解析データにアクセスしやすくするため
     const p = product as any;
 
-    // 💡 関連商品の取得（確実に最大8つ表示）
+    // 💡 関連商品の取得
     const relatedProducts = await fetchRelatedProducts(product.maker, unique_id);
     const displayRelated = relatedProducts.slice(0, 8);
     
@@ -72,15 +73,12 @@ export default async function ProductDetailPage(props: PageProps) {
     const isPriceAvailable = product.price > 0;
     const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
-    /**
-     * 💡 ジャンルリンク用の最初の属性スラッグを取得
-     */
     const firstAttributeSlug = (p.attributes && p.attributes.length > 0)
         ? p.attributes[0].slug
         : '';
 
     /**
-     * AIコンテンツの解析（目次・要約・本文の分離）
+     * AIコンテンツの解析
      */
     const parseContent = (html: string) => {
         const h2RegExp = /<h2.*?>(.*?)<\/h2>/g;
@@ -107,19 +105,12 @@ export default async function ProductDetailPage(props: PageProps) {
 
     const { tocItems, summary, cleanBody } = parseContent(product.ai_content || "");
 
-    /**
-     * 💡 JSON-LD 構造化データ
-     */
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": product.name,
         "image": product.image_url || '/no-image.png',
-        "description": `${product.maker}のPC、${product.name}の詳細スペック。`,
-        "brand": {
-            "@type": "Brand",
-            "name": product.maker
-        },
+        "brand": { "@type": "Brand", "name": product.maker },
         "offers": {
             "@type": "Offer",
             "url": finalUrl,
@@ -140,19 +131,12 @@ export default async function ProductDetailPage(props: PageProps) {
                 {/* 1. ヒーローセクション */}
                 <div className={styles.heroSection}>
                     <div className={styles.imageWrapper}>
-                        <img 
-                            src={product.image_url || '/no-image.png'} 
-                            alt={product.name} 
-                            className={styles.productImage} 
-                        />
+                        <img src={product.image_url || '/no-image.png'} alt={product.name} className={styles.productImage} />
                     </div>
                     <div className={styles.infoSide}>
                         <div className={styles.badgeContainer}>
                             {product.unified_genre && (
-                                <Link 
-                                    href={`/brand/${product.maker.toLowerCase()}?attribute=${firstAttributeSlug}`} 
-                                    className={styles.genreBadgeLink}
-                                >
+                                <Link href={`/brand/${product.maker.toLowerCase()}?attribute=${firstAttributeSlug}`} className={styles.genreBadgeLink}>
                                     <span className={styles.genreBadge}># {product.unified_genre}</span>
                                 </Link>
                             )}
@@ -160,9 +144,7 @@ export default async function ProductDetailPage(props: PageProps) {
                         </div>
                         <h1 className={styles.productTitle}>{product.name}</h1>
                         <div className={styles.priceContainer}>
-                            <span className={styles.priceLabel}>
-                                {isPriceAvailable ? "メーカー直販特別価格" : "販売状況"}
-                            </span>
+                            <span className={styles.priceLabel}>{isPriceAvailable ? "メーカー直販特別価格" : "販売状況"}</span>
                             <div className={styles.priceValue}>
                                 {isPriceAvailable ? (
                                     <>¥{product.price.toLocaleString()}<span className={styles.taxLabel}>(税込)</span></>
@@ -203,7 +185,72 @@ export default async function ProductDetailPage(props: PageProps) {
                     </section>
                 )}
 
-                {/* 3. エキスパート解説 */}
+                {/* ✅ 3. AI解析済みスペックサマリー */}
+                <section className={styles.aiSpecSummarySection}>
+                    <h2 className={styles.minimalTitle}>主要スペック構成</h2>
+                    <div className={styles.aiSpecGrid}>
+                        <div className={styles.aiSpecCard}>
+                            <span className={styles.aiSpecLabel}>CPU</span>
+                            <span className={styles.aiSpecValue}>{p.cpu_model || '標準構成'}</span>
+                        </div>
+                        <div className={styles.aiSpecCard}>
+                            <span className={styles.aiSpecLabel}>GPU</span>
+                            <span className={styles.aiSpecValue}>{p.gpu_model || '標準構成'}</span>
+                        </div>
+                        <div className={styles.aiSpecCard}>
+                            <span className={styles.aiSpecLabel}>メモリ</span>
+                            <span className={styles.aiSpecValue}>{p.memory_gb ? `${p.memory_gb}GB` : '標準構成'}</span>
+                        </div>
+                        <div className={styles.aiSpecCard}>
+                            <span className={styles.aiSpecLabel}>ストレージ</span>
+                            <span className={styles.aiSpecValue}>{p.storage_gb ? `${p.storage_gb}GB SSD` : '標準構成'}</span>
+                        </div>
+                        <div className={styles.aiSpecCard}>
+                            <span className={styles.aiSpecLabel}>ディスプレイ</span>
+                            <span className={styles.aiSpecValue}>{p.display_info || '標準構成'}</span>
+                        </div>
+                        {p.is_ai_pc && (
+                            <div className={`${styles.aiSpecCard} ${styles.aiPcCard}`}>
+                                <span className={styles.aiSpecLabel}>AI機能</span>
+                                <span className={styles.aiSpecValue}>AI PC 対応</span>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* ✅ 4. 自作PC・アップグレード情報 (New!) */}
+                {(p.cpu_socket || p.motherboard_chipset || p.ram_type) && (
+                    <section className={styles.upgradeSection}>
+                        <div className={styles.upgradeHeader}>
+                            <h2 className={styles.minimalTitle}>自作PC・アップグレード情報</h2>
+                            <span className={styles.diyBadge}>DIY Support</span>
+                        </div>
+                        <div className={styles.upgradeGrid}>
+                            <div className={styles.upgradeCard}>
+                                <div className={styles.upgradeLabel}>CPUソケット</div>
+                                <div className={styles.upgradeValue}>{p.cpu_socket || '非公開'}</div>
+                                <div className={styles.upgradeNote}>将来のCPU交換の目安</div>
+                            </div>
+                            <div className={styles.upgradeCard}>
+                                <div className={styles.upgradeLabel}>チップセット</div>
+                                <div className={styles.upgradeValue}>{p.motherboard_chipset || '標準構成'}</div>
+                                <div className={styles.upgradeNote}>マザーボード拡張性</div>
+                            </div>
+                            <div className={styles.upgradeCard}>
+                                <div className={styles.upgradeLabel}>メモリ規格</div>
+                                <div className={styles.upgradeValue}>{p.ram_type || '標準規格'}</div>
+                                <div className={styles.upgradeNote}>増設時のメモリ選択</div>
+                            </div>
+                            <div className={styles.upgradeCard}>
+                                <div className={styles.upgradeLabel}>推奨電源(目安)</div>
+                                <div className={styles.upgradeValue}>{p.power_recommendation ? `${p.power_recommendation}W` : '標準構成'}</div>
+                                <div className={styles.upgradeNote}>GPU増設時の参考</div>
+                            </div>
+                        </div>
+                    </section>
+                )}
+
+                {/* 5. エキスパート解説 */}
                 {cleanBody && (
                     <section className={styles.aiContentSection}>
                         <div className={styles.sectionHeader}>
@@ -226,9 +273,9 @@ export default async function ProductDetailPage(props: PageProps) {
                     </section>
                 )}
 
-                {/* 4. スペック詳細 & 属性タグリンク */}
+                {/* 6. スペック詳細 & 属性タグ */}
                 <section className={styles.specSection}>
-                    <h2 className={styles.specTitle}>構成・スペック詳細</h2>
+                    <h2 className={styles.specTitle}>詳細スペック</h2>
                     <div className={styles.specGrid}>
                         {product.description?.split('/').map((spec: string, i: number) => (
                             <div key={i} className={styles.specRow}>
@@ -238,15 +285,10 @@ export default async function ProductDetailPage(props: PageProps) {
                         ))}
                     </div>
                     
-                    {/* 💡 属性タグ表示：すべてLinkで囲み、クリックで仕分けページへ */}
                     {p.attributes && p.attributes.length > 0 && (
                         <div className={styles.attributeTags}>
                             {p.attributes.map((attr: any, idx: number) => (
-                                <Link 
-                                    key={idx} 
-                                    href={`/brand/${product.maker.toLowerCase()}?attribute=${attr.slug}`}
-                                    className={styles.attrTagLink}
-                                >
+                                <Link key={idx} href={`/brand/${product.maker.toLowerCase()}?attribute=${attr.slug}`} className={styles.attrTagLink}>
                                     <span className={styles.attrTag}>{attr.name}</span>
                                 </Link>
                             ))}
@@ -254,12 +296,10 @@ export default async function ProductDetailPage(props: PageProps) {
                     )}
                 </section>
 
-                {/* 5. 関連商品セクション（最大8商品） */}
+                {/* 7. 関連商品 */}
                 {displayRelated.length > 0 && (
                     <section className={styles.relatedSection}>
-                        <div className={styles.sectionHeader}>
-                            <h2 className={styles.specTitle}>こちらもおすすめ：{product.maker}のPC</h2>
-                        </div>
+                        <h2 className={styles.specTitle}>こちらもおすすめ：{product.maker}のPC</h2>
                         <div className={styles.relatedGrid}>
                             {displayRelated.map((item) => (
                                 <Link href={`/product/${item.unique_id}`} key={item.unique_id} className={styles.relatedCard}>
@@ -267,15 +307,9 @@ export default async function ProductDetailPage(props: PageProps) {
                                         <img src={item.image_url || '/no-image.png'} alt={item.name} />
                                     </div>
                                     <div className={styles.relatedInfo}>
-                                        <p className={item.name.length > 20 ? styles.relatedNameSmall : styles.relatedName}>
-                                            {item.name}
-                                        </p>
+                                        <p className={item.name.length > 20 ? styles.relatedNameSmall : styles.relatedName}>{item.name}</p>
                                         <div className={styles.relatedPrice}>
-                                            {item.price > 0 ? (
-                                                `¥${item.price.toLocaleString()}〜`
-                                            ) : (
-                                                <span className={styles.relatedPriceNote}>価格を確認</span>
-                                            )}
+                                            {item.price > 0 ? `¥${item.price.toLocaleString()}〜` : "価格を確認"}
                                         </div>
                                     </div>
                                 </Link>
@@ -284,7 +318,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     </section>
                 )}
 
-                {/* 6. プレミアムCTA */}
+                {/* 8. プレミアムCTA */}
                 <section className={styles.finalCtaSection}>
                     <div className={styles.finalCtaCard}>
                         <div className={styles.finalCtaImage}>
@@ -308,7 +342,7 @@ export default async function ProductDetailPage(props: PageProps) {
 
                 <div className={styles.backToBrand}>
                     <Link href={`/brand/${product.maker.toLowerCase()}`} className={styles.backLink}>
-                        ← {product.maker} の最新PC製品一覧・比較に戻る
+                        ← {product.maker} の最新PC製品一覧に戻る
                     </Link>
                 </div>
             </main>

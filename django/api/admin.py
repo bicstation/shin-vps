@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 from django.contrib import admin
 from django import forms
@@ -11,7 +12,7 @@ from django.contrib import messages
 from .models import (
     RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series,
-    PCAttribute # 新規追加
+    PCAttribute 
 )
 from .models.pc_products import PCProduct
 
@@ -39,62 +40,83 @@ class PCAttributeAdmin(admin.ModelAdmin):
     get_product_count.short_description = '紐付け製品数'
 
 # ----------------------------------------------------
-# 2. PCProduct (PC製品・Minisforum/Lenovo/Acer等) のAdminクラス
+# 2. PCProduct (PC製品・Mouse/Minisforum/Lenovo等) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
     # テンプレートパスを指定
     change_list_template = "admin/api/pcproduct/change_list.html"
 
-    # 一覧画面の表示項目
+    # 一覧画面の表示項目 (自作PCに重要なソケット・チップセットを追加)
     list_display = (
         'maker',
         'display_thumbnail',
         'name_summary',
         'price_display',
-        'unified_genre',
+        'cpu_model',         # 解析されたCPU
+        'cpu_socket',        # 🚀 追記：ソケット (LGA1700等)
+        'motherboard_chipset', # 🚀 追記：チップセット
+        'memory_gb',         # メモリ
         'stock_status',      # 在庫状況
-        'display_ai_status', # AI解説の有無 (生成済み/未生成)
-        'is_posted',         # WordPress投稿済みフラグ (✅/❌表示)
+        'display_ai_status', # AI解説の有無
+        'is_posted',         # WordPress投稿済みフラグ
         'is_active',         # 掲載中フラグ
         'updated_at',        # 更新日時
     )
     list_display_links = ('name_summary',)
     
-    # フィルタリング機能を強化 (属性フィルタを追加)
+    # フィルタリング機能を強化 (ソケットやジャンルで絞り込み)
     list_filter = (
-        'is_posted',      # 投稿済みかどうか
-        'is_active',      # アクティブかどうか
-        'maker',          # メーカー別
-        'attributes__attr_type', # 🚀 属性タイプ（CPU/NPUなど）でフィルタ
-        'stock_status',   # 在庫状況別
-        'site_prefix',    # 取得元サイト別
-        'unified_genre',  # ジャンル別
+        'is_posted',
+        'is_active',
+        'is_ai_pc',
+        'maker',
+        'cpu_socket',         # 🚀 追記：ソケットでフィルタ
+        'ram_type',           # 🚀 追記：メモリ規格でフィルタ
+        'attributes__attr_type',
+        'stock_status',
+        'site_prefix',
+        'unified_genre',
     )
     
     # 検索窓の対象
-    search_fields = ('name', 'unique_id', 'description', 'ai_content')
+    search_fields = ('name', 'unique_id', 'cpu_model', 'gpu_model', 'description', 'ai_content')
     
     # 並び順 (新しい更新を上に)
     ordering = ('-updated_at',)
 
-    # 🚀 多対多の属性選択を使いやすくするUI（横並びの選択ボックス）
+    # 多対多の属性選択を使いやすくするUI
     filter_horizontal = ('attributes',)
 
-    # 詳細編集画面のレイアウト
+    # 詳細編集画面のレイアウト (自作PC提案セクションを強化)
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
         }),
-        ('仕分け・スペック属性', {
-            'fields': ('unified_genre', 'raw_genre', 'attributes'),
-            'description': '統合ジャンルおよび、CPU/メモリ/NPUなどの詳細タグを設定します。',
+        ('AI解析スペック（自動抽出）', {
+            'description': 'スクレイピングした説明文からAIが抽出した主要構成データです。',
+            'fields': (
+                ('cpu_model', 'gpu_model'),
+                ('memory_gb', 'storage_gb'),
+                ('display_info', 'spec_score'),
+                ('is_ai_pc', 'npu_tops'),
+            ),
         }),
-        ('製品詳細', {
+        ('自作PC提案用データ（AI推論）', {
+            'description': 'CPU型番等からAIが推論した、自作PCパーツ選定用の互換性データです。',
+            'fields': (
+                ('cpu_socket', 'motherboard_chipset'),
+                ('ram_type', 'power_recommendation'),
+            ),
+        }),
+        ('仕分け・スペック属性タグ', {
+            'fields': ('unified_genre', 'raw_genre', 'attributes'),
+            'description': '統合ジャンルおよび、サイドバー絞り込み用の詳細タグを設定します。',
+        }),
+        ('製品詳細・HTML', {
             'fields': ('name', 'price', 'description', 'raw_html'),
         }),
-        ('アフィリエイト・AIコンテンツ', {
-            'fields': ('affiliate_url', 'affiliate_updated_at', 'ai_content'),
-            'description': '公式サイトへのアフィリエイトリンクとAI生成された解説文です。',
+        ('アフィリエイト・AI解説', {
+            'fields': ('affiliate_url', 'affiliate_updated_at', 'ai_summary', 'ai_content', 'last_spec_parsed_at'),
         }),
         ('画像', {
             'fields': ('image_url', 'display_thumbnail_large'),
@@ -104,7 +126,7 @@ class PCProductAdmin(admin.ModelAdmin):
             'classes': ('collapse',),
         }),
     )
-    readonly_fields = ('created_at', 'updated_at', 'display_thumbnail_large')
+    readonly_fields = ('created_at', 'updated_at', 'display_thumbnail_large', 'last_spec_parsed_at')
 
     # --- カスタム表示メソッド ---
     def name_summary(self, obj):
@@ -116,21 +138,18 @@ class PCProductAdmin(admin.ModelAdmin):
     price_display.short_description = "価格"
 
     def display_thumbnail(self, obj):
-        """一覧画面用の小型サムネイル"""
         if obj.image_url:
             return mark_safe(f'<img src="{obj.image_url}" width="80" height="50" style="object-fit: contain; background: #eee; border-radius: 4px;" />')
         return "No Image"
     display_thumbnail.short_description = '製品画像'
 
     def display_thumbnail_large(self, obj):
-        """詳細画面用の大きなプレビュー"""
         if obj.image_url:
             return mark_safe(f'<img src="{obj.image_url}" width="300" style="border: 1px solid #ccc;" />')
         return "画像なし"
     display_thumbnail_large.short_description = '画像プレビュー'
 
     def display_ai_status(self, obj):
-        """AI解説が生成されているかをアイコンで表示"""
         if obj.ai_content:
             return mark_safe('<span style="color: #28a745; font-weight: bold;">生成済み</span>')
         return mark_safe('<span style="color: #666;">未生成</span>')
@@ -240,6 +259,9 @@ class LinkshareProductAdmin(admin.ModelAdmin):
 class CommonAdmin(admin.ModelAdmin):
     list_display = ('name', 'product_count', 'api_source', 'created_at')
 
+    def product_count(self, obj):
+        return getattr(obj, 'products', obj).count() # 各リレーションに合わせて調整
+
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'created_at')
 
@@ -256,4 +278,3 @@ admin.site.register(Label, CommonAdmin)
 admin.site.register(Director, CommonAdmin)
 admin.site.register(Series, CommonAdmin)
 admin.site.register(RawApiData, RawApiDataAdmin)
-# PCAttribute は @admin.register(PCAttribute) で登録済み
