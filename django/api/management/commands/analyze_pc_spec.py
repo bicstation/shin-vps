@@ -14,8 +14,8 @@ from django.utils import timezone
 GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
 
 # レート制限の設定
-MAX_WORKERS = 5       # 並列リクエスト数
-SAFE_RPM_LIMIT = 25   # 1分間に送る最大リクエスト数
+MAX_WORKERS = 1       # 並列リクエスト数
+SAFE_RPM_LIMIT = 5   # 1分間に送る最大リクエスト数
 INTERVAL = 60 / SAFE_RPM_LIMIT  # 1リクエストあたりの最低待機時間（秒）
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
