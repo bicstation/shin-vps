@@ -18,8 +18,8 @@ GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
 # SAFE_RPM_LIMIT = 25   # 1分間に送る最大リクエスト数（30ギリギリを避けて25に設定）
 
 # --- 修正後 (RPM 28相当 / 限界に挑戦) ---
-MAX_WORKERS = 8       # 並列リクエストを少し増やす
-SAFE_RPM_LIMIT = 28   # 30ギリギリまで攻める
+MAX_WORKERS = 5       # 並列リクエストを少し増やす
+SAFE_RPM_LIMIT = 25   # 30ギリギリまで攻める
 
 INTERVAL = 60 / SAFE_RPM_LIMIT  # 1リクエストあたりの最低待機時間（秒）
 

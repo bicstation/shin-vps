@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import django
 import json
@@ -5,116 +6,127 @@ import sys
 import urllib.parse
 import re
 
-# --- Django設定 ---
-# 実行環境に合わせてパスを調整してください
-sys.path.append('/usr/src/app')
+# --- Django設定の修正 ---
+# 1. プロジェクトのルート（manage.pyがある場所）を優先的に追加
+BASE_DIR = '/usr/src/app'
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+# 2. 環境変数の設定
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tiper_api.settings')
-django.setup()
+
+# 3. インポートエラー回避のため、特定のモジュールパスを明示的に指定
+try:
+    django.setup()
+except django.core.exceptions.ImproperlyConfigured:
+    # 既存のパス競合がある場合、一度スクレイパー関連をパスから外すなどの対策が必要
+    # ここではセットアップを再試行
+    import django.apps
+    if not django.apps.apps.ready:
+        django.setup()
 
 from api.models import PCProduct
 
+def generate_mouse_unique_id(name, url):
+    """
+    商品名から型番を抽出。失敗時はURL末尾を使用。
+    """
+    match = re.search(r'([A-Z0-9]+-[A-Z0-9-]+)', name)
+    if match:
+        model_part = match.group(1)
+    else:
+        model_part = url.rstrip('/').split('/')[-1].replace('g', '', 1)
+    return f"mouse_{model_part}"
+
 def import_mouse_data():
     """
-    マウスコンピューターの最新JSONをPCProductモデルへインポート。
-    バリューコマースのMyLink形式に対応し、周辺機器を自動除外する。
+    マウスコンピューターのインポート処理（モニター対応版）
     """
-    # 💡 読み込みファイル名を確認してください
+    # Dockerコンテナ内の絶対パスを指定
     json_path = "/usr/src/app/scrapers/src/json/mouse_results.json"
     
-    # 💡 バリューコマース提携承認後に MyLink 用のベースURLを入力してください
-    # 承認前は空のままでOKです（自動的に直リンクになります）
     VC_MYLINK_BASE = "" 
-    # 例: "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892493739&vc_url="
 
     if not os.path.exists(json_path):
-        print(f"❌ JSONファイルが見つかりません: {json_path}")
-        return
+        # ホスト側のパスも念のためフォールバックとして確認
+        json_path = "/home/maya/dev/shin-vps/django/scrapers/src/json/mouse_results.json"
+        if not os.path.exists(json_path):
+            print(f"❌ JSONファイルが見つかりません。")
+            return
 
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    print(f"📥 {len(data)}件のデータをインポート開始（マウスコンピューター）...")
+    print(f"📥 {len(data)}件のデータを処理中...")
 
     success_count = 0
     skip_count_price = 0
-    skip_count_peripheral = 0
+    skip_count_trash = 0
+    monitor_count = 0
 
     for item in data:
         product_url = item['url']
         price = item.get('price', 0)
         name = item.get('name', '商品名不明')
-        unified_genre = item.get('unified_genre', 'bto-pc')
+        raw_genre = item.get('raw_genre', 'PC')
+        unified_genre = item.get('unified_genre', 'desktop') 
 
-        # --- 1. 価格のバリデーション ---
-        # 見積もり用や異常値をスキップ
-        if price <= 100:
+        unique_id = generate_mouse_unique_id(name, product_url)
+
+        is_monitor = any(x in name.upper() for x in ["PROLITE", "G-MASTER", "IIYAMA", "液晶ディスプレイ"])
+        if is_monitor:
+            unified_genre = "monitor"
+            monitor_count += 1
+
+        if not is_monitor and price <= 100:
             skip_count_price += 1
             continue
 
-        # --- 2. 周辺機器の除外（自作PC提案に不要なもの） ---
-        # モニター(iiyamaブランド)や取付ブラケット、unified_genreがmonitorのものを除外
-        is_peripheral = any(x in name.upper() for x in ["PROLITE", "G-MASTER", "ブラケット", "液晶ディスプレイ"])
-        if unified_genre == "monitor" or is_peripheral:
-            skip_count_peripheral += 1
+        is_trash = any(x in name for x in ["ブラケット", "取付金具", "リサイクル券", "専用マウント"])
+        if is_trash:
+            skip_count_trash += 1
             continue
 
-        # --- 3. Unique IDの生成 ---
-        # マウスのURL末尾を抽出し、メーカー接頭辞 'MSE' を付与
-        url_parts = product_url.rstrip('/').split('/')
-        product_code = url_parts[-1]
-        unique_id = f"MSE_{product_code}"
-        
-        # --- 4. アフィリエイトURL（ValueCommerce MyLink）の生成 ---
         if VC_MYLINK_BASE:
-            # 商品URLをエンコードしてベースURLと結合
             encoded_url = urllib.parse.quote(product_url, safe='')
             affiliate_url = f"{VC_MYLINK_BASE}{encoded_url}"
         else:
-            affiliate_url = product_url # 提携前は直リンクを格納
+            affiliate_url = product_url
         
-        # --- 5. 詳細テキスト（description）のクレンジング ---
-        raw_description = item.get('description', '')
-        # <br> を改行に置換し、他のHTMLタグをすべて除去
+        raw_description = item.get('description', 'スペック詳細は公式サイトをご確認ください')
         clean_description = re.sub(r'<br\s*/?>', '\n', raw_description)
         clean_description = re.sub(r'<[^>]*?>', '', clean_description)
-        # 連続改行や端の空白をトリミング
         clean_description = clean_description.strip()
 
         try:
-            # データの更新または作成
             PCProduct.objects.update_or_create(
                 unique_id=unique_id,
                 defaults={
-                    'site_prefix': 'MSE',
-                    'maker': 'mouse',
+                    'site_prefix': 'mouse',
+                    'maker': 'Mouse Computer',
                     'name': name,
                     'price': price,
                     'url': product_url,
                     'affiliate_url': affiliate_url,
                     'image_url': item.get('image_url', ''),
                     'description': clean_description,
-                    'raw_genre': item.get('raw_genre', 'PC'),
-                    'unified_genre': unified_genre, # laptop / desktop
-                    'stock_status': '在庫あり',
+                    'raw_genre': raw_genre,
+                    'unified_genre': unified_genre,
+                    'stock_status': '在庫あり' if price > 1 else 'オープン価格',
                     'is_active': True,
                 }
             )
             success_count += 1
-            if success_count % 50 == 0:
-                print(f"   ... {success_count}件 処理済み")
-
         except Exception as e:
             print(f"   ❌ エラー ({unique_id}): {e}")
 
     print(f"\n✨ インポート完了報告")
     print(f"----------------------------------------")
-    print(f"✅ 登録/更新成功       : {success_count} 件")
-    print(f"⚠️ スキップ（低価格）   : {skip_count_price} 件")
-    print(f"⚠️ スキップ（周辺機器） : {skip_count_peripheral} 件")
+    print(f"✅ 成功（登録/更新）   : {success_count} 件")
+    print(f"   (うちモニター数     : {monitor_count} 件)")
+    print(f"⚠️ スキップ（低価格PC） : {skip_count_price} 件")
+    print(f"⚠️ スキップ（不要小物） : {skip_count_trash} 件")
     print(f"----------------------------------------")
-    
-    if not VC_MYLINK_BASE:
-        print(f"ℹ️  [提携申請中] ValueCommerce承認後に VC_MYLINK_BASE を設定して再実行するとリンクが収益化されます。")
 
 if __name__ == "__main__":
     import_mouse_data()

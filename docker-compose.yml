@@ -1,11 +1,10 @@
-# /mnt/c/dev/SHIN-VPS/docker-compose.yml
 # =====================================================================
-# 🏠 SHIN-VPS ローカル開発・統合環境 (自宅PC専用: WSL2 Integration)
+# 🏠 SHIN-VPS ローカル開発・統合環境 (WordPress安定版 + Ollama GPU/CPU両対応)
 # =====================================================================
 
 services:
 
-  # --- 1. データベース層 ---
+  # --- 1. データベース層 (PostgreSQL & MariaDB) ---
   postgres-db-v2:
     image: postgres:15-alpine
     container_name: postgres-db-v2
@@ -38,7 +37,7 @@ services:
     networks:
       - internal-net
 
-  # --- 2. アプリケーション層 (Django) ---
+  # --- 2. アプリケーション層 (Django API) ---
   django-v2:
     env_file:
       - .env
@@ -55,6 +54,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - OLLAMA_HOST=http://ollama-v2:11434
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
@@ -68,7 +68,7 @@ services:
     networks:
       - internal-net
 
-  # --- 3. フロントエンド層 (Next.js) ---
+  # --- 3. フロントエンド層 (Next.js 4サイト) ---
   next-bicstation-v2:
     build: 
       context: ./next-bicstation
@@ -170,12 +170,46 @@ services:
         define('WP_HOME', 'http://localhost:8083/blog');
         define('WP_SITEURL', 'http://localhost:8083/blog');
         define('FORCE_SSL_ADMIN', false);
+        if (isset($$_SERVER['HTTP_X_FORWARDED_HOST'])) {
+            $$_SERVER['HTTP_HOST'] = $$_SERVER['HTTP_X_FORWARDED_HOST'];
+        }
+        if (strpos($$_SERVER['REQUEST_URI'], '/wp-admin') !== false || strpos($$_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {
+            $$_SERVER['REQUEST_URI'] = '/blog' . $$_SERVER['REQUEST_URI'];
+            $$_SERVER['SCRIPT_NAME'] = '/blog' . $$_SERVER['SCRIPT_NAME'];
+            $$_SERVER['PHP_SELF']    = '/blog' . $$_SERVER['PHP_SELF'];
+        }
     volumes:
       - ./data/home/wp-content:/var/www/html
     networks:
       - internal-net
 
-  # --- 5. 管理ツール層 ---
+  # --- 5. AI・画像解析層 (Ollama) ---
+  ollama-v2:
+    image: ollama/ollama:latest
+    container_name: ollama-v2
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+    # 職場(GTX 3050)でGPUを使用するための設定
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_internal-net"
+      - "traefik.http.routers.ollama-router.rule=Host(`localhost`) && PathPrefix(`/ollama`)"
+      - "traefik.http.routers.ollama-router.entrypoints=web"
+      - "traefik.http.middlewares.ollama-strip.stripprefix.prefixes=/ollama"
+      - "traefik.http.routers.ollama-router.middlewares=ollama-strip"
+      - "traefik.http.services.ollama-svc.loadbalancer.server.port=11434"
+    networks:
+      - internal-net
+
+  # --- 6. 管理ツール層 (DB管理・ログ) ---
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin-v2
@@ -229,7 +263,7 @@ services:
     networks:
       - internal-net
 
-  # --- 6. ゲートウェイ (Traefik) ---
+  # --- 7. ゲートウェイ (Traefik) ---
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy
@@ -250,11 +284,12 @@ services:
     networks:
       - internal-net
 
-# 外部ボリューム・ネットワーク定義
+# --- リソース定義 ---
 volumes:
   static_volume_home:
   postgres_data:
   mariadb_data:
+  ollama_data:
 
 networks:
   internal-net:

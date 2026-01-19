@@ -33,7 +33,7 @@ GPUモデル	GeForce RTX 4050	gpu-rtx-4050	RTX 4050, 4050	58
 GPUモデル	Radeon AI PRO	gpu-radeon-ai-pro	R9700, Radeon AI PRO, W7900	60
 GPUモデル	Intel Arc Graphics	gpu-intel-arc	Intel Arc, Arc Graphics, Arc A	61
 PC形状	ノートPC用GPU	gpu-laptop	Laptop GPU, Mobile, ノート向け	62
-PC形状	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT, Tower, ミニタワー,desktop,pc	63
+PC形状	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT, Tower, ミニタワー, desktop, pc	63
 ビデオメモリ	ビデオメモリ 16GB以上	vram-16gb-plus	16GB Video, VRAM 16GB, 24GB	64
 ビデオメモリ	ビデオメモリ 8GB	vram-8gb-plus	8GB Video, VRAM 8GB, 8GB	65
 ビデオメモリ	ビデオメモリ 6GB	vram-6gb-plus	6GB Video, VRAM 6GB, 6GB	66
@@ -52,10 +52,22 @@ GPUモデル	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内�
 4. パネル・付加価値	IPSパネル	panel-ips	IPS方式, 広視野角	541
 4. パネル・付加価値	湾曲・ウルトラワイド	curved-wide	湾曲, 1500R, 21:9	542
 4. パネル・付加価値	裸眼立体視	spatial-labs	SpatialLabs, 3Dモニター	543
-mem	メモリ 16GB	mem-16gb	16GB,16 GB,8GBx2,16GB（LPDDR5）	210
-mem	メモリ 32GB	mem-32gb	32GB,32 GB,16GBx2,32GB（LPDDR5）	211
-npu	AIプロセッサ(NPU)	npu-all	Ryzen™ AI,Ryzen AI,AI Boost,統合AIエンジン,NPU搭載	100
-os	Windows 11 Pro	win-11-pro	Windows 11 Pro,Win11 Pro,11 Pro 64bit	300
-spec	ゲーミングモデル	gaming-pc	ゲーミング,Legion,Nitro,RTX 40,RTX 50	600
-spec	モバイルモニター	portable-monitor	モバイルモニター,モバイルディスプレイ	610
-storage	SSD 512GB	ssd-512gb	512GB SSD,512 GB SSD,512GB（PCIe）	400
+mem	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GB（LPDDR5）	210
+mem	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GB（LPDDR5）	211
+npu	AIプロセッサ(NPU)	npu-all	Ryzen™ AI, Ryzen AI, AI Boost, 統合AIエンジン, NPU搭載	100
+os	Windows 11 Pro	win-11-pro	Windows 11 Pro, Win11 Pro, 11 Pro 64bit	300
+spec	ゲーミングモデル	gaming-pc	ゲーミング, Legion, Nitro, RTX 40, RTX 50	600
+spec	モバイルモニター	portable-monitor	モバイルモニター, モバイルディスプレイ	610
+storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, 512GB（PCIe）	400
+PC形状	デスクトップPC	type-desktop	デスクトップ, タワー, DT, Tower, フルタワー	700
+PC形状	小型PC	type-mini-pc	小型PC, ミニPC, Mini PC, コンパクトPC, CAシリーズ, 手のひらサイズ, 超小型	701
+PC形状	オールインワンPC	type-all-in-one	オールインワン, All-in-One, 一体型PC, 一体型デスクトップ	702
+PC形状	ノートPC	type-laptop	ノートパソコン, ノートPC, Laptop, 2-in-1, モバイルノート, 型, インチ	703
+PC形状	タブレットPC	type-tablet	タブレット, Tablet, iPad, Surface, スレート	704
+PC形状	サーバー	type-server	サーバー, Server, ラックマウント, Xeon, 24時間稼働	705
+PC形状	ワークステーション	type-workstation	ワークステーション, Workstation, Quadro, RTX Ada, MousePro W	706
+PC形状	ディスプレイ	type-display	モニター, ディスプレイ, 液晶, Monitor, Display, iiyama, ProLite, G-MASTER	707
+用途	一般向け	usage-general	一般, 家庭用, Web閲覧, Youtube, 初心者, スタンダード, mouse	710
+用途	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, 144Hz, RTX	711
+用途	クリエイティブ向け	usage-creator	クリエイター, 動画編集, RAW現像, 3DCG, CAD, DAIV, Adobe	712
+用途	ビジネス向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro	713

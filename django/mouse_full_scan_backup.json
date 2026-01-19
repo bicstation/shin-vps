@@ -1,0 +1,92 @@
+[
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 169800,
+        "ai_extracted_json": "{\n    \"cpu\": \"Intel Core i5-1335U\",\n    \"gpu\": \"Intel UHD Graphics\",\n    \"ram\": \"8GB (single channel)\",\n    \"storage\": \"256GB NVMe SSD\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gmouse-b4i5u01sracaw103cecal/",
+        "screenshot_saved": "debug_screenshots/1768792061.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 159800,
+        "ai_extracted_json": "{\n    \"cpu\": \"AMD Ryzen™ 7 7435HS\",\n    \"gpu\": \"NVIDIA® GeForce RTX™ 4050 Laptop GPU\",\n    \"ram\": \"16GB (8GB×2 / Dual Channel)\",\n    \"storage\": \"500GB (NVMe Gen4x4)\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gngear-j6a7g50wtadcw101dec/",
+        "screenshot_saved": "debug_screenshots/1768792083.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 179800,
+        "ai_extracted_json": "{\n    \"cpu\": \"AMD Ryzen™ 7 255\",\n    \"gpu\": \"NVIDIA® GeForce RTX™ 5050 Laptop GPU\",\n    \"ram\": \"16GB (8GB×2 / Dual Channel)\",\n    \"storage\": \"500GB (NVMe Gen4x4)\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gngear-j6a7g50wtbedw101dec/",
+        "screenshot_saved": "debug_screenshots/1768792101.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 159800,
+        "ai_extracted_json": "{\n    \"cpu\": \"Intel Core i7-13620H\",\n    \"gpu\": \"Intel UHD Graphics\",\n    \"ram\": \"16GB (8GBx2 / Dual Channel)\",\n    \"storage\": \"500GB NVMe Gen4×4\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gmouse-a5i7u01bkacaw102dec/",
+        "screenshot_saved": "debug_screenshots/1768792122.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 126800,
+        "ai_extracted_json": "{\n    \"cpu\": \"AMD Ryzen™ 5 7430U\",\n    \"gpu\": \"AMD Radeon™\",\n    \"ram\": \"16GB (8GB×2 / シングルチャネル)\",\n    \"storage\": \"256GB (NVMe)\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gmouse-a4a5u01srbdaw102dec/",
+        "screenshot_saved": "debug_screenshots/1768792143.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "desktop",
+        "category_name": "デスクトップパソコン",
+        "price": 159800,
+        "ai_extracted_json": "{\n    \"cpu\": \"Intel Core i5-1335U\",\n    \"gpu\": \"Intel Iris Xe\",\n    \"ram\": \"16GB (Onboard 16GB)\",\n    \"storage\": \"512GB (NVMe Gen3x4)\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gmouse-m2icu01bkacaw101dec/",
+        "screenshot_saved": "debug_screenshots/1768792164.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 123800,
+        "ai_extracted_json": "{\n    \"cpu\": \"AMD Ryzen™ 5 7430U\",\n    \"gpu\": \"AMD Radeon™\",\n    \"ram\": \"16GB (8GB×2 / シングルチャネル)\",\n    \"storage\": \"500GB (NVMe)\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gmouse-a5a5a01sradaw102dec/",
+        "screenshot_saved": "debug_screenshots/1768792185.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 103800,
+        "ai_extracted_json": "{\n    \"cpu\": \"AMD Ryzen™ 5 7430U\",\n    \"gpu\": \"AMD Radeon™ Graphics\",\n    \"ram\": \"8GB (8GB×1 / シングルチャネル)\",\n    \"storage\": \"256GB (NVMe)\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gmouse-a4a5u01srbdaw101dec/",
+        "screenshot_saved": "debug_screenshots/1768792207.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 199800,
+        "ai_extracted_json": "{\n    \"cpu\": \"AMD Ryzen™ 7 255\",\n    \"gpu\": \"NVIDIA® GeForce RTX™ 5060 Laptop GPU\",\n    \"ram\": \"16GB (8GB×2 / Dual Channel)\",\n    \"storage\": \"500GB (NVMe Gen4x4)\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gngear-j6a7g60wtbedw101dec/",
+        "screenshot_saved": "debug_screenshots/1768792228.png"
+    },
+    {
+        "name": "BTOパソコン(PC)通販のマウスコンピューター【公式】",
+        "category_slug": "laptop",
+        "category_name": "ノートパソコン",
+        "price": 106800,
+        "ai_extracted_json": "{\n    \"cpu\": \"AMD Ryzen™ 5 7430U\",\n    \"gpu\": \"AMD Radeon™\",\n    \"ram\": \"8GB (8GB×1 / シングルチャネル)\",\n    \"storage\": \"256GB (NVMe)\",\n    \"price\": \"Unknown\"\n}",
+        "url": "https://www.mouse-jp.co.jp/store/g/gmouse-a5a5a01sradaw101dec/",
+        "screenshot_saved": "debug_screenshots/1768792247.png"
+    }
+]
