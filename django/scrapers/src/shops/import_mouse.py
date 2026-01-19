@@ -103,7 +103,7 @@ def import_mouse_data():
                 unique_id=unique_id,
                 defaults={
                     'site_prefix': 'mouse',
-                    'maker': 'Mouse Computer',
+                    'maker': 'mouse',
                     'name': name,
                     'price': price,
                     'url': product_url,
