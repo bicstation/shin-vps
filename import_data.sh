@@ -115,7 +115,7 @@ case $CHOICE in
         ;;
     12) run_django python manage.py export_products ;;
     13) 
-        read -p "ファイル名: " TSV_FILE
+        read -p "ファイル名:(例：master_data/attributes.tsv) " TSV_FILE
         run_django python manage.py import_specs "/usr/src/app/$TSV_FILE"
         ;;
     14) run_django python manage.py auto_map_attributes ;;
