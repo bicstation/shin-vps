@@ -56,8 +56,7 @@ mem	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GB（LPDDR5）	210
 mem	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GB（LPDDR5）	211
 npu	AIプロセッサ(NPU)	npu-all	Ryzen™ AI, Ryzen AI, AI Boost, 統合AIエンジン, NPU搭載	100
 os	Windows 11 Pro	win-11-pro	Windows 11 Pro, Win11 Pro, 11 Pro 64bit	300
-spec	ゲーミングモデル	gaming-pc	ゲーミング, Legion, Nitro, RTX 40, RTX 50	600
-spec	モバイルモニター	portable-monitor	モバイルモニター, モバイルディスプレイ	610
+os	Windows 11 Home	win-11-home	Windows 11 Home, Win11 Home, 11 Home 64bit	301
 storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, 512GB（PCIe）	400
 PC形状	デスクトップPC	type-desktop	デスクトップ, タワー, DT, Tower, フルタワー	700
 PC形状	小型PC	type-mini-pc	小型PC, ミニPC, Mini PC, コンパクトPC, CAシリーズ, 手のひらサイズ, 超小型	701
@@ -71,3 +70,5 @@ PC形状	ディスプレイ	type-display	モニター, ディスプレイ, 液�
 用途	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, 144Hz, RTX	711
 用途	クリエイティブ向け	usage-creator	クリエイター, 動画編集, RAW現像, 3DCG, CAD, DAIV, Adobe	712
 用途	ビジネス向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro	713
+用途	プログラミング	usage-programming	プログラミング, 開発, エンジニア, ITエンジニア, コーディング	714
+

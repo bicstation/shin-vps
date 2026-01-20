@@ -1,0 +1,24 @@
+Analyze the PC specification from the provided text and image.
+
+### DATA PRIORITIZATION (STRICT):
+1. IMAGE IS THE TRUTH: Use the image as the primary source for the product name, price, and specs.
+2. PRICE ANCHOR: The correct product is the one located near the "Red Purchase Button" or "Web Price" in the image.
+3. IGNORE NOISE: The text hint may contain multiple models (e.g., in a comparison table). IGNORE any specifications that do NOT match the price and product name shown in the image.
+
+### EXTRACTION RULES:
+1. Extract information ONLY for the main product featured in the image.
+2. DO NOT invent or hallucinate.
+3. If NPU-related features like "Ryzen AI" or "Intel AI Boost" are mentioned in the specs, set npu_exists to true.
+
+### OUTPUT FORMAT:
+Output MUST be a valid JSON object only:
+{
+    "product_name": "Full name from image",
+    "price": "Price shown near the red button",
+    "cpu": "Full CPU model name (e.g., AMD Ryzen 7 255)",
+    "gpu": "Full GPU model name (e.g., NVIDIA GeForce RTX 5060 Laptop GPU)",
+    "ram": "Total RAM size (e.g., 16GB)",
+    "storage": "Total Storage size and type (e.g., 500GB NVMe SSD)",
+    "display": "Size, Resolution, and Refresh Rate",
+    "npu_exists": true/false
+}
