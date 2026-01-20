@@ -174,7 +174,7 @@ class Command(BaseCommand):
         encoded_url = urllib.parse.quote(product.url, safe='')
         final_affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
         
-        target_uid = str(product.unique_id).strip().replace('-', '_')
+        target_uid = str(product.unique_id).strip()
         bic_detail_url = f"https://bicstation.com/product/{target_uid}/"
         
         summary_items = "".join([f"<li>{l.strip()}</li>" for l in summary_raw.splitlines() if ":" in l or "-" in l])
