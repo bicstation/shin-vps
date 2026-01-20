@@ -11,9 +11,20 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DBの製品情報を元にAI記事を生成し、WPへ自動投稿（アイキャッチ・ダブルボタン・URL置換対応）'
+    help = 'DBの製品情報を元にAI記事を生成し、WPへ自動投稿（メーカー指定対応）'
+
+    def add_arguments(self, parser):
+        # メーカー名を引数で受け取れるように設定
+        parser.add_argument(
+            '--maker',
+            type=str,
+            help='投稿対象のメーカー名を指定 (例: mouse, hp, dell)',
+        )
 
     def handle(self, *args, **options):
+        # 引数からメーカー名を取得
+        specified_maker = options.get('maker')
+
         # ==========================================
         # 1. 基本設定と認証情報の定義
         # ==========================================
@@ -69,24 +80,35 @@ class Command(BaseCommand):
         # ==========================================
         # 4. 投稿対象（商品）の選定
         # ==========================================
-        products = PCProduct.objects.filter(is_active=True, is_posted=False).exclude(stock_status="受注停止中")
+        # 基本フィルタリング条件
+        query = DjangoQ(is_active=True, is_posted=False)
+        
+        # メーカーが指定されている場合は条件を追加
+        if specified_maker:
+            query &= DjangoQ(maker__iexact=specified_maker) # iexactは大文字小文字を区別しない
+            self.stdout.write(self.style.WARNING(f"🔍 メーカー検索: {specified_maker}"))
+
+        products = PCProduct.objects.filter(query).exclude(stock_status="受注停止中")
+
         if not products.exists():
-            self.stdout.write(self.style.ERROR("未投稿の製品がありません。"))
+            msg = f"未投稿の製品がありません。{f'(メーカー: {specified_maker})' if specified_maker else ''}"
+            self.stdout.write(self.style.ERROR(msg))
             return
 
         product = random.choice(products)
-        self.stdout.write(self.style.SUCCESS(f"🚀 ターゲット: {product.name}"))
+        self.stdout.write(self.style.SUCCESS(f"🚀 ターゲット: {product.name} ({product.maker})"))
 
         # カテゴリ・タグ取得
         target_cats = [get_or_create_term('categories', product.maker.upper())]
         target_cats = [c for c in target_cats if c]
 
+        # デスクトップ判定（拡張キーワード含む）
         is_desktop = any(k in product.name.lower() for k in ["desktop", "tower", "station", "aio", "gkb", "fk2", "mirai", "shinkai"])
         target_tags = [get_or_create_term('tags', "デスクトップPC" if is_desktop else "ノートパソコン")]
         target_tags = [t for t in target_tags if t]
 
         # ==========================================
-        # 5. アイキャッチ画像のアップロード
+        # 5. アイキャッチ画像のアップロード (以下、元のロジックと共通)
         # ==========================================
         media_id = None
         if product.image_url:
@@ -146,14 +168,12 @@ class Command(BaseCommand):
         if summary_match: main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()
 
         # ==========================================
-        # 8. HTMLデザイン構築 (URL置換ロジック搭載)
+        # 8. HTMLデザイン構築
         # ==========================================
-        # アフィリエイト用
         sid, pid = "3697471", "892455531"
         encoded_url = urllib.parse.quote(product.url, safe='')
         final_affiliate_url = f"https://ck.jp.ap.valuecommerce.com/servlet/referral?sid={sid}&pid={pid}&vc_url={encoded_url}"
         
-        # 【重要】自社サイト用URL生成：DBのハイフンをアンダースコアに強制置換
         target_uid = str(product.unique_id).strip().replace('-', '_')
         bic_detail_url = f"https://bicstation.com/product/{target_uid}/"
         
@@ -201,5 +221,7 @@ class Command(BaseCommand):
                 product.save()
                 self.stdout.write(self.style.SUCCESS(f"✅ 投稿完了: {title}"))
                 self.stdout.write(f"🔗 生成URL: {bic_detail_url}")
+            else:
+                self.stdout.write(self.style.ERROR(f"❌ WPエラー: {wp_res.status_code} - {wp_res.text}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 投稿失敗: {e}"))
