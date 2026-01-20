@@ -103,7 +103,6 @@ case $CHOICE in
                 read -p "AIによる詳細解析を実行しますか？(y/n): " AI_CONFIRM
                 if [ "$AI_CONFIRM" == "y" ]; then
                     read -p "解析件数を入力 (all または 空欄で全件, 数値指定も可): " AI_LIMIT
-                    # 「すべて」のロジック
                     if [[ -z "$AI_LIMIT" || "$AI_LIMIT" == "all" ]]; then
                         AI_LIMIT=999999
                         echo ">> 全件解析モードで実行します。"
@@ -115,7 +114,7 @@ case $CHOICE in
         ;;
     12) run_django python manage.py export_products ;;
     13) 
-        read -p "ファイル名: " TSV_FILE
+        read -p "ファイル名:(例：master_data/attributes.tsv) " TSV_FILE
         run_django python manage.py import_specs "/usr/src/app/$TSV_FILE"
         ;;
     14) run_django python manage.py auto_map_attributes ;;
@@ -126,7 +125,6 @@ case $CHOICE in
         read -p "メーカー (mouse/dell等, 空欄で全件): " MK_ARG
         read -p "解析件数 (all または 空欄で全件, 数値指定も可): " LM_ARG
         
-        # 「すべて」のロジック
         if [[ -z "$LM_ARG" || "$LM_ARG" == "all" ]]; then
             LM_ARG=999999
             echo ">> 全件解析モードで実行します。"

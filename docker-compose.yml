@@ -144,7 +144,8 @@ services:
     restart: always
     volumes:
       - ./data/home/wp-content:/var/www/html:ro
-      - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
+      # - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
+      - /home/maya/dev/shin-vps/nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
