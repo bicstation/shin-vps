@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.core.management.base import BaseCommand
 from api.models.pc_products import PCProduct
 from django.utils import timezone
+from django.db.models import Q
 
 # === API設定 ===
 GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
@@ -29,8 +30,8 @@ class Command(BaseCommand):
         parser.add_argument('unique_id', type=str, nargs='?')
         parser.add_argument('--limit', type=int, default=1, help='処理件数')
         parser.add_argument('--maker', type=str, help='メーカー指定')
-        # リモート側の変更から引数機能を取り込み
         parser.add_argument('--model', type=str, help='使用するGeminiモデルID')
+        parser.add_argument('--force', action='store_true', help='解析済みデータも再解析対象に含める')
 
     def load_prompt_file(self, filename):
         path = os.path.join(PROMPT_BASE_DIR, filename)
@@ -45,16 +46,28 @@ class Command(BaseCommand):
         limit = options['limit']
         maker_arg = options['maker']
         model_arg = options['model']
+        force = options['force']
 
-        query = PCProduct.objects.filter(last_spec_parsed_at__isnull=True)
+        # 基本クエリ: 未解析(last_spec_parsed_atがNone)のものを優先
+        query = PCProduct.objects.all()
+        if not force:
+            query = query.filter(last_spec_parsed_at__isnull=True)
+
         if unique_id:
-            query = PCProduct.objects.filter(unique_id=unique_id)
+            query = query.filter(unique_id=unique_id)
         elif maker_arg:
-            query = query.filter(maker__iexact=maker_arg)
+            # 修正: 表記揺れ（富士通/fujitsuなど）に対応するためicontainsとQオブジェクトを使用
+            if maker_arg.lower() == 'fujitsu':
+                query = query.filter(Q(maker__icontains='富士通') | Q(maker__icontains='fujitsu'))
+            else:
+                query = query.filter(maker__icontains=maker_arg)
 
         products = list(query[:limit])
         if not products:
-            self.stdout.write(self.style.WARNING("対象製品が見つかりませんでした。"))
+            # 診断用メッセージ
+            available_makers = PCProduct.objects.values_list('maker', flat=True).distinct()[:10]
+            self.stdout.write(self.style.WARNING(f"対象製品が見つかりませんでした。"))
+            self.stdout.write(f"DB内のメーカー名の例: {list(available_makers)}")
             return
 
         # モデル選択ロジック: 引数優先 > ファイル1行目 > デフォルト
@@ -71,6 +84,7 @@ class Command(BaseCommand):
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
             for product in products:
+                # 流量制限のための待機
                 time.sleep(INTERVAL) 
                 self.counter += 1
                 future = executor.submit(self.analyze_product, product, maker_arg, model_id, self.counter, len(products))
@@ -85,22 +99,30 @@ class Command(BaseCommand):
 
     def analyze_product(self, product, maker_arg, model_id, count, total):
         base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt')
-        target_maker = (maker_arg or product.maker or "standard").lower()
-        maker_prompt_file = f"analyze_{target_maker}_prompt.txt"
+        
+        # メーカー特有のプロンプト読み込み用
+        raw_maker = (product.maker or "standard").lower()
+        if "富士通" in raw_maker or "fujitsu" in raw_maker:
+            target_maker_slug = "fujitsu"
+        elif "asus" in raw_maker:
+            target_maker_slug = "asus"
+        else:
+            target_maker_slug = maker_arg or "standard"
+
+        maker_prompt_file = f"analyze_{target_maker_slug.lower()}_prompt.txt"
         brand_rules = self.load_prompt_file(maker_prompt_file)
 
         if not brand_rules:
             brand_rules = "【標準ルール】名称や型番からスペックを論理的に推論してください。"
 
         try:
-            # HEAD側のリッチな数値フォーマットを採用
             formatted_base = base_pc_prompt.format(
                 maker=product.maker, 
                 name=product.name, 
                 price=f"{product.price:,}",
                 description=product.description
             )
-        except:
+        except Exception:
             formatted_base = base_pc_prompt
 
         full_prompt = f"{formatted_base}\n\nブランドルール:\n{brand_rules}"
@@ -116,10 +138,10 @@ class Command(BaseCommand):
                 "generationConfig": {"temperature": 0.3}
             }, timeout=120)
             
-            # 503リトライ対応ロジックを採用
+            # 503/429リトライ対応
             if response.status_code in [429, 500, 503]:
                 wait_time = 30 if response.status_code == 429 else 10
-                self.stdout.write(self.style.WARNING(f"⏳ サーバー一時エラー ({response.status_code})。{wait_time}秒待機してリトライ..."))
+                self.stdout.write(self.style.WARNING(f"⏳ サーバー一時エラー ({response.status_code})。再試行中..."))
                 time.sleep(wait_time)
                 return self.analyze_product(product, maker_arg, model_id, count, total)
             
@@ -132,14 +154,11 @@ class Command(BaseCommand):
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
                 try:
-                    spec_data = json.loads(spec_match.group(1).strip())
-                except:
-                    # リモート側の簡易クリーンアップ案も念のため内部で考慮
-                    try:
-                        clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
-                        spec_data = json.loads(clean_json)
-                    except:
-                        self.stdout.write(self.style.WARNING(f"⚠️ JSONパース失敗 ({product.unique_id})"))
+                    # コメントアウト等を除去してパース
+                    clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
+                    spec_data = json.loads(clean_json)
+                except Exception:
+                    self.stdout.write(self.style.WARNING(f"⚠️ JSONパース失敗 ({product.unique_id})"))
 
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
             summary_text = summary_match.group(1).strip() if summary_match else ""
@@ -147,11 +166,13 @@ class Command(BaseCommand):
             html_content = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', full_text, flags=re.DOTALL)
             html_content = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', html_content, flags=re.DOTALL).strip()
 
-            # 数値変換の安全ガード
+            # 数値変換ユーティリティ
             def safe_int(val, default=0):
-                try: return int(re.sub(r'[^0-9]', '', str(val))) if val else default
-                except: return default
+                if val is None: return default
+                try: return int(re.sub(r'[^0-9]', '', str(val)))
+                except Exception: return default
 
+            # モデル更新
             product.cpu_model = spec_data.get('cpu_model', product.cpu_model)
             product.gpu_model = spec_data.get('gpu_model', product.gpu_model)
             product.memory_gb = safe_int(spec_data.get('memory_gb'), product.memory_gb)
@@ -162,17 +183,17 @@ class Command(BaseCommand):
             
             try:
                 product.npu_tops = float(spec_data.get('npu_tops', 0.0))
-            except:
+            except Exception:
                 product.npu_tops = 0.0
 
-            product.cpu_socket = spec_data.get('cpu_socket')
-            product.motherboard_chipset = spec_data.get('chipset')
-            product.ram_type = spec_data.get('ram_type')
-            product.power_recommendation = safe_int(spec_data.get('power_wattage'), None)
+            product.cpu_socket = spec_data.get('cpu_socket', product.cpu_socket)
+            product.motherboard_chipset = spec_data.get('chipset', product.motherboard_chipset)
+            product.ram_type = spec_data.get('ram_type', product.ram_type)
+            product.power_recommendation = safe_int(spec_data.get('power_wattage'), product.power_recommendation)
             
             product.ai_summary = summary_text
             product.ai_content = html_content
-            product.target_segment = spec_data.get('target_segment')
+            product.target_segment = spec_data.get('target_segment', product.target_segment)
             product.last_spec_parsed_at = timezone.now()
             product.save()
 
