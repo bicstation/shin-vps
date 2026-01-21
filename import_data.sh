@@ -27,10 +27,10 @@ fi
 
 RESET="\e[0m"
 
-# --- メーカー配列の定義 ---
-# MAKERSのスラッグとMAKER_NAMESの表示名を同期
-MAKERS=("" "lenovo" "hp" "dell" "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom" "msi" "mouse" "asus" "fmv" "dynabook")
-MAKER_NAMES=("" "Lenovo" "HP" "Dell" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom" "MSI" "Mouse Computer 🐭" "ASUS (API) 🚀" "FMV (Fujitsu) 💻" "Dynabook 💻")
+# --- メーカー配列の定義 (NEC特選街を追加) ---
+# 17: nec-biz (将来的に18: nec-lavie を想定)
+MAKERS=("" "lenovo" "hp" "dell" "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom" "msi" "mouse" "asus" "fmv" "dynabook" "eizo" "nec-biz")
+MAKER_NAMES=("" "Lenovo" "HP" "Dell" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom" "MSI" "Mouse Computer 🐭" "ASUS (API) 🚀" "FMV (Fujitsu) 💻" "Dynabook 💻" "EIZO 🖥️" "NEC特選街 (法人/SOHO) 🏢")
 
 # --- ヘルプ表示関数 ---
 show_help() {
@@ -71,7 +71,7 @@ update_sitemap() {
     echo -e "\n${COLOR}🌐 サイトマップを更新中...${RESET}"
     MJS_SRC="$SCRIPT_DIR/next-bicstation/generate-sitemap.mjs"
     if [ -f "$MJS_SRC" ]; then
-        echo "🔄 スクロプトをコンテナに同期中..."
+        echo "🔄 スクリプトをコンテナに同期中..."
         docker cp "$MJS_SRC" "$NEXT_CON":/app/generate-sitemap.mjs
         echo "✅ 同期完了。"
     else
@@ -85,14 +85,14 @@ update_sitemap() {
 # --- 関数: メーカー一覧を表示 ---
 show_maker_menu() {
     echo -e "\n--- 対象メーカーを選択してください ---"
-    for i in {1..15}; do
+    for i in {1..17}; do
         if [ $i -ge 12 ]; then
             echo -e "${i}) ${COLOR}${MAKER_NAMES[$i]}${RESET}"
         else
             echo "${i}) ${MAKER_NAMES[$i]}"
         fi
     done
-    echo "16) 戻る / 指定なし"
+    echo "18) 戻る / 指定なし"
 }
 
 # --- メインメニュー ---
@@ -176,13 +176,28 @@ case $CHOICE in
                 read -p "そのままAI詳細解析を実行しますか？(y/n): " AI_CONFIRM
                 [[ "$AI_CONFIRM" == "y" ]] && run_django python manage.py analyze_pc_spec --maker dynabook --limit 999999
                 ;;
-            16) : ;;
+            16)
+                echo -e "\n${COLOR}📡 LinkShare FTPから取得中... (EIZO)${RESET}"
+                run_django python manage.py import_bc_mid_ftp --mid 3256
+                echo -e "\n${COLOR}✅ EIZOのインポート・同期完了。${RESET}"
+                read -p "そのままAI詳細解析を実行しますか？(y/n): " AI_CONFIRM
+                [[ "$AI_CONFIRM" == "y" ]] && run_django python manage.py analyze_pc_spec --maker eizo --limit 999999
+                ;;
+            17)
+                echo -e "\n${COLOR}📡 LinkShare FTPから取得中... (NEC特選街)${RESET}"
+                # MID 2470: NEC特選街 (文字化け対策はDjango側の import_bc_mid_ftp で実施)
+                run_django python manage.py import_bc_mid_ftp --mid 2470
+                echo -e "\n${COLOR}✅ NEC特選街のインポート・同期完了。${RESET}"
+                read -p "そのままAI詳細解析を実行しますか？(y/n): " AI_CONFIRM
+                [[ "$AI_CONFIRM" == "y" ]] && run_django python manage.py analyze_pc_spec --maker nec-biz --limit 999999
+                ;;
+            18) : ;;
             *) exit 0 ;;
         esac
         echo -e "\n${COLOR}💡 ヒント: データの更新後は 14番 で属性紐付け、15番 でサイトマップ更新を推奨します。${RESET}"
         ;;
     4)
-        read -p "ファイル名を入力: " FILE_NAME
+        read -p "ファイル名を入力: (例：master_data/attributes.tsv) " FILE_NAME
         run_django python manage.py import_av "/usr/src/app/data/$FILE_NAME"
         ;;
     5) run_django python manage.py createsuperuser ;;
@@ -192,7 +207,7 @@ case $CHOICE in
         show_maker_menu
         read -p "メーカー指定 (空欄で全対象): " WP_MK_NUM
         MK_ARG=""
-        [[ -n "$WP_MK_NUM" && "$WP_MK_NUM" -le 15 ]] && MK_ARG="--maker ${MAKERS[$WP_MK_NUM]}"
+        [[ -n "$WP_MK_NUM" && "$WP_MK_NUM" -le 17 ]] && MK_ARG="--maker ${MAKERS[$WP_MK_NUM]}"
         if [ "$WP_CHOICE" == "1" ]; then run_django python manage.py ai_blog_from_db $MK_ARG
         elif [ "$WP_CHOICE" == "2" ]; then
             for i in {1..5}; do run_django python manage.py ai_blog_from_db $MK_ARG; sleep 10; done
@@ -233,7 +248,7 @@ case $CHOICE in
         show_maker_menu
         read -p "メーカー番号を選択: " SPEC_MK_NUM
         MK_NAME=""
-        [[ -n "$SPEC_MK_NUM" && "$SPEC_MK_NUM" -le 15 ]] && MK_NAME="${MAKERS[$SPEC_MK_NUM]}"
+        [[ -n "$SPEC_MK_NUM" && "$SPEC_MK_NUM" -ge 1 && "$SPEC_MK_NUM" -le 17 ]] && MK_NAME="${MAKERS[$SPEC_MK_NUM]}"
         read -p "解析件数 (all/数値): " LM_ARG
         [[ -z "$LM_ARG" || "$LM_ARG" == "all" ]] && LM_ARG=999999
         CMD="python manage.py analyze_pc_spec --limit $LM_ARG"

@@ -4,6 +4,7 @@ import ftplib
 import gzip
 import csv
 import logging
+import chardet  # 文字コード判定用
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
@@ -23,7 +24,10 @@ class Command(BaseCommand):
     DOWNLOAD_DIR = "/tmp/pc_ftp_import"
     SID = "3273700"
 
+    # MAKER_MAPを更新：NEC特選街(2470)を追加
+    # キーワード「nec-biz」は manage.sh の maker 配列と一致させます
     MAKER_MAP = {
+        "2470": {"prefix": "nec-biz", "maker": "NEC-SOHO"},
         "2543": {"prefix": "fujitsu", "maker": "FMV"},
         "2557": {"prefix": "dell", "maker": "Dell"},
         "2780": {"prefix": "nec", "maker": "NEC"},
@@ -64,14 +68,37 @@ class Command(BaseCommand):
 
             self.stdout.write("🔓 Decompressing...")
             with gzip.open(local_gz_path, 'rb') as f_in:
-                with open(local_txt_path, 'wb') as f_out:
-                    f_out.write(f_in.read())
+                # 文字化け対策：一度バイナリとしてすべて読み込む
+                raw_content = f_in.read()
+                
+                # 文字コードの判定
+                if target_mid == "2470":
+                    # NEC特選街はCP932(Shift-JIS拡張)であることが確定しているため強制指定
+                    encoding = 'cp932'
+                else:
+                    # 他のメーカーは自動判定を試みる
+                    detected = chardet.detect(raw_content[:10000]) # 先頭1万文字で判定
+                    encoding = detected.get('encoding', 'utf-8')
+                
+                self.stdout.write(f"ℹ️ Detected Encoding: {encoding} for MID {target_mid}")
+
+                # 判定したエンコーディングでデコードして書き出し
+                try:
+                    decoded_text = raw_content.decode(encoding, errors='replace')
+                except Exception as e:
+                    self.stdout.write(self.style.WARNING(f"⚠️ Decode error with {encoding}, falling back to 'replace'"))
+                    decoded_text = raw_content.decode('utf-8', errors='replace')
+
+                with open(local_txt_path, 'w', encoding='utf-8') as f_out:
+                    f_out.write(decoded_text)
 
             count = self._parse_and_import(local_txt_path, target_mid, site_info)
             self.stdout.write(self.style.SUCCESS(f"✅ {site_info['maker']} 完了: {count} 件"))
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"❌ Error: {str(e)}"))
+            import traceback
+            traceback.print_exc()
         finally:
             if os.path.exists(local_gz_path): os.remove(local_gz_path)
             if os.path.exists(local_txt_path): os.remove(local_txt_path)
@@ -82,10 +109,9 @@ class Command(BaseCommand):
     def _parse_and_import(self, file_path: str, mid: str, site_info: dict) -> int:
         batch = []
         import_count = 0
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+        # 解凍時にutf-8に変換済みなので、ここではutf-8で開く
+        with open(file_path, 'r', encoding='utf-8') as f:
             header_line = f.readline()
-            # 保存するメーカー名を site_info['maker'] (例: 富士通) に固定
-            # これにより AI解析コマンドの --maker fujitsu との紐付けを安定させます
             maker_name = site_info['maker']
             
             self.stdout.write(f"📂 Processing as: {maker_name}")
@@ -99,6 +125,7 @@ class Command(BaseCommand):
                 name = row[1].strip()
                 raw_desc = row[9].strip() or row[10].strip() or ""
 
+                # スペック抽出
                 specs = self._extract_specs(name, raw_desc)
                 spec_parts = []
                 if specs['cpu']: spec_parts.append(specs['cpu'])
@@ -114,7 +141,7 @@ class Command(BaseCommand):
                 product = PCProduct(
                     unique_id=f"{site_info['prefix']}_{sku}",
                     site_prefix=site_info['prefix'],
-                    maker=maker_name,  # 統一されたメーカー名
+                    maker=maker_name,
                     name=name,
                     price=self._clean_price(row[13]),
                     url=row[8].strip(),
