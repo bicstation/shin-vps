@@ -125,7 +125,7 @@ case $CHOICE in
                 14)
                     echo -e "\n${COLOR}📡 LinkShare FTPから最新データを取得中... (Fujitsu)${RESET}"
                     # 正しいコマンド名に変更
-                    run_django python manage.py import_bc_linkshare_data --mid 2543
+                    run_django python manage.py import_bc_mid_ftp --mid 2543
                     echo -e "\n${COLOR}✅ 富士通のインポート・同期が完了しました。${RESET}"
                     read -p "そのままAI詳細解析を実行しますか？(y/n): " AI_CONFIRM
                     # インポート側のmaker="富士通"に対し、analyze_pc_specが認識できるスラッグ(fujitsu)を渡す
