@@ -28,21 +28,21 @@ fi
 RESET="\e[0m"
 
 # --- メーカー配列の定義 ---
-# ASUS を 13番に追加
-MAKERS=("" "lenovo" "hp" "dell" "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom" "msi" "mouse" "asus")
-MAKER_NAMES=("" "Lenovo" "HP" "Dell" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom" "MSI" "Mouse Computer 🐭" "ASUS (API) 🚀")
+# 14番に fujitsu を追加
+MAKERS=("" "lenovo" "hp" "dell" "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom" "msi" "mouse" "asus" "fujitsu")
+MAKER_NAMES=("" "Lenovo" "HP" "Dell" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom" "MSI" "Mouse Computer 🐭" "ASUS (API) 🚀" "Fujitsu (LinkShare) 💻")
 
 # --- 関数: メーカー一覧を表示 ---
 show_maker_menu() {
     echo -e "\n--- 対象メーカーを選択してください ---"
-    for i in {1..13}; do
-        if [ $i -eq 12 ] || [ $i -eq 13 ]; then
+    for i in {1..14}; do
+        if [ $i -eq 12 ] || [ $i -eq 13 ] || [ $i -eq 14 ]; then
             echo -e "${i}) ${COLOR}${MAKER_NAMES[$i]}${RESET}"
         else
             echo "${i}) ${MAKER_NAMES[$i]}"
         fi
     done
-    echo "14) 戻る / 指定なし"
+    echo "15) 戻る / 指定なし"
 }
 
 # --- Djangoコンテナ用コマンド実行関数 ---
@@ -89,7 +89,7 @@ echo "13) [Master]   属性マスター(TSV)をインポート"
 echo "14) ${COLOR}[Auto]     属性自動マッピング実行 ⚡${RESET}"
 echo "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
 echo "16) ${COLOR}[AI-M]     AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
-echo "17) ${COLOR}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
+echo "17) ${COLOR}[AI-Spec]   AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
 echo "---------------------------------------"
 echo "8) 終了"
 echo "---------------------------------------"
@@ -102,7 +102,7 @@ case $CHOICE in
     3)
         show_maker_menu
         read -p ">> " SUB_CHOICE
-        if [ "$SUB_CHOICE" -ge 1 ] && [ "$SUB_CHOICE" -le 13 ]; then
+        if [ "$SUB_CHOICE" -ge 1 ] && [ "$SUB_CHOICE" -le 14 ]; then
             case $SUB_CHOICE in
                 1) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
                 2) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_hp.py ;;
@@ -122,6 +122,13 @@ case $CHOICE in
                     read -p "そのままAI詳細解析を実行しますか？(y/n): " AI_CONFIRM
                     [[ "$AI_CONFIRM" == "y" ]] && run_django python manage.py analyze_pc_spec --maker asus --limit 999999
                     ;;
+                14)
+                    echo -e "\n${COLOR}📡 LinkShare FTPから最新データを取得中... (Fujitsu)${RESET}"
+                    run_django python manage.py import_bc_bc_mid_ftp --mid 2543
+                    echo -e "\n${COLOR}✅ 富士通のインポート・同期が完了しました。${RESET}"
+                    read -p "そのままAI詳細解析を実行しますか？(y/n): " AI_CONFIRM
+                    [[ "$AI_CONFIRM" == "y" ]] && run_django python manage.py analyze_pc_spec --maker fujitsu --limit 999999
+                    ;;
                 *) echo "選択したメーカーのスクリプトを実行します..." ;;
             esac
         fi
@@ -135,7 +142,7 @@ case $CHOICE in
         read -p "メーカー番号を指定 (空欄で全メーカー対象): " WP_MK_NUM
         
         MK_ARG=""
-        if [[ -n "$WP_MK_NUM" && "$WP_MK_NUM" -ge 1 && "$WP_MK_NUM" -le 13 ]]; then
+        if [[ -n "$WP_MK_NUM" && "$WP_MK_NUM" -ge 1 && "$WP_MK_NUM" -le 14 ]]; then
             MK_ARG="--maker ${MAKERS[$WP_MK_NUM]}"
             echo -e "Target: ${COLOR}${MAKER_NAMES[$WP_MK_NUM]}${RESET}"
         fi
@@ -156,7 +163,7 @@ case $CHOICE in
         show_maker_menu
         read -p "メーカー番号を選択: " SPEC_MK_NUM
         MK_NAME=""
-        [[ -n "$SPEC_MK_NUM" && "$SPEC_MK_NUM" -ge 1 && "$SPEC_MK_NUM" -le 13 ]] && MK_NAME="${MAKERS[$SPEC_MK_NUM]}"
+        [[ -n "$SPEC_MK_NUM" && "$SPEC_MK_NUM" -ge 1 && "$SPEC_MK_NUM" -le 14 ]] && MK_NAME="${MAKERS[$SPEC_MK_NUM]}"
         read -p "解析件数 (all/数値): " LM_ARG
         [[ -z "$LM_ARG" || "$LM_ARG" == "all" ]] && LM_ARG=999999
         CMD="python manage.py analyze_pc_spec --limit $LM_ARG"
