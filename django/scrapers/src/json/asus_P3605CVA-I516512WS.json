@@ -1,0 +1,15 @@
+{
+    "sku": "P3605CVA-I516512WS",
+    "unique_id": "ASUS_P3605CVA-I516512WS",
+    "name": "P3605CVA-I516512WS",
+    "genre": null,
+    "price": "169800",
+    "image_url": "",
+    "url": "https://store.asus.com/jp/90nx08c1-m00550-asus-expertbook-p3-p3605.html",
+    "ai_extracted_json": {
+        "error": "empty_response",
+        "raw": "",
+        "price": "169800"
+    },
+    "last_update": "2026-01-21 10:04:39"
+}

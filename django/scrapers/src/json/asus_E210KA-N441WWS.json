@@ -1,0 +1,15 @@
+{
+    "sku": "E210KA-N441WWS",
+    "unique_id": "ASUS_E210KA-N441WWS",
+    "name": "E210KA-N441WWS",
+    "genre": null,
+    "price": "49800",
+    "image_url": "",
+    "url": "https://store.asus.com/jp/asus-vivobook-go-12-e210ka-e210ka-n441wws.html",
+    "ai_extracted_json": {
+        "error": "empty_response",
+        "raw": "",
+        "price": "49800"
+    },
+    "last_update": "2026-01-21 10:04:33"
+}

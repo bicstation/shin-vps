@@ -1,0 +1,15 @@
+{
+    "sku": "P440VAK-I7321TBPROX",
+    "unique_id": "ASUS_P440VAK-I7321TBPROX",
+    "name": "P440VAK-I7321TBPROX",
+    "genre": null,
+    "price": "159800",
+    "image_url": "",
+    "url": "https://store.asus.com/jp/90pt03x5-m01670-asus-expertcenter-p400-aio-p440va.html",
+    "ai_extracted_json": {
+        "error": "empty_response",
+        "raw": "",
+        "price": "159800"
+    },
+    "last_update": "2026-01-21 10:04:55"
+}

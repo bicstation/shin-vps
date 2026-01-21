@@ -1,0 +1,15 @@
+{
+    "sku": "CX5601FBA-MC0042",
+    "unique_id": "ASUS_CX5601FBA-MC0042",
+    "name": "CX5601FBA-MC0042",
+    "genre": null,
+    "price": "99800",
+    "image_url": "",
+    "url": "https://store.asus.com/jp/90nx0541-m001c0-asus-chromebook-flip-cx5-cx5601-12th-gen-intel.html",
+    "ai_extracted_json": {
+        "error": "empty_response",
+        "raw": "",
+        "price": "99800"
+    },
+    "last_update": "2026-01-21 10:04:00"
+}

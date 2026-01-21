@@ -1,0 +1,15 @@
+{
+    "sku": "CM3001DM2A-R70006",
+    "unique_id": "ASUS_CM3001DM2A-R70006",
+    "name": "CM3001DM2A-R70006",
+    "genre": null,
+    "price": "69800",
+    "image_url": "",
+    "url": "https://store.asus.com/jp/90nx0781-m00060-asus-chromebook-cm30-detachable-cm3001.html",
+    "ai_extracted_json": {
+        "error": "empty_response",
+        "raw": "",
+        "price": "69800"
+    },
+    "last_update": "2026-01-21 10:09:48"
+}

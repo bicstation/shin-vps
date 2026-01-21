@@ -1,0 +1,35 @@
+Analyze the ASUS product specification from the provided text.
+
+### DATA PRIORITIZATION & ACCURACY (STRICT):
+1. SPECIFICATION LIST IS THE TRUTH: Prioritize the list containing "インチ (Inch)", "CPU", "メモリ (Memory)", and "ストレージ (Storage)".
+2. MODEL IDENTIFICATION: Extract the full model name including the sub-model code (e.g., "ASUS ProArt PZ13 HT5306QA").
+3. NO HALLUCINATION: If a field is not found in the text, set it to null.
+
+### NPU & COPILOT+ PC DETECTION RULES:
+- Set "npu_exists" to true ONLY IF:
+  - The text explicitly mentions "Copilot+ PC".
+  - The CPU is "Snapdragon X Elite" or "Snapdragon X Plus".
+  - The CPU is "AMD Ryzen™ AI" (specifically with the 'AI' branding).
+  - The CPU is "Intel® Core™ Ultra" (Series 2 / Lunar Lake or newer).
+- If NPU TOPS (e.g., 45TOPS) is mentioned, definitely set to true.
+
+### OUTPUT FORMAT:
+Output MUST be a valid JSON object ONLY. DO NOT include any conversational text:
+{
+    "product_name": "Full product name (e.g., ASUS Vivobook S 15 S5507QA)",
+    "genre": "ノートブック",
+    "price": number,
+    "cpu": "Full CPU name (e.g., Snapdragon X Plus X1P-42-100)",
+    "gpu": "Graphics model (e.g., Qualcomm Adreno GPU)",
+    "ram": "Total RAM (e.g., 16GB)",
+    "storage": "Total Storage (e.g., 1TB SSD)",
+    "display": "Size and Panel type (e.g., 13.3型 OLED)",
+    "npu_exists": true/false
+}
+REFERENCE PRICE: 89800 JPY
+
+### SOURCE TEXT FROM ASUS PAGE:
+
+
+---
+JSON OUTPUT:

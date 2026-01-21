@@ -1,0 +1,15 @@
+{
+    "sku": "T500MV-13620H448W",
+    "unique_id": "ASUS_T500MV-13620H448W",
+    "name": "T500MV-13620H448W",
+    "genre": null,
+    "price": "279800",
+    "image_url": "",
+    "url": "https://store.asus.com/jp/90pf05h2-m01ft0-asus-tuf-gaming-t500-2025.html",
+    "ai_extracted_json": {
+        "error": "empty_response",
+        "raw": "",
+        "price": "279800"
+    },
+    "last_update": "2026-01-21 10:04:44"
+}
