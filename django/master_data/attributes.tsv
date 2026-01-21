@@ -7,19 +7,21 @@ cpu	Core i7	intel-core-i7	Core i7, i7-14700, i7-13700	14
 cpu	Core i5	intel-core-i5	Core i5, i5-14400, i5-13400	15
 cpu	Core i3	intel-core-i3	Core i3, i3-13100, i3-12100	16
 cpu	Celeron / Pentium	intel-low-end	Celeron, Pentium, Intel Processor	17
-cpu	Ryzen AI 300	amd-ryzen-ai-300	Ryzen AI 9, Ryzen AI 300, Strix Point	18
-cpu	Ryzen 9	amd-ryzen-9	Ryzen 9, 9950X, 7950X, 7945HX	19
-cpu	Ryzen 7	amd-ryzen-7	Ryzen 7, 9700X, 7800X3D, 7700	20
-cpu	Ryzen 5	amd-ryzen-5	Ryzen 5, 9600X, 7600, 7530U	21
-cpu	Ryzen 3	amd-ryzen-3	Ryzen 3, 7320U, 4300G	22
-cpu	Ryzen Threadripper	amd-threadripper	Threadripper, 7995WX, スレッドリッパー	23
-cpu	最新第14世代インテル	intel-14th-gen	i9-14, i7-14, i5-14	24
-cpu	最新第13世代インテル	intel-13th-gen	i9-13, i7-13, i5-13	25
-cpu	Ryzen 9000シリーズ	amd-ryzen-9000	Ryzen 9 9, Ryzen 7 9, Ryzen 5 9	26
-cpu	NPU搭載 (AI PC)	feature-npu-ai	Ryzen AI, AI Boost, Intel NPU, NPU搭載	27
-cpu	省電力モデル	feature-power-efficient	Core i7-U, Ryzen 7-U, 省電力	28
-cpu	Intel Xeon	intel-xeon	Xeon, ジーオン	29
-cpu	Ryzen PRO	amd-ryzen-pro	Ryzen AI PRO, Ryzen 7 PRO	30
+cpu	Snapdragon X Elite / Plus	arm-snapdragon-x	Snapdragon X Elite, Snapdragon X Plus, X1E-84-100, X1P-64-100, ARM Windows	18
+cpu	Ryzen AI 300	amd-ryzen-ai-300	Ryzen AI 9, Ryzen AI 300, Strix Point, Ryzen AI 9 HX 370	19
+cpu	Ryzen 9	amd-ryzen-9	Ryzen 9, 9950X, 7950X, 7945HX	20
+cpu	Ryzen 7	amd-ryzen-7	Ryzen 7, 9700X, 7800X3D, 7700	21
+cpu	Ryzen 5	amd-ryzen-5	Ryzen 5, 9600X, 7600, 7530U	22
+cpu	Ryzen 3	amd-ryzen-3	Ryzen 3, 7320U, 4300G	23
+cpu	Ryzen Threadripper	amd-threadripper	Threadripper, 7995WX, スレッドリッパー	24
+cpu	最新第14世代インテル	intel-14th-gen	i9-14, i7-14, i5-14	25
+cpu	最新第13世代インテル	intel-13th-gen	i9-13, i7-13, i5-13	26
+cpu	Ryzen 9000シリーズ	amd-ryzen-9000	Ryzen 9 9, Ryzen 7 9, Ryzen 5 9	27
+cpu	Copilot+ PC (AI基準適合)	feature-copilot-plus	Copilot+ PC, Copilotプラス, 40+ TOPS, NPU 45TOPS	28
+cpu	NPU搭載 (AI PC)	feature-npu-ai	Ryzen AI, AI Boost, Intel NPU, NPU搭載, Neural Processing Unit	29
+cpu	省電力モデル	feature-power-efficient	Core i7-U, Ryzen 7-U, 省電力, T-Series	30
+cpu	Intel Xeon	intel-xeon	Xeon, ジーオン	31
+cpu	Ryzen PRO	amd-ryzen-pro	Ryzen AI PRO, Ryzen 7 PRO	32
 GPUモデル	GeForce RTX 5090	gpu-rtx-5090	RTX 5090, 5090	50
 GPUモデル	GeForce RTX 5080	gpu-rtx-5080	RTX 5080, 5080	51
 GPUモデル	GeForce RTX 5070 Ti	gpu-rtx-5070-ti	RTX 5070 Ti, 5070Ti	52
@@ -32,43 +34,46 @@ GPUモデル	GeForce RTX 4050	gpu-rtx-4050	RTX 4050, 4050	58
 グラフィックス	GeForce RTX 40シリーズ	gpu-rtx-40-series	RTX 40, RTX 4090, RTX 4080, RTX 4070, RTX 4060, RTX 4050	59
 GPUモデル	Radeon AI PRO	gpu-radeon-ai-pro	R9700, Radeon AI PRO, W7900	60
 GPUモデル	Intel Arc Graphics	gpu-intel-arc	Intel Arc, Arc Graphics, Arc A	61
-PC形状	ノートPC用GPU	gpu-laptop	Laptop GPU, Mobile, ノート向け	62
+PC形状	ノートPC用GPU	gpu-laptop	Laptop GPU, Mobile, ノート向け, Laptop GPU	62
 PC形状	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT, Tower, ミニタワー, desktop, pc	63
 ビデオメモリ	ビデオメモリ 16GB以上	vram-16gb-plus	16GB Video, VRAM 16GB, 24GB	64
 ビデオメモリ	ビデオメモリ 8GB	vram-8gb-plus	8GB Video, VRAM 8GB, 8GB	65
 ビデオメモリ	ビデオメモリ 6GB	vram-6gb-plus	6GB Video, VRAM 6GB, 6GB	66
-GPUモデル	プロ向け (NVIDIA RTX / Quadro)	gpu-professional	NVIDIA RTX, Quadro, A2000, A4000	67
+GPUモデル	プロ向け (NVIDIA RTX / Quadro)	gpu-professional	NVIDIA RTX, Quadro, A2000, A4000, Ada Generation	67
 GPUモデル	Intel Graphics (内蔵)	gpu-intel-graphics	Intel UHD, Intel Iris, Intel Graphics, 内蔵グラフィックス	68
 GPUモデル	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内蔵グラフィックス	69
-1. 画面サイズ	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, モバイルモニター	510
+1. 画面サイズ	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, 13.4型, 12.6型, モバイルモニター	510
 1. 画面サイズ	24-25インチ (標準)	size-standard	23.8型, 24.5型, 標準サイズ	511
 1. 画面サイズ	27インチ (大画面)	size-large	27型, 27-inch	512
-1. 画面サイズ	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上	513
-2. 解像度軸	WQHD	res-wqhd	WQHD, 2560x1440	520
-2. 解像度軸	4K	res-4k	4K, 3840x2160, UHD	521
+1. 画面サイズ	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上, ウルトラワイド	513
+2. 解像度軸	WQHD	res-wqhd	WQHD, 2560x1440, 2.8K, 3K	520
+2. 解像度軸	4K	res-4k	4K, 3840x2160, UHD, 4K UHD	521
 3. リフレッシュレート軸	高速 (144Hz-165Hz)	high-refresh	144Hz, 165Hz	530
 3. リフレッシュレート軸	超高速 (240Hz+)	extreme-refresh	240Hz, 360Hz, 500Hz	531
-4. パネル・付加価値	有機EL	panel-oled	OLED, 有機EL	540
-4. パネル・付加価値	IPSパネル	panel-ips	IPS方式, 広視野角	541
-4. パネル・付加価値	湾曲・ウルトラワイド	curved-wide	湾曲, 1500R, 21:9	542
-4. パネル・付加価値	裸眼立体視	spatial-labs	SpatialLabs, 3Dモニター	543
+4. パネル・付加価値	有機EL (OLED)	panel-oled	OLED, 有機EL, Lumina OLED	540
+4. パネル・付加価値	IPSパネル	panel-ips	IPS方式, 広視野角, WVパネル	541
+4. パネル・付加価値	湾曲・ウルトラワイド	curved-wide	湾曲, 1500R, 21:9, 曲面	542
+4. パネル	タッチパネル / ペン対応	panel-touch	タッチパネル, タッチスクリーン, スタイラス, ASUS Pen, 筆圧感知	543
 mem	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GB（LPDDR5）	210
 mem	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GB（LPDDR5）	211
-npu	AIプロセッサ(NPU)	npu-all	Ryzen™ AI, Ryzen AI, AI Boost, 統合AIエンジン, NPU搭載	100
+mem	メモリ 64GB以上	mem-64gb-plus	64GB, 64 GB, 128GB, 大容量メモリ	212
+npu	AIプロセッサ(NPU)	npu-all	Ryzen™ AI, Ryzen AI, AI Boost, 統合AIエンジン, NPU搭載, Snapdragon X	100
 os	Windows 11 Pro	win-11-pro	Windows 11 Pro, Win11 Pro, 11 Pro 64bit	300
 os	Windows 11 Home	win-11-home	Windows 11 Home, Win11 Home, 11 Home 64bit	301
 storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, 512GB（PCIe）	400
-PC形状	デスクトップPC	type-desktop	デスクトップ, タワー, DT, Tower, フルタワー	700
-PC形状	小型PC	type-mini-pc	小型PC, ミニPC, Mini PC, コンパクトPC, CAシリーズ, 手のひらサイズ, 超小型	701
+storage	SSD 1TB以上	ssd-1tb-plus	1TB SSD, 1 TB, 2TB, 4TB	401
+PC形状	デスクトップPC	type-desktop	デスクトップ, タワー, DT, Tower, フルタワー, ROG Strix G	700
+PC形状	小型PC	type-mini-pc	小型PC, ミニPC, Mini PC, コンパクトPC, NUC, ExpertCenter, CAシリーズ	701
 PC形状	オールインワンPC	type-all-in-one	オールインワン, All-in-One, 一体型PC, 一体型デスクトップ	702
-PC形状	ノートPC	type-laptop	ノートパソコン, ノートPC, Laptop, 2-in-1, モバイルノート, 型, インチ	703
-PC形状	タブレットPC	type-tablet	タブレット, Tablet, iPad, Surface, スレート	704
-PC形状	サーバー	type-server	サーバー, Server, ラックマウント, Xeon, 24時間稼働	705
-PC形状	ワークステーション	type-workstation	ワークステーション, Workstation, Quadro, RTX Ada, MousePro W	706
-PC形状	ディスプレイ	type-display	モニター, ディスプレイ, 液晶, Monitor, Display, iiyama, ProLite, G-MASTER	707
-用途	一般向け	usage-general	一般, 家庭用, Web閲覧, Youtube, 初心者, スタンダード, mouse	710
-用途	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, 144Hz, RTX	711
-用途	クリエイティブ向け	usage-creator	クリエイター, 動画編集, RAW現像, 3DCG, CAD, DAIV, Adobe	712
-用途	ビジネス向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro	713
-用途	プログラミング	usage-programming	プログラミング, 開発, エンジニア, ITエンジニア, コーディング	714
-
+PC形状	ノートPC	type-laptop	ノートパソコン, ノートPC, Laptop, モバイルノート, Zenbook, Vivobook, 型, インチ	703
+PC形状	2-in-1 / コンバーチブル	type-2in1	Flip, 2-in-1, コンバーチブル, 回転式, 360度回転	704
+PC形状	タブレットPC	type-tablet	タブレット, Tablet, iPad, Surface, スレート, ProArt PZ13	705
+PC形状	デュアルスクリーン	type-dual-screen	Zenbook Duo, デュアルディスプレイ, 2画面ノート	706
+PC形状	ワークステーション	type-workstation	ワークステーション, Workstation, ProArt Station, Quadro, RTX Ada, MousePro W	707
+PC形状	ディスプレイ	type-display	モニター, ディスプレイ, 液晶, Monitor, Display, iiyama, ProLite, G-MASTER, ROG Swift, TUF Gaming	708
+用途	一般・スタンダード	usage-general	一般, 家庭用, Web閲覧, Youtube, 初心者, スタンダード, mouse, Vivobook	710
+用途	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, 144Hz, RTX, ROG, TUF Gaming, 240Hz	711
+用途	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, 3DCG, CAD, DAIV, Adobe, ProArt, ASUS Dial, 4K OLED, DCI-P3	712
+用途	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro, ExpertBook, ExpertCenter, MIL規格	713
+用途	プログラミング・開発	usage-programming	プログラミング, 開発, エンジニア, ITエンジニア, コーディング, WS	714
+用途	AI開発・生成AI	usage-ai-dev	生成AI, ローカルLLM, AI開発, Stable Diffusion, Tensor Core	715
