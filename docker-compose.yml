@@ -67,6 +67,14 @@ services:
       - static_volume_home:/usr/src/app/staticfiles
     networks:
       - internal-net
+    # 自宅(GPUなし)と職場(GPUあり)を .env の COMPOSE_PROFILES で切り替え可能にする設定
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_COUNT:-0}  # ここを変数にする
+              capabilities: [gpu]
 
   # --- 3. フロントエンド層 (Next.js 4サイト) ---
   next-bicstation-v2:
@@ -144,7 +152,6 @@ services:
     restart: always
     volumes:
       - ./data/home/wp-content:/var/www/html:ro
-      # - ./nginx/conf/wp.conf:/etc/nginx/conf.d/default.conf:ro
       - /home/maya/dev/shin-vps/nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
     labels:
       - "traefik.enable=true"
@@ -197,7 +204,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: ${GPU_COUNT:-0}
               capabilities: [gpu]
     labels:
       - "traefik.enable=true"

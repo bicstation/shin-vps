@@ -12,3 +12,6 @@ curl -X POST https://blog.tiper.live/wp-json/wp/v2/posts \
         "content": "この投稿はVPSのターミナルからAPI経由で送信されました。成功です！",
         "status": "publish"
     }'
+
+# VPSの場合: 
+GPU_DRIVER=none

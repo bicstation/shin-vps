@@ -27,14 +27,16 @@ class Command(BaseCommand):
     # MAKER_MAPを更新：NEC特選街(2470)を追加
     # キーワード「nec-biz」は manage.sh の maker 配列と一致させます
     MAKER_MAP = {
-        "2470": {"prefix": "nec-biz", "maker": "NEC-SOHO"},
+        # "13730": {"prefix": "nec-biz", "maker": "NEC-SOHO"}, # 2470 から 13730 へ変更
         "2543": {"prefix": "fujitsu", "maker": "FMV"},
         "2557": {"prefix": "dell", "maker": "Dell"},
-        "2780": {"prefix": "nec", "maker": "NEC"},
         "3256": {"prefix": "eizo", "maker": "EIZO"},
         "35909": {"prefix": "hp", "maker": "HP"},
         "36508": {"prefix": "dynabook", "maker": "Dynabook"},
         "42368": {"prefix": "asus", "maker": "ASUS"},
+        # "24172": {"prefix": "iodata", "maker": "I-O DATA"}, # 24172 から 43219 (最新) へ変更
+        "2633": {"prefix": "sourcenext", "maker": "ソースネクスト"},
+        "13786": {"prefix": "trendmicro", "maker": "トレンドマイクロ"},
     }
 
     def add_arguments(self, parser):
