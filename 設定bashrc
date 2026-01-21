@@ -1,0 +1,36 @@
+# ==========================================
+# 🚀 SHIN-VPS 開発用ショートカット (WSLネイティブ対応版)
+# ==========================================
+
+# 💡 修正ポイント: ~ ではなく $HOME を使い、WSL内のパスを指定
+export VPS_PATH="$HOME/dev/shin-vps"
+
+# --- 関数定義 ---
+
+# Gitコミット & プッシュ
+save() {
+    local msg="${1:-update}"
+    # 💡 () サブシェルではなく cd してから実行
+    cd "$VPS_PATH" && ./git-commit.sh "$msg"
+}
+
+# データインポート
+vps-import() {
+    cd "$VPS_PATH" && ./import_data.sh "$@"
+}
+
+# フルリビルド (爆速ネイティブ領域実行)
+vps-rebuild() {
+    cd "$VPS_PATH" && ./rebuild.sh "$@"
+}
+
+# --- Docker Compose エイリアス ---
+# 💡 修正ポイント: パスを引用符で囲み、docker-compose.yml を自動判定させるため -f 指定を外すか調整
+alias vps-up='cd "$VPS_PATH" && docker compose up -d'
+alias vps-down='cd "$VPS_PATH" && docker compose down'
+alias vps-ps='cd "$VPS_PATH" && docker compose ps'
+alias vps-logs='cd "$VPS_PATH" && docker compose logs -f --tail=50'
+
+# --- 便利な追加ショートカット ---
+alias vps-cd='cd "$VPS_PATH"'
+maya@Marya:~/dev/shin-vps$ 
