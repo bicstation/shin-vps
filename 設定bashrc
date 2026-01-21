@@ -33,4 +33,3 @@ alias vps-logs='cd "$VPS_PATH" && docker compose logs -f --tail=50'
 
 # --- 便利な追加ショートカット ---
 alias vps-cd='cd "$VPS_PATH"'
-maya@Marya:~/dev/shin-vps$ 
