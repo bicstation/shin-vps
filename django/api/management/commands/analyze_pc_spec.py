@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = '並立処理と流量制限を用いて、PC製品をAI解析する（Gemma 3 / Gemini 2.5 対応版）'
+    help = '並立処理と流量制限を用いて、PC製品をAI解析する（FMV/Dynabook対応版）'
 
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
@@ -48,23 +48,28 @@ class Command(BaseCommand):
         model_arg = options['model']
         force = options['force']
 
-        # 基本クエリ: 未解析(last_spec_parsed_atがNone)のものを優先
+        # 基本クエリの構築
         query = PCProduct.objects.all()
+        
+        # 未解析のみを対象（--forceがある場合は解析済みも含める）
         if not force:
             query = query.filter(last_spec_parsed_at__isnull=True)
 
         if unique_id:
             query = query.filter(unique_id=unique_id)
         elif maker_arg:
-            # 修正: 表記揺れ（FMV/fujitsuなど）に対応するためicontainsとQオブジェクトを使用
-            if maker_arg.lower() in ['fmv', 'fujitsu', 'fujitu']:
+            # 表記揺れ（FMV/Dynabook/ASUSなど）に対応するためicontainsとQオブジェクトを使用
+            m = maker_arg.lower()
+            if m in ['fmv', 'fujitsu', '富士通']:
                 query = query.filter(Q(maker__icontains='FMV') | Q(maker__icontains='富士通') | Q(maker__icontains='fujitsu'))
+            elif m in ['dynabook', 'ダイナブック']:
+                query = query.filter(Q(maker__icontains='dynabook') | Q(maker__icontains='ダイナブック'))
             else:
                 query = query.filter(maker__icontains=maker_arg)
 
         products = list(query[:limit])
         if not products:
-            # 診断用メッセージ
+            # 診断用デバッグ：現在DBにあるメーカー名を一部表示
             available_makers = PCProduct.objects.values_list('maker', flat=True).distinct()[:10]
             self.stdout.write(self.style.WARNING(f"対象製品が見つかりませんでした。"))
             self.stdout.write(f"DB内のメーカー名の例: {list(available_makers)}")
@@ -100,21 +105,25 @@ class Command(BaseCommand):
     def analyze_product(self, product, maker_arg, model_id, count, total):
         base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt')
         
-        # メーカー特有のプロンプト読み込み用
-        raw_maker = (product.maker or "standard").lower()
-        if "富士通" in raw_maker or "fujitsu" in raw_maker:
-            target_maker_slug = "fujitsu"
+        # メーカー判定：製品のmakerカラムから適切なスラッグを決定する
+        raw_maker = (product.maker or "").lower()
+        if any(x in raw_maker for x in ["fmv", "富士通", "fujitsu"]):
+            target_maker_slug = "fmv"
+        elif any(x in raw_maker for x in ["dynabook", "ダイナブック"]):
+            target_maker_slug = "dynabook"
         elif "asus" in raw_maker:
             target_maker_slug = "asus"
         else:
             target_maker_slug = maker_arg or "standard"
 
+        # 個別メーカー用プロンプトファイルの読み込み
         maker_prompt_file = f"analyze_{target_maker_slug.lower()}_prompt.txt"
         brand_rules = self.load_prompt_file(maker_prompt_file)
 
         if not brand_rules:
-            brand_rules = "【標準ルール】名称や型番からスペックを論理的に推論してください。"
+            brand_rules = "【標準ルール】製品名や型番、説明文からCPU、メモリ、ストレージ容量を正確に推論・抽出してください。"
 
+        # プロンプトの組み立て
         try:
             formatted_base = base_pc_prompt.format(
                 maker=product.maker, 
@@ -138,10 +147,10 @@ class Command(BaseCommand):
                 "generationConfig": {"temperature": 0.3}
             }, timeout=120)
             
-            # 503/429リトライ対応
+            # APIサーバー側の一時的なエラー(429, 503等)へのリトライ処理
             if response.status_code in [429, 500, 503]:
                 wait_time = 30 if response.status_code == 429 else 10
-                self.stdout.write(self.style.WARNING(f"⏳ サーバー一時エラー ({response.status_code})。再試行中..."))
+                self.stdout.write(self.style.WARNING(f"⏳ サーバー一時エラー ({response.status_code})。{wait_time}秒待機して再試行..."))
                 time.sleep(wait_time)
                 return self.analyze_product(product, maker_arg, model_id, count, total)
             
@@ -149,30 +158,34 @@ class Command(BaseCommand):
             res_json = response.json()
             full_text = res_json['candidates'][0]['content']['parts'][0]['text']
 
-            # --- データ抽出 ---
+            # --- AI回答からのデータ抽出 ---
             spec_data = {}
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
                 try:
-                    # コメントアウト等を除去してパース
+                    # JSON内の不要なコメント(//)や末尾カンマなどを簡易的に除去してパース
                     clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
                     spec_data = json.loads(clean_json)
                 except Exception:
                     self.stdout.write(self.style.WARNING(f"⚠️ JSONパース失敗 ({product.unique_id})"))
 
+            # 要約テキストの抽出
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
             summary_text = summary_match.group(1).strip() if summary_match else ""
 
+            # HTMLコンテンツの抽出（タグを除去した残りの部分）
             html_content = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', full_text, flags=re.DOTALL)
             html_content = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', html_content, flags=re.DOTALL).strip()
 
-            # 数値変換ユーティリティ
+            # 数値変換の安全用関数
             def safe_int(val, default=0):
                 if val is None: return default
-                try: return int(re.sub(r'[^0-9]', '', str(val)))
-                except Exception: return default
+                try:
+                    return int(re.sub(r'[^0-9]', '', str(val)))
+                except Exception:
+                    return default
 
-            # モデル更新
+            # --- モデルインスタンスの更新 ---
             product.cpu_model = spec_data.get('cpu_model', product.cpu_model)
             product.gpu_model = spec_data.get('gpu_model', product.gpu_model)
             product.memory_gb = safe_int(spec_data.get('memory_gb'), product.memory_gb)
@@ -194,6 +207,8 @@ class Command(BaseCommand):
             product.ai_summary = summary_text
             product.ai_content = html_content
             product.target_segment = spec_data.get('target_segment', product.target_segment)
+            
+            # 解析完了時刻を記録
             product.last_spec_parsed_at = timezone.now()
             product.save()
 
