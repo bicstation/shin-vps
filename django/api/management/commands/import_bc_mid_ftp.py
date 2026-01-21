@@ -12,20 +12,17 @@ from django.db import transaction
 from django.utils import timezone
 from api.models import PCProduct
 
-# ロガー設定
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'LinkShare FTPから製品データを取得し、PCProductモデルを更新します（リスト取得エラー回避版）'
+    help = 'LinkShare FTPから製品データを取得し、PCProductモデルを更新します'
 
-    # --- 設定定数 ---
     FTP_HOST = "aftp.linksynergy.com"
     FTP_USER = os.getenv("LINKSHARE_BC_USER", "rkp_3273700")
     FTP_PASS = os.getenv("LINKSHARE_BC_PASS", "5OqF1NfuruvJlmuJXKQDRuzh")
     DOWNLOAD_DIR = "/tmp/pc_ftp_import"
     SID = "3273700"
 
-    # 既知のメーカーマッピング
     MAKER_MAP = {
         "2543": {"prefix": "fujitsu", "maker": "富士通"},
         "2557": {"prefix": "dell", "maker": "Dell"},
@@ -52,31 +49,26 @@ class Command(BaseCommand):
         if not ftp: return
 
         try:
-            # FileZillaのログに基づき、ルート直下のファイルを指定
             target_filename = f"{target_mid}_{self.SID}_mp.txt.gz"
             local_gz_path = os.path.join(self.DOWNLOAD_DIR, target_filename)
             local_txt_path = local_gz_path.replace('.gz', '.txt')
 
             self.stdout.write(f"📡 Downloading: /{target_filename}")
             
-            # --- 重要: リスト取得（nlst/450エラーの原因）をせず、直接RETRを行う ---
             try:
                 with open(local_gz_path, 'wb') as f:
                     ftp.retrbinary(f'RETR {target_filename}', f.write)
-                self.stdout.write(self.style.SUCCESS(f"✅ Download successful: {target_filename}"))
             except ftplib.error_perm as e:
-                self.stderr.write(self.style.ERROR(f"❌ FTP上にファイルが見つかりません: {target_filename} ({e})"))
+                self.stderr.write(self.style.ERROR(f"❌ FTP File Not Found: {target_filename} ({e})"))
                 return
 
-            # 2. 解凍処理
             self.stdout.write("🔓 Decompressing...")
             with gzip.open(local_gz_path, 'rb') as f_in:
                 with open(local_txt_path, 'wb') as f_out:
                     f_out.write(f_in.read())
 
-            # 3. 解析とインポート
             count = self._parse_and_import(local_txt_path, target_mid, site_info)
-            self.stdout.write(self.style.SUCCESS(f"✅ {site_info['maker']} 完了: {count} 件の製品を更新しました。"))
+            self.stdout.write(self.style.SUCCESS(f"✅ {site_info['maker']} 完了: {count} 件"))
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"❌ Error: {str(e)}"))
@@ -91,12 +83,12 @@ class Command(BaseCommand):
         batch = []
         import_count = 0
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            # 1行目のHDR行から実際のショップ名を取得
             header_line = f.readline()
-            header_parts = header_line.split('|')
-            actual_shop_name = header_parts[2].strip() if len(header_parts) >= 3 else site_info['maker']
+            # 保存するメーカー名を site_info['maker'] (例: 富士通) に固定
+            # これにより AI解析コマンドの --maker fujitsu との紐付けを安定させます
+            maker_name = site_info['maker']
             
-            self.stdout.write(f"📂 Merchant Name: {actual_shop_name}")
+            self.stdout.write(f"📂 Processing as: {maker_name}")
 
             reader = csv.reader(f, delimiter='|')
             for row in reader:
@@ -107,7 +99,6 @@ class Command(BaseCommand):
                 name = row[1].strip()
                 raw_desc = row[9].strip() or row[10].strip() or ""
 
-                # スペック抽出（Core i / Ryzen / RAM / SSD）
                 specs = self._extract_specs(name, raw_desc)
                 spec_parts = []
                 if specs['cpu']: spec_parts.append(specs['cpu'])
@@ -120,11 +111,10 @@ class Command(BaseCommand):
                 parsed_spec_prefix = " / ".join(spec_parts)
                 full_description = f"{parsed_spec_prefix} | {raw_desc}" if parsed_spec_prefix else raw_desc
 
-                # モデル保存
                 product = PCProduct(
                     unique_id=f"{site_info['prefix']}_{sku}",
                     site_prefix=site_info['prefix'],
-                    maker=actual_shop_name,
+                    maker=maker_name,  # 統一されたメーカー名
                     name=name,
                     price=self._clean_price(row[13]),
                     url=row[8].strip(),
@@ -151,19 +141,13 @@ class Command(BaseCommand):
         cpu = re.search(r'(Core\s?i[3579]|Ryzen\s?[3579]|Ultra\s?\d|Snapdragon|Xeon|Celeron|Pentium)', text, re.I)
         ram = re.search(r'(\d+)\s?GB\s?(?:RAM|メモリ|DDR)', text, re.I)
         ssd = re.search(r'(\d+)\s?(GB|TB)\s?(?:SSD|NVMe|ストレージ)', text, re.I)
-
         ssd_val = 0
         if ssd:
             try:
                 v = int(ssd.group(1))
                 ssd_val = v * 1024 if ssd.group(2).upper() == 'TB' else v
             except: pass
-
-        return {
-            'cpu': cpu.group(0) if cpu else None,
-            'ram': int(ram.group(1)) if ram else None,
-            'ssd': ssd_val
-        }
+        return {'cpu': cpu.group(0) if cpu else None, 'ram': int(ram.group(1)) if ram else None, 'ssd': ssd_val}
 
     def _clean_price(self, p_str: str) -> int:
         try: return int(float(re.sub(r'[^\d.]', '', p_str)))
@@ -175,18 +159,11 @@ class Command(BaseCommand):
                 PCProduct.objects.update_or_create(
                     unique_id=item.unique_id,
                     defaults={
-                        'site_prefix': item.site_prefix,
-                        'maker': item.maker,
-                        'name': item.name,
-                        'price': item.price,
-                        'url': item.url,
-                        'image_url': item.image_url,
-                        'affiliate_url': item.affiliate_url,
-                        'description': item.description,
-                        'raw_genre': item.raw_genre,
-                        'unified_genre': item.unified_genre,
-                        'is_active': item.is_active,
-                        'updated_at': item.updated_at,
+                        'site_prefix': item.site_prefix, 'maker': item.maker, 'name': item.name,
+                        'price': item.price, 'url': item.url, 'image_url': item.image_url,
+                        'affiliate_url': item.affiliate_url, 'description': item.description,
+                        'raw_genre': item.raw_genre, 'unified_genre': item.unified_genre,
+                        'is_active': item.is_active, 'updated_at': item.updated_at,
                     }
                 )
 

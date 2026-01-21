@@ -28,7 +28,7 @@ fi
 RESET="\e[0m"
 
 # --- メーカー配列の定義 ---
-# 14番に fujitsu を追加
+# MAKERSのスラッグとMAKER_NAMESの表示名を同期
 MAKERS=("" "lenovo" "hp" "dell" "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom" "msi" "mouse" "asus" "fujitsu")
 MAKER_NAMES=("" "Lenovo" "HP" "Dell" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom" "MSI" "Mouse Computer 🐭" "ASUS (API) 🚀" "Fujitsu (LinkShare) 💻")
 
@@ -36,7 +36,7 @@ MAKER_NAMES=("" "Lenovo" "HP" "Dell" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM
 show_maker_menu() {
     echo -e "\n--- 対象メーカーを選択してください ---"
     for i in {1..14}; do
-        if [ $i -eq 12 ] || [ $i -eq 13 ] || [ $i -eq 14 ]; then
+        if [ $i -ge 12 ]; then
             echo -e "${i}) ${COLOR}${MAKER_NAMES[$i]}${RESET}"
         else
             echo "${i}) ${MAKER_NAMES[$i]}"
@@ -89,7 +89,7 @@ echo "13) [Master]   属性マスター(TSV)をインポート"
 echo "14) ${COLOR}[Auto]     属性自動マッピング実行 ⚡${RESET}"
 echo "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
 echo "16) ${COLOR}[AI-M]     AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
-echo "17) ${COLOR}[AI-Spec]   AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
+echo "17) ${COLOR}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
 echo "---------------------------------------"
 echo "8) 終了"
 echo "---------------------------------------"
@@ -124,12 +124,14 @@ case $CHOICE in
                     ;;
                 14)
                     echo -e "\n${COLOR}📡 LinkShare FTPから最新データを取得中... (Fujitsu)${RESET}"
-                    run_django python manage.py import_bc_bc_mid_ftp --mid 2543
+                    # 正しいコマンド名に変更
+                    run_django python manage.py import_bc_linkshare_data --mid 2543
                     echo -e "\n${COLOR}✅ 富士通のインポート・同期が完了しました。${RESET}"
                     read -p "そのままAI詳細解析を実行しますか？(y/n): " AI_CONFIRM
+                    # インポート側のmaker="富士通"に対し、analyze_pc_specが認識できるスラッグ(fujitsu)を渡す
                     [[ "$AI_CONFIRM" == "y" ]] && run_django python manage.py analyze_pc_spec --maker fujitsu --limit 999999
                     ;;
-                *) echo "選択したメーカーのスクリプトを実行します..." ;;
+                *) echo "スクリプトを実行します..." ;;
             esac
         fi
         ;;
@@ -173,7 +175,7 @@ case $CHOICE in
     8) exit 0 ;;
 esac
 
-# 🔄 VPS連携処理
+# 🔄 VPS連携・スケジューラー再起動処理
 if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14|17)$ ]]; then
     echo -e "\n${COLOR}🔄 スケジューラー再起動中...${RESET}"
     docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
