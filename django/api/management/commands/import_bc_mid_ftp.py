@@ -24,7 +24,7 @@ class Command(BaseCommand):
     SID = "3273700"
 
     MAKER_MAP = {
-        "2543": {"prefix": "fujitsu", "maker": "富士通"},
+        "2543": {"prefix": "fujitsu", "maker": "FMV"},
         "2557": {"prefix": "dell", "maker": "Dell"},
         "2780": {"prefix": "nec", "maker": "NEC"},
         "3256": {"prefix": "eizo", "maker": "EIZO"},

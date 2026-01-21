@@ -56,9 +56,9 @@ class Command(BaseCommand):
         if unique_id:
             query = query.filter(unique_id=unique_id)
         elif maker_arg:
-            # 修正: 表記揺れ（富士通/fujitsuなど）に対応するためicontainsとQオブジェクトを使用
-            if maker_arg.lower() == 'fujitsu':
-                query = query.filter(Q(maker__icontains='富士通') | Q(maker__icontains='fujitsu'))
+            # 修正: 表記揺れ（FMV/fujitsuなど）に対応するためicontainsとQオブジェクトを使用
+            if maker_arg.lower() in ['fmv', 'fujitsu', 'fujitu']:
+                query = query.filter(Q(maker__icontains='FMV') | Q(maker__icontains='富士通') | Q(maker__icontains='fujitsu'))
             else:
                 query = query.filter(maker__icontains=maker_arg)
 
