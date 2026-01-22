@@ -3,10 +3,9 @@
 # ==============================================================================
 # 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール
 # ==============================================================================
-# 🛠 修正内容: メーカー選択メニューを「PC本体」「ソフト」「量販店」順に再編
-# 🛠 修正内容: ASUS(43708)のAPIロジックを維持しつつ、既存FTPロジックを完全復旧
-# 🛠 修正内容: 3) Import, 17) AI-Spec 実行後に record_price_history を自動連動
-# 🛠 修正内容: 18) [Price] 価格履歴の単独記録メニューを新設
+# 🛠 修正内容: メーカー表示を横3列(カラム)に変更し、視認性を大幅に向上
+# 🛠 修正内容: 配列インデックスとメニュー番号の不一致を完全に解消
+# 🛠 修正内容: サイトマップ更新プロンプト等の対話ロジックを整理
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -34,21 +33,22 @@ RESET="\e[0m"
 RED="\e[31m"
 YELLOW="\e[33m"
 
-# --- 2. データ定義 (MAKER_MAP / MID_MAP) ---
+# --- 2. データ定義 (番号とインデックスを厳密に一致させる) ---
+# 0番はダミーとして空け、1番から開始します
 MAKERS=(
-    "" 
-    "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse"          # PC本体 (1-10)
-    "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom"                # BTO/その他 (11-17)
-    "norton" "mcafee" "kingsoft" "cyberlink" "trendmicro" "sourcenext"             # ソフトウェア (18-23)
-    "edion" "kojima" "sofmap" "bic_sofmap" "recollect" "ioplazy" "eizo"            # 量販店・周辺機器 (24-30)
+    "DUMMY"
+    "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse"          # 1-10
+    "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom"                 # 11-17
+    "norton" "mcafee" "kingsoft" "cyberlink" "trendmicro" "sourcenext"              # 18-23
+    "edion" "kojima" "sofmap" "bic_sofmap" "recollect" "ioplazy" "eizo"             # 24-30
 )
 
 MAKER_NAMES=(
-    ""
-    "ソニーストア [API◯]" "富士通 (FMV) [FTP◯]" "Dynabook [FTP◯]" "HP [FTP◯]" "Dell [FTP◯]" "Lenovo" "ASUS [API◯] 🚀" "MSI" "マウスコンピューター"
+    "DUMMY"
+    "NEC [FTP]" "Sony [API]" "富士通FMV [FTP]" "Dynabook [FTP]" "HP [FTP]" "Dell [FTP]" "Lenovo" "ASUS [API]" "MSI" "Mouse"
     "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom"
-    "ノートン [API◯]" "マカフィー [API◯]" "キングソフト [API◯]" "サイバーリンク [API◯]" "トレンドマイクロ [FTP◯]" "ソースネクスト [FTP◯]"
-    "エディオン [API◯]" "コジマネット [API◯]" "ソフマップ [API◯]" "アキバ☆ソフマップ [API◯]" "リコレ!(中古) [API◯]" "ioPLAZA [API◯]" "EIZO [FTP◯]"
+    "ノートン [API]" "マカフィー [API]" "キングソフト [API]" "サイバーリンク [API]" "トレンドマイクロ [FTP]" "ソースネクスト [FTP]"
+    "エディオン [API]" "コジマネット [API]" "ソフマップ [API]" "アキバソフマップ [API]" "リコレ!(中古) [API]" "ioPLAZA [API]" "EIZO [FTP]"
 )
 
 declare -A MID_MAP
@@ -100,25 +100,17 @@ update_sitemap() {
     run_next node /app/generate-sitemap.mjs
 }
 
-show_help() {
-    echo -e "\n${COLOR}【SHIN-VPS 運用フロー】${RESET}"
-    echo "1. [DB] スキーマ変更の反映。"
-    echo "2. [Import] カテゴリ3から実行。API(◯)はAPI Parser、FTP(×)はMID FTPロジックで動作します。"
-    echo "3. [Analysis] 解析が必要な製品に対し、カテゴリ17でスペック抽出。"
-    echo "4. [Price] 価格履歴のみを更新したい場合は18番を実行してください。"
-}
-
 show_maker_menu() {
-    echo -e "\n--- 対象メーカーを選択してください ---"
-    echo -e "${YELLOW}[PC本体・大手]${RESET}"
-    for i in {1..10}; do echo -e "${i}) ${MAKER_NAMES[$i]}"; done
-    echo -e "\n${YELLOW}[BTO・その他PC]${RESET}"
-    for i in {11..17}; do echo -e "${i}) ${MAKER_NAMES[$i]}"; done
-    echo -e "\n${YELLOW}[ソフトウェア]${RESET}"
-    for i in {18..23}; do echo -e "${i}) ${MAKER_NAMES[$i]}"; done
-    echo -e "\n${YELLOW}[量販店・周辺機器]${RESET}"
-    for i in {24..30}; do echo -e "${i}) ${MAKER_NAMES[$i]}"; done
-    echo -e "\n31) 戻る / 指定なし"
+    echo -e "\n${YELLOW}--- 対象メーカーを選択 (横3列表示) ---${RESET}"
+    
+    # 3列で表示するためのループ
+    for ((i=1; i<=30; i+=3)); do
+        for ((j=i; j<i+3 && j<=30; j++)); do
+            printf "%-2d) %-22s " "$j" "${MAKER_NAMES[$j]}"
+        done
+        echo "" # 改行
+    done
+    echo -e "31) 戻る / 指定なし"
 }
 
 # --- 4. メインルーチン ---
@@ -144,7 +136,7 @@ while true; do
     echo -e "17) ${COLOR}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
     echo -e "18) ${COLOR}[Price]    価格履歴の一斉記録 (record_price_history) 📈${RESET}"
     echo "---------------------------------------"
-    echo "h) [Help]     使い方の説明"
+    echo "h) [Help]      使い方の説明"
     echo "8) 終了"
     echo "---------------------------------------"
 

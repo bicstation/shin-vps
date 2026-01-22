@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🤖 BICSTATION 自動データ更新スクリプト (Non-Interactive)
+# 🤖 BICSTATION 自動データ更新スクリプト (Non-Interactive / .mjs 対応版)
 # 実行推奨場所: ~/dev/shin-vps
 # ==============================================================================
 
@@ -56,8 +56,8 @@ for i in "${!API_MIDS[@]}"; do
     run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid "$MID" --maker "$SLUG"
 done
 
-# --- 1-3. 独自スクリプト系 (VPS環境が整うまで注釈化) ---
-echo "📡 独自スクリプト実行: (スキップ中)"
+# --- 1-3. 独自スクリプト系 (VPS環境が整っているLenovoのみ有効化) ---
+echo "📡 独自スクリプト実行: Lenovo"
 run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
 # run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py
 # run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py
@@ -66,23 +66,26 @@ run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/sc
 # 📈 2/4: 価格履歴の記録
 # ------------------------------------------------------------------------------
 echo "📈 2/4: 価格履歴を記録中 (record_price_history --all)..."
-run_django python manage.py record_price_history --all
+# 対話プロンプトを自動パスするために 'y' を流し込む
+echo "y" | run_django python manage.py record_price_history --all
 
 # ------------------------------------------------------------------------------
 # 🌐 3/4: サイトマップの更新
 # ------------------------------------------------------------------------------
 echo "🌐 3/4: サイトマップを更新中..."
-# ホスト側のソースファイル
-SITEMAP_SCRIPT="./next-bicstation/generate-sitemap.js"
+# 高機能な .mjs ファイルを優先使用
+SITEMAP_SCRIPT="./next-bicstation/generate-sitemap.mjs"
 
 if [ -f "$SITEMAP_SCRIPT" ]; then
-    # コンテナへコピー (実行コマンドに合わせて .js で配置)
-    docker cp "$SITEMAP_SCRIPT" "$NEXT_CON":/app/generate-sitemap.js
+    echo "📄 サイトマップスクリプト (.mjs) を使用します"
+    # コンテナへコピー
+    docker cp "$SITEMAP_SCRIPT" "$NEXT_CON":/app/generate-sitemap.mjs
+    # 権限付与
     docker compose -f "$COMPOSE_FILE" exec -T -u root "$NEXT_CON" chmod -R 777 /app/public/sitemap_gen
-    # コンテナ内の .js を実行
-    docker compose -f "$COMPOSE_FILE" exec -T "$NEXT_CON" node /app/generate-sitemap.js
+    # 実行 (node は .mjs を自動判別します)
+    docker compose -f "$COMPOSE_FILE" exec -T "$NEXT_CON" node /app/generate-sitemap.mjs
 else
-    echo "❌ エラー: $SITEMAP_SCRIPT が見つかりません。サイトマップ更新をスキップします。"
+    echo "❌ エラー: $SITEMAP_SCRIPT が見つかりません。更新をスキップします。"
 fi
 
 # ------------------------------------------------------------------------------

@@ -23,12 +23,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = '並立処理と流量制限を用いて、PC製品およびソフトウェアをAI解析する（メーカー別プロンプト対応）'
+    help = '並立処理と流量制限を用いて、PC製品およびソフトウェアをAI解析する（全メーカー動的プロンプト対応）'
 
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
         parser.add_argument('--limit', type=int, default=1, help='処理件数')
-        parser.add_argument('--maker', type=str, help='メーカー指定')
+        parser.add_argument('--maker', type=str, help='メーカー指定（フィルタ用）')
         parser.add_argument('--model', type=str, help='使用するGeminiモデルID')
         parser.add_argument('--force', action='store_true', help='解析済みデータも再解析対象に含める')
 
@@ -40,6 +40,40 @@ class Command(BaseCommand):
         except FileNotFoundError:
             return ""
 
+    def get_maker_slug(self, maker_name):
+        """
+        メーカー名からファイル名に使用するスラッグを動的に生成・判定する
+        """
+        if not maker_name:
+            return "standard"
+        
+        m = maker_name.lower()
+        # 既存の特定主要メーカーの正規化
+        if any(x in m for x in ['fmv', 'fujitsu', '富士通']):
+            return "fmv"
+        if any(x in m for x in ['dynabook', 'ダイナブック']):
+            return "dynabook"
+        if any(x in m for x in ['sourcenext', 'ソースネクスト']):
+            return "sourcenext"
+        if any(x in m for x in ['trend', 'トレンドマイクロ']):
+            return "trendmicro"
+        if 'asus' in m:
+            return "asus"
+        if 'sony' in m:
+            return "sony"
+        if 'hp' in m:
+            return "hp"
+        if 'dell' in m:
+            return "dell"
+        if 'lenovo' in m:
+            return "lenovo"
+        if 'mouse' in m or 'マウス' in m:
+            return "mouse"
+        
+        # それ以外のメーカーは、英数字のみを抽出して小文字スラッグ化
+        slug = re.sub(r'[^a-z0-9]', '', m)
+        return slug if slug else "standard"
+
     def handle(self, *args, **options):
         unique_id = options['unique_id']
         limit = options['limit']
@@ -50,25 +84,20 @@ class Command(BaseCommand):
         # 基本クエリの構築
         query = PCProduct.objects.all()
         
-        # 未解析のみを対象（--forceがある場合は解析済みも含める）
+        # 未解析のみを対象
         if not force:
             query = query.filter(last_spec_parsed_at__isnull=True)
 
         if unique_id:
             query = query.filter(unique_id=unique_id)
         elif maker_arg:
-            # 🚀 ソフトウェアメーカー対応：メーカー判定ロジックの強化
+            # 検索時は柔軟にヒットするようにQオブジェクトを使用
             m = maker_arg.lower()
             if m in ['fmv', 'fujitsu', '富士通']:
                 query = query.filter(Q(maker__icontains='FMV') | Q(maker__icontains='富士通') | Q(maker__icontains='fujitsu'))
             elif m in ['dynabook', 'ダイナブック']:
                 query = query.filter(Q(maker__icontains='dynabook') | Q(maker__icontains='ダイナブック'))
-            elif m in ['sourcenext', 'ソースネクスト']:
-                query = query.filter(Q(maker__icontains='ソースネクスト') | Q(maker__icontains='sourcenext'))
-            elif m in ['trendmicro', 'トレンドマイクロ']:
-                query = query.filter(Q(maker__icontains='トレンドマイクロ') | Q(maker__icontains='trend'))
             else:
-                # 指定された文字列で部分一致検索
                 query = query.filter(maker__icontains=maker_arg)
 
         products = list(query[:limit])
@@ -83,7 +112,7 @@ class Command(BaseCommand):
             model_id = model_arg
         else:
             models_content = self.load_prompt_file('ai_models.txt')
-            model_id = models_content.split('\n')[0].strip() if models_content else "gemma-3-27b-it"
+            model_id = models_content.split('\n')[0].strip() if models_content else "gemini-1.5-flash"
 
         self.stdout.write(self.style.SUCCESS(f"🚀 解析開始: 全 {len(products)} 件 / モデル: {model_id}"))
 
@@ -93,7 +122,7 @@ class Command(BaseCommand):
             for product in products:
                 time.sleep(INTERVAL) 
                 self.counter += 1
-                future = executor.submit(self.analyze_product, product, maker_arg, model_id, self.counter, len(products))
+                future = executor.submit(self.analyze_product, product, model_id, self.counter, len(products))
                 future_to_product[future] = product
 
             for future in as_completed(future_to_product):
@@ -103,28 +132,22 @@ class Command(BaseCommand):
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f"❌ 致命的エラー ({product.unique_id}): {str(e)}"))
 
-    def analyze_product(self, product, maker_arg, model_id, count, total):
-        # 1. プロンプトの読み込み
+    def analyze_product(self, product, model_id, count, total):
+        # 1. 基本プロンプトの読み込み
         base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt')
+        if not base_pc_prompt:
+            base_pc_prompt = "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析してHTML記事とJSONスペックを作成せよ。"
         
-        # 2. メーカー判定（スラッグの決定：プロンプトファイルの選択に使用）
-        raw_maker = (product.maker or "").lower()
-        if any(x in raw_maker for x in ["fmv", "富士通", "fujitsu"]):
-            target_maker_slug = "fmv"
-        elif any(x in raw_maker for x in ["dynabook", "ダイナブック"]):
-            target_maker_slug = "dynabook"
-        elif any(x in raw_maker for x in ["sourcenext", "ソースネクスト"]):
-            target_maker_slug = "sourcenext"
-        elif any(x in raw_maker for x in ["trend", "トレンドマイクロ"]):
-            target_maker_slug = "trendmicro"
-        elif "asus" in raw_maker:
-            target_maker_slug = "asus"
-        else:
-            target_maker_slug = maker_arg or "standard"
-
-        maker_prompt_file = f"analyze_{target_maker_slug.lower()}_prompt.txt"
+        # 2. メーカー別プロンプトの動的判定
+        target_maker_slug = self.get_maker_slug(product.maker)
+        maker_prompt_file = f"analyze_{target_maker_slug}_prompt.txt"
         brand_rules = self.load_prompt_file(maker_prompt_file)
 
+        # 個別プロンプトがない場合は「標準プロンプト」を試行
+        if not brand_rules:
+            brand_rules = self.load_prompt_file('analyze_standard_prompt.txt')
+
+        # それでもない場合のフォールバック
         if not brand_rules:
             brand_rules = "【標準ルール】スペックからCPU、メモリ、ストレージ容量等を正確に抽出し、製品がソフトウェアの場合はライセンス形態（年数・台数・永続版等）も特定してください。"
 
@@ -137,15 +160,15 @@ class Command(BaseCommand):
                 description=product.description
             )
         except Exception:
-            formatted_base = base_pc_prompt
+            formatted_base = f"メーカー:{product.maker}\n名:{product.name}\n価格:{product.price}\n{product.description}"
 
-        full_prompt = f"{formatted_base}\n\nブランドルール:\n{brand_rules}"
+        full_prompt = f"{formatted_base}\n\nブランド別追加ルール:\n{brand_rules}"
 
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
         
         try:
             current_time = datetime.now().strftime("%H:%M:%S")
-            self.stdout.write(f"[{current_time}] 📤 リクエスト ({count}/{total}): {product.name}")
+            self.stdout.write(f"[{current_time}] 📤 解析中 ({count}/{total}): [{product.maker}] {product.name}")
 
             response = requests.post(api_url, json={
                 "contents": [{"parts": [{"text": full_prompt}]}],
@@ -154,8 +177,9 @@ class Command(BaseCommand):
             
             if response.status_code in [429, 500, 503]:
                 wait_time = 30 if response.status_code == 429 else 10
+                self.stdout.write(self.style.WARNING(f"🕒 API制限中... {wait_time}秒待機"))
                 time.sleep(wait_time)
-                return self.analyze_product(product, maker_arg, model_id, count, total)
+                return self.analyze_product(product, model_id, count, total)
             
             response.raise_for_status()
             res_json = response.json()
@@ -180,7 +204,6 @@ class Command(BaseCommand):
             def safe_int(val, default=0):
                 if val is None or val == "": return default
                 try:
-                    # 数字以外（GBや円など）を除去して数値化
                     return int(re.sub(r'[^0-9]', '', str(val)))
                 except: return default
 
@@ -192,11 +215,9 @@ class Command(BaseCommand):
             product.display_info = spec_data.get('display_info', product.display_info)
             product.spec_score = safe_int(spec_data.get('spec_score'), 0)
             
-            # ソフトウェア・ライセンス関連
             if spec_data.get('os_support'): product.os_support = spec_data['os_support']
             if spec_data.get('license_term'): product.license_term = spec_data['license_term']
             
-            # PC詳細
             product.is_ai_pc = spec_data.get('is_ai_pc', False)
             try:
                 product.npu_tops = float(spec_data.get('npu_tops', 0.0))
@@ -208,12 +229,10 @@ class Command(BaseCommand):
             product.ram_type = spec_data.get('ram_type', product.ram_type)
             product.power_recommendation = safe_int(spec_data.get('power_wattage'), product.power_recommendation)
             
-            # テキストコンテンツ
             product.ai_summary = summary_text
             product.ai_content = html_content
             product.target_segment = spec_data.get('target_segment', product.target_segment)
             
-            # 解析完了フラグの更新
             product.last_spec_parsed_at = timezone.now()
             product.save()
 
