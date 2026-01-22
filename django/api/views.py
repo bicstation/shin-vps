@@ -37,7 +37,8 @@ from .models import (
     Director, 
     Series
 )
-from .models.pc_products import PCProduct, PCAttribute
+# 価格履歴モデルを追加
+from .models.pc_products import PCProduct, PCAttribute, PriceHistory
 
 # --------------------------------------------------------------------------
 # 💡 カスタムページネーション
@@ -65,6 +66,7 @@ def api_root(request):
                 "pc_product_makers": "/api/pc-makers/",
                 "pc_sidebar_stats": "/api/pc-sidebar-stats/",
                 "pc_product_detail": "/api/pc-products/{unique_id}/", 
+                "pc_price_history": "/api/pc-products/{unique_id}/price-history/", # 追加
                 "adult_products_list": "/api/adults/",
                 "linkshare_products_list": "/api/linkshare/",
                 "adult_product_detail": "/api/adults/{product_id_unique}/",
@@ -141,7 +143,6 @@ class PCProductListAPIView(generics.ListAPIView):
     
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
-    # 🚀 フィルタ項目をソフトウェア対応に拡張
     filterset_fields = [
         'site_prefix', 'unified_genre', 'stock_status', 
         'is_posted', 'is_ai_pc', 'is_download',
@@ -149,23 +150,19 @@ class PCProductListAPIView(generics.ListAPIView):
         'license_term', 'edition'
     ]
     
-    # 🚀 スペック検索を強化 (OSやライセンスも対象に)
     search_fields = [
         'name', 'cpu_model', 'gpu_model', 'os_support',
         'edition', 'description', 'ai_content'
     ]
     
-    # 🚀 並び替え
     ordering_fields = [
         'price', 'updated_at', 'created_at', 'memory_gb', 
         'spec_score', 'npu_tops', 'power_recommendation'
     ]
 
     def get_queryset(self):
-        # 属性タグをprefetchしてN+1問題を回避
         queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
         
-        # クエリパラメータによる個別フィルタリング（メーカー名、属性スラッグ）
         maker = self.request.query_params.get('maker', None)
         attribute_slug = self.request.query_params.get('attribute', None)
         
@@ -192,7 +189,6 @@ class PCProductMakerListView(APIView):
     製品に紐付いているメーカー名と、それぞれの製品数をカウント
     """
     def get(self, request):
-        # ジャンルで絞り込みたい場合（例：ソフトメーカーだけ出したい等）に対応
         genre = request.query_params.get('genre', None)
         qs = PCProduct.objects.filter(is_active=True).exclude(maker__isnull=True).exclude(maker='')
         
@@ -207,7 +203,6 @@ def pc_sidebar_stats(request):
     """
     サイドバー表示用：属性タイプ（CPU, RAM, OS, ライセンス等）ごとに製品数を集計
     """
-    # 属性マスターから、製品が存在するものだけをカウントして取得
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
     ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
@@ -216,7 +211,6 @@ def pc_sidebar_stats(request):
     for attr in attrs:
         type_display = attr.get_attr_type_display()
         
-        # 不要な接頭辞があれば除去（例: "1. OS" -> "OS"）
         if type_display and ". " in type_display:
             type_display = type_display.split(". ", 1)[1]
             
@@ -231,6 +225,25 @@ def pc_sidebar_stats(request):
         })
     
     return Response(sidebar_data)
+
+# --------------------------------------------------------------------------
+# 📈 2.5 価格履歴取得用 API (追加)
+# --------------------------------------------------------------------------
+@api_view(['GET'])
+def pc_product_price_history(request, unique_id):
+    """
+    特定のPC商品の価格推移データを取得する
+    """
+    product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
+    # 直近30件の履歴を古い順（グラフ描画用）に取得
+    history = PriceHistory.objects.filter(product=product).order_by('recorded_at')[:30]
+    
+    data = {
+        "name": product.name,
+        "labels": [h.recorded_at.strftime('%Y/%m/%d') for h in history],
+        "prices": [h.price for h in history]
+    }
+    return Response(data)
 
 # --------------------------------------------------------------------------
 # 3. Linkshare商品データ API ビュー

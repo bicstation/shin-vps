@@ -77,7 +77,7 @@ class PCProduct(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
 
-    # === 2. 🚀 PCスペック用追加カラム（既存） ===
+    # === 2. 🚀 PCスペック用追加カラム ===
     memory_gb = models.IntegerField(null=True, blank=True, verbose_name="メモリ(GB数値)")
     storage_gb = models.IntegerField(null=True, blank=True, verbose_name="ストレージ(GB数値)")
     npu_tops = models.FloatField(null=True, blank=True, verbose_name="NPU性能(TOPS)")
@@ -87,17 +87,17 @@ class PCProduct(models.Model):
     display_info = models.CharField(max_length=255, null=True, blank=True, verbose_name="ディスプレイ情報")
 
     # --- 自作PC提案カラム ---
-    cpu_socket = models.CharField(max_length=50, null=True, blank=True, verbose_name="CPUソケット(推論)") # 例: LGA1700, AM5
-    motherboard_chipset = models.CharField(max_length=50, null=True, blank=True, verbose_name="推奨チップセット") # 例: B760, Z790
-    ram_type = models.CharField(max_length=20, null=True, blank=True, verbose_name="メモリ規格") # 例: DDR5, DDR4
+    cpu_socket = models.CharField(max_length=50, null=True, blank=True, verbose_name="CPUソケット(推論)")
+    motherboard_chipset = models.CharField(max_length=50, null=True, blank=True, verbose_name="推奨チップセット")
+    ram_type = models.CharField(max_length=20, null=True, blank=True, verbose_name="メモリ規格")
     power_recommendation = models.IntegerField(null=True, blank=True, verbose_name="推奨電源容量(W)")
 
-    # === 3. ✨ ソフトウェア・ライセンス用追加カラム（新規） ===
-    os_support = models.CharField(max_length=255, null=True, blank=True, verbose_name="対応OS詳細") # 例: Windows 11/10, macOS, Android
-    license_term = models.CharField(max_length=100, null=True, blank=True, verbose_name="ライセンス期間") # 例: 1年版, 3年版, 永続版
-    device_count = models.CharField(max_length=100, null=True, blank=True, verbose_name="利用可能台数") # 例: 1台, 3台, 無制限
-    edition = models.CharField(max_length=100, null=True, blank=True, verbose_name="エディション/版番") # 例: Standard, Premium, 家庭向け
-    is_download = models.BooleanField(default=False, verbose_name="DL版フラグ") # Trueならダウンロード版、Falseならパッケージ版等
+    # === 3. ✨ ソフトウェア・ライセンス用追加カラム ===
+    os_support = models.CharField(max_length=255, null=True, blank=True, verbose_name="対応OS詳細")
+    license_term = models.CharField(max_length=100, null=True, blank=True, verbose_name="ライセンス期間")
+    device_count = models.CharField(max_length=100, null=True, blank=True, verbose_name="利用可能台数")
+    edition = models.CharField(max_length=100, null=True, blank=True, verbose_name="エディション/版番")
+    is_download = models.BooleanField(default=False, verbose_name="DL版フラグ")
 
     # === 4. 解析・メタ情報 ===
     target_segment = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI判定ターゲット層")
@@ -116,7 +116,7 @@ class PCProduct(models.Model):
     def __str__(self):
         return f"[{self.maker}] {self.name[:30]}"
 
-    # 💡 保存時の自動処理
+    # 保存時の自動処理
     def save(self, *args, **kwargs):
         # 1. 統合ジャンルのフォールバック
         if not self.unified_genre and self.raw_genre:
@@ -131,16 +131,39 @@ class PCProduct(models.Model):
                 if self.stock_status == "受注停止中":
                     self.stock_status = "在庫あり"
         
-        # 3. AI PC判定（説明文から推測）
+        # 3. AI PC判定
         if self.description:
             ai_keywords = ["NPU", "Ryzen AI", "Core Ultra", "TOPS", "Copilot+"]
             if any(key.lower() in self.description.lower() for key in ai_keywords):
                 self.is_ai_pc = True
         
-        # 4. ソフトウェア自動判定（簡易版：メーカー名やジャンルから）
+        # 4. ソフトウェア自動判定
         soft_makers = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT"]
         if any(sm in self.maker.upper() for sm in soft_makers):
             if "ダウンロード" in self.name or "DL版" in self.name:
                 self.is_download = True
 
         super().save(*args, **kwargs)
+
+
+class PriceHistory(models.Model):
+    """
+    製品の価格変動を記録するモデル
+    個別ページでグラフ表示するために使用
+    """
+    product = models.ForeignKey(
+        PCProduct, 
+        on_delete=models.CASCADE, 
+        related_name='price_history', 
+        verbose_name="対象製品"
+    )
+    price = models.IntegerField(verbose_name="記録時価格")
+    recorded_at = models.DateTimeField(default=now, db_index=True, verbose_name="記録日時")
+
+    class Meta:
+        verbose_name = "価格履歴"
+        verbose_name_plural = "価格履歴一覧"
+        ordering = ['-recorded_at']
+
+    def __str__(self):
+        return f"{self.product.name[:20]} - {self.price}円 ({self.recorded_at.strftime('%Y/%m/%d')})"

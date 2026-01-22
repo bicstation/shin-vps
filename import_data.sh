@@ -5,7 +5,8 @@
 # ==============================================================================
 # 🛠 修正内容: メーカー選択メニューを「PC本体」「ソフト」「量販店」順に再編
 # 🛠 修正内容: ASUS(43708)のAPIロジックを維持しつつ、既存FTPロジックを完全復旧
-# 🛠 修正内容: API(◯)とFTP(×)で実行する管理コマンドを適切に分岐
+# 🛠 修正内容: 3) Import, 17) AI-Spec 実行後に record_price_history を自動連動
+# 🛠 修正内容: 18) [Price] 価格履歴の単独記録メニューを新設
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -34,7 +35,6 @@ RED="\e[31m"
 YELLOW="\e[33m"
 
 # --- 2. データ定義 (MAKER_MAP / MID_MAP) ---
-# カテゴリ別に並べ替え
 MAKERS=(
     "" 
     "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse"          # PC本体 (1-10)
@@ -45,15 +45,13 @@ MAKERS=(
 
 MAKER_NAMES=(
     ""
-    "NEC得選街 [API◯]" "ソニーストア [API◯]" "富士通 (FMV) [FTP×]" "Dynabook [FTP×]" "HP [FTP×]" "Dell [FTP×]" "Lenovo" "ASUS [API◯] 🚀" "MSI" "マウスコンピューター"
+    "ソニーストア [API◯]" "富士通 (FMV) [FTP◯]" "Dynabook [FTP◯]" "HP [FTP◯]" "Dell [FTP◯]" "Lenovo" "ASUS [API◯] 🚀" "MSI" "マウスコンピューター"
     "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom"
-    "ノートン [API◯]" "マカフィー [API◯]" "キングソフト [API◯]" "サイバーリンク [API◯]" "トレンドマイクロ [FTP×]" "ソースネクスト [FTP×]"
-    "エディオン [API◯]" "コジマネット [API◯]" "ソフマップ [API◯]" "アキバ☆ソフマップ [API◯]" "リコレ!(中古) [API◯]" "ioPLAZA [API◯]" "EIZO [FTP×]"
+    "ノートン [API◯]" "マカフィー [API◯]" "キングソフト [API◯]" "サイバーリンク [API◯]" "トレンドマイクロ [FTP◯]" "ソースネクスト [FTP◯]"
+    "エディオン [API◯]" "コジマネット [API◯]" "ソフマップ [API◯]" "アキバ☆ソフマップ [API◯]" "リコレ!(中古) [API◯]" "ioPLAZA [API◯]" "EIZO [FTP◯]"
 )
 
-# LinkShare MIDマッピング
 declare -A MID_MAP
-# PC本体
 MID_MAP["nec"]="2780"
 MID_MAP["sony"]="2980"
 MID_MAP["fmv"]="2543"
@@ -61,14 +59,12 @@ MID_MAP["dynabook"]="36508"
 MID_MAP["hp"]="35909"
 MID_MAP["dell"]="2557"
 MID_MAP["asus"]="43708"
-# ソフトウェア
 MID_MAP["norton"]="24732"
 MID_MAP["mcafee"]="3388"
 MID_MAP["kingsoft"]="24623"
 MID_MAP["cyberlink"]="36855"
 MID_MAP["trendmicro"]="24501"
 MID_MAP["sourcenext"]="2633"
-# 量販店・周辺機器
 MID_MAP["edion"]="43098"
 MID_MAP["kojima"]="13993"
 MID_MAP["sofmap"]="37641"
@@ -109,6 +105,7 @@ show_help() {
     echo "1. [DB] スキーマ変更の反映。"
     echo "2. [Import] カテゴリ3から実行。API(◯)はAPI Parser、FTP(×)はMID FTPロジックで動作します。"
     echo "3. [Analysis] 解析が必要な製品に対し、カテゴリ17でスペック抽出。"
+    echo "4. [Price] 価格履歴のみを更新したい場合は18番を実行してください。"
 }
 
 show_maker_menu() {
@@ -131,13 +128,13 @@ while true; do
     echo -e "🚀 SHIN-VPS Data Import & Automation Tool"
     echo -e "環境: ${COLOR}${ENV_TYPE}${RESET}"
     echo -e "---------------------------------------"
-    echo "1) [DB]      マイグレーション実行 (スキーマ更新)"
-    echo "2) [Import]  Tiper データ (Fanza/Duga) インポート"
-    echo -e "3) ${COLOR}[Import]  メーカー別インポート・同期 ✨${RESET}"
-    echo "4) [Import]  AV-Flash データのインポート"
-    echo "5) [Admin]   スーパーユーザーの作成"
-    echo -e "6) ${COLOR}[WP]      商品AI記事生成 & WordPress自動投稿${RESET}"
-    echo -e "7) ${COLOR}[News]    PCパーツ最新ニュース投稿 (RSS/URL)${RESET}"
+    echo "1) [DB]       マイグレーション実行 (スキーマ更新)"
+    echo "2) [Import]   Tiper データ (Fanza/Duga) インポート"
+    echo -e "3) ${COLOR}[Import]   メーカー別インポート・同期 ✨${RESET}"
+    echo "4) [Import]   AV-Flash データのインポート"
+    echo "5) [Admin]    スーパーユーザーの作成"
+    echo -e "6) ${COLOR}[WP]       商品AI記事生成 & WordPress自動投稿${RESET}"
+    echo -e "7) ${COLOR}[News]     PCパーツ最新ニュース投稿 (RSS/URL)${RESET}"
     echo "---------------------------------------"
     echo "12) [Analysis] 製品データをTSV出力 (分析用)"
     echo "13) [Master]   属性マスター(TSV)をインポート"
@@ -145,8 +142,9 @@ while true; do
     echo -e "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
     echo -e "16) ${COLOR}[AI-M]     AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
     echo -e "17) ${COLOR}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
+    echo -e "18) ${COLOR}[Price]    価格履歴の一斉記録 (record_price_history) 📈${RESET}"
     echo "---------------------------------------"
-    echo "h) [Help]    使い方の説明"
+    echo "h) [Help]     使い方の説明"
     echo "8) 終了"
     echo "---------------------------------------"
 
@@ -172,7 +170,6 @@ while true; do
             MID=${MID_MAP[$SLUG]}
 
             case $SUB_CHOICE in
-                # --- 個別スクラッチロジック ---
                 7) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
                 11) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_acer.py ;;
                 12) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
@@ -184,7 +181,6 @@ while true; do
                 9)  run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py ;;
                 10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
 
-                # --- LinkShare API(◯) 独自ロジック (ASUS等) ---
                 1|2|8|18|19|20|21|24|25|26|27|28|29)
                     if [ "$SLUG" == "asus" ]; then
                         echo -e "\n${COLOR}📡 LinkShare API 経由で取得中... (ASUS)${RESET}"
@@ -197,7 +193,6 @@ while true; do
                     fi
                     ;;
 
-                # --- LinkShare FTP(×) 共通ロジック (FMV, Dell, HP, トレンド等) ---
                 3|4|5|6|22|23|30)
                     if [ -n "$MID" ]; then
                         echo -e "\n${COLOR}📡 LinkShare FTP 経由で同期中... (${MAKER_NAMES[$SUB_CHOICE]} MID:$MID)${RESET}"
@@ -209,13 +204,14 @@ while true; do
                 *) echo "無効な番号です。"; continue ;;
             esac
 
-            echo -e "\n${YELLOW}>>> ${MAKER_NAMES[$SUB_CHOICE]} 同期完了。${RESET}"
+            echo -e "\n${YELLOW}>>> ${MAKER_NAMES[$SUB_CHOICE]} 同期完了。価格履歴を自動更新中...${RESET}"
+            run_django python manage.py record_price_history --maker "$SLUG"
+
             read -p "続けてAI詳細スペック解析を実行しますか？(y/n): " AI_CONFIRM
             if [[ "$AI_CONFIRM" == "y" ]]; then
                 run_django python manage.py analyze_pc_spec --maker "$SLUG" --limit 999999
             fi
             ;;
-        # (4番以降の管理メニューは既存のものをすべて維持)
         4)
             read -p "AV Flash ファイル名: " FILE_NAME
             run_django python manage.py import_av "/usr/src/app/data/$FILE_NAME"
@@ -260,11 +256,30 @@ while true; do
         17)
             show_maker_menu
             read -p "メーカー番号: " SPEC_MK_NUM
-            [[ -z "$SPEC_MK_NUM" ]] && continue
+            [[ -z "$SPEC_MK_NUM" || "$SPEC_MK_NUM" == "31" ]] && continue
             MK_NAME=${MAKERS[$SPEC_MK_NUM]}
             read -p "件数 (all/数値): " LM_ARG
             [[ -z "$LM_ARG" || "$LM_ARG" == "all" ]] && LM_ARG=999999
             run_django python manage.py analyze_pc_spec --maker "$MK_NAME" --limit "$LM_ARG"
+            echo -e "\n${COLOR}📊 解析完了後の価格履歴を記録中...${RESET}"
+            run_django python manage.py record_price_history --maker "$MK_NAME"
+            ;;
+        18)
+            echo -e "\n${YELLOW}--- 価格履歴の記録モードを選択してください ---${RESET}"
+            echo "1) 全製品を一斉記録 (--all)"
+            echo "2) 特定のメーカーのみ記録 (--maker)"
+            read -p ">> " PRICE_MODE
+            if [ "$PRICE_MODE" == "1" ]; then
+                echo -e "\n${COLOR}📊 全製品の価格スナップショットを記録中...${RESET}"
+                run_django python manage.py record_price_history --all
+            elif [ "$PRICE_MODE" == "2" ]; then
+                show_maker_menu
+                read -p "メーカー番号: " PRICE_MK_NUM
+                [[ -z "$PRICE_MK_NUM" || "$PRICE_MK_NUM" == "31" ]] && continue
+                MK_NAME=${MAKERS[$PRICE_MK_NUM]}
+                echo -e "\n${COLOR}📊 メーカー: $MK_NAME の価格を記録中...${RESET}"
+                run_django python manage.py record_price_history --maker "$MK_NAME"
+            fi
             ;;
         h) show_help ;;
         8) exit 0 ;;
@@ -272,7 +287,7 @@ while true; do
     esac
 
     # 本番環境のみの事後処理
-    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14|17)$ ]]; then
+    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14|17|18)$ ]]; then
         echo -e "\n${COLOR}🔄 スケジューラーを再起動中...${RESET}"
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
         read -p "サイトマップも更新しますか？ (y/n): " CONFIRM

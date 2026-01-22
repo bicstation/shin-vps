@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 from .models import AdultProduct, LinkshareProduct, Maker, Genre, Actress, Label, Director, Series 
-from .models.pc_products import PCProduct, PCAttribute
+from .models.pc_products import PCProduct, PCAttribute, PriceHistory
 
 # --------------------------------------------------------------------------
 # 1. エンティティ（マスターデータ）のシリアライザ
@@ -44,6 +44,14 @@ class PCAttributeSerializer(serializers.ModelSerializer):
         model = PCAttribute
         fields = ('id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order')
 
+# --- 🚀 価格履歴用シリアライザ (追加) ---
+class PriceHistorySerializer(serializers.ModelSerializer):
+    date = serializers.DateTimeField(source='recorded_at', format="%Y/%m/%d")
+
+    class Meta:
+        model = PriceHistory
+        fields = ('date', 'price')
+
 # --------------------------------------------------------------------------
 # 2. アダルト商品モデル (AdultProductSerializer)
 # --------------------------------------------------------------------------
@@ -85,6 +93,8 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
 
 class PCProductSerializer(serializers.ModelSerializer):
     attributes = PCAttributeSerializer(many=True, read_only=True)
+    # --- 🚀 価格履歴をシリアライザに統合 ---
+    price_history = serializers.SerializerMethodField()
 
     class Meta:
         model = PCProduct
@@ -131,6 +141,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             
             # --- ステータス・メタ情報 ---
             'attributes',
+            'price_history',        # 📈 価格履歴フィールド
             'affiliate_url',
             'affiliate_updated_at',
             'stock_status',
@@ -141,3 +152,9 @@ class PCProductSerializer(serializers.ModelSerializer):
             'updated_at',
         )
         read_only_fields = fields
+
+    # --- 🚀 直近30件の価格履歴を取得するメソッド ---
+    def get_price_history(self, obj):
+        # PCProductインスタンスに紐づく履歴を古い順に取得（グラフ描画用）
+        histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
+        return PriceHistorySerializer(histories, many=True).data

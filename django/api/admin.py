@@ -14,15 +14,23 @@ from .models import (
     Genre, Actress, Maker, Label, Director, Series,
     PCAttribute 
 )
-from .models.pc_products import PCProduct
+from .models.pc_products import PCProduct, PriceHistory
 
 # ----------------------------------------------------
-# 0. カスタムフォーム
+# 0. カスタムフォーム & インライン
 # ----------------------------------------------------
 class AdultProductAdminForm(forms.ModelForm):
     class Meta:
         model = AdultProduct
         fields = '__all__'
+
+class PriceHistoryInline(admin.TabularInline):
+    """PC製品の詳細画面で価格履歴を直接編集・確認できるインライン"""
+    model = PriceHistory
+    extra = 0  # 空の入力欄をデフォルトで表示しない
+    ordering = ('-recorded_at',)
+    readonly_fields = ('recorded_at',)
+    can_delete = True
 
 # ----------------------------------------------------
 # 1. PCAttribute (スペック属性) のAdminクラス
@@ -40,11 +48,24 @@ class PCAttributeAdmin(admin.ModelAdmin):
     get_product_count.short_description = '紐付け製品数'
 
 # ----------------------------------------------------
+# 1.5 PriceHistory (価格履歴単体) のAdminクラス
+# ----------------------------------------------------
+@admin.register(PriceHistory)
+class PriceHistoryAdmin(admin.ModelAdmin):
+    list_display = ('product', 'price', 'recorded_at')
+    list_filter = ('recorded_at', 'product__maker')
+    search_fields = ('product__name', 'product__unique_id')
+    date_hierarchy = 'recorded_at'
+
+# ----------------------------------------------------
 # 2. PCProduct (PC製品・ソフト・周辺機器) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
     # テンプレートパスを指定
     change_list_template = "admin/api/pcproduct/change_list.html"
+    
+    # 履歴をインライン表示
+    inlines = [PriceHistoryInline]
 
     # 一覧画面の表示項目
     list_display = (
@@ -280,7 +301,6 @@ class CommonAdmin(admin.ModelAdmin):
     list_display = ('name', 'product_count', 'api_source', 'created_at')
 
     def product_count(self, obj):
-        # 関連付けられた商品数を取得するロジック（リレーション名に合わせて調整）
         if hasattr(obj, 'products'):
             return obj.products.count()
         return 0

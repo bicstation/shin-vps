@@ -42,6 +42,10 @@ urlpatterns = [
     # 💡 lookup_field='unique_id' により、メーカー固有ID（MSE_xxxなど）で詳細を取得
     path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
 
+    # GET /api/pc-products/<unique_id>/price-history/
+    # 📈 💡 特定製品の価格推移データを取得 (Chart.js等でのグラフ描画用)
+    path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
+
     # -----------------------------------------------------------
     # 4. Linkshare商品データ エンドポイント (LinkshareProduct)
     # -----------------------------------------------------------

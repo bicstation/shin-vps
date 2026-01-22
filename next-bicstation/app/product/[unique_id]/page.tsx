@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { fetchProductDetail, fetchRelatedProducts } from '@/lib/api';
 import { COLORS } from "@/constants";
 import styles from './ProductDetail.module.css';
+import PriceHistoryChart from '@/components/PriceHistoryChart'; // 📈 グラフコンポーネントをインポート
 
 interface PageProps {
     params: Promise<{ unique_id: string }>;
@@ -134,7 +135,7 @@ export default async function ProductDetailPage(props: PageProps) {
             />
 
             <main className={styles.mainContainer}>
-                {/* 📈 リアルタイム・トレンドバナー（追加） */}
+                {/* 📈 リアルタイム・トレンドバナー */}
                 <div className={styles.trendBanner} style={{ backgroundColor: '#fff', border: '1px solid #eee', padding: '10px 20px', borderRadius: '12px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.03)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem' }}>
                         <span style={{ backgroundColor: primaryColor, color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold' }}>{today} UPDATE</span>
@@ -178,6 +179,17 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </div>
 
+                {/* 📈 1.5 価格履歴グラフセクション（追加） */}
+                <div style={{ marginBottom: '30px' }}>
+                    {p.price_history && p.price_history.length > 0 ? (
+                        <PriceHistoryChart history={p.price_history} />
+                    ) : (
+                        <div style={{ padding: '20px', textAlign: 'center', backgroundColor: '#f9f9f9', borderRadius: '12px', color: '#999', fontSize: '0.85rem', border: '1px dashed #ddd' }}>
+                            価格推移データは十分な期間の蓄積が必要です。
+                        </div>
+                    )}
+                </div>
+
                 {/* 2. クイックハイライト */}
                 {summary && (
                     <section className={styles.highlightSection}>
@@ -203,7 +215,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     </section>
                 )}
 
-                {/* ✅ 3. スペックサマリー（ソフトとハードで項目名を出し分け） */}
+                {/* ✅ 3. スペックサマリー */}
                 <section className={styles.aiSpecSummarySection}>
                     <h2 className={styles.minimalTitle}>{isSoftware ? "動作要件・ライセンス" : "主要スペック構成"}</h2>
                     <div className={styles.aiSpecGrid}>
@@ -238,7 +250,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </section>
 
-                {/* ✅ 4. 自作PC・拡張情報（PC本体の場合のみ表示） */}
+                {/* ✅ 4. 自作PC・拡張情報 */}
                 {!isSoftware && (p.cpu_socket || p.motherboard_chipset || p.ram_type) && (
                     <section className={styles.upgradeSection}>
                         <div className={styles.upgradeHeader}>
