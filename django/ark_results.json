@@ -1,0 +1,90 @@
+[
+    {
+        "unique_id": "ark-ai-a835233058fc",
+        "name": "ARD4-U8G26SB-26V-D",
+        "maker": "ark",
+        "price": 3828,
+        "description": "Intel Core i3/i5/i7/i9 / N/A / 288Pin DDR4-UDIMM 8GB 4GBモジュール x2枚セット / N/A / NPU:False",
+        "url": "https://www.ark-pc.co.jp/i/11786018/",
+        "image_url": "https://media.ark-pc.co.jp/image/item/top/11786018.jpg",
+        "genre": "デスクトップ",
+        "last_update": "2026-01-22 18:50:33"
+    },
+    {
+        "unique_id": "ark-ai-7aa093a15a10",
+        "name": "arkhive Gaming Custom GC-A7G57M AG-AG8B85MGB7-TS1",
+        "maker": "ark",
+        "price": 279800,
+        "description": "AMD Ryzen 7 9700X / GeForce RTX 5070 / 32GB (16GBx2) - Crucial Pro DDR5-5600 1.1Volt AMD EXPO / 1TB - Kingston NV3シリーズ SSD M.2 (PCIEx Gen4 x4) / NPU:False",
+        "url": "https://www.ark-pc.co.jp/i/72003275/",
+        "image_url": "https://media.ark-pc.co.jp/image/bto/model/3275_mdl_cust.png",
+        "genre": "デスクトップ",
+        "last_update": "2026-01-22 18:50:45"
+    },
+    {
+        "unique_id": "ark-ai-34071be8e68e",
+        "name": "arkhive Gaming Alliance Powered by ASUS GN-A5G56M AG-AR6B85MGB6I-A22",
+        "maker": "ark",
+        "price": 259800,
+        "description": "AMD RYZEN 5 7500F / NVIDIA RTX5060Ti 16GB / Corsair DDR5-5600 32GB / Crucial 1000GB SSD / NPU:False",
+        "url": "https://www.ark-pc.co.jp/i/72003397/",
+        "image_url": "https://media.ark-pc.co.jp/image/bto/model/3397_mdl_cust.png",
+        "genre": "デスクトップ",
+        "last_update": "2026-01-22 18:50:55"
+    },
+    {
+        "unique_id": "ark-ai-66179e03a946",
+        "name": "arkhive Gaming Custom GC-A7G57R AG-AG8C2TX87AGB7I-AX8",
+        "maker": "ark",
+        "price": 398800,
+        "description": "AMD Ryzen 7 9700X / GeForce RTX 5070 Ti / 32GB (16GBx2) - SanMax DDR5-5600 SKhynix 1.1Volt Black PCB Edition / 2TB - Princeton PHD-ISM2G4シリーズ SSD M.2 (PCIEx Gen4 x4) / NPU:False",
+        "url": "https://www.ark-pc.co.jp/i/72003464/",
+        "image_url": "https://media.ark-pc.co.jp/image/bto/model/3464_mdl_cust.png",
+        "genre": "デスクトップ",
+        "last_update": "2026-01-22 18:51:07"
+    },
+    {
+        "unique_id": "ark-ai-fe34c3e1fb19",
+        "name": "arkhive Gaming Custom GC-A7R96M AG-AR8C1TB55MRD6X-H3F",
+        "maker": "ark",
+        "price": 219800,
+        "description": "AMD Ryzen 7 5700X / AMD Radeon RX 9060 XT / 32GB (16GBx2) - SanMax DDR4-3200 Micron 1.2Volt (88M) / 1TB - Princeton PHD-ISM2G4シリーズ SSD M.2 (PCIEx Gen4 x4) / NPU:False",
+        "url": "https://www.ark-pc.co.jp/i/72003497/",
+        "image_url": "https://media.ark-pc.co.jp/image/bto/model/3497_mdl_cust.png",
+        "genre": "デスクトップ",
+        "last_update": "2026-01-22 18:51:19"
+    },
+    {
+        "unique_id": "ark-ai-930b2ecf06ab",
+        "name": "arkhive Gaming Alliance Powered by MSI",
+        "maker": "ark",
+        "price": 209800,
+        "description": "AMD RYZEN 5 7500F / NVIDIA RTX5060 / 16GB (8GBx2) - Ark Selection Memory DDR5-5600 Samsung 1.1Volt / Kingston 1000GB SSD / NPU:False",
+        "url": "https://www.ark-pc.co.jp/i/72003283/",
+        "image_url": "https://media.ark-pc.co.jp/image/bto/model/3283_mdl_cust.png",
+        "genre": "デスクトップ",
+        "last_update": "2026-01-22 18:51:30"
+    },
+    {
+        "unique_id": "ark-ai-2fb90fa2c42c",
+        "name": "arkhive Creator Limited CL-I9R4R AC-IA24F4TZ89ARB4-AP1",
+        "maker": "ark",
+        "price": 901780,
+        "description": "Intel Core Ultra 9 285K / NVIDIA RTX PRO 4000 Blackwell / 128GB Crucial PRO DDR5-5600 CL46 1.1Volt AMD EXPO / 4TB Samsung 990 PRO NVMe SSD / NPU:True",
+        "url": "https://www.ark-pc.co.jp/i/72003448/",
+        "image_url": "https://media.ark-pc.co.jp/image/bto/model/3448_mdl_cust.png",
+        "genre": "デスクトップ",
+        "last_update": "2026-01-22 18:51:41"
+    },
+    {
+        "unique_id": "ark-ai-91c5dba3d965",
+        "name": "arkhive Gaming Custom GC-A5G56M AG-AR6B55MGB6-TS1",
+        "maker": "ark",
+        "price": 218800,
+        "description": "AMD Ryzen 5 5600 / GeForce RTX 5060 / 16GB (8GBx2) - SanMax DDR4-3200 1.2Volt Micron(46M) / Kingston NV3 PCIe 4.0 NVMe SSD 1TB / NPU:False",
+        "url": "https://www.ark-pc.co.jp/i/72003271/",
+        "image_url": "https://media.ark-pc.co.jp/image/bto/model/3271_mdl_cust.png",
+        "genre": "デスクトップ",
+        "last_update": "2026-01-22 18:51:52"
+    }
+]
