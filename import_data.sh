@@ -3,9 +3,9 @@
 # ==============================================================================
 # 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール
 # ==============================================================================
-# 🛠 修正内容: HP(35909)とDell(2557)を共通FTPロジックに完全統合
-# 🛠 修正内容: ◯項目のMIDのみを採用し、不要な個別スクリプト呼び出しを廃止
-# 🛠 修正内容: トレンドマイクロ(13786)を含む最新ラインナップを反映
+# 🛠 修正内容: メーカー選択メニューを「PC本体」「ソフト」「量販店」順に再編
+# 🛠 修正内容: ASUS(43708)のAPIロジックを維持しつつ、既存FTPロジックを完全復旧
+# 🛠 修正内容: API(◯)とFTP(×)で実行する管理コマンドを適切に分岐
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -34,20 +34,48 @@ RED="\e[31m"
 YELLOW="\e[33m"
 
 # --- 2. データ定義 (MAKER_MAP / MID_MAP) ---
-# ※ 将来の自動ループ処理を見据え、スラグ名と表示名を完全一致させています。
-MAKERS=("" "lenovo" "hp" "dell" "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom" "msi" "mouse" "asus" "fmv" "dynabook" "eizo" "sourcenext" "trendmicro")
-MAKER_NAMES=("" "Lenovo" "HP" "Dell" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom" "MSI" "Mouse Computer 🐭" "ASUS (API) 🚀" "FMV (Fujitsu) 💻" "Dynabook 💻" "EIZO 🖥️" "ソースネクスト 💿" "トレンドマイクロ 🛡️")
+# カテゴリ別に並べ替え
+MAKERS=(
+    "" 
+    "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse"          # PC本体 (1-10)
+    "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom"                # BTO/その他 (11-17)
+    "norton" "mcafee" "kingsoft" "cyberlink" "trendmicro" "sourcenext"             # ソフトウェア (18-23)
+    "edion" "kojima" "sofmap" "bic_sofmap" "recollect" "ioplazy" "eizo"            # 量販店・周辺機器 (24-30)
+)
 
-# LinkShare FTP用 MIDマッピング (◯の項目のみ)
-# HP(35909)とDell(2557)を共通ロジックへ統合
+MAKER_NAMES=(
+    ""
+    "NEC得選街 [API◯]" "ソニーストア [API◯]" "富士通 (FMV) [FTP×]" "Dynabook [FTP×]" "HP [FTP×]" "Dell [FTP×]" "Lenovo" "ASUS [API◯] 🚀" "MSI" "マウスコンピューター"
+    "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom"
+    "ノートン [API◯]" "マカフィー [API◯]" "キングソフト [API◯]" "サイバーリンク [API◯]" "トレンドマイクロ [FTP×]" "ソースネクスト [FTP×]"
+    "エディオン [API◯]" "コジマネット [API◯]" "ソフマップ [API◯]" "アキバ☆ソフマップ [API◯]" "リコレ!(中古) [API◯]" "ioPLAZA [API◯]" "EIZO [FTP×]"
+)
+
+# LinkShare MIDマッピング
 declare -A MID_MAP
-MID_MAP["hp"]="35909"
-MID_MAP["dell"]="2557"
+# PC本体
+MID_MAP["nec"]="2780"
+MID_MAP["sony"]="2980"
 MID_MAP["fmv"]="2543"
 MID_MAP["dynabook"]="36508"
-MID_MAP["eizo"]="3256"
-MID_MAP["sourcenext"]="2633"
+MID_MAP["hp"]="35909"
+MID_MAP["dell"]="2557"
+MID_MAP["asus"]="43708"
+# ソフトウェア
+MID_MAP["norton"]="24732"
+MID_MAP["mcafee"]="3388"
+MID_MAP["kingsoft"]="24623"
+MID_MAP["cyberlink"]="36855"
 MID_MAP["trendmicro"]="24501"
+MID_MAP["sourcenext"]="2633"
+# 量販店・周辺機器
+MID_MAP["edion"]="43098"
+MID_MAP["kojima"]="13993"
+MID_MAP["sofmap"]="37641"
+MID_MAP["bic_sofmap"]="43262"
+MID_MAP["recollect"]="43860"
+MID_MAP["ioplazy"]="24172"
+MID_MAP["eizo"]="3256"
 
 # --- 3. 共通実行関数 ---
 
@@ -78,22 +106,22 @@ update_sitemap() {
 
 show_help() {
     echo -e "\n${COLOR}【SHIN-VPS 運用フロー】${RESET}"
-    echo "1. [DB] 1番でカラム追加等を反映。"
-    echo "2. [Import] 3番でメーカーデータを同期。HP/Dellを含む多くのメーカーが共通FTPロジックで動作します。"
-    echo "3. [Mapping] 14番で属性付与、15番でサイトマップ更新。"
-    echo -e "\n${YELLOW}※ 統合メリット:${RESET} 全てのFTP対象メーカーが一貫したエラーハンドリングで処理されます。"
+    echo "1. [DB] スキーマ変更の反映。"
+    echo "2. [Import] カテゴリ3から実行。API(◯)はAPI Parser、FTP(×)はMID FTPロジックで動作します。"
+    echo "3. [Analysis] 解析が必要な製品に対し、カテゴリ17でスペック抽出。"
 }
 
 show_maker_menu() {
     echo -e "\n--- 対象メーカーを選択してください ---"
-    for i in $(seq 1 $((${#MAKER_NAMES[@]} - 1))); do
-        if [ $i -ge 13 ]; then
-            echo -e "${i}) ${COLOR}${MAKER_NAMES[$i]}${RESET}"
-        else
-            echo "${i}) ${MAKER_NAMES[$i]}"
-        fi
-    done
-    echo "20) 戻る / 指定なし"
+    echo -e "${YELLOW}[PC本体・大手]${RESET}"
+    for i in {1..10}; do echo -e "${i}) ${MAKER_NAMES[$i]}"; done
+    echo -e "\n${YELLOW}[BTO・その他PC]${RESET}"
+    for i in {11..17}; do echo -e "${i}) ${MAKER_NAMES[$i]}"; done
+    echo -e "\n${YELLOW}[ソフトウェア]${RESET}"
+    for i in {18..23}; do echo -e "${i}) ${MAKER_NAMES[$i]}"; done
+    echo -e "\n${YELLOW}[量販店・周辺機器]${RESET}"
+    for i in {24..30}; do echo -e "${i}) ${MAKER_NAMES[$i]}"; done
+    echo -e "\n31) 戻る / 指定なし"
 }
 
 # --- 4. メインルーチン ---
@@ -138,33 +166,44 @@ while true; do
         3)
             show_maker_menu
             read -p ">> " SUB_CHOICE
-            [[ "$SUB_CHOICE" == "20" || -z "$SUB_CHOICE" ]] && continue
+            [[ "$SUB_CHOICE" == "31" || -z "$SUB_CHOICE" ]] && continue
             
             SLUG=${MAKERS[$SUB_CHOICE]}
             MID=${MID_MAP[$SLUG]}
 
             case $SUB_CHOICE in
-                1) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
-                4) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_acer.py ;;
-                5) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
-                6) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py ;;
-                7) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_vspec.py ;;
-                8) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py ;;
-                9) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py ;;
-                10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
-                11) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py ;;
-                12) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
-                13) # ASUS API 独自ロジック
-                    echo -e "\n${COLOR}📡 LinkShare API 経由で取得中... (ASUS)${RESET}"
-                    run_django python manage.py linkshare_bc_api_parser --mid 43708 --save-db --max-pages 5
-                    run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid 43708 --maker asus
+                # --- 個別スクラッチロジック ---
+                7) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
+                11) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_acer.py ;;
+                12) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_mini.py ;;
+                13) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_geekom.py ;;
+                14) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_vspec.py ;;
+                15) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_storm.py ;;
+                16) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_frontier.py ;;
+                17) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
+                9)  run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py ;;
+                10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
+
+                # --- LinkShare API(◯) 独自ロジック (ASUS等) ---
+                1|2|8|18|19|20|21|24|25|26|27|28|29)
+                    if [ "$SLUG" == "asus" ]; then
+                        echo -e "\n${COLOR}📡 LinkShare API 経由で取得中... (ASUS)${RESET}"
+                        run_django python manage.py linkshare_bc_api_parser --mid 43708 --save-db --max-pages 5
+                        run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid 43708 --maker asus
+                    else
+                        echo -e "\n${COLOR}📡 LinkShare API 経由で同期中... (${MAKER_NAMES[$SUB_CHOICE]} MID:$MID)${RESET}"
+                        run_django python manage.py linkshare_bc_api_parser --mid "$MID" --save-db --limit 100
+                        run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid "$MID" --maker "$SLUG"
+                    fi
                     ;;
-                2|3|14|15|16|17|18) # 共通FTPロジック (HP, Dell, FMV, Dynabook, EIZO, ソースネクスト, トレンドマイクロ)
+
+                # --- LinkShare FTP(×) 共通ロジック (FMV, Dell, HP, トレンド等) ---
+                3|4|5|6|22|23|30)
                     if [ -n "$MID" ]; then
-                        echo -e "\n${COLOR}📡 LinkShare FTP 経由で取得中... (${MAKER_NAMES[$SUB_CHOICE]} MID:$MID)${RESET}"
+                        echo -e "\n${COLOR}📡 LinkShare FTP 経由で同期中... (${MAKER_NAMES[$SUB_CHOICE]} MID:$MID)${RESET}"
                         run_django python manage.py import_bc_mid_ftp --mid "$MID"
                     else
-                        echo -e "${RED}[ERROR] MIDが定義されていないか、除外されています。${RESET}"
+                        echo -e "${RED}[ERROR] MIDが定義されていません。${RESET}"
                     fi
                     ;;
                 *) echo "無効な番号です。"; continue ;;
@@ -176,6 +215,7 @@ while true; do
                 run_django python manage.py analyze_pc_spec --maker "$SLUG" --limit 999999
             fi
             ;;
+        # (4番以降の管理メニューは既存のものをすべて維持)
         4)
             read -p "AV Flash ファイル名: " FILE_NAME
             run_django python manage.py import_av "/usr/src/app/data/$FILE_NAME"
@@ -187,7 +227,7 @@ while true; do
             show_maker_menu
             read -p "メーカー番号 (空欄で全対象): " WP_MK_NUM
             MK_ARG=""
-            [[ -n "$WP_MK_NUM" && "$WP_MK_NUM" -le 18 ]] && MK_ARG="--maker ${MAKERS[$WP_MK_NUM]}"
+            [[ -n "$WP_MK_NUM" && "$WP_MK_NUM" -le 30 ]] && MK_ARG="--maker ${MAKERS[$WP_MK_NUM]}"
             if [ "$WP_CHOICE" == "1" ]; then run_django python manage.py ai_blog_from_db $MK_ARG
             elif [ "$WP_CHOICE" == "2" ]; then
                 for i in {1..5}; do run_django python manage.py ai_blog_from_db $MK_ARG; sleep 10; done
