@@ -59,10 +59,11 @@ const decodeHtml = (html: string) => {
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ attribute?: string }> }) {
     try {
         const { slug } = await params;
+        const decodedSlug = decodeURIComponent(slug); // 💡 追加
         const sParams = await searchParams;
         const makers = await fetchMakers();
-        const makerObj = makers.find((m: any) => m.slug === slug) as any;
-        const brandName = makerObj ? (makerObj.name || makerObj.maker) : slug.toUpperCase();
+        const makerObj = makers.find((m: any) => m.slug === decodedSlug || m.maker === decodedSlug) as any;
+        const brandName = makerObj ? (makerObj.name || makerObj.maker) : decodedSlug.toUpperCase();
         const attrName = sParams.attribute ? getAttributeDisplayName(sParams.attribute) : "";
         
         const titleText = attrName ? `${brandName} ${attrName} 搭載モデル一覧` : `${brandName} 最新PCスペック比較・最安価格一覧`;
@@ -78,6 +79,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
 
 export default async function BrandPage({ params, searchParams }: PageProps) {
     const { slug } = await params;
+    const decodedSlug = decodeURIComponent(slug); // 💡 URLの日本語をデコード
     const sParams = await searchParams;
     
     // 💡 ページネーション設定
@@ -86,14 +88,14 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
     const limit = 12; 
     const offset = (currentPage - 1) * limit;
 
-    // 💡 APIからデータを一括取得（元のロジックを維持）
+    // 💡 APIからデータを一括取得
     let pcData: any = { results: [], count: 0 };
     let makersData: any[] = [];
     let wpData: any = { results: [] };
 
     try {
         const [pcRes, makersRes, wpRes] = await Promise.all([
-            fetchPCProducts(slug, offset, limit, attributeSlug),
+            fetchPCProducts(slug, offset, limit, attributeSlug), // 💡 デコード済みを使う
             fetchMakers(),
             fetchPostList(5) 
         ]);
@@ -105,11 +107,11 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
     }
 
     // 💡 メーカー名と属性名の取得
-    const makerObj = makersData.find((m: any) => m.slug === slug) as any;
-    const brandDisplayName = makerObj ? (makerObj.name || makerObj.maker) : slug.toUpperCase();
+    const makerObj = makersData.find((m: any) => m.slug === decodedSlug || m.maker === decodedSlug) as any;
+    const brandDisplayName = makerObj ? (makerObj.name || makerObj.maker) : decodedSlug;
     const attrDisplayName = attributeSlug ? getAttributeDisplayName(attributeSlug) : "";
     
-    // 🚩 タイトル構築（メーカー名 + ジャンル名）
+    // 🚩 タイトル構築（デコードされた綺麗な名前を使用）
     const pageTitle = attrDisplayName ? `${brandDisplayName} ${attrDisplayName} 搭載モデル` : `${brandDisplayName} の最新PC比較・一覧`;
 
     const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
@@ -160,10 +162,10 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
             </div>
 
             <div className={styles.wrapper}>
-                {/* 💡 サイドバー（wpDataのresultsをそのまま使用） */}
+                {/* 💡 サイドバー（デコード済みのslugを渡す） */}
                 <aside className={styles.sidebarSection}>
                     <Sidebar 
-                        activeMenu={slug} 
+                        activeMenu={decodedSlug} 
                         makers={makersData} 
                         recentPosts={wpData.results.map((p: any) => ({
                             id: p.id,
@@ -195,14 +197,12 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                             </div>
                         ) : (
                             <>
-                                {/* 💡 製品グリッド（元のロジック通り） */}
                                 <div className={styles.productGrid}>
                                     {pcData.results.map((product: any) => (
                                         <ProductCard key={product.id} product={product} />
                                     ))}
                                 </div>
 
-                                {/* 💡 ページネーション（クエリパラメータを維持） */}
                                 {totalPages > 1 && (
                                     <div className={styles.paginationWrapper}>
                                         <nav className={styles.pagination} aria-label="ページ送り">

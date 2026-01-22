@@ -1,5 +1,5 @@
-# E:\SHIN-VPS\django\api\urls.py
 # -*- coding: utf-8 -*-
+# E:\SHIN-VPS\django\api\urls.py
 
 from django.urls import path
 from . import views
@@ -22,10 +22,11 @@ urlpatterns = [
     path('adults/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # -----------------------------------------------------------
-    # 3. PC製品データ エンドポイント (PCProduct)
+    # 3. PC・ソフトウェア製品データ エンドポイント (PCProduct)
     # -----------------------------------------------------------
     # GET /api/pc-products/
-    # 💡 フィルタ（cpu_socket, maker, price_range等）を適用して一覧を取得
+    # 💡 フィルタ（cpu_socket, maker, unified_genre等）を適用して一覧を取得
+    # ソフトウェアの場合も unified_genre='software' などでここから取得します
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # GET /api/pc-makers/
@@ -33,7 +34,8 @@ urlpatterns = [
     path('pc-makers/', views.PCProductMakerListView.as_view(), name='pc_maker_list'),
 
     # GET /api/pc-sidebar-stats/
-    # 💡 サイドバーの絞り込み用メニュー（CPU別、ソケット別、価格帯別の件数）を動的に取得
+    # 💡 サイドバーの絞り込み用メニュー（CPU別、OS別、ライセンス別などの件数）を動的に取得
+    # 内部の views.pc_sidebar_stats で os_support 等の集計ロジックを追加すると便利です
     path('pc-sidebar-stats/', views.pc_sidebar_stats, name='pc_sidebar_stats'),
 
     # GET /api/pc-products/<unique_id>/

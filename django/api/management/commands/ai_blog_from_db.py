@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import random
 import requests
 import urllib.parse
@@ -11,7 +12,7 @@ from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
 class Command(BaseCommand):
-    help = 'DBの製品情報を元にAI記事を生成し、WPへ自動投稿（メーカー指定対応）'
+    help = 'DBの製品情報を元にAI記事を生成し、WPへ自動投稿（メーカー指定・ソフト対応版）'
 
     def add_arguments(self, parser):
         # メーカー名を引数で受け取れるように設定
@@ -80,12 +81,10 @@ class Command(BaseCommand):
         # ==========================================
         # 4. 投稿対象（商品）の選定
         # ==========================================
-        # 基本フィルタリング条件
         query = DjangoQ(is_active=True, is_posted=False)
         
-        # メーカーが指定されている場合は条件を追加
         if specified_maker:
-            query &= DjangoQ(maker__iexact=specified_maker) # iexactは大文字小文字を区別しない
+            query &= DjangoQ(maker__iexact=specified_maker)
             self.stdout.write(self.style.WARNING(f"🔍 メーカー検索: {specified_maker}"))
 
         products = PCProduct.objects.filter(query).exclude(stock_status="受注停止中")
@@ -102,13 +101,22 @@ class Command(BaseCommand):
         target_cats = [get_or_create_term('categories', product.maker.upper())]
         target_cats = [c for c in target_cats if c]
 
-        # デスクトップ判定（拡張キーワード含む）
+        # 🚀 ソフトウェアかPCかの判定ロジックを追加
+        is_software = (product.unified_genre == 'software')
         is_desktop = any(k in product.name.lower() for k in ["desktop", "tower", "station", "aio", "gkb", "fk2", "mirai", "shinkai"])
-        target_tags = [get_or_create_term('tags', "デスクトップPC" if is_desktop else "ノートパソコン")]
+        
+        if is_software:
+            tag_label = "ソフトウェア"
+        elif is_desktop:
+            tag_label = "デスクトップPC"
+        else:
+            tag_label = "ノートパソコン"
+            
+        target_tags = [get_or_create_term('tags', tag_label)]
         target_tags = [t for t in target_tags if t]
 
         # ==========================================
-        # 5. アイキャッチ画像のアップロード (以下、元のロジックと共通)
+        # 5. アイキャッチ画像のアップロード
         # ==========================================
         media_id = None
         if product.image_url:
@@ -150,7 +158,29 @@ class Command(BaseCommand):
         # ==========================================
         # 7. 生成テキストの解析
         # ==========================================
-        clean_text = re.sub(r'```(html)?', '', ai_raw_text).replace('```', '').strip()
+        clean_text = re.sub(r'```(html|json)?', '', ai_raw_text).replace('```', '').strip()
+        
+        # 🚀 [SPEC_JSON] ブロックの抽出とDB保存
+        json_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', clean_text, re.DOTALL)
+        if json_match:
+            try:
+                spec_json_str = json_match.group(1).strip()
+                spec_data = json.loads(spec_json_str)
+                # 抽出した値をモデルにマッピング（存在するフィールドのみ更新）
+                if spec_data.get('cpu_model'): product.cpu_model = spec_data['cpu_model']
+                if spec_data.get('gpu_model'): product.gpu_model = spec_data['gpu_model']
+                if spec_data.get('os_support'): product.os_support = spec_data['os_support']
+                if spec_data.get('license_term'): product.license_term = spec_data['license_term']
+                if spec_data.get('is_ai_pc') is not None: product.is_ai_pc = spec_data['is_ai_pc']
+                if spec_data.get('cpu_socket'): product.cpu_socket = spec_data['cpu_socket']
+                # 解析が終わったら一旦保存（WP投稿失敗してもスペックは更新される）
+                product.save()
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f"⚠️ JSON解析失敗: {e}"))
+            
+            # 本文から JSON ブロックを除去
+            clean_text = clean_text.replace(json_match.group(0), "").strip()
+
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
         
         title = ""
@@ -164,8 +194,11 @@ class Command(BaseCommand):
 
         summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', clean_text, re.DOTALL)
         summary_raw = summary_match.group(1).strip() if summary_match else ""
+        
+        # 本文からタイトルと[SUMMARY_DATA]を除外して作成
         main_body_raw = '\n'.join(lines[body_start_index:])
-        if summary_match: main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()
+        if summary_match: 
+            main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()
 
         # ==========================================
         # 8. HTMLデザイン構築
@@ -179,7 +212,7 @@ class Command(BaseCommand):
         
         summary_items = "".join([f"<li>{l.strip()}</li>" for l in summary_raw.splitlines() if ":" in l or "-" in l])
         summary_block = f"""<div style="background:#f8fafc; padding:25px; border:1px solid #e2e8f0; border-left:6px solid #3b82f6; border-radius:12px; margin-bottom:40px;">
-            <h4 style="margin-top:0; color:#1e293b; font-size:1.2em;">🚀 このモデルの主要ポイント</h4>
+            <h4 style="margin-top:0; color:#1e293b; font-size:1.2em;">🚀 この製品の主要ポイント</h4>
             <ul style="margin-bottom:0; color:#475569; line-height:1.8; font-size:0.95em;">{summary_items}</ul>
         </div>"""
 

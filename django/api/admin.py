@@ -25,7 +25,7 @@ class AdultProductAdminForm(forms.ModelForm):
         fields = '__all__'
 
 # ----------------------------------------------------
-# 1. PCAttribute (スペック属性: CPU/メモリ/NPU等) のAdminクラス
+# 1. PCAttribute (スペック属性) のAdminクラス
 # ----------------------------------------------------
 @admin.register(PCAttribute)
 class PCAttributeAdmin(admin.ModelAdmin):
@@ -40,60 +40,72 @@ class PCAttributeAdmin(admin.ModelAdmin):
     get_product_count.short_description = '紐付け製品数'
 
 # ----------------------------------------------------
-# 2. PCProduct (PC製品・Mouse/Minisforum/Lenovo等) のAdminクラス
+# 2. PCProduct (PC製品・ソフト・周辺機器) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
     # テンプレートパスを指定
     change_list_template = "admin/api/pcproduct/change_list.html"
 
-    # 一覧画面の表示項目 (自作PCに重要なソケット・チップセットを追加)
+    # 一覧画面の表示項目
     list_display = (
         'maker',
         'display_thumbnail',
         'name_summary',
         'price_display',
-        'cpu_model',         # 解析されたCPU
-        'cpu_socket',        # 🚀 追記：ソケット (LGA1700等)
-        'motherboard_chipset', # 🚀 追記：チップセット
-        'memory_gb',         # メモリ
-        'stock_status',      # 在庫状況
-        'display_ai_status', # AI解説の有無
-        'is_posted',         # WordPress投稿済みフラグ
-        'is_active',         # 掲載中フラグ
-        'updated_at',        # 更新日時
+        'stock_status',
+        # --- ハードウェア情報 ---
+        'cpu_model',
+        'memory_gb',
+        # --- ✨ ソフトウェア・ライセンス情報 (追記) ---
+        'os_support_summary', 
+        'license_term',
+        'is_download_display',
+        # --- 状態 ---
+        'display_ai_status',
+        'is_posted',
+        'is_active',
+        'updated_at',
     )
     list_display_links = ('name_summary',)
     
-    # フィルタリング機能を強化 (ソケットやジャンルで絞り込み)
+    # フィルタリング機能
     list_filter = (
         'is_posted',
         'is_active',
         'is_ai_pc',
+        'is_download',        # 🚀 追記：DL版かどうか
         'maker',
-        'cpu_socket',         # 🚀 追記：ソケットでフィルタ
-        'ram_type',           # 🚀 追記：メモリ規格でフィルタ
+        'cpu_socket',
+        'ram_type',
         'attributes__attr_type',
         'stock_status',
-        'site_prefix',
         'unified_genre',
     )
     
     # 検索窓の対象
-    search_fields = ('name', 'unique_id', 'cpu_model', 'gpu_model', 'description', 'ai_content')
+    search_fields = ('name', 'unique_id', 'cpu_model', 'os_support', 'description', 'ai_content')
     
-    # 並び順 (新しい更新を上に)
+    # 並び順
     ordering = ('-updated_at',)
 
-    # 多対多の属性選択を使いやすくするUI
+    # 多対多の属性選択UI
     filter_horizontal = ('attributes',)
 
-    # 詳細編集画面のレイアウト (自作PC提案セクションを強化)
+    # 詳細編集画面のレイアウト (セクションを整理)
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
         }),
-        ('AI解析スペック（自動抽出）', {
-            'description': 'スクレイピングした説明文からAIが抽出した主要構成データです。',
+        ('✨ ソフトウェア・ライセンス情報', {
+            'description': 'セキュリティソフトやOffice等のソフトウェア専用項目です。',
+            'fields': (
+                ('os_support', 'is_download'),
+                ('license_term', 'device_count'),
+                'edition',
+            ),
+        }),
+        ('AI解析スペック（ハードウェア自動抽出）', {
+            'description': 'PC本体の主要構成データです。',
             'fields': (
                 ('cpu_model', 'gpu_model'),
                 ('memory_gb', 'storage_gb'),
@@ -110,7 +122,6 @@ class PCProductAdmin(admin.ModelAdmin):
         }),
         ('仕分け・スペック属性タグ', {
             'fields': ('unified_genre', 'raw_genre', 'attributes'),
-            'description': '統合ジャンルおよび、サイドバー絞り込み用の詳細タグを設定します。',
         }),
         ('製品詳細・HTML', {
             'fields': ('name', 'price', 'description', 'raw_html'),
@@ -136,6 +147,16 @@ class PCProductAdmin(admin.ModelAdmin):
     def price_display(self, obj):
         return f"¥{obj.price:,}" if obj.price else "価格未定"
     price_display.short_description = "価格"
+
+    def os_support_summary(self, obj):
+        return obj.os_support[:15] + ".." if obj.os_support and len(obj.os_support) > 15 else obj.os_support
+    os_support_summary.short_description = "対応OS"
+
+    def is_download_display(self, obj):
+        if obj.is_download:
+            return mark_safe('<span style="color: #007bff;">DL版</span>')
+        return "パケ版"
+    is_download_display.short_description = "提供形態"
 
     def display_thumbnail(self, obj):
         if obj.image_url:
@@ -185,7 +206,6 @@ class PCProductAdmin(admin.ModelAdmin):
 
     def full_update_pc_action(self, request):
         try:
-            # call_command('fetch_all_pc')
             self.message_user(request, "全PCショップの一括更新プロセスを開始しました。", messages.WARNING)
         except Exception as e:
             self.message_user(request, f"一括更新エラー: {e}", messages.ERROR)
@@ -260,7 +280,11 @@ class CommonAdmin(admin.ModelAdmin):
     list_display = ('name', 'product_count', 'api_source', 'created_at')
 
     def product_count(self, obj):
-        return getattr(obj, 'products', obj).count() # 各リレーションに合わせて調整
+        # 関連付けられた商品数を取得するロジック（リレーション名に合わせて調整）
+        if hasattr(obj, 'products'):
+            return obj.products.count()
+        return 0
+    product_count.short_description = "製品数"
 
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'created_at')

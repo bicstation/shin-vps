@@ -8,6 +8,7 @@ from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 import logging
+from urllib.parse import unquote
 
 # ログの設定
 logger = logging.getLogger(__name__)
@@ -128,30 +129,33 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
 
 # --------------------------------------------------------------------------
-# 2. PC製品データ API ビュー (PCProduct)
+# 2. PC・ソフトウェア製品データ API ビュー (PCProduct)
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
     """
-    PC製品一覧取得：メーカー名やAI解析スペックでの絞り込みに対応
+    PCおよびソフトウェア製品一覧取得：
+    メーカー名、AI解析スペック、ライセンス形態等での絞り込みに対応
     """
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
     
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
-    # 🚀 自作PC関連のフィルタ項目を追加 (socket, chipset, ram_type)
+    # 🚀 フィルタ項目をソフトウェア対応に拡張
     filterset_fields = [
         'site_prefix', 'unified_genre', 'stock_status', 
-        'is_posted', 'is_ai_pc', 'cpu_socket', 'motherboard_chipset', 'ram_type'
+        'is_posted', 'is_ai_pc', 'is_download',
+        'cpu_socket', 'motherboard_chipset', 'ram_type',
+        'license_term', 'edition'
     ]
     
-    # 🚀 スペック検索を強化
+    # 🚀 スペック検索を強化 (OSやライセンスも対象に)
     search_fields = [
-        'name', 'cpu_model', 'gpu_model', 'cpu_socket', 
-        'motherboard_chipset', 'description', 'ai_content'
+        'name', 'cpu_model', 'gpu_model', 'os_support',
+        'edition', 'description', 'ai_content'
     ]
     
-    # 🚀 スコアや電源容量での並び替えに対応
+    # 🚀 並び替え
     ordering_fields = [
         'price', 'updated_at', 'created_at', 'memory_gb', 
         'spec_score', 'npu_tops', 'power_recommendation'
@@ -161,22 +165,23 @@ class PCProductListAPIView(generics.ListAPIView):
         # 属性タグをprefetchしてN+1問題を回避
         queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
         
-        # クエリパラメータによる個別フィルタリング
+        # クエリパラメータによる個別フィルタリング（メーカー名、属性スラッグ）
         maker = self.request.query_params.get('maker', None)
         attribute_slug = self.request.query_params.get('attribute', None)
         
         if maker and maker.strip() != "":
-            queryset = queryset.filter(maker__iexact=maker)
+            decoded_maker = unquote(maker)
+            queryset = queryset.filter(maker__iexact=decoded_maker)
             
         if attribute_slug:
-            # 指定されたスラッグを持つスペック属性が紐付いている製品を抽出
-            queryset = queryset.filter(attributes__slug=attribute_slug)
+            decoded_slug = unquote(attribute_slug)
+            queryset = queryset.filter(attributes__slug=decoded_slug)
             
         return queryset.order_by('-updated_at', 'id')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
     """
-    PC製品詳細取得 (unique_id による取得)
+    PC/ソフト製品詳細取得 (unique_id による取得)
     """
     queryset = PCProduct.objects.all().prefetch_related('attributes')
     serializer_class = PCProductSerializer
@@ -184,23 +189,25 @@ class PCProductDetailAPIView(generics.RetrieveAPIView):
 
 class PCProductMakerListView(APIView):
     """
-    PC製品に紐付いているメーカー名と、それぞれの製品数をカウントして取得
+    製品に紐付いているメーカー名と、それぞれの製品数をカウント
     """
     def get(self, request):
-        maker_counts = PCProduct.objects.filter(is_active=True) \
-            .exclude(maker__isnull=True) \
-            .exclude(maker='') \
-            .values('maker') \
-            .annotate(count=Count('id')) \
-            .order_by('maker')
+        # ジャンルで絞り込みたい場合（例：ソフトメーカーだけ出したい等）に対応
+        genre = request.query_params.get('genre', None)
+        qs = PCProduct.objects.filter(is_active=True).exclude(maker__isnull=True).exclude(maker='')
         
+        if genre:
+            qs = qs.filter(unified_genre=genre)
+
+        maker_counts = qs.values('maker').annotate(count=Count('id')).order_by('maker')
         return Response(list(maker_counts))
 
 @api_view(['GET'])
 def pc_sidebar_stats(request):
     """
-    サイドバー表示用：属性タイプ（CPU, GPU, RAM等）ごとに製品数を集計
+    サイドバー表示用：属性タイプ（CPU, RAM, OS, ライセンス等）ごとに製品数を集計
     """
+    # 属性マスターから、製品が存在するものだけをカウントして取得
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
     ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
@@ -208,6 +215,11 @@ def pc_sidebar_stats(request):
     sidebar_data = {}
     for attr in attrs:
         type_display = attr.get_attr_type_display()
+        
+        # 不要な接頭辞があれば除去（例: "1. OS" -> "OS"）
+        if type_display and ". " in type_display:
+            type_display = type_display.split(". ", 1)[1]
+            
         if type_display not in sidebar_data:
             sidebar_data[type_display] = []
         
@@ -221,7 +233,7 @@ def pc_sidebar_stats(request):
     return Response(sidebar_data)
 
 # --------------------------------------------------------------------------
-# 3. Linkshare商品データ API ビュー (LinkshareProduct)
+# 3. Linkshare商品データ API ビュー
 # --------------------------------------------------------------------------
 class LinkshareProductListAPIView(generics.ListAPIView): 
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')

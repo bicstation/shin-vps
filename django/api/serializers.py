@@ -80,7 +80,7 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 # --------------------------------------------------------------------------
-# 4. PC製品モデル (PCProductSerializer)
+# 4. PC・ソフトウェア製品モデル (PCProductSerializer)
 # --------------------------------------------------------------------------
 
 class PCProductSerializer(serializers.ModelSerializer):
@@ -101,7 +101,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             'image_url',
             'description',
             
-            # --- AI解析抽出スペック ---
+            # --- AI解析抽出スペック (ハードウェア) ---
             'cpu_model',
             'gpu_model',
             'memory_gb',
@@ -109,11 +109,18 @@ class PCProductSerializer(serializers.ModelSerializer):
             'display_info',
             'npu_tops',
             
-            # --- 🚀 自作PC提案・相性用データ（追加分） ---
+            # --- 🚀 自作PC提案・相性用データ ---
             'cpu_socket',           # CPUソケット (LGA1700等)
             'motherboard_chipset',  # 推奨チップセット
             'ram_type',             # メモリ規格 (DDR5等)
             'power_recommendation', # 推奨電源容量
+            
+            # --- ✨ ソフトウェア・ライセンス用データ (追加) ---
+            'os_support',           # 対応OS (Windows, macOS等)
+            'license_term',         # ライセンス期間 (1年, 3年等)
+            'device_count',         # 利用可能台数
+            'edition',              # エディション (Standard, Pro等)
+            'is_download',          # ダウンロード版フラグ
             
             # --- AI判定・スコアリング ---
             'target_segment',
