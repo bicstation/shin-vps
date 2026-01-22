@@ -36,7 +36,7 @@ class Command(BaseCommand):
         "42368": {"prefix": "asus", "maker": "ASUS"},
         # "24172": {"prefix": "iodata", "maker": "I-O DATA"}, # 24172 から 43219 (最新) へ変更
         "2633": {"prefix": "sourcenext", "maker": "ソースネクスト"},
-        "13786": {"prefix": "trendmicro", "maker": "トレンドマイクロ"},
+        "24501": {"prefix": "trendmicro", "maker": "トレンドマイクロ"},
     }
 
     def add_arguments(self, parser):

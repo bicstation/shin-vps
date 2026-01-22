@@ -42,8 +42,8 @@ PC形状	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT,
 GPUモデル	プロ向け (NVIDIA RTX / Quadro)	gpu-professional	NVIDIA RTX, Quadro, A2000, A4000, Ada Generation, T1000, T600	67
 GPUモデル	Intel Graphics (内蔵)	gpu-intel-graphics	Intel UHD, Intel Iris, Intel Graphics, 内蔵グラフィックス, Iris Xe, UHD Graphics	68
 GPUモデル	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内蔵グラフィックス, Radeon 780M, Radeon 760M, 680M	69
-1. 画面サイズ	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, 13.4型, 12.6型, 12.1型, 11.6型, 10.1型, モバイルモニター, 軽量ノート	510
-1. 画面サイズ	15-16インチ (標準)	size-laptop-standard	15.6型, 16型, 15.4型, 16.0型, 標準ノート	510.5
+1. 画面サイズ	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, 13.4型, 12.6型, 12.1型, 11.6型, 10.1型, モバイルモニター, 軽量ノート, EliteBook 630, Latitude 3340, dynabook G83	510
+1. 画面サイズ	15-16インチ (標準)	size-laptop-standard	15.6型, 16型, 15.4型, 16.0型, 標準ノート, ProBook 450, Latitude 3540, LIFEBOOK A5513	510.5
 1. 画面サイズ	24-25インチ (標準)	size-standard	23.8型, 24.5型, 24型, 標準サイズ, 23.8インチ, EV24, EV23, S2133, CS24	511
 1. 画面サイズ	27インチ (大画面)	size-large	27型, 27-inch, 27インチ, WQHDモニタ, EV27, CS27, CG27	512
 1. 画面サイズ	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上, ウルトラワイド, 49型, 43型, 湾曲モニタ, EV38, EV32, CG31	513
@@ -51,10 +51,10 @@ GPUモデル	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内�
 2. 解像度軸	4K	res-4k	4K, 3840x2160, UHD, 4K UHD, 3840×2400	521
 3. リフレッシュレート軸	高速 (144Hz-165Hz)	high-refresh	144Hz, 165Hz, 120Hz, 高リフレッシュレート	530
 3. リフレッシュレート軸	超高速 (240Hz+)	extreme-refresh	240Hz, 360Hz, 500Hz, 480Hz, 540Hz	531
-4. パネル・付加価値	有機EL (OLED)	panel-oled	OLED, 有機EL, Lumina OLED, QD-OLED	540
+4. パネル・付加価値	有機EL (OLED)	panel-oled	OLED, 有機EL, Lumina OLED, QD-OLED, Spectre x360 OLED	540
 4. パネル・付加価値	IPSパネル	panel-ips	IPS方式, 広視野角, WVパネル, ADSパネル, IGZO	541
 4. パネル・付加価値	湾曲・ウルトラワイド	curved-wide	湾曲, 1500R, 21:9, 曲面, 1000R, 1800R, 32:9	542
-4. パネル	タッチパネル / ペン対応	panel-touch	タッチパネル, タッチスクリーン, スタイラス, ASUS Pen, 筆圧感知, 10点マルチタッチ	543
+4. パネル	タッチパネル / ペン対応	panel-touch	タッチパネル, タッチスクリーン, スタイラス, ASUS Pen, 筆圧感知, 10点マルチタッチ, アクティブペン	543
 mem	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GB（LPDDR5）, 16GB（LPDDR5X）	210
 mem	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GB（LPDDR5）, 32GB（LPDDR5X）, 32GBオンボード	211
 mem	メモリ 64GB以上	mem-64gb-plus	64GB, 64 GB, 128GB, 大容量メモリ, 96GB, 192GB	212
@@ -65,25 +65,25 @@ os	Windows 11 Home	win-11-home	Windows 11 Home, Win11 Home, 11 Home 64bit, Sモ�
 storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, 512GB（PCIe）, 500GB SSD	400
 storage	SSD 1TB以上	ssd-1tb-plus	1TB SSD, 1 TB, 2TB, 4TB, 8TB, NVMe 1TB	401
 storage	SSD 256GB	ssd-256gb	256GB SSD, 256 GB SSD, 240GB SSD	402
-PC形状	デスクトップPC	type-desktop	デスクトップ, タワー, DT, Tower, フルタワー, ROG Strix G, ESPRIMO, DHシリーズ, WDシリーズ, Mate, Mate J, タイプML, タイプMB, タイプME, タイプMC	700
-PC形状	小型PC	type-mini-pc	小型PC, ミニPC, Mini PC, コンパクトPC, NUC, ExpertCenter, CAシリーズ, 超小型, Mate タイプMC	701
-PC形状	オールインワンPC	type-all-in-one	オールインワン, All-in-One, 一体型PC, 一体型デスクトップ, ESPRIMO FH, dynaDesk DT, AIO, Mate タイプMG	702
-PC形状	ノートPC	type-laptop	ノートパソコン, ノートPC, Laptop, モバイルノート, Zenbook, Vivobook, 型, インチ, LIFEBOOK, dynabook V, dynabook G, dynabook R, AHシリーズ, VersaPro, VersaPro J, タイプVM, タイプVG, タイプVX, タイプVA	703
-PC形状	2-in-1 / コンバーチブル	type-2in1	Flip, 2-in-1, コンバーチブル, 回転式, 360度回転, LIFEBOOK WA, dynabook VZ, VersaPro タイプVS, VersaPro タイプVT, VersaPro タイプVN	704
-PC形状	タブレットPC	type-tablet	タブレット, Tablet, iPad, Surface, スレート, ProArt PZ13, 着脱式, デタッチャブル, VersaPro タイプVS, Windowsタブレット	705
+PC形状	デスクトップPC	type-desktop	デスクトップ, タワー, DT, Tower, フルタワー, ROG Strix G, ESPRIMO, DHシリーズ, WDシリーズ, Mate, Mate J, タイプML, タイプMB, タイプME, タイプMC, OptiPlex Tower, Inspiron Desktop, HP ENVY Desktop, OMEN 25L, OMEN 40L, OMEN 45L	700
+PC形状	小型PC	type-mini-pc	小型PC, ミニPC, Mini PC, コンパクトPC, NUC, ExpertCenter, CAシリーズ, 超小型, Mate タイプMC, OptiPlex Micro, HP Pro Mini, Z2 Mini, Elite Mini	701
+PC形状	オールインワンPC	type-all-in-one	オールインワン, All-in-One, 一体型PC, 一体型デスクトップ, ESPRIMO FH, dynaDesk DT, AIO, Mate タイプMG, HP Pavilion All-in-One, Inspiron All-in-One, OptiPlex All-in-One	702
+PC形状	ノートPC	type-laptop	ノートパソコン, ノートPC, Laptop, モバイルノート, Zenbook, Vivobook, LIFEBOOK, dynabook V, dynabook G, dynabook R, AHシリーズ, VersaPro, VersaPro J, タイプVM, タイプVG, タイプVX, タイプVA, Inspiron 14, Latitude, XPS 13, Vostro, HP Pavilion, HP ENVY, EliteBook, Spectre	703
+PC形状	2-in-1 / コンバーチブル	type-2in1	Flip, 2-in-1, コンバーチブル, 回転式, 360度回転, LIFEBOOK WA, dynabook VZ, VersaPro タイプVS, VersaPro タイプVT, VersaPro タイプVN, HP ENVY x360, Spectre x360, Latitude 2-in-1, Inspiron 2-in-1	704
+PC形状	タブレットPC	type-tablet	タブレット, Tablet, iPad, Surface, スレート, ProArt PZ13, 着脱式, デタッチャブル, VersaPro タイプVS, Windowsタブレット, Latitude 7320 Detachable	705
 PC形状	デュアルスクリーン	type-dual-screen	Zenbook Duo, デュアルディスプレイ, 2画面ノート, ScreenPad	706
-PC形状	ワークステーション	type-workstation	ワークステーション, Workstation, ProArt Station, Quadro, RTX Ada, MousePro W, CELSIUS, サーバー	707
-PC形状	ディスプレイ	type-display	モニター, ディスプレイ, 液晶, Monitor, Display, iiyama, ProLite, G-MASTER, ROG Swift, TUF Gaming, EIZO, FlexScan, ColorEdge, FORIS, RadiForce	708
-用途	一般・スタンダード	usage-general	一般, 家庭用, Web閲覧, Youtube, 初心者, スタンダード, mouse, Vivobook, LIFEBOOK AH, dynabook T, FlexScan EV, 事務用モニタ, LAVIE N15	710
-用途	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, 144Hz, RTX, ROG, TUF Gaming, 240Hz, Alienware, OMEN, Victus, FORIS, 応答速度	711
-用途	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, 3DCG, CAD, DAIV, Adobe, ProArt, ASUS Dial, 4K OLED, DCI-P3, 色校正, ColorEdge, Adobe RGB, 階調特性, キャリブレーション	712
-用途	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro, ExpertBook, ExpertCenter, MIL規格, LIFEBOOK U, dynabook B, 働き方改革, 疲れ目軽減, ブルーライトカット, フリッカーレス, VersaPro, Mate, ビジネスPC, SOHO向け	713
-用途	プログラミング・開発	usage-programming	プログラミング, 開発, エンジニア, ITエンジニア, コーディング, WS, Docker, Linux仮想化, 縦回転, ピボット	714
-用途	AI開発・生成AI	usage-ai-dev	生成AI, ローカルLLM, AI開発, Stable Diffusion, Tensor Core, 機械学習, PyTorch	715
+PC形状	ワークステーション	type-workstation	ワークステーション, Workstation, ProArt Station, Quadro, RTX Ada, MousePro W, CELSIUS, サーバー, Precision, HP ZBook, Z1, Z2, Z4, Z6, Z8	707
+PC形状	ディスプレイ	type-display	モニター, ディスプレイ, 液晶, Monitor, Display, iiyama, ProLite, G-MASTER, ROG Swift, TUF Gaming, EIZO, FlexScan, ColorEdge, FORIS, RadiForce, HP Monitor, Dell Monitor, UltraSharp	708
+用途	一般・スタンダード	usage-general	一般, 家庭用, Web閲覧, Youtube, 初心者, スタンダード, mouse, Vivobook, LIFEBOOK AH, dynabook T, FlexScan EV, 事務用モニタ, LAVIE N15, Inspiron, HP Pavilion, HP 14, HP 15	710
+用途	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, 144Hz, RTX, ROG, TUF Gaming, 240Hz, Alienware, OMEN, Victus, FORIS, 応答速度, Dell G15, Dell G16	711
+用途	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, 3DCG, CAD, DAIV, Adobe, ProArt, ASUS Dial, 4K OLED, DCI-P3, 色校正, ColorEdge, Adobe RGB, 階調特性, キャリブレーション, XPS, HP ENVY, ZBook, Precision	712
+用途	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro, ExpertBook, ExpertCenter, MIL規格, LIFEBOOK U, dynabook B, 働き方改革, 疲れ目軽減, VersaPro, Mate, ビジネスPC, SOHO向け, Latitude, Vostro, OptiPlex, EliteBook, ProBook, EliteDesk, ProDesk	713
+用途	プログラミング・開発	usage-programming	プログラミング, 開発, エンジニア, ITエンジニア, コーディング, WS, Docker, Linux仮想化, 縦回転, ピボット, ThinkPad, Latitude, EliteBook	714
+用途	AI開発・生成AI	usage-ai-dev	生成AI, ローカルLLM, AI開発, Stable Diffusion, Tensor Core, 機械学習, PyTorch, RTX 6000, NVIDIA RTX	715
 機能	Wi-Fi 7対応	feat-wifi7	Wi-Fi 7, IEEE802.11be, BE200	800
 機能	Wi-Fi 6E/6対応	feat-wifi6	Wi-Fi 6E, Wi-Fi 6, 11ax, IEEE802.11ax	801
 機能	Office付属	feat-office	Office Home & Business 2021, Office 2021, 筆ぐるめ, オフィス付, Personal 2021, Microsoft 365	802
-機能	光学ドライブ搭載	feat-odd	Blu-rayドライブ, DVDスーパーマルチ, BDXL, BDドライブ, DVDドライブ	803
-機能	軽量・1kg未満	feat-lightweight	900g, 800g, 700g, 1kgを切る, 超軽量, UltraLite	804
+機能	光学ドライブ搭載	feat-odd	Blu-rayドライブ, DVDスーパーマルチ, BDXL, BDドライブ, DVDドライブ, LIFEBOOK AH	803
+機能	軽量・1kg未満	feat-lightweight	900g, 800g, 700g, 1kgを切る, 超軽量, UltraLite, LIFEBOOK UH, dynabook G, dynabook R, Elite Dragonfly	804
 機能	USB Type-C給電	feat-usb-pd	USB Type-C給電, Power Delivery, USB-PD, 60W給電, 70W給電, 90W給電, ケーブル1本	805
 機能	ハードウェアキャリブレーション	feat-calibration	キャリブレーション対応, 内蔵センサー, ColorNavigator, キャリブレーションセンサー, 測色機	806

@@ -47,7 +47,7 @@ MID_MAP["fmv"]="2543"
 MID_MAP["dynabook"]="36508"
 MID_MAP["eizo"]="3256"
 MID_MAP["sourcenext"]="2633"
-MID_MAP["trendmicro"]="13786"
+MID_MAP["trendmicro"]="24501"
 
 # --- 3. 共通実行関数 ---
 
