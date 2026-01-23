@@ -56,20 +56,13 @@ class Command(BaseCommand):
             return "sourcenext"
         if any(x in m for x in ['trend', 'トレンドマイクロ']):
             return "trendmicro"
-        if 'asus' in m:
-            return "asus"
-        if 'sony' in m:
-            return "sony"
-        if 'hp' in m:
-            return "hp"
-        if 'dell' in m:
-            return "dell"
-        if 'lenovo' in m:
-            return "lenovo"
-        if 'mouse' in m or 'マウス' in m:
-            return "mouse"
-        if 'nec' in m:
-            return "nec"
+        if 'asus' in m: return "asus"
+        if 'sony' in m: return "sony"
+        if 'hp' in m: return "hp"
+        if 'dell' in m: return "dell"
+        if 'lenovo' in m: return "lenovo"
+        if 'mouse' in m or 'マウス' in m: return "mouse"
+        if 'nec' in m: return "nec"
         
         slug = re.sub(r'[^a-z0-9]', '', m)
         return slug if slug else "standard"
@@ -81,25 +74,27 @@ class Command(BaseCommand):
         model_arg = options['model']
         force = options['force']
 
-        # 基本クエリ
+        # 1. 基本クエリの構築
         query = PCProduct.objects.all()
         
-        # 解析済み除外（forceがない場合）
+        # 2. 解析対象の判定ロジック（ここを最適化）
         if not force:
-            query = query.filter(last_spec_parsed_at__isnull=True)
+            # 「解析日時が空」 または 「レーダーチャート用スコアがいずれか0」のものを抽出
+            # これにより、以前の古い形式のデータも自動的に再解析対象になります
+            query = query.filter(
+                Q(last_spec_parsed_at__isnull=True) | 
+                Q(score_cpu=0) | Q(score_gpu=0) | Q(score_cost=0) | Q(score_portable=0) | Q(score_ai=0)
+            )
 
-        # フィルタリング
+        # 3. メーカー別・ID別フィルタリング
         if unique_id:
             query = query.filter(unique_id=unique_id)
         elif maker_arg:
             m = maker_arg.lower()
-            # 💡 表記のゆれに対応する検索ロジック
             if m in ['fmv', 'fujitsu', '富士通']:
                 query = query.filter(
-                    Q(maker__icontains='FMV') | 
-                    Q(maker__icontains='富士通') | 
-                    Q(maker__icontains='Fujitsu') |
-                    Q(name__icontains='FMV')
+                    Q(maker__icontains='FMV') | Q(maker__icontains='富士通') | 
+                    Q(maker__icontains='Fujitsu') | Q(name__icontains='FMV')
                 )
             elif m in ['dynabook', 'ダイナブック']:
                 query = query.filter(Q(maker__icontains='dynabook') | Q(maker__icontains='ダイナブック'))
@@ -115,7 +110,7 @@ class Command(BaseCommand):
         # 実行対象リスト化
         products = list(query[:limit])
         if not products:
-            self.stdout.write(self.style.WARNING(f"🔎 指定条件 [{maker_arg or '全件'}] に該当する未解析製品が見つかりませんでした。"))
+            self.stdout.write(self.style.WARNING(f"🔎 指定条件 [{maker_arg or '全件'}] に該当する解析待ち製品が見つかりませんでした。"))
             return
 
         # AIモデル決定
@@ -144,12 +139,12 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR(f"❌ 致命的エラー ({product.unique_id}): {str(e)}"))
 
     def analyze_product(self, product, model_id, count, total):
-        # 1. 基本プロンプト
+        # 1. 基本プロンプトの読み込み
         base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt')
         if not base_pc_prompt:
             base_pc_prompt = "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析せよ。"
         
-        # 2. メーカー別プロンプト
+        # 2. メーカー別プロンプトの読み込み
         target_maker_slug = self.get_maker_slug(product.maker)
         maker_prompt_file = f"analyze_{target_maker_slug}_prompt.txt"
         brand_rules = self.load_prompt_file(maker_prompt_file) or self.load_prompt_file('analyze_standard_prompt.txt')
@@ -157,7 +152,7 @@ class Command(BaseCommand):
         if not brand_rules:
             brand_rules = "【標準ルール】正確なスペックと5軸スコアを抽出してください。"
 
-        # 3. 構造化タグ定義
+        # 3. 構造化タグ定義（レーダーチャート用の5軸スコアを必須化）
         structure_instruction = """
 必ず以下のJSON形式を [SPEC_JSON] タグ内に含めてください。
 [SPEC_JSON]
@@ -196,7 +191,7 @@ POINT3: 特徴3
 TARGET: おすすめ対象
 [/SUMMARY_DATA]
 """
-        # プロンプト組み立て
+        # プロンプトの組み立て
         formatted_base = base_pc_prompt.replace("{maker}", str(product.maker))\
                                        .replace("{name}", str(product.name))\
                                        .replace("{price}", f"{product.price:,}")\
@@ -223,7 +218,7 @@ TARGET: おすすめ対象
             res_json = response.json()
             full_text = res_json['candidates'][0]['content']['parts'][0]['text']
 
-            # 4. データ抽出
+            # 4. AIの回答からデータを抽出
             spec_data = {}
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
@@ -236,7 +231,7 @@ TARGET: おすすめ対象
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
             summary_text = summary_match.group(0).strip() if summary_match else ""
 
-            # HTMLコンテンツ抽出
+            # HTMLコンテンツの分離
             html_content = full_text
             if summary_match: html_content = html_content.replace(summary_match.group(0), '')
             if spec_match: html_content = html_content.replace(spec_match.group(0), '')
@@ -247,7 +242,7 @@ TARGET: おすすめ対象
                 try: return int(re.sub(r'[^0-9]', '', str(val)))
                 except: return default
 
-            # 5. 保存処理
+            # 5. データベース保存処理
             product.cpu_model = spec_data.get('cpu_model', product.cpu_model)
             product.gpu_model = spec_data.get('gpu_model', product.gpu_model)
             product.memory_gb = safe_int(spec_data.get('memory_gb'), product.memory_gb)
@@ -255,6 +250,7 @@ TARGET: おすすめ対象
             product.display_info = spec_data.get('display_info', product.display_info)
             product.spec_score = safe_int(spec_data.get('spec_score'), 0)
             
+            # レーダーチャート用スコア
             product.score_cpu = safe_int(spec_data.get('score_cpu'), 0)
             product.score_gpu = safe_int(spec_data.get('score_gpu'), 0)
             product.score_cost = safe_int(spec_data.get('score_cost'), 0)
@@ -284,7 +280,7 @@ TARGET: おすすめ対象
             product.last_spec_parsed_at = timezone.now()
             product.save()
 
-            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id} (Score:{product.score_cost})"))
+            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id} (CPU:{product.score_cpu}/AI:{product.score_ai})"))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.unique_id}): {str(e)}"))
