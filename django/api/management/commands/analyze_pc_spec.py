@@ -14,10 +14,10 @@ from django.db.models import Q
 # === API設定 ===
 GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
 
-# === レート制限の設定 ===
-MAX_WORKERS = 2       # 503エラー抑制のため控えめに設定
-SAFE_RPM_LIMIT = 15   # 1分間に 15 リクエスト程度
-INTERVAL = 60 / SAFE_RPM_LIMIT
+# === レート制限の設定 (Gemini 1.5 Flash 無料枠に最適化) ===
+MAX_WORKERS = 2       # 同時接続数エラーを避けるため2スレッドに固定
+SAFE_RPM_LIMIT = 12   # 1分間に12リクエスト（安全マージンを確保）
+INTERVAL = 60 / SAFE_RPM_LIMIT  # 1リクエストあたり5秒の間隔
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
@@ -31,6 +31,7 @@ class Command(BaseCommand):
         parser.add_argument('--maker', type=str, help='メーカー指定（フィルタ用）')
         parser.add_argument('--model', type=str, help='使用するGeminiモデルID')
         parser.add_argument('--force', action='store_true', help='解析済みデータも再解析対象に含める')
+        parser.add_argument('--null-only', action='store_true', help='解析日時が空のもののみを対象にする')
 
     def load_prompt_file(self, filename):
         path = os.path.join(PROMPT_BASE_DIR, filename)
@@ -41,12 +42,8 @@ class Command(BaseCommand):
             return ""
 
     def get_maker_slug(self, maker_name):
-        """
-        メーカー名からプロンプトファイル選択用のスラッグを動的に判定
-        """
         if not maker_name:
             return "standard"
-        
         m = str(maker_name).lower()
         if any(x in m for x in ['fmv', 'fujitsu', '富士通']):
             return "fmv"
@@ -63,8 +60,7 @@ class Command(BaseCommand):
         if 'lenovo' in m: return "lenovo"
         if 'mouse' in m or 'マウス' in m: return "mouse"
         if 'nec' in m: return "nec"
-        if 'ark' in m or 'アーク' in m: return "ark"  # アークを追加
-        
+        if 'ark' in m or 'アーク' in m: return "ark"
         slug = re.sub(r'[^a-z0-9]', '', m)
         return slug if slug else "standard"
 
@@ -74,13 +70,15 @@ class Command(BaseCommand):
         maker_arg = options['maker']
         model_arg = options['model']
         force = options['force']
+        null_only = options['null_only']
 
         # 1. 基本クエリの構築
         query = PCProduct.objects.all()
         
         # 2. 解析対象の判定ロジック
-        if not force:
-            # 「解析日時が空」 または 「レーダーチャート用スコアがいずれか0」のものを抽出
+        if null_only:
+            query = query.filter(last_spec_parsed_at__isnull=True)
+        elif not force:
             query = query.filter(
                 Q(last_spec_parsed_at__isnull=True) | 
                 Q(score_cpu=0) | Q(score_gpu=0) | Q(score_cost=0) | Q(score_portable=0) | Q(score_ai=0)
@@ -92,10 +90,7 @@ class Command(BaseCommand):
         elif maker_arg:
             m = maker_arg.lower()
             if m in ['fmv', 'fujitsu', '富士通']:
-                query = query.filter(
-                    Q(maker__icontains='FMV') | Q(maker__icontains='富士通') | 
-                    Q(maker__icontains='Fujitsu') | Q(name__icontains='FMV')
-                )
+                query = query.filter(Q(maker__icontains='FMV') | Q(maker__icontains='富士通') | Q(name__icontains='FMV'))
             elif m in ['dynabook', 'ダイナブック']:
                 query = query.filter(Q(maker__icontains='dynabook') | Q(maker__icontains='ダイナブック'))
             elif m in ['nec']:
@@ -105,15 +100,13 @@ class Command(BaseCommand):
             elif m in ['dell']:
                 query = query.filter(Q(maker__icontains='dell'))
             elif m in ['ark', 'アーク']:
-                # アークのフィルタリングを強化
                 query = query.filter(Q(maker__icontains='ark') | Q(site_prefix='ark'))
             else:
                 query = query.filter(maker__icontains=maker_arg)
 
-        # 実行対象リスト化
         products = list(query[:limit])
         if not products:
-            self.stdout.write(self.style.WARNING(f"🔎 指定条件 [{maker_arg or '全件'}] に該当する解析待ち製品が見つかりませんでした。"))
+            self.stdout.write(self.style.WARNING(f"🔎 解析待ち製品が見つかりませんでした。"))
             return
 
         # AIモデル決定
@@ -121,17 +114,18 @@ class Command(BaseCommand):
             model_id = model_arg
         else:
             models_content = self.load_prompt_file('ai_models.txt')
-            # 最初の1行を使用、なければデフォルト
             model_id = models_content.split('\n')[0].strip() if models_content else "gemini-1.5-flash"
 
-        self.stdout.write(self.style.SUCCESS(f"🚀 解析開始: 全 {len(products)} 件 / モデル: {model_id}"))
+        self.stdout.write(self.style.SUCCESS(f"🚀 解析開始: 全 {len(products)} 件 / スレッド数: {MAX_WORKERS} / モデル: {model_id}"))
 
         self.counter = 0
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
-            for product in products:
-                # 流量制限のためのスリープ
-                time.sleep(INTERVAL) 
+            for i, product in enumerate(products):
+                # 流量制限: 1リクエストごとに一定秒数待機して同時リクエストを防ぐ
+                if i > 0:
+                    time.sleep(INTERVAL) 
+                
                 self.counter += 1
                 future = executor.submit(self.analyze_product, product, model_id, self.counter, len(products))
                 future_to_product[future] = product
@@ -143,21 +137,14 @@ class Command(BaseCommand):
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f"❌ 致命的エラー ({product.unique_id}): {str(e)}"))
 
-    def analyze_product(self, product, model_id, count, total):
-        # 1. 基本プロンプトの読み込み
-        base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt')
-        if not base_pc_prompt:
-            base_pc_prompt = "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析せよ。"
-        
-        # 2. メーカー別プロンプトの読み込み
+    def analyze_product(self, product, model_id, count, total, retry_count=0):
+        # 1. プロンプト組み立て
+        base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt') or "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析せよ。"
         target_maker_slug = self.get_maker_slug(product.maker)
         maker_prompt_file = f"analyze_{target_maker_slug}_prompt.txt"
         brand_rules = self.load_prompt_file(maker_prompt_file) or self.load_prompt_file('analyze_pc_prompt.txt')
+        if not brand_rules: brand_rules = "【標準ルール】正確なスペックと5軸スコアを抽出してください。"
 
-        if not brand_rules:
-            brand_rules = "【標準ルール】正確なスペックと5軸スコアを抽出してください。"
-
-        # 3. 構造化タグ定義
         structure_instruction = """
 必ず以下のJSON形式を [SPEC_JSON] タグ内に含めてください。
 [SPEC_JSON]
@@ -196,14 +183,12 @@ POINT3: 特徴3
 TARGET: おすすめ対象
 [/SUMMARY_DATA]
 """
-        # プロンプトの組み立て
         formatted_base = base_pc_prompt.replace("{maker}", str(product.maker))\
                                        .replace("{name}", str(product.name))\
                                        .replace("{price}", f"{product.price:,}")\
                                        .replace("{description}", str(product.description or ""))
 
         full_prompt = f"{formatted_base}\n\nブランド別追加ルール:\n{brand_rules}\n\n{structure_instruction}"
-
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
         
         try:
@@ -215,30 +200,33 @@ TARGET: おすすめ対象
                 "generationConfig": {"temperature": 0.2}
             }, timeout=120)
             
-            # サーバーエラーやレート制限時は再試行（リカーシブ）
+            # --- 指数バックオフによるリトライ制御 ---
             if response.status_code in [429, 500, 503]:
-                time.sleep(20)
-                return self.analyze_product(product, model_id, count, total)
-            
+                if retry_count < 3:
+                    wait_time = (retry_count + 1) * 30 # 30s, 60s, 90s と待機時間を増やす
+                    self.stdout.write(self.style.WARNING(f"⚠️ リミット/エラー検知 ({product.unique_id}): {wait_time}秒待機してリトライ({retry_count+1}/3)"))
+                    time.sleep(wait_time)
+                    return self.analyze_product(product, model_id, count, total, retry_count + 1)
+                else:
+                    self.stdout.write(self.style.ERROR(f"❌ リトライ上限超過: {product.unique_id}"))
+                    return
+
             response.raise_for_status()
             res_json = response.json()
             full_text = res_json['candidates'][0]['content']['parts'][0]['text']
 
-            # 4. AIの回答からデータを抽出
+            # --- データ抽出処理 ---
             spec_data = {}
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
                 try:
-                    # コメントアウト（//）などを削除してパース
                     clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
                     spec_data = json.loads(clean_json)
-                except Exception:
-                    pass
+                except: pass
 
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
             summary_text = summary_match.group(0).strip() if summary_match else ""
 
-            # HTMLコンテンツの分離
             html_content = full_text
             if summary_match: html_content = html_content.replace(summary_match.group(0), '')
             if spec_match: html_content = html_content.replace(spec_match.group(0), '')
@@ -249,48 +237,37 @@ TARGET: おすすめ対象
                 try: return int(re.sub(r'[^0-9]', '', str(val)))
                 except: return default
 
-            # 5. データベース保存処理
+            # --- DB保存 ---
             product.cpu_model = spec_data.get('cpu_model', product.cpu_model)
             product.gpu_model = spec_data.get('gpu_model', product.gpu_model)
             product.memory_gb = safe_int(spec_data.get('memory_gb'), product.memory_gb)
             product.storage_gb = safe_int(spec_data.get('storage_gb'), product.storage_gb)
             product.display_info = spec_data.get('display_info', product.display_info)
             product.spec_score = safe_int(spec_data.get('spec_score'), 0)
-            
-            # レーダーチャート用スコア
             product.score_cpu = safe_int(spec_data.get('score_cpu'), 0)
             product.score_gpu = safe_int(spec_data.get('score_gpu'), 0)
             product.score_cost = safe_int(spec_data.get('score_cost'), 0)
             product.score_portable = safe_int(spec_data.get('score_portable'), 0)
             product.score_ai = safe_int(spec_data.get('score_ai'), 0)
-
-            # ソフトウェア・パーツ関連属性
             product.os_support = spec_data.get('os_support', product.os_support)
             product.license_term = spec_data.get('license_term', product.license_term)
             product.is_download = spec_data.get('is_download', product.is_download)
             product.device_count = safe_int(spec_data.get('device_count'), product.device_count)
             product.edition = spec_data.get('edition', product.edition)
             product.is_ai_pc = spec_data.get('is_ai_pc', False)
-            try:
-                product.npu_tops = float(spec_data.get('npu_tops', 0.0))
-            except:
-                product.npu_tops = 0.0
-
-            # パーツ詳細
+            try: product.npu_tops = float(spec_data.get('npu_tops', 0.0))
+            except: product.npu_tops = 0.0
             product.cpu_socket = spec_data.get('cpu_socket', product.cpu_socket)
             product.motherboard_chipset = spec_data.get('chipset', product.motherboard_chipset)
             product.ram_type = spec_data.get('ram_type', product.ram_type)
             product.power_recommendation = safe_int(spec_data.get('power_wattage'), product.power_recommendation)
-            
-            # AI紹介文とセグメント
             product.ai_summary = summary_text 
             product.ai_content = f"{summary_text}\n\n{html_content}"
             product.target_segment = spec_data.get('target_segment', product.target_segment)
-            
             product.last_spec_parsed_at = timezone.now()
             product.save()
 
-            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id} (CPU:{product.score_cpu}/AI:{product.score_ai})"))
+            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id}"))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.unique_id}): {str(e)}"))

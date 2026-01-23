@@ -48,6 +48,7 @@ class Command(BaseCommand):
         parser.add_argument('--max-pages', type=int, default=0, help='取得最大ページ数。')
         parser.add_argument('--limit', type=int, default=0, help='MIDごとの取得上限件数。')
         parser.add_argument('--save-db', action='store_true', help='データベースに保存し、PCProductに同期。')
+        # 💡 新規追加: 生のXMLを表示するデバッグオプション
         parser.add_argument('--show-raw', action='store_true', help='APIから返ってきた生のXMLを整形してそのまま表示します。')
 
     def _save_products_to_db(self, mids_data: list):
@@ -82,27 +83,25 @@ class Command(BaseCommand):
                 link_id = item.get('linkid')
                 product_sku = item.get('sku', 'N/A')
                 link_url = item.get('linkurl') # 🚀 1円報酬等を含む正式アフィリンク
-                product_name = item.get('productname', 'Unknown')
                 
                 if not link_id:
                     continue
 
                 try:
                     # 1. BcLinkshareProduct (API生データ) を保存・更新
-                    # ⚠️ エラー回避のため、モデルに存在しない 'api_source_details' は除外しています
                     obj, created = BcLinkshareProduct.objects.update_or_create(
                         linkid=link_id,
                         mid=mid,
                         defaults={
                             'sku': product_sku,
                             'api_response_json': item, 
-                            'api_source': 'Linkshare-API-Raw',
+                            'api_source': 'Linkshare-API-Raw', 
+                            'api_source_details': f"none_filter:{item.get('none_query', 'none')}"
                         }
                     )
                     total_saved += 1
                     if created:
                         total_created += 1
-                        tqdm.write(self.style.NOTICE(f"   [新規保存] {product_name[:40]}..."))
                     
                     # 2. 🚀 PCProduct への同期ロジック
                     if product_sku and product_sku != 'N/A' and PCProduct.objects is not None:

@@ -3,6 +3,7 @@
 import os
 import base64
 import requests
+import time
 from xml.etree import ElementTree as ET
 from urllib.parse import urljoin
 from tqdm import tqdm 
@@ -30,8 +31,7 @@ class LinkShareAPIClient:
 
     def _generate_token_key(self):
         """
-        仕様書通り: client_id:client_secret を Base64 エンコードして 87 文字の文字列を作成
-        Linuxの echo -n {id}:{secret}|base64 と同等の処理
+        仕様書通り: client_id:client_secret を Base64 エンコード
         """
         auth_string = f"{self.client_id}:{self.client_secret}"
         return base64.b64encode(auth_string.encode('utf-8')).decode('utf-8')
@@ -48,19 +48,12 @@ class LinkShareAPIClient:
             self._fetch_access_token()
             
     def _fetch_access_token(self):
-        """
-        仕様書の Step 5 に完全に準拠したリクエスト。
-        1. Authorization: Bearer {token-key}
-        2. POSTデータに grant_type=password と scope={account-id} を含める
-        """
+        """仕様書の Step 5 に準拠したリクエスト"""
         token_key = self._generate_token_key()
-        
         headers = {
             'Authorization': f'Bearer {token_key}',
             'Content-Type': 'application/x-www-form-urlencoded',
         }
-        
-        # 💡 仕様書通り、grant_type=password と scope を POST データとして送信
         data = {
             'grant_type': 'password',
             'scope': self.account_id  
@@ -94,10 +87,10 @@ class LinkShareAPIClient:
         if not self.access_token:
             self._fetch_access_token()
 
-    def fetch_raw_xml(self, keyword=None, mid=None, cat=None, pagenumber=1, max_results=1):
+    def fetch_raw_xml(self, keyword=None, mid=None, cat=None, pagenumber=1, max_results=1, none=None):
         """
-        💡 新規追加: APIレスポンスのXMLを一切加工せず、生の文字列のまま取得する。
-        デバッグや解析用。
+        💡 none パラメーター（除外キーワード）に対応
+        APIレスポンスのXMLを生の文字列のまま取得。
         """
         self.refresh_token_if_expired()
         endpoint = urljoin(self.BASE_URL, 'productsearch/1.0')
@@ -107,6 +100,7 @@ class LinkShareAPIClient:
         if keyword: params['keyword'] = keyword
         if mid: params['mid'] = mid
         if cat: params['cat'] = cat
+        if none: params['none'] = none  # 💡 仕様書の除外ワード機能
         
         try:
             response = requests.get(endpoint, headers=headers, params=params)
@@ -143,12 +137,18 @@ class LinkShareAPIClient:
             return []
     
     def _extract_item_data(self, item_elem: ET.Element) -> dict:
-        """APIから返ってきた各商品データをパース"""
+        """
+        💡 仕様書の階層構造（category/primary, description/short）に対応
+        """
         category_elem = item_elem.find('category')
         primary_cat = category_elem.findtext('primary') if category_elem is not None else ''
         secondary_cat = category_elem.findtext('secondary') if category_elem is not None else ''
         full_category = f"{primary_cat}~~{secondary_cat}".strip("~~")
         
+        desc_node = item_elem.find('description')
+        short_desc = desc_node.findtext('short') if desc_node is not None else ""
+        long_desc = desc_node.findtext('long') if desc_node is not None else ""
+
         price_elem = item_elem.find('price')
         sale_price_elem = item_elem.find('saleprice')
 
@@ -169,10 +169,10 @@ class LinkShareAPIClient:
                 'currency': sale_price_elem.get('currency') if sale_price_elem is not None else None
             },
             'upccode': item_elem.findtext('upccode'),
-            'description_short': item_elem.findtext('description/short'),
-            'description_long': item_elem.findtext('description/long'),
+            'description_short': short_desc,
+            'description_long': long_desc,
             'keywords': item_elem.findtext('keywords'),
-            'linkurl': item_elem.findtext('linkurl'), # 💡 ここに Bicstation の SID が反映されることを期待
+            'linkurl': item_elem.findtext('linkurl'),
             'imageurl': item_elem.findtext('imageurl'),
         }
 
@@ -196,16 +196,20 @@ class LinkShareAPIClient:
                 'items': product_items
             }
             return page_result, total_matches, total_pages
-        except Exception:
+        except Exception as e:
+            tqdm.write(f"⚠️ ページ取得失敗: {e}")
             return {}, 0, 0
             
-    def search_products(self, keyword=None, mid=None, cat=None, page_size=100, max_pages=0):
-        """複数ページにわたる検索結果を取得"""
+    def search_products(self, keyword=None, mid=None, cat=None, page_size=100, max_pages=0, none=None):
+        """
+        💡 none 引数を追加し、fetch_raw_xml へ渡すように修正
+        """
         all_page_results = []
         params = {'max': min(page_size, 100), 'pagenumber': 1}
         if keyword: params['keyword'] = keyword
         if mid: params['mid'] = mid
         if cat: params['cat'] = cat
+        if none: params['none'] = none # 💡 ここが重要
         
         # 1ページ目
         page_result_1, total_matches, total_pages = self._fetch_product_page(params)
@@ -224,4 +228,5 @@ class LinkShareAPIClient:
                     all_page_results.append(page_result_n)
                 else:
                     break
+                time.sleep(0.6) # 1分間100リクエスト制限の考慮
         return all_page_results

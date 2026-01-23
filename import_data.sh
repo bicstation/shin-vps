@@ -3,8 +3,9 @@
 # ==============================================================================
 # 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール
 # ==============================================================================
-# 🛠 修正内容: アーク(ark)のインポート処理を31番に追加
-# 🛠 修正内容: メーカー表示を横3列(カラム)に変更し、視認性を向上
+# 🛠 修正内容: 量販店インポートに --none (除外キーワード) を適用
+# 🛠 修正内容: DBクリーンアップ機能の追加
+# 🛠 修正内容: AIスペック解析の全メーカー一括実行対応
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -32,11 +33,10 @@ RESET="\e[0m"
 RED="\e[31m"
 YELLOW="\e[33m"
 
-# --- 2. データ定義 (番号とインデックスを厳密に一致させる) ---
-# 0番はダミー、1-31番にメーカーを定義
+# --- 2. データ定義 ---
 MAKERS=(
     "DUMMY"
-    "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse"          # 1-10
+    "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse"           # 1-10
     "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom"                 # 11-17
     "norton" "mcafee" "kingsoft" "cyberlink" "trendmicro" "sourcenext"              # 18-23
     "edion" "kojima" "sofmap" "bic_sofmap" "recollect" "ioplazy" "eizo"             # 24-30
@@ -51,6 +51,11 @@ MAKER_NAMES=(
     "エディオン [API]" "コジマネット [API]" "ソフマップ [API]" "アキバソフマップ [API]" "リコレ!(中古) [API]" "ioPLAZA [API]" "EIZO [FTP]"
     "アーク(ark) [JSON]"
 )
+
+# 量販店でPCを狙い撃つためのキーワードリスト
+PC_KEYWORDS=("fmv" "lavie" "dynabook" "surface" "macbook" "lenovo")
+# 除外したい周辺機器ワード
+EXCLUDE_KEYWORDS="ケース,カバー,フィルム,アダプタ,マウス,キーボード,バッグ,ケーブル"
 
 declare -A MID_MAP
 MID_MAP["nec"]="2780"
@@ -103,7 +108,6 @@ update_sitemap() {
 
 show_maker_menu() {
     echo -e "\n${YELLOW}--- 対象メーカーを選択 (横3列表示) ---${RESET}"
-    # 3列で表示するためのループ (31番まで対応)
     for ((i=1; i<=31; i+=3)); do
         for ((j=i; j<i+3 && j<=31; j++)); do
             printf "%-2d) %-22s " "$j" "${MAKER_NAMES[$j]}"
@@ -124,19 +128,20 @@ while true; do
     echo "2) [Import]   Tiper データ (Fanza/Duga) インポート"
     echo -e "3) ${COLOR}[Import]   メーカー別インポート・同期 ✨${RESET}"
     echo "4) [Import]   AV-Flash データのインポート"
-    echo "5) [Admin]    スーパーユーザーの作成"
+    echo "5) [Admin]     スーパーユーザーの作成"
     echo -e "6) ${COLOR}[WP]       商品AI記事生成 & WordPress自動投稿${RESET}"
     echo -e "7) ${COLOR}[News]     PCパーツ最新ニュース投稿 (RSS/URL)${RESET}"
     echo "---------------------------------------"
     echo "12) [Analysis] 製品データをTSV出力 (分析用)"
     echo "13) [Master]   属性マスター(TSV)をインポート"
     echo -e "14) ${COLOR}[Auto]     属性自動マッピング実行 ⚡${RESET}"
-    echo -e "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
+    echo -e "15) ${COLOR}[SEO]       サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
     echo -e "16) ${COLOR}[AI-M]     AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
-    echo -e "17) ${COLOR}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
-    echo -e "18) ${COLOR}[Price]    価格履歴の一斉記録 (record_price_history) 📈${RESET}"
+    echo -e "17) ${COLOR}[AI-Spec]   AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
+    echo -e "18) ${COLOR}[Price]     価格履歴の一斉記録 (record_price_history) 📈${RESET}"
+    echo -e "19) ${RED}[Admin]     特定ショップのDBデータ一括削除 (クリーンアップ) 🗑️${RESET}"
     echo "---------------------------------------"
-    echo "h) [Help]      使い方の説明"
+    echo "h) [Help]       使い方の説明"
     echo "8) 終了"
     echo "---------------------------------------"
 
@@ -174,11 +179,19 @@ while true; do
                 10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
                 31) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark.py ;;
 
+                # --- API 経由（量販店キーワードループ対応） ---
                 1|2|8|18|19|20|21|24|25|26|27|28|29)
                     if [ "$SLUG" == "asus" ]; then
                         echo -e "\n${COLOR}📡 LinkShare API 経由で取得中... (ASUS)${RESET}"
                         run_django python manage.py linkshare_bc_api_parser --mid 43708 --save-db --max-pages 5
                         run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid 43708 --maker asus
+                    elif [[ "$SUB_CHOICE" =~ ^(24|25|26|27)$ ]]; then
+                        echo -e "\n${COLOR}🏪 量販店モード: キーワードループ実行中... (${MAKER_NAMES[$SUB_CHOICE]})${RESET}"
+                        for KW in "${PC_KEYWORDS[@]}"; do
+                            echo -e "${YELLOW}🔍 検索キーワード: $KW (除外設定あり)${RESET}"
+                            run_django python manage.py linkshare_bc_api_parser --mid "$MID" --keyword "$KW" --none "$EXCLUDE_KEYWORDS" --save-db --limit 100
+                        done
+                        run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid "$MID" --maker "$SLUG"
                     else
                         echo -e "\n${COLOR}📡 LinkShare API 経由で同期中... (${MAKER_NAMES[$SUB_CHOICE]} MID:$MID)${RESET}"
                         run_django python manage.py linkshare_bc_api_parser --mid "$MID" --save-db --limit 100
@@ -237,8 +250,20 @@ while true; do
             echo -e "\n${COLOR}pc_products_analysis.tsv を出力しました。${RESET}"
             ;;
         13)
-            read -p "TSVパス: " TSV_FILE
-            run_django python manage.py import_specs "/usr/src/app/$TSV_FILE"
+            # パスを固定して実行（ホストの master_data/attributes.tsv は コンテナの /usr/src/app/master_data/attributes.tsv に相当）
+            FIXED_TSV="/usr/src/app/master_data/attributes.tsv"
+            echo -e "\n${YELLOW}📁 マスターデータをインポート中...${RESET}"
+            echo -e "📄 Target: $FIXED_TSV"
+            
+            run_django python manage.py import_specs "$FIXED_TSV"
+            
+            echo -e "${COLOR}✅ インポートが完了しました。${RESET}"
+            # 2. そのまま自動マッピングを実行
+            
+            echo -e "\n${YELLOW}⚡ 続けて属性自動マッピングを実行中...${RESET}"
+            run_django python manage.py auto_map_attributes
+            
+            echo -e "${COLOR}✅ すべての処理が完了しました。${RESET}"
             ;;
         14)
             echo -e "\n${YELLOW}属性自動マッピングを実行中...⚡${RESET}"
@@ -247,15 +272,26 @@ while true; do
         15) update_sitemap ;;
         16) run_django python manage.py ai_model_name ;;
         17)
-            show_maker_menu
-            read -p "メーカー番号: " SPEC_MK_NUM
-            [[ -z "$SPEC_MK_NUM" || "$SPEC_MK_NUM" == "99" ]] && continue
-            MK_NAME=${MAKERS[$SPEC_MK_NUM]}
-            read -p "件数 (all/数値): " LM_ARG
-            [[ -z "$LM_ARG" || "$LM_ARG" == "all" ]] && LM_ARG=999999
-            run_django python manage.py analyze_pc_spec --maker "$MK_NAME" --limit "$LM_ARG"
-            echo -e "\n${COLOR}📊 解析完了後の価格履歴を記録中...${RESET}"
-            run_django python manage.py record_price_history --maker "$MK_NAME"
+            echo -e "\n${YELLOW}--- AI詳細スペック解析モード ---${RESET}"
+            echo "番号選択: 各メーカー個別"
+            echo "all:     全メーカー一括解析"
+            read -p "メーカー指定 (番号/all): " SPEC_MK_VAL
+            
+            MK_ARG=""
+            if [[ "$SPEC_MK_VAL" == "all" ]]; then
+                echo -e "${COLOR}🚀 全メーカーを対象に解析を開始します...${RESET}"
+            else
+                [[ -z "$SPEC_MK_VAL" || "$SPEC_MK_VAL" == "99" ]] && continue
+                MK_NAME=${MAKERS[$SPEC_MK_VAL]}
+                MK_ARG="--maker $MK_NAME"
+                echo -e "${COLOR}🚀 メーカー: $MK_NAME を解析中...${RESET}"
+            fi
+
+            read -p "未解析分のみ実行しますか？ (y/n): " ONLY_NULL
+            NULL_ARG=""
+            [[ "$ONLY_NULL" == "y" ]] && NULL_ARG="--null-only"
+
+            run_django python manage.py analyze_pc_spec $MK_ARG $NULL_ARG --limit 999999
             ;;
         18)
             echo -e "\n${YELLOW}--- 価格履歴の記録モードを選択してください ---${RESET}"
@@ -274,13 +310,50 @@ while true; do
                 run_django python manage.py record_price_history --maker "$MK_NAME"
             fi
             ;;
+        19)
+            echo -e "\n${RED}⚠️ DBクリーンアップモード: 指定ショップのデータを削除します${RESET}"
+            show_maker_menu
+            read -p "削除対象のメーカー番号: " DEL_MK_NUM
+            [[ -z "$DEL_MK_NUM" || "$DEL_MK_NUM" == "99" ]] && continue
+            
+            DEL_SLUG=${MAKERS[$DEL_MK_NUM]}
+            DEL_MID=${MID_MAP[$DEL_SLUG]}
+            DEL_NAME=${MAKER_NAMES[$DEL_MK_NUM]}
+
+            echo -e "${RED}[確認] $DEL_NAME (MID: $DEL_MID) のデータを削除してよろしいですか？ (y/N)${RESET}"
+            read -p ">> " DEL_CONFIRM
+            if [[ "$DEL_CONFIRM" == "y" ]]; then
+                run_django python manage.py shell <<EOF
+from api.models import BcLinkshareProduct, PCProduct
+from django.utils import timezone
+import sys
+
+mid = "$DEL_MID"
+slug = "$DEL_SLUG"
+
+# 1. 生データの削除
+qs_raw = BcLinkshareProduct.objects.filter(mid=mid)
+count_raw = qs_raw.count()
+qs_raw.delete()
+print(f"✅ BcLinkshareProduct から {count_raw} 件削除しました。")
+
+# 2. PCProduct のリンク解除 (MIDまたはアフィリエイトURLにMIDが含まれるもの)
+qs_pc = PCProduct.objects.filter(affiliate_url__contains=mid)
+count_pc = qs_pc.count()
+qs_pc.update(affiliate_url=None, affiliate_updated_at=timezone.now())
+print(f"✅ PCProduct {count_pc} 件のリンクを解除しました。")
+EOF
+            else
+                echo "キャンセルしました。"
+            fi
+            ;;
         h) show_help ;;
         8) exit 0 ;;
         *) echo "無効な選択です。" ;;
     esac
 
     # 本番環境のみの事後処理
-    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14|17|18)$ ]]; then
+    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14|17|18|19)$ ]]; then
         echo -e "\n${COLOR}🔄 スケジューラーを再起動中...${RESET}"
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
         read -p "サイトマップも更新しますか？ (y/n): " CONFIRM
