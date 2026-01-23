@@ -21,12 +21,12 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { unique_id } = await params;
     const product = await fetchProductDetail(unique_id);
-    
+
     if (!product) return { title: "製品が見つかりません | BICSTATION" };
 
     const title = `${product.name} のスペック・価格・評判 | ${product.maker}最新比較`;
     const seoDescription = `${product.maker}の「${product.name}」詳細解説。${product.description?.substring(0, 80)}... 最安値や在庫状況をチェック。`;
-    
+
     return {
         title,
         description: seoDescription,
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ProductDetailPage(props: PageProps) {
     const { unique_id } = await props.params;
     const product = await fetchProductDetail(unique_id);
-    
+
     if (!product) notFound();
 
     const p = product as any;
@@ -51,7 +51,7 @@ export default async function ProductDetailPage(props: PageProps) {
     const finalUrl = product.affiliate_url || product.url;
     const isPriceAvailable = product.price > 0;
 
-    const isSoftware = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT", "EIZO", "ウイルスバスター"].some(keyword => 
+    const isSoftware = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT", "EIZO", "ウイルスバスター"].some(keyword =>
         product.maker.toUpperCase().includes(keyword.toUpperCase()) || product.name.includes(keyword)
     );
 
@@ -88,13 +88,13 @@ export default async function ProductDetailPage(props: PageProps) {
     return (
         <div className={styles.wrapper}>
             <main className={styles.mainContainer}>
-                
+
                 {/* 📈 リアルタイム・トレンドバナー */}
                 <div className={styles.trendBanner}>
                     <div className={styles.trendInfo}>
                         <span className={styles.updateBadge}>{today} UPDATE</span>
                         <span className={styles.trendText}>
-                            <strong>{isSoftware ? "ライセンス動動" : "在庫状況"}:</strong> 
+                            <strong>{isSoftware ? "ライセンス動動" : "在庫状況"}:</strong>
                             <span className={styles.trendAlert}> {isSoftware ? "▲ 需要急増中" : "▼ 最安値圏を維持"}</span>
                         </span>
                     </div>
@@ -135,14 +135,14 @@ export default async function ProductDetailPage(props: PageProps) {
                 <div className={styles.analysisGrid}>
                     <div className={styles.analysisChartItem}>
                         <h3 className={styles.chartTitle}>スペック評価スコア</h3>
-                        <SpecRadarChart 
+                        <SpecRadarChart
                             scores={{
                                 cpu: p.score_cpu || 0,
                                 gpu: p.score_gpu || 0,
                                 cost: p.score_cost || 0,
                                 portable: p.score_portable || 0,
                                 ai: p.score_ai || 0
-                            }} 
+                            }}
                         />
                     </div>
                     <div className={styles.analysisChartItem}>
@@ -240,31 +240,40 @@ export default async function ProductDetailPage(props: PageProps) {
                     </section>
                 )}
 
-                {/* 🔥 7. かっこいい最終CTAセクション (復元) */}
+                {/* 🔥 究極のCTAセクション: プレミアム・ダーク・エディション */}
                 <section className={styles.finalCtaSection}>
-                    <div className={styles.ctaCard}>
+                    <div className={styles.ctaGlassCard}>
+                        <div className={styles.ctaGlow}></div>
                         <div className={styles.ctaContent}>
+                            <div className={styles.ctaBrandTag}>{product.maker} Official Dealer</div>
                             <h2 className={styles.ctaTitle}>
-                                {isSoftware ? "今すぐライセンスを取得" : "このスペックを手に入れる"}
+                                {isSoftware ? "究極のツールを、あなたの手に。" : "未体験のパフォーマンスを解き放つ。"}
                             </h2>
                             <p className={styles.ctaDescription}>
-                                メーカー公式サイトなら、カスタマイズ構成の確認や、最新のキャンペーン価格で購入が可能です。
+                                妥協なきスペック選びは、公式サイトから始まります。
+                                最新の在庫状況、限定キャンペーン、詳細なカスタマイズ・シミュレーションを今すぐチェック。
                             </p>
-                            <div className={styles.ctaPriceDisplay}>
-                                <span className={styles.ctaCurrentPrice}>
-                                    {isPriceAvailable ? `¥${product.price.toLocaleString()}` : "OPEN PRICE"}
-                                </span>
-                                <span className={styles.ctaTaxLabel}>(税込・メーカー公式価格)</span>
+
+                            <div className={styles.ctaActionRow}>
+                                <div className={styles.ctaPriceInfo}>
+                                    <span className={styles.ctaPriceLabel}>メーカー希望小売価格</span>
+                                    <span className={styles.ctaPriceValue}>
+                                        {isPriceAvailable ? `¥${product.price.toLocaleString()}` : "CHECK PRICE"}
+                                        <span className={styles.ctaTax}> (税込)</span>
+                                    </span>
+                                </div>
+
+                                <a href={finalUrl} target="_blank" rel="nofollow" className={styles.ctaNeonButton}>
+                                    <span className={styles.ctaBtnText}>公式サイトで構成をカスタマイズ</span>
+                                    <svg className={styles.ctaArrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                        <path d="M5 12h14M12 5l7 7-7 7" />
+                                    </svg>
+                                </a>
                             </div>
-                            <a href={finalUrl} target="_blank" rel="nofollow" className={styles.ctaPrimaryButton}>
-                                {product.maker}公式で最新情報をチェック
-                                <svg className={styles.ctaIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M5 12h14M12 5l7 7-7 7" />
-                                </svg>
-                            </a>
                         </div>
-                        <div className={styles.ctaVisual}>
-                             <img src={product.image_url || '/no-image.png'} alt="Final Visual" className={styles.ctaImage} />
+
+                        <div className={styles.ctaVisualContainer}>
+                            <img src={product.image_url || '/no-image.png'} alt="Premium Visual" className={styles.ctaFloatingImage} />
                         </div>
                     </div>
                 </section>
