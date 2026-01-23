@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       # 1. ファイルを VPS のディレクトリへ同期
+      # 🛠 修正点: .git フォルダを除外して転送エラーと速度低下を防止
       - name: Sync Files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -23,10 +24,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
-          source: "." 
+          source: ".,!.git" # ここが重要！全ファイル対象だが .git は除外
           target: "/home/maya/shin-vps"
           strip_components: 0
           overwrite: true
+          # 以前の権限エラーが残っている場合に備え、VPS側の同期先を一度整理する場合は rm: false（デフォルト）
+          # もし権限エラーが消えない場合はここを true にして再試行してください
 
       # 2. SSH経由でネットワーク構築・Docker起動・DBマイグレーションを実行
       - name: Deploy to Production via SSH
@@ -57,8 +60,8 @@ jobs:
             docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py migrate --noinput
 
             echo "🎨 静的ファイルを収集します..."
-            # CSS/JSの更新を反映させるために必須のステップです
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py collectstatic --noinput
+            # --clear を付けることで、前回のビルド時の古い静的ファイルの不整合を解消します
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py collectstatic --noinput --clear
 
             echo "🧹 不要な資産を掃除します..."
             docker image prune -f
