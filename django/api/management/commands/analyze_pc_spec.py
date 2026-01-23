@@ -63,6 +63,7 @@ class Command(BaseCommand):
         if 'lenovo' in m: return "lenovo"
         if 'mouse' in m or 'マウス' in m: return "mouse"
         if 'nec' in m: return "nec"
+        if 'ark' in m or 'アーク' in m: return "ark"  # アークを追加
         
         slug = re.sub(r'[^a-z0-9]', '', m)
         return slug if slug else "standard"
@@ -77,10 +78,9 @@ class Command(BaseCommand):
         # 1. 基本クエリの構築
         query = PCProduct.objects.all()
         
-        # 2. 解析対象の判定ロジック（ここを最適化）
+        # 2. 解析対象の判定ロジック
         if not force:
             # 「解析日時が空」 または 「レーダーチャート用スコアがいずれか0」のものを抽出
-            # これにより、以前の古い形式のデータも自動的に再解析対象になります
             query = query.filter(
                 Q(last_spec_parsed_at__isnull=True) | 
                 Q(score_cpu=0) | Q(score_gpu=0) | Q(score_cost=0) | Q(score_portable=0) | Q(score_ai=0)
@@ -104,6 +104,9 @@ class Command(BaseCommand):
                 query = query.filter(Q(maker__icontains='HP') | Q(maker__icontains='Hewlett'))
             elif m in ['dell']:
                 query = query.filter(Q(maker__icontains='dell'))
+            elif m in ['ark', 'アーク']:
+                # アークのフィルタリングを強化
+                query = query.filter(Q(maker__icontains='ark') | Q(site_prefix='ark'))
             else:
                 query = query.filter(maker__icontains=maker_arg)
 
@@ -118,6 +121,7 @@ class Command(BaseCommand):
             model_id = model_arg
         else:
             models_content = self.load_prompt_file('ai_models.txt')
+            # 最初の1行を使用、なければデフォルト
             model_id = models_content.split('\n')[0].strip() if models_content else "gemini-1.5-flash"
 
         self.stdout.write(self.style.SUCCESS(f"🚀 解析開始: 全 {len(products)} 件 / モデル: {model_id}"))
@@ -126,6 +130,7 @@ class Command(BaseCommand):
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
             for product in products:
+                # 流量制限のためのスリープ
                 time.sleep(INTERVAL) 
                 self.counter += 1
                 future = executor.submit(self.analyze_product, product, model_id, self.counter, len(products))
@@ -152,7 +157,7 @@ class Command(BaseCommand):
         if not brand_rules:
             brand_rules = "【標準ルール】正確なスペックと5軸スコアを抽出してください。"
 
-        # 3. 構造化タグ定義（レーダーチャート用の5軸スコアを必須化）
+        # 3. 構造化タグ定義
         structure_instruction = """
 必ず以下のJSON形式を [SPEC_JSON] タグ内に含めてください。
 [SPEC_JSON]
@@ -183,7 +188,7 @@ class Command(BaseCommand):
 }
 [/SPEC_JSON]
 
-紹介文（HTML）の後に、以下の注目ポイントを [SUMMARY_DATA] タグ内に含めてください：
+紹介文（HTML形式、CSSクラスなしのクリーンなタグのみ）の後に、以下の注目ポイントを [SUMMARY_DATA] タグ内に含めてください：
 [SUMMARY_DATA]
 POINT1: 特徴1
 POINT2: 特徴2
@@ -210,6 +215,7 @@ TARGET: おすすめ対象
                 "generationConfig": {"temperature": 0.2}
             }, timeout=120)
             
+            # サーバーエラーやレート制限時は再試行（リカーシブ）
             if response.status_code in [429, 500, 503]:
                 time.sleep(20)
                 return self.analyze_product(product, model_id, count, total)
@@ -223,6 +229,7 @@ TARGET: おすすめ対象
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
                 try:
+                    # コメントアウト（//）などを削除してパース
                     clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
                     spec_data = json.loads(clean_json)
                 except Exception:
@@ -257,6 +264,7 @@ TARGET: おすすめ対象
             product.score_portable = safe_int(spec_data.get('score_portable'), 0)
             product.score_ai = safe_int(spec_data.get('score_ai'), 0)
 
+            # ソフトウェア・パーツ関連属性
             product.os_support = spec_data.get('os_support', product.os_support)
             product.license_term = spec_data.get('license_term', product.license_term)
             product.is_download = spec_data.get('is_download', product.is_download)
@@ -268,11 +276,13 @@ TARGET: おすすめ対象
             except:
                 product.npu_tops = 0.0
 
+            # パーツ詳細
             product.cpu_socket = spec_data.get('cpu_socket', product.cpu_socket)
             product.motherboard_chipset = spec_data.get('chipset', product.motherboard_chipset)
             product.ram_type = spec_data.get('ram_type', product.ram_type)
             product.power_recommendation = safe_int(spec_data.get('power_wattage'), product.power_recommendation)
             
+            # AI紹介文とセグメント
             product.ai_summary = summary_text 
             product.ai_content = f"{summary_text}\n\n{html_content}"
             product.target_segment = spec_data.get('target_segment', product.target_segment)

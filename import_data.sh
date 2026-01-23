@@ -3,9 +3,8 @@
 # ==============================================================================
 # 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール
 # ==============================================================================
-# 🛠 修正内容: メーカー表示を横3列(カラム)に変更し、視認性を大幅に向上
-# 🛠 修正内容: 配列インデックスとメニュー番号の不一致を完全に解消
-# 🛠 修正内容: サイトマップ更新プロンプト等の対話ロジックを整理
+# 🛠 修正内容: アーク(ark)のインポート処理を31番に追加
+# 🛠 修正内容: メーカー表示を横3列(カラム)に変更し、視認性を向上
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -34,13 +33,14 @@ RED="\e[31m"
 YELLOW="\e[33m"
 
 # --- 2. データ定義 (番号とインデックスを厳密に一致させる) ---
-# 0番はダミーとして空け、1番から開始します
+# 0番はダミー、1-31番にメーカーを定義
 MAKERS=(
     "DUMMY"
     "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse"          # 1-10
     "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom"                 # 11-17
     "norton" "mcafee" "kingsoft" "cyberlink" "trendmicro" "sourcenext"              # 18-23
     "edion" "kojima" "sofmap" "bic_sofmap" "recollect" "ioplazy" "eizo"             # 24-30
+    "ark"                                                                           # 31
 )
 
 MAKER_NAMES=(
@@ -49,6 +49,7 @@ MAKER_NAMES=(
     "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom"
     "ノートン [API]" "マカフィー [API]" "キングソフト [API]" "サイバーリンク [API]" "トレンドマイクロ [FTP]" "ソースネクスト [FTP]"
     "エディオン [API]" "コジマネット [API]" "ソフマップ [API]" "アキバソフマップ [API]" "リコレ!(中古) [API]" "ioPLAZA [API]" "EIZO [FTP]"
+    "アーク(ark) [JSON]"
 )
 
 declare -A MID_MAP
@@ -102,15 +103,14 @@ update_sitemap() {
 
 show_maker_menu() {
     echo -e "\n${YELLOW}--- 対象メーカーを選択 (横3列表示) ---${RESET}"
-    
-    # 3列で表示するためのループ
-    for ((i=1; i<=30; i+=3)); do
-        for ((j=i; j<i+3 && j<=30; j++)); do
+    # 3列で表示するためのループ (31番まで対応)
+    for ((i=1; i<=31; i+=3)); do
+        for ((j=i; j<i+3 && j<=31; j++)); do
             printf "%-2d) %-22s " "$j" "${MAKER_NAMES[$j]}"
         done
-        echo "" # 改行
+        echo "" 
     done
-    echo -e "31) 戻る / 指定なし"
+    echo -e "99) 戻る / 指定なし"
 }
 
 # --- 4. メインルーチン ---
@@ -156,7 +156,7 @@ while true; do
         3)
             show_maker_menu
             read -p ">> " SUB_CHOICE
-            [[ "$SUB_CHOICE" == "31" || -z "$SUB_CHOICE" ]] && continue
+            [[ "$SUB_CHOICE" == "99" || -z "$SUB_CHOICE" ]] && continue
             
             SLUG=${MAKERS[$SUB_CHOICE]}
             MID=${MID_MAP[$SLUG]}
@@ -172,6 +172,7 @@ while true; do
                 17) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_sycom.py ;;
                 9)  run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py ;;
                 10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
+                31) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark.py ;;
 
                 1|2|8|18|19|20|21|24|25|26|27|28|29)
                     if [ "$SLUG" == "asus" ]; then
@@ -215,7 +216,7 @@ while true; do
             show_maker_menu
             read -p "メーカー番号 (空欄で全対象): " WP_MK_NUM
             MK_ARG=""
-            [[ -n "$WP_MK_NUM" && "$WP_MK_NUM" -le 30 ]] && MK_ARG="--maker ${MAKERS[$WP_MK_NUM]}"
+            [[ -n "$WP_MK_NUM" && "$WP_MK_NUM" -le 31 ]] && MK_ARG="--maker ${MAKERS[$WP_MK_NUM]}"
             if [ "$WP_CHOICE" == "1" ]; then run_django python manage.py ai_blog_from_db $MK_ARG
             elif [ "$WP_CHOICE" == "2" ]; then
                 for i in {1..5}; do run_django python manage.py ai_blog_from_db $MK_ARG; sleep 10; done
@@ -248,7 +249,7 @@ while true; do
         17)
             show_maker_menu
             read -p "メーカー番号: " SPEC_MK_NUM
-            [[ -z "$SPEC_MK_NUM" || "$SPEC_MK_NUM" == "31" ]] && continue
+            [[ -z "$SPEC_MK_NUM" || "$SPEC_MK_NUM" == "99" ]] && continue
             MK_NAME=${MAKERS[$SPEC_MK_NUM]}
             read -p "件数 (all/数値): " LM_ARG
             [[ -z "$LM_ARG" || "$LM_ARG" == "all" ]] && LM_ARG=999999
@@ -267,7 +268,7 @@ while true; do
             elif [ "$PRICE_MODE" == "2" ]; then
                 show_maker_menu
                 read -p "メーカー番号: " PRICE_MK_NUM
-                [[ -z "$PRICE_MK_NUM" || "$PRICE_MK_NUM" == "31" ]] && continue
+                [[ -z "$PRICE_MK_NUM" || "$PRICE_MK_NUM" == "99" ]] && continue
                 MK_NAME=${MAKERS[$PRICE_MK_NUM]}
                 echo -e "\n${COLOR}📊 メーカー: $MK_NAME の価格を記録中...${RESET}"
                 run_django python manage.py record_price_history --maker "$MK_NAME"
