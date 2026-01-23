@@ -152,7 +152,7 @@ class Command(BaseCommand):
         # 2. メーカー別プロンプトの読み込み
         target_maker_slug = self.get_maker_slug(product.maker)
         maker_prompt_file = f"analyze_{target_maker_slug}_prompt.txt"
-        brand_rules = self.load_prompt_file(maker_prompt_file) or self.load_prompt_file('analyze_standard_prompt.txt')
+        brand_rules = self.load_prompt_file(maker_prompt_file) or self.load_prompt_file('analyze_pc_prompt.txt')
 
         if not brand_rules:
             brand_rules = "【標準ルール】正確なスペックと5軸スコアを抽出してください。"

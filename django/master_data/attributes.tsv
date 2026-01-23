@@ -1,33 +1,33 @@
 attr_type	name	slug	search_keywords	order
-cpu	Core Ultra 9	intel-core-ultra-9	Core Ultra 9, Ultra 285K, Ultra 185H, Ultra 9 185H	10
-cpu	Core Ultra 7	intel-core-ultra-7	Core Ultra 7, Ultra 265K, Ultra 155H, Ultra 165H, Ultra 155U	11
-cpu	Core Ultra 5	intel-core-ultra-5	Core Ultra 5, Ultra 245K, Ultra 125H, Ultra 135H, Ultra 125U	12
-cpu	Core i9	intel-core-i9	Core i9, i9-14900, i9-13900, i9-12900, 14900HX, 13980HX	13
-cpu	Core i7	intel-core-i7	Core i7, i7-14700, i7-13700, i7-1360P, i7-1355U, i7-12700, i7-1260P, 14700HX	14
-cpu	Core i5	intel-core-i5	Core i5, i5-14400, i5-13400, i5-1335U, i5-1340P, i5-12400, i5-1235U	15
+cpu	Core Ultra 9	intel-core-ultra-9	Core Ultra 9, Ultra 285K, Ultra 185H, Ultra 9 185H, Ultra 9 285K	10
+cpu	Core Ultra 7	intel-core-ultra-7	Core Ultra 7, Ultra 265K, Ultra 155H, Ultra 165H, Ultra 155U, Ultra 7 265K	11
+cpu	Core Ultra 5	intel-core-ultra-5	Core Ultra 5, Ultra 245K, Ultra 125H, Ultra 135H, Ultra 125U, Ultra 5 245K	12
+cpu	Core i9	intel-core-i9	Core i9, i9-14900, i9-13900, i9-12900, 14900HX, 13980HX, i9-14900K, i9-14900KS	13
+cpu	Core i7	intel-core-i7	Core i7, i7-14700, i7-13700, i7-1360P, i7-1355U, i7-12700, i7-1260P, 14700HX, i7-14700K	14
+cpu	Core i5	intel-core-i5	Core i5, i5-14400, i5-13400, i5-1335U, i5-1340P, i5-12400, i5-1235U, i5-14600K	15
 cpu	Core i3	intel-core-i3	Core i3, i3-13100, i3-12100, i3-1215U, i3-1115G4, i3-N305	16
 cpu	Celeron / Pentium	intel-low-end	Celeron, Pentium, Intel Processor, N100, N200, Gold 8505, 7305	17
 cpu	Snapdragon X Elite / Plus	arm-snapdragon-x	Snapdragon X Elite, Snapdragon X Plus, X1E-84-100, X1E-78-100, X1P-64-100, ARM Windows, クアルコム	18
 cpu	Ryzen AI 300	amd-ryzen-ai-300	Ryzen AI 9, Ryzen AI 300, Strix Point, Ryzen AI 9 HX 370, Ryzen AI 9 365	19
-cpu	Ryzen 9	amd-ryzen-9	Ryzen 9, 9950X, 7950X, 7945HX, 8945HS, 7940HS, 5900X	20
-cpu	Ryzen 7	amd-ryzen-7	Ryzen 7, 9700X, 7800X3D, 7700, 8845HS, 8840U, 7735HS, 7730U, 5800U, 5700U	21
-cpu	Ryzen 5	amd-ryzen-5	Ryzen 5, 9600X, 7600, 7530U, 8645HS, 8640U, 7535HS, 7520U, 5625U, 5500U	22
+cpu	Ryzen 9	amd-ryzen-9	Ryzen 9, 9950X, 7950X, 7945HX, 8945HS, 7940HS, 5900X, 9900X	20
+cpu	Ryzen 7	amd-ryzen-7	Ryzen 7, 9700X, 7800X3D, 7700, 8845HS, 8840U, 7735HS, 7730U, 5800U, 5700U, 9800X3D	21
+cpu	Ryzen 5	amd-ryzen-5	Ryzen 5, 9600X, 7600, 7530U, 8645HS, 8640U, 7535HS, 7520U, 5625U, 5500U, 9600	22
 cpu	Ryzen 3	amd-ryzen-3	Ryzen 3, 7320U, 4300G, 5300U, 3300U, 3100	23
 cpu	Ryzen Threadripper	amd-threadripper	Threadripper, 7995WX, 7980X, 7970X, スレッドリッパー, WXシリーズ	24
 cpu	最新第14世代インテル	intel-14th-gen	i9-14, i7-14, i5-14, Raptor Lake Refresh, 第14世代	25
 cpu	最新第13世代インテル	intel-13th-gen	i9-13, i7-13, i5-13, Raptor Lake, 第13世代	26
-cpu	Ryzen 9000シリーズ	amd-ryzen-9000	Ryzen 9 9, Ryzen 7 9, Ryzen 5 9, Zen 5, 9000番台	27
+cpu	Ryzen 9000シリーズ	amd-ryzen-9000	Ryzen 9 9, Ryzen 7 9, Ryzen 5 9, Zen 5, 9000番台, 9950X, 9900X, 9700X, 9600X	27
 cpu	Copilot+ PC (AI基準適合)	feature-copilot-plus	Copilot+ PC, Copilotプラス, 40+ TOPS, NPU 45TOPS, 40TOPS以上, AI要件適合	28
 cpu	NPU搭載 (AI PC)	feature-npu-ai	Ryzen AI, AI Boost, Intel NPU, NPU搭載, Neural Processing Unit, XDNA, NPU 10	29
 cpu	省電力モデル	feature-power-efficient	Core i7-U, Ryzen 7-U, 省電力, T-Series, 低電圧, 15Wモデル, 効率重視	30
 cpu	Intel Xeon	intel-xeon	Xeon, ジーオン, Xeon W, Xeon Silver, Xeon Gold	31
 cpu	Ryzen PRO	amd-ryzen-pro	Ryzen AI PRO, Ryzen 7 PRO, Ryzen 5 PRO, ビジネス向けRyzen	32
-GPUモデル	GeForce RTX 5090	gpu-rtx-5090	RTX 5090, 5090, Blackwillow	50
+GPUモデル	GeForce RTX 5090	gpu-rtx-5090	RTX 5090, 5090, Blackwell	50
 GPUモデル	GeForce RTX 5080	gpu-rtx-5080	RTX 5080, 5080	51
 GPUモデル	GeForce RTX 5070 Ti	gpu-rtx-5070-ti	RTX 5070 Ti, 5070Ti	52
 GPUモデル	GeForce RTX 5070	gpu-rtx-5070	RTX 5070, 5070	53
 グラフィックス	GeForce RTX 50シリーズ	gpu-rtx-50-series	RTX 50, RTX 5090, RTX 5080, RTX 5070, Blackwell	54
-GPUモデル	GeForce RTX 4070 Ti	gpu-rtx-4070-ti	RTX 4070 Ti, 4070Ti, 4070 Ti SUPER	55
+GPUモデル	GeForce RTX 4070 Ti	gpu-rtx-4070-ti	RTX 4070 Ti, 4070Ti, 4070 Ti SUPER, 4070TiS	55
 GPUモデル	GeForce RTX 4060 Ti	gpu-rtx-4060-ti	RTX 4060 Ti, 4060Ti, 4060 Ti 16GB	56
 GPUモデル	GeForce RTX 4060	gpu-rtx-4060	RTX 4060, 4060	57
 GPUモデル	GeForce RTX 4050	gpu-rtx-4050	RTX 4050, 4050	58
@@ -35,8 +35,8 @@ GPUモデル	GeForce RTX 4050	gpu-rtx-4050	RTX 4050, 4050	58
 GPUモデル	Radeon AI PRO	gpu-radeon-ai-pro	R9700, Radeon AI PRO, W7900, W7800, W7600	60
 GPUモデル	Intel Arc Graphics	gpu-intel-arc	Intel Arc, Arc Graphics, Arc A770, Arc A750, Arc A380, Arc A140V	61
 PC形状	ノートPC用GPU	gpu-laptop	Laptop GPU, Mobile, ノート向け, Laptop GPU, モバイルGPU	62
-PC形状	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT, Tower, ミニタワー, desktop, pc	63
-ビデオメモリ	ビデオメモリ 16GB以上	vram-16gb-plus	16GB Video, VRAM 16GB, 24GB, GDDR6 16GB	64
+PC形状	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT, Tower, ミニタワー, desktop, pc, グラフィックボード, ビデオカード, 拡張カード	63
+ビデオメモリ	ビデオメモリ 16GB以上	vram-16gb-plus	16GB Video, VRAM 16GB, 24GB, GDDR6 16GB, GDDR7 16GB	64
 ビデオメモリ	ビデオメモリ 8GB	vram-8gb-plus	8GB Video, VRAM 8GB, 8GB, GDDR6 8GB	65
 ビデオメモリ	ビデオメモリ 6GB	vram-6gb-plus	6GB Video, VRAM 6GB, 6GB, GDDR6 6GB	66
 GPUモデル	プロ向け (NVIDIA RTX / Quadro)	gpu-professional	NVIDIA RTX, Quadro, A2000, A4000, Ada Generation, T1000, T600	67
@@ -44,42 +44,42 @@ GPUモデル	Intel Graphics (内蔵)	gpu-intel-graphics	Intel UHD, Intel Iris, I
 GPUモデル	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内蔵グラフィックス, Radeon 780M, Radeon 760M, 680M	69
 1. 画面サイズ	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, 13.4型, 12.6型, 12.1型, 11.6型, 10.1型, モバイルモニター, 軽量ノート, EliteBook 630, Latitude 3340, dynabook G83	510
 1. 画面サイズ	15-16インチ (標準)	size-laptop-standard	15.6型, 16型, 15.4型, 16.0型, 標準ノート, ProBook 450, Latitude 3540, LIFEBOOK A5513	510.5
-1. 画面サイズ	24-25インチ (標準)	size-standard	23.8型, 24.5型, 24型, 標準サイズ, 23.8インチ, EV24, EV23, S2133, CS24	511
-1. 画面サイズ	27インチ (大画面)	size-large	27型, 27-inch, 27インチ, WQHDモニタ, EV27, CS27, CG27	512
-1. 画面サイズ	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上, ウルトラワイド, 49型, 43型, 湾曲モニタ, EV38, EV32, CG31	513
+1. 画面サイズ	24-25インチ (標準)	size-standard	23.8型, 24.5型, 24型, 標準サイズ, 23.8インチ, EV24, EV23, S2133, CS24, G-MASTER	511
+1. 画面サイズ	27インチ (大画面)	size-large	27型, 27-inch, 27インチ, WQHDモニタ, EV27, CS27, CG27, ROG Swift	512
+1. 画面サイズ	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上, ウルトラワイド, 49型, 43型, 湾曲モニタ, EV38, EV32, CG31, 曲面モニタ	513
 2. 解像度軸	WQHD	res-wqhd	WQHD, 2560x1440, 2.8K, 3K, 3.2K, 2560×1600	520
 2. 解像度軸	4K	res-4k	4K, 3840x2160, UHD, 4K UHD, 3840×2400	521
-3. リフレッシュレート軸	高速 (144Hz-165Hz)	high-refresh	144Hz, 165Hz, 120Hz, 高リフレッシュレート	530
-3. リフレッシュレート軸	超高速 (240Hz+)	extreme-refresh	240Hz, 360Hz, 500Hz, 480Hz, 540Hz	531
+3. リフレッシュレート軸	高速 (144Hz-165Hz)	high-refresh	144Hz, 165Hz, 120Hz, 高リフレッシュレート, 144ヘルツ	530
+3. リフレッシュレート軸	超高速 (240Hz+)	extreme-refresh	240Hz, 360Hz, 500Hz, 480Hz, 540Hz, 240fps	531
 4. パネル・付加価値	有機EL (OLED)	panel-oled	OLED, 有機EL, Lumina OLED, QD-OLED, Spectre x360 OLED	540
 4. パネル・付加価値	IPSパネル	panel-ips	IPS方式, 広視野角, WVパネル, ADSパネル, IGZO	541
 4. パネル・付加価値	湾曲・ウルトラワイド	curved-wide	湾曲, 1500R, 21:9, 曲面, 1000R, 1800R, 32:9	542
 4. パネル	タッチパネル / ペン対応	panel-touch	タッチパネル, タッチスクリーン, スタイラス, ASUS Pen, 筆圧感知, 10点マルチタッチ, アクティブペン	543
-mem	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GB（LPDDR5）, 16GB（LPDDR5X）	210
-mem	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GB（LPDDR5）, 32GB（LPDDR5X）, 32GBオンボード	211
-mem	メモリ 64GB以上	mem-64gb-plus	64GB, 64 GB, 128GB, 大容量メモリ, 96GB, 192GB	212
+mem	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GB（LPDDR5）, 16GB（LPDDR5X）, DDR4-16GB, DDR5-16GB	210
+mem	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GB（LPDDR5）, 32GB（LPDDR5X）, 32GBオンボード, DDR5-32GB	211
+mem	メモリ 64GB以上	mem-64gb-plus	64GB, 64 GB, 128GB, 大容量メモリ, 96GB, 192GB, 256GB	212
 mem	メモリ 8GB (低容量)	mem-8gb	8GB, 8 GB, 4GBx2, 8GB（LPDDR4X）	213
 npu	AIプロセッサ(NPU)	npu-all	Ryzen™ AI, Ryzen AI, AI Boost, 統合AIエンジン, NPU搭載, Snapdragon X, NPU 45TOPS	100
 os	Windows 11 Pro	win-11-pro	Windows 11 Pro, Win11 Pro, 11 Pro 64bit, 11 Pro for Business	300
 os	Windows 11 Home	win-11-home	Windows 11 Home, Win11 Home, 11 Home 64bit, Sモード	301
-storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, 512GB（PCIe）, 500GB SSD	400
-storage	SSD 1TB以上	ssd-1tb-plus	1TB SSD, 1 TB, 2TB, 4TB, 8TB, NVMe 1TB	401
-storage	SSD 256GB	ssd-256gb	256GB SSD, 256 GB SSD, 240GB SSD	402
-PC形状	デスクトップPC	type-desktop	デスクトップ, タワー, DT, Tower, フルタワー, ROG Strix G, ESPRIMO, DHシリーズ, WDシリーズ, Mate, Mate J, タイプML, タイプMB, タイプME, タイプMC, OptiPlex Tower, Inspiron Desktop, HP ENVY Desktop, OMEN 25L, OMEN 40L, OMEN 45L	700
-PC形状	小型PC	type-mini-pc	小型PC, ミニPC, Mini PC, コンパクトPC, NUC, ExpertCenter, CAシリーズ, 超小型, Mate タイプMC, OptiPlex Micro, HP Pro Mini, Z2 Mini, Elite Mini	701
+storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, 512GB（PCIe）, 500GB SSD, M.2 512GB	400
+storage	SSD 1TB以上	ssd-1tb-plus	1TB SSD, 1 TB, 2TB, 4TB, 8TB, NVMe 1TB, M.2 1TB, Gen4 1TB	401
+storage	SSD 256GB	ssd-256gb	256GB SSD, 256 GB SSD, 240GB SSD, M.2 256GB	402
+PC形状	デスクトップPC	type-desktop	デスクトップ, タワー, DT, Tower, フルタワー, ROG Strix G, ESPRIMO, DHシリーズ, WDシリーズ, Mate, Mate J, タイプML, タイプMB, タイプME, タイプMC, OptiPlex Tower, Inspiron Desktop, HP ENVY Desktop, OMEN 25L, OMEN 40L, OMEN 45L, arkhive, アークハイブ, Middle Tower	700
+PC形状	小型PC	type-mini-pc	小型PC, ミニPC, Mini PC, コンパクトPC, NUC, ExpertCenter, CAシリーズ, 超小型, Mate タイプMC, OptiPlex Micro, HP Pro Mini, Z2 Mini, Elite Mini, Small Form Factor	701
 PC形状	オールインワンPC	type-all-in-one	オールインワン, All-in-One, 一体型PC, 一体型デスクトップ, ESPRIMO FH, dynaDesk DT, AIO, Mate タイプMG, HP Pavilion All-in-One, Inspiron All-in-One, OptiPlex All-in-One	702
-PC形状	ノートPC	type-laptop	ノートパソコン, ノートPC, Laptop, モバイルノート, Zenbook, Vivobook, LIFEBOOK, dynabook V, dynabook G, dynabook R, AHシリーズ, VersaPro, VersaPro J, タイプVM, タイプVG, タイプVX, タイプVA, Inspiron 14, Latitude, XPS 13, Vostro, HP Pavilion, HP ENVY, EliteBook, Spectre	703
+PC形状	ノートPC	type-laptop	ノートパソコン, ノートPC, Laptop, モバイルノート, Zenbook, Vivobook, LIFEBOOK, dynabook V, dynabook G, dynabook R, AHシリーズ, VersaPro, VersaPro J, タイプVM, タイプVG, タイプVX, タイプVA, Inspiron 14, Latitude, XPS 13, Vostro, HP Pavilion, HP ENVY, EliteBook, Spectre, ゲーミングノート	703
 PC形状	2-in-1 / コンバーチブル	type-2in1	Flip, 2-in-1, コンバーチブル, 回転式, 360度回転, LIFEBOOK WA, dynabook VZ, VersaPro タイプVS, VersaPro タイプVT, VersaPro タイプVN, HP ENVY x360, Spectre x360, Latitude 2-in-1, Inspiron 2-in-1	704
 PC形状	タブレットPC	type-tablet	タブレット, Tablet, iPad, Surface, スレート, ProArt PZ13, 着脱式, デタッチャブル, VersaPro タイプVS, Windowsタブレット, Latitude 7320 Detachable	705
 PC形状	デュアルスクリーン	type-dual-screen	Zenbook Duo, デュアルディスプレイ, 2画面ノート, ScreenPad	706
-PC形状	ワークステーション	type-workstation	ワークステーション, Workstation, ProArt Station, Quadro, RTX Ada, MousePro W, CELSIUS, サーバー, Precision, HP ZBook, Z1, Z2, Z4, Z6, Z8	707
+PC形状	ワークステーション	type-workstation	ワークステーション, Workstation, ProArt Station, Quadro, RTX Ada, MousePro W, CELSIUS, サーバー, Precision, HP ZBook, Z1, Z2, Z4, Z6, Z8, 演算サーバー	707
 PC形状	ディスプレイ	type-display	モニター, ディスプレイ, 液晶, Monitor, Display, iiyama, ProLite, G-MASTER, ROG Swift, TUF Gaming, EIZO, FlexScan, ColorEdge, FORIS, RadiForce, HP Monitor, Dell Monitor, UltraSharp	708
-用途	一般・スタンダード	usage-general	一般, 家庭用, Web閲覧, Youtube, 初心者, スタンダード, mouse, Vivobook, LIFEBOOK AH, dynabook T, FlexScan EV, 事務用モニタ, LAVIE N15, Inspiron, HP Pavilion, HP 14, HP 15	710
-用途	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, 144Hz, RTX, ROG, TUF Gaming, 240Hz, Alienware, OMEN, Victus, FORIS, 応答速度, Dell G15, Dell G16	711
-用途	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, 3DCG, CAD, DAIV, Adobe, ProArt, ASUS Dial, 4K OLED, DCI-P3, 色校正, ColorEdge, Adobe RGB, 階調特性, キャリブレーション, XPS, HP ENVY, ZBook, Precision	712
-用途	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro, ExpertBook, ExpertCenter, MIL規格, LIFEBOOK U, dynabook B, 働き方改革, 疲れ目軽減, VersaPro, Mate, ビジネスPC, SOHO向け, Latitude, Vostro, OptiPlex, EliteBook, ProBook, EliteDesk, ProDesk	713
+用途	一般・スタンダード	usage-general	一般, 家庭用, Web閲覧, Youtube, 初心者, スタンダード, mouse, Vivobook, LIFEBOOK AH, dynabook T, FlexScan EV, 事務用モニタ, LAVIE N15, Inspiron, HP Pavilion, HP 14, HP 15, 家庭向け	710
+用途	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, 144Hz, RTX, ROG, TUF Gaming, 240Hz, Alienware, OMEN, Victus, FORIS, 応答速度, Dell G15, Dell G16, arkhive Gaming, アークハイブ, ゲーミングデバイス, ゲーミングマウス, ゲーミングキーボード	711
+用途	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, 3DCG, CAD, DAIV, Adobe, ProArt, ASUS Dial, 4K OLED, DCI-P3, 色校正, ColorEdge, Adobe RGB, 階調特性, キャリブレーション, XPS, HP ENVY, ZBook, Precision, 映像制作	712
+用途	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro, ExpertBook, ExpertCenter, MIL規格, LIFEBOOK U, dynabook B, 働き方改革, 疲れ目軽減, VersaPro, Mate, ビジネスPC, SOHO向け, Latitude, Vostro, OptiPlex, EliteBook, ProBook, EliteDesk, ProDesk, 官公庁向け	713
 用途	プログラミング・開発	usage-programming	プログラミング, 開発, エンジニア, ITエンジニア, コーディング, WS, Docker, Linux仮想化, 縦回転, ピボット, ThinkPad, Latitude, EliteBook	714
-用途	AI開発・生成AI	usage-ai-dev	生成AI, ローカルLLM, AI開発, Stable Diffusion, Tensor Core, 機械学習, PyTorch, RTX 6000, NVIDIA RTX	715
+用途	AI開発・生成AI	usage-ai-dev	生成AI, ローカルLLM, AI開発, Stable Diffusion, Tensor Core, 機械学習, PyTorch, RTX 6000, NVIDIA RTX, CUDA, LLM, ディープラーニング	715
 機能	Wi-Fi 7対応	feat-wifi7	Wi-Fi 7, IEEE802.11be, BE200	800
 機能	Wi-Fi 6E/6対応	feat-wifi6	Wi-Fi 6E, Wi-Fi 6, 11ax, IEEE802.11ax	801
 機能	Office付属	feat-office	Office Home & Business 2021, Office 2021, 筆ぐるめ, オフィス付, Personal 2021, Microsoft 365	802
