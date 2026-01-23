@@ -37,7 +37,7 @@ from .models import (
     Director, 
     Series
 )
-# 価格履歴モデルを追加
+# 価格履歴モデル、PC製品モデル
 from .models.pc_products import PCProduct, PCAttribute, PriceHistory
 
 # --------------------------------------------------------------------------
@@ -66,7 +66,7 @@ def api_root(request):
                 "pc_product_makers": "/api/pc-makers/",
                 "pc_sidebar_stats": "/api/pc-sidebar-stats/",
                 "pc_product_detail": "/api/pc-products/{unique_id}/", 
-                "pc_price_history": "/api/pc-products/{unique_id}/price-history/", # 追加
+                "pc_price_history": "/api/pc-products/{unique_id}/price-history/",
                 "adult_products_list": "/api/adults/",
                 "linkshare_products_list": "/api/linkshare/",
                 "adult_product_detail": "/api/adults/{product_id_unique}/",
@@ -136,7 +136,7 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 class PCProductListAPIView(generics.ListAPIView):
     """
     PCおよびソフトウェア製品一覧取得：
-    メーカー名、AI解析スペック、ライセンス形態等での絞り込みに対応
+    メーカー名、AI解析スコア、ライセンス形態等での絞り込みに対応
     """
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
@@ -155,9 +155,11 @@ class PCProductListAPIView(generics.ListAPIView):
         'edition', 'description', 'ai_content'
     ]
     
+    # 🚀 5軸スコアによる並び替えを有効化
     ordering_fields = [
         'price', 'updated_at', 'created_at', 'memory_gb', 
-        'spec_score', 'npu_tops', 'power_recommendation'
+        'spec_score', 'score_cpu', 'score_gpu', 'score_cost', 
+        'score_portable', 'score_ai', 'npu_tops', 'power_recommendation'
     ]
 
     def get_queryset(self):
@@ -227,7 +229,7 @@ def pc_sidebar_stats(request):
     return Response(sidebar_data)
 
 # --------------------------------------------------------------------------
-# 📈 2.5 価格履歴取得用 API (追加)
+# 📈 2.5 価格履歴取得用 API
 # --------------------------------------------------------------------------
 @api_view(['GET'])
 def pc_product_price_history(request, unique_id):
@@ -252,7 +254,7 @@ class LinkshareProductListAPIView(generics.ListAPIView):
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')
     serializer_class = LinkshareProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['product_name', 'sku']
+    search_filter = ['product_name', 'sku']
 
 class LinkshareProductDetailAPIView(generics.RetrieveAPIView): 
     queryset = LinkshareProduct.objects.all()

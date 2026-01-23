@@ -26,7 +26,7 @@ urlpatterns = [
     # -----------------------------------------------------------
     # GET /api/pc-products/
     # 💡 フィルタ（cpu_socket, maker, unified_genre等）を適用して一覧を取得
-    # ソフトウェアの場合も unified_genre='software' などでここから取得します
+    # 🚀 レーダーチャート用の5軸スコア(score_cpu等)も一覧データに含まれます
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # GET /api/pc-makers/
@@ -35,15 +35,15 @@ urlpatterns = [
 
     # GET /api/pc-sidebar-stats/
     # 💡 サイドバーの絞り込み用メニュー（CPU別、OS別、ライセンス別などの件数）を動的に取得
-    # 内部の views.pc_sidebar_stats で os_support 等の集計ロジックを追加すると便利です
     path('pc-sidebar-stats/', views.pc_sidebar_stats, name='pc_sidebar_stats'),
 
     # GET /api/pc-products/<unique_id>/
-    # 💡 lookup_field='unique_id' により、メーカー固有ID（MSE_xxxなど）で詳細を取得
+    # 💡 lookup_field='unique_id' により、詳細情報を取得
+    # 🚀 radar_chartフィールドによりNext.js側で即座にグラフ描画が可能です
     path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
 
     # GET /api/pc-products/<unique_id>/price-history/
-    # 📈 💡 特定製品の価格推移データを取得 (Chart.js等でのグラフ描画用)
+    # 📈 💡 特定製品の価格推移データを取得 (Chart.jsやRechartsでのラインチャート用)
     path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
 
     # -----------------------------------------------------------

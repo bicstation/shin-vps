@@ -28,7 +28,16 @@ class Command(BaseCommand):
         SITE_PREFIX = "Ark"
         # 提供された最新のアフィリエイトベースURL (sid=3697471, pid=892466351)
         AFFILIATE_BASE_URL = "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=3697471&pid=892466351&vc_url="
-        JSON_OUTPUT_FILE = "/home/maya/dev/shin-vps/django/scrapers/src/json/ark_results.json"
+        
+        # --- 【修正】Dockerコンテナ内のパスに変更 ---
+        # docker-compose.yml で ./django が /usr/src/app にマウントされているため
+        # このパスに書き込むことでホスト側の django/scrapers/src/json/ に反映されます
+        JSON_OUTPUT_FILE = "/usr/src/app/scrapers/src/json/ark_results.json"
+        
+        # 出力ディレクトリが存在しない場合は作成
+        output_dir = os.path.dirname(JSON_OUTPUT_FILE)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir, mode=0o775, exist_ok=True)
         
         from api.models.pc_products import PCProduct
 

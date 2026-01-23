@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = '並立処理と流量制限を用いて、PC製品およびソフトウェアをAI解析する（全メーカー動的プロンプト対応）'
+    help = '並列処理と流量制限を用いて、PC製品およびソフトウェアをAI解析・5軸スコアリングする'
 
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
@@ -43,12 +43,12 @@ class Command(BaseCommand):
     def get_maker_slug(self, maker_name):
         """
         メーカー名からファイル名に使用するスラッグを動的に生成・判定する
+        プロンプトファイルの選択に利用
         """
         if not maker_name:
             return "standard"
         
-        m = maker_name.lower()
-        # 既存の特定主要メーカーの正規化
+        m = str(maker_name).lower()
         if any(x in m for x in ['fmv', 'fujitsu', '富士通']):
             return "fmv"
         if any(x in m for x in ['dynabook', 'ダイナブック']):
@@ -69,8 +69,9 @@ class Command(BaseCommand):
             return "lenovo"
         if 'mouse' in m or 'マウス' in m:
             return "mouse"
+        if 'nec' in m:
+            return "nec"
         
-        # それ以外のメーカーは、英数字のみを抽出して小文字スラッグ化
         slug = re.sub(r'[^a-z0-9]', '', m)
         return slug if slug else "standard"
 
@@ -84,27 +85,36 @@ class Command(BaseCommand):
         # 基本クエリの構築
         query = PCProduct.objects.all()
         
-        # 未解析のみを対象
         if not force:
             query = query.filter(last_spec_parsed_at__isnull=True)
 
         if unique_id:
             query = query.filter(unique_id=unique_id)
         elif maker_arg:
-            # 検索時は柔軟にヒットするようにQオブジェクトを使用
             m = maker_arg.lower()
+            # 💡 フィルタリングロジックの強化：メーカー名・説明・URLなどから柔軟に検索
             if m in ['fmv', 'fujitsu', '富士通']:
-                query = query.filter(Q(maker__icontains='FMV') | Q(maker__icontains='富士通') | Q(maker__icontains='fujitsu'))
+                query = query.filter(
+                    Q(maker__icontains='FMV') | 
+                    Q(maker__icontains='富士通') | 
+                    Q(maker__icontains='Fujitsu') |
+                    Q(name__icontains='FMV')
+                )
             elif m in ['dynabook', 'ダイナブック']:
                 query = query.filter(Q(maker__icontains='dynabook') | Q(maker__icontains='ダイナブック'))
+            elif m in ['nec']:
+                query = query.filter(Q(maker__icontains='NEC') | Q(name__icontains='LAVIE'))
+            elif m in ['lenovo']:
+                query = query.filter(Q(maker__icontains='lenovo'))
             else:
+                # 一般的なメーカー指定（部分一致）
                 query = query.filter(maker__icontains=maker_arg)
 
+        # 重複を排除し、指定件数取得
         products = list(query[:limit])
+        
         if not products:
-            available_makers = PCProduct.objects.values_list('maker', flat=True).distinct()[:10]
-            self.stdout.write(self.style.WARNING(f"対象製品が見つかりませんでした。"))
-            self.stdout.write(f"DB内のメーカー名の例: {list(available_makers)}")
+            self.stdout.write(self.style.WARNING(f"🔎 メーカー指定 [{maker_arg}] に該当する未解析製品が見つかりませんでした。"))
             return
 
         # モデル選択
@@ -120,6 +130,7 @@ class Command(BaseCommand):
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
             for product in products:
+                # 流量制限
                 time.sleep(INTERVAL) 
                 self.counter += 1
                 future = executor.submit(self.analyze_product, product, model_id, self.counter, len(products))
@@ -136,33 +147,70 @@ class Command(BaseCommand):
         # 1. 基本プロンプトの読み込み
         base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt')
         if not base_pc_prompt:
-            base_pc_prompt = "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析してHTML記事とJSONスペックを作成せよ。"
+            base_pc_prompt = "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析してJSONスペックを作成せよ。"
         
         # 2. メーカー別プロンプトの動的判定
         target_maker_slug = self.get_maker_slug(product.maker)
         maker_prompt_file = f"analyze_{target_maker_slug}_prompt.txt"
+        
+        # 固有のプロンプトがなければ standard を読み込む
         brand_rules = self.load_prompt_file(maker_prompt_file)
-
-        # 個別プロンプトがない場合は「標準プロンプト」を試行
         if not brand_rules:
             brand_rules = self.load_prompt_file('analyze_standard_prompt.txt')
 
-        # それでもない場合のフォールバック
         if not brand_rules:
-            brand_rules = "【標準ルール】スペックからCPU、メモリ、ストレージ容量等を正確に抽出し、製品がソフトウェアの場合はライセンス形態（年数・台数・永続版等）も特定してください。"
+            brand_rules = "【標準ルール】スペックから正確なスペック、および5軸評価スコアを抽出してください。"
 
-        # 3. プロンプト組み立て
+        # 3. 構造化出力の厳格化
+        structure_instruction = """
+必ず以下のJSON形式を [SPEC_JSON] タグ内に含めてください。スコアは1-100で評価してください。
+[SPEC_JSON]
+{
+  "cpu_model": "型番",
+  "gpu_model": "型番",
+  "memory_gb": 数値,
+  "storage_gb": 数値,
+  "display_info": "15.6型 4K等",
+  "is_ai_pc": bool,
+  "npu_tops": 数値,
+  "score_cpu": 1-100,
+  "score_gpu": 1-100,
+  "score_cost": 1-100,
+  "score_portable": 1-100,
+  "score_ai": 1-100,
+  "os_support": "Windows 11等",
+  "is_download": bool,
+  "license_term": "永続/3年等",
+  "device_count": 数値,
+  "edition": "Pro/Home等",
+  "cpu_socket": "LGA1700等",
+  "chipset": "Z790等",
+  "ram_type": "DDR5等",
+  "power_wattage": 数値,
+  "spec_score": 1-100,
+  "target_segment": "ゲーミング/ビジネス等"
+}
+[/SPEC_JSON]
+
+また、ユーザー向けの紹介文（HTML形式、h2やpタグ使用）を [SUMMARY_DATA]タグとは別に出力してください。
+注目ポイントを以下の形式で [SUMMARY_DATA] タグ内に含めてください：
+[SUMMARY_DATA]
+POINT1: 特徴1
+POINT2: 特徴2
+POINT3: 特徴3
+TARGET: おすすめのユーザー
+[/SUMMARY_DATA]
+"""
         try:
-            formatted_base = base_pc_prompt.format(
-                maker=product.maker, 
-                name=product.name, 
-                price=f"{product.price:,}",
-                description=product.description
-            )
+            # 💡 formatの失敗を防ぐため安全に埋め込み
+            formatted_base = base_pc_prompt.replace("{maker}", str(product.maker))\
+                                         .replace("{name}", str(product.name))\
+                                         .replace("{price}", f"{product.price:,}")\
+                                         .replace("{description}", str(product.description or ""))
         except Exception:
-            formatted_base = f"メーカー:{product.maker}\n名:{product.name}\n価格:{product.price}\n{product.description}"
+            formatted_base = f"メーカー:{product.maker}\n製品名:{product.name}\n価格:{product.price}\n{product.description}"
 
-        full_prompt = f"{formatted_base}\n\nブランド別追加ルール:\n{brand_rules}"
+        full_prompt = f"{formatted_base}\n\nブランド別追加ルール:\n{brand_rules}\n\n{structure_instruction}"
 
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
         
@@ -172,12 +220,11 @@ class Command(BaseCommand):
 
             response = requests.post(api_url, json={
                 "contents": [{"parts": [{"text": full_prompt}]}],
-                "generationConfig": {"temperature": 0.3}
+                "generationConfig": {"temperature": 0.2}
             }, timeout=120)
             
             if response.status_code in [429, 500, 503]:
                 wait_time = 30 if response.status_code == 429 else 10
-                self.stdout.write(self.style.WARNING(f"🕒 API制限中... {wait_time}秒待機"))
                 time.sleep(wait_time)
                 return self.analyze_product(product, model_id, count, total)
             
@@ -190,16 +237,23 @@ class Command(BaseCommand):
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
                 try:
+                    # JSON内のコメントを削除
                     clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
                     spec_data = json.loads(clean_json)
                 except Exception:
                     self.stdout.write(self.style.WARNING(f"⚠️ JSONパース失敗 ({product.unique_id})"))
 
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
-            summary_text = summary_match.group(1).strip() if summary_match else ""
+            summary_text = summary_match.group(0).strip() if summary_match else ""
 
-            html_content = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', full_text, flags=re.DOTALL)
-            html_content = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', html_content, flags=re.DOTALL).strip()
+            # HTMLコンテンツの抽出（タグを除いた部分）
+            html_content = full_text
+            if summary_match:
+                html_content = html_content.replace(summary_match.group(0), '')
+            if spec_match:
+                html_content = html_content.replace(spec_match.group(0), '')
+            
+            html_content = html_content.strip()
 
             def safe_int(val, default=0):
                 if val is None or val == "": return default
@@ -215,8 +269,19 @@ class Command(BaseCommand):
             product.display_info = spec_data.get('display_info', product.display_info)
             product.spec_score = safe_int(spec_data.get('spec_score'), 0)
             
-            if spec_data.get('os_support'): product.os_support = spec_data['os_support']
-            if spec_data.get('license_term'): product.license_term = spec_data['license_term']
+            # レーダーチャート用スコア
+            product.score_cpu = safe_int(spec_data.get('score_cpu'), 0)
+            product.score_gpu = safe_int(spec_data.get('score_gpu'), 0)
+            product.score_cost = safe_int(spec_data.get('score_cost'), 0)
+            product.score_portable = safe_int(spec_data.get('score_portable'), 0)
+            product.score_ai = safe_int(spec_data.get('score_ai'), 0)
+
+            # 追加スペック
+            product.os_support = spec_data.get('os_support', product.os_support)
+            product.license_term = spec_data.get('license_term', product.license_term)
+            product.is_download = spec_data.get('is_download', product.is_download)
+            product.device_count = safe_int(spec_data.get('device_count'), product.device_count)
+            product.edition = spec_data.get('edition', product.edition)
             
             product.is_ai_pc = spec_data.get('is_ai_pc', False)
             try:
@@ -229,14 +294,15 @@ class Command(BaseCommand):
             product.ram_type = spec_data.get('ram_type', product.ram_type)
             product.power_recommendation = safe_int(spec_data.get('power_wattage'), product.power_recommendation)
             
-            product.ai_summary = summary_text
-            product.ai_content = html_content
+            # AI生成コンテンツ（サマリーデータを内包させることでNext.js側でパース可能にする）
+            product.ai_summary = summary_text 
+            product.ai_content = f"{summary_text}\n\n{html_content}"
             product.target_segment = spec_data.get('target_segment', product.target_segment)
             
             product.last_spec_parsed_at = timezone.now()
             product.save()
 
-            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id}"))
+            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id} (Score:{product.score_cost})"))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.unique_id}): {str(e)}"))

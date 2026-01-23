@@ -40,9 +40,9 @@ class PCAttribute(models.Model):
 class PCProduct(models.Model):
     """
     PC製品およびソフトウェア・周辺機器を管理する汎用モデル
-    既存のカラムを完全維持しつつ、長期運用に耐えうる拡張カラムを追加
+    既存のカラムを完全維持しつつ、レーダーチャート用スコアおよび解析カラムを統合
     """
-    # === 1. 既存カラム（一切変更なし） ===
+    # === 1. 既存カラム（基本情報） ===
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
     site_prefix = models.CharField(max_length=20, verbose_name="サイト接頭辞")
     maker = models.CharField(max_length=100, db_index=True, verbose_name="メーカー")
@@ -76,8 +76,7 @@ class PCProduct(models.Model):
     created_at = models.DateTimeField(default=now, verbose_name="登録日時")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
-
-    # === 2. 🚀 PCスペック用追加カラム ===
+    # === 2. PCスペック用追加カラム（具現化） ===
     memory_gb = models.IntegerField(null=True, blank=True, verbose_name="メモリ(GB数値)")
     storage_gb = models.IntegerField(null=True, blank=True, verbose_name="ストレージ(GB数値)")
     npu_tops = models.FloatField(null=True, blank=True, verbose_name="NPU性能(TOPS)")
@@ -86,27 +85,33 @@ class PCProduct(models.Model):
     gpu_model = models.CharField(max_length=255, null=True, blank=True, verbose_name="GPUモデル詳細")
     display_info = models.CharField(max_length=255, null=True, blank=True, verbose_name="ディスプレイ情報")
 
-    # --- 自作PC提案カラム ---
+    # 自作PC提案・互換性カラム
     cpu_socket = models.CharField(max_length=50, null=True, blank=True, verbose_name="CPUソケット(推論)")
     motherboard_chipset = models.CharField(max_length=50, null=True, blank=True, verbose_name="推奨チップセット")
     ram_type = models.CharField(max_length=20, null=True, blank=True, verbose_name="メモリ規格")
     power_recommendation = models.IntegerField(null=True, blank=True, verbose_name="推奨電源容量(W)")
 
-    # === 3. ✨ ソフトウェア・ライセンス用追加カラム ===
+    # === 3. ソフトウェア・ライセンス用追加カラム ===
     os_support = models.CharField(max_length=255, null=True, blank=True, verbose_name="対応OS詳細")
     license_term = models.CharField(max_length=100, null=True, blank=True, verbose_name="ライセンス期間")
     device_count = models.CharField(max_length=100, null=True, blank=True, verbose_name="利用可能台数")
     edition = models.CharField(max_length=100, null=True, blank=True, verbose_name="エディション/版番")
     is_download = models.BooleanField(default=False, verbose_name="DL版フラグ")
 
-    # === 4. 解析・メタ情報 ===
+    # === 4. 🚀 レーダーチャート・解析用追加カラム ===
     target_segment = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI判定ターゲット層")
     is_ai_pc = models.BooleanField(default=False, verbose_name="AI PC該当フラグ")
-    spec_score = models.IntegerField(default=0, verbose_name="性能評価スコア(0-100)")
+    
+    # 5軸スコア (1-100)
+    score_cpu = models.IntegerField(default=0, verbose_name="CPU性能スコア(1-100)")
+    score_gpu = models.IntegerField(default=0, verbose_name="GPU性能スコア(1-100)")
+    score_cost = models.IntegerField(default=0, verbose_name="コスパスコア(1-100)")
+    score_portable = models.IntegerField(default=0, verbose_name="携帯性スコア(1-100)")
+    score_ai = models.IntegerField(default=0, verbose_name="AI・NPUスコア(1-100)")
 
+    spec_score = models.IntegerField(default=0, verbose_name="総合評価スコア(0-100)")
     ai_summary = models.CharField(max_length=500, null=True, blank=True, verbose_name="AI記事要約/メタ情報")
     last_spec_parsed_at = models.DateTimeField(null=True, blank=True, verbose_name="スペック解析実行日")
-
 
     class Meta:
         verbose_name = "PC製品"
@@ -149,7 +154,6 @@ class PCProduct(models.Model):
 class PriceHistory(models.Model):
     """
     製品の価格変動を記録するモデル
-    個別ページでグラフ表示するために使用
     """
     product = models.ForeignKey(
         PCProduct, 

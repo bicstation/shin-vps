@@ -44,7 +44,7 @@ class PCAttributeSerializer(serializers.ModelSerializer):
         model = PCAttribute
         fields = ('id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order')
 
-# --- 🚀 価格履歴用シリアライザ (追加) ---
+# --- 🚀 価格履歴用シリアライザ ---
 class PriceHistorySerializer(serializers.ModelSerializer):
     date = serializers.DateTimeField(source='recorded_at', format="%Y/%m/%d")
 
@@ -95,6 +95,8 @@ class PCProductSerializer(serializers.ModelSerializer):
     attributes = PCAttributeSerializer(many=True, read_only=True)
     # --- 🚀 価格履歴をシリアライザに統合 ---
     price_history = serializers.SerializerMethodField()
+    # --- 🚀 レーダーチャート用データをフロントエンドで使いやすく統合 ---
+    radar_chart = serializers.SerializerMethodField()
 
     class Meta:
         model = PCProduct
@@ -125,17 +127,25 @@ class PCProductSerializer(serializers.ModelSerializer):
             'ram_type',             # メモリ規格 (DDR5等)
             'power_recommendation', # 推奨電源容量
             
-            # --- ✨ ソフトウェア・ライセンス用データ (追加) ---
+            # --- ✨ ソフトウェア・ライセンス用データ ---
             'os_support',           # 対応OS (Windows, macOS等)
             'license_term',         # ライセンス期間 (1年, 3年等)
             'device_count',         # 利用可能台数
             'edition',              # エディション (Standard, Pro等)
             'is_download',          # ダウンロード版フラグ
             
-            # --- AI判定・スコアリング ---
+            # --- 🚀 レーダーチャート・スコアリング (新規追加) ---
+            'score_cpu',            # CPU点数 (1-100)
+            'score_gpu',            # GPU点数 (1-100)
+            'score_cost',           # コスパ点数 (1-100)
+            'score_portable',       # 携帯性点数 (1-100)
+            'score_ai',             # AI性能点数 (1-100)
+            'radar_chart',          # Recharts等でそのまま使える形式
+            
+            # --- AI判定・メタ情報 ---
             'target_segment',
             'is_ai_pc',
-            'spec_score',
+            'spec_score',           # 総合点
             'ai_summary',           # 記事要約
             'ai_content',           # 記事本文
             
@@ -153,8 +163,21 @@ class PCProductSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
-    # --- 🚀 直近30件の価格履歴を取得するメソッド ---
+    # --- 📈 直近30件の価格履歴を取得するメソッド ---
     def get_price_history(self, obj):
-        # PCProductインスタンスに紐づく履歴を古い順に取得（グラフ描画用）
+        # 古い順に取得（グラフ描画用）
         histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
         return PriceHistorySerializer(histories, many=True).data
+
+    # --- 📊 レーダーチャート用データをフロントエンドで扱いやすく整形 ---
+    def get_radar_chart(self, obj):
+        """
+        Next.js側のRecharts等でそのまま流し込める形式の配列を返します。
+        """
+        return [
+            {"subject": "CPU性能", "value": obj.score_cpu, "fullMark": 100},
+            {"subject": "GPU性能", "value": obj.score_gpu, "fullMark": 100},
+            {"subject": "コスパ", "value": obj.score_cost, "fullMark": 100},
+            {"subject": "携帯性", "value": obj.score_portable, "fullMark": 100},
+            {"subject": "AI性能", "value": obj.score_ai, "fullMark": 100},
+        ]

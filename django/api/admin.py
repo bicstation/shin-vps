@@ -74,10 +74,9 @@ class PCProductAdmin(admin.ModelAdmin):
         'name_summary',
         'price_display',
         'stock_status',
-        # --- ハードウェア情報 ---
-        'cpu_model',
-        'memory_gb',
-        # --- ✨ ソフトウェア・ライセンス情報 (追記) ---
+        # --- ハードウェア性能（スコア表示） ---
+        'display_scores',
+        # --- ✨ ソフトウェア・ライセンス情報 ---
         'os_support_summary', 
         'license_term',
         'is_download_display',
@@ -94,7 +93,7 @@ class PCProductAdmin(admin.ModelAdmin):
         'is_posted',
         'is_active',
         'is_ai_pc',
-        'is_download',        # 🚀 追記：DL版かどうか
+        'is_download',
         'maker',
         'cpu_socket',
         'ram_type',
@@ -112,7 +111,7 @@ class PCProductAdmin(admin.ModelAdmin):
     # 多対多の属性選択UI
     filter_horizontal = ('attributes',)
 
-    # 詳細編集画面のレイアウト (セクションを整理)
+    # 詳細編集画面のレイアウト
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
@@ -125,13 +124,22 @@ class PCProductAdmin(admin.ModelAdmin):
                 'edition',
             ),
         }),
-        ('AI解析スペック（ハードウェア自動抽出）', {
+        ('🚀 レーダーチャート性能解析 (1-100)', {
+            'description': 'AIがスペックから算出した100点満点のスコア群です。',
+            'fields': (
+                ('score_cpu', 'score_gpu'),
+                ('score_cost', 'score_portable'),
+                ('score_ai', 'spec_score'),
+                'target_segment',
+            ),
+        }),
+        ('AI解析スペック詳細（ハードウェア）', {
             'description': 'PC本体の主要構成データです。',
             'fields': (
                 ('cpu_model', 'gpu_model'),
                 ('memory_gb', 'storage_gb'),
-                ('display_info', 'spec_score'),
-                ('is_ai_pc', 'npu_tops'),
+                ('display_info', 'is_ai_pc'),
+                'npu_tops',
             ),
         }),
         ('自作PC提案用データ（AI推論）', {
@@ -168,6 +176,14 @@ class PCProductAdmin(admin.ModelAdmin):
     def price_display(self, obj):
         return f"¥{obj.price:,}" if obj.price else "価格未定"
     price_display.short_description = "価格"
+
+    def display_scores(self, obj):
+        """5軸スコアの簡易表示"""
+        return mark_safe(
+            f'<small>CPU:{obj.score_cpu} G:{obj.score_gpu} コスパ:{obj.score_cost}<br>'
+            f'AI:{obj.score_ai} 携帯:{obj.score_portable}</small>'
+        )
+    display_scores.short_description = "性能点数"
 
     def os_support_summary(self, obj):
         return obj.os_support[:15] + ".." if obj.os_support and len(obj.os_support) > 15 else obj.os_support
