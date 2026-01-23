@@ -50,7 +50,6 @@ export default async function ProductDetailPage(props: PageProps) {
     const displayRelated = relatedProducts.slice(0, 8);
     const finalUrl = product.affiliate_url || product.url;
     const isPriceAvailable = product.price > 0;
-    const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
     const isSoftware = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT", "EIZO", "ウイルスバスター"].some(keyword => 
         product.maker.toUpperCase().includes(keyword.toUpperCase()) || product.name.includes(keyword)
@@ -84,7 +83,6 @@ export default async function ProductDetailPage(props: PageProps) {
     };
 
     const { tocItems, summary, cleanBody } = parseContent(product.ai_content || "");
-
     const today = new Date().toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
 
     return (
@@ -96,7 +94,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     <div className={styles.trendInfo}>
                         <span className={styles.updateBadge}>{today} UPDATE</span>
                         <span className={styles.trendText}>
-                            <strong>{isSoftware ? "ライセンス動向" : "在庫状況"}:</strong> 
+                            <strong>{isSoftware ? "ライセンス動動" : "在庫状況"}:</strong> 
                             <span className={styles.trendAlert}> {isSoftware ? "▲ 需要急増中" : "▼ 最安値圏を維持"}</span>
                         </span>
                     </div>
@@ -133,7 +131,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </div>
 
-                {/* 📊 2. 分析データセクション（実データの価格推移を表示） */}
+                {/* 📊 2. 分析データセクション */}
                 <div className={styles.analysisGrid}>
                     <div className={styles.analysisChartItem}>
                         <h3 className={styles.chartTitle}>スペック評価スコア</h3>
@@ -157,7 +155,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </div>
 
-                {/* 🏆 3. ランキング推移セクション（実データがある場合のみ表示） */}
+                {/* 🏆 3. ランキング推移 */}
                 {!isSoftware && p.rank_history && p.rank_history.length > 0 && (
                     <div className={styles.rankSection}>
                         <h3 className={styles.chartTitle}>注目度ランキング推移</h3>
@@ -242,7 +240,36 @@ export default async function ProductDetailPage(props: PageProps) {
                     </section>
                 )}
 
-                {/* 7. 関連商品 */}
+                {/* 🔥 7. かっこいい最終CTAセクション (復元) */}
+                <section className={styles.finalCtaSection}>
+                    <div className={styles.ctaCard}>
+                        <div className={styles.ctaContent}>
+                            <h2 className={styles.ctaTitle}>
+                                {isSoftware ? "今すぐライセンスを取得" : "このスペックを手に入れる"}
+                            </h2>
+                            <p className={styles.ctaDescription}>
+                                メーカー公式サイトなら、カスタマイズ構成の確認や、最新のキャンペーン価格で購入が可能です。
+                            </p>
+                            <div className={styles.ctaPriceDisplay}>
+                                <span className={styles.ctaCurrentPrice}>
+                                    {isPriceAvailable ? `¥${product.price.toLocaleString()}` : "OPEN PRICE"}
+                                </span>
+                                <span className={styles.ctaTaxLabel}>(税込・メーカー公式価格)</span>
+                            </div>
+                            <a href={finalUrl} target="_blank" rel="nofollow" className={styles.ctaPrimaryButton}>
+                                {product.maker}公式で最新情報をチェック
+                                <svg className={styles.ctaIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </a>
+                        </div>
+                        <div className={styles.ctaVisual}>
+                             <img src={product.image_url || '/no-image.png'} alt="Final Visual" className={styles.ctaImage} />
+                        </div>
+                    </div>
+                </section>
+
+                {/* 8. 関連商品 */}
                 {displayRelated.length > 0 && (
                     <section className={styles.relatedSection}>
                         <h2 className={styles.specTitle}>{product.maker} の他の製品</h2>
