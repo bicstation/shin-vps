@@ -1,39 +1,30 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🤖 BICSTATION 自動データ更新スクリプト (Non-Interactive / .mjs 対応版)
-# 実行推奨場所: ~/dev/shin-vps
+# 🤖 BICSTATION 自動データ更新スクリプト (Internal Execution 対応版)
+# 実行環境: Djangoコンテナ内部での実行を想定
 # ==============================================================================
 
-# 1. パス解決：スクリプトの場所からプロジェクトルート(shin-vps)を特定して移動
-# django/scripts/ から見て2つ上がルート
-SCRIPT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+# 1. パス解決
+# コンテナ内では通常 /usr/src/app がルート
+SCRIPT_DIR="/usr/src/app"
 cd "$SCRIPT_DIR"
 
-# 2. 環境判別
+# 2. 環境判別 (コンテナ内実行のためCOMPOSEファイル参照は不要だが、ロジック維持)
 CURRENT_HOSTNAME=$(hostname)
-if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]]; then
-    # VPS本番環境
-    COMPOSE_FILE="docker-compose.prod.yml"
-else
-    # ローカル開発環境 (Maryaなど)
-    COMPOSE_FILE="docker-compose.yml"
-fi
+echo "🔍 現在のホスト名: $CURRENT_HOSTNAME"
 
-DJANGO_CON="django-v2"
-NEXT_CON="next-bicstation-v2"
-
-# 3. 共通実行関数
+# 3. 共通実行関数 (修正点: docker compose を介さず直接実行)
 run_django() {
-    docker compose -f "$COMPOSE_FILE" exec -T "$DJANGO_CON" "$@"
+    # コンテナ内なので直接コマンドを叩く
+    "$@"
 }
 
 echo "--- 🚀 自動更新開始: $(date) ---"
 echo "📂 実行ディレクトリ: $(pwd)"
-echo "📄 使用設定ファイル: $COMPOSE_FILE"
 
 # ------------------------------------------------------------------------------
-# 📦 1/4: 商品データのインポート (FTPを先に、APIを後に実行して最新価格を優先)
+# 📦 1/4: 商品データのインポート
 # ------------------------------------------------------------------------------
 echo "📦 1/4: 商品データのインポートを開始..."
 
@@ -56,44 +47,40 @@ for i in "${!API_MIDS[@]}"; do
     run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid "$MID" --maker "$SLUG"
 done
 
-# --- 1-3. 独自スクリプト系 (VPS環境が整っているLenovoのみ有効化) ---
-echo "📡 独自スクリプト実行: Lenovo"
+# --- 1-3. 独自スクリプト系 ---
+echo "📡 独自スクリプト実行: Lenovo / Mouse / Ark"
 run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py
-# run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py
-# run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py
+run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py
+run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark_msi.py
 
 # ------------------------------------------------------------------------------
 # 📈 2/4: 価格履歴の記録
 # ------------------------------------------------------------------------------
-echo "📈 2/4: 価格履歴を記録中 (record_price_history --all)..."
-# 対話プロンプトを自動パスするために 'y' を流し込む
+echo "📈 2/4: 価格履歴を記録中..."
+# 対話プロンプトに 'y' を自動入力
 echo "y" | run_django python manage.py record_price_history --all
 
 # ------------------------------------------------------------------------------
-# 🌐 3/4: サイトマップの更新
+# 🌐 3/4: サイトマップの更新 (修正点: コンテナ跨ぎを考慮せずNext.jsディレクトリを直接叩く)
 # ------------------------------------------------------------------------------
 echo "🌐 3/4: サイトマップを更新中..."
-# 高機能な .mjs ファイルを優先使用
-SITEMAP_SCRIPT="./next-bicstation/generate-sitemap.mjs"
+
+# DjangoコンテナからNext.jsのボリュームがマウントされている場合を想定
+# もし別コンテナの必要がある場合は、API経由でキックするのが一般的です
+SITEMAP_SCRIPT="/usr/src/app/next-bicstation/generate-sitemap.mjs"
 
 if [ -f "$SITEMAP_SCRIPT" ]; then
-    echo "📄 サイトマップスクリプト (.mjs) を使用します"
-    # コンテナへコピー
-    docker cp "$SITEMAP_SCRIPT" "$NEXT_CON":/app/generate-sitemap.mjs
-    # 権限付与
-    docker compose -f "$COMPOSE_FILE" exec -T -u root "$NEXT_CON" chmod -R 777 /app/public/sitemap_gen
-    # 実行 (node は .mjs を自動判別します)
-    docker compose -f "$COMPOSE_FILE" exec -T "$NEXT_CON" node /app/generate-sitemap.mjs
+    echo "📄 サイトマップスクリプトを実行します"
+    node "$SITEMAP_SCRIPT"
 else
-    echo "❌ エラー: $SITEMAP_SCRIPT が見つかりません。更新をスキップします。"
+    echo "⚠️ 警告: $SITEMAP_SCRIPT がこのコンテナ内に見つかりません。パスを確認してください。"
 fi
 
 # ------------------------------------------------------------------------------
-# 🔄 4/4: システムメンテナンス (本番環境のみ)
+# 🔄 4/4: AI解析 (アーク専用プロンプト等の反映タイミング)
 # ------------------------------------------------------------------------------
-if [[ "$COMPOSE_FILE" == *"prod"* ]]; then
-    echo "🔄 4/4: スケジューラーを再起動中..."
-    docker compose -f "$COMPOSE_FILE" up -d scheduler
-fi
+echo "🤖 4/4: AIスペック解析を実行中..."
+# 未解析の商品を優先して処理 (例: 直近100件)
+run_django python manage.py analyze_pc_spec --limit 100
 
 echo "✅ 全工程完了: $(date)"
