@@ -8,7 +8,7 @@ from api.models.pc_products import PCProduct
 from django.utils import timezone
 
 # API設定
-GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 BASE_PROMPT_DIR = os.path.join(os.path.dirname(__file__), 'prompt')
 
 class Command(BaseCommand):

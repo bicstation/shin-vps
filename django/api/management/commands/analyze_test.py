@@ -6,7 +6,8 @@ from api.models.pc_products import PCProduct  # 💡 正しいパスに合わせ
 from django.utils import timezone
 
 # APIキー
-GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
+# GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 class Command(BaseCommand):
     help = 'Gemma-3/Geminiを使用して製品スペックを解析し、DBを更新する（解説文付き）'

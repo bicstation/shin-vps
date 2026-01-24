@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.db.models import Q
 
 # === API設定 ===
-GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # === レート制限の設定 (Gemini 1.5 Flash 無料枠に最適化) ===
 MAX_WORKERS = 2       # 同時接続数エラーを避けるため2スレッドに固定
@@ -72,6 +72,10 @@ class Command(BaseCommand):
         force = options['force']
         null_only = options['null_only']
 
+        if not GEMINI_API_KEY:
+            self.stdout.write(self.style.ERROR("❌ エラー: GEMINI_API_KEY が設定されていません。"))
+            return
+
         # 1. 基本クエリの構築
         query = PCProduct.objects.all()
         
@@ -122,7 +126,6 @@ class Command(BaseCommand):
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
             for i, product in enumerate(products):
-                # 流量制限: 1リクエストごとに一定秒数待機して同時リクエストを防ぐ
                 if i > 0:
                     time.sleep(INTERVAL) 
                 
@@ -189,22 +192,49 @@ TARGET: おすすめ対象
                                        .replace("{description}", str(product.description or ""))
 
         full_prompt = f"{formatted_base}\n\nブランド別追加ルール:\n{brand_rules}\n\n{structure_instruction}"
-        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+        
+        # モデル名形式の補完とURL設定
+        actual_model = model_id if model_id.startswith("models/") else f"models/{model_id}"
+        api_url = f"https://generativelanguage.googleapis.com/v1beta/{actual_model}:generateContent"
+        
+        headers = {
+            "Content-Type": "application/json",
+            "x-goog-api-key": GEMINI_API_KEY
+        }
+        
+        # === 🛠 修正ポイント: 400エラー回避のための厳格なペイロード構造 ===
+        payload = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [
+                        {"text": full_prompt}
+                    ]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.2,
+                "topP": 0.95,
+                "maxOutputTokens": 4096,
+                "responseMimeType": "text/plain"
+            }
+        }
         
         try:
             current_time = datetime.now().strftime("%H:%M:%S")
             self.stdout.write(f"[{current_time}] 📤 解析中 ({count}/{total}): [{product.maker}] {product.name}")
 
-            response = requests.post(api_url, json={
-                "contents": [{"parts": [{"text": full_prompt}]}],
-                "generationConfig": {"temperature": 0.2}
-            }, timeout=120)
+            response = requests.post(api_url, headers=headers, json=payload, timeout=120)
             
-            # --- 指数バックオフによるリトライ制御 ---
+            # 400エラー時の詳細理由を出力
+            if response.status_code == 400:
+                self.stdout.write(self.style.ERROR(f"❌ 400 Bad Request 詳細: {response.text}"))
+
+            # 指数バックオフによるリトライ
             if response.status_code in [429, 500, 503]:
                 if retry_count < 3:
-                    wait_time = (retry_count + 1) * 30 # 30s, 60s, 90s と待機時間を増やす
-                    self.stdout.write(self.style.WARNING(f"⚠️ リミット/エラー検知 ({product.unique_id}): {wait_time}秒待機してリトライ({retry_count+1}/3)"))
+                    wait_time = (retry_count + 1) * 30
+                    self.stdout.write(self.style.WARNING(f"⚠️ エラー検知 ({product.unique_id}): {wait_time}秒待機してリトライ"))
                     time.sleep(wait_time)
                     return self.analyze_product(product, model_id, count, total, retry_count + 1)
                 else:
