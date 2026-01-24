@@ -3,9 +3,9 @@
 # ==============================================================================
 # 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール
 # ==============================================================================
-# 🛠 修正内容: メニュー番号の重複(17番)を解消
-# 🛠 修正内容: AI解析機能を 20番 以降に整理
-# 🛠 修正内容: show_maker_menu が確実に呼ばれるよう調整
+# 🛠 修正内容: TTYエラーの解消 (-T オプション追加)
+# 🛠 修正内容: コジマ等のAPIショップで全件取得に流れないよう条件判定を厳密化
+# 🛠 修正内容: 一時データ削除時の Django Shell 実行安定化
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -84,11 +84,12 @@ run_django() {
         echo -e "${RED}[ERROR] $COMPOSE_FILE が見つかりません。${RESET}"
         exit 1
     fi
-    docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec "$DJANGO_CON" "$@"
+    # -T を追加して非対話シェルでも動作するように修正
+    docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec -T "$DJANGO_CON" "$@"
 }
 
 run_next() {
-    docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec "$NEXT_CON" "$@"
+    docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec -T "$NEXT_CON" "$@"
 }
 
 update_sitemap() {
@@ -100,7 +101,7 @@ update_sitemap() {
         echo -e "${RED}[ERROR] $MJS_SRC が見つかりません。${RESET}"
         return 1
     fi
-    docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec -u root "$NEXT_CON" chmod -R 777 /app/public/sitemap_gen
+    docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec -T -u root "$NEXT_CON" chmod -R 777 /app/public/sitemap_gen
     run_next node /app/generate-sitemap.mjs
 }
 
@@ -131,21 +132,21 @@ while true; do
     echo "2) [Import]   Tiper (Fanza/Duga) インポート"
     echo -e "3) ${COLOR}[Import]   メーカー別インポート・同期 ✨${RESET}"
     echo "4) [Import]   AV-Flash インポート"
-    echo "5) [Admin]    スーパーユーザー作成"
+    echo "5) [Admin]     スーパーユーザー作成"
     echo "---------------------------------------"
     echo "12) [Analysis] 製品データをTSV出力"
     echo "13) [Master]   属性マスター(TSV)インポート"
     echo "14) [Auto]     属性自動マッピング実行 ⚡"
-    echo "15) [SEO]      サイトマップ手動更新 🌐"
+    echo "15) [SEO]       サイトマップ手動更新 🌐"
     echo "---------------------------------------"
     echo -e "20) ${YELLOW}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
     echo -e "21) ${COLOR}[WP]       商品AI記事生成 & WordPress投稿${RESET}"
     echo -e "22) ${COLOR}[News]     PCパーツ最新ニュース投稿${RESET}"
     echo -e "23) ${COLOR}[AI-M]     AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
-    echo -e "24) ${COLOR}[Price]    価格履歴の一斉記録 📈${RESET}"
-    echo -e "25) ${RED}[Admin]    DBデータ一括削除 (クリーンアップ) 🗑️${RESET}"
+    echo -e "24) ${COLOR}[Price]     価格履歴の一斉記録 📈${RESET}"
+    echo -e "25) ${RED}[Admin]     DBデータ一括削除 (クリーンアップ) 🗑️${RESET}"
     echo "---------------------------------------"
-    echo "h) [Help]      説明  /  8) 終了"
+    echo "h) [Help]       説明  /  8) 終了"
     echo "---------------------------------------"
 
     read -p "選択してください: " CHOICE
@@ -177,20 +178,30 @@ while true; do
                 10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
                 31) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark.py ;;
 
-                1|2|8|18|19|20|21|24|25|26|27|28|29)
+                # --- API系ショップ（24-27: エディオン, コジマ等）---
+                24|25|26|27)
+                    echo -e "${YELLOW}🧹 古い一時データをクリア中 (MID: $MID)...${RESET}"
+                    echo "from api.models import BcLinkshareProduct; BcLinkshareProduct.objects.filter(mid='$MID').delete()" | run_django python manage.py shell
+                    
+                    for KW in "${PC_KEYWORDS[@]}"; do
+                        echo -e "\n${COLOR}🔎 キーワード検索中: $KW (MID: $MID)${RESET}"
+                        run_django python manage.py linkshare_bc_api_parser --mid "$MID" --keyword "$KW" --save-db --limit 100
+                    done
+                    run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid "$MID" --maker "$SLUG"
+                    ;;
+
+                # --- その他のAPI系メーカー ---
+                1|2|8|18|19|20|21|28|29)
                     if [ "$SLUG" == "asus" ]; then
                         run_django python manage.py linkshare_bc_api_parser --mid 43708 --save-db --max-pages 5
                         run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid 43708 --maker asus
-                    elif [[ "$SUB_CHOICE" =~ ^(24|25|26|27)$ ]]; then
-                        for KW in "${PC_KEYWORDS[@]}"; do
-                            run_django python manage.py linkshare_bc_api_parser --mid "$MID" --keyword "$KW" --none "$EXCLUDE_KEYWORDS" --save-db --limit 100
-                        done
-                        run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid "$MID" --maker "$SLUG"
                     else
                         run_django python manage.py linkshare_bc_api_parser --mid "$MID" --save-db --limit 100
                         run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid "$MID" --maker "$SLUG"
                     fi
                     ;;
+
+                # --- FTP系メーカー ---
                 3|4|5|6|22|23|30)
                     run_django python manage.py import_bc_mid_ftp --mid "$MID" ;;
                 *) echo "無効な番号です。"; continue ;;
@@ -211,17 +222,13 @@ while true; do
         14) run_django python manage.py auto_map_attributes ;;
         15) update_sitemap ;;
 
-        # --- AI解析関連 (再編) ---
+        # --- AI解析関連 ---
         20)
             echo -e "\n${YELLOW}--- AI詳細スペック解析モード ---${RESET}"
             show_maker_menu
-            echo "番号選択: 各メーカー個別 / all: 全メーカー一括"
-            read -p "メーカー指定: " SPEC_MK_VAL
+            read -p "メーカー指定 (all / 番号): " SPEC_MK_VAL
             MK_ARG=""
-            if [[ "$SPEC_MK_VAL" == "all" ]]; then
-                echo -e "${COLOR}🚀 全メーカー対象に開始...${RESET}"
-            else
-                [[ -z "$SPEC_MK_VAL" || "$SPEC_MK_VAL" == "99" ]] && continue
+            if [[ "$SPEC_MK_VAL" != "all" && -n "$SPEC_MK_VAL" ]]; then
                 MK_ARG="--maker ${MAKERS[$SPEC_MK_VAL]}"
             fi
             read -p "未解析分のみ？ (y/n): " ONLY_NULL
@@ -266,13 +273,7 @@ while true; do
             DEL_MID=${MID_MAP[${MAKERS[$DEL_MK_NUM]}]}
             read -p "${RED}本当に削除しますか？ (y/N): ${RESET}" DEL_CONFIRM
             if [[ "$DEL_CONFIRM" == "y" ]]; then
-                run_django python manage.py shell <<EOF
-from api.models import BcLinkshareProduct, PCProduct
-from django.utils import timezone
-mid = "$DEL_MID"
-BcLinkshareProduct.objects.filter(mid=mid).delete()
-PCProduct.objects.filter(affiliate_url__contains=mid).update(affiliate_url=None, affiliate_updated_at=timezone.now())
-EOF
+                echo "from api.models import BcLinkshareProduct, PCProduct; from django.utils import timezone; mid = '$DEL_MID'; BcLinkshareProduct.objects.filter(mid=mid).delete(); PCProduct.objects.filter(affiliate_url__contains=mid).update(affiliate_url=None, affiliate_updated_at=timezone.now())" | run_django python manage.py shell
             fi
             ;;
         h) show_help ;;
