@@ -3,7 +3,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { fetchProductDetail, fetchRelatedProducts } from '@/lib/api';
+import { fetchProductDetail, fetchRelatedProducts, fetchPCProductRanking } from '@/lib/api';
 import { COLORS } from "@/constants";
 import styles from './ProductDetail.module.css';
 
@@ -41,7 +41,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ProductDetailPage(props: PageProps) {
     const { unique_id } = await props.params;
-    const product = await fetchProductDetail(unique_id);
+
+    // 💡 データの並列取得（詳細・ランキング）
+    const [product, rankingData] = await Promise.all([
+        fetchProductDetail(unique_id),
+        fetchPCProductRanking()
+    ]);
 
     if (!product) notFound();
 
@@ -50,6 +55,9 @@ export default async function ProductDetailPage(props: PageProps) {
     const displayRelated = relatedProducts.slice(0, 8);
     const finalUrl = product.affiliate_url || product.url;
     const isPriceAvailable = product.price > 0;
+
+    // 現在の順位を特定 (rankingDataからこの製品を探す)
+    const currentRank = rankingData ? rankingData.findIndex((item: any) => item.unique_id === unique_id) + 1 : 0;
 
     const isSoftware = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT", "EIZO", "ウイルスバスター"].some(keyword =>
         product.maker.toUpperCase().includes(keyword.toUpperCase()) || product.name.includes(keyword)
@@ -94,7 +102,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     <div className={styles.trendInfo}>
                         <span className={styles.updateBadge}>{today} UPDATE</span>
                         <span className={styles.trendText}>
-                            <strong>{isSoftware ? "ライセンス動動" : "在庫状況"}:</strong>
+                            <strong>{isSoftware ? "ライセンス動向" : "在庫状況"}:</strong>
                             <span className={styles.trendAlert}> {isSoftware ? "▲ 需要急増中" : "▼ 最安値圏を維持"}</span>
                         </span>
                     </div>
@@ -106,6 +114,13 @@ export default async function ProductDetailPage(props: PageProps) {
                 {/* 1. ヒーローセクション */}
                 <div className={styles.heroSection}>
                     <div className={styles.imageWrapper}>
+                        {/* 🏆 順位バッジ (100位以内の場合表示) */}
+                        {currentRank > 0 && currentRank <= 100 && (
+                            <div className={`${styles.detailRankBadge} ${styles[`rankColor_${currentRank}`]}`}>
+                                <span className={styles.rankLabel}>RANK</span>
+                                <span className={styles.rankNumber}>{currentRank}</span>
+                            </div>
+                        )}
                         <img src={product.image_url || '/no-image.png'} alt={product.name} className={styles.productImage} />
                     </div>
                     <div className={styles.infoSide}>
@@ -155,12 +170,20 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </div>
 
-                {/* 🏆 3. ランキング推移 */}
-                {!isSoftware && p.rank_history && p.rank_history.length > 0 && (
-                    <div className={styles.rankSection}>
+                {/* 🏆 3. ランキング推移セクション */}
+                {!isSoftware && (
+                    <div className={styles.rankHistorySection}>
                         <h3 className={styles.chartTitle}>注目度ランキング推移</h3>
-                        <PriceHistoryChart history={p.rank_history} />
-                        <p className={styles.rankNotice}>※ BICSTATION内でのアクセス・クリック数に基づく注目度ランキング推移</p>
+                        {p.rank_history && p.rank_history.length > 0 ? (
+                            <div className={styles.rankChartWrapper}>
+                                <PriceHistoryChart history={p.rank_history} isRank={true} />
+                            </div>
+                        ) : (
+                            <div className={styles.noDataPlaceholder}>
+                                {currentRank > 0 ? `現在 ${currentRank}位 / 順位データを蓄積中です` : "ランキング解析中です"}
+                            </div>
+                        )}
+                        <p className={styles.rankNotice}>※ BICSTATION内での人気度・比較回数に基づく独自のリアルタイムランキング推移</p>
                     </div>
                 )}
 
@@ -240,7 +263,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     </section>
                 )}
 
-                {/* 🔥 究極のCTAセクション: プレミアム・ダーク・エディション */}
+                {/* 🔥 7. 究極のCTAセクション */}
                 <section className={styles.finalCtaSection}>
                     <div className={styles.ctaGlassCard}>
                         <div className={styles.ctaGlow}></div>
@@ -250,8 +273,7 @@ export default async function ProductDetailPage(props: PageProps) {
                                 {isSoftware ? "究極のツールを、あなたの手に。" : "未体験のパフォーマンスを解き放つ。"}
                             </h2>
                             <p className={styles.ctaDescription}>
-                                妥協なきスペック選びは、公式サイトから始まります。
-                                最新の在庫状況、限定キャンペーン、詳細なカスタマイズ・シミュレーションを今すぐチェック。
+                                妥協なきスペック選びは、公式サイトから始まります。最新の在庫状況や限定キャンペーンを今すぐチェック。
                             </p>
 
                             <div className={styles.ctaActionRow}>
@@ -262,16 +284,14 @@ export default async function ProductDetailPage(props: PageProps) {
                                         <span className={styles.ctaTax}> (税込)</span>
                                     </span>
                                 </div>
-
                                 <a href={finalUrl} target="_blank" rel="nofollow" className={styles.ctaNeonButton}>
-                                    <span className={styles.ctaBtnText}>公式サイトで構成をカスタマイズ</span>
+                                    <span className={styles.ctaBtnText}>公式サイトで詳細を見る</span>
                                     <svg className={styles.ctaArrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                                         <path d="M5 12h14M12 5l7 7-7 7" />
                                     </svg>
                                 </a>
                             </div>
                         </div>
-
                         <div className={styles.ctaVisualContainer}>
                             <img src={product.image_url || '/no-image.png'} alt="Premium Visual" className={styles.ctaFloatingImage} />
                         </div>

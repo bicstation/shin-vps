@@ -83,8 +83,30 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
   return (
     <aside className={styles.sidebar}>
       
+      {/* 🏆 0. ランキング (RANKING) - 新設セクション */}
+      <h3 className={styles.sectionTitle} style={{ marginTop: 0 }}>RANKING</h3>
+      <ul style={{ listStyle: 'none', padding: 0, marginBottom: '2rem' }}>
+        <li>
+          <Link 
+            href="/ranking/" 
+            className={styles.link}
+            style={{ 
+              color: pathname === '/ranking/' ? siteColor : undefined,
+              fontWeight: pathname === '/ranking/' ? 'bold' : 'normal',
+              background: 'rgba(236, 201, 75, 0.1)', // 薄いゴールド背景で強調
+              borderRadius: '8px',
+              padding: '10px'
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              🏆 スペック解析ランキング
+            </span>
+          </Link>
+        </li>
+      </ul>
+
       {/* 1. メーカー別（BRANDS） */}
-      <h3 className={styles.sectionTitle} style={{ marginTop: 0 }}>BRANDS</h3>
+      <h3 className={styles.sectionTitle}>BRANDS</h3>
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {makers.length > 0 ? (
           makers.map((item) => {

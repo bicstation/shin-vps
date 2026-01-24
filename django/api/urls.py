@@ -29,6 +29,11 @@ urlpatterns = [
     # 🚀 レーダーチャート用の5軸スコア(score_cpu等)も一覧データに含まれます
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
+    # GET /api/pc-products/ranking/
+    # 🏆 💡 AI解析スコア(spec_score)が高い順に取得 (CPUモデル有りの製品に限定)
+    # 修正ポイント: クラスベースビュー PCProductRankingView または 関数ビューを紐付け
+    path('pc-products/ranking/', views.PCProductRankingView.as_view(), name='pc_product_ranking'),
+
     # GET /api/pc-makers/
     # メーカー別の製品数やロゴ、リンク用データを取得
     path('pc-makers/', views.PCProductMakerListView.as_view(), name='pc_maker_list'),
@@ -39,11 +44,10 @@ urlpatterns = [
 
     # GET /api/pc-products/<unique_id>/
     # 💡 lookup_field='unique_id' により、詳細情報を取得
-    # 🚀 radar_chartフィールドによりNext.js側で即座にグラフ描画が可能です
     path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
 
     # GET /api/pc-products/<unique_id>/price-history/
-    # 📈 💡 特定製品の価格推移データを取得 (Chart.jsやRechartsでのラインチャート用)
+    # 📈 💡 特定製品の価格推移データを取得
     path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
 
     # -----------------------------------------------------------

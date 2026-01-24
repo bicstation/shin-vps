@@ -67,12 +67,13 @@ class PCProductAdmin(admin.ModelAdmin):
     # 履歴をインライン表示
     inlines = [PriceHistoryInline]
 
-    # 一覧画面の表示項目
+    # 一覧画面の表示項目 (ベスト1000管理用に spec_score を追加)
     list_display = (
         'maker',
         'display_thumbnail',
         'name_summary',
         'price_display',
+        'spec_score_display',  # 🏆 総合スコアを追加
         'stock_status',
         # --- ハードウェア性能（スコア表示） ---
         'display_scores',
@@ -105,8 +106,8 @@ class PCProductAdmin(admin.ModelAdmin):
     # 検索窓の対象
     search_fields = ('name', 'unique_id', 'cpu_model', 'os_support', 'description', 'ai_content')
     
-    # 並び順
-    ordering = ('-updated_at',)
+    # 並び順 (デフォルトをスコア降順に設定しランキングを確認しやすくする)
+    ordering = ('-spec_score', '-updated_at')
 
     # 多対多の属性選択UI
     filter_horizontal = ('attributes',)
@@ -177,13 +178,22 @@ class PCProductAdmin(admin.ModelAdmin):
         return f"¥{obj.price:,}" if obj.price else "価格未定"
     price_display.short_description = "価格"
 
+    def spec_score_display(self, obj):
+        """総合スコアを強調表示"""
+        if obj.spec_score:
+            color = "#d9534f" if obj.spec_score >= 80 else "#f0ad4e" if obj.spec_score >= 60 else "#333"
+            return mark_safe(f'<b style="color: {color}; font-size: 1.1em;">{obj.spec_score}</b>')
+        return "-"
+    spec_score_display.short_description = "総合点"
+    spec_score_display.admin_order_field = 'spec_score'
+
     def display_scores(self, obj):
         """5軸スコアの簡易表示"""
         return mark_safe(
-            f'<small>CPU:{obj.score_cpu} G:{obj.score_gpu} コスパ:{obj.score_cost}<br>'
-            f'AI:{obj.score_ai} 携帯:{obj.score_portable}</small>'
+            f'<small>CPU:{obj.score_cpu or 0} G:{obj.score_gpu or 0} コスパ:{obj.score_cost or 0}<br>'
+            f'AI:{obj.score_ai or 0} 携帯:{obj.score_portable or 0}</small>'
         )
-    display_scores.short_description = "性能点数"
+    display_scores.short_description = "性能詳細"
 
     def os_support_summary(self, obj):
         return obj.os_support[:15] + ".." if obj.os_support and len(obj.os_support) > 15 else obj.os_support

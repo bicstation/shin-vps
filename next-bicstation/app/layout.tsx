@@ -21,8 +21,6 @@ const inter = Inter({
 
 /**
  * 💡 SEOメタデータの設定
- * metadataBaseを設定することで、OGP画像などの相対パスが正しく解決されます。
- * title.templateにより、各個別ページのタイトルが自動的に「製品名 | BICSTATION...」の形式になります。
  */
 export const metadata: Metadata = {
   metadataBase: new URL("https://bicstation.com"),
@@ -66,7 +64,7 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5, // ユーザーがピンチズーム（拡大）できるようにし、アクセシビリティを向上
+  maximumScale: 5,
   themeColor: COLORS?.SITE_COLOR || "#007bff",
 };
 
@@ -77,7 +75,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      {/* 🚩 headタグは書きません。Next.jsがmetadataオブジェクトから自動生成し、適切な順序で挿入します */}
       <body 
         className={inter.className} 
         style={{ 
@@ -87,31 +84,27 @@ export default function RootLayout({
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          position: "relative"
         }}
       >
         {/* 全ページ共通ヘッダー */}
         <Header />
 
-        {/* メインコンテンツエリア */}
-        <main style={{ 
-          flexGrow: 1, 
-          display: "flex", 
-          flexDirection: "column" 
-        }}
-        >
+        {/* 🚩 重要修正ポイント: 
+          mainに flex-direction: column を直接書くと、
+          中の page.tsx の Sidebar と Main が縦に並んでしまいます。
+          ここは中身の自由度を保つために最低限の flexGrow だけにします。
+        */}
+        <main style={{ flexGrow: 1 }}>
           {children}
         </main>
 
         {/* 全ページ共通フッター */}
         <Footer />
 
-        {/* ✅ AIチャットコンシェルジュを全ページに配置 */}
+        {/* ✅ AIチャットコンシェルジュ */}
         <ChatBot />
 
-        {/* ✅ 外部JSの読み込み (common-utils.js) 
-            strategy="afterInteractive" を指定することで、メインコンテンツの表示を妨げずに読み込みます。
-        */}
+        {/* ✅ 外部JSの読み込み */}
         <Script 
           src="/scripts/common-utils.js" 
           strategy="afterInteractive" 

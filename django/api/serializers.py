@@ -97,6 +97,8 @@ class PCProductSerializer(serializers.ModelSerializer):
     price_history = serializers.SerializerMethodField()
     # --- 🚀 レーダーチャート用データをフロントエンドで使いやすく統合 ---
     radar_chart = serializers.SerializerMethodField()
+    # --- 🚀 フロントエンド表示用のメーカー名 ---
+    maker_name = serializers.CharField(source='maker', read_only=True)
 
     class Meta:
         model = PCProduct
@@ -105,6 +107,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             'unique_id',
             'site_prefix',
             'maker',
+            'maker_name',
             'raw_genre',
             'unified_genre',
             'name',
@@ -134,7 +137,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             'edition',              # エディション (Standard, Pro等)
             'is_download',          # ダウンロード版フラグ
             
-            # --- 🚀 レーダーチャート・スコアリング (新規追加) ---
+            # --- 🚀 レーダーチャート・スコアリング ---
             'score_cpu',            # CPU点数 (1-100)
             'score_gpu',            # GPU点数 (1-100)
             'score_cost',           # コスパ点数 (1-100)
@@ -145,7 +148,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             # --- AI判定・メタ情報 ---
             'target_segment',
             'is_ai_pc',
-            'spec_score',           # 総合点
+            'spec_score',           # 総合点 (ランキングのソートキー)
             'ai_summary',           # 記事要約
             'ai_content',           # 記事本文
             
@@ -169,15 +172,22 @@ class PCProductSerializer(serializers.ModelSerializer):
         histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
         return PriceHistorySerializer(histories, many=True).data
 
-    # --- 📊 レーダーチャート用データをフロントエンドで扱いやすく整形 ---
+    # --- 📊 レーダーチャート用データをフロントエンドで使いやすく整形 ---
     def get_radar_chart(self, obj):
         """
         Next.js側のRecharts等でそのまま流し込める形式の配列を返します。
         """
+        # 値がNoneの場合は0として扱う
+        s_cpu = obj.score_cpu or 0
+        s_gpu = obj.score_gpu or 0
+        s_cost = obj.score_cost or 0
+        s_port = obj.score_portable or 0
+        s_ai = obj.score_ai or 0
+
         return [
-            {"subject": "CPU性能", "value": obj.score_cpu, "fullMark": 100},
-            {"subject": "GPU性能", "value": obj.score_gpu, "fullMark": 100},
-            {"subject": "コスパ", "value": obj.score_cost, "fullMark": 100},
-            {"subject": "携帯性", "value": obj.score_portable, "fullMark": 100},
-            {"subject": "AI性能", "value": obj.score_ai, "fullMark": 100},
+            {"subject": "CPU性能", "value": s_cpu, "fullMark": 100},
+            {"subject": "GPU性能", "value": s_gpu, "fullMark": 100},
+            {"subject": "コスパ", "value": s_cost, "fullMark": 100},
+            {"subject": "携帯性", "value": s_port, "fullMark": 100},
+            {"subject": "AI性能", "value": s_ai, "fullMark": 100},
         ]

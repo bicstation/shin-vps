@@ -1,6 +1,6 @@
 /**
  * =====================================================================
- * 💡 SHIN-VPS API サービス層 (lib/api.ts) - 修正版
+ * 💡 SHIN-VPS API サービス層 (lib/api.ts) - 統合版
  * WordPress(bicstation) & Django(pc-products) 統合データアクセス層
  * =====================================================================
  */
@@ -35,11 +35,18 @@ const getDjangoBaseUrl = () => {
 
 // --- 型定義 ---
 
+export interface RadarChartData {
+    subject: string;
+    value: number;
+    fullMark: number;
+}
+
 export interface PCProduct {
     id: number;
     unique_id: string;
     site_prefix: string;
     maker: string;
+    maker_name?: string;
     name: string;
     price: number;
     image_url: string;
@@ -47,8 +54,17 @@ export interface PCProduct {
     affiliate_url: string; // 正式アフィリエイトURL
     description: string;
     ai_content: string;    // AI生成コンテンツ
+    ai_summary?: string;
     stock_status: string;
     unified_genre: string;
+    // スペック情報
+    cpu_model?: string;
+    gpu_model?: string;
+    memory_gb?: number;
+    storage_gb?: number;
+    display_info?: string;
+    spec_score?: number;   // AI解析総合スコア
+    radar_chart?: RadarChartData[]; // 5軸チャート用データ
 }
 
 /**
@@ -61,11 +77,9 @@ export interface MakerCount {
 
 /**
  * 📝 [WordPress] 記事一覧取得
- * 🛠️ 修正: offset パラメータを追加し、レスポンスヘッダーから総記事数を取得するように変更
  */
 export async function fetchPostList(perPage = 12, offset = 0) {
     const { baseUrl, host } = getWpConfig();
-    // WordPress API に offset を渡すよう修正
     const url = `${baseUrl}/wp-json/wp/v2/bicstation?_embed&per_page=${perPage}&offset=${offset}`;
 
     try {
@@ -80,16 +94,11 @@ export async function fetchPostList(perPage = 12, offset = 0) {
         if (!res.ok) return { results: [], count: 0, debugUrl: url, status: res.status };
 
         const data = await res.json();
-        
-        /**
-         * 💡 WordPressはヘッダー 'X-WP-Total' に全記事数を格納しています。
-         * これを取得することで Pagination コンポーネントが正しく動作します。
-         */
         const totalCount = parseInt(res.headers.get('X-WP-Total') || '0', 10);
 
         return { 
             results: Array.isArray(data) ? data : [], 
-            count: totalCount, // Pagination用の総件数
+            count: totalCount, 
             debugUrl: url, 
             status: res.status 
         };
@@ -139,8 +148,7 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attrib
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            cache: 'no-store',
-            next: { revalidate: 0 } 
+            cache: 'no-store'
         });
 
         if (!res.ok) {
@@ -149,11 +157,6 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attrib
         }
 
         const data = await res.json();
-        
-        if (IS_SERVER) {
-            console.log(`[API Fetch Success]: offset=${offset}, attribute=${attribute}, items=${data.results?.length}`);
-        }
-
         return { 
             results: data.results || [], 
             count: data.count || 0, 
@@ -174,8 +177,7 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            cache: 'no-store',
-            next: { revalidate: 0 } 
+            cache: 'no-store'
         });
         return res.ok ? await res.json() : null;
     } catch (e) { 
@@ -221,18 +223,42 @@ export async function fetchMakers(): Promise<MakerCount[]> {
     try {
         const res = await fetch(url, {
             headers: { 'Host': 'localhost' },
-            cache: 'no-store',
+            cache: 'no-store'
+        });
+
+        if (!res.ok) return [];
+        return await res.json();
+    } catch (e) {
+        console.error(`[Makers API ERROR]:`, e);
+        return [];
+    }
+}
+
+/**
+ * 🚀 [Django API] ランキング取得 (AI解析スコア順)
+ * ソフトウェア等の不純物が除外された上位1000件を取得します。
+ */
+export async function fetchPCProductRanking(): Promise<PCProduct[]> {
+    const rootUrl = getDjangoBaseUrl();
+    const url = `${rootUrl}/api/pc-products/ranking/`;
+
+    try {
+        const res = await fetch(url, {
+            headers: { 'Host': 'localhost' },
+            cache: 'no-store', // ランキングは常に最新の状態を保つ
             next: { revalidate: 0 }
         });
 
         if (!res.ok) {
-            console.error(`[Django Makers API Error]: Status ${res.status}`);
+            console.error(`[Django Ranking API Error]: Status ${res.status}`);
             return [];
         }
 
-        return await res.json();
+        const data = await res.json();
+        // RankingViewは pagination_class = None のため、直で配列が返る想定
+        return Array.isArray(data) ? data : (data.results || []);
     } catch (e) {
-        console.error(`[Makers API ERROR]:`, e);
+        console.error(`[Ranking API ERROR]:`, e);
         return [];
     }
 }
