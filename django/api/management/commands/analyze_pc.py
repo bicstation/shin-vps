@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/management/commands/analyze_spec_gemma.py
+
 import json
 import requests
 import re
 import os
+import itertools
 from django.core.management.base import BaseCommand
 from api.models.pc_products import PCProduct
 from django.utils import timezone
 
-# API設定
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+# === API設定 (2つのキーを読み込み) ===
+API_KEYS = [
+    os.getenv("GEMINI_API_KEY_0") or os.getenv("GEMINI_API_KEY"), # 既存のキー
+    os.getenv("GEMINI_API_KEY_1")                                # 新しいキー
+]
+VALID_KEYS = [k for k in API_KEYS if k]
+key_cycle = itertools.cycle(VALID_KEYS)
+
 BASE_PROMPT_DIR = os.path.join(os.path.dirname(__file__), 'prompt')
 
 class Command(BaseCommand):
@@ -30,6 +39,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         unique_id = options['unique_id']
         limit = options['limit']
+
+        if not VALID_KEYS:
+            self.stdout.write(self.style.ERROR("❌ エラー: APIキーが設定されていません。"))
+            return
 
         # モデルリストの確認（デバッグ用）
         models_list = self.load_prompt('ai_models.txt')
@@ -65,7 +78,6 @@ class Command(BaseCommand):
             brand_rules = "【標準ルール】型番や名称からメーカーの命名規則を推測して解析してください。"
 
         # 3. 最終プロンプトの組み立て
-        # 自作PC提案用のカラム（Socket, Chipset, RAM Type, PSU）を抽出対象に追加
         full_prompt = f"""
 {base_pc_prompt.format(maker=product.maker, name=product.name, price=product.price, description=product.description)}
 
@@ -93,10 +105,13 @@ class Command(BaseCommand):
 {brand_rules}
 """
 
-        # 4. APIリクエスト設定 (Gemma-3 27Bを使用)
+        # 4. APIリクエスト設定 (Gemma-3 27Bを使用 & APIキーローテーション)
         model_id = "gemma-3-27b-it"
-        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+        current_gemini_key = next(key_cycle)
+        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={current_gemini_key}"
         
+        self.stdout.write(f"🤖 使用キー末尾: {current_gemini_key[-4:]}")
+
         payload = {
             "contents": [{"parts": [{"text": full_prompt}]}],
             "generationConfig": {
@@ -106,6 +121,9 @@ class Command(BaseCommand):
 
         try:
             response = requests.post(api_url, json=payload, timeout=90)
+            
+            # レート制限情報の取得
+            rem = response.headers.get('x-ratelimit-remaining-requests', '-')
             
             if response.status_code != 200:
                 self.stdout.write(self.style.ERROR(f"❌ API Error {response.status_code}: {response.text}"))
@@ -118,14 +136,13 @@ class Command(BaseCommand):
 
             # A. タイトルとHTML本文の分離
             lines = full_response_text.split('\n')
-            title = lines[0].replace('#', '').strip() # Markdownの#を除去
+            title = lines[0].replace('#', '').strip() 
             
-            # 特殊タグを除いた部分をHTMLとして抽出
             html_content = "\n".join(lines[1:])
             html_content = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', html_content, flags=re.DOTALL)
             html_content = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', html_content, flags=re.DOTALL).strip()
 
-            # B. [SUMMARY_DATA] の抽出（meta description用）
+            # B. [SUMMARY_DATA] の抽出
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_response_text, re.DOTALL)
             summary_text = summary_match.group(1).strip() if summary_match else ""
 
@@ -135,18 +152,15 @@ class Command(BaseCommand):
                 spec_json_str = spec_match.group(1).strip()
                 spec_data = json.loads(spec_json_str)
             else:
-                # 予備：もしタグがなければ全体からJSONを探す
                 json_match = re.search(r'\{.*"memory_gb".*\}', full_response_text, re.DOTALL)
                 spec_data = json.loads(json_match.group(0)) if json_match else {}
 
-            self.stdout.write(self.style.SUCCESS(f"--- 解析成功: {title[:30]}... ---"))
+            self.stdout.write(self.style.SUCCESS(f"--- 解析成功 (残り枠: {rem}): {title[:30]}... ---"))
 
             # --- DB保存フェーズ ---
-            # 基本情報
             product.ai_summary = summary_text
             product.ai_content = html_content
             
-            # AI抽出スペック
             product.cpu_model = spec_data.get('cpu_model')
             product.gpu_model = spec_data.get('gpu_model')
             product.memory_gb = spec_data.get('memory_gb')
@@ -157,13 +171,12 @@ class Command(BaseCommand):
             product.spec_score = spec_data.get('spec_score', 0)
             product.target_segment = spec_data.get('target_segment')
 
-            # 🚀 自作PC提案用新設カラムへの保存
+            # 自作PC提案用カラム
             product.cpu_socket = spec_data.get('cpu_socket')
             product.motherboard_chipset = spec_data.get('chipset')
             product.ram_type = spec_data.get('ram_type')
             product.power_recommendation = spec_data.get('power_wattage')
             
-            # タイムスタンプ更新
             product.last_spec_parsed_at = timezone.now()
             product.save()
             
@@ -172,5 +185,4 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 例外発生 ({product.unique_id}): {str(e)}"))
             if 'full_response_text' in locals():
-                # エラー時でも生レスポンスの冒頭をログ出力
                 self.stdout.write(f"Raw Response Sample: {full_response_text[:200]}...")

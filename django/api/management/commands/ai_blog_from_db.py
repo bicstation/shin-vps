@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 import os
 import re
 import json
 import random
 import requests
 import urllib.parse
+import itertools
 from django.core.management.base import BaseCommand
 from api.models.pc_products import PCProduct 
 from django.db.models import Q as DjangoQ 
@@ -11,8 +13,17 @@ from django.utils.timezone import now
 from requests.auth import HTTPBasicAuth
 from django.core.files.temp import NamedTemporaryFile
 
+# === API設定 (2つのキーを読み込み) ===
+API_KEYS = [
+    os.getenv("GEMINI_API_KEY_0") or os.getenv("GEMINI_API_KEY"), # 既存のキー
+    os.getenv("GEMINI_API_KEY_1")                                # 新しいキー
+]
+# 有効なキーのみでサイクルを作成
+VALID_KEYS = [k for k in API_KEYS if k]
+key_cycle = itertools.cycle(VALID_KEYS)
+
 class Command(BaseCommand):
-    help = 'DBの製品情報を元にAI記事を生成し、WPへ自動投稿（メーカー指定・ソフト対応版）'
+    help = '2つのAPIキーを交互に使用し、DBの製品情報を元にAI記事を生成してWPへ自動投稿する'
 
     def add_arguments(self, parser):
         # メーカー名を引数で受け取れるように設定
@@ -31,7 +42,6 @@ class Command(BaseCommand):
         # ==========================================
         SCH, CLN, SLS, QMK, EQU, AMP = "https", ":", "/", "?", "=", "&"
 
-        GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         W_DOM = "blog.tiper.live"
@@ -55,6 +65,10 @@ class Command(BaseCommand):
                 MODELS = [line.strip() for line in f if line.strip()]
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 設定ファイル読み込み失敗: {e}"))
+            return
+
+        if not VALID_KEYS:
+            self.stdout.write(self.style.ERROR("❌ エラー: APIキーが設定されていません。"))
             return
 
         # ==========================================
@@ -101,7 +115,6 @@ class Command(BaseCommand):
         target_cats = [get_or_create_term('categories', product.maker.upper())]
         target_cats = [c for c in target_cats if c]
 
-        # 🚀 ソフトウェアかPCかの判定ロジックを追加
         is_software = (product.unified_genre == 'software')
         is_desktop = any(k in product.name.lower() for k in ["desktop", "tower", "station", "aio", "gkb", "fk2", "mirai", "shinkai"])
         
@@ -135,7 +148,7 @@ class Command(BaseCommand):
             except: pass
 
         # ==========================================
-        # 6. AIによる本文生成
+        # 6. AIによる本文生成 (APIキー・ローテーション適用)
         # ==========================================
         prompt = base_prompt_template.format(
             maker=product.maker, name=product.name,
@@ -144,41 +157,48 @@ class Command(BaseCommand):
 
         ai_raw_text = None
         for model_id in MODELS:
-            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+            # 💡 リクエストごとにキーを切り替え
+            current_gemini_key = next(key_cycle)
+            api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={current_gemini_key}"
+            
+            self.stdout.write(f"📡 AI生成中... (Model: {model_id}, Key末尾: {current_gemini_key[-4:]})")
             try:
                 response = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=180)
                 res_json = response.json()
                 if 'candidates' in res_json:
                     ai_raw_text = res_json['candidates'][0]['content']['parts'][0]['text']
                     break
-            except: continue
+                elif 'error' in res_json:
+                    self.stdout.write(self.style.WARNING(f"⚠️ APIエラー ({model_id}): {res_json['error'].get('message')}"))
+                    continue
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f"⚠️ 通信エラー ({model_id}): {e}"))
+                continue
         
-        if not ai_raw_text: return
+        if not ai_raw_text:
+            self.stdout.write(self.style.ERROR("❌ AI本文の生成に失敗しました。"))
+            return
 
         # ==========================================
         # 7. 生成テキストの解析
         # ==========================================
         clean_text = re.sub(r'```(html|json)?', '', ai_raw_text).replace('```', '').strip()
         
-        # 🚀 [SPEC_JSON] ブロックの抽出とDB保存
         json_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', clean_text, re.DOTALL)
         if json_match:
             try:
                 spec_json_str = json_match.group(1).strip()
                 spec_data = json.loads(spec_json_str)
-                # 抽出した値をモデルにマッピング（存在するフィールドのみ更新）
                 if spec_data.get('cpu_model'): product.cpu_model = spec_data['cpu_model']
                 if spec_data.get('gpu_model'): product.gpu_model = spec_data['gpu_model']
                 if spec_data.get('os_support'): product.os_support = spec_data['os_support']
                 if spec_data.get('license_term'): product.license_term = spec_data['license_term']
                 if spec_data.get('is_ai_pc') is not None: product.is_ai_pc = spec_data['is_ai_pc']
                 if spec_data.get('cpu_socket'): product.cpu_socket = spec_data['cpu_socket']
-                # 解析が終わったら一旦保存（WP投稿失敗してもスペックは更新される）
                 product.save()
             except Exception as e:
                 self.stdout.write(self.style.WARNING(f"⚠️ JSON解析失敗: {e}"))
             
-            # 本文から JSON ブロックを除去
             clean_text = clean_text.replace(json_match.group(0), "").strip()
 
         lines = [l.strip() for l in clean_text.split('\n') if l.strip()]
@@ -195,7 +215,6 @@ class Command(BaseCommand):
         summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', clean_text, re.DOTALL)
         summary_raw = summary_match.group(1).strip() if summary_match else ""
         
-        # 本文からタイトルと[SUMMARY_DATA]を除外して作成
         main_body_raw = '\n'.join(lines[body_start_index:])
         if summary_match: 
             main_body_raw = main_body_raw.replace(summary_match.group(0), "").strip()

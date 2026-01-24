@@ -8,13 +8,22 @@ import feedparser
 import urllib.parse
 import time
 import random
+import itertools
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from requests.auth import HTTPBasicAuth
 from api.models import PCProduct
 
+# === API設定 (2つのキーを読み込み) ===
+API_KEYS = [
+    os.getenv("GEMINI_API_KEY_0") or os.getenv("GEMINI_API_KEY"), # 既存のキー
+    os.getenv("GEMINI_API_KEY_1")                                # 新しいキー
+]
+VALID_KEYS = [k for k in API_KEYS if k]
+key_cycle = itertools.cycle(VALID_KEYS)
+
 class Command(BaseCommand):
-    help = 'ニュース記事を生成し、A8.net Amazonリンクと洗練された商品カードを含めて投稿する'
+    help = '2つのAPIキーを交互に使用し、ニュース記事を生成。A8リンク・商品カードを含めて投稿する'
 
     def add_arguments(self, parser):
         parser.add_argument('--url', type=str, help='特定の記事URLを直接指定')
@@ -25,7 +34,6 @@ class Command(BaseCommand):
         WP_USER = "bicstation"
         WP_APP_PASSWORD = "9re0 t3de WCe1 u1IL MudX 31IY"
         W_DOM = "blog.tiper.live"
-        GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         AUTH = HTTPBasicAuth(WP_USER, WP_APP_PASSWORD)
         WP_API_BASE = f"https://{W_DOM}/wp-json/wp/v2"
 
@@ -36,6 +44,10 @@ class Command(BaseCommand):
 
         if not os.path.exists(PROMPT_FILE):
             self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルが見つかりません"))
+            return
+
+        if not VALID_KEYS:
+            self.stdout.write(self.style.ERROR("❌ エラー: APIキーが設定されていません。"))
             return
 
         posted_links = set()
@@ -112,16 +124,19 @@ class Command(BaseCommand):
                 if len(page_content) < 300: continue
             except: continue
 
-            # --- 4. AI記事生成 ---
+            # --- 4. AI記事生成 (APIキー・ローテーション適用) ---
             prompt = PROMPT_TEMPLATE.replace("{raw_title}", raw_title).replace("{page_content[:3500]}", page_content[:3500])
             ai_response = ""
             for model in MODELS:
-                self.stdout.write(f"🤖 モデル {model} で生成を試行中...")
-                api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
+                # 💡 リクエストごとにキーを切り替え
+                current_gemini_key = next(key_cycle)
+                self.stdout.write(f"🤖 モデル {model} で生成を試行中... (Key末尾: {current_gemini_key[-4:]})")
+                
+                api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={current_gemini_key}"
                 try:
                     r = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=180)
                     
-                    # --- 残り回数（レート制限）の抽出表示 ---
+                    # レート制限情報の取得
                     rem = r.headers.get('x-ratelimit-remaining-requests', '-')
                     lim = r.headers.get('x-ratelimit-limit-requests', '-')
                     
@@ -130,16 +145,17 @@ class Command(BaseCommand):
                         self.stdout.write(self.style.SUCCESS(f"✅ AI生成成功: {model} (残り目安: {rem}/{lim})"))
                         break
                     elif r.status_code == 429:
-                        self.stdout.write(self.style.ERROR(f"⚠️ {model} の制限に達しました。"))
+                        self.stdout.write(self.style.ERROR(f"⚠️ {model} (Key: {current_gemini_key[-4:]}) の制限に達しました。"))
                         continue
                 except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"通信エラー: {e}"))
+                    self.stdout.write(self.style.ERROR(f"通信エラー ({model}): {e}"))
                     continue
+            
             if not ai_response: continue
 
-            # --- 4.5 【重要】HTML二重構造ガードロジック ---
+            # --- 4.5 HTML二重構造ガードロジック ---
             if "<html" in ai_response.lower():
-                self.stdout.write(self.style.WARNING("⚠️ AIがDOCTYPE等を出力したためクレンジングします"))
+                self.stdout.write(self.style.WARNING("⚠️ クレンジング実行"))
                 body_match = re.search(r'<body[^>]*>([\s\S]*?)<\/body>', ai_response, re.IGNORECASE)
                 if body_match:
                     ai_response = body_match.group(1).strip()
@@ -183,7 +199,6 @@ class Command(BaseCommand):
                 line = line.strip()
                 if not line or line == final_title: continue
                 
-                # スペック表の正規表現を強化
                 spec_match = re.match(r'^[*-]\s*(?:\*\*)?(.*?)(?:\*\*)?[:：]\s*(.*)', line)
                 if spec_match:
                     if not in_table:
@@ -200,7 +215,7 @@ class Command(BaseCommand):
                 if line.startswith('#'):
                     clean = line.replace('#', '').strip()
                     html_body += f'<h2 class="wp-block-heading" style="border-bottom:2px solid #333;padding-bottom:10px;margin-top:40px;font-weight:bold;">{clean}</h2>'
-                elif line.startswith('<'): # 既にHTMLタグの場合はそのまま
+                elif line.startswith('<'):
                     html_body += line
                 else:
                     html_body += f'<p>{line}</p>'
@@ -240,9 +255,9 @@ class Command(BaseCommand):
                             </div>
                         </div>
                         <div style="display:flex; flex-direction:column; gap:12px;">
-                            <a href="{amazon_a8_url}" target="_blank" rel="nofollow" style="display:block; background:#FF9900; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #cc7a00; transition:all 0.2s;">🛒 Amazonで最安値をチェック</a>
-                            <a href="{official_url}" target="_blank" rel="nofollow" style="display:block; background:#e41313; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #b30f0f; transition:all 0.2s;">🏢 公式サイトで購入</a>
-                            <a href="{bic_url}" style="display:block; background:#2563eb; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #1d4ed8; transition:all 0.2s;">🔍 BicStationで詳細スペックを見る</a>
+                            <a href="{amazon_a8_url}" target="_blank" rel="nofollow" style="display:block; background:#FF9900; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #cc7a00;">🛒 Amazonで最安値をチェック</a>
+                            <a href="{official_url}" target="_blank" rel="nofollow" style="display:block; background:#e41313; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #b30f0f;">🏢 公式サイトで購入</a>
+                            <a href="{bic_url}" style="display:block; background:#2563eb; color:#fff; text-align:center; padding:16px; text-decoration:none; border-radius:12px; font-weight:800; font-size:1.05em; box-shadow:0 4px 0 #1d4ed8;">🔍 BicStationで詳細スペックを見る</a>
                         </div>
                         {a8_pixel}
                     </div>
