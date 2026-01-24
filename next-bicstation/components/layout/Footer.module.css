@@ -1,93 +1,131 @@
+/* --- Footer 全体 --- */
 .footer {
   background: #1a1a1a;
   color: #bbb;
-  padding: 60px 20px;
-  /* borderTop はインラインで siteColor を適用するためここには書きません */
+  padding: 60px 20px 30px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* border-top は Component 側でインラインスタイル (siteColor) として適用 */
 }
 
+/* --- レイアウトコンテナ (3列構成) --- */
 .container {
-  maxWidth: 1100px;
+  max-width: 1100px;
   margin: 0 auto;
   display: grid;
-  gridTemplateColumns: repeat(auto-fit, minmax(280px, 1fr));
+  /* 280pxを下回ると自動で折り返し、最大で3列(1fr)並ぶ設定 */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 40px;
+}
+
+/* --- タイトル関連 --- */
+.siteTitle {
+  color: #fff;
+  margin-bottom: 20px;
+  font-size: 1.2em;
+  font-weight: 800;
+  letter-spacing: 0.05em;
 }
 
 .sectionTitle {
   color: #fff;
-  marginBottom: 20px;
-  fontSize: 1.1em;
-}
-
-.siteTitle {
-  color: #fff;
-  marginBottom: 20px;
-  fontSize: 1.2em;
-}
-
-.description {
-  fontSize: 0.9em;
-  lineHeight: 1.6;
-  color: #888;
-}
-
-.linkList {
-  listStyle: none;
-  padding: 0;
-  fontSize: 0.95em;
-}
-
-.linkItem {
-  marginBottom: 12px;
-}
-
-.linkItem a {
-  color: inherit;
-  textDecoration: none;
-  transition: color 0.2s;
-}
-
-.linkItem a:hover {
-  color: #fff;
+  margin-bottom: 20px;
+  font-size: 1.1em;
+  font-weight: 700;
 }
 
 .brandTitle {
   color: #fff;
-  marginTop: 25px;
-  marginBottom: 12px;
-  fontSize: 1.0em;
+  margin-top: 25px;
+  margin-bottom: 12px;
+  font-size: 1.0em;
+  font-weight: 600;
 }
 
+/* --- テキスト・説明文 --- */
+.description {
+  font-size: 0.9em;
+  line-height: 1.8;
+  color: #888;
+}
+
+.note {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.6;
+  border-left: 2px solid #333;
+  padding-left: 12px;
+}
+
+/* --- ナビゲーションリンク --- */
+.linkList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.95em;
+}
+
+.linkItem {
+  margin-bottom: 12px;
+}
+
+.linkItem a {
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.linkItem a:hover {
+  color: #fff;
+  transform: translateX(4px); /* 少し右にスライドする演出 */
+}
+
+/* --- ブランドグリッド --- */
 .brandGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  fontSize: 0.85em;
-  lineHeight: 1.8;
+  align-items: center;
+  gap: 0 8px; /* 横の隙間のみ */
+  font-size: 0.85em;
+  line-height: 2;
 }
 
 .brandLink {
   color: #888;
-  textDecoration: none;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.brandLink:hover {
+  color: #fff;
 }
 
 .brandSeparator {
   color: #444;
+  user-select: none;
 }
 
-.note {
-  marginTop: 20px;
-  fontSize: 0.8rem;
-  color: #666;
-  lineHeight: 1.5;
-}
-
+/* --- 下部コピーライト --- */
 .bottomBar {
-  maxWidth: 1100px;
+  max-width: 1100px;
   margin: 40px auto 0;
-  paddingTop: 20px;
-  borderTop: 1px solid #333;
-  textAlign: center;
-  fontSize: 0.85em;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+  text-align: center;
+  font-size: 0.85em;
   color: #666;
+}
+
+/* --- モバイル最適化 --- */
+@media (max-width: 600px) {
+  .footer {
+    padding: 40px 20px 20px;
+  }
+  .container {
+    gap: 30px;
+  }
+  .siteTitle, .sectionTitle {
+    margin-bottom: 15px;
+  }
 }
