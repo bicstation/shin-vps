@@ -17,7 +17,10 @@ from django.core.files.temp import NamedTemporaryFile
 API_KEYS = [
     os.getenv("GEMINI_API_KEY_0") or os.getenv("GEMINI_API_KEY"), # 既存のキー
     os.getenv("GEMINI_API_KEY_1"),                                # 新しいキー
-    os.getenv("GEMINI_API_KEY_2")                                # 新しいキー
+    os.getenv("GEMINI_API_KEY_2"),                                # 新しいキー
+    os.getenv("GEMINI_API_KEY_3"),                                # 新しいキー
+    os.getenv("GEMINI_API_KEY_4"),                                # 新しいキー
+    os.getenv("GEMINI_API_KEY_5")                                # 新しいキー
 ]
 # 有効なキーのみでサイクルを作成
 VALID_KEYS = [k for k in API_KEYS if k]
