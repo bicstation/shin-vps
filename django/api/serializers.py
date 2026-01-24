@@ -1,9 +1,33 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 from django.utils import timezone
-from .models import AdultProduct, LinkshareProduct, Maker, Genre, Actress, Label, Director, Series 
+from .models import (
+    AdultProduct, LinkshareProduct, Maker, Genre, Actress, 
+    Label, Director, Series, User, ProductComment
+)
 from .models.pc_products import PCProduct, PCAttribute, PriceHistory
 from .models.pc_stats import ProductDailyStats
+
+# --------------------------------------------------------------------------
+# 0. ユーザー & コメント用シリアライザ (新規追加)
+# --------------------------------------------------------------------------
+
+class UserSerializer(serializers.ModelSerializer):
+    """ユーザー情報の取得・更新用"""
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'profile_image', 'bio')
+        read_only_fields = ('id', 'username', 'email')
+
+class ProductCommentSerializer(serializers.ModelSerializer):
+    """製品コメント用。投稿時はログインユーザーを自動紐付け"""
+    user_details = UserSerializer(source='user', read_only=True)
+    created_at = serializers.DateTimeField(format="%Y/%m/%d %H:%M", read_only=True)
+
+    class Meta:
+        model = ProductComment
+        fields = ('id', 'product', 'user', 'user_details', 'rating', 'content', 'created_at')
+        read_only_fields = ('user',) # View側で request.user から設定するため
 
 # --------------------------------------------------------------------------
 # 1. エンティティ（マスターデータ）のシリアライザ
@@ -48,7 +72,6 @@ class PCAttributeSerializer(serializers.ModelSerializer):
 
 # --- 🚀 価格履歴用シリアライザ ---
 class PriceHistorySerializer(serializers.ModelSerializer):
-    # recorded_at を フロントエンドのチャートが扱いやすい "MM/DD" 形式などに変換
     date = serializers.SerializerMethodField()
 
     class Meta:
@@ -60,7 +83,6 @@ class PriceHistorySerializer(serializers.ModelSerializer):
 
 # --- 🚀 注目度・統計推移用シリアライザ ---
 class ProductDailyStatsSerializer(serializers.ModelSerializer):
-    # フロントエンドの page.tsx が期待する "formatted_date" に合わせる
     formatted_date = serializers.DateField(source='date', format="%m/%d")
 
     class Meta:
@@ -108,6 +130,7 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
 
 class PCProductSerializer(serializers.ModelSerializer):
     attributes = PCAttributeSerializer(many=True, read_only=True)
+    comments = ProductCommentSerializer(many=True, read_only=True) # 💬 コメント一覧を追加
     
     # --- カスタムフィールド設定 ---
     price_history = serializers.SerializerMethodField()
@@ -169,6 +192,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             
             # --- ステータス・統計・履歴情報 ---
             'attributes',
+            'comments',      # 💬 ここで製品詳細にコメントを含める
             'price_history', # メソッド経由 (📈 価格推移)
             'stats_history', # メソッド経由 (📉 注目度推移)
             'affiliate_url',
@@ -184,21 +208,16 @@ class PCProductSerializer(serializers.ModelSerializer):
 
     # --- 📈 価格履歴の取得 (直近30日分を日付順で) ---
     def get_price_history(self, obj):
-        # 降順で取得して最新30件を出し、それを昇順（チャート表示用）に並び替え
         histories = PriceHistory.objects.filter(product=obj).order_by('-recorded_at')[:30]
         return PriceHistorySerializer(reversed(histories), many=True).data
 
     # --- 📉 注目度・ランキング履歴の取得 (直近30日分) ---
     def get_stats_history(self, obj):
-        # 直近の統計データを取得
         stats = ProductDailyStats.objects.filter(product=obj).order_by('-date')[:30]
         return ProductDailyStatsSerializer(reversed(stats), many=True).data
 
     # --- 📊 レーダーチャート用データの整形 ---
     def get_radar_chart(self, obj):
-        """
-        フロントエンドの Recharts 等でそのまま map 回せる形式
-        """
         return [
             {"subject": "CPU性能", "value": obj.score_cpu or 0, "fullMark": 100},
             {"subject": "GPU性能", "value": obj.score_gpu or 0, "fullMark": 100},

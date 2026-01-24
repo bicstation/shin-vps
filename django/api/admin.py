@@ -7,12 +7,13 @@ from django.core.management import call_command
 from django.http import HttpResponseRedirect
 from django.urls import path
 from django.contrib import messages
+from django.contrib.auth.admin import UserAdmin
 
 # モデルのインポート
 from .models import (
     RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series,
-    PCAttribute 
+    PCAttribute, User, ProductComment  # 👤 User と ProductComment を追加
 )
 # 🚀 PC製品、価格履歴、そして新しい統計モデルをインポート
 from .models.pc_products import PCProduct, PriceHistory
@@ -41,15 +42,57 @@ class ProductDailyStatsInline(admin.TabularInline):
     extra = 0
     ordering = ('-date',)
     readonly_fields = ('date', 'pv_count', 'daily_rank', 'ranking_score')
-    can_delete = False # 統計データは手動削除させない
-    
-    # 統計データが多いと重くなるのでページネーション的な制限（直近30件など）が理想だが
-    # Django AdminのInlineにはmax_numがないため、表示専用として割り切る
     def has_add_permission(self, request, obj=None):
         return False # 手動追加は不可
 
+# 👤 ユーザー詳細画面でコメント履歴を確認できるインライン
+class ProductCommentInline(admin.TabularInline):
+    model = ProductComment
+    extra = 0
+    fields = ('product', 'rating', 'content', 'created_at')
+    readonly_fields = ('created_at',)
+
 # ----------------------------------------------------
-# 1. PCAttribute (スペック属性) のAdminクラス
+# 1. User (カスタムユーザー) のAdminクラス
+# ----------------------------------------------------
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    """プロフ画像や自己紹介を含めたカスタムユーザー管理"""
+    list_display = ('username', 'email', 'is_staff', 'display_profile_image')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
+    search_fields = ('username', 'email')
+    inlines = [ProductCommentInline] # ユーザーが書いたコメントを一覧表示
+
+    # 詳細画面に独自フィールドを追加
+    fieldsets = UserAdmin.fieldsets + (
+        ('追加情報', {'fields': ('profile_image', 'bio')}),
+    )
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        ('追加情報', {'fields': ('profile_image', 'bio')}),
+    )
+
+    def display_profile_image(self, obj):
+        if obj.profile_image:
+            return mark_safe(f'<img src="{obj.profile_image.url}" width="30" height="30" style="border-radius: 50%;" />')
+        return "No Image"
+    display_profile_image.short_description = "画像"
+
+# ----------------------------------------------------
+# 1.1 ProductComment (製品コメント) のAdminクラス
+# ----------------------------------------------------
+@admin.register(ProductComment)
+class ProductCommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'product', 'rating', 'content_summary', 'created_at')
+    list_filter = ('rating', 'created_at')
+    search_fields = ('content', 'user__username', 'product__name')
+    readonly_fields = ('created_at',)
+
+    def content_summary(self, obj):
+        return obj.content[:30] + "..." if len(obj.content) > 30 else obj.content
+    content_summary.short_description = "コメント内容"
+
+# ----------------------------------------------------
+# 1.2 PCAttribute (スペック属性) のAdminクラス
 # ----------------------------------------------------
 @admin.register(PCAttribute)
 class PCAttributeAdmin(admin.ModelAdmin):
@@ -138,7 +181,7 @@ class PCProductAdmin(admin.ModelAdmin):
             'fields': (
                 ('os_support', 'is_download'),
                 ('license_term', 'device_count'),
-                'edition',
+                ('edition',),
             ),
         }),
         ('🚀 レーダーチャート性能解析 (1-100)', {
@@ -147,7 +190,7 @@ class PCProductAdmin(admin.ModelAdmin):
                 ('score_cpu', 'score_gpu'),
                 ('score_cost', 'score_portable'),
                 ('score_ai', 'spec_score'),
-                'target_segment',
+                ('target_segment',),
             ),
         }),
         ('AI解析スペック詳細（ハードウェア）', {
@@ -156,7 +199,7 @@ class PCProductAdmin(admin.ModelAdmin):
                 ('cpu_model', 'gpu_model'),
                 ('memory_gb', 'storage_gb'),
                 ('display_info', 'is_ai_pc'),
-                'npu_tops',
+                ('npu_tops',),
             ),
         }),
         ('自作PC提案用データ（AI推論）', {

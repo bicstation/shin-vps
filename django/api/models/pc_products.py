@@ -1,7 +1,32 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/models/pc_products.py
 from django.db import models
 from django.utils.timezone import now
+from django.contrib.auth.models import AbstractUser
 
+# ==========================================
+# 1. ユーザー管理モデル
+# ==========================================
+class User(AbstractUser):
+    """
+    カスタムユーザーモデル
+    標準のユーザー機能にプロフィール画像や自己紹介を追加
+    """
+    profile_image = models.ImageField('プロフィール画像', upload_to='profiles/', null=True, blank=True)
+    bio = models.TextField('自己紹介', max_length=500, blank=True)
+    is_pc_enthusiast = models.BooleanField('PC愛好家フラグ', default=False)
+
+    class Meta:
+        verbose_name = 'ユーザー'
+        verbose_name_plural = 'ユーザー一覧'
+
+    def __str__(self):
+        return self.username
+
+
+# ==========================================
+# 2. マスター・製品モデル
+# ==========================================
 class PCAttribute(models.Model):
     """
     CPU、メモリ、NPUなどのスペック情報、およびソフトのライセンス形態などを管理するマスターモデル
@@ -40,7 +65,6 @@ class PCAttribute(models.Model):
 class PCProduct(models.Model):
     """
     PC製品およびソフトウェア・周辺機器を管理する汎用モデル
-    既存のカラムを完全維持しつつ、レーダーチャート用スコアおよび解析カラムを統合
     """
     # === 1. 既存カラム（基本情報） ===
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
@@ -121,7 +145,6 @@ class PCProduct(models.Model):
     def __str__(self):
         return f"[{self.maker}] {self.name[:30]}"
 
-    # 保存時の自動処理
     def save(self, *args, **kwargs):
         # 1. 統合ジャンルのフォールバック
         if not self.unified_genre and self.raw_genre:
@@ -151,6 +174,9 @@ class PCProduct(models.Model):
         super().save(*args, **kwargs)
 
 
+# ==========================================
+# 3. 履歴・アクションモデル
+# ==========================================
 class PriceHistory(models.Model):
     """
     製品の価格変動を記録するモデル
@@ -171,3 +197,32 @@ class PriceHistory(models.Model):
 
     def __str__(self):
         return f"{self.product.name[:20]} - {self.price}円 ({self.recorded_at.strftime('%Y/%m/%d')})"
+
+
+class ProductComment(models.Model):
+    """
+    製品に対するユーザーのコメント・レビュー
+    """
+    product = models.ForeignKey(
+        'api.PCProduct',
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name="対象製品"
+    )
+    user = models.ForeignKey(
+        'api.User',
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name="投稿ユーザー"
+    )
+    content = models.TextField('コメント内容')
+    rating = models.IntegerField('評価(1-5)', default=5)
+    created_at = models.DateTimeField('投稿日', auto_now_add=True)
+
+    class Meta:
+        verbose_name = '製品コメント'
+        verbose_name_plural = '製品コメント一覧'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name[:20]}"

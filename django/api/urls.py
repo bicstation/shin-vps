@@ -3,6 +3,10 @@
 
 from django.urls import path
 from . import views
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     # -----------------------------------------------------------
@@ -16,13 +20,23 @@ urlpatterns = [
     path('status/', views.status_check, name='status_check'),
     
     # -----------------------------------------------------------
-    # 2. アダルト商品データ エンドポイント (AdultProduct)
+    # 2. 認証・ユーザー関連 (User) - 新設
+    # -----------------------------------------------------------
+    # 💡 JWTログイン: ID/PWを送信してトークンを取得
+    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # 💡 トークン更新: 期限切れのアクセストークンを更新
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # 💡 自分のプロフィール取得・更新
+    path('auth/me/', views.UserProfileView.as_view(), name='user_me'),
+    
+    # -----------------------------------------------------------
+    # 3. アダルト商品データ エンドポイント (AdultProduct)
     # -----------------------------------------------------------
     path('adults/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
     path('adults/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # -----------------------------------------------------------
-    # 3. PC・ソフトウェア製品データ エンドポイント (PCProduct)
+    # 4. PC・ソフトウェア製品データ エンドポイント (PCProduct)
     # -----------------------------------------------------------
     # GET /api/pc-products/
     # 💡 フィルタ（cpu_socket, maker, unified_genre等）を適用して一覧を取得
@@ -32,7 +46,7 @@ urlpatterns = [
     # 🏆 AI解析スコア(spec_score)が高い順に取得（スペック最強ランキング）
     path('pc-products/ranking/', views.PCProductRankingView.as_view(), name='pc_product_ranking'),
 
-    # 🚀 【新設】GET /api/pc-products/popularity-ranking/
+    # 🚀 GET /api/pc-products/popularity-ranking/
     # 🔥 注目度（PV数）が高い順に取得（トレンドランキング・ベスト100）
     path('pc-products/popularity-ranking/', views.PCProductPopularityRankingView.as_view(), name='pc_product_popularity_ranking'),
 
@@ -52,18 +66,21 @@ urlpatterns = [
     # 📈 特定製品の価格推移データを取得（グラフ表示用）
     path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
 
-    # 📉 注目度ランキング・PV数の推移データを取得（グラフ表示用）
-    # ※ views.py に stats_history 取得関数が定義されていることを前提としています
-    # path('pc-products/<str:unique_id>/stats-history/', views.pc_product_stats_history, name='pc_product_stats_history'),
+    # -----------------------------------------------------------
+    # 5. コメント投稿 エンドポイント (ProductComment) - 新設
+    # -----------------------------------------------------------
+    # POST /api/comments/ 
+    # 💡 ログインユーザーとしてコメントを新規作成
+    path('comments/', views.ProductCommentCreateView.as_view(), name='comment_create'),
 
     # -----------------------------------------------------------
-    # 4. Linkshare商品データ エンドポイント (LinkshareProduct)
+    # 6. Linkshare商品データ エンドポイント (LinkshareProduct)
     # -----------------------------------------------------------
     path('linkshare/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_list'),
     path('linkshare/<str:sku>/', views.LinkshareProductDetailAPIView.as_view(), name='linkshare_product_detail'),
 
     # -----------------------------------------------------------
-    # 5. マスターデータ (仕分け項目) エンドポイント
+    # 7. マスターデータ (仕分け項目) エンドポイント
     # -----------------------------------------------------------
     path('actresses/', views.ActressListAPIView.as_view(), name='actress_list'),
     path('genres/', views.GenreListAPIView.as_view(), name='genre_list'),

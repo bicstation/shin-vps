@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.http import JsonResponse
-from rest_framework import generics, filters, pagination
+from rest_framework import generics, filters, pagination, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from django.db.models import Count, F, Max
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -24,7 +24,9 @@ from .serializers import (
     MakerSerializer,
     LabelSerializer,
     DirectorSerializer,
-    SeriesSerializer
+    SeriesSerializer,
+    UserSerializer,          # 👤 追加
+    ProductCommentSerializer # 💬 追加
 )
 
 # モデルのインポート
@@ -36,7 +38,9 @@ from .models import (
     Maker, 
     Label, 
     Director, 
-    Series
+    Series,
+    User,           # 👤 追加
+    ProductComment  # 💬 追加
 )
 # PC製品モデル & 統計モデル
 from .models.pc_products import PCProduct, PCAttribute, PriceHistory
@@ -57,6 +61,11 @@ def api_root(request):
         "message": "Welcome to Tiper API Gateway", 
         "endpoints": {
             "status": "/api/status/",
+            "auth": {
+                "login": "/api/auth/login/",
+                "refresh": "/api/auth/refresh/",
+                "me": "/api/auth/me/"
+            },
             "products": {
                 "pc_products_list": "/api/pc-products/", 
                 "pc_ranking": "/api/pc-products/ranking/",
@@ -68,6 +77,9 @@ def api_root(request):
                 "pc_stats_history": "/api/pc-products/{unique_id}/stats-history/",
                 "adult_products_list": "/api/adults/",
                 "linkshare_products_list": "/api/linkshare/",
+            },
+            "comments": {
+                "create": "/api/comments/"
             }
         }
     }, status=200)
@@ -76,7 +88,29 @@ def status_check(request):
     return JsonResponse({"status": "API is running"}, status=200)
 
 # --------------------------------------------------------------------------
-# 1. アダルト商品データ API
+# 1. ユーザー & コメント API (新規追加)
+# --------------------------------------------------------------------------
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    """ログイン中のユーザー情報を取得・更新する"""
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+class ProductCommentCreateView(generics.CreateAPIView):
+    """製品へのコメントを投稿する"""
+    queryset = ProductComment.objects.all()
+    serializer_class = ProductCommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # 投稿者を現在のログインユーザーに固定する
+        serializer.save(user=self.request.user)
+
+# --------------------------------------------------------------------------
+# 2. アダルト商品データ API
 # --------------------------------------------------------------------------
 class AdultProductListAPIView(generics.ListAPIView):
     queryset = AdultProduct.objects.all().prefetch_related(
@@ -100,7 +134,7 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
 
 # --------------------------------------------------------------------------
-# 2. PC製品データ API
+# 3. PC製品データ API
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
     serializer_class = PCProductSerializer
@@ -112,7 +146,7 @@ class PCProductListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = PCProduct.objects.filter(is_active=True).prefetch_related(
-            'attributes', 'daily_stats'
+            'attributes', 'daily_stats', 'comments__user' # 💬 コメントも一括取得
         )
         maker = self.request.query_params.get('maker')
         if maker:
@@ -120,7 +154,7 @@ class PCProductListAPIView(generics.ListAPIView):
         return queryset.order_by('-updated_at')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = PCProduct.objects.all().prefetch_related('attributes', 'daily_stats')
+    queryset = PCProduct.objects.all().prefetch_related('attributes', 'daily_stats', 'comments__user')
     serializer_class = PCProductSerializer
     lookup_field = 'unique_id'
 
@@ -180,13 +214,8 @@ def pc_product_price_history(request, unique_id):
 
 @api_view(['GET'])
 def pc_product_stats_history(request, unique_id):
-    """
-    📈 特定製品の「注目度(PV)」の推移データを取得（グラフ表示用）
-    """
     product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
-    # 直近30日分の統計を取得
     stats = ProductDailyStats.objects.filter(product=product).order_by('-date')[:30]
-    # 時系列順（古い順）に並べ替え
     stats_list = sorted(list(stats), key=lambda x: x.date)
 
     data = {
@@ -201,7 +230,6 @@ def pc_product_stats_history(request, unique_id):
 # --------------------------------------------------------------------------
 
 class PCProductRankingView(generics.ListAPIView):
-    """スペック性能(spec_score)順のランキング"""
     serializer_class = PCProductSerializer
     pagination_class = None 
 
@@ -216,10 +244,6 @@ class PCProductRankingView(generics.ListAPIView):
         ).prefetch_related('attributes', 'daily_stats').order_by('-spec_score')[:1000]
 
 class PCProductPopularityRankingView(generics.ListAPIView):
-    """
-    🔥 注目度ランキング (PV数ベース)
-    直近の最大PV数が多い順にベスト100を返す
-    """
     serializer_class = PCProductSerializer
     pagination_class = None
 
@@ -231,7 +255,7 @@ class PCProductPopularityRankingView(generics.ListAPIView):
         ).prefetch_related('attributes', 'daily_stats').order_by('-latest_pv', '-spec_score')[:100]
 
 # --------------------------------------------------------------------------
-# 3. Linkshare & マスターデータ
+# 4. Linkshare & マスターデータ
 # --------------------------------------------------------------------------
 class LinkshareProductListAPIView(generics.ListAPIView): 
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')
