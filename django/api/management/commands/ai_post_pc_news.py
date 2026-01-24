@@ -17,7 +17,8 @@ from api.models import PCProduct
 # === API設定 (2つのキーを読み込み) ===
 API_KEYS = [
     os.getenv("GEMINI_API_KEY_0") or os.getenv("GEMINI_API_KEY"), # 既存のキー
-    os.getenv("GEMINI_API_KEY_1")                                # 新しいキー
+    os.getenv("GEMINI_API_KEY_1") ,                             # 新しいキー
+    os.getenv("GEMINI_API_KEY_2")  
 ]
 VALID_KEYS = [k for k in API_KEYS if k]
 key_cycle = itertools.cycle(VALID_KEYS)
