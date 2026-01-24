@@ -5,7 +5,7 @@
 # 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
 # 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
 # 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
-#    変更するとシステム全体が崩壊します。
+#     変更するとシステム全体が崩壊します。
 # =====================================================================
 
 services:
@@ -94,7 +94,8 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - /var/lib/mysql
+      # 🛠 重要修正: 匿名ボリュームからホスト側の物理ディレクトリへのマウントに変更
+      - /home/maya/docker_volumes/mysql:/var/lib/mysql
     networks:
       - internal-net
     healthcheck:
@@ -129,7 +130,7 @@ services:
       - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
       - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
       - "ofelia.job-exec.ai_rss_news_post.no-overlap=true"
-      # 【新規追加】自動データ更新スクリプト (4時間おき 45分に実行)
+      # 自動データ更新スクリプト (4時間おき 45分に実行)
       - "ofelia.job-exec.auto_daily_update.schedule=0 45 */4 * * *"
       - "ofelia.job-exec.auto_daily_update.command=/usr/src/app/scripts/auto_daily_update.sh"
       - "ofelia.job-exec.auto_daily_update.no-overlap=true"
@@ -164,7 +165,6 @@ services:
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
       - "traefik.http.routers.bicstation-router.priority=100"
       - "traefik.http.services.bicstation-svc.loadbalancer.server.port=3000"
-      # note: update_sitemap は django-v2 側のスクリプトに含まれるため、ここでは enabled=true のみ残しジョブは削除します
       - "ofelia.enabled=true"
 
   next-tiper-v2:
