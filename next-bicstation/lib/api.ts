@@ -245,7 +245,7 @@ export async function fetchPCProductRanking(): Promise<PCProduct[]> {
     try {
         const res = await fetch(url, {
             headers: { 'Host': 'localhost' },
-            cache: 'no-store', // ランキングは常に最新の状態を保つ
+            cache: 'no-store',
             next: { revalidate: 0 }
         });
 
@@ -255,10 +255,38 @@ export async function fetchPCProductRanking(): Promise<PCProduct[]> {
         }
 
         const data = await res.json();
-        // RankingViewは pagination_class = None のため、直で配列が返る想定
         return Array.isArray(data) ? data : (data.results || []);
     } catch (e) {
         console.error(`[Ranking API ERROR]:`, e);
+        return [];
+    }
+}
+
+/**
+ * 🔥 [Django API] 注目度ランキング取得 (PV数ベース)
+ * 今リアルタイムで注目されている製品の上位を取得します。
+ */
+export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
+    const rootUrl = getDjangoBaseUrl();
+    const url = `${rootUrl}/api/pc-products/popularity-ranking/`;
+
+    try {
+        const res = await fetch(url, {
+            headers: { 'Host': 'localhost' },
+            cache: 'no-store',
+            next: { revalidate: 0 }
+        });
+
+        if (!res.ok) {
+            console.error(`[Django Popularity Ranking API Error]: Status ${res.status}`);
+            return [];
+        }
+
+        const data = await res.json();
+        // PopularityRankingViewは pagination_class = None のため、直で配列が返る想定
+        return Array.isArray(data) ? data : (data.results || []);
+    } catch (e) {
+        console.error(`[Popularity Ranking API ERROR]:`, e);
         return [];
     }
 }

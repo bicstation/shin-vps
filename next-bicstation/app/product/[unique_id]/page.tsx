@@ -93,6 +93,12 @@ export default async function ProductDetailPage(props: PageProps) {
     const { tocItems, summary, cleanBody } = parseContent(product.ai_content || "");
     const today = new Date().toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
 
+    // 🚀 ランキング履歴データの整形 (Recharts用)
+    const formattedRankHistory = p.stats_history?.map((s: any) => ({
+        date: s.formatted_date,
+        price: s.daily_rank // PriceHistoryChartを再利用するためkeyを統一
+    })) || [];
+
     return (
         <div className={styles.wrapper}>
             <main className={styles.mainContainer}>
@@ -174,16 +180,16 @@ export default async function ProductDetailPage(props: PageProps) {
                 {!isSoftware && (
                     <div className={styles.rankHistorySection}>
                         <h3 className={styles.chartTitle}>注目度ランキング推移</h3>
-                        {p.rank_history && p.rank_history.length > 0 ? (
+                        {formattedRankHistory.length > 0 ? (
                             <div className={styles.rankChartWrapper}>
-                                <PriceHistoryChart history={p.rank_history} isRank={true} />
+                                <PriceHistoryChart history={formattedRankHistory} isRank={true} />
                             </div>
                         ) : (
                             <div className={styles.noDataPlaceholder}>
                                 {currentRank > 0 ? `現在 ${currentRank}位 / 順位データを蓄積中です` : "ランキング解析中です"}
                             </div>
                         )}
-                        <p className={styles.rankNotice}>※ BICSTATION内での人気度・比較回数に基づく独自のリアルタイムランキング推移</p>
+                        <p className={styles.rankNotice}>※ BICSTATION内での人気度・比較回数に基づく独自のリアルタイムランキング推移（順位が上ほど高評価）</p>
                     </div>
                 )}
 

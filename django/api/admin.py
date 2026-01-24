@@ -14,7 +14,9 @@ from .models import (
     Genre, Actress, Maker, Label, Director, Series,
     PCAttribute 
 )
+# 🚀 PC製品、価格履歴、そして新しい統計モデルをインポート
 from .models.pc_products import PCProduct, PriceHistory
+from .models.pc_stats import ProductDailyStats
 
 # ----------------------------------------------------
 # 0. カスタムフォーム & インライン
@@ -31,6 +33,20 @@ class PriceHistoryInline(admin.TabularInline):
     ordering = ('-recorded_at',)
     readonly_fields = ('recorded_at',)
     can_delete = True
+
+# 🚀 注目度・ランキング統計のインライン表示
+class ProductDailyStatsInline(admin.TabularInline):
+    """PC製品の詳細画面で日次アクセス統計を確認できるインライン"""
+    model = ProductDailyStats
+    extra = 0
+    ordering = ('-date',)
+    readonly_fields = ('date', 'pv_count', 'daily_rank', 'ranking_score')
+    can_delete = False # 統計データは手動削除させない
+    
+    # 統計データが多いと重くなるのでページネーション的な制限（直近30件など）が理想だが
+    # Django AdminのInlineにはmax_numがないため、表示専用として割り切る
+    def has_add_permission(self, request, obj=None):
+        return False # 手動追加は不可
 
 # ----------------------------------------------------
 # 1. PCAttribute (スペック属性) のAdminクラス
@@ -64,8 +80,8 @@ class PCProductAdmin(admin.ModelAdmin):
     # テンプレートパスを指定
     change_list_template = "admin/api/pcproduct/change_list.html"
     
-    # 履歴をインライン表示
-    inlines = [PriceHistoryInline]
+    # 🚀 履歴をインライン表示（価格履歴 + 注目度統計）
+    inlines = [PriceHistoryInline, ProductDailyStatsInline]
 
     # 一覧画面の表示項目 (ベスト1000管理用に spec_score を追加)
     list_display = (

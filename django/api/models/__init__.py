@@ -10,5 +10,7 @@ from .linkshare_api_product import LinkshareApiProduct
 from .bc_linkshare_products import BcLinkshareProduct
 
 # 💡 PC製品用モデルと、属性モデル、価格履歴モデルをインポート
-# ここに含めることで makemigrations が正常に動作します
 from .pc_products import PCProduct, PCAttribute, PriceHistory
+
+# 🚀 【追記】ランキング推移・統計用モデルを追加
+from .pc_stats import ProductDailyStats

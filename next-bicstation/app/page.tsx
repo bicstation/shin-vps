@@ -10,7 +10,13 @@ import Sidebar from '@/components/layout/Sidebar';
 import Pagination from '@/components/common/Pagination';
 import RadarChart from '@/components/RadarChart'; 
 import ProductCard from '@/components/product/ProductCard';
-import { fetchPostList, fetchPCProducts, fetchMakers, fetchPCProductRanking } from '@/lib/api'; 
+import { 
+    fetchPostList, 
+    fetchPCProducts, 
+    fetchMakers, 
+    fetchPCProductRanking,
+    fetchPCPopularityRanking // 🔥 新しく追加
+} from '@/lib/api'; 
 import styles from './MainPage.module.css';
 
 interface PageProps {
@@ -22,18 +28,22 @@ export default async function Page({ searchParams }: PageProps) {
     const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     const currentOffset = parseInt(offsetStr || '0', 10);
-    const limit = 12;
+    const limit = 15;
 
-    // 💡 データの並列取得
-    const [wpData, pcData, makersData, rankingData] = await Promise.all([
+    // 💡 データの並列取得（注目度ランキングを追加）
+    const [wpData, pcData, makersData, rankingData, popularityData] = await Promise.all([
         fetchPostList(20), 
         fetchPCProducts('', currentOffset, limit, attribute || ''), 
         fetchMakers(),
-        fetchPCProductRanking()
+        fetchPCProductRanking(),
+        fetchPCPopularityRanking() // 🔥 PV数ベースのデータを取得
     ]);
 
-    // ランキングTOP3
+    // スペックランキング TOP 3
     const topThree = rankingData.slice(0, 3);
+
+    // 🔥 注目度ランキング TOP 3
+    const trendTopThree = popularityData.slice(0, 3);
     
     // ブログ記事の振り分け
     const allPosts = wpData.results || [];
@@ -72,7 +82,7 @@ export default async function Page({ searchParams }: PageProps) {
                     </h1>
                 </header>
 
-                {/* 🏆 ランキングセクション */}
+                {/* 🏆 AIスペックランキングセクション (既存) */}
                 {!attribute && currentOffset === 0 && (
                     <section className={styles.rankingSection}>
                         <div className={styles.sectionHeader}>
@@ -106,6 +116,45 @@ export default async function Page({ searchParams }: PageProps) {
                                             </div>
                                             <Link href={`/product/${product.unique_id}`} className={styles.detailButton}>
                                                 解析詳細
+                                            </Link>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
+
+                {/* 🔥 【新設】注目度ランキングセクション */}
+                {!attribute && currentOffset === 0 && (
+                    <section className={`${styles.rankingSection} ${styles.popularityBg}`}>
+                        <div className={styles.sectionHeader}>
+                            <h2 className={styles.sectionTitle}>
+                                <span className={styles.emoji}>🔥</span> 注目度ランキング TOP 3
+                            </h2>
+                            <Link href="/ranking/popularity/" className={styles.rankingLink}>すべて見る →</Link>
+                        </div>
+                        
+                        <div className={styles.topThreeGrid}>
+                            {trendTopThree.map((product, index) => {
+                                const rank = index + 1;
+                                return (
+                                    <div key={`trend-${product.unique_id}`} className={`${styles.topThreeCard} ${styles.trendCard}`}>
+                                        <div className={`${styles.rankBadge} ${styles.trendBadge}`}>{rank}位</div>
+                                        <div className={styles.topThreeImage}>
+                                            <img src={product.image_url || '/no-image.png'} alt={product.name} />
+                                        </div>
+                                        <div className={styles.topThreeContent}>
+                                            <div className={styles.productBaseInfo}>
+                                                <span className={styles.topThreeMaker}>{product.maker}</span>
+                                                <h3 className={styles.topThreeName}>{product.name}</h3>
+                                            </div>
+                                            <div className={styles.trendingInfo}>
+                                                <span className={styles.trendLabel}>今売れてます！</span>
+                                                <div className={styles.trendPrice}>¥{product.price?.toLocaleString()}</div>
+                                            </div>
+                                            <Link href={`/product/${product.unique_id}`} className={styles.detailButton}>
+                                                詳細を見る
                                             </Link>
                                         </div>
                                     </div>

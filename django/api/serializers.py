@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
+from django.utils import timezone
 from .models import AdultProduct, LinkshareProduct, Maker, Genre, Actress, Label, Director, Series 
 from .models.pc_products import PCProduct, PCAttribute, PriceHistory
+from .models.pc_stats import ProductDailyStats
 
 # --------------------------------------------------------------------------
 # 1. エンティティ（マスターデータ）のシリアライザ
@@ -46,11 +48,24 @@ class PCAttributeSerializer(serializers.ModelSerializer):
 
 # --- 🚀 価格履歴用シリアライザ ---
 class PriceHistorySerializer(serializers.ModelSerializer):
-    date = serializers.DateTimeField(source='recorded_at', format="%Y/%m/%d")
+    # recorded_at を フロントエンドのチャートが扱いやすい "MM/DD" 形式などに変換
+    date = serializers.SerializerMethodField()
 
     class Meta:
         model = PriceHistory
         fields = ('date', 'price')
+
+    def get_date(self, obj):
+        return obj.recorded_at.strftime('%m/%d')
+
+# --- 🚀 注目度・統計推移用シリアライザ ---
+class ProductDailyStatsSerializer(serializers.ModelSerializer):
+    # フロントエンドの page.tsx が期待する "formatted_date" に合わせる
+    formatted_date = serializers.DateField(source='date', format="%m/%d")
+
+    class Meta:
+        model = ProductDailyStats
+        fields = ('formatted_date', 'pv_count', 'ranking_score', 'daily_rank')
 
 # --------------------------------------------------------------------------
 # 2. アダルト商品モデル (AdultProductSerializer)
@@ -93,11 +108,11 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
 
 class PCProductSerializer(serializers.ModelSerializer):
     attributes = PCAttributeSerializer(many=True, read_only=True)
-    # --- 🚀 価格履歴をシリアライザに統合 ---
+    
+    # --- カスタムフィールド設定 ---
     price_history = serializers.SerializerMethodField()
-    # --- 🚀 レーダーチャート用データをフロントエンドで使いやすく統合 ---
+    stats_history = serializers.SerializerMethodField()
     radar_chart = serializers.SerializerMethodField()
-    # --- 🚀 フロントエンド表示用のメーカー名 ---
     maker_name = serializers.CharField(source='maker', read_only=True)
 
     class Meta:
@@ -124,70 +139,70 @@ class PCProductSerializer(serializers.ModelSerializer):
             'display_info',
             'npu_tops',
             
-            # --- 🚀 自作PC提案・相性用データ ---
-            'cpu_socket',           # CPUソケット (LGA1700等)
-            'motherboard_chipset',  # 推奨チップセット
-            'ram_type',             # メモリ規格 (DDR5等)
-            'power_recommendation', # 推奨電源容量
+            # --- 自作PC提案・相性用データ ---
+            'cpu_socket',
+            'motherboard_chipset',
+            'ram_type',
+            'power_recommendation',
             
-            # --- ✨ ソフトウェア・ライセンス用データ ---
-            'os_support',           # 対応OS (Windows, macOS等)
-            'license_term',         # ライセンス期間 (1年, 3年等)
-            'device_count',         # 利用可能台数
-            'edition',              # エディション (Standard, Pro等)
-            'is_download',          # ダウンロード版フラグ
+            # --- ソフトウェア・ライセンス用データ ---
+            'os_support',
+            'license_term',
+            'device_count',
+            'edition',
+            'is_download',
             
-            # --- 🚀 レーダーチャート・スコアリング ---
-            'score_cpu',            # CPU点数 (1-100)
-            'score_gpu',            # GPU点数 (1-100)
-            'score_cost',           # コスパ点数 (1-100)
-            'score_portable',       # 携帯性点数 (1-100)
-            'score_ai',             # AI性能点数 (1-100)
-            'radar_chart',          # Recharts等でそのまま使える形式
+            # --- レーダーチャート・スコアリング ---
+            'score_cpu',
+            'score_gpu',
+            'score_cost',
+            'score_portable',
+            'score_ai',
+            'radar_chart', # メソッド経由
             
             # --- AI判定・メタ情報 ---
             'target_segment',
             'is_ai_pc',
-            'spec_score',           # 総合点 (ランキングのソートキー)
-            'ai_summary',           # 記事要約
-            'ai_content',           # 記事本文
+            'spec_score',
+            'ai_summary',
+            'ai_content',
             
-            # --- ステータス・メタ情報 ---
+            # --- ステータス・統計・履歴情報 ---
             'attributes',
-            'price_history',        # 📈 価格履歴フィールド
+            'price_history', # メソッド経由 (📈 価格推移)
+            'stats_history', # メソッド経由 (📉 注目度推移)
             'affiliate_url',
             'affiliate_updated_at',
             'stock_status',
             'is_posted',
             'is_active',
-            'last_spec_parsed_at',  # スペック解析実行日
+            'last_spec_parsed_at',
             'created_at',
             'updated_at',
         )
         read_only_fields = fields
 
-    # --- 📈 直近30件の価格履歴を取得するメソッド ---
+    # --- 📈 価格履歴の取得 (直近30日分を日付順で) ---
     def get_price_history(self, obj):
-        # 古い順に取得（グラフ描画用）
-        histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
-        return PriceHistorySerializer(histories, many=True).data
+        # 降順で取得して最新30件を出し、それを昇順（チャート表示用）に並び替え
+        histories = PriceHistory.objects.filter(product=obj).order_by('-recorded_at')[:30]
+        return PriceHistorySerializer(reversed(histories), many=True).data
 
-    # --- 📊 レーダーチャート用データをフロントエンドで使いやすく整形 ---
+    # --- 📉 注目度・ランキング履歴の取得 (直近30日分) ---
+    def get_stats_history(self, obj):
+        # 直近の統計データを取得
+        stats = ProductDailyStats.objects.filter(product=obj).order_by('-date')[:30]
+        return ProductDailyStatsSerializer(reversed(stats), many=True).data
+
+    # --- 📊 レーダーチャート用データの整形 ---
     def get_radar_chart(self, obj):
         """
-        Next.js側のRecharts等でそのまま流し込める形式の配列を返します。
+        フロントエンドの Recharts 等でそのまま map 回せる形式
         """
-        # 値がNoneの場合は0として扱う
-        s_cpu = obj.score_cpu or 0
-        s_gpu = obj.score_gpu or 0
-        s_cost = obj.score_cost or 0
-        s_port = obj.score_portable or 0
-        s_ai = obj.score_ai or 0
-
         return [
-            {"subject": "CPU性能", "value": s_cpu, "fullMark": 100},
-            {"subject": "GPU性能", "value": s_gpu, "fullMark": 100},
-            {"subject": "コスパ", "value": s_cost, "fullMark": 100},
-            {"subject": "携帯性", "value": s_port, "fullMark": 100},
-            {"subject": "AI性能", "value": s_ai, "fullMark": 100},
+            {"subject": "CPU性能", "value": obj.score_cpu or 0, "fullMark": 100},
+            {"subject": "GPU性能", "value": obj.score_gpu or 0, "fullMark": 100},
+            {"subject": "コスパ", "value": obj.score_cost or 0, "fullMark": 100},
+            {"subject": "携帯性", "value": obj.score_portable or 0, "fullMark": 100},
+            {"subject": "AI性能", "value": obj.score_ai or 0, "fullMark": 100},
         ]
