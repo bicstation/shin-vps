@@ -148,7 +148,8 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attrib
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            cache: 'no-store'
+            // cache: 'no-store'
+            next: { revalidate: 3600 } // 1時間はキャッシュを利用（その間は爆速）
         });
 
         if (!res.ok) {
