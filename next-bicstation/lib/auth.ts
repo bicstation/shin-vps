@@ -53,14 +53,22 @@ export async function loginUser(username: string, password: string): Promise<Aut
   const data: AuthTokenResponse = await response.json();
   
   if (data.access && typeof window !== 'undefined') {
+    // トークンの保存
     localStorage.setItem('access_token', data.access);
     localStorage.setItem('refresh_token', data.refresh);
     
+    // ロールの保存
     if (data.user?.site_group) {
       localStorage.setItem('user_role', data.user.site_group);
     } else {
       localStorage.setItem('user_role', site_group);
     }
+
+    /* 🚀 ログイン成功後のリダイレクト
+     next.config.js の basePath が "/bicstation" の場合、
+     "/" は自動的に "https://bicstation.com/bicstation/" として処理されます。
+    */
+    window.location.href = "/"; 
   }
 
   return data;
@@ -95,7 +103,6 @@ export async function registerUser(username: string, email: string, password: st
 
 /**
  * 💡 ログアウト処理
- * 🚀 修正ポイント: URLから直接プレフィックスを特定してリダイレクトします
  */
 export function logoutUser(): void {
   if (typeof window !== 'undefined') {
@@ -104,17 +111,9 @@ export function logoutUser(): void {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
 
-    // 🚀 2. URLから直接プレフィックス（/bicstationなど）を取得
-    // siteConfigに頼らず、現在のブラウザのパスから確実に抽出します
-    const pathSegments = window.location.pathname.split('/').filter(Boolean);
-    const sitePrefix = pathSegments.length > 0 ? `/${pathSegments[0]}` : '';
-    
-    // sitePrefix が "/bicstation" なら "/bicstation/login" へ
-    const redirectPath = `${sitePrefix}/login`;
-
-    console.log("Logout redirect to:", redirectPath);
-    
-    // 強制リロード遷移で状態を完全にクリア
-    window.location.href = redirectPath;
+    /* 🚀 ログアウト後のリダイレクト
+     basePath が有効な場合、"/login/" は自動的に "/bicstation/login/" になります。
+    */
+    window.location.href = "/login/";
   }
 }

@@ -1,17 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 💡 NEXT_PUBLIC_BASE_PATH がセットされていない場合のデフォルトを '/bicstation' にするか
-  // もしくは環境変数に確実に含めてください
+  // 🚀 本番(VPS)では '/bicstation'、ローカルでは '' (空) になるよう環境変数で制御
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
+  // 末尾スラッシュを統一（SEOおよびパス解決の安定化）
   trailingSlash: true,
 
-  // 🛑 注意：env セクションで NEXT_PUBLIC_... を再定義すると、
-  // .env や Docker の引数が無視される原因になるため、ここからは削除を推奨します。
-  env: {
-    API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000',
-    // NEXT_PUBLIC_API_URL は自動的に読み込まれるので、ここには書かないのが安全です
-  },
+  // Docker環境での動作を最適化
+  output: 'standalone', 
+  reactStrictMode: true,
 
   images: {
     remotePatterns: [
@@ -21,8 +18,10 @@ const nextConfig = {
     ],
   },
 
-  output: 'standalone', 
-  reactStrictMode: true,
+  // クライアント・サーバー両方で参照する変数
+  env: {
+    API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000',
+  },
 };
 
 export default nextConfig;

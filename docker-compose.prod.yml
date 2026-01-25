@@ -5,7 +5,7 @@
 # 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
 # 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
 # 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
-#     変更するとシステム全体が崩壊します。
+#    変更するとシステム全体が崩壊します。
 # =====================================================================
 
 services:
@@ -94,7 +94,6 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      # 🛠 重要修正: 匿名ボリュームからホスト側の物理ディレクトリへのマウントに変更
       - /home/maya/docker_volumes/mysql:/var/lib/mysql
     networks:
       - internal-net
@@ -122,15 +121,12 @@ services:
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
       - "ofelia.enabled=true"
-      # AIブログ投稿 (30分おき)
       - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
       - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
       - "ofelia.job-exec.ai_blog_post.no-overlap=true"
-      # PCニュース投稿 (2時間おき)
       - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
       - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
       - "ofelia.job-exec.ai_rss_news_post.no-overlap=true"
-      # 自動データ更新スクリプト (4時間おき 45分に実行)
       - "ofelia.job-exec.auto_daily_update.schedule=0 45 */4 * * *"
       - "ofelia.job-exec.auto_daily_update.command=/usr/src/app/scripts/auto_daily_update.sh"
       - "ofelia.job-exec.auto_daily_update.no-overlap=true"
@@ -151,6 +147,7 @@ services:
       args:
         - NODE_ENV=production
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_BASE_PATH=/bicstation
     container_name: next-bicstation-v2
     restart: always
     networks: [internal-net, shared-proxy]
@@ -158,6 +155,7 @@ services:
       - .env
     environment:
       - DJANGO_API_URL=http://django-v2:8000
+      - NEXT_PUBLIC_BASE_PATH=/bicstation
     volumes:
       - sitemap_data:/app/public/sitemap_gen
       - ./django:/usr/src/app:ro
