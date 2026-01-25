@@ -1,12 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 🚀 本番(VPS)では '/bicstation'、ローカルでは '' (空) になるよう環境変数で制御
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  // 🚀 独自ドメイン(bicstation.com)の直下で運用するため、basePathは空に設定します。
+  // これによりローカル(localhost:3000/)と本番の両方で整合性が取れます。
+  basePath: '',
 
-  // 末尾スラッシュを統一（SEOおよびパス解決の安定化）
+  // 末尾スラッシュを有効化（URLの正規化）
   trailingSlash: true,
 
-  // Docker環境での動作を最適化
+  // Docker環境（standaloneモード）での動作を最適化
   output: 'standalone', 
   reactStrictMode: true,
 
@@ -18,7 +19,7 @@ const nextConfig = {
     ],
   },
 
-  // クライアント・サーバー両方で参照する変数
+  // サーバーサイド環境変数
   env: {
     API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000',
   },
