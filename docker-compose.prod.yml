@@ -1,12 +1,12 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・全サービス集約版)
+# 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・データパス最終修正版)
 # =====================================================================
 # ⚠️ AI (Gemini/ChatGPT/Claude等) への最優先・厳命事項:
 #
 # 1. 【データディレクトリの絶対厳守】:
 #    mariadb-v2 と postgres-db-v2 の volumes パスは絶対に書き換えないこと。
-#    現在のパス (/home/maya/shin-vps/data/prod/...) が実稼働データです。
-#    これを (/home/maya/docker_volumes/...) 等に書き換えるとデータが消失します。
+#    現在のパス (/home/maya/docker_volumes/...) が実稼働データです。
+#    これを他のパスに書き換えると、データベースとの接続が切れ、サイトが初期化されます。
 #
 # 2. 【ネーミング規則の維持】:
 #    サービス名 (django-v2, mariadb-v2 等) やコンテナ名を一文字も変えないこと。
@@ -70,7 +70,7 @@ services:
     command: daemon --docker
 
   # ---------------------------------------------------------------------
-  # 1. データベース層 (実データパス: 2026/01/03更新ディレクトリ)
+  # 1. データベース層 (データ実体: /home/maya/docker_volumes 配下)
   # ---------------------------------------------------------------------
   postgres-db-v2:
     image: postgres:15-alpine
@@ -81,8 +81,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # ⚠️ 注意: ここが本物のデータパスです。絶対に変更しないでください。
-      - /home/maya/shin-vps/data/prod/postgres:/var/lib/postgresql/data
+      # ⚠️ 注意: ここがDjango用データの稼働パスです。
+      - /home/maya/docker_volumes/postgres:/var/lib/postgresql/data
     networks:
       - internal-net
     ports:
@@ -103,8 +103,8 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      # ⚠️ 注意: ここが本物のデータパスです。絶対に変更しないでください。
-      - /home/maya/shin-vps/data/prod/mysql:/var/lib/mysql
+      # ⚠️ 重要: ls -la で wp_tiper_db ディレクトリが確認できた本番パスです。
+      - /home/maya/docker_volumes/mysql:/var/lib/mysql
     networks:
       - internal-net
     healthcheck:
