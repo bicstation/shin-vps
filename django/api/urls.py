@@ -4,7 +4,6 @@
 from django.urls import path
 from . import views
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenRefreshView,
 )
 
@@ -20,13 +19,20 @@ urlpatterns = [
     path('status/', views.status_check, name='status_check'),
     
     # -----------------------------------------------------------
-    # 2. 認証・ユーザー関連 (User) - 新設
+    # 2. 認証・ユーザー関連 (User)
     # -----------------------------------------------------------
-    # 💡 JWTログイン: ID/PWを送信してトークンを取得
-    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # 💡 ユーザー新規登録: ユーザー名、メール、PWを送信
+    path('auth/register/', views.RegisterView.as_view(), name='auth_register'),
+
+    # 💡 カスタムJWTログイン: ID/PWを送信してトークン + ユーザー情報(site_group等)を取得
+    # views.py で定義した LoginView (CustomTokenObtainPairSerializer使用) を呼び出します
+    path('auth/login/', views.LoginView.as_view(), name='token_obtain_pair'),
+    
     # 💡 トークン更新: 期限切れのアクセストークンを更新
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
     # 💡 自分のプロフィール取得・更新
+    # 🚀 重要: views.py で拡張した UserProfileView により、ここでドメイン情報がDBに保存されます
     path('auth/me/', views.UserProfileView.as_view(), name='user_me'),
     
     # -----------------------------------------------------------
@@ -66,8 +72,12 @@ urlpatterns = [
     # 📈 特定製品の価格推移データを取得（グラフ表示用）
     path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
 
+    # GET /api/pc-products/<unique_id>/stats-history/
+    # 📊 特定製品のPV推移データを取得
+    path('pc-products/<str:unique_id>/stats-history/', views.pc_product_stats_history, name='pc_product_stats_history'),
+
     # -----------------------------------------------------------
-    # 5. コメント投稿 エンドポイント (ProductComment) - 新設
+    # 5. コメント投稿 エンドポイント (ProductComment)
     # -----------------------------------------------------------
     # POST /api/comments/ 
     # 💡 ログインユーザーとしてコメントを新規作成

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/admin.py
+
 import os
 from django.contrib import admin
 from django import forms
@@ -8,14 +10,15 @@ from django.http import HttpResponseRedirect
 from django.urls import path
 from django.contrib import messages
 from django.contrib.auth.admin import UserAdmin
+from django.utils.translation import gettext_lazy as _
 
 # モデルのインポート
 from .models import (
     RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series,
-    PCAttribute, User, ProductComment  # 👤 User と ProductComment を追加
+    PCAttribute, User, ProductComment
 )
-# 🚀 PC製品、価格履歴、そして新しい統計モデルをインポート
+# PC製品、価格履歴、統計モデル
 from .models.pc_products import PCProduct, PriceHistory
 from .models.pc_stats import ProductDailyStats
 
@@ -30,12 +33,11 @@ class AdultProductAdminForm(forms.ModelForm):
 class PriceHistoryInline(admin.TabularInline):
     """PC製品の詳細画面で価格履歴を直接編集・確認できるインライン"""
     model = PriceHistory
-    extra = 0  # 空の入力欄をデフォルトで表示しない
+    extra = 0
     ordering = ('-recorded_at',)
     readonly_fields = ('recorded_at',)
     can_delete = True
 
-# 🚀 注目度・ランキング統計のインライン表示
 class ProductDailyStatsInline(admin.TabularInline):
     """PC製品の詳細画面で日次アクセス統計を確認できるインライン"""
     model = ProductDailyStats
@@ -43,10 +45,10 @@ class ProductDailyStatsInline(admin.TabularInline):
     ordering = ('-date',)
     readonly_fields = ('date', 'pv_count', 'daily_rank', 'ranking_score')
     def has_add_permission(self, request, obj=None):
-        return False # 手動追加は不可
+        return False
 
-# 👤 ユーザー詳細画面でコメント履歴を確認できるインライン
 class ProductCommentInline(admin.TabularInline):
+    """ユーザー詳細画面でコメント履歴を確認できるインライン"""
     model = ProductComment
     extra = 0
     fields = ('product', 'rating', 'content', 'created_at')
@@ -57,19 +59,35 @@ class ProductCommentInline(admin.TabularInline):
 # ----------------------------------------------------
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    """プロフ画像や自己紹介を含めたカスタムユーザー管理"""
-    list_display = ('username', 'email', 'is_staff', 'display_profile_image')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
-    search_fields = ('username', 'email')
-    inlines = [ProductCommentInline] # ユーザーが書いたコメントを一覧表示
+    """プロフ画像、サイトグループ、ドメインを含めたカスタムユーザー管理"""
+    
+    # 一覧画面に site_group と origin_domain を追加
+    list_display = ('username', 'email', 'site_group_display', 'origin_domain', 'is_staff', 'display_profile_image')
+    list_filter = ('site_group', 'is_staff', 'is_superuser', 'is_active', 'groups')
+    search_fields = ('username', 'email', 'origin_domain')
+    inlines = [ProductCommentInline]
 
-    # 詳細画面に独自フィールドを追加
+    # 詳細画面（編集画面）のレイアウト変更
     fieldsets = UserAdmin.fieldsets + (
-        ('追加情報', {'fields': ('profile_image', 'bio')}),
+        (_('追加情報 / サイト管理'), {
+            'fields': ('site_group', 'origin_domain', 'profile_image', 'bio')
+        }),
     )
+    
+    # 新規作成画面（UserAdmin.add_fieldsets）にも追加
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ('追加情報', {'fields': ('profile_image', 'bio')}),
+        (_('追加情報 / サイト管理'), {
+            'fields': ('site_group', 'origin_domain', 'profile_image', 'bio')
+        }),
     )
+
+    def site_group_display(self, obj):
+        """一覧画面でサイトグループを色分け表示"""
+        if obj.site_group == 'adult':
+            return mark_safe('<b style="color: #d9534f;">アダルト (Adult)</b>')
+        return mark_safe('<b style="color: #007bff;">一般系 (General)</b>')
+    site_group_display.short_description = "所属グループ"
+    site_group_display.admin_order_field = 'site_group'
 
     def display_profile_image(self, obj):
         if obj.profile_image:
@@ -102,12 +120,11 @@ class PCAttributeAdmin(admin.ModelAdmin):
     ordering = ('attr_type', 'name')
 
     def get_product_count(self, obj):
-        """この属性に紐付いている製品数を表示"""
         return obj.products.count()
     get_product_count.short_description = '紐付け製品数'
 
 # ----------------------------------------------------
-# 1.5 PriceHistory (価格履歴単体) のAdminクラス
+# 1.5 PriceHistory & ProductDailyStats
 # ----------------------------------------------------
 @admin.register(PriceHistory)
 class PriceHistoryAdmin(admin.ModelAdmin):
@@ -116,68 +133,53 @@ class PriceHistoryAdmin(admin.ModelAdmin):
     search_fields = ('product__name', 'product__unique_id')
     date_hierarchy = 'recorded_at'
 
+@admin.register(ProductDailyStats)
+class ProductDailyStatsAdmin(admin.ModelAdmin):
+    """日次PV統計を一覧で確認できる管理画面"""
+    list_display = ('date', 'product', 'pv_count', 'daily_rank', 'ranking_score')
+    list_filter = ('date', 'product__site_prefix')
+    search_fields = ('product__name', 'product__unique_id')
+    date_hierarchy = 'date'
+
 # ----------------------------------------------------
 # 2. PCProduct (PC製品・ソフト・周辺機器) のAdminクラス
 # ----------------------------------------------------
+@admin.register(PCProduct)
 class PCProductAdmin(admin.ModelAdmin):
-    # テンプレートパスを指定
     change_list_template = "admin/api/pcproduct/change_list.html"
-    
-    # 🚀 履歴をインライン表示（価格履歴 + 注目度統計）
     inlines = [PriceHistoryInline, ProductDailyStatsInline]
 
-    # 一覧画面の表示項目 (ベスト1000管理用に spec_score を追加)
     list_display = (
         'maker',
         'display_thumbnail',
         'name_summary',
         'price_display',
-        'spec_score_display',  # 🏆 総合スコアを追加
+        'spec_score_display',
         'stock_status',
-        # --- ハードウェア性能（スコア表示） ---
         'display_scores',
-        # --- ✨ ソフトウェア・ライセンス情報 ---
         'os_support_summary', 
         'license_term',
         'is_download_display',
-        # --- 状態 ---
         'display_ai_status',
         'is_posted',
         'is_active',
         'updated_at',
     )
     list_display_links = ('name_summary',)
-    
-    # フィルタリング機能
     list_filter = (
-        'is_posted',
-        'is_active',
-        'is_ai_pc',
-        'is_download',
-        'maker',
-        'cpu_socket',
-        'ram_type',
-        'attributes__attr_type',
-        'stock_status',
-        'unified_genre',
+        'is_posted', 'is_active', 'is_ai_pc', 'is_download',
+        'maker', 'cpu_socket', 'ram_type', 'attributes__attr_type',
+        'stock_status', 'unified_genre',
     )
-    
-    # 検索窓の対象
     search_fields = ('name', 'unique_id', 'cpu_model', 'os_support', 'description', 'ai_content')
-    
-    # 並び順 (デフォルトをスコア降順に設定しランキングを確認しやすくする)
     ordering = ('-spec_score', '-updated_at')
-
-    # 多対多の属性選択UI
     filter_horizontal = ('attributes',)
 
-    # 詳細編集画面のレイアウト
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
         }),
         ('✨ ソフトウェア・ライセンス情報', {
-            'description': 'セキュリティソフトやOffice等のソフトウェア専用項目です。',
             'fields': (
                 ('os_support', 'is_download'),
                 ('license_term', 'device_count'),
@@ -185,7 +187,6 @@ class PCProductAdmin(admin.ModelAdmin):
             ),
         }),
         ('🚀 レーダーチャート性能解析 (1-100)', {
-            'description': 'AIがスペックから算出した100点満点のスコア群です。',
             'fields': (
                 ('score_cpu', 'score_gpu'),
                 ('score_cost', 'score_portable'),
@@ -193,8 +194,7 @@ class PCProductAdmin(admin.ModelAdmin):
                 ('target_segment',),
             ),
         }),
-        ('AI解析スペック詳細（ハードウェア）', {
-            'description': 'PC本体の主要構成データです。',
+        ('AI解析スペック詳細', {
             'fields': (
                 ('cpu_model', 'gpu_model'),
                 ('memory_gb', 'storage_gb'),
@@ -203,7 +203,6 @@ class PCProductAdmin(admin.ModelAdmin):
             ),
         }),
         ('自作PC提案用データ（AI推論）', {
-            'description': 'CPU型番等からAIが推論した、自作PCパーツ選定用の互換性データです。',
             'fields': (
                 ('cpu_socket', 'motherboard_chipset'),
                 ('ram_type', 'power_recommendation'),
@@ -228,7 +227,6 @@ class PCProductAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_at', 'updated_at', 'display_thumbnail_large', 'last_spec_parsed_at')
 
-    # --- カスタム表示メソッド ---
     def name_summary(self, obj):
         return obj.name[:40] + "..." if len(obj.name) > 40 else obj.name
     name_summary.short_description = "商品名"
@@ -238,7 +236,6 @@ class PCProductAdmin(admin.ModelAdmin):
     price_display.short_description = "価格"
 
     def spec_score_display(self, obj):
-        """総合スコアを強調表示"""
         if obj.spec_score:
             color = "#d9534f" if obj.spec_score >= 80 else "#f0ad4e" if obj.spec_score >= 60 else "#333"
             return mark_safe(f'<b style="color: {color}; font-size: 1.1em;">{obj.spec_score}</b>')
@@ -247,7 +244,6 @@ class PCProductAdmin(admin.ModelAdmin):
     spec_score_display.admin_order_field = 'spec_score'
 
     def display_scores(self, obj):
-        """5軸スコアの簡易表示"""
         return mark_safe(
             f'<small>CPU:{obj.score_cpu or 0} G:{obj.score_gpu or 0} コスパ:{obj.score_cost or 0}<br>'
             f'AI:{obj.score_ai or 0} 携帯:{obj.score_portable or 0}</small>'
@@ -282,7 +278,6 @@ class PCProductAdmin(admin.ModelAdmin):
         return mark_safe('<span style="color: #666;">未生成</span>')
     display_ai_status.short_description = 'AI解説'
 
-    # --- カスタムURLとアクション ---
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -320,6 +315,7 @@ class PCProductAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 # 3. AdultProduct (アダルト製品データ) のAdminクラス
 # ----------------------------------------------------
+@admin.register(AdultProduct)
 class AdultProductAdmin(admin.ModelAdmin):
     form = AdultProductAdminForm
     change_list_template = "admin/adult_product_changelist.html"
@@ -331,7 +327,6 @@ class AdultProductAdmin(admin.ModelAdmin):
     list_display_links = ('product_id_unique', 'title') 
     list_filter = ('is_active', 'release_date', 'maker') 
     search_fields = ('title', 'product_id_unique')
-
     readonly_fields = ('created_at', 'updated_at', 'product_id_unique', 'api_source')
 
     def display_first_image(self, obj):
@@ -375,6 +370,7 @@ class AdultProductAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 # 4. LinkshareProduct Admin
 # ----------------------------------------------------
+@admin.register(LinkshareProduct)
 class LinkshareProductAdmin(admin.ModelAdmin): 
     list_display = ('id', 'product_name', 'sku', 'merchant_id', 'is_active', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
@@ -383,27 +379,21 @@ class LinkshareProductAdmin(admin.ModelAdmin):
 # 5. その他マスター・共通設定
 # ----------------------------------------------------
 class CommonAdmin(admin.ModelAdmin):
-    list_display = ('name', 'product_count', 'api_source', 'created_at')
-
-    def product_count(self, obj):
+    list_display = ('name', 'get_product_count', 'api_source', 'created_at')
+    def get_product_count(self, obj):
         if hasattr(obj, 'products'):
             return obj.products.count()
         return 0
-    product_count.short_description = "製品数"
+    get_product_count.short_description = "製品数"
 
+@admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'created_at')
 
-# ----------------------------------------------------
-# 6. 登録
-# ----------------------------------------------------
-admin.site.register(PCProduct, PCProductAdmin)
-admin.site.register(AdultProduct, AdultProductAdmin)
-admin.site.register(LinkshareProduct, LinkshareProductAdmin) 
+# マスターデータの登録
 admin.site.register(Genre, CommonAdmin)
 admin.site.register(Actress, CommonAdmin)
 admin.site.register(Maker, CommonAdmin)
 admin.site.register(Label, CommonAdmin)
 admin.site.register(Director, CommonAdmin)
 admin.site.register(Series, CommonAdmin)
-admin.site.register(RawApiData, RawApiDataAdmin)

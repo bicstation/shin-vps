@@ -9,14 +9,23 @@ from .models.pc_products import PCProduct, PCAttribute, PriceHistory
 from .models.pc_stats import ProductDailyStats
 
 # --------------------------------------------------------------------------
-# 0. ユーザー & コメント用シリアライザ (新規追加)
+# 0. ユーザー & コメント用シリアライザ
 # --------------------------------------------------------------------------
 
 class UserSerializer(serializers.ModelSerializer):
-    """ユーザー情報の取得・更新用"""
+    """🚀 ユーザー情報の取得・更新・および新規登録用"""
+    
+    # 新規登録時のみパスワードを受け取る（出力には含まない write_only）
+    password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'profile_image', 'bio')
+        # 🚀 site_group と origin_domain を含め、フロントエンドの siteConfig と同期可能にします
+        fields = (
+            'id', 'username', 'email', 'password', 'profile_image', 
+            'bio', 'site_group', 'origin_domain'
+        )
+        # IDやユーザー名などは基本変更不可。site_groupなどはシステム更新のため除外
         read_only_fields = ('id', 'username', 'email')
 
 class ProductCommentSerializer(serializers.ModelSerializer):
@@ -141,77 +150,28 @@ class PCProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = PCProduct
         fields = (
-            'id',
-            'unique_id',
-            'site_prefix',
-            'maker',
-            'maker_name',
-            'raw_genre',
-            'unified_genre',
-            'name',
-            'price',
-            'url',
-            'image_url',
-            'description',
-            
-            # --- AI解析抽出スペック (ハードウェア) ---
-            'cpu_model',
-            'gpu_model',
-            'memory_gb',
-            'storage_gb',
-            'display_info',
-            'npu_tops',
-            
-            # --- 自作PC提案・相性用データ ---
-            'cpu_socket',
-            'motherboard_chipset',
-            'ram_type',
-            'power_recommendation',
-            
-            # --- ソフトウェア・ライセンス用データ ---
-            'os_support',
-            'license_term',
-            'device_count',
-            'edition',
-            'is_download',
-            
-            # --- レーダーチャート・スコアリング ---
-            'score_cpu',
-            'score_gpu',
-            'score_cost',
-            'score_portable',
-            'score_ai',
-            'radar_chart', # メソッド経由
-            
-            # --- AI判定・メタ情報 ---
-            'target_segment',
-            'is_ai_pc',
-            'spec_score',
-            'ai_summary',
-            'ai_content',
-            
-            # --- ステータス・統計・履歴情報 ---
-            'attributes',
-            'comments',      # 💬 ここで製品詳細にコメントを含める
-            'price_history', # メソッド経由 (📈 価格推移)
-            'stats_history', # メソッド経由 (📉 注目度推移)
-            'affiliate_url',
-            'affiliate_updated_at',
-            'stock_status',
-            'is_posted',
-            'is_active',
-            'last_spec_parsed_at',
-            'created_at',
-            'updated_at',
+            'id', 'unique_id', 'site_prefix', 'maker', 'maker_name',
+            'raw_genre', 'unified_genre', 'name', 'price', 'url',
+            'image_url', 'description', 'cpu_model', 'gpu_model',
+            'memory_gb', 'storage_gb', 'display_info', 'npu_tops',
+            'cpu_socket', 'motherboard_chipset', 'ram_type',
+            'power_recommendation', 'os_support', 'license_term',
+            'device_count', 'edition', 'is_download', 'score_cpu',
+            'score_gpu', 'score_cost', 'score_portable', 'score_ai',
+            'radar_chart', 'target_segment', 'is_ai_pc', 'spec_score',
+            'ai_summary', 'ai_content', 'attributes', 'comments',
+            'price_history', 'stats_history', 'affiliate_url',
+            'affiliate_updated_at', 'stock_status', 'is_posted',
+            'is_active', 'last_spec_parsed_at', 'created_at', 'updated_at',
         )
         read_only_fields = fields
 
-    # --- 📈 価格履歴の取得 (直近30日分を日付順で) ---
+    # --- 📈 価格履歴の取得 ---
     def get_price_history(self, obj):
         histories = PriceHistory.objects.filter(product=obj).order_by('-recorded_at')[:30]
         return PriceHistorySerializer(reversed(histories), many=True).data
 
-    # --- 📉 注目度・ランキング履歴の取得 (直近30日分) ---
+    # --- 📉 注目度推移の取得 ---
     def get_stats_history(self, obj):
         stats = ProductDailyStats.objects.filter(product=obj).order_by('-date')[:30]
         return ProductDailyStatsSerializer(reversed(stats), many=True).data

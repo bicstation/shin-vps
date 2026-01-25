@@ -2,27 +2,13 @@
 # /home/maya/dev/shin-vps/django/api/models/pc_products.py
 from django.db import models
 from django.utils.timezone import now
-from django.contrib.auth.models import AbstractUser
+from django.conf import settings  # User参照のために追加
 
 # ==========================================
-# 1. ユーザー管理モデル
+# 1. ユーザー管理モデル (分離済み)
 # ==========================================
-class User(AbstractUser):
-    """
-    カスタムユーザーモデル
-    標準のユーザー機能にプロフィール画像や自己紹介を追加
-    """
-    profile_image = models.ImageField('プロフィール画像', upload_to='profiles/', null=True, blank=True)
-    bio = models.TextField('自己紹介', max_length=500, blank=True)
-    is_pc_enthusiast = models.BooleanField('PC愛好家フラグ', default=False)
-
-    class Meta:
-        verbose_name = 'ユーザー'
-        verbose_name_plural = 'ユーザー一覧'
-
-    def __str__(self):
-        return self.username
-
+# Userモデルは users.models へ移動しました。
+# 参照時は settings.AUTH_USER_MODEL を使用します。
 
 # ==========================================
 # 2. マスター・製品モデル
@@ -38,8 +24,8 @@ class PCAttribute(models.Model):
         ('gpu', 'グラフィック'),
         ('npu', 'AIプロセッサ(NPU)'),
         ('os', 'OS'),
-        ('software', 'ソフトウェア種別'),  # セキュリティ, 会計, 編集など
-        ('license', 'ライセンス形態'),    # サブスク, 買い切りなど
+        ('software', 'ソフトウェア種別'),
+        ('license', 'ライセンス形態'),
     ]
     
     attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES)
@@ -66,7 +52,6 @@ class PCProduct(models.Model):
     """
     PC製品およびソフトウェア・周辺機器を管理する汎用モデル
     """
-    # === 1. 既存カラム（基本情報） ===
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
     site_prefix = models.CharField(max_length=20, verbose_name="サイト接頭辞")
     maker = models.CharField(max_length=100, db_index=True, verbose_name="メーカー")
@@ -100,7 +85,6 @@ class PCProduct(models.Model):
     created_at = models.DateTimeField(default=now, verbose_name="登録日時")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
-    # === 2. PCスペック用追加カラム（具現化） ===
     memory_gb = models.IntegerField(null=True, blank=True, verbose_name="メモリ(GB数値)")
     storage_gb = models.IntegerField(null=True, blank=True, verbose_name="ストレージ(GB数値)")
     npu_tops = models.FloatField(null=True, blank=True, verbose_name="NPU性能(TOPS)")
@@ -109,24 +93,20 @@ class PCProduct(models.Model):
     gpu_model = models.CharField(max_length=255, null=True, blank=True, verbose_name="GPUモデル詳細")
     display_info = models.CharField(max_length=255, null=True, blank=True, verbose_name="ディスプレイ情報")
 
-    # 自作PC提案・互換性カラム
     cpu_socket = models.CharField(max_length=50, null=True, blank=True, verbose_name="CPUソケット(推論)")
     motherboard_chipset = models.CharField(max_length=50, null=True, blank=True, verbose_name="推奨チップセット")
     ram_type = models.CharField(max_length=20, null=True, blank=True, verbose_name="メモリ規格")
     power_recommendation = models.IntegerField(null=True, blank=True, verbose_name="推奨電源容量(W)")
 
-    # === 3. ソフトウェア・ライセンス用追加カラム ===
     os_support = models.CharField(max_length=255, null=True, blank=True, verbose_name="対応OS詳細")
     license_term = models.CharField(max_length=100, null=True, blank=True, verbose_name="ライセンス期間")
     device_count = models.CharField(max_length=100, null=True, blank=True, verbose_name="利用可能台数")
     edition = models.CharField(max_length=100, null=True, blank=True, verbose_name="エディション/版番")
     is_download = models.BooleanField(default=False, verbose_name="DL版フラグ")
 
-    # === 4. 🚀 レーダーチャート・解析用追加カラム ===
     target_segment = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI判定ターゲット層")
     is_ai_pc = models.BooleanField(default=False, verbose_name="AI PC該当フラグ")
     
-    # 5軸スコア (1-100)
     score_cpu = models.IntegerField(default=0, verbose_name="CPU性能スコア(1-100)")
     score_gpu = models.IntegerField(default=0, verbose_name="GPU性能スコア(1-100)")
     score_cost = models.IntegerField(default=0, verbose_name="コスパスコア(1-100)")
@@ -146,11 +126,9 @@ class PCProduct(models.Model):
         return f"[{self.maker}] {self.name[:30]}"
 
     def save(self, *args, **kwargs):
-        # 1. 統合ジャンルのフォールバック
         if not self.unified_genre and self.raw_genre:
             self.unified_genre = self.raw_genre
         
-        # 2. 受注停止ワードの自動チェック
         if self.raw_html:
             stop_words = ["現在ご注文いただけません", "受注停止", "販売終了", "品切れ", "在庫切れ", "販売を終了いたしました"]
             if any(word in self.raw_html for word in stop_words):
@@ -159,13 +137,11 @@ class PCProduct(models.Model):
                 if self.stock_status == "受注停止中":
                     self.stock_status = "在庫あり"
         
-        # 3. AI PC判定
         if self.description:
             ai_keywords = ["NPU", "Ryzen AI", "Core Ultra", "TOPS", "Copilot+"]
             if any(key.lower() in self.description.lower() for key in ai_keywords):
                 self.is_ai_pc = True
         
-        # 4. ソフトウェア自動判定
         soft_makers = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT"]
         if any(sm in self.maker.upper() for sm in soft_makers):
             if "ダウンロード" in self.name or "DL版" in self.name:
@@ -178,9 +154,6 @@ class PCProduct(models.Model):
 # 3. 履歴・アクションモデル
 # ==========================================
 class PriceHistory(models.Model):
-    """
-    製品の価格変動を記録するモデル
-    """
     product = models.ForeignKey(
         PCProduct, 
         on_delete=models.CASCADE, 
@@ -200,17 +173,15 @@ class PriceHistory(models.Model):
 
 
 class ProductComment(models.Model):
-    """
-    製品に対するユーザーのコメント・レビュー
-    """
     product = models.ForeignKey(
-        'api.PCProduct',
+        PCProduct,
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name="対象製品"
     )
+    # ここを settings.AUTH_USER_MODEL に変更
     user = models.ForeignKey(
-        'api.User',
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name="投稿ユーザー"
