@@ -2,7 +2,7 @@
 const nextConfig = {
   // 🚀 独自ドメイン(bicstation.com)の直下で運用するため、basePathは空に設定します。
   // これによりローカル(localhost:3000/)と本番の両方で整合性が取れます。
-  basePath: '',
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
   // 末尾スラッシュを有効化（URLの正規化）
   trailingSlash: true,

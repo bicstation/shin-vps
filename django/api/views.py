@@ -62,6 +62,8 @@ class PCProductLimitOffsetPagination(pagination.LimitOffsetPagination):
 # --------------------------------------------------------------------------
 # 0. /api/ ルートエンドポイント
 # --------------------------------------------------------------------------
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
 def api_root(request):
     return JsonResponse({
         "message": "Welcome to Tiper API Gateway", 
@@ -91,6 +93,8 @@ def api_root(request):
         }
     }, status=200)
 
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
 def status_check(request):
     return JsonResponse({"status": "API is running"}, status=200)
 
@@ -102,7 +106,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """🚀 ログイン成功時にトークンだけでなく、ユーザー情報(site_group等)を一緒に返す"""
     def validate(self, attrs):
         data = super().validate(attrs)
-        # レスポンスにユーザーの詳細データを追加
         data['user'] = {
             'id': self.user.id,
             'username': self.user.username,
@@ -115,6 +118,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class LoginView(TokenObtainPairView):
     """🚀 ログイン用 View: 拡張したシリアライザを使用"""
     serializer_class = CustomTokenObtainPairSerializer
+    permission_classes = [permissions.AllowAny]
 
 class RegisterView(generics.CreateAPIView):
     """🚀 新規ユーザー登録 API"""
@@ -126,12 +130,10 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        # ユーザーの作成
         user = User.objects.create_user(
             username=serializer.validated_data['username'],
             email=serializer.validated_data.get('email', ''),
             password=request.data.get('password'),
-            # Next.jsから送られてきたドメイン情報を保存
             site_group=request.data.get('site_group', 'general'),
             origin_domain=request.data.get('origin_domain', '')
         )
@@ -150,12 +152,9 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         user = self.request.user
-        
-        # 🚀 Next.jsから送られてきたドメイン情報(site_group, origin_domain)を取得
         site_group = self.request.data.get('site_group') or self.request.query_params.get('site_group')
         origin_domain = self.request.data.get('origin_domain') or self.request.query_params.get('origin_domain')
 
-        # 情報があればユーザーモデルを更新
         if site_group or origin_domain:
             update_fields = []
             if site_group and user.site_group != site_group:
@@ -187,6 +186,7 @@ class ProductCommentCreateView(generics.CreateAPIView):
 # 2. アダルト商品データ API
 # --------------------------------------------------------------------------
 class AdultProductListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny] # 👈 公開設定
     queryset = AdultProduct.objects.all().prefetch_related(
         'maker', 'label', 'director', 'series', 'genres', 'actresses'
     ).order_by('-id') 
@@ -197,6 +197,7 @@ class AdultProductListAPIView(generics.ListAPIView):
     search_fields = ['title']
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
+    permission_classes = [permissions.AllowAny] # 👈 公開設定
     queryset = AdultProduct.objects.all().prefetch_related('maker', 'label', 'director')
     serializer_class = AdultProductSerializer
     lookup_field = 'product_id_unique'
@@ -208,9 +209,10 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
 
 # --------------------------------------------------------------------------
-# 3. PC製品データ API
+# 3. PC製品データ API (ここが重要！)
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny] # 👈 Next.jsから見えるように公開
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
@@ -228,6 +230,7 @@ class PCProductListAPIView(generics.ListAPIView):
         return queryset.order_by('-updated_at')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
+    permission_classes = [permissions.AllowAny] # 👈 公開
     queryset = PCProduct.objects.all().prefetch_related('attributes', 'daily_stats', 'comments__user')
     serializer_class = PCProductSerializer
     lookup_field = 'unique_id'
@@ -250,12 +253,14 @@ class PCProductDetailAPIView(generics.RetrieveAPIView):
         return product
 
 class PCProductMakerListView(APIView):
+    permission_classes = [permissions.AllowAny] # 👈 公開
     def get(self, request):
         qs = PCProduct.objects.filter(is_active=True).exclude(maker__isnull=True).exclude(maker='')
         maker_counts = qs.values('maker').annotate(count=Count('id')).order_by('maker')
         return Response(list(maker_counts))
 
 @api_view(['GET'])
+@permission_classes([permissions.AllowAny]) # 👈 デコレータ版公開設定
 def pc_sidebar_stats(request):
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
@@ -274,6 +279,7 @@ def pc_sidebar_stats(request):
     return Response(sidebar_data)
 
 @api_view(['GET'])
+@permission_classes([permissions.AllowAny])
 def pc_product_price_history(request, unique_id):
     product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
     history = PriceHistory.objects.filter(product=product).order_by('-recorded_at')[:30]
@@ -287,6 +293,7 @@ def pc_product_price_history(request, unique_id):
     return Response(data)
 
 @api_view(['GET'])
+@permission_classes([permissions.AllowAny])
 def pc_product_stats_history(request, unique_id):
     product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
     stats = ProductDailyStats.objects.filter(product=product).order_by('-date')[:30]
@@ -300,9 +307,10 @@ def pc_product_stats_history(request, unique_id):
     return Response(data)
 
 # --------------------------------------------------------------------------
-# 🚀 ランキング
+# 🚀 ランキング (Next.jsトップページで401エラーになっていた箇所)
 # --------------------------------------------------------------------------
 class PCProductRankingView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny] # 👈 公開設定を追加
     serializer_class = PCProductSerializer
     pagination_class = None 
 
@@ -315,6 +323,7 @@ class PCProductRankingView(generics.ListAPIView):
         ).exclude(cpu_model="").prefetch_related('attributes', 'daily_stats').order_by('-spec_score')[:1000]
 
 class PCProductPopularityRankingView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny] # 👈 公開設定を追加
     serializer_class = PCProductSerializer
     pagination_class = None
 
@@ -327,23 +336,31 @@ class PCProductPopularityRankingView(generics.ListAPIView):
 # 4. Linkshare & マスターデータ
 # --------------------------------------------------------------------------
 class LinkshareProductListAPIView(generics.ListAPIView): 
+    permission_classes = [permissions.AllowAny]
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')
     serializer_class = LinkshareProductSerializer
 
 class LinkshareProductDetailAPIView(generics.RetrieveAPIView): 
+    permission_classes = [permissions.AllowAny]
     queryset = LinkshareProduct.objects.all()
     serializer_class = LinkshareProductSerializer
     lookup_field = 'sku'
 
 class ActressListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
     queryset = Actress.objects.all().order_by('name'); serializer_class = ActressSerializer
 class GenreListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
     queryset = Genre.objects.all().order_by('name'); serializer_class = GenreSerializer
 class MakerListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
     queryset = Maker.objects.all().order_by('name'); serializer_class = MakerSerializer
 class LabelListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
     queryset = Label.objects.all().order_by('name'); serializer_class = LabelSerializer
 class DirectorListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
     queryset = Director.objects.all().order_by('name'); serializer_class = DirectorSerializer
 class SeriesListAPIView(generics.ListAPIView):
+    permission_classes = [permissions.AllowAny]
     queryset = Series.objects.all().order_by('name'); serializer_class = SeriesSerializer

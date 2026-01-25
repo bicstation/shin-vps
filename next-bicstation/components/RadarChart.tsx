@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Radar as ReChartsRadar,
   RadarChart as ReChartsRadarContainer,
@@ -23,8 +23,6 @@ interface RadarChartProps {
 
 /**
  * 🚀 【重要】ビルドエラー完全回避策
- * Next.jsのビルドプロセスにおける ReactNode / bigint の型競合を避けるため、
- * 全ての Recharts コンポーネントを any としてキャストします。
  */
 const TypedResponsiveContainer = ResponsiveContainer as any;
 const TypedRadarChartContainer = ReChartsRadarContainer as any;
@@ -33,14 +31,24 @@ const TypedPolarAngleAxis = ReChartsPolarAngleAxis as any;
 const TypedRadar = ReChartsRadar as any;
 
 const RadarChart = ({ data, color = "#3182ce" }: RadarChartProps) => {
-  // データが空の場合のガード
-  if (!data || data.length === 0) {
+  // 💡 クライアントサイドでのマウント状態を管理（警告回避用）
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // データが空の場合、またはマウント前はプレースホルダーを返す
+  if (!isMounted || !data || data.length === 0) {
     return <div style={{ width: '100%', height: 160 }} />;
   }
 
   return (
     <div style={{ width: '100%', height: 160, position: 'relative' }}>
-      <TypedResponsiveContainer width="100%" height="100%">
+      {/* 💡 minWidth={0} を追加することで ResponsiveContainer の計算エラーを抑制します。
+          さらに isMounted でクライアント側でのみ描画を確定させます。
+      */}
+      <TypedResponsiveContainer width="100%" height="100%" minWidth={0}>
         <TypedRadarChartContainer cx="50%" cy="50%" outerRadius="75%" data={data}>
           
           {/* 背景のグリッド網 */}

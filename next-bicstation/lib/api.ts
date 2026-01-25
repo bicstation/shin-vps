@@ -88,7 +88,7 @@ export async function fetchPostList(perPage = 12, offset = 0) {
                 'Host': host,
                 'Accept': 'application/json'
             },
-            next: { revalidate: 60 }
+            next: { revalidate: 60 } // 60秒キャッシュ
         });
 
         if (!res.ok) return { results: [], count: 0, debugUrl: url, status: res.status };
@@ -119,7 +119,7 @@ export async function fetchPostData(slug: string) {
     try {
         const res = await fetch(url, {
             headers: { 'Host': host, 'Accept': 'application/json' },
-            next: { revalidate: 3600 }
+            next: { revalidate: 3600 } // 1時間キャッシュ
         });
 
         if (!res.ok) return null;
@@ -148,8 +148,7 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attrib
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            // cache: 'no-store'
-            next: { revalidate: 3600 } // 1時間はキャッシュを利用（その間は爆速）
+            next: { revalidate: 3600 } // 1時間キャッシュ
         });
 
         if (!res.ok) {
@@ -178,7 +177,7 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost' },
-            cache: 'no-store'
+            cache: 'no-store' // 常に最新の在庫・価格情報を取得
         });
         return res.ok ? await res.json() : null;
     } catch (e) { 
@@ -237,7 +236,6 @@ export async function fetchMakers(): Promise<MakerCount[]> {
 
 /**
  * 🚀 [Django API] ランキング取得 (AI解析スコア順)
- * ソフトウェア等の不純物が除外された上位1000件を取得します。
  */
 export async function fetchPCProductRanking(): Promise<PCProduct[]> {
     const rootUrl = getDjangoBaseUrl();
@@ -246,8 +244,7 @@ export async function fetchPCProductRanking(): Promise<PCProduct[]> {
     try {
         const res = await fetch(url, {
             headers: { 'Host': 'localhost' },
-            cache: 'no-store',
-            next: { revalidate: 0 }
+            cache: 'no-store' // 重複していた next: { revalidate: 0 } を削除
         });
 
         if (!res.ok) {
@@ -265,7 +262,6 @@ export async function fetchPCProductRanking(): Promise<PCProduct[]> {
 
 /**
  * 🔥 [Django API] 注目度ランキング取得 (PV数ベース)
- * 今リアルタイムで注目されている製品の上位を取得します。
  */
 export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
     const rootUrl = getDjangoBaseUrl();
@@ -274,8 +270,7 @@ export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
     try {
         const res = await fetch(url, {
             headers: { 'Host': 'localhost' },
-            cache: 'no-store',
-            next: { revalidate: 0 }
+            cache: 'no-store' // 重複していた next: { revalidate: 0 } を削除
         });
 
         if (!res.ok) {
@@ -284,7 +279,6 @@ export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
         }
 
         const data = await res.json();
-        // PopularityRankingViewは pagination_class = None のため、直で配列が返る想定
         return Array.isArray(data) ? data : (data.results || []);
     } catch (e) {
         console.error(`[Popularity Ranking API ERROR]:`, e);
