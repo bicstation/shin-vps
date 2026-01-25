@@ -1,11 +1,19 @@
 # =====================================================================
 # 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・全サービス集約版)
 # =====================================================================
-# ⚠️ AI (Gemini/ChatGPT) への厳命事項:
-# 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
-# 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
-# 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
-#     変更するとシステム全体が崩壊します。
+# ⚠️ AI (Gemini/ChatGPT/Claude等) への最優先・厳命事項:
+#
+# 1. 【データディレクトリの絶対厳守】:
+#    mariadb-v2 と postgres-db-v2 の volumes パスは絶対に書き換えないこと。
+#    現在のパス (/home/maya/shin-vps/data/prod/...) が実稼働データです。
+#    これを (/home/maya/docker_volumes/...) 等に書き換えるとデータが消失します。
+#
+# 2. 【ネーミング規則の維持】:
+#    サービス名 (django-v2, mariadb-v2 等) やコンテナ名を一文字も変えないこと。
+#    外部スクリプトや Traefik のルーティング設定がこれらに依存しています。
+#
+# 3. 【省略禁止】:
+#    コードを提示する際は、必ず全行を省略せずに表示すること。
 # =====================================================================
 
 services:
@@ -62,7 +70,7 @@ services:
     command: daemon --docker
 
   # ---------------------------------------------------------------------
-  # 1. データベース層 (永続化データ - 外部物理ディレクトリ固定)
+  # 1. データベース層 (実データパス: 2026/01/03更新ディレクトリ)
   # ---------------------------------------------------------------------
   postgres-db-v2:
     image: postgres:15-alpine
@@ -73,8 +81,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # 🛠 外部物理ディレクトリを直接マウント
-      - /home/maya/docker_volumes/postgres:/var/lib/postgresql/data
+      # ⚠️ 注意: ここが本物のデータパスです。絶対に変更しないでください。
+      - /home/maya/shin-vps/data/prod/postgres:/var/lib/postgresql/data
     networks:
       - internal-net
     ports:
@@ -95,8 +103,8 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      # 🛠 外部物理ディレクトリを直接マウント
-      - /home/maya/docker_volumes/mysql:/var/lib/mysql
+      # ⚠️ 注意: ここが本物のデータパスです。絶対に変更しないでください。
+      - /home/maya/shin-vps/data/prod/mysql:/var/lib/mysql
     networks:
       - internal-net
     healthcheck:
@@ -123,15 +131,12 @@ services:
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
       - "ofelia.enabled=true"
-      # AIブログ投稿 (30分おき)
       - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
       - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
       - "ofelia.job-exec.ai_blog_post.no-overlap=true"
-      # PCニュース投稿 (2時間おき)
       - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
       - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
       - "ofelia.job-exec.ai_rss_news_post.no-overlap=true"
-      # 自動データ更新スクリプト (4時間おき)
       - "ofelia.job-exec.auto_daily_update.schedule=0 45 */4 * * *"
       - "ofelia.job-exec.auto_daily_update.command=/usr/src/app/scripts/auto_daily_update.sh"
       - "ofelia.job-exec.auto_daily_update.no-overlap=true"
