@@ -2,7 +2,7 @@
 const nextConfig = {
   // 💡 NEXT_PUBLIC_BASE_PATH がセットされていない場合のデフォルトを '/bicstation' にするか
   // もしくは環境変数に確実に含めてください
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/bicstation',
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
   trailingSlash: true,
 
