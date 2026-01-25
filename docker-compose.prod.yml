@@ -146,7 +146,12 @@ services:
   # 3. フロントエンド層 (Next.js アプリ群)
   # ---------------------------------------------------------------------
   next-bicstation-v2:
-    build: { context: ./next-bicstation }
+    build: 
+      context: ./next-bicstation
+      args:
+        - NODE_ENV=production
+        - NEXT_PUBLIC_BASE_PATH=/bicstation
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     container_name: next-bicstation-v2
     restart: always
     networks: [internal-net, shared-proxy]
