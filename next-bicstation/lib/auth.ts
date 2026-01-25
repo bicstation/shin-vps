@@ -53,21 +53,19 @@ export async function loginUser(username: string, password: string): Promise<Aut
   const data: AuthTokenResponse = await response.json();
   
   if (data.access && typeof window !== 'undefined') {
-    // トークンの保存
+    // トークン情報をブラウザに保存
     localStorage.setItem('access_token', data.access);
     localStorage.setItem('refresh_token', data.refresh);
     
-    // ロールの保存
+    // ロール情報を保存
     if (data.user?.site_group) {
       localStorage.setItem('user_role', data.user.site_group);
     } else {
       localStorage.setItem('user_role', site_group);
     }
 
-    /* 🚀 ログイン成功後のリダイレクト
-     next.config.js の basePath が "/bicstation" の場合、
-     "/" は自動的に "https://bicstation.com/bicstation/" として処理されます。
-    */
+    // 🚀 ログイン成功後のリダイレクト
+    // basePathが空なので、"/" は常にドメインのトップ（ルート）を指します
     window.location.href = "/"; 
   }
 
@@ -111,9 +109,8 @@ export function logoutUser(): void {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
 
-    /* 🚀 ログアウト後のリダイレクト
-     basePath が有効な場合、"/login/" は自動的に "/bicstation/login/" になります。
-    */
+    // 🚀 ログアウト後のリダイレクト
+    // basePathが空なので、シンプルに "/login/" へ飛ばします
     window.location.href = "/login/";
   }
 }
