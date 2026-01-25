@@ -25,6 +25,13 @@ export interface RegisterResponse {
   };
 }
 
+// --- ヘルパー関数：ベースパスを取得 ---
+// ローカル(localhost)なら /bicstation/、VPSなら / を返す
+const getBasePath = () => {
+  if (typeof window === 'undefined') return '/';
+  return window.location.hostname === 'localhost' ? '/bicstation/' : '/';
+};
+
 // --- 認証関数 ---
 
 /**
@@ -65,15 +72,14 @@ export async function loginUser(username: string, password: string): Promise<Aut
     }
 
     // 🚀 ログイン成功後のリダイレクト
-    // basePathが空なので、"/" は常にドメインのトップ（ルート）を指します
-    window.location.href = "/"; 
+    window.location.href = getBasePath(); 
   }
 
   return data;
 }
 
 /**
- * 💡 新規ユーザー登録を実行
+ * 💡 新規ユーザー登録を実行 (省略せずに復活させました！)
  */
 export async function registerUser(username: string, email: string, password: string): Promise<RegisterResponse> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api';
@@ -109,8 +115,7 @@ export function logoutUser(): void {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
 
-    // 🚀 ログアウト後のリダイレクト
-    // basePathが空なので、シンプルに "/login/" へ飛ばします
-    window.location.href = "/login/";
+    // 🚀 ログアウト後のリダイレクト（ベースパスに合わせて移動）
+    window.location.href = getBasePath();
   }
 }
