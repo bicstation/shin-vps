@@ -10,41 +10,46 @@ export default function LoginPage() {
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [debugMsg, setDebugMsg] = useState<string>(''); // 🚀 どこで止まったか表示する用
 
-  /**
-   * 💡 フォーム送信処理
-   */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    setDebugMsg('1. フォーム送信開始...');
     setLoading(true);
 
     try {
       console.log("Login sequence initiated...");
       
-      // auth.ts の loginUser を呼び出します。
-      // 成功すれば auth.ts 側の getBasePath() ロジックにより
-      // 自動的に適切なトップページへリダイレクトされます。
+      setDebugMsg('2. API通信(auth.ts)を呼び出し中...');
       await loginUser(username, password);
+      
+      // 通常、成功すれば auth.ts 側でリダイレクトされるのでここには来ません
+      setDebugMsg('3. 通信成功！リダイレクトを待機中...');
 
     } catch (err: any) {
       console.error("Login Error:", err);
+      setDebugMsg(`❌ エラー発生: ${err.message}`);
       setError(err.message || 'ログインに失敗しました。');
       setLoading(false);
     }
   };
 
-  // リンク用メタデータ取得
   const { site_prefix } = getSiteMetadata();
   const registerHref = site_prefix ? `${site_prefix}/register` : '/register';
 
   return (
     <div className="flex justify-center items-center min-h-[70vh] px-4">
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">
-          ログイン
-        </h1>
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">ログイン</h1>
         
+        {/* ステータス表示（デバッグ用） */}
+        {loading && (
+          <div className="mb-4 text-xs text-blue-500 font-mono text-center bg-blue-50 p-2 rounded">
+            {debugMsg}
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
             {error}
@@ -52,61 +57,43 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* ユーザー名入力 */}
           <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">
-              ユーザー名
-            </label>
+            <label className="block text-sm font-semibold text-gray-600 mb-2">ユーザー名</label>
             <input 
               type="text" 
-              placeholder="ユーザー名" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
               required
               autoComplete="username"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-gray-900"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* パスワード入力 */}
           <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">
-              パスワード
-            </label>
+            <label className="block text-sm font-semibold text-gray-600 mb-2">パスワード</label>
             <input 
               type="password" 
-              placeholder="パスワード" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required
               autoComplete="current-password"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-gray-900"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* 送信ボタン */}
           <button 
             type="submit" 
             disabled={loading}
-            className={`w-full py-4 rounded-xl font-bold text-white transition-all transform active:scale-[0.98] mt-4 shadow-lg ${
-              loading 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
+            className={`w-full py-4 rounded-xl font-bold text-white transition-all ${
+              loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
-            {loading ? '通信中...' : 'ログイン'}
+            {loading ? '処理中...' : 'ログイン'}
           </button>
         </form>
 
-        {/* 新規登録への案内 */}
-        <div className="mt-10 pt-6 border-t border-gray-50 text-center">
-          <p className="text-sm text-gray-500 mb-2">
-            アカウントをお持ちでないですか？
-          </p>
-          <Link 
-            href={registerHref} 
-            className="text-blue-600 font-bold hover:underline"
-          >
+        <div className="mt-8 pt-6 border-t border-gray-50 text-center">
+          <Link href={registerHref} className="text-blue-600 font-bold hover:underline text-sm">
             新規会員登録はこちら
           </Link>
         </div>
