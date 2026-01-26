@@ -25,15 +25,24 @@ export interface RegisterResponse {
 }
 
 // --- ヘルパー関数：ベースパスを「絶対URL」で取得 ---
+/**
+ * 💡 VPS環境におけるリダイレクトの確実性を高める関数
+ */
 const getAbsoluteRedirectPath = () => {
   if (typeof window === 'undefined') return '/';
 
   const isLocal = window.location.hostname === 'localhost';
   const origin = window.location.origin;
 
-  // 💡 VPS環境（bicstation.com）では、末尾スラッシュなしのURLを返し、
-  // ブラウザに「ディレクトリ」ではなく「トップページそのもの」を認識させます。
-  return isLocal ? `${origin}/bicstation/` : `${origin}`;
+  // ローカル: http://localhost:3000/bicstation/
+  // 本番: https://bicstation.com (末尾スラッシュなしでブラウザの自動補完に任せる)
+  const basePath = isLocal ? `${origin}/bicstation/` : `${origin}`;
+  
+  // 🚀 キャッシュバスターを追加 (?t=...)
+  // これにより、Nginxやブラウザが「古いログイン画面」をキャッシュから出すのを防ぎます
+  const cacheBuster = `?t=${Date.now()}`;
+  
+  return basePath + cacheBuster;
 };
 
 // --- 認証関数 ---
@@ -71,16 +80,17 @@ export async function loginUser(username: string, password: string): Promise<Aut
     localStorage.setItem('refresh_token', data.refresh);
     localStorage.setItem('user_role', data.user?.site_group || site_group);
 
-    console.log("3. 通信成功！リダイレクトを待機中...");
+    console.log("3. 通信成功！強制リフレッシュ遷移を開始します...");
 
-    // 🚀 修正ポイント: 
-    // ブラウザの履歴に残さず（replace）、完全にページを再読み込みして遷移させます。
-    // これにより、Headerコンポーネントのログインチェックが確実に発火します。
+    // 🚀 修正ポイント:
+    // 1. window.location.replace を使用して履歴を上書き（ログイン画面に戻らせない）
+    // 2. キャッシュバスター付きの絶対URLへ遷移
+    // 3. 100msのディレイでlocalStorageの書き込みをOSレベルで確定させる
     const redirectUrl = getAbsoluteRedirectPath();
     
     setTimeout(() => {
       window.location.replace(redirectUrl);
-    }, 100); // 100msの微小なディレイを入れて保存を確実にする
+    }, 150); 
   }
 
   return data;
@@ -118,10 +128,14 @@ export async function registerUser(username: string, email: string, password: st
  */
 export function logoutUser(): void {
   if (typeof window !== 'undefined') {
+    // 1. 全ストレージの破棄
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
 
+    console.log("Logout initiated. Clearing session and redirecting...");
+
+    // 2. ログアウト時もキャッシュを避けてトップへ
     const redirectUrl = getAbsoluteRedirectPath();
     window.location.replace(redirectUrl);
   }
