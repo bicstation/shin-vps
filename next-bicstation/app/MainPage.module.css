@@ -490,3 +490,95 @@
     font-size: 1.3rem;
   }
 }
+
+/* --- 🔍 カテゴリー別検索セクションの最適化 --- */
+.categorySearchSection {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 60px;
+}
+
+.searchGroup {
+  margin-top: 25px;
+}
+
+.groupLabel {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #64748b;
+  margin-bottom: 15px;
+  padding-left: 10px;
+  border-left: 4px solid #28a745;
+}
+
+/* ミニカードのグリッド */
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.categoryCardSmall {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.categoryCardSmall:hover {
+  background: #ffffff;
+  border-color: #28a745;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1);
+  transform: translateY(-2px);
+}
+
+.catIcon {
+  font-size: 1.4rem;
+}
+
+.catNameSmall {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+/* スペックタグ（クラウド形式） */
+.tagCloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.specTag {
+  padding: 8px 16px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid #dbeafe;
+  transition: all 0.2s;
+}
+
+.specTag:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* 📱 スマホ対応 */
+@media (max-width: 640px) {
+  .categoryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .categorySearchSection {
+    padding: 20px 15px;
+  }
+}
