@@ -27,6 +27,7 @@ export interface RegisterResponse {
 // --- ヘルパー関数：ベースパスを「絶対URL」で取得 ---
 /**
  * 💡 VPS環境におけるリダイレクトの確実性を高める関数
+ * パス末尾の整合性を整え、キャッシュバスター（タイムスタンプ）を付与します。
  */
 const getAbsoluteRedirectPath = () => {
   if (typeof window === 'undefined') return '/';
@@ -35,8 +36,8 @@ const getAbsoluteRedirectPath = () => {
   const origin = window.location.origin;
 
   // ローカル: http://localhost:3000/bicstation/
-  // 本番: https://bicstation.com (末尾スラッシュなしでブラウザの自動補完に任せる)
-  const basePath = isLocal ? `${origin}/bicstation/` : `${origin}`;
+  // 本番: https://bicstation.com/
+  let basePath = isLocal ? `${origin}/bicstation/` : `${origin}/`;
   
   // 🚀 キャッシュバスターを追加 (?t=...)
   // これにより、Nginxやブラウザが「古いログイン画面」をキャッシュから出すのを防ぎます
@@ -84,13 +85,13 @@ export async function loginUser(username: string, password: string): Promise<Aut
 
     // 🚀 修正ポイント:
     // 1. window.location.replace を使用して履歴を上書き（ログイン画面に戻らせない）
-    // 2. キャッシュバスター付きの絶対URLへ遷移
-    // 3. 100msのディレイでlocalStorageの書き込みをOSレベルで確定させる
+    // 2. キャッシュバスター付きの絶対URLへ遷移（末尾スラッシュを保証）
+    // 3. 200msのディレイでlocalStorageの書き込みを確実に完了させる
     const redirectUrl = getAbsoluteRedirectPath();
     
     setTimeout(() => {
       window.location.replace(redirectUrl);
-    }, 150); 
+    }, 200); 
   }
 
   return data;
@@ -135,7 +136,7 @@ export function logoutUser(): void {
 
     console.log("Logout initiated. Clearing session and redirecting...");
 
-    // 2. ログアウト時もキャッシュを避けてトップへ
+    // 2. ログアウト時もキャッシュを避けてトップへ強制遷移
     const redirectUrl = getAbsoluteRedirectPath();
     window.location.replace(redirectUrl);
   }
