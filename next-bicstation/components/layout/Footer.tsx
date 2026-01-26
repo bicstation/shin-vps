@@ -5,7 +5,7 @@ import styles from './Footer.module.css';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const siteColor = COLORS?.SITE_COLOR || '#0f172a'; // メインカラーを反映
+  const siteColor = COLORS?.SITE_COLOR || '#0f172a';
 
   const mainBrands = [
     { name: 'Lenovo', slug: 'lenovo' },
@@ -44,7 +44,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* 2列目：ナビゲーション・解析メニュー */}
+        {/* 2列目：ナビゲーション */}
         <div className={styles.column}>
           <h3 className={styles.sectionTitle}>コンテンツ・解析</h3>
           <ul className={styles.linkList}>
@@ -52,13 +52,13 @@ export default function Footer() {
               <Link href="/">🏠 製品カタログトップ</Link>
             </li>
             <li className={styles.linkItem}>
-              <Link href="/bicstation">📝 最新テックニュース・ブログ</Link>
+              <Link href="/bicstation">📝 最新テックニュース</Link>
             </li>
             <li className={styles.linkItem}>
               <Link href="/parts">🛠 自作PCパーツ比較</Link>
             </li>
             <li className={styles.linkItem}>
-              <Link href="/ranking">🏆 スペック・コスパランキング</Link>
+              <Link href="/ranking">🏆 コスパランキング</Link>
             </li>
             <li className={styles.linkItem}>
               <Link href="/about">ℹ️ BICSTATIONについて</Link>
@@ -66,21 +66,27 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* 3列目：サポート・法的情報 */}
+        {/* 3列目：法的・信頼性情報（5つのページを統合） */}
         <div className={styles.column}>
           <h3 className={styles.sectionTitle}>インフォメーション</h3>
           <ul className={styles.linkList}>
             <li className={styles.linkItem}>
+              <Link href="/privacy-policy">🛡 プライバシーポリシー</Link>
+            </li>
+            <li className={styles.linkItem}>
+              <Link href="/ads-policy">📢 広告掲載規定 (API利用)</Link>
+            </li>
+            <li className={styles.linkItem}>
+              <Link href="/disclaimer">⚠️ 免責事項</Link>
+            </li>
+            <li className={styles.linkItem}>
+              <Link href="/guideline">📋 編集ガイドライン</Link>
+            </li>
+            <li className={styles.linkItem}>
               <Link href="/contact">📧 お問い合わせ</Link>
             </li>
-            <li className={styles.linkItem}>
-              <Link href="/privacy-policy">プライバシーポリシー</Link>
-            </li>
-            <li className={styles.linkItem}>
-              <Link href="/terms">利用規約</Link>
-            </li>
             <li className={styles.note}>
-              ※製品スペック、在庫状況、価格は各メーカー公式サイトを必ず優先してご確認ください。本サイトの解析データは購入の参考として提供されています。
+              ※本サイトの解析データはAPIに基づいた投稿時点のものであり、ご購入の際は必ず遷移先の各販売サイトにて最新情報をご確認ください。
             </li>
           </ul>
         </div>
