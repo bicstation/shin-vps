@@ -101,12 +101,14 @@ export default async function Page({ searchParams }: PageProps) {
                     <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔍</span> 目的・形状から探す</h2>
                     <div className={styles.categoryGrid}>
                         {[
-                            { name: 'ビジネス・事務', slug: 'business', img: 'https://via.placeholder.com/400x225?text=Business+PC' },
-                            { name: '動画編集・クリエイティブ', slug: 'creative', img: 'https://via.placeholder.com/400x225?text=Creative+PC' },
-                            { name: 'ゲーミングPC', slug: 'gaming', img: 'https://via.placeholder.com/400x225?text=Gaming+PC' },
-                            { name: 'モバイルノート', slug: 'laptop', img: 'https://via.placeholder.com/400x225?text=Laptop' },
-                            { name: 'デスクトップ', slug: 'desktop', img: 'https://via.placeholder.com/400x225?text=Desktop' },
-                            { name: 'ミニPC', slug: 'mini-pc', img: 'https://via.placeholder.com/400x225?text=Mini+PC' },
+                            { name: 'ビジネス・事務', slug: 'usage-general', img: 'https://via.placeholder.com/400x225?text=Business+PC' },
+                            { name: '動画編集・クリエイティブ', slug: 'usage-creator', img: 'https://via.placeholder.com/400x225?text=Creative+PC' },
+                            { name: 'ゲーミングPC', slug: 'usage-gaming', img: 'https://via.placeholder.com/400x225?text=Gaming+PC' },
+                            { name: 'モバイルノート', slug: 'type-laptop', img: 'https://via.placeholder.com/400x225?text=Laptop' },
+                            { name: 'デスクトップ', slug: 'type-desktop', img: 'https://via.placeholder.com/400x225?text=Desktop' },
+                            { name: 'ミニPC', slug: 'type-mini-pc', img: 'https://via.placeholder.com/400x225?text=Mini+PC' },
+                            { name: 'タブレットPC', slug: 'type-tablet', img: 'https://via.placeholder.com/400x225?text=Mini+PC' },
+                            { name: 'ワークステーション', slug: 'type-workstation', img: 'https://via.placeholder.com/400x225?text=Mini+PC' },
                         ].map((cat) => (
                             <Link key={cat.slug} href={`/catalog?attribute=${cat.slug}`} className={styles.categoryCard}>
                                 <div className={styles.categoryImageWrapper}>
