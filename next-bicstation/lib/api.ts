@@ -132,16 +132,36 @@ export async function fetchPostData(slug: string) {
 }
 
 /**
- * 💻 [Django API] 商品一覧取得
+ * 💻 [Django API] 商品一覧取得 (PCファインダー対応拡張版)
+ * 引数に詳細なフィルタパラメータを追加しました
  */
-export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attribute = '') {
+export async function fetchPCProducts(
+    maker = '', 
+    offset = 0, 
+    limit = 10, 
+    attribute = '',
+    budget = '',    // 💰 追加: 最大予算
+    ram = '',       // 🧠 追加: 最小メモリ
+    npu = false,    // 🤖 追加: NPU搭載フラグ
+    gpu = false,    // 🎮 追加: 独立GPUフラグ
+    type = ''       // 🏗️ 追加: 筐体タイプ(unified_genre)
+) {
     const rootUrl = getDjangoBaseUrl();
     
     const params = new URLSearchParams();
+    
+    // 既存の基本パラメータ
     if (maker) params.append('maker', maker.toLowerCase());
     if (attribute) params.append('attribute', attribute);
     params.append('limit', limit.toString());
     params.append('offset', offset.toString());
+
+    // 🚀 PCファインダー用の新規パラメータ
+    if (budget) params.append('budget', budget);
+    if (ram) params.append('ram', ram);
+    if (npu) params.append('npu', 'true');
+    if (gpu) params.append('gpu', 'true');
+    if (type && type !== 'all') params.append('type', type);
 
     const url = `${rootUrl}/api/pc-products/?${params.toString()}`;
     
@@ -244,7 +264,7 @@ export async function fetchPCProductRanking(): Promise<PCProduct[]> {
     try {
         const res = await fetch(url, {
             headers: { 'Host': 'localhost' },
-            cache: 'no-store' // 重複していた next: { revalidate: 0 } を削除
+            cache: 'no-store'
         });
 
         if (!res.ok) {
@@ -270,7 +290,7 @@ export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
     try {
         const res = await fetch(url, {
             headers: { 'Host': 'localhost' },
-            cache: 'no-store' // 重複していた next: { revalidate: 0 } を削除
+            cache: 'no-store'
         });
 
         if (!res.ok) {

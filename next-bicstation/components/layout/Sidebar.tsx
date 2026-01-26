@@ -33,12 +33,13 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
 
   const [specStats, setSpecStats] = useState<SidebarData | null>(null);
   
-  // 🚀 アコーディオンの開閉状態を管理するState
-  // 初期値として「BRANDS」と「RANKING」を開いておく設定
+  // アコーディオンの開閉状態を管理
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
     'RANKING': true,
     'BRANDS': true,
-    'LATEST ARTICLES': true
+    'LATEST': true,
+    'DOMESTIC': true, // 追加
+    'OVERSEAS': true  // 追加
   });
 
   const toggleSection = (section: string) => {
@@ -62,6 +63,19 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
     fetchSpecStats();
   }, []);
 
+  // --- メーカーをグループ分けするロジック ---
+  const domesticNames = ['mouse', 'panasonic', 'vaio', 'dynabook', 'fujitsu', 'nec', 'iiyama'];
+  
+  const categorizedMakers = makers.reduce((acc, curr) => {
+    const name = curr.maker.toLowerCase();
+    if (domesticNames.includes(name)) {
+      acc.domestic.push(curr);
+    } else {
+      acc.overseas.push(curr);
+    }
+    return acc;
+  }, { domestic: [] as MakerCount[], overseas: [] as MakerCount[] });
+
   const getFilterHref = (attrSlug: string) => {
     const isBrandPage = pathname.startsWith('/brand');
     if (isBrandPage && activeMenu) {
@@ -74,16 +88,26 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
     return `${hrefObj.pathname}?attribute=${hrefObj.query.attribute}`;
   };
 
-  // 🚀 セクション見出し（トリガー）コンポーネント
-  const SectionHeader = ({ title, id }: { title: string, id: string }) => (
+  // セクション見出し（トリガー）コンポーネント
+  const SectionHeader = ({ title, id, sub = false }: { title: string, id: string, sub?: boolean }) => (
     <h3 
       className={styles.sectionTitle} 
       onClick={() => toggleSection(id)}
-      style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+      style={{ 
+        cursor: 'pointer', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        fontSize: sub ? '0.85rem' : undefined,
+        opacity: sub ? 0.8 : 1,
+        marginTop: sub ? '10px' : undefined,
+        paddingLeft: sub ? '10px' : undefined,
+        borderLeft: sub ? `2px solid ${siteColor}44` : undefined
+      }}
     >
       {title}
       <span style={{ 
-        fontSize: '0.8rem', 
+        fontSize: '0.7rem', 
         transition: 'transform 0.3s', 
         transform: openSections[id] ? 'rotate(180deg)' : 'rotate(0deg)' 
       }}>
@@ -92,13 +116,41 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
     </h3>
   );
 
+  // メーカーアイテムを描画する共通関数
+  const renderMakerList = (makerItems: MakerCount[]) => (
+    <ul className={styles.accordionContent}>
+      {makerItems.map((item) => {
+        const isActive = activeMenu?.toLowerCase() === item.maker.toLowerCase();
+        return (
+          <li key={item.maker}>
+            <Link href={`/brand/${item.maker.toLowerCase()}`} className={styles.link}
+              style={{ color: isActive ? siteColor : undefined, fontWeight: isActive ? 'bold' : 'normal' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>💻 {item.maker.toUpperCase()}</span>
+              <span className={styles.badge}>{item.count}</span>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   return (
-    <aside className={styles.sidebar}>
+    <aside className={styles.sidebar} style={{ height: 'auto', minHeight: '100%', maxHeight: 'none', overflowY: 'visible' }}>
       
-      {/* 🏆 RANKING */}
-      <SectionHeader title="RANKING" id="RANKING" />
+      {/* 🏆 RANKING & TOOLS */}
+      <SectionHeader title="SPECIAL" id="RANKING" />
       {openSections['RANKING'] && (
         <ul className={styles.accordionContent}>
+          <li style={{ marginBottom: '8px' }}>
+            <Link href="/pc-finder/" className={styles.link} style={{ 
+                background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                color: '#ffffff',
+                borderRadius: '12px', padding: '12px',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              }}>
+              <span style={{ fontWeight: '900', letterSpacing: '0.05em' }}>🔍 PC-FINDER (AI選定)</span>
+            </Link>
+          </li>
           <li>
             <Link href="/ranking/" className={styles.link} style={{ 
                 color: pathname === '/ranking/' ? siteColor : undefined,
@@ -111,23 +163,18 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
         </ul>
       )}
 
-      {/* 1. BRANDS */}
+      {/* 1. BRANDS (Grouped) */}
       <SectionHeader title="BRANDS" id="BRANDS" />
       {openSections['BRANDS'] && (
-        <ul className={styles.accordionContent}>
-          {makers.map((item) => {
-            const isActive = activeMenu?.toLowerCase() === item.maker.toLowerCase();
-            return (
-              <li key={item.maker}>
-                <Link href={`/brand/${item.maker.toLowerCase()}`} className={styles.link}
-                  style={{ color: isActive ? siteColor : undefined, fontWeight: isActive ? 'bold' : 'normal' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>💻 {item.maker.toUpperCase()}</span>
-                  <span className={styles.badge}>{item.count}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <div style={{ marginBottom: '20px' }}>
+          {/* 国内ブランド */}
+          <SectionHeader title="国内メーカー" id="DOMESTIC" sub />
+          {openSections['DOMESTIC'] && renderMakerList(categorizedMakers.domestic)}
+
+          {/* 海外ブランド */}
+          <SectionHeader title="海外メーカー" id="OVERSEAS" sub />
+          {openSections['OVERSEAS'] && renderMakerList(categorizedMakers.overseas)}
+        </div>
       )}
 
       {/* 2. SPECS (動的生成セクション) */}
@@ -163,7 +210,7 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
           {recentPosts.map((post) => (
             <li key={post.id} style={{ marginBottom: '10px' }}>
               <Link href={`/bicstation/${post.slug || post.id}`} className={styles.link}>
-                <span>📄 {post.title}</span>
+                <span style={{ fontSize: '0.85rem', lineHeight: '1.4', display: 'block' }}>📄 {post.title}</span>
               </Link>
             </li>
           ))}

@@ -45,7 +45,7 @@ urlpatterns = [
     # 4. PC・ソフトウェア製品データ エンドポイント (PCProduct)
     # -----------------------------------------------------------
     # GET /api/pc-products/
-    # 💡 フィルタ（cpu_socket, maker, unified_genre等）を適用して一覧を取得
+    # 💡 フィルタ（budget, ram, npu, gpu, maker, unified_genre等）を適用して一覧を取得
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # GET /api/pc-products/ranking/

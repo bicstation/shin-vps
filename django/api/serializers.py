@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/serializers.py
+
 from rest_framework import serializers
 from django.utils import timezone
 from .models import (
@@ -81,7 +83,6 @@ class PCAttributeSerializer(serializers.ModelSerializer):
 
 # --- 🚀 価格履歴用シリアライザ ---
 class PriceHistorySerializer(serializers.ModelSerializer):
-    # date = serializers.SerializerMethodField()
     date = serializers.DateTimeField(source='recorded_at', format="%Y-%m-%d")
 
     class Meta:
@@ -170,12 +171,14 @@ class PCProductSerializer(serializers.ModelSerializer):
     # --- 📈 価格履歴の取得 ---
     def get_price_history(self, obj):
         histories = PriceHistory.objects.filter(product=obj).order_by('-recorded_at')[:30]
-        return PriceHistorySerializer(reversed(histories), many=True).data
+        # reversedしたものをリストにして返す
+        return PriceHistorySerializer(list(reversed(histories)), many=True).data
 
     # --- 📉 注目度推移の取得 ---
     def get_stats_history(self, obj):
         stats = ProductDailyStats.objects.filter(product=obj).order_by('-date')[:30]
-        return ProductDailyStatsSerializer(reversed(stats), many=True).data
+        # reversedしたものをリストにして返す
+        return ProductDailyStatsSerializer(list(reversed(stats)), many=True).data
 
     # --- 📊 レーダーチャート用データの整形 ---
     def get_radar_chart(self, obj):

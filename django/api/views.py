@@ -232,6 +232,34 @@ class PCProductListAPIView(generics.ListAPIView):
             'attributes', 'daily_stats', 'comments__user'
         )
         
+        # --- 🚀 PCファインダー用の追加フィルタ ---
+        # 予算フィルタ
+        budget = self.request.query_params.get('budget')
+        if budget:
+            queryset = queryset.filter(price__lte=int(budget))
+
+        # 最小メモリ (GB)
+        ram = self.request.query_params.get('ram')
+        if ram and int(ram) > 0:
+            queryset = queryset.filter(memory_gb__gte=int(ram))
+
+        # AI PC (NPU搭載フラグ)
+        npu = self.request.query_params.get('npu')
+        if npu == 'true':
+            queryset = queryset.filter(is_ai_pc=True)
+
+        # 独立GPU (GPUスコアや特定キーワードで判定)
+        gpu = self.request.query_params.get('gpu')
+        if gpu == 'true':
+            # スコアが一定以上、または Integrated(内蔵)以外
+            queryset = queryset.filter(score_gpu__gte=30)
+
+        # 形状 (unified_genre)
+        p_type = self.request.query_params.get('type')
+        if p_type and p_type != 'all':
+            queryset = queryset.filter(unified_genre__icontains=p_type)
+        # --- ここまで ---
+
         # メーカーでの絞り込み
         maker = self.request.query_params.get('maker')
         if maker:

@@ -21,8 +21,7 @@ export default function Header() {
     if (token) {
       setIsLoggedIn(true);
       // シンプルな実装として、以前保存した site_group やユーザー情報を取得
-      // ※より正確には /auth/me の結果を保持するのが理想です
-      const storedRole = localStorage.getItem('user_role'); // ログイン時に保存するように auth.ts を調整
+      const storedRole = localStorage.getItem('user_role'); 
       setUserRole(storedRole || '一般'); 
     }
   }, []);
@@ -60,6 +59,21 @@ export default function Header() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           
           <nav className={styles.desktopNav} style={{ gap: '25px', marginRight: '20px' }}>
+            {/* 🚀 PC-FINDERへのリンクを追加 */}
+            <Link 
+              href="/pc-finder" 
+              style={{ 
+                color: siteColor, 
+                textDecoration: 'none', 
+                fontSize: '0.95em', 
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <span style={{ fontSize: '1.1em' }}>🔍</span> PC診断
+            </Link>
             <Link href="/" style={{ color: '#eee', textDecoration: 'none', fontSize: '0.95em' }}>PCカタログ</Link>
           </nav>
 
@@ -113,6 +127,10 @@ export default function Header() {
       <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} style={{ borderBottom: `2px solid ${siteColor}` }}>
         <div className={styles.menuSection}>
           <p className={styles.sectionTitle}>Navigation</p>
+          {/* 🚀 スマホメニューにもPC-FINDERを追加 */}
+          <Link href="/pc-finder" onClick={closeMenu} style={{ color: siteColor, fontWeight: 'bold' }}>
+            🔍 AIスペック診断 (PC-FINDER)
+          </Link>
           <Link href="/" onClick={closeMenu}>PCカタログ</Link>
         </div>
 
