@@ -27,7 +27,7 @@ export default async function Page({ searchParams }: PageProps) {
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     
     // 💡 トップページ用に表示件数を絞る
-    const PRODUCT_LIMIT = 8; 
+    const PRODUCT_LIMIT = 10; 
 
     // データの並列取得
     const [wpData, pcData, makersData, rankingData, popularityData] = await Promise.all([
@@ -42,7 +42,7 @@ export default async function Page({ searchParams }: PageProps) {
     const trendTopThree = popularityData.slice(0, 3);
     
     const allPosts = wpData.results || [];
-    const featuredPosts = allPosts.slice(0, 6); 
+    const featuredPosts = allPosts.slice(0, 8); 
     const archivePosts = allPosts.slice(6);
 
     const safeDecode = (str: string) => {
