@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link'; 
 import { loginUser } from '../../lib/auth';
 import { getSiteMetadata } from '../../utils/siteConfig';
@@ -19,84 +18,71 @@ export default function LoginPage() {
 
     try {
       await loginUser(username, password);
-
-      // 🚀 現在のURLパスから、確実にプレフィックスを特定する
-      const currentPath = window.location.pathname; // 例: "/bicstation/login"
-      
-      // "/bicstation/login" から "/bicstation" を抽出
-      // スラッシュで分割して、最初の要素を再構成する
-      const pathSegments = currentPath.split('/').filter(Boolean);
-      const sitePrefix = pathSegments.length > 0 ? `/${pathSegments[0]}` : '';
-
-      // 🚀 遷移先を "/bicstation" (または "/") に設定
-      const destination = sitePrefix || '/';
-
-      console.log("Login success! Current path:", currentPath);
-      console.log("Determined destination:", destination);
-      
-      // 強制リロード遷移
-      window.location.href = destination;
-
+      console.log("Login sequence initiated...");
     } catch (err: any) {
       setError(err.message || 'ログインに失敗しました。');
-    } finally {
       setLoading(false);
     }
   };
 
-  // リンク用のパス（表示用）
   const { site_prefix } = getSiteMetadata();
   const registerHref = site_prefix ? `${site_prefix}/register` : '/register';
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', fontFamily: 'sans-serif' }}>
-      <h1 style={{ textAlign: 'center' }}>ログイン</h1>
+    <div className="w-full max-w-md mx-auto my-12 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
+      <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">ログイン</h1>
       
       {error && (
-        <p style={{ color: '#d9534f', backgroundColor: '#f2dede', padding: '10px', borderRadius: '4px', fontSize: '0.9rem' }}>
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm animate-pulse">
           {error}
-        </p>
+        </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>ユーザー名</label>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            ユーザー名
+          </label>
           <input 
             type="text" 
             placeholder="ユーザー名を入力" 
             value={username} 
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)} 
+            onChange={(e) => setUsername(e.target.value)} 
             required
-            style={{ display: 'block', width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '4px' }}
+            autoComplete="username"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>パスワード</label>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            パスワード
+          </label>
           <input 
             type="password" 
             placeholder="パスワードを入力" 
             value={password} 
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} 
+            onChange={(e) => setPassword(e.target.value)} 
             required
-            style={{ display: 'block', width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '4px' }}
+            autoComplete="current-password"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
           />
         </div>
 
         <button 
           type="submit" 
           disabled={loading}
-          style={{ 
-            width: '100%', padding: '12px', backgroundColor: loading ? '#ccc' : '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '1rem'
-          }}
+          className={`w-full py-4 rounded-lg font-bold text-white transition-all transform active:scale-[0.98] ${
+            loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200'
+          }`}
         >
           {loading ? 'ログイン中...' : 'ログイン'}
         </button>
       </form>
 
-      <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>
+      <div className="mt-10 pt-6 border-t border-gray-100 text-center text-sm text-gray-500">
         アカウントをお持ちでないですか？<br />
-        <Link href={registerHref} style={{ color: '#0070f3', textDecoration: 'none', fontWeight: 'bold' }}>
+        <Link href={registerHref} className="inline-block mt-2 text-blue-600 font-bold hover:underline">
           新規会員登録はこちら
         </Link>
       </div>
