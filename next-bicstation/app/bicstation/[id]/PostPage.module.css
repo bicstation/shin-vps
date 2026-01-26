@@ -280,9 +280,10 @@
 
 /* 🚀 修正ポイント：製品名を確実に見えるように */
 .ctaTitle {
-  font-size: 1.8rem;
-  font-weight: 800;
+  font-size: 1.8rem !important;
+  font-weight: 800 !important;
   color: #ffffff !important; /* 強制的に白 */
+  display: block !important;
   line-height: 1.4;
   margin: 0 0 20px;
   padding-left: 15px;
