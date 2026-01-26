@@ -3,7 +3,6 @@
 import { getSiteMetadata } from '../utils/siteConfig';
 
 // --- 型定義 (Interfaces) ---
-
 export interface AuthTokenResponse {
   access: string;
   refresh: string;
@@ -25,28 +24,16 @@ export interface RegisterResponse {
   };
 }
 
-// --- ヘルパー関数：ベースパスを取得 ---
-/**
- * 💡 ローカル(localhost)なら /bicstation/、VPSなら / を返す
- * さらに、無限ループ防止のため現在のパスが /login の場合はトップを指すように調整
- */
-const getBasePath = () => {
+// --- ヘルパー関数：ベースパスを「絶対URL」で取得 ---
+const getAbsoluteRedirectPath = () => {
   if (typeof window === 'undefined') return '/';
 
   const isLocal = window.location.hostname === 'localhost';
-  const currentPath = window.location.pathname;
+  const origin = window.location.origin;
 
-  // 1. 基本となるベースパスを決定
-  let basePath = isLocal ? '/bicstation/' : '/';
-
-  // 2. 無限ループ防止ロジック
-  // 現在のパスが /login を含む場合、リダイレクト先が自分自身にならないよう
-  // 確実にトップページ（"/" または "/bicstation/"）へ飛ばす
-  if (currentPath.includes('/login')) {
-    return basePath;
-  }
-
-  return basePath;
+  // 💡 VPS環境（bicstation.com）では、末尾スラッシュなしのURLを返し、
+  // ブラウザに「ディレクトリ」ではなく「トップページそのもの」を認識させます。
+  return isLocal ? `${origin}/bicstation/` : `${origin}`;
 };
 
 // --- 認証関数 ---
@@ -58,7 +45,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api';
   const { site_group, origin_domain } = getSiteMetadata();
 
-  console.log("Attempting API login at:", `${API_BASE}/auth/login/`);
+  console.log("1. APIログイン試行中:", `${API_BASE}/auth/login/`);
 
   const response = await fetch(`${API_BASE}/auth/login/`, {
     method: 'POST',
@@ -79,20 +66,21 @@ export async function loginUser(username: string, password: string): Promise<Aut
   const data: AuthTokenResponse = await response.json();
   
   if (data.access && typeof window !== 'undefined') {
-    // 1. トークン情報をブラウザに保存
+    // 2. ストレージへの保存
     localStorage.setItem('access_token', data.access);
     localStorage.setItem('refresh_token', data.refresh);
+    localStorage.setItem('user_role', data.user?.site_group || site_group);
+
+    console.log("3. 通信成功！リダイレクトを待機中...");
+
+    // 🚀 修正ポイント: 
+    // ブラウザの履歴に残さず（replace）、完全にページを再読み込みして遷移させます。
+    // これにより、Headerコンポーネントのログインチェックが確実に発火します。
+    const redirectUrl = getAbsoluteRedirectPath();
     
-    // 2. ロール情報を保存
-    const userRole = data.user?.site_group || site_group;
-    localStorage.setItem('user_role', userRole);
-
-    console.log("Login successful, redirecting to:", getBasePath());
-
-    // 🚀 ログイン成功後のリダイレクト実行
-    // href を書き換えることでページ全体をクリーンにリロードし、
-    // Authコンテキストやステートを確実に更新させます。
-    window.location.href = getBasePath(); 
+    setTimeout(() => {
+      window.location.replace(redirectUrl);
+    }, 100); // 100msの微小なディレイを入れて保存を確実にする
   }
 
   return data;
@@ -130,12 +118,11 @@ export async function registerUser(username: string, email: string, password: st
  */
 export function logoutUser(): void {
   if (typeof window !== 'undefined') {
-    // 1. ストレージの破棄
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
 
-    // 🚀 ログアウト後のリダイレクト
-    window.location.href = getBasePath();
+    const redirectUrl = getAbsoluteRedirectPath();
+    window.location.replace(redirectUrl);
   }
 }
