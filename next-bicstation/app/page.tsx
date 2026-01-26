@@ -7,15 +7,15 @@ export const revalidate = 0;
 import React from 'react';
 import Link from 'next/link';
 import Sidebar from '@/components/layout/Sidebar';
-import RadarChart from '@/components/RadarChart'; 
+import RadarChart from '@/components/RadarChart';
 import ProductCard from '@/components/product/ProductCard';
-import { 
-    fetchPostList, 
-    fetchPCProducts, 
-    fetchMakers, 
+import {
+    fetchPostList,
+    fetchPCProducts,
+    fetchMakers,
     fetchPCProductRanking,
-    fetchPCPopularityRanking 
-} from '@/lib/api'; 
+    fetchPCPopularityRanking
+} from '@/lib/api';
 import styles from './MainPage.module.css';
 
 interface PageProps {
@@ -25,11 +25,11 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
     const sParams = await searchParams;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
-    const PRODUCT_LIMIT = 10; 
+    const PRODUCT_LIMIT = 10;
 
     const [wpData, pcData, makersData, rankingData, popularityData] = await Promise.all([
         fetchPostList(18),
-        fetchPCProducts('', 0, PRODUCT_LIMIT, attribute || ''), 
+        fetchPCProducts('', 0, PRODUCT_LIMIT, attribute || ''),
         fetchMakers(),
         fetchPCProductRanking(),
         fetchPCPopularityRanking()
@@ -37,7 +37,7 @@ export default async function Page({ searchParams }: PageProps) {
 
     const topThree = rankingData.slice(0, 3);
     const trendTopThree = popularityData.slice(0, 3);
-    const featuredPosts = (wpData.results || []).slice(0, 8); 
+    const featuredPosts = (wpData.results || []).slice(0, 8);
     const archivePosts = (wpData.results || []).slice(8);
 
     const safeDecode = (str: string) => {
@@ -48,9 +48,9 @@ export default async function Page({ searchParams }: PageProps) {
     return (
         <div className={styles.wrapper}>
             <aside className={styles.sidebarSection}>
-                <Sidebar 
-                    activeMenu="all" 
-                    makers={makersData} 
+                <Sidebar
+                    activeMenu="all"
+                    makers={makersData}
                     recentPosts={(wpData.results || []).slice(0, 10).map((p: any) => ({
                         id: p.id,
                         title: safeDecode(p.title.rendered),
@@ -96,27 +96,67 @@ export default async function Page({ searchParams }: PageProps) {
                     </div>
                 </section>
 
-                {/* 🔍 目的・形状から探す（新規追加セクション） */}
+                {/* 🔍 目的・スペック・形状から探す */}
                 <section className={styles.categorySearchSection}>
-                    <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔍</span> 目的・形状から探す</h2>
-                    <div className={styles.categoryGrid}>
-                        {[
-                            { name: 'ビジネス・事務', slug: 'usage-general', img: 'https://via.placeholder.com/400x225?text=Business+PC' },
-                            { name: '動画編集・クリエイティブ', slug: 'usage-creator', img: 'https://via.placeholder.com/400x225?text=Creative+PC' },
-                            { name: 'ゲーミングPC', slug: 'usage-gaming', img: 'https://via.placeholder.com/400x225?text=Gaming+PC' },
-                            { name: 'モバイルノート', slug: 'type-laptop', img: 'https://via.placeholder.com/400x225?text=Laptop' },
-                            { name: 'デスクトップ', slug: 'type-desktop', img: 'https://via.placeholder.com/400x225?text=Desktop' },
-                            { name: 'ミニPC', slug: 'type-mini-pc', img: 'https://via.placeholder.com/400x225?text=Mini+PC' },
-                            { name: 'タブレットPC', slug: 'type-tablet', img: 'https://via.placeholder.com/400x225?text=Mini+PC' },
-                            { name: 'ワークステーション', slug: 'type-workstation', img: 'https://via.placeholder.com/400x225?text=Mini+PC' },
-                        ].map((cat) => (
-                            <Link key={cat.slug} href={`/catalog?attribute=${cat.slug}`} className={styles.categoryCard}>
-                                <div className={styles.categoryImageWrapper}>
-                                    <img src={cat.img} alt={cat.name} className={styles.categoryImage} />
-                                    <div className={styles.categoryOverlay}><span className={styles.categoryName}>{cat.name}</span></div>
-                                </div>
-                            </Link>
-                        ))}
+                    <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔍</span> 目的・スペックから探す</h2>
+
+                    {/* --- 用途・ターゲット別 --- */}
+                    <div className={styles.searchGroup}>
+                        <h3 className={styles.groupLabel}>用途・スタイル</h3>
+                        <div className={styles.categoryGrid}>
+                            {[
+                                { name: 'ビジネス・法人向け', slug: 'usage-business', icon: '💼' },
+                                { name: 'ゲーミングPC', slug: 'usage-gaming', icon: '🎮' },
+                                { name: 'クリエイター向け', slug: 'usage-creator', icon: '🎨' },
+                                { name: 'AI開発・生成AI', slug: 'usage-ai-dev', icon: '🤖' },
+                                { name: '軽量・1kg未満', slug: 'feat-lightweight', icon: '🪶' },
+                                { name: 'モバイルノート', slug: 'size-mobile', icon: '💻' },
+                            ].map((cat) => (
+                                <Link key={cat.slug} href={`/catalog?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
+                                    <span className={styles.catIcon}>{cat.icon}</span>
+                                    <span className={styles.catNameSmall}>{cat.name}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* --- 最新プロセッサ・性能軸 --- */}
+                    <div className={styles.searchGroup}>
+                        <h3 className={styles.groupLabel}>最新プロセッサ・AI機能</h3>
+                        <div className={styles.tagCloud}>
+                            {[
+                                { name: 'Core Ultra 9', slug: 'intel-core-ultra-9' },
+                                { name: 'Core Ultra 7', slug: 'intel-core-ultra-7' },
+                                { name: 'Ryzen AI 300', slug: 'amd-ryzen-ai-300' },
+                                { name: 'Snapdragon X', slug: 'arm-snapdragon-x' },
+                                { name: 'Copilot+ PC', slug: 'feature-copilot-plus' },
+                                { name: 'NPU搭載 (AI PC)', slug: 'feature-npu-ai' },
+                            ].map((tag) => (
+                                <Link key={tag.slug} href={`/catalog?attribute=${tag.slug}`} className={styles.specTag}>
+                                    {tag.name}
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* --- グラフィックス・形状別 --- */}
+                    <div className={styles.searchGroup}>
+                        <h3 className={styles.groupLabel}>形状・グラフィックス</h3>
+                        <div className={styles.categoryGrid}>
+                            {[
+                                { name: 'デスクトップPC', slug: 'type-desktop', icon: '🖥️' },
+                                { name: '小型・ミニPC', slug: 'type-mini-pc', icon: '📦' },
+                                { name: '2-in-1 / タブレット', slug: 'type-2in1', icon: '🔄' },
+                                { name: 'RTX 50シリーズ', slug: 'gpu-rtx-50-series', icon: '⚡' },
+                                { name: 'RTX 40シリーズ', slug: 'gpu-rtx-40-series', icon: '🚀' },
+                                { name: 'ワークステーション', slug: 'type-workstation', icon: '🛠️' },
+                            ].map((cat) => (
+                                <Link key={cat.slug} href={`/catalog?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
+                                    <span className={styles.catIcon}>{cat.icon}</span>
+                                    <span className={styles.catNameSmall}>{cat.name}</span>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 </section>
 
