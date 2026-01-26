@@ -25,13 +25,10 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
     const sParams = await searchParams;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
-    
-    // 💡 トップページ用に表示件数を絞る
     const PRODUCT_LIMIT = 10; 
 
-    // データの並列取得
     const [wpData, pcData, makersData, rankingData, popularityData] = await Promise.all([
-        fetchPostList(18), // 記事は多めに取得して分配
+        fetchPostList(18),
         fetchPCProducts('', 0, PRODUCT_LIMIT, attribute || ''), 
         fetchMakers(),
         fetchPCProductRanking(),
@@ -40,16 +37,12 @@ export default async function Page({ searchParams }: PageProps) {
 
     const topThree = rankingData.slice(0, 3);
     const trendTopThree = popularityData.slice(0, 3);
-    
-    const allPosts = wpData.results || [];
-    const featuredPosts = allPosts.slice(0, 8); 
-    const archivePosts = allPosts.slice(6);
+    const featuredPosts = (wpData.results || []).slice(0, 8); 
+    const archivePosts = (wpData.results || []).slice(8);
 
     const safeDecode = (str: string) => {
         if (!str) return '';
-        return str
-            .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, ' ');
+        return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, ' ');
     };
 
     return (
@@ -58,7 +51,7 @@ export default async function Page({ searchParams }: PageProps) {
                 <Sidebar 
                     activeMenu="all" 
                     makers={makersData} 
-                    recentPosts={allPosts.slice(0, 10).map((p: any) => ({
+                    recentPosts={(wpData.results || []).slice(0, 10).map((p: any) => ({
                         id: p.id,
                         title: safeDecode(p.title.rendered),
                         slug: p.slug
@@ -73,148 +66,111 @@ export default async function Page({ searchParams }: PageProps) {
                     </h1>
                 </header>
 
-                {/* 🏆 AIスペックランキングセクション */}
+                {/* 🏆 AIスペックランキング */}
                 <section className={styles.rankingSection}>
                     <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>
-                            <span className={styles.emoji}>👑</span> AIスペックランキング TOP 3
-                        </h2>
+                        <h2 className={styles.sectionTitle}><span className={styles.emoji}>👑</span> AIスペックランキング</h2>
                         <Link href="/ranking/" className={styles.rankingLink}>すべて見る →</Link>
                     </div>
-                    
                     <div className={styles.topThreeGrid}>
-                        {topThree.map((product, index) => {
-                            const rank = index + 1;
-                            const chartColor = rank === 1 ? "#ecc94b" : rank === 2 ? "#a0aec0" : "#ed8936";
-                            return (
-                                <div key={product.unique_id} className={`${styles.topThreeCard} ${styles[`rank_${rank}`]}`}>
-                                    <div className={styles.rankBadge}>{rank}位</div>
-                                    <div className={styles.topThreeImage}>
-                                        <img src={product.image_url || '/no-image.png'} alt={product.name} />
-                                    </div>
-                                    <div className={styles.topThreeContent}>
-                                        <div className={styles.productBaseInfo}>
-                                            <span className={styles.topThreeMaker}>{product.maker}</span>
-                                            <h3 className={styles.topThreeName}>{product.name}</h3>
-                                        </div>
-                                        <div className={styles.topThreeScore}>
-                                            <div className={styles.scoreValue}>{product.spec_score}</div>
-                                            <div className={styles.scoreLabel}>AI SCORE</div>
-                                        </div>
-                                        <div className={styles.chartMini}>
-                                            <RadarChart data={product.radar_chart || []} color={chartColor} />
-                                        </div>
-                                        <Link href={`/product/${product.unique_id}`} className={styles.detailButton}>
-                                            解析詳細
-                                        </Link>
-                                    </div>
+                        {topThree.map((product, index) => (
+                            <div key={product.unique_id} className={`${styles.topThreeCard} ${styles[`rank_${index + 1}`]}`}>
+                                <div className={styles.rankBadge}>{index + 1}位</div>
+                                <div className={styles.topThreeImage}>
+                                    <img src={product.image_url?.replace('http://', 'https://') || '/no-image.png'} alt={product.name} />
                                 </div>
-                            );
-                        })}
+                                <div className={styles.topThreeContent}>
+                                    <span className={styles.topThreeMaker}>{product.maker}</span>
+                                    <h3 className={styles.topThreeName}>{product.name}</h3>
+                                    <div className={styles.topThreeScore}>
+                                        <div className={styles.scoreValue}>{product.spec_score}</div>
+                                        <div className={styles.scoreLabel}>AI SCORE</div>
+                                    </div>
+                                    <div className={styles.chartMini}>
+                                        <RadarChart data={product.radar_chart || []} color={index === 0 ? "#ecc94b" : "#a0aec0"} />
+                                    </div>
+                                    <Link href={`/product/${product.unique_id}`} className={styles.detailButton}>解析詳細</Link>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </section>
 
-                {/* 🔥 注目度ランキングセクション */}
+                {/* 🔍 目的・形状から探す（新規追加セクション） */}
+                <section className={styles.categorySearchSection}>
+                    <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔍</span> 目的・形状から探す</h2>
+                    <div className={styles.categoryGrid}>
+                        {[
+                            { name: 'ビジネス・事務', slug: 'business', img: 'https://via.placeholder.com/400x225?text=Business+PC' },
+                            { name: '動画編集・クリエイティブ', slug: 'creative', img: 'https://via.placeholder.com/400x225?text=Creative+PC' },
+                            { name: 'ゲーミングPC', slug: 'gaming', img: 'https://via.placeholder.com/400x225?text=Gaming+PC' },
+                            { name: 'モバイルノート', slug: 'laptop', img: 'https://via.placeholder.com/400x225?text=Laptop' },
+                            { name: 'デスクトップ', slug: 'desktop', img: 'https://via.placeholder.com/400x225?text=Desktop' },
+                            { name: 'ミニPC', slug: 'mini-pc', img: 'https://via.placeholder.com/400x225?text=Mini+PC' },
+                        ].map((cat) => (
+                            <Link key={cat.slug} href={`/catalog?attribute=${cat.slug}`} className={styles.categoryCard}>
+                                <div className={styles.categoryImageWrapper}>
+                                    <img src={cat.img} alt={cat.name} className={styles.categoryImage} />
+                                    <div className={styles.categoryOverlay}><span className={styles.categoryName}>{cat.name}</span></div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+
+                {/* 🔥 注目度ランキング */}
                 <section className={`${styles.rankingSection} ${styles.popularityBg}`}>
                     <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>
-                            <span className={styles.emoji}>🔥</span> 注目度ランキング TOP 3
-                        </h2>
+                        <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔥</span> 注目度ランキング</h2>
                         <Link href="/ranking/popularity/" className={styles.rankingLink}>すべて見る →</Link>
                     </div>
-                    
                     <div className={styles.topThreeGrid}>
-                        {trendTopThree.map((product, index) => {
-                            const rank = index + 1;
-                            return (
-                                <div key={`trend-${product.unique_id}`} className={`${styles.topThreeCard} ${styles.trendCard}`}>
-                                    <div className={`${styles.rankBadge} ${styles.trendBadge}`}>{rank}位</div>
-                                    <div className={styles.topThreeImage}>
-                                        <img src={product.image_url || '/no-image.png'} alt={product.name} />
-                                    </div>
-                                    <div className={styles.topThreeContent}>
-                                        <div className={styles.productBaseInfo}>
-                                            <span className={styles.topThreeMaker}>{product.maker}</span>
-                                            <h3 className={styles.topThreeName}>{product.name}</h3>
-                                        </div>
-                                        <div className={styles.trendingInfo}>
-                                            <span className={styles.trendLabel}>今売れてます！</span>
-                                            <div className={styles.trendPrice}>
-                                                {product.price ? `¥${product.price.toLocaleString()}` : "価格情報なし"}
-                                            </div>
-                                        </div>
-                                        <Link href={`/product/${product.unique_id}`} className={styles.detailButton}>
-                                            詳細を見る
-                                        </Link>
-                                    </div>
+                        {trendTopThree.map((product, index) => (
+                            <div key={`trend-${product.unique_id}`} className={`${styles.topThreeCard} ${styles.trendCard}`}>
+                                <div className={`${styles.rankBadge} ${styles.trendBadge}`}>{index + 1}位</div>
+                                <div className={styles.topThreeImage}>
+                                    <img src={product.image_url?.replace('http://', 'https://') || '/no-image.png'} alt={product.name} />
                                 </div>
-                            );
-                        })}
+                                <div className={styles.topThreeContent}>
+                                    <span className={styles.topThreeMaker}>{product.maker}</span>
+                                    <h3 className={styles.topThreeName}>{product.name}</h3>
+                                    <div className={styles.trendingInfo}>
+                                        <span className={styles.trendLabel}>注目！</span>
+                                        <div className={styles.trendPrice}>{product.price ? `¥${product.price.toLocaleString()}` : "価格情報なし"}</div>
+                                    </div>
+                                    <Link href={`/product/${product.unique_id}`} className={styles.detailButton}>詳細を見る</Link>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </section>
 
-                {/* 🚀 注目のPCトピック */}
+                {/* 🚀 記事セクション */}
                 <section className={styles.newsSection}>
-                    <h2 className={styles.sectionTitle}>
-                        <span className={styles.emoji}>🚀</span> 注目のPCトピック
-                    </h2>
+                    <h2 className={styles.sectionTitle}><span className={styles.emoji}>🚀</span> 注目のPCトピック</h2>
                     <div className={styles.newsGrid}>
-                        {featuredPosts.length > 0 ? (
-                            featuredPosts.map((post: any) => {
-                                const imageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png';
-                                return (
-                                    <Link href={`/bicstation/${post.slug}`} key={post.id} className={styles.newsCard}>
-                                        <div className={styles.imageWrapper}>
-                                            <img src={imageUrl} alt={safeDecode(post.title.rendered)} className={styles.eyecatch} loading="lazy" />
-                                        </div>
-                                        <div className={styles.contentBody}>
-                                            <span className={styles.postDate}>{new Date(post.date).toLocaleDateString('ja-JP')}</span>
-                                            <h3 className={styles.articleTitle}>{safeDecode(post.title.rendered)}</h3>
-                                        </div>
-                                    </Link>
-                                );
-                            })
-                        ) : (
-                            <p>新着記事はありません。</p>
-                        )}
+                        {featuredPosts.map((post: any) => (
+                            <Link href={`/bicstation/${post.slug}`} key={post.id} className={styles.newsCard}>
+                                <div className={styles.imageWrapper}>
+                                    <img src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url?.replace('http://', 'https://') || '/no-image.png'} alt={safeDecode(post.title.rendered)} className={styles.eyecatch} loading="lazy" />
+                                </div>
+                                <div className={styles.contentBody}>
+                                    <span className={styles.postDate}>{new Date(post.date).toLocaleDateString('ja-JP')}</span>
+                                    <h3 className={styles.articleTitle}>{safeDecode(post.title.rendered)}</h3>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 </section>
 
-                {/* 📝 以前の記事アーカイブ */}
-                {archivePosts.length > 0 && (
-                    <section className={styles.archiveSection}>
-                        <h2 className={styles.sectionTitleSmall}>
-                            <span className={styles.emoji}>📝</span> 以前の記事を読む
-                        </h2>
-                        <ul className={styles.archiveList}>
-                            {archivePosts.map((post: any) => (
-                                <li key={post.id} className={styles.archiveItem}>
-                                    <span className={styles.archiveDate}>{new Date(post.date).toLocaleDateString('ja-JP').replace(/\//g, '.')}</span>
-                                    <Link href={`/bicstation/${post.slug}`} className={styles.archiveLink}>
-                                        {safeDecode(post.title.rendered)}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                        <div className={styles.archiveFooter}>
-                            <Link href="/bicstation" className={styles.viewAllButton}>すべての記事一覧へ</Link>
-                        </div>
-                    </section>
-                )}
-
-                {/* 📦 新着製品カタログ（厳選表示） */}
+                {/* 📦 製品カタログ */}
                 <section className={styles.productSection}>
-                    <h2 className={styles.productGridTitle}>
-                        <span className={styles.titleIndicator}></span>
-                        最新PCカタログ
-                    </h2>
+                    <h2 className={styles.productGridTitle}><span className={styles.titleIndicator}></span>最新PCカタログ</h2>
                     <div className={styles.productGrid}>
                         {pcData.results.map((product: any) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
-                    
-                    {/* 🚀 カタログ全件ページへの導線を強化 */}
                     <div className={styles.viewMoreContainer}>
                         <Link href="/catalog/" className={styles.catalogFullLink}>
                             すべての製品カタログを表示する ({pcData.count}件)

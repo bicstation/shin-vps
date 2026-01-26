@@ -1,5 +1,4 @@
-/* app/MainPage.module.css */
-
+/* --- 全体レイアウト --- */
 .wrapper {
   display: flex;
   min-height: 100vh;
@@ -17,17 +16,38 @@
 
 .main {
   flex-grow: 1;
-  padding: 40px 50px; /* 上下40px, 左右50px */
+  padding: 40px 50px;
   width: 100%;
-  /* 🚩 両サイドの余白をなくすため、max-widthを解除 */
   max-width: 100%; 
   margin: 0;
   min-width: 0;
 }
 
-/* --- 🏆 RANKING SECTION --- */
-.rankingSection {
-  margin-bottom: 50px;
+.pageHeader {
+  margin-bottom: 40px;
+}
+
+.mainTitle {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.subTitle {
+  display: block;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+/* --- 🏆 共通セクション設定 --- */
+.rankingSection, 
+.categorySearchSection, 
+.newsSection, 
+.productSection {
+  margin-bottom: 60px;
   width: 100%;
 }
 
@@ -48,6 +68,10 @@
   margin: 0;
 }
 
+.emoji {
+  font-size: 1.8rem;
+}
+
 .rankingLink {
   font-size: 0.95rem;
   color: #28a745;
@@ -55,14 +79,14 @@
   font-weight: 700;
 }
 
+/* --- 👑 ランキングカード --- */
 .topThreeGrid {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  width: 100%; /* グリッド全体を横いっぱいに */
+  width: 100%;
 }
 
-/* 1つ1つのランキングカード */
 .topThreeCard {
   display: flex;
   flex-direction: row;
@@ -73,7 +97,6 @@
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   position: relative;
-  /* 🚩 右端を揃えるために幅を100%に固定 */
   width: 100%;
   box-sizing: border-box; 
   transition: transform 0.2s ease;
@@ -84,7 +107,6 @@
   box-shadow: 0 8px 20px rgba(0,0,0,0.06);
 }
 
-/* 順位バッジ */
 .rankBadge {
   position: absolute;
   top: -10px;
@@ -102,9 +124,8 @@
 .rank_2 .rankBadge { background: #a0aec0; }
 .rank_3 .rankBadge { background: #ed8936; }
 
-/* 画像エリアのサイズ固定 */
 .topThreeImage {
-  flex: 0 0 160px; /* 画像の幅を固定 */
+  flex: 0 0 160px;
   height: 120px;
   display: flex;
   align-items: center;
@@ -121,19 +142,13 @@
   object-fit: contain;
 }
 
-/* 情報とチャートのコンテナ（ここで右端まで埋める） */
 .topThreeContent {
   flex: 1;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between; /* 要素を左右に分散 */
+  justify-content: space-between;
   gap: 20px;
-}
-
-.productBaseInfo {
-  flex: 1; /* 余ったスペースを名前が埋める */
-  min-width: 200px;
 }
 
 .topThreeMaker {
@@ -150,9 +165,8 @@
   color: #0f172a;
 }
 
-/* スコア表示 */
 .topThreeScore {
-  flex: 0 0 100px; /* 幅固定 */
+  flex: 0 0 100px;
   text-align: center;
   padding: 0 20px;
   border-left: 1px solid #f1f5f9;
@@ -172,17 +186,15 @@
   margin-top: 4px;
 }
 
-/* レーダーチャートのサイズ固定（右側に配置） */
 .chartMini {
-  flex: 0 0 200px; /* チャートの幅を固定 */
+  flex: 0 0 200px;
   height: 150px;
   display: flex;
   align-items: center;
 }
 
-/* 詳細ボタン */
 .detailButton {
-  flex: 0 0 100px; /* ボタンの幅を固定 */
+  flex: 0 0 100px;
   background: #0f172a;
   color: #fff;
   padding: 12px 0;
@@ -198,12 +210,97 @@
   background: #334155;
 }
 
-/* --- 🚀 注目のPCトピック --- */
-.newsSection {
-  margin-bottom: 50px;
-  width: 100%;
+/* 🔥 注目度ランキング用の背景調整 */
+.popularityBg {
+  background: #f1f5f9;
+  padding: 40px;
+  border-radius: 20px;
+  margin-left: -20px;
+  margin-right: -20px;
+  width: calc(100% + 40px);
 }
 
+.trendCard {
+  border: none;
+}
+
+.trendingInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.trendLabel {
+  color: #ef4444;
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+
+.trendPrice {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+/* --- 🔍 カテゴリー別検索（新規追加部分） --- */
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.categoryCard {
+  text-decoration: none;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  aspect-ratio: 16 / 9;
+  background: #e2e8f0; /* 画像がない時のベース */
+}
+
+.categoryCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.categoryImageWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.categoryImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.categoryCard:hover .categoryImage {
+  transform: scale(1.05);
+}
+
+.categoryOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 24px;
+}
+
+.categoryName {
+  color: white;
+  font-weight: 900;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+/* --- 🚀 注目のPCトピック --- */
 .newsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -277,7 +374,6 @@
 .archiveList {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
 
 .archiveItem {
@@ -335,20 +431,42 @@
 
 .productGrid {
   display: grid;
-  /* 🚩 280px以上にすることで、1200px幅なら約4列、狭くなれば3列...と自動調整されます */
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 25px; 
   width: 100%;
   margin: 20px 0;
 }
 
-/* 📱 レスポンシブ */
+.viewMoreContainer {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.catalogFullLink {
+  padding: 15px 40px;
+  background: #0f172a;
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 700;
+  display: inline-block;
+  transition: background 0.2s;
+}
+
+.catalogFullLink:hover {
+  background: #334155;
+}
+
+/* --- 📱 レスポンシブ --- */
 @media (max-width: 1200px) {
   .topThreeContent {
     gap: 15px;
   }
   .chartMini {
     flex: 0 0 150px;
+  }
+  .categoryGrid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   }
 }
 
@@ -359,6 +477,16 @@
   .topThreeCard { flex-direction: column; padding: 30px 20px; text-align: center; }
   .topThreeImage { margin-right: 0; margin-bottom: 15px; }
   .topThreeContent { flex-direction: column; width: 100%; }
-  .topThreeScore { border: none; margin: 15px 0; }
+  .topThreeScore { border: none; margin: 15px 0; padding: 0; }
   .chartMini { margin: 0 auto; }
+  .popularityBg { width: 100%; margin-left: 0; margin-right: 0; padding: 30px 15px; }
+}
+
+@media (max-width: 640px) {
+  .categoryGrid {
+    grid-template-columns: 1fr;
+  }
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
 }
