@@ -4,13 +4,15 @@
 import { notFound } from 'next/navigation';
 import { PostHeader } from '@/components/blog/PostHeader';
 import { COLORS } from '@/constants';
-// 🚀 fetchPosts を fetchPostList に変更
 import { fetchPostData, fetchProductDetail, fetchPostList } from '@/lib/api';
 import Link from 'next/link';
 import styles from './PostPage.module.css';
 
 // --- ユーティリティ ---
 
+/**
+ * HTMLエンティティをデコードする
+ */
 const safeDecode = (str: string) => {
     if (!str) return '';
     return str
@@ -22,12 +24,18 @@ const safeDecode = (str: string) => {
         .replace(/&nbsp;/g, ' ');
 };
 
+/**
+ * 日本語の日付形式に変換
+ */
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
         year: 'numeric', month: '2-digit', day: '2-digit',
     });
 };
 
+/**
+ * 本文から目次を抽出・加工
+ */
 function processContent(content: string) {
     const toc: { text: string; id: string; level: number }[] = [];
     let index = 0;
@@ -40,6 +48,8 @@ function processContent(content: string) {
     });
     return { toc, processedContent };
 }
+
+// --- SEO・メタデータ ---
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
@@ -58,28 +68,37 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     };
 }
 
+// --- メインコンポーネント ---
+
 export default async function PostPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const post = await fetchPostData(params.id);
     
     if (!post) notFound();
 
+    // 1. 基本データの加工
     const { toc, processedContent } = processContent(post.content.rendered);
     const relatedProductId = post.acf?.related_product_id || null;
     const relatedProduct = relatedProductId ? await fetchProductDetail(relatedProductId) : null;
     const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
 
-    // 🚀 fetchPostList を実行。戻り値は { results, count, ... } なので destructuring する
-    const { results: allPosts } = await fetchPostList(10, 0);
+    // 2. 前後の記事・おすすめ記事の取得
+    // fetchPostList の戻り値構造 { results: [], count: 0 } に対応
+    const postListData = await fetchPostList(10, 0);
+    const allPosts = Array.isArray(postListData?.results) ? postListData.results : [];
     
     const currentIndex = allPosts.findIndex((p: any) => p.id === post.id);
     const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
     const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
-    const recommendedPosts = allPosts.filter((p: any) => p.id !== post.id).slice(0, 3);
+    
+    // おすすめ記事（現在の記事を除外して最大3件）
+    const recommendedPosts = allPosts
+        .filter((p: any) => p.id !== post.id)
+        .slice(0, 3);
 
     return (
         <article className={styles.article}>
-            {/* Hero Section */}
+            {/* Hero Section: 背景ボカシのヘッダー */}
             <div className={styles.heroSection}>
                 {eyeCatchUrl && (
                     <div className={styles.eyeCatchWrapper}>
@@ -119,34 +138,76 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                 )}
 
                 <main className={styles.mainContent}>
+                    {/* 🚀 追加: 記事本文の冒頭にアイキャッチ画像を表示 */}
+                    {eyeCatchUrl && (
+                        <div className={styles.mainEyeCatch}>
+                            <img 
+                                src={eyeCatchUrl} 
+                                alt={safeDecode(post.title.rendered)} 
+                                className={styles.articleMainImage} 
+                            />
+                        </div>
+                    )}
+
+                    {/* WordPress 本文 */}
                     <div className={styles.wpContent} dangerouslySetInnerHTML={{ __html: processedContent }} />
 
-                    {/* 商品紹介カード */}
+                    {/* 商品紹介カード (CTA) */}
                     {relatedProduct && (
                         <section className={styles.enhancedCTA}>
                             <div className={styles.ctaBadge}>PICK UP ITEM</div>
                             <div className={styles.ctaContainer}>
                                 <div className={styles.ctaImageArea}>
-                                    <img src={relatedProduct.image_url} alt={relatedProduct.name} />
+                                    <img 
+                                        src={relatedProduct.image_url || '/no-image.png'} 
+                                        alt={relatedProduct.name} 
+                                    />
                                 </div>
                                 <div className={styles.ctaInfoArea}>
                                     <span className={styles.ctaMaker}>{relatedProduct.maker}</span>
-                                    <h3 className={styles.ctaTitle}>{relatedProduct.name}</h3>
+                                    <h3 className={styles.ctaTitle}>
+                                        {relatedProduct.name || "製品名データなし"}
+                                    </h3>
+                                    
+                                    {/* 🚀 スペックタグの表示ロジック（もしあれば） */}
+                                    <div className={styles.ctaSpecBox}>
+                                        {relatedProduct.cpu_model && <span className={styles.ctaSpecTag}>{relatedProduct.cpu_model}</span>}
+                                        {relatedProduct.gpu_model && <span className={styles.ctaSpecTag}>{relatedProduct.gpu_model}</span>}
+                                        {relatedProduct.memory_gb && <span className={styles.ctaSpecTag}>{relatedProduct.memory_gb}GB</span>}
+                                    </div>
+
                                     <div className={styles.ctaPriceRow}>
+                                        <span className={styles.ctaPriceLabel}>市場想定価格</span>
                                         <span className={styles.ctaPriceValue}>
-                                            ¥{Number(relatedProduct.price).toLocaleString()}<small>(税込)</small>
+                                            ¥{Number(relatedProduct.price) > 0 
+                                                ? Number(relatedProduct.price).toLocaleString() 
+                                                : '---'}
+                                            <small>(税込)</small>
                                         </span>
                                     </div>
+
                                     <div className={styles.ctaActionButtons}>
-                                        <Link href={`/product/${relatedProduct.unique_id}`} className={styles.ctaDetailBtn}>詳細を見る</Link>
-                                        <a href={relatedProduct.affiliate_url} target="_blank" rel="nofollow" className={styles.ctaShopBtn}>販売ページへ</a>
+                                        <a 
+                                            href={relatedProduct.affiliate_url} 
+                                            target="_blank" 
+                                            rel="nofollow noopener" 
+                                            className={styles.ctaShopBtn}
+                                        >
+                                            公式サイトで在庫を見る <span>➔</span>
+                                        </a>
+                                        <Link 
+                                            href={`/product/${relatedProduct.unique_id}`} 
+                                            className={styles.ctaDetailBtn}
+                                        >
+                                            詳細スペックを確認
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
                         </section>
                     )}
 
-                    {/* ナビゲーション */}
+                    {/* ナビゲーション（前後の記事） */}
                     <nav className={styles.postNav}>
                         {prevPost ? (
                             <Link href={`/bicstation/${prevPost.slug}`} className={styles.prevLink}>
@@ -162,21 +223,35 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                         ) : <div />}
                     </nav>
 
+                    {/* おすすめの記事セクション */}
                     <section className={styles.recommendSection}>
-                        <h3 className={styles.recommendTitle}>おすすめの記事</h3>
+                        <h3 className={styles.recommendTitle}>
+                            <span style={{ marginRight: '8px' }}>💡</span> 
+                            この記事を読んだ人におすすめ
+                        </h3>
                         <div className={styles.recommendGrid}>
                             {recommendedPosts.map((rPost: any) => (
                                 <Link key={rPost.id} href={`/bicstation/${rPost.slug}`} className={styles.recommendCard}>
                                     <div className={styles.recommendThumb}>
-                                        <img src={rPost._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png'} alt="" />
+                                        <img 
+                                            src={rPost._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png'} 
+                                            alt="" 
+                                        />
                                     </div>
                                     <div className={styles.recommendContent}>
+                                        <time>{formatDate(rPost.date)}</time>
                                         <h4>{safeDecode(rPost.title.rendered)}</h4>
                                     </div>
                                 </Link>
                             ))}
                         </div>
                     </section>
+
+                    {/* フッター（戻るリンク・更新日） */}
+                    <footer className={styles.postFooter}>
+                        <Link href="/" className={styles.backLink}>記事一覧へ戻る</Link>
+                        <p className={styles.modifiedDate}>最終更新日: {formatDate(post.modified)}</p>
+                    </footer>
                 </main>
             </div>
         </article>
