@@ -26,10 +26,27 @@ export interface RegisterResponse {
 }
 
 // --- ヘルパー関数：ベースパスを取得 ---
-// ローカル(localhost)なら /bicstation/、VPSなら / を返す
+/**
+ * 💡 ローカル(localhost)なら /bicstation/、VPSなら / を返す
+ * さらに、無限ループ防止のため現在のパスが /login の場合はトップを指すように調整
+ */
 const getBasePath = () => {
   if (typeof window === 'undefined') return '/';
-  return window.location.hostname === 'localhost' ? '/bicstation/' : '/';
+
+  const isLocal = window.location.hostname === 'localhost';
+  const currentPath = window.location.pathname;
+
+  // 1. 基本となるベースパスを決定
+  let basePath = isLocal ? '/bicstation/' : '/';
+
+  // 2. 無限ループ防止ロジック
+  // 現在のパスが /login を含む場合、リダイレクト先が自分自身にならないよう
+  // 確実にトップページ（"/" または "/bicstation/"）へ飛ばす
+  if (currentPath.includes('/login')) {
+    return basePath;
+  }
+
+  return basePath;
 };
 
 // --- 認証関数 ---
@@ -40,6 +57,8 @@ const getBasePath = () => {
 export async function loginUser(username: string, password: string): Promise<AuthTokenResponse> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api';
   const { site_group, origin_domain } = getSiteMetadata();
+
+  console.log("Attempting API login at:", `${API_BASE}/auth/login/`);
 
   const response = await fetch(`${API_BASE}/auth/login/`, {
     method: 'POST',
@@ -54,24 +73,25 @@ export async function loginUser(username: string, password: string): Promise<Aut
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'ログインに失敗しました。');
+    throw new Error(errorData.detail || 'ログインに失敗しました。ユーザー名またはパスワードを確認してください。');
   }
 
   const data: AuthTokenResponse = await response.json();
   
   if (data.access && typeof window !== 'undefined') {
-    // トークン情報をブラウザに保存
+    // 1. トークン情報をブラウザに保存
     localStorage.setItem('access_token', data.access);
     localStorage.setItem('refresh_token', data.refresh);
     
-    // ロール情報を保存
-    if (data.user?.site_group) {
-      localStorage.setItem('user_role', data.user.site_group);
-    } else {
-      localStorage.setItem('user_role', site_group);
-    }
+    // 2. ロール情報を保存
+    const userRole = data.user?.site_group || site_group;
+    localStorage.setItem('user_role', userRole);
 
-    // 🚀 ログイン成功後のリダイレクト
+    console.log("Login successful, redirecting to:", getBasePath());
+
+    // 🚀 ログイン成功後のリダイレクト実行
+    // href を書き換えることでページ全体をクリーンにリロードし、
+    // Authコンテキストやステートを確実に更新させます。
     window.location.href = getBasePath(); 
   }
 
@@ -79,7 +99,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
 }
 
 /**
- * 💡 新規ユーザー登録を実行 (省略せずに復活させました！)
+ * 💡 新規ユーザー登録を実行
  */
 export async function registerUser(username: string, email: string, password: string): Promise<RegisterResponse> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api';
@@ -115,7 +135,7 @@ export function logoutUser(): void {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
 
-    // 🚀 ログアウト後のリダイレクト（ベースパスに合わせて移動）
+    // 🚀 ログアウト後のリダイレクト
     window.location.href = getBasePath();
   }
 }
