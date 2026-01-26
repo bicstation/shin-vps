@@ -278,16 +278,18 @@
   display: block;
 }
 
-/* 🚀 修正ポイント：製品名を確実に見えるように */
+/* PostPage.module.css 内の .ctaTitle を以下に書き換え */
 .ctaTitle {
-  font-size: 1.8rem !important;
-  font-weight: 800 !important;
-  color: #ffffff !important; /* 強制的に白 */
-  display: block !important;
-  line-height: 1.4;
-  margin: 0 0 20px;
-  padding-left: 15px;
-  border-left: 4px solid #3b82f6; /* 青いアクセント棒 */
+  display: block !important;           /* 確実にブロック要素にする */
+  font-size: 1.8rem !important;        /* Tailwindの inherit を上書き */
+  font-weight: 800 !important;         /* Tailwindの inherit を上書き */
+  color: #ffffff !important;           /* 背景色に負けない白 */
+  margin: 0 0 20px !important;
+  line-height: 1.4 !important;
+  visibility: visible !important;      /* 念のための可視化 */
+  opacity: 1 !important;               /* 念のための不透明化 */
+  border-left: 4px solid #3b82f6 !important;
+  padding-left: 15px !important;
 }
 
 .ctaSpecBox {
