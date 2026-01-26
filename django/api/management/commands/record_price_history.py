@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand
-from api.models.pc_products import PCProduct, PriceHistory
-from django.utils.timezone import now
+from api.models.pc_products import PCProduct
 
 class Command(BaseCommand):
-    help = '現在の製品価格をPriceHistoryに記録します（価格変動がある場合のみ）'
+    help = '現在の製品価格をPriceHistoryに記録します（毎日1回は必ず記録）'
 
     def add_arguments(self, parser):
         parser.add_argument('--maker', type=str, help='特定のメーカーのみ実行')
@@ -20,24 +19,14 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("❌ --maker [name] または --all を指定してください"))
             return
 
-        count = 0
-        skipped = 0
+        total_count = products.count()
+        self.stdout.write(f"🚀 {total_count} 件の製品に対して価格記録を開始します...")
 
         for product in products:
-            # 最新の履歴を取得
-            last_history = PriceHistory.objects.filter(product=product).order_by('-recorded_at').first()
-
-            # 履歴がない、または最新履歴と価格が異なる場合のみ保存
-            if not last_history or last_history.price != product.price:
-                PriceHistory.objects.create(
-                    product=product,
-                    price=product.price,
-                    recorded_at=now()
-                )
-                count += 1
-            else:
-                skipped += 1
+            # 🚀 models.py に追加した新メソッドを呼び出す
+            # これにより「今日すでに記録があれば更新、なければ新規作成」が自動で行われます
+            product.record_daily_price()
 
         self.stdout.write(self.style.SUCCESS(
-            f"✅ 完了: {count} 件の価格変更を記録しました（変動なし: {skipped} 件）"
+            f"✅ 完了: {total_count} 件の製品の「今日の価格」を記録しました。"
         ))

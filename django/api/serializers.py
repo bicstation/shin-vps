@@ -81,7 +81,8 @@ class PCAttributeSerializer(serializers.ModelSerializer):
 
 # --- 🚀 価格履歴用シリアライザ ---
 class PriceHistorySerializer(serializers.ModelSerializer):
-    date = serializers.SerializerMethodField()
+    # date = serializers.SerializerMethodField()
+    date = serializers.DateTimeField(source='recorded_at', format="%Y-%m-%d")
 
     class Meta:
         model = PriceHistory

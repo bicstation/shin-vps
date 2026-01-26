@@ -2,7 +2,8 @@
 # /home/maya/dev/shin-vps/django/api/models/pc_products.py
 from django.db import models
 from django.utils.timezone import now
-from django.conf import settings  # User参照のために追加
+from django.conf import settings
+from django.utils import timezone
 
 # ==========================================
 # 1. ユーザー管理モデル (分離済み)
@@ -125,6 +126,30 @@ class PCProduct(models.Model):
     def __str__(self):
         return f"[{self.maker}] {self.name[:30]}"
 
+    def record_daily_price(self):
+        """
+        🚀 追加: その日の価格を履歴として強制的に記録するメソッド
+        スクレイピング実行時などに呼び出すことで、価格変動がなくても日々の記録を残します。
+        """
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        # 今日すでに記録があるか確認（日付ベース）
+        history = PriceHistory.objects.filter(
+            product=self,
+            recorded_at__gte=today_start
+        ).first()
+
+        if history:
+            # 既存の今日の記録を最新価格で更新
+            history.price = self.price
+            history.save()
+        else:
+            # 今日の記録がなければ新規作成
+            PriceHistory.objects.create(
+                product=self,
+                price=self.price
+            )
+
     def save(self, *args, **kwargs):
         if not self.unified_genre and self.raw_genre:
             self.unified_genre = self.raw_genre
@@ -179,7 +204,6 @@ class ProductComment(models.Model):
         related_name='comments',
         verbose_name="対象製品"
     )
-    # ここを settings.AUTH_USER_MODEL に変更
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
