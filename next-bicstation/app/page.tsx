@@ -203,6 +203,11 @@ export default async function Page({ searchParams }: PageProps) {
                             </Link>
                         ))}
                     </div>
+                    <div className={styles.viewMoreContainer}>
+                        <Link href="/bicstation/" className={styles.catalogFullLink}>
+                            すべてのPC記事を表示する ({wpData.count}件)
+                        </Link>
+                    </div>
                 </section>
 
                 {/* 📦 製品カタログ */}

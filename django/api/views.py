@@ -186,7 +186,7 @@ class ProductCommentCreateView(generics.CreateAPIView):
 # 2. アダルト商品データ API
 # --------------------------------------------------------------------------
 class AdultProductListAPIView(generics.ListAPIView):
-    permission_classes = [permissions.AllowAny] # 👈 公開設定
+    permission_classes = [permissions.AllowAny]
     queryset = AdultProduct.objects.all().prefetch_related(
         'maker', 'label', 'director', 'series', 'genres', 'actresses'
     ).order_by('-id') 
@@ -197,7 +197,7 @@ class AdultProductListAPIView(generics.ListAPIView):
     search_fields = ['title']
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
-    permission_classes = [permissions.AllowAny] # 👈 公開設定
+    permission_classes = [permissions.AllowAny]
     queryset = AdultProduct.objects.all().prefetch_related('maker', 'label', 'director')
     serializer_class = AdultProductSerializer
     lookup_field = 'product_id_unique'
@@ -209,10 +209,10 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
 
 # --------------------------------------------------------------------------
-# 3. PC製品データ API (ここが重要！)
+# 3. PC製品データ API (修正済み)
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
-    permission_classes = [permissions.AllowAny] # 👈 Next.jsから見えるように公開
+    permission_classes = [permissions.AllowAny]
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
@@ -221,16 +221,31 @@ class PCProductListAPIView(generics.ListAPIView):
     ordering_fields = ['price', 'spec_score', 'updated_at']
 
     def get_queryset(self):
-        queryset = PCProduct.objects.filter(is_active=True).prefetch_related(
+        # 🚩 ソフト系を除外: cpu_model が null または空文字のものを除外
+        queryset = PCProduct.objects.filter(
+            is_active=True
+        ).exclude(
+            cpu_model__isnull=True
+        ).exclude(
+            cpu_model=""
+        ).prefetch_related(
             'attributes', 'daily_stats', 'comments__user'
         )
+        
+        # メーカーでの絞り込み
         maker = self.request.query_params.get('maker')
         if maker:
             queryset = queryset.filter(maker__iexact=unquote(maker))
+            
+        # 属性（usage-gaming等）での絞り込み
+        attribute_slug = self.request.query_params.get('attribute')
+        if attribute_slug:
+            queryset = queryset.filter(attributes__slug=attribute_slug)
+            
         return queryset.order_by('-updated_at')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
-    permission_classes = [permissions.AllowAny] # 👈 公開
+    permission_classes = [permissions.AllowAny]
     queryset = PCProduct.objects.all().prefetch_related('attributes', 'daily_stats', 'comments__user')
     serializer_class = PCProductSerializer
     lookup_field = 'unique_id'
@@ -253,14 +268,14 @@ class PCProductDetailAPIView(generics.RetrieveAPIView):
         return product
 
 class PCProductMakerListView(APIView):
-    permission_classes = [permissions.AllowAny] # 👈 公開
+    permission_classes = [permissions.AllowAny]
     def get(self, request):
         qs = PCProduct.objects.filter(is_active=True).exclude(maker__isnull=True).exclude(maker='')
         maker_counts = qs.values('maker').annotate(count=Count('id')).order_by('maker')
         return Response(list(maker_counts))
 
 @api_view(['GET'])
-@permission_classes([permissions.AllowAny]) # 👈 デコレータ版公開設定
+@permission_classes([permissions.AllowAny])
 def pc_sidebar_stats(request):
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
@@ -307,28 +322,36 @@ def pc_product_stats_history(request, unique_id):
     return Response(data)
 
 # --------------------------------------------------------------------------
-# 🚀 ランキング (Next.jsトップページで401エラーになっていた箇所)
+# 🚀 ランキング (修正済み)
 # --------------------------------------------------------------------------
 class PCProductRankingView(generics.ListAPIView):
-    permission_classes = [permissions.AllowAny] # 👈 公開設定を追加
+    permission_classes = [permissions.AllowAny]
     serializer_class = PCProductSerializer
     pagination_class = None 
 
     def get_queryset(self):
+        # 🚩 CPUモデルがあり、かつ価格が設定されている「PC本体」のみを対象にする
         return PCProduct.objects.filter(
             is_active=True, 
             spec_score__isnull=False,
             cpu_model__isnull=False,
             price__gt=0
-        ).exclude(cpu_model="").prefetch_related('attributes', 'daily_stats').order_by('-spec_score')[:1000]
+        ).exclude(
+            cpu_model=""
+        ).prefetch_related('attributes', 'daily_stats').order_by('-spec_score')[:1000]
 
 class PCProductPopularityRankingView(generics.ListAPIView):
-    permission_classes = [permissions.AllowAny] # 👈 公開設定を追加
+    permission_classes = [permissions.AllowAny]
     serializer_class = PCProductSerializer
     pagination_class = None
 
     def get_queryset(self):
-        return PCProduct.objects.filter(is_active=True).annotate(
+        return PCProduct.objects.filter(
+            is_active=True,
+            cpu_model__isnull=False
+        ).exclude(
+            cpu_model=""
+        ).annotate(
             latest_pv=Max('daily_stats__pv_count')
         ).prefetch_related('attributes', 'daily_stats').order_by('-latest_pv', '-spec_score')[:100]
 

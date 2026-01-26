@@ -1,7 +1,9 @@
+/* /home/maya/dev/shin-vps/nextjs/src/app/blog/[id]/PostPage.module.css */
+
 /* 1. 記事全体のコンテナ */
 .article {
   min-height: 100vh;
-  background-color: #f9fafb; /* COLORS.BACKGROUND に対応 */
+  background-color: #f9fafb;
 }
 
 /* 2. アイキャッチ・ヒーローセクション */
@@ -43,7 +45,7 @@
   background: linear-gradient(
     to bottom,
     rgba(17, 24, 39, 0.4) 0%,
-    rgba(17, 24, 39, 0.8) 100%
+    rgba(17, 24, 39, 0.9) 100%
   );
   z-index: 2;
 }
@@ -61,18 +63,18 @@
 
 /* 3. シングルカラム・レイアウトコンテナ */
 .singleColumnContainer {
-  max-width: 1200px;
+  max-width: 1000px; /* 記事の読みやすさを考慮して少し絞る */
   margin: -80px auto 0;
   padding: 0 20px 80px;
   position: relative;
   z-index: 20;
 }
 
-/* 4. インライン目次セクション（階層対応） */
-.inlineToc {
+/* 4. 目次セクション */
+.tocSection {
   background: #ffffff;
   border-radius: 20px;
-  padding: 40px;
+  padding: 35px 40px;
   margin-bottom: 30px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
   border: 1px solid #eef2f6;
@@ -88,7 +90,13 @@
 }
 
 .tocIcon {
-  font-size: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  letter-spacing: 0.1em;
 }
 
 .tocTitle {
@@ -107,7 +115,6 @@
   gap: 8px;
 }
 
-/* PC表示では目次を2列にする */
 @media (min-width: 768px) {
   .tocList {
     grid-template-columns: repeat(2, 1fr);
@@ -115,87 +122,61 @@
   }
 }
 
-.tocItem {
-  font-size: 1rem;
-}
-
-/* 💡 H3（小見出し）の場合は少しインデントを下げる */
-.tocItemH3 {
-  padding-left: 20px;
-  font-size: 0.95rem;
-}
-
-.tocItemH3 .tocNumber {
-  background: transparent;
-  color: #94a3b8;
-  font-weight: normal;
-}
-
-.tocLink {
+.tocItem a {
   text-decoration: none;
   color: #475569;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 8px 12px;
   border-radius: 8px;
   transition: all 0.2s;
+  font-size: 1rem;
 }
 
-.tocLink:hover {
+.tocItem a:hover {
   background: #f8fafc;
   color: #3b82f6;
   transform: translateX(5px);
 }
 
+.tocItemH3 {
+  padding-left: 20px;
+}
+
 .tocNumber {
-  background: #f1f5f9;
-  color: #64748b;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 0.8rem;
-  font-weight: bold;
-  flex-shrink: 0;
+  color: #3b82f6;
+  font-family: serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  opacity: 0.5;
 }
 
 /* 5. 本文エリア */
-.mainContentFull {
+.mainContent {
   background: #fff;
-  padding: 60px 100px; 
-  border-radius: 20px;
+  padding: 60px 80px;
+  border-radius: 24px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
 }
 
-.entryInfo {
-  margin-bottom: 40px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f1f5f9;
-  text-align: right;
-}
-
-.readingTime {
+.readingStats {
   font-size: 0.85rem;
   color: #64748b;
-  background: #f1f5f9;
-  padding: 6px 16px;
-  border-radius: 50px;
+  margin-bottom: 40px;
+  text-align: right;
   font-weight: 600;
 }
 
-/* 6. WordPress本文の装飾 */
+/* 6. WordPress本文装飾 */
 .wpContent {
   line-height: 2.1;
   color: #1e293b;
   font-size: 1.15rem;
-  letter-spacing: 0.03em;
 }
 
 .wpContent h2 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   margin: 2.5em 0 1.2em;
   padding-bottom: 15px;
   border-bottom: 3px solid #f1f5f9;
@@ -211,20 +192,20 @@
   left: 0;
   width: 80px;
   height: 3px;
-  background-color: #3b82f6;
+  background: #3b82f6;
 }
 
 .wpContent h3 {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   margin: 2em 0 1em;
-  color: #1e293b;
-  font-weight: 700;
   padding-left: 15px;
   border-left: 5px solid #3b82f6;
+  color: #1e293b;
+  font-weight: 700;
 }
 
 .wpContent p {
-  margin-bottom: 2em;
+  margin-bottom: 1.8em;
 }
 
 .wpContent img {
@@ -232,245 +213,302 @@
   height: auto;
   border-radius: 16px;
   margin: 40px 0;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
-/* 7. 商品紹介プレミアムカード */
-.relatedProductCard {
-  margin: 100px 0 40px;
-  padding: 40px;
-  background: #ffffff;
-  border-radius: 24px;
+/* 7. ✨ 強化されたプレミアムCTAカード */
+.enhancedCTA {
+  margin: 80px 0 60px;
+  padding: 45px;
+  background: #f8fafc;
+  border-radius: 32px;
+  border: 1px solid #e2e8f0;
   position: relative;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-  border: 1px solid #eef2f6;
 }
 
-.cardTag {
+.ctaBadge {
   position: absolute;
-  top: -14px;
+  top: -15px;
   left: 40px;
-  background: #0f172a;
+  background: #3b82f6;
   color: #fff;
   font-size: 0.75rem;
   font-weight: 900;
-  padding: 6px 20px;
+  padding: 6px 18px;
   border-radius: 50px;
-  letter-spacing: 0.1em;
-  z-index: 5;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.cardMain {
+.ctaContainer {
   display: flex;
   gap: 40px;
+  align-items: center;
 }
 
-.cardLeft {
-  flex: 0 0 240px;
-  text-align: center;
-}
-
-.cardImage {
-  background: #f8fafc;
-  border-radius: 16px;
+.ctaImageArea {
+  flex: 0 0 260px;
+  background: #fff;
   padding: 20px;
-  margin-bottom: 20px;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
 }
 
-.cardImage img {
+.ctaImageArea img {
   width: 100%;
   height: auto;
   object-fit: contain;
 }
 
-.cardPriceBox {
-  background: #fff5f5;
-  padding: 15px;
-  border-radius: 12px;
-}
-
-.cardPriceLabel {
-  display: block;
-  font-size: 0.75rem;
-  color: #ef4444;
-  font-weight: 700;
-  margin-bottom: 2px;
-}
-
-.cardPrice {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #ef4444;
-}
-
-.cardRight {
+.ctaInfoArea {
   flex: 1;
-  min-width: 0;
 }
 
-.cardMaker {
-  font-size: 0.85rem;
+.ctaMaker {
+  font-size: 0.8rem;
   font-weight: 800;
   color: #3b82f6;
   text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
 }
 
-.cardTitle {
-  font-size: 1.8rem;
+.ctaTitle {
+  font-size: 1.6rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 4px 0 24px;
   line-height: 1.3;
+  margin: 0 0 20px;
 }
 
-.productSpecSummary {
-  background: #f1f5f9;
-  padding: 25px;
-  border-radius: 12px;
+.ctaSpecBox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 25px;
+}
+
+.ctaSpecTag {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.ctaPriceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
   margin-bottom: 30px;
 }
 
-.specSummaryTitle {
+.ctaPriceLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.ctaPriceValue {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.ctaPriceValue small {
   font-size: 0.9rem;
-  font-weight: 800;
-  color: #475569;
-  margin-bottom: 15px;
+  margin-left: 4px;
 }
 
-.specMiniList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px 25px;
-}
-
-.specMiniItem {
-  font-size: 0.9rem;
-  color: #334155;
-  font-weight: 600;
+.ctaActionButtons {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
+  gap: 15px;
 }
 
-.specText {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.specIcon {
-  color: #f59e0b;
-  flex-shrink: 0;
-}
-
-.cardButtons {
-  display: flex;
-  gap: 20px;
-}
-
-.affiliateBtn {
-  flex: 2;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+.ctaShopBtn {
+  flex: 1.5;
+  background: #0f172a;
   color: #fff;
   text-align: center;
   padding: 18px;
   border-radius: 12px;
   font-weight: 800;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
-.detailBtn {
+.ctaShopBtn:hover {
+  background: #334155;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.ctaDetailBtn {
   flex: 1;
   background: #fff;
+  border: 1px solid #cbd5e1;
   color: #1e293b;
-  border: 1px solid #e2e8f0;
   text-align: center;
   padding: 18px;
   border-radius: 12px;
   font-weight: 700;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: 0.2s;
 }
 
-.affiliateBtn:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+.ctaDetailBtn:hover {
+  background: #f1f5f9;
 }
 
-/* 8. 記事フッター */
-.postFooter {
-  margin-top: 60px;
+/* 8. 前後の記事ナビゲーション */
+.postNav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin: 60px 0;
   padding-top: 40px;
   border-top: 1px solid #f1f5f9;
+}
+
+.prevLink, .nextLink {
+  text-decoration: none;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: 0.2s;
 }
 
-.updateDate {
-  font-size: 0.9rem;
-  color: #94a3b8;
-  text-align: right;
+.prevLink:hover, .nextLink:hover {
+  background: #eff6ff;
+  transform: translateY(-2px);
 }
 
-.backLink {
-  display: inline-block;
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 0.95rem;
-  transition: color 0.2s;
-}
-
-.backLink:hover {
+.navLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
   color: #3b82f6;
 }
 
-/* 9. モバイル対応 */
-@media (max-width: 1024px) {
-  .heroSection {
-    height: 350px;
-  }
-  .singleColumnContainer {
-    margin-top: -40px;
-    padding: 0 15px 60px;
-  }
-  .mainContentFull {
-    padding: 40px 30px;
-  }
+.navTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
 }
 
-@media (max-width: 640px) {
-  .heroSection {
-    height: 300px;
-  }
-  .mainContentFull {
-    padding: 30px 20px;
-    border-radius: 10px; /* モバイルでも少し角を丸く */
-  }
-  .wpContent {
-    font-size: 1.05rem;
-  }
-  .specMiniList {
-    grid-template-columns: 1fr;
-  }
-  .cardMain {
-    flex-direction: column;
-    gap: 30px;
-  }
-  .cardLeft {
-    flex: 0 0 auto;
-  }
-  .cardButtons {
-    flex-direction: column;
-  }
-  .tocItemH3 {
-    padding-left: 15px;
-  }
+/* 9. おすすめ記事セクション */
+.recommendSection {
+  margin-top: 80px;
+}
+
+.recommendTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 30px;
+}
+
+.recommendGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.recommendCard {
+  text-decoration: none;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: 0.3s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.recommendCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
+
+.recommendThumb {
+  aspect-ratio: 16/9;
+  overflow: hidden;
+}
+
+.recommendThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recommendContent {
+  padding: 15px;
+}
+
+.recommendContent time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.recommendContent h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* 10. フッター部 */
+.postFooter {
+  margin-top: 60px;
+  padding-top: 30px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backLink {
+  text-decoration: none;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.modifiedDate {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+/* 11. レスポンシブ対応 */
+@media (max-width: 1024px) {
+  .mainContent { padding: 40px; }
+  .ctaContainer { flex-direction: column; }
+  .ctaImageArea { width: 100%; max-width: 300px; }
+}
+
+@media (max-width: 768px) {
+  .singleColumnContainer { margin-top: -40px; }
+  .recommendGrid { grid-template-columns: 1fr; }
+  .postNav { grid-template-columns: 1fr; }
+  .ctaActionButtons { flex-direction: column; }
+  .heroSection { height: 350px; }
+}
+
+@media (max-width: 480px) {
+  .mainContent { padding: 30px 20px; }
+  .wpContent { font-size: 1.05rem; }
+  .ctaTitle { font-size: 1.3rem; }
+  .ctaPriceValue { font-size: 1.6rem; }
 }
