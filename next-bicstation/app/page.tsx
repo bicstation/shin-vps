@@ -112,7 +112,7 @@ export default async function Page({ searchParams }: PageProps) {
                                 { name: '軽量・1kg未満', slug: 'feat-lightweight', icon: '🪶' },
                                 { name: 'モバイルノート', slug: 'size-mobile', icon: '💻' },
                             ].map((cat) => (
-                                <Link key={cat.slug} href={`/catalog?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
+                                <Link key={cat.slug} href={`/pc-products/?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
                                     <span className={styles.catIcon}>{cat.icon}</span>
                                     <span className={styles.catNameSmall}>{cat.name}</span>
                                 </Link>
@@ -132,7 +132,7 @@ export default async function Page({ searchParams }: PageProps) {
                                 { name: 'Copilot+ PC', slug: 'feature-copilot-plus' },
                                 { name: 'NPU搭載 (AI PC)', slug: 'feature-npu-ai' },
                             ].map((tag) => (
-                                <Link key={tag.slug} href={`/catalog?attribute=${tag.slug}`} className={styles.specTag}>
+                                <Link key={tag.slug} href={`/pc-products/?attribute=${tag.slug}`} className={styles.specTag}>
                                     {tag.name}
                                 </Link>
                             ))}
@@ -151,7 +151,7 @@ export default async function Page({ searchParams }: PageProps) {
                                 { name: 'RTX 40シリーズ', slug: 'gpu-rtx-40-series', icon: '🚀' },
                                 { name: 'ワークステーション', slug: 'type-workstation', icon: '🛠️' },
                             ].map((cat) => (
-                                <Link key={cat.slug} href={`/catalog?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
+                                <Link key={cat.slug} href={`/pc-products/?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
                                     <span className={styles.catIcon}>{cat.icon}</span>
                                     <span className={styles.catNameSmall}>{cat.name}</span>
                                 </Link>
