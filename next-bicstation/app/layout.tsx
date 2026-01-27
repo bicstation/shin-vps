@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-
-// ✅ 外部JS読み込み用の Script コンポーネントは不要になったため削除
+import styles from "./layout.module.css"; // ✅ CSSモジュールのインポート
 
 // ✅ パス・エイリアス (@/) を使用してインポート
 import Header from "@/components/layout/Header";
@@ -14,7 +13,7 @@ import ChatBot from "@/components/common/ChatBot";
 // ✅ 共通カラー設定をインポート
 import { COLORS } from "@/constants";
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
 });
 
@@ -37,13 +36,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ja_JP",
-    url: "https://bicstation.com/", 
+    url: "https://bicstation.com/",
     siteName: "BICSTATION",
     title: "BICSTATION - 最安PC・スペック比較ポータル",
     description: "メーカー直販サイトをスクレイピングし、最新のPC情報を集約。あなたの最適な1台が見つかる比較サイト。",
     images: [
       {
-        url: "/og-image.png", 
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "BICSTATION PCカタログ",
@@ -74,26 +73,24 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body 
-        className={inter.className} 
-        style={{ 
-          margin: 0, 
-          padding: 0, 
-          backgroundColor: COLORS?.BACKGROUND || "#f4f7f9", 
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
+      <body
+        className={`${inter.className} ${styles.bodyWrapper}`}
+        style={{
+          backgroundColor: COLORS?.BACKGROUND || "#f4f7f9",
         }}
       >
         {/* 全ページ共通ヘッダー */}
         <Header />
 
-        {/* 🚩 重要修正ポイント: 
-          mainに flex-direction: column を直接書くと、
-          中の page.tsx の Sidebar と Main が縦に並んでしまいます。
-          ここは中身の自由度を保つために最低限の flexGrow だけにします。
+        {/* ⚖️ ステマ規制対策：PR表記 */}
+        <div className={styles.adDisclosure}>
+          本サイトはアフィリエイト広告（広告・宣伝）を利用しています
+        </div>
+
+        {/* 🚩 メインコンテンツ
+          flexGrow: 1 により、コンテンツが少ないページでもフッターが最下部に固定されます
         */}
-        <main style={{ flexGrow: 1 }}>
+        <main className={styles.mainContainer}>
           {children}
         </main>
 
