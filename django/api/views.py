@@ -6,7 +6,7 @@ from rest_framework import generics, filters, pagination, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from django.db.models import Count, F, Max
+from django.db.models import Count, F, Max, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -209,7 +209,7 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
 
 # --------------------------------------------------------------------------
-# 3. PC製品データ API (修正済み)
+# 3. PC製品データ API (PC-FINDER 強化版)
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
@@ -221,7 +221,7 @@ class PCProductListAPIView(generics.ListAPIView):
     ordering_fields = ['price', 'spec_score', 'updated_at']
 
     def get_queryset(self):
-        # 🚩 ソフト系を除外: cpu_model が null または空文字のものを除外
+        # 🚩 基本セット: 有効なPC本体のみ（CPUが入っていない周辺機器等を除外）
         queryset = PCProduct.objects.filter(
             is_active=True
         ).exclude(
@@ -230,46 +230,63 @@ class PCProductListAPIView(generics.ListAPIView):
             cpu_model=""
         ).prefetch_related(
             'attributes', 'daily_stats', 'comments__user'
-        )
+        ).distinct()
         
-        # --- 🚀 PCファインダー用の追加フィルタ ---
-        # 予算フィルタ
+        # --- 🚀 PC-FINDER パラメータ処理 ---
         budget = self.request.query_params.get('budget')
-        if budget:
+        ram = self.request.query_params.get('ram')
+        npu = self.request.query_params.get('npu')
+        gpu = self.request.query_params.get('gpu')
+        p_type = self.request.query_params.get('type')    # "type-laptop" 等
+        usage = self.request.query_params.get('usage')    # "usage-gaming" 等
+        brand = self.request.query_params.get('brand')    # "brand-fujitsu" 等
+        maker = self.request.query_params.get('maker')    # メーカー名文字列
+
+        # 💰 予算フィルタ
+        if budget and int(budget) > 0:
             queryset = queryset.filter(price__lte=int(budget))
 
-        # 最小メモリ (GB)
-        ram = self.request.query_params.get('ram')
+        # 🧠 メモリフィルタ
         if ram and int(ram) > 0:
             queryset = queryset.filter(memory_gb__gte=int(ram))
 
-        # AI PC (NPU搭載フラグ)
-        npu = self.request.query_params.get('npu')
+        # 🤖 NPU搭載 (AI PC)
         if npu == 'true':
             queryset = queryset.filter(is_ai_pc=True)
 
-        # 独立GPU (GPUスコアや特定キーワードで判定)
-        gpu = self.request.query_params.get('gpu')
+        # 🎮 独立GPU (スコア30以上、または特定のGPUモデル)
         if gpu == 'true':
-            # スコアが一定以上、または Integrated(内蔵)以外
-            queryset = queryset.filter(score_gpu__gte=30)
+            queryset = queryset.filter(Q(score_gpu__gte=30) | ~Q(gpu_model__icontains='Integrated'))
 
-        # 形状 (unified_genre)
-        p_type = self.request.query_params.get('type')
+        # 🚩 PC形状絞り込み (TSVのスラッグ "type-laptop" 等を検索)
         if p_type and p_type != 'all':
-            queryset = queryset.filter(unified_genre__icontains=p_type)
-        # --- ここまで ---
+            # attributesリレーションのslugフィールドを検索するように修正
+            queryset = queryset.filter(attributes__slug=p_type)
 
-        # メーカーでの絞り込み
-        maker = self.request.query_params.get('maker')
+        # 🚩 用途絞り込み (TSVのスラッグ "usage-gaming" 等を検索)
+        if usage and usage != 'all':
+            queryset = queryset.filter(attributes__slug=usage)
+
+        # 🚩 ブランド絞り込み (TSVのスラッグ "brand-xxx" 等を検索)
+        if brand and brand != 'all':
+            queryset = queryset.filter(attributes__slug=brand)
+
+        # 🏭 メーカー名（文字列）での直接絞り込み
         if maker:
             queryset = queryset.filter(maker__iexact=unquote(maker))
             
-        # 属性（usage-gaming等）での絞り込み
+        # 汎用属性検索（サイドバー用）
         attribute_slug = self.request.query_params.get('attribute')
         if attribute_slug:
             queryset = queryset.filter(attributes__slug=attribute_slug)
             
+        # 並び替え（デフォルトは更新順）
+        sort_param = self.request.query_params.get('sort')
+        if sort_param == 'price_asc':
+            return queryset.order_by('price')
+        elif sort_param == 'spec_desc':
+            return queryset.order_by('-spec_score')
+        
         return queryset.order_by('-updated_at')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
@@ -350,7 +367,7 @@ def pc_product_stats_history(request, unique_id):
     return Response(data)
 
 # --------------------------------------------------------------------------
-# 🚀 ランキング (修正済み)
+# 🚀 ランキング
 # --------------------------------------------------------------------------
 class PCProductRankingView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
@@ -358,7 +375,6 @@ class PCProductRankingView(generics.ListAPIView):
     pagination_class = None 
 
     def get_queryset(self):
-        # 🚩 CPUモデルがあり、かつ価格が設定されている「PC本体」のみを対象にする
         return PCProduct.objects.filter(
             is_active=True, 
             spec_score__isnull=False,

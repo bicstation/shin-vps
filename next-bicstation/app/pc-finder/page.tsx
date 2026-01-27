@@ -87,7 +87,7 @@ export default function PCFinderPage() {
   return (
     <div className={styles.pageContainer}>
       <Script
-        src={`/scripts/common-utils.js`.replace('//', '/')}
+        src={`${basePath}/scripts/common-utils.js`.replace('//', '/')}
         strategy="afterInteractive"
       />
 
