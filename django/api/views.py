@@ -255,7 +255,7 @@ class PCProductListAPIView(generics.ListAPIView):
         if npu == 'true':
             queryset = queryset.filter(is_ai_pc=True)
 
-        # 🎮 独立GPU (GPUスコアが高い、またはIntegrated/内蔵 ではないもの)
+        # 🎮 独立GPU
         if gpu == 'true':
             queryset = queryset.filter(Q(score_gpu__gte=30) | ~Q(gpu_model__icontains='Integrated'))
 
@@ -271,12 +271,12 @@ class PCProductListAPIView(generics.ListAPIView):
         if brand and brand != 'all':
             queryset = queryset.filter(attributes__slug__icontains=brand)
 
-        # 🏭 メーカー名：部分一致(icontains)に変更。URLデコードも実施。
+        # 🏭 メーカー名：部分一致(icontains)
         if maker:
             decoded_maker = unquote(maker)
             queryset = queryset.filter(maker__icontains=decoded_maker)
             
-        # 🏷️ 汎用属性検索 (サイドバー: mem-16gb 等)
+        # 🏷️ 汎用属性検索
         if attribute_slug:
             queryset = queryset.filter(attributes__slug=attribute_slug)
             
@@ -371,7 +371,7 @@ def pc_product_stats_history(request, unique_id):
     return Response(data)
 
 # --------------------------------------------------------------------------
-# 🚀 ランキング (最適化版)
+# 🚀 ランキング (速度改善版：取得件数を最適化)
 # --------------------------------------------------------------------------
 class PCProductRankingView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
@@ -379,8 +379,7 @@ class PCProductRankingView(generics.ListAPIView):
     pagination_class = None 
 
     def get_queryset(self):
-        # 💡 TOPページ高速化のため、デフォルト取得数を制限。
-        # 必要に応じて ?limit=3 等でNext.js側から絞り込めます。
+        # ⚡ 1,000件取得をデフォルト20件に制限
         limit_param = self.request.query_params.get('limit', 20)
         try:
             limit = int(limit_param)
@@ -402,13 +401,14 @@ class PCProductPopularityRankingView(generics.ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
+        # ⚡ デフォルト10件に制限
         limit_param = self.request.query_params.get('limit', 10)
         try:
             limit = int(limit_param)
         except ValueError:
             limit = 10
 
-        # 💡 過去すべての最大値ではなく、直近(今日)のPVでソートすることで集計を軽量化
+        # ⚡ 今日のPVを基準にして集計負荷を軽減
         today = timezone.now().date()
         
         return PCProduct.objects.filter(
@@ -417,7 +417,6 @@ class PCProductPopularityRankingView(generics.ListAPIView):
         ).exclude(
             cpu_model=""
         ).annotate(
-            # filterをかけることで、今日のデータが存在するものから優先的に取得
             latest_pv=Max('daily_stats__pv_count', filter=Q(daily_stats__date=today))
         ).prefetch_related('attributes', 'daily_stats').order_by(
             F('latest_pv').desc(nulls_last=True), 
