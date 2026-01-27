@@ -16,7 +16,6 @@ interface PageProps {
 
 /**
  * 💡 属性スラッグから日本語表示名を取得するマッピング
- * usage-gaming などの用途別スラッグを追加しました。
  */
 function getAttributeDisplayName(slug: string) {
     const mapping: { [key: string]: string } = {
@@ -44,24 +43,15 @@ function getAttributeDisplayName(slug: string) {
         'spatial-labs': '裸眼立体視', 'portable-monitor': 'モバイルモニター',
         // Memory / Storage / OS
         'mem-16gb': 'メモリ 16GB', 'mem-32gb': 'メモリ 32GB', 'ssd-512gb': 'SSD 512GB', 'win-11-pro': 'Windows 11 Pro',
-        // Usage / Others (🚩 ここを強化)
-        'usage-gaming': 'ゲーミング',
-        'gaming-pc': 'ゲーミングモデル',
-        'usage-business': 'ビジネス',
-        'usage-creative': 'クリエイター向け',
+        // Usage
+        'usage-gaming': 'ゲーミング', 'gaming-pc': 'ゲーミングモデル', 'usage-business': 'ビジネス', 'usage-creative': 'クリエイター向け',
         'feature-power-efficient': '省電力モデル',
     };
 
-    // マッピングにあればそれを返し、なければスラッグを整形して返す（フォールバック）
     if (mapping[slug]) return mapping[slug];
-    
-    // 例: usage-gaming -> Usage Gaming
     return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
-/**
- * 💡 HTMLエンティティのデコード
- */
 const decodeHtml = (html: string) => {
     if (!html) return '';
     const map: { [key: string]: string } = { 
@@ -71,9 +61,6 @@ const decodeHtml = (html: string) => {
         .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
 };
 
-/**
- * 💡 SEOメタデータの動的生成
- */
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ attribute?: string }> }) {
     try {
         const { slug } = await params;
@@ -82,15 +69,12 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
         const makers = await fetchMakers();
         const makerObj = makers.find((m: any) => m.slug === decodedSlug || m.maker === decodedSlug) as any;
         const brandName = makerObj ? (makerObj.name || makerObj.maker) : decodedSlug.toUpperCase();
-        
-        // 🚩 修正ポイント：属性名取得の確実化
         const attrName = sParams.attribute ? getAttributeDisplayName(sParams.attribute) : "";
-        
         const titleText = attrName ? `${brandName} × ${attrName} PC一覧` : `${brandName} 最新PCスペック比較・最安価格一覧`;
 
         return {
             title: `${titleText} | BICSTATION`,
-            description: `${brandName}${attrName ? `の${attrName}対応モデル` : 'のノートPC・デスクトップ'}をリアルタイム比較。直販モデルのセール情報や最新モデルを網羅したPC専門カタログです。`,
+            description: `${brandName}${attrName ? `の${attrName}対応モデル` : 'のノートPC・デスクトップ'}をリアルタイム比較。`,
         };
     } catch (e) {
         return { title: "製品一覧 | BICSTATION" };
@@ -111,25 +95,33 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
     let makersData: any[] = [];
     let wpData: any = { results: [] };
 
+    // 🚩 デバッグ用のURL構築ログ
+    const debugApiUrl = `https://tiper.live/api/pc-products/?maker=${decodedSlug}&offset=${offset}&limit=${limit}&attribute=${attributeSlug}`;
+    console.log(`[Next.js Debug]: Fetching BrandPage Data...`);
+    console.log(`[Next.js Debug]: PC API URL -> ${debugApiUrl}`);
+
     try {
         const [pcRes, makersRes, wpRes] = await Promise.all([
             fetchPCProducts(decodedSlug, offset, limit, attributeSlug),
             fetchMakers(),
             fetchPostList(5) 
         ]);
+        
         pcData = pcRes;
         makersData = makersRes;
         wpData = wpRes;
+
+        // 🚩 データ取得後の件数ログ
+        console.log(`[Next.js Debug]: Success! Found ${pcData?.count || 0} products.`);
     } catch (error) {
-        console.error("[API Error]:", error);
+        console.error(`[Next.js API Error]: Failed to fetch data for ${decodedSlug}`);
+        console.error(`[Next.js API Error]: Target URL was -> ${debugApiUrl}`);
+        console.error(error);
     }
 
     const makerObj = makersData.find((m: any) => m.slug === decodedSlug || m.maker === decodedSlug) as any;
     const brandDisplayName = makerObj ? (makerObj.name || makerObj.maker) : decodedSlug;
-    
-    // 🚩 修正ポイント：ここで表示名を確実に取得
     const attrDisplayName = attributeSlug ? getAttributeDisplayName(attributeSlug) : "";
-    
     const pageTitle = attrDisplayName 
         ? `${brandDisplayName} 【${attrDisplayName}】 搭載モデル` 
         : `${brandDisplayName} の最新PC比較・一覧`;
@@ -137,7 +129,6 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
     const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
     const totalCount = pcData?.count || 0;
     const totalPages = Math.ceil(totalCount / limit);
-
     const startRange = totalCount > 0 ? offset + 1 : 0;
     const endRange = Math.min(offset + limit, totalCount);
 
@@ -145,21 +136,22 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
         "name": pageTitle,
-        "description": `${brandDisplayName}のスペック比較と最安値情報`,
         "mainEntity": {
             "@type": "ItemList",
             "itemListElement": pcData?.results?.map((product: any, index: number) => ({
                 "@type": "ListItem",
                 "position": offset + index + 1,
-                "url": product.affiliate_url || `https://bicstation.com/product/${product.id}`,
+                "url": `https://bicstation.com/product/${product.unique_id || product.id}`,
                 "name": product.name,
-                "image": product.image_url
             })) || []
         }
     };
 
     return (
         <div className={styles.pageContainer}>
+            {/* ブラウザのコンソールにもURLを表示するための隠しデバッグタグ（開発用） */}
+            <script dangerouslySetInnerHTML={{ __html: `console.log("🚀 Client-side Debug: API URL used was ${debugApiUrl}");` }} />
+            
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -206,6 +198,7 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                         {!pcData || !pcData.results || pcData.results.length === 0 ? (
                             <div className={styles.noDataLarge}>
                                 <p>現在、{brandDisplayName} <strong>{attrDisplayName}</strong> の該当する製品データがありません。</p>
+                                <p style={{ fontSize: '0.8rem', color: '#999', marginTop: '10px' }}>Debug URL: {debugApiUrl}</p>
                                 <Link href={`/brand/${decodedSlug}`} className={styles.resetLink} style={{ color: primaryColor, marginTop: '15px', display: 'inline-block' }}>
                                     {brandDisplayName} の全製品を見る
                                 </Link>

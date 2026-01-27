@@ -83,14 +83,15 @@ class PCAttributeSerializer(serializers.ModelSerializer):
 
 # --- 🚀 価格履歴用シリアライザ ---
 class PriceHistorySerializer(serializers.ModelSerializer):
-    date = serializers.DateTimeField(source='recorded_at', format="%Y-%m-%d")
+    date = serializers.SerializerMethodField()
 
     class Meta:
         model = PriceHistory
         fields = ('date', 'price')
 
     def get_date(self, obj):
-        return obj.recorded_at.strftime('%m/%d')
+        # 日本語環境やグラフ表示を考慮し、月/日の形式で返す
+        return obj.recorded_at.strftime('%m/%d') if obj.recorded_at else None
 
 # --- 🚀 注目度・統計推移用シリアライザ ---
 class ProductDailyStatsSerializer(serializers.ModelSerializer):
@@ -141,12 +142,13 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
 
 class PCProductSerializer(serializers.ModelSerializer):
     attributes = PCAttributeSerializer(many=True, read_only=True)
-    comments = ProductCommentSerializer(many=True, read_only=True) # 💬 コメント一覧を追加
+    comments = ProductCommentSerializer(many=True, read_only=True)
     
     # --- カスタムフィールド設定 ---
     price_history = serializers.SerializerMethodField()
     stats_history = serializers.SerializerMethodField()
     radar_chart = serializers.SerializerMethodField()
+    # makerフィールド（文字列）をそのままmaker_nameとしても露出
     maker_name = serializers.CharField(source='maker', read_only=True)
 
     class Meta:
@@ -168,16 +170,16 @@ class PCProductSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
-    # --- 📈 価格履歴の取得 ---
+    # --- 📈 価格履歴の取得（直近30件分） ---
     def get_price_history(self, obj):
         histories = PriceHistory.objects.filter(product=obj).order_by('-recorded_at')[:30]
-        # reversedしたものをリストにして返す
+        # 配列を逆転させて、時系列（過去→現在）でシリアライズ
         return PriceHistorySerializer(list(reversed(histories)), many=True).data
 
-    # --- 📉 注目度推移の取得 ---
+    # --- 📉 注目度推移の取得（直近30件分） ---
     def get_stats_history(self, obj):
         stats = ProductDailyStats.objects.filter(product=obj).order_by('-date')[:30]
-        # reversedしたものをリストにして返す
+        # 配列を逆転させて、時系列（過去→現在）でシリアライズ
         return ProductDailyStatsSerializer(list(reversed(stats)), many=True).data
 
     # --- 📊 レーダーチャート用データの整形 ---

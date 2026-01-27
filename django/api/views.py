@@ -209,7 +209,7 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
 
 # --------------------------------------------------------------------------
-# 3. PC製品データ API (PC-FINDER 強化版)
+# 3. PC製品データ API (PC-FINDER & フィルタリング強化版)
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
@@ -221,7 +221,7 @@ class PCProductListAPIView(generics.ListAPIView):
     ordering_fields = ['price', 'spec_score', 'updated_at']
 
     def get_queryset(self):
-        # 🚩 基本セット: 有効なPC本体のみ（CPUが入っていない周辺機器等を除外）
+        # 🚩 基本セット: 有効なPC本体のみ
         queryset = PCProduct.objects.filter(
             is_active=True
         ).exclude(
@@ -232,62 +232,66 @@ class PCProductListAPIView(generics.ListAPIView):
             'attributes', 'daily_stats', 'comments__user'
         ).distinct()
         
-        # --- 🚀 PC-FINDER パラメータ処理 ---
+        # --- 🚀 パラメータ処理 ---
         budget = self.request.query_params.get('budget')
         ram = self.request.query_params.get('ram')
         npu = self.request.query_params.get('npu')
         gpu = self.request.query_params.get('gpu')
-        p_type = self.request.query_params.get('type')    # "type-laptop" 等
-        usage = self.request.query_params.get('usage')    # "usage-gaming" 等
-        brand = self.request.query_params.get('brand')    # "brand-fujitsu" 等
-        maker = self.request.query_params.get('maker')    # メーカー名文字列
+        p_type = self.request.query_params.get('type')
+        usage = self.request.query_params.get('usage')
+        brand = self.request.query_params.get('brand')
+        maker = self.request.query_params.get('maker')
+        attribute_slug = self.request.query_params.get('attribute')
 
         # 💰 予算フィルタ
-        if budget and int(budget) > 0:
+        if budget and budget.isdigit() and int(budget) > 0:
             queryset = queryset.filter(price__lte=int(budget))
 
         # 🧠 メモリフィルタ
-        if ram and int(ram) > 0:
+        if ram and ram.isdigit() and int(ram) > 0:
             queryset = queryset.filter(memory_gb__gte=int(ram))
 
         # 🤖 NPU搭載 (AI PC)
         if npu == 'true':
             queryset = queryset.filter(is_ai_pc=True)
 
-        # 🎮 独立GPU (スコア30以上、または特定のGPUモデル)
+        # 🎮 独立GPU (GPUスコアが高い、またはIntegrated/内蔵 ではないもの)
         if gpu == 'true':
             queryset = queryset.filter(Q(score_gpu__gte=30) | ~Q(gpu_model__icontains='Integrated'))
 
-        # 🚩 PC形状絞り込み (TSVのスラッグ "type-laptop" 等を検索)
+        # 🚩 PC形状絞り込み
         if p_type and p_type != 'all':
-            # attributesリレーションのslugフィールドを検索するように修正
-            queryset = queryset.filter(attributes__slug=p_type)
+            queryset = queryset.filter(attributes__slug__icontains=p_type)
 
-        # 🚩 用途絞り込み (TSVのスラッグ "usage-gaming" 等を検索)
+        # 🚩 用途絞り込み
         if usage and usage != 'all':
-            queryset = queryset.filter(attributes__slug=usage)
+            queryset = queryset.filter(attributes__slug__icontains=usage)
 
-        # 🚩 ブランド絞り込み (TSVのスラッグ "brand-xxx" 等を検索)
+        # 🚩 ブランド絞り込み
         if brand and brand != 'all':
-            queryset = queryset.filter(attributes__slug=brand)
+            queryset = queryset.filter(attributes__slug__icontains=brand)
 
-        # 🏭 メーカー名（文字列）での直接絞り込み
+        # 🏭 メーカー名：部分一致(icontains)に変更。URLデコードも実施。
         if maker:
-            queryset = queryset.filter(maker__iexact=unquote(maker))
+            decoded_maker = unquote(maker)
+            queryset = queryset.filter(maker__icontains=decoded_maker)
             
-        # 汎用属性検索（サイドバー用）
-        attribute_slug = self.request.query_params.get('attribute')
+        # 🏷️ 汎用属性検索 (サイドバー: mem-16gb 等)
         if attribute_slug:
             queryset = queryset.filter(attributes__slug=attribute_slug)
             
-        # 並び替え（デフォルトは更新順）
+        # --- 並び替えロジック ---
         sort_param = self.request.query_params.get('sort')
         if sort_param == 'price_asc':
-            return queryset.order_by('price')
+            queryset = queryset.order_by('price')
+        elif sort_param == 'price_desc':
+            queryset = queryset.order_by('-price')
         elif sort_param == 'spec_desc':
-            return queryset.order_by('-spec_score')
+            queryset = queryset.order_by('-spec_score')
+        else:
+            queryset = queryset.order_by('-updated_at')
         
-        return queryset.order_by('-updated_at')
+        return queryset
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
     permission_classes = [permissions.AllowAny]
@@ -367,7 +371,7 @@ def pc_product_stats_history(request, unique_id):
     return Response(data)
 
 # --------------------------------------------------------------------------
-# 🚀 ランキング
+# 🚀 ランキング (最適化版)
 # --------------------------------------------------------------------------
 class PCProductRankingView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
@@ -375,6 +379,14 @@ class PCProductRankingView(generics.ListAPIView):
     pagination_class = None 
 
     def get_queryset(self):
+        # 💡 TOPページ高速化のため、デフォルト取得数を制限。
+        # 必要に応じて ?limit=3 等でNext.js側から絞り込めます。
+        limit_param = self.request.query_params.get('limit', 20)
+        try:
+            limit = int(limit_param)
+        except ValueError:
+            limit = 20
+
         return PCProduct.objects.filter(
             is_active=True, 
             spec_score__isnull=False,
@@ -382,7 +394,7 @@ class PCProductRankingView(generics.ListAPIView):
             price__gt=0
         ).exclude(
             cpu_model=""
-        ).prefetch_related('attributes', 'daily_stats').order_by('-spec_score')[:1000]
+        ).prefetch_related('attributes', 'daily_stats').order_by('-spec_score')[:limit]
 
 class PCProductPopularityRankingView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
@@ -390,14 +402,27 @@ class PCProductPopularityRankingView(generics.ListAPIView):
     pagination_class = None
 
     def get_queryset(self):
+        limit_param = self.request.query_params.get('limit', 10)
+        try:
+            limit = int(limit_param)
+        except ValueError:
+            limit = 10
+
+        # 💡 過去すべての最大値ではなく、直近(今日)のPVでソートすることで集計を軽量化
+        today = timezone.now().date()
+        
         return PCProduct.objects.filter(
             is_active=True,
             cpu_model__isnull=False
         ).exclude(
             cpu_model=""
         ).annotate(
-            latest_pv=Max('daily_stats__pv_count')
-        ).prefetch_related('attributes', 'daily_stats').order_by('-latest_pv', '-spec_score')[:100]
+            # filterをかけることで、今日のデータが存在するものから優先的に取得
+            latest_pv=Max('daily_stats__pv_count', filter=Q(daily_stats__date=today))
+        ).prefetch_related('attributes', 'daily_stats').order_by(
+            F('latest_pv').desc(nulls_last=True), 
+            '-spec_score'
+        )[:limit]
 
 # --------------------------------------------------------------------------
 # 4. Linkshare & マスターデータ

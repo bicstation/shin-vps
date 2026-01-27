@@ -27,9 +27,27 @@ const getWpConfig = () => {
 
 /**
  * 🔗 Django API 設定
+ * 環境変数 NEXT_PUBLIC_API_URL を活用。デバッグログを追加。
  */
 const getDjangoBaseUrl = () => {
-    if (IS_SERVER) return 'http://django-v2:8000';
+    if (IS_SERVER) {
+        // Dockerネットワーク内での通信
+        return 'http://django-v2:8000';
+    }
+
+    // ブラウザ側実行時：環境変数のチェック
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    
+    // 🔍 コンソールに環境変数の値を表示（デバッグ用）
+    if (envUrl) {
+        const formattedUrl = envUrl.replace(/\/api$/, '');
+        console.log(`[API DEBUG] NEXT_PUBLIC_API_URL detected: ${envUrl}`);
+        console.log(`[API DEBUG] Using Base URL: ${formattedUrl}`);
+        return formattedUrl;
+    }
+
+    // 環境変数が読み込めていない場合の警告とフォールバック
+    console.warn(`[API DEBUG] NEXT_PUBLIC_API_URL is undefined! Check your .env file.`);
     return 'http://localhost:8083';
 };
 
@@ -133,25 +151,24 @@ export async function fetchPostData(slug: string) {
 
 /**
  * 💻 [Django API] 商品一覧取得 (PCファインダー対応拡張版)
- * 引数に詳細なフィルタパラメータを追加しました
+ * デバッグログを追加し、リクエストURLを可視化。
  */
 export async function fetchPCProducts(
     maker = '', 
     offset = 0, 
     limit = 10, 
     attribute = '',
-    budget = '',    // 💰 追加: 最大予算
-    ram = '',       // 🧠 追加: 最小メモリ
-    npu = false,    // 🤖 追加: NPU搭載フラグ
-    gpu = false,    // 🎮 追加: 独立GPUフラグ
-    type = ''       // 🏗️ 追加: 筐体タイプ(unified_genre)
+    budget = '',    // 💰 最大予算
+    ram = '',       // 🧠 最小メモリ
+    npu = false,    // 🤖 NPU搭載フラグ
+    gpu = false,    // 🎮 独立GPUフラグ
+    type = ''       // 🏗️ 筐体タイプ
 ) {
     const rootUrl = getDjangoBaseUrl();
-    
     const params = new URLSearchParams();
     
-    // 既存の基本パラメータ
-    if (maker) params.append('maker', maker.toLowerCase());
+    // 基本パラメータ
+    if (maker) params.append('maker', maker); 
     if (attribute) params.append('attribute', attribute);
     params.append('limit', limit.toString());
     params.append('offset', offset.toString());
@@ -165,10 +182,13 @@ export async function fetchPCProducts(
 
     const url = `${rootUrl}/api/pc-products/?${params.toString()}`;
     
+    // 🚀 実行URLをコンソールに表示
+    console.log(`[API CALL fetchPCProducts]: ${url}`);
+    
     try {
         const res = await fetch(url, { 
-            headers: { 'Host': 'localhost' },
-            next: { revalidate: 3600 } // 1時間キャッシュ
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
+            next: { revalidate: 3600 } 
         });
 
         if (!res.ok) {
@@ -183,8 +203,8 @@ export async function fetchPCProducts(
             debugUrl: url 
         };
     } catch (e: any) { 
-        console.error(`[Django API ERROR]: ${e.message}`);
-        return { results: [], count: 0 }; 
+        console.error(`[Django API ERROR]: ${e.message} (Target URL: ${url})`);
+        return { results: [], count: 0, debugUrl: url }; 
     }
 }
 
@@ -196,11 +216,12 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
     const url = `${rootUrl}/api/pc-products/${unique_id}/`;
     try {
         const res = await fetch(url, { 
-            headers: { 'Host': 'localhost' },
-            cache: 'no-store' // 常に最新の在庫・価格情報を取得
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
+            cache: 'no-store'
         });
         return res.ok ? await res.json() : null;
     } catch (e) { 
+        console.error(`[Product Detail API ERROR]:`, e);
         return null; 
     }
 }
@@ -210,11 +231,11 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
  */
 export async function fetchRelatedProducts(maker: string, excludeId: string, limit = 4) {
     const rootUrl = getDjangoBaseUrl();
-    const url = `${rootUrl}/api/pc-products/?maker=${maker.toLowerCase()}&limit=${limit + 1}`;
+    const url = `${rootUrl}/api/pc-products/?maker=${maker}&limit=${limit + 1}`;
 
     try {
         const res = await fetch(url, { 
-            headers: { 'Host': 'localhost' },
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
             next: { revalidate: 3600 }
         });
 
@@ -242,7 +263,7 @@ export async function fetchMakers(): Promise<MakerCount[]> {
 
     try {
         const res = await fetch(url, {
-            headers: { 'Host': 'localhost' },
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
             cache: 'no-store'
         });
 
@@ -263,7 +284,7 @@ export async function fetchPCProductRanking(): Promise<PCProduct[]> {
 
     try {
         const res = await fetch(url, {
-            headers: { 'Host': 'localhost' },
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
             cache: 'no-store'
         });
 
@@ -289,7 +310,7 @@ export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
 
     try {
         const res = await fetch(url, {
-            headers: { 'Host': 'localhost' },
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
             cache: 'no-store'
         });
 
