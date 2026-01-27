@@ -4,6 +4,8 @@
 import Link from 'next/link';
 import styles from './ProductCard.module.css';
 import { ReactNode } from 'react';
+// ✅ 新しく作成したデコードユーティリティをインポート
+import { decodeHtml } from '@/utils/decode';
 
 /**
  * =====================================================================
@@ -44,6 +46,9 @@ export default function ProductCard({
   const displayMaker = product.maker || product.maker_name || 'Brand';
   const displayPrice = product.price ? Number(product.price) : 0;
 
+  // ✅ 商品名をデコード済みの状態で変数に格納
+  const decodedProductName = decodeHtml(product.name || '');
+
   const getSafeImageUrl = () => {
     if (!product.image_url) return 'https://via.placeholder.com/300x200?text=No+Image';
     return product.image_url.replace('http://', 'https://');
@@ -77,7 +82,8 @@ export default function ProductCard({
       <div className={styles.imageArea}>
         <img 
           src={getSafeImageUrl()} 
-          alt={`${displayMaker} ${product.name}`} 
+          {/* ✅ alt属性にデコード済みの名前を適用 */}
+          alt={`${displayMaker} ${decodedProductName}`} 
           className={styles.image}
           loading="lazy"
           onError={(e) => {
@@ -96,7 +102,8 @@ export default function ProductCard({
       </div>
 
       <h3 className={styles.productName}>
-        <Link href={`/product/${product.unique_id}`}>{product.name}</Link>
+        {/* ✅ 表示テキストにデコード済みの名前を適用 */}
+        <Link href={`/product/${product.unique_id}`}>{decodedProductName}</Link>
       </h3>
 
       {/* 🚩 追加コンテンツスロット (ここにレーダーチャートなどが入る) */}

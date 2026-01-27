@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-// ✅ 外部JS読み込み用の Script コンポーネントをインポート
-import Script from "next/script";
+// ✅ 外部JS読み込み用の Script コンポーネントは不要になったため削除
 
 // ✅ パス・エイリアス (@/) を使用してインポート
 import Header from "@/components/layout/Header";
@@ -104,11 +103,10 @@ export default function RootLayout({
         {/* ✅ AIチャットコンシェルジュ */}
         <ChatBot />
 
-        {/* ✅ 外部JSの読み込み */}
-        <Script 
-          src="/scripts/common-utils.js" 
-          strategy="afterInteractive" 
-        />
+        {/* ❌ 外部JS (/scripts/common-utils.js) の読み込みを削除しました。
+           今後は utils/format.ts などに定義した decodeHtml 関数を 
+           各コンポーネントで import して使用する形式に移行します。
+        */}
       </body>
     </html>
   );
