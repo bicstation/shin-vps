@@ -52,7 +52,7 @@ export default function ProductCard({
   const getSafeImageUrl = () => {
     // 画像URLがない場合
     if (!product?.image_url) {
-      return 'https://via.placeholder.com/300x200?text=No+Image';
+      return 'https://placehold.jp/24/3b82f6/ffffff/300x200.png?text=No%20Image';
     }
     // 文字列であることを保証しつつ、httpをhttpsに置換
     return String(product.image_url).replace('http://', 'https://');
@@ -69,10 +69,10 @@ export default function ProductCard({
 
   return (
     <article className={cardClassName}>
-      {/* 🚩 順位バッジ (ランキング用) */}
+      {/* 🚩 順位バッジ */}
       {rank && (
         <div className={`${styles.rankBadge} ${styles[`rankBadge_${rank}`]}`}>
-          {rank}<span className={styles.rankUnit}>位</span>
+          {rank}
         </div>
       )}
 
@@ -86,12 +86,11 @@ export default function ProductCard({
       <div className={styles.imageArea}>
         <img 
           src={getSafeImageUrl()} 
-          {/* ✅ alt属性にデコード済みの名前を適用 */}
           alt={`${displayMaker} ${decodedProductName}`} 
           className={styles.image}
           loading="lazy"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=Not+Found';
+            (e.target as HTMLImageElement).src = 'https://placehold.jp/24/3b82f6/ffffff/300x200.png?text=No%20Image';
           }}
         />
       </div>
