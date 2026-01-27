@@ -1,12 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
 
-// ✅ 爆速化の要: 毎回APIを叩く 'force-dynamic' を削除し、ISR (1時間キャッシュ) に変更
-// これにより、2回目以降のアクセスはサーバー側で生成済みのHTMLが即座に返ります。
+// ✅ 爆速化の要: ISR (1時間キャッシュ)
 export const revalidate = 3600; 
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // ✅ Next.js Imageコンポーネントを使用
+import Image from 'next/image';
 import Sidebar from '@/components/layout/Sidebar';
 import RadarChart from '@/components/RadarChart';
 import ProductCard from '@/components/product/ProductCard';
@@ -30,7 +29,6 @@ export default async function Page({ searchParams }: PageProps) {
 
     /**
      * 🚀 APIリクエストの最適化
-     * fetchPostList を18件から10件に減らし、ペイロードを軽量化。
      */
     const [wpData, pcData, makersData, rankingData, popularityData] = await Promise.all([
         fetchPostList(10).catch(() => ({ results: [], count: 0 })),
@@ -40,7 +38,6 @@ export default async function Page({ searchParams }: PageProps) {
         fetchPCPopularityRanking().catch(() => [])
     ]);
 
-    // データの安全な抽出
     const pcResults = pcData?.results || [];
     const wpResults = wpData?.results || [];
     const topThree = (rankingData || []).slice(0, 3);
@@ -79,7 +76,7 @@ export default async function Page({ searchParams }: PageProps) {
                     </h1>
                 </header>
 
-                {/* 🏆 AIスペックランキング (LCP発生エリア) */}
+                {/* 🏆 AIスペックランキング */}
                 {topThree.length > 0 && (
                     <section className={styles.rankingSection}>
                         <div className={styles.sectionHeader}>
@@ -91,19 +88,22 @@ export default async function Page({ searchParams }: PageProps) {
                                 <div key={product.unique_id || index} className={`${styles.topThreeCard} ${styles[`rank_${index + 1}`]}`}>
                                     <div className={styles.rankBadge}>{index + 1}位</div>
                                     <div className={styles.topThreeImage}>
-                                        {/* ✅ imgからImageへ。priority={index === 0} で1位の画像を最優先ロード */}
+                                        {/* ✅ fill属性を使用し、CSS側でサイズを制御。unoptimized={true}で確実に表示 */}
                                         <Image 
                                             src={product.image_url?.replace('http://', 'https://') || '/no-image.png'} 
                                             alt={product.name || 'PC製品'} 
-                                            width={400} 
-                                            height={300}
+                                            fill
                                             priority={index === 0} 
+                                            unoptimized={true}
+                                            sizes="(max-width: 1024px) 100vw, 160px"
                                             className={styles.rankingImgTag}
                                         />
                                     </div>
                                     <div className={styles.topThreeContent}>
-                                        <span className={styles.topThreeMaker}>{product.maker}</span>
-                                        <h3 className={styles.topThreeName}>{product.name}</h3>
+                                        <div className={styles.topThreeNameArea}>
+                                            <span className={styles.topThreeMaker}>{product.maker}</span>
+                                            <h3 className={styles.topThreeName}>{product.name}</h3>
+                                        </div>
                                         <div className={styles.topThreeScore}>
                                             <div className={styles.scoreValue}>{product.spec_score || 0}</div>
                                             <div className={styles.scoreLabel}>AI SCORE</div>
@@ -119,7 +119,7 @@ export default async function Page({ searchParams }: PageProps) {
                     </section>
                 )}
 
-                {/* 🔍 目的・スペック・形状から探す */}
+                {/* 🔍 目的・スペックから探す */}
                 <section className={styles.categorySearchSection}>
                     <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔍</span> 目的・スペックから探す</h2>
                     <div className={styles.searchGroup}>
@@ -175,14 +175,17 @@ export default async function Page({ searchParams }: PageProps) {
                                         <Image 
                                             src={product.image_url?.replace('http://', 'https://') || '/no-image.png'} 
                                             alt={product.name || 'PC製品'} 
-                                            width={300} 
-                                            height={200}
-                                            loading="lazy"
+                                            fill
+                                            unoptimized={true}
+                                            sizes="(max-width: 1024px) 100vw, 160px"
+                                            className={styles.rankingImgTag}
                                         />
                                     </div>
                                     <div className={styles.topThreeContent}>
-                                        <span className={styles.topThreeMaker}>{product.maker}</span>
-                                        <h3 className={styles.topThreeName}>{product.name}</h3>
+                                        <div className={styles.topThreeNameArea}>
+                                            <span className={styles.topThreeMaker}>{product.maker}</span>
+                                            <h3 className={styles.topThreeName}>{product.name}</h3>
+                                        </div>
                                         <div className={styles.trendingInfo}>
                                             <span className={styles.trendLabel}>注目！</span>
                                             <div className={styles.trendPrice}>
@@ -208,9 +211,9 @@ export default async function Page({ searchParams }: PageProps) {
                                         src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url?.replace('http://', 'https://') || '/no-image.png'} 
                                         alt={safeDecode(post.title?.rendered || '')} 
                                         fill
+                                        unoptimized={true}
                                         sizes="(max-width: 768px) 100vw, 25vw"
                                         style={{ objectFit: 'cover' }}
-                                        loading="lazy"
                                     />
                                 </div>
                                 <div className={styles.contentBody}>
