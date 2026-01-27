@@ -112,6 +112,11 @@ export default function ProductCard({
       {/* 🚩 追加コンテンツスロット (ここにレーダーチャートなどが入る) */}
       {children && (
         <div className={styles.extraContent}>
+          {/* ResponsiveContainerがこのコンポーネントの外側（親側）で定義されている場合、
+            ここでの children に minWidth={0} などのプロパティが伝播しないことがあります。
+            もし警告が消えない場合は、親側（チャートを渡している側）の 
+            <ResponsiveContainer> に minWidth={0} を追加してください。
+          */}
           {children}
         </div>
       )}
