@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Script from 'next/script';
+// ✅ 外部JS (Script) は不要になったためインポートから削除
 import styles from './PCFinderPage.module.css';
 import ProductCard from '@/components/product/ProductCard';
 
 /**
  * =====================================================================
- * 💻 PC-FINDER ページコンポーネント (TSV属性同期版)
+ * 💻 PC-FINDER ページコンポーネント
+ * 4,000件のデータベース検索に対応したローディング強化版
  * =====================================================================
  */
 
@@ -17,10 +18,9 @@ export default function PCFinderPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   // 環境変数の取得
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
-  // 🚩 フィルター条件の初期値 (TSVのスラッグに準拠)
+  // 🚩 フィルター条件の初期値
   const [filters, setFilters] = useState({
     budget: 300000,
     type: 'all',         // type-laptop, type-desktop 等
@@ -39,7 +39,6 @@ export default function PCFinderPage() {
     try {
       const query = new URLSearchParams({
         budget: filters.budget.toString(),
-        // 🚩 形状(type)と用途(usage)をパラメータとして送信
         type: filters.type !== 'all' ? filters.type : '',
         usage: filters.usage !== 'all' ? filters.usage : '',
         brand: filters.brand !== 'all' ? filters.brand : '',
@@ -52,7 +51,6 @@ export default function PCFinderPage() {
       const endpoint = `${apiUrl}/pc-products/?${query.toString()}`;
       const response = await fetch(endpoint);
       console.log("Fetching from:", endpoint);  
-
 
       if (!response.ok) {
         throw new Error(`HTTP Error: ${response.status}`);
@@ -86,11 +84,7 @@ export default function PCFinderPage() {
 
   return (
     <div className={styles.pageContainer}>
-      <Script
-        src={`${basePath}/scripts/common-utils.js`.replace('//', '/')}
-        strategy="afterInteractive"
-      />
-
+      
       <div className={styles.contentWrapper}>
         <header className={styles.header}>
           <div className={styles.badge}>BICSTATION LIVE DATABASE</div>
@@ -119,7 +113,7 @@ export default function PCFinderPage() {
                 </div>
               </section>
 
-              {/* 02. PC形状 (TSVの slug: type-xxx に同期) */}
+              {/* 02. PC形状 */}
               <section className={styles.filterGroup}>
                 <label className={styles.filterLabel}>02. Form Factor</label>
                 <div className={styles.buttonGrid}>
@@ -140,7 +134,7 @@ export default function PCFinderPage() {
                 </div>
               </section>
 
-              {/* 03. 主な用途 (TSVの slug: usage-xxx に同期) */}
+              {/* 03. 主な用途 */}
               <section className={styles.filterGroup}>
                 <label className={styles.filterLabel}>03. Purpose</label>
                 <select
@@ -239,11 +233,21 @@ export default function PCFinderPage() {
               </div>
             </div>
 
+            {/* ✅ 修正：ローディング中の表示をユーザーに優しく強化 */}
             {isLoading ? (
-              <div className={styles.productGrid}>
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className={styles.skeletonCard}></div>
-                ))}
+              <div className={styles.loadingContainer}>
+                <div className={styles.loaderContent}>
+                  <div className={styles.spinner}></div>
+                  <h3 className={styles.loadingTitle}>ただいま検索中です...</h3>
+                  <p className={styles.loadingText}>
+                    約4,000件のデータベースから最適なPCを抽出しています。
+                  </p>
+                </div>
+                <div className={styles.productGrid}>
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className={styles.skeletonCard}></div>
+                  ))}
+                </div>
               </div>
             ) : products.length > 0 ? (
               <div className={styles.productGrid}>

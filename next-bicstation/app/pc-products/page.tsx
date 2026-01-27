@@ -112,10 +112,7 @@ export default async function PCProductsPage(props: PageProps) {
     };
 
     return (
-        <div className={styles.pageContainer}>
-            {/* 🚩 スクリプト読み込みの最適化 (MIMEタイプエラー対策) */}
-            <Script src="/scripts/common-utils.js" strategy="afterInteractive" />
-            
+        <div className={styles.pageContainer}>           
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

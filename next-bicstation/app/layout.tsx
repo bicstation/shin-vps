@@ -102,11 +102,6 @@ export default function RootLayout({
 
         {/* ✅ AIチャットコンシェルジュ */}
         <ChatBot />
-
-        {/* ❌ 外部JS (/scripts/common-utils.js) の読み込みを削除しました。
-           今後は utils/format.ts などに定義した decodeHtml 関数を 
-           各コンポーネントで import して使用する形式に移行します。
-        */}
       </body>
     </html>
   );
