@@ -50,8 +50,12 @@ export default function ProductCard({
   const decodedProductName = decodeHtml(product.name || '');
 
   const getSafeImageUrl = () => {
-    if (!product.image_url) return 'https://via.placeholder.com/300x200?text=No+Image';
-    return product.image_url.replace('http://', 'https://');
+    // 画像URLがない場合
+    if (!product?.image_url) {
+      return 'https://via.placeholder.com/300x200?text=No+Image';
+    }
+    // 文字列であることを保証しつつ、httpをhttpsに置換
+    return String(product.image_url).replace('http://', 'https://');
   };
 
   const getAttrHref = (attrSlug: string) => {
