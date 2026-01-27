@@ -25,7 +25,8 @@ class Command(BaseCommand):
     SID = "3273700"
     
     # 属性定義TSVのパス
-    TSV_PATH = "/home/maya/dev/shin-vps/django/master_data/attributes.tsv"
+    # TSV_PATH = "/home/maya/dev/shin-vps/django/master_data/attributes.tsv"
+    TSV_PATH = "/usr/src/app/master_data/attributes.tsv"
 
     MAKER_MAP = {
         "2543": {"prefix": "fujitsu", "maker": "FMV"},

@@ -15,7 +15,8 @@ django.setup()
 from api.models import BcLinkshareProduct, PCProduct, PCAttribute
 
 class APISyncEngine:
-    TSV_PATH = "/home/maya/dev/shin-vps/django/master_data/attributes.tsv"
+    # TSV_PATH = "/home/maya/dev/shin-vps/django/master_data/attributes.tsv"
+    TSV_PATH = "/usr/src/app/master_data/attributes.tsv"
 
     def __init__(self):
         self.attr_rules = self._load_attr_rules()
