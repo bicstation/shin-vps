@@ -147,6 +147,10 @@
   padding: 5px;
   display: flex;
   justify-content: center;
+  /* ✅ チャートの描画エラーを防ぐための修正点 */
+  width: 100%;
+  min-height: 160px; /* チャートが消えないように最低限の高さを持たせる */
+  position: relative;
 }
 
 /* 属性・タグリスト */
