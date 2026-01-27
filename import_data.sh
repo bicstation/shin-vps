@@ -212,7 +212,12 @@ while true; do
             [[ "$AI_CONFIRM" == "y" ]] && run_django python manage.py analyze_pc_spec --maker "$SLUG" --limit 999999
             ;;
         4) read -p "ファイル名: " FILE_NAME; run_django python manage.py import_av "/usr/src/app/data/$FILE_NAME" ;;
-        5) run_django python manage.py createsuperuser ;;
+        5) 
+            echo "スーパーユーザーを作成します..."
+            run_django python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='maya').exists() or User.objects.create_superuser('maya', 'bicstation@gmail.com', '1492nabe')"
+            echo "✅ 作成完了 (User: maya / Pass: 1492nabe)"
+            ;;
+
         12) run_django python manage.py export_products ;;
         13)
             FIXED_TSV="/usr/src/app/master_data/attributes.tsv"

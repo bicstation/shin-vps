@@ -1,8 +1,15 @@
 import { fetchPCProductRanking } from '@/lib/api';
-import Image from 'next/image';
 import Link from 'next/link';
 import styles from './Ranking.module.css';
 import RadarChart from '@/components/RadarChart';
+import ProductCard from '@/components/product/ProductCard';
+
+/**
+ * =====================================================================
+ * 🏆 PCスペック解析ランキング ページ
+ * 汎用 ProductCard を使用し、デザインを統一した最新版
+ * =====================================================================
+ */
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const sParams = await searchParams;
@@ -22,17 +29,12 @@ export default async function RankingPage({ searchParams }: { searchParams: Prom
   const limit = 20; 
   const offset = (currentPage - 1) * limit;
 
+  // APIデータの取得
   const allProducts = await fetchPCProductRanking();
   const products = allProducts.slice(offset, offset + limit);
   const totalPages = Math.ceil(allProducts.length / limit);
 
-  // Mixed Content対策と画像URLの正規化
-  const getSafeImageUrl = (url: string | null) => {
-    if (!url) return '/no-image.png';
-    if (url.startsWith('//')) return `https:${url}`;
-    return url.replace('http://', 'https://');
-  };
-
+  // JSON-LD（構造化データ）の生成
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -43,9 +45,17 @@ export default async function RankingPage({ searchParams }: { searchParams: Prom
       "item": {
         "@type": "Product",
         "name": p.name,
-        "image": getSafeImageUrl(p.image_url),
+        "image": p.image_url?.replace('http://', 'https://'),
       }
     }))
+  };
+
+  // ランキング順位に応じたチャート色の取得
+  const getChartColor = (rank: number) => {
+    if (rank === 1) return '#d69e2e'; // Gold
+    if (rank === 2) return '#718096'; // Silver
+    if (rank === 3) return '#975a16'; // Bronze
+    return '#3182ce'; // Default Blue
   };
 
   return (
@@ -56,6 +66,7 @@ export default async function RankingPage({ searchParams }: { searchParams: Prom
       />
 
       <div className={styles.header}>
+        <div className={styles.badge}>RANKING</div>
         <h1 className={styles.title}>💻 PCスペック解析ランキング</h1>
         <p className={styles.subtitle}>AIが全PCのスペックを数値化。真のパフォーマンスを可視化しました。</p>
       </div>
@@ -63,13 +74,8 @@ export default async function RankingPage({ searchParams }: { searchParams: Prom
       <div className={styles.grid}>
         {products.map((product, index) => {
           const rank = offset + index + 1;
-          let rankClass = '';
-          let chartColor = '#3182ce';
           
-          if (rank === 1) { rankClass = styles.rank_1; chartColor = '#d69e2e'; }
-          else if (rank === 2) { rankClass = styles.rank_2; chartColor = '#718096'; }
-          else if (rank === 3) { rankClass = styles.rank_3; chartColor = '#975a16'; }
-
+          // チャートデータの整形
           const chartData = product.radar_chart || [
             { subject: 'CPU', value: 0, fullMark: 100 },
             { subject: 'GPU', value: 0, fullMark: 100 },
@@ -79,60 +85,41 @@ export default async function RankingPage({ searchParams }: { searchParams: Prom
           ];
 
           return (
-            <article key={product.unique_id} className={`${styles.card} ${rankClass}`}>
-              <div className={styles.rankBadge}>{rank}位</div>
-              
-              <div className={styles.imageWrapper}>
-                <Image
-                  src={getSafeImageUrl(product.image_url)}
-                  alt={product.name}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  priority={rank <= 5}
-                  unoptimized={true} // 🚩 画像が出ない問題を強制回避
+            <ProductCard 
+              key={product.unique_id} 
+              product={product} 
+              rank={rank}
+            >
+              {/* 🚩 ProductCardのchildrenとしてレーダーチャートを注入 */}
+              <div className={styles.chartWrapper}>
+                <div className={styles.chartHeader}>
+                  <span className={styles.analysisLabel}>AI解析詳細</span>
+                </div>
+                <RadarChart 
+                  data={chartData} 
+                  color={getChartColor(rank)} 
                 />
               </div>
-
-              <div className={styles.content}>
-                <p className={styles.maker}>{product.maker}</p>
-                <h2 className={styles.productName}>{product.name}</h2>
-                
-                <div className={styles.scoreSection}>
-                  <div className={styles.scoreHeader}>
-                    <span className={styles.scoreValue}>{product.spec_score}</span>
-                    <span className={styles.scoreLabel}>ANALYSIS SCORE</span>
-                  </div>
-                  <div className={styles.chartContainer}>
-                    <RadarChart data={chartData} color={chartColor} />
-                  </div>
-                </div>
-
-                <div className={styles.specBox}>
-                   <div className={styles.specItem}>🚀 {product.cpu_model || 'CPU不明'}</div>
-                   <div className={styles.specItem}>📟 {product.memory_gb}GB / {product.storage_gb}GB</div>
-                   <div className={styles.specItem}>🖥️ {product.display_info}</div>
-                </div>
-
-                <div className={styles.bottomSection}>
-                  <div className={styles.price}>
-                    <span className={styles.currency}>¥</span>
-                    {product.price?.toLocaleString()}
-                  </div>
-                  <a href={product.affiliate_url} target="_blank" rel="noopener" className={styles.button}>
-                    公式サイト
-                  </a>
-                </div>
-              </div>
-            </article>
+            </ProductCard>
           );
         })}
       </div>
 
+      {/* ページネーション */}
       <nav className={styles.pagination}>
-        {currentPage > 1 && <Link href={`?page=${currentPage - 1}`} className={styles.pageButton}>← 前へ</Link>}
-        <div className={styles.pageInfo}><strong>{currentPage}</strong> / {totalPages}</div>
-        {currentPage < totalPages && <Link href={`?page=${currentPage + 1}`} className={styles.pageButton}>次へ →</Link>}
+        {currentPage > 1 && (
+          <Link href={`?page=${currentPage - 1}`} className={styles.pageButton}>
+            ← 前のページ
+          </Link>
+        )}
+        <div className={styles.pageInfo}>
+          <strong>{currentPage}</strong> / {totalPages}
+        </div>
+        {currentPage < totalPages && (
+          <Link href={`?page=${currentPage + 1}`} className={styles.pageButton}>
+            次のページ →
+          </Link>
+        )}
       </nav>
     </main>
   );

@@ -3,6 +3,21 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 import styles from './ProductCard.module.css';
+import { ReactNode } from 'react';
+
+/**
+ * =====================================================================
+ * 🗂️ 拡張版 ProductCard コンポーネント
+ * Finder, Ranking, Catalog すべてに対応可能なユニバーサル設計
+ * =====================================================================
+ */
+
+interface ProductCardProps {
+  product: any;
+  rank?: number;        // ランキング順位 (オプション)
+  children?: ReactNode; // レーダーチャート等の追加コンテンツ (オプション)
+  showActions?: boolean; // 詳細・購入ボタンを表示するか (デフォルト true)
+}
 
 const attrColorMap: { [key: string]: { bg: string, text: string, border: string } } = {
   cpu: { bg: '#eef2ff', text: '#3730a3', border: '#e0e7ff' },
@@ -15,10 +30,19 @@ const attrColorMap: { [key: string]: { bg: string, text: string, border: string 
   'PC形状': { bg: '#f5f5f5', text: '#666666', border: '#e5e5e5' },
 };
 
-export default function ProductCard({ product }: any) {
+export default function ProductCard({ 
+  product, 
+  rank, 
+  children, 
+  showActions = true 
+}: ProductCardProps) {
+  
   if (!product) return null;
 
+  // 🚩 各種データの正規化
   const buyLink = product.affiliate_url || product.url || '#';
+  const displayMaker = product.maker || product.maker_name || 'Brand';
+  const displayPrice = product.price ? Number(product.price) : 0;
 
   const getSafeImageUrl = () => {
     if (!product.image_url) return 'https://via.placeholder.com/300x200?text=No+Image';
@@ -26,17 +50,34 @@ export default function ProductCard({ product }: any) {
   };
 
   const getAttrHref = (attrSlug: string) => {
-    return product.maker 
-      ? `/brand/${product.maker.toLowerCase()}?attribute=${attrSlug}`
+    return displayMaker 
+      ? `/brand/${displayMaker.toLowerCase()}?attribute=${attrSlug}`
       : `/catalog?attribute=${attrSlug}`;
   };
 
+  // 🚩 ランキングに応じたクラス付与 (rank_1, rank_2, rank_3 ...)
+  const cardClassName = `${styles.card} ${rank ? styles[`rank_${rank}`] : ''}`;
+
   return (
-    <article className={styles.card}>
+    <article className={cardClassName}>
+      {/* 🚩 順位バッジ (ランキング用) */}
+      {rank && (
+        <div className={`${styles.rankBadge} ${styles[`rankBadge_${rank}`]}`}>
+          {rank}<span className={styles.rankUnit}>位</span>
+        </div>
+      )}
+
+      {/* 🚩 スコア表示 */}
+      {product.spec_score && (
+        <div className={styles.scoreBadge}>
+          AI SCORE: <span>{product.spec_score}</span>
+        </div>
+      )}
+
       <div className={styles.imageArea}>
         <img 
           src={getSafeImageUrl()} 
-          alt={`${product.maker} ${product.name}`} 
+          alt={`${displayMaker} ${product.name}`} 
           className={styles.image}
           loading="lazy"
           onError={(e) => {
@@ -46,17 +87,27 @@ export default function ProductCard({ product }: any) {
       </div>
 
       <div className={styles.metaInfo}>
-        <span className={styles.makerBadge}>{product.maker}</span>
-        <span className={`${styles.stockStatus} ${product.stock_status === '在庫あり' ? styles.inStock : ''}`}>
-          {product.stock_status}
-        </span>
+        <span className={styles.makerBadge}>{displayMaker}</span>
+        {product.stock_status && (
+          <span className={`${styles.stockStatus} ${product.stock_status === '在庫あり' ? styles.inStock : ''}`}>
+            {product.stock_status}
+          </span>
+        )}
       </div>
 
       <h3 className={styles.productName}>
         <Link href={`/product/${product.unique_id}`}>{product.name}</Link>
       </h3>
 
+      {/* 🚩 追加コンテンツスロット (ここにレーダーチャートなどが入る) */}
+      {children && (
+        <div className={styles.extraContent}>
+          {children}
+        </div>
+      )}
+
       <div className={styles.attributeList}>
+        {/* 詳細属性がある場合 */}
         {product.attributes?.map((attr: any) => {
           const colors = attrColorMap[attr.attr_type] || attrColorMap[attr.attr_type_display] || { bg: '#f9fafb', text: '#374151', border: '#f3f4f6' };
           return (
@@ -65,24 +116,37 @@ export default function ProductCard({ product }: any) {
             </Link>
           );
         })}
+
+        {/* 属性がない場合の簡易タグ (スペックを文字列で表示) */}
+        {!product.attributes && (
+          <div className={styles.simpleTags}>
+            {product.cpu_model && <span className={styles.simpleTag}>{product.cpu_model}</span>}
+            {product.memory_gb && <span className={styles.simpleTag}>{product.memory_gb}GB RAM</span>}
+            {product.storage_gb && <span className={styles.simpleTag}>{product.storage_gb}GB SSD</span>}
+            {product.is_ai_pc && <span className={styles.aiBadge}>AI PC</span>}
+          </div>
+        )}
       </div>
 
       <div className={styles.priceContainer}>
         <p className={styles.price}>
-          {product.price > 0 ? (
+          {displayPrice > 0 ? (
             <>
               <span className={styles.currency}>¥</span>
-              <span className={styles.amount}>{product.price.toLocaleString()}</span>
+              <span className={styles.amount}>{displayPrice.toLocaleString()}</span>
               <span className={styles.taxLabel}>(税込)</span>
             </>
           ) : <span className={styles.priceUnknown}>価格不明</span>}
         </p>
       </div>
 
-      <div className={styles.actions}>
-        <Link href={`/product/${product.unique_id}`} className={styles.detailBtn}>詳細スペック</Link>
-        <a href={buyLink} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>公式サイト</a>
-      </div>
+      {/* 🚩 ボタンエリア (フラグで非表示も可能) */}
+      {showActions && (
+        <div className={styles.actions}>
+          <Link href={`/product/${product.unique_id}`} className={styles.detailBtn}>詳細スペック</Link>
+          <a href={buyLink} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>公式サイト</a>
+        </div>
+      )}
     </article>
   );
 }

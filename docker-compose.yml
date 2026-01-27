@@ -91,6 +91,8 @@ services:
       - .env
     environment:
       - DJANGO_API_URL=http://django-v2:8000
+      - NEXT_PUBLIC_BASE_PATH=/bicstation
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     networks: 
       - internal-net
     labels:
