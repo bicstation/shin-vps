@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,15 +12,14 @@ import {
   Legend,
   Filler,
   ChartOptions,
-  Tick
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
+// Chart.js のプラグイン登録
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 interface PriceHistoryChartProps {
   /** * history: [{ date: "01/24", price: 150000 }] などの形式
-   * 順位データの場合も、便宜上 price というキーで数値が入っていることを想定
    */
   history: { date: string; price?: number; rank?: number; [key: string]: any }[];
   isRank?: boolean; // 順位モード（軸反転・緑色）
@@ -28,6 +27,12 @@ interface PriceHistoryChartProps {
 
 export default function PriceHistoryChart({ history, isRank = false }: PriceHistoryChartProps) {
   const [range, setRange] = useState<'1M' | '3M' | 'ALL'>('ALL');
+  const [isMounted, setIsMounted] = useState(false);
+
+  // 💡 [修正] マウント状態を管理。ブラウザ側にDOMが構築されるまで Chart を描画させない。
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // 1. 期間フィルタリング
   const filteredHistory = useMemo(() => {
@@ -55,15 +60,14 @@ export default function PriceHistoryChart({ history, isRank = false }: PriceHist
     datasets: [
       {
         label: isRank ? '順位' : '価格',
-        // ページ側で rank を price キーにマッピングして渡してくるケースも考慮
         data: filteredHistory.map(h => {
           const val = isRank ? (h.rank ?? h.price) : h.price;
           return val || null;
         }),
-        borderColor: isRank ? '#10b981' : '#2563eb', // 順位：エメラルド, 価格：ブルー
+        borderColor: isRank ? '#10b981' : '#2563eb',
         backgroundColor: isRank ? 'rgba(16, 185, 129, 0.05)' : 'rgba(37, 99, 235, 0.05)',
         fill: true,
-        tension: 0.4, // 少し滑らかに
+        tension: 0.4,
         pointRadius: filteredHistory.length > 31 ? 0 : 4,
         pointHitRadius: 10,
         pointBackgroundColor: isRank ? '#10b981' : '#2563eb',
@@ -75,7 +79,7 @@ export default function PriceHistoryChart({ history, isRank = false }: PriceHist
   // 3. チャートオプション
   const options: ChartOptions<'line'> = {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: false, // 💡 コンテナの高さに追従させる
     interaction: {
       intersect: false,
       mode: 'index',
@@ -102,14 +106,13 @@ export default function PriceHistoryChart({ history, isRank = false }: PriceHist
         ticks: { font: { size: 10 }, color: '#94a3b8' }
       },
       y: {
-        reverse: isRank, // ★重要: 1位を一番上に表示
+        reverse: isRank, // 1位を上に
         beginAtZero: !isRank,
-        // 順位の場合、目盛りを整数に限定
         ticks: {
           stepSize: isRank ? 1 : undefined,
           font: { size: 11 },
           color: '#94a3b8',
-          callback: function(this, value) {
+          callback: function(value) {
             if (isRank) return `${value}位`;
             return `¥${Number(value).toLocaleString()}`;
           }
@@ -121,7 +124,7 @@ export default function PriceHistoryChart({ history, isRank = false }: PriceHist
     }
   };
 
-  // ボタンボタンスタイル
+  // ボタンスタイル
   const btnStyle = (active: boolean) => `
     px-4 py-1.5 text-[11px] font-bold rounded-full transition-all border
     ${active 
@@ -129,8 +132,18 @@ export default function PriceHistoryChart({ history, isRank = false }: PriceHist
       : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'}
   `;
 
+  // 💡 [修正] マウント前はプレースホルダー（高さ確保済み）を表示して、Chart.jsのエラーを回避
+  if (!isMounted) {
+    return (
+      <div className="w-full bg-white rounded-xl p-4">
+        <div className="h-[250px] w-full bg-gray-50 animate-pulse rounded-lg" />
+      </div>
+    );
+  }
+
   return (
     <div className="w-full bg-white rounded-xl">
+      {/* ヘッダー部分 */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
           <div className={`w-1 h-4 rounded-full ${isRank ? 'bg-emerald-500' : 'bg-blue-500'}`}></div>
@@ -147,7 +160,8 @@ export default function PriceHistoryChart({ history, isRank = false }: PriceHist
         </div>
       </div>
       
-      <div className="h-[250px] w-full">
+      {/* 💡 [修正] コンテナに明示的な高さと相対位置、最小高さを付与 */}
+      <div className="h-[250px] w-full" style={{ minHeight: '250px', position: 'relative' }}>
         {filteredHistory.length > 0 ? (
           <Line data={data} options={options} />
         ) : (
