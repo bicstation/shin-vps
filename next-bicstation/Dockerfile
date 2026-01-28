@@ -30,7 +30,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # 依存関係のインストール
-COPY package.json package-lock.json ./
+# COPY package.json package-lock.json ./
+COPY package.json package.json ./
 RUN npm install --include=optional
 
 # ソースコードをコピーしてビルド実行
