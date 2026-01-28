@@ -25,9 +25,12 @@ class AdultProductAdminForm(forms.ModelForm):
         fields = '__all__'
 
 class PriceHistoryInline(admin.TabularInline):
-    """PC製品の詳細画面で価格履歴を直接編集・確認できるインライン"""
+    """
+    📈 価格履歴インライン
+    PC製品の詳細画面で、過去の価格推移を直接編集・確認できるUIを提供します。
+    """
     model = PriceHistory
-    extra = 0  # 空の入力欄をデフォルトで表示しない
+    extra = 0  # デフォルトの空行を表示しない
     ordering = ('-recorded_at',)
     readonly_fields = ('recorded_at',)
     can_delete = True
@@ -37,13 +40,17 @@ class PriceHistoryInline(admin.TabularInline):
 # ----------------------------------------------------
 @admin.register(PCAttribute)
 class PCAttributeAdmin(admin.ModelAdmin):
+    """
+    🎨 スペック属性（CPU、RAM、OS、ライセンス等）の管理
+    サイドバーの絞り込み項目や、製品詳細のタグとして機能します。
+    """
     list_display = ('name', 'attr_type', 'slug', 'get_product_count', 'id')
     list_filter = ('attr_type',)
     search_fields = ('name', 'slug')
     ordering = ('attr_type', 'name')
 
     def get_product_count(self, obj):
-        """この属性に紐付いている製品数を表示"""
+        """この属性（例：Core i7）に紐付いている製品総数をカウントします。"""
         return obj.products.count()
     get_product_count.short_description = '紐付け製品数'
 
@@ -52,6 +59,10 @@ class PCAttributeAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 @admin.register(PriceHistory)
 class PriceHistoryAdmin(admin.ModelAdmin):
+    """
+    💰 価格履歴の単体管理
+    全製品の価格変動ログを一括で確認するための画面です。
+    """
     list_display = ('product', 'price', 'recorded_at')
     list_filter = ('recorded_at', 'product__maker')
     search_fields = ('product__name', 'product__unique_id')
@@ -61,13 +72,18 @@ class PriceHistoryAdmin(admin.ModelAdmin):
 # 2. PCProduct (PC製品・ソフト・周辺機器) のAdminクラス
 # ----------------------------------------------------
 class PCProductAdmin(admin.ModelAdmin):
+    """
+    🚀 PC製品メイン管理
+    AI解析の結果、5軸スコア、ソフトウェアライセンス、自作PC互換性など
+    本システムの核心となるデータを管理します。
+    """
     # テンプレートパスを指定
     change_list_template = "admin/api/pcproduct/change_list.html"
     
-    # 履歴をインライン表示
+    # 価格履歴を詳細画面に埋め込む
     inlines = [PriceHistoryInline]
 
-    # 一覧画面の表示項目
+    # 一覧画面の表示項目（運用性を重視した配置）
     list_display = (
         'maker',
         'display_thumbnail',
@@ -80,7 +96,7 @@ class PCProductAdmin(admin.ModelAdmin):
         'os_support_summary', 
         'license_term',
         'is_download_display',
-        # --- 状態 ---
+        # --- 状態フラグ ---
         'display_ai_status',
         'is_posted',
         'is_active',
@@ -88,7 +104,7 @@ class PCProductAdmin(admin.ModelAdmin):
     )
     list_display_links = ('name_summary',)
     
-    # フィルタリング機能
+    # 絞り込みパネル
     list_filter = (
         'is_posted',
         'is_active',
@@ -102,30 +118,29 @@ class PCProductAdmin(admin.ModelAdmin):
         'unified_genre',
     )
     
-    # 検索窓の対象
+    # 検索対象
     search_fields = ('name', 'unique_id', 'cpu_model', 'os_support', 'description', 'ai_content')
     
-    # 並び順
     ordering = ('-updated_at',)
 
-    # 多対多の属性選択UI
+    # 多対多（Attributes）の選択を使いやすくするUI
     filter_horizontal = ('attributes',)
 
-    # 詳細編集画面のレイアウト
+    # 詳細編集画面のレイアウト（セクション分け）
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
         }),
         ('✨ ソフトウェア・ライセンス情報', {
-            'description': 'セキュリティソフトやOffice等のソフトウェア専用項目です。',
+            'description': 'セキュリティソフト、Office、OS等のソフトウェア特有の管理項目です。',
             'fields': (
                 ('os_support', 'is_download'),
                 ('license_term', 'device_count'),
                 'edition',
             ),
         }),
-        ('🚀 レーダーチャート性能解析 (1-100)', {
-            'description': 'AIがスペックから算出した100点満点のスコア群です。',
+        ('🚀 AI性能解析スコア (1-100)', {
+            'description': 'AIがスペックから算出した性能指標。レーダーチャートの元データになります。',
             'fields': (
                 ('score_cpu', 'score_gpu'),
                 ('score_cost', 'score_portable'),
@@ -134,7 +149,7 @@ class PCProductAdmin(admin.ModelAdmin):
             ),
         }),
         ('AI解析スペック詳細（ハードウェア）', {
-            'description': 'PC本体の主要構成データです。',
+            'description': 'PC本体（デスクトップ・ノート）の主要パーツ構成データです。',
             'fields': (
                 ('cpu_model', 'gpu_model'),
                 ('memory_gb', 'storage_gb'),
@@ -142,33 +157,33 @@ class PCProductAdmin(admin.ModelAdmin):
                 'npu_tops',
             ),
         }),
-        ('自作PC提案用データ（AI推論）', {
-            'description': 'CPU型番等からAIが推論した、自作PCパーツ選定用の互換性データです。',
+        ('自作PC提案用・パーツ互換性（AI推論）', {
+            'description': 'パーツ単品販売時に、AIが型番から推論した互換性データです。',
             'fields': (
                 ('cpu_socket', 'motherboard_chipset'),
                 ('ram_type', 'power_recommendation'),
             ),
         }),
-        ('仕分け・スペック属性タグ', {
+        ('仕分け・カテゴリ属性', {
             'fields': ('unified_genre', 'raw_genre', 'attributes'),
         }),
-        ('製品詳細・HTML', {
+        ('製品情報・HTML原文', {
             'fields': ('name', 'price', 'description', 'raw_html'),
         }),
-        ('アフィリエイト・AI解説', {
+        ('アフィリエイト・AI生成記事', {
             'fields': ('affiliate_url', 'affiliate_updated_at', 'ai_summary', 'ai_content', 'last_spec_parsed_at'),
         }),
-        ('画像', {
+        ('画像・メディア', {
             'fields': ('image_url', 'display_thumbnail_large'),
         }),
-        ('システム情報', {
+        ('システム管理情報', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',),
+            'classes': ('collapse',), # 初期状態では閉じておく
         }),
     )
     readonly_fields = ('created_at', 'updated_at', 'display_thumbnail_large', 'last_spec_parsed_at')
 
-    # --- カスタム表示メソッド ---
+    # --- 表示カスタマイズ用メソッド ---
     def name_summary(self, obj):
         return obj.name[:40] + "..." if len(obj.name) > 40 else obj.name
     name_summary.short_description = "商品名"
@@ -178,12 +193,14 @@ class PCProductAdmin(admin.ModelAdmin):
     price_display.short_description = "価格"
 
     def display_scores(self, obj):
-        """5軸スコアの簡易表示"""
+        """一覧画面で5つの性能スコアをコンパクトに表示します。"""
         return mark_safe(
-            f'<small>CPU:{obj.score_cpu} G:{obj.score_gpu} コスパ:{obj.score_cost}<br>'
-            f'AI:{obj.score_ai} 携帯:{obj.score_portable}</small>'
+            f'<div style="line-height: 1.2; font-size: 11px;">'
+            f'CPU:{obj.score_cpu} GPU:{obj.score_gpu} コスパ:{obj.score_cost}<br>'
+            f'AI:{obj.score_ai} 携帯:{obj.score_portable}'
+            f'</div>'
         )
-    display_scores.short_description = "性能点数"
+    display_scores.short_description = "性能スコア"
 
     def os_support_summary(self, obj):
         return obj.os_support[:15] + ".." if obj.os_support and len(obj.os_support) > 15 else obj.os_support
@@ -191,15 +208,15 @@ class PCProductAdmin(admin.ModelAdmin):
 
     def is_download_display(self, obj):
         if obj.is_download:
-            return mark_safe('<span style="color: #007bff;">DL版</span>')
-        return "パケ版"
+            return mark_safe('<span style="color: #007bff; font-weight: bold;">DL版</span>')
+        return "パッケージ版"
     is_download_display.short_description = "提供形態"
 
     def display_thumbnail(self, obj):
         if obj.image_url:
             return mark_safe(f'<img src="{obj.image_url}" width="80" height="50" style="object-fit: contain; background: #eee; border-radius: 4px;" />')
         return "No Image"
-    display_thumbnail.short_description = '製品画像'
+    display_thumbnail.short_description = '画像'
 
     def display_thumbnail_large(self, obj):
         if obj.image_url:
@@ -209,11 +226,11 @@ class PCProductAdmin(admin.ModelAdmin):
 
     def display_ai_status(self, obj):
         if obj.ai_content:
-            return mark_safe('<span style="color: #28a745; font-weight: bold;">生成済み</span>')
-        return mark_safe('<span style="color: #666;">未生成</span>')
-    display_ai_status.short_description = 'AI解説'
+            return mark_safe('<span style="color: #28a745; font-weight: bold;">生成済</span>')
+        return mark_safe('<span style="color: #999;">未生成</span>')
+    display_ai_status.short_description = 'AI解析'
 
-    # --- カスタムURLとアクション ---
+    # --- カスタムURL・ボタンアクションの設定 ---
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -226,32 +243,33 @@ class PCProductAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def fetch_minisforum_action(self, request):
-        self.message_user(request, "Minisforumデータの同期を開始しました。", messages.SUCCESS)
+        self.message_user(request, "Minisforumデータの同期プロセスをバックグラウンドで開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def fetch_lenovo_action(self, request):
-        self.message_user(request, "Lenovoデータの取得を開始しました。", messages.SUCCESS)
+        self.message_user(request, "Lenovoデータの取得プロセスを開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def fetch_acer_action(self, request):
-        self.message_user(request, "Acerデータの取得を開始しました。", messages.SUCCESS)
+        self.message_user(request, "Acerデータの取得プロセスを開始しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def generate_ai_action(self, request):
-        self.message_user(request, "AI記事生成プロセスを開始しました。", messages.SUCCESS)
+        self.message_user(request, "未生成の商品に対してAI解析・記事生成を開始します。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def full_update_pc_action(self, request):
-        try:
-            self.message_user(request, "全PCショップの一括更新プロセスを開始しました。", messages.WARNING)
-        except Exception as e:
-            self.message_user(request, f"一括更新エラー: {e}", messages.ERROR)
+        self.message_user(request, "全PCショップの一括取得・更新プロセスを開始しました。", messages.WARNING)
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
 # 3. AdultProduct (アダルト製品データ) のAdminクラス
 # ----------------------------------------------------
 class AdultProductAdmin(admin.ModelAdmin):
+    """
+    🔞 アダルト製品管理
+    FANZA/DUGA等のAPIから取得したデータの管理・正規化を行います。
+    """
     form = AdultProductAdminForm
     change_list_template = "admin/adult_product_changelist.html"
 
@@ -283,37 +301,39 @@ class AdultProductAdmin(admin.ModelAdmin):
 
     def fetch_fanza_action(self, request):
         call_command('fetch_fanza')
-        self.message_user(request, "FANZAデータの取得が完了しました。")
+        self.message_user(request, "FANZAデータの取得コマンドを実行しました。")
         return HttpResponseRedirect("../")
 
     def fetch_duga_action(self, request):
         call_command('fetch_duga')
-        self.message_user(request, "DUGAデータの取得が完了しました。")
+        self.message_user(request, "DUGAデータの取得コマンドを実行しました。")
         return HttpResponseRedirect("../")
 
     def normalize_action(self, request):
         call_command('normalize_fanza')
-        self.message_user(request, "データの正規化が完了しました。")
+        self.message_user(request, "データのタグ付け・メーカー正規化を実行しました。")
         return HttpResponseRedirect("../")
 
     def full_update_action(self, request):
         call_command('fetch_fanza')
         call_command('fetch_duga')
         call_command('normalize_fanza')
-        self.message_user(request, "すべての工程が完了しました！")
+        self.message_user(request, "全工程（取得・正規化）が完了しました。")
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
 # 4. LinkshareProduct Admin
 # ----------------------------------------------------
 class LinkshareProductAdmin(admin.ModelAdmin): 
+    """Linkshare経由の製品データ管理"""
     list_display = ('id', 'product_name', 'sku', 'merchant_id', 'is_active', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
 
 # ----------------------------------------------------
-# 5. その他マスター・共通設定
+# 5. その他共通マスター設定
 # ----------------------------------------------------
 class CommonAdmin(admin.ModelAdmin):
+    """マスターデータ系（ジャンル・女優・メーカー等）の共通設定"""
     list_display = ('name', 'product_count', 'api_source', 'created_at')
 
     def product_count(self, obj):
@@ -323,10 +343,11 @@ class CommonAdmin(admin.ModelAdmin):
     product_count.short_description = "製品数"
 
 class RawApiDataAdmin(admin.ModelAdmin):
+    """APIからの生応答データを保存するログ管理"""
     list_display = ('id', 'api_source', 'created_at')
 
 # ----------------------------------------------------
-# 6. 登録
+# 6. Adminサイトへの登録
 # ----------------------------------------------------
 admin.site.register(PCProduct, PCProductAdmin)
 admin.site.register(AdultProduct, AdultProductAdmin)

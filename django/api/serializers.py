@@ -97,6 +97,8 @@ class PCProductSerializer(serializers.ModelSerializer):
     price_history = serializers.SerializerMethodField()
     # --- 🚀 レーダーチャート用データをフロントエンドで使いやすく統合 ---
     radar_chart = serializers.SerializerMethodField()
+    # --- 🚀 ランキング表示用の順位 (オプション) ---
+    rank = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
         model = PCProduct
@@ -134,7 +136,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             'edition',              # エディション (Standard, Pro等)
             'is_download',          # ダウンロード版フラグ
             
-            # --- 🚀 レーダーチャート・スコアリング (新規追加) ---
+            # --- 🚀 レーダーチャート・スコアリング ---
             'score_cpu',            # CPU点数 (1-100)
             'score_gpu',            # GPU点数 (1-100)
             'score_cost',           # コスパ点数 (1-100)
@@ -152,6 +154,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             # --- ステータス・メタ情報 ---
             'attributes',
             'price_history',        # 📈 価格履歴フィールド
+            'rank',                 # 🏆 ランキング順位
             'affiliate_url',
             'affiliate_updated_at',
             'stock_status',
@@ -174,10 +177,11 @@ class PCProductSerializer(serializers.ModelSerializer):
         """
         Next.js側のRecharts等でそのまま流し込める形式の配列を返します。
         """
+        # 値がNoneの場合は0を返すようにガード
         return [
-            {"subject": "CPU性能", "value": obj.score_cpu, "fullMark": 100},
-            {"subject": "GPU性能", "value": obj.score_gpu, "fullMark": 100},
-            {"subject": "コスパ", "value": obj.score_cost, "fullMark": 100},
-            {"subject": "携帯性", "value": obj.score_portable, "fullMark": 100},
-            {"subject": "AI性能", "value": obj.score_ai, "fullMark": 100},
+            {"subject": "CPU性能", "value": obj.score_cpu or 0, "fullMark": 100},
+            {"subject": "GPU性能", "value": obj.score_gpu or 0, "fullMark": 100},
+            {"subject": "コスパ", "value": obj.score_cost or 0, "fullMark": 100},
+            {"subject": "携帯性", "value": obj.score_portable or 0, "fullMark": 100},
+            {"subject": "AI性能", "value": obj.score_ai or 0, "fullMark": 100},
         ]

@@ -37,13 +37,16 @@ urlpatterns = [
     # 💡 サイドバーの絞り込み用メニュー（CPU別、OS別、ライセンス別などの件数）を動的に取得
     path('pc-sidebar-stats/', views.pc_sidebar_stats, name='pc_sidebar_stats'),
 
+    # GET /api/pc-products/ranking/
+    # 🏆 💡 スコアに基づいたランキングデータを取得
+    path('pc-products/ranking/', views.PCProductRankingView.as_view(), name='pc_product_ranking'),
+
     # GET /api/pc-products/<unique_id>/
     # 💡 lookup_field='unique_id' により、詳細情報を取得
-    # 🚀 radar_chartフィールドによりNext.js側で即座にグラフ描画が可能です
     path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
 
     # GET /api/pc-products/<unique_id>/price-history/
-    # 📈 💡 特定製品の価格推移データを取得 (Chart.jsやRechartsでのラインチャート用)
+    # 📈 💡 特定製品の価格推移データを取得
     path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
 
     # -----------------------------------------------------------
@@ -61,4 +64,12 @@ urlpatterns = [
     path('labels/', views.LabelListAPIView.as_view(), name='label_list'),
     path('directors/', views.DirectorListAPIView.as_view(), name='director_list'),
     path('series/', views.SeriesListAPIView.as_view(), name='series_list'),
+
+    # -----------------------------------------------------------
+    # 6. 認証 (Auth) エンドポイント
+    # -----------------------------------------------------------
+    # 💡 Next.js 側の Auth.js (NextAuth) が利用するログイン・セッション管理
+    path('auth/login/', views.login_view, name='api_login'),
+    path('auth/logout/', views.logout_view, name='api_logout'),
+    path('auth/user/', views.get_user_view, name='api_user'),
 ]

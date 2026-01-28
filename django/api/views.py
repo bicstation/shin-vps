@@ -3,10 +3,13 @@ from django.http import JsonResponse
 from rest_framework import generics, filters, pagination
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.views.decorators.csrf import csrf_exempt
 import logging
 from urllib.parse import unquote
 
@@ -61,8 +64,14 @@ def api_root(request):
         "message": "Welcome to Tiper API Gateway", 
         "endpoints": {
             "status": "/api/status/",
+            "auth": {
+                "login": "/api/auth/login/",
+                "logout": "/api/auth/logout/",
+                "user": "/api/auth/user/"
+            },
             "products": {
                 "pc_products_list": "/api/pc-products/", 
+                "pc_ranking": "/api/pc-products/ranking/",
                 "pc_product_makers": "/api/pc-makers/",
                 "pc_sidebar_stats": "/api/pc-sidebar-stats/",
                 "pc_product_detail": "/api/pc-products/{unique_id}/", 
@@ -88,6 +97,73 @@ def status_check(request):
     稼働確認用エンドポイント
     """
     return JsonResponse({"status": "API is running"}, status=200)
+
+# --------------------------------------------------------------------------
+# 🔑 認証 (Auth) 関連ビュー
+# --------------------------------------------------------------------------
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    """
+    Auth.js (NextAuth.js) 認証用エンドポイント
+    """
+    username = request.data.get('username')
+    password = request.data.get('password')
+    
+    logger.info(f"Login attempt for user: {username}")
+    
+    user = authenticate(request, username=username, password=password)
+    
+    if user is not None:
+        login(request, user)
+        return Response({
+            "id": user.id,
+            "name": user.username,
+            "email": user.email,
+            "status": "success"
+        })
+    else:
+        logger.warning(f"Failed login attempt for user: {username}")
+        return Response({"error": "Invalid credentials"}, status=401)
+
+@api_view(['POST'])
+def logout_view(request):
+    """
+    セッションを終了してログアウト
+    """
+    logout(request)
+    return Response({"message": "Successfully logged out"})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_view(request):
+    """
+    現在のセッションに基づいたユーザー情報を取得
+    """
+    user = request.user
+    return Response({
+        "id": user.id,
+        "name": user.username,
+        "email": user.email
+    })
+
+# --------------------------------------------------------------------------
+# 🏆 ランキングビュー
+# --------------------------------------------------------------------------
+class PCProductRankingView(generics.ListAPIView):
+    """
+    AI解析スコア(spec_score)に基づいた上位製品ランキングを取得
+    """
+    serializer_class = PCProductSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        # スコアが高い順、かつ更新日が新しい順にトップ20を取得
+        return PCProduct.objects.filter(
+            is_active=True,
+            spec_score__gt=0
+        ).order_by('-spec_score', '-updated_at')[:20]
 
 # --------------------------------------------------------------------------
 # 1. アダルト商品データ API ビュー (AdultProduct)
@@ -135,8 +211,7 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
     """
-    PCおよびソフトウェア製品一覧取得：
-    メーカー名、AI解析スコア、ライセンス形態等での絞り込みに対応
+    PCおよびソフトウェア製品一覧取得
     """
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
@@ -155,7 +230,6 @@ class PCProductListAPIView(generics.ListAPIView):
         'edition', 'description', 'ai_content'
     ]
     
-    # 🚀 5軸スコアによる並び替えを有効化
     ordering_fields = [
         'price', 'updated_at', 'created_at', 'memory_gb', 
         'spec_score', 'score_cpu', 'score_gpu', 'score_cost', 
@@ -203,7 +277,7 @@ class PCProductMakerListView(APIView):
 @api_view(['GET'])
 def pc_sidebar_stats(request):
     """
-    サイドバー表示用：属性タイプ（CPU, RAM, OS, ライセンス等）ごとに製品数を集計
+    サイドバー表示用：属性タイプごとに製品数を集計
     """
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
@@ -228,16 +302,12 @@ def pc_sidebar_stats(request):
     
     return Response(sidebar_data)
 
-# --------------------------------------------------------------------------
-# 📈 2.5 価格履歴取得用 API
-# --------------------------------------------------------------------------
 @api_view(['GET'])
 def pc_product_price_history(request, unique_id):
     """
     特定のPC商品の価格推移データを取得する
     """
     product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
-    # 直近30件の履歴を古い順（グラフ描画用）に取得
     history = PriceHistory.objects.filter(product=product).order_by('recorded_at')[:30]
     
     data = {

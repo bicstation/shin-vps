@@ -4,6 +4,7 @@ import requests
 import re
 import os
 import time
+import itertools
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.core.management.base import BaseCommand
@@ -11,19 +12,32 @@ from api.models.pc_products import PCProduct
 from django.utils import timezone
 from django.db.models import Q
 
-# === API設定 ===
-GEMINI_API_KEY = "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"
+# === APIキー設定 (6つのキーを定義) ===
+# 💡 環境変数から読み込むか、ここに直接リストとして定義します
+API_KEYS = [
+    os.getenv("GEMINI_API_KEY", "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"), # 元のキー
+    os.getenv("GEMINI_API_KEY_1", "ここに1つ目の追加キー"),
+    os.getenv("GEMINI_API_KEY_2", "ここに2つ目の追加キー"),
+    os.getenv("GEMINI_API_KEY_3", "ここに3つ目の追加キー"),
+    os.getenv("GEMINI_API_KEY_4", "ここに4つ目の追加キー"),
+    os.getenv("GEMINI_API_KEY_5", "ここに5つ目の追加キー"),
+]
 
-# === レート制限の設定 (Gemini 1.5 Flash 無料枠に最適化) ===
-MAX_WORKERS = 2       # 同時接続数エラーを避けるため2スレッドに固定
-SAFE_RPM_LIMIT = 12   # 1分間に12リクエスト（安全マージンを確保）
-INTERVAL = 60 / SAFE_RPM_LIMIT  # 1リクエストあたり5秒の間隔
+# 💡 有効なキー（空でないもの）のみを抽出してローテーションを作成
+VALID_KEYS = [k for k in API_KEYS if k and "ここに" not in k]
+key_cycle = itertools.cycle(VALID_KEYS)
+
+# === レート制限の設定 (6キー並列用に最適化) ===
+# 無料枠でもキーを分ければ並列度を上げられます
+MAX_WORKERS = 6       # キーの数に合わせて最大6スレッド
+SAFE_RPM_LIMIT = 50   # 6キー合計で1分間に50リクエスト（安全マージン）
+INTERVAL = 60 / SAFE_RPM_LIMIT  # 1リクエストあたり約1.2秒の間隔
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = '並列処理と流量制限を用いて、PC製品およびソフトウェアをAI解析・5軸スコアリングする'
+    help = '複数のAPIキーをローテーションし、PC製品をAI解析・5軸スコアリングする（並列・高速版）'
 
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
@@ -45,14 +59,10 @@ class Command(BaseCommand):
         if not maker_name:
             return "standard"
         m = str(maker_name).lower()
-        if any(x in m for x in ['fmv', 'fujitsu', '富士通']):
-            return "fmv"
-        if any(x in m for x in ['dynabook', 'ダイナブック']):
-            return "dynabook"
-        if any(x in m for x in ['sourcenext', 'ソースネクスト']):
-            return "sourcenext"
-        if any(x in m for x in ['trend', 'トレンドマイクロ']):
-            return "trendmicro"
+        if any(x in m for x in ['fmv', 'fujitsu', '富士通']): return "fmv"
+        if any(x in m for x in ['dynabook', 'ダイナブック']): return "dynabook"
+        if any(x in m for x in ['sourcenext', 'ソースネクスト']): return "sourcenext"
+        if any(x in m for x in ['trend', 'トレンドマイクロ']): return "trendmicro"
         if 'asus' in m: return "asus"
         if 'sony' in m: return "sony"
         if 'hp' in m: return "hp"
@@ -72,10 +82,8 @@ class Command(BaseCommand):
         force = options['force']
         null_only = options['null_only']
 
-        # 1. 基本クエリの構築
         query = PCProduct.objects.all()
         
-        # 2. 解析対象の判定ロジック
         if null_only:
             query = query.filter(last_spec_parsed_at__isnull=True)
         elif not force:
@@ -84,7 +92,6 @@ class Command(BaseCommand):
                 Q(score_cpu=0) | Q(score_gpu=0) | Q(score_cost=0) | Q(score_portable=0) | Q(score_ai=0)
             )
 
-        # 3. メーカー別・ID別フィルタリング
         if unique_id:
             query = query.filter(unique_id=unique_id)
         elif maker_arg:
@@ -109,20 +116,18 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(f"🔎 解析待ち製品が見つかりませんでした。"))
             return
 
-        # AIモデル決定
         if model_arg:
             model_id = model_arg
         else:
             models_content = self.load_prompt_file('ai_models.txt')
             model_id = models_content.split('\n')[0].strip() if models_content else "gemini-1.5-flash"
 
-        self.stdout.write(self.style.SUCCESS(f"🚀 解析開始: 全 {len(products)} 件 / スレッド数: {MAX_WORKERS} / モデル: {model_id}"))
+        self.stdout.write(self.style.SUCCESS(f"🚀 解析開始: 全 {len(products)} 件 / 稼働キー数: {len(VALID_KEYS)} / スレッド数: {MAX_WORKERS} / モデル: {model_id}"))
 
         self.counter = 0
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
             for i, product in enumerate(products):
-                # 流量制限: 1リクエストごとに一定秒数待機して同時リクエストを防ぐ
                 if i > 0:
                     time.sleep(INTERVAL) 
                 
@@ -138,6 +143,10 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR(f"❌ 致命的エラー ({product.unique_id}): {str(e)}"))
 
     def analyze_product(self, product, model_id, count, total, retry_count=0):
+        # 💡 ローテーションから次のキーを取得
+        current_api_key = next(key_cycle)
+        key_hint = current_api_key[-4:] # デバッグ用末尾4桁
+
         # 1. プロンプト組み立て
         base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt') or "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析せよ。"
         target_maker_slug = self.get_maker_slug(product.maker)
@@ -189,22 +198,22 @@ TARGET: おすすめ対象
                                        .replace("{description}", str(product.description or ""))
 
         full_prompt = f"{formatted_base}\n\nブランド別追加ルール:\n{brand_rules}\n\n{structure_instruction}"
-        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={GEMINI_API_KEY}"
+        api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={current_api_key}"
         
         try:
             current_time = datetime.now().strftime("%H:%M:%S")
-            self.stdout.write(f"[{current_time}] 📤 解析中 ({count}/{total}): [{product.maker}] {product.name}")
+            self.stdout.write(f"[{current_time}] 📤 解析中 ({count}/{total}) [Key:..{key_hint}]: [{product.maker}] {product.name}")
 
             response = requests.post(api_url, json={
                 "contents": [{"parts": [{"text": full_prompt}]}],
                 "generationConfig": {"temperature": 0.2}
             }, timeout=120)
             
-            # --- 指数バックオフによるリトライ制御 ---
+            # 💡 429(Rate Limit) の場合は別のキーに期待してリトライ
             if response.status_code in [429, 500, 503]:
-                if retry_count < 3:
-                    wait_time = (retry_count + 1) * 30 # 30s, 60s, 90s と待機時間を増やす
-                    self.stdout.write(self.style.WARNING(f"⚠️ リミット/エラー検知 ({product.unique_id}): {wait_time}秒待機してリトライ({retry_count+1}/3)"))
+                if retry_count < 5: # キーが多いのでリトライ回数を少し増やす
+                    wait_time = (retry_count + 1) * 10 
+                    self.stdout.write(self.style.WARNING(f"⚠️ 制限/エラー検知 ({product.unique_id}) [Key:..{key_hint}]: 次のキーでリトライ({retry_count+1}/5)"))
                     time.sleep(wait_time)
                     return self.analyze_product(product, model_id, count, total, retry_count + 1)
                 else:
