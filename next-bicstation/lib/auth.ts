@@ -25,10 +25,6 @@ export interface RegisterResponse {
 }
 
 // --- ヘルパー関数：ベースパスを「絶対URL」で取得 ---
-/**
- * 💡 VPS環境におけるリダイレクトの確実性を高める関数
- * パス末尾の整合性を整え、キャッシュバスター（タイムスタンプ）を付与します。
- */
 const getAbsoluteRedirectPath = () => {
   if (typeof window === 'undefined') return '/';
 
@@ -39,62 +35,87 @@ const getAbsoluteRedirectPath = () => {
   // 本番: https://bicstation.com/
   let basePath = isLocal ? `${origin}/bicstation/` : `${origin}/`;
   
-  // 🚀 キャッシュバスターを追加 (?t=...)
-  // これにより、Nginxやブラウザが「古いログイン画面」をキャッシュから出すのを防ぎます
   const cacheBuster = `?t=${Date.now()}`;
-  
-  return basePath + cacheBuster;
+  const finalPath = basePath + cacheBuster;
+
+  console.log("🔍 [DEBUG] 生成された遷移先URL:", finalPath);
+  return finalPath;
 };
 
 // --- 認証関数 ---
 
 /**
- * 💡 ユーザーログインを実行
+ * 💡 ユーザーログインを実行 (デバッグ強化版)
  */
 export async function loginUser(username: string, password: string): Promise<AuthTokenResponse> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api';
   const { site_group, origin_domain } = getSiteMetadata();
 
-  console.log("1. APIログイン試行中:", `${API_BASE}/auth/login/`);
+  console.log("🚀 [DEBUG] 1. ログイン試行開始");
+  console.log("   - 宛先:", `${API_BASE}/auth/login/`);
+  console.log("   - 送信データ:", { username, site_group, origin_domain });
 
-  const response = await fetch(`${API_BASE}/auth/login/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      username, 
-      password,
-      site_group,
-      origin_domain
-    }),
-  });
+  try {
+    const response = await fetch(`${API_BASE}/auth/login/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        username, 
+        password,
+        site_group,
+        origin_domain
+      }),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || 'ログインに失敗しました。ユーザー名またはパスワードを確認してください。');
-  }
+    console.log("📡 [DEBUG] 2. APIレスポンス受信");
+    console.log("   - ステータス:", response.status, response.statusText);
 
-  const data: AuthTokenResponse = await response.json();
-  
-  if (data.access && typeof window !== 'undefined') {
-    // 2. ストレージへの保存
-    localStorage.setItem('access_token', data.access);
-    localStorage.setItem('refresh_token', data.refresh);
-    localStorage.setItem('user_role', data.user?.site_group || site_group);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("❌ [DEBUG] ログイン失敗レスポンス:", errorData);
+      throw new Error(errorData.detail || 'ログインに失敗しました。ユーザー名またはパスワードを確認してください。');
+    }
 
-    console.log("3. 通信成功！強制リフレッシュ遷移を開始します...");
-
-    // 🚀 修正ポイント:
-    // 1. window.location.replace を使用して履歴を上書き（ログイン画面に戻らせない）
-    // 2. キャッシュバスター付きの絶対URLへ遷移（末尾スラッシュを保証）
-    // 3. 200msのディレイでlocalStorageの書き込みを確実に完了させる
-    const redirectUrl = getAbsoluteRedirectPath();
+    const data: AuthTokenResponse = await response.json();
+    console.log("✅ [DEBUG] 3. JSONパース成功:", { 
+      hasAccess: !!data.access, 
+      hasRefresh: !!data.refresh,
+      user: data.user 
+    });
     
-    setTimeout(() => {
-      window.location.replace(redirectUrl);
-    }, 200); 
-  }
+    if (data.access && typeof window !== 'undefined') {
+      console.log("💾 [DEBUG] 4. localStorageへの書き込み開始");
+      
+      try {
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+        localStorage.setItem('user_role', data.user?.site_group || site_group);
+        
+        // 書き込み確認
+        const checkToken = localStorage.getItem('access_token');
+        console.log("   - 書き込みチェック:", checkToken ? "成功 (OK)" : "失敗 (Empty!)");
+      } catch (storageErr) {
+        console.error("❌ [DEBUG] localStorage書き込みエラー:", storageErr);
+      }
 
-  return data;
+      const redirectUrl = getAbsoluteRedirectPath();
+      
+      console.log("🔄 [DEBUG] 5. 強制リフレッシュ遷移を実行します (300ms後)");
+      
+      setTimeout(() => {
+        console.log("✈️ [DEBUG] window.location.replace 実行直前...");
+        window.location.replace(redirectUrl);
+      }, 300); 
+    } else {
+      console.warn("⚠️ [DEBUG] アクセストークンがないか、windowオブジェクトがありません");
+    }
+
+    return data;
+
+  } catch (err: any) {
+    console.error("🔥 [DEBUG] 通信または処理中に致命的エラー:", err);
+    throw err;
+  }
 }
 
 /**
@@ -103,6 +124,8 @@ export async function loginUser(username: string, password: string): Promise<Aut
 export async function registerUser(username: string, email: string, password: string): Promise<RegisterResponse> {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api';
   const { site_group, origin_domain } = getSiteMetadata();
+
+  console.log("🚀 [DEBUG] 新規登録試行:", `${API_BASE}/auth/register/`);
 
   const response = await fetch(`${API_BASE}/auth/register/`, {
     method: 'POST',
@@ -118,9 +141,11 @@ export async function registerUser(username: string, email: string, password: st
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.error("❌ [DEBUG] 登録失敗:", errorData);
     throw new Error(errorData.detail || 'ユーザー登録に失敗しました。');
   }
 
+  console.log("✅ [DEBUG] 登録成功");
   return await response.json();
 }
 
@@ -129,15 +154,14 @@ export async function registerUser(username: string, email: string, password: st
  */
 export function logoutUser(): void {
   if (typeof window !== 'undefined') {
-    // 1. 全ストレージの破棄
+    console.log("🧹 [DEBUG] ログアウト実行: ストレージを消去します");
+    
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
 
-    console.log("Logout initiated. Clearing session and redirecting...");
-
-    // 2. ログアウト時もキャッシュを避けてトップへ強制遷移
     const redirectUrl = getAbsoluteRedirectPath();
+    console.log("🔄 [DEBUG] トップページへ戻ります:", redirectUrl);
     window.location.replace(redirectUrl);
   }
 }
