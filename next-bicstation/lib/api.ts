@@ -1,6 +1,6 @@
 /**
  * =====================================================================
- * 💡 SHIN-VPS API サービス層 (lib/api.ts) - 修正版
+ * 💡 SHIN-VPS API サービス層 (lib/api.ts) - 統合版
  * WordPress(bicstation) & Django(pc-products) 統合データアクセス層
  * =====================================================================
  */
@@ -27,19 +27,44 @@ const getWpConfig = () => {
 
 /**
  * 🔗 Django API 設定
+ * 環境変数 NEXT_PUBLIC_API_URL を活用。デバッグログを追加。
  */
 const getDjangoBaseUrl = () => {
-    if (IS_SERVER) return 'http://django-v2:8000';
+    if (IS_SERVER) {
+        // Dockerネットワーク内での通信
+        return 'http://django-v2:8000';
+    }
+
+    // ブラウザ側実行時：環境変数のチェック
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    
+    // 🔍 コンソールに環境変数の値を表示（デバッグ用）
+    if (envUrl) {
+        const formattedUrl = envUrl.replace(/\/api$/, '');
+        console.log(`[API DEBUG] NEXT_PUBLIC_API_URL detected: ${envUrl}`);
+        console.log(`[API DEBUG] Using Base URL: ${formattedUrl}`);
+        return formattedUrl;
+    }
+
+    // 環境変数が読み込めていない場合の警告とフォールバック
+    console.warn(`[API DEBUG] NEXT_PUBLIC_API_URL is undefined! Check your .env file.`);
     return 'http://localhost:8083';
 };
 
 // --- 型定義 ---
+
+export interface RadarChartData {
+    subject: string;
+    value: number;
+    fullMark: number;
+}
 
 export interface PCProduct {
     id: number;
     unique_id: string;
     site_prefix: string;
     maker: string;
+    maker_name?: string;
     name: string;
     price: number;
     image_url: string;
@@ -47,8 +72,17 @@ export interface PCProduct {
     affiliate_url: string; // 正式アフィリエイトURL
     description: string;
     ai_content: string;    // AI生成コンテンツ
+    ai_summary?: string;
     stock_status: string;
     unified_genre: string;
+    // スペック情報
+    cpu_model?: string;
+    gpu_model?: string;
+    memory_gb?: number;
+    storage_gb?: number;
+    display_info?: string;
+    spec_score?: number;   // AI解析総合スコア
+    radar_chart?: RadarChartData[]; // 5軸チャート用データ
 }
 
 /**
@@ -61,11 +95,9 @@ export interface MakerCount {
 
 /**
  * 📝 [WordPress] 記事一覧取得
- * 🛠️ 修正: offset パラメータを追加し、レスポンスヘッダーから総記事数を取得するように変更
  */
 export async function fetchPostList(perPage = 12, offset = 0) {
     const { baseUrl, host } = getWpConfig();
-    // WordPress API に offset を渡すよう修正
     const url = `${baseUrl}/wp-json/wp/v2/bicstation?_embed&per_page=${perPage}&offset=${offset}`;
 
     try {
@@ -74,22 +106,17 @@ export async function fetchPostList(perPage = 12, offset = 0) {
                 'Host': host,
                 'Accept': 'application/json'
             },
-            next: { revalidate: 60 }
+            next: { revalidate: 60 } // 60秒キャッシュ
         });
 
         if (!res.ok) return { results: [], count: 0, debugUrl: url, status: res.status };
 
         const data = await res.json();
-        
-        /**
-         * 💡 WordPressはヘッダー 'X-WP-Total' に全記事数を格納しています。
-         * これを取得することで Pagination コンポーネントが正しく動作します。
-         */
         const totalCount = parseInt(res.headers.get('X-WP-Total') || '0', 10);
 
         return { 
             results: Array.isArray(data) ? data : [], 
-            count: totalCount, // Pagination用の総件数
+            count: totalCount, 
             debugUrl: url, 
             status: res.status 
         };
@@ -110,7 +137,7 @@ export async function fetchPostData(slug: string) {
     try {
         const res = await fetch(url, {
             headers: { 'Host': host, 'Accept': 'application/json' },
-            next: { revalidate: 3600 }
+            next: { revalidate: 3600 } // 1時間キャッシュ
         });
 
         if (!res.ok) return null;
@@ -123,24 +150,45 @@ export async function fetchPostData(slug: string) {
 }
 
 /**
- * 💻 [Django API] 商品一覧取得
+ * 💻 [Django API] 商品一覧取得 (PCファインダー対応拡張版)
+ * デバッグログを追加し、リクエストURLを可視化。
  */
-export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attribute = '') {
+export async function fetchPCProducts(
+    maker = '', 
+    offset = 0, 
+    limit = 10, 
+    attribute = '',
+    budget = '',    // 💰 最大予算
+    ram = '',       // 🧠 最小メモリ
+    npu = false,    // 🤖 NPU搭載フラグ
+    gpu = false,    // 🎮 独立GPUフラグ
+    type = ''       // 🏗️ 筐体タイプ
+) {
     const rootUrl = getDjangoBaseUrl();
-    
     const params = new URLSearchParams();
-    if (maker) params.append('maker', maker.toLowerCase());
+    
+    // 基本パラメータ
+    if (maker) params.append('maker', maker); 
     if (attribute) params.append('attribute', attribute);
     params.append('limit', limit.toString());
     params.append('offset', offset.toString());
 
+    // 🚀 PCファインダー用の新規パラメータ
+    if (budget) params.append('budget', budget);
+    if (ram) params.append('ram', ram);
+    if (npu) params.append('npu', 'true');
+    if (gpu) params.append('gpu', 'true');
+    if (type && type !== 'all') params.append('type', type);
+
     const url = `${rootUrl}/api/pc-products/?${params.toString()}`;
+    
+    // 🚀 実行URLをコンソールに表示
+    console.log(`[API CALL fetchPCProducts]: ${url}`);
     
     try {
         const res = await fetch(url, { 
-            headers: { 'Host': 'localhost' },
-            cache: 'no-store',
-            next: { revalidate: 0 } 
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
+            next: { revalidate: 3600 } 
         });
 
         if (!res.ok) {
@@ -149,19 +197,14 @@ export async function fetchPCProducts(maker = '', offset = 0, limit = 10, attrib
         }
 
         const data = await res.json();
-        
-        if (IS_SERVER) {
-            console.log(`[API Fetch Success]: offset=${offset}, attribute=${attribute}, items=${data.results?.length}`);
-        }
-
         return { 
             results: data.results || [], 
             count: data.count || 0, 
             debugUrl: url 
         };
     } catch (e: any) { 
-        console.error(`[Django API ERROR]: ${e.message}`);
-        return { results: [], count: 0 }; 
+        console.error(`[Django API ERROR]: ${e.message} (Target URL: ${url})`);
+        return { results: [], count: 0, debugUrl: url }; 
     }
 }
 
@@ -173,12 +216,12 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
     const url = `${rootUrl}/api/pc-products/${unique_id}/`;
     try {
         const res = await fetch(url, { 
-            headers: { 'Host': 'localhost' },
-            cache: 'no-store',
-            next: { revalidate: 0 } 
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
+            cache: 'no-store'
         });
         return res.ok ? await res.json() : null;
     } catch (e) { 
+        console.error(`[Product Detail API ERROR]:`, e);
         return null; 
     }
 }
@@ -188,11 +231,11 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
  */
 export async function fetchRelatedProducts(maker: string, excludeId: string, limit = 4) {
     const rootUrl = getDjangoBaseUrl();
-    const url = `${rootUrl}/api/pc-products/?maker=${maker.toLowerCase()}&limit=${limit + 1}`;
+    const url = `${rootUrl}/api/pc-products/?maker=${maker}&limit=${limit + 1}`;
 
     try {
         const res = await fetch(url, { 
-            headers: { 'Host': 'localhost' },
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
             next: { revalidate: 3600 }
         });
 
@@ -220,19 +263,66 @@ export async function fetchMakers(): Promise<MakerCount[]> {
 
     try {
         const res = await fetch(url, {
-            headers: { 'Host': 'localhost' },
-            cache: 'no-store',
-            next: { revalidate: 0 }
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
+            cache: 'no-store'
         });
 
-        if (!res.ok) {
-            console.error(`[Django Makers API Error]: Status ${res.status}`);
-            return [];
-        }
-
+        if (!res.ok) return [];
         return await res.json();
     } catch (e) {
         console.error(`[Makers API ERROR]:`, e);
+        return [];
+    }
+}
+
+/**
+ * 🚀 [Django API] ランキング取得 (AI解析スコア順)
+ */
+export async function fetchPCProductRanking(): Promise<PCProduct[]> {
+    const rootUrl = getDjangoBaseUrl();
+    const url = `${rootUrl}/api/pc-products/ranking/`;
+
+    try {
+        const res = await fetch(url, {
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            console.error(`[Django Ranking API Error]: Status ${res.status}`);
+            return [];
+        }
+
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.results || []);
+    } catch (e) {
+        console.error(`[Ranking API ERROR]:`, e);
+        return [];
+    }
+}
+
+/**
+ * 🔥 [Django API] 注目度ランキング取得 (PV数ベース)
+ */
+export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
+    const rootUrl = getDjangoBaseUrl();
+    const url = `${rootUrl}/api/pc-products/popularity-ranking/`;
+
+    try {
+        const res = await fetch(url, {
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
+            cache: 'no-store'
+        });
+
+        if (!res.ok) {
+            console.error(`[Django Popularity Ranking API Error]: Status ${res.status}`);
+            return [];
+        }
+
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.results || []);
+    } catch (e) {
+        console.error(`[Popularity Ranking API ERROR]:`, e);
         return [];
     }
 }

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import React from 'react';
+import Script from 'next/script'; // 🚩 JSエラー対策
 import ProductCard from '@/components/product/ProductCard';
 import Sidebar from '@/components/layout/Sidebar';
 import Pagination from '@/components/common/Pagination';
@@ -14,7 +15,6 @@ import styles from './BrandPage.module.css';
 
 /**
  * 💡 属性スラッグから日本語表示名を取得するマッピング
- * Djangoモデルの PCAttribute.name と対応
  */
 function getAttributeDisplayName(slug: string) {
     const mapping: { [key: string]: string } = {
@@ -65,23 +65,20 @@ export default async function PCProductsPage(props: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 20;
 
-    // データ並列取得
+    // 🚩 データ並列取得 (APIのパス不整合を防ぐため lib/api 内の fetchPCProducts が末尾スラッシュを考慮している前提)
     const [wpData, pcData, makersData] = await Promise.all([
-        fetchPostList(5),
-        fetchPCProducts(makerSlug || '', currentOffset, limit, attributeSlug || ''), 
-        fetchMakers() 
+        fetchPostList(5).catch(() => ({ results: [] })),
+        fetchPCProducts(makerSlug || '', currentOffset, limit, attributeSlug || '').catch(() => ({ results: [], count: 0 })), 
+        fetchMakers().catch(() => []) 
     ]);
 
     const posts = wpData.results || [];
     const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
-    // 💡 メーカー名と属性名（ジャンル名）の取得
-    // 型エラー回避のため as any を使用し、name または maker プロパティを柔軟に取得
     const makerObj = makerSlug ? (makersData.find((m: any) => m.slug === makerSlug) as any) : null;
     const makerName = makerObj ? (makerObj.name || makerObj.maker) : (makerSlug ? makerSlug.toUpperCase() : "");
     const attrName = attributeSlug ? getAttributeDisplayName(attributeSlug) : "";
 
-    // 🚩 SEO・表示用タイトルの構築（メーカー名＋ジャンル名）
     let pageTitle = "";
     if (makerName && attrName) {
         pageTitle = `${makerName} ${attrName} 搭載モデル一覧`;
@@ -93,12 +90,10 @@ export default async function PCProductsPage(props: PageProps) {
         pageTitle = "すべてのPC製品一覧";
     }
 
-    // ページ件数計算
     const totalCount = pcData.count || 0;
     const startRange = totalCount > 0 ? currentOffset + 1 : 0;
     const endRange = Math.min(currentOffset + limit, totalCount);
 
-    // 💡 SEO: 構造化データ (JSON-LD)
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
@@ -106,7 +101,7 @@ export default async function PCProductsPage(props: PageProps) {
         "description": `${pageTitle}のスペック・価格をリアルタイム比較。BICSTATIONが厳選した最新モデルを網羅しています。`,
         "mainEntity": {
             "@type": "ItemList",
-            "itemListElement": pcData.results.slice(0, 10).map((p: any, i: number) => ({
+            "itemListElement": (pcData.results || []).slice(0, 10).map((p: any, i: number) => ({
                 "@type": "ListItem",
                 "position": i + 1,
                 "url": p.affiliate_url || p.url,
@@ -117,13 +112,12 @@ export default async function PCProductsPage(props: PageProps) {
     };
 
     return (
-        <div className={styles.pageContainer}>
+        <div className={styles.pageContainer}>           
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
 
-            {/* 💡 ヘッダーエリア（全幅） */}
             <div className={styles.fullWidthHeader}>
                 <div className={styles.headerInner}>
                     <h1 className={styles.title}>
@@ -152,7 +146,6 @@ export default async function PCProductsPage(props: PageProps) {
 
                 <main className={styles.main}>
                     <section className={styles.productSection}>
-                        {/* 💡 合計数とページ内範囲を表示（SEOと利便性向上） */}
                         <div className={styles.productGridTitle}>
                             <span className={styles.titleIndicator} style={{ backgroundColor: primaryColor }}></span>
                             製品ラインナップ
@@ -163,7 +156,7 @@ export default async function PCProductsPage(props: PageProps) {
                             )}
                         </div>
 
-                        {pcData.results.length === 0 ? (
+                        {!pcData.results || pcData.results.length === 0 ? (
                             <div className={styles.noDataLarge}>
                                 <p>申し訳ございません。該当する製品データが見つかりませんでした。</p>
                                 <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '10px' }}>
@@ -172,7 +165,8 @@ export default async function PCProductsPage(props: PageProps) {
                             </div>
                         ) : (
                             <>
-                                <div className={styles.productGrid}>
+                                {/* 🚩 Grid自体の最小高さを確保しチャートの計算を安定させる */}
+                                <div className={styles.productGrid} style={{ minHeight: '400px' }}>
                                     {pcData.results.map((product: any) => (
                                         <ProductCard key={product.id} product={product} />
                                     ))}

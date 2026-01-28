@@ -1,6 +1,7 @@
 # 💡 最初のステージよりも前に ARG を定義することで、ビルド全体で参照可能にします
 ARG NEXT_PUBLIC_APP_TITLE
 ARG NEXT_PUBLIC_BASE_PATH
+ARG NEXT_PUBLIC_API_URL
 
 # --- ステージ 1: ビルドステージ ---
 FROM node:18-slim AS builder 
@@ -8,8 +9,10 @@ FROM node:18-slim AS builder
 # 💡 ビルド時に必要な環境変数を定義
 ARG NEXT_PUBLIC_APP_TITLE
 ARG NEXT_PUBLIC_BASE_PATH
+ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
 ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 WORKDIR /app
 
@@ -26,12 +29,19 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# 💡 依存関係のインストールの前にキャッシュをクリア（古いライブラリの残存防止）
+RUN npm cache clean --force
+
 # 依存関係のインストール
-COPY package.json package-lock.json ./
+COPY package.json ./
 RUN npm install --include=optional
 
-# ソースコードをコピーしてビルド実行
+# ソースコードをコピー
 COPY . .
+
+# 💡 重要：ビルド直前に古い成果物を徹底的に削除（キャッシュ事故を防止）
+RUN rm -rf .next .cache node_modules/.cache
+
 # next.config.js で output: 'standalone' が設定されている前提
 RUN npm run build
 
@@ -67,14 +77,10 @@ COPY --from=builder /app/public ./public
 # 2. 本体（standalone フォルダの中身を直下に展開）
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
-# 3. 💡 重要：静的ファイルの配置修正
-# Next.js の server.js は、.next/static を参照します。
-# standalone モードでは、実行ディレクトリの .next/static を手動で用意する必要があります。
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# 3. 静的ファイルの配置
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static /app/.next/static
 
-# 4. 💡 basePath 対策のダメ押し：
-# 一部の Next.js バージョンでは、static 内でも basePath 名の階層を期待することがあります。
-# そのため、static を standalone 構造内部にもコピーします。
+# 4. 💡 basePath 対策のダメ押し
 RUN mkdir -p .next/standalone/.next/static && \
     cp -r .next/static/* .next/standalone/.next/static/ 2>/dev/null || true
 
