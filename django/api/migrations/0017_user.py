@@ -13,6 +13,12 @@ class Migration(migrations.Migration):
         ('api', '0016_pcproduct_score_ai_pcproduct_score_cost_and_more'),
     ]
 
+    # 💡 非常に重要：Django標準の admin ログなどが作成される前に、
+    # このカスタムユーザーモデルを確実に存在させるための強制設定です。
+    run_before = [
+        ('admin', '0001_initial'),
+    ]
+
     operations = [
         migrations.CreateModel(
             name='User',
