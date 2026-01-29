@@ -28,7 +28,7 @@ jobs:
           strip_components: 0
           overwrite: true
 
-      # 2. SSH経由でネットワーク構築・Docker起動・DBマイグレーションを実行
+      # 2. SSH経由でネットワーク構築・Docker起動・DBマイグレーション・掃除を実行
       - name: Deploy to Production via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -49,18 +49,31 @@ jobs:
             docker network create shin-vps_shared-proxy || echo "Network already exists."
 
             echo "🚀 本番環境(prod)をビルド・起動します..."
-            # --wait フラグを使うことで、コンテナがReady状態になるまで待機します
+            # --build で最新状態を反映。--wait でDB等の準備完了まで待機。
             docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans --wait
             
             echo "📦 データベースを更新します..."
-            # 構造変更がない場合でも「No migrations to apply」と出るだけで安全です
             docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py migrate --noinput
 
             echo "🎨 静的ファイルを収集します..."
-            # CSS/JSの更新を反映させるために必須のステップです
             docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py collectstatic --noinput
 
-            echo "🧹 不要な資産を掃除します..."
-            docker image prune -f
+            echo "🧹 徹底的なクリーンアップを開始します..."
             
-            echo "✅ デプロイ成功！全ての処理が完了しました。"
+            # ① 未使用イメージの削除（-a を付けることで古い中間イメージも一掃）
+            docker image prune -af
+            
+            # ② ビルドキャッシュの削除（ストレージを最も食い潰す原因を解消）
+            docker builder prune -f
+            
+            # ③ 接続の切れた「浮いたボリューム」を削除（DBの残骸などを掃除）
+            docker volume prune -f
+            
+            # ④ システム全体の掃除（停止したコンテナやネットワーク）
+            docker system prune -f
+
+            echo "✨ データベース内部の最適化を実行します..."
+            # Postgresのデッドタプル整理と統計更新（実行時間は数秒です）
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T postgres-db-v2 vacuumdb -U maya -d next_bic_db_v2 --all --analyze
+
+            echo "✅ デプロイ成功！全ての処理と掃除が完了しました。"
