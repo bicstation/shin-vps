@@ -59,8 +59,4 @@ jobs:
             docker volume prune -f
             docker system prune -f
 
-            echo "✨ データベース内部の最適化を実行します..."
-            # 修正点：--allを削除し、環境変数PGPASSWORDを渡して対話モードを回避
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T -e PGPASSWORD="${{ secrets.DB_PASSWORD }}" postgres-db-v2 vacuumdb -U maya -d next_bic_db_v2 --analyze
-
             echo "✅ デプロイ成功！全ての処理と掃除が完了しました。"
