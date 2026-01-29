@@ -5,7 +5,7 @@
 # 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
 # 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
 # 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
-#    変更するとシステム全体が崩壊します。
+#     変更するとシステム全体が崩壊します。
 # =====================================================================
 
 services:
@@ -94,7 +94,7 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - /var/lib/mysql
+      - /home/maya/docker_volumes/mysql:/var/lib/mysql
     networks:
       - internal-net
     healthcheck:

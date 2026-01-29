@@ -14,8 +14,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # - postgres_data:/var/lib/postgresql/data
-      - ~/dev/vps-data/postgres:/var/lib/postgresql/data
+      - /home/maya/dev/vps-data/postgres:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
@@ -34,8 +33,7 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      # - mariadb_data:/var/lib/mysql
-      - ~/dev/vps-data/mariadb:/var/lib/mysql
+      - /home/maya/dev/vps-data/mariadb:/var/lib/mysql
     networks:
       - internal-net
 
