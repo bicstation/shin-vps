@@ -3,7 +3,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import Link from 'next/link';
 import { registerUser } from '../../lib/auth';
-import styles from './Register.module.css'; // 🚀 CSSをインポート
+import styles from './Register.module.css';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState<string>('');
@@ -14,17 +14,24 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [sitePrefix, setSitePrefix] = useState<string>('');
 
-  // 1. 環境判別 & デバッグ開始
+  // 1. 【修正ポイント】環境判別ロジックの改善
   useEffect(() => {
     const path = window.location.pathname;
+    
+    // パスを / で分割し、空要素を除去
     const segments = path.split('/').filter(Boolean);
-    const prefix = segments.length > 0 ? `/${segments[0]}` : '';
+    
+    // 'register' や 'login' はページ名であり、プレフィックスではないので除外する
+    const prefixSegments = segments.filter(s => s !== 'register' && s !== 'login');
+    
+    // 最初のセグメントが残っていればそれがプレフィックス (例: /bicstation)
+    const prefix = prefixSegments.length > 0 ? `/${prefixSegments[0]}` : '';
     
     setSitePrefix(prefix);
 
     console.group("🔍 Debug: Environment Check");
     console.log("Current Pathname:", path);
-    console.log("Detected Site Prefix:", prefix || "(Root /)");
+    console.log("Detected Site Prefix (Corrected):", prefix || "(Root /)");
     console.groupEnd();
   }, []);
 
@@ -45,17 +52,22 @@ export default function RegisterPage() {
     }
 
     try {
-      console.log("Calling registerUser with prefix-aware API...");
+      // lib/auth.ts の修正版 registerUser を呼び出し
+      // (email も確実に送信されるようになっています)
+      console.log("Calling registerUser...");
       const result = await registerUser(username, email, password);
       
       console.log("✅ Success:", result);
       alert('会員登録が完了しました！ログインしてください。');
       
+      // 正しいプレフィックスを使用してログイン画面へ
       const loginPath = `${sitePrefix}/login`;
+      console.log("🔄 Redirecting to:", loginPath);
       window.location.href = loginPath;
 
     } catch (err: any) {
       console.error("❌ Registration Failed:", err);
+      // Django側から詳細なエラー（email重複など）が返ればそれを表示
       setError(err.message || '登録に失敗しました。');
     } finally {
       setLoading(false);
@@ -85,6 +97,7 @@ export default function RegisterPage() {
             onChange={(e) => setUsername(e.target.value)}
             required
             placeholder="例: bic_taro"
+            autoComplete="username"
           />
         </div>
 
@@ -97,6 +110,7 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="example@mail.com"
+            autoComplete="email"
           />
         </div>
 
@@ -109,6 +123,7 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             placeholder="8文字以上"
+            autoComplete="new-password"
           />
         </div>
 
@@ -120,6 +135,7 @@ export default function RegisterPage() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            autoComplete="new-password"
           />
         </div>
 

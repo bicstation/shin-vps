@@ -23,6 +23,7 @@ urlpatterns = [
     # 💡 Next.js 側（Auth.js / localStorage管理）が利用するログイン・セッション管理
     path('auth/login/', views.login_view, name='api_login'),
     path('auth/logout/', views.logout_view, name='api_logout'),
+    path('auth/register/', views.register_view, name='api_register'),
     
     # 💡 ユーザー情報取得 & 更新 (MyPage / Header用)
     # GET: 情報取得 / PATCH: プロフィール項目（bio, status_message等）の更新

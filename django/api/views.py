@@ -10,13 +10,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.views.decorators.csrf import csrf_exempt
 import logging
 from urllib.parse import unquote
 
 # ログの設定
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 # --------------------------------------------------------------------------
 # シリアライザのインポート
@@ -76,6 +77,7 @@ def api_root(request):
             "auth": {
                 "login": "/api/auth/login/",
                 "logout": "/api/auth/logout/",
+                "register": "/api/auth/register/",
                 "user": "/api/auth/me/"
             },
             "products": {
@@ -115,6 +117,44 @@ def status_check(request):
 # --------------------------------------------------------------------------
 # 🔑 認証 (Auth) 関連ビュー
 # --------------------------------------------------------------------------
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_view(request):
+    """
+    💡 修正点: 新規ユーザー登録エンドポイントの実装
+    """
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
+    site_group = request.data.get('site_group', 'general')
+    origin_domain = request.data.get('origin_domain', '')
+
+    if not username or not password or not email:
+        return Response({"detail": "ユーザー名、メールアドレス、パスワードは必須です。"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(username=username).exists():
+        return Response({"detail": "このユーザー名は既に存在します。"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            site_group=site_group,
+            origin_domain=origin_domain
+        )
+        serializer = UserSerializer(user)
+        logger.info(f"New user created: {username}")
+        return Response({
+            "message": "User registered successfully",
+            "user": serializer.data
+        }, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        logger.error(f"Registration error: {str(e)}")
+        return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -132,8 +172,7 @@ def login_view(request):
     
     if user is not None:
         login(request, user)
-        # 修正したUserSerializerを使用して、is_staff等の権限情報も含めて返す
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, context={'request': request})
         return Response({
             "status": "success",
             "hasAccess": True,
@@ -168,7 +207,6 @@ def get_user_view(request):
         return Response(serializer.data)
 
     elif request.method == 'PATCH':
-        # プロフィール項目（status_message, bio等）を部分更新可能にする
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -179,9 +217,6 @@ def get_user_view(request):
 # 🏆 ランキングビュー (PC製品用)
 # --------------------------------------------------------------------------
 class PCProductRankingView(generics.ListAPIView):
-    """
-    AI解析スコア(spec_score)に基づいた上位製品ランキングを取得
-    """
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
 
@@ -223,7 +258,6 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         lookup_value = self.kwargs.get(self.lookup_field)
-        # ID（数値）か product_id_unique（文字列）の両方で検索可能なロジックを維持
         if lookup_value.isdigit():
             return get_object_or_404(AdultProduct, id=int(lookup_value))
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
@@ -257,17 +291,13 @@ class PCProductListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
-        
-        # クエリパラメータによるフィルタリング（unquoteでデコード）
         maker = self.request.query_params.get('maker')
         attribute_slug = self.request.query_params.get('attribute')
         
         if maker:
             queryset = queryset.filter(maker__iexact=unquote(maker))
-            
         if attribute_slug:
             queryset = queryset.filter(attributes__slug=unquote(attribute_slug))
-            
         return queryset.order_by('-updated_at', 'id')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
@@ -281,19 +311,14 @@ class PCProductMakerListView(APIView):
     def get(self, request):
         genre = request.query_params.get('genre')
         qs = PCProduct.objects.filter(is_active=True).exclude(maker__isnull=True).exclude(maker='')
-        
         if genre:
             qs = qs.filter(unified_genre=genre)
-
         maker_counts = qs.values('maker').annotate(count=Count('id')).order_by('maker')
         return Response(list(maker_counts))
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_sidebar_stats(request):
-    """
-    PCサイドバーの属性別カウント統計を取得
-    """
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
     ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
@@ -301,31 +326,20 @@ def pc_sidebar_stats(request):
     sidebar_data = {}
     for attr in attrs:
         type_display = attr.get_attr_type_display()
-        # "1. CPU" のような表示から "CPU" を抽出する処理
         if type_display and ". " in type_display:
             type_display = type_display.split(". ", 1)[1]
-            
         if type_display not in sidebar_data:
             sidebar_data[type_display] = []
-        
         sidebar_data[type_display].append({
-            'id': attr.id,
-            'name': attr.name,
-            'slug': attr.slug,
-            'count': attr.product_count
+            'id': attr.id, 'name': attr.name, 'slug': attr.slug, 'count': attr.product_count
         })
-    
     return Response(sidebar_data)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_product_price_history(request, unique_id):
-    """
-    特定PC製品の価格推移データを取得
-    """
     product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
     history = PriceHistory.objects.filter(product=product).order_by('recorded_at')[:30]
-    
     data = {
         "name": product.name,
         "labels": [h.recorded_at.strftime('%Y/%m/%d') for h in history],
@@ -352,8 +366,6 @@ class LinkshareProductDetailAPIView(generics.RetrieveAPIView):
 # --------------------------------------------------------------------------
 # 4. マスターデータ系 API ビュー
 # --------------------------------------------------------------------------
-# 省略せず、各クラスを明示的に記述します
-
 class ActressListAPIView(generics.ListAPIView):
     queryset = Actress.objects.all().order_by('name')
     serializer_class = ActressSerializer

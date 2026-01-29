@@ -1,5 +1,5 @@
 /**
- * 🛠️ [VPS-CHECK-FINAL] 統合認証ライブラリ
+ * 🛠️ [VPS-CHECK-FINAL-FIXED] 統合認証ライブラリ
  * /home/maya/dev/shin-vps/next-bicstation/lib/auth.ts
  */
 
@@ -58,23 +58,49 @@ const getAbsoluteRedirectPath = (path: string = '/') => {
   return finalUrl;
 };
 
+/**
+ * 💡 APIのベースURLを環境に合わせて動的に構築する
+ * 環境変数 NEXT_PUBLIC_API_URL がある場合はそれを最優先します。
+ */
+const getApiBaseUrl = () => {
+  // 1. 環境変数が設定されている場合は最優先 (ローカル環境の http://localhost:8083/api など)
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  if (typeof window === 'undefined') return '';
+
+  const origin = window.location.origin;
+  const pathname = window.location.pathname;
+
+  // 2. VPS環境判定: URLに /bicstation が含まれている場合
+  if (pathname.includes('/bicstation')) {
+    return `${origin}/bicstation/api`;
+  }
+
+  // 3. デフォルトのフォールバック
+  return `${origin}/api`;
+};
+
 // --- 認証関数 ---
 
 /**
  * 💡 ユーザーログインを実行 (ローカル/VPS両対応・マイページ遷移版)
  */
 export async function loginUser(username: string, password: string): Promise<AuthTokenResponse> {
-  // APIベースURLの取得
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-  console.log("🛠️ [VPS-CHECK] 使用するAPIベースURL:", API_BASE);
+  // APIベースURLの取得（修正された優先順位で取得）
+  const API_BASE = getApiBaseUrl();
+  console.log("🛠️ [VPS-FIX] ログイン用APIベースURL:", API_BASE);
 
   const { site_group, origin_domain } = getSiteMetadata();
 
   console.log("🚀 [DEBUG] 1. ログイン試行開始");
-  console.log("   - 宛先:", `${API_BASE}/auth/login/`);
+  // Djangoは末尾のスラッシュが必須
+  const targetUrl = `${API_BASE}/auth/login/`;
+  console.log("   - 宛先:", targetUrl);
 
   try {
-    const response = await fetch(`${API_BASE}/auth/login/`, {
+    const response = await fetch(targetUrl, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -131,7 +157,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
         console.error("❌ [DEBUG] localStorage書き込みエラー:", storageErr);
       }
 
-      // 💡 修正ポイント: ログイン成功時は「マイページ」へ誘導
+      // 💡 ログイン成功時は「マイページ」へ誘導
       const redirectUrl = getAbsoluteRedirectPath('/mypage');
       
       console.log("🔄 [DEBUG] 5. 遷移を実行します (待機後)");
@@ -155,17 +181,18 @@ export async function loginUser(username: string, password: string): Promise<Aut
  * 💡 新規ユーザー登録を実行
  */
 export async function registerUser(username: string, email: string, password: string): Promise<RegisterResponse> {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+  const API_BASE = getApiBaseUrl();
   const { site_group, origin_domain } = getSiteMetadata();
 
-  console.log("🚀 [DEBUG] 新規登録試行:", `${API_BASE}/auth/register/`);
+  const targetUrl = `${API_BASE}/auth/register/`;
+  console.log("🚀 [DEBUG] 新規登録試行:", targetUrl);
 
-  const response = await fetch(`${API_BASE}/auth/register/`, {
+  const response = await fetch(targetUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       username,
-      email,
+      email,     // 修正: 確実に email フィールドを送る
       password,
       site_group,
       origin_domain,
@@ -175,7 +202,9 @@ export async function registerUser(username: string, email: string, password: st
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     console.error("❌ [DEBUG] 登録失敗:", errorData);
-    throw new Error(errorData.detail || 'ユーザー登録に失敗しました。');
+    // Djangoのバリデーションエラー（emailの重複など）を詳しく取得する
+    const msg = errorData.email?.[0] || errorData.username?.[0] || errorData.detail || 'ユーザー登録に失敗しました。';
+    throw new Error(msg);
   }
 
   console.log("✅ [DEBUG] 登録成功");
