@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# E:\SHIN-VPS\django\api\views.py
+# /home/maya/dev/shin-vps/django/api/views.py
 
 from django.http import JsonResponse
-from rest_framework import generics, filters, pagination
+from rest_framework import generics, filters, pagination, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
@@ -18,8 +18,11 @@ from urllib.parse import unquote
 # ログの設定
 logger = logging.getLogger(__name__)
 
+# --------------------------------------------------------------------------
 # シリアライザのインポート
+# --------------------------------------------------------------------------
 from .serializers import (
+    UserSerializer, 
     AdultProductSerializer, 
     LinkshareProductSerializer,
     PCProductSerializer,  
@@ -31,7 +34,9 @@ from .serializers import (
     SeriesSerializer
 )
 
+# --------------------------------------------------------------------------
 # モデルのインポート
+# --------------------------------------------------------------------------
 from .models import (
     AdultProduct, 
     LinkshareProduct, 
@@ -71,7 +76,7 @@ def api_root(request):
             "auth": {
                 "login": "/api/auth/login/",
                 "logout": "/api/auth/logout/",
-                "user": "/api/auth/user/"
+                "user": "/api/auth/me/"
             },
             "products": {
                 "pc_products_list": "/api/pc-products/", 
@@ -102,7 +107,10 @@ def status_check(request):
     """
     稼働確認用エンドポイント
     """
-    return Response({"status": "API is running", "environment": "production" if not request.is_secure() else "secure"}, status=200)
+    return Response({
+        "status": "API is running", 
+        "environment": "production" if not request.is_secure() else "secure"
+    }, status=200)
 
 # --------------------------------------------------------------------------
 # 🔑 認証 (Auth) 関連ビュー
@@ -110,7 +118,7 @@ def status_check(request):
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@authentication_classes([])  # ログイン時はCSRFチェックをDRF層で回避し、内部でlogin()を処理
+@authentication_classes([])
 def login_view(request):
     """
     Auth.js (NextAuth.js) 認証用エンドポイント
@@ -123,15 +131,13 @@ def login_view(request):
     user = authenticate(request, username=username, password=password)
     
     if user is not None:
-        login(request, user) # ここで Django の sessionid が発行される
+        login(request, user)
+        # 修正したUserSerializerを使用して、is_staff等の権限情報も含めて返す
+        serializer = UserSerializer(user)
         return Response({
             "status": "success",
             "hasAccess": True,
-            "user": {
-                "id": user.id,
-                "name": user.username,
-                "email": user.email,
-            }
+            "user": serializer.data
         })
     else:
         logger.warning(f"Failed login attempt for user: {username}")
@@ -149,22 +155,28 @@ def logout_view(request):
     logout(request)
     return Response({"message": "Successfully logged out", "status": "success"})
 
-@api_view(['GET'])
+@api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def get_user_view(request):
     """
-    現在のセッションに基づいたユーザー情報を取得
+    現在のユーザー情報の取得、およびプロフィールの更新
     """
     user = request.user
-    return Response({
-        "id": user.id,
-        "name": user.username,
-        "email": user.email,
-        "hasAccess": True
-    })
+
+    if request.method == 'GET':
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    elif request.method == 'PATCH':
+        # プロフィール項目（status_message, bio等）を部分更新可能にする
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # --------------------------------------------------------------------------
-# 🏆 ランキングビュー
+# 🏆 ランキングビュー (PC製品用)
 # --------------------------------------------------------------------------
 class PCProductRankingView(generics.ListAPIView):
     """
@@ -211,7 +223,7 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         lookup_value = self.kwargs.get(self.lookup_field)
-        # ID（数値）での検索と unique_id（文字列）での検索を両立
+        # ID（数値）か product_id_unique（文字列）の両方で検索可能なロジックを維持
         if lookup_value.isdigit():
             return get_object_or_404(AdultProduct, id=int(lookup_value))
         return get_object_or_404(AdultProduct, product_id_unique=lookup_value)
@@ -220,9 +232,6 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 # 2. PC・ソフトウェア製品データ API ビュー (PCProduct)
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
-    """
-    PCおよびソフトウェア製品一覧取得
-    """
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
     permission_classes = [AllowAny]
@@ -249,6 +258,7 @@ class PCProductListAPIView(generics.ListAPIView):
     def get_queryset(self):
         queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
         
+        # クエリパラメータによるフィルタリング（unquoteでデコード）
         maker = self.request.query_params.get('maker')
         attribute_slug = self.request.query_params.get('attribute')
         
@@ -261,18 +271,12 @@ class PCProductListAPIView(generics.ListAPIView):
         return queryset.order_by('-updated_at', 'id')
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
-    """
-    PC/ソフト製品詳細取得 (unique_id による取得)
-    """
     queryset = PCProduct.objects.all().prefetch_related('attributes')
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
     lookup_field = 'unique_id'
 
 class PCProductMakerListView(APIView):
-    """
-    メーカー名ごとの製品数を取得
-    """
     permission_classes = [AllowAny]
     def get(self, request):
         genre = request.query_params.get('genre')
@@ -288,7 +292,7 @@ class PCProductMakerListView(APIView):
 @permission_classes([AllowAny])
 def pc_sidebar_stats(request):
     """
-    サイドバー表示用：属性タイプごとに製品数を集計
+    PCサイドバーの属性別カウント統計を取得
     """
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
@@ -297,7 +301,7 @@ def pc_sidebar_stats(request):
     sidebar_data = {}
     for attr in attrs:
         type_display = attr.get_attr_type_display()
-        # "1. CPU" のような表示から "CPU" だけを抽出
+        # "1. CPU" のような表示から "CPU" を抽出する処理
         if type_display and ". " in type_display:
             type_display = type_display.split(". ", 1)[1]
             
@@ -317,7 +321,7 @@ def pc_sidebar_stats(request):
 @permission_classes([AllowAny])
 def pc_product_price_history(request, unique_id):
     """
-    特定のPC商品の価格推移データを取得する
+    特定PC製品の価格推移データを取得
     """
     product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
     history = PriceHistory.objects.filter(product=product).order_by('recorded_at')[:30]
@@ -348,31 +352,40 @@ class LinkshareProductDetailAPIView(generics.RetrieveAPIView):
 # --------------------------------------------------------------------------
 # 4. マスターデータ系 API ビュー
 # --------------------------------------------------------------------------
-class MasterListBaseView(generics.ListAPIView):
-    """マスターデータ一覧のベースクラス"""
-    permission_classes = [AllowAny]
-    pagination_class = None # マスターデータは全件取得が多いため
+# 省略せず、各クラスを明示的に記述します
 
-class ActressListAPIView(MasterListBaseView):
+class ActressListAPIView(generics.ListAPIView):
     queryset = Actress.objects.all().order_by('name')
     serializer_class = ActressSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
 
-class GenreListAPIView(MasterListBaseView):
+class GenreListAPIView(generics.ListAPIView):
     queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
 
-class MakerListAPIView(MasterListBaseView):
+class MakerListAPIView(generics.ListAPIView):
     queryset = Maker.objects.all().order_by('name')
     serializer_class = MakerSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
 
-class LabelListAPIView(MasterListBaseView):
+class LabelListAPIView(generics.ListAPIView):
     queryset = Label.objects.all().order_by('name')
     serializer_class = LabelSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
 
-class DirectorListAPIView(MasterListBaseView):
+class DirectorListAPIView(generics.ListAPIView):
     queryset = Director.objects.all().order_by('name')
     serializer_class = DirectorSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
 
-class SeriesListAPIView(MasterListBaseView):
+class SeriesListAPIView(generics.ListAPIView):
     queryset = Series.objects.all().order_by('name')
     serializer_class = SeriesSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None

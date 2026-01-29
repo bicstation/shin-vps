@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/admin.py
+
 import os
 from django.contrib import admin
 from django import forms
@@ -7,9 +9,11 @@ from django.core.management import call_command
 from django.http import HttpResponseRedirect
 from django.urls import path
 from django.contrib import messages
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 # モデルのインポート
 from .models import (
+    User,  # ✨ カスタムユーザーモデル
     RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series,
     PCAttribute 
@@ -17,7 +21,36 @@ from .models import (
 from .models.pc_products import PCProduct, PriceHistory
 
 # ----------------------------------------------------
-# 0. カスタムフォーム & インライン
+# 🌟 0. User (カスタムユーザー) の管理設定
+# ----------------------------------------------------
+try:
+    from django.contrib.auth.models import User as DjangoUser
+    admin.site.unregister(DjangoUser)
+except admin.sites.NotRegistered:
+    pass
+
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    """
+    👥 カスタムユーザー管理
+    """
+    fieldsets = BaseUserAdmin.fieldsets + (
+        ('✨ 追加プロフィール', {
+            'fields': ('site_group', 'status_message', 'profile_image', 'bio'),
+        }),
+    )
+    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+        ('追加プロフィール', {
+            'fields': ('site_group', 'status_message'),
+        }),
+    )
+    list_display = ('username', 'email', 'site_group', 'status_message', 'is_staff', 'is_active', 'date_joined')
+    list_filter = ('site_group', 'is_staff', 'is_superuser', 'is_active')
+    search_fields = ('username', 'email', 'status_message')
+    ordering = ('-date_joined',)
+
+# ----------------------------------------------------
+# 0.5 カスタムフォーム & インライン
 # ----------------------------------------------------
 class AdultProductAdminForm(forms.ModelForm):
     class Meta:
@@ -27,23 +60,18 @@ class AdultProductAdminForm(forms.ModelForm):
 class PriceHistoryInline(admin.TabularInline):
     """
     📈 価格履歴インライン
-    PC製品の詳細画面で、過去の価格推移を直接編集・確認できるUIを提供します。
     """
     model = PriceHistory
-    extra = 0  # デフォルトの空行を表示しない
+    extra = 0
     ordering = ('-recorded_at',)
     readonly_fields = ('recorded_at',)
     can_delete = True
 
 # ----------------------------------------------------
-# 1. PCAttribute (スペック属性) のAdminクラス
+# 1. PCAttribute (スペック属性)
 # ----------------------------------------------------
 @admin.register(PCAttribute)
 class PCAttributeAdmin(admin.ModelAdmin):
-    """
-    🎨 スペック属性（CPU、RAM、OS、ライセンス等）の管理
-    サイドバーの絞り込み項目や、製品詳細のタグとして機能します。
-    """
     list_display = ('name', 'display_attr_type', 'slug', 'get_product_count', 'order', 'id')
     list_filter = ('attr_type',)
     search_fields = ('name', 'slug')
@@ -54,18 +82,14 @@ class PCAttributeAdmin(admin.ModelAdmin):
     display_attr_type.short_description = '属性タイプ'
 
     def get_product_count(self, obj):
-        """この属性に紐付いている製品総数をカウントします。"""
         return obj.products.count()
     get_product_count.short_description = '製品数'
 
 # ----------------------------------------------------
-# 1.5 PriceHistory (価格履歴単体) のAdminクラス
+# 1.5 PriceHistory (価格履歴単体)
 # ----------------------------------------------------
 @admin.register(PriceHistory)
 class PriceHistoryAdmin(admin.ModelAdmin):
-    """
-    💰 価格履歴の単体管理
-    """
     list_display = ('product', 'price_formatted', 'recorded_at')
     list_filter = ('recorded_at', 'product__maker')
     search_fields = ('product__name', 'product__unique_id')
@@ -78,6 +102,7 @@ class PriceHistoryAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 # 2. PCProduct (PC製品・ソフト・周辺機器) のAdminクラス
 # ----------------------------------------------------
+@admin.register(PCProduct)
 class PCProductAdmin(admin.ModelAdmin):
     """
     🚀 PC製品メイン管理
@@ -104,24 +129,16 @@ class PCProductAdmin(admin.ModelAdmin):
     list_display_links = ('name_summary',)
     
     list_filter = (
-        'is_posted',
-        'is_active',
-        'is_ai_pc',
-        'is_download',
-        'maker',
-        'cpu_socket',
-        'ram_type',
-        'attributes__attr_type',
-        'stock_status',
-        'unified_genre',
+        'is_posted', 'is_active', 'is_ai_pc', 'is_download',
+        'maker', 'cpu_socket', 'ram_type', 'attributes__attr_type',
+        'stock_status', 'unified_genre',
     )
     
-    # 検索対象を拡張
     search_fields = ('name', 'unique_id', 'cpu_model', 'os_support', 'description', 'ai_content', 'attributes__name')
     ordering = ('-updated_at',)
     filter_horizontal = ('attributes',)
 
-    # 詳細編集画面のレイアウト
+    # 詳細編集画面のレイアウト (一切の省略なし)
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
@@ -270,6 +287,7 @@ class PCProductAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 # 3. AdultProduct (アダルト製品データ) のAdminクラス
 # ----------------------------------------------------
+@admin.register(AdultProduct)
 class AdultProductAdmin(admin.ModelAdmin):
     """
     🔞 アダルト製品管理
@@ -339,6 +357,7 @@ class AdultProductAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 # 4. LinkshareProduct Admin
 # ----------------------------------------------------
+@admin.register(LinkshareProduct)
 class LinkshareProductAdmin(admin.ModelAdmin): 
     list_display = ('id', 'product_name', 'sku', 'merchant_id', 'is_active', 'updated_at')
     list_filter = ('is_active', 'merchant_id')
@@ -362,21 +381,18 @@ class CommonAdmin(admin.ModelAdmin):
         return 0
     get_product_count.short_description = "製品数"
 
+@admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'created_at')
     list_filter = ('api_source', 'created_at')
     readonly_fields = ('created_at',)
 
 # ----------------------------------------------------
-# 6. Adminサイトへの登録
+# 6. Adminサイトへの登録 (一括登録)
 # ----------------------------------------------------
-admin.site.register(PCProduct, PCProductAdmin)
-admin.site.register(AdultProduct, AdultProductAdmin)
-admin.site.register(LinkshareProduct, LinkshareProductAdmin) 
 admin.site.register(Genre, CommonAdmin)
 admin.site.register(Actress, CommonAdmin)
 admin.site.register(Maker, CommonAdmin)
 admin.site.register(Label, CommonAdmin)
 admin.site.register(Director, CommonAdmin)
 admin.site.register(Series, CommonAdmin)
-admin.site.register(RawApiData, RawApiDataAdmin)

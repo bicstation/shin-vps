@@ -12,3 +12,5 @@ from .bc_linkshare_products import BcLinkshareProduct
 # 💡 PC製品用モデルと、属性モデル、価格履歴モデルをインポート
 # ここに含めることで makemigrations が正常に動作します
 from .pc_products import PCProduct, PCAttribute, PriceHistory
+
+from .users import User  # users.pyからUserクラスを読み込む

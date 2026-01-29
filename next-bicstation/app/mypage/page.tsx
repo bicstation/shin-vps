@@ -3,17 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { logoutUser } from '../../lib/auth';
+import styles from './MyPage.module.css';
 
-/**
- * 🚀 ユーザー情報の型定義
- */
 interface UserProfile {
   id: number;
   username: string;
   email: string;
   site_group: 'general' | 'adult' | string;
   origin_domain: string;
+  is_staff: boolean;
+  is_superuser: boolean;
   profile_image?: string;
+  status_message?: string;
   bio?: string;
 }
 
@@ -21,61 +22,68 @@ export default function MyPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
   const router = useRouter();
 
   useEffect(() => {
     const fetchProfile = async () => {
-      // サーバーサイドレンダリング時は実行しない
       if (typeof window === 'undefined') return;
 
+      // 💡 判定を修正: JWTトークン、またはセッション用のuser情報の有無を確認
       const token = localStorage.getItem('access_token');
       const storedUser = localStorage.getItem('user');
-      
-      // 🚀 トークンもユーザー情報も無い場合は未ログインと判断
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+
+      // 両方とも無い場合は未ログインとみなす
       if (!token && !storedUser) {
-        console.warn("🚩 ログイン情報が見つかりません。ログインページへ移動します。");
-        router.push('/login'); // 相対パスで安全に遷移
+        console.warn("⚠️ 認証情報が見つからないためログイン画面へリダイレクトします");
+        router.push('/login');
         return;
       }
 
-      // 環境変数からAPIのベースURLを取得（ローカルなら localhost:8083, VPSならドメイン）
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-
       try {
-        console.log("📡 プロフィール取得リクエスト:", `${API_BASE}/auth/me/`);
-        
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        // トークンがある場合のみAuthorizationヘッダーを付与
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const res = await fetch(`${API_BASE}/auth/me/`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // トークンがある場合のみAuthorizationヘッダーを付与
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-          },
-          // 💡 重要: Cookie（sessionid）をVPS環境でも正しく送受信するために必要
+          headers: headers,
+          // 💡 セッションCookieを送信するために必須
           credentials: 'include'
         });
 
         if (!res.ok) {
           if (res.status === 401 || res.status === 403) {
-            console.error("❌ 認証エラー。再ログインが必要です。");
-            logoutUser(); 
+            console.error("❌ 認証エラーが発生しました");
+            logoutUser();
             return;
           }
-          throw new Error(`エラーが発生しました (Status: ${res.status})`);
+          throw new Error(`サーバーエラー (${res.status})`);
         }
 
         const data = await res.json();
-        
-        // 💡 レスポンスが { isSuccess: true, user: {...} } の場合と {...} 直接の場合の両方に対応
+        // Djangoのレスポンスが { user: {...} } か直接 {...} かに対応
         const userData = data.user || data;
         setUser(userData);
-
-        // localStorage のユーザー情報を最新に更新
+        
+        // 最新のユーザー情報をキャッシュとして保存
         localStorage.setItem('user', JSON.stringify(userData));
 
       } catch (err: any) {
-        console.error("🔥 Fetch Error:", err);
-        setError(err.message || 'プロフィールの取得に失敗しました。');
+        console.error("🔥 プロフィール取得失敗:", err);
+        setError(err.message);
+        
+        // 通信エラー等で取得できないが、ローカルにデータがある場合はそれを使う（予備）
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+          setError(''); // エラー表示をクリア
+        }
       } finally {
         setLoading(false);
       }
@@ -84,74 +92,104 @@ export default function MyPage() {
     fetchProfile();
   }, [router]);
 
-  // -----------------------------------------------------------
-  // レンダリングロジック
-  // -----------------------------------------------------------
-  if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>読み込み中...</div>;
-  if (error) return <div style={{ color: 'red', textAlign: 'center', marginTop: '50px' }}>{error}</div>;
+  if (loading) return <div className={styles.centerMsg}>読み込み中...</div>;
+  if (error && !user) return <div className={styles.centerMsg} style={{color: 'red'}}>{error}</div>;
   if (!user) return null;
 
   return (
-    <div style={{ maxWidth: '600px', margin: '40px auto', padding: '20px', border: '1px solid #eee', borderRadius: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', fontFamily: 'sans-serif' }}>
-      <h1 style={{ borderBottom: '2px solid #0070f3', paddingBottom: '10px', fontSize: '1.5rem' }}>マイページ</h1>
-      
-      <div style={{ marginTop: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-          <div style={{ 
-            width: '80px', height: '80px', borderRadius: '50%', 
-            backgroundColor: '#0070f3', color: 'white', 
-            display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            fontSize: '2rem', fontWeight: 'bold' 
-          }}>
+    <div className={styles.container}>
+      {/* サイドバー */}
+      <aside className={styles.sidebar}>
+        <div className={styles.sidebarHeader}>
+          <div className={styles.avatar}>
             {(user.username || 'U').charAt(0).toUpperCase()}
           </div>
-          <div>
-            <h2 style={{ margin: 0 }}>{user.username}</h2>
-            <p style={{ color: '#666', margin: '5px 0' }}>{user.email}</p>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontWeight: 'bold' }}>{user.username}</div>
+            <div style={{ fontSize: '0.8rem', color: '#888' }}>{user.email}</div>
           </div>
         </div>
 
-        <section style={{ backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '8px' }}>
-          <h3 style={{ marginTop: 0, fontSize: '1.1rem' }}>🌐 システム連携ステータス</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px' }}>
-            <span style={{ fontWeight: 'bold', color: '#555' }}>現在の属性:</span>
-            <span>
-              <span style={{ 
-                backgroundColor: user.site_group === 'adult' ? '#ff4d4f' : '#52c41a', 
-                color: 'white', 
-                padding: '3px 10px', 
-                borderRadius: '12px', 
-                fontSize: '0.85rem',
-                fontWeight: 'bold'
-              }}>
-                {user.site_group?.toUpperCase() || 'GENERAL'}
-              </span>
-            </span>
+        <nav className={styles.nav}>
+          <button 
+            onClick={() => setActiveTab('profile')}
+            className={activeTab === 'profile' ? styles.activeNavItem : styles.navItem}
+          >
+            👤 プロフィール
+          </button>
+          <button 
+            onClick={() => setActiveTab('settings')}
+            className={activeTab === 'settings' ? styles.activeNavItem : styles.navItem}
+          >
+            ⚙️ アカウント設定
+          </button>
 
-            <span style={{ fontWeight: 'bold', color: '#555' }}>最終同期URL:</span>
-            <span style={{ color: '#0070f3', wordBreak: 'break-all' }}>{user.origin_domain || '未同期'}</span>
+          <hr className={styles.divider} />
 
-            <span style={{ fontWeight: 'bold', color: '#555' }}>ユーザーID:</span>
-            <span style={{ color: '#888' }}>#{user.id}</span>
+          {user.is_staff && (
+            <div style={{ padding: '10px 0' }}>
+              <p className={styles.label}>ADMIN ONLY</p>
+              <a 
+                href={`${process.env.NEXT_PUBLIC_API_URL}/admin/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.adminLink}
+              >
+                🛠 Django 管理画面
+              </a>
+            </div>
+          )}
+        </nav>
+
+        <button 
+          onClick={() => confirm('ログアウトしますか？') && logoutUser()} 
+          className={styles.logoutButton}
+        >
+          🚪 ログアウト
+        </button>
+      </aside>
+
+      {/* メインコンテンツ */}
+      <main className={styles.mainContent}>
+        <header className={styles.contentHeader}>
+          <h1 style={{ fontSize: '1.4rem' }}>
+            {activeTab === 'profile' ? 'プロフィール情報' : 'アカウント設定'}
+          </h1>
+          <span 
+            className={styles.statusBadge}
+            style={{ backgroundColor: user.site_group === 'adult' ? '#ff4d4f' : '#52c41a' }}
+          >
+            {user.site_group?.toUpperCase() || 'GENERAL'} MODE
+          </span>
+        </header>
+
+        {activeTab === 'profile' ? (
+          <div className={styles.card}>
+            <section style={{ marginBottom: '40px' }}>
+              <h3 className={styles.sectionTitle}>🌐 システム連携ステータス</h3>
+              <div className={styles.grid}>
+                <span className={styles.gridKey}>ユーザーID</span>
+                <span className={styles.gridValue}>#{user.id}</span>
+                <span className={styles.gridKey}>スタッフ権限</span>
+                <span className={styles.gridValue}>{user.is_staff ? '✅ あり' : '❌ なし'}</span>
+                <span className={styles.gridKey}>同期ドメイン</span>
+                <span className={styles.gridValue}>{user.origin_domain || '未設定'}</span>
+              </div>
+            </section>
+
+            <section>
+              <h3 className={styles.sectionTitle}>📝 自己紹介</h3>
+              <div className={styles.bioBox}>
+                <p>{user.bio || '自己紹介文が設定されていません。'}</p>
+              </div>
+            </section>
           </div>
-        </section>
-
-        <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
-          <button 
-            onClick={() => alert('プロフィール編集は現在準備中です')}
-            style={{ flex: 1, padding: '12px', backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            設定変更
-          </button>
-          
-          <button 
-            onClick={() => { if(confirm('ログアウトしますか？')) logoutUser(); }}
-            style={{ flex: 1, padding: '12px', backgroundColor: '#ff4d4f', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            ログアウト
-          </button>
-        </div>
-      </div>
+        ) : (
+          <div className={styles.card}>
+            <p>設定変更機能は開発中です。</p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

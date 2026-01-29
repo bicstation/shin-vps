@@ -14,7 +14,7 @@ export interface AuthTokenResponse {
   user?: {
     id: number;
     username: string;
-    name?: string;  // Django側が name で返す場合に対応
+    name?: string;    // Django側が name で返す場合に対応
     email: string;
     site_group?: string;
   };
@@ -31,8 +31,11 @@ export interface RegisterResponse {
   };
 }
 
-// --- ヘルパー関数：ベースパスを「絶対URL」で取得 ---
-const getAbsoluteRedirectPath = () => {
+// --- ヘルパー関数：ベースパスを考慮した「絶対URL」を取得 ---
+/**
+ * @param path 遷移先のパス (例: '/mypage')
+ */
+const getAbsoluteRedirectPath = (path: string = '/') => {
   if (typeof window === 'undefined') return '/';
 
   const origin = window.location.origin;
@@ -40,13 +43,16 @@ const getAbsoluteRedirectPath = () => {
   // 💡 環境変数からベースパスを取得 (例: /bicstation)
   const envBasePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
   
-  // スラッシュの整形
+  // ベースパスのスラッシュ整形
   let basePath = envBasePath.startsWith('/') ? envBasePath : `/${envBasePath}`;
   if (basePath === '/') basePath = '';
 
+  // パスのスラッシュ整形
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
   // 遷移先を構築（キャッシュバスターを付けて強制リロードを促す）
   const cacheBuster = `t=${Date.now()}`;
-  const finalUrl = `${origin}${basePath}/?${cacheBuster}`;
+  const finalUrl = `${origin}${basePath}${normalizedPath}?${cacheBuster}`;
 
   console.log("🔍 [DEBUG] 生成された遷移先URL:", finalUrl);
   return finalUrl;
@@ -55,7 +61,7 @@ const getAbsoluteRedirectPath = () => {
 // --- 認証関数 ---
 
 /**
- * 💡 ユーザーログインを実行 (ローカル/VPS両対応・デバッグ強化版)
+ * 💡 ユーザーログインを実行 (ローカル/VPS両対応・マイページ遷移版)
  */
 export async function loginUser(username: string, password: string): Promise<AuthTokenResponse> {
   // APIベースURLの取得
@@ -94,7 +100,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
 
     const data: AuthTokenResponse = await response.json();
     
-    // Django側のレスポンス構造（status: "success" または hasAccess: true）をチェック
+    // Django側のレスポンス構造をチェック
     const isSuccess = data.status === "success" || data.hasAccess === true || !!data.access;
 
     console.log("✅ [DEBUG] 3. JSONパース成功:", { 
@@ -106,7 +112,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
       console.log("💾 [DEBUG] 4. localStorageへの書き込み開始");
       
       try {
-        // トークンがある場合は保存（JWT方式への互換性）
+        // トークンがある場合は保存
         if (data.access) localStorage.setItem('access_token', data.access);
         if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
         
@@ -114,7 +120,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
         if (data.user) {
           const userData = {
             ...data.user,
-            username: data.user.username || data.user.name // 両方の表記に対応
+            username: data.user.username || data.user.name 
           };
           localStorage.setItem('user', JSON.stringify(userData));
           localStorage.setItem('user_role', data.user.site_group || site_group);
@@ -125,11 +131,12 @@ export async function loginUser(username: string, password: string): Promise<Aut
         console.error("❌ [DEBUG] localStorage書き込みエラー:", storageErr);
       }
 
-      const redirectUrl = getAbsoluteRedirectPath();
+      // 💡 修正ポイント: ログイン成功時は「マイページ」へ誘導
+      const redirectUrl = getAbsoluteRedirectPath('/mypage');
       
       console.log("🔄 [DEBUG] 5. 遷移を実行します (待機後)");
       
-      // 💡 ストレージへの書き込み反映とCookieの定着を待つ
+      // 💡 ストレージ反映待ち
       setTimeout(() => {
         console.log("✈️ [DEBUG] 最終遷移先へ移動:", redirectUrl);
         window.location.href = redirectUrl; 
@@ -187,11 +194,10 @@ export function logoutUser(): void {
     localStorage.removeItem('user');
     localStorage.removeItem('user_role');
 
-    const redirectUrl = getAbsoluteRedirectPath();
+    // 💡 ログアウト時は「トップページ」へ誘導
+    const redirectUrl = getAbsoluteRedirectPath('/');
     console.log("🔄 [DEBUG] トップページへ戻ります:", redirectUrl);
     
-    // Cookieのセッションも切るためにDjango側を叩くのが理想ですが、
-    // まずはフロントエンドをクリアして遷移
     window.location.href = redirectUrl;
   }
 }

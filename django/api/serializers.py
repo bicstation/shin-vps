@@ -2,6 +2,7 @@
 # api/serializers.py
 
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from .models import (
     AdultProduct, 
     LinkshareProduct, 
@@ -14,8 +15,38 @@ from .models import (
 )
 from .models.pc_products import PCProduct, PCAttribute, PriceHistory
 
+# カスタムユーザーモデルの取得
+User = get_user_model()
+
 # --------------------------------------------------------------------------
-# 1. エンティティ（マスターデータ）のシリアライザ
+# 1. ユーザーモデルのシリアライザ (マイページ・権限仕分け用)
+# --------------------------------------------------------------------------
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    カスタムユーザー情報のシリアライザ
+    Next.jsのマイページ、サイドバーの権限判定、プロフィール表示に使用
+    """
+    class Meta:
+        model = User
+        fields = (
+            'id', 
+            'username', 
+            'email', 
+            'site_group',      # 一般 / アダルト
+            'origin_domain',    # 同期元ドメイン (追加)
+            'status_message',   # 一言コメント
+            'profile_image', 
+            'bio', 
+            'is_staff',         # サイドバーの管理リンク表示判定に使用
+            'is_superuser', 
+            'date_joined'
+        )
+        # 権限昇格などはAPI経由では安易に行わせないため read_only に設定
+        read_only_fields = ('id', 'is_staff', 'is_superuser', 'date_joined')
+
+# --------------------------------------------------------------------------
+# 2. エンティティ（マスターデータ）のシリアライザ
 # --------------------------------------------------------------------------
 
 class MakerSerializer(serializers.ModelSerializer):
@@ -65,7 +96,7 @@ class PriceHistorySerializer(serializers.ModelSerializer):
         fields = ('date', 'price')
 
 # --------------------------------------------------------------------------
-# 2. アダルト商品モデル (AdultProductSerializer)
+# 3. アダルト商品モデル (AdultProductSerializer)
 # --------------------------------------------------------------------------
 
 class AdultProductSerializer(serializers.ModelSerializer): 
@@ -88,7 +119,7 @@ class AdultProductSerializer(serializers.ModelSerializer):
         read_only_fields = fields 
 
 # --------------------------------------------------------------------------
-# 3. Linkshare商品モデル (LinkshareProductSerializer)
+# 4. Linkshare商品モデル (LinkshareProductSerializer)
 # --------------------------------------------------------------------------
 
 class LinkshareProductSerializer(serializers.ModelSerializer):
@@ -101,7 +132,7 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 # --------------------------------------------------------------------------
-# 4. PC・ソフトウェア製品モデル (PCProductSerializer)
+# 5. PC・ソフトウェア製品モデル (PCProductSerializer)
 # --------------------------------------------------------------------------
 
 class PCProductSerializer(serializers.ModelSerializer):
@@ -184,7 +215,6 @@ class PCProductSerializer(serializers.ModelSerializer):
         """
         商品の価格推移を時間軸の古い順に取得
         """
-        # recorded_atの昇順で取得することでグラフが左から右へ流れるようにする
         histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
         return PriceHistorySerializer(histories, many=True).data
 
@@ -193,7 +223,6 @@ class PCProductSerializer(serializers.ModelSerializer):
         """
         Next.jsのRecharts等のライブラリにそのまま渡せる形式
         """
-        # None値を0に変換するヘルパー処理を含めて安全性を確保
         return [
             {"subject": "CPU性能", "value": obj.score_cpu or 0, "fullMark": 100},
             {"subject": "GPU性能", "value": obj.score_gpu or 0, "fullMark": 100},
