@@ -71,6 +71,6 @@ jobs:
 
             echo "✨ データベース内部の最適化を実行します..."
             # Postgresのデッドタプル整理と統計更新（実行時間は数秒です）
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T postgres-db-v2 vacuumdb -U maya -d next_bic_db_v2 --all --analyze
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T postgres-db-v2 vacuumdb -U maya -d next_bic_db_v2 --analyze
 
             echo "✅ デプロイ成功！全ての処理と掃除が完了しました。"
