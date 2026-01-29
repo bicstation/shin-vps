@@ -1,11 +1,12 @@
-"use client"; // 🚀 1行目に追加
+"use client";
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { logoutUser } from '../../lib/auth';
-import { getSiteMetadata } from '../../utils/siteConfig'; // 🚀 リダイレクト用にインポート
 
-// 🚀 ユーザー情報の型定義
+/**
+ * 🚀 ユーザー情報の型定義
+ */
 interface UserProfile {
   id: number;
   username: string;
@@ -28,46 +29,64 @@ export default function MyPage() {
       if (typeof window === 'undefined') return;
 
       const token = localStorage.getItem('access_token');
+      const storedUser = localStorage.getItem('user');
       
-      // 🚀 トークンがない場合、正しいログインページへ飛ばす
-      if (!token) {
-        const { site_prefix } = getSiteMetadata();
-        const loginPath = site_prefix ? `${site_prefix}/login` : '/login';
-        window.location.href = loginPath; // リロードを伴う遷移でヘッダーをリセット
+      // 🚀 トークンもユーザー情報も無い場合は未ログインと判断
+      if (!token && !storedUser) {
+        console.warn("🚩 ログイン情報が見つかりません。ログインページへ移動します。");
+        router.push('/login'); // 相対パスで安全に遷移
         return;
       }
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL;
+      // 環境変数からAPIのベースURLを取得（ローカルなら localhost:8083, VPSならドメイン）
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
       try {
+        console.log("📡 プロフィール取得リクエスト:", `${API_BASE}/auth/me/`);
+        
         const res = await fetch(`${API_BASE}/auth/me/`, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            'Content-Type': 'application/json',
+            // トークンがある場合のみAuthorizationヘッダーを付与
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          // 💡 重要: Cookie（sessionid）をVPS環境でも正しく送受信するために必要
+          credentials: 'include'
         });
 
         if (!res.ok) {
-          if (res.status === 401) {
-            logoutUser(); // トークン期限切れならログアウト
+          if (res.status === 401 || res.status === 403) {
+            console.error("❌ 認証エラー。再ログインが必要です。");
+            logoutUser(); 
             return;
           }
-          throw new Error('プロフィールの取得に失敗しました。');
+          throw new Error(`エラーが発生しました (Status: ${res.status})`);
         }
 
-        const data: UserProfile = await res.json();
-        setUser(data);
+        const data = await res.json();
+        
+        // 💡 レスポンスが { isSuccess: true, user: {...} } の場合と {...} 直接の場合の両方に対応
+        const userData = data.user || data;
+        setUser(userData);
+
+        // localStorage のユーザー情報を最新に更新
+        localStorage.setItem('user', JSON.stringify(userData));
+
       } catch (err: any) {
-        setError(err.message);
+        console.error("🔥 Fetch Error:", err);
+        setError(err.message || 'プロフィールの取得に失敗しました。');
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, []); // router への依存を外し初回のみ実行
+  }, [router]);
 
+  // -----------------------------------------------------------
+  // レンダリングロジック
+  // -----------------------------------------------------------
   if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>読み込み中...</div>;
   if (error) return <div style={{ color: 'red', textAlign: 'center', marginTop: '50px' }}>{error}</div>;
   if (!user) return null;
@@ -78,8 +97,13 @@ export default function MyPage() {
       
       <div style={{ marginTop: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#0070f3', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold' }}>
-            {user.username?.charAt(0).toUpperCase()}
+          <div style={{ 
+            width: '80px', height: '80px', borderRadius: '50%', 
+            backgroundColor: '#0070f3', color: 'white', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            fontSize: '2rem', fontWeight: 'bold' 
+          }}>
+            {(user.username || 'U').charAt(0).toUpperCase()}
           </div>
           <div>
             <h2 style={{ margin: 0 }}>{user.username}</h2>
@@ -100,7 +124,7 @@ export default function MyPage() {
                 fontSize: '0.85rem',
                 fontWeight: 'bold'
               }}>
-                {user.site_group === 'adult' ? 'ADULT' : 'GENERAL'}
+                {user.site_group?.toUpperCase() || 'GENERAL'}
               </span>
             </span>
 
@@ -114,14 +138,14 @@ export default function MyPage() {
 
         <div style={{ marginTop: '30px', display: 'flex', gap: '15px' }}>
           <button 
-            onClick={() => alert('プロフィール編集は開発中です')}
+            onClick={() => alert('プロフィール編集は現在準備中です')}
             style={{ flex: 1, padding: '12px', backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             設定変更
           </button>
           
           <button 
-            onClick={logoutUser}
+            onClick={() => { if(confirm('ログアウトしますか？')) logoutUser(); }}
             style={{ flex: 1, padding: '12px', backgroundColor: '#ff4d4f', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             ログアウト

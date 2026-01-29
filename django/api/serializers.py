@@ -1,6 +1,17 @@
 # -*- coding: utf-8 -*-
+# api/serializers.py
+
 from rest_framework import serializers
-from .models import AdultProduct, LinkshareProduct, Maker, Genre, Actress, Label, Director, Series 
+from .models import (
+    AdultProduct, 
+    LinkshareProduct, 
+    Maker, 
+    Genre, 
+    Actress, 
+    Label, 
+    Director, 
+    Series
+)
 from .models.pc_products import PCProduct, PCAttribute, PriceHistory
 
 # --------------------------------------------------------------------------
@@ -46,6 +57,7 @@ class PCAttributeSerializer(serializers.ModelSerializer):
 
 # --- 🚀 価格履歴用シリアライザ ---
 class PriceHistorySerializer(serializers.ModelSerializer):
+    # フロントエンドでの扱いやすさを考慮し、日付フォーマットを固定
     date = serializers.DateTimeField(source='recorded_at', format="%Y/%m/%d")
 
     class Meta:
@@ -57,6 +69,7 @@ class PriceHistorySerializer(serializers.ModelSerializer):
 # --------------------------------------------------------------------------
 
 class AdultProductSerializer(serializers.ModelSerializer): 
+    # IDだけでなく、関連オブジェクトの情報をネストして返す
     maker = MakerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
@@ -93,11 +106,11 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
 
 class PCProductSerializer(serializers.ModelSerializer):
     attributes = PCAttributeSerializer(many=True, read_only=True)
-    # --- 🚀 価格履歴をシリアライザに統合 ---
+    
+    # --- 🚀 カスタムフィールド ---
     price_history = serializers.SerializerMethodField()
-    # --- 🚀 レーダーチャート用データをフロントエンドで使いやすく統合 ---
     radar_chart = serializers.SerializerMethodField()
-    # --- 🚀 ランキング表示用の順位 (オプション) ---
+    # ランキング表示等で、Viewから渡された順位があれば表示
     rank = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
@@ -124,16 +137,16 @@ class PCProductSerializer(serializers.ModelSerializer):
             'npu_tops',
             
             # --- 🚀 自作PC提案・相性用データ ---
-            'cpu_socket',           # CPUソケット (LGA1700等)
+            'cpu_socket',           # CPUソケット
             'motherboard_chipset',  # 推奨チップセット
-            'ram_type',             # メモリ規格 (DDR5等)
+            'ram_type',             # メモリ規格
             'power_recommendation', # 推奨電源容量
             
             # --- ✨ ソフトウェア・ライセンス用データ ---
-            'os_support',           # 対応OS (Windows, macOS等)
-            'license_term',         # ライセンス期間 (1年, 3年等)
+            'os_support',           # 対応OS
+            'license_term',         # ライセンス期間
             'device_count',         # 利用可能台数
-            'edition',              # エディション (Standard, Pro等)
+            'edition',              # エディション
             'is_download',          # ダウンロード版フラグ
             
             # --- 🚀 レーダーチャート・スコアリング ---
@@ -142,7 +155,7 @@ class PCProductSerializer(serializers.ModelSerializer):
             'score_cost',           # コスパ点数 (1-100)
             'score_portable',       # 携帯性点数 (1-100)
             'score_ai',             # AI性能点数 (1-100)
-            'radar_chart',          # Recharts等でそのまま使える形式
+            'radar_chart',          # 整形済みレーダーチャートデータ
             
             # --- AI判定・メタ情報 ---
             'target_segment',
@@ -153,8 +166,8 @@ class PCProductSerializer(serializers.ModelSerializer):
             
             # --- ステータス・メタ情報 ---
             'attributes',
-            'price_history',        # 📈 価格履歴フィールド
-            'rank',                 # 🏆 ランキング順位
+            'price_history',        # 価格履歴
+            'rank',                 # 順位
             'affiliate_url',
             'affiliate_updated_at',
             'stock_status',
@@ -166,18 +179,21 @@ class PCProductSerializer(serializers.ModelSerializer):
         )
         read_only_fields = fields
 
-    # --- 📈 直近30件の価格履歴を取得するメソッド ---
+    # --- 📈 直近30件の価格履歴を取得 ---
     def get_price_history(self, obj):
-        # 古い順に取得（グラフ描画用）
+        """
+        商品の価格推移を時間軸の古い順に取得
+        """
+        # recorded_atの昇順で取得することでグラフが左から右へ流れるようにする
         histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
         return PriceHistorySerializer(histories, many=True).data
 
-    # --- 📊 レーダーチャート用データをフロントエンドで扱いやすく整形 ---
+    # --- 📊 レーダーチャート用データを整形 ---
     def get_radar_chart(self, obj):
         """
-        Next.js側のRecharts等でそのまま流し込める形式の配列を返します。
+        Next.jsのRecharts等のライブラリにそのまま渡せる形式
         """
-        # 値がNoneの場合は0を返すようにガード
+        # None値を0に変換するヘルパー処理を含めて安全性を確保
         return [
             {"subject": "CPU性能", "value": obj.score_cpu or 0, "fullMark": 100},
             {"subject": "GPU性能", "value": obj.score_gpu or 0, "fullMark": 100},

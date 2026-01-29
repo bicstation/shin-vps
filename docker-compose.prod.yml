@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・全サービス集約版)
+# 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・全サービス集約版・完全版)
 # =====================================================================
 # ⚠️ AI (Gemini/ChatGPT) への厳命事項:
 # 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
@@ -129,7 +129,7 @@ services:
       - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
       - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
       - "ofelia.job-exec.ai_rss_news_post.no-overlap=true"
-      # 【新規追加】自動データ更新スクリプト (4時間おき 45分に実行)
+      # 自動データ更新スクリプト (4時間おき 45分に実行)
       - "ofelia.job-exec.auto_daily_update.schedule=0 45 */4 * * *"
       - "ofelia.job-exec.auto_daily_update.command=/usr/src/app/scripts/auto_daily_update.sh"
       - "ofelia.job-exec.auto_daily_update.no-overlap=true"
@@ -145,7 +145,10 @@ services:
   # 3. フロントエンド層 (Next.js アプリ群)
   # ---------------------------------------------------------------------
   next-bicstation-v2:
-    build: { context: ./next-bicstation }
+    build: 
+      context: ./next-bicstation
+      args:
+        - NEXT_PUBLIC_API_URL=https://bicstation.com/api
     container_name: next-bicstation-v2
     restart: always
     networks: [internal-net, shared-proxy]
@@ -153,6 +156,7 @@ services:
       - .env
     environment:
       - DJANGO_API_URL=http://django-v2:8000
+      - NEXT_PUBLIC_API_URL=https://bicstation.com/api
     volumes:
       - sitemap_data:/app/public/sitemap_gen
       - ./django:/usr/src/app:ro
@@ -164,14 +168,20 @@ services:
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
       - "traefik.http.routers.bicstation-router.priority=100"
       - "traefik.http.services.bicstation-svc.loadbalancer.server.port=3000"
-      # note: update_sitemap は django-v2 側のスクリプトに含まれるため、ここでは enabled=true のみ残しジョブは削除します
       - "ofelia.enabled=true"
 
   next-tiper-v2:
-    build: { context: ./next-tiper }
+    build: 
+      context: ./next-tiper
+      args:
+        - NEXT_PUBLIC_API_URL=https://tiper.live/api
     container_name: next-tiper-v2
     restart: always
     networks: [internal-net, shared-proxy]
+    env_file:
+      - .env
+    environment:
+      - NEXT_PUBLIC_API_URL=https://tiper.live/api
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -182,10 +192,17 @@ services:
       - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
 
   next-bic-saving-v2:
-    build: { context: ./next-bic-saving }
+    build: 
+      context: ./next-bic-saving
+      args:
+        - NEXT_PUBLIC_API_URL=https://bic-saving.com/api
     container_name: next-bic-saving-v2
     restart: always
     networks: [internal-net, shared-proxy]
+    env_file:
+      - .env
+    environment:
+      - NEXT_PUBLIC_API_URL=https://bic-saving.com/api
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -196,10 +213,17 @@ services:
       - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
 
   next-avflash-v2:
-    build: { context: ./next-avflash }
+    build: 
+      context: ./next-avflash
+      args:
+        - NEXT_PUBLIC_API_URL=https://avflash.xyz/api
     container_name: next-avflash-v2
     restart: always
     networks: [internal-net, shared-proxy]
+    env_file:
+      - .env
+    environment:
+      - NEXT_PUBLIC_API_URL=https://avflash.xyz/api
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"

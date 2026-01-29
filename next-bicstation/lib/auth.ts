@@ -1,16 +1,22 @@
-console.log("🛠️ [VPS-CHECK-FINAL] THIS IS THE REAL FILE");
-// /home/maya/dev/shin-vps/next-bicstation/lib/auth.ts
+/**
+ * 🛠️ [VPS-CHECK-FINAL] 統合認証ライブラリ
+ * /home/maya/dev/shin-vps/next-bicstation/lib/auth.ts
+ */
 
 import { getSiteMetadata } from '../utils/siteConfig';
 
 // --- 型定義 (Interfaces) ---
 export interface AuthTokenResponse {
-  access: string;
-  refresh: string;
+  access?: string;  // JWT使用時のためのオプション
+  refresh?: string; // JWT使用時のためのオプション
+  status?: string;  // Django Response用
+  hasAccess?: boolean;
   user?: {
     id: number;
     username: string;
-    site_group: string;
+    name?: string;  // Django側が name で返す場合に対応
+    email: string;
+    site_group?: string;
   };
 }
 
@@ -30,31 +36,30 @@ const getAbsoluteRedirectPath = () => {
   if (typeof window === 'undefined') return '/';
 
   const origin = window.location.origin;
-  const isLocal = window.location.hostname === 'localhost';
   
-  // 💡 NEXT_PUBLIC_BASE_PATH が設定されている場合はそれを優先、なければ空文字
+  // 💡 環境変数からベースパスを取得 (例: /bicstation)
   const envBasePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
   
-  // スラッシュの重複を防ぎつつパスを結合
-  // 本番環境 (bicstation.com) では envBasePath は通常空、ローカルでは /bicstation など
-  let path = envBasePath.startsWith('/') ? envBasePath : `/${envBasePath}`;
-  if (path === '/') path = '';
+  // スラッシュの整形
+  let basePath = envBasePath.startsWith('/') ? envBasePath : `/${envBasePath}`;
+  if (basePath === '/') basePath = '';
 
-  const cacheBuster = `?t=${Date.now()}`;
-  const finalPath = `${origin}${path}/${cacheBuster}`;
+  // 遷移先を構築（キャッシュバスターを付けて強制リロードを促す）
+  const cacheBuster = `t=${Date.now()}`;
+  const finalUrl = `${origin}${basePath}/?${cacheBuster}`;
 
-  console.log("🔍 [DEBUG] 生成された遷移先URL:", finalPath);
-  return finalPath;
+  console.log("🔍 [DEBUG] 生成された遷移先URL:", finalUrl);
+  return finalUrl;
 };
 
 // --- 認証関数 ---
 
 /**
- * 💡 ユーザーログインを実行 (デバッグ強化版)
+ * 💡 ユーザーログインを実行 (ローカル/VPS両対応・デバッグ強化版)
  */
 export async function loginUser(username: string, password: string): Promise<AuthTokenResponse> {
-  // 💡 環境変数のチェックログ
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL;
+  // APIベースURLの取得
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
   console.log("🛠️ [VPS-CHECK] 使用するAPIベースURL:", API_BASE);
 
   const { site_group, origin_domain } = getSiteMetadata();
@@ -65,7 +70,11 @@ export async function loginUser(username: string, password: string): Promise<Aut
   try {
     const response = await fetch(`${API_BASE}/auth/login/`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      // 💡 重要: クッキー(sessionid)をブラウザに保存させるために必須
+      credentials: 'include', 
       body: JSON.stringify({ 
         username, 
         password,
@@ -80,25 +89,35 @@ export async function loginUser(username: string, password: string): Promise<Aut
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error("❌ [DEBUG] ログイン失敗レスポンス:", errorData);
-      throw new Error(errorData.detail || 'ログインに失敗しました。');
+      throw new Error(errorData.error || errorData.detail || 'ログインに失敗しました。');
     }
 
     const data: AuthTokenResponse = await response.json();
+    
+    // Django側のレスポンス構造（status: "success" または hasAccess: true）をチェック
+    const isSuccess = data.status === "success" || data.hasAccess === true || !!data.access;
+
     console.log("✅ [DEBUG] 3. JSONパース成功:", { 
-      hasAccess: !!data.access, 
-      user: data.user?.username 
+      isSuccess,
+      user: data.user?.username || data.user?.name 
     });
     
-    if (data.access && typeof window !== 'undefined') {
+    if (isSuccess && typeof window !== 'undefined') {
       console.log("💾 [DEBUG] 4. localStorageへの書き込み開始");
       
       try {
-        // トークン名は他のコンポーネントと合わせる (access_token / refresh_token)
-        localStorage.setItem('access_token', data.access);
-        localStorage.setItem('refresh_token', data.refresh);
+        // トークンがある場合は保存（JWT方式への互換性）
+        if (data.access) localStorage.setItem('access_token', data.access);
+        if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+        
+        // ユーザー情報の保存
         if (data.user) {
+          const userData = {
+            ...data.user,
+            username: data.user.username || data.user.name // 両方の表記に対応
+          };
+          localStorage.setItem('user', JSON.stringify(userData));
           localStorage.setItem('user_role', data.user.site_group || site_group);
-          localStorage.setItem('user', JSON.stringify(data.user));
         }
         
         console.log("   - ストレージ書き込み完了");
@@ -108,13 +127,13 @@ export async function loginUser(username: string, password: string): Promise<Aut
 
       const redirectUrl = getAbsoluteRedirectPath();
       
-      console.log("🔄 [DEBUG] 5. 遷移を実行します (500msの待機後)");
+      console.log("🔄 [DEBUG] 5. 遷移を実行します (待機後)");
       
-      // 💡 少し長めに待機してストレージへの書き込みを確実に反映させる
+      // 💡 ストレージへの書き込み反映とCookieの定着を待つ
       setTimeout(() => {
         console.log("✈️ [DEBUG] 最終遷移先へ移動:", redirectUrl);
-        window.location.href = redirectUrl; // replace より確実にリロードを伴う href を使用
-      }, 500); 
+        window.location.href = redirectUrl; 
+      }, 300); 
     }
 
     return data;
@@ -129,7 +148,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
  * 💡 新規ユーザー登録を実行
  */
 export async function registerUser(username: string, email: string, password: string): Promise<RegisterResponse> {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL;
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
   const { site_group, origin_domain } = getSiteMetadata();
 
   console.log("🚀 [DEBUG] 新規登録試行:", `${API_BASE}/auth/register/`);
@@ -163,10 +182,16 @@ export function logoutUser(): void {
   if (typeof window !== 'undefined') {
     console.log("🧹 [DEBUG] ログアウト実行: ストレージを消去します");
     
-    localStorage.clear(); // 全削除の方が安全
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('user_role');
 
     const redirectUrl = getAbsoluteRedirectPath();
     console.log("🔄 [DEBUG] トップページへ戻ります:", redirectUrl);
+    
+    // Cookieのセッションも切るためにDjango側を叩くのが理想ですが、
+    // まずはフロントエンドをクリアして遷移
     window.location.href = redirectUrl;
   }
 }

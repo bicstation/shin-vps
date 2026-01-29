@@ -14,7 +14,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # - postgres_data:/var/lib/postgresql/data
+      - ~/dev/vps-data/postgres:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
@@ -33,7 +34,8 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - mariadb_data:/var/lib/mysql
+      # - mariadb_data:/var/lib/mysql
+      - ~/dev/vps-data/mariadb:/var/lib/mysql
     networks:
       - internal-net
 
@@ -80,7 +82,7 @@ services:
   next-bicstation-v2:
     build: 
       context: ./next-bicstation
-      args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/bicstation"]
+      args: ["NODE_ENV=development", "NEXT_PUBLIC_BASE_PATH=/bicstation","NEXT_PUBLIC_API_URL=http://localhost:8083/api"]
     container_name: next-bicstation-v2
     restart: always
     env_file:

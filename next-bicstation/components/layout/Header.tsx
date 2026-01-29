@@ -1,36 +1,64 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { COLORS } from '@/constants';
 import styles from './Header.module.css';
 import { logoutUser } from '../../lib/auth';
+
+/**
+ * 🛠️ 修正のポイント:
+ * 1. ログイン判定を「トークン」だけでなく「ユーザー情報の有無」に広げる
+ * 2. pathname を監視し、ページ遷移のたびに auth 状態を再チェックする
+ * 3. ログアウト処理の整合性を保つ
+ */
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  
   const router = useRouter();
+  const pathname = usePathname(); // 💡 パス変更を検知するために導入
 
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
-  // ログイン状態のチェック
-  useEffect(() => {
+  /**
+   * 💡 ログイン状態のチェックロジックを共通化
+   */
+  const checkAuthStatus = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
     const token = localStorage.getItem('access_token');
-    if (token) {
+    const user = localStorage.getItem('user'); // 💡 ユーザーオブジェクトの有無を確認
+    const storedRole = localStorage.getItem('user_role');
+
+    // トークンまたはユーザーデータのどちらかがあればログイン中とみなす
+    if (user || token) {
       setIsLoggedIn(true);
-      // シンプルな実装として、以前保存した site_group やユーザー情報を取得
-      const storedRole = localStorage.getItem('user_role'); 
-      setUserRole(storedRole || '一般'); 
+      setUserRole(storedRole || '一般');
+      console.log("✅ [Header] Auth Status: Logged In", { role: storedRole });
+    } else {
+      setIsLoggedIn(false);
+      setUserRole(null);
+      console.log("ℹ️ [Header] Auth Status: Not Logged In");
     }
   }, []);
+
+  // 1. 初回マウント時にチェック
+  // 2. ページ遷移 (pathname変更) ごとにチェックを実行
+  useEffect(() => {
+    checkAuthStatus();
+  }, [pathname, checkAuthStatus]);
 
   const closeMenu = () => setIsOpen(false);
 
   const handleLogout = () => {
     if (confirm('ログアウトしますか？')) {
       logoutUser();
+      // 💡 logoutUser() 内で window.location.href が呼ばれるため、
+      // ここで setIsLoggedIn(false) を呼ぶ必要はありません（リロードされるため）
     }
   };
 
@@ -59,7 +87,6 @@ export default function Header() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           
           <nav className={styles.desktopNav} style={{ gap: '25px', marginRight: '20px' }}>
-            {/* 🚀 PC-FINDERへのリンクを追加 */}
             <Link 
               href="/pc-finder" 
               style={{ 
@@ -127,14 +154,13 @@ export default function Header() {
       <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} style={{ borderBottom: `2px solid ${siteColor}` }}>
         <div className={styles.menuSection}>
           <p className={styles.sectionTitle}>Navigation</p>
-          {/* 🚀 スマホメニューにもPC-FINDERを追加 */}
           <Link href="/pc-finder" onClick={closeMenu} style={{ color: siteColor, fontWeight: 'bold' }}>
             🔍 AIスペック診断 (PC-FINDER)
           </Link>
           <Link href="/" onClick={closeMenu}>PCカタログ</Link>
         </div>
 
-        {/* 🚀 スマホ用アカウントセクション */}
+        {/* スマホ用アカウントセクション */}
         <div className={styles.menuSection}>
           <p className={styles.sectionTitle}>Account</p>
           {isLoggedIn ? (

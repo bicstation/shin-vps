@@ -44,15 +44,19 @@ class PCAttributeAdmin(admin.ModelAdmin):
     🎨 スペック属性（CPU、RAM、OS、ライセンス等）の管理
     サイドバーの絞り込み項目や、製品詳細のタグとして機能します。
     """
-    list_display = ('name', 'attr_type', 'slug', 'get_product_count', 'id')
+    list_display = ('name', 'display_attr_type', 'slug', 'get_product_count', 'order', 'id')
     list_filter = ('attr_type',)
     search_fields = ('name', 'slug')
-    ordering = ('attr_type', 'name')
+    ordering = ('attr_type', 'order', 'name')
+
+    def display_attr_type(self, obj):
+        return obj.get_attr_type_display()
+    display_attr_type.short_description = '属性タイプ'
 
     def get_product_count(self, obj):
-        """この属性（例：Core i7）に紐付いている製品総数をカウントします。"""
+        """この属性に紐付いている製品総数をカウントします。"""
         return obj.products.count()
-    get_product_count.short_description = '紐付け製品数'
+    get_product_count.short_description = '製品数'
 
 # ----------------------------------------------------
 # 1.5 PriceHistory (価格履歴単体) のAdminクラス
@@ -61,12 +65,15 @@ class PCAttributeAdmin(admin.ModelAdmin):
 class PriceHistoryAdmin(admin.ModelAdmin):
     """
     💰 価格履歴の単体管理
-    全製品の価格変動ログを一括で確認するための画面です。
     """
-    list_display = ('product', 'price', 'recorded_at')
+    list_display = ('product', 'price_formatted', 'recorded_at')
     list_filter = ('recorded_at', 'product__maker')
     search_fields = ('product__name', 'product__unique_id')
     date_hierarchy = 'recorded_at'
+
+    def price_formatted(self, obj):
+        return f"¥{obj.price:,}"
+    price_formatted.short_description = '価格'
 
 # ----------------------------------------------------
 # 2. PCProduct (PC製品・ソフト・周辺機器) のAdminクラス
@@ -74,37 +81,28 @@ class PriceHistoryAdmin(admin.ModelAdmin):
 class PCProductAdmin(admin.ModelAdmin):
     """
     🚀 PC製品メイン管理
-    AI解析の結果、5軸スコア、ソフトウェアライセンス、自作PC互換性など
-    本システムの核心となるデータを管理します。
     """
-    # テンプレートパスを指定
     change_list_template = "admin/api/pcproduct/change_list.html"
-    
-    # 価格履歴を詳細画面に埋め込む
     inlines = [PriceHistoryInline]
 
-    # 一覧画面の表示項目（運用性を重視した配置）
+    # 一覧画面の表示項目
     list_display = (
         'maker',
         'display_thumbnail',
         'name_summary',
         'price_display',
-        'stock_status',
-        # --- ハードウェア性能（スコア表示） ---
+        'stock_status_tag',
         'display_scores',
-        # --- ✨ ソフトウェア・ライセンス情報 ---
         'os_support_summary', 
         'license_term',
         'is_download_display',
-        # --- 状態フラグ ---
         'display_ai_status',
-        'is_posted',
-        'is_active',
+        'is_posted_tag',
+        'is_active_tag',
         'updated_at',
     )
     list_display_links = ('name_summary',)
     
-    # 絞り込みパネル
     list_filter = (
         'is_posted',
         'is_active',
@@ -118,21 +116,18 @@ class PCProductAdmin(admin.ModelAdmin):
         'unified_genre',
     )
     
-    # 検索対象
-    search_fields = ('name', 'unique_id', 'cpu_model', 'os_support', 'description', 'ai_content')
-    
+    # 検索対象を拡張
+    search_fields = ('name', 'unique_id', 'cpu_model', 'os_support', 'description', 'ai_content', 'attributes__name')
     ordering = ('-updated_at',)
-
-    # 多対多（Attributes）の選択を使いやすくするUI
     filter_horizontal = ('attributes',)
 
-    # 詳細編集画面のレイアウト（セクション分け）
+    # 詳細編集画面のレイアウト
     fieldsets = (
         ('基本情報', {
             'fields': ('unique_id', 'site_prefix', 'maker', 'is_active', 'is_posted', 'stock_status'),
         }),
         ('✨ ソフトウェア・ライセンス情報', {
-            'description': 'セキュリティソフト、Office、OS等のソフトウェア特有の管理項目です。',
+            'description': 'セキュリティソフト、Office、OS等の管理項目です。',
             'fields': (
                 ('os_support', 'is_download'),
                 ('license_term', 'device_count'),
@@ -140,7 +135,7 @@ class PCProductAdmin(admin.ModelAdmin):
             ),
         }),
         ('🚀 AI性能解析スコア (1-100)', {
-            'description': 'AIがスペックから算出した性能指標。レーダーチャートの元データになります。',
+            'description': 'レーダーチャートの元データ。',
             'fields': (
                 ('score_cpu', 'score_gpu'),
                 ('score_cost', 'score_portable'),
@@ -149,7 +144,6 @@ class PCProductAdmin(admin.ModelAdmin):
             ),
         }),
         ('AI解析スペック詳細（ハードウェア）', {
-            'description': 'PC本体（デスクトップ・ノート）の主要パーツ構成データです。',
             'fields': (
                 ('cpu_model', 'gpu_model'),
                 ('memory_gb', 'storage_gb'),
@@ -158,7 +152,6 @@ class PCProductAdmin(admin.ModelAdmin):
             ),
         }),
         ('自作PC提案用・パーツ互換性（AI推論）', {
-            'description': 'パーツ単品販売時に、AIが型番から推論した互換性データです。',
             'fields': (
                 ('cpu_socket', 'motherboard_chipset'),
                 ('ram_type', 'power_recommendation'),
@@ -178,12 +171,12 @@ class PCProductAdmin(admin.ModelAdmin):
         }),
         ('システム管理情報', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',), # 初期状態では閉じておく
+            'classes': ('collapse',),
         }),
     )
     readonly_fields = ('created_at', 'updated_at', 'display_thumbnail_large', 'last_spec_parsed_at')
 
-    # --- 表示カスタマイズ用メソッド ---
+    # --- 表示カスタマイズ ---
     def name_summary(self, obj):
         return obj.name[:40] + "..." if len(obj.name) > 40 else obj.name
     name_summary.short_description = "商品名"
@@ -192,45 +185,57 @@ class PCProductAdmin(admin.ModelAdmin):
         return f"¥{obj.price:,}" if obj.price else "価格未定"
     price_display.short_description = "価格"
 
+    def stock_status_tag(self, obj):
+        color = "#28a745" if obj.stock_status == "instock" else "#dc3545"
+        return mark_safe(f'<span style="color: {color}; font-weight: bold;">{obj.stock_status}</span>')
+    stock_status_tag.short_description = "在庫"
+
+    def is_posted_tag(self, obj):
+        return mark_safe('✅' if obj.is_posted else '<span style="color: #999;">未</span>')
+    is_posted_tag.short_description = "投稿"
+
+    def is_active_tag(self, obj):
+        return mark_safe('✅' if obj.is_active else '❌')
+    is_active_tag.short_description = "有効"
+
     def display_scores(self, obj):
-        """一覧画面で5つの性能スコアをコンパクトに表示します。"""
         return mark_safe(
-            f'<div style="line-height: 1.2; font-size: 11px;">'
-            f'CPU:{obj.score_cpu} GPU:{obj.score_gpu} コスパ:{obj.score_cost}<br>'
-            f'AI:{obj.score_ai} 携帯:{obj.score_portable}'
+            f'<div style="line-height: 1.2; font-size: 11px; color: #555;">'
+            f'CPU:{obj.score_cpu} GPU:{obj.score_gpu} 💰:{obj.score_cost}<br>'
+            f'AI:{obj.score_ai} 📱:{obj.score_portable}'
             f'</div>'
         )
-    display_scores.short_description = "性能スコア"
+    display_scores.short_description = "性能"
 
     def os_support_summary(self, obj):
         return obj.os_support[:15] + ".." if obj.os_support and len(obj.os_support) > 15 else obj.os_support
-    os_support_summary.short_description = "対応OS"
+    os_support_summary.short_description = "OS"
 
     def is_download_display(self, obj):
         if obj.is_download:
             return mark_safe('<span style="color: #007bff; font-weight: bold;">DL版</span>')
-        return "パッケージ版"
-    is_download_display.short_description = "提供形態"
+        return "パケ版"
+    is_download_display.short_description = "形態"
 
     def display_thumbnail(self, obj):
         if obj.image_url:
-            return mark_safe(f'<img src="{obj.image_url}" width="80" height="50" style="object-fit: contain; background: #eee; border-radius: 4px;" />')
+            return mark_safe(f'<img src="{obj.image_url}" width="80" height="50" style="object-fit: contain; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px;" />')
         return "No Image"
     display_thumbnail.short_description = '画像'
 
     def display_thumbnail_large(self, obj):
         if obj.image_url:
-            return mark_safe(f'<img src="{obj.image_url}" width="300" style="border: 1px solid #ccc;" />')
+            return mark_safe(f'<img src="{obj.image_url}" width="400" style="border: 2px solid #eee;" />')
         return "画像なし"
-    display_thumbnail_large.short_description = '画像プレビュー'
+    display_thumbnail_large.short_description = 'プレビュー'
 
     def display_ai_status(self, obj):
         if obj.ai_content:
-            return mark_safe('<span style="color: #28a745; font-weight: bold;">生成済</span>')
-        return mark_safe('<span style="color: #999;">未生成</span>')
-    display_ai_status.short_description = 'AI解析'
+            return mark_safe('<span style="background: #28a745; color: white; padding: 2px 5px; border-radius: 3px; font-size: 10px;">生成済</span>')
+        return mark_safe('<span style="color: #999; font-size: 10px;">未</span>')
+    display_ai_status.short_description = 'AI'
 
-    # --- カスタムURL・ボタンアクションの設定 ---
+    # --- アクション ---
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -243,23 +248,23 @@ class PCProductAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def fetch_minisforum_action(self, request):
-        self.message_user(request, "Minisforumデータの同期プロセスをバックグラウンドで開始しました。", messages.SUCCESS)
+        self.message_user(request, "Minisforum同期プロセスを開始。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def fetch_lenovo_action(self, request):
-        self.message_user(request, "Lenovoデータの取得プロセスを開始しました。", messages.SUCCESS)
+        self.message_user(request, "Lenovo取得プロセスを開始。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def fetch_acer_action(self, request):
-        self.message_user(request, "Acerデータの取得プロセスを開始しました。", messages.SUCCESS)
+        self.message_user(request, "Acer取得プロセスを開始。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def generate_ai_action(self, request):
-        self.message_user(request, "未生成の商品に対してAI解析・記事生成を開始します。", messages.SUCCESS)
+        self.message_user(request, "AI解析・記事生成キューを追加しました。", messages.SUCCESS)
         return HttpResponseRedirect("../")
 
     def full_update_pc_action(self, request):
-        self.message_user(request, "全PCショップの一括取得・更新プロセスを開始しました。", messages.WARNING)
+        self.message_user(request, "全PCショップの一括更新を開始。", messages.WARNING)
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
@@ -268,20 +273,30 @@ class PCProductAdmin(admin.ModelAdmin):
 class AdultProductAdmin(admin.ModelAdmin):
     """
     🔞 アダルト製品管理
-    FANZA/DUGA等のAPIから取得したデータの管理・正規化を行います。
     """
     form = AdultProductAdminForm
     change_list_template = "admin/adult_product_changelist.html"
 
     list_display = (
-        'product_id_unique', 'title', 'release_date', 'price', 'maker', 
-        'display_first_image', 'is_active', 'updated_at',
+        'product_id_unique', 'title_summary', 'release_date', 'price_display', 'maker', 
+        'display_first_image', 'is_active_tag', 'updated_at',
     )
-    list_display_links = ('product_id_unique', 'title') 
-    list_filter = ('is_active', 'release_date', 'maker') 
+    list_display_links = ('product_id_unique', 'title_summary') 
+    list_filter = ('is_active', 'release_date', 'maker', 'api_source') 
     search_fields = ('title', 'product_id_unique')
-
     readonly_fields = ('created_at', 'updated_at', 'product_id_unique', 'api_source')
+
+    def title_summary(self, obj):
+        return obj.title[:50] + "..." if len(obj.title) > 50 else obj.title
+    title_summary.short_description = "タイトル"
+
+    def price_display(self, obj):
+        return f"¥{obj.price:,}" if obj.price else "---"
+    price_display.short_description = "価格"
+
+    def is_active_tag(self, obj):
+        return mark_safe('✅' if obj.is_active else '❌')
+    is_active_tag.short_description = "有効"
 
     def display_first_image(self, obj):
         if obj.image_url_list and obj.image_url_list[0]:
@@ -301,50 +316,56 @@ class AdultProductAdmin(admin.ModelAdmin):
 
     def fetch_fanza_action(self, request):
         call_command('fetch_fanza')
-        self.message_user(request, "FANZAデータの取得コマンドを実行しました。")
+        self.message_user(request, "FANZA取得完了。")
         return HttpResponseRedirect("../")
 
     def fetch_duga_action(self, request):
         call_command('fetch_duga')
-        self.message_user(request, "DUGAデータの取得コマンドを実行しました。")
+        self.message_user(request, "DUGA取得完了。")
         return HttpResponseRedirect("../")
 
     def normalize_action(self, request):
         call_command('normalize_fanza')
-        self.message_user(request, "データのタグ付け・メーカー正規化を実行しました。")
+        self.message_user(request, "データ正規化完了。")
         return HttpResponseRedirect("../")
 
     def full_update_action(self, request):
         call_command('fetch_fanza')
         call_command('fetch_duga')
         call_command('normalize_fanza')
-        self.message_user(request, "全工程（取得・正規化）が完了しました。")
+        self.message_user(request, "一括更新完了。")
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
 # 4. LinkshareProduct Admin
 # ----------------------------------------------------
 class LinkshareProductAdmin(admin.ModelAdmin): 
-    """Linkshare経由の製品データ管理"""
     list_display = ('id', 'product_name', 'sku', 'merchant_id', 'is_active', 'updated_at')
+    list_filter = ('is_active', 'merchant_id')
+    search_fields = ('product_name', 'sku')
     readonly_fields = ('created_at', 'updated_at')
 
 # ----------------------------------------------------
 # 5. その他共通マスター設定
 # ----------------------------------------------------
 class CommonAdmin(admin.ModelAdmin):
-    """マスターデータ系（ジャンル・女優・メーカー等）の共通設定"""
-    list_display = ('name', 'product_count', 'api_source', 'created_at')
+    """マスターデータ系共通設定"""
+    list_display = ('name', 'get_product_count', 'api_source', 'created_at')
+    list_filter = ('api_source',)
+    search_fields = ('name',)
 
-    def product_count(self, obj):
-        if hasattr(obj, 'products'):
-            return obj.products.count()
+    def get_product_count(self, obj):
+        # 多対多のリレーション名を動的に取得してカウント
+        for attr in ['products', 'adultproduct_set']:
+            if hasattr(obj, attr):
+                return getattr(obj, attr).count()
         return 0
-    product_count.short_description = "製品数"
+    get_product_count.short_description = "製品数"
 
 class RawApiDataAdmin(admin.ModelAdmin):
-    """APIからの生応答データを保存するログ管理"""
     list_display = ('id', 'api_source', 'created_at')
+    list_filter = ('api_source', 'created_at')
+    readonly_fields = ('created_at',)
 
 # ----------------------------------------------------
 # 6. Adminサイトへの登録
