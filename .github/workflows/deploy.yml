@@ -42,11 +42,9 @@ jobs:
             cd /home/maya/shin-vps
             
             echo "🔧 ネットワーク環境を整備します..."
-            # 既存ネットワークがある場合は削除せず、存在しない場合のみ作成する（警告防止）
             docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || docker network create shin-vps_shared-proxy
 
             echo "🚀 本番環境(prod)をビルド・起動します..."
-            # --build で最新状態を反映。--wait でDB等の準備完了まで待機。
             docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans --wait
             
             echo "📦 データベースを更新します..."
@@ -56,21 +54,13 @@ jobs:
             docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py collectstatic --noinput
 
             echo "🧹 徹底的なクリーンアップを開始します..."
-            
-            # ① 未使用イメージの削除（-a を付けることで古い中間イメージも一掃）
             docker image prune -af
-            
-            # ② ビルドキャッシュの削除（ストレージを最も食い潰す原因を解消）
             docker builder prune -f
-            
-            # ③ 接続の切れた「浮いたボリューム」を削除（DBの残骸などを掃除）
             docker volume prune -f
-            
-            # ④ システム全体の掃除（停止したコンテナやネットワーク）
             docker system prune -f
 
             echo "✨ データベース内部の最適化を実行します..."
-            # Postgresのデッドタプル整理と統計更新（実行時間は数秒です）
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T postgres-db-v2 vacuumdb -U maya -d next_bic_db_v2 --analyze
+            # 修正点：--allを削除し、環境変数PGPASSWORDを渡して対話モードを回避
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T -e PGPASSWORD="${{ secrets.DB_PASSWORD }}" postgres-db-v2 vacuumdb -U maya -d next_bic_db_v2 --analyze
 
             echo "✅ デプロイ成功！全ての処理と掃除が完了しました。"
