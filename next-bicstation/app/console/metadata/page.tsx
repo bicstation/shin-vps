@@ -1,138 +1,158 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Play, Pause, AlertTriangle, Zap, Search } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  BrainCircuit, Sparkles, Wand2, ArrowRight, 
+  CheckCircle2, RefreshCw, Eye, Zap, MessageSquareQuote
+} from 'lucide-react';
 
 export default function AIMetaSync() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(35);
-  const [cpuUsage, setCpuUsage] = useState(42);
-  const [selectedModel, setSelectedModel] = useState("phi-3-mini");
+  const [promptMode, setPromptMode] = useState('creative'); // creative, seo, professional
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCpuUsage(isProcessing 
-        ? Math.floor(Math.random() * (85 - 70) + 70) 
-        : Math.floor(Math.random() * (20 - 10) + 10)
-      );
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [isProcessing]);
+  // 🧪 リライトのシミュレーションデータ
+  const [metaData, setMetaData] = useState({
+    originalTitle: "高性能ゲーミングPC Z-1 Black Edition / Core i9 / RTX 4090",
+    originalDesc: "最新のCPUとGPUを搭載したデスクトップPCです。非常に高い性能を持っており、ゲームや動画編集に最適です。黒いケースを採用しています。",
+    aiTitle: "極限の没入感。究極のパワーを纏った、漆黒の覇者「Z-1 Black Edition」",
+    aiDesc: "第14世代Core i9とRTX 4090が織りなす、異次元のパフォーマンス。あらゆるクリエイティビティを加速させ、勝利を確約するゲーミング・モンスター、ここに降臨。",
+  });
+
+  const handleSync = () => {
+    setIsProcessing(true);
+    // 擬似的なAI処理待ち
+    setTimeout(() => setIsProcessing(false), 2000);
+  };
 
   return (
-    <>
-      {/* ヘッダー */}
-      <div className="mb-10 flex justify-between items-end">
+    <div className="space-y-8 animate-in fade-in duration-700">
+      
+      {/* 🚀 ヘッダーエリア */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-white uppercase flex items-center gap-3">
-            AI Meta Sync <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded border border-cyan-500/30">PC Edition</span>
+          <div className="flex items-center gap-2 text-purple-400 mb-2 font-black text-[10px] tracking-[0.3em] uppercase bg-purple-500/10 w-fit px-2 py-0.5 rounded">
+            AI Cognitive <Sparkles size={10} /> Syncing
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-white uppercase italic flex items-center gap-3">
+            <BrainCircuit className="text-purple-500" /> AI Meta Sync
           </h1>
-          <p className="text-slate-400 mt-1 font-medium">PCスペック表から魅力的な紹介文とSEOタグを自動生成</p>
+          <p className="text-slate-400 mt-1 text-sm font-medium">収集データの最適化とAIによるリライト生成</p>
         </div>
-        <div className="text-right">
-          <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">Current Model</div>
+        
+        <div className="flex gap-3">
           <select 
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1 text-xs text-cyan-400 outline-none focus:border-cyan-500"
+            value={promptMode}
+            onChange={(e) => setPromptMode(e.target.value)}
+            className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs font-bold text-slate-300 focus:outline-none focus:border-purple-500/50"
           >
-            <option value="phi-3-mini">Phi-3-Mini (Lightweight)</option>
-            <option value="llama3-8b">Llama 3 (High Quality)</option>
-            <option value="gemma-2b">Gemma 2B (Ultra Fast)</option>
+            <option value="creative">Creative Mode</option>
+            <option value="seo">SEO Optimized</option>
+            <option value="professional">Professional</option>
           </select>
+          <button 
+            onClick={handleSync}
+            disabled={isProcessing}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-900 px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] text-xs text-white uppercase"
+          >
+            {isProcessing ? <RefreshCw size={16} className="animate-spin" /> : <Wand2 size={16} />} 
+            {isProcessing ? 'Processing...' : 'Run Global Sync'}
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          {/* コントロールパネル */}
-          <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-3xl shadow-2xl backdrop-blur-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <Zap size={120} className="text-cyan-400" />
-            </div>
-            <h3 className="text-xl font-bold mb-8 flex items-center gap-2 text-white">
-              <Play size={20} className="text-cyan-400" /> 実行プロセス管理
-            </h3>
-            <div className="space-y-8">
-              <div>
-                <div className="flex justify-between text-xs mb-3">
-                  <span className="text-slate-400 font-bold flex items-center gap-2">
-                    <Search size={14} /> 処理対象: <span className="text-white text-sm">48 / 124 PCモデル</span>
-                  </span>
-                  <span className="text-cyan-400 font-mono text-sm">{progress}% Complete</span>
-                </div>
-                <div className="w-full bg-slate-800/50 h-3 rounded-full overflow-hidden border border-slate-700">
-                  <div className="bg-gradient-to-r from-cyan-600 to-blue-400 h-full transition-all duration-1000 shadow-[0_0_15px_rgba(6,182,212,0.5)]" style={{ width: `${progress}%` }}></div>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        {/* 📥 Original Data (Raw) */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 px-2">
+            <Eye size={16} className="text-slate-500" />
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Source Data (Raw)</span>
+          </div>
+          <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl space-y-6 opacity-60">
+            <div>
+              <label className="text-[9px] font-black text-slate-600 uppercase block mb-2">Original Title</label>
+              <div className="bg-slate-950/50 rounded-xl p-4 text-sm text-slate-400 font-medium border border-slate-800/50">
+                {metaData.originalTitle}
               </div>
-              <button 
-                onClick={() => setIsProcessing(!isProcessing)}
-                className={`w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 transition-all active:scale-95 ${isProcessing ? 'bg-slate-800 hover:bg-slate-700' : 'bg-cyan-600 hover:bg-cyan-500 shadow-[0_0_25px_rgba(8,145,178,0.2)]'}`}
-              >
-                {isProcessing ? <><Pause size={20} fill="currentColor" /> 処理を一時停止</> : <><Zap size={20} fill="currentColor" /> AI紹介文の一括生成を開始</>}
-              </button>
             </div>
-          </div>
-
-          {/* ログエリア */}
-          <div className="bg-black/60 border border-slate-800 p-6 rounded-3xl font-mono text-[11px] h-72 overflow-y-auto">
-            <div className="space-y-1.5 text-slate-500">
-              <p>[{new Date().toLocaleTimeString()}] システム初期化完了</p>
-              <p className="text-cyan-500">[{new Date().toLocaleTimeString()}] Ollamaモデル {selectedModel} をロード中...</p>
-              {isProcessing && (
-                <div className="text-white mt-4 border-l-2 border-cyan-500 pl-2">
-                  <p className="text-emerald-400 font-bold">● PROCESSING: [Model #PC-402] MacBook Pro M3</p>
-                  <p className="text-slate-400 ml-4 italic">&gt; スペック解析・紹介文生成中...</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* サイド情報 */}
-        <div className="space-y-6">
-          <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-3xl backdrop-blur-sm">
-            <h3 className="text-xs font-black text-slate-500 mb-6 uppercase tracking-[0.2em]">Resource Monitor</h3>
-            <div className="space-y-6">
-              <ResourceGauge label="CPU Usage" value={cpuUsage} color={cpuUsage > 80 ? "text-rose-500" : "text-cyan-400"} />
-              <ResourceGauge label="VRAM (Ollama)" value={64} color="text-purple-400" />
-              <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex gap-3 items-start text-[10px] text-amber-500/80">
-                <AlertTriangle size={16} className="shrink-0" />
-                <span>処理中はWebサーバーの応答速度が低下する可能性があります。</span>
+            <div>
+              <label className="text-[9px] font-black text-slate-600 uppercase block mb-2">Original Description</label>
+              <div className="bg-slate-950/50 rounded-xl p-4 text-sm text-slate-400 leading-relaxed border border-slate-800/50 min-h-[120px]">
+                {metaData.originalDesc}
               </div>
             </div>
           </div>
-          <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-3xl">
-            <h3 className="text-xs font-black text-slate-500 mb-4 uppercase tracking-[0.2em]">Target Mode</h3>
-            <div className="space-y-2">
-              <ModeToggle label="初心者向け解説" active />
-              <ModeToggle label="テクニカル仕様重視" />
-              <ModeToggle label="コスパ比較重視" />
+        </div>
+
+        {/* 📤 AI Optimized Data (Refined) */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-purple-400" />
+              <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">AI Generated (Optimized)</span>
+            </div>
+            <div className={`text-[9px] font-black px-2 py-0.5 rounded border border-purple-500/20 text-purple-400 bg-purple-500/5 animate-pulse ${isProcessing ? 'block' : 'hidden'}`}>
+              GENERATING...
+            </div>
+          </div>
+          <div className="bg-purple-900/5 border border-purple-500/20 p-6 rounded-3xl space-y-6 shadow-[0_0_40px_rgba(168,85,247,0.05)]">
+            <div className="animate-in slide-in-from-right-4 duration-500">
+              <label className="text-[9px] font-black text-purple-500 uppercase block mb-2 tracking-widest flex items-center gap-1">
+                Optimized Title <CheckCircle2 size={10} />
+              </label>
+              <div className="bg-slate-950 border border-purple-500/30 rounded-xl p-4 text-sm text-white font-bold shadow-inner">
+                {metaData.aiTitle}
+              </div>
+            </div>
+            <div className="animate-in slide-in-from-right-8 duration-700">
+              <label className="text-[9px] font-black text-purple-500 uppercase block mb-2 tracking-widest flex items-center gap-1">
+                Optimized Description <CheckCircle2 size={10} />
+              </label>
+              <div className="bg-slate-950 border border-purple-500/30 rounded-xl p-4 text-sm text-slate-200 leading-relaxed shadow-inner min-h-[120px]">
+                {metaData.aiDesc}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </>
-  );
-}
 
-function ResourceGauge({ label, value, color }: { label: string, value: number, color: string }) {
-  return (
-    <div>
-      <div className="flex justify-between text-[11px] mb-2 font-bold tracking-wider uppercase text-slate-500">
-        <span>{label}</span><span className={color}>{value}%</span>
-      </div>
-      <div className="w-full bg-slate-800/50 h-1.5 rounded-full overflow-hidden border border-slate-700/50">
-        <div className={`h-full bg-current transition-all duration-1000 ${color}`} style={{ width: `${value}%` }}></div>
+      {/* 🧠 Prompt Configuration Panel */}
+      <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem]">
+        <h3 className="text-lg font-black text-white italic uppercase flex items-center gap-3 mb-6 tracking-tight">
+          <MessageSquareQuote className="text-purple-500" /> AI Prompt Strategy
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <PromptCard 
+            icon={<Zap size={20} className="text-amber-400" />}
+            title="Focus keywords"
+            desc="SEOを意識し、検索ボリュームの多いキーワードを優先的に配置します。"
+          />
+          <PromptCard 
+            icon={<Sparkles size={20} className="text-purple-400" />}
+            title="Emotional Tone"
+            desc="ユーザーの感情に訴えかける「刺さる」キャッチコピーを生成します。"
+          />
+          <PromptCard 
+            icon={<ShieldCheck size={20} className="text-emerald-400" />}
+            title="Clean Filter"
+            desc="不適切な表現やプラットフォームの規約に触れるワードを自動で排除・置換します。"
+          />
+        </div>
       </div>
     </div>
   );
 }
 
-function ModeToggle({ label, active = false }: { label: string, active?: boolean }) {
+function PromptCard({ icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
-    <div className={`w-full p-3 rounded-xl text-xs font-bold transition-all border ${active ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' : 'bg-slate-800/50 border-transparent text-slate-500 hover:border-slate-700'}`}>
-      {label}
+    <div className="bg-slate-950/50 border border-slate-800/60 p-5 rounded-2xl hover:border-purple-500/30 transition-all group">
+      <div className="mb-3">{icon}</div>
+      <h4 className="text-xs font-black text-slate-200 uppercase tracking-widest mb-2">{title}</h4>
+      <p className="text-xs text-slate-500 leading-relaxed font-medium">{desc}</p>
     </div>
   );
+}
+
+function ShieldCheck({ size, className }: { size: number, className: string }) {
+  return <Zap size={size} className={className} />; // 暫定アイコン
 }
