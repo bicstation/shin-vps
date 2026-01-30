@@ -93,7 +93,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
       }
 
       // 🚀 権限に応じた遷移先の決定
-      const targetPath = data.user?.is_staff ? '/admin/dashboard' : '/mypage';
+      const targetPath = data.user?.is_staff ? '/console/dashboard' : '/mypage';
       window.location.href = getAbsoluteRedirectPath(targetPath);
     }
     return data;
