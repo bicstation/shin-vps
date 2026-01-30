@@ -1,4 +1,5 @@
 /**
+<<<<<<< HEAD
  * 🛠️ [VPS-PROD-INTEGRATED] 統合認証ライブラリ
  * * 特徴:
  * 1. YAML/Docker環境変数を優先 (NEXT_PUBLIC_...)
@@ -6,6 +7,10 @@
  * 3. 認証(bicstation.com)とデータ(tiper.live)の2ドメイン自動切換
  * 4. 冗長なデバッグログ完備
  * 5. 管理者(is_staff)と一般ユーザーの自動振り分け機能搭載
+=======
+ * 🛠️ [VPS-CHECK-FINAL-FIXED] 統合認証ライブラリ
+ * /home/maya/dev/shin-vps/next-bicstation/lib/auth.ts
+>>>>>>> 9acac766cbeb8f8e33c3fafebc8b06c24535c7fc
  */
 
 import { getSiteMetadata } from '../utils/siteConfig';
@@ -83,20 +88,61 @@ const getAbsoluteRedirectPath = (path: string = '/') => {
   return finalUrl;
 };
 
+<<<<<<< HEAD
 // --- 3. メイン認証関数 ---
+=======
+/**
+ * 💡 APIのベースURLを環境に合わせて動的に構築する
+ * 環境変数 NEXT_PUBLIC_API_URL がある場合はそれを最優先します。
+ */
+const getApiBaseUrl = () => {
+  // 1. 環境変数が設定されている場合は最優先 (ローカル環境の http://localhost:8083/api など)
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  if (typeof window === 'undefined') return '';
+
+  const origin = window.location.origin;
+  const pathname = window.location.pathname;
+
+  // 2. VPS環境判定: URLに /bicstation が含まれている場合
+  if (pathname.includes('/bicstation')) {
+    return `${origin}/bicstation/api`;
+  }
+
+  // 3. デフォルトのフォールバック
+  return `${origin}/api`;
+};
+
+// --- 認証関数 ---
+>>>>>>> 9acac766cbeb8f8e33c3fafebc8b06c24535c7fc
 
 /**
  * 💡 ユーザーログイン
  */
 export async function loginUser(username: string, password: string): Promise<AuthTokenResponse> {
+<<<<<<< HEAD
   const API_BASE = getTargetApiBase(true);
   const { site_group, origin_domain } = getSiteMetadata();
 
   console.log("🚀 [Auth-Flow] ログイン処理を開始します...");
   console.log(`📡 [Target] ${API_BASE}/auth/login/`);
+=======
+  // APIベースURLの取得（修正された優先順位で取得）
+  const API_BASE = getApiBaseUrl();
+  console.log("🛠️ [VPS-FIX] ログイン用APIベースURL:", API_BASE);
+
+  const { site_group, origin_domain } = getSiteMetadata();
+
+  console.log("🚀 [DEBUG] 1. ログイン試行開始");
+  // Djangoは末尾のスラッシュが必須
+  const targetUrl = `${API_BASE}/auth/login/`;
+  console.log("   - 宛先:", targetUrl);
+>>>>>>> 9acac766cbeb8f8e33c3fafebc8b06c24535c7fc
 
   try {
-    const response = await fetch(`${API_BASE}/auth/login/`, {
+    const response = await fetch(targetUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // 重要：Cookie(sessionid)をブラウザに保持させる
@@ -138,9 +184,14 @@ export async function loginUser(username: string, password: string): Promise<Aut
         localStorage.setItem('user_role', data.user.site_group || site_group);
       }
 
+<<<<<<< HEAD
       // 🚀 [振り分け処理] 権限に応じて遷移先を変更
       // data.user.is_staff が true なら /admin/dashboard へ、それ以外は /mypage へ
       const targetPath = data.user?.is_staff ? '/admin/dashboard' : '/mypage';
+=======
+      // 💡 ログイン成功時は「マイページ」へ誘導
+      const redirectUrl = getAbsoluteRedirectPath('/mypage');
+>>>>>>> 9acac766cbeb8f8e33c3fafebc8b06c24535c7fc
       
       // 環境に応じた正しいパスへ遷移
       const destination = getAbsoluteRedirectPath(targetPath);
@@ -159,18 +210,26 @@ export async function loginUser(username: string, password: string): Promise<Aut
  * 💡 新規ユーザー登録
  */
 export async function registerUser(username: string, email: string, password: string): Promise<RegisterResponse> {
+<<<<<<< HEAD
   const API_BASE = getTargetApiBase(true);
   const { site_group, origin_domain } = getSiteMetadata();
 
   console.log("🚀 [Register-Flow] ユーザー登録を開始します...");
   console.log(`📡 [Target] ${API_BASE}/auth/register/`);
+=======
+  const API_BASE = getApiBaseUrl();
+  const { site_group, origin_domain } = getSiteMetadata();
 
-  const response = await fetch(`${API_BASE}/auth/register/`, {
+  const targetUrl = `${API_BASE}/auth/register/`;
+  console.log("🚀 [DEBUG] 新規登録試行:", targetUrl);
+>>>>>>> 9acac766cbeb8f8e33c3fafebc8b06c24535c7fc
+
+  const response = await fetch(targetUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       username,
-      email,
+      email,     // 修正: 確実に email フィールドを送る
       password,
       site_group,
       origin_domain,
@@ -179,6 +238,7 @@ export async function registerUser(username: string, email: string, password: st
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+<<<<<<< HEAD
     console.error("❌ [Register-Error] 登録失敗:", errorData);
     throw new Error(errorData.detail || errorData.error || 'アカウントの作成に失敗しました。');
   }
@@ -212,6 +272,12 @@ export async function fetchMe(): Promise<any> {
   if (!response.ok) {
     console.error("❌ [Fetch-Me-Error] プロフィールの取得に失敗しました。");
     throw new Error("セッションが無効です。");
+=======
+    console.error("❌ [DEBUG] 登録失敗:", errorData);
+    // Djangoのバリデーションエラー（emailの重複など）を詳しく取得する
+    const msg = errorData.email?.[0] || errorData.username?.[0] || errorData.detail || 'ユーザー登録に失敗しました。';
+    throw new Error(msg);
+>>>>>>> 9acac766cbeb8f8e33c3fafebc8b06c24535c7fc
   }
 
   return await response.json();

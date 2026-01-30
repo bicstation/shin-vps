@@ -14,7 +14,11 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
+<<<<<<< HEAD
       - ${DATA_ROOT}/postgres:/var/lib/postgresql/data
+=======
+      - /home/maya/dev/vps-data/postgres:/var/lib/postgresql/data
+>>>>>>> 9acac766cbeb8f8e33c3fafebc8b06c24535c7fc
     networks:
       - internal-net
     healthcheck:
@@ -33,7 +37,11 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
+<<<<<<< HEAD
       - ${DATA_ROOT}/mariadb:/var/lib/mysql
+=======
+      - /home/maya/dev/vps-data/mariadb:/var/lib/mysql
+>>>>>>> 9acac766cbeb8f8e33c3fafebc8b06c24535c7fc
     networks:
       - internal-net
 

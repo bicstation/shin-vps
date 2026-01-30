@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# api/serializers.py
+# /home/maya/dev/shin-vps/django/api/serializers.py
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
@@ -26,15 +26,19 @@ class UserSerializer(serializers.ModelSerializer):
     """
     カスタムユーザー情報のシリアライザ
     Next.jsのマイページ、サイドバーの権限判定、プロフィール表示に使用
+    💡 修正点: パスワードの書き込み専用設定とバリデーションを追加
     """
+    password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
+
     class Meta:
         model = User
         fields = (
             'id', 
             'username', 
             'email', 
-            'site_group',      # 一般 / アダルト
-            'origin_domain',    # 同期元ドメイン (追加)
+            'password',         # 書き込み時のみ使用
+            'site_group',       # 一般 / アダルト
+            'origin_domain',    # 同期元ドメイン
             'status_message',   # 一言コメント
             'profile_image', 
             'bio', 
@@ -44,6 +48,17 @@ class UserSerializer(serializers.ModelSerializer):
         )
         # 権限昇格などはAPI経由では安易に行わせないため read_only に設定
         read_only_fields = ('id', 'is_staff', 'is_superuser', 'date_joined')
+
+    def create(self, validated_data):
+        """
+        ユーザー作成時にパスワードをハッシュ化して保存するためのオーバーライド
+        """
+        password = validated_data.pop('password', None)
+        user = super().create(validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
 
 # --------------------------------------------------------------------------
 # 2. エンティティ（マスターデータ）のシリアライザ
@@ -212,17 +227,11 @@ class PCProductSerializer(serializers.ModelSerializer):
 
     # --- 📈 直近30件の価格履歴を取得 ---
     def get_price_history(self, obj):
-        """
-        商品の価格推移を時間軸の古い順に取得
-        """
         histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
         return PriceHistorySerializer(histories, many=True).data
 
     # --- 📊 レーダーチャート用データを整形 ---
     def get_radar_chart(self, obj):
-        """
-        Next.jsのRecharts等のライブラリにそのまま渡せる形式
-        """
         return [
             {"subject": "CPU性能", "value": obj.score_cpu or 0, "fullMark": 100},
             {"subject": "GPU性能", "value": obj.score_gpu or 0, "fullMark": 100},

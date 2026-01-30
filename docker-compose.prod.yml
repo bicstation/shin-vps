@@ -5,7 +5,7 @@
 # 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
 # 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
 # 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
-#    変更するとシステム全体が崩壊します。
+#     変更するとシステム全体が崩壊します。
 # =====================================================================
 
 services:
@@ -72,6 +72,12 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+    # PostgreSQL内部の自動掃除機能を最適化
+    command: >
+      postgres 
+      -c 'autovacuum=on'
+      -c 'autovacuum_vacuum_scale_factor=0.1'
+      -c 'autovacuum_analyze_scale_factor=0.05'
     volumes:
       - /home/maya/docker_volumes/postgres:/var/lib/postgresql/data
     networks:
@@ -88,13 +94,15 @@ services:
     image: mariadb:10
     container_name: mariadb-v2
     restart: always
+    # 【追加修正】バイナリログを1日(86400秒)で期限切れにして自動削除する設定
+    command: --binlog-expire-logs-seconds=86400
     environment:
       MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${WP_DB_NAME}
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - /var/lib/mysql
+      - /home/maya/docker_volumes/mysql:/var/lib/mysql
     networks:
       - internal-net
     healthcheck:

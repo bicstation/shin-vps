@@ -64,5 +64,3 @@ maya@Marya:/mnt/e/dev/shin-vps$ save -h
   ./deploy.sh          : 通常のコミット・デプロイ作業を開始
   ./deploy.sh -h       : このヘルプと注意事項を表示
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-maya@Marya:/mnt/e/dev/shin-vps$ 
