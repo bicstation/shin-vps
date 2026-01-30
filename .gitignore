@@ -73,5 +73,14 @@ desktop.ini
 *.log
 # デバッグ用の画像や一時的なHTMLも除外対象にする場合
 debug_*.png
-debug_*.htmltraefik/letsencrypt/*.json
+debug_*.html
+traefik/letsencrypt/*.json
 *.sql
+
+
+# スクレイピングのデバッグ画像フォルダを丸ごと除外
+**/debug_screenshots/
+
+*.tar.gz
+*.zip
+*.deb
