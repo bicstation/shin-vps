@@ -1,22 +1,29 @@
 /**
- * 🛠️ [VPS-CHECK-FINAL] 統合認証ライブラリ
- * /home/maya/dev/shin-vps/next-bicstation/lib/auth.ts
+ * 🛠️ [VPS-PROD-INTEGRATED] 統合認証ライブラリ
+ * * 特徴:
+ * 1. YAML/Docker環境変数を優先 (NEXT_PUBLIC_...)
+ * 2. 実行環境のURLからサブパス(/bicstation)の有無を自動判別（ローカル/VPS両対応）
+ * 3. 認証(bicstation.com)とデータ(tiper.live)の2ドメイン自動切換
+ * 4. 冗長なデバッグログ完備
+ * 5. 管理者(is_staff)と一般ユーザーの自動振り分け機能搭載
  */
 
 import { getSiteMetadata } from '../utils/siteConfig';
 
-// --- 型定義 (Interfaces) ---
+// --- 1. 型定義 (Interfaces) ---
+
 export interface AuthTokenResponse {
-  access?: string;  // JWT使用時のためのオプション
-  refresh?: string; // JWT使用時のためのオプション
-  status?: string;  // Django Response用
+  access?: string;
+  refresh?: string;
+  status?: string;
   hasAccess?: boolean;
   user?: {
     id: number;
     username: string;
-    name?: string;    // Django側が name で返す場合に対応
+    name?: string;
     email: string;
     site_group?: string;
+    is_staff?: boolean; // 🚀 権限判定用に追加
   };
 }
 
@@ -31,134 +38,132 @@ export interface RegisterResponse {
   };
 }
 
-// --- ヘルパー関数：ベースパスを考慮した「絶対URL」を取得 ---
+// --- 2. 内部ヘルパー関数 ---
+
 /**
- * @param path 遷移先のパス (例: '/mypage')
+ * 💡 APIのベースURLを決定する
+ * Docker/YAML で設定された環境変数を読み込み、用途別に切り替えます。
+ */
+const getTargetApiBase = (isAuthRequest: boolean = false): string => {
+  if (isAuthRequest) {
+    // ログイン・登録用：bicstation.com (CSRF/Session維持用)
+    const authUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://bicstation.com/api';
+    return authUrl.endsWith('/') ? authUrl.slice(0, -1) : authUrl;
+  } else {
+    // 一般データ取得用：tiper.live (メインAPIサーバー)
+    const dataUrl = process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api';
+    return dataUrl.endsWith('/') ? dataUrl.slice(0, -1) : dataUrl;
+  }
+};
+
+/**
+ * 💡 遷移先URLを絶対パスで構築
+ * 現在のブラウザのURLを見て、/bicstation が含まれていればそれを維持します。
  */
 const getAbsoluteRedirectPath = (path: string = '/') => {
   if (typeof window === 'undefined') return '/';
-
+  
   const origin = window.location.origin;
-  
-  // 💡 環境変数からベースパスを取得 (例: /bicstation)
-  const envBasePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-  
-  // ベースパスのスラッシュ整形
-  let basePath = envBasePath.startsWith('/') ? envBasePath : `/${envBasePath}`;
-  if (basePath === '/') basePath = '';
+  const currentPath = window.location.pathname;
 
-  // パスのスラッシュ整形
+  // 💡 自動判別ロジック：現在のURLに /bicstation が含まれているかチェック
+  // これにより、ローカル環境のサブパス問題を自動で解決します。
+  const hasSubPath = currentPath.startsWith('/bicstation');
+  const prefix = hasSubPath ? '/bicstation' : '';
+
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-
-  // 遷移先を構築（キャッシュバスターを付けて強制リロードを促す）
+  // キャッシュによる古いページの表示を防ぐためのバスター
   const cacheBuster = `t=${Date.now()}`;
-  const finalUrl = `${origin}${basePath}${normalizedPath}?${cacheBuster}`;
-
-  console.log("🔍 [DEBUG] 生成された遷移先URL:", finalUrl);
+  
+  const finalUrl = `${origin}${prefix}${normalizedPath}?${cacheBuster}`;
+  
+  console.log(`🔍 [Redirect-Build] Mode: ${hasSubPath ? 'Local(Subpath)' : 'VPS(Root)'}`);
+  console.log(`🔍 [Redirect-Build] Result -> ${finalUrl}`);
+  
   return finalUrl;
 };
 
-// --- 認証関数 ---
+// --- 3. メイン認証関数 ---
 
 /**
- * 💡 ユーザーログインを実行 (ローカル/VPS両対応・マイページ遷移版)
+ * 💡 ユーザーログイン
  */
 export async function loginUser(username: string, password: string): Promise<AuthTokenResponse> {
-  // APIベースURLの取得
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
-  console.log("🛠️ [VPS-CHECK] 使用するAPIベースURL:", API_BASE);
-
+  const API_BASE = getTargetApiBase(true);
   const { site_group, origin_domain } = getSiteMetadata();
 
-  console.log("🚀 [DEBUG] 1. ログイン試行開始");
-  console.log("   - 宛先:", `${API_BASE}/auth/login/`);
+  console.log("🚀 [Auth-Flow] ログイン処理を開始します...");
+  console.log(`📡 [Target] ${API_BASE}/auth/login/`);
 
   try {
     const response = await fetch(`${API_BASE}/auth/login/`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-      },
-      // 💡 重要: クッキー(sessionid)をブラウザに保存させるために必須
-      credentials: 'include', 
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // 重要：Cookie(sessionid)をブラウザに保持させる
       body: JSON.stringify({ 
         username, 
-        password,
-        site_group,
-        origin_domain
+        password, 
+        site_group, 
+        origin_domain 
       }),
     });
 
-    console.log("📡 [DEBUG] 2. APIレスポンス受信");
-    console.log("   - ステータス:", response.status, response.statusText);
+    console.log(`📡 [Response] Status: ${response.status}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error("❌ [DEBUG] ログイン失敗レスポンス:", errorData);
-      throw new Error(errorData.error || errorData.detail || 'ログインに失敗しました。');
+      console.error("❌ [Auth-Error] ログイン失敗:", errorData);
+      throw new Error(errorData.error || errorData.detail || '認証に失敗しました。');
     }
 
     const data: AuthTokenResponse = await response.json();
     
-    // Django側のレスポンス構造をチェック
+    // Django側の成功レスポンス判定
     const isSuccess = data.status === "success" || data.hasAccess === true || !!data.access;
 
-    console.log("✅ [DEBUG] 3. JSONパース成功:", { 
-      isSuccess,
-      user: data.user?.username || data.user?.name 
-    });
-    
     if (isSuccess && typeof window !== 'undefined') {
-      console.log("💾 [DEBUG] 4. localStorageへの書き込み開始");
+      console.log("✅ [Auth-Success] ユーザー情報を保存中...");
       
-      try {
-        // トークンがある場合は保存
-        if (data.access) localStorage.setItem('access_token', data.access);
-        if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
-        
-        // ユーザー情報の保存
-        if (data.user) {
-          const userData = {
-            ...data.user,
-            username: data.user.username || data.user.name 
-          };
-          localStorage.setItem('user', JSON.stringify(userData));
-          localStorage.setItem('user_role', data.user.site_group || site_group);
-        }
-        
-        console.log("   - ストレージ書き込み完了");
-      } catch (storageErr) {
-        console.error("❌ [DEBUG] localStorage書き込みエラー:", storageErr);
+      // トークン情報の保存
+      if (data.access) localStorage.setItem('access_token', data.access);
+      if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+      
+      // ユーザープロフィールの保存
+      if (data.user) {
+        const userData = {
+          ...data.user,
+          username: data.user.username || data.user.name
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('user_role', data.user.site_group || site_group);
       }
 
-      // 💡 修正ポイント: ログイン成功時は「マイページ」へ誘導
-      const redirectUrl = getAbsoluteRedirectPath('/mypage');
+      // 🚀 [振り分け処理] 権限に応じて遷移先を変更
+      // data.user.is_staff が true なら /admin/dashboard へ、それ以外は /mypage へ
+      const targetPath = data.user?.is_staff ? '/admin/dashboard' : '/mypage';
       
-      console.log("🔄 [DEBUG] 5. 遷移を実行します (待機後)");
-      
-      // 💡 ストレージ反映待ち
-      setTimeout(() => {
-        console.log("✈️ [DEBUG] 最終遷移先へ移動:", redirectUrl);
-        window.location.href = redirectUrl; 
-      }, 300); 
+      // 環境に応じた正しいパスへ遷移
+      const destination = getAbsoluteRedirectPath(targetPath);
+      console.log(`🔄 [Redirect] Role:${data.user?.is_staff ? 'Admin' : 'User'} -> ${destination}`);
+      window.location.href = destination;
     }
 
     return data;
-
   } catch (err: any) {
-    console.error("🔥 [DEBUG] 通信または処理中に致命的エラー:", err);
+    console.error("🔥 [Critical-Error] ログイン中に例外が発生しました:", err);
     throw err;
   }
 }
 
 /**
- * 💡 新規ユーザー登録を実行
+ * 💡 新規ユーザー登録
  */
 export async function registerUser(username: string, email: string, password: string): Promise<RegisterResponse> {
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+  const API_BASE = getTargetApiBase(true);
   const { site_group, origin_domain } = getSiteMetadata();
 
-  console.log("🚀 [DEBUG] 新規登録試行:", `${API_BASE}/auth/register/`);
+  console.log("🚀 [Register-Flow] ユーザー登録を開始します...");
+  console.log(`📡 [Target] ${API_BASE}/auth/register/`);
 
   const response = await fetch(`${API_BASE}/auth/register/`, {
     method: 'POST',
@@ -174,11 +179,41 @@ export async function registerUser(username: string, email: string, password: st
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    console.error("❌ [DEBUG] 登録失敗:", errorData);
-    throw new Error(errorData.detail || 'ユーザー登録に失敗しました。');
+    console.error("❌ [Register-Error] 登録失敗:", errorData);
+    throw new Error(errorData.detail || errorData.error || 'アカウントの作成に失敗しました。');
   }
 
-  console.log("✅ [DEBUG] 登録成功");
+  console.log("✅ [Register-Success] 登録が完了しました。");
+  return await response.json();
+}
+
+/**
+ * 💡 ログイン中ユーザー情報の取得 (tiper.liveを使用)
+ */
+export async function fetchMe(): Promise<any> {
+  const API_BASE = getTargetApiBase(false);
+  const token = localStorage.getItem('access_token');
+
+  console.log("📡 [Fetch-Me] ユーザープロフィールの同期中...");
+
+  if (!token) {
+    console.warn("⚠️ [Fetch-Me] トークンが見つかりません。");
+    return null;
+  }
+
+  const response = await fetch(`${API_BASE}/auth/me/`, {
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json' 
+    },
+    credentials: 'include'
+  });
+
+  if (!response.ok) {
+    console.error("❌ [Fetch-Me-Error] プロフィールの取得に失敗しました。");
+    throw new Error("セッションが無効です。");
+  }
+
   return await response.json();
 }
 
@@ -187,17 +222,11 @@ export async function registerUser(username: string, email: string, password: st
  */
 export function logoutUser(): void {
   if (typeof window !== 'undefined') {
-    console.log("🧹 [DEBUG] ログアウト実行: ストレージを消去します");
+    console.log("🧹 [Logout] セッションをクリアしています...");
+    localStorage.clear();
     
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('user_role');
-
-    // 💡 ログアウト時は「トップページ」へ誘導
-    const redirectUrl = getAbsoluteRedirectPath('/');
-    console.log("🔄 [DEBUG] トップページへ戻ります:", redirectUrl);
-    
-    window.location.href = redirectUrl;
+    const destination = getAbsoluteRedirectPath('/');
+    console.log(`🔄 [Logout-Redirect] ${destination}`);
+    window.location.href = destination;
   }
 }

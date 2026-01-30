@@ -148,7 +148,9 @@ services:
     build: 
       context: ./next-bicstation
       args:
-        - NEXT_PUBLIC_API_URL=https://bicstation.com/api
+        - NEXT_PUBLIC_API_URL=https://tiper.live/api
+        - NEXT_PUBLIC_AUTH_API_URL=https://bicstation.com/api
+        - NEXT_PUBLIC_BASE_PATH=
     container_name: next-bicstation-v2
     restart: always
     networks: [internal-net, shared-proxy]
@@ -156,7 +158,9 @@ services:
       - .env
     environment:
       - DJANGO_API_URL=http://django-v2:8000
-      - NEXT_PUBLIC_API_URL=https://bicstation.com/api
+      - NEXT_PUBLIC_API_URL=https://tiper.live/api
+      - NEXT_PUBLIC_AUTH_API_URL=https://bicstation.com/api
+      - NEXT_PUBLIC_BASE_PATH=
     volumes:
       - sitemap_data:/app/public/sitemap_gen
       - ./django:/usr/src/app:ro

@@ -9,18 +9,19 @@ import { logoutUser } from '../../lib/auth';
 
 /**
  * 🛠️ 修正のポイント:
- * 1. ログイン判定を「トークン」だけでなく「ユーザー情報の有無」に広げる
- * 2. pathname を監視し、ページ遷移のたびに auth 状態を再チェックする
- * 3. ログアウト処理の整合性を保つ
+ * 1. ログイン中の「ユーザー名」を表示するステートを追加
+ * 2. checkAuthStatus で localStorage から username を抽出
+ * 3. PC版/スマホ版それぞれのレイアウトにユーザー名を配置
  */
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null); // 🚀 ユーザー名表示用
   
   const router = useRouter();
-  const pathname = usePathname(); // 💡 パス変更を検知するために導入
+  const pathname = usePathname(); 
 
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
@@ -31,20 +32,30 @@ export default function Header() {
     if (typeof window === 'undefined') return;
 
     const token = localStorage.getItem('access_token');
-    const user = localStorage.getItem('user'); // 💡 ユーザーオブジェクトの有無を確認
+    const userDataStr = localStorage.getItem('user'); 
     const storedRole = localStorage.getItem('user_role');
 
-    // トークンまたはユーザーデータのどちらかがあればログイン中とみなす
-    if (user || token) {
+    if (userDataStr || token) {
       setIsLoggedIn(true);
       setUserRole(storedRole || '一般');
-      console.log("✅ [Header] Auth Status: Logged In", { role: storedRole });
+      
+      // 🚀 ユーザーオブジェクトから名前を取得
+      if (userDataStr) {
+        try {
+          const userObj = JSON.parse(userDataStr);
+          setUserName(userObj.username || userObj.name || 'ユーザー');
+        } catch (e) {
+          setUserName('ユーザー');
+        }
+      }
+      console.log("✅ [Header] Auth Status: Logged In", { role: storedRole, name: userName });
     } else {
       setIsLoggedIn(false);
       setUserRole(null);
+      setUserName(null);
       console.log("ℹ️ [Header] Auth Status: Not Logged In");
     }
-  }, []);
+  }, [userName]);
 
   // 1. 初回マウント時にチェック
   // 2. ページ遷移 (pathname変更) ごとにチェックを実行
@@ -57,8 +68,6 @@ export default function Header() {
   const handleLogout = () => {
     if (confirm('ログアウトしますか？')) {
       logoutUser();
-      // 💡 logoutUser() 内で window.location.href が呼ばれるため、
-      // ここで setIsLoggedIn(false) を呼ぶ必要はありません（リロードされるため）
     }
   };
 
@@ -123,6 +132,11 @@ export default function Header() {
                 }}>
                   {userRole === 'adult' ? 'ADULT' : '一般'}
                 </span>
+
+                {/* 🚀 ユーザー名表示 */}
+                <span style={{ color: '#fff', fontSize: '0.9em', fontWeight: '500' }}>
+                  {userName} 様
+                </span>
                 
                 <Link href="/mypage" style={{ color: '#eee', textDecoration: 'none', fontSize: '0.9em' }}>マイページ</Link>
                 
@@ -165,7 +179,11 @@ export default function Header() {
           <p className={styles.sectionTitle}>Account</p>
           {isLoggedIn ? (
             <>
-              <div style={{ padding: '10px 0', color: '#fff', display: 'flex', justifyContent: 'space-between' }}>
+              {/* 🚀 スマホ版ユーザー名表示 */}
+              <div style={{ padding: '5px 0', color: siteColor, fontWeight: 'bold', fontSize: '1.1em' }}>
+                👤 {userName} 様
+              </div>
+              <div style={{ padding: '10px 0', color: '#fff', display: 'flex', justifyContent: 'space-between', fontSize: '0.9em' }}>
                 <span>ステータス:</span>
                 <span style={{ color: userRole === 'adult' ? '#ff4d4f' : '#52c41a' }}>{userRole === 'adult' ? 'ADULT' : '一般会員'}</span>
               </div>

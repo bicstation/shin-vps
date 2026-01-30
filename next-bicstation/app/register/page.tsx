@@ -1,10 +1,9 @@
-"use client"; // 🚀 1行目に追加
+"use client"; // 🚀 クライアントサイドでの動作を指定
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { registerUser } from '../../lib/auth';
-import { getSiteMetadata } from '../../utils/siteConfig'; // 🚀 プレフィックス取得用に追加
 
 export default function RegisterPage() {
   const [username, setUsername] = useState<string>('');
@@ -15,100 +14,147 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
+  // 💡 サブパス（/bicstationなど）を管理
+  const [basePath, setBasePath] = useState("");
+
+  useEffect(() => {
+    // 実行環境のURLからサブパスがあるか判定
+    const currentPath = window.location.pathname;
+    const hasSubPath = currentPath.startsWith('/bicstation');
+    setBasePath(hasSubPath ? '/bicstation' : '');
+  }, []);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
 
-    // パスワード一致チェック
+    // 入力バリデーション（一般ユーザー向けに分かりやすく）
     if (password !== confirmPassword) {
-      setError('パスワードが一致しません。');
+      setError('入力されたパスワードが一致しません。もう一度ご確認ください。');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('パスワードは8文字以上で設定してください。');
       return;
     }
 
     setLoading(true);
 
     try {
-      // 🚀 lib/auth.ts の registerUser を呼び出す
+      // 🚀 lib/auth.ts の registerUser を呼び出し（内部でAPIドメインを切り替え）
       await registerUser(username, email, password);
 
-      // 🚀 登録成功後のリダイレクト先を動的に決定
-      // window.location.pathname から "/bicstation" などを抽出
-      const pathSegments = window.location.pathname.split('/').filter(Boolean);
-      const sitePrefix = pathSegments.length > 0 ? `/${pathSegments[0]}` : '';
-      const loginPath = `${sitePrefix}/login`;
+      alert('会員登録ありがとうございます！ログイン画面からログインしてください。');
 
-      alert('会員登録が完了しました！ログインしてください。');
-
-      // 登録後はログイン不要で自動遷移させる場合も多いですが、
-      // 一旦ログイン画面へ飛ばす場合は href を使ってリフレッシュさせるのが確実です。
-      window.location.href = loginPath;
+      // 💡 ログイン画面へリダイレクト（環境に合わせて自動判別）
+      const loginUrl = `${window.location.origin}${basePath}/login`;
+      window.location.href = loginUrl;
 
     } catch (err: any) {
-      setError(err.message || '登録に失敗しました。');
+      // サーバーからのエラーメッセージを親切に表示
+      setError(err.message || '登録処理中にエラーが発生しました。時間を置いて再度お試しください。');
     } finally {
       setLoading(false);
     }
   };
 
-  // 🚀 表示用のログインリンクもプレフィックスを考慮
-  const { site_prefix } = getSiteMetadata();
-  const loginHref = site_prefix ? `${site_prefix}/login` : '/login';
+  // 💡 ログインページへのリンクを動的に生成
+  const loginHref = `${basePath}/login`;
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px', fontFamily: 'sans-serif' }}>
-      <h1 style={{ textAlign: 'center', fontSize: '1.5rem', marginBottom: '20px' }}>会員登録</h1>
+    <div style={{ 
+      maxWidth: '440px', 
+      margin: '60px auto', 
+      padding: '32px', 
+      border: '1px solid #eaeaea', 
+      borderRadius: '16px', 
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+      backgroundColor: '#fff'
+    }}>
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: '#111', marginBottom: '8px' }}>
+          新規会員登録
+        </h1>
+        <p style={{ color: '#666', fontSize: '0.9rem' }}>
+          アカウントを作成してサービスを開始しましょう。
+        </p>
+      </div>
       
       {error && (
-        <div style={{ color: '#d9534f', backgroundColor: '#f2dede', padding: '10px', marginBottom: '20px', borderRadius: '4px', fontSize: '0.9rem' }}>
+        <div style={{ 
+          color: '#e53e3e', 
+          backgroundColor: '#fff5f5', 
+          padding: '12px 16px', 
+          marginBottom: '24px', 
+          borderRadius: '8px', 
+          fontSize: '0.85rem',
+          border: '1px solid #feb2b2',
+          lineHeight: '1.5'
+        }}>
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>ユーザー名</label>
+        {/* ユーザー名 */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.9rem', color: '#333' }}>
+            ユーザー名
+          </label>
           <input
             type="text"
             value={username}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
             required
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '4px' }}
-            placeholder="例: bic_taro"
+            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+            placeholder="例: tanaka_taro"
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>メールアドレス</label>
+        {/* メールアドレス */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.9rem', color: '#333' }}>
+            メールアドレス
+          </label>
           <input
             type="email"
             value={email}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             required
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '4px' }}
+            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
             placeholder="example@mail.com"
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>パスワード</label>
+        {/* パスワード */}
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.9rem', color: '#333' }}>
+            パスワード
+          </label>
           <input
             type="password"
             value={password}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             required
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '4px' }}
-            placeholder="8文字以上"
+            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+            placeholder="8文字以上で入力"
           />
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>パスワード（確認）</label>
+        {/* パスワード（確認） */}
+        <div style={{ marginBottom: '24px' }}>
+          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.9rem', color: '#333' }}>
+            パスワード（確認用）
+          </label>
           <input
             type="password"
             value={confirmPassword}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
             required
-            style={{ width: '100%', padding: '10px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '4px' }}
+            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+            placeholder="もう一度入力してください"
           />
         </div>
 
@@ -117,26 +163,27 @@ export default function RegisterPage() {
           disabled={loading}
           style={{
             width: '100%',
-            padding: '12px',
-            backgroundColor: loading ? '#ccc' : '#0070f3',
+            padding: '14px',
+            backgroundColor: loading ? '#a0aec0' : '#0070f3',
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
+            borderRadius: '8px',
             cursor: loading ? 'not-allowed' : 'pointer',
             fontWeight: 'bold',
-            fontSize: '1rem'
+            fontSize: '1rem',
+            transition: 'background-color 0.2s ease'
           }}
         >
-          {loading ? '登録中...' : 'アカウントを作成する'}
+          {loading ? '処理中...' : '無料でお試しを開始する'}
         </button>
       </form>
 
-      <p style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.9rem' }}>
-        すでにアカウントをお持ちですか？{' '}
+      <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '0.9rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '24px' }}>
+        すでにアカウントをお持ちの方は{' '}
         <Link href={loginHref} style={{ color: '#0070f3', textDecoration: 'none', fontWeight: 'bold' }}>
           ログイン
         </Link>
-      </p>
+      </div>
     </div>
   );
 }
