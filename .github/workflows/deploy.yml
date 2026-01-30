@@ -25,6 +25,15 @@ jobs:
           port: 2222
           source: "." 
           target: "/home/maya/shin-vps"
+          
+          exclude: |
+            .git
+            .github
+            .venv
+            __pycache__
+            node_modules
+          
+
           strip_components: 0
           overwrite: true
 
