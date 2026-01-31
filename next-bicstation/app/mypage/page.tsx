@@ -15,7 +15,7 @@ import {
   ChevronRight, LayoutDashboard, User, Settings, LogOut, ShieldCheck,
   TrendingUp, Clock, Shield
 } from 'lucide-react';
-import { logoutUser } from '../../lib/auth';
+import { logoutUser } from '../shared/auth';
 
 // --- 型定義 ---
 interface UserProfile {

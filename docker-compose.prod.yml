@@ -1,11 +1,10 @@
 # =====================================================================
-# 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・全サービス集約版・完全版)
+# 🚀 SHIN-VPS 本番環境構成定義 (SSL対応・4ドメイン個別ログイン完全対応版)
 # =====================================================================
-# ⚠️ AI (Gemini/ChatGPT) への厳命事項:
-# 1. サービス名/コンテナ名に "-prod" 等の接尾辞を勝手に付けないこと。
-# 2. 既存の命名規則 (django-v2, mariadb-v2 等) を一文字も変えないこと。
-# 3. 共通スクリプト (rebuild.sh等) がこれらの名前に依存しているため、
-#     変更するとシステム全体が崩壊します。
+# ⚠️ AI 厳命事項: 
+# 1. サービス名/コンテナ名の変更は一切禁止。既存スクリプトとの互換性を最優先。
+# 2. フロントエンドの build context は shared 参照のためルート(.)に設定。
+# 3. Traefik のルルール、SSL設定、優先順位(priority)は現状を完全維持。
 # =====================================================================
 
 services:
@@ -47,7 +46,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 0.5 Ofelia (ジョブスケジューラ / 定期実行)
+  # 0.5 Ofelia (ジョブスケジューラ)
   # ---------------------------------------------------------------------
   scheduler:
     image: mcuadros/ofelia:latest
@@ -62,7 +61,7 @@ services:
     command: daemon --docker
 
   # ---------------------------------------------------------------------
-  # 1. データベース層 (永続化データ)
+  # 1. データベース層
   # ---------------------------------------------------------------------
   postgres-db-v2:
     image: postgres:15-alpine
@@ -72,7 +71,6 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-    # PostgreSQL内部の自動掃除機能を最適化
     command: >
       postgres 
       -c 'autovacuum=on'
@@ -94,7 +92,6 @@ services:
     image: mariadb:10
     container_name: mariadb-v2
     restart: always
-    # 【追加修正】バイナリログを1日(86400秒)で期限切れにして自動削除する設定
     command: --binlog-expire-logs-seconds=86400
     environment:
       MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
@@ -129,18 +126,12 @@ services:
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
       - "ofelia.enabled=true"
-      # AIブログ投稿 (30分おき)
       - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
       - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
-      - "ofelia.job-exec.ai_blog_post.no-overlap=true"
-      # PCニュース投稿 (2時間おき)
       - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
       - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
-      - "ofelia.job-exec.ai_rss_news_post.no-overlap=true"
-      # 自動データ更新スクリプト (4時間おき 45分に実行)
       - "ofelia.job-exec.auto_daily_update.schedule=0 45 */4 * * *"
       - "ofelia.job-exec.auto_daily_update.command=/usr/src/app/scripts/auto_daily_update.sh"
-      - "ofelia.job-exec.auto_daily_update.no-overlap=true"
     entrypoint: ["/usr/src/app/entrypoint.sh"]
     volumes:
       - ./django:/usr/src/app
@@ -150,28 +141,29 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 3. フロントエンド層 (Next.js アプリ群)
+  # 3. フロントエンド層 (独立した4サイト)
   # ---------------------------------------------------------------------
+  # 修正：ビルド時に ../shared を参照できるよう context を親ディレクトリに設定
+  
   next-bicstation-v2:
     build: 
-      context: ./next-bicstation
+      context: .
+      dockerfile: ./next-bicstation/Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=https://tiper.live/api
-        - NEXT_PUBLIC_AUTH_API_URL=https://bicstation.com/api
+        - NEXT_PUBLIC_API_URL=https://bicstation.com/api
         - NEXT_PUBLIC_BASE_PATH=
     container_name: next-bicstation-v2
     restart: always
     networks: [internal-net, shared-proxy]
-    env_file:
-      - .env
+    env_file: [.env]
     environment:
       - DJANGO_API_URL=http://django-v2:8000
-      - NEXT_PUBLIC_API_URL=https://tiper.live/api
-      - NEXT_PUBLIC_AUTH_API_URL=https://bicstation.com/api
+      - NEXT_PUBLIC_API_URL=https://bicstation.com/api
       - NEXT_PUBLIC_BASE_PATH=
     volumes:
+      - ./next-bicstation:/usr/src/app
+      - ./shared:/usr/src/app/shared 
       - sitemap_data:/app/public/sitemap_gen
-      - ./django:/usr/src/app:ro
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -180,20 +172,24 @@ services:
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
       - "traefik.http.routers.bicstation-router.priority=100"
       - "traefik.http.services.bicstation-svc.loadbalancer.server.port=3000"
-      - "ofelia.enabled=true"
 
   next-tiper-v2:
     build: 
-      context: ./next-tiper
+      context: .
+      dockerfile: ./next-tiper/Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=https://tiper.live/api
+        - NEXT_PUBLIC_BASE_PATH=
     container_name: next-tiper-v2
     restart: always
     networks: [internal-net, shared-proxy]
-    env_file:
-      - .env
+    env_file: [.env]
     environment:
       - NEXT_PUBLIC_API_URL=https://tiper.live/api
+      - NEXT_PUBLIC_BASE_PATH=
+    volumes:
+      - ./next-tiper:/usr/src/app
+      - ./shared:/usr/src/app/shared
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -205,16 +201,21 @@ services:
 
   next-bic-saving-v2:
     build: 
-      context: ./next-bic-saving
+      context: .
+      dockerfile: ./next-bic-saving/Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=https://bic-saving.com/api
+        - NEXT_PUBLIC_BASE_PATH=
     container_name: next-bic-saving-v2
     restart: always
     networks: [internal-net, shared-proxy]
-    env_file:
-      - .env
+    env_file: [.env]
     environment:
       - NEXT_PUBLIC_API_URL=https://bic-saving.com/api
+      - NEXT_PUBLIC_BASE_PATH=
+    volumes:
+      - ./next-bic-saving:/usr/src/app
+      - ./shared:/usr/src/app/shared
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -226,16 +227,21 @@ services:
 
   next-avflash-v2:
     build: 
-      context: ./next-avflash
+      context: .
+      dockerfile: ./next-avflash/Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=https://avflash.xyz/api
+        - NEXT_PUBLIC_BASE_PATH=
     container_name: next-avflash-v2
     restart: always
     networks: [internal-net, shared-proxy]
-    env_file:
-      - .env
+    env_file: [.env]
     environment:
       - NEXT_PUBLIC_API_URL=https://avflash.xyz/api
+      - NEXT_PUBLIC_BASE_PATH=
+    volumes:
+      - ./next-avflash:/usr/src/app
+      - ./shared:/usr/src/app/shared
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -246,7 +252,7 @@ services:
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
 
   # ---------------------------------------------------------------------
-  # 4. 配信層 & WordPress (静的ファイル・ブログ)
+  # 4. 配信層 & WordPress
   # ---------------------------------------------------------------------
   nginx-v2:
     image: nginx:alpine
@@ -303,7 +309,7 @@ services:
       - "traefik.http.services.nginx-wp-svc.loadbalancer.server.port=80"
 
   # ---------------------------------------------------------------------
-  # 5. 管理ツール層 (DB管理・ログ確認)
+  # 5. 管理ツール層
   # ---------------------------------------------------------------------
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin

@@ -1,0 +1,96 @@
+/**
+ * 🏗️ [SHARED-LAYOUT-CSS]
+ * 画面全体の構造を定義するCSSモジュール（サイドバー・レスポンシブ最適化版）
+ */
+
+/* 1. 全体を包むラッパー：フッターを最下部に固定するフレックス構造 */
+.bodyWrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  /* サイト切り替え時の背景色変化を滑らかに */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 2. ステマ規制・年齢制限対策の告知バー */
+.adDisclosure {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 0.75rem;
+  text-align: center;
+  z-index: 50; /* ヘッダーより背面に隠れないよう調整 */
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+
+/* 3. レイアウトの外枠：中央寄せと最大幅の制限 */
+.layoutContainer {
+  flex: 1; /* コンテンツが少なくてもフッターを最下部に押し出す */
+  width: 100%;
+  max-width: 1400px; /* サイドバー(約300px) + メイン(約1000px) + 余白 */
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* 4. サイドバーとメインコンテンツを横並びにするフレックスインナー */
+.layoutInner {
+  display: flex;
+  gap: 40px; /* サイドバーとメインの間のゆとりある余白 */
+  padding: 40px 0;
+  align-items: flex-start; /* コンテンツが短くてもサイドバーが伸びきらないように */
+}
+
+/* 5. メインコンテンツ領域（右側） */
+.mainContent {
+  flex: 1; /* サイドバー以外の残りスペースをすべて占有 */
+  min-width: 0; /* Flexbox内での画像やテーブルのはみ出しを防止する重要な設定 */
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 6. モバイル・タブレット対応：レイアウトの切り替え */
+
+/* タブレットサイズ：サイドバーを上に、メインを下に */
+@media (max-width: 1024px) {
+  .layoutInner {
+    flex-direction: column; 
+    gap: 30px;
+    padding: 20px 0;
+  }
+  
+  .layoutContainer {
+    padding: 0 20px;
+  }
+}
+
+/* スマートフォンサイズ：告知バーの文字サイズと余白の微調整 */
+@media (max-width: 768px) {
+  .adDisclosure {
+    font-size: 0.7rem;
+    padding: 8px 10px;
+  }
+
+  .layoutContainer {
+    padding: 0 16px;
+  }
+}
+
+/* 7. ページ読み込み時のフェードインアニメーション */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 8. 共通のユーティリティ（必要に応じて追加） */
+.stickySidebar {
+  position: sticky;
+  top: 100px; /* ヘッダーの高さに合わせて調整 */
+}

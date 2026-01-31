@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-
+"use client";
 /**
  * ✅ 爆速の鍵: ISR (Incremental Static Regeneration)
  * 1時間（3600秒）ごとにバックグラウンドで再生成。

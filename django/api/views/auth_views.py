@@ -11,15 +11,33 @@ from api.serializers import UserSerializer
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
+def get_current_site_group(request):
+    """
+    ミドルウェアが判定した site_type に基づき、
+    ユーザーが所属すべきグループ ('general' または 'adult') を返す内部関数。
+    """
+    site_type = getattr(request, 'site_type', 'station')
+    # adult系ドメイン・パスの場合は 'adult' グループ、それ以外（station/saving）は 'general'
+    if site_type == 'adult':
+        return 'adult'
+    else:
+        return 'general'
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
+    """
+    ユーザー登録。アクセス元のドメイン/パスに基づき、
+    自動的に 'general' または 'adult' のグループ属性を付与する。
+    """
     username = request.data.get('username')
     email = request.data.get('email')
     password = request.data.get('password')
-    site_group = request.data.get('site_group', 'general')
-    origin_domain = request.data.get('origin_domain', '')
+    
+    # 💡 ミドルウェアの判定から所属グループを自動決定（クライアント側の申告を信用しない）
+    current_group = get_current_site_group(request)
+    origin_domain = request.get_host()
 
     if not username or not password or not email:
         return Response({"detail": "ユーザー名、メールアドレス、パスワードは必須です。"}, status=status.HTTP_400_BAD_REQUEST)
@@ -28,17 +46,18 @@ def register_view(request):
         return Response({"detail": "このユーザー名は既に存在します。"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
+        # Userモデルの site_group フィールドに現在のグループをセットして作成
         user = User.objects.create_user(
             username=username,
             email=email,
             password=password,
-            site_group=site_group,
+            site_group=current_group,
             origin_domain=origin_domain
         )
         serializer = UserSerializer(user)
-        logger.info(f"New user created: {username}")
+        logger.info(f"New {current_group} user created: {username} via {origin_domain}")
         return Response({
-            "message": "User registered successfully",
+            "message": f"Successfully registered to {current_group} group.",
             "user": serializer.data
         }, status=status.HTTP_201_CREATED)
     except Exception as e:
@@ -50,13 +69,32 @@ def register_view(request):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def login_view(request):
+    """
+    ログイン処理。認証後、ユーザーの所属グループ(site_group)が
+    現在のアクセス環境と一致するかを厳密にチェックする。
+    """
     username = request.data.get('username')
     password = request.data.get('password')
     
-    logger.info(f"Login attempt for user: {username}")
+    # 現在のドメインが要求するグループ
+    current_group = get_current_site_group(request)
+    
+    logger.info(f"Login attempt for user: {username} on group: {current_group}")
     user = authenticate(request, username=username, password=password)
     
     if user is not None:
+        # 💡 ユーザーの所属グループと、現在アクセスしているサイトのグループが一致するか検証
+        user_site_group = getattr(user, 'site_group', 'general')
+        
+        if user_site_group != current_group:
+            logger.warning(f"Cross-site login blocked: User '{username}' (Group:{user_site_group}) tried to login on {current_group} site.")
+            return Response({
+                "status": "error",
+                "hasAccess": False,
+                "error": "このアカウントは現在のサイトでは利用できません（グループが異なります）。"
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        # グループが一致すればログインを許可
         login(request, user)
         serializer = UserSerializer(user, context={'request': request})
         return Response({
@@ -70,16 +108,22 @@ def login_view(request):
             "status": "error",
             "hasAccess": False,
             "error": "ユーザー名またはパスワードが正しくありません。"
-        }, status=401)
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
 def logout_view(request):
+    """
+    ログアウト処理。
+    """
     logout(request)
     return Response({"message": "Successfully logged out", "status": "success"})
 
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def get_user_view(request):
+    """
+    ログイン中のユーザー情報取得および更新。
+    """
     user = request.user
     if request.method == 'GET':
         serializer = UserSerializer(user)

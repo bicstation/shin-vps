@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import styles from "./layout.module.css"; // ✅ CSSモジュールのインポート
+// ✅ shared へのパスを ../../ に修正
+import "../../shared/globals.css"; 
+import styles from "./layout.module.css";
 
-// ✅ パス・エイリアス (@/) を使用してインポート
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+// ✅ 共通設定ライブラリ
+import { getSiteMetadata, getSiteColor } from "../../shared/siteConfig";
 
-// ✅ AIチャットコンシェルジュコンポーネントをインポート
-import ChatBot from "@/components/common/ChatBot";
+// ✅ 共通コンポーネント (shared)
+import Header from "../../shared/layout/Header";
+import Footer from "../../shared/layout/Footer";
+import Sidebar from "../../shared/layout/Sidebar";
+import ChatBot from "../../shared/components/ChatBot";
 
-// ✅ 共通カラー設定をインポート
-import { COLORS } from "@/constants";
+// ✅ プロジェクト内コンポーネント (app/components/)
+import ClientStyles from "../components/ClientStyles";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -63,7 +66,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: COLORS?.SITE_COLOR || "#007bff",
+  themeColor: "#007bff",
 };
 
 export default function RootLayout({
@@ -71,34 +74,34 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const site = getSiteMetadata();
+  const themeColor = getSiteColor(site.site_name);
+
   return (
     <html lang="ja">
       <body
         className={`${inter.className} ${styles.bodyWrapper}`}
         style={{
-          backgroundColor: COLORS?.BACKGROUND || "#f4f7f9",
+          backgroundColor: "#f4f7f9",
+          color: "#333",
         }}
       >
-        {/* 全ページ共通ヘッダー */}
         <Header />
-
-        {/* ⚖️ ステマ規制対策：PR表記 */}
         <div className={styles.adDisclosure}>
           本サイトはアフィリエイト広告（広告・宣伝）を利用しています
         </div>
-
-        {/* 🚩 メインコンテンツ
-          flexGrow: 1 により、コンテンツが少ないページでもフッターが最下部に固定されます
-        */}
-        <main className={styles.mainContainer}>
-          {children}
-        </main>
-
-        {/* 全ページ共通フッター */}
+        <div className={styles.layoutContainer}>
+          <div className={styles.layoutInner}>
+            <Sidebar />
+            <main className={styles.mainContent}>
+              {children}
+            </main>
+          </div>
+        </div>
         <Footer />
-
-        {/* ✅ AIチャットコンシェルジュ */}
         <ChatBot />
+        {/* 💡 クライアント側で実行するスタイル注入 */}
+        <ClientStyles themeColor={themeColor} />
       </body>
     </html>
   );

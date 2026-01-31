@@ -1,33 +1,43 @@
 /**
  * =====================================================================
- * 💡 SHIN-VPS API サービス層 (lib/api.ts) - 統合版
+ * 💡 SHIN-VPS 統合 API サービス層 (shared/api.ts)
  * WordPress(bicstation) & Django(pc-products) 統合データアクセス層
+ * ---------------------------------------------------------------------
+ * 1. 環境判定（Server vs Client）による通信先の自動切り替え
+ * 2. サイト判定（site_group）によるデータの自動フィルタリング
+ * 3. ローカル（localhost）と本番（VPS）の完全両対応
  * =====================================================================
  */
+
+import { getSiteMetadata } from './siteConfig';
 
 const IS_SERVER = typeof window === 'undefined';
 
 /**
  * 🔗 WordPress API 設定
+ * サーバーサイドなら Docker コンテナ名、クライアントサイドなら localhost 経由
  */
 const getWpConfig = () => {
+    const { site_prefix } = getSiteMetadata();
+    
     if (IS_SERVER) {
         // Next.jsサーバー内部（Dockerネットワーク）からの通信
         return {
             baseUrl: 'http://nginx-wp-v2', 
-            host: 'localhost:8083' // WP_HOME / WP_SITEURL と一致させる
+            host: 'localhost:8083' // WordPress側のドメイン設定と一致させる
         };
     }
     // クライアントサイド（ブラウザ）からの通信
     return {
-        baseUrl: 'http://localhost:8083/blog',
+        // site_prefix (例: /tiper) がある場合はそれを考慮
+        baseUrl: `http://localhost:8083${site_prefix}/blog`,
         host: 'localhost:8083'
     };
 };
 
 /**
  * 🔗 Django API 設定
- * 環境変数 NEXT_PUBLIC_API_URL を活用。デバッグログを追加。
+ * 環境変数 NEXT_PUBLIC_API_URL を活用し、末尾の /api を除去したベースURLを返却
  */
 const getDjangoBaseUrl = () => {
     if (IS_SERVER) {
@@ -35,19 +45,17 @@ const getDjangoBaseUrl = () => {
         return 'http://django-v2:8000';
     }
 
-    // ブラウザ側実行時：環境変数のチェック
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
     
-    // 🔍 コンソールに環境変数の値を表示（デバッグ用）
     if (envUrl) {
-        const formattedUrl = envUrl.replace(/\/api$/, '');
-        console.log(`[API DEBUG] NEXT_PUBLIC_API_URL detected: ${envUrl}`);
-        console.log(`[API DEBUG] Using Base URL: ${formattedUrl}`);
+        // 末尾の /api を削ってベースURLにする
+        const formattedUrl = envUrl.replace(/\/api$/, '').replace(/\/$/, '');
+        console.log(`[API DEBUG] Base URL: ${formattedUrl}`);
         return formattedUrl;
     }
 
-    // 環境変数が読み込めていない場合の警告とフォールバック
-    console.warn(`[API DEBUG] NEXT_PUBLIC_API_URL is undefined! Check your .env file.`);
+    // 環境変数がない場合のフォールバック
+    console.warn(`[API DEBUG] NEXT_PUBLIC_API_URL is undefined!`);
     return 'http://localhost:8083';
 };
 
@@ -85,19 +93,19 @@ export interface PCProduct {
     radar_chart?: RadarChartData[]; // 5軸チャート用データ
 }
 
-/**
- * ✨ メーカーと製品数の型定義
- */
 export interface MakerCount {
     maker: string;
     count: number;
 }
+
+// --- WordPress API 関数 ---
 
 /**
  * 📝 [WordPress] 記事一覧取得
  */
 export async function fetchPostList(perPage = 12, offset = 0) {
     const { baseUrl, host } = getWpConfig();
+    // bicstation カスタムポストタイプを使用
     const url = `${baseUrl}/wp-json/wp/v2/bicstation?_embed&per_page=${perPage}&offset=${offset}`;
 
     try {
@@ -149,9 +157,10 @@ export async function fetchPostData(slug: string) {
     }
 }
 
+// --- Django API 関数 ---
+
 /**
- * 💻 [Django API] 商品一覧取得 (PCファインダー対応拡張版)
- * デバッグログを追加し、リクエストURLを可視化。
+ * 💻 [Django API] 商品一覧取得 (サイトフィルター自動適用版)
  */
 export async function fetchPCProducts(
     maker = '', 
@@ -165,15 +174,19 @@ export async function fetchPCProducts(
     type = ''       // 🏗️ 筐体タイプ
 ) {
     const rootUrl = getDjangoBaseUrl();
+    const { site_group } = getSiteMetadata(); // サイトグループ (adult/general) を取得
     const params = new URLSearchParams();
     
+    // サイトグループに基づいてデータをフィルタリング
+    params.append('site_group', site_group);
+
     // 基本パラメータ
     if (maker) params.append('maker', maker); 
     if (attribute) params.append('attribute', attribute);
     params.append('limit', limit.toString());
     params.append('offset', offset.toString());
 
-    // 🚀 PCファインダー用の新規パラメータ
+    // PCファインダー用パラメータ
     if (budget) params.append('budget', budget);
     if (ram) params.append('ram', ram);
     if (npu) params.append('npu', 'true');
@@ -181,8 +194,6 @@ export async function fetchPCProducts(
     if (type && type !== 'all') params.append('type', type);
 
     const url = `${rootUrl}/api/pc-products/?${params.toString()}`;
-    
-    // 🚀 実行URLをコンソールに表示
     console.log(`[API CALL fetchPCProducts]: ${url}`);
     
     try {
@@ -227,11 +238,12 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
 }
 
 /**
- * 💻 [Django API] 関連商品の取得
+ * 💻 [Django API] 関連商品の取得 (同一サイトグループ内)
  */
 export async function fetchRelatedProducts(maker: string, excludeId: string, limit = 4) {
     const rootUrl = getDjangoBaseUrl();
-    const url = `${rootUrl}/api/pc-products/?maker=${maker}&limit=${limit + 1}`;
+    const { site_group } = getSiteMetadata();
+    const url = `${rootUrl}/api/pc-products/?maker=${maker}&site_group=${site_group}&limit=${limit + 1}`;
 
     try {
         const res = await fetch(url, { 
@@ -255,7 +267,7 @@ export async function fetchRelatedProducts(maker: string, excludeId: string, lim
 }
 
 /**
- * 💻 [Django API] メーカー一覧取得 (製品数カウント付き)
+ * 💻 [Django API] メーカー一覧取得
  */
 export async function fetchMakers(): Promise<MakerCount[]> {
     const rootUrl = getDjangoBaseUrl();
@@ -276,11 +288,12 @@ export async function fetchMakers(): Promise<MakerCount[]> {
 }
 
 /**
- * 🚀 [Django API] ランキング取得 (AI解析スコア順)
+ * 🚀 [Django API] ランキング取得 (AI解析スコア順 + サイトグループ考慮)
  */
 export async function fetchPCProductRanking(): Promise<PCProduct[]> {
     const rootUrl = getDjangoBaseUrl();
-    const url = `${rootUrl}/api/pc-products/ranking/`;
+    const { site_group } = getSiteMetadata();
+    const url = `${rootUrl}/api/pc-products/ranking/?site_group=${site_group}`;
 
     try {
         const res = await fetch(url, {
@@ -302,11 +315,12 @@ export async function fetchPCProductRanking(): Promise<PCProduct[]> {
 }
 
 /**
- * 🔥 [Django API] 注目度ランキング取得 (PV数ベース)
+ * 🔥 [Django API] 注目度ランキング取得 (PV数ベース + サイトグループ考慮)
  */
 export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
     const rootUrl = getDjangoBaseUrl();
-    const url = `${rootUrl}/api/pc-products/popularity-ranking/`;
+    const { site_group } = getSiteMetadata();
+    const url = `${rootUrl}/api/pc-products/popularity-ranking/?site_group=${site_group}`;
 
     try {
         const res = await fetch(url, {

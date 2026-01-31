@@ -1,5 +1,5 @@
 # =====================================================================
-# 🏠 SHIN-VPS ローカル開発・統合環境 (完全絶対パス・安定運用版)
+# 🏠 SHIN-VPS ローカル開発・統合環境 (4ドメイン・ログイン完全対応版)
 # =====================================================================
 
 services:
@@ -58,7 +58,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
-      - "traefik.http.routers.django-v2-router.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.django-v2-router.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/bicstation/api`) || PathPrefix(`/saving/api`) || PathPrefix(`/tiper/api`) || PathPrefix(`/avflash/api`))"
       - "traefik.http.routers.django-v2-router.entrypoints=web"
       - "traefik.http.routers.django-v2-router.priority=2000"
       - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
@@ -76,22 +76,20 @@ services:
               capabilities: [gpu]
 
   # --- 3. フロントエンド層 (Next.js 4サイト) ---
+  # build context をプロジェクトルート(.)に変更し、Dockerfileの位置を指定することで shared を参照可能に修正
+
   next-bicstation-v2:
     build: 
-      context: ./next-bicstation
+      context: .
+      dockerfile: ./next-bicstation/Dockerfile
       args: 
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/bicstation
-        - NEXT_PUBLIC_API_URL=http://localhost:8083/api
-        - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8083/api
+        - NEXT_PUBLIC_API_URL=http://localhost:8083/bicstation/api
     container_name: next-bicstation-v2
     restart: always
-    env_file:
-      - .env
-    environment:
-      - DJANGO_API_URL=http://django-v2:8000
-    networks: 
-      - internal-net
+    env_file: [.env]
+    networks: [internal-net]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
@@ -99,17 +97,22 @@ services:
       - "traefik.http.routers.bic-v2-router.entrypoints=web"
       - "traefik.http.routers.bic-v2-router.priority=100"
       - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
+    volumes:
+      - ./next-bicstation:/usr/src/app
+      - ./shared:/usr/src/app/shared
 
   next-tiper-v2:
     build: 
-      context: ./next-tiper
+      context: .
+      dockerfile: ./next-tiper/Dockerfile
       args: 
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/tiper
+        - NEXT_PUBLIC_API_URL=http://localhost:8083/tiper/api
     container_name: next-tiper-v2
     restart: always
-    networks: 
-      - internal-net
+    env_file: [.env]
+    networks: [internal-net]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
@@ -117,17 +120,22 @@ services:
       - "traefik.http.routers.tiper-v2-router.entrypoints=web"
       - "traefik.http.routers.tiper-v2-router.priority=100"
       - "traefik.http.services.tiper-v2-svc.loadbalancer.server.port=3000"
+    volumes:
+      - ./next-tiper:/usr/src/app
+      - ./shared:/usr/src/app/shared
 
   next-bic-saving-v2:
     build: 
-      context: ./next-bic-saving
+      context: .
+      dockerfile: ./next-bic-saving/Dockerfile
       args: 
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/saving
+        - NEXT_PUBLIC_API_URL=http://localhost:8083/saving/api
     container_name: next-bic-saving-v2
     restart: always
-    networks: 
-      - internal-net
+    env_file: [.env]
+    networks: [internal-net]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
@@ -135,17 +143,22 @@ services:
       - "traefik.http.routers.saving-v2-router.entrypoints=web"
       - "traefik.http.routers.saving-v2-router.priority=100"
       - "traefik.http.services.saving-v2-svc.loadbalancer.server.port=3000"
+    volumes:
+      - ./next-bic-saving:/usr/src/app
+      - ./shared:/usr/src/app/shared
 
   next-avflash-v2:
     build: 
-      context: ./next-avflash
+      context: .
+      dockerfile: ./next-avflash/Dockerfile
       args: 
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/avflash
+        - NEXT_PUBLIC_API_URL=http://localhost:8083/avflash/api
     container_name: next-avflash-v2
     restart: always
-    networks: 
-      - internal-net
+    env_file: [.env]
+    networks: [internal-net]
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
@@ -153,6 +166,9 @@ services:
       - "traefik.http.routers.avflash-v2-router.entrypoints=web"
       - "traefik.http.routers.avflash-v2-router.priority=100"
       - "traefik.http.services.avflash-v2-svc.loadbalancer.server.port=3000"
+    volumes:
+      - ./next-avflash:/usr/src/app
+      - ./shared:/usr/src/app/shared
 
   # --- 4. WordPress & 静的配信層 ---
   nginx-wp-v2:

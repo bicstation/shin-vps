@@ -1,0 +1,79 @@
+/**
+ * 🏗️ [TIPER-LIVE-LAYOUT-CSS]
+ * アダルト・クリエイター支援サイト専用構造
+ */
+
+/* 1. 全体を包むラッパー */
+.bodyWrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* 2. 告知・年齢制限バー */
+.adDisclosure {
+  width: 100%;
+  padding: 8px 15px;
+  font-size: 11px;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #94a3b8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  letter-spacing: 0.05em;
+}
+
+.ageLimit {
+  margin-left: 10px;
+  color: #f43f5e; /* 警告用の赤ピンク */
+  font-weight: bold;
+}
+
+/* 3. レイアウトの外枠 */
+.layoutContainer {
+  flex: 1;
+  width: 100%;
+  max-width: 1400px; /* 動画コンテンツを考慮した広め設計 */
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* 4. サイドバーとメインを横並びにするインナー */
+.layoutInner {
+  display: flex;
+  gap: 32px;
+  padding: 32px 0;
+}
+
+/* 5. メインコンテンツ（吹きこぼれ防止） */
+.mainContent {
+  flex: 1;
+  min-width: 0; /* 💡 テーブルや動画プレイヤーの突き抜け防止 */
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* 6. モバイル対応 */
+@media (max-width: 1024px) {
+  .layoutInner {
+    flex-direction: column;
+    gap: 24px;
+    padding: 20px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .layoutContainer {
+    padding: 0 16px;
+  }
+  .adDisclosure {
+    font-size: 9px;
+  }
+}
+
+/* 7. ページフェードイン */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

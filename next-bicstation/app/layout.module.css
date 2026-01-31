@@ -1,11 +1,22 @@
+/**
+ * 🏗️ [BICSTATION-LAYOUT-CSS]
+ * PCカタログ・比較ポータル専用レイアウト構造
+ * コンテンツの「吹きこぼれ」を徹底的に防ぐ設計です。
+ */
+
+/* 1. 全体を包むラッパー：フッターを常に最下部へ */
 .bodyWrapper {
   margin: 0;
   padding: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* フォントのレンダリングを最適化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* 2. ステマ規制対策：PR表記（控えめかつ視認性確保） */
 .adDisclosure {
   background-color: transparent;
   font-size: 10px;
@@ -16,8 +27,70 @@
   letter-spacing: 0.05em;
   font-weight: 400;
   opacity: 0.8;
+  width: 100%;
 }
 
-.mainContainer {
-  flex-grow: 1;
+/* 3. レイアウトの外枠：画面中央寄せと最大幅の制限 */
+.layoutContainer {
+  flex: 1; /* コンテンツが少なくてもフッターを押し下げる */
+  width: 100%;
+  max-width: 1440px; /* PCスペック比較表を考慮し、ゆとりある幅に */
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* 4. サイドバーとメインを横並びにするインナー */
+.layoutInner {
+  display: flex;
+  gap: 32px; /* サイドバーとメインコンテンツの間の余白 */
+  padding: 32px 0;
+}
+
+/* 5. メインコンテンツ領域（右側） */
+.mainContent {
+  flex: 1;
+  min-width: 0; /* 💡 重要：Flex内の子要素（テーブル等）が親を突き破るのを防ぐ */
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 6. モバイル対応：レスポンシブ設定 */
+
+/* タブレットサイズ：サイドバーを上、メインを下に */
+@media (max-width: 1024px) {
+  .layoutInner {
+    flex-direction: column;
+    gap: 24px;
+    padding: 20px 0;
+  }
+}
+
+/* スマートフォンサイズ：余白の最小化 */
+@media (max-width: 768px) {
+  .layoutContainer {
+    padding: 0 16px;
+  }
+  
+  .adDisclosure {
+    font-size: 9px;
+    padding: 6px 4px;
+  }
+}
+
+/* 7. ページ読み込み時のフェードイン */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 吹きこぼれ防止用のユーティリティ（必要に応じてメイン要素に付与） */
+.noOverflow {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }

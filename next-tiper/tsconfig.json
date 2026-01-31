@@ -18,9 +18,21 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      // ✅ 自分のプロジェクト内を参照
+      "@/*": ["./*"],
+      // ✅ Dockerビルド時に内部へ物理コピーされる shared 用のパス
+      // Dockerfile の sed 処理で書き換えられる @shared/ エイリアスに対応
+      "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts", 
+    "**/*.ts", 
+    "**/*.tsx", 
+    ".next/types/**/*.ts",
+    // ✅ プロジェクト内にコピーされた shared フォルダをスキャン対象にする
+    "shared/**/*.ts",
+    "shared/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }

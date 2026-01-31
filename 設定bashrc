@@ -33,3 +33,27 @@ alias vps-logs='cd "$VPS_PATH" && docker compose logs -f --tail=50'
 
 # --- 便利な追加ショートカット ---
 alias vps-cd='cd "$VPS_PATH"'
+
+
+# --- Docker Compose エイリアス ---
+# 💡 修正ポイント: パスを引用符で囲み、docker-compose.yml を自動判定させるため -f 指定を外すか調>整
+alias vps-up='cd "$VPS_PATH" && docker compose up -d'
+alias vps-down='cd "$VPS_PATH" && docker compose down'
+alias vps-ps='cd "$VPS_PATH" && docker compose ps'
+alias vps-logs='cd "$VPS_PATH" && docker compose logs -f --tail=50'
+
+# --- 便利な追加ショートカット ---
+alias vps-cd='cd "$VPS_PATH"'
+
+
+# 基本：現在のディレクトリをL2で表示
+alias t2='tree -u -g -p -L 2'
+
+# 詳細：現在のディレクトリをL3まで表示
+alias t3='tree -u -g -p -L 3'
+
+# 逆引き：更新順に並べて表示（最近触ったファイルを確認する時に便利）
+alias trt='tree -u -g -p -L 2 -t'
+
+# ディレクトリのみ表示（ファイルが多くて邪魔な時用）
+alias td='tree -u -g -p -L 2 -d'
