@@ -1,60 +1,82 @@
-// E:\shin-vps\next-tiper\app\products\page.tsx
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getAdultProducts } from '../../lib/api'; // libへのパスを調整
-import ProductCard from '../components/ProductCard'; // app/components/ProductCard を参照
+import React from 'react';
+import { getAdultProducts } from '@shared/lib/api'; 
+// ✅ 共通の ProductCard を参照するように修正
+import ProductCard from '@shared/components/cards/AdultProductCard';
+import styles from './products.module.css'; // スタイルをCSS Modulesに分離
 
-export default async function ProductsPage() {
-  // 💡 API呼び出しに失敗しても画面が真っ白にならないようデフォルト値を設定
-  const data = await getAdultProducts({ limit: 20 }).catch(() => ({ results: [], next: null }));
+export const dynamic = 'force-dynamic';
+
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  // Next.js 15対応
+  const resolvedSearchParams = await searchParams;
+  const currentPage = Number(resolvedSearchParams.page) || 1;
+  const limit = 40; // 一覧ページなので多めに表示
+  const offset = (currentPage - 1) * limit;
+
+  // 💡 API呼び出し
+  const data = await getAdultProducts({ 
+    limit, 
+    offset, 
+    ordering: '-id' 
+  }).catch(() => ({ results: [], count: 0 }));
+
   const products = data?.results || [];
+  const totalCount = data?.count || 0;
+  const totalPages = Math.ceil(totalCount / limit);
 
   return (
-    <div style={{ padding: '40px 20px', backgroundColor: '#111122', minHeight: '100vh', color: 'white' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ 
-          marginBottom: '24px', 
-          fontSize: '1.5rem', 
-          fontWeight: 'bold', 
-          borderLeft: '4px solid #ec4899', 
-          paddingLeft: '16px' 
-        }}>
-          新着作品一覧
-        </h1>
+    <div className={styles.wrapper}>
+      <div className={styles.container}>
+        
+        {/* ヘッダーエリア */}
+        <header className={styles.header}>
+          <div className={styles.titleGroup}>
+            <h1 className={styles.title}>
+              ALL PRODUCTS
+            </h1>
+            <p className={styles.subtitle}>
+              全作品アーカイブ <span className={styles.count}>{totalCount.toLocaleString()} ITEMS</span>
+            </p>
+          </div>
+        </header>
         
         {/* 商品グリッド */}
         {products.length > 0 ? (
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-            gap: '20px' 
-          }}>
+          <div className={styles.grid}>
             {products.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '50px', border: '1px dashed #3d3d66' }}>
-            <p>作品データを取得できませんでした。Django APIの稼働状況を確認してください。</p>
+          <div className={styles.emptyBox}>
+            <p>作品データを取得できませんでした。</p>
+            <p className={styles.emptySub}>Django APIの稼働状況を確認してください。</p>
           </div>
         )}
         
-        {/* ページネーション */}
-        <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'center' }}>
-          {data.next && (
-            <button style={{ 
-              backgroundColor: '#ec4899', 
-              color: 'white', 
-              padding: '8px 24px', 
-              borderRadius: '9999px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}>
-              もっと見る
-            </button>
-          )}
-        </div>
+        {/* ページネーション（簡易版） */}
+        {totalPages > 1 && (
+          <div className={styles.pagination}>
+            {currentPage > 1 && (
+              <a href={`/products?page=${currentPage - 1}`} className={styles.pageBtn}>
+                PREV
+              </a>
+            )}
+            
+            <div className={styles.pageDisplay}>
+              <span className={styles.current}>{currentPage}</span>
+              <span className={styles.divider}>/</span>
+              <span className={styles.total}>{totalPages}</span>
+            </div>
+
+            {currentPage < totalPages && (
+              <a href={`/products?page=${currentPage + 1}`} className={styles.pageBtn}>
+                NEXT
+              </a>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

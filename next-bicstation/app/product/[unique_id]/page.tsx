@@ -3,13 +3,13 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { fetchProductDetail, fetchRelatedProducts, fetchPCProductRanking } from '@/lib/api';
+import { fetchProductDetail, fetchRelatedProducts, fetchPCProductRanking } from '@shared/components/lib/api';
 import { COLORS } from "@/constants";
 import styles from './ProductDetail.module.css';
 
 // 📈 グラフコンポーネント
-import PriceHistoryChart from '@/components/PriceHistoryChart';
-import SpecRadarChart from '@/components/product/SpecRadarChart';
+import PriceHistoryChart from '@shared/components/ui/PriceHistoryChart';
+import SpecRadarChart from '@shared/components/product/SpecRadarChart';
 
 interface PageProps {
     params: Promise<{ unique_id: string }>;

@@ -2,9 +2,9 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import { notFound } from 'next/navigation';
-import { PostHeader } from '@/components/blog/PostHeader';
+import { PostHeader } from '@shared/components/blog/PostHeader';
 import { COLORS } from '@/constants';
-import { fetchPostData, fetchProductDetail, fetchPostList } from '@/lib/api';
+import { fetchPostData, fetchProductDetail, fetchPostList } from '@shared/components/lib/api';
 import Link from 'next/link';
 import styles from './PostPage.module.css';
 

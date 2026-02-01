@@ -1,27 +1,41 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-// ✅ shared へのパスを ../../ に修正
-import "../../shared/globals.css"; 
+import { Suspense } from "react";
 import styles from "./layout.module.css";
 
-// ✅ 共通設定ライブラリ
-import { getSiteMetadata, getSiteColor } from "../../shared/siteConfig";
+/**
+ * ✅ 1. スタイルのインポート
+ * 整理後の shared/styles/globals.css を参照
+ */
+import '@shared/components/styles/globals.css';
 
-// ✅ 共通コンポーネント (shared)
-import Header from "../../shared/layout/Header";
-import Footer from "../../shared/layout/Footer";
-import Sidebar from "../../shared/layout/Sidebar";
-import ChatBot from "../../shared/components/ChatBot";
+/**
+ * ✅ 2. 共通設定ライブラリ
+ * 整理後の shared/lib/siteConfig.tsx を参照
+ */
+import { getSiteMetadata, getSiteColor } from '@shared/components/lib/siteConfig';
 
-// ✅ プロジェクト内コンポーネント (app/components/)
-import ClientStyles from "../components/ClientStyles";
+/**
+ * ✅ 3. 共通コンポーネント (shared)
+ * 整理後の shared/layout/ フォルダを参照
+ */
+import Header from '@shared/components/layout/Header';
+import Footer from '@shared/components/layout/Footer';
+import Sidebar from '@shared/components/layout/Sidebar';
+import ChatBot from '@shared/components/common/ChatBot';
+
+/**
+ * ✅ 4. プロジェクト内コンポーネント
+ * shared/layout/ に移動した ClientStyles を参照
+ */
+import ClientStyles from '@shared/components/layout/ClientStyles';
 
 const inter = Inter({
   subsets: ["latin"],
 });
 
 /**
- * 💡 SEOメタデータの設定
+ * 💡 SEOメタデータの設定 (BICSTATION 固有)
  */
 export const metadata: Metadata = {
   metadataBase: new URL("https://bicstation.com"),
@@ -74,6 +88,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // ✅ 共通ロジックからサイト情報を取得
   const site = getSiteMetadata();
   const themeColor = getSiteColor(site.site_name);
 
@@ -84,23 +99,38 @@ export default function RootLayout({
         style={{
           backgroundColor: "#f4f7f9",
           color: "#333",
-        }}
+          // ✅ サーバーコンポーネントで動的な色を扱うためのCSS変数注入
+          // @ts-ignore
+          "--site-theme-color": themeColor,
+        } as React.CSSProperties}
       >
         <Header />
-        <div className={styles.adDisclosure}>
+        
+        <div className={styles.adDisclosure} style={{ padding: "8px 15px", fontSize: "12px", textAlign: "center", backgroundColor: "#e9ecef", color: "#666" }}>
           本サイトはアフィリエイト広告（広告・宣伝）を利用しています
         </div>
+
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
-            <Sidebar />
-            <main className={styles.mainContent}>
-              {children}
-            </main>
+            {/* ✅ 根本解決：Sidebarとchildrenを一括でSuspenseで囲む 
+                 これがないと build 時に useSearchParams エラーで停止します */}
+            <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+              <Sidebar />
+              <main className={styles.mainContent}>
+                {children}
+              </main>
+            </Suspense>
           </div>
         </div>
+
         <Footer />
-        <ChatBot />
-        {/* 💡 クライアント側で実行するスタイル注入 */}
+
+        {/* ✅ ChatBotも navigation Hook を使う可能性があるため Suspense で保護 */}
+        <Suspense fallback={null}>
+          <ChatBot />
+        </Suspense>
+
+        {/* 💡 クライアント側で実行するスタイル注入 ('@shared/layout/ClientStyles' を使用) */}
         <ClientStyles themeColor={themeColor} />
       </body>
     </html>

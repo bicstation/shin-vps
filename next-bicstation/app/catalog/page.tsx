@@ -1,10 +1,10 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Sidebar from '@/components/layout/Sidebar';
-import Pagination from '@/components/common/Pagination';
-import ProductCard from '@/components/product/ProductCard';
-import { fetchPCProducts, fetchMakers, fetchPostList } from '@/lib/api';
+import Sidebar from '@shared/components/layout/Sidebar';
+import Pagination from '@shared/components/common/Pagination';
+import ProductCard from '@shared/components/product/ProductCard';
+import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/components/lib/api';
 import styles from './CatalogPage.module.css';
 
 export const metadata: Metadata = {

@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { getSiteMetadata, getSiteColor } from '../siteConfig';
+import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
 import styles from './Sidebar.module.css';
 
 // --- 型定義 ---

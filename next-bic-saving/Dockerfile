@@ -6,6 +6,7 @@ ARG NEXT_PUBLIC_API_URL
 # --- ステージ 1: ビルドステージ ---
 FROM node:20-slim AS builder 
 
+# ビルド引数の設定
 ARG NEXT_PUBLIC_APP_TITLE
 ARG NEXT_PUBLIC_BASE_PATH
 ARG NEXT_PUBLIC_API_URL
@@ -15,35 +16,30 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 WORKDIR /app
 
-# ✅ リポジトリ設定の徹底修正（404エラー・セキュリティパス対策）
-RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
-    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources; \
-    fi && \
-    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
+# ✅ OSパッケージのセットアップ（404エラー対策済み）
+RUN sed -i 's|http://deb.debian.org/debian |http://ftp.jp.debian.org/debian |g' /etc/apt/sources.list || true
+RUN echo "deb http://security.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/security.list
 
-# セキュリティリポジトリを安定したパス（本家）へ上書き
-RUN echo "deb http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/security.list || true
-
-# 依存パッケージのインストール（updateが一部失敗しても強行する）
-RUN apt-get update || true
-RUN apt-get install -y libc6 libstdc++6 fonts-ipafont-gothic && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libc6 libstdc++6 fonts-ipafont-gothic && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# 💡 物理構造のコピー（sharedとプロジェクト本体）
-# 親ディレクトリにある shared を /app/shared へ、プロジェクトを /app へ
-COPY shared/ ../shared/
+# ✅ 1. ファイルの物理コピー
+# アプリ本体を先にコピー
 COPY next-bic-saving/ ./
+# リンク切れの可能性があるディレクトリを掃除
+RUN rm -rf ./shared
 
-# 💡 共有ディレクトリをプロジェクト内に物理コピーし、パスを調整
-RUN rm -rf ./shared && cp -r ../shared ./shared
-RUN find . -type f -name "*.tsx" -o -name "*.ts" | xargs sed -i 's|../shared/|@shared/|g' || true
+# sharedフォルダを実体としてコピー
+COPY shared/ ./shared/
 
-# 依存関係のインストール
+# ✅ 2. 依存関係のインストール
 RUN npm cache clean --force
 RUN npm install --include=optional
 
-# 💡 ビルド実行（徹底的にクリーンアップしてから実行）
+# ✅ 3. ビルド実行
+# 前回のキャッシュを削除してクリーンビルド
 RUN rm -rf .next .cache node_modules/.cache
 RUN npm run build
 
@@ -52,41 +48,29 @@ FROM node:20-slim AS runner
 
 WORKDIR /app
 
-# 実行環境のリポジトリ修正
-RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
-RUN apt-get update || true && apt-get install -y libc6 && \
+# 実行環境のOSパッケージ調整
+RUN apt-get update && apt-get install -y libc6 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 実行ユーザーの定義
 RUN addgroup --gid 1001 nodejs || true && \
     adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
 
-# 環境変数の設定
 ENV LANG=C.UTF-8
 ENV NODE_ENV=production
 ENV HOSTNAME "0.0.0.0"
 ENV PORT 3000
 
-# ✅ Standalone モード専用のコピー設定
-# 1. 公開フォルダ
+# ✅ 成果物の配置 (standaloneモード用)
 COPY --from=builder /app/public ./public
-
-# 2. 本体（standalone フォルダの中身を直下に展開）
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
-# 3. 💡 重要：サブフォルダ（bic-saving）の中身を WORKDIR 直下に移動
-# これを行わないと server.js が依存ファイルを見つけられず code 0 で終了します
-RUN if [ -d "./bic-saving" ]; then cp -r ./bic-saving/. . && rm -rf ./bic-saving; fi
+# 💡 standalone配下のプロジェクト名ディレクトリをルートに展開
+RUN if [ -d "./next-bic-saving" ]; then cp -r ./next-bic-saving/. . && rm -rf ./next-bic-saving; fi
 
-# 4. 静的ファイルの配置
+# 静的ファイルのコピー
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# 💡 basePath 設定時の対策（念のため）
-RUN mkdir -p .next/static && cp -r ./static/* .next/static/ 2>/dev/null || true
-
-# 実行ユーザーの切り替え
 USER nextjs
 EXPOSE 3000
 
-# 確実に直下の server.js を実行
 CMD ["node", "server.js"]

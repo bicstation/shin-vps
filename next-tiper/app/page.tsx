@@ -4,9 +4,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import ProductCard from './components/ProductCard'; 
-import { getAdultProducts, fetchPostList } from '../lib/api'; 
-
+// ✅ パスを shared 側に修正
+import ProductCard from '@shared/components/cards/AdultProductCard'; 
+import { fetchPostList, getAdultProducts } from '@shared/components/lib/api'; // 👈 ここを修正
 export const dynamic = 'force-dynamic';
 
 // --- ユーティリティ関数 ---
@@ -22,12 +22,11 @@ const formatDate = (dateString: string) => {
 };
 
 export default async function Home({ searchParams }: { searchParams: { page?: string } }) {
-  // 💡 ページネーション計算
   const currentPage = Number(searchParams.page) || 1;
   const limit = 20;
   const offset = (currentPage - 1) * limit;
 
-  // 💡 データフェッチ (最新順をリクエスト)
+  // 💡 データフェッチ (並列実行で高速化)
   const [latestPosts, productData] = await Promise.all([
     fetchPostList(5).catch(() => []), 
     getAdultProducts({ limit, offset, ordering: '-id' }).catch(() => ({ results: [], count: 0 }))
@@ -52,12 +51,14 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
 
       {/* 2. Django 商品セクション */}
       <section className="py-12 px-[5%]">
-        <div className="section-title-line">
+        <div className="flex justify-between items-end mb-8 border-b border-[#3d3d66]/50 pb-4">
           <div>
-            <h2 className="text-white text-2xl md:text-3xl font-bold">🔥 最新コンテンツ</h2>
+            <h2 className="text-white text-2xl md:text-3xl font-bold flex items-center gap-3">
+              <span className="text-[#e94560]">🔥</span> 最新コンテンツ
+            </h2>
             <p className="text-gray-500 text-sm mt-1">新着アイテムを毎日更新中</p>
           </div>
-          <span className="text-gray-600 text-sm font-mono">{totalCount} ITEMS</span>
+          <span className="text-gray-600 text-sm font-mono tracking-tighter">{totalCount} ITEMS</span>
         </div>
 
         {/* 商品グリッド */}
@@ -67,13 +68,13 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
-            <div className="col-span-full py-32 text-center text-gray-700 font-bold">
+            <div className="col-span-full py-32 text-center text-gray-700 font-bold border-2 border-dashed border-[#3d3d66]/30 rounded-2xl">
               NO PRODUCTS FOUND.
             </div>
           )}
         </div>
 
-        {/* ページネーション (globals.css の btn-pagination を使用) */}
+        {/* ページネーション */}
         {totalPages > 1 && (
           <div className="mt-16 flex justify-center items-center gap-8">
             {currentPage > 1 && (
@@ -82,9 +83,9 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
               </Link>
             )}
             
-            <div className="text-xl font-black tracking-widest">
+            <div className="text-xl font-black tracking-widest flex items-center gap-2">
               <span className="text-[#e94560]">{currentPage}</span>
-              <span className="mx-3 text-gray-800">/</span>
+              <span className="text-gray-800">/</span>
               <span className="text-gray-600">{totalPages}</span>
             </div>
 
@@ -109,18 +110,18 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
               <Link 
                 key={post.id} 
                 href={`/tiper/${post.slug}`} 
-                className="news-card"
+                className="group block p-6 bg-[#16162d] border border-transparent hover:border-[#e94560]/50 rounded-xl transition-all"
               >
-                <div className="font-bold text-xl text-gray-100 mb-2 group-hover:text-[#e94560]">
+                <div className="font-bold text-xl text-gray-100 mb-2 group-hover:text-[#e94560] transition-colors">
                   {decodeHtml(post.title?.rendered)}
                 </div>
                 <div className="text-gray-600 text-sm flex items-center gap-2">
-                  <span className="text-[#e94560]">DATE:</span> {formatDate(post.date)}
+                  <span className="text-[#e94560] font-black uppercase text-[10px]">DATE:</span> {formatDate(post.date)}
                 </div>
               </Link>
             ))
           ) : (
-            <p className="text-center text-gray-700 italic">No announcements at the moment.</p>
+            <p className="text-center text-gray-700 italic py-10">No announcements at the moment.</p>
           )}
         </div>
       </section>

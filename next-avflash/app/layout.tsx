@@ -1,18 +1,33 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "@shared/globals.css"; // ✅ エイリアスを使用
 import styles from "./layout.module.css";
 
-// ✅ 共通設定ライブラリからインポート
-import { getSiteMetadata, getSiteColor } from "@shared/siteConfig";
+/**
+ * ✅ 1. スタイルのインポート
+ * shared/styles/globals.css を参照
+ */
+import '@shared/styles/globals.css';
 
-// ✅ 共通コンポーネントをインポート
-import Header from "@shared/layout/Header";
-import Footer from "@shared/layout/Footer";
-import Sidebar from "@shared/layout/Sidebar";
 
-// ✅ チャットボット（コンポーネント側で "use client" を指定している前提）
-import ChatBot from "@shared/components/ChatBot";
+/*
+ * ✅ 2. 共通ロジックのインポート
+ * shared/lib/ フォルダに移動した設定ファイルを読み込み
+ */
+import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
+
+/**
+ * ✅ 3. 共通レイアウトコンポーネントのインポート
+ * shared/layout/ フォルダから読み込み
+ */
+import Header from '@shared/layout/Header';
+import Footer from '@shared/layout/Footer';
+import Sidebar from '@shared/layout/Sidebar';
+
+/**
+ * ✅ 4. チャットボットコンポーネントのインポート
+ * shared/components/ フォルダから読み込み
+ */
+import ChatBot from '@shared/components/ChatBot';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,7 +35,8 @@ const inter = Inter({
 
 /**
  * 💡 SEOメタデータの設定
- * サーバーコンポーネントである layout.tsx でのみ定義可能
+ * サーバーコンポーネントである layout.tsx でのみ定義可能。
+ * ※ドメインごとに個別に書き換えるか、generateMetadataでの動的生成も検討してください。
  */
 export const metadata: Metadata = {
   metadataBase: new URL("https://avflash.xyz"),
@@ -74,7 +90,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // ✅ 共通設定からサイト情報を取得
+  // ✅ 共通設定からサイト情報を取得（shared/lib/siteConfig.tsx を使用）
   const site = getSiteMetadata();
   const themeColor = getSiteColor(site.site_name);
 
@@ -85,7 +101,7 @@ export default function RootLayout({
         style={{
           backgroundColor: "#0f0f0f",
           color: "#ffffff",
-          // 💡 style jsx の代わりに CSS 変数を style プロパティで注入
+          // 💡 CSS 変数を style プロパティで注入（サイトごとに色が自動で変わる）
           // @ts-ignore (CSS変数を渡すための型回避)
           "--site-theme-color": themeColor,
         } as React.CSSProperties}
@@ -96,7 +112,7 @@ export default function RootLayout({
         {/* 2. ⚖️ 広告表記・年齢制限バー */}
         <div 
           className={styles.adDisclosure} 
-          style={{ backgroundColor: "#1a1a1a", borderBottom: "1px solid #333", color: "#ccc" }}
+          style={{ backgroundColor: "#1a1a1a", borderBottom: "1px solid #333", color: "#ccc", padding: "8px 15px", fontSize: "12px", textAlign: "center" }}
         >
           【PR】本サイトはアフィリエイト広告を利用しています。
           <span style={{ marginLeft: "10px", color: "#ff4444", fontWeight: "bold" }}>

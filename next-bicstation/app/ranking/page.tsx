@@ -1,8 +1,8 @@
-import { fetchPCProductRanking } from '@/lib/api';
+import { fetchPCProductRanking } from '@shared/components/lib/api';
 import Link from 'next/link';
 import styles from './Ranking.module.css';
-import RadarChart from '@/components/RadarChart';
-import ProductCard from '@/components/product/ProductCard';
+import RadarChart from '@shared/components/ui/RadarChart';
+import ProductCard from '@shared/components/product/ProductCard';
 
 /**
  * =====================================================================

@@ -96,7 +96,8 @@
 }
 
 .searchBox:focus {
-  border-color: var(--site-color);
+  /* border-color: var(--site-color); */
+  border-color: #666;
 }
 
 @media (max-width: 768px) {

@@ -1,130 +1,131 @@
-// ファイル名: C:\dev\SHIN-VPS\next-bic-saving\app\page.tsx
-
-// 💡 Linter と TypeScript のチェックを無効化 (赤線対策)
+// 💡 Linter と TypeScript のチェックを無効化
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/no-danger-to-js */
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
 import React from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 
-// 💡 WordPress APIから取得する記事データの型定義 (簡略化)
-interface WpPost {
-    id: number;
-    slug: string; // 記事のパーマリンクに使用されるスラッグ
-    title: {
-        rendered: string; // HTMLタグを含むタイトル
-    };
-    date: string; // 記事の公開日時
-    link: string; // 記事へのWordPress上のURL
-}
+// ✅ 共通コンポーネントと共通APIのインポート
+import Sidebar from '@shared/components/layout/Sidebar';
+import { fetchPostList } from '@shared/components/lib/api'; 
 
-// 💡 データを取得するサーバー関数 (記事一覧向け)
-async function fetchPostList(): Promise<WpPost[]> {
-    // 🚨 修正点: カスタム投稿タイプ 'saving_post' を指定
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/saving?_embed&per_page=5`; // 最新5件を取得
+// 💡 ビルド時の静的生成エラーを回避するための設定
+export const dynamic = 'force-dynamic'; 
+export const fetchCache = 'force-no-store';
 
-    try {
-        const res = await fetch(WP_API_URL, {
-            // 修正箇所: Hostヘッダーを追加して、WordPressに正しいドメイン名を伝える
-            // 節約生活のドメイン名を設定
-            headers: {
-                'Host': 'stg.blog.tiper.live' 
-            },
-            // リバリデートを長めに設定 (例: 3600秒 = 1時間)
-            next: { revalidate: 3600 } 
-        });
-
-        if (!res.ok) {
-            console.error(`WordPress API Error: ${res.status} ${res.statusText}`);
-            return [];
-        }
-        
-        // WordPressがJSON配列を返すことを期待
-        const data: WpPost[] = await res.json();
-        return data;
-
-    } catch (error) {
-        console.error("Failed to fetch post list from WordPress API:", error);
-        return []; 
-    }
-}
-
-// ユーティリティ関数: HTMLエンティティをデコード
+/**
+ * ユーティリティ: HTMLエンティティのデコード
+ */
 const decodeHtml = (html: string) => {
-    const map: { [key: string]: string } = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
-    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (match) => map[match] || match);
+    if (!html) return '';
+    const map: { [key: string]: string } = { 
+        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
+    };
+    return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (m) => map[m] || m);
 };
 
-// ユーティリティ関数: 日付フォーマット (例: 2025/12/16)
+/**
+ * ユーティリティ: 日付フォーマット
+ */
 const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    }).replace(/\//g, '/');
+    try {
+        if (!dateString) return '----/--/--';
+        return new Date(dateString).toLocaleDateString('ja-JP', { 
+            year: 'numeric', month: '2-digit', day: '2-digit' 
+        });
+    } catch (e) {
+        return '----/--/--';
+    }
 };
 
-
-// Next.js Server Component (async function)
+/**
+ * Next.js Server Component: メインページ
+ * レイアウト（Header/Footer）は RootLayout に任せ、
+ * このページ独自の構成（Sidebar + Main）を構築します。
+ */
 export default async function Page() {
-    
-    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'デモタイトルが見つかりません';
-    const posts = await fetchPostList(); // 記事一覧を取得
+    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'ビック的な節約生活';
+
+    /**
+     * ✅ 共通APIを使用して記事を取得
+     * shared/api.ts の fetchPostList('postType', limit) を利用
+     */
+    let posts = [];
+    try {
+        const response = await fetchPostList('saving', 5);
+        if (response && response.results && Array.isArray(response.results)) {
+            posts = response.results;
+        }
+    } catch (error) {
+        console.warn("[Build Warning] API fetch failed. Using empty list for prerender.");
+        posts = []; 
+    }
 
     return (
-        <div style={{ fontFamily: 'Arial, sans-serif', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+        <div style={{ display: 'flex', flexGrow: 1, backgroundColor: '#f4f4f4', width: '100%' }}> 
             
-            {/* 1. トップ (ヘッダー) */}
-            <header style={{ background: '#333', color: 'white', padding: '15px 20px', borderBottom: '3px solid #ffcc00' }}>
-                <h1 style={{ margin: 0, fontSize: '1.5em' }}>{title}</h1>
-                <p style={{ margin: '5px 0 0 0', fontSize: '0.9em' }}>App Router (RSC) によるレンダリング</p>
-            </header>
-
-            {/* 2. メインコンテンツとサイドバーのコンテナ */}
-            <div style={{ display: 'flex', flexGrow: 1 }}>
-                
-                {/* 3. サイドバー */}
-                <aside style={{ width: '200px', background: '#e0e0e0', padding: '20px', borderRight: '1px solid #ccc' }}>
-                    <h3 style={{ marginTop: 0, color: '#ffcc00' }}>カテゴリ</h3>
-                    <ul style={{ listStyleType: 'none', padding: 0 }}>
-                        <li><a href="/" style={{ textDecoration: 'none', color: '#333' }}>メインへ戻る</a></li>
-                        <li style={{ marginTop: '10px', fontSize: '0.8em', color: '#666' }}>（App Routerデモ）</li>
-                    </ul>
-                </aside>
-
-                {/* 4. メインエリア - 記事一覧 */}
-                <main style={{ flexGrow: 1, padding: '20px' }}>
-                    <h2 style={{ color: '#ffcc00', borderBottom: '2px solid #ddd', paddingBottom: '10px' }}>最新記事一覧</h2>
+            {/* ✅ 1. サイドバー（内容によって中身を変えたい場合は、ここを専用コンポーネントに差し替える） */}
+            <Sidebar />
+            
+            {/* ✅ 2. メインコンテンツエリア */}
+            <main style={{ flexGrow: 1, padding: '20px', minWidth: 0 }}>
+                <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                    <h2 style={{ 
+                        color: '#ffcc00', 
+                        borderBottom: '2px solid #ddd', 
+                        paddingBottom: '10px',
+                        marginTop: 0,
+                        fontSize: '1.5rem'
+                    }}>
+                        {title} 最新記事一覧
+                    </h2>
                     
+                    {/* 記事リストまたはエラー表示 */}
                     {posts.length === 0 ? (
-                        <p style={{ color: '#666' }}>現在、**節約生活**の記事は登録されていません。</p>
+                        <div style={{ 
+                            padding: '40px', 
+                            textAlign: 'center', 
+                            background: 'white', 
+                            borderRadius: '8px', 
+                            border: '1px dashed #ccc' 
+                        }}>
+                            <p style={{ color: '#666', fontWeight: 'bold' }}>現在、表示できる記事はありません。</p>
+                            <p style={{ color: '#999', fontSize: '0.85em' }}>
+                                記事が公開されているか、またはWordPressの接続設定を確認してください。
+                            </p>
+                        </div>
                     ) : (
-                        <ul style={{ listStyleType: 'none', padding: 0 }}>
+                        <div style={{ display: 'grid', gap: '15px' }}>
                             {posts.map((post) => (
-                                <li key={post.id} style={{ marginBottom: '15px', padding: '10px', background: 'white', border: '1px solid #ddd', borderRadius: '5px' }}>
-                                    {/* 記事詳細ページへのリンク */}
-                                    {/* 🚨 リンク先URLをカスタム投稿タイプのパス構造に合わせる */}
-                                    <Link href={`/saving/${post.slug}`} style={{ textDecoration: 'none', color: '#007bff', fontSize: '1.2em', fontWeight: 'bold' }}>
-                                        {decodeHtml(post.title.rendered)}
+                                <article key={post.id} style={{ 
+                                    padding: '20px', 
+                                    background: 'white', 
+                                    border: '1px solid #ddd', 
+                                    borderRadius: '8px', 
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                    transition: 'transform 0.2s'
+                                }}>
+                                    <Link href={`/saving/${post.slug}`} style={{ 
+                                        textDecoration: 'none', 
+                                        color: '#007bff', 
+                                        fontSize: '1.2rem', 
+                                        fontWeight: 'bold',
+                                        display: 'block'
+                                    }}>
+                                        {decodeHtml(post?.title?.rendered || '無題の記事')}
                                     </Link>
-                                    <p style={{ color: '#999', fontSize: '0.9em', margin: '5px 0 0 0' }}>
-                                        公開日: {formatDate(post.date)} | スラッグ: {post.slug}
-                                    </p>
-                                </li>
+                                    <div style={{ color: '#888', fontSize: '0.85rem', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <span>📅</span>
+                                        <time dateTime={post.date}>{formatDate(post.date)}</time>
+                                    </div>
+                                </article>
                             ))}
-                        </ul>
+                        </div>
                     )}
-                    
-                </main>
-            </div>
-
-            {/* 5. フッター */}
-            <footer style={{ background: '#333', color: 'white', padding: '10px 20px', textAlign: 'center', borderTop: '3px solid #ffcc00' }}>
-                <p style={{ margin: 0 }}>&copy; {new Date().getFullYear()} {title} | フッター情報</p>
-            </footer>
+                </div>
+                <div>新しいページです。テスト</div>
+            </main>
         </div>
     );
-};
+}

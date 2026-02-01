@@ -1,23 +1,24 @@
-/* app/[category]/[id]/category.module.css */
 .container {
   min-height: 100vh;
-  background-color: #0f0f1e;
-  color: #ffffff;
-  padding: 1.5rem;
+  background-color: #111122; /* --bg-deep */
+  padding: 2rem 0;
 }
 
 .inner {
-  max-width: 80rem; /* 7xl相当 */
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 1rem;
 }
 
+/* ヘッダーエリア */
 .header {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: flex-start; /* 左寄せに変更し、境界線を目立たせる */
-  margin-bottom: 2rem;
-  border-left: 4px solid #e94560;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  border-left: 4px solid #e94560; /* アクセントライン */
   padding-left: 1.5rem;
 }
 
@@ -28,114 +29,155 @@
   }
 }
 
-.title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+.categoryPrefix {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 800;
   color: #e94560;
-  margin: 0;
+  letter-spacing: 0.2em;
+  margin-bottom: 0.5rem;
 }
 
 .titleMain {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 900;
   color: #ffffff;
 }
 
-.itemCount {
-  color: #9ca3af;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+.titleId {
+  font-size: 1rem;
+  color: #444466;
+  font-family: monospace;
+  margin-left: 0.5rem;
 }
 
+.itemCount {
+  font-size: 0.875rem;
+  color: #8888aa;
+  margin-top: 0.5rem;
+}
+
+/* ソートボタン一覧 */
 .sortList {
-  margin-top: 1rem;
   display: flex;
   gap: 0.5rem;
-}
-
-@media (min-width: 768px) {
-  .sortList {
-    margin-top: 0;
-  }
+  background-color: #1a1a2e;
+  padding: 0.3rem;
+  border-radius: 9999px;
+  border: 1px solid #3d3d66;
 }
 
 .sortButton {
-  padding: 0.35rem 1rem;
+  padding: 0.5rem 1rem;
   font-size: 0.75rem;
-  border-radius: 9999px;
-  border: 1px solid #3d3d66;
-  color: #9ca3af;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  color: #8888aa;
   text-decoration: none;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.sortButton:hover {
+  color: #ffffff;
+  background-color: #252545;
 }
 
 .sortButtonActive {
   background-color: #e94560;
-  border-color: #e94560;
-  color: #ffffff;
-  font-weight: bold;
+  color: #ffffff !important;
 }
 
-.sortButton:hover:not(.sortButtonActive) {
-  border-color: #9ca3af;
-  background-color: #1a1a2e;
-}
-
-/* 💡 グリッド修正ポイント: columnsに直しました */
+/* グリッドレイアウト */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
 }
 
-@media (min-width: 768px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1024px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-@media (min-width: 1280px) { .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
-
-.emptyState {
-  text-align: center;
-  padding: 5rem 0;
-  color: #6b7280;
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
 }
 
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* ページネーション */
 .pagination {
-  margin-top: 4rem;
+  margin-top: 5rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  padding-bottom: 2rem;
+  gap: 2rem;
 }
 
 .pageLink {
-  padding: 0.5rem 1.25rem;
-  background-color: #1a1a2e;
+  padding: 0.75rem 1.5rem;
+  background-color: #1f1f3a;
   border: 1px solid #3d3d66;
-  border-radius: 0.25rem;
-  color: #ffffff;
+  color: #00d1b2;
+  font-weight: 800;
+  font-size: 0.875rem;
   text-decoration: none;
-  font-weight: bold;
+  border-radius: 0.5rem;
   transition: all 0.2s;
 }
 
 .pageLink:hover {
-  background-color: #e94560;
-  border-color: #e94560;
+  border-color: #00d1b2;
+  background-color: #252545;
+  box-shadow: 0 0 15px rgba(0, 209, 178, 0.3);
 }
 
 .pageDisabled {
-  padding: 0.5rem 1.25rem;
-  color: #4b5563;
-  border: 1px solid transparent;
+  padding: 0.75rem 1.5rem;
+  color: #3d3d66;
+  font-weight: 800;
+  font-size: 0.875rem;
+  cursor: not-allowed;
 }
 
 .pageInfo {
-  font-size: 0.875rem;
-  font-family: monospace;
-  color: #9ca3af;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.pageLabel {
+  font-size: 0.6rem;
+  color: #555577;
+  font-weight: 700;
 }
 
 .currentPage {
-  color: #e94560;
-  font-weight: bold;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.pageSeparator {
+  color: #3d3d66;
+}
+
+.totalPage {
+  color: #8888aa;
+  font-weight: 700;
+}
+
+/* 空の状態 */
+.emptyState {
+  padding: 5rem 0;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
 }

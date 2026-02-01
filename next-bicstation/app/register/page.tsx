@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import Link from 'next/link';
-import { registerUser } from '../shared/auth';
+import { registerUser } from '@shared/components/lib/auth';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState<string>('');

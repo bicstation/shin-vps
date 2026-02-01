@@ -1,0 +1,227 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  border-color: #3b82f6;
+}
+
+/* 🚩 ランキング順位別スタイル */
+.rank_1 { border: 2px solid #fbbf24; background-color: #fffbeb; }
+.rank_2 { border: 2px solid #94a3b8; background-color: #f8fafc; }
+.rank_3 { border: 2px solid #cd7f32; background-color: #fff7ed; }
+
+/* 順位バッジ */
+.rankBadge {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 900;
+  color: white;
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.rankBadge_1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.rankBadge_2 { background: linear-gradient(135deg, #94a3b8, #64748b); }
+.rankBadge_3 { background: linear-gradient(135deg, #d97706, #b45309); }
+
+/* スコア表示 */
+.scoreBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: #1e293b;
+  color: #38bdf8;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.scoreBadge span {
+  font-size: 14px;
+  color: #ffffff;
+  margin-left: 4px;
+}
+
+/* 画像エリア */
+.imageArea {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* メタ情報 */
+.metaInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.makerBadge {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stockStatus {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.inStock {
+  color: #22c55e;
+}
+
+.productName {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.4;
+  margin-bottom: 1rem;
+}
+
+.productName a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.productName a:hover {
+  color: #3b82f6;
+}
+
+/* チャートなどの追加コンテンツ */
+.extraContent {
+  width: 100%;
+  margin-bottom: 1rem;
+  min-height: 0;
+}
+
+/* 属性リスト */
+.attributeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.attrBadge {
+  font-size: 11px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.attrTypeLabel {
+  opacity: 0.7;
+  margin-right: 2px;
+}
+
+.simpleTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.simpleTag {
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 0.2rem 0.5rem;
+  font-size: 10px;
+  border-radius: 4px;
+}
+
+.aiBadge {
+  background: linear-gradient(to right, #8b5cf6, #d946ef);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  font-size: 10px;
+  font-weight: 800;
+  border-radius: 4px;
+}
+
+/* 価格表示 */
+.priceContainer {
+  margin-top: auto;
+  margin-bottom: 1.25rem;
+}
+
+.price {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.currency { font-size: 1.125rem; margin-right: 2px; }
+.amount { font-size: 1.75rem; }
+.taxLabel { font-size: 10px; color: #64748b; margin-left: 4px; }
+.priceUnknown { color: #94a3b8; font-size: 0.875rem; }
+
+/* アクションボタン */
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.detailBtn, .buyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.detailBtn {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.detailBtn:hover {
+  background-color: #e2e8f0;
+}
+
+.buyBtn {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.buyBtn:hover {
+  background-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}

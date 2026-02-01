@@ -6,6 +6,7 @@ ARG NEXT_PUBLIC_API_URL
 # --- ステージ 1: ビルドステージ ---
 FROM node:18-slim AS builder 
 
+# ビルド引数の設定
 ARG NEXT_PUBLIC_APP_TITLE
 ARG NEXT_PUBLIC_BASE_PATH
 ARG NEXT_PUBLIC_API_URL
@@ -13,84 +14,57 @@ ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
 ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+# 作業ディレクトリの設定
 WORKDIR /app
 
-# ✅ リポジトリ設定の徹底修正（404エラー・セキュリティパス対策）
-RUN if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
-    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list.d/debian.sources; \
-    fi && \
-    sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
+# ✅ 1. OSパッケージのインストール（ミラーサイト指定で安定化）
+RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
+RUN apt-get update && apt-get install -y libc6 libstdc++6 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# セキュリティリポジトリを安定したパス（本家）へ上書き
-RUN echo "deb http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/security.list || true
-
-# 必要なパッケージのインストール
-RUN apt-get update || true
-RUN apt-get install -y libc6 libstdc++6 fonts-ipafont-gothic && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# 💡 物理構造のコピー（sharedとプロジェクト本体）
-# 親ディレクトリにある shared を /app/shared へ、プロジェクトを /app へ
-COPY shared/ ../shared/
+# ✅ 2. ファイルのコピー
+# 🚨 プロジェクトファイルを先にコピー（ここに含まれる shared リンクは後で消す）
 COPY next-bicstation/ ./
 
-# 💡 共有ディレクトリをプロジェクト内に物理コピーし、パスを調整
-RUN rm -rf ./shared && cp -r ../shared ./shared
-RUN find . -type f -name "*.tsx" -o -name "*.ts" | xargs sed -i 's|../shared/|@shared/|g' || true
+# 🚨 コンテナ内の不完全な shared を削除し、
+#    物理構造を整えた「本物の shared フォルダ」を正しい位置（/app/shared）に配置
+RUN rm -rf ./shared
+COPY shared/ ./shared/
 
-# 💡 依存関係のインストールの前にキャッシュをクリア
+# ✅ 3. 依存関係のインストール
+# node_modules などをクリーンにしてからインストールを実行
 RUN npm cache clean --force
-
-# 依存関係のインストール
-COPY package.json ./
 RUN npm install --include=optional
 
-# 💡 重要：ビルド直前に古い成果物を徹底的に削除
+# ✅ 4. ビルド実行
+# 前回のキャッシュを完全に削除してからビルドを開始
 RUN rm -rf .next .cache node_modules/.cache
-
-# ビルド実行
 RUN npm run build
 
-# --- ステージ 2: プロダクションステージ (実行環境) ---
+# --- ステージ 2: プロダクションステージ ---
 FROM node:18-slim AS runner 
-
 WORKDIR /app
 
-# 実行環境でもリポジトリ修正を実施
-RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
-RUN apt-get update || true && apt-get install -y libc6 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# 実行ユーザーの定義
+# 実行ユーザーの定義（セキュリティ対応）
 RUN addgroup --gid 1001 nodejs || true && \
     adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
 
-# 環境変数の設定
-ENV LANG=C.UTF-8
 ENV NODE_ENV=production
-ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
+ENV PORT 3000
 
-# ✅ Standalone モード用の成果物をコピー
-# 1. 公開フォルダ
+# builderステージから standalone モードに必要な成果物だけをコピー
 COPY --from=builder /app/public ./public
-
-# 2. 本体（standalone フォルダの中身を直下に展開）
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
-# 3. 💡 重要：サブフォルダ（bicstation）の中身を WORKDIR 直下に移動
-# Next.jsのstandaloneビルド特有の階層構造を解消します
-RUN if [ -d "./bicstation" ]; then cp -r ./bicstation/. . && rm -rf ./bicstation; fi
+# 💡 standalone 配下のプロジェクト名ディレクトリをルートに展開
+# next-bicstation ディレクトリがある場合、その中身をカレントディレクトリに移動する
+RUN if [ -d "./next-bicstation" ]; then cp -r ./next-bicstation/. . && rm -rf ./next-bicstation; fi
 
-# 4. 静的ファイルの配置
+# staticファイルをコピー
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# 5. 💡 basePath 対策のダメ押し
-RUN mkdir -p .next/static && cp -r ./static/* .next/static/ 2>/dev/null || true
 
 USER nextjs
 EXPOSE 3000
 
-# server.js を実行
+# server.js を実行して起動
 CMD ["node", "server.js"]

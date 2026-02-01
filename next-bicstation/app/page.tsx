@@ -10,16 +10,16 @@ export const revalidate = 3600;
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Sidebar from '@/components/layout/Sidebar';
-import RadarChart from '@/components/RadarChart';
-import ProductCard from '@/components/product/ProductCard';
+import Sidebar from '@shared/components/layout/Sidebar';
+import RadarChart from '@shared/components/ui/RadarChart';
+import ProductCard from '@shared/components/product/ProductCard';
 import {
     fetchPostList,
     fetchPCProducts,
     fetchMakers,
     fetchPCProductRanking,
     fetchPCPopularityRanking
-} from '@/lib/api';
+} from '@shared/components/lib/api';
 import styles from './MainPage.module.css';
 
 interface PageProps {

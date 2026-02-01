@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { getSiteMetadata, getSiteColor } from '../siteConfig';
+import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
 import styles from './Footer.module.css';
 
 export default function Footer() {

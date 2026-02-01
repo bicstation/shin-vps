@@ -1,23 +1,23 @@
-/* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/no-danger-to-js */
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-danger */
 // @ts-nocheck 
 
 import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAdultProducts } from '../../../lib/api'; 
-import ProductCard from '../../components/ProductCard';
+import { getAdultProducts } from '@shared/lib/api'; 
+import ProductCard from '@shared/components/cards/AdultProductCard';
 import styles from './page.module.css';
 
 /**
- * 💡 個別記事データ取得（カテゴリーIDを含めるため _embed を使用）
+ * 💡 個別記事データ取得
  */
 async function fetchPostData(postSlug: string) {
     const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?slug=${postSlug}&_embed&per_page=1&_t=${Date.now()}`; 
     try {
         const res = await fetch(WP_API_URL, {
             headers: { 'Host': 'localhost:8083', 'Accept': 'application/json' },
-            cache: 'no-store' 
+            next: { revalidate: 60 } // 60秒キャッシュ
         });
         if (!res.ok) return null;
         const data = await res.json();
@@ -29,14 +29,13 @@ async function fetchPostData(postSlug: string) {
  * 💡 サイドバー用：同じカテゴリーの人気・最新記事を取得
  */
 async function fetchRelatedCategoryPosts(categories: number[], excludeId: number) {
-    // カテゴリーが指定されている場合はそのカテゴリーを優先、なければ最新
     const categoryQuery = categories && categories.length > 0 ? `&categories=${categories.join(',')}` : '';
     const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?_embed&per_page=5&exclude=${excludeId}${categoryQuery}`;
     
     try {
         const res = await fetch(WP_API_URL, {
             headers: { 'Host': 'localhost:8083' },
-            cache: 'no-store'
+            next: { revalidate: 300 }
         });
         return res.ok ? await res.json() : [];
     } catch { return []; }
@@ -52,8 +51,8 @@ async function fetchNeighborPosts(currentDate: string) {
 
     try {
         const [nextRes, prevRes] = await Promise.all([
-            fetch(nextUrl, { headers, cache: 'no-store' }),
-            fetch(prevUrl, { headers, cache: 'no-store' })
+            fetch(nextUrl, { headers }),
+            fetch(prevUrl, { headers })
         ]);
         const [nextData, prevData] = await Promise.all([
             nextRes.ok ? nextRes.json() : [],
@@ -69,14 +68,15 @@ const decodeHtml = (html: string) => {
     return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (m) => map[m] || m);
 };
 
-export default async function PostPage({ params }: { params: { id: string } }) {
-    const postSlug = decodeURIComponent(params.id);
+export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const postSlug = decodeURIComponent(id);
     const post = await fetchPostData(postSlug);
     if (!post) notFound();
 
-    // カテゴリーIDを抽出
     const categoryIds = post.categories || [];
-    // 💡 並列フェッチ
+    
+    // 💡 データの並列フェッチ
     const [neighbors, relatedPosts, productData] = await Promise.all([
         fetchNeighborPosts(post.date),
         fetchRelatedCategoryPosts(categoryIds, post.id),
@@ -90,11 +90,12 @@ export default async function PostPage({ params }: { params: { id: string } }) {
     return (
         <div className={styles.container}>
             
-            {/* 1. ヒーローセクション */}
             <header className={styles.header}>
                 <div className={styles.decoration} />
                 <div className={styles.headerContent}>
-                    <Link href="/" className={styles.backLink}><span>«</span> BACK TO LIST</Link>
+                    <Link href="/tiper" className={styles.backLink}>
+                        <span>«</span> BACK TO MAGAZINE
+                    </Link>
                     <div className={styles.categoryBadge}>{categoryName}</div>
                     <h1 className={styles.title}>{postTitle}</h1>
                     <div className={styles.metaInfo}>
@@ -110,32 +111,35 @@ export default async function PostPage({ params }: { params: { id: string } }) {
 
             {featuredImageUrl && (
                 <div className={styles.featuredImageWrapper}>
-                    <div className={styles.featuredImage}><img src={featuredImageUrl} alt={postTitle} /></div>
+                    <div className={styles.featuredImage}>
+                        <img src={featuredImageUrl} alt={postTitle} />
+                    </div>
                 </div>
             )}
 
             <div className={styles.mainLayout}>
                 <article>
-                    <div className={styles.tiperBody} dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+                    <div 
+                        className={styles.tiperBody} 
+                        dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
+                    />
 
-                    {/* 前後ナビゲーション */}
                     <nav className={styles.postNavigation}>
                         {neighbors.prev ? (
                             <Link href={`/tiper/${neighbors.prev.slug}`} className={styles.navCard}>
-                                <span className={styles.navLabel}>PREVIOUS</span>
+                                <span className={styles.navLabel}>PREVIOUS ARTICLE</span>
                                 <span className={styles.navTitle}>{decodeHtml(neighbors.prev.title.rendered)}</span>
                             </Link>
                         ) : <div />}
                         {neighbors.next ? (
                             <Link href={`/tiper/${neighbors.next.slug}`} className={`${styles.navCard} ${styles.navNext}`}>
-                                <span className={styles.navLabel}>NEXT</span>
+                                <span className={styles.navLabel}>NEXT ARTICLE</span>
                                 <span className={styles.navTitle}>{decodeHtml(neighbors.next.title.rendered)}</span>
                             </Link>
                         ) : <div />}
                     </nav>
                 </article>
 
-                {/* 右側：サイドバー */}
                 <aside className={styles.sidebar}>
                     <div className={styles.sidebarSection}>
                         <h3 className={styles.sidebarTitle}>
@@ -157,10 +161,12 @@ export default async function PostPage({ params }: { params: { id: string } }) {
                     </div>
 
                     <div className={styles.sidebarWidget}>
-                        <h3 style={{ fontSize: '0.9em', color: '#fff', marginBottom: '20px', borderLeft: '3px solid #00d1b2', paddingLeft: '12px' }}>SHARE</h3>
-                        <div style={{ display: 'flex', gap: '10px' }}>
+                        <h3 className="text-[11px] font-black tracking-widest text-white mb-6 border-l-2 border-[#00d1b2] pl-3">SHARE</h3>
+                        <div className="flex gap-2">
                             {['X', 'FB', 'LINE'].map(sns => (
-                                <div key={sns} style={{ flex: 1, textAlign: 'center', padding: '10px', backgroundColor: '#1f1f3a', border: '1px solid #333', borderRadius: '8px', fontSize: '0.75em', fontWeight: 'bold' }}>{sns}</div>
+                                <button key={sns} className="flex-1 py-3 bg-[#1f1f3a] border border-[#333] rounded-lg text-[10px] font-black hover:border-[#00d1b2] hover:text-[#00d1b2] transition-all">
+                                    {sns}
+                                </button>
                             ))}
                         </div>
                     </div>
@@ -173,13 +179,17 @@ export default async function PostPage({ params }: { params: { id: string } }) {
                     <div className={styles.relatedContainer}>
                         <div className={styles.relatedHeader}>
                             <div>
-                                <h2 style={{ fontSize: '2em', fontWeight: '800', color: '#fff', marginBottom: '10px' }}>Recommended</h2>
-                                <p style={{ color: '#888' }}>この記事を読んだ人におすすめの作品</p>
+                                <h2 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">Recommended</h2>
+                                <p className="text-gray-500 text-xs font-bold tracking-widest uppercase">For readers of this article</p>
                             </div>
-                            <Link href="/" style={{ color: '#00d1b2', fontSize: '0.8em', textDecoration: 'none', fontWeight: 'bold' }}>VIEW ALL →</Link>
+                            <Link href="/products" className="text-[#00d1b2] text-[10px] font-black tracking-[0.2em] no-underline hover:underline">
+                                VIEW ALL VIDEOS →
+                            </Link>
                         </div>
                         <div className={styles.relatedGrid}>
-                            {productData.results.map((p) => <ProductCard key={p.id} product={p} />)}
+                            {productData.results.map((p) => (
+                                <ProductCard key={p.id} product={p} />
+                            ))}
                         </div>
                     </div>
                 </section>

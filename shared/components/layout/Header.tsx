@@ -4,11 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 // ✅ shared 内の設定を参照
-import { getSiteMetadata, getSiteColor } from '../siteConfig';
+import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
 import styles from './Header.module.css';
-
-// ※ ログアウト処理も shared/lib/auth.ts などに移動しておくと管理が楽です
-// import { logoutUser } from '../../lib/auth';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,8 +53,8 @@ export default function Header() {
 
   const handleLogout = () => {
     if (confirm('ログアウトしますか？')) {
-      // ログアウト処理を実行（localStorageのクリアなど）
       localStorage.clear();
+      // window.location は Next.js の制御外なので prefix が必要
       window.location.href = `${site.site_prefix}/`;
     }
   };
@@ -67,14 +64,13 @@ export default function Header() {
       className={styles.header} 
       style={{ 
         borderBottom: `3px solid ${themeColor}`,
-        backgroundColor: site.site_group === 'adult' ? '#111' : '#1a1a1a', // アダルトはより深く
-        ['--site-color' as any]: themeColor 
+        backgroundColor: site.site_group === 'adult' ? '#111' : '#1a1a1a',
       }}
     >
       <div className={styles.container}>
         
-        {/* ロゴエリア：サイト名が自動で切り替わる */}
-        <Link href={`${site.site_prefix}/`} onClick={closeMenu} style={{ textDecoration: 'none', color: 'white' }}>
+        {/* ロゴエリア - href="/" でOK。Next.jsが自動で /avflash/ に変換します */}
+        <Link href="/" onClick={closeMenu} style={{ textDecoration: 'none', color: 'white' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ 
               background: themeColor, color: 'white', padding: '4px 8px', 
@@ -92,25 +88,24 @@ export default function Header() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           
           <nav className={styles.desktopNav} style={{ gap: '25px', marginRight: '20px' }}>
-            {/* 一般サイトとアダルトサイトでメニューを出し分け可能 */}
             {site.site_group === 'general' ? (
-              <Link href={`${site.site_prefix}/pc-finder`} style={{ color: themeColor, textDecoration: 'none', fontWeight: 'bold' }}>
+              <Link href="/pc-finder" style={{ color: themeColor, textDecoration: 'none', fontWeight: 'bold' }}>
                 🔍 PC診断
               </Link>
             ) : (
-              <Link href={`${site.site_prefix}/ranking`} style={{ color: themeColor, textDecoration: 'none', fontWeight: 'bold' }}>
+              <Link href="/ranking" style={{ color: themeColor, textDecoration: 'none', fontWeight: 'bold' }}>
                 🔥 人気ランキング
               </Link>
             )}
-            <Link href={`${site.site_prefix}/`} style={{ color: '#eee', textDecoration: 'none' }}>カタログ</Link>
+            <Link href="/" style={{ color: '#eee', textDecoration: 'none' }}>カタログ</Link>
           </nav>
 
           {/* アカウント関連 */}
           <div className={styles.desktopNav} style={{ gap: '10px', alignItems: 'center' }}>
             {!isLoggedIn ? (
               <>
-                <Link href={`${site.site_prefix}/login`} style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85em' }}>ログイン</Link>
-                <Link href={`${site.site_prefix}/register`} style={{ 
+                <Link href="/login" style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85em' }}>ログイン</Link>
+                <Link href="/register" style={{ 
                   background: themeColor, color: 'white', textDecoration: 'none', 
                   fontSize: '0.85em', fontWeight: 'bold', padding: '8px 18px', borderRadius: '20px' 
                 }}>新規登録</Link>
@@ -126,7 +121,7 @@ export default function Header() {
 
                 <span style={{ color: '#fff', fontSize: '0.9em' }}>{userName} 様</span>
                 
-                <Link href={`${site.site_prefix}/mypage`} style={{ color: '#eee', textDecoration: 'none', fontSize: '0.9em' }}>マイページ</Link>
+                <Link href="/mypage" style={{ color: '#eee', textDecoration: 'none', fontSize: '0.9em' }}>マイページ</Link>
                 
                 <button onClick={handleLogout} className={styles.logoutBtn}>ログアウト</button>
               </div>
@@ -139,13 +134,23 @@ export default function Header() {
         </div>
       </div>
 
-      {/* 📱 スマホ用展開メニュー（同様に site_prefix を適用） */}
-      <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} style={{ borderBottom: `2px solid ${themeColor}` }}>
+      {/* スマホ用展開メニュー */}
+      <div 
+        className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} 
+        style={{ borderBottom: `2px solid ${themeColor}` }}
+      >
         <div className={styles.menuSection}>
           <p className={styles.sectionTitle}>Navigation</p>
-          <Link href={`${site.site_prefix}/`} onClick={closeMenu}>トップページ</Link>
+          <Link href="/" onClick={closeMenu}>トップページ</Link>
+          <input 
+            type="text" 
+            placeholder="キーワード検索..." 
+            className={styles.searchBox} 
+            onFocus={(e: any) => e.target.style.borderColor = themeColor}
+            onBlur={(e: any) => e.target.style.borderColor = '#444'}
+            style={{ border: '1px solid #444', transition: 'border-color 0.2s' }}
+          />
         </div>
-        {/* ...（以下、スマホ版も同様にプレフィックスを適用） */}
       </div>
     </header>
   );

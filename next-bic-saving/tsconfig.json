@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -12,25 +13,24 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "baseUrl": ".",
     "plugins": [
       {
         "name": "next"
       }
     ],
-    "paths": {
+  "paths": {
       "@/*": ["./*"],
-      // ✅ Dockerビルド時の物理配置（プロジェクト内）に合わせる
       "@shared/*": ["./shared/*"]
     }
   },
   "include": [
-    "next-env.d.ts", 
-    "**/*.ts", 
-    "**/*.tsx", 
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts",
-    // ✅ プロジェクト内にコピーされた shared を参照
-    "shared/**/*.ts",
-    "shared/**/*.tsx"
+    "./shared/**/*.ts",
+    "./shared/**/*.tsx"
   ],
   "exclude": ["node_modules"]
 }

@@ -2,8 +2,8 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { TrendingUp, Activity } from 'lucide-react';
-import { fetchPCPopularityRanking } from '@/lib/api';
-import ProductCard from '@/components/product/ProductCard';
+import { fetchPCPopularityRanking } from '@shared/components/lib/api';
+import ProductCard from '@shared/components/product/ProductCard';
 import styles from './Popularity.module.css';
 
 export const metadata: Metadata = {

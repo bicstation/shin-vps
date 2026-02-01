@@ -1,5 +1,21 @@
 # =====================================================================
-# 🏠 SHIN-VPS ローカル開発・統合環境 (4ドメイン・ログイン完全対応版)
+# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml)
+# ---------------------------------------------------------------------
+# 【ポート割り当て一覧 (デバッグ用)】
+# - 8083: Traefik 統合ポート (http://localhost:8083/xxx)
+# - 8085: Traefik ダッシュボード
+# - 3001: next-bicstation-v2 (直通)
+# - 3002: next-tiper-v2 (直通)
+# - 3003: next-bic-saving-v2 (直通)
+# - 3004: next-avflash-v2 (直通)
+# - 8000: Django API (直通)
+#
+# 【AIへの保守指示】
+# 1. ネットワーク: 'shin-vps_internal-net' を全サービスの通信基盤とする。
+# 2. Next.js: 'shared' フォルダを各コンテナの /usr/src/app/shared にマウント。
+# 3. URL設計: PathPrefix を利用したサブディレクトリ運用。
+# 4. URL修正: Next.jsサービスは basePath を自前で持つため stripprefix は適用しない。
+# 5. 変数同期: .env 内のデータベースパス変数を volumes に適用。
 # =====================================================================
 
 services:
@@ -14,7 +30,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH:-postgres_data}:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
@@ -33,18 +49,19 @@ services:
       MARIADB_USER: ${WP_DB_USER}
       MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - ${MARIADB_DATA_PATH:-mariadb_data}:/var/lib/mysql
     networks:
       - internal-net
 
   # --- 2. アプリケーション層 (Django API) ---
   django-v2:
-    env_file:
-      - .env
+    env_file: [.env]
     build:
       context: ./django
     container_name: django-v2
     restart: always
+    ports:
+      - "8000:8000" # デバッグ用ポート
     depends_on:
       postgres-db-v2:
         condition: service_healthy
@@ -63,7 +80,7 @@ services:
       - "traefik.http.routers.django-v2-router.priority=2000"
       - "traefik.http.services.django-v2-svc.loadbalancer.server.port=8000"
     volumes:
-      - ${PROJECT_ROOT}/django:/usr/src/app
+      - ./django:/usr/src/app
       - static_volume_home:/usr/src/app/staticfiles
     networks:
       - internal-net
@@ -76,7 +93,6 @@ services:
               capabilities: [gpu]
 
   # --- 3. フロントエンド層 (Next.js 4サイト) ---
-  # build context をプロジェクトルート(.)に変更し、Dockerfileの位置を指定することで shared を参照可能に修正
 
   next-bicstation-v2:
     build: 
@@ -85,10 +101,14 @@ services:
       args: 
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/bicstation
-        - NEXT_PUBLIC_API_URL=http://localhost:8083/bicstation/api
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     container_name: next-bicstation-v2
     restart: always
+    ports:
+      - "3001:3000" # デバッグ用直通ポート
     env_file: [.env]
+    environment:
+      - NEXT_PUBLIC_BASE_PATH=/bicstation
     networks: [internal-net]
     labels:
       - "traefik.enable=true"
@@ -108,10 +128,14 @@ services:
       args: 
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/tiper
-        - NEXT_PUBLIC_API_URL=http://localhost:8083/tiper/api
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     container_name: next-tiper-v2
     restart: always
+    ports:
+      - "3002:3000" # デバッグ用直通ポート
     env_file: [.env]
+    environment:
+      - NEXT_PUBLIC_BASE_PATH=/tiper
     networks: [internal-net]
     labels:
       - "traefik.enable=true"
@@ -120,9 +144,9 @@ services:
       - "traefik.http.routers.tiper-v2-router.entrypoints=web"
       - "traefik.http.routers.tiper-v2-router.priority=100"
       - "traefik.http.services.tiper-v2-svc.loadbalancer.server.port=3000"
-    volumes:
-      - ./next-tiper:/usr/src/app
-      - ./shared:/usr/src/app/shared
+    # volumes:
+    #   - ./next-tiper:/usr/src/app
+    #   - ./shared:/usr/src/app/shared
 
   next-bic-saving-v2:
     build: 
@@ -131,10 +155,14 @@ services:
       args: 
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/saving
-        - NEXT_PUBLIC_API_URL=http://localhost:8083/saving/api
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     container_name: next-bic-saving-v2
     restart: always
+    ports:
+      - "3003:3000" # デバッグ用直通ポート
     env_file: [.env]
+    environment:
+      - NEXT_PUBLIC_BASE_PATH=/saving
     networks: [internal-net]
     labels:
       - "traefik.enable=true"
@@ -154,10 +182,14 @@ services:
       args: 
         - NODE_ENV=development
         - NEXT_PUBLIC_BASE_PATH=/avflash
-        - NEXT_PUBLIC_API_URL=http://localhost:8083/avflash/api
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     container_name: next-avflash-v2
     restart: always
+    ports:
+      - "3004:3000" # デバッグ用直通ポート
     env_file: [.env]
+    environment:
+      - NEXT_PUBLIC_BASE_PATH=/avflash
     networks: [internal-net]
     labels:
       - "traefik.enable=true"
@@ -177,7 +209,7 @@ services:
     restart: always
     volumes:
       - ${PROJECT_ROOT}/data/home/wp-content:/var/www/html:ro
-      - ${PROJECT_ROOT}/nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_internal-net"
@@ -202,17 +234,8 @@ services:
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'http://localhost:8083/blog');
         define('WP_SITEURL', 'http://localhost:8083/blog');
-        define('FORCE_SSL_ADMIN', false);
-        if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
-            $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_X_FORWARDED_HOST'];
-        }
-        if (strpos($_SERVER['REQUEST_URI'], '/wp-admin') !== false || strpos($_SERVER['REQUEST_URI'], 'wp-login.php') !== false) {
-            $_SERVER['REQUEST_URI'] = '/blog' . $_SERVER['REQUEST_URI'];
-            $_SERVER['SCRIPT_NAME'] = '/blog' . $_SERVER['SCRIPT_NAME'];
-            $_SERVER['PHP_SELF']    = '/blog' . $_SERVER['PHP_SELF'];
-        }
     volumes:
-      - ${PROJECT_ROOT}/data/home/wp-content:/var/www/html
+      - ${WP_DATA_PATH:-wordpress_data}:/var/www/html
     networks:
       - internal-net
 
@@ -321,7 +344,11 @@ volumes:
   static_volume_home:
   postgres_data:
   mariadb_data:
+  wordpress_data:
   ollama_data:
+  postgres_data_home:
+  mariadb_data_home:
+  wordpress_data_home:
 
 networks:
   internal-net:

@@ -1,25 +1,27 @@
-// /mnt/e/dev/shin-vps/next-bic-saving/next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // VPS環境（本番/ステージング）では空、ローカル開発時のみ指定するようにする
-  // basePath: process.env.NODE_ENV === 'production' ? '' : '/saving',
+  // 1. ベースパスの設定
+  // 環境変数から取得し、デフォルトは空（ルート）に設定
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
-  // basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/saving',
-  // basePath: '/saving',
-  // サーバーサイドでの環境変数を定義
-  env: {
-    // ✅ 修正：環境変数から取得し、なければデフォルト値（本番名）を使用
-    // これにより、yml側の environment: DB_HOST 設定が反映されます
-    API_URL_INTERNAL: 'http://django-v2-prod:8000', 
-    
-    // 公開用のURL（ブラウザからアクセスするURL）
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
-  },
-  
-  // Docker環境でのビルド安定化のため、念のため output を指定（任意）
+
+  // 2. ビルド・出力設定
+  // Docker環境（スタンドアロンモード）で最適に動作するための設定
   output: 'standalone', 
-  // Reactの厳密モード（必要に応じて）
   reactStrictMode: true,
+
+  // 3. 🛠️ 外部ディレクトリ（shared）のコンパイル許可
+  // shared フォルダ内の TypeScript/JSX をビルド対象に含めます。
+  // これにより、シンボリックリンクや物理コピーされた共通部品が正しく読み込まれます。
+  transpilePackages: ['shared'],
+
+  // 4. 環境変数の定義
+  env: {
+    // サーバー内部（コンテナ間）での通信先
+    API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2-prod:8000', 
+  },
+
+  // 💡 クライアント側（ブラウザ）で使用する環境変数は、
+  // NEXT_PUBLIC_ つきで .env や docker-compose.yml に書くことで自動的に反映されます
 };
 
 export default nextConfig;

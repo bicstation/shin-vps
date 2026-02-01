@@ -1,0 +1,130 @@
+.wrapper {
+  min-height: 100vh;
+  background-color: #111122;
+  padding: 2.5rem 1rem; /* py-10 px-4 */
+}
+
+.container {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1400px;
+}
+
+.header {
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(61, 61, 102, 0.5);
+  padding-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-left: 4px solid #e94560;
+  padding-left: 1rem;
+}
+
+.subtitle {
+  color: #6b7280; /* text-gray-500 */
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.count {
+  color: #e94560;
+  font-family: monospace;
+  font-weight: 700;
+}
+
+/* レスポンシブ・グリッド設定 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* 空の状態 */
+.emptyBox {
+  text-align: center;
+  padding: 8rem 0; /* py-32 */
+  border: 2px dashed rgba(61, 61, 102, 0.3);
+  border-radius: 1rem;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.emptySub {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  font-weight: 400;
+}
+
+/* ページネーション */
+.pagination {
+  margin-top: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.pageBtn {
+  padding: 0.5rem 2rem;
+  background-color: #1f1f3a;
+  border: 1px solid #3d3d66;
+  color: #00d1b2;
+  border-radius: 9999px;
+  font-weight: 900;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.pageBtn:hover {
+  background-color: #e94560;
+  color: #ffffff;
+  border-color: #e94560;
+}
+
+.pageDisplay {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.current {
+  color: #e94560;
+}
+
+.divider {
+  color: #1f2937; /* text-gray-800相当 */
+}
+
+.total {
+  color: #4b5563; /* text-gray-600相当 */
+}

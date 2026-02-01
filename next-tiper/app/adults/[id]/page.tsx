@@ -3,14 +3,13 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { getAdultProductById, getAdultProductsByMaker } from '../../../lib/api';
-import { constructMetadata } from '../../../lib/metadata'; 
-import ProductGallery from '../../components/ProductGallery';
+import styles from './ProductDetail.module.css';
 
-/**
- * 💡 SEO対策: 動的メタデータの生成
- */
-export async function generateMetadata({ params }: { params: { category: string, id: string } }): Promise<Metadata> {
+import { getAdultProductById, getAdultProductsByMaker } from '@shared/components/lib/api';
+import { constructMetadata } from '@shared/components/lib/metadata'; 
+import ProductGallery from '@shared/components/cards/AdultProductGallery';
+
+export async function generateMetadata({ params }: { params: Promise<{ category: string, id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const product = await getAdultProductById(id);
   
@@ -25,94 +24,94 @@ export async function generateMetadata({ params }: { params: { category: string,
   );
 }
 
-export default async function ProductDetailPage({ params }: { params: { category: string, id: string } }) {
+export default async function ProductDetailPage({ params }: { params: Promise<{ category: string, id: string }> }) {
   const { category, id } = await params;
   
-  // 商品データの取得
+  // 💡 商品データの取得
   const product = await getAdultProductById(id);
 
-  // 商品が見つからない場合のエラーハンドリング
   if (!product) {
     return (
-      <div style={{ backgroundColor: '#111122', minHeight: '80vh', color: 'white', padding: '50px', textAlign: 'center' }}>
-        <h1 style={{ color: '#e94560' }}>商品が見つかりませんでした</h1>
-        <Link href="/" style={{ color: '#00d1b2', textDecoration: 'none', marginTop: '20px', display: 'inline-block' }}>
-          ← トップページへ戻る
+      <div className={styles.notFound}>
+        <div className="text-6xl mb-6">🚫</div>
+        <h1 className="text-white text-3xl font-black italic">PRODUCT NOT FOUND</h1>
+        <Link href="/products" className="mt-8 px-8 py-3 bg-[#1f1f3a] text-[#00d1b2] rounded-full font-bold border border-[#3d3d66] hover:border-[#00d1b2] no-underline">
+          ← BACK TO ARCHIVE
         </Link>
       </div>
     );
   }
 
-  // 💡 データの整形（JSONの構造 actresses に合わせる）
   const imageList = Array.isArray(product.image_url_list) ? product.image_url_list : [];
-  const actresses = product.actresses || []; // actors から actresses に修正
+  const actresses = product.actresses || []; 
   const genres = product.genres || [];
 
-  // 同じメーカーの関連商品を取得
+  // 💡 関連商品の取得
   let relatedProducts = [];
   try {
-    relatedProducts = product.maker ? await getAdultProductsByMaker(product.maker.id, 8) : [];
-    if (!Array.isArray(relatedProducts) && relatedProducts?.results) {
-        relatedProducts = relatedProducts.results;
+    if (product.maker?.id) {
+      const response = await getAdultProductsByMaker(product.maker.id, 8);
+      relatedProducts = Array.isArray(response) ? response : (response?.results || []);
     }
   } catch (e) {
     relatedProducts = [];
   }
 
   return (
-    <div style={{ backgroundColor: '#111122', minHeight: '100vh', color: 'white' }}>
-      
-      {/* ページ内ナビゲーション */}
-      <nav style={{ padding: '15px 5%', borderBottom: '1px solid #3d3d66', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8em' }}>
-        <Link href="/" style={{ color: '#00d1b2', textDecoration: 'none' }}>
-          ← 商品一覧へ戻る
+    <div className={styles.wrapper}>
+      <nav className={styles.nav}>
+        <Link href="/products" className={styles.backLink}>
+          « BACK TO ALL MOVIES
         </Link>
-        <span style={{ color: '#555' }}>PRODUCT ID: {id}</span>
+        <span className={styles.productId}>UID: {id}</span>
       </nav>
 
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px', alignItems: 'start' }}>
+      <main className={styles.mainContainer}>
+        <div className={styles.gridContent}>
           
-          {/* 左側：画像ギャラリー */}
-          <section>
+          {/* 左側：ギャラリー（画像リストを渡すとスライダーやタイル表示する共通部品） */}
+          <section className="sticky top-24">
             {imageList.length > 0 ? (
-                <ProductGallery images={imageList} title={product.title} />
+              <ProductGallery images={imageList} title={product.title} />
             ) : (
-                <div style={{ width: '100%', aspectRatio: '1/1', backgroundColor: '#1f1f3a', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px' }}>
-                    <p style={{ color: '#666' }}>No Images Available</p>
-                </div>
+              <div className="aspect-[3/4] w-full bg-[#1f1f3a] flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#3d3d66]">
+                <span className="text-4xl mb-4">🖼️</span>
+                <p className="text-gray-600 font-bold">NO IMAGE DATA</p>
+              </div>
             )}
           </section>
 
-          {/* 右側：詳細情報 */}
+          {/* 右側：コンテンツ詳細 */}
           <section>
-            <div style={{ marginBottom: '15px' }}>
-              <span style={{ backgroundColor: '#e94560', color: 'white', padding: '4px 12px', borderRadius: '4px', fontSize: '0.7em', fontWeight: 'bold' }}>
-                {product.api_source || 'PREMIUM'}
+            <div className="flex items-center gap-3 mb-4">
+              <span className={styles.sourceBadge}>
+                {product.api_source || 'EXCLUSIVE'}
+              </span>
+              <span className="text-[10px] font-mono text-gray-600 tracking-tighter uppercase">
+                Release: {product.release_date || 'TBA'}
               </span>
             </div>
             
-            <h1 style={{ fontSize: '1.8em', marginBottom: '20px', lineHeight: '1.4', fontWeight: 'bold', color: '#fff' }}>
+            <h1 className={styles.title}>
               {product.title}
             </h1>
             
-            <div style={{ fontSize: '2.2em', color: '#00d1b2', fontWeight: 'bold', marginBottom: '30px', display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-              ¥{(product.price || 0).toLocaleString()}
-              <span style={{ fontSize: '0.4em', color: '#aaa', fontWeight: 'normal' }}>税込</span>
+            <div className={styles.priceContainer}>
+              <span className="text-lg mt-2 italic text-[#e94560]">¥</span>
+              {(product.price || 0).toLocaleString()}
+              <span className={styles.priceLabel}>TAX INCL.</span>
             </div>
 
-            {/* スペックテーブル */}
-            <div style={{ backgroundColor: '#1f1f3a', padding: '25px', borderRadius: '12px', border: '1px solid #3d3d66', marginBottom: '35px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
+            <div className={styles.specTableContainer}>
+              <table className={styles.specTable}>
                 <tbody>
-                  {/* 出演者 (actresses) の追加 */}
-                  <tr style={{ borderBottom: '1px solid #333' }}>
-                    <td style={{ padding: '15px 0', color: '#99e0ff' }}>出演者</td>
-                    <td style={{ textAlign: 'right', padding: '15px 0' }}>
+                  <tr className={styles.specRow}>
+                    <td className={styles.specKey}>ACTRESS</td>
+                    <td className={styles.specValue}>
                       {actresses.length > 0 ? (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', justifyContent: 'flex-end' }}>
+                        <div className="flex flex-wrap gap-2 justify-end">
                           {actresses.map((act) => (
-                            <Link key={act.id} href={`/actress/${act.id}`} style={{ color: '#00d1b2', textDecoration: 'none' }}>
+                            <Link key={act.id} href={`/actress/${act.id}`} className={styles.actressLink}>
                               {act.name}
                             </Link>
                           ))}
@@ -120,43 +119,32 @@ export default async function ProductDetailPage({ params }: { params: { category
                       ) : '---'}
                     </td>
                   </tr>
-                  <tr style={{ borderBottom: '1px solid #333' }}>
-                    <td style={{ padding: '15px 0', color: '#99e0ff' }}>メーカー</td>
-                    <td style={{ textAlign: 'right', padding: '15px 0' }}>
-                      <Link href={`/maker/${product.maker?.id}`} style={{ color: 'white', textDecoration: 'none' }}>
+                  <tr className={styles.specRow}>
+                    <td className={styles.specKey}>MAKER</td>
+                    <td className={styles.specValue}>
+                      <Link href={`/maker/${product.maker?.id}`} className="text-[#00d1b2] hover:underline">
                         {product.maker?.name || '---'}
                       </Link>
                     </td>
                   </tr>
-                  <tr style={{ borderBottom: '1px solid #333' }}>
-                    <td style={{ padding: '15px 0', color: '#99e0ff' }}>シリーズ</td>
-                    <td style={{ textAlign: 'right', padding: '15px 0' }}>
+                  <tr className={styles.specRow}>
+                    <td className={styles.specKey}>SERIES</td>
+                    <td className={styles.specValue}>
                       {product.series ? (
-                        <Link href={`/series/${product.series.id}`} style={{ color: 'white', textDecoration: 'none' }}>
-                          {product.series.name}
-                        </Link>
-                      ) : '---'}
+                        <span className="text-gray-300">{product.series.name}</span>
+                      ) : 'SINGLE WORK'}
                     </td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '15px 0', color: '#99e0ff' }}>配信開始</td>
-                    <td style={{ textAlign: 'right', padding: '15px 0' }}>{product.release_date || '---'}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            {/* ジャンルタグリスト */}
             {genres.length > 0 && (
-              <div style={{ marginTop: '30px' }}>
-                <h3 style={{ fontSize: '0.9em', color: '#aaa', marginBottom: '15px', borderLeft: '3px solid #e94560', paddingLeft: '10px' }}>関連ジャンル</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              <div className={styles.genreSection}>
+                <h3 className={styles.sectionLabel}>Tags / Genres</h3>
+                <div className={styles.genreGrid}>
                   {genres.map((genre) => (
-                    <Link 
-                      key={genre.id} 
-                      href={`/genre/${genre.id}`}
-                      style={{ padding: '6px 14px', backgroundColor: '#252545', border: '1px solid #3d3d66', color: '#00d1b2', borderRadius: '6px', fontSize: '0.85em', textDecoration: 'none', transition: '0.2s' }}
-                    >
+                    <Link key={genre.id} href={`/genre/${genre.id}`} className={styles.genreTag}>
                       #{genre.name}
                     </Link>
                   ))}
@@ -164,31 +152,36 @@ export default async function ProductDetailPage({ params }: { params: { category
               </div>
             )}
 
-            {/* 外部アフィリエイトリンク */}
-            <a href={product.affiliate_url} target="_blank" rel="nofollow noopener noreferrer"
-              style={{ display: 'block', marginTop: '45px', padding: '20px', backgroundColor: '#e94560', color: 'white', textAlign: 'center', borderRadius: '10px', fontSize: '1.2em', fontWeight: 'bold', textDecoration: 'none', boxShadow: '0 5px 20px rgba(233, 69, 96, 0.4)' }}
-            >
-              販売サイトで詳細を見る
+            <a href={product.affiliate_url} target="_blank" rel="nofollow noopener noreferrer" className={styles.affiliateBtn}>
+              DOWNLOAD / WATCH NOW
             </a>
+
+            <p className="mt-6 text-[10px] text-center text-gray-600 leading-relaxed font-bold italic uppercase tracking-tighter">
+              ※ 外部配信サイトへ移動します。18歳未満の方の閲覧は固く禁止されています。
+            </p>
           </section>
         </div>
 
-        {/* 💡 おすすめセクション */}
-        {relatedProducts && relatedProducts.length > 0 && (
-          <section style={{ marginTop: '100px', borderTop: '2px solid #3d3d66', paddingTop: '50px' }}>
-            <h2 style={{ fontSize: '1.5em', marginBottom: '35px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ color: '#e94560', fontSize: '1.2em' }}>◆</span> このメーカーの注目作品
+        {/* 関連商品：メーカーつながり */}
+        {relatedProducts.length > 0 && (
+          <section className={styles.relatedSection}>
+            <h2 className={styles.relatedTitle}>
+              MORE FROM {product.maker?.name || 'THIS MAKER'}
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '25px' }}>
-              {relatedProducts.map((p) => (
-                <Link key={p.id} href={`/${category}/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ backgroundColor: '#1f1f3a', borderRadius: '12px', overflow: 'hidden', border: '1px solid #3d3d66', transition: 'transform 0.2s' }}>
-                    <div style={{ aspectRatio: '16/10', overflow: 'hidden' }}>
-                      <img src={p.image_url_list?.[0] || '/no-image.png'} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div className={styles.relatedGrid}>
+              {relatedProducts.slice(0, 4).map((p) => (
+                <Link key={p.id} href={`/${category}/${p.id}`} className="no-underline group">
+                  <div className={styles.relatedCard}>
+                    <div className="aspect-[16/10] overflow-hidden bg-black">
+                      <img 
+                        src={p.image_url_list?.[0] || '/no-image.png'} 
+                        alt={p.title} 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100" 
+                      />
                     </div>
-                    <div style={{ padding: '15px' }}>
-                      <p style={{ fontSize: '0.75em', color: '#00d1b2', marginBottom: '8px', fontWeight: 'bold' }}>{p.maker?.name || '---'}</p>
-                      <p style={{ fontSize: '0.9em', lineHeight: '1.5', height: '3em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    <div className="p-4 bg-[#1f1f3a]">
+                      <p className="text-[9px] text-[#e94560] font-black uppercase mb-1 tracking-widest">{p.maker?.name || '---'}</p>
+                      <p className="text-[12px] font-bold text-gray-300 group-hover:text-white line-clamp-2 h-9 leading-snug">
                         {p.title}
                       </p>
                     </div>

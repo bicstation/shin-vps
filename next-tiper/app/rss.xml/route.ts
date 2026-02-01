@@ -1,36 +1,68 @@
-import { getAdultProducts } from '../../lib/api';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { getAdultProducts } from '@shared/lib/api';
 
+/**
+ * 💡 RSSフィード生成ロジック
+ * Route Handlers を使用して XML を動的に返します。
+ */
 export async function GET() {
   const baseURL = 'https://tiper.live/tiper';
-  const products = await getAdultProducts(); // 最新の商品を取得
+  
+  // 最新の動画データを取得（多めに50件程度取得するのが一般的です）
+  const data = await getAdultProducts({ limit: 50, ordering: '-created_at' })
+    .catch(() => ({ results: [] }));
+  
+  const products = data?.results || [];
 
-  const items = (products?.results || [])
-    .map((product: any) => `
+  const items = products
+    .map((product: any) => {
+      // 日付のバリデーション（不正な日付によるエラー防止）
+      const pubDate = product.release_date 
+        ? new Date(product.release_date).toUTCString() 
+        : new Date().toUTCString();
+
+      // サムネイル画像の取得（最初の1枚）
+      const thumbnail = product.image_url_list?.[0] || '';
+
+      return `
       <item>
         <title><![CDATA[${product.title}]]></title>
         <link>${baseURL}/adults/${product.id}</link>
-        <description><![CDATA[${product.maker?.name || ''} - ${product.title}]]></description>
-        <pubDate>${new Date(product.release_date).toUTCString()}</pubDate>
+        <description><![CDATA[
+          ${thumbnail ? `<img src="${thumbnail}" style="max-width:300px;display:block;margin-bottom:10px;" /><br/>` : ''}
+          メーカー: ${product.maker?.name || '---'}<br/>
+          出演者: ${product.actresses?.map((a: any) => a.name).join(', ') || '---'}
+        ]]></description>
+        ${thumbnail ? `<enclosure url="${thumbnail}" length="0" type="image/jpeg" />` : ''}
+        <pubDate>${pubDate}</pubDate>
         <guid isPermaLink="false">${product.id}</guid>
-      </item>
-    `)
+        <category><![CDATA[アダルト動画]]></category>
+      </item>`;
+    })
     .join('');
 
   const rss = `<?xml version="1.0" encoding="UTF-8" ?>
-    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-      <channel>
-        <title>Tiper - 最新アダルト商品情報</title>
-        <link>${baseURL}</link>
-        <description>最新の商品入荷情報をお届けします</description>
-        <language>ja</language>
-        <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-        ${items}
-      </channel>
-    </rss>`;
+<rss version="2.0" 
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:media="http://search.yahoo.com/mrss/"
+>
+  <channel>
+    <title>Tiper - 最新動画情報アーカイブ</title>
+    <link>${baseURL}</link>
+    <description>最新の商品入荷情報をサイバーパンクなスピードでお届けします</description>
+    <language>ja</language>
+    <copyright>Copyright 2026 Tiper Live</copyright>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${baseURL}/rss.xml" rel="self" type="application/rss+xml" />
+    ${items}
+  </channel>
+</rss>`;
 
   return new Response(rss, {
     headers: {
-      'Content-Type': 'application/xml',
+      'Content-Type': 'application/xml; charset=utf-8',
+      // 1時間キャッシュさせつつ、背後で更新する設定
       'Cache-Control': 's-maxage=3600, stale-while-revalidate',
     },
   });

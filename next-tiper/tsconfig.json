@@ -1,5 +1,16 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      // 💡 配列で複数の候補を指定することで、どちらの書き方にも対応させます
+      "@shared/*": [
+        "shared/*",
+        "shared/components/*"
+      ]
+    },
+    // (他の設定はそのまま)
+    "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -12,25 +23,13 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      // ✅ 自分のプロジェクト内を参照
-      "@/*": ["./*"],
-      // ✅ Dockerビルド時に内部へ物理コピーされる shared 用のパス
-      // Dockerfile の sed 処理で書き換えられる @shared/ エイリアスに対応
-      "@shared/*": ["./shared/*"]
-    }
+    "plugins": [{ "name": "next" }]
   },
   "include": [
     "next-env.d.ts", 
     "**/*.ts", 
     "**/*.tsx", 
     ".next/types/**/*.ts",
-    // ✅ プロジェクト内にコピーされた shared フォルダをスキャン対象にする
     "shared/**/*.ts",
     "shared/**/*.tsx"
   ],

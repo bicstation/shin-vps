@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 // ✅ 外部JS (Script) は不要になったためインポートから削除
 import styles from './PCFinderPage.module.css';
-import ProductCard from '@/components/product/ProductCard';
+import ProductCard from '@/shared/components/product/ProductCard';
 
 /**
  * =====================================================================

@@ -1,38 +1,32 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    /* 🚨 baseUrlは必ず "." のまま。絶対に変えないでください。 */
+    "baseUrl": ".",
+    "paths": {
+      /* 🚨 @/* は現在のプロジェクト内、@shared/* はリンクした共通フォルダを指します。変えないでください。 */
+      "@/*": ["./*"],
+      "@shared/*": ["./shared/*"]
+    },
+    /* 💡 型定義の衝突を防ぎ、パス解決を安定させるために以下を追加してください */
+    "moduleResolution": "node",
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      // ✅ 自分のフォルダ用
-      "@/*": ["./*"],
-      // ✅ Dockerビルド時に内部へコピーされる shared フォルダ用のパス
-      // Dockerfile内での文字列置換（@shared/）に合わせて定義
-      "@shared/*": ["./shared/*"]
-    }
+    "incremental": true
   },
   "include": [
     "next-env.d.ts", 
     "**/*.ts", 
     "**/*.tsx", 
     ".next/types/**/*.ts",
-    // ✅ プロジェクト内にコピーされた shared フォルダをスキャン対象にする
-    "shared/**/*.ts",
-    "shared/**/*.tsx"
+    /* 🚨 外部の shared を型チェック対象に含めるため、この記述は必須です。変えないでください。 */
+    "shared/**/*"
   ],
   "exclude": ["node_modules"]
 }

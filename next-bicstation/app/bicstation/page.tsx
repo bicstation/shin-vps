@@ -2,9 +2,9 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { fetchPostList, fetchMakers } from '@/lib/api';
-import Sidebar from '@/components/layout/Sidebar';
-import Pagination from '@/components/common/Pagination';
+import { fetchPostList, fetchMakers } from '@shared/components/lib/api';
+import Sidebar from '@shared/components/layout/Sidebar';
+import Pagination from '@shared/components/common/Pagination';
 import styles from '../MainPage.module.css';
 
 export const dynamic = 'force-dynamic';

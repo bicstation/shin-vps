@@ -2,98 +2,110 @@
 
 import React, { useState, FormEvent } from 'react';
 import Link from 'next/link'; 
-import { loginUser } from '../shared/auth';
-import { getSiteMetadata } from '../shared/siteConfig';
+import { loginUser } from '@shared/components/lib/auth';
+import { getSiteMetadata } from '@shared/components/lib/siteConfig';
+import styles from './Login.module.css'; // 上記のCSSを読み込み
 
 export default function LoginPage() {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [debugMsg, setDebugMsg] = useState<string>(''); // 🚀 どこで止まったか表示する用
+  const [debugMsg, setDebugMsg] = useState<string>('');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    setDebugMsg('1. フォーム送信開始...');
+    setDebugMsg('SEQUENCE: STARTING AUTH...');
     setLoading(true);
 
     try {
       console.log("Login sequence initiated...");
       
-      setDebugMsg('2. API通信(auth.ts)を呼び出し中...');
+      setDebugMsg('SEQUENCE: CALLING AUTH API...');
+      // lib/auth.ts 内で cookie セットやリダイレクト処理が行われる想定
       await loginUser(username, password);
       
-      // 通常、成功すれば auth.ts 側でリダイレクトされるのでここには来ません
-      setDebugMsg('3. 通信成功！リダイレクトを待機中...');
-
+      setDebugMsg('SEQUENCE: SUCCESS. REDIRECTING...');
     } catch (err: any) {
       console.error("Login Error:", err);
-      setDebugMsg(`❌ エラー発生: ${err.message}`);
+      setDebugMsg(`ERROR: ${err.message}`);
       setError(err.message || 'ログインに失敗しました。');
       setLoading(false);
     }
   };
 
-  const { site_prefix } = getSiteMetadata();
-  const registerHref = site_prefix ? `${site_prefix}/register` : '/register';
+  const siteMetadata = getSiteMetadata();
+  const sitePrefix = siteMetadata?.site_prefix || '';
+  const registerHref = sitePrefix ? `${sitePrefix}/register` : '/register';
 
   return (
-    <div className="flex justify-center items-center min-h-[70vh] px-4">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">ログイン</h1>
+    <div className={styles.loginWrapper}>
+      <div className={styles.loginCard}>
+        <h1 className={styles.title}>Member Login</h1>
         
-        {/* ステータス表示（デバッグ用） */}
+        {/* デバッグ用ステータス（開発・運用初期に便利） */}
         {loading && (
-          <div className="mb-4 text-xs text-blue-500 font-mono text-center bg-blue-50 p-2 rounded">
+          <div className={styles.debugBox}>
             {debugMsg}
           </div>
         )}
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+          <div className={styles.errorBox}>
+            <span className="font-bold mr-2">!</span>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className={styles.formGroup}>
           <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">ユーザー名</label>
+            <label className={styles.label}>USER NAME</label>
             <input 
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
               required
               autoComplete="username"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500"
+              placeholder="ユーザー名を入力"
+              className={styles.input}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-600 mb-2">パスワード</label>
+            <label className={styles.label}>PASSWORD</label>
             <input 
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required
               autoComplete="current-password"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500"
+              placeholder="••••••••"
+              className={styles.input}
             />
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className={`w-full py-4 rounded-xl font-bold text-white transition-all ${
-              loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+            className={`${styles.submitBtn} ${
+              loading ? styles.submitBtnLoading : styles.submitBtnActive
             }`}
           >
-            {loading ? '処理中...' : 'ログイン'}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Processing...
+              </span>
+            ) : 'Login to Tiper'}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-50 text-center">
-          <Link href={registerHref} className="text-blue-600 font-bold hover:underline text-sm">
+        <div className={styles.footer}>
+          <Link href={registerHref} className={styles.registerLink}>
             新規会員登録はこちら
           </Link>
         </div>

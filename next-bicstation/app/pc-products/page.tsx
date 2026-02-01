@@ -6,10 +6,10 @@ export const revalidate = 0;
 
 import React from 'react';
 import Script from 'next/script'; // 🚩 JSエラー対策
-import ProductCard from '@/components/product/ProductCard';
-import Sidebar from '@/components/layout/Sidebar';
-import Pagination from '@/components/common/Pagination';
-import { fetchPCProducts, fetchPostList, fetchMakers } from '@/lib/api';
+import ProductCard from '@shared/components/product/ProductCard';
+import Sidebar from '@shared/components/layout/Sidebar';
+import Pagination from '@shared/components/common/Pagination';
+import { fetchPCProducts, fetchPostList, fetchMakers } from '@shared/components/lib/api';
 import { COLORS } from "@/constants";
 import styles from './BrandPage.module.css';
 

@@ -1,0 +1,247 @@
+/* 基本レイアウト */
+.wrapper {
+  min-height: 100vh;
+  background-color: #111122;
+  color: #ffffff;
+  padding-bottom: 5rem; /* pb-20 */
+}
+
+.nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem; /* py-8 px-4 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backLink {
+  color: #00d1b2;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.backLink:hover {
+  filter: brightness(1.25);
+}
+
+.productId {
+  font-size: 10px;
+  font-family: monospace;
+  color: #4b5563; /* text-gray-600 */
+  letter-spacing: 0.1em;
+}
+
+.mainContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.gridContent {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .gridContent {
+    grid-template-columns: 1fr 450px;
+  }
+}
+
+.sourceBadge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: rgba(233, 69, 96, 0.2);
+  border: 1px solid #e94560;
+  color: #e94560;
+  font-size: 10px;
+  font-weight: 900;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.025em;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 1.875rem;
+  }
+}
+
+.priceContainer {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: #00d1b2;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: monospace;
+}
+
+.priceLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-family: sans-serif;
+  letter-spacing: normal;
+}
+
+/* スペックテーブル */
+.specTableContainer {
+  background-color: #1f1f3a;
+  border-radius: 1rem;
+  border: 1px solid #3d3d66;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.specTable {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.specRow {
+  border-bottom: 1px solid #3d3d66;
+}
+
+.specRow:last-child {
+  border-bottom: 0;
+}
+
+.specKey {
+  width: 8rem;
+  padding: 1rem 1.5rem;
+  background-color: #1a1a2e;
+  color: #9ca3af; /* text-gray-400相当 */
+  font-weight: 700;
+  text-align: left;
+}
+
+.specValue {
+  padding: 1rem 1.5rem;
+  text-align: right;
+  font-weight: 700;
+}
+
+.actressLink {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background-color: #111122;
+  border: 1px solid #3d3d66;
+  border-radius: 9999px;
+  color: #00d1b2;
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.actressLink:hover {
+  border-color: #00d1b2;
+}
+
+/* ジャンル */
+.genreSection {
+  margin-bottom: 2.5rem;
+}
+
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 900;
+  color: #6b7280;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.genreGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.genreTag {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.genreTag:hover {
+  color: #ffffff;
+}
+
+/* アフィリエイトボタン */
+.affiliateBtn {
+  display: block;
+  width: 100%;
+  padding: 1.25rem 0;
+  background: linear-gradient(to right, #e94560, #ff4d6d);
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 1rem;
+  font-weight: 900;
+  font-size: 1.25rem;
+  box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.affiliateBtn:hover {
+  transform: scale(1.02);
+}
+
+.affiliateBtn:active {
+  transform: scale(0.98);
+}
+
+/* おすすめセクション */
+.relatedSection {
+  margin-top: 6rem;
+  padding-top: 4rem;
+  border-top: 1px solid #3d3d66;
+}
+
+.relatedTitle {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 2.5rem;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .relatedGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+}

@@ -1,4 +1,4 @@
-import StaticPageLayout from '@/components/static/StaticPageLayout';
+import StaticPageLayout from '@shared/components/static/StaticPageLayout';
 
 export const metadata = {
   title: '広告掲載規定および免責事項 | BICSTATION',

@@ -10,6 +10,8 @@
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  background-color: #111122; /* サイト全体のベース背景色を固定 */
+  color: #ffffff;
 }
 
 /* 2. 告知・年齢制限バー */
@@ -18,23 +20,24 @@
   padding: 8px 15px;
   font-size: 11px;
   text-align: center;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.5); /* 少し暗くして視認性アップ */
   color: #94a3b8;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   letter-spacing: 0.05em;
+  z-index: 50;
 }
 
 .ageLimit {
   margin-left: 10px;
-  color: #f43f5e; /* 警告用の赤ピンク */
-  font-weight: bold;
+  color: #e94560; /* 他のパーツと色を統一 (#f43f5e から #e94560 へ) */
+  font-weight: 800;
 }
 
 /* 3. レイアウトの外枠 */
 .layoutContainer {
   flex: 1;
   width: 100%;
-  max-width: 1400px; /* 動画コンテンツを考慮した広め設計 */
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 24px;
   box-sizing: border-box;
@@ -50,7 +53,7 @@
 /* 5. メインコンテンツ（吹きこぼれ防止） */
 .mainContent {
   flex: 1;
-  min-width: 0; /* 💡 テーブルや動画プレイヤーの突き抜け防止 */
+  min-width: 0; /* 💡 フレックスボックス内での突き抜け防止 */
   animation: fadeIn 0.6s ease-out;
 }
 
@@ -68,12 +71,18 @@
     padding: 0 16px;
   }
   .adDisclosure {
-    font-size: 9px;
+    font-size: 10px; /* 9pxだと小さすぎる場合があるため調整 */
   }
 }
 
 /* 7. ページフェードイン */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }

@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, FormEvent } from 'react';
 import Link from 'next/link';
-import { registerUser } from '../shared/auth';
+import { useRouter } from 'next/navigation';
+import { registerUser } from '@shared/components/lib/auth';
+import { getSiteMetadata } from '@shared/components/lib/siteConfig';
+import styles from './Register.module.css';
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [basePath, setBasePath] = useState("");
 
-  // 環境判別（サブパス対応）
-  useEffect(() => {
-    const currentPath = window.location.pathname;
-    const prefix = currentPath.startsWith('/bicstation') ? '/bicstation' : '';
-    setBasePath(prefix);
-  }, []);
+  // サイト設定の取得（リンク用）
+  const { site_prefix } = getSiteMetadata();
+  const loginHref = site_prefix ? `${site_prefix}/login` : '/login';
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,13 +27,13 @@ export default function RegisterPage() {
 
     // バリデーション
     if (password !== confirmPassword) {
-      setError('パスワードが一致しません。');
+      setError('パスワード（確認用）が一致しません。');
       setLoading(false);
       return;
     }
 
     if (password.length < 8) {
-      setError('パスワードは8文字以上で入力してください。');
+      setError('パスワードは8文字以上である必要があります。');
       setLoading(false);
       return;
     }
@@ -42,133 +42,109 @@ export default function RegisterPage() {
       // 🚀 lib/auth.ts の registerUser を呼び出し
       await registerUser(username, email, password);
       
-      alert('会員登録が完了しました！ログインしてください。');
+      alert('会員登録が完了しました！ログインページへ移動します。');
       
       // ログイン画面へ遷移
-      window.location.href = `${window.location.origin}${basePath}/login`;
+      router.push(loginHref);
     } catch (err: any) {
-      setError(err.message || '登録に失敗しました。');
+      console.error("Registration Error:", err);
+      setError(err.message || '登録に失敗しました。ユーザー名やメールアドレスが既に使用されている可能性があります。');
     } finally {
       setLoading(false);
     }
   };
 
-  const loginHref = `${basePath}/login`;
-
   return (
-    <div style={{ 
-      maxWidth: '440px', 
-      margin: '60px auto', 
-      padding: '32px', 
-      border: '1px solid #eaeaea', 
-      borderRadius: '16px', 
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-      backgroundColor: '#fff'
-    }}>
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: '#111', marginBottom: '8px' }}>
-          新規会員登録
-        </h1>
-        <p style={{ color: '#666', fontSize: '0.9rem' }}>
-          アカウントを作成してサービスを開始しましょう。
-        </p>
-      </div>
-      
-      {error && (
-        <div style={{ 
-          color: '#e53e3e', 
-          backgroundColor: '#fff5f5', 
-          padding: '12px 16px', 
-          marginBottom: '24px', 
-          borderRadius: '8px', 
-          fontSize: '0.85rem',
-          border: '1px solid #feb2b2'
-        }}>
-          {error}
+    <div className={styles.wrapper}>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Join Tiper Live</h1>
+          <p className={styles.subtitle}>
+            最高のアダルト体験を。今すぐ無料登録。
+          </p>
         </div>
-      )}
+        
+        {error && (
+          <div className={styles.errorBox}>
+            <span className="mr-2">⚠️</span>
+            {error}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.9rem', color: '#333' }}>
-            ユーザー名
-          </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-            placeholder="例: bic_taro"
-          />
+        <form onSubmit={handleSubmit} className={styles.formGroup}>
+          <div>
+            <label className={styles.label}>User Name</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              placeholder="例: tip_master"
+              className={styles.input}
+            />
+          </div>
+
+          <div>
+            <label className={styles.label}>Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="mail@example.com"
+              className={styles.input}
+            />
+          </div>
+
+          <div>
+            <label className={styles.label}>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="8文字以上の英数字"
+              className={styles.input}
+            />
+          </div>
+
+          <div>
+            <label className={styles.label}>Confirm Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              placeholder="パスワードを再入力"
+              className={styles.input}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`${styles.submitBtn} ${
+              loading ? styles.btnLoading : styles.btnActive
+            }`}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Creating Account...
+              </span>
+            ) : '無料でお試しを開始する'}
+          </button>
+        </form>
+
+        <div className={styles.footer}>
+          すでにアカウントをお持ちですか？{' '}
+          <Link href={loginHref} className={styles.loginLink}>
+            ログインはこちら
+          </Link>
         </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.9rem', color: '#333' }}>
-            メールアドレス
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-            placeholder="example@mail.com"
-          />
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.9rem', color: '#333' }}>
-            パスワード
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-            placeholder="8文字以上"
-          />
-        </div>
-
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '0.9rem', color: '#333' }}>
-            パスワード（確認用）
-          </label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '14px',
-            backgroundColor: loading ? '#a0aec0' : '#0070f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold',
-            fontSize: '1rem'
-          }}
-        >
-          {loading ? '処理中...' : '無料でお試しを開始する'}
-        </button>
-      </form>
-
-      <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '0.9rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '24px' }}>
-        すでにアカウントをお持ちですか？{' '}
-        <Link href={loginHref} style={{ color: '#0070f3', textDecoration: 'none', fontWeight: 'bold' }}>
-          ログイン
-        </Link>
       </div>
     </div>
   );

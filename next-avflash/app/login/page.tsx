@@ -2,8 +2,8 @@
 
 import React, { useState, FormEvent } from 'react';
 import Link from 'next/link'; 
-import { loginUser } from '../shared/auth';
-import { getSiteMetadata } from '../shared/siteConfig';
+import { loginUser } from '@shared/lib/auth';
+import { getSiteMetadata } from '@shared/lib/siteConfig';
 
 export default function LoginPage() {
   const [username, setUsername] = useState<string>('');

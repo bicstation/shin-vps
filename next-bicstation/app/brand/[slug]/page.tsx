@@ -2,9 +2,9 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import React from "react";
-import ProductCard from "@/components/product/ProductCard";
-import Sidebar from "@/components/layout/Sidebar";
-import { fetchPCProducts, fetchMakers, fetchPostList } from "@/lib/api";
+import ProductCard from "@shared/components/product/ProductCard";
+import Sidebar from "@shared/components/layout/Sidebar";
+import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/components/lib/api';
 import { COLORS } from "@/constants";
 import styles from "./BrandPage.module.css";
 import Link from "next/link";

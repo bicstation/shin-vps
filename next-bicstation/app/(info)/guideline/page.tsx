@@ -1,4 +1,4 @@
-import StaticPageLayout from '@/components/static/StaticPageLayout';
+import StaticPageLayout from '@shared/components/static/StaticPageLayout';
 
 export const metadata = {
   title: 'コンテンツ制作ガイドライン | BICSTATION',

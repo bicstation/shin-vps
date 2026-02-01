@@ -1,17 +1,15 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS 高機能再構築スクリプト (令和・WSL2ネイティブ対応版)
+# 🚀 SHIN-VPS プロフェッショナル再構築スクリプト (WSL2 & 32GB RAM 最適化版)
 # ==============================================================================
 
-# 1. 実行ディレクトリ・ホスト情報の取得
-# $(dirname "$0") を使うことで、どこから実行してもスクリプトのある場所を基準にします
+# 1. 実行環境の解析
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CURRENT_HOSTNAME=$(hostname)
 CURRENT_USER=$USER
 
 # 💡 VPS・ローカル環境の判定
-# ホスト名やユーザー名から「本番(VPS)」か「開発(Local)」かを自動判別
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]] || [[ "$CURRENT_USER" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
     IS_VPS=true
 else
@@ -24,6 +22,7 @@ NO_CACHE=""
 CLEAN=false
 CLEAN_ALL=false
 WATCH_MODE=false
+TAIL_LOGS=true
 RAW_SERVICES=""
 
 # ---------------------------------------------------------
@@ -31,33 +30,40 @@ RAW_SERVICES=""
 # ---------------------------------------------------------
 show_help() {
     echo "================================================================"
-    echo "🛠  SHIN-VPS REBUILD SCRIPT (Native WSL2 Optimized)"
+    echo "🛠  SHIN-VPS REBUILD SCRIPT Pro (High Performance Mode)"
     echo "================================================================"
     echo "Usage: ./rebuild.sh [TARGET] [SERVICE_KEYWORD...] [OPTIONS]"
     echo ""
-    echo "TARGET (指定がない場合は自動判定されます):"
-    echo "  home         🏠 自宅AI環境 (WSL2ネイティブ: /home/...)"
-    echo "  work         🏢 職場旧環境 (Windowsマウント: /mnt/...)"
+    echo "TARGET (自動判定されます):"
+    echo "  home         🏠 自宅AI環境 (Native WSL2: /home/...)"
+    echo "  work         🏢 職場旧環境 (Windows Mount: /mnt/...)"
     echo "  prod         🌐 本番環境 (VPS)"
     echo ""
-    echo "SERVICE_KEYWORDS:"
-    echo "  bicstation / tiper / saving / avflash / django / nginx"
+    echo "SERVICE_KEYWORDS: (部分一致・複数指定可)"
+    echo "  bicstation / tiper / saving / avflash / django / nginx / ollama"
     echo ""
     echo "OPTIONS:"
-    echo "  -w, --watch     🚀 ローカル専用: ファイル変更を監視して自動再構築"
-    echo "  --clean         コンテナとイメージを掃除して再構築"
-    echo "  --no-cache      キャッシュを無視してビルド"
+    echo "  -w, --watch  🚀 ファイル変更を監視して自動リロード (nodemon)"
+    echo "  -c, --clean  🧹 ビルドキャッシュと未使用イメージを掃除"
+    echo "  -a, --all    🚨 [強力] 未使用ボリューム・全キャッシュを完全削除"
+    echo "  -n, --no-log 🚫 起動後のログ追跡をスキップ"
+    echo "  --stats      📊 コンテナの稼働状況(docker stats)を表示して終了"
+    echo "  --no-cache   🔨 Dockerビルド時にキャッシュを無視"
     echo "================================================================"
 }
 
-# 引数解析
+# ---------------------------------------------------------
+# 4. 引数解析
+# ---------------------------------------------------------
 for arg in "$@"; do
     case $arg in
         "home"|"work"|"prod") TARGET=$arg ;;
         "--no-cache") NO_CACHE="--no-cache" ;;
-        "--clean") CLEAN=true ;;
-        "--clean-all") CLEAN_ALL=true ;;
+        "-c"|"--clean") CLEAN=true ;;
+        "-a"|"--all"|"--clean-all") CLEAN_ALL=true ;;
         "-w"|"--watch") WATCH_MODE=true ;;
+        "-n"|"--no-log") TAIL_LOGS=false ;;
+        "--stats") docker stats; exit 0 ;;
         "--help"|"-h") show_help; exit 0 ;;
         *) RAW_SERVICES="$RAW_SERVICES $arg" ;;
     esac
@@ -71,49 +77,26 @@ for s in $RAW_SERVICES; do
         "tiper")       SERVICES="$SERVICES next-tiper-v2" ;;
         "saving")      SERVICES="$SERVICES next-bic-saving-v2" ;;
         "avflash")     SERVICES="$SERVICES next-avflash-v2" ;;
+        "django")      SERVICES="$SERVICES django-v2" ;;
+        "wp")          SERVICES="$SERVICES wordpress-v2" ;;
         *)             SERVICES="$SERVICES $s" ;;
     esac
 done
 SERVICES=$(echo "$SERVICES" | tr ' ' '\n' | sort -u | tr '\n' ' ')
 
 # ---------------------------------------------------------
-# 4. ターゲット自動決定 (ここが今回の肝！)
+# 5. ターゲット & 設定ファイルの決定
 # ---------------------------------------------------------
 if [ "$IS_VPS" = true ]; then
     TARGET="prod"
 elif [ -z "$TARGET" ]; then
-    # 実行ディレクトリのパスに "/home/" が含まれるならネイティブ環境とみなす
-    if [[ "$SCRIPT_DIR" == *"/home/"* ]]; then
-        TARGET="home"
-    # "/mnt/" が含まれるなら旧来のWindowsマウント環境とみなす
-    elif [[ "$SCRIPT_DIR" == *"/mnt/"* ]]; then
-        TARGET="work"
-    else
-        TARGET="home"
-    fi
+    if [[ "$SCRIPT_DIR" == *"/home/"* ]]; then TARGET="home";
+    elif [[ "$SCRIPT_DIR" == *"/mnt/"* ]]; then TARGET="work";
+    else TARGET="home"; fi
 fi
 
-# ---------------------------------------------------------
-# 5. 設定ファイルのパス決定 (相対パスを基本にする)
-# ---------------------------------------------------------
-case $TARGET in
-    "prod")
-        COMPOSE_FILE="$SCRIPT_DIR/docker-compose.prod.yml"
-        ;;
-    "work")
-        # 職場環境がマウント領域にある場合を想定
-        COMPOSE_FILE="$SCRIPT_DIR/docker-compose.work.yml"
-        ;;
-    *)
-        # 自宅(home)環境。デフォルトの compose ファイルを使用
-        COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
-        ;;
-esac
-
-# ターゲット専用ファイルが存在すれば上書き適用
-if [ -f "$SCRIPT_DIR/docker-compose.$TARGET.yml" ]; then
-    COMPOSE_FILE="$SCRIPT_DIR/docker-compose.$TARGET.yml"
-fi
+COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
+[ -f "$SCRIPT_DIR/docker-compose.$TARGET.yml" ] && COMPOSE_FILE="$SCRIPT_DIR/docker-compose.$TARGET.yml"
 
 if [ ! -f "$COMPOSE_FILE" ]; then
     echo "❌ エラー: 設定ファイルが見つかりません: $COMPOSE_FILE"
@@ -121,60 +104,70 @@ if [ ! -f "$COMPOSE_FILE" ]; then
 fi
 
 # ---------------------------------------------------------
-# 🚀 ウォッチモード (nodemon) 
+# 6. 事前チェック (WSL2/Docker 動作確認)
 # ---------------------------------------------------------
-if [ "$WATCH_MODE" = true ]; then
-    if [ "$TARGET" == "prod" ]; then echo "❌ 本番でのWatch禁止"; exit 1; fi
-    if ! command -v nodemon &> /dev/null; then echo "❌ nodemon未検出"; exit 1; fi
+if ! docker info >/dev/null 2>&1; then
+    echo "❌ Dockerが起動していないか、WSL2が応答していません。"
+    echo "👉 'wsl --shutdown' を試すか、Docker Desktopを確認してください。"
+    exit 1
+fi
 
+# 🚀 ウォッチモード (nodemon)
+if [ "$WATCH_MODE" = true ]; then
+    [ "$TARGET" == "prod" ] && { echo "❌ 本番環境でのWatchは禁止されています"; exit 1; }
     echo "👀 ウォッチモード起動中..."
     NEXT_ARGS=$(echo "$@" | sed 's/-w//g' | sed 's/--watch//g')
-    nodemon --watch "$SCRIPT_DIR" -e ts,tsx,js,jsx,css,scss,json,html \
-            --ignore 'node_modules/**' --ignore '.next/**' --delay 2 \
+    nodemon --watch "$SCRIPT_DIR" -e ts,tsx,js,jsx,css,scss,json,html,py \
+            --ignore 'node_modules/**' --ignore '.next/**' --delay 3 \
             --exec "$0 $NEXT_ARGS"
     exit 0
 fi
 
 # =========================================================
-# 🔍 実行
+# 🔍 実行シーケンス
 # =========================================================
 echo "======================================="
-echo "📂 PATH    : $SCRIPT_DIR"
+echo "📁 PATH    : $SCRIPT_DIR"
 echo "📍 TARGET  : $TARGET"
 echo "📄 COMPOSE : $(basename "$COMPOSE_FILE")"
-echo "⚙️  SERVICES: ${SERVICES:-ALL}"
+echo "⚙️  SERVICES: ${SERVICES:-ALL (FULL REBUILD)}"
 echo "======================================="
 
 cd "$SCRIPT_DIR"
 
-# ネットワーク作成
+# 共有ネットワークの確保
 EXTERNAL_NET="shin-vps_shared-proxy"
-if ! docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1; then
-    docker network create "$EXTERNAL_NET"
-fi
+docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1 || docker network create "$EXTERNAL_NET"
 
-# ステップ1: 停止
+# --- STEP 1: 停止 & クリーンアップ ---
 if [ "$CLEAN_ALL" = true ]; then
-    echo "🚨 完全クリーンアップ中..."
+    echo "🚨 [MODE: FULL CLEAN] システム全体の未使用リソースを削除します..."
     docker compose -f "$COMPOSE_FILE" down --volumes --remove-orphans
-    docker builder prune -af
+    docker system prune -af --volumes # これが以前13GB解放した魔法のコマンドです
 elif [ "$CLEAN" = true ]; then
-    echo "🧹 クリーンアップ中..."
+    echo "🧹 [MODE: CLEAN] キャッシュと古いイメージを掃除します..."
     docker compose -f "$COMPOSE_FILE" down --remove-orphans
     docker image prune -f
+    docker builder prune -f # BuildKitキャッシュの掃除
 else
-    echo "🚀 サービス停止中..."
+    echo "🚀 サービスを停止中..."
     docker compose -f "$COMPOSE_FILE" stop $SERVICES
 fi
 
-# ステップ2 & 3: ビルド
-echo "🛠️  ビルド実行中..."
+# --- STEP 2: ビルド & 起動 ---
+echo "🛠️  ビルド中..."
 docker compose -f "$COMPOSE_FILE" build --pull $NO_CACHE $SERVICES
 
-# ステップ4: 起動
-echo "✨ コンテナ起動..."
-docker compose -f "$COMPOSE_FILE" up -d --build --remove-orphans $SERVICES
+echo "✨ コンテナを起動します..."
+docker compose -f "$COMPOSE_FILE" up -d --remove-orphans $SERVICES
 
+# --- STEP 3: 完了確認 & ログ出力 ---
 echo "---------------------------------------"
-echo "🎉 再構築完了！"
-docker compose -f "$COMPOSE_FILE" ps $SERVICES
+echo "🎉 再構築が完了しました！"
+
+if [ "$TAIL_LOGS" = true ] && [ -z "$WATCH_MODE" ]; then
+    echo "📝 ログ出力を開始します... (Ctrl+C で中断してもコンテナは動き続けます)"
+    docker compose -f "$COMPOSE_FILE" logs -f --tail=50 $SERVICES
+else
+    docker compose -f "$COMPOSE_FILE" ps $SERVICES
+fi
