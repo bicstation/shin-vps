@@ -1,6 +1,6 @@
 /**
- * 🛠️ [SHARED-FINAL] 汎用サイト設定管理ライブラリ
- * 複数のドメイン運用に対応し、プロキシ環境下でも正確にサイトを判定します。
+ * 🛠️ [SHARED-FINAL-REVISED] 汎用サイト設定管理ライブラリ
+ * 複数のドメイン運用に対応し、プロキシ環境下（内部IP検出時）でも正確にサイトを判定します。
  */
 
 export interface SiteMetadata {
@@ -25,9 +25,9 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
       const headerList = headers();
       
       /**
-       * 💡 汎用性の鍵: プロキシが渡すべき標準的なヘッダーを優先順位順にチェック
-       * 1. x-forwarded-host: プロキシが本来のホスト名を格納する場所
-       * 2. host: 直接のリクエスト先（内部IPになる場合がある）
+       * 💡 優先順位:
+       * 1. x-forwarded-host: プロキシ（Traefik）が本来のドメイン名を格納する場所
+       * 2. host: 直接のリクエスト先（Docker内部ネットワーク経由だとIPになる場合がある）
        */
       hostname = headerList.get('x-forwarded-host') || headerList.get('host') || 'localhost';
       detectionSource = headerList.get('x-forwarded-host') ? 'x-forwarded-host' : 'host-header';
@@ -40,20 +40,28 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
   // ポート番号が含まれる場合は除去
   const domain = hostname.split(':')[0].toLowerCase();
   
-  // 💡 判定ロジック：特定のキーワードが含まれるかどうかで汎用的に振り分け
-  let site_name = 'Bic Station'; // システム全体のデフォルト
+  // 💡 [修正ポイント] 環境変数からのバックアップ判定
+  // コンテナ起動時に渡している NEXT_PUBLIC_BASE_PATH を取得
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
+  let site_name = 'Bic Station'; // デフォルト
   let site_group: 'general' | 'adult' = 'general';
 
-  if (domain.includes('tiper')) {
+  /**
+   * 判定ロジックの優先度:
+   * 1. ドメイン名にキーワードが含まれるか (tiper-host など)
+   * 2. ベースパス設定から推測するか (内部IP 172.x.x.x 対策)
+   */
+  if (domain.includes('tiper') || basePath === '/tiper') {
     site_name = 'Tiper';
     site_group = 'adult';
-  } else if (domain.includes('avflash')) {
+  } else if (domain.includes('avflash') || basePath === '/avflash') {
     site_name = 'AV Flash';
     site_group = 'adult';
-  } else if (domain.includes('saving')) {
+  } else if (domain.includes('saving') || basePath === '/saving') {
     site_name = 'Bic Saving';
     site_group = 'general';
-  } else if (domain.includes('bicstation')) {
+  } else if (domain.includes('bicstation') || basePath === '/bicstation') {
     site_name = 'Bic Station';
     site_group = 'general';
   }
@@ -64,12 +72,12 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
   const logColor = isServer ? "\x1b[33m" : "color: #00dbde; font-weight: bold; background: #000; padding: 2px 5px;";
 
   if (isServer) {
-    console.log(`${logColor}${logPrefix} Hostname: ${hostname} (via ${detectionSource}) -> Site: ${site_name}\x1b[0m`);
+    console.log(`${logColor}${logPrefix} Host: ${hostname} (via ${detectionSource}) | BasePath: ${basePath} -> Site: ${site_name}\x1b[0m`);
   } else {
-    console.log(`%c${logPrefix} Hostname: ${hostname} (via ${detectionSource}) -> Site: ${site_name}`, logColor);
+    console.log(`%c${logPrefix} Host: ${hostname} (via ${detectionSource}) | BasePath: ${basePath} -> Site: ${site_name}`, logColor);
   }
 
-  return { site_group, origin_domain: domain, site_name, site_prefix: '' };
+  return { site_group, origin_domain: domain, site_name, site_prefix: basePath };
 };
 
 /**
