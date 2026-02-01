@@ -3,7 +3,13 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { TrendingUp, Activity } from 'lucide-react';
 import { fetchPCPopularityRanking } from '@shared/components/lib/api';
-import ProductCard from '@shared/components/product/ProductCard';
+
+/**
+ * ✅ 修正ポイント: インポートパスの変更
+ * @shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ */
+import ProductCard from '@shared/components/cards/ProductCard';
+
 import styles from './Popularity.module.css';
 
 export const metadata: Metadata = {
@@ -32,7 +38,7 @@ export default async function PopularityRankingPage({
     "itemListElement": products.map((product, index) => ({
       "@type": "ListItem",
       "position": offset + index + 1,
-      "url": `https://your-domain.com/product/${product.unique_id}`,
+      "url": `https://bicstation.com/product/${product.unique_id}`,
       "name": product.name
     }))
   };
@@ -65,7 +71,7 @@ export default async function PopularityRankingPage({
           const rank = offset + index + 1;
           return (
             <ProductCard 
-              key={product.unique_id} 
+              key={product.unique_id || product.id} 
               product={product} 
               rank={rank}
             >

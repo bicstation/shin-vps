@@ -1,126 +1,144 @@
-// ファイル名: C:\dev\SHIN-VPS\next-avflash-v2\app\page.tsx
+// ファイル名: app/page.tsx
 
-// 💡 Linter と TypeScript のチェックを無効化 (赤線対策)
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/no-danger-to-js */
+/* eslint-disable react/no-danger */
 // @ts-nocheck 
 
 import React from 'react';
 import Link from 'next/link';
+import { getAdultProductsByMaker } from '@shared/components/lib/api';
+import AdultProductCard from '@shared/components/cards/AdultProductCard';
+import { decodeHtml } from '@shared/components/lib/decode';
 
-// 💡 WordPress APIから取得する記事データの型定義
+// 💡 日付フォーマット用のヘルパー
+const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('ja-JP');
+};
+
 interface WpPost {
     id: number;
     slug: string;
-    title: {
-        rendered: string;
-    };
+    title: { rendered: string };
     date: string;
-    link: string;
+    _embedded?: {
+        'wp:featuredmedia'?: Array<{ source_url: string }>;
+    };
 }
 
-// 💡 データを取得するサーバー関数
+/**
+ * 💡 WordPress 記事取得
+ */
 async function fetchPostList(): Promise<WpPost[]> {
-    // 🚨 修正点1: CPT UIで作成するスラッグ 'avflash' を指定
-    // まだ作成していない場合は、WordPress側で 'avflash' という投稿タイプを作成してください
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_embed&per_page=5`;
-
+    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_embed&per_page=4`;
     try {
         const res = await fetch(WP_API_URL, {
-            // 🚨 修正点2: WordPressコンテナが認識する実際のホスト名を指定
-            headers: {
-                'Host': 'stg.blog.tiper.live' 
-            },
-            next: { revalidate: 60 } 
+            headers: { 'Host': 'stg.blog.tiper.live' },
+            next: { revalidate: 60 }
         });
-
-        if (!res.ok) {
-            console.error(`WordPress API Error: ${res.status} ${res.statusText}`);
-            return [];
-        }
-        
-        const data: WpPost[] = await res.json();
-        return data;
-
+        return res.ok ? await res.json() : [];
     } catch (error) {
-        console.error("Failed to fetch post list from WordPress API:", error);
-        return []; 
+        console.error("WP API Error:", error);
+        return [];
     }
 }
 
-// ユーティリティ関数: HTMLエンティティをデコード
-const decodeHtml = (html: string) => {
-    const map: { [key: string]: string } = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
-    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (match) => map[match] || match);
-};
-
-// ユーティリティ関数: 日付フォーマット
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    });
-};
-
-// 💡 Avflashのブランドカラー (オレンジレッド)
-const SITE_COLOR = '#ff4500'; 
-
+/**
+ * 💡 メインページコンポーネント
+ * 🚨 注意: viewport 設定などは layout.tsx に集約したため、ここでは定義しません
+ */
 export default async function Page() {
+    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'AVFLASH.xyz';
     
-    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'AVFLASH.xyz デモタイトル';
-    const posts = await fetchPostList(); 
+    // データ取得
+    const [posts, products] = await Promise.all([
+        fetchPostList(),
+        getAdultProductsByMaker('mgs', 12) 
+    ]);
+
+    const SITE_COLOR = '#ff4500';
 
     return (
-        <div style={{ fontFamily: 'Arial, sans-serif', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: '#f4f4f4' }}>
+        <div style={{ backgroundColor: '#0f0f0f', color: '#fff', minHeight: '100vh' }}>
             
-            {/* 1. ヘッダー */}
-            <header style={{ background: '#333', color: 'white', padding: '15px 20px', borderBottom: `3px solid ${SITE_COLOR}` }}>
-                <h1 style={{ margin: 0, fontSize: '1.5em' }}>{title}</h1>
-                <p style={{ margin: '5px 0 0 0', fontSize: '0.9em' }}>WordPress REST API 連携済み (Avflash)</p>
-            </header>
+            {/* --- ヒーローセクション --- */}
+            <section style={{ 
+                padding: '60px 20px', 
+                textAlign: 'center', 
+                background: 'linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%)',
+                borderBottom: `1px solid #333`
+            }}>
+                <h1 style={{ fontSize: '3rem', color: SITE_COLOR, marginBottom: '10px', fontWeight: 'bold' }}>
+                    {title}
+                </h1>
+                <p style={{ color: '#aaa', fontSize: '1.2rem' }}>
+                    MGS動画・新作作品の最速比較ポータル
+                </p>
+            </section>
 
-            <div style={{ display: 'flex', flexGrow: 1 }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px' }}>
                 
-                {/* 2. サイドバー */}
-                <aside style={{ width: '200px', background: '#e0e0e0', padding: '20px', borderRight: '1px solid #ccc' }}>
-                    <h3 style={{ marginTop: 0, color: SITE_COLOR }}>カテゴリ</h3>
-                    <ul style={{ listStyleType: 'none', padding: 0 }}>
-                        <li><Link href="/" style={{ textDecoration: 'none', color: '#333' }}>ホーム</Link></li>
-                        <li style={{ marginTop: '10px', fontSize: '0.8em', color: '#666' }}>（Custom Post Type: avflash）</li>
-                    </ul>
-                </aside>
-
-                {/* 3. メインエリア */}
-                <main style={{ flexGrow: 1, padding: '20px' }}>
-                    <h2 style={{ color: SITE_COLOR, borderBottom: '2px solid #ddd', paddingBottom: '10px' }}>最新記事一覧</h2>
+                {/* --- 商品セクション --- */}
+                <section style={{ marginBottom: '60px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                        <h2 style={{ borderLeft: `6px solid ${SITE_COLOR}`, paddingLeft: '15px', margin: 0 }}>
+                            NEW RELEASES
+                        </h2>
+                    </div>
                     
-                    {posts.length === 0 ? (
-                        <div style={{ padding: '20px', background: '#fff3e0', border: '1px solid #ffe0b2', borderRadius: '5px' }}>
-                            <p style={{ color: '#e65100', margin: 0 }}>現在、**Avflash** の記事は登録されていません。</p>
-                            <p style={{ fontSize: '0.8em', color: '#666' }}>WordPress管理画面で 'avflash' 投稿タイプを作成し、記事を公開してください。</p>
-                        </div>
-                    ) : (
-                        <ul style={{ listStyleType: 'none', padding: 0 }}>
-                            {posts.map((post) => (
-                                <li key={post.id} style={{ marginBottom: '15px', padding: '15px', background: 'white', border: '1px solid #ddd', borderRadius: '5px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                                    <Link href={`/avflash/${post.slug}`} style={{ textDecoration: 'none', color: SITE_COLOR, fontSize: '1.2em', fontWeight: 'bold' }}>
-                                        {decodeHtml(post.title.rendered)}
-                                    </Link>
-                                    <p style={{ color: '#999', fontSize: '0.85em', margin: '8px 0 0 0' }}>
-                                        公開日: {formatDate(post.date)} | スラッグ: {post.slug}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </main>
-            </div>
+                    <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+                        gap: '30px' 
+                    }}>
+                        {products && products.length > 0 ? (
+                            products.map((item) => (
+                                <AdultProductCard key={item.id} product={item} />
+                            ))
+                        ) : (
+                            <p style={{ color: '#888' }}>最新作品がありません。</p>
+                        )}
+                    </div>
+                </section>
 
-            {/* 4. フッター */}
-            <footer style={{ background: '#333', color: 'white', padding: '10px 20px', textAlign: 'center', borderTop: `3px solid ${SITE_COLOR}` }}>
-                <p style={{ margin: 0 }}>&copy; {new Date().getFullYear()} {title}</p>
-            </footer>
+                {/* --- カラムセクション --- */}
+                <section>
+                    <h2 style={{ borderLeft: `6px solid ${SITE_COLOR}`, paddingLeft: '15px', marginBottom: '25px' }}>
+                        AVFLASH COLUMN
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '25px' }}>
+                        {posts && posts.length > 0 ? (
+                            posts.map((post) => (
+                                <article key={post.id} style={{ 
+                                    display: 'flex', 
+                                    background: '#1a1a1a', 
+                                    borderRadius: '12px', 
+                                    overflow: 'hidden',
+                                    border: '1px solid #222'
+                                }}>
+                                    <div style={{ width: '180px', flexShrink: 0 }}>
+                                        <img 
+                                            src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png'} 
+                                            alt="" 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                    <div style={{ padding: '20px', flex: 1 }}>
+                                        <Link href={`/avflash/${post.slug}`} style={{ textDecoration: 'none' }}>
+                                            <h3 style={{ color: '#fff', fontSize: '1.2rem', margin: '0 0 10px 0' }}>
+                                                {decodeHtml(post.title.rendered)}
+                                            </h3>
+                                        </Link>
+                                        <span style={{ fontSize: '0.8rem', color: '#666' }}>{formatDate(post.date)}</span>
+                                    </div>
+                                </article>
+                            ))
+                        ) : (
+                            <p style={{ color: '#555' }}>記事を準備中です。</p>
+                        )}
+                    </div>
+                </section>
+            </div>
         </div>
     );
-};
+}

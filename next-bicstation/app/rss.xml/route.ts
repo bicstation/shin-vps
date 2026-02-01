@@ -1,38 +1,63 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
+import { fetchWordPressPosts } from '@shared/components/lib/api';
+import { getSiteMetadata } from '@shared/components/lib/siteConfig';
 
-const WP_API = 'http://nginx-wp-v2/wp-json/wp/v2/posts?_embed';
+/**
+ * 💡 RSS フィード生成 Route Handler
+ * @shared/components/lib/api.ts の共通関数を使用して
+ * WordPress から最新の投稿を取得し、XML 形式で出力します。
+ */
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // 1時間ごとに再生成（ISR/キャッシュ）
 
 export async function GET() {
-  const res = await fetch(WP_API, { headers: { 'Host': 'stg.blog.tiper.live' } });
-  const posts = await res.json();
+  const { site_prefix } = getSiteMetadata();
+  const isProd = process.env.NODE_ENV === 'production';
+  
+  // 💡 サイト構成に基づいたベースURLの設定
+  const baseUrl = isProd ? 'https://bicstation.com' : `http://localhost:8083${site_prefix}`;
 
-  const baseUrl = 'https://tiper.live';
+  // 1. 共通API関数から投稿データを取得
+  const posts = await fetchWordPressPosts(20);
 
-  // RSSのXMLを組み立て
-  const feed = `<?xml version="1.0" encoding="UTF-8" ?>
-    <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-      <channel>
-        <title>BICSTATION - 最新PC情報</title>
-        <link>${baseUrl}</link>
-        <description>Lenovo PCの最新スペックとニュースをお届けします</description>
-        <language>ja</language>
-        ${posts.map((post: any) => `
-          <item>
-            <title><![CDATA[${post.title.rendered}]]></title>
-            <link>${baseUrl}/news/${post.slug}</link>
-            <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-            <guid>${baseUrl}/news/${post.slug}</guid>
-            <description><![CDATA[${post.excerpt?.rendered || ''}]]></description>
-          </item>
-        `).join('')}
-      </channel>
-    </rss>`;
+  // 2. RSSアイテムの組み立て
+  const feedItems = posts.map((post: any) => {
+    // 投稿日時を RFC822 形式に変換
+    const pubDate = new Date(post.date).toUTCString();
+    // 本文または抜粋（HTMLエンティティやタグへの対策として CDATA を使用）
+    const description = post.excerpt?.rendered || post.content?.rendered || '';
+    
+    return `
+    <item>
+      <title><![CDATA[${post.title?.rendered || ''}]]></title>
+      <link>${baseUrl}/news/${post.slug}</link>
+      <guid isPermaLink="false">${baseUrl}/news/${post.slug}</guid>
+      <pubDate>${pubDate}</pubDate>
+      <description><![CDATA[${description}]]></description>
+    </item>`;
+  }).join('');
 
-  return new NextResponse(feed, {
+  // 3. 全体の XML 構造の組み立て
+  const rssFeed = `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>BICSTATION - 最新PCスペック解析・ニュース</title>
+    <link>${baseUrl}</link>
+    <description>AI解析スコアに基づいたPC製品ランキングと最新ニュースをお届けします。</description>
+    <language>ja</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
+    ${feedItems}
+  </channel>
+</rss>`;
+
+  // 4. 正しい Content-Type を設定してレスポンスを返す
+  return new NextResponse(rssFeed.trim(), {
     headers: {
-      'Content-Type': 'application/xml',
+      'Content-Type': 'application/xml; charset=utf-8',
       'Cache-Control': 's-maxage=3600, stale-while-revalidate',
+      'X-Content-Type-Options': 'nosniff',
     },
   });
 }

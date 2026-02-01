@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import Link from 'next/link';
-import { registerUser } from '@shared/lib/auth';
+// ✅ 整理後のディレクトリ構造に合わせてインポートパスを修正
+import { registerUser } from '@shared/components/lib/auth';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState<string>('');
@@ -13,11 +14,19 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [basePath, setBasePath] = useState("");
 
-  // 環境判別（サブパス対応）
+  /**
+   * ✅ 環境判別（サブパス対応）
+   * ローカルの /avflash/ や /bicstation/ 運用でも遷移先が壊れないように調整
+   */
   useEffect(() => {
     const currentPath = window.location.pathname;
-    const prefix = currentPath.startsWith('/bicstation') ? '/bicstation' : '';
-    setBasePath(prefix);
+    // URLの最初のセグメントを判別
+    const prefix = currentPath.split('/')[1];
+    if (prefix === 'bicstation' || prefix === 'avflash') {
+      setBasePath(`/${prefix}`);
+    } else {
+      setBasePath('');
+    }
   }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -39,13 +48,13 @@ export default function RegisterPage() {
     }
 
     try {
-      // 🚀 lib/auth.ts の registerUser を呼び出し
+      // 🚀 @shared/components/lib/auth.ts の registerUser を呼び出し
       await registerUser(username, email, password);
       
       alert('会員登録が完了しました！ログインしてください。');
       
-      // ログイン画面へ遷移
-      window.location.href = `${window.location.origin}${basePath}/login`;
+      // ログイン画面へ遷移（ベースパスを考慮）
+      window.location.href = `${window.location.origin}${basePath}/login/`;
     } catch (err: any) {
       setError(err.message || '登録に失敗しました。');
     } finally {
@@ -53,7 +62,10 @@ export default function RegisterPage() {
     }
   };
 
-  const loginHref = `${basePath}/login`;
+  const loginHref = `${basePath}/login/`;
+
+  // 💡 デザインテーマ設定（AVFLASHに合わせてオレンジ系をアクセントに）
+  const ACCENT_COLOR = '#ff4500'; 
 
   return (
     <div style={{ 
@@ -63,7 +75,7 @@ export default function RegisterPage() {
       border: '1px solid #eaeaea', 
       borderRadius: '16px', 
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+      boxShadow: '0 4px 25px rgba(0,0,0,0.1)',
       backgroundColor: '#fff'
     }}>
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -71,7 +83,7 @@ export default function RegisterPage() {
           新規会員登録
         </h1>
         <p style={{ color: '#666', fontSize: '0.9rem' }}>
-          アカウントを作成してサービスを開始しましょう。
+          お気に入りの作品やレビューを保存しましょう。
         </p>
       </div>
       
@@ -100,7 +112,7 @@ export default function RegisterPage() {
             onChange={(e) => setUsername(e.target.value)}
             required
             style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-            placeholder="例: bic_taro"
+            placeholder="例: av_taro"
           />
         </div>
 
@@ -151,22 +163,23 @@ export default function RegisterPage() {
           style={{
             width: '100%',
             padding: '14px',
-            backgroundColor: loading ? '#a0aec0' : '#0070f3',
+            backgroundColor: loading ? '#cbd5e0' : ACCENT_COLOR,
             color: 'white',
             border: 'none',
             borderRadius: '8px',
             cursor: loading ? 'not-allowed' : 'pointer',
             fontWeight: 'bold',
-            fontSize: '1rem'
+            fontSize: '1rem',
+            transition: 'opacity 0.2s'
           }}
         >
-          {loading ? '処理中...' : '無料でお試しを開始する'}
+          {loading ? '登録処理中...' : '会員登録を完了する'}
         </button>
       </form>
 
       <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '0.9rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '24px' }}>
         すでにアカウントをお持ちですか？{' '}
-        <Link href={loginHref} style={{ color: '#0070f3', textDecoration: 'none', fontWeight: 'bold' }}>
+        <Link href={loginHref} style={{ color: ACCENT_COLOR, textDecoration: 'none', fontWeight: 'bold' }}>
           ログイン
         </Link>
       </div>

@@ -21,7 +21,6 @@ import { getSiteMetadata, getSiteColor } from '@shared/components/lib/siteConfig
  */
 import Header from '@shared/components/layout/Header';
 import Footer from '@shared/components/layout/Footer';
-import Sidebar from '@shared/components/layout/Sidebar';
 import ChatBot from '@shared/components/common/ChatBot';
 
 /**
@@ -111,12 +110,10 @@ export default function RootLayout({
         </div>
 
         <div className={styles.layoutContainer}>
+          {/* ✅ サイドバーを削除し、メインコンテンツをラップ */}
           <div className={styles.layoutInner}>
-            {/* ✅ 根本解決：Sidebarとchildrenを一括でSuspenseで囲む 
-                 これがないと build 時に useSearchParams エラーで停止します */}
             <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
-              <Sidebar />
-              <main className={styles.mainContent}>
+              <main className={styles.mainContentFull}>
                 {children}
               </main>
             </Suspense>

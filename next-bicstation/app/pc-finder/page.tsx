@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-// ✅ 外部JS (Script) は不要になったためインポートから削除
 import styles from './PCFinderPage.module.css';
-import ProductCard from '@/shared/components/product/ProductCard';
+
+/**
+ * ✅ 修正ポイント: インポートパスの変更
+ * @/shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ */
+import ProductCard from '@shared/components/cards/ProductCard';
 
 /**
  * =====================================================================
@@ -233,7 +237,7 @@ export default function PCFinderPage() {
               </div>
             </div>
 
-            {/* ✅ 修正：ローディング中の表示をユーザーに優しく強化 */}
+            {/* ✅ ローディング中の表示をユーザーに優しく強化 */}
             {isLoading ? (
               <div className={styles.loadingContainer}>
                 <div className={styles.loaderContent}>
@@ -252,7 +256,7 @@ export default function PCFinderPage() {
             ) : products.length > 0 ? (
               <div className={styles.productGrid}>
                 {products.map(product => (
-                  <ProductCard key={product.unique_id} product={product} />
+                  <ProductCard key={product.unique_id || product.id} product={product} />
                 ))}
               </div>
             ) : (

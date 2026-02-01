@@ -2,7 +2,11 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import React from "react";
-import ProductCard from "@shared/components/product/ProductCard";
+/**
+ * ✅ 修正ポイント: インポートパスの変更
+ * @shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ */
+import ProductCard from "@shared/components/cards/ProductCard";
 import Sidebar from "@shared/components/layout/Sidebar";
 import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/components/lib/api';
 import { COLORS } from "@/constants";
@@ -95,10 +99,9 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
     let makersData: any[] = [];
     let wpData: any = { results: [] };
 
-    // 🚩 デバッグ用のURL構築ログ
-    const debugApiUrl = `process.env.NEXT_PUBLIC_API_URL/pc-products/?maker=${decodedSlug}&offset=${offset}&limit=${limit}&attribute=${attributeSlug}`;
-    console.log(`[Next.js Debug]: Fetching BrandPage Data...`);
-    console.log(`[Next.js Debug]: PC API URL -> ${debugApiUrl}`);
+    // 🚩 API URL の構築（デバッグ用）
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || ''}/pc-products/?maker=${decodedSlug}&offset=${offset}&limit=${limit}&attribute=${attributeSlug}`;
+    console.log(`[Next.js Debug]: Fetching BrandPage Data for ${decodedSlug}`);
 
     try {
         const [pcRes, makersRes, wpRes] = await Promise.all([
@@ -111,11 +114,9 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
         makersData = makersRes;
         wpData = wpRes;
 
-        // 🚩 データ取得後の件数ログ
         console.log(`[Next.js Debug]: Success! Found ${pcData?.count || 0} products.`);
     } catch (error) {
         console.error(`[Next.js API Error]: Failed to fetch data for ${decodedSlug}`);
-        console.error(`[Next.js API Error]: Target URL was -> ${debugApiUrl}`);
         console.error(error);
     }
 
@@ -149,9 +150,6 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
 
     return (
         <div className={styles.pageContainer}>
-            {/* ブラウザのコンソールにもURLを表示するための隠しデバッグタグ（開発用） */}
-            <script dangerouslySetInnerHTML={{ __html: `console.log("🚀 Client-side Debug: API URL used was ${debugApiUrl}");` }} />
-            
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -198,7 +196,6 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                         {!pcData || !pcData.results || pcData.results.length === 0 ? (
                             <div className={styles.noDataLarge}>
                                 <p>現在、{brandDisplayName} <strong>{attrDisplayName}</strong> の該当する製品データがありません。</p>
-                                <p style={{ fontSize: '0.8rem', color: '#999', marginTop: '10px' }}>Debug URL: {debugApiUrl}</p>
                                 <Link href={`/brand/${decodedSlug}`} className={styles.resetLink} style={{ color: primaryColor, marginTop: '15px', display: 'inline-block' }}>
                                     {brandDisplayName} の全製品を見る
                                 </Link>

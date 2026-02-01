@@ -15,7 +15,7 @@ export default function Header() {
   
   const pathname = usePathname(); 
 
-  // ✅ サイト情報を動的に取得
+  // ✅ サイト情報を動的に取得（引数なしでホスト名判定）
   const site = getSiteMetadata();
   const themeColor = getSiteColor(site.site_name);
 
@@ -54,8 +54,8 @@ export default function Header() {
   const handleLogout = () => {
     if (confirm('ログアウトしますか？')) {
       localStorage.clear();
-      // window.location は Next.js の制御外なので prefix が必要
-      window.location.href = `${site.site_prefix}/`;
+      // ✅ prefix を削除。ホスト名運用なので常に "/" への遷移でOK
+      window.location.href = '/';
     }
   };
 
@@ -69,7 +69,7 @@ export default function Header() {
     >
       <div className={styles.container}>
         
-        {/* ロゴエリア - href="/" でOK。Next.jsが自動で /avflash/ に変換します */}
+        {/* ロゴエリア - ホスト名運用なので href="/" で各サイトのトップに飛びます */}
         <Link href="/" onClick={closeMenu} style={{ textDecoration: 'none', color: 'white' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ 
@@ -146,8 +146,8 @@ export default function Header() {
             type="text" 
             placeholder="キーワード検索..." 
             className={styles.searchBox} 
-            onFocus={(e: any) => e.target.style.borderColor = themeColor}
-            onBlur={(e: any) => e.target.style.borderColor = '#444'}
+            onFocus={(e: React.FocusEvent<HTMLInputElement>) => e.target.style.borderColor = themeColor}
+            onBlur={(e: React.FocusEvent<HTMLInputElement>) => e.target.style.borderColor = '#444'}
             style={{ border: '1px solid #444', transition: 'border-color 0.2s' }}
           />
         </div>

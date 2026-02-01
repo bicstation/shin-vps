@@ -1,22 +1,40 @@
 /** @type {import('next').NextConfig} */
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ESM環境で __dirname をシミュレート
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const nextConfig = {
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  // 💡 ホスト名運用(tiper-host)では basePath は空にする必要があります
+  // 環境変数 NEXT_PUBLIC_BASE_PATH が設定されている場合はこれを無効化します
+  basePath: '', 
+
   trailingSlash: true,
+
   // 💡 sharedディレクトリをコンパイル対象に含める
   transpilePackages: ["shared"],
+
+  // Docker/VPS運用に必須の設定
   output: 'standalone',
+
   reactStrictMode: true,
 
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      // 💡 実体の構造に合わせて /components まで含める
-      '@shared': path.resolve(process.cwd(), 'shared/components'),
-      '@': path.resolve(process.cwd()),
+      // 💡 エイリアスを shared のルートに設定（importしやすくなります）
+      '@shared': path.resolve(__dirname, 'shared'),
+      '@': path.resolve(__dirname),
     };
     return config;
+  },
+
+  // 💡 ホスト名チェックの緩和（Invalid Host Header 対策）
+  // 開発環境で tiper-host 等を使用する場合に必要になることがあります
+  devIndicators: {
+    buildActivity: true,
   },
 };
 

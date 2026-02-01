@@ -87,7 +87,8 @@ class PriceHistoryInline(admin.TabularInline):
 # ----------------------------------------------------
 @admin.register(PCProduct)
 class PCProductAdmin(admin.ModelAdmin):
-    change_list_template = "admin/api/pcproduct/change_list.html"
+    # 💡 TemplateDoesNotExist エラー回避のため一旦コメントアウト
+    # change_list_template = "admin/api/pcproduct/change_list.html"
     inlines = [PriceHistoryInline]
 
     list_display = (
@@ -214,7 +215,8 @@ class PCProductAdmin(admin.ModelAdmin):
 # ----------------------------------------------------
 @admin.register(AdultProduct)
 class AdultProductAdmin(admin.ModelAdmin):
-    change_list_template = "admin/api/adultproduct/change_list.html"
+    # 💡 エラーの直接的な原因：指定の HTML ファイルがないためコメントアウト
+    # change_list_template = "admin/api/adultproduct/change_list.html" 
     
     list_display = (
         'product_id_unique', 'display_first_image', 'title_summary', 

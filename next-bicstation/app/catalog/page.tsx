@@ -3,7 +3,13 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Sidebar from '@shared/components/layout/Sidebar';
 import Pagination from '@shared/components/common/Pagination';
-import ProductCard from '@shared/components/product/ProductCard';
+
+/**
+ * ✅ 修正ポイント: インポートパスの変更
+ * @shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ */
+import ProductCard from '@shared/components/cards/ProductCard';
+
 import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/components/lib/api';
 import styles from './CatalogPage.module.css';
 
@@ -45,7 +51,12 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     const allPosts = wpData.results || [];
     const safeDecode = (str: string) => {
         if (!str) return '';
-        return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+        return str
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'");
     };
 
     return (
@@ -106,7 +117,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
                     <div className={styles.productGrid}>
                         {pcData.results.length > 0 ? (
                             pcData.results.map((product: any) => (
-                                <ProductCard key={product.unique_id} product={product} />
+                                <ProductCard key={product.unique_id || product.id} product={product} />
                             ))
                         ) : (
                             <p className="py-20 text-center text-gray-500 w-full">該当する製品が見つかりませんでした。</p>

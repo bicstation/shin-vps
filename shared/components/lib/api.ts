@@ -1,13 +1,7 @@
 /**
  * =====================================================================
  * 💡 SHIN-VPS 統合 API サービス層 (shared/components/lib/api.ts)
- * WordPress(bicstation/saving) & Django(pc-products) 統合データアクセス層
- * ---------------------------------------------------------------------
- * 対応ドメイン:
- * - bicstation.com (postType: bicstation)
- * - bic-saving.com (postType: saving)
- * - tiper.live (site_group: tiper)
- * - avflash.xyz (site_group: avflash)
+ * WordPress(bicstation/saving) & Django(pc-products/adult-products) 統合データアクセス層
  * =====================================================================
  */
 
@@ -23,39 +17,35 @@ const IS_SERVER = typeof window === 'undefined';
 const getWpConfig = () => {
     const { site_prefix } = getSiteMetadata();
     
+    // 💡 運用環境（Staging/Production）に合わせて Host ヘッダーを設定
+    const hostHeader = 'stg.blog.tiper.live'; 
+
     if (IS_SERVER) {
         // Next.jsサーバー内部（Dockerネットワーク）からの通信
         return {
             baseUrl: 'http://nginx-wp-v2', 
-            host: 'localhost:8083' // WordPress側のドメイン設定（内部ポート）に一致させる
+            host: hostHeader 
         };
     }
     // クライアントサイド（ブラウザ）からの通信
     return {
         baseUrl: `http://localhost:8083${site_prefix}/blog`,
-        host: 'localhost:8083'
+        host: hostHeader
     };
 };
 
 /**
  * 🔗 Django API 接続設定の取得
- * 環境変数 NEXT_PUBLIC_API_URL をベースに、通信先を判定します
  */
 const getDjangoBaseUrl = () => {
     if (IS_SERVER) {
-        // Dockerネットワーク内でのコンテナ間通信
         return 'http://django-v2:8000';
     }
-
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    
     if (envUrl) {
-        // 末尾のスラッシュや /api を除去してベースURLを正規化
         const formattedUrl = envUrl.replace(/\/api$/, '').replace(/\/$/, '');
         return formattedUrl;
     }
-
-    // フォールバック（ローカル開発環境用）
     return 'http://localhost:8083';
 };
 
@@ -76,10 +66,10 @@ export interface PCProduct {
     name: string;
     price: number;
     image_url: string;
-    url: string;           // 直リンクURL
-    affiliate_url: string; // 正式アフィリエイトURL
+    url: string;
+    affiliate_url: string;
     description: string;
-    ai_content: string;    // AI生成コンテンツ
+    ai_content: string;
     ai_summary?: string;
     stock_status: string;
     unified_genre: string;
@@ -88,8 +78,8 @@ export interface PCProduct {
     memory_gb?: number;
     storage_gb?: number;
     display_info?: string;
-    spec_score?: number;   // AI解析総合スコア
-    radar_chart?: RadarChartData[]; // 5軸チャート用データ
+    spec_score?: number;
+    radar_chart?: RadarChartData[];
 }
 
 export interface MakerCount {
@@ -100,10 +90,33 @@ export interface MakerCount {
 // --- WordPress API 関数群 ---
 
 /**
- * 📝 [WordPress] 記事一覧取得
- * @param postType - 'bicstation' または 'saving' を指定
- * @param perPage - 取得件数
- * @param offset - 取得開始位置
+ * 📝 [WordPress] 汎用投稿一覧取得 (RSS/サイトマップ用)
+ */
+export async function fetchWordPressPosts(perPage = 20) {
+    const { baseUrl, host } = getWpConfig();
+    const url = `${baseUrl}/wp-json/wp/v2/posts?_embed&per_page=${perPage}`;
+
+    try {
+        const res = await fetch(url, {
+            headers: { 
+                'Host': host,
+                'Accept': 'application/json'
+            },
+            next: { revalidate: 3600 },
+            signal: AbortSignal.timeout(5000)
+        });
+
+        if (!res.ok) throw new Error(`WP API Error: ${res.status}`);
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error: any) {
+        console.error(`[fetchWordPressPosts FAILED]: ${error.message} at ${url}`);
+        return [];
+    }
+}
+
+/**
+ * 📝 [WordPress] カスタム投稿タイプ(bicstation等)一覧取得
  */
 export async function fetchPostList(postType = 'bicstation', perPage = 12, offset = 0) {
     const { baseUrl, host } = getWpConfig();
@@ -115,8 +128,8 @@ export async function fetchPostList(postType = 'bicstation', perPage = 12, offse
                 'Host': host,
                 'Accept': 'application/json'
             },
-            next: { revalidate: 60 }, // 1分間のキャッシュ
-            signal: AbortSignal.timeout(5000) // 5秒でタイムアウト（ビルド停滞防止）
+            next: { revalidate: 60 },
+            signal: AbortSignal.timeout(5000)
         });
 
         if (!res.ok) {
@@ -140,8 +153,6 @@ export async function fetchPostList(postType = 'bicstation', perPage = 12, offse
 
 /**
  * 📝 [WordPress] 個別記事取得
- * @param postType - 'bicstation' または 'saving'
- * @param slug - 記事のスラッグ
  */
 export async function fetchPostData(postType = 'bicstation', slug: string) {
     const { baseUrl, host } = getWpConfig();
@@ -151,7 +162,7 @@ export async function fetchPostData(postType = 'bicstation', slug: string) {
     try {
         const res = await fetch(url, {
             headers: { 'Host': host, 'Accept': 'application/json' },
-            next: { revalidate: 3600 }, // 1時間のキャッシュ
+            next: { revalidate: 3600 },
             signal: AbortSignal.timeout(5000)
         });
 
@@ -239,21 +250,62 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
     }
 }
 
-// --- 特定サイト(Tiper等)向けエイリアス関数 ---
+// --- 🔞 特定サイト(Tiper等)向けアダルト商品取得ロジック ---
 
-export async function getAdultProducts(arg1?: any, arg2?: number) {
-    let offset = 0; let limit = 12;
-    if (typeof arg1 === 'object' && arg1 !== null) {
-        offset = arg1.offset ?? 0; limit = arg1.limit ?? 12;
-    } else {
-        offset = typeof arg1 === 'number' ? arg1 : 0;
-        limit = typeof arg2 === 'number' ? arg2 : 12;
+/**
+ * 🔞 [Django API] アダルト商品一覧取得
+ * fetchPCProducts を使わず、専用のエンドポイントを叩くように修正
+ */
+export async function getAdultProducts(params: any = {}) {
+    let offset = 0; 
+    let limit = 20;
+    let ordering = '-id';
+
+    if (typeof params === 'object' && params !== null) {
+        offset = params.offset ?? 0;
+        limit = params.limit ?? 20;
+        ordering = params.ordering ?? '-id';
     }
-    return fetchPCProducts('', offset, limit);
+
+    const rootUrl = getDjangoBaseUrl();
+    const { site_group } = getSiteMetadata(); 
+    
+    // 💡 重要: pc-products ではなく adult-products を叩く
+    const url = `${rootUrl}/api/adult-products/?limit=${limit}&offset=${offset}&ordering=${ordering}&site_group=${site_group}`;
+
+    try {
+        const res = await fetch(url, { 
+            headers: { 'Host': 'localhost', 'Accept': 'application/json' },
+            next: { revalidate: 60 }, // アダルトは更新頻度が高いため短めに
+            signal: AbortSignal.timeout(5000)
+        });
+
+        if (!res.ok) return { results: [], count: 0 };
+
+        const data = await res.json();
+        return { 
+            results: data.results || [], 
+            count: data.count || 0 
+        };
+    } catch (e) {
+        console.error(`[Adult API ERROR]:`, e);
+        return { results: [], count: 0 };
+    }
 }
 
 export async function getAdultProductById(id: string) {
-    return fetchProductDetail(id);
+    const rootUrl = getDjangoBaseUrl();
+    const url = `${rootUrl}/api/adult-products/${id}/`;
+    try {
+        const res = await fetch(url, { cache: 'no-store' });
+        return res.ok ? await res.json() : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+export async function getAdultProductsByMaker(maker: string, offset = 0, limit = 12) {
+    return getAdultProducts({ offset, limit, maker });
 }
 
 // --- 共通ランキング・関連商品取得ロジック ---
@@ -327,13 +379,4 @@ export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
         console.error(`[Popularity Ranking API ERROR]:`, e);
         return [];
     }
-}
-
-
-/**
- * 💡 不足していた関数を追加
- * 特定のメーカーの製品一覧を取得します
- */
-export async function getAdultProductsByMaker(maker: string, offset = 0, limit = 12) {
-    return fetchPCProducts(maker, offset, limit);
 }

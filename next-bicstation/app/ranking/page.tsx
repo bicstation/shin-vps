@@ -2,7 +2,12 @@ import { fetchPCProductRanking } from '@shared/components/lib/api';
 import Link from 'next/link';
 import styles from './Ranking.module.css';
 import RadarChart from '@shared/components/ui/RadarChart';
-import ProductCard from '@shared/components/product/ProductCard';
+
+/**
+ * ✅ 修正ポイント: インポートパスの変更
+ * @shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ */
+import ProductCard from '@shared/components/cards/ProductCard';
 
 /**
  * =====================================================================
@@ -86,7 +91,7 @@ export default async function RankingPage({ searchParams }: { searchParams: Prom
 
           return (
             <ProductCard 
-              key={product.unique_id} 
+              key={product.unique_id || product.id} 
               product={product} 
               rank={rank}
             >

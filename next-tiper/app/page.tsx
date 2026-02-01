@@ -4,21 +4,43 @@
 
 import React from 'react';
 import Link from 'next/link';
-// ✅ パスを shared 側に修正
 import ProductCard from '@shared/components/cards/AdultProductCard'; 
-import { fetchPostList, getAdultProducts } from '@shared/components/lib/api'; // 👈 ここを修正
+import { fetchPostList, getAdultProducts } from '@shared/components/lib/api';
+import { constructMetadata } from '@shared/components/lib/metadata';
+
+/**
+ * 💡 Next.js 13+ Server Components 設定
+ */
 export const dynamic = 'force-dynamic';
+
+/**
+ * 💡 メタデータの動的生成
+ * generateMetadata 関数を使用することで、SSR時のタイトル不一致（Bic Station問題）を防ぎます。
+ */
+export async function generateMetadata() {
+  return constructMetadata(
+    undefined, // title (defaultを使用)
+    undefined, // description (defaultを使用)
+    undefined, // image
+    '/tiper'   // 💡 forcedPath: これにより Tiper としてメタデータが生成される
+  );
+}
 
 // --- ユーティリティ関数 ---
 const decodeHtml = (html: string) => {
   if (!html) return '';
-  const map: { [key: string]: string } = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
-  return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (match) => map[match] || match);
+  const map: { [key: string]: string } = { 
+    '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
+  };
+  return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+             .replace(/&[a-z]+;/gi, (match) => map[match] || match);
 };
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '';
-  return new Date(dateString).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  return new Date(dateString).toLocaleDateString('ja-JP', { 
+    year: 'numeric', month: '2-digit', day: '2-digit' 
+  });
 };
 
 export default async function Home({ searchParams }: { searchParams: { page?: string } }) {
@@ -26,10 +48,19 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
   const limit = 20;
   const offset = (currentPage - 1) * limit;
 
-  // 💡 データフェッチ (並列実行で高速化)
+  /**
+   * 💡 データフェッチ
+   * getAdultProducts 内で getSiteMetadata('/tiper') が呼ばれるように設計されています。
+   * もし 0 ITEMS になる場合は、api.ts 側の fetch URL が正しいか確認が必要です。
+   */
   const [latestPosts, productData] = await Promise.all([
     fetchPostList(5).catch(() => []), 
-    getAdultProducts({ limit, offset, ordering: '-id' }).catch(() => ({ results: [], count: 0 }))
+    getAdultProducts({ 
+      limit, 
+      offset, 
+      ordering: '-id',
+      // 必要に応じて明示的にフラグを渡す場合はここに追加
+    }).catch(() => ({ results: [], count: 0 }))
   ]);
 
   const products = productData?.results || [];
@@ -58,7 +89,9 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
             </h2>
             <p className="text-gray-500 text-sm mt-1">新着アイテムを毎日更新中</p>
           </div>
-          <span className="text-gray-600 text-sm font-mono tracking-tighter">{totalCount} ITEMS</span>
+          <span className="text-gray-600 text-sm font-mono tracking-tighter">
+            {totalCount} ITEMS
+          </span>
         </div>
 
         {/* 商品グリッド */}
@@ -69,7 +102,10 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
             ))
           ) : (
             <div className="col-span-full py-32 text-center text-gray-700 font-bold border-2 border-dashed border-[#3d3d66]/30 rounded-2xl">
-              NO PRODUCTS FOUND.
+              <p className="text-xl mb-2">NO PRODUCTS FOUND.</p>
+              <p className="text-sm font-normal text-gray-500">
+                URL Path: /tiper | Group: adult
+              </p>
             </div>
           )}
         </div>
@@ -78,7 +114,7 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
         {totalPages > 1 && (
           <div className="mt-16 flex justify-center items-center gap-8">
             {currentPage > 1 && (
-              <Link href={`?page=${currentPage - 1}`} className="btn-pagination">
+              <Link href={`?page=${currentPage - 1}`} className="btn-pagination px-6 py-2 bg-[#1f1f3a] text-white rounded hover:bg-[#e94560] transition-colors">
                 PREV
               </Link>
             )}
@@ -90,7 +126,7 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
             </div>
 
             {currentPage < totalPages && (
-              <Link href={`?page=${currentPage + 1}`} className="btn-pagination">
+              <Link href={`?page=${currentPage + 1}`} className="btn-pagination px-6 py-2 bg-[#1f1f3a] text-white rounded hover:bg-[#e94560] transition-colors">
                 NEXT
               </Link>
             )}
@@ -109,7 +145,7 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
             latestPosts.map((post) => (
               <Link 
                 key={post.id} 
-                href={`/tiper/${post.slug}`} 
+                href={`/tiper/news/${post.slug}`} 
                 className="group block p-6 bg-[#16162d] border border-transparent hover:border-[#e94560]/50 rounded-xl transition-all"
               >
                 <div className="font-bold text-xl text-gray-100 mb-2 group-hover:text-[#e94560] transition-colors">

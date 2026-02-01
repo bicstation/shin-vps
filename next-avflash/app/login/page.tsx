@@ -2,8 +2,9 @@
 
 import React, { useState, FormEvent } from 'react';
 import Link from 'next/link'; 
-import { loginUser } from '@shared/lib/auth';
-import { getSiteMetadata } from '@shared/lib/siteConfig';
+// ✅ 整理後のディレクトリ構造に合わせてパスを修正
+import { loginUser } from '@shared/components/lib/auth';
+import { getSiteMetadata } from '@shared/components/lib/siteConfig';
 
 export default function LoginPage() {
   const [username, setUsername] = useState<string>('');
@@ -22,6 +23,7 @@ export default function LoginPage() {
       console.log("Login sequence initiated...");
       
       setDebugMsg('2. API通信(auth.ts)を呼び出し中...');
+      // 共通ライブラリのログイン関数を実行
       await loginUser(username, password);
       
       // 通常、成功すれば auth.ts 側でリダイレクトされるのでここには来ません
@@ -35,6 +37,7 @@ export default function LoginPage() {
     }
   };
 
+  // ✅ 共通設定からサイト情報を取得（パス修正済み）
   const { site_prefix } = getSiteMetadata();
   const registerHref = site_prefix ? `${site_prefix}/register` : '/register';
 
@@ -65,7 +68,7 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)} 
               required
               autoComplete="username"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
@@ -77,7 +80,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)} 
               required
               autoComplete="current-password"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
@@ -85,7 +88,9 @@ export default function LoginPage() {
             type="submit" 
             disabled={loading}
             className={`w-full py-4 rounded-xl font-bold text-white transition-all ${
-              loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+              loading 
+                ? 'bg-gray-400' 
+                : 'bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-200' 
             }`}
           >
             {loading ? '処理中...' : 'ログイン'}
@@ -93,7 +98,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-8 pt-6 border-t border-gray-50 text-center">
-          <Link href={registerHref} className="text-blue-600 font-bold hover:underline text-sm">
+          <Link href={registerHref} className="text-orange-600 font-bold hover:underline text-sm">
             新規会員登録はこちら
           </Link>
         </div>

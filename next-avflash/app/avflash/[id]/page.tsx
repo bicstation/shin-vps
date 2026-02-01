@@ -1,186 +1,140 @@
-// ファイル名: C:\dev\SHIN-VPS\next-avflash-v2\app\avflash\[id]\page.tsx
+// ファイル名: app/avflash/[id]/page.tsx
 
-// 💡 Linter と TypeScript のチェックを無効化 (赤線対策)
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/no-danger-to-js */
+/* eslint-disable react/no-danger */
 // @ts-nocheck 
 
 import React from 'react';
 import { notFound } from 'next/navigation';
+import styles from './post.module.css';
 
-// 💡 WordPress APIから取得する記事データの型定義 (簡略化)
-interface WpPost {
-    id: number;
-    slug: string; // 記事のパーマリンクに使用されるスラッグ
-    title: {
-        rendered: string; // HTMLタグを含むタイトル
-    };
-    date: string; // 記事の公開日時 (YYYY-MM-DDTHH:MM:SS)
-    content: {
-        rendered: string; // 記事本文のHTML
-    };
-    author: string; // 著者名
-    _embedded?: {
-        'wp:term'?: {
-            name: string;
-        }[][];
-        // 著者情報が含まれる場合
-        author?: {
-            name: string;
-        }[];
-    };
-}
+// ✅ api.ts から現在利用可能な関数をインポート
+// 💡 fetchPostList は WordPress API からデータを取得するために使用
+import { decodeHtml } from '@shared/components/lib/decode';
 
-// Next.jsの動的ルートからパラメータを受け取るための型定義
-interface PostPageProps {
-    params: {
-        id: string; // URLから渡される記事スラッグ
-    };
-}
-
-// 💡 データを取得するサーバー関数 (WordPress API向け)
-async function fetchPostData(postSlug: string): Promise<WpPost | null> {
-    // 🚨 カスタム投稿タイプ 'avflash_post' をスラッグで検索
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash_post?slug=${postSlug}&_embed&per_page=1`; 
-
-    try {
-        const res = await fetch(WP_API_URL, {
-            // 🚨 Hostヘッダーを「Avflash」のドメインに設定
-            headers: {
-                'Host': 'stg.blog.avflash.xyz' 
-            },
-            next: { revalidate: 3600 } 
-        });
-
-        if (!res.ok) {
-            console.error(`WordPress API Error: ${res.status} ${res.statusText}`);
-            return null;
-        }
-        
-        const data: WpPost[] = await res.json();
-        
-        if (data.length === 0) {
-            return null; // 記事が見つからない
-        }
-
-        const post = data[0];
-
-        // 著者名を取得 (なければ '不明な著者' とする)
-        const authorName = post._embedded?.author?.[0]?.name || '不明な著者';
-
-        return { ...post, author: authorName };
-
-    } catch (error) {
-        console.error("Failed to fetch post from WordPress API:", error);
-        return null; 
-    }
-}
-
-
-// ===============================================
-// 💡 追加: generateStaticParams 関数 
-// ビルド時にアクセスする全ての記事スラッグを取得し、静的生成します
-// ===============================================
-export async function generateStaticParams() {
-    // 🚨 記事スラッグのみを効率的に取得 (avflash_post)
-    const WP_SLUGS_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_fields=slug&per_page=100`; 
-
-    try {
-        const res = await fetch(WP_SLUGS_API_URL, {
-            headers: {
-                // 🚨 Hostヘッダーを設定
-                'Host': 'stg.blog.avflash.xyz' 
-            },
-            // ビルド時に実行されるため、キャッシュなしでOK
-            cache: 'no-store', 
-        });
-        
-        if (!res.ok) {
-            console.error(`generateStaticParams API Error: ${res.status} ${res.statusText}`);
-            return [];
-        }
-
-        const slugs: { slug: string }[] = await res.json();
-        
-        // 戻り値の形式を Next.js の要件 { id: string } に変換
-        return slugs.map((post) => ({
-            // URLパラメータ名が [id] なので、キーは id にする
-            id: post.slug, 
-        }));
-
-    } catch (error) {
-        console.error("Failed to fetch slugs for generateStaticParams:", error);
-        return [];
-    }
-}
-
-
-// ユーティリティ関数: HTMLエンティティをデコード
-const decodeHtml = (html: string) => {
-    const map: { [key: string]: string } = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
-    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (match) => map[match] || match);
-};
-
-// ユーティリティ関数: 日付フォーマット (例: 2025/12/16)
+/**
+ * 💡 ユーティリティ: 日付フォーマット
+ * decode.ts に存在しない場合のエラーを回避するため内部で定義
+ */
 const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    }).replace(/\//g, '/');
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
 };
 
+/**
+ * 💡 WordPress 記事取得関数 (内部定義または api.ts の fetchPostList を拡張)
+ */
+async function getWpPostDetail(slug: string) {
+  // avflash カテゴリ(カスタム投稿タイプ)から特定のスラッグの記事を取得
+  const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_embed&slug=${slug}`;
+  try {
+    const res = await fetch(WP_API_URL, {
+      headers: { 'Host': 'stg.blog.tiper.live' },
+      next: { revalidate: 3600 } // 1時間キャッシュ
+    });
+    if (!res.ok) return null;
+    const posts = await res.json();
+    return posts.length > 0 ? posts[0] : null;
+  } catch (error) {
+    console.error("WP API Fetch Error:", error);
+    return null;
+  }
+}
 
-// Next.js Server Component (async function)
+/**
+ * 💡 静的パスの生成 (generateStaticParams)
+ * ビルド時に WordPress から最新記事のスラッグを取得して静的ページ化します
+ */
+export async function generateStaticParams() {
+  try {
+    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_embed&per_page=20`;
+    const res = await fetch(WP_API_URL, {
+      headers: { 'Host': 'stg.blog.tiper.live' }
+    });
+    const allPosts = await res.json();
+    
+    if (!Array.isArray(allPosts)) return [];
+    
+    return allPosts.map((post) => ({
+      id: post.slug,
+    }));
+  } catch (error) {
+    console.error("StaticParams generation failed:", error);
+    return [];
+  }
+}
+
+interface PostPageProps {
+  params: { id: string };
+}
+
+/**
+ * 💡 記事詳細ページ メインコンポーネント
+ */
 export default async function PostPage({ params }: PostPageProps) {
-    
-    // URLから取得したエンコード済みのID (スラッグ) をデコード
-    const postSlug = decodeURIComponent(params.id);
-    
-    const post = await fetchPostData(postSlug);
+  // URLパラメータ(id)はスラッグなのでデコードして使用
+  const postSlug = decodeURIComponent(params.id);
 
-    // 記事が見つからなかった場合は 404 ページを表示
-    if (!post) {
-        notFound(); 
-    }
-    
-    const postTitle = decodeHtml(post.title.rendered);
-    const postDate = formatDate(post.date);
+  // ✅ 記事データを取得
+  const post = await getWpPostDetail(postSlug);
 
-    // サイトカラー: #ff4500 (page.tsxと合わせる)
-    const SITE_COLOR = '#ff4500'; 
+  // 記事が見つからない場合は 404
+  if (!post) {
+    notFound();
+  }
 
-    return (
-        <div style={{ padding: '40px 80px', maxWidth: '1000px', margin: '0 auto', backgroundColor: '#fff' }}>
+  // 著者情報の抽出
+  const authorName = post._embedded?.author?.[0]?.name || 'AV FLASH 編集部';
 
-            {/* 1. 記事タイトルとメタ情報 */}
-            <h1 style={{ 
-                color: SITE_COLOR, 
-                fontSize: '2.5em', 
-                borderBottom: `3px solid ${SITE_COLOR}`, 
-                paddingBottom: '10px' 
-            }}>
-                {postTitle}
-            </h1>
-            <div style={{ color: '#666', fontSize: '0.9em', marginBottom: '30px' }}>
-                <span>著者: {post.author}</span>
-                <span style={{ marginLeft: '20px' }}>公開日: {postDate}</span>
-                {/* スラッグを表示 */}
-                <span style={{ marginLeft: '20px', color: '#999' }}>スラッグ: {post.slug}</span>
-            </div>
-
-            {/* 2. 記事コンテンツ */}
-            <div 
-                style={{ fontSize: '1.05em', lineHeight: '1.7', color: '#333' }}
-                dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
-            />
-            
-            {/* 3. コメントや関連情報のプレースホルダー */}
-            <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #ccc' }}>
-                <h3 style={{ color: SITE_COLOR }}>コメントセクション (仮)</h3>
-                <p style={{ color: '#666' }}>この下にコメントフォームや関連記事が表示されます。</p>
-            </div>
-
+  return (
+    <article className={styles.container}>
+      {/* 1. 記事ヘッダー */}
+      <header className={styles.header} style={{ marginBottom: '40px' }}>
+        <h1 className={styles.title} style={{ fontSize: '2.4rem', color: '#fff', marginBottom: '20px' }}>
+          {decodeHtml(post.title.rendered)}
+        </h1>
+        
+        <div className={styles.meta} style={{ display: 'flex', gap: '20px', color: '#aaa', fontSize: '0.9rem' }}>
+          <div className={styles.metaItem}>
+            👤 <span>{authorName}</span>
+          </div>
+          <div className={styles.metaItem}>
+            📅 <time>{formatDate(post.date)}</time>
+          </div>
         </div>
-    );
-};
+      </header>
+
+      {/* 2. アイキャッチ画像があれば表示 */}
+      {post._embedded?.['wp:featuredmedia']?.[0]?.source_url && (
+        <div className={styles.featuredImage} style={{ marginBottom: '40px', borderRadius: '12px', overflow: 'hidden' }}>
+          <img 
+            src={post._embedded['wp:featuredmedia'][0].source_url} 
+            alt="" 
+            style={{ width: '100%', height: 'auto', display: 'block' }} 
+          />
+        </div>
+      )}
+
+      {/* 3. 記事メインコンテンツ */}
+      {/* WordPressから取得したHTMLを流し込み。スタイルの適用には post.module.css または global.css を使用 */}
+      <div 
+        className={styles.content}
+        style={{ lineHeight: '1.8', fontSize: '1.1rem', color: '#eee' }}
+        dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
+      />
+
+      {/* 4. 記事フッター */}
+      <footer className={styles.footerSection} style={{ marginTop: '60px', padding: '30px', background: '#1a1a1a', borderRadius: '12px' }}>
+        <h3 className={styles.footerTitle} style={{ color: '#ff4500', marginBottom: '15px' }}>おすすめの関連記事</h3>
+        <p style={{ color: '#888', fontSize: '0.9rem' }}>
+          現在、この記事に関連するレビュー記事を準備中です。
+          最新の動画作品はトップページからご確認いただけます。
+        </p>
+      </footer>
+    </article>
+  );
+}

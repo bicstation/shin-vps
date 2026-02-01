@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 import React from 'react';
-import Script from 'next/script'; // 🚩 JSエラー対策
-import ProductCard from '@shared/components/product/ProductCard';
+// ✅ 修正ポイント: インポートパスの変更
+import ProductCard from '@shared/components/cards/ProductCard';
 import Sidebar from '@shared/components/layout/Sidebar';
 import Pagination from '@shared/components/common/Pagination';
 import { fetchPCProducts, fetchPostList, fetchMakers } from '@shared/components/lib/api';
@@ -65,7 +65,7 @@ export default async function PCProductsPage(props: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 20;
 
-    // 🚩 データ並列取得 (APIのパス不整合を防ぐため lib/api 内の fetchPCProducts が末尾スラッシュを考慮している前提)
+    // データ並列取得
     const [wpData, pcData, makersData] = await Promise.all([
         fetchPostList(5).catch(() => ({ results: [] })),
         fetchPCProducts(makerSlug || '', currentOffset, limit, attributeSlug || '').catch(() => ({ results: [], count: 0 })), 
@@ -165,10 +165,10 @@ export default async function PCProductsPage(props: PageProps) {
                             </div>
                         ) : (
                             <>
-                                {/* 🚩 Grid自体の最小高さを確保しチャートの計算を安定させる */}
+                                {/* 🚩 Grid自体の最小高さを確保 */}
                                 <div className={styles.productGrid} style={{ minHeight: '400px' }}>
                                     {pcData.results.map((product: any) => (
-                                        <ProductCard key={product.id} product={product} />
+                                        <ProductCard key={product.id || product.unique_id} product={product} />
                                     ))}
                                 </div>
 

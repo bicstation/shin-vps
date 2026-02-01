@@ -1,9 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
-"use client";
 /**
  * ✅ 爆速の鍵: ISR (Incremental Static Regeneration)
  * 1時間（3600秒）ごとにバックグラウンドで再生成。
- * ユーザーには常に生成済みの超軽量HTMLが返るため、0.62sという速度が実現します。
  */
 export const revalidate = 3600; 
 
@@ -12,7 +10,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Sidebar from '@shared/components/layout/Sidebar';
 import RadarChart from '@shared/components/ui/RadarChart';
-import ProductCard from '@shared/components/product/ProductCard';
+
+/**
+ * ✅ 修正ポイント: インポートパスの変更
+ * @shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ */
+import ProductCard from '@shared/components/cards/ProductCard';
+
 import {
     fetchPostList,
     fetchPCProducts,
@@ -161,7 +165,7 @@ export default async function Page({ searchParams }: PageProps) {
                     </div>
                 </section>
 
-                {/* 🔥 注目度ランキング (背景色あり) */}
+                {/* 🔥 注目度ランキング */}
                 {trendTopThree.length > 0 && (
                     <section className={`${styles.rankingSection} ${styles.popularityBg}`}>
                         <div className={styles.sectionHeader}>

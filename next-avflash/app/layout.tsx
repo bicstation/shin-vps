@@ -1,33 +1,33 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
- * shared/styles/globals.css を参照
+ * shared/components/styles/globals.css を参照
  */
-import '@shared/styles/globals.css';
-
+import '@shared/components/styles/globals.css';
 
 /*
  * ✅ 2. 共通ロジックのインポート
- * shared/lib/ フォルダに移動した設定ファイルを読み込み
+ * shared/components/lib/ フォルダの設定ファイルを読み込み
  */
-import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@shared/components/lib/siteConfig';
 
 /**
  * ✅ 3. 共通レイアウトコンポーネントのインポート
- * shared/layout/ フォルダから読み込み
+ * shared/components/layout/ フォルダから読み込み
  */
-import Header from '@shared/layout/Header';
-import Footer from '@shared/layout/Footer';
-import Sidebar from '@shared/layout/Sidebar';
+import Header from '@shared/components/layout/Header';
+import Footer from '@shared/components/layout/Footer';
+import Sidebar from '@shared/components/layout/Sidebar';
 
 /**
  * ✅ 4. チャットボットコンポーネントのインポート
- * shared/components/ フォルダから読み込み
+ * 💡 修正ポイント: shared/components/common/ChatBot.tsx を参照
  */
-import ChatBot from '@shared/components/ChatBot';
+import ChatBot from '@shared/components/common/ChatBot';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,7 +36,6 @@ const inter = Inter({
 /**
  * 💡 SEOメタデータの設定
  * サーバーコンポーネントである layout.tsx でのみ定義可能。
- * ※ドメインごとに個別に書き換えるか、generateMetadataでの動的生成も検討してください。
  */
 export const metadata: Metadata = {
   metadataBase: new URL("https://avflash.xyz"),
@@ -90,7 +89,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // ✅ 共通設定からサイト情報を取得（shared/lib/siteConfig.tsx を使用）
+  // ✅ 共通設定からサイト情報を取得（shared/components/lib/siteConfig.tsx を使用）
   const site = getSiteMetadata();
   const themeColor = getSiteColor(site.site_name);
 
@@ -136,9 +135,6 @@ export default function RootLayout({
 
         {/* 5. AIチャットコンシェルジュ */}
         <ChatBot />
-
-        {/* 💡 Note: styled-jsx global はサーバーコンポーネントでは使用不可。
-            必要であれば globals.css または layout.module.css で管理してください。 */}
       </body>
     </html>
   );
