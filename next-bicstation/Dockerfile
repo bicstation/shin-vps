@@ -1,42 +1,34 @@
 # 💡 ビルド全体で参照可能な引数
 ARG NEXT_PUBLIC_APP_TITLE
-ARG NEXT_PUBLIC_BASE_PATH
 ARG NEXT_PUBLIC_API_URL
 
 # --- ステージ 1: ビルドステージ ---
 FROM node:18-slim AS builder 
 
-# ビルド引数の設定
 ARG NEXT_PUBLIC_APP_TITLE
-ARG NEXT_PUBLIC_BASE_PATH
 ARG NEXT_PUBLIC_API_URL
+
+# 🚀 パスを強制的に空にし、ビルド時に「/」用としてJSを焼く
+ENV NEXT_PUBLIC_BASE_PATH=""
 ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
-ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-# 作業ディレクトリの設定
 WORKDIR /app
 
-# ✅ 1. OSパッケージのインストール（ミラーサイト指定で安定化）
+# ✅ OSパッケージのインストール
 RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
 RUN apt-get update && apt-get install -y libc6 libstdc++6 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ✅ 2. ファイルのコピー
-# 🚨 プロジェクトファイルを先にコピー（ここに含まれる shared リンクは後で消す）
+# ✅ ファイルのコピー
 COPY next-bicstation/ ./
-
-# 🚨 コンテナ内の不完全な shared を削除し、
-#    物理構造を整えた「本物の shared フォルダ」を正しい位置（/app/shared）に配置
 RUN rm -rf ./shared
 COPY shared/ ./shared/
 
-# ✅ 3. 依存関係のインストール
-# node_modules などをクリーンにしてからインストールを実行
+# ✅ 依存関係のインストール
 RUN npm cache clean --force
 RUN npm install --include=optional
 
-# ✅ 4. ビルド実行
-# 前回のキャッシュを完全に削除してからビルドを開始
+# ✅ ビルド実行
 RUN rm -rf .next .cache node_modules/.cache
 RUN npm run build
 
@@ -44,21 +36,23 @@ RUN npm run build
 FROM node:18-slim AS runner 
 WORKDIR /app
 
-# 実行ユーザーの定義（セキュリティ対応）
 RUN addgroup --gid 1001 nodejs || true && \
     adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
 
 ENV NODE_ENV=production
 ENV HOSTNAME "0.0.0.0"
 ENV PORT 3000
+ENV NEXT_PUBLIC_BASE_PATH=""
 
-# builderステージから standalone モードに必要な成果物だけをコピー
+# 💡 standalone モードの成果物をコピー
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
-# 💡 standalone 配下のプロジェクト名ディレクトリをルートに展開
-# next-bicstation ディレクトリがある場合、その中身をカレントディレクトリに移動する
-RUN if [ -d "./next-bicstation" ]; then cp -r ./next-bicstation/. . && rm -rf ./next-bicstation; fi
+# 🚀 【重要】特定のフォルダ名（next-bicstation等）に依存せず、
+# 中身をすべてルートに展開して、/ 直下で動くように強制する
+RUN cp -r .next/standalone/* . 2>/dev/null || true
+# 不要になったサブフォルダを削除（混乱を防ぐ）
+RUN rm -rf ./next-bicstation ./next-tiper ./next-bic-saving ./next-avflash
 
 # staticファイルをコピー
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

@@ -1,56 +1,60 @@
 /** @type {import('next').NextConfig} */
 
-// ✅ 1. basePath の決定
-// ローカル開発時に /avflash 等のサブディレクトリで動かす場合は環境変数で指定
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+// 💡 パターンB: ドメインごとに分けるため、サブパス設定は空にします
+const basePath = ''; 
 
 const nextConfig = {
-  // 🚀 2. ベースパス設定（ローカル/本番切り替え対応）
+  // =====================================================================
+  // 🚀 ルーティング・パス設定 (ドメイン直下運用)
+  // =====================================================================
   basePath: basePath,
+  assetPrefix: basePath,
 
-  // 🛑 3. 重要：404回避とリダイレクト整合性
-  // サブディレクトリ運用（localhost/avflash/）でも、本番（avflash.xyz/）でも
-  // パスの末尾にスラッシュを付与してルーティングを安定させます
+  // URLの末尾にスラッシュを付与（SEOおよびTraefikとの整合性のため）
   trailingSlash: true,
 
-  // 📦 4. スタンドアロンモード（Docker 本番環境に必須）
+  // Docker環境（standaloneモード）で最適に動作
   output: 'standalone',
 
-  // 🔧 5. 環境変数の公開（サーバー/クライアント両用）
+  // =====================================================================
+  // 🛠 ビルド・コンパイル設定
+  // =====================================================================
+  // 💡 sharedフォルダ内の TypeScript (siteConfig.tsx等) を読み込むために必須
+  transpilePackages: ['shared'],
+
+  // =====================================================================
+  // 🌍 環境変数設定
+  // =====================================================================
   env: {
-    // SSR時のDjangoコンテナ通信用（内部ネットワーク）
+    // サーバーサイドでのDjango通信用
     API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000',
-    // クライアントサイドでのAPI通信用（公開URL）
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://avflash.xyz/api',
-    // 自身のベースパスをJS側でも参照可能にする
+    // クライアントサイドでのAPI通信用 (統合ポート8083経由)
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api',
+    // フロントエンド側でベースパスを参照する場合（空文字）
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
 
-  // 🖼️ 6. 画像最適化設定（MGS等の外部アフィリエイト画像表示用）
+  // =====================================================================
+  // 🖼 画像最適化設定
+  // =====================================================================
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.mgs.jp', // MGSのアフィリエイト画像
-      },
-      {
-        protocol: 'https',
-        hostname: '**.mgstage.com', // MGStageのサムネイル
-      },
-      {
-        protocol: 'https',
-        hostname: '**.dmm.co.jp', // (参考) DMMなどの他ASP併用時用
-      },
+      { protocol: 'https', hostname: '**.mgs.jp' },
+      { protocol: 'https', hostname: '**.mgstage.com' },
+      { protocol: 'https', hostname: '**.dmm.co.jp' },
+      // 他の外部ドメインも必要に応じてここに追加
     ],
-    // Docker環境でのビルド時間を短縮し、ライブラリ依存エラーを防ぐ設定
-    unoptimized: process.env.NODE_ENV === 'development',
+    // Docker環境でのトラブル回避のため最適化をオフ
+    unoptimized: true,
   },
 
-  // ⚡ 7. パフォーマンス・品質設定
+  // ⚡ パフォーマンス・品質設定
   reactStrictMode: true,
   swcMinify: true,
 
-  // 🛡️ 8. セキュリティヘッダー（アダルトサイトの信頼性向上）
+  // =====================================================================
+  // 🛡 セキュリティヘッダー
+  // =====================================================================
   async headers() {
     return [
       {

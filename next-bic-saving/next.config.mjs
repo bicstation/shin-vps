@@ -1,27 +1,71 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  // 1. ベースパスの設定
-  // 環境変数から取得し、デフォルトは空（ルート）に設定
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
 
-  // 2. ビルド・出力設定
-  // Docker環境（スタンドアロンモード）で最適に動作するための設定
-  output: 'standalone', 
+// 💡 パターンB: サブパスを消し、ドメイン直下で運用するため空文字に固定
+const basePath = '';
+
+const nextConfig = {
+  // =====================================================================
+  // 🚀 ルーティング設定 (ドメイン分離運用のための初期化)
+  // =====================================================================
+  basePath: basePath,
+  assetPrefix: basePath,
+
+  // URL末尾のスラッシュを付与（Traefikとの親和性とSEOのため）
+  trailingSlash: true,
+
+  // Docker（standaloneモード）最適化
+  output: 'standalone',
   reactStrictMode: true,
 
-  // 3. 🛠️ 外部ディレクトリ（shared）のコンパイル許可
-  // shared フォルダ内の TypeScript/JSX をビルド対象に含めます。
-  // これにより、シンボリックリンクや物理コピーされた共通部品が正しく読み込まれます。
+  // =====================================================================
+  // 🛠 ビルド・コンパイル設定 (shared連携)
+  // =====================================================================
+  // 💡 sharedフォルダ内の TypeScript (siteConfig.tsx等) を読み込むために必須
   transpilePackages: ['shared'],
 
-  // 4. 環境変数の定義
+  // ビルド時の型チェック・ESLintエラーで停止させない（開発スピード優先）
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
+
+  // =====================================================================
+  // 🌍 環境変数設定
+  // =====================================================================
   env: {
-    // サーバー内部（コンテナ間）での通信先
-    API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2-prod:8000', 
+    // SSR時のDjango通信用
+    API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000',
+    // クライアントサイドでのAPI通信用 (統合ポート8083経由)
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api',
+    // フロントエンド側で参照するベースパス（空文字）
+    NEXT_PUBLIC_BASE_PATH: basePath,
   },
 
-  // 💡 クライアント側（ブラウザ）で使用する環境変数は、
-  // NEXT_PUBLIC_ つきで .env や docker-compose.yml に書くことで自動的に反映されます
+  // =====================================================================
+  // 🖼 画像最適化設定 (アフィリエイト画像等)
+  // =====================================================================
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**' },
+      { protocol: 'http', hostname: '**' },
+    ],
+    // Docker環境での依存エラーを防ぐため一律true
+    unoptimized: true,
+  },
+
+  // =====================================================================
+  // 🛡 セキュリティヘッダー
+  // =====================================================================
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

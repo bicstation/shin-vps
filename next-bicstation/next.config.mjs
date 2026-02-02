@@ -1,59 +1,78 @@
 /** @type {import('next').NextConfig} */
+
+// 💡 パターンB: ドメインごとに分けるため、サブパス設定は一切行わず空文字に固定します
 const nextConfig = {
   // =====================================================================
-  // 🚀 ルーティング設定 (ローカル・VPS本番 両対応)
+  // 🚀 ルーティング・パス設定 (ドメイン直下運用)
   // =====================================================================
-  // 💡 ポイント: 
-  // ローカル開発時: NEXT_PUBLIC_BASE_PATH='/tiper' 等を指定してサブパス運用。
-  // VPS本番環境: NEXT_PUBLIC_BASE_PATH を空にすることで、ドメイン直下運用。
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  // サブパス (/saving 等) を使わず、ドメインのトップ (/) で動作させます
+  basePath: '',
+  assetPrefix: '',
 
-  // URLの末尾にスラッシュを強制（例: /login -> /login/）
-  // Traefikとの整合性を高め、404エラーを回避するために有効化します。
+  // URLの末尾にスラッシュを付与（Traefikとの親和性とSEOのため）
   trailingSlash: true,
 
-  // Docker環境（standaloneモード）での動作を最適化
-  output: 'standalone', 
-  reactStrictMode: true,
+  // Docker環境（standaloneモード）で最適に動作
+  output: 'standalone',
 
   // =====================================================================
-  // 🛠 ビルド・チェック緩和設定 (エラーによる中断を防止)
+  // 🛠 ビルド・コンパイル設定
   // =====================================================================
+  // 💡 sharedフォルダ内の siteConfig.tsx 等を読み込むために必須
+  transpilePackages: ['shared'],
+
   typescript: {
-    // ⚠️ Rechartsなどのサードパーティ製ライブラリの型エラーを無視してビルドを継続
+    // 型エラーによるビルド中断を防止
     ignoreBuildErrors: true,
   },
   eslint: {
-    // ⚠️ ビルド中のESLintチェックでエラーが出ても中断しない
+    // ESLintチェックによるエラー中断を防止
     ignoreDuringBuilds: true,
   },
 
   // =====================================================================
-  // 🖼 画像最適化設定 (あらゆる画像ソースに対応)
+  // 🖼 画像最適化設定 (アフィリエイト・外部画像対応)
   // =====================================================================
   images: {
     remotePatterns: [
-      { protocol: 'https', hostname: 'www.fmv.com' },
-      { protocol: 'https', hostname: '**.linksynergy.com' },
-      { protocol: 'https', hostname: '**.itmedia.co.jp' },
-      { protocol: 'https', hostname: '**.rakuten.co.jp' },
-      { protocol: 'http', hostname: 'localhost' },
-      { protocol: 'http', hostname: '127.0.0.1' },
-      // 💡 あらゆる外部画像ドメインを許可するワイルドカード設定
-      // これにより、動的な画像配信サービスもカバーします。
       { protocol: 'https', hostname: '**' },
       { protocol: 'http', hostname: '**' },
     ],
+    // Docker環境での依存エラーを防ぐため一律 true
+    unoptimized: true,
   },
 
   // =====================================================================
-  // 🌍 環境変数設定 (サーバーサイド用)
+  // 🌍 環境変数設定 (サーバー/クライアント両用)
   // =====================================================================
   env: {
-    // コンテナ間通信（サーバーサイド）で使用するAPIの向き先
+    // サーバーサイドでのDjango通信用
     API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000',
+    // クライアントサイドでのAPI通信用 (統合ポート8083経由)
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api',
+    // フロントエンド側で参照するベースパス（空文字に固定）
+    NEXT_PUBLIC_BASE_PATH: '',
+  },
+
+  // ⚡ パフォーマンス・品質設定
+  reactStrictMode: true,
+  swcMinify: true,
+
+  // =====================================================================
+  // 🛡 セキュリティヘッダー
+  // =====================================================================
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+    ];
   },
 };
 
-// 💡 Next.js 14以降推奨の ES Modules (mjs) 形式でエクスポート
 export default nextConfig;
