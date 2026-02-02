@@ -2,6 +2,8 @@
 
 # ==============================================================================
 # 🚀 SHIN-VPS プロフェッショナル再構築スクリプト (WSL2 & 32GB RAM 最適化版)
+# ------------------------------------------------------------------------------
+# 修正内容: ネットワーク不整合(Labelエラー)の自動検知・修復機能を追加
 # ==============================================================================
 
 # 1. 実行環境の解析
@@ -40,14 +42,14 @@ show_help() {
     echo "  prod         🌐 本番環境 (VPS)"
     echo ""
     echo "SERVICE_KEYWORDS: (部分一致・複数指定可)"
-    echo "  bicstation / tiper / saving / avflash / django / nginx / ollama"
+    echo "  bicstation / tiper / saving / avflash / django / wp / ollama"
     echo ""
     echo "OPTIONS:"
     echo "  -w, --watch  🚀 ファイル変更を監視して自動リロード (nodemon)"
-    echo "  -c, --clean  🧹 ビルドキャッシュと未使用イメージを掃除"
+    echo "  -c, --clean  🧹 ビルドキャッシュと古いイメージを掃除"
     echo "  -a, --all    🚨 [強力] 未使用ボリューム・全キャッシュを完全削除"
     echo "  -n, --no-log 🚫 起動後のログ追跡をスキップ"
-    echo "  --stats      📊 コンテナの稼働状況(docker stats)を表示して終了"
+    echo "  --stats      📊 コンテナの稼働状況を表示して終了"
     echo "  --no-cache   🔨 Dockerビルド時にキャッシュを無視"
     echo "================================================================"
 }
@@ -104,12 +106,29 @@ if [ ! -f "$COMPOSE_FILE" ]; then
 fi
 
 # ---------------------------------------------------------
-# 6. 事前チェック (WSL2/Docker 動作確認)
+# 6. 事前チェック & ネットワーク修復
 # ---------------------------------------------------------
 if ! docker info >/dev/null 2>&1; then
     echo "❌ Dockerが起動していないか、WSL2が応答していません。"
-    echo "👉 'wsl --shutdown' を試すか、Docker Desktopを確認してください。"
     exit 1
+fi
+
+EXTERNAL_NET="shin-vps_shared-proxy"
+NETWORK_INFO=$(docker network inspect "$EXTERNAL_NET" 2>/dev/null)
+
+if [ $? -eq 0 ]; then
+    # ネットワークが存在する場合、ラベルをチェック
+    HAS_LABEL=$(echo "$NETWORK_INFO" | grep "com.docker.compose.network")
+    if [ -z "$HAS_LABEL" ]; then
+        echo "⚠️  ネットワークの不整合（Labelなし）を検知しました。"
+        echo "🔄  正常な通信を確保するため、ネットワークを再生成します..."
+        docker compose -f "$COMPOSE_FILE" down >/dev/null 2>&1
+        docker network rm "$EXTERNAL_NET" >/dev/null 2>&1
+        docker network create "$EXTERNAL_NET"
+    fi
+else
+    echo "🌐 共有ネットワークを作成します: $EXTERNAL_NET"
+    docker network create "$EXTERNAL_NET"
 fi
 
 # 🚀 ウォッチモード (nodemon)
@@ -135,22 +154,18 @@ echo "======================================="
 
 cd "$SCRIPT_DIR"
 
-# 共有ネットワークの確保
-EXTERNAL_NET="shin-vps_shared-proxy"
-docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1 || docker network create "$EXTERNAL_NET"
-
 # --- STEP 1: 停止 & クリーンアップ ---
 if [ "$CLEAN_ALL" = true ]; then
     echo "🚨 [MODE: FULL CLEAN] システム全体の未使用リソースを削除します..."
     docker compose -f "$COMPOSE_FILE" down --volumes --remove-orphans
-    docker system prune -af --volumes # これが以前13GB解放した魔法のコマンドです
+    docker system prune -af --volumes 
 elif [ "$CLEAN" = true ]; then
     echo "🧹 [MODE: CLEAN] キャッシュと古いイメージを掃除します..."
     docker compose -f "$COMPOSE_FILE" down --remove-orphans
     docker image prune -f
-    docker builder prune -f # BuildKitキャッシュの掃除
+    docker builder prune -f 
 else
-    echo "🚀 サービスを停止中..."
+    echo "🚀 停止/更新中..."
     docker compose -f "$COMPOSE_FILE" stop $SERVICES
 fi
 
@@ -166,7 +181,7 @@ echo "---------------------------------------"
 echo "🎉 再構築が完了しました！"
 
 if [ "$TAIL_LOGS" = true ] && [ -z "$WATCH_MODE" ]; then
-    echo "📝 ログ出力を開始します... (Ctrl+C で中断してもコンテナは動き続けます)"
+    echo "📝 ログ出力を開始します... (Ctrl+C で中断可能)"
     docker compose -f "$COMPOSE_FILE" logs -f --tail=50 $SERVICES
 else
     docker compose -f "$COMPOSE_FILE" ps $SERVICES

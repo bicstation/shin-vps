@@ -1,8 +1,8 @@
 # =====================================================================
-# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 完全無欠版
+# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 最終修正版
 # ---------------------------------------------------------------------
-# 【環境】職場PC 開発・テスト環境 (ポート 8083)
-# 【設計】本番環境の Traefik + Multi-Domain 構成を完全移植
+# 【設計】Traefikをゲートウェイとし、Next.js(3000) / Django(8000) / 
+#        WordPress分離(Nginx経由)を統合制御する
 # =====================================================================
 
 services:
@@ -22,7 +22,7 @@ services:
       - "--entrypoints.web.address=:80"
     ports:
       - "8083:80"      # 統合フロントポート
-      - "8085:8080"    # Traefik Dashboard (http://localhost:8085)
+      - "8085:8080"    # Traefik Dashboard
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -53,9 +53,6 @@ services:
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${WP_DB_NAME}
-      MARIADB_USER: ${WP_DB_USER}
-      MARIADB_PASSWORD: ${WP_DB_PASSWORD}
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
@@ -76,7 +73,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # API、管理画面、静的ファイルを全ドメインから受け入れる優先ルール
       - "traefik.http.routers.django-router.rule=(Host(`localhost`) || Host(`127.0.0.1`) || Host(`tiper-host`) || Host(`bicstation-host`) || Host(`saving-host`) || Host(`avflash-host`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=web"
       - "traefik.http.routers.django-router.priority=2000"
@@ -89,106 +85,52 @@ services:
       - shared-proxy
 
   # --- 3. フロントエンド層 (Next.js 4サイト) ---
-
   next-bicstation-v2:
-    build: 
-      context: .
-      dockerfile: ./next-bicstation/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=http://bicstation-host:8083/api
+    build: { context: ., dockerfile: ./next-bicstation/Dockerfile, args: [NEXT_PUBLIC_API_URL=http://bicstation-host:8083/api] }
     container_name: next-bicstation-v2
     restart: always
     env_file: [.env]
-    environment:
-      - NEXT_PUBLIC_API_URL=http://bicstation-host:8083/api
-      - TRUST_PROXY=true
-    volumes:
-      - ./next-bicstation:/usr/src/app
-      - ./shared:/usr/src/app/shared
-    networks:
-      - internal-net
-      - shared-proxy
+    volumes: [ "./next-bicstation:/usr/src/app", "./shared:/usr/src/app/shared" ]
+    networks: [ internal-net, shared-proxy ]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.bic-v2-router.rule=Host(`bicstation-host`) || Host(`localhost`) || Host(`127.0.0.1`)"
-      - "traefik.http.routers.bic-v2-router.entrypoints=web"
-      - "traefik.http.routers.bic-v2-router.priority=100"
       - "traefik.http.services.bic-v2-svc.loadbalancer.server.port=3000"
 
   next-tiper-v2:
-    build: 
-      context: .
-      dockerfile: ./next-tiper/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=http://tiper-host:8083/api
+    build: { context: ., dockerfile: ./next-tiper/Dockerfile, args: [NEXT_PUBLIC_API_URL=http://tiper-host:8083/api] }
     container_name: next-tiper-v2
     restart: always
     env_file: [.env]
-    environment:
-      - NEXT_PUBLIC_API_URL=http://tiper-host:8083/api
-    volumes:
-      - ./next-tiper:/usr/src/app
-      - ./shared:/usr/src/app/shared
-    networks:
-      - internal-net
-      - shared-proxy
+    volumes: [ "./next-tiper:/usr/src/app", "./shared:/usr/src/app/shared" ]
+    networks: [ internal-net, shared-proxy ]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.tiper-v2-router.rule=Host(`tiper-host`)"
-      - "traefik.http.routers.tiper-v2-router.entrypoints=web"
-      - "traefik.http.routers.tiper-v2-router.priority=100"
       - "traefik.http.services.tiper-v2-svc.loadbalancer.server.port=3000"
 
   next-bic-saving-v2:
-    build: 
-      context: .
-      dockerfile: ./next-bic-saving/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=http://saving-host:8083/api
+    build: { context: ., dockerfile: ./next-bic-saving/Dockerfile, args: [NEXT_PUBLIC_API_URL=http://saving-host:8083/api] }
     container_name: next-bic-saving-v2
     restart: always
     env_file: [.env]
-    environment:
-      - NEXT_PUBLIC_API_URL=http://saving-host:8083/api
-    volumes:
-      - ./next-bic-saving:/usr/src/app
-      - ./shared:/usr/src/app/shared
-    networks:
-      - internal-net
-      - shared-proxy
+    volumes: [ "./next-bic-saving:/usr/src/app", "./shared:/usr/src/app/shared" ]
+    networks: [ internal-net, shared-proxy ]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.saving-v2-router.rule=Host(`saving-host`)"
-      - "traefik.http.routers.saving-v2-router.entrypoints=web"
-      - "traefik.http.routers.saving-v2-router.priority=100"
       - "traefik.http.services.saving-v2-svc.loadbalancer.server.port=3000"
 
   next-avflash-v2:
-    build: 
-      context: .
-      dockerfile: ./next-avflash/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=http://avflash-host:8083/api
+    build: { context: ., dockerfile: ./next-avflash/Dockerfile, args: [NEXT_PUBLIC_API_URL=http://avflash-host:8083/api] }
     container_name: next-avflash-v2
     restart: always
     env_file: [.env]
-    environment:
-      - NEXT_PUBLIC_API_URL=http://avflash-host:8083/api
-    volumes:
-      - ./next-avflash:/usr/src/app
-      - ./shared:/usr/src/app/shared
-    networks:
-      - internal-net
-      - shared-proxy
+    volumes: [ "./next-avflash:/usr/src/app", "./shared:/usr/src/app/shared" ]
+    networks: [ internal-net, shared-proxy ]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.avflash-v2-router.rule=Host(`avflash-host`)"
-      - "traefik.http.routers.avflash-v2-router.entrypoints=web"
-      - "traefik.http.routers.avflash-v2-router.priority=100"
       - "traefik.http.services.avflash-v2-svc.loadbalancer.server.port=3000"
 
   # --- 4. WordPress & 静的配信層 ---
@@ -197,7 +139,8 @@ services:
     container_name: nginx-wp-v2
     restart: always
     volumes:
-      - wordpress_data:/var/www/html:ro
+      - wordpress_gen_data:/var/www/html/gen:ro
+      - wordpress_adult_data:/var/www/html/adult:ro
       - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
     networks:
       - internal-net
@@ -205,23 +148,37 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.blog-router.rule=(Host(`blog-host`) || Host(`localhost`)) && PathPrefix(`/blog`)"
+      - "traefik.http.routers.blog-router.rule=(Host(`blog-host`) || Host(`localhost`) || Host(`bicstation-host`) || Host(`tiper-host`) || Host(`saving-host`) || Host(`avflash-host`)) && PathPrefix(`/blog`)"
       - "traefik.http.routers.blog-router.entrypoints=web"
       - "traefik.http.middlewares.blog-strip.stripprefix.prefixes=/blog"
       - "traefik.http.routers.blog-router.middlewares=blog-strip"
       - "traefik.http.services.nginx-wp-svc.loadbalancer.server.port=80"
 
-  wordpress-v2:
+  wordpress-gen:
     image: wordpress:6-fpm-alpine
-    container_name: wordpress-v2
+    container_name: wordpress-gen-v2
     restart: always
     environment:
       WORDPRESS_DB_HOST: mariadb-v2
-      WORDPRESS_DB_NAME: ${WP_DB_NAME}
-      WORDPRESS_DB_USER: ${WP_DB_USER}
-      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WP_GEN_DB_NAME}
+      WORDPRESS_DB_USER: ${WP_GEN_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WP_GEN_DB_PASSWORD}
     volumes:
-      - wordpress_data:/var/www/html
+      - wordpress_gen_data:/var/www/html
+    networks:
+      - internal-net
+
+  wordpress-adult:
+    image: wordpress:6-fpm-alpine
+    container_name: wordpress-adult-v2
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: mariadb-v2
+      WORDPRESS_DB_NAME: ${WP_ADULT_DB_NAME}
+      WORDPRESS_DB_USER: ${WP_ADULT_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WP_ADULT_DB_PASSWORD}
+    volumes:
+      - wordpress_adult_data:/var/www/html
     networks:
       - internal-net
 
@@ -230,8 +187,7 @@ services:
     image: ollama/ollama:latest
     container_name: ollama-v2
     restart: always
-    volumes:
-      - ollama_data:/root/.ollama
+    volumes: [ "ollama_data:/root/.ollama" ]
     deploy:
       resources:
         reservations:
@@ -239,17 +195,13 @@ services:
             - driver: nvidia
               count: ${GPU_COUNT:-0}
               capabilities: [gpu]
+    networks: [ internal-net, shared-proxy ]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.ollama-router.rule=(Host(`localhost`) || Host(`tiper-host`)) && PathPrefix(`/ollama`)"
-      - "traefik.http.routers.ollama-router.entrypoints=web"
       - "traefik.http.middlewares.ollama-strip.stripprefix.prefixes=/ollama"
       - "traefik.http.routers.ollama-router.middlewares=ollama-strip"
       - "traefik.http.services.ollama-svc.loadbalancer.server.port=11434"
-    networks:
-      - internal-net
-      - shared-proxy
 
   # --- 6. 管理ツール層 (DB管理・ログ) ---
   phpmyadmin-v2:
@@ -257,16 +209,11 @@ services:
     container_name: phpmyadmin-v2
     environment:
       PMA_HOST: mariadb-v2
-      # 管理画面アクセスURLの固定
       PMA_ABSOLUTE_URI: http://bicstation-host:8083/phpmyadmin/
-    networks:
-      - internal-net
-      - shared-proxy
+    networks: [ internal-net, shared-proxy ]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.pma-router.rule=Host(`bicstation-host`) && PathPrefix(`/phpmyadmin`)"
-      - "traefik.http.routers.pma-router.entrypoints=web"
       - "traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin"
       - "traefik.http.routers.pma-router.middlewares=pma-strip"
       - "traefik.http.services.pma-svc.loadbalancer.server.port=80"
@@ -279,28 +226,21 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_LISTEN_PORT: 80
       SCRIPT_NAME: /pgadmin
-    networks:
-      - internal-net
-      - shared-proxy
+    networks: [ internal-net, shared-proxy ]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.pgadmin-router.rule=Host(`bicstation-host`) && PathPrefix(`/pgadmin`)"
-      - "traefik.http.routers.pgadmin-router.entrypoints=web"
       - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
 
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - shared-proxy
+    volumes: [ "/var/run/docker.sock:/var/run/docker.sock:ro" ]
+    networks: [ shared-proxy ]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.dozzle-router.rule=Host(`bicstation-host`) && PathPrefix(`/logs`)"
-      - "traefik.http.routers.dozzle-router.entrypoints=web"
+      # ルール修正: bicstation-host だけでなく localhost でもログを見れるように統合
+      - "traefik.http.routers.dozzle-router.rule=(Host(`bicstation-host`) || Host(`localhost`)) && PathPrefix(`/logs`)"
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 # --- リソース定義 ---
@@ -308,12 +248,12 @@ volumes:
   static_volume_home:
   postgres_data:
   mariadb_data:
-  wordpress_data:
+  wordpress_gen_data:
+  wordpress_adult_data:
   ollama_data:
 
 networks:
   internal-net:
     driver: bridge
   shared-proxy:
-    name: shin-vps_shared-proxy   # Traefikがコンテナを発見するために必須の名称
     driver: bridge
