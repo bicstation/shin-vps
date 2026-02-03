@@ -66,18 +66,15 @@ maya@Marya:/mnt/e/dev/shin-vps$ save -h
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-127.0.0.1     localhost
-::1           localhost
-192.168.0.106 host.docker.internal
-192.168.0.106 gateway.docker.internal
-127.0.0.1     kubernetes.docker.internal
-127.0.0.1     localhost
 127.0.0.1     tiper-host                 # tiper.live
 127.0.0.1     bicstation-host            # bicstation.com
 127.0.0.1     saving-host                # bic-saving.com
 127.0.0.1     avflash-host               # avflash.xyz
 127.0.0.1     blog-host                  # blog.tiper.live
-127.0.0.1     log-host                   # Dazzn
+127.0.0.1     log-host                   # Dozzl
 127.0.0.1     phpmyadmin-host            # phpmyadmin
 127.0.0.1     pgadmin-host               # pgadmin
-127.0.0.1     trafick-host               # trafick
+127.0.0.1     traefck-host               # traefik
+127.0.0.1     b-tiper-host               # blog.tiper.live
+127.0.0.1     b-bicstation-host          # blog.bicstation.com
+127.0.0.1     b-saving-host              # blog.bic-saving.com

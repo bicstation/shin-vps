@@ -1,7 +1,7 @@
 /**
  * =====================================================================
  * 💡 SHIN-VPS 統合 API サービス層 (shared/components/lib/api.ts)
- * WordPress(bicstation/saving) & Django(pc-products/adult-products) 統合データアクセス層
+ * WordPress(bicstation/saving/tiper) & Django 統合データアクセス層
  * =====================================================================
  */
 
@@ -17,8 +17,15 @@ const IS_SERVER = typeof window === 'undefined';
 const getWpConfig = () => {
     const { site_prefix } = getSiteMetadata();
     
-    // 💡 運用環境（Staging/Production）に合わせて Host ヘッダーを設定
-    const hostHeader = 'stg.blog.tiper.live'; 
+    // サイト識別子を取得 (tiper, bicstation, savingなど)
+    const siteKey = site_prefix.replace(/\//g, '') || 'bicstation';
+    
+    /**
+     * 💡 修正ポイント: 
+     * 1. Nginx(nginx-wp-v2)がコンテナを振り分けるための Host ヘッダーを生成
+     * 2. /blog をパスから排除
+     */
+    const hostHeader = `b-${siteKey}-host`; 
 
     if (IS_SERVER) {
         // Next.jsサーバー内部（Dockerネットワーク）からの通信
@@ -29,7 +36,8 @@ const getWpConfig = () => {
     }
     // クライアントサイド（ブラウザ）からの通信
     return {
-        baseUrl: `http://localhost:8083${site_prefix}/blog`,
+        // site_prefix がある場合も /blog は付けない
+        baseUrl: `http://localhost:8083${site_prefix}`, 
         host: hostHeader
     };
 };
@@ -254,7 +262,6 @@ export async function fetchProductDetail(unique_id: string): Promise<PCProduct |
 
 /**
  * 🔞 [Django API] アダルト商品一覧取得
- * fetchPCProducts を使わず、専用のエンドポイントを叩くように修正
  */
 export async function getAdultProducts(params: any = {}) {
     let offset = 0; 
@@ -270,13 +277,12 @@ export async function getAdultProducts(params: any = {}) {
     const rootUrl = getDjangoBaseUrl();
     const { site_group } = getSiteMetadata(); 
     
-    // 💡 重要: pc-products ではなく adult-products を叩く
     const url = `${rootUrl}/api/adult-products/?limit=${limit}&offset=${offset}&ordering=${ordering}&site_group=${site_group}`;
 
     try {
         const res = await fetch(url, { 
             headers: { 'Host': 'localhost', 'Accept': 'application/json' },
-            next: { revalidate: 60 }, // アダルトは更新頻度が高いため短めに
+            next: { revalidate: 60 },
             signal: AbortSignal.timeout(5000)
         });
 

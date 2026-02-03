@@ -4,8 +4,8 @@ from api import views
 
 urlpatterns = [
     # --- アダルト商品 (AdultProduct) ---
-    path('adults/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
-    path('adults/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
+    path('adult-products/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
+    path('adult-products/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # --- Linkshare商品 ---
     path('linkshare/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_list'),
