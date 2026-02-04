@@ -1,7 +1,7 @@
 /**
  * =====================================================================
  * 🌍 API 環境設定 (shared/lib/api/config.ts)
- * ローカル(Traefik/Docker) と VPS(本番ドメイン) の通信差分を吸収
+ * 3つのブログ系統（tiper統合 / saving / bicstation）を正しく振り分け
  * =====================================================================
  */
 import { getSiteMetadata } from '../siteConfig';
@@ -13,26 +13,47 @@ export const IS_SERVER = typeof window === 'undefined';
  * 📝 WordPress接続用の設定を取得
  */
 export const getWpConfig = () => {
-    // 💡 防御的プログラミング: metadataが取れない場合のフォールバック
+    // 💡 metadata から現在のサイト設定を取得
     const metadata = getSiteMetadata();
     const site_prefix = metadata?.site_prefix || '';
     
-    // "/tiper/" から "tiper" を抽出
+    // スラッシュを除去して判定用のキーを作成 ("/tiper/" -> "tiper")
     const rawKey = site_prefix.replace(/\//g, '');
-    const siteKey = rawKey || 'bicstation';
     
-    // Traefikルールの Host(`b-tiper-host`) 等に合わせる（Nginx振り分け用）
-    const hostHeader = `b-${siteKey}-host`; 
+    let siteKey = '';
+    let hostHeader = '';
+
+    // --- 振り分けロジック ---
+    if (rawKey === 'saving') {
+        /**
+         * ① 節約ブログ系統
+         */
+        siteKey = 'saving';
+        hostHeader = 'b-saving-host';
+    } else if (rawKey === 'station' || rawKey === 'bicstation') {
+        /**
+         * ② 駅名ブログ系統
+         */
+        siteKey = 'station';
+        hostHeader = 'b-bicstation-host';
+    } else {
+        /**
+         * ③ アダルトブログ系統 (tiper, avflash, または Root '/')
+         * avflash は tiper に統合するため、ここをデフォルトにします。
+         * Hostヘッダーを b-tiper-host に固定することで、Nginx側での404を回避します。
+         */
+        siteKey = 'tiper';
+        hostHeader = 'b-tiper-host';
+    }
 
     let baseUrl = '';
 
     if (IS_SERVER) {
-        // 1. SSR (Next.jsサーバーからNginxコンテナへ直接通信)
-        // Dockerネットワーク名を使用。ポート80は明示。
+        // SSR: Next.js サーバーコンテナから Nginx コンテナへ直接通信
+        // ポートは内部ネットワークの 80 を使用
         baseUrl = 'http://nginx-wp-v2:80'; 
     } else {
-        // 2. ブラウザ (クライアント)
-        // windowが存在する場合のみ location を使用。originを使うとプロトコル+ホストが一度に取れます。
+        // ブラウザ: 現在閲覧しているドメインをベースにする
         baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
     }
 
@@ -47,18 +68,24 @@ export const getWpConfig = () => {
  * 💻 Django API接続用のベースURLを取得
  */
 export const getDjangoBaseUrl = () => {
+    // 1. 環境変数 (NEXT_PUBLIC_API_URL) があれば最優先
+    const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (envApiUrl) {
+        // 末尾の /api を除いたベース部分のみを返す
+        return envApiUrl.replace(/\/api\/?$/, '');
+    }
+
+    // 2. サーバーサイド (SSR)
     if (IS_SERVER) {
-        // 💡 SSR: Djangoコンテナを直接(ポート8000)叩く
-        // Traefikを介さないため、django.ts側で headers: { 'Host': 'localhost' } が必要
+        // docker-compose 内のサービス名で直接通信
         return 'http://django-v2:8000';
     }
     
-    // クライアントサイド (ブラウザ)
+    // 3. クライアントサイド (ブラウザ)
     if (typeof window !== 'undefined') {
-        // 現在のホスト（localhost:8083 や blog.tiper.live）をベースにする
         return window.location.origin;
     }
     
-    // ビルド時などのフォールバック
+    // 4. 最終的なフォールバック
     return 'http://localhost:8083';
 };

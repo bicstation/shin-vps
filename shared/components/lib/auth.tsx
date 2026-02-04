@@ -1,8 +1,11 @@
 /**
- * 🛠️ [SHARED-FINAL] 統合認証ライブラリ (.tsx版)
+ * =====================================================================
+ * 🔑 統合認証ライブラリ (shared/lib/api/auth.ts)
+ * ユーザー登録・ログイン・ログアウトおよびトークン管理を担当
+ * =====================================================================
  */
 
-import { getSiteMetadata, SiteMetadata } from './siteConfig';
+import { getSiteMetadata } from './siteConfig';
 
 export interface AuthTokenResponse {
   access?: string;
@@ -21,13 +24,20 @@ export interface AuthTokenResponse {
 
 /**
  * 💡 APIのベースURLを動的に取得
+ * 🔴 修正: config.ts のロジックと整合性を取り、環境変数を最優先にします
  */
 const getTargetApiBase = (): string => {
   if (typeof window !== 'undefined') {
+    // 1. 環境変数を優先 (例: http://api-tiper-host:8083/api)
+    const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (envApiUrl) {
+      return envApiUrl.endsWith('/') ? envApiUrl.slice(0, -1) : envApiUrl;
+    }
+
+    // 2. フォールバック: 現在のドメイン + site_prefix
     const { site_prefix } = getSiteMetadata();
     const origin = window.location.origin;
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || `${origin}${site_prefix}/api`;
-    return apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    return `${origin}${site_prefix}/api`.replace(/\/+$/, '');
   }
   return '/api';
 };
@@ -40,12 +50,13 @@ const getAbsoluteRedirectPath = (path: string = '/') => {
   const { site_prefix } = getSiteMetadata();
   const origin = window.location.origin;
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  return `${origin}${site_prefix}${normalizedPath}?t=${Date.now()}`;
+  
+  // キャッシュ回避のクエリパラメータを付与してリダイレクト
+  return `${origin}${site_prefix}${normalizedPath}`.replace(/\/+$/, '') + `?t=${Date.now()}`;
 };
 
 /**
  * 🚀 ユーザー登録
- * 引数を個別に受け取れるようにし、呼び出し側の型エラーを解消します
  */
 export async function registerUser(username: string, email: string, password: string): Promise<AuthTokenResponse> {
   const API_BASE = getTargetApiBase();
@@ -96,7 +107,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
   const response = await fetch(`${API_BASE}/auth/login/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    credentials: 'include', // 💡 Cookie(セッション)を許可
     body: JSON.stringify({ username, password, site_group, origin_domain }),
   });
 
@@ -106,12 +117,19 @@ export async function loginUser(username: string, password: string): Promise<Aut
   }
 
   const data: AuthTokenResponse = await response.json();
+  
+  // ログイン成功時のトークン保存とリダイレクト
   if ((data.status === "success" || data.access) && typeof window !== 'undefined') {
     if (data.access) localStorage.setItem('access_token', data.access);
     if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
     if (data.user) {
-      localStorage.setItem('user', JSON.stringify({ ...data.user, username: data.user.username || data.user.name }));
+      localStorage.setItem('user', JSON.stringify({ 
+        ...data.user, 
+        username: data.user.username || data.user.name 
+      }));
     }
+    
+    // スタッフなら管理画面、一般ユーザーならマイページへ
     const targetPath = data.user?.is_staff ? '/console/dashboard' : '/mypage';
     window.location.href = getAbsoluteRedirectPath(targetPath);
   }
@@ -129,10 +147,14 @@ export function logoutUser(): void {
 }
 
 /**
- * 👤 ログイン中のユーザー情報を取得
+ * 👤 ログイン中のユーザー情報をローカルストレージから取得
  */
 export function getAuthUser() {
   if (typeof window === 'undefined') return null;
   const user = localStorage.getItem('user');
-  try { return user ? JSON.parse(user) : null; } catch { return null; }
+  try { 
+    return user ? JSON.parse(user) : null; 
+  } catch { 
+    return null; 
+  }
 }

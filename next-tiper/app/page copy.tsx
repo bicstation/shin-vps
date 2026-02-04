@@ -3,17 +3,23 @@
 
 import React from 'react';
 import Link from 'next/link';
+import ProductCard from '@shared/components/cards/AdultProductCard'; 
 
-// ✅ 成功している /products と同じパスから直接インポート
-import ProductCard from '../shared/components/cards/AdultProductCard'; 
-import { getSiteMainPosts } from '../shared/components/lib/api/wordpress';
-import { getAdultProducts } from '../shared/components/lib/api/django';
-import { WPPost, AdultProduct } from '../shared/components/lib/api/types';
-import { constructMetadata } from '../shared/components/lib/metadata';
+/**
+ * 💡 APIインポート
+ * shared/lib/api/index.ts から統合された関数と型を取得します。
+ */
+import { 
+  getSiteMainPosts, 
+  getAdultProducts, 
+  WPPost, 
+  AdultProduct 
+} from '@shared/lib/api';
+import { constructMetadata } from '@shared/lib/metadata';
 
 /**
  * 💡 強制的動的レンダリング
- * キャッシュによる「古いデータ表示」を防ぐため、常に最新をリクエストします。
+ * 常に最新のAPIデータを反映させるため、キャッシュをバイパスします。
  */
 export const dynamic = 'force-dynamic';
 
@@ -46,35 +52,26 @@ const formatDate = (dateString: string) => {
   });
 };
 
-/**
- * 💡 トップページコンポーネント (Next.js 15)
- */
-export default async function Home({ 
-  searchParams 
-}: { 
-  searchParams: Promise<{ page?: string }> 
-}) {
-  // --- 🛡️ Next.js 15: searchParams を await する ---
-  const resolvedSearchParams = await searchParams;
-  const currentPage = Number(resolvedSearchParams.page) || 1;
+export default async function Home({ searchParams }: { searchParams: { page?: string } }) {
+  const currentPage = Number(searchParams.page) || 1;
   const limit = 20;
   const offset = (currentPage - 1) * limit;
 
   /**
-   * 💡 データフェッチ
-   * Promise.all で並列実行し、個別に .catch でエラーハンドリングを行います。
+   * 💡 データフェッチ (並列実行)
+   * WordPress(お知らせ)とDjango(商品データ)を同時に取得します。
    */
   const [wpData, productData] = await Promise.all([
     getSiteMainPosts(0, 5).catch((err) => {
-      console.error("❌ [WP Fetch Error]:", err);
+      console.error("[WP Fetch Error]:", err);
       return { results: [], count: 0 };
     }), 
     getAdultProducts({ 
-      limit: limit, 
-      offset: offset, 
+      limit, 
+      offset, 
       ordering: '-id',
     }).catch((err) => {
-      console.error("❌ [Django Fetch Error]:", err);
+      console.error("[Django Fetch Error]:", err);
       return { results: [], count: 0 };
     })
   ]);
@@ -85,10 +82,10 @@ export default async function Home({
   const totalPages = Math.ceil(totalCount / limit);
 
   return (
-    <div className="pb-16 bg-[#0a0a14] min-h-screen">
+    <div className="pb-16">
       
       {/* 1. ヒーローセクション */}
-      <section className="py-24 px-[5%] text-center bg-gradient-to-b from-[#1f1f3a] to-[#0a0a14] border-b border-gray-900">
+      <section className="py-24 px-[5%] text-center bg-gradient-to-b from-[#1f1f3a] to-[#111122] border-b border-gray-900">
         <h1 className="text-5xl md:text-7xl font-black tracking-[0.2em] text-white uppercase drop-shadow-2xl">
           TIPER LIVE
         </h1>
@@ -107,7 +104,7 @@ export default async function Home({
             <p className="text-gray-500 text-sm mt-1">新着アイテムを毎日更新中</p>
           </div>
           <span className="text-gray-600 text-sm font-mono tracking-tighter">
-            {totalCount.toLocaleString()} ITEMS
+            {totalCount} ITEMS
           </span>
         </div>
 
@@ -121,7 +118,7 @@ export default async function Home({
             <div className="col-span-full py-32 text-center text-gray-700 font-bold border-2 border-dashed border-[#3d3d66]/30 rounded-2xl">
               <p className="text-xl mb-2">NO PRODUCTS FOUND.</p>
               <p className="text-sm font-normal text-gray-500">
-                Check internal connection to Django-v2.
+                API Host: {process.env.NEXT_PUBLIC_API_URL || 'Check .env'} | Group: adult
               </p>
             </div>
           )}
@@ -131,7 +128,7 @@ export default async function Home({
         {totalPages > 1 && (
           <div className="mt-16 flex justify-center items-center gap-8">
             {currentPage > 1 && (
-              <Link href={`?page=${currentPage - 1}`} className="px-6 py-2 bg-[#1f1f3a] text-white rounded hover:bg-[#e94560] transition-colors font-bold">
+              <Link href={`?page=${currentPage - 1}`} className="btn-pagination px-6 py-2 bg-[#1f1f3a] text-white rounded hover:bg-[#e94560] transition-colors">
                 PREV
               </Link>
             )}
@@ -143,7 +140,7 @@ export default async function Home({
             </div>
 
             {currentPage < totalPages && (
-              <Link href={`?page=${currentPage + 1}`} className="px-6 py-2 bg-[#1f1f3a] text-white rounded hover:bg-[#e94560] transition-colors font-bold">
+              <Link href={`?page=${currentPage + 1}`} className="btn-pagination px-6 py-2 bg-[#1f1f3a] text-white rounded hover:bg-[#e94560] transition-colors">
                 NEXT
               </Link>
             )}

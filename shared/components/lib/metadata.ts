@@ -1,7 +1,7 @@
 /**
  * =====================================================================
- * 🛠️ [SHARED] メタデータ生成ライブラリ (shared/lib/metadata.ts)
- * SEO設定、SNSシェア（OGP）設定を全サイトで共通化します。
+ * 🛠️ [SHARED-FINAL] 統合メタデータ生成ライブラリ (shared/lib/metadata.ts)
+ * SEO最適化、SNSシェア（OGP）、インデックス制御を全サイトで共通化。
  * =====================================================================
  */
 
@@ -15,18 +15,19 @@ import type { Metadata } from 'next';
  * @param description ページの説明
  * @param image シェア用画像URL
  * @param path 現在のパス (例: "/search")
+ * @param noIndex trueに設定すると検索エンジンから除外 (マイページ等に使用)
  */
 export function constructMetadata(
   title?: string, 
   description?: string, 
   image?: string,
-  path: string = ""
+  path: string = "",
+  noIndex: boolean = false
 ): Metadata {
   // 現在のサイト設定を取得
   const { site_name, origin_domain, site_prefix } = getSiteMetadata();
 
   // 💡 ベースパスの決定
-  // site_prefix がある場合はそれを優先、ない場合は環境変数から取得
   const basePath = site_prefix || process.env.NEXT_PUBLIC_BASE_PATH || "";
 
   // デフォルトの説明文
@@ -43,7 +44,6 @@ export function constructMetadata(
 
   // 🔗 正規URL (canonical) の構築
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  // ルートパスの場合は末尾スラッシュを考慮
   const canonicalPath = (path === "/" || path === "") ? `${basePath}/` : `${basePath}${cleanPath}`;
 
   // 🖼️ OGP画像パス
@@ -53,17 +53,40 @@ export function constructMetadata(
     title: fullTitle,
     description: defaultDescription,
     
+    // 💡 キーワード設定 (SEOの補助)
+    keywords: [`${site_name}`, "AI比較", "最新ランキング", "仕様解析"],
+
     // 基本設定
     metadataBase: new URL(siteBaseUrl),
     alternates: {
       canonical: canonicalPath,
     },
 
+    // 💡 インデックス制御 (noIndexがtrueなら検索結果に出さない)
+    robots: {
+      index: !noIndex,
+      follow: !noIndex,
+      googleBot: {
+        index: !noIndex,
+        follow: !noIndex,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+
     // SNS (Facebook, LINE等)
     openGraph: {
       title: fullTitle,
       description: defaultDescription,
-      images: [{ url: ogImage }],
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: fullTitle,
+        }
+      ],
       type: "website",
       siteName: site_name,
       url: canonicalPath,
@@ -76,12 +99,29 @@ export function constructMetadata(
       title: fullTitle,
       description: defaultDescription,
       images: [ogImage],
+      creator: "@your_twitter_handle", // 必要に応じて追加
     },
 
     // アイコン設定
     icons: {
-      icon: `${basePath}/favicon.ico`,
-      apple: `${basePath}/apple-touch-icon.png`,
-    }
+      icon: [
+        { url: `${basePath}/favicon.ico` },
+        { url: `${basePath}/icon.png`, type: 'image/png' },
+      ],
+      apple: [
+        { url: `${basePath}/apple-touch-icon.png` },
+      ],
+    },
+
+    // 💡 モバイル最適化とその他のメタ
+    applicationName: site_name,
+    authors: [{ name: "SHIN-VPS Team" }],
+    generator: "Next.js",
+    referrer: "origin-when-cross-origin",
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
   };
 }

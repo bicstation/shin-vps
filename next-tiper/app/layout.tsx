@@ -2,18 +2,18 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
- * 共有ディレクトリ shared/styles/globals.css を参照
  */
 import '@shared/styles/globals.css';
 
 /**
  * ✅ 2. 共通設定とコンポーネント
  */
-import { getSiteMetadata, getSiteColor } from '@shared/components/lib/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
 import Header from '@shared/components/layout/Header';
 import Footer from '@shared/components/layout/Footer';
 import Sidebar from '@shared/components/layout/Sidebar';
@@ -21,30 +21,27 @@ import Sidebar from '@shared/components/layout/Sidebar';
 /**
  * ✅ 3. SEO設定
  */
-import { constructMetadata } from '@shared/components/lib/metadata';
+import { constructMetadata } from '@shared/lib/metadata';
 
 const inter = Inter({ subsets: ["latin"] });
 
 /**
  * 💡 強制的動的レンダリングの設定
- * これにより、ビルド時の固定情報ではなく、アクセス時のホスト名に基づいた判定を強制します。
- * ハイドレーションエラーを根本から解決するための最重要設定です。
+ * マルチドメイン判定を行うため、ビルド時の静的生成ではなくリクエスト時の動的生成を強制します。
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
  * 💡 メタデータの動的生成
- * 引数なしの getSiteMetadata() を使用し、ホスト名から自動判定させます。
  */
 export async function generateMetadata(): Promise<Metadata> {
-  const site = getSiteMetadata();
-  return constructMetadata(
-    undefined, 
-    undefined, 
-    undefined, 
-    "" // ホスト名運用なのでプレフィックスは不要
-  );
+  const headerList = headers();
+  const host = headerList.get('host') || "localhost";
+  
+  // 💡 metadata.ts の constructMetadata を呼び出し
+  // 特定のページタイトルがない場合はデフォルト（サイト名のみ）が適用されます
+  return constructMetadata();
 }
 
 export default function RootLayout({
@@ -52,9 +49,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // ✅ サイト設定の取得
-  // 💡 引数を削除。siteConfig.tsx 内のホスト名判定ロジックにすべて任せます。
-  const site = getSiteMetadata();
+  /**
+   * ✅ サイト設定の取得
+   */
+  const headerList = headers();
+  const host = headerList.get('host') || "localhost";
+  const site = getSiteMetadata(host);
+  
   const themeColor = getSiteColor(site.site_name);
 
   return (
@@ -73,7 +74,7 @@ export default function RootLayout({
         {/* 1. 共通ヘッダー */}
         <Header />
 
-        {/* 2. アダルトサイト特有の告知・年齢制限バー (サイト名が Tiper / AV Flash の場合のみ表示などの条件分岐も可能) */}
+        {/* 2. サイト種別に応じた告知バー (Tiper / AV Flash 用) */}
         {site.site_group === 'adult' && (
           <div 
             className={styles.adDisclosure} 
@@ -103,17 +104,17 @@ export default function RootLayout({
         {/* 3. メインレイアウト構造 */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
-            {/* ✅ SidebarやMain内での不一致を防ぐSuspense */}
             <Suspense 
               fallback={
                 <div style={{ color: '#666', padding: '20px', textAlign: 'center' }}>
-                  Loading Layout Content...
+                  Loading Layout...
                 </div>
               }
             >
+              {/* サイドバー */}
               <Sidebar />
               
-              {/* メインコンテンツエリア */}
+              {/* メインコンテンツ */}
               <main className={styles.mainContent}>
                 {children}
               </main>

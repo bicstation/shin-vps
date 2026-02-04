@@ -1,9 +1,13 @@
 # =====================================================================
-# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 最終修正版
+# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 最終安定版
 # ---------------------------------------------------------------------
-# 【修正内容】
-# 1. 各 Next.js サービスに traefik.docker.network ラベルを追加（502 Bad Gateway 対策）
-# 2. Traefik が shared-proxy ネットワーク内の正しい IP を参照するように固定
+# 【コア設計思想: Single Source of Truth】
+# 1. 共通基盤: ルート直下の `./shared` を「唯一の正解」として管理。
+# 2. 強制マウント: 各Next.jsプロジェクト内のローカルフォルダではなく、
+#    共通の `./shared` をコンテナの `/usr/src/app/shared` に直接結合する。
+# 3. AI・開発者への指示: 各プロジェクト(next-*)配下に `shared` フォルダを
+#    物理的にコピーしたり、Gitに含めたりしてはならない。
+#    変更はすべてルートの `./shared` で行い、全サイトに即時反映させる。
 # =====================================================================
 
 services:
@@ -22,14 +26,14 @@ services:
       - "--providers.docker.network=shared-proxy"
       - "--entrypoints.web.address=:80"
     ports:
-      - "8083:80"       # 外部アクセス用メインポート
-      - "8085:8080"     # Traefik ダッシュボード監視用
+      - "8083:80"       # 外部アクセス用メインポート (http://host:8083)
+      - "8085:8080"     # Traefik ダッシュボード (http://localhost:8085)
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - shared-proxy
 
-  # --- 1. データベース層 (物理パスマウント) ---
+  # --- 1. データベース層 ---
   mariadb-v2:
     image: mariadb:10
     container_name: mariadb-v2
@@ -72,12 +76,13 @@ services:
     env_file: .env
     environment:
       - DB_HOST=postgres-db-v2
-      - OLLAMA_HOST=http://ollama-v2:11434
+      # Ollama無効化に伴いコメントアウト
+      # - OLLAMA_HOST=http://ollama-v2:11434
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.django-router.priority=150"
-      - "traefik.http.routers.django-router.rule=(Host(`localhost`) || Host(`127.0.0.1`) || Host(`b-tiper-host`) || Host(`b-bicstation-host`) || Host(`b-saving-host`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.django-router.rule=(Host(`localhost`) || Host(`127.0.0.1`) || Host(`api-tiper-host`) || Host(`b-tiper-host`) || Host(`b-bicstation-host`) || Host(`b-saving-host`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
     volumes:
       - ./django:/usr/src/app
@@ -87,12 +92,11 @@ services:
       - shared-proxy
 
   # --- 3. フロントエンド層 (Next.js 4サイト) ---
+
   next-bicstation-v2:
     build:
       context: .
       dockerfile: ./next-bicstation/Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: next-bicstation-v2
     restart: always
     env_file: .env
@@ -106,7 +110,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bic-router.priority=100"
-      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`) || Host(`localhost`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`) || Host(`localhost`)"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
 
   next-tiper-v2:
@@ -114,10 +118,15 @@ services:
       context: .
       dockerfile: ./next-tiper/Dockerfile
       args:
+        # ここを必ず空にする（または消す）
+        NEXT_PUBLIC_BASE_PATH: "" 
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: next-tiper-v2
     restart: always
     env_file: .env
+    environment:
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
     volumes:
       - ./next-tiper:/usr/src/app
       - ./shared:/usr/src/app/shared
@@ -135,8 +144,6 @@ services:
     build:
       context: .
       dockerfile: ./next-bic-saving/Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: next-bic-saving-v2
     restart: always
     env_file: .env
@@ -157,8 +164,6 @@ services:
     build:
       context: .
       dockerfile: ./next-avflash/Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     container_name: next-avflash-v2
     restart: always
     env_file: .env
@@ -175,7 +180,7 @@ services:
       - "traefik.http.routers.avflash-router.rule=Host(`avflash-host`)"
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
 
-  # --- 4. WordPress & 静的配信層 (Nginx フロント) ---
+  # --- 4. WordPress & 静的配信層 ---
   nginx-wp-v2:
     image: nginx:alpine
     container_name: nginx-wp-v2
@@ -192,11 +197,11 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.blog-gen.priority=200"
-      - "traefik.http.routers.blog-gen.rule=Host(`blog.bicstation.com`) || Host(`b-bicstation-host`)"
+      - "traefik.http.routers.blog-gen.rule=Host(`b-bicstation-host`)"
       - "traefik.http.routers.blog-saving.priority=200"
-      - "traefik.http.routers.blog-saving.rule=Host(`blog.bic-saving.com`) || Host(`b-saving-host`)"
+      - "traefik.http.routers.blog-saving.rule=Host(`b-saving-host`)"
       - "traefik.http.routers.blog-adult.priority=200"
-      - "traefik.http.routers.blog-adult.rule=Host(`blog.tiper.live`) || Host(`b-tiper-host`) || Host(`avflash-host`)"
+      - "traefik.http.routers.blog-adult.rule=Host(`b-tiper-host`)"
       - "traefik.http.services.nginx-wp-svc.loadbalancer.server.port=80"
 
   wordpress-gen:
@@ -241,31 +246,31 @@ services:
     networks:
       - internal-net
 
-  # --- 5. AI・画像解析層 (Ollama) ---
-  ollama-v2:
-    image: ollama/ollama:latest
-    container_name: ollama-v2
-    restart: always
-    volumes:
-      - ../vps-data/ollama:/root/.ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: ${GPU_COUNT:-0}
-              capabilities: [gpu]
-    networks:
-      - internal-net
-      - shared-proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.ollama-router.priority=200"
-      - "traefik.http.routers.ollama-router.rule=(Host(`localhost`) || Host(`b-tiper-host`)) && PathPrefix(`/ollama`)"
-      - "traefik.http.middlewares.ollama-strip.stripprefix.prefixes=/ollama"
-      - "traefik.http.routers.ollama-router.middlewares=ollama-strip"
-      - "traefik.http.services.ollama-svc.loadbalancer.server.port=11434"
+  # --- 5. AI・画像解析層 (ビルドリソース確保のため一時停止) ---
+  # ollama-v2:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama-v2
+  #   restart: always
+  #   volumes:
+  #     - ../vps-data/ollama:/root/.ollama
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: ${GPU_COUNT:-0}
+  #             capabilities: [gpu]
+  #   networks:
+  #     - internal-net
+  #     - shared-proxy
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.docker.network=shared-proxy"
+  #     - "traefik.http.routers.ollama-router.priority=200"
+  #     - "traefik.http.routers.ollama-router.rule=(Host(`localhost`) || Host(`api-tiper-host`)) && PathPrefix(`/ollama`)"
+  #     - "traefik.http.middlewares.ollama-strip.stripprefix.prefixes=/ollama"
+  #     - "traefik.http.routers.ollama-router.middlewares=ollama-strip"
+  #     - "traefik.http.services.ollama-svc.loadbalancer.server.port=11434"
 
   # --- 6. 管理ツール層 ---
   phpmyadmin-v2:
@@ -273,19 +278,14 @@ services:
     container_name: phpmyadmin-v2
     environment:
       PMA_HOST: mariadb-v2
-      PMA_ABSOLUTE_URI: http://phpmyadmin:8083/
+      PMA_ABSOLUTE_URI: http://phpmyadmin-host:8083/
       PMA_ARBITRARY: 1
-      SESSION_STRICT: "false"
-      PMA_CONFIG_PARAMETERS: |
-        $cfg['CookieSecure'] = false;
-        $cfg['CookieSameSite'] = 'Lax';
     networks:
       - internal-net
       - shared-proxy
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.pma-router.priority=400"
       - "traefik.http.routers.pma-router.rule=Host(`phpmyadmin-host`)"
       - "traefik.http.services.pma-svc.loadbalancer.server.port=80"
 
@@ -302,17 +302,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.pgadmin-router.priority=400"
       - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin-host`)"
       - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
 
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
-    environment:
-      # サブパスを使わない（一番シンプルな構成）場合はここを削除
-      # もし http://log-host:8083/logs でアクセスしたいなら残す
-      - DOZZLE_BASE=/
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -320,13 +315,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.dozzle-router.priority=400"
-      # 修正点：閉じ括弧を追加
       - "traefik.http.routers.dozzle-router.rule=Host(`log-host`)"
-      - "traefik.http.routers.dozzle-router.entrypoints=web"
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
-# --- ネットワーク定義 ---
 networks:
   internal-net:
     driver: bridge
@@ -334,6 +325,5 @@ networks:
     driver: bridge
     name: shared-proxy
 
-# --- リソース定義 ---
 volumes:
   static_volume_home:

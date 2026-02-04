@@ -35,11 +35,19 @@ export interface PCProduct {
     radar_chart?: RadarChartData[];
 }
 
+/**
+ * 🔞 アダルト製品用型定義
+ * PCProduct から PC 特有のスペックを除外し、女優名やラベルを追加
+ */
 export interface AdultProduct extends Omit<PCProduct, 'cpu_model' | 'gpu_model'> {
     actress?: string;
     label?: string;
 }
 
+/**
+ * 📝 WordPress 投稿用型定義
+ * _embedded を含むレスポンス構造をカバー
+ */
 export interface WPPost {
     id: number;
     date: string;

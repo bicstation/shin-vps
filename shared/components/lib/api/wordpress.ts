@@ -1,48 +1,53 @@
 /**
  * =====================================================================
  * 📝 WordPress 専用 API サービス層 (shared/lib/api/wordpress.ts)
- * ローカル(localhost:8083) / VPS(本番ドメイン) 両対応
+ * 3系統（tiper / saving / station）の動的判定と安全なパースに対応
  * =====================================================================
  */
 import { getWpConfig } from './config';
 
 /**
  * 📝 WordPress 投稿一覧取得
+ * @param postType 明示的に指定がない場合は config からの判定値を使用
  * @param limit    取得件数 (per_page)
  * @param offset   オフセット
- * @param postType 省略時は siteKey から自動判別 (tiper / saving / station)
  */
 export async function fetchPostList(postType?: string, limit = 12, offset = 0) {
     const { baseUrl, host, siteKey } = getWpConfig();
     
-    // 1. siteKey(configから取得)に基づいてデフォルトの投稿タイプを決定
-    const defaultType = siteKey === 'tiper' ? 'tiper' : 
-                        siteKey === 'saving' ? 'saving' : 'station';
+    /**
+     * ✅ 振り分けロジックの適用
+     * config.ts で siteKey が正しく正規化されているため、
+     * ここではそれに基づいた投稿タイプをデフォルトとして使用します。
+     */
+    const defaultType = siteKey === 'saving' ? 'saving' : 
+                        siteKey === 'station' ? 'station' : 'tiper';
     
-    // 引数で指定があればそれを優先、なければ siteKey から判定したデフォルトを使用
     const targetType = postType || defaultType;
 
-    // 2. baseUrl を使用してURLを構築
+    // APIエンドポイントの構築
     const url = `${baseUrl}/wp-json/wp/v2/${targetType}?_embed&per_page=${limit}&offset=${offset}`;
 
     try {
         const res = await fetch(url, {
             headers: { 
-                'Host': host,           // Nginxの振り分け(b-tiper-hostなど)に必須
+                'Host': host,           // Nginxの振り分けに必須
                 'Accept': 'application/json' 
             },
             next: { revalidate: 60 },   // 1分間キャッシュ
             signal: AbortSignal.timeout(5000)
         });
 
-        if (!res.ok) {
-            console.error(`[WP API ERROR]: Status ${res.status} at ${url}`);
+        // ✅ 安全策: JSON以外のレスポンス（HTML等）が返ってきた場合に例外を投げないようガード
+        const contentType = res.headers.get('content-type');
+        if (!res.ok || !contentType?.includes('application/json')) {
+            console.warn(`[WP API WARNING]: Invalid response from ${url}. Status: ${res.status}, Type: ${contentType}`);
             return { results: [], count: 0 };
         }
 
         const data = await res.json();
         
-        // WordPressはヘッダーに全件数を返してくるのでそれを取得
+        // WordPressはヘッダーに全件数を返してくるため取得を試みる
         const totalCount = parseInt(res.headers.get('X-WP-Total') || '0', 10);
 
         return { 
@@ -57,7 +62,6 @@ export async function fetchPostList(postType?: string, limit = 12, offset = 0) {
 
 /**
  * 📝 個別記事取得 (Slug指定)
- * index.ts から呼び出されるために追加
  */
 export async function fetchPostData(postType: string, slug: string) {
     const { baseUrl, host } = getWpConfig();
@@ -74,7 +78,12 @@ export async function fetchPostData(postType: string, slug: string) {
             signal: AbortSignal.timeout(5000)
         });
 
-        if (!res.ok) return null;
+        const contentType = res.headers.get('content-type');
+        if (!res.ok || !contentType?.includes('application/json')) {
+            console.warn(`[WP Single Post API ERROR]: Non-JSON response at ${url}`);
+            return null;
+        }
+
         const posts = await res.json();
         return Array.isArray(posts) && posts.length > 0 ? posts[0] : null;
     } catch (error) {
@@ -85,12 +94,10 @@ export async function fetchPostData(postType: string, slug: string) {
 
 /**
  * 🏷️ タクソノミー（カテゴリ・タグ）取得
- * @param taxonomyName tiper_category / station_tag 等を動的に指定
+ * @param taxonomyName tiper_category / station_tag 等
  */
 export async function fetchTaxonomyTerms(taxonomyName: string) {
     const { baseUrl, host } = getWpConfig();
-    
-    // 全件取得（最大100件）
     const url = `${baseUrl}/wp-json/wp/v2/${taxonomyName}?per_page=100`;
 
     try {
@@ -102,13 +109,24 @@ export async function fetchTaxonomyTerms(taxonomyName: string) {
             next: { revalidate: 3600 } 
         });
 
-        if (!res.ok) {
-            console.error(`[Taxonomy API ERROR]: Status ${res.status} at ${url}`);
+        const contentType = res.headers.get('content-type');
+        if (!res.ok || !contentType?.includes('application/json')) {
             return [];
         }
+
         return await res.json();
     } catch (e: any) {
         console.error(`[Taxonomy Fetch Error]: ${e.message} at ${url}`);
         return [];
     }
+}
+
+
+/**
+ * 💡 トップページ (page.tsx) が getSiteMainPosts という名前で
+ * 関数をインポートしているための互換性レイヤー
+ */
+export async function getSiteMainPosts(offset = 0, limit = 5) {
+    // 内部で fetchPostList を呼び出す
+    return await fetchPostList(undefined, limit, offset);
 }

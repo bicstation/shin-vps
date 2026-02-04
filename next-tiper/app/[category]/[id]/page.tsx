@@ -2,9 +2,9 @@
 export const dynamic = 'force-dynamic';
 
 import React from 'react';
-// ✅ shared 側の AdultProductCard を使用するようにパスを修正
 import ProductCard from '@shared/components/cards/AdultProductCard';
 import Link from 'next/link';
+import { notFound } from 'next/navigation'; // 404へ誘導するためのインポート
 import styles from './category.module.css';
 
 /**
@@ -14,7 +14,6 @@ import styles from './category.module.css';
 async function getCategoryProducts(category: string, id: string, page: string = '1', sort: string = '-created_at') {
   const pageSize = 20;
 
-  // 各カテゴリパスを API のクエリパラメータ名にマッピング
   const categoryMap: { [key: string]: string } = {
     'genre': 'genres',
     'genres': 'genres',
@@ -41,13 +40,14 @@ async function getCategoryProducts(category: string, id: string, page: string = 
   try {
     const res = await fetch(apiUrl, { cache: 'no-store' });
     if (!res.ok) {
-      console.warn(`⚠️ API Response Not OK: ${res.status} for ${apiUrl}`);
+      // DjangoがエラーHTMLを返した場合、ここで捕捉して例外を防ぐ
+      console.warn(`⚠️ Django API Error: ${res.status} at ${apiUrl}`);
       return { results: [], count: 0 };
     }
     const data = await res.json();
     return { results: data.results || [], count: data.count || 0 };
   } catch (error) {
-    console.error("❌ Fetch Error:", error);
+    console.error("❌ Fetch Error during API call:", error);
     return { results: [], count: 0 };
   }
 }
@@ -70,6 +70,18 @@ export default async function CategoryListPage({
   const currentPage = resolvedSearchParams.page || '1';
   const currentSort = resolvedSearchParams.sort || '-created_at'; 
 
+  // --- 🛡️ 強力なガード処理 ---
+  // パラメータが 'undefined' という文字列だったり、存在しない場合は即座に 404 にする
+  // これにより、トップページへの干渉や Django への不正なリクエストを阻止します
+  if (
+    !category || !id || 
+    category === 'undefined' || id === 'undefined' ||
+    category === '[category]' || id === '[id]'
+  ) {
+    console.warn(`🚩 Invalid access blocked: category=${category}, id=${id}`);
+    notFound(); 
+  }
+
   // データ取得
   const data = await getCategoryProducts(category, id, currentPage, currentSort);
   const products = data.results || [];
@@ -78,7 +90,6 @@ export default async function CategoryListPage({
 
   /**
    * 💡 カテゴリ名称の抽出
-   * 1件目のデータから、現在の ID に対応する名称（女優名やジャンル名）を特定します
    */
   let categoryName = "";
   if (products.length > 0) {
@@ -109,7 +120,6 @@ export default async function CategoryListPage({
     <div className={styles.container}>
       <div className={styles.inner}>
         
-        {/* ヘッダーエリア：タイトルとソート順 */}
         <header className={styles.header}>
           <div>
             <h1 className={styles.title}>
@@ -137,7 +147,6 @@ export default async function CategoryListPage({
           </div>
         </header>
 
-        {/* 商品グリッド */}
         {products.length > 0 ? (
           <div className={styles.grid}>
             {products.map((product: any) => (
@@ -154,7 +163,6 @@ export default async function CategoryListPage({
           </div>
         )}
 
-        {/* ページネーション */}
         {totalPages > 1 && (
           <nav className={styles.pagination}>
             {parseInt(currentPage) > 1 ? (

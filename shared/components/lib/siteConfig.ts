@@ -1,6 +1,9 @@
 /**
- * 🛠️ [SHARED-CORE] サイト環境動的判定ライブラリ (Build Safe Version)
+ * =====================================================================
+ * 🛠️ [SHARED-CORE] サイト環境動的判定ライブラリ (Final Production Version)
  * ---------------------------------------------------------------------
+ * サーバー・クライアント両方で安全に動作し、例外エラー（Digestエラー）を防止します。
+ * =====================================================================
  */
 
 export interface SiteMetadata {
@@ -21,13 +24,17 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
 
   // --- STEP 1: ホスト名の取得 ---
   if (!isServer) {
+    // A. クライアントサイド: window.location を優先
     hostname = window.location.hostname;
     detectionSource = `browser-location`;
   } else if (!hostname) {
-    // 💡 ビルドエラー回避策: サーバーサイドかつ hostname がない場合、
-    // Next.jsの headers() を動的に require するか、localhost をデフォルトにする
+    // B. サーバーサイド: 引数がない場合のみ dynamic require で headers を取得
     try {
-      // クライアント側で実行されないよう、ここだけで require する
+      /**
+       * 💡 重要: 'next/headers' をファイルの先頭で import すると、
+       * クライアントコンポーネントから読み込まれた際にビルドエラーになります。
+       * そのため、サーバー実行時のみ動的に読み込みます。
+       */
       const { headers } = require('next/headers');
       const headerList = headers();
       const xForwardedHost = headerList.get('x-forwarded-host');
@@ -36,12 +43,13 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
       hostname = xForwardedHost || standardHost || 'localhost';
       detectionSource = xForwardedHost ? 'x-forwarded-host' : 'host-header';
     } catch (e) {
+      // headers() が呼べない環境（ビルド時など）のフォールバック
       hostname = 'localhost';
       detectionSource = 'error-fallback';
     }
   }
 
-  // ポート番号除去
+  // ポート番号除去 (例: localhost:3000 -> localhost)
   const domain = hostname.split(':')[0].toLowerCase();
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
@@ -50,28 +58,34 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
   let site_group: 'general' | 'adult' = 'general';
   let site_prefix = '';
 
+  // 💡 判定ロジック：ドメイン名またはベースパスで判定
   if (domain.includes('tiper') || basePath === '/tiper') {
     site_name = 'Tiper';
     site_group = 'adult';
-    site_prefix = '/tiper';
+    site_prefix = '';
   } else if (domain.includes('avflash') || basePath === '/avflash') {
     site_name = 'AV Flash';
     site_group = 'adult';
-    site_prefix = '/avflash';
+    site_prefix = '';
   } else if (domain.includes('saving') || basePath === '/saving') {
     site_name = 'Bic Saving';
     site_group = 'general';
-    site_prefix = '/saving';
-  } else {
+    site_prefix = '';
+  } else if (domain.includes('bicstation') || basePath === '/bicstation') {
     site_name = 'Bic Station';
     site_group = 'general';
-    site_prefix = '/bicstation';
+    site_prefix = '';
+  } else {
+    // デフォルト設定
+    site_name = 'Bic Station';
+    site_group = 'general';
+    site_prefix = '';
   }
 
   // --- STEP 3: デバッグ出力 ---
   if (isServer && process.env.NODE_ENV !== 'production') {
-    // 開発中のログ出力
-    // console.log(`[DIAGNOSTIC] ${site_name}`); 
+    // サーバーログに判定結果を出力（デバッグ用）
+    console.log(`\x1b[1m\x1b[33m[DIAGNOSTIC]\x1b[0m Site: ${site_name} (Source: ${detectionSource})`);
   }
 
   return { site_group, origin_domain: domain, site_name, site_prefix };

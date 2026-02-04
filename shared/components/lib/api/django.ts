@@ -16,8 +16,20 @@ const getDjangoHeaders = () => {
         'Accept': 'application/json',
     };
 
+    /**
+     * 💡 サーバーサイド (Server Components) 実行時の Host ヘッダー修正
+     * localhost 固定ではなく、.env で設定された API URL からホスト名を抽出して設定します。
+     * これにより Traefik がリクエストを正しく Django コンテナへ振り分けられます。
+     */
     if (IS_SERVER) {
-        headers['Host'] = 'localhost';
+        try {
+            const rootUrl = getDjangoBaseUrl(); // 例: http://api-tiper-host:8083
+            const hostName = new URL(rootUrl).hostname; // 'api-tiper-host' を抽出
+            headers['Host'] = hostName;
+        } catch (e) {
+            // URL解析に失敗した場合は、Traefikのデフォルト挙動に任せるため Host を設定しない
+            console.warn("[Django API] Failed to parse hostname for Server Side Request.");
+        }
     }
 
     return headers;

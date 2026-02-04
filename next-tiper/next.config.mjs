@@ -32,7 +32,7 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       // 💡 エイリアスの設定（shared ディレクトリとプロジェクトルート）
-      '@shared': path.resolve(__dirname, 'shared'),
+      '@shared': path.resolve(__dirname, 'shared'), // 👈 配置場所に応じて '../shared' 等に調整
       '@': path.resolve(__dirname),
     };
     return config;
@@ -50,7 +50,7 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api',
   },
 
-  // ビルド中断を防ぐ設定
+  // ビルド中断を防ぐ設定（開発スピード重視）
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
 
@@ -58,6 +58,7 @@ const nextConfig = {
   // 🖼️ 画像最適化設定 (アフィリエイト・外部画像対応)
   // =====================================================================
   images: {
+    // 💡 すべてのホストを許可しつつ、Next.jsのサーバー負荷を減らすため unoptimized を使用
     remotePatterns: [
       { protocol: 'https', hostname: '**' },
       { protocol: 'http', hostname: '**' },
