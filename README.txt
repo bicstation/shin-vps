@@ -70,11 +70,10 @@ maya@Marya:/mnt/e/dev/shin-vps$ save -h
 127.0.0.1     bicstation-host            # bicstation.com
 127.0.0.1     saving-host                # bic-saving.com
 127.0.0.1     avflash-host               # avflash.xyz
-127.0.0.1     blog-host                  # blog.tiper.live
-127.0.0.1     log-host                   # Dozzl
-127.0.0.1     phpmyadmin-host            # phpmyadmin
-127.0.0.1     pgadmin-host               # pgadmin
-127.0.0.1     traefck-host               # traefik
+127.0.0.1     log-host                   # log.tiper.live Dozzle
+127.0.0.1     phpmyadmin-host            # phpmyadmin.tiper.live
+127.0.0.1     pgadmin-host               # pgadmin.tiper.live
+127.0.0.1     traefck-host               # traefil.tiper.live
 127.0.0.1     b-tiper-host               # blog.tiper.live
 127.0.0.1     b-bicstation-host          # blog.bicstation.com
 127.0.0.1     b-saving-host              # blog.bic-saving.com

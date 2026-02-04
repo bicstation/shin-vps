@@ -1,28 +1,27 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react/no-danger-to-js */
-// @ts-nocheck
 
 import React from 'react';
 import Link from 'next/link';
 import ProductCard from '@shared/components/cards/AdultProductCard'; 
-import { fetchPostList, getAdultProducts } from '@shared/components/lib/api';
-import { constructMetadata } from '@shared/components/lib/metadata';
-
 /**
- * 💡 Next.js 13+ Server Components 設定
+ * 💡 APIインポート
+ * shared/lib/api/index.ts から getSiteMainPosts と getAdultProducts を取得します。
  */
+import { getSiteMainPosts, getAdultProducts, WPPost, AdultProduct } from '@shared/lib/api';
+import { constructMetadata } from '@shared/lib/metadata';
+
 export const dynamic = 'force-dynamic';
 
 /**
- * 💡 メタデータの動的生成
- * generateMetadata 関数を使用することで、SSR時のタイトル不一致（Bic Station問題）を防ぎます。
+ * 💡 メタデータ生成
  */
 export async function generateMetadata() {
   return constructMetadata(
-    undefined, // title (defaultを使用)
-    undefined, // description (defaultを使用)
-    undefined, // image
-    '/tiper'   // 💡 forcedPath: これにより Tiper としてメタデータが生成される
+    undefined, 
+    undefined, 
+    undefined, 
+    '/tiper'
   );
 }
 
@@ -32,7 +31,7 @@ const decodeHtml = (html: string) => {
   const map: { [key: string]: string } = { 
     '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
   };
-  return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+  return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
              .replace(/&[a-z]+;/gi, (match) => map[match] || match);
 };
 
@@ -50,20 +49,26 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
 
   /**
    * 💡 データフェッチ
-   * getAdultProducts 内で getSiteMetadata('/tiper') が呼ばれるように設計されています。
-   * もし 0 ITEMS になる場合は、api.ts 側の fetch URL が正しいか確認が必要です。
+   * 先ほどのログにあったエラー(Not a function)を回避するため、
+   * index.ts が正しくビルドされていることが前提となります。
    */
-  const [latestPosts, productData] = await Promise.all([
-    fetchPostList(5).catch(() => []), 
+  const [wpData, productData] = await Promise.all([
+    getSiteMainPosts(0, 5).catch((err) => {
+      console.error("[WP Fetch Error]:", err);
+      return { results: [], count: 0 };
+    }), 
     getAdultProducts({ 
       limit, 
       offset, 
       ordering: '-id',
-      // 必要に応じて明示的にフラグを渡す場合はここに追加
-    }).catch(() => ({ results: [], count: 0 }))
+    }).catch((err) => {
+      console.error("[Django Fetch Error]:", err);
+      return { results: [], count: 0 };
+    })
   ]);
 
-  const products = productData?.results || [];
+  const latestPosts = (wpData?.results || []) as WPPost[];
+  const products = (productData?.results || []) as AdultProduct[];
   const totalCount = productData?.count || 0;
   const totalPages = Math.ceil(totalCount / limit);
 
@@ -97,7 +102,7 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
         {/* 商品グリッド */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {products.length > 0 ? (
-            products.map((product: any) => (
+            products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
@@ -141,7 +146,7 @@ export default async function Home({ searchParams }: { searchParams: { page?: st
         </h2>
         
         <div className="max-w-4xl mx-auto space-y-4">
-          {Array.isArray(latestPosts) && latestPosts.length > 0 ? (
+          {latestPosts.length > 0 ? (
             latestPosts.map((post) => (
               <Link 
                 key={post.id} 

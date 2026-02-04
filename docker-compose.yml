@@ -1,14 +1,10 @@
 # =====================================================================
-# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 最終進化版
+# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 最終修正版
 # ---------------------------------------------------------------------
-# 【設計要件】
-# 1. 3系統 WordPress: Bicstation, Saving, Tiperをドメイン/ホスト名で完全分離。
-# 2. 物理パス連携: ~/dev/vps-data/ 配下の実データを直接参照。
-# 3. Next.js 連携: 各ドメイン(Host)ごとに対応するフロントエンドへ。
-# 4. Traefik 制御: /blog サブパスを廃止し、ドメインベースのルーティングへ集約。
+# 【修正内容】
+# 1. 各 Next.js サービスに traefik.docker.network ラベルを追加（502 Bad Gateway 対策）
+# 2. Traefik が shared-proxy ネットワーク内の正しい IP を参照するように固定
 # =====================================================================
-
-version: '3.8'
 
 services:
 
@@ -108,6 +104,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bic-router.priority=100"
       - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`) || Host(`localhost`) || Host(`127.0.0.1`)"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
@@ -129,6 +126,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.tiper-router.priority=100"
       - "traefik.http.routers.tiper-router.rule=Host(`tiper-host`)"
       - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
@@ -150,6 +148,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.saving-router.priority=100"
       - "traefik.http.routers.saving-router.rule=Host(`saving-host`)"
       - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
@@ -171,6 +170,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.avflash-router.priority=100"
       - "traefik.http.routers.avflash-router.rule=Host(`avflash-host`)"
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
@@ -190,20 +190,13 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      # サブパス剥離(StripPrefix)ミドルウェアを廃止。Host判定のみに移行
-      
-      # 一般ブログ (blog.bicstation.com / b-bicstation-host)
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.blog-gen.priority=200"
       - "traefik.http.routers.blog-gen.rule=Host(`blog.bicstation.com`) || Host(`b-bicstation-host`)"
-      
-      # 節約ブログ (blog.bic-saving.com / b-saving-host)
       - "traefik.http.routers.blog-saving.priority=200"
       - "traefik.http.routers.blog-saving.rule=Host(`blog.bic-saving.com`) || Host(`b-saving-host`)"
-      
-      # アダルトブログ (blog.tiper.live / b-tiper-host)
       - "traefik.http.routers.blog-adult.priority=200"
       - "traefik.http.routers.blog-adult.rule=Host(`blog.tiper.live`) || Host(`b-tiper-host`) || Host(`avflash-host`)"
-      
       - "traefik.http.services.nginx-wp-svc.loadbalancer.server.port=80"
 
   wordpress-gen:
@@ -267,6 +260,7 @@ services:
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.ollama-router.priority=200"
       - "traefik.http.routers.ollama-router.rule=(Host(`localhost`) || Host(`b-tiper-host`)) && PathPrefix(`/ollama`)"
       - "traefik.http.middlewares.ollama-strip.stripprefix.prefixes=/ollama"
@@ -279,7 +273,12 @@ services:
     container_name: phpmyadmin-v2
     environment:
       PMA_HOST: mariadb-v2
-      PMA_ABSOLUTE_URI: http://b-bicstation-host:8083/phpmyadmin/
+      PMA_ABSOLUTE_URI: http://phpmyadmin:8083/
+      PMA_ARBITRARY: 1
+      SESSION_STRICT: "false"
+      PMA_CONFIG_PARAMETERS: |
+        $cfg['CookieSecure'] = false;
+        $cfg['CookieSameSite'] = 'Lax';
     networks:
       - internal-net
       - shared-proxy
@@ -287,9 +286,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.pma-router.priority=400"
-      - "traefik.http.routers.pma-router.rule=Host(`b-bicstation-host`) && PathPrefix(`/phpmyadmin`)"
-      - "traefik.http.middlewares.pma-strip.stripprefix.prefixes=/phpmyadmin"
-      - "traefik.http.routers.pma-router.middlewares=pma-strip"
+      - "traefik.http.routers.pma-router.rule=Host(`phpmyadmin-host`)"
       - "traefik.http.services.pma-svc.loadbalancer.server.port=80"
 
   pgadmin-v2:
@@ -299,29 +296,34 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_LISTEN_PORT: 80
-      SCRIPT_NAME: /pgadmin
     networks:
       - internal-net
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.pgadmin-router.priority=400"
-      - "traefik.http.routers.pgadmin-router.rule=Host(`b-bicstation-host`) && PathPrefix(`/pgadmin`)"
+      - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin-host`)"
       - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
 
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
     environment:
-      DOZZLE_BASE: /logs
+      # サブパスを使わない（一番シンプルな構成）場合はここを削除
+      # もし http://log-host:8083/logs でアクセスしたいなら残す
+      - DOZZLE_BASE=/
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - shared-proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.dozzle-router.priority=200"
-      - "traefik.http.routers.dozzle-router.rule=(Host(`b-bicstation-host`) || Host(`localhost`)) && PathPrefix(`/logs`)"
+      - "traefik.docker.network=shared-proxy"
+      - "traefik.http.routers.dozzle-router.priority=400"
+      # 修正点：閉じ括弧を追加
+      - "traefik.http.routers.dozzle-router.rule=Host(`log-host`)"
+      - "traefik.http.routers.dozzle-router.entrypoints=web"
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 # --- ネットワーク定義 ---

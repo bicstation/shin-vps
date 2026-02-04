@@ -1,14 +1,17 @@
 /**
- * 🛠️ [SHARED-FINAL] メタデータ生成ライブラリ
+ * =====================================================================
+ * 🛠️ [SHARED] メタデータ生成ライブラリ (shared/lib/metadata.ts)
  * SEO設定、SNSシェア（OGP）設定を全サイトで共通化します。
- * 既存の siteConfig.tsx を利用するように修正済み。
+ * =====================================================================
  */
 
-import { getSiteMetadata } from './siteConfig'; // 同じディレクトリにあるため ./ でOK
+import { getSiteMetadata } from './siteConfig';
+import type { Metadata } from 'next';
 
 /**
  * 💡 各ページのメタデータを動的に生成する
- * @param title ページタイトル (例: "商品一覧")
+ * Next.js の Metadata 型を戻り値に指定することで、型安全性を確保します。
+ * * @param title ページタイトル (例: "商品一覧")
  * @param description ページの説明
  * @param image シェア用画像URL
  * @param path 現在のパス (例: "/search")
@@ -18,20 +21,20 @@ export function constructMetadata(
   description?: string, 
   image?: string,
   path: string = ""
-) {
-  // 現在のサイト設定（サイト名、ドメイン、グループ、プレフィックス）を取得
+): Metadata {
+  // 現在のサイト設定を取得
   const { site_name, origin_domain, site_prefix } = getSiteMetadata();
 
-  // 💡 Next.jsの環境変数からベースパスを優先取得 (/saving, /tiper 等)
-  // site_prefix が空の場合のフォールバックとして機能させます
+  // 💡 ベースパスの決定
+  // site_prefix がある場合はそれを優先、ない場合は環境変数から取得
   const basePath = site_prefix || process.env.NEXT_PUBLIC_BASE_PATH || "";
 
   // デフォルトの説明文
   const defaultDescription = description || `${site_name} - AI解析と最新データに基づく情報プラットフォーム`;
   
-  // 🌐 ベースURLの構築
-  // Traefik統合ポート 8083 を考慮し、localhost時はポートを含める
-  const siteBaseUrl = (origin_domain === 'localhost' || origin_domain === '127.0.0.1')
+  // 🌐 ベースURLの構築 (URLオブジェクトの生成に使用)
+  const isLocal = origin_domain === 'localhost' || origin_domain === '127.0.0.1';
+  const siteBaseUrl = isLocal
     ? 'http://localhost:8083' 
     : `https://${origin_domain}`;
 
@@ -40,7 +43,8 @@ export function constructMetadata(
 
   // 🔗 正規URL (canonical) の構築
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  const canonicalPath = path === "/" || path === "" ? `${basePath}/` : `${basePath}${cleanPath}`;
+  // ルートパスの場合は末尾スラッシュを考慮
+  const canonicalPath = (path === "/" || path === "") ? `${basePath}/` : `${basePath}${cleanPath}`;
 
   // 🖼️ OGP画像パス
   const ogImage = image || `${basePath}/og-image.png`;
@@ -49,13 +53,13 @@ export function constructMetadata(
     title: fullTitle,
     description: defaultDescription,
     
-    // ブラウザのメタタグ設定
+    // 基本設定
     metadataBase: new URL(siteBaseUrl),
     alternates: {
       canonical: canonicalPath,
     },
 
-    // SNS (Facebook, LINE等) での見え方
+    // SNS (Facebook, LINE等)
     openGraph: {
       title: fullTitle,
       description: defaultDescription,
@@ -66,7 +70,7 @@ export function constructMetadata(
       locale: "ja_JP",
     },
 
-    // Twitter (X) での見え方
+    // Twitter (X)
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
@@ -74,7 +78,7 @@ export function constructMetadata(
       images: [ogImage],
     },
 
-    // 💡 アイコン設定
+    // アイコン設定
     icons: {
       icon: `${basePath}/favicon.ico`,
       apple: `${basePath}/apple-touch-icon.png`,
