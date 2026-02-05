@@ -9,6 +9,23 @@ import { getSiteMetadata } from '../siteConfig';
 import { PCProduct, AdultProduct } from './types';
 
 /**
+ * 💡 接続先URLを解決するユーティリティ
+ * サーバーサイド実行時はDocker内部ネットワーク(django-v2)を、
+ * クライアントサイド実行時は設定された外部URLを使用します。
+ */
+const resolveApiUrl = (endpoint: string) => {
+    const rootUrl = getDjangoBaseUrl(); // 例: http://api-tiper-host:8083
+    
+    if (IS_SERVER) {
+        // 💡 サーバーサイド(Server Components)からのリクエストは
+        // 外部用ドメインではなく Dockerコンテナ名:内部ポート を直接叩く
+        return `http://django-v2:8000${endpoint}`;
+    }
+    
+    return `${rootUrl}${endpoint}`;
+};
+
+/**
  * 💡 Django リクエスト用ヘッダーの生成
  */
 const getDjangoHeaders = () => {
@@ -17,18 +34,17 @@ const getDjangoHeaders = () => {
     };
 
     /**
-     * 💡 サーバーサイド (Server Components) 実行時の Host ヘッダー修正
-     * localhost 固定ではなく、.env で設定された API URL からホスト名を抽出して設定します。
-     * これにより Traefik がリクエストを正しく Django コンテナへ振り分けられます。
+     * TraefikやDjangoのALLOWED_HOSTS対策としてHostヘッダーを調整
      */
     if (IS_SERVER) {
         try {
-            const rootUrl = getDjangoBaseUrl(); // 例: http://api-tiper-host:8083
-            const hostName = new URL(rootUrl).hostname; // 'api-tiper-host' を抽出
+            const rootUrl = getDjangoBaseUrl();
+            const hostName = new URL(rootUrl).hostname;
+            // サーバー内部通信であっても、Django側が「正しいドメインからのリクエスト」と
+            // 認識できるように元のホスト名をセットします。
             headers['Host'] = hostName;
         } catch (e) {
-            // URL解析に失敗した場合は、Traefikのデフォルト挙動に任せるため Host を設定しない
-            console.warn("[Django API] Failed to parse hostname for Server Side Request.");
+            console.warn("[Django API] Failed to parse hostname.");
         }
     }
 
@@ -39,15 +55,14 @@ const getDjangoHeaders = () => {
  * 💻 [Django API] 一般商品一覧取得
  */
 export async function fetchPCProducts(params: any = {}): Promise<{ results: PCProduct[]; count: number }> {
-    const rootUrl = getDjangoBaseUrl();
     const { site_group } = getSiteMetadata(); 
-    
     const queryParams = new URLSearchParams({ 
         site_group: site_group || 'common', 
         ...params 
     });
     
-    const url = `${rootUrl}/api/pc-products/?${queryParams.toString()}`;
+    // 💡 resolveApiUrl を使用
+    const url = resolveApiUrl(`/api/pc-products/?${queryParams.toString()}`);
 
     try {
         const res = await fetch(url, { 
@@ -76,15 +91,14 @@ export async function fetchPCProducts(params: any = {}): Promise<{ results: PCPr
  * 🔞 [Django API] アダルト商品一覧取得
  */
 export async function getAdultProducts(params: any = {}): Promise<{ results: AdultProduct[]; count: number }> {
-    const rootUrl = getDjangoBaseUrl();
     const { site_group } = getSiteMetadata(); 
-    
     const queryParams = new URLSearchParams({ 
         site_group: site_group || 'adult', 
         ...params 
     });
     
-    const url = `${rootUrl}/api/adult-products/?${queryParams.toString()}`;
+    // 💡 resolveApiUrl を使用
+    const url = resolveApiUrl(`/api/adult-products/?${queryParams.toString()}`);
 
     try {
         const res = await fetch(url, { 
@@ -113,8 +127,8 @@ export async function getAdultProducts(params: any = {}): Promise<{ results: Adu
  * 💻 [Django API] 商品詳細取得
  */
 export async function fetchProductDetail(unique_id: string): Promise<PCProduct | null> {
-    const rootUrl = getDjangoBaseUrl();
-    const url = `${rootUrl}/api/pc-products/${unique_id}/`;
+    // 💡 resolveApiUrl を使用
+    const url = resolveApiUrl(`/api/pc-products/${unique_id}//`);
     
     try {
         const res = await fetch(url, { 

@@ -84,6 +84,15 @@ export default async function Home({
   const totalCount = productData?.count || 0;
   const totalPages = Math.ceil(totalCount / limit);
 
+
+  // --- データフェッチの直後に追加 ---
+  console.log("========================================");
+  console.log("🔍 [DEBUG] productData check:");
+  // Laravel の dump() のように、見やすくフォーマットして表示
+  console.dir(productData, { depth: null, colors: true }); 
+  console.log("========================================");
+
+
   return (
     <div className="pb-16 bg-[#0a0a14] min-h-screen">
       
