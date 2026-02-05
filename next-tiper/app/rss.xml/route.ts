@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// ✅ 修正ポイント: shared/lib/api から共通のフェッチ関数をインポート
 import { getAdultProducts } from '@shared/lib/api';
 
 /**
@@ -8,9 +9,15 @@ import { getAdultProducts } from '@shared/lib/api';
 export async function GET() {
   const baseURL = 'https://tiper.live/tiper';
   
-  // 最新の動画データを取得（多めに50件程度取得するのが一般的です）
-  const data = await getAdultProducts({ limit: 50, ordering: '-created_at' })
-    .catch(() => ({ results: [] }));
+  // 💡 最新の動画データを取得
+  // shared/lib/api 内で定義された型やオプションを利用します
+  const data = await getAdultProducts({ 
+    limit: 50, 
+    ordering: '-created_at' 
+  }).catch((err) => {
+    console.error("❌ RSS Generation Error:", err);
+    return { results: [] };
+  });
   
   const products = data?.results || [];
 
@@ -24,6 +31,7 @@ export async function GET() {
       // サムネイル画像の取得（最初の1枚）
       const thumbnail = product.image_url_list?.[0] || '';
 
+      // RSS項目の組み立て（CDAATAセクションを使用して特殊文字を保護）
       return `
       <item>
         <title><![CDATA[${product.title}]]></title>
@@ -62,7 +70,7 @@ export async function GET() {
   return new Response(rss, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      // 1時間キャッシュさせつつ、背後で更新する設定
+      // ✅ キャッシュ戦略: 1時間キャッシュ (s-maxage=3600)
       'Cache-Control': 's-maxage=3600, stale-while-revalidate',
     },
   });

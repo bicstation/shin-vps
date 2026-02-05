@@ -5,9 +5,9 @@ import styles from './PCFinderPage.module.css';
 
 /**
  * ✅ 修正ポイント: インポートパスの変更
- * @/shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ * @/shared/components/product/ProductCard から @shared/cards/ProductCard へ
  */
-import ProductCard from '@shared/components/cards/ProductCard';
+import ProductCard from '@shared/cards/ProductCard';
 
 /**
  * =====================================================================

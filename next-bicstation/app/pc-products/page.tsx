@@ -6,10 +6,10 @@ export const revalidate = 0;
 
 import React from 'react';
 // ✅ 修正ポイント: インポートパスの変更
-import ProductCard from '@shared/components/cards/ProductCard';
-import Sidebar from '@shared/components/layout/Sidebar';
-import Pagination from '@shared/components/common/Pagination';
-import { fetchPCProducts, fetchPostList, fetchMakers } from '@shared/components/lib/api';
+import ProductCard from '@shared/cards/ProductCard';
+import Sidebar from '@shared/layout/Sidebar';
+import Pagination from '@shared/common/Pagination';
+import { fetchPCProducts, fetchPostList, fetchMakers } from '@shared/lib/api';
 import { COLORS } from "@/constants";
 import styles from './BrandPage.module.css';
 

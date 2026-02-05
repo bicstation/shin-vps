@@ -1,15 +1,36 @@
 /** @type {import('next').NextConfig} */
-// 1. 共通設定を import する
+// ✅ 相対パスの先頭に ./ を明示
 import { baseNextConfig } from './shared/next.config.base.mjs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const nextConfig = {
-  // 2. 共通設定をすべて展開して適用
   ...baseNextConfig,
 
-  /* もし avflash サイトだけで使いたい「特別な設定」があれば
-     ここに追記します（例: 環境変数など）。
-     特になければこのままでOKです。
-  */
+  output: 'standalone',
+
+  experimental: {
+    ...baseNextConfig.experimental,
+    externalDir: true, // 👈 これが命！
+  },
+
+  webpack: (config, { isServer }) => {
+    // baseNextConfig の webpack 設定を安全に継承
+    if (baseNextConfig && typeof baseNextConfig.webpack === 'function') {
+      config = baseNextConfig.webpack(config, { isServer });
+    }
+
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // ✅ @shared を絶対パスで確実に紐付け
+      '@shared': path.resolve(__dirname, 'shared'),
+    };
+
+    return config;
+  },
 };
 
 export default nextConfig;

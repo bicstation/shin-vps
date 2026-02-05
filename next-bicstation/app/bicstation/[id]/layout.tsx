@@ -1,31 +1,33 @@
 import React from 'react';
-import { COLORS } from '@/constants';
+// ✅ shared/lib/siteConfig 等から色を取得する形に合わせるとより汎用的です
+import { COLORS } from '@/constants'; 
 
 /**
  * ブログ記事表示用の共通レイアウト
- * 💡 インラインの <style> タグを globals.css へ移動し、HTMLを軽量化しました。
+ * 💡 インラインの <style> を排除し、CSS変数のみを制御します。
  */
 export default function PostLayout({
   children,
+  className = "",
 }: {
   children: React.ReactNode;
+  className?: string;
 }) {
-  // 共通のプライマリカラーを取得
+  // サイト共通カラーを取得（フォールバック付き）
   const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
   return (
-    <section 
+    <article 
+      className={`post-content-container ${className}`} // ✅ 専用のクラスを付与
       style={{ 
-        // CSS変数 (--site-color) だけを動的に渡すことで、
-        // インラインスタイルを最小限（この1行だけ）に抑えます。
-        '--site-color': primaryColor 
+        // 💡 CSS変数のみをインラインで定義
+        '--site-theme-color': primaryColor 
       } as React.CSSProperties}
     >
-      {/* ✅ インラインの巨大な <style> は削除されました。
-          これにより、ページのソースを表示した際に「中身（記事本文）」が
-          検索エンジンから見つけやすくなります。
+      {/* この children（記事本文）内の h2, h3, a タグなどは、
+         外部 CSS 側で var(--site-theme-color) を通じて着色されます。
       */}
       {children}
-    </section>
+    </article>
   );
 }

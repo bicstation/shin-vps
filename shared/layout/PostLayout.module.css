@@ -1,0 +1,100 @@
+.postContainer {
+  width: 100%;
+  margin: 0 auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* --- 見出し (h2) --- */
+.postContainer :global(h2) {
+  font-size: 1.75rem;
+  font-weight: 800;
+  /* 各ドメインのサイトカラーを使用。未定義なら青 */
+  border-left: 6px solid var(--site-color, #0070f3);
+  padding: 0.6rem 1.2rem;
+  margin: 3.5rem 0 1.8rem;
+  background: #f8fafc;
+  border-radius: 0 4px 4px 0;
+  line-height: 1.4;
+}
+
+/* --- 見出し (h3) --- */
+.postContainer :global(h3) {
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin: 2.8rem 0 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  line-height: 1.4;
+}
+
+.postContainer :global(h3)::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--site-color, #0070f3);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* --- 本文 (p) --- */
+.postContainer :global(p) {
+  line-height: 2.0;
+  margin-bottom: 1.8rem;
+  color: #334155;
+  letter-spacing: 0.01em;
+}
+
+/* --- リスト (ul / ol) --- */
+.postContainer :global(ul),
+.postContainer :global(ol) {
+  margin: 2rem 0;
+  background: #f1f5f9;
+  padding: 1.8rem 1.8rem 1.8rem 3rem;
+  border-radius: 12px;
+}
+
+.postContainer :global(li) {
+  margin-bottom: 0.8rem;
+  line-height: 1.7;
+}
+
+.postContainer :global(li:last-child) {
+  margin-bottom: 0;
+}
+
+/* --- 画像 (img) --- */
+.postContainer :global(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 2.5rem 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+/* 記事内の画像にマウスを乗せた時の演出（任意） */
+.postContainer :global(img:hover) {
+  transform: scale(1.01);
+}
+
+/* --- 強調 (strong) --- */
+.postContainer :global(strong) {
+  font-weight: 700;
+  background: linear-gradient(transparent 70%, rgba(255, 243, 176, 0.6) 70%);
+}
+
+/* --- レスポンシブ調整 --- */
+@media (max-width: 768px) {
+  .postContainer :global(h2) {
+    font-size: 1.5rem;
+    margin: 2.5rem 0 1.2rem;
+  }
+  .postContainer :global(h3) {
+    font-size: 1.3rem;
+  }
+  .postContainer :global(p) {
+    line-height: 1.8;
+  }
+}

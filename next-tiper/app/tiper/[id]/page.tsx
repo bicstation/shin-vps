@@ -5,14 +5,18 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+
+// ✅ 修正ポイント: shared/lib/api 経由に統一
 import { getAdultProducts } from '@shared/lib/api'; 
-import ProductCard from '@shared/components/cards/AdultProductCard';
+// ✅ 修正ポイント: components/ を挟まない直下参照
+import ProductCard from '@shared/cards/AdultProductCard';
 import styles from './page.module.css';
 
 /**
- * 💡 個別記事データ取得
+ * 💡 個別記事データ取得 (WordPress API)
  */
 async function fetchPostData(postSlug: string) {
+    // 💡 ホスト名は環境に合わせて nginx-wp-v2 を維持
     const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?slug=${postSlug}&_embed&per_page=1&_t=${Date.now()}`; 
     try {
         const res = await fetch(WP_API_URL, {
@@ -22,7 +26,10 @@ async function fetchPostData(postSlug: string) {
         if (!res.ok) return null;
         const data = await res.json();
         return (Array.isArray(data) && data.length > 0) ? data[0] : null;
-    } catch (error) { return null; }
+    } catch (error) { 
+        console.error("WP Fetch Error:", error);
+        return null; 
+    }
 }
 
 /**
@@ -72,15 +79,16 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
     const { id } = await params;
     const postSlug = decodeURIComponent(id);
     const post = await fetchPostData(postSlug);
+    
     if (!post) notFound();
 
     const categoryIds = post.categories || [];
     
-    // 💡 データの並列フェッチ
+    // 💡 データの並列フェッチ (WP記事 + Django商品)
     const [neighbors, relatedPosts, productData] = await Promise.all([
         fetchNeighborPosts(post.date),
         fetchRelatedCategoryPosts(categoryIds, post.id),
-        getAdultProducts({ limit: 4 })
+        getAdultProducts({ limit: 4 }) // ✅ 共通ライブラリを使用
     ]);
 
     const postTitle = decodeHtml(post.title.rendered);
@@ -173,7 +181,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                 </aside>
             </div>
 
-            {/* 関連商品セクション */}
+            {/* ✅ 関連商品セクション: 共通 ProductCard を利用 */}
             {productData?.results?.length > 0 && (
                 <section className={styles.relatedSection}>
                     <div className={styles.relatedContainer}>

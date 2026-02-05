@@ -6,9 +6,9 @@
 import React from 'react';
 import Link from 'next/link';
 
-// ✅ 共通コンポーネントと共通APIのインポート
-import Sidebar from '@shared/components/layout/Sidebar';
-import { fetchPostList } from '@shared/components/lib/api'; 
+// ✅ 共通コンポーネントと共通APIのインポート（新構造に対応）
+import Sidebar from '@shared/layout/Sidebar';
+import { fetchPostList } from '@shared/lib/api'; 
 
 // 💡 ビルド時の静的生成エラーを回避するための設定
 export const dynamic = 'force-dynamic'; 
@@ -41,15 +41,14 @@ const formatDate = (dateString: string) => {
 
 /**
  * Next.js Server Component: メインページ
- * レイアウト（Header/Footer）は RootLayout に任せ、
- * このページ独自の構成（Sidebar + Main）を構築します。
  */
 export default async function Page() {
-    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'ビック的な節約生活';
+    // サイトタイトルを環境変数から取得（fallback付き）
+    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'ビック的節約生活';
 
     /**
      * ✅ 共通APIを使用して記事を取得
-     * shared/api.ts の fetchPostList('postType', limit) を利用
+     * shared/lib/api.ts の fetchPostList('saving', limit) を利用
      */
     let posts = [];
     try {
@@ -65,7 +64,7 @@ export default async function Page() {
     return (
         <div style={{ display: 'flex', flexGrow: 1, backgroundColor: '#f4f4f4', width: '100%' }}> 
             
-            {/* ✅ 1. サイドバー（内容によって中身を変えたい場合は、ここを専用コンポーネントに差し替える） */}
+            {/* ✅ 1. サイドバー（shared/layout/Sidebar） */}
             <Sidebar />
             
             {/* ✅ 2. メインコンテンツエリア */}
@@ -76,7 +75,8 @@ export default async function Page() {
                         borderBottom: '2px solid #ddd', 
                         paddingBottom: '10px',
                         marginTop: 0,
-                        fontSize: '1.5rem'
+                        fontSize: '1.5rem',
+                        fontWeight: 'bold'
                     }}>
                         {title} 最新記事一覧
                     </h2>
@@ -92,7 +92,7 @@ export default async function Page() {
                         }}>
                             <p style={{ color: '#666', fontWeight: 'bold' }}>現在、表示できる記事はありません。</p>
                             <p style={{ color: '#999', fontSize: '0.85em' }}>
-                                記事が公開されているか、またはWordPressの接続設定を確認してください。
+                                記事が公開されているか、WordPressの接続設定を確認してください。
                             </p>
                         </div>
                     ) : (
@@ -106,6 +106,7 @@ export default async function Page() {
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                                     transition: 'transform 0.2s'
                                 }}>
+                                    {/* 🚨 個別記事へのリンクパスを /saving/ に固定 */}
                                     <Link href={`/saving/${post.slug}`} style={{ 
                                         textDecoration: 'none', 
                                         color: '#007bff', 
@@ -124,7 +125,10 @@ export default async function Page() {
                         </div>
                     )}
                 </div>
-                <div>新しいページです。テスト</div>
+                {/* デバッグ用：正常に読み込まれているか確認 */}
+                <div style={{ marginTop: '20px', fontSize: '12px', color: '#ccc', textAlign: 'center' }}>
+                    Next.js 15/16 Shared-Container Build Mode
+                </div>
             </main>
         </div>
     );

@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 /* 1. レイアウトとモバイル最適化 (全サイト共通) */
+/* Tailwind v4では @layer base の代わりに @theme 内や標準的なCSSとして記述します */
+@theme {
+  /* サイトごとのテーマカラー変数のデフォルト値を定義 */
+  --site-theme-color: #3b82f6;
+}
+
+/* 基本スタイルのリセットと設定 */
 @layer base {
   html, body {
     margin: 0;
@@ -41,7 +48,6 @@
 }
 
 /* 3. 記事・リッチテキスト表示用 (wp-content) */
-/* どのサイトでも、記事本文を <div className="wp-content"> で囲むだけで綺麗になります */
 .wp-content {
   word-break: break-word;
   overflow-wrap: break-word;
@@ -49,7 +55,8 @@
 }
 
 .wp-content a {
-  color: var(--site-theme-color, #3b82f6); /* layout.tsxで注入した色を使用 */
+  /* Tailwind v4の変数参照形式 */
+  color: var(--site-theme-color);
   text-decoration: underline;
 }
 
@@ -60,6 +67,8 @@
 }
 
 /* 4. スマホ対応 (メディアクエリ) */
+/* Tailwind v4 では @media の代わりに @variant などの指定も可能ですが、
+   既存のメディアクエリの書き方も標準 CSS として有効です。 */
 @media (max-width: 768px) {
   .wp-content {
     font-size: 1rem;
@@ -74,7 +83,7 @@
     font-size: 1.25rem !important;
   }
 
-  /* 💡 スマホでテーブルがはみ出さないように横スクロールを許可 */
+  /* スマホでテーブルがはみ出さないように横スクロールを許可 */
   .wp-content table {
     display: block;
     overflow-x: auto;
@@ -83,4 +92,34 @@
     border-collapse: collapse;
     width: 100%;
   }
+}
+
+
+/* 記事本文内の装飾ルール */
+.post-content-container {
+  line-height: 1.8;
+  color: #f3f4f6; /* ダークモード用テキスト色 */
+}
+
+/* 変数を使用した動的な装飾 */
+.post-content-container h2 {
+  border-left: 5px solid var(--site-theme-color);
+  padding-left: 15px;
+  margin-top: 2.5rem;
+  font-weight: 800;
+}
+
+.post-content-container a {
+  color: var(--site-theme-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.post-content-container a:hover {
+  border-bottom-color: var(--site-theme-color);
+}
+
+.post-content-container strong {
+  color: var(--site-theme-color);
 }

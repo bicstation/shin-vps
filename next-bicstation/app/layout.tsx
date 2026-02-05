@@ -1,36 +1,30 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
- * 整理後の shared/styles/globals.css を参照
+ * プロジェクト構成に合わせた globals.css の参照
  */
-import '@shared/components/styles/globals.css';
+import '@shared/styles/globals.css';
 
 /**
- * ✅ 2. 共通設定ライブラリ
- * 整理後の shared/lib/siteConfig.tsx を参照
+ * ✅ 2. 共通設定・ライブラリ
  */
-import { getSiteMetadata, getSiteColor } from '@shared/components/lib/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
 
 /**
  * ✅ 3. 共通コンポーネント (shared)
- * 整理後の shared/layout/ フォルダを参照
  */
-import Header from '@shared/components/layout/Header';
-import Footer from '@shared/components/layout/Footer';
-import ChatBot from '@shared/components/common/ChatBot';
-
-/**
- * ✅ 4. プロジェクト内コンポーネント
- * shared/layout/ に移動した ClientStyles を参照
- */
-import ClientStyles from '@shared/components/layout/ClientStyles';
+import Header from '@shared/layout/Header';
+import Footer from '@shared/layout/Footer';
+import ChatBot from '@shared/common/ChatBot';
+import ClientStyles from '@shared/layout/ClientStyles';
 
 const inter = Inter({
   subsets: ["latin"],
+  display: 'swap',
 });
 
 /**
@@ -73,9 +67,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * 💡 ビューポート設定
+ * 💡 ビューポート設定 (Next.js 15 仕様)
  */
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -98,21 +92,29 @@ export default function RootLayout({
         style={{
           backgroundColor: "#f4f7f9",
           color: "#333",
-          // ✅ サーバーコンポーネントで動的な色を扱うためのCSS変数注入
+          // ✅ サーバーコンポーネントで動的なテーマカラーを扱うためのCSS変数注入
           // @ts-ignore
           "--site-theme-color": themeColor,
         } as React.CSSProperties}
       >
+        {/* クライアント側での動的スタイル適用（プログレスバーやテーマ調整用） */}
+        <ClientStyles themeColor={themeColor} />
+
         <Header />
         
-        <div className={styles.adDisclosure} style={{ padding: "8px 15px", fontSize: "12px", textAlign: "center", backgroundColor: "#e9ecef", color: "#666" }}>
+        {/* 📢 広告表記（リーガル対応） */}
+        <aside className={styles.adDisclosure} aria-label="広告告知">
           本サイトはアフィリエイト広告（広告・宣伝）を利用しています
-        </div>
+        </aside>
 
         <div className={styles.layoutContainer}>
-          {/* ✅ サイドバーを削除し、メインコンテンツをラップ */}
           <div className={styles.layoutInner}>
-            <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+            <Suspense fallback={
+              <div className={styles.loadingContainer}>
+                <div className={styles.spinner}></div>
+                <p>Loading BICSTATION...</p>
+              </div>
+            }>
               <main className={styles.mainContentFull}>
                 {children}
               </main>
@@ -122,13 +124,10 @@ export default function RootLayout({
 
         <Footer />
 
-        {/* ✅ ChatBotも navigation Hook を使う可能性があるため Suspense で保護 */}
+        {/* ✅ ChatBotは navigation Hook を使用するため Suspense で保護 */}
         <Suspense fallback={null}>
           <ChatBot />
         </Suspense>
-
-        {/* 💡 クライアント側で実行するスタイル注入 ('@shared/layout/ClientStyles' を使用) */}
-        <ClientStyles themeColor={themeColor} />
       </body>
     </html>
   );

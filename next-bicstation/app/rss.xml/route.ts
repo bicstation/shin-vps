@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { fetchWordPressPosts } from '@shared/components/lib/api';
-import { getSiteMetadata } from '@shared/components/lib/siteConfig';
+import { fetchWordPressPosts } from '@shared/lib/api';
+import { getSiteMetadata } from '@shared/lib/siteConfig';
 
 /**
  * 💡 RSS フィード生成 Route Handler
- * @shared/components/lib/api.ts の共通関数を使用して
+ * @shared/lib/api.ts の共通関数を使用して
  * WordPress から最新の投稿を取得し、XML 形式で出力します。
  */
 

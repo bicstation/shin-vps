@@ -2,13 +2,13 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { TrendingUp, Activity } from 'lucide-react';
-import { fetchPCPopularityRanking } from '@shared/components/lib/api';
+import { fetchPCPopularityRanking } from '@shared/lib/api';
 
 /**
  * ✅ 修正ポイント: インポートパスの変更
- * @shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ * @shared/product/ProductCard から @shared/cards/ProductCard へ
  */
-import ProductCard from '@shared/components/cards/ProductCard';
+import ProductCard from '@shared/cards/ProductCard';
 
 import styles from './Popularity.module.css';
 

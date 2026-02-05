@@ -2,9 +2,10 @@
 export const dynamic = 'force-dynamic';
 
 import React from 'react';
-import ProductCard from '@shared/components/cards/AdultProductCard';
+// ✅ 修正ポイント: components/ を除いた新構造のパス
+import ProductCard from '@shared/cards/AdultProductCard';
 import Link from 'next/link';
-import { notFound } from 'next/navigation'; // 404へ誘導するためのインポート
+import { notFound } from 'next/navigation'; 
 import styles from './category.module.css';
 
 /**
@@ -40,7 +41,6 @@ async function getCategoryProducts(category: string, id: string, page: string = 
   try {
     const res = await fetch(apiUrl, { cache: 'no-store' });
     if (!res.ok) {
-      // DjangoがエラーHTMLを返した場合、ここで捕捉して例外を防ぐ
       console.warn(`⚠️ Django API Error: ${res.status} at ${apiUrl}`);
       return { results: [], count: 0 };
     }
@@ -71,8 +71,6 @@ export default async function CategoryListPage({
   const currentSort = resolvedSearchParams.sort || '-created_at'; 
 
   // --- 🛡️ 強力なガード処理 ---
-  // パラメータが 'undefined' という文字列だったり、存在しない場合は即座に 404 にする
-  // これにより、トップページへの干渉や Django への不正なリクエストを阻止します
   if (
     !category || !id || 
     category === 'undefined' || id === 'undefined' ||

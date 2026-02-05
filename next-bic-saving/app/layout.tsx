@@ -10,32 +10,30 @@ import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
- * 共通デザインシステム（shared/components/styles/globals.css）を適用
+ * 構造変更に合わせて components/ を削除
  */
-import '@shared/components/styles/globals.css';
+import '@shared/styles/globals.css';
 
 /**
  * ✅ 2. 共通設定のインポート
- * サイトごとのメタデータやテーマカラーを動的に取得
+ * lib/ を経由するパスに修正
  */
-import { getSiteMetadata, getSiteColor } from '@shared/components/lib/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
 
 /**
  * ✅ 3. 共通レイアウトコンポーネントのインポート
- * Header, Footer, ChatBot は全ページ共通。Sidebarは page.tsx 側で個別に制御
+ * 構造変更に合わせて components/ を削除
  */
-import Header from '@shared/components/layout/Header';
-import Footer from '@shared/components/layout/Footer';
-import ChatBot from '@shared/components/common/ChatBot';
+import Header from '@shared/layout/Header';
+import Footer from '@shared/layout/Footer';
+import ChatBot from '@shared/common/ChatBot';
 
 const inter = Inter({ subsets: ["latin"] });
 
 /**
  * 💡 SEOメタデータの設定
- * metadataBase は、OGP画像などの絶対パス解決に使用されます。
  */
 export const metadata: Metadata = {
-  // metadataBase: new URL("https://bic-saving.com"),
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: {
     template: "%s | ビック professional的節約生活",
@@ -48,7 +46,7 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     url: "https://bic-saving.com/",
     siteName: "ビック的節約生活",
-    title: "ビック적節約生活 - 賢い買い物ガイド",
+    title: "ビック的節約生活 - 賢い買い物ガイド",
     description: "AI解析で最適な節約プランを提案するライフスタイルメディア",
   },
 };
@@ -60,7 +58,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#2ecc71",
+  themeColor: "#ffcc00", // 節約生活のテーマカラーに合わせる
 };
 
 /**
@@ -106,17 +104,13 @@ export default function RootLayout({
           【PR】本サイトはアフィリエイト広告を利用して運営されています。
         </div>
 
-        {/* ③ メインコンテンツ領域
-            flexGrow: 1 を指定することで、コンテンツが少ない場合でもフッターを最下部に押し下げます。
-            layoutContainer 自体も flex 構造にすることで、内部の children (page.tsx) との整合性を取ります。
-        */}
+        {/* ③ メインコンテンツ領域 */}
         <div className={styles.layoutContainer} style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
           <Suspense fallback={
             <div style={{ padding: '50px', textAlign: 'center', color: '#999' }}>
               コンテンツを読み込み中...
             </div>
           }>
-            {/* ここに各ページの Sidebar + MainContent が流し込まれます */}
             {children}
           </Suspense>
         </div>
@@ -124,7 +118,7 @@ export default function RootLayout({
         {/* ④ 共通フッター */}
         <Footer />
 
-        {/* ⑤ AIチャットコンシェルジュ (クライアントサイドでの読み込みを想定) */}
+        {/* ⑤ AIチャットコンシェルジュ */}
         <Suspense fallback={null}>
           <ChatBot />
         </Suspense>

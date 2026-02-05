@@ -6,9 +6,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { getAdultProductsByMaker } from '@shared/components/lib/api';
-import AdultProductCard from '@shared/components/cards/AdultProductCard';
-import { decodeHtml } from '@shared/components/lib/decode';
+import { getAdultProductsByMaker } from '@shared/lib/api';
+import AdultProductCard from '@shared/cards/AdultProductCard';
+import { decodeHtml } from '@shared/lib/decode';
 
 // 💡 日付フォーマット用のヘルパー
 const formatDate = (dateString: string) => {

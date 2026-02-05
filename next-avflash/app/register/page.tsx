@@ -1,11 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent } from 'react';
-import Link from 'next/link';
-// ✅ 整理後のディレクトリ構造に合わせてインポートパスを修正
-import { registerUser } from '@shared/components/lib/auth';
+// 💡 ビルド時の静的解析を強制的にバイパス
+export const dynamic = "force-dynamic";
 
-export default function RegisterPage() {
+import React, { useState, useEffect, FormEvent, Suspense } from 'react';
+import Link from 'next/link';
+// 💡 明示的にインポートしておく（ビルドエラー回避のまじない）
+import { useSearchParams } from 'next/navigation';
+import { registerUser } from '@shared/lib/auth';
+
+/**
+ * 💡 フォーム本体のコンポーネント
+ */
+function RegisterForm() {
+  // 💡 実際に呼び出しておくことで、Suspenseの境界を明確にします
+  const searchParams = useSearchParams(); 
+  
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -14,13 +24,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [basePath, setBasePath] = useState("");
 
-  /**
-   * ✅ 環境判別（サブパス対応）
-   * ローカルの /avflash/ や /bicstation/ 運用でも遷移先が壊れないように調整
-   */
   useEffect(() => {
     const currentPath = window.location.pathname;
-    // URLの最初のセグメントを判別
     const prefix = currentPath.split('/')[1];
     if (prefix === 'bicstation' || prefix === 'avflash') {
       setBasePath(`/${prefix}`);
@@ -34,7 +39,6 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
 
-    // バリデーション
     if (password !== confirmPassword) {
       setError('パスワードが一致しません。');
       setLoading(false);
@@ -48,12 +52,8 @@ export default function RegisterPage() {
     }
 
     try {
-      // 🚀 @shared/components/lib/auth.ts の registerUser を呼び出し
       await registerUser(username, email, password);
-      
       alert('会員登録が完了しました！ログインしてください。');
-      
-      // ログイン画面へ遷移（ベースパスを考慮）
       window.location.href = `${window.location.origin}${basePath}/login/`;
     } catch (err: any) {
       setError(err.message || '登録に失敗しました。');
@@ -63,8 +63,6 @@ export default function RegisterPage() {
   };
 
   const loginHref = `${basePath}/login/`;
-
-  // 💡 デザインテーマ設定（AVFLASHに合わせてオレンジ系をアクセントに）
   const ACCENT_COLOR = '#ff4500'; 
 
   return (
@@ -89,13 +87,8 @@ export default function RegisterPage() {
       
       {error && (
         <div style={{ 
-          color: '#e53e3e', 
-          backgroundColor: '#fff5f5', 
-          padding: '12px 16px', 
-          marginBottom: '24px', 
-          borderRadius: '8px', 
-          fontSize: '0.85rem',
-          border: '1px solid #feb2b2'
+          color: '#e53e3e', backgroundColor: '#fff5f5', padding: '12px 16px', 
+          marginBottom: '24px', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid #feb2b2'
         }}>
           {error}
         </div>
@@ -111,7 +104,7 @@ export default function RegisterPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px' }}
             placeholder="例: av_taro"
           />
         </div>
@@ -125,7 +118,7 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px' }}
             placeholder="example@mail.com"
           />
         </div>
@@ -139,7 +132,7 @@ export default function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px' }}
             placeholder="8文字以上"
           />
         </div>
@@ -153,7 +146,7 @@ export default function RegisterPage() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
+            style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px' }}
           />
         </div>
 
@@ -161,16 +154,9 @@ export default function RegisterPage() {
           type="submit"
           disabled={loading}
           style={{
-            width: '100%',
-            padding: '14px',
-            backgroundColor: loading ? '#cbd5e0' : ACCENT_COLOR,
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold',
-            fontSize: '1rem',
-            transition: 'opacity 0.2s'
+            width: '100%', padding: '14px', backgroundColor: loading ? '#cbd5e0' : ACCENT_COLOR,
+            color: 'white', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer',
+            fontWeight: 'bold', fontSize: '1rem'
           }}
         >
           {loading ? '登録処理中...' : '会員登録を完了する'}
@@ -184,5 +170,13 @@ export default function RegisterPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: 'center', padding: '50px' }}>読み込み中...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

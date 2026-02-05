@@ -15,7 +15,7 @@ import {
   ChevronRight, LayoutDashboard, User, Settings, LogOut, ShieldCheck,
   TrendingUp, Clock, Shield
 } from 'lucide-react';
-import { logoutUser } from '@shared/components/lib/auth';
+import { logoutUser } from '@shared/lib/auth';
 
 // --- 型定義 ---
 interface UserProfile {
@@ -51,7 +51,7 @@ export default function UnifiedDashboard() {
     const checkAuth = async () => {
       const token = localStorage.getItem('access_token');
       const storedUser = localStorage.getItem('user');
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://tiper.live/api';
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tiper.live';
 
       if (!token && !storedUser) {
         router.push(`${prefix}/login`);

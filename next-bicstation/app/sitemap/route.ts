@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { fetchPCProducts, fetchPostList } from '@shared/components/lib/api';
-import { getSiteMetadata } from '@shared/components/lib/siteConfig';
+import { fetchPCProducts, fetchPostList } from '@shared/lib/api';
+import { getSiteMetadata } from '@shared/lib/siteConfig';
 
 /**
  * 💡 Next.js App Router用 Sitemap生成 Route Handler

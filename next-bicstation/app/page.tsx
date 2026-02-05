@@ -1,21 +1,22 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
+
 /**
  * ✅ 爆速の鍵: ISR (Incremental Static Regeneration)
- * 1時間（3600秒）ごとにバックグラウンドで再生成。
+ * 1時間（3600秒）ごとにバックグラウンドで再生成し、静的ファイルとして配信。
  */
 export const revalidate = 3600; 
 
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Sidebar from '@shared/components/layout/Sidebar';
-import RadarChart from '@shared/components/ui/RadarChart';
+import Sidebar from '@shared/layout/Sidebar';
+import RadarChart from '@shared/ui/RadarChart';
 
 /**
- * ✅ 修正ポイント: インポートパスの変更
- * @shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ * ✅ 修正ポイント: インポートパスの正規化
  */
-import ProductCard from '@shared/components/cards/ProductCard';
+import ProductCard from '@shared/cards/ProductCard';
 
 import {
     fetchPostList,
@@ -23,20 +24,26 @@ import {
     fetchMakers,
     fetchPCProductRanking,
     fetchPCPopularityRanking
-} from '@shared/components/lib/api';
+} from '@shared/lib/api';
 import styles from './MainPage.module.css';
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+/**
+ * BICSTATION メインページ
+ * 統合データフェッチにより、WP記事とDjango製品データを単一ビューに集約。
+ */
 export default async function Page({ searchParams }: PageProps) {
+    // Next.js 15 では searchParams は Promise として扱う
     const sParams = await searchParams;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
-    const PRODUCT_LIMIT = 10;
+    const PRODUCT_LIMIT = 12;
 
     /**
      * 🚀 APIリクエストの並列化 (Parallel Data Fetching)
+     * すべてのデータを同時にリクエストすることで、逐次実行に比べて大幅にロード時間を短縮。
      */
     const [wpData, pcData, makersData, rankingData, popularityData] = await Promise.all([
         fetchPostList(10).catch(() => ({ results: [], count: 0 })),
@@ -52,6 +59,9 @@ export default async function Page({ searchParams }: PageProps) {
     const trendTopThree = (popularityData || []).slice(0, 3);
     const featuredPosts = wpResults.slice(0, 8);
 
+    /**
+     * WPのタイトル等のHTMLエンティティをデコード
+     */
     const safeDecode = (str: string) => {
         if (!str) return '';
         return str
@@ -65,6 +75,7 @@ export default async function Page({ searchParams }: PageProps) {
 
     return (
         <div className={styles.wrapper}>
+            {/* サイドバー: メーカー一覧と最新記事を同期 */}
             <aside className={styles.sidebarSection}>
                 <Sidebar
                     activeMenu="all"
@@ -84,12 +95,14 @@ export default async function Page({ searchParams }: PageProps) {
                     </h1>
                 </header>
 
-                {/* 🏆 AIスペックランキング */}
+                {/* 🏆 AIスペックランキング (スコア上位) */}
                 {topThree.length > 0 && (
                     <section className={styles.rankingSection}>
                         <div className={styles.sectionHeader}>
-                            <h2 className={styles.sectionTitle}><span className={styles.emoji}>👑</span> AIスペックランキング</h2>
-                            <Link href="/ranking/" className={styles.rankingLink}>すべて見る →</Link>
+                            <h2 className={styles.sectionTitle}>
+                                <span className={styles.emoji}>👑</span> AIスペックランキング
+                            </h2>
+                            <Link href="/ranking/" className={styles.rankingLink}>ランキング一覧 →</Link>
                         </div>
                         <div className={styles.topThreeGrid}>
                             {topThree.map((product, index) => (
@@ -117,7 +130,7 @@ export default async function Page({ searchParams }: PageProps) {
                                         <div className={styles.chartMini}>
                                             <RadarChart data={product.radar_chart || []} color={index === 0 ? "#ecc94b" : "#a0aec0"} />
                                         </div>
-                                        <Link href={`/product/${product.unique_id}`} className={styles.detailButton}>解析詳細</Link>
+                                        <Link href={`/product/${product.unique_id}`} className={styles.detailButton}>スペック詳細</Link>
                                     </div>
                                 </div>
                             ))}
@@ -125,19 +138,19 @@ export default async function Page({ searchParams }: PageProps) {
                     </section>
                 )}
 
-                {/* 🔍 カテゴリー・スペック検索 */}
+                {/* 🔍 カテゴリー・スペック検索クイックリンク */}
                 <section className={styles.categorySearchSection}>
-                    <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔍</span> 目的・スペックから探す</h2>
+                    <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔍</span> 条件から探す</h2>
                     <div className={styles.searchGroup}>
-                        <h3 className={styles.groupLabel}>用途・スタイル</h3>
+                        <h3 className={styles.groupLabel}>利用シーン別</h3>
                         <div className={styles.categoryGrid}>
                             {[
-                                { name: 'ビジネス・法人向け', slug: 'usage-business', icon: '💼' },
-                                { name: 'ゲーミングPC', slug: 'usage-gaming', icon: '🎮' },
-                                { name: 'クリエイター向け', slug: 'usage-creator', icon: '🎨' },
-                                { name: 'AI開発・生成AI', slug: 'usage-ai-dev', icon: '🤖' },
-                                { name: '軽量・1kg未満', slug: 'feat-lightweight', icon: '🪶' },
-                                { name: 'モバイルノート', slug: 'size-mobile', icon: '💻' },
+                                { name: 'ビジネス', slug: 'usage-business', icon: '💼' },
+                                { name: 'ゲーミング', slug: 'usage-gaming', icon: '🎮' },
+                                { name: 'クリエイティブ', slug: 'usage-creator', icon: '🎨' },
+                                { name: 'AI・開発', slug: 'usage-ai-dev', icon: '🤖' },
+                                { name: '1kg未満', slug: 'feat-lightweight', icon: '🪶' },
+                                { name: 'モバイル', slug: 'size-mobile', icon: '💻' },
                             ].map((cat) => (
                                 <Link key={cat.slug} href={`/pc-products/?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
                                     <span className={styles.catIcon}>{cat.icon}</span>
@@ -148,7 +161,7 @@ export default async function Page({ searchParams }: PageProps) {
                     </div>
 
                     <div className={styles.searchGroup}>
-                        <h3 className={styles.groupLabel}>最新AIプロセッサ</h3>
+                        <h3 className={styles.groupLabel}>最新プロセッサ</h3>
                         <div className={styles.tagCloud}>
                             {[
                                 { name: 'Core Ultra 9', slug: 'intel-core-ultra-9' },
@@ -165,11 +178,11 @@ export default async function Page({ searchParams }: PageProps) {
                     </div>
                 </section>
 
-                {/* 🔥 注目度ランキング */}
+                {/* 🔥 注目度ランキング (PV/トレンド上位) */}
                 {trendTopThree.length > 0 && (
                     <section className={`${styles.rankingSection} ${styles.popularityBg}`}>
                         <div className={styles.sectionHeader}>
-                            <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔥</span> 注目度ランキング</h2>
+                            <h2 className={styles.sectionTitle}><span className={styles.emoji}>🔥</span> 注目度急上昇</h2>
                             <Link href="/ranking/popularity/" className={styles.rankingLink}>すべて見る →</Link>
                         </div>
                         <div className={styles.topThreeGrid}>
@@ -191,7 +204,7 @@ export default async function Page({ searchParams }: PageProps) {
                                             <h3 className={styles.topThreeName}>{product.name}</h3>
                                         </div>
                                         <div className={styles.trendingInfo}>
-                                            <span className={styles.trendLabel}>注目！</span>
+                                            <span className={styles.trendLabel}>TREND</span>
                                             <div className={styles.trendPrice}>
                                                 {product.price ? `¥${product.price.toLocaleString()}` : "価格情報なし"}
                                             </div>
@@ -204,12 +217,12 @@ export default async function Page({ searchParams }: PageProps) {
                     </section>
                 )}
 
-                {/* 🚀 記事セクション */}
+                {/* 🚀 記事セクション (WPから取得) */}
                 <section className={styles.newsSection}>
-                    <h2 className={styles.sectionTitle}><span className={styles.emoji}>🚀</span> 注目のPCトピック</h2>
+                    <h2 className={styles.sectionTitle}><span className={styles.emoji}>🚀</span> PC最新トピック</h2>
                     <div className={styles.newsGrid}>
                         {featuredPosts.map((post: any) => (
-                            <Link href={`/bicstation/${post.slug}`} key={post.id} className={styles.newsCard}>
+                            <Link href={`/news/${post.id}`} key={post.id} className={styles.newsCard}>
                                 <div className={styles.imageWrapper}>
                                     <Image 
                                         src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url?.replace('http://', 'https://') || '/no-image.png'} 
@@ -228,21 +241,23 @@ export default async function Page({ searchParams }: PageProps) {
                     </div>
                 </section>
 
-                {/* 📦 製品カタログ */}
+                {/* 📦 最新製品カタログ一覧 */}
                 <section className={styles.productSection}>
-                    <h2 className={styles.productGridTitle}><span className={styles.titleIndicator}></span>最新PCカタログ</h2>
+                    <div className={styles.sectionHeader}>
+                        <h2 className={styles.productGridTitle}><span className={styles.titleIndicator}></span>最新カタログ</h2>
+                    </div>
                     <div className={styles.productGrid}>
                         {pcResults.length > 0 ? (
                             pcResults.map((product: any) => (
                                 <ProductCard key={product.id || product.unique_id} product={product} />
                             ))
                         ) : (
-                            <p>製品データが見つかりませんでした。</p>
+                            <p className={styles.noData}>製品データがありません。</p>
                         )}
                     </div>
                     <div className={styles.viewMoreContainer}>
                         <Link href="/catalog/" className={styles.catalogFullLink}>
-                            すべての製品カタログを表示する ({pcData?.count || 0}件)
+                            すべての製品を表示 ({pcData?.count || 0}件)
                         </Link>
                     </div>
                 </section>

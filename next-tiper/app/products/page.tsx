@@ -1,25 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
+// ✅ 修正ポイント: shared/lib 経由のパスに修正
 import { getAdultProducts } from '@shared/lib/api'; 
-// ✅ 共通の ProductCard を参照するように修正
-import ProductCard from '@shared/components/cards/AdultProductCard';
-import styles from './products.module.css'; // スタイルをCSS Modulesに分離
+// ✅ 修正ポイント: components/ を挟まない新構造のパスに修正
+import ProductCard from '@shared/cards/AdultProductCard';
+import styles from './products.module.css'; 
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
-  // Next.js 15対応
+  // 💡 Next.js 15対応: Promiseとして渡される searchParams を await
   const resolvedSearchParams = await searchParams;
   const currentPage = Number(resolvedSearchParams.page) || 1;
   const limit = 40; // 一覧ページなので多めに表示
   const offset = (currentPage - 1) * limit;
 
-  // 💡 API呼び出し
+  // 💡 API呼び出し: Django サーバーからデータを取得
   const data = await getAdultProducts({ 
     limit, 
     offset, 
     ordering: '-id' 
-  }).catch(() => ({ results: [], count: 0 }));
+  }).catch((err) => {
+    console.error("❌ Products fetch error:", err);
+    return { results: [], count: 0 };
+  });
 
   const products = data?.results || [];
   const totalCount = data?.count || 0;
@@ -55,7 +59,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           </div>
         )}
         
-        {/* ページネーション（簡易版） */}
+        {/* ページネーション */}
         {totalPages > 1 && (
           <div className={styles.pagination}>
             {currentPage > 1 && (

@@ -1,5 +1,3 @@
-// ファイル名: app/avflash/[id]/page.tsx
-
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react/no-danger */
 // @ts-nocheck 
@@ -8,13 +6,18 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import styles from './post.module.css';
 
-// ✅ api.ts から現在利用可能な関数をインポート
-// 💡 fetchPostList は WordPress API からデータを取得するために使用
-import { decodeHtml } from '@shared/components/lib/decode';
+// ✅ 共通ライブラリのインポート
+import { decodeHtml } from '@shared/lib/decode';
+
+/**
+ * 💡 Next.js 15 用の設定
+ * force-dynamic: ビルド時の fetch をスキップし、実行時にデータを取得する
+ */
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
 
 /**
  * 💡 ユーティリティ: 日付フォーマット
- * decode.ts に存在しない場合のエラーを回避するため内部で定義
  */
 const formatDate = (dateString: string) => {
   if (!dateString) return '';
@@ -26,10 +29,10 @@ const formatDate = (dateString: string) => {
 };
 
 /**
- * 💡 WordPress 記事取得関数 (内部定義または api.ts の fetchPostList を拡張)
+ * 💡 WordPress 記事取得関数
+ * ⚠️ ビルド時ではなく、ブラウザからのリクエスト時に実行される
  */
 async function getWpPostDetail(slug: string) {
-  // avflash カテゴリ(カスタム投稿タイプ)から特定のスラッグの記事を取得
   const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_embed&slug=${slug}`;
   try {
     const res = await fetch(WP_API_URL, {
@@ -47,39 +50,30 @@ async function getWpPostDetail(slug: string) {
 
 /**
  * 💡 静的パスの生成 (generateStaticParams)
- * ビルド時に WordPress から最新記事のスラッグを取得して静的ページ化します
+ * ⚠️ Next.js 15 + Dockerビルド環境では、名前解決エラーを防ぐため
+ * ビルド時は空配列を返し、アクセス時に生成（Dynamic Rendering）させるのが最も安全です。
  */
 export async function generateStaticParams() {
-  try {
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_embed&per_page=20`;
-    const res = await fetch(WP_API_URL, {
-      headers: { 'Host': 'stg.blog.tiper.live' }
-    });
-    const allPosts = await res.json();
-    
-    if (!Array.isArray(allPosts)) return [];
-    
-    return allPosts.map((post) => ({
-      id: post.slug,
-    }));
-  } catch (error) {
-    console.error("StaticParams generation failed:", error);
-    return [];
-  }
+  return [];
 }
 
+/**
+ * 💡 Props の型定義
+ * Next.js 15 では params は Promise 型として定義する必要があります。
+ */
 interface PostPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 /**
  * 💡 記事詳細ページ メインコンポーネント
  */
 export default async function PostPage({ params }: PostPageProps) {
-  // URLパラメータ(id)はスラッグなのでデコードして使用
-  const postSlug = decodeURIComponent(params.id);
+  // ✅ 1. params を await して取得（Next.js 15 の必須ルール）
+  const resolvedParams = await params;
+  const postSlug = decodeURIComponent(resolvedParams.id);
 
-  // ✅ 記事データを取得
+  // ✅ 2. 記事データを取得
   const post = await getWpPostDetail(postSlug);
 
   // 記事が見つからない場合は 404
@@ -120,7 +114,6 @@ export default async function PostPage({ params }: PostPageProps) {
       )}
 
       {/* 3. 記事メインコンテンツ */}
-      {/* WordPressから取得したHTMLを流し込み。スタイルの適用には post.module.css または global.css を使用 */}
       <div 
         className={styles.content}
         style={{ lineHeight: '1.8', fontSize: '1.1rem', color: '#eee' }}

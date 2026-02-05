@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import ProductCard from '@shared/components/cards/AdultProductCard'; 
+import ProductCard from '@shared/cards/AdultProductCard'; 
 
 /**
  * 💡 APIインポート

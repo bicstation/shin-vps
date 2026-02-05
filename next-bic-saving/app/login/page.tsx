@@ -1,9 +1,14 @@
 "use client";
 
+
+// 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
+export const dynamic = "force-dynamic";
+
 import React, { useState, FormEvent } from 'react';
 import Link from 'next/link'; 
-import { loginUser } from '@shared/components/lib/auth';
-import { getSiteMetadata } from '@shared/components/lib/siteConfig';
+// ✅ 物理構造にあわせて /lib/ を経由するパスに固定
+import { loginUser } from '@shared/lib/auth';
+import { getSiteMetadata } from '@shared/lib/siteConfig';
 
 export default function LoginPage() {
   const [username, setUsername] = useState<string>('');
@@ -35,6 +40,7 @@ export default function LoginPage() {
     }
   };
 
+  // ✅ getSiteMetadata から情報を取得（siteConfig.ts 内の関数）
   const { site_prefix } = getSiteMetadata();
   const registerHref = site_prefix ? `${site_prefix}/register` : '/register';
 

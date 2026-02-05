@@ -8,7 +8,7 @@ const WP_INTERNAL_API = 'http://nginx-wp-v2/wp-json/wp/v2/posts';
 
 export async function GET() {
   const isProd = process.env.NODE_ENV === 'production';
-  const baseUrl = isProd ? 'https://bicstation.com' : 'http://localhost:8083/bicstation';
+  const baseUrl = isProd ? 'https://bicstation.com' : 'http://bicstation-host:8083';
 
   console.log(`[Sitemap XML] Generating... BaseURL: ${baseUrl}`);
 

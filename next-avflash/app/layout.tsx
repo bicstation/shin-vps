@@ -1,33 +1,29 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import React, { Suspense } from 'react'; // 💡 Suspense を追加
 import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
- * shared/components/styles/globals.css を参照
  */
-import '@shared/components/styles/globals.css';
+import '@shared/styles/globals.css';
 
 /*
  * ✅ 2. 共通ロジックのインポート
- * shared/components/lib/ フォルダの設定ファイルを読み込み
  */
-import { getSiteMetadata, getSiteColor } from '@shared/components/lib/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
 
 /**
  * ✅ 3. 共通レイアウトコンポーネントのインポート
- * shared/components/layout/ フォルダから読み込み
  */
-import Header from '@shared/components/layout/Header';
-import Footer from '@shared/components/layout/Footer';
-import Sidebar from '@shared/components/layout/Sidebar';
+import Header from '@shared/layout/Header';
+import Footer from '@shared/layout/Footer';
+import Sidebar from '@shared/layout/Sidebar';
 
 /**
  * ✅ 4. チャットボットコンポーネントのインポート
- * 💡 修正ポイント: shared/components/common/ChatBot.tsx を参照
  */
-import ChatBot from '@shared/components/common/ChatBot';
+import ChatBot from '@shared/common/ChatBot';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,7 +31,6 @@ const inter = Inter({
 
 /**
  * 💡 SEOメタデータの設定
- * サーバーコンポーネントである layout.tsx でのみ定義可能。
  */
 export const metadata: Metadata = {
   metadataBase: new URL("https://avflash.xyz"),
@@ -89,7 +84,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // ✅ 共通設定からサイト情報を取得（shared/components/lib/siteConfig.tsx を使用）
+  // ✅ 共通設定からサイト情報を取得
   const site = getSiteMetadata();
   const themeColor = getSiteColor(site.site_name);
 
@@ -100,15 +95,16 @@ export default function RootLayout({
         style={{
           backgroundColor: "#0f0f0f",
           color: "#ffffff",
-          // 💡 CSS 変数を style プロパティで注入（サイトごとに色が自動で変わる）
-          // @ts-ignore (CSS変数を渡すための型回避)
+          // @ts-ignore
           "--site-theme-color": themeColor,
         } as React.CSSProperties}
       >
-        {/* 1. 共通ヘッダー */}
-        <Header />
+        {/* 💡 動的なフック（URL取得など）を含む可能性があるコンポーネントを 
+             Suspense で囲むことで、ビルドエラーを回避します */}
+        <Suspense fallback={<div style={{ height: '60px', backgroundColor: '#1a1a1a' }} />}>
+          <Header />
+        </Suspense>
 
-        {/* 2. ⚖️ 広告表記・年齢制限バー */}
         <div 
           className={styles.adDisclosure} 
           style={{ backgroundColor: "#1a1a1a", borderBottom: "1px solid #333", color: "#ccc", padding: "8px 15px", fontSize: "12px", textAlign: "center" }}
@@ -119,22 +115,28 @@ export default function RootLayout({
           </span>
         </div>
 
-        {/* 3. 🚩 メインレイアウト構造 */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
-            <Sidebar />
+            {/* 💡 Sidebar も動的なリンク生成を含む可能性があるためラップ */}
+            <Suspense fallback={<div style={{ width: '250px' }} />}>
+              <Sidebar />
+            </Suspense>
 
             <main className={styles.mainContent}>
-              {children}
+              {/* 💡 ページ本体も Suspense で囲むのが Next.js 15 ビルドの定石です */}
+              <Suspense fallback={<div>Loading content...</div>}>
+                {children}
+              </Suspense>
             </main>
           </div>
         </div>
 
-        {/* 4. 共通フッター */}
         <Footer />
 
-        {/* 5. AIチャットコンシェルジュ */}
-        <ChatBot />
+        {/* 💡 ChatBot は確実に useSearchParams 等を使うため必須 */}
+        <Suspense fallback={null}>
+          <ChatBot />
+        </Suspense>
       </body>
     </html>
   );

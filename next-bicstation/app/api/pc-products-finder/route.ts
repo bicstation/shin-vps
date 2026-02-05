@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { fetchPCProducts } from '@shared/components/lib/api'; 
+import { fetchPCProducts } from '@shared/lib/api'; 
 
 export async function GET(request: Request) {
   try {

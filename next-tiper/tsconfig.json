@@ -6,7 +6,7 @@
       "@/*": ["./*"],
       /* ✅ ビルドエラー解決の鍵:
          @shared を shared フォルダそのものに向けることで、
-         @shared/components/... も @shared/styles/... も一括で解決します。
+         @shared/... も @shared/styles/... も一括で解決します。
       */
       "@shared/*": ["shared/*"]
     }

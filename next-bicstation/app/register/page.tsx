@@ -1,10 +1,23 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent } from 'react';
-import Link from 'next/link';
-import { registerUser } from '@shared/components/lib/auth';
+// 💡 Next.jsの静的解析を強制的にバイパスします
+export const dynamic = "force-dynamic";
 
-export default function RegisterPage() {
+import React, { useState, useEffect, FormEvent, Suspense } from 'react';
+import Link from 'next/link';
+// ✅ 実際の利用がなくても、ビルド時の「Suspense境界エラー」を防ぐためにインポート
+import { useSearchParams } from 'next/navigation';
+// ✅ ディレクトリ構造に合わせたインポート
+import { registerUser } from '@shared/lib/auth';
+
+/**
+ * 💡 フォーム本体のコンポーネント
+ * Next.js 15 のビルドエラーを回避するため、ロジックをここに分離します。
+ */
+function RegisterFormInner() {
+  // 💡 フックを呼び出しておくことで、Suspenseがこのコンポーネントを監視するようにします
+  const searchParams = useSearchParams();
+
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -16,7 +29,8 @@ export default function RegisterPage() {
   // 環境判別（サブパス対応）
   useEffect(() => {
     const currentPath = window.location.pathname;
-    const prefix = currentPath.startsWith('/bicstation') ? '/bicstation' : '';
+    const prefix = currentPath.startsWith('/bicstation') ? '/bicstation' : 
+                   currentPath.startsWith('/avflash') ? '/avflash' : '';
     setBasePath(prefix);
   }, []);
 
@@ -25,7 +39,6 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
 
-    // バリデーション
     if (password !== confirmPassword) {
       setError('パスワードが一致しません。');
       setLoading(false);
@@ -39,12 +52,8 @@ export default function RegisterPage() {
     }
 
     try {
-      // 🚀 lib/auth.ts の registerUser を呼び出し
       await registerUser(username, email, password);
-      
       alert('会員登録が完了しました！ログインしてください。');
-      
-      // ログイン画面へ遷移
       window.location.href = `${window.location.origin}${basePath}/login`;
     } catch (err: any) {
       setError(err.message || '登録に失敗しました。');
@@ -54,6 +63,7 @@ export default function RegisterPage() {
   };
 
   const loginHref = `${basePath}/login`;
+  const ACCENT_COLOR = '#ff4500'; // avflash用のアクセントカラー
 
   return (
     <div style={{ 
@@ -63,7 +73,7 @@ export default function RegisterPage() {
       border: '1px solid #eaeaea', 
       borderRadius: '16px', 
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+      boxShadow: '0 4px 25px rgba(0,0,0,0.1)',
       backgroundColor: '#fff'
     }}>
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -71,19 +81,14 @@ export default function RegisterPage() {
           新規会員登録
         </h1>
         <p style={{ color: '#666', fontSize: '0.9rem' }}>
-          アカウントを作成してサービスを開始しましょう。
+          お気に入りの作品やレビューを保存しましょう。
         </p>
       </div>
       
       {error && (
         <div style={{ 
-          color: '#e53e3e', 
-          backgroundColor: '#fff5f5', 
-          padding: '12px 16px', 
-          marginBottom: '24px', 
-          borderRadius: '8px', 
-          fontSize: '0.85rem',
-          border: '1px solid #feb2b2'
+          color: '#e53e3e', backgroundColor: '#fff5f5', padding: '12px 16px', 
+          marginBottom: '24px', borderRadius: '8px', fontSize: '0.85rem', border: '1px solid #feb2b2'
         }}>
           {error}
         </div>
@@ -100,7 +105,7 @@ export default function RegisterPage() {
             onChange={(e) => setUsername(e.target.value)}
             required
             style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-            placeholder="例: bic_taro"
+            placeholder="例: av_taro"
           />
         </div>
 
@@ -149,27 +154,37 @@ export default function RegisterPage() {
           type="submit"
           disabled={loading}
           style={{
-            width: '100%',
-            padding: '14px',
-            backgroundColor: loading ? '#a0aec0' : '#0070f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold',
-            fontSize: '1rem'
+            width: '100%', padding: '14px', backgroundColor: loading ? '#cbd5e0' : ACCENT_COLOR,
+            color: 'white', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer',
+            fontWeight: 'bold', fontSize: '1rem'
           }}
         >
-          {loading ? '処理中...' : '無料でお試しを開始する'}
+          {loading ? '登録処理中...' : '会員登録を完了する'}
         </button>
       </form>
 
       <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '0.9rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '24px' }}>
         すでにアカウントをお持ちですか？{' '}
-        <Link href={loginHref} style={{ color: '#0070f3', textDecoration: 'none', fontWeight: 'bold' }}>
+        <Link href={loginHref} style={{ color: ACCENT_COLOR, textDecoration: 'none', fontWeight: 'bold' }}>
           ログイン
         </Link>
       </div>
     </div>
+  );
+}
+
+/**
+ * ✅ Next.js 15 用のエントリポイント
+ * Suspense境界を作ることで、ビルド時のエラーを解消します。
+ */
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <p>読み込み中...</p>
+      </div>
+    }>
+      <RegisterFormInner />
+    </Suspense>
   );
 }

@@ -4,16 +4,16 @@
 import React from 'react';
 import Link from 'next/link';
 
-// ✅ 成功している /products と同じパスから直接インポート
-import ProductCard from '@shared/components/cards/AdultProductCard'; 
-import { getSiteMainPosts } from '@shared/components/lib/api/wordpress';
-import { getAdultProducts } from '@shared/components/lib/api/django';
-import { WPPost, AdultProduct } from '@shared/components/lib/api/types';
-import { constructMetadata } from '@shared/components/lib/metadata';
+// ✅ 修正ポイント: shared の新ディレクトリ構造に合わせたインポート
+import ProductCard from '@shared/cards/AdultProductCard'; 
+import { getSiteMainPosts } from '@shared/lib/api/wordpress';
+import { getAdultProducts } from '@shared/lib/api/django';
+import { WPPost, AdultProduct } from '@shared/lib/api/types';
+import { constructMetadata } from '@shared/lib/metadata';
 
 /**
  * 💡 強制的動的レンダリング
- * キャッシュによる「古いデータ表示」を防ぐため、常に最新をリクエストします。
+ * マルチドメイン環境や認証状態、最新データを常に反映させるために動的生成を強制
  */
 export const dynamic = 'force-dynamic';
 
@@ -54,7 +54,7 @@ export default async function Home({
 }: { 
   searchParams: Promise<{ page?: string }> 
 }) {
-  // --- 🛡️ Next.js 15: searchParams を await する ---
+  // --- 🛡️ Next.js 15 対応: Promise である searchParams を await ---
   const resolvedSearchParams = await searchParams;
   const currentPage = Number(resolvedSearchParams.page) || 1;
   const limit = 20;
@@ -62,7 +62,7 @@ export default async function Home({
 
   /**
    * 💡 データフェッチ
-   * Promise.all で並列実行し、個別に .catch でエラーハンドリングを行います。
+   * Promise.all で WordPress(ニュース) と Django(商品) を並列取得
    */
   const [wpData, productData] = await Promise.all([
     getSiteMainPosts(0, 5).catch((err) => {
@@ -111,7 +111,7 @@ export default async function Home({
           </span>
         </div>
 
-        {/* 商品グリッド */}
+        {/* 商品グリッド (共通コンポーネント) */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {products.length > 0 ? (
             products.map((product) => (
@@ -162,7 +162,7 @@ export default async function Home({
             latestPosts.map((post) => (
               <Link 
                 key={post.id} 
-                href={`/news/${post.slug}`} 
+                href={`/tiper/${post.slug}`} 
                 className="group block p-6 bg-[#16162d] border border-transparent hover:border-[#e94560]/50 rounded-xl transition-all"
               >
                 <div className="font-bold text-xl text-gray-100 mb-2 group-hover:text-[#e94560] transition-colors">

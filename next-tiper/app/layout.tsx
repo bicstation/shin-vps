@@ -7,13 +7,15 @@ import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
+ * shared/styles 直下を参照するように修正
  */
 import '@shared/styles/globals.css';
 
 /**
  * ✅ 2. 共通設定とコンポーネント
+ * shared 直下の新ディレクトリ構造に合わせてインポート
  */
-import { getSiteMetadata, getSiteColor } from '@shared/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
 import Header from '@shared/layout/Header';
 import Footer from '@shared/layout/Footer';
 import Sidebar from '@shared/layout/Sidebar';
@@ -21,38 +23,39 @@ import Sidebar from '@shared/layout/Sidebar';
 /**
  * ✅ 3. SEO設定
  */
-import { constructMetadata } from '@shared/metadata';
+import { constructMetadata } from '@shared/lib/metadata';
 
 const inter = Inter({ subsets: ["latin"] });
 
 /**
  * 💡 強制的動的レンダリングの設定
- * マルチドメイン判定を行うため、ビルド時の静的生成ではなくリクエスト時の動的生成を強制します。
+ * マルチドメイン判定（Headersの取得）を行うため必須
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
  * 💡 メタデータの動的生成
+ * Next.js 15 では headers() は非同期で扱うのが推奨されます
  */
 export async function generateMetadata(): Promise<Metadata> {
-  const headerList = headers();
+  const headerList = await headers(); // ✅ await を追加
   const host = headerList.get('host') || "localhost";
   
-  // 💡 metadata.ts の constructMetadata を呼び出し
-  // 特定のページタイトルがない場合はデフォルト（サイト名のみ）が適用されます
+  // 💡 constructMetadata は内部で host を元にタイトル等を生成する想定
   return constructMetadata();
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   /**
    * ✅ サイト設定の取得
+   * Next.js 15 対応: RootLayout も async にして headers を await
    */
-  const headerList = headers();
+  const headerList = await headers();
   const host = headerList.get('host') || "localhost";
   const site = getSiteMetadata(host);
   
@@ -65,7 +68,7 @@ export default function RootLayout({
         style={{
           backgroundColor: "#111122",
           color: "#ffffff",
-          // ✅ CSS変数を動的に注入
+          // ✅ CSS変数を動的に注入（サイトごとのテーマカラー）
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": "#111122",
@@ -74,7 +77,7 @@ export default function RootLayout({
         {/* 1. 共通ヘッダー */}
         <Header />
 
-        {/* 2. サイト種別に応じた告知バー (Tiper / AV Flash 用) */}
+        {/* 2. アダルトサイトグループ特有の告知バー */}
         {site.site_group === 'adult' && (
           <div 
             className={styles.adDisclosure} 
@@ -111,10 +114,10 @@ export default function RootLayout({
                 </div>
               }
             >
-              {/* サイドバー */}
+              {/* 共通サイドバー */}
               <Sidebar />
               
-              {/* メインコンテンツ */}
+              {/* 各ページのコンテンツ */}
               <main className={styles.mainContent}>
                 {children}
               </main>

@@ -4,9 +4,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      /* ✅ ビルドエラー解決の鍵:
-         @shared を shared フォルダそのものに向けることで、
-         @shared/components/... も @shared/styles/... も一括で解決します。
+      /* ✅ shared 直下のファイルを直接参照できるようにします。
+         これで @shared/lib/... や @shared/layout/... が物理パスと一致します。
       */
       "@shared/*": ["shared/*"]
     }
@@ -16,11 +15,12 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    /* ✅ shared フォルダ内のすべての TS/TSX ファイルと、
-       globals.css を含む CSS ファイルをビルド対象として認識させます。
+    /* ✅ shared フォルダを明示的に include することで、
+       外部ディレクトリ扱い（externalDir）のエラーを防ぎます。
     */
     "shared/**/*.ts",
     "shared/**/*.tsx",
     "shared/**/*.css"
-  ]
+  ],
+  "exclude": ["node_modules"]
 }

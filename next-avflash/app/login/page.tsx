@@ -1,17 +1,30 @@
 "use client";
 
-import React, { useState, FormEvent } from 'react';
-import Link from 'next/link'; 
-// ✅ 整理後のディレクトリ構造に合わせてパスを修正
-import { loginUser } from '@shared/components/lib/auth';
-import { getSiteMetadata } from '@shared/components/lib/siteConfig';
+// 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
+export const dynamic = "force-dynamic";
 
-export default function LoginPage() {
+import React, { useState, FormEvent, Suspense, useEffect } from 'react';
+import Link from 'next/link'; 
+import { loginUser } from '@shared/lib/auth';
+import { getSiteMetadata } from '@shared/lib/siteConfig';
+
+function LoginForm() {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [debugMsg, setDebugMsg] = useState<string>(''); // 🚀 どこで止まったか表示する用
+  const [debugMsg, setDebugMsg] = useState<string>(''); 
+  const [basePath, setBasePath] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      const prefix = currentPath.split('/')[1];
+      if (prefix === 'bicstation' || prefix === 'avflash') {
+        setBasePath(`/${prefix}`);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,33 +33,26 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      console.log("Login sequence initiated...");
-      
       setDebugMsg('2. API通信(auth.ts)を呼び出し中...');
-      // 共通ライブラリのログイン関数を実行
       await loginUser(username, password);
-      
-      // 通常、成功すれば auth.ts 側でリダイレクトされるのでここには来ません
       setDebugMsg('3. 通信成功！リダイレクトを待機中...');
-
+      window.location.href = `${window.location.origin}${basePath}/`;
     } catch (err: any) {
-      console.error("Login Error:", err);
       setDebugMsg(`❌ エラー発生: ${err.message}`);
       setError(err.message || 'ログインに失敗しました。');
       setLoading(false);
     }
   };
 
-  // ✅ 共通設定からサイト情報を取得（パス修正済み）
-  const { site_prefix } = getSiteMetadata();
-  const registerHref = site_prefix ? `${site_prefix}/register` : '/register';
+  // ✅ getSiteMetadata が undefined の場合も考慮して安全に取得
+  const metadata = getSiteMetadata() || {};
+  const registerHref = metadata.site_prefix ? `${metadata.site_prefix}/register` : `${basePath}/register`;
 
   return (
     <div className="flex justify-center items-center min-h-[70vh] px-4">
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">ログイン</h1>
         
-        {/* ステータス表示（デバッグ用） */}
         {loading && (
           <div className="mb-4 text-xs text-blue-500 font-mono text-center bg-blue-50 p-2 rounded">
             {debugMsg}
@@ -89,7 +95,7 @@ export default function LoginPage() {
             disabled={loading}
             className={`w-full py-4 rounded-xl font-bold text-white transition-all ${
               loading 
-                ? 'bg-gray-400' 
+                ? 'bg-gray-400 cursor-not-allowed' 
                 : 'bg-orange-600 hover:bg-orange-700 shadow-lg shadow-orange-200' 
             }`}
           >
@@ -104,5 +110,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center min-h-[70vh]">
+        <div className="animate-spin h-8 w-8 border-4 border-orange-500 rounded-full border-t-transparent"></div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

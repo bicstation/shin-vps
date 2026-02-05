@@ -1,10 +1,13 @@
 "use client";
+// 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
+export const dynamic = "force-dynamic";
 
 import React, { useState, FormEvent } from 'react';
 import Link from 'next/link'; 
-import { loginUser } from '@shared/components/lib/auth';
-import { getSiteMetadata } from '@shared/components/lib/siteConfig';
-import styles from './Login.module.css'; // 上記のCSSを読み込み
+// ✅ 修正ポイント: shared の新構造に合わせたインポートパス
+import { loginUser } from '@shared/lib/auth';
+import { getSiteMetadata } from '@shared/lib/siteConfig';
+import styles from './Login.module.css'; 
 
 export default function LoginPage() {
   const [username, setUsername] = useState<string>('');
@@ -23,10 +26,11 @@ export default function LoginPage() {
       console.log("Login sequence initiated...");
       
       setDebugMsg('SEQUENCE: CALLING AUTH API...');
-      // lib/auth.ts 内で cookie セットやリダイレクト処理が行われる想定
+      // 💡 lib/auth.ts 内で cookie セットやリダイレクト処理が行われる想定
       await loginUser(username, password);
       
       setDebugMsg('SEQUENCE: SUCCESS. REDIRECTING...');
+      // 成功時は lib/auth 内で window.location.href 等による遷移が行われます
     } catch (err: any) {
       console.error("Login Error:", err);
       setDebugMsg(`ERROR: ${err.message}`);
@@ -37,6 +41,7 @@ export default function LoginPage() {
 
   const siteMetadata = getSiteMetadata();
   const sitePrefix = siteMetadata?.site_prefix || '';
+  // 💡 サイト固有のプレフィックスがある場合に対応したリンク生成
   const registerHref = sitePrefix ? `${sitePrefix}/register` : '/register';
 
   return (

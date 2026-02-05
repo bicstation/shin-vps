@@ -1,16 +1,16 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Sidebar from '@shared/components/layout/Sidebar';
-import Pagination from '@shared/components/common/Pagination';
+import Sidebar from '@shared/layout/Sidebar';
+import Pagination from '@shared/common/Pagination';
 
 /**
  * ✅ 修正ポイント: インポートパスの変更
- * @shared/components/product/ProductCard から @shared/components/cards/ProductCard へ
+ * @shared/product/ProductCard から @shared/cards/ProductCard へ
  */
-import ProductCard from '@shared/components/cards/ProductCard';
+import ProductCard from '@shared/cards/ProductCard';
 
-import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/components/lib/api';
+import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/lib/api';
 import styles from './CatalogPage.module.css';
 
 export const metadata: Metadata = {

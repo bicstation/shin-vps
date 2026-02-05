@@ -5,9 +5,12 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import styles from './ProductDetail.module.css';
 
-import { getAdultProductById, getAdultProductsByMaker } from '@shared/components/lib/api';
-import { constructMetadata } from '@shared/components/lib/metadata'; 
-import ProductGallery from '@shared/components/cards/AdultProductGallery';
+// ✅ 修正ポイント: shared/lib/ 経由のパスに統一
+import { getAdultProductById, getAdultProductsByMaker } from '@shared/lib/api';
+import { constructMetadata } from '@shared/lib/metadata'; 
+
+// ✅ 修正ポイント: components/ を除いた直下参照のパス
+import ProductGallery from '@shared/cards/AdultProductGallery';
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string, id: string }> }): Promise<Metadata> {
   const { id } = await params;

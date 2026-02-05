@@ -1,4 +1,4 @@
-import StaticPageLayout from '@shared/components/static/StaticPageLayout';
+import StaticPageLayout from '@shared/static/StaticPageLayout';
 
 export const metadata = {
   title: 'BICSTATIONについて - 運営理念と情報の信頼性 | BICSTATION',
