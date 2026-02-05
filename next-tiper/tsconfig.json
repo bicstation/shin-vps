@@ -1,37 +1,26 @@
 {
+  "extends": "./shared/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      // 💡 配列で複数の候補を指定することで、どちらの書き方にも対応させます
-      "@shared/*": [
-        "shared/*",
-        "shared/components/*"
-      ]
-    },
-    // (他の設定はそのまま)
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [{ "name": "next" }]
+      /* ✅ ビルドエラー解決の鍵:
+         @shared を shared フォルダそのものに向けることで、
+         @shared/components/... も @shared/styles/... も一括で解決します。
+      */
+      "@shared/*": ["shared/*"]
+    }
   },
   "include": [
-    "next-env.d.ts", 
-    "**/*.ts", 
-    "**/*.tsx", 
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts",
+    /* ✅ shared フォルダ内のすべての TS/TSX ファイルと、
+       globals.css を含む CSS ファイルをビルド対象として認識させます。
+    */
     "shared/**/*.ts",
-    "shared/**/*.tsx"
-  ],
-  "exclude": ["node_modules"]
+    "shared/**/*.tsx",
+    "shared/**/*.css"
+  ]
 }

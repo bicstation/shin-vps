@@ -5,11 +5,11 @@ import React from 'react';
 import Link from 'next/link';
 
 // ✅ 成功している /products と同じパスから直接インポート
-import ProductCard from '../shared/components/cards/AdultProductCard'; 
-import { getSiteMainPosts } from '../shared/components/lib/api/wordpress';
-import { getAdultProducts } from '../shared/components/lib/api/django';
-import { WPPost, AdultProduct } from '../shared/components/lib/api/types';
-import { constructMetadata } from '../shared/components/lib/metadata';
+import ProductCard from '@shared/components/cards/AdultProductCard'; 
+import { getSiteMainPosts } from '@shared/components/lib/api/wordpress';
+import { getAdultProducts } from '@shared/components/lib/api/django';
+import { WPPost, AdultProduct } from '@shared/components/lib/api/types';
+import { constructMetadata } from '@shared/components/lib/metadata';
 
 /**
  * 💡 強制的動的レンダリング

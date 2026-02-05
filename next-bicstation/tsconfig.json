@@ -1,32 +1,26 @@
 {
+  "extends": "./shared/tsconfig.base.json",
   "compilerOptions": {
-    /* 🚨 baseUrlは必ず "." のまま。絶対に変えないでください。 */
     "baseUrl": ".",
     "paths": {
-      /* 🚨 @/* は現在のプロジェクト内、@shared/* はリンクした共通フォルダを指します。変えないでください。 */
       "@/*": ["./*"],
-      "@shared/*": ["./shared/*"]
-    },
-    /* 💡 型定義の衝突を防ぎ、パス解決を安定させるために以下を追加してください */
-    "moduleResolution": "node",
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": false,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true
+      /* ✅ ビルドエラー解決の鍵:
+         @shared を shared フォルダそのものに向けることで、
+         @shared/components/... も @shared/styles/... も一括で解決します。
+      */
+      "@shared/*": ["shared/*"]
+    }
   },
   "include": [
-    "next-env.d.ts", 
-    "**/*.ts", 
-    "**/*.tsx", 
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts",
-    /* 🚨 外部の shared を型チェック対象に含めるため、この記述は必須です。変えないでください。 */
-    "shared/**/*"
-  ],
-  "exclude": ["node_modules"]
+    /* ✅ shared フォルダ内のすべての TS/TSX ファイルと、
+       globals.css を含む CSS ファイルをビルド対象として認識させます。
+    */
+    "shared/**/*.ts",
+    "shared/**/*.tsx",
+    "shared/**/*.css"
+  ]
 }

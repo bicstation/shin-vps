@@ -13,15 +13,15 @@ import '@shared/styles/globals.css';
 /**
  * ✅ 2. 共通設定とコンポーネント
  */
-import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
-import Header from '@shared/components/layout/Header';
-import Footer from '@shared/components/layout/Footer';
-import Sidebar from '@shared/components/layout/Sidebar';
+import { getSiteMetadata, getSiteColor } from '@shared/siteConfig';
+import Header from '@shared/layout/Header';
+import Footer from '@shared/layout/Footer';
+import Sidebar from '@shared/layout/Sidebar';
 
 /**
  * ✅ 3. SEO設定
  */
-import { constructMetadata } from '@shared/lib/metadata';
+import { constructMetadata } from '@shared/metadata';
 
 const inter = Inter({ subsets: ["latin"] });
 

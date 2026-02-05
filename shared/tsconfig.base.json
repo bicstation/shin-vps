@@ -1,29 +1,34 @@
 {
   "compilerOptions": {
-    "baseUrl": ".", 
-    "paths": {
-      "@/*": ["./*"],
-      "@shared/*": ["./shared/*"]
-    },
-    "target": "ES2017",
+    "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ]
+    /* ✅ 1. ベースディレクトリをカレントに設定 */
+    "baseUrl": ".",
+    /* ✅ 2. エイリアスの解決ルールを追加 */
+    "paths": {
+      "@/*": ["./*"],
+      "@shared/*": ["shared/*"]
+    }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  /* ✅ 3. ビルド対象に shared フォルダを明示的に含める */
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "shared/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }

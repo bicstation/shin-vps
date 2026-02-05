@@ -1,78 +1,15 @@
 /** @type {import('next').NextConfig} */
+// 1. 共通設定を import する
+import { baseNextConfig } from './shared/next.config.base.mjs';
 
-// 💡 パターンB: ドメインごとに分けるため、サブパス設定は一切行わず空文字に固定します
 const nextConfig = {
-  // =====================================================================
-  // 🚀 ルーティング・パス設定 (ドメイン直下運用)
-  // =====================================================================
-  // サブパス (/saving 等) を使わず、ドメインのトップ (/) で動作させます
-  basePath: '',
-  assetPrefix: '',
+  // 2. 共通設定をすべて展開して適用
+  ...baseNextConfig,
 
-  // URLの末尾にスラッシュを付与（Traefikとの親和性とSEOのため）
-  trailingSlash: true,
-
-  // Docker環境（standaloneモード）で最適に動作
-  output: 'standalone',
-
-  // =====================================================================
-  // 🛠 ビルド・コンパイル設定
-  // =====================================================================
-  // 💡 sharedフォルダ内の siteConfig.tsx 等を読み込むために必須
-  transpilePackages: ['shared'],
-
-  typescript: {
-    // 型エラーによるビルド中断を防止
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    // ESLintチェックによるエラー中断を防止
-    ignoreDuringBuilds: true,
-  },
-
-  // =====================================================================
-  // 🖼 画像最適化設定 (アフィリエイト・外部画像対応)
-  // =====================================================================
-  images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: '**' },
-      { protocol: 'http', hostname: '**' },
-    ],
-    // Docker環境での依存エラーを防ぐため一律 true
-    unoptimized: true,
-  },
-
-  // =====================================================================
-  // 🌍 環境変数設定 (サーバー/クライアント両用)
-  // =====================================================================
-  env: {
-    // サーバーサイドでのDjango通信用
-    API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000',
-    // クライアントサイドでのAPI通信用 (統合ポート8083経由)
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api',
-    // フロントエンド側で参照するベースパス（空文字に固定）
-    NEXT_PUBLIC_BASE_PATH: '',
-  },
-
-  // ⚡ パフォーマンス・品質設定
-  reactStrictMode: true,
-  swcMinify: true,
-
-  // =====================================================================
-  // 🛡 セキュリティヘッダー
-  // =====================================================================
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-        ],
-      },
-    ];
-  },
+  /* もし avflash サイトだけで使いたい「特別な設定」があれば
+     ここに追記します（例: 環境変数など）。
+     特になければこのままでOKです。
+  */
 };
 
 export default nextConfig;

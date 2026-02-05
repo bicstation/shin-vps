@@ -1,70 +1,15 @@
 /** @type {import('next').NextConfig} */
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// ESM環境で __dirname をシミュレート
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 1. 共通設定を import する
+import { baseNextConfig } from './shared/next.config.base.mjs';
 
 const nextConfig = {
-  // =====================================================================
-  // 🚀 ルーティング設定 (ドメイン分離・ルート運用)
-  // =====================================================================
-  // 💡 パターンB: ドメインごとに分けるため、サブパス設定は空文字に固定
-  basePath: '', 
-  assetPrefix: '', 
+  // 2. 共通設定をすべて展開して適用
+  ...baseNextConfig,
 
-  // URLの末尾にスラッシュを強制（Traefikとの整合性とSEOのため）
-  trailingSlash: true,
-
-  // Docker環境（standaloneモード）での動作を最適化
-  output: 'standalone',
-
-  reactStrictMode: true,
-
-  // =====================================================================
-  // 🛠️ ビルド・コンパイル設定 (shared連携)
-  // =====================================================================
-  // 💡 shared ディレクトリをトランスパイル対象に含める
-  transpilePackages: ["shared"],
-
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      // 💡 エイリアスの設定（shared ディレクトリとプロジェクトルート）
-      '@shared': path.resolve(__dirname, 'shared'), // 👈 配置場所に応じて '../shared' 等に調整
-      '@': path.resolve(__dirname),
-    };
-    return config;
-  },
-
-  // =====================================================================
-  // 🌍 環境変数
-  // =====================================================================
-  env: {
-    // 自身のパス判定用（ドメイン運用の場合は常に空）
-    NEXT_PUBLIC_BASE_PATH: '',
-    // サーバーサイドでのDjango通信用
-    API_URL_INTERNAL: process.env.API_URL_INTERNAL || 'http://django-v2:8000',
-    // クライアントサイドでのAPI通信用 (統合ポート8083経由)
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api',
-  },
-
-  // ビルド中断を防ぐ設定（開発スピード重視）
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
-
-  // =====================================================================
-  // 🖼️ 画像最適化設定 (アフィリエイト・外部画像対応)
-  // =====================================================================
-  images: {
-    // 💡 すべてのホストを許可しつつ、Next.jsのサーバー負荷を減らすため unoptimized を使用
-    remotePatterns: [
-      { protocol: 'https', hostname: '**' },
-      { protocol: 'http', hostname: '**' },
-    ],
-    unoptimized: true,
-  },
+  /* もし avflash サイトだけで使いたい「特別な設定」があれば
+     ここに追記します（例: 環境変数など）。
+     特になければこのままでOKです。
+  */
 };
 
 export default nextConfig;

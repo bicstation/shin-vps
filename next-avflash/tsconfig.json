@@ -1,27 +1,14 @@
 {
+  "extends": "./shared/tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@shared/*": ["./shared/*"]
+      /* ✅ ビルドエラー解決の鍵:
+         @shared を shared フォルダそのものに向けることで、
+         @shared/components/... も @shared/styles/... も一括で解決します。
+      */
+      "@shared/*": ["shared/*"]
     }
   },
   "include": [
@@ -29,8 +16,11 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    /* ✅ shared フォルダ内のすべての TS/TSX ファイルと、
+       globals.css を含む CSS ファイルをビルド対象として認識させます。
+    */
     "shared/**/*.ts",
-    "shared/**/*.tsx"
-  ],
-  "exclude": ["node_modules"]
+    "shared/**/*.tsx",
+    "shared/**/*.css"
+  ]
 }
