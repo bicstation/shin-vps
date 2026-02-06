@@ -10,7 +10,7 @@ import ProductCard from '@shared/cards/ProductCard';
 import Sidebar from '@shared/layout/Sidebar';
 import Pagination from '@shared/common/Pagination';
 import { fetchPCProducts, fetchPostList, fetchMakers } from '@shared/lib/api';
-import { COLORS } from "@/constants";
+import { COLORS } from "@/shared/styles/constants";
 import styles from './BrandPage.module.css';
 
 /**

@@ -67,7 +67,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           {hasSample && (
             <div className={styles.sampleBadge}>
               <span className={styles.sampleDot}>●</span>
-              SAMPLE MOVIE
+              SAMPLE
             </div>
           )}
         </Link>

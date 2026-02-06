@@ -4,7 +4,7 @@
 import { notFound } from 'next/navigation';
 import { PostHeader } from '@shared/blog/PostHeader';
 import PostLayout from '@shared/layout/PostLayout'; // ✅ 先ほど作成した共通レイアウト
-import { COLORS } from '@/constants';
+import { COLORS } from '@shared/styles/constants';
 import { fetchPostData, fetchProductDetail, fetchPostList } from '@shared/lib/api';
 import Link from 'next/link';
 import styles from './PostPage.module.css';

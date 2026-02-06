@@ -1,6 +1,6 @@
 import React from 'react';
 // ✅ shared/lib/siteConfig 等から色を取得する形に合わせるとより汎用的です
-import { COLORS } from '@/constants'; 
+import { COLORS } from '@shared/styles/constants'; 
 
 /**
  * ブログ記事表示用の共通レイアウト

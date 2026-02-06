@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { fetchProductDetail, fetchRelatedProducts, fetchPCProductRanking } from '@shared/lib/api';
-import { COLORS } from "@/constants";
+import { COLORS } from "@/shared/styles/constants";
 import styles from './ProductDetail.module.css';
 
 // 📈 グラフコンポーネント

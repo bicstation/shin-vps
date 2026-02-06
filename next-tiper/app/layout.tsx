@@ -90,7 +90,7 @@ export default async function RootLayout({
             style={{ 
               padding: "8px 15px", 
               fontSize: "12px", 
-              text-align: "center", 
+              textAlign: "center",
               backgroundColor: "#1a1a2e", 
               color: "#888",
               borderBottom: "1px solid #3d3d6650"
