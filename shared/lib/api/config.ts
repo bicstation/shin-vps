@@ -1,7 +1,7 @@
 /**
  * =====================================================================
  * 🌍 API 環境設定 (shared/components/lib/api/config.ts)
- * 3つのブログ系統（tiper統合 / saving / bicstation）を正しく振り分け
+ * 4つのブログ系統（tiper / avflash / saving / bicstation）を正しく振り分け
  * VPS: api.tiper.live / Local: api-tiper-host & 8083ポート対応版
  * =====================================================================
  */
@@ -24,7 +24,7 @@ export const getWpConfig = () => {
     let siteKey = '';
     let hostHeader = '';
 
-    // --- 振り分けロジック ---
+    // --- 振り分けロジック (統合・拡張版) ---
     if (rawKey === 'saving') {
         /**
          * ① 節約ブログ系統
@@ -37,9 +37,16 @@ export const getWpConfig = () => {
          */
         siteKey = 'station';
         hostHeader = 'b-bicstation-host';
+    } else if (rawKey === 'avflash') {
+        /**
+         * ③ アダルトブログ系統 (AVFLASH専用)
+         * tiper-host上の WordPress を使用するが、投稿タイプは avflash を優先
+         */
+        siteKey = 'avflash';
+        hostHeader = 'b-tiper-host';
     } else {
         /**
-         * ③ アダルトブログ系統 (tiper, avflash, または Root '/')
+         * ④ アダルトブログ系統 (TIPER / Default)
          */
         siteKey = 'tiper';
         hostHeader = 'b-tiper-host';
@@ -76,8 +83,7 @@ export const getDjangoBaseUrl = () => {
     if (IS_SERVER) {
         /**
          * 💡 重要修正ポイント:
-         * ブラウザでの疎通確認（DRF画面）が http://api-tiper-host:8083/ で成功したため
-         * SSR（サーバー間通信）でも同じホスト名とポートを明示的に指定します。
+         * サーバー間通信でも api-tiper-host:8083 を明示的に指定します。
          */
         return 'http://api-tiper-host:8083'; 
     }
@@ -122,7 +128,7 @@ if (!IS_SERVER) {
     console.log("%cDjango Base URL:", "color: #00ff00; font-weight: bold;", API_CONFIG.djangoBase);
     console.log("%cDjango Host Header:", "color: #00ff00;", API_CONFIG.djangoHost);
     console.log("%cWordPress Base URL:", "color: #00bfff; font-weight: bold;", API_CONFIG.wp.baseUrl);
-    console.log("%cWordPress Host:", "color: #00bfff;", API_CONFIG.wp.host);
-    console.log("%cSite Key:", "color: #ff8c00; font-weight: bold;", API_CONFIG.wp.siteKey);
+    console.log("%cWordPress Host Header:", "color: #00bfff;", API_CONFIG.wp.host);
+    console.log("%cSite Key (Post Filter):", "color: #ff8c00; font-weight: bold;", API_CONFIG.wp.siteKey);
     console.groupEnd();
 }

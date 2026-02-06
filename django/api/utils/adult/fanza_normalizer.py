@@ -1,75 +1,64 @@
-# api/utils/adult/fanza_normalizer.py
-
+# -*- coding: utf-8 -*-
 import json
 import logging
 from datetime import datetime
 from django.utils.dateparse import parse_date
 from typing import List, Tuple, Dict, Any, Optional
 
-# ログはutils全体で共通のロガーを使用
-logger = logging.getLogger('api_utils')
-
-# 必要なモデル (ここでは参照のみ)
-from api.models import RawApiData, Maker, Label, Series, Director, Actress, Genre 
-# 依存関係を新しい場所からインポート
-from .entity_manager import get_or_create_entity
-
-# 🚨 【インポート修正点】: 相対インポートを絶対インポートに修正
-# generate_product_unique_id は、api.utils.common にあると仮定
+# 必要なモデルとユーティリティ
+from api.models import RawApiData
 from api.utils.common import generate_product_unique_id 
 
-API_SOURCE = 'FANZA' # 定数として定義
+# ロガー設定
+logger = logging.getLogger('api_utils')
+
+# FANZAのAPIソース定数
+API_SOURCE = 'FANZA'
 
 def _safe_extract_single_entity(item_info_content: dict, key: str) -> tuple[str | None, str | None]:
     """
-    FANZAのデータ構造に合わせて、単一のエンティティ（メーカー、レーベルなど）の名前とAPI IDを抽出する。
+    FANZAのデータ構造に合わせて、単一のエンティティの名前とAPI IDを抽出する。
+    iteminfo内のmaker, label, series, directorなどの辞書またはリストに対応。
     """
     data = item_info_content.get(key)
     if not data:
         return None, None
+    
+    # リスト形式で届く場合（例: actressなど）があるため、最初の要素を取得
     if isinstance(data, list):
         if not data:
             return None, None
         data = data[0]
-    # 'data' が辞書の場合は 'name' と 'id' を抽出
+    
     if isinstance(data, dict):
-        # API IDは必須ではないため、名前だけを返す
         return data.get('name'), data.get('id')
-    # 'data' が文字列の場合は、それが名前であると仮定
     elif isinstance(data, str):
         return data, None
     return None, None
 
 def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dict]]:
     """
-    RawApiData (FANZA: 1バッチ) のレコードを読み込み、Productモデルとリレーションに必要なデータに正規化する。
+    RawApiData (FANZA) のレコードを正規化する。
+    動画URLの確実な取得とプロトコル補完を含めた完全版。
     """
     products_data_list = []
     relations_list = []
     
-    # Raw JSONデータのデコード
     try:
-        # ----------------------------------------------------------------------
-        # RawApiDataの実際のJSONデータフィールド名が 'raw_json_data' であると仮定
         raw_data = getattr(raw_instance, 'raw_json_data', None)
-        
         if raw_data is None:
-            logger.error(f"RawApiData ID {raw_instance.id} にデータ属性が見つかりません。")
             return [], []
 
+        # データ型の判定とデコード
         if isinstance(raw_data, dict):
             raw_json_data = raw_data
         elif isinstance(raw_data, str):
             raw_json_data = json.loads(raw_data)
         else:
-            logger.error(f"RawApiData ID {raw_instance.id} のデータ型が不正です (Type: {type(raw_data)})")
             return [], []
             
         items = raw_json_data.get('result', {}).get('items', [])
         
-    except json.JSONDecodeError as e:
-        logger.error(f"RawApiData ID {raw_instance.id} のJSONデコードエラー: {e}")
-        raise 
     except Exception as e:
         logger.error(f"RawApiData ID {raw_instance.id} のデコード中にエラー: '{e}'")
         return [], []
@@ -78,108 +67,110 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
         return [], []
 
     for data in items:
-        # 必要なフィールドが欠けている場合はスキップ
+        # 基本識別子
         api_product_id = data.get('content_id')
         title = data.get('title')
         
         if not api_product_id or not title:
-            logger.warning(f"FANZAデータ (Raw ID: {raw_instance.id}) で content_id または title が不足。スキップ。")
             continue
 
-        # ------------------------------------------------------------------
-        # 1. エンティティの名前とIDを抽出 (PKではなく名前を使用)
-        # ------------------------------------------------------------------
+        # 詳細情報階層
         item_info = data.get('iteminfo', {})
         
-        # 単一リレーション (名前のみ取得)
+        # 1. 各種エンティティ抽出（メーカー、レーベル、シリーズ、監督）
         maker_name, _ = _safe_extract_single_entity(item_info, 'maker')
         label_name, _ = _safe_extract_single_entity(item_info, 'label')
         series_name, _ = _safe_extract_single_entity(item_info, 'series')
         director_name, _ = _safe_extract_single_entity(item_info, 'director')
         
-        # ------------------------------------------------------------------
-        # 2. リレーションエンティティの名前を収集
-        # ------------------------------------------------------------------
-        genre_names = []
-        actress_names = []
+        # 2. ジャンル・女優リスト（M2Mリレーション用）
+        genre_names = [g.get('name') for g in item_info.get('genre', []) if g.get('name')]
+        actress_names = [a.get('name') for a in item_info.get('actress', []) if a.get('name')]
         
-        # ジャンル (Genre)
-        if 'genre' in item_info and isinstance(item_info['genre'], list):
-            for genre_data in item_info['genre']:
-                genre_name = genre_data.get('name')
-                if genre_name:
-                    genre_names.append(genre_name)
-
-        # 女優 (Actress)
-        if 'actress' in item_info and isinstance(item_info['actress'], list):
-            for actress_data in item_info['actress']:
-                actress_name = actress_data.get('name')
-                if actress_name:
-                    actress_names.append(actress_name)
-        
-        # ------------------------------------------------------------------
-        # 3. 製品データの正規化
-        # ------------------------------------------------------------------
-        
-        # リリース日の整形
-        raw_date_str = data.get('date')
-        release_date = parse_date(raw_date_str) if raw_date_str else None
-        
-        # 画像URLリストの整形
+        # 3. 画像URLリストの正規化
         image_url_list = []
+        image_data = data.get('imageURL', {})
         
-        # メインサムネイル (imageURL.list) を追加
-        if data.get('imageURL', {}).get('list'):
-             image_url_list.append(data['imageURL']['list'])
-             
-        # サンプル画像 (sampleImageURL.sample_s.image) を追加
-        sample_image_data = data.get('sampleImageURL', {}).get('sample_s', {}).get('image')
-        if sample_image_data and isinstance(sample_image_data, list):
-             image_url_list.extend(sample_image_data)
+        # メイン画像
+        main_image = image_data.get('large') or image_data.get('list')
+        if main_image:
+            # プロトコル補完
+            if main_image.startswith('//'): main_image = 'https:' + main_image
+            image_url_list.append(main_image)
+            
+        # サンプル画像
+        sample_image_dict = data.get('sampleImageURL', {})
+        sample_images = sample_image_dict.get('sample_l', {}).get('image') or sample_image_dict.get('sample_s', {}).get('image')
         
-        # JSONFieldへの格納を想定
-        if not image_url_list:
-             image_url_for_db = []
-        else:
-             image_url_for_db = image_url_list
+        if sample_images:
+            if isinstance(sample_images, list):
+                for img in sample_images:
+                    if img.startswith('//'): img = 'https:' + img
+                    if img not in image_url_list:
+                        image_url_list.append(img)
+            elif isinstance(sample_images, str):
+                if sample_images.startswith('//'): sample_images = 'https:' + sample_images
+                if sample_images not in image_url_list:
+                    image_url_list.append(sample_images)
 
-        # 価格の整形 (価格情報がない場合があるため、Noneを許容)
-        price_str = data.get('prices', {}).get('price')
-        try:
-            # "~" が含まれる場合があるため、数値部分のみ抽出
-            price = int(price_str.replace('~', '')) if price_str and price_str.replace('~', '').isdigit() else None
-        except ValueError:
-            price = None
+        # 4. サンプル動画URLの抽出（重要修正点）
+        movie_urls = data.get('sampleMovieURL', {})
+        # Noneを回避するために明示的に "" をデフォルトにする
+        sample_movie = (
+            movie_urls.get('size_720_480') or 
+            movie_urls.get('size_644_414') or 
+            movie_urls.get('size_560_360') or 
+            movie_urls.get('size_476_306') or 
+            ""
+        )
+
+        # プロトコル補完 (// を https: に)
+        if sample_movie.startswith('//'):
+            sample_movie = 'https:' + sample_movie
         
-        # 正規化された Product モデル用のデータ辞書
+        # 最終ガード：Noneであれば空文字にする
+        if sample_movie is None:
+            sample_movie = ""
+
+        # 5. 価格の数値化
+        price_val = None
+        price_raw = data.get('prices', {}).get('price')
+        if price_raw:
+            try:
+                price_clean = str(price_raw).replace('~', '').replace(',', '').strip()
+                if price_clean.isdigit():
+                    price_val = int(price_clean)
+            except:
+                price_val = None
+        
+        # 6. Djangoモデル（AdultProduct）の構造に合わせて集約
         product_data = {
             'api_source': API_SOURCE,
-            'api_product_id': api_product_id,
-            # generate_product_unique_id 関数を呼び出す
-            'product_id_unique': generate_product_unique_id(API_SOURCE, api_product_id), 
+            'api_product_id': str(api_product_id),
+            'product_id_unique': generate_product_unique_id(API_SOURCE, str(api_product_id)), 
             'title': title,
-            'release_date': release_date,
+            'release_date': parse_date(data.get('date').split(' ')[0]) if data.get('date') else None,
             'affiliate_url': data.get('affiliateURL') or "", 
-            'price': price,
-            'image_url_list': image_url_for_db, # Pythonのリストオブジェクトをそのまま格納
+            'price': price_val,
+            'image_url_list': image_url_list,
+            'sample_movie_url': sample_movie, # Noneではない文字列を確実に渡す
             
-            # FK IDではなく、エンティティの「名前」を格納
             'maker': maker_name,
             'label': label_name,
             'series': series_name,
             'director': director_name,
             
-            'raw_data_id': raw_instance.id, # RawApiDataのID
+            'raw_data_id': raw_instance.id,
             'updated_at': datetime.now(),
+            'is_active': True,
+            'is_posted': False,
         }
         
         products_data_list.append(product_data)
         
-        # リレーションシップ用のデータ辞書
-        # PK IDではなく、エンティティの「名前」を格納
+        # 7. 多対多（ManyToMany）リレーション用データの分離
         relations_list.append({
-            'api_product_id': api_product_id, # Product.product_id_uniqueと紐づけるためのキー
-            'product_id_unique': generate_product_unique_id(API_SOURCE, api_product_id), # 紐付け用にユニークIDを追加
+            'product_id_unique': product_data['product_id_unique'],
             'genres': genre_names,
             'actresses': actress_names,
         })

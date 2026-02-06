@@ -15,7 +15,7 @@ export default function Footer() {
 
   // 1. 説明文の切り替え
   const siteDescription = isAdult 
-    ? "新作から人気作品まで、最新の動画情報を網羅。価格比較や出演者データに基づき、あなたに最適なエンタメ体験を提案します。"
+    ? "新作から人気作品まで、最新の動画情報を網羅。独自の5軸解析データに基づき、あなたに最適なエンタメ体験を提案します。"
     : "AIによる最新スペック解析と価格比較。メーカー直販モデルから自作PCパーツまで、ハードウェア性能を数値化して最適な1台を提案します。";
 
   // 2. 主要ジャンル（ブランド）の切り替え
@@ -61,6 +61,10 @@ export default function Footer() {
                 <Link href={`${site.site_prefix}${link.path}`}>{link.name}</Link>
               </li>
             ))}
+            {/* 追加：Aboutページへのリンク */}
+            <li className={styles.linkItem}>
+              <Link href={`${site.site_prefix}/about`}>ℹ️ {isAdult ? 'tiper.liveについて' : '当サイトについて'}</Link>
+            </li>
           </ul>
         </div>
 
@@ -68,6 +72,9 @@ export default function Footer() {
         <div className={styles.column}>
           <h3 className={styles.sectionTitle}>インフォメーション</h3>
           <ul className={styles.linkList}>
+            <li className={styles.linkItem}>
+              <Link href={`${site.site_prefix}/guideline`}>📝 制作ガイドライン</Link>
+            </li>
             <li className={styles.linkItem}>
               <Link href={`${site.site_prefix}/privacy-policy`}>🛡 プライバシーポリシー</Link>
             </li>

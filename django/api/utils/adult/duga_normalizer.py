@@ -1,218 +1,134 @@
-# api/utils/adult/duga_normalizer.py
-
+# -*- coding: utf-8 -*-
 import json
+import logging
 from datetime import datetime
 from django.utils.dateparse import parse_date
-import logging
 from typing import List, Tuple, Dict, Any, Optional
 
-# 必要なモデル（エンティティ名抽出には不要だが、型ヒントのために残す）
-from api.models import RawApiData, Maker, Label, Series, Director, Actress, Genre
-# 🚨 【インポート修正点】: 相対インポートを絶対インポートに修正
-# (api.utils.common にあると仮定)
+from api.models import RawApiData
 from api.utils.common import generate_product_unique_id 
 
-# ロガー設定
 logger = logging.getLogger('api_utils')
-logger.setLevel(logging.INFO) 
-
-# DUGAのAPIソース定数
 API_SOURCE = 'DUGA' 
 
 def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list[dict]]:
     """
-    RawApiDataインスタンス (DUGA) のJSONデータから、Productデータ辞書とリレーション情報を含む
-    辞書を構築する。
-
-    戻り値:
-    - product_data_list: AdultProduct モデルにマッピングされるフィールドのリスト (FKは名前で)
-    - relations_data_list: M2Mリレーション (女優、ジャンル) の名前リストを含むリスト
+    DUGAのJSONデータを抽出し、正規化された辞書形式のリストを返します。
+    ForeignKey対象（Maker, Label, Director, Series）は名前文字列のまま保持し、
+    ManyToMany対象（Genre, Actress）も名前のリストとして保持します。
     """
-    
-    # ------------------------------------------------------------------
-    # 0. Raw JSONデータのデコードと必要なデータの抽出
-    # ------------------------------------------------------------------
     try:
-        raw_json_data = raw_data_instance.raw_json_data
-        
+        raw_json_data = getattr(raw_data_instance, 'raw_json_data', None)
         if isinstance(raw_json_data, str):
             data = json.loads(raw_json_data) 
-        elif isinstance(raw_json_data, dict):
-            data = raw_json_data
         else:
-            raise TypeError("Raw JSONデータが文字列または辞書形式ではありません。")
-            
+            data = raw_json_data or {}
+
         if not isinstance(data, dict):
-            raise ValueError("デコード後のデータが製品データ（辞書形式）ではありません。")
+            logger.warning(f"RawApiData ID {raw_data_instance.id}: データが辞書形式ではありません。")
+            return [], []
 
-    except json.JSONDecodeError as e:
-        logger.error(f"RawApiData ID {raw_data_instance.id} のデコード中にJSONエラー: 無効なJSON文字列です。エラー: {e}")
-        return [], []
-    except (TypeError, ValueError) as e:
-        logger.error(f"RawApiData ID {raw_data_instance.id} のデコード中にエラー: {e}")
-        return [], []
     except Exception as e:
-        logger.error(f"RawApiData ID {raw_data_instance.id} の予期せぬエラー: {e}")
+        logger.error(f"RawApiData ID {raw_data_instance.id} デコードエラー: {e}")
         return [], []
 
-    # ------------------------------------------------------------------
-    # 1. コア情報の抽出と検証 (必須フィールド)
-    # ------------------------------------------------------------------
-    
+    # 必須項目のチェック
     api_product_id = data.get('productid')
     title = data.get('title')
-    
     if not api_product_id or not title:
-        logger.warning(f"DUGAデータ (Raw ID: {raw_data_instance.id}) で productid または title が不足。スキップ。")
         return [], [] 
 
-    # ------------------------------------------------------------------
-    # 2. エンティティの名前を取得 (ForeignKey)
-    # ------------------------------------------------------------------
-    
-    # Maker (メーカー)
+    # --- 単一エンティティ名の抽出 ---
     maker_name = data.get('makername')
-
-    # Label (レーベル)
-    labels_list = data.get('label', [])
-    label_name = labels_list[0].get('name') if labels_list and isinstance(labels_list[0], dict) else None
-
-    # Director (監督)
-    director_data = data.get('director')
-    director_name = director_data[0].get('name') if isinstance(director_data, list) and director_data and isinstance(director_data[0], dict) else None
-
-    # Series (シリーズ)
-    series_name = None # DUGA APIは FANZAほどシリーズ情報を明確に提供しないため、空で保持
-
-    # ------------------------------------------------------------------
-    # 3. リレーションエンティティの名前を取得 (ManyToMany)
-    # ------------------------------------------------------------------
     
-    # Genre (ジャンル)
-    raw_genre_names = []
-    genres_data = data.get('category', [])
-    if isinstance(genres_data, list):
-        for item in genres_data:
-            genre_name = item.get('data', {}).get('name')
-            if genre_name:
-                raw_genre_names.append(genre_name)
-    # 重複を排除
-    raw_genre_names = list(set(raw_genre_names))
-
-    # Actress (女優)
-    raw_actress_names = []
-    actresses_data = data.get('performer', [])
-    if isinstance(actresses_data, list):
-        for item in actresses_data:
-            actress_name = item.get('data', {}).get('name')
-            if actress_name:
-                raw_actress_names.append(actress_name)
-    # 重複を排除
-    raw_actress_names = list(set(raw_actress_names))
-
-
-    # ------------------------------------------------------------------
-    # 4. その他のフィールドの正規化
-    # ------------------------------------------------------------------
+    labels = data.get('label', [])
+    label_name = labels[0].get('name') if labels and isinstance(labels[0], dict) else None
     
-    # リリース日の整形
-    raw_date_str = data.get('releasedate')
+    directors = data.get('director', [])
+    director_name = directors[0].get('name') if directors and isinstance(directors[0], dict) else None
+    
+    series_list = data.get('series', [])
+    series_name = series_list[0].get('name') if series_list and isinstance(series_list[0], dict) else None 
+
+    # --- 画像URLの抽出ロジック ---
+    image_url_list = []
+    jacket = data.get('jacketimage', [])
+    poster = data.get('posterimage', [])
+    
+    main_img = None
+    if isinstance(jacket, list) and jacket:
+        main_img = jacket[0].get('large')
+    if not main_img and isinstance(poster, list) and poster:
+        main_img = poster[0].get('large')
+    
+    if main_img:
+        image_url_list.append(main_img)
+
+    thumbnails = data.get('thumbnail', [])
+    if isinstance(thumbnails, list):
+        for t in thumbnails:
+            url = t.get('image')
+            if url:
+                image_url_list.append(url)
+    
+    # 重複削除
+    image_url_list = list(dict.fromkeys(image_url_list))
+    
+    # --- サンプル動画URL ---
+    sample_movies = data.get('samplemovie', [])
+    movie_url = ""
+    if isinstance(sample_movies, list) and sample_movies:
+        # midiumサイズを優先的に取得
+        movie_url = sample_movies[0].get('midium', {}).get('movie', "")
+
+    # --- 日付と価格 ---
+    raw_date = data.get('releasedate')
     release_date = None
-    if raw_date_str:
-        # 例: 2024/01/01 -> 2024-01-01 に変換してからパース
-        parsed_date = parse_date(raw_date_str.replace('/', '-'))
-        # parse_date は文字列を返すため、datetime.date オブジェクトに変換
-        if parsed_date:
-            release_date = parsed_date
+    if raw_date:
+        try:
+            release_date = parse_date(raw_date.replace('/', '-'))
+        except:
+            pass
     
-    # 価格の整形 (最安値を取得)
     min_price = None
-    saletype_list = data.get('saletype', [])
-    if isinstance(saletype_list, list):
+    saletypes = data.get('saletype', [])
+    if isinstance(saletypes, list):
         prices = []
-        for saletype in saletype_list:
-            price_str = saletype.get('data', {}).get('price')
-            if price_str and price_str.isdigit():
-                try:
-                    prices.append(int(price_str))
-                except (ValueError, TypeError):
-                    pass
+        for s in saletypes:
+            p_val = s.get('data', {}).get('price')
+            if p_val and str(p_val).isdigit():
+                prices.append(int(p_val))
         if prices:
             min_price = min(prices)
-    
-    # アフィリエイトURL
-    affiliate_url = data.get('affiliateurl') or ""
-    
-    # 画像URLリストの整形
-    image_url_list = []
-    
-    # 1. メイン画像 (ジャケット/ポスターのLargeサイズ) の抽出
-    jacket_images = data.get('jacketimage', [])
-    large_jacket_url = next(
-        (item.get('large') for item in jacket_images if isinstance(item, dict) and item.get('large')),
-        None
-    )
-    if large_jacket_url:
-        image_url_list.append(large_jacket_url)
 
-    # b) jacketimage がない場合は posterimage (Largeサイズ) を抽出
-    if not large_jacket_url:
-        poster_images = data.get('posterimage', [])
-        large_poster_url = next(
-            (item.get('large') for item in poster_images if isinstance(item, dict) and item.get('large')),
-            None
-        )
-        if large_poster_url:
-            image_url_list.append(large_poster_url)
-
-    # 2. サンプル画像 (thumbnail) の抽出と結合
-    thumbnail_data = data.get('thumbnail', [])
-    if thumbnail_data and isinstance(thumbnail_data, list):
-        sample_urls = [
-            item.get('image') 
-            for item in thumbnail_data 
-            if isinstance(item, dict) and item.get('image')
-        ]
-        image_url_list.extend(sample_urls)
-    
-    # 重複を排除し、最終リストを確定
-    image_url_for_db = list(dict.fromkeys(image_url_list)) 
-
-    if not image_url_for_db:
-        logger.warning(f"[DEBUG] Raw ID: {raw_data_instance.id} ({api_product_id}) - 画像URLリストが空です。")
-    
-    # ------------------------------------------------------------------
-    # 5. 結果の構築 (PKではなくエンティティ名を使用)
-    # ------------------------------------------------------------------
-
-    # Product モデル用のデータ辞書 (FKフィールドには一時的にエンティティ名を設定)
-    product_data = {
+    # --- AdultProduct用データ辞書 ---
+    product_dict = {
         'api_source': API_SOURCE,
-        'api_product_id': api_product_id,
-        'product_id_unique': generate_product_unique_id(API_SOURCE, api_product_id), 
+        'api_product_id': str(api_product_id),
+        'product_id_unique': generate_product_unique_id(API_SOURCE, str(api_product_id)), 
         'title': title,
         'release_date': release_date,
-        'affiliate_url': affiliate_url, 
+        'affiliate_url': data.get('affiliateurl') or "", 
         'price': min_price,
-        'image_url_list': image_url_for_db,
-        # IDではなく名前を格納し、後のコマンドでPKに変換させる
+        'image_url_list': image_url_list,
+        'sample_movie_url': movie_url,
+        
+        # 管理コマンドでPKに変換される一時キー
         'maker': maker_name,
         'label': label_name,
         'series': series_name, 
         'director': director_name,
         
         'raw_data_id': raw_data_instance.id,
-        'updated_at': datetime.now(),
         'is_active': True,
+        'is_posted': False,
     }
     
-    # リレーションシップ用のデータ辞書 (IDではなくエンティティ名リストを使用)
-    relations_data = {
-        'api_product_id': api_product_id, # 紐付けのために必要
-        'product_id_unique': generate_product_unique_id(API_SOURCE, api_product_id), # 紐付け用にユニークIDを追加
-        # IDリストではなく、名前リストを格納
-        'genres': raw_genre_names,
-        'actresses': raw_actress_names,
+    # --- ManyToManyリレーション用辞書 ---
+    relations_dict = {
+        'product_id_unique': product_dict['product_id_unique'],
+        'genres': [c.get('data', {}).get('name') for c in data.get('category', []) if c.get('data', {}).get('name')],
+        'actresses': [p.get('data', {}).get('name') for p in data.get('performer', []) if p.get('data', {}).get('name')],
     }
 
-    return [product_data], [relations_data]
+    return [product_dict], [relations_dict]

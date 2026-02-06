@@ -1,0 +1,207 @@
+/* 💡 ページ全体の基盤 */
+.pageContainer {
+    width: 100%;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* 💡 1. ページヘッダー：パンくずとタイトルの間隔を詰める */
+.fullWidthHeader {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    /* 上下の余白を大幅に削減して、パンくずとの一体感を出す */
+    padding: 24px 0 20px;
+    width: 100%;
+}
+
+/* コンテンツを1600pxで中央寄せ */
+.headerInner {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 40px;
+    box-sizing: border-box;
+}
+
+.title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.subTitle {
+    font-size: 1.15rem;
+    color: #64748b;
+    font-weight: 400;
+    margin-left: 12px;
+    display: inline-block;
+}
+
+.lead {
+    margin-top: 12px;
+    color: #475569;
+    line-height: 1.6;
+    font-size: 1rem;
+    max-width: 1000px;
+}
+
+/* 💡 2. メインコンテンツエリア（全幅） */
+.main {
+    width: 100%;
+    padding: 40px 0;
+}
+
+/* コンテンツを中央に寄せるためのラッパー */
+.wrapper {
+    display: flex;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 40px;
+    gap: 40px;
+    box-sizing: border-box;
+    align-items: flex-start;
+}
+
+/* サイドバーの設定 */
+.sidebarSection {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+}
+
+/* 製品セクション */
+.productSection {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+/* セクション内のタイトル：件数表示を横並びにする */
+.productGridTitle {
+    font-size: 1.6rem;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    font-weight: 800;
+    color: #0f172a;
+    width: 100%;
+}
+
+/* 🚀 合計件数と現在の範囲を表示するスタイル */
+.countDetail {
+    font-size: 0.95rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-left: auto; /* 右寄せ */
+    background: #f1f5f9;
+    padding: 6px 16px;
+    border-radius: 30px;
+    letter-spacing: 0.02em;
+}
+
+.titleIndicator {
+    background: #28a745;
+    width: 6px;
+    height: 28px;
+    margin-right: 15px;
+    border-radius: 4px;
+}
+
+/* 🚀 製品一覧グリッド：横3列に固定（カード間の隙間を最適化） */
+.productGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 24px;
+    width: 100%;
+}
+
+/* 💡 ページネーション */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 60px;
+    padding-bottom: 40px;
+}
+
+.pageLink, .pageActive {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 46px;
+    height: 46px;
+    padding: 0 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    background: #fff;
+    color: #475569;
+}
+
+.pageLink:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    transform: translateY(-1px);
+}
+
+.pageActive {
+    background: #0f172a;
+    color: #fff;
+    border-color: #0f172a;
+}
+
+/* データなしの場合 */
+.noDataLarge {
+    padding: 120px 0;
+    text-align: center;
+    color: #94a3b8;
+    background: #fff;
+    border-radius: 24px;
+    border: 1px dashed #cbd5e1;
+}
+
+.resetLink {
+    display: inline-block;
+    margin-top: 20px;
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* 💡 レスポンシブ対応 */
+@media (max-width: 1200px) {
+    .productGrid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    .headerInner {
+        padding: 0 20px;
+    }
+    .wrapper {
+        flex-direction: column;
+        padding: 0 20px;
+    }
+    .sidebarSection {
+        width: 100%;
+        position: static;
+    }
+    .productGrid {
+        grid-template-columns: 1fr !important;
+    }
+    .productGridTitle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .countDetail {
+        margin-left: 0;
+    }
+}

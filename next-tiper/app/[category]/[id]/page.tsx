@@ -2,15 +2,15 @@
 export const dynamic = 'force-dynamic';
 
 import React from 'react';
-// ✅ 修正ポイント: components/ を除いた新構造のパス
-import ProductCard from '@shared/cards/AdultProductCard';
 import Link from 'next/link';
 import { notFound } from 'next/navigation'; 
 import styles from './category.module.css';
 
+// ✅ コンポーネントのパスは環境に合わせて調整してください
+import ProductCard from '@shared/cards/AdultProductCard';
+
 /**
  * 💡 API フェッチ関数
- * Django 内部ネットワーク (http://django-v2:8000) を経由してデータを取得します
  */
 async function getCategoryProducts(category: string, id: string, page: string = '1', sort: string = '-created_at') {
   const pageSize = 20;
@@ -39,13 +39,18 @@ async function getCategoryProducts(category: string, id: string, page: string = 
   const apiUrl = `${baseUrl}/adults/?${query.toString()}`;
   
   try {
-    const res = await fetch(apiUrl, { cache: 'no-store' });
+    // revalidate: 0 または cache: 'no-store' で常に最新を取得
+    const res = await fetch(apiUrl, { next: { revalidate: 0 } });
+    
     if (!res.ok) {
       console.warn(`⚠️ Django API Error: ${res.status} at ${apiUrl}`);
       return { results: [], count: 0 };
     }
     const data = await res.json();
-    return { results: data.results || [], count: data.count || 0 };
+    return { 
+      results: Array.isArray(data.results) ? data.results : [], 
+      count: data.count || 0 
+    };
   } catch (error) {
     console.error("❌ Fetch Error during API call:", error);
     return { results: [], count: 0 };
@@ -55,35 +60,31 @@ async function getCategoryProducts(category: string, id: string, page: string = 
 /**
  * 💡 カテゴリ一覧ページコンポーネント
  */
-export default async function CategoryListPage({ 
-  params, 
-  searchParams 
-}: { 
+export default async function CategoryListPage(props: { 
   params: Promise<{ category: string, id: string }>,
   searchParams: Promise<{ page?: string, sort?: string }>
 }) {
-  // Next.js 15 以降の Promise 解消対応
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
+  // ✅ Next.js 15 の必須処理: params と searchParams を await する
+  const resolvedParams = await props.params;
+  const resolvedSearchParams = await props.searchParams;
   
   const { category, id } = resolvedParams;
   const currentPage = resolvedSearchParams.page || '1';
   const currentSort = resolvedSearchParams.sort || '-created_at'; 
 
-  // --- 🛡️ 強力なガード処理 ---
+  // --- 🛡️ ガード処理 ---
   if (
     !category || !id || 
     category === 'undefined' || id === 'undefined' ||
     category === '[category]' || id === '[id]'
   ) {
-    console.warn(`🚩 Invalid access blocked: category=${category}, id=${id}`);
     notFound(); 
   }
 
   // データ取得
   const data = await getCategoryProducts(category, id, currentPage, currentSort);
-  const products = data.results || [];
-  const totalCount = data.count || 0;
+  const products = data.results;
+  const totalCount = data.count;
   const totalPages = Math.ceil(totalCount / 20);
 
   /**
@@ -93,24 +94,28 @@ export default async function CategoryListPage({
   if (products.length > 0) {
     const firstProduct = products[0];
     
-    if (category.startsWith('genre')) {
-      const g = firstProduct.genres?.find((x: any) => String(x.id) === id);
-      if (g) categoryName = g.name;
-    } else if (category.startsWith('actress')) {
-      const a = firstProduct.actresses?.find((x: any) => String(x.id) === id);
-      if (a) categoryName = a.name;
-    } else if (category === 'maker' || category === 'makers') {
-      if (firstProduct.maker && String(firstProduct.maker.id) === id) {
-        categoryName = firstProduct.maker.name;
+    try {
+      if (category.startsWith('genre')) {
+        const g = firstProduct.genres?.find((x: any) => String(x.id) === id);
+        if (g) categoryName = g.name;
+      } else if (category.startsWith('actress')) {
+        const a = firstProduct.actresses?.find((x: any) => String(x.id) === id);
+        if (a) categoryName = a.name;
+      } else if (category === 'maker' || category === 'makers') {
+        if (firstProduct.maker && String(firstProduct.maker.id) === id) {
+          categoryName = firstProduct.maker.name;
+        }
+      } else if (category === 'series') {
+        if (firstProduct.series && String(firstProduct.series.id) === id) {
+          categoryName = firstProduct.series.name;
+        }
+      } else if (category === 'label') {
+        if (firstProduct.label && String(firstProduct.label.id) === id) {
+          categoryName = firstProduct.label.name;
+        }
       }
-    } else if (category === 'series') {
-      if (firstProduct.series && String(firstProduct.series.id) === id) {
-        categoryName = firstProduct.series.name;
-      }
-    } else if (category === 'label') {
-      if (firstProduct.label && String(firstProduct.label.id) === id) {
-        categoryName = firstProduct.label.name;
-      }
+    } catch (e) {
+      console.error("Category name extraction failed", e);
     }
   }
 
@@ -119,7 +124,7 @@ export default async function CategoryListPage({
       <div className={styles.inner}>
         
         <header className={styles.header}>
-          <div>
+          <div className={styles.titleSection}>
             <h1 className={styles.title}>
               <span className={styles.categoryPrefix}>{category.toUpperCase()}:</span>
               <span className={styles.titleMain}> {categoryName || id}</span>

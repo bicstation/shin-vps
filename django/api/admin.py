@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/admin.py
-
 import os
+import logging
 from django.contrib import admin
 from django import forms
 from django.utils.safestring import mark_safe
@@ -13,12 +12,13 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 # モデルのインポート
 from .models import (
-    User,  # カスタムユーザーモデル
-    RawApiData, AdultProduct, LinkshareProduct,
+    User, RawApiData, AdultProduct, LinkshareProduct,
     Genre, Actress, Maker, Label, Director, Series,
-    PCAttribute 
+    PCAttribute, AdultAttribute
 )
 from .models.pc_products import PCProduct, PriceHistory
+
+logger = logging.getLogger(__name__)
 
 # ----------------------------------------------------
 # 🌟 0. User (カスタムユーザー) 管理
@@ -87,13 +87,11 @@ class PriceHistoryInline(admin.TabularInline):
 # ----------------------------------------------------
 @admin.register(PCProduct)
 class PCProductAdmin(admin.ModelAdmin):
-    # 💡 TemplateDoesNotExist エラー回避のため一旦コメントアウト
-    # change_list_template = "admin/api/pcproduct/change_list.html"
     inlines = [PriceHistoryInline]
 
     list_display = (
         'display_thumbnail', 'maker', 'name_summary', 'price_display', 
-        'score_visual', 'stock_status_tag', 'is_download_display', 
+        'score_visual_tag', 'stock_status_tag', 'is_download_display', 
         'ai_status_tag', 'is_posted_tag', 'updated_at'
     )
     list_display_links = ('name_summary',)
@@ -128,7 +126,7 @@ class PCProductAdmin(admin.ModelAdmin):
                 'is_ai_pc',
             ),
         }),
-        ('🔧 自作互換性・属性', {
+        ('🔧 属性・タグ', {
             'fields': (
                 ('cpu_socket', 'motherboard_chipset'),
                 ('ram_type', 'power_recommendation'),
@@ -144,14 +142,13 @@ class PCProductAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('display_thumbnail_large', 'last_spec_parsed_at')
 
-    # カスタム表示メソッド
-    def score_visual(self, obj):
-        avg = (obj.score_cpu + obj.score_gpu + obj.score_ai) // 3
+    def score_visual_tag(self, obj):
+        avg = obj.spec_score
         color = "#28a745" if avg > 70 else "#ffc107" if avg > 40 else "#dc3545"
         return mark_safe(f'<div style="width: 100px; background: #eee; height: 12px; border-radius: 6px; overflow: hidden;">'
                          f'<div style="width: {avg}px; background: {color}; height: 100%;"></div>'
-                         f'</div><span style="font-size: 10px;">Avg: {avg}pts</span>')
-    score_visual.short_description = "性能指標"
+                         f'</div><span style="font-size: 10px;">Score: {avg}</span>')
+    score_visual_tag.short_description = "性能指標"
 
     def stock_status_tag(self, obj):
         colors = {"instock": "#28a745", "outofstock": "#dc3545", "preorder": "#007bff"}
@@ -184,6 +181,7 @@ class PCProductAdmin(admin.ModelAdmin):
 
     def is_posted_tag(self, obj):
         return mark_safe('✅' if obj.is_posted else '☁️')
+    is_posted_tag.short_description = "投稿済"
 
     def is_download_display(self, obj):
         return "DL版" if obj.is_download else "物理"
@@ -192,39 +190,71 @@ class PCProductAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('fetch-minisforum/', self.fetch_minisforum_action, name='fetch_minisforum'),
-            path('fetch-lenovo/', self.fetch_lenovo_action, name='fetch_lenovo'),
             path('generate-ai-article/', self.generate_ai_action, name='generate_ai_article'),
         ]
         return custom_urls + urls
-
-    def fetch_minisforum_action(self, request):
-        self.message_user(request, "Minisforum同期開始。")
-        return HttpResponseRedirect("../")
-
-    def fetch_lenovo_action(self, request):
-        self.message_user(request, "Lenovo同期開始。")
-        return HttpResponseRedirect("../")
 
     def generate_ai_action(self, request):
         self.message_user(request, "AI記事生成キューを送信しました。")
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
-# 🔞 2. AdultProduct (アダルト・API連携)
+# 🔞 2. AdultProduct (アダルト製品・AI解析対応版)
 # ----------------------------------------------------
 @admin.register(AdultProduct)
 class AdultProductAdmin(admin.ModelAdmin):
-    # 💡 エラーの直接的な原因：指定の HTML ファイルがないためコメントアウト
-    # change_list_template = "admin/api/adultproduct/change_list.html" 
-    
     list_display = (
-        'product_id_unique', 'display_first_image', 'title_summary', 
-        'release_date', 'price_display', 'maker', 'is_active_tag'
+        'display_first_image', 'product_id_unique', 'title_summary', 
+        'price_display', 'score_radar_tag', 'is_posted_tag', 'is_active_tag', 
+        'api_source', 'release_date'
     )
-    list_filter = ('is_active', 'release_date', 'maker', 'api_source')
-    search_fields = ('title', 'product_id_unique')
-    readonly_fields = ('created_at', 'updated_at', 'api_source')
+    list_display_links = ('title_summary',)
+    list_filter = (
+        'is_active', 'is_posted', 'api_source', 'maker', 'release_date'
+    )
+    search_fields = ('title', 'product_id_unique', 'ai_summary')
+    filter_horizontal = ('genres', 'actresses', 'attributes')
+    readonly_fields = ('created_at', 'updated_at', 'api_source', 'last_spec_parsed_at')
+
+    fieldsets = (
+        ('基本ステータス', {
+            'fields': (('product_id_unique', 'api_source'), 'title', ('is_active', 'is_posted')),
+        }),
+        ('💰 価格・アフィリエイト', {
+            'fields': (('release_date', 'price'), 'affiliate_url'),
+        }),
+        ('🧠 AI解析スコアリング (Radar Chart Data)', {
+            'description': '100点満点での5軸評価',
+            'fields': (
+                ('score_visual', 'score_story'),
+                ('score_cost', 'score_erotic'),
+                ('score_rarity', 'spec_score'),
+                'target_segment',
+            ),
+        }),
+        ('📝 コンテンツ生成', {
+            'fields': ('ai_summary', 'ai_content', 'last_spec_parsed_at'),
+        }),
+        ('🏷️ 分類・マスター参照', {
+            'fields': (
+                ('maker', 'label'),
+                ('director', 'series'),
+                'genres', 'actresses', 'attributes'
+            ),
+        }),
+        ('🖼️ メディア', {
+            'fields': ('sample_movie_url', 'image_url_list'),
+        }),
+    )
+
+    def score_radar_tag(self, obj):
+        val = obj.spec_score
+        # アダルト用は少しセクシーなピンク・パープル系に
+        color = "#e83e8c" if val > 75 else "#6f42c1" if val > 50 else "#6c757d"
+        return mark_safe(f'<div style="width: 80px; background: #eee; height: 10px; border-radius: 5px; overflow: hidden;">'
+                         f'<div style="width: {val}%; background: {color}; height: 100%;"></div>'
+                         f'</div><span style="font-size: 10px;">Score: {val}</span>')
+    score_radar_tag.short_description = "作品スコア"
 
     def display_first_image(self, obj):
         if obj.image_url_list and len(obj.image_url_list) > 0:
@@ -232,59 +262,68 @@ class AdultProductAdmin(admin.ModelAdmin):
         return "N/A"
     display_first_image.short_description = "Preview"
 
-    def is_active_tag(self, obj):
-        icon = "✅" if obj.is_active else "❌"
-        return mark_safe(f'<span style="font-size: 1.2em;">{icon}</span>')
-
     def title_summary(self, obj):
-        return obj.title[:45] + "..." if len(obj.title) > 45 else obj.title
+        return obj.title[:35] + "..." if len(obj.title) > 35 else obj.title
 
     def price_display(self, obj):
         return f"¥{obj.price:,}" if obj.price else "---"
 
-    # --- API実行アクション ---
+    def is_active_tag(self, obj):
+        return mark_safe('✅' if obj.is_active else '❌')
+    is_active_tag.short_description = "公開"
+
+    def is_posted_tag(self, obj):
+        return mark_safe('📮' if obj.is_posted else '☁️')
+    is_posted_tag.short_description = "投稿"
+
+    # --- アクション ---
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
             path('fetch-fanza/', self.fetch_fanza_action, name='fetch_fanza'),
             path('fetch-duga/', self.fetch_duga_action, name='fetch_duga'),
-            path('full-update/', self.full_update_action, name='full_update'),
         ]
         return custom_urls + urls
 
     def fetch_fanza_action(self, request):
         call_command('fetch_fanza')
-        self.message_user(request, "FANZAからの最新データ取得を完了しました。")
+        self.message_user(request, "FANZA同期完了")
         return HttpResponseRedirect("../")
 
     def fetch_duga_action(self, request):
         call_command('fetch_duga')
-        self.message_user(request, "DUGAからの最新データ取得を完了しました。")
-        return HttpResponseRedirect("../")
-
-    def full_update_action(self, request):
-        call_command('fetch_fanza')
-        call_command('fetch_duga')
-        call_command('normalize_fanza')
-        self.message_user(request, "全アダルトソースの同期と正規化が完了しました。", messages.SUCCESS)
+        self.message_user(request, "DUGA同期完了")
         return HttpResponseRedirect("../")
 
 # ----------------------------------------------------
-# 📂 3. マスターデータ・その他
+# 📂 3. マスターデータ・属性管理
 # ----------------------------------------------------
-class MasterAdmin(admin.ModelAdmin):
-    list_display = ('name', 'product_count_badge', 'api_source', 'created_at')
-    list_filter = ('api_source',)
-    search_fields = ('name',)
+@admin.register(AdultAttribute)
+class AdultAttributeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'attr_type', 'slug', 'order', 'product_count_badge')
+    list_filter = ('attr_type',)
+    search_fields = ('name', 'slug')
+    ordering = ('attr_type', 'order')
 
     def product_count_badge(self, obj):
-        count = 0
-        if hasattr(obj, 'products'): count = obj.products.count()
-        elif hasattr(obj, 'adultproduct_set'): count = obj.adultproduct_set.count()
-        
-        color = "#007bff" if count > 0 else "#6c757d"
-        return mark_safe(f'<span style="background: {color}; color: white; padding: 2px 10px; border-radius: 12px;">{count}</span>')
+        count = obj.products.count()
+        return mark_safe(f'<span style="background: #e83e8c; color: white; padding: 2px 10px; border-radius: 12px;">{count}</span>')
+    product_count_badge.short_description = "作品数"
+
+@admin.register(PCAttribute)
+class PCAttributeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'attr_type', 'slug', 'order', 'product_count_badge')
+    list_filter = ('attr_type',)
+
+    def product_count_badge(self, obj):
+        count = obj.products.count()
+        return mark_safe(f'<span style="background: #007bff; color: white; padding: 2px 10px; border-radius: 12px;">{count}</span>')
     product_count_badge.short_description = "製品数"
+
+class MasterAdmin(admin.ModelAdmin):
+    list_display = ('name', 'api_source', 'created_at')
+    list_filter = ('api_source',)
+    search_fields = ('name',)
 
 @admin.register(Genre)
 class GenreAdmin(MasterAdmin): pass
@@ -295,23 +334,10 @@ class ActressAdmin(MasterAdmin): pass
 @admin.register(Maker)
 class MakerAdmin(MasterAdmin): pass
 
-@admin.register(PCAttribute)
-class PCAttributeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'attr_type', 'slug', 'order')
-    list_filter = ('attr_type',)
-    ordering = ('attr_type', 'order')
-
 @admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'created_at')
-    readonly_fields = ('created_at', 'data_display')
-    
-    def data_display(self, obj):
-        return mark_safe(f'<pre style="background: #f4f4f4; padding: 10px;">{obj.raw_json}</pre>')
+    readonly_fields = ('created_at',)
 
-# 簡易登録
-admin.site.register(Label)
-admin.site.register(Director)
-admin.site.register(Series)
-admin.site.register(LinkshareProduct)
-admin.site.register(PriceHistory)
+# シンプル登録
+admin.site.register([Label, Director, Series, LinkshareProduct, PriceHistory])

@@ -1,118 +1,105 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-danger */
-// @ts-nocheck 
 
 import React from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { Metadata } from 'next';
 
-// ✅ 修正ポイント: shared/lib/api 経由に統一
+// 共通ライブラリのインポート
 import { getAdultProducts } from '@shared/lib/api'; 
-// ✅ 修正ポイント: components/ を挟まない直下参照
+import { fetchPostData as fetchWpPost, fetchPostList } from '@shared/lib/api/wordpress';
+import { getWpConfig } from '@shared/lib/api/config';
 import ProductCard from '@shared/cards/AdultProductCard';
+import { constructMetadata } from '@shared/lib/metadata';
+
+// CSSモジュール (既存のものを使用)
 import styles from './page.module.css';
 
 /**
- * 💡 個別記事データ取得 (WordPress API)
+ * 💡 SEO: メタデータの動的生成
  */
-async function fetchPostData(postSlug: string) {
-    // 💡 ホスト名は環境に合わせて nginx-wp-v2 を維持
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?slug=${postSlug}&_embed&per_page=1&_t=${Date.now()}`; 
-    try {
-        const res = await fetch(WP_API_URL, {
-            headers: { 'Host': 'localhost:8083', 'Accept': 'application/json' },
-            next: { revalidate: 60 } // 60秒キャッシュ
-        });
-        if (!res.ok) return null;
-        const data = await res.json();
-        return (Array.isArray(data) && data.length > 0) ? data[0] : null;
-    } catch (error) { 
-        console.error("WP Fetch Error:", error);
-        return null; 
-    }
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const { siteKey } = getWpConfig();
+    const post = await fetchWpPost(siteKey, id);
+
+    if (!post) return constructMetadata("Post Not Found", "");
+
+    const title = decodeHtml(post.title.rendered);
+    const description = post.excerpt?.rendered.replace(/<[^>]*>/g, '').slice(0, 120) || "";
+    const image = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+
+    return constructMetadata(title, description, image, `/${id}`);
 }
 
 /**
- * 💡 サイドバー用：同じカテゴリーの人気・最新記事を取得
+ * 💡 ユーティリティ: HTMLデコード
  */
-async function fetchRelatedCategoryPosts(categories: number[], excludeId: number) {
-    const categoryQuery = categories && categories.length > 0 ? `&categories=${categories.join(',')}` : '';
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/tiper?_embed&per_page=5&exclude=${excludeId}${categoryQuery}`;
-    
-    try {
-        const res = await fetch(WP_API_URL, {
-            headers: { 'Host': 'localhost:8083' },
-            next: { revalidate: 300 }
-        });
-        return res.ok ? await res.json() : [];
-    } catch { return []; }
-}
-
-/**
- * 💡 前後の記事を取得
- */
-async function fetchNeighborPosts(currentDate: string) {
-    const headers = { 'Host': 'localhost:8083', 'Accept': 'application/json' };
-    const nextUrl = `http://nginx-wp-v2/wp-json/wp/v2/tiper?after=${currentDate}&order=asc&per_page=1`;
-    const prevUrl = `http://nginx-wp-v2/wp-json/wp/v2/tiper?before=${currentDate}&order=desc&per_page=1`;
-
-    try {
-        const [nextRes, prevRes] = await Promise.all([
-            fetch(nextUrl, { headers }),
-            fetch(prevUrl, { headers })
-        ]);
-        const [nextData, prevData] = await Promise.all([
-            nextRes.ok ? nextRes.json() : [],
-            prevRes.ok ? prevRes.json() : []
-        ]);
-        return { next: nextData[0] || null, prev: prevData[0] || null };
-    } catch { return { next: null, prev: null }; }
-}
-
 const decodeHtml = (html: string) => {
     if (!html) return '';
-    const map = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
+    const map: Record<string, string> = { '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' };
     return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec)).replace(/&[a-z]+;/gi, (m) => map[m] || m);
 };
 
+/**
+ * 💡 メインコンポーネント
+ */
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const postSlug = decodeURIComponent(id);
-    const post = await fetchPostData(postSlug);
+    const { siteKey } = getWpConfig();
     
+    // 1. 記事本体の取得 (configで判定された siteKey を使用)
+    const post = await fetchWpPost(siteKey, id);
     if (!post) notFound();
 
-    const categoryIds = post.categories || [];
-    
-    // 💡 データの並列フェッチ (WP記事 + Django商品)
-    const [neighbors, relatedPosts, productData] = await Promise.all([
-        fetchNeighborPosts(post.date),
-        fetchRelatedCategoryPosts(categoryIds, post.id),
-        getAdultProducts({ limit: 4 }) // ✅ 共通ライブラリを使用
+    const postTitle = decodeHtml(post.title.rendered);
+    const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || "MAGAZINE";
+    const featuredImageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+
+    // 2. 関連データの並列取得 (SEOとパフォーマンスの両立)
+    const [relatedPosts, productData] = await Promise.all([
+        fetchPostList(siteKey, 5, 0), // 関連記事
+        getAdultProducts({ limit: 4 }) // 関連商品
     ]);
 
-    const postTitle = decodeHtml(post.title.rendered);
-    const featuredImageUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
-    const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || "MAGAZINE";
+    // JSON-LD 構造化データ (SEO)
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": postTitle,
+        "image": featuredImageUrl,
+        "datePublished": post.date,
+        "author": {
+            "@type": "Person",
+            "name": post._embedded?.author?.[0]?.name || 'Admin'
+        }
+    };
 
     return (
         <div className={styles.container}>
-            
+            {/* 構造化データの挿入 */}
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
             <header className={styles.header}>
                 <div className={styles.decoration} />
                 <div className={styles.headerContent}>
-                    <Link href="/tiper" className={styles.backLink}>
-                        <span>«</span> BACK TO MAGAZINE
+                    <Link href="/" className={styles.backLink}>
+                        <span>«</span> BACK TO HOME
                     </Link>
                     <div className={styles.categoryBadge}>{categoryName}</div>
                     <h1 className={styles.title}>{postTitle}</h1>
                     <div className={styles.metaInfo}>
                         <div className={styles.author}>
-                            <img src={post._embedded?.author?.[0]?.avatar_urls?.['48'] || ''} className={styles.authorAvatar} alt="" />
+                            <img 
+                                src={post._embedded?.author?.[0]?.avatar_urls?.['48'] || '/shared/assets/default-avatar.png'} 
+                                className={styles.authorAvatar} 
+                                alt="" 
+                            />
                             <span>{post._embedded?.author?.[0]?.name || 'Admin'}</span>
                         </div>
                         <div className={styles.divider} />
-                        <span>{new Date(post.date).toLocaleDateString('ja-JP')}</span>
+                        <time dateTime={post.date}>{new Date(post.date).toLocaleDateString('ja-JP')}</time>
                     </div>
                 </div>
             </header>
@@ -120,46 +107,40 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             {featuredImageUrl && (
                 <div className={styles.featuredImageWrapper}>
                     <div className={styles.featuredImage}>
-                        <img src={featuredImageUrl} alt={postTitle} />
+                        <img src={featuredImageUrl} alt={postTitle} loading="eager" />
                     </div>
                 </div>
             )}
 
             <div className={styles.mainLayout}>
-                <article>
+                <article className={styles.article}>
                     <div 
                         className={styles.tiperBody} 
                         dangerouslySetInnerHTML={{ __html: post.content.rendered }} 
                     />
 
-                    <nav className={styles.postNavigation}>
-                        {neighbors.prev ? (
-                            <Link href={`/tiper/${neighbors.prev.slug}`} className={styles.navCard}>
-                                <span className={styles.navLabel}>PREVIOUS ARTICLE</span>
-                                <span className={styles.navTitle}>{decodeHtml(neighbors.prev.title.rendered)}</span>
-                            </Link>
-                        ) : <div />}
-                        {neighbors.next ? (
-                            <Link href={`/tiper/${neighbors.next.slug}`} className={`${styles.navCard} ${styles.navNext}`}>
-                                <span className={styles.navLabel}>NEXT ARTICLE</span>
-                                <span className={styles.navTitle}>{decodeHtml(neighbors.next.title.rendered)}</span>
-                            </Link>
-                        ) : <div />}
-                    </nav>
+                    {/* シェアボタンセクション */}
+                    <div className="mt-12 p-8 border-t border-white/5 bg-[#16162d] rounded-2xl">
+                        <h3 className="text-[10px] font-black tracking-[0.3em] text-[#e94560] mb-6 uppercase text-center">Share this article</h3>
+                        <div className="flex gap-4 max-w-xs mx-auto">
+                            {['X', 'LINE', 'FB'].map(sns => (
+                                <button key={sns} className="flex-1 py-3 bg-[#0a0a14] border border-white/10 rounded-xl text-xs font-bold hover:border-[#e94560] transition-all">
+                                    {sns}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </article>
 
                 <aside className={styles.sidebar}>
                     <div className={styles.sidebarSection}>
                         <h3 className={styles.sidebarTitle}>
-                            RELATED <small>in {categoryName}</small>
+                            LATEST <small className="text-[#e94560]">NEWS</small>
                         </h3>
                         <div className={styles.latestList}>
-                            {relatedPosts.map((rp) => (
+                            {relatedPosts.results.filter((p: any) => p.id !== post.id).slice(0, 5).map((rp: any) => (
                                 <div key={rp.id} className={styles.latestItem}>
-                                    <Link href={`/tiper/${rp.slug}`} className={styles.latestLink}>
-                                        <span className={styles.sidebarCategoryBadge}>
-                                            {rp._embedded?.['wp:term']?.[0]?.[0]?.name}
-                                        </span>
+                                    <Link href={`/${rp.slug}`} className={styles.latestLink}>
                                         <span className={styles.latestText}>{decodeHtml(rp.title.rendered)}</span>
                                         <span className={styles.latestDate}>{new Date(rp.date).toLocaleDateString('ja-JP')}</span>
                                     </Link>
@@ -168,34 +149,32 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                         </div>
                     </div>
 
-                    <div className={styles.sidebarWidget}>
-                        <h3 className="text-[11px] font-black tracking-widest text-white mb-6 border-l-2 border-[#00d1b2] pl-3">SHARE</h3>
-                        <div className="flex gap-2">
-                            {['X', 'FB', 'LINE'].map(sns => (
-                                <button key={sns} className="flex-1 py-3 bg-[#1f1f3a] border border-[#333] rounded-lg text-[10px] font-black hover:border-[#00d1b2] hover:text-[#00d1b2] transition-all">
-                                    {sns}
-                                </button>
-                            ))}
+                    <div className="sticky top-8">
+                        {/* バナーや追加のウィジェットをここに */}
+                        <div className="p-6 bg-gradient-to-br from-[#1f1f3a] to-[#0a0a14] rounded-2xl border border-white/5 text-center">
+                            <p className="text-[#e94560] text-[10px] font-black tracking-widest uppercase mb-2">Check out</p>
+                            <h4 className="text-white font-bold text-sm mb-4">Official Merchandise</h4>
+                            <div className="h-[1px] bg-white/10 w-12 mx-auto" />
                         </div>
                     </div>
                 </aside>
             </div>
 
-            {/* ✅ 関連商品セクション: 共通 ProductCard を利用 */}
+            {/* ✅ おすすめ商品セクション (共通 ProductCard) */}
             {productData?.results?.length > 0 && (
                 <section className={styles.relatedSection}>
                     <div className={styles.relatedContainer}>
                         <div className={styles.relatedHeader}>
                             <div>
-                                <h2 className="text-4xl font-black text-white mb-2 uppercase italic tracking-tighter">Recommended</h2>
-                                <p className="text-gray-500 text-xs font-bold tracking-widest uppercase">For readers of this article</p>
+                                <h2 className="text-3xl font-black text-white mb-1 uppercase italic italic tracking-tighter">Recommended Items</h2>
+                                <p className="text-gray-500 text-[10px] font-bold tracking-[0.2em] uppercase">Handpicked for you</p>
                             </div>
-                            <Link href="/products" className="text-[#00d1b2] text-[10px] font-black tracking-[0.2em] no-underline hover:underline">
-                                VIEW ALL VIDEOS →
+                            <Link href="/products" className="text-[#e94560] text-[10px] font-black tracking-widest no-underline border-b border-[#e94560]">
+                                VIEW MORE
                             </Link>
                         </div>
                         <div className={styles.relatedGrid}>
-                            {productData.results.map((p) => (
+                            {productData.results.map((p: any) => (
                                 <ProductCard key={p.id} product={p} />
                             ))}
                         </div>

@@ -1,32 +1,44 @@
 /**
  * =====================================================================
  * 📝 WordPress 専用 API サービス層 (shared/lib/api/wordpress.ts)
- * 3系統（tiper / saving / station）の動的判定と安全なパースに対応
+ * 複数投稿タイプ（post + 固有タイプ）のマージと日付順ソートに対応
  * =====================================================================
  */
-import { getWpConfig } from './config';
+import { getWpConfig, IS_SERVER } from './config';
 
 /**
- * 📝 WordPress 投稿一覧取得
- * @param postType 明示的に指定がない場合は config からの判定値を使用
+ * 💡 接続先URLを解決するユーティリティ
+ * サーバーサイド実行時は Docker 内部ネットワーク (nginx-wp-v2) を使用し、
+ * クライアントサイド実行時は設定された外部 URL (baseUrl) を使用します。
+ */
+const resolveWPUrl = (endpoint: string) => {
+    const { baseUrl } = getWpConfig();
+    
+    if (IS_SERVER) {
+        // 💡 サーバーサイド (Server Components) からのリクエストは 
+        // 外部用ドメインではなく Docker コンテナ名:内部ポート(80) を直接叩く
+        return `http://nginx-wp-v2:80${endpoint}`;
+    }
+    
+    // クライアントサイド（ブラウザ）では本来の URL を使用
+    return `${baseUrl}${endpoint}`;
+};
+
+/**
+ * 📝 WordPress 投稿一覧取得 (単一タイプ用)
+ * @param postType 取得したい投稿タイプ (posts / tiper / avflash 等)
  * @param limit    取得件数 (per_page)
  * @param offset   オフセット
  */
-export async function fetchPostList(postType?: string, limit = 12, offset = 0) {
-    const { baseUrl, host, siteKey } = getWpConfig();
+export async function fetchPostList(postType: string, limit = 12, offset = 0) {
+    const { host } = getWpConfig();
     
-    /**
-     * ✅ 振り分けロジックの適用
-     * config.ts で siteKey が正しく正規化されているため、
-     * ここではそれに基づいた投稿タイプをデフォルトとして使用します。
-     */
-    const defaultType = siteKey === 'saving' ? 'saving' : 
-                        siteKey === 'station' ? 'station' : 'tiper';
+    // WordPress標準の「投稿」はエンドポイントが 'posts' になるための処理
+    const typeEndpoint = postType === 'post' ? 'posts' : postType;
     
-    const targetType = postType || defaultType;
-
     // APIエンドポイントの構築
-    const url = `${baseUrl}/wp-json/wp/v2/${targetType}?_embed&per_page=${limit}&offset=${offset}`;
+    const endpoint = `/wp-json/wp/v2/${typeEndpoint}?_embed&per_page=${limit}&offset=${offset}`;
+    const url = resolveWPUrl(endpoint);
 
     try {
         const res = await fetch(url, {
@@ -38,7 +50,7 @@ export async function fetchPostList(postType?: string, limit = 12, offset = 0) {
             signal: AbortSignal.timeout(5000)
         });
 
-        // ✅ 安全策: JSON以外のレスポンス（HTML等）が返ってきた場合に例外を投げないようガード
+        // ✅ 安全策: JSON以外のレスポンス（HTML等）が返ってきた場合に警告を出す
         const contentType = res.headers.get('content-type');
         if (!res.ok || !contentType?.includes('application/json')) {
             console.warn(`[WP API WARNING]: Invalid response from ${url}. Status: ${res.status}, Type: ${contentType}`);
@@ -61,12 +73,58 @@ export async function fetchPostList(postType?: string, limit = 12, offset = 0) {
 }
 
 /**
+ * 💡 トップページ用：複数タイプを統合して日付順にソートして取得
+ * tiper-host -> [post, tiper] をマージ
+ * avflash-host -> [post, avflash] をマージ
+ * station / saving -> [post, 各固有種] をマージ
+ */
+export async function getSiteMainPosts(offset = 0, limit = 5) {
+    const { siteKey } = getWpConfig();
+
+    // 1. まず共通の「標準投稿 (post)」を取得
+    const postRes = await fetchPostList('post', limit, offset);
+    
+    // 2. サイト固有の投稿タイプを決定
+    let specificType = '';
+    if (siteKey === 'tiper') specificType = 'tiper';
+    else if (siteKey === 'avflash') specificType = 'avflash';
+    else if (siteKey === 'station') specificType = 'station';
+    else if (siteKey === 'saving') specificType = 'saving';
+
+    // 3. 固有タイプが存在すれば、それも取得
+    let specificRes = { results: [], count: 0 };
+    if (specificType) {
+        specificRes = await fetchPostList(specificType, limit, offset);
+    }
+
+    // 4. 取得した2つのリストを合体させる
+    const combined = [...postRes.results, ...specificRes.results];
+
+    // 5. 日付 (date) を基準に降順 (新しい順) でソート
+    const sortedResults = combined.sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+
+    // 6. 合体・ソートした結果から、必要な件数 (limit) 分だけ切り出す
+    return {
+        results: sortedResults.slice(0, limit),
+        count: postRes.count + specificRes.count
+    };
+}
+
+/**
  * 📝 個別記事取得 (Slug指定)
+ * @param postType 投稿タイプ (post / tiper / avflash 等)
+ * @param slug 記事のスラッグ
  */
 export async function fetchPostData(postType: string, slug: string) {
-    const { baseUrl, host } = getWpConfig();
+    const { host } = getWpConfig();
     const safeSlug = encodeURIComponent(decodeURIComponent(slug));
-    const url = `${baseUrl}/wp-json/wp/v2/${postType}?slug=${safeSlug}&_embed`;
+    
+    // 個別ページでも 'post' を 'posts' エンドポイントに変換
+    const typeEndpoint = postType === 'post' ? 'posts' : postType;
+    const endpoint = `/wp-json/wp/v2/${typeEndpoint}?slug=${safeSlug}&_embed`;
+    const url = resolveWPUrl(endpoint);
 
     try {
         const res = await fetch(url, {
@@ -97,8 +155,10 @@ export async function fetchPostData(postType: string, slug: string) {
  * @param taxonomyName tiper_category / station_tag 等
  */
 export async function fetchTaxonomyTerms(taxonomyName: string) {
-    const { baseUrl, host } = getWpConfig();
-    const url = `${baseUrl}/wp-json/wp/v2/${taxonomyName}?per_page=100`;
+    const { host } = getWpConfig();
+    
+    const endpoint = `/wp-json/wp/v2/${taxonomyName}?per_page=100`;
+    const url = resolveWPUrl(endpoint);
 
     try {
         const res = await fetch(url, { 
@@ -119,14 +179,4 @@ export async function fetchTaxonomyTerms(taxonomyName: string) {
         console.error(`[Taxonomy Fetch Error]: ${e.message} at ${url}`);
         return [];
     }
-}
-
-
-/**
- * 💡 トップページ (page.tsx) が getSiteMainPosts という名前で
- * 関数をインポートしているための互換性レイヤー
- */
-export async function getSiteMainPosts(offset = 0, limit = 5) {
-    // 内部で fetchPostList を呼び出す
-    return await fetchPostList(undefined, limit, offset);
 }

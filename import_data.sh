@@ -6,6 +6,7 @@
 # 🛠 修正内容: 量販店インポートに --none (除外キーワード) を適用
 # 🛠 修正内容: DBクリーンアップ機能の追加
 # 🛠 修正内容: AIスペック解析の全メーカー一括実行対応
+# 🛠 修正内容: FANZA/DUGA のリセット＆再正規化メニューの追加
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -125,20 +126,20 @@ while true; do
     echo -e "環境: ${COLOR}${ENV_TYPE}${RESET}"
     echo -e "---------------------------------------"
     echo "1) [DB]       マイグレーション実行 (スキーマ更新)"
-    echo "2) [Import]   Tiper データ (Fanza/Duga) インポート"
+    echo "2) [Import]   Tiper データ (Fanza/Duga) インポート・リセット"
     echo -e "3) ${COLOR}[Import]   メーカー別インポート・同期 ✨${RESET}"
     echo "4) [Import]   AV-Flash データのインポート"
-    echo "5) [Admin]     スーパーユーザーの作成"
+    echo "5) [Admin]    スーパーユーザーの作成"
     echo -e "6) ${COLOR}[WP]       商品AI記事生成 & WordPress自動投稿${RESET}"
     echo -e "7) ${COLOR}[News]     PCパーツ最新ニュース投稿 (RSS/URL)${RESET}"
     echo "---------------------------------------"
     echo "12) [Analysis] 製品データをTSV出力 (分析用)"
     echo "13) [Master]   属性マスター(TSV)をインポート"
     echo -e "14) ${COLOR}[Auto]     属性自動マッピング実行 ⚡${RESET}"
-    echo -e "15) ${COLOR}[SEO]       サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
+    echo -e "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
     echo -e "16) ${COLOR}[AI-M]     AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
-    echo -e "17) ${COLOR}[AI-Spec]   AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
-    echo -e "18) ${COLOR}[Price]     価格履歴の一斉記録 (record_price_history) 📈${RESET}"
+    echo -e "17) ${COLOR}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
+    echo -e "18) ${COLOR}[Price]    価格履歴の一斉記録 (record_price_history) 📈${RESET}"
     echo -e "19) ${RED}[Admin]     特定ショップのDBデータ一括削除 (クリーンアップ) 🗑️${RESET}"
     echo "---------------------------------------"
     echo "h) [Help]       使い方の説明"
@@ -153,10 +154,27 @@ while true; do
             run_django python manage.py migrate
             ;;
         2)
-            run_django python manage.py import_t_duga
-            run_django python manage.py import_t_fanza
-            run_django python manage.py normalize_duga
-            run_django python manage.py normalize_fanza
+            echo -e "\n${YELLOW}--- FANZA / DUGA 処理メニュー ---${RESET}"
+            echo "1) 新規インポート実行 (import -> normalize)"
+            echo "2) 【リセット】全FANZAデータを未処理に戻す (reset_fanza_migration)"
+            echo "3) 【リセット】全DUGAデータを未処理に戻す (reset_duga_migration)"
+            echo "4) 【再実行】リセット後に正規化のみ実行 (normalize_fanza/duga)"
+            read -p ">> " ADULT_CHOICE
+
+            if [ "$ADULT_CHOICE" == "1" ]; then
+                run_django python manage.py import_t_duga
+                run_django python manage.py import_t_fanza
+                run_django python manage.py normalize_duga
+                run_django python manage.py normalize_fanza
+            elif [ "$ADULT_CHOICE" == "2" ]; then
+                run_django python manage.py reset_fanza_migration
+            elif [ "$ADULT_CHOICE" == "3" ]; then
+                run_django python manage.py reset_duga_migration
+            elif [ "$ADULT_CHOICE" == "4" ]; then
+                echo -e "${COLOR}🔄 再正規化を開始します...${RESET}"
+                run_django python manage.py normalize_duga
+                run_django python manage.py normalize_fanza
+            fi
             ;;
         3)
             show_maker_menu
@@ -250,19 +268,15 @@ while true; do
             echo -e "\n${COLOR}pc_products_analysis.tsv を出力しました。${RESET}"
             ;;
         13)
-            # パスを固定して実行（ホストの master_data/attributes.tsv は コンテナの /usr/src/app/master_data/attributes.tsv に相当）
+            # パスを固定して実行
             FIXED_TSV="/usr/src/app/master_data/attributes.tsv"
             echo -e "\n${YELLOW}📁 マスターデータをインポート中...${RESET}"
             echo -e "📄 Target: $FIXED_TSV"
-            
             run_django python manage.py import_specs "$FIXED_TSV"
-            
             echo -e "${COLOR}✅ インポートが完了しました。${RESET}"
-            # 2. そのまま自動マッピングを実行
             
             echo -e "\n${YELLOW}⚡ 続けて属性自動マッピングを実行中...${RESET}"
             run_django python manage.py auto_map_attributes
-            
             echo -e "${COLOR}✅ すべての処理が完了しました。${RESET}"
             ;;
         14)
@@ -337,7 +351,7 @@ count_raw = qs_raw.count()
 qs_raw.delete()
 print(f"✅ BcLinkshareProduct から {count_raw} 件削除しました。")
 
-# 2. PCProduct のリンク解除 (MIDまたはアフィリエイトURLにMIDが含まれるもの)
+# 2. PCProduct のリンク解除
 qs_pc = PCProduct.objects.filter(affiliate_url__contains=mid)
 count_pc = qs_pc.count()
 qs_pc.update(affiliate_url=None, affiliate_updated_at=timezone.now())
@@ -353,7 +367,7 @@ EOF
     esac
 
     # 本番環境のみの事後処理
-    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(3|13|14|17|18|19)$ ]]; then
+    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(2|3|13|14|17|18|19)$ ]]; then
         echo -e "\n${COLOR}🔄 スケジューラーを再起動中...${RESET}"
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
         read -p "サイトマップも更新しますか？ (y/n): " CONFIRM

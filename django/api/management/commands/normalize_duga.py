@@ -7,7 +7,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone 
 
 # 関連エンティティのモデルをインポート
-from api.models import RawApiData, AdultProduct, Genre, Actress, Maker, Label, Director
+from api.models import RawApiData, AdultProduct, Genre, Actress, Maker, Label, Director, Series
 
 # ユーティリティのインポート
 from api.utils.common import generate_product_unique_id 
@@ -17,10 +17,14 @@ from api.utils.adult.entity_manager import get_or_create_entity
 logger = logging.getLogger(__name__)
 
 # すべてのエンティティモデルをリスト化
-ENTITY_MODELS = [Maker, Label, Director, Genre, Actress]
+ENTITY_MODELS = [Maker, Label, Director, Series, Genre, Actress]
 ENTITY_RELATION_KEYS = {
-    Maker: 'maker', Label: 'label', Director: 'director',
-    Genre: 'genres', Actress: 'actresses'
+    Maker: 'maker', 
+    Label: 'label', 
+    Director: 'director', 
+    Series: 'series',
+    Genre: 'genres', 
+    Actress: 'actresses'
 }
 
 class Command(BaseCommand):
@@ -30,20 +34,20 @@ class Command(BaseCommand):
     def _resolve_entity_names_to_pks(self, product_list, relations_map):
         """
         製品リストとリレーションマップに含まれるすべてのエンティティ名を
-        データベースのPKに解決する。
+        データベースのPKに解決し、辞書内のキーをモデルのフィールド名（_id）に書き換えます。
         """
         all_entity_names = {Model: set() for Model in ENTITY_MODELS}
 
         # 1. すべてのエンティティ名を収集
         for p in product_list:
-            # ForeignKey (Maker, Label, Director)
-            for Model in [Maker, Label, Director]:
+            # ForeignKey対象 (Maker, Label, Director, Series)
+            for Model in [Maker, Label, Director, Series]:
                 key = ENTITY_RELATION_KEYS[Model]
                 name = p.get(key)
                 if name:
                     all_entity_names[Model].add(name)
 
-            # ManyToMany (Genre, Actress)
+            # ManyToMany対象 (Genre, Actress)
             raw_id = p['raw_data_id']
             relations = relations_map.get(raw_id)
             if relations:
@@ -52,7 +56,7 @@ class Command(BaseCommand):
                     names = relations.get(key, [])
                     all_entity_names[Model].update(names)
 
-        # 2. 収集したすべての名前に対して一括で PK を取得
+        # 2. 収集したすべての名前に対して一括で PK を取得 (entity_managerを使用)
         pk_maps = {}
         for Model, names in all_entity_names.items():
             if names:
@@ -61,37 +65,36 @@ class Command(BaseCommand):
             else:
                 pk_maps[Model] = {}
 
-        # 3. Product インスタンスと Relations マップのフィールドを PK に置き換え
+        # 3. 辞書内の「名前」キーを削除し、「_id」キーにPKをセットする
+        # これにより AdultProduct(**p) 実行時に不正な引数エラーが出るのを防ぐ
         for p in product_list:
             # ForeignKey の置き換え
-            for Model in [Maker, Label, Director]:
+            for Model in [Maker, Label, Director, Series]:
                 key = ENTITY_RELATION_KEYS[Model]
-                name = p.pop(key, None)
+                name = p.pop(key, None) # 文字列名を削除
                 if name:
-                    # 'maker' (name) -> 'maker_id' (pk) にフィールド名を変更
                     pk = pk_maps[Model].get(name)
                     p[f'{key}_id'] = pk 
                 else:
                     p[f'{key}_id'] = None
 
-            # ManyToMany の置き換え
+            # ManyToMany の置き換え (relations_map内)
             raw_id = p['raw_data_id']
             relations = relations_map.get(raw_id)
             if relations:
                 for Model in [Genre, Actress]:
                     key = ENTITY_RELATION_KEYS[Model]
                     names = relations.pop(key, [])
-                    
-                    # 'genres' (names) -> 'genre_ids' (pks) にキーを変更
                     pks = [pk_maps[Model].get(name) for name in names if pk_maps[Model].get(name) is not None]
                     relations[f'{key}_ids'] = pks
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} API データ仕訳・正規化処理開始 ---'))
 
+        # 未移行のデータを取得
         raw_data_qs = RawApiData.objects.filter(api_source=self.API_SOURCE, migrated=False).order_by('id')
         
-        products_data = [] # Product インスタンスではなく、データ辞書を保持する
+        products_data = [] 
         relations_map = {} 
         processed_raw_ids = []
         total_processed = 0
@@ -99,17 +102,15 @@ class Command(BaseCommand):
         current_time = timezone.now()
         
         try:
-            self.stdout.write(f'処理対象のRawデータ件数: {raw_data_qs.count()} 件')
+            total_count = raw_data_qs.count()
+            self.stdout.write(f'処理対象のRawデータ件数: {total_count} 件')
 
-            # --------------------------------------------------------
-            # 1. データの正規化とエンティティ名の収集
-            # --------------------------------------------------------
             for raw_instance in raw_data_qs:
                 try:
                     normalized_data_list, relations_list = normalize_duga_data(raw_instance)
                     
                     if not normalized_data_list:
-                        logger.warning(f"Raw ID {raw_instance.id} の DUGA データから product_data が抽出できませんでした。スキップします。")
+                        logger.warning(f"Raw ID {raw_instance.id} の抽出に失敗。スキップします。")
                         continue
                         
                     product_data = normalized_data_list[0]
@@ -117,199 +118,139 @@ class Command(BaseCommand):
                     
                     product_data['updated_at'] = current_time 
                     
-                    # Product インスタンスではなく、辞書をリストに追加
+                    # リストに蓄積
                     products_data.append(product_data) 
-                    
                     relations_map[raw_instance.id] = relations
                     processed_raw_ids.append(raw_instance.id)
                     
                     total_processed += 1
                     
-                    # 500件ごとにバッチ処理
+                    # 500件ごとにバッチ処理実行
                     if len(products_data) >= 500:
                         self._process_batch(products_data, relations_map, processed_raw_ids)
                         
-                        # 次のバッチのためにリストとマップをクリア
+                        # クリア
                         products_data = []
                         relations_map = {}
                         processed_raw_ids = []
                         current_time = timezone.now() 
                         
-                except ValueError as ve:
-                    logger.warning(f"Raw ID {raw_instance.id} のデータが不完全なためスキップ: {ve}")
-                    continue
                 except Exception as e:
-                    logger.error(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}")
-                    self.stderr.write(self.style.ERROR(f"Raw ID {raw_instance.id} のデータ処理中に予期せぬエラーが発生: {e}"))
+                    logger.error(f"Raw ID {raw_instance.id} 処理中エラー: {e}")
+                    self.stderr.write(self.style.ERROR(f"Raw ID {raw_instance.id} 処理中エラー: {e}"))
                     continue
                 
-            # 残りのデータを保存・同期
+            # 残りのデータを処理
             if products_data:
                 self._process_batch(products_data, relations_map, processed_raw_ids)
 
-            self.stdout.write(self.style.SUCCESS(f'✅ 合計処理件数: {total_processed} 件の製品データを正規化・保存/更新しました。'))
+            self.stdout.write(self.style.SUCCESS(f'✅ 合計処理件数: {total_processed} 件の正規化・保存完了。'))
 
-            # --------------------------------------------------------
-            # 2. 関連エンティティの product_count を更新 
-            # --------------------------------------------------------
+            # 最後にカウント更新
             self.update_product_counts(self.stdout)
             
-            self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} API データ仕訳・正規化処理完了 (コミット済み) ---'))
+            self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} 全工程完了 ---'))
             
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"処理中に致命的なエラーが発生しました: {e}"))
-            logger.critical(f"正規化処理中に致命的なエラー: {e}")
+            self.stdout.write(self.style.ERROR(f"致命的エラー: {e}"))
+            logger.critical(f"致命的エラー: {e}")
 
-    # --------------------------------------------------------
-    # ヘルパーメソッド
-    # --------------------------------------------------------
-    
     def _process_batch(self, products_data, relations_map, processed_raw_ids):
-        """
-        バッチ全体でエンティティ名をPKに解決し、その後バルクUPSERTと同期を実行する。
-        """
-        # 1. エンティティ名をPKに解決 (products_data と relations_map の中身がPKに置き換わる)
-        self.stdout.write(f'バッチ処理開始: {len(products_data)} 件の製品エンティティ名を解決中...')
+        """バッチ単位での名前解決とDB保存"""
+        self.stdout.write(f'バッチ処理開始: {len(products_data)} 件')
+        
+        # 名前 -> PK 解決
         self._resolve_entity_names_to_pks(products_data, relations_map)
 
-        # 2. Product インスタンスに変換
+        # モデルインスタンス化
         products_to_upsert = [AdultProduct(**data) for data in products_data]
         
-        # 3. バルクUPSERTと同期を実行
+        # DB保存実行
         self._bulk_upsert_and_sync(products_to_upsert, relations_map, processed_raw_ids)
 
-
     def _bulk_upsert_and_sync(self, products_to_upsert, relations_map, processed_raw_ids):
-        """
-        AdultProductを一括でUPSERTし、その後にリレーションを一括で同期し、RawApiDataを更新する。
-        （元のコードからロジックの変更なし）
-        """
-        num_products = len(products_to_upsert)
-        self.stdout.write(f'製品UPSERT実行: {num_products} 件の製品データを保存/更新中...')
-        
-        # product_id_unique のリストを取得
+        """AdultProductのバルク保存、M2M同期、Rawデータのフラグ更新"""
         unique_ids = [p.product_id_unique for p in products_to_upsert]
         
-        # データベースに既存のID (pk) と product_id_unique の両方を取得
-        existing_products_data = AdultProduct.objects.filter(product_id_unique__in=unique_ids).values('id', 'product_id_unique')
-
-        # マッピング辞書を作成 { product_id_unique: id }
-        id_map = {p['product_id_unique']: p['id'] for p in existing_products_data}
-        existing_unique_ids = set(id_map.keys())
+        # 既存データのIDマップ作成
+        existing_products = AdultProduct.objects.filter(product_id_unique__in=unique_ids).values('id', 'product_id_unique')
+        id_map = {p['product_id_unique']: p['id'] for p in existing_products}
 
         products_to_create = []
         products_to_update = []
         
-        # 挿入/更新のインスタンスリストを分割し、更新対象には ID をセット
         for p in products_to_upsert:
-            if p.product_id_unique in existing_unique_ids:
-                p.id = id_map.get(p.product_id_unique)
-                if p.id:
-                    products_to_update.append(p)
-                else:
-                    logger.error(f"IDマッピングエラー: product_id_unique {p.product_id_unique} の ID が見つかりませんでした。")
+            if p.product_id_unique in id_map:
+                p.id = id_map[p.product_id_unique]
+                products_to_update.append(p)
             else:
                 products_to_create.append(p)
 
         try:
             with transaction.atomic():
+                # ForeignKeyフィールドの自動取得
                 fk_fields = [f.attname for f in AdultProduct._meta.fields if isinstance(f, models.ForeignKey)]
                 
-                # 更新対象フィールドリスト
                 update_fields = [
                     'title', 'release_date', 'affiliate_url', 'price', 
-                    'image_url_list', 'updated_at', 'is_active', 
+                    'image_url_list', 'sample_movie_url', 'updated_at', 'is_active', 
                 ] + fk_fields
                 
-                # 1. 新規レコードの一括挿入
+                # 1. 保存
                 if products_to_create:
                     AdultProduct.objects.bulk_create(products_to_create, batch_size=500)
-                    self.stdout.write(self.style.NOTICE(f'  - 新規作成: {len(products_to_create)} 件'))
-                
-                # 2. 既存レコードの一括更新 (IDがセットされていることを確認済み)
                 if products_to_update:
                     AdultProduct.objects.bulk_update(products_to_update, update_fields, batch_size=500)
-                    self.stdout.write(self.style.NOTICE(f'  - 既存更新: {len(products_to_update)} 件'))
                 
-                # 3. リレーション同期のために、すべてのProductの DB ID (pk) を取得/確認
-                product_db_id_map = {
-                    p.product_id_unique: p.id
-                    for p in products_to_upsert if p.id is not None
-                }
+                # 2. M2M同期のために最新のIDマップを再取得
+                refreshed = AdultProduct.objects.filter(product_id_unique__in=unique_ids).values('id', 'product_id_unique')
+                product_db_id_map = {p['product_id_unique']: p['id'] for p in refreshed}
                 
-                # 4. ManyToMany リレーションの同期
+                # 3. ManyToMany同期
                 self._synchronize_many_to_many(products_to_upsert, product_db_id_map, relations_map)
                 
-                # 5. RawApiData の migrated フラグを更新 (トランザクション内)
+                # 4. 移行済みフラグ更新
                 RawApiData.objects.filter(id__in=processed_raw_ids).update(
                     migrated=True, 
                     updated_at=timezone.now() 
                 )
-                self.stdout.write(self.style.NOTICE(f'RawApiData {len(processed_raw_ids)} 件の migrated フラグを True に更新しました。'))
-
+                self.stdout.write(self.style.NOTICE(f'バッチ {len(processed_raw_ids)} 件完了'))
 
         except Exception as e:
-            logger.error(f"バッチ処理中にDBエラーが発生しロールバック: {e}")
-            self.stdout.write(self.style.ERROR(f"バッチ処理中にDBエラーが発生しロールバック: {e}"))
-
+            logger.error(f"DBバッチエラー: {e}")
+            self.stdout.write(self.style.ERROR(f"DBバッチエラー: {e}"))
 
     def _synchronize_many_to_many(self, products_to_upsert, product_db_id_map, relations_map):
-        """
-        ManyToManyリレーション (Genre, Actress) を同期する。
-        （元のコードからロジックの変更なし）
-        """
+        """ジャンルと出演者のリレーションを更新"""
         product_db_ids = list(product_db_id_map.values())
         if not product_db_ids:
             return
 
-        # ------------------
-        # Genre (ジャンル) の同期
-        # ------------------
+        # --- Genre ---
         AdultProduct.genres.through.objects.filter(adultproduct_id__in=product_db_ids).delete() 
-        
-        genre_relations_to_insert = []
+        genre_rels = []
         for p in products_to_upsert:
-            raw_id = p.raw_data_id 
             db_id = product_db_id_map.get(p.product_id_unique)
+            if db_id and p.raw_data_id in relations_map:
+                for g_id in relations_map[p.raw_data_id].get('genres_ids', []):
+                    genre_rels.append(AdultProduct.genres.through(adultproduct_id=db_id, genre_id=g_id))
+        if genre_rels:
+            AdultProduct.genres.through.objects.bulk_create(genre_rels, batch_size=500, ignore_conflicts=True)
             
-            # relations_map は PK 解決後なので、'genre_ids' が入っている
-            if db_id and raw_id in relations_map:
-                for genre_id in relations_map[raw_id]['genres_ids']: 
-                    genre_relations_to_insert.append(
-                        AdultProduct.genres.through(adultproduct_id=db_id, genre_id=genre_id) 
-                    )
-
-        if genre_relations_to_insert:
-            AdultProduct.genres.through.objects.bulk_create(genre_relations_to_insert, batch_size=500, ignore_conflicts=True)
-            
-        # ------------------
-        # Actress (出演者) の同期
-        # ------------------
+        # --- Actress ---
         AdultProduct.actresses.through.objects.filter(adultproduct_id__in=product_db_ids).delete()
-
-        actress_relations_to_insert = []
+        actress_rels = []
         for p in products_to_upsert:
-            raw_id = p.raw_data_id
             db_id = product_db_id_map.get(p.product_id_unique)
-            
-            # relations_map は PK 解決後なので、'actress_ids' が入っている
-            if db_id and raw_id in relations_map:
-                for actress_id in relations_map[raw_id]['actresses_ids']:
-                    actress_relations_to_insert.append(
-                        AdultProduct.actresses.through(adultproduct_id=db_id, actress_id=actress_id)
-                    )
-
-        if actress_relations_to_insert:
-            AdultProduct.actresses.through.objects.bulk_create(actress_relations_to_insert, batch_size=500, ignore_conflicts=True)
-
+            if db_id and p.raw_data_id in relations_map:
+                for a_id in relations_map[p.raw_data_id].get('actresses_ids', []):
+                    actress_rels.append(AdultProduct.actresses.through(adultproduct_id=db_id, actress_id=a_id))
+        if actress_rels:
+            AdultProduct.actresses.through.objects.bulk_create(actress_rels, batch_size=500, ignore_conflicts=True)
 
     def update_product_counts(self, stdout):
-        """
-        関連エンティティテーブルの product_count カラムを中間テーブルの件数に基づいて更新する。
-        （元のコードからロジックの変更なし）
-        """
-        stdout.write("\n--- 関連エンティティの product_count を更新中 ---")
-        
+        """各エンティティの紐付け件数を集計して更新"""
+        stdout.write("\n--- カウント更新開始 ---")
         try:
             with transaction.atomic():
                 MAPPING = [
@@ -317,62 +258,31 @@ class Command(BaseCommand):
                     (Genre, 'genres'),
                     (Maker, 'products_made'), 
                     (Label, 'products_labeled'), 
-                    (Director, 'products_directed'), 
+                    (Director, 'products_directed'),
+                    (Series, 'products_series'), # 逆参照名はモデル定義に合わせる
                 ]
                 
-                # AdultProduct モデルからDUGAの製品IDのみをフィルタリングするための Subquery を準備
-                duga_product_ids = AdultProduct.objects.filter(api_source=self.API_SOURCE).values('id')
+                duga_products = AdultProduct.objects.filter(api_source=self.API_SOURCE)
 
-                for Model, related_name in MAPPING:
-                    
-                    if related_name.startswith('products_'):
-                        # Maker, Label, Director (ForeignKey リレーション)
-                        fk_field_name = f'{Model.__name__.lower()}_id'
-                        
-                        count_subquery = (
-                            AdultProduct.objects
-                            .filter(
-                                api_source=self.API_SOURCE,
-                                **{fk_field_name: OuterRef('pk')} 
-                            )
-                            .values(fk_field_name) 
-                            .annotate(count=Count('id'))
-                            .values('count')[:1]
-                        )
-                        
-                        Model.objects.filter(api_source=self.API_SOURCE).update(
-                            product_count=Coalesce( 
-                                Subquery(count_subquery, output_field=models.IntegerField()),
-                                0,
-                                output_field=models.IntegerField()
-                            )
-                        )
-
+                for Model, rel_name in MAPPING:
+                    if rel_name.startswith('products_'):
+                        # FK
+                        fk_name = f'{Model.__name__.lower()}_id'
+                        subquery = AdultProduct.objects.filter(
+                            api_source=self.API_SOURCE, **{fk_name: OuterRef('pk')}
+                        ).values(fk_name).annotate(c=Count('id')).values('c')[:1]
                     else:
-                        # Actress, Genre (ManyToMany リレーション)
-                        ThroughModel = getattr(AdultProduct, related_name).through
-                        
-                        entity_fk_name = f'{Model.__name__.lower()}_id' 
-                        filter_kwargs = {entity_fk_name: OuterRef('pk')}
+                        # M2M
+                        Through = getattr(AdultProduct, rel_name).through
+                        entity_fk = f'{Model.__name__.lower()}_id' 
+                        subquery = Through.objects.filter(
+                            **{entity_fk: OuterRef('pk')}, 
+                            adultproduct_id__in=Subquery(duga_products.values('id'))
+                        ).values(entity_fk).annotate(c=Count('adultproduct_id')).values('c')[:1]
 
-                        count_subquery = (
-                            ThroughModel.objects
-                            .filter(**filter_kwargs, adultproduct_id__in=Subquery(duga_product_ids.values('id')))
-                            .values(entity_fk_name)
-                            .annotate(count=Count('adultproduct_id'))
-                            .values('count')[:1]
-                        )
-
-                        Model.objects.filter(api_source=self.API_SOURCE).update(
-                            product_count=Coalesce( 
-                                Subquery(count_subquery, output_field=models.IntegerField()),
-                                0,
-                                output_field=models.IntegerField()
-                            )
-                        )
-
-                    stdout.write(f'✅ {Model.__name__} の product_count を更新しました。')
-                        
+                    Model.objects.filter(api_source=self.API_SOURCE).update(
+                        product_count=Coalesce(Subquery(subquery, output_field=models.IntegerField()), 0)
+                    )
+                    stdout.write(f'✅ {Model.__name__} 更新')
         except Exception as e:
-            logger.error(f"エンティティカウント更新中にDBエラーが発生しロールバック: {e}")
-            self.stdout.write(self.style.ERROR(f"エンティティカウント更新中にエラーが発生しました: {e}"))
+            stdout.write(self.style.ERROR(f"カウント更新エラー: {e}"))

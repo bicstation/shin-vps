@@ -1,0 +1,126 @@
+/* 💡 レイアウト全体のベース */
+.layoutContainer {
+    width: 100%;
+}
+
+/* 🚀 セールバナー：最大幅1600pxで中央寄せ */
+.banner {
+    max-width: 1600px;
+    margin: 20px auto 0;
+    padding: 16px 24px;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.bannerEmoji {
+    font-size: 1.2rem;
+}
+
+/* 🍞 パンくずリスト：Page側のコンテンツと左端を揃える */
+.breadcrumb {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 15px 40px; /* Page側のメイン余白40pxに合わせる */
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+    color: #111;
+}
+
+.separator {
+    color: #cbd5e1;
+}
+
+.current {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* 📦 メインコンテンツの包み：Page側の全幅ヘッダーを活かすため幅制限なし */
+.mainWrapper {
+    width: 100%;
+}
+
+/* 🚩 相談CTAセクション：下部にゆったり配置 */
+.ctaSection {
+    width: 100%;
+    margin-top: 60px;
+    padding: 80px 20px;
+    text-align: center;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+}
+
+.ctaInner {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ctaTitle {
+    font-size: 1.8rem; /* MainPageのタイトルウェイトに合わせる */
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 16px;
+}
+
+.ctaDescription {
+    color: #475569;
+    margin-bottom: 32px;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.ctaButton {
+    display: inline-block;
+    color: #fff;
+    padding: 16px 40px;
+    border-radius: 12px; /* カード類と合わせた角丸 */
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.ctaButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* 📱 レスポンシブ対応 */
+@media (max-width: 1024px) {
+    .banner {
+        margin: 10px 20px 0;
+        font-size: 0.85rem;
+    }
+    .breadcrumb {
+        padding: 10px 20px;
+    }
+    .ctaSection {
+        padding: 60px 20px;
+    }
+    .ctaTitle {
+        font-size: 1.5rem;
+    }
+}

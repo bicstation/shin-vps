@@ -1,0 +1,143 @@
+/* =====================================================================
+   🏆 PCスペック解析ランキング ページ専用スタイルシート
+   ===================================================================== */
+
+.container {
+  max-width: 1400px; /* PC-FINDERと統一 */
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  background-color: #f8fafc;
+}
+
+/* ヘッダーエリア */
+.header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.badge {
+  display: inline-block;
+  background-color: #0f172a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0.25rem 1rem;
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+  letter-spacing: 0.2em;
+}
+
+.title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  margin-bottom: 1rem;
+  color: #0f172a;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 🚩 グリッド設定：ProductCardの並びを制御 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+/* 📊 チャートエリアの調整 (ProductCardのchildrenとして注入される部分) */
+.chartWrapper {
+  width: 100%;
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.chartHeader {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 8px;
+  border-bottom: 1px dashed #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.analysisLabel {
+  display: block;
+  font-size: 10px;
+  font-weight: 900;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ページネーション */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pageButton {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.9rem;
+}
+
+.pageButton:hover {
+  background: #0f172a;
+  color: white;
+  border-color: #0f172a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.pageInfo {
+  font-size: 1rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.pageInfo strong {
+  color: #0f172a;
+  font-weight: 900;
+}
+
+/* モバイル対応の微調整 */
+@media (max-width: 640px) {
+  .container {
+    padding: 2rem 1rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr; /* スマホでは1カラム */
+    gap: 1.5rem;
+  }
+
+  .pagination {
+    gap: 0.75rem;
+  }
+  
+  .pageButton {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+  }
+}

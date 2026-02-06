@@ -7,18 +7,20 @@ import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
- * shared/styles 直下を参照するように修正
  */
 import '@shared/styles/globals.css';
 
 /**
  * ✅ 2. 共通設定とコンポーネント
- * shared 直下の新ディレクトリ構造に合わせてインポート
  */
 import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
 import Header from '@shared/layout/Header';
 import Footer from '@shared/layout/Footer';
 import Sidebar from '@shared/layout/Sidebar';
+
+// ✅ APIから統計データを取得する関数（既存のAPIライブラリからインポート想定）
+// もし未作成の場合は、仮のデータ構造を定義します
+import { getAdultSidebarStats } from '@shared/lib/api/django';
 
 /**
  * ✅ 3. SEO設定
@@ -29,20 +31,16 @@ const inter = Inter({ subsets: ["latin"] });
 
 /**
  * 💡 強制的動的レンダリングの設定
- * マルチドメイン判定（Headersの取得）を行うため必須
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
  * 💡 メタデータの動的生成
- * Next.js 15 では headers() は非同期で扱うのが推奨されます
  */
 export async function generateMetadata(): Promise<Metadata> {
-  const headerList = await headers(); // ✅ await を追加
+  const headerList = await headers();
   const host = headerList.get('host') || "localhost";
-  
-  // 💡 constructMetadata は内部で host を元にタイトル等を生成する想定
   return constructMetadata();
 }
 
@@ -53,13 +51,22 @@ export default async function RootLayout({
 }>) {
   /**
    * ✅ サイト設定の取得
-   * Next.js 15 対応: RootLayout も async にして headers を await
    */
   const headerList = await headers();
   const host = headerList.get('host') || "localhost";
   const site = getSiteMetadata(host);
-  
   const themeColor = getSiteColor(site.site_name);
+
+  // 💡 サイドバーに表示する統計データをサーバーサイドで取得
+  let sidebarData = { makers: [], actresses: [], series: [] };
+  try {
+    if (site.site_group === 'adult') {
+      // Django API等から実際のカウントデータを取得
+      sidebarData = await getAdultSidebarStats();
+    }
+  } catch (e) {
+    console.error("Sidebar data fetch failed:", e);
+  }
 
   return (
     <html lang="ja">
@@ -68,7 +75,6 @@ export default async function RootLayout({
         style={{
           backgroundColor: "#111122",
           color: "#ffffff",
-          // ✅ CSS変数を動的に注入（サイトごとのテーマカラー）
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": "#111122",
@@ -77,14 +83,14 @@ export default async function RootLayout({
         {/* 1. 共通ヘッダー */}
         <Header />
 
-        {/* 2. アダルトサイトグループ特有の告知バー */}
+        {/* 2. アダルトサイト特有の告知バー */}
         {site.site_group === 'adult' && (
           <div 
             className={styles.adDisclosure} 
             style={{ 
               padding: "8px 15px", 
               fontSize: "12px", 
-              textAlign: "center", 
+              text-align: "center", 
               backgroundColor: "#1a1a2e", 
               color: "#888",
               borderBottom: "1px solid #3d3d6650"
@@ -107,6 +113,7 @@ export default async function RootLayout({
         {/* 3. メインレイアウト構造 */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
+            {/* 💡 Suspenseで包むことで、サイドバーの読み込みを待機可能に */}
             <Suspense 
               fallback={
                 <div style={{ color: '#666', padding: '20px', textAlign: 'center' }}>
@@ -114,8 +121,13 @@ export default async function RootLayout({
                 </div>
               }
             >
-              {/* 共通サイドバー */}
-              <Sidebar />
+              {/* ✅ サイドバーに取得したデータを渡す 
+                  makersだけでなくactressesやseriesも渡せるようにPropsを拡張
+              */}
+              <Sidebar 
+                makers={sidebarData.makers} 
+                recentPosts={[]} 
+              />
               
               {/* 各ページのコンテンツ */}
               <main className={styles.mainContent}>
