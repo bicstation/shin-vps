@@ -5,9 +5,11 @@ import React from "react";
 import AdultProductCard from "@shared/cards/AdultProductCard"; 
 import Sidebar from "@shared/layout/Sidebar";
 import Pagination from "@shared/common/Pagination"; 
+// 💡 @shared/lib/api/django からアダルト製品取得用関数をインポート
 import { getAdultProducts, fetchMakers } from '@shared/lib/api/django';
 import { fetchPostList } from '@shared/lib/api';
-import { COLORS } from "@/shared/styles/constants";
+// 💡 共通の定数ファイルからCOLORSを取得
+import { COLORS } from "@shared/styles/constants";
 import styles from "./BrandPage.module.css";
 import Link from "next/link";
 
@@ -53,7 +55,6 @@ const decodeHtml = (html: string) => {
 
 /**
  * 💡 メタデータ生成
- * SEOのために、ブラウザのタイトルや説明文を動的に生成します
  */
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ attribute?: string }> }) {
     try {
@@ -61,7 +62,6 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
         const decodedSlug = decodeURIComponent(slug);
         const sParams = await searchParams;
         
-        // メーカー一覧を取得してスラッグと照合
         const makers = await fetchMakers();
         const normalizedSlug = ['duga', 'fanza'].includes(decodedSlug.toLowerCase()) ? decodedSlug.toUpperCase() : decodedSlug;
         
@@ -109,25 +109,20 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
     try {
         debugLogs.push(`Step 1: Fetching Sidebar & News...`);
         
-        // サイドバー用のメーカーリストと、WordPressのニュース記事を同時に取得
         const [mRes, wRes] = await Promise.all([
             fetchMakers().catch(e => { debugLogs.push(`❌ Makers Error: ${e.message}`); return []; }),
             fetchPostList(5).catch(e => { debugLogs.push(`❌ WP Error: ${e.message}`); return { results: [] }; })
         ]);
         
-        // APIレスポンスの形状（配列かオブジェクトか）を柔軟に処理
         makersData = Array.isArray(mRes) ? mRes : (mRes as any).results || [];
         wpData = wRes || { results: [] };
-        debugLogs.push(`Sidebar: ${makersData.length} makers found.`);
 
-        // 🚀 メインの作品データ取得
         const apiParams: any = {
             offset: currentOffset,
             limit: limit,
             attribute: attributeSlug,
         };
 
-        // ブランド（FANZA等）の場合は api_source フィルタ、個別メーカーの場合は maker フィルタを使用
         if (isMainPlatform) {
             apiParams.api_source = searchKey; 
             debugLogs.push(`Step 2: Requesting api_source=${searchKey}...`);
@@ -136,6 +131,7 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
             debugLogs.push(`Step 2: Requesting maker=${searchKey}...`);
         }
 
+        // 🚀 getAdultProducts を使用してデータを取得
         pcData = await getAdultProducts(apiParams);
         debugLogs.push(`Step 2 Result: ${pcData?.count || 0} items found.`);
 
@@ -156,7 +152,7 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
 
     return (
         <div className={styles.pageContainer}>
-            {/* 🛠️ システムデバッグコンソール（開発時のみ有用） */}
+            {/* システムデバッグコンソール */}
             <div style={{ position: 'relative', zIndex: 10000, background: '#000', color: '#0f0', padding: '10px', borderBottom: '2px solid #0f0', fontFamily: 'monospace', fontSize: '12px' }}>
                 <details>
                     <summary style={{ cursor: 'pointer' }}>📂 DEBUG CONSOLE: {decodedSlug} ({totalCount} items)</summary>
@@ -177,7 +173,6 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                 </details>
             </div>
 
-            {/* ヒーローヘッダーセクション */}
             <div className={styles.fullWidthHeader}>
                 <div className={styles.headerInner}>
                     <h1 className={styles.title}>
@@ -193,7 +188,6 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
             </div>
 
             <div className={styles.wrapper}>
-                {/* サイドバー（メーカー一覧とニュース） */}
                 <aside className={styles.sidebar}>
                     <Sidebar 
                         makers={makersData} 
@@ -201,9 +195,7 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                     />
                 </aside>
 
-                {/* メインコンテンツエリア */}
                 <main className={styles.main}>
-                    {/* ソート等のフィルタバー（見た目のみ） */}
                     <div className={styles.filterBar}>
                         <span className={styles.activeFilter}>最新順</span>
                         <span>人気順</span>
@@ -212,7 +204,6 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
 
                     <section className={styles.productSection}>
                         {(!pcData?.results || pcData.results.length === 0) ? (
-                            // データが0件の場合の表示
                             <div className={styles.noDataLarge}>
                                 <div className={styles.noDataIcon}>🚫</div>
                                 <p className={styles.noDataText}>該当する作品が見つかりませんでした。</p>
@@ -221,7 +212,6 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                                 </Link>
                             </div>
                         ) : (
-                            // データがある場合のグリッド表示
                             <>
                                 <div className={styles.productGrid}>
                                     {pcData.results.map((item: any) => (
@@ -236,7 +226,6 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                                     ))}
                                 </div>
 
-                                {/* ページネーションコンポーネント */}
                                 <div className={styles.paginationWrapper}>
                                     <Pagination 
                                         currentOffset={currentOffset}
