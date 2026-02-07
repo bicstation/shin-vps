@@ -4,6 +4,7 @@ import logging
 from django.contrib import admin
 from django import forms
 from django.utils.safestring import mark_safe
+# 管理コマンド実行用
 from django.core.management import call_command
 from django.http import HttpResponseRedirect
 from django.urls import path
@@ -186,7 +187,6 @@ class PCProductAdmin(admin.ModelAdmin):
     def is_download_display(self, obj):
         return "DL版" if obj.is_download else "物理"
 
-    # --- API連携アクション ---
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -212,13 +212,19 @@ class AdultProductAdmin(admin.ModelAdmin):
     list_filter = (
         'is_active', 'is_posted', 'api_source', 'maker', 'release_date'
     )
-    search_fields = ('title', 'product_id_unique', 'ai_summary')
+    # 🚀 検索フィールドに product_description を追加
+    search_fields = ('title', 'product_id_unique', 'product_description', 'ai_summary')
     filter_horizontal = ('genres', 'actresses', 'attributes')
     readonly_fields = ('created_at', 'updated_at', 'api_source', 'last_spec_parsed_at')
 
     fieldsets = (
         ('基本ステータス', {
-            'fields': (('product_id_unique', 'api_source'), 'title', ('is_active', 'is_posted')),
+            'fields': (
+                ('product_id_unique', 'api_source'), 
+                'title', 
+                'product_description',  # 🚀 ここに新設カラムを追加
+                ('is_active', 'is_posted')
+            ),
         }),
         ('💰 価格・アフィリエイト', {
             'fields': (('release_date', 'price'), 'affiliate_url'),
@@ -249,7 +255,6 @@ class AdultProductAdmin(admin.ModelAdmin):
 
     def score_radar_tag(self, obj):
         val = obj.spec_score
-        # アダルト用は少しセクシーなピンク・パープル系に
         color = "#e83e8c" if val > 75 else "#6f42c1" if val > 50 else "#6c757d"
         return mark_safe(f'<div style="width: 80px; background: #eee; height: 10px; border-radius: 5px; overflow: hidden;">'
                          f'<div style="width: {val}%; background: {color}; height: 100%;"></div>'

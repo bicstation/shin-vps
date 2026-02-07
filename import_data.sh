@@ -3,10 +3,7 @@
 # ==============================================================================
 # 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール
 # ==============================================================================
-# 🛠 修正内容: 量販店インポートに --none (除外キーワード) を適用
-# 🛠 修正内容: DBクリーンアップ機能の追加
-# 🛠 修正内容: AIスペック解析の全メーカー一括実行対応
-# 🛠 修正内容: FANZA/DUGA のリセット＆再正規化メニューの追加
+# 🛠 修正内容: 17番のAI詳細スペック解析でメーカーメニューが表示されない問題を修正
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -129,18 +126,19 @@ while true; do
     echo "2) [Import]   Tiper データ (Fanza/Duga) インポート・リセット"
     echo -e "3) ${COLOR}[Import]   メーカー別インポート・同期 ✨${RESET}"
     echo "4) [Import]   AV-Flash データのインポート"
-    echo "5) [Admin]    スーパーユーザーの作成"
+    echo "5) [Admin]     スーパーユーザーの作成"
     echo -e "6) ${COLOR}[WP]       商品AI記事生成 & WordPress自動投稿${RESET}"
     echo -e "7) ${COLOR}[News]     PCパーツ最新ニュース投稿 (RSS/URL)${RESET}"
     echo "---------------------------------------"
     echo "12) [Analysis] 製品データをTSV出力 (分析用)"
     echo "13) [Master]   属性マスター(TSV)をインポート"
     echo -e "14) ${COLOR}[Auto]     属性自動マッピング実行 ⚡${RESET}"
-    echo -e "15) ${COLOR}[SEO]      サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
+    echo -e "15) ${COLOR}[SEO]       サイトマップ手動更新 (Sitemap.xml) 🌐${RESET}"
     echo -e "16) ${COLOR}[AI-M]     AIモデル一覧の確認 (Gemini/Gemma) 🤖${RESET}"
-    echo -e "17) ${COLOR}[AI-Spec]  AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
-    echo -e "18) ${COLOR}[Price]    価格履歴の一斉記録 (record_price_history) 📈${RESET}"
+    echo -e "17) ${COLOR}[AI-Spec]   AI詳細スペック解析 (analyze_pc_spec) 🔥${RESET}"
+    echo -e "18) ${COLOR}[Price]     価格履歴の一斉記録 (record_price_history) 📈${RESET}"
     echo -e "19) ${RED}[Admin]     特定ショップのDBデータ一括削除 (クリーンアップ) 🗑️${RESET}"
+    echo -e "20) ${COLOR}[AI-Adult] アダルト作品AI解析 (analyze_adult) 🔞${RESET}"
     echo "---------------------------------------"
     echo "h) [Help]       使い方の説明"
     echo "8) 終了"
@@ -197,7 +195,6 @@ while true; do
                 10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
                 31) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_ark.py ;;
 
-                # --- API 経由（量販店キーワードループ対応） ---
                 1|2|8|18|19|20|21|24|25|26|27|28|29)
                     if [ "$SLUG" == "asus" ]; then
                         echo -e "\n${COLOR}📡 LinkShare API 経由で取得中... (ASUS)${RESET}"
@@ -268,14 +265,13 @@ while true; do
             echo -e "\n${COLOR}pc_products_analysis.tsv を出力しました。${RESET}"
             ;;
         13)
-            # パスを固定して実行
             FIXED_TSV="/usr/src/app/master_data/attributes.tsv"
             echo -e "\n${YELLOW}📁 マスターデータをインポート中...${RESET}"
             echo -e "📄 Target: $FIXED_TSV"
             run_django python manage.py import_specs "$FIXED_TSV"
             echo -e "${COLOR}✅ インポートが完了しました。${RESET}"
             
-            echo -e "\n${YELLOW}⚡ 続けて属性自動マッピングを実行中...${RESET}"
+            echo -e "\n${YELLOW}⚡ 続けて属性自動マッピング実行中...${RESET}"
             run_django python manage.py auto_map_attributes
             echo -e "${COLOR}✅ すべての処理が完了しました。${RESET}"
             ;;
@@ -286,19 +282,22 @@ while true; do
         15) update_sitemap ;;
         16) run_django python manage.py ai_model_name ;;
         17)
+            # --- 🛠 ここを修正しました ---
             echo -e "\n${YELLOW}--- AI詳細スペック解析モード ---${RESET}"
-            echo "番号選択: 各メーカー個別"
+            show_maker_menu  # メニュー呼び出しを追加
             echo "all:     全メーカー一括解析"
             read -p "メーカー指定 (番号/all): " SPEC_MK_VAL
             
             MK_ARG=""
             if [[ "$SPEC_MK_VAL" == "all" ]]; then
                 echo -e "${COLOR}🚀 全メーカーを対象に解析を開始します...${RESET}"
-            else
-                [[ -z "$SPEC_MK_VAL" || "$SPEC_MK_VAL" == "99" ]] && continue
+            elif [[ "$SPEC_MK_VAL" =~ ^[0-9]+$ ]] && [ "$SPEC_MK_VAL" -le 31 ]; then
                 MK_NAME=${MAKERS[$SPEC_MK_VAL]}
                 MK_ARG="--maker $MK_NAME"
                 echo -e "${COLOR}🚀 メーカー: $MK_NAME を解析中...${RESET}"
+            else
+                echo "キャンセルまたは無効な選択です。"
+                continue
             fi
 
             read -p "未解析分のみ実行しますか？ (y/n): " ONLY_NULL
@@ -345,13 +344,11 @@ import sys
 mid = "$DEL_MID"
 slug = "$DEL_SLUG"
 
-# 1. 生データの削除
 qs_raw = BcLinkshareProduct.objects.filter(mid=mid)
 count_raw = qs_raw.count()
 qs_raw.delete()
 print(f"✅ BcLinkshareProduct から {count_raw} 件削除しました。")
 
-# 2. PCProduct のリンク解除
 qs_pc = PCProduct.objects.filter(affiliate_url__contains=mid)
 count_pc = qs_pc.count()
 qs_pc.update(affiliate_url=None, affiliate_updated_at=timezone.now())
@@ -361,13 +358,48 @@ EOF
                 echo "キャンセルしました。"
             fi
             ;;
-        h) show_help ;;
+        20)
+            echo -e "\n${YELLOW}--- 🔞 アダルト作品 AI解析モード ---${RESET}"
+            echo "どのブランドを解析しますか？"
+            echo "1) DUGA のみ (--brand DUGA)"
+            echo "2) FANZA のみ (--brand FANZA)"
+            echo "3) 全ブランド (指定なし)"
+            read -p ">> " BRAND_CHOICE
+            
+            BRAND_ARG=""
+            [[ "$BRAND_CHOICE" == "1" ]] && BRAND_ARG="--brand DUGA"
+            [[ "$BRAND_CHOICE" == "2" ]] && BRAND_ARG="--brand FANZA"
+
+            echo -e "\n解析範囲を選択してください"
+            echo "1) 未解析データを解析 (--limit)"
+            echo "2) 特定のプロダクトIDを指定"
+            echo "3) 強制再解析 (--force)"
+            read -p ">> " ADULT_AI_MODE
+
+            LIMIT_ARG="--limit 50"
+            FORCE_ARG=""
+            ID_ARG=""
+
+            if [ "$ADULT_AI_MODE" == "1" ]; then
+                read -p "処理件数 (デフォルト50): " ADULT_LIMIT
+                [[ -n "$ADULT_LIMIT" ]] && LIMIT_ARG="--limit $ADULT_LIMIT"
+            elif [ "$ADULT_AI_MODE" == "2" ]; then
+                read -p "プロダクトID (例: d_12345): " TARGET_PID
+                [[ -n "$TARGET_PID" ]] && ID_ARG="$TARGET_PID" && LIMIT_ARG=""
+            elif [ "$ADULT_AI_MODE" == "3" ]; then
+                FORCE_ARG="--force"
+                read -p "処理件数 (デフォルト100): " ADULT_LIMIT
+                [[ -n "$ADULT_LIMIT" ]] && LIMIT_ARG="--limit $ADULT_LIMIT"
+            fi
+
+            echo -e "\n${COLOR}🔞 AIソムリエが作品をレビュー中... (Gemini) ${RESET}"
+            run_django python manage.py analyze_adult $ID_ARG $LIMIT_ARG $FORCE_ARG $BRAND_ARG
+            ;;
         8) exit 0 ;;
         *) echo "無効な選択です。" ;;
     esac
 
-    # 本番環境のみの事後処理
-    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(2|3|13|14|17|18|19)$ ]]; then
+    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(2|3|13|14|17|18|19|20)$ ]]; then
         echo -e "\n${COLOR}🔄 スケジューラーを再起動中...${RESET}"
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
         read -p "サイトマップも更新しますか？ (y/n): " CONFIRM

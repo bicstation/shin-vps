@@ -11,23 +11,26 @@
   border: 1px solid #3d3d66;
   background-color: #1a1a2e;
   transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  isolation: isolate;
 }
 
 .cardContainer:hover {
   transform: translateY(-0.25rem);
-  border-color: rgba(233, 69, 96, 0.6); /* アダルト向けに少し赤みを強めに */
+  border-color: rgba(233, 69, 96, 0.6);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(233, 69, 96, 0.1);
 }
 
-/* 2. 画像セクション */
+/* 2. 画像・動画セクション */
 .imageSection {
   position: relative;
-  aspect-ratio: 16 / 9; /* アダルトコンテンツに最適な比率 */
+  aspect-ratio: 16 / 9;
   width: 100%;
   overflow: hidden;
-  background-color: #000; /* 読み込み前の下地 */
+  background-color: #000;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
+/* imgとvideoの両方に適用 */
 .thumbnail {
   height: 100%;
   width: 100%;
@@ -37,22 +40,28 @@
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   backface-visibility: hidden;
-  transform: translateZ(0); /* ハードウェアアクセラレーションを有効化 */
+  transform: translateZ(0); 
 }
 
 .cardContainer:hover .thumbnail {
-  transform: scale(1.08); /* 拡大しすぎによるボケを抑えるため少し控えめに */
+  transform: scale(1.05);
 }
 
+/* 💡 デジタル感を演出するオーバーレイ */
 .imageOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, #1a1a2e 0%, transparent 40%, transparent 100%);
+  /* 走査線（スキャンライン）エフェクト + 下部沈み込みグラデーション */
+  background: 
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%),
+    linear-gradient(to top, #1a1a2e 0%, transparent 50%);
+  background-size: 100% 3px, 100% 100%;
   opacity: 0.9;
   pointer-events: none;
+  z-index: 5;
 }
 
-/* 🎥 サンプル動画バッジ */
+/* 🎥 サンプル動画・プレビューバッジ */
 .sampleBadge {
   position: absolute;
   top: 0.75rem;
@@ -62,24 +71,25 @@
   align-items: center;
   gap: 0.375rem;
   border-radius: 4px;
-  background-color: rgba(233, 69, 96, 0.85); /* 鮮やかなレッドピンク */
-  backdrop-filter: blur(4px);
-  padding: 0.25rem 0.5rem;
+  background-color: rgba(233, 69, 96, 0.9); /* 少し濃くして視認性UP */
+  backdrop-filter: blur(8px);
+  padding: 0.25rem 0.6rem;
   font-size: 9px;
   font-weight: 900;
   color: #ffffff;
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
+  letter-spacing: 0.05em;
 }
 
-/* 録画中のような点滅ドット */
 .sampleDot {
   color: #ffffff;
+  font-size: 8px;
   animation: blink 1s infinite;
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 2px white); }
   50% { opacity: 0.3; }
 }
 
@@ -88,16 +98,16 @@
   bottom: 0.75rem;
   left: 0.75rem;
   z-index: 10;
-  border-radius: 9999px;
-  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 4px; /* タグ形状に合わせる */
+  background-color: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(12px);
-  padding: 0.2rem 0.6rem;
+  padding: 0.2rem 0.5rem;
   font-size: 9px;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #99e0ff;
-  border: 1px solid rgba(153, 224, 255, 0.2);
+  letter-spacing: 0.1em;
+  color: #00d1b2; /* DUGAを意識したターコイズ */
+  border: 1px solid rgba(0, 209, 178, 0.3);
 }
 
 /* 3. コンテンツ */
@@ -116,10 +126,10 @@
   min-height: 2.8rem;
   font-size: 14px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.4;
   color: #f3f4f6;
   transition: color 200ms;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .cardContainer:hover .title {
@@ -130,16 +140,16 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .infoLabel {
   font-size: 9px;
-  color: #9ca3af;
+  color: #6b7280;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  min-width: 36px;
+  min-width: 40px;
 }
 
 .infoLink {
@@ -185,22 +195,19 @@
   border-radius: 0.5rem;
   background-color: #2a2a4a;
   padding: 0.625rem 0.5rem;
-  font-size: 11px;
+  font-size: 10px; /* 少し小さくして安定感を出す */
   font-weight: 900;
   color: #ffffff;
   transition: all 200ms;
   border: 1px solid rgba(255, 255, 255, 0.1);
   text-decoration: none;
   cursor: pointer;
+  letter-spacing: 0.05em;
 }
 
 .btnView:hover {
   background-color: #3d3d66;
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.btnView:active {
-  transform: scale(0.96);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btnGet {
@@ -211,7 +218,7 @@
   border-radius: 0.5rem;
   background: linear-gradient(135deg, #e94560 0%, #ff5e78 100%);
   padding: 0.625rem 0.5rem;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
   color: #ffffff;
   box-shadow: 0 8px 20px -4px rgba(233, 69, 96, 0.4);
@@ -219,13 +226,14 @@
   border: none;
   text-decoration: none;
   cursor: pointer;
+  letter-spacing: 0.05em;
 }
 
 .btnGet:hover {
   filter: brightness(1.1);
-  box-shadow: 0 10px 25px -4px rgba(233, 69, 96, 0.6);
+  transform: translateY(-1px);
 }
 
-.btnGet:active {
+.btnGet:active, .btnView:active {
   transform: scale(0.96);
 }

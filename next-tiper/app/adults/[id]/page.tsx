@@ -10,7 +10,7 @@ import styles from './ProductDetail.module.css';
 // ✅ 共通ライブラリ・コンポーネント
 import { getAdultProductDetail, getAdultProducts } from '@shared/lib/api/django';
 import { constructMetadata } from '@shared/lib/metadata'; 
-import AdultProductCard from '@shared/cards/AdultProductCard'; // 💡 共通カードをインポート
+import AdultProductCard from '@shared/cards/AdultProductCard';
 import AdultProductGallery from '@shared/cards/AdultProductGallery';
 import MoviePlayerModal from '@shared/product/MoviePlayerModal';
 
@@ -54,6 +54,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     console.error("Fetch product error:", e);
   }
 
+  // データがない場合は404風の表示
   if (!product) {
     return (
       <div className={styles.notFound}>
@@ -66,14 +67,45 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     );
   }
 
-  // 2. 関連作品の取得 (メーカー軸)
+  // 💡 DUGA判定
+  const isDuga = product.api_source === 'DUGA';
+
+  // --- 🖼️ ビジュアル抽出ロジックの強化 ---
+  const jacketImage = (Array.isArray(product.image_url_list) && product.image_url_list.length > 0)
+    ? product.image_url_list[0] 
+    : (product.image_url || '/placeholder.png');
+
+  const galleryImages = Array.isArray(product.image_url_list) ? product.image_url_list : [];
+
+  // --- 🎥 動画データの正規化 (Server Componentのため useMemo は削除) ---
+  let movieData = null;
+  if (product.sample_movie_url) {
+    if (typeof product.sample_movie_url === 'object' && product.sample_movie_url !== null) {
+      movieData = {
+        url: product.sample_movie_url.url || null,
+        preview_image: product.sample_movie_url.preview_image || null
+      };
+    } else {
+      movieData = { url: product.sample_movie_url, preview_image: null };
+    }
+  }
+
+  // --- 📊 スコアデータの安全な数値変換 (JSONField対策) ---
+  const getSafeScore = (val: any) => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'object' && val !== null) return val.score || 0;
+    const parsed = parseInt(val);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  // 2. 関連作品の取得
   let relatedProducts = [];
   try {
     if (product.maker?.id) {
       const response = await getAdultProducts({ 
         maker: product.maker.id, 
         limit: 4,
-        exclude: id // 💡 現在表示中の作品を除外
+        exclude: id
       });
       relatedProducts = response?.results || [];
     }
@@ -86,74 +118,108 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
   return (
     <div className={styles.wrapper}>
-      {/* 🛠️ ナビゲーション */}
+      {/* 🛠️ ナビゲーションバー */}
       <nav className={styles.nav}>
         <Link href={`/${currentCategory}`} className={styles.backLink}>
-          « EXPLORE ALL MOVIES
+          « EXPLORE {isDuga ? 'DUGA' : 'ALL'} ARCHIVE
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-[10px] text-gray-600 font-mono tracking-tighter uppercase">Product ID: {product.product_id_unique || id}</span>
-          <span className={styles.sourceBadge}>{product.api_source || 'AI PREMIUM'}</span>
+          <span className="text-[10px] text-gray-600 font-mono tracking-tighter">ID: {product.product_id_unique || id}</span>
+          <span className={isDuga ? styles.sourceBadgeDuga : styles.sourceBadge}>
+            {product.api_source || 'AI PREMIUM'}
+          </span>
         </div>
       </nav>
 
       <main className={styles.mainContainer}>
+        
+        {/* 💡 ビジュアル・ヒーロー・セクション */}
+        <section className={styles.visualHeroSection}>
+          <div className={styles.visualGrid}>
+            
+            {/* 左: 縦長ジャケット画像 */}
+            <div className={styles.jacketColumn}>
+              <div className={styles.jacketWrapper}>
+                <img 
+                  src={jacketImage} 
+                  alt={`${title} Jacket`} 
+                  className={styles.jacketImage}
+                  style={{ imageRendering: 'crisp-edges' }}
+                />
+                <div className={styles.jacketOverlay} />
+                <div className={styles.scanline} />
+                <div className={styles.jacketLabel}>PRIMARY ARCHIVE: JACKET</div>
+              </div>
+            </div>
+
+            {/* 右: メインギャラリー（動画統合版） */}
+            <div className={styles.galleryColumn}>
+              <AdultProductGallery 
+                images={galleryImages} 
+                title={title} 
+                apiSource={product.api_source} 
+                sampleMovieData={movieData}
+              />
+            </div>
+
+          </div>
+        </section>
+
+        {/* 💡 コンテンツ詳細エリア */}
         <div className={styles.gridContent}>
           
-          {/* 左カラム：ビジュアル & AI サマリー */}
+          {/* 左側：AIサマリー */}
           <section className="space-y-6">
-            <div className="sticky top-24">
-              <AdultProductGallery images={product.image_url_list || []} title={title} />
-
-              {product.ai_summary && (
-                <div className="mt-8 p-6 bg-gradient-to-br from-[#1f1f3a] to-[#0a0a14] rounded-2xl border-l-4 border-[#e94560] shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-2 opacity-5 font-black text-6xl italic">AI</div>
-                  <h3 className="text-[10px] font-black text-[#e94560] mb-3 tracking-widest uppercase">AI Expert Analysis</h3>
-                  <p className="text-gray-200 text-sm leading-relaxed italic relative z-10">
-                    "{product.ai_summary}"
-                  </p>
-                </div>
-              )}
-            </div>
+            {product.ai_summary && (
+              <div className="p-8 bg-gradient-to-br from-[#1f1f3a] to-[#0a0a14] rounded-2xl border-l-4 border-[#e94560] shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-2 opacity-5 font-black text-6xl italic">AI</div>
+                <h3 className="text-[11px] font-black text-[#e94560] mb-4 tracking-widest uppercase">Expert Analysis</h3>
+                <p className="text-gray-200 text-base leading-relaxed italic relative z-10">
+                  "{product.ai_summary}"
+                </p>
+              </div>
+            )}
           </section>
 
-          {/* 右カラム：スペック & 購入 */}
+          {/* 右側：スペック・評価・購入ボタン */}
           <section className="flex flex-col">
-            <h1 className={styles.title}>{title}</h1>
+            <h1 className={styles.detailTitle}>{title}</h1>
             
             <div className="flex items-baseline gap-4 mb-8">
               <div className={styles.priceContainer}>
                 <span className="text-xl mr-1 text-[#e94560] italic font-light">¥</span>
                 {price}
               </div>
-              <span className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">Digital Version</span>
+              <span className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">
+                {isDuga ? 'DUGA High Quality Stream' : 'Digital Version'}
+              </span>
             </div>
 
-            {/* 📊 5軸評価グラフ */}
+            {/* 📊 解析評価グラフ (安全な数値変換を適用) */}
             <div className="mb-10 p-6 bg-[#0f0f1e]/80 backdrop-blur-sm rounded-2xl border border-white/5 shadow-inner">
               <div className="flex justify-between items-end mb-6">
-                <h3 className="text-xs font-black text-gray-500 tracking-widest uppercase">Performance Stats</h3>
+                <h3 className="text-xs font-black text-gray-500 tracking-[0.2em] uppercase">Performance Stats</h3>
                 <div className="text-right">
-                  <span className="text-3xl font-black text-white italic">{product.spec_score ?? 0}</span>
+                  <span className="text-3xl font-black text-white italic">{getSafeScore(product.spec_score)}</span>
                   <span className="text-xs text-gray-600 ml-1">/100</span>
                 </div>
               </div>
               
               <div className="space-y-4">
                 {[
-                  { label: 'VISUAL', val: product.score_visual ?? 0, color: 'from-pink-500 to-rose-500' },
-                  { label: 'STORY', val: product.score_story ?? 0, color: 'from-purple-500 to-indigo-500' },
-                  { label: 'EROTIC', val: product.score_erotic ?? 0, color: 'from-red-500 to-orange-500' },
-                  { label: 'RARITY', val: product.score_rarity ?? 0, color: 'from-amber-500 to-yellow-500' },
-                  { label: 'COST', val: product.score_cost ?? 0, color: 'from-emerald-500 to-teal-500' },
+                  { label: 'VISUAL', val: getSafeScore(product.score_visual), color: 'from-pink-500 to-rose-500' },
+                  { label: 'STORY', val: getSafeScore(product.score_story), color: 'from-purple-500 to-indigo-500' },
+                  { label: 'EROTIC', val: getSafeScore(product.score_erotic), color: 'from-red-500 to-orange-500' },
+                  { label: 'RARITY', val: getSafeScore(product.score_rarity), color: 'from-amber-500 to-yellow-500' },
+                  { label: 'COST', val: getSafeScore(product.score_cost), color: 'from-emerald-500 to-teal-500' },
                 ].map((stat) => (
                   <div key={stat.label}>
-                    <div className="flex justify-between text-[9px] font-black mb-1.5 tracking-tighter">
+                    <div className="flex justify-between text-[9px] font-black mb-1.5 tracking-tighter uppercase">
                       <span className="text-gray-400">{stat.label}</span>
                       <span className="text-white">{stat.val}%</span>
                     </div>
                     <div className="h-1.5 w-full bg-gray-900 rounded-full overflow-hidden">
-                      <div className={`h-full bg-gradient-to-r ${stat.color} shadow-[0_0_8px_rgba(233,69,96,0.2)]`} style={{ width: `${Math.min(stat.val, 100)}%` }} />
+                      <div className={`h-full bg-gradient-to-r ${stat.color} shadow-[0_0_8px_rgba(255,255,255,0.1)]`} style={{ width: `${Math.min(stat.val, 100)}%` }} />
                     </div>
                   </div>
                 ))}
@@ -179,7 +245,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <tr className={styles.specRow}>
                     <td className={styles.specKey}>MAKER</td>
                     <td className={styles.specValue}>
-                      <Link href={`/maker/${product.maker?.id}`} className="text-cyan-400 font-bold hover:underline transition-all">
+                      <Link href={`/maker/${product.maker?.id}`} className="text-cyan-400 font-bold hover:underline">
                         {product.maker?.name || '---'}
                       </Link>
                     </td>
@@ -194,71 +260,38 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </table>
             </div>
 
-            {/* 🏷️ 属性 & ジャンル */}
-            <div className="mt-8 space-y-6">
-              {product.attributes?.length > 0 && (
-                <div>
-                  <h3 className="text-[10px] font-black text-gray-600 mb-3 tracking-widest uppercase">AI Analysis Tags</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.attributes.map((attr) => (
-                      <span key={attr.id} className="text-[10px] px-3 py-1 bg-rose-950/20 text-rose-300 border border-rose-500/30 rounded font-bold uppercase">
-                        {attr.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {product.genres?.length > 0 && (
-                <div className={styles.genreSection}>
-                  <h3 className={styles.sectionLabel}>Genres</h3>
-                  <div className={styles.genreGrid}>
-                    {product.genres.map((genre) => (
-                      <Link key={genre.id} href={`/genre/${genre.id}`} className={styles.genreTag}>
-                        #{genre.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* 🚀 アクションボタン */}
             <div className="mt-12 space-y-4">
-              {product.sample_movie_url && (
+              {movieData?.url && (
                 <MoviePlayerModal 
-                  videoUrl={product.sample_movie_url} 
+                  videoUrl={movieData.url} 
                   title={title} 
                 />
               )}
-              <a href={product.affiliate_url || '#'} target="_blank" rel="nofollow noopener noreferrer" className={styles.affiliateBtn}>
-                <span>WATCH FULL CONTENT ON FANZA</span>
+
+              <a 
+                href={product.affiliate_url || '#'} 
+                target="_blank" 
+                rel="nofollow noopener noreferrer" 
+                className={isDuga ? styles.affiliateBtnDuga : styles.affiliateBtn}
+              >
+                <span>WATCH FULL CONTENT ON {isDuga ? 'DUGA' : 'FANZA'}</span>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>
-              <p className="text-[9px] text-center text-gray-600 font-black tracking-tighter">
-                ※ 移動先の外部サイトにて年齢確認が必要です。18歳未満の方はご利用いただけません。
-              </p>
             </div>
           </section>
         </div>
 
-        {/* --- 💡 関連作品セクション (AdultProductCardを使用) --- */}
+        {/* --- 💡 関連作品セクション --- */}
         {relatedProducts.length > 0 && (
           <section className="mt-32 pt-16 border-t border-white/5">
             <div className="flex items-center justify-between mb-12">
               <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter text-white uppercase">
                 MORE FROM <span className="text-[#e94560] ml-2">{product.maker?.name || 'MAKER'}</span>
               </h2>
-              {product.maker?.id && (
-                <Link href={`/maker/${product.maker.id}`} className="text-[11px] font-black text-gray-500 hover:text-[#e94560] transition-all uppercase tracking-[0.3em] border-b border-gray-800 hover:border-[#e94560] pb-1">
-                  View Collection »
-                </Link>
-              )}
             </div>
-            
-            {/* 💡 共通カードコンポーネントによるグリッド表示 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {relatedProducts.map((p) => (
                 <AdultProductCard key={p.id} product={p} />

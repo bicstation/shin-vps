@@ -1,7 +1,9 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
-import React from 'react';
+'use client';
+
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import styles from './AdultProductCard.module.css';
 
@@ -9,31 +11,57 @@ interface ProductCardProps {
   product: any;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
-  // --- 💡 画像のボケ対策ロジック ---
-  const rawThumbnail = product.image_url_list?.[0] || product.image_url || '/no-image.png';
-  
-  const getHighResThumbnail = (url: string) => {
-    if (!url) return '/no-image.png';
-    // FANZA: ps/pt(小) -> pl(大)
-    let highRes = url.replace(/p[s|t]\.jpg/i, 'pl.jpg');
-    // DUGA: _m -> _l
+export default function AdultProductCard({ product }: ProductCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  // --- 💡 画像最適化ロジック ---
+  const thumbnail = useMemo(() => {
+    const isDuga = product.api_source === 'DUGA';
+    const rawUrl = product.image_url_list?.[0] || product.image_url || '/no-image.png';
+
+    if (rawUrl === '/no-image.png') return rawUrl;
+
+    // DUGAはPython側で0番目にパッケージ画像を入れているので、そのまま使用
+    if (isDuga) {
+      return rawUrl;
+    }
+
+    // その他（FANZA等）のフォールバック
+    let highRes = rawUrl.replace(/p[s|t]\.jpg/i, 'pl.jpg');
     highRes = highRes.replace('_m.jpg', '_l.jpg');
     return highRes;
-  };
+  }, [product.image_url_list, product.image_url, product.api_source]);
 
-  const thumbnail = getHighResThumbnail(rawThumbnail);
+  // --- 🎥 動画プレビューデータ (モデルのJSONField対応) ---
+  const movieData = useMemo(() => {
+    const rawMovie = product.sample_movie_url;
+    // JSONField(辞書)として保存されている場合
+    if (rawMovie && typeof rawMovie === 'object' && !Array.isArray(rawMovie)) {
+      return {
+        url: rawMovie.url || null,
+        preview_image: rawMovie.preview_image || null
+      };
+    }
+    // 古いデータが単なる文字列URLとして残っている場合のフォールバック
+    if (typeof rawMovie === 'string' && rawMovie.startsWith('http')) {
+      return { url: rawMovie, preview_image: null };
+    }
+    return { url: null, preview_image: null };
+  }, [product.sample_movie_url]);
 
+  const hasVideo = !!movieData.url;
+
+  // --- 属性データの抽出 ---
   const genres = product.genres || [];
   const actors = product.actresses || [];
   const attributes = product.attributes || []; 
   const series = product.series || null;
   const maker = product.maker || null;
-  const hasSample = !!product.sample_movie_url;
   const score = product.spec_score || 0; 
   
   const detailPath = '/adults';
 
+  // タグのスタイル決定ロジック
   const getTagStyle = (name: string, type: 'genre' | 'actor' | 'series' | 'attribute') => {
     const genreColors = [
       { bg: 'bg-pink-900/40', text: 'text-pink-300', border: 'border-pink-500/30' },
@@ -54,23 +82,41 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className={styles.cardContainer}>
+    <div 
+      className={styles.cardContainer}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className={styles.imageSection}>
         <Link href={`${detailPath}/${product.id}`} className="block h-full w-full">
-          <img 
-            src={thumbnail} 
-            alt={product.title} 
-            className={styles.thumbnail} 
-            loading="lazy"
-            /* ✅ 修正ポイント：imageRendering を auto から crisp-edges 系に変更 */
-            style={{ 
-              imageRendering: '-webkit-optimize-contrast', // Safari用
-              // @ts-ignore
-              imageRendering: 'crisp-edges'              // 標準
-            }} 
-          />
+          {/* 💡 ホバー時に動画を表示 */}
+          {isHovered && hasVideo ? (
+            <video
+              src={movieData.url!}
+              poster={movieData.preview_image || thumbnail}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className={styles.thumbnail}
+              style={{ objectFit: 'cover' }}
+            />
+          ) : (
+            <img 
+              src={thumbnail} 
+              alt={product.title} 
+              className={styles.thumbnail} 
+              loading="lazy"
+              style={{ 
+                // @ts-ignore
+                imageRendering: 'crisp-edges'
+              }} 
+            />
+          )}
+          
           <div className={styles.imageOverlay} />
           
+          {/* AI解析スコアバッジ */}
           {score > 0 && (
             <div className="absolute top-2 left-2 z-20 bg-black/70 backdrop-blur-md border border-pink-500/50 px-2 py-0.5 rounded flex items-baseline gap-1">
               <span className="text-[9px] text-pink-400 font-bold">SCORE</span>
@@ -78,10 +124,11 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {hasSample && (
+          {/* ビデオ有無バッジ */}
+          {hasVideo && (
             <div className={styles.sampleBadge}>
               <span className={styles.sampleDot}>●</span>
-              SAMPLE
+              {isHovered ? 'PREVIEWING' : 'SAMPLE'}
             </div>
           )}
         </Link>
@@ -101,31 +148,35 @@ export default function ProductCard({ product }: ProductCardProps) {
           </p>
         )}
 
-        {actors.length > 0 && (
-          <div className={`${styles.tagContainer} mb-2`}>
-            {actors.slice(0, 2).map((actor: any) => {
-              const style = getTagStyle(actor.name, 'actor');
-              return (
-                <Link key={actor.id} href={`/actress/${actor.id}`} className={`text-[10px] font-bold px-2 py-0.5 rounded border ${style.bg} ${style.text} ${style.border} transition-all hover:brightness-125`}>
-                  👤 {actor.name}
-                </Link>
-              );
-            })}
-          </div>
-        )}
+        <div className="space-y-2 mb-3">
+          {/* 出演者 */}
+          {actors.length > 0 && (
+            <div className={styles.tagContainer}>
+              {actors.slice(0, 2).map((actor: any) => {
+                const style = getTagStyle(actor.name || 'Unknown', 'actor');
+                return (
+                  <Link key={actor.id} href={`/actress/${actor.id}`} className={`text-[10px] font-bold px-2 py-0.5 rounded border ${style.bg} ${style.text} ${style.border} transition-all hover:brightness-125`}>
+                    👤 {actor.name}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
 
-        {attributes.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
-            {attributes.slice(0, 3).map((attr: any) => {
-              const style = getTagStyle(attr.name, 'attribute');
-              return (
-                <span key={attr.id} className={`text-[9px] px-1.5 py-0 rounded-sm border ${style.bg} ${style.text} ${style.border} opacity-80`}>
-                  {attr.name}
-                </span>
-              );
-            })}
-          </div>
-        )}
+          {/* 属性属性（AI判定） */}
+          {attributes.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {attributes.slice(0, 3).map((attr: any) => {
+                const style = getTagStyle(attr.name || 'Attr', 'attribute');
+                return (
+                  <span key={attr.id} className={`text-[9px] px-1.5 py-0 rounded-sm border ${style.bg} ${style.text} ${style.border} opacity-80`}>
+                    {attr.name}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         <div className="space-y-0.5 mb-3">
           <div className={styles.infoRow}>
@@ -142,9 +193,10 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
+        {/* ジャンルタグ */}
         <div className="flex flex-wrap gap-1 mb-4 h-10 content-start overflow-hidden">
           {genres.slice(0, 4).map((genre: any) => {
-            const style = getTagStyle(genre.name, 'genre');
+            const style = getTagStyle(genre.name || 'Genre', 'genre');
             return (
               <Link key={genre.id} href={`/genre/${genre.id}`} className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${style.bg} ${style.text} ${style.border} hover:scale-105 transition-transform`}>
                 #{genre.name}
@@ -175,7 +227,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           <div className="grid grid-cols-2 gap-2">
             <Link href={`${detailPath}/${product.id}`} className={styles.btnView}>
-              {hasSample && <span className="text-xs">🎬</span>}
+              {hasVideo && <span className="text-xs">🎬</span>}
               VIEW DETAILS
             </Link>
             <a 

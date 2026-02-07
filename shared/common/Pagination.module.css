@@ -1,84 +1,130 @@
-/* Pagination.module.css */
+/* Pagination.module.css - Cyberpunk Edition */
 
-.pagination {
+.paginationContainer {
   margin-top: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  position: relative;
+  z-index: 5; /* 他の要素の下に隠れないように */
+}
+
+/* ページ情報のテキスト表示 */
+.statsText {
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-family: var(--font-mono, monospace);
+}
+
+.accentText {
+  color: #fff;
+  text-shadow: 0 0 10px var(--theme-color, #e94560);
+}
+
+.paginationList {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px; /* サイバーパンクらしく少しタイトに */
-  flex-wrap: wrap; /* スマホで溢れないように */
+  gap: 8px; /* タイトな間隔 */
+  flex-wrap: wrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.pageButton {
-  padding: 10px 20px;
+/* 共通のボタン基盤 */
+.pageNumber, 
+.arrowButton {
   background: #1a1a35; /* ダーク背景 */
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px; /* 少し角を立たせる */
-  text-decoration: none;
+  border-radius: 4px;
+  text-decoration: none !important;
   color: #9ca3af;
   font-weight: 900;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  pointer-events: auto; /* 確実にクリック可能に */
 }
 
-.pageButton:hover:not(.disabled) {
-  border-color: #e94560;
-  background-color: rgba(233, 69, 96, 0.1);
-  color: #fff;
-  box-shadow: 0 0 15px rgba(233, 69, 96, 0.2);
+/* 前へ・次へボタン */
+.arrowButton {
+  padding: 10px 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
-.disabled {
-  color: #374151;
-  border-color: #1f2937;
-  cursor: not-allowed;
-  background-color: #0a0a14;
-  opacity: 0.5;
-}
-
+/* 数字ボタン */
 .pageNumber {
   width: 40px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
+  font-size: 0.85rem;
+  font-family: var(--font-mono, monospace);
   color: #6b7280;
-  font-weight: 800;
-  border-radius: 4px; /* 円形ではなく、カードに合わせた角丸 */
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  font-family: var(--font-mono); /* 数字は等幅フォントがクール */
 }
 
-.pageNumber:hover {
+/* ホバーエフェクト（共通） */
+.pageNumber:hover, 
+.arrowButton:hover:not(.disabled) {
+  border-color: var(--theme-color, #e94560);
   background-color: rgba(255, 255, 255, 0.05);
   color: #fff;
+  box-shadow: 0 0 15px var(--theme-color, rgba(233, 69, 96, 0.2));
+  transform: translateY(-2px);
 }
 
+/* アクティブ（現在地） */
 .active {
-  background-color: #e94560 !important; /* TIPER RED */
+  background-color: var(--theme-color, #e94560) !important;
   color: #fff !important;
-  border-color: #e94560;
-  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+  border-color: var(--theme-color, #e94560) !important;
+  box-shadow: 0 0 20px var(--theme-color, rgba(233, 69, 96, 0.4)) !important;
+}
+
+/* 無効化状態 */
+.disabled {
+  color: #374151 !important;
+  border-color: #1f2937 !important;
+  cursor: not-allowed;
+  background-color: #0a0a14 !important;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .dots {
   color: #4b5563;
   font-weight: bold;
   padding: 0 8px;
+  user-select: none;
 }
 
+.loading {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+/* アイコン用 */
+.icon {
+  font-size: 1.1em;
+  margin: 0 4px;
+}
+
+/* レスポンシブ調整 */
 @media (max-width: 600px) {
-  .pagination {
+  .paginationList {
     gap: 4px;
   }
-  .pageButton {
+  .arrowButton {
     padding: 8px 12px;
     font-size: 0.7rem;
   }
@@ -86,5 +132,8 @@
     width: 34px;
     height: 34px;
     font-size: 0.8rem;
+  }
+  .paginationContainer {
+    margin-top: 40px;
   }
 }

@@ -17,21 +17,24 @@ class AdultProductListAPIView(generics.ListAPIView):
     
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
-    # 💡 修正：新しいカラム（is_posted, is_ai_pc等）での絞り込みを可能にする
+    # 💡 修正：新しいカラム（is_posted, is_active等）での絞り込みを可能にする
     filterset_fields = {
+        'api_source': ['exact'],      # DUGAかFANZAかで絞り込み可能に
         'genres': ['exact'],
         'actresses': ['exact'],
         'maker': ['exact'],
         'series': ['exact'],
         'label': ['exact'],
-        'attributes': ['exact'],      # 新設：属性タグでの絞り込み
-        'is_posted': ['exact'],       # 新設：ブログ投稿済みかどうか
-        'is_active': ['exact'],       # 新設：掲載中かどうか
+        'attributes': ['exact'],      # 属性タグでの絞り込み
+        'is_posted': ['exact'],       # ブログ投稿済みかどうか
+        'is_active': ['exact'],       # 掲載中かどうか
     }
     
     # 💡 修正：スコア順や解析日順での並び替えをサポート
     ordering_fields = ['id', 'price', 'release_date', 'spec_score', 'last_spec_parsed_at'] 
-    search_fields = ['title', 'ai_summary'] # AI要約も検索対象に含める
+    
+    # 🚀 修正：作品紹介文 (product_description) も検索対象に含める
+    search_fields = ['title', 'product_description', 'ai_summary']
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
     # 💡 修正：詳細画面でも属性データを一括取得

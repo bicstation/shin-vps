@@ -1,3 +1,5 @@
+/* AdultProductGallery.module.css */
+
 .galleryWrapper {
   display: flex;
   flex-direction: column;
@@ -5,43 +7,101 @@
   width: 100%;
 }
 
-/* メイン画像表示エリア */
+/* 1. メイン画像・動画表示エリア */
 .mainDisplayArea {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9; /* 動画メインなら16:9、パッケージメインなら3:4など調整可 */
-  background-color: #0a0a1a;
+  aspect-ratio: 16 / 9;
+  background-color: #050510;
   border-radius: 1rem;
   overflow: hidden;
   border: 1px solid #3d3d66;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
 }
 
-.mainImage {
+.imageContainer {
+  position: relative;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* 画像全体を表示 */
-  transition: opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* サブ画像リスト（サムネイル） */
+.mainImage, .mainVideo {
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* パッケージ全体を見せるためにcontain */
+  z-index: 1;
+}
+
+.mainVideo {
+  background-color: #000;
+}
+
+/* 💡 サイバーパンク・オーバーレイ（走査線） */
+.mainOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.1) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.4;
+}
+
+/* 💡 HUD風の角装飾（Brackets） */
+.cornerBrackets {
+  position: absolute;
+  inset: 1.5rem;
+  border: 1px solid rgba(0, 209, 178, 0.2);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cornerBrackets::before, .cornerBrackets::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #00d1b2;
+}
+
+.cornerBrackets::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
+.cornerBrackets::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+
+/* 💡 解像度タグ */
+.resolutionTag {
+  position: absolute;
+  bottom: 1rem;
+  right: 1.5rem;
+  background: rgba(0, 209, 178, 0.2);
+  color: #00d1b2;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border: 1px solid #00d1b2;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 4;
+  backdrop-filter: blur(4px);
+}
+
+/* 2. サブ画像リスト（サムネイル） */
 .thumbnailGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* デフォルト4列 */
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
 }
 
-@media (min-width: 640px) {
-  .thumbnailGrid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .thumbnailGrid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
+@media (min-width: 640px) { .thumbnailGrid { grid-template-columns: repeat(6, 1fr); } }
+@media (min-width: 1024px) { .thumbnailGrid { grid-template-columns: repeat(8, 1fr); } }
 
 .thumbButton {
   position: relative;
@@ -51,43 +111,103 @@
   overflow: hidden;
   cursor: pointer;
   background-color: #1a1a2e;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid #3d3d66;
 }
 
 .thumbButtonDefault {
-  border-color: #3d3d66;
   opacity: 0.6;
 }
 
 .thumbButtonDefault:hover {
   opacity: 1;
   border-color: #555588;
+  transform: translateY(-2px);
 }
 
 .thumbButtonActive {
-  border-color: #00d1b2; /* アクティブなサムネイルをターコイズで強調 */
+  border-color: #00d1b2;
   opacity: 1;
-  box-shadow: 0 0 10px rgba(0, 209, 178, 0.4);
+  box-shadow: 0 0 15px rgba(0, 209, 178, 0.3);
+}
+
+/* 🎥 動画サムネイル専用の装飾 */
+.videoThumb {
+  border-color: #e94560; /* 動画はアクセントカラーを変える */
+}
+
+.videoThumb.thumbButtonActive {
+  border-color: #ff5e78;
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
+}
+
+.videoIconOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+  z-index: 2;
+}
+
+.videoLabel {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #e94560;
+  color: white;
+  font-size: 8px;
+  font-weight: 900;
+  text-align: center;
+  padding: 1px 0;
+  z-index: 3;
+}
+
+.activeIndicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #00d1b2;
+  z-index: 4;
 }
 
 .thumbImage {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* サムネイル内を埋める */
+  object-fit: cover;
 }
 
-/* 画像がない場合の状態 */
-.noImage {
+/* 3. 特殊状態 */
+.noImage, .placeholder {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 300px;
-  background-color: #1a1a2e;
-  border: 2px dashed #3d3d66;
+  height: 400px;
+  background-color: #0a0a1a;
+  border: 1px solid #3d3d66;
   border-radius: 1rem;
-  color: #6b7280;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  color: #00d1b2;
+  font-family: monospace;
+  gap: 1rem;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 209, 178, 0.1);
+  border-top-color: #00d1b2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

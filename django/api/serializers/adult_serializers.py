@@ -6,7 +6,7 @@ from .master_serializers import (
     SeriesSerializer, GenreSerializer, ActressSerializer
 )
 
-# 🚀 追加: 属性タグ用のシリアライザー
+# 🚀 属性タグ用のシリアライザー
 class AdultAttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdultAttribute
@@ -20,17 +20,37 @@ class AdultProductSerializer(serializers.ModelSerializer):
     series = SeriesSerializer(read_only=True) 
     genres = GenreSerializer(many=True, read_only=True)
     actresses = ActressSerializer(many=True, read_only=True)
-    # 🚀 追加: 詳細属性タグ
+    
+    # 🚀 詳細属性タグ
     attributes = AdultAttributeSerializer(many=True, read_only=True)
+
+    # 🎥 JSONField の明示的定義
+    image_url_list = serializers.JSONField(required=False, allow_null=True)
+    sample_movie_url = serializers.JSONField(required=False, allow_null=True)
+    
+    # 🤖 AI生成コンテンツ & 解析スコア
+    # 💡 models.py では TextField や IntegerField ですが、
+    # フロントエンドとの柔軟なやり取りや、null/空文字の安全なハンドリングのために定義を維持します。
+    ai_content = serializers.CharField(required=False, allow_null=True)
+    product_description = serializers.CharField(required=False, allow_null=True) # 🚀 新設カラムを追加
+    
+    # 📊 解析スコア (数値型として明示)
+    score_visual = serializers.IntegerField(required=False, allow_null=True)
+    score_story = serializers.IntegerField(required=False, allow_null=True)
+    score_cost = serializers.IntegerField(required=False, allow_null=True)
+    score_erotic = serializers.IntegerField(required=False, allow_null=True)
+    score_rarity = serializers.IntegerField(required=False, allow_null=True)
+    spec_score = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = AdultProduct 
         fields = (
-            'id', 'product_id_unique', 'title', 'release_date',
-            'affiliate_url', 'price', 'image_url_list', 'sample_movie_url', # 🎥 動画追加
+            'id', 'product_id_unique', 'title', 'product_description', # 🚀 紹介文を追加
+            'release_date', 'affiliate_url', 'price', 
+            'image_url_list', 'sample_movie_url', # 🎥 動画
             'api_source',
             'maker', 'label', 'director', 'series', 'genres', 'actresses',
-            'attributes', # 🏷️ 属性タグ追加
+            'attributes', # 🏷️ 属性タグ
             
             # 🤖 AI生成コンテンツ
             'ai_content', 'ai_summary', 'target_segment',
