@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { COLORS } from "@/constants";
+import { COLORS } from "@/shared/styles/constants";
 import styles from "./ProductLayout.module.css";
 
 export default function ProductLayout({ children }: { children: React.ReactNode }) {

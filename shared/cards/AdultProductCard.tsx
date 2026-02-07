@@ -10,19 +10,30 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  // 基本データの抽出
-  const thumbnail = product.image_url_list?.[0] || '/no-image.png';
+  // --- 💡 画像のボケ対策ロジック ---
+  const rawThumbnail = product.image_url_list?.[0] || product.image_url || '/no-image.png';
+  
+  const getHighResThumbnail = (url: string) => {
+    if (!url) return '/no-image.png';
+    // FANZA: ps/pt(小) -> pl(大)
+    let highRes = url.replace(/p[s|t]\.jpg/i, 'pl.jpg');
+    // DUGA: _m -> _l
+    highRes = highRes.replace('_m.jpg', '_l.jpg');
+    return highRes;
+  };
+
+  const thumbnail = getHighResThumbnail(rawThumbnail);
+
   const genres = product.genres || [];
   const actors = product.actresses || [];
-  const attributes = product.attributes || []; // 🚀 追加: 身体的・設定的属性
+  const attributes = product.attributes || []; 
   const series = product.series || null;
   const maker = product.maker || null;
   const hasSample = !!product.sample_movie_url;
-  const score = product.spec_score || 0; // 🚀 追加: 総合解析スコア
+  const score = product.spec_score || 0; 
   
   const detailPath = '/adults';
 
-  // タグの動的スタイリング
   const getTagStyle = (name: string, type: 'genre' | 'actor' | 'series' | 'attribute') => {
     const genreColors = [
       { bg: 'bg-pink-900/40', text: 'text-pink-300', border: 'border-pink-500/30' },
@@ -44,18 +55,22 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div className={styles.cardContainer}>
-      {/* --- 画像セクション --- */}
       <div className={styles.imageSection}>
         <Link href={`${detailPath}/${product.id}`} className="block h-full w-full">
           <img 
             src={thumbnail} 
             alt={product.title} 
             className={styles.thumbnail} 
-            loading="lazy" 
+            loading="lazy"
+            /* ✅ 修正ポイント：imageRendering を auto から crisp-edges 系に変更 */
+            style={{ 
+              imageRendering: '-webkit-optimize-contrast', // Safari用
+              // @ts-ignore
+              imageRendering: 'crisp-edges'              // 標準
+            }} 
           />
           <div className={styles.imageOverlay} />
           
-          {/* 総合スコアバッジ (左上) */}
           {score > 0 && (
             <div className="absolute top-2 left-2 z-20 bg-black/70 backdrop-blur-md border border-pink-500/50 px-2 py-0.5 rounded flex items-baseline gap-1">
               <span className="text-[9px] text-pink-400 font-bold">SCORE</span>
@@ -63,18 +78,16 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* サンプル動画バッジ (右上) */}
           {hasSample && (
             <div className={styles.sampleBadge}>
               <span className={styles.sampleDot}>●</span>
-              SAMPLE MOVIE
+              SAMPLE
             </div>
           )}
         </Link>
         <div className={styles.apiBadge}>{product.api_source || 'PREMIUM'}</div>
       </div>
 
-      {/* --- コンテンツセクション --- */}
       <div className={styles.contentSection}>
         <div className="flex justify-between items-start gap-2 mb-1">
           <h3 className={styles.title}>
@@ -82,14 +95,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           </h3>
         </div>
 
-        {/* AI サマリー (短い一行紹介) */}
         {product.ai_summary && (
           <p className="text-[10px] text-gray-400 line-clamp-1 mb-2 italic">
             " {product.ai_summary} "
           </p>
         )}
 
-        {/* 出演者タグ */}
         {actors.length > 0 && (
           <div className={`${styles.tagContainer} mb-2`}>
             {actors.slice(0, 2).map((actor: any) => {
@@ -103,7 +114,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* 属性タグ (身体的特徴など) */}
         {attributes.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-2">
             {attributes.slice(0, 3).map((attr: any) => {
@@ -117,7 +127,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* メイン情報 (Maker & Series) */}
         <div className="space-y-0.5 mb-3">
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Maker</span>
@@ -133,7 +142,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {/* ジャンルタグ */}
         <div className="flex flex-wrap gap-1 mb-4 h-10 content-start overflow-hidden">
           {genres.slice(0, 4).map((genre: any) => {
             const style = getTagStyle(genre.name, 'genre');
@@ -145,7 +153,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           })}
         </div>
 
-        {/* --- アクションエリア --- */}
         <div className={styles.actionArea}>
           <div className="mb-4 flex items-center justify-between">
             <div className="flex flex-col">
@@ -155,7 +162,6 @@ export default function ProductCard({ product }: ProductCardProps) {
               </span>
             </div>
             
-            {/* 解析スコア・ミニバー (5軸評価の簡易版) */}
             <div className="flex flex-col items-end">
               <span className="text-[8px] text-gray-500 uppercase tracking-tighter">AI Spec Score</span>
               <div className="w-16 h-1 bg-gray-800 rounded-full mt-1 overflow-hidden">

@@ -1,59 +1,69 @@
 /* --- フローティングボタン --- */
 .floatingButton {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: #0070f3;
+    bottom: 30px;
+    right: 30px;
+    width: 64px;
+    height: 64px;
+    border-radius: 22px; /* 少し角丸の四角形でモダンに */
+    background: var(--theme-color);
     color: white;
     border: none;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     z-index: 1000;
-    font-size: 24px;
+    font-size: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s, background-color 0.2s;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .floatingButton:hover {
-    transform: scale(1.1);
-    background-color: #0056b3;
+    transform: translateY(-5px) scale(1.05);
+    filter: brightness(1.1);
+}
+
+.pulseIcon {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
 /* --- チャットウィンドウ本体 --- */
 .chatWindow {
     position: fixed;
-    bottom: 90px;
-    right: 20px;
-    width: 350px;
-    height: 500px;
-    max-height: 70vh; /* スマホ等でのはみ出し防止 */
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    bottom: 110px;
+    right: 30px;
+    width: 380px;
+    height: 600px;
+    max-height: 80vh;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     z-index: 1000;
     overflow: hidden;
-    border: 1px solid #eaeaea;
-    animation: slideUp 0.3s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    animation: openWindow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes openWindow {
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* --- ヘッダーエリア --- */
+/* --- ヘッダー --- */
 .chatHeader {
-    background: #0070f3;
+    background: var(--theme-color);
+    padding: 20px;
     color: white;
-    padding: 15px;
-    font-weight: bold;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -62,122 +72,143 @@
 .headerTitle {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
-.statusDot {
-    color: #4dfd4d; /* オンラインを示す緑の点 */
-    font-size: 10px;
+.statusLamp {
+    width: 8px;
+    height: 8px;
+    background: #4dfd4d;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #4dfd4d;
 }
 
 .headerCloseBtn {
-    background: none;
+    background: rgba(255,255,255,0.1);
     border: none;
     color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 18px;
-    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
 }
 
-.headerCloseBtn:hover {
-    opacity: 1;
-}
-
-/* --- チャット本文（スクロールエリア） --- */
+/* --- チャット本文 --- */
 .chatBody {
     flex: 1;
-    padding: 20px 15px;
+    padding: 20px;
     overflow-y: auto;
-    background: #fcfcfc;
+    background: linear-gradient(to bottom, #f9f9ff, #ffffff);
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
 }
 
-/* --- メッセージの行と吹き出し --- */
-.aiMessageRow {
-    display: flex;
-    justify-content: flex-start;
-}
-
-.userMessageRow {
-    display: flex;
-    justify-content: flex-end;
-}
+.aiRow { display: flex; justify-content: flex-start; }
+.userRow { display: flex; justify-content: flex-end; }
 
 .aiBubble {
-    background: #f0f0f0;
-    color: #333;
-    padding: 10px 14px;
-    border-radius: 14px 14px 14px 2px;
+    background: white;
+    color: #2d3436;
+    padding: 12px 16px;
+    border-radius: 18px 18px 18px 4px;
     max-width: 85%;
     font-size: 14px;
-    line-height: 1.5;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    line-height: 1.6;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
 
 .userBubble {
-    background: #0070f3;
+    background: var(--theme-color);
     color: white;
-    padding: 10px 14px;
-    border-radius: 14px 14px 2px 14px;
+    padding: 12px 16px;
+    border-radius: 18px 18px 4px 18px;
     max-width: 85%;
     font-size: 14px;
-    line-height: 1.5;
-    box-shadow: 0 2px 4px rgba(0,112,243,0.2);
+    line-height: 1.6;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* --- ローディング（入力中） --- */
+/* --- ローディングアニメーション --- */
 .loadingBubble {
-    background: #f0f0f0;
-    color: #999;
-    padding: 8px 14px;
-    border-radius: 14px;
-    font-size: 12px;
-    font-style: italic;
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background: #eee;
+    border-radius: 18px;
+}
+
+.loadingBubble span {
+    width: 6px;
+    height: 6px;
+    background: #aaa;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loadingBubble span:nth-child(1) { animation-delay: -0.32s; }
+.loadingBubble span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
 }
 
 /* --- 入力エリア --- */
 .chatInputArea {
-    padding: 15px;
-    border-top: 1px solid #f0f0f0;
-    display: flex;
-    gap: 8px;
+    padding: 20px;
     background: white;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-top: 1px solid #f0f0f0;
 }
 
 .inputField {
     flex: 1;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
+    padding: 12px 18px;
+    background: #f4f7f6;
+    border: 1px solid transparent;
+    border-radius: 14px;
     outline: none;
     font-size: 14px;
-    transition: border-color 0.2s;
+    transition: 0.3s;
 }
 
 .inputField:focus {
-    border-color: #0070f3;
+    background: white;
+    border-color: var(--theme-color);
+    box-shadow: 0 0 0 4px rgba(var(--theme-color-rgb), 0.1);
 }
 
 .sendButton {
-    background: #0070f3;
+    background: var(--theme-color);
     color: white;
     border: none;
-    padding: 0 15px;
-    border-radius: 20px;
+    padding: 12px 18px;
+    border-radius: 14px;
     cursor: pointer;
-    font-weight: bold;
-    font-size: 13px;
-    transition: opacity 0.2s;
+    font-weight: 900;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    transition: 0.3s;
+}
+
+.sendButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .sendButton:disabled {
-    background: #ccc;
+    opacity: 0.3;
     cursor: not-allowed;
-}
-
-.sendButton:not(:disabled):hover {
-    background-color: #0056b3;
 }

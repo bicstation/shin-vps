@@ -16,11 +16,6 @@ import '@shared/styles/globals.css';
 import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
 import Header from '@shared/layout/Header';
 import Footer from '@shared/layout/Footer';
-import Sidebar from '@shared/layout/Sidebar';
-
-// ✅ APIから統計データを取得する関数（既存のAPIライブラリからインポート想定）
-// もし未作成の場合は、仮のデータ構造を定義します
-import { getAdultSidebarStats } from '@shared/lib/api/django';
 
 /**
  * ✅ 3. SEO設定
@@ -39,8 +34,6 @@ export const revalidate = 0;
  * 💡 メタデータの動的生成
  */
 export async function generateMetadata(): Promise<Metadata> {
-  const headerList = await headers();
-  const host = headerList.get('host') || "localhost";
   return constructMetadata();
 }
 
@@ -56,17 +49,6 @@ export default async function RootLayout({
   const host = headerList.get('host') || "localhost";
   const site = getSiteMetadata(host);
   const themeColor = getSiteColor(site.site_name);
-
-  // 💡 サイドバーに表示する統計データをサーバーサイドで取得
-  let sidebarData = { makers: [], actresses: [], series: [] };
-  try {
-    if (site.site_group === 'adult') {
-      // Django API等から実際のカウントデータを取得
-      sidebarData = await getAdultSidebarStats();
-    }
-  } catch (e) {
-    console.error("Sidebar data fetch failed:", e);
-  }
 
   return (
     <html lang="ja">
@@ -90,7 +72,7 @@ export default async function RootLayout({
             style={{ 
               padding: "8px 15px", 
               fontSize: "12px", 
-              text-align: "center", 
+              textAlign: "center",
               backgroundColor: "#1a1a2e", 
               color: "#888",
               borderBottom: "1px solid #3d3d6650"
@@ -112,29 +94,20 @@ export default async function RootLayout({
 
         {/* 3. メインレイアウト構造 */}
         <div className={styles.layoutContainer}>
-          <div className={styles.layoutInner}>
-            {/* 💡 Suspenseで包むことで、サイドバーの読み込みを待機可能に */}
+          {/* 💡 サイドバーを layout から削除しました。
+            各ページの page.tsx 内で <Sidebar /> を配置してください。
+          */}
+          <main className={styles.mainContent}>
             <Suspense 
               fallback={
                 <div style={{ color: '#666', padding: '20px', textAlign: 'center' }}>
-                  Loading Layout...
+                  Loading Content...
                 </div>
               }
             >
-              {/* ✅ サイドバーに取得したデータを渡す 
-                  makersだけでなくactressesやseriesも渡せるようにPropsを拡張
-              */}
-              <Sidebar 
-                makers={sidebarData.makers} 
-                recentPosts={[]} 
-              />
-              
-              {/* 各ページのコンテンツ */}
-              <main className={styles.mainContent}>
-                {children}
-              </main>
+              {children}
             </Suspense>
-          </div>
+          </main>
         </div>
 
         {/* 4. 共通フッター */}

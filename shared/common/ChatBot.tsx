@@ -1,158 +1,111 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import styles from './ChatBot.module.css';
 
-/**
- * メッセージの型定義
- */
 interface Message {
     role: 'user' | 'ai';
     text: string;
 }
 
 export default function ChatBot() {
+    // 💡 URLからサイト設定を判定
+    const siteConfig = useMemo(() => {
+        if (typeof window === 'undefined') return { name: 'TIPER', api: '/tiper/api/chat', color: '#e94560' };
+        const path = window.location.pathname;
+        if (path.includes('/bicstation')) {
+            return { name: 'BICSTATION', api: '/bicstation/api/chat', color: '#0070f3' };
+        } else if (path.includes('/avflash')) {
+            return { name: 'AVFLASH', api: '/avflash/api/chat', color: '#ff4757' };
+        }
+        return { name: 'TIPER', api: '/tiper/api/chat', color: '#e94560' }; // Default
+    }, []);
+
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([
-        { role: 'ai', text: 'こんにちは！BICSTATIONコンシェルジュです。あなたにぴったりのPC探しをお手伝いします。気になることはありますか？' }
+        { role: 'ai', text: `Welcome to ${siteConfig.name}. 何かお手伝いできることはありますか？` }
     ]);
     const [isLoading, setIsLoading] = useState(false);
-
-    // 最新メッセージへ自動スクロールするための参照
     const scrollEndRef = useRef<HTMLDivElement>(null);
 
-    // メッセージが更新されるたびに最下部へスクロール
     useEffect(() => {
-        if (isOpen) {
-            scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (isOpen) scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isOpen]);
 
-    const toggleChat = () => setIsOpen(!isOpen);
-
-    /**
-     * 送信処理 (本物のAPI接続)
-     */
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
-
         const userMsg = input.trim();
-        setInput(''); // 入力欄を即座にクリア
-        
-        // ユーザーのメッセージを追加
+        setInput('');
         setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
         setIsLoading(true);
 
         try {
-            // ✅ TraefikのPathPrefixに合わせて /bicstation を付与
-            const response = await fetch('/bicstation/api/chat', {
+            const response = await fetch(siteConfig.api, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMsg }),
             });
-
-            if (!response.ok) {
-                throw new Error(`エラーが発生しました。ステータス: ${response.status}`);
-            }
-
             const data = await response.json();
-            
-            // AIからの回答を画面に追加
             setMessages(prev => [...prev, { role: 'ai', text: data.text }]);
         } catch (error) {
-            console.error('Error:', error);
-            setMessages(prev => [...prev, { 
-                role: 'ai', 
-                text: '申し訳ありません。通信エラーが発生しました。しばらく時間を置いてから再度お試しください。' 
-            }]);
+            setMessages(prev => [...prev, { role: 'ai', text: 'Error: 通信に失敗しました。' }]);
         } finally {
             setIsLoading(false);
         }
     };
 
-    /**
-     * Enterキーでの送信対応
-     */
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    };
-
     return (
-        <>
-            {/* 右下のフローティングボタン */}
-            <button 
-                className={styles.floatingButton} 
-                onClick={toggleChat}
-                aria-label="チャット相談を開く"
-            >
-                {isOpen ? '✕' : '💬'}
+        <div style={{ '--theme-color': siteConfig.color } as React.CSSProperties}>
+            <button className={styles.floatingButton} onClick={() => setIsOpen(!isOpen)}>
+                {isOpen ? '✕' : <span className={styles.pulseIcon}>💬</span>}
             </button>
 
-            {/* チャットウィンドウ */}
             {isOpen && (
                 <div className={styles.chatWindow}>
-                    {/* ヘッダー */}
                     <div className={styles.chatHeader}>
                         <div className={styles.headerTitle}>
-                            <span className={styles.statusDot}>●</span>
-                            <span>BICSTATION コンシェルジュ</span>
+                            <div className={styles.statusLamp} />
+                            <span>{siteConfig.name} Concierge</span>
                         </div>
-                        <button onClick={toggleChat} className={styles.headerCloseBtn}>✕</button>
+                        <button onClick={() => setIsOpen(false)} className={styles.headerCloseBtn}>✕</button>
                     </div>
                     
-                    {/* メッセージ表示エリア */}
                     <div className={styles.chatBody}>
                         {messages.map((msg, index) => (
-                            <div 
-                                key={index} 
-                                className={msg.role === 'user' ? styles.userMessageRow : styles.aiMessageRow}
-                            >
+                            <div key={index} className={msg.role === 'user' ? styles.userRow : styles.aiRow}>
                                 <div 
                                     className={msg.role === 'user' ? styles.userBubble : styles.aiBubble}
-                                    style={{ whiteSpace: 'pre-wrap' }} // ✅ 改行を反映させる
                                     dangerouslySetInnerHTML={{ 
-                                        __html: msg.text
-                                            .replace(/\n/g, '<br />') // 改行コードをBRタグに変換
-                                            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // **太字** を <b>タグに変換
+                                        __html: msg.text.replace(/\n/g, '<br />').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
                                     }}
                                 />
                             </div>
                         ))}
                         {isLoading && (
-                            <div className={styles.aiMessageRow}>
-                                <div className={styles.loadingBubble}>考え中...</div>
+                            <div className={styles.aiRow}>
+                                <div className={styles.loadingBubble}>
+                                    <span></span><span></span><span></span>
+                                </div>
                             </div>
                         )}
                         <div ref={scrollEndRef} />
                     </div>
 
-                    {/* 入力エリア */}
                     <div className={styles.chatInputArea}>
                         <input 
-                            type="text" 
                             className={styles.inputField} 
-                            placeholder="例：10万円以下のPCは？"
+                            placeholder="Type a message..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            disabled={isLoading}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                         />
-                        <button 
-                            className={styles.sendButton} 
-                            onClick={handleSend}
-                            disabled={isLoading || !input.trim()}
-                        >
-                            送信
+                        <button className={styles.sendButton} onClick={handleSend} disabled={!input.trim()}>
+                            SEND
                         </button>
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }

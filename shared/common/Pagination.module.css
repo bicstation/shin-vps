@@ -1,42 +1,46 @@
+/* Pagination.module.css */
+
 .pagination {
-  margin-top: 50px;
+  margin-top: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px; /* 少し間隔を詰めるとスマートです */
+  gap: 8px; /* サイバーパンクらしく少しタイトに */
+  flex-wrap: wrap; /* スマホで溢れないように */
 }
 
-/* 前へ・次へボタンの基本スタイル */
 .pageButton {
   padding: 10px 20px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  background: #1a1a35; /* ダーク背景 */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px; /* 少し角を立たせる */
   text-decoration: none;
-  color: #444;
-  font-weight: 500;
-  font-size: 0.9em;
-  transition: all 0.2s ease;
+  color: #9ca3af;
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .pageButton:hover:not(.disabled) {
-  border-color: #007bff;
-  background-color: #f0f7ff;
-  color: #007bff;
+  border-color: #e94560;
+  background-color: rgba(233, 69, 96, 0.1);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.2);
 }
 
-/* 無効状態のスタイル */
 .disabled {
-  color: #ccc;
-  border-color: #eee;
+  color: #374151;
+  border-color: #1f2937;
   cursor: not-allowed;
-  background-color: #fafafa;
+  background-color: #0a0a14;
+  opacity: 0.5;
 }
 
-/* 🚀 数字ボタンのスタイル */
 .pageNumber {
   width: 40px;
   height: 40px;
@@ -44,45 +48,43 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  color: #666;
-  font-weight: 600;
-  border-radius: 50%; /* 円形にする */
+  color: #6b7280;
+  font-weight: 800;
+  border-radius: 4px; /* 円形ではなく、カードに合わせた角丸 */
   transition: all 0.2s ease;
   border: 1px solid transparent;
+  font-family: var(--font-mono); /* 数字は等幅フォントがクール */
 }
 
 .pageNumber:hover {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 
-/* 🚀 現在のページ（アクティブ）のスタイル */
 .active {
-  background-color: #007bff !important;
+  background-color: #e94560 !important; /* TIPER RED */
   color: #fff !important;
-  border-color: #007bff;
-  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+  border-color: #e94560;
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
 }
 
-/* 三点リーダー（...）のスタイル */
 .dots {
-  color: #999;
+  color: #4b5563;
   font-weight: bold;
-  padding: 0 4px;
+  padding: 0 8px;
 }
 
-/* スマホ閲覧時：ボタンを少し小さく */
 @media (max-width: 600px) {
   .pagination {
-    gap: 6px;
+    gap: 4px;
   }
   .pageButton {
     padding: 8px 12px;
-    font-size: 0.8em;
+    font-size: 0.7rem;
   }
   .pageNumber {
-    width: 32px;
-    height: 32px;
-    font-size: 0.85em;
+    width: 34px;
+    height: 34px;
+    font-size: 0.8rem;
   }
 }

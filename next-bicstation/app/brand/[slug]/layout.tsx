@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { COLORS } from "@/constants";
+import { COLORS } from "@shared/styles/constants";
 import styles from "./BrandLayout.module.css";
 
 // 💡 [slug] フォルダ名に合わせて params の型を定義

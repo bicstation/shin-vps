@@ -9,7 +9,7 @@ import React from "react";
 import ProductCard from "@shared/cards/ProductCard";
 import Sidebar from "@shared/layout/Sidebar";
 import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/lib/api';
-import { COLORS } from "@/constants";
+import { COLORS } from "@shared/styles/constants";
 import styles from "./BrandPage.module.css";
 import Link from "next/link";
 

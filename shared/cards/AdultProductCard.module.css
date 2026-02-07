@@ -1,3 +1,5 @@
+/* AdultProductCard.module.css */
+
 /* 1. コンテナ：ホバーの基点とサイバーパンクな質感 */
 .cardContainer {
   position: relative;
@@ -23,6 +25,7 @@
   aspect-ratio: 16 / 9; /* アダルトコンテンツに最適な比率 */
   width: 100%;
   overflow: hidden;
+  background-color: #000; /* 読み込み前の下地 */
 }
 
 .thumbnail {
@@ -30,10 +33,15 @@
   width: 100%;
   object-fit: cover;
   transition: transform 700ms cubic-bezier(0, 0, 0.2, 1);
+  /* 💡 ボケ対策: ブラウザの補間アルゴリズムをシャープに設定 */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  backface-visibility: hidden;
+  transform: translateZ(0); /* ハードウェアアクセラレーションを有効化 */
 }
 
 .cardContainer:hover .thumbnail {
-  transform: scale(1.1);
+  transform: scale(1.08); /* 拡大しすぎによるボケを抑えるため少し控えめに */
 }
 
 .imageOverlay {
@@ -41,6 +49,7 @@
   inset: 0;
   background: linear-gradient(to top, #1a1a2e 0%, transparent 40%, transparent 100%);
   opacity: 0.9;
+  pointer-events: none;
 }
 
 /* 🎥 サンプル動画バッジ */
@@ -181,6 +190,7 @@
   color: #ffffff;
   transition: all 200ms;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -207,6 +217,7 @@
   box-shadow: 0 8px 20px -4px rgba(233, 69, 96, 0.4);
   transition: all 200ms;
   border: none;
+  text-decoration: none;
   cursor: pointer;
 }
 
