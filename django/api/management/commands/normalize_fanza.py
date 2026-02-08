@@ -52,10 +52,11 @@ class Command(BaseCommand):
         limit = options.get('limit')
         
         # 移行が完了していない RawApiData を取得
+        # 最新の取得データ(IDが大きいもの)から順に処理することで鮮度を保つ
         raw_data_qs = RawApiData.objects.filter(
             api_source=self.API_SOURCE, 
             migrated=False 
-        ).order_by('id')
+        ).order_by('-id')
 
         if limit:
             raw_data_qs = raw_data_qs[:limit]
@@ -63,6 +64,7 @@ class Command(BaseCommand):
         total_batches = raw_data_qs.count()
         if total_batches == 0:
             self.stdout.write(self.style.SUCCESS('処理すべきRawレコードがありません。'))
+            # 念のためカウント更新だけ走らせる
             self._update_all_product_counts()
             return
 
@@ -75,16 +77,17 @@ class Command(BaseCommand):
             try:
                 with transaction.atomic():
                     # 1. Rawバッチデータの処理と製品データの抽出
+                    # normalize_fanza_data 内で詳細なパースが行われる
                     products_data_list, relations_data_list = normalize_fanza_data(raw_instance) 
                     
                     if not products_data_list:
                         raw_instance.migrated = True
                         raw_instance.updated_at = timezone.now()
                         raw_instance.save(update_fields=['migrated', 'updated_at'])
-                        self.stdout.write(self.style.WARNING(f'⚠️ Rawバッチ ID {raw_instance.id} はデータ不備のためスキップしました。'))
+                        self.stdout.write(self.style.WARNING(f'⚠️ Rawバッチ ID {raw_instance.id} は有効な製品データがないためスキップしました。'))
                         continue
 
-                    self.stdout.write(f'--- バッチ {i+1}/{total_batches} 処理開始 ({len(products_data_list)} 製品) ---')
+                    self.stdout.write(f'--- バッチ {i+1}/{total_batches} 処理開始 (RawID:{raw_instance.id} / {len(products_data_list)} 製品) ---')
 
                     # 2. エンティティの作成/更新
                     all_entities = {'Maker': set(), 'Label': set(), 'Director': set(), 'Series': set(), 'Genre': set(), 'Actress': set()}
@@ -115,7 +118,7 @@ class Command(BaseCommand):
                         )
                         entity_pk_maps[entity_type] = pk_map
                     
-                    self.stdout.write(f'   -> {sum(len(v) for v in entity_pk_maps.values())} 件のエンティティを処理しました。')
+                    self.stdout.write(f'   -> {sum(len(v) for v in entity_pk_maps.values())} 件のエンティティ(マスタ)を同期しました。')
 
                     # 3. AdultProduct モデルインスタンスの準備
                     products_to_upsert = []
@@ -133,7 +136,7 @@ class Command(BaseCommand):
                     # 4. AdultProductテーブルへの一括UPSERT
                     unique_fields = ['product_id_unique']
                     
-                    # 動画URLを含む更新対象フィールド
+                    # 更新対象フィールド（既存データがある場合、これらが上書きされる）
                     update_fields = [
                         'raw_data_id', 'title', 'affiliate_url', 'image_url_list',
                         'sample_movie_url', 'release_date', 'price', 
@@ -148,7 +151,7 @@ class Command(BaseCommand):
                         update_fields=update_fields,
                     )
                     
-                    self.stdout.write(self.style.NOTICE(f'   -> AdultProductsテーブルに {len(products_to_upsert)} 件をUPSERTしました。'))
+                    self.stdout.write(self.style.NOTICE(f'   -> AdultProductsテーブルに {len(products_to_upsert)} 件を保存/更新しました。'))
 
                     # 5. リレーションの同期 (Genre, Actress)
                     final_relations_list = []
@@ -167,6 +170,7 @@ class Command(BaseCommand):
                         ]
                         final_relations_list.append(new_rel)
 
+                    # product_id_unique を使ってDB上のPKを逆引き
                     api_ids = [r['api_product_id'] for r in final_relations_list] 
                     db_products = AdultProduct.objects.filter(
                         api_source=self.API_SOURCE, 
@@ -184,20 +188,20 @@ class Command(BaseCommand):
                     raw_instance.migrated = True
                     raw_instance.updated_at = timezone.now()
                     raw_instance.save(update_fields=['migrated', 'updated_at'])
-                    self.stdout.write(self.style.SUCCESS(f'✅ Rawバッチ ID {raw_instance.id} 完了。'))
+                    self.stdout.write(self.style.SUCCESS(f'✅ バッチ処理完了 (RawID:{raw_instance.id})'))
 
             except Exception as e:
-                logger.error(f"Rawバッチ ID {raw_instance.id} でエラー: {e}")
+                logger.error(f"Rawバッチ ID {raw_instance.id} で致命的なエラー: {e}")
                 logger.debug(f"Stack trace: {traceback.format_exc()}")
                 continue 
 
-        # 7. product_count を更新
+        # 7. 各マスタの出演作数などのカウントを更新
         self._update_all_product_counts()
-        self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} 正規化完了 ---'))
+        self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} 正規化処理をすべて完了しました ---'))
 
 
     def _synchronize_relations(self, relations_list: list[dict], product_pk_map: dict):
-        """GenreとActressのリレーションを同期"""
+        """ジャンルと女優の多対多リレーションを最新状態に同期"""
         product_pks = list(product_pk_map.values())
         if not product_pks:
             return
@@ -207,6 +211,7 @@ class Command(BaseCommand):
         adult_product_fk_name = 'adultproduct_id' 
 
         with connection.cursor() as cursor:
+            # 一度既存の紐付けを削除してから一括挿入（もっとも確実な同期方法）
             placeholders = ','.join(['%s'] * len(product_pks))
             cursor.execute(f"DELETE FROM {genre_through_table} WHERE {adult_product_fk_name} IN ({placeholders})", product_pks)
             cursor.execute(f"DELETE FROM {actress_through_table} WHERE {adult_product_fk_name} IN ({placeholders})", product_pks)
@@ -232,18 +237,20 @@ class Command(BaseCommand):
 
 
     def _update_all_product_counts(self):
+        """統計情報の更新処理"""
         try:
             with transaction.atomic():
                 self.update_product_counts(self.stdout)
         except Exception as e:
-            logger.error(f"product_count 更新エラー: {e}")
+            logger.error(f"統計カウント更新エラー: {e}")
 
 
     def update_product_counts(self, stdout):
-        stdout.write(self.style.NOTICE('\n--- product_count を更新中 ---'))
+        """各マスタ（女優、ジャンル等）に紐付く有効な商品数を集計して反映"""
+        stdout.write(self.style.NOTICE('\n--- product_count (統計情報) を更新中 ---'))
         adult_product_fk_name = 'adultproduct_id'
         
-        # 女優
+        # 女優ごとの作品数集計
         actress_count_sq = Subquery(
             AdultProduct.actresses.through.objects
             .filter(actress_id=OuterRef('pk'))
@@ -256,7 +263,7 @@ class Command(BaseCommand):
             product_count=Coalesce(actress_count_sq, Value(0), output_field=IntegerField())
         )
 
-        # ジャンル
+        # ジャンルごとの作品数集計
         genre_count_sq = Subquery(
             AdultProduct.genres.through.objects
             .filter(genre_id=OuterRef('pk'))
@@ -269,7 +276,7 @@ class Command(BaseCommand):
             product_count=Coalesce(genre_count_sq, Value(0), output_field=IntegerField())
         )
 
-        # メーカー等 (FK)
+        # メーカー、レーベル、シリーズ、監督 (ForeignKey)
         for model_name, model in [('maker', Maker), ('label', Label), ('series', Series), ('director', Director)]:
             count_sq = Subquery(
                 AdultProduct.objects
@@ -282,4 +289,4 @@ class Command(BaseCommand):
             model.objects.filter(api_source=self.API_SOURCE).update(
                 product_count=Coalesce(count_sq, Value(0), output_field=IntegerField())
             )
-        stdout.write(self.style.SUCCESS(' ✅ カウント更新完了'))
+        stdout.write(self.style.SUCCESS(' ✅ 統計情報の更新が完了しました。'))

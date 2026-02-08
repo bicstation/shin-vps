@@ -1,0 +1,627 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "DMM.com",
+      "service": "mono",
+      "floor": "cd",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 50000,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_2510empc5166_2",
+        "product_id": "cd_2510empc5166_2",
+        "title": "ミュージカル『刀剣乱舞』 和泉守兼定 堀川国広 山姥切国広 参騎出陣 〜八百八町膝栗毛〜 （初回限定盤B）/刀剣男士 和泉守兼定 堀川国広 山姥切国広",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_2510empc5166_2/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_2510empc5166_2%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/anime_game/cd_2510empc5166_2/cd_2510empc5166_2pt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/anime_game/cd_2510empc5166_2/cd_2510empc5166_2ps.jpg"
+        },
+        "prices": {
+          "price": "4950",
+          "list_price": "4950"
+        },
+        "date": "2026-03-25 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 79022,
+              "name": "刀剣乱舞"
+            }
+          ],
+          "series": [
+            {
+              "id": 65820,
+              "name": "ミュージカル『刀剣乱舞』"
+            }
+          ],
+          "maker": [
+            {
+              "id": 81607,
+              "name": "ユークリッド・エージェンシー"
+            }
+          ],
+          "artist": [
+            {
+              "id": 221221,
+              "name": "刀剣男士 和泉守兼定 堀川国広 山姥切国広",
+              "ruby": "とうけんだんしいずみのかみかねさだほりかわくにひろやまんばぎりくにひろ"
+            }
+          ]
+        },
+        "stock": "reserve",
+        "cdinfo": {
+          "kind": "アルバム"
+        },
+        "directory": [
+          {
+            "id": 776,
+            "name": "アニメ・ゲーム"
+          },
+          {
+            "id": 796,
+            "name": "2.5次元"
+          },
+          {
+            "id": 824,
+            "name": "その他"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "storegcd00134j84zf7wl16",
+        "product_id": "storegcd00134j84zf7wl16",
+        "title": "【初回生産限定盤】美しきこの世界-偽りと祝福-（CV.テトラポット登）",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=storegcd00134j84zf7wl16/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dstoregcd00134j84zf7wl16%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/store/storegcd00134j84zf7wl16/storegcd00134j84zf7wl16pt.jpg",
+          "small": "https://pics.dmm.com/mono/store/storegcd00134j84zf7wl16/storegcd00134j84zf7wl16ps.jpg"
+        },
+        "prices": {
+          "price": "3300",
+          "list_price": "3300"
+        },
+        "date": "2026-01-30 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 31761,
+              "name": "HOBiGIRLS neige"
+            }
+          ],
+          "artist": [
+            {
+              "id": 184423,
+              "name": "テトラポット登",
+              "ruby": "てとらぽっとのぼる"
+            }
+          ]
+        },
+        "jancode": "4520424304806",
+        "stock": "stock",
+        "cdinfo": {
+          "kind": "アルバム"
+        },
+        "directory": [
+          {
+            "id": 776,
+            "name": "アニメ・ゲーム"
+          },
+          {
+            "id": 799,
+            "name": "ドラマ・シチュエーションCD"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "storegcd00134m0sd0xqijo",
+        "product_id": "storegcd00134m0sd0xqijo",
+        "title": "【初回生産限定盤】美シキコノ世界-偽りと愛-（CV.猿飛総司）",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=storegcd00134m0sd0xqijo/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dstoregcd00134m0sd0xqijo%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/store/storegcd00134m0sd0xqijo/storegcd00134m0sd0xqijopt.jpg",
+          "small": "https://pics.dmm.com/mono/store/storegcd00134m0sd0xqijo/storegcd00134m0sd0xqijops.jpg"
+        },
+        "prices": {
+          "price": "3300",
+          "list_price": "3300"
+        },
+        "date": "2026-02-27 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 31761,
+              "name": "HOBiGIRLS neige"
+            }
+          ],
+          "artist": [
+            {
+              "id": 196412,
+              "name": "猿飛総司",
+              "ruby": "さるとびそうじ"
+            }
+          ]
+        },
+        "jancode": "4520424304813",
+        "stock": "reserve",
+        "cdinfo": {
+          "kind": "アルバム"
+        },
+        "directory": [
+          {
+            "id": 776,
+            "name": "アニメ・ゲーム"
+          },
+          {
+            "id": 799,
+            "name": "ドラマ・シチュエーションCD"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_258empc5159_2",
+        "product_id": "cd_258empc5159_2",
+        "title": "ミュージカル『刀剣乱舞』 〜陸奥一蓮〜 （通常盤）/刀剣男士 formation of 陸奥一蓮",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_258empc5159_2/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_258empc5159_2%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/anime_game/cd_258empc5159_2/cd_258empc5159_2pt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/anime_game/cd_258empc5159_2/cd_258empc5159_2ps.jpg"
+        },
+        "prices": {
+          "price": "3850",
+          "list_price": "3850"
+        },
+        "date": "2025-12-10 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 79022,
+              "name": "刀剣乱舞"
+            }
+          ],
+          "series": [
+            {
+              "id": 65820,
+              "name": "ミュージカル『刀剣乱舞』"
+            }
+          ],
+          "maker": [
+            {
+              "id": 81607,
+              "name": "ユークリッド・エージェンシー"
+            }
+          ],
+          "artist": [
+            {
+              "id": 219614,
+              "name": "刀剣男士 formation of 陸奥一蓮",
+              "ruby": "とうけんだんしふぉーめーしょんおぶみちのおくひとつはちす"
+            }
+          ]
+        },
+        "stock": "empty",
+        "cdinfo": {
+          "kind": "シングル"
+        },
+        "directory": [
+          {
+            "id": 776,
+            "name": "アニメ・ゲーム"
+          },
+          {
+            "id": 796,
+            "name": "2.5次元"
+          },
+          {
+            "id": 824,
+            "name": "その他"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_2510empc5167_2",
+        "product_id": "cd_2510empc5167_2",
+        "title": "ミュージカル『刀剣乱舞』 和泉守兼定 堀川国広 山姥切国広 参騎出陣 〜八百八町膝栗毛〜 （通常盤）/刀剣男士 和泉守兼定 堀川国広 山姥切国広",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_2510empc5167_2/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_2510empc5167_2%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/anime_game/cd_2510empc5167_2/cd_2510empc5167_2pt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/anime_game/cd_2510empc5167_2/cd_2510empc5167_2ps.jpg"
+        },
+        "prices": {
+          "price": "3850",
+          "list_price": "3850"
+        },
+        "date": "2026-03-25 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 79022,
+              "name": "刀剣乱舞"
+            }
+          ],
+          "series": [
+            {
+              "id": 65820,
+              "name": "ミュージカル『刀剣乱舞』"
+            }
+          ],
+          "maker": [
+            {
+              "id": 81607,
+              "name": "ユークリッド・エージェンシー"
+            }
+          ],
+          "artist": [
+            {
+              "id": 221221,
+              "name": "刀剣男士 和泉守兼定 堀川国広 山姥切国広",
+              "ruby": "とうけんだんしいずみのかみかねさだほりかわくにひろやまんばぎりくにひろ"
+            }
+          ]
+        },
+        "stock": "reserve",
+        "cdinfo": {
+          "kind": "アルバム"
+        },
+        "directory": [
+          {
+            "id": 776,
+            "name": "アニメ・ゲーム"
+          },
+          {
+            "id": 796,
+            "name": "2.5次元"
+          },
+          {
+            "id": 824,
+            "name": "その他"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_2510empc5165_2",
+        "product_id": "cd_2510empc5165_2",
+        "title": "ミュージカル『刀剣乱舞』 和泉守兼定 堀川国広 山姥切国広 参騎出陣 〜八百八町膝栗毛〜 （初回限定盤A）/刀剣男士 和泉守兼定 堀川国広 山姥切国広",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_2510empc5165_2/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_2510empc5165_2%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/anime_game/cd_2510empc5165_2/cd_2510empc5165_2pt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/anime_game/cd_2510empc5165_2/cd_2510empc5165_2ps.jpg"
+        },
+        "prices": {
+          "price": "4950",
+          "list_price": "4950"
+        },
+        "date": "2026-03-25 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 79022,
+              "name": "刀剣乱舞"
+            }
+          ],
+          "series": [
+            {
+              "id": 65820,
+              "name": "ミュージカル『刀剣乱舞』"
+            }
+          ],
+          "maker": [
+            {
+              "id": 81607,
+              "name": "ユークリッド・エージェンシー"
+            }
+          ],
+          "artist": [
+            {
+              "id": 221221,
+              "name": "刀剣男士 和泉守兼定 堀川国広 山姥切国広",
+              "ruby": "とうけんだんしいずみのかみかねさだほりかわくにひろやまんばぎりくにひろ"
+            }
+          ]
+        },
+        "stock": "reserve",
+        "cdinfo": {
+          "kind": "アルバム"
+        },
+        "directory": [
+          {
+            "id": 776,
+            "name": "アニメ・ゲーム"
+          },
+          {
+            "id": 796,
+            "name": "2.5次元"
+          },
+          {
+            "id": 824,
+            "name": "その他"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_258empc5158_2",
+        "product_id": "cd_258empc5158_2",
+        "title": "ミュージカル『刀剣乱舞』 〜陸奥一蓮〜 （初回限定盤B）/刀剣男士 formation of 陸奥一蓮",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_258empc5158_2/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_258empc5158_2%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/anime_game/cd_258empc5158_2/cd_258empc5158_2pt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/anime_game/cd_258empc5158_2/cd_258empc5158_2ps.jpg"
+        },
+        "prices": {
+          "price": "4950",
+          "list_price": "4950"
+        },
+        "date": "2025-12-10 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 79022,
+              "name": "刀剣乱舞"
+            }
+          ],
+          "series": [
+            {
+              "id": 65820,
+              "name": "ミュージカル『刀剣乱舞』"
+            }
+          ],
+          "maker": [
+            {
+              "id": 81607,
+              "name": "ユークリッド・エージェンシー"
+            }
+          ],
+          "artist": [
+            {
+              "id": 219614,
+              "name": "刀剣男士 formation of 陸奥一蓮",
+              "ruby": "とうけんだんしふぉーめーしょんおぶみちのおくひとつはちす"
+            }
+          ]
+        },
+        "stock": "empty",
+        "cdinfo": {
+          "kind": "シングル"
+        },
+        "directory": [
+          {
+            "id": 776,
+            "name": "アニメ・ゲーム"
+          },
+          {
+            "id": 796,
+            "name": "2.5次元"
+          },
+          {
+            "id": 824,
+            "name": "その他"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_210vizl2193s",
+        "product_id": "cd_210vizl2193s",
+        "title": "M！LK/Jewel（初回盤B）",
+        "volume": "86分",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_210vizl2193s/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_210vizl2193s%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/japanese_music/cd_210vizl2193s/cd_210vizl2193spt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/japanese_music/cd_210vizl2193s/cd_210vizl2193sps.jpg"
+        },
+        "prices": {
+          "price": "5500",
+          "list_price": "5500"
+        },
+        "date": "2023-06-14 10:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 80210,
+              "name": "ビクターエンタテインメント"
+            }
+          ],
+          "artist": [
+            {
+              "id": 178447,
+              "name": "M！LK",
+              "ruby": "みるく"
+            }
+          ]
+        },
+        "jancode": "4988002930593",
+        "maker_product": "VIZL-2193",
+        "stock": "empty",
+        "cdinfo": {
+          "kind": "アルバム"
+        },
+        "directory": [
+          {
+            "id": 773,
+            "name": "邦楽"
+          },
+          {
+            "id": 783,
+            "name": "J-POP"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_003060248hp",
+        "product_id": "cd_003060248hp",
+        "title": "蓮ノ空女学院スクールアイドルクラブ/蓮ノ空女学院スクールアイドルクラブ 10thシングル「タイトル未定」",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_003060248hp/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_003060248hp%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/anime_game/cd_003060248hp/cd_003060248hppt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/anime_game/cd_003060248hp/cd_003060248hpps.jpg"
+        },
+        "prices": {
+          "price": "1650",
+          "list_price": "1650"
+        },
+        "date": "2026-04-15 10:00:00",
+        "iteminfo": {
+          "series": [
+            {
+              "id": 170329,
+              "name": "ラブライブ！"
+            }
+          ],
+          "maker": [
+            {
+              "id": 80285,
+              "name": "ランティス"
+            }
+          ],
+          "artist": [
+            {
+              "id": 213857,
+              "name": "蓮ノ空女学院スクールアイドルクラブ",
+              "ruby": "はすのそらじょがくいんすくーるあいどるくらぶ"
+            }
+          ]
+        },
+        "jancode": "4540774247790",
+        "stock": "reserve",
+        "cdinfo": {
+          "kind": "シングル"
+        },
+        "directory": [
+          {
+            "id": 776,
+            "name": "アニメ・ゲーム"
+          },
+          {
+            "id": 797,
+            "name": "アニメ"
+          },
+          {
+            "id": 826,
+            "name": "その他"
+          }
+        ]
+      },
+      {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_338secl3256s",
+        "product_id": "cd_338secl3256s",
+        "title": "米津玄師/IRIS OUT/JANE DOE（通常盤）",
+        "volume": "6分",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_338secl3256s/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_338secl3256s%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/japanese_music/cd_338secl3256s/cd_338secl3256spt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/japanese_music/cd_338secl3256s/cd_338secl3256sps.jpg"
+        },
+        "prices": {
+          "price": "1200",
+          "list_price": "1200"
+        },
+        "date": "2025-09-24 10:00:00",
+        "iteminfo": {
+          "series": [
+            {
+              "id": 4241574,
+              "name": "チェンソーマン"
+            }
+          ],
+          "maker": [
+            {
+              "id": 80338,
+              "name": "ソニー・ミュージック"
+            }
+          ],
+          "artist": [
+            {
+              "id": 161529,
+              "name": "米津玄師",
+              "ruby": "よねづけんし"
+            }
+          ]
+        },
+        "jancode": "4547366768794",
+        "maker_product": "SECL-3256",
+        "stock": "empty",
+        "cdinfo": {
+          "kind": "シングル"
+        },
+        "directory": [
+          {
+            "id": 773,
+            "name": "邦楽"
+          },
+          {
+            "id": 783,
+            "name": "J-POP"
+          }
+        ]
+      }
+    ]
+  }
+}

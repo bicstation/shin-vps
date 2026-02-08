@@ -1,4 +1,6 @@
-/* AdultProductGallery.module.css */
+/* ==============================================================================
+ * 📌 Adult Product Gallery - Hybrid Cyber Layout
+ * ============================================================================== */
 
 .galleryWrapper {
   display: flex;
@@ -17,7 +19,12 @@
   overflow: hidden;
   border: 1px solid #3d3d66;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+  transition: border-color 0.4s ease;
 }
+
+/* テーマ別メイン枠線 */
+.fanzaTheme .mainDisplayArea { border-color: rgba(233, 69, 96, 0.4); }
+.dugaTheme .mainDisplayArea { border-color: rgba(0, 209, 178, 0.4); }
 
 .imageContainer {
   position: relative;
@@ -33,7 +40,7 @@
   max-height: 100%;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* パッケージ全体を見せるためにcontain */
+  object-fit: contain; /* パッケージ全体を見せる */
   z-index: 1;
 }
 
@@ -59,9 +66,9 @@
 .cornerBrackets {
   position: absolute;
   inset: 1.5rem;
-  border: 1px solid rgba(0, 209, 178, 0.2);
   pointer-events: none;
   z-index: 3;
+  transition: all 0.4s ease;
 }
 
 .cornerBrackets::before, .cornerBrackets::after {
@@ -69,28 +76,58 @@
   position: absolute;
   width: 20px;
   height: 20px;
-  border: 2px solid #00d1b2;
+  border: 2px solid transparent;
+  transition: border-color 0.4s ease;
 }
 
-.cornerBrackets::before { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
-.cornerBrackets::after { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+/* FANZA用装飾カラー */
+.fanzaTheme .cornerBrackets { border: 1px solid rgba(233, 69, 96, 0.1); }
+.fanzaTheme .cornerBrackets::before { top: -2px; left: -2px; border-left: 2px solid #e94560; border-top: 2px solid #e94560; }
+.fanzaTheme .cornerBrackets::after { bottom: -2px; right: -2px; border-right: 2px solid #e94560; border-bottom: 2px solid #e94560; }
+
+/* DUGA用装飾カラー */
+.dugaTheme .cornerBrackets { border: 1px solid rgba(0, 209, 178, 0.1); }
+.dugaTheme .cornerBrackets::before { top: -2px; left: -2px; border-left: 2px solid #00d1b2; border-top: 2px solid #00d1b2; }
+.dugaTheme .cornerBrackets::after { bottom: -2px; right: -2px; border-right: 2px solid #00d1b2; border-bottom: 2px solid #00d1b2; }
 
 /* 💡 解像度タグ */
 .resolutionTag {
   position: absolute;
   bottom: 1rem;
   right: 1.5rem;
-  background: rgba(0, 209, 178, 0.2);
-  color: #00d1b2;
   font-size: 10px;
   font-weight: 900;
   padding: 2px 8px;
-  border: 1px solid #00d1b2;
   border-radius: 3px;
   text-transform: uppercase;
   letter-spacing: 1px;
   z-index: 4;
   backdrop-filter: blur(4px);
+  transition: all 0.4s ease;
+}
+
+.fanzaTheme .resolutionTag {
+  background: rgba(233, 69, 96, 0.2);
+  color: #ff5e78;
+  border: 1px solid #e94560;
+}
+
+.dugaTheme .resolutionTag {
+  background: rgba(0, 209, 178, 0.2);
+  color: #00d1b2;
+  border: 1px solid #00d1b2;
+}
+
+/* 💡 ライブパルスアニメーション (Video再生中用) */
+.livePulse {
+  display: inline-block;
+  animation: pulseBlink 1.5s infinite;
+}
+
+@keyframes pulseBlink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 /* 2. サブ画像リスト（サムネイル） */
@@ -125,7 +162,14 @@
   transform: translateY(-2px);
 }
 
-.thumbButtonActive {
+/* アクティブ状態の出し分け */
+.fanzaTheme .thumbButtonActive {
+  border-color: #e94560;
+  opacity: 1;
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+}
+
+.dugaTheme .thumbButtonActive {
   border-color: #00d1b2;
   opacity: 1;
   box-shadow: 0 0 15px rgba(0, 209, 178, 0.3);
@@ -133,7 +177,7 @@
 
 /* 🎥 動画サムネイル専用の装飾 */
 .videoThumb {
-  border-color: #e94560; /* 動画はアクセントカラーを変える */
+  border-color: #e94560;
 }
 
 .videoThumb.thumbButtonActive {
@@ -173,9 +217,11 @@
   left: 0;
   width: 100%;
   height: 3px;
-  background-color: #00d1b2;
   z-index: 4;
 }
+
+.fanzaTheme .activeIndicator { background-color: #e94560; }
+.dugaTheme .activeIndicator { background-color: #00d1b2; }
 
 .thumbImage {
   width: 100%;
@@ -194,19 +240,23 @@
   background-color: #0a0a1a;
   border: 1px solid #3d3d66;
   border-radius: 1rem;
-  color: #00d1b2;
   font-family: monospace;
   gap: 1rem;
 }
 
+.fanzaTheme .noImage { color: #e94560; }
+.dugaTheme .noImage { color: #00d1b2; }
+
 .loadingSpinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0, 209, 178, 0.1);
-  border-top-color: #00d1b2;
+  border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+
+.fanzaTheme .loadingSpinner { border-top-color: #e94560; }
+.dugaTheme .loadingSpinner { border-top-color: #00d1b2; }
 
 @keyframes spin {
   to { transform: rotate(360deg); }

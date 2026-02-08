@@ -1,215 +1,114 @@
-# django\api\management\commands\import_t_fanza.py
-
-import requests
+# -*- coding: utf-8 -*-
 import json
 import time
 import logging
-import urllib.parse
-from datetime import datetime
-
 from django.core.management.base import BaseCommand
-from django.db import transaction
 from django.utils import timezone
-from django.conf import settings # API_CONFIG を settings から読み込む
-
-# 共通モジュールからのインポート
-# ✅ 修正: raw_data_manager.py が utils/ 直下にあることを想定し、インポートパスを修正
+from .fanza_api_utils import FanzaAPIClient
 from api.utils.raw_data_manager import bulk_insert_or_update
-from api.models import RawApiData
 
-
-# ロガーのセットアップ
 logger = logging.getLogger('adult.fetch_fanza')
 
-# FANZA APIの設定を settings から取得
-FANZA_CONFIG = settings.API_CONFIG.get('FANZA', {})
-API_SOURCE = 'FANZA'
-
-# FANZA APIのサービスの定義
-DEFAULT_FANZA_FLOORS = [
-    {'service': 'digital', 'floor': 'videoa', 'hits': 100},
-    {'service': 'digital', 'floor': 'videoc', 'hits': 100},
-]
-
-# APIリクエストの共通パラメーター
-DEFAULT_PARAMS = {
-    'site': 'FANZA', 
-    'hits': 100, 
-    'sort': 'date', # 新しい順
-    'output': 'json',
-    'callback': '___json_dmm', # JSONP回避用
-}
-
-# 設定が存在しない場合のフォールバック
-FLOOR_CONFIGS = FANZA_CONFIG.get('FLOORS', DEFAULT_FANZA_FLOORS)
-BASE_URL = FANZA_CONFIG.get('API_URL', 'https://api.dmm.com/affiliate/v3/ItemList')
-COMMON_PARAMS = FANZA_CONFIG.get('PARAMS', DEFAULT_PARAMS)
-
-
-# ====================================================
-# JSONPラッパーを除去してJSONオブジェクトを返すヘルパー関数
-# ====================================================
-def clean_jsonp_response(response_text, callback_name):
-    """
-    JSONPレスポンスからコールバック関数ラッパーを除去し、JSONをデコードする。
-    """
-    start = f'{callback_name}('
-    end = ');'
-    
-    # JSONPラッパーが存在する場合
-    if response_text.startswith(start) and response_text.endswith(end):
-        # ラッパーを除去し、内部のJSON文字列を取得
-        json_string = response_text[len(start):-len(end)]
-        return json.loads(json_string)
-    
-    # 標準のJSONレスポンスの場合（念のため）
-    return json.loads(response_text)
-
-
 class Command(BaseCommand):
-    help = 'FANZA APIからデータを取得し、RawApiDataテーブルに保存します。'
+    help = 'DMM/FANZA APIから動的に全フロアを最新順に巡回し、RawApiDataに保存します。ページ指定が可能です。'
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--limit-floors',
+            '--start_page',
             type=int,
-            default=2,
-            help='フロアごとの最大取得ページ数 (1ページあたり100件)。',
+            default=1,
+            help='取得を開始するページ番号 (1ページ100件計算)。',
+        )
+        parser.add_argument(
+            '--pages',
+            type=int,
+            default=1,
+            help='開始ページから何ページ分取得するか。',
         )
 
     def handle(self, *args, **options):
-        """メインの処理ロジック"""
-        self.stdout.write(self.style.NOTICE('--- FANZA API データ取得開始 ---'))
-        
-        limit_floors = options['limit_floors']
-        total_saved_count = 0
-        
-        CALLBACK_NAME = COMMON_PARAMS.get('callback', '___json_dmm') 
+        client = FanzaAPIClient()
+        start_page = options['start_page']
+        limit_pages = options['pages']
+        hits_per_page = 100  # API効率を最大化するため100固定
 
-
-        for floor_config in FLOOR_CONFIGS:
-            service = floor_config['service']
-            floor = floor_config['floor']
-            self.stdout.write(self.style.NOTICE(f'\n--- サービス: {service}, フロア: {floor} のデータ取得開始 ---'))
-            
-            # API検索パラメーターの準備
-            params = COMMON_PARAMS.copy()
-            params['service'] = service
-            params['floor'] = floor
-            
-            # settings.API_CONFIG から認証情報を取得
-            # FANZA_CONFIG は settings.API_CONFIG.get('FANZA', {}) で既に定義済み
-            params['api_id'] = FANZA_CONFIG.get('API_ID') 
-            params['affiliate_id'] = FANZA_CONFIG.get('API_KEY')
-            
-            # 認証情報が設定されているか確認 (必須)
-            if not params['api_id'] or not params['affiliate_id']:
-                logger.error("FANZA API ID または AFFILIATE ID が設定されていません。処理をスキップします。")
-                self.stdout.write(self.style.ERROR(f'--- サービス: {service}, フロア: {floor} は認証情報不足によりスキップされました ---'))
-                continue
-            
-            # ヒット数（ページあたりの件数）をフロア設定またはデフォルトから取得
-            hits = floor_config.get('hits', COMMON_PARAMS['hits'])
-            params['hits'] = hits
-
-            offset = 1 # 1から開始
-            page_count = 0
-            
-            try:
-                # 最初の取得で総アイテム数を確認
-                self.stdout.write(f'FANZA API からデータを取得中 (サービス: {service}, フロア: {floor}, offset: {offset})...')
-                response = requests.get(BASE_URL, params={**params, 'offset': offset})
-                response.raise_for_status() # HTTPエラーを確認
-                
-                # JSONP対応のヘルパー関数を使用
-                data = clean_jsonp_response(response.text, CALLBACK_NAME)
-                result = data.get('result', {})
-                
-                # API認証失敗のケースをここで再度チェック
-                if result.get('status') == 400 and result.get('message') == 'BAD REQUEST':
-                    raise requests.exceptions.HTTPError(f"API認証失敗: {result.get('errors')}")
-
-                total_count = int(result.get('total_count', 0))
-                
-                self.stdout.write(f'このフロア ({floor}) で利用可能な総アイテム数: {total_count} 件')
-
-                # 総アイテム数またはページ制限に応じてループ
-                while offset <= total_count and page_count < limit_floors:
-                    # 最初のページは既に取得済み
-                    if offset != 1: 
-                        # 2回目以降の取得
-                        time.sleep(1) # API負荷軽減のため待機
-
-                        self.stdout.write(f'FANZA API からデータを取得中 (サービス: {service}, フロア: {floor}, offset: {offset})...')
-                        response = requests.get(BASE_URL, params={**params, 'offset': offset})
-                        response.raise_for_status()
-                        
-                        # JSONP対応のヘルパー関数を使用
-                        data = clean_jsonp_response(response.text, CALLBACK_NAME)
-                        result = data.get('result', {})
-
-                    # --------------------------------------------------------
-                    # DB保存処理 (RawApiDataバッチの準備と保存)
-                    # --------------------------------------------------------
-                    raw_data_batch = []
-                    
-                    # API全体レスポンスの 'floor-offset' をユニークキーとする
-                    api_product_id_key = f"{floor}-{offset}" 
-                    
-                    # APIから取得したレスポンスJSON全体を raw_json_data に格納
-                    # ★修正: data が最初の取得時またはループ内で既に定義されていることを確認★
-                    raw_data_batch.append({
-                        'api_source': API_SOURCE,
-                        'api_product_id': api_product_id_key, 
-                        'raw_json_data': json.dumps(data),
-                        'api_service': service,
-                        'api_floor': floor,
-                        'updated_at': timezone.now(),
-                        # bulk_create の UPSERT では created_at は更新しないため、設定は不要だが、
-                        # インスタンス生成のために含めておいても問題はない。
-                        'created_at': timezone.now(),
-                        'migrated': False, # ✅ 修正: 'is_processed' を 'migrated' に変更
-                    })
-                    
-                    saved_count = self._save_raw_data_batch(raw_data_batch) # 保存ヘルパーを呼び出す
-                    total_saved_count += saved_count
-                    
-                    # result.get("items", []) が空の場合、APIのページングが終了したと見なせる
-                    items_count = len(result.get("items", []))
-                    self.stdout.write(f'{items_count} 件の商品データを取得しました。データベースに保存しました。')
-                    
-                    if items_count == 0 and offset != 1:
-                        break # アイテムが空であれば、ループを抜ける
-
-                    # 次のオフセットとページカウンターの更新
-                    offset += hits
-                    page_count += 1
-
-            except requests.exceptions.HTTPError as e:
-                # HTTPエラーの場合は、エラーメッセージと共にレスポンス内容もログ出力
-                logger.error(f"HTTPエラーが発生しました: {e}. レスポンス: {response.text}")
-            except Exception as e:
-                # その他のエラー (JSONデコードエラーなど)
-                logger.error(f"データ処理中にエラーが発生しました: {e}")
-            
-            self.stdout.write(self.style.NOTICE(f'--- サービス: {service}, フロア: {floor} のデータ取得完了 (合計: {total_saved_count} 件) ---'))
-
-        self.stdout.write(self.style.SUCCESS('✅ 全フロアのデータ取得と保存が完了しました。'))
-        self.stdout.write(f'合計保存された RawApiData レコード数: {total_saved_count} 件')
-
-
-    def _save_raw_data_batch(self, batch):
-        """
-        RawApiDataをバルク挿入・更新する。
-        """
-        if not batch:
-            return 0
+        self.stdout.write(self.style.SUCCESS(f"📡 設定: {start_page}ページ目から{limit_pages}ページ分を取得 (1ページ100件)"))
         
         try:
-            # ✅ 修正: エラー原因となった model_class と unique_fields を削除
-            # bulk_insert_or_update は、内部で RawApiData モデルを処理することを前提としていると推測
-            bulk_insert_or_update(batch=batch)
-            return len(batch)
+            # get_dynamic_menu() で DMM/FANZA の全フロアを取得
+            menu_list = client.get_dynamic_menu()
         except Exception as e:
-            logger.error(f"DB保存エラー: {e}")
-            raise # エラーを再度スローし、handle()メソッド外側のtry/exceptで捕捉させる
+            self.stdout.write(self.style.ERROR(f"メニュー取得失敗: {e}"))
+            return
+
+        self.stdout.write(f"合計 {len(menu_list)} 個のフロアが見つかりました。巡回を開始します。\n")
+
+        total_saved_all = 0
+
+        for target in menu_list:
+            site_label = target['site_name']
+            service = target['service']
+            floor = target['floor']
+            label = target['label']
+            
+            self.stdout.write(self.style.MIGRATE_LABEL(f">> 巡回中: [{site_label}] {label} ({service}/{floor})"))
+            
+            # 開始ページから初期 offset を計算 (例: 1ページ目=1, 2ページ目=101)
+            current_offset = ((start_page - 1) * hits_per_page) + 1
+            
+            for p in range(limit_pages):
+                # API仕様上の最大 offset 50,000 を超える場合は終了
+                if current_offset > 50000:
+                    self.stdout.write(self.style.WARNING(f"   - offsetが上限(50,000)に達したため、このフロアを終了します。"))
+                    break
+
+                try:
+                    # fetch_item_list を利用して最新順(sort='date')でデータを取得
+                    data = client.fetch_item_list(
+                        site=target['site'],
+                        service=service,
+                        floor=floor,
+                        hits=hits_per_page,
+                        offset=current_offset,
+                        sort='date'
+                    )
+                    
+                    result = data.get('result', {})
+                    items = result.get('items', [])
+                    
+                    if not items:
+                        self.stdout.write(f"   - {start_page + p}ページ目: データが見つかりません。")
+                        break
+
+                    # RawApiData への保存（一括保存用のバッチ作成）
+                    # サイトコードから source 名を正規化
+                    source_name = 'FANZA' if 'FANZA' in target['site_name'] else 'DMM'
+
+                    raw_data_batch = [{
+                        'api_source': source_name,
+                        'api_product_id': f"{floor}-{current_offset}-{int(timezone.now().timestamp())}",
+                        'raw_json_data': json.dumps(data, ensure_ascii=False),
+                        'api_service': service,
+                        'api_floor': floor,
+                        'migrated': False,
+                        'updated_at': timezone.now(),
+                        'created_at': timezone.now(),
+                    }]
+
+                    bulk_insert_or_update(batch=raw_data_batch)
+                    
+                    saved_count = len(items)
+                    total_saved_all += saved_count
+                    self.stdout.write(f"   - {start_page + p}ページ目: {saved_count}件取得 (offset: {current_offset})")
+
+                    # 次のページの offset へ進める
+                    current_offset += hits_per_page
+                    
+                    # API負荷軽減のための待機
+                    time.sleep(1.2)
+
+                except Exception as e:
+                    self.stdout.write(self.style.ERROR(f"   - エラー: {e}"))
+                    break
+
+        self.stdout.write(self.style.SUCCESS(f"\n✅ 巡回完了！ 合計 {total_saved_all} 件の生データを保存しました。"))

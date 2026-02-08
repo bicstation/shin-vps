@@ -15,7 +15,7 @@ logger = logging.getLogger('api_utils')
 # FANZAのAPIソース定数
 API_SOURCE = 'FANZA'
 
-def _safe_extract_single_entity(item_info_content: dict, key: str) -> tuple[str | None, str | None]:
+def _safe_extract_single_entity(item_info_content: dict, key: str) -> tuple[Optional[str], Optional[str]]:
     """
     FANZAのデータ構造に合わせて、単一のエンティティの名前とAPI IDを抽出する。
     iteminfo内のmaker, label, series, directorなどの辞書またはリストに対応。
@@ -24,7 +24,7 @@ def _safe_extract_single_entity(item_info_content: dict, key: str) -> tuple[str 
     if not data:
         return None, None
     
-    # リスト形式で届く場合（例: actressなど）があるため、最初の要素を取得
+    # リスト形式で届く場合があるため、最初の要素を取得
     if isinstance(data, list):
         if not data:
             return None, None
@@ -36,7 +36,7 @@ def _safe_extract_single_entity(item_info_content: dict, key: str) -> tuple[str 
         return data, None
     return None, None
 
-def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dict]]:
+def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     RawApiData (FANZA) のレコードを正規化する。
     動画URLの確実な取得とプロトコル補完を含めた完全版。
@@ -113,9 +113,8 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
                 if sample_images not in image_url_list:
                     image_url_list.append(sample_images)
 
-        # 4. サンプル動画URLの抽出（重要修正点）
+        # 4. サンプル動画URLの抽出（高画質を優先）
         movie_urls = data.get('sampleMovieURL', {})
-        # Noneを回避するために明示的に "" をデフォルトにする
         sample_movie = (
             movie_urls.get('size_720_480') or 
             movie_urls.get('size_644_414') or 
@@ -124,11 +123,11 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
             ""
         )
 
-        # プロトコル補完 (// を https: に)
-        if sample_movie.startswith('//'):
+        # プロトコル補完
+        if sample_movie and sample_movie.startswith('//'):
             sample_movie = 'https:' + sample_movie
         
-        # 最終ガード：Noneであれば空文字にする
+        # 最終ガード
         if sample_movie is None:
             sample_movie = ""
 
@@ -137,6 +136,7 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
         price_raw = data.get('prices', {}).get('price')
         if price_raw:
             try:
+                # 記号を除去して整数化
                 price_clean = str(price_raw).replace('~', '').replace(',', '').strip()
                 if price_clean.isdigit():
                     price_val = int(price_clean)
@@ -144,17 +144,20 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
                 price_val = None
         
         # 6. Djangoモデル（AdultProduct）の構造に合わせて集約
+        product_id_unique = generate_product_unique_id(API_SOURCE, str(api_product_id))
+        
         product_data = {
             'api_source': API_SOURCE,
             'api_product_id': str(api_product_id),
-            'product_id_unique': generate_product_unique_id(API_SOURCE, str(api_product_id)), 
+            'product_id_unique': product_id_unique,
             'title': title,
             'release_date': parse_date(data.get('date').split(' ')[0]) if data.get('date') else None,
             'affiliate_url': data.get('affiliateURL') or "", 
             'price': price_val,
             'image_url_list': image_url_list,
-            'sample_movie_url': sample_movie, # Noneではない文字列を確実に渡す
+            'sample_movie_url': sample_movie,
             
+            # 外部キー用（後にIDに置換される文字列）
             'maker': maker_name,
             'label': label_name,
             'series': series_name,
@@ -169,8 +172,9 @@ def normalize_fanza_data(raw_instance: RawApiData) -> tuple[list[dict], list[dic
         products_data_list.append(product_data)
         
         # 7. 多対多（ManyToMany）リレーション用データの分離
+        # コマンド側の _synchronize_relations との紐付けのため 'api_product_id' を使用
         relations_list.append({
-            'product_id_unique': product_data['product_id_unique'],
+            'api_product_id': str(api_product_id),
             'genres': genre_names,
             'actresses': actress_names,
         })

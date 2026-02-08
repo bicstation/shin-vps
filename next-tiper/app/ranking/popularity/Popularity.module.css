@@ -1,102 +1,193 @@
+/* --- tiper.live Adult Theme Ranking Styles --- */
+
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 4rem 1.5rem;
-  background-color: #f8fafc;
+  padding: 3rem 1.5rem;
+  background-color: #0f172a; /* 深みのあるダークネイビー/ブラック */
+  min-height: 100vh;
 }
 
 .header {
   text-align: center;
   margin-bottom: 4rem;
-  background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
-  padding: 3rem 2rem;
-  border-radius: 2rem;
+  /* アダルトの熱量を感じさせるディープパープルとマゼンタのグラデーション */
+  background: linear-gradient(135deg, #2d0a31 0%, #6b21a8 50%, #9d174d 100%);
+  padding: 4rem 2rem;
+  border-radius: 1.5rem;
   color: white;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
 }
 
-.badgeContainer {
+/* ヘッダーの背景に少し光の演出を追加 */
+.header::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.badge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.4rem 1rem;
+  background: rgba(233, 30, 99, 0.2);
+  padding: 0.5rem 1.2rem;
   border-radius: 9999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(233, 30, 99, 0.4);
+  color: #f472b6;
+  text-transform: uppercase;
+}
+
+/* Popularityページ用のバッジコンテナも共通化 */
+.badgeContainer {
+  composes: badge;
 }
 
 .title {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 900;
-  letter-spacing: -0.02em;
-  margin-bottom: 1rem;
-  font-style: italic;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.2rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .subtitle {
-  color: #e2e8f0;
-  max-width: 600px;
+  color: #f1f5f9;
+  max-width: 650px;
   margin: 0 auto;
   font-size: 1.1rem;
-  opacity: 0.9;
+  line-height: 1.6;
+  opacity: 0.85;
 }
 
 /* グリッドレイアウト */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-bottom: 4rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2.5rem;
+  margin-bottom: 5rem;
 }
 
-/* Trendingバッジ(ProductCardのchildren用) */
-.trendingTag {
+/* カード周りのラッパー */
+.cardWrapper {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.cardWrapper:hover {
+  transform: translateY(-8px);
+}
+
+/* レーダーチャートのコンテナ */
+.chartWrapper {
+  margin-top: 1.5rem;
+  padding: 1.2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chartHeader {
   display: flex;
   align-items: center;
-  font-size: 10px;
-  font-weight: 800;
-  color: #ef4444;
-  text-transform: uppercase;
-  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #cbd5e1;
 }
 
-/* ページネーション (他ページと共通のテイスト) */
+.analysisLabel {
+  margin-left: 0.5rem;
+}
+
+/* Trending/HOTバッジ */
+.trendingTag {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  background: #ef4444;
+  color: white;
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.5rem;
+  font-size: 11px;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  z-index: 10;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ページネーションセクション */
+.paginationSection {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 予備：独自ページネーション用 */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 1.5rem;
-  margin-top: 2rem;
 }
 
 .pageButton {
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 0.75rem 2rem;
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 0.8rem 1.8rem;
   border-radius: 0.75rem;
-  font-weight: 900;
-  color: #1e3a8a;
-  transition: 0.2s;
+  font-weight: 800;
+  color: #f1f5f9;
+  transition: all 0.2s ease;
 }
 
 .pageButton:hover {
-  background: #1e3a8a;
+  background: #db2777; /* ピンク */
+  border-color: #db2777;
   color: white;
-  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(219, 39, 119, 0.4);
 }
 
 .pageInfo {
-  font-weight: 600;
-  color: #64748b;
+  font-weight: 700;
+  color: #94a3b8;
+  font-family: monospace;
 }
 
-@media (max-width: 640px) {
-  .header {
+/* モバイル最適化 */
+@media (max-width: 768px) {
+  .container {
     padding: 2rem 1rem;
-    border-radius: 1.5rem;
+  }
+  
+  .header {
+    padding: 3rem 1.5rem;
+    border-radius: 1rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr; /* スマホでは1列でしっかり見せる */
+    gap: 1.5rem;
   }
 }

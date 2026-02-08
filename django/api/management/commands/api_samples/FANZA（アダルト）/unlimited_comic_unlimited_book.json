@@ -1,0 +1,630 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "FANZA",
+      "service": "unlimited_book",
+      "floor": "unlimited_comic",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 31045,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "b079akroe00078",
+        "product_id": "b079akroe00078st",
+        "title": "にゅぷ妻！！ 〜牝穴開発倶楽部〜",
+        "review": {
+          "count": 5,
+          "average": "4.20"
+        },
+        "URL": "https://unlimited.book.dmm.co.jp/products/b079akroe00078/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fb079akroe00078%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00078/b079akroe00078pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00078/b079akroe00078ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00078/b079akroe00078pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-06 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 1032,
+              "name": "お母さん"
+            },
+            {
+              "id": 1039,
+              "name": "人妻・主婦"
+            },
+            {
+              "id": 4002,
+              "name": "近親相姦"
+            },
+            {
+              "id": 4057,
+              "name": "姉・妹"
+            },
+            {
+              "id": 5022,
+              "name": "3P・4P"
+            }
+          ],
+          "series": [
+            {
+              "id": 514759,
+              "name": "にゅぷ妻！！ 〜牝穴開発倶楽部〜"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40308,
+              "name": "クロエ出版"
+            }
+          ],
+          "author": [
+            {
+              "id": 236852,
+              "name": "わらしべ"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "b079akroe00160",
+        "product_id": "b079akroe00160st",
+        "title": "淫汁だく 女子校生【電子版特典付き】",
+        "review": {
+          "count": 10,
+          "average": "4.10"
+        },
+        "URL": "https://unlimited.book.dmm.co.jp/products/b079akroe00160/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fb079akroe00160%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00160/b079akroe00160pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00160/b079akroe00160ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00160/b079akroe00160pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-01 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 5022,
+              "name": "3P・4P"
+            },
+            {
+              "id": 569,
+              "name": "ラブコメ"
+            },
+            {
+              "id": 5075,
+              "name": "汗だく"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 5011,
+              "name": "放尿・お漏らし"
+            }
+          ],
+          "series": [
+            {
+              "id": 812694,
+              "name": "淫汁だく 女子校生【電子版特典付き】"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40308,
+              "name": "クロエ出版"
+            }
+          ],
+          "author": [
+            {
+              "id": 276299,
+              "name": "双葉八重"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "k178adrrn01097",
+        "product_id": "k178adrrn01097st",
+        "title": "学園で時間停止能力を使ってみたら〜部活女子の引き締まった身体に好き放題にイタズラ〜（単話）",
+        "URL": "https://unlimited.book.dmm.co.jp/products/k178adrrn01097/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fk178adrrn01097%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/k178adrrn01097/k178adrrn01097pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/k178adrrn01097/k178adrrn01097ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/k178adrrn01097/k178adrrn01097pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-01 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 1,
+              "name": "フルカラー"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 3001,
+              "name": "体操着・ブルマ"
+            }
+          ],
+          "series": [
+            {
+              "id": 4179437,
+              "name": "学園で時間停止能力を使ってみたら〜部活女子の引き締まった身体に好き放題にイタズラ〜（単話）"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 50546,
+              "name": "デジタルコミック流通ネットワーク"
+            }
+          ],
+          "author": [
+            {
+              "id": 296315,
+              "name": "川乃雅慧"
+            },
+            {
+              "id": 354768,
+              "name": "玲"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "b079akroe00176",
+        "product_id": "b079akroe00176st",
+        "title": "痙攣ラブピストン お姉さんは変態玩具",
+        "review": {
+          "count": 7,
+          "average": "4.00"
+        },
+        "URL": "https://unlimited.book.dmm.co.jp/products/b079akroe00176/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fb079akroe00176%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00176/b079akroe00176pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00176/b079akroe00176ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00176/b079akroe00176pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-01 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 5022,
+              "name": "3P・4P"
+            },
+            {
+              "id": 5005,
+              "name": "アナル"
+            },
+            {
+              "id": 5076,
+              "name": "アナルセックス"
+            },
+            {
+              "id": 1033,
+              "name": "お姉さん"
+            },
+            {
+              "id": 5006,
+              "name": "バイブ"
+            },
+            {
+              "id": 6164,
+              "name": "ビッチ"
+            },
+            {
+              "id": 5003,
+              "name": "ぶっかけ"
+            },
+            {
+              "id": 4057,
+              "name": "姉・妹"
+            },
+            {
+              "id": 1016,
+              "name": "女教師"
+            },
+            {
+              "id": 1031,
+              "name": "痴女"
+            },
+            {
+              "id": 4020,
+              "name": "野外・露出"
+            },
+            {
+              "id": 4005,
+              "name": "乱交"
+            }
+          ],
+          "series": [
+            {
+              "id": 881051,
+              "name": "痙攣ラブピストン お姉さんは変態玩具"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40308,
+              "name": "クロエ出版"
+            }
+          ],
+          "author": [
+            {
+              "id": 247083,
+              "name": "とんのすけ"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "b079akroe00172",
+        "product_id": "b079akroe00172st",
+        "title": "妻は夫の知らぬ間に",
+        "review": {
+          "count": 13,
+          "average": "4.31"
+        },
+        "URL": "https://unlimited.book.dmm.co.jp/products/b079akroe00172/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fb079akroe00172%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00172/b079akroe00172pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00172/b079akroe00172ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00172/b079akroe00172pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-01 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 1014,
+              "name": "熟女"
+            },
+            {
+              "id": 4111,
+              "name": "寝取り・寝取られ・NTR"
+            },
+            {
+              "id": 1039,
+              "name": "人妻・主婦"
+            },
+            {
+              "id": 1069,
+              "name": "不倫"
+            }
+          ],
+          "series": [
+            {
+              "id": 861896,
+              "name": "妻は夫の知らぬ間に"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40308,
+              "name": "クロエ出版"
+            }
+          ],
+          "author": [
+            {
+              "id": 300061,
+              "name": "黒金さつき"
+            },
+            {
+              "id": 312307,
+              "name": "黒金真樹"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "b079akroe00112",
+        "product_id": "b079akroe00112st",
+        "title": "変態兄キと妹玩具",
+        "review": {
+          "count": 7,
+          "average": "4.00"
+        },
+        "URL": "https://unlimited.book.dmm.co.jp/products/b079akroe00112/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fb079akroe00112%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00112/b079akroe00112pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00112/b079akroe00112ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b079akroe00112/b079akroe00112pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-01 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 4002,
+              "name": "近親相姦"
+            },
+            {
+              "id": 4057,
+              "name": "姉・妹"
+            }
+          ],
+          "series": [
+            {
+              "id": 613004,
+              "name": "変態兄キと妹玩具"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40308,
+              "name": "クロエ出版"
+            }
+          ],
+          "author": [
+            {
+              "id": 279264,
+              "name": "板場広し"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "k574acmds00774",
+        "product_id": "k574acmds00774st",
+        "title": "アソコ自由に使わせてくれる幼馴染",
+        "URL": "https://unlimited.book.dmm.co.jp/products/k574acmds00774/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fk574acmds00774%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/k574acmds00774/k574acmds00774pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/k574acmds00774/k574acmds00774ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/k574acmds00774/k574acmds00774pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-01-31 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 307965,
+              "name": "AI生成"
+            }
+          ],
+          "series": [
+            {
+              "id": 6089693,
+              "name": "アソコ自由に使わせてくれる幼馴染"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 56071,
+              "name": "コミックダイス"
+            }
+          ],
+          "author": [
+            {
+              "id": 403343,
+              "name": "MaiMai"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "b139amagy00129",
+        "product_id": "b139amagy00129st",
+        "title": "上司の妻 〜波に揺れる乳房〜（単話）",
+        "URL": "https://unlimited.book.dmm.co.jp/products/b139amagy00129/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fb139amagy00129%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b139amagy00129/b139amagy00129pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b139amagy00129/b139amagy00129ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b139amagy00129/b139amagy00129pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-05 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 1014,
+              "name": "熟女"
+            },
+            {
+              "id": 1039,
+              "name": "人妻・主婦"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 1069,
+              "name": "不倫"
+            }
+          ],
+          "series": [
+            {
+              "id": 524005,
+              "name": "上司の妻 〜波に揺れる乳房〜（単話）"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 50219,
+              "name": "メディアックス"
+            }
+          ],
+          "author": [
+            {
+              "id": 191823,
+              "name": "黒木秀彦"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "k574acmds00729",
+        "product_id": "k574acmds00729st",
+        "title": "催淫スクール〜咽び泣くメスガキたち〜【R指定】分冊版（単話）",
+        "URL": "https://unlimited.book.dmm.co.jp/products/k574acmds00729/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fk574acmds00729%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/k574acmds00729/k574acmds00729pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/k574acmds00729/k574acmds00729ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/k574acmds00729/k574acmds00729pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-01-28 00:00:00",
+        "iteminfo": {
+          "series": [
+            {
+              "id": 6012017,
+              "name": "催淫スクール〜咽び泣くメスガキたち〜【R指定】分冊版（単話）"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 56071,
+              "name": "コミックダイス"
+            }
+          ],
+          "author": [
+            {
+              "id": 396210,
+              "name": "Kairi"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "s587anmad00259",
+        "product_id": "s587anmad00259st",
+        "title": "その女は陸上部を性支配する＜お買い得版＞",
+        "URL": "https://unlimited.book.dmm.co.jp/products/s587anmad00259/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fs587anmad00259%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/s587anmad00259/s587anmad00259pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/s587anmad00259/s587anmad00259ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/s587anmad00259/s587anmad00259pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-01 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 307965,
+              "name": "AI生成"
+            }
+          ],
+          "series": [
+            {
+              "id": 6239959,
+              "name": "その女は陸上部を性支配する＜お買い得版＞"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 309479,
+              "name": "ailoveproject"
+            }
+          ],
+          "author": [
+            {
+              "id": 405885,
+              "name": "なぁみ"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

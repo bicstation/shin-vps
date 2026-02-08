@@ -22,24 +22,35 @@ export default function AdultProductGallery({ images, title, apiSource, sampleMo
   // 表示中なのが動画かどうか
   const [isVideoActive, setIsVideoActive] = useState<boolean>(false);
 
-  // --- 💡 DUGA専用のフィルタリングロジック ---
+  // 💡 プラットフォーム判定
+  const isDuga = apiSource === 'DUGA';
+  const isFanza = apiSource === 'FANZA';
+
+  // --- 💡 最適化ロジック ---
   const displayThumbnails = useMemo(() => {
     if (!images) return [];
-    if (apiSource !== 'DUGA') return images;
+    
+    // DUGA専用の重複画像フィルタリング
+    if (isDuga) {
+      return images.filter((img, index) => {
+        if (index === 0) return true; // メインジャケットは残す
+        const isDugaRedundant = 
+          img.includes('_120') || 
+          img.includes('_240') || 
+          img.includes('160x120') || 
+          img.includes('120x90') ||
+          (img.includes('jacket_') && !img.endsWith('jacket.jpg')); 
+        return !isDugaRedundant;
+      });
+    }
 
-    return images.filter((img, index) => {
-      if (index === 0) return true; // メインジャケットは残す
-      
-      const isDugaRedundant = 
-        img.includes('_120') || 
-        img.includes('_240') || 
-        img.includes('160x120') || 
-        img.includes('120x90') ||
-        (img.includes('jacket_') && !img.endsWith('jacket.jpg')); 
-        
-      return !isDugaRedundant;
+    // FANZA等: サムネイルを大きな画像（pl.jpg / _l.jpg）に置換してクオリティを上げる
+    return images.map(img => {
+      let highRes = img.replace(/p[s|t]\.jpg/i, 'pl.jpg');
+      highRes = highRes.replace('_m.jpg', '_l.jpg');
+      return highRes;
     });
-  }, [images, apiSource]);
+  }, [images, isDuga]);
 
   // 初期表示の設定（動画があれば動画、なければ画像）
   useEffect(() => {
@@ -63,8 +74,11 @@ export default function AdultProductGallery({ images, title, apiSource, sampleMo
     );
   }
 
+  // テーマ用クラス
+  const themeClass = isDuga ? styles.dugaTheme : styles.fanzaTheme;
+
   return (
-    <div className={styles.galleryWrapper}>
+    <div className={`${styles.galleryWrapper} ${themeClass}`}>
       {/* 1. メインディスプレイエリア */}
       <div className={styles.mainDisplayArea}>
         <div className={styles.imageContainer}>
@@ -75,6 +89,7 @@ export default function AdultProductGallery({ images, title, apiSource, sampleMo
               controls
               autoPlay
               muted
+              loop
               className={styles.mainVideo}
             />
           ) : (
@@ -82,6 +97,7 @@ export default function AdultProductGallery({ images, title, apiSource, sampleMo
               src={currentContent} 
               alt={title} 
               className={styles.mainImage} 
+              loading="eager"
               style={{ 
                 // @ts-ignore
                 imageRendering: 'crisp-edges'
@@ -89,17 +105,25 @@ export default function AdultProductGallery({ images, title, apiSource, sampleMo
             />
           )}
           
+          {/* 💡 装飾用オーバーレイ */}
           <div className={styles.mainOverlay} />
           <div className={styles.cornerBrackets} />
+          <div className={styles.scanlineEffect} />
+
+          {/* ステータスタグの出し分け */}
           <div className={styles.resolutionTag}>
-            {isVideoActive ? 'MODE: LIVE_PREVIEW' : `SOURCE: ${apiSource === 'DUGA' ? 'DUGA_HIGH_RES' : 'STANDARD_STREAM'}`}
+            {isVideoActive ? (
+              <span className={styles.livePulse}>● MODE: LIVE_PREVIEW</span>
+            ) : (
+              `SOURCE: ${isDuga ? 'DUGA_HIGH_RES' : isFanza ? 'FANZA_PREMIUM_4K' : 'STANDARD_ARCHIVE'}`
+            )}
           </div>
         </div>
       </div>
 
       {/* 2. サムネイルリスト */}
       <div className={styles.thumbnailGrid}>
-        {/* 🎬 動画サムネイル（存在する場合のみ先頭に表示） */}
+        {/* 🎬 動画サムネイル */}
         {sampleMovieData?.url && (
           <button
             type="button"

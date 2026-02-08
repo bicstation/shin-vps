@@ -35,7 +35,7 @@ BASE_PROMPT_DIR = "/home/maya/dev/shin-vps/django/api/management/commands/prompt
 AI_MODEL_FILE = os.path.join(BASE_PROMPT_DIR, "ai_models.txt")
 
 class Command(BaseCommand):
-    help = 'Gemma/Gemini APIをローテーションし、粘り強くAI解析する（リトライ・指数バックオフ強化版）'
+    help = 'FANZA/DMM/DUGAのデータをブランド別に最適化されたプロンプトでAI解析する (Gemma 3対応版)'
 
     def add_arguments(self, parser):
         parser.add_argument('product_id', type=str, nargs='?', help='特定の製品ID')
@@ -53,19 +53,28 @@ class Command(BaseCommand):
             return default_content
 
     def get_ai_model(self):
-        """ai_models.txtからモデル名を取得"""
-        model = self.load_file_content(AI_MODEL_FILE, "gemma-3-27b-it")
-        name = model.split('\n')[0].strip().replace('"', '').replace("'", "")
-        return name.replace("models/", "")
+        """ai_models.txtからモデル名を取得し、エンドポイント用に整形"""
+        # ファイルから取得。デフォルトは指定されていた Gemma 3 系列
+        model_content = self.load_file_content("ai_models.txt", "gemma-3-27b-it")
+        
+        # 1行目を取得し、引用符を除去
+        name = model_content.split('\n')[0].strip().replace('"', '').replace("'", "")
+        
+        # APIエンドポイントのURLに組み込むため、'models/' が付いていない場合は付与する
+        if not name.startswith("models/"):
+            name = f"models/{name}"
+        return name
 
     def handle(self, *args, **options):
         if not VALID_KEYS:
             self.stdout.write(self.style.ERROR("❌ 有効なAPIキーが設定されていません。"))
             return
 
-        target_model = self.get_ai_model()
+        # 整形済みのモデルIDを取得 (例: models/gemma-3-27b-it)
+        target_model_id = self.get_ai_model()
         query = AdultProduct.objects.all()
 
+        # フィルタリング
         if options['product_id']:
             query = query.filter(product_id_unique=options['product_id'])
         else:
@@ -80,7 +89,7 @@ class Command(BaseCommand):
             return
 
         self.stdout.write(self.style.SUCCESS(
-            f"🚀 解析開始: {len(products)}件 / 稼働キー: {len(VALID_KEYS)} / スレッド: {MAX_WORKERS}"
+            f"🚀 解析開始: {len(products)}件 / モデル: {target_model_id} / 稼働キー: {len(VALID_KEYS)}"
         ))
 
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -89,7 +98,7 @@ class Command(BaseCommand):
                 if i > 0:
                     time.sleep(INTERVAL) 
                 
-                future = executor.submit(self.analyze_adult_task, product, target_model, i+1, len(products))
+                future = executor.submit(self.analyze_adult_task, product, target_model_id, i+1, len(products))
                 future_to_product[future] = product
 
             for future in as_completed(future_to_product):
@@ -99,25 +108,31 @@ class Command(BaseCommand):
                 except Exception as e:
                     self.stdout.write(self.style.ERROR(f"❌ 致命的エラー ({p.product_id_unique}): {e}"))
 
-    def analyze_adult_task(self, product, model_id, count, total, retry_count=0):
+    def analyze_adult_task(self, product, model_full_id, count, total, retry_count=0):
         # キーのローテーション
         current_api_key = next(key_cycle)
         key_hint = current_api_key[-4:]
 
-        prompt_filename = f"adult_analysis_{product.api_source.lower()}.txt"
-        instruction = self.load_file_content(prompt_filename, "凄腕ソムリエとして、作品を解析しJSONで出力してください。")
+        # ブランドに応じたプロンプトファイルの選択
+        brand_key = product.api_source.lower()
+        prompt_filename = f"adult_analysis_{brand_key}.txt"
+        instruction = self.load_file_content(prompt_filename, "アダルト作品ソムリエとして解析しJSONで出力してください。")
 
         actress_names = ", ".join([a.name for a in product.actresses.all()]) or "情報なし"
         genre_names = ", ".join([g.name for g in product.genres.all()]) or "情報なし"
 
+        # プロンプトの組み立て
         full_prompt = f"""
 {instruction}
+
+【ソース】: {product.api_source}
 【作品タイトル】: {product.title}
 【出演女優】: {actress_names}
 【ジャンル】: {genre_names}
 【作品内容】: {product.product_description or "タイトルとジャンルから推測して解析してください。"}
 
 必ず [ANALYSIS_JSON] タグ内に JSON 形式で出力してください。
+
 [ANALYSIS_JSON]
 {{
   "score_visual": 1-100,
@@ -125,18 +140,22 @@ class Command(BaseCommand):
   "score_erotic": 1-100,
   "score_rarity": 1-100,
   "score_cost": 1-100,
-  "ai_summary": "作品の要約（短い紹介文）",
+  "ai_summary": "作品を魅力的に紹介する要約（150文字程度）",
   "target_segment": "おすすめのユーザー層（20文字以内）"
 }}
 [/ANALYSIS_JSON]
 """
-        # エンドポイント設定
-        endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={current_api_key}"
+        # エンドポイントURL構築 (model_full_id は既に models/ を含んでいる)
+        endpoint = f"https://generativelanguage.googleapis.com/v1beta/{model_full_id}:generateContent?key={current_api_key}"
         
         try:
             payload = {
                 "contents": [{"parts": [{"text": full_prompt}]}],
-                "generationConfig": {"temperature": 0.7, "maxOutputTokens": 2048},
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": 2048,
+                    "response_mime_type": "text/plain"
+                },
                 "safetySettings": [
                     {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
                     {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
@@ -145,19 +164,13 @@ class Command(BaseCommand):
                 ]
             }
 
-            # タイムアウトを長めに設定
             response = requests.post(endpoint, json=payload, timeout=120)
 
-            # --- 強化リトライロジック (指数バックオフ) ---
-            # 429(RateLimit), 5xx(Server), またはレスポンスが空(char 0)の場合
-            if (response.status_code in [429, 500, 503, 504] or not response.text) and retry_count < 5:
-                # 待機時間: 15秒, 30秒, 45秒, 60秒...
+            # リトライ判定 (429, 5xx)
+            if (response.status_code in [429, 500, 503, 504]) and retry_count < 5:
                 wait_time = (retry_count + 1) * 15
-                self.stdout.write(self.style.WARNING(
-                    f" ⏳ リトライ中({retry_count+1}/5): {product.product_id_unique} [HTTP {response.status_code}] {wait_time}s待機..."
-                ))
                 time.sleep(wait_time)
-                return self.analyze_adult_task(product, model_id, count, total, retry_count + 1)
+                return self.analyze_adult_task(product, model_full_id, count, total, retry_count + 1)
 
             response.raise_for_status()
             result = response.json()
@@ -171,8 +184,11 @@ class Command(BaseCommand):
             # JSON抽出
             spec_match = re.search(r'\[ANALYSIS_JSON\](.*?)\[/ANALYSIS_JSON\]', full_text, re.DOTALL)
             if spec_match:
-                clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
-                data = json.loads(clean_json)
+                json_content = spec_match.group(1).strip()
+                json_content = re.sub(r'```json\s*|\s*```', '', json_content)
+                json_content = re.sub(r'//.*', '', json_content) 
+                
+                data = json.loads(json_content)
                 
                 def safe_int(v):
                     try: return int(v)
@@ -185,30 +201,24 @@ class Command(BaseCommand):
                 product.score_cost = safe_int(data.get('score_cost', 0))
                 
                 scores = [product.score_visual, product.score_story, product.score_erotic, product.score_rarity, product.score_cost]
-                product.spec_score = int(sum(scores) / 5) if scores else 0
+                product.spec_score = int(sum(scores) / 5) if any(scores) else 0
                 
                 product.ai_summary = data.get('ai_summary', '')
-                raw_target = data.get('target_segment', '一般')
-                product.target_segment = raw_target[:20] 
+                product.target_segment = (data.get('target_segment') or '一般')[:20]
                 
                 product.ai_content = full_text
                 product.last_spec_parsed_at = timezone.now()
                 product.save()
 
-                self.stdout.write(self.style.SUCCESS(f" ✅ [{count}/{total}] {product.title[:15]}... [Key:..{key_hint}]"))
+                self.stdout.write(self.style.SUCCESS(f" ✅ [{count}/{total}] {product.api_source} | {product.title[:15]}... [Key:..{key_hint}]"))
             else:
-                # JSONが抽出できなかった場合も2回までリトライを試みる
                 if retry_count < 2:
-                    self.stdout.write(self.style.WARNING(f" ⚠️ JSON未検出のため再試行: {product.product_id_unique}"))
                     time.sleep(10)
-                    return self.analyze_adult_task(product, model_id, count, total, retry_count + 1)
-                self.stdout.write(self.style.WARNING(f" ⚠️ JSON構造不備: {product.product_id_unique}"))
+                    return self.analyze_adult_task(product, model_full_id, count, total, retry_count + 1)
+                self.stdout.write(self.style.WARNING(f" ⚠️ JSON未検出: {product.product_id_unique}"))
 
         except Exception as e:
-            # 通信エラーやパースエラー(JSONDecodeError等)もリトライ対象
             if retry_count < 3:
-                wait_time = (retry_count + 1) * 20
-                self.stdout.write(self.style.WARNING(f" 🔄 エラー復帰試行: {product.product_id_unique} ({str(e)})"))
-                time.sleep(wait_time)
-                return self.analyze_adult_task(product, model_id, count, total, retry_count + 1)
+                time.sleep(20)
+                return self.analyze_adult_task(product, model_full_id, count, total, retry_count + 1)
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.product_id_unique}): {str(e)}"))

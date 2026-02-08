@@ -1,49 +1,51 @@
-import { fetchPCProductRanking } from '@shared/lib/api';
-import Link from 'next/link';
-import styles from './Ranking.module.css';
+import React from 'react';
+import { Metadata } from 'next';
+import { Flame, BrainCircuit } from 'lucide-react';
+
+/**
+ * 🛠️ インポートセクション
+ */
+import { fetchAdultProductRanking } from '@shared/lib/api';
+import AdultProductCard from '@shared/cards/AdultProductCard';
+import Pagination from '@shared/common/Pagination';
 import RadarChart from '@shared/ui/RadarChart';
+import styles from './Ranking.module.css';
 
 /**
- * ✅ 修正ポイント: インポートパスの変更
- * @shared/product/ProductCard から @shared/cards/ProductCard へ
+ * ✅ SEOメタデータ生成
+ * tiper.live のドメインとアダルトコンテンツに最適化
  */
-import ProductCard from '@shared/cards/ProductCard';
-
-/**
- * =====================================================================
- * 🏆 PCスペック解析ランキング ページ
- * 汎用 ProductCard を使用し、デザインを統一した最新版
- * =====================================================================
- */
-
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const sParams = await searchParams;
   const page = sParams.page || '1';
   return {
-    title: `【2026年最新】PCスペック解析ランキング 第${page}ページ | Tiper`,
-    description: `AI解析スコアに基づいたPC製品の最新ランキング。CPU・メモリ・コスパを5軸で徹底比較。`,
+    title: `【AI解析】アダルト作品徹底比較ランキング 第${page}ページ | Tiper`,
+    description: `最新のAI解析スコアに基づいたアダルト作品ランキング。ルックス・演技・没入感を5軸チャートで徹底比較。`,
     alternates: {
-      canonical: `https://bicstation.com/ranking/?page=${page}`,
+      canonical: `https://tiper.live/ranking/?page=${page}`,
     },
   };
 }
 
+/**
+ * ページコンポーネント
+ */
 export default async function RankingPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const sParams = await searchParams;
   const currentPage = parseInt(sParams.page || '1', 10);
   const limit = 20; 
   const offset = (currentPage - 1) * limit;
 
-  // APIデータの取得
-  const allProducts = await fetchPCProductRanking();
+  // アダルト作品解析データの取得
+  const allProducts = await fetchAdultProductRanking();
   const products = allProducts.slice(offset, offset + limit);
   const totalPages = Math.ceil(allProducts.length / limit);
 
-  // JSON-LD（構造化データ）の生成
+  // 構造化データ (JSON-LD)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": "PCスペック解析ランキング",
+    "name": "アダルト作品AI解析スコアランキング",
     "itemListElement": products.map((p, i) => ({
       "@type": "ListItem",
       "position": offset + i + 1,
@@ -57,10 +59,10 @@ export default async function RankingPage({ searchParams }: { searchParams: Prom
 
   // ランキング順位に応じたチャート色の取得
   const getChartColor = (rank: number) => {
-    if (rank === 1) return '#d69e2e'; // Gold
-    if (rank === 2) return '#718096'; // Silver
-    if (rank === 3) return '#975a16'; // Bronze
-    return '#3182ce'; // Default Blue
+    if (rank === 1) return '#FFD700'; // Gold
+    if (rank === 2) return '#C0C0C0'; // Silver
+    if (rank === 3) return '#CD7F32'; // Bronze
+    return '#E91E63'; // Default Pink/Red
   };
 
   return (
@@ -70,62 +72,65 @@ export default async function RankingPage({ searchParams }: { searchParams: Prom
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      {/* ヘッダーエリア */}
       <div className={styles.header}>
-        <div className={styles.badge}>RANKING</div>
-        <h1 className={styles.title}>💻 PCスペック解析ランキング</h1>
-        <p className={styles.subtitle}>AIが全PCのスペックを数値化。真のパフォーマンスを可視化しました。</p>
+        <div className={styles.badge}>
+          <BrainCircuit className="w-4 h-4 mr-1" />
+          AI ANALYSIS
+        </div>
+        <h1 className={styles.title}>🔞 作品スペック解析ランキング</h1>
+        <p className={styles.subtitle}>
+          AIソムリエが全作品を独自のアルゴリズムで数値化。真の満足度を可視化しました。
+        </p>
       </div>
       
+      {/* グリッドレイアウト */}
       <div className={styles.grid}>
         {products.map((product, index) => {
           const rank = offset + index + 1;
           
-          // チャートデータの整形
+          /**
+           * チャートデータの整形
+           * PCスペック(CPU等)からアダルト解析軸へ変更
+           */
           const chartData = product.radar_chart || [
-            { subject: 'CPU', value: 0, fullMark: 100 },
-            { subject: 'GPU', value: 0, fullMark: 100 },
+            { subject: 'ルックス', value: 0, fullMark: 100 },
+            { subject: '演技力', value: 0, fullMark: 100 },
             { subject: 'コスパ', value: 0, fullMark: 100 },
-            { subject: '携帯性', value: 0, fullMark: 100 },
-            { subject: 'AI', value: 0, fullMark: 100 },
+            { subject: '没入感', value: 0, fullMark: 100 },
+            { subject: '希少性', value: 0, fullMark: 100 },
           ];
 
           return (
-            <ProductCard 
+            <AdultProductCard 
               key={product.unique_id || product.id} 
               product={product} 
               rank={rank}
             >
-              {/* 🚩 ProductCardのchildrenとしてレーダーチャートを注入 */}
+              {/* 🚩 AdultProductCardのchildrenとして解析チャートを注入 */}
               <div className={styles.chartWrapper}>
                 <div className={styles.chartHeader}>
-                  <span className={styles.analysisLabel}>AI解析詳細</span>
+                  <Flame className="w-3 h-3 text-orange-500 mr-1" />
+                  <span className={styles.analysisLabel}>AI解析スコア詳細</span>
                 </div>
                 <RadarChart 
                   data={chartData} 
                   color={getChartColor(rank)} 
                 />
               </div>
-            </ProductCard>
+            </AdultProductCard>
           );
         })}
       </div>
 
-      {/* ページネーション */}
-      <nav className={styles.pagination}>
-        {currentPage > 1 && (
-          <Link href={`?page=${currentPage - 1}`} className={styles.pageButton}>
-            ← 前のページ
-          </Link>
-        )}
-        <div className={styles.pageInfo}>
-          <strong>{currentPage}</strong> / {totalPages}
-        </div>
-        {currentPage < totalPages && (
-          <Link href={`?page=${currentPage + 1}`} className={styles.pageButton}>
-            次のページ →
-          </Link>
-        )}
-      </nav>
+      {/* 共通 Pagination コンポーネントを使用 */}
+      <div className={styles.paginationSection}>
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          baseUrl="/ranking" 
+        />
+      </div>
     </main>
   );
 }

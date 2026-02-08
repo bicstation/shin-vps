@@ -3,7 +3,7 @@
 # ==============================================================================
 # 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール
 # ==============================================================================
-# 🛠 修正内容: 17番のAI詳細スペック解析でメーカーメニューが表示されない問題を修正
+# 🛠 修正内容: FANZA API エクスプローラー (fanza_explorer) の統合
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -139,6 +139,7 @@ while true; do
     echo -e "18) ${COLOR}[Price]     価格履歴の一斉記録 (record_price_history) 📈${RESET}"
     echo -e "19) ${RED}[Admin]     特定ショップのDBデータ一括削除 (クリーンアップ) 🗑️${RESET}"
     echo -e "20) ${COLOR}[AI-Adult] アダルト作品AI解析 (analyze_adult) 🔞${RESET}"
+    echo -e "21) ${YELLOW}[Test]     FANZA API エクスプローラー (JSON確認/保存) 🔍${RESET}"
     echo "---------------------------------------"
     echo "h) [Help]       使い方の説明"
     echo "8) 終了"
@@ -282,9 +283,8 @@ while true; do
         15) update_sitemap ;;
         16) run_django python manage.py ai_model_name ;;
         17)
-            # --- 🛠 ここを修正しました ---
             echo -e "\n${YELLOW}--- AI詳細スペック解析モード ---${RESET}"
-            show_maker_menu  # メニュー呼び出しを追加
+            show_maker_menu
             echo "all:     全メーカー一括解析"
             read -p "メーカー指定 (番号/all): " SPEC_MK_VAL
             
@@ -395,11 +395,17 @@ EOF
             echo -e "\n${COLOR}🔞 AIソムリエが作品をレビュー中... (Gemini) ${RESET}"
             run_django python manage.py analyze_adult $ID_ARG $LIMIT_ARG $FORCE_ARG $BRAND_ARG
             ;;
+        21)
+            # --- 🚀 追加機能: FANZA API エクスプローラー ---
+            echo -e "\n${YELLOW}--- 🔍 FANZA API エクスプローラー (Explorer) ---${RESET}"
+            echo -e "APIリクエストをテストし、サンプルのJSONを取得・保存します。"
+            run_django python manage.py fanza_explorer
+            ;;
         8) exit 0 ;;
         *) echo "無効な選択です。" ;;
     esac
 
-    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(2|3|13|14|17|18|19|20)$ ]]; then
+    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(2|3|13|14|17|18|19|20|21)$ ]]; then
         echo -e "\n${COLOR}🔄 スケジューラーを再起動中...${RESET}"
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
         read -p "サイトマップも更新しますか？ (y/n): " CONFIRM

@@ -1,0 +1,962 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "DMM.com",
+      "service": "pcsoft",
+      "floor": "digital_pcgame",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 1530,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "dmmgames_0218",
+        "product_id": "dmmgames_0218",
+        "title": "エルダー・スクロールズ・オンライン：＜コンテンツパス2025＞ プレミアムエディション 日本語版",
+        "URL": "https://dlsoft.dmm.com/detail/dmmgames_0218/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fdmmgames_0218%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/dmmgames_0218/dmmgames_0218pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/dmmgames_0218/dmmgames_0218ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/dmmgames_0218/dmmgames_0218pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0218/dmmgames_0218js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0218/dmmgames_0218js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0218/dmmgames_0218js-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0218/dmmgames_0218js-004.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "9900",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "9900",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-06-03 11:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7114,
+              "name": "RPG"
+            },
+            {
+              "id": 7468,
+              "name": "DMM GAMES PLAYER専用"
+            },
+            {
+              "id": 100013,
+              "name": "Mac対応商品"
+            },
+            {
+              "id": 300638,
+              "name": "Windows10対応作品"
+            },
+            {
+              "id": 6043,
+              "name": "ESOバレンタインセール2026"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 301732,
+              "name": "エルダー・スクロールズ・オンライン"
+            }
+          ],
+          "maker": [
+            {
+              "id": 69123,
+              "name": "DMM GAMES"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "dmmgames_0186",
+        "product_id": "dmmgames_0186",
+        "title": "エルダー・スクロールズ・オンライン 日本語版",
+        "review": {
+          "count": 12,
+          "average": "4.25"
+        },
+        "URL": "https://dlsoft.dmm.com/detail/dmmgames_0186/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fdmmgames_0186%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/dmmgames_0186/dmmgames_0186pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/dmmgames_0186/dmmgames_0186ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/dmmgames_0186/dmmgames_0186pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0186/dmmgames_0186js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0186/dmmgames_0186js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0186/dmmgames_0186js-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0186/dmmgames_0186js-004.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0186/dmmgames_0186js-005.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "2640",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "2640",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2022-04-06 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7114,
+              "name": "RPG"
+            },
+            {
+              "id": 7267,
+              "name": "セット商品"
+            },
+            {
+              "id": 7468,
+              "name": "DMM GAMES PLAYER専用"
+            },
+            {
+              "id": 100013,
+              "name": "Mac対応商品"
+            },
+            {
+              "id": 300638,
+              "name": "Windows10対応作品"
+            },
+            {
+              "id": 6043,
+              "name": "ESOバレンタインセール2026"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 301732,
+              "name": "エルダー・スクロールズ・オンライン"
+            }
+          ],
+          "maker": [
+            {
+              "id": 69123,
+              "name": "DMM GAMES"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "clear_0036",
+        "product_id": "clear_0036",
+        "title": "9-nine- 新章",
+        "review": {
+          "count": 42,
+          "average": "4.29"
+        },
+        "URL": "https://dlsoft.dmm.com/detail/clear_0036/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fclear_0036%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/clear_0036/clear_0036pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/clear_0036/clear_0036ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/clear_0036/clear_0036pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/clear_0036/clear_0036js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0036/clear_0036js-002.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "1500",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "1500",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2021-04-23 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7133,
+              "name": "アドベンチャー（全年齢向け）"
+            },
+            {
+              "id": 7438,
+              "name": "アニメ化"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 300638,
+              "name": "Windows10対応作品"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 4036845,
+              "name": "9-nine-"
+            }
+          ],
+          "maker": [
+            {
+              "id": 30274,
+              "name": "ぱれっと"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "clear_0035",
+        "product_id": "clear_0035",
+        "title": "9-nine-",
+        "review": {
+          "count": 13,
+          "average": "4.15"
+        },
+        "URL": "https://dlsoft.dmm.com/detail/clear_0035/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fclear_0035%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-004.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-005.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-006.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-007.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-008.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-009.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-010.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-011.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-012.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-013.jpg",
+              "https://pics.dmm.com/digital/pcgame/clear_0035/clear_0035js-014.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "10780",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "10780",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2021-04-23 00:00:01",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7133,
+              "name": "アドベンチャー（全年齢向け）"
+            },
+            {
+              "id": 7438,
+              "name": "アニメ化"
+            },
+            {
+              "id": 7721,
+              "name": "ブラウザ対応"
+            },
+            {
+              "id": 300638,
+              "name": "Windows10対応作品"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 4036845,
+              "name": "9-nine-"
+            }
+          ],
+          "maker": [
+            {
+              "id": 30274,
+              "name": "ぱれっと"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "dmmgames_0214",
+        "product_id": "dmmgames_0214",
+        "title": "マジカミ＆アイ・アム・マジカミ【オフライン版】",
+        "review": {
+          "count": 4,
+          "average": "4.00"
+        },
+        "URL": "https://dlsoft.dmm.com/detail/dmmgames_0214/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fdmmgames_0214%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214js-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214js-004.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214js-005.jpg",
+              "https://pics.dmm.com/digital/pcgame/dmmgames_0214/dmmgames_0214js-006.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "4000",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "4000",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-02-25 12:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7048,
+              "name": "魔法少女"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 100013,
+              "name": "Mac対応商品"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 4587463,
+              "name": "マジカミ"
+            }
+          ],
+          "maker": [
+            {
+              "id": 310467,
+              "name": "Studio MGCM"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "dragami_0001",
+        "product_id": "dragami_0001",
+        "title": "【E15】LoveR Kiss Endless Memories",
+        "review": {
+          "count": 1,
+          "average": "4.00"
+        },
+        "URL": "https://dlsoft.dmm.com/detail/dragami_0001/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fdragami_0001%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-004.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-005.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-006.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-007.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-008.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-009.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-010.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-011.jpg",
+              "https://pics.dmm.com/digital/pcgame/dragami_0001/dragami_0001js-012.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "6490",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "6490",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-11-27 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7110,
+              "name": "シミュレーション"
+            },
+            {
+              "id": 7133,
+              "name": "アドベンチャー（全年齢向け）"
+            },
+            {
+              "id": 7213,
+              "name": "恋愛"
+            },
+            {
+              "id": 7405,
+              "name": "デモ・体験版あり"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 6044,
+              "name": "DRAGAMI GAMES Valentine Sale 2026"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "maker": [
+            {
+              "id": 85217,
+              "name": "DragamiGames"
+            }
+          ],
+          "author": [
+            {
+              "id": 267236,
+              "name": "箕星太朗",
+              "ruby": "みのぼしたろう"
+            },
+            {
+              "id": 415533,
+              "name": "九印-quin-",
+              "ruby": "きゅーいん"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "redf_0005",
+        "product_id": "redf_0005",
+        "title": "EVE ghost enemies【全年齢向け】",
+        "review": {
+          "count": 8,
+          "average": "4.88"
+        },
+        "URL": "https://dlsoft.dmm.com/detail/redf_0005/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fredf_0005%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-004.jpg",
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-005.jpg",
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-006.jpg",
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-007.jpg",
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-008.jpg",
+              "https://pics.dmm.com/digital/pcgame/redf_0005/redf_0005js-009.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "6380",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "6380",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2023-12-08 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7133,
+              "name": "アドベンチャー（全年齢向け）"
+            },
+            {
+              "id": 7403,
+              "name": "全年齢向け"
+            },
+            {
+              "id": 7405,
+              "name": "デモ・体験版あり"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 300638,
+              "name": "Windows10対応作品"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 80878,
+              "name": "EVE burst error"
+            }
+          ],
+          "maker": [
+            {
+              "id": 31603,
+              "name": "El Dia"
+            }
+          ],
+          "author": [
+            {
+              "id": 23856,
+              "name": "田島直",
+              "ruby": "たじまなお"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "iillgames_0001",
+        "product_id": "iillgames_0001",
+        "title": "DIGITAL CRAFT プレーン版",
+        "review": {
+          "count": 1,
+          "average": "1.00"
+        },
+        "URL": "https://dlsoft.dmm.com/detail/iillgames_0001/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fiillgames_0001%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/iillgames_0001/iillgames_0001pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/iillgames_0001/iillgames_0001ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/iillgames_0001/iillgames_0001pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/iillgames_0001/iillgames_0001js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/iillgames_0001/iillgames_0001js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/iillgames_0001/iillgames_0001js-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/iillgames_0001/iillgames_0001js-004.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "1480",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "1480",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2024-10-04 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7401,
+              "name": "3DCG"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "maker": [
+            {
+              "id": 304480,
+              "name": "ILLGAMES"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "ieg_0022pack",
+        "product_id": "ieg_0022pack",
+        "title": "制服カノジョ フルセット版",
+        "URL": "https://dlsoft.dmm.com/detail/ieg_0022pack/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fieg_0022pack%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packpt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packpl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-004.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-005.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-006.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-007.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-008.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-009.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-010.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-011.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-012.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-013.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-014.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-015.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-016.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-017.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-018.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-019.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-020.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-021.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-022.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-023.jpg",
+              "https://pics.dmm.com/digital/pcgame/ieg_0022pack/ieg_0022packjs-024.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "17980",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "17980",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-07-24 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 6047,
+              "name": "制服カノジョ2.5"
+            },
+            {
+              "id": 7133,
+              "name": "アドベンチャー（全年齢向け）"
+            },
+            {
+              "id": 7213,
+              "name": "恋愛"
+            },
+            {
+              "id": 7267,
+              "name": "セット商品"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 4423788,
+              "name": "制服カノジョ"
+            }
+          ],
+          "maker": [
+            {
+              "id": 308261,
+              "name": "エンターグラム"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "vsat_0272",
+        "product_id": "vsat_0272",
+        "title": "Rewrite＋【全年齢向け】",
+        "review": {
+          "count": 7,
+          "average": "4.71"
+        },
+        "URL": "https://dlsoft.dmm.com/detail/vsat_0272/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fvsat_0272%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-003.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-004.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-005.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-006.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-007.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-008.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-009.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-010.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-011.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-012.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-013.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-014.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-015.jpg",
+              "https://pics.dmm.com/digital/pcgame/vsat_0272/vsat_0272js-016.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "7700",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "7700",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2021-10-15 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7207,
+              "name": "ギャグ・コメディ"
+            },
+            {
+              "id": 7213,
+              "name": "恋愛"
+            },
+            {
+              "id": 7270,
+              "name": "バトル"
+            },
+            {
+              "id": 7403,
+              "name": "全年齢向け"
+            },
+            {
+              "id": 7435,
+              "name": "ビジュアルアーツ"
+            },
+            {
+              "id": 7438,
+              "name": "アニメ化"
+            },
+            {
+              "id": 7502,
+              "name": "学園もの"
+            },
+            {
+              "id": 300638,
+              "name": "Windows10対応作品"
+            },
+            {
+              "id": 301088,
+              "name": "キャラクターがいい"
+            },
+            {
+              "id": 301089,
+              "name": "ゲーム性に定評"
+            },
+            {
+              "id": 301090,
+              "name": "シナリオがいい"
+            },
+            {
+              "id": 301097,
+              "name": "演出がいい"
+            },
+            {
+              "id": 301098,
+              "name": "音楽がいい"
+            },
+            {
+              "id": 301119,
+              "name": "世界観がいい"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 6046,
+              "name": "感謝祭2026"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "maker": [
+            {
+              "id": 30541,
+              "name": "Key"
+            }
+          ],
+          "author": [
+            {
+              "id": 240670,
+              "name": "樋上いたる",
+              "ruby": "ひのうえいたる"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

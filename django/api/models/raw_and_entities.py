@@ -1,5 +1,4 @@
-# api/models/raw_and_entities.py
-
+# -*- coding: utf-8 -*-
 from django.db import models
 
 # --------------------------------------------------------------------------
@@ -13,7 +12,6 @@ class RawApiData(models.Model):
     API_CHOICES = [
         ('DUGA', 'DUGA API'),
         ('FANZA', 'FANZA API'),
-        # 将来的にノーマル商品用のソースも追加される可能性
     ]
 
     api_source = models.CharField(max_length=10, choices=API_CHOICES, verbose_name="APIソース")
@@ -38,16 +36,19 @@ class RawApiData(models.Model):
 
 
 # --------------------------------------------------------------------------
-# 2. エンティティモデル群の基底クラスと個別モデル (アダルト商品用エンティティ)
+# 2. エンティティモデル群の基底クラスと個別モデル
 # --------------------------------------------------------------------------
 
 class EntityBase(models.Model):
     """
-    メーカー、ジャンル、女優などの共通フィールドを持つ基底クラス
+    メーカー、ジャンル、女優、著者などの共通フィールドを持つ基底クラス。
     """
     api_source = models.CharField(max_length=10, verbose_name="APIソース (DUGA/FANZA)")
-    api_id = models.CharField(max_length=255, null=True, blank=True, unique=False, verbose_name="API固有ID")
+    api_id = models.CharField(max_length=255, null=True, blank=True, verbose_name="API固有ID")
+    
     name = models.CharField(max_length=255, verbose_name="名称")
+    ruby = models.CharField(max_length=255, null=True, blank=True, verbose_name="ふりがな") # 拡張：FANZAのruby対応
+    
     product_count = models.IntegerField(default=0, verbose_name="関連商品数")
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="作成日時")
@@ -55,6 +56,7 @@ class EntityBase(models.Model):
 
     class Meta:
         abstract = True
+        # 同じソース内で「ID」または「名前」が重複しないように管理
         unique_together = (('api_source', 'name'),)
         ordering = ['name']
 
@@ -62,7 +64,7 @@ class EntityBase(models.Model):
         return f"[{self.api_source}] {self.name}"
 
 class Maker(EntityBase):
-    """メーカー"""
+    """メーカー / 出版社"""
     class Meta(EntityBase.Meta):
         db_table = 'maker'
         verbose_name = 'メーカー'
@@ -76,18 +78,25 @@ class Label(EntityBase):
         verbose_name_plural = 'レーベル一覧'
 
 class Genre(EntityBase):
-    """ジャンル/カテゴリ"""
+    """ジャンル / カテゴリ"""
     class Meta(EntityBase.Meta):
         db_table = 'genre'
         verbose_name = 'ジャンル'
         verbose_name_plural = 'ジャンル一覧'
 
 class Actress(EntityBase):
-    """女優/出演者"""
+    """女優 / 出演者"""
     class Meta(EntityBase.Meta):
         db_table = 'actress'
         verbose_name = '女優'
         verbose_name_plural = '女優一覧'
+
+class Author(EntityBase):
+    """著者 / 作者 (FANZAブックス・読み放題用)"""
+    class Meta(EntityBase.Meta):
+        db_table = 'author'
+        verbose_name = '著者'
+        verbose_name_plural = '著者一覧'
 
 class Director(EntityBase):
     """監督"""
@@ -97,7 +106,7 @@ class Director(EntityBase):
         verbose_name_plural = '監督一覧'
 
 class Series(EntityBase):
-    """シリーズ (FANZAの「シリーズ名」に対応)"""
+    """シリーズ"""
     class Meta(EntityBase.Meta):
         db_table = 'series'
         verbose_name = 'シリーズ'

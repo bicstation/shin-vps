@@ -1,0 +1,1800 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "FANZA",
+      "service": "ebook",
+      "floor": "comic",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 50000,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b915awnmg04046",
+        "product_id": "b915awnmg04046",
+        "title": "ぜんぶちち【デジタル版限定おまけ付き】",
+        "volume": "227",
+        "review": {
+          "count": 8,
+          "average": "4.88"
+        },
+        "URL": "https://book.dmm.co.jp/product/6246686/b915awnmg04046/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6246686%2Fb915awnmg04046%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04046/b915awnmg04046pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04046/b915awnmg04046ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04046/b915awnmg04046pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgdTVhYLW1EADVQNVE5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgdTVhYLW1EADVQNVE5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1540"
+        },
+        "date": "2026-01-30 00:00:05",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 27,
+              "name": "辱め"
+            },
+            {
+              "id": 28,
+              "name": "羞恥"
+            },
+            {
+              "id": 38,
+              "name": "クンニ"
+            },
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 55,
+              "name": "処女"
+            },
+            {
+              "id": 102,
+              "name": "美乳"
+            },
+            {
+              "id": 527,
+              "name": "お嬢様・令嬢"
+            },
+            {
+              "id": 553,
+              "name": "学園もの"
+            },
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 569,
+              "name": "ラブコメ"
+            },
+            {
+              "id": 583,
+              "name": "ラブ＆H"
+            },
+            {
+              "id": 1001,
+              "name": "OL"
+            },
+            {
+              "id": 1008,
+              "name": "メイド"
+            },
+            {
+              "id": 1016,
+              "name": "女教師"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 1031,
+              "name": "痴女"
+            },
+            {
+              "id": 1032,
+              "name": "お母さん"
+            },
+            {
+              "id": 1033,
+              "name": "お姉さん"
+            },
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 1039,
+              "name": "人妻・主婦"
+            },
+            {
+              "id": 1083,
+              "name": "幼なじみ"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 2002,
+              "name": "長身"
+            },
+            {
+              "id": 2023,
+              "name": "日焼け"
+            },
+            {
+              "id": 3002,
+              "name": "和服・浴衣"
+            },
+            {
+              "id": 3008,
+              "name": "水着"
+            },
+            {
+              "id": 3011,
+              "name": "学生服"
+            },
+            {
+              "id": 3014,
+              "name": "ランジェリー"
+            },
+            {
+              "id": 3029,
+              "name": "即ハメ"
+            },
+            {
+              "id": 4014,
+              "name": "童貞"
+            },
+            {
+              "id": 4019,
+              "name": "パイパン"
+            },
+            {
+              "id": 4020,
+              "name": "野外・露出"
+            },
+            {
+              "id": 4030,
+              "name": "淫乱・ハード系"
+            },
+            {
+              "id": 4057,
+              "name": "姉・妹"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 4123,
+              "name": "カップル"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5003,
+              "name": "ぶっかけ"
+            },
+            {
+              "id": 5004,
+              "name": "手コキ"
+            },
+            {
+              "id": 5009,
+              "name": "ごっくん"
+            },
+            {
+              "id": 5011,
+              "name": "放尿・お漏らし"
+            },
+            {
+              "id": 5019,
+              "name": "パイズリ"
+            },
+            {
+              "id": 5020,
+              "name": "シックスナイン"
+            },
+            {
+              "id": 5022,
+              "name": "3P・4P"
+            },
+            {
+              "id": 5023,
+              "name": "顔射"
+            },
+            {
+              "id": 5073,
+              "name": "デカチン・巨根"
+            },
+            {
+              "id": 5075,
+              "name": "汗だく"
+            },
+            {
+              "id": 300360,
+              "name": "爆乳"
+            },
+            {
+              "id": 308739,
+              "name": "ムッチリ・ムチムチ"
+            },
+            {
+              "id": 6661,
+              "name": "先行販売"
+            },
+            {
+              "id": 7409,
+              "name": "独占販売"
+            }
+          ],
+          "series": [
+            {
+              "id": 6246686,
+              "name": "ぜんぶちち【デジタル版限定おまけ付き】"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40229,
+              "name": "ワニマガジン社"
+            }
+          ],
+          "author": [
+            {
+              "id": 249392,
+              "name": "オクモト悠太"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b915awnmg02654",
+        "product_id": "b915awnmg02654",
+        "title": "パイらびゅ！",
+        "volume": "201",
+        "review": {
+          "count": 12,
+          "average": "4.83"
+        },
+        "URL": "https://book.dmm.co.jp/product/4542169/b915awnmg02654/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F4542169%2Fb915awnmg02654%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg02654/b915awnmg02654pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg02654/b915awnmg02654ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg02654/b915awnmg02654pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgdTVhYLW1EAC1IMVk5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgdTVhYLW1EAC1IMVk5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "715"
+        },
+        "date": "2024-08-02 00:00:05",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 5,
+              "name": "ギャグ・コメディ"
+            },
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 55,
+              "name": "処女"
+            },
+            {
+              "id": 102,
+              "name": "美乳"
+            },
+            {
+              "id": 527,
+              "name": "お嬢様・令嬢"
+            },
+            {
+              "id": 553,
+              "name": "学園もの"
+            },
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 569,
+              "name": "ラブコメ"
+            },
+            {
+              "id": 583,
+              "name": "ラブ＆H"
+            },
+            {
+              "id": 1014,
+              "name": "熟女"
+            },
+            {
+              "id": 1016,
+              "name": "女教師"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 1019,
+              "name": "女子大生"
+            },
+            {
+              "id": 1022,
+              "name": "家庭教師"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 1031,
+              "name": "痴女"
+            },
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 1039,
+              "name": "人妻・主婦"
+            },
+            {
+              "id": 1069,
+              "name": "不倫"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 2003,
+              "name": "小柄"
+            },
+            {
+              "id": 2019,
+              "name": "ツンデレ"
+            },
+            {
+              "id": 2023,
+              "name": "日焼け"
+            },
+            {
+              "id": 2024,
+              "name": "巨尻"
+            },
+            {
+              "id": 3001,
+              "name": "体操着・ブルマ"
+            },
+            {
+              "id": 3006,
+              "name": "パンスト・タイツ"
+            },
+            {
+              "id": 3014,
+              "name": "ランジェリー"
+            },
+            {
+              "id": 3029,
+              "name": "即ハメ"
+            },
+            {
+              "id": 4009,
+              "name": "巨乳フェチ"
+            },
+            {
+              "id": 4014,
+              "name": "童貞"
+            },
+            {
+              "id": 4016,
+              "name": "パンチラ"
+            },
+            {
+              "id": 4017,
+              "name": "局部アップ"
+            },
+            {
+              "id": 4028,
+              "name": "妄想"
+            },
+            {
+              "id": 4057,
+              "name": "姉・妹"
+            },
+            {
+              "id": 4096,
+              "name": "スポーツ"
+            },
+            {
+              "id": 4098,
+              "name": "セクシー"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 4111,
+              "name": "寝取り・寝取られ・NTR"
+            },
+            {
+              "id": 4116,
+              "name": "着エロ"
+            },
+            {
+              "id": 4120,
+              "name": "逆ナン"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5004,
+              "name": "手コキ"
+            },
+            {
+              "id": 5008,
+              "name": "オナニー"
+            },
+            {
+              "id": 5011,
+              "name": "放尿・お漏らし"
+            },
+            {
+              "id": 5016,
+              "name": "潮吹き"
+            },
+            {
+              "id": 5019,
+              "name": "パイズリ"
+            },
+            {
+              "id": 5053,
+              "name": "指マン"
+            },
+            {
+              "id": 5075,
+              "name": "汗だく"
+            }
+          ],
+          "series": [
+            {
+              "id": 4542169,
+              "name": "パイらびゅ！"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40229,
+              "name": "ワニマガジン社"
+            }
+          ],
+          "author": [
+            {
+              "id": 249392,
+              "name": "オクモト悠太"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "k568agotp11662",
+        "product_id": "k568agotp11662",
+        "title": "初恋ルミナス【デジタル特装版】",
+        "volume": "268",
+        "review": {
+          "count": 4,
+          "average": "4.75"
+        },
+        "URL": "https://book.dmm.co.jp/product/6245723/k568agotp11662/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6245723%2Fk568agotp11662%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/k568agotp11662/k568agotp11662pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/k568agotp11662/k568agotp11662ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/k568agotp11662/k568agotp11662pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxTBgBeVgYKQkYBCFIPUE5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxTBgBeVgYKQkYBCFIPUE5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1760"
+        },
+        "date": "2026-01-30 00:00:04",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 28,
+              "name": "羞恥"
+            },
+            {
+              "id": 38,
+              "name": "クンニ"
+            },
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 55,
+              "name": "処女"
+            },
+            {
+              "id": 102,
+              "name": "美乳"
+            },
+            {
+              "id": 553,
+              "name": "学園もの"
+            },
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 569,
+              "name": "ラブコメ"
+            },
+            {
+              "id": 583,
+              "name": "ラブ＆H"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 2006,
+              "name": "スレンダー"
+            },
+            {
+              "id": 4014,
+              "name": "童貞"
+            },
+            {
+              "id": 4020,
+              "name": "野外・露出"
+            },
+            {
+              "id": 4031,
+              "name": "コスプレ"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 4123,
+              "name": "カップル"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5004,
+              "name": "手コキ"
+            },
+            {
+              "id": 5016,
+              "name": "潮吹き"
+            },
+            {
+              "id": 5023,
+              "name": "顔射"
+            },
+            {
+              "id": 5057,
+              "name": "ローション・オイル"
+            },
+            {
+              "id": 5075,
+              "name": "汗だく"
+            },
+            {
+              "id": 308860,
+              "name": "夜のお仕事・風俗嬢"
+            },
+            {
+              "id": 6661,
+              "name": "先行販売"
+            },
+            {
+              "id": 7409,
+              "name": "独占販売"
+            }
+          ],
+          "series": [
+            {
+              "id": 6245723,
+              "name": "初恋ルミナス【デジタル特装版】"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 65237,
+              "name": "ジーオーティー"
+            }
+          ],
+          "author": [
+            {
+              "id": 245787,
+              "name": "さいもん"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b915awnmg04047",
+        "product_id": "b915awnmg04047",
+        "title": "ギャルすこパコる【デジタル版限定おまけ付き】",
+        "volume": "175",
+        "review": {
+          "count": 2,
+          "average": "5.00"
+        },
+        "URL": "https://book.dmm.co.jp/product/6246682/b915awnmg04047/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6246682%2Fb915awnmg04047%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04047/b915awnmg04047pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04047/b915awnmg04047ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04047/b915awnmg04047pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgdTVhYLW1EADVQNVU5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgdTVhYLW1EADVQNVU5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1430"
+        },
+        "date": "2026-02-06 00:00:05",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 25,
+              "name": "拘束"
+            },
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 102,
+              "name": "美乳"
+            },
+            {
+              "id": 553,
+              "name": "学園もの"
+            },
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 569,
+              "name": "ラブコメ"
+            },
+            {
+              "id": 583,
+              "name": "ラブ＆H"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 1031,
+              "name": "痴女"
+            },
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 1083,
+              "name": "幼なじみ"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 2002,
+              "name": "長身"
+            },
+            {
+              "id": 2004,
+              "name": "めがね"
+            },
+            {
+              "id": 2007,
+              "name": "ぽっちゃり"
+            },
+            {
+              "id": 2023,
+              "name": "日焼け"
+            },
+            {
+              "id": 2024,
+              "name": "巨尻"
+            },
+            {
+              "id": 3003,
+              "name": "セーラー服"
+            },
+            {
+              "id": 3007,
+              "name": "ミニスカ"
+            },
+            {
+              "id": 3011,
+              "name": "学生服"
+            },
+            {
+              "id": 3014,
+              "name": "ランジェリー"
+            },
+            {
+              "id": 3029,
+              "name": "即ハメ"
+            },
+            {
+              "id": 4006,
+              "name": "ナンパ"
+            },
+            {
+              "id": 4009,
+              "name": "巨乳フェチ"
+            },
+            {
+              "id": 4011,
+              "name": "尻フェチ"
+            },
+            {
+              "id": 4014,
+              "name": "童貞"
+            },
+            {
+              "id": 4019,
+              "name": "パイパン"
+            },
+            {
+              "id": 4030,
+              "name": "淫乱・ハード系"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 4123,
+              "name": "カップル"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5003,
+              "name": "ぶっかけ"
+            },
+            {
+              "id": 5004,
+              "name": "手コキ"
+            },
+            {
+              "id": 5009,
+              "name": "ごっくん"
+            },
+            {
+              "id": 5019,
+              "name": "パイズリ"
+            },
+            {
+              "id": 5020,
+              "name": "シックスナイン"
+            },
+            {
+              "id": 5023,
+              "name": "顔射"
+            },
+            {
+              "id": 5053,
+              "name": "指マン"
+            },
+            {
+              "id": 5067,
+              "name": "顔面騎乗"
+            },
+            {
+              "id": 5068,
+              "name": "イラマチオ"
+            },
+            {
+              "id": 5073,
+              "name": "デカチン・巨根"
+            },
+            {
+              "id": 5075,
+              "name": "汗だく"
+            },
+            {
+              "id": 6164,
+              "name": "ビッチ"
+            },
+            {
+              "id": 300360,
+              "name": "爆乳"
+            },
+            {
+              "id": 308739,
+              "name": "ムッチリ・ムチムチ"
+            },
+            {
+              "id": 308752,
+              "name": "眼鏡っ娘"
+            }
+          ],
+          "series": [
+            {
+              "id": 6246682,
+              "name": "ギャルすこパコる【デジタル版限定おまけ付き】"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40229,
+              "name": "ワニマガジン社"
+            }
+          ],
+          "author": [
+            {
+              "id": 256404,
+              "name": "旅烏"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b425aakkg00719",
+        "product_id": "b425aakkg00719",
+        "title": "発育良いロリ風俗嬢を好きなだけ孕ませてみませんか？【FANZA限定特典付き】",
+        "volume": "184",
+        "review": {
+          "count": 5,
+          "average": "4.60"
+        },
+        "URL": "https://book.dmm.co.jp/product/6246706/b425aakkg00719/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6246706%2Fb425aakkg00719%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b425aakkg00719/b425aakkg00719pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b425aakkg00719/b425aakkg00719ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b425aakkg00719/b425aakkg00719pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaBwRTVgAOXVEACVMIW05EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaBwRTVgAOXVEACVMIW05EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1463"
+        },
+        "date": "2026-02-01 00:00:04",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 38,
+              "name": "クンニ"
+            },
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 72,
+              "name": "異物挿入"
+            },
+            {
+              "id": 553,
+              "name": "学園もの"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 2004,
+              "name": "めがね"
+            },
+            {
+              "id": 2006,
+              "name": "スレンダー"
+            },
+            {
+              "id": 2025,
+              "name": "ミニ系・小柄"
+            },
+            {
+              "id": 3003,
+              "name": "セーラー服"
+            },
+            {
+              "id": 3006,
+              "name": "パンスト・タイツ"
+            },
+            {
+              "id": 3008,
+              "name": "水着"
+            },
+            {
+              "id": 3009,
+              "name": "競泳・スクール水着"
+            },
+            {
+              "id": 4005,
+              "name": "乱交"
+            },
+            {
+              "id": 4019,
+              "name": "パイパン"
+            },
+            {
+              "id": 4031,
+              "name": "コスプレ"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 4116,
+              "name": "着エロ"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5003,
+              "name": "ぶっかけ"
+            },
+            {
+              "id": 5004,
+              "name": "手コキ"
+            },
+            {
+              "id": 5008,
+              "name": "オナニー"
+            },
+            {
+              "id": 5017,
+              "name": "おもちゃ"
+            },
+            {
+              "id": 5019,
+              "name": "パイズリ"
+            },
+            {
+              "id": 5020,
+              "name": "シックスナイン"
+            },
+            {
+              "id": 5022,
+              "name": "3P・4P"
+            },
+            {
+              "id": 5053,
+              "name": "指マン"
+            },
+            {
+              "id": 5057,
+              "name": "ローション・オイル"
+            },
+            {
+              "id": 308860,
+              "name": "夜のお仕事・風俗嬢"
+            }
+          ],
+          "series": [
+            {
+              "id": 6246706,
+              "name": "発育良いロリ風俗嬢を好きなだけ孕ませてみませんか？【FANZA限定特典付き】"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 55978,
+              "name": "茜新社"
+            }
+          ],
+          "author": [
+            {
+              "id": 50317,
+              "name": "EB110SS"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b241bktur01080",
+        "product_id": "b241bktur01080",
+        "title": "異種奇譚",
+        "volume": "188",
+        "review": {
+          "count": 42,
+          "average": "4.45"
+        },
+        "URL": "https://book.dmm.co.jp/product/866741/b241bktur01080/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F866741%2Fb241bktur01080%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b241bktur01080/b241bktur01080pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b241bktur01080/b241bktur01080ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b241bktur01080/b241bktur01080pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaAQJXVQoRQ0QACFQBUk5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaAQJXVQoRQ0QACFQBUk5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1100"
+        },
+        "date": "2019-05-30 00:03:57",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 17,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 59,
+              "name": "ふたなり"
+            },
+            {
+              "id": 5003,
+              "name": "ぶっかけ"
+            },
+            {
+              "id": 4013,
+              "name": "レズビアン"
+            },
+            {
+              "id": 62,
+              "name": "触手"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 1029,
+              "name": "妊婦"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            }
+          ],
+          "series": [
+            {
+              "id": 866741,
+              "name": "異種奇譚"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40291,
+              "name": "キルタイムコミュニケーション"
+            }
+          ],
+          "author": [
+            {
+              "id": 245027,
+              "name": "タケ"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b915awnmg04018",
+        "product_id": "b915awnmg04018",
+        "title": "マゾ漫【デジタル版限定おまけ付き】",
+        "volume": "195",
+        "review": {
+          "count": 16,
+          "average": "4.94"
+        },
+        "URL": "https://book.dmm.co.jp/product/6243288/b915awnmg04018/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6243288%2Fb915awnmg04018%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04018/b915awnmg04018pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04018/b915awnmg04018ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg04018/b915awnmg04018pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgdTVhYLW1EADVQIWk5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgdTVhYLW1EADVQIWk5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1540"
+        },
+        "date": "2026-01-13 00:00:05",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 17,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 27,
+              "name": "辱め"
+            },
+            {
+              "id": 28,
+              "name": "羞恥"
+            },
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 527,
+              "name": "お嬢様・令嬢"
+            },
+            {
+              "id": 553,
+              "name": "学園もの"
+            },
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 583,
+              "name": "ラブ＆H"
+            },
+            {
+              "id": 1016,
+              "name": "女教師"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 2003,
+              "name": "小柄"
+            },
+            {
+              "id": 2004,
+              "name": "めがね"
+            },
+            {
+              "id": 3011,
+              "name": "学生服"
+            },
+            {
+              "id": 3029,
+              "name": "即ハメ"
+            },
+            {
+              "id": 4019,
+              "name": "パイパン"
+            },
+            {
+              "id": 4030,
+              "name": "淫乱・ハード系"
+            },
+            {
+              "id": 4123,
+              "name": "カップル"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5003,
+              "name": "ぶっかけ"
+            },
+            {
+              "id": 5009,
+              "name": "ごっくん"
+            },
+            {
+              "id": 5023,
+              "name": "顔射"
+            },
+            {
+              "id": 5025,
+              "name": "淫語"
+            },
+            {
+              "id": 5053,
+              "name": "指マン"
+            },
+            {
+              "id": 5073,
+              "name": "デカチン・巨根"
+            },
+            {
+              "id": 5075,
+              "name": "汗だく"
+            },
+            {
+              "id": 308739,
+              "name": "ムッチリ・ムチムチ"
+            },
+            {
+              "id": 308752,
+              "name": "眼鏡っ娘"
+            }
+          ],
+          "series": [
+            {
+              "id": 6243288,
+              "name": "マゾ漫【デジタル版限定おまけ付き】"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40229,
+              "name": "ワニマガジン社"
+            }
+          ],
+          "author": [
+            {
+              "id": 322384,
+              "name": "昼寝"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b915awnmg03939",
+        "product_id": "b915awnmg03939",
+        "title": "したがりデリバリー",
+        "volume": "225",
+        "review": {
+          "count": 25,
+          "average": "4.68"
+        },
+        "URL": "https://book.dmm.co.jp/product/6238047/b915awnmg03939/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6238047%2Fb915awnmg03939%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg03939/b915awnmg03939pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg03939/b915awnmg03939ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b915awnmg03939/b915awnmg03939pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgdTVhYLW1EACl0KW05EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgdTVhYLW1EACl0KW05EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1540"
+        },
+        "date": "2025-12-12 00:00:05",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 25,
+              "name": "拘束"
+            },
+            {
+              "id": 38,
+              "name": "クンニ"
+            },
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 102,
+              "name": "美乳"
+            },
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 583,
+              "name": "ラブ＆H"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 1019,
+              "name": "女子大生"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 1031,
+              "name": "痴女"
+            },
+            {
+              "id": 1032,
+              "name": "お母さん"
+            },
+            {
+              "id": 1039,
+              "name": "人妻・主婦"
+            },
+            {
+              "id": 1069,
+              "name": "不倫"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 3011,
+              "name": "学生服"
+            },
+            {
+              "id": 3014,
+              "name": "ランジェリー"
+            },
+            {
+              "id": 3029,
+              "name": "即ハメ"
+            },
+            {
+              "id": 4030,
+              "name": "淫乱・ハード系"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 4120,
+              "name": "逆ナン"
+            },
+            {
+              "id": 4123,
+              "name": "カップル"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5003,
+              "name": "ぶっかけ"
+            },
+            {
+              "id": 5004,
+              "name": "手コキ"
+            },
+            {
+              "id": 5006,
+              "name": "バイブ"
+            },
+            {
+              "id": 5017,
+              "name": "おもちゃ"
+            },
+            {
+              "id": 5057,
+              "name": "ローション・オイル"
+            },
+            {
+              "id": 6164,
+              "name": "ビッチ"
+            },
+            {
+              "id": 308739,
+              "name": "ムッチリ・ムチムチ"
+            },
+            {
+              "id": 308792,
+              "name": "浮気"
+            }
+          ],
+          "series": [
+            {
+              "id": 6238047,
+              "name": "したがりデリバリー"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40229,
+              "name": "ワニマガジン社"
+            }
+          ],
+          "author": [
+            {
+              "id": 255885,
+              "name": "さんじゅうろう"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b061bangl02392",
+        "product_id": "b061bangl02392",
+        "title": "コンビニバイトのむちむち女子がどう見ても俺に発情している。",
+        "volume": "202",
+        "review": {
+          "count": 10,
+          "average": "4.40"
+        },
+        "URL": "https://book.dmm.co.jp/product/4459944/b061bangl02392/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F4459944%2Fb061bangl02392%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b061bangl02392/b061bangl02392pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b061bangl02392/b061bangl02392ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b061bangl02392/b061bangl02392pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaAwBXVQALUVoAC1cAUE5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaAwBXVQALUVoAC1cAUE5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "660"
+        },
+        "date": "2024-02-16 00:00:04",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 54,
+              "name": "単行本"
+            }
+          ],
+          "series": [
+            {
+              "id": 4459944,
+              "name": "コンビニバイトのむちむち女子がどう見ても俺に発情している。"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 50170,
+              "name": "エンジェル出版"
+            }
+          ],
+          "author": [
+            {
+              "id": 22098,
+              "name": "ポン貴花田"
+            }
+          ]
+        },
+        "number": "1"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b472abnen03729",
+        "product_id": "b472abnen03729",
+        "title": "ルーティーン（単話）",
+        "volume": "51",
+        "review": {
+          "count": 20,
+          "average": "5.00"
+        },
+        "URL": "https://book.dmm.co.jp/product/4229947/b472abnen03729/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F4229947%2Fb472abnen03729%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b472abnen03729/b472abnen03729pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b472abnen03729/b472abnen03729ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b472abnen03729/b472abnen03729pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxaBwFUVgMLU1gAClMLW05EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaBwFUVgMLU1gAClMLW05EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "440"
+        },
+        "date": "2025-12-22 00:00:01",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 28,
+              "name": "羞恥"
+            },
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 53,
+              "name": "単話"
+            },
+            {
+              "id": 553,
+              "name": "学園もの"
+            },
+            {
+              "id": 583,
+              "name": "ラブ＆H"
+            },
+            {
+              "id": 1018,
+              "name": "女子校生"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5053,
+              "name": "指マン"
+            },
+            {
+              "id": 5006,
+              "name": "バイブ"
+            },
+            {
+              "id": 102,
+              "name": "美乳"
+            },
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 4019,
+              "name": "パイパン"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 5017,
+              "name": "おもちゃ"
+            },
+            {
+              "id": 2024,
+              "name": "巨尻"
+            },
+            {
+              "id": 3029,
+              "name": "即ハメ"
+            },
+            {
+              "id": 4009,
+              "name": "巨乳フェチ"
+            },
+            {
+              "id": 4011,
+              "name": "尻フェチ"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 1008,
+              "name": "メイド"
+            },
+            {
+              "id": 2002,
+              "name": "長身"
+            },
+            {
+              "id": 4031,
+              "name": "コスプレ"
+            },
+            {
+              "id": 5075,
+              "name": "汗だく"
+            },
+            {
+              "id": 308739,
+              "name": "ムッチリ・ムチムチ"
+            }
+          ],
+          "series": [
+            {
+              "id": 4229947,
+              "name": "ルーティーン"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 40349,
+              "name": "文苑堂"
+            }
+          ],
+          "author": [
+            {
+              "id": 253547,
+              "name": "あるぷ"
+            },
+            {
+              "id": 274337,
+              "name": "コミックバベル編集部"
+            }
+          ]
+        },
+        "number": "5"
+      }
+    ]
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "DMM.com",
+      "service": "dmmtv",
+      "floor": "dmmtv_video",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 50000,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "5162stage00017",
+        "title": "ミュージカル『刀剣乱舞』 目出度歌誉花舞 十周年祝賀祭",
+        "review": {
+          "count": 48,
+          "average": "3.58"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=5162stage00017&season=5162stage00017",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3D5162stage00017%26season%3D5162stage00017&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": 0
+        },
+        "date": "2025-07-31 07:00:00"
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "47rtpq5aw2t4pv2eprna4ymjk",
+        "title": "お気楽領主の楽しい領地防衛～生産系魔術で名もなき村を最強の城塞都市に～",
+        "review": {
+          "count": 42,
+          "average": "3.55"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=c1ob5oioaspv1t68ojj9sfpvo&season=47rtpq5aw2t4pv2eprna4ymjk",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3Dc1ob5oioaspv1t68ojj9sfpvo%26season%3D47rtpq5aw2t4pv2eprna4ymjk&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        }
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "3xxrr3seg3n9dpzs8b51boun",
+        "title": "貴族転生 ～恵まれた生まれから最強の力を得る～",
+        "review": {
+          "count": 39,
+          "average": "2.56"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=fjgpbyqwwh4ffpmdebeghs7p4&season=3xxrr3seg3n9dpzs8b51boun",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3Dfjgpbyqwwh4ffpmdebeghs7p4%26season%3D3xxrr3seg3n9dpzs8b51boun&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        }
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "mfa245hpumf2e9gjt8dx0qw20",
+        "title": "29歳独身中堅冒険者の日常",
+        "review": {
+          "count": 17,
+          "average": "4.18"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=nd0y330qw9gt7xjc9e9b48caf&season=mfa245hpumf2e9gjt8dx0qw20",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3Dnd0y330qw9gt7xjc9e9b48caf%26season%3Dmfa245hpumf2e9gjt8dx0qw20&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        }
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "5dedu4a3xw1bvuj3j1bemwnf",
+        "title": "葬送のフリーレン",
+        "review": {
+          "count": 27,
+          "average": "4.85"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=1tnuxjra4b9x7w409g1npo3fn&season=5dedu4a3xw1bvuj3j1bemwnf",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3D1tnuxjra4b9x7w409g1npo3fn%26season%3D5dedu4a3xw1bvuj3j1bemwnf&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        }
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "g56w5p0g9mh0xm9n2ic0befrs",
+        "title": "多聞くん今どっち！？",
+        "review": {
+          "count": 18,
+          "average": "4.00"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=4xf7cd5yarqen2793gm2o378z&season=g56w5p0g9mh0xm9n2ic0befrs",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3D4xf7cd5yarqen2793gm2o378z%26season%3Dg56w5p0g9mh0xm9n2ic0befrs&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        }
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "7vx9m421eus5yg34uxok3jr7a",
+        "title": "呪術廻戦",
+        "review": {
+          "count": 28,
+          "average": "3.54"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=9ymkchfdnnbretd0sq157r2ag&season=7vx9m421eus5yg34uxok3jr7a",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3D9ymkchfdnnbretd0sq157r2ag%26season%3D7vx9m421eus5yg34uxok3jr7a&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        }
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "tyt0cvaarhj2pzwb7s7o0q83",
+        "title": "葬送のフリーレン",
+        "review": {
+          "count": 89,
+          "average": "4.53"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=1tnuxjra4b9x7w409g1npo3fn&season=tyt0cvaarhj2pzwb7s7o0q83",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3D1tnuxjra4b9x7w409g1npo3fn%26season%3Dtyt0cvaarhj2pzwb7s7o0q83&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        }
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "osgrazhpworinu41o9vm6j938",
+        "title": "HUNTER×HUNTER",
+        "review": {
+          "count": 40,
+          "average": "4.78"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=bo9sassnwwwi4pieqf8e82rpm&season=osgrazhpworinu41o9vm6j938",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3Dbo9sassnwwwi4pieqf8e82rpm%26season%3Dosgrazhpworinu41o9vm6j938&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        },
+        "date": "2025-05-31 15:00:00"
+      },
+      {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "h4kzh3nvdakh8uxz310urox6",
+        "title": "NARUTO-ナルト- 疾風伝",
+        "review": {
+          "count": 17,
+          "average": "4.65"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=987o1c5m5x8ff64f4pma1wxc3&season=h4kzh3nvdakh8uxz310urox6",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3D987o1c5m5x8ff64f4pma1wxc3%26season%3Dh4kzh3nvdakh8uxz310urox6&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "550"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,1444 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "FANZA",
+      "service": "pcgame",
+      "floor": "digital_pcgame",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 10746,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "illgames_f4nn1djf1d",
+        "product_id": "illgames_f4nn1djf1d",
+        "title": "アイコミ ナイトツアー",
+        "review": {
+          "count": 4,
+          "average": "5.00"
+        },
+        "URL": "https://dlsoft.dmm.co.jp/detail/illgames_f4nn1djf1d/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fillgames_f4nn1djf1d%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1dpt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1dps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1dpl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1djs-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1djs-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1djs-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1djs-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1djs-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1djs-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1djs-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_f4nn1djf1d/illgames_f4nn1djf1djs-008.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "5800",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "5800",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2026-02-06 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7401,
+              "name": "3DCG"
+            },
+            {
+              "id": 7402,
+              "name": "アニメーション"
+            },
+            {
+              "id": 7405,
+              "name": "デモ・体験版あり"
+            },
+            {
+              "id": 7502,
+              "name": "学園もの"
+            },
+            {
+              "id": 301085,
+              "name": "CGがいい"
+            },
+            {
+              "id": 301086,
+              "name": "エロに定評"
+            },
+            {
+              "id": 301121,
+              "name": "田舎が舞台のゲーム"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 4596366,
+              "name": "アイコミ"
+            }
+          ],
+          "maker": [
+            {
+              "id": 304480,
+              "name": "ILLGAMES"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "mgold_0203select",
+        "product_id": "mgold_0203select",
+        "title": "【まとめ買い】ルネソフト累計100万本突破記念まとめ買い",
+        "URL": "https://dlsoft.dmm.co.jp/detail/mgold_0203select/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fmgold_0203select%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectpt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectpl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-008.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-009.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-010.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-011.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-012.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-013.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-014.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-015.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-016.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-017.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-018.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-019.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-020.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-021.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-022.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-023.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/mgold_0203select/mgold_0203selectjs-024.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "10000",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "10000",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2026-01-30 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7037,
+              "name": "巨乳"
+            },
+            {
+              "id": 7203,
+              "name": "辱め"
+            },
+            {
+              "id": 7417,
+              "name": "ルネブランド"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 7497,
+              "name": "まとめ買い商品"
+            },
+            {
+              "id": 7501,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 7502,
+              "name": "学園もの"
+            },
+            {
+              "id": 301085,
+              "name": "CGがいい"
+            },
+            {
+              "id": 301086,
+              "name": "エロに定評"
+            },
+            {
+              "id": 301088,
+              "name": "キャラクターがいい"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "maker": [
+            {
+              "id": 30123,
+              "name": "ルネ"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "fanzagames_0158",
+        "product_id": "fanzagames_0158",
+        "title": "みんなの育乳アカデミー　〜桃色おっぱい研修録〜",
+        "review": {
+          "count": 7,
+          "average": "4.43"
+        },
+        "URL": "https://dlsoft.dmm.co.jp/detail/fanzagames_0158/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Ffanzagames_0158%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-008.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-009.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-010.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-011.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-012.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-013.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-014.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-015.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-016.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-017.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-018.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-019.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-020.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-021.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-022.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0158/fanzagames_0158js-023.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "10780",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "10780",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2026-01-30 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7037,
+              "name": "巨乳"
+            },
+            {
+              "id": 7218,
+              "name": "ラブコメ"
+            },
+            {
+              "id": 7243,
+              "name": "パイズリ"
+            },
+            {
+              "id": 7245,
+              "name": "3P・4P"
+            },
+            {
+              "id": 7252,
+              "name": "ハーレム"
+            },
+            {
+              "id": 7301,
+              "name": "制服"
+            },
+            {
+              "id": 7302,
+              "name": "裸エプロン"
+            },
+            {
+              "id": 7305,
+              "name": "和服・浴衣"
+            },
+            {
+              "id": 7308,
+              "name": "水着"
+            },
+            {
+              "id": 7402,
+              "name": "アニメーション"
+            },
+            {
+              "id": 7405,
+              "name": "デモ・体験版あり"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 7502,
+              "name": "学園もの"
+            },
+            {
+              "id": 7721,
+              "name": "ブラウザ対応"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "maker": [
+            {
+              "id": 312659,
+              "name": "えどわ〜る"
+            }
+          ],
+          "author": [
+            {
+              "id": 364055,
+              "name": "ゆなまろ",
+              "ruby": "ゆなまろ"
+            },
+            {
+              "id": 273320,
+              "name": "ぺい",
+              "ruby": "ぺい"
+            },
+            {
+              "id": 324094,
+              "name": "黒結",
+              "ruby": "くろゆい"
+            },
+            {
+              "id": 26369,
+              "name": "望月望",
+              "ruby": "もちづきのぞむ"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "views_0943",
+        "product_id": "views_0943",
+        "title": "もっと！孕ませ！炎のおっぱい異世界 おっぱいバニー学園！",
+        "review": {
+          "count": 35,
+          "average": "4.60"
+        },
+        "URL": "https://dlsoft.dmm.co.jp/detail/views_0943/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fviews_0943%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-008.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-009.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-010.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/views_0943/views_0943js-011.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "10780",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "10780",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-08-16 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7037,
+              "name": "巨乳"
+            },
+            {
+              "id": 7203,
+              "name": "辱め"
+            },
+            {
+              "id": 7252,
+              "name": "ハーレム"
+            },
+            {
+              "id": 7258,
+              "name": "母娘"
+            },
+            {
+              "id": 7313,
+              "name": "バニーガール"
+            },
+            {
+              "id": 7501,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 7502,
+              "name": "学園もの"
+            },
+            {
+              "id": 7721,
+              "name": "ブラウザ対応"
+            },
+            {
+              "id": 300638,
+              "name": "Windows10対応作品"
+            },
+            {
+              "id": 301085,
+              "name": "CGがいい"
+            },
+            {
+              "id": 301086,
+              "name": "エロに定評"
+            },
+            {
+              "id": 301088,
+              "name": "キャラクターがいい"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 80867,
+              "name": "炎の孕ませシリーズ"
+            }
+          ],
+          "maker": [
+            {
+              "id": 31709,
+              "name": "みるくふぁくとりー"
+            }
+          ],
+          "author": [
+            {
+              "id": 266864,
+              "name": "でらうえあ",
+              "ruby": "でらうえあ"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "yuzu_0012",
+        "product_id": "yuzu_0012",
+        "title": "ライムライト・レモネードジャム",
+        "review": {
+          "count": 153,
+          "average": "4.76"
+        },
+        "URL": "https://dlsoft.dmm.co.jp/detail/yuzu_0012/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fyuzu_0012%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-008.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-009.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-010.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-011.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-012.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-013.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-014.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-015.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-016.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-017.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/yuzu_0012/yuzu_0012js-018.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "8470",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "8470",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-09-26 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7018,
+              "name": "女子校生"
+            },
+            {
+              "id": 7301,
+              "name": "制服"
+            },
+            {
+              "id": 7405,
+              "name": "デモ・体験版あり"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 7721,
+              "name": "ブラウザ対応"
+            },
+            {
+              "id": 301085,
+              "name": "CGがいい"
+            },
+            {
+              "id": 301088,
+              "name": "キャラクターがいい"
+            },
+            {
+              "id": 301098,
+              "name": "音楽がいい"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 308891,
+              "name": "2025/9/26 配信開始作品"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 4594520,
+              "name": "ライムライト・レモネードジャム"
+            }
+          ],
+          "maker": [
+            {
+              "id": 30727,
+              "name": "ゆずソフト"
+            }
+          ],
+          "author": [
+            {
+              "id": 239231,
+              "name": "むりりん",
+              "ruby": "むりりん"
+            },
+            {
+              "id": 239232,
+              "name": "こぶいち",
+              "ruby": "こぶいち"
+            },
+            {
+              "id": 365208,
+              "name": "ほかん",
+              "ruby": "ほかん"
+            },
+            {
+              "id": 248182,
+              "name": "羽純りお",
+              "ruby": "はづみりお"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "illgames_0007",
+        "product_id": "illgames_0007",
+        "title": "アイコミ",
+        "review": {
+          "count": 71,
+          "average": "3.38"
+        },
+        "URL": "https://dlsoft.dmm.co.jp/detail/illgames_0007/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fillgames_0007%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-008.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-009.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-010.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-011.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-012.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-013.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-014.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-015.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-016.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-017.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/illgames_0007/illgames_0007js-018.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "8800",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "8800",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-09-26 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7401,
+              "name": "3DCG"
+            },
+            {
+              "id": 7402,
+              "name": "アニメーション"
+            },
+            {
+              "id": 7405,
+              "name": "デモ・体験版あり"
+            },
+            {
+              "id": 7502,
+              "name": "学園もの"
+            },
+            {
+              "id": 301085,
+              "name": "CGがいい"
+            },
+            {
+              "id": 301086,
+              "name": "エロに定評"
+            },
+            {
+              "id": 301121,
+              "name": "田舎が舞台のゲーム"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 308891,
+              "name": "2025/9/26 配信開始作品"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 4596366,
+              "name": "アイコミ"
+            }
+          ],
+          "maker": [
+            {
+              "id": 304480,
+              "name": "ILLGAMES"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "cveaa_0107",
+        "product_id": "cveaa_0107",
+        "title": "エンジョイサマー マキシマム",
+        "URL": "https://dlsoft.dmm.co.jp/detail/cveaa_0107/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fcveaa_0107%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107js-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107js-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107js-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107js-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107js-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107js-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107js-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/cveaa_0107/cveaa_0107js-008.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "8980",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "8980",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2026-02-27 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7037,
+              "name": "巨乳"
+            },
+            {
+              "id": 7243,
+              "name": "パイズリ"
+            },
+            {
+              "id": 7252,
+              "name": "ハーレム"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 301085,
+              "name": "CGがいい"
+            },
+            {
+              "id": 301099,
+              "name": "夏が舞台のゲーム"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 7443,
+              "name": "アトリエかぐやHonkyTonk Pumpkin新作予約キャンペーン"
+            },
+            {
+              "id": 300081,
+              "name": "予約作品16%ポイント還元キャンペーン"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "maker": [
+            {
+              "id": 30043,
+              "name": "アトリエかぐや"
+            }
+          ],
+          "author": [
+            {
+              "id": 256620,
+              "name": "yoppy",
+              "ruby": "よっぴー"
+            },
+            {
+              "id": 300701,
+              "name": "たいのね",
+              "ruby": "たいのね"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "digination_0035",
+        "product_id": "digination_0035",
+        "title": "流星ワールドアクター Gaslight Bullet",
+        "URL": "https://dlsoft.dmm.co.jp/detail/digination_0035/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fdigination_0035%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-008.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-009.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-010.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-011.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-012.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-013.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-014.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-015.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/digination_0035/digination_0035js-016.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "10780",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "10780",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2026-02-27 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7251,
+              "name": "ミステリー"
+            },
+            {
+              "id": 7270,
+              "name": "バトル"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 7504,
+              "name": "SF"
+            },
+            {
+              "id": 7508,
+              "name": "近未来"
+            },
+            {
+              "id": 301085,
+              "name": "CGがいい"
+            },
+            {
+              "id": 301088,
+              "name": "キャラクターがいい"
+            },
+            {
+              "id": 301090,
+              "name": "シナリオがいい"
+            },
+            {
+              "id": 301119,
+              "name": "世界観がいい"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 7701,
+              "name": "「流星ワールドアクター Gaslight Bullet」予約記念キャンペーン"
+            },
+            {
+              "id": 300081,
+              "name": "予約作品16%ポイント還元キャンペーン"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 84399,
+              "name": "流星ワールドアクター"
+            }
+          ],
+          "maker": [
+            {
+              "id": 58591,
+              "name": "Heliodor"
+            }
+          ],
+          "author": [
+            {
+              "id": 240544,
+              "name": "春夏冬ゆう",
+              "ruby": "あきなしゆう"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "fanzagames_0148",
+        "product_id": "fanzagames_0148",
+        "title": "ミッドナイトガールズRアーカイブ版",
+        "review": {
+          "count": 22,
+          "average": "4.91"
+        },
+        "URL": "https://dlsoft.dmm.co.jp/detail/fanzagames_0148/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Ffanzagames_0148%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-008.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-009.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-010.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-011.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-012.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-013.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-014.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-015.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-016.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-017.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-018.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-019.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-020.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-021.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/fanzagames_0148/fanzagames_0148js-022.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "29800",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "29800",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-12-17 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7002,
+              "name": "ふたなり"
+            },
+            {
+              "id": 7004,
+              "name": "ネコミミ・獣系"
+            },
+            {
+              "id": 7005,
+              "name": "けもの娘"
+            },
+            {
+              "id": 7045,
+              "name": "天使っ娘"
+            },
+            {
+              "id": 7106,
+              "name": "ノベル"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 7501,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 301086,
+              "name": "エロに定評"
+            },
+            {
+              "id": 301116,
+              "name": "女性主導"
+            },
+            {
+              "id": 301118,
+              "name": "人外"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 4595257,
+              "name": "ミッドナイトガールズR"
+            }
+          ],
+          "maker": [
+            {
+              "id": 312413,
+              "name": "まどれぇぬかんぱにぃ"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "qruppo_0003pack",
+        "product_id": "qruppo_0003pack",
+        "title": "【ぬきたし】抜きゲーみたいな島に住んでる貧乳（わたし）はどうすりゃいいですか？ 1＋2パック",
+        "review": {
+          "count": 206,
+          "average": "4.81"
+        },
+        "URL": "https://dlsoft.dmm.co.jp/detail/qruppo_0003pack/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fqruppo_0003pack%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packpt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packpl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-006.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-007.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-008.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-009.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-010.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-011.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-012.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-013.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/qruppo_0003pack/qruppo_0003packjs-014.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "15950",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "15950",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2025-01-31 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7207,
+              "name": "ギャグ・コメディ"
+            },
+            {
+              "id": 7213,
+              "name": "恋愛"
+            },
+            {
+              "id": 7232,
+              "name": "淫乱"
+            },
+            {
+              "id": 7252,
+              "name": "ハーレム"
+            },
+            {
+              "id": 7267,
+              "name": "セット商品"
+            },
+            {
+              "id": 7405,
+              "name": "デモ・体験版あり"
+            },
+            {
+              "id": 7438,
+              "name": "アニメ化"
+            },
+            {
+              "id": 7466,
+              "name": "萌えゲーアワード/美少女ゲームアワード受賞作品"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 7502,
+              "name": "学園もの"
+            },
+            {
+              "id": 300638,
+              "name": "Windows10対応作品"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 7708,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第2弾"
+            },
+            {
+              "id": 7707,
+              "name": "感謝祭の最大16%ポイント還元キャンペーン　第1弾"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            },
+            {
+              "id": 300076,
+              "name": "3点以上で5%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300077,
+              "name": "5点以上で6%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            },
+            {
+              "id": 300078,
+              "name": "10点以上で7%OFFクーポン／感謝祭2026／ポイント還元併用可対象"
+            }
+          ],
+          "series": [
+            {
+              "id": 84369,
+              "name": "ぬきたし"
+            }
+          ],
+          "maker": [
+            {
+              "id": 31728,
+              "name": "Qruppo"
+            }
+          ],
+          "author": [
+            {
+              "id": 306849,
+              "name": "浮丸つぼね",
+              "ruby": "うきまるつぼね"
+            },
+            {
+              "id": 306850,
+              "name": "如月千幸",
+              "ruby": "きさらぎちゆき"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

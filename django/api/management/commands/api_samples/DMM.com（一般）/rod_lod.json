@@ -1,0 +1,278 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "DMM.com",
+      "service": "lod",
+      "floor": "rod",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 9745,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c23021901",
+        "product_id": "ske48c23021901",
+        "title": "2023年2月19日（日） 「We’re Growing Up」公演",
+        "volume": "79",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=ske48c23021901/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c23021901%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:09",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "nmb48m20032101",
+        "product_id": "nmb48m20032101",
+        "title": "2020年3月21日（土） チームM「誰かのために」公演",
+        "volume": "120",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=nmb48m20032101/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dnmb48m20032101%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:09",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66402,
+              "name": "NMB48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "ngt48r519021602",
+        "product_id": "ngt48r519021602",
+        "title": "2019年2月16日（土）17:30～ 研究生「PARTYが始まるよ～研究生の息吹を感じて！～」公演",
+        "volume": "120",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=ngt48r519021602/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dngt48r519021602%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:09",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66419,
+              "name": "NGT48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "hkt48sf18082402",
+        "product_id": "hkt48sf18082402",
+        "title": "2018年8月24日（金）18:30～ ひまわり組「ただいま　恋愛中」公演",
+        "volume": "120",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=hkt48sf18082402/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dhkt48sf18082402%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:09",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66394,
+              "name": "HKT48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "akb48b110218",
+        "product_id": "akb48b110218dl",
+        "title": "2011年2月18日（金）チームB5th Stage「シアターの女神」 公演",
+        "volume": "118",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=akb48b110218/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dakb48b110218%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:09",
+        "iteminfo": {
+          "series": [
+            {
+              "id": 53524,
+              "name": "AKB48 LIVE！！ ON DEMAND"
+            }
+          ],
+          "maker": [
+            {
+              "id": 66226,
+              "name": "AKB48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48k224020301",
+        "product_id": "ske48k224020301",
+        "title": "2024年2月3日（土） チームKII「時間がない」公演",
+        "volume": "98",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=ske48k224020301/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dske48k224020301%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:08",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "nmb48c21021101",
+        "product_id": "nmb48c21021101",
+        "title": "2021年2月11日（木） 吉田朱里プロデュース「Will be idol」公演",
+        "volume": "80",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=nmb48c21021101/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dnmb48c21021101%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:08",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66402,
+              "name": "NMB48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "hkt48k422012001",
+        "product_id": "hkt48k422012001",
+        "title": "2022年1月20日（木） チームKIV「制服の芽」公演",
+        "volume": "118",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=hkt48k422012001/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dhkt48k422012001%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:08",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66394,
+              "name": "HKT48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "akb48d19022701",
+        "product_id": "akb48d19022701",
+        "title": "2019年2月27日（水） 牧野アンナ 「ヤバイよ！ついて来れんのか？！」公演",
+        "volume": "120",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=akb48d19022701/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dakb48d19022701%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:08",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66226,
+              "name": "AKB48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c25011501",
+        "product_id": "ske48c25011501",
+        "title": "2025年1月15日（水） 「手をつなぎながら」公演",
+        "volume": "107",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=ske48c25011501/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c25011501%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-03 10:00:07",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

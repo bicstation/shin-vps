@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
@@ -14,13 +14,28 @@ interface SidebarItem {
   count: number;
 }
 
+interface FanzaFloor {
+  name: string;
+  slug: string;
+  count: number;
+}
+
+interface FanzaService {
+  name: string;
+  slug: string;
+  floors: FanzaFloor[];
+}
+
 interface SidebarData {
-  [category: string]: SidebarItem[];
+  [category: string]: SidebarItem[] | FanzaService[] | any;
+  fanza_hierarchy?: FanzaService[];
+  duga_hierarchy?: any[]; // 将来的なDUGA拡張用
+  ai_tags?: SidebarItem[]; // 「仕分け」用タグ
 }
 
 interface SidebarProps {
   activeMenu?: string;
-  makers?: { maker: string; count: number }[]; // 汎用的なメーカー/カテゴリリスト
+  makers?: { maker: string; count: number }[];
   recentPosts?: { id: string; title: string; slug?: string }[];
 }
 
@@ -29,16 +44,19 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
   const searchParams = useSearchParams();
   const attribute = searchParams.get('attribute');
   
-  // ✅ 共通設定からサイト情報を取得
+  // ✅ サイト設定取得
   const site = getSiteMetadata();
   const siteColor = getSiteColor(site.site_name);
   const isAdult = site.site_group === 'adult';
 
   const [dynamicStats, setDynamicStats] = useState<SidebarData | null>(null);
-  
-  // アコーディオン状態（初期値はサイトによって変えることも可能）
+  const [activeSource, setActiveSource] = useState<'fanza' | 'duga'>('fanza'); // ソース切り替え状態
+
+  // アコーディオン状態
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
     'MAIN': true,
+    'SOURCE_EXPLORER': true,
+    'AI_TAGS': true,
     'CATEGORIES': true,
     'LATEST': true,
   });
@@ -47,11 +65,10 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // ✅ サイトに応じた統計データを取得
+  // ✅ 統計データ取得
   useEffect(() => {
     async function fetchStats() {
       try {
-        // APIパスもサイトごとに切り替わるように設計（将来的に）
         const apiPath = isAdult ? '/api/adult-stats/' : '/api/pc-sidebar-stats/';
         const res = await fetch(apiPath);
         if (res.ok) {
@@ -66,24 +83,14 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
   }, [isAdult]);
 
   // --- ヘルパー: セクション見出し ---
-  const SectionHeader = ({ title, id, sub = false }: { title: string, id: string, sub?: boolean }) => (
+  const SectionHeader = ({ title, id }: { title: string, id: string }) => (
     <h3 
       className={styles.sectionTitle} 
       onClick={() => toggleSection(id)}
-      style={{ 
-        cursor: 'pointer', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        fontSize: sub ? '0.85rem' : undefined,
-        borderLeft: sub ? `2px solid ${siteColor}44` : undefined,
-        color: sub ? undefined : siteColor
-      }}
+      style={{ color: openSections[id] ? siteColor : '#555577' }}
     >
       {title}
-      <span style={{ 
-        fontSize: '0.7rem', 
-        transition: 'transform 0.3s', 
+      <span className={styles.arrow} style={{ 
         transform: openSections[id] ? 'rotate(180deg)' : 'rotate(0deg)' 
       }}>▼</span>
     </h3>
@@ -92,15 +99,33 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
   return (
     <aside className={styles.sidebar}>
       
-      {/* 🚀 サイトごとのメインツール/ランキング */}
+      {/* 🔘 1. ソーススイッチャー (アダルトのみ表示) */}
+      {isAdult && (
+        <div className={styles.sourceSwitcher}>
+          <button 
+            className={activeSource === 'fanza' ? styles.activeFanza : ''} 
+            onClick={() => setActiveSource('fanza')}
+          >
+            FANZA
+          </button>
+          <button 
+            className={activeSource === 'duga' ? styles.activeDuga : ''} 
+            onClick={() => setActiveSource('duga')}
+          >
+            DUGA
+          </button>
+        </div>
+      )}
+
+      {/* 🚀 2. メインツール/ランキング */}
       <SectionHeader title={isAdult ? "HOT CONTENTS" : "SPECIAL"} id="MAIN" />
       {openSections['MAIN'] && (
         <ul className={styles.accordionContent}>
-          <li style={{ marginBottom: '8px' }}>
+          <li>
             <Link href={`${site.site_prefix}${isAdult ? '/ranking/' : '/pc-finder/'}`} 
                   className={styles.link} 
-                  style={{ background: `linear-gradient(135deg, ${siteColor}, #000)`, color: '#fff', borderRadius: '8px', padding: '12px' }}>
-              <span style={{ fontWeight: 'bold' }}>
+                  style={{ background: `linear-gradient(135deg, ${siteColor}dd, #000)`, color: '#fff' }}>
+              <span style={{ fontWeight: '900' }}>
                 {isAdult ? '🔥 総合ランキング' : '🔍 AIスペック診断'}
               </span>
             </Link>
@@ -108,60 +133,104 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
         </ul>
       )}
 
-      {/* 📦 カテゴリ/メーカーセクション */}
-      <SectionHeader title={isAdult ? "GENRE" : "BRANDS"} id="CATEGORIES" />
+      {/* 🔞 3. FANZA/DUGA 階層エクスプローラー */}
+      {isAdult && openSections['SOURCE_EXPLORER'] && (
+        <>
+          <SectionHeader title={`${activeSource.toUpperCase()} ARCHIVE`} id="SOURCE_EXPLORER" />
+          {activeSource === 'fanza' && dynamicStats?.fanza_hierarchy && (
+            <div className={styles.accordionContent}>
+              {dynamicStats.fanza_hierarchy.map((service: FanzaService) => (
+                <div key={service.slug} className={styles.serviceBlock}>
+                  <div className={styles.subCategoryLabel} style={{ color: siteColor }}>{service.name}</div>
+                  <ul className={styles.nestedList}>
+                    {service.floors.map((floor) => (
+                      <li key={floor.slug}>
+                        <Link href={`/adults/fanza/${service.slug}/${floor.slug}`} className={styles.link}>
+                          <span className={styles.floorName}>📂 {floor.name}</span>
+                          <span className={styles.badge}>{floor.count}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* DUGA用 (APIからデータが来る想定) */}
+          {activeSource === 'duga' && (
+            <div className={styles.accordionContent}>
+              <p className={styles.emptyMsg}>DUGAノードをスキャン中...</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ✨ 4. AI解析タグ（仕分けメニュー） */}
+      {isAdult && dynamicStats?.ai_tags && (
+        <>
+          <SectionHeader title="AI ATTRIBUTES" id="AI_TAGS" />
+          {openSections['AI_TAGS'] && (
+            <div className={styles.tagCloud}>
+              {dynamicStats.ai_tags.map((tag: SidebarItem) => (
+                <Link 
+                  key={tag.id} 
+                  href={`${site.site_prefix}/products?attribute=${tag.slug}`}
+                  className={attribute === tag.slug ? styles.tagChipActive : styles.tagChip}
+                >
+                  #{tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* 📦 5. カテゴリ/メーカー/ブランド */}
+      <SectionHeader title={isAdult ? "BRANDS" : "MANUFACTURERS"} id="CATEGORIES" />
       {openSections['CATEGORIES'] && (
         <ul className={styles.accordionContent}>
-          {makers.map((item) => {
-            const isActive = activeMenu?.toLowerCase() === item.maker.toLowerCase();
-            return (
-              <li key={item.maker}>
-                <Link href={`${site.site_prefix}/brand/${item.maker.toLowerCase()}`} 
-                      className={styles.link}
-                      style={{ color: isActive ? siteColor : undefined, fontWeight: isActive ? 'bold' : 'normal' }}>
-                  <span>{isAdult ? '🎬' : '💻'} {item.maker.toUpperCase()}</span>
-                  <span className={styles.badge}>{item.count}</span>
-                </Link>
-              </li>
-            );
-          })}
+          {makers.map((item) => (
+            <li key={item.maker}>
+              <Link href={`${site.site_prefix}/brand/${item.maker.toLowerCase()}`} 
+                    className={styles.link}
+                    style={{ color: activeMenu === item.maker ? siteColor : undefined }}>
+                <span>{isAdult ? '🎬' : '💻'} {item.maker.toUpperCase()}</span>
+                <span className={styles.badge}>{item.count}</span>
+              </Link>
+            </li>
+          ))}
         </ul>
       )}
 
-      {/* 📊 動的なスペック/タグセクション */}
-      {dynamicStats && Object.entries(dynamicStats).map(([category, items]) => (
+      {/* 📊 6. 動的なその他のスペック (PCサイト用など) */}
+      {dynamicStats && Object.entries(dynamicStats)
+        .filter(([key]) => !['fanza_hierarchy', 'duga_hierarchy', 'ai_tags'].includes(key))
+        .map(([category, items]) => (
         <div key={category}>
           <SectionHeader title={category.toUpperCase()} id={category} />
           {openSections[category] && (
             <ul className={styles.accordionContent}>
-              {items.map((item) => {
-                const isActive = attribute === item.slug;
-                // アイコンをサイト種別で変える遊び心
-                const icon = isAdult ? '✨' : (category.includes('CPU') ? '🚀' : '🧠');
-                return (
-                  <li key={item.id}>
-                    <Link href={`${site.site_prefix}/products?attribute=${item.slug}`} 
-                          className={styles.link}
-                          style={{ color: isActive ? siteColor : undefined }}>
-                      <span>{icon} {item.name}</span>
-                      <span className={styles.badge}>{item.count}</span>
-                    </Link>
-                  </li>
-                );
-              })}
+              {(items as SidebarItem[]).map((item) => (
+                <li key={item.id}>
+                  <Link href={`${site.site_prefix}/products?attribute=${item.slug}`} className={styles.link}>
+                    <span>✨ {item.name}</span>
+                    <span className={styles.badge}>{item.count}</span>
+                  </Link>
+                </li>
+              ))}
             </ul>
           )}
         </div>
       ))}
 
-      {/* 📝 最新記事 */}
+      {/* 📝 7. LATEST */}
       <SectionHeader title="LATEST" id="LATEST" />
       {openSections['LATEST'] && (
         <ul className={styles.accordionContent}>
           {recentPosts.map((post) => (
             <li key={post.id}>
               <Link href={`${site.site_prefix}/news/${post.slug || post.id}`} className={styles.link}>
-                <span style={{ fontSize: '0.85rem' }}>{isAdult ? '🎥' : '📄'} {post.title}</span>
+                <span className={styles.recentTitle}>{isAdult ? '🎥' : '📄'} {post.title}</span>
               </Link>
             </li>
           ))}

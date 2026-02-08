@@ -14,9 +14,11 @@ interface ProductCardProps {
 export default function AdultProductCard({ product }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
+  // --- 💡 DUGA判定 ---
+  const isDuga = product.api_source === 'DUGA';
+
   // --- 💡 画像最適化ロジック ---
   const thumbnail = useMemo(() => {
-    const isDuga = product.api_source === 'DUGA';
     const rawUrl = product.image_url_list?.[0] || product.image_url || '/no-image.png';
 
     if (rawUrl === '/no-image.png') return rawUrl;
@@ -83,7 +85,7 @@ export default function AdultProductCard({ product }: ProductCardProps) {
 
   return (
     <div 
-      className={styles.cardContainer}
+      className={`${styles.cardContainer} ${isDuga ? styles.dugaTheme : ''}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -116,23 +118,26 @@ export default function AdultProductCard({ product }: ProductCardProps) {
           
           <div className={styles.imageOverlay} />
           
-          {/* AI解析スコアバッジ */}
+          {/* AI解析スコアバッジ - DUGA時は色を変更 */}
           {score > 0 && (
-            <div className="absolute top-2 left-2 z-20 bg-black/70 backdrop-blur-md border border-pink-500/50 px-2 py-0.5 rounded flex items-baseline gap-1">
-              <span className="text-[9px] text-pink-400 font-bold">SCORE</span>
+            <div className={`absolute top-2 left-2 z-20 bg-black/70 backdrop-blur-md border px-2 py-0.5 rounded flex items-baseline gap-1 ${isDuga ? 'border-cyan-500/50' : 'border-pink-500/50'}`}>
+              <span className={`text-[9px] font-bold ${isDuga ? 'text-cyan-400' : 'text-pink-400'}`}>SCORE</span>
               <span className="text-sm text-white font-black italic">{score}</span>
             </div>
           )}
 
-          {/* ビデオ有無バッジ */}
+          {/* ビデオ有無バッジ - DUGA時は色を変更 */}
           {hasVideo && (
-            <div className={styles.sampleBadge}>
+            <div className={isDuga ? styles.sampleBadgeDuga : styles.sampleBadge}>
               <span className={styles.sampleDot}>●</span>
               {isHovered ? 'PREVIEWING' : 'SAMPLE'}
             </div>
           )}
         </Link>
-        <div className={styles.apiBadge}>{product.api_source || 'PREMIUM'}</div>
+        {/* APIソースバッジ - DUGA時は色を変更 */}
+        <div className={isDuga ? styles.apiBadgeDuga : styles.apiBadge}>
+          {product.api_source || 'PREMIUM'}
+        </div>
       </div>
 
       <div className={styles.contentSection}>
@@ -182,7 +187,7 @@ export default function AdultProductCard({ product }: ProductCardProps) {
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Maker</span>
             {maker ? (
-              <Link href={`/maker/${maker.id}`} className={`${styles.infoLink} text-cyan-300`}>{maker.name}</Link>
+              <Link href={`/maker/${maker.id}`} className={`${styles.infoLink} ${isDuga ? 'text-cyan-400' : 'text-cyan-300'}`}>{maker.name}</Link>
             ) : <span className="text-[11px] text-gray-600">Unknown</span>}
           </div>
           {series && (
@@ -209,7 +214,7 @@ export default function AdultProductCard({ product }: ProductCardProps) {
           <div className="mb-4 flex items-center justify-between">
             <div className="flex flex-col">
               <span className={styles.infoLabel}>Price</span>
-              <span className={styles.priceText}>
+              <span className={isDuga ? styles.priceTextDuga : styles.priceText}>
                 {product.price ? `¥${product.price.toLocaleString()}` : 'CHECK PRICE'}
               </span>
             </div>
@@ -218,7 +223,7 @@ export default function AdultProductCard({ product }: ProductCardProps) {
               <span className="text-[8px] text-gray-500 uppercase tracking-tighter">AI Spec Score</span>
               <div className="w-16 h-1 bg-gray-800 rounded-full mt-1 overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-pink-500 to-purple-500" 
+                  className={`h-full bg-gradient-to-r ${isDuga ? 'from-cyan-500 to-blue-500' : 'from-pink-500 to-purple-500'}`} 
                   style={{ width: `${score}%` }}
                 />
               </div>
@@ -226,7 +231,7 @@ export default function AdultProductCard({ product }: ProductCardProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <Link href={`${detailPath}/${product.id}`} className={styles.btnView}>
+            <Link href={`${detailPath}/${product.id}`} className={isDuga ? styles.btnViewDuga : styles.btnView}>
               {hasVideo && <span className="text-xs">🎬</span>}
               VIEW DETAILS
             </Link>
@@ -234,7 +239,7 @@ export default function AdultProductCard({ product }: ProductCardProps) {
               href={product.affiliate_url} 
               target="_blank" 
               rel="noopener noreferrer" 
-              className={styles.btnGet}
+              className={isDuga ? styles.btnGetDuga : styles.btnGet}
             >
               <span>GET NOW</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

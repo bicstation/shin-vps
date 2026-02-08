@@ -1,0 +1,1199 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "FANZA",
+      "service": "doujin",
+      "floor": "digital_doujin",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 50000,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_658585",
+        "product_id": "d_658585",
+        "title": "入り浸りギャルにま〇こ使わせて貰う話5",
+        "volume": "71",
+        "review": {
+          "count": 216,
+          "average": "4.94"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_658585/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_658585%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-006.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-007.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-008.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-009.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_658585/d_658585jp-010.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "968",
+          "list_price": "1210",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "968",
+                "list_price": "1210"
+              }
+            ]
+          }
+        },
+        "date": "2026-01-31 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 3007,
+              "name": "ミニスカ"
+            },
+            {
+              "id": 4019,
+              "name": "パイパン"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 155024,
+              "name": "着衣"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160010,
+              "name": "キス"
+            },
+            {
+              "id": 156021,
+              "name": "専売"
+            },
+            {
+              "id": 5068,
+              "name": "イラマチオ"
+            },
+            {
+              "id": 160058,
+              "name": "潮吹き"
+            },
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            }
+          ],
+          "series": [
+            {
+              "id": 3013205,
+              "name": "入り浸りギャルにま〇こ使わせて貰う話"
+            }
+          ],
+          "maker": [
+            {
+              "id": 206684,
+              "name": "甘噛本舗"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_720445",
+        "product_id": "d_720445",
+        "title": "一夜ちゃんの受難4",
+        "volume": "33",
+        "review": {
+          "count": 41,
+          "average": "4.85"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_720445/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_720445%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-006.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-007.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-008.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_720445/d_720445jp-009.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "770",
+          "list_price": "770",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "770",
+                "list_price": "770"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-02 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 17,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 25,
+              "name": "拘束"
+            },
+            {
+              "id": 72,
+              "name": "異物挿入"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 154019,
+              "name": "陰毛・腋毛"
+            },
+            {
+              "id": 156021,
+              "name": "専売"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160157,
+              "name": "正常位"
+            },
+            {
+              "id": 160159,
+              "name": "後背位／バック"
+            },
+            {
+              "id": 160268,
+              "name": "コミケ107（2025冬）"
+            }
+          ],
+          "series": [
+            {
+              "id": 3005668,
+              "name": "一夜ちゃんの受難"
+            }
+          ],
+          "maker": [
+            {
+              "id": 79470,
+              "name": "仔馬牧場"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_714516",
+        "product_id": "d_714516",
+        "title": "「特待」生になったので、性悪ギャルを指名します！ ―いつも机にケツを載せてくる梅津さん―",
+        "volume": "46",
+        "review": {
+          "count": 10,
+          "average": "5.00"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_714516/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_714516%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-006.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-007.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-008.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-009.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_714516/d_714516jp-010.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "792",
+          "list_price": "880",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "792",
+                "list_price": "880"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-03 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 553,
+              "name": "学園もの"
+            },
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 153019,
+              "name": "脚"
+            },
+            {
+              "id": 154025,
+              "name": "金髪"
+            },
+            {
+              "id": 156021,
+              "name": "専売"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160058,
+              "name": "潮吹き"
+            },
+            {
+              "id": 160091,
+              "name": "ムチムチ"
+            }
+          ],
+          "maker": [
+            {
+              "id": 221113,
+              "name": "ダイヤモンドマグナム"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_722571",
+        "product_id": "d_722571",
+        "title": "裏筋侍・大全ノ巻ー極意総伝ー",
+        "volume": "528",
+        "review": {
+          "count": 1,
+          "average": "5.00"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_722571/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_722571%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_722571/d_722571pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_722571/d_722571pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_722571/d_722571jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_722571/d_722571jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_722571/d_722571jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_722571/d_722571jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_722571/d_722571jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_722571/d_722571jp-006.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "3850",
+          "list_price": "7700",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "3850",
+                "list_price": "7700"
+              }
+            ]
+          }
+        },
+        "date": "2026-01-29 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 156021,
+              "name": "専売"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5019,
+              "name": "パイズリ"
+            },
+            {
+              "id": 152014,
+              "name": "日常・生活"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 153004,
+              "name": "お尻・ヒップ"
+            },
+            {
+              "id": 160157,
+              "name": "正常位"
+            },
+            {
+              "id": 160158,
+              "name": "騎乗位"
+            },
+            {
+              "id": 160159,
+              "name": "後背位／バック"
+            },
+            {
+              "id": 160035,
+              "name": "独占"
+            }
+          ],
+          "maker": [
+            {
+              "id": 79357,
+              "name": "裏筋部屋"
+            }
+          ]
+        },
+        "campaign": [
+          {
+            "date_begin": "2026-01-29T00:00:00Z",
+            "date_end": "",
+            "title": "50%OFF"
+          }
+        ]
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_713242",
+        "product_id": "d_713242",
+        "title": "女子寮管理人の僕はギャル寮生に振り回されてます総集編",
+        "volume": "281",
+        "review": {
+          "count": 6,
+          "average": "5.00"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_713242/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_713242%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242jp-006.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_713242/d_713242jp-007.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "1485",
+          "list_price": "2970",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "1485",
+                "list_price": "2970"
+              }
+            ]
+          }
+        },
+        "date": "2026-01-24 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5019,
+              "name": "パイズリ"
+            },
+            {
+              "id": 5071,
+              "name": "ハーレム"
+            },
+            {
+              "id": 6003,
+              "name": "ベスト・総集編"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 154019,
+              "name": "陰毛・腋毛"
+            },
+            {
+              "id": 156021,
+              "name": "専売"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160071,
+              "name": "学生"
+            }
+          ],
+          "series": [
+            {
+              "id": 3013186,
+              "name": "女子寮管理人の僕はギャル寮生に振り回されてます"
+            }
+          ],
+          "maker": [
+            {
+              "id": 201991,
+              "name": "猫耳と黒マスク"
+            }
+          ]
+        },
+        "campaign": [
+          {
+            "date_begin": "2026-01-24T00:00:00Z",
+            "date_end": "",
+            "title": "50%OFF"
+          }
+        ]
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_626776",
+        "product_id": "d_626776",
+        "title": "入り浸りギャルにま〇こ使わせて貰う話4.5",
+        "volume": "53",
+        "review": {
+          "count": 12,
+          "average": "4.75"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_626776/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_626776%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-006.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-007.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-008.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-009.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_626776/d_626776jp-010.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "792",
+          "list_price": "990",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "792",
+                "list_price": "990"
+              }
+            ]
+          }
+        },
+        "date": "2025-09-01 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 3007,
+              "name": "ミニスカ"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 151019,
+              "name": "ワイシャツ"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160061,
+              "name": "睡眠姦"
+            },
+            {
+              "id": 160071,
+              "name": "学生"
+            },
+            {
+              "id": 160157,
+              "name": "正常位"
+            },
+            {
+              "id": 160261,
+              "name": "コミケ106（2025夏）"
+            }
+          ],
+          "series": [
+            {
+              "id": 3013205,
+              "name": "入り浸りギャルにま〇こ使わせて貰う話"
+            }
+          ],
+          "maker": [
+            {
+              "id": 206684,
+              "name": "甘噛本舗"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_715985",
+        "product_id": "d_715985",
+        "title": "おててつないで",
+        "review": {
+          "count": 15,
+          "average": "4.40"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_715985/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_715985%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/game/d_715985/d_715985pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/game/d_715985/d_715985pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/game/d_715985/d_715985jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/game/d_715985/d_715985jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/game/d_715985/d_715985jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/game/d_715985/d_715985jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/game/d_715985/d_715985jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/game/d_715985/d_715985jp-006.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "2728",
+          "list_price": "3410",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "2728",
+                "list_price": "3410"
+              }
+            ]
+          }
+        },
+        "date": "2026-01-30 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 13,
+              "name": "動画・アニメーション"
+            },
+            {
+              "id": 37,
+              "name": "デモ・体験版あり"
+            },
+            {
+              "id": 55,
+              "name": "処女"
+            },
+            {
+              "id": 1014,
+              "name": "熟女"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5071,
+              "name": "ハーレム"
+            },
+            {
+              "id": 152004,
+              "name": "ラブラブ・あまあま"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 153016,
+              "name": "ロールプレイング"
+            },
+            {
+              "id": 153022,
+              "name": "純愛"
+            },
+            {
+              "id": 154041,
+              "name": "乳首・乳輪"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            }
+          ],
+          "series": [
+            {
+              "id": 3020136,
+              "name": "おててつないで"
+            }
+          ],
+          "maker": [
+            {
+              "id": 73402,
+              "name": "神乳"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_708698",
+        "product_id": "d_708698",
+        "title": "セックスレベリング 〜魅了スキルでNTRを仕掛けてきたグラビアアイドルにガチ惚れされて溺愛JKと一緒にハーレム3Pする話〜",
+        "volume": "96",
+        "review": {
+          "count": 5,
+          "average": "5.00"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_708698/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_708698%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_708698/d_708698pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_708698/d_708698pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_708698/d_708698jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_708698/d_708698jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_708698/d_708698jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_708698/d_708698jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_708698/d_708698jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_708698/d_708698jp-006.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "1188",
+          "list_price": "1320",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "1188",
+                "list_price": "1320"
+              }
+            ]
+          }
+        },
+        "date": "2026-01-31 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 4111,
+              "name": "寝取り・寝取られ・NTR"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 5019,
+              "name": "パイズリ"
+            },
+            {
+              "id": 5022,
+              "name": "3P・4P"
+            },
+            {
+              "id": 5071,
+              "name": "ハーレム"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 156021,
+              "name": "専売"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160048,
+              "name": "連続絶頂"
+            },
+            {
+              "id": 160266,
+              "name": "COMITIA155"
+            }
+          ],
+          "series": [
+            {
+              "id": 3019583,
+              "name": "セックスレベリング"
+            }
+          ],
+          "maker": [
+            {
+              "id": 202464,
+              "name": "聖華快楽書店"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_505193",
+        "product_id": "d_505193",
+        "title": "入り浸りギャルにま〇こ使わせて貰う話4",
+        "volume": "63",
+        "review": {
+          "count": 61,
+          "average": "4.84"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_505193/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_505193%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-006.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-007.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-008.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-009.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_505193/d_505193jp-010.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "693",
+          "list_price": "990",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "693",
+                "list_price": "990"
+              }
+            ]
+          }
+        },
+        "date": "2025-02-01 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 48,
+              "name": "制服"
+            },
+            {
+              "id": 1034,
+              "name": "ギャル"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 153019,
+              "name": "脚"
+            },
+            {
+              "id": 156001,
+              "name": "シリーズもの"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160012,
+              "name": "手コキ"
+            },
+            {
+              "id": 160058,
+              "name": "潮吹き"
+            },
+            {
+              "id": 160243,
+              "name": "コミケ105（2024冬）"
+            }
+          ],
+          "series": [
+            {
+              "id": 3013205,
+              "name": "入り浸りギャルにま〇こ使わせて貰う話"
+            }
+          ],
+          "maker": [
+            {
+              "id": 206684,
+              "name": "甘噛本舗"
+            }
+          ]
+        },
+        "campaign": [
+          {
+            "date_begin": "2026-01-31T00:00:00Z",
+            "date_end": "",
+            "title": "30%OFF"
+          }
+        ]
+      },
+      {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_630536",
+        "product_id": "d_630536",
+        "title": "いけにえの母5",
+        "volume": "95",
+        "review": {
+          "count": 10,
+          "average": "4.50"
+        },
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_630536/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_630536%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_630536/d_630536pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_630536/d_630536pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_630536/d_630536jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_630536/d_630536jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_630536/d_630536jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_630536/d_630536jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_630536/d_630536jp-005.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "1430",
+          "list_price": "1430",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "1430",
+                "list_price": "1430"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-06 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 27,
+              "name": "辱め"
+            },
+            {
+              "id": 1039,
+              "name": "人妻・主婦"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 4111,
+              "name": "寝取り・寝取られ・NTR"
+            },
+            {
+              "id": 5003,
+              "name": "ぶっかけ"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 156021,
+              "name": "専売"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160038,
+              "name": "鬼畜"
+            },
+            {
+              "id": 160044,
+              "name": "汁/液大量"
+            }
+          ],
+          "series": [
+            {
+              "id": 3002489,
+              "name": "いけにえの母"
+            }
+          ],
+          "maker": [
+            {
+              "id": 25738,
+              "name": "四畳半書房"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,680 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "DMM.com",
+      "service": "ebook",
+      "floor": "comic",
+      "hits": "10",
+      "sort": "rank",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 50000,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b000ehftx89314",
+        "product_id": "b000ehftx89314",
+        "title": "異世界迷宮でハーレムを",
+        "volume": "183",
+        "review": {
+          "count": 21,
+          "average": "4.81"
+        },
+        "URL": "https://book.dmm.com/product/772256/b000ehftx89314/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F772256%2Fb000ehftx89314%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b000ehftx89314/b000ehftx89314pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b000ehftx89314/b000ehftx89314ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b000ehftx89314/b000ehftx89314pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaAwZWUgkDQk4IAFcIVk5EDl0VClQMBllNB1o*VVoKXlMfQgdUCQxPWV1QWQg_&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaAwZWUgkDQk4IAFcIVk5EDl0VClQMBllNB1o%2AVVoKXlMfQgdUCQxPWV1QWQg_%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "836"
+        },
+        "date": "2026-01-23 00:00:18",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 92206,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 308810,
+              "name": "異世界系"
+            }
+          ],
+          "series": [
+            {
+              "id": 772256,
+              "name": "異世界迷宮でハーレムを"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 98046,
+              "name": "KADOKAWA"
+            }
+          ],
+          "author": [
+            {
+              "id": 240033,
+              "name": "氷樹一世"
+            },
+            {
+              "id": 385638,
+              "name": "蘇我捨恥（ヒーロー文庫/イマジカインフォス）"
+            },
+            {
+              "id": 128930,
+              "name": "四季童子"
+            }
+          ]
+        },
+        "number": "12"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b388atabd01874",
+        "product_id": "b388atabd01874",
+        "title": "ヘルモード 〜やり込み好きのゲーマーは廃設定の異世界で無双する〜はじまりの召喚士",
+        "volume": "201",
+        "review": {
+          "count": 5,
+          "average": "4.80"
+        },
+        "URL": "https://book.dmm.com/product/4080756/b388atabd01874/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F4080756%2Fb388atabd01874%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b388atabd01874/b388atabd01874pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b388atabd01874/b388atabd01874ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b388atabd01874/b388atabd01874pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaAA5eVhUEVFIACFwOVk5EDl0VClQMBllNB1o*VVoKXlMfQgdUCQxPWV1QWQg_&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaAA5eVhUEVFIACFwOVk5EDl0VClQMBllNB1o%2AVVoKXlMfQgdUCQxPWV1QWQg_%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "726"
+        },
+        "date": "2026-01-09 00:00:15",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 308810,
+              "name": "異世界系"
+            },
+            {
+              "id": 92206,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 92026,
+              "name": "冒険"
+            },
+            {
+              "id": 308800,
+              "name": "バトル・アクション"
+            },
+            {
+              "id": 91657,
+              "name": "コミカライズ"
+            }
+          ],
+          "series": [
+            {
+              "id": 4080756,
+              "name": "ヘルモード 〜やり込み好きのゲーマーは廃設定の異世界で無双する〜はじまりの召喚士"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 65722,
+              "name": "アース・スター エンターテイメント"
+            }
+          ],
+          "author": [
+            {
+              "id": 250468,
+              "name": "鉄田猿児"
+            },
+            {
+              "id": 330781,
+              "name": "ハム男"
+            },
+            {
+              "id": 302733,
+              "name": "藻"
+            }
+          ]
+        },
+        "number": "13"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b653aovrp03181",
+        "product_id": "b653aovrp03181",
+        "title": "お気楽領主の楽しい領地防衛",
+        "volume": "202",
+        "review": {
+          "count": 15,
+          "average": "4.93"
+        },
+        "URL": "https://book.dmm.com/product/4159894/b653aovrp03181/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F4159894%2Fb653aovrp03181%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b653aovrp03181/b653aovrp03181pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b653aovrp03181/b653aovrp03181ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b653aovrp03181/b653aovrp03181pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaBQNVVg4TREYAClUBU05EDl0VClQMBllNB1o*VVoKXlMfQgdUCQxPWV1QWQg_&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaBQNVVg4TREYAClUBU05EDl0VClQMBllNB1o%2AVVoKXlMfQgdUCQxPWV1QWQg_%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "792"
+        },
+        "date": "2025-04-25 00:00:15",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 92206,
+              "name": "ファンタジー"
+            }
+          ],
+          "series": [
+            {
+              "id": 4159894,
+              "name": "お気楽領主の楽しい領地防衛"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 65626,
+              "name": "オーバーラップ"
+            }
+          ],
+          "author": [
+            {
+              "id": 352676,
+              "name": "青色まろ"
+            },
+            {
+              "id": 346206,
+              "name": "赤池宗"
+            },
+            {
+              "id": 269042,
+              "name": "転"
+            }
+          ]
+        },
+        "number": "7"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b900zkds30567",
+        "product_id": "b900zkds30567",
+        "title": "メダリスト",
+        "volume": "171",
+        "review": {
+          "count": 22,
+          "average": "4.82"
+        },
+        "URL": "https://book.dmm.com/product/4016510/b900zkds30567/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F4016510%2Fb900zkds30567%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b900zkds30567/b900zkds30567pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b900zkds30567/b900zkds30567ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b900zkds30567/b900zkds30567pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgZWTQoBRQUADFIOThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgZWTQoBRQUADFIOThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "792"
+        },
+        "date": "2026-01-22 00:00:15",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 93701,
+              "name": "スポーツ"
+            }
+          ],
+          "series": [
+            {
+              "id": 4016510,
+              "name": "メダリスト"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 65368,
+              "name": "講談社"
+            }
+          ],
+          "author": [
+            {
+              "id": 329407,
+              "name": "つるまいかだ"
+            }
+          ]
+        },
+        "number": "14"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b900zkds19906",
+        "product_id": "b900zkds19906",
+        "title": "勇者パーティを追い出された器用貧乏 〜パーティ事情で付与術士をやっていた剣士、万能へと至る〜",
+        "volume": "144",
+        "review": {
+          "count": 5,
+          "average": "4.40"
+        },
+        "URL": "https://book.dmm.com/product/4162770/b900zkds19906/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F4162770%2Fb900zkds19906%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b900zkds19906/b900zkds19906pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b900zkds19906/b900zkds19906ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b900zkds19906/b900zkds19906pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgZWTQoBRQcJAFQPThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgZWTQoBRQcJAFQPThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "759"
+        },
+        "date": "2025-12-09 00:00:15",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 308800,
+              "name": "バトル・アクション"
+            },
+            {
+              "id": 308810,
+              "name": "異世界系"
+            },
+            {
+              "id": 92206,
+              "name": "ファンタジー"
+            }
+          ],
+          "series": [
+            {
+              "id": 4162770,
+              "name": "勇者パーティを追い出された器用貧乏 〜パーティ事情で付与術士をやっていた剣士、万能へと至る〜"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 65368,
+              "name": "講談社"
+            }
+          ],
+          "author": [
+            {
+              "id": 331263,
+              "name": "よねぞう"
+            },
+            {
+              "id": 345434,
+              "name": "都神樹"
+            },
+            {
+              "id": 325376,
+              "name": "きさらぎゆり"
+            }
+          ]
+        },
+        "number": "17"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b950yshes07610",
+        "product_id": "b950yshes07610",
+        "title": "キングダム",
+        "volume": "242",
+        "review": {
+          "count": 51,
+          "average": "4.63"
+        },
+        "URL": "https://book.dmm.com/product/101099/b950yshes07610/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F101099%2Fb950yshes07610%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b950yshes07610/b950yshes07610pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b950yshes07610/b950yshes07610ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b950yshes07610/b950yshes07610pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgNWThINU0UADlIIUk5EDl0VClQMBllNB1o*VVoKXlMfQgdUCQxPWV1QWQg_&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgNWThINU0UADlIIUk5EDl0VClQMBllNB1o%2AVVoKXlMfQgdUCQxPWV1QWQg_%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "731"
+        },
+        "date": "2026-01-19 00:00:18",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 308800,
+              "name": "バトル・アクション"
+            },
+            {
+              "id": 94202,
+              "name": "歴史・時代劇・戦記"
+            },
+            {
+              "id": 308814,
+              "name": "映画化・ドラマ化・実写化"
+            },
+            {
+              "id": 91606,
+              "name": "アニメ化"
+            }
+          ],
+          "series": [
+            {
+              "id": 101099,
+              "name": "キングダム"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 93514,
+              "name": "集英社"
+            }
+          ],
+          "author": [
+            {
+              "id": 190117,
+              "name": "原泰久"
+            }
+          ]
+        },
+        "number": "78"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b950xshes60848",
+        "product_id": "b950xshes60848",
+        "title": "呪術廻戦",
+        "volume": "200",
+        "review": {
+          "count": 82,
+          "average": "4.52"
+        },
+        "URL": "https://book.dmm.com/product/801346/b950xshes60848/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F801346%2Fb950xshes60848%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b950xshes60848/b950xshes60848pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b950xshes60848/b950xshes60848ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b950xshes60848/b950xshes60848pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgNWTxINU0UGCVwNWk5EDl0VClQMBllNB1o*VVoKXlMfQgdUCQxPWV1QWQg_&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgNWTxINU0UGCVwNWk5EDl0VClQMBllNB1o%2AVVoKXlMfQgdUCQxPWV1QWQg_%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "543"
+        },
+        "date": "2024-12-25 00:00:18",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 92206,
+              "name": "ファンタジー"
+            }
+          ],
+          "series": [
+            {
+              "id": 801346,
+              "name": "呪術廻戦"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 93514,
+              "name": "集英社"
+            }
+          ],
+          "author": [
+            {
+              "id": 307436,
+              "name": "芥見下々"
+            }
+          ]
+        },
+        "number": "30"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b900zkds29816",
+        "product_id": "b900zkds29816",
+        "title": "シャングリラ・フロンティア",
+        "volume": "204",
+        "review": {
+          "count": 8,
+          "average": "4.88"
+        },
+        "URL": "https://book.dmm.com/product/4028935/b900zkds29816/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F4028935%2Fb900zkds29816%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b900zkds29816/b900zkds29816pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b900zkds29816/b900zkds29816ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b900zkds29816/b900zkds29816pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaCgZWTQoBRQQJAVUPThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaCgZWTQoBRQQJAVUPThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "792"
+        },
+        "date": "2026-01-16 00:00:15",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 92206,
+              "name": "ファンタジー"
+            }
+          ],
+          "series": [
+            {
+              "id": 4028935,
+              "name": "シャングリラ・フロンティア"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 65368,
+              "name": "講談社"
+            }
+          ],
+          "author": [
+            {
+              "id": 331137,
+              "name": "硬梨菜"
+            },
+            {
+              "id": 267235,
+              "name": "不二涼介"
+            }
+          ]
+        },
+        "number": "25"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b000ehftx89300",
+        "product_id": "b000ehftx89300",
+        "title": "辺境の錬金術師 〜今更予算ゼロの職場に戻るとかもう無理〜",
+        "volume": "171",
+        "review": {
+          "count": 5,
+          "average": "4.60"
+        },
+        "URL": "https://book.dmm.com/product/4155726/b000ehftx89300/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F4155726%2Fb000ehftx89300%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b000ehftx89300/b000ehftx89300pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b000ehftx89300/b000ehftx89300ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b000ehftx89300/b000ehftx89300pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaAwZWUgkDQk4IAFcJUk5EDl0VClQMBllNB1o*VVoKXlMfQgdUCQxPWV1QWQg_&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaAwZWUgkDQk4IAFcJUk5EDl0VClQMBllNB1o%2AVVoKXlMfQgdUCQxPWV1QWQg_%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "836"
+        },
+        "date": "2026-01-23 00:00:15",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 92206,
+              "name": "ファンタジー"
+            }
+          ],
+          "series": [
+            {
+              "id": 4155726,
+              "name": "辺境の錬金術師 〜今更予算ゼロの職場に戻るとかもう無理〜"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 98046,
+              "name": "KADOKAWA"
+            }
+          ],
+          "author": [
+            {
+              "id": 313086,
+              "name": "ぐんたお"
+            },
+            {
+              "id": 328017,
+              "name": "御手々ぽんた"
+            },
+            {
+              "id": 278688,
+              "name": "又市マタロー"
+            }
+          ]
+        },
+        "number": "8"
+      },
+      {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b600zsgk31782",
+        "product_id": "b600zsgk31782",
+        "title": "葬送のフリーレン",
+        "volume": "202",
+        "review": {
+          "count": 55,
+          "average": "4.67"
+        },
+        "URL": "https://book.dmm.com/product/4009192/b600zsgk31782/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F4009192%2Fb600zsgk31782%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b600zsgk31782/b600zsgk31782pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b600zsgk31782/b600zsgk31782ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b600zsgk31782/b600zsgk31782pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaBQZWTRICXQUBDlwLThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaBQZWTRICXQUBDlwLThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "583"
+        },
+        "date": "2025-12-18 00:00:15",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 92206,
+              "name": "ファンタジー"
+            }
+          ],
+          "series": [
+            {
+              "id": 4009192,
+              "name": "葬送のフリーレン"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 63326,
+              "name": "小学館"
+            }
+          ],
+          "author": [
+            {
+              "id": 253195,
+              "name": "山田鐘人"
+            },
+            {
+              "id": 331709,
+              "name": "アベツカサ"
+            }
+          ]
+        },
+        "number": "15"
+      }
+    ]
+  }
+}

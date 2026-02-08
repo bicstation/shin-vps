@@ -6,9 +6,9 @@
 # 2. 共通基盤: ルート直下の `./shared` を「唯一の正解」として管理。
 # 3. 強制マウント: 開発時は ./shared を各コンテナの /usr/src/app/shared に直接結合。
 # 4. AI・開発者への指示: 
-#    - 各プロジェクト(next-*)配下に shared フォルダをコピーしてはならない。
-#    - 変更はすべてルートの `./shared` で行い、全サイトに即時反映させること。
-#    - ビルド時は PROJECT_NAME 引数で対象プロジェクトを切り替えること。
+#     - 各プロジェクト(next-*)配下に shared フォルダをコピーしてはならない。
+#     - 変更はすべてルートの `./shared` で行い、全サイトに即時反映させること。
+#     - ビルド時は PROJECT_NAME 引数で対象プロジェクトを切り替えること。
 # =====================================================================
 
 services:
@@ -196,7 +196,6 @@ services:
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
 
   # --- 4. WordPress & 静的配信層 ---
-  # 各サイトのブログセクションを担当
   nginx-wp-v2:
     image: nginx:alpine
     container_name: nginx-wp-v2
@@ -263,7 +262,6 @@ services:
       - internal-net
 
   # --- 6. 管理ツール層 ---
-  # DB管理およびログ監視
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin-v2

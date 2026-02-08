@@ -1,183 +1,287 @@
+/* ==============================================================================
+ * 🎬 TIPER Archive - Category Listing CSS (Matrix Edition)
+ * ============================================================================== */
+
 .container {
   min-height: 100vh;
-  background-color: #111122; /* --bg-deep */
-  padding: 2rem 0;
+  background-color: #0a0a14; /* より深いネイビーブラック */
+  padding: 4rem 0;
+  background-image: 
+    radial-gradient(circle at 50% -10%, rgba(233, 69, 96, 0.05), transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(0, 209, 178, 0.03), transparent 30%);
 }
 
 .inner {
-  max-width: 1200px;
+  max-width: 1440px; /* グリッドの広がりに合わせて拡張 */
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 5%;
 }
 
-/* ヘッダーエリア */
+/* 1. ヘッダーエリア：ダイナミック・フレーム */
 .header {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  border-left: 4px solid #e94560; /* アクセントライン */
-  padding-left: 1.5rem;
+  gap: 2rem;
+  margin-bottom: 4rem;
+  border-left: 2px solid #e94560;
+  padding-left: 2rem;
+  position: relative;
 }
 
-@media (min-width: 768px) {
+/* ネオンの反射光演出 */
+.header::before {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #e94560, #00d1b2);
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
+}
+
+@media (min-width: 1024px) {
   .header {
     flex-direction: row;
     align-items: flex-end;
   }
 }
 
+.titleGroup {
+  flex-grow: 1;
+}
+
 .categoryPrefix {
   display: block;
-  font-size: 0.75rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 900;
   color: #e94560;
-  letter-spacing: 0.2em;
-  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  margin-bottom: 0.75rem;
+  opacity: 0.8;
 }
 
 .titleMain {
-  font-size: 1.875rem; /* text-3xl */
-  font-weight: 900;
+  font-size: 2.5rem;
+  font-weight: 950;
   color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-style: italic;
+}
+
+@media (min-width: 768px) {
+  .titleMain {
+    font-size: 4rem;
+  }
 }
 
 .titleId {
-  font-size: 1rem;
-  color: #444466;
-  font-family: monospace;
-  margin-left: 0.5rem;
+  font-size: 1.25rem;
+  color: #3d3d66;
+  font-family: 'JetBrains Mono', monospace;
+  margin-left: 1rem;
+  font-style: normal;
+  vertical-align: middle;
 }
 
 .itemCount {
-  font-size: 0.875rem;
-  color: #8888aa;
-  margin-top: 0.5rem;
-}
-
-/* ソートボタン一覧 */
-.sortList {
   display: flex;
-  gap: 0.5rem;
-  background-color: #1a1a2e;
-  padding: 0.3rem;
-  border-radius: 9999px;
-  border: 1px solid #3d3d66;
-}
-
-.sortButton {
-  padding: 0.5rem 1rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
   font-size: 0.75rem;
   font-weight: 700;
   color: #8888aa;
+  letter-spacing: 0.1em;
+}
+
+.itemCount b {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* 2. ソートツールバー */
+.sortList {
+  display: flex;
+  gap: 0.25rem;
+  background-color: rgba(26, 26, 46, 0.8);
+  padding: 0.4rem;
+  border-radius: 0.5rem; /* 丸すぎない角丸でテック感を出す */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.sortButton {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #555577;
   text-decoration: none;
-  border-radius: 9999px;
-  transition: all 0.2s ease;
+  border-radius: 0.3rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .sortButton:hover {
   color: #ffffff;
-  background-color: #252545;
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .sortButtonActive {
-  background-color: #e94560;
-  color: #ffffff !important;
+  background-color: #ffffff;
+  color: #000000 !important;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
 }
 
-/* グリッドレイアウト */
+/* 3. メイングリッド：マトリックス・レイアウト */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 2rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 480px) {
   .grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
 }
 
 @media (min-width: 1024px) {
   .grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
   }
 }
 
-/* ページネーション */
+@media (min-width: 1600px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2.5rem;
+  }
+}
+
+/* 4. ページネーション：サイバーナビゲーター */
 .pagination {
-  margin-top: 5rem;
+  margin-top: 8rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 2rem;
+  gap: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .pageLink {
-  padding: 0.75rem 1.5rem;
-  background-color: #1f1f3a;
-  border: 1px solid #3d3d66;
+  padding: 1rem 2rem;
+  background-color: #1a1a2e;
+  border: 1px solid rgba(0, 209, 178, 0.3);
   color: #00d1b2;
-  font-weight: 800;
-  font-size: 0.875rem;
+  font-weight: 900;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
   text-decoration: none;
-  border-radius: 0.5rem;
-  transition: all 0.2s;
+  border-radius: 0.25rem;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .pageLink:hover {
-  border-color: #00d1b2;
-  background-color: #252545;
-  box-shadow: 0 0 15px rgba(0, 209, 178, 0.3);
+  background-color: #00d1b2;
+  color: #000000;
+  box-shadow: 0 0 30px rgba(0, 209, 178, 0.4);
+  transform: translateY(-2px);
 }
 
 .pageDisabled {
-  padding: 0.75rem 1.5rem;
+  padding: 1rem 2rem;
   color: #3d3d66;
   font-weight: 800;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
   cursor: not-allowed;
+  border: 1px solid transparent;
 }
 
 .pageInfo {
   display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  font-family: 'Inter', sans-serif;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .pageLabel {
   font-size: 0.6rem;
   color: #555577;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+}
+
+.currentPageWrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
 }
 
 .currentPage {
-  font-size: 1.5rem;
-  font-weight: 900;
+  font-size: 2.5rem;
+  font-weight: 950;
   color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
 }
 
 .pageSeparator {
   color: #3d3d66;
+  font-size: 1rem;
 }
 
 .totalPage {
   color: #8888aa;
   font-weight: 700;
+  font-size: 1rem;
 }
 
-/* 空の状態 */
+/* 5. 空の状態・エラーハンドリング */
 .emptyState {
-  padding: 5rem 0;
+  padding: 10rem 0;
   text-align: center;
+  background: radial-gradient(circle at center, rgba(61, 61, 102, 0.1), transparent 70%);
+  border-radius: 4rem;
 }
 
 .emptyIcon {
-  font-size: 4rem;
+  font-size: 5rem;
+  margin-bottom: 2rem;
+  filter: drop-shadow(0 0 15px rgba(233, 69, 96, 0.3));
+  display: block;
+}
+
+.emptyTitle {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-style: italic;
   margin-bottom: 1rem;
+}
+
+.emptyText {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 700;
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.8;
 }
