@@ -3,78 +3,97 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { fetchProductDetail, fetchRelatedProducts, fetchPCProductRanking } from '@shared/lib/api';
-import { COLORS } from "@/shared/styles/constants";
+
+// 💡 分割・整理したAPIから関数をインポート
+import { 
+    fetchPCProductDetail, 
+    fetchRelatedProducts, 
+    fetchPCProductRanking 
+} from '@shared/lib/api';
+
 import styles from './ProductDetail.module.css';
 
-// 📈 グラフコンポーネント
+// 📈 UIコンポーネント
 import PriceHistoryChart from '@shared/ui/PriceHistoryChart';
 import SpecRadarChart from '@shared/product/SpecRadarChart';
 
+/**
+ * 💡 型定義: Next.js 15 では params は Promise で受け取る必要があります
+ */
 interface PageProps {
     params: Promise<{ unique_id: string }>;
 }
 
 /**
- * 💡 SEOメタデータ・キーワードの動的生成
+ * 💡 SEOメタデータ生成
  */
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { unique_id } = await params;
-    const product = await fetchProductDetail(unique_id);
+    const product = await fetchPCProductDetail(unique_id);
 
     if (!product) return { title: "製品が見つかりません | BICSTATION" };
 
     const title = `${product.name} のスペック・価格・評判 | ${product.maker}最新比較`;
-    const seoDescription = `${product.maker}の「${product.name}」詳細解説。${product.description?.substring(0, 80)}... 最安値や在庫状況をチェック。`;
-
     return {
         title,
-        description: seoDescription,
+        description: `${product.maker}の「${product.name}」詳細。価格推移、スペック評価、AIによるエキスパートレビューを掲載。`,
         openGraph: {
             title,
-            description: seoDescription,
             images: [product.image_url || '/no-image.png'],
-            type: 'article',
         },
     };
 }
 
+/**
+ * 💡 メインコンポーネント
+ */
 export default async function ProductDetailPage(props: PageProps) {
+    // 1. パラメータの解決
     const { unique_id } = await props.params;
 
-    // 💡 データの並列取得（詳細・ランキング）
+    // 2. データの並列取得 (パフォーマンス最適化)
+    // RankingDataがコケても製品詳細が出るように .catch() でガード
     const [product, rankingData] = await Promise.all([
-        fetchProductDetail(unique_id),
-        fetchPCProductRanking()
+        fetchPCProductDetail(unique_id),
+        fetchPCProductRanking().catch(() => [])
     ]);
 
-    if (!product) notFound();
+    // 🚨 3. データが存在しない、または取得失敗時は即座に 404
+    if (!product || !product.unique_id) {
+        console.error(`[DEBUG] Product not found for unique_id: ${unique_id}`);
+        notFound();
+    }
 
-    const p = product as any;
-    const relatedProducts = await fetchRelatedProducts(product.maker, unique_id);
+    // 4. 関連データの取得
+    const relatedProducts = await fetchRelatedProducts(product.maker, unique_id).catch(() => []);
     const displayRelated = relatedProducts.slice(0, 8);
+    
+    // 5. 表示用変数の整理
+    const p = product as any;
     const finalUrl = product.affiliate_url || product.url;
-    const isPriceAvailable = product.price > 0;
-
-    // 現在の順位を特定 (rankingDataからこの製品を探す)
+    const isPriceAvailable = product.price && product.price > 0;
+    
+    // 現在の順位を算出
     const currentRank = rankingData ? rankingData.findIndex((item: any) => item.unique_id === unique_id) + 1 : 0;
 
+    // ソフトウェア判定（表示項目の切り替え用）
     const isSoftware = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT", "EIZO", "ウイルスバスター"].some(keyword =>
         product.maker.toUpperCase().includes(keyword.toUpperCase()) || product.name.includes(keyword)
     );
 
-    const firstAttributeSlug = (p.attributes && p.attributes.length > 0) ? p.attributes[0].slug : '';
-
     /**
-     * AIコンテンツの解析
+     * AIコンテンツ（HTML）の解析ロジック
      */
     const parseContent = (html: string) => {
+        if (!html) return { tocItems: [], summary: null, cleanBody: "" };
+        
         const h2RegExp = /<h2.*?>(.*?)<\/h2>/g;
         const tocItems: string[] = [];
         let match;
         while ((match = h2RegExp.exec(html)) !== null) {
             tocItems.push(match[1].replace(/<[^>]*>?/gm, ''));
         }
+        
         const summaryRegex = /\[SUMMARY_DATA\]([\s\S]*?)\[\/SUMMARY_DATA\]/;
         const summaryMatch = html.match(summaryRegex);
         let summary = null;
@@ -93,17 +112,17 @@ export default async function ProductDetailPage(props: PageProps) {
     const { tocItems, summary, cleanBody } = parseContent(product.ai_content || "");
     const today = new Date().toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
 
-    // 🚀 ランキング履歴データの整形 (Recharts用)
+    // ランキング履歴の整形
     const formattedRankHistory = p.stats_history?.map((s: any) => ({
         date: s.formatted_date,
-        price: s.daily_rank // PriceHistoryChartを再利用するためkeyを統一
+        price: s.daily_rank 
     })) || [];
 
     return (
         <div className={styles.wrapper}>
             <main className={styles.mainContainer}>
 
-                {/* 📈 リアルタイム・トレンドバナー */}
+                {/* --- トレンドバナー --- */}
                 <div className={styles.trendBanner}>
                     <div className={styles.trendInfo}>
                         <span className={styles.updateBadge}>{today} UPDATE</span>
@@ -117,10 +136,9 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </div>
 
-                {/* 1. ヒーローセクション */}
+                {/* --- 1. ヒーローセクション --- */}
                 <div className={styles.heroSection}>
                     <div className={styles.imageWrapper}>
-                        {/* 🏆 順位バッジ (100位以内の場合表示) */}
                         {currentRank > 0 && currentRank <= 100 && (
                             <div className={`${styles.detailRankBadge} ${styles[`rankColor_${currentRank}`]}`}>
                                 <span className={styles.rankLabel}>RANK</span>
@@ -131,11 +149,6 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                     <div className={styles.infoSide}>
                         <div className={styles.badgeContainer}>
-                            {product.unified_genre && (
-                                <Link href={`/brand/${product.maker.toLowerCase()}?attribute=${firstAttributeSlug}`} className={styles.genreBadgeLink}>
-                                    <span className={styles.genreBadge}># {product.unified_genre}</span>
-                                </Link>
-                            )}
                             <span className={styles.makerBadge}>{product.maker}</span>
                         </div>
                         <h1 className={styles.productTitle}>{product.name}</h1>
@@ -152,7 +165,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </div>
 
-                {/* 📊 2. 分析データセクション */}
+                {/* --- 2. 分析データ（グラフ） --- */}
                 <div className={styles.analysisGrid}>
                     <div className={styles.analysisChartItem}>
                         <h3 className={styles.chartTitle}>スペック評価スコア</h3>
@@ -176,7 +189,7 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </div>
 
-                {/* 🏆 3. ランキング推移セクション */}
+                {/* --- 3. ランキング推移 --- */}
                 {!isSoftware && (
                     <div className={styles.rankHistorySection}>
                         <h3 className={styles.chartTitle}>注目度ランキング推移</h3>
@@ -189,11 +202,10 @@ export default async function ProductDetailPage(props: PageProps) {
                                 {currentRank > 0 ? `現在 ${currentRank}位 / 順位データを蓄積中です` : "ランキング解析中です"}
                             </div>
                         )}
-                        <p className={styles.rankNotice}>※ BICSTATION内での人気度・比較回数に基づく独自のリアルタイムランキング推移（順位が上ほど高評価）</p>
                     </div>
                 )}
 
-                {/* 4. クイックハイライト */}
+                {/* --- 4. クイックハイライト --- */}
                 {summary && (
                     <section className={styles.highlightSection}>
                         <h2 className={styles.minimalTitle}>注目ポイント</h2>
@@ -211,24 +223,16 @@ export default async function ProductDetailPage(props: PageProps) {
                                 <p>{summary.p3}</p>
                             </div>
                         </div>
-                        <div className={styles.targetBox}>
-                            <span className={styles.targetLabel}>Recommend</span>
-                            <p className={styles.targetText}>{summary.target}</p>
-                        </div>
                     </section>
                 )}
 
-                {/* 5. スペックサマリー */}
+                {/* --- 5. スペックサマリー --- */}
                 <section className={styles.aiSpecSummarySection}>
                     <h2 className={styles.minimalTitle}>主要構成スペック</h2>
                     <div className={styles.aiSpecGrid}>
                         <div className={styles.aiSpecCard}>
                             <span className={styles.aiSpecLabel}>{isSoftware ? "対応OS" : "CPU"}</span>
                             <span className={styles.aiSpecValue}>{isSoftware ? (p.os_support || 'Windows/Mac') : (p.cpu_model || '-')}</span>
-                        </div>
-                        <div className={styles.aiSpecCard}>
-                            <span className={styles.aiSpecLabel}>{isSoftware ? "ライセンス" : "GPU"}</span>
-                            <span className={styles.aiSpecValue}>{isSoftware ? (p.license_type || 'サブスク') : (p.gpu_model || '-')}</span>
                         </div>
                         <div className={styles.aiSpecCard}>
                             <span className={styles.aiSpecLabel}>メモリ</span>
@@ -240,14 +244,14 @@ export default async function ProductDetailPage(props: PageProps) {
                         </div>
                         {p.is_ai_pc && (
                             <div className={`${styles.aiSpecCard} ${styles.aiPcCard}`}>
-                                <span className={styles.aiSpecLabel}>次世代機能</span>
-                                <span className={styles.aiSpecValue}>✨ AI PC 対応モデル</span>
+                                <span className={styles.aiSpecLabel}>機能</span>
+                                <span className={styles.aiSpecValue}>✨ AI PC 対応</span>
                             </div>
                         )}
                     </div>
                 </section>
 
-                {/* 6. エキスパート解説 (AI Content) */}
+                {/* --- 6. AIエキスパート解説 --- */}
                 {cleanBody && (
                     <section className={styles.aiContentSection}>
                         <div className={styles.sectionHeader}>
@@ -269,42 +273,22 @@ export default async function ProductDetailPage(props: PageProps) {
                     </section>
                 )}
 
-                {/* 🔥 7. 究極のCTAセクション */}
+                {/* --- 7. 下部CTA --- */}
                 <section className={styles.finalCtaSection}>
                     <div className={styles.ctaGlassCard}>
-                        <div className={styles.ctaGlow}></div>
                         <div className={styles.ctaContent}>
                             <div className={styles.ctaBrandTag}>{product.maker} Official Dealer</div>
                             <h2 className={styles.ctaTitle}>
                                 {isSoftware ? "究極のツールを、あなたの手に。" : "未体験のパフォーマンスを解き放つ。"}
                             </h2>
-                            <p className={styles.ctaDescription}>
-                                妥協なきスペック選びは、公式サイトから始まります。最新の在庫状況や限定キャンペーンを今すぐチェック。
-                            </p>
-
-                            <div className={styles.ctaActionRow}>
-                                <div className={styles.ctaPriceInfo}>
-                                    <span className={styles.ctaPriceLabel}>メーカー希望小売価格</span>
-                                    <span className={styles.ctaPriceValue}>
-                                        {isPriceAvailable ? `¥${product.price.toLocaleString()}` : "CHECK PRICE"}
-                                        <span className={styles.ctaTax}> (税込)</span>
-                                    </span>
-                                </div>
-                                <a href={finalUrl} target="_blank" rel="nofollow" className={styles.ctaNeonButton}>
-                                    <span className={styles.ctaBtnText}>公式サイトで詳細を見る</span>
-                                    <svg className={styles.ctaArrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                        <path d="M5 12h14M12 5l7 7-7 7" />
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                        <div className={styles.ctaVisualContainer}>
-                            <img src={product.image_url || '/no-image.png'} alt="Premium Visual" className={styles.ctaFloatingImage} />
+                            <a href={finalUrl} target="_blank" rel="nofollow" className={styles.ctaNeonButton}>
+                                公式サイトで詳細を見る
+                            </a>
                         </div>
                     </div>
                 </section>
 
-                {/* 8. 関連商品 */}
+                {/* --- 8. 関連商品 --- */}
                 {displayRelated.length > 0 && (
                     <section className={styles.relatedSection}>
                         <h2 className={styles.specTitle}>{product.maker} の他の製品</h2>
@@ -315,20 +299,14 @@ export default async function ProductDetailPage(props: PageProps) {
                                         <img src={item.image_url || '/no-image.png'} alt={item.name} />
                                     </div>
                                     <div className={styles.relatedInfo}>
-                                        <p className={item.name.length > 30 ? styles.relatedNameSmall : styles.relatedName}>{item.name}</p>
-                                        <div className={styles.relatedPrice}>¥{item.price.toLocaleString()}〜</div>
+                                        <p className={styles.relatedName}>{item.name}</p>
+                                        <div className={styles.relatedPrice}>¥{item.price?.toLocaleString()}〜</div>
                                     </div>
                                 </Link>
                             ))}
                         </div>
                     </section>
                 )}
-
-                <div className={styles.backToBrand}>
-                    <Link href={`/brand/${product.maker.toLowerCase()}`} className={styles.backLink}>
-                        ← {product.maker} の最新一覧へ戻る
-                    </Link>
-                </div>
             </main>
         </div>
     );
