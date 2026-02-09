@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 from api.models.pc_products import PCProduct, PriceHistory
-from .master_serializers import PCAttributeSerializer
+from .adult_serializers import PCAttributeSerializer
 
 # 📈 価格履歴を整形するためのサブ・シリアライザー
 class PriceHistorySerializer(serializers.ModelSerializer):

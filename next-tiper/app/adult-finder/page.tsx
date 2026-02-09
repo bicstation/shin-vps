@@ -1,22 +1,17 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import styles from './PCFinderPage.module.css';
-
-/**
- * ✅ 修正ポイント: インポートパスの変更
- * @/shared/components/product/ProductCard から @shared/cards/ProductCard へ
- */
-import ProductCard from '@shared/cards/ProductCard';
+import styles from './AdultFinderPage.module.css'; // 専用のCSSModule（PCFinderのものをベースに調整想定）
+import AdultProductCard from '@shared/cards/AdultProductCard';
 
 /**
  * =====================================================================
- * 💻 PC-FINDER ページコンポーネント
- * 4,000件のデータベース検索に対応したローディング強化版
+ * 🔞 ADULT-FINDER ページコンポーネント
+ * FANZA / DUGA 混合データベースからAI解析スコアに基づき製品を抽出
  * =====================================================================
  */
 
-export default function PCFinderPage() {
+export default function AdultFinderPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,45 +19,41 @@ export default function PCFinderPage() {
   // 環境変数の取得
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
-  // 🚩 フィルター条件の初期値
+  // 🚩 アダルト検索用フィルター条件
   const [filters, setFilters] = useState({
-    budget: 300000,
-    type: 'all',         // type-laptop, type-desktop 等
-    usage: 'all',        // usage-gaming, usage-business 等
-    brand: 'all',
-    ram: 0,
-    npuRequired: false,
-    gpuRequired: false,
+    budget: 5000,         // 価格上限
+    source: 'all',        // 全て / FANZA / DUGA
+    category: 'all',      // 単体作品 / セット作品 / アニメ 等
+    hasVideo: false,      // サンプル動画あり限定
+    minScore: 0,          // AI解析スコア最低点
+    term: '',             // キーワード検索
   });
 
   const [sortBy, setSortBy] = useState('newest');
 
-  // 🚀 API通信ロジック
-  const fetchProductsFromDatabase = useCallback(async () => {
+  // 🚀 API通信ロジック (アダルトエンドポイントへ接続)
+  const fetchAdultProducts = useCallback(async () => {
     setIsLoading(true);
     try {
       const query = new URLSearchParams({
-        budget: filters.budget.toString(),
-        type: filters.type !== 'all' ? filters.type : '',
-        usage: filters.usage !== 'all' ? filters.usage : '',
-        brand: filters.brand !== 'all' ? filters.brand : '',
-        ram: filters.ram.toString(),
-        npu: filters.npuRequired.toString(),
-        gpu: filters.gpuRequired.toString(),
+        price_max: filters.budget.toString(),
+        api_source: filters.source !== 'all' ? filters.source : '',
+        category: filters.category !== 'all' ? filters.category : '',
+        has_video: filters.hasVideo.toString(),
+        min_score: filters.minScore.toString(),
+        q: filters.term,
         sort: sortBy,
       });
 
-      const endpoint = `${apiUrl}/pc-products/?${query.toString()}`;
+      // エンドポイントを /adult-products/ 等へ変更
+      const endpoint = `${apiUrl}/adult-products/?${query.toString()}`;
       const response = await fetch(endpoint);
-      console.log("Fetching from:", endpoint);  
-
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`);
-      }
+      
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
       const data = await response.json();
 
-      // Djangoのレスポンス形式に合わせてデータをセット
+      // Djangoの標準的なページネーションレスポンスを処理
       if (data.results && Array.isArray(data.results)) {
         setProducts(data.results);
         setTotalCount(data.count);
@@ -74,7 +65,7 @@ export default function PCFinderPage() {
         setTotalCount(0);
       }
     } catch (error) {
-      console.error("❌ Fetch failed:", error);
+      console.error("❌ Adult Fetch failed:", error);
       setProducts([]);
       setTotalCount(0);
     } finally {
@@ -83,18 +74,22 @@ export default function PCFinderPage() {
   }, [filters, sortBy, apiUrl]);
 
   useEffect(() => {
-    fetchProductsFromDatabase();
-  }, [fetchProductsFromDatabase]);
+    const timer = setTimeout(() => {
+      fetchAdultProducts();
+    }, 300); // タイピング時の連続リクエストを防止
+    return () => clearTimeout(timer);
+  }, [fetchAdultProducts]);
 
   return (
     <div className={styles.pageContainer}>
-      
       <div className={styles.contentWrapper}>
+        
+        {/* ヘッダーセクション */}
         <header className={styles.header}>
-          <div className={styles.badge}>BICSTATION LIVE DATABASE</div>
-          <h1 className={styles.mainTitle}>PC-FINDER</h1>
+          <div className={styles.badge}>TIPER LIVE ADULT DATABASE</div>
+          <h1 className={styles.mainTitle}>ADULT<span>-FINDER</span></h1>
           <p className={styles.subTitle}>
-            Django データベース直結。AI解析スコアと価格をリアルタイム反映。
+            AI解析エンジンが数万件のアーカイブから「あなたの嗜好」をスコアリング。
           </p>
         </header>
 
@@ -103,34 +98,45 @@ export default function PCFinderPage() {
           <aside className={styles.sidebar}>
             <div className={styles.filterSection}>
 
-              {/* 01. 予算 */}
+              {/* 01. キーワード検索 */}
               <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>01. Budget (Max)</label>
+                <label className={styles.filterLabel}>01. Keyword Search</label>
                 <input
-                  type="range" min="50000" max="500000" step="10000"
+                  type="text"
+                  placeholder="女優名、キーワード..."
+                  className={styles.textInput}
+                  value={filters.term}
+                  onChange={(e) => setFilters({ ...filters, term: e.target.value })}
+                />
+              </section>
+
+              {/* 02. 予算（価格帯） */}
+              <section className={styles.filterGroup}>
+                <label className={styles.filterLabel}>02. Price Cap</label>
+                <input
+                  type="range" min="0" max="10000" step="500"
                   value={filters.budget}
                   onChange={(e) => setFilters({ ...filters, budget: Number(e.target.value) })}
                   className={styles.rangeInput}
                 />
                 <div className={styles.priceDisplay}>
-                  <span className={styles.priceMin}>~ ¥{filters.budget.toLocaleString()}</span>
+                  <span className={styles.priceMin}>UNDER ¥{filters.budget.toLocaleString()}</span>
                 </div>
               </section>
 
-              {/* 02. PC形状 */}
+              {/* 03. 配信プラットフォーム */}
               <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>02. Form Factor</label>
+                <label className={styles.filterLabel}>03. Platform</label>
                 <div className={styles.buttonGrid}>
                   {[
-                    { label: '全て', val: 'all' },
-                    { label: 'ノート', val: 'type-laptop' },
-                    { label: 'デスク', val: 'type-desktop' },
-                    { label: '小型', val: 'type-mini-pc' }
+                    { label: 'ALL', val: 'all' },
+                    { label: 'FANZA', val: 'FANZA' },
+                    { label: 'DUGA', val: 'DUGA' }
                   ].map((t) => (
                     <button
                       key={t.val}
-                      onClick={() => setFilters({ ...filters, type: t.val })}
-                      className={filters.type === t.val ? styles.btnActive : styles.btnInactive}
+                      onClick={() => setFilters({ ...filters, source: t.val })}
+                      className={filters.source === t.val ? styles.btnActive : styles.btnInactive}
                     >
                       {t.label}
                     </button>
@@ -138,54 +144,33 @@ export default function PCFinderPage() {
                 </div>
               </section>
 
-              {/* 03. 主な用途 */}
+              {/* 04. カテゴリ選択 */}
               <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>03. Purpose</label>
+                <label className={styles.filterLabel}>04. Category</label>
                 <select
-                  value={filters.usage}
-                  onChange={(e) => setFilters({ ...filters, usage: e.target.value })}
+                  value={filters.category}
+                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
                   className={styles.selectInput}
                 >
-                  <option value="all">全ての用途</option>
-                  <option value="usage-general">一般・スタンダード</option>
-                  <option value="usage-gaming">ゲーミングPC</option>
-                  <option value="usage-business">ビジネス・法人</option>
-                  <option value="usage-creator">クリエイター向け</option>
-                  <option value="usage-ai-dev">AI開発・生成AI</option>
+                  <option value="all">全てのジャンル</option>
+                  <option value="video">単体作品</option>
+                  <option value="set">セット・まとめ買い</option>
+                  <option value="anime">アダルトアニメ</option>
+                  <option value="vr">VR作品</option>
                 </select>
               </section>
 
-              {/* 04. メーカー */}
+              {/* 05. AI解析スコア */}
               <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>04. Manufacturer</label>
-                <select
-                  value={filters.brand}
-                  onChange={(e) => setFilters({ ...filters, brand: e.target.value })}
-                  className={styles.selectInput}
-                >
-                  <option value="all">全てのブランド</option>
-                  <option value="lenovo">Lenovo</option>
-                  <option value="dell">DELL</option>
-                  <option value="hp">HP</option>
-                  <option value="apple">Apple</option>
-                  <option value="mouse">Mouse</option>
-                  <option value="asus">ASUS</option>
-                  <option value="dynabook">Dynabook</option>
-                  <option value="panasonic">Panasonic</option>
-                </select>
-              </section>
-
-              {/* 05. メモリ */}
-              <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>05. Memory (Min)</label>
+                <label className={styles.filterLabel}>05. Min AI Score</label>
                 <div className={styles.buttonGrid}>
-                  {[0, 16, 32].map((r) => (
+                  {[0, 70, 90].map((s) => (
                     <button
-                      key={r}
-                      onClick={() => setFilters({ ...filters, ram: r })}
-                      className={filters.ram === r ? styles.btnActive : styles.btnInactive}
+                      key={s}
+                      onClick={() => setFilters({ ...filters, minScore: s })}
+                      className={filters.minScore === s ? styles.btnActive : styles.btnInactive}
                     >
-                      {r === 0 ? '不問' : `${r}GB+`}
+                      {s === 0 ? '不問' : `${s}+`}
                     </button>
                   ))}
                 </div>
@@ -196,18 +181,10 @@ export default function PCFinderPage() {
                 <label className={styles.checkboxLabel}>
                   <input
                     type="checkbox"
-                    checked={filters.npuRequired}
-                    onChange={(e) => setFilters({ ...filters, npuRequired: e.target.checked })}
+                    checked={filters.hasVideo}
+                    onChange={(e) => setFilters({ ...filters, hasVideo: e.target.checked })}
                   />
-                  <span>AI PC (NPU 搭載)</span>
-                </label>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={filters.gpuRequired}
-                    onChange={(e) => setFilters({ ...filters, gpuRequired: e.target.checked })}
-                  />
-                  <span>独立GPU (GeForce等)</span>
+                  <span>サンプル動画あり限定</span>
                 </label>
               </section>
             </div>
@@ -217,9 +194,9 @@ export default function PCFinderPage() {
           <main className={styles.mainContent}>
             <div className={styles.toolbar}>
               <div className={styles.resultInfo}>
-                <span className={styles.resultLabel}>Search Results</span>
+                <span className={styles.resultLabel}>Matrix Archive</span>
                 <div className={styles.resultCount}>
-                  <span className={styles.highlight}>{totalCount}</span> Products Found
+                  <span className={styles.highlight}>{totalCount.toLocaleString()}</span> Titles Loaded
                 </div>
               </div>
 
@@ -229,26 +206,26 @@ export default function PCFinderPage() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className={styles.sortSelect}
                 >
-                  <option value="newest">発売日が新しい順</option>
+                  <option value="newest">最新リリース順</option>
                   <option value="price_asc">価格が安い順</option>
-                  <option value="price_desc">価格が高い順</option>
-                  <option value="spec_score">総合評価が高い順</option>
+                  <option value="spec_score">AI評価が高い順</option>
+                  <option value="popular">人気・トレンド順</option>
                 </select>
               </div>
             </div>
 
-            {/* ✅ ローディング中の表示をユーザーに優しく強化 */}
+            {/* コンテンツエリア */}
             {isLoading ? (
               <div className={styles.loadingContainer}>
                 <div className={styles.loaderContent}>
                   <div className={styles.spinner}></div>
-                  <h3 className={styles.loadingTitle}>ただいま検索中です...</h3>
+                  <h3 className={styles.loadingTitle}>AI解析中...</h3>
                   <p className={styles.loadingText}>
-                    約4,000件のデータベースから最適なPCを抽出しています。
+                    膨大なデータベースから条件に合致するアーカイブを抽出しています。
                   </p>
                 </div>
                 <div className={styles.productGrid}>
-                  {[...Array(6)].map((_, i) => (
+                  {[...Array(8)].map((_, i) => (
                     <div key={i} className={styles.skeletonCard}></div>
                   ))}
                 </div>
@@ -256,14 +233,14 @@ export default function PCFinderPage() {
             ) : products.length > 0 ? (
               <div className={styles.productGrid}>
                 {products.map(product => (
-                  <ProductCard key={product.unique_id || product.id} product={product} />
+                  <AdultProductCard key={product.id} product={product} />
                 ))}
               </div>
             ) : (
               <div className={styles.emptyState}>
-                <div className={styles.emptyIcon}>🔍</div>
-                <h3 className={styles.emptyTitle}>一致する製品が見つかりませんでした</h3>
-                <p className={styles.emptyText}>条件を緩めて再検索してみてください。</p>
+                <div className={styles.emptyIcon}>🛰️</div>
+                <h3 className={styles.emptyTitle}>対象データが見つかりません</h3>
+                <p className={styles.emptyText}>フィルター条件（予算やAIスコア）を調整してください。</p>
               </div>
             )}
           </main>

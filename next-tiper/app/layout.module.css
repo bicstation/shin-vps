@@ -1,6 +1,6 @@
 /**
- * 🏗️ [TIPER-LIVE-LAYOUT-CSS]
- * アダルト・クリエイター支援サイト専用構造
+ * 🏗️ [TIPER-LIVE-LAYOUT-CSS] - FULL WIDTH EDITION
+ * アダルト・クリエイター支援サイト専用構造 (全幅対応版)
  */
 
 /* 1. 全体を包むラッパー */
@@ -10,8 +10,9 @@
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #111122; /* サイト全体のベース背景色を固定 */
+  background-color: #111122; /* サイト全体のベース背景色 */
   color: #ffffff;
+  overflow-x: hidden; /* 横スクロールの発生を防止 */
 }
 
 /* 2. 告知・年齢制限バー */
@@ -20,58 +21,71 @@
   padding: 8px 15px;
   font-size: 11px;
   text-align: center;
-  background-color: rgba(0, 0, 0, 0.5); /* 少し暗くして視認性アップ */
+  background-color: rgba(0, 0, 0, 0.5); 
   color: #94a3b8;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   letter-spacing: 0.05em;
   z-index: 50;
+  box-sizing: border-box;
 }
 
 .ageLimit {
   margin-left: 10px;
-  color: #e94560; /* 他のパーツと色を統一 (#f43f5e から #e94560 へ) */
+  color: #e94560; 
   font-weight: 800;
 }
 
-/* 3. レイアウトの外枠 */
+/* 3. レイアウトの外枠 (全幅設定) */
 .layoutContainer {
   flex: 1;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 24px;
+  /* 💡 max-width を削除または 100% にして全幅化 */
+  max-width: 100%; 
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 4. サイドバーとメインを横並びにするインナー */
+/* ページ側でこのクラスを使う場合は、ここでも幅を100%にします */
 .layoutInner {
   display: flex;
-  gap: 32px;
-  padding: 32px 0;
+  width: 100%;
+  gap: 0; /* サイドバーとの隙間はページ側のコンテナで制御 */
+  padding: 0;
 }
 
-/* 5. メインコンテンツ（吹きこぼれ防止） */
+/* 5. メインコンテンツ */
 .mainContent {
   flex: 1;
-  min-width: 0; /* 💡 フレックスボックス内での突き抜け防止 */
+  width: 100%;
+  min-width: 0; /* フレックスボックス内での突き抜け防止 */
+  min-height: 100vh;
   animation: fadeIn 0.6s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 6. モバイル対応 */
 @media (max-width: 1024px) {
   .layoutInner {
     flex-direction: column;
-    gap: 24px;
-    padding: 20px 0;
+    gap: 0;
   }
 }
 
 @media (max-width: 768px) {
-  .layoutContainer {
-    padding: 0 16px;
-  }
   .adDisclosure {
-    font-size: 10px; /* 9pxだと小さすぎる場合があるため調整 */
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+  
+  .ageLimit {
+    display: block; /* スマホでは改行させて視認性を確保 */
+    margin-left: 0;
+    margin-top: 2px;
   }
 }
 
@@ -85,4 +99,14 @@
     opacity: 1; 
     transform: translateY(0); 
   }
+}
+
+/* 8. ユーティリティ：コンテンツの「中身」だけ中央寄せにしたい場合用 */
+/* 各 page.tsx 内の div などに適用してください */
+.contentContainer {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 5%;
+  box-sizing: border-box;
 }

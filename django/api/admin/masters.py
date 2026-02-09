@@ -7,58 +7,74 @@ from ..models import (
     AdultAttribute, PCAttribute, LinkshareProduct, PriceHistory
 )
 
+# 🌐 フロントエンドのベースURL
+FRONTEND_BASE_URL = "https://tiper.live"
+
 # --- 共通ベースクラス ---
 class MasterAdmin(admin.ModelAdmin):
     """マスターデータ共通の管理設定"""
-    # 一覧に ruby (ふりがな) を表示し、検索も可能にします
-    list_display = ('name', 'ruby', 'api_source', 'product_count', 'created_at')
+    list_display = ('display_name_link', 'ruby', 'api_source', 'product_count_badge', 'created_at')
     list_filter = ('api_source',)
     search_fields = ('name', 'ruby')
     ordering = ('-created_at',)
+
+    def display_name_link(self, obj):
+        """フロントエンドの各アーカイブページへリンク"""
+        # モデル名に基づいてパスを分岐
+        model_name = obj._meta.model_name # 'actress', 'maker', etc.
+        # モデル名が複数形でない場合は調整が必要な場合があります
+        detail_url = f"{FRONTEND_BASE_URL}/{model_name}/{obj.id}"
+        
+        return mark_safe(f'<a href="{detail_url}" target="_blank" style="font-weight:bold; color:#00d1b2;">{obj.name}</a>')
+    display_name_link.short_description = "名前 (LIVE)"
+
+    def product_count_badge(self, obj):
+        # Masterモデルに product_count フィールドがある前提
+        count = getattr(obj, 'product_count', 0)
+        return mark_safe(f'<span style="background: #6c757d; color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px;">{count}</span>')
+    product_count_badge.short_description = "作品数"
 
 # --- 各モデルの管理クラス定義 ---
 
 @admin.register(Genre)
 class GenreAdmin(MasterAdmin):
-    """ジャンル管理"""
     pass
 
 @admin.register(Actress)
 class ActressAdmin(MasterAdmin):
-    """女優管理"""
+    """女優管理 - アバター表示等が必要な場合はここに追加可能"""
     pass
 
 @admin.register(Maker)
 class MakerAdmin(MasterAdmin):
-    """メーカー管理"""
     pass
 
 @admin.register(Author)
 class AuthorAdmin(MasterAdmin):
-    """著者管理 (FANZA Books/Unlimited用)"""
     pass
 
 @admin.register(Label)
 class LabelAdmin(MasterAdmin):
-    """レーベル管理"""
     pass
 
 @admin.register(Director)
 class DirectorAdmin(MasterAdmin):
-    """監督管理"""
     pass
 
 @admin.register(Series)
 class SeriesAdmin(MasterAdmin):
-    """シリーズ管理"""
     pass
 
 @admin.register(AdultAttribute)
 class AdultAttributeAdmin(admin.ModelAdmin):
-    """アダルト属性管理"""
-    list_display = ('name', 'attr_type', 'slug', 'product_count_badge')
+    list_display = ('display_attr_link', 'attr_type', 'slug', 'product_count_badge')
     search_fields = ('name', 'slug')
     list_filter = ('attr_type',)
+
+    def display_attr_link(self, obj):
+        detail_url = f"{FRONTEND_BASE_URL}/attribute/{obj.id}"
+        return mark_safe(f'<a href="{detail_url}" target="_blank" style="font-weight:bold; color:#e83e8c;">{obj.name}</a>')
+    display_attr_link.short_description = "属性名"
 
     def product_count_badge(self, obj):
         count = obj.products.count()
@@ -67,10 +83,14 @@ class AdultAttributeAdmin(admin.ModelAdmin):
 
 @admin.register(PCAttribute)
 class PCAttributeAdmin(admin.ModelAdmin):
-    """PC属性管理"""
-    list_display = ('name', 'attr_type', 'slug', 'product_count_badge')
+    list_display = ('display_attr_link', 'attr_type', 'slug', 'product_count_badge')
     search_fields = ('name', 'slug')
     list_filter = ('attr_type',)
+
+    def display_attr_link(self, obj):
+        detail_url = f"{FRONTEND_BASE_URL}/pc/attribute/{obj.id}"
+        return mark_safe(f'<a href="{detail_url}" target="_blank" style="font-weight:bold; color:#007bff;">{obj.name}</a>')
+    display_attr_link.short_description = "属性名"
 
     def product_count_badge(self, obj):
         count = obj.products.count()
@@ -79,14 +99,11 @@ class PCAttributeAdmin(admin.ModelAdmin):
 
 @admin.register(LinkshareProduct)
 class LinkshareProductAdmin(admin.ModelAdmin):
-    """Linkshare商品管理"""
-    # エラーの原因となっていた 'availability' をリストから除外しました
     list_display = ('product_name', 'sku', 'updated_at')
     search_fields = ('product_name', 'sku')
 
 @admin.register(PriceHistory)
 class PriceHistoryAdmin(admin.ModelAdmin):
-    """価格履歴管理"""
     list_display = ('product', 'price', 'recorded_at')
     list_filter = ('recorded_at',)
     readonly_fields = ('recorded_at',)

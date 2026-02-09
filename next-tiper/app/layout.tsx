@@ -57,6 +57,8 @@ export default async function RootLayout({
         style={{
           backgroundColor: "#111122",
           color: "#ffffff",
+          margin: 0,
+          padding: 0,
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": "#111122",
@@ -92,16 +94,13 @@ export default async function RootLayout({
           </div>
         )}
 
-        {/* 3. メインレイアウト構造 */}
-        <div className={styles.layoutContainer}>
-          {/* 💡 サイドバーを layout から削除しました。
-            各ページの page.tsx 内で <Sidebar /> を配置してください。
-          */}
-          <main className={styles.mainContent}>
+        {/* 3. メインレイアウト構造 (全幅対応) */}
+        <div className={styles.layoutContainer} style={{ width: '100%', maxWidth: '100%' }}>
+          <main className={styles.mainContent} style={{ width: '100%', minHeight: '100vh' }}>
             <Suspense 
               fallback={
-                <div style={{ color: '#666', padding: '20px', textAlign: 'center' }}>
-                  Loading Content...
+                <div style={{ color: '#666', padding: '100px 20px', textAlign: 'center' }}>
+                  <div className="animate-pulse">LOADING ARCHIVE...</div>
                 </div>
               }
             >

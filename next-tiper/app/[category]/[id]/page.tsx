@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation'; 
 import { Metadata } from 'next';
 
-// ✅ 共通コンポーネント (Atomic Design準拠)
+// ✅ 共通コンポーネント
 import ProductCard from '@shared/cards/AdultProductCard';
 import Sidebar from '@shared/layout/Sidebar';
 import Pagination from '@shared/common/Pagination';
@@ -28,7 +28,8 @@ import { constructMetadata } from '@shared/lib/metadata';
  * 💡 SEOメタデータ生成 (Next.js 15 Async Params 対応)
  */
 export async function generateMetadata({ params }: { params: Promise<{ category: string, id: string }> }): Promise<Metadata> {
-    const { category, id } = await params;
+    const resolvedParams = await params;
+    const { category, id } = resolvedParams;
     
     if (!category || !id) return constructMetadata("Error", "Missing Identifier");
 
@@ -36,14 +37,19 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
         'genre': 'ジャンル',
         'actress': '出演女優',
         'maker': 'メーカー',
+        'brand': 'ブランド',
         'series': 'シリーズ',
+        'director': '監督',
         'label': 'レーベル',
     };
+    
+    // IDが数値かスラグ（文字列）かに関わらずデコードして表示
+    const decodedId = decodeURIComponent(id);
     const categoryLabel = labelMap[category] || category.toUpperCase();
 
     return constructMetadata(
-        `${categoryLabel} ID:${id} - プレミアム解析アーカイブ | TIPER Live`,
-        `TIPER AIが解析した、${categoryLabel}「ID:${id}」に関連する高品質なアダルトコンテンツ一覧です。`,
+        `${categoryLabel}: ${decodedId} - プレミアム解析アーカイブ | TIPER Live`,
+        `TIPER AIが解析した、${categoryLabel}「${decodedId}」に関連する高品質なアダルトコンテンツ一覧です。`,
         undefined,
         `/${category}/${id}`
     );
@@ -63,9 +69,10 @@ export default async function CategoryListPage(props: {
     ]);
     
     const { category, id } = resolvedParams;
+    const decodedId = decodeURIComponent(id);
     const currentPageNum = Number(resolvedSearchParams.page) || 1;
     const currentSort = resolvedSearchParams.sort || '-created_at'; 
-    const limit = 20;
+    const limit = 24; // 3列・4列グリッドでキリの良い数字に変更
     const offset = (currentPageNum - 1) * limit;
 
     // --- 🛡️ 不正URLガード ---
@@ -74,20 +81,22 @@ export default async function CategoryListPage(props: {
     }
 
     // 2. APIクエリキーの動的マッピング
+    // Django側のフィルタリング引数名に合わせる（スラグでの検索を想定）
     const categoryMap: { [key: string]: string } = {
-        'genre': 'genres',
-        'actress': 'actresses',
-        'maker': 'maker',
-        'makers': 'maker',
-        'series': 'series',
-        'label': 'label',
+        'genre': 'genre_slug',
+        'actress': 'actress_slug',
+        'maker': 'maker_slug',
+        'brand': 'maker_slug',
+        'series': 'series_slug',
+        'director': 'director_slug',
+        'label': 'label_slug',
     };
-    const queryKey = categoryMap[category] || category;
+    const queryKey = categoryMap[category] || `${category}_slug`;
 
-    // 3. データフェッチ (並列実行でパフォーマンスを最大化)
+    // 3. データフェッチ (並列実行)
     const [productData, makersData, wpData] = await Promise.all([
         getAdultProducts({
-            [queryKey]: id,
+            [queryKey]: decodedId,
             offset: offset,
             limit: limit,
             ordering: currentSort
@@ -105,21 +114,22 @@ export default async function CategoryListPage(props: {
     const makers = Array.isArray(makersData) ? makersData : (makersData as any).results || [];
     const latestPosts = wpData?.results || [];
 
-    // 4. 表示用カテゴリ名称の抽出 (各アイテムのメタデータから逆引き)
-    let categoryDisplayName = "";
+    // 4. 表示用カテゴリ名称の抽出
+    let categoryDisplayName = decodedId; 
     if (products.length > 0) {
         const first = products[0];
         try {
-            if (category.includes('genre')) {
-                categoryDisplayName = first.genres?.find((x: any) => String(x.id) === id)?.name;
-            } else if (category.includes('actress')) {
-                categoryDisplayName = first.actresses?.find((x: any) => String(x.id) === id)?.name;
-            } else if (category.includes('maker')) {
-                categoryDisplayName = first.maker?.name;
+            // スラグまたはIDが一致するものを探して正規の「名前」を取得
+            if (category === 'genre') {
+                categoryDisplayName = first.genres?.find((x: any) => x.slug === decodedId || String(x.id) === decodedId)?.name || categoryDisplayName;
+            } else if (category === 'actress') {
+                categoryDisplayName = first.actresses?.find((x: any) => x.slug === decodedId || String(x.id) === decodedId)?.name || categoryDisplayName;
+            } else if (category === 'maker' || category === 'brand') {
+                categoryDisplayName = first.maker?.name || categoryDisplayName;
             } else if (category === 'series') {
-                categoryDisplayName = first.series?.name;
-            } else if (category === 'label') {
-                categoryDisplayName = first.label?.name;
+                categoryDisplayName = first.series?.name || categoryDisplayName;
+            } else if (category === 'director') {
+                categoryDisplayName = first.director?.name || categoryDisplayName;
             }
         } catch (e) {
             console.warn("Display name extraction failed", e);
@@ -131,7 +141,6 @@ export default async function CategoryListPage(props: {
             
             {/* 🌌 セクション1: ダイナミック・ヒーローヘッダー */}
             <header className="relative py-28 px-[5%] text-center overflow-hidden border-b border-white/[0.03] bg-[#0d0d1f]">
-                {/* 背景装飾 */}
                 <div className="absolute inset-0 opacity-[0.07] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(233,69,96,0.08),transparent_70%)]"></div>
                 <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-[#0a0a14] to-transparent"></div>
@@ -146,7 +155,7 @@ export default async function CategoryListPage(props: {
                     </div>
 
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white italic uppercase leading-none drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                        {categoryDisplayName || `ID: ${id}`}
+                        {categoryDisplayName}
                     </h1>
                     
                     <div className="mt-12 flex flex-col items-center gap-3">
@@ -219,7 +228,7 @@ export default async function CategoryListPage(props: {
                     {/* メイン・グリッド */}
                     {products.length > 0 ? (
                         <>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-x-8 gap-y-16">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
                                 {products.map((product: any) => (
                                     <ProductCard 
                                         key={product.id} 
@@ -250,7 +259,7 @@ export default async function CategoryListPage(props: {
                             <div className="mb-10 text-6xl opacity-20 grayscale">📡</div>
                             <h3 className="text-4xl font-black text-white uppercase italic tracking-tighter mb-4">Signal Lost</h3>
                             <p className="text-gray-500 text-xs font-bold uppercase tracking-[0.3em] max-w-xs mx-auto mb-12 leading-relaxed">
-                                ノード「{id}」からのデータ受信に失敗しました。アーカイブが未生成か、移動された可能性があります。
+                                ノード「{decodedId}」からのデータ受信に失敗しました。アーカイブが未生成か、データが同期されていない可能性があります。
                             </p>
                             <Link href="/" className="inline-flex items-center gap-4 px-12 py-5 rounded-sm bg-[#e94560] text-white text-[11px] font-black uppercase tracking-[0.3em] hover:bg-[#ff5e78] transition-colors">
                                 <span>Reboot System</span>
@@ -263,7 +272,6 @@ export default async function CategoryListPage(props: {
                 </main>
             </div>
             
-            {/* 装飾用ボトムライン */}
             <div className="mt-40 h-[1px] w-full bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
         </div>
     );

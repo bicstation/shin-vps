@@ -1,0 +1,100 @@
+# -*- coding: utf-8 -*-
+from rest_framework import serializers
+from api.models import (
+    AdultProduct, LinkshareProduct, AdultAttribute, 
+    FanzaProduct, Author
+)
+# 前項で作ったマスター用シリアライザーを再利用
+from .master_serializers import (
+    MakerSerializer, LabelSerializer, DirectorSerializer,
+    SeriesSerializer, GenreSerializer, ActressSerializer, AuthorSerializer,
+    AdultAttributeSerializer  # ← これをインポートして共通化
+)
+
+# --------------------------------------------------------------------------
+# 1. FANZA 最適化商品 (FanzaProduct) シリアライザー
+# --------------------------------------------------------------------------
+
+class FanzaProductSerializer(serializers.ModelSerializer):
+    """
+    FANZA APIの全フロア、複雑な価格、高画質動画に対応したシリアライザー。
+    """
+    maker = MakerSerializer(read_only=True)
+    label = LabelSerializer(read_only=True)
+    director = DirectorSerializer(read_only=True)
+    series = SeriesSerializer(read_only=True)
+    genres = GenreSerializer(many=True, read_only=True)
+    actresses = ActressSerializer(many=True, read_only=True)
+    authors = AuthorSerializer(many=True, read_only=True)
+
+    # JSONField の明示的な展開
+    price_info = serializers.JSONField(required=False, allow_null=True)
+    image_urls = serializers.JSONField(required=False, allow_null=True)
+    sample_images = serializers.JSONField(required=False, allow_null=True)
+    sample_movie = serializers.JSONField(required=False, allow_null=True)
+    radar_chart_data = serializers.JSONField(required=False, allow_null=True)
+
+    class Meta:
+        model = FanzaProduct
+        fields = (
+            'id', 'unique_id', 'content_id', 'product_id',
+            'site_code', 'service_code', 'floor_code', 'floor_name',
+            'title', 'url', 'affiliate_url', 'release_date', 'volume',
+            'price_info', 'review_count', 'review_average',
+            'image_urls', 'sample_images', 'sample_movie',
+            'maker', 'label', 'series', 'director', 'genres', 'actresses', 'authors',
+            'product_description', 'ai_summary',
+            'score_visual', 'score_story', 'score_cost', 'score_erotic', 'score_rarity',
+            'radar_chart_data', 'is_active', 'is_recommend', 'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'unique_id', 'content_id', 'created_at', 'updated_at')
+
+
+# --------------------------------------------------------------------------
+# 2. アダルト商品 (AdultProduct) シリアライザー
+# --------------------------------------------------------------------------
+
+class AdultProductSerializer(serializers.ModelSerializer): 
+    """DUGA、旧FANZAデータ、AIレビュー投稿用の汎用シリアライザー"""
+    maker = MakerSerializer(read_only=True)
+    label = LabelSerializer(read_only=True)
+    director = DirectorSerializer(read_only=True)
+    series = SeriesSerializer(read_only=True) 
+    genres = GenreSerializer(many=True, read_only=True)
+    actresses = ActressSerializer(many=True, read_only=True)
+    # 🆕 master_serializers の AdultAttributeSerializer を使うよう変更
+    attributes = AdultAttributeSerializer(many=True, read_only=True)
+
+    image_url_list = serializers.JSONField(required=False, allow_null=True)
+    sample_movie_url = serializers.JSONField(required=False, allow_null=True)
+    
+    class Meta:
+        model = AdultProduct 
+        fields = (
+            'id', 'product_id_unique', 'title', 'product_description',
+            'release_date', 'affiliate_url', 'price', 
+            'image_url_list', 'sample_movie_url',
+            'api_source',
+            'maker', 'label', 'director', 'series', 'genres', 'actresses',
+            'attributes',
+            'ai_content', 'ai_summary', 'target_segment',
+            'score_visual', 'score_story', 'score_cost', 
+            'score_erotic', 'score_rarity', 'spec_score',
+            'is_active', 'is_posted', 'last_spec_parsed_at', 'updated_at',
+        )
+        read_only_fields = ('id', 'product_id_unique', 'updated_at')
+
+
+# --------------------------------------------------------------------------
+# 3. Linkshare商品 シリアライザー
+# --------------------------------------------------------------------------
+
+class LinkshareProductSerializer(serializers.ModelSerializer):
+    """アフィリエイト（物販系等）用シリアライザー"""
+    class Meta:
+        model = LinkshareProduct 
+        fields = (
+            'id', 'sku', 'product_name', 'availability', 
+            'affiliate_url', 'image_url', 'merchant_id', 'updated_at',
+        )
+        read_only_fields = ('id', 'updated_at')

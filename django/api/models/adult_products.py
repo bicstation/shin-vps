@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from django.utils import timezone
+import unicodedata
+import re
+
 # 外部参照するモデルをインポート
+# プロジェクト構成に合わせて、適切なインポートパスを確認してください
 from .raw_and_entities import RawApiData, Maker, Label, Director, Series, Genre, Actress 
 
 
@@ -18,7 +22,15 @@ class AdultAttribute(models.Model):
     
     attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES)
     name = models.CharField('表示名', max_length=100)
-    slug = models.SlugField('スラッグ', max_length=100, unique=True)
+    
+    # 修正ポイント: SlugFieldをCharFieldに変更し、日本語を許容する
+    slug = models.CharField(
+        'スラッグ', 
+        max_length=100, 
+        unique=True, 
+        db_index=True, 
+        help_text="URLに使用されます。日本語可。"
+    )
     
     search_keywords = models.TextField(
         '検索キーワード', 
@@ -35,6 +47,18 @@ class AdultAttribute(models.Model):
     def __str__(self):
         return f"[{self.get_attr_type_display()}] {self.name}"
 
+    def save(self, *args, **kwargs):
+        # 名前の正規化
+        if self.name:
+            self.name = unicodedata.normalize('NFKC', self.name).strip()
+        
+        # スラッグの自動生成 (空の場合)
+        if not self.slug:
+            temp_slug = self.name.replace(" ", "-").replace("　", "-")
+            self.slug = re.sub(r'[^\w\s-]', '', temp_slug)
+            
+        super().save(*args, **kwargs)
+
 
 # ==========================================================================
 # 2. アダルト商品モデル (AdultProduct)
@@ -47,7 +71,7 @@ class AdultProduct(models.Model):
     product_id_unique = models.CharField(max_length=255, unique=True, verbose_name="統合ID")
     title = models.CharField(max_length=512, verbose_name="作品タイトル")
     
-    # --- 🚀 新設: 作品紹介文 (DUGAのcaption等) ---
+    # --- 作品紹介文 ---
     product_description = models.TextField(
         null=True, 
         blank=True, 
@@ -60,7 +84,7 @@ class AdultProduct(models.Model):
     price = models.IntegerField(null=True, blank=True, verbose_name="販売価格 (円)")
     image_url_list = models.JSONField(default=list, verbose_name="画像URLリスト")
 
-    # --- 修正: サンプル動画データをJSON形式で保持 (URL + プレビュー画像) ---
+    # --- サンプル動画データ ---
     sample_movie_url = models.JSONField(
         null=True, 
         blank=True, 
@@ -83,7 +107,7 @@ class AdultProduct(models.Model):
     is_posted = models.BooleanField(default=False, verbose_name="ブログ/SNS投稿済み")
     is_active = models.BooleanField(default=True, verbose_name="掲載中")
     
-    # --- 📊 5軸解析スコア (レーダーチャート用 1-100) ---
+    # --- 📊 5軸解析スコア (1-100) ---
     score_visual = models.IntegerField(default=0, verbose_name="ルックス・画質スコア(1-100)")
     score_story = models.IntegerField(default=0, verbose_name="構成・ストーリースコア(1-100)")
     score_cost = models.IntegerField(default=0, verbose_name="コスパスコア(1-100)")
@@ -115,13 +139,27 @@ class AdultProduct(models.Model):
 
     # 保存時の自動処理
     def save(self, *args, **kwargs):
-        # 1. サンプル動画データ（JSON）が存在し、中身のurlがある場合にスコアを調整
+        # タイトルの正規化
+        if self.title:
+            self.title = unicodedata.normalize('NFKC', self.title).strip()
+
+        # 1. 統合ID (product_id_unique) の自動生成
+        if not self.product_id_unique and self.api_source and self.api_product_id:
+            self.product_id_unique = f"{self.api_source.lower()}_{self.api_product_id}"
+
+        # 2. サンプル動画による暫定スコア設定
         has_video = False
         if isinstance(self.sample_movie_url, dict):
             if self.sample_movie_url.get('url'):
                 has_video = True
         
         if has_video and self.score_visual == 0:
-            self.score_visual = 50 # 動画あり作品の暫定ベーススコア
+            self.score_visual = 50 
             
+        # 3. 総合スコア (spec_score) の自動計算
+        scores = [self.score_visual, self.score_story, self.score_cost, self.score_erotic, self.score_rarity]
+        filled_scores = [s for s in scores if s > 0]
+        if filled_scores:
+            self.spec_score = sum(filled_scores) // len(filled_scores)
+
         super().save(*args, **kwargs)

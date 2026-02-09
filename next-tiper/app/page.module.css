@@ -1,8 +1,8 @@
 /* ==============================================================================
- * 📂 page.module.css - TIPER LIVE Main Architecture
+ * 📂 page.module.css - TIPER LIVE Main Architecture (Full Width Edition)
  * ============================================================================== */
 
-:root {
+ :root {
   --background: #0a0a14;
   --foreground: #111122;
   --accent: #e94560;
@@ -16,24 +16,38 @@
 
 .page {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--background);
   color: var(--text-primary);
-  /* サイバーパンクな質感を出すための背景パターン */
+  /* 💡 背景パターンを全幅に適用 */
   background-image: 
     radial-gradient(circle at 50% 50%, rgba(22, 22, 45, 1) 0%, rgba(10, 10, 20, 1) 100%),
     url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+  background-attachment: fixed; /* スクロールしても背景を固定 */
   overflow-x: hidden;
+  width: 100%;
 }
 
 .main {
   display: flex;
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
+  /* 💡 max-width を解除して全幅化 */
+  max-width: 100%; 
+  margin: 0;
   flex-direction: column;
-  padding: 0 5%;
+  /* padding は内部の要素で制御するため、ここでは最小限に */
+  padding: 0; 
   animation: fadeIn 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* --- 💡 コンテンツを中央に寄せるための汎用ラッパー --- */
+.container {
+  width: 100%;
+  max-width: 1800px; /* パソコン版の理想的な最大幅 */
+  margin: 0 auto;
+  padding: 0 4%;
+  box-sizing: border-box;
 }
 
 /* --- ヒーローセクション専用の調整 --- */
@@ -42,9 +56,12 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 120px 0 80px;
+  padding: 160px 4% 100px; /* 上下の余白を広げて重厚感を出す */
   gap: 40px;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(to bottom, rgba(22, 22, 45, 0.5), transparent);
 }
 
 /* 背景に流れるラインの装飾 */
@@ -54,19 +71,21 @@
   top: 0;
   left: 50%;
   width: 1px;
-  height: 100px;
-  background: linear-gradient(to bottom, transparent, var(--accent));
+  height: 120px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+  opacity: 0.8;
 }
 
 .intro h1 {
-  font-size: clamp(48px, 10vw, 120px);
+  font-size: clamp(56px, 12vw, 140px); /* さらに大きく */
   font-weight: 900;
-  line-height: 0.9;
-  letter-spacing: -0.05em;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
   color: var(--text-primary);
   text-transform: uppercase;
   font-style: italic;
-  filter: drop-shadow(0 0 20px var(--accent-glow));
+  /* 💡 ネオンのようなグロー効果を強化 */
+  filter: drop-shadow(0 0 30px rgba(233, 69, 96, 0.5));
 }
 
 .intro h1 span {
@@ -75,13 +94,14 @@
 }
 
 .intro p {
-  max-width: 600px;
-  font-size: clamp(14px, 2vw, 18px);
+  max-width: 700px;
+  font-size: clamp(14px, 1.5vw, 18px);
   line-height: 1.8;
   color: var(--text-secondary);
   font-weight: 600;
-  letter-spacing: 0.05em;
-  opacity: 0.8;
+  letter-spacing: 0.4em; /* 文字間隔を広げて高級感を出す */
+  text-transform: uppercase;
+  opacity: 0.6;
 }
 
 /* --- コール・トゥ・アクション (CTAS) --- */
@@ -90,7 +110,7 @@
   flex-direction: row;
   justify-content: center;
   width: 100%;
-  gap: 24px;
+  gap: 30px;
   margin-top: 20px;
 }
 
@@ -98,16 +118,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 60px;
-  padding: 0 40px;
-  border-radius: 4px; /* あえて少し角を立たせて鋭利な印象に */
+  height: 64px;
+  padding: 0 50px;
+  border-radius: 2px; /* より鋭利な角に */
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   cursor: pointer;
   font-weight: 900;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   text-decoration: none;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.3em;
   position: relative;
   overflow: hidden;
 }
@@ -115,62 +135,64 @@
 a.primary {
   background: var(--accent);
   color: white;
-  box-shadow: 0 10px 30px var(--accent-glow);
+  box-shadow: 0 10px 40px var(--accent-glow);
 }
 
 a.secondary {
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
 }
 
 /* --- ホバーエフェクト --- */
 @media (hover: hover) {
   a.primary:hover {
     background: #ff4d6d;
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 15px 40px rgba(233, 69, 96, 0.6);
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 20px 50px rgba(233, 69, 96, 0.7);
   }
 
   a.secondary:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.1);
     border-color: var(--accent);
     color: var(--accent);
-    transform: translateY(-3px);
+    transform: translateY(-5px);
   }
 
-  /* 装飾ラインのホバー連動 */
   .intro:hover::before {
-    height: 150px;
-    transition: 0.6s ease;
+    height: 180px;
+    opacity: 1;
+    transition: 0.8s ease;
   }
 }
 
 /* --- レスポンシブ --- */
-@media (max-width: 992px) {
+@media (max-width: 1200px) {
   .intro h1 {
-    font-size: 72px;
+    font-size: 90px;
   }
 }
 
 @media (max-width: 768px) {
-  .main {
-    padding: 0 20px;
-  }
-
   .intro {
-    padding: 80px 0 60px;
+    padding: 100px 20px 60px;
   }
 
   .intro h1 {
-    font-size: 48px;
+    font-size: 52px;
+  }
+
+  .intro p {
+    letter-spacing: 0.2em;
+    font-size: 12px;
   }
 
   .ctas {
     flex-direction: column;
     width: 100%;
     gap: 16px;
+    padding: 0 10%;
   }
 
   .ctas a {
@@ -183,8 +205,8 @@ a.secondary {
 @keyframes fadeIn {
   from { 
     opacity: 0; 
-    transform: translateY(30px); 
-    filter: blur(10px);
+    transform: translateY(40px); 
+    filter: blur(15px);
   }
   to { 
     opacity: 1; 
@@ -193,17 +215,20 @@ a.secondary {
   }
 }
 
-/* --- セクションタイトル等の共通装飾 (サイドバーとの調和用) --- */
+/* --- セクションタイトル等の共通装飾 --- */
 .sectionHeader {
-  border-left: 4px solid var(--accent);
-  padding-left: 20px;
-  margin-bottom: 40px;
+  border-left: 5px solid var(--accent);
+  padding-left: 25px;
+  margin-bottom: 50px;
+  display: flex;
+  flex-direction: column;
 }
 
 .sectionHeader h2 {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   font-style: italic;
+  line-height: 1;
 }

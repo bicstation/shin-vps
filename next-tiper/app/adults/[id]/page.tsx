@@ -5,6 +5,7 @@
  * 🔞 TIPER Product Detail - Hybrid Cyber Archive
  * ==============================================================================
  * Next.js 15 Async Params / AI Performance Stats / Platform Auto-Switch
+ * [Referrer Policy Patch for FANZA/DMM Streaming]
  */
 
 export const dynamic = 'force-dynamic';
@@ -114,7 +115,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  // 2. 関連作品の並列フェッチ (パフォーマンス最適化)
+  // 2. 関連作品の並列フェッチ
   let relatedProducts = [];
   try {
     if (product.maker?.id) {
@@ -155,7 +156,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
         <section className={styles.visualHeroSection}>
           <div className={styles.visualGrid}>
             
-            {/* 左: メインジャケット (HUD装飾付き) */}
+            {/* 左: メインジャケット */}
             <div className={styles.jacketColumn}>
               <div className={styles.jacketWrapper}>
                 <img 
@@ -172,6 +173,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
 
             {/* 右: インタラクティブ・ギャラリー (動画/画像) */}
             <div className={styles.galleryColumn}>
+              {/* 💡 Note: Gallery内のVideoタグには必ず referrerPolicy="no-referrer" を適用させること */}
               <AdultProductGallery 
                 images={galleryImages} 
                 title={title} 
@@ -222,7 +224,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
               </div>
             </div>
 
-            {/* 📊 AI解析チャート・コンポーネント */}
+            {/* 📊 AI解析チャート */}
             <div className={styles.statsCard}>
               <div className="flex justify-between items-end mb-8">
                 <h3 className="text-[10px] font-black text-gray-500 tracking-[0.4em] uppercase">AI_Performance_Matrix</h3>
@@ -284,6 +286,8 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
             {/* 🚀 アフィリエイト・アクション */}
             <div className="mt-12 space-y-4">
               {movieData?.url && (
+                /* 💡 MoviePlayerModal 内部の video 要素に 
+                   referrerPolicy="no-referrer" を追加したコンポーネントであることを確認してください */
                 <MoviePlayerModal 
                   videoUrl={movieData.url} 
                   title={title} 

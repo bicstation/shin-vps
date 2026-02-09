@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from rest_framework import generics, filters
+from rest_framework import generics, filters, pagination
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
@@ -16,6 +16,30 @@ from api.serializers import (
 )
 
 # --------------------------------------------------------------------------
+# 0. 共通設定 (Pagination / BaseViews)
+# --------------------------------------------------------------------------
+
+class StandardResultsSetPagination(pagination.PageNumberPagination):
+    """
+    標準的なページネーション設定。
+    マスターデータが膨大になることを考慮し、1ページあたりの件数を制御します。
+    """
+    page_size = 50
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+class EntityBaseListView(generics.ListAPIView):
+    """
+    マスタデータ（女優・ジャンル等）の基底View。
+    検索、フィルタリング、並び替えを共通化。
+    """
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'slug', 'ruby'] # スラッグでの検索もサポート
+    ordering_fields = ['name', 'product_count', 'created_at']
+    pagination_class = StandardResultsSetPagination
+
+# --------------------------------------------------------------------------
 # 1. 🆕 FANZA 最適化商品 (FanzaProduct) Views
 # --------------------------------------------------------------------------
 
@@ -24,8 +48,11 @@ class FanzaProductListAPIView(generics.ListAPIView):
     FANZA APIの全フロアを統合した一覧表示。
     高度なフィルタリングと検索、スコア順の並び替えに対応。
     """
-    queryset = FanzaProduct.objects.all().prefetch_related(
-        'maker', 'label', 'director', 'series', 'genres', 'actresses', 'authors'
+    # prefetch_related に 'authors' を含め、N+1問題を完全に解消
+    queryset = FanzaProduct.objects.all().select_related(
+        'maker', 'label', 'director', 'series'
+    ).prefetch_related(
+        'genres', 'actresses', 'authors'
     ).order_by('-release_date')
     
     serializer_class = FanzaProductSerializer
@@ -44,7 +71,6 @@ class FanzaProductListAPIView(generics.ListAPIView):
         'is_recommend': ['exact'],
     }
     
-    # AI解析スコアやレビュー、発売日での並び替えをサポート
     ordering_fields = [
         'id', 'release_date', 'review_average', 'review_count', 
         'score_visual', 'score_story', 'score_cost', 'score_erotic'
@@ -57,8 +83,10 @@ class FanzaProductDetailAPIView(generics.RetrieveUpdateAPIView):
     FANZA商品の詳細取得および更新（AI解析結果の書き込み用）。
     unique_id (fz_xxxx) または DBのIDで取得可能。
     """
-    queryset = FanzaProduct.objects.all().prefetch_related(
-        'maker', 'label', 'director', 'series', 'genres', 'actresses', 'authors'
+    queryset = FanzaProduct.objects.all().select_related(
+        'maker', 'label', 'director', 'series'
+    ).prefetch_related(
+        'genres', 'actresses', 'authors'
     )
     serializer_class = FanzaProductSerializer
     permission_classes = [AllowAny]
@@ -66,6 +94,7 @@ class FanzaProductDetailAPIView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         lookup_value = self.kwargs.get(self.lookup_field)
+        # 数値の場合はIDで検索、それ以外は unique_id で検索
         if lookup_value.isdigit():
             return get_object_or_404(FanzaProduct, id=int(lookup_value))
         return get_object_or_404(FanzaProduct, unique_id=lookup_value)
@@ -77,8 +106,10 @@ class FanzaProductDetailAPIView(generics.RetrieveUpdateAPIView):
 
 class AdultProductListAPIView(generics.ListAPIView):
     """既存のDUGA/旧式FANZAデータ用一覧"""
-    queryset = AdultProduct.objects.all().prefetch_related(
-        'maker', 'label', 'director', 'series', 'genres', 'actresses', 'attributes'
+    queryset = AdultProduct.objects.all().select_related(
+        'maker', 'label', 'director', 'series'
+    ).prefetch_related(
+        'genres', 'actresses', 'attributes'
     ).order_by('-id') 
     
     serializer_class = AdultProductSerializer
@@ -101,8 +132,11 @@ class AdultProductListAPIView(generics.ListAPIView):
     search_fields = ['title', 'product_description', 'ai_summary']
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = AdultProduct.objects.all().prefetch_related(
-        'maker', 'label', 'director', 'series', 'genres', 'actresses', 'attributes'
+    """AdultProductの詳細取得"""
+    queryset = AdultProduct.objects.all().select_related(
+        'maker', 'label', 'director', 'series'
+    ).prefetch_related(
+        'genres', 'actresses', 'attributes'
     )
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
@@ -116,43 +150,36 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 
 
 # --------------------------------------------------------------------------
-# 3. マスターデータ (Entity) Views
+# 3. マスターデータ (Entity) 実装
 # --------------------------------------------------------------------------
 
-class EntityBaseListView(generics.ListAPIView):
-    """マスタデータの基底View"""
-    permission_classes = [AllowAny]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'ruby']
-    ordering_fields = ['name', 'product_count', 'created_at']
-
 class ActressListAPIView(EntityBaseListView):
-    queryset = Actress.objects.all()
+    queryset = Actress.objects.all().order_by('name')
     serializer_class = ActressSerializer
 
 class GenreListAPIView(EntityBaseListView):
-    queryset = Genre.objects.all()
+    queryset = Genre.objects.all().order_by('name')
     serializer_class = GenreSerializer
 
 class MakerListAPIView(EntityBaseListView):
-    queryset = Maker.objects.all()
+    queryset = Maker.objects.all().order_by('name')
     serializer_class = MakerSerializer
 
 class LabelListAPIView(EntityBaseListView):
-    queryset = Label.objects.all()
+    queryset = Label.objects.all().order_by('name')
     serializer_class = LabelSerializer
 
 class DirectorListAPIView(EntityBaseListView):
-    queryset = Director.objects.all()
+    queryset = Director.objects.all().order_by('name')
     serializer_class = DirectorSerializer
 
 class SeriesListAPIView(EntityBaseListView):
-    queryset = Series.objects.all()
+    queryset = Series.objects.all().order_by('name')
     serializer_class = SeriesSerializer
 
 class AuthorListAPIView(EntityBaseListView):
     """🆕 著者一覧"""
-    queryset = Author.objects.all()
+    queryset = Author.objects.all().order_by('name')
     serializer_class = AuthorSerializer
 
 
@@ -173,6 +200,7 @@ class LinkshareProductDetailAPIView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = 'sku'
     
+
 # --------------------------------------------------------------------------
 # 5. ランキング・特殊抽出 Views
 # --------------------------------------------------------------------------
@@ -180,19 +208,18 @@ class LinkshareProductDetailAPIView(generics.RetrieveAPIView):
 class AdultProductRankingAPIView(generics.ListAPIView):
     """
     AI解析スコア(spec_score)に基づく総合ランキングAPI。
-    AI解析が完了している製品を優先して、スコアの高い順に返します。
+    上位30件に絞り込み、高パフォーマンスで返却します。
     """
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        # 1. AI要約が存在し、かつスコアが設定されているものを抽出
-        # 2. 総合スコア(spec_score)の降順で並び替え
-        # 3. 上位30件に絞り込む
         return AdultProduct.objects.filter(
             Q(ai_summary__isnull=False) & ~Q(ai_summary="")
         ).filter(
             spec_score__gt=0
+        ).select_related(
+            'maker', 'label'
         ).prefetch_related(
-            'maker', 'label', 'actresses', 'genres'
+            'actresses', 'genres'
         ).order_by('-spec_score', '-release_date')[:30]
