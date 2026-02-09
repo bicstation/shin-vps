@@ -5,7 +5,7 @@
  * ✅ 爆速の鍵: ISR (Incremental Static Regeneration)
  * 1時間（3600秒）ごとにバックグラウンドで再生成し、静的ファイルとして配信。
  */
-export const revalidate = 3600; 
+export const revalidate = 3600;
 
 import React from 'react';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ import Sidebar from '@shared/layout/Sidebar';
 import RadarChart from '@shared/ui/RadarChart';
 
 /**
- * ✅ 修正ポイント: インポートパスの正規化
+ * ✅ インポートパスの正規化
  */
 import ProductCard from '@shared/cards/ProductCard';
 
@@ -43,7 +43,6 @@ export default async function Page({ searchParams }: PageProps) {
 
     /**
      * 🚀 APIリクエストの並列化 (Parallel Data Fetching)
-     * すべてのデータを同時にリクエストすることで、逐次実行に比べて大幅にロード時間を短縮。
      */
     const [wpData, pcData, makersData, rankingData, popularityData] = await Promise.all([
         fetchPostList(10).catch(() => ({ results: [], count: 0 })),
@@ -75,12 +74,18 @@ export default async function Page({ searchParams }: PageProps) {
 
     return (
         <div className={styles.wrapper}>
-            {/* サイドバー: メーカー一覧と最新記事を同期 */}
+            {/* ✅ サイドバー: 
+                トップページでは `product` を渡さないことで、
+                スペックカードを表示させず、共通ナビゲーションのみを表示。
+            */}
+            {/* Page.tsx 内の該当箇所 */}
             <aside className={styles.sidebarSection}>
                 <Sidebar
                     activeMenu="all"
-                    makers={makersData || []}
-                    recentPosts={wpResults.slice(0, 10).map((p: any) => ({
+                    // メーカー一覧: APIレスポンスが配列であることを確認
+                    makers={Array.isArray(makersData) ? makersData : []}
+                    // 最新記事: オブジェクト構造をサイドバーの期待値に合わせる
+                    recentPosts={wpResults.map((p: any) => ({
                         id: p.id,
                         title: safeDecode(p.title?.rendered || ''),
                         slug: p.slug
@@ -109,11 +114,11 @@ export default async function Page({ searchParams }: PageProps) {
                                 <div key={product.unique_id || index} className={`${styles.topThreeCard} ${styles[`rank_${index + 1}`]}`}>
                                     <div className={styles.rankBadge}>{index + 1}位</div>
                                     <div className={styles.topThreeImage}>
-                                        <Image 
-                                            src={product.image_url?.replace('http://', 'https://') || '/no-image.png'} 
-                                            alt={product.name || 'PC製品'} 
+                                        <Image
+                                            src={product.image_url?.replace('http://', 'https://') || '/no-image.png'}
+                                            alt={product.name || 'PC製品'}
                                             fill
-                                            priority={index === 0} 
+                                            priority={index === 0}
                                             unoptimized={true}
                                             className={styles.rankingImgTag}
                                         />
@@ -190,9 +195,9 @@ export default async function Page({ searchParams }: PageProps) {
                                 <div key={`trend-${product.unique_id || index}`} className={`${styles.topThreeCard} ${styles.trendCard}`}>
                                     <div className={`${styles.rankBadge} ${styles.trendBadge}`}>{index + 1}位</div>
                                     <div className={styles.topThreeImage}>
-                                        <Image 
-                                            src={product.image_url?.replace('http://', 'https://') || '/no-image.png'} 
-                                            alt={product.name || 'PC製品'} 
+                                        <Image
+                                            src={product.image_url?.replace('http://', 'https://') || '/no-image.png'}
+                                            alt={product.name || 'PC製品'}
                                             fill
                                             unoptimized={true}
                                             className={styles.rankingImgTag}
@@ -224,9 +229,9 @@ export default async function Page({ searchParams }: PageProps) {
                         {featuredPosts.map((post: any) => (
                             <Link href={`/news/${post.id}`} key={post.id} className={styles.newsCard}>
                                 <div className={styles.imageWrapper}>
-                                    <Image 
-                                        src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url?.replace('http://', 'https://') || '/no-image.png'} 
-                                        alt={safeDecode(post.title?.rendered || '')} 
+                                    <Image
+                                        src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url?.replace('http://', 'https://') || '/no-image.png'}
+                                        alt={safeDecode(post.title?.rendered || '')}
                                         fill
                                         unoptimized={true}
                                         style={{ objectFit: 'cover' }}

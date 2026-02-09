@@ -1,0 +1,66 @@
+.ctaWrapper {
+  margin: 4rem 0;
+  padding: 0 1rem;
+}
+
+.ctaCard {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem;
+  background: linear-gradient(145deg, #ffffff, #f0f4f8);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  color: #718096;
+  font-size: 1rem;
+}
+
+.consultButton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white !important;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.consultButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.1);
+}
+
+.arrow {
+  transition: transform 0.3s ease;
+}
+
+.consultButton:hover .arrow {
+  transform: translateX(5px);
+}
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+  .ctaCard {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+  }
+}

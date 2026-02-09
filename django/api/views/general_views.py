@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from urllib.parse import unquote
 
 from api.models.pc_products import PCProduct, PCAttribute, PriceHistory
@@ -26,26 +27,34 @@ class PCProductLimitOffsetPagination(pagination.LimitOffsetPagination):
 # 🏆 ランキングビュー (PC製品用)
 # --------------------------------------------------------------------------
 class PCProductRankingView(generics.ListAPIView):
+    """
+    PC製品のランキング一覧を返す。
+    URL: /api/pc-products/ranking/
+    """
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
+        # activeかつスコアがあるものを対象
         queryset = PCProduct.objects.filter(is_active=True, spec_score__gt=0)
         
-        # 💡 ドメイン判定によるランキングロジックの分岐
+        # 💡 ドメイン判定（ミドルウェア等で設定されている想定）
         site_type = getattr(self.request, 'site_type', 'station')
         
         if site_type == 'saving':
-            # 節約サイト: コスパスコアを最優先したランキング
+            # 節約サイト: コスパ重視
             return queryset.order_by('-score_cost', '-spec_score')[:20]
         
-        # 通常サイト: 総合スペックスコア順
+        # 通常サイト: 総合スコア順
         return queryset.order_by('-spec_score', '-updated_at')[:20]
 
 # --------------------------------------------------------------------------
 # 💻 PC・ソフトウェア製品一覧 (PCProduct)
 # --------------------------------------------------------------------------
 class PCProductListAPIView(generics.ListAPIView):
+    """
+    PC製品の一覧取得・フィルタリング・検索
+    """
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
     permission_classes = [AllowAny]
@@ -71,11 +80,10 @@ class PCProductListAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         """
-        ドメイン判定ミドルウェアの結果に基づき、クエリセットを動的に最適化
+        メーカーや属性（スラッグ）によるフィルタリングを適用
         """
         queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
         
-        # クエリパラメータによる絞り込み
         maker = self.request.query_params.get('maker')
         attribute_slug = self.request.query_params.get('attribute')
         
@@ -84,36 +92,53 @@ class PCProductListAPIView(generics.ListAPIView):
         if attribute_slug:
             queryset = queryset.filter(attributes__slug=unquote(attribute_slug))
         
-        # 💡 ドメインによるデフォルト並び替え・絞り込みの分岐
         site_type = getattr(self.request, 'site_type', 'station')
         
         if site_type == 'saving':
-            # 節約系サイト: 在庫があるものを優先し、コスパ順に並べる
             return queryset.order_by('stock_status', '-score_cost', '-updated_at')
         
-        # 通常（Bic Station）: 更新順
         return queryset.order_by('-updated_at', 'id')
 
+# --------------------------------------------------------------------------
+# 🔍 製品詳細 (PCProductDetail)
+# --------------------------------------------------------------------------
 class PCProductDetailAPIView(generics.RetrieveAPIView):
+    """
+    個別製品の詳細情報を unique_id で取得
+    """
     queryset = PCProduct.objects.all().prefetch_related('attributes')
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
+    
+    # URLパラメータ <str:unique_id> をモデルの unique_id フィールドと紐付け
     lookup_field = 'unique_id'
+    lookup_url_kwarg = 'unique_id'
+
+    def get_object(self):
+        """
+        予約語(rankingなど)がIDとして渡された場合に安全に404を返す
+        """
+        unique_id = self.kwargs.get(self.lookup_url_kwarg)
+        
+        # 🚨 unique_idが 'ranking' の場合は、一覧Viewへ行くべきリクエストなので
+        # 詳細Viewとしては「存在しない」として404を出す
+        if unique_id == 'ranking':
+            raise Http404("Invalid ID: 'ranking' is a reserved keyword.")
+            
+        return super().get_object()
 
 # --------------------------------------------------------------------------
 # 🛠️ メーカー・統計・履歴 API
 # --------------------------------------------------------------------------
 class PCProductMakerListView(APIView):
+    """
+    メーカーの一覧とそれぞれの登録商品数を返す
+    """
     permission_classes = [AllowAny]
     def get(self, request):
         genre = request.query_params.get('genre')
         qs = PCProduct.objects.filter(is_active=True).exclude(maker__isnull=True).exclude(maker='')
         
-        # 💡 ドメインに応じたメーカーリストのフィルタリング（必要に応じて）
-        if getattr(request, 'site_type', '') == 'saving':
-            # 例: 節約サイトでは特定の安価なメーカーのみに絞るなどの拡張が可能
-            pass
-
         if genre:
             qs = qs.filter(unified_genre=genre)
             
@@ -123,6 +148,9 @@ class PCProductMakerListView(APIView):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_sidebar_stats(request):
+    """
+    サイドバー表示用の属性統計データを返す
+    """
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
     ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
@@ -142,8 +170,17 @@ def pc_sidebar_stats(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_product_price_history(request, unique_id):
-    product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
+    """
+    製品の価格履歴を返す（30日分）
+    """
+    decoded_id = unquote(unique_id)
+    
+    if decoded_id == 'ranking':
+        raise Http404()
+
+    product = get_object_or_404(PCProduct, unique_id=decoded_id)
     history = PriceHistory.objects.filter(product=product).order_by('recorded_at')[:30]
+    
     data = {
         "name": product.name,
         "labels": [h.recorded_at.strftime('%Y/%m/%d') for h in history],

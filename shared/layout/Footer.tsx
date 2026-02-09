@@ -26,7 +26,7 @@ export default function Footer() {
   // 3. コンテンツリンクの切り替え
   const contentLinks = isAdult
     ? [ { name: '🏠 トップページ', path: '/' }, { name: '🔥 人気ランキング', path: '/ranking' }, { name: '📅 発売カレンダー', path: '/calendar' } ]
-    : [ { name: '🏠 製品カタログ', path: '/' }, { name: '🔍 PC診断', path: '/pc-finder' }, { name: '🛠 パーツ比較', path: '/parts' } ];
+    : [ { name: '🏠 製品カタログ', path: '/' }, { name: '🔍 PC診断', path: '/pc-finder' }, { name: '🛠 パーツ比較', path: '/ranking' } ];
 
   return (
     <footer className={styles.footer} style={{ borderTop: `4px solid ${siteColor}` }}>

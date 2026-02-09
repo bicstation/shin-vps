@@ -1,3 +1,7 @@
+/* ==========================================================
+   Sidebar.module.css - 統合デザイン完全版
+   ========================================================== */
+
 .sidebar {
   width: 280px;
   background: #0a0a14;
@@ -10,7 +14,76 @@
   overflow-y: auto;
 }
 
-/* --- ソーススイッチャー --- */
+/* --- 💻 PC製品詳細専用: スペックカード --- */
+.productSpecCard {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 20px 12px;
+  margin-bottom: 24px;
+}
+
+.specScoreBox {
+  text-align: center;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.scoreLabel {
+  display: block;
+  font-size: 0.6rem;
+  color: #555577;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.scoreValue {
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+
+.miniSpecList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.specRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  align-items: flex-start;
+}
+
+.specRow dt {
+  color: #555577;
+  font-weight: 600;
+}
+
+.specRow dd {
+  color: #bbbbcc;
+  text-align: right;
+  font-weight: 500;
+  max-width: 70%;
+  word-break: break-all;
+}
+
+.aiBadge {
+  margin-top: 16px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 6px;
+  border-radius: 4px;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+
+/* --- 🔘 ソーススイッチャー --- */
 .sourceSwitcher {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -37,7 +110,7 @@
 .activeFanza { background: #e94560 !important; color: #fff !important; }
 .activeDuga { background: #00d1b2 !important; color: #000 !important; }
 
-/* --- セクションタイトル --- */
+/* --- 🏷️ セクションタイトル --- */
 .sectionTitle {
   font-size: 0.7rem;
   letter-spacing: 0.2em;
@@ -53,7 +126,7 @@
 
 .arrow { font-size: 0.6rem; transition: transform 0.3s; }
 
-/* --- リンク & バッジ --- */
+/* --- 🔗 リンク & バッジ --- */
 .link {
   display: flex;
   justify-content: space-between;
@@ -76,7 +149,7 @@
   border-radius: 10px;
 }
 
-/* --- タグクラウド (仕分け) --- */
+/* --- ✨ タグクラウド --- */
 .tagCloud {
   display: flex;
   flex-wrap: wrap;
@@ -96,7 +169,7 @@
 .tagChip:hover { border-color: #e94560; color: #fff; }
 .tagChipActive { background: #e94560; color: #fff; }
 
-/* --- FANZA 階層 --- */
+/* --- 🔞 アダルト階層表示 --- */
 .serviceBlock { margin-bottom: 1rem; }
 .subCategoryLabel { font-size: 0.6rem; font-weight: 900; padding: 4px 12px; opacity: 0.5; }
 .nestedList { list-style: none; padding-left: 1rem; border-left: 1px solid rgba(255, 255, 255, 0.05); }
@@ -104,6 +177,26 @@
 .emptyMsg { font-size: 0.7rem; color: #444466; padding: 20px; text-align: center; }
 .recentTitle { font-size: 0.75rem; line-height: 1.4; }
 
-/* スクロールバー */
+/* --- 🕹️ 共通パーツ --- */
+.accordionContent {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0 0;
+}
+
+/* --- 📜 スクロールバー --- */
 .sidebar::-webkit-scrollbar { width: 3px; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+
+/* --- 📱 レスポンシブ (必要に応じて) --- */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 100%;
+    position: relative;
+    top: 0;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  }
+}

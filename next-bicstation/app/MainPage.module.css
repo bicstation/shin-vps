@@ -1,17 +1,25 @@
+/* ==========================================================
+   MainPage.module.css - サイドバー表示修正・統合デザイン版
+   ========================================================== */
+
 /* --- 全体レイアウト --- */
 .wrapper {
   display: flex;
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background-color: #f8f9fa; /* サイト全体の基調色 */
   width: 100%;
   overflow-x: hidden;
+  align-items: stretch; /* 子要素の高さを揃える */
 }
 
+/* サイドバー外枠：中身が表示されるよう高さを確保 */
 .sidebarSection {
   width: 280px;
   flex-shrink: 0;
-  background: #fff;
-  border-right: 1px solid #e2e8f0;
+  background: #0a0a14; /* Sidebar.module.css との整合性 */
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 10;
 }
 
 .main {
@@ -21,6 +29,9 @@
   max-width: 100%; 
   margin: 0;
   min-width: 0;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
 }
 
 .pageHeader {
@@ -78,9 +89,14 @@
   color: #28a745;
   text-decoration: none;
   font-weight: 700;
+  transition: opacity 0.2s;
 }
 
-/* --- 👑 ランキングカード --- */
+.rankingLink:hover {
+  opacity: 0.7;
+}
+
+/* --- 👑 ランキングカード (横長リスト形式) --- */
 .topThreeGrid {
   display: flex;
   flex-direction: column;
@@ -100,7 +116,7 @@
   position: relative;
   width: 100%;
   box-sizing: border-box; 
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .topThreeCard:hover {
@@ -122,8 +138,8 @@
 }
 
 .rank_1 .rankBadge { background: #ecc94b; color: #000; }
-.rank_2 .rankBadge { background: #a0aec0; }
-.rank_3 .rankBadge { background: #ed8936; }
+.rank_2 .rankBadge { background: #a0aec0; color: #fff; }
+.rank_3 .rankBadge { background: #ed8936; color: #fff; }
 
 .topThreeImage {
   flex: 0 0 160px;
@@ -156,6 +172,11 @@
   gap: 20px;
 }
 
+.topThreeNameArea {
+  flex: 1;
+  min-width: 0;
+}
+
 .topThreeMaker {
   font-size: 0.8rem;
   color: #94a3b8;
@@ -168,7 +189,9 @@
   font-weight: 800;
   margin: 4px 0;
   color: #0f172a;
-  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topThreeScore {
@@ -194,7 +217,7 @@
 
 .chartMini {
   flex: 0 0 200px;
-  height: 150px;
+  height: 120px;
   display: flex;
   align-items: center;
 }
@@ -245,6 +268,7 @@
   color: #ef4444;
   font-weight: 800;
   font-size: 0.75rem;
+  margin-bottom: 2px;
 }
 
 .trendPrice {
@@ -253,7 +277,7 @@
   color: #0f172a;
 }
 
-/* --- 🔍 カテゴリー別検索（詳細版） --- */
+/* --- 🔍 カテゴリー別検索 --- */
 .categorySearchSection {
   background: #ffffff;
   padding: 30px;
@@ -274,57 +298,12 @@
   border-left: 4px solid #28a745;
 }
 
-/* ビジュアル重視のカテゴリーカード */
-.categoryCard {
-  text-decoration: none;
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  aspect-ratio: 16 / 9;
-  background: #e2e8f0;
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
 }
 
-.categoryCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-}
-
-.categoryImageWrapper {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.categoryImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.categoryCard:hover .categoryImage {
-  transform: scale(1.05);
-}
-
-.categoryOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
-  display: flex;
-  align-items: flex-end;
-  padding: 24px;
-}
-
-.categoryName {
-  color: white;
-  font-weight: 900;
-  font-size: 1.4rem;
-  letter-spacing: 0.02em;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-/* ミニ版のカテゴリーカード（用途など） */
 .categoryCardSmall {
   display: flex;
   align-items: center;
@@ -402,33 +381,6 @@
 .postDate { font-size: 0.8rem; color: #94a3b8; font-weight: 600; margin-bottom: 8px; display: block; }
 .articleTitle { font-size: 1.1rem; font-weight: 700; line-height: 1.5; margin: 0; color: #1e293b; }
 
-/* --- 📝 アーカイブセクション --- */
-.archiveSection {
-  background: #fff;
-  padding: 30px;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-}
-
-.sectionTitleSmall { font-size: 1.3rem; font-weight: 800; margin-bottom: 20px; color: #334155; }
-.archiveList { list-style: none; padding: 0; }
-.archiveItem { display: flex; padding: 15px 0; border-bottom: 1px solid #f1f5f9; gap: 20px; align-items: center; }
-.archiveDate { font-size: 0.9rem; color: #94a3b8; flex: 0 0 100px; }
-.archiveLink { font-weight: 600; text-decoration: none; color: #334155; flex: 1; transition: color 0.2s; }
-.archiveLink:hover { color: #28a745; }
-.viewAllButton {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 25px;
-  border: 2px solid #28a745;
-  color: #28a745;
-  text-decoration: none;
-  border-radius: 50px;
-  font-weight: 700;
-  transition: all 0.2s;
-}
-.viewAllButton:hover { background: #28a745; color: #fff; }
-
 /* --- 📦 製品カタログ --- */
 .productGridTitle {
   font-size: 1.5rem;
@@ -448,6 +400,13 @@
   margin: 20px 0;
 }
 
+.noData {
+  text-align: center;
+  color: #94a3b8;
+  grid-column: 1 / -1;
+  padding: 40px;
+}
+
 .viewMoreContainer { text-align: center; margin-top: 40px; }
 .catalogFullLink {
   padding: 15px 40px;
@@ -465,19 +424,20 @@
 @media (max-width: 1200px) {
   .topThreeContent { gap: 15px; }
   .chartMini { flex: 0 0 150px; }
-  .categoryGrid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .categoryGrid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
 }
 
 @media (max-width: 1024px) {
   .wrapper { flex-direction: column; }
-  .sidebarSection { width: 100%; border-right: none; }
+  .sidebarSection { width: 100%; border-right: none; height: auto; }
   .main { padding: 30px 20px; }
   .topThreeCard { flex-direction: column; padding: 30px 20px; text-align: center; }
   .topThreeImage { margin-right: 0; margin-bottom: 15px; }
-  .topThreeContent { flex-direction: column; width: 100%; }
+  .topThreeContent { flex-direction: column; width: 100%; gap: 10px; }
   .topThreeScore { border: none; margin: 15px 0; padding: 0; }
-  .chartMini { margin: 0 auto; }
+  .chartMini { margin: 0 auto; height: 150px; }
   .popularityBg { width: 100%; margin-left: 0; margin-right: 0; padding: 30px 15px; }
+  .topThreeName { white-space: normal; }
 }
 
 @media (max-width: 640px) {
@@ -485,5 +445,4 @@
   .sectionTitle { font-size: 1.3rem; }
   .categorySearchSection { padding: 20px 15px; }
   .newsGrid { grid-template-columns: 1fr; }
-  .archiveItem { flex-direction: column; align-items: flex-start; gap: 5px; }
 }
