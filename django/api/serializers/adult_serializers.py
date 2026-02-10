@@ -4,10 +4,11 @@ from api.models import (
     # 基本モデル
     Maker, Label, Director, Series, Genre, Actress, Author,
     # 商品・属性モデル
-    AdultProduct, LinkshareProduct, AdultAttribute, FanzaProduct
+    AdultProduct, AdultAttribute, FanzaProduct
 )
 
-# PCAttribute は存在しない環境でも動くように try-except
+# 💡 PCAttribute は general_serializers で主に使われるが、
+# 相互参照を避けるため、定義のみこちらで try-except 処理を維持
 try:
     from api.models.pc_products import PCAttribute
 except ImportError:
@@ -20,50 +21,40 @@ except ImportError:
 class BaseMasterSerializer(serializers.ModelSerializer):
     """
     全てのマスターモデル（女優、ジャンル等）の共通定義。
-    モデルの save() で生成された slug と ruby を確実に含めます。
+    api_source により、どのドメイン由来のデータか判別可能にします。
     """
-    # 修正ポイント: フィールド型を明示的に指定して、モデル側の SlugField のお節介を完全に無視させる
     slug = serializers.CharField(read_only=True)
     ruby = serializers.CharField(read_only=True)
+    api_source = serializers.CharField(read_only=True) 
     
     class Meta:
         fields = ('id', 'name', 'slug', 'ruby', 'api_source', 'product_count')
-        read_only_fields = ('id', 'slug', 'ruby', 'product_count')
+        read_only_fields = fields
 
-# --------------------------------------------------------------------------
-# 2. 各マスターモデルのシリアライザー (BaseMasterを継承)
-# --------------------------------------------------------------------------
-
+# --- 各マスターモデルの実装 ---
 class MakerSerializer(BaseMasterSerializer):
-    class Meta(BaseMasterSerializer.Meta):
-        model = Maker
+    class Meta(BaseMasterSerializer.Meta): model = Maker
 
 class LabelSerializer(BaseMasterSerializer):
-    class Meta(BaseMasterSerializer.Meta):
-        model = Label
+    class Meta(BaseMasterSerializer.Meta): model = Label
 
 class DirectorSerializer(BaseMasterSerializer):
-    class Meta(BaseMasterSerializer.Meta):
-        model = Director
+    class Meta(BaseMasterSerializer.Meta): model = Director
 
 class SeriesSerializer(BaseMasterSerializer):
-    class Meta(BaseMasterSerializer.Meta):
-        model = Series
+    class Meta(BaseMasterSerializer.Meta): model = Series
 
 class GenreSerializer(BaseMasterSerializer):
-    class Meta(BaseMasterSerializer.Meta):
-        model = Genre
+    class Meta(BaseMasterSerializer.Meta): model = Genre
 
 class ActressSerializer(BaseMasterSerializer):
-    class Meta(BaseMasterSerializer.Meta):
-        model = Actress
+    class Meta(BaseMasterSerializer.Meta): model = Actress
 
 class AuthorSerializer(BaseMasterSerializer):
-    class Meta(BaseMasterSerializer.Meta):
-        model = Author
+    class Meta(BaseMasterSerializer.Meta): model = Author
 
 # --------------------------------------------------------------------------
-# 3. 属性・タグ用シリアライザー (Adult / PC)
+# 2. 属性・タグ用シリアライザー
 # --------------------------------------------------------------------------
 
 class AdultAttributeSerializer(serializers.ModelSerializer):
@@ -77,6 +68,7 @@ class AdultAttributeSerializer(serializers.ModelSerializer):
 
 if PCAttribute:
     class PCAttributeSerializer(serializers.ModelSerializer):
+        """PC製品用の属性（本来はgeneral用だが、モデル構成上ここに定義）"""
         attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
         class Meta:
             model = PCAttribute
@@ -84,11 +76,11 @@ if PCAttribute:
             read_only_fields = fields
 
 # --------------------------------------------------------------------------
-# 4. 商品データ用シリアライザー (マスターをネスト)
+# 3. 商品データ用シリアライザー
 # --------------------------------------------------------------------------
 
 class AdultProductSerializer(serializers.ModelSerializer): 
-    """DUGA、旧FANZAデータ、AIレビュー投稿用の汎用シリアライザー"""
+    """正規化された DUGA/DMM データを共通で扱うためのシリアライザー"""
     maker = MakerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
@@ -97,13 +89,13 @@ class AdultProductSerializer(serializers.ModelSerializer):
     actresses = ActressSerializer(many=True, read_only=True)
     attributes = AdultAttributeSerializer(many=True, read_only=True)
 
-    image_url_list = serializers.JSONField(required=False, allow_null=True)
-    sample_movie_url = serializers.JSONField(required=False, allow_null=True)
+    # 💡 フロントエンド統一用の追加フィールド（IDの呼び名を共通化）
+    display_id = serializers.CharField(source='product_id_unique', read_only=True)
     
     class Meta:
         model = AdultProduct 
         fields = (
-            'id', 'product_id_unique', 'title', 'product_description',
+            'id', 'product_id_unique', 'display_id', 'title', 'product_description',
             'release_date', 'affiliate_url', 'price', 
             'image_url_list', 'sample_movie_url',
             'api_source', 'maker', 'label', 'director', 'series', 'genres', 'actresses',
@@ -115,7 +107,7 @@ class AdultProductSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'product_id_unique', 'updated_at')
 
 class FanzaProductSerializer(serializers.ModelSerializer):
-    """FANZA APIの全フロア、複雑な価格、高画質動画に対応したシリアライザー"""
+    """FANZA Direct API 用の個別シリアライザー"""
     maker = MakerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
@@ -124,19 +116,16 @@ class FanzaProductSerializer(serializers.ModelSerializer):
     actresses = ActressSerializer(many=True, read_only=True)
     authors = AuthorSerializer(many=True, read_only=True)
 
-    price_info = serializers.JSONField(required=False, allow_null=True)
-    image_urls = serializers.JSONField(required=False, allow_null=True)
-    sample_images = serializers.JSONField(required=False, allow_null=True)
-    sample_movie = serializers.JSONField(required=False, allow_null=True)
-    radar_chart_data = serializers.JSONField(required=False, allow_null=True)
+    # 💡 共通化のためのエイリアス
+    display_id = serializers.CharField(source='unique_id', read_only=True)
 
     class Meta:
         model = FanzaProduct
         fields = (
-            'id', 'unique_id', 'content_id', 'product_id',
+            'id', 'unique_id', 'display_id', 'content_id', 'product_id',
             'site_code', 'service_code', 'floor_code', 'floor_name',
             'title', 'url', 'affiliate_url', 'release_date', 'volume',
-            'price_info', 'review_count', 'review_average',
+            'price', 'price_info', 'review_count', 'review_average',
             'image_urls', 'sample_images', 'sample_movie',
             'maker', 'label', 'series', 'director', 'genres', 'actresses', 'authors',
             'product_description', 'ai_summary',
@@ -144,17 +133,3 @@ class FanzaProductSerializer(serializers.ModelSerializer):
             'radar_chart_data', 'is_active', 'is_recommend', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'unique_id', 'content_id', 'created_at', 'updated_at')
-
-# --------------------------------------------------------------------------
-# 5. その他
-# --------------------------------------------------------------------------
-
-class LinkshareProductSerializer(serializers.ModelSerializer):
-    """アフィリエイト（物販系等）用"""
-    class Meta:
-        model = LinkshareProduct 
-        fields = (
-            'id', 'sku', 'product_name', 'availability', 
-            'affiliate_url', 'image_url', 'merchant_id', 'updated_at',
-        )
-        read_only_fields = ('id', 'updated_at')

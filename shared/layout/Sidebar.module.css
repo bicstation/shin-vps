@@ -1,10 +1,10 @@
 /* ==========================================================
-   Sidebar.module.css - 統合デザイン完全版
+   Sidebar.module.css - Cyber-System Optimization
    ========================================================== */
 
 .sidebar {
   width: 280px;
-  background: #0a0a14;
+  background: #07070c; /* より深い闇へ */
   padding: 24px 16px;
   border-right: 1px solid rgba(255, 255, 255, 0.03);
   height: fit-content;
@@ -12,184 +12,329 @@
   top: 80px;
   max-height: calc(100vh - 100px);
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* --- 💻 PC製品詳細専用: スペックカード --- */
-.productSpecCard {
-  background: rgba(255, 255, 255, 0.02);
+/* --- 📡 PLATFORM MATRIX (グリッド・セレクター) --- */
+.platformGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 12px 0 24px 0;
+}
+
+.platLink {
+  text-decoration: none;
+}
+
+.platBtn {
+  padding: 10px 0;
+  text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 20px 12px;
-  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 1px;
+  font-size: 9px;
+  font-weight: 900;
+  color: #555577;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.platBtn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.platActive {
+  color: #fff;
+  background: var(--active-color);
+  border-color: transparent;
+  box-shadow: 0 0 15px var(--active-color);
+}
+
+/* --- 💾 HARDWARE ANALYSIS (スペックカード) --- */
+.productSpecCard {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 2px solid var(--site-color, #00f2ff);
+  border-radius: 4px;
+  padding: 16px 12px;
+  margin: 12px 0 24px 0;
 }
 
 .specScoreBox {
-  text-align: center;
-  padding-bottom: 16px;
-  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.scoreLabel {
-  display: block;
-  font-size: 0.6rem;
-  color: #555577;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
+.scoreCircle {
+  width: 45px;
+  height: 45px;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+  border-top: 2px solid var(--site-color); /* システムランクを示す色 */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .scoreValue {
-  font-size: 2.2rem;
+  font-size: 1.2rem;
   font-weight: 900;
-  line-height: 1;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.scoreLabel {
+  font-size: 0.55rem;
+  color: #555577;
+  letter-spacing: 0.2em;
+  line-height: 1.2;
 }
 
 .miniSpecList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .specRow {
   display: flex;
   justify-content: space-between;
-  font-size: 0.75rem;
-  align-items: flex-start;
-}
-
-.specRow dt {
-  color: #555577;
-  font-weight: 600;
-}
-
-.specRow dd {
-  color: #bbbbcc;
-  text-align: right;
-  font-weight: 500;
-  max-width: 70%;
-  word-break: break-all;
-}
-
-.aiBadge {
-  margin-top: 16px;
-  font-size: 0.65rem;
-  font-weight: 900;
-  text-align: center;
-  padding: 6px;
-  border-radius: 4px;
-  color: #fff;
-  letter-spacing: 0.05em;
-}
-
-/* --- 🔘 ソーススイッチャー --- */
-.sourceSwitcher {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 24px;
-  background: rgba(255, 255, 255, 0.02);
-  padding: 4px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.sourceSwitcher button {
-  padding: 10px;
-  border: none;
-  background: transparent;
-  color: #555577;
-  font-size: 0.7rem;
-  font-weight: 950;
-  cursor: pointer;
-  transition: all 0.3s;
-  border-radius: 2px;
-}
-
-.activeFanza { background: #e94560 !important; color: #fff !important; }
-.activeDuga { background: #00d1b2 !important; color: #000 !important; }
-
-/* --- 🏷️ セクションタイトル --- */
-.sectionTitle {
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  padding: 12px 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  margin-top: 24px;
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.specRow small {
+  color: #555577;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
-.arrow { font-size: 0.6rem; transition: transform 0.3s; }
+.specRow span {
+  color: #bbbbcc;
+  font-weight: 500;
+  max-width: 65%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-/* --- 🔗 リンク & バッジ --- */
+/* --- 🏷️ SECTION CONTROLS --- */
+.sectionWrapper {
+  margin-bottom: 4px;
+}
+
+.sectionTitle {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  padding: 14px 4px;
+  color: #888;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  user-select: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.sectionTitle:hover {
+  background: rgba(255, 255, 255, 0.02);
+  color: #fff;
+}
+
+.chevron {
+  font-size: 0.5rem;
+  opacity: 0.3;
+}
+
+/* --- 🔗 LINK NODES & BADGES --- */
+.accordionContent {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+  animation: scanIn 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes scanIn {
+  from { opacity: 0; transform: translateY(-10px) scaleY(0.9); }
+  to { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+
 .link {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
+  padding: 7px 10px;
   text-decoration: none;
-  color: #8888aa;
-  font-size: 0.8rem;
-  border-radius: 4px;
-  transition: 0.2s;
+  color: #777799;
+  font-size: 0.75rem;
+  border-radius: 2px;
+  transition: all 0.2s;
+  border-left: 1px solid transparent;
 }
 
-.link:hover { background: rgba(255, 255, 255, 0.03); color: #fff; transform: translateX(4px); }
+.link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff !important;
+  border-left: 1px solid var(--site-color, #fff);
+  padding-left: 14px;
+}
+
+.linkText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
 
 .badge {
-  font-size: 0.65rem;
-  font-family: monospace;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 2px 8px;
-  border-radius: 10px;
-}
-
-/* --- ✨ タグクラウド --- */
-.tagCloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px 0;
-}
-
-.tagChip, .tagChipActive {
-  font-size: 0.65rem;
-  padding: 4px 10px;
+  font-size: 0.6rem;
+  font-family: 'Roboto Mono', monospace;
+  background: rgba(0, 0, 0, 0.3);
+  color: #555577;
+  padding: 1px 5px;
   border-radius: 2px;
-  text-decoration: none;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.tagChip { background: rgba(255, 255, 255, 0.02); color: #6b7280; }
-.tagChip:hover { border-color: #e94560; color: #fff; }
-.tagChipActive { background: #e94560; color: #fff; }
-
-/* --- 🔞 アダルト階層表示 --- */
-.serviceBlock { margin-bottom: 1rem; }
-.subCategoryLabel { font-size: 0.6rem; font-weight: 900; padding: 4px 12px; opacity: 0.5; }
-.nestedList { list-style: none; padding-left: 1rem; border-left: 1px solid rgba(255, 255, 255, 0.05); }
-
-.emptyMsg { font-size: 0.7rem; color: #444466; padding: 20px; text-align: center; }
-.recentTitle { font-size: 0.75rem; line-height: 1.4; }
-
-/* --- 🕹️ 共通パーツ --- */
-.accordionContent {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0 0;
+.link:hover .badge {
+  color: var(--site-color, #fff);
+  border-color: var(--site-color, rgba(255, 255, 255, 0.2));
 }
 
-/* --- 📜 スクロールバー --- */
+/* --- 🕹️ SPECIAL HUB --- */
+.specialLink {
+  display: block;
+  padding: 12px;
+  text-decoration: none;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  margin: 8px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.glitchText {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- 💃 HIERARCHY (Actress / Source) --- */
+.scrollArea {
+  max-height: 400px;
+  overflow-y: auto;
+  margin: 8px 0;
+  padding-right: 4px;
+}
+
+.detailsGroup {
+  margin-bottom: 2px;
+}
+
+.subCategoryLabel {
+  list-style: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: #9999aa;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subCategoryLabel::-webkit-details-marker { display: none; }
+
+.subCategoryLabel:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nestedList {
+  list-style: none;
+  padding: 4px 0 4px 12px;
+  margin: 0 0 8px 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.serviceBlock {
+  margin-bottom: 12px;
+}
+
+/* --- 📄 INTEL LOGS --- */
+.recentTitle {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #8888aa;
+}
+
+.emptyLink {
+  padding: 10px;
+  font-size: 0.6rem;
+  color: #444455;
+  text-align: center;
+  letter-spacing: 0.2em;
+}
+
+/* --- 📟 SYSTEM STATUS BAR --- */
+.systemStatus {
+  margin-top: 40px;
+  padding: 15px 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statusLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: #555577;
+  letter-spacing: 0.1em;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.timestamp {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.55rem;
+  color: #333344;
+}
+
+/* --- 📜 CUSTOM SCROLLBAR --- */
 .sidebar::-webkit-scrollbar { width: 3px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--site-color, rgba(255, 255, 255, 0.2));
+}
 
-/* --- 📱 レスポンシブ (必要に応じて) --- */
+/* --- 📱 MOBILE OPTIMIZATION --- */
 @media (max-width: 1024px) {
   .sidebar {
     width: 100%;
@@ -197,6 +342,8 @@
     top: 0;
     max-height: none;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px;
   }
+  .scrollArea { max-height: none; }
 }

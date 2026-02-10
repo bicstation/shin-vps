@@ -12,42 +12,48 @@ interface ProductCardProps {
 }
 
 /**
- * 🛰️ AdultProductCard - Matrix Edition (Video Fixed)
- * FANZAのリファラ制限を回避し、プレビュー動画を確実に再生させる修正版
+ * 🛰️ AdultProductCard - Matrix Edition (Full Optimized)
+ * 画像の大型化、DMM/FANZA/DUGAのマルチソース対応、No Image対策済み
  */
 export default function AdultProductCard({ product }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // --- 💡 APIソース判定 ---
-  const apiSource = product.api_source || 'FANZA';
+  const apiSource = (product.api_source || 'FANZA').toUpperCase();
   const isDuga = apiSource === 'DUGA';
+  const isDmm = apiSource === 'DMM';
 
-  // --- 💡 画像最適化ロジック ---
+  // --- 💡 画像・プレースホルダー最適化 ---
   const thumbnail = useMemo(() => {
-    const rawUrl = product.image_url_list?.[0] || product.image_url || '/no-image.png';
-    if (rawUrl === '/no-image.png') return rawUrl;
+    const rawUrl = product.image_url_list?.[0] || product.image_url;
+    
+    // 画像がない場合のデフォルト画像 (ソース別に切り替えも可能)
+    if (!rawUrl) {
+      return 'https://placehold.jp/24/333333/cccccc/400x600.png?text=NO%20IMAGE%0A(DATA%20ONLY)';
+    }
 
     if (isDuga) return rawUrl;
 
-    // FANZA等のサムネイルをラージサイズに置換
+    // FANZA / DMM 等のサムネイルをラージサイズに置換
+    // ps.jpg (small) or pt.jpg (thumb) -> pl.jpg (large)
     let highRes = rawUrl.replace(/p[s|t]\.jpg/i, 'pl.jpg');
+    // _m.jpg -> _l.jpg (DMM等の別パターン)
     highRes = highRes.replace('_m.jpg', '_l.jpg');
+    
     return highRes;
   }, [product.image_url_list, product.image_url, isDuga]);
 
-  // --- 💡 動画再生ロジック（重要：FANZA対応） ---
+  // --- 💡 動画再生ロジック ---
   const movieData = useMemo(() => {
     const rawMovie = product.sample_movie_url;
     
-    // JSONField(オブジェクト)対応
     if (rawMovie && typeof rawMovie === 'object' && !Array.isArray(rawMovie)) {
       return {
         url: rawMovie.url || null,
         preview_image: rawMovie.preview_image || null
       };
     }
-    // 文字列URLフォールバック
     if (typeof rawMovie === 'string' && rawMovie.startsWith('http')) {
       return { url: rawMovie, preview_image: null };
     }
@@ -56,21 +62,18 @@ export default function AdultProductCard({ product }: ProductCardProps) {
 
   const hasVideo = !!movieData.url;
 
-  // ホバー時にプログラムから再生を開始させる（ブラウザ制限の確実な回避）
   useEffect(() => {
     if (isHovered && hasVideo && videoRef.current) {
       const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
-        playPromise.catch((error) => {
-          console.warn("Video auto-play failed. Referrer or Policy issue.", error);
-        });
+        playPromise.catch(() => {}); // Autoplay policy error silencer
       }
     } else if (videoRef.current) {
       videoRef.current.pause();
     }
   }, [isHovered, hasVideo]);
 
-  // --- 属性データの抽出 ---
+  // 属性データの抽出
   const genres = product.genres || [];
   const actors = product.actresses || [];
   const attributes = product.attributes || []; 
@@ -87,32 +90,28 @@ export default function AdultProductCard({ product }: ProductCardProps) {
       genre: [
         { bg: 'bg-pink-900/30', text: 'text-pink-300', border: 'border-pink-500/20' },
         { bg: 'bg-purple-900/30', text: 'text-purple-300', border: 'border-purple-500/20' },
-        { bg: 'bg-indigo-900/30', text: 'text-indigo-300', border: 'border-indigo-500/20' },
       ],
       actor: [{ bg: 'bg-blue-900/40', text: 'text-blue-200', border: 'border-blue-400/30' }],
       series: [{ bg: 'bg-amber-900/30', text: 'text-amber-200', border: 'border-amber-500/20' }],
       attribute: [{ bg: 'bg-emerald-950/40', text: 'text-emerald-300', border: 'border-emerald-500/30' }]
     };
-
     const palette = paletteMap[type] || paletteMap.genre;
-    const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % palette.length;
+    const index = (name || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % palette.length;
     return palette[index];
   };
 
+  // ソースに応じたテーマクラスの決定
+  const themeClass = isDuga ? styles.dugaTheme : isDmm ? styles.dmmTheme : styles.fanzaTheme;
+
   return (
     <div 
-      className={`${styles.cardContainer} ${isDuga ? styles.dugaTheme : styles.fanzaTheme}`}
+      className={`${styles.cardContainer} ${themeClass}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 🖼️ 画像・プレビューセクション */}
-      <div className={styles.imageSection}>
-        <Link href={`${detailPath}/${product.id}`} className="block h-full w-full relative overflow-hidden">
-          {/* 💡 FANZA再生の肝: 
-              1. referrerPolicy="no-referrer" でリファラ制限を突破
-              2. muted playsInline は必須
-              3. Refを使用してEffectからPlayを叩く
-          */}
+      {/* 🖼️ 画像セクション (サイズを大きく強調) */}
+      <div className={styles.imageSection} style={{ aspectRatio: '2 / 3', minHeight: '320px' }}>
+        <Link href={`${detailPath}/${product.id}`} className="block h-full w-full relative overflow-hidden bg-black">
           {hasVideo && (
             <video
               ref={videoRef}
@@ -122,38 +121,38 @@ export default function AdultProductCard({ product }: ProductCardProps) {
               loop
               playsInline
               referrerPolicy="no-referrer"
-              className={`${styles.thumbnail} ${isHovered ? 'opacity-100' : 'opacity-0'} absolute inset-0 z-10 transition-opacity duration-300 object-cover w-full h-full`}
+              className={`${styles.thumbnail} ${isHovered ? 'opacity-100' : 'opacity-0'} absolute inset-0 z-10 transition-opacity duration-500 object-cover w-full h-full scale-105`}
             />
           )}
           
           <img 
             src={thumbnail} 
             alt={product.title} 
-            className={`${styles.thumbnail} ${isHovered && hasVideo ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`} 
+            className={`${styles.thumbnail} ${isHovered && hasVideo ? 'opacity-0 scale-110' : 'opacity-100 scale-100'} transition-all duration-700 object-cover w-full h-full`} 
             loading="lazy"
           />
           
           <div className={styles.imageOverlay} />
           
-          {/* AI解析スコア */}
+          {/* AI解析スコア (ソース別カラー) */}
           {score > 0 && (
-            <div className={`${styles.scoreBadge} ${isDuga ? styles.scoreDuga : styles.scoreFanza}`}>
+            <div className={`${styles.scoreBadge} ${isDuga ? styles.scoreDuga : isDmm ? styles.scoreDmm : styles.scoreFanza}`}>
               <span className={styles.scoreLabel}>AI_SCORE</span>
               <span className={styles.scoreValue}>{score}</span>
             </div>
           )}
 
-          {/* ビデオ有無表示 */}
+          {/* ビデオステータス */}
           {hasVideo && (
-            <div className={isDuga ? styles.sampleBadgeDuga : styles.sampleBadge}>
+            <div className={isDuga ? styles.sampleBadgeDuga : isDmm ? styles.sampleBadgeDmm : styles.sampleBadge}>
               <span className={styles.sampleDot}>●</span>
               {isHovered ? 'PREVIEWING' : 'SAMPLE'}
             </div>
           )}
         </Link>
 
-        {/* ソースラベル */}
-        <div className={isDuga ? styles.apiBadgeDuga : styles.apiBadge}>
+        {/* ソースバッジ */}
+        <div className={`${styles.apiBadge} ${isDuga ? styles.dugaBg : isDmm ? styles.dmmBg : styles.fanzaBg}`}>
           {apiSource}
         </div>
       </div>
@@ -162,119 +161,92 @@ export default function AdultProductCard({ product }: ProductCardProps) {
       <div className={styles.contentSection}>
         <div className="mb-2">
           <h3 className={styles.title}>
-            <Link href={`${detailPath}/${product.id}`}>{product.title}</Link>
+            <Link href={`${detailPath}/${product.id}`} className="line-clamp-2 leading-tight">
+              {product.title}
+            </Link>
           </h3>
         </div>
 
-        {/* AI要約テキスト */}
+        {/* AI要約 */}
         {product.ai_summary && (
           <div className={styles.summaryBox}>
-            <p className={styles.summaryText}>
-              "{product.ai_summary}"
-            </p>
+            <p className={styles.summaryText}>"{product.ai_summary}"</p>
           </div>
         )}
 
-        {/* メタタグエリア (出演者 & 属性) */}
-        <div className="space-y-2 mb-4">
+        {/* メタ情報 */}
+        <div className="space-y-2 mb-3">
           {actors.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {actors.slice(0, 2).map((actor: any) => {
-                const style = getTagStyle(actor.name || 'Unknown', 'actor');
+              {actors.slice(0, 3).map((actor: any) => {
+                const style = getTagStyle(actor.name, 'actor');
                 return (
-                  <Link 
-                    key={actor.id} 
-                    href={`/actress/${actor.id}`} 
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${style.bg} ${style.text} ${style.border} transition-all hover:bg-opacity-80`}
-                  >
+                  <Link key={actor.id} href={`/actress/${actor.id}`} 
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-sm border ${style.bg} ${style.text} ${style.border} transition-all hover:brightness-125`}>
                     👤 {actor.name}
                   </Link>
                 );
               })}
             </div>
           )}
-
-          {attributes.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {attributes.slice(0, 3).map((attr: any) => {
-                const style = getTagStyle(attr.name || 'Attr', 'attribute');
-                return (
-                  <span key={attr.id} className={`text-[9px] font-medium px-1.5 py-0 rounded border ${style.bg} ${style.text} ${style.border} opacity-70`}>
-                    {attr.name}
-                  </span>
-                );
-              })}
-            </div>
-          )}
         </div>
 
-        {/* メーカー & シリーズ */}
-        <div className="space-y-1 mb-4 text-[11px]">
+        {/* Maker / Series */}
+        <div className="space-y-1 mb-3 text-[11px] border-l-2 border-white/10 pl-2">
           <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Maker</span>
+            <span className={styles.infoLabel}>Maker:</span>
             {maker ? (
-              <Link href={`/maker/${maker.id}`} className={styles.infoLink}>
-                {maker.name}
-              </Link>
-            ) : <span className="text-gray-600">Unknown</span>}
+              <Link href={`/maker/${maker.id}`} className={styles.infoLink}>{maker.name}</Link>
+            ) : <span className="text-gray-600 italic">Unlisted</span>}
           </div>
           {series && (
             <div className={styles.infoRow}>
-              <span className={styles.infoLabel}>Series</span>
-              <Link href={`/series/${series.id}`} className={`${styles.infoLink} text-amber-400/80`}>
-                {series.name}
-              </Link>
+              <span className={styles.infoLabel}>Series:</span>
+              <Link href={`/series/${series.id}`} className={`${styles.infoLink} text-amber-400/80`}>{series.name}</Link>
             </div>
           )}
         </div>
 
-        {/* ジャンルタグ (ハッシュタグ形式) */}
-        <div className="flex flex-wrap gap-1 mb-6 h-10 content-start overflow-hidden">
-          {genres.slice(0, 4).map((genre: any) => {
-            const style = getTagStyle(genre.name || 'Genre', 'genre');
+        {/* ジャンルタグ */}
+        <div className="flex flex-wrap gap-1 mb-4 h-9 content-start overflow-hidden opacity-80">
+          {genres.slice(0, 5).map((genre: any) => {
+            const style = getTagStyle(genre.name, 'genre');
             return (
-              <Link 
-                key={genre.id} 
-                href={`/genre/${genre.id}`} 
-                className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${style.bg} ${style.text} ${style.border} hover:border-white/40 transition-colors`}
-              >
+              <Link key={genre.id} href={`/genre/${genre.id}`} 
+                    className={`text-[9px] font-medium px-1.5 py-0.5 rounded border ${style.bg} ${style.text} ${style.border} hover:border-white/40`}>
                 #{genre.name}
               </Link>
             );
           })}
         </div>
 
-        {/* 💳 アクション・価格エリア */}
+        {/* 💳 価格・アクション */}
         <div className={styles.actionArea}>
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-3 flex items-end justify-between">
             <div className="flex flex-col">
-              <span className={styles.priceLabel}>Access Fee</span>
-              <span className={isDuga ? styles.priceTextDuga : styles.priceText}>
-                {product.price ? `¥${product.price.toLocaleString()}` : 'MARKET PRICE'}
+              <span className={styles.priceLabel}>Price</span>
+              <span className={isDuga ? styles.priceTextDuga : isDmm ? styles.priceTextDmm : styles.priceText}>
+                {product.price ? `¥${product.price.toLocaleString()}` : 'OPEN PRICE'}
               </span>
             </div>
             
-            <div className="flex flex-col items-end">
-              <span className="text-[8px] text-gray-500 uppercase font-black tracking-widest">Spec Analysis</span>
-              <div className="w-16 h-1.5 bg-white/5 rounded-full mt-1 overflow-hidden">
+            <div className="flex flex-col items-end pb-1">
+              <span className="text-[7px] text-gray-500 uppercase font-black">AI Spec Level</span>
+              <div className="w-16 h-1 bg-white/5 rounded-full mt-1 overflow-hidden">
                 <div 
-                  className={`h-full transition-all duration-1000 ${isDuga ? 'bg-cyan-500' : 'bg-[#e94560]'}`} 
-                  style={{ width: isHovered ? `${score}%` : '0%' }}
+                  className={`h-full transition-all duration-1000 ${isDuga ? 'bg-cyan-500' : isDmm ? 'bg-amber-500' : 'bg-[#e94560]'}`} 
+                  style={{ width: isHovered ? `${score}%` : '15%' }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <Link href={`${detailPath}/${product.id}`} className={isDuga ? styles.btnViewDuga : styles.btnView}>
+          <div className="grid grid-cols-2 gap-2 mt-auto">
+            <Link href={`${detailPath}/${product.id}`} className={isDuga ? styles.btnViewDuga : isDmm ? styles.btnViewDmm : styles.btnView}>
               DETAILS
             </Link>
-            <a 
-              href={product.affiliate_url} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className={isDuga ? styles.btnGetDuga : styles.btnGet}
-            >
+            <a href={product.affiliate_url} target="_blank" rel="noopener noreferrer" 
+               className={isDuga ? styles.btnGetDuga : isDmm ? styles.btnGetDmm : styles.btnGet}>
               <span>GET</span>
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />

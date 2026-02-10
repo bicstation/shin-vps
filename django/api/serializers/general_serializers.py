@@ -1,30 +1,55 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 from api.models.pc_products import PCProduct, PriceHistory
+from api.models import LinkshareProduct  # 💡 引っ越し先として追加
 from .adult_serializers import PCAttributeSerializer
 
-# 📈 価格履歴を整形するためのサブ・シリアライザー
+# --------------------------------------------------------------------------
+# 1. 価格履歴用サブ・シリアライザー
+# --------------------------------------------------------------------------
 class PriceHistorySerializer(serializers.ModelSerializer):
-    # recorded_at フィールドを 'date' という名前で "2024/05/20" 形式に変換
+    """
+    価格推移チャート用のデータを整形。
+    recorded_at を 'date' という名前でフロントエンドに返します。
+    """
     date = serializers.DateTimeField(source='recorded_at', format="%Y/%m/%d")
 
     class Meta:
         model = PriceHistory
         fields = ('date', 'price')
 
-# 💻 PC製品のメイン・シリアライザー
+# --------------------------------------------------------------------------
+# 2. 物販・アフィリエイト用シリアライザー (adultから移動)
+# --------------------------------------------------------------------------
+class LinkshareProductSerializer(serializers.ModelSerializer):
+    """
+    PCパーツ、周辺機器等のアフィリエイト商品用シリアライザー。
+    """
+    class Meta:
+        model = LinkshareProduct 
+        fields = (
+            'id', 'sku', 'product_name', 'availability', 
+            'affiliate_url', 'image_url', 'merchant_id', 'updated_at',
+        )
+        read_only_fields = ('id', 'updated_at')
+
+# --------------------------------------------------------------------------
+# 3. PC製品メイン・シリアライザー
+# --------------------------------------------------------------------------
 class PCProductSerializer(serializers.ModelSerializer):
-    # 関連する属性（メーカー、用途など）を詳細に展開
+    """
+    PC・ソフトウェア製品の詳細スペック、スコア、チャートデータを含むメインシリアライザー。
+    """
+    # 属性（メーカー、用途タグなど）を詳細展開
     attributes = PCAttributeSerializer(many=True, read_only=True)
     
-    # データベースにない計算項目を定義
+    # グラフ・履歴用動的フィールド
     price_history = serializers.SerializerMethodField()
     radar_chart = serializers.SerializerMethodField()
     rank = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
         model = PCProduct
-        # Next.js 側で使用するすべてのフィールドを定義
         fields = (
             'id', 'unique_id', 'site_prefix', 'maker', 'raw_genre', 'unified_genre',
             'name', 'price', 'url', 'image_url', 'description',
@@ -36,19 +61,20 @@ class PCProductSerializer(serializers.ModelSerializer):
             'attributes', 'price_history', 'rank', 'affiliate_url', 'affiliate_updated_at',
             'stock_status', 'is_posted', 'is_active', 'last_spec_parsed_at', 'created_at', 'updated_at',
         )
-        # API経由で勝手に書き換えられないようすべて読み取り専用に設定
+        # 参照専用のため、すべて読み取り専用に設定
         read_only_fields = fields
 
     def get_price_history(self, obj):
         """
-        Next.jsのチャート用に、直近30件の価格データを取得
+        Next.jsのチャートコンポーネント用に直近30件の履歴を返す
         """
+        # queryset を制限してパフォーマンスを維持
         histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
         return PriceHistorySerializer(histories, many=True).data
 
     def get_radar_chart(self, obj):
         """
-        Next.jsのレーダーチャート（SpecRadarChart）が期待するデータ構造に変換
+        Next.jsのレーダーチャート（SpecRadarChart）が解釈可能なデータ構造に変換
         """
         return [
             {"subject": "CPU性能", "value": obj.score_cpu or 0, "fullMark": 100},

@@ -1,5 +1,5 @@
 /* ==============================================================================
- * 📌 Adult Product Card - Hybrid Cyber Layout (FANZA & DUGA)
+ * 📌 Adult Product Card - Matrix Cyber Layout (FANZA / DUGA / DMM)
  * ============================================================================== */
 
 /* 1. コンテナ：ホバーの基点とサイバーパンクな質感 */
@@ -9,298 +9,265 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  border-radius: 4px; /* 鋭利な印象にするため少し角を立たせる */
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  background-color: #111122;
+  background-color: #0d0d16; /* より深い黒へ */
   transition: all 400ms cubic-bezier(0.23, 1, 0.32, 1);
   isolation: isolate;
 }
 
-/* FANZA (Default) Hover */
+/* --- テーマ別ホバーエフェクト --- */
 .fanzaTheme:hover {
-  transform: translateY(-5px);
-  border-color: rgba(233, 69, 96, 0.5);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 15px rgba(233, 69, 96, 0.1);
+  transform: translateY(-8px);
+  border-color: rgba(233, 69, 96, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(233, 69, 96, 0.15);
 }
 
-/* DUGA Hover */
 .dugaTheme:hover {
-  transform: translateY(-5px);
-  border-color: rgba(0, 209, 178, 0.5);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 209, 178, 0.1);
+  transform: translateY(-8px);
+  border-color: rgba(0, 209, 178, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 209, 178, 0.15);
 }
 
-/* 2. 画像・動画セクション */
+.dmmTheme:hover {
+  transform: translateY(-8px);
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+/* 2. 画像・動画セクション (大型化: 2/3アスペクト) */
 .imageSection {
   position: relative;
-  aspect-ratio: 16 / 9;
   width: 100%;
   overflow: hidden;
   background-color: #000;
+  /* 比率はコンポーネント側のstyleでも制御していますがCSSで担保 */
+  aspect-ratio: 2 / 3; 
 }
 
 .thumbnail {
   height: 100%;
   width: 100%;
   object-fit: cover;
-  transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.5s ease;
-  image-rendering: crisp-edges;
-  opacity: 0.85;
+  transition: transform 1.5s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.6s ease;
+  image-rendering: auto;
 }
 
-.cardContainer:hover .thumbnail {
-  transform: scale(1.08);
-  opacity: 1;
-}
-
-/* 💡 デジタル感を演出するオーバーレイ (走査線) */
+/* 💡 デジタル走査線オーバーレイ */
 .imageOverlay {
   position: absolute;
   inset: 0;
   background: 
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-    linear-gradient(to top, #111122 0%, transparent 40%);
-  background-size: 100% 4px, 100% 100%;
-  opacity: 0.6;
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+    linear-gradient(to top, #0d0d16 0%, transparent 25%);
+  background-size: 100% 3px, 100% 100%;
+  opacity: 0.5;
   pointer-events: none;
   z-index: 5;
 }
 
-/* 🏆 AIスコアバッジ */
+/* 🏆 AIスコアバッジ (左上) */
 .scoreBadge {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  padding: 4px;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
+  min-width: 40px;
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
   border: 1px solid;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
-.scoreFanza { border-color: rgba(233, 69, 96, 0.5); }
-.scoreDuga { border-color: rgba(0, 209, 178, 0.5); }
+.scoreFanza { border-color: #e94560; box-shadow: 0 0 10px rgba(233, 69, 96, 0.3); }
+.scoreDuga { border-color: #00d1b2; box-shadow: 0 0 10px rgba(0, 209, 178, 0.3); }
+.scoreDmm { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
 
 .scoreLabel {
   font-size: 7px;
   font-weight: 900;
-  letter-spacing: 0.1em;
-  color: #888;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .scoreValue {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 900;
-  font-style: italic;
   color: #fff;
-  line-height: 1;
+  line-height: 1.1;
+  font-family: 'Orbitron', sans-serif; /* あればサイバー感アップ */
 }
 
-/* 🎥 サンプル動画・プレビューバッジ */
-.sampleBadge, .sampleBadgeDuga {
+/* 🎥 サンプルバッジ (右上) */
+.sampleBadge, .sampleBadgeDuga, .sampleBadgeDmm {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   z-index: 20;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  font-size: 9px;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.1em;
   border-radius: 2px;
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); /* 少し斜めにカット */
 }
 
-.sampleBadge {
-  background: #e94560;
-  color: #fff;
-}
+.sampleBadge { background: #e94560; color: #fff; }
+.sampleBadgeDuga { background: #00d1b2; color: #000; }
+.sampleBadgeDmm { background: #f59e0b; color: #000; }
 
-.sampleBadgeDuga {
-  background: #00d1b2;
-  color: #000;
-}
-
-.sampleDot {
-  animation: blink 1s infinite;
-}
+.sampleDot { animation: blink 0.8s infinite; }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
 }
 
-/* 🌐 APIソースバッジ */
-.apiBadge, .apiBadgeDuga {
+/* 🌐 APIソースバッジ (画像内左下) */
+.apiBadge {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
+  bottom: 12px;
+  left: 12px;
   z-index: 10;
-  padding: 2px 8px;
-  font-size: 8px;
+  padding: 3px 10px;
+  font-size: 9px;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  background: rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.2em;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
   border: 1px solid;
 }
 
-.apiBadge { color: #e94560; border-color: #e94560; }
-.apiBadgeDuga { color: #00d1b2; border-color: #00d1b2; }
+.fanzaBg { color: #e94560; border-color: #e94560; }
+.dugaBg { color: #00d1b2; border-color: #00d1b2; }
+.dmmBg { color: #f59e0b; border-color: #f59e0b; }
 
-/* 3. コンテンツ */
+/* 3. コンテンツセクション */
 .contentSection {
   display: flex;
   flex-grow: 1;
   flex-direction: column;
-  padding: 1.2rem 1rem;
+  padding: 1.2rem 1.1rem;
+  background: linear-gradient(to bottom, #0d0d16, #12121e);
 }
 
 .title {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  height: 2.8rem;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 1.4;
-  color: #e2e8f0;
-  margin-bottom: 0.5rem;
+  line-height: 1.5;
+  color: #f8fafc;
+  margin-bottom: 0.8rem;
+  transition: color 0.3s;
 }
 
 .title a:hover {
-  text-decoration: underline;
+  color: var(--theme-accent, #fff);
+  text-decoration: none;
 }
 
-/* AI要約セクション */
+/* AI要約 */
 .summaryBox {
-  margin-bottom: 12px;
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
-  padding-left: 10px;
+  margin-bottom: 15px;
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 0 4px 12px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .summaryText {
-  font-size: 10px;
+  font-size: 11px;
   color: #94a3b8;
   font-style: italic;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
+/* 情報行 (Maker/Series) */
 .infoRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 2px;
+  gap: 8px;
 }
 
 .infoLabel {
-  font-size: 8px;
-  color: #555577;
+  font-size: 9px;
+  color: #475569;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  min-width: 40px;
+  letter-spacing: 0.05em;
+  min-width: 45px;
 }
 
 .infoLink {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 11px;
-  font-weight: 700;
-  color: #ccd6f6;
-  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
 }
 
-.infoLink:hover {
-  color: #fff;
-}
+.infoLink:hover { color: #fff; text-decoration: underline; }
 
 /* 4. アクションエリア */
 .actionArea {
   margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .priceLabel {
-  font-size: 8px;
-  color: #555577;
+  font-size: 9px;
+  color: #64748b;
   text-transform: uppercase;
-  font-weight: 900;
-  letter-spacing: 0.1em;
+  font-weight: 800;
 }
 
-.priceText, .priceTextDuga {
-  font-size: 1.1rem;
+.priceText, .priceTextDuga, .priceTextDmm {
+  font-size: 1.25rem;
   font-weight: 900;
-  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.02em;
 }
 .priceText { color: #fff; }
-.priceTextDuga { color: #00d1b2; }
+.priceTextDuga { color: #00d1b2; text-shadow: 0 0 10px rgba(0, 209, 178, 0.3); }
+.priceTextDmm { color: #f59e0b; text-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
 
-/* View Button */
-.btnView, .btnViewDuga {
+/* Buttons Base */
+.btnView, .btnViewDuga, .btnViewDmm,
+.btnGet, .btnGetDuga, .btnGetDmm {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
-  border-radius: 2px;
-  font-size: 9px;
+  height: 38px;
+  border-radius: 3px;
+  font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.15em;
-  transition: all 0.3s;
+  letter-spacing: 0.1em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.btnView {
-  background: #1e1e38;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-.btnView:hover { background: #2a2a4a; border-color: rgba(255, 255, 255, 0.3); }
+/* DETAILS (Secondary) */
+.btnView { background: #1a1a2e; color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); }
+.btnViewDuga { background: rgba(0, 209, 178, 0.05); color: #00d1b2; border: 1px solid rgba(0, 209, 178, 0.3); }
+.btnViewDmm { background: rgba(245, 158, 11, 0.05); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
 
-.btnViewDuga {
-  background: rgba(0, 209, 178, 0.05);
-  color: #00d1b2;
-  border: 1px solid rgba(0, 209, 178, 0.2);
-}
-.btnViewDuga:hover { background: rgba(0, 209, 178, 0.1); border-color: #00d1b2; }
-
-/* Get Button */
-.btnGet, .btnGetDuga {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 36px;
-  border-radius: 2px;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  transition: all 0.3s;
+.btnView:hover, .btnViewDuga:hover, .btnViewDmm:hover {
+  filter: brightness(1.3);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.btnGet {
-  background: #e94560;
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
-}
+/* GET (Primary) */
+.btnGet { background: #e94560; color: #fff; box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3); }
+.btnGetDuga { background: #00d1b2; color: #000; box-shadow: 0 4px 15px rgba(0, 209, 178, 0.3); }
+.btnGetDmm { background: #f59e0b; color: #000; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
 
-.btnGetDuga {
-  background: #00d1b2;
-  color: #000;
-  box-shadow: 0 4px 15px rgba(0, 209, 178, 0.3);
-}
-
-.btnGet:hover, .btnGetDuga:hover {
-  transform: translateY(-2px);
+.btnGet:hover, .btnGetDuga:hover, .btnGetDmm:hover {
+  transform: translateY(-3px) scale(1.02);
   filter: brightness(1.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }

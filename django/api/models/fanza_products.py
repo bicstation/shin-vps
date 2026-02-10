@@ -31,7 +31,11 @@ class FanzaProduct(models.Model):
     # volume: 動画なら「120」（分）、書籍なら「200」（ページ）等を保持
     volume = models.CharField('ボリューム/収録時間', max_length=50, blank=True, null=True)
     
-    # --- 3. 価格・セール情報 (複雑な体系をJSONで管理) ---
+    # --- 3. 価格・セール情報 ---
+    # 数値での基本価格（ソート・フィルタ用。通常は最安値や標準価格を保存）
+    price = models.IntegerField('基本価格', default=0, db_index=True)
+    
+    # 複雑な体系をJSONで管理
     # 構造例: 
     # {
     #   "min_price": 350, 
@@ -40,7 +44,7 @@ class FanzaProduct(models.Model):
     #   "deliveries": [{"type": "hd", "price": 1175, "list_price": 1680}, ...],
     #   "campaign": {"title": "30%OFF", "end_date": "2026-02-09"}
     # }
-    price_info = models.JSONField('価格情報', default=dict)
+    price_info = models.JSONField('詳細価格情報', default=dict)
 
     # --- 4. ユーザー評価情報 ---
     review_count = models.IntegerField('レビュー数', default=0)
@@ -102,6 +106,7 @@ class FanzaProduct(models.Model):
             models.Index(fields=['site_code', 'service_code', 'floor_code']),
             models.Index(fields=['release_date']),
             models.Index(fields=['is_active']),
+            models.Index(fields=['price']), # 価格検索用インデックス
         ]
 
     def __str__(self):
@@ -110,11 +115,16 @@ class FanzaProduct(models.Model):
     @property
     def get_main_image(self):
         """フロントエンド表示用のメイン画像（largeを優先）を取得"""
+        # adminやフロントで使用。画像URLリストから最適なものを返す
         return self.image_urls.get('large') or self.image_urls.get('list')
 
     @property
     def get_sample_movie_url(self):
         """高画質(720_480)の動画URLを優先的に取得"""
         if self.sample_movie:
-            return self.sample_movie.get('size_720_480') or self.sample_movie.get('size_644_414')
+            return (
+                self.sample_movie.get('size_720_480') or 
+                self.sample_movie.get('size_644_414') or 
+                self.sample_movie.get('size_560_360')
+            )
         return None

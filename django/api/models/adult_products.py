@@ -66,7 +66,14 @@ class AdultAttribute(models.Model):
 class AdultProduct(models.Model):
     # --- 既存カラム (基本情報) ---
     raw_data = models.ForeignKey(RawApiData, on_delete=models.SET_NULL, null=True, blank=True, related_name='adult_products', verbose_name="生データソース")
-    api_source = models.CharField(max_length=10, verbose_name="APIソース (DUGA/FANZA)")
+    
+    # 💡 修正ポイント: max_lengthを20に拡張し、DMMを許容する説明文に変更
+    api_source = models.CharField(
+        max_length=20, 
+        verbose_name="APIソース (DMM/FANZA/DUGA)",
+        help_text="取得元のプラットフォーム識別子"
+    )
+    
     api_product_id = models.CharField(max_length=255, verbose_name="API提供元製品ID")
     product_id_unique = models.CharField(max_length=255, unique=True, verbose_name="統合ID")
     title = models.CharField(max_length=512, verbose_name="作品タイトル")
@@ -145,6 +152,7 @@ class AdultProduct(models.Model):
 
         # 1. 統合ID (product_id_unique) の自動生成
         if not self.product_id_unique and self.api_source and self.api_product_id:
+            # 💡 常に小文字で統一的なIDを生成
             self.product_id_unique = f"{self.api_source.lower()}_{self.api_product_id}"
 
         # 2. サンプル動画による暫定スコア設定

@@ -5,24 +5,21 @@ from datetime import datetime
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.db.models import F, Count, OuterRef, Subquery, Value, IntegerField
-from django.db.models.functions import Coalesce 
+from django.db.models import Count
 from django.utils import timezone
 import traceback
 
-# 修正したノーマライザーをインポート
+# 共通ユーティリティ
 from api.utils.adult.fanza_normalizer import normalize_fanza_data
-# エンティティの作成・更新に使用するユーティリティをインポート
 from api.utils.adult.entity_manager import get_or_create_entity 
 
-# モデルのインポート
-from api.models import RawApiData, AdultProduct, Genre, Actress, Director, Maker, Label, Series
-from django.db import connection 
+from api.models import (
+    RawApiData, AdultProduct, Genre, Actress, 
+    Director, Maker, Label, Series
+)
 
-# ロガーのセットアップ
-logger = logging.getLogger('normalize_fanza')
+logger = logging.getLogger('normalize_adult')
 
-# エンティティモデルをマッピング
 ENTITY_MAP = {
     'maker': Maker, 
     'label': Label,
@@ -33,260 +30,188 @@ ENTITY_MAP = {
 }
 
 class Command(BaseCommand):
-    help = 'FANZA APIから取得したRawデータをAdultProductテーブルに正規化し、リレーションを同期します。'
-    API_SOURCE = 'FANZA'
+    help = 'RawApiDataからAdultProductへデータを正規化します（FANZA/DMM両対応）。'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--limit',
             type=int,
-            help='処理するRawApiDataのレコード数を制限します。',
+            help='処理するRawレコード数を制限します。',
+        )
+        parser.add_argument(
+            '--source',
+            type=str,
+            default=None,  # 指定がない場合は全ソースを対象にする
+            help='正規化対象のソースを指定 (FANZA or DMM)',
         )
 
     def handle(self, *args, **options):
-        """メインの処理ロジック"""
+        # 1. 処理対象のソースを決定
+        source_opt = options.get('source')
+        if source_opt:
+            sources_to_process = [source_opt.upper()]
+        else:
+            # 💡 指定がない場合は自動的に両方を処理対象に含める
+            sources_to_process = ['FANZA', 'DMM']
         
-        logging.getLogger('api_utils').setLevel(logging.DEBUG) 
-        self.stdout.write(self.style.NOTICE(f'--- {self.API_SOURCE} 正規化コマンドを開始します ---'))
-
         limit = options.get('limit')
-        
-        # 移行が完了していない RawApiData を取得
-        # 最新の取得データ(IDが大きいもの)から順に処理することで鮮度を保つ
-        raw_data_qs = RawApiData.objects.filter(
-            api_source=self.API_SOURCE, 
-            migrated=False 
-        ).order_by('-id')
+        logging.getLogger('api_utils').setLevel(logging.DEBUG) 
 
-        if limit:
-            raw_data_qs = raw_data_qs[:limit]
+        for current_source in sources_to_process:
+            self.API_SOURCE = current_source
+            self.stdout.write(self.style.NOTICE(f'\n--- {self.API_SOURCE} 正規化フェーズを開始します ---'))
 
-        total_batches = raw_data_qs.count()
-        if total_batches == 0:
-            self.stdout.write(self.style.SUCCESS('処理すべきRawレコードがありません。'))
-            # 念のためカウント更新だけ走らせる
-            self._update_all_product_counts()
-            return
+            # 💡 未移行のデータを取得
+            raw_data_qs = RawApiData.objects.filter(
+                api_source=self.API_SOURCE, 
+                migrated=False 
+            ).order_by('-id')
 
-        self.stdout.write(self.style.NOTICE(f'処理対象のRawバッチデータ件数: {total_batches} 件'))
+            if limit:
+                raw_data_qs = raw_data_qs[:limit]
 
-        # --------------------------------------------------------
-        # RawApiDataのバッチごとの処理ループ
-        # --------------------------------------------------------
-        for i, raw_instance in enumerate(raw_data_qs):
-            try:
-                with transaction.atomic():
-                    # 1. Rawバッチデータの処理と製品データの抽出
-                    # normalize_fanza_data 内で詳細なパースが行われる
-                    products_data_list, relations_data_list = normalize_fanza_data(raw_instance) 
-                    
-                    if not products_data_list:
+            total_batches = raw_data_qs.count()
+            if total_batches == 0:
+                self.stdout.write(self.style.SUCCESS(f'{self.API_SOURCE} の未処理レコードはありません。'))
+                continue
+
+            self.stdout.write(self.style.NOTICE(f'処理対象: {total_batches} 件'))
+
+            processed_count = 0
+            for raw_instance in raw_data_qs:
+                try:
+                    with transaction.atomic():
+                        # --- 工程1: データの正規化（共通フォーマットへの変換） ---
+                        products_data_list, relations_data_list = normalize_fanza_data(raw_instance) 
+                        
+                        if not products_data_list:
+                            raw_instance.migrated = True
+                            raw_instance.save(update_fields=['migrated'])
+                            continue
+
+                        # --- 工程2: エンティティ（メーカー・女優等）の同期 ---
+                        entity_pk_maps = {}
+                        all_entities = {
+                            'Maker': set(), 'Label': set(), 'Director': set(), 
+                            'Series': set(), 'Genre': set(), 'Actress': set()
+                        }
+                        
+                        for p in products_data_list:
+                            for k in ['maker', 'label', 'director', 'series']:
+                                if p.get(k): all_entities[k.capitalize()].add(p[k])
+
+                        for r in relations_data_list:
+                            for g in r.get('genres', []): all_entities['Genre'].add(g)
+                            for a in r.get('actresses', []): all_entities['Actress'].add(a)
+
+                        for e_type, names in all_entities.items():
+                            if names:
+                                entity_pk_maps[e_type] = get_or_create_entity(
+                                    model=ENTITY_MAP[e_type.lower()], 
+                                    names=list(names), 
+                                    api_source=self.API_SOURCE
+                                )
+
+                        # --- 工程3: AdultProduct オブジェクトの準備 ---
+                        products_to_upsert = []
+                        for p_data in products_data_list:
+                            # ソース情報を上書き（DMMの生データならDMMとして保存）
+                            p_data['api_source'] = self.API_SOURCE
+                            
+                            # ユニークIDの生成（DMM_xxx または FANZA_xxx）
+                            p_data['product_id_unique'] = f"{self.API_SOURCE}_{p_data['api_product_id']}"
+
+                            # 外部キー（ID）の差し替え
+                            for k in ['maker', 'label', 'director', 'series']:
+                                val = p_data.pop(k, None)
+                                if val:
+                                    p_data[f'{k}_id'] = entity_pk_maps.get(k.capitalize(), {}).get(val)
+                            
+                            products_to_upsert.append(AdultProduct(**p_data))
+
+                        # --- 工程4: データベースへの一括保存 (UPSERT) ---
+                        AdultProduct.objects.bulk_create(
+                            products_to_upsert,
+                            update_conflicts=True,
+                            unique_fields=['product_id_unique'],
+                            update_fields=[
+                                'raw_data_id', 'title', 'affiliate_url', 'image_url_list',
+                                'release_date', 'price', 'maker_id', 'label_id', 'updated_at'
+                            ],
+                        )
+
+                        # --- 工程5: 多対多リレーション（女優・ジャンル）の紐付け ---
+                        self._process_relations(relations_data_list, entity_pk_maps)
+
+                        # --- 工程6: 生データ側の完了フラグ更新 ---
                         raw_instance.migrated = True
                         raw_instance.updated_at = timezone.now()
                         raw_instance.save(update_fields=['migrated', 'updated_at'])
-                        self.stdout.write(self.style.WARNING(f'⚠️ Rawバッチ ID {raw_instance.id} は有効な製品データがないためスキップしました。'))
-                        continue
+                        processed_count += 1
 
-                    self.stdout.write(f'--- バッチ {i+1}/{total_batches} 処理開始 (RawID:{raw_instance.id} / {len(products_data_list)} 製品) ---')
+                except Exception as e:
+                    self.stdout.write(self.style.ERROR(f"ID {raw_instance.id} でエラー: {str(e)}"))
+                    logger.error(traceback.format_exc())
+                    continue 
 
-                    # 2. エンティティの作成/更新
-                    all_entities = {'Maker': set(), 'Label': set(), 'Director': set(), 'Series': set(), 'Genre': set(), 'Actress': set()}
-                    
-                    for product_data in products_data_list:
-                        for key_name in ['maker', 'label', 'director', 'series']:
-                            entity_name = product_data.get(key_name)
-                            if entity_name:
-                                all_entities[key_name.capitalize()].add(entity_name)
-
-                    for relation in relations_data_list:
-                        for genre_name in relation.get('genres', []):
-                            all_entities['Genre'].add(genre_name)
-                        for actress_name in relation.get('actresses', []):
-                            all_entities['Actress'].add(actress_name)
-                    
-                    entity_pk_maps = {} 
-
-                    for entity_type, names in all_entities.items():
-                        if not names:
-                            continue
-                            
-                        model = ENTITY_MAP[entity_type.lower()]
-                        pk_map = get_or_create_entity(
-                            model=model, 
-                            names=list(names), 
-                            api_source=self.API_SOURCE
-                        )
-                        entity_pk_maps[entity_type] = pk_map
-                    
-                    self.stdout.write(f'   -> {sum(len(v) for v in entity_pk_maps.values())} 件のエンティティ(マスタ)を同期しました。')
-
-                    # 3. AdultProduct モデルインスタンスの準備
-                    products_to_upsert = []
-                    
-                    for product_data in products_data_list:
-                        for key_name in ['maker', 'label', 'director', 'series']:
-                            entity_name = product_data.pop(key_name, None)
-                            if entity_name:
-                                fk_key = f'{key_name}_id'
-                                pk = entity_pk_maps.get(key_name.capitalize(), {}).get(entity_name)
-                                product_data[fk_key] = pk
-                                
-                        products_to_upsert.append(AdultProduct(**product_data))
-
-                    # 4. AdultProductテーブルへの一括UPSERT
-                    unique_fields = ['product_id_unique']
-                    
-                    # 更新対象フィールド（既存データがある場合、これらが上書きされる）
-                    update_fields = [
-                        'raw_data_id', 'title', 'affiliate_url', 'image_url_list',
-                        'sample_movie_url', 'release_date', 'price', 
-                        'maker_id', 'label_id', 'series_id', 'director_id', 
-                        'updated_at'
-                    ]
-                    
-                    AdultProduct.objects.bulk_create(
-                        products_to_upsert,
-                        update_conflicts=True,
-                        unique_fields=unique_fields,
-                        update_fields=update_fields,
-                    )
-                    
-                    self.stdout.write(self.style.NOTICE(f'   -> AdultProductsテーブルに {len(products_to_upsert)} 件を保存/更新しました。'))
-
-                    # 5. リレーションの同期 (Genre, Actress)
-                    final_relations_list = []
-                    for relation in relations_data_list:
-                        new_rel = {'api_product_id': relation['api_product_id']}
-                        
-                        new_rel['genre_ids'] = [
-                            entity_pk_maps['Genre'].get(name) 
-                            for name in relation.get('genres', []) 
-                            if entity_pk_maps.get('Genre', {}).get(name) is not None
-                        ]
-                        new_rel['actress_ids'] = [
-                            entity_pk_maps['Actress'].get(name) 
-                            for name in relation.get('actresses', [])
-                            if entity_pk_maps.get('Actress', {}).get(name) is not None
-                        ]
-                        final_relations_list.append(new_rel)
-
-                    # product_id_unique を使ってDB上のPKを逆引き
-                    api_ids = [r['api_product_id'] for r in final_relations_list] 
-                    db_products = AdultProduct.objects.filter(
-                        api_source=self.API_SOURCE, 
-                        product_id_unique__in=[f'{self.API_SOURCE}_{api_id}' for api_id in api_ids]
-                    ).only('pk', 'product_id_unique')
-                    
-                    product_pk_map = {
-                        p.product_id_unique.split('_')[-1]: p.pk 
-                        for p in db_products
-                    }
-                    
-                    self._synchronize_relations(final_relations_list, product_pk_map)
-                    
-                    # 6. 移行済みとしてマーク
-                    raw_instance.migrated = True
-                    raw_instance.updated_at = timezone.now()
-                    raw_instance.save(update_fields=['migrated', 'updated_at'])
-                    self.stdout.write(self.style.SUCCESS(f'✅ バッチ処理完了 (RawID:{raw_instance.id})'))
-
-            except Exception as e:
-                logger.error(f"Rawバッチ ID {raw_instance.id} で致命的なエラー: {e}")
-                logger.debug(f"Stack trace: {traceback.format_exc()}")
-                continue 
-
-        # 7. 各マスタの出演作数などのカウントを更新
+            self.stdout.write(self.style.SUCCESS(f'{self.API_SOURCE} 正規化完了: {processed_count} 件'))
+        
+        # 💡 全てのソースが完了した後に統計（カウント）を一括更新
         self._update_all_product_counts()
-        self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} 正規化処理をすべて完了しました ---'))
+        self.stdout.write(self.style.SUCCESS(f'\n✅ すべてのソースの工程が完了しました'))
 
-
-    def _synchronize_relations(self, relations_list: list[dict], product_pk_map: dict):
-        """ジャンルと女優の多対多リレーションを最新状態に同期"""
-        product_pks = list(product_pk_map.values())
-        if not product_pks:
-            return
-
-        genre_through_table = AdultProduct.genres.through._meta.db_table
-        actress_through_table = AdultProduct.actresses.through._meta.db_table
-        adult_product_fk_name = 'adultproduct_id' 
-
-        with connection.cursor() as cursor:
-            # 一度既存の紐付けを削除してから一括挿入（もっとも確実な同期方法）
-            placeholders = ','.join(['%s'] * len(product_pks))
-            cursor.execute(f"DELETE FROM {genre_through_table} WHERE {adult_product_fk_name} IN ({placeholders})", product_pks)
-            cursor.execute(f"DELETE FROM {actress_through_table} WHERE {adult_product_fk_name} IN ({placeholders})", product_pks)
-        
-        genre_relations = []
-        actress_relations = []
-        GenreThroughModel = AdultProduct.genres.through
-        ActressThroughModel = AdultProduct.actresses.through
-        
-        for rel in relations_list:
-            product_pk = product_pk_map.get(rel['api_product_id'])
-            if not product_pk:
+    def _process_relations(self, relations_data_list, entity_pk_maps):
+        """中間テーブル（女優・ジャンル）の同期ロジック"""
+        for rel_data in relations_data_list:
+            # 💡 現在の処理ソースに基づいた一意のIDで製品を特定
+            unique_id = f"{self.API_SOURCE}_{rel_data.get('api_product_id')}"
+            try:
+                product = AdultProduct.objects.get(product_id_unique=unique_id)
+                
+                # 女優の紐付け
+                if 'actresses' in rel_data:
+                    act_map = entity_pk_maps.get('Actress', {})
+                    actress_ids = [act_map.get(name) for name in rel_data['actresses'] if act_map.get(name)]
+                    product.actresses.set(actress_ids)
+                
+                # ジャンルの紐付け
+                if 'genres' in rel_data:
+                    gen_map = entity_pk_maps.get('Genre', {})
+                    genre_ids = [gen_map.get(name) for name in rel_data['genres'] if gen_map.get(name)]
+                    product.genres.set(genre_ids)
+                    
+            except AdultProduct.DoesNotExist:
                 continue
 
-            for genre_id in rel['genre_ids']:
-                genre_relations.append(GenreThroughModel(**{adult_product_fk_name: product_pk, 'genre_id': genre_id}))
-
-            for actress_id in rel['actress_ids']:
-                actress_relations.append(ActressThroughModel(**{adult_product_fk_name: product_pk, 'actress_id': actress_id}))
-
-        GenreThroughModel.objects.bulk_create(genre_relations, ignore_conflicts=True)
-        ActressThroughModel.objects.bulk_create(actress_relations, ignore_conflicts=True)
-
-
     def _update_all_product_counts(self):
-        """統計情報の更新処理"""
-        try:
-            with transaction.atomic():
-                self.update_product_counts(self.stdout)
-        except Exception as e:
-            logger.error(f"統計カウント更新エラー: {e}")
+        """マスターデータの product_count を一括集計して更新"""
+        self.stdout.write("マスターデータの作品数を集計中...")
 
+        targets = [
+            (Maker, 'maker_id'),
+            (Label, 'label_id'),
+            (Director, 'director_id'),
+            (Series, 'series_id'),
+            (Genre, 'genres'),
+            (Actress, 'actresses')
+        ]
 
-    def update_product_counts(self, stdout):
-        """各マスタ（女優、ジャンル等）に紐付く有効な商品数を集計して反映"""
-        stdout.write(self.style.NOTICE('\n--- product_count (統計情報) を更新中 ---'))
-        adult_product_fk_name = 'adultproduct_id'
-        
-        # 女優ごとの作品数集計
-        actress_count_sq = Subquery(
-            AdultProduct.actresses.through.objects
-            .filter(actress_id=OuterRef('pk'))
-            .values('actress_id')
-            .annotate(count=Count(adult_product_fk_name))
-            .values('count'),
-            output_field=IntegerField()
-        )
-        Actress.objects.filter(api_source=self.API_SOURCE).update(
-            product_count=Coalesce(actress_count_sq, Value(0), output_field=IntegerField())
-        )
+        for model, field_name in targets:
+            self.stdout.write(f"集計中: {model.__name__}...")
 
-        # ジャンルごとの作品数集計
-        genre_count_sq = Subquery(
-            AdultProduct.genres.through.objects
-            .filter(genre_id=OuterRef('pk'))
-            .values('genre_id')
-            .annotate(count=Count(adult_product_fk_name))
-            .values('count'),
-            output_field=IntegerField()
-        )
-        Genre.objects.filter(api_source=self.API_SOURCE).update(
-            product_count=Coalesce(genre_count_sq, Value(0), output_field=IntegerField())
-        )
+            counts_query = AdultProduct.objects.values(field_name).annotate(total=Count('id'))
+            count_map = {item[field_name]: item['total'] for item in counts_query if item[field_name]}
 
-        # メーカー、レーベル、シリーズ、監督 (ForeignKey)
-        for model_name, model in [('maker', Maker), ('label', Label), ('series', Series), ('director', Director)]:
-            count_sq = Subquery(
-                AdultProduct.objects
-                .filter(**{f'{model_name}_id': OuterRef('pk'), 'api_source': self.API_SOURCE})
-                .values(f'{model_name}_id')
-                .annotate(count=Count('id'))
-                .values('count'),
-                output_field=IntegerField()
-            )
-            model.objects.filter(api_source=self.API_SOURCE).update(
-                product_count=Coalesce(count_sq, Value(0), output_field=IntegerField())
-            )
-        stdout.write(self.style.SUCCESS(' ✅ 統計情報の更新が完了しました。'))
+            all_objs = model.objects.all()
+            updates = []
+
+            for obj in all_objs:
+                new_count = count_map.get(obj.id, 0)
+                if obj.product_count != new_count:
+                    obj.product_count = new_count
+                    updates.append(obj)
+            
+            if updates:
+                model.objects.bulk_update(updates, ['product_count'], batch_size=500)
+
+        self.stdout.write(self.style.SUCCESS("作品数の更新が完了しました。"))

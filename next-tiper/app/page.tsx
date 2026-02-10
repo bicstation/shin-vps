@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-// ✅ 共通コンポーネント
+// ✅ 共通コンポーネントのインポート
 import ProductCard from '@shared/cards/AdultProductCard';
 import Pagination from '@shared/common/Pagination';
 import Sidebar from '@shared/layout/Sidebar';
@@ -47,14 +47,15 @@ const formatDate = (dateString: string) => {
 };
 
 /**
- * 🎬 メインホームコンポーネント
+ * 🎬 メインホームコンポーネント (Server Component)
  */
 export default async function Home(props: {
   searchParams: Promise<{ page?: string; offset?: string }>
 }) {
   const resolvedSearchParams = await props.searchParams;
 
-  const limit = 24; // 💡 グリッド(2,3,4,6列)で割り切りやすい24に変更
+  // 1. ページネーション設定
+  const limit = 24; // グリッド表示に適した24件
   let currentOffset = 0;
   if (resolvedSearchParams.offset) {
     currentOffset = Number(resolvedSearchParams.offset) || 0;
@@ -66,7 +67,7 @@ export default async function Home(props: {
   const displayCurrentPage = Math.floor(currentOffset / limit) + 1;
   const isFirstPage = displayCurrentPage === 1;
 
-  // 1. データフェッチ (並列実行でボトルネックを解消)
+  // 2. データフェッチ (並列実行)
   const [wpData, productData, makersData] = await Promise.all([
     isFirstPage
       ? getSiteMainPosts(0, 6).catch(() => ({ results: [], count: 0 }))
@@ -76,16 +77,20 @@ export default async function Home(props: {
     fetchMakers().catch(() => [])
   ]);
 
+  // 3. プロダクトデータの抽出
   const products = (productData?.results || []) as AdultProduct[];
   const totalCount = Number(productData?.count) || 0;
 
+  // 4. メーカーデータの整形 (サイドバー用)
   let makers = [];
   if (Array.isArray(makersData)) {
     makers = makersData;
   } else if (makersData && (makersData as any).results) {
+    // Django DRF ページネーション対応
     makers = (makersData as any).results;
   }
 
+  // 5. WordPress記事の整形 (サイドバー用)
   const latestPosts = (wpData?.results || []) as WPPost[];
   const sidebarRecentPosts = latestPosts.map(p => ({
     id: p.id.toString(),
@@ -98,7 +103,7 @@ export default async function Home(props: {
   return (
     <div className="pb-24 bg-[#0a0a14] min-h-screen text-gray-100 selection:bg-[#e94560]/30 selection:text-white font-sans overflow-x-hidden">
 
-      {/* 🌌 1. ヒーローセクション (全幅背景) */}
+      {/* 🌌 1. ヒーローセクション (1ページ目のみ表示) */}
       {isFirstPage && (
         <section className="relative py-32 px-[5%] text-center overflow-hidden border-b border-white/[0.03] bg-gradient-to-b from-[#16162d] to-[#0a0a14]">
           <div className="absolute inset-0 opacity-[0.05] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
@@ -125,10 +130,10 @@ export default async function Home(props: {
         </section>
       )}
 
-      {/* 🏗️ 2. メインレイアウト (全幅コンテナ) */}
+      {/* 🏗️ 2. メインレイアウト */}
       <div className={`w-full max-w-[1800px] mx-auto px-[4%] flex flex-col lg:flex-row gap-12 xl:gap-16 ${isFirstPage ? 'mt-16' : 'mt-32'}`}>
 
-        {/* 💡 左翼: サイドバー (全幅化に合わせて幅を固定) */}
+        {/* 💡 左翼: サイドバー */}
         <aside className="w-full lg:w-[300px] xl:w-[340px] flex-shrink-0">
           <div className="lg:sticky lg:top-24 space-y-8">
 
@@ -137,7 +142,7 @@ export default async function Home(props: {
               {[
                 { name: 'DUGA', path: '/brand/duga' },
                 { name: 'FANZA', path: '/brand/fanza' },
-                { name: 'DMM', path: '/brand/fanza' }, // DMMもfanzaへ飛ばす設定
+                { name: 'DMM', path: '/brand/fanza' },
               ].map((plat) => (
                 <Link key={plat.name} href={plat.path} className="block">
                   <div className="py-3 text-center border border-white/5 bg-white/[0.02] rounded-sm text-[9px] font-black text-gray-500 hover:text-white hover:bg-[#e94560] hover:border-[#e94560] transition-all cursor-pointer uppercase tracking-tighter">
@@ -147,6 +152,7 @@ export default async function Home(props: {
               ))}
             </div>
 
+            {/* APIエラー警告 */}
             {!isApiConnected && (
               <div className="p-5 border border-red-500/20 bg-red-950/5 rounded-sm">
                 <div className="flex items-center gap-2 mb-2 text-red-500 text-[10px] font-black uppercase tracking-widest">
@@ -159,6 +165,7 @@ export default async function Home(props: {
               </div>
             )}
 
+            {/* 共通サイドバーコンポーネント */}
             <Sidebar
               makers={makers}
               recentPosts={sidebarRecentPosts}
@@ -197,6 +204,7 @@ export default async function Home(props: {
                             src={imageUrl}
                             alt={post.title?.rendered}
                             className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                            loading="lazy"
                           />
                         </div>
                         <div className="p-5">
@@ -210,7 +218,9 @@ export default async function Home(props: {
                       </Link>
                     );
                   })
-                ) : null}
+                ) : (
+                  <p className="text-[10px] text-gray-600 uppercase tracking-widest">No reports available.</p>
+                )}
               </div>
             </section>
           )}
@@ -224,12 +234,12 @@ export default async function Home(props: {
               <div className="text-right flex items-center gap-6">
                 <div>
                   <p className="text-3xl font-black text-white tabular-nums italic leading-none">{totalCount.toLocaleString()}</p>
-                  <p className="text-gray-600 text-[9px] font-black uppercase tracking-widest mt-1">Registry</p>
+                  <p className="text-gray-600 text-[9px] font-black uppercase tracking-widest mt-1">Registry Total</p>
                 </div>
               </div>
             </div>
 
-            {/* 💡 全幅を活かした多列表示 (2 -> 2 -> 3 -> 4 -> 5) */}
+            {/* 💡 多列グリッドレイアウト */}
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-x-6 gap-y-12">
               {products.length > 0 ? (
                 products.map((product) => (
@@ -244,7 +254,7 @@ export default async function Home(props: {
               )}
             </div>
 
-            {/* ページネーション */}
+            {/* ページネーション (条件付きレンダリング) */}
             {totalCount > limit && (
               <div className="mt-28 pt-16 border-t border-white/[0.05]">
                 <Pagination

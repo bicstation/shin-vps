@@ -1,207 +1,274 @@
-/* 💡 ページ全体の基盤 */
+/* ==========================================================
+   BrandPage.module.css - System Archive Optimized Edition
+   ========================================================== */
+
 .pageContainer {
     width: 100%;
-    background-color: #f8f9fa;
     min-height: 100vh;
+    background-color: var(--background, #0a0a14);
 }
 
-/* 💡 1. ページヘッダー：パンくずとタイトルの間隔を詰める */
+/* --- 🌌 1. ページヘッダー: プラットフォーム別の動的カラー対応 --- */
 .fullWidthHeader {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    /* 上下の余白を大幅に削減して、パンくずとの一体感を出す */
-    padding: 24px 0 20px;
+    position: relative;
+    padding: 80px 0 40px;
     width: 100%;
+    background: linear-gradient(to bottom, rgba(20, 20, 35, 0.8), transparent);
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+    overflow: hidden;
 }
 
-/* コンテンツを1600pxで中央寄せ */
+/* プラットフォーム別のグロー効果 */
+.headerGlow {
+    position: absolute;
+    top: -50%;
+    left: 10%;
+    width: 40%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(var(--accent-rgb), 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* データ属性による色分けの仕組み (FANZA=ピンク系, DUGA=ブルー系想定) */
+.fullWidthHeader[data-platform="duga"] {
+    --accent: #00d1b2;
+    --accent-rgb: 0, 209, 178;
+}
+
 .headerInner {
     max-width: 1600px;
     margin: 0 auto;
     padding: 0 40px;
-    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 1;
+}
+
+.label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.pulseDot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent);
+    animation: pulse 2s infinite;
 }
 
 .title {
-    font-size: 2.25rem;
-    font-weight: 800;
-    color: #0f172a;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 950;
+    color: var(--text-primary, #fff);
     margin: 0;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
 }
 
-.subTitle {
-    font-size: 1.15rem;
-    color: #64748b;
-    font-weight: 400;
-    margin-left: 12px;
-    display: inline-block;
+.titleThin {
+    font-weight: 200;
+    opacity: 0.4;
+    font-style: italic;
 }
 
-.lead {
-    margin-top: 12px;
-    color: #475569;
-    line-height: 1.6;
-    font-size: 1rem;
-    max-width: 1000px;
+/* 🚀 ステータス表示 */
+.stats {
+    text-align: right;
 }
 
-/* 💡 2. メインコンテンツエリア（全幅） */
-.main {
-    width: 100%;
-    padding: 40px 0;
+.statsLabel {
+    font-size: 0.6rem;
+    color: var(--text-secondary, #8888aa);
+    letter-spacing: 0.2em;
+    margin-bottom: 4px;
 }
 
-/* コンテンツを中央に寄せるためのラッパー */
+.statsValue {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.countNum {
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.countUnit {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+}
+
+/* --- 💡 2. コンテンツレイアウト --- */
 .wrapper {
     display: flex;
     max-width: 1600px;
     margin: 0 auto;
-    padding: 0 40px;
+    padding: 40px;
     gap: 40px;
     box-sizing: border-box;
-    align-items: flex-start;
 }
 
-/* サイドバーの設定 */
-.sidebarSection {
+.sidebar {
     width: 280px;
     flex-shrink: 0;
-    position: sticky;
-    top: 20px;
 }
 
-/* 製品セクション */
-.productSection {
+.main {
     flex-grow: 1;
     min-width: 0;
 }
 
-/* セクション内のタイトル：件数表示を横並びにする */
-.productGridTitle {
-    font-size: 1.6rem;
-    margin-bottom: 30px;
+/* フェードインアニメーション */
+.contentFadeIn {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.gridHeader {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    font-weight: 800;
-    color: #0f172a;
-    width: 100%;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
 }
 
-/* 🚀 合計件数と現在の範囲を表示するスタイル */
-.countDetail {
-    font-size: 0.95rem;
-    color: #64748b;
-    font-weight: 500;
-    margin-left: auto; /* 右寄せ */
-    background: #f1f5f9;
-    padding: 6px 16px;
-    border-radius: 30px;
-    letter-spacing: 0.02em;
+.sortInfo {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: monospace;
 }
 
-.titleIndicator {
-    background: #28a745;
-    width: 6px;
-    height: 28px;
-    margin-right: 15px;
-    border-radius: 4px;
-}
-
-/* 🚀 製品一覧グリッド：横3列に固定（カード間の隙間を最適化） */
+/* 🚀 製品一覧グリッド：1600px時3列固定 */
 .productGrid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 24px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
     width: 100%;
 }
 
-/* 💡 ページネーション */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 60px;
-    padding-bottom: 40px;
+/* --- 💡 3. ページネーションエリア --- */
+.paginationArea {
+    margin-top: 80px;
+    padding: 40px 0;
+    border-top: 1px solid var(--border-color);
 }
 
-.pageLink, .pageActive {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-width: 46px;
-    height: 46px;
-    padding: 0 10px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 0.9rem;
-    border: 1px solid #e2e8f0;
-    transition: all 0.2s ease;
-    background: #fff;
-    color: #475569;
-}
-
-.pageLink:hover {
-    border-color: #3b82f6;
-    color: #3b82f6;
-    transform: translateY(-1px);
-}
-
-.pageActive {
-    background: #0f172a;
-    color: #fff;
-    border-color: #0f172a;
-}
-
-/* データなしの場合 */
+/* --- 🛰️ 4. データなし (シグナルロスト) ステート --- */
 .noDataLarge {
-    padding: 120px 0;
+    padding: 160px 40px;
     text-align: center;
-    color: #94a3b8;
-    background: #fff;
-    border-radius: 24px;
-    border: 1px dashed #cbd5e1;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px dashed var(--border-color);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
 }
 
-.resetLink {
+.lostIcon {
+    font-size: 4rem;
+    margin-bottom: 24px;
+    position: relative;
     display: inline-block;
-    margin-top: 20px;
-    color: #3b82f6;
-    text-decoration: none;
-    font-weight: 600;
 }
 
-/* 💡 レスポンシブ対応 */
+.scannerLine {
+    position: absolute;
+    top: 0;
+    left: -20%;
+    width: 140%;
+    height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 15px var(--accent);
+    animation: scan 3s linear infinite;
+}
+
+.noDataLarge h3 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.noDataLarge p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 40px;
+}
+
+.backBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    transition: all 0.3s ease;
+}
+
+.backBtn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px var(--accent-glow);
+}
+
+/* --- 📱 レスポンシブ設計 --- */
+@media (max-width: 1400px) {
+    .productGrid { gap: 20px; }
+}
+
 @media (max-width: 1200px) {
-    .productGrid {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
+    .headerInner { flex-direction: column; align-items: flex-start; gap: 30px; }
+    .stats { text-align: left; }
+    .productGrid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 1024px) {
-    .headerInner {
-        padding: 0 20px;
-    }
-    .wrapper {
-        flex-direction: column;
-        padding: 0 20px;
-    }
-    .sidebarSection {
-        width: 100%;
-        position: static;
-    }
-    .productGrid {
-        grid-template-columns: 1fr !important;
-    }
-    .productGridTitle {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    .countDetail {
-        margin-left: 0;
-    }
+    .wrapper { flex-direction: column; padding: 20px; }
+    .sidebar { width: 100%; }
+    .productGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+    .productGrid { grid-template-columns: 1fr; }
+    .title { font-size: 2.2rem; }
+}
+
+/* --- Animations --- */
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scan {
+    0% { top: 0%; }
+    100% { top: 100%; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

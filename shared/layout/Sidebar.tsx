@@ -1,27 +1,20 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
 import { PCProduct } from '@/shared/lib/api/types';
 import styles from './Sidebar.module.css';
 
-// ✅ インポート：五十音グループ化ユーティリティ
+// ✅ 五十音グループ化ユーティリティ
 import { groupByGojuon } from '../utils/grouping';
 
 // --- 型定義 ---
-interface SidebarItem {
-  id: number | string;
-  name: string;
-  slug: string;
-  count: number;
-}
-
 interface MasterItem {
   id: number;
   name: string;
-  slug: string;
+  slug: string | null;
   product_count: number;
 }
 
@@ -38,27 +31,22 @@ interface FanzaService {
 }
 
 interface SidebarData {
-  [category: string]: SidebarItem[] | FanzaService[] | any;
+  [category: string]: any;
   fanza_hierarchy?: FanzaService[];
-  duga_hierarchy?: any[];
-  ai_tags?: SidebarItem[];
 }
 
 interface SidebarProps {
   activeMenu?: string;
-  makers?: { maker: string; count: number }[];
+  makers?: any[]; 
   recentPosts?: { id: string; title: string; slug?: string }[];
   product?: PCProduct;
 }
 
-export default function Sidebar({ activeMenu, makers = [], recentPosts = [], product }: SidebarProps) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const attribute = searchParams.get('attribute');
-  
+export default function Sidebar({ makers = [], recentPosts = [], product }: SidebarProps) {
   const site = getSiteMetadata();
   const siteColor = getSiteColor(site.site_name);
   const isAdult = site.site_group === 'adult';
+  const pathname = usePathname();
 
   // --- ステート管理 ---
   const [dynamicStats, setDynamicStats] = useState<SidebarData | null>(null);
@@ -66,9 +54,12 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [], pro
   const [genres, setGenres] = useState<MasterItem[]>([]);
   const [series, setSeries] = useState<MasterItem[]>([]);
   const [directors, setDirectors] = useState<MasterItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // セクションの開閉状態（初期値）
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'SPEC': true,
+    'PLATFORMS': true,
     'MAIN': true,
     'ACTRESSES': false,
     'GENRES': true,
@@ -83,125 +74,172 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [], pro
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // ✅ データフェッチ統合
+  // ✅ 安全なURL生成ヘルパー
+  const getSafeLink = (type: string, item: any) => {
+    const identifier = item.slug && item.slug !== "null" ? item.slug : item.id;
+    return `/${type}/${identifier}`;
+  };
+
+  // ✅ 防弾仕様のデータフェッチ (JSONのみを受け入れ、HTMLエラーを無視する)
+  const safeJsonFetch = async (url: string) => {
+    try {
+      const res = await fetch(url, { cache: 'no-store' });
+      const contentType = res.headers.get('content-type');
+      if (res.ok && contentType && contentType.includes('application/json')) {
+        return await res.json();
+      }
+      return null;
+    } catch (e) {
+      console.warn(`[Sidebar API Silent Error] Failed to fetch: ${url}`);
+      return null;
+    }
+  };
+
+  // ✅ メイン・エフェクト: データ取得
   useEffect(() => {
     async function fetchSidebarData() {
-      const baseApiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const cleanBaseUrl = baseApiUrl.endsWith('/') ? baseApiUrl.slice(0, -1) : baseApiUrl;
+      setIsLoading(true);
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://api-tiper-host:8083/api';
+      const cleanBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
 
-      // 1. 基本統計データ (既存ロジック)
-      const statsPath = isAdult ? `${cleanBaseUrl}/adult-stats/` : `${cleanBaseUrl}/pc-sidebar-stats/`;
-      try {
-        const res = await fetch(statsPath, { cache: 'no-store', mode: 'cors' });
-        if (res.ok) {
-          const data = await res.json();
-          setDynamicStats(data);
-        }
-      } catch (e) { console.error("[Sidebar] Stats Fetch Error:", e); }
+      // 1. 統計情報の取得
+      const statsUrl = isAdult ? `${cleanBase}/adult-stats/` : `${cleanBase}/pc-sidebar-stats/`;
+      const stats = await safeJsonFetch(statsUrl);
+      if (stats) setDynamicStats(stats.results || stats);
 
-      // 2. マスターデータ取得 (アダルト専用)
       if (isAdult) {
-        const fetchMaster = async (endpoint: string) => {
-          try {
-            // 末尾スラッシュ必須 / 配列直下レスポンス対応
-            const res = await fetch(`${cleanBaseUrl}/${endpoint}/?ordering=-product_count&limit=20`, { mode: 'cors' });
-            if (!res.ok) return [];
-            const data = await res.json();
-            return Array.isArray(data) ? data : (data.results || []);
-          } catch (e) { return []; }
-        };
+        // 2. 女優データの取得とグループ化
+        const actressData = await safeJsonFetch(`${cleanBase}/actresses/?limit=500`);
+        if (actressData) {
+          const list = Array.isArray(actressData) ? actressData : (actressData.results || []);
+          setGroupedActresses(groupByGojuon(list));
+        }
 
-        // 女優 (五十音用にある程度多めに取得)
-        fetch(`${cleanBaseUrl}/actresses/?limit=1000`, { mode: 'cors' })
-          .then(res => res.json())
-          .then(data => {
-            const list = Array.isArray(data) ? data : (data.results || []);
-            setGroupedActresses(groupByGojuon(list));
-          }).catch(e => console.error(e));
+        // 3. その他マスターデータの並列取得
+        const [g, s, d] = await Promise.all([
+          safeJsonFetch(`${cleanBase}/genres/?limit=20&ordering=-product_count`),
+          safeJsonFetch(`${cleanBase}/series/?limit=15&ordering=-product_count`),
+          safeJsonFetch(`${cleanBase}/directors/?limit=10&ordering=-product_count`),
+        ]);
 
-        fetchMaster('genres').then(setGenres);
-        fetchMaster('series').then(setSeries);
-        fetchMaster('directors').then(setDirectors);
+        if (g) setGenres(Array.isArray(g) ? g : (g.results || []));
+        if (s) setSeries(Array.isArray(s) ? s : (s.results || []));
+        if (d) setDirectors(Array.isArray(d) ? d : (d.results || []));
       }
+      setIsLoading(false);
     }
     fetchSidebarData();
   }, [isAdult]);
 
-  // --- ヘルパー: セクション見出し ---
-  const SectionHeader = ({ title, id }: { title: string, id: string }) => (
-    <h3 
+  // --- UIコンポーネント: セクション見出し ---
+  const SectionHeader = ({ title, id, icon }: { title: string, id: string, icon?: string }) => (
+    <div 
       className={styles.sectionTitle} 
       onClick={() => toggleSection(id)}
       style={{ 
-        color: openSections[id] ? siteColor : '#555577',
-        cursor: 'pointer',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
+        cursor: 'pointer', 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        borderLeft: openSections[id] ? `3px solid ${siteColor}` : '3px solid transparent',
+        paddingLeft: '10px'
       }}
     >
-      {title}
+      <span style={{ color: openSections[id] ? '#fff' : '#888', fontWeight: 'bold', fontSize: '0.75rem', letterSpacing: '1px' }}>
+        {icon && <span style={{ marginRight: '8px' }}>{icon}</span>}
+        {title}
+      </span>
       <span style={{ 
         transform: openSections[id] ? 'rotate(180deg)' : 'rotate(0deg)',
-        transition: 'transform 0.3s ease',
-        fontSize: '0.8rem'
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        fontSize: '0.6rem',
+        opacity: 0.5
       }}>▼</span>
-    </h3>
+    </div>
   );
 
   return (
     <aside className={styles.sidebar}>
-      {/* 🚀 1. PC詳細スペック (既存維持) */}
+      
+      {/* 💻 PC SPEC CARD (PCサイト詳細時のみ) */}
       {!isAdult && product && (
         <div className={styles.sectionWrapper}>
-          <SectionHeader title="PRODUCT SPEC" id="SPEC" />
+          <SectionHeader title="HARDWARE ANALYSIS" id="SPEC" icon="💾" />
           {openSections['SPEC'] && (
             <div className={styles.productSpecCard}>
-              <div className={styles.specScoreBox} style={{ borderColor: siteColor }}>
-                <span className={styles.scoreLabel}>AI Spec Score</span>
-                <span className={styles.scoreValue} style={{ color: siteColor }}>{product.spec_score}</span>
+              <div className={styles.specScoreBox} style={{ borderColor: `${siteColor}44` }}>
+                <div className={styles.scoreCircle} style={{ borderTopColor: siteColor }}>
+                    <span className={styles.scoreValue} style={{ color: siteColor }}>{product.spec_score}</span>
+                </div>
+                <span className={styles.scoreLabel}>AI_SYSTEM_RANK</span>
               </div>
-              <dl className={styles.miniSpecList}>
-                {product.cpu_model && <div className={styles.specRow}><dt>CPU</dt><dd>{product.cpu_model}</dd></div>}
-                {product.gpu_model && <div className={styles.specRow}><dt>GPU</dt><dd>{product.gpu_model}</dd></div>}
-              </dl>
+              <div className={styles.miniSpecList}>
+                {product.cpu_model && <div className={styles.specRow}><small>CPU</small><span>{product.cpu_model}</span></div>}
+                {product.gpu_model && <div className={styles.specRow}><small>GPU</small><span>{product.gpu_model}</span></div>}
+              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* 🚀 2. メインツール (既存維持) */}
+      {/* 🚀 PLATFORM MATRIX (ブランド・プラットフォーム切替) */}
       <div className={styles.sectionWrapper}>
-        <SectionHeader title={isAdult ? "HOT CONTENTS" : "SPECIAL"} id="MAIN" />
+        <SectionHeader title="PLATFORM MATRIX" id="PLATFORMS" icon="📡" />
+        {openSections['PLATFORMS'] && (
+          <div className={styles.platformGrid}>
+            {[
+              { name: 'DUGA', path: '/brand/duga' },
+              { name: 'FANZA', path: '/brand/fanza' },
+              { name: 'DMM', path: '/brand/dmm' },
+            ].map((plat) => {
+              const isActive = pathname?.includes(plat.path);
+              return (
+                <Link key={plat.name} href={plat.path} className={styles.platLink}>
+                  <div 
+                    className={`${styles.platBtn} ${isActive ? styles.platActive : ''}`}
+                    style={{ '--active-color': siteColor } as any}
+                  >
+                    {plat.name}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 🔥 NAVIGATION HUB */}
+      <div className={styles.sectionWrapper}>
+        <SectionHeader title="COMMAND CENTER" id="MAIN" icon="🕹️" />
         {openSections['MAIN'] && (
           <ul className={styles.accordionContent}>
             <li>
-              <Link href={`${site.site_prefix}${isAdult ? '/ranking/' : '/pc-finder/'}`} 
-                    className={styles.link} 
-                    style={{ background: `linear-gradient(135deg, ${siteColor}dd, #000)`, color: '#fff' }}>
-                <span style={{ fontWeight: '900' }}>{isAdult ? '🔥 総合ランキング' : '🔍 AIスペック診断'}</span>
+              <Link href={isAdult ? '/ranking/' : '/pc-finder/'} className={styles.specialLink} 
+                    style={{ background: `linear-gradient(45deg, ${siteColor}33, transparent)`, borderRight: `2px solid ${siteColor}` }}>
+                <span className={styles.glitchText}>{isAdult ? '🔥 総合ランキング' : '🔍 AIスペック診断'}</span>
               </Link>
             </li>
           </ul>
         )}
       </div>
 
-      {/* 💃 3. 女優セクション (五十音グループ) */}
+      {/* 💃 ACTRESSES (五十音インデックス) */}
       {isAdult && Object.keys(groupedActresses).length > 0 && (
         <div className={styles.sectionWrapper}>
-          <SectionHeader title="ACTRESSES" id="ACTRESSES" />
+          <SectionHeader title="ACTRESSES" id="ACTRESSES" icon="💃" />
           {openSections['ACTRESSES'] && (
-            <div className={styles.accordionContent} style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <div className={styles.scrollArea}>
               {Object.entries(groupedActresses).map(([row, list]) => (
                 <details key={row} className={styles.detailsGroup}>
                   <summary className={styles.subCategoryLabel}>
-                    <span style={{ color: siteColor }}>📁</span> {row} ({list.length})
+                    <span style={{ color: siteColor }}>●</span> {row} <small>({list.length})</small>
                   </summary>
                   <ul className={styles.nestedList}>
                     {list.map((a) => (
                       <li key={a.id}>
-                        <Link href={`/actress/${encodeURIComponent(a.slug)}`} className={styles.link}>
-                          <span>💃 {a.name}</span>
+                        <Link href={getSafeLink('actress', a)} className={styles.link}>
+                          <span className={styles.linkText}>{a.name}</span>
+                          {a.product_count > 0 && <span className={styles.badge}>{a.product_count}</span>}
                         </Link>
                       </li>
                     ))}
@@ -213,94 +251,84 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [], pro
         </div>
       )}
 
-      {/* 🏷️ 4. ジャンルセクション (Top 20) */}
-      {isAdult && genres.length > 0 && (
-        <div className={styles.sectionWrapper}>
-          <SectionHeader title="GENRES" id="GENRES" />
-          {openSections['GENRES'] && (
-            <ul className={styles.accordionContent}>
-              {genres.map(g => (
-                <li key={g.id}>
-                  <Link href={`/genre/${encodeURIComponent(g.slug)}`} className={styles.link}>
-                    <span>🏷️ {g.name}</span>
-                    <span className={styles.badge}>{g.product_count}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      {/* 🏷️ MASTER TAXONOMY (ジャンル・シリーズ等) */}
+      {isAdult && (
+        <>
+          {genres.length > 0 && (
+            <div className={styles.sectionWrapper}>
+              <SectionHeader title="GENRES" id="GENRES" icon="🏷️" />
+              {openSections['GENRES'] && (
+                <ul className={styles.accordionContent}>
+                  {genres.map(g => (
+                    <li key={g.id}>
+                      <Link href={getSafeLink('genre', g)} className={styles.link}>
+                        <span className={styles.linkText}>{g.name}</span>
+                        <span className={styles.badge}>{g.product_count}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
-        </div>
+
+          {series.length > 0 && (
+            <div className={styles.sectionWrapper}>
+              <SectionHeader title="SERIES" id="SERIES" icon="📺" />
+              {openSections['SERIES'] && (
+                <ul className={styles.accordionContent}>
+                  {series.map(s => (
+                    <li key={s.id}>
+                      <Link href={getSafeLink('series', s)} className={styles.link}>
+                        <span className={styles.linkText}>{s.name}</span>
+                        <span className={styles.badge}>{s.product_count}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </>
       )}
 
-      {/* 📺 5. シリーズセクション (Top 20) */}
-      {isAdult && series.length > 0 && (
-        <div className={styles.sectionWrapper}>
-          <SectionHeader title="SERIES" id="SERIES" />
-          {openSections['SERIES'] && (
-            <ul className={styles.accordionContent}>
-              {series.map(s => (
-                <li key={s.id}>
-                  <Link href={`/series/${encodeURIComponent(s.slug)}`} className={styles.link}>
-                    <span>📺 {s.name}</span>
-                    <span className={styles.badge}>{s.product_count}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      {/* 🎬 6. 監督セクション (Top 20) */}
-      {isAdult && directors.length > 0 && (
-        <div className={styles.sectionWrapper}>
-          <SectionHeader title="DIRECTORS" id="DIRECTORS" />
-          {openSections['DIRECTORS'] && (
-            <ul className={styles.accordionContent}>
-              {directors.map(d => (
-                <li key={d.id}>
-                  <Link href={`/director/${encodeURIComponent(d.slug)}`} className={styles.link}>
-                    <span>🎬 {d.name}</span>
-                    <span className={styles.badge}>{d.product_count}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
-      {/* 📦 7. メーカー/ブランド (既存維持) */}
+      {/* 🏢 BRAND NODES (メーカーリスト) */}
       <div className={styles.sectionWrapper}>
-        <SectionHeader title={isAdult ? "BRANDS" : "MANUFACTURERS"} id="CATEGORIES" />
+        <SectionHeader title={isAdult ? "PRODUCTION BRANDS" : "MANUFACTURERS"} id="CATEGORIES" icon="🏢" />
         {openSections['CATEGORIES'] && (
           <ul className={styles.accordionContent}>
-            {makers.slice(0, 20).map((item) => (
-              <li key={item.maker}>
-                <Link href={`${site.site_prefix}/brand/${item.maker.toLowerCase()}`} className={styles.link}>
-                  <span>{isAdult ? '🏢' : '💻'} {item.maker.toUpperCase()}</span>
-                  <span className={styles.badge}>{item.count}</span>
-                </Link>
-              </li>
-            ))}
+            {makers.slice(0, 30).map((item, idx) => {
+              const mName = item.name || item.maker || "Unknown Node";
+              const mSlug = (item.slug || (item.maker ? item.maker.toLowerCase() : 'unknown'));
+              return (
+                <li key={idx}>
+                  <Link href={`/brand/${mSlug}`} className={styles.link}>
+                    <span className={styles.linkText}>{mName.toUpperCase()}</span>
+                    {(item.count || item.product_count) !== undefined && (
+                      <span className={styles.badge}>{item.count || item.product_count}</span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
 
-      {/* 🔞 8. FANZA階層構造 (既存維持) */}
+      {/* 🔞 SOURCE EXPLORER (FANZA階層構造) */}
       {isAdult && dynamicStats?.fanza_hierarchy && (
         <div className={styles.sectionWrapper}>
-          <SectionHeader title="FANZA ARCHIVE" id="SOURCE_EXPLORER" />
+          <SectionHeader title="SOURCE EXPLORER" id="SOURCE_EXPLORER" icon="📂" />
           {openSections['SOURCE_EXPLORER'] && (
             <div className={styles.accordionContent}>
               {dynamicStats.fanza_hierarchy.map((service: FanzaService) => (
                 <div key={service.slug} className={styles.serviceBlock}>
-                  <div className={styles.subCategoryLabel} style={{ color: siteColor }}>{service.name}</div>
+                  <div className={styles.subCategoryLabel} style={{ color: siteColor, fontSize: '0.65rem' }}>{service.name.toUpperCase()}</div>
                   <ul className={styles.nestedList}>
                     {service.floors.map((floor) => (
                       <li key={floor.slug}>
                         <Link href={`/adults/fanza/${service.slug}/${floor.slug}`} className={styles.link}>
-                          <span>📂 {floor.name}</span>
+                          <span className={styles.linkText}>{floor.name}</span>
                           <span className={styles.badge}>{floor.count}</span>
                         </Link>
                       </li>
@@ -313,20 +341,31 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [], pro
         </div>
       )}
 
-      {/* 📝 9. LATEST POSTS (既存維持) */}
+      {/* 📝 INTEL LOGS (最新記事) */}
       <div className={styles.sectionWrapper}>
-        <SectionHeader title="LATEST NEWS" id="LATEST" />
+        <SectionHeader title="INTEL LOGS" id="LATEST" icon="📄" />
         {openSections['LATEST'] && (
           <ul className={styles.accordionContent}>
-            {recentPosts.map((post) => (
+            {recentPosts.length > 0 ? recentPosts.map((post) => (
               <li key={post.id}>
-                <Link href={`${site.site_prefix}/news/${post.slug || post.id}`} className={styles.link}>
-                  <span className={styles.recentTitle}>{isAdult ? '📄' : '📄'} {post.title}</span>
+                <Link href={`/news/${post.slug || post.id}`} className={styles.link}>
+                  <span className={styles.recentTitle}>{post.title}</span>
                 </Link>
               </li>
-            ))}
+            )) : (
+              <li className={styles.emptyLink}>NO RECENT LOGS</li>
+            )}
           </ul>
         )}
+      </div>
+
+      {/* 📟 SYSTEM STATUS */}
+      <div className={styles.systemStatus}>
+        <div className={styles.statusLine}>
+          <span className={styles.statusDot} style={{ backgroundColor: isLoading ? '#ffaa00' : '#00ffaa' }} />
+          <span>SYSTEM_{isLoading ? 'SYNCING' : 'READY'}</span>
+        </div>
+        <div className={styles.timestamp}>{new Date().toISOString().split('T')[0].replace(/-/g, '.')}</div>
       </div>
     </aside>
   );

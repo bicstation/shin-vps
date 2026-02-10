@@ -7,7 +7,13 @@ app_name = 'api'
 
 urlpatterns = [
     # ==========================================================
-    # 1. 認証 (Auth)
+    # 0. システム・ルート
+    # ==========================================================
+    path('', views.api_root, name='api_root'),
+    path('status/', views.status_check, name='status_check'),
+
+    # ==========================================================
+    # 1. 認証 (Auth) - auth_views.py
     # ==========================================================
     path('auth/login/', views.login_view, name='api_login'),
     path('auth/logout/', views.logout_view, name='api_logout'),
@@ -16,7 +22,7 @@ urlpatterns = [
     path('auth/user/', views.get_user_view, name='api_user'),
 
     # ==========================================================
-    # 2. PC・ソフトウェア製品 (PCProduct)
+    # 2. PC・ソフトウェア製品 (PCProduct) - general_views.py
     # ==========================================================
     # 🏆 ランキング
     path('pc-products/ranking/', views.PCProductRankingView.as_view(), name='pc_product_ranking'),
@@ -28,44 +34,48 @@ urlpatterns = [
     # 📈 価格推移
     path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
 
-    # 🔍 詳細
+    # 🔍 詳細 (ID または unique_id)
     path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
 
-    # 📋 一覧 (末尾のスラッシュを意識)
+    # 📋 一覧
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # ==========================================================
-    # 3. FANZA 最適化商品 (FanzaProduct)
+    # 3. 統合アダルト共通エンドポイント (重要) - adult_views.py
+    # ==========================================================
+    # 💡 Next.jsから ?api_source=DMM / FANZA / DUGA を付けて共通で叩くURL
+    path('unified-adult-products/', views.UnifiedAdultProductListView.as_view(), name='unified_adult_products'),
+
+    # ==========================================================
+    # 4. FANZA 最適化商品 (FanzaProduct - Direct API連携) - adult_views.py
     # ==========================================================
     # 📋 一覧
     path('fanza-products/', views.FanzaProductListAPIView.as_view(), name='fanza_product_list'),
     
-    # 🔍 詳細 (unique_id: fz_xxxx 等)
+    # 🔍 詳細 (数値ID または unique_id: fz_xxxx)
     path('fanza-products/<str:unique_id>/', views.FanzaProductDetailAPIView.as_view(), name='fanza_product_detail'),
 
     # ==========================================================
-    # 4. アダルト商品 (AdultProduct - DUGA/汎用)
+    # 5. アダルト/DUGA商品 (AdultProduct) - adult_views.py
     # ==========================================================
-    # 🏆 ランキング (AI解析済み優先)
+    # 🏆 ランキング
     path('adult-products/ranking/', views.AdultProductRankingAPIView.as_view(), name='adult_product_ranking'),
     
     # 📋 一覧
     path('adult-products/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
     
-    # 🔍 詳細
+    # 🔍 詳細 (数値ID または product_id_unique: DMM_xxxx / FANZA_xxxx)
     path('adult-products/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # ==========================================================
-    # 5. Linkshare商品
+    # 6. Linkshare商品 (物販アフィリエイト) - general_views.py
     # ==========================================================
     path('linkshare/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_list'),
     path('linkshare/<str:sku>/', views.LinkshareProductDetailAPIView.as_view(), name='linkshare_product_detail'),
 
     # ==========================================================
-    # 6. マスターデータ (エンティティ)
+    # 7. マスターデータ (エンティティ) - general_views.py
     # ==========================================================
-    # 💡 全て /api/actresses/ のような形でアクセス可能。
-    # Next.js のサイドバーや絞り込み検索で使用します。
     path('actresses/', views.ActressListAPIView.as_view(), name='actress_list'),
     path('genres/', views.GenreListAPIView.as_view(), name='genre_list'),
     path('makers/', views.MakerListAPIView.as_view(), name='maker_list'),

@@ -63,7 +63,7 @@ class Command(BaseCommand):
                     break
 
                 try:
-                    # fetch_item_list を利用して最新順(sort='date')でデータを取得
+                    # 💡 リクエストURLには API仕様通り 'DMM.com' (target['site']) が入ります
                     data = client.fetch_item_list(
                         site=target['site'],
                         service=service,
@@ -80,8 +80,7 @@ class Command(BaseCommand):
                         self.stdout.write(f"   - {start_page + p}ページ目: データが見つかりません。")
                         break
 
-                    # RawApiData への保存（一括保存用のバッチ作成）
-                    # サイトコードから source 名を正規化
+                    # 💡 DB保存用のソース名は 分かりやすく 'DMM' に正規化
                     source_name = 'FANZA' if 'FANZA' in target['site_name'] else 'DMM'
 
                     raw_data_batch = [{
