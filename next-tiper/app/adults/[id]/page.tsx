@@ -2,10 +2,8 @@
 // @ts-nocheck
 /**
  * ==============================================================================
- * 🔞 TIPER Product Detail - Hybrid Cyber Archive
+ * 🔞 TIPER Product Detail - Hybrid Cyber Archive (SEO Optimized)
  * ==============================================================================
- * Next.js 15 Async Params / AI Performance Stats / Platform Auto-Switch
- * [Referrer Policy Patch for FANZA/DMM Streaming]
  */
 
 export const dynamic = 'force-dynamic';
@@ -23,18 +21,25 @@ import AdultProductGallery from '@shared/cards/AdultProductGallery';
 import MoviePlayerModal from '@shared/product/MoviePlayerModal';
 
 /**
- * 💡 メタデータ生成 (Next.js 15 Async Params 対応)
+ * 💡 メタデータ生成 (Next.js 15 Async Params 修正)
+ * SEOエラーを防ぐため、引数の型定義を厳密に合わせます。
  */
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const params = await props.params;
+  const id = params.id;
+
   if (!id) return constructMetadata("エラー", "IDが見つかりません。");
 
   try {
     const product = await getAdultProductDetail(id);
-    if (!product || product._error) return constructMetadata("作品未検出", "指定のノードは存在しません。");
+    if (!product || product._error) {
+      return constructMetadata("作品未検出", "指定のノードは存在しません。");
+    }
 
     const actressNames = product.actresses?.map(a => a.name).join(', ') || '';
-    const description = `【${product.maker?.name || '解析済み'}】${actressNames ? `出演: ${actressNames}。` : ''} AIスコア: ${product.spec_score ?? 0}点。${product.ai_summary || product.title || ''}`;
+    const makerName = product.maker?.name || '解析済み';
+    // 説明文を160文字程度に最適化（SEO）
+    const description = `【${makerName}】${actressNames ? `出演: ${actressNames}。` : ''} AIスコア: ${product.spec_score ?? 0}点。${product.ai_summary || product.title || ''}`.slice(0, 160);
 
     return constructMetadata(
       `${product.title || '詳細'} | tiper.live AI Archive`,
@@ -52,7 +57,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
  */
 export default async function ProductDetailPage(props: { params: Promise<{ id: string }> }) {
   // 1. Next.js 15 準拠の非同期パラメータ解決
-  const { id } = await props.params;
+  const params = await props.params;
+  const id = params.id;
   const currentCategory = 'adults';
   
   let product = null;
@@ -84,7 +90,7 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   // 💡 プラットフォーム判定
   const source = (product.api_source || '').toUpperCase();
   const isDuga = source === 'DUGA';
-  const isFanza = source === 'FANZA';
+  const isFanza = source === 'FANZA' || source === 'DMM';
   const themeClass = isDuga ? styles.dugaTheme : isFanza ? styles.fanzaTheme : '';
 
   // --- 🖼️ ビジュアルデータの正規化 ---
@@ -115,34 +121,33 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  // 2. 関連作品の並列フェッチ
+  // 2. 関連作品のフェッチ
   let relatedProducts = [];
   try {
     if (product.maker?.id) {
       const response = await getAdultProducts({ 
         maker: product.maker.id, 
-        limit: 4,
-        exclude: id
+        limit: 5,
       });
-      relatedProducts = response?.results || [];
+      // product_id_unique を使って自分自身を除外（SEO的にも重要）
+      relatedProducts = response?.results?.filter(p => p.product_id_unique !== product.product_id_unique).slice(0, 4) || [];
     }
   } catch (e) {
     console.warn("Related products fetch failed");
   }
 
   const title = product.title || 'Untitled Archive';
-  const price = typeof product.price === 'number' ? product.price.toLocaleString() : '---';
+  const priceDisplay = typeof product.price === 'number' ? product.price.toLocaleString() : '---';
 
   return (
     <div className={`${styles.wrapper} ${themeClass}`}>
-      {/* 🛠️ ナビゲーション・ヘッダー */}
       <nav className={styles.nav}>
         <div className="max-w-[1440px] mx-auto px-[5%] flex justify-between items-center w-full">
           <Link href={`/${currentCategory}`} className={styles.backLink}>
             <span className="opacity-50">«</span> EXPLORE_{source || 'CORE'}_STREAM
           </Link>
           <div className="flex items-center gap-6">
-            <span className="hidden md:block text-[9px] text-gray-600 font-mono tracking-widest uppercase">ID_BUFFER: {product.product_id_unique || id}</span>
+            <span className="hidden md:block text-[9px] text-gray-600 font-mono tracking-widest uppercase">ID_BUFFER: {product.product_id_unique}</span>
             <div className={isDuga ? styles.sourceBadgeDuga : isFanza ? styles.sourceBadgeFanza : styles.sourceBadge}>
               {source || 'AI_VIRTUAL'}
             </div>
@@ -151,29 +156,18 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
       </nav>
 
       <main className={styles.mainContainer}>
-        
-        {/* 💡 ビジュアル・ヒーロー・セクション */}
         <section className={styles.visualHeroSection}>
           <div className={styles.visualGrid}>
-            
-            {/* 左: メインジャケット */}
             <div className={styles.jacketColumn}>
               <div className={styles.jacketWrapper}>
-                <img 
-                  src={jacketImage} 
-                  alt={`${title} Jacket`} 
-                  className={styles.jacketImage}
-                />
+                <img src={jacketImage} alt={title} className={styles.jacketImage} />
                 <div className={styles.jacketOverlay} />
                 <div className={styles.scanline} />
                 <div className={styles.cornerMarker} />
                 <div className={styles.jacketLabel}>DATA_STREAM: SUCCESS_01</div>
               </div>
             </div>
-
-            {/* 右: インタラクティブ・ギャラリー (動画/画像) */}
             <div className={styles.galleryColumn}>
-              {/* 💡 Note: Gallery内のVideoタグには必ず referrerPolicy="no-referrer" を適用させること */}
               <AdultProductGallery 
                 images={galleryImages} 
                 title={title} 
@@ -184,21 +178,15 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
           </div>
         </section>
 
-        {/* 💡 コンテンツ詳細エリア */}
         <div className={styles.gridContent}>
-          
-          {/* 左カラム：AI解析 & 説明 */}
           <section className="space-y-8">
             {product.ai_summary && (
               <div className={styles.aiSummaryCard}>
                 <div className={styles.aiLabel}>Expert AI_Report</div>
-                <p className={styles.aiText}>
-                  "{product.ai_summary}"
-                </p>
+                <p className={styles.aiText}>"{product.ai_summary}"</p>
                 <div className={styles.aiReflection} />
               </div>
             )}
-            
             {product.description && (
               <div className="p-8 bg-[#111125]/40 rounded-sm border border-white/5">
                 <h4 className="text-[10px] font-black text-gray-500 uppercase mb-6 tracking-[0.4em]">Node_Raw_Description</h4>
@@ -209,14 +197,12 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
             )}
           </section>
 
-          {/* 右カラム：ステータス・評価・アクション */}
           <section className="flex flex-col">
             <h1 className={styles.detailTitle}>{title}</h1>
-            
             <div className="flex items-center gap-6 mb-10 pb-10 border-b border-white/5">
               <div className={styles.priceContainer}>
                 <span className="text-xl mr-2 text-[#e94560] italic font-light opacity-60">¥</span>
-                <span className="text-4xl font-black tabular-nums">{price}</span>
+                <span className="text-4xl font-black tabular-nums">{priceDisplay}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[9px] text-gray-500 font-black tracking-widest uppercase mb-1">Status</span>
@@ -224,7 +210,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
               </div>
             </div>
 
-            {/* 📊 AI解析チャート */}
             <div className={styles.statsCard}>
               <div className="flex justify-between items-end mb-8">
                 <h3 className="text-[10px] font-black text-gray-500 tracking-[0.4em] uppercase">AI_Performance_Matrix</h3>
@@ -233,14 +218,12 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                   <span className="text-[10px] text-gray-600 ml-2 font-black">/100</span>
                 </div>
               </div>
-              
               <div className="space-y-5">
                 {[
                   { label: 'VISUAL', val: getSafeScore(product.score_visual), color: 'from-pink-500 to-rose-500' },
                   { label: 'STORY', val: getSafeScore(product.score_story), color: 'from-blue-500 to-indigo-500' },
                   { label: 'EROTIC', val: getSafeScore(product.score_erotic), color: 'from-red-600 to-orange-500' },
                   { label: 'RARITY', val: getSafeScore(product.score_rarity), color: 'from-amber-400 to-yellow-500' },
-                  { label: 'COST', val: getSafeScore(product.score_cost), color: 'from-emerald-500 to-teal-500' },
                 ].map((stat) => (
                   <div key={stat.label} className="group">
                     <div className="flex justify-between text-[10px] font-black mb-2 tracking-widest uppercase">
@@ -255,7 +238,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
               </div>
             </div>
 
-            {/* 📋 スペックテーブル */}
             <div className={styles.specTableContainer}>
               <table className={styles.specTable}>
                 <tbody>
@@ -283,17 +265,10 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
               </table>
             </div>
 
-            {/* 🚀 アフィリエイト・アクション */}
             <div className="mt-12 space-y-4">
               {movieData?.url && (
-                /* 💡 MoviePlayerModal 内部の video 要素に 
-                   referrerPolicy="no-referrer" を追加したコンポーネントであることを確認してください */
-                <MoviePlayerModal 
-                  videoUrl={movieData.url} 
-                  title={title} 
-                />
+                <MoviePlayerModal videoUrl={movieData.url} title={title} />
               )}
-
               <a 
                 href={product.affiliate_url || '#'} 
                 target="_blank" 
@@ -309,7 +284,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
           </section>
         </div>
 
-        {/* --- 💡 関連作品エリア --- */}
         {relatedProducts.length > 0 && (
           <section className="mt-40 pt-20 border-t border-white/5">
             <div className="flex items-center gap-6 mb-16">
@@ -320,14 +294,12 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {relatedProducts.map((p) => (
-                <AdultProductCard key={p.id} product={p} />
+                <AdultProductCard key={p.product_id_unique || p.id} product={p} />
               ))}
             </div>
           </section>
         )}
       </main>
-      
-      {/* フッター装飾 */}
       <div className="mt-40 h-[1px] w-full bg-gradient-to-r from-transparent via-[#e94560]/10 to-transparent"></div>
     </div>
   );

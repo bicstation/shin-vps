@@ -20,7 +20,7 @@ import Sidebar from '@shared/layout/Sidebar';
 import Pagination from '@shared/common/Pagination';
 
 // ✅ 内部ロジック・API
-import { fetchMakers, getFanzaProducts } from '@shared/lib/api/django';
+import { fetchMakers, getAdultProducts } from '@shared/lib/api/django';
 import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 import { constructMetadata } from '@shared/lib/metadata';
 
@@ -69,6 +69,7 @@ export default async function CategoryListPage(props: {
         return notFound(); 
     }
 
+    // 日本語URL（例: %E4%B8%AD%E5%87%BA%E3%81%97）をデコードして「中出し」にする
     const decodedId = decodeURIComponent(id);
     const currentPageNum = Number(resolvedSearchParams?.page) || 1;
     const currentSort = resolvedSearchParams?.sort || '-release_date'; 
@@ -89,9 +90,9 @@ export default async function CategoryListPage(props: {
     
     const queryKey = categoryMap[category] || category;
 
-    // 3. データフェッチ (エラーハンドリングを強化)
+    // 3. データフェッチ (全プラットフォーム対応の getAdultProducts を使用)
     const [productData, makersData, wpData] = await Promise.all([
-        getFanzaProducts({
+        getAdultProducts({
             [queryKey]: decodedId,
             offset: offset,
             limit: limit,
@@ -110,14 +111,24 @@ export default async function CategoryListPage(props: {
     const makers = Array.isArray(makersData) ? makersData : (makersData as any)?.results || [];
     const latestPosts = wpData?.results || [];
 
-    // 4. 正確なカテゴリ表示名の取得ロジック (Nullガード徹底)
+    /**
+     * 💡 4. 正確なカテゴリ表示名の取得ロジック
+     * URLからデコードした名称（decodedId）を基本とし、
+     * APIのレスポンス内に一致する正式名称があればそれを採用する。
+     */
     let categoryDisplayName = decodedId; 
     if (products.length > 0) {
         const first = products[0];
         try {
             const findNameInList = (list: any[]) => {
                 if (!Array.isArray(list)) return null;
-                const target = list.find((x: any) => String(x.id) === decodedId || x.slug === decodedId);
+                // 名前、ID、スラッグのいずれかが URLのIDと一致するものを探す
+                const target = list.find((x: any) => 
+                    String(x.name) === decodedId || 
+                    String(x.id) === decodedId || 
+                    x.slug === decodedId ||
+                    x.product_id_unique === decodedId
+                );
                 return target ? target.name : null;
             };
 
@@ -126,8 +137,9 @@ export default async function CategoryListPage(props: {
             } else if (category === 'actress') {
                 categoryDisplayName = findNameInList(first.actresses) || categoryDisplayName;
             } else if (category === 'maker' && first.maker) {
-                if (String(first.maker.id) === decodedId || first.maker.slug === decodedId) {
-                    categoryDisplayName = first.maker.name;
+                const m = first.maker;
+                if (String(m.name) === decodedId || String(m.id) === decodedId || m.slug === decodedId) {
+                    categoryDisplayName = m.name;
                 }
             } else if (category === 'author') {
                 categoryDisplayName = findNameInList(first.authors) || categoryDisplayName;
@@ -225,7 +237,7 @@ export default async function CategoryListPage(props: {
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
                                 {products.map((product: any) => (
                                     <ProductCard 
-                                        key={product.id} 
+                                        key={product.product_id_unique || product.id} 
                                         product={product} 
                                     />
                                 ))}
@@ -243,7 +255,7 @@ export default async function CategoryListPage(props: {
                         <div className="py-40 text-center bg-[#111125]/50 rounded-[3rem] border border-white/5">
                             <h3 className="text-4xl font-black text-white uppercase italic mb-4">No Data found</h3>
                             <p className="text-gray-500 text-xs tracking-[0.3em] mb-12">
-                                指定されたカテゴリ「{decodedId}」のデータが見つかりません。
+                                指定されたパラメータ「{decodedId}」に一致するアーカイブが見つかりません。
                             </p>
                             <Link href="/" className="px-12 py-5 bg-[#e94560] text-white text-[11px] font-black uppercase hover:bg-[#ff4d6d] transition-colors">
                                 Return to Archive

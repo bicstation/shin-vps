@@ -3,132 +3,125 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from "react";
+import { Metadata } from "next";
 import ProductCard from "@shared/cards/AdultProductCard"; 
 import Sidebar from "@shared/layout/Sidebar";
 import Pagination from "@shared/common/Pagination"; 
-import { getFanzaProducts, fetchMakers } from '@shared/lib/api/django';
+import * as DjangoAPI from '@shared/lib/api/django';
 import { fetchPostList } from '@shared/lib/api';
 import styles from "./BrandPage.module.css";
 import Link from "next/link";
 
-// 🏎️ パフォーマンス最適化
+/**
+ * 3. SEOメタデータの動的生成
+ */
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
+    const slug = decodeURIComponent(params.slug);
+    const title = `${slug.toUpperCase()} | アーカイブ解析ノード | TIPER`;
+    
+    return {
+        title: title,
+        description: `${slug}の最新作品情報を5軸解析データと共にストリーミング。`,
+        openGraph: {
+            title: title,
+            type: "website",
+        },
+    };
+}
+
 export const dynamic = 'force-dynamic';
-export const revalidate = 3600; 
+export const revalidate = 3600;
 
 interface PageProps {
     params: Promise<{ slug: string }>;
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-/**
- * ブランド・プラットフォーム別 アーカイブページ
- * Django側の UnifiedAdultProductListView または MakerFilter を使用します。
- */
 export default async function BrandPage(props: PageProps) {
-    // 1. Next.js 15 パラメータ解決
+    // --- 1. パラメータ解決 ---
     const resolvedParams = await props.params;
     const resolvedSearchParams = await props.searchParams;
     
     const slug = resolvedParams?.slug || "";
     const decodedSlug = decodeURIComponent(slug);
-    
-    // クエリパラメータの安全な取得
-    const currentOffset = Number(Array.isArray(resolvedSearchParams.offset) ? resolvedSearchParams.offset[0] : resolvedSearchParams.offset) || 0;
-    const currentSort = (Array.isArray(resolvedSearchParams.sort) ? resolvedSearchParams.sort[0] : resolvedSearchParams.sort) || "-release_date";
-    const limit = 24;
-
     const lowerSlug = decodedSlug.toLowerCase();
-    
-    // 判定ロジック: プラットフォームのトップか、特定のメーカーか
     const isMainPlatform = ['duga', 'fanza', 'dmm'].includes(lowerSlug);
+
+    // --- 2. ページングとソートの補正 ---
+    const limit = 24;
+    const currentOffset = Number(resolvedSearchParams.offset || 0);
     
-    // APIパラメータの構築
+    // DjangoのPageNumberPagination (?page=X) への変換
+    const currentPage = Math.floor(currentOffset / limit) + 1;
+    
+    // 4. ソートの連動
+    const currentSort = (Array.isArray(resolvedSearchParams.sort) 
+        ? resolvedSearchParams.sort[0] 
+        : (resolvedSearchParams.sort || "-release_date"));
+
+    // --- 3. APIパラメータの構築 ---
     const apiParams: any = {
-        offset: currentOffset,
-        limit: limit,
+        page: currentPage,
+        page_size: limit,
         ordering: currentSort,
     };
 
     if (isMainPlatform) {
-        // 例: /brand/fanza -> api_source=FANZA で全メーカー取得
-        apiParams.api_source = lowerSlug.toUpperCase(); 
+        apiParams.api_source = lowerSlug.toUpperCase();
     } else {
-        // 例: /brand/soft-on-demand -> maker__slug=soft-on-demand
-        apiParams.maker__slug = decodedSlug; 
+        apiParams.maker__slug = decodedSlug;
+        if (decodedSlug.toLowerCase().includes('duga')) apiParams.api_source = 'DUGA';
     }
 
-    // 2. データフェッチ (並列実行)
-    let fetchErrorMsg = null;
+    // --- 4. データフェッチ (並列実行) ---
+    const fetchFunc = (DjangoAPI as any).getAdultProducts;
     
     const [pcData, mRes, wRes] = await Promise.all([
-        getFanzaProducts(apiParams).catch((err) => {
-            console.error("📡 [Server-Side Error] Products fetch failed:", err);
-            fetchErrorMsg = err.message;
-            return { results: [], count: 0, tiper_debug: {} };
-        }),
-        fetchMakers().catch(() => []),
+        typeof fetchFunc === 'function' ? fetchFunc(apiParams).catch(() => null) : null,
+        DjangoAPI.fetchMakers().catch(() => []),
         fetchPostList(5).catch(() => ({ results: [] }))
     ]);
 
     const products = pcData?.results || [];
     const totalCount = pcData?.count || 0;
-    const makersData = Array.isArray(mRes) ? mRes : (mRes as any).results || [];
-    const wpPosts = wRes?.results || [];
+    const makersData = Array.isArray(mRes) ? mRes : (mRes as any)?.results || [];
+    const wpPosts = Array.isArray(wRes) ? wRes : (wRes as any)?.results || [];
 
-    // 💡 デバッグ情報の整理
-    const djangoDebug = pcData?.tiper_debug || null;
-
-    // 表示用ブランド名の特定
     const makerObj = makersData.find((m: any) => m.slug === decodedSlug);
-    const brandDisplayName = isMainPlatform ? decodedSlug.toUpperCase() : (makerObj?.name || decodedSlug);
+    const brandDisplayName = isMainPlatform ? lowerSlug.toUpperCase() : (makerObj?.name || decodedSlug);
 
     return (
         <div className={styles.pageContainer}>
-            {/* 🛠️ デバッグスクリプト (ブラウザコンソール用) */}
-            <script
-                dangerouslySetInnerHTML={{
-                    __html: `
-                        (function() {
-                            console.group("🚀 TIPER SYSTEM: Brand Archiver");
-                            console.log("Context_Slug:", ${JSON.stringify(decodedSlug)});
-                            console.log("Is_Platform:", ${isMainPlatform});
-                            console.log("Identified_Backend:", ${JSON.stringify(pcData?.identified_site || "N/A")});
-                            ${djangoDebug ? `console.table(${JSON.stringify(djangoDebug)});` : ''}
-                            console.groupEnd();
-                        })();
-                    `,
-                }}
-            />
-
-            {/* 🌌 ブランドページ専用 サイバーパンク・ヘッダー */}
+            {/* ヘッダーエリア */}
             <header className={styles.fullWidthHeader} data-platform={isMainPlatform ? lowerSlug : "maker"}>
                 <div className={styles.headerGlow} />
                 <div className={styles.headerInner}>
                     <div className={styles.titleArea}>
                         <div className={styles.label}>
                             <span className={styles.pulseDot} />
-                            {isMainPlatform ? "ESTABLISHED PLATFORM" : "AUTHORIZED MAKER"}
+                            {isMainPlatform ? "SYSTEM_PLATFORM" : "MAKER_DATABASE"}
                         </div>
                         <h1 className={styles.title}>
-                            {brandDisplayName} <span className={styles.titleThin}>/ARCHIVE</span>
+                            {brandDisplayName} <span className={styles.titleThin}>/DATA_LINK</span>
                         </h1>
                     </div>
                     
                     <div className={styles.stats}>
-                        <div className={styles.statsLabel}>SYNCED_CONTENT</div>
+                        <div className={styles.statsLabel}>RECORDS_FOUND</div>
                         <div className={styles.statsValue}>
                             <span className={styles.countNum}>{totalCount.toLocaleString()}</span>
-                            <span className={styles.countUnit}>ITEMS</span>
+                            <span className={styles.countUnit}>UNITS</span>
                         </div>
                     </div>
                 </div>
             </header>
 
             <div className={styles.wrapper}>
-                {/* 💡 システムサイドバー (ブランドナビゲーション統合) */}
+                {/* サイドバー */}
                 <aside className={styles.sidebar}>
                     <div className={styles.brandNav}>
-                        <h3>PLATFORM SELECT</h3>
+                        <h3>NETWORK_SELECT</h3>
                         <div className={styles.brandButtons}>
                             {['FANZA', 'DMM', 'DUGA'].map((b) => (
                                 <Link 
@@ -144,29 +137,32 @@ export default async function BrandPage(props: PageProps) {
 
                     <Sidebar 
                         makers={makersData} 
-                        latestPosts={(wpPosts || []).map((p: any) => ({
+                        recentPosts={wpPosts.map((p: any) => ({
                             id: p.id?.toString() || Math.random().toString(),
-                            title: p.title?.rendered || "Untitled",
+                            title: p.title?.rendered || p.title || "Untitled",
                             slug: p.slug || ""
                         }))} 
                     />
                 </aside>
 
-                {/* 💡 メインコンテンツ領域 */}
+                {/* メイングリッド */}
                 <main className={styles.main}>
+                    <div className={styles.toolbar}>
+                        <div className={styles.sortInfo}>
+                            STREAM_RANGE: {currentOffset + 1} - {Math.min(currentOffset + limit, totalCount)}
+                        </div>
+                        <div className={styles.sortActions}>
+                            {/* ソートボタン例 (クライアント側処理が必要な場合は別コンポーネント化) */}
+                            <div className={styles.currentSortLabel}>SORT: {currentSort.replace('-', '').toUpperCase()}</div>
+                        </div>
+                    </div>
+
                     {products.length > 0 ? (
                         <div className={styles.contentFadeIn}>
-                            <div className={styles.gridHeader}>
-                                <div className={styles.sortInfo}>
-                                    Showing {currentOffset + 1} - {Math.min(currentOffset + limit, totalCount)} of {totalCount}
-                                </div>
-                                <div className={styles.displayTag}>NODE: {decodedSlug.toUpperCase()}</div>
-                            </div>
-
                             <div className={styles.productGrid}>
                                 {products.map((item: any) => (
                                     <ProductCard 
-                                        key={item.id} 
+                                        key={item.id || item.product_id_unique} 
                                         product={item} 
                                     />
                                 ))}
@@ -183,20 +179,10 @@ export default async function BrandPage(props: PageProps) {
                         </div>
                     ) : (
                         <div className={styles.noDataLarge}>
-                            <div className={styles.lostIcon}>
-                                <div className={styles.scannerLine} />
-                                📡
-                            </div>
-                            <h3>NO DATA DETECTED</h3>
-                            <p>
-                                ノード「{brandDisplayName}」の信号が未検出です。<br />
-                                データベースにまだ同期されていないか、フィルタ条件が厳しすぎる可能性があります。
-                            </p>
-                            {fetchErrorMsg && <p className={styles.errorText}>Reason: {fetchErrorMsg}</p>}
-                            <Link href="/" className={styles.backBtn}>
-                                <span className={styles.btnText}>RETURN TO HQ</span>
-                                <span className={styles.btnArrow}>→</span>
-                            </Link>
+                            <div className={styles.errorIcon}>⚠️</div>
+                            <h3>ERROR: NULL_RESPONSE</h3>
+                            <p>ノード「{brandDisplayName}」のデータストリームが途絶えています。</p>
+                            <Link href="/" className={styles.backBtn}>REBOOT_SYSTEM</Link>
                         </div>
                     )}
                 </main>

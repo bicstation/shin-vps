@@ -1,20 +1,43 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import re
 from datetime import datetime
 from django.utils.dateparse import parse_date
+from django.utils import timezone
 from typing import List, Tuple, Dict, Any, Optional
 
+# 必要なモデルとユーティリティ
 from api.models import RawApiData
 from api.utils.common import generate_product_unique_id 
 
 logger = logging.getLogger('api_utils')
 API_SOURCE = 'DUGA' 
 
-def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list[dict]]:
+def _optimize_duga_url(url: Optional[str]) -> str:
+    """
+    DUGA/DMMの画像URLを正規表現で最高画質(Large)に変換する内部関数
+    """
+    if not url:
+        return ""
+    
+    # プロトコル補完
+    if url.startswith('//'):
+        url = 'https:' + url
+
+    # DMMサーバーの画像であれば置換ロジックを適用
+    if 'pics.dmm.com' in url or 'pics.dmm.co.jp' in url:
+        # パターンA: ps.jpg / pt.jpg (Small/Thumb) -> pl.jpg (Large)
+        url = re.sub(r'p[s|t]\.jpg', 'pl.jpg', url, flags=re.IGNORECASE)
+        # パターンB: _s.jpg / _m.jpg (Small/Medium) -> _l.jpg (Large)
+        url = re.sub(r'_[ms]\.jpg', '_l.jpg', url, flags=re.IGNORECASE)
+        
+    return url
+
+def normalize_duga_data(raw_data_instance: RawApiData) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     DUGAのJSONデータを抽出し、正規化された辞書形式のリストを返します。
-    画像は全解像度を保持し、動画はURLとプレビュー画像のペアを辞書形式で保持します。
+    画像および動画プレビューは最高解像度(Large)へ自動変換し、JSON形式で保持します。
     """
     try:
         raw_json_data = getattr(raw_data_instance, 'raw_json_data', None)
@@ -49,53 +72,52 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list
     series_list = data.get('series', [])
     series_name = series_list[0].get('name') if series_list and isinstance(series_list[0], dict) else None 
 
-    # --- 📸 画像URLの抽出ロジック（全解像度網羅版） ---
+    # --- 📸 画像URLの抽出と高画質化 ---
     image_url_list = []
+    seen_urls = set()
     
-    # 1. ジャケット画像 (最優先: large -> midium -> small)
+    def add_url(raw_url):
+        if not raw_url:
+            return
+        optimized = _optimize_duga_url(raw_url)
+        if optimized and optimized not in seen_urls:
+            image_url_list.append(optimized)
+            seen_urls.add(optimized)
+
+    # 1. ジャケット画像
     jackets = data.get('jacketimage', [])
     if isinstance(jackets, list):
         for j in jackets:
             for size in ['large', 'midium', 'small']:
-                url = j.get(size)
-                if url:
-                    image_url_list.append(url)
+                add_url(j.get(size))
 
-    # 2. ポスター画像 (次に優先: large -> midium -> small)
+    # 2. ポスター画像
     posters = data.get('posterimage', [])
     if isinstance(posters, list):
         for p in posters:
             for size in ['large', 'midium', 'small']:
-                url = p.get(size)
-                if url:
-                    image_url_list.append(url)
+                add_url(p.get(size))
 
-    # 3. 商品内キャプチャ（サムネイル一覧）
+    # 3. 商品内キャプチャ
     thumbnails = data.get('thumbnail', [])
     if isinstance(thumbnails, list):
         for t in thumbnails:
-            url = t.get('image')
-            if url:
-                image_url_list.append(url)
+            add_url(t.get('image'))
     
-    # 順序を維持したまま重複削除
-    # index[0]には常に最も解像度の高いジャケット(jacket.jpg)が来るようになります
-    image_url_list = list(dict.fromkeys(image_url_list))
-    
-    # --- 🎥 サンプル動画データ（動画URL + キャプチャ画像のペア） ---
+    # --- 🎥 サンプル動画データ (JSON形式) ---
     sample_movies = data.get('samplemovie', [])
-    movie_data = {}
+    movie_json_data = {} # JSONField用
     
     if isinstance(sample_movies, list) and sample_movies:
-        # midiumサイズを優先取得、なければ他のサイズ
+        # 優先度の高い動画情報を取得
         m_info = sample_movies[0].get('midium') or sample_movies[0].get('large') or sample_movies[0].get('small') or {}
         movie_url = m_info.get('movie', "")
-        movie_capture = m_info.get('capture', "")
+        capture_url = m_info.get('capture', "")
         
         if movie_url:
-            movie_data = {
+            movie_json_data = {
                 'url': movie_url,
-                'preview_image': movie_capture
+                'preview_image': _optimize_duga_url(capture_url) # キャプチャも最高画質化
             }
 
     # --- 日付のパース ---
@@ -116,7 +138,6 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list
             p_val = s.get('data', {}).get('price')
             if p_val:
                 try:
-                    # カンマを除去して数値化
                     prices.append(int(str(p_val).replace(',', '')))
                 except ValueError:
                     continue
@@ -132,9 +153,8 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list
         'release_date': release_date,
         'affiliate_url': data.get('affiliateurl') or "", 
         'price': min_price,
-        'image_url_list': image_url_list,
-        # 💡 モデルのカラム名 'sample_movie_url' に合わせて、辞書からURLのみを抽出して格納
-        'sample_movie_url': movie_data if movie_data else None,
+        'image_url_list': image_url_list,  # JSONField: 高画質画像リスト
+        'sample_movie_url': movie_json_data if movie_json_data else None, # JSONField: 動画URL+高画質キャプチャ
         
         'maker': maker_name,
         'label': label_name,
@@ -142,13 +162,14 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> tuple[list[dict], list
         'director': director_name,
         
         'raw_data_id': raw_data_instance.id,
+        'updated_at': timezone.now(),
         'is_active': True,
         'is_posted': False,
     }
     
     # --- ManyToManyリレーション用辞書 ---
     relations_dict = {
-        'product_id_unique': product_dict['product_id_unique'],
+        'api_product_id': str(api_product_id),
         'genres': [c.get('data', {}).get('name') for c in data.get('category', []) if c.get('data', {}).get('name')],
         'actresses': [p.get('data', {}).get('name') for p in data.get('performer', []) if p.get('data', {}).get('name')],
     }

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+import re
 from datetime import datetime
 from django.utils.dateparse import parse_date
 from django.utils import timezone
@@ -32,15 +33,33 @@ def _safe_extract_single_entity(item_info_content: dict, key: str) -> tuple[Opti
         return data, None
     return None, None
 
+def _optimize_fanza_url(url: Optional[str]) -> str:
+    """
+    DMM/FANZAの画像URLを正規表現で最高画質(Large)に変換
+    """
+    if not url:
+        return ""
+    
+    # プロトコル補完
+    if url.startswith('//'):
+        url = 'https:' + url
+
+    # DMMサーバーの画像であれば置換ロジックを適用
+    if 'pics.dmm.com' in url or 'pics.dmm.co.jp' in url:
+        # パターンA: ps.jpg / pt.jpg (Small/Thumb) -> pl.jpg (Large)
+        url = re.sub(r'p[s|t]\.jpg', 'pl.jpg', url, flags=re.IGNORECASE)
+        # パターンB: _s.jpg / _m.jpg (Small/Medium) -> _l.jpg (Large)
+        url = re.sub(r'_[ms]\.jpg', '_l.jpg', url, flags=re.IGNORECASE)
+        
+    return url
+
 def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    RawApiData のレコードを正規化する。
-    生データの api_source を参照し、FANZAとDMMを動的に切り替えて「取りこぼし」を防ぎます。
+    RawApiData のレコードを正規化。動画データもJSON形式で集約します。
     """
     products_data_list = []
     relations_list = []
     
-    # 💡 修正ポイント：生データのソース（'FANZA' か 'DMM'）を動的に取得
     actual_source = getattr(raw_instance, 'api_source', 'FANZA')
     
     try:
@@ -57,7 +76,7 @@ def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]]
             
         items = raw_json_data.get('result', {}).get('items', [])
     except Exception as e:
-        logger.error(f"RawApiData ID {raw_instance.id} のデコード中にエラー: '{e}'")
+        logger.error(f"RawApiData ID {raw_instance.id} のデコードエラー: '{e}'")
         return [], []
 
     if not items:
@@ -72,48 +91,56 @@ def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]]
 
         item_info = data.get('iteminfo', {})
         
-        # 1. 各種エンティティ抽出
+        # 1. エンティティ抽出
         maker_name, _ = _safe_extract_single_entity(item_info, 'maker')
         label_name, _ = _safe_extract_single_entity(item_info, 'label')
         series_name, _ = _safe_extract_single_entity(item_info, 'series')
         director_name, _ = _safe_extract_single_entity(item_info, 'director')
         
-        # 2. ジャンル・女優リスト
+        # 2. ジャンル・女優
         genre_names = [g.get('name') for g in item_info.get('genre', []) if g.get('name')]
         actress_names = [a.get('name') for a in item_info.get('actress', []) if a.get('name')]
         
-        # 3. 画像URLリストの正規化（高品質優先ロジック）
+        # 3. 画像URLリスト（高画質化）
         image_url_list = []
         image_data = data.get('imageURL', {})
         sample_image_dict = data.get('sampleImageURL', {})
 
-        def _format_url(url: str) -> str:
-            if url and url.startswith('//'):
-                return 'https:' + url
-            return url or ""
+        for key in ['large', 'list', 'small']:
+            u = _optimize_fanza_url(image_data.get(key))
+            if u and u not in image_url_list:
+                image_url_list.append(u)
 
-        # 優先順位：パッケージ大 -> サンプル大 -> パッケージ小 -> サンプル小
-        best_main = _format_url(image_data.get('large'))
-        if best_main:
-            image_url_list.append(best_main)
+        sample_l_images = sample_image_dict.get('sample_l', {}).get('image', [])
+        if isinstance(sample_l_images, list):
+            for img in sample_l_images:
+                u = _optimize_fanza_url(img)
+                if u and u not in image_url_list:
+                    image_url_list.append(u)
 
-        sample_l_list = sample_image_dict.get('sample_l', {}).get('image', [])
-        if isinstance(sample_l_list, list):
-            for img in sample_l_list:
-                f_img = _format_url(img)
-                if f_img and f_img not in image_url_list:
-                    image_url_list.append(f_img)
-
-        for sub_key in ['small', 'list']:
-            sub_img = _format_url(image_data.get(sub_key))
-            if sub_img and sub_img not in image_url_list:
-                image_url_list.append(sub_img)
-
-        # 4. サンプル動画URL
+        # 4. サンプル動画データ (JSON形式)
         movie_urls = data.get('sampleMovieURL', {})
-        sample_movie = _format_url(movie_urls.get('size_720_480') or movie_urls.get('size_644_414') or "")
+        movie_json_data = {}
+        
+        sample_movie_path = (
+            movie_urls.get('size_720_480') or 
+            movie_urls.get('size_644_414') or 
+            movie_urls.get('size_560_360') or ""
+        )
+        
+        if sample_movie_path:
+            if sample_movie_path.startswith('//'):
+                sample_movie_path = 'https:' + sample_movie_path
+            
+            preview_images = movie_urls.get('pc_flag_images', {}).get('image', [])
+            raw_preview = preview_images[0] if isinstance(preview_images, list) and preview_images else ""
+            
+            movie_json_data = {
+                'url': sample_movie_path,
+                'preview_image': _optimize_fanza_url(raw_preview)
+            }
 
-        # 5. 価格の数値化
+        # 5. 価格
         price_val = None
         price_raw = data.get('prices', {}).get('price')
         if price_raw:
@@ -124,12 +151,11 @@ def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]]
             except:
                 price_val = None
         
-        # 6. Djangoモデル（AdultProduct）の構造に合わせて集約
-        # 💡 修正ポイント：実際のソースを使って一意のID（DMM_xxx や FANZA_xxx）を生成
+        # 6. 集約
         product_id_unique = generate_product_unique_id(actual_source, str(api_product_id))
         
         product_data = {
-            'api_source': actual_source, # 💡 ここで DMM か FANZA が保存される
+            'api_source': actual_source,
             'api_product_id': str(api_product_id),
             'product_id_unique': product_id_unique,
             'title': title,
@@ -137,20 +163,17 @@ def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]]
             'affiliate_url': data.get('affiliateURL') or "", 
             'price': price_val,
             'image_url_list': image_url_list,
-            'sample_movie_url': sample_movie,
+            'sample_movie_url': movie_json_data if movie_json_data else None,
             'maker': maker_name,
             'label': label_name,
             'series': series_name,
             'director': director_name,
-            'raw_data_id': raw_instance.id,
             'updated_at': timezone.now(),
             'is_active': True,
             'is_posted': False,
         }
         
         products_data_list.append(product_data)
-        
-        # 7. 多対多リレーション用データ
         relations_list.append({
             'api_product_id': str(api_product_id),
             'genres': genre_names,

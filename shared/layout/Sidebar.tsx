@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
@@ -42,7 +42,7 @@ interface SidebarProps {
   product?: PCProduct;
 }
 
-export default function Sidebar({ makers = [], recentPosts = [], product }: SidebarProps) {
+export default function Sidebar({ makers: initialMakers = [], recentPosts = [], product }: SidebarProps) {
   const site = getSiteMetadata();
   const siteColor = getSiteColor(site.site_name);
   const isAdult = site.site_group === 'adult';
@@ -54,9 +54,10 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
   const [genres, setGenres] = useState<MasterItem[]>([]);
   const [series, setSeries] = useState<MasterItem[]>([]);
   const [directors, setDirectors] = useState<MasterItem[]>([]);
+  const [makers, setMakers] = useState<any[]>(initialMakers);
   const [isLoading, setIsLoading] = useState(true);
 
-  // セクションの開閉状態（初期値）
+  // セクションの開閉状態
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'SPEC': true,
     'PLATFORMS': true,
@@ -64,7 +65,6 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
     'ACTRESSES': false,
     'GENRES': true,
     'SERIES': false,
-    'DIRECTORS': false,
     'CATEGORIES': true,
     'SOURCE_EXPLORER': false,
     'LATEST': true,
@@ -80,7 +80,7 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
     return `/${type}/${identifier}`;
   };
 
-  // ✅ 防弾仕様のデータフェッチ (JSONのみを受け入れ、HTMLエラーを無視する)
+  // ✅ JSONのみを受け入れる防弾仕様フェッチ
   const safeJsonFetch = async (url: string) => {
     try {
       const res = await fetch(url, { cache: 'no-store' });
@@ -90,70 +90,72 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
       }
       return null;
     } catch (e) {
-      console.warn(`[Sidebar API Silent Error] Failed to fetch: ${url}`);
+      console.warn(`[Sidebar API Error]: ${url}`, e);
       return null;
     }
   };
 
-  // ✅ メイン・エフェクト: データ取得
+  // ✅ メイン・エフェクト: Django URLS.PY に完全準拠した取得ロジック
   useEffect(() => {
     async function fetchSidebarData() {
       setIsLoading(true);
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://api-tiper-host:8083/api';
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api';
       const cleanBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
 
-      // 1. 統計情報の取得
-      const statsUrl = isAdult ? `${cleanBase}/adult-stats/` : `${cleanBase}/pc-sidebar-stats/`;
-      const stats = await safeJsonFetch(statsUrl);
-      if (stats) setDynamicStats(stats.results || stats);
+      // 引数の組み立て (?api_source=DUGA)
+      const sourceQuery = isAdult ? '?api_source=DUGA' : '';
 
       if (isAdult) {
-        // 2. 女優データの取得とグループ化
-        const actressData = await safeJsonFetch(`${cleanBase}/actresses/?limit=500`);
+        // 1. 女優データの取得 (五十音順)
+        const actressData = await safeJsonFetch(`${cleanBase}/actresses/${sourceQuery}${sourceQuery ? '&' : '?'}limit=300`);
         if (actressData) {
-          const list = Array.isArray(actressData) ? actressData : (actressData.results || []);
+          const list = actressData.results || (Array.isArray(actressData) ? actressData : []);
           setGroupedActresses(groupByGojuon(list));
         }
 
-        // 3. その他マスターデータの並列取得
-        const [g, s, d] = await Promise.all([
-          safeJsonFetch(`${cleanBase}/genres/?limit=20&ordering=-product_count`),
-          safeJsonFetch(`${cleanBase}/series/?limit=15&ordering=-product_count`),
-          safeJsonFetch(`${cleanBase}/directors/?limit=10&ordering=-product_count`),
+        // 2. マスターデータの並列取得 (スラッシュ必須)
+        const [gData, sData, dData, mData] = await Promise.all([
+          safeJsonFetch(`${cleanBase}/genres/${sourceQuery}${sourceQuery ? '&' : '?'}limit=15&ordering=-product_count`),
+          safeJsonFetch(`${cleanBase}/series/${sourceQuery}${sourceQuery ? '&' : '?'}limit=10&ordering=-product_count`),
+          safeJsonFetch(`${cleanBase}/directors/${sourceQuery}${sourceQuery ? '&' : '?'}limit=10&ordering=-product_count`),
+          safeJsonFetch(`${cleanBase}/makers/${sourceQuery}${sourceQuery ? '&' : '?'}limit=20&ordering=-product_count`),
         ]);
 
-        if (g) setGenres(Array.isArray(g) ? g : (g.results || []));
-        if (s) setSeries(Array.isArray(s) ? s : (s.results || []));
-        if (d) setDirectors(Array.isArray(d) ? d : (d.results || []));
+        if (gData) setGenres(gData.results || (Array.isArray(gData) ? gData : []));
+        if (sData) setSeries(sData.results || (Array.isArray(sData) ? sData : []));
+        if (dData) setDirectors(dData.results || (Array.isArray(dData) ? dData : []));
+        
+        // Propsが空、またはDUGAデータを優先する場合にmakersをセット
+        if (mData && (initialMakers.length === 0 || isAdult)) {
+          setMakers(mData.results || (Array.isArray(mData) ? mData : []));
+        }
+      } else {
+        // PCサイト用統計 (存在するエンドポイントを使用)
+        const pcStats = await safeJsonFetch(`${cleanBase}/pc-sidebar-stats/`);
+        if (pcStats) setDynamicStats(pcStats);
       }
+      
       setIsLoading(false);
     }
     fetchSidebarData();
-  }, [isAdult]);
+  }, [isAdult, initialMakers]);
 
-  // --- UIコンポーネント: セクション見出し ---
+  // UIパーツ: セクション見出し
   const SectionHeader = ({ title, id, icon }: { title: string, id: string, icon?: string }) => (
     <div 
       className={styles.sectionTitle} 
       onClick={() => toggleSection(id)}
       style={{ 
-        cursor: 'pointer', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        borderLeft: openSections[id] ? `3px solid ${siteColor}` : '3px solid transparent',
-        paddingLeft: '10px'
+        borderLeft: openSections[id] ? `3px solid ${siteColor}` : '3px solid transparent'
       }}
     >
-      <span style={{ color: openSections[id] ? '#fff' : '#888', fontWeight: 'bold', fontSize: '0.75rem', letterSpacing: '1px' }}>
+      <span>
         {icon && <span style={{ marginRight: '8px' }}>{icon}</span>}
         {title}
       </span>
       <span style={{ 
         transform: openSections[id] ? 'rotate(180deg)' : 'rotate(0deg)',
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        fontSize: '0.6rem',
-        opacity: 0.5
+        transition: 'transform 0.3s ease'
       }}>▼</span>
     </div>
   );
@@ -161,17 +163,17 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
   return (
     <aside className={styles.sidebar}>
       
-      {/* 💻 PC SPEC CARD (PCサイト詳細時のみ) */}
+      {/* 💻 PC SPEC CARD */}
       {!isAdult && product && (
         <div className={styles.sectionWrapper}>
           <SectionHeader title="HARDWARE ANALYSIS" id="SPEC" icon="💾" />
           {openSections['SPEC'] && (
             <div className={styles.productSpecCard}>
-              <div className={styles.specScoreBox} style={{ borderColor: `${siteColor}44` }}>
+              <div className={styles.specScoreBox}>
                 <div className={styles.scoreCircle} style={{ borderTopColor: siteColor }}>
                     <span className={styles.scoreValue} style={{ color: siteColor }}>{product.spec_score}</span>
                 </div>
-                <span className={styles.scoreLabel}>AI_SYSTEM_RANK</span>
+                <span className={styles.scoreLabel}>SYSTEM_RANK</span>
               </div>
               <div className={styles.miniSpecList}>
                 {product.cpu_model && <div className={styles.specRow}><small>CPU</small><span>{product.cpu_model}</span></div>}
@@ -182,7 +184,7 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
         </div>
       )}
 
-      {/* 🚀 PLATFORM MATRIX (ブランド・プラットフォーム切替) */}
+      {/* 🚀 PLATFORM MATRIX */}
       <div className={styles.sectionWrapper}>
         <SectionHeader title="PLATFORM MATRIX" id="PLATFORMS" icon="📡" />
         {openSections['PLATFORMS'] && (
@@ -191,24 +193,21 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
               { name: 'DUGA', path: '/brand/duga' },
               { name: 'FANZA', path: '/brand/fanza' },
               { name: 'DMM', path: '/brand/dmm' },
-            ].map((plat) => {
-              const isActive = pathname?.includes(plat.path);
-              return (
-                <Link key={plat.name} href={plat.path} className={styles.platLink}>
-                  <div 
-                    className={`${styles.platBtn} ${isActive ? styles.platActive : ''}`}
-                    style={{ '--active-color': siteColor } as any}
-                  >
-                    {plat.name}
-                  </div>
-                </Link>
-              );
-            })}
+            ].map((plat) => (
+              <Link key={plat.name} href={plat.path} className={styles.platLink}>
+                <div 
+                  className={`${styles.platBtn} ${pathname?.includes(plat.path) ? styles.platActive : ''}`}
+                  style={{ '--active-color': siteColor } as any}
+                >
+                  {plat.name}
+                </div>
+              </Link>
+            ))}
           </div>
         )}
       </div>
 
-      {/* 🔥 NAVIGATION HUB */}
+      {/* 🔥 COMMAND CENTER */}
       <div className={styles.sectionWrapper}>
         <SectionHeader title="COMMAND CENTER" id="MAIN" icon="🕹️" />
         {openSections['MAIN'] && (
@@ -223,7 +222,7 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
         )}
       </div>
 
-      {/* 💃 ACTRESSES (五十音インデックス) */}
+      {/* 💃 ACTRESSES (五十音) */}
       {isAdult && Object.keys(groupedActresses).length > 0 && (
         <div className={styles.sectionWrapper}>
           <SectionHeader title="ACTRESSES" id="ACTRESSES" icon="💃" />
@@ -251,95 +250,43 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
         </div>
       )}
 
-      {/* 🏷️ MASTER TAXONOMY (ジャンル・シリーズ等) */}
-      {isAdult && (
-        <>
-          {genres.length > 0 && (
-            <div className={styles.sectionWrapper}>
-              <SectionHeader title="GENRES" id="GENRES" icon="🏷️" />
-              {openSections['GENRES'] && (
-                <ul className={styles.accordionContent}>
-                  {genres.map(g => (
-                    <li key={g.id}>
-                      <Link href={getSafeLink('genre', g)} className={styles.link}>
-                        <span className={styles.linkText}>{g.name}</span>
-                        <span className={styles.badge}>{g.product_count}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+      {/* 🏷️ GENRES */}
+      {isAdult && genres.length > 0 && (
+        <div className={styles.sectionWrapper}>
+          <SectionHeader title="GENRES" id="GENRES" icon="🏷️" />
+          {openSections['GENRES'] && (
+            <ul className={styles.accordionContent}>
+              {genres.map(g => (
+                <li key={g.id}>
+                  <Link href={getSafeLink('genre', g)} className={styles.link}>
+                    <span className={styles.linkText}>{g.name}</span>
+                    <span className={styles.badge}>{g.product_count}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           )}
-
-          {series.length > 0 && (
-            <div className={styles.sectionWrapper}>
-              <SectionHeader title="SERIES" id="SERIES" icon="📺" />
-              {openSections['SERIES'] && (
-                <ul className={styles.accordionContent}>
-                  {series.map(s => (
-                    <li key={s.id}>
-                      <Link href={getSafeLink('series', s)} className={styles.link}>
-                        <span className={styles.linkText}>{s.name}</span>
-                        <span className={styles.badge}>{s.product_count}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </>
+        </div>
       )}
 
-      {/* 🏢 BRAND NODES (メーカーリスト) */}
+      {/* 🏢 PRODUCTION BRANDS (メーカー) */}
       <div className={styles.sectionWrapper}>
         <SectionHeader title={isAdult ? "PRODUCTION BRANDS" : "MANUFACTURERS"} id="CATEGORIES" icon="🏢" />
         {openSections['CATEGORIES'] && (
           <ul className={styles.accordionContent}>
-            {makers.slice(0, 30).map((item, idx) => {
-              const mName = item.name || item.maker || "Unknown Node";
-              const mSlug = (item.slug || (item.maker ? item.maker.toLowerCase() : 'unknown'));
-              return (
-                <li key={idx}>
-                  <Link href={`/brand/${mSlug}`} className={styles.link}>
-                    <span className={styles.linkText}>{mName.toUpperCase()}</span>
-                    {(item.count || item.product_count) !== undefined && (
-                      <span className={styles.badge}>{item.count || item.product_count}</span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
+            {makers.length > 0 ? makers.slice(0, 25).map((item, idx) => (
+              <li key={idx}>
+                <Link href={getSafeLink('brand', item)} className={styles.link}>
+                  <span className={styles.linkText}>{(item.name || item.maker || "").toUpperCase()}</span>
+                  <span className={styles.badge}>{item.product_count || item.count}</span>
+                </Link>
+              </li>
+            )) : (
+              <li className={styles.emptyLink}>NO BRANDS LOADED</li>
+            )}
           </ul>
         )}
       </div>
-
-      {/* 🔞 SOURCE EXPLORER (FANZA階層構造) */}
-      {isAdult && dynamicStats?.fanza_hierarchy && (
-        <div className={styles.sectionWrapper}>
-          <SectionHeader title="SOURCE EXPLORER" id="SOURCE_EXPLORER" icon="📂" />
-          {openSections['SOURCE_EXPLORER'] && (
-            <div className={styles.accordionContent}>
-              {dynamicStats.fanza_hierarchy.map((service: FanzaService) => (
-                <div key={service.slug} className={styles.serviceBlock}>
-                  <div className={styles.subCategoryLabel} style={{ color: siteColor, fontSize: '0.65rem' }}>{service.name.toUpperCase()}</div>
-                  <ul className={styles.nestedList}>
-                    {service.floors.map((floor) => (
-                      <li key={floor.slug}>
-                        <Link href={`/adults/fanza/${service.slug}/${floor.slug}`} className={styles.link}>
-                          <span className={styles.linkText}>{floor.name}</span>
-                          <span className={styles.badge}>{floor.count}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* 📝 INTEL LOGS (最新記事) */}
       <div className={styles.sectionWrapper}>
@@ -365,7 +312,9 @@ export default function Sidebar({ makers = [], recentPosts = [], product }: Side
           <span className={styles.statusDot} style={{ backgroundColor: isLoading ? '#ffaa00' : '#00ffaa' }} />
           <span>SYSTEM_{isLoading ? 'SYNCING' : 'READY'}</span>
         </div>
-        <div className={styles.timestamp}>{new Date().toISOString().split('T')[0].replace(/-/g, '.')}</div>
+        <div className={styles.timestamp}>
+          {new Date().toISOString().split('T')[0].replace(/-/g, '.')}
+        </div>
       </div>
     </aside>
   );
