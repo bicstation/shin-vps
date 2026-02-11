@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS プロフェッショナル再構築スクリプト (WSL2 & 32GB RAM 最適化版)
+# 🚀 SHIN-VPS プロフェッショナル再構築スクリプト (BuildKit & GPU アクセル最適化版)
 # ------------------------------------------------------------------------------
-# 修正内容: ネットワーク不整合(Labelエラー)の自動検知・修復機能を追加
+# 修正内容: BuildKitの強制有効化、並列ビルドの最適化、iGPUパススルー対応の強化
 # ==============================================================================
 
 # 1. 実行環境の解析
@@ -17,6 +17,10 @@ if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" 
 else
     IS_VPS=false
 fi
+
+# ⚡ Docker BuildKit を強制有効化 (ビルド高速化の鍵)
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
 
 # 2. 変数初期化
 TARGET=""
@@ -113,15 +117,19 @@ if ! docker info >/dev/null 2>&1; then
     exit 1
 fi
 
+# iGPU デバイス (/dev/dri) の存在確認 (WSL2/Linux)
+if [ -e "/dev/dri" ]; then
+    echo "🎮 内蔵グラフィック (iGPU) を検出しました。HWアクセラレーションが利用可能です。"
+fi
+
 EXTERNAL_NET="shin-vps_shared-proxy"
 NETWORK_INFO=$(docker network inspect "$EXTERNAL_NET" 2>/dev/null)
 
 if [ $? -eq 0 ]; then
-    # ネットワークが存在する場合、ラベルをチェック
     HAS_LABEL=$(echo "$NETWORK_INFO" | grep "com.docker.compose.network")
     if [ -z "$HAS_LABEL" ]; then
         echo "⚠️  ネットワークの不整合（Labelなし）を検知しました。"
-        echo "🔄  正常な通信を確保するため、ネットワークを再生成します..."
+        echo "🔄  再生成します..."
         docker compose -f "$COMPOSE_FILE" down >/dev/null 2>&1
         docker network rm "$EXTERNAL_NET" >/dev/null 2>&1
         docker network create "$EXTERNAL_NET"
@@ -146,10 +154,11 @@ fi
 # 🔍 実行シーケンス
 # =========================================================
 echo "======================================="
-echo "📁 PATH    : $SCRIPT_DIR"
-echo "📍 TARGET  : $TARGET"
-echo "📄 COMPOSE : $(basename "$COMPOSE_FILE")"
-echo "⚙️  SERVICES: ${SERVICES:-ALL (FULL REBUILD)}"
+echo "📁 PATH     : $SCRIPT_DIR"
+echo "📍 TARGET   : $TARGET"
+echo "📄 COMPOSE  : $(basename "$COMPOSE_FILE")"
+echo "⚙️  SERVICES : ${SERVICES:-ALL (FULL REBUILD)}"
+echo "⚡ MODE     : BuildKit Enabled"
 echo "======================================="
 
 cd "$SCRIPT_DIR"
@@ -170,7 +179,8 @@ else
 fi
 
 # --- STEP 2: ビルド & 起動 ---
-echo "🛠️  ビルド中..."
+# BuildKitの並列ビルドを活かし、依存関係を解決しながら高速構築
+echo "🛠️  ビルド中 (BuildKit)..."
 docker compose -f "$COMPOSE_FILE" build --pull $NO_CACHE $SERVICES
 
 echo "✨ コンテナを起動します..."

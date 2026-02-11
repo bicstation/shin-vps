@@ -104,10 +104,12 @@ class AdultProductAdmin(BaseProductAdmin):
     list_filter = ('api_source', 'is_active', 'is_posted', 'maker')
     search_fields = ('title', 'product_id_unique')
 
+    # ✅ 修正箇所: display_image メソッドを定義
     def display_image(self, obj):
         if obj.image_url_list and len(obj.image_url_list) > 0:
             return mark_safe(f'<img src="{obj.image_url_list[0]}" width="70" style="border-radius:4px;" referrerpolicy="no-referrer" />')
         return "N/A"
+    display_image.short_description = "画像"
 
     def api_source_tag(self, obj):
         # DMMは青、FANZAはピンク、その他はグレー
@@ -178,12 +180,20 @@ class AttributeAdmin(admin.ModelAdmin):
     list_display_links = ('name',)
     list_filter = ('attr_type',)
 
+# 💡 RawApiData の管理画面
 @admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'api_source', 'migrated', 'created_at')
+    list_display = ('id', 'api_source_tag', 'api_service', 'api_floor', 'migrated', 'created_at')
     list_display_links = ('id',)
-    list_filter = ('api_source', 'migrated')
+    list_filter = ('api_source', 'migrated', 'api_service')
+    search_fields = ('api_source', 'api_service', 'api_floor')
+    ordering = ('-created_at',)
     readonly_fields = ('created_at',)
+
+    def api_source_tag(self, obj):
+        color = "#ff3860" if obj.api_source == "FANZA" else "#007bff" if obj.api_source == "DMM" else "#6c757d"
+        return mark_safe(f'<span style="background:{color}; color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold;">{obj.api_source}</span>')
+    api_source_tag.short_description = "ソース"
 
 @admin.register(LinkshareProduct)
 class LinkshareProductAdmin(admin.ModelAdmin):

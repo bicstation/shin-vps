@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from itertools import chain
 from datetime import date
+import re
+
 from api.models import AdultProduct, FanzaProduct, LinkshareProduct
 from api.serializers import AdultProductSerializer, FanzaProductSerializer, LinkshareProductSerializer
 
@@ -38,10 +40,12 @@ class UnifiedAdultProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         source = self.request.query_params.get('api_source', '').upper()
+        # FanzaProductが空である現状に合わせ、FANZA/DMM指定時もAdultProductを探索対象に含める
         if source == 'DUGA':
             return AdultProduct.objects.filter(is_active=True)
         elif source in ['FANZA', 'DMM']:
-            return FanzaProduct.objects.filter(is_active=True, site_code=source)
+            # FanzaProductにデータがない場合、AdultProduct側の api_source='FANZA' 等を探す
+            return AdultProduct.objects.filter(is_active=True, api_source__iexact=source)
         return AdultProduct.objects.filter(is_active=True)
 
     def list(self, request, *args, **kwargs):
@@ -74,10 +78,16 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             return self._get_paginated_response(queryset, AdultProductSerializer)
             
         elif source in ['FANZA', 'DMM']:
+            # FanzaProductが空ならAdultProduct内のFANZAデータを返す
+            if qs_fanza.count() == 0:
+                queryset = qs_adult.filter(api_source__iexact=source).order_by('-release_date')
+                return self._get_paginated_response(queryset, AdultProductSerializer)
+            
             queryset = qs_fanza.filter(site_code=source).order_by('-release_date')
             return self._get_paginated_response(queryset, FanzaProductSerializer)
 
         else:
+            # 混合リストのソート
             def get_sort_key(instance):
                 val = instance.release_date
                 if not val: return "0000-00-00"
@@ -137,11 +147,11 @@ class AdultProductListAPIView(generics.ListAPIView):
     search_fields = ['title', 'product_description', 'actresses__name', 'genres__name']
 
 # --------------------------------------------------------------------------
-# 3. 詳細 View & 特殊抽出 (【2026-02-11 修正版】: 冗長IDマッチング採用)
+# 3. 詳細 View (【2026-02-11 統合・深層探索版】)
 # --------------------------------------------------------------------------
 class FanzaProductDetailAPIView(generics.RetrieveAPIView):
     """
-    FANZA作品詳細。URLの ID (FANZA_...) からプレフィックスを剥がして DB検索。
+    FANZA作品詳細。FanzaProductになければ AdultProductをフォールバック探索。
     """
     queryset = FanzaProduct.objects.all().select_related('maker', 'label').prefetch_related('genres', 'actresses')
     serializer_class = FanzaProductSerializer
@@ -149,25 +159,35 @@ class FanzaProductDetailAPIView(generics.RetrieveAPIView):
     lookup_field = 'unique_id'
 
     def get_object(self):
-        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-        raw_id = self.kwargs[lookup_url_kwarg]
+        raw_id = self.kwargs[self.lookup_url_kwarg or self.lookup_field]
+        # プレフィックスを剥離（DMM_n_1058... -> n_1058...）
+        clean_id = re.sub(r'^(FANZA_|DMM_|DUGA_|fz_)', '', raw_id, flags=re.IGNORECASE)
         
-        # プレフィックスを剥離
-        clean_id = raw_id.replace('FANZA_', '').replace('DMM_', '')
-        
-        # DB上の unique_id が clean_id または raw_id のいずれかに一致するか確認
+        # 1. まず本来の FanzaProduct モデルを探す
         obj = self.get_queryset().filter(
-            Q(unique_id=clean_id) | Q(unique_id=raw_id)
+            Q(unique_id__iexact=raw_id) | Q(unique_id__iexact=clean_id) | Q(unique_id__icontains=clean_id)
         ).first()
 
+        # 2. 【重要】FanzaProductになければ AdultProduct モデル内を探索
         if not obj:
-            raise Http404(f"FanzaProduct Not Found: {raw_id}")
+            fallback_obj = AdultProduct.objects.filter(
+                Q(product_id_unique__iexact=raw_id) | 
+                Q(product_id_unique__iexact=f"FANZA_{clean_id}") | 
+                Q(product_id_unique__icontains=clean_id)
+            ).first()
+            
+            if fallback_obj:
+                # AdultProductが見つかった場合、Serializerを切り替えて返却
+                self.serializer_class = AdultProductSerializer
+                return fallback_obj
+            
+            raise Http404(f"Product Not Found: {raw_id}")
             
         return obj
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
     """
-    DUGA等詳細。ハイフンを含むIDやプレフィックス付きIDを柔軟にマッチング。
+    DUGA等詳細。大文字小文字やプレフィックスの有無を無視して柔軟にマッチング。
     """
     queryset = AdultProduct.objects.all().select_related('maker', 'label').prefetch_related('genres', 'actresses')
     serializer_class = AdultProductSerializer
@@ -175,20 +195,20 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
     lookup_field = 'product_id_unique'
 
     def get_object(self):
-        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-        raw_id = self.kwargs[lookup_url_kwarg]
+        raw_id = self.kwargs[self.lookup_url_kwarg or self.lookup_field]
+        # プレフィックスを剥離（DMM_n_1058... -> n_1058...）
+        clean_id = re.sub(r'^(FANZA_|DMM_|DUGA_|fz_)', '', raw_id, flags=re.IGNORECASE)
         
-        # プレフィックスを剥離（DUGA / FANZA / DMM すべての可能性を考慮）
-        clean_id = raw_id.replace('DUGA_', '').replace('FANZA_', '').replace('DMM_', '')
-        
-        # DB上の product_id_unique が clean_id または raw_id のいずれかに一致するか確認
-        # select_related と prefetch_related を確実に実行
+        # 大文字小文字を無視 (__iexact) し、かつ複数のIDパターンで検索
         obj = self.get_queryset().filter(
-            Q(product_id_unique=clean_id) | Q(product_id_unique=raw_id)
+            Q(product_id_unique__iexact=raw_id) | 
+            Q(product_id_unique__iexact=f"FANZA_{clean_id}") |
+            Q(product_id_unique__iexact=f"DUGA_{clean_id}") |
+            Q(product_id_unique__icontains=clean_id)
         ).first()
 
         if not obj:
-            raise Http404(f"AdultProduct Not Found: {raw_id} (Cleaned: {clean_id})")
+            raise Http404(f"AdultProduct Not Found: {raw_id}")
             
         return obj
 
