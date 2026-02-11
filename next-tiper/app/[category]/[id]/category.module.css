@@ -1,16 +1,21 @@
 /* ==============================================================================
- * 🎬 TIPER Archive - Category Listing CSS (Matrix Edition)
+ * 🎬 TIPER Archive - Category Listing CSS (Matrix Ultimate Edition)
  * ============================================================================== */
 
 .container {
   min-height: 100vh;
-  background-color: #05050a; /* より絶対零度に近い黒へ */
+  background-color: #05050a; /* 漆黒 */
   padding: 0;
   overflow-x: hidden;
   position: relative;
+  /* カスタムプロパティ：テーマカラーの集中管理 */
+  --accent-primary: #e94560;
+  --accent-secondary: #00d1b2;
+  --text-dim: #64748b;
+  --bg-darker: #080812;
 }
 
-/* 🌌 背景の動的グリッド演出 */
+/* 🌌 背景：動的グリッド & スキャンラインエフェクト */
 .container::before {
   content: "";
   position: absolute;
@@ -18,55 +23,55 @@
   background-image: 
     linear-gradient(rgba(233, 69, 96, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(233, 69, 96, 0.03) 1px, transparent 1px);
-  background-size: 50px 50px;
-  mask-image: radial-gradient(ellipse at 50% 0%, black, transparent 70%);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at 50% 0%, black 20%, transparent 80%);
   pointer-events: none;
+  z-index: 0;
 }
 
 .inner {
   max-width: 1600px;
   margin: 0 auto;
-  padding: 4rem 5% 8rem;
+  padding: 0 5% 10rem;
   position: relative;
   z-index: 1;
 }
 
 /* ==========================================================
-   1. ヘッダーエリア：ダイナミック・フレーム
+   1. ヒーローヘッダー：ダイナミック・フレーム
    ========================================================== */
 .header {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 2.5rem;
-  margin-bottom: 6rem;
-  padding: 2rem 0 2rem 3rem;
+  justify-content: flex-end;
+  min-height: 40vh;
+  padding: 8rem 0 4rem 3.5rem;
   position: relative;
+  margin-bottom: 4rem;
 }
 
-/* 左側のネオン・バー */
+/* 左側のネオン・バー（アニメーション付き） */
 .header::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
+  top: 15%;
+  bottom: 5%;
   width: 4px;
-  background: linear-gradient(to bottom, #e94560, #00d1b2, transparent);
-  box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
-  border-radius: 2px;
+  background: linear-gradient(to bottom, var(--accent-primary), var(--accent-secondary), transparent);
+  box-shadow: 0 0 25px rgba(233, 69, 96, 0.4);
+  border-radius: 4px;
+  animation: neonFlow 3s linear infinite;
 }
 
-@media (min-width: 1024px) {
-  .header {
-    flex-direction: row;
-    align-items: flex-end;
-  }
+@keyframes neonFlow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5) contrast(1.2); }
 }
 
 .titleGroup {
-  flex-grow: 1;
+  position: relative;
+  z-index: 2;
 }
 
 .categoryPrefix {
@@ -74,232 +79,197 @@
   align-items: center;
   font-size: 0.75rem;
   font-weight: 900;
-  color: #e94560;
+  color: var(--accent-primary);
   text-transform: uppercase;
-  letter-spacing: 0.5em;
+  letter-spacing: 0.6em;
   margin-bottom: 1.5rem;
-  background: rgba(233, 69, 96, 0.1);
-  padding: 0.3rem 1rem;
-  border-radius: 2px;
-  border-right: 3px solid #e94560;
+  background: rgba(233, 69, 96, 0.08);
+  padding: 0.4rem 1.2rem;
+  border-left: 2px solid var(--accent-primary);
+  backdrop-filter: blur(4px);
 }
 
 .titleMain {
-  font-size: clamp(2.5rem, 8vw, 5.5rem); /* レスポンシブにフォントサイズを可変 */
+  font-size: clamp(3rem, 10vw, 7rem);
   font-weight: 950;
   color: #ffffff;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
+  letter-spacing: -0.05em;
+  line-height: 0.85;
   font-style: italic;
   text-transform: uppercase;
-  filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.1));
-}
-
-.titleId {
-  font-size: 1.25rem;
-  color: #3d3d66;
-  font-family: 'JetBrains Mono', monospace;
-  margin-left: 1rem;
-  font-style: normal;
-  display: block;
-  margin-top: 1rem;
-  opacity: 0.6;
+  margin: 0;
+  /* テキストのわずかなグリッチ感 */
+  text-shadow: 
+    2px 0 rgba(233, 69, 96, 0.3),
+    -2px 0 rgba(0, 209, 178, 0.3);
 }
 
 .itemCount {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  font-size: 0.8rem;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.countLabel {
+  font-size: 0.7rem;
   font-weight: 800;
-  color: #8888aa;
-  letter-spacing: 0.15em;
+  color: var(--text-dim);
+  letter-spacing: 0.3em;
   text-transform: uppercase;
 }
 
-.itemCount b {
-  color: #00d1b2;
-  font-size: 1.75rem;
+.countNumber {
+  color: var(--accent-secondary);
+  font-size: 2.5rem;
+  font-weight: 950;
   font-family: 'JetBrains Mono', monospace;
-  text-shadow: 0 0 10px rgba(0, 209, 178, 0.5);
+  font-style: italic;
+  line-height: 1;
 }
 
 /* ==========================================================
-   2. ソートツールバー
+   2. ツールバー：フィルタリング & ソート
    ========================================================== */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
 .sortList {
   display: flex;
-  gap: 0.5rem;
-  background-color: rgba(15, 15, 30, 0.8);
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  gap: 0.75rem;
+  padding: 0.4rem;
+  background: rgba(15, 15, 30, 0.6);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .sortButton {
-  padding: 0.75rem 1.5rem;
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: #6b7280;
+  padding: 0.8rem 1.8rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #555577;
   text-decoration: none;
-  border-radius: 2px;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  text-transform: uppercase;
+  border-radius: 4px;
+  transition: all 0.3s ease;
   letter-spacing: 0.1em;
-  position: relative;
-  overflow: hidden;
+  border: 1px solid transparent;
 }
 
 .sortButton:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .sortButtonActive {
-  background-color: #ffffff;
+  background: #ffffff !important;
   color: #000000 !important;
-  font-weight: 900;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.2);
 }
 
 /* ==========================================================
-   3. メイングリッド：マトリックス・レイアウト
+   3. メイングリッド
    ========================================================== */
 .grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 3rem;
-}
-
-@media (min-width: 640px) {
-  .grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
-}
-
-@media (min-width: 1100px) {
-  .grid { grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
-}
-
-@media (min-width: 1600px) {
-  .grid { grid-template-columns: repeat(4, 1fr); gap: 3rem; }
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 4rem 2.5rem;
 }
 
 /* ==========================================================
    4. ページネーション：サイバーナビゲーター
    ========================================================== */
 .pagination {
-  margin-top: 10rem;
+  margin-top: 8rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 4rem;
-  padding-top: 4rem;
-  border-top: 1px solid rgba(61, 61, 102, 0.3);
+  gap: clamp(1rem, 5vw, 4rem);
+  padding-top: 5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .pageLink {
-  padding: 1.25rem 2.5rem;
+  padding: 1.2rem 2.5rem;
   background-color: transparent;
-  border: 1px solid #00d1b2;
-  color: #00d1b2;
+  border: 1px solid var(--accent-secondary);
+  color: var(--accent-secondary);
   font-weight: 900;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.3em;
   text-decoration: none;
-  transition: all 0.4s;
-  position: relative;
-  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); /* スラッシュ形状 */
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  clip-path: polygon(15% 0, 100% 0, 85% 100%, 0% 100%);
 }
 
 .pageLink:hover {
-  background-color: #00d1b2;
-  color: #000000;
-  box-shadow: 0 0 40px rgba(0, 209, 178, 0.6);
-  transform: skewX(-5deg);
+  background-color: var(--accent-secondary);
+  color: #000;
+  box-shadow: 0 0 30px rgba(0, 209, 178, 0.4);
+  transform: translateY(-5px) skewX(-5deg);
 }
 
 .pageDisabled {
-  padding: 1.25rem 2.5rem;
-  color: #1f2937;
-  font-weight: 800;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
+  opacity: 0.2;
   cursor: not-allowed;
-  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
-  background: rgba(255, 255, 255, 0.02);
+  filter: grayscale(1);
 }
 
 .pageInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.pageLabel {
-  font-size: 0.65rem;
-  color: #e94560;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.5em;
-  margin-bottom: 0.5rem;
-}
-
-.currentPageWrapper {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
+  text-align: center;
+  min-width: 120px;
 }
 
 .currentPage {
-  font-size: 3.5rem;
+  font-size: 4rem;
   font-weight: 950;
-  color: #ffffff;
+  color: #fff;
   line-height: 0.8;
-  letter-spacing: -0.05em;
-}
-
-.pageSeparator {
-  color: #3d3d66;
-  font-size: 1.5rem;
-  font-weight: 300;
+  font-style: italic;
+  display: block;
 }
 
 .totalPage {
-  color: #4b5563;
-  font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  font-weight: 800;
+  margin-top: 0.5rem;
 }
 
 /* ==========================================================
    5. 空の状態
    ========================================================== */
 .emptyState {
-  padding: 12rem 0;
-  text-align: center;
-  background: radial-gradient(circle at center, rgba(233, 69, 96, 0.05), transparent 70%);
-}
-
-.emptyIcon {
-  font-size: 6rem;
-  margin-bottom: 2.5rem;
-  filter: drop-shadow(0 0 20px rgba(233, 69, 96, 0.5));
-  animation: float 4s ease-in-out infinite;
+  padding: 15rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2rem;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px dashed rgba(255, 255, 255, 0.05);
 }
 
 .emptyTitle {
-  font-size: 2.5rem;
-  font-weight: 950;
-  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--text-dim);
   text-transform: uppercase;
-  font-style: italic;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.4em;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+/* モバイル最適化 */
+@media (max-width: 768px) {
+  .header { padding-left: 1.5rem; min-height: 30vh; }
+  .grid { gap: 2rem; }
+  .pagination { gap: 1rem; }
+  .pageLink { padding: 1rem 1.5rem; font-size: 0.7rem; }
 }

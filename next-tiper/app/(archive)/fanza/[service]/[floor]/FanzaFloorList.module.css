@@ -1,0 +1,304 @@
+/* ==============================================================================
+ * 📁 FANZA Deep Archive - Service & Floor Explorer Optimized
+ * ============================================================================== */
+
+.pageWrapper {
+  min-height: 100vh;
+  background-color: #05050a;
+  color: #e2e8f0;
+  padding-bottom: 8rem;
+  /* 背景：FANZAピンクの残像を配置 */
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(233, 69, 96, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(233, 69, 96, 0.03) 0%, transparent 40%);
+}
+
+/* --- 📡 1. Header Section --- */
+.header {
+  padding: 80px 5% 40px;
+  background: linear-gradient(to bottom, rgba(10, 10, 20, 0.8), transparent);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.headerInner {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* パンくずリスト風パスインフォ */
+.pathInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  margin-bottom: 2rem;
+  opacity: 0.8;
+}
+
+.root { color: #64748b; }
+.sep { color: rgba(233, 69, 96, 0.4); }
+.provider { color: #e94560; text-shadow: 0 0 10px rgba(233, 69, 96, 0.3); }
+.service { 
+  color: #ffffff; 
+  background: rgba(233, 69, 96, 0.1);
+  padding: 3px 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(233, 69, 96, 0.2);
+}
+
+/* タイトルエリア */
+.titleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.titleMain {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 950;
+  color: #ffffff;
+  letter-spacing: -0.05em;
+  font-style: italic;
+  line-height: 0.9;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.floorSub {
+  font-size: 0.4em;
+  color: #e94560;
+  font-weight: 300;
+  font-style: normal;
+  margin-left: 1rem;
+  letter-spacing: 0.5em;
+  vertical-align: middle;
+}
+
+.itemCount {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  margin-top: 0.5rem;
+}
+
+.countNum {
+  color: #ffffff;
+  font-size: 1.8rem;
+  margin-right: 0.5rem;
+  font-family: 'Inter', sans-serif;
+  vertical-align: middle;
+}
+
+/* ツールバー（ソートボタン） */
+.toolbar {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.sortGroup {
+  display: flex;
+  background: rgba(15, 15, 25, 0.6);
+  padding: 4px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.sortBtn, .sortActive {
+  padding: 10px 24px;
+  font-size: 10px;
+  font-weight: 950;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.sortBtn {
+  color: #64748b;
+}
+
+.sortBtn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sortActive {
+  color: #ffffff !important;
+  background: #e94560;
+  box-shadow: 0 10px 25px rgba(233, 69, 96, 0.4);
+}
+
+/* --- 🏗️ 2. Layout Structure --- */
+.layoutContainer {
+  display: flex;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 60px 5%;
+  gap: 60px;
+}
+
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.mainContent {
+  flex-grow: 1;
+  min-width: 0; /* 防止 grid blowout */
+}
+
+/* プラットフォーム切替メニュー */
+.platformNav {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebarTitle {
+  font-size: 10px;
+  font-weight: 950;
+  color: #64748b;
+  letter-spacing: 0.4em;
+  margin-bottom: 1.5rem;
+}
+
+.platformButtons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.platformBtn, .platformBtnActive {
+  padding: 14px;
+  font-size: 11px;
+  font-weight: 950;
+  text-decoration: none;
+  text-align: center;
+  letter-spacing: 0.2em;
+  transition: all 0.3s;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.platformBtn {
+  color: #64748b;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.platformBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.platformBtnActive {
+  color: #ffffff;
+  background: #e94560;
+  border-color: #e94560;
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.2);
+}
+
+/* --- 📦 3. Content Grid --- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 30px;
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@media (min-width: 768px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1280px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* --- 🔗 4. Pagination & Status --- */
+.paginationWrapper {
+  margin-top: 80px;
+  padding-top: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.streamStatus {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #475569;
+  letter-spacing: 0.3em;
+  font-weight: 700;
+}
+
+/* --- ⚠️ 5. Empty State --- */
+.emptyContainer {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 2rem;
+  opacity: 0.5;
+  filter: drop-shadow(0 0 20px #e94560);
+}
+
+.emptyTitle {
+  font-size: 2.5rem;
+  font-weight: 950;
+  color: #ffffff;
+  letter-spacing: 0.3em;
+  margin-bottom: 1.5rem;
+}
+
+.emptyText {
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 3rem;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.backBtn {
+  padding: 20px 40px;
+  background: transparent;
+  border: 1px solid #e94560;
+  color: #e94560;
+  font-weight: 950;
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-decoration: none;
+  transition: all 0.4s;
+}
+
+.backBtn:hover {
+  background: #e94560;
+  color: #ffffff;
+  box-shadow: 0 15px 40px rgba(233, 69, 96, 0.4);
+}
+
+/* --- 📱 Responsive Adaptation --- */
+@media (max-width: 1100px) {
+  .layoutContainer { flex-direction: column; }
+  .sidebar { width: 100%; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

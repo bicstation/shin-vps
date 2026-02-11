@@ -4,16 +4,21 @@
 
 .sidebar {
   width: 280px;
-  background: #07070c; /* より深い闇へ */
+  background: #07070c; /* 深い闇 */
   padding: 24px 16px;
   border-right: 1px solid rgba(255, 255, 255, 0.03);
   height: fit-content;
   position: sticky;
   top: 80px;
+  /* 縦幅の制御: ビューポートからヘッダー分を引いた高さに固定しスクロール可能に */
   max-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-gutter: stable;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  z-index: 50;
 }
 
 /* --- 📡 PLATFORM MATRIX (グリッド・セレクター) --- */
@@ -81,11 +86,12 @@
   width: 45px;
   height: 45px;
   border: 2px solid rgba(255, 255, 255, 0.05);
-  border-top: 2px solid var(--site-color); /* システムランクを示す色 */
+  border-top: 2px solid var(--site-color);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .scoreValue {
@@ -131,10 +137,14 @@
 
 /* --- 🏷️ SECTION CONTROLS --- */
 .sectionWrapper {
+  width: 100%;
   margin-bottom: 4px;
 }
 
 .sectionTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.2em;
@@ -144,6 +154,7 @@
   transition: all 0.3s ease;
   user-select: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  cursor: pointer;
 }
 
 .sectionTitle:hover {
@@ -151,9 +162,10 @@
   color: #fff;
 }
 
-.chevron {
+.arrow {
   font-size: 0.5rem;
-  opacity: 0.3;
+  opacity: 0.5;
+  transition: transform 0.3s ease;
 }
 
 /* --- 🔗 LINK NODES & BADGES --- */
@@ -165,8 +177,8 @@
 }
 
 @keyframes scanIn {
-  from { opacity: 0; transform: translateY(-10px) scaleY(0.9); }
-  to { opacity: 1; transform: translateY(0) scaleY(1); }
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .link {
@@ -204,6 +216,7 @@
   padding: 1px 5px;
   border-radius: 2px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
 }
 
 .link:hover .badge {
@@ -231,7 +244,8 @@
 
 /* --- 💃 HIERARCHY (Actress / Source) --- */
 .scrollArea {
-  max-height: 400px;
+  /* 内部スクロール領域の高さ調整 */
+  max-height: 350px;
   overflow-y: auto;
   margin: 8px 0;
   padding-right: 4px;
@@ -268,10 +282,6 @@
   border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.serviceBlock {
-  margin-bottom: 12px;
-}
-
 /* --- 📄 INTEL LOGS --- */
 .recentTitle {
   font-size: 0.7rem;
@@ -293,9 +303,9 @@
 
 /* --- 📟 SYSTEM STATUS BAR --- */
 .systemStatus {
-  margin-top: 40px;
-  padding: 15px 10px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  margin-top: auto; /* コンテンツが少なくても最下部に配置 */
+  padding: 20px 10px 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -315,7 +325,6 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  box-shadow: 0 0 8px currentColor;
 }
 
 .timestamp {
@@ -325,14 +334,19 @@
 }
 
 /* --- 📜 CUSTOM SCROLLBAR --- */
-.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar { width: 4px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
 .sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
 }
 .sidebar::-webkit-scrollbar-thumb:hover {
-  background: var(--site-color, rgba(255, 255, 255, 0.2));
+  background: var(--active-color, rgba(255, 255, 255, 0.1));
 }
+
+/* 内部スクロールエリア用 */
+.scrollArea::-webkit-scrollbar { width: 2px; }
+.scrollArea::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); }
 
 /* --- 📱 MOBILE OPTIMIZATION --- */
 @media (max-width: 1024px) {
@@ -344,6 +358,7 @@
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     padding: 20px;
+    height: auto;
   }
   .scrollArea { max-height: none; }
 }

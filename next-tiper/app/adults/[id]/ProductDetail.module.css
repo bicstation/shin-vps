@@ -1,352 +1,395 @@
 /* ==============================================================================
- * 📌 Product Details - Cyber-Premium Layout (Matrix Optimized)
+ * 🌌 TIPER Product Detail - Absolute Ultimate Matrix Styling
+ * [BUILD COMPLIANT] + [NO OMISSION] + [MAXIMUM CYBER DENSITY]
  * ============================================================================== */
 
 .wrapper {
+  /* 🛠️ 変数定義：コンポーネント全体で使い倒す */
+  --primary-red: #e94560;
+  --primary-cyan: #00d1b2;
+  --bg-deep: #05050a;
+  --bg-card: rgba(20, 20, 35, 0.7);
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --accent-glow: rgba(233, 69, 96, 0.3);
+  --font-main: 'Inter', 'Noto Sans JP', sans-serif;
+  --transition-ultra: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
   min-height: 100vh;
-  background-color: #0a0a14;
-  color: #f3f4f6;
-  padding-bottom: 8rem;
-  /* 背景の光彩：標準は深みのある紫 */
-  background-image: 
-    radial-gradient(circle at 50% -10%, rgba(30, 30, 63, 0.5) 0%, transparent 60%),
-    radial-gradient(circle at 0% 100%, rgba(22, 22, 45, 0.3) 0%, transparent 40%);
-  transition: background 0.5s ease;
+  background-color: var(--bg-deep);
+  color: #e2e8f0;
+  padding-bottom: 15rem; /* さらに深く */
+  overflow-x: hidden;
+  position: relative;
+  font-family: var(--font-main);
+  transition: background 1s ease;
 }
 
-/* 🟢 DUGAテーマ時の背景微調整 */
+/* 🧬 ノイズテクスチャ：背景に圧倒的な質感を与える */
+.wrapper::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* 🟢 DUGAテーマ：深海のエメラルド・グリッチ */
 .dugaTheme {
   background-image: 
-    radial-gradient(circle at 50% -10%, rgba(0, 209, 178, 0.05) 0%, transparent 60%),
-    radial-gradient(circle at 0% 100%, rgba(0, 209, 178, 0.02) 0%, transparent 40%);
+    radial-gradient(circle at 50% -20%, rgba(0, 209, 178, 0.2) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(0, 209, 178, 0.08) 0%, transparent 40%),
+    linear-gradient(to bottom, transparent, rgba(0, 209, 178, 0.02));
 }
 
-/* 🔴 FANZAテーマ時の背景微調整 */
+/* 🔴 FANZAテーマ：血脈のクリムゾン・オーバーライド */
 .fanzaTheme {
   background-image: 
-    radial-gradient(circle at 50% -10%, rgba(233, 69, 96, 0.05) 0%, transparent 60%),
-    radial-gradient(circle at 0% 100%, rgba(233, 69, 96, 0.02) 0%, transparent 40%);
+    radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.2) 0%, transparent 60%),
+    radial-gradient(circle at 0% 100%, rgba(233, 69, 96, 0.08) 0%, transparent 40%),
+    linear-gradient(to bottom, transparent, rgba(233, 69, 96, 0.02));
 }
 
+/* --- 🧭 Navigation: 空中に浮遊するような透過感 --- */
 .nav {
   width: 100%;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  background: rgba(10, 10, 20, 0.8);
-  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(5, 5, 10, 0.85);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
   position: sticky;
   top: 0;
-  z-index: 100;
-  padding: 1.5rem 0;
+  z-index: 1000;
+  padding: 1.8rem 0;
 }
 
 .backLink {
-  color: #8888aa;
-  font-size: 0.7rem;
-  font-weight: 900;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 950;
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  transition: var(--transition-ultra);
+  letter-spacing: 0.5em;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.2rem;
+  text-transform: uppercase;
 }
 
 .backLink:hover {
-  color: #ffffff;
-  letter-spacing: 0.3em;
-  transform: translateX(-5px);
+  color: #fff;
+  transform: translateX(-12px);
+  text-shadow: 0 0 20px var(--primary-red);
 }
-
-/* --- 🏷️ Source Badges --- */
 
 .sourceBadge, .sourceBadgeFanza, .sourceBadgeDuga {
-  padding: 0.35rem 1rem;
-  font-size: 10px;
-  font-weight: 950;
-  border-radius: 2px;
+  padding: 6px 16px;
+  font-size: 11px;
+  font-weight: 1000;
+  border-radius: 1px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  display: inline-block;
 }
 
-.sourceBadge {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
+.sourceBadgeFanza { background: #ff0080; color: #fff; box-shadow: 0 0 30px rgba(255,0,128,0.4); }
+.sourceBadgeDuga { background: var(--primary-cyan); color: #000; box-shadow: 0 0 30px rgba(0,209,178,0.4); }
+.sourceBadge { background: #222; color: #fff; border: 1px solid #444; }
 
-.sourceBadgeFanza {
-  background: rgba(233, 69, 96, 0.1);
-  border: 1px solid #e94560;
-  color: #e94560;
-  box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
-}
-
-.sourceBadgeDuga {
-  background: rgba(0, 209, 178, 0.1);
-  border: 1px solid #00d1b2;
-  color: #00d1b2;
-  box-shadow: 0 0 15px rgba(0, 209, 178, 0.3);
-}
-
-/* --- 🏗️ Layout Containers --- */
-
+/* --- 🏗️ Layout Structure --- */
 .mainContainer {
-  max-width: 1440px;
+  max-width: 1700px; /* 拡大 */
   margin: 0 auto;
-  padding: 4rem 5%;
+  padding: 6rem 5%;
+  position: relative;
+  z-index: 10;
 }
 
-.visualHeroSection {
-  margin-bottom: 5rem;
-}
+.visualHeroSection { margin-bottom: 8rem; }
 
 .visualGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3rem;
+  gap: 6rem;
 }
 
 @media (min-width: 1024px) {
   .visualGrid {
-    grid-template-columns: 400px 1fr;
+    grid-template-columns: 520px 1fr;
     align-items: flex-start;
   }
 }
 
-/* --- 🖼️ Jacket Design --- */
-
+/* --- 🖼️ Jacket Design: 圧倒的な存在感 --- */
 .jacketWrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 10 / 14.5;
-  border-radius: 4px;
+  aspect-ratio: 10 / 14.2;
+  border-radius: 2px;
   overflow: hidden;
-  background-color: #050510;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: #000;
+  box-shadow: 0 60px 120px -30px rgba(0, 0, 0, 0.95);
+  border: 1px solid var(--border-glass);
 }
 
 .jacketImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  image-rendering: auto;
+  transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.jacketWrapper:hover .jacketImage { transform: scale(1.1); filter: contrast(1.1) brightness(1.1); }
 
 .jacketOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(10, 10, 20, 0.8) 0%, transparent 30%);
+  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.9) 100%);
   pointer-events: none;
 }
 
-/* サイバースキャンライン効果 */
 .scanline {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 10px;
-  background: linear-gradient(to bottom, transparent, rgba(0, 209, 178, 0.2), transparent);
-  opacity: 0.5;
-  animation: scan 6s linear infinite;
+  top: 0; left: 0; width: 100%; height: 25px;
+  background: linear-gradient(to bottom, transparent, rgba(233, 69, 96, 0.25), transparent);
+  opacity: 0.6;
+  animation: scan 5s linear infinite;
+  pointer-events: none;
 }
 
 @keyframes scan {
   from { transform: translateY(-100%); }
-  to { transform: translateY(1000%); }
+  to { transform: translateY(1800%); }
 }
 
 .cornerMarker {
   position: absolute;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  width: 40px;
-  height: 40px;
-  border-right: 2px solid rgba(255, 255, 255, 0.2);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  top: 25px; right: 25px; width: 50px; height: 50px;
+  border-top: 3px solid var(--primary-red);
+  border-right: 3px solid var(--primary-red);
+  opacity: 0.7;
 }
 
 .jacketLabel {
   position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
-  background: #e94560;
-  color: #ffffff;
-  font-size: 9px;
-  font-weight: 900;
-  padding: 4px 8px;
-  letter-spacing: 2px;
-  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.5);
+  bottom: 2.5rem; left: 0;
+  background: var(--primary-red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 1000;
+  padding: 10px 25px;
+  letter-spacing: 0.4em;
+  clip-path: polygon(0 0, 88% 0, 100% 100%, 0% 100%);
 }
 
-/* --- 📝 AI Summary Card --- */
-
+/* --- 📊 AI Summary Card: 未来のインターフェース --- */
 .aiSummaryCard {
-  padding: 2.5rem;
-  background: linear-gradient(135deg, rgba(31, 31, 58, 0.4) 0%, rgba(10, 10, 20, 0.6) 100%);
-  border-radius: 4px;
-  border-left: 4px solid #e94560;
+  padding: 5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-left: 5px solid var(--primary-red);
   position: relative;
   overflow: hidden;
-  box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(30px);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
 }
 
 .aiLabel {
-  font-size: 10px;
-  font-weight: 950;
-  color: #e94560;
+  font-size: 12px;
+  font-weight: 1000;
+  color: var(--primary-red);
   text-transform: uppercase;
-  letter-spacing: 0.4em;
-  margin-bottom: 1.5rem;
+  letter-spacing: 0.7em;
+  margin-bottom: 3.5rem;
+  display: flex;
+  align-items: center; gap: 2rem;
+}
+
+.aiLabel::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(to right, var(--primary-red), transparent);
 }
 
 .aiText {
-  color: #e5e7eb;
-  font-size: 1.1rem;
-  line-height: 1.8;
+  color: #f8fafc;
+  font-size: 1.5rem;
+  line-height: 2.4;
   font-style: italic;
-  position: relative;
-  z-index: 1;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
 .aiReflection {
   position: absolute;
-  top: -20%;
-  right: -10%;
-  font-size: 10rem;
-  font-weight: 950;
-  color: rgba(233, 69, 96, 0.03);
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle at center, rgba(233, 69, 96, 0.05) 0%, transparent 70%);
   pointer-events: none;
-  font-style: italic;
 }
 
-/* --- 📊 Stats Matrix --- */
-
-.statsCard {
-  background: rgba(22, 22, 45, 0.4);
-  padding: 2.5rem;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  margin-bottom: 3rem;
-}
-
-/* --- 📝 Content Titles --- */
-
+/* --- 📝 Typography & Core Info --- */
 .gridContent {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 4rem;
+  gap: 8rem;
+  margin-top: 8rem;
 }
 
-@media (min-width: 1024px) {
-  .gridContent {
-    grid-template-columns: 1fr 500px;
-  }
+@media (min-width: 1280px) {
+  .gridContent { grid-template-columns: 1fr 580px; }
 }
 
 .detailTitle {
-  font-size: 2.5rem;
-  font-weight: 950;
-  line-height: 1.1;
-  margin-bottom: 2rem;
-  color: #ffffff;
-  letter-spacing: -0.03em;
+  font-size: clamp(3rem, 6vw, 4.5rem);
+  font-weight: 1000;
+  line-height: 1;
+  margin-bottom: 4rem;
+  color: #fff;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+  font-style: italic;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
 }
 
 .priceContainer {
-  font-family: 'Inter', sans-serif;
-  color: #ffffff;
+  display: flex;
+  align-items: baseline;
+  background: linear-gradient(90deg, rgba(233, 69, 96, 0.15), transparent);
+  padding: 2rem 3rem;
+  border-left: 4px solid var(--primary-red);
+  margin-bottom: 2rem;
 }
 
-/* --- 📋 Spec Table --- */
+/* --- 📈 Stats Card --- */
+.statsCard {
+  background: rgba(10, 10, 22, 0.9);
+  padding: 4.5rem;
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+  position: relative;
+  overflow: hidden;
+}
 
+.statsCard::before {
+  content: "";
+  position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+  background: linear-gradient(to right, transparent, var(--primary-red), transparent);
+}
+
+/* --- 📋 Spec Table: 徹底した情報の可視化 --- */
 .specTableContainer {
-  margin-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 5rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
-.specTable {
-  width: 100%;
-}
+.specTable { width: 100%; border-collapse: collapse; }
 
 .specRow {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: var(--transition-ultra);
+}
+
+.specRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+  padding-left: 20px;
 }
 
 .specKey {
-  padding: 1.5rem 0;
-  color: #555577;
-  font-size: 9px;
-  font-weight: 900;
+  padding: 2.5rem 0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 1000;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.5em;
 }
 
 .specValue {
-  padding: 1.5rem 0;
+  padding: 2.5rem 0;
   text-align: right;
-  color: #ffffff;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
 }
 
 .actressLink {
-  color: #ffffff;
+  color: #fff;
   text-decoration: none;
-  font-weight: 800;
-  font-size: 0.85rem;
-  padding: 0.4rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s;
+  font-weight: 1000;
+  font-size: 0.9rem;
+  padding: 1rem 1.8rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  transition: var(--transition-ultra);
+  display: inline-block;
+  margin: 6px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .actressLink:hover {
-  background: #ffffff;
-  color: #000000;
+  background: #fff;
+  color: #000;
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 15px 40px rgba(255, 255, 255, 0.25);
 }
 
-/* --- 🚀 Action Buttons --- */
-
+/* --- 🚀 Professional Affiliate Buttons --- */
 .affiliateBtn, .affiliateBtnFanza, .affiliateBtnDuga {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 1.5rem 2rem;
-  border-radius: 4px;
-  font-weight: 950;
-  font-size: 1rem;
+  padding: 2.5rem 3.5rem;
+  font-weight: 1000;
   text-decoration: none;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-size: 14px;
+  transition: var(--transition-ultra);
+  border-radius: 2px;
+  margin-top: 3rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.affiliateBtnFanza {
-  background: #e94560;
-  color: #ffffff;
-  box-shadow: 0 15px 40px rgba(233, 69, 96, 0.3);
-}
+.affiliateBtnFanza { background: #ff0080; color: #fff; box-shadow: 0 20px 50px rgba(255, 0, 128, 0.5); }
+.affiliateBtnDuga { background: var(--primary-cyan); color: #000; box-shadow: 0 20px 50px rgba(0, 209, 178, 0.5); }
+.affiliateBtn { background: var(--primary-red); color: #fff; box-shadow: 0 20px 50px rgba(233, 69, 96, 0.5); }
 
-.affiliateBtnDuga {
-  background: #00d1b2;
-  color: #000000;
-  box-shadow: 0 15px 40px rgba(0, 209, 178, 0.2);
-}
-
-.affiliateBtnFanza:hover, .affiliateBtnDuga:hover {
-  transform: translateY(-5px) scale(1.01);
+.affiliateBtn:hover {
+  transform: translateY(-8px) scale(1.02);
   filter: brightness(1.2);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
 }
 
-/* --- ⚠️ Status / Error --- */
-
+/* --- ⚠️ 404 / Error State --- */
 .notFound {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
-  background-color: #0a0a14;
+  background: #05050a;
+  text-align: center;
   padding: 2rem;
+}
+
+/* 🌀 関連作品タイトルの装飾 */
+.relatedTitle {
+  font-size: 3rem;
+  font-weight: 1000;
+  letter-spacing: -0.05em;
+  margin-bottom: 6rem;
+  color: #fff;
+  font-style: italic;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.relatedTitle::after {
+  content: ""; flex: 1; height: 2px;
+  background: linear-gradient(to right, var(--primary-red), transparent);
 }

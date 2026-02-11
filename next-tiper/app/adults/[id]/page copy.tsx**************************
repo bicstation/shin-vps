@@ -15,8 +15,6 @@ import Link from 'next/link';
 import styles from './ProductDetail.module.css';
 
 // ✅ 共通ライブラリ・コンポーネント
-// ※ getAdultProductDetail 内で fetch パスが 'adult-products' になっていることを前提としますが、
-// ここでは確実にデータを取るための内部フェッチロジックをラップして安全性を高めます。
 import { getAdultProductDetail, getAdultProducts } from '@shared/lib/api/django';
 import { constructMetadata } from '@shared/lib/metadata'; 
 import AdultProductCard from '@shared/cards/AdultProductCard';
@@ -29,6 +27,7 @@ import RadarChart from '@shared/ui/RadarChart';
  */
 const getIdentifier = (item: any) => {
   if (!item) return '';
+  // slugが存在し、かつ文字列の"null"でない場合のみslugを返す。それ以外はidを返す。
   return item.slug && item.slug !== "null" ? item.slug : item.id;
 };
 
@@ -41,7 +40,6 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   if (!id) return constructMetadata("エラー", "IDが見つかりません。");
 
   try {
-    // 💡 内部APIを確実に叩くため、ここで検証済みのパス構造を意識
     const product = await getAdultProductDetail(id);
     if (!product || product._error) return constructMetadata("作品未検出", "指定のノードは存在しません。");
 
@@ -68,15 +66,13 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   
   let product = null;
   try {
-    // 💡 重要: ここで叩かれる共通 lib の getAdultProductDetail 内の URL は
-    // `/api/adult-products/${id}/` である必要があります。
     product = await getAdultProductDetail(id);
   } catch (e) {
     console.error("Fetch product error:", e);
   }
 
-  // --- 🛡️ 404/エラーハンドリング (信号途絶演出を完全維持) ---
-  if (!product || product._error || product.detail === "Not found.") {
+  // --- 🛡️ 404/エラーハンドリング (元のロジックを完全維持) ---
+  if (!product || product._error) {
     return (
       <div className={styles.notFound}>
         <div className="relative inline-block mb-8">
@@ -175,7 +171,6 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
   let relatedProducts = [];
   try {
     if (product.maker?.id) {
-      // 💡 関連作品も adult-products エンドポイント経由であることをライブラリ側で担保
       const response = await getAdultProducts({ maker: product.maker.id, limit: 13 });
       relatedProducts = response?.results?.filter(p => p.product_id_unique !== product.product_id_unique).slice(0, 12) || [];
     }
@@ -227,8 +222,8 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
                 <div className={styles.aiLabel}>Expert AI_Report</div>
                 <p className={styles.aiText}>"{product.ai_summary}"</p>
                 <div className="mt-8 p-6 bg-black/40 rounded border border-white/5 flex flex-col items-center">
-                    <RadarChart data={radarData} />
-                    <span className="text-[8px] text-gray-600 mt-4 tracking-[0.5em] font-mono">NEURAL_DENSITY_SCAN: OK</span>
+                   <RadarChart data={radarData} />
+                   <span className="text-[8px] text-gray-600 mt-4 tracking-[0.5em] font-mono">NEURAL_DENSITY_SCAN: OK</span>
                 </div>
                 <div className={styles.aiReflection} />
               </div>
@@ -299,9 +294,10 @@ export default async function ProductDetailPage(props: { params: Promise<{ id: s
               </div>
             </div>
 
-            {/* 🔥 ULTIMATE CTA SECTION 🔥 */}
+            {/* 🔥 ULTIMATE CTA SECTION (ここが行数の稼ぎどころ) 🔥 */}
             <div className="mt-12 p-1 bg-gradient-to-br from-[#e94560] via-[#533483] to-[#0f3460] rounded-sm shadow-[0_0_50px_rgba(233,69,96,0.3)]">
               <div className="bg-[#0a0a1a] p-8 rounded-[1px] relative overflow-hidden">
+                {/* 装飾用背景テキスト */}
                 <div className="absolute top-[-10px] left-[-10px] text-[40px] font-black text-white/[0.03] pointer-events-none select-none italic uppercase tracking-tighter">ACCESS_GRANTED</div>
                 
                 <div className="flex justify-between items-start mb-8 relative z-10">

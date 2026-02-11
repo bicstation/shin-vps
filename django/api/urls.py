@@ -24,47 +24,36 @@ urlpatterns = [
     # ==========================================================
     # 2. PC・ソフトウェア製品 (PCProduct) - general_views.py
     # ==========================================================
-    # 🏆 ランキング
     path('pc-products/ranking/', views.PCProductRankingView.as_view(), name='pc_product_ranking'),
-    
-    # 🏭 統計・メーカー
     path('pc-makers/', views.PCProductMakerListView.as_view(), name='pc_maker_list'),
     path('pc-sidebar-stats/', views.pc_sidebar_stats, name='pc_sidebar_stats'),
-
-    # 📈 価格推移
+    
+    # ⚡ 詳細系は固定パスの後に配置
     path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
-
-    # 🔍 詳細 (ID または unique_id)
     path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
-
-    # 📋 一覧
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # ==========================================================
     # 3. 統合アダルト共通エンドポイント (重要) - adult_views.py
     # ==========================================================
-    # 💡 Next.jsから ?api_source=DMM / FANZA / DUGA を付けて共通で叩くURL
     path('unified-adult-products/', views.UnifiedAdultProductListView.as_view(), name='unified_adult_products'),
 
     # ==========================================================
-    # 4. FANZA 最適化商品 (FanzaProduct - Direct API連携) - adult_views.py
+    # 4. FANZA 最適化商品 (FanzaProduct) - adult_views.py
     # ==========================================================
-    # 📋 一覧
     path('fanza-products/', views.FanzaProductListAPIView.as_view(), name='fanza_product_list'),
     
-    # 🔍 詳細 (数値ID または unique_id: fz_xxxx)
+    # 🔍 詳細: FANZA_fz_xxxx 等の形式を views.get_object で処理
     path('fanza-products/<str:unique_id>/', views.FanzaProductDetailAPIView.as_view(), name='fanza_product_detail'),
 
     # ==========================================================
     # 5. アダルト/DUGA商品 (AdultProduct) - adult_views.py
     # ==========================================================
-    # 🏆 ランキング
+    # 💡 修正: <str:product_id_unique> が 'ranking' という文字列を ID と誤認しないよう順序を担保
     path('adult-products/ranking/', views.AdultProductRankingAPIView.as_view(), name='adult_product_ranking'),
-    
-    # 📋 一覧
     path('adult-products/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
     
-    # 🔍 詳細 (数値ID または product_id_unique: DMM_xxxx / FANZA_xxxx)
+    # 🔍 詳細: DUGA_monstersmr-0030 等の形式を views.get_object で処理
     path('adult-products/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # ==========================================================
