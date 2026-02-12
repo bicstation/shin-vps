@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { fetchPCProductRanking } from '@shared/lib/api';
 import Link from 'next/link';
 import styles from './Ranking.module.css';

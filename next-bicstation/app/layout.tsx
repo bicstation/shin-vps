@@ -100,7 +100,12 @@ export default function RootLayout({
         {/* クライアント側での動的スタイル適用（プログレスバーやテーマ調整用） */}
         <ClientStyles themeColor={themeColor} />
 
-        <Header />
+        {/* ✅ 修正ポイント: Header を Suspense でラップ 
+          Header内で useSearchParams や usePathname を使用している場合のビルドエラー（404ページ生成時など）を防ぎます。
+        */}
+        <Suspense fallback={<div className="h-16 bg-white border-b border-gray-100 animate-pulse" />}>
+          <Header />
+        </Suspense>
         
         {/* 📢 広告表記（リーガル対応） */}
         <aside className={styles.adDisclosure} aria-label="広告告知">

@@ -5,7 +5,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -37,7 +37,11 @@ const statsData = [
   { name: 'Sun', pc: 72, views: 72 },
 ];
 
-export default function UnifiedDashboard() {
+/**
+ * 💡 ダッシュボードのメインコンテンツ
+ * useRouterを使用するため、Suspense境界の内部に配置する必要があります。
+ */
+function DashboardContent() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [basePath, setBasePath] = useState("");
@@ -88,9 +92,6 @@ export default function UnifiedDashboard() {
   
   if (!user) return null;
 
-  // ==========================================
-  // 🛡️ 管理者用・一般ユーザー用 共通レイアウト
-  // ==========================================
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col lg:flex-row">
       
@@ -186,6 +187,22 @@ export default function UnifiedDashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+/**
+ * ✅ 修正ポイント: UnifiedDashboard (エントリポイント)
+ * 全体をSuspenseでラップすることで、ビルド時のCSR bailoutエラーを回避します。
+ */
+export default function UnifiedDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-cyan-500 font-mono">
+        INITIALIZING CORE...
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
 

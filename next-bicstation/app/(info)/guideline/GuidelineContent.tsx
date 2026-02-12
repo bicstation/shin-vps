@@ -10,12 +10,13 @@ import StaticPageLayout from '@shared/static/StaticPageLayout';
 
 // ❌ 削除: export const metadata = { ... };
 // 💡 重要: "use client" ファイルから metadata を export することは disallowed (禁止) です。
-// SEO 用の情報は StaticPageLayout の Props (title, description) を通じて管理します。
+// SEO 用の情報は StaticPageLayout の Props (title, description) を通を通じて管理します。
 
 /**
- * 💡 ページのメインコンテンツ部分
+ * 💡 ページのメインコンテンツ実体
+ * 名前を Inner に変更し、useSearchParams の直接の境界とします。
  */
-function GuidelinePageContent() {
+function GuidelinePageContentInner() {
   // ✅ 修正ポイント: ビルド時の CSR bailout エラーを回避するために実行
   const searchParams = useSearchParams();
 
@@ -88,15 +89,17 @@ function GuidelinePageContent() {
 
 /**
  * ✅ ページエントリポイント
+ * クライアントコンポーネント内でもさらに Suspense で包むことで、
+ * サーバー側での Prerender エラーを二重に防ぎます。
  */
-export default function GuidelinePage() {
+export default function GuidelinePageContent() {
   return (
     <Suspense fallback={
       <div className="flex justify-center items-center p-20 text-gray-400">
         <span className="animate-pulse">Loading Guidelines...</span>
       </div>
     }>
-      <GuidelinePageContent />
+      <GuidelinePageContentInner />
     </Suspense>
   );
 }

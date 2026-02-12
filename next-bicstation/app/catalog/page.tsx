@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Sidebar from '@shared/layout/Sidebar';
@@ -6,12 +6,17 @@ import Pagination from '@shared/common/Pagination';
 
 /**
  * ✅ 修正ポイント: インポートパスの変更
- * @shared/product/ProductCard から @shared/cards/ProductCard へ
  */
 import ProductCard from '@shared/cards/ProductCard';
 
 import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/lib/api';
 import styles from './CatalogPage.module.css';
+
+/**
+ * ✅ 修正ポイント: Next.js 15 でのビルドエラー（Missing Suspense boundary）を強制回避
+ * このページはクエリパラメータに依存するため、静的生成をスキップして動的レンダリングを強制します。
+ */
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
     title: 'PC製品カタログ一覧 | BICSTATION',
@@ -28,7 +33,28 @@ interface PageProps {
     }>;
 }
 
-export default async function CatalogPage({ searchParams }: PageProps) {
+/**
+ * ✅ Next.js 15 ビルドエラー対策:
+ * 子コンポーネント（Pagination等）で useSearchParams が使われている可能性があるため、
+ * ページ全体を Suspense でラップします。
+ */
+export default function CatalogPage(props: PageProps) {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-500 font-mono text-xs uppercase tracking-[0.2em]">
+                <div className="w-8 h-8 border-t-2 border-slate-500 animate-spin mb-4 rounded-full"></div>
+                Loading Catalog Data...
+            </div>
+        }>
+            <CatalogPageContent {...props} />
+        </Suspense>
+    );
+}
+
+/**
+ * 実際のページロジックを async 関数として保持
+ */
+async function CatalogPageContent({ searchParams }: PageProps) {
     const sParams = await searchParams;
     
     // パラメータ取得
@@ -62,15 +88,20 @@ export default async function CatalogPage({ searchParams }: PageProps) {
     return (
         <div className={styles.wrapper}>
             <aside className={styles.sidebarSection}>
-                <Sidebar 
-                    activeMenu="all" 
-                    makers={makersData} 
-                    recentPosts={allPosts.map((p: any) => ({
-                        id: p.id,
-                        title: safeDecode(p.title.rendered),
-                        slug: p.slug
-                    }))}
-                />
+                {/* Sidebar内で useSearchParams を使っている可能性があるため、
+                   コンポーネント単位でも Suspense を適用して安全性を高めます 
+                */}
+                <Suspense fallback={<div className="h-40 animate-pulse bg-slate-900 rounded-lg" />}>
+                    <Sidebar 
+                        activeMenu="all" 
+                        makers={makersData} 
+                        recentPosts={allPosts.map((p: any) => ({
+                            id: p.id,
+                            title: safeDecode(p.title.rendered),
+                            slug: p.slug
+                        }))}
+                    />
+                </Suspense>
             </aside>
 
             <main className={styles.main}>
@@ -125,12 +156,17 @@ export default async function CatalogPage({ searchParams }: PageProps) {
                     </div>
 
                     <div className={styles.paginationWrapper}>
-                        <Pagination 
-                            currentOffset={currentOffset}
-                            limit={limit}
-                            totalCount={pcData.count}
-                            baseUrl="/catalog" 
-                        />
+                        {/* ✅ 修正ポイント: Pagination を個別に Suspense でラップ
+                           ビルド時の useSearchParams() bailout を防ぐための最も強力な対策です。
+                        */}
+                        <Suspense fallback={<div className="h-10 w-full bg-slate-900 animate-pulse rounded" />}>
+                            <Pagination 
+                                currentOffset={currentOffset}
+                                limit={limit}
+                                totalCount={pcData.count}
+                                baseUrl="/catalog" 
+                            />
+                        </Suspense>
                     </div>
                 </section>
             </main>
