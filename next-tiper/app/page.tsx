@@ -6,11 +6,11 @@ import Link from 'next/link';
 
 // ✅ 共通コンポーネント
 import ProductCard from '@shared/cards/AdultProductCard';
-// 💡 統合版サイドバー (先ほど修正した AdultSidebar を想定)
-import UnifiedSidebar from '@shared/layout/Sidebar/UnifiedSidebar';
+// 💡 統合版サイドバー (マーケット分析対応版)
+import UnifiedSidebar from '@shared/layout/Sidebar/AdultSidebar'; 
 import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 // 💡 統合APIを利用
-import { getUnifiedProducts, fetchMakers, fetchGenres } from '@shared/lib/api/django';
+import { getUnifiedProducts, fetchMakers, fetchGenres } from '@shared/lib/api/django/adult';
 import { WPPost, AdultProduct } from '@shared/lib/api/types';
 import { constructMetadata } from '@shared/lib/metadata';
 
@@ -63,8 +63,8 @@ export default async function Home() {
       console.error("Home: Unified API Error", e);
       return { results: [], count: 0 };
     }),
-    fetchMakers({ limit: 100, ordering: '-count' }).catch(() => []),
-    fetchGenres({ limit: 100, ordering: '-count' }).catch(() => [])
+    fetchMakers({ limit: 100, ordering: '-product_count' }).catch(() => []),
+    fetchGenres({ limit: 100, ordering: '-product_count' }).catch(() => [])
   ]);
 
   const products = (productData?.results || []) as AdultProduct[];
@@ -72,17 +72,16 @@ export default async function Home() {
 
   /**
    * ✅ サイドバー用：メーカーデータのTop 20抽出
-   * DB側の slug (日本語名) を優先的に使用します
    */
   const rawMakers = Array.isArray(makersData) ? makersData : (makersData as any)?.results || [];
   const topMakers = rawMakers
-    .sort((a: any, b: any) => (b.count || b.product_count || 0) - (a.count || a.product_count || 0))
+    .sort((a: any, b: any) => (b.product_count || b.count || 0) - (a.product_count || a.count || 0))
     .slice(0, 20)
     .map((m: any) => ({
       id: m.id,
       name: m.name || `Studio ${m.id}`,
-      slug: m.slug || m.id.toString(), // DB側の修正により、ここに日本語が入る
-      product_count: m.count || m.product_count || 0
+      slug: m.slug || m.id.toString(),
+      product_count: m.product_count || m.count || 0
     }));
 
   /**
@@ -90,13 +89,13 @@ export default async function Home() {
    */
   const rawGenres = Array.isArray(genresData) ? genresData : (genresData as any)?.results || [];
   const topGenres = rawGenres
-    .sort((a: any, b: any) => (b.count || b.product_count || 0) - (a.count || a.product_count || 0))
+    .sort((a: any, b: any) => (b.product_count || b.count || 0) - (a.product_count || a.count || 0))
     .slice(0, 20)
     .map((g: any) => ({
       id: g.id,
       name: g.name,
-      slug: g.slug || g.id.toString(), // DB側の修正により、ここに日本語が入る
-      product_count: g.count || g.product_count || 0
+      slug: g.slug || g.id.toString(),
+      product_count: g.product_count || g.count || 0
     }));
 
   // WordPress記事の整形
@@ -145,20 +144,12 @@ export default async function Home() {
         <aside className="w-full lg:w-[300px] xl:w-[340px] flex-shrink-0">
           <div className="lg:sticky lg:top-24 space-y-8">
             
-            {/* 🔗 プラットフォーム・クイック・セレクター */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { name: 'DUGA', path: '/brand/duga', color: 'hover:bg-[#00d1b2] hover:border-[#00d1b2]' },
-                { name: 'FANZA', path: '/brand/fanza', color: 'hover:bg-[#e94560] hover:border-[#e94560]' },
-                { name: 'DMM', path: '/brand/dmm', color: 'hover:bg-[#f59e0b] hover:border-[#f59e0b]' }
-              ].map((site) => (
-                <Link key={site.name} href={site.path} className="block">
-                  <div className={`py-3 text-center border border-white/5 bg-white/[0.02] rounded-sm text-[9px] font-black text-gray-500 hover:text-white transition-all cursor-pointer uppercase tracking-tighter ${site.color}`}>
-                    {site.name}
-                  </div>
-                </Link>
-              ))}
-            </div>
+            {/* 💡 統合版サイドバー（マーケット分析・仕訳データ対応） */}
+            {/* productが渡されない場合、サイドバーは自動的に全体の統計をフェッチします */}
+            <UnifiedSidebar 
+              makers={topMakers} 
+              recentPosts={sidebarRecentPosts} 
+            />
 
             {!isApiConnected && (
               <div className="p-5 border border-red-500/20 bg-red-950/5 rounded-sm">
@@ -167,13 +158,6 @@ export default async function Home() {
                 </p>
               </div>
             )}
-
-            {/* 💡 統合版サイドバーの呼び出し */}
-            <UnifiedSidebar 
-              makers={topMakers} 
-              genres={topGenres}
-              recentPosts={sidebarRecentPosts} 
-            />
           </div>
         </aside>
 
@@ -228,7 +212,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-x-6 gap-y-12 min-h-[600px]">
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12 min-h-[600px]">
               {products.length > 0 ? (
                 products.map((product) => (
                   <ProductCard key={`${product.api_source}-${product.id}`} product={product} />

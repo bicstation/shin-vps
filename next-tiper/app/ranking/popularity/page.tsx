@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import { TrendingUp, Activity, Flame } from 'lucide-react';
 
@@ -33,9 +33,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * ページコンポーネント
+ * 💡 実際のコンテンツを描画する非同期コンポーネント
  */
-export default async function AdultPopularityRankingPage({ 
+async function RankingContent({ 
   searchParams 
 }: { 
   searchParams: Promise<{ page?: string }> 
@@ -69,7 +69,7 @@ export default async function AdultPopularityRankingPage({
   };
 
   return (
-    <main className={styles.container}>
+    <>
       {/* 構造化データのレンダリング */}
       <script
         type="application/ld+json"
@@ -120,9 +120,31 @@ export default async function AdultPopularityRankingPage({
         <Pagination 
           currentPage={currentPage} 
           totalPages={totalPages} 
-          baseUrl="/popularity" 
+          baseUrl="/ranking/popularity" 
         />
       </div>
+    </>
+  );
+}
+
+/**
+ * ✅ ページエントリポイント
+ * Next.js 15 の「Missing Suspense Boundary」を回避するため、
+ * 動的パラメータ（searchParams）を扱うコンテンツを Suspense で保護します。
+ */
+export default function AdultPopularityRankingPage(props: { 
+  searchParams: Promise<{ page?: string }> 
+}) {
+  return (
+    <main className={styles.container}>
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center p-20 min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mb-4"></div>
+          <p className="text-gray-500 font-medium">RANKING DATA LOADING...</p>
+        </div>
+      }>
+        <RankingContent searchParams={props.searchParams} />
+      </Suspense>
     </main>
   );
 }

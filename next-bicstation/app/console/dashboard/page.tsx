@@ -1,14 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  Server, Cpu, Database, Users, Activity, Play, RefreshCw
+  Server, Cpu, Database, Users, Activity, Play, RefreshCw, ChevronRight
 } from 'lucide-react';
 
-// 📊 統計データ
+/**
+ * =====================================================================
+ * 📊 統計データ (ダミーデータ)
+ * =====================================================================
+ */
 const productStats = [
   { name: 'Mon', pc: 45, adult: 120 },
   { name: 'Tue', pc: 52, adult: 110 },
@@ -19,14 +23,25 @@ const productStats = [
   { name: 'Sun', pc: 72, adult: 210 },
 ];
 
-export default function ConsoleDashboard() {
+/**
+ * 💡 メインコンテンツ
+ * Rechartsはブラウザ環境を必要とするため、mounted制御を維持します。
+ */
+function DashboardContent() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <div className="animate-spin h-10 w-10 border-4 border-cyan-500 rounded-full border-t-transparent"></div>
+        <p className="text-slate-500 text-xs font-mono">LOADING VISUALIZER...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
@@ -34,16 +49,19 @@ export default function ConsoleDashboard() {
       {/* 🛠️ ヘッダーセクション */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
+          <div className="flex items-center gap-2 text-cyan-500 mb-2 font-black text-[10px] tracking-widest uppercase bg-cyan-500/10 w-fit px-2 py-0.5 rounded">
+            System <ChevronRight size={10} /> Metrics
+          </div>
           <h1 className="text-3xl font-black tracking-tight text-white uppercase italic">
             Overview
           </h1>
           <p className="text-slate-400 mt-1 text-sm font-medium">システム稼働状況とデータ統計のリアルタイム監視</p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 px-4 py-2.5 rounded-xl transition-all border border-slate-800 text-xs font-bold text-slate-300">
+          <button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 px-4 py-2.5 rounded-xl transition-all border border-slate-800 text-xs font-bold text-slate-300 active:scale-95">
             <RefreshCw size={16} className="text-slate-500" /> Refresh
           </button>
-          <button className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 px-5 py-2.5 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(8,145,178,0.2)] text-xs text-white">
+          <button className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 px-5 py-2.5 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(8,145,178,0.2)] text-xs text-white active:scale-95">
             <Play size={16} fill="currentColor" /> Run Scrapers
           </button>
         </div>
@@ -172,7 +190,7 @@ function StatCard({ icon, title, value, sub }: { icon: any, title: string, value
         {React.cloneElement(icon, { size: 80 })}
       </div>
       <div className="flex items-center gap-4 mb-4">
-        <div className="p-3 bg-slate-800/50 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+        <div className="p-3 bg-slate-800/50 rounded-2xl group-hover:scale-110 transition-transform duration-300 border border-white/5">
           {icon}
         </div>
         <span className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{title}</span>
@@ -203,5 +221,22 @@ function LogItem({ time, type, msg }: { time: string, type: 'SUCCESS' | 'ERROR' 
       </div>
       <span className="text-xs text-slate-300 font-medium leading-relaxed">{msg}</span>
     </div>
+  );
+}
+
+/**
+ * ✅ ページエントリポイント
+ * 他のconsoleページと一貫性を持たせるため Suspense でラップ
+ */
+export default function ConsoleDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col justify-center items-center min-h-[400px] gap-4">
+        <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 font-mono text-xs animate-pulse">CONNECTING TO SYSTEM CORE...</p>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

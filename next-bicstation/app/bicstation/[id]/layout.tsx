@@ -1,31 +1,39 @@
 import React from 'react';
-// ✅ shared/lib/siteConfig 等から色を取得する形に合わせるとより汎用的です
+// ✅ サイト共通設定（色など）をインポート
 import { COLORS } from '@shared/styles/constants'; 
 
+interface PostLayoutProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
 /**
- * ブログ記事表示用の共通レイアウト
- * 💡 インラインの <style> を排除し、CSS変数のみを制御します。
+ * 💡 ブログ記事表示用の共通レイアウトコンポーネント
+ * * 役割:
+ * 1. 記事本文全体のラッパーとして機能。
+ * 2. サイトのテーマカラーをCSS変数 (--site-theme-color) として流し込む。
+ * 3. 外部CSS (PostContent.module.css 等) と組み合わせて、h2, h3, a タグを制御。
  */
 export default function PostLayout({
   children,
   className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  // サイト共通カラーを取得（フォールバック付き）
+}: PostLayoutProps) {
+  
+  // 🎨 テーマカラーの取得（フォールバックを確実に設定）
   const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
   return (
     <article 
-      className={`post-content-container ${className}`} // ✅ 専用のクラスを付与
+      className={`post-body-content ${className}`}
       style={{ 
-        // 💡 CSS変数のみをインラインで定義
+        // 💡 インラインスタイルはこのCSS変数の定義だけに留めるのがスマート
         '--site-theme-color': primaryColor 
       } as React.CSSProperties}
     >
-      {/* この children（記事本文）内の h2, h3, a タグなどは、
-         外部 CSS 側で var(--site-theme-color) を通じて着色されます。
+      {/* 💡 children 内に含まれる HTML（WordPress等からの生のHTML）は、
+         親要素である .post-body-content を起点とした子孫セレクタで
+         外部CSSからスタイルを当てます。
+         例: .post-body-content h2 { color: var(--site-theme-color); }
       */}
       {children}
     </article>

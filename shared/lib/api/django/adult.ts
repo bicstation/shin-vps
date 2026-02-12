@@ -7,12 +7,12 @@ import { AdultProduct } from '../types';
  * 🔞 TIPER API Middleware - Django Connector (Full-Sync Edition)
  * ==============================================================================
  * * このファイルは Django 側の views.py / urls.py と 1対1 で同期しています。
- * 修正日: 2026-02-11
+ * 修正日: 2026-02-12
  */
 
 /**
  * 💡 1. 統合製品詳細取得 (最重要エンドポイント)
- * 最強ページ (page.tsx) から呼ばれるメインの取得ロジックです。
+ * 最強ページ (page.tsx) から呼ばめるメインの取得ロジックです。
  * Django 側の RetrieveAPIView (FanzaProductDetailAPIView / AdultProductDetailAPIView) 
  * の lookup_field 設定に合わせてエンドポイントを自動選択します。
  */
@@ -51,7 +51,6 @@ export async function getAdultProductDetail(id: string | number, source?: string
         const data = await handleResponseWithDebug(res, url);
         
         // Django 側の get_object() が Http404 を返した場合の処理
-        // JSON 内に "detail" がある場合は、Django が正常に「見つからない」と回答した証拠です。
         if (!data || data._error || data.detail === "見つかりませんでした。" || data.detail === "Not found.") {
             console.warn(`⚠️ [BYPASS 404] Node not found in Django DB: ${idStr} at ${url}`);
             return null;
@@ -133,7 +132,32 @@ export async function getAdultProducts(params: any = {}): Promise<{ results: Adu
 }
 
 /**
- * 💡 4. メーカー一覧取得
+ * 💡 4. 【新設】マーケット分析・仕訳データ取得 (Analysis)
+ * Django 側の PlatformMarketAnalysisAPIView (/api/adult-products/analysis/) を使用。
+ * プラットフォーム別の人気ジャンルや平均スコアを取得し、サイドメニューの描画を支えます。
+ */
+export async function getPlatformAnalysis(source: string, makerId?: string | number): Promise<any | null> {
+    const queryParams = new URLSearchParams({ source: source.toUpperCase() });
+    if (makerId) queryParams.append('maker_id', String(makerId));
+
+    const url = resolveApiUrl(`/api/adult-products/analysis/?${queryParams.toString()}`);
+    console.log(`📊 [ANALYSIS] Fetching market classification from: ${url}`);
+
+    try {
+        const res = await fetch(url, { 
+            headers: getDjangoHeaders(), 
+            next: { revalidate: 3600 } // 統計データは1時間キャッシュで十分
+        });
+        const data = await res.json();
+        return data;
+    } catch (e) {
+        console.error("❌ [ANALYSIS ERROR] Failed to fetch market analysis:", e);
+        return null;
+    }
+}
+
+/**
+ * 💡 5. メーカー一覧取得
  */
 export async function fetchMakers(params: any = {}): Promise<any[]> {
     const url = resolveApiUrl(`/api/makers/?${new URLSearchParams(params).toString()}`);
@@ -151,12 +175,10 @@ export async function fetchMakers(params: any = {}): Promise<any[]> {
 }
 
 /**
- * 💡 5. ランキング取得 (AIスコア順)
+ * 💡 6. ランキング取得 (AIスコア順)
  * Django の path('adult-products/ranking/', ...) に合わせて固定パスを優先。
  */
 export async function fetchAdultProductRanking(params: any = {}): Promise<{ results: AdultProduct[]; count: number; _debug?: any }> {
-    const { site_group } = getSiteMetadata(); 
-    // IDマッチングより先に 'ranking/' パスを通るように固定パスとして構築
     const url = resolveApiUrl(`/api/adult-products/ranking/`);
     
     try {
@@ -167,7 +189,6 @@ export async function fetchAdultProductRanking(params: any = {}): Promise<{ resu
         });
         const data = await handleResponseWithDebug(res, url);
         
-        // 配列直列化または PageNumberPagination の両方に対応
         const results = Array.isArray(data) ? data : (data.results || []);
         return { 
             results: results, 
@@ -183,7 +204,6 @@ export async function fetchAdultProductRanking(params: any = {}): Promise<{ resu
 /**
  * ==============================================================================
  * 🔄 別名エクスポート (互換性維持)
- * 既存のコンポーネントが getUnifiedProductDetail を参照していても動作を保証します。
  * ==============================================================================
  */
 export const getUnifiedProductDetail = getAdultProductDetail;

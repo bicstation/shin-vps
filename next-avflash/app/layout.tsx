@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import React, { Suspense } from 'react'; // 💡 Suspense を追加
+import React, { Suspense } from 'react'; 
 import styles from "./layout.module.css";
 
 /**
@@ -8,7 +8,7 @@ import styles from "./layout.module.css";
  */
 import '@shared/styles/globals.css';
 
-/*
+/**
  * ✅ 2. 共通ロジックのインポート
  */
 import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
@@ -99,8 +99,7 @@ export default function RootLayout({
           "--site-theme-color": themeColor,
         } as React.CSSProperties}
       >
-        {/* 💡 動的なフック（URL取得など）を含む可能性があるコンポーネントを 
-             Suspense で囲むことで、ビルドエラーを回避します */}
+        {/* 💡 Header: 認証ロジック等でURLを参照するため必須 */}
         <Suspense fallback={<div style={{ height: '60px', backgroundColor: '#1a1a1a' }} />}>
           <Header />
         </Suspense>
@@ -117,23 +116,27 @@ export default function RootLayout({
 
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
-            {/* 💡 Sidebar も動的なリンク生成を含む可能性があるためラップ */}
+            {/* 💡 Sidebar: ナビゲーションリンク生成のため必須 */}
             <Suspense fallback={<div style={{ width: '250px' }} />}>
               <Sidebar />
             </Suspense>
 
             <main className={styles.mainContent}>
-              {/* 💡 ページ本体も Suspense で囲むのが Next.js 15 ビルドの定石です */}
-              <Suspense fallback={<div>Loading content...</div>}>
+              {/* 💡 ページ本体: 404エラーページを含む全ページの防波堤 */}
+              <Suspense fallback={<div style={{ padding: '20px', color: '#888' }}>読み込み中...</div>}>
                 {children}
               </Suspense>
             </main>
           </div>
         </div>
 
-        <Footer />
+        {/* 💡 Footer: デバッグ機能等で useSearchParams を利用しているため、
+             ここを Suspense で囲まないと 404 ページでビルドエラーになります */}
+        <Suspense fallback={<div style={{ height: '200px', backgroundColor: '#0a0a0a' }} />}>
+          <Footer />
+        </Suspense>
 
-        {/* 💡 ChatBot は確実に useSearchParams 等を使うため必須 */}
+        {/* 💡 ChatBot: クライアントサイドフックを多用するため必須 */}
         <Suspense fallback={null}>
           <ChatBot />
         </Suspense>

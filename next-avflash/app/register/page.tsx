@@ -5,12 +5,13 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, FormEvent, Suspense } from 'react';
 import Link from 'next/link';
-// 💡 明示的にインポートしておく（ビルドエラー回避のまじない）
+// 💡 URLパラメータを取得するためのフック。これがビルドエラーの直接的な原因になります。
 import { useSearchParams } from 'next/navigation';
 import { registerUser } from '@shared/lib/auth';
 
 /**
  * 💡 フォーム本体のコンポーネント
+ * useSearchParams() は必ず Suspense でラップされたコンポーネント内で呼び出す必要があります。
  */
 function RegisterForm() {
   // 💡 実際に呼び出しておくことで、Suspenseの境界を明確にします
@@ -54,6 +55,7 @@ function RegisterForm() {
     try {
       await registerUser(username, email, password);
       alert('会員登録が完了しました！ログインしてください。');
+      // 💡 登録後の遷移先。searchParamsを使ってリダイレクト先を制御する場合もここで処理可能です。
       window.location.href = `${window.location.origin}${basePath}/login/`;
     } catch (err: any) {
       setError(err.message || '登録に失敗しました。');
@@ -173,9 +175,20 @@ function RegisterForm() {
   );
 }
 
+/**
+ * ✅ ページエントリポイント
+ * Next.js 15 では、useSearchParams を含むコンポーネントを Suspense で囲むことが必須です。
+ */
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div style={{ textAlign: 'center', padding: '50px' }}>読み込み中...</div>}>
+    <Suspense fallback={
+      <div style={{ 
+        display: 'flex', justifyContent: 'center', alignItems: 'center', 
+        minHeight: '60vh', color: '#888', fontSize: '0.9rem' 
+      }}>
+        <div className="animate-pulse">登録フォームを読み込み中...</div>
+      </div>
+    }>
       <RegisterForm />
     </Suspense>
   );

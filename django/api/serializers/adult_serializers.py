@@ -118,6 +118,9 @@ class FanzaProductSerializer(serializers.ModelSerializer):
 
     # 💡 共通化のためのエイリアス
     display_id = serializers.CharField(source='unique_id', read_only=True)
+    
+    # 💡 修正：FanzaProductにも明示的に api_source を定義（フロントエンドでの仕訳を容易にする）
+    api_source = serializers.SerializerMethodField()
 
     class Meta:
         model = FanzaProduct
@@ -127,9 +130,13 @@ class FanzaProductSerializer(serializers.ModelSerializer):
             'title', 'url', 'affiliate_url', 'release_date', 'volume',
             'price', 'price_info', 'review_count', 'review_average',
             'image_urls', 'sample_images', 'sample_movie',
-            'maker', 'label', 'series', 'director', 'genres', 'actresses', 'authors',
+            'api_source', 'maker', 'label', 'series', 'director', 'genres', 'actresses', 'authors',
             'product_description', 'ai_summary',
             'score_visual', 'score_story', 'score_cost', 'score_erotic', 'score_rarity',
             'radar_chart_data', 'is_active', 'is_recommend', 'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'unique_id', 'content_id', 'created_at', 'updated_at')
+
+    def get_api_source(self, obj):
+        # site_code (FANZA/DMM) を api_source として返す
+        return obj.site_code if obj.site_code else 'FANZA'

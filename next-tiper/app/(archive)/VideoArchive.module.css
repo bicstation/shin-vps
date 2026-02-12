@@ -1,0 +1,14 @@
+/* VideoArchive.module.css のイメージ */
+
+/* デフォルト（FANZA想定） */
+.pageWrapper { --accent: #e94560; } 
+
+/* DMMテーマ */
+.pageWrapper[data-platform="dmm"] { --accent: #ff9900; }
+
+/* DUGAテーマ */
+.pageWrapper[data-platform="duga"] { --accent: #00d1b2; }
+
+/* 共通パーツで変数を使用 */
+.pulse { background-color: var(--accent); }
+.titleAccent { color: var(--accent); }

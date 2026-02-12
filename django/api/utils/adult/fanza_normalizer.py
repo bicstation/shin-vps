@@ -55,7 +55,7 @@ def _optimize_fanza_url(url: Optional[str]) -> str:
 
 def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    RawApiData のレコードを正規化。動画データもJSON形式で集約します。
+    RawApiData のレコードを正規化。動画データヒット率を最大化し、JSON形式で集約します。
     """
     products_data_list = []
     relations_list = []
@@ -118,26 +118,47 @@ def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]]
                 if u and u not in image_url_list:
                     image_url_list.append(u)
 
-        # 4. サンプル動画データ (JSON形式)
-        movie_urls = data.get('sampleMovieURL', {})
-        movie_json_data = {}
-        
-        sample_movie_path = (
-            movie_urls.get('size_720_480') or 
-            movie_urls.get('size_644_414') or 
-            movie_urls.get('size_560_360') or ""
-        )
-        
+        # 4. サンプル動画データ (ヒット率最大化ロジック)
+        movie_urls_raw = data.get('sampleMovieURL')
+        movie_json_data = None
+        sample_movie_path = ""
+        raw_preview = ""
+
+        if movie_urls_raw:
+            # リスト形式で返ってきた場合の補正 ([{...}] -> {...})
+            target_movie_dict = movie_urls_raw[0] if isinstance(movie_urls_raw, list) and movie_urls_raw else movie_urls_raw
+            
+            if isinstance(target_movie_dict, dict):
+                # A. size_xxxx 系のキーを解像度の高い順に自動走査
+                size_keys = sorted([k for k in target_movie_dict.keys() if k.startswith('size_')], reverse=True)
+                for sk in size_keys:
+                    val = target_movie_dict.get(sk)
+                    if val:
+                        sample_movie_path = val
+                        break
+                
+                # B. size_ 形式のキーがない場合、値がURLっぽいものを全走査して救出
+                if not sample_movie_path:
+                    for val in target_movie_dict.values():
+                        if isinstance(val, str) and (val.startswith('http') or val.startswith('//')):
+                            sample_movie_path = val
+                            break
+
+                # C. プレビュー画像の抽出
+                preview_images = target_movie_dict.get('pc_flag_images', {}).get('image', [])
+                if isinstance(preview_images, list) and preview_images:
+                    raw_preview = preview_images[0]
+                elif isinstance(preview_images, str):
+                    raw_preview = preview_images
+
+        # URLがヒットした場合のみ、構造化されたJSONオブジェクトを生成
         if sample_movie_path:
             if sample_movie_path.startswith('//'):
                 sample_movie_path = 'https:' + sample_movie_path
             
-            preview_images = movie_urls.get('pc_flag_images', {}).get('image', [])
-            raw_preview = preview_images[0] if isinstance(preview_images, list) and preview_images else ""
-            
             movie_json_data = {
                 'url': sample_movie_path,
-                'preview_image': _optimize_fanza_url(raw_preview)
+                'preview_image': _optimize_fanza_url(raw_preview) if raw_preview else ""
             }
 
         # 5. 価格
@@ -163,7 +184,8 @@ def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]]
             'affiliate_url': data.get('affiliateURL') or "", 
             'price': price_val,
             'image_url_list': image_url_list,
-            'sample_movie_url': movie_json_data if movie_json_data else None,
+            # ここがポイント: 確実に辞書かNoneが入るようにする
+            'sample_movie_url': movie_json_data, 
             'maker': maker_name,
             'label': label_name,
             'series': series_name,

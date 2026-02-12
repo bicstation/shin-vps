@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { 
   BrainCircuit, Sparkles, Wand2, ArrowRight, 
-  CheckCircle2, RefreshCw, Eye, Zap, MessageSquareQuote
+  CheckCircle2, RefreshCw, Eye, Zap, MessageSquareQuote, ShieldCheck
 } from 'lucide-react';
 
-export default function AIMetaSync() {
+/**
+ * 💡 AIリライト・同期 メインコンテンツ
+ */
+function AIMetaSyncContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [promptMode, setPromptMode] = useState('creative'); // creative, seo, professional
 
@@ -43,7 +46,7 @@ export default function AIMetaSync() {
           <select 
             value={promptMode}
             onChange={(e) => setPromptMode(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs font-bold text-slate-300 focus:outline-none focus:border-purple-500/50"
+            className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs font-bold text-slate-300 focus:outline-none focus:border-purple-500/50 appearance-none cursor-pointer hover:bg-slate-800 transition-colors"
           >
             <option value="creative">Creative Mode</option>
             <option value="seo">SEO Optimized</option>
@@ -52,7 +55,7 @@ export default function AIMetaSync() {
           <button 
             onClick={handleSync}
             disabled={isProcessing}
-            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-900 px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] text-xs text-white uppercase"
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-900 px-6 py-3 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] text-xs text-white uppercase active:scale-95 disabled:scale-100"
           >
             {isProcessing ? <RefreshCw size={16} className="animate-spin" /> : <Wand2 size={16} />} 
             {isProcessing ? 'Processing...' : 'Run Global Sync'}
@@ -117,7 +120,8 @@ export default function AIMetaSync() {
       </div>
 
       {/* 🧠 Prompt Configuration Panel */}
-      <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem]">
+      <div className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2.5rem] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
         <h3 className="text-lg font-black text-white italic uppercase flex items-center gap-3 mb-6 tracking-tight">
           <MessageSquareQuote className="text-purple-500" /> AI Prompt Strategy
         </h3>
@@ -143,16 +147,32 @@ export default function AIMetaSync() {
   );
 }
 
+/**
+ * 🎨 サポートコンポーネント: PromptCard
+ */
 function PromptCard({ icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
-    <div className="bg-slate-950/50 border border-slate-800/60 p-5 rounded-2xl hover:border-purple-500/30 transition-all group">
-      <div className="mb-3">{icon}</div>
+    <div className="bg-slate-950/50 border border-slate-800/60 p-5 rounded-2xl hover:border-purple-500/30 transition-all group hover:bg-slate-900/50">
+      <div className="mb-3 group-hover:scale-110 transition-transform">{icon}</div>
       <h4 className="text-xs font-black text-slate-200 uppercase tracking-widest mb-2">{title}</h4>
       <p className="text-xs text-slate-500 leading-relaxed font-medium">{desc}</p>
     </div>
   );
 }
 
-function ShieldCheck({ size, className }: { size: number, className: string }) {
-  return <Zap size={size} className={className} />; // 暫定アイコン
+/**
+ * ✅ ページエントリポイント
+ * CSR Bailout 防止と、管理画面共通のローディングUXのための Suspense ラップ
+ */
+export default function AIMetaSync() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col justify-center items-center min-h-[400px] gap-4">
+        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(168,85,247,0.4)]"></div>
+        <p className="text-slate-500 font-mono text-[10px] uppercase tracking-[0.3em] animate-pulse">Initializing AI Cognitive Engine...</p>
+      </div>
+    }>
+      <AIMetaSyncContent />
+    </Suspense>
+  );
 }

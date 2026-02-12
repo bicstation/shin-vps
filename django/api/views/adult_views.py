@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from rest_framework import generics, filters, pagination, response
+from rest_framework import generics, filters, pagination, response, views
 from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Q
+from django.db.models import Q, Count, Avg
 from django.shortcuts import get_object_or_404
 from django.http import Http404
 from itertools import chain
@@ -44,7 +44,6 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         if source == 'DUGA':
             return AdultProduct.objects.filter(is_active=True)
         elif source in ['FANZA', 'DMM']:
-            # FanzaProductにデータがない場合、AdultProduct側の api_source='FANZA' 等を探す
             return AdultProduct.objects.filter(is_active=True, api_source__iexact=source)
         return AdultProduct.objects.filter(is_active=True)
 
@@ -78,7 +77,6 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             return self._get_paginated_response(queryset, AdultProductSerializer)
             
         elif source in ['FANZA', 'DMM']:
-            # FanzaProductが空ならAdultProduct内のFANZAデータを返す
             if qs_fanza.count() == 0:
                 queryset = qs_adult.filter(api_source__iexact=source).order_by('-release_date')
                 return self._get_paginated_response(queryset, AdultProductSerializer)
@@ -87,7 +85,6 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             return self._get_paginated_response(queryset, FanzaProductSerializer)
 
         else:
-            # 混合リストのソート
             def get_sort_key(instance):
                 val = instance.release_date
                 if not val: return "0000-00-00"
@@ -126,6 +123,41 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         return response.Response(serializer.data)
 
 # --------------------------------------------------------------------------
+# 📊 新設：MarketAnalysisView (プラットフォーム別の「奥」のデータ取得)
+# --------------------------------------------------------------------------
+class PlatformMarketAnalysisAPIView(views.APIView):
+    """
+    サイドメニュー用の「仕訳データ」を生成。
+    プラットフォームごとの人気ジャンルや平均スコアを返す。
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        source = request.query_params.get('source', 'FANZA').upper()
+        maker_id = request.query_params.get('maker_id')
+
+        # 1. プラットフォーム内でのジャンル集計 (仕訳データ)
+        base_qs = AdultProduct.objects.filter(api_source__iexact=source, is_active=True)
+        
+        if maker_id:
+            base_qs = base_qs.filter(maker_id=maker_id)
+
+        genre_stats = base_qs.values('genres__name').annotate(
+            count=Count('genres')
+        ).exclude(genres__name=None).order_by('-count')[:8]
+
+        # 2. プラットフォーム・ベンチマーク (平均AIスコア)
+        avg_score = base_qs.aggregate(avg=Avg('spec_score'))
+
+        return response.Response({
+            "source": source,
+            "genre_distribution": list(genre_stats),
+            "platform_avg_score": round(avg_score['avg'] or 0, 2),
+            "total_nodes": base_qs.count(),
+            "status": "NODE_SYNC_COMPLETE"
+        })
+
+# --------------------------------------------------------------------------
 # 2. 個別 View (特定のモデルに特化した一覧)
 # --------------------------------------------------------------------------
 class FanzaProductListAPIView(generics.ListAPIView):
@@ -147,12 +179,9 @@ class AdultProductListAPIView(generics.ListAPIView):
     search_fields = ['title', 'product_description', 'actresses__name', 'genres__name']
 
 # --------------------------------------------------------------------------
-# 3. 詳細 View (【2026-02-11 統合・深層探索版】)
+# 3. 詳細 View (統合・深層探索版)
 # --------------------------------------------------------------------------
 class FanzaProductDetailAPIView(generics.RetrieveAPIView):
-    """
-    FANZA作品詳細。FanzaProductになければ AdultProductをフォールバック探索。
-    """
     queryset = FanzaProduct.objects.all().select_related('maker', 'label').prefetch_related('genres', 'actresses')
     serializer_class = FanzaProductSerializer
     permission_classes = [AllowAny]
@@ -160,15 +189,12 @@ class FanzaProductDetailAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         raw_id = self.kwargs[self.lookup_url_kwarg or self.lookup_field]
-        # プレフィックスを剥離（DMM_n_1058... -> n_1058...）
         clean_id = re.sub(r'^(FANZA_|DMM_|DUGA_|fz_)', '', raw_id, flags=re.IGNORECASE)
         
-        # 1. まず本来の FanzaProduct モデルを探す
         obj = self.get_queryset().filter(
             Q(unique_id__iexact=raw_id) | Q(unique_id__iexact=clean_id) | Q(unique_id__icontains=clean_id)
         ).first()
 
-        # 2. 【重要】FanzaProductになければ AdultProduct モデル内を探索
         if not obj:
             fallback_obj = AdultProduct.objects.filter(
                 Q(product_id_unique__iexact=raw_id) | 
@@ -177,7 +203,6 @@ class FanzaProductDetailAPIView(generics.RetrieveAPIView):
             ).first()
             
             if fallback_obj:
-                # AdultProductが見つかった場合、Serializerを切り替えて返却
                 self.serializer_class = AdultProductSerializer
                 return fallback_obj
             
@@ -186,9 +211,6 @@ class FanzaProductDetailAPIView(generics.RetrieveAPIView):
         return obj
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
-    """
-    DUGA等詳細。大文字小文字やプレフィックスの有無を無視して柔軟にマッチング。
-    """
     queryset = AdultProduct.objects.all().select_related('maker', 'label').prefetch_related('genres', 'actresses')
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
@@ -196,10 +218,8 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         raw_id = self.kwargs[self.lookup_url_kwarg or self.lookup_field]
-        # プレフィックスを剥離（DMM_n_1058... -> n_1058...）
         clean_id = re.sub(r'^(FANZA_|DMM_|DUGA_|fz_)', '', raw_id, flags=re.IGNORECASE)
         
-        # 大文字小文字を無視 (__iexact) し、かつ複数のIDパターンで検索
         obj = self.get_queryset().filter(
             Q(product_id_unique__iexact=raw_id) | 
             Q(product_id_unique__iexact=f"FANZA_{clean_id}") |

@@ -1,15 +1,25 @@
 "use client";
+
 // 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
 export const dynamic = "force-dynamic";
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, Suspense } from 'react';
 import Link from 'next/link'; 
 // ✅ 修正ポイント: shared の新構造に合わせたインポートパス
 import { loginUser } from '@shared/lib/auth';
 import { getSiteMetadata } from '@shared/lib/siteConfig';
+// ✅ useSearchParams を明示的にインポート（Suspense境界のトリガーとして機能させるため）
+import { useSearchParams } from 'next/navigation';
 import styles from './Login.module.css'; 
 
-export default function LoginPage() {
+/**
+ * 💡 フォーム本体のコンポーネント
+ * Next.js 15 の「Missing Suspense Boundary」エラーを回避するために分離。
+ */
+function LoginFormInner() {
+  // 💡 フックを呼び出し、このコンポーネントが Suspense 下で動作することを保証します
+  const searchParams = useSearchParams();
+
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -116,5 +126,21 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * ✅ Next.js 15 用のエントリポイント
+ * ビルド時の強制エラーを防ぐために Suspense でラップします。
+ */
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+        <p style={{ color: '#666', fontFamily: 'sans-serif' }}>Loading Authentication...</p>
+      </div>
+    }>
+      <LoginFormInner />
+    </Suspense>
   );
 }

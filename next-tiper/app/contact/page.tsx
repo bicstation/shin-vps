@@ -1,6 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import styles from './contact.module.css';
 
 interface Message {
@@ -13,7 +15,11 @@ interface Message {
     };
 }
 
-export default function ContactPage() {
+/**
+ * 🤖 AI Chat Inner Component
+ * 実際のアナリティクスやチャットロジックをここに集約
+ */
+function ChatInner() {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([
         { 
@@ -53,7 +59,6 @@ export default function ContactPage() {
 
         try {
             // ✅ APIエンドポイントはプロジェクトの設定に合わせて調整してください
-            // HTMLが返ってくるのを防ぐため、Acceptヘッダーを明示
             const response = await fetch('/api/chat', { 
                 method: 'POST',
                 headers: { 
@@ -63,7 +68,6 @@ export default function ContactPage() {
                 body: JSON.stringify({ message: userMsg }),
             });
 
-            // ✅ 先ほどのエラー対策：JSONでない（HTMLが返ってきた）場合の処理
             const contentType = response.headers.get("content-type");
             if (!response.ok || (contentType && contentType.includes("text/html"))) {
                 throw new Error("Invalid response from server (HTML instead of JSON)");
@@ -110,7 +114,6 @@ export default function ContactPage() {
                                     alt="avatar" 
                                     className={styles.avatar}
                                     onError={(e) => {
-                                        // 画像がない場合はイニシャルを表示するなどのフォールバック
                                         e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23222244'/%3E%3C/svg%3E";
                                     }}
                                 />
@@ -143,7 +146,6 @@ export default function ContactPage() {
                         </div>
                     ))}
                     
-                    {/* ローディングアニメーション */}
                     {isLoading && (
                         <div className={styles.aiRow}>
                             <div className={styles.avatarWrapper}>
@@ -176,5 +178,23 @@ export default function ContactPage() {
                 </form>
             </div>
         </div>
+    );
+}
+
+/**
+ * ✅ 最終エクスポート
+ * Next.js 15 のビルドエラーを回避するため、全体を Suspense でラップ
+ */
+export default function ContactPage() {
+    return (
+        <Suspense fallback={
+            <div className={styles.fullScreenWrapper}>
+                <div className="flex items-center justify-center h-full text-[#e94560] font-mono animate-pulse">
+                    INITIALIZING_CONCIERGE...
+                </div>
+            </div>
+        }>
+            <ChatInner />
+        </Suspense>
     );
 }

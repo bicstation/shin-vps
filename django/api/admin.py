@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 def get_score_bar(value, max_val=100):
     """スコアを視覚的なバーに変換"""
     val = value or 0
+    # スコアが高いほど色が鮮やかになる設定
     color = "#e83e8c" if val > 75 else "#6f42c1" if val > 40 else "#6c757d"
     return mark_safe(
         f'<div style="width: 80px; background: #eee; height: 10px; border-radius: 5px; overflow: hidden;">'
@@ -94,17 +95,19 @@ class FanzaProductAdmin(BaseProductAdmin):
         return f"¥{p}"
 
     def score_tag(self, obj):
+        # ✅ COST (obj.score_cost) を含めた5軸平均
         avg = (obj.score_visual + obj.score_story + obj.score_cost + obj.score_erotic + obj.score_rarity) / 5
         return get_score_bar(avg)
+    score_tag.short_description = "AI評価"
 
 @admin.register(AdultProduct)
 class AdultProductAdmin(BaseProductAdmin):
+    # 一覧に表示するカラム
     list_display = ('display_image', 'product_id_unique', 'title', 'price_display', 'score_bar', 'is_posted_tag', 'api_source_tag', 'release_date')
     list_display_links = ('display_image', 'product_id_unique', 'title')
     list_filter = ('api_source', 'is_active', 'is_posted', 'maker')
     search_fields = ('title', 'product_id_unique')
 
-    # ✅ 修正箇所: display_image メソッドを定義
     def display_image(self, obj):
         if obj.image_url_list and len(obj.image_url_list) > 0:
             return mark_safe(f'<img src="{obj.image_url_list[0]}" width="70" style="border-radius:4px;" referrerpolicy="no-referrer" />')
@@ -112,14 +115,18 @@ class AdultProductAdmin(BaseProductAdmin):
     display_image.short_description = "画像"
 
     def api_source_tag(self, obj):
-        # DMMは青、FANZAはピンク、その他はグレー
         color = "#ff3860" if obj.api_source == "FANZA" else "#007bff" if obj.api_source == "DMM" else "#6c757d"
         return mark_safe(f'<span style="background:{color}; color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold;">{obj.api_source}</span>')
     api_source_tag.short_description = "ソース"
 
     def price_display(self, obj): return f"¥{obj.price:,}" if obj.price else "---"
+    
+    # ✅ obj.spec_score は analyze_adult_task 内で (5軸の合計/5) として保存されている必要があります
     def score_bar(self, obj): return get_score_bar(obj.spec_score)
+    score_bar.short_description = "総合スコア"
+
     def is_posted_tag(self, obj): return '📮' if obj.is_posted else '☁️'
+    is_posted_tag.short_description = "投稿"
 
 # --------------------------------------------------------------------------
 # 3. PCProduct (ハードウェア・PC製品)
@@ -177,14 +184,11 @@ class AllMasterAdmin(admin.ModelAdmin):
 @admin.register(AdultAttribute, PCAttribute)
 class AttributeAdmin(admin.ModelAdmin):
     list_display = ('name', 'attr_type', 'slug')
-    list_display_links = ('name',)
     list_filter = ('attr_type',)
 
-# 💡 RawApiData の管理画面
 @admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source_tag', 'api_service', 'api_floor', 'migrated', 'created_at')
-    list_display_links = ('id',)
     list_filter = ('api_source', 'migrated', 'api_service')
     search_fields = ('api_source', 'api_service', 'api_floor')
     ordering = ('-created_at',)
@@ -198,9 +202,7 @@ class RawApiDataAdmin(admin.ModelAdmin):
 @admin.register(LinkshareProduct)
 class LinkshareProductAdmin(admin.ModelAdmin):
     list_display = ('product_name', 'sku', 'updated_at')
-    list_display_links = ('product_name',)
 
 @admin.register(PriceHistory)
 class PriceHistoryAdmin(admin.ModelAdmin):
     list_display = ('product', 'price', 'recorded_at')
-    list_display_links = ('product',)

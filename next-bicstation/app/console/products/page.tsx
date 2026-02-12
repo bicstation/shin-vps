@@ -1,21 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { 
   Search, Filter, Edit, Trash2, ExternalLink, 
   CheckCircle, Clock, AlertCircle, Plus, ChevronRight, X, Save, AlertTriangle
 } from 'lucide-react';
 
+// 初期データ
 const initialProducts = [
   { id: '1', name: '高性能ゲーミングPC Z-1 Black Edition', category: 'PC', status: 'active', price: '248,000', description: '第14世代Core i9搭載のフラッグシップモデル。' },
   { id: '2', name: 'VRヘッドセット Neo-V (High-End)', category: 'Gadget', status: 'pending', price: '68,000', description: '広視野角と高リフレッシュレートを実現した次世代VR。' },
   { id: '3', name: 'AIアシスタント搭載メカニカルキーボード', category: 'PC', status: 'error', price: '32,000', description: 'ChatGPTと連携する専用マクロキーを搭載。' },
 ];
 
-export default function ProductManager() {
+/**
+ * 💡 メインコンテンツコンポーネント
+ */
+function ProductManagerContent() {
   const [products, setProducts] = useState(initialProducts);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // 削除用ステート
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   // 編集開始
@@ -103,7 +107,7 @@ export default function ProductManager() {
         </table>
       </div>
 
-      {/* 🛠️ 詳細編集モーダル (前回分) */}
+      {/* 🛠️ 詳細編集モーダル */}
       {isEditModalOpen && selectedProduct && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setIsEditModalOpen(false)} />
@@ -115,23 +119,26 @@ export default function ProductManager() {
             <div className="p-8 space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase">Product Name</label>
-                <input type="text" value={selectedProduct.name} onChange={(e) => setSelectedProduct({...selectedProduct, name: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-200 focus:border-cyan-500/50 outline-none" />
+                <input 
+                  type="text" 
+                  value={selectedProduct.name} 
+                  onChange={(e) => setSelectedProduct({...selectedProduct, name: e.target.value})} 
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm text-slate-200 focus:border-cyan-500/50 outline-none" 
+                />
               </div>
-              {/* ...他のフィールドは省略可能ですが、構造は維持... */}
             </div>
             <div className="p-8 bg-slate-950/50 border-t border-slate-800 flex justify-end gap-3">
               <button onClick={() => setIsEditModalOpen(false)} className="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-widest">Cancel</button>
-              <button onClick={handleSave} className="bg-cyan-600 hover:bg-cyan-500 px-8 py-3 rounded-xl text-xs font-bold text-white uppercase tracking-widest"><Save size={16} /> Save Changes</button>
+              <button onClick={handleSave} className="bg-cyan-600 hover:bg-cyan-500 px-8 py-3 rounded-xl text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2"><Save size={16} /> Save Changes</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ⚠️ 削除確認ダイアログ (今回の追加分) */}
+      {/* ⚠️ 削除確認ダイアログ */}
       {isDeleteModalOpen && selectedProduct && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-rose-950/20 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
-          
           <div className="relative w-full max-w-md bg-slate-900 border border-rose-500/30 rounded-[2rem] shadow-[0_0_50px_rgba(225,29,72,0.2)] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-8 text-center space-y-4">
               <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -143,7 +150,6 @@ export default function ProductManager() {
                 この操作は取り消せません。本当によろしいですか？
               </p>
             </div>
-
             <div className="p-6 bg-slate-950/50 flex gap-3">
               <button 
                 onClick={() => setIsDeleteModalOpen(false)}
@@ -161,12 +167,11 @@ export default function ProductManager() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
 
-// ステータスバッジ (省略)
+// ステータスバッジ
 function StatusBadge({ status }: { status: string }) {
   const styles: any = {
     active: { icon: <CheckCircle size={12} />, text: 'Active', classes: 'text-emerald-400 bg-emerald-400/5 border-emerald-400/20' },
@@ -178,5 +183,22 @@ function StatusBadge({ status }: { status: string }) {
     <div className={`flex items-center gap-1.5 w-fit px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-tighter ${s.classes}`}>
       {s.icon} {s.text}
     </div>
+  );
+}
+
+/**
+ * ✅ ページエントリポイント
+ * CSR bailout エラー回避のため Suspense でラップ
+ */
+export default function ProductManager() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col justify-center items-center min-h-[400px] gap-4">
+        <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 font-mono text-xs animate-pulse">BOOTING PRODUCT SYSTEM...</p>
+      </div>
+    }>
+      <ProductManagerContent />
+    </Suspense>
   );
 }

@@ -16,6 +16,7 @@ import { registerUser } from '@shared/lib/auth';
  */
 function RegisterFormInner() {
   // 💡 フックを呼び出しておくことで、Suspenseがこのコンポーネントを監視するようにします
+  // Next.js 15 では、この呼び出しが含まれるコンポーネントが Suspense の「外側」にあるとビルドエラーになります
   const searchParams = useSearchParams();
 
   const [username, setUsername] = useState<string>('');
@@ -176,12 +177,13 @@ function RegisterFormInner() {
 /**
  * ✅ Next.js 15 用のエントリポイント
  * Suspense境界を作ることで、ビルド時のエラーを解消します。
+ * 💡 内部コンポーネントを確実に Suspense で包む形式を維持します。
  */
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <p>読み込み中...</p>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', fontFamily: 'sans-serif' }}>
+        <p style={{ color: '#666', animatePulse: 'true' } as any}>読み込み中...</p>
       </div>
     }>
       <RegisterFormInner />

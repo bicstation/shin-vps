@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { 
   Users, Search, UserMinus, ShieldCheck, Mail, Calendar, Filter, Settings 
 } from 'lucide-react';
@@ -15,7 +15,10 @@ interface User {
   last_login: string | null;
 }
 
-export default function UserManagement() {
+/**
+ * 💡 実際のUIとロジックを担うメインコンテンツ
+ */
+function UserManagementContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -165,5 +168,22 @@ export default function UserManagement() {
         )}
       </div>
     </>
+  );
+}
+
+/**
+ * ✅ ページエントリポイント
+ * ビルド時の CSR bailout エラーを回避するために Suspense でラップ
+ */
+export default function UserManagement() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col justify-center items-center min-h-[400px] gap-4">
+        <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-slate-500 font-mono text-xs animate-pulse">INITIALIZING USER CONSOLE...</p>
+      </div>
+    }>
+      <UserManagementContent />
+    </Suspense>
   );
 }

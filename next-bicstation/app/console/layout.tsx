@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -14,25 +14,23 @@ import {
   Terminal
 } from 'lucide-react';
 
+/**
+ * 💡 Next.js 15 のビルドエラー対策
+ * このレイアウト配下を動的レンダリングとしてマークし、
+ * useSearchParams 等の Bailout エラーを防止します。
+ */
+export const dynamic = "force-dynamic";
+
 export default function ConsoleLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   /**
-   * 🔗 パス判定ロジックの強化
-   * ローカル（/console/...）でもVPS（/bicstation/console/...）でも
-   * 正しくアクティブ状態を判定します。
+   * 🔗 パス判定ロジック
    */
   const isActive = (path: string) => {
-    // パスの末尾が一致するか、または現在のパスに含まれているかを確認
     return pathname.endsWith(path) || pathname.includes(`${path}/`);
   };
 
-  /**
-   * 🛠️ ベースパス解決用ヘルパー
-   * VPS環境でのサブディレクトリ "/bicstation" を自動的に考慮します。
-   * Next.js の basepath 設定がある場合、Link href は自動で調整されますが、
-   * 明示的に /console から始めることで共通化します。
-   */
   const menuItems = [
     { href: "/console/dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { href: "/console/products", icon: <Package size={18} />, label: "Product Manager" },
@@ -44,10 +42,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-50 font-sans">
       
-      {/* 🚀 共通サイドバー (この layout.tsx で一括管理) */}
-      {/* 重要：各 page.tsx (dashboard, users等) の中身からは 
-          <aside> や サイドバー用のコードをすべて削除してください。
-      */}
+      {/* 🚀 共通サイドバー */}
       <aside className="w-64 bg-[#0a0f1c] border-r border-slate-800/60 flex flex-col fixed h-full z-50 backdrop-blur-xl">
         
         {/* ロゴ・ヘッダーエリア */}
@@ -98,7 +93,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
 
       {/* 🚀 メインコンテンツエリア */}
       <main className="flex-1 ml-64 min-h-screen relative bg-[#020617]">
-        {/* 背景装飾 (サイバーパンク・アンビエントライト) */}
+        {/* 背景装飾 */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[20%] w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[120px]" />
           <div className="absolute bottom-[-5%] right-[10%] w-[400px] h-[400px] bg-purple-600/5 rounded-full blur-[100px]" />
@@ -106,7 +101,15 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
         
         {/* コンテンツ描画 */}
         <div className="p-8 lg:p-12 relative z-10 max-w-[1600px] mx-auto">
-          {children}
+          {/* ✅ 重要：配下のページが useSearchParams を使っても大丈夫なように Suspense で囲む */}
+          <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+              <div className="animate-spin h-10 w-10 border-4 border-cyan-500 rounded-full border-t-transparent"></div>
+              <p className="text-slate-500 text-sm animate-pulse font-mono">INITIALIZING CONSOLE...</p>
+            </div>
+          }>
+            {children}
+          </Suspense>
         </div>
       </main>
 
@@ -142,7 +145,6 @@ function SidebarLink({ href, icon, label, active }: { href: string, icon: any, l
       </span>
       <span className="tracking-tight">{label}</span>
       
-      {/* アクティブ時のインジケーター */}
       {active && (
         <div className="absolute right-4 w-1.5 h-1.5 rounded-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
       )}

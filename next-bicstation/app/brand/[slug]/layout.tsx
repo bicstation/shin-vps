@@ -3,72 +3,100 @@ import Link from "next/link";
 import { COLORS } from "@shared/styles/constants";
 import styles from "./BrandLayout.module.css";
 
-// 💡 [slug] フォルダ名に合わせて params の型を定義
+/**
+ * 💡 Next.js 15 用の型定義
+ * [slug] ディレクトリ配下の layout は params を Promise で受け取ります。
+ */
 interface LayoutProps {
   children: React.ReactNode;
   params: Promise<{ slug: string }>;
 }
 
 export default async function BrandLayout({ children, params }: LayoutProps) {
-  // paramsをawaitして解決
+  // 1. params を非同期で解決（Next.js 15 の必須処理）
   const resolvedParams = await params;
   const brandSlug = resolvedParams?.slug || "";
   
-  // 💡 URLエンコードされた文字列を日本語にデコード
-  // トレンドマイクロなどの日本語はデコードし、英単語はそのまま大文字にできるように処理
-  const decodedBrandName = decodeURIComponent(brandSlug);
+  // 2. 💡 URLデコード処理
+  // 日本語スラッグ（例: %E3%83%88%E3%83%AC%E3%83%B3%E3%83%89...）を「トレンドマイクロ」に復元
+  let decodedBrandName = "";
+  try {
+    decodedBrandName = decodeURIComponent(brandSlug);
+  } catch (e) {
+    decodedBrandName = brandSlug; // デコード失敗時のフォールバック
+  }
   
-  // 表示用の名前を生成（英単語なら大文字、日本語ならそのまま）
+  // 3. 💡 表示名の正規化
+  // 英単語のみの場合は大文字（DELL, HP等）、日本語混じりの場合はそのまま表示
   const brandDisplayName = /^[a-zA-Z0-9-]*$/.test(decodedBrandName) 
     ? decodedBrandName.toUpperCase() 
     : decodedBrandName;
 
-  const primaryColor = COLORS?.SITE_COLOR || '#28a745'; // サイトカラーに合わせる
+  // 🎨 カラー設定
+  const primaryColor = COLORS?.SITE_COLOR || '#28a745';
   const bgColor = COLORS?.BACKGROUND || '#f8f9fa';
 
   return (
     <div style={{ backgroundColor: bgColor, width: '100%', minHeight: '100vh' }}>
       <div className={styles.container}>
         
-        {/* 🚀 セールバナー：デコード済みの日本語名を表示 */}
+        {/* 🚀 セールバナー：視認性を高めた配色設計 */}
         <div 
           className={styles.banner} 
+          role="alert"
           style={{ 
-              background: `${primaryColor}10`, 
+              background: `${primaryColor}08`, // 透過度を調整して背景に馴染ませる
               color: primaryColor, 
-              borderColor: `${primaryColor}30` 
+              border: `1px solid ${primaryColor}25` 
           }}
         >
-          <span className={styles.emoji}>🚀</span> 
-          <strong>{brandDisplayName}</strong> の最新セール・学割情報を反映済み！お得なモデルをチェック
+          <span className={styles.emoji} aria-hidden="true">🚀</span> 
+          <p className={styles.bannerText}>
+            <strong>{brandDisplayName}</strong> の最新セール・学割情報を反映済み！お得なモデルをチェック
+          </p>
         </div>
 
-        {/* 🍞 パンくずリスト：日本語で表示 */}
-        <nav className={styles.breadcrumb}>
-          <Link href="/">ホーム</Link>
-          <span className={styles.separator}>&gt;</span>
-          <span className={styles.current}>{brandDisplayName} の製品一覧</span>
+        {/* 🍞 パンくずリスト：SEOに配慮した構造化タグ */}
+        <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+          <ol className={styles.breadcrumbList} style={{ listStyle: 'none', display: 'flex', padding: 0 }}>
+            <li>
+              <Link href="/">ホーム</Link>
+            </li>
+            <li className={styles.separator} aria-hidden="true">&gt;</li>
+            <li>
+              <span className={styles.current} aria-current="page">
+                {brandDisplayName} の製品一覧
+              </span>
+            </li>
+          </ol>
         </nav>
 
-        {/* 📦 ブランド個別の中身 */}
+        {/* 📦 メインコンテンツ：ブランド個別の一覧（page.tsx）がここに描画される */}
         <main className={styles.mainWrapper}>
           {children}
         </main>
         
-        {/* 🚩 相談CTAセクション */}
-        <section className={styles.ctaSection}>
+        {/* 🚩 相談CTAセクション：コンバージョン率を意識した設計 */}
+        <section className={styles.ctaSection} aria-labelledby="cta-title">
           <div className={styles.ctaInner}>
-            <h3 className={styles.ctaTitle}>自分にぴったりの構成に迷ったら</h3>
+            <h3 id="cta-title" className={styles.ctaTitle}>
+              {brandDisplayName} の構成に迷ったら
+            </h3>
             <p className={styles.ctaDescription}>
-              専門スタッフがチャットやメールで、あなたの用途に最適な一台をご提案します。
+              専門スタッフが、あなたの用途に最適な <strong>{brandDisplayName}</strong> のカスタマイズ構成をご提案します。
             </p>
-            <Link 
-              href="/contact" 
-              className={styles.ctaButton} 
-              style={{ backgroundColor: primaryColor }}
-            >
-              無料でスペック相談する →
-            </Link>
+            <div className={styles.ctaAction}>
+              <Link 
+                href="/contact" 
+                className={styles.ctaButton} 
+                style={{ 
+                  backgroundColor: primaryColor,
+                  boxShadow: `0 4px 14px ${primaryColor}40`
+                }}
+              >
+                無料スペック相談 (チャット・メール) →
+              </Link>
+            </div>
           </div>
         </section>
 

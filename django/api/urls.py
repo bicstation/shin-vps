@@ -49,6 +49,9 @@ urlpatterns = [
     # ==========================================================
     # 5. アダルト/DUGA商品 (AdultProduct) - adult_views.py
     # ==========================================================
+    # 💡 重要: 仕訳・解析用エンドポイントを追加（ID詳細パスより先に記述）
+    path('adult-products/analysis/', views.PlatformMarketAnalysisAPIView.as_view(), name='platform_market_analysis'),
+    
     # 💡 修正: <str:product_id_unique> が 'ranking' という文字列を ID と誤認しないよう順序を担保
     path('adult-products/ranking/', views.AdultProductRankingAPIView.as_view(), name='adult_product_ranking'),
     path('adult-products/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),

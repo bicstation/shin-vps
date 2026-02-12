@@ -1,9 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
 
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PostHeader } from '@shared/blog/PostHeader';
-import PostLayout from '@shared/layout/PostLayout'; // ✅ 先ほど作成した共通レイアウト
+import PostLayout from '@shared/layout/PostLayout';
 import { COLORS } from '@shared/styles/constants';
 import { fetchPostData, fetchProductDetail, fetchPostList } from '@shared/lib/api';
 import Link from 'next/link';
@@ -37,7 +38,7 @@ const formatDate = (dateString: string) => {
 };
 
 /**
- * 本文から目次を抽出・加工
+ * 本文から目次を抽出・ID付与加工
  */
 function processContent(content: string) {
   const toc: { text: string; id: string; level: number }[] = [];
@@ -52,59 +53,104 @@ function processContent(content: string) {
   return { toc, processedContent };
 }
 
-// --- SEO・メタデータ (Next.js 15 Async Params) ---
+// --- SEO・メタデータ (Next.js 15 Async Params 準拠) ---
 
-export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
-  const { id } = await props.params;
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
   const post = await fetchPostData(id);
-  if (!post) return { title: "記事が見つかりません" };
+  
+  if (!post) return { title: "記事が見つかりません | BICSTATION" };
 
   const title = `${safeDecode(post.title.rendered)} | BICSTATION`;
+  const description = post.excerpt?.rendered.replace(/<[^>]*>/g, '').slice(0, 120).trim();
   const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '';
 
   return {
     title,
+    description,
     openGraph: {
       title,
-      description: post.excerpt?.rendered.replace(/<[^>]*>/g, '').slice(0, 120),
+      description,
+      type: 'article',
+      publishedTime: post.date,
+      modifiedTime: post.modified,
+      images: eyeCatchUrl ? [{ url: eyeCatchUrl, width: 1200, height: 630 }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
       images: eyeCatchUrl ? [eyeCatchUrl] : [],
-    }
+    },
   };
 }
 
 // --- メインコンポーネント ---
 
-export default async function PostPage(props: { params: Promise<{ id: string }> }) {
-  const { id: postId } = await props.params;
-  const post = await fetchPostData(postId);
+export default async function PostPage({ params }: PageProps) {
+  const { id: postId } = await params;
   
+  // データの並列取得によるパフォーマンス最適化
+  const post = await fetchPostData(postId);
   if (!post) notFound();
 
-  // 1. 本文加工と製品データの取得
-  const { toc, processedContent } = processContent(post.content.rendered);
+  const [postListData, { toc, processedContent }] = await Promise.all([
+    fetchPostList(20, 0), // 前後記事検索用に少し多めに取得
+    Promise.resolve(processContent(post.content.rendered))
+  ]);
+
+  // 1. 関連製品データの取得
   const relatedProductId = post.acf?.related_product_id || null;
   const relatedProduct = relatedProductId ? await fetchProductDetail(relatedProductId) : null;
   const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
 
-  // 2. 関連記事・前後記事の取得 (fetchPostList の構造 { results: [] } に準拠)
-  const postListData = await fetchPostList(10, 0);
+  // 2. 関連記事・前後ナビゲーションの算出
   const allPosts = Array.isArray(postListData?.results) ? postListData.results : [];
-  
   const currentIndex = allPosts.findIndex((p: any) => String(p.id) === String(post.id));
+  
   const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
-  const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+  const nextPost = currentIndex !== -1 && currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
   
   const recommendedPosts = allPosts
-    .filter((p: any) => p.id !== post.id)
+    .filter((p: any) => String(p.id) !== String(post.id))
     .slice(0, 3);
+
+  // 3. JSON-LD 構造化データ (SEO用)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": safeDecode(post.title.rendered),
+    "image": eyeCatchUrl ? [eyeCatchUrl] : [],
+    "datePublished": post.date,
+    "dateModified": post.modified,
+    "author": [{
+        "@type": "Organization",
+        "name": "BICSTATION",
+        "url": "https://bicstation.com"
+    }]
+  };
 
   return (
     <article className={styles.article}>
-      {/* Hero Section: アイキャッチ背景 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Hero Section */}
       <div className={styles.heroSection}>
         {eyeCatchUrl && (
           <div className={styles.eyeCatchWrapper}>
-            <img src={eyeCatchUrl} alt="" className={styles.eyeCatchImage} />
+            <img 
+              src={eyeCatchUrl} 
+              alt="" 
+              className={styles.eyeCatchImage} 
+              style={{ objectFit: 'cover' }}
+            />
             <div className={styles.eyeCatchOverlay}></div>
           </div>
         )}
@@ -121,7 +167,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
       <div className={styles.singleColumnContainer}>
         {/* 目次セクション */}
         {toc.length > 0 && (
-          <section className={styles.tocSection}>
+          <section className={styles.tocSection} aria-label="目次">
             <div className={styles.tocHeader}>
               <span className={styles.tocIcon}>INDEX</span>
               <h2 className={styles.tocTitle}>目次</h2>
@@ -140,23 +186,24 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
         )}
 
         <main className={styles.mainContent}>
-          {/* 本文冒頭のアイキャッチ */}
+          {/* メインアイキャッチ（LCP最適化のため loading="eager"） */}
           {eyeCatchUrl && (
             <div className={styles.mainEyeCatch}>
               <img 
                 src={eyeCatchUrl} 
                 alt={safeDecode(post.title.rendered)} 
                 className={styles.articleMainImage} 
+                loading="eager"
               />
             </div>
           )}
 
-          {/* ✅ 修正ポイント: PostLayout を適用して CSS 変数でスタイルを制御 */}
+          {/* 本文コンテンツ */}
           <PostLayout className={styles.wpContent}>
             <div dangerouslySetInnerHTML={{ __html: processedContent }} />
           </PostLayout>
 
-          {/* 商品紹介カード (Django 連携 CTA) */}
+          {/* 関連製品カード */}
           {relatedProduct && (
             <section className={styles.enhancedCTA}>
               <div className={styles.ctaBadge}>PICK UP ITEM</div>
@@ -210,8 +257,8 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
             </section>
           )}
 
-          {/* 前後の記事ナビゲーション */}
-          <nav className={styles.postNav}>
+          {/* 記事ナビゲーション */}
+          <nav className={styles.postNav} aria-label="前後記事ナビゲーション">
             {prevPost ? (
               <Link href={`/news/${prevPost.id}`} className={styles.prevLink}>
                 <span className={styles.navLabel}>← 前の記事</span>
@@ -236,6 +283,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
                     <img 
                       src={rPost._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png'} 
                       alt="" 
+                      loading="lazy"
                     />
                   </div>
                   <div className={styles.recommendContent}>
@@ -248,7 +296,7 @@ export default async function PostPage(props: { params: Promise<{ id: string }> 
           </section>
 
           <footer className={styles.postFooter}>
-            <Link href="/" className={styles.backLink}>記事一覧へ戻る</Link>
+            <Link href="/bicstation" className={styles.backLink}>記事一覧へ戻る</Link>
             <p className={styles.modifiedDate}>最終更新日: {formatDate(post.modified)}</p>
           </footer>
         </main>

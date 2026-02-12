@@ -7,6 +7,10 @@ import Sidebar from '@shared/layout/Sidebar';
 import Pagination from '@shared/common/Pagination';
 import styles from '../MainPage.module.css';
 
+/**
+ * 💡 Next.js 15 Dynamic Rendering Configuration
+ * searchParams を使用し、常に最新のデータを取得するために強制動的レンダリングを設定します。
+ */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -16,11 +20,12 @@ interface PageProps {
 
 /**
  * 💡 SEOメタデータの動的生成
- * ページ番号に応じてタイトルを変化させ、正規URL（canonical）を正しく設定します。
  */
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
     const sParams = await searchParams;
-    const offset = parseInt(Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset || '0', 10);
+    const offsetRaw = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
+    const offset = Math.max(0, parseInt(offsetRaw || '0', 10));
+    
     const pageNum = offset > 0 ? ` | ${Math.floor(offset / 12) + 1}ページ目` : '';
     
     const title = `PCトピックス・ニュース一覧${pageNum} - BICSTATION`;
@@ -37,6 +42,14 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
             description,
             url: canonical,
             siteName: 'BICSTATION',
+            images: [
+                {
+                    url: 'https://bicstation.com/ogp-default.png', // 適切なデフォルトOGP画像を設定してください
+                    width: 1200,
+                    height: 630,
+                    alt: 'BICSTATION',
+                },
+            ],
             type: 'website',
         },
         twitter: {
@@ -50,13 +63,11 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 export default async function BicstationListPage({ searchParams }: PageProps) {
     const sParams = await searchParams;
     const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
-    const currentOffset = parseInt(offsetStr || '0', 10);
+    const currentOffset = Math.max(0, parseInt(offsetStr || '0', 10));
     const limit = 12;
 
     /**
-     * 🛠️ 修正ポイント:
-     * fetchPostList に limit と currentOffset の両方を渡します。
-     * lib/api.ts 側で offset パラメータを処理するようにしたため、これでページが切り替わります。
+     * 🚀 データフェッチ (Promise.all で並列実行)
      */
     const [wpDataResponse, makersData] = await Promise.all([
         fetchPostList(limit, currentOffset) as any, 
@@ -64,18 +75,24 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
     ]);
 
     const posts = wpDataResponse.results || [];
-    // APIのレスポンスヘッダーから取得した全記事数（count）を使用します
     const totalCount = wpDataResponse.count || 0;
 
+    /**
+     * 文字列デコード用ヘルパー
+     */
     const safeDecode = (str: string) => {
         if (!str) return '';
         return str
-            .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, ' ');
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'")
+            .replace(/&nbsp;/g, ' ');
     };
 
     /**
-     * 🚀 JSON-LD 構造化データの生成
+     * 🚀 JSON-LD 構造化データの生成 (SEO向上)
      */
     const jsonLd = {
         "@context": "https://schema.org",
@@ -89,7 +106,8 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
                 "@type": "ListItem",
                 "position": index + 1,
                 "url": `https://bicstation.com/bicstation/${post.slug}`,
-                "name": safeDecode(post.title.rendered)
+                "name": safeDecode(post.title.rendered),
+                "image": post._embedded?.['wp:featuredmedia']?.[0]?.source_url || 'https://bicstation.com/no-image.png'
             }))
         }
     };

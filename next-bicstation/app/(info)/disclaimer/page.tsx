@@ -1,77 +1,22 @@
-import StaticPageLayout from '@shared/static/StaticPageLayout';
+import { Metadata } from 'next';
+import { Suspense } from 'react';
+import DisclaimerPageContent from './DisclaimerContent'; // コンテンツ側を読み込む
 
-export const metadata = {
-  title: '免責事項および損害賠償に関する規定 | BICSTATION',
-  description: 'BICSTATION（ビックステーション）を利用する際の免責事項、情報の正確性、および損害賠償責任の制限に関する詳細な規定です。',
+export const metadata: Metadata = {
+  title: 'Disclaimer | BICSTATION',
+  description: '当サイトをご利用いただくにあたっての法的責任の範囲と、免責事項に関する重要なガイドラインです。',
 };
 
 export default function DisclaimerPage() {
-  const toc = [
-    { id: 'accuracy', text: '情報の正確性と最新性について' },
-    { id: 'compatibility', text: 'PC自作・パーツの互換性に関する免責' },
-    { id: 'external-links', text: '外部リンク先での取引について' },
-    { id: 'technical-issues', text: 'システム停止・保守に関する免責' },
-    { id: 'legal-action', text: '準拠法および管轄裁判所' },
-    { id: 'update-policy', text: '本規定の変更について' },
-  ];
-
   return (
-    <StaticPageLayout 
-      title="Disclaimer"
-      description="当サイトをご利用いただくにあたっての法的責任の範囲と、免責事項に関する重要なガイドラインです。"
-      lastUpdated="2026年1月26日"
-      toc={toc}
-    >
-      <section id="accuracy">
-        <h2>1. 情報の正確性と最新性について</h2>
-        <p>
-          BICSTATION（以下、「当サイト」）に掲載されている情報の作成にあたっては、細心の注意を払っております。しかしながら、テクノロジーの進化、製品のファームウェア更新、あるいは各ECサイトの価格改定により、情報が一時的に古くなったり、誤りを含んだりする可能性があります。
-        </p>
-        <p>
-          当サイトが提供するデータやレビューは、あくまで執筆時点の調査に基づくものであり、その完全性、正確性、有用性を永久に保証するものではありません。当サイトの情報を用いて行われた判断、行動によって生じた結果について、当サイトは一切の責任を負いかねます。
-        </p>
-      </section>
-
-      <section id="compatibility">
-        <h2>2. PC自作・パーツの互換性に関する免責</h2>
-        <p>
-          PCパーツ（CPU、マザーボード、メモリ、グラフィックボード等）の組み合わせや設定、オーバークロック、BIOS更新などの行為は、ハードウェアの故障やデータの消失を伴うリスクがあります。
-        </p>
-        <p>
-          当サイトで紹介している構成例や設定値は、特定の環境下での結果です。個々の環境、個体差、使用期間によって結果は異なります。これらの情報を参考に作業を行った結果、製品が故障したり保証対象外となった場合でも、当サイトは一切の修理費用や損害を補填することはありません。必ずメーカー公式サイトの指示に従ってください。
-        </p>
-      </section>
-
-      <section id="external-links">
-        <h2>3. 外部リンク先での取引について</h2>
-        <p>
-          当サイトからリンクやバナーなどによって他のサイト（Amazon、楽天市場、Yahoo!ショッピング、メーカー公式サイト等）に移動された場合、移動先サイトで提供される情報、サービス、商品等について、当サイトは一切の責任を負いません。
-        </p>
-        <p>
-          商品の購入、支払方法、配送、返品、返金等に関する全ての契約行為は、ユーザーと販売元との間で直接行われるものです。取引に関するトラブルは、当該販売元のカスタマーサポートへお問い合わせください。
-        </p>
-      </section>
-
-      <section id="technical-issues">
-        <h2>4. システム停止・保守に関する免責</h2>
-        <p>
-          サーバー攻撃、通信回線の障害、システムメンテナンス、その他不可抗力（天災地変等）により、当サイトのサービスが中断または停止することがあります。これによってユーザーに生じたいかなる損害についても、当サイトは責任を負わないものとします。
-        </p>
-      </section>
-
-      <section id="legal-action">
-        <h2>5. 準拠法および管轄裁判所</h2>
-        <p>
-          当サイトの利用および本規定の解釈・適用は、日本国法に準拠するものとします。当サイトの利用に関して紛争が生じた場合は、運営者の所在地を管轄する裁判所を第一審の専属的合意管轄裁判所とします。
-        </p>
-      </section>
-
-      <section id="update-policy">
-        <h2>6. 本規定の変更について</h2>
-        <p>
-          当サイトは、本免責事項の内容を適宜見直し、予告なく変更することがあります。修正された最新の免責事項は、本ページに掲載された時点から効力を生じるものとします。定期的に本ページを確認し、最新の規定を承諾いただいた上で当サイトをご利用ください。
-        </p>
-      </section>
-    </StaticPageLayout>
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-slate-500 font-mono text-xs animate-pulse uppercase tracking-widest">
+          Loading Disclaimer...
+        </div>
+      </div>
+    }>
+      <DisclaimerPageContent />
+    </Suspense>
   );
 }

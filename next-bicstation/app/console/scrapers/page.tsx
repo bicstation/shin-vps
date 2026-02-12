@@ -1,26 +1,35 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { 
   Terminal, Play, Square, RefreshCcw, 
   Search, ShieldCheck, Zap, Database, Download, AlertCircle
 } from 'lucide-react';
 
-// 🧪 ログのダミー生成用
+/**
+ * =====================================================================
+ * 🧪 ログの初期データ
+ * =====================================================================
+ */
 const initialLogs = [
   { id: 1, time: '12:00:01', type: 'SYSTEM', msg: 'Scraper Engine v2.0 initialized.' },
   { id: 2, time: '12:00:05', type: 'INFO', msg: 'Target: DMM.co.jp - Checking for new releases...' },
   { id: 3, time: '12:00:10', type: 'SUCCESS', msg: 'Fetched 12 new product IDs.' },
 ];
 
-export default function ScraperTerminal() {
+/**
+ * 📟 ターミナルメインコンテンツ
+ */
+function ScraperTerminalContent() {
   const [isRunning, setIsRunning] = useState(false);
   const [logs, setLogs] = useState(initialLogs);
   const logEndRef = useRef<HTMLDivElement>(null);
 
-  // ログの自動スクロール
+  // ログの自動スクロール (DOM存在確認を追加して安全に)
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [logs]);
 
   // 実行擬似ロジック
@@ -33,6 +42,11 @@ export default function ScraperTerminal() {
       msg: isRunning ? 'Stopping scraper processes...' : 'Starting scraper engine...'
     };
     setLogs(prev => [...prev, newLog]);
+  };
+
+  // ログクリアロジック
+  const clearLogs = () => {
+    setLogs([{ id: Date.now(), time: new Date().toLocaleTimeString(), type: 'SYSTEM', msg: 'Logs cleared by administrator.' }]);
   };
 
   return (
@@ -50,13 +64,13 @@ export default function ScraperTerminal() {
         <div className="flex items-center gap-4 bg-slate-900/60 p-2 rounded-2xl border border-slate-800">
           <div className="flex flex-col px-4">
             <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Status</span>
-            <span className={`text-xs font-bold ${isRunning ? 'text-emerald-400' : 'text-slate-500'}`}>
+            <span className={`text-xs font-bold transition-colors duration-300 ${isRunning ? 'text-emerald-400' : 'text-slate-500'}`}>
               {isRunning ? '● RUNNING' : '○ IDLE'}
             </span>
           </div>
           <button 
             onClick={toggleScraper}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs transition-all uppercase tracking-widest shadow-lg ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-black text-xs transition-all uppercase tracking-widest shadow-lg active:scale-95 ${
               isRunning 
               ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-500/20' 
               : 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-500/20'
@@ -81,23 +95,29 @@ export default function ScraperTerminal() {
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-rose-500/20 border border-rose-500/40" />
             <div className="w-3 h-3 rounded-full bg-amber-500/20 border border-amber-500/40" />
-            <div className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/40" />
+            <div className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-400/40" />
             <span className="ml-3 text-[10px] font-mono text-slate-500 uppercase tracking-widest">system@bicstation:~ scraper_logs</span>
           </div>
           <div className="flex items-center gap-4">
-            <button className="text-slate-500 hover:text-white transition-colors" title="Clear Logs">
+            <button 
+              onClick={clearLogs}
+              className="text-slate-500 hover:text-white transition-colors p-1" 
+              title="Clear Logs"
+            >
               <RefreshCcw size={14} />
             </button>
           </div>
         </div>
 
         {/* ログ出力エリア */}
-        <div className="flex-1 overflow-y-auto p-6 font-mono text-xs leading-relaxed custom-scrollbar bg-[#020617]">
+        <div className="flex-1 overflow-y-auto p-6 font-mono text-[11px] leading-relaxed custom-scrollbar bg-[#020617]">
           {logs.map((log) => (
             <div key={log.id} className="flex gap-4 mb-2 group animate-in slide-in-from-left-2 duration-300">
-              <span className="text-slate-600 shrink-0">{log.time}</span>
+              <span className="text-slate-600 shrink-0 font-bold">{log.time}</span>
               <span className={`shrink-0 font-black w-16 ${getLogColor(log.type)}`}>[{log.type}]</span>
-              <span className="text-slate-300 group-hover:text-cyan-100 transition-colors">{log.msg}</span>
+              <span className="text-slate-300 group-hover:text-cyan-100 transition-colors break-all italic md:not-italic">
+                {log.msg}
+              </span>
             </div>
           ))}
           <div ref={logEndRef} />
@@ -116,7 +136,7 @@ export default function ScraperTerminal() {
   );
 }
 
-// --- サブコンポーネント ---
+// --- ヘルパー関数 ---
 
 function getLogColor(type: string) {
   switch (type) {
@@ -124,14 +144,17 @@ function getLogColor(type: string) {
     case 'ERROR': return 'text-rose-500';
     case 'SYSTEM': return 'text-cyan-500';
     case 'PROCESS': return 'text-purple-500';
+    case 'INFO': return 'text-amber-400';
     default: return 'text-slate-500';
   }
 }
 
+// --- サブコンポーネント ---
+
 function TerminalStatCard({ icon, title, value, sub }: { icon: any, title: string, value: string, sub: string }) {
   return (
-    <div className="bg-slate-900/40 border border-slate-800/60 p-4 rounded-2xl flex items-center gap-4">
-      <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
+    <div className="bg-slate-900/40 border border-slate-800/60 p-4 rounded-2xl flex items-center gap-4 hover:border-slate-700 transition-all group">
+      <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 group-hover:bg-slate-900 transition-colors">
         {icon}
       </div>
       <div className="flex flex-col">
@@ -142,5 +165,30 @@ function TerminalStatCard({ icon, title, value, sub }: { icon: any, title: strin
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * ✅ ページエントリポイント
+ * 他の管理画面ページと一貫性を持たせるため Suspense でラップ
+ */
+export default function ScraperTerminal() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col justify-center items-center min-h-[500px] gap-6">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-cyan-900 rounded-full"></div>
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-cyan-500 font-mono text-xs font-black tracking-[0.2em] animate-pulse">TERMINAL_INITIALIZING...</p>
+          <div className="w-48 h-1 bg-slate-900 rounded-full overflow-hidden">
+            <div className="h-full bg-cyan-500 w-1/3 animate-[loading_2s_infinite]"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <ScraperTerminalContent />
+    </Suspense>
   );
 }
