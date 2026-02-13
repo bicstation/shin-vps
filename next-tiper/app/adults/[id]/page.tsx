@@ -197,18 +197,52 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
     return "【標準適合】全システムにおいて安定した出力を確認。高品質なアーカイブです。";
   };
 
-  // --- 🔗 関連商品API（サイドバー用）の取得 ---
+// --- 🔗 関連商品API：統合レコメンドエンジン(Unified)の強制発動 ---
   let relatedProducts = [];
   let relatedError = null;
+
   try {
-    const response = await getAdultProducts({ 
-        related_to_id: product.display_id || product.product_id_unique || product.unique_id, 
-        limit: 12 
-    });
-    relatedProducts = response?.results || [];
+    // 💡 修正の要：以前構築した UnifiedAdultProductListView (urls.py) を直接指定
+    // getAdultProducts関数がエンドポイントを固定している場合を考慮し、fetchで確実に繋ぎます
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8083';
+    const targetId = product.product_id_unique || product.display_id || product.unique_id;
+
+    const response = await fetch(
+      `${API_BASE}/api/unified-adult-products/?related_to_id=${targetId}&page_size=12`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // 必要に応じて認証ヘッダー等を追加
+        },
+        cache: 'no-store' // 常に最新の関連スコアを取得
+      }
+    );
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    
+    const data = await response.json();
+
+    // 🧠 バックエンドの UnifiedView は StandardResultsSetPagination を通るため、
+    // data.results にスコア順のリストが格納されています
+    relatedProducts = data.results || [];
+
+    console.log(`[RELATION_SYNC_COMPLETE] NODE: ${targetId} | SCORE_BASED_ALIGNMENT: ${relatedProducts.length} ITEMS`);
+
   } catch (e) { 
     relatedError = e.message;
-    console.warn("Related fetch failed"); 
+    console.warn("⚠️ Related fetch failed (Unified engine bypass):", e); 
+    
+    // フォールバック: 万が一統合エンドポイントが失敗した場合のみ、既存の簡易取得を試行
+    try {
+      const fallback = await getAdultProducts({ 
+        related_to_id: product.display_id || product.product_id_unique, 
+        limit: 12 
+      });
+      relatedProducts = fallback?.results || [];
+    } catch (fallbackError) {
+      console.error("Critical: All relation paths failed.");
+    }
   }
 
   const displayTitle = product.title || 'Untitled Archive';
