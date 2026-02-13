@@ -102,9 +102,12 @@ services:
       args:
         PROJECT_NAME: next-bicstation
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NODE_ENV: ${NODE_ENV:-production}
     container_name: next-bicstation-v2
     restart: always
     env_file: .env
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
     volumes:
       - ./next-bicstation:/usr/src/app
       - ./shared:/usr/src/app/shared
@@ -126,12 +129,14 @@ services:
         PROJECT_NAME: next-tiper
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         NEXT_PUBLIC_BASE_PATH: ""
+        NODE_ENV: ${NODE_ENV:-production}
     container_name: next-tiper-v2
     restart: always
     env_file: .env
     environment:
       - HOSTNAME=0.0.0.0
       - PORT=3000
+      - NODE_ENV=${NODE_ENV:-production}
     volumes:
       - ./next-tiper:/usr/src/app
       - ./shared:/usr/src/app/shared
@@ -152,9 +157,12 @@ services:
       args:
         PROJECT_NAME: next-bic-saving
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NODE_ENV: ${NODE_ENV:-production}
     container_name: next-bic-saving-v2
     restart: always
     env_file: .env
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
     volumes:
       - ./next-bic-saving:/usr/src/app
       - ./shared:/usr/src/app/shared
@@ -175,9 +183,12 @@ services:
       args:
         PROJECT_NAME: next-avflash
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NODE_ENV: ${NODE_ENV:-production}
     container_name: next-avflash-v2
     restart: always
     env_file: .env
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
     volumes:
       - ./next-avflash:/usr/src/app
       - ./shared:/usr/src/app/shared

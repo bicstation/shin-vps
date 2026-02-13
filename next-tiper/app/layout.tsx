@@ -109,8 +109,10 @@ export default async function RootLayout({
           </main>
         </div>
 
-        {/* 4. 共通フッター */}
-        <Footer />
+        {/* ✅ 修正: FooterをSuspenseで囲む */}
+        <Suspense fallback={<div className="h-40 bg-gray-50 animate-pulse" />}>
+          <Footer />
+        </Suspense>
       </body>
     </html>
   );

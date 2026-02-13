@@ -115,8 +115,10 @@ export default function RootLayout({
           </Suspense>
         </div>
 
-        {/* ④ 共通フッター */}
-        <Footer />
+{/* ✅ 修正: FooterをSuspenseで囲む */}
+        <Suspense fallback={<div className="h-40 bg-gray-50 animate-pulse" />}>
+          <Footer />
+        </Suspense>
 
         {/* ⑤ AIチャットコンシェルジュ */}
         <Suspense fallback={null}>

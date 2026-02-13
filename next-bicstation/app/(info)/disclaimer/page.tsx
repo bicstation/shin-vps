@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"; // ✅ これを追加
+
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import DisclaimerPageContent from './DisclaimerContent'; // コンテンツ側を読み込む

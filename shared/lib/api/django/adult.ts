@@ -201,6 +201,26 @@ export async function fetchAdultProductRanking(params: any = {}): Promise<{ resu
     }
 }
 
+
+/**
+ * 💡 7. ジャンル一覧取得
+ */
+export async function fetchGenres(params: any = {}): Promise<any[]> {
+    const url = resolveApiUrl(`/api/genres/?${new URLSearchParams(params).toString()}`);
+    try {
+        const res = await fetch(url, { 
+            headers: getDjangoHeaders(), 
+            next: { revalidate: 3600 } 
+        });
+        const data = await res.json();
+        // Django API のレスポンス形式に合わせて調整
+        return Array.isArray(data) ? data : (data.results || []);
+    } catch (e) { 
+        console.error("❌ [BYPASS ERROR] fetchGenres failed:", e);
+        return []; 
+    }
+}
+
 /**
  * ==============================================================================
  * 🔄 別名エクスポート (互換性維持)

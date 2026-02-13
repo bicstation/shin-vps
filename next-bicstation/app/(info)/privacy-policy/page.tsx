@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"; // ✅ 追加
+
 import { Metadata } from 'next';
 import { Suspense } from 'react'; // ✅ Suspenseをインポート
 import PrivacyContent from './PrivacyContent';

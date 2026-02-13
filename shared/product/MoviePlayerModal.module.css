@@ -1,137 +1,224 @@
 /* ==============================================================================
- * 🎬 Movie Player Modal Styles
+ * 🎬 Movie Player Modal Styles - Hybrid Cyber Archive (V6.2)
  * ============================================================================== */
 
-/* 再生ボタン本体 */
+/* 🚀 再生ボタン本体 */
 .playBtn {
   width: 100%;
   padding: 1.2rem;
   background: linear-gradient(135deg, #1f1f3a 0%, #16162d 100%);
   color: #00d1b2;
   border: 1px solid #3d3d66;
-  border-radius: 12px;
-  font-family: 'Orbitron', sans-serif; /* もしインポートしていれば */
+  border-radius: 4px; /* より角を鋭くしてサイバー感を強調 */
   font-weight: 900;
   font-size: 0.9rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.2em;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 15px;
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.playBtn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 209, 178, 0.2), transparent);
+  transition: 0.5s;
+}
+
+.playBtn:hover::before {
+  left: 100%;
 }
 
 .playBtn:hover {
   background: #00d1b2;
   color: #0f0f1e;
   border-color: #00f3ff;
-  box-shadow: 0 0 25px rgba(0, 209, 178, 0.5);
-  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(0, 209, 178, 0.6);
+  transform: scale(1.02);
 }
 
-/* モーダルの背景（オーバーレイ） */
+/* 🔞 モーダルの背景（オーバーレイ） */
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(10, 10, 15, 0.95);
-  backdrop-filter: blur(8px);
+  inset: 0;
+  background: rgba(5, 5, 10, 0.9);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000; /* ヘッダーより上に */
-  padding: 20px;
-  animation: fadeIn 0.3s ease-out;
+  z-index: 10000;
+  padding: clamp(10px, 5vw, 40px);
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* モーダルコンテンツ容器 */
 .modalContent {
   width: 100%;
-  max-width: 1000px;
-  background: #0f0f1e;
-  border-radius: 24px;
-  overflow: hidden;
-  border: 1px solid #3d3d66;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+  max-width: 1100px;
+  background: #0a0a15;
+  border: 1px solid rgba(0, 209, 178, 0.3);
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 209, 178, 0.05);
   position: relative;
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ヘッダーエリア */
 .header {
-  padding: 18px 24px;
+  padding: 15px 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #1a1a2e;
-  border-bottom: 1px solid #3d3d66;
+  background: #111125;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  font-family: monospace;
+  color: #00d1b2;
+  font-size: 10px;
+}
+
+.blinkDot {
+  color: #00d1b2;
+  animation: blink 1s infinite;
 }
 
 .modalTitle {
   color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  max-width: 60%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 80%;
 }
 
-/* 閉じるボタン */
 .closeBtn {
   background: none;
   border: none;
   color: #e94560;
-  font-size: 1.8rem;
+  font-size: 1.2rem;
   cursor: pointer;
-  line-height: 1;
-  transition: transform 0.2s ease;
-  padding: 0;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
 }
 
 .closeBtn:hover {
-  color: #ff2e63;
+  color: #fff;
   transform: rotate(90deg);
+  text-shadow: 0 0 10px #e94560;
 }
 
-/* ビデオプレイヤーのレスポンシブ枠 */
-.videoWrapper {
+/* 🎥 ビデオ・iframe コンテナ (16:9固定) */
+.videoContainer {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  padding-top: 56.25%; /* 16:9 */
   background: #000;
+  overflow: hidden;
 }
 
+/* iframeとvideo両方に適用される共通スタイル */
 .videoPlayer {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  border: none;
   outline: none;
+  z-index: 1;
 }
 
-/* アニメーション */
+/* 走査線（スキャンライン）演出 */
+.scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.1) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* 角のアクセント */
+.cornerMarkerTR, .cornerMarkerBL {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-color: #00d1b2;
+  border-style: solid;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.cornerMarkerTR {
+  top: 10px;
+  right: 10px;
+  border-width: 2px 2px 0 0;
+}
+
+.cornerMarkerBL {
+  bottom: 10px;
+  left: 10px;
+  border-width: 0 0 2px 2px;
+}
+
+/* 📱 フッターエリア */
+.footer {
+  padding: 10px;
+  background: #0a0a15;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* アニメーション定義 */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 /* モバイル対応 */
 @media (max-width: 768px) {
   .modalContent {
-    border-radius: 12px;
+    border-radius: 0;
+    max-width: 100%;
   }
   .header {
-    padding: 12px 16px;
+    padding: 10px 15px;
   }
-  .playBtn {
-    padding: 1rem;
-    font-size: 0.8rem;
+  .modalTitle {
+    font-size: 0.65rem;
   }
 }

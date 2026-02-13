@@ -2,85 +2,92 @@
 import React from 'react';
 
 /**
- * 🛰️ SYSTEM DIAGNOSTIC FOOTER (Ver. 2.2)
- * 全ドメイン共通・最下部埋め込み型デバッグターミナル
+ * 🛰️ SYSTEM DIAGNOSTIC FOOTER (Ver. 3.5)
+ * [MAIN_NODE + RELATED_SIDEBAR_STREAM] 統合デバッグ
  */
 export default function SystemDiagnostic({
   id,
   source,
-  targetUrl,
-  data,
-  errorMsg,
-  apiInternalUrl
+  data,          // メイン商品のRAWデータ
+  sidebarData,   // ⬅️ サイドバー（関連商品）のRAWデータ
+  fetchError,
+  relatedError   // ⬅️ 関連商品取得時のエラー
 }: any) {
   return (
     <footer style={{ 
-      marginTop: '100px', // コンテンツとの余白
+      marginTop: '100px',
       background: '#050505',
       color: '#00ff41',
-      fontFamily: '"Fira Code", "Courier New", monospace',
-      fontSize: '13px',
-      borderTop: '5px solid #333',
-      paddingBottom: '50px'
+      fontFamily: '"Fira Code", monospace',
+      fontSize: '12px',
+      borderTop: '4px solid #e94560', // TIPERカラーでアクセント
+      padding: '0 0 50px 0'
     }}>
       {/* ターミナルヘッダー */}
-      <div style={{ 
-        background: '#1a1a1a', 
-        padding: '10px 20px', 
-        display: 'flex', 
-        justifyContent: 'space-between',
-        borderBottom: '1px solid #00ff41'
-      }}>
-        <span>SYSTEM_DIAGNOSTIC_REPORT // {source?.toUpperCase() || 'GENERAL'}</span>
-        <span style={{ color: errorMsg ? '#ff4d4d' : '#00ff41' }}>
-          ● {errorMsg ? 'CONNECTION_FAILED' : 'NODE_ATTACHED'}
+      <div style={{ background: '#111', padding: '10px 20px', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #333' }}>
+        <span>📡 DATA_STREAM_MONITOR // NODE: {id}</span>
+        <span style={{ color: sidebarData ? '#00ff41' : '#ff4d4d' }}>
+          SIDEBAR_STATUS: {sidebarData ? 'CONNECTED' : 'STANDBY/ERROR'}
         </span>
       </div>
 
       <div style={{ padding: '20px' }}>
-        {/* 基本情報グリッド */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-          <div style={{ border: '1px solid #222', padding: '15px', background: '#0a0a0a' }}>
-            <h4 style={{ margin: '0 0 10px 0', color: '#fff' }}>[ PARAMETERS ]</h4>
-            <div>IDENTIFIER: <span style={{ color: '#fff' }}>{id || 'NULL'}</span></div>
-            <div>API_SOURCE: <span style={{ color: '#fff' }}>{source || 'AUTO'}</span></div>
-            <div>INTERNAL_URL: <span style={{ opacity: 0.6 }}>{apiInternalUrl}</span></div>
-          </div>
-
-          <div style={{ border: '1px solid #222', padding: '15px', background: '#0a0a0a' }}>
-            <h4 style={{ margin: '0 0 10px 0', color: '#fff' }}>[ ENDPOINT_TEST ]</h4>
-            <div style={{ wordBreak: 'break-all', fontSize: '11px', color: '#888' }}>{targetUrl}</div>
-            <div style={{ marginTop: '10px' }}>
-              {errorMsg ? (
-                <span style={{ background: '#300', color: '#f00', padding: '2px 5px' }}>ERROR: {errorMsg}</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          
+          {/* 左側：メイン商品のAPI結果 */}
+          <section>
+            <h4 style={{ color: '#fff', marginBottom: '10px', fontSize: '11px', textTransform: 'uppercase' }}>
+              [01] Main_Product_Payload
+            </h4>
+            <div style={containerStyle}>
+              {fetchError ? (
+                <div style={{ color: '#ff4d4d' }}>ERROR: {fetchError}</div>
               ) : (
-                <span style={{ background: '#030', color: '#0f0', padding: '2px 5px' }}>FETCH_SUCCESSFUL</span>
+                <pre style={preStyle}>{JSON.stringify(data, null, 2)}</pre>
               )}
             </div>
-          </div>
+          </section>
+
+          {/* 右側：関連商品のAPI結果（ここが別枠） */}
+          <section>
+            <h4 style={{ color: '#00d1b2', marginBottom: '10px', fontSize: '11px', textTransform: 'uppercase' }}>
+              [02] Sidebar_Related_API_Result
+            </h4>
+            <div style={{ ...containerStyle, borderColor: '#00d1b244' }}>
+              <div style={{ marginBottom: '10px', paddingBottom: '5px', borderBottom: '1px solid #222', fontSize: '10px', color: '#00d1b2' }}>
+                FOUND: {sidebarData?.length || 0} ITEMS // KEY: related_to_id
+              </div>
+              {relatedError ? (
+                <div style={{ color: '#ff4d4d' }}>ERROR: {relatedError}</div>
+              ) : (
+                <pre style={preStyle}>
+                  {sidebarData ? JSON.stringify(sidebarData, null, 2) : '// No data received from endpoint'}
+                </pre>
+              )}
+            </div>
+          </section>
+
         </div>
-
-        {/* ペイロード表示 */}
-        {data && (
-          <div style={{ marginTop: '20px' }}>
-            <h4 style={{ margin: '0 0 10px 0', color: '#fff' }}>[ RAW_DATA_STREAM ]</h4>
-            <pre style={{ 
-              background: '#000', 
-              padding: '15px', 
-              border: '1px solid #1a1a1a', 
-              overflowX: 'auto',
-              maxHeight: '300px',
-              fontSize: '12px'
-            }}>
-              {JSON.stringify(data, null, 2)}
-            </pre>
-          </div>
-        )}
       </div>
-
-      <div style={{ textAlign: 'center', opacity: 0.3, fontSize: '10px', padding: '10px' }}>
-        TIPER_CORE_ARCHIVE_DEBUGGER_SYSTEM // (C) 2026
+      
+      <div style={{ textAlign: 'center', opacity: 0.2, fontSize: '9px' }}>
+        CRITICAL_INFRASTRUCTURE_MONITOR_SYSTEM_V3.5
       </div>
     </footer>
   );
 }
+
+const containerStyle: React.CSSProperties = {
+  background: '#000',
+  border: '1px solid #222',
+  padding: '10px',
+  borderRadius: '2px'
+};
+
+const preStyle: React.CSSProperties = {
+  maxHeight: '450px',
+  overflowY: 'auto',
+  lineHeight: '1.4',
+  whiteSpace: 'pre-wrap',
+  wordBreak: 'break-all'
+};

@@ -1,3 +1,6 @@
+// ✅ Next.js 15 のビルドルールを強制回避
+export const dynamic = "force-dynamic";
+
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import PCFinderClient from './PCFinderClient'; // クライアントコンポーネントを読み込む

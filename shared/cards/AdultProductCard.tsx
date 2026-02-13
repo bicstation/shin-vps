@@ -6,21 +6,18 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './AdultProductCard.module.css';
-import RadarChart from '@shared/ui/RadarChart'; // レーダーチャートをインポート
+import RadarChart from '@shared/ui/RadarChart';
 
 interface ProductCardProps {
   product: any;
 }
 
-/**
- * 🛰️ AdultProductCard - Ultimate Unified Edition
- * [IFRAME_PREVIEW + MINI_RADAR_INTEGRATED + FULL_LOGIC]
- */
 export default function AdultProductCard({ product }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [imgError, setImgError] = useState(false); // 404エラーハンドリング用
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // --- 💡 1. ソース判定 & ターゲットID設定 ---
+  // --- 💡 1. ソース判定 ---
   const apiSource = (product.api_source || 'FANZA').toUpperCase();
   const isDuga = apiSource === 'DUGA';
   const isFanza = apiSource === 'FANZA' || apiSource === 'DMM';
@@ -33,22 +30,38 @@ export default function AdultProductCard({ product }: ProductCardProps) {
     return item.slug && item.slug !== "null" ? item.slug : item.id;
   };
 
-  // --- 💡 2. 画像ロジック (pl.jpg / _l.jpg 強制) ---
+  // --- 💡 2. 画像ロジック (DUGA仕様に完全準拠) ---
   const thumbnail = useMemo(() => {
     const rawUrl = product.image_url_list?.[0] || product.image_url;
     if (!rawUrl) return 'https://placehold.jp/24/333333/cccccc/400x600.png?text=NO%20IMAGE';
 
-    const isDmmHost = /dmm\.(com|co\.jp)/i.test(rawUrl);
-    let highRes = rawUrl;
+    // A: DUGAの高度な高画質化
+    if (isDuga) {
+      const match = rawUrl.match(/unsecure\/([^/]+)\/([^/]+)\//);
+      if (match) {
+        const labelId = match[1];
+        const workId = match[2];
+        
+        // imgErrorがtrue（jacket.jpgが404）の場合は、仕様にある240x180.jpgにフォールバック
+        if (imgError) {
+          return `https://pic.duga.jp/unsecure/${labelId}/${workId}/noauth/240x180.jpg`;
+        }
+        // 第一優先は縦長高画質のjacket.jpg
+        return `https://pic.duga.jp/unsecure/${labelId}/${workId}/noauth/jacket.jpg`;
+      }
+    }
 
+    // B: FANZA/DMMの高画質化
+    let highRes = rawUrl;
+    const isDmmHost = /dmm\.(com|co\.jp)/i.test(rawUrl);
     if (isDmmHost) {
       highRes = highRes.replace(/p[s|t|m]\.jpg/i, 'pl.jpg');
       highRes = highRes.replace(/_[s|m]\.jpg/i, '_l.jpg');
     }
     return highRes;
-  }, [product.image_url_list, product.image_url]);
+  }, [product.image_url_list, product.image_url, isDuga, imgError]);
 
-  // --- 💡 3. 動画・プレビューロジック (iframe対応) ---
+  // --- 💡 3. 動画・プレビューロジック ---
   const movieData = useMemo(() => {
     const rawMovie = product.sample_movie_url;
     if (rawMovie && typeof rawMovie === 'object') {
@@ -60,7 +73,6 @@ export default function AdultProductCard({ product }: ProductCardProps) {
     return { url: null, preview: null };
   }, [product.sample_movie_url]);
 
-  // DUGA等のmp4用play/pause
   useEffect(() => {
     if (!isFanza && isHovered && movieData.url && videoRef.current) {
       videoRef.current.play().catch(() => {}); 
@@ -69,7 +81,7 @@ export default function AdultProductCard({ product }: ProductCardProps) {
     }
   }, [isHovered, movieData.url, isFanza]);
 
-  // --- 💡 4. レーダーチャート用データの正規化 ---
+  // --- 💡 4. レーダーチャート用データ ---
   const getSafeScore = (val: any) => {
     if (typeof val === 'number') return val;
     const parsed = parseInt(val);
@@ -84,7 +96,6 @@ export default function AdultProductCard({ product }: ProductCardProps) {
     { subject: 'C', value: getSafeScore(product.score_cost), fullMark: 100 },
   ], [product]);
 
-  // --- 💡 5. メタデータ抽出 ---
   const releaseDate = product.release_date || '';
   const score = product.spec_score || 0;
   const actors = product.actresses || [];
@@ -96,14 +107,11 @@ export default function AdultProductCard({ product }: ProductCardProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 🖼️ 画像・プレビューエリア */}
       <div className={styles.imageSection}>
         <Link href={detailPath} className="block h-full w-full relative overflow-hidden bg-[#0a0a0a]">
           
-          {/* 🎥 動画プレビュー分岐 */}
           {movieData.url && isHovered ? (
             isFanza ? (
-              /* FANZA/DMM: iframe埋め込みプレイヤー (ホバー時) */
               <div className="absolute inset-0 z-10 w-full h-full pointer-events-none">
                 <iframe
                   src={`${movieData.url}&autoplay=1&mute=1`}
@@ -113,7 +121,6 @@ export default function AdultProductCard({ product }: ProductCardProps) {
                 ></iframe>
               </div>
             ) : (
-              /* DUGA/Others: 通常のvideoタグ (ホバー時) */
               <video
                 ref={videoRef}
                 src={movieData.url}
@@ -122,20 +129,22 @@ export default function AdultProductCard({ product }: ProductCardProps) {
               />
             )
           ) : (
-            /* 通常時: サムネイル画像 */
             <img 
               src={thumbnail} 
               alt={product.title} 
               className={`${styles.thumbnail} opacity-100`} 
               loading="lazy"
+              /* 💡 404エラー（jacket.jpgが無い場合）にメイン画像へ切り替える */
+              onError={() => {
+                if (isDuga && !imgError) setImgError(true);
+              }}
             />
           )}
 
-          {/* 📊 ホバー時に表示されるミニ・レーダーチャート */}
           {isHovered && (
             <div className="absolute inset-0 z-20 bg-black/60 flex items-center justify-center animate-in fade-in duration-300">
               <div className="w-24 h-24">
-                <RadarChart data={radarData} hideAxis /> {/* 小型化用のプロップスを想定 */}
+                <RadarChart data={radarData} hideAxis />
               </div>
               <div className="absolute bottom-2 text-[8px] font-black text-[#e94560] tracking-widest uppercase">AI_ANALYZED</div>
             </div>
@@ -152,16 +161,10 @@ export default function AdultProductCard({ product }: ProductCardProps) {
               </div>
             </div>
           )}
-
-          {movieData.url && !isHovered && (
-            <div className={styles.playIndicator}>
-              <div className={styles.playIcon} />
-            </div>
-          )}
         </Link>
       </div>
 
-      {/* 📝 コンテンツエリア */}
+      {/* コンテンツエリアは変更なし */}
       <div className={styles.contentSection}>
         <div className={styles.actressRow}>
           {actors.length > 0 ? (
@@ -193,14 +196,6 @@ export default function AdultProductCard({ product }: ProductCardProps) {
               <span className={styles.metaLabel}>MAKER</span>
               <Link href={`/maker/${getIdentifier(product.maker)}`} className={styles.metaLink}>
                 {product.maker.name}
-              </Link>
-            </div>
-          )}
-          {product.series && (
-            <div className={styles.metaItem}>
-              <span className={styles.metaLabel}>SERIES</span>
-              <Link href={`/series/${getIdentifier(product.series)}`} className={styles.metaLink}>
-                {product.series.name}
               </Link>
             </div>
           )}

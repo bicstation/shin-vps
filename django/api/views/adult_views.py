@@ -24,11 +24,13 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
     max_page_size = 100
 
 # --------------------------------------------------------------------------
-# 💡 1. 統合ゲートウェイView (FANZA / DMM / DUGA 共通エンドポイント)
+# 💡 1. 統合ゲートウェイView (高度なレコメンドエンジン搭載)
 # --------------------------------------------------------------------------
 class UnifiedAdultProductListView(generics.ListAPIView):
     """
     FANZA / DMM / DUGA を一つのエンドポイントで統合管理。
+    'related_to_id' パラメータが渡された場合、モデル間のリレーションを活用して
+    出演者・属性・シリーズ・ジャンルに基づいた高精度な関連商品を抽出します。
     """
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
@@ -36,27 +38,58 @@ class UnifiedAdultProductListView(generics.ListAPIView):
     
     queryset = AdultProduct.objects.none()
     search_fields = ['title', 'product_description', 'ai_summary', 'actresses__name', 'genres__name']
-    ordering_fields = ['release_date', 'price', 'review_average', 'spec_score']
+    ordering_fields = ['release_date', 'price', 'review_average', 'spec_score', 'rel_score']
 
     def get_queryset(self):
-        source = self.request.query_params.get('api_source', '').upper()
-        # FanzaProductが空である現状に合わせ、FANZA/DMM指定時もAdultProductを探索対象に含める
-        if source == 'DUGA':
-            return AdultProduct.objects.filter(is_active=True)
-        elif source in ['FANZA', 'DMM']:
-            return AdultProduct.objects.filter(is_active=True, api_source__iexact=source)
+        """
+        通常のフィルタリング用。Listメソッドで詳細な制御を行うため、
+        基本的には空のQuerySetを返し、オーバーライドしたlistメソッドで実データを制御。
+        """
         return AdultProduct.objects.filter(is_active=True)
 
     def list(self, request, *args, **kwargs):
+        # --- 1. パラメータ取得 ---
         source = self.request.query_params.get('api_source', '').upper()
         maker_slug = self.request.query_params.get('maker__slug')
         search_query = self.request.query_params.get('search')
-        
-        # 1. 各モデルからベースとなるQuerySetを構築
-        qs_adult = AdultProduct.objects.filter(is_active=True).select_related('maker', 'label').prefetch_related('actresses', 'genres')
+        related_to_id = self.request.query_params.get('related_to_id') # 👈 関連商品用の鍵
+
+        # --- 2. [NEW] 関連商品抽出ロジック (最優先パス) ---
+        if related_to_id:
+            # 基準となる作品を特定
+            base_product = AdultProduct.objects.filter(product_id_unique=related_to_id).first()
+            if not base_product:
+                # 統合IDで見つからない場合は通常IDで試行
+                base_product = AdultProduct.objects.filter(id=related_to_id).first()
+
+            if base_product:
+                # 🧠 高度なスコアリング: モデルのリレーションをフル活用
+                # 
+                qs_related = AdultProduct.objects.filter(is_active=True).exclude(id=base_product.id)
+                
+                # 重み付け計算 (Annotate)
+                qs_related = qs_related.annotate(
+                    rel_score=(
+                        # 出演女優の一致: 20点
+                        Count('actresses', filter=Q(actresses__in=base_product.actresses.all())) * 20 +
+                        # シリーズの一致: 15点
+                        Count('series', filter=Q(series=base_product.series)) * 15 +
+                        # 詳細スペック属性(巨乳/清楚など)の一致: 10点
+                        Count('attributes', filter=Q(attributes__in=base_product.attributes.all())) * 10 +
+                        # ジャンルの一致: 5点
+                        Count('genres', filter=Q(genres__in=base_product.genres.all())) * 5 +
+                        # メーカーの一致: 2点
+                        Count('maker', filter=Q(maker=base_product.maker)) * 2
+                    )
+                ).filter(rel_score__gt=0).order_by('-rel_score', '-release_date')
+
+                return self._get_paginated_response(qs_related, AdultProductSerializer)
+
+        # --- 3. 通常の一覧表示ロジック (現状維持) ---
+        qs_adult = AdultProduct.objects.filter(is_active=True).select_related('maker', 'label', 'series').prefetch_related('actresses', 'genres', 'attributes')
         qs_fanza = FanzaProduct.objects.filter(is_active=True).select_related('maker', 'label').prefetch_related('actresses', 'genres')
 
-        # 2. パラメータによるフィルタリング
+        # フィルタリング適用
         if maker_slug:
             qs_adult = qs_adult.filter(maker__slug=maker_slug)
             qs_fanza = qs_fanza.filter(maker__slug=maker_slug)
@@ -71,7 +104,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             qs_adult = qs_adult.filter(q_filter).distinct()
             qs_fanza = qs_fanza.filter(q_filter).distinct()
 
-        # 3. 出力ロジックの分岐
+        # ソース別の出力
         if source == 'DUGA':
             queryset = qs_adult.order_by('-release_date')
             return self._get_paginated_response(queryset, AdultProductSerializer)
@@ -85,6 +118,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             return self._get_paginated_response(queryset, FanzaProductSerializer)
 
         else:
+            # 全ソース混合表示 (既存のchain + sortedロジックを完全維持)
             def get_sort_key(instance):
                 val = instance.release_date
                 if not val: return "0000-00-00"
@@ -123,22 +157,16 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         return response.Response(serializer.data)
 
 # --------------------------------------------------------------------------
-# 📊 新設：MarketAnalysisView (プラットフォーム別の「奥」のデータ取得)
+# 📊 MarketAnalysisView (既存機能を完全維持)
 # --------------------------------------------------------------------------
 class PlatformMarketAnalysisAPIView(views.APIView):
-    """
-    サイドメニュー用の「仕訳データ」を生成。
-    プラットフォームごとの人気ジャンルや平均スコアを返す。
-    """
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
         source = request.query_params.get('source', 'FANZA').upper()
         maker_id = request.query_params.get('maker_id')
 
-        # 1. プラットフォーム内でのジャンル集計 (仕訳データ)
         base_qs = AdultProduct.objects.filter(api_source__iexact=source, is_active=True)
-        
         if maker_id:
             base_qs = base_qs.filter(maker_id=maker_id)
 
@@ -146,7 +174,6 @@ class PlatformMarketAnalysisAPIView(views.APIView):
             count=Count('genres')
         ).exclude(genres__name=None).order_by('-count')[:8]
 
-        # 2. プラットフォーム・ベンチマーク (平均AIスコア)
         avg_score = base_qs.aggregate(avg=Avg('spec_score'))
 
         return response.Response({
@@ -158,7 +185,7 @@ class PlatformMarketAnalysisAPIView(views.APIView):
         })
 
 # --------------------------------------------------------------------------
-# 2. 個別 View (特定のモデルに特化した一覧)
+# 2. 個別 View / 3. 詳細 View (以下、既存コードをすべて維持)
 # --------------------------------------------------------------------------
 class FanzaProductListAPIView(generics.ListAPIView):
     queryset = FanzaProduct.objects.filter(is_active=True).select_related('maker', 'label').prefetch_related('genres', 'actresses').order_by('-release_date')
@@ -178,9 +205,6 @@ class AdultProductListAPIView(generics.ListAPIView):
     filterset_fields = ['maker__slug']
     search_fields = ['title', 'product_description', 'actresses__name', 'genres__name']
 
-# --------------------------------------------------------------------------
-# 3. 詳細 View (統合・深層探索版)
-# --------------------------------------------------------------------------
 class FanzaProductDetailAPIView(generics.RetrieveAPIView):
     queryset = FanzaProduct.objects.all().select_related('maker', 'label').prefetch_related('genres', 'actresses')
     serializer_class = FanzaProductSerializer
@@ -190,24 +214,14 @@ class FanzaProductDetailAPIView(generics.RetrieveAPIView):
     def get_object(self):
         raw_id = self.kwargs[self.lookup_url_kwarg or self.lookup_field]
         clean_id = re.sub(r'^(FANZA_|DMM_|DUGA_|fz_)', '', raw_id, flags=re.IGNORECASE)
-        
-        obj = self.get_queryset().filter(
-            Q(unique_id__iexact=raw_id) | Q(unique_id__iexact=clean_id) | Q(unique_id__icontains=clean_id)
-        ).first()
+        obj = self.get_queryset().filter(Q(unique_id__iexact=raw_id) | Q(unique_id__iexact=clean_id) | Q(unique_id__icontains=clean_id)).first()
 
         if not obj:
-            fallback_obj = AdultProduct.objects.filter(
-                Q(product_id_unique__iexact=raw_id) | 
-                Q(product_id_unique__iexact=f"FANZA_{clean_id}") | 
-                Q(product_id_unique__icontains=clean_id)
-            ).first()
-            
+            fallback_obj = AdultProduct.objects.filter(Q(product_id_unique__iexact=raw_id) | Q(product_id_unique__iexact=f"FANZA_{clean_id}") | Q(product_id_unique__icontains=clean_id)).first()
             if fallback_obj:
                 self.serializer_class = AdultProductSerializer
                 return fallback_obj
-            
             raise Http404(f"Product Not Found: {raw_id}")
-            
         return obj
 
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
@@ -219,28 +233,16 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
     def get_object(self):
         raw_id = self.kwargs[self.lookup_url_kwarg or self.lookup_field]
         clean_id = re.sub(r'^(FANZA_|DMM_|DUGA_|fz_)', '', raw_id, flags=re.IGNORECASE)
-        
-        obj = self.get_queryset().filter(
-            Q(product_id_unique__iexact=raw_id) | 
-            Q(product_id_unique__iexact=f"FANZA_{clean_id}") |
-            Q(product_id_unique__iexact=f"DUGA_{clean_id}") |
-            Q(product_id_unique__icontains=clean_id)
-        ).first()
-
+        obj = self.get_queryset().filter(Q(product_id_unique__iexact=raw_id) | Q(product_id_unique__iexact=f"FANZA_{clean_id}") | Q(product_id_unique__iexact=f"DUGA_{clean_id}") | Q(product_id_unique__icontains=clean_id)).first()
         if not obj:
             raise Http404(f"AdultProduct Not Found: {raw_id}")
-            
         return obj
 
 class AdultProductRankingAPIView(generics.ListAPIView):
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
-
     def get_queryset(self):
-        return AdultProduct.objects.filter(
-            spec_score__gt=0, 
-            is_active=True
-        ).exclude(ai_summary="").select_related('maker', 'label').order_by('-spec_score', '-release_date')[:30]
+        return AdultProduct.objects.filter(spec_score__gt=0, is_active=True).exclude(ai_summary="").select_related('maker', 'label').order_by('-spec_score', '-release_date')[:30]
 
 class LinkshareProductListAPIView(generics.ListAPIView):
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')

@@ -127,7 +127,10 @@ export default function RootLayout({
           </div>
         </div>
 
-        <Footer />
+{/* ✅ 修正: FooterをSuspenseで囲む */}
+        <Suspense fallback={<div className="h-40 bg-gray-50 animate-pulse" />}>
+          <Footer />
+        </Suspense>
 
         {/* ✅ ChatBotは navigation Hook を使用するため Suspense で保護 */}
         <Suspense fallback={null}>

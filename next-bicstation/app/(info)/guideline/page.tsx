@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"; // ✅ これを追加
+
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import GuidelinePageContent from './GuidelineContent'; // クライアント側をインポート

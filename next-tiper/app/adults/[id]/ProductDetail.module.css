@@ -1,395 +1,424 @@
 /* ==============================================================================
- * 🌌 TIPER Product Detail - Absolute Ultimate Matrix Styling
- * [BUILD COMPLIANT] + [NO OMISSION] + [MAXIMUM CYBER DENSITY]
+ * 🌌 TIPER Product Detail - Absolute Ultimate Matrix Styling (V7.0)
+ * [NO_OMISSION] + [MAX_CYBER_DENSITY] + [FULL_GLITCH_ENABLED]
  * ============================================================================== */
 
-.wrapper {
-  /* 🛠️ 変数定義：コンポーネント全体で使い倒す */
-  --primary-red: #e94560;
-  --primary-cyan: #00d1b2;
-  --bg-deep: #05050a;
-  --bg-card: rgba(20, 20, 35, 0.7);
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --accent-glow: rgba(233, 69, 96, 0.3);
-  --font-main: 'Inter', 'Noto Sans JP', sans-serif;
-  --transition-ultra: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-
-  min-height: 100vh;
-  background-color: var(--bg-deep);
-  color: #e2e8f0;
-  padding-bottom: 15rem; /* さらに深く */
-  overflow-x: hidden;
-  position: relative;
-  font-family: var(--font-main);
-  transition: background 1s ease;
-}
-
-/* 🧬 ノイズテクスチャ：背景に圧倒的な質感を与える */
-.wrapper::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.04;
-  pointer-events: none;
-  z-index: 5;
-}
-
-/* 🟢 DUGAテーマ：深海のエメラルド・グリッチ */
-.dugaTheme {
-  background-image: 
-    radial-gradient(circle at 50% -20%, rgba(0, 209, 178, 0.2) 0%, transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(0, 209, 178, 0.08) 0%, transparent 40%),
-    linear-gradient(to bottom, transparent, rgba(0, 209, 178, 0.02));
-}
-
-/* 🔴 FANZAテーマ：血脈のクリムゾン・オーバーライド */
-.fanzaTheme {
-  background-image: 
-    radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.2) 0%, transparent 60%),
-    radial-gradient(circle at 0% 100%, rgba(233, 69, 96, 0.08) 0%, transparent 40%),
-    linear-gradient(to bottom, transparent, rgba(233, 69, 96, 0.02));
-}
-
-/* --- 🧭 Navigation: 空中に浮遊するような透過感 --- */
-.nav {
-  width: 100%;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(5, 5, 10, 0.85);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  padding: 1.8rem 0;
-}
-
-.backLink {
-  color: #475569;
-  font-size: 0.75rem;
-  font-weight: 950;
-  text-decoration: none;
-  transition: var(--transition-ultra);
-  letter-spacing: 0.5em;
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  text-transform: uppercase;
-}
-
-.backLink:hover {
-  color: #fff;
-  transform: translateX(-12px);
-  text-shadow: 0 0 20px var(--primary-red);
-}
-
-.sourceBadge, .sourceBadgeFanza, .sourceBadgeDuga {
-  padding: 6px 16px;
-  font-size: 11px;
-  font-weight: 1000;
-  border-radius: 1px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  display: inline-block;
-}
-
-.sourceBadgeFanza { background: #ff0080; color: #fff; box-shadow: 0 0 30px rgba(255,0,128,0.4); }
-.sourceBadgeDuga { background: var(--primary-cyan); color: #000; box-shadow: 0 0 30px rgba(0,209,178,0.4); }
-.sourceBadge { background: #222; color: #fff; border: 1px solid #444; }
-
-/* --- 🏗️ Layout Structure --- */
-.mainContainer {
-  max-width: 1700px; /* 拡大 */
-  margin: 0 auto;
-  padding: 6rem 5%;
-  position: relative;
-  z-index: 10;
-}
-
-.visualHeroSection { margin-bottom: 8rem; }
-
-.visualGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6rem;
-}
-
-@media (min-width: 1024px) {
-  .visualGrid {
-    grid-template-columns: 520px 1fr;
-    align-items: flex-start;
+ .wrapper {
+    /* 🛠️ 変数定義：アーキテクチャの根幹 */
+    --primary-red: #e94560;
+    --primary-fanza: #ff0080;
+    --primary-cyan: #00d1b2;
+    --primary-purple: #533483;
+    --bg-deep: #020205;
+    --bg-card: rgba(10, 10, 20, 0.85);
+    --border-glass: rgba(255, 255, 255, 0.08);
+    --accent-glow: rgba(233, 69, 96, 0.3);
+    --font-main: 'JetBrains Mono', 'Inter', 'Noto Sans JP', sans-serif;
+    --transition-ultra: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  
+    min-height: 100vh;
+    background-color: var(--bg-deep);
+    color: #e2e8f0;
+    padding-bottom: 20rem; 
+    overflow-x: hidden;
+    position: relative;
+    font-family: var(--font-main);
+    transition: background 1s ease;
   }
-}
+  
+  /* 🧬 ノイズテクスチャ：背景に圧倒的な質感を与える */
+  .wrapper::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: 100;
+  }
+  
+  /* 🟢 DUGAテーマ：深海のエメラルド・グリッチ */
+  .dugaTheme {
+    background-image: 
+      radial-gradient(circle at 50% -20%, rgba(0, 209, 178, 0.25) 0%, transparent 60%),
+      radial-gradient(circle at 100% 100%, rgba(0, 209, 178, 0.1) 0%, transparent 40%),
+      linear-gradient(to bottom, transparent, rgba(0, 209, 178, 0.03));
+  }
+  
+  /* 🔴 FANZAテーマ：血脈のクリムゾン・オーバーライド */
+  .fanzaTheme {
+    background-image: 
+      radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.25) 0%, transparent 60%),
+      radial-gradient(circle at 0% 100%, rgba(233, 69, 96, 0.1) 0%, transparent 40%),
+      linear-gradient(to bottom, transparent, rgba(233, 69, 96, 0.03));
+  }
+  
+  /* --- 🧭 Navigation: 空中に浮遊するような透過感 --- */
+  .nav {
+    width: 100%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(2, 2, 5, 0.8);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: 1.5rem 0;
+  }
+  
+  .backLink {
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-decoration: none;
+    transition: var(--transition-ultra);
+    letter-spacing: 0.5em;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    text-transform: uppercase;
+  }
+  
+  .backLink:hover {
+    color: #fff;
+    transform: translateX(-12px);
+    text-shadow: 0 0 20px var(--primary-red);
+  }
+  
+  .sourceBadge, .sourceBadgeFanza, .sourceBadgeDuga {
+    padding: 8px 20px;
+    font-size: 10px;
+    font-weight: 1000;
+    border-radius: 1px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    display: inline-block;
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+  }
+  
+  .sourceBadgeFanza { background: var(--primary-fanza); color: #fff; box-shadow: 0 0 35px rgba(255,0,128,0.5); }
+  .sourceBadgeDuga { background: var(--primary-cyan); color: #000; box-shadow: 0 0 35px rgba(0,209,178,0.5); }
+  .sourceBadge { background: #1a1a2e; color: #fff; border: 1px solid #3d3d66; }
+  
+  /* --- 🏗️ Layout Structure --- */
+  .mainContainer {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 4rem 5%;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .visualHeroSection { margin-bottom: 10rem; }
+  
+  .visualGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5rem;
+  }
+  
+  @media (min-width: 1024px) {
+    .visualGrid {
+      grid-template-columns: 560px 1fr;
+      align-items: flex-start;
+    }
+  }
+  
+  /* --- 🖼️ Jacket Design: 圧倒的な存在感 --- */
+  .jacketWrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1.414; 
+    border-radius: 2px;
+    overflow: hidden;
+    background-color: #000;
+    box-shadow: 0 80px 160px -40px rgba(0, 0, 0, 0.9);
+    border: 1px solid var(--border-glass);
+  }
+  
+  .jacketImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 2s cubic-bezier(0.16, 1, 0.3, 1), filter 1s ease;
+  }
+  
+  .jacketWrapper:hover .jacketImage { 
+    transform: scale(1.08); 
+    filter: contrast(1.15) brightness(1.1); 
+  }
+  
+  .jacketOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(2,2,5,0.95) 100%);
+    pointer-events: none;
+    z-index: 2;
+  }
+  
+  .scanline {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(
+      rgba(255, 255, 255, 0) 0%,
+      rgba(233, 69, 96, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 100% 400px;
+    animation: scanMove 8s linear infinite;
+    pointer-events: none;
+    z-index: 3;
+  }
+  
+  @keyframes scanMove {
+    0% { background-position: 0 -400px; }
+    100% { background-position: 0 800px; }
+  }
+  
+  .cornerMarker {
+    position: absolute;
+    top: 30px; right: 30px; width: 60px; height: 60px;
+    border-top: 2px solid var(--primary-red);
+    border-right: 2px solid var(--primary-red);
+    opacity: 0.8;
+    z-index: 4;
+  }
+  
+  .jacketLabel {
+    position: absolute;
+    bottom: 2rem; left: 0;
+    background: var(--primary-red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 1000;
+    padding: 12px 30px;
+    letter-spacing: 0.5em;
+    clip-path: polygon(0 0, 85% 0, 100% 100%, 0% 100%);
+    z-index: 5;
+    box-shadow: 10px 0 30px rgba(233, 69, 96, 0.4);
+  }
+  
+  /* --- 📊 AI Summary Card --- */
+  .aiSummaryCard {
+    padding: 4rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
+    border-left: 4px solid var(--primary-red);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    box-shadow: 0 50px 100px rgba(0,0,0,0.6);
+  }
+  
+  .aiLabel {
+    font-size: 11px;
+    font-weight: 1000;
+    color: var(--primary-red);
+    text-transform: uppercase;
+    letter-spacing: 0.8em;
+    margin-bottom: 3rem;
+    display: flex;
+    align-items: center; gap: 1.5rem;
+  }
+  
+  .aiLabel::after {
+    content: ""; flex: 1; height: 1px;
+    background: linear-gradient(to right, var(--primary-red), transparent);
+    opacity: 0.4;
+  }
+  
+  .aiText {
+    color: #f1f5f9;
+    font-size: 1.4rem;
+    line-height: 2.2;
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+  
+  .aiReflection {
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at center, rgba(233, 69, 96, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+    animation: rotateGlow 15s linear infinite;
+  }
+  
+  @keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  /* --- 📝 Typography & Core Info --- */
+  .gridContent {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6rem;
+    margin-top: 6rem;
+  }
+  
+  @media (min-width: 1280px) {
+    .gridContent { grid-template-columns: 1fr 540px; }
+  }
+  
+  .detailTitle {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 1000;
+    line-height: 1.1;
+    margin-bottom: 3.5rem;
+    color: #fff;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    font-style: italic;
+    filter: drop-shadow(0 0 30px rgba(255,255,255,0.1));
+  }
+  
+  .priceContainer {
+    display: flex;
+    align-items: baseline;
+    background: linear-gradient(90deg, rgba(233, 69, 96, 0.1), transparent);
+    padding: 1.5rem 2.5rem;
+    border-left: 3px solid var(--primary-red);
+    margin-bottom: 2rem;
+  }
+  
+  /* --- 📈 Stats Card --- */
+  .statsCard {
+    background: rgba(5, 5, 15, 0.95);
+    padding: 4rem;
+    border: 1px solid var(--border-glass);
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8);
+    position: relative;
+  }
+  
+  .statsCard::before {
+    content: "ANALYTICS_V9.0";
+    position: absolute; top: 1rem; right: 1.5rem;
+    font-size: 8px; color: var(--primary-red);
+    letter-spacing: 0.3em; font-weight: 900;
+  }
+  
+  /* --- 📋 Spec Table --- */
+  .specTableContainer {
+    margin-top: 4rem;
+  }
+  
+  .specTable { width: 100%; border-collapse: collapse; }
+  
+  .specRow {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition-ultra);
+  }
+  
+  .specRow:hover {
+    background: rgba(233, 69, 96, 0.02);
+  }
+  
+  .specKey {
+    padding: 2rem 0;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+  }
+  
+  .specValue {
+    padding: 2rem 0;
+    text-align: right;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  
+  .actressLink {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 0.85rem;
+    padding: 0.8rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: var(--transition-ultra);
+    display: inline-block;
+    margin: 4px;
+    clip-path: polygon(0 15%, 95% 0, 100% 85%, 5% 100%);
+  }
+  
+  .actressLink:hover {
+    background: var(--primary-red);
+    color: #fff;
+    transform: translateY(-5px) rotate(2deg);
+    box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
+  }
+  
+  /* --- 🚀 Affiliate Buttons --- */
+  .affiliateBtn, .affiliateBtnFanza, .affiliateBtnDuga {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 2rem 3rem;
+    font-weight: 1000;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    font-size: 13px;
+    transition: var(--transition-ultra);
+    border-radius: 1px;
+    margin-top: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .affiliateBtnFanza { background: var(--primary-fanza); color: #fff; }
+  .affiliateBtnDuga { background: var(--primary-cyan); color: #000; }
+  .affiliateBtn { background: var(--primary-red); color: #fff; }
+  
+  .affiliateBtn::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+  
+  .affiliateBtn:hover::after {
+    transform: translateX(100%);
+  }
 
-/* --- 🖼️ Jacket Design: 圧倒的な存在感 --- */
-.jacketWrapper {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 10 / 14.2;
-  border-radius: 2px;
-  overflow: hidden;
-  background-color: #000;
-  box-shadow: 0 60px 120px -30px rgba(0, 0, 0, 0.95);
-  border: 1px solid var(--border-glass);
-}
-
-.jacketImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.jacketWrapper:hover .jacketImage { transform: scale(1.1); filter: contrast(1.1) brightness(1.1); }
-
-.jacketOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.9) 100%);
-  pointer-events: none;
-}
-
-.scanline {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 25px;
-  background: linear-gradient(to bottom, transparent, rgba(233, 69, 96, 0.25), transparent);
-  opacity: 0.6;
-  animation: scan 5s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes scan {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(1800%); }
-}
-
-.cornerMarker {
-  position: absolute;
-  top: 25px; right: 25px; width: 50px; height: 50px;
-  border-top: 3px solid var(--primary-red);
-  border-right: 3px solid var(--primary-red);
-  opacity: 0.7;
-}
-
-.jacketLabel {
-  position: absolute;
-  bottom: 2.5rem; left: 0;
-  background: var(--primary-red);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 1000;
-  padding: 10px 25px;
-  letter-spacing: 0.4em;
-  clip-path: polygon(0 0, 88% 0, 100% 100%, 0% 100%);
-}
-
-/* --- 📊 AI Summary Card: 未来のインターフェース --- */
-.aiSummaryCard {
-  padding: 5rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border-glass);
-  border-left: 5px solid var(--primary-red);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(30px);
-  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-}
-
-.aiLabel {
-  font-size: 12px;
-  font-weight: 1000;
-  color: var(--primary-red);
-  text-transform: uppercase;
-  letter-spacing: 0.7em;
-  margin-bottom: 3.5rem;
-  display: flex;
-  align-items: center; gap: 2rem;
-}
-
-.aiLabel::after {
-  content: ""; flex: 1; height: 1px;
-  background: linear-gradient(to right, var(--primary-red), transparent);
-}
-
-.aiText {
-  color: #f8fafc;
-  font-size: 1.5rem;
-  line-height: 2.4;
-  font-style: italic;
-  font-weight: 300;
-  letter-spacing: 0.08em;
-  text-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-
-.aiReflection {
-  position: absolute;
-  top: -50%; left: -50%; width: 200%; height: 200%;
-  background: radial-gradient(circle at center, rgba(233, 69, 96, 0.05) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-/* --- 📝 Typography & Core Info --- */
-.gridContent {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8rem;
-  margin-top: 8rem;
-}
-
-@media (min-width: 1280px) {
-  .gridContent { grid-template-columns: 1fr 580px; }
-}
-
-.detailTitle {
-  font-size: clamp(3rem, 6vw, 4.5rem);
-  font-weight: 1000;
-  line-height: 1;
-  margin-bottom: 4rem;
-  color: #fff;
-  letter-spacing: -0.06em;
-  text-transform: uppercase;
-  font-style: italic;
-  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
-}
-
-.priceContainer {
-  display: flex;
-  align-items: baseline;
-  background: linear-gradient(90deg, rgba(233, 69, 96, 0.15), transparent);
-  padding: 2rem 3rem;
-  border-left: 4px solid var(--primary-red);
-  margin-bottom: 2rem;
-}
-
-/* --- 📈 Stats Card --- */
-.statsCard {
-  background: rgba(10, 10, 22, 0.9);
-  padding: 4.5rem;
-  border: 1px solid var(--border-glass);
-  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
-  position: relative;
-  overflow: hidden;
-}
-
-.statsCard::before {
-  content: "";
-  position: absolute; top: 0; left: 0; width: 100%; height: 1px;
-  background: linear-gradient(to right, transparent, var(--primary-red), transparent);
-}
-
-/* --- 📋 Spec Table: 徹底した情報の可視化 --- */
-.specTableContainer {
-  margin-top: 5rem;
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-
-.specTable { width: 100%; border-collapse: collapse; }
-
-.specRow {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  transition: var(--transition-ultra);
-}
-
-.specRow:hover {
-  background: rgba(255, 255, 255, 0.03);
-  padding-left: 20px;
-}
-
-.specKey {
-  padding: 2.5rem 0;
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 1000;
-  text-transform: uppercase;
-  letter-spacing: 0.5em;
-}
-
-.specValue {
-  padding: 2.5rem 0;
-  text-align: right;
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.95rem;
-}
-
-.actressLink {
-  color: #fff;
-  text-decoration: none;
-  font-weight: 1000;
-  font-size: 0.9rem;
-  padding: 1rem 1.8rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border-glass);
-  transition: var(--transition-ultra);
-  display: inline-block;
-  margin: 6px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.actressLink:hover {
-  background: #fff;
-  color: #000;
-  transform: translateY(-8px) scale(1.05);
-  box-shadow: 0 15px 40px rgba(255, 255, 255, 0.25);
-}
-
-/* --- 🚀 Professional Affiliate Buttons --- */
-.affiliateBtn, .affiliateBtnFanza, .affiliateBtnDuga {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 2.5rem 3.5rem;
-  font-weight: 1000;
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.4em;
-  font-size: 14px;
-  transition: var(--transition-ultra);
-  border-radius: 2px;
-  margin-top: 3rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.affiliateBtnFanza { background: #ff0080; color: #fff; box-shadow: 0 20px 50px rgba(255, 0, 128, 0.5); }
-.affiliateBtnDuga { background: var(--primary-cyan); color: #000; box-shadow: 0 20px 50px rgba(0, 209, 178, 0.5); }
-.affiliateBtn { background: var(--primary-red); color: #fff; box-shadow: 0 20px 50px rgba(233, 69, 96, 0.5); }
-
-.affiliateBtn:hover {
-  transform: translateY(-8px) scale(1.02);
-  filter: brightness(1.2);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
-}
-
-/* --- ⚠️ 404 / Error State --- */
-.notFound {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #05050a;
-  text-align: center;
-  padding: 2rem;
-}
-
-/* 🌀 関連作品タイトルの装飾 */
-.relatedTitle {
-  font-size: 3rem;
-  font-weight: 1000;
-  letter-spacing: -0.05em;
-  margin-bottom: 6rem;
-  color: #fff;
-  font-style: italic;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.relatedTitle::after {
-  content: ""; flex: 1; height: 2px;
-  background: linear-gradient(to right, var(--primary-red), transparent);
-}
+  .affiliateBtn:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+    box-shadow: 0 0 50px var(--accent-glow);
+  }
+  
+  /* 🌀 関連作品タイトルの装飾 */
+  .relatedTitle {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 1000;
+    letter-spacing: -0.04em;
+    margin-bottom: 5rem;
+    color: #fff;
+    font-style: italic;
+    text-transform: uppercase;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .relatedTitle::before {
+    content: "SYNCHRONIZED_NODES";
+    font-size: 10px; color: var(--primary-red);
+    letter-spacing: 0.5em; position: absolute; top: -2.5rem; left: 0;
+    font-style: normal;
+  }
+  
+  /* 📱 Responsive Adjustments */
+  @media (max-width: 768px) {
+    .mainContainer { padding: 2rem 5%; }
+    .detailTitle { font-size: 2.2rem; }
+    .aiSummaryCard { padding: 2rem; }
+    .visualHeroSection { margin-bottom: 4rem; }
+    .gridContent { gap: 3rem; margin-top: 2rem; }
+  }

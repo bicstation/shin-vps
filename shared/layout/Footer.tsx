@@ -122,16 +122,6 @@ export default function Footer({ debugData }: FooterProps) {
           </ul>
         </div>
       </div>
-
-      <div className={styles.bottomBar}>
-        <div className={styles.bottomContent}>
-          <p>&copy; {currentYear} {site.site_name.toUpperCase()}. All rights reserved.</p>
-          {/* 開発者用：デバッグモードへの導線（隠し要素的） */}
-          <div className={styles.devTag}>
-            STATUS: <span style={{ color: isDebugMode ? '#00ff41' : 'inherit' }}>{isDebugMode ? 'DEBUG_ENABLED' : 'STABLE'}</span>
-          </div>
-        </div>
-      </div>
     </footer>
   );
 }
