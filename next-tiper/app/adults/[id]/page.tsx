@@ -2,10 +2,11 @@
 // @ts-nocheck
 /**
  * ==============================================================================
- * 🌌 TIPER Product Detail - Full Spectrum Matrix (V8.1)
+ * 🌌 TIPER Product Detail - Full Spectrum Matrix (V9.9_Final)
  * [DEBUG_TOP_BRIDGE + AI_SEO_ENHANCED + SIDEBAR_API_MONITOR + FULL_DENSITY]
  * ==============================================================================
  * 🚀 FIXED: API Endpoint resolution via resolveApiUrl for internal/external sync
+ * 🧠 INTEGRATED: AI_DEEP_CONTENT + AI_CHAT_LOGS (No data left behind)
  */
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import styles from './ProductDetail.module.css';
 
-// ✅ 共通ライブラリ・コンポーネント
+// ✅ 共通ライブラリ・コンポーネント (V8.1 完全準拠)
 import { 
   getAdultProductDetail, 
   getAdultProducts, 
@@ -27,7 +28,7 @@ import AdultProductCard from '@shared/cards/AdultProductCard';
 import AdultProductGallery from '@shared/cards/AdultProductGallery';
 import MoviePlayerModal from '@shared/product/MoviePlayerModal';
 import RadarChart from '@shared/ui/RadarChart';
-import SystemDiagnostic from '@shared/ui/SystemDiagnostic'; // 🛰️ デバッグコンポーネント
+import SystemDiagnostic from '@shared/ui/SystemDiagnostic';
 
 const getIdentifier = (item: any) => {
   if (!item) return '';
@@ -35,7 +36,7 @@ const getIdentifier = (item: any) => {
 };
 
 /**
- * 💡 AI自律型メタデータ生成 (SEO強化版)
+ * 💡 AI自律型メタデータ生成 (SEO強化版: V8.1ロジック完全復元)
  */
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     const makerName = product.maker?.name || 'メーカー不明';
     const score = product.spec_score ?? 0;
     
-    // AI SEOタイトルロジック
+    // AI SEOタイトルロジック (V8.1の判定基準を100%継承)
     let aiPrefix = '';
     if (score >= 95) aiPrefix = '【究極神作】';
     else if (score >= 85) aiPrefix = '【超高評価】';
@@ -103,7 +104,7 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
     console.error("Fetch error:", e); 
   }
 
-  // --- 🛰️ [DEBUG_MATRIX] 最上部デバッグレイヤー ---
+  // --- 🛰️ [DEBUG_MATRIX] 最上部デバッグレイヤー (V8.1完全継承) ---
   const debugLayer = isDebugVisible && (
     <section className="w-full bg-[#050510] border-b-2 border-yellow-500 p-6 font-mono text-[10px] text-yellow-500 z-[9999] relative">
       <div className="max-w-[1440px] mx-auto">
@@ -151,7 +152,7 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
   const isFanza = source === 'FANZA' || source === 'DMM';
   const themeClass = isDuga ? styles.dugaTheme : isFanza ? styles.fanzaTheme : '';
 
-  // --- 🖼️ 画像最適化ロジック (Jacket & Gallery) ---
+  // --- 🖼️ 画像最適化ロジック (V8.1 完全準拠) ---
   let jacketImage = product.image_url_list?.[0] || product.image_url || '/placeholder.png';
   if (isDuga) {
     jacketImage = jacketImage.replace(/(\/|\d+x\d+|jacket_)\d+(x\d+)?\.jpg/i, '/jacket.jpg').replace(/jacket_\d+\.jpg/i, 'jacket.jpg');
@@ -163,6 +164,7 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
     ? product.image_url_list 
     : [jacketImage];
   
+  // --- 🎥 Movieロジック (V8.1 完全準拠) ---
   let movieData = null;
   if (product.sample_movie_url) {
     if (typeof product.sample_movie_url === 'object' && product.sample_movie_url !== null) {
@@ -178,14 +180,14 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
     }
   }
 
-  // --- 📊 統計データ ---
+  // --- 📊 統計データ (V8.1ロジック + AI拡張) ---
   const getSafeScore = (val: any) => (typeof val === 'number' ? val : (parseInt(val) || 0));
   const statsData = [
     { label: 'VISUAL', val: getSafeScore(product.score_visual), color: 'from-pink-500 to-rose-500' },
     { label: 'STORY', val: getSafeScore(product.score_story), color: 'from-blue-500 to-indigo-500' },
-    { label: 'EROTIC', val: getSafeScore(product.score_erotic), color: 'from-red-600 to-orange-500' },
-    { label: 'RARITY', val: getSafeScore(product.score_rarity), color: 'from-amber-400 to-yellow-500' },
-    { label: 'COST',   val: getSafeScore(product.score_cost),   color: 'from-emerald-400 to-teal-500' }, 
+    { label: 'EROTIC', val: getSafeScore(product.score_erotic || product.score_acting), color: 'from-red-600 to-orange-500' },
+    { label: 'RARITY', val: getSafeScore(product.score_rarity || product.score_direction), color: 'from-amber-400 to-yellow-500' },
+    { label: 'COST',   val: getSafeScore(product.score_cost || product.score_value),   color: 'from-emerald-400 to-teal-500' }, 
   ];
   const radarData = statsData.map(s => ({ subject: s.label, value: s.val, A: s.val, fullMark: 100 }));
   
@@ -194,7 +196,7 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
     { day: '4D', val: 40 }, { day: '3D', val: 25 }, { day: '2D', val: 12 }, { day: 'NOW', val: 8 }
   ];
 
-  // --- 🧬 内部AI：短評生成 ---
+  // --- 🧬 内部AI：短評生成 (V8.1 完全復元) ---
   const generateAiShortComment = (p) => {
     const s = getSafeScore(p.spec_score);
     if (s >= 90) return "【AI最高評価】業界標準を凌駕するパラメータを計測。即時アーカイブ推奨。";
@@ -203,42 +205,32 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
     return "【標準適合】全システムにおいて安定した出力を確認。高品質なアーカイブです。";
   };
 
-  // --- 🔗 関連商品API：統合レコメンドエンジン(Unified)の強制発動 ---
+  // --- 🔗 関連商品API (V8.1 完全復元) ---
   let relatedProducts = [];
   let relatedError = null;
 
   try {
     const targetId = product.product_id_unique || product.display_id || product.unique_id;
-
-    // 💡 修正ポイント: resolveApiUrl を使用して内部/外部のURL解決を安全に行う
     const targetApiUrl = resolveApiUrl(`/api/unified-adult-products/?related_to_id=${targetId}&page_size=12`);
 
     const response = await fetch(targetApiUrl, {
       method: 'GET',
-      headers: getDjangoHeaders(), // ヘッダーも共通関数から取得
+      headers: getDjangoHeaders(),
       cache: 'no-store' 
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
     const data = await response.json();
     relatedProducts = data.results || [];
-
-    console.log(`[RELATION_SYNC_COMPLETE] NODE: ${targetId} | SCORE_BASED_ALIGNMENT: ${relatedProducts.length} ITEMS`);
-
   } catch (e) { 
     relatedError = e.message;
-    console.warn("⚠️ Related fetch failed (Unified engine bypass):", e); 
-    
     try {
       const fallback = await getAdultProducts({ 
         related_to_id: product.display_id || product.product_id_unique, 
         limit: 12 
       });
       relatedProducts = fallback?.results || [];
-    } catch (fallbackError) {
-      console.error("Critical: All relation paths failed.");
-    }
+    } catch (fbErr) { console.error("Critical fail", fbErr); }
   }
 
   const displayTitle = product.title || 'Untitled Archive';
@@ -286,6 +278,22 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
         <div className={styles.gridContent}>
           {/* LEFT COLUMN */}
           <section className="space-y-8">
+            {/* 🆕 NEURAL DIALOGUE LOG (V9新要素マージ) */}
+            {product.ai_chat_comments && product.ai_chat_comments.length > 0 && (
+              <div className="bg-[#0f0f1a] border border-white/10 p-6 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-2 opacity-10 text-[10px] font-black italic text-[#e94560]">AI_COMM_LOG</div>
+                <h4 className="text-[10px] font-black text-[#e94560] mb-6 tracking-[0.3em] uppercase border-b border-[#e94560]/20 pb-2">Neural_Dialogue_Archive</h4>
+                <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar font-mono">
+                  {product.ai_chat_comments.map((chat, idx) => (
+                    <div key={idx} className={`p-3 text-[11px] leading-relaxed ${idx % 2 === 0 ? 'bg-white/5 border-l border-white/20 text-gray-400' : 'bg-[#e94560]/5 border-l border-[#e94560] text-gray-300'}`}>
+                      <div className="text-[9px] font-black opacity-50 mb-1">[{chat.user}]</div>
+                      <div>{chat.comment}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="bg-[#e94560]/10 border-l-4 border-[#e94560] p-6 relative overflow-hidden group">
                <div className="absolute top-0 right-0 p-2 opacity-20 text-[20px] font-black italic">AI_REPORT</div>
                <span className="text-[10px] font-black text-[#e94560] block mb-2 tracking-[0.3em]">AI_QUICK_VERDICT:</span>
@@ -293,17 +301,17 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
                <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#e94560]/50 to-transparent" />
             </div>
 
-            {product.ai_summary && (
-              <div className={styles.aiSummaryCard}>
-                <div className={styles.aiLabel}>Expert AI_Report</div>
-                <p className={styles.aiText}>"{product.ai_summary}"</p>
-                <div className="mt-8 p-6 bg-black/40 rounded border border-white/5 flex flex-col items-center justify-center min-h-[280px]">
-                    <RadarChart data={radarData} />
-                </div>
-                <div className={styles.aiReflection} />
+            {/* RADAR & SUMMARY */}
+            <div className={styles.aiSummaryCard}>
+              <div className={styles.aiLabel}>Expert AI_Report</div>
+              <p className={styles.aiText}>"{product.ai_summary || 'No summary available.'}"</p>
+              <div className="mt-8 p-6 bg-black/40 rounded border border-white/5 flex flex-col items-center justify-center min-h-[280px]">
+                  <RadarChart data={radarData} />
               </div>
-            )}
+              <div className={styles.aiReflection} />
+            </div>
 
+            {/* RANKING TREND (V8.1 完全継承) */}
             <div className="p-8 bg-[#111125]/40 rounded-sm border border-white/5">
               <h4 className="text-[10px] font-black text-gray-400 uppercase mb-8 tracking-[0.4em]">Node_Market_Volatility</h4>
               <div className="flex items-end justify-between h-20 gap-1.5 px-2">
@@ -318,6 +326,7 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
               </div>
             </div>
 
+            {/* TAGS (V8.1 完全継承) */}
             <div className="p-8 bg-[#111125]/40 rounded-sm border border-white/5">
               <h4 className="text-[10px] font-black text-gray-400 uppercase mb-6 tracking-[0.4em]">Semantic_Tags</h4>
               <div className="flex flex-wrap gap-2">
@@ -338,6 +347,21 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
             <div className={styles.priceContainer}>
               <span className="text-xl mr-2 text-[#e94560] italic opacity-60">¥</span>
               <span className="text-4xl font-black tabular-nums">{priceDisplay}</span>
+            </div>
+
+            {/* 🆕 NEURAL DEEP CONTENT (V9深要素マージ) */}
+            <div className="my-10 p-8 bg-gradient-to-b from-white/[0.03] to-transparent border-t border-white/10 relative">
+               <div className="absolute top-0 left-0 w-12 h-[2px] bg-[#e94560]" />
+               <h3 className="text-[10px] font-black text-[#00d1b2] mb-6 uppercase tracking-[0.4em] flex items-center gap-2">
+                 <span className="w-2 h-2 bg-[#00d1b2] animate-pulse" /> Neural_Deep_Analysis_Report
+               </h3>
+               <div className="text-gray-300 leading-relaxed font-light space-y-4 text-base md:text-lg italic">
+                  {product.ai_content ? (
+                    product.ai_content.split('\n').map((p, i) => p && <p key={i}>{p}</p>)
+                  ) : (
+                    <p className="opacity-30">No neural expansion data available.</p>
+                  )}
+               </div>
             </div>
 
             <div className={styles.statsCard}>
@@ -362,6 +386,7 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
               </div>
             </div>
 
+            {/* CTA SECTION (V8.1 完全継承) */}
             <div className="mt-12 p-1 bg-gradient-to-br from-[#e94560] via-[#533483] to-[#0f3460] rounded-sm shadow-[0_0_50px_rgba(233,69,96,0.2)]">
               <div className="bg-[#0a0a1a] p-8 rounded-[1px] relative overflow-hidden">
                 <div className="absolute top-[-10px] left-[-10px] text-[40px] font-black text-white/[0.03] pointer-events-none italic uppercase">ACCESS_GRANTED</div>
@@ -383,6 +408,7 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
               </div>
             </div>
 
+            {/* SPEC TABLE (V8.1 完全継承) */}
             <div className={styles.specTableContainer}>
               <table className={styles.specTable}>
                 <tbody>
@@ -428,7 +454,7 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
           </section>
         </div>
 
-        {/* RELATED SECTION */}
+        {/* RELATED SECTION (V8.1 完全継承) */}
         {relatedProducts.length > 0 && (
           <section className="mt-40 pt-20 border-t border-white/5">
             <div className="flex justify-between items-end mb-12">
@@ -448,13 +474,13 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
           </section>
         )}
 
-        {/* 🛰️ SYSTEM_DIAGNOSTIC_TERMINAL (Ver. 3.5 Extended) */}
+        {/* 🛰️ SYSTEM_DIAGNOSTIC (V8.1 完全継承) */}
         <SystemDiagnostic 
           id={id}
           source={source}
           targetUrl={`/api/adults/${id}`}
-          data={product}              // メインペイロード
-          secondaryData={relatedProducts} // ⬅️ 別枠で関連商品のAPI結果を表示
+          data={product}
+          secondaryData={relatedProducts}
           errorMsg={fetchError}
           secondaryError={relatedError}
           apiInternalUrl={process.env.NEXT_PUBLIC_API_URL || 'DJANGO_INTERNAL_STREAM'}

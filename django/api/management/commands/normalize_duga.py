@@ -30,8 +30,9 @@ ENTITY_RELATION_KEYS = {
 }
 
 class Command(BaseCommand):
-    help = 'RawApiData (DUGA) を読み込み、画像を最高画質化してAdultProductモデルに正規化保存します。'
-    API_SOURCE = 'DUGA'
+    help = 'RawApiData (DUGA) を正規化し、AIカラムを保護しながらAdultProductに保存します。'
+    # 判定用に小文字で定義
+    API_SOURCE_LOWER = 'duga'
 
     def _optimize_url(self, url):
         """画像URLを高画質版に置換する共通内部関数"""
@@ -67,8 +68,8 @@ class Command(BaseCommand):
                     names = relations.get(key, [])
                     all_entity_names[Model].update(names)
 
-        # 2. PK を一括取得
-        pk_maps = {Model: get_or_create_entity(Model, list(names), self.API_SOURCE) 
+        # 2. PK を一括取得 (API_SOURCEは正規化して渡す)
+        pk_maps = {Model: get_or_create_entity(Model, list(names), self.API_SOURCE_LOWER.upper()) 
                    for Model, names in all_entity_names.items() if names}
 
         # 3. 辞書内のキーを書き換え
@@ -84,18 +85,22 @@ class Command(BaseCommand):
                 for Model in [Genre, Actress]:
                     key = ENTITY_RELATION_KEYS[Model]
                     names = relations.pop(key, [])
-                    # 解決できたPKのみ保持
                     pks = [pk_maps.get(Model, {}).get(n) for n in names if pk_maps.get(Model, {}).get(n)]
                     relations[f'{key}_ids'] = pks
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE(f'--- {self.API_SOURCE} 正規化・高画質化処理開始 ---'))
+        self.stdout.write(self.style.NOTICE(f'--- {self.API_SOURCE_LOWER.upper()} 正規化・高画質化処理開始 ---'))
 
-        raw_data_qs = RawApiData.objects.filter(api_source=self.API_SOURCE, migrated=False).order_by('id')
+        # 🚀 修正点: __iexact を使用して大文字小文字を問わず抽出
+        raw_data_qs = RawApiData.objects.filter(
+            api_source__iexact=self.API_SOURCE_LOWER, 
+            migrated=False
+        ).order_by('id')
+        
         total_count = raw_data_qs.count()
         
         if total_count == 0:
-            self.stdout.write(self.style.SUCCESS("未処理のRawデータはありません。"))
+            self.stdout.write(self.style.WARNING(f"未処理のRawデータ({self.API_SOURCE_LOWER})はありません。"))
             return
 
         products_data = [] 
@@ -112,21 +117,22 @@ class Command(BaseCommand):
                 product_data = normalized_data_list[0]
                 relations = relations_list[0]
                 
-                # 🚀 画像URLリストを高画質化・重複排除
+                # 画像URLリストを高画質化
                 if 'image_url_list' in product_data:
                     optimized_images = [self._optimize_url(u) for u in product_data['image_url_list']]
                     product_data['image_url_list'] = list(dict.fromkeys(filter(None, optimized_images)))
 
-                # 🎥 動画データのプレビュー画像も高画質化
+                # 動画データのプレビュー画像も高画質化
                 if isinstance(product_data.get('sample_movie_url'), dict):
                     preview = product_data['sample_movie_url'].get('preview_image')
                     if preview:
                         product_data['sample_movie_url']['preview_image'] = self._optimize_url(preview)
 
-                # ⚠️ モデルに存在しないフィールドを確実に削除
                 product_data.pop('image_url', None)
-
                 product_data['updated_at'] = timezone.now()
+                # api_sourceの値を小文字で統一（AI解析コマンドとの整合性のため）
+                product_data['api_source'] = self.API_SOURCE_LOWER
+
                 products_data.append(product_data) 
                 relations_map[raw_instance.id] = relations
                 processed_raw_ids.append(raw_instance.id)
@@ -142,24 +148,29 @@ class Command(BaseCommand):
             self._process_batch(products_data, relations_map, processed_raw_ids)
 
         self.update_product_counts(self.stdout)
-        self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE} 全工程完了 ---'))
+        self.stdout.write(self.style.SUCCESS(f'--- {self.API_SOURCE_LOWER.upper()} 全工程完了 ---'))
 
     def _process_batch(self, products_data, relations_map, processed_raw_ids):
         """名前解決からUPSERTまでをバッチ実行"""
         self._resolve_entity_names_to_pks(products_data, relations_map)
         
-        # raw_data_id は AdultProduct のフィールドではないためインスタンス化前に pop
-        for p in products_data:
-            p.pop('raw_data_id', None)
+        # 修正: M2M解決のために一時的にraw_data_idを保持してインスタンス化
+        products_to_upsert = []
+        raw_id_to_unique = {}
+        for d in products_data:
+            rid = d.pop('raw_data_id', None)
+            p_obj = AdultProduct(**d)
+            products_to_upsert.append(p_obj)
+            if rid:
+                raw_id_to_unique[rid] = p_obj.product_id_unique
 
-        products_to_upsert = [AdultProduct(**data) for data in products_data]
-        
         with transaction.atomic():
-            # bulk_create の update_conflicts を使用して一括 UPSERT
+            # 🚀 重要: AI関連フィールドを update_fields から除外！
+            # これにより、既存レコード更新時にAIレビューが消去されるのを防ぎます。
             fk_fields = [f.attname for f in AdultProduct._meta.fields if isinstance(f, models.ForeignKey)]
             update_fields = [
                 'title', 'release_date', 'affiliate_url', 'price', 
-                'image_url_list', 'sample_movie_url', 'updated_at', 'is_active'
+                'image_url_list', 'sample_movie_url', 'updated_at', 'is_active', 'api_source'
             ] + fk_fields
 
             AdultProduct.objects.bulk_create(
@@ -169,71 +180,12 @@ class Command(BaseCommand):
                 update_fields=update_fields
             )
             
-            # M2M同期用のIDマップ取得
-            unique_ids = [p.product_id_unique for p in products_to_upsert]
-            product_db_id_map = {obj.product_id_unique: obj.id for obj in 
-                                AdultProduct.objects.filter(product_id_unique__in=unique_ids)}
-            
-            self._synchronize_many_to_many(products_to_upsert, product_db_id_map, relations_map)
-            
-            # Rawデータの処理完了フラグ更新
-            RawApiData.objects.filter(id__in=processed_raw_ids).update(
-                migrated=True, updated_at=timezone.now()
-            )
-        self.stdout.write(f'バッチ {len(processed_raw_ids)} 件を保存完了')
-
-    def _synchronize_many_to_many(self, products_to_upsert, product_db_id_map, relations_map):
-        """ManyToManyリレーション（女優・ジャンル）の同期"""
-        product_db_ids = list(product_db_id_map.values())
-        if not product_db_ids: return
-
-        for Model, key in [(Genre, 'genres_ids'), (Actress, 'actresses_ids')]:
-            rel_name = ENTITY_RELATION_KEYS[Model]
-            through_model = getattr(AdultProduct, rel_name).through
-            through_model.objects.filter(adultproduct_id__in=product_db_ids).delete()
-            
-            new_rels = []
-            # relations_map に戻すために products_to_upsert の product_id_unique から解決
-            # (ただし _resolve_entity_names_to_pks 内で raw_id ベースで管理しているため注意)
-            # ここではシンプルにするため normalize_duga_data 時の product_id_unique を使う設計も可
-            # ここは現在の relations_map 構造（raw_id キー）を維持します
-            
-            # 実際には products_to_upsert に raw_data_id はもうないので、
-            # raw_id を一時的に保持するか relations_map のキー構成を合わせる必要があります。
-            # 今回は products_to_upsert ループではなく products_data (dict) との関係性で復元します。
-            pass # (下記 _process_batch で raw_id を pop する前に処理するのが安全)
-
-    def _process_batch(self, products_data, relations_map, processed_raw_ids):
-        """(修正) raw_data_id を使って M2M を解決してから pop する"""
-        self._resolve_entity_names_to_pks(products_data, relations_map)
-        
-        # インスタンス化
-        products_to_upsert = []
-        raw_id_to_unique = {}
-        for d in products_data:
-            rid = d.pop('raw_data_id', None)
-            p_obj = AdultProduct(**d)
-            products_to_upsert.append(p_obj)
-            if rid: raw_id_to_unique[rid] = p_obj.product_id_unique
-
-        with transaction.atomic():
-            update_fields = [
-                'title', 'release_date', 'affiliate_url', 'price', 
-                'image_url_list', 'sample_movie_url', 'updated_at', 'is_active'
-            ] + [f.attname for f in AdultProduct._meta.fields if isinstance(f, models.ForeignKey)]
-
-            AdultProduct.objects.bulk_create(
-                products_to_upsert,
-                update_conflicts=True,
-                unique_fields=['product_id_unique'],
-                update_fields=update_fields
-            )
-            
+            # 保存後のIDマップを取得
             db_id_map = {obj.product_id_unique: obj.id for obj in AdultProduct.objects.filter(
                 product_id_unique__in=[p.product_id_unique for p in products_to_upsert]
             )}
             
-            # M2M 同期処理
+            # M2M 同期処理（ジャンル・女優）
             for Model, rel_key in [(Genre, 'genres_ids'), (Actress, 'actresses_ids')]:
                 field_name = ENTITY_RELATION_KEYS[Model]
                 through = getattr(AdultProduct, field_name).through
@@ -249,10 +201,14 @@ class Command(BaseCommand):
                 if rels:
                     through.objects.bulk_create(rels, ignore_conflicts=True)
 
-            RawApiData.objects.filter(id__in=processed_raw_ids).update(migrated=True, updated_at=timezone.now())
+            # Rawデータの移行済みフラグを更新
+            RawApiData.objects.filter(id__in=processed_raw_ids).update(
+                migrated=True, updated_at=timezone.now()
+            )
+        self.stdout.write(f'バッチ {len(processed_raw_ids)} 件を保存完了')
 
     def update_product_counts(self, stdout):
-        """全エンティティの作品数カウントをサブクエリで更新"""
+        """全エンティティの作品数カウントを更新"""
         stdout.write("\n--- 作品数集計更新 ---")
         with transaction.atomic():
             MAPPING = [
@@ -268,7 +224,7 @@ class Command(BaseCommand):
                     fk = f"{Model.__name__.lower()}_id"
                     subq = through.objects.filter(**{fk: OuterRef('pk')}).values(fk).annotate(c=Count('adultproduct_id')).values('c')[:1]
                 
-                Model.objects.filter(api_source=self.API_SOURCE).update(
+                Model.objects.filter(api_source__iexact=self.API_SOURCE_LOWER).update(
                     product_count=Coalesce(Subquery(subq, output_field=models.IntegerField()), 0)
                 )
                 stdout.write(f'✅ {Model.__name__} カウント完了')

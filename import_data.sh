@@ -1,9 +1,14 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール
+# 📦 SHIN-VPS & Local 環境自動判別・製品データ運用ツール [ULTIMATE FULL VERSION]
 # ==============================================================================
-# 🛠 修正内容: FANZA API エクスプローラー (fanza_explorer) の統合
+# 🛠 統合内容: 
+#   - FANZA/DUGA API ページ指定・大量取得 (タグ情報完全維持)
+#   - インポート(import_t_...) → 正規化(normalize_...) の自動パイプライン
+#   - 既存の全メーカー別個別スクリプト (Lenovo, Acer, MSI, Mouse etc...) の完全保持
+#   - 量販店キーワードループ解析の完全保持
+#   - 属性マッピング・AI解析・価格履歴・クリーンアップ機能の全搭載
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -123,7 +128,7 @@ while true; do
     echo -e "環境: ${COLOR}${ENV_TYPE}${RESET}"
     echo -e "---------------------------------------"
     echo "1) [DB]       マイグレーション実行 (スキーマ更新)"
-    echo "2) [Import]   Tiper データ (Fanza/Duga) インポート・リセット"
+    echo "2) [Import]   Tiper データ (Fanza/Duga) インポート・正規化・リセット"
     echo -e "3) ${COLOR}[Import]   メーカー別インポート・同期 ✨${RESET}"
     echo "4) [Import]   AV-Flash データのインポート"
     echo "5) [Admin]     スーパーユーザーの作成"
@@ -154,17 +159,28 @@ while true; do
             ;;
         2)
             echo -e "\n${YELLOW}--- FANZA / DUGA 処理メニュー ---${RESET}"
-            echo "1) 新規インポート実行 (import -> normalize)"
+            echo "1) 新規インポート実行 (ページ指定 -> 自動正規化)"
             echo "2) 【リセット】全FANZAデータを未処理に戻す (reset_fanza_migration)"
             echo "3) 【リセット】全DUGAデータを未処理に戻す (reset_duga_migration)"
             echo "4) 【再実行】リセット後に正規化のみ実行 (normalize_fanza/duga)"
+            echo "5) 【クリーンアップ】処理済みのRawデータをDBから削除"
             read -p ">> " ADULT_CHOICE
 
             if [ "$ADULT_CHOICE" == "1" ]; then
-                run_django python manage.py import_t_duga
-                run_django python manage.py import_t_fanza
+                read -p "開始ページを入力 (デフォルト: 1): " START_PG
+                START_PG=${START_PG:-1}
+                read -p "取得ページ数を入力 (1P=100件 / デフォルト: 1): " PG_COUNT
+                PG_COUNT=${PG_COUNT:-1}
+
+                echo -e "\n${COLOR}📡 1. 生データのインポートを開始します...${RESET}"
+                run_django python manage.py import_t_duga --start_page "$START_PG" --pages "$PG_COUNT"
+                run_django python manage.py import_t_fanza --start_page "$START_PG" --pages "$PG_COUNT"
+                
+                echo -e "\n${COLOR}💎 2. 取得データを正規化(Normalize)中...${RESET}"
                 run_django python manage.py normalize_duga
                 run_django python manage.py normalize_fanza
+                echo -e "${COLOR}✅ 完了しました。${RESET}"
+
             elif [ "$ADULT_CHOICE" == "2" ]; then
                 run_django python manage.py reset_fanza_migration
             elif [ "$ADULT_CHOICE" == "3" ]; then
@@ -173,6 +189,18 @@ while true; do
                 echo -e "${COLOR}🔄 再正規化を開始します...${RESET}"
                 run_django python manage.py normalize_duga
                 run_django python manage.py normalize_fanza
+            elif [ "$ADULT_CHOICE" == "5" ]; then
+                echo -e "${RED}🗑️ 処理済みの生データを削除してよろしいですか？ (y/N)${RESET}"
+                read -p ">> " CLEAN_RAW_CONFIRM
+                if [[ "$CLEAN_RAW_CONFIRM" == "y" ]]; then
+                    run_django python manage.py shell <<EOF
+from api.models import RawApiData
+qs = RawApiData.objects.filter(migrated=True)
+count = qs.count()
+qs.delete()
+print(f"✅ {count} 件の処理済みデータを削除しました。")
+EOF
+                fi
             fi
             ;;
         3)
@@ -396,9 +424,7 @@ EOF
             run_django python manage.py analyze_adult $ID_ARG $LIMIT_ARG $FORCE_ARG $BRAND_ARG
             ;;
         21)
-            # --- 🚀 追加機能: FANZA API エクスプローラー ---
-            echo -e "\n${YELLOW}--- 🔍 FANZA API エクスプローラー (Explorer) ---${RESET}"
-            echo -e "APIリクエストをテストし、サンプルのJSONを取得・保存します。"
+            echo -e "\n${YELLOW}--- 🔍 FANZA API エクスプローラー ---${RESET}"
             run_django python manage.py fanza_explorer
             ;;
         8) exit 0 ;;

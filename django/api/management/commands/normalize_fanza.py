@@ -7,30 +7,32 @@ from django.db.models import Count, OuterRef, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone 
 
-# 関連モデル
+# 関連モデル：Author（著者）をインポートに追加
 from api.models import (
     RawApiData, AdultProduct, Genre, Actress, 
-    Director, Maker, Label, Series
+    Director, Maker, Label, Series, Author
 )
 
-# ユーティリティ
+# ユーティリティ：進化したParserとEntityManager
 from api.utils.adult.fanza_normalizer import normalize_fanza_data 
 from api.utils.adult.entity_manager import get_or_create_entity 
 
 logger = logging.getLogger('normalize_adult')
 
-ENTITY_MODELS = [Maker, Label, Director, Series, Genre, Actress]
+# 🚀 エンティティ管理リスト：Authorを統合
+ENTITY_MODELS = [Maker, Label, Director, Series, Genre, Actress, Author]
 ENTITY_RELATION_KEYS = {
     Maker: 'maker', 
     Label: 'label', 
     Director: 'director', 
     Series: 'series',
     Genre: 'genres', 
-    Actress: 'actresses'
+    Actress: 'actresses',
+    Author: 'authors' # 🆕 電子書籍・コミック用
 }
 
 class Command(BaseCommand):
-    help = 'RawApiDataをAdultProductへ正規化し、バッチ内重複を排除してUPSERTします。'
+    help = 'RawApiData(API/スクレイピング)をAdultProductへ統合正規化し、最高画質でUPSERTします。'
 
     def add_arguments(self, parser):
         parser.add_argument('--limit', type=int, help='処理件数制限')
@@ -38,16 +40,12 @@ class Command(BaseCommand):
         parser.add_argument('--re-run', action='store_true', help='migrated=Trueのデータも再処理する')
 
     def _optimize_url(self, url):
-        """DMM/FANZAのURLを最高画質へ置換"""
-        if not url:
-            return ""
-        if url.startswith('//'):
-            url = 'https:' + url
-            
-        if 'pics.dmm.com' in url or 'pics.dmm.co.jp' in url:
-            # ps.jpg / pt.jpg -> pl.jpg
+        """DMM/FANZAの画像URLを最高画質(Large)へ変換。電子書籍系ドメインもカバー"""
+        if not url: return ""
+        if url.startswith('//'): url = 'https:' + url
+        # 動画(pics.dmm.com)および電子書籍(ebook-assets)の画像置換に対応
+        if any(domain in url for domain in ['pics.dmm', 'ebook-assets']):
             url = re.sub(r'p[s|t]\.jpg', 'pl.jpg', url, flags=re.IGNORECASE)
-            # _s.jpg / _m.jpg -> _l.jpg
             url = re.sub(r'_[ms]\.jpg', '_l.jpg', url, flags=re.IGNORECASE)
         return url
 
@@ -56,7 +54,7 @@ class Command(BaseCommand):
         re_run = options.get('re_run', False)
         
         for source in sources:
-            self.stdout.write(self.style.NOTICE(f'\n--- {source} 正規化・高画質化フェーズ開始 ---'))
+            self.stdout.write(self.style.NOTICE(f'\n--- {source} 統合正規化・高画質化開始 ---'))
             
             filters = {'api_source': source}
             if not re_run:
@@ -68,131 +66,126 @@ class Command(BaseCommand):
 
             total = raw_qs.count()
             if total == 0:
-                self.stdout.write(self.style.WARNING(f"{source} の処理対象データはありません。"))
+                self.stdout.write(self.style.WARNING(f"{source} の未処理データはありません。"))
                 continue
 
             batch_size = 500
-            # 🚀 重複排除用辞書: product_id_uniqueをキーにして最新のデータで上書き保持する
+            # 🚀 バッチ内重複排除：product_id_uniqueをキーに最新データを保持
             batch_dict = {} 
             batch_relations = {}
             processed_raw_ids = []
 
             for raw_instance in raw_qs:
                 try:
-                    # fanza_normalizer から正規化データを受け取る
+                    # 🔥 心臓部：API/スクレイピング/読み放題を自動判別してパース
                     p_list, r_list = normalize_fanza_data(raw_instance)
                     if not p_list:
                         raw_instance.migrated = True
                         raw_instance.save(update_fields=['migrated'])
                         continue
 
-                    # 1つのRawデータから複数の商品が出る可能性はあるが、基本は1件目を処理
+                    # 1つのRawDataに対し1商品を原則として処理
                     p_data = p_list[0]
                     r_data = r_list[0]
                     unique_id = p_data['product_id_unique']
 
-                    # 🚀 画像URLリストの高画質化
+                    # 🖼️ 画像リストの高画質化
                     if 'image_url_list' in p_data and p_data['image_url_list']:
-                        optimized_urls = [self._optimize_url(u) for u in p_data['image_url_list']]
-                        # 重複排除と空要素の除去
-                        p_data['image_url_list'] = list(dict.fromkeys(filter(None, optimized_urls)))
+                        p_data['image_url_list'] = list(dict.fromkeys(
+                            filter(None, [self._optimize_url(u) for u in p_data['image_url_list']])
+                        ))
 
-                    # 🎥 動画データのプレビュー画像も高画質化
+                    # 🎥 動画プレビュー画像も高画質化
                     if isinstance(p_data.get('sample_movie_url'), dict):
                         preview = p_data['sample_movie_url'].get('preview_image')
                         if preview:
                             p_data['sample_movie_url']['preview_image'] = self._optimize_url(preview)
 
-                    p_data['api_source'] = source
+                    p_data['api_source'] = source.lower()
                     p_data['updated_at'] = timezone.now()
 
-                    # 🚀 バッチ内重複排除: 
-                    # 同じIDが来た場合、後から来た（恐らく新しい）RawApiDataの内容で辞書を更新
+                    # 同一バッチ内に同じIDがあれば、後から来たデータ（最新）で辞書を更新
                     batch_dict[unique_id] = p_data
                     batch_relations[unique_id] = r_data
                     processed_raw_ids.append(raw_instance.id)
 
-                    # バッチサイズに達したら書き込み
                     if len(batch_dict) >= batch_size:
                         self._process_batch(list(batch_dict.values()), batch_relations, processed_raw_ids, source)
                         batch_dict, batch_relations, processed_raw_ids = {}, {}, []
 
                 except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"Raw ID {raw_instance.id} 処理エラー: {e}"))
+                    self.stdout.write(self.style.ERROR(f"Raw ID {raw_instance.id} 解析不能: {e}"))
                     logger.exception(f"Error processing RawApiData {raw_instance.id}")
 
-            # 残りのバッチを処理
             if batch_dict:
                 self._process_batch(list(batch_dict.values()), batch_relations, processed_raw_ids, source)
 
-        # 全ソース完了後にカウント更新
         self._update_all_product_counts()
-        self.stdout.write(self.style.SUCCESS('\n✅ FANZA/DMM 全工程が完了しました'))
+        self.stdout.write(self.style.SUCCESS('\n✅ 全ての正規化・UPSERT工程が完了しました'))
 
     def _process_batch(self, products_data, relations_map, raw_ids, source):
-        """名前解決・UPSERT・M2M更新を一括実行"""
+        """マスター解決、統合UPSERT、M2M同期を一挙に実行"""
         
-        # 1. マスターデータの名前解決（Maker, Label, Actress等）
+        # 1. マスターデータの名前解決（Authorを含む全方位）
         all_names = {M: set() for M in ENTITY_MODELS}
         for p in products_data:
             for M in [Maker, Label, Director, Series]:
                 key = ENTITY_RELATION_KEYS[M]
-                val = p.get(key)
-                if val: all_names[M].add(val)
+                if val := p.get(key): all_names[M].add(val)
         
         for r in relations_map.values():
-            for M in [Genre, Actress]:
+            for M in [Genre, Actress, Author]: # 🆕 Authorを追加
                 key = ENTITY_RELATION_KEYS[M]
                 for name in r.get(key, []): 
                     if name: all_names[M].add(name)
 
-        # Entityを一括取得または作成し、名前からIDへのマップを作成
+        # Entityを一括生成・取得
         pk_maps = {M: get_or_create_entity(M, list(names), source) for M, names in all_names.items() if names}
 
-        # 2. FK（外部キー）の置換とモデルインスタンス化
+        # 2. 外部キー(FK)のID置換とインスタンス化
         upsert_list = []
         for p in products_data:
-            # 不要なキーを削除（モデルのフィールドに存在しないもの）
+            # モデルに存在しない一時的な作業キーを削除
             p.pop('image_url', None) 
             p.pop('raw_data_id', None)
             
-            # 各Entityの名前をIDに変換してセット
             for M in [Maker, Label, Director, Series]:
                 key = ENTITY_RELATION_KEYS[M]
                 name = p.pop(key, None)
                 p[f'{key}_id'] = pk_maps.get(M, {}).get(name) if name else None
             
-            # モデルインスタンスをリストに追加
             upsert_list.append(AdultProduct(**p))
 
-        # 3. データベースへの UPSERT 実行
-        if not upsert_list:
-            return
+        if not upsert_list: return
 
+        # 3. 🛡️ データベースへの 統合UPSERT 実行
+        # ここでAPIデータとスクレイピングデータの「融合」が起こります
         with transaction.atomic():
-            # unique_fields が衝突した際に update_fields を更新する
             AdultProduct.objects.bulk_create(
                 upsert_list,
                 update_conflicts=True,
                 unique_fields=['product_id_unique'],
                 update_fields=[
-                    'title', 'affiliate_url', 'image_url_list', 
-                    'sample_movie_url', 'price', 'release_date', 
-                    'maker_id', 'label_id', 'director_id', 'series_id', 'updated_at'
+                    'title', 'affiliate_url', 'image_url_list', 'sample_movie_url', 
+                    'price', 'release_date', 'maker_id', 'label_id', 'director_id', 
+                    'series_id', 'updated_at',
+                    # 🆕 強化フィールド：スクレイピングや読み放題固有のデータも確実に更新
+                    'rich_description', 'product_description', 'is_unlimited',
+                    'unlimited_channels', 'volume', 'maker_product_id', 'tachiyomi_url'
                 ]
             )
 
-            # M2M関係（ジャンル、女優）の同期
-            # データベース側の最新のIDマップを取得
+            # 4. M2M関係の同期（Genre, Actress, Author）
+            # UPSERT後の最新IDを取得
             db_map = {obj.product_id_unique: obj.id for obj in AdultProduct.objects.filter(
                 product_id_unique__in=[p.product_id_unique for p in upsert_list]
             )}
 
-            for M in [Genre, Actress]:
+            for M in [Genre, Actress, Author]: # 🆕 Authorを同期ループに追加
                 key = ENTITY_RELATION_KEYS[M]
                 through_model = getattr(AdultProduct, key).through
                 
-                # 一旦、このバッチ内の商品に紐づくM2Mを削除（リフレッシュ）
+                # 既存の紐付けを一旦リセット（最新のAPI/スクレイピング情報を正とするため）
                 through_model.objects.filter(adultproduct_id__in=db_map.values()).delete()
                 
                 rels = []
@@ -200,32 +193,30 @@ class Command(BaseCommand):
                     pid = db_map.get(unique_id)
                     m_map = pk_maps.get(M, {})
                     for name in r.get(key, []):
-                        eid = m_map.get(name)
-                        if pid and eid:
-                            kwargs = {'adultproduct_id': pid, f'{M.__name__.lower()}_id': eid}
-                            rels.append(through_model(**kwargs))
+                        if eid := m_map.get(name):
+                            rels.append(through_model(**{'adultproduct_id': pid, f'{M.__name__.lower()}_id': eid}))
                 
                 if rels:
                     through_model.objects.bulk_create(rels, ignore_conflicts=True)
 
-            # 処理済みRawApiDataのフラグ更新
+            # 元データの処理済みフラグを立てる
             RawApiData.objects.filter(id__in=raw_ids).update(migrated=True, updated_at=timezone.now())
 
     def _update_all_product_counts(self):
-        """マスターデータ（女優、メーカー等）の作品数カウントを一括更新"""
-        self.stdout.write("各マスターの作品数カウントを更新中...")
+        """Authorを含む全マスターの作品数カウントを高速一括更新"""
+        self.stdout.write("各エンティティの作品数カウントを更新中...")
         with transaction.atomic():
             MAPPING = [
-                (Actress, 'actresses'), (Genre, 'genres'),
+                (Actress, 'actresses'), (Genre, 'genres'), (Author, 'authors'), # 🆕 Author
                 (Maker, 'maker_id'), (Label, 'label_id'),
                 (Director, 'director_id'), (Series, 'series_id'),
             ]
             for Model, field in MAPPING:
                 if field.endswith('_id'):
-                    # FK（Maker等）の場合
+                    # FKパターンの集計
                     subq = AdultProduct.objects.filter(**{field: OuterRef('pk')}).values(field).annotate(c=Count('id')).values('c')[:1]
                 else:
-                    # M2M（Actress等）の場合
+                    # M2Mパターンの集計
                     through = getattr(AdultProduct, field).through
                     fk = f"{Model.__name__.lower()}_id"
                     subq = through.objects.filter(**{fk: OuterRef('pk')}).values(fk).annotate(c=Count('adultproduct_id')).values('c')[:1]

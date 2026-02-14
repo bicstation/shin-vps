@@ -11,195 +11,180 @@ from typing import List, Tuple, Dict, Any, Optional
 from api.models import RawApiData
 from api.utils.common import generate_product_unique_id 
 
-# ロガー設定
 logger = logging.getLogger('api_utils')
 
+# --- 共通ユーティリティ ---
+
 def _safe_extract_single_entity(item_info_content: dict, key: str) -> tuple[Optional[str], Optional[str]]:
-    """
-    FANZA/DMMのデータ構造に合わせて、単一のエンティティ（メーカー、レーベル等）を抽出
-    """
+    """単一エンティティ（メーカー等）の抽出。電子書籍特有のキーにも対応"""
     data = item_info_content.get(key)
-    if not data:
-        return None, None
-    
+    if not data: return None, None
     if isinstance(data, list):
-        if not data:
-            return None, None
+        if not data: return None, None
         data = data[0]
-    
     if isinstance(data, dict):
         return data.get('name'), data.get('id')
-    elif isinstance(data, str):
-        return data, None
-    return None, None
+    return (data if isinstance(data, str) else None), None
 
 def _optimize_fanza_url(url: Optional[str]) -> str:
-    """
-    DMM/FANZAの画像URLを正規表現で最高画質(Large)に変換
-    """
-    if not url:
-        return ""
-    
-    # プロトコル補完
-    if url.startswith('//'):
-        url = 'https:' + url
-
-    # DMMサーバーの画像であれば置換ロジックを適用
-    if 'pics.dmm.com' in url or 'pics.dmm.co.jp' in url:
-        # パターンA: ps.jpg / pt.jpg (Small/Thumb) -> pl.jpg (Large)
+    """FANZA/DMM/電子書籍の画像URLを正規表現で最高画質に置換"""
+    if not url: return ""
+    if url.startswith('//'): url = 'https:' + url
+    if any(d in url for d in ['pics.dmm', 'ebook-assets']):
         url = re.sub(r'p[s|t]\.jpg', 'pl.jpg', url, flags=re.IGNORECASE)
-        # パターンB: _s.jpg / _m.jpg (Small/Medium) -> _l.jpg (Large)
         url = re.sub(r'_[ms]\.jpg', '_l.jpg', url, flags=re.IGNORECASE)
-        
     return url
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    """ハイフン、カンマ、記号を含む文字列を安全に数値変換する"""
+    if value is None:
+        return default
+    # 数字以外をすべて除去（ハイフン '-' や カンマ ',' も除去される）
+    clean_val = re.sub(r'[^0-9]', '', str(value))
+    if not clean_val:
+        return default
+    try:
+        return int(clean_val)
+    except (ValueError, TypeError):
+        return default
+
+# --- 🚀 最強の心臓部（メイン関数） ---
 
 def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    RawApiData のレコードを正規化。動画データヒット率を最大化し、JSON形式で集約します。
+    公式API・読み放題API・詳細スクレイピングJSONを自動判別して正規化します。
     """
-    products_data_list = []
-    relations_list = []
-    
-    actual_source = getattr(raw_instance, 'api_source', 'FANZA')
-    
+    actual_source = getattr(raw_instance, 'api_source', 'FANZA').upper()
     try:
         raw_data = getattr(raw_instance, 'raw_json_data', None)
-        if raw_data is None:
-            return [], []
-
-        if isinstance(raw_data, dict):
-            raw_json_data = raw_data
-        elif isinstance(raw_data, str):
-            raw_json_data = json.loads(raw_data)
-        else:
-            return [], []
+        if not raw_data: return [], []
+        raw_json_data = json.loads(raw_data) if isinstance(raw_data, str) else raw_data
+        
+        # 1. スクレイピングデータ (__NEXT_DATA__) の判定
+        if 'props' in raw_json_data and 'pageProps' in raw_json_data['props']:
+            return _parse_scraping_flow(raw_json_data, actual_source)
             
+        # 2. 公式API / 読み放題API (result.items) の判定
         items = raw_json_data.get('result', {}).get('items', [])
+        if items:
+            return _parse_api_flow(items, raw_json_data, actual_source)
+            
     except Exception as e:
-        logger.error(f"RawApiData ID {raw_instance.id} のデコードエラー: '{e}'")
-        return [], []
+        logger.error(f"RawApiData ID {raw_instance.id} 解析致命的エラー: {e}")
+    
+    return [], []
 
-    if not items:
-        return [], []
+# --- 🛰️ A: スクレイピング(NextData)パース用 ---
+
+def _parse_scraping_flow(json_data: dict, source: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    try:
+        queries = json_data.get('props', {}).get('pageProps', {}).get('dehydratedState', {}).get('queries', [])
+        c = queries[0].get('state', {}).get('data', {}).get('videoContent', {})
+    except (IndexError, KeyError): return [], []
+    if not c: return [], []
+
+    cid = c.get('cid')
+    img_l = _optimize_fanza_url(c.get('imgSrcLarge'))
+    
+    product = {
+        'api_source': source.lower(),
+        'api_product_id': cid,
+        'product_id_unique': generate_product_unique_id(source, cid),
+        'title': c.get('title'),
+        'floor_code': 'videoa',
+        'rich_description': c.get('text'), # 濃厚なあらすじ
+        'release_date': parse_date(c.get('releaseDate').replace('/', '-')) if c.get('releaseDate') else None,
+        'image_url_list': [img_l] if img_l else [],
+        'sample_movie_url': {
+            'url': c.get('sampleMovieSrc'),
+            'preview_image': img_l,
+            'iframe_url': f"https://www.dmm.co.jp/litevideo/-/part/=/cid={cid}/size=720_480/"
+        } if c.get('sampleMovieSrc') else None,
+        'volume': _safe_int(c.get('runtime')),
+        'maker': c.get('makerName'),
+        'label': c.get('labelName'),
+        'series': c.get('seriesName'),
+        'director': c.get('directorName'),
+        'updated_at': timezone.now(),
+        'is_active': True,
+    }
+    rel = {
+        'api_product_id': cid,
+        'genres': [g.get('name') for g in c.get('genres', [])],
+        'actresses': [a.get('name') for a in c.get('actresses', [])],
+        'authors': [],
+    }
+    return [product], [rel]
+
+# --- 🛰️ B: 公式API & 読み放題パース用 ---
+
+def _parse_api_flow(items: list, raw_json: dict, source: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    p_list, r_list = [], []
+    req_params = raw_json.get('request', {}).get('parameters', {})
+    is_unlimited_req = (req_params.get('service') == 'unlimited_book')
 
     for data in items:
-        api_product_id = data.get('content_id')
-        title = data.get('title')
-        
-        if not api_product_id or not title:
-            continue
-
+        cid = data.get('content_id')
+        if not cid: continue
         item_info = data.get('iteminfo', {})
         
-        # 1. エンティティ抽出
-        maker_name, _ = _safe_extract_single_entity(item_info, 'maker')
-        label_name, _ = _safe_extract_single_entity(item_info, 'label')
-        series_name, _ = _safe_extract_single_entity(item_info, 'series')
-        director_name, _ = _safe_extract_single_entity(item_info, 'director')
+        # 特殊エンティティ救出
+        maker_n, _ = _safe_extract_single_entity(item_info, 'maker')
+        if not maker_n: maker_n, _ = _safe_extract_single_entity(item_info, 'manufacture')
         
-        # 2. ジャンル・女優
-        genre_names = [g.get('name') for g in item_info.get('genre', []) if g.get('name')]
-        actress_names = [a.get('name') for a in item_info.get('actress', []) if a.get('name')]
+        # 読み放題フラグ
+        is_unl = is_unlimited_req or '読み放題' in (data.get('service_name') or '')
+
+        # 動画URL最大化
+        movie_data = None
+        m_raw = data.get('sampleMovieURL')
+        if m_raw:
+            target = m_raw[0] if isinstance(m_raw, list) else m_raw
+            if isinstance(target, dict):
+                size_keys = sorted([k for k in target.keys() if k.startswith('size_')], reverse=True)
+                path = next((target.get(sk) for sk in size_keys if target.get(sk)), "")
+                if path:
+                    movie_data = {
+                        'url': 'https:' + path if path.startswith('//') else path,
+                        'preview_image': _optimize_fanza_url(target.get('pc_flag_images', {}).get('image', [None])[0]),
+                        'iframe_url': f"https://www.dmm.co.jp/litevideo/-/part/=/cid={cid}/size=720_480/"
+                    }
+
+        # 画像リスト
+        imgs = []
+        for k in ['large', 'list', 'small']:
+            u = _optimize_fanza_url(data.get('imageURL', {}).get(k))
+            if u and u not in imgs: imgs.append(u)
         
-        # 3. 画像URLリスト（高画質化）
-        image_url_list = []
-        image_data = data.get('imageURL', {})
-        sample_image_dict = data.get('sampleImageURL', {})
-
-        for key in ['large', 'list', 'small']:
-            u = _optimize_fanza_url(image_data.get(key))
-            if u and u not in image_url_list:
-                image_url_list.append(u)
-
-        sample_l_images = sample_image_dict.get('sample_l', {}).get('image', [])
-        if isinstance(sample_l_images, list):
-            for img in sample_l_images:
-                u = _optimize_fanza_url(img)
-                if u and u not in image_url_list:
-                    image_url_list.append(u)
-
-        # 4. サンプル動画データ (ヒット率最大化ロジック)
-        movie_urls_raw = data.get('sampleMovieURL')
-        movie_json_data = None
-        sample_movie_path = ""
-        raw_preview = ""
-
-        if movie_urls_raw:
-            # リスト形式で返ってきた場合の補正 ([{...}] -> {...})
-            target_movie_dict = movie_urls_raw[0] if isinstance(movie_urls_raw, list) and movie_urls_raw else movie_urls_raw
-            
-            if isinstance(target_movie_dict, dict):
-                # A. size_xxxx 系のキーを解像度の高い順に自動走査
-                size_keys = sorted([k for k in target_movie_dict.keys() if k.startswith('size_')], reverse=True)
-                for sk in size_keys:
-                    val = target_movie_dict.get(sk)
-                    if val:
-                        sample_movie_path = val
-                        break
-                
-                # B. size_ 形式のキーがない場合、値がURLっぽいものを全走査して救出
-                if not sample_movie_path:
-                    for val in target_movie_dict.values():
-                        if isinstance(val, str) and (val.startswith('http') or val.startswith('//')):
-                            sample_movie_path = val
-                            break
-
-                # C. プレビュー画像の抽出
-                preview_images = target_movie_dict.get('pc_flag_images', {}).get('image', [])
-                if isinstance(preview_images, list) and preview_images:
-                    raw_preview = preview_images[0]
-                elif isinstance(preview_images, str):
-                    raw_preview = preview_images
-
-        # URLがヒットした場合のみ、構造化されたJSONオブジェクトを生成
-        if sample_movie_path:
-            if sample_movie_path.startswith('//'):
-                sample_movie_path = 'https:' + sample_movie_path
-            
-            movie_json_data = {
-                'url': sample_movie_path,
-                'preview_image': _optimize_fanza_url(raw_preview) if raw_preview else ""
-            }
-
-        # 5. 価格
-        price_val = None
-        price_raw = data.get('prices', {}).get('price')
-        if price_raw:
-            try:
-                price_clean = str(price_raw).replace('~', '').replace(',', '').strip()
-                if price_clean.isdigit():
-                    price_val = int(price_clean)
-            except:
-                price_val = None
-        
-        # 6. 集約
-        product_id_unique = generate_product_unique_id(actual_source, str(api_product_id))
-        
-        product_data = {
-            'api_source': actual_source,
-            'api_product_id': str(api_product_id),
-            'product_id_unique': product_id_unique,
-            'title': title,
+        p_list.append({
+            'api_source': source.lower(),
+            'api_product_id': str(cid),
+            'product_id_unique': generate_product_unique_id(source, str(cid)),
+            'title': data.get('title'),
+            'floor_code': req_params.get('floor') or data.get('floor_code', 'videoa'),
+            'product_description': data.get('description'),
             'release_date': parse_date(data.get('date').split(' ')[0]) if data.get('date') else None,
-            'affiliate_url': data.get('affiliateURL') or "", 
-            'price': price_val,
-            'image_url_list': image_url_list,
-            # ここがポイント: 確実に辞書かNoneが入るようにする
-            'sample_movie_url': movie_json_data, 
-            'maker': maker_name,
-            'label': label_name,
-            'series': series_name,
-            'director': director_name,
+            'affiliate_url': data.get('affiliateURL') or "",
+            # 修正ポイント: どんな記号が来ても数字だけを抽出
+            'price': _safe_int(data.get('prices', {}).get('price')),
+            'is_unlimited': is_unl,
+            'unlimited_channels': [data.get('service_name')] if is_unl else [],
+            'volume': _safe_int(data.get('volume')),
+            'maker_product_id': data.get('stock_number'),
+            'image_url_list': imgs,
+            'sample_movie_url': movie_data,
+            'tachiyomi_url': data.get('URL') if is_unl else None,
+            'maker': maker_n,
+            'label': _safe_extract_single_entity(item_info, 'label')[0],
+            'series': _safe_extract_single_entity(item_info, 'series')[0],
+            'director': _safe_extract_single_entity(item_info, 'director')[0],
             'updated_at': timezone.now(),
             'is_active': True,
-            'is_posted': False,
-        }
-        
-        products_data_list.append(product_data)
-        relations_list.append({
-            'api_product_id': str(api_product_id),
-            'genres': genre_names,
-            'actresses': actress_names,
         })
-
-    return products_data_list, relations_list
+        r_list.append({
+            'api_product_id': str(cid),
+            'genres': [g.get('name') for g in item_info.get('genre', []) if g.get('name')],
+            'actresses': [a.get('name') for a in item_info.get('actress', []) if a.get('name')],
+            'authors': [a.get('name') for a in item_info.get('author', []) if a.get('name')],
+        })
+    return p_list, r_list

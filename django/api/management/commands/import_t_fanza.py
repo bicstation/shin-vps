@@ -10,60 +10,68 @@ from api.utils.raw_data_manager import bulk_insert_or_update
 logger = logging.getLogger('adult.fetch_fanza')
 
 class Command(BaseCommand):
-    help = 'DMM/FANZA APIから動的に全フロアを最新順に巡回し、RawApiDataに保存します。ページ指定が可能です。'
+    help = 'DMM/FANZA APIから全フロアを巡回し、指定ページ数（最大500P）を構造維持したまま保存します。'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--start_page',
             type=int,
             default=1,
-            help='取得を開始するページ番号 (1ページ100件計算)。',
+            help='取得を開始するページ番号（1〜500）',
         )
         parser.add_argument(
             '--pages',
             type=int,
-            default=1,
-            help='開始ページから何ページ分取得するか。',
+            default=5, # デフォルトで5ページ（500件）分くらいは回すように設定
+            help='各フロアで何ページ分取得するか（1ページ100件）',
+        )
+        parser.add_argument(
+            '--floor_limit',
+            type=int,
+            default=None,
+            help='巡回するフロア数に上限を設ける場合に使用（テスト用）',
         )
 
     def handle(self, *args, **options):
         client = FanzaAPIClient()
         start_page = options['start_page']
         limit_pages = options['pages']
-        hits_per_page = 100  # API効率を最大化するため100固定
+        hits_per_page = 100 
 
-        self.stdout.write(self.style.SUCCESS(f"📡 設定: {start_page}ページ目から{limit_pages}ページ分を取得 (1ページ100件)"))
+        self.stdout.write(self.style.SUCCESS(f"📡 起動: {start_page}ページ目から {limit_pages}ページ分を各フロアで取得します"))
         
         try:
-            # get_dynamic_menu() で DMM/FANZA の全フロアを取得
+            # 全フロアの動的メニュー（サービス・フロアのリスト）を取得
             menu_list = client.get_dynamic_menu()
+            if options['floor_limit']:
+                menu_list = menu_list[:options['floor_limit']]
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"メニュー取得失敗: {e}"))
             return
 
-        self.stdout.write(f"合計 {len(menu_list)} 個のフロアが見つかりました。巡回を開始します。\n")
+        self.stdout.write(f"合計 {len(menu_list)} 個のフロアを巡回対象に設定しました。\n")
 
         total_saved_all = 0
 
         for target in menu_list:
-            site_label = target['site_name']
             service = target['service']
             floor = target['floor']
-            label = target['label']
+            site_label = 'FANZA' if 'FANZA' in target['site_name'] else 'DMM'
             
-            self.stdout.write(self.style.MIGRATE_LABEL(f">> 巡回中: [{site_label}] {label} ({service}/{floor})"))
+            self.stdout.write(self.style.MIGRATE_LABEL(f"\n>> ターゲット開始: [{site_label}] {target['label']}"))
             
-            # 開始ページから初期 offset を計算 (例: 1ページ目=1, 2ページ目=101)
-            current_offset = ((start_page - 1) * hits_per_page) + 1
-            
+            # 各フロアごとに offset を計算してループ
             for p in range(limit_pages):
-                # API仕様上の最大 offset 50,000 を超える場合は終了
+                current_page = start_page + p
+                current_offset = ((current_page - 1) * hits_per_page) + 1
+                
+                # APIの物理限界 50,000件（500ページ相当）を超えたら強制終了
                 if current_offset > 50000:
-                    self.stdout.write(self.style.WARNING(f"   - offsetが上限(50,000)に達したため、このフロアを終了します。"))
+                    self.stdout.write(self.style.WARNING(f"   - Offset上限(50,000)に達したため {target['label']} を切り上げます。"))
                     break
 
                 try:
-                    # 💡 リクエストURLには API仕様通り 'DMM.com' (target['site']) が入ります
+                    # 💡 構造（タグ情報含む全体）を維持して取得
                     data = client.fetch_item_list(
                         site=target['site'],
                         service=service,
@@ -77,37 +85,35 @@ class Command(BaseCommand):
                     items = result.get('items', [])
                     
                     if not items:
-                        self.stdout.write(f"   - {start_page + p}ページ目: データが見つかりません。")
+                        self.stdout.write(f"   - {current_page}ページ目: データ空のため終了。")
                         break
 
-                    # 💡 DB保存用のソース名は 分かりやすく 'DMM' に正規化
-                    source_name = 'FANZA' if 'FANZA' in target['site_name'] else 'DMM'
+                    # 💡 重複判定用のIDを「場所」と「時間」で一意にする
+                    # これにより、あとで「いつの時点のどのページか」を特定して解析できる
+                    unique_batch_id = f"{floor}-{current_offset}-{int(timezone.now().timestamp())}"
 
                     raw_data_batch = [{
-                        'api_source': source_name,
-                        'api_product_id': f"{floor}-{current_offset}-{int(timezone.now().timestamp())}",
-                        'raw_json_data': json.dumps(data, ensure_ascii=False),
+                        'api_source': site_label,
+                        'api_product_id': unique_batch_id,
+                        'raw_json_data': json.dumps(data, ensure_ascii=False), # 丸ごと保存（タグを死守）
                         'api_service': service,
                         'api_floor': floor,
                         'migrated': False,
                         'updated_at': timezone.now(),
-                        'created_at': timezone.now(),
                     }]
 
+                    # 生データ保存実行
                     bulk_insert_or_update(batch=raw_data_batch)
                     
                     saved_count = len(items)
                     total_saved_all += saved_count
-                    self.stdout.write(f"   - {start_page + p}ページ目: {saved_count}件取得 (offset: {current_offset})")
+                    self.stdout.write(f"   - {current_page}ページ目: {saved_count}件取得保存完了")
 
-                    # 次のページの offset へ進める
-                    current_offset += hits_per_page
-                    
-                    # API負荷軽減のための待機
-                    time.sleep(1.2)
+                    # インターバル（BAN対策）
+                    time.sleep(1.5)
 
                 except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"   - エラー: {e}"))
-                    break
+                    self.stdout.write(self.style.ERROR(f"   - {current_page}ページ目でエラー発生: {e}"))
+                    continue # エラーが起きても次のページ/フロアへ
 
-        self.stdout.write(self.style.SUCCESS(f"\n✅ 巡回完了！ 合計 {total_saved_all} 件の生データを保存しました。"))
+        self.stdout.write(self.style.SUCCESS(f"\n✅ 全フロア巡回完了！ 合計 {total_saved_all} 件のデータを構造を保ったまま格納しました。"))

@@ -1,7 +1,10 @@
 /* ==============================================================================
- * 🌌 TIPER Product Detail - Absolute Ultimate Matrix Styling (V7.0)
+ * 🌌 TIPER Product Detail - Absolute Ultimate Matrix Styling (V9.9_Final)
+ * ==============================================================================
  * [NO_OMISSION] + [MAX_CYBER_DENSITY] + [FULL_GLITCH_ENABLED]
- * ============================================================================== */
+ * 🚀 ADDED: Neural Dialogue, Deep Analysis, and Volatility Graph Support.
+ * ------------------------------------------------------------------------------
+ */
 
  .wrapper {
     /* 🛠️ 変数定義：アーキテクチャの根幹 */
@@ -198,7 +201,7 @@
     box-shadow: 10px 0 30px rgba(233, 69, 96, 0.4);
   }
   
-  /* --- 📊 AI Summary Card --- */
+  /* --- 📊 AI Summary Card & Reports --- */
   .aiSummaryCard {
     padding: 4rem;
     background: var(--bg-card);
@@ -249,6 +252,23 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
+
+  /* --- 🧬 Neural Dialogue & Logs --- */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--primary-red);
+    border-radius: 10px;
+  }
+
+  /* --- 📈 Volatility Bars --- */
+  .volatilityBar {
+    transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
   
   /* --- 📝 Typography & Core Info --- */
   .gridContent {
@@ -283,7 +303,7 @@
     margin-bottom: 2rem;
   }
   
-  /* --- 📈 Stats Card --- */
+  /* --- 📈 Stats Card & Performance Matrix --- */
   .statsCard {
     background: rgba(5, 5, 15, 0.95);
     padding: 4rem;
@@ -297,6 +317,23 @@
     position: absolute; top: 1rem; right: 1.5rem;
     font-size: 8px; color: var(--primary-red);
     letter-spacing: 0.3em; font-weight: 900;
+  }
+
+  .statRow {
+    margin-bottom: 2rem;
+  }
+
+  .statBarContainer {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .statBarFill {
+    height: 100%;
+    transition: width 1.5s ease-out;
   }
   
   /* --- 📋 Spec Table --- */
@@ -413,7 +450,47 @@
     letter-spacing: 0.5em; position: absolute; top: -2.5rem; left: 0;
     font-style: normal;
   }
-  
+
+  /* --- 🛰️ System Diagnostic Extra Styling --- */
+  .notFound {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(233, 69, 96, 0.05) 0%, transparent 70%);
+  }
+
+  /* 404 Glitch Effect */
+  .glitchText {
+    position: relative;
+    animation: glitch 1s linear infinite;
+  }
+
+  @keyframes glitch {
+    2%, 64% { transform: translate(2px,0) skew(0deg); }
+    4%, 60% { transform: translate(-2px,0) skew(0deg); }
+    62% { transform: translate(0,0) skew(5deg); }
+  }
+
+  /* 🆕 AI Neural Expansion (V9.5) */
+  .aiNeuralContainer {
+    border-top: 1px solid var(--border-glass);
+    padding-top: 4rem;
+    margin-top: 4rem;
+  }
+
+  .dropCap::first-letter {
+    float: left;
+    font-size: 4rem;
+    line-height: 0.8;
+    padding-top: 4px;
+    padding-right: 8px;
+    color: var(--primary-red);
+    font-weight: 1000;
+    font-style: italic;
+    text-shadow: 4px 4px 0px rgba(0,0,0,1);
+  }
+
   /* 📱 Responsive Adjustments */
   @media (max-width: 768px) {
     .mainContainer { padding: 2rem 5%; }
@@ -421,4 +498,10 @@
     .aiSummaryCard { padding: 2rem; }
     .visualHeroSection { margin-bottom: 4rem; }
     .gridContent { gap: 3rem; margin-top: 2rem; }
+    .statsCard { padding: 2rem; }
+    .jacketLabel { padding: 8px 15px; font-size: 8px; }
   }
+
+  /* ==============================================================================
+   * 🌌 EOF: Absolute Ultimate Matrix Styling
+   * ============================================================================== */

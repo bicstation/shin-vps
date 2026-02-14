@@ -96,17 +96,18 @@ class AdultProductAdmin(BaseProductAdmin):
         'is_posted_tag', 'api_source_tag', 'release_date'
     )
     list_display_links = ('display_image', 'product_id_unique', 'title_short')
-    list_filter = ('api_source', 'is_active', 'is_posted', 'maker', 'author', 'attributes')
-    search_fields = ('title', 'product_id_unique', 'actresses__name', 'maker__name', 'author__name')
+    
+    list_filter = ('api_source', 'is_active', 'is_posted', 'maker', 'authors', 'attributes')
+    search_fields = ('title', 'product_id_unique', 'actresses__name', 'maker__name', 'authors__name')
     ordering = ('-release_date',)
     
-    filter_horizontal = ('genres', 'actresses', 'attributes')
+    filter_horizontal = ('genres', 'actresses', 'authors', 'attributes')
     
     fieldsets = (
         ('基本情報', {'fields': ('product_id_unique', 'title', 'api_source', 'affiliate_url', 'price', 'release_date')}),
         ('メディア', {'fields': ('image_url_list', 'sample_movie_url')}),
         ('AI解析', {'fields': ('ai_summary', 'ai_content', 'target_segment', 'spec_score')}),
-        ('リレーション', {'fields': ('maker', 'label', 'author', 'director', 'series', 'actresses', 'genres', 'attributes')}),
+        ('リレーション', {'fields': ('maker', 'label', 'authors', 'director', 'series', 'actresses', 'genres', 'attributes')}),
         ('ステータス', {'fields': ('is_active', 'is_posted')}),
     )
 
@@ -115,12 +116,20 @@ class AdultProductAdmin(BaseProductAdmin):
     title_short.short_description = "タイトル"
 
     def author_tag(self, obj):
-        return obj.author.name if obj.author else "---"
+        authors = obj.authors.all()
+        return ", ".join([a.name for a in authors]) if authors.exists() else "---"
     author_tag.short_description = "著者/作者"
 
     def display_image(self, obj):
-        if obj.image_url_list and len(obj.image_url_list) > 0:
-            return mark_safe(f'<img src="{obj.image_url_list[0]}" width="85" style="border-radius:4px;" referrerpolicy="no-referrer" />')
+        # image_url_list がリスト形式または辞書形式（JSON）いずれでも対応できるようにガード
+        url = None
+        if isinstance(obj.image_url_list, list) and len(obj.image_url_list) > 0:
+            url = obj.image_url_list[0]
+        elif isinstance(obj.image_url_list, dict):
+            url = obj.image_url_list.get('list') or obj.image_url_list.get('small')
+
+        if url:
+            return mark_safe(f'<img src="{url}" width="85" style="border-radius:4px;" referrerpolicy="no-referrer" />')
         return "No Image"
 
     def api_source_tag(self, obj):
@@ -179,7 +188,7 @@ class PCProductAdmin(admin.ModelAdmin):
     list_filter = ('stock_status', 'maker')
 
 # --------------------------------------------------------------------------
-# 6. マスターデータ (著者対応)
+# 6. マスターデータ (動的リレーション対応)
 # --------------------------------------------------------------------------
 @admin.register(Genre, Actress, Maker, Author, Label, Director, Series)
 class AllMasterAdmin(admin.ModelAdmin):
@@ -189,9 +198,23 @@ class AllMasterAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if 'author' in str(self.model).lower():
-            return qs.annotate(_product_count=Count('adult_products_authored', distinct=True))
-        return qs.annotate(_product_count=Count('adult_products', distinct=True))
+        model_name = self.model.__name__
+        
+        # モデルごとの AdultProduct への正しい逆参照名 (related_name) マッピング
+        relation_map = {
+            'Series': 'products_in_series',
+            'Maker': 'products_made',
+            'Label': 'products_labeled',
+            'Director': 'products_directed',
+            'Author': 'products_authored',
+            'Genre': 'products',      # models.py で related_name='products'
+            'Actress': 'products',    # models.py で related_name='products'
+        }
+        
+        # マップにある名前を使用し、なければデフォルトを試みる
+        target_field = relation_map.get(model_name, 'adult_products')
+        
+        return qs.annotate(_product_count=Count(target_field, distinct=True))
 
     def api_source_badge(self, obj):
         source = obj.api_source or "COMMON"
@@ -215,13 +238,10 @@ class AdultAttributeAdmin(admin.ModelAdmin):
 @admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'api_service', 'migrated', 'created_at')
-    
-    # 💡 解決策: 直接フィールド名を指定せず、メソッド経由で表示することで E035 を回避
     readonly_fields = ('display_raw_data', 'created_at')
 
     def display_raw_data(self, obj):
         """モデル内のJSONデータを安全にフォーマット表示"""
-        # data または raw_json フィールドから値を取得
         val = getattr(obj, 'data', None) or getattr(obj, 'raw_json', None) or {}
         formatted = json.dumps(val, indent=2, ensure_ascii=False)
         return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:5px; max-height:500px; overflow:auto;">{formatted}</pre>')
