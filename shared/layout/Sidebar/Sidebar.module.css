@@ -1,101 +1,351 @@
+/* ==============================================================================
+ * 📂 Sidebar.module.css - Advanced Tactical Registry Interface
+ * ============================================================================== */
+
+/* --- 🛰️ SIDEBAR_CORE --- */
 .sidebar {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 1rem;
+  gap: 0.75rem;
+  background: rgba(10, 10, 12, 0.98);
+  padding: 1.25rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  /* 高さを十分に確保し、内部スクロールを可能に */
+  height: calc(100vh - 100px); 
+  min-height: 800px;
+  position: sticky;
+  top: 80px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(233, 69, 96, 0.3) transparent;
+  font-family: 'JetBrains Mono', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* カスタムスクロールバー (WebKit用) */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(233, 69, 96, 0.2);
+  border-radius: 2px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(233, 69, 96, 0.5);
+}
+
+/* --- 🧊 SECTION_LAYOUT --- */
 .sectionWrapper {
   margin-bottom: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.01);
+  transition: border-color 0.3s ease;
 }
 
-.sectionTitle {
+.sectionWrapper:hover {
+  border-color: rgba(233, 69, 96, 0.2);
+}
+
+.sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.sectionHeader:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.headerTitle {
   font-size: 0.75rem;
   font-weight: 900;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.15em;
   color: #888;
-  transition: all 0.2s ease;
-}
-
-.sectionTitle:hover {
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
-}
-
-.accordionContent {
-  list-style: none;
-  padding: 0.5rem 0 0.5rem 0.5rem;
   margin: 0;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.link {
+.icon {
+  font-size: 1rem;
+  filter: grayscale(1);
+  transition: 0.3s;
+}
+
+.sectionHeader:hover .headerTitle {
+  color: #e94560;
+}
+
+.sectionHeader:hover .icon {
+  filter: grayscale(0) drop-shadow(0 0 5px rgba(233, 69, 96, 0.5));
+}
+
+.arrow {
+  font-size: 8px;
+  color: #444;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.sectionHeader:hover .arrow {
+  color: #e94560;
+}
+
+/* --- 📡 PLATFORM_MATRIX --- */
+.platformGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.platBtn {
+  padding: 12px 4px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 900;
+  background: #161618;
+  border: 1px solid #2a2a2e;
+  color: #666;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.platBtn:hover {
+  border-color: #e94560;
+  color: #aaa;
+  background: rgba(233, 69, 96, 0.05);
+}
+
+.platBtn.active {
+  background: #e94560;
+  color: #fff;
+  border-color: #e94560;
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
+}
+
+/* --- 🎯 MASTER_LIST (TOP 10 厳選表示エリア) --- */
+.masterList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.masterLink {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.4rem 0.75rem;
+  padding: 0.75rem 1.25rem;
   font-size: 0.8rem;
-  color: #aaa;
+  color: #999;
   text-decoration: none;
-  transition: 0.2s;
+  transition: all 0.25s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
 }
 
-.link:hover {
+.masterLink:hover {
   color: #fff;
-  transform: translateX(5px);
+  background: rgba(233, 69, 96, 0.08);
+  padding-left: 1.5rem;
+  box-shadow: inset 2px 0 0 #e94560;
 }
 
-.badge {
-  font-family: monospace;
+.itemName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 10px;
+  flex: 1;
+}
+
+.itemCount {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
   color: #e94560;
-  background: rgba(233, 69, 96, 0.1);
-  padding: 0 4px;
+  background: rgba(233, 69, 96, 0.12);
+  padding: 2px 8px;
+  border-radius: 4px;
+  min-width: 45px;
+  text-align: right;
+  border: 1px solid rgba(233, 69, 96, 0.1);
 }
 
-/* アダルト用: 五十音エリア */
-.scrollArea {
-  max-height: 400px;
-  overflow-y: auto;
-  padding-right: 5px;
+.fullLink {
+  display: block;
+  padding: 12px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 900;
+  color: #555;
+  text-decoration: none;
+  letter-spacing: 0.2em;
+  background: rgba(0,0,0,0.2);
+  transition: 0.3s;
 }
 
-.detailsGroup {
-  margin-bottom: 0.25rem;
+.fullLink:hover {
+  color: #fff;
+  background: #e94560;
 }
 
-.subCategoryLabel {
-  list-style: none;
-  padding: 0.4rem;
+/* --- 📊 ANALYSIS_VISUALS --- */
+.analysisContainer {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.distRow {
+  margin-bottom: 15px;
+}
+
+.distInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin-bottom: 6px;
+  color: #999;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.barContainer {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, #e94560, #ff0055);
+  box-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- 📄 LOGS_STREAM (RECENT REPORTS) --- */
+.logContainer {
+  padding: 8px 0;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.logItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 1.25rem;
   font-size: 0.75rem;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.02);
+  color: #777;
+  text-decoration: none;
+  transition: 0.2s;
+  border-left: 2px solid #222;
+  margin-bottom: 2px;
 }
 
-/* システムステータス */
-.systemStatus {
-  margin-top: 1rem;
-  padding: 1rem;
+.logIndicator {
+  font-size: 8px;
+  color: #e94560;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
+.logTitle {
+  line-height: 1.4;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.logItem:hover {
+  color: #fff;
+  border-left-color: #e94560;
+  background: rgba(233, 69, 96, 0.05);
+}
+
+.emptyStatus {
+  padding: 30px 20px;
+  font-size: 10px;
+  color: #444;
+  text-align: center;
+  letter-spacing: 0.1em;
+}
+
+/* --- ⚙️ SYSTEM_FOOTER --- */
+.systemFooter {
+  margin-top: auto;
+  padding: 1.5rem 0.5rem 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
 }
 
-.statusLine {
+.statusRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.blinkContainer {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 10px;
-  color: #555;
+  gap: 8px;
 }
 
-.statusDot {
+.blinkDot {
   width: 6px;
   height: 6px;
+  background: #00ffaa;
   border-radius: 50%;
+  box-shadow: 0 0 10px #00ffaa;
+  animation: pulse-blink 2s infinite;
+}
+
+.statusLabel {
+  font-size: 10px;
+  font-weight: 900;
+  color: #00ffaa;
+  letter-spacing: 0.05em;
+}
+
+.timestamp {
+  font-size: 9px;
+  color: #444;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.sysMeta {
+  font-size: 8px;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+@keyframes pulse-blink {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* --- 📱 MOBILE_ADAPTATION --- */
+@media (max-width: 1100px) {
+  .sidebar {
+    height: auto;
+    min-height: 0;
+    position: relative;
+    top: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
 }

@@ -1,0 +1,219 @@
+/* --- 🎨 THEME_PROTOCOL (テーマカラー定義) --- */
+
+/* デフォルト（FANZA） */
+.pageWrapper { 
+  --accent: #e94560; 
+  --accent-glow: rgba(233, 69, 96, 0.15);
+  background-color: #050b0a;
+  color: #e0e0e5;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* DMMテーマ */
+.pageWrapper[data-platform="dmm"] { 
+  --accent: #ff9900; 
+  --accent-glow: rgba(255, 153, 0, 0.15);
+}
+
+/* DUGAテーマ */
+.pageWrapper[data-platform="duga"] { 
+  --accent: #00d1b2; 
+  --accent-glow: rgba(0, 209, 178, 0.15);
+}
+
+/* --- 🏗️ LAYOUT_ENGINE --- */
+
+.container {
+  display: flex;
+  gap: 32px;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 20px 24px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebarWrapper {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.stickySidebar {
+  position: sticky;
+  top: 24px;
+}
+
+.mainContent {
+  flex-grow: 1;
+  min-width: 0; /* Gridの突き抜け防止 */
+}
+
+/* --- 🛰️ UI_COMPONENTS --- */
+
+/* 🛰️ BREADCRUMB */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  margin-bottom: 20px;
+  letter-spacing: 0.1em;
+}
+
+.bcLink {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.bcLink:hover { color: var(--accent); }
+.bcDivider { color: #333; }
+.bcActive { color: var(--accent); font-weight: bold; }
+
+/* 🏎️ FILTER & SORT BAR */
+.filterControl {
+  display: flex;
+  gap: 20px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.fieldLabel {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--accent);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.filterInput, .selectInput {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  outline: none;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.filterInput:focus, .selectInput:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.searchField { flex-grow: 1; }
+.sortField { width: 200px; }
+
+/* 🛰️ HEADER SECTION */
+.headerSection {
+  margin-bottom: 40px;
+}
+
+.titleGroup {
+  padding-bottom: 24px;
+}
+
+.systemLabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.1em;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse-key 2s infinite;
+}
+
+.mainTitle {
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin: 12px 0;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.titleAccent { 
+  color: var(--accent); 
+}
+
+.statusInfo {
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #888;
+}
+
+.statusValue {
+  color: #fff;
+  font-weight: bold;
+}
+
+/* 📦 PRODUCT GRID */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.noData {
+  padding: 100px 0;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  color: #555;
+  border: 1px dashed #222;
+  border-radius: 4px;
+}
+
+/* 🔢 PAGINATION AREA */
+.paginationArea {
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.pageStatus {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #555;
+}
+
+/* ✨ AMBIENT EFFECTS */
+.ambientGlow {
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 600px;
+  background: radial-gradient(circle at 20% 0%, var(--accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 🔄 ANIMATIONS */
+@keyframes pulse-key {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 📱 RESPONSIVE */
+@media (max-width: 1100px) {
+  .container { flex-direction: column; }
+  .sidebarWrapper { width: 100%; }
+  .filterControl { flex-direction: column; gap: 15px; }
+  .sortField { width: 100%; }
+}

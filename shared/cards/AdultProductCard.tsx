@@ -104,7 +104,6 @@ export default function AdultProductCard({ product }: ProductCardProps) {
       <div className={styles.imageSection}>
         <Link href={detailPath} className="block h-full w-full relative overflow-hidden bg-[#0a0a0a]">
           
-          {/* プレビュー動画表示ロジック */}
           {movieData.url && isHovered ? (
             isFanza ? (
               <div className="absolute inset-0 z-10 w-full h-full pointer-events-none">
@@ -125,7 +124,6 @@ export default function AdultProductCard({ product }: ProductCardProps) {
             )
           ) : (
             <>
-              {/* 💡 遅延表示用スケルトン/ローダー演出 */}
               {!isLoaded && (
                 <div className="absolute inset-0 bg-[#1a1a2e] animate-pulse flex items-center justify-center">
                    <div className="text-[8px] text-gray-600 font-mono tracking-tighter">DECODING_VISUAL...</div>
@@ -136,16 +134,15 @@ export default function AdultProductCard({ product }: ProductCardProps) {
                 alt={product.title} 
                 className={`${styles.thumbnail} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700 ease-in-out`} 
                 loading="lazy"
-                onLoad={() => setIsLoaded(true)} // 💡 読み込み完了でフェードイン
+                onLoad={() => setIsLoaded(true)}
                 onError={() => {
                   if (isDuga && !imgError) setImgError(true);
-                  setIsLoaded(true); // エラー時もローダーは消す
+                  setIsLoaded(true);
                 }}
               />
             </>
           )}
 
-          {/* AI解析オーバーレイ（ホバー時） */}
           {isHovered && (
             <div className="absolute inset-0 z-20 bg-black/60 flex items-center justify-center animate-in fade-in duration-300">
               <div className="w-24 h-24">
@@ -177,8 +174,13 @@ export default function AdultProductCard({ product }: ProductCardProps) {
                 {actor.name}
               </Link>
             ))
+          ) : product.maker ? (
+            /* 💡 修正箇所: 女優がいない場合はメーカー名を表示 */
+            <Link href={`/maker/${getIdentifier(product.maker)}`} className={styles.actressLink}>
+              {product.maker.name}
+            </Link>
           ) : (
-            <span className={styles.emptyText}>Actress Unknown</span>
+            <span className={styles.emptyText}>GENERIC_NODE</span>
           )}
         </div>
 

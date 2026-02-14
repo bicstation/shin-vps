@@ -4,15 +4,23 @@
 import React from 'react';
 import Link from 'next/link';
 
-// ✅ CSS Modules & 共通コンポーネント
+// ✅ スタイル & 共通コンポーネント
 import styles from './page.module.css';
 import ProductCard from '@shared/cards/AdultProductCard';
-import Sidebar from '@shared/layout/Sidebar'; // ブランドページと同一の高性能Sidebar
+import Sidebar from '@shared/layout/Sidebar'; 
 import { getSiteMainPosts } from '@shared/lib/api/wordpress';
-import { getUnifiedProducts, fetchMakers, fetchGenres } from '@shared/lib/api/django/adult';
-import { WPPost, AdultProduct } from '@shared/lib/api/types';
+import { 
+  getUnifiedProducts, 
+  fetchMakers, 
+  fetchGenres, 
+  fetchSeries,   
+  fetchDirectors, 
+  fetchAuthors    
+} from '@shared/lib/api/django/adult';
+import { AdultProduct } from '@shared/lib/api/types';
 import { constructMetadata } from '@shared/lib/metadata';
 
+// Next.js 15 最適化設定
 export const dynamic = 'force-dynamic';
 export const revalidate = 60; 
 
@@ -21,8 +29,8 @@ export const revalidate = 60;
  */
 export async function generateMetadata() {
   return constructMetadata(
-    "TIPER Live | プレミアム・アーカイブ",
-    "DUGA・FANZA・DMMの全アーカイブをAI解析。統合デジタルアーカイブ。",
+    "TIPER Live | プレミアム・統合デジタルアーカイブ",
+    "AI解析に基づいたFANZA・DUGA・DMMの全件横断アーカイブ。次世代のデジタルコンテンツ・レジストリ。",
     undefined,
     '/'
   );
@@ -51,49 +59,61 @@ const formatDate = (dateString: string) => {
  * 🎬 メインホームコンポーネント
  */
 export default async function Home() {
-  // --- 1. データフェッチの最適化 ---
-  // 不安定さを解消するため、各ソースから個別に取得するロジックへアップグレード
+  // --- 1. データフェッチの並列実行 (Djangoバックエンドへの集約リクエスト) ---
   const [
     wpData, 
     mRes, 
     gRes,
+    sRes, 
+    dirRes, 
+    autRes, 
     fanzaRes,
     dugaRes,
-    dmmRes,
-    unifiedStats // 統計用
+    dmmRes
   ] = await Promise.all([
-    getSiteMainPosts(0, 6).catch(() => ({ results: [], count: 0 })),
-    fetchMakers({ limit: 20, ordering: '-product_count' }).catch(() => []),
-    fetchGenres({ limit: 20, ordering: '-product_count' }).catch(() => []),
-    // 三種の神器をそれぞれ確実に4件ずつ取得
+    getSiteMainPosts(0, 6).catch(() => ({ results: [] })),
+    fetchMakers({ limit: 12, ordering: '-product_count' }).catch(() => []),
+    fetchGenres({ limit: 12, ordering: '-product_count' }).catch(() => []),
+    fetchSeries({ limit: 12, ordering: '-product_count' }).catch(() => []), 
+    fetchDirectors({ limit: 12, ordering: '-product_count' }).catch(() => []),
+    fetchAuthors({ limit: 12, ordering: '-product_count' }).catch(() => []),
     getUnifiedProducts({ limit: 4, api_source: 'FANZA', ordering: '-release_date' }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'DUGA', ordering: '-release_date' }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'DMM', ordering: '-release_date' }).catch(() => ({ results: [] })),
-    // 全体件数取得用
-    getUnifiedProducts({ limit: 1 }).catch(() => ({ count: 0 }))
   ]);
 
-  // --- 2. データの整形 (ブランドページのロジックを適用) ---
-  const makersData = Array.isArray(mRes) ? mRes : (mRes as any)?.results || [];
-  const latestPosts = (wpData?.results || []) as WPPost[];
-  const totalCount = unifiedStats?.count || 0;
+  // --- 2. データの正規化 (空配列保証) ---
+  const normalizeData = (res: any) => {
+    if (!res) return [];
+    if (Array.isArray(res)) return res;
+    if (res.results && Array.isArray(res.results)) return res.results;
+    return [];
+  };
 
-  // 各プラットフォームのデータを抽出
-  const fanzaProducts = (fanzaRes?.results || []) as AdultProduct[];
-  const dugaProducts = (dugaRes?.results || []) as AdultProduct[];
-  const dmmProducts = (dmmRes?.results || []) as AdultProduct[];
+  const makersData = normalizeData(mRes);
+  const genresData = normalizeData(gRes);
+  const seriesData = normalizeData(sRes);
+  const directorsData = normalizeData(dirRes);
+  const authorsData = normalizeData(autRes);
+  const latestPosts = normalizeData(wpData);
+  
+  const fanzaProducts = normalizeData(fanzaRes);
+  const dugaProducts = normalizeData(dugaRes);
+  const dmmProducts = normalizeData(dmmRes);
 
   const isApiConnected = fanzaProducts.length > 0 || dugaProducts.length > 0;
 
-  // --- 3. セクションレンダラー ---
+  // --- 3. セクションレンダラー (再利用可能なUIパーツ) ---
   const renderPlatformSection = (title: string, items: AdultProduct[], source: string) => (
     <section className={styles.platformSection} key={source}>
       <div className={styles.sectionHeader}>
         <div className={styles.titleGroup}>
           <span className={styles.pulseDot} />
-          <h2 className={styles.platformTitle}>{title} <span className={styles.titleThin}>/LATEST_FEED</span></h2>
+          <h2 className={styles.platformTitle}>
+            {title} <span className={styles.titleThin}>/LATEST_FEED</span>
+          </h2>
         </div>
-        <Link href={`/brand/${source.toLowerCase()}`} className={styles.headerLink}>
+        <Link href={`/videos?source=${source.toUpperCase()}`} className={styles.headerLink}>
           EXPLORE_ARCHIVE →
         </Link>
       </div>
@@ -108,30 +128,21 @@ export default async function Home() {
   return (
     <div className={styles.pageContainer}>
       <main className={styles.main}>
-      
         <div className={styles.wrapper}>
-          {/* 🏗️ 2. サイドバー (ブランドページと統一) */}
+          
+          {/* 🏗️ サイドバー (Djangoから取得した全6カテゴリのマスターデータを注入) */}
           <aside className={styles.sidebar}>
             <div className={styles.sidebarSticky}>
-              {/* クイック・ネットワーク・アクセス */}
-              <div className={styles.networkSelect}>
-                <h3 className={styles.sidebarLabel}>NETWORK_SELECT</h3>
-                <div className={styles.networkGrid}>
-                  {['FANZA', 'DMM', 'DUGA'].map((b) => (
-                    <Link key={b} href={`/brand/${b.toLowerCase()}`} className={styles.networkBtn}>
-                      {b}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* マスターデータ・サイドバー */}
               <div className={styles.sidebarMain}>
                 <Sidebar 
                   makers={makersData} 
-                  recentPosts={latestPosts.map(p => ({
+                  genres={genresData}
+                  series={seriesData}
+                  directors={directorsData}
+                  authors={authorsData}
+                  recentPosts={latestPosts.map((p: any) => ({
                     id: p.id.toString(),
-                    title: decodeHtml(p.title.rendered),
+                    title: decodeHtml(p.title?.rendered || ''),
                     slug: p.slug
                   }))} 
                 />
@@ -139,31 +150,38 @@ export default async function Home() {
 
               {!isApiConnected && (
                 <div className={styles.errorBox}>
-                  [!] CRITICAL: DATA_STREAM_INTERRUPTED.
+                  <span className={styles.errorIcon}>⚠️</span>
+                  <div className={styles.errorText}>
+                    <strong>CRITICAL_ERROR:</strong>
+                    <span>DATA_STREAM_INTERRUPTED. PLEASE_REFRESH.</span>
+                  </div>
                 </div>
               )}
             </div>
           </aside>
 
-          {/* 🏗️ 3. メインコンテンツ・ストリーム */}
+          {/* 🏗️ メインコンテンツエリア */}
           <div className={styles.contentStream}>
             
-            {/* A: Intelligence Reports (WP) */}
+            {/* 1. Intelligence Reports (WordPress ニュース) */}
             {latestPosts.length > 0 && (
               <section className={styles.newsSection}>
                 <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionHeading}>INTELLIGENCE_REPORTS</h2>
-                  <Link href="/news" className={styles.headerLink}>FULL_REPORT →</Link>
+                  <div className={styles.titleGroup}>
+                    <h2 className={styles.sectionHeading}>INTELLIGENCE_REPORTS</h2>
+                  </div>
+                  <Link href="/news" className={styles.headerLink}>VIEW_ALL_REPORTS →</Link>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {latestPosts.slice(0, 3).map((post) => (
+                  {latestPosts.slice(0, 3).map((post: any) => (
                     <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
                       <div className={styles.newsThumbWrap}>
                         <img
-                          src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/api/placeholder/400/225'}
+                          src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/placeholder.jpg'}
                           alt={post.title?.rendered}
                           className={styles.newsThumb}
                         />
+                        <div className={styles.newsOverlay} />
                       </div>
                       <div className={styles.newsContent}>
                         <span className={styles.newsDate}>{formatDate(post.date)}</span>
@@ -175,7 +193,7 @@ export default async function Home() {
               </section>
             )}
 
-            {/* B: 三種の神器 - 統合アーカイブ (個別取得による安定化) */}
+            {/* 2. Unified Data Stream (Django 統合製品) */}
             <div className={styles.archiveRegistry}>
               <div className={styles.registryHeader}>
                 <h2 className={styles.registryMainTitle}>UNIFIED_DATA_STREAM</h2>
@@ -184,24 +202,30 @@ export default async function Home() {
 
               {isApiConnected ? (
                 <div className={styles.registryStack}>
+                  {/* 各プラットフォームの最新フィードを表示 */}
                   {fanzaProducts.length > 0 && renderPlatformSection("FANZA", fanzaProducts, "FANZA")}
                   {dugaProducts.length > 0 && renderPlatformSection("DUGA", dugaProducts, "DUGA")}
                   {dmmProducts.length > 0 && renderPlatformSection("DMM", dmmProducts, "DMM")}
                 </div>
               ) : (
                 <div className={styles.loadingArea}>
-                  <div className={styles.glitchText}>SYNCHRONIZING_MATRIX_NODES...</div>
+                  <div className={styles.glitchBox}>
+                    <div className={styles.glitchText}>SYNCHRONIZING_MATRIX_NODES...</div>
+                    <div className={styles.scanningLine} />
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* C: 全件エントリー */}
+            {/* 3. Footer Action */}
             <div className={styles.footerAction}>
               <Link href="/videos" className={styles.megaTerminalBtn}>
-                <span className={styles.btnGlitch}>ACCESS_FULL_REGISTRY</span>
+                <span className={styles.btnScanline} />
+                <span className={styles.btnText}>ACCESS_FULL_REGISTRY_DATABASE</span>
               </Link>
             </div>
           </div>
+          
         </div>
       </main>
     </div>

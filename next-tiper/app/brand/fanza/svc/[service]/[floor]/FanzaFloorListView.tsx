@@ -7,34 +7,50 @@ import AdultProductCard from '@shared/cards/AdultProductCard';
 import AdultSidebar from '@shared/layout/Sidebar/AdultSidebar';
 import Pagination from '@shared/common/Pagination';
 
+/**
+ * 🛰️ FANZA_SECTOR_VIEWER
+ * FANZAの特定のサービス・フロア階層に特化したインテリジェンス・ビュー
+ */
 export default function FanzaFloorListView({ 
     service, floor, sort, currentOffset, limit, dataRes, mRes, gRes, wRes 
 }: any) {
     const products = (dataRes?.results || []) as any[];
     const totalCount = Number(dataRes?.count) || 0;
 
+    // --- サイドバー用データ整形 (APIレスポンスの正規化) ---
     const topMakers = (Array.isArray(mRes) ? mRes : mRes?.results || [])
         .slice(0, 20)
         .map((m: any) => ({
-            id: m.id, name: m.name, slug: m.slug || m.id.toString(), product_count: m.product_count || 0
+            id: m.id, 
+            name: m.name, 
+            slug: m.slug || m.id.toString(), 
+            product_count: m.product_count || 0
         }));
 
     const topGenres = (Array.isArray(gRes) ? gRes : gRes?.results || [])
         .slice(0, 20)
         .map((g: any) => ({
-            id: g.id, name: g.name, slug: g.slug || g.id.toString(), product_count: g.product_count || 0
+            id: g.id, 
+            name: g.name, 
+            slug: g.slug || g.id.toString(), 
+            product_count: g.product_count || 0
         }));
 
     const wpPosts = (wRes?.results || []).map((p: any) => ({
-        id: p.id?.toString(), title: p.title?.rendered || "Untitled", slug: p.slug || ""
+        id: p.id?.toString(), 
+        title: p.title?.rendered || "Untitled", 
+        slug: p.slug || ""
     }));
 
+    // --- データ不在時のフォールバック UI ---
     if (products.length === 0 && currentOffset === 0) {
         return (
             <div className={styles.emptyContainer}>
                 <div className={styles.emptyIcon}>📡</div>
                 <h1 className={styles.emptyTitle}>FANZA_ARCHIVE_EMPTY</h1>
-                <p className={styles.emptyText}>FANZA / {service} / {floor} セクターの同期データが現在存在しません。</p>
+                <p className={styles.emptyText}>
+                    FANZA / {service.toUpperCase()} / {floor.toUpperCase()} セクターの同期データが現在存在しません。
+                </p>
                 <Link href="/brand/fanza" className={styles.backBtn}>RETURN TO RED_BASE</Link>
             </div>
         );
@@ -45,6 +61,7 @@ export default function FanzaFloorListView({
 
     return (
         <div className={styles.pageWrapper}>
+            {/* 🚨 RED_CORE SYSTEM TOP OVERLAY */}
             <div className="bg-[#120508] border-b border-[#e94560]/30 px-4 py-2 font-mono text-[10px] text-[#e94560] flex flex-wrap gap-x-6">
                 <span className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#e94560] animate-pulse"></span> 
@@ -52,9 +69,11 @@ export default function FanzaFloorListView({
                 </span>
                 <span>[SV: {service.toUpperCase()}]</span>
                 <span>[FL: {floor.toUpperCase()}]</span>
-                <span>[COUNT: {totalCount}]</span>
+                <span>[NODES_COUNT: {totalCount.toLocaleString()}]</span>
+                <span className="ml-auto opacity-50">SYNC_PATH: /brand/fanza/{service}/{floor}</span>
             </div>
 
+            {/* 🟥 FANZA HEADER SECTION */}
             <header className={styles.header}>
                 <div className={styles.headerInner}>
                     <div className={styles.pathInfo}>
@@ -74,12 +93,14 @@ export default function FanzaFloorListView({
                         </div>
                     </div>
 
+                    {/* ⚙️ TOOLBAR: SORTING */}
                     <div className={styles.toolbar}>
                         <div className={styles.sortGroup}>
                             {[
                                 { id: 'recent', label: 'NEW_RELEASE', val: '-release_date' },
                                 { id: 'rank', label: 'MOST_REVIEWED', val: '-review_count' },
                                 { id: 'score', label: 'AI_SCORE', val: '-spec_score' },
+                                { id: 'popular', label: 'POPULARITY', val: '-product_count' }, // 代替的な並び替え
                             ].map((s) => (
                                 <Link 
                                     key={s.id} 
@@ -94,34 +115,37 @@ export default function FanzaFloorListView({
                 </div>
             </header>
 
+            {/* 🧬 MAIN LAYOUT */}
             <div className={styles.layoutContainer}>
-                <aside className={styles.sidebar}>
-                    <div className={styles.platformNav}>
-                        <h3 className={styles.sidebarTitle}>PLATFORM_SWITCH</h3>
-                        <div className={styles.platformButtons}>
-                            <Link href="/brand/fanza" className={styles.platformBtnActive}>FANZA</Link>
-                            <Link href="/brand/duga" className={styles.platformBtn}>DUGA</Link>
-                            <Link href="/brand/dmm" className={styles.platformBtn}>DMM</Link>
-                        </div>
+                
+                {/* 🛡️ SIDEBAR NAVIGATION (RED MOD) */}
+                <aside className={styles.sidebarWrapper}>
+                    <div className="mb-4 flex gap-1 p-2 bg-white/5 rounded">
+                        <Link href="/fanza" className="flex-1 text-center py-2 text-[10px] font-black bg-[#e94560] text-white rounded">FANZA</Link>
+                        <Link href="/dmm" className="flex-1 text-center py-2 text-[10px] font-black bg-zinc-800 text-zinc-400 rounded hover:bg-zinc-700">DMM</Link>
+                        <Link href="/duga" className="flex-1 text-center py-2 text-[10px] font-black bg-zinc-800 text-zinc-400 rounded hover:bg-zinc-700">DUGA</Link>
                     </div>
+
                     <AdultSidebar 
                         makers={topMakers} 
                         genres={topGenres}
                         recentPosts={wpPosts} 
-                        product={products[0]}
+                        product={{...products[0], api_source: 'fanza'}} // 強制的にFANZAコンテキストを渡す
                     />
                 </aside>
 
+                {/* 🔳 PRODUCT GRID */}
                 <main className={styles.mainContent}>
                     <div className={styles.grid}>
                         {products.map((product: any) => (
                             <AdultProductCard 
-                                key={`${product.api_source}-${product.id}`} 
+                                key={`${product.api_source || 'fanza'}-${product.id}`} 
                                 product={product} 
                             />
                         ))}
                     </div>
 
+                    {/* 🔢 PAGINATION */}
                     {totalCount > limit && (
                         <div className={styles.paginationWrapper}>
                             <Pagination 
@@ -133,11 +157,19 @@ export default function FanzaFloorListView({
                             />
                             <div className={styles.streamStatus}>
                                 SYNC_STATUS: PAGE {displayCurrentPage} / {displayTotalPages}
+                                <span className="ml-4 opacity-30">| RANGE: {currentOffset} » {Math.min(currentOffset + limit, totalCount)}</span>
                             </div>
                         </div>
                     )}
                 </main>
             </div>
+
+            {/* 🛠️ TERMINAL FOOTER */}
+            <footer className="mt-12 border-t border-[#e94560]/10 py-6 text-center">
+                <div className="text-[10px] text-zinc-700 font-mono tracking-[0.2em] uppercase">
+                    Data Stream Terminal // Source: FANZA_INTELLIGENCE_UNIT
+                </div>
+            </footer>
         </div>
     );
 }

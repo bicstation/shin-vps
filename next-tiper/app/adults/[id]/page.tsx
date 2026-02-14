@@ -2,9 +2,10 @@
 // @ts-nocheck
 /**
  * ==============================================================================
- * 🌌 TIPER Product Detail - Full Spectrum Matrix (V8.0)
+ * 🌌 TIPER Product Detail - Full Spectrum Matrix (V8.1)
  * [DEBUG_TOP_BRIDGE + AI_SEO_ENHANCED + SIDEBAR_API_MONITOR + FULL_DENSITY]
  * ==============================================================================
+ * 🚀 FIXED: API Endpoint resolution via resolveApiUrl for internal/external sync
  */
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +16,12 @@ import Link from 'next/link';
 import styles from './ProductDetail.module.css';
 
 // ✅ 共通ライブラリ・コンポーネント
-import { getAdultProductDetail, getAdultProducts } from '@shared/lib/api/django';
+import { 
+  getAdultProductDetail, 
+  getAdultProducts, 
+  resolveApiUrl, 
+  getDjangoHeaders 
+} from '@shared/lib/api/django';
 import { constructMetadata } from '@shared/lib/metadata'; 
 import AdultProductCard from '@shared/cards/AdultProductCard';
 import AdultProductGallery from '@shared/cards/AdultProductGallery';
@@ -197,34 +203,25 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
     return "【標準適合】全システムにおいて安定した出力を確認。高品質なアーカイブです。";
   };
 
-// --- 🔗 関連商品API：統合レコメンドエンジン(Unified)の強制発動 ---
+  // --- 🔗 関連商品API：統合レコメンドエンジン(Unified)の強制発動 ---
   let relatedProducts = [];
   let relatedError = null;
 
   try {
-    // 💡 修正の要：以前構築した UnifiedAdultProductListView (urls.py) を直接指定
-    // getAdultProducts関数がエンドポイントを固定している場合を考慮し、fetchで確実に繋ぎます
-    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8083';
     const targetId = product.product_id_unique || product.display_id || product.unique_id;
 
-    const response = await fetch(
-      `${API_BASE}/api/unified-adult-products/?related_to_id=${targetId}&page_size=12`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          // 必要に応じて認証ヘッダー等を追加
-        },
-        cache: 'no-store' // 常に最新の関連スコアを取得
-      }
-    );
+    // 💡 修正ポイント: resolveApiUrl を使用して内部/外部のURL解決を安全に行う
+    const targetApiUrl = resolveApiUrl(`/api/unified-adult-products/?related_to_id=${targetId}&page_size=12`);
+
+    const response = await fetch(targetApiUrl, {
+      method: 'GET',
+      headers: getDjangoHeaders(), // ヘッダーも共通関数から取得
+      cache: 'no-store' 
+    });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     
     const data = await response.json();
-
-    // 🧠 バックエンドの UnifiedView は StandardResultsSetPagination を通るため、
-    // data.results にスコア順のリストが格納されています
     relatedProducts = data.results || [];
 
     console.log(`[RELATION_SYNC_COMPLETE] NODE: ${targetId} | SCORE_BASED_ALIGNMENT: ${relatedProducts.length} ITEMS`);
@@ -233,7 +230,6 @@ async function DetailContent({ params }: { params: Promise<{ id: string }> }) {
     relatedError = e.message;
     console.warn("⚠️ Related fetch failed (Unified engine bypass):", e); 
     
-    // フォールバック: 万が一統合エンドポイントが失敗した場合のみ、既存の簡易取得を試行
     try {
       const fallback = await getAdultProducts({ 
         related_to_id: product.display_id || product.product_id_unique, 

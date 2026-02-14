@@ -1,0 +1,143 @@
+/**
+ * 🛰️ DUGA_CORE_STYLESHEET
+ * システム監視パネル & DUGA専用カラープロトコル
+ */
+
+/* 🏗️ 1. 基本骨組み (トップページと同期) */
+.pageContainer {
+  min-height: 100vh;
+  background-color: #050b0a; /* 深いエメラルドブラック */
+  color: #e0e0e0;
+  overflow-x: hidden;
+}
+
+/* 🛠️ 4. グローバル変数の注入 (修正ポイント: セレクタを連結) */
+.pageContainer :global(.duga-theme) {
+  --accent-color: #00d1b2;
+  --accent-glow: rgba(0, 209, 178, 0.2);
+  --bg-darker: #050b0a;
+  --card-bg: rgba(10, 25, 23, 0.6);
+  --border-color: rgba(0, 209, 178, 0.15);
+}
+
+.main {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.wrapper {
+  display: flex; /* サイドバーとコンテンツを左右に配置 */
+  gap: 30px;
+  padding-top: 20px;
+  width: 100%;
+}
+
+/* 🛰️ 2. システムモニターバー (最上部固定) */
+.systemMonitor {
+  background: #0a1917;
+  border-bottom: 1px solid rgba(0, 209, 178, 0.3);
+  padding: 0.6rem 1.2rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  color: #00d1b2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+  position: relative;
+  z-index: 50;
+  letter-spacing: 0.05em;
+}
+
+/* 🟢 ステータス・インジケーター */
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #00d1b2;
+  box-shadow: 0 0 10px #00d1b2, 0 0 20px rgba(0, 209, 178, 0.5);
+}
+
+/* 🏷️ ソース識別タグ */
+.sourceTag {
+  background: rgba(0, 209, 178, 0.1);
+  padding: 3px 10px;
+  border: 1px solid rgba(0, 209, 178, 0.3);
+  border-radius: 4px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* 🔗 外部プラットフォームリンク群 */
+.platformLinks {
+  margin-left: auto;
+  display: flex;
+  gap: 1.2rem;
+  opacity: 0.7;
+}
+
+.platformLink {
+  color: #00d1b2;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+  font-size: 10px;
+}
+
+.platformLink::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: #00d1b2;
+  transition: width 0.2s ease;
+}
+
+.platformLink:hover {
+  opacity: 1;
+  text-shadow: 0 0 8px rgba(0, 209, 178, 0.6);
+}
+
+.platformLink:hover::after {
+  width: 100%;
+}
+
+/* 🔳 3. コンテンツ・コンテナ */
+.container {
+  width: 100%;
+  padding: 1.5rem 0;
+}
+
+/* スクロールバーのカスタマイズ (DUGAカラー) */
+.pageContainer :global(.duga-theme)::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pageContainer :global(.duga-theme)::-webkit-scrollbar-track {
+  background: #050b0a;
+}
+
+.pageContainer :global(.duga-theme)::-webkit-scrollbar-thumb {
+  background: #0a403a;
+  border-radius: 3px;
+}
+
+.pageContainer :global(.duga-theme)::-webkit-scrollbar-thumb:hover {
+  background: #00d1b2;
+}
+
+/* 選択時のハイライト設定 */
+.pageContainer :global(.duga-theme ::selection) {
+  background: rgba(0, 209, 178, 0.3);
+  color: #ffffff;
+}
+
+/* レスポンシブ対応: 1024px以下で縦並び */
+@media (max-width: 1024px) {
+  .wrapper {
+    flex-direction: column;
+  }
+}

@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 from api.models import (
-    # 基本モデル
+    # 基本マスターモデル
     Maker, Label, Director, Series, Genre, Actress, Author,
     # 商品・属性モデル
-    AdultProduct, AdultAttribute, FanzaProduct
+    AdultProduct, AdultAttribute, FanzaProduct,
+    # LinkshareProduct
+    LinkshareProduct
 )
 
-# 💡 PCAttribute は general_serializers で主に使われるが、
-# 相互参照を避けるため、定義のみこちらで try-except 処理を維持
+# 💡 PCAttribute 相互参照回避の try-except 処理
 try:
     from api.models.pc_products import PCAttribute
 except ImportError:
@@ -21,18 +22,31 @@ except ImportError:
 class BaseMasterSerializer(serializers.ModelSerializer):
     """
     全てのマスターモデル（女優、ジャンル等）の共通定義。
-    api_source により、どのドメイン由来のデータか判別可能にします。
+    辞書型データ（values()）とモデルオブジェクトの両方を安全に処理。
     """
     slug = serializers.CharField(read_only=True)
     ruby = serializers.CharField(read_only=True)
-    api_source = serializers.CharField(read_only=True) 
+    api_source = serializers.SerializerMethodField() 
+    # 集計時に渡される product_count を確実に受け取る
     product_count = serializers.IntegerField(read_only=True, required=False)
     
     class Meta:
         fields = ('id', 'name', 'slug', 'ruby', 'api_source', 'product_count')
         read_only_fields = fields
 
-# --- 各マスターモデルの実装 (個別のメタクラス定義) ---
+    def get_api_source(self, obj):
+        """
+        オブジェクト属性、または辞書キーから api_source を取得
+        """
+        if isinstance(obj, dict):
+            return obj.get('api_source', 'COMMON').upper()
+        
+        source = getattr(obj, 'api_source', None)
+        if source:
+            return source.upper()
+        return 'COMMON'
+
+# --- 各マスターモデルの実装 ---
 class MakerSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): 
         model = Maker
@@ -62,43 +76,29 @@ class AuthorSerializer(BaseMasterSerializer):
         model = Author
 
 # --------------------------------------------------------------------------
-# 2. 属性・タグ用シリアライザー (詳細スペック)
+# 2. 属性・タグ用シリアライザー
 # --------------------------------------------------------------------------
 
 class AdultAttributeSerializer(serializers.ModelSerializer):
     """
-    作品の身体的特徴やシチュエーションタグ用。
-    AI解析によって付与された '属性' をフロントエンドに渡します。
+    身体的特徴やシチュエーションタグ用。
     """
     attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
+    product_count = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
         model = AdultAttribute
         fields = (
-            'id', 
-            'attr_type', 
-            'attr_type_display', 
-            'name', 
-            'slug', 
-            'order'
+            'id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order', 'product_count'
         )
         read_only_fields = fields
 
 if PCAttribute:
     class PCAttributeSerializer(serializers.ModelSerializer):
-        """PC製品用の属性（本来はgeneral用だが、モデル構成上ここに定義）"""
         attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
-        
         class Meta:
             model = PCAttribute
-            fields = (
-                'id', 
-                'attr_type', 
-                'attr_type_display', 
-                'name', 
-                'slug', 
-                'order'
-            )
+            fields = ('id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order')
             read_only_fields = fields
 
 # --------------------------------------------------------------------------
@@ -107,67 +107,35 @@ if PCAttribute:
 
 class AdultProductSerializer(serializers.ModelSerializer): 
     """
-    正規化された DUGA/DMM/FANZA データを共通で扱うためのメインシリアライザー。
-    View側で計算された関連度スコア (rel_score) もオプションで含めます。
+    正規化された DUGA/DMM/FANZA データを統合管理
     """
-    # 各種リレーションモデルのネスト
     maker = MakerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
     series = SeriesSerializer(read_only=True) 
+    author = AuthorSerializer(read_only=True)  # 💡 追加：著者対応
     genres = GenreSerializer(many=True, read_only=True)
     actresses = ActressSerializer(many=True, read_only=True)
     attributes = AdultAttributeSerializer(many=True, read_only=True)
-
-    # 💡 共通化フィールド
-    display_id = serializers.CharField(source='product_id_unique', read_only=True)
     
-    # 💡 [NEW] 関連度スコア：Viewのannotateで計算されたスコアを受け取る
-    # これにより、なぜ関連商品として選ばれたかの「重み」をフロント側で把握可能
+    display_id = serializers.CharField(source='product_id_unique', read_only=True)
     rel_score = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
         model = AdultProduct 
         fields = (
-            'id', 
-            'product_id_unique', 
-            'display_id', 
-            'title', 
-            'product_description',
-            'release_date', 
-            'affiliate_url', 
-            'price', 
-            'image_url_list', 
-            'sample_movie_url',
-            'api_source', 
-            'maker', 
-            'label', 
-            'director', 
-            'series', 
-            'genres', 
-            'actresses',
-            'attributes', 
-            'ai_content', 
-            'ai_summary', 
-            'target_segment',
-            'score_visual', 
-            'score_story', 
-            'score_cost', 
-            'score_erotic', 
-            'score_rarity', 
-            'spec_score',
-            'rel_score',  # 👈 スコアリングフィールドを追加
-            'is_active', 
-            'is_posted', 
-            'last_spec_parsed_at', 
-            'updated_at',
+            'id', 'product_id_unique', 'display_id', 'title', 'product_description',
+            'release_date', 'affiliate_url', 'price', 'image_url_list', 'sample_movie_url',
+            'api_source', 'maker', 'label', 'director', 'series', 'author', 'genres', 'actresses',
+            'attributes', 'ai_content', 'ai_summary', 'target_segment',
+            'score_visual', 'score_story', 'score_cost', 'score_erotic', 'score_rarity', 
+            'spec_score', 'rel_score', 'is_active', 'updated_at'
         )
         read_only_fields = ('id', 'product_id_unique', 'updated_at', 'rel_score')
 
 class FanzaProductSerializer(serializers.ModelSerializer):
     """
-    FANZA Direct API 用の個別シリアライザー。
-    既存の FanzaProduct モデルのデータ構造を維持しつつ、共通インターフェースを提供。
+    FANZA/DMM Direct API用。
     """
     maker = MakerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
@@ -175,70 +143,32 @@ class FanzaProductSerializer(serializers.ModelSerializer):
     series = SeriesSerializer(read_only=True)
     genres = GenreSerializer(many=True, read_only=True)
     actresses = ActressSerializer(many=True, read_only=True)
-    authors = AuthorSerializer(many=True, read_only=True)
+    authors = AuthorSerializer(many=True, read_only=True) # Fanzaは複数著者の可能性があるためs付き
 
-    # 💡 フロントエンド統一用エイリアス
     display_id = serializers.CharField(source='unique_id', read_only=True)
-    
-    # 💡 共通化：FanzaProductにも api_source を定義
     api_source = serializers.SerializerMethodField()
-    
-    # View側でのannotate対応用（将来的な拡張）
     rel_score = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
         model = FanzaProduct
         fields = (
-            'id', 
-            'unique_id', 
-            'display_id', 
-            'content_id', 
-            'product_id',
-            'site_code', 
-            'service_code', 
-            'floor_code', 
-            'floor_name',
-            'title', 
-            'url', 
-            'affiliate_url', 
-            'release_date', 
-            'volume',
-            'price', 
-            'price_info', 
-            'review_count', 
-            'review_average',
-            'image_urls', 
-            'sample_images', 
-            'sample_movie',
-            'api_source', 
-            'maker', 
-            'label', 
-            'series', 
-            'director', 
-            'genres', 
-            'actresses', 
-            'authors',
-            'product_description', 
-            'ai_summary',
-            'score_visual', 
-            'score_story', 
-            'score_cost', 
-            'score_erotic', 
-            'score_rarity',
-            'rel_score',
-            'radar_chart_data', 
-            'is_active', 
-            'is_recommend', 
-            'created_at', 
-            'updated_at'
+            'id', 'unique_id', 'display_id', 'content_id', 'site_code', 'service_code', 
+            'floor_code', 'title', 'url', 'affiliate_url', 'release_date', 'price', 
+            'review_average', 'image_urls', 'sample_images', 'sample_movie', 'api_source', 
+            'maker', 'label', 'director', 'series', 'genres', 'actresses', 'authors',
+            'product_description', 'ai_summary', 'spec_score', 'rel_score', 'is_active', 'updated_at'
         )
-        read_only_fields = ('id', 'unique_id', 'content_id', 'created_at', 'updated_at', 'rel_score')
+        read_only_fields = ('id', 'unique_id', 'updated_at', 'rel_score')
 
     def get_api_source(self, obj):
-        """
-        site_code (FANZA/DMM) を api_source として正規化。
-        フロントエンドはこの値を見て、iframeかvideoかの判定等を行います。
-        """
-        if hasattr(obj, 'site_code') and obj.site_code:
-            return obj.site_code.upper()
-        return 'FANZA'
+        if isinstance(obj, dict):
+            return obj.get('site_code', 'FANZA').upper()
+        return getattr(obj, 'site_code', 'FANZA').upper()
+
+# --------------------------------------------------------------------------
+# 4. Linkshare商品シリアライザー
+# --------------------------------------------------------------------------
+class LinkshareProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LinkshareProduct
+        fields = '__all__'

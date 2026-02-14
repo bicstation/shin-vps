@@ -1,5 +1,5 @@
 /* ==============================================================================
- * 📂 page.module.css - Unified Tactical Interface
+ * 📂 page.module.css - Unified Tactical Interface (Ultimate Edition)
  * ============================================================================== */
 
 .pageContainer {
@@ -7,20 +7,27 @@
   flex-direction: column;
   min-height: 100vh;
   background-color: #0a0a12; /* 漆黒の背景 */
+  /* グリッドとラジアルグラデーションの重層構造 */
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 30px 30px, 30px 30px;
   color: #fff;
   overflow-x: hidden;
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
 }
 
 /* --- 🌐 1. システム・ステータスバー (最上部) --- */
 .systemBar {
   width: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(10, 10, 18, 0.8);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(233, 69, 96, 0.2);
+  border-bottom: 1px solid rgba(233, 69, 96, 0.3);
   padding: 15px 4%;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 
 .systemInner {
@@ -43,11 +50,13 @@
   letter-spacing: -0.02em;
   margin: 0;
   font-style: italic;
+  text-transform: uppercase;
 }
 
 .mainTitle span {
   color: #e94560;
   font-style: normal;
+  text-shadow: 0 0 15px rgba(233, 69, 96, 0.6);
 }
 
 .version {
@@ -72,6 +81,7 @@
   color: rgba(255, 255, 255, 0.4);
   letter-spacing: 0.2em;
   margin-bottom: 2px;
+  text-transform: uppercase;
 }
 
 .statValue {
@@ -86,12 +96,12 @@
   font-weight: 700;
   color: #00ffcc;
   text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-  animation: pulse 2s infinite;
+  animation: pulseStatus 2s infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+@keyframes pulseStatus {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.6; filter: brightness(1.5); }
 }
 
 /* --- 🏗️ 2. レイアウト構造 --- */
@@ -101,8 +111,9 @@
   margin: 40px auto;
   padding: 0 4%;
   display: grid;
-  grid-template-columns: 320px 1fr; /* サイドバー 320px 固定 */
+  grid-template-columns: 320px 1fr; /* サイドバー固定 */
   gap: 60px;
+  position: relative;
 }
 
 .sidebar {
@@ -146,14 +157,16 @@
   font-size: 10px;
   font-weight: 900;
   color: #fff;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
 }
 
 .networkBtn:hover {
   background: #e94560;
   border-color: #e94560;
-  box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+  color: #000;
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+  transform: translateY(-2px);
 }
 
 /* --- 🎬 3. メインコンテンツ・セクション --- */
@@ -162,7 +175,7 @@
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 15px;
 }
 
@@ -178,7 +191,13 @@
   background: #e94560;
   border-radius: 50%;
   box-shadow: 0 0 10px #e94560;
-  animation: pulse 1.5s infinite;
+  animation: pulseDotAnim 1.5s infinite;
+}
+
+@keyframes pulseDotAnim {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.8); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .platformTitle {
@@ -187,6 +206,7 @@
   font-style: italic;
   letter-spacing: -0.05em;
   margin: 0;
+  text-transform: uppercase;
 }
 
 .titleThin {
@@ -209,33 +229,31 @@
   transform: translateX(8px);
 }
 
-/* --- 📰 ニュースセクション --- */
+/* --- 📰 ニュースセクション (INTELLIGENCE_REPORTS) --- */
 .newsSection {
   margin-bottom: 80px;
-}
-
-.newsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
 }
 
 .newsCard {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: 0.4s;
+  transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   text-decoration: none;
+  display: block;
 }
 
 .newsCard:hover {
-  border-color: rgba(233, 69, 96, 0.4);
-  transform: translateY(-5px);
+  border-color: rgba(233, 69, 96, 0.6);
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
 .newsThumbWrap {
   aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #000;
+  position: relative;
 }
 
 .newsThumb {
@@ -243,64 +261,141 @@
   height: 100%;
   object-fit: cover;
   opacity: 0.6;
-  transition: 0.6s;
+  transition: 0.8s ease;
 }
 
 .newsCard:hover .newsThumb {
   opacity: 1;
-  scale: 1.05;
+  transform: scale(1.08);
 }
 
 .newsContent {
-  padding: 15px;
+  padding: 20px;
 }
 
 .newsDate {
-  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
   color: #e94560;
   font-weight: 800;
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .newsTitle {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 1.6;
   color: #fff;
 }
 
-/* --- 📀 プラットフォームスタック --- */
-.platformSection {
-  margin-bottom: 80px;
-  animation: sectionEnter 1s ease-out forwards;
+/* --- 📀 統合データストリーム (UNIFIED_DATA_STREAM) --- */
+.archiveRegistry {
+  margin-top: 20px;
 }
 
-@keyframes sectionEnter {
-  from { opacity: 0; transform: translateX(20px); }
+.registryHeader {
+  margin-bottom: 40px;
+}
+
+.registryMainTitle {
+  font-size: 48px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: #fff;
+}
+
+.registryLine {
+  width: 80px;
+  height: 5px;
+  background: #e94560;
+  margin-top: 15px;
+}
+
+.platformSection {
+  margin-bottom: 100px;
+  animation: sectionSlideIn 0.8s ease-out forwards;
+}
+
+@keyframes sectionSlideIn {
+  from { opacity: 0; transform: translateX(30px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+/* --- 🌀 ローディング・エラー・ステータス --- */
+.loadingArea {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.glitchBox {
+  position: relative;
+  padding: 20px;
+}
+
+.glitchText {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 0.4em;
+  color: #e94560;
+  text-transform: uppercase;
+}
+
+.scanningLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #e94560;
+  box-shadow: 0 0 15px #e94560;
+  animation: scanAnim 2s linear infinite;
+}
+
+@keyframes scanAnim {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+.errorBox {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(255, 56, 96, 0.1);
+  border: 1px solid #ff3860;
+  color: #ff3860;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* --- 🔘 アクションボタン --- */
 .footerAction {
-  margin-top: 100px;
-  padding-bottom: 120px;
+  margin-top: 80px;
+  padding-bottom: 150px;
   text-align: center;
 }
 
 .megaTerminalBtn {
   position: relative;
   display: inline-block;
-  padding: 24px 80px;
+  padding: 26px 80px;
   background: transparent;
   border: 1px solid #e94560;
   color: #fff;
   text-decoration: none;
   font-weight: 900;
-  font-size: 14px;
-  letter-spacing: 0.6em;
+  font-size: 16px;
+  letter-spacing: 0.5em;
   overflow: hidden;
   transition: 0.4s;
+  z-index: 1;
 }
 
 .megaTerminalBtn::before {
@@ -311,12 +406,13 @@
   width: 100%;
   height: 100%;
   background: #e94560;
-  transition: 0.4s;
+  transition: 0.5s cubic-bezier(0.77, 0, 0.175, 1);
   z-index: -1;
 }
 
 .megaTerminalBtn:hover {
-  box-shadow: 0 0 50px rgba(233, 69, 96, 0.4);
+  color: #000;
+  box-shadow: 0 0 60px rgba(233, 69, 96, 0.5);
 }
 
 .megaTerminalBtn:hover::before {
@@ -324,38 +420,28 @@
 }
 
 /* --- 📱 レスポンシブ --- */
-@media (max-width: 1280px) {
-  .wrapper {
-    grid-template-columns: 280px 1fr;
-    gap: 40px;
-  }
+@media (max-width: 1440px) {
+  .registryMainTitle { font-size: 40px; }
 }
 
 @media (max-width: 1024px) {
   .wrapper {
     grid-template-columns: 1fr;
+    gap: 40px;
   }
-  .sidebar {
-    order: 2;
-  }
-  .contentStream {
-    order: 1;
-  }
-  .systemStats {
-    display: none;
-  }
+  .sidebar { order: 2; }
+  .contentStream { order: 1; }
+  .systemStats { display: none; }
+  .sidebarSticky { position: relative; top: 0; }
 }
 
 @media (max-width: 768px) {
-  .newsGrid {
-    grid-template-columns: 1fr;
-  }
-  .platformTitle {
-    font-size: 24px;
-  }
-  .megaTerminalBtn {
-    width: 100%;
-    padding: 20px;
-    letter-spacing: 0.3em;
+  .platformTitle { font-size: 24px; }
+  .registryMainTitle { font-size: 28px; }
+  .megaTerminalBtn { 
+    width: 100%; 
+    padding: 20px; 
+    letter-spacing: 0.2em; 
+    font-size: 12px;
   }
 }

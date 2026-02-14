@@ -10,7 +10,7 @@
     position: relative;
 }
 
-/* 🌌 背景の環境光エフェクト */
+/* 🌌 背景の環境光エフェクト - 空間の深みを演出 */
 .ambientGlow {
     position: fixed;
     top: -10%;
@@ -63,7 +63,7 @@
     min-width: 0;
 }
 
-/* ヘッダーセクション */
+/* ヘッダーセクション - システム情報の可視化 */
 .headerSection {
     display: flex;
     flex-direction: column;
@@ -136,7 +136,7 @@
 .statusOnline { color: #10b981; }
 .statusValue { color: #ffffff; }
 
-/* 🛠️ ツールバーコントロール */
+/* 🛠️ ツールバーコントロール - ガラスモフィズム採用 */
 .controls {
     display: flex;
     flex-direction: column;
@@ -183,7 +183,7 @@
     box-shadow: 0 5px 15px rgba(233, 69, 96, 0.3);
 }
 
-/* --- 📦 4. Grid System --- */
+/* --- 📦 4. Grid System - レスポンシブ最適化 --- */
 .productGrid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -215,11 +215,39 @@
 
 /* --- 🛰️ Animations --- */
 @keyframes pulseAnim {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.3); }
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+    50% { 
+        opacity: 0.5; 
+        transform: scale(1.3); 
+        box-shadow: 0 0 20px #e94560;
+    }
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* 追加のユーティリティ: スクロールバーのカスタマイズ (オプション) */
+.pageWrapper::-webkit-scrollbar {
+    width: 6px;
+}
+.pageWrapper::-webkit-scrollbar-track {
+    background: #05050a;
+}
+.pageWrapper::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 10px;
+}
+.pageWrapper::-webkit-scrollbar-thumb:hover {
+    background: #e94560;
 }

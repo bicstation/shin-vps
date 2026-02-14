@@ -1,0 +1,359 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { getSiteMetadata, getSiteColor } from '../../lib/siteConfig';
+import styles from './Sidebar.module.css';
+import { groupByGojuon } from '../../utils/grouping';
+
+// --- インターフェース定義 ---
+interface MasterItem {
+  id: number;
+  name: string;
+  slug: string | null;
+  product_count: number;
+}
+
+interface MenuItem {
+  label: string;
+  slug: string;
+  count: number;
+}
+
+interface MenuGroup {
+  group_label: string;
+  items: MenuItem[];
+}
+
+interface AnalysisData {
+  source: string;
+  total_nodes: number;
+  platform_avg_score: number;
+  genre_distribution: { genres__name: string; count: number }[];
+  menu_items: MenuGroup[];
+}
+
+interface SidebarProps {
+  makers?: any[]; 
+  recentPosts?: { id: string; title: string; slug?: string }[];
+  product?: any;
+}
+
+export default function AdultSidebar({ recentPosts = [], product }: SidebarProps) {
+  const site = getSiteMetadata();
+  const siteColor = getSiteColor(site.site_name);
+  const pathname = usePathname();
+
+  const [groupedActresses, setGroupedActresses] = useState<Record<string, any[]>>({});
+  const [genres, setGenres] = useState<MasterItem[]>([]);
+  const [series, setSeries] = useState<MasterItem[]>([]);
+  const [directors, setDirectors] = useState<MasterItem[]>([]);
+  const [makers, setMakers] = useState<MasterItem[]>([]);
+  const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 現在のプラットフォームを特定
+  const currentPlatform = (() => {
+    if (pathname?.includes('/brand/duga')) return 'duga';
+    if (pathname?.includes('/brand/fanza')) return 'fanza';
+    if (pathname?.includes('/brand/dmm')) return 'dmm';
+    return null; // ブランド外（グローバル）
+  })();
+
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    'PLATFORMS': true,
+    'DYNAMIC_MENU': true,
+    'ANALYSIS': true,
+    'ACTRESSES': false,
+    'GENRES': true,
+    'SERIES': false,
+    'MAKERS': false,
+    'DIRECTORS': false,
+    'LOGS': true,
+  });
+
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  /**
+   * 🔗 LINK_RESOLVER
+   * ブランド配下（/brand/duga等）にいる場合はその配下のカテゴリURLを、
+   * それ以外はグローバルのURLを返します。
+   */
+  const getSafeLink = (type: string, item: any) => {
+    if (!item) return '#';
+    const identifier = item.slug && item.slug !== "null" ? item.slug : item.id;
+    
+    // ブランド特化パスの生成
+    if (currentPlatform) {
+      return `/brand/${currentPlatform}/${type}/${identifier}`;
+    }
+    
+    // 既存のグローバルパス
+    return `/${type}/${identifier}`;
+  };
+
+  useEffect(() => {
+    const fetchSidebarData = async () => {
+      setIsLoading(true);
+      try {
+        const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8083/api').replace(/\/$/, '');
+        
+        // パスまたはプロダクトからソースを判定
+        let sourceName = 'DUGA';
+        if (pathname?.includes('fanza')) sourceName = 'FANZA';
+        if (pathname?.includes('dmm')) sourceName = 'DMM';
+        if (product?.api_source) sourceName = product.api_source;
+
+        const sourceQuery = `?api_source=${sourceName.toLowerCase()}`;
+        const baseSort = `&ordering=-product_count`;
+
+        const [actRes, genRes, serRes, dirRes, makRes, anaRes] = await Promise.all([
+          fetch(`${apiBase}/actresses/${sourceQuery}&limit=200${baseSort}`).catch(() => null),
+          fetch(`${apiBase}/genres/${sourceQuery}&limit=20${baseSort}`).catch(() => null),
+          fetch(`${apiBase}/series/${sourceQuery}&limit=20${baseSort}`).catch(() => null),
+          fetch(`${apiBase}/directors/${sourceQuery}&limit=20${baseSort}`).catch(() => null),
+          fetch(`${apiBase}/makers/${sourceQuery}&limit=20${baseSort}`).catch(() => null),
+          fetch(`${apiBase}/adult-products/analysis/?source=${sourceName}`).catch(() => null),
+        ]);
+
+        if (actRes?.ok) {
+          const data = await actRes.json();
+          setGroupedActresses(groupByGojuon(data.results || []));
+        }
+        if (genRes?.ok) {
+          const data = await genRes.json();
+          setGenres(data.results || []);
+        }
+        if (serRes?.ok) {
+          const data = await serRes.json();
+          setSeries(data.results || []);
+        }
+        if (dirRes?.ok) {
+          const data = await dirRes.json();
+          setDirectors(data.results || []);
+        }
+        if (makRes?.ok) {
+          const data = await makRes.json();
+          setMakers(data.results || []);
+        }
+        if (anaRes?.ok) {
+          const data = await anaRes.json();
+          setAnalysis(data);
+        }
+
+      } catch (error) {
+        console.error("Critical error in sidebar data fetching:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSidebarData();
+  }, [pathname, product]);
+
+  return (
+    <aside className={styles.sidebar}>
+      
+      {/* --- 📡 PLATFORMS --- */}
+      <section className={styles.sectionWrapper}>
+        <div className={styles.sectionHeader} onClick={() => toggleSection('PLATFORMS')}>
+          <h3 className={styles.headerTitle}>📡 PLATFORM MATRIX</h3>
+          <span className={styles.arrow}>{openSections['PLATFORMS'] ? '▲' : '▼'}</span>
+        </div>
+        {openSections['PLATFORMS'] && (
+          <div className={styles.platformGrid}>
+            {['DUGA', 'FANZA', 'DMM'].map((p) => (
+              <Link key={p} href={`/brand/${p.toLowerCase()}`} className={`${styles.platBtn} ${currentPlatform === p.toLowerCase() ? styles.active : ''}`}>
+                {p}
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* --- 🛠️ DYNAMIC INTEL MENU --- */}
+      {analysis?.menu_items && (
+        <section className={styles.sectionWrapper}>
+          <div className={styles.sectionHeader} onClick={() => toggleSection('DYNAMIC_MENU')}>
+            <h3 className={styles.headerTitle}>🎯 SMART FILTERS</h3>
+            <span className={styles.arrow}>{openSections['DYNAMIC_MENU'] ? '▲' : '▼'}</span>
+          </div>
+          {openSections['DYNAMIC_MENU'] && (
+            <div className={styles.dynamicMenuContainer}>
+              {analysis.menu_items.map((group, idx) => (
+                <div key={idx} className={styles.menuGroup}>
+                  <div className={styles.menuLabel}>{group.group_label}</div>
+                  <ul className={styles.masterList}>
+                    {group.items.map((item, i) => (
+                      <li key={i}>
+                        <Link href={`/search?attr=${item.slug}&source=${currentPlatform}`} className={styles.masterLink}>
+                          <span className={styles.itemName}>{item.label}</span>
+                          <span className={styles.itemCount}>{item.count}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* --- 📊 MARKET ANALYSIS --- */}
+      {analysis && (
+        <section className={styles.sectionWrapper}>
+          <div className={styles.sectionHeader} onClick={() => toggleSection('ANALYSIS')}>
+            <h3 className={styles.headerTitle}>📊 MARKET INTELLIGENCE</h3>
+            <span className={styles.arrow}>{openSections['ANALYSIS'] ? '▲' : '▼'}</span>
+          </div>
+          {openSections['ANALYSIS'] && (
+            <div className={styles.analysisContainer}>
+              <div className={styles.analysisMeta}>
+                <span className={styles.tag}>AVG_SCORE: {analysis.platform_avg_score}</span>
+              </div>
+              <div className={styles.distributionList}>
+                {analysis.genre_distribution?.slice(0, 5).map((item, idx) => (
+                  <div key={idx} className={styles.distRow}>
+                    <div className={styles.distInfo}>
+                      <span>{item.genres__name}</span>
+                      <span>{item.count}</span>
+                    </div>
+                    <div className={styles.barContainer}>
+                      <div className={styles.barFill} style={{ width: `${(item.count / (analysis.genre_distribution[0]?.count || 1)) * 100}%`, backgroundColor: siteColor }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* --- 💃 ACTRESSES --- */}
+      <section className={styles.sectionWrapper}>
+        <div className={styles.sectionHeader} onClick={() => toggleSection('ACTRESSES')}>
+          <h3 className={styles.headerTitle}>💃 ACTRESSES</h3>
+          <Link href="/actress" className={styles.indexLink}>ALL →</Link>
+        </div>
+        {openSections['ACTRESSES'] && (
+          <div className={styles.actressScroll}>
+            {Object.entries(groupedActresses).map(([kana, list]) => (
+              <div key={kana} className={styles.kanaGroup}>
+                <div className={styles.kanaLabel} style={{ color: siteColor }}>{kana}</div>
+                <div className={styles.actressTags}>
+                  {list.slice(0, 10).map(act => (
+                    <Link key={act.id} href={getSafeLink('actress', act)} className={styles.tagLink}>{act.name}</Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* --- 🏷️ GENRES --- */}
+      <section className={styles.sectionWrapper}>
+        <div className={styles.sectionHeader} onClick={() => toggleSection('GENRES')}>
+          <h3 className={styles.headerTitle}>🏷️ GENRES</h3>
+        </div>
+        {openSections['GENRES'] && (
+          <ul className={styles.masterList}>
+            {genres.map(item => (
+              <li key={item.id}>
+                <Link href={getSafeLink('genre', item)} className={styles.masterLink}>
+                  <span className={styles.itemName}>{item.name}</span>
+                  <span className={styles.itemCount}>{item.product_count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* --- 🎞️ SERIES --- */}
+      <section className={styles.sectionWrapper}>
+        <div className={styles.sectionHeader} onClick={() => toggleSection('SERIES')}>
+          <h3 className={styles.headerTitle}>🎞️ SERIES</h3>
+        </div>
+        {openSections['SERIES'] && (
+          <ul className={styles.masterList}>
+            {series.map(item => (
+              <li key={item.id}>
+                <Link href={getSafeLink('series', item)} className={styles.masterLink}>
+                  <span className={styles.itemName}>{item.name}</span>
+                  <span className={styles.itemCount}>{item.product_count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* --- 🏢 MAKERS --- */}
+      <section className={styles.sectionWrapper}>
+        <div className={styles.sectionHeader} onClick={() => toggleSection('MAKERS')}>
+          <h3 className={styles.headerTitle}>🏢 PRODUCTION</h3>
+        </div>
+        {openSections['MAKERS'] && (
+          <ul className={styles.masterList}>
+            {makers.map(item => (
+              <li key={item.id}>
+                <Link href={getSafeLink('maker', item)} className={styles.masterLink}>
+                  <span className={styles.itemName}>{item.name}</span>
+                  <span className={styles.itemCount}>{item.product_count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* --- 🎬 DIRECTORS --- */}
+      <section className={styles.sectionWrapper}>
+        <div className={styles.sectionHeader} onClick={() => toggleSection('DIRECTORS')}>
+          <h3 className={styles.headerTitle}>🎬 DIRECTORS</h3>
+        </div>
+        {openSections['DIRECTORS'] && (
+          <ul className={styles.masterList}>
+            {directors.map(item => (
+              <li key={item.id}>
+                <Link href={getSafeLink('director', item)} className={styles.masterLink}>
+                  <span className={styles.itemName}>{item.name}</span>
+                  <span className={styles.itemCount}>{item.product_count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* --- 📄 LATEST LOGS --- */}
+      <section className={styles.sectionWrapper}>
+        <div className={styles.sectionHeader} onClick={() => toggleSection('LOGS')}>
+          <h3 className={styles.headerTitle}>📄 INTEL LOGS</h3>
+          <span className={styles.arrow}>{openSections['LOGS'] ? '▲' : '▼'}</span>
+        </div>
+        {openSections['LOGS'] && (
+          <div className={styles.logList}>
+            {recentPosts.length > 0 ? recentPosts.slice(0, 5).map(post => (
+              <Link key={post.id} href={`/news/${post.slug || post.id}`} className={styles.logItem}>{post.title}</Link>
+            )) : <div className={styles.empty}>NO_INTEL_RECORDS</div>}
+          </div>
+        )}
+      </section>
+
+      {/* --- SYSTEM STATUS FOOTER --- */}
+      <div className={styles.systemFooter}>
+        <div className={styles.statusRow}>
+          <span className={styles.blinkDot} style={{ background: isLoading ? '#f1c40f' : '#2ecc71' }} />
+          <span className={styles.statusText}>SYS_READY: {isLoading ? 'SYNCING' : 'ONLINE'}</span>
+        </div>
+        <div className={styles.nodeMeta}>DATA_SOURCE: {analysis?.source || '...'} | NODES: {analysis?.total_nodes?.toLocaleString() || '0'}</div>
+      </div>
+    </aside>
+  );
+}
