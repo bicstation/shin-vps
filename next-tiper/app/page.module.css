@@ -1,182 +1,112 @@
 /* ==============================================================================
- * 📂 page.module.css - Unified Tactical Interface (Ultimate Edition)
+ * 📂 page.module.css - Tactical Archive Interface (Zenith Edition - Optimized)
  * ============================================================================== */
 
 .pageContainer {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #0a0a12; /* 漆黒の背景 */
-  /* グリッドとラジアルグラデーションの重層構造 */
+  background-color: #06060a;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(233, 69, 96, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.15) 0%, transparent 60%),
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 30px 30px, 30px 30px;
-  color: #fff;
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+  color: #e0e0e0;
   overflow-x: hidden;
-  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  font-family: 'Inter', 'JetBrains Mono', 'Noto Sans JP', sans-serif;
+  position: relative;
 }
 
-/* --- 🌐 1. システム・ステータスバー (最上部) --- */
-.systemBar {
+.pageContainer::before {
+  content: " ";
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+              linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+  background-size: 100% 4px, 3px 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.2;
+}
+
+/* --- 🏗️ 1. レイアウト構造 --- */
+.main {
+  flex: 1;
   width: 100%;
-  background: rgba(10, 10, 18, 0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(233, 69, 96, 0.3);
-  padding: 15px 4%;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.systemInner {
-  max-width: 1800px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.systemIdentity {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.mainTitle {
-  font-size: 24px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  margin: 0;
-  font-style: italic;
-  text-transform: uppercase;
-}
-
-.mainTitle span {
-  color: #e94560;
-  font-style: normal;
-  text-shadow: 0 0 15px rgba(233, 69, 96, 0.6);
-}
-
-.version {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.3);
-  letter-spacing: 0.1em;
-}
-
-.systemStats {
-  display: flex;
-  gap: 40px;
-}
-
-.statItem {
   display: flex;
   flex-direction: column;
 }
 
-.statLabel {
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.4);
-  letter-spacing: 0.2em;
-  margin-bottom: 2px;
-  text-transform: uppercase;
-}
-
-.statValue {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.statStatus {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  font-weight: 700;
-  color: #00ffcc;
-  text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
-  animation: pulseStatus 2s infinite;
-}
-
-@keyframes pulseStatus {
-  0%, 100% { opacity: 1; filter: brightness(1); }
-  50% { opacity: 0.6; filter: brightness(1.5); }
-}
-
-/* --- 🏗️ 2. レイアウト構造 --- */
 .wrapper {
   max-width: 1800px;
   width: 100%;
   margin: 40px auto;
   padding: 0 4%;
   display: grid;
-  grid-template-columns: 320px 1fr; /* サイドバー固定 */
-  gap: 60px;
+  grid-template-columns: 340px 1fr;
+  gap: 50px;
   position: relative;
+  z-index: 10;
+  /* 💡 サイドバーをコンテンツの高さに追従させる */
+  align-items: stretch; 
 }
 
+/* --- 🏛️ 2. サイドバー (Tactical Sidebar Area) --- */
 .sidebar {
   position: relative;
+  min-height: 100%;
 }
 
 .sidebarSticky {
   position: sticky;
-  top: 100px;
-}
-
-/* --- 💡 統合サイドバー装飾 --- */
-.networkSelect {
-  margin-bottom: 40px;
-}
-
-.sidebarLabel {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.3em;
-  color: #e94560;
-  border-left: 3px solid #e94560;
-  padding-left: 12px;
-  margin-bottom: 20px;
-  text-transform: uppercase;
-}
-
-.networkGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.networkBtn {
+  top: 40px; /* 💡 余白を広げて視認性を向上 */
+  /* 💡 画面高さいっぱいまで使い切り、スクロールバーを右端へ寄せる */
+  max-height: calc(100vh - 80px); 
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(233, 69, 96, 0.5) transparent;
+  /* 💡 コンテンツが詰まって見えないようにゆとりを持たせる */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 10px;
-  font-weight: 900;
-  color: #fff;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-decoration: none;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.networkBtn:hover {
-  background: #e94560;
-  border-color: #e94560;
-  color: #000;
-  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
-  transform: translateY(-2px);
+/* 🎨 カスタムスクロールバー（モダンな細めデザイン） */
+.sidebarSticky::-webkit-scrollbar { width: 3px; }
+.sidebarSticky::-webkit-scrollbar-track { background: transparent; }
+.sidebarSticky::-webkit-scrollbar-thumb { 
+  background: linear-gradient(to bottom, transparent, #e94560, transparent);
+  border-radius: 10px;
 }
 
-/* --- 🎬 3. メインコンテンツ・セクション --- */
+/* --- 🎬 3. コンテンツストリーム --- */
+.contentStream {
+  min-width: 0;
+}
+
+/* --- 📰 ニュースセクション --- */
+.newsSection { margin-bottom: 80px; }
+
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(233, 69, 96, 0.2);
   padding-bottom: 15px;
+  position: relative;
+}
+
+.sectionHeader::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 60px; height: 3px;
+  background: #e94560;
+  box-shadow: 0 0 10px #e94560;
 }
 
 .titleGroup {
@@ -185,68 +115,30 @@
   gap: 15px;
 }
 
-.pulseDot {
-  width: 8px;
-  height: 8px;
-  background: #e94560;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #e94560;
-  animation: pulseDotAnim 1.5s infinite;
-}
-
-@keyframes pulseDotAnim {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.8); opacity: 0.4; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-.platformTitle {
-  font-size: 32px;
-  font-weight: 950;
-  font-style: italic;
-  letter-spacing: -0.05em;
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.titleThin {
-  font-weight: 200;
-  opacity: 0.4;
-  font-style: normal;
-}
-
-.headerLink {
-  font-size: 11px;
+.sectionHeading {
+  font-size: 18px;
   font-weight: 900;
   letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.4);
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.headerLink:hover {
-  color: #e94560;
-  transform: translateX(8px);
-}
-
-/* --- 📰 ニュースセクション (INTELLIGENCE_REPORTS) --- */
-.newsSection {
-  margin-bottom: 80px;
+  color: #fff;
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .newsCard {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   text-decoration: none;
   display: block;
+  overflow: hidden;
+  height: 100%;
 }
 
 .newsCard:hover {
-  border-color: rgba(233, 69, 96, 0.6);
-  background: rgba(255, 255, 255, 0.04);
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  border-color: rgba(233, 69, 96, 0.8);
+  background: rgba(233, 69, 96, 0.05);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
 }
 
 .newsThumbWrap {
@@ -257,84 +149,113 @@
 }
 
 .newsThumb {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: cover;
   opacity: 0.6;
-  transition: 0.8s ease;
+  transition: 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+  filter: grayscale(0.4) contrast(1.1);
 }
 
 .newsCard:hover .newsThumb {
   opacity: 1;
   transform: scale(1.08);
+  filter: grayscale(0) contrast(1.0);
 }
 
-.newsContent {
-  padding: 20px;
+.newsOverlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8));
+  pointer-events: none;
 }
+
+.newsContent { padding: 20px; }
 
 .newsDate {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   color: #e94560;
   font-weight: 800;
-  display: block;
   margin-bottom: 8px;
+  display: block;
 }
 
 .newsTitle {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.6;
   color: #fff;
 }
 
-/* --- 📀 統合データストリーム (UNIFIED_DATA_STREAM) --- */
-.archiveRegistry {
-  margin-top: 20px;
-}
-
-.registryHeader {
-  margin-bottom: 40px;
-}
+/* --- 📀 統合データストリーム (Archive Registry) --- */
+.archiveRegistry { margin-top: 20px; }
+.registryHeader { margin-bottom: 60px; }
 
 .registryMainTitle {
-  font-size: 48px;
+  font-size: 5vw;
   font-weight: 950;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   margin: 0;
   color: #fff;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+  line-height: 0.9;
+  text-transform: uppercase;
 }
 
 .registryLine {
-  width: 80px;
-  height: 5px;
-  background: #e94560;
-  margin-top: 15px;
+  width: 120px; height: 6px;
+  background: linear-gradient(90deg, #e94560, transparent);
+  margin-top: 20px;
 }
 
 .platformSection {
   margin-bottom: 100px;
-  animation: sectionSlideIn 0.8s ease-out forwards;
+  animation: sectionSlideIn 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 
 @keyframes sectionSlideIn {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- 🌀 ローディング・エラー・ステータス --- */
+.platformTitle {
+  font-size: 32px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.04em;
+  margin: 0;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.titleThin {
+  font-weight: 200;
+  opacity: 0.3;
+  font-style: normal;
+  font-family: 'Inter', sans-serif;
+}
+
+.pulseDot {
+  width: 10px; height: 10px;
+  background: #e94560;
+  border-radius: 50%;
+  box-shadow: 0 0 15px #e94560;
+  animation: pulseDotAnim 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes pulseDotAnim {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.5; }
+}
+
 .loadingArea {
-  height: 300px;
+  height: 350px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-}
-
-.glitchBox {
-  position: relative;
-  padding: 20px;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1px dashed rgba(233, 69, 96, 0.2);
+  margin: 40px 0;
 }
 
 .glitchText {
@@ -342,106 +263,77 @@
   font-size: 14px;
   letter-spacing: 0.4em;
   color: #e94560;
-  text-transform: uppercase;
-}
-
-.scanningLine {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #e94560;
-  box-shadow: 0 0 15px #e94560;
-  animation: scanAnim 2s linear infinite;
-}
-
-@keyframes scanAnim {
-  0% { top: 0; }
-  100% { top: 100%; }
+  animation: glitchTextAnim 3s infinite;
 }
 
 .errorBox {
   margin-top: 20px;
   padding: 15px;
   background: rgba(255, 56, 96, 0.1);
-  border: 1px solid #ff3860;
+  border-left: 4px solid #ff3860;
   color: #ff3860;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  letter-spacing: 0.1em;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-/* --- 🔘 アクションボタン --- */
+/* --- 🔘 メガアクション --- */
 .footerAction {
-  margin-top: 80px;
-  padding-bottom: 150px;
+  margin: 80px 0 150px;
   text-align: center;
 }
 
 .megaTerminalBtn {
   position: relative;
   display: inline-block;
-  padding: 26px 80px;
+  padding: 24px 70px;
   background: transparent;
-  border: 1px solid #e94560;
+  border: 2px solid #e94560;
   color: #fff;
   text-decoration: none;
   font-weight: 900;
   font-size: 16px;
   letter-spacing: 0.5em;
+  text-transform: uppercase;
   overflow: hidden;
-  transition: 0.4s;
+  transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
   z-index: 1;
 }
 
 .megaTerminalBtn::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
   background: #e94560;
-  transition: 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+  transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   z-index: -1;
 }
 
 .megaTerminalBtn:hover {
   color: #000;
-  box-shadow: 0 0 60px rgba(233, 69, 96, 0.5);
+  box-shadow: 0 0 50px rgba(233, 69, 96, 0.5);
 }
 
-.megaTerminalBtn:hover::before {
-  left: 0;
-}
+.megaTerminalBtn:hover::before { left: 0; }
 
-/* --- 📱 レスポンシブ --- */
+/* --- 📱 レスポンシブ最適化 --- */
 @media (max-width: 1440px) {
-  .registryMainTitle { font-size: 40px; }
+  .registryMainTitle { font-size: 6vw; }
+  .wrapper { grid-template-columns: 300px 1fr; gap: 40px; }
 }
 
-@media (max-width: 1024px) {
-  .wrapper {
-    grid-template-columns: 1fr;
-    gap: 40px;
+@media (max-width: 1100px) {
+  .wrapper { 
+    grid-template-columns: 1fr; 
+    margin-top: 20px;
   }
-  .sidebar { order: 2; }
-  .contentStream { order: 1; }
-  .systemStats { display: none; }
-  .sidebarSticky { position: relative; top: 0; }
-}
-
-@media (max-width: 768px) {
-  .platformTitle { font-size: 24px; }
-  .registryMainTitle { font-size: 28px; }
-  .megaTerminalBtn { 
-    width: 100%; 
-    padding: 20px; 
-    letter-spacing: 0.2em; 
-    font-size: 12px;
+  .sidebarSticky { 
+    position: static; 
+    max-height: none; 
+    margin-bottom: 40px;
+    padding-right: 0;
   }
 }

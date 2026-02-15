@@ -10,7 +10,7 @@ from api.utils.raw_data_manager import bulk_insert_or_update
 logger = logging.getLogger('adult.fetch_fanza')
 
 class Command(BaseCommand):
-    help = 'DMM/FANZA APIから全フロアを巡回し、指定ページ数（最大500P）を構造維持したまま保存します。'
+    help = 'DMM/FANZA APIから全フロアを巡回し、リトライ機能を備えた状態で構造維持保存します。'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -22,7 +22,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--pages',
             type=int,
-            default=5, # デフォルトで5ページ（500件）分くらいは回すように設定
+            default=5,
             help='各フロアで何ページ分取得するか（1ページ100件）',
         )
         parser.add_argument(
@@ -40,19 +40,29 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"📡 起動: {start_page}ページ目から {limit_pages}ページ分を各フロアで取得します"))
         
-        try:
-            # 全フロアの動的メニュー（サービス・フロアのリスト）を取得
-            menu_list = client.get_dynamic_menu()
-            if options['floor_limit']:
-                menu_list = menu_list[:options['floor_limit']]
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(f"メニュー取得失敗: {e}"))
+        # 1. フロアメニューの取得（リトライ付き）
+        menu_list = []
+        max_menu_retries = 3
+        for i in range(max_menu_retries):
+            try:
+                menu_list = client.get_dynamic_menu()
+                if options['floor_limit']:
+                    menu_list = menu_list[:options['floor_limit']]
+                break
+            except Exception as e:
+                wait_time = (i + 1) * 5
+                self.stdout.write(self.style.WARNING(f"メニュー取得失敗 (試行 {i+1}/{max_menu_retries}): {e}. {wait_time}秒後に再試行..."))
+                time.sleep(wait_time)
+        
+        if not menu_list:
+            self.stdout.write(self.style.ERROR("全試行に失敗。メニューが取得できないため終了します。"))
             return
 
         self.stdout.write(f"合計 {len(menu_list)} 個のフロアを巡回対象に設定しました。\n")
 
         total_saved_all = 0
 
+        # 2. フロアごとの巡回
         for target in menu_list:
             service = target['service']
             floor = target['floor']
@@ -60,60 +70,77 @@ class Command(BaseCommand):
             
             self.stdout.write(self.style.MIGRATE_LABEL(f"\n>> ターゲット開始: [{site_label}] {target['label']}"))
             
-            # 各フロアごとに offset を計算してループ
             for p in range(limit_pages):
                 current_page = start_page + p
                 current_offset = ((current_page - 1) * hits_per_page) + 1
                 
-                # APIの物理限界 50,000件（500ページ相当）を超えたら強制終了
                 if current_offset > 50000:
-                    self.stdout.write(self.style.WARNING(f"   - Offset上限(50,000)に達したため {target['label']} を切り上げます。"))
+                    self.stdout.write(self.style.WARNING(f"   - Offset上限(50,000)到達のため切り上げ"))
                     break
 
-                try:
-                    # 💡 構造（タグ情報含む全体）を維持して取得
-                    data = client.fetch_item_list(
-                        site=target['site'],
-                        service=service,
-                        floor=floor,
-                        hits=hits_per_page,
-                        offset=current_offset,
-                        sort='date'
-                    )
-                    
-                    result = data.get('result', {})
-                    items = result.get('items', [])
-                    
-                    if not items:
-                        self.stdout.write(f"   - {current_page}ページ目: データ空のため終了。")
-                        break
+                # 3. 各ページ取得のリトライループ
+                max_page_retries = 5
+                success = False
+                
+                for retry_count in range(max_page_retries):
+                    try:
+                        self.stdout.write(f"   - {current_page}ページ目 (offset: {current_offset}) 取得中... (試行 {retry_count+1})")
+                        
+                        data = client.fetch_item_list(
+                            site=target['site'],
+                            service=service,
+                            floor=floor,
+                            hits=hits_per_page,
+                            offset=current_offset,
+                            sort='date'
+                        )
+                        
+                        # 4. JSONレスポンスの検証
+                        if not data or 'result' not in data:
+                            raise ValueError("不完全なレスポンスを受信しました")
 
-                    # 💡 重複判定用のIDを「場所」と「時間」で一意にする
-                    # これにより、あとで「いつの時点のどのページか」を特定して解析できる
-                    unique_batch_id = f"{floor}-{current_offset}-{int(timezone.now().timestamp())}"
+                        result = data.get('result', {})
+                        items = result.get('items', [])
+                        
+                        if not items:
+                            self.stdout.write(f"   - ページ空のためフロア終了。")
+                            success = True # これ以上データがないのでこのフロアは成功扱いで抜ける
+                            p = limit_pages # 外側のページループも終了させる
+                            break
 
-                    raw_data_batch = [{
-                        'api_source': site_label,
-                        'api_product_id': unique_batch_id,
-                        'raw_json_data': json.dumps(data, ensure_ascii=False), # 丸ごと保存（タグを死守）
-                        'api_service': service,
-                        'api_floor': floor,
-                        'migrated': False,
-                        'updated_at': timezone.now(),
-                    }]
+                        # 5. Rawデータ保存
+                        current_time = timezone.now()
+                        unique_batch_id = f"FANZA-{floor}-{current_offset}-{int(current_time.timestamp())}"
 
-                    # 生データ保存実行
-                    bulk_insert_or_update(batch=raw_data_batch)
-                    
-                    saved_count = len(items)
-                    total_saved_all += saved_count
-                    self.stdout.write(f"   - {current_page}ページ目: {saved_count}件取得保存完了")
+                        raw_data_batch = [{
+                            'api_source': site_label,
+                            'api_product_id': unique_batch_id,
+                            'raw_json_data': json.dumps(data, ensure_ascii=False),
+                            'api_service': service,
+                            'api_floor': floor,
+                            'migrated': False,
+                            'updated_at': current_time,
+                            'created_at': current_time,
+                        }]
 
-                    # インターバル（BAN対策）
-                    time.sleep(1.5)
+                        bulk_insert_or_update(batch=raw_data_batch)
+                        
+                        saved_count = len(items)
+                        total_saved_all += saved_count
+                        self.stdout.write(self.style.SUCCESS(f"     ✅ 保存完了: {saved_count}件"))
+                        
+                        success = True
+                        break # 成功したのでリトライループを抜ける
 
-                except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"   - {current_page}ページ目でエラー発生: {e}"))
-                    continue # エラーが起きても次のページ/フロアへ
+                    except Exception as e:
+                        wait = (2 ** retry_count) + 1 # 指数バックオフ: 2, 3, 5, 9, 17秒...
+                        self.stdout.write(self.style.ERROR(f"     ❌ エラー: {e}. {wait}秒後にリトライ..."))
+                        time.sleep(wait)
 
-        self.stdout.write(self.style.SUCCESS(f"\n✅ 全フロア巡回完了！ 合計 {total_saved_all} 件のデータを構造を保ったまま格納しました。"))
+                if not success:
+                    self.stdout.write(self.style.ERROR(f"   - {current_page}ページ目は最大リトライを超過。スキップします。"))
+
+                # 負荷軽減インターバル
+                time.sleep(1.5)
+
+        self.stdout.write(self.style.SUCCESS(f"\n✅ 全フロア巡回完了！ 合計 {total_saved_all} 件のデータを保存しました。"))

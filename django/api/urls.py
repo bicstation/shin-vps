@@ -2,7 +2,8 @@
 from django.urls import path
 from api import views
 
-# 🚀 app_name を指定することで、他アプリとの名前空間の衝突を防ぎます
+# 🚀 app_name を指定。
+# ルートの urls.py で include('api.urls') とだけ書けば、自動的に 'api:<name>' で逆引き可能になります。
 app_name = 'api'
 
 urlpatterns = [
@@ -22,7 +23,7 @@ urlpatterns = [
     path('auth/user/', views.get_user_view, name='api_user'),
 
     # ==========================================================
-    # 2. PC・ソフトウェア製品 (PCProduct)
+    # 2. PC・ソフトウェア製品 (PCProduct / 価格履歴)
     # ==========================================================
     path('pc-products/ranking/', views.PCProductRankingView.as_view(), name='pc_product_ranking'),
     path('pc-makers/', views.PCProductMakerListView.as_view(), name='pc_maker_list'),
@@ -33,9 +34,9 @@ urlpatterns = [
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # ==========================================================
-    # 3. 🛡️ 統合アダルト共通ゲートウェイ (レコメンド / 横断検索 / トップページ)
+    # 3. 🛡️ 統合アダルト共通ゲートウェイ (横断検索 / 関連レコメンド)
     # ==========================================================
-    # 💡 source パラメータなしでリクエストすると、全プラットフォームの最新データがミックスされます
+    # 💡 内部で api_source (FANZA/DUGA) を動的に判定し、フロントエンドに統一された型を返します
     path('unified-adult-products/', views.UnifiedAdultProductListView.as_view(), name='unified_adult_products'),
 
     # ==========================================================
@@ -45,13 +46,15 @@ urlpatterns = [
     path('fanza-products/<str:unique_id>/', views.FanzaProductDetailAPIView.as_view(), name='fanza_product_detail'),
 
     # ==========================================================
-    # 5. アダルト/DUGA商品 (AdultProduct)
+    # 5. アダルト/DUGA/統合商品 (AdultProduct)
     # ==========================================================
-    # 💡 統合解析エンドポイント
-    # サイドバーの 'CLASSIFICATION' セクションに必要な「フロア」や「属性」の仕訳を返却します
+    # 💡 サイドバー統計（フロア・ジャンル・メーカー・著者・属性のカウント）
     path('adult-products/analysis/', views.PlatformMarketAnalysisAPIView.as_view(), name='platform_market_analysis'),
     
+    # 💡 AIスコア（Matrix Score）に基づくランキング。
     path('adult-products/ranking/', views.AdultProductRankingAPIView.as_view(), name='adult_product_ranking'),
+    
+    # 💡 AdultProduct 本体（DUGA等）
     path('adult-products/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
     path('adult-products/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
@@ -64,12 +67,13 @@ urlpatterns = [
     # ==========================================================
     # 7. 🏷️ マスターデータ (全プラットフォーム統合版)
     # ==========================================================
-    # 💡 修正後の View により、api_source 指定なしで「メーカー」や「女優」の全件取得が可能です
+    # 💡 サイドバーや詳細ページのリレーション表示に必須
     path('actresses/', views.ActressListAPIView.as_view(), name='actress_list'),
     path('genres/', views.GenreListAPIView.as_view(), name='genre_list'),
     path('makers/', views.MakerListAPIView.as_view(), name='maker_list'),
     path('labels/', views.LabelListAPIView.as_view(), name='label_list'),
     path('directors/', views.DirectorListAPIView.as_view(), name='director_list'),
     path('series/', views.SeriesListAPIView.as_view(), name='series_list'),
+    # 🚀 著者(Author)エンドポイント：電子書籍・コミック対応の肝
     path('authors/', views.AuthorListAPIView.as_view(), name='author_list'),
 ]

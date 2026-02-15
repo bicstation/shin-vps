@@ -20,7 +20,7 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 # FANZAソースのレコードのみをフィルタリング
-                qs = RawApiData.objects.filter(api_source=self.API_SOURCE)
+                qs = RawApiData.objects.filter(api_source__iexact=self.API_SOURCE)
                 
                 # 更新対象の件数を取得
                 total_count = qs.count()

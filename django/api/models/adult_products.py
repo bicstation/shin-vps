@@ -61,7 +61,7 @@ class AdultProduct(models.Model):
         related_name='adult_products', verbose_name="生データソース"
     )
     api_source = models.CharField(
-        max_length=20, verbose_name="ソース元", help_text="fanza / dmm / duga"
+        max_length=20, verbose_name="ソース元", help_text="FANZA / DMM / DUGA"
     )
     floor_code = models.CharField(
         max_length=50, verbose_name="フロア識別", 
@@ -72,7 +72,7 @@ class AdultProduct(models.Model):
     )
     product_id_unique = models.CharField(
         max_length=255, unique=True, verbose_name="システム内一意識別子", 
-        help_text="例: fanza_unlimited_b079akroe00078 (重複登録防止用)"
+        help_text="例: FANZA_unlimited_b079akroe00078 (重複登録防止用)"
     )
     content_id = models.CharField(
         max_length=255, null=True, blank=True, db_index=True, verbose_name="コンテンツID"
@@ -173,26 +173,45 @@ class AdultProduct(models.Model):
     actresses = models.ManyToManyField(Actress, related_name='products', verbose_name="出演女優/声優")
     attributes = models.ManyToManyField(AdultAttribute, blank=True, related_name='products', verbose_name="AI抽出・詳細タグ")
 
-    # --- 🤖 AI & コミュニティ演出（AIソムリエの主戦場） ---
+    # --- 🤖 AI & コミュニティ演出 ---
     ai_content = models.TextField(
         null=True, blank=True, 
         verbose_name="AI生成独自レビュー", 
-        help_text="【AIへの指示】rich_descriptionを元に、読者の欲情を煽るブログ記事風レビューを生成してください。"
+        help_text="【AIへの指示】rich_descriptionを元に、ブログ記事風レビューを生成。"
     )
     ai_summary = models.CharField(
         max_length=500, null=True, blank=True, 
         verbose_name="AIキャッチコピー", 
-        help_text="【AIへの指示】一覧画面で目を引くための強烈な1行キャッチコピーを生成してください。"
+        help_text="【AIへの指示】一覧画面で目を引く1行キャッチコピーを生成。"
     )
     ai_chat_comments = models.JSONField(
         default=list, blank=True, 
         verbose_name="疑似チャット/掲示板", 
-        help_text="【AIへの指示】複数のユーザーになりきって、作品に対する期待や感想を3〜5件生成してください。"
+        help_text="【AIへの指示】複数のユーザーになりきった期待や感想。"
     )
     target_segment = models.CharField(
         max_length=255, null=True, blank=True, 
         verbose_name="ターゲット層", 
-        help_text="【AIへの指示】この作品が最も刺さる層を特定してください（例：新人発掘好き、ムチムチ熟女ファン等）。"
+        help_text="【AIへの指示】この作品が最も刺さる層を特定。"
+    )
+
+    # --- 🚀 NEW: Matrix Scoring & Analysis (V9.9 Frontend Sync) ---
+    score_visual = models.IntegerField(
+        default=0, verbose_name="視覚的完成度スコア", help_text="0-100"
+    )
+    score_story = models.IntegerField(
+        default=0, verbose_name="シナリオ強度スコア", help_text="0-100"
+    )
+    score_fetish = models.IntegerField(
+        default=0, verbose_name="フェティシズム濃度スコア", help_text="0-100"
+    )
+    score_cost_performance = models.IntegerField(
+        default=0, verbose_name="コストパフォーマンス", help_text="0-100"
+    )
+    ranking_trend = models.JSONField(
+        default=list, blank=True, 
+        verbose_name="ランキング推移", 
+        help_text="[数値, 数値...] の配列データ"
     )
 
     # --- ⚙️ 管理・公開設定 ---
@@ -224,9 +243,15 @@ class AdultProduct(models.Model):
         # 1. 表記のゆれを統一 (全角・半角の正規化)
         if self.title:
             self.title = unicodedata.normalize('NFKC', self.title).strip()
+            
+        # 👑 表示用のソース元を大文字（FANZA等）に固定
+        if self.api_source:
+            self.api_source = self.api_source.upper()
         
-        # 2. 統合ユニークIDの生成
+        # 2. 統合ユニークIDの生成 (内部IDは常に小文字で安全に)
         if not self.product_id_unique:
+            # api_sourceが大文字になっていても、ここで再度 lower() するので
+            # IDは一貫して fanza_floor_apiid 形式になる
             self.product_id_unique = f"{self.api_source}_{self.floor_code}_{self.api_product_id}".lower()
 
         # 3. 割引率の自動計算

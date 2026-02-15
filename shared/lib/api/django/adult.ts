@@ -6,292 +6,174 @@ import { AdultProduct } from '../types';
 
 /**
  * ==============================================================================
- * 🔞 TIPER API Middleware - Django Connector (Full-Sync Edition V2.5)
+ * 🚀 内部ロジック: 競合回避 & 階層吸収
  * ==============================================================================
- * このファイルは Django 側の views.py / urls.py と 1対1 で同期しています。
- * 修正日: 2026-02-14 (URL解決ロジックの堅牢化)
  */
+
+/** 💡 汎用データ抽出: Djangoのページネーション有無にかかわらず配列を返す */
+const safeExtract = (data: any) => {
+    if (!data) return [];
+    return Array.isArray(data) ? data : (data.results || []);
+};
 
 /**
- * 💡 1. 統合製品詳細取得 (最重要エンドポイント)
- * 個別ページ (page.tsx) から呼ばれるメインの取得ロジック。
- * Django 側の RetrieveAPIView の lookup_field 設定に合わせてエンドポイントを選択します。
+ * ==============================================================================
+ * 💡 1. 製品詳細 & アーカイブ取得 (Core)
+ * ==============================================================================
  */
+
+/** 💡 製品詳細取得 (FANZA/Django自動振り分け) */
 export async function getAdultProductDetail(id: string | number, source?: string): Promise<AdultProduct | null> {
     const idStr = String(id);
+    const endpoint = (idStr.startsWith('DMM_') || idStr.startsWith('FANZA_') || source === 'DMM' || source === 'FANZA') 
+        ? `/api/fanza-products/${idStr}/` : `/api/adult-products/${idStr}/`;
     
-    // 🚨 Django の urls.py 定義に厳密に合わせるためのルーティング
-    let endpoint = '';
-    
-    if (
-        idStr.startsWith('DMM_') || 
-        idStr.startsWith('FANZA_') || 
-        source === 'DMM' || 
-        source === 'FANZA'
-    ) {
-        // FANZA/DMM系: path('fanza-products/<str:unique_id>/', ...)
-        endpoint = `/api/fanza-products/${idStr}/`;
-    } else {
-        // Adult/DUGA系: path('adult-products/<str:product_id_unique>/', ...)
-        endpoint = `/api/adult-products/${idStr}/`;
-    }
-
-    const url = resolveApiUrl(endpoint);
-    console.log(`📡 [BYPASS] Fetching product data from: ${url}`);
-
     try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 60 },
-            cache: 'no-store' // 常に最新の在庫・価格情報を反映
+        const res = await fetch(resolveApiUrl(endpoint), { headers: getDjangoHeaders(), cache: 'no-store' });
+        const data = await handleResponseWithDebug(res, resolveApiUrl(endpoint));
+        return (data && !data._error) ? data : null;
+    } catch { return null; }
+}
+
+/** 💡 統合製品一覧 (Unified) */
+export async function getUnifiedProducts(params: any = {}) {
+    const { site_group } = getSiteMetadata(); 
+    const query = new URLSearchParams({ site_group: site_group || 'adult', ...params });
+    try {
+        const res = await fetch(resolveApiUrl(`/api/unified-adult-products/?${query}`), { headers: getDjangoHeaders() });
+        const data = await res.json();
+        return { results: safeExtract(data), count: data?.count || 0 };
+    } catch { return { results: [], count: 0 }; }
+}
+
+/** 💡 個別製品一覧 (Standard) */
+export async function getAdultProducts(params: any = {}) {
+    const query = new URLSearchParams({ ...params });
+    try {
+        const res = await fetch(resolveApiUrl(`/api/adult-products/?${query}`), { headers: getDjangoHeaders() });
+        const data = await res.json();
+        return { results: safeExtract(data), count: data?.count || 0 };
+    } catch { return { results: [], count: 0 }; }
+}
+
+/**
+ * ==============================================================================
+ * 💡 2. マーケット分析 & サイドバー集計 (Analysis)
+ * ==============================================================================
+ */
+
+/** * 💡 サイドバー用の集計データ取得 
+ * 修正点: パラメータ名を api_source に柔軟に対応させ、トップページ用の mode を許容 
+ */
+export async function getPlatformAnalysis(source: string, params: any = {}) {
+    // 💡 既存の 'source' キーと新しい 'api_source' キーの両方を考慮
+    const queryParams = {
+        api_source: source.toUpperCase(),
+        ...params
+    };
+    
+    // もし引数に source が直接入っていたら削除して api_source に統一
+    if (queryParams.source) delete queryParams.source;
+
+    const query = new URLSearchParams(queryParams);
+    
+    try {
+        const res = await fetch(resolveApiUrl(`/api/adult-products/analysis/?${query}`), { 
+            headers: getDjangoHeaders(),
+            next: { revalidate: 3600 } // 統計データなので1時間キャッシュ
         });
-        
-        const data = await handleResponseWithDebug(res, url);
-        
-        if (!data || data._error || data.detail === "見つかりませんでした。" || data.detail === "Not found.") {
-            console.warn(`⚠️ [BYPASS 404] Node not found in Django DB: ${idStr} at ${url}`);
-            return null;
-        }
-        
-        return data;
-    } catch (e) { 
-        console.error("❌ [BYPASS CRITICAL ERROR] Connection failed between Next.js and Django:", e);
+        const data = await res.json();
+        // Djangoが results で包んでいる場合と、生の集計オブジェクトの場合の両方をカバー
+        return data.results ? data.results : data;
+    } catch (err) { 
+        console.error("ANALYSIS_FETCH_ERROR:", err);
         return null; 
     }
 }
 
 /**
- * 💡 2. 統合製品アーカイブ取得 (Unified)
- * UnifiedAdultProductListView (/api/unified-adult-products/) を使用。
- * フロントの offset/limit を Django の PageNumberPagination 形式に変換。
+ * ==============================================================================
+ * 💡 3. プラットフォーム別メニュー構造 (Menu Structure)
+ * ==============================================================================
  */
-export async function getUnifiedProducts(params: any = {}): Promise<{ results: AdultProduct[]; count: number; _debug?: any }> {
-    const { site_group } = getSiteMetadata(); 
-    const endpoint = '/api/unified-adult-products/';
 
-    const { limit, offset, ...rest } = params;
-    const pageSize = limit || 24;
-    const page = offset ? Math.floor(offset / pageSize) + 1 : (params.page || 1);
-
-    const queryParams = new URLSearchParams({ 
-        site_group: site_group || 'adult', 
-        page: String(page),
-        page_size: String(pageSize),
-        ...rest 
-    });
-
-    const url = resolveApiUrl(`${endpoint}?${queryParams.toString()}`);
-
+/** 💡 FANZA ダイナミックメニュー取得 */
+export async function getFanzaDynamicMenu() {
     try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 60 }, 
-            signal: AbortSignal.timeout(10000) 
-        });
-        const data = await handleResponseWithDebug(res, url);
-        
-        return { 
-            results: Array.isArray(data?.results) ? data.results : [], 
-            count: data?.count || 0, 
-            _debug: data?._debug || { url, page, pageSize }
-        };
-    } catch (e: any) { 
-        console.error("❌ [BYPASS ERROR] getUnifiedProducts failed:", e);
-        return { results: [], count: 0, _debug: { error: e.message, url } }; 
-    }
+        const res = await fetch(resolveApiUrl('/api/fanza/menu-structure/'), { headers: getDjangoHeaders() });
+        return safeExtract(await res.json());
+    } catch { return []; }
 }
 
-/**
- * 💡 3. 個別製品一覧 (DUGA/AdultProduct専用)
- */
-export async function getAdultProducts(params: any = {}): Promise<{ results: AdultProduct[]; count: number; _debug?: any }> {
-    const { site_group } = getSiteMetadata(); 
-    const queryParams = new URLSearchParams({ site_group: site_group || 'adult', ...params });
-    const url = resolveApiUrl(`/api/adult-products/?${queryParams.toString()}`);
-    
+/** 💡 DUGA ダイナミックメニュー取得 */
+export async function getDugaDynamicMenu() {
     try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 60 }, 
-            signal: AbortSignal.timeout(10000) 
-        });
-        const data = await handleResponseWithDebug(res, url);
-        return { 
-            results: data.results || [], 
-            count: data.count || 0, 
-            _debug: data._debug 
-        };
-    } catch (e: any) { 
-        return { results: [], count: 0, _debug: { error: e.message, url } }; 
-    }
+        const res = await fetch(resolveApiUrl('/api/duga/menu-structure/'), { headers: getDjangoHeaders() });
+        return safeExtract(await res.json());
+    } catch { return []; }
 }
 
-/**
- * 💡 4. マーケット分析・仕訳データ取得 (Analysis)
- * サイドメニューや統計グラフの描画を支えます。
- */
-export async function getPlatformAnalysis(source: string, makerId?: string | number): Promise<any | null> {
-    const queryParams = new URLSearchParams({ source: source.toUpperCase() });
-    if (makerId) queryParams.append('maker_id', String(makerId));
-
-    const url = resolveApiUrl(`/api/adult-products/analysis/?${queryParams.toString()}`);
-    console.log(`📊 [ANALYSIS] Fetching market classification from: ${url}`);
-
+/** 💡 DMM(一般) ダイナミックメニュー取得 */
+export async function getDmmDynamicMenu() {
     try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 3600 } 
-        });
-        const data = await res.json();
-        return data;
-    } catch (e) {
-        console.error("❌ [ANALYSIS ERROR] Failed to fetch market analysis:", e);
-        return null;
-    }
-}
-
-/**
- * 💡 5. メーカー一覧取得
- */
-export async function fetchMakers(params: any = {}): Promise<any[]> {
-    const url = resolveApiUrl(`/api/makers/?${new URLSearchParams(params).toString()}`);
-    try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 3600 } 
-        });
-        const data = await res.json();
-        return Array.isArray(data) ? data : (data.results || []);
-    } catch (e) { 
-        console.error("❌ [BYPASS ERROR] fetchMakers failed:", e);
-        return []; 
-    }
-}
-
-/**
- * 💡 6. ランキング取得 (AIスコア順)
- */
-export async function fetchAdultProductRanking(params: any = {}): Promise<{ results: AdultProduct[]; count: number; _debug?: any }> {
-    const url = resolveApiUrl(`/api/adult-products/ranking/`);
-    
-    try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 3600 }, 
-            signal: AbortSignal.timeout(10000) 
-        });
-        const data = await handleResponseWithDebug(res, url);
-        
-        const results = Array.isArray(data) ? data : (data.results || []);
-        return { 
-            results: results, 
-            count: data.count || results.length, 
-            _debug: data._debug 
-        };
-    } catch (e: any) { 
-        console.error("❌ [BYPASS ERROR] fetchAdultProductRanking failed:", e);
-        return { results: [], count: 0, _debug: { error: e.message, url } }; 
-    }
-}
-
-/**
- * 💡 7. ジャンル一覧取得
- */
-export async function fetchGenres(params: any = {}): Promise<any[]> {
-    const url = resolveApiUrl(`/api/genres/?${new URLSearchParams(params).toString()}`);
-    try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 3600 } 
-        });
-        const data = await res.json();
-        return Array.isArray(data) ? data : (data.results || []);
-    } catch (e) { 
-        console.error("❌ [BYPASS ERROR] fetchGenres failed:", e);
-        return []; 
-    }
-}
-
-/**
- * 💡 8. FANZA/DMM ダイナミックメニュー取得
- * explorer.py で使用している get_dynamic_menu() の結果を API 経由で取得します。
- * これにより、サイドメニューのフロア仕訳を完全自動化します。
- */
-export async function getFanzaDynamicMenu(): Promise<any[]> {
-    const url = resolveApiUrl('/api/fanza/menu-structure/');
-    
-    try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(),
-            next: { revalidate: 86400 } // フロア構成は頻繁に変わらないため24時間キャッシュ
-        });
-        const data = await res.json();
-        
-        // 配列であることを保証して返す
-        return Array.isArray(data) ? data : [];
-    } catch (e) {
-        console.error("❌ [MENU ERROR] Failed to fetch dynamic FANZA menu:", e);
-        return [];
-    }
-}
-
-/**
- * 💡 9. シリーズ一覧取得 (追加)
- */
-export async function fetchSeries(params: any = {}): Promise<any[]> {
-    const url = resolveApiUrl(`/api/series/?${new URLSearchParams(params).toString()}`);
-    try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 3600 } 
-        });
-        const data = await res.json();
-        return Array.isArray(data) ? data : (data.results || []);
-    } catch (e) { 
-        console.error("❌ [BYPASS ERROR] fetchSeries failed:", e);
-        return []; 
-    }
-}
-
-/**
- * 💡 10. 監督一覧取得 (追加)
- */
-export async function fetchDirectors(params: any = {}): Promise<any[]> {
-    const url = resolveApiUrl(`/api/directors/?${new URLSearchParams(params).toString()}`);
-    try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 3600 } 
-        });
-        const data = await res.json();
-        return Array.isArray(data) ? data : (data.results || []);
-    } catch (e) { 
-        console.error("❌ [BYPASS ERROR] fetchDirectors failed:", e);
-        return []; 
-    }
-}
-
-/**
- * 💡 11. 著者・出演者一覧取得 (今回のエラー原因)
- */
-export async function fetchAuthors(params: any = {}): Promise<any[]> {
-    const url = resolveApiUrl(`/api/authors/?${new URLSearchParams(params).toString()}`);
-    try {
-        const res = await fetch(url, { 
-            headers: getDjangoHeaders(), 
-            next: { revalidate: 3600 } 
-        });
-        const data = await res.json();
-        return Array.isArray(data) ? data : (data.results || []);
-    } catch (e) { 
-        console.error("❌ [BYPASS ERROR] fetchAuthors failed:", e);
-        return []; 
-    }
+        const res = await fetch(resolveApiUrl('/api/dmm/menu-structure/'), { headers: getDjangoHeaders() });
+        return safeExtract(await res.json());
+    } catch { return []; }
 }
 
 /**
  * ==============================================================================
- * 🔄 別名エクスポート (互換性維持)
+ * 💡 4. 各種マスタデータ一覧 (Masters)
+ * ==============================================================================
+ */
+
+export const fetchMakers = async (p?: any) => {
+    try {
+        const res = await fetch(resolveApiUrl(`/api/makers/?${new URLSearchParams(p)}`), { headers: getDjangoHeaders() });
+        return safeExtract(await res.json());
+    } catch { return []; }
+};
+
+export const fetchGenres = async (p?: any) => {
+    try {
+        const res = await fetch(resolveApiUrl(`/api/genres/?${new URLSearchParams(p)}`), { headers: getDjangoHeaders() });
+        return safeExtract(await res.json());
+    } catch { return []; }
+};
+
+export const fetchSeries = async (p?: any) => {
+    try {
+        const res = await fetch(resolveApiUrl(`/api/series/?${new URLSearchParams(p)}`), { headers: getDjangoHeaders() });
+        return safeExtract(await res.json());
+    } catch { return []; }
+};
+
+export const fetchDirectors = async (p?: any) => {
+    try {
+        const res = await fetch(resolveApiUrl(`/api/directors/?${new URLSearchParams(p)}`), { headers: getDjangoHeaders() });
+        return safeExtract(await res.json());
+    } catch { return []; }
+};
+
+export const fetchAuthors = async (p?: any) => {
+    try {
+        const res = await fetch(resolveApiUrl(`/api/authors/?${new URLSearchParams(p)}`), { headers: getDjangoHeaders() });
+        return safeExtract(await res.json());
+    } catch { return []; }
+};
+
+/** 💡 ランキング取得 */
+export async function fetchAdultProductRanking() {
+    try {
+        const res = await fetch(resolveApiUrl(`/api/adult-products/ranking/`), { headers: getDjangoHeaders() });
+        const data = await res.json();
+        return { results: safeExtract(data), count: data?.count || 0 };
+    } catch { return { results: [], count: 0 }; }
+}
+
+/**
+ * ==============================================================================
+ * 🔄 別名エクスポート
  * ==============================================================================
  */
 export const getUnifiedProductDetail = getAdultProductDetail;

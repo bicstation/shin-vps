@@ -1,6 +1,6 @@
 /**
- * 🏗️ [TIPER-LIVE-LAYOUT-CSS] - FULL WIDTH EDITION
- * アダルト・クリエイター支援サイト専用構造 (全幅対応版)
+ * 🏗️ [TIPER-LIVE-LAYOUT-CSS] - FULL WIDTH OPTIMIZED (FINAL)
+ * 全幅対応 ＆ サイドバー可動域最大化
  */
 
 /* 1. 全体を包むラッパー */
@@ -10,9 +10,11 @@
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #111122; /* サイト全体のベース背景色 */
+  background-color: #06060a;
   color: #ffffff;
-  overflow-x: hidden; /* 横スクロールの発生を防止 */
+  /* 💡 stickyの天敵 overflow: hidden を避け、横だけを隠す */
+  overflow-x: hidden;
+  overflow-y: visible; 
 }
 
 /* 2. 告知・年齢制限バー */
@@ -21,51 +23,58 @@
   padding: 8px 15px;
   font-size: 11px;
   text-align: center;
-  background-color: rgba(0, 0, 0, 0.5); 
+  background-color: rgba(0, 0, 0, 0.85); 
   color: #94a3b8;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(233, 69, 96, 0.3);
   letter-spacing: 0.05em;
-  z-index: 50;
+  z-index: 1000;
   box-sizing: border-box;
+  font-family: 'JetBrains Mono', monospace;
+  backdrop-filter: blur(10px);
 }
 
 .ageLimit {
   margin-left: 10px;
   color: #e94560; 
   font-weight: 800;
+  text-shadow: 0 0 8px rgba(233, 69, 96, 0.5);
 }
 
 /* 3. レイアウトの外枠 (全幅設定) */
 .layoutContainer {
-  flex: 1;
+  flex: 1 0 auto; /* 💡 画面の高さに応じて自動で伸びる */
   width: 100%;
-  /* 💡 max-width を削除または 100% にして全幅化 */
   max-width: 100%; 
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 /* 4. サイドバーとメインを横並びにするインナー */
-/* ページ側でこのクラスを使う場合は、ここでも幅を100%にします */
 .layoutInner {
   display: flex;
   width: 100%;
-  gap: 0; /* サイドバーとの隙間はページ側のコンテナで制御 */
+  gap: 0;
   padding: 0;
+  /* 💡 重要: サイドバーを右側コンテンツと同じ高さまで強制的に引き伸ばす */
+  align-items: stretch; 
+  position: relative;
+  flex: 1;
 }
 
 /* 5. メインコンテンツ */
 .mainContent {
-  flex: 1;
+  flex: 1 0 auto;
   width: 100%;
-  min-width: 0; /* フレックスボックス内での突き抜け防止 */
+  min-width: 0;
   min-height: 100vh;
-  animation: fadeIn 0.6s ease-out;
+  animation: fadeIn 0.6s cubic-bezier(0.19, 1, 0.22, 1);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 /* 6. モバイル対応 */
@@ -79,34 +88,37 @@
 @media (max-width: 768px) {
   .adDisclosure {
     font-size: 10px;
-    padding: 6px 10px;
+    padding: 8px 10px;
+    line-height: 1.4;
   }
-  
   .ageLimit {
-    display: block; /* スマホでは改行させて視認性を確保 */
-    margin-left: 0;
-    margin-top: 2px;
+    display: inline-block;
+    margin-left: 5px;
   }
 }
 
 /* 7. ページフェードイン */
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(10px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* 8. ユーティリティ：コンテンツの「中身」だけ中央寄せにしたい場合用 */
-/* 各 page.tsx 内の div などに適用してください */
+/* 8. ユーティリティ */
 .contentContainer {
   width: 100%;
-  max-width: 1600px;
+  max-width: 1800px;
   margin: 0 auto;
-  padding: 0 5%;
+  padding: 0 4%;
   box-sizing: border-box;
+}
+
+.systemGrid {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    linear-gradient(rgba(233, 69, 96, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(233, 69, 96, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: -1;
 }

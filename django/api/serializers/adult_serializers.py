@@ -9,7 +9,7 @@ from api.models import (
     LinkshareProduct
 )
 
-# 💡 PCAttribute 相互参照回避の try-except 処理
+# 💡 PCAttribute 相互参照回避の try-except 処理 (既存ロジックを維持)
 try:
     from api.models.pc_products import PCAttribute
 except ImportError:
@@ -36,7 +36,7 @@ class BaseMasterSerializer(serializers.ModelSerializer):
 
     def get_api_source(self, obj):
         """
-        オブジェクト属性、または辞書キーから api_source を取得
+        オブジェクト属性、または辞書キーから api_source を取得し、一貫して大文字で返却
         """
         if isinstance(obj, dict):
             return obj.get('api_source', 'COMMON').upper()
@@ -46,7 +46,7 @@ class BaseMasterSerializer(serializers.ModelSerializer):
             return source.upper()
         return 'COMMON'
 
-# --- 各マスターモデルの実装 ---
+# --- 各マスターモデルの実装 (BaseMasterSerializerを継承) ---
 class MakerSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): 
         model = Maker
@@ -107,18 +107,21 @@ if PCAttribute:
 
 class AdultProductSerializer(serializers.ModelSerializer): 
     """
-    正規化された DUGA/DMM/FANZA データを統合管理
+    正規化された DUGA/DMM/FANZA データを統合管理。
+    AIスコア、AIサマリー、複数著者(authors)に対応した最新版。
     """
     maker = MakerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
     series = SeriesSerializer(read_only=True) 
-    author = AuthorSerializer(read_only=True)  # 💡 追加：著者対応
+    authors = AuthorSerializer(many=True, read_only=True)  # 💡 複数著者対応に統一
     genres = GenreSerializer(many=True, read_only=True)
     actresses = ActressSerializer(many=True, read_only=True)
     attributes = AdultAttributeSerializer(many=True, read_only=True)
     
+    # フロントエンド互換性：product_id_unique を display_id として露出
     display_id = serializers.CharField(source='product_id_unique', read_only=True)
+    # ビューで annotate されるレコメンドスコア
     rel_score = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
@@ -126,9 +129,9 @@ class AdultProductSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'product_id_unique', 'display_id', 'title', 'product_description',
             'release_date', 'affiliate_url', 'price', 'image_url_list', 'sample_movie_url',
-            'api_source', 'maker', 'label', 'director', 'series', 'author', 'genres', 'actresses',
+            'api_source', 'maker', 'label', 'director', 'series', 'authors', 'genres', 'actresses',
             'attributes', 'ai_content', 'ai_summary', 'target_segment',
-            'score_visual', 'score_story', 'score_cost', 'score_erotic', 'score_rarity', 
+            'score_visual', 'score_story', 'score_cost_performance', 'ranking_trend', 
             'spec_score', 'rel_score', 'is_active', 'updated_at'
         )
         read_only_fields = ('id', 'product_id_unique', 'updated_at', 'rel_score')
@@ -143,7 +146,7 @@ class FanzaProductSerializer(serializers.ModelSerializer):
     series = SeriesSerializer(read_only=True)
     genres = GenreSerializer(many=True, read_only=True)
     actresses = ActressSerializer(many=True, read_only=True)
-    authors = AuthorSerializer(many=True, read_only=True) # Fanzaは複数著者の可能性があるためs付き
+    authors = AuthorSerializer(many=True, read_only=True)
 
     display_id = serializers.CharField(source='unique_id', read_only=True)
     api_source = serializers.SerializerMethodField()
@@ -161,6 +164,9 @@ class FanzaProductSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'unique_id', 'updated_at', 'rel_score')
 
     def get_api_source(self, obj):
+        """
+        site_codeを api_source として大文字(FANZA/DMM)で返却
+        """
         if isinstance(obj, dict):
             return obj.get('site_code', 'FANZA').upper()
         return getattr(obj, 'site_code', 'FANZA').upper()

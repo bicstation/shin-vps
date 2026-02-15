@@ -7,15 +7,11 @@ import Link from 'next/link';
 // ✅ スタイル & 共通コンポーネント
 import styles from './page.module.css';
 import ProductCard from '@shared/cards/AdultProductCard';
-import Sidebar from '@shared/layout/Sidebar'; 
-import { getSiteMainPosts } from '@shared/lib/api/wordpress';
+import Sidebar from '@shared/layout/Sidebar/AdultSidebar'; 
+import { getSiteMainPosts, getWpFeaturedImage } from '@shared/lib/api/wordpress';
 import { 
   getUnifiedProducts, 
-  fetchMakers, 
-  fetchGenres, 
-  fetchSeries,   
-  fetchDirectors, 
-  fetchAuthors    
+  getPlatformAnalysis,
 } from '@shared/lib/api/django/adult';
 import { AdultProduct } from '@shared/lib/api/types';
 import { constructMetadata } from '@shared/lib/metadata';
@@ -48,62 +44,81 @@ const decodeHtml = (html: string) => {
     .replace(/&[a-z]+;/gi, (match) => map[match] || match);
 };
 
+/**
+ * 💡 ユーティリティ: 日付フォーマット
+ */
 const formatDate = (dateString: string) => {
   if (!dateString) return '';
-  return new Date(dateString).toLocaleDateString('ja-JP', {
-    year: 'numeric', month: '2-digit', day: '2-digit'
-  });
+  const date = new Date(dateString);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}/${m}/${d}`;
 };
 
 /**
  * 🎬 メインホームコンポーネント
  */
 export default async function Home() {
-  // --- 1. データフェッチの並列実行 (Djangoバックエンドへの集約リクエスト) ---
+  // --- 1. データフェッチの並列実行 ---
   const [
     wpData, 
-    mRes, 
-    gRes,
-    sRes, 
-    dirRes, 
-    autRes, 
+    analysisData, 
     fanzaRes,
     dugaRes,
     dmmRes
   ] = await Promise.all([
     getSiteMainPosts(0, 6).catch(() => ({ results: [] })),
-    fetchMakers({ limit: 12, ordering: '-product_count' }).catch(() => []),
-    fetchGenres({ limit: 12, ordering: '-product_count' }).catch(() => []),
-    fetchSeries({ limit: 12, ordering: '-product_count' }).catch(() => []), 
-    fetchDirectors({ limit: 12, ordering: '-product_count' }).catch(() => []),
-    fetchAuthors({ limit: 12, ordering: '-product_count' }).catch(() => []),
+    getPlatformAnalysis('UNIFIED', { 
+      mode: 'summary', 
+      limit: 15 
+    }).catch((err) => {
+      console.error("ANALYSIS_FETCH_FAILED:", err);
+      return null;
+    }),
     getUnifiedProducts({ limit: 4, api_source: 'FANZA', ordering: '-release_date' }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'DUGA', ordering: '-release_date' }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'DMM', ordering: '-release_date' }).catch(() => ({ results: [] })),
   ]);
 
-  // --- 2. データの正規化 (空配列保証) ---
-  const normalizeData = (res: any) => {
-    if (!res) return [];
-    if (Array.isArray(res)) return res;
-    if (res.results && Array.isArray(res.results)) return res.results;
-    return [];
+  // --- 2. データの正規化 ---
+  const latestPosts = wpData?.results || [];
+  const fanzaProducts = fanzaRes?.results || [];
+  const dugaProducts = dugaRes?.results || [];
+  const dmmProducts = dmmRes?.results || [];
+
+  /**
+   * 💡 サイドバー抽出ヘルパー (修正版)
+   * Djangoのレスポンスが直下か results 内か、どちらでも対応可能にする
+   */
+  const extractSidebarItems = (key: string) => {
+    if (!analysisData) return [];
+
+    // 直下にある場合、または results 内にある場合を探す
+    const data = analysisData[key] || (analysisData.results && analysisData.results[key]);
+
+    // データが配列ならそのまま返し、そうでなければ空配列を返す
+    return Array.isArray(data) ? data : [];
   };
 
-  const makersData = normalizeData(mRes);
-  const genresData = normalizeData(gRes);
-  const seriesData = normalizeData(sRes);
-  const directorsData = normalizeData(dirRes);
-  const authorsData = normalizeData(autRes);
-  const latestPosts = normalizeData(wpData);
-  
-  const fanzaProducts = normalizeData(fanzaRes);
-  const dugaProducts = normalizeData(dugaRes);
-  const dmmProducts = normalizeData(dmmRes);
+  const sidebarProps = {
+    makers: extractSidebarItems('makers'),
+    genres: extractSidebarItems('genres'),
+    series: extractSidebarItems('series'),
+    directors: extractSidebarItems('directors'),
+    authors: extractSidebarItems('authors'),
+    recentPosts: latestPosts.map((p: any) => ({
+      id: p.id.toString(),
+      title: decodeHtml(p.title?.rendered || ''),
+      slug: p.slug
+    }))
+  };
 
-  const isApiConnected = fanzaProducts.length > 0 || dugaProducts.length > 0;
+  const isApiConnected = fanzaProducts.length > 0 || dugaProducts.length > 0 || dmmProducts.length > 0;
 
-  // --- 3. セクションレンダラー (再利用可能なUIパーツ) ---
+  /**
+   * 🎬 セクションレンダラー
+   */
   const renderPlatformSection = (title: string, items: AdultProduct[], source: string) => (
     <section className={styles.platformSection} key={source}>
       <div className={styles.sectionHeader}>
@@ -130,22 +145,12 @@ export default async function Home() {
       <main className={styles.main}>
         <div className={styles.wrapper}>
           
-          {/* 🏗️ サイドバー (Djangoから取得した全6カテゴリのマスターデータを注入) */}
+          {/* 🏗️ 1. サイドバー (サーバーサイド・プロップス注入) */}
           <aside className={styles.sidebar}>
             <div className={styles.sidebarSticky}>
               <div className={styles.sidebarMain}>
-                <Sidebar 
-                  makers={makersData} 
-                  genres={genresData}
-                  series={seriesData}
-                  directors={directorsData}
-                  authors={authorsData}
-                  recentPosts={latestPosts.map((p: any) => ({
-                    id: p.id.toString(),
-                    title: decodeHtml(p.title?.rendered || ''),
-                    slug: p.slug
-                  }))} 
-                />
+                {/* 💡 統計データをスプレッド展開で注入 */}
+                <Sidebar {...sidebarProps} />
               </div>
 
               {!isApiConnected && (
@@ -160,10 +165,10 @@ export default async function Home() {
             </div>
           </aside>
 
-          {/* 🏗️ メインコンテンツエリア */}
+          {/* 🏗️ 2. メインコンテンツストリーム */}
           <div className={styles.contentStream}>
             
-            {/* 1. Intelligence Reports (WordPress ニュース) */}
+            {/* Intelligence Reports (WordPress Posts) */}
             {latestPosts.length > 0 && (
               <section className={styles.newsSection}>
                 <div className={styles.sectionHeader}>
@@ -177,15 +182,19 @@ export default async function Home() {
                     <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
                       <div className={styles.newsThumbWrap}>
                         <img
-                          src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/placeholder.jpg'}
-                          alt={post.title?.rendered}
+                          src={getWpFeaturedImage(post, 'large')}
+                          alt=""
                           className={styles.newsThumb}
                         />
                         <div className={styles.newsOverlay} />
                       </div>
                       <div className={styles.newsContent}>
-                        <span className={styles.newsDate}>{formatDate(post.date)}</span>
-                        <h3 className={styles.newsTitle}>{decodeHtml(post.title?.rendered)}</h3>
+                        <span className={styles.newsDate} suppressHydrationWarning>
+                          {formatDate(post.date)}
+                        </span>
+                        <h3 className={styles.newsTitle} suppressHydrationWarning>
+                          {decodeHtml(post.title?.rendered)}
+                        </h3>
                       </div>
                     </Link>
                   ))}
@@ -193,7 +202,7 @@ export default async function Home() {
               </section>
             )}
 
-            {/* 2. Unified Data Stream (Django 統合製品) */}
+            {/* Archive Registry (Platform Sections) */}
             <div className={styles.archiveRegistry}>
               <div className={styles.registryHeader}>
                 <h2 className={styles.registryMainTitle}>UNIFIED_DATA_STREAM</h2>
@@ -202,7 +211,6 @@ export default async function Home() {
 
               {isApiConnected ? (
                 <div className={styles.registryStack}>
-                  {/* 各プラットフォームの最新フィードを表示 */}
                   {fanzaProducts.length > 0 && renderPlatformSection("FANZA", fanzaProducts, "FANZA")}
                   {dugaProducts.length > 0 && renderPlatformSection("DUGA", dugaProducts, "DUGA")}
                   {dmmProducts.length > 0 && renderPlatformSection("DMM", dmmProducts, "DMM")}
@@ -217,10 +225,9 @@ export default async function Home() {
               )}
             </div>
 
-            {/* 3. Footer Action */}
+            {/* CTA Final Terminal */}
             <div className={styles.footerAction}>
               <Link href="/videos" className={styles.megaTerminalBtn}>
-                <span className={styles.btnScanline} />
                 <span className={styles.btnText}>ACCESS_FULL_REGISTRY_DATABASE</span>
               </Link>
             </div>
