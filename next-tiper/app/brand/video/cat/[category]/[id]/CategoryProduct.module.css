@@ -1,0 +1,102 @@
+/* 全体コンテナ */
+.container {
+  padding: 2rem;
+  color: #fff;
+  background: #0a0a0c;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* レイアウト構造：サイドバー(左) + メイン(右) */
+.layout {
+  display: flex;
+  gap: 2.5rem; /* 間隔を少し広げて視認性を向上 */
+  margin-top: 2rem;
+  align-items: flex-start; /* コンテンツ量に関わらず上揃え */
+}
+
+/* 左サイドバー：固定幅と追従設定 */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 2rem; /* スクロール時に画面上部で止まる */
+  z-index: 10;
+}
+
+/* 右メインコンテンツ */
+.mainContent {
+  flex: 1;
+  min-width: 0; /* flexアイテム内でのoverflow/grid崩れ防止の定石 */
+}
+
+/* ヘッダーエリア */
+.headerContainer {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1.5rem;
+}
+
+.title {
+  text-transform: uppercase;
+  border-left: 4px solid #e94560;
+  padding-left: 1rem;
+  font-size: 1.6rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  letter-spacing: 0.05em;
+}
+
+.nodeLabel {
+  font-size: 0.75rem;
+  color: #00ffcc; /* サイバー感を出すためにアクセントカラー変更 */
+  background: rgba(0, 255, 204, 0.1);
+  border: 1px solid rgba(0, 255, 204, 0.2);
+  padding: 2px 10px;
+  border-radius: 2px;
+  font-family: monospace;
+}
+
+/* 商品グリッド：レスポンシブ対応 */
+.productGrid {
+  display: grid;
+  /* AdultProductCardのサイズに合わせて最適化 */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+}
+
+/* データなし状態 */
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 8rem 2rem;
+  border: 1px dashed #222;
+  border-radius: 8px;
+  color: #444;
+  font-family: monospace;
+  background: rgba(255, 255, 255, 0.01);
+  letter-spacing: 0.2em;
+}
+
+/* ページネーションの配置調整用 */
+.paginationWrapper {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* モバイル対応（必要に応じて） */
+@media (max-width: 1024px) {
+  .layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    position: static;
+  }
+}

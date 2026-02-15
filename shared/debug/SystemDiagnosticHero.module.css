@@ -1,0 +1,112 @@
+/* SystemDiagnosticHero.module.css */
+.wrapper {
+  width: 100%;
+  background: radial-gradient(circle at center, #0d1117 0%, #050505 100%);
+  color: #c9d1d9;
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 13px;
+  border-top: 2px solid #00d1b2;
+  box-shadow: 0 -10px 30px rgba(0, 209, 178, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* スキャングリッド効果 */
+.wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+              linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 4px, 3px 100%;
+  pointer-events: none;
+}
+
+.topBar {
+  background: rgba(20, 20, 25, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 10px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #30363d;
+}
+
+.statusGroup {
+  display: flex;
+  gap: 25px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.glowText {
+  text-shadow: 0 0 8px currentColor;
+}
+
+.grid {
+  padding: 25px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.section {
+  background: rgba(13, 17, 23, 0.7);
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.section:hover {
+  border-color: #58a6ff;
+  transform: translateY(-2px);
+}
+
+.sectionHeader {
+  padding: 12px 15px;
+  background: rgba(48, 54, 61, 0.3);
+  border-bottom: 1px solid #30363d;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.container {
+  padding: 15px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.scrollBox {
+  max-height: 350px;
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8b949e;
+  scrollbar-width: thin;
+  scrollbar-color: #30363d transparent;
+}
+
+.scrollBox::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollBox::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 10px;
+}
+
+.footerBar {
+  background: #000;
+  padding: 6px 20px;
+  font-size: 10px;
+  color: #484f58;
+  display: flex;
+  justify-content: space-between;
+}

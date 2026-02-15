@@ -38,13 +38,34 @@ class BaseMasterSerializer(serializers.ModelSerializer):
         """
         オブジェクト属性、または辞書キーから api_source を取得し、一貫して大文字で返却
         """
+        # dict(values()経由)の場合
         if isinstance(obj, dict):
-            return obj.get('api_source', 'COMMON').upper()
+            # tmp_slug など別名でアノテートされている場合も考慮
+            return obj.get('api_source', obj.get('tmp_source', 'COMMON')).upper()
         
+        # モデルオブジェクトの場合
         source = getattr(obj, 'api_source', None)
         if source:
             return source.upper()
         return 'COMMON'
+
+    def to_representation(self, instance):
+        """
+        💡 最適化: 辞書データ(values()アノテーション結果)が渡された場合でも
+        シリアライズエラーにならないように拡張
+        """
+        if isinstance(instance, dict):
+            # values()で取得した際にキー名が tmp_name 等になっている場合を吸収
+            data = {
+                'id': instance.get('id') or instance.get('tmp_id'),
+                'name': instance.get('name') or instance.get('tmp_name'),
+                'slug': instance.get('slug') or instance.get('tmp_slug'),
+                'ruby': instance.get('ruby') or instance.get('tmp_ruby', ''),
+                'api_source': self.get_api_source(instance),
+                'product_count': instance.get('product_count', 0)
+            }
+            return data
+        return super().to_representation(instance)
 
 # --- 各マスターモデルの実装 (BaseMasterSerializerを継承) ---
 class MakerSerializer(BaseMasterSerializer):
@@ -114,7 +135,7 @@ class AdultProductSerializer(serializers.ModelSerializer):
     label = LabelSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
     series = SeriesSerializer(read_only=True) 
-    authors = AuthorSerializer(many=True, read_only=True)  # 💡 複数著者対応に統一
+    authors = AuthorSerializer(many=True, read_only=True)
     genres = GenreSerializer(many=True, read_only=True)
     actresses = ActressSerializer(many=True, read_only=True)
     attributes = AdultAttributeSerializer(many=True, read_only=True)

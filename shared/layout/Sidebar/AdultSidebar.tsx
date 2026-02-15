@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getSiteMetadata, getSiteColor } from '../../lib/siteConfig';
-import styles from './Sidebar.module.css';
+import styles from './AdultSidebar.module.css';
 
 interface MasterItem {
   id: number;
@@ -36,14 +36,8 @@ export default function AdultSidebar({
   const siteColor = getSiteColor(site.site_name);
   const pathname = usePathname();
 
-  // 現在のプラットフォーム判定
-  const currentPlatform = useMemo(() => {
-    if (pathname?.includes('/brand/duga')) return 'duga';
-    if (pathname?.includes('/brand/dmm')) return 'dmm';
-    return 'fanza';
-  }, [pathname]);
-
-  // セクション開閉管理（初期状態ですべて展開）
+  // --- 💡 状態管理 & マウント判定 (Hydration対策) ---
+  const [mounted, setMounted] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'PLATFORMS': true,
     'GENRES': true,
@@ -54,23 +48,41 @@ export default function AdultSidebar({
     'LOGS': true
   });
 
+  // クライアントサイドでのマウントを確認
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // --- 💡 判定ロジック：ブランド指定がない場合は 'video' をデフォルトにする ---
+  const currentPlatform = useMemo(() => {
+    if (pathname?.includes('/brand/duga')) return 'duga';
+    if (pathname?.includes('/brand/dmm')) return 'dmm';
+    if (pathname?.includes('/brand/fanza')) return 'fanza';
+    return 'video';
+  }, [pathname]);
+
   const toggleSection = (section: string) => 
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
 
-  // 各カテゴリの表示件数を上位10件に制限（メモリエラー防止 & 可読性向上）
+  // 表示件数の制限 (TOP 10)
   const topMakers = useMemo(() => makers.slice(0, 10), [makers]);
   const topGenres = useMemo(() => genres.slice(0, 10), [genres]);
   const topSeries = useMemo(() => series.slice(0, 10), [series]);
   const topDirectors = useMemo(() => directors.slice(0, 10), [directors]);
   const topAuthors = useMemo(() => authors.slice(0, 10), [authors]);
 
-  const getSafeLink = (type: string, item: any) => 
-    `/brand/${currentPlatform}/${type}/cat/${item.slug || item.id}`;
+  /**
+   * 🛠️ リンク生成：currentPlatform に基づいて動的にパスを切り替え
+   */
+  const getSafeLink = (category: string, item: any) => {
+    const identifier = encodeURIComponent(item.slug || item.name || item.id);
+    return `/brand/${currentPlatform}/cat/${category}/${identifier}`;
+  };
 
   return (
     <aside className={styles.sidebar}>
       
-      {/* 🌐 1. PLATFORM SELECTOR (マトリックス・リンク) */}
+      {/* 🌐 1. PLATFORM SELECTOR */}
       <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeader} onClick={() => toggleSection('PLATFORMS')}>
           <h3 className={styles.headerTitle}>
@@ -97,18 +109,19 @@ export default function AdultSidebar({
 
       {/* 🛠️ 2-6. マスターデータセクション (TOP 10 厳選表示) */}
       {[
-        { id: 'GENRES', type: 'genre', data: topGenres, icon: '🏷️', label: '主要カテゴリ' },
-        { id: 'MAKERS', type: 'maker', data: topMakers, icon: '🏢', label: 'トップメーカー' },
-        { id: 'SERIES', type: 'series', data: topSeries, icon: '🎞️', label: '人気シリーズ' },
-        { id: 'DIRECTORS', type: 'director', data: topDirectors, icon: '🎬', label: '監督アーカイブ' },
-        { id: 'AUTHORS', type: 'author', data: topAuthors, icon: '✍️', label: '著者レジストリ' }
+        { id: 'GENRES', type: 'genre', data: topGenres, icon: '🏷️' },
+        { id: 'MAKERS', type: 'maker', data: topMakers, icon: '🏢' },
+        { id: 'SERIES', type: 'series', data: topSeries, icon: '🎞️' },
+        { id: 'DIRECTORS', type: 'director', data: topDirectors, icon: '🎬' },
+        { id: 'AUTHORS', type: 'author', data: topAuthors, icon: '✍️' }
       ].map((cat) => (
         <section key={cat.id} className={styles.sectionWrapper}>
           <div className={styles.sectionHeader} onClick={() => toggleSection(cat.id)}>
             <h3 className={styles.headerTitle}>
-              <span className={styles.icon}>{cat.icon}</span> {cat.id}
+              <span className={styles.icon}>{cat.icon}</span> 
+              {cat.id} 
+              <span className={styles.subLabel}>{` > TOP10`}</span>
             </h3>
-            <span className={styles.subLabel}>/TOP10</span>
             <span className={styles.arrow}>{openSections[cat.id] ? '▲' : '▼'}</span>
           </div>
           {openSections[cat.id] && (
@@ -164,7 +177,9 @@ export default function AdultSidebar({
             <span className={styles.blinkDot} />
             <span className={styles.statusLabel}>SYS_CORE: OPERATIONAL</span>
           </div>
-          <span className={styles.timestamp}>{new Date().toLocaleTimeString()}</span>
+          <span className={styles.timestamp} suppressHydrationWarning>
+            {mounted ? new Date().toLocaleTimeString() : '--:--:--'}
+          </span>
         </div>
         <div className={styles.sysMeta}>
           NODE: {currentPlatform.toUpperCase()} | STREAM: SYNCED

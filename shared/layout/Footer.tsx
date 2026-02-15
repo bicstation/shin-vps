@@ -2,22 +2,24 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation'; // デバッグフラグ取得用
+import { useSearchParams } from 'next/navigation';
 import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
 import styles from './Footer.module.css';
 
-// ✅ 共通デバッグコンポーネントをインポート
-import SystemDiagnostic from '@/shared/debug/SystemDiagnostic';
+/** * ✅ 指定パス: /home/maya/dev/shin-vps/shared/debug/SystemDiagnosticHero.tsx
+ * プロジェクト構成に合わせてエイリアス (@/shared/...) でインポートします
+ */
+import SystemDiagnosticHero from '@/shared/debug/SystemDiagnosticHero';
 
 interface FooterProps {
-  // ページから渡される診断データ用（オプション）
   debugData?: {
     id?: string;
     source?: string;
-    targetUrl?: string;
-    data?: any;
-    errorMsg?: string | null;
-    apiInternalUrl?: string;
+    data?: any;          // メイン商品のRAWデータ
+    sidebarData?: any;   // サイドバー（関連商品）のRAWデータ
+    fetchError?: string | null;
+    relatedError?: string | null;
+    params?: any;
   };
 }
 
@@ -29,8 +31,6 @@ export default function Footer({ debugData }: FooterProps) {
   
   // URLに ?debug=true が含まれているか判定
   const isDebugMode = searchParams.get('debug') === 'true';
-
-  // 💡 サイトごとのコンテンツ設定
   const isAdult = site.site_group === 'adult';
 
   const siteDescription = isAdult 
@@ -47,27 +47,11 @@ export default function Footer({ debugData }: FooterProps) {
 
   return (
     <footer className={styles.footer} style={{ borderTop: `4px solid ${siteColor}` }}>
-      
-      {/* --- 🚀 診断ターミナル (デバッグモード時のみ最上部に表示) --- */}
-      {isDebugMode && debugData && (
-        <div className={styles.debugSection}>
-          <SystemDiagnostic 
-            id={debugData.id}
-            source={debugData.source}
-            targetUrl={debugData.targetUrl}
-            data={debugData.data}
-            errorMsg={debugData.errorMsg}
-            apiInternalUrl={debugData.apiInternalUrl || process.env.NEXT_PUBLIC_API_URL}
-          />
-        </div>
-      )}
-
       <div className={styles.container}>
-        {/* 1列目：サイト概要 */}
+        {/* --- 1. サイト概要 --- */}
         <div className={styles.column}>
           <h3 className={styles.siteTitle}>{site.site_name.toUpperCase()}</h3>
           <p className={styles.description}>{siteDescription}</p>
-          
           <div className={styles.brandGrid}>
             <h4 className={styles.miniTitle}>{isAdult ? '主要プラットフォーム' : '主要ブランド'}</h4>
             <div className={styles.brandLinks}>
@@ -83,7 +67,7 @@ export default function Footer({ debugData }: FooterProps) {
           </div>
         </div>
 
-        {/* 2列目：メインナビゲーション */}
+        {/* --- 2. メインナビ --- */}
         <div className={styles.column}>
           <h3 className={styles.sectionTitle}>コンテンツ</h3>
           <ul className={styles.linkList}>
@@ -92,19 +76,13 @@ export default function Footer({ debugData }: FooterProps) {
                 <Link href={`${site.site_prefix}${link.path}`}>{link.name}</Link>
               </li>
             ))}
-            <li className={styles.linkItem}>
-              <Link href={`${site.site_prefix}/about`}>ℹ️ {isAdult ? 'tiper.liveについて' : '当サイトについて'}</Link>
-            </li>
           </ul>
         </div>
 
-        {/* 3列目：規約・法的情報 */}
+        {/* --- 3. リーガル/情報 --- */}
         <div className={styles.column}>
           <h3 className={styles.sectionTitle}>インフォメーション</h3>
           <ul className={styles.linkList}>
-            <li className={styles.linkItem}>
-              <Link href={`${site.site_prefix}/guideline`}>📝 制作ガイドライン</Link>
-            </li>
             <li className={styles.linkItem}>
               <Link href={`${site.site_prefix}/privacy-policy`}>🛡 プライバシーポリシー</Link>
             </li>
@@ -114,14 +92,38 @@ export default function Footer({ debugData }: FooterProps) {
             <li className={styles.linkItem}>
               <Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link>
             </li>
-            <li className={styles.note}>
-              {isAdult 
-                ? "※本サイトは18歳未満の方の閲覧を固く禁じています。掲載情報は投稿時点のものであり、必ず遷移先の各販売サイトにて最新情報をご確認ください。"
-                : "※本サイトの解析データはAPIに基づいた投稿時点のものであり、ご購入の際は必ず遷移先の各販売サイトにて最新情報をご確認ください。"}
-            </li>
           </ul>
         </div>
       </div>
+
+      <div className={styles.bottomBar}>
+        <p className={styles.copyright}>&copy; {currentYear} {site.site_name.toUpperCase()} All Rights Reserved.</p>
+      </div>
+
+      {/* --- 🚀 診断ターミナル (最下部: SystemDiagnosticHero) --- */}
+      {isDebugMode && (
+        <div className={styles.debugContainer} style={{ marginTop: '30px' }}>
+          <SystemDiagnosticHero 
+            id={debugData?.id}
+            source={debugData?.source}
+            data={debugData?.data}
+            sidebarData={debugData?.sidebarData}
+            fetchError={debugData?.fetchError}
+            relatedError={debugData?.relatedError}
+            params={debugData?.params}
+          />
+          <div style={{ 
+            textAlign: 'center', 
+            background: '#ffcc00', 
+            color: '#000', 
+            fontSize: '10px', 
+            fontWeight: 'bold', 
+            padding: '2px' 
+          }}>
+            DEBUG_MODE_ACTIVE: Data stream from /shared/debug/SystemDiagnosticHero.tsx
+          </div>
+        </div>
+      )}
     </footer>
   );
 }

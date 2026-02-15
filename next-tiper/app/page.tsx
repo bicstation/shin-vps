@@ -8,6 +8,8 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import ProductCard from '@shared/cards/AdultProductCard';
 import Sidebar from '@shared/layout/Sidebar/AdultSidebar'; 
+// 🪄 指定のパスで Footer をインポート
+import Footer from '@shared/layout/Footer'; 
 import { getSiteMainPosts, getWpFeaturedImage } from '@shared/lib/api/wordpress';
 import { 
   getUnifiedProducts, 
@@ -88,16 +90,11 @@ export default async function Home() {
   const dmmProducts = dmmRes?.results || [];
 
   /**
-   * 💡 サイドバー抽出ヘルパー (修正版)
-   * Djangoのレスポンスが直下か results 内か、どちらでも対応可能にする
+   * 💡 サイドバー抽出ヘルパー
    */
   const extractSidebarItems = (key: string) => {
     if (!analysisData) return [];
-
-    // 直下にある場合、または results 内にある場合を探す
     const data = analysisData[key] || (analysisData.results && analysisData.results[key]);
-
-    // データが配列ならそのまま返し、そうでなければ空配列を返す
     return Array.isArray(data) ? data : [];
   };
 
@@ -141,100 +138,113 @@ export default async function Home() {
   );
 
   return (
-    <div className={styles.pageContainer}>
-      <main className={styles.main}>
-        <div className={styles.wrapper}>
-          
-          {/* 🏗️ 1. サイドバー (サーバーサイド・プロップス注入) */}
-          <aside className={styles.sidebar}>
-            <div className={styles.sidebarSticky}>
-              <div className={styles.sidebarMain}>
-                {/* 💡 統計データをスプレッド展開で注入 */}
-                <Sidebar {...sidebarProps} />
-              </div>
-
-              {!isApiConnected && (
-                <div className={styles.errorBox}>
-                  <span className={styles.errorIcon}>⚠️</span>
-                  <div className={styles.errorText}>
-                    <strong>CRITICAL_ERROR:</strong>
-                    <span>DATA_STREAM_INTERRUPTED. PLEASE_REFRESH.</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </aside>
-
-          {/* 🏗️ 2. メインコンテンツストリーム */}
-          <div className={styles.contentStream}>
+    <>
+      <div className={styles.pageContainer}>
+        <main className={styles.main}>
+          <div className={styles.wrapper}>
             
-            {/* Intelligence Reports (WordPress Posts) */}
-            {latestPosts.length > 0 && (
-              <section className={styles.newsSection}>
-                <div className={styles.sectionHeader}>
-                  <div className={styles.titleGroup}>
-                    <h2 className={styles.sectionHeading}>INTELLIGENCE_REPORTS</h2>
-                  </div>
-                  <Link href="/news" className={styles.headerLink}>VIEW_ALL_REPORTS →</Link>
+            {/* 🏗️ 1. サイドバー (現在の不具合調査対象) */}
+            <aside className={styles.sidebar}>
+              <div className={styles.sidebarSticky}>
+                <div className={styles.sidebarMain}>
+                  <Sidebar {...sidebarProps} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {latestPosts.slice(0, 3).map((post: any) => (
-                    <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
-                      <div className={styles.newsThumbWrap}>
-                        <img
-                          src={getWpFeaturedImage(post, 'large')}
-                          alt=""
-                          className={styles.newsThumb}
-                        />
-                        <div className={styles.newsOverlay} />
-                      </div>
-                      <div className={styles.newsContent}>
-                        <span className={styles.newsDate} suppressHydrationWarning>
-                          {formatDate(post.date)}
-                        </span>
-                        <h3 className={styles.newsTitle} suppressHydrationWarning>
-                          {decodeHtml(post.title?.rendered)}
-                        </h3>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
 
-            {/* Archive Registry (Platform Sections) */}
-            <div className={styles.archiveRegistry}>
-              <div className={styles.registryHeader}>
-                <h2 className={styles.registryMainTitle}>UNIFIED_DATA_STREAM</h2>
-                <div className={styles.registryLine} />
+                {!isApiConnected && (
+                  <div className={styles.errorBox}>
+                    <span className={styles.errorIcon}>⚠️</span>
+                    <div className={styles.errorText}>
+                      <strong>CRITICAL_ERROR:</strong>
+                      <span>DATA_STREAM_INTERRUPTED. PLEASE_REFRESH.</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </aside>
+
+            {/* 🏗️ 2. メインコンテンツストリーム */}
+            <div className={styles.contentStream}>
+              
+              {/* Intelligence Reports */}
+              {latestPosts.length > 0 && (
+                <section className={styles.newsSection}>
+                  <div className={styles.sectionHeader}>
+                    <div className={styles.titleGroup}>
+                      <h2 className={styles.sectionHeading}>INTELLIGENCE_REPORTS</h2>
+                    </div>
+                    <Link href="/news" className={styles.headerLink}>VIEW_ALL_REPORTS →</Link>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {latestPosts.slice(0, 3).map((post: any) => (
+                      <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
+                        <div className={styles.newsThumbWrap}>
+                          <img
+                            src={getWpFeaturedImage(post, 'large')}
+                            alt=""
+                            className={styles.newsThumb}
+                          />
+                          <div className={styles.newsOverlay} />
+                        </div>
+                        <div className={styles.newsContent}>
+                          <span className={styles.newsDate} suppressHydrationWarning>
+                            {formatDate(post.date)}
+                          </span>
+                          <h3 className={styles.newsTitle} suppressHydrationWarning>
+                            {decodeHtml(post.title?.rendered)}
+                          </h3>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Archive Registry */}
+              <div className={styles.archiveRegistry}>
+                <div className={styles.registryHeader}>
+                  <h2 className={styles.registryMainTitle}>UNIFIED_DATA_STREAM</h2>
+                  <div className={styles.registryLine} />
+                </div>
+
+                {isApiConnected ? (
+                  <div className={styles.registryStack}>
+                    {fanzaProducts.length > 0 && renderPlatformSection("FANZA", fanzaProducts, "FANZA")}
+                    {dugaProducts.length > 0 && renderPlatformSection("DUGA", dugaProducts, "DUGA")}
+                    {dmmProducts.length > 0 && renderPlatformSection("DMM", dmmProducts, "DMM")}
+                  </div>
+                ) : (
+                  <div className={styles.loadingArea}>
+                    <div className={styles.glitchBox}>
+                      <div className={styles.glitchText}>SYNCHRONIZING_MATRIX_NODES...</div>
+                      <div className={styles.scanningLine} />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {isApiConnected ? (
-                <div className={styles.registryStack}>
-                  {fanzaProducts.length > 0 && renderPlatformSection("FANZA", fanzaProducts, "FANZA")}
-                  {dugaProducts.length > 0 && renderPlatformSection("DUGA", dugaProducts, "DUGA")}
-                  {dmmProducts.length > 0 && renderPlatformSection("DMM", dmmProducts, "DMM")}
-                </div>
-              ) : (
-                <div className={styles.loadingArea}>
-                  <div className={styles.glitchBox}>
-                    <div className={styles.glitchText}>SYNCHRONIZING_MATRIX_NODES...</div>
-                    <div className={styles.scanningLine} />
-                  </div>
-                </div>
-              )}
+              {/* CTA Final Terminal */}
+              <div className={styles.footerAction}>
+                <Link href="/videos" className={styles.megaTerminalBtn}>
+                  <span className={styles.btnText}>ACCESS_FULL_REGISTRY_DATABASE</span>
+                </Link>
+              </div>
             </div>
-
-            {/* CTA Final Terminal */}
-            <div className={styles.footerAction}>
-              <Link href="/videos" className={styles.megaTerminalBtn}>
-                <span className={styles.btnText}>ACCESS_FULL_REGISTRY_DATABASE</span>
-              </Link>
-            </div>
+            
           </div>
-          
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+
+      {/* 🪄 魔法の一行：Footer経由でデバッグモニターに配線 */}
+      <Footer debugData={{ 
+        id: "HOME_ROOT", 
+        source: "UNIFIED", 
+        data: { 
+          fanza: fanzaProducts, 
+          duga: dugaProducts, 
+          dmm: dmmProducts 
+        }, 
+        sidebarData: sidebarProps // ここにサイドバーの中身を託しました
+      }} />
+    </>
   );
 }
