@@ -39,6 +39,9 @@ urlpatterns = [
     # 💡 内部で api_source (FANZA/DUGA) を動的に判定。
     # ジャンル・女優スラグによる「仕分け」と「レコメンド」を一つの口で処理します。
     path('unified-adult-products/', views.UnifiedAdultProductListView.as_view(), name='unified_adult_products'),
+    
+    # 🔥 [ADD] Next.js 側が 'unified-products' としてアクセスしてくる場合のエイリアス
+    path('unified-products/', views.UnifiedAdultProductListView.as_view(), name='unified_products_alias'),
 
     # ==========================================================
     # 4. FANZA 最適化商品 (FanzaProduct)

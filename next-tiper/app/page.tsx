@@ -8,8 +8,11 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import ProductCard from '@shared/cards/AdultProductCard';
 import Sidebar from '@shared/layout/Sidebar/AdultSidebar'; 
-// 🪄 指定のパスで Footer をインポート
+// 🪄 HEAD側: Footer をインポート
 import Footer from '@shared/layout/Footer'; 
+// 🛰️ スクリプト側: 診断Heroをインポート
+import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
+
 import { getSiteMainPosts, getWpFeaturedImage } from '@shared/lib/api/wordpress';
 import { 
   getUnifiedProducts, 
@@ -140,10 +143,17 @@ export default async function Home() {
   return (
     <>
       <div className={styles.pageContainer}>
+        {/* 🛰️ DEBUG_HERO_SECTION: サイドバーの生データを最上部で可視化 */}
+        <SystemDiagnosticHero 
+          id="MAIN_CORE_ANALYSIS" 
+          source="UNIFIED_SUMMARY" 
+          rawJson={analysisData} 
+        />
+
         <main className={styles.main}>
           <div className={styles.wrapper}>
             
-            {/* 🏗️ 1. サイドバー (現在の不具合調査対象) */}
+            {/* 🏗️ 1. サイドバー (サーバーサイド・プロップス注入) */}
             <aside className={styles.sidebar}>
               <div className={styles.sidebarSticky}>
                 <div className={styles.sidebarMain}>
@@ -243,7 +253,7 @@ export default async function Home() {
           duga: dugaProducts, 
           dmm: dmmProducts 
         }, 
-        sidebarData: sidebarProps // ここにサイドバーの中身を託しました
+        sidebarData: sidebarProps 
       }} />
     </>
   );

@@ -47,13 +47,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   return (
     <div className={`${styles.wrapper} ${isFanza ? styles.fanzaTheme : ''}`}>
       {/* 🛰️ SystemDiagnosticHero へのデータ注入
-          受け手側の propsに合わせて data={product} を渡すことで JSON表示を有効化 
+          data={product} と rawJson={product} の両方を渡すことで
+          HEAD側の柔軟性とスクリプト側の厳密なJSON表示を両立
       */}
       <SystemDiagnosticHero 
         id={id} 
         source={source} 
         data={product} 
         params={params}
+        rawJson={product} 
       />
 
       <nav className={styles.nav}>

@@ -35,6 +35,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
+    # 既存のロジック維持のため、ベースクエリセットは none() または active で初期化
     queryset = AdultProduct.objects.none()
     search_fields = [
         'title', 'product_description', 'ai_summary', 'ai_content', 
@@ -53,7 +54,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         search_query = self.request.query_params.get('search')
         related_to_id = self.request.query_params.get('related_to_id')
         
-        # 💡 [NEW] 仕分け検索用スラグの抽出
+        # 💡 [NEW] 仕分け検索用スラグの抽出 (maker_slug を確実に取得)
         genre_slug = self.request.query_params.get('genre_slug')
         actress_slug = self.request.query_params.get('actress_slug')
         maker_slug = self.request.query_params.get('maker_slug') or self.request.query_params.get('maker__slug')
@@ -105,6 +106,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
                 if author_slug: qs = qs.filter(authors__slug=author_slug)
             return qs.distinct()
 
+        # フィルタリングを両 QuerySet に適用
         qs_adult = apply_common_filters(qs_adult, is_fanza=False)
         qs_fanza = apply_common_filters(qs_fanza, is_fanza=True)
 
@@ -114,26 +116,38 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             return self._get_paginated_response(queryset, AdultProductSerializer)
         
         elif source in ['FANZA', 'DMM']:
+            # FanzaProduct側にデータがあるか確認
             if qs_fanza.filter(site_code=source).exists():
                 queryset = qs_fanza.filter(site_code=source).order_by('-release_date')
                 return self._get_paginated_response(queryset, FanzaProductSerializer)
             else:
+                # AdultProduct側にマッピングされたFanzaデータがあるか確認
                 queryset = qs_adult.filter(api_source__iexact=source).order_by('-release_date')
                 return self._get_paginated_response(queryset, AdultProductSerializer)
         
         else:
-            # 混合（全ソース）ソート: 発売日順
+            # 💡 [NEW] 混合（全ソース）ソートロジック
+            # ページネーションを Python リストに対して適用するための修正
             def get_sort_key(instance):
-                val = instance.release_date
-                return val.isoformat() if isinstance(val, date) else (str(val) if val else "0000-00-00")
+                val = getattr(instance, 'release_date', None)
+                if isinstance(val, date):
+                    return val.isoformat()
+                return str(val) if val else "0000-00-00"
 
+            # 両方の QuerySet を結合し、発売日順にソート
             combined_list = sorted(chain(qs_adult, qs_fanza), key=get_sort_key, reverse=True)
+            
+            # リストに対してページネーションを実行
             page = self.paginate_queryset(combined_list)
             if page is not None:
+                # ページ化されたデータのみを適切なシリアライザーで変換
                 return self.get_paginated_response(self._serialize_mixed_list(page))
+            
+            # ページネーション不要な場合のレスポンス
             return response.Response(self._serialize_mixed_list(combined_list))
 
     def _serialize_mixed_list(self, instance_list):
+        """インスタンスの型に応じてシリアライザーを使い分ける"""
         return [
             AdultProductSerializer(obj, context={'request': self.request}).data if isinstance(obj, AdultProduct)
             else FanzaProductSerializer(obj, context={'request': self.request}).data
@@ -141,9 +155,14 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         ]
 
     def _get_paginated_response(self, queryset, serializer_class):
+        """QuerySet に対する標準的なページネーション応答"""
         page = self.paginate_queryset(queryset)
-        serializer = serializer_class(page if page is not None else queryset, many=True, context={'request': self.request})
-        return self.get_paginated_response(serializer.data) if page is not None else response.Response(serializer.data)
+        if page is not None:
+            serializer = serializer_class(page, many=True, context={'request': self.request})
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = serializer_class(queryset, many=True, context={'request': self.request})
+        return response.Response(serializer.data)
 
 # --------------------------------------------------------------------------
 # 📊 MarketAnalysisView (サイドバー集計：変更なし・最適化済み)
@@ -188,7 +207,6 @@ class AdultProductListAPIView(generics.ListAPIView):
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    # DjangoFilterBackendで自動処理されるフィールド
     filterset_fields = ['api_source', 'is_active']
     search_fields = ['title', 'product_description', 'actresses__name', 'genres__name']
     
@@ -197,7 +215,7 @@ class AdultProductListAPIView(generics.ListAPIView):
             'maker', 'label', 'series', 'director'
         ).prefetch_related('genres', 'actresses', 'authors')
         
-        # 💡 [NEW] パラメータ取得
+        # 💡 [NEW] 各種スラグによる絞り込み
         source = self.request.query_params.get('api_source')
         genre_slug = self.request.query_params.get('genre_slug')
         actress_slug = self.request.query_params.get('actress_slug')
@@ -206,7 +224,6 @@ class AdultProductListAPIView(generics.ListAPIView):
         director_slug = self.request.query_params.get('director_slug')
         author_slug = self.request.query_params.get('author_slug')
 
-        # 💡 [NEW] フィルタリング適用
         if source: queryset = queryset.filter(api_source__iexact=source)
         if genre_slug: queryset = queryset.filter(genres__slug=genre_slug)
         if actress_slug: queryset = queryset.filter(actresses__slug=actress_slug)
@@ -227,12 +244,15 @@ class FanzaProductListAPIView(generics.ListAPIView):
     filterset_fields = ['site_code', 'maker__slug', 'is_recommend']
     search_fields = ['title', 'product_description', 'actresses__name', 'genres__name']
 
-# --- 以下、詳細・ランキング等は既存ロジックを最適化状態で維持 ---
+# --------------------------------------------------------------------------
+# 💡 3. 詳細・ランキング・Linkshare (既存ロジックを最適化状態で維持)
+# --------------------------------------------------------------------------
 class FanzaProductDetailAPIView(generics.RetrieveAPIView):
     queryset = FanzaProduct.objects.all().select_related('maker', 'label').prefetch_related('genres', 'actresses')
     serializer_class = FanzaProductSerializer
     permission_classes = [AllowAny]
     lookup_field = 'unique_id'
+    
     def get_object(self):
         raw_id = self.kwargs[self.lookup_field]
         clean_id = re.sub(r'^(FANZA_|DMM_|DUGA_|fz_)', '', raw_id, flags=re.IGNORECASE)

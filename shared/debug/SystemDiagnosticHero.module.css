@@ -1,112 +1,242 @@
-/* SystemDiagnosticHero.module.css */
-.wrapper {
-  width: 100%;
-  background: radial-gradient(circle at center, #0d1117 0%, #050505 100%);
-  color: #c9d1d9;
-  font-family: 'Fira Code', 'JetBrains Mono', monospace;
-  font-size: 13px;
-  border-top: 2px solid #00d1b2;
-  box-shadow: 0 -10px 30px rgba(0, 209, 178, 0.1);
+/* ==============================================================================
+ * 📂 SystemDiagnosticHero.module.css - Optimized Tactical Hybrid Monitor
+ * ============================================================================== */
+
+.debugContainer {
   position: relative;
+  width: 100%;
+  background: radial-gradient(circle at center, #0d1117 0%, #050508 100%);
+  color: #00ffcc;
+  font-family: 'Fira Code', 'JetBrains Mono', 'Orbitron', monospace;
+  padding: 0; /* ヘッダー・フッターがあるため、内部で調整 */
   overflow: hidden;
+  border-top: 2px solid #00d1b2;
+  border-bottom: 2px solid rgba(0, 255, 204, 0.3);
+  box-shadow: 0 -10px 30px rgba(0, 209, 178, 0.1), inset 0 0 50px rgba(0, 0, 0, 1);
+  z-index: 100;
 }
 
-/* スキャングリッド効果 */
-.wrapper::before {
-  content: "";
+/* 🛰️ 背景演出: スキャンライン & グリッド */
+.scanline {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0; left: 0; width: 100%; height: 100%;
   background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-              linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-  background-size: 100% 4px, 3px 100%;
+              linear-gradient(to bottom, transparent 50%, rgba(0, 255, 204, 0.05) 50%);
+  background-size: 100% 4px;
+  z-index: 5;
   pointer-events: none;
 }
 
-.topBar {
-  background: rgba(20, 20, 25, 0.8);
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+
+/* 🟢 ヘッダー: システムステータス */
+.header {
+  background: rgba(20, 20, 25, 0.85);
   backdrop-filter: blur(10px);
   padding: 10px 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #30363d;
-}
-
-.statusGroup {
-  display: flex;
-  gap: 25px;
-  font-weight: 700;
-  text-transform: uppercase;
+  border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+  font-size: 11px;
   letter-spacing: 1.5px;
+  position: relative;
+  z-index: 10;
 }
 
-.glowText {
-  text-shadow: 0 0 8px currentColor;
+.headerLeft { display: flex; align-items: center; gap: 20px; }
+
+.blink {
+  animation: blink 1.5s step-end infinite;
+  color: #7efaff;
+  text-shadow: 0 0 8px #7efaff;
+  font-weight: bold;
 }
 
-.grid {
-  padding: 25px;
+.pathBadge {
+  background: #e94560;
+  color: #fff;
+  padding: 2px 10px;
+  font-size: 9px;
+  font-weight: bold;
+  border-radius: 2px;
+  text-transform: uppercase;
+  box-shadow: 0 0 10px rgba(233, 69, 96, 0.4);
+}
+
+.nodeId { color: #f39c12; font-weight: bold; }
+.timestamp { color: rgba(0, 255, 204, 0.6); font-size: 10px; }
+
+/* 🏗️ メインコンテンツ: 3カラムグリッド */
+.content {
+  padding: 20px 25px;
+  position: relative;
+  z-index: 10;
+}
+
+.threeColumnGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: 1.2fr 1fr 0.8fr;
   gap: 20px;
 }
 
-.section {
-  background: rgba(13, 17, 23, 0.7);
-  border: 1px solid #30363d;
-  border-radius: 8px;
-  transition: transform 0.2s, border-color 0.2s;
+.column { display: flex; flex-direction: column; }
+
+.columnLabel {
+  font-size: 10px;
+  color: rgba(0, 255, 204, 0.6);
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
-.section:hover {
+/* 🟦 COLUMN 1 & 2: ターミナルボックス */
+.jsonTerminal {
+  background: rgba(13, 17, 23, 0.8);
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.jsonTerminal:hover {
   border-color: #58a6ff;
   transform: translateY(-2px);
 }
 
-.sectionHeader {
-  padding: 12px 15px;
-  background: rgba(48, 54, 61, 0.3);
+.terminalHeader {
+  background: rgba(48, 54, 61, 0.4);
+  color: #fff;
+  font-size: 10px;
+  padding: 8px 15px;
   border-bottom: 1px solid #30363d;
-  font-size: 11px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.container {
-  padding: 15px;
-}
-
-.badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: bold;
-}
-
-.scrollBox {
-  max-height: 350px;
+.jsonContent {
+  flex: 1;
   overflow-y: auto;
-  font-size: 12px;
-  line-height: 1.6;
+  padding: 15px;
+  font-size: 11px;
   color: #8b949e;
+  line-height: 1.6;
+  white-space: pre-wrap;
   scrollbar-width: thin;
   scrollbar-color: #30363d transparent;
 }
 
-.scrollBox::-webkit-scrollbar {
-  width: 6px;
-}
-.scrollBox::-webkit-scrollbar-thumb {
-  background: #30363d;
-  border-radius: 10px;
+.jsonContent::-webkit-scrollbar { width: 6px; }
+.jsonContent::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
+
+.errorText { color: #ff7b72; padding: 15px; font-size: 12px; }
+
+/* 🟩 COLUMN 2: メトリクス & ルート表示用独自スタイル */
+.metricsBox {
+  background: rgba(0, 255, 204, 0.03);
+  border: 1px solid rgba(0, 255, 204, 0.1);
+  padding: 15px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.footerBar {
+.pathVisualizer {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(0, 255, 204, 0.07);
+  border-left: 3px solid #00ffcc;
+}
+
+.pathLabel { font-size: 9px; color: #00ffcc; opacity: 0.7; font-weight: bold; }
+
+.visualDivider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 255, 204, 0.3), transparent);
+  margin: 15px 0;
+}
+
+/* 🟨 COLUMN 3: システムステータス & レーダー */
+.statusBox {
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(48, 54, 61, 0.5);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.metricLine {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 10px;
+  border-bottom: 1px dashed rgba(48, 54, 61, 0.5);
+  padding-bottom: 4px;
+}
+
+.mLabel { color: rgba(139, 148, 158, 0.8); }
+.mValue { color: #fff; }
+
+.terminalLine { margin-bottom: 10px; display: flex; gap: 10px; font-size: 11px; }
+.label { color: #8b949e; }
+.valueSource { color: #e94560; font-weight: bold; }
+
+.radarArea {
+  flex: 1;
+  margin-top: 15px;
+  border: 1px solid rgba(0, 255, 204, 0.2);
+  position: relative;
+  overflow: hidden;
+  background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0, 255, 204, 0.02) 1px, rgba(0, 255, 204, 0.02) 2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radarLine {
+  position: absolute;
+  width: 100%; height: 2px;
+  background: #00ffcc;
+  box-shadow: 0 0 15px #00ffcc;
+  animation: radarScan 3s linear infinite;
+}
+
+.radarText { font-size: 9px; letter-spacing: 2px; color: #00ffcc; opacity: 0.5; z-index: 1; }
+
+/* 🏁 フッター */
+.footer {
   background: #000;
-  padding: 6px 20px;
+  padding: 8px 25px;
   font-size: 10px;
   color: #484f58;
   display: flex;
   justify-content: space-between;
+  border-top: 1px solid #30363d;
+  position: relative;
+  z-index: 10;
+}
+
+.footerRight { color: #58a6ff; font-family: monospace; }
+.separator { margin: 0 10px; opacity: 0.3; }
+
+/* 🎬 アニメーション */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes radarScan { 0% { top: -5%; } 100% { top: 105%; } }
+
+/* モバイル対応 */
+@media (max-width: 1024px) {
+  .threeColumnGrid { grid-template-columns: 1fr; }
+  .jsonTerminal { height: 250px; }
 }

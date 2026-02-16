@@ -48,27 +48,25 @@
   gap: 50px;
   position: relative;
   z-index: 10;
-  /* 💡 サイドバーをコンテンツの高さに追従させる */
-  align-items: stretch; 
+  /* 💡 修正: stretchからstartに変更。
+     これにより、隣のカラム（デバッグエリア等）が伸びてもサイドバーの枠が強制的に引き伸ばされなくなります */
+  align-items: start; 
 }
 
 /* --- 🏛️ 2. サイドバー (Tactical Sidebar Area) --- */
 .sidebar {
   position: relative;
-  min-height: 100%;
+  /* min-height: 100%; 💡 stretchを止めたのでこれも不要、自然な高さに任せます */
 }
 
 .sidebarSticky {
   position: sticky;
-  top: 40px; /* 💡 余白を広げて視認性を向上 */
-  /* 💡 画面高さいっぱいまで使い切り、スクロールバーを右端へ寄せる */
+  top: 40px; 
   max-height: calc(100vh - 80px); 
   overflow-y: auto;
-  overflow-x: hidden;
   padding-right: 20px;
   scrollbar-width: thin;
   scrollbar-color: rgba(233, 69, 96, 0.5) transparent;
-  /* 💡 コンテンツが詰まって見えないようにゆとりを持たせる */
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -80,6 +78,15 @@
 .sidebarSticky::-webkit-scrollbar-thumb { 
   background: linear-gradient(to bottom, transparent, #e94560, transparent);
   border-radius: 10px;
+}
+
+/* --- 📊 2.5 デバッグセクション用追加 --- */
+.debugHeroWrapper {
+  width: 100%;
+  /* コンテンツストリームの上に配置される際の余白調整 */
+  margin-bottom: 30px;
+  border: 1px solid rgba(0, 255, 204, 0.1);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 /* --- 🎬 3. コンテンツストリーム --- */

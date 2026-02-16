@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { getSiteMetadata, getSiteColor } from '../../lib/siteConfig';
 import styles from './AdultSidebar.module.css';
 
@@ -35,8 +35,9 @@ export default function AdultSidebar({
   const site = getSiteMetadata();
   const siteColor = getSiteColor(site.site_name);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // --- 💡 状態管理 & マウント判定 (Hydration対策) ---
+  // --- 💡 状態管理 & マウント判定 (Hydration対策 / 昨日作成) ---
   const [mounted, setMounted] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'PLATFORMS': true,
@@ -48,23 +49,30 @@ export default function AdultSidebar({
     'LOGS': true
   });
 
-  // クライアントサイドでのマウントを確認
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // --- 💡 判定ロジック：ブランド指定がない場合は 'video' をデフォルトにする ---
+  /**
+   * 💡 ブランド（プラットフォーム）判定の統合
+   * URLのクエリパラメータ ?brand= または パスに含まれるキーワードから判定
+   */
   const currentPlatform = useMemo(() => {
-    if (pathname?.includes('/brand/duga')) return 'duga';
-    if (pathname?.includes('/brand/dmm')) return 'dmm';
-    if (pathname?.includes('/brand/fanza')) return 'fanza';
-    return 'video';
-  }, [pathname]);
+    const brandParam = searchParams.get('brand');
+    if (brandParam) return brandParam.toLowerCase();
+    
+    // パスベースのフォールバック (昨日作成のロジック)
+    if (pathname?.includes('/brand/duga') || pathname?.includes('duga')) return 'duga';
+    if (pathname?.includes('/brand/fanza') || pathname?.includes('fanza')) return 'fanza';
+    if (pathname?.includes('/brand/dmm') || pathname?.includes('dmm')) return 'dmm';
+    
+    return null; // 指定なし（統合表示）
+  }, [pathname, searchParams]);
 
   const toggleSection = (section: string) => 
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
 
-  // 表示件数の制限 (TOP 10)
+  // 表示件数制限 (TOP 10)
   const topMakers = useMemo(() => makers.slice(0, 10), [makers]);
   const topGenres = useMemo(() => genres.slice(0, 10), [genres]);
   const topSeries = useMemo(() => series.slice(0, 10), [series]);
@@ -72,12 +80,17 @@ export default function AdultSidebar({
   const topAuthors = useMemo(() => authors.slice(0, 10), [authors]);
 
   /**
-   * 🛠️ リンク生成：currentPlatform に基づいて動的にパスを切り替え
+   * 💡 統合リンク生成ロジック
+   * パス: /[type]/[identifier]
+   * クエリ: ?brand=... (プラットフォームが指定されている場合のみ付与)
    */
-  const getSafeLink = (category: string, item: any) => {
-    const identifier = encodeURIComponent(item.slug || item.name || item.id);
-    return `/brand/${currentPlatform}/cat/${category}/${identifier}`;
+  const getSafeLink = (type: string, item: any) => {
+    const identifier = item.slug || item.id;
+    const baseUrl = `/${type}/${identifier}`;
+    return currentPlatform ? `${baseUrl}?brand=${currentPlatform}` : baseUrl;
   };
+
+  if (!mounted) return null; // Hydrationエラー防止
 
   return (
     <aside className={styles.sidebar}>
@@ -93,21 +106,26 @@ export default function AdultSidebar({
         </div>
         {openSections['PLATFORMS'] && (
           <div className={styles.platformGrid}>
-            {['DUGA', 'FANZA', 'DMM'].map((p) => (
+            <Link 
+              href={pathname} 
+              className={`${styles.platBtn} ${!currentPlatform ? styles.active : ''}`}
+            >
+              <span className={styles.btnDot} /> ALL
+            </Link>
+            {['FANZA', 'DUGA', 'DMM'].map((p) => (
               <Link 
                 key={p} 
-                href={`/brand/${p.toLowerCase()}`} 
+                href={`${pathname}?brand=${p.toLowerCase()}`} 
                 className={`${styles.platBtn} ${currentPlatform === p.toLowerCase() ? styles.active : ''}`}
               >
-                <span className={styles.btnDot} />
-                {p}
+                <span className={styles.btnDot} /> {p}
               </Link>
             ))}
           </div>
         )}
       </section>
 
-      {/* 🛠️ 2-6. マスターデータセクション (TOP 10 厳選表示) */}
+      {/* 🛠️ 2-6. マスターデータセクション (昨日作成のデータマッピング) */}
       {[
         { id: 'GENRES', type: 'genre', data: topGenres, icon: '🏷️' },
         { id: 'MAKERS', type: 'maker', data: topMakers, icon: '🏢' },
@@ -140,7 +158,10 @@ export default function AdultSidebar({
                   <li className={styles.emptyStatus}>[!] {cat.id}_NO_DATA</li>
                 )}
               </ul>
-              <Link href={`/brand/${currentPlatform}/${cat.type}`} className={styles.fullLink}>
+              <Link 
+                href={currentPlatform ? `/${cat.type}?brand=${currentPlatform}` : `/${cat.type}`} 
+                className={styles.fullLink}
+              >
                 FULL_REGISTRY_ACCESS <span>→</span>
               </Link>
             </div>
@@ -148,7 +169,7 @@ export default function AdultSidebar({
         </section>
       ))}
 
-      {/* 📄 7. INTEL LOGS (最新レポート) */}
+      {/* 📄 7. RECENT_REPORTS (昨日作成) */}
       <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeader} onClick={() => toggleSection('LOGS')}>
           <h3 className={styles.headerTitle}><span className={styles.icon}>📄</span> RECENT_REPORTS</h3>
@@ -170,7 +191,7 @@ export default function AdultSidebar({
         )}
       </section>
 
-      {/* ⚙️ SYSTEM FOOTER (ターミナル風) */}
+      {/* ⚙️ SYSTEM FOOTER */}
       <div className={styles.systemFooter}>
         <div className={styles.statusRow}>
           <div className={styles.blinkContainer}>
@@ -182,9 +203,8 @@ export default function AdultSidebar({
           </span>
         </div>
         <div className={styles.sysMeta}>
-          NODE: {currentPlatform.toUpperCase()} | STREAM: SYNCED
+          NODE: {currentPlatform ? currentPlatform.toUpperCase() : 'INTEGRATED'} | STREAM: SYNCED
         </div>
-        <div className={styles.scanlineEffect} />
       </div>
     </aside>
   );

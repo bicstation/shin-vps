@@ -40,7 +40,7 @@ class BaseMasterSerializer(serializers.ModelSerializer):
         """
         # dict(values()経由)の場合
         if isinstance(obj, dict):
-            # tmp_slug など別名でアノテートされている場合も考慮
+            # 💡 最適化: tmp_slug など別名でアノテートされている場合も考慮
             return obj.get('api_source', obj.get('tmp_source', 'COMMON')).upper()
         
         # モデルオブジェクトの場合
@@ -55,7 +55,7 @@ class BaseMasterSerializer(serializers.ModelSerializer):
         シリアライズエラーにならないように拡張
         """
         if isinstance(instance, dict):
-            # values()で取得した際にキー名が tmp_name 等になっている場合を吸収
+            # 💡 最適化: values()で取得した際にキー名が tmp_name 等になっている場合を吸収
             data = {
                 'id': instance.get('id') or instance.get('tmp_id'),
                 'name': instance.get('name') or instance.get('tmp_name'),
@@ -129,7 +129,7 @@ if PCAttribute:
 class AdultProductSerializer(serializers.ModelSerializer): 
     """
     正規化された DUGA/DMM/FANZA データを統合管理。
-    AIスコア、AIサマリー、複数著者(authors)に対応した最新版。
+    AIスコア、AIサマリー、複数著者(authors)に対応。
     """
     maker = MakerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
@@ -140,22 +140,33 @@ class AdultProductSerializer(serializers.ModelSerializer):
     actresses = ActressSerializer(many=True, read_only=True)
     attributes = AdultAttributeSerializer(many=True, read_only=True)
     
-    # フロントエンド互換性：product_id_unique を display_id として露出
+    # フロントエンド統合フィールド
     display_id = serializers.CharField(source='product_id_unique', read_only=True)
-    # ビューで annotate されるレコメンドスコア
+    thumbnail = serializers.SerializerMethodField()
+    product_url = serializers.CharField(source='affiliate_url', read_only=True)
     rel_score = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
         model = AdultProduct 
         fields = (
             'id', 'product_id_unique', 'display_id', 'title', 'product_description',
-            'release_date', 'affiliate_url', 'price', 'image_url_list', 'sample_movie_url',
+            'release_date', 'affiliate_url', 'product_url', 'price', 
+            'image_url_list', 'thumbnail', 'sample_movie_url',
             'api_source', 'maker', 'label', 'director', 'series', 'authors', 'genres', 'actresses',
             'attributes', 'ai_content', 'ai_summary', 'target_segment',
             'score_visual', 'score_story', 'score_cost_performance', 'ranking_trend', 
             'spec_score', 'rel_score', 'is_active', 'updated_at'
         )
         read_only_fields = ('id', 'product_id_unique', 'updated_at', 'rel_score')
+
+    def get_thumbnail(self, obj):
+        """画像リストから代表画像URLを抽出"""
+        imgs = obj.image_url_list
+        if isinstance(imgs, list) and len(imgs) > 0:
+            return imgs[0]
+        if isinstance(imgs, dict):
+            return imgs.get('large') or imgs.get('main')
+        return None
 
 class FanzaProductSerializer(serializers.ModelSerializer):
     """
@@ -169,7 +180,10 @@ class FanzaProductSerializer(serializers.ModelSerializer):
     actresses = ActressSerializer(many=True, read_only=True)
     authors = AuthorSerializer(many=True, read_only=True)
 
+    # フロントエンド統合フィールド
     display_id = serializers.CharField(source='unique_id', read_only=True)
+    thumbnail = serializers.SerializerMethodField()
+    product_url = serializers.CharField(source='affiliate_url', read_only=True)
     api_source = serializers.SerializerMethodField()
     rel_score = serializers.IntegerField(read_only=True, required=False)
 
@@ -177,20 +191,27 @@ class FanzaProductSerializer(serializers.ModelSerializer):
         model = FanzaProduct
         fields = (
             'id', 'unique_id', 'display_id', 'content_id', 'site_code', 'service_code', 
-            'floor_code', 'title', 'url', 'affiliate_url', 'release_date', 'price', 
-            'review_average', 'image_urls', 'sample_images', 'sample_movie', 'api_source', 
+            'floor_code', 'title', 'url', 'affiliate_url', 'product_url', 'release_date', 'price', 
+            'review_average', 'image_urls', 'thumbnail', 'sample_images', 'sample_movie', 'api_source', 
             'maker', 'label', 'director', 'series', 'genres', 'actresses', 'authors',
             'product_description', 'ai_summary', 'spec_score', 'rel_score', 'is_active', 'updated_at'
         )
         read_only_fields = ('id', 'unique_id', 'updated_at', 'rel_score')
 
     def get_api_source(self, obj):
-        """
-        site_codeを api_source として大文字(FANZA/DMM)で返却
-        """
         if isinstance(obj, dict):
             return obj.get('site_code', 'FANZA').upper()
         return getattr(obj, 'site_code', 'FANZA').upper()
+
+    def get_thumbnail(self, obj):
+        """image_urls辞書から最適な画像URLを抽出"""
+        imgs = obj.image_urls
+        if isinstance(imgs, dict):
+            # FANZA APIの標準構造: large -> list -> small
+            return imgs.get('large') or imgs.get('list') or imgs.get('small')
+        if isinstance(imgs, list) and len(imgs) > 0:
+            return imgs[0]
+        return None
 
 # --------------------------------------------------------------------------
 # 4. Linkshare商品シリアライザー

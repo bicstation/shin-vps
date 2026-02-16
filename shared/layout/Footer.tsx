@@ -6,20 +6,22 @@ import { useSearchParams } from 'next/navigation';
 import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
 import styles from './Footer.module.css';
 
-/** * ✅ 指定パス: /home/maya/dev/shin-vps/shared/debug/SystemDiagnosticHero.tsx
- * プロジェクト構成に合わせてエイリアス (@/shared/...) でインポートします
+/** * ✅ 指定パス: プロジェクト構成に合わせてエイリアス (@shared/...) でインポート 
  */
-import SystemDiagnosticHero from '@/shared/debug/SystemDiagnosticHero';
+import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
 
 interface FooterProps {
   debugData?: {
     id?: string;
     source?: string;
-    data?: any;          // メイン商品のRAWデータ
-    sidebarData?: any;   // サイドバー（関連商品）のRAWデータ
+    targetUrl?: string;      // スクリプト側
+    data?: any;              // メイン商品のRAWデータ
+    sidebarData?: any;       // サイドバー（関連商品）のRAWデータ
     fetchError?: string | null;
-    relatedError?: string | null;
-    params?: any;
+    errorMsg?: string | null; // スクリプト側のエラー名
+    relatedError?: any;       // 関連商品のエラー
+    params?: any;            // 昨日作成
+    apiInternalUrl?: string;  // スクリプト側
   };
 }
 
@@ -97,20 +99,25 @@ export default function Footer({ debugData }: FooterProps) {
       </div>
 
       <div className={styles.bottomBar}>
-        <p className={styles.copyright}>&copy; {currentYear} {site.site_name.toUpperCase()} All Rights Reserved.</p>
+        <p className={styles.copyright}>
+          &copy; {currentYear} {site.site_name.toUpperCase()} - {isAdult ? 'Tactical Archive Interface' : 'Performance Registry'}
+        </p>
       </div>
 
       {/* --- 🚀 診断ターミナル (最下部: SystemDiagnosticHero) --- */}
-      {isDebugMode && (
+      {/* 昨日作成した配線 + スクリプト側の新プロパティをすべて統合 */}
+      {isDebugMode && debugData && (
         <div className={styles.debugContainer} style={{ marginTop: '30px' }}>
           <SystemDiagnosticHero 
-            id={debugData?.id}
-            source={debugData?.source}
-            data={debugData?.data}
-            sidebarData={debugData?.sidebarData}
-            fetchError={debugData?.fetchError}
-            relatedError={debugData?.relatedError}
-            params={debugData?.params}
+            id={debugData.id}
+            source={debugData.source}
+            data={debugData.data}
+            rawJson={debugData.data} // スクリプト側対応
+            sidebarData={debugData.sidebarData}
+            fetchError={debugData.fetchError || debugData.errorMsg}
+            relatedError={debugData.relatedError}
+            params={debugData.params}
+            componentPath={debugData.apiInternalUrl} // 内部URLをパスとして流用
           />
           <div style={{ 
             textAlign: 'center', 

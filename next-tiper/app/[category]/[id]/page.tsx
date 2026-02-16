@@ -2,8 +2,11 @@
 /* eslint-disable @next/next/no-img-element */
 /**
  * ==============================================================================
- * 🎬 TIPER Archive - Category Listing Page (Unified Stability Edition)
+ * 🎬 TIPER Archive - Universal Category Sequence (Full-Spec Edition)
  * ==============================================================================
+ * ✅ アダルト/一般(DMM) ハイブリッドUI対応
+ * ✅ 全カテゴリ（スラグ/名前）自動マッピング
+ * ✅ リアルタイム・テレメトリ & 最適化ソート
  */
 
 export const dynamic = 'force-dynamic';
@@ -13,19 +16,19 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation'; 
 import { Metadata } from 'next';
 
-// ✅ 共通コンポーネント
+// ✅ コンポーネント & スタイル
 import ProductCard from '@shared/cards/AdultProductCard';
-// 💡 統合版サイドバー (マーケット分析対応版)
 import UnifiedSidebar from '@shared/layout/Sidebar/AdultSidebar';
 import Pagination from '@shared/common/Pagination';
+import styles from './Category.module.css';
 
-// ✅ 内部ロジック・API
-import { fetchMakers, getAdultProducts, fetchGenres } from '@shared/lib/api/django/adult';
+// ✅ API / 内部ロジック
+import { fetchMakers, getUnifiedProducts, fetchGenres } from '@shared/lib/api/django/adult';
 import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 import { constructMetadata } from '@shared/lib/metadata';
 
 /**
- * 💡 表示用ラベルマップ
+ * 💡 カテゴリラベル詳細定義
  */
 const CATEGORY_LABEL_MAP: Record<string, string> = {
     'genre': 'ジャンル',
@@ -39,263 +42,264 @@ const CATEGORY_LABEL_MAP: Record<string, string> = {
 };
 
 /**
- * 💡 ユーティリティ
+ * 💡 安全なHTMLデコード
  */
 const decodeHtml = (html: string) => {
     if (!html) return '';
     const map: { [key: string]: string } = {
-        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>'
+        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>',
+        '&#39;': "'", '&#039;': "'", '&ldquo;': '"', '&rdquo;': '"'
     };
     return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
-        .replace(/&[a-z]+;/gi, (match) => map[match] || match);
+                .replace(/&[a-z]+;/gi, (match) => map[match] || match);
 };
 
-/**
- * 💡 メタデータ生成
- */
 export async function generateMetadata({ params }: { params: Promise<{ category: string, id: string }> }): Promise<Metadata> {
     const { category, id } = await params;
     const decodedId = decodeURIComponent(id);
     const categoryLabel = CATEGORY_LABEL_MAP[category] || category.toUpperCase();
 
     return constructMetadata(
-        `${decodedId} の${categoryLabel}アーカイブ | TIPER`,
-        `AI解析による、${categoryLabel}「${decodedId}」に関連する最新の統合作品データ一覧です。`,
+        `${decodedId} の${categoryLabel}一覧 | TIPER Archive`,
+        `AI解析による、${categoryLabel}「${decodedId}」に関連する最新の統合作品データ・アーカイブです。`,
         undefined,
         `/${category}/${id}`
     );
 }
 
-/**
- * 🎬 カテゴリ別一覧ページ
- */
 export default async function CategoryListPage(props: { 
     params: Promise<{ category: string, id: string }>,
-    searchParams: Promise<{ page?: string, sort?: string, site_group?: string }>
+    searchParams: Promise<{ page?: string, sort?: string, brand?: string, debug?: string }>
 }) {
-    const resolvedParams = await props.params;
-    const resolvedSearchParams = await props.searchParams;
-    const { category, id } = resolvedParams;
+    // 1. パラメータ解決
+    const { category, id } = await props.params;
+    const searchParams = await props.searchParams;
 
-    // 基本バリデーション
     if (!category || !id || category === 'undefined') return notFound();
 
     const decodedId = decodeURIComponent(id);
-    const currentPageNum = Number(resolvedSearchParams?.page) || 1;
-    const currentSort = resolvedSearchParams?.sort || '-release_date'; 
+    const currentBrand = searchParams?.brand || null;
+    const currentPageNum = Number(searchParams?.page) || 1;
+    const currentSort = searchParams?.sort || '-release_date'; 
+    const isDebugMode = searchParams?.debug === 'true';
     const limit = 24; 
-    const offset = (currentPageNum - 1) * limit;
 
-    /**
-     * 🚀 重要：Django API へのクエリパラメータ最適化
-     * 全文検索(search)は重く、ジャンル名がタイトルに含まれる場合にノイズが入ります。
-     * categoryに応じて、Djangoの正確なFilterBackend用キーに割り振ります。
-     */
+    // 2. APIクエリビルディング（全カテゴリ・全ソース対応）
     const queryParams: Record<string, any> = {
-        offset: offset,
-        limit: limit,
+        page: currentPageNum,
         ordering: currentSort,
+        ...(currentBrand && { api_source: currentBrand.toUpperCase() })
     };
 
-    // フィルタリングの厳密化 (API側の filterset_fields に準拠)
-    if (category === 'genre') {
-        queryParams.genre_name = decodedId;
-    } else if (category === 'actress') {
-        queryParams.actress_name = decodedId;
-    } else if (category === 'maker' || category === 'brand') {
-        queryParams.maker_name = decodedId;
-    } else if (category === 'series') {
-        queryParams.series_name = decodedId;
-    } else {
-        // 想定外のカテゴリは全文検索にフォールバック
-        queryParams.search = decodedId;
+    // URLのカテゴリに応じてバックエンドが期待するキーへマッピング
+    switch (category) {
+        case 'genre':    queryParams.genre_slug = decodedId; break;
+        case 'actress':  queryParams.actress_slug = decodedId; break;
+        case 'maker':
+        case 'brand':    queryParams.maker_slug = decodedId; break; // VANS等の名前一致
+        case 'series':   queryParams.series_slug = decodedId; break;
+        case 'director': queryParams.director_slug = decodedId; break;
+        case 'author':   queryParams.author_slug = decodedId; break;
+        case 'label':    queryParams.label_slug = decodedId; break;
+        default:         queryParams.search = decodedId;
     }
 
-    const TARGET_ENDPOINT = '/unified-adult-products/';
+    const startTime = Date.now();
 
-    // 1. 並列データフェッチ (パフォーマンス最大化)
+    // 3. 並列データ取得
     const [productData, makersData, genresData, wpData] = await Promise.all([
-        getAdultProducts(queryParams, TARGET_ENDPOINT).catch((e) => {
-            console.error("API Error [Products]:", e);
-            return { results: [], count: 0 };
-        }),
-        fetchMakers({ limit: 100, ordering: '-product_count' }).catch(() => []), 
-        fetchGenres({ limit: 100, ordering: '-product_count' }).catch(() => []),
-        getSiteMainPosts(0, 6).catch(() => ({ results: [] }))
+        getUnifiedProducts(queryParams).catch(e => ({ results: [], count: 0, error: e.message })),
+        fetchMakers({ limit: 60, ordering: '-product_count' }).catch(() => []), 
+        fetchGenres({ limit: 60, ordering: '-product_count' }).catch(() => []),
+        getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
 
+    const fetchDuration = Date.now() - startTime;
     const products = productData?.results || [];
     const totalCount = productData?.count || 0;
     const totalPages = Math.ceil(totalCount / limit);
 
-    /**
-     * ✅ サイドバー用：メーカーデータのTop 20抽出
-     */
-    const rawMakers = Array.isArray(makersData) ? makersData : (makersData as any)?.results || [];
-    const topMakers = rawMakers
-        .sort((a: any, b: any) => (b.product_count || b.count || 0) - (a.product_count || a.count || 0))
-        .slice(0, 20)
-        .map((m: any) => ({
-            id: m.id,
-            name: m.name || `Studio ${m.id}`,
-            slug: m.slug || m.id.toString(),
-            product_count: m.product_count || m.count || 0
-        }));
+    // 4. コンテンツ特性の判定（一般物販かアダルトか）
+    const isGeneralMode = products.some((p: any) => p.api_source === 'DMM');
+    const displayCategoryName = CATEGORY_LABEL_MAP[category] || category.toUpperCase();
 
-    /**
-     * ✅ サイドバー用：ジャンルデータのTop 20抽出
-     */
-    const rawGenres = Array.isArray(genresData) ? genresData : (genresData as any)?.results || [];
-    const topGenres = rawGenres
-        .sort((a: any, b: any) => (b.product_count || b.count || 0) - (a.product_count || a.count || 0))
-        .slice(0, 20)
-        .map((g: any) => ({
-            id: g.id,
-            name: g.name,
-            slug: g.slug || g.id.toString(),
-            product_count: g.product_count || g.count || 0
-        }));
-
-    // WordPress記事の整形 (サイドバー用)
+    // 5. サイドバー用整形
     const sidebarRecentPosts = (wpData?.results || []).map((p: any) => ({
         id: p.id.toString(),
         title: decodeHtml(p.title?.rendered || "Untitled"),
         slug: p.slug
     }));
 
-    /**
-     * 💡 表示名の確定
-     * 取得した products の中から、APIが返した正式な名称（表記揺れ対策）を取得
-     */
-    let categoryDisplayName = decodedId; 
-    if (products.length > 0) {
-        const first = products[0];
-        const findActualName = () => {
-            if ((category === 'maker' || category === 'brand') && first.maker) return first.maker.name;
-            const listKey = category === 'genre' ? 'genres' : (category === 'actress' ? 'actresses' : null);
-            if (listKey && Array.isArray(first[listKey])) {
-                const target = first[listKey].find((x: any) => x.name === decodedId || x.slug === decodedId);
-                return target?.name;
-            }
-            return null;
-        };
-        categoryDisplayName = findActualName() || decodedId;
-    }
-
     return (
-        <div className="pb-24 bg-[#08080c] min-h-screen text-gray-100 selection:bg-[#e94560]/30 selection:text-white font-sans overflow-x-hidden">
+        <div className={styles.container}>
             
-            {/* 📟 SYSTEM MONITOR: デバッグを容易にするためのステータス表示 */}
-            <div className="bg-[#1a1a2e] border-b border-[#e94560]/30 px-4 py-2 font-mono text-[10px] text-[#e94560] flex flex-wrap gap-x-6">
-                <span className="flex items-center gap-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${products.length > 0 ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span> 
-                    STREAM_STATUS: {products.length > 0 ? 'ACTIVE' : 'NO_DATA'}
-                </span>
-                <span>[FILTER: {category.toUpperCase()}]</span>
-                <span>[TARGET: {decodedId}]</span>
-                <span>[NODES: {totalCount}]</span>
-            </div>
-
-            <header className="relative py-32 px-[5%] text-center overflow-hidden border-b border-white/[0.03] bg-gradient-to-b from-[#11111d] to-[#08080c]">
-                <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(233,69,96,0.1),transparent_70%)]"></div>
-                
-                <div className="relative z-10 max-w-7xl mx-auto">
-                    <div className="flex justify-center items-center gap-4 mb-8">
-                        <span className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#e94560]"></span>
-                        <span className="text-[10px] font-black tracking-[0.4em] text-[#e94560] uppercase">
-                            Archive_Registry / {CATEGORY_LABEL_MAP[category] || category}
-                        </span>
-                        <span className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#e94560]"></span>
-                    </div>
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white uppercase italic leading-none drop-shadow-[0_0_30px_rgba(233,69,96,0.1)]">
-                        {categoryDisplayName}
-                    </h1>
-                </div>
-            </header>
-
-            <div className="w-full max-w-[1800px] mx-auto px-[4%] flex flex-col lg:flex-row gap-12 xl:gap-16 mt-16">
-
-                {/* 💡 左翼: サイドバーエリア */}
-                <aside className="w-full lg:w-[300px] xl:w-[340px] flex-shrink-0">
-                    <div className="lg:sticky lg:top-24 space-y-8">
+            {/* 📟 TACTICAL BREADCRUMBS BAR */}
+            <nav className={styles.navBar}>
+                <div className={styles.navInner}>
+                    <div className={styles.breadcrumb}>
+                        <Link href="/" className={styles.breadcrumbLink}>SYSTEM_ROOT</Link>
+                        <span className="opacity-30 mx-2 text-white">/</span>
+                        <Link href={`/${category}`} className={styles.breadcrumbLink}>{category.toUpperCase()}</Link>
+                        <span className="opacity-30 mx-2 text-white">/</span>
+                        <span className={styles.breadcrumbCurrent}>{decodedId}</span>
                         
-                        {/* プラットフォーム・クイック・セレクター (明示的に配置) */}
-                        <div className="grid grid-cols-3 gap-2">
-                            {[
-                                { name: 'DUGA', path: '/brand/duga', color: 'hover:bg-[#00d1b2] hover:border-[#00d1b2]' },
-                                { name: 'FANZA', path: '/brand/fanza', color: 'hover:bg-[#e94560] hover:border-[#e94560]' },
-                                { name: 'DMM', path: '/brand/dmm', color: 'hover:bg-[#f59e0b] hover:border-[#f59e0b]' }
-                            ].map((site) => (
-                                <Link key={site.name} href={site.path} className="block">
-                                    <div className={`py-3 text-center border border-white/5 bg-white/[0.02] rounded-sm text-[9px] font-black text-gray-500 hover:text-white transition-all cursor-pointer uppercase tracking-tighter ${site.color}`}>
-                                        {site.name}
-                                    </div>
+                        {/* ⚡ クイックブランドフィルター（DMM/一般も選択肢に含める） */}
+                        <div className="ml-8 flex items-center gap-1.5">
+                            {['FANZA', 'DUGA', 'DMM'].map((brand) => (
+                                <Link 
+                                    key={brand}
+                                    href={`/${category}/${id}?brand=${brand.toLowerCase()}&sort=${currentSort}${isDebugMode ? '&debug=true' : ''}`}
+                                    className={`px-2 py-0.5 rounded text-[9px] font-black border transition-all tracking-tighter ${currentBrand?.toUpperCase() === brand ? 'bg-[#e94560] border-[#e94560] text-white shadow-[0_0_15px_rgba(233,69,96,0.4)]' : 'border-white/10 text-gray-500 hover:text-white hover:border-white/30'}`}
+                                >
+                                    @{brand}
                                 </Link>
                             ))}
+                            {currentBrand && (
+                                <Link href={`/${category}/${id}?sort=${currentSort}`} className="ml-2 text-[8px] text-gray-600 hover:text-[#e94560] font-mono">[CLR_FLTR]</Link>
+                            )}
                         </div>
-
-                        {/* 💡 統合サイドバーの呼び出し */}
-                        <UnifiedSidebar 
-                            makers={topMakers} 
-                            genres={topGenres}
-                            recentPosts={sidebarRecentPosts} 
-                            product={products[0]} // 作品を渡してマーケット分析を連動
-                        />
                     </div>
-                </aside>
 
-                {/* 💡 中央: メインストリーム */}
-                <main className="flex-grow min-w-0">
+                    <div className="flex items-center gap-6">
+                        <div className={styles.metrics}>
+                            <span className={styles.liveDot}></span>
+                            <span className="text-[10px] text-gray-500 mr-2 font-mono">SIGNAL_LATENCY:</span>
+                            <span className={styles.metricValue}>{fetchDuration}ms</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div className={styles.inner}>
+                <div className={styles.mainLayout}>
                     
-                    {/* ソートバー */}
-                    <div className="flex justify-between items-end mb-12 border-b border-white/[0.05] pb-6">
-                        <h2 className="text-2xl font-black uppercase italic tracking-tighter">
-                            Captured <span className="text-[#e94560]">Sequence</span>
-                        </h2>
-                        <div className="flex gap-2">
-                            {[{ l: 'NEW', v: '-release_date' }, { l: 'SCORE', v: '-spec_score' }].map((opt) => (
-                                <Link key={opt.v} href={`/${category}/${id}?page=1&sort=${opt.v}`}
-                                    className={`px-4 py-2 text-[10px] font-black border transition-all ${currentSort === opt.v ? 'bg-white text-black border-white' : 'bg-[#16162d] border-white/5 text-gray-500 hover:text-white'}`}>
-                                    {opt.l}
-                                </Link>
-                            ))}
+                    {/* 💡 LEFT SIDEBAR */}
+                    <aside className={styles.sidebar}>
+                        <div className="sticky top-24 space-y-10">
+                            <UnifiedSidebar 
+                                makers={Array.isArray(makersData) ? makersData : (makersData as any)?.results || []} 
+                                genres={Array.isArray(genresData) ? genresData : (genresData as any)?.results || []}
+                                recentPosts={sidebarRecentPosts} 
+                                product={products[0]}
+                            />
                         </div>
-                    </div>
+                    </aside>
 
-                    {/* 商品グリッド */}
-                    {products.length > 0 ? (
-                        <>
-                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
-                                {products.map((product: any) => (
-                                    <ProductCard key={`${product.api_source}-${product.id}`} product={product} />
-                                ))}
+                    {/* 💡 CONTENT AREA */}
+                    <main className={styles.content}>
+                        
+                        <header className={styles.header}>
+                            <div className="flex flex-col gap-2">
+                                <span className={styles.nodeLabel}>
+                                    {isGeneralMode ? 'MARKET_DATA_STREAM' : 'ADULT_ARCHIVE_SEQUENCE'} // {displayCategoryName} // {decodedId}
+                                </span>
+                                <h1 className={styles.titleMain}>{decodedId}</h1>
+                                
+                                <div className={styles.itemCount}>
+                                    <span className={styles.countLabel}>RECORDS_TOTAL</span>
+                                    <span className={styles.countNumber}>{totalCount.toLocaleString()}</span>
+                                </div>
                             </div>
-                            
-                            {/* ページネーション */}
-                            <div className="mt-24">
-                                <Pagination 
-                                    currentPage={currentPageNum} 
-                                    totalPages={totalPages} 
-                                    baseUrl={`/${category}/${id}`} 
-                                />
+
+                            {/* 🛠️ SORT SELECTOR (一般物販なら価格順も有用) */}
+                            <div className={styles.toolbar}>
+                                <div className={styles.sortGroup}>
+                                    {[
+                                        { l: 'LATEST_RELEASE', v: '-release_date' }, 
+                                        { l: 'MATRIX_SCORE', v: '-spec_score' },
+                                        { l: 'PRICE_ASC', v: 'price' },
+                                        { l: 'ID_SORT', v: '-id' }
+                                    ].map((opt) => (
+                                        <Link 
+                                            key={opt.v} 
+                                            href={`/${category}/${id}?brand=${currentBrand || ''}&sort=${opt.v}${isDebugMode ? '&debug=true' : ''}`}
+                                            className={`${styles.sortBtn} ${currentSort === opt.v ? styles.sortBtnActive : ''}`}
+                                        >
+                                            {opt.l}
+                                        </Link>
+                                    ))}
+                                </div>
                             </div>
-                        </>
-                    ) : (
-                        /* データの取得に失敗または該当なしの場合 */
-                        <div className="py-40 text-center border border-dashed border-[#e94560]/20 bg-[#e94560]/5 rounded-sm">
-                            <p className="text-[#e94560] font-black tracking-[0.3em] text-[10px] uppercase mb-4 animate-pulse">
-                                [!] NO_RECORDS_FOUND_IN_THE_UNIFIED_REGISTRY
-                            </p>
-                            <p className="text-gray-600 text-[10px] font-mono mb-8">
-                                Query: {decodedId} | Category: {category}
-                            </p>
-                            <Link href="/" className="px-8 py-3 bg-[#e94560] text-white text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-black transition-colors">
-                                Return to Main Terminal
-                            </Link>
-                        </div>
-                    )}
-                </main>
+                        </header>
+
+                        {/* PRODUCT GRID */}
+                        {products.length > 0 ? (
+                            <>
+                                <div className={styles.productGrid}>
+                                    {products.map((product: any) => (
+                                        <ProductCard 
+                                            key={`${product.api_source}-${product.id}`} 
+                                            product={product} 
+                                            // 物販かアダルトかで内部表示を切り替えるフラグ
+                                            variant={product.api_source === 'DMM' ? 'market' : 'adult'}
+                                        />
+                                    ))}
+                                </div>
+                                
+                                <div className={styles.pagination}>
+                                    <Pagination 
+                                        currentPage={currentPageNum} 
+                                        totalPages={totalPages} 
+                                        baseUrl={`/${category}/${id}`} 
+                                        query={{ brand: currentBrand, sort: currentSort, ...(isDebugMode && { debug: 'true' }) }}
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyTitle}>0_MATCHES_FOUND</div>
+                                <p className="text-gray-600 text-[11px] font-mono mt-4 max-w-xs text-center leading-relaxed opacity-60">
+                                    NODE: [{decodedId}] に一致するデータは存在しません。再検索してください。
+                                </p>
+                                <Link href={`/${category}`} className={`${styles.pageBtn} mt-10 uppercase`}>
+                                    Back_to_Archive
+                                </Link>
+                            </div>
+                        )}
+
+                        {/* 🛠️ MATRIX DEBUG TERMINAL (FULL OPTIMIZED) */}
+                        {isDebugMode && (
+                            <section className={styles.debugConsole}>
+                                <div className="flex justify-between items-center mb-6 border-b border-[#e94560]/30 pb-4">
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-2.5 h-2.5 bg-[#e94560] animate-ping rounded-full"></span>
+                                        <span className="font-mono font-bold text-[#e94560] tracking-widest uppercase text-xs">System_Telemetry_Terminal</span>
+                                    </div>
+                                    <span className="font-mono text-[9px] text-gray-500 uppercase">Status: 200 OK</span>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-8 font-mono">
+                                    <div className="space-y-4">
+                                        <p className="text-[#e94560] font-bold uppercase text-[10px] tracking-tighter"> {">>"} API_REQUEST_MAP</p>
+                                        <pre className="bg-black/60 p-4 rounded-lg border border-white/5 text-[10px] text-cyan-400 leading-tight overflow-x-auto">
+                                            {JSON.stringify({
+                                                category_raw: category,
+                                                id_decoded: decodedId,
+                                                params_generated: queryParams,
+                                                target_uri: '/api/unified-products/',
+                                                mode: isGeneralMode ? 'GENERAL/DMM' : 'ADULT/FANZA_DUGA'
+                                            }, null, 2)}
+                                        </pre>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <p className="text-[#00d1b2] font-bold uppercase text-[10px] tracking-tighter"> {">>"} RUNTIME_METRICS</p>
+                                        <div className="bg-black/60 p-4 rounded-lg border border-white/5 text-[10px] text-gray-400 space-y-2">
+                                            <div className="flex justify-between"><span className="text-gray-600">PROCESS:</span> <span className="text-white">NODE_JS_SSR</span></div>
+                                            <div className="flex justify-between"><span className="text-gray-600">LATENCY:</span> <span className="text-yellow-400">{fetchDuration}ms</span></div>
+                                            <div className="flex justify-between"><span className="text-gray-600">DATA_INTEGRITY:</span> <span className="text-green-500">VERIFIED</span></div>
+                                            <div className="flex justify-between"><span className="text-gray-600">PAGINATION:</span> <span className="text-white">{currentPageNum} / {totalPages}</span></div>
+                                            <div className="flex justify-between"><span className="text-gray-600">TOTAL_RECORDS:</span> <span className="text-white">{totalCount}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {productData?.error && (
+                                    <div className="mt-8 p-4 bg-red-950/40 border border-red-500/50 text-red-500 font-mono text-[10px] animate-pulse">
+                                        [CORE_EXCEPTION_DETECTED]: {productData.error}
+                                    </div>
+                                )}
+                            </section>
+                        )}
+                    </main>
+                </div>
             </div>
         </div>
     );
