@@ -1,139 +1,110 @@
-/* Pagination.module.css - Cyberpunk Edition */
+/* Pagination.module.css - Optimized Cyberpunk */
 
 .paginationContainer {
-  margin-top: 80px;
+  margin-top: 60px;
+  margin-bottom: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   width: 100%;
-  position: relative;
-  z-index: 5; /* 他の要素の下に隠れないように */
 }
 
-/* ページ情報のテキスト表示 */
 .statsText {
-  font-size: 10px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.3);
-  letter-spacing: 0.25em;
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono, 'Courier New', monospace);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px 16px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .accentText {
   color: #fff;
-  text-shadow: 0 0 10px var(--theme-color, #e94560);
+  text-shadow: 0 0 8px var(--theme-color, #e94560);
+  margin-right: 4px;
 }
 
 .paginationList {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px; /* タイトな間隔 */
-  flex-wrap: wrap;
+  gap: 6px;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-/* 共通のボタン基盤 */
+/* 共通ボタン基盤 */
 .pageNumber, 
 .arrowButton {
-  background: #1a1a35; /* ダーク背景 */
+  background: #0f0f1a; /* より深い黒 */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  text-decoration: none !important;
-  color: #9ca3af;
+  color: #888;
   font-weight: 900;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  pointer-events: auto; /* 確実にクリック可能に */
+  text-decoration: none !important;
 }
 
-/* 前へ・次へボタン */
 .arrowButton {
-  padding: 10px 20px;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  padding: 0 16px;
+  height: 40px;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  font-family: var(--font-mono, monospace);
 }
 
-/* 数字ボタン */
 .pageNumber {
   width: 40px;
   height: 40px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-family: var(--font-mono, monospace);
-  color: #6b7280;
 }
 
-/* ホバーエフェクト（共通） */
+/* ホバー: ネオン・リアクション */
 .pageNumber:hover, 
 .arrowButton:hover:not(.disabled) {
   border-color: var(--theme-color, #e94560);
-  background-color: rgba(255, 255, 255, 0.05);
+  background: rgba(233, 69, 96, 0.05);
   color: #fff;
-  box-shadow: 0 0 15px var(--theme-color, rgba(233, 69, 96, 0.2));
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
   transform: translateY(-2px);
 }
 
-/* アクティブ（現在地） */
+/* アクティブ: 過負荷発光 */
 .active {
-  background-color: var(--theme-color, #e94560) !important;
+  background: var(--theme-color, #e94560) !important;
   color: #fff !important;
-  border-color: var(--theme-color, #e94560) !important;
-  box-shadow: 0 0 20px var(--theme-color, rgba(233, 69, 96, 0.4)) !important;
+  border-color: #fff !important;
+  box-shadow: 0 0 25px var(--theme-color, rgba(233, 69, 96, 0.6)) !important;
+  z-index: 2;
 }
 
-/* 無効化状態 */
 .disabled {
-  color: #374151 !important;
-  border-color: #1f2937 !important;
+  opacity: 0.2;
   cursor: not-allowed;
-  background-color: #0a0a14 !important;
-  opacity: 0.5;
   pointer-events: none;
+  border-color: transparent !important;
 }
 
 .dots {
-  color: #4b5563;
-  font-weight: bold;
-  padding: 0 8px;
-  user-select: none;
-}
-
-.loading {
   color: rgba(255, 255, 255, 0.2);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
+  padding: 0 4px;
+  font-weight: 900;
 }
 
-/* アイコン用 */
-.icon {
-  font-size: 1.1em;
-  margin: 0 4px;
-}
-
-/* レスポンシブ調整 */
-@media (max-width: 600px) {
-  .paginationList {
-    gap: 4px;
-  }
-  .arrowButton {
-    padding: 8px 12px;
-    font-size: 0.7rem;
-  }
-  .pageNumber {
-    width: 34px;
-    height: 34px;
-    font-size: 0.8rem;
-  }
-  .paginationContainer {
-    margin-top: 40px;
-  }
+/* レスポンシブ */
+@media (max-width: 640px) {
+  .statsText { font-size: 9px; letter-spacing: 0.2em; }
+  .pageNumber { width: 34px; height: 34px; font-size: 0.75rem; }
+  .arrowButton { padding: 0 10px; height: 34px; font-size: 0.65rem; }
+  /* スマホでは端のボタンを非表示にする等の調整が可能 */
 }

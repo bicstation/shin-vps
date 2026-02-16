@@ -147,7 +147,7 @@ export default async function Home() {
         <SystemDiagnosticHero 
           id="MAIN_CORE_ANALYSIS" 
           source="UNIFIED_SUMMARY" 
-          rawJson={analysisData} 
+          // rawJson={analysisData} 
         />
 
         <main className={styles.main}>

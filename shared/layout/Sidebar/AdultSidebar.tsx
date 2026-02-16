@@ -127,11 +127,11 @@ export default function AdultSidebar({
 
       {/* 🛠️ 2-6. マスターデータセクション (昨日作成のデータマッピング) */}
       {[
-        { id: 'GENRES', type: 'genre', data: topGenres, icon: '🏷️' },
-        { id: 'MAKERS', type: 'maker', data: topMakers, icon: '🏢' },
+        { id: 'GENRES', type: 'genres', data: topGenres, icon: '🏷️' },
+        { id: 'MAKERS', type: 'makers', data: topMakers, icon: '🏢' },
         { id: 'SERIES', type: 'series', data: topSeries, icon: '🎞️' },
-        { id: 'DIRECTORS', type: 'director', data: topDirectors, icon: '🎬' },
-        { id: 'AUTHORS', type: 'author', data: topAuthors, icon: '✍️' }
+        { id: 'DIRECTORS', type: 'directors', data: topDirectors, icon: '🎬' },
+        { id: 'AUTHORS', type: 'authors', data: topAuthors, icon: '✍️' }
       ].map((cat) => (
         <section key={cat.id} className={styles.sectionWrapper}>
           <div className={styles.sectionHeader} onClick={() => toggleSection(cat.id)}>

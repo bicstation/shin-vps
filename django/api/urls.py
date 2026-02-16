@@ -3,7 +3,6 @@ from django.urls import path
 from api import views
 
 # 🚀 app_name を指定。
-# テンプレートやリダイレクトで 'api:endpoint_name' として参照可能になります。
 app_name = 'api'
 
 urlpatterns = [
@@ -36,11 +35,7 @@ urlpatterns = [
     # ==========================================================
     # 3. 🛡️ 統合アダルト共通ゲートウェイ (横断検索 / 関連レコメンド / 仕分け検索)
     # ==========================================================
-    # 💡 内部で api_source (FANZA/DUGA) を動的に判定。
-    # ジャンル・女優スラグによる「仕分け」と「レコメンド」を一つの口で処理します。
     path('unified-adult-products/', views.UnifiedAdultProductListView.as_view(), name='unified_adult_products'),
-    
-    # 🔥 [ADD] Next.js 側が 'unified-products' としてアクセスしてくる場合のエイリアス
     path('unified-products/', views.UnifiedAdultProductListView.as_view(), name='unified_products_alias'),
 
     # ==========================================================
@@ -52,16 +47,14 @@ urlpatterns = [
     # ==========================================================
     # 5. アダルト/DUGA/統合商品 (AdultProduct)
     # ==========================================================
-    # 💡 サイドバー統計（フロア・ジャンル・メーカー・著者・属性のカウント）
     path('adult-products/analysis/', views.PlatformMarketAnalysisAPIView.as_view(), name='platform_market_analysis'),
-    
-    # 💡 AIスコア（Matrix Score）に基づくランキング
     path('adult-products/ranking/', views.AdultProductRankingAPIView.as_view(), name='adult_product_ranking'),
-    
-    # 💡 AdultProduct 本体（DUGA等、およびカテゴリ絞り込みのメインエンドポイント）
     path('adult-products/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
-    # 💡 詳細ページ（product_id_unique には記号が含まれる場合があるため str で受容）
     path('adult-products/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
+
+    # 💡 [NEW] 全項目インデックス（仕分け）用エンドポイント
+    # type引数 (genres, makers, actresses等) により1000件超のマスターを全件返却します。
+    path('adult/taxonomy/', views.AdultTaxonomyIndexAPIView.as_view(), name='adult_taxonomy_index'),
 
     # ==========================================================
     # 6. Linkshare商品 (物販アフィリエイト)
@@ -72,13 +65,11 @@ urlpatterns = [
     # ==========================================================
     # 7. 🏷️ マスターデータ (全プラットフォーム統合版)
     # ==========================================================
-    # 💡 フロントエンドの検索、パンくずリスト、カテゴリ一覧ページ等で使用
     path('actresses/', views.ActressListAPIView.as_view(), name='actress_list'),
     path('genres/', views.GenreListAPIView.as_view(), name='genre_list'),
     path('makers/', views.MakerListAPIView.as_view(), name='maker_list'),
     path('labels/', views.LabelListAPIView.as_view(), name='label_list'),
     path('directors/', views.DirectorListAPIView.as_view(), name='director_list'),
     path('series/', views.SeriesListAPIView.as_view(), name='series_list'),
-    # 🚀 著者(Author)エンドポイント：漫画・コミック系プラットフォーム拡張の鍵
     path('authors/', views.AuthorListAPIView.as_view(), name='author_list'),
 ]

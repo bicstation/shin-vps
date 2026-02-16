@@ -13,6 +13,7 @@ import { AdultProduct } from '../types';
 /** 💡 汎用データ抽出: Djangoのページネーション有無にかかわらず配列を返す */
 const safeExtract = (data: any) => {
     if (!data) return [];
+    // taxonomy APIのような "results" キーを持つオブジェクト、または純粋な配列を処理
     return Array.isArray(data) ? data : (data.results || []);
 };
 
@@ -57,7 +58,6 @@ export async function getUnifiedProducts(params: any = {}) {
     const targetUrl = resolveApiUrl(`/api/unified-products/?${queryString}`);
 
     try {
-        // cache: 'no-store' を追加して、開発中の反映を確実にする
         const res = await fetch(targetUrl, { 
             headers: getDjangoHeaders(),
             cache: 'no-store' 
@@ -148,6 +148,29 @@ export async function getDmmDynamicMenu() {
  * 💡 4. 各種マスタデータ一覧 (Masters)
  * ==============================================================================
  */
+
+/** * 💡 [NEW] 万能仕分けインデックス取得
+ * ジャンル、女優、メーカー等の全件リストを "あいうえお表示用" に一括取得する
+ */
+export async function fetchAdultTaxonomyIndex(type: 'genres' | 'actresses' | 'makers' | 'series' | 'directors' | 'authors') {
+    try {
+        const targetUrl = resolveApiUrl(`/api/adult/taxonomy/?type=${type}`);
+        const res = await fetch(targetUrl, { 
+            headers: getDjangoHeaders(),
+            // インデックスページは頻繁に変わらないため、1時間キャッシュを推奨
+            next: { revalidate: 3600 } 
+        });
+        const data = await res.json();
+        return {
+            type: data.type,
+            results: safeExtract(data),
+            total_count: data.total_count || 0
+        };
+    } catch (error) {
+        console.error(`TAXONOMY_FETCH_FAILED (${type}):`, error);
+        return { type, results: [], total_count: 0 };
+    }
+}
 
 export const fetchMakers = async (p?: any) => {
     try {

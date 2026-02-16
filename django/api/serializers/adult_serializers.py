@@ -52,7 +52,8 @@ class BaseMasterSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """
         💡 最適化: 辞書データ(values()アノテーション結果)が渡された場合でも
-        シリアライズエラーにならないように拡張
+        シリアライズエラーにならないように拡張。
+        TaxonomyIndexView で使用される tmp_name 等のキーも吸収します。
         """
         if isinstance(instance, dict):
             # 💡 最適化: values()で取得した際にキー名が tmp_name 等になっている場合を吸収
@@ -113,6 +114,20 @@ class AdultAttributeSerializer(serializers.ModelSerializer):
             'id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order', 'product_count'
         )
         read_only_fields = fields
+
+    def to_representation(self, instance):
+        """辞書データ(values())対応を属性シリアライザーにも適用"""
+        if isinstance(instance, dict):
+            return {
+                'id': instance.get('id') or instance.get('tmp_id'),
+                'attr_type': instance.get('attr_type'),
+                'attr_type_display': instance.get('attr_type_display', ''),
+                'name': instance.get('name') or instance.get('tmp_name'),
+                'slug': instance.get('slug') or instance.get('tmp_slug'),
+                'order': instance.get('order', 0),
+                'product_count': instance.get('product_count', 0)
+            }
+        return super().to_representation(instance)
 
 if PCAttribute:
     class PCAttributeSerializer(serializers.ModelSerializer):
@@ -207,7 +222,6 @@ class FanzaProductSerializer(serializers.ModelSerializer):
         """image_urls辞書から最適な画像URLを抽出"""
         imgs = obj.image_urls
         if isinstance(imgs, dict):
-            # FANZA APIの標準構造: large -> list -> small
             return imgs.get('large') or imgs.get('list') or imgs.get('small')
         if isinstance(imgs, list) and len(imgs) > 0:
             return imgs[0]
