@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import styles from './AdultSidebar.module.css';
 
+// --- インターフェース定義 ---
 interface MasterItem {
   id: number;
   name: string;
@@ -12,22 +13,24 @@ interface MasterItem {
   product_count: number;
 }
 
-// 💡 Django API側のキー名（service_name等）とReact側のインターフェースを統合
 interface OfficialFloor {
   id: string | number;
-  name?: string;       // 旧
-  floor_name?: string; // Django
-  slug?: string;       // 旧
-  floor_code?: string; // Django
+  name?: string;
+  floor_name?: string;
+  slug?: string;
+  floor_code?: string;
+  code?: string;
 }
 
 interface OfficialService {
   id: string | number;
-  name?: string;          // 旧
-  service_name?: string;  // Django
-  slug?: string;          // 旧
-  service_code?: string;  // Django
+  name?: string;
+  service_name?: string;
+  slug?: string;
+  service_code?: string;
+  code?: string;
   floors?: OfficialFloor[];
+  items?: OfficialFloor[]; 
 }
 
 interface SidebarProps {
@@ -59,10 +62,6 @@ export default function AdultSidebar({
     'OFFICIAL_NAV': true,
     'PLATFORMS': true,
     'GENRES': true,
-    'SERIES': true,
-    'MAKERS': true,
-    'DIRECTORS': true,
-    'AUTHORS': true,
     'LOGS': true
   });
 
@@ -70,44 +69,43 @@ export default function AdultSidebar({
     setMounted(true);
   }, []);
 
+  // 1. 現在のプラットフォーム判定
   const currentPlatform = useMemo(() => {
     if (pathname?.includes('/brand/fanza')) return 'fanza';
     if (pathname?.includes('/brand/dmm')) return 'dmm';
     if (pathname?.includes('/brand/duga')) return 'duga';
-    const brandParam = searchParams.get('brand');
-    if (brandParam) return brandParam.toLowerCase();
-    return null; 
+    return searchParams.get('brand')?.toLowerCase() || 'fanza';
   }, [pathname, searchParams]);
 
+  // 2. セクション開閉
   const toggleSection = (section: string) => 
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
 
-  const categories = [
-    { id: 'GENRES', type: 'genres', data: genres.slice(0, 10), icon: '🏷️' },
-    { id: 'MAKERS', type: 'makers', data: makers.slice(0, 10), icon: '🏢' },
-    { id: 'SERIES', type: 'series', data: series.slice(0, 10), icon: '🎞️' },
-    { id: 'DIRECTORS', type: 'directors', data: directors.slice(0, 10), icon: '🎬' },
-    { id: 'AUTHORS', type: 'authors', data: authors.slice(0, 10), icon: '✍️' }
-  ];
+  /** * 💡 3. /svc/ パス形式リンク生成ロジック
+   * 例: /brand/fanza/svc/digital/videoa
+   */
+  const getOfficialLink = (sCode: string, fCode?: string) => {
+    const base = `/brand/${currentPlatform}/svc`;
+    if (fCode) {
+      return `${base}/${sCode}/${fCode}`;
+    }
+    return `${base}/${sCode}`;
+  };
+
+  /** * 💡 4. アクティブ判定ロジック
+   */
+  const isSvcActive = (sCode: string) => {
+    return pathname?.includes(`/svc/${sCode}`);
+  };
+
+  const isFlrActive = (sCode: string, fCode: string) => {
+    // パスが /svc/service/floor を含んでいるか厳密に判定
+    return pathname?.includes(`/svc/${sCode}/${fCode}`);
+  };
 
   const getSafeLink = (type: string, item: any) => {
     const identifier = item.slug || item.id;
-    if (currentPlatform) {
-      return `/brand/${currentPlatform}/cat/${type.replace(/s$/, '')}/${identifier}`;
-    }
-    return `/${type}/${identifier}`;
-  };
-
-  /**
-   * 💡 サービス・フロア専用リンク生成
-   * マッピング: slug または code を使用
-   */
-  const getOfficialLink = (serviceSlug: string, floorSlug?: string) => {
-    const base = `/brand/${currentPlatform || 'fanza'}`;
-    if (floorSlug) {
-      return `${base}/svc/${serviceSlug}/${floorSlug}`;
-    }
-    return `${base}/svc/${serviceSlug}/all`;
+    return `/brand/${currentPlatform}/cat/${type.replace(/s$/, '')}/${identifier}`;
   };
 
   if (!mounted) return null;
@@ -126,13 +124,11 @@ export default function AdultSidebar({
         </div>
         {openSections['PLATFORMS'] && (
           <div className={styles.platformGrid}>
-            <Link href="/" className={`${styles.platBtn} ${!currentPlatform ? styles.active : ''}`}>
-              <span className={styles.btnDot} /> ALL_ROOT
-            </Link>
             {['FANZA', 'DMM', 'DUGA'].map((p) => {
               const platId = p.toLowerCase();
+              const isActive = currentPlatform === platId;
               return (
-                <Link key={p} href={`/brand/${platId}`} className={`${styles.platBtn} ${currentPlatform === platId ? styles.active : ''}`}>
+                <Link key={p} href={`/brand/${platId}`} className={`${styles.platBtn} ${isActive ? styles.active : ''}`}>
                   <span className={styles.btnDot} /> {p}
                 </Link>
               );
@@ -141,54 +137,64 @@ export default function AdultSidebar({
         )}
       </section>
 
-      {/* 🚀 2. OFFICIAL_LAYERS (データ吸収ロジック搭載) */}
+      {/* 🚀 2. OFFICIAL_LAYERS (/svc/ パス対応版) */}
       {currentPlatform && officialHierarchy.length > 0 && (
         <section className={styles.sectionWrapper}>
           <div className={styles.sectionHeader} onClick={() => toggleSection('OFFICIAL_NAV')}>
             <h3 className={styles.headerTitle}>
-              <span className={styles.icon}>⚡</span> OFFICIAL_LAYERS
+              <span className={styles.icon}>⚡</span> {currentPlatform.toUpperCase()}_LAYERS
             </h3>
             <span className={styles.arrow}>{openSections['OFFICIAL_NAV'] ? '▲' : '▼'}</span>
           </div>
           {openSections['OFFICIAL_NAV'] && (
             <div className={styles.contentBody}>
-              <ul className={styles.serviceList}>
+              <ul className={styles.masterList}>
                 {officialHierarchy.map((service) => {
-                  // 💡 Django APIの service_name / service_code に対応
                   const sName = service.service_name || service.name;
-                  const sSlug = service.service_code || service.slug;
-                  if (!sSlug) return null;
+                  const sCode = service.service_code || service.code || service.slug;
+                  if (!sCode) return null;
+
+                  const isServiceActive = isSvcActive(sCode);
+                  const floors = service.floors || service.items || [];
 
                   return (
-                    <li key={service.id || sSlug} className={styles.serviceItem}>
-                      <Link 
-                        href={getOfficialLink(sSlug)}
-                        className={`${styles.serviceLink} ${pathname.includes(`/svc/${sSlug}`) ? styles.active : ''}`}
-                      >
-                        <span className={styles.serviceName}>// {sName}</span>
-                      </Link>
+                    <React.Fragment key={`svc-${sCode}`}>
+                      {/* 親サービス項目 */}
+                      <li className={styles.masterListItem}>
+                        <Link 
+                          href={getOfficialLink(sCode)}
+                          className={`${styles.masterLink} ${isServiceActive ? styles.active : ''}`}
+                        >
+                          <span className={styles.itemName} style={{ color: 'var(--accent)', fontWeight: 'bold' }}>
+                             {sName}
+                          </span>
+                        </Link>
+                      </li>
                       
-                      {service.floors && service.floors.length > 0 && (
-                        <ul className={styles.floorList}>
-                          {service.floors.map((floor) => {
-                            const fName = floor.floor_name || floor.name;
-                            const fSlug = floor.floor_code || floor.slug;
-                            if (!fSlug) return null;
+                      {/* 子フロア項目 */}
+                      {floors.map((floor) => {
+                        const fName = floor.floor_name || floor.name;
+                        const fCode = floor.floor_code || floor.code || floor.slug;
+                        if (!fCode) return null;
 
-                            return (
-                              <li key={floor.id || fSlug}>
-                                <Link 
-                                  href={getOfficialLink(sSlug, fSlug)}
-                                  className={`${styles.floorLink} ${pathname.endsWith(`/${fSlug}`) ? styles.active : ''}`}
-                                >
-                                  <span className={styles.floorDash}>└</span> {fName}
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                    </li>
+                        const isFloorActive = isFlrActive(sCode, fCode);
+
+                        return (
+                          <li key={`flr-${fCode}`} className={styles.masterListItem}>
+                            <Link 
+                              href={getOfficialLink(sCode, fCode)}
+                              className={`${styles.masterLink} ${isFloorActive ? styles.active : ''}`}
+                              style={{ paddingLeft: '1.2rem', opacity: 0.9 }}
+                            >
+                              <span className={styles.itemName}>
+                                <span style={{ color: 'var(--accent)', marginRight: '6px', opacity: 0.5 }}>└</span>
+                                {fName}
+                              </span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </React.Fragment>
                   );
                 })}
               </ul>
@@ -197,21 +203,26 @@ export default function AdultSidebar({
         </section>
       )}
 
-      {/* 🛠️ 3. マスターデータセクション (TOP 10 一覧表示を維持) */}
-      {categories.map((cat) => (
+      {/* 🛠️ 3. マスターデータセクション (GENRES / MAKERS / SERIES / etc...) */}
+      {[
+        { id: 'GENRES', type: 'genres', data: genres.slice(0, 10), icon: '🏷️' },
+        { id: 'MAKERS', type: 'makers', data: makers.slice(0, 10), icon: '🏢' },
+        { id: 'SERIES', type: 'series', data: series.slice(0, 5), icon: '📚' },
+        { id: 'DIRECTORS', type: 'directors', data: directors.slice(0, 5), icon: '🎬' },
+      ].map((cat) => (
         <section key={cat.id} className={styles.sectionWrapper}>
           <div className={styles.sectionHeader} onClick={() => toggleSection(cat.id)}>
             <h3 className={styles.headerTitle}>
               <span className={styles.icon}>{cat.icon}</span> 
               {cat.id} 
-              <span className={styles.subLabel}>{` > TOP10`}</span>
+              <span className={styles.subLabel}>{` > TOP`}</span>
             </h3>
             <span className={styles.arrow}>{openSections[cat.id] ? '▲' : '▼'}</span>
           </div>
           {openSections[cat.id] && (
             <div className={styles.contentBody}>
               <ul className={styles.masterList}>
-                {cat.data && cat.data.length > 0 ? (
+                {cat.data.length > 0 ? (
                   cat.data.map(item => (
                     <li key={item.id} className={styles.masterListItem}>
                       <Link href={getSafeLink(cat.type, item)} className={styles.masterLink}>
@@ -221,41 +232,13 @@ export default function AdultSidebar({
                     </li>
                   ))
                 ) : (
-                  <li className={styles.emptyStatus}>[!] {cat.id}_NO_DATA</li>
+                  <li className={styles.emptyStatus}>[!] NO_DATA</li>
                 )}
               </ul>
-              <Link 
-                href={currentPlatform ? `/brand/${currentPlatform}/cat/${cat.type}` : `/${cat.type}`} 
-                className={styles.fullLink}
-              >
-                FULL_REGISTRY_ACCESS <span>→</span>
-              </Link>
             </div>
           )}
         </section>
       ))}
-
-      {/* 📄 4. RECENT_REPORTS */}
-      <section className={styles.sectionWrapper}>
-        <div className={styles.sectionHeader} onClick={() => toggleSection('LOGS')}>
-          <h3 className={styles.headerTitle}><span className={styles.icon}>📄</span> RECENT_REPORTS</h3>
-          <span className={styles.arrow}>{openSections['LOGS'] ? '▲' : '▼'}</span>
-        </div>
-        {openSections['LOGS'] && (
-          <div className={styles.logContainer}>
-            {recentPosts && recentPosts.length > 0 ? (
-              recentPosts.slice(0, 5).map(post => (
-                <Link key={post.id} href={`/news/${post.slug || post.id}`} className={styles.logItem}>
-                  <div className={styles.logIndicator}>REPT</div>
-                  <div className={styles.logTitle}>{post.title}</div>
-                </Link>
-              ))
-            ) : (
-              <div className={styles.emptyStatus}>NO_LOG_RECORDS</div>
-            )}
-          </div>
-        )}
-      </section>
 
       {/* ⚙️ SYSTEM FOOTER */}
       <div className={styles.systemFooter}>
@@ -267,9 +250,6 @@ export default function AdultSidebar({
           <span className={styles.timestamp}>
             {mounted ? new Date().toLocaleTimeString() : '--:--:--'}
           </span>
-        </div>
-        <div className={styles.sysMeta}>
-          NODE: {currentPlatform ? currentPlatform.toUpperCase() : 'INTEGRATED'} | STREAM: SYNCED
         </div>
       </div>
     </aside>

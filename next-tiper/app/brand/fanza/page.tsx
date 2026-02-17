@@ -2,8 +2,7 @@
 // @ts-nocheck
 import React from 'react';
 import { Metadata } from 'next';
-// 💡 インポートパスをプロジェクト構造に合わせて調整
-import ArchiveTemplate from '../ArchiveTemplate'; 
+import ArchiveTemplate from '@/app/brand/ArchiveTemplate'; 
 import { 
     getUnifiedProducts, 
     fetchMakers, 
@@ -20,10 +19,6 @@ export const metadata: Metadata = {
     description: 'FANZAの公式サービス階層と、当サイト独自のAI解析によるメーカー・ジャンル別アーカイブ。',
 };
 
-/**
- * FANZAブランド専用アーカイブページ
- * Djangoマスタと同期した「サービス/フロア」の動的サイドメニューを実現します。
- */
 export default async function FanzaBrandPage(props: {
     searchParams: Promise<{ 
         page?: string; 
@@ -38,103 +33,78 @@ export default async function FanzaBrandPage(props: {
     const currentPage = Number(searchParams?.page) || 1;
     const currentSort = searchParams?.sort || '-release_date';
     
-    // 💡 現在のURLから選択中のサービス・フロアを特定
     const currentService = searchParams?.service || '';
     const currentFloor = searchParams?.floor || '';
 
-    // --- 🏗️ 1. データ取得（並列） ---
-    const startTime = Date.now();
+    // --- 🏗️ 1. データ取得 ---
     const [productData, dynamicMenu, makersArray, genresArray, wpData] = await Promise.all([
         getUnifiedProducts({
             api_source: 'FANZA',
             page: currentPage,
             ordering: currentSort,
-            service: currentService, // Django API側の service_code に自動変換される
-            floor: currentFloor,     // Django API側の floor_code に自動変換される
+            service: currentService,
+            floor: currentFloor,
         }),
-        // 💡 階層マスタを取得
-        getFanzaDynamicMenu().catch(() => []), 
-        // 💡 仕訳用マスタを取得（FANZAでの利用実績順）
+        getFanzaDynamicMenu().catch(() => ({})), 
         fetchMakers({ limit: 40, ordering: '-product_count' }).catch(() => []), 
         fetchGenres({ limit: 40, ordering: '-product_count' }).catch(() => []), 
         getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
-    const duration = Date.now() - startTime;
 
-    // --- 🛡️ 2. サイドバー用データの整理（順番と正規化） ---
+    // --- 🛡️ 2. サイドバー用データの整理（AdultSidebarの期待値に100%準拠） ---
+    const fanzaHierarchy = Object.entries(dynamicMenu).map(([serviceName, content]: [string, any]) => {
+        const floorItems = (content.floors || []).map((f: any) => ({
+            id: f.code,
+            name: f.name,
+            floor_name: f.name, // 💡 AdultSidebarがこれを使う
+            floor_code: f.code, // 💡 AdultSidebarがこれを使う
+            slug: f.code
+        }));
 
-    // A. 汎用抽出ロジック
+        return {
+            id: content.code,
+            name: serviceName,
+            service_name: serviceName, // 💡 AdultSidebarがこれを使う
+            service_code: content.code, // 💡 AdultSidebarがこれを使う
+            slug: content.code,
+            floors: floorItems, // 💡 AdultSidebarがこれを使う
+        };
+    });
+
     const safeExtract = (data: any) => Array.isArray(data) ? data : (data?.results || []);
-
-    // B. FANZA公式階層（FanzaFloorMaster由来のデータ）
-    // django/adult.ts の getFanzaDynamicMenu は [{service_code, floors: []}, ...] の形式を想定
-    const fanzaHierarchy = dynamicMenu; 
-
-    // C. 当サイト仕訳メニュー（FANZAソースのものに限定、またはマスタ全体）
-    // Django側のシリアライザーで api_source: 'FANZA' が付与されているものを優先
     const filterByBrand = (list: any) => 
         safeExtract(list).filter((item: any) => 
             !item.api_source || item.api_source === 'FANZA' || item.api_source === 'COMMON'
         );
 
-    const fanzaMakers = filterByBrand(makersArray);
-    const fanzaGenres = filterByBrand(genresArray);
-
-    // --- 🎨 3. レンダリング ---
     return (
         <>
-            {/* 🛠️ システム診断情報の表示 (debug=true の時のみ) */}
             {isDebug && (
                 <SystemDiagnosticHero 
-                    stats={{
-                        fetchTime: `${duration}ms`,
-                        mode: 'SERVER_BRAND_PAGE',
-                        platform: 'fanza',
-                        hierarchyCount: fanzaHierarchy.length,
-                        makerCount: fanzaMakers.length,
-                        genreCount: fanzaGenres.length,
-                        productCount: productData?.results?.length || 0,
-                    }}
-                    raw={{
-                        fanzaHierarchy,
-                        params: { currentService, currentFloor },
-                        firstProduct: productData?.results?.[0]
-                    }}
+                    stats={{ mode: 'SERVER_BRAND_PAGE', platform: 'fanza' }}
+                    raw={{ fanzaHierarchy }}
                 />
             )}
-
             <ArchiveTemplate 
                 platform="fanza"
                 title={currentFloor ? `FANZA - ${currentFloor.toUpperCase()}` : "FANZA ARCHIVE"}
                 products={productData.results || []}
                 totalCount={productData.count || 0}
-                
-                // 💡 公式メニュー（サービス ＞ フロア の階層構造を渡す）
                 officialHierarchy={fanzaHierarchy} 
-                
-                // 💡 仕訳メニュー（メーカー・ジャンル）
-                makers={fanzaMakers}
-                genres={fanzaGenres}
-                
-                // WordPressお知らせ
-                recentPosts={wpData.results?.map((p: any) => ({
+                makers={filterByBrand(makersArray)}
+                genres={filterByBrand(genresArray)}
+                recentPosts={safeExtract(wpData).map((p: any) => ({
                     id: p.id,
-                    title: p.title.rendered,
+                    title: p.title?.rendered || 'No Title',
                     slug: p.slug,
                     date: p.date
                 }))}
-                
-                // 状態同期（サイドバーの「active」クラス判定に使用）
                 currentPage={currentPage}
                 currentSort={currentSort}
                 currentService={currentService}
                 currentFloor={currentFloor}
-                
                 basePath="/brand/fanza"
-                extraParams={{ 
-                    brand: 'fanza',
-                    debug: isDebug 
-                }}
+                extraParams={{ brand: 'fanza', debug: isDebug }}
             />
         </>
     );

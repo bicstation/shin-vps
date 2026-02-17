@@ -1,66 +1,56 @@
+/* /app/brand/fanza/svc/[service]/[floor]/page.tsx */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/**
- * ==============================================================================
- * 🎬 TIPER Archive - FANZA Floor Listing (Server Entry)
- * ==============================================================================
- */
 import React from 'react';
 import { Metadata } from 'next';
-import { getAdultProducts, fetchMakers, fetchGenres } from '@shared/lib/api/django/adult';
+import { 
+    getAdultProducts, 
+    fetchMakers, 
+    fetchGenres, 
+    getFanzaDynamicMenu // 💡 階層メニュー取得を追加
+} from '@shared/lib/api/django/adult';
 import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 import { constructMetadata } from '@shared/lib/metadata';
-import FanzaFloorListView from './FanzaFloorListView';
+import FanzaFloorListView from '@/app/brand/fanza/svc/[service]/[floor]/FanzaFloorListView';
+
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
-/**
- * ✅ 1. メタデータ生成 (Server Componentのみ許可)
- */
 export async function generateMetadata({ params }: { params: Promise<{ service: string; floor: string }> }): Promise<Metadata> {
     const { service, floor } = await params;
     const title = `FANZA ${service.toUpperCase()} - ${floor.toUpperCase()} 市場解析アーカイブ | TIPER`;
     return constructMetadata(
         title, 
-        `FANZAの${service}内${floor}フロアをAI解析。最新のリリース動向、メーカーシェア、作品属性をデータ化しています。`,
+        `FANZAの${service}内${floor}フロアを解析。`,
         undefined,
-        `/brand/fanza/${service}/${floor}`
+        `/brand/fanza/svc/${service}/${floor}`
     );
 }
 
-interface PageProps {
+export default async function FanzaFloorListPage(props: {
     params: Promise<{ service: string; floor: string }>;
     searchParams: Promise<{ page?: string; sort?: string; offset?: string }>;
-}
-
-export default async function FanzaFloorListPage(props: PageProps) {
+}) {
     const resolvedParams = await props.params;
     const resolvedSearchParams = await props.searchParams;
-
     const { service, floor } = resolvedParams;
-    const sort = (Array.isArray(resolvedSearchParams.sort) ? resolvedSearchParams.sort[0] : resolvedSearchParams.sort) || '-release_date';
+    const sort = resolvedSearchParams.sort || '-release_date';
     const limit = 24;
+    const currentOffset = resolvedSearchParams.offset ? Number(resolvedSearchParams.offset) : (Number(resolvedSearchParams.page || 1) - 1) * limit;
 
-    let currentOffset = 0;
-    if (resolvedSearchParams.offset) {
-        currentOffset = Number(resolvedSearchParams.offset) || 0;
-    } else if (resolvedSearchParams.page) {
-        const pageNum = Number(resolvedSearchParams.page) || 1;
-        currentOffset = (pageNum - 1) * limit;
-    }
-
-    // --- データフェッチ ---
-    const [dataRes, mRes, gRes, wRes] = await Promise.all([
+    // --- 🚀 全データを並列フェッチ ---
+    const [dataRes, dynamicMenu, mRes, gRes, wRes] = await Promise.all([
         getAdultProducts({
             api_source: 'fanza',
-            service: service,
-            floor: floor,
+            service_code: service,
+            floor_code: floor,
             offset: currentOffset,
             ordering: sort,
             limit: limit
-        }, '/unified-adult-products/').catch(() => ({ results: [], count: 0 })),
-        fetchMakers({ limit: 100, ordering: '-product_count' }).catch(() => []),
-        fetchGenres({ limit: 100, ordering: '-product_count' }).catch(() => []),
+        }).catch(() => ({ results: [], count: 0 })),
+        getFanzaDynamicMenu().catch(() => ({})), // 💡 サイドバー用の階層を取得
+        fetchMakers({ limit: 40, ordering: '-product_count' }).catch(() => ({ results: [] })),
+        fetchGenres({ limit: 40, ordering: '-product_count' }).catch(() => ({ results: [] })),
         getSiteMainPosts(0, 5).catch(() => ({ results: [] }))
     ]);
 
@@ -72,6 +62,7 @@ export default async function FanzaFloorListPage(props: PageProps) {
             currentOffset={currentOffset}
             limit={limit}
             dataRes={dataRes}
+            officialHierarchy={dynamicMenu} // 💡 これをViewに渡す
             mRes={mRes}
             gRes={gRes}
             wRes={wRes}

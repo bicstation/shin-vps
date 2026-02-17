@@ -1,3 +1,4 @@
+/* /app/brand/dmm/svc/[service]/[floor]/page.tsx */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ==============================================================================
@@ -7,24 +8,29 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { constructMetadata } from '@shared/lib/metadata';
-import { getAdultProducts, fetchMakers, fetchGenres } from '@shared/lib/api/django/adult';
+import { 
+    getAdultProducts, 
+    fetchMakers, 
+    fetchGenres, 
+    getFanzaDynamicMenu // 💡 共通メニュー取得を追加
+} from '@shared/lib/api/django/adult';
 import { getSiteMainPosts } from '@shared/lib/api/wordpress';
-import DmmFloorListView from './DmmFloorListView'; // 後述のクライアントコンポーネント
+import DmmFloorListView from '@/app/brand/dmm/svc/[service]/[floor]/DmmFloorListView';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 /**
- * ✅ メタデータ生成 (Server Componentのみ許可)
+ * ✅ メタデータ生成
  */
 export async function generateMetadata({ params }: { params: Promise<{ service: string; floor: string }> }): Promise<Metadata> {
     const { service, floor } = await params;
     const title = `DMM ${service.toUpperCase()} - ${floor.toUpperCase()} 市場解析アーカイブ | TIPER`;
     return constructMetadata(
         title, 
-        `DMM ${service}内 ${floor}フロアの作品データをAI解析。最新のリリース状況とマーケットシェアを可視化しています。`,
+        `DMM ${service}内 ${floor}フロアの作品データをAI解析。最新のリリース状況とマーケットシェアを可視化。`,
         undefined,
-        `/dmm/${service}/${floor}`
+        `/brand/dmm/svc/${service}/${floor}`
     );
 }
 
@@ -49,18 +55,21 @@ export default async function DmmFloorListPage(props: PageProps) {
         currentOffset = (pageNum - 1) * limit;
     }
 
-    // --- データフェッチ ---
-    const [dataRes, mRes, gRes, wRes] = await Promise.all([
+    // --- 📡 最新のパラメータ名と並列データフェッチ ---
+    const [dataRes, dynamicMenu, mRes, gRes, wRes] = await Promise.all([
         getAdultProducts({
-            api_source: 'dmm',
-            service: service,
-            floor: floor,
+            api_source: 'dmm',     // DMMデータも現在は統合ソース 'fanza' で管理
+            service_code: service,   // 💡 service → service_code に修正
+            floor_code: floor,       // 💡 floor → floor_code に修正
             offset: currentOffset,
             ordering: sort,
             limit: limit
         }, '/unified-adult-products/').catch(() => ({ results: [], count: 0 })),
-        fetchMakers({ limit: 100, ordering: '-product_count' }).catch(() => []),
-        fetchGenres({ limit: 100, ordering: '-product_count' }).catch(() => []),
+        
+        getFanzaDynamicMenu().catch(() => ({})), // 💡 サイドバー用の共通メニューを追加
+        
+        fetchMakers({ limit: 40, ordering: '-product_count' }).catch(() => ({ results: [] })),
+        fetchGenres({ limit: 40, ordering: '-product_count' }).catch(() => ({ results: [] })),
         getSiteMainPosts(0, 5).catch(() => ({ results: [] }))
     ]);
 
@@ -73,6 +82,7 @@ export default async function DmmFloorListPage(props: PageProps) {
             currentOffset={currentOffset}
             limit={limit}
             dataRes={dataRes}
+            officialHierarchy={dynamicMenu} // 💡 これを渡してサイドバーに表示させる
             mRes={mRes}
             gRes={gRes}
             wRes={wRes}

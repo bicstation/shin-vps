@@ -2,50 +2,61 @@
 # django/tiper_api/views.py
 
 from django.http import HttpResponse
-from django.urls import reverse
+from rest_framework.reverse import reverse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+import logging
+
+logger = logging.getLogger(__name__)
 
 def home(request):
-    """
-    Djangoのルートパス (/) 用のビュー
-    Nginxから転送された際のランディングページ
-    """
     return HttpResponse("<h1>Django API Server is Running!</h1><p>Access /django/admin to log in.</p>")
 
-# 💡 [重要] Django REST Framework のデコレータを使用して、
-# ブラウザから見やすい API Root 画面を生成します。
 @api_view(['GET'])
 def api_root(request, format=None):
     """
-    /api/ へのリクエストのためのルートエンドポイント。
-    主要なAPIへのリンクを動的に生成して返します。
+    主要な全APIエンドポイントを網羅したルート
     """
-    # 既存の api/urls.py 内にある name を 'api:...' 形式で逆引きします。
-    # 逆引きに失敗すると 500 エラーになるため、try-except で囲むとより安全ですが、
-    # 開発時はエラーが出たほうがミスに気づきやすいためこのままでOKです。
+    
+    def safe_reverse(viewname):
+        """URL逆引きに失敗してもエラーにせず、Noneを返す安全なラッパー"""
+        try:
+            return reverse(viewname, request=request, format=format)
+        except Exception:
+            return f"URL name '{viewname}' not found"
+
     return Response({
-        "message": "Tiper API Gateway Root",
+        "message": "Tiper API Gateway - Managed Root",
         "status": "OK",
-        "version": "v1 (Django)",
+        "version": "v1.2 (Django)",
         "endpoints": {
-            # 🚀 階層ナビゲーション (今回追加したもの)
-            "navigation_floors": reverse('api:floor_navigation', request=request, format=format),
-            
-            # 🛡️ 統合アダルト共通ゲートウェイ
-            "unified_products": reverse('api:unified_adult_products', request=request, format=format),
-            
-            # 🏷️ マスターデータ
-            "actresses": reverse('api:actress_list', request=request, format=format),
-            "genres": reverse('api:genre_list', request=request, format=format),
-            
-            # 💻 PC製品
-            "pc_products": reverse('api:pc_product_list', request=request, format=format),
-            
-            # 💰 Linkshare
-            "linkshare": reverse('api:linkshare_product_list', request=request, format=format),
-            
-            # 🔍 システム状態
-            "system_status": reverse('api:status_check', request=request, format=format),
+            # 🚀 1. 統合・横断検索
+            "unified_search": {
+                "products": safe_reverse('api:unified_adult_products'),
+                "navigation": safe_reverse('api:floor_navigation'),
+            },
+
+            # 🔞 2. アダルト専用リソース
+            "adult_resources": {
+                # アンダースコア版とハイフン版の両方を試せるよう安全に記述
+                "adult_products": safe_reverse('api:adult_product_list'), 
+                "fanza_products": safe_reverse('api:fanza_product_list'),
+                "actresses": safe_reverse('api:actress_list'),
+                "genres": safe_reverse('api:genre_list'),
+                "makers": safe_reverse('api:maker_list'),
+                "labels": safe_reverse('api:label_list'),
+            },
+
+            # 💻 3. PC・ガジェット関連
+            "pc_gadget_resources": {
+                "pc_products": safe_reverse('api:pc_product_list'),
+                "linkshare_products": safe_reverse('api:linkshare_product_list'),
+            },
+
+            # 🛠 4. システム
+            "system": {
+                "status": safe_reverse('api:status_check'),
+                "raw_data": safe_reverse('api:raw_api_data_list'),
+            }
         }
     })
