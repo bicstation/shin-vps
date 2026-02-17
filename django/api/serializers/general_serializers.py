@@ -1,8 +1,25 @@
 # -*- coding: utf-8 -*-
 from rest_framework import serializers
 from api.models.pc_products import PCProduct, PriceHistory
-from api.models import LinkshareProduct  # 💡 引っ越し先として追加
-from .adult_serializers import PCAttributeSerializer
+from api.models import LinkshareProduct
+import logging
+
+logger = logging.getLogger(__name__)
+
+# --------------------------------------------------------------------------
+# 0. 💡 循環参照回避のための Attribute シリアライザー定義
+# --------------------------------------------------------------------------
+# adult_serializers からインポートする代わりに、ここで定義するか
+# 共通基盤がある場合はそこから呼び出します。
+try:
+    from api.models.pc_products import PCAttribute
+    class PCAttributeSerializer(serializers.ModelSerializer):
+        attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
+        class Meta:
+            model = PCAttribute
+            fields = ('id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order')
+except ImportError:
+    PCAttributeSerializer = None
 
 # --------------------------------------------------------------------------
 # 1. 価格履歴用サブ・シリアライザー
@@ -10,7 +27,7 @@ from .adult_serializers import PCAttributeSerializer
 class PriceHistorySerializer(serializers.ModelSerializer):
     """
     価格推移チャート用のデータを整形。
-    recorded_at を 'date' という名前でフロントエンドに返します。
+    recorded_at を 'date' という名前でフロントエンド（Recharts等）に返します。
     """
     date = serializers.DateTimeField(source='recorded_at', format="%Y/%m/%d")
 
@@ -19,7 +36,7 @@ class PriceHistorySerializer(serializers.ModelSerializer):
         fields = ('date', 'price')
 
 # --------------------------------------------------------------------------
-# 2. 物販・アフィリエイト用シリアライザー (adultから移動)
+# 2. 物販・アフィリエイト用シリアライザー
 # --------------------------------------------------------------------------
 class LinkshareProductSerializer(serializers.ModelSerializer):
     """
@@ -41,7 +58,7 @@ class PCProductSerializer(serializers.ModelSerializer):
     PC・ソフトウェア製品の詳細スペック、スコア、チャートデータを含むメインシリアライザー。
     """
     # 属性（メーカー、用途タグなど）を詳細展開
-    attributes = PCAttributeSerializer(many=True, read_only=True)
+    attributes = PCAttributeSerializer(many=True, read_only=True) if PCAttributeSerializer else serializers.ReadOnlyField()
     
     # グラフ・履歴用動的フィールド
     price_history = serializers.SerializerMethodField()
@@ -61,16 +78,15 @@ class PCProductSerializer(serializers.ModelSerializer):
             'attributes', 'price_history', 'rank', 'affiliate_url', 'affiliate_updated_at',
             'stock_status', 'is_posted', 'is_active', 'last_spec_parsed_at', 'created_at', 'updated_at',
         )
-        # 参照専用のため、すべて読み取り専用に設定
         read_only_fields = fields
 
     def get_price_history(self, obj):
         """
-        Next.jsのチャートコンポーネント用に直近30件の履歴を返す
+        Next.jsのチャートコンポーネント（LineChart）用に直近30件の履歴を返す
         """
-        # queryset を制限してパフォーマンスを維持
-        histories = PriceHistory.objects.filter(product=obj).order_by('recorded_at')[:30]
-        return PriceHistorySerializer(histories, many=True).data
+        histories = PriceHistory.objects.filter(product=obj).order_by('-recorded_at')[:30]
+        # チャート表示は時系列順にしたいので reverse()
+        return PriceHistorySerializer(reversed(histories), many=True).data
 
     def get_radar_chart(self, obj):
         """

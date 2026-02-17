@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/auth_serializers.py
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -9,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
     カスタムユーザー情報のシリアライザ
     
     サイト分離（一般/アダルト）を安全に行うため、site_group と origin_domain は
-    読み取り専用として定義し、View側のロジック（middleware判定等）でのみ設定可能にしています。
+    読み取り専用として定義し、View側のロジック（middleware判定等）でのみ設定可能。
     """
     password = serializers.CharField(
         write_only=True, 
@@ -25,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
             'site_group', 'origin_domain', 'status_message',
             'profile_image', 'bio', 'is_staff', 'is_superuser', 'date_joined'
         )
-        # 💡 セキュリティ：サーバー側で自動決定すべきフィールドをユーザーが書き換えられないように保護
+        # 💡 セキュリティ：サーバー側で自動決定すべき重要フィールドを保護
         read_only_fields = (
             'id', 
             'site_group', 
@@ -40,8 +42,8 @@ class UserSerializer(serializers.ModelSerializer):
         ユーザー作成時のパスワードハッシュ化処理
         """
         password = validated_data.pop('password', None)
-        # 💡 Django標準の UserManager を経由させることでバリデーションとハッシュ化を確実に実行
         if password:
+            # create_user を通すことで自動的にハッシュ化
             user = User.objects.create_user(**validated_data, password=password)
         else:
             user = User.objects.create_user(**validated_data)
@@ -53,11 +55,9 @@ class UserSerializer(serializers.ModelSerializer):
         """
         password = validated_data.pop('password', None)
         
-        # 通常のフィールドを更新（validated_dataから順にセット）
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         
-        # パスワードが送信された場合のみ再ハッシュ化してセット
         if password:
             instance.set_password(password)
             

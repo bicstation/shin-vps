@@ -14,7 +14,7 @@ from .models import (
     User, RawApiData, AdultProduct, FanzaProduct,
     Genre, Actress, Maker, Label, Director, Series, 
     Author, AdultAttribute, PCAttribute, LinkshareProduct, 
-    PriceHistory, PCProduct
+    PriceHistory, PCProduct, FanzaFloorMaster
 )
 
 logger = logging.getLogger(__name__)
@@ -64,9 +64,10 @@ class UserAdmin(BaseUserAdmin):
         return mark_safe(f'<b style="color: {color};">{"● ACTIVE" if obj.is_active else "○ STOPPED"}</b>')
 
 # --------------------------------------------------------------------------
-# 2. 動画製品ベース (共通アクション)
+# 2. 共通アクションベース
 # --------------------------------------------------------------------------
 class BaseProductAdmin(admin.ModelAdmin):
+    """API同期ボタンを管理画面に追加するベースクラス"""
     change_list_template = "admin/api/change_list_with_actions.html"
 
     def get_urls(self):
@@ -88,7 +89,7 @@ class BaseProductAdmin(admin.ModelAdmin):
         return HttpResponseRedirect("../")
 
 # --------------------------------------------------------------------------
-# 3. AdultProduct (統合アダルト製品：V10.1 完全版)
+# 3. AdultProduct (統合アダルト製品)
 # --------------------------------------------------------------------------
 @admin.register(AdultProduct)
 class AdultProductAdmin(BaseProductAdmin):
@@ -98,13 +99,14 @@ class AdultProductAdmin(BaseProductAdmin):
         'is_posted_tag', 'api_source_tag', 'release_date'
     )
     list_display_links = ('display_image', 'product_id_unique', 'title_short')
-    
     list_filter = ('api_source', 'is_active', 'is_posted', 'maker', 'authors', 'attributes')
     search_fields = ('title', 'product_id_unique', 'actresses__name', 'maker__name', 'authors__name')
     ordering = ('-release_date',)
-    
     filter_horizontal = ('genres', 'actresses', 'authors', 'attributes')
     
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('authors', 'actresses', 'genres').select_related('maker', 'label')
+
     fieldsets = (
         ('基本情報', {'fields': ('product_id_unique', 'title', 'api_source', 'affiliate_url', 'price', 'release_date')}),
         ('メディア', {'fields': ('image_url_list', 'sample_movie_url')}),
@@ -131,17 +133,17 @@ class AdultProductAdmin(BaseProductAdmin):
 
     def display_image(self, obj):
         url = None
-        if isinstance(obj.image_url_list, list) and len(obj.image_url_list) > 0:
-            url = obj.image_url_list[0]
-        elif isinstance(obj.image_url_list, dict):
-            url = obj.image_url_list.get('list') or obj.image_url_list.get('small')
+        imgs = obj.image_url_list
+        if isinstance(imgs, list) and len(imgs) > 0:
+            url = imgs[0]
+        elif isinstance(imgs, dict):
+            url = imgs.get('large') or imgs.get('list') or imgs.get('small')
 
         if url:
             return mark_safe(f'<img src="{url}" width="85" style="border-radius:4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" referrerpolicy="no-referrer" />')
         return "No Image"
 
     def matrix_scores(self, obj):
-        """一覧で主要AIスコアをタイル表示"""
         return mark_safe(
             f'<div style="display: flex; flex-direction: column; gap: 4px; min-width: 110px;">'
             f'{get_score_bar(obj.score_visual, label="VISUAL", width="80px")}'
@@ -190,7 +192,7 @@ class FanzaProductAdmin(BaseProductAdmin):
         return (obj.title[:30] + '...') if len(obj.title) > 30 else obj.title
 
 # --------------------------------------------------------------------------
-# 5. PC・マスターデータ・他 (完全継承)
+# 5. マスターデータ・階層マスタ
 # --------------------------------------------------------------------------
 @admin.register(Genre, Actress, Maker, Author, Label, Director, Series)
 class AllMasterAdmin(admin.ModelAdmin):
@@ -218,13 +220,41 @@ class AllMasterAdmin(admin.ModelAdmin):
         return mark_safe(f'<b style="color:#007bff;">{count} titles</b>')
     product_count_badge.short_description = "関連作品数"
 
-@admin.register(AdultAttribute)
-class AdultAttributeAdmin(admin.ModelAdmin):
-    list_display = ('order', 'name', 'attr_type', 'slug')
-    list_editable = ('order',)
-    list_display_links = ('name',) 
-    ordering = ('order',)
+@admin.register(FanzaFloorMaster)
+class FanzaFloorMasterAdmin(admin.ModelAdmin):
+    list_display = ('site_name', 'service_name', 'floor_name', 'site_code', 'service_code', 'floor_code', 'is_active')
+    list_filter = ('site_name', 'service_name', 'is_active')
+    search_fields = ('floor_name', 'floor_code')
 
+# --------------------------------------------------------------------------
+# 6. PC製品・物販
+# --------------------------------------------------------------------------
+class PriceHistoryInline(admin.TabularInline):
+    model = PriceHistory
+    extra = 0
+    readonly_fields = ('recorded_at', 'price')
+
+@admin.register(PCProduct)
+class PCProductAdmin(admin.ModelAdmin):
+    inlines = [PriceHistoryInline]
+    list_display = ('name', 'maker', 'price', 'spec_score_bar', 'stock_status')
+    list_filter = ('stock_status', 'maker', 'is_ai_pc')
+    search_fields = ('name', 'cpu_model', 'gpu_model')
+    
+    def spec_score_bar(self, obj):
+        return get_score_bar(obj.spec_score, width="70px")
+    spec_score_bar.short_description = "性能スコア"
+
+@admin.register(LinkshareProduct)
+class LinkshareProductAdmin(admin.ModelAdmin):
+    list_display = ('product_name', 'sku', 'price_display', 'updated_at')
+    search_fields = ('product_name', 'sku')
+    def price_display(self, obj):
+        return f"¥{obj.price:,}" if obj.price else "---"
+
+# --------------------------------------------------------------------------
+# 7. システム・インフラ (エラー修正済み)
+# --------------------------------------------------------------------------
 @admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
     list_display = ('id', 'api_source', 'api_service', 'migrated', 'created_at')
@@ -235,24 +265,18 @@ class RawApiDataAdmin(admin.ModelAdmin):
         formatted = json.dumps(val, indent=2, ensure_ascii=False)
         return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:5px; max-height:500px; overflow:auto;">{formatted}</pre>')
 
-# --- インライン・PC製品・Linkshare ---
-class PriceHistoryInline(admin.TabularInline):
-    model = PriceHistory
-    extra = 0
-    readonly_fields = ('recorded_at', 'price')
+@admin.register(AdultAttribute)
+class AdultAttributeAdmin(admin.ModelAdmin):
+    list_display = ('order', 'name', 'attr_type', 'slug')
+    list_editable = ('order',)
+    list_display_links = ('name',) # 💡 ここを修正: list_editable との衝突を回避
+    ordering = ('order',)
 
-@admin.register(PCProduct)
-class PCProductAdmin(admin.ModelAdmin):
-    inlines = [PriceHistoryInline]
-    list_display = ('name', 'maker', 'price', 'stock_status')
-    list_filter = ('stock_status', 'maker')
-
-@admin.register(LinkshareProduct)
-class LinkshareProductAdmin(admin.ModelAdmin):
-    list_display = ('product_name', 'sku', 'price_display', 'updated_at')
-    search_fields = ('product_name', 'sku')
-    def price_display(self, obj):
-        return f"¥{obj.price:,}" if obj.price else "---"
+@admin.register(PCAttribute)
+class PCAttributeAdmin(admin.ModelAdmin):
+    list_display = ('order', 'name', 'attr_type')
+    list_editable = ('order',)
+    list_display_links = ('name',) # 💡 ここを修正: list_editable との衝突を回避
+    ordering = ('order',)
 
 admin.site.register(PriceHistory)
-admin.site.register(PCAttribute)

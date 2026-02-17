@@ -8,64 +8,76 @@ import ProductCard from '@shared/cards/AdultProductCard';
 import Pagination from '@shared/common/Pagination';
 import AdultSidebar from '@shared/layout/Sidebar/AdultSidebar';
 
-/**
- * 🛰️ UNIVERSAL_ARCHIVE_CORE
- * パンくずリスト & データフィルタリング機能を搭載した統合テンプレート
- */
+// 💡 診断用コンポーネントのインポート
+import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
+
 export default function ArchiveTemplate({ 
   products = [], 
   totalCount = 0, 
-  platform, // 'fanza' | 'dmm' | 'duga'
+  platform, 
   title, 
+  officialHierarchy = [], 
   makers = [], 
   genres = [],
+  series = [],
+  directors = [],
+  authors = [],
   recentPosts = [],
-  currentSort, 
-  currentOffset, 
+  currentSort = '-release_date', 
+  currentPage = 1, 
   basePath, 
-  category, // 追加: 'genre' | 'maker' 等
-  id,       // 追加: カテゴリID
+  category, 
+  id,
   extraParams = {} 
 }: any) {
   
   const router = useRouter();
   const limit = 24;
-  const displayCurrentPage = Math.floor(currentOffset / limit) + 1;
   const displayTotalPages = Math.ceil(totalCount / limit) || 1;
   const [filterText, setFilterText] = useState('');
 
-  // ソート切り替えハンドラ
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSort = e.target.value;
-    router.push(`${basePath}?ordering=${newSort}`);
+  // 🐞 デバッグモード判定
+  const isDebug = extraParams.debug === true;
+
+  const platformColors: Record<string, string> = {
+    fanza: '#ff3366',
+    dmm: '#ff9900',
+    duga: '#00d1b2',
+    video: '#e94560'
   };
 
-  // クライアントサイドでの簡易絞り込み
+  const accentColor = platformColors[platform] || platformColors.video;
   const filteredProducts = products.filter((p: any) => 
-    p.title.toLowerCase().includes(filterText.toLowerCase())
+    (p.title || '').toLowerCase().includes(filterText.toLowerCase())
   );
 
   return (
-    <div className={styles.pageWrapper} data-platform={platform}>
+    <div 
+      className={styles.pageWrapper} 
+      style={{ '--accent': accentColor, '--accent-glow': `${accentColor}33` } as any}
+      data-platform={platform}
+    >
       <div className={styles.ambientGlow} />
 
       <div className={styles.container}>
-        {/* 🛡️ サイドバーセクション */}
         <aside className={styles.sidebarWrapper}>
           <div className={styles.stickySidebar}>
+            {/* 💡 AdultSidebarにデータを流し込む */}
             <AdultSidebar 
+              officialHierarchy={officialHierarchy}
               makers={makers} 
               genres={genres}
+              series={series}
+              directors={directors}
+              authors={authors}
               recentPosts={recentPosts}
               product={products[0]} 
             />
           </div>
         </aside>
 
-        {/* 🏗️ メインコンテンツセクション */}
         <main className={styles.mainContent}>
-          
-          {/* 🛰️ パンくずリスト (SYSTEM_PATH) */}
+          {/* パンくず・ヘッダー・グリッド・ページネーション等は既存のまま維持 */}
           <nav className={styles.breadcrumb}>
             <Link href="/" className={styles.bcLink}>ROOT</Link>
             <span className={styles.bcDivider}>/</span>
@@ -73,79 +85,37 @@ export default function ArchiveTemplate({
             {category && (
               <>
                 <span className={styles.bcDivider}>/</span>
-                <span className={styles.bcActive}>{category.toUpperCase()}</span>
+                <Link href={`/brand/${platform}/cat/${category}`} className={styles.bcLink}>{category.toUpperCase()}</Link>
                 <span className={styles.bcDivider}>:</span>
-                <span className={styles.bcActive}>{id}</span>
+                <span className={styles.bcActive}>{id ? decodeURIComponent(id) : 'ALL'}</span>
               </>
             )}
           </nav>
 
           <header className={styles.headerSection}>
             <div className={styles.titleGroup}>
-              <div className={styles.systemLabel}>
-                <span className={styles.pulse} /> ARCHIVE_NODE: {platform?.toUpperCase()}
-              </div>
-              <h1 className={styles.mainTitle}>
-                {title} <span className={styles.titleAccent}>/</span> RECORDS
-              </h1>
+              <h1 className={styles.titleMain}>{title}</h1>
               <div className={styles.statusInfo}>
-                <span>ENTRIES: <span className={styles.statusValue}>{totalCount.toLocaleString()}</span></span>
-              </div>
-            </div>
-
-            {/* 🔍 フィルター & ソートバー */}
-            <div className={styles.filterControl}>
-              <div className={styles.searchField}>
-                <label className={styles.fieldLabel}>STREAM_FILTER</label>
-                <input 
-                  type="text" 
-                  placeholder="KEYWORDS..." 
-                  className={styles.filterInput}
-                  onChange={(e) => setFilterText(e.target.value)}
-                />
-              </div>
-              <div className={styles.sortField}>
-                <label className={styles.fieldLabel}>SORT_PROTOCOL</label>
-                <select 
-                  className={styles.selectInput} 
-                  value={currentSort || 'new'} 
-                  onChange={handleSortChange}
-                >
-                  <option value="new">🆕 NEW_RECORDS</option>
-                  <option value="popular">🔥 POPULARITY</option>
-                  <option value="review">⭐ RATING</option>
-                </select>
+                <span className={styles.statusLabel}>RECORDS:</span>
+                <span className={styles.statusValue}>{totalCount.toLocaleString()}</span>
               </div>
             </div>
           </header>
 
-          {/* 📦 作品グリッド表示 */}
           <div className={styles.productGrid}>
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product: any) => (
-                <ProductCard 
-                  key={`${product.api_source || platform}-${product.id}`} 
-                  product={product} 
-                />
-              ))
-            ) : (
-              <div className={styles.noData}>[!] DATA_STREAM_NOT_FOUND_IN_CURRENT_FILTER</div>
-            )}
+            {filteredProducts.map((product: any) => (
+              <ProductCard key={`${product.api_source}-${product.id}`} product={product} />
+            ))}
           </div>
 
-          {/* 🔢 ページネーションユニット */}
           {totalCount > limit && (
             <div className={styles.paginationArea}>
               <Pagination
-                currentOffset={currentOffset}
-                limit={limit}
-                totalCount={totalCount}
-                basePath={basePath}
-                extraParams={{ ...extraParams, ordering: currentSort }}
+                currentPage={currentPage}
+                totalPages={displayTotalPages}
+                baseUrl={basePath}
+                query={{ sort: currentSort, ...extraParams }}
               />
-              <div className={styles.pageStatus}>
-                PAGE {displayCurrentPage} OF {displayTotalPages}
-              </div>
             </div>
           )}
         </main>

@@ -1,219 +1,232 @@
-/* --- 🎨 THEME_PROTOCOL (テーマカラー定義) --- */
+/* --- 🎨 THEME_PROTOCOL (テーマカラー統合管理) --- */
 
-/* デフォルト（FANZA） */
 .pageWrapper { 
+  /* デフォルト: FANZA (Pink/Red) */
   --accent: #e94560; 
-  --accent-glow: rgba(233, 69, 96, 0.15);
-  background-color: #050b0a;
+  --accent-glow: rgba(233, 69, 96, 0.2);
+  --bg-deep: #05050a;
+  --bg-surface: rgba(255, 255, 255, 0.03);
+  --border-dim: rgba(255, 255, 255, 0.08);
+  
+  background-color: var(--bg-deep);
   color: #e0e0e5;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* DMMテーマ */
+/* DMMテーマ (Orange) */
 .pageWrapper[data-platform="dmm"] { 
   --accent: #ff9900; 
-  --accent-glow: rgba(255, 153, 0, 0.15);
+  --accent-glow: rgba(255, 153, 0, 0.2);
 }
 
-/* DUGAテーマ */
+/* DUGAテーマ (Turquoise) */
 .pageWrapper[data-platform="duga"] { 
   --accent: #00d1b2; 
-  --accent-glow: rgba(0, 209, 178, 0.15);
+  --accent-glow: rgba(0, 209, 178, 0.2);
+}
+
+/* --- 🛰️ BACKGROUND_EFFECTS --- */
+
+.ambientGlow {
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 800px;
+  background: 
+    radial-gradient(circle at 15% 0%, var(--accent-glow) 0%, transparent 50%),
+    linear-gradient(to bottom, transparent, var(--bg-deep));
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 背景にスキャンライン・グリッドを追加 */
+.pageWrapper::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(var(--border-dim) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border-dim) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at 50% 0%, black, transparent 80%);
+  pointer-events: none;
+  opacity: 0.3;
 }
 
 /* --- 🏗️ LAYOUT_ENGINE --- */
 
 .container {
   display: flex;
-  gap: 32px;
+  gap: 40px;
   max-width: 1800px;
   margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 40px 4% 80px;
   position: relative;
   z-index: 1;
 }
 
 .sidebarWrapper {
-  width: 280px;
+  width: 300px;
   flex-shrink: 0;
-}
-
-.stickySidebar {
-  position: sticky;
-  top: 24px;
 }
 
 .mainContent {
   flex-grow: 1;
-  min-width: 0; /* Gridの突き抜け防止 */
+  min-width: 0;
 }
 
 /* --- 🛰️ UI_COMPONENTS --- */
 
-/* 🛰️ BREADCRUMB */
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  margin-bottom: 20px;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  margin-bottom: 30px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 .bcLink {
-  color: #666;
+  color: #64748b;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.bcLink:hover { color: var(--accent); }
-.bcDivider { color: #333; }
-.bcActive { color: var(--accent); font-weight: bold; }
-
-/* 🏎️ FILTER & SORT BAR */
-.filterControl {
-  display: flex;
-  gap: 20px;
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+.bcLink:hover { 
+  color: var(--accent); 
+  text-shadow: 0 0 8px var(--accent-glow);
 }
 
-.fieldLabel {
-  display: block;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--accent);
-  margin-bottom: 6px;
-  letter-spacing: 1px;
+.bcActive { 
+  color: var(--accent); 
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 2px;
 }
 
-.filterInput, .selectInput {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  outline: none;
-  width: 100%;
-  transition: all 0.3s ease;
-}
-
-.filterInput:focus, .selectInput:focus {
-  border-color: var(--accent);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 10px var(--accent-glow);
-}
-
-.searchField { flex-grow: 1; }
-.sortField { width: 200px; }
-
-/* 🛰️ HEADER SECTION */
+/* 🛰️ HEADER_SECTION */
 .headerSection {
-  margin-bottom: 40px;
-}
-
-.titleGroup {
-  padding-bottom: 24px;
+  margin-bottom: 50px;
+  border-left: 2px solid var(--accent);
+  padding-left: 24px;
 }
 
 .systemLabel {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--accent);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  letter-spacing: 0.1em;
-}
-
-.pulse {
-  width: 8px;
-  height: 8px;
-  background-color: var(--accent);
-  border-radius: 50%;
-  box-shadow: 0 0 12px var(--accent);
-  animation: pulse-key 2s infinite;
+  letter-spacing: 0.2em;
+  margin-bottom: 8px;
 }
 
 .mainTitle {
-  font-size: 2.2rem;
-  font-weight: 900;
-  margin: 12px 0;
-  color: #fff;
-  letter-spacing: -0.02em;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 950;
+  line-height: 1.1;
+  margin: 0 0 16px;
+  letter-spacing: -0.04em;
+  font-style: italic;
+  text-transform: uppercase;
 }
 
-.titleAccent { 
-  color: var(--accent); 
-}
+.titleAccent { color: var(--accent); opacity: 0.8; }
 
 .statusInfo {
-  font-size: 12px;
   font-family: 'JetBrains Mono', monospace;
-  color: #888;
+  font-size: 12px;
+  color: #64748b;
 }
 
 .statusValue {
   color: #fff;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 14px;
+  margin-left: 8px;
 }
 
-/* 📦 PRODUCT GRID */
+/* 🏎️ FILTER_CONTROL (Tactical Edition) */
+.filterControl {
+  display: flex;
+  gap: 24px;
+  background: var(--bg-surface);
+  padding: 20px;
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.fieldLabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.filterInput, .selectInput {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-dim);
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filterInput:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 📦 PRODUCT_GRID */
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 32px 24px;
+  margin-top: 40px;
 }
 
 .noData {
-  padding: 100px 0;
+  padding: 120px 0;
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
-  color: #555;
-  border: 1px dashed #222;
-  border-radius: 4px;
+  color: #475569;
+  border: 1px dashed var(--border-dim);
+  background: rgba(255, 255, 255, 0.01);
+  letter-spacing: 0.1em;
 }
 
-/* 🔢 PAGINATION AREA */
+/* 🔢 PAGINATION_AREA */
 .paginationArea {
-  margin-top: 60px;
+  margin-top: 80px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border-dim);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
 }
 
 .pageStatus {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: #555;
+  font-size: 11px;
+  color: #64748b;
+  letter-spacing: 0.2em;
 }
 
-/* ✨ AMBIENT EFFECTS */
-.ambientGlow {
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 600px;
-  background: radial-gradient(circle at 20% 0%, var(--accent-glow) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* 🔄 ANIMATIONS */
-@keyframes pulse-key {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.8); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* 📱 RESPONSIVE */
-@media (max-width: 1100px) {
+/* 📱 RESPONSIVE_STRATEGY */
+@media (max-width: 1200px) {
   .container { flex-direction: column; }
-  .sidebarWrapper { width: 100%; }
-  .filterControl { flex-direction: column; gap: 15px; }
+  .sidebarWrapper { width: 100%; order: 2; }
+  .mainContent { order: 1; }
+}
+
+@media (max-width: 768px) {
+  .filterControl { flex-direction: column; }
   .sortField { width: 100%; }
+  .mainTitle { font-size: 2.5rem; }
 }

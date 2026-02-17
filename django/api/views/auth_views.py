@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/auth_views.py
+
+import logging
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.views.decorators.csrf import csrf_exempt
-import logging
+
+# 💡 api/serializers.py に定義されている UserSerializer を使用
 from api.serializers import UserSerializer
 
 # ロガー設定
 logger = logging.getLogger(__name__)
 User = get_user_model()
+
+# --------------------------------------------------------------------------
+# 🛠️ 内部ユーティリティ
+# --------------------------------------------------------------------------
 
 def get_current_site_group(request):
     """
@@ -26,6 +34,10 @@ def get_current_site_group(request):
     else:
         return 'general'
 
+# --------------------------------------------------------------------------
+# 👤 ユーザー認証 View
+# --------------------------------------------------------------------------
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -38,18 +50,18 @@ def register_view(request):
     email = request.data.get('email')
     password = request.data.get('password')
     
-    # ミドルウェアの判定から所属グループを自動決定（クライアント側の申告を信用しない）
+    # ミドルウェアの判定から所属グループを自動決定（セキュリティ上、クライアントの申告は無視）
     current_group = get_current_site_group(request)
     origin_domain = request.get_host()
 
-    # 必須チェック
+    # 必須入力チェック
     if not username or not password or not email:
         return Response(
             {"detail": "ユーザー名、メールアドレス、パスワードは必須です。"}, 
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # 重複チェック
+    # ユーザー名の重複チェック
     if User.objects.filter(username=username).exists():
         return Response(
             {"detail": "このユーザー名は既に存在します。"}, 
@@ -57,7 +69,7 @@ def register_view(request):
         )
 
     try:
-        # Userモデルの site_group フィールドに現在のグループをセットして作成
+        # Userモデルのカスタムフィールド site_group, origin_domain を利用
         user = User.objects.create_user(
             username=username,
             email=email,
@@ -78,6 +90,7 @@ def register_view(request):
         logger.error(f"Registration error: {str(e)}")
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -95,12 +108,11 @@ def login_view(request):
     
     logger.info(f"Login attempt for user: {username} on group: {current_group}")
     
-    # 標準の認証処理
+    # 1. ユーザー名とパスワードの認証
     user = authenticate(request, username=username, password=password)
     
     if user is not None:
-        # 💡 ユーザーの所属グループと、現在アクセスしているサイトのグループが一致するか検証
-        # データベース上のユーザーグループを取得（デフォルトは general）
+        # 2. 💡 重要：グループの一致検証
         user_site_group = getattr(user, 'site_group', 'general')
         
         if user_site_group != current_group:
@@ -114,10 +126,10 @@ def login_view(request):
                 "error": "このアカウントは現在のサイトでは利用できません（グループが異なります）。"
             }, status=status.HTTP_403_FORBIDDEN)
 
-        # グループが一致すればログインを許可
+        # 3. セッションにログイン情報を記録
         login(request, user)
         
-        # UserSerializerにrequestを渡し、必要に応じて絶対URLなどを生成可能にする
+        # UserSerializerにcontextを渡し、Next.js側で必要な画像URL等を完全修飾可能にする
         serializer = UserSerializer(user, context={'request': request})
         
         return Response({
@@ -133,6 +145,7 @@ def login_view(request):
             "error": "ユーザー名またはパスワードが正しくありません。"
         }, status=status.HTTP_401_UNAUTHORIZED)
 
+
 @api_view(['POST'])
 def logout_view(request):
     """
@@ -144,6 +157,7 @@ def logout_view(request):
         "status": "success"
     })
 
+
 @api_view(['GET', 'PATCH'])
 @permission_classes([IsAuthenticated])
 def get_user_view(request):
@@ -153,12 +167,12 @@ def get_user_view(request):
     user = request.user
     
     if request.method == 'GET':
-        serializer = UserSerializer(user)
+        serializer = UserSerializer(user, context={'request': request})
         return Response(serializer.data)
         
     elif request.method == 'PATCH':
-        # partial=True により、一部のフィールドのみの更新を許可
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        # partial=True により、変更したいフィールドのみ送信すればOK（例：メールだけ更新等）
+        serializer = UserSerializer(user, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

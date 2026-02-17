@@ -1,26 +1,22 @@
 # -*- coding: utf-8 -*-
 import os
 import requests
-import json
 from typing import List, Dict, Any
 
-# --- 環境変数または設定からAPI情報を取得 ---
+# API設定（環境変数から取得。デフォルトは提供されたもの）
 FANZA_API_ID = os.getenv("FANZA_API_ID", "GkGxcxhcMKUgQGWzPnp9")
 FANZA_AFFILIATE_ID = os.getenv("FANZA_AFFILIATE_ID", "bicbic-990")
-
 BASE_URL = "https://api.dmm.com/affiliate/v3"
 
 class FanzaAPIClient:
-    """FANZA/DMM APIと通信するためのユーティリティクラス"""
+    """FANZA/DMM APIから階層構造と商品リストを取得するユーティリティ"""
     
     def __init__(self, api_id: str = FANZA_API_ID, affiliate_id: str = FANZA_AFFILIATE_ID):
         self.api_id = api_id
         self.affiliate_id = affiliate_id
 
     def fetch_floor_list(self) -> Dict[str, Any]:
-        """
-        DMM/FANZAの全サービス・フロア構造を取得する。
-        """
+        """FloorList APIから生の階層構造を取得する"""
         endpoint = f"{BASE_URL}/FloorList"
         params = {
             "api_id": self.api_id,
@@ -31,75 +27,49 @@ class FanzaAPIClient:
         response.raise_for_status()
         return response.json()
 
-    def fetch_item_list(self, site: str, service: str, floor: str, hits: int = 100, offset: int = 1, sort: str = "date") -> Dict[str, Any]:
+    def get_flattened_floors(self) -> List[Dict[str, str]]:
         """
-        指定したフロアの商品リストを取得する。
-        
-        Args:
-            site (str): 'DMM.com' または 'FANZA'
-            service (str): サービスコード (例: 'digital')
-            floor (str): フロアコード (例: 'videoa')
-            hits (int): 取得件数 (最大100)
-            offset (int): 検索開始位置 (1〜50000)
-            sort (str): 並び順 (date, rank, review, price, -price)
+        APIのネストされた構造を、DB保存に最適なフラットリストに変換する。
         """
-        endpoint = f"{BASE_URL}/ItemList"
+        raw_data = self.fetch_floor_list()
+        flattened = []
         
-        # 数値のバリデーション（APIエラーを未然に防ぐ）
-        hits = max(1, min(hits, 100))
-        offset = max(1, min(offset, 50000))
+        # APIレスポンスの階層を走査
+        sites = raw_data.get('result', {}).get('site', [])
+        for site in sites:
+            # site['code'] は 'DMM.com' または 'FANZA'
+            s_code = site['code']
+            s_name = site['name']
+            
+            for service in site.get('service', []):
+                svc_code = service['code']
+                svc_name = service['name']
+                
+                for floor in service.get('floor', []):
+                    flattened.append({
+                        "site_code": s_code,
+                        "site_name": s_name,
+                        "service_code": svc_code,
+                        "service_name": svc_name,
+                        "floor_code": floor['code'],
+                        "floor_name": floor['name']
+                    })
+        return flattened
 
+    def fetch_item_list(self, site: str, service: str, floor: str, **kwargs) -> Dict[str, Any]:
+        """指定した条件で商品リストを取得（クローラー用）"""
+        endpoint = f"{BASE_URL}/ItemList"
         params = {
             "api_id": self.api_id,
             "affiliate_id": self.affiliate_id,
             "site": site,
             "service": service,
             "floor": floor,
-            "hits": hits,
-            "offset": offset,
-            "sort": sort,
+            "hits": max(1, min(kwargs.get('hits', 100), 100)),
+            "offset": max(1, min(kwargs.get('offset', 1), 50000)),
+            "sort": kwargs.get('sort', 'date'),
             "output": "json"
         }
         response = requests.get(endpoint, params=params)
         response.raise_for_status()
         return response.json()
-
-    def get_dynamic_menu(self) -> List[Dict[str, str]]:
-        """
-        FloorList APIの結果を解析して、巡回しやすい平坦なリストに変換する。
-        """
-        raw_data = self.fetch_floor_list()
-        menu = []
-        
-        sites = raw_data.get('result', {}).get('site', [])
-        for site in sites:
-            for service in site.get('service', []):
-                for floor in service.get('floor', []):
-                    menu.append({
-                        "label": f"{site['name']} > {service['name']} > {floor['name']}",
-                        "site": site['code'],           # 'DMM.com' または 'FANZA'
-                        "site_name": site['name'],       # 表示・ディレクトリ用
-                        "service": service['code'],     # 'digital' 等
-                        "service_name": service['name'], # 'ビデオ' 等
-                        "floor": floor['code'],         # 'videoa' 等
-                        "floor_name": floor['name']      # 'ビデオ' 等
-                    })
-        return menu
-
-# --- 動作確認用 ---
-if __name__ == "__main__":
-    client = FanzaAPIClient()
-    try:
-        menu = client.get_dynamic_menu()
-        print(f"取得したフロア総数: {len(menu)}")
-        if menu:
-            # 1ページ目、1件だけ取得テスト
-            test = client.fetch_item_list(
-                site=menu[0]['site'], 
-                service=menu[0]['service'], 
-                floor=menu[0]['floor'], 
-                hits=1
-            )
-            print("✅ API接続テスト成功")
-    except Exception as e:
-        print(f"❌ Error: {e}")

@@ -7,11 +7,11 @@ import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'DUGA Archive | TIPER Archive',
-    description: 'DUGA（デュガ）プラットフォームの特化型アーカイブ。独自メーカーのデータを網羅。',
+    title: 'DMM Archive | TIPER Archive',
+    description: 'DMM.R18 / FANZA 共通基盤を含むアーカイブデータを統合。',
 };
 
-export default async function DugaBrandPage(props: {
+export default async function DmmBrandPage(props: {
     searchParams: Promise<{ page?: string; sort?: string }>;
 }) {
     const searchParams = await props.searchParams;
@@ -19,7 +19,7 @@ export default async function DugaBrandPage(props: {
     const currentSort = searchParams?.sort || '-release_date';
 
     const queryParams = {
-        api_source: 'DUGA', // DUGAソースを指定
+        api_source: 'DMM', // DMMソースを指定
         page: currentPage,
         ordering: currentSort,
     };
@@ -33,8 +33,8 @@ export default async function DugaBrandPage(props: {
 
     return (
         <ArchiveTemplate 
-            platform="duga"
-            title="DUGA ARCHIVE"
+            platform="dmm"
+            title="DMM ARCHIVE"
             products={productData.results}
             totalCount={productData.count}
             makers={makersRaw.results}
@@ -46,7 +46,7 @@ export default async function DugaBrandPage(props: {
             }))}
             currentPage={currentPage}
             currentSort={currentSort}
-            basePath="/brand/duga"
+            basePath="/brand/dmm"
         />
     );
 }

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from rest_framework import generics, filters, pagination
+# /home/maya/dev/shin-vps/django/api/general_views.py
+
+from rest_framework import generics, filters, pagination, views, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -10,14 +12,18 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from urllib.parse import unquote
 
+# 💡 提供された全モデル + ナビゲーション用モデル
 from api.models import (
     PCProduct, PCAttribute, PriceHistory, LinkshareProduct,
-    Actress, Genre, Maker, Label, Director, Series, Author
+    Actress, Genre, Maker, Label, Director, Series, Author,
+    FanzaFloorMaster
 )
+# 💡 提供された全シリアライザー + ナビゲーション用シリアライザー
 from api.serializers import (
     PCProductSerializer, LinkshareProductSerializer,
     ActressSerializer, GenreSerializer, MakerSerializer, 
-    LabelSerializer, DirectorSerializer, SeriesSerializer, AuthorSerializer
+    LabelSerializer, DirectorSerializer, SeriesSerializer, AuthorSerializer,
+    FanzaNavigationSerializer
 )
 
 # --------------------------------------------------------------------------
@@ -231,3 +237,27 @@ class LinkshareProductDetailAPIView(generics.RetrieveAPIView):
     serializer_class = LinkshareProductSerializer
     permission_classes = [AllowAny]
     lookup_field = 'sku'
+
+# --------------------------------------------------------------------------
+# 7. 🗺️ 階層ナビゲーション (Floor Master) [💡 新設・サイドバー用]
+# --------------------------------------------------------------------------
+
+class FanzaFloorNavigationAPIView(views.APIView):
+    """
+    Next.jsのサイドメニューを動的に生成するためのエンドポイント。
+    FanzaFloorMaster から サービス > フロア のツリー構造を返す。
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        # 重複しないサービス一覧を取得
+        services = FanzaFloorMaster.objects.filter(is_active=True)\
+            .values('service_code', 'service_name')\
+            .distinct()
+        
+        # ツリー構造に変換するSerializer
+        serializer = FanzaNavigationSerializer(services, many=True)
+        
+        return Response({
+            "officialHierarchy": serializer.data
+        }, status=status.HTTP_200)

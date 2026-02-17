@@ -13,8 +13,9 @@ import { AdultProduct } from '../types';
 /** 💡 汎用データ抽出: Djangoのページネーション有無にかかわらず配列を返す */
 const safeExtract = (data: any) => {
     if (!data) return [];
-    // taxonomy APIのような "results" キーを持つオブジェクト、または純粋な配列を処理
-    return Array.isArray(data) ? data : (data.results || []);
+    // taxonomy APIやfloor navigationのように "results" または "data" キーを持つオブジェクトを処理
+    if (Array.isArray(data)) return data;
+    return data.results || data.data || [];
 };
 
 /**
@@ -36,15 +37,18 @@ export async function getAdultProductDetail(id: string | number, source?: string
     } catch { return null; }
 }
 
-/** 💡 統合製品一覧 (Unified) - 修正：パラメータクリーンアップ & エンコード最適化 */
+/** 💡 統合製品一覧 (Unified) - サービス・フロア対応版 */
 export async function getUnifiedProducts(params: any = {}) {
     const { site_group } = getSiteMetadata(); 
 
     // 1. パラメータのクリーンアップ (undefinedや空文字を除去)
     const cleanParams: Record<string, string> = {};
     Object.keys(params).forEach(key => {
-        if (params[key] !== undefined && params[key] !== null && params[key] !== 'undefined' && params[key] !== '') {
-            cleanParams[key] = String(params[key]);
+        const val = params[key];
+        if (val !== undefined && val !== null && val !== 'undefined' && val !== '') {
+            // [floor] や [service] のパスパラメータ名を Django API のクエリ名に正規化
+            const targetKey = key === 'service' ? 'service_code' : (key === 'floor' ? 'floor_code' : key);
+            cleanParams[targetKey] = String(val);
         }
     });
 
@@ -55,7 +59,7 @@ export async function getUnifiedProducts(params: any = {}) {
     };
     
     const queryString = new URLSearchParams(queryPayload).toString();
-    const targetUrl = resolveApiUrl(`/api/unified-products/?${queryString}`);
+    const targetUrl = resolveApiUrl(`/api/unified-adult-products/?${queryString}`);
 
     try {
         const res = await fetch(targetUrl, { 
@@ -94,13 +98,15 @@ export async function getAdultProducts(params: any = {}) {
  * ==============================================================================
  */
 
-/** 💡 サイドバー用の集計データ取得 */
+/** 💡 サイドバー用の集計データ取得 (フロア絞り込み対応) */
 export async function getPlatformAnalysis(source: string, params: any = {}) {
     const queryParams = {
-        api_source: source.toUpperCase(),
+        api_source: source?.toUpperCase(),
         ...params
     };
+    // パラメータ名が重複する場合のクリーンアップ
     if (queryParams.source) delete queryParams.source;
+    if (params.floor) queryParams.floor_code = params.floor;
 
     const query = new URLSearchParams(queryParams);
     try {
@@ -109,7 +115,8 @@ export async function getPlatformAnalysis(source: string, params: any = {}) {
             next: { revalidate: 3600 } 
         });
         const data = await res.json();
-        return data.results ? data.results : data;
+        // Django側のResponse構造に合わせて抽出
+        return data.data ? data.data : data;
     } catch (err) { 
         console.error("ANALYSIS_FETCH_ERROR:", err);
         return null; 
@@ -122,13 +129,23 @@ export async function getPlatformAnalysis(source: string, params: any = {}) {
  * ==============================================================================
  */
 
-export async function getFanzaDynamicMenu() {
+/** 💡 [NEW] FANZAの階層構造をDBマスタから取得 (Next.js サイドバー用) */
+export async function getFanzaDynamicMenu(serviceCode?: string) {
     try {
-        const res = await fetch(resolveApiUrl('/api/fanza/menu-structure/'), { headers: getDjangoHeaders() });
-        return safeExtract(await res.json());
-    } catch { return []; }
+        const query = serviceCode ? `?service_code=${serviceCode}` : '';
+        const res = await fetch(resolveApiUrl(`/api/navigation/floors/${query}`), { 
+            headers: getDjangoHeaders(),
+            next: { revalidate: 3600 } // メニューは1時間キャッシュ
+        });
+        const json = await res.json();
+        return json.data || []; 
+    } catch (error) { 
+        console.error("FANZA_MENU_FETCH_FAILED:", error);
+        return []; 
+    }
 }
 
+// 他プラットフォームも統合Viewに寄せていく設計
 export async function getDugaDynamicMenu() {
     try {
         const res = await fetch(resolveApiUrl('/api/duga/menu-structure/'), { headers: getDjangoHeaders() });
@@ -137,10 +154,8 @@ export async function getDugaDynamicMenu() {
 }
 
 export async function getDmmDynamicMenu() {
-    try {
-        const res = await fetch(resolveApiUrl('/api/dmm/menu-structure/'), { headers: getDjangoHeaders() });
-        return safeExtract(await res.json());
-    } catch { return []; }
+    // getFanzaDynamicMenu と同様に site_code=DMM で取得可能
+    return getFanzaDynamicMenu();
 }
 
 /**
@@ -149,15 +164,20 @@ export async function getDmmDynamicMenu() {
  * ==============================================================================
  */
 
-/** * 💡 [NEW] 万能仕分けインデックス取得
+/** * 💡 [NEW] 万能仕分けインデックス取得 (フロア対応版)
  * ジャンル、女優、メーカー等の全件リストを "あいうえお表示用" に一括取得する
  */
-export async function fetchAdultTaxonomyIndex(type: 'genres' | 'actresses' | 'makers' | 'series' | 'directors' | 'authors') {
+export async function fetchAdultTaxonomyIndex(
+    type: 'genres' | 'actresses' | 'makers' | 'series' | 'directors' | 'authors',
+    floorCode?: string
+) {
     try {
-        const targetUrl = resolveApiUrl(`/api/adult/taxonomy/?type=${type}`);
+        let url = `/api/adult/taxonomy/?type=${type}`;
+        if (floorCode) url += `&floor_code=${floorCode}`;
+
+        const targetUrl = resolveApiUrl(url);
         const res = await fetch(targetUrl, { 
             headers: getDjangoHeaders(),
-            // インデックスページは頻繁に変わらないため、1時間キャッシュを推奨
             next: { revalidate: 3600 } 
         });
         const data = await res.json();
