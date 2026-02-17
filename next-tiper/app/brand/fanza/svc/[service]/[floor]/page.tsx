@@ -6,12 +6,11 @@ import {
     getAdultProducts, 
     fetchMakers, 
     fetchGenres, 
-    getFanzaDynamicMenu // 💡 階層メニュー取得を追加
+    getFanzaDynamicMenu 
 } from '@shared/lib/api/django/adult';
 import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 import { constructMetadata } from '@shared/lib/metadata';
-import FanzaFloorListView from '@/app/brand/fanza/svc/[service]/[floor]/FanzaFloorListView';
-
+import ArchiveTemplate from '@/app/brand/ArchiveTemplate'; // 💡 テンプレートに変更
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60;
@@ -34,11 +33,15 @@ export default async function FanzaFloorListPage(props: {
     const resolvedParams = await props.params;
     const resolvedSearchParams = await props.searchParams;
     const { service, floor } = resolvedParams;
+    
     const sort = resolvedSearchParams.sort || '-release_date';
     const limit = 24;
-    const currentOffset = resolvedSearchParams.offset ? Number(resolvedSearchParams.offset) : (Number(resolvedSearchParams.page || 1) - 1) * limit;
+    const currentPage = Number(resolvedSearchParams.page) || 1;
+    const currentOffset = resolvedSearchParams.offset 
+        ? Number(resolvedSearchParams.offset) 
+        : (currentPage - 1) * limit;
 
-    // --- 🚀 全データを並列フェッチ ---
+    // --- 🏗️ 1. データ取得（並列） ---
     const [dataRes, dynamicMenu, mRes, gRes, wRes] = await Promise.all([
         getAdultProducts({
             api_source: 'fanza',
@@ -48,24 +51,65 @@ export default async function FanzaFloorListPage(props: {
             ordering: sort,
             limit: limit
         }).catch(() => ({ results: [], count: 0 })),
-        getFanzaDynamicMenu().catch(() => ({})), // 💡 サイドバー用の階層を取得
+        getFanzaDynamicMenu().catch(() => ({})), 
         fetchMakers({ limit: 40, ordering: '-product_count' }).catch(() => ({ results: [] })),
         fetchGenres({ limit: 40, ordering: '-product_count' }).catch(() => ({ results: [] })),
-        getSiteMainPosts(0, 5).catch(() => ({ results: [] }))
+        getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
 
+    // --- 🛡️ 2. サイドバー用データの整理（FANZA形式） ---
+    // APIレスポンスから "fanza" キーを安全に抽出
+    const fanzaRawData = dynamicMenu?.fanza || dynamicMenu || {};
+    const fanzaHierarchy = Object.entries(fanzaRawData).map(([serviceName, content]: [string, any]) => {
+        const floorItems = (content.floors || []).map((f: any) => ({
+            id: f.code,
+            name: f.name,
+            floor_name: f.name,
+            floor_code: f.code,
+            slug: f.code,
+            href: `/brand/fanza/svc/${content.code}/${f.code}`,
+        }));
+
+        return {
+            id: content.code,
+            name: serviceName,
+            service_name: serviceName,
+            service_code: content.code,
+            slug: content.code,
+            floors: floorItems,
+            items: floorItems,
+            active: service === content.code,
+        };
+    }).filter(item => item.floors.length > 0);
+
+    const safeExtract = (data: any) => Array.isArray(data) ? data : (data?.results || []);
+
+    // --- 🎨 3. ArchiveTemplate への流し込み ---
     return (
-        <FanzaFloorListView 
-            service={service}
-            floor={floor}
-            sort={sort}
-            currentOffset={currentOffset}
-            limit={limit}
-            dataRes={dataRes}
-            officialHierarchy={dynamicMenu} // 💡 これをViewに渡す
-            mRes={mRes}
-            gRes={gRes}
-            wRes={wRes}
+        <ArchiveTemplate 
+            platform="fanza"
+            title={`${floor.toUpperCase()} SECTOR`}
+            products={dataRes.results || []}
+            totalCount={dataRes.count || 0}
+            
+            officialHierarchy={fanzaHierarchy} 
+            
+            makers={safeExtract(mRes)}
+            genres={safeExtract(gRes)} 
+            
+            recentPosts={safeExtract(wRes).map((p: any) => ({
+                id: p.id,
+                title: p.title?.rendered || 'No Title',
+                slug: p.slug,
+            }))}
+            
+            currentPage={currentPage}
+            currentSort={sort}
+            currentService={service}
+            currentFloor={floor}
+            
+            basePath={`/brand/fanza/svc/${service}/${floor}`}
+            extraParams={{ brand: 'fanza' }}
         />
     );
 }
