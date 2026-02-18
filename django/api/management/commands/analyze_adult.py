@@ -8,11 +8,11 @@ import itertools
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.core.management.base import BaseCommand
-from api.models.adult_products import AdultProduct
+from api.models import AdultProduct
 from django.utils import timezone
 from django.db.models import Q, Count
 
-# === APIキー設定 (6つのキーをローテーション) ===
+# === APIキー設定 ===
 API_KEYS = [
     os.getenv("GEMINI_API_KEY"),
     os.getenv("GEMINI_API_KEY_1"),
@@ -25,22 +25,21 @@ API_KEYS = [
 VALID_KEYS = [k for k in API_KEYS if k and len(k) > 10]
 key_cycle = itertools.cycle(VALID_KEYS)
 
-# === レート制限・並列設定 ===
+# === 並列・レート制限設定 ===
 MAX_WORKERS = 4 
 SAFE_RPM_LIMIT = 50 
 INTERVAL = 60 / SAFE_RPM_LIMIT 
 
-# === パス設定 ===
 CURRENT_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_PROMPT_DIR = os.path.join(CURRENT_FILE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = 'AI対話ログを含む詳細解析を実行し、全てのAIカラムを完全に補完する'
+    help = 'DUGAを含む全ブランドのAI詳細解析を実行し、新設された5項目スコアをDBに格納する'
 
     def add_arguments(self, parser):
         parser.add_argument('product_id', type=str, nargs='?', help='特定の製品ID')
-        parser.add_argument('--limit', type=int, default=10, help='処理件数')
-        parser.add_argument('--brand', type=str, help='解析対象のブランド (fanza, duga, dmm)')
+        parser.add_argument('--limit', type=int, default=50, help='処理件数')
+        parser.add_argument('--brand', type=str, help='対象ブランド (fanza, duga, dmm)')
         parser.add_argument('--force', action='store_true', help='解析済みデータも再解析')
 
     def load_file_content(self, filename, default_content=""):
@@ -54,12 +53,10 @@ class Command(BaseCommand):
             return default_content
 
     def get_ai_model(self):
-        model_content = self.load_file_content("ai_models.txt", "gemma-3-27b-it")
-        first_line = model_content.split('\n')[0].strip()
-        name = first_line.replace('"', '').replace("'", "")
-        if not name.startswith("models/"):
-            name = f"models/{name}"
-        return name
+        # ai_models.txt からモデル名を取得 (デフォルトは gemini-1.5-flash)
+        model_content = self.load_file_content("ai_models.txt", "gemini-1.5-flash")
+        name = model_content.split('\n')[0].strip().strip('"').strip("'")
+        return name if name.startswith("models/") else f"models/{name}"
 
     def handle(self, *args, **options):
         if not VALID_KEYS:
@@ -68,12 +65,12 @@ class Command(BaseCommand):
 
         target_model_id = self.get_ai_model()
 
-        # DB現状可視化
+        # 🚀 現状の可視化
         stats = AdultProduct.objects.values('api_source').annotate(count=Count('id'))
-        self.stdout.write(self.style.HTTP_INFO("--- [DB内ブランド集計] ---"))
+        self.stdout.write(self.style.HTTP_INFO("\n--- [DB内ブランド集計] ---"))
         for s in stats:
-            self.stdout.write(f" ・{s['api_source']}: {s['count']}件")
-        self.stdout.write(self.style.HTTP_INFO("--------------------------"))
+            brand_display = s['api_source'] or "Unknown"
+            self.stdout.write(f" ・{brand_display}: {s['count']}件")
 
         query = AdultProduct.objects.all()
 
@@ -84,10 +81,11 @@ class Command(BaseCommand):
                 query = query.filter(api_source__icontains=options['brand'].lower())
             
             if not options['force']:
+                # 新設スコア（score_erotic等）がまだ0のものも対象に含める
                 query = query.filter(
                     Q(ai_summary__isnull=True) | Q(ai_summary="") | 
-                    Q(ai_content__isnull=True) | Q(ai_content="") |
-                    Q(last_spec_parsed_at__isnull=True)
+                    Q(last_spec_parsed_at__isnull=True) |
+                    Q(score_erotic=0)
                 )
 
         products = list(query[:options['limit']])
@@ -106,9 +104,7 @@ class Command(BaseCommand):
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
             for i, product in enumerate(products):
-                if i > 0:
-                    time.sleep(INTERVAL) 
-                
+                if i > 0: time.sleep(INTERVAL) 
                 future = executor.submit(self.analyze_product_task, product, target_model_id, total_count)
                 future_to_product[future] = product
 
@@ -117,12 +113,12 @@ class Command(BaseCommand):
                     future.result()
                 except Exception as e:
                     p = future_to_product[future]
-                    self.stdout.write(self.style.ERROR(f"❌ 致命的エラー ({p.product_id_unique}): {e}"))
+                    self.stdout.write(self.style.ERROR(f"❌ エラー ({p.product_id_unique}): {e}"))
 
     def analyze_product_task(self, product, model_full_id, total, retry_count=0):
         current_api_key = next(key_cycle)
         
-        brand_raw = product.api_source.lower()
+        brand_raw = (product.api_source or "").lower()
         if 'fanza' in brand_raw:
             prompt_file = "adult_analysis_fanza.txt"
         elif 'duga' in brand_raw:
@@ -131,120 +127,102 @@ class Command(BaseCommand):
             prompt_file = "general_analysis_dmm.txt"
         
         instruction = self.load_file_content(prompt_file)
-        if not instruction:
-            self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルが空、または見つかりません: {prompt_file}"))
-            return
-
         actress_names = ", ".join([a.name for a in product.actresses.all()]) or "情報なし"
         genre_names = ", ".join([g.name for g in product.genres.all()]) or "情報なし"
-
-        # AIに渡す情報の整理（rich_descriptionを優先）
         content_description = product.rich_description or product.product_description or "タイトルから推測してください。"
         
-        full_prompt = f"""
-{instruction}
-
+        # 🚀 5項目スコアを意識した出力をAIに促すプロンプト
+        full_prompt = f"""{instruction}
 # 解析対象データ
 ソース: {product.api_source}
 タイトル: {product.title}
 出演者: {actress_names}
 ジャンル: {genre_names}
-内容紹介（ソース）: {content_description[:4000]}
+内容紹介: {content_description[:3500]}
 
-必ず [ANALYSIS_JSON] セクション内に、指定されたJSON構造のみを出力してください。
+必ず以下のキーを含む [ANALYSIS_JSON] を出力してください。
+スコアは1-100の数値で判定してください。
+- ai_custom_title: キャッチコピー
+- ai_summary: 詳細な紹介文
+- score_visual: 映像美
+- score_story: ストーリー性
+- score_erotic: 刺激・エロティズム
+- score_rarity: レア度・希少性
+- score_fetish: フェチ度
+- score_cost_performance: コスパ
+- chat_logs: ユーザー風の擬似コメント(配列)
+- target_segment: おすすめターゲット
 """
         endpoint = f"https://generativelanguage.googleapis.com/v1beta/{model_full_id}:generateContent?key={current_api_key}"
-        
         try:
             payload = {
                 "contents": [{"parts": [{"text": full_prompt}]}],
                 "generationConfig": {
-                    "temperature": 0.8, "maxOutputTokens": 2048, "response_mime_type": "text/plain"
+                    "temperature": 0.7, "maxOutputTokens": 2048, "response_mime_type": "text/plain"
                 },
                 "safetySettings": [
-                    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-                    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-                    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
+                    {"category": c, "threshold": "BLOCK_NONE"} 
+                    for c in ["HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_HATE_SPEECH", 
+                             "HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_DANGEROUS_CONTENT"]
                 ]
             }
 
-            response = requests.post(endpoint, json=payload, timeout=120)
-
-            if response.status_code in [429, 500, 503, 504] and retry_count < 5:
-                time.sleep((retry_count + 1) * 15)
+            response = requests.post(endpoint, json=payload, timeout=60)
+            if response.status_code in [429, 500, 503] and retry_count < 3:
+                time.sleep(20 * (retry_count + 1))
                 return self.analyze_product_task(product, model_full_id, total, retry_count + 1)
 
             response.raise_for_status()
             result = response.json()
             
-            if 'candidates' not in result or not result['candidates'][0].get('content'):
-                return
+            candidates = result.get('candidates', [])
+            if not candidates: return
+            full_text = candidates[0]['content']['parts'][0]['text']
 
-            full_text = result['candidates'][0]['content']['parts'][0]['text']
-            spec_match = re.search(r'\[ANALYSIS_JSON\](.*?)\[/ANALYSIS_JSON\]', full_text, re.DOTALL)
+            json_str = ""
+            if match := re.search(r'\[ANALYSIS_JSON\](.*?)\[/ANALYSIS_JSON\]', full_text, re.DOTALL):
+                json_str = match.group(1).strip()
+            elif match := re.search(r'```json\s*(.*?)\s*```', full_text, re.DOTALL):
+                json_str = match.group(1).strip()
             
-            if spec_match:
-                json_content = spec_match.group(1).strip()
-                json_content = re.sub(r'//.*', '', json_content) # コメント削除
-                
-                try:
-                    data = json.loads(json_content)
-                except json.JSONDecodeError:
-                    # 不完全なJSONの簡易リカバリ
-                    json_content = re.sub(r',\s*}', '}', json_content)
-                    json_content = re.sub(r',\s*]', ']', json_content)
-                    data = json.loads(json_content)
+            if json_str:
+                json_str = re.sub(r'//.*', '', json_str) # コメント削除
+                data = json.loads(json_str)
 
-                def safe_int(v):
-                    try: return int(v)
-                    except: return 0
+                # --- 1. スコア格納 (新設5項目 + 合計) ---
+                product.score_visual = int(data.get('score_visual', 0))
+                product.score_story = int(data.get('score_story', 0))
+                product.score_erotic = int(data.get('score_erotic', 0))
+                product.score_rarity = int(data.get('score_rarity', 0))
+                product.score_fetish = int(data.get('score_fetish', 0))
+                product.score_cost_performance = int(data.get('score_cost_performance', 0))
 
-                # --- 1. スコア算出 (全プロンプトのキーバリエーションを網羅) ---
-                s_keys = [
-                    'score_visual', 'score_story', 
-                    'score_erotic', 'score_acting', 'score_erotic_or_acting',
-                    'score_rarity', 'score_direction', 'score_rarity_or_direction',
-                    'score_cost', 'score_value', 'score_cost_or_value'
-                ]
-                s_values = [safe_int(data.get(k)) for k in s_keys if data.get(k) is not None]
-                product.spec_score = int(sum(s_values) / len(s_values)) if s_values else 0
+                # spec_score は 5項目の平均値を自動算出
+                s_vals = [product.score_visual, product.score_story, product.score_erotic, product.score_rarity, product.score_fetish]
+                valid_vals = [v for v in s_vals if v > 0]
+                product.spec_score = int(sum(valid_vals) / len(valid_vals)) if valid_vals else 0
 
-                # --- 2. AIカラムへのマッピング（最重要） ---
-                # ai_custom_title (キャッチコピー) -> DB: ai_summary (32文字程度の見出し)
+                # --- 2. テキスト系格納 ---
                 product.ai_summary = data.get('ai_custom_title', product.title)[:500]
-                
-                # ai_summary (JSON内の長文レビュー) -> DB: ai_content (本文カラム)
                 product.ai_content = data.get('ai_summary', '')
-                
-                # chat_logs (対話リスト) -> DB: ai_chat_comments (JSONFieldにそのまま格納)
                 product.ai_chat_comments = data.get('chat_logs', [])
-                
-                # target_segment (ターゲット層) -> DB: target_segment
-                target = data.get('target_segment', '一般')
-                product.target_segment = target[:255] if target else '一般'
+                product.target_segment = data.get('target_segment', '一般')[:255]
                 
                 product.last_spec_parsed_at = timezone.now()
                 product.save()
 
-                # --- 進捗・予測計算 ---
                 self.finished_count += 1
-                now = datetime.now()
-                elapsed = time.time() - self.start_time
-                avg_time = elapsed / self.finished_count
-                remaining_count = total - self.finished_count
-                eta_time = now + timedelta(seconds=avg_time * remaining_count)
+                avg_time = (time.time() - self.start_time) / self.finished_count
+                eta = datetime.now() + timedelta(seconds=avg_time * (total - self.finished_count))
 
                 self.stdout.write(self.style.SUCCESS(
-                    f" ✅ [{self.finished_count}/{total}] {now.strftime('%H:%M:%S')} (完了予測: {eta_time.strftime('%H:%M')}) | {product.api_source} | {product.ai_summary[:15]}..."
+                    f" ✅ [{self.finished_count}/{total}] {product.api_source} | {product.ai_summary[:20]}... (ETA: {eta.strftime('%H:%M')})"
                 ))
             else:
-                if retry_count < 1: # JSONが見当たらない場合一度だけリトライ
-                    return self.analyze_product_task(product, model_full_id, total, retry_count + 1)
-                self.stdout.write(self.style.WARNING(f" ⚠️ JSON未検出: {product.product_id_unique}"))
+                raise ValueError("JSON構造を抽出できませんでした。")
 
         except Exception as e:
             if retry_count < 2:
-                time.sleep(10)
+                time.sleep(5)
                 return self.analyze_product_task(product, model_full_id, total, retry_count + 1)
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.product_id_unique}): {str(e)}"))

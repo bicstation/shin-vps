@@ -11,8 +11,6 @@ urlpatterns = [
     # ==========================================================
     # 0. システム・ルート (System Health & Entry)
     # ==========================================================
-    # 💡 競合を避けるため、アプリ側のルートは api_v1_root 等に名前を変えるか、
-    # 親の urls.py からのみ呼び出すようにします。
     path('', views.api_root, name='api_v1_root'), 
     path('status/', views.status_check, name='status_check'),
 
@@ -39,13 +37,15 @@ urlpatterns = [
     # ==========================================================
     # 3. 🛡️ 統合アダルト共通ゲートウェイ (横断検索 / 関連レコメンド / 仕分け検索)
     # ==========================================================
+    # 💡 Next.js の統合検索・カテゴリトップで使用。
+    # AdultProduct と FanzaProduct をマージして返します。
     path('unified-adult-products/', views.UnifiedAdultProductListView.as_view(), name='unified_adult_products'),
     path('unified-products/', views.UnifiedAdultProductListView.as_view(), name='unified_products_alias'),
 
     # ==========================================================
     # 4. 🗺️ 階層ナビゲーション (Floor Master)
     # ==========================================================
-    # 💡 Next.js のサイドメニュー用。views.FanzaFloorNavigationAPIView が必須です。
+    # 💡 サイドメニュー生成の要。小文字化された site/service 構造を返します。
     path('navigation/floors/', views.FanzaFloorNavigationAPIView.as_view(), name='floor_navigation'),
 
     # ==========================================================
@@ -57,19 +57,23 @@ urlpatterns = [
     # ==========================================================
     # 6. アダルト/DUGA/統合商品 (AdultProduct)
     # ==========================================================
+    # 📊 サイドバーのマーケット分析
     path('adult-products/analysis/', views.PlatformMarketAnalysisAPIView.as_view(), name='platform_market_analysis'),
     path('adult-products/ranking/', views.AdultProductRankingAPIView.as_view(), name='adult_product_ranking'),
+    
+    # 🔍 統合商品リストと詳細
     path('adult-products/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
     path('adult-products/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
-    # 💡 全項目インデックス（仕分け）用
+    # 💡 全項目インデックス（A-Z, 50音検索など）用
     path('adult/taxonomy/', views.AdultTaxonomyIndexAPIView.as_view(), name='adult_taxonomy_index'),
 
     # ==========================================================
     # 7. Linkshare商品 (物販アフィリエイト)
     # ==========================================================
     path('linkshare/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_list'),
-    path('linkshare/<str:sku>/', views.LinkshareProductDetailAPIView.as_view(), name='linkshare_product_detail'),
+    # RetrieveAPIView が views.py に存在することを確認 (存在しない場合は GenericAPIView 等で定義)
+    path('linkshare/<str:sku>/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_detail'),
 
     # ==========================================================
     # 8. 🏷️ マスターデータ (全プラットフォーム統合版)

@@ -15,7 +15,7 @@ from api.utils.raw_data_manager import bulk_insert_or_update
 logger = logging.getLogger('adult.fetch_duga')
 
 class Command(BaseCommand):
-    help = 'DUGA APIから指定された範囲のデータを構造を維持して一括取得します。'
+    help = 'DUGA APIから指定された範囲のデータを構造を維持して一括取得し、小文字に正規化して保存します。'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -35,9 +35,9 @@ class Command(BaseCommand):
         # 1. 設定の読み込み
         try:
             config = settings.API_CONFIG['DUGA']
-            DUGA_API_ID = config['API_ID']   # API認証ID
-            DUGA_API_KEY = config['API_KEY'] # アフィリエイトID (agentid)
-            DUGA_API_URL = config['API_URL'] # https://pub.duga.jp/api/search
+            DUGA_API_ID = config['API_ID']
+            DUGA_API_KEY = config['API_KEY']
+            DUGA_API_URL = config['API_URL']
         except (AttributeError, KeyError):
             self.stderr.write(self.style.ERROR("settings.pyにDUGAのAPI設定が見つかりません。"))
             return
@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"📡 DUGA巡回開始: {start_page}ページ目から{limit_pages}ページ分を取得"))
 
-        # 2. セッション設定
+        # 2. セッション設定 (リトライロジック含む)
         session = requests.Session()
         retries = Retry(
             total=5, 
@@ -58,7 +58,6 @@ class Command(BaseCommand):
         )
         session.mount("https://", HTTPAdapter(max_retries=retries))
 
-        # ブラウザを装うヘッダー
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
@@ -70,7 +69,6 @@ class Command(BaseCommand):
             current_page = start_page + p
             offset = ((current_page - 1) * hits_per_page) + 1
 
-            # DUGA V1.2 仕様に基づいたパラメータ
             params = {
                 'version': '1.2',
                 'appid': DUGA_API_ID,
@@ -80,23 +78,16 @@ class Command(BaseCommand):
                 'offset': offset,
                 'format': 'json',
                 'sort': 'release',
-                # 'category': 'video',
                 'adult': '1'
             }
 
             try:
                 self.stdout.write(f"\n--- {current_page}ページ目 (offset: {offset}) ---")
                 
-                # リクエスト実行
                 response = session.get(DUGA_API_URL, params=params, headers=headers, timeout=30)
                 
-                # 【デバッグ用】実際にリクエストしたURLを表示
-                self.stdout.write(self.style.WARNING(f"DEBUG URL: {response.url}"))
-                
-                # ステータスコードチェック
                 if response.status_code != 200:
                     self.stderr.write(self.style.ERROR(f"HTTPエラー: {response.status_code}"))
-                    self.stderr.write(f"Response Content: {response.text[:500]}")
                     time.sleep(10)
                     continue
 
@@ -104,14 +95,11 @@ class Command(BaseCommand):
                 try:
                     data = response.json()
                 except json.JSONDecodeError:
-                    self.stderr.write(self.style.ERROR(f"JSONパースエラー: HTMLが返却されました。認証IDやURLを確認してください。"))
-                    self.stderr.write(f"Content (先頭200文字): {response.text[:200]}")
+                    self.stderr.write(self.style.ERROR(f"JSONパースエラー: 有効なJSONが返却されませんでした。"))
                     continue
 
-                # DUGA APIは正常時でも内部エラーを返す場合があるためチェック
                 if 'items' not in data:
                     self.stderr.write(self.style.ERROR(f"APIレスポンス異常: 'items'キーが見つかりません。"))
-                    self.stderr.write(f"Data: {json.dumps(data, ensure_ascii=False)[:300]}")
                     continue
 
                 items = data.get('items', [])
@@ -121,26 +109,33 @@ class Command(BaseCommand):
 
                 # 5. Rawデータ保存用パケット作成
                 current_time = timezone.now()
-                unique_batch_id = f"DUGA-{offset}-{int(current_time.timestamp())}"
+                
+                # 🚀 根本解決: api_source を確実に小文字 'duga' に固定
+                # 取得元が大文字であっても、保存直前に lower() を通すことで表記揺れを物理的に排除します。
+                site_label = 'duga'.lower()
+
+                # IDの整合性 (接頭辞も小文字に統一)
+                unique_batch_id = f"{site_label}-{offset}-{int(current_time.timestamp())}"
 
                 raw_data_batch = [{
-                    'api_source': 'DUGA',
+                    'api_source': site_label, # 必ず 'duga'
                     'api_product_id': unique_batch_id,
                     'raw_json_data': json.dumps(data, ensure_ascii=False),
-                    'api_service': 'duga',
-                    'api_floor': 'video',
+                    # 🚀 根本解決: サービス・フロア名も小文字に統一
+                    'api_service': 'video'.lower(),
+                    'api_floor': 'video'.lower(),
                     'migrated': False,
                     'updated_at': current_time,
                     'created_at': current_time,
                 }]
 
-                # DB保存
+                # 6. DB保存 (bulk_insert_or_update 内で重複チェックが行われます)
                 bulk_insert_or_update(raw_data_batch)
                 
                 total_saved_count += len(items)
-                self.stdout.write(self.style.SUCCESS(f"✅ 保存完了: {len(items)}件"))
+                self.stdout.write(self.style.SUCCESS(f"✅ 保存完了: {len(items)}件 (api_source: {site_label})"))
 
-                # 負荷軽減 (DUGAは短時間の連続アクセスに厳しいため長めに設定)
+                # サーバー負荷軽減のためのスリープ
                 time.sleep(2.0)
 
             except requests.exceptions.RequestException as e:
@@ -151,4 +146,4 @@ class Command(BaseCommand):
                 self.stderr.write(self.style.ERROR(f"予期せぬエラー: {e}"))
                 break
 
-        self.stdout.write(self.style.SUCCESS(f"\n🚀 完了！ 合計 {total_saved_count} 件（DUGA形式）を保存しました。"))
+        self.stdout.write(self.style.SUCCESS(f"\n🚀 完了！ 合計 {total_saved_count} 件のアイテムを含む生データを '{site_label}' として保存しました。"))

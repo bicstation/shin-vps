@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/adult_views.py
+import re
+from datetime import date
+from itertools import chain
 
+from django.db.models import Q, Count, Avg, F
+from django.http import Http404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters, pagination, response, views
 from rest_framework.permissions import AllowAny
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Q, Count, Avg, F
-from django.shortcuts import get_object_or_404
-from django.http import Http404
-from itertools import chain
-from datetime import date
-import re
 
 from api.models import (
     AdultProduct, FanzaProduct, LinkshareProduct, 
@@ -34,39 +32,42 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
 class UnifiedAdultProductListView(generics.ListAPIView):
     """
     FANZA / DMM / DUGA を一つのエンドポイントで統合管理。
-    階層マスタ (service/floor) に基づくフィルタリングに完全対応。
     """
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     
-    queryset = AdultProduct.objects.none()
+    queryset = AdultProduct.objects.none() # 基本はget_querysetで制御
     search_fields = [
         'title', 'product_description', 'ai_summary', 'ai_content', 
         'target_segment', 'actresses__name', 'genres__name', 'maker__name'
     ]
-    ordering_fields = ['release_date', 'price', 'review_average', 'spec_score', 'rel_score']
+    ordering_fields = [
+        'release_date', 'price', 'review_average', 'spec_score', 'rel_score',
+        'score_visual', 'score_story', 'score_erotic', 'score_rarity', 'score_cost_performance'
+    ]
 
     def get_queryset(self):
         return AdultProduct.objects.filter(is_active=True)
 
     def list(self, request, *args, **kwargs):
-        source_param = self.request.query_params.get('api_source', '')
-        source = source_param.upper() if source_param else None
-        
-        # --- 🚀 階層フィルタ (Next.js パス連動用) ---
-        service_code = self.request.query_params.get('service_code')
-        floor_code = self.request.query_params.get('floor_code')
+        # --- 🚀 パラメータ取得と正規化 ---
+        source_param = self.request.query_params.get('api_source', '').strip().lower()
+        service_code = self.request.query_params.get('service_code', '').strip().lower()
+        floor_code = self.request.query_params.get('floor_code', '').strip().lower()
 
         search_query = self.request.query_params.get('search')
         related_to_id = self.request.query_params.get('related_to_id')
         
-        genre_slug = self.request.query_params.get('genre_slug')
-        actress_slug = self.request.query_params.get('actress_slug')
-        maker_slug = self.request.query_params.get('maker_slug') or self.request.query_params.get('maker__slug')
-        series_slug = self.request.query_params.get('series_slug')
-        director_slug = self.request.query_params.get('director_slug')
-        author_slug = self.request.query_params.get('author_slug')
+        # スラッグ類
+        slug_params = {
+            'genre_slug': self.request.query_params.get('genre_slug'),
+            'actress_slug': self.request.query_params.get('actress_slug'),
+            'maker_slug': self.request.query_params.get('maker_slug') or self.request.query_params.get('maker__slug'),
+            'series_slug': self.request.query_params.get('series_slug'),
+            'director_slug': self.request.query_params.get('director_slug'),
+            'author_slug': self.request.query_params.get('author_slug'),
+        }
 
         # --- 🔗 関連作品レコメンドロジック ---
         if related_to_id:
@@ -94,47 +95,60 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             'maker', 'label'
         ).prefetch_related('actresses', 'genres')
 
-        def apply_common_filters(qs, is_fanza=False):
+        def apply_common_filters(qs, is_fanza_model=False):
+            if source_param:
+                if is_fanza_model:
+                    qs = qs.filter(site_code__iexact=source_param)
+                else:
+                    qs = qs.filter(api_source__iexact=source_param)
+
+            if service_code and not is_fanza_model:
+                qs = qs.filter(api_service__iexact=service_code)
+
             if floor_code:
-                if is_fanza:
+                if is_fanza_model:
                     qs = qs.filter(floor_code=floor_code)
                 else:
                     qs = qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
             
-            if genre_slug: qs = qs.filter(genres__slug=genre_slug)
-            if actress_slug: qs = qs.filter(actresses__slug=actress_slug)
-            if maker_slug: qs = qs.filter(maker__slug=maker_slug)
+            # スラッグフィルタ
+            if slug_params['genre_slug']: qs = qs.filter(genres__slug=slug_params['genre_slug'])
+            if slug_params['actress_slug']: qs = qs.filter(actresses__slug=slug_params['actress_slug'])
+            if slug_params['maker_slug']: qs = qs.filter(maker__slug=slug_params['maker_slug'])
+            
             if search_query:
                 q_f = Q(title__icontains=search_query) | Q(product_description__icontains=search_query) | \
                       Q(actresses__name__icontains=search_query) | Q(genres__name__icontains=search_query)
-                if not is_fanza:
+                if not is_fanza_model:
                     q_f |= Q(ai_summary__icontains=search_query) | Q(maker__name__icontains=search_query)
                 qs = qs.filter(q_f)
-            if not is_fanza:
-                if series_slug: qs = qs.filter(series__slug=series_slug)
-                if director_slug: qs = qs.filter(director__slug=director_slug)
-                if author_slug: qs = qs.filter(authors__slug=author_slug)
+            
+            if not is_fanza_model:
+                if slug_params['series_slug']: qs = qs.filter(series__slug=slug_params['series_slug'])
+                if slug_params['director_slug']: qs = qs.filter(director__slug=slug_params['director_slug'])
+                if slug_params['author_slug']: qs = qs.filter(authors__slug=slug_params['author_slug'])
+                
             return qs.distinct()
 
-        qs_adult = apply_common_filters(qs_adult, is_fanza=False)
-        qs_fanza = apply_common_filters(qs_fanza, is_fanza=True)
+        qs_adult = apply_common_filters(qs_adult, is_fanza_model=False)
+        qs_fanza = apply_common_filters(qs_fanza, is_fanza_model=True)
 
-        # 出力ソースの判定
-        if source == 'DUGA':
-            queryset = qs_adult.filter(api_source__iexact='DUGA').order_by('-release_date')
-            return self._get_paginated_response(queryset, AdultProductSerializer)
+        # OrderingFilterなどのDRF標準フィルタを適用(Adult側)
+        qs_adult = self.filter_queryset(qs_adult)
+
+        # --- 📦 出力判定 ---
+        if source_param == 'duga':
+            return self._get_paginated_response(qs_adult.order_by('-release_date'), AdultProductSerializer)
         
-        elif source in ['FANZA', 'DMM']:
-            # FanzaProduct側にデータがあるか確認
-            if qs_fanza.filter(site_code=source).exists():
-                queryset = qs_fanza.filter(site_code=source).order_by('-release_date')
-                return self._get_paginated_response(queryset, FanzaProductSerializer)
+        elif source_param in ['fanza', 'dmm']:
+            # FanzaProductモデルにデータがある場合はそちらを優先、なければAdultProductから
+            if qs_fanza.exists():
+                return self._get_paginated_response(qs_fanza.order_by('-release_date'), FanzaProductSerializer)
             else:
-                queryset = qs_adult.filter(api_source__iexact=source).order_by('-release_date')
-                return self._get_paginated_response(queryset, AdultProductSerializer)
+                return self._get_paginated_response(qs_adult.order_by('-release_date'), AdultProductSerializer)
         
         else:
-            # 混合ソート処理
+            # 混合ソート（統合アーカイブ用）
             def get_sort_key(instance):
                 val = getattr(instance, 'release_date', None)
                 if isinstance(val, date):
@@ -166,14 +180,11 @@ class UnifiedAdultProductListView(generics.ListAPIView):
 # 💡 2. 階層ナビゲーションView (Next.js サイドバー用)
 # --------------------------------------------------------------------------
 class FanzaFloorNavigationAPIView(views.APIView):
-    """
-    FANZA / DMM のサイト > サービス > フロア構造を返す。
-    """
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
-        site_code = request.query_params.get('site_code')
-        service_code = request.query_params.get('service_code')
+        site_code = request.query_params.get('site_code', '').lower()
+        service_code = request.query_params.get('service_code', '').lower()
         
         qs = FanzaFloorMaster.objects.filter(is_active=True)
         if site_code: qs = qs.filter(site_code__iexact=site_code)
@@ -183,14 +194,14 @@ class FanzaFloorNavigationAPIView(views.APIView):
         for item in qs:
             site = item.site_name
             if site not in structure:
-                structure[site] = {"code": item.site_code, "name": site, "services": {}}
+                structure[site] = {"code": item.site_code.lower(), "name": site, "services": {}}
             
             svc = item.service_name
             if svc not in structure[site]["services"]:
-                structure[site]["services"][svc] = {"code": item.service_code, "name": svc, "floors": []}
+                structure[site]["services"][svc] = {"code": item.service_code.lower(), "name": svc, "floors": []}
             
             structure[site]["services"][svc]["floors"].append({
-                "code": item.floor_code,
+                "code": item.floor_code.lower(),
                 "name": item.floor_name
             })
 
@@ -203,14 +214,13 @@ class FanzaFloorNavigationAPIView(views.APIView):
 # 💡 3. 全項目インデックス取得View (仕分けページ用)
 # --------------------------------------------------------------------------
 class AdultTaxonomyIndexAPIView(views.APIView):
-    """
-    ジャンル、メーカー、女優などの「項目リスト」を全件取得。
-    """
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
         tax_type = request.query_params.get('type', 'genres')
-        floor_code = request.query_params.get('floor_code')
+        source_param = request.query_params.get('api_source', '').lower()
+        service_code = request.query_params.get('service_code', '').lower()
+        floor_code = request.query_params.get('floor_code', '').lower()
         
         mapping = {
             'genres': 'genres', 'makers': 'maker', 'actresses': 'actresses',
@@ -220,6 +230,9 @@ class AdultTaxonomyIndexAPIView(views.APIView):
         
         relation_name = mapping.get(tax_type, 'genres')
         base_qs = AdultProduct.objects.filter(is_active=True)
+        
+        if source_param: base_qs = base_qs.filter(api_source__iexact=source_param)
+        if service_code: base_qs = base_qs.filter(api_service__iexact=service_code)
         if floor_code:
             base_qs = base_qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
 
@@ -247,12 +260,13 @@ class AdultTaxonomyIndexAPIView(views.APIView):
 class PlatformMarketAnalysisAPIView(views.APIView):
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
-        source_param = request.query_params.get('source')
-        source = source_param.upper() if source_param else None
-        floor_code = request.query_params.get('floor_code')
+        source_param = request.query_params.get('source', '').lower()
+        service_code = request.query_params.get('service_code', '').lower()
+        floor_code = request.query_params.get('floor_code', '').lower()
 
         base_qs = AdultProduct.objects.filter(is_active=True)
-        if source: base_qs = base_qs.filter(api_source__iexact=source)
+        if source_param: base_qs = base_qs.filter(api_source__iexact=source_param)
+        if service_code: base_qs = base_qs.filter(api_service__iexact=service_code)
         if floor_code: base_qs = base_qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
 
         def get_top_items(qs, relation_name, limit=15):
@@ -264,8 +278,9 @@ class PlatformMarketAnalysisAPIView(views.APIView):
             return [{"id": i['tmp_id'], "name": i['tmp_name'], "slug": i['tmp_slug'], "product_count": i['product_count']} for i in items]
 
         return response.Response({
-            "source": source or "UNIFIED_MATRIX",
-            "floor": floor_code or "ALL",
+            "source": source_param or "all",
+            "service": service_code or "all",
+            "floor": floor_code or "all",
             "total_nodes": base_qs.count(),
             "genres": get_top_items(base_qs, 'genres'),
             "makers": get_top_items(base_qs, 'maker'),
@@ -282,18 +297,22 @@ class AdultProductListAPIView(generics.ListAPIView):
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    filterset_fields = ['api_source', 'is_active']
-    search_fields = ['title', 'product_description', 'actresses__name', 'genres__name']
     
     def get_queryset(self):
         queryset = AdultProduct.objects.filter(is_active=True).select_related(
-            'maker', 'label', 'series', 'director'
+            'maker', 'label', 'series', 'director', 'floor_master'
         ).prefetch_related('genres', 'actresses', 'authors')
         
         params = self.request.query_params
+        source = params.get('api_source', '').lower()
+        service = params.get('service_code', '').lower()
+        floor = params.get('floor_code', '').lower()
+        
+        if source: queryset = queryset.filter(api_source__iexact=source)
+        if service: queryset = queryset.filter(api_service__iexact=service)
+        if floor: queryset = queryset.filter(Q(floor_code=floor) | Q(floor_master__floor_code=floor))
+        
         mapping = {
-            'api_source': 'api_source__iexact',
-            'floor_code': 'floor_code',
             'genre_slug': 'genres__slug',
             'actress_slug': 'actresses__slug',
             'maker_slug': 'maker__slug',
@@ -327,7 +346,7 @@ class FanzaProductDetailAPIView(generics.RetrieveAPIView):
         clean_id = re.sub(r'^(FANZA_|DMM_|DUGA_|fz_)', '', raw_id, flags=re.IGNORECASE)
         obj = self.get_queryset().filter(Q(unique_id__iexact=raw_id) | Q(unique_id__icontains=clean_id)).first()
         if not obj:
-            fallback = AdultProduct.objects.filter(Q(product_id_unique__iexact=raw_id) | Q(product_id_unique__icontains=clean_id)).first()
+            fallback = AdultProduct.objects.filter(Q(product_id_unique__iexact=raw_id.lower()) | Q(product_id_unique__icontains=clean_id.lower())).first()
             if fallback: 
                 self.serializer_class = AdultProductSerializer
                 return fallback
@@ -344,7 +363,9 @@ class AdultProductRankingAPIView(generics.ListAPIView):
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
     def get_queryset(self):
-        return AdultProduct.objects.filter(spec_score__gt=0, is_active=True).exclude(ai_summary="").order_by('-spec_score', '-release_date')[:30]
+        return AdultProduct.objects.filter(
+            spec_score__gt=0, is_active=True
+        ).exclude(ai_summary="").order_by('-spec_score', '-release_date')[:30]
 
 class LinkshareProductListAPIView(generics.ListAPIView):
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')

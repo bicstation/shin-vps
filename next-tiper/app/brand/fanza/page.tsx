@@ -39,11 +39,11 @@ export default async function FanzaBrandPage(props: {
     // --- 🏗️ 1. データ取得 ---
     const [productData, dynamicMenu, makersArray, genresArray, wpData] = await Promise.all([
         getUnifiedProducts({
-            api_source: 'FANZA',
+            api_source: 'fanza',
             page: currentPage,
             ordering: currentSort,
-            service: currentService,
-            floor: currentFloor,
+            api_service: currentService,
+            floor_code: currentFloor,
         }),
         getFanzaDynamicMenu().catch(() => ({})), 
         fetchMakers({ limit: 40, ordering: '-product_count' }).catch(() => []), 

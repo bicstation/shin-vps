@@ -51,7 +51,7 @@ export default async function DmmFloorListPage(props: {
     const [dataRes, dynamicMenu, mRes, gRes, wRes] = await Promise.all([
         getAdultProducts({
             api_source: 'dmm',
-            service_code: service,
+            api_service: service,
             floor_code: floor,
             offset: currentOffset,
             ordering: sort,

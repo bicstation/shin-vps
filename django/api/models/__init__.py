@@ -10,7 +10,7 @@ from .raw_and_entities import (
 # 2. FANZA / DMM 完全最適化モデル（今回作成したもの）
 from .fanza_products import FanzaProduct
 # 3. 成人向け製品（既存）
-from .adult_products import AdultProduct, AdultAttribute ,FanzaFloorMaster
+from .adult_products import AdultProduct,FanzaFloorMaster,AdultAttribute
 
 
 # 4. Linkshare 関連（外部アフィリエイト等）

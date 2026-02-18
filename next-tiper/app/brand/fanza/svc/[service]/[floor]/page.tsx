@@ -45,7 +45,7 @@ export default async function FanzaFloorListPage(props: {
     const [dataRes, dynamicMenu, mRes, gRes, wRes] = await Promise.all([
         getAdultProducts({
             api_source: 'fanza',
-            service_code: service,
+            api_service: service,
             floor_code: floor,
             offset: currentOffset,
             ordering: sort,

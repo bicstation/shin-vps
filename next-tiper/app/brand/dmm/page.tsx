@@ -46,11 +46,11 @@ export default async function DmmBrandPage(props: {
     const startTime = Date.now();
     const [productData, dynamicMenu, makersArray, genresArray, wpData] = await Promise.all([
         getUnifiedProducts({
-            api_source: 'DMM',
+            api_source: 'dmm',
             page: currentPage,
             ordering: currentSort,
-            service: currentService,
-            floor: currentFloor,
+            api_service: currentService,
+            floor_code: currentFloor,
         }),
         // DMM用の動的メニューを取得（関数名はAPIの実装に合わせて適宜調整してください）
         getDmmDynamicMenu().catch(() => ({})), 

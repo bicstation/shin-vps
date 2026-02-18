@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import styles from './VideoArchive.module.css'; 
+import styles from './Archive.module.css'; 
 import ProductCard from '@shared/cards/AdultProductCard';
 import Pagination from '@shared/common/Pagination';
 import AdultSidebar from '@shared/layout/Sidebar/AdultSidebar';

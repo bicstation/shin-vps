@@ -265,3 +265,6 @@ if DEBUG and 'collectstatic' not in sys.argv:
                 print("✅ [AUTO-INFO] collectstatic completed.")
             except Exception as e:
                 print(f"⚠️ [AUTO-ERROR] Failed: {e}")
+                
+# デフォルトの1000から、余裕を持った数値（例: 5000〜10000）に変更
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
