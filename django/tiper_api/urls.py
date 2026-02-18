@@ -3,7 +3,7 @@
 
 from django.contrib import admin
 from django.urls import path, include, re_path 
-from .views import home, api_root  # api_root を views.py から読み込み
+from .views import home, api_root
 
 urlpatterns = [
     # ==========================================================
@@ -13,22 +13,27 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # ==========================================================
-    # 2. API エンドポイント (委譲設定)
+    # 2. API エンドポイント (メイン)
     # ==========================================================
     
-    # 💡 [重要修正] /api/ 自体のアクセスにはプロジェクト親の api_root を使い、
-    # それ以降の階層（/api/genres/ など）を api.urls に委譲します。
-    path('api/', api_root, name='api_root'), # ← ここで読み込んだ api_root を使う
-    path('api/', include('api.urls')), 
+    # APIルート（ドキュメント表示用）
+    path('api/', api_root, name='api_root'),
     
-    # 各ブランド用エイリアス
+    # メインのAPI機能 (namespace='api' として唯一無二の定義にする)
+    path('api/', include('api.urls', namespace='api')), 
+    
+    # ==========================================================
+    # 3. ブランド別エイリアス (警告回避のため namespace を指定しない)
+    # ==========================================================
+    # 💡 内部のURL逆引き(reverse)は上記 'api' namespace が優先されます
     path('bicstation/api/', include('api.urls')),
     path('saving/api/', include('api.urls')),
     path('tiper/api/', include('api.urls')),
     path('avflash/api/', include('api.urls')),
     
     # ==========================================================
-    # 3. フォールバック (フロントエンド / 未定義パス用)
+    # 4. フォールバック (フロントエンド / 未定義パス用)
     # ==========================================================
+    # API以外の全てのパスを home (またはフロントエンド) へ
     re_path(r'^.*$', home, name='frontend'), 
 ]

@@ -62,7 +62,6 @@ export default async function RootLayout({
           color: "#ffffff",
           margin: 0,
           padding: 0,
-          // 💡 重要: sticky が機能するには body 自体に overflow: visible が必要 (hiddenは厳禁)
           overflowX: "hidden",
           overflowY: "visible",
           minHeight: "100vh",
@@ -81,24 +80,25 @@ export default async function RootLayout({
         <Header />
 
         {/* 2. 告知バー（広告・年齢制限） */}
-        {site.site_group === 'adult' && (
-          <div 
-            className={styles.adDisclosure} 
-            style={{ 
-              width: '100%',
-              padding: "8px 15px", 
-              fontSize: "11px", 
-              textAlign: "center",
-              backgroundColor: "rgba(0, 0, 0, 0.85)", 
-              color: "#94a3b8",
-              borderBottom: "1px solid rgba(233, 69, 96, 0.3)",
-              backdropFilter: "blur(12px)",
-              zIndex: 1000,
-              position: "relative",
-              fontFamily: "'JetBrains Mono', monospace"
-            }}
-          >
-            【PR】本サイトは広告を利用しています。
+        {/* 💡 [修正] site_group が 'adult' の場合のみ、年齢制限警告を表示 */}
+        <div 
+          className={styles.adDisclosure} 
+          style={{ 
+            width: '100%',
+            padding: "8px 15px", 
+            fontSize: "11px", 
+            textAlign: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.85)", 
+            color: "#94a3b8",
+            borderBottom: "1px solid rgba(233, 69, 96, 0.3)",
+            backdropFilter: "blur(12px)",
+            zIndex: 1000,
+            position: "relative",
+            fontFamily: "'JetBrains Mono', monospace"
+          }}
+        >
+          【PR】本サイトは広告を利用しています。
+          {site.site_group === 'adult' && (
             <span 
               className={styles.ageLimit} 
               style={{ 
@@ -110,14 +110,10 @@ export default async function RootLayout({
             >
               ※18歳未満の閲覧は固く禁止されています。
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* 3. メインレイアウト構造 */}
-        {/* 💡 解決の鍵: 
-          layoutContainer が「画面の高さを下限」として自動で伸びるように flex: 1 0 auto を設定。
-          alignItems: stretch により、page.tsx 内のサイドバーとメインが「同じ高さ」を共有できるようにします。
-        */}
         <div 
           className={styles.layoutContainer} 
           style={{ 
@@ -150,18 +146,16 @@ export default async function RootLayout({
                     color: "#e94560"
                   }}
                 >
-                  <div className={styles.loadingPulse}>INITIALIZING_DATABASE_LINK...</div>
+                  <div className={styles.loadingPulse}>SYNCING_UNIFIED_GATEWAY...</div>
                 </div>
               }
             >
-              {/* page.tsx の中身 (wrapper) がここに展開される */}
               {children}
             </Suspense>
           </main>
         </div>
 
         {/* 4. 共通フッター */}
-        {/* 💡 フッターがサイドバーに被らないよう、適切な余白を確保 */}
         <Suspense fallback={<div style={{ height: '200px', backgroundColor: BG_COLOR }} />}>
           <Footer />
         </Suspense>

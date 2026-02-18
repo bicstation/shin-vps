@@ -8,16 +8,16 @@ import Link from 'next/link';
 import styles from './page.module.css';
 import ProductCard from '@shared/cards/AdultProductCard';
 import Sidebar from '@shared/layout/Sidebar/AdultSidebar'; 
-// 🪄 HEAD側: Footer をインポート
-import Footer from '@shared/layout/Footer'; 
-// 🛰️ スクリプト側: 診断Heroをインポート
 import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
 
 import { getSiteMainPosts, getWpFeaturedImage } from '@shared/lib/api/wordpress';
 import { 
   getUnifiedProducts, 
-  getPlatformAnalysis,
-} from '@shared/lib/api/django/adult';
+  fetchMakers, 
+  fetchGenres, 
+  fetchActresses, 
+  fetchSeries 
+} from '@shared/lib/api/django/adult'; // ✅ 共通APIからインポート
 import { AdultProduct } from '@shared/lib/api/types';
 import { constructMetadata } from '@shared/lib/metadata';
 
@@ -38,75 +38,66 @@ export async function generateMetadata() {
 }
 
 /**
- * 💡 ユーティリティ: HTMLエスケープ解除
+ * 💡 ユーティリティ: 文字列・日付処理
  */
 const decodeHtml = (html: string) => {
   if (!html) return '';
-  const map: { [key: string]: string } = {
-    '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>'
+  const map: { [key: string]: string } = { 
+    '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
   };
   return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
     .replace(/&[a-z]+;/gi, (match) => map[match] || match);
 };
 
-/**
- * 💡 ユーティリティ: 日付フォーマット
- */
 const formatDate = (dateString: string) => {
   if (!dateString) return '';
   const date = new Date(dateString);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}/${m}/${d}`;
+  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
 };
 
 /**
  * 🎬 メインホームコンポーネント
  */
-export default async function Home() {
-  // --- 1. データフェッチの並列実行 ---
+export default async function Home(props: { 
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }> 
+}) {
+  const searchParams = await props.searchParams;
+  const isDebugMode = searchParams.debug === 'true';
+
+  // --- 1. データフェッチの並列実行 (最適化済み) ---
+  // lib/api/django/adult.ts で定義した共通関数を使用することで、サイドバー表示の信頼性を確保
   const [
     wpData, 
-    analysisData, 
+    genresRes, 
+    makersRes, 
+    actressesRes,
+    seriesRes,
     fanzaRes,
     dugaRes,
     dmmRes
   ] = await Promise.all([
     getSiteMainPosts(0, 6).catch(() => ({ results: [] })),
-    getPlatformAnalysis('UNIFIED', { 
-      mode: 'summary', 
-      limit: 15 
-    }).catch((err) => {
-      console.error("ANALYSIS_FETCH_FAILED:", err);
-      return null;
-    }),
+    fetchGenres({ limit: 15 }),
+    fetchMakers({ limit: 15 }),
+    fetchActresses({ limit: 15 }),
+    fetchSeries({ limit: 15 }),
     getUnifiedProducts({ limit: 4, api_source: 'FANZA', ordering: '-release_date' }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'DUGA', ordering: '-release_date' }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'DMM', ordering: '-release_date' }).catch(() => ({ results: [] })),
   ]);
 
-  // --- 2. データの正規化 ---
   const latestPosts = wpData?.results || [];
-  const fanzaProducts = fanzaRes?.results || [];
-  const dugaProducts = dugaRes?.results || [];
-  const dmmProducts = dmmRes?.results || [];
-
-  /**
-   * 💡 サイドバー抽出ヘルパー
-   */
-  const extractSidebarItems = (key: string) => {
-    if (!analysisData) return [];
-    const data = analysisData[key] || (analysisData.results && analysisData.results[key]);
-    return Array.isArray(data) ? data : [];
-  };
-
+  
+  // --- 2. データの正規化とサイドバーへの注入 ---
+  // サイドバーが必要とする型に整形。api_source等の欠損を防ぎます。
   const sidebarProps = {
-    makers: extractSidebarItems('makers'),
-    genres: extractSidebarItems('genres'),
-    series: extractSidebarItems('series'),
-    directors: extractSidebarItems('directors'),
-    authors: extractSidebarItems('authors'),
+    genres: genresRes?.results || [],
+    makers: makersRes?.results || [],
+    actresses: actressesRes?.results || [],
+    series: seriesRes?.results || [],
+    labels: [], // 必要に応じて追加
+    directors: [],
+    authors: [],
     recentPosts: latestPosts.map((p: any) => ({
       id: p.id.toString(),
       title: decodeHtml(p.title?.rendered || ''),
@@ -114,10 +105,10 @@ export default async function Home() {
     }))
   };
 
-  const isApiConnected = fanzaProducts.length > 0 || dugaProducts.length > 0 || dmmProducts.length > 0;
+  const isApiConnected = (fanzaRes?.results?.length || 0) > 0 || (dugaRes?.results?.length || 0) > 0 || (dmmRes?.results?.length || 0) > 0;
 
   /**
-   * 🎬 セクションレンダラー
+   * 🎬 プラットフォーム別セクションレンダラー
    */
   const renderPlatformSection = (title: string, items: AdultProduct[], source: string) => (
     <section className={styles.platformSection} key={source}>
@@ -143,17 +134,18 @@ export default async function Home() {
   return (
     <>
       <div className={styles.pageContainer}>
-        {/* 🛰️ DEBUG_HERO_SECTION: サイドバーの生データを最上部で可視化 */}
-        <SystemDiagnosticHero 
-          id="MAIN_CORE_ANALYSIS" 
-          source="UNIFIED_SUMMARY" 
-          // rawJson={analysisData} 
-        />
+        {isDebugMode && (
+          <SystemDiagnosticHero 
+            id="V1.4_UNIFIED_LIB_INTEGRATED" 
+            source="DJANGO_ADULT_LIB" 
+            rawJson={{ genresRes, makersRes, actressesRes, seriesRes }} 
+          />
+        )}
 
         <main className={styles.main}>
           <div className={styles.wrapper}>
             
-            {/* 🏗️ 1. サイドバー (サーバーサイド・プロップス注入) */}
+            {/* 🏗️ 1. サイドバー (共通ライブラリからのデータを確実に注入) */}
             <aside className={styles.sidebar}>
               <div className={styles.sidebarSticky}>
                 <div className={styles.sidebarMain}>
@@ -164,8 +156,8 @@ export default async function Home() {
                   <div className={styles.errorBox}>
                     <span className={styles.errorIcon}>⚠️</span>
                     <div className={styles.errorText}>
-                      <strong>CRITICAL_ERROR:</strong>
-                      <span>DATA_STREAM_INTERRUPTED. PLEASE_REFRESH.</span>
+                      <strong>CORE_OFFLINE:</strong>
+                      <span>DATA_STREAM_INTERRUPTED.</span>
                     </div>
                   </div>
                 )}
@@ -175,7 +167,7 @@ export default async function Home() {
             {/* 🏗️ 2. メインコンテンツストリーム */}
             <div className={styles.contentStream}>
               
-              {/* Intelligence Reports */}
+              {/* Intelligence Reports (WordPress) */}
               {latestPosts.length > 0 && (
                 <section className={styles.newsSection}>
                   <div className={styles.sectionHeader}>
@@ -188,17 +180,15 @@ export default async function Home() {
                     {latestPosts.slice(0, 3).map((post: any) => (
                       <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
                         <div className={styles.newsThumbWrap}>
-                          <img
-                            src={getWpFeaturedImage(post, 'large')}
-                            alt=""
-                            className={styles.newsThumb}
+                          <img 
+                            src={getWpFeaturedImage(post, 'large')} 
+                            alt={decodeHtml(post.title?.rendered)} 
+                            className={styles.newsThumb} 
                           />
                           <div className={styles.newsOverlay} />
                         </div>
                         <div className={styles.newsContent}>
-                          <span className={styles.newsDate} suppressHydrationWarning>
-                            {formatDate(post.date)}
-                          </span>
+                          <span className={styles.newsDate} suppressHydrationWarning>{formatDate(post.date)}</span>
                           <h3 className={styles.newsTitle} suppressHydrationWarning>
                             {decodeHtml(post.title?.rendered)}
                           </h3>
@@ -209,7 +199,7 @@ export default async function Home() {
                 </section>
               )}
 
-              {/* Archive Registry */}
+              {/* Archive Registry (Django Unified) */}
               <div className={styles.archiveRegistry}>
                 <div className={styles.registryHeader}>
                   <h2 className={styles.registryMainTitle}>UNIFIED_DATA_STREAM</h2>
@@ -218,9 +208,9 @@ export default async function Home() {
 
                 {isApiConnected ? (
                   <div className={styles.registryStack}>
-                    {fanzaProducts.length > 0 && renderPlatformSection("FANZA", fanzaProducts, "FANZA")}
-                    {dugaProducts.length > 0 && renderPlatformSection("DUGA", dugaProducts, "DUGA")}
-                    {dmmProducts.length > 0 && renderPlatformSection("DMM", dmmProducts, "DMM")}
+                    {fanzaRes?.results?.length > 0 && renderPlatformSection("FANZA", fanzaRes.results, "FANZA")}
+                    {dugaRes?.results?.length > 0 && renderPlatformSection("DUGA", dugaRes.results, "DUGA")}
+                    {dmmRes?.results?.length > 0 && renderPlatformSection("DMM", dmmRes.results, "DMM")}
                   </div>
                 ) : (
                   <div className={styles.loadingArea}>
@@ -243,18 +233,6 @@ export default async function Home() {
           </div>
         </main>
       </div>
-
-      {/* 🪄 魔法の一行：Footer経由でデバッグモニターに配線 */}
-      <Footer debugData={{ 
-        id: "HOME_ROOT", 
-        source: "UNIFIED", 
-        data: { 
-          fanza: fanzaProducts, 
-          duga: dugaProducts, 
-          dmm: dmmProducts 
-        }, 
-        sidebarData: sidebarProps 
-      }} />
     </>
   );
 }

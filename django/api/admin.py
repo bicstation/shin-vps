@@ -11,9 +11,9 @@ from django.http import HttpResponseRedirect
 from django.urls import path
 from django.db.models import Count
 
-# 🚀 必要なモデルをすべてインポート
+# 🚀 必要なモデルをインポート（FanzaProductを排除）
 from .models import (
-    User, RawApiData, AdultProduct, FanzaProduct,
+    User, RawApiData, AdultProduct, 
     Genre, Actress, Maker, Label, Director, Series, 
     Author, PCAttribute, LinkshareProduct, 
     PriceHistory, PCProduct, FanzaFloorMaster, AdultAttribute
@@ -120,7 +120,12 @@ class AdultProductAdmin(admin.ModelAdmin):
 
     def display_image(self, obj):
         imgs = obj.image_url_list
-        url = imgs[0] if isinstance(imgs, list) and imgs else imgs.get('large') if isinstance(imgs, dict) else None
+        url = None
+        if isinstance(imgs, list) and imgs:
+            url = imgs[0]
+        elif isinstance(imgs, dict):
+            url = imgs.get('large') or imgs.get('main') or imgs.get('list')
+        
         if url:
             return mark_safe(f'<img src="{url}" width="80" style="border-radius:4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" />')
         return "No Image"
@@ -138,13 +143,13 @@ class AdultProductAdmin(admin.ModelAdmin):
     matrix_scores.short_description = "AI解析スコア"
 
     def api_source_tag(self, obj):
-        colors = {"FANZA": "#ff3860", "DUGA": "#ff9f00", "DIGITAL": "#00d1b2"}
+        colors = {"FANZA": "#ff3860", "DUGA": "#ff9f00", "DMM": "#00d1b2"}
         src = str(obj.api_source).upper()
         return mark_safe(f'<span style="background:{colors.get(src, "#666")}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">{src}</span>')
 
     def is_posted_tag(self, obj):
         icon = "✅" if obj.is_posted else "⏳"
-        return mark_safe(f'<span title="公開済み">{icon}</span>')
+        return mark_safe(f'<span title="公開状態">{icon}</span>')
 
     def get_urls(self):
         return [
@@ -168,8 +173,17 @@ class AllMasterAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        rel_map = {'Genre': 'products', 'Actress': 'products', 'Maker': 'products_made', 'Author': 'products_authored'}
-        target = rel_map.get(self.model.__name__, 'adult_products')
+        # 各モデルからの AdultProduct へのリレーション名を動的に判別
+        rel_map = {
+            'Genre': 'products', 
+            'Actress': 'products', 
+            'Maker': 'products_made', 
+            'Author': 'products_authored',
+            'Label': 'products_labeled',
+            'Director': 'products_directed',
+            'Series': 'products_in_series'
+        }
+        target = rel_map.get(self.model.__name__, 'products')
         return qs.annotate(_count=Count(target, distinct=True))
 
     def product_count_badge(self, obj):
@@ -177,15 +191,14 @@ class AllMasterAdmin(admin.ModelAdmin):
     product_count_badge.short_description = "作品数"
 
     def api_source_badge(self, obj):
-        return mark_safe(f'<span style="color:#999; font-size:10px;">[{obj.api_source}]</span>')
+        src = getattr(obj, 'api_source', 'common')
+        return mark_safe(f'<span style="color:#999; font-size:10px;">[{src}]</span>')
 
 # --------------------------------------------------------------------------
-# 4. AdultAttribute (タグ・属性管理) ※エラー修正済み
+# 4. AdultAttribute (タグ・属性管理)
 # --------------------------------------------------------------------------
 @admin.register(AdultAttribute)
 class AdultAttributeAdmin(admin.ModelAdmin):
-    # ✅ 修正: list_display の 0番目 (order) を list_editable に含めるため、
-    # リンク機能を 1番目 (name) に移動させて競合を回避
     list_display = ('order', 'name', 'attr_type', 'slug')
     list_display_links = ('name',) 
     list_editable = ('order',)
@@ -209,4 +222,5 @@ class RawApiDataAdmin(admin.ModelAdmin):
         data = obj.raw_json_data or obj.data or {}
         return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:5px;">{json.dumps(data, indent=2, ensure_ascii=False)}</pre>')
 
-admin.site.register([PCProduct, PCAttribute, PriceHistory, LinkshareProduct, FanzaProduct])
+# 不要な FanzaProduct の登録を削除
+admin.site.register([PCProduct, PCAttribute, PriceHistory, LinkshareProduct])

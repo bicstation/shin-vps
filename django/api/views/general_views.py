@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/general_views.py
+# /home/maya/dev/shin-vps/django/api/views/general_views.py
 
 from rest_framework import generics, filters, pagination, views, status
 from rest_framework.views import APIView
@@ -12,18 +12,25 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from urllib.parse import unquote
 
-# 💡 提供された全モデル + ナビゲーション用モデル
+# 💡 必要なモデルをインポート
 from api.models import (
     PCProduct, PCAttribute, PriceHistory, LinkshareProduct,
     Actress, Genre, Maker, Label, Director, Series, Author,
     FanzaFloorMaster
 )
-# 💡 提供された全シリアライザー + ナビゲーション用シリアライザー
-from api.serializers import (
-    PCProductSerializer, LinkshareProductSerializer,
+
+# 💡 インポート先の修正
+# 1. PC系および共通シリアライザー (general_serializers.py から)
+from api.serializers.general_serializers import (
+    PCProductSerializer, 
+    LinkshareProductSerializer
+)
+
+# 2. アダルト系マスタ・階層シリアライザー (adult_serializers.py から)
+from api.serializers.adult_serializers import (
     ActressSerializer, GenreSerializer, MakerSerializer, 
     LabelSerializer, DirectorSerializer, SeriesSerializer, AuthorSerializer,
-    FanzaNavigationSerializer
+    FanzaFloorMasterSerializer
 )
 
 # --------------------------------------------------------------------------
@@ -40,7 +47,6 @@ class PCProductLimitOffsetPagination(pagination.LimitOffsetPagination):
 class MasterEntityListView(generics.ListAPIView):
     """
     マスタデータ（女優・ジャンル等）取得の共通ベースクラス。
-    サイドバーやフィルタリング用の選択肢として一括取得（None）を許可。
     """
     permission_classes = [AllowAny]
     pagination_class = None
@@ -49,7 +55,7 @@ class MasterEntityListView(generics.ListAPIView):
     ordering = ['name']
 
 # --------------------------------------------------------------------------
-# 1. 共通マスタデータ View 実装 (旧 master_views 統合)
+# 1. 共通マスタデータ View 実装
 # --------------------------------------------------------------------------
 
 class ActressListAPIView(MasterEntityListView):
@@ -97,10 +103,8 @@ class PCProductRankingView(generics.ListAPIView):
         site_type = getattr(self.request, 'site_type', 'station')
         
         if site_type == 'saving':
-            # 節約サイト: コスパ重視
             return queryset.order_by('-score_cost', '-spec_score')[:20]
         
-        # 通常サイト: 総合スコア順
         return queryset.order_by('-spec_score', '-updated_at')[:20]
 
 # --------------------------------------------------------------------------
@@ -156,9 +160,6 @@ class PCProductListAPIView(generics.ListAPIView):
 # --------------------------------------------------------------------------
 
 class PCProductDetailAPIView(generics.RetrieveAPIView):
-    """
-    個別製品の詳細情報を unique_id で取得。予約語 'ranking' を保護。
-    """
     queryset = PCProduct.objects.all().prefetch_related('attributes')
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
@@ -176,7 +177,6 @@ class PCProductDetailAPIView(generics.RetrieveAPIView):
 # --------------------------------------------------------------------------
 
 class PCProductMakerListView(APIView):
-    """メーカーの一覧と登録商品数"""
     permission_classes = [AllowAny]
     def get(self, request):
         genre = request.query_params.get('genre')
@@ -189,7 +189,6 @@ class PCProductMakerListView(APIView):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_sidebar_stats(request):
-    """サイドバー表示用の属性統計(属性タイプ別)"""
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
     ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
@@ -209,7 +208,6 @@ def pc_sidebar_stats(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_product_price_history(request, unique_id):
-    """製品の価格履歴（直近30日分）"""
     decoded_id = unquote(unique_id)
     if decoded_id == 'ranking':
         raise Http404()
@@ -222,7 +220,7 @@ def pc_product_price_history(request, unique_id):
     })
 
 # --------------------------------------------------------------------------
-# 6. Linkshare商品 (物販・楽天・公式ストア等) Views
+# 6. Linkshare商品 Views
 # --------------------------------------------------------------------------
 
 class LinkshareProductListAPIView(generics.ListAPIView): 
@@ -239,24 +237,22 @@ class LinkshareProductDetailAPIView(generics.RetrieveAPIView):
     lookup_field = 'sku'
 
 # --------------------------------------------------------------------------
-# 7. 🗺️ 階層ナビゲーション (Floor Master) [💡 新設・サイドバー用]
+# 7. 🗺️ 階層ナビゲーション (Floor Master)
 # --------------------------------------------------------------------------
 
 class FanzaFloorNavigationAPIView(views.APIView):
     """
     Next.jsのサイドメニューを動的に生成するためのエンドポイント。
-    FanzaFloorMaster から サービス > フロア のツリー構造を返す。
+    FanzaFloorMasterSerializer を使用して正規化された階層データを返却。
     """
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
-        # 重複しないサービス一覧を取得
-        services = FanzaFloorMaster.objects.filter(is_active=True)\
-            .values('service_code', 'service_name')\
-            .distinct()
+        # サービス・フロア階層をすべて取得
+        floors = FanzaFloorMaster.objects.filter(is_active=True).order_by('site_code', 'service_code', 'id')
         
-        # ツリー構造に変換するSerializer
-        serializer = FanzaNavigationSerializer(services, many=True)
+        # アダルト用シリアライザーを使用
+        serializer = FanzaFloorMasterSerializer(floors, many=True)
         
         return Response({
             "officialHierarchy": serializer.data

@@ -18,6 +18,7 @@ except ImportError:
 class FanzaFloorMasterSerializer(serializers.ModelSerializer):
     """
     FANZA/DMMのサービス・フロア階層を表示するためのシリアライザー。
+    出力コードをすべて小文字に統一し、URLパラメータとの整合性を確保。
     """
     site_code = serializers.SerializerMethodField()
     service_code = serializers.SerializerMethodField()
@@ -40,7 +41,7 @@ class FanzaFloorMasterSerializer(serializers.ModelSerializer):
 class BaseMasterSerializer(serializers.ModelSerializer):
     """
     ジャンル、女優、メーカー等のマスタデータ用。
-    タクソノミー取得APIでの集計結果（辞書型）にも対応。
+    辞書型(values)取得とオブジェクト型の両方に対応。
     """
     slug = serializers.CharField(read_only=True)
     ruby = serializers.CharField(read_only=True)
@@ -69,7 +70,7 @@ class BaseMasterSerializer(serializers.ModelSerializer):
             }
         return super().to_representation(instance)
 
-# 各マスタ用シリアライザーの継承
+# 各マスタ用シリアライザーの継承（AdultProductのリレーション名に基づき一貫性を保持）
 class MakerSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Maker
 
@@ -95,6 +96,7 @@ class AuthorSerializer(BaseMasterSerializer):
 # 2. 属性・タグ用シリアライザー
 # --------------------------------------------------------------------------
 class AdultAttributeSerializer(serializers.ModelSerializer):
+    """作品タグ（身体的特徴、シチュエーション等）用"""
     attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
     product_count = serializers.IntegerField(read_only=True, required=False)
 
@@ -139,10 +141,10 @@ class AdultProductSerializer(serializers.ModelSerializer):
         )
 
     def get_thumbnail(self, obj):
-        """画像リストから最適なサムネイルを選択"""
+        """画像データ形式（JSON辞書/リスト）を判別して最適なURLを返却"""
         imgs = getattr(obj, 'image_url_list', {})
         if isinstance(imgs, dict):
-            # large -> main -> list の順で優先
+            # large -> main -> list の順で優先。FANZAやDUGAのキー名の違いを吸収。
             return imgs.get('large') or imgs.get('main') or imgs.get('list')
         if isinstance(imgs, list) and len(imgs) > 0:
             return imgs[0]
@@ -150,17 +152,18 @@ class AdultProductSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """
-        出力データをフロントエンドの要求に合わせて正規化。
-        特に api_source 等のコード値を小文字に統一し、Next.js側でのマッチングを確実にする。
+        出力データを正規化。
+        1. api_source等を小文字に統一。
+        2. api_sourceが空の場合の補完ロジック。
         """
         ret = super().to_representation(instance)
         
-        # 小文字化プロキシ
+        # URLクエリパラメータとの整合性のための小文字化
         for key in ['api_source', 'api_service', 'floor_code']:
             if ret.get(key):
                 ret[key] = ret[key].lower()
         
-        # 💡 DMM/FANZAデータの補完（api_sourceが空の場合はfloor_masterから推測）
+        # 💡 ソース名補完ロジック（データ移行直後などの欠損対策）
         if not ret.get('api_source') and instance.floor_master:
             ret['api_source'] = instance.floor_master.site_code.lower()
 

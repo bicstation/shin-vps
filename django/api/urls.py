@@ -4,7 +4,6 @@
 from django.urls import path
 from api import views
 
-# 🚀 app_name を指定。これにより reverse('api:...') が有効になります。
 app_name = 'api'
 
 urlpatterns = [
@@ -29,55 +28,42 @@ urlpatterns = [
     path('pc-products/ranking/', views.PCProductRankingView.as_view(), name='pc_product_ranking'),
     path('pc-makers/', views.PCProductMakerListView.as_view(), name='pc_maker_list'),
     path('pc-sidebar-stats/', views.pc_sidebar_stats, name='pc_sidebar_stats'),
-    
     path('pc-products/<str:unique_id>/price-history/', views.pc_product_price_history, name='pc_product_price_history'),
     path('pc-products/<str:unique_id>/', views.PCProductDetailAPIView.as_view(), name='pc_product_detail'),
     path('pc-products/', views.PCProductListAPIView.as_view(), name='pc_product_list'),
 
     # ==========================================================
-    # 3. 🛡️ 統合アダルト共通ゲートウェイ (横断検索 / 関連レコメンド / 仕分け検索)
+    # 3. 🛡️ 統合アダルト共通ゲートウェイ (メインAPI)
     # ==========================================================
-    # 💡 Next.js の統合検索・カテゴリトップで使用。
-    # AdultProduct と FanzaProduct をマージして返します。
+    # 💡 Next.js はここをメインで叩きます。
     path('unified-adult-products/', views.UnifiedAdultProductListView.as_view(), name='unified_adult_products'),
     path('unified-products/', views.UnifiedAdultProductListView.as_view(), name='unified_products_alias'),
+    
+    # 💡 修正箇所: AdultProductDetailView -> AdultProductDetailAPIView に変更
+    path('adult-products/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
 
     # ==========================================================
     # 4. 🗺️ 階層ナビゲーション (Floor Master)
     # ==========================================================
-    # 💡 サイドメニュー生成の要。小文字化された site/service 構造を返します。
     path('navigation/floors/', views.FanzaFloorNavigationAPIView.as_view(), name='floor_navigation'),
 
     # ==========================================================
-    # 5. FANZA 最適化商品 (FanzaProduct)
+    # 5. 📊 分析・ランキング・タクソノミー (AdultProduct 統合版)
     # ==========================================================
-    path('fanza-products/', views.FanzaProductListAPIView.as_view(), name='fanza_product_list'),
-    path('fanza-products/<str:unique_id>/', views.FanzaProductDetailAPIView.as_view(), name='fanza_product_detail'),
-
-    # ==========================================================
-    # 6. アダルト/DUGA/統合商品 (AdultProduct)
-    # ==========================================================
-    # 📊 サイドバーのマーケット分析
     path('adult-products/analysis/', views.PlatformMarketAnalysisAPIView.as_view(), name='platform_market_analysis'),
     path('adult-products/ranking/', views.AdultProductRankingAPIView.as_view(), name='adult_product_ranking'),
-    
-    # 🔍 統合商品リストと詳細
-    path('adult-products/', views.AdultProductListAPIView.as_view(), name='adult_product_list'),
-    path('adult-products/<str:product_id_unique>/', views.AdultProductDetailAPIView.as_view(), name='adult_product_detail'),
-
-    # 💡 全項目インデックス（A-Z, 50音検索など）用
     path('adult/taxonomy/', views.AdultTaxonomyIndexAPIView.as_view(), name='adult_taxonomy_index'),
 
     # ==========================================================
-    # 7. Linkshare商品 (物販アフィリエイト)
+    # 6. Linkshare商品 (物販アフィリエイト)
     # ==========================================================
     path('linkshare/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_list'),
-    # RetrieveAPIView が views.py に存在することを確認 (存在しない場合は GenericAPIView 等で定義)
     path('linkshare/<str:sku>/', views.LinkshareProductListAPIView.as_view(), name='linkshare_product_detail'),
 
     # ==========================================================
-    # 8. 🏷️ マスターデータ (全プラットフォーム統合版)
+    # 7. 🏷️ マスターデータ (全プラットフォーム統合版)
     # ==========================================================
+    # 💡 これらの View が api/views/master_views.py などで定義されていることを前提としています
     path('actresses/', views.ActressListAPIView.as_view(), name='actress_list'),
     path('genres/', views.GenreListAPIView.as_view(), name='genre_list'),
     path('makers/', views.MakerListAPIView.as_view(), name='maker_list'),

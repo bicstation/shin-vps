@@ -1,6 +1,6 @@
 /**
- * 🏗️ [TIPER-LIVE-LAYOUT-CSS] - FULL WIDTH OPTIMIZED (FINAL)
- * 全幅対応 ＆ サイドバー可動域最大化
+ * 🏗️ [TIPER-LIVE-LAYOUT-CSS] - UNIFIED & FULL-WIDTH OPTIMIZED
+ * バックエンド統合環境に合わせた全幅レイアウト ＆ サイドバー可動域最大化
  */
 
 /* 1. 全体を包むラッパー */
@@ -12,12 +12,12 @@
   padding: 0;
   background-color: #06060a;
   color: #ffffff;
-  /* 💡 stickyの天敵 overflow: hidden を避け、横だけを隠す */
+  /* 💡 stickyを維持しつつ横スクロールのみを防止 */
   overflow-x: hidden;
   overflow-y: visible; 
 }
 
-/* 2. 告知・年齢制限バー */
+/* 2. 告知バー（広告・年齢制限） */
 .adDisclosure {
   width: 100%;
   padding: 8px 15px;
@@ -25,24 +25,32 @@
   text-align: center;
   background-color: rgba(0, 0, 0, 0.85); 
   color: #94a3b8;
-  border-bottom: 1px solid rgba(233, 69, 96, 0.3);
+  border-bottom: 1px solid rgba(233, 69, 96, 0.2);
   letter-spacing: 0.05em;
   z-index: 1000;
   box-sizing: border-box;
   font-family: 'JetBrains Mono', monospace;
   backdrop-filter: blur(10px);
+  /* 💡 site_group が DMM の場合、ageLimit が消えても高さが変わらないよう min-height を確保 */
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ageLimit {
-  margin-left: 10px;
+  margin-left: 12px;
   color: #e94560; 
   font-weight: 800;
-  text-shadow: 0 0 8px rgba(233, 69, 96, 0.5);
+  text-shadow: 0 0 10px rgba(233, 69, 96, 0.4);
+  /* 💡 強調したいキーワードへのアクセント */
+  border-left: 1px solid rgba(233, 69, 96, 0.3);
+  padding-left: 12px;
 }
 
 /* 3. レイアウトの外枠 (全幅設定) */
 .layoutContainer {
-  flex: 1 0 auto; /* 💡 画面の高さに応じて自動で伸びる */
+  flex: 1 0 auto;
   width: 100%;
   max-width: 100%; 
   margin: 0;
@@ -71,13 +79,14 @@
   width: 100%;
   min-width: 0;
   min-height: 100vh;
-  animation: fadeIn 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  /* 💡 バックエンド統合後のデータ読み込みを考慮したスムーズな登場 */
+  animation: fadeIn 0.4s ease-out;
   display: flex;
   flex-direction: column;
   position: relative;
 }
 
-/* 6. モバイル対応 */
+/* 6. モバイル対応 (1024px以下) */
 @media (max-width: 1024px) {
   .layoutInner {
     flex-direction: column;
@@ -85,30 +94,34 @@
   }
 }
 
+/* 7. モバイル対応 (768px以下) */
 @media (max-width: 768px) {
   .adDisclosure {
     font-size: 10px;
-    padding: 8px 10px;
-    line-height: 1.4;
+    padding: 6px 10px;
+    flex-wrap: wrap; /* 💡 狭い画面でPRと制限が2行になってもOKなように */
   }
   .ageLimit {
-    display: inline-block;
-    margin-left: 5px;
+    margin-left: 0;
+    margin-top: 2px;
+    border-left: none;
+    padding-left: 0;
+    width: 100%; /* モバイルでは改行して目立たせる */
   }
 }
 
-/* 7. ページフェードイン */
+/* 8. ページフェードイン */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* 8. ユーティリティ */
+/* 9. ユーティリティ */
 .contentContainer {
   width: 100%;
-  max-width: 1800px;
+  max-width: 1920px; /* 💡 4K/大型モニター向けに少し拡張 */
   margin: 0 auto;
-  padding: 0 4%;
+  padding: 0 2%; /* 💡 全幅を活かすため余白をタイトに */
   box-sizing: border-box;
 }
 
@@ -116,9 +129,22 @@
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
   background-image: 
-    linear-gradient(rgba(233, 69, 96, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(233, 69, 96, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(233, 69, 96, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(233, 69, 96, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px; /* 少しグリッドを広げて視認性を向上 */
   pointer-events: none;
   z-index: -1;
+}
+
+.loadingPulse {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: #e94560;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }

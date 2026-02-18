@@ -8,26 +8,24 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 # 💡 分割・再編成した各モジュールからインポート
-# ⚠️ 各 .py ファイル内にクラスや関数が定義されている必要があります
 from .auth_views import *
 from .general_views import *
 from .adult_views import *
 
-# ロガーの設定（サーバー側のターミナルに動作状況を出力するため）
 logger = logging.getLogger(__name__)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def api_root(request, format=None):
     """
-    API全体のマップを返す（ブラウザでの確認用エンドポイント）
-    プロジェクト親の api_root とは別に、アプリ内部の詳細マップを提供します。
+    API全体のマップを返す。
+    統合されたエンドポイントに合わせて整理しました。
     """
     site_type = getattr(request, 'site_type', 'unknown')
     site_name = getattr(request, 'site_name', 'Unknown Site')
 
     return Response({
-        "message": "Welcome to Tiper API v1",
+        "message": "Welcome to Tiper API v1 (Unified Version)",
         "context": {
             "identified_site": site_type,
             "identified_name": site_name,
@@ -50,8 +48,7 @@ def api_root(request, format=None):
             },
             "products": {
                 "unified_adult_products": reverse('api:unified_adult_products', request=request, format=format),
-                "adult_products_list": reverse('api:adult_product_list', request=request, format=format),
-                "fanza_products_list": reverse('api:fanza_product_list', request=request, format=format),
+                # 💡 旧ファンザ単体リストを削除し、統合リストへ集約
                 "pc_products_list": reverse('api:pc_product_list', request=request, format=format),
                 "pc_ranking": reverse('api:pc_product_ranking', request=request, format=format),
                 "linkshare_products_list": reverse('api:linkshare_product_list', request=request, format=format),
@@ -71,32 +68,13 @@ def api_root(request, format=None):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def status_check(request):
-    """
-    稼働確認用エンドポイント。
-    フロントエンド(Next.js)のデバッグ情報を確認するために維持。
-    """
+    """稼働確認用"""
     site_type = getattr(request, 'site_type', 'unknown')
     site_name = getattr(request, 'site_name', 'Unknown')
-
-    debug_payload = {
-        "client_ip": request.META.get('REMOTE_ADDR'),
-        "http_host": request.get_host(),
-        "user_agent": request.META.get('HTTP_USER_AGENT')[:100] if request.META.get('HTTP_USER_AGENT') else None,
-        "query_params": request.GET,
-        "is_secure": request.is_secure(),
-        "middleware_context": {
-            "site_type": site_type,
-            "site_name": site_name
-        }
-    }
-
-    logger.info(f"--- API Status Check: {site_name} ({site_type}) ---")
 
     return Response({
         "status": "API is running",
         "identified_site": site_type,
         "identified_name": site_name,
         "environment": "secure" if request.is_secure() else "standard",
-        "detail": f"This request is processed as {site_name} configuration.",
-        "tiper_debug": debug_payload 
     }, status=200)
