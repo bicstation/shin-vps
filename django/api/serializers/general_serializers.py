@@ -1,24 +1,17 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/serializers/general_serializers.py
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+# 💡 モデルの分割構造に合わせてインポート
 from api.models.pc_products import PCProduct, PriceHistory, PCAttribute
 from api.models import LinkshareProduct
 import logging
 
-User = get_user_model()
 logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------
-# 1. 👤 ユーザー・認証系
-# --------------------------------------------------------------------------
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name')
-        read_only_fields = ('id',)
-
-# --------------------------------------------------------------------------
-# 2. 💻 PC属性・価格履歴（内部利用）
+# 1. 💻 PC属性・価格履歴
 # --------------------------------------------------------------------------
 class PCAttributeSerializer(serializers.ModelSerializer):
     attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
@@ -27,13 +20,14 @@ class PCAttributeSerializer(serializers.ModelSerializer):
         fields = ('id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order')
 
 class PriceHistorySerializer(serializers.ModelSerializer):
+    # 💡 グラフ描画用に日付フォーマットを固定
     date = serializers.DateTimeField(source='recorded_at', format="%Y/%m/%d")
     class Meta:
         model = PriceHistory
         fields = ('date', 'price')
 
 # --------------------------------------------------------------------------
-# 3. 📦 物販・アフィリエイト (Linkshare)
+# 2. 📦 物販・アフィリエイト (Linkshare)
 # --------------------------------------------------------------------------
 class LinkshareProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,7 +39,7 @@ class LinkshareProductSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'updated_at')
 
 # --------------------------------------------------------------------------
-# 4. 🏆 PC製品メイン
+# 3. 🏆 PC製品メイン (Bic-Saving)
 # --------------------------------------------------------------------------
 class PCProductSerializer(serializers.ModelSerializer):
     attributes = PCAttributeSerializer(many=True, read_only=True)
@@ -69,10 +63,12 @@ class PCProductSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_price_history(self, obj):
+        # 💡 直近30件を昇順（古い順）に並べ替えてチャートへ渡す
         histories = PriceHistory.objects.filter(product=obj).order_by('-recorded_at')[:30]
         return PriceHistorySerializer(reversed(histories), many=True).data
 
     def get_radar_chart(self, obj):
+        # 💡 Next.js の Recharts 等でそのまま使える配列形式
         return [
             {"subject": "CPU性能", "value": obj.score_cpu or 0, "fullMark": 100},
             {"subject": "GPU性能", "value": obj.score_gpu or 0, "fullMark": 100},

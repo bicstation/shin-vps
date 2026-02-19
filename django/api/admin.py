@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/admin.py
-
 import logging
 import json
 from django.contrib import admin
@@ -11,7 +9,6 @@ from django.http import HttpResponseRedirect
 from django.urls import path
 from django.db.models import Count
 
-# 🚀 必要なモデルをインポート（FanzaProductを排除）
 from .models import (
     User, RawApiData, AdultProduct, 
     Genre, Actress, Maker, Label, Director, Series, 
@@ -75,7 +72,7 @@ class AdultProductAdmin(admin.ModelAdmin):
     
     list_display = (
         'display_image', 'product_id_unique', 'title_short', 
-        'maker', 'matrix_scores', 'api_source_tag', 'is_posted_tag', 'release_date'
+        'maker', 'matrix_scores', 'api_source_tag', 'is_posted_tag', 'open_link'
     )
     list_display_links = ('display_image', 'product_id_unique', 'title_short')
     list_filter = ('api_source', 'api_service', 'is_active', 'is_posted', 'maker')
@@ -88,17 +85,16 @@ class AdultProductAdmin(admin.ModelAdmin):
             'fields': (
                 'product_id_unique', 'title', 
                 ('api_source', 'api_service'), 
-                'floor_master', 'floor_code', 'affiliate_url', 
+                ('floor_master', 'floor_code'), 
+                'affiliate_url', 
                 ('price', 'list_price'), 'release_date'
             )
         }),
         ('メディア', {'fields': ('image_url_list', 'sample_image_list', 'sample_movie_url', 'tachiyomi_url')}),
-        ('AI解析サマリー', {
-            'classes': ('collapse',),
+        ('AI解析', {
             'fields': ('ai_summary', 'ai_content', 'target_segment', 'ai_chat_comments')
         }),
-        ('AIスコアリング (Matrix 5項目)', {
-            'description': 'フロントエンドのレーダーチャートに反映されるスコアです。',
+        ('AIスコアリング', {
             'fields': (
                 ('score_visual', 'score_story'),
                 ('score_erotic', 'score_rarity'),
@@ -115,27 +111,30 @@ class AdultProductAdmin(admin.ModelAdmin):
     )
 
     def title_short(self, obj):
-        return (obj.title[:25] + '...') if len(obj.title) > 25 else obj.title
-    title_short.short_description = "商品名"
+        return obj.title[:30] + '...' if len(obj.title) > 30 else obj.title
 
     def display_image(self, obj):
-        imgs = obj.image_url_list
-        url = None
-        if isinstance(imgs, list) and imgs:
-            url = imgs[0]
-        elif isinstance(imgs, dict):
-            url = imgs.get('large') or imgs.get('main') or imgs.get('list')
+        url = ""
+        if isinstance(obj.image_url_list, list) and obj.image_url_list:
+            url = obj.image_url_list[0]
+        elif isinstance(obj.image_url_list, dict):
+            url = obj.image_url_list.get('large') or obj.image_url_list.get('list')
         
         if url:
-            return mark_safe(f'<img src="{url}" width="80" style="border-radius:4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" />')
+            return mark_safe(f'<img src="{url}" width="90" style="border-radius:4px; border:1px solid #ddd; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />')
         return "No Image"
+
+    def open_link(self, obj):
+        if obj.affiliate_url:
+            return mark_safe(f'<a href="{obj.affiliate_url}" target="_blank" style="display:inline-block; padding:3px 8px; background:#007bff; color:white; border-radius:3px; text-decoration:none; font-size:10px; font-weight:bold;">🔗 Open</a>')
+        return "-"
+    open_link.short_description = "外部リンク"
 
     def matrix_scores(self, obj):
         return mark_safe(
             f'<div style="min-width: 120px;">'
             f'{get_score_bar(obj.score_visual, "映像")}'
             f'{get_score_bar(obj.score_erotic, "刺激")}'
-            f'{get_score_bar(obj.score_rarity, "希少")}'
             f'<div style="border-top:1px solid #eee; padding-top:3px;">'
             f'{get_score_bar(obj.spec_score, "TOTAL", width="90px")}'
             f'</div></div>'
@@ -143,13 +142,14 @@ class AdultProductAdmin(admin.ModelAdmin):
     matrix_scores.short_description = "AI解析スコア"
 
     def api_source_tag(self, obj):
-        colors = {"FANZA": "#ff3860", "DUGA": "#ff9f00", "DMM": "#00d1b2"}
-        src = str(obj.api_source).upper()
-        return mark_safe(f'<span style="background:{colors.get(src, "#666")}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">{src}</span>')
+        colors = {"fanza": "#ff3860", "duga": "#ff9f00", "dmm": "#00d1b2"}
+        src = str(obj.api_source).lower()
+        return mark_safe(f'<span style="background:{colors.get(src, "#666")}; color:white; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">{src.upper()}</span>')
+    api_source_tag.short_description = "ソース"
 
     def is_posted_tag(self, obj):
-        icon = "✅" if obj.is_posted else "⏳"
-        return mark_safe(f'<span title="公開状態">{icon}</span>')
+        return "✅" if obj.is_posted else "⏳"
+    is_posted_tag.short_description = "公開"
 
     def get_urls(self):
         return [
@@ -173,15 +173,10 @@ class AllMasterAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        # 各モデルからの AdultProduct へのリレーション名を動的に判別
         rel_map = {
-            'Genre': 'products', 
-            'Actress': 'products', 
-            'Maker': 'products_made', 
-            'Author': 'products_authored',
-            'Label': 'products_labeled',
-            'Director': 'products_directed',
-            'Series': 'products_in_series'
+            'Genre': 'products', 'Actress': 'products', 'Maker': 'products_made', 
+            'Author': 'products_authored', 'Label': 'products_labeled',
+            'Director': 'products_directed', 'Series': 'products_in_series'
         }
         target = rel_map.get(self.model.__name__, 'products')
         return qs.annotate(_count=Count(target, distinct=True))
@@ -191,36 +186,46 @@ class AllMasterAdmin(admin.ModelAdmin):
     product_count_badge.short_description = "作品数"
 
     def api_source_badge(self, obj):
-        src = getattr(obj, 'api_source', 'common')
-        return mark_safe(f'<span style="color:#999; font-size:10px;">[{src}]</span>')
+        return mark_safe(f'<span style="color:#999; font-size:10px;">[{obj.api_source}]</span>')
+    api_source_badge.short_description = "ソース"
 
 # --------------------------------------------------------------------------
-# 4. AdultAttribute (タグ・属性管理)
+# 4. RawApiData (生データ)
+# --------------------------------------------------------------------------
+@admin.register(RawApiData)
+class RawApiDataAdmin(admin.ModelAdmin):
+    list_display = ('api_source_tag', 'api_service', 'api_floor', 'api_product_id', 'created_at', 'migrated')
+    list_filter = ('api_source', 'api_service', 'migrated')
+    search_fields = ('api_product_id',)
+    readonly_fields = ('display_json',)
+
+    def api_source_tag(self, obj):
+        colors = {"fanza": "#ff3860", "duga": "#ff9f00", "dmm": "#00d1b2"}
+        src = str(obj.api_source).lower()
+        return mark_safe(f'<span style="background:{colors.get(src, "#666")}; color:white; padding:2px 8px; border-radius:4px; font-weight:bold;">{src.upper()}</span>')
+    api_source_tag.short_description = "ソース"
+
+    def display_json(self, obj):
+        data = obj.raw_json_data or {}
+        return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:5px; font-size:12px; overflow:auto; max-height:600px;">{json.dumps(data, indent=2, ensure_ascii=False)}</pre>')
+    display_json.short_description = "生JSON解析結果"
+
+# --------------------------------------------------------------------------
+# 5. その他・属性管理
 # --------------------------------------------------------------------------
 @admin.register(AdultAttribute)
 class AdultAttributeAdmin(admin.ModelAdmin):
+    # 💡 修正箇所: order を list_editable に含めるため、links を name に明示
     list_display = ('order', 'name', 'attr_type', 'slug')
-    list_display_links = ('name',) 
-    list_editable = ('order',)
+    list_display_links = ('name',) # 🚀 詳細画面へのリンクを name に変更
+    list_editable = ('order',)      # 🚀 一覧画面で order を直接編集可能
     list_filter = ('attr_type',)
     search_fields = ('name', 'slug')
 
-# --------------------------------------------------------------------------
-# 5. その他・インフラ
-# --------------------------------------------------------------------------
 @admin.register(FanzaFloorMaster)
 class FanzaFloorMasterAdmin(admin.ModelAdmin):
     list_display = ('site_name', 'service_name', 'floor_name', 'floor_code', 'is_active')
     list_filter = ('site_name', 'service_name')
 
-@admin.register(RawApiData)
-class RawApiDataAdmin(admin.ModelAdmin):
-    list_display = ('api_source', 'api_service', 'created_at', 'migrated')
-    readonly_fields = ('display_json',)
-    
-    def display_json(self, obj):
-        data = obj.raw_json_data or obj.data or {}
-        return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:5px;">{json.dumps(data, indent=2, ensure_ascii=False)}</pre>')
-
-# 不要な FanzaProduct の登録を削除
+# その他のインフラ系モデルを一括登録
 admin.site.register([PCProduct, PCAttribute, PriceHistory, LinkshareProduct])

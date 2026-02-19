@@ -11,14 +11,21 @@ import re
 
 class RawApiData(models.Model):
     """
-    FANZAやDUGAなどのAPIから取得した生データをそのまま格納するモデル。
+    FANZA、DMM、DUGAなどのAPIから取得した生データをそのまま格納するモデル。
     """
+    # 💡 運用に合わせ、正規化ロジックで使用する小文字の値を定義します
     API_CHOICES = [
-        ('DUGA', 'DUGA API'),
-        ('FANZA', 'FANZA API'),
+        ('fanza', 'FANZA API'),
+        ('dmm', 'DMM API'),
+        ('duga', 'DUGA API'),
     ]
 
-    api_source = models.CharField(max_length=10, choices=API_CHOICES, verbose_name="APIソース")
+    # choicesに合わせた値（fanza, dmm, duga）が保存されることで管理画面に正しく表示されます
+    api_source = models.CharField(
+        max_length=10, 
+        choices=API_CHOICES, 
+        verbose_name="APIソース"
+    )
     api_product_id = models.CharField(max_length=255, verbose_name="API商品ID")
     raw_json_data = models.JSONField(verbose_name="生JSONデータ")
     
@@ -33,10 +40,14 @@ class RawApiData(models.Model):
         db_table = 'raw_api_data'
         verbose_name = 'API生データ'
         verbose_name_plural = 'API生データ一覧'
+        # 同じサイトの同じIDが重複しないように制限
         unique_together = ('api_source', 'api_product_id')
 
     def __str__(self):
-        return f"{self.api_source}: {self.api_product_id}"
+        # 管理画面で "FANZA API: digital_doujin_bl..." のように見やすく表示
+        source_dict = dict(self.API_CHOICES)
+        source_label = source_dict.get(self.api_source, self.api_source)
+        return f"{source_label}: {self.api_product_id}"
 
 
 # --------------------------------------------------------------------------
@@ -48,12 +59,13 @@ class EntityBase(models.Model):
     メーカー、ジャンル、女優、著者などの共通フィールドを持つ基底クラス。
     自動スラッグ生成、重複回避、およびデータ正規化機能を持ちます。
     """
-    api_source = models.CharField(max_length=10, verbose_name="APIソース (DUGA/FANZA)")
+    # こちらも正規化後のデータとして fanza/dmm/duga 等が入ります
+    api_source = models.CharField(max_length=10, verbose_name="APIソース")
     api_id = models.CharField(max_length=255, null=True, blank=True, verbose_name="API固有ID")
     
     name = models.CharField(max_length=255, verbose_name="名称")
     
-    # 【修正】SlugFieldをCharFieldに変更。db_indexを付けて検索性を維持しつつ日本語を許容。
+    # SlugFieldをCharFieldに変更し、db_indexを付けて日本語スラッグを許容
     slug = models.CharField(max_length=255, null=True, blank=True, verbose_name="スラッグ", db_index=True)
     ruby = models.CharField(max_length=255, null=True, blank=True, verbose_name="ふりがな") 
     
@@ -64,12 +76,12 @@ class EntityBase(models.Model):
 
     class Meta:
         abstract = True
-        # api_source内での名称重複とスラッグ重複を防ぐ
+        # 同一ソース内での名称とスラッグの重複を防止
         unique_together = (('api_source', 'name'), ('api_source', 'slug'))
         ordering = ['name']
 
     def __str__(self):
-        return f"[{self.api_source}] {self.name}"
+        return f"[{self.api_source.upper()}] {self.name}"
 
     def save(self, *args, **kwargs):
         # 1. テキストの正規化（全角英数字を半角に、前後の空白削除）

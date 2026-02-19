@@ -26,7 +26,7 @@ VALID_KEYS = [k for k in API_KEYS if k and len(k) > 10]
 key_cycle = itertools.cycle(VALID_KEYS)
 
 # === 並列・レート制限設定 ===
-MAX_WORKERS = 4 
+MAX_WORKERS = 12
 SAFE_RPM_LIMIT = 50 
 INTERVAL = 60 / SAFE_RPM_LIMIT 
 

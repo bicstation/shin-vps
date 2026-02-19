@@ -84,26 +84,60 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         return qs.distinct().order_by('-release_date')
 
 # --------------------------------------------------------------------------
-# 💡 2. 階層ナビゲーションView
+# 💡 2. 階層ナビゲーションView (リアルタイム集計版)
 # --------------------------------------------------------------------------
 class FanzaFloorNavigationAPIView(views.APIView):
+    """
+    DMM/FANZAの階層構造に、DB内の実件数(product_count)をリアルタイムに付与して返す
+    """
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
+        # 1. フロアマスタを取得
         qs = FanzaFloorMaster.objects.filter(is_active=True)
+        
+        # 2. AdultProductからフロアごとの件数を一括集計
+        # floor_master_id ごとの商品数を取得（Group By floor_master_id）
+        floor_counts = AdultProduct.objects.filter(is_active=True)\
+            .values('floor_master_id')\
+            .annotate(count=Count('id'))
+        
+        # 辞書形式に変換 {floor_master_id: count, ...}
+        count_map = {item['floor_master_id']: item['count'] for item in floor_counts}
+
         structure = {}
         for item in qs:
             site = item.site_name
+            # このフロア単体の件数を取得
+            current_floor_count = count_map.get(item.id, 0)
+
             if site not in structure:
-                structure[site] = {"code": item.site_code.lower(), "name": site, "services": {}}
+                structure[site] = {
+                    "code": item.site_code.lower(), 
+                    "name": site, 
+                    "product_count": 0,  # サービス単位の合計
+                    "services": {}
+                }
             
             svc = item.service_name
             if svc not in structure[site]["services"]:
-                structure[site]["services"][svc] = {"code": item.service_code.lower(), "name": svc, "floors": []}
+                structure[site]["services"][svc] = {
+                    "code": item.service_code.lower(), 
+                    "name": svc, 
+                    "product_count": 0,  # フロア単位の合計
+                    "floors": []
+                }
             
+            # フロア情報を追加
             structure[site]["services"][svc]["floors"].append({
-                "code": item.floor_code.lower(), "name": item.floor_name
+                "code": item.floor_code.lower(), 
+                "name": item.floor_name,
+                "product_count": current_floor_count
             })
+
+            # 親階層（Service, Site）に件数を累積加算
+            structure[site]["services"][svc]["product_count"] += current_floor_count
+            structure[site]["product_count"] += current_floor_count
 
         return response.Response({"status": "NAV_SYNC_COMPLETE", "data": structure})
 

@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/serializers/adult_serializers.py
+
 import re
+import logging
 from rest_framework import serializers
 from api.models import (
     Maker, Label, Director, Series, Genre, Actress, Author,
     AdultProduct, AdultAttribute, LinkshareProduct, FanzaFloorMaster
 )
 
-# 💡 PCAttribute 相互参照回避 (既存ロジックを維持)
-try:
-    from api.models.pc_products import PCAttribute
-except ImportError:
-    PCAttribute = None
+logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------
 # 0. 🚀 階層マスタ用シリアライザー (Next.jsナビゲーション用)
@@ -18,7 +17,6 @@ except ImportError:
 class FanzaFloorMasterSerializer(serializers.ModelSerializer):
     """
     FANZA/DMMのサービス・フロア階層を表示するためのシリアライザー。
-    出力コードをすべて小文字に統一し、URLパラメータとの整合性を確保。
     """
     site_code = serializers.SerializerMethodField()
     service_code = serializers.SerializerMethodField()
@@ -40,8 +38,7 @@ class FanzaFloorMasterSerializer(serializers.ModelSerializer):
 # --------------------------------------------------------------------------
 class BaseMasterSerializer(serializers.ModelSerializer):
     """
-    ジャンル、女優、メーカー等のマスタデータ用。
-    辞書型(values)取得とオブジェクト型の両方に対応。
+    辞書型(values)取得とオブジェクト型の両方に対応した基底クラス。
     """
     slug = serializers.CharField(read_only=True)
     ruby = serializers.CharField(read_only=True)
@@ -70,25 +67,19 @@ class BaseMasterSerializer(serializers.ModelSerializer):
             }
         return super().to_representation(instance)
 
-# 各マスタ用シリアライザーの継承（AdultProductのリレーション名に基づき一貫性を保持）
+# --- 継承クラス群 ---
 class MakerSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Maker
-
 class LabelSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Label
-
 class DirectorSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Director
-
 class SeriesSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Series
-
 class GenreSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Genre
-
 class ActressSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Actress
-
 class AuthorSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Author
 
@@ -96,7 +87,6 @@ class AuthorSerializer(BaseMasterSerializer):
 # 2. 属性・タグ用シリアライザー
 # --------------------------------------------------------------------------
 class AdultAttributeSerializer(serializers.ModelSerializer):
-    """作品タグ（身体的特徴、シチュエーション等）用"""
     attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
     product_count = serializers.IntegerField(read_only=True, required=False)
 
@@ -108,9 +98,6 @@ class AdultAttributeSerializer(serializers.ModelSerializer):
 # 3. 統合商品データ用シリアライザー (AdultProduct 一本化)
 # --------------------------------------------------------------------------
 class AdultProductSerializer(serializers.ModelSerializer): 
-    """
-    FANZA / DMM / DUGA すべてのデータを統合して返却するメインシリアライザー。
-    """
     maker = MakerSerializer(read_only=True)
     label = LabelSerializer(read_only=True)
     director = DirectorSerializer(read_only=True)
@@ -141,38 +128,29 @@ class AdultProductSerializer(serializers.ModelSerializer):
         )
 
     def get_thumbnail(self, obj):
-        """画像データ形式（JSON辞書/リスト）を判別して最適なURLを返却"""
         imgs = getattr(obj, 'image_url_list', {})
+        # JSON辞書形式（旧仕様など）の場合
         if isinstance(imgs, dict):
-            # large -> main -> list の順で優先。FANZAやDUGAのキー名の違いを吸収。
             return imgs.get('large') or imgs.get('main') or imgs.get('list')
+        # リスト形式（現在の統合正規化ロジックの標準）の場合
         if isinstance(imgs, list) and len(imgs) > 0:
             return imgs[0]
         return None
 
     def to_representation(self, instance):
-        """
-        出力データを正規化。
-        1. api_source等を小文字に統一。
-        2. api_sourceが空の場合の補完ロジック。
-        """
         ret = super().to_representation(instance)
         
-        # URLクエリパラメータとの整合性のための小文字化
+        # Next.jsとの整合性（小文字統一）
         for key in ['api_source', 'api_service', 'floor_code']:
             if ret.get(key):
                 ret[key] = ret[key].lower()
         
-        # 💡 ソース名補完ロジック（データ移行直後などの欠損対策）
+        # 欠損補完
         if not ret.get('api_source') and instance.floor_master:
             ret['api_source'] = instance.floor_master.site_code.lower()
 
-        return ret
+        # 💡 追加: AI解析データの未完了時のデフォルト値
+        if ret.get('ai_summary') is None:
+            ret['ai_summary'] = "解析準備中..."
 
-# --------------------------------------------------------------------------
-# 4. Linkshare商品シリアライザー
-# --------------------------------------------------------------------------
-class LinkshareProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LinkshareProduct
-        fields = '__all__'
+        return ret
