@@ -5,7 +5,7 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import styles from './ProductDetail.module.css';
 
-import { getAdultProductDetail } from '@shared/lib/api/django';
+import { getAdultProductDetail } from '@shared/lib/api/django/adult';
 import SystemDiagnostic from '@shared/ui/SystemDiagnostic';
 import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
 
@@ -16,6 +16,39 @@ import InfoColumn from './_components/InfoColumn';
 import RelatedArchives from './RelatedArchives';
 
 const getSafeScore = (val: any) => (typeof val === 'number' ? val : (parseInt(val) || 0));
+
+/**
+ * 💡 関連商品のデバッグ表示用ラッパー
+ */
+async function RelatedArchivesWithDebug({ product, isDebugMode }: { product: any, isDebugMode: boolean }) {
+  return (
+    <>
+      <RelatedArchives product={product} />
+      
+      {/* 🛠️ 関連商品の RAW JSON デバッグ表示 (debug=true時のみ) */}
+      {isDebugMode && (
+        <div className="mt-20 p-6 bg-black/40 border border-blue-500/20 rounded-lg font-mono">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            <h3 className="text-blue-500 text-[11px] tracking-widest uppercase">Debug: Related_Archives_Raw_Data</h3>
+          </div>
+          <div className={styles.debugCodeContainer}>
+            <pre>
+              {JSON.stringify({
+                target_product_id: product.product_id_unique,
+                actresses: product.actresses?.map(a => a.name) || [],
+                note: "RelatedArchives内部で女優全員分の並列フェッチを実行中"
+              }, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 export default async function ProductDetailPage(props: { 
   params: Promise<{ id: string }>;
@@ -30,18 +63,16 @@ export default async function ProductDetailPage(props: {
   const id = decodeURIComponent(rawId);
   const isDebugMode = debugParam === 'true';
 
-  // 📡 API 呼び出し (最新エンドポイント: /api/adult/products/{id}/)
+  // 📡 API 呼び出し
   const product = await getAdultProductDetail(id);
 
   /**
-   * 🚨 404/Error Handling (SIGNAL_LOST)
+   * 🚨 404/Error Handling
    */
   if (!product || product._error || product.detail === "Not found.") {
     return (
       <div className="min-h-screen bg-[#06060a] flex flex-col items-center justify-center relative overflow-hidden">
-        {/* 背景のノイズ演出 */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]"></div>
-        
         <div className="z-10 flex flex-col items-center p-6 text-center">
           <h1 className="text-[#e94560] font-black text-6xl italic tracking-tighter animate-pulse shadow-pink-500/20">
             SIGNAL_LOST
@@ -51,18 +82,12 @@ export default async function ProductDetailPage(props: {
               Node_ID: {id} // Status: 404_NOT_FOUND
             </p>
           </div>
-          
           {isDebugMode && (
-            <div className="mt-4 text-left bg-black/60 p-4 rounded border border-white/5 font-mono text-[9px] text-gray-400 max-w-md overflow-auto">
-              <p className="text-pink-500 mb-1">RAW_TRACE:</p>
-              {JSON.stringify(product || { status: "null_response" }, null, 2)}
+            <div className={styles.debugCodeContainer + " mt-4 max-w-md"}>
+              <pre>{JSON.stringify(product || { status: "null_response" }, null, 2)}</pre>
             </div>
           )}
-
-          <Link 
-            href="/adults" 
-            className="mt-12 px-10 py-3 border border-[#e94560] text-[#e94560] font-mono hover:bg-[#e94560] hover:text-white transition-all duration-500 tracking-widest text-sm shadow-[0_0_15px_rgba(233,69,96,0.1)]"
-          >
+          <Link href="/adults" className="mt-12 px-10 py-3 border border-[#e94560] text-[#e94560] font-mono hover:bg-[#e94560] hover:text-white transition-all duration-500 tracking-widest text-sm">
             « RETURN_TO_CORE_STREAM
           </Link>
         </div>
@@ -73,7 +98,6 @@ export default async function ProductDetailPage(props: {
   const source = (product.api_source || querySource || '').toUpperCase();
   const isFanza = source === 'FANZA' || source === 'DMM';
 
-  // 統計データの整形
   const statsData = [
     { label: 'VISUAL', val: getSafeScore(product.score_visual), color: 'from-pink-500 to-rose-500' },
     { label: 'STORY', val: getSafeScore(product.score_story), color: 'from-blue-500 to-indigo-500' },
@@ -86,29 +110,31 @@ export default async function ProductDetailPage(props: {
     <div className={`${styles.wrapper} ${isFanza ? styles.fanzaTheme : ''}`}>
       
       {/**
-       * 🛠️ DEBUG PANEL (?debug=true の時のみ表示)
+       * 🛠️ DEBUG UI (debug=true 時のみ表示)
        */}
       {isDebugMode && (
-        <div className="w-full bg-pink-600 text-white text-[10px] font-mono py-1 px-4 flex justify-between items-center shadow-lg z-[9999] sticky top-0">
-          <div className="flex gap-4">
-            <span>[DEBUG_MODE: ACTIVE]</span>
-            <span>NODE: {id}</span>
-            <span>ENDPOINT: /api/adult/products/</span>
+        <>
+          {/* 最上部ステータスバー */}
+          <div className="w-full bg-pink-600 text-white text-[10px] font-mono py-1 px-4 flex justify-between items-center shadow-lg z-[9999] sticky top-0">
+            <div className="flex gap-4">
+              <span>[DEBUG_MODE: ACTIVE]</span>
+              <span>NODE: {id}</span>
+            </div>
+            <div className="opacity-80">
+              TRACED: {new Date().toLocaleTimeString()}
+            </div>
           </div>
-          <div className="opacity-80">
-            TRACED: {new Date().toLocaleTimeString()}
-          </div>
-        </div>
-      )}
 
-      {/* 🛰️ SystemDiagnosticHero へのデータ注入 */}
-      <SystemDiagnosticHero 
-        id={id} 
-        source={source} 
-        data={product} 
-        params={props.params}
-        rawJson={product} 
-      />
+          {/* 🛰️ 以前常時表示されていたパネルを here (isDebugMode) に移動 */}
+          <SystemDiagnosticHero 
+            id={id} 
+            source={source} 
+            data={product} 
+            params={props.params}
+            rawJson={product} 
+          />
+        </>
+      )}
 
       <nav className={styles.nav}>
         <div className="max-w-[1440px] mx-auto px-[5%] flex justify-between items-center w-full">
@@ -125,10 +151,8 @@ export default async function ProductDetailPage(props: {
       </nav>
 
       <main className={styles.mainContainer}>
-        {/* 1. HERO SECTION (Visuals) */}
         <VisualHeroColumn product={product} source={source} />
 
-        {/* 2. GRID CONTENT (Analysis & Info) */}
         <div className={styles.gridContent}>
           <AnalysisColumn 
             product={product} 
@@ -142,18 +166,24 @@ export default async function ProductDetailPage(props: {
           />
         </div>
 
-        {/* 3. ASYNC SECTION (Related) */}
         <Suspense fallback={
           <div className="h-60 flex flex-col items-center justify-center font-mono text-gray-600 gap-3">
             <div className="w-6 h-6 border-2 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
             <span className="text-[10px] tracking-[0.3em] animate-pulse">RECONSTRUCTING_ARCHIVE...</span>
           </div>
         }>
-          <RelatedArchives product={product} />
+          <RelatedArchivesWithDebug product={product} isDebugMode={isDebugMode} />
         </Suspense>
 
-        {/* 下部の詳細デバッグパネル (URLパスをDjangoに合わせた) */}
-        <SystemDiagnostic id={id} source={source} targetUrl={`/api/adult/products/${id}/`} data={product} />
+        {/* 下部診断パネルも debug=true の時のみ表示するように変更 */}
+        {isDebugMode && (
+          <SystemDiagnostic 
+            id={id} 
+            source={source} 
+            targetUrl={`/api/adult/products/${id}/`} 
+            data={product} 
+          />
+        )}
       </main>
     </div>
   );

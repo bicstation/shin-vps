@@ -32,12 +32,13 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
     max_page_size = 100
 
 # --------------------------------------------------------------------------
-# 💡 1. 統合ゲートウェイView (すべてのフィルタを網羅)
+# 💡 1. 統合ゲートウェイView (関連作品ロジック：各軸の出し分け対応版)
 # --------------------------------------------------------------------------
 class UnifiedAdultProductListView(generics.ListAPIView):
     """
     FANZA / DMM / DUGA を AdultProduct モデルで一括管理。
-    ID、日本語スラッグ、各種コードによる完全フィルタリングに対応。
+    related_to_id パラメータがある場合でも、具体的なID指定(genre, actress_id等)がある場合は
+    その軸での絞り込みを優先し、RelatedArchives.tsx の各セクション表示をサポートする。
     """
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
@@ -55,13 +56,38 @@ class UnifiedAdultProductListView(generics.ListAPIView):
     ]
 
     def get_queryset(self):
+        # 共通のベースクエリ
         qs = AdultProduct.objects.filter(is_active=True).select_related(
             'maker', 'label', 'series', 'director', 'floor_master'
         ).prefetch_related('actresses', 'genres', 'attributes', 'authors')
 
         p = self.request.query_params
 
-        # A. 基本ソース・階層フィルタ
+        # --- 🎯 関連作品ロジックの判定 ---
+        related_id = p.get('related_to_id')
+        
+        # フロントエンド(RelatedArchives.tsx)から特定の軸が指定されているかチェック
+        # 修正ポイント: actress_id や maker_id をより確実に検知するように修正
+        axis_params = ['actress_id', 'maker_id', 'genre', 'actress', 'maker', 'series_id', 'label_id']
+        has_specific_axis = any(p.get(k) for k in axis_params)
+
+        # related_to_id があり、かつ「特定の軸指定がない」場合のみ、従来の統合関連モード
+        # 軸指定がある場合は、下の A, B フィルタセクションに処理を流す
+        if related_id and not has_specific_axis:
+            try:
+                base_obj = AdultProduct.objects.get(product_id_unique=related_id)
+                related_qs = qs.filter(
+                    Q(maker=base_obj.maker) | 
+                    Q(actresses__in=base_obj.actresses.all()) |
+                    Q(genres__in=base_obj.genres.all())
+                ).exclude(product_id_unique=related_id).distinct()
+                
+                if related_qs.exists():
+                    return related_qs.order_by('-release_date')
+            except AdultProduct.DoesNotExist:
+                pass
+
+        # --- A. 基本ソース・階層フィルタ ---
         source_param = p.get('api_source', '').strip().lower()
         service_code = p.get('service_code', '').strip().lower()
         floor_code = p.get('floor_code', '').strip().lower()
@@ -70,8 +96,8 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         if service_code: qs = qs.filter(api_service__iexact=service_code)
         if floor_code:  qs = qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
 
-        # B. 【重要】全方位スラッグ・IDフィルタリング
-        # Next.js側から送られる xxx_slug (日本語含) または xxx (ID) を処理
+        # --- B. 全方位スラッグ・IDフィルタリング ---
+        # 💡 修正ポイント: actress__id へのフィルタリングを確実に通すためのマッピング
         filter_map = {
             'genre': ('genres__id', 'genres__slug'),
             'actress': ('actresses__id', 'actresses__slug'),
@@ -83,13 +109,19 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         }
 
         for key, fields in filter_map.items():
-            id_val = p.get(key)
+            # actress と actress_id の両方をチェック
+            id_val = p.get(key) or p.get(f"{key}_id")
             slug_val = p.get(f"{key}_slug")
 
-            if id_val and id_val.isdigit():
+            if id_val and str(id_val).isdigit():
+                # 🎯 確実なID指定によるフィルタ
                 qs = qs.filter(**{fields[0]: id_val})
             elif slug_val:
                 qs = qs.filter(**{fields[1]: slug_val})
+
+        # 最後に自分自身を除外（related_to_idがある場合）
+        if related_id:
+            qs = qs.exclude(product_id_unique=related_id)
 
         return qs.distinct().order_by('-release_date')
 
@@ -147,7 +179,7 @@ class PlatformMarketAnalysisAPIView(views.APIView):
         return response.Response({"total_nodes": base_qs.count(), "platform_avg_score": round(base_qs.aggregate(avg=Avg('spec_score'))['avg'] or 0, 2)})
 
 # --------------------------------------------------------------------------
-# 💡 5. 各種個別リスト・詳細View (ランキング等不足分を追加)
+# 💡 5. 各種個別リスト・詳細View
 # --------------------------------------------------------------------------
 class AdultProductListAPIView(generics.ListAPIView):
     serializer_class = AdultProductSerializer
@@ -163,14 +195,12 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
     lookup_field = 'product_id_unique'
 
 class AdultProductRankingAPIView(generics.ListAPIView):
-    """ ランキング用View (AttributeError解消用) """
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
     def get_queryset(self):
         return AdultProduct.objects.filter(spec_score__gt=0, is_active=True).order_by('-spec_score')[:30]
 
 class LinkshareProductListAPIView(generics.ListAPIView):
-    """ Linkshare用View (AttributeError解消用) """
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')
     serializer_class = LinkshareProductSerializer
     permission_classes = [AllowAny]

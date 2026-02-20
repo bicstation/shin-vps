@@ -85,7 +85,7 @@ export default function InfoColumn({ product, statsData, movieData, isFanza, sou
               <td className={styles.specValue}>
                 <div className="flex flex-wrap gap-2 justify-end">
                   {product.actresses?.map((act) => (
-                    <Link key={act.id} href={`/actress/${act.slug || act.id}`} className={styles.actressLink}>{act.name}</Link>
+                    <Link key={act.id} href={`/actresses/${act.slug || act.id}`} className={styles.actressLink}>{act.name}</Link>
                   ))}
                 </div>
               </td>

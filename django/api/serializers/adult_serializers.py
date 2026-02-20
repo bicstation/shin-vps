@@ -40,12 +40,15 @@ class BaseMasterSerializer(serializers.ModelSerializer):
     """
     辞書型(values)取得とオブジェクト型の両方に対応した基底クラス。
     """
+    # 💡 修正: 明示的に id を含め、Meta.fields にも追加
+    id = serializers.IntegerField(read_only=True)
     slug = serializers.CharField(read_only=True)
     ruby = serializers.CharField(read_only=True)
     api_source = serializers.SerializerMethodField() 
     product_count = serializers.IntegerField(read_only=True, required=False)
     
     class Meta:
+        # 💡 修正: 'id' を Meta.fields に追加
         fields = ('id', 'name', 'slug', 'ruby', 'api_source', 'product_count')
 
     def get_api_source(self, obj):
@@ -56,6 +59,7 @@ class BaseMasterSerializer(serializers.ModelSerializer):
         return val.lower() if val else 'common'
 
     def to_representation(self, instance):
+        # 💡 辞書型（タクソノミー集計時など）の対応
         if isinstance(instance, dict):
             return {
                 'id': instance.get('id') or instance.get('tmp_id'),
@@ -65,6 +69,7 @@ class BaseMasterSerializer(serializers.ModelSerializer):
                 'api_source': self.get_api_source(instance),
                 'product_count': instance.get('product_count', 0)
             }
+        # 💡 オブジェクト型（通常の製品紐付け）の対応
         return super().to_representation(instance)
 
 # --- 継承クラス群 ---
@@ -129,10 +134,8 @@ class AdultProductSerializer(serializers.ModelSerializer):
 
     def get_thumbnail(self, obj):
         imgs = getattr(obj, 'image_url_list', {})
-        # JSON辞書形式（旧仕様など）の場合
         if isinstance(imgs, dict):
             return imgs.get('large') or imgs.get('main') or imgs.get('list')
-        # リスト形式（現在の統合正規化ロジックの標準）の場合
         if isinstance(imgs, list) and len(imgs) > 0:
             return imgs[0]
         return None
@@ -149,7 +152,7 @@ class AdultProductSerializer(serializers.ModelSerializer):
         if not ret.get('api_source') and instance.floor_master:
             ret['api_source'] = instance.floor_master.site_code.lower()
 
-        # 💡 追加: AI解析データの未完了時のデフォルト値
+        # AI解析データのデフォルト値
         if ret.get('ai_summary') is None:
             ret['ai_summary'] = "解析準備中..."
 

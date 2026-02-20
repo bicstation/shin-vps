@@ -1,8 +1,8 @@
 /* ==============================================================================
- * 🌌 TIPER Product Detail - Absolute Ultimate Matrix Styling (V9.9_Final)
+ * 🌌 TIPER Product Detail - Absolute Ultimate Matrix Styling (V9.9_Final_Optimized)
  * ==============================================================================
- * [NO_OMISSION] + [MAX_CYBER_DENSITY] + [FULL_GLITCH_ENABLED]
- * 🚀 ADDED: Neural Dialogue, Deep Analysis, and Volatility Graph Support.
+ * [NO_OMISSION] + [MAX_CYBER_DENSITY] + [DEBUG_FRAME_FIXED]
+ * 🚀 OPTIMIZED: Debug JSON Layout, Responsive Containment, and High-Density Typography.
  * ------------------------------------------------------------------------------
  */
 
@@ -29,7 +29,7 @@
     transition: background 1s ease;
   }
   
-  /* 🧬 ノイズテクスチャ：背景に圧倒的な質感を与える */
+  /* 🧬 ノイズテクスチャ */
   .wrapper::before {
     content: "";
     position: fixed;
@@ -40,7 +40,7 @@
     z-index: 100;
   }
   
-  /* 🟢 DUGAテーマ：深海のエメラルド・グリッチ */
+  /* 🟢 DUGAテーマ / 🔴 FANZAテーマ */
   .dugaTheme {
     background-image: 
       radial-gradient(circle at 50% -20%, rgba(0, 209, 178, 0.25) 0%, transparent 60%),
@@ -48,7 +48,6 @@
       linear-gradient(to bottom, transparent, rgba(0, 209, 178, 0.03));
   }
   
-  /* 🔴 FANZAテーマ：血脈のクリムゾン・オーバーライド */
   .fanzaTheme {
     background-image: 
       radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.25) 0%, transparent 60%),
@@ -56,7 +55,7 @@
       linear-gradient(to bottom, transparent, rgba(233, 69, 96, 0.03));
   }
   
-  /* --- 🧭 Navigation: 空中に浮遊するような透過感 --- */
+  /* --- 🧭 Navigation --- */
   .nav {
     width: 100%;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
@@ -127,7 +126,7 @@
     }
   }
   
-  /* --- 🖼️ Jacket Design: 圧倒的な存在感 --- */
+  /* --- 🖼️ Jacket Design --- */
   .jacketWrapper {
     position: relative;
     width: 100%;
@@ -162,11 +161,7 @@
   .scanline {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(
-      rgba(255, 255, 255, 0) 0%,
-      rgba(233, 69, 96, 0.05) 50%,
-      rgba(255, 255, 255, 0) 100%
-    );
+    background: linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(233, 69, 96, 0.05) 50%, rgba(255, 255, 255, 0) 100%);
     background-size: 100% 400px;
     animation: scanMove 8s linear infinite;
     pointer-events: none;
@@ -201,7 +196,7 @@
     box-shadow: 10px 0 30px rgba(233, 69, 96, 0.4);
   }
   
-  /* --- 📊 AI Summary Card & Reports --- */
+  /* --- 📊 AI Summary Card --- */
   .aiSummaryCard {
     padding: 4rem;
     background: var(--bg-card);
@@ -253,17 +248,34 @@
     to { transform: rotate(360deg); }
   }
 
-  /* --- 🧬 Neural Dialogue & Logs --- */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
+  /* --- 🛠️ 修正: デバッグコードの最適化 (RAW JSON用) --- */
+  .debugCodeContainer {
+    margin-top: 1rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 4px;
+    width: 100%; /* コンテナいっぱいに広げる */
+    overflow: hidden; /* 親からはみ出させない */
   }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.02);
+
+  .debugCodeContainer pre {
+    margin: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    line-height: 1.5;
+    color: var(--primary-cyan);
+    white-space: pre-wrap;       /* 折り返しを許可 */
+    word-break: break-all;      /* 英単語の途中でも改行 */
+    overflow-y: auto;           /* 縦スクロール */
+    max-height: 400px;
+    width: 100%;
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--primary-red);
-    border-radius: 10px;
-  }
+
+  /* スクロールバーのカスタマイズ */
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--primary-red); border-radius: 10px; }
 
   /* --- 📈 Volatility Bars --- */
   .volatilityBar {
@@ -303,7 +315,7 @@
     margin-bottom: 2rem;
   }
   
-  /* --- 📈 Stats Card & Performance Matrix --- */
+  /* --- 📈 Stats Card --- */
   .statsCard {
     background: rgba(5, 5, 15, 0.95);
     padding: 4rem;
@@ -319,176 +331,68 @@
     letter-spacing: 0.3em; font-weight: 900;
   }
 
-  .statRow {
-    margin-bottom: 2rem;
-  }
-
+  .statRow { margin-bottom: 2rem; }
   .statBarContainer {
-    width: 100%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.05);
-    position: relative;
-    overflow: hidden;
+    width: 100%; height: 4px; background: rgba(255, 255, 255, 0.05);
+    position: relative; overflow: hidden;
   }
-
-  .statBarFill {
-    height: 100%;
-    transition: width 1.5s ease-out;
-  }
+  .statBarFill { height: 100%; transition: width 1.5s ease-out; }
   
   /* --- 📋 Spec Table --- */
-  .specTableContainer {
-    margin-top: 4rem;
-  }
-  
+  .specTableContainer { margin-top: 4rem; }
   .specTable { width: 100%; border-collapse: collapse; }
-  
-  .specRow {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    transition: var(--transition-ultra);
-  }
-  
-  .specRow:hover {
-    background: rgba(233, 69, 96, 0.02);
-  }
-  
-  .specKey {
-    padding: 2rem 0;
-    color: #64748b;
-    font-size: 10px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.4em;
-  }
-  
-  .specValue {
-    padding: 2rem 0;
-    text-align: right;
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.9rem;
-  }
+  .specRow { border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: var(--transition-ultra); }
+  .specRow:hover { background: rgba(233, 69, 96, 0.02); }
+  .specKey { padding: 2rem 0; color: #64748b; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4em; }
+  .specValue { padding: 2rem 0; text-align: right; color: #fff; font-weight: 700; font-size: 0.9rem; }
   
   .actressLink {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 900;
-    font-size: 0.85rem;
-    padding: 0.8rem 1.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    transition: var(--transition-ultra);
-    display: inline-block;
-    margin: 4px;
+    color: #fff; text-decoration: none; font-weight: 900; font-size: 0.85rem; padding: 0.8rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.05);
+    transition: var(--transition-ultra); display: inline-block; margin: 4px;
     clip-path: polygon(0 15%, 95% 0, 100% 85%, 5% 100%);
   }
-  
-  .actressLink:hover {
-    background: var(--primary-red);
-    color: #fff;
-    transform: translateY(-5px) rotate(2deg);
-    box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4);
-  }
+  .actressLink:hover { background: var(--primary-red); color: #fff; transform: translateY(-5px) rotate(2deg); box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4); }
   
   /* --- 🚀 Affiliate Buttons --- */
   .affiliateBtn, .affiliateBtnFanza, .affiliateBtnDuga {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 2rem 3rem;
-    font-weight: 1000;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.4em;
-    font-size: 13px;
-    transition: var(--transition-ultra);
-    border-radius: 1px;
-    margin-top: 2rem;
-    position: relative;
-    overflow: hidden;
+    display: flex; align-items: center; justify-content: center; width: 100%; padding: 2rem 3rem;
+    font-weight: 1000; text-decoration: none; text-transform: uppercase; letter-spacing: 0.4em; font-size: 13px;
+    transition: var(--transition-ultra); border-radius: 1px; margin-top: 2rem; position: relative; overflow: hidden;
   }
-  
   .affiliateBtnFanza { background: var(--primary-fanza); color: #fff; }
   .affiliateBtnDuga { background: var(--primary-cyan); color: #000; }
   .affiliateBtn { background: var(--primary-red); color: #fff; }
   
   .affiliateBtn::after {
-    content: "";
-    position: absolute; inset: 0;
+    content: ""; position: absolute; inset: 0;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transform: translateX(-100%);
-    transition: transform 0.6s ease;
+    transform: translateX(-100%); transition: transform 0.6s ease;
   }
+  .affiliateBtn:hover::after { transform: translateX(100%); }
+  .affiliateBtn:hover { filter: brightness(1.1); transform: scale(1.02); box-shadow: 0 0 50px var(--accent-glow); }
   
-  .affiliateBtn:hover::after {
-    transform: translateX(100%);
-  }
-
-  .affiliateBtn:hover {
-    filter: brightness(1.1);
-    transform: scale(1.02);
-    box-shadow: 0 0 50px var(--accent-glow);
-  }
-  
-  /* 🌀 関連作品タイトルの装飾 */
   .relatedTitle {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 1000;
-    letter-spacing: -0.04em;
-    margin-bottom: 5rem;
-    color: #fff;
-    font-style: italic;
-    text-transform: uppercase;
-    position: relative;
-    display: inline-block;
+    font-size: clamp(2rem, 4vw, 3rem); font-weight: 1000; letter-spacing: -0.04em; margin-bottom: 5rem;
+    color: #fff; font-style: italic; text-transform: uppercase; position: relative; display: inline-block;
   }
-  
   .relatedTitle::before {
-    content: "SYNCHRONIZED_NODES";
-    font-size: 10px; color: var(--primary-red);
-    letter-spacing: 0.5em; position: absolute; top: -2.5rem; left: 0;
-    font-style: normal;
-  }
-
-  /* --- 🛰️ System Diagnostic Extra Styling --- */
-  .notFound {
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at center, rgba(233, 69, 96, 0.05) 0%, transparent 70%);
+    content: "SYNCHRONIZED_NODES"; font-size: 10px; color: var(--primary-red);
+    letter-spacing: 0.5em; position: absolute; top: -2.5rem; left: 0; font-style: normal;
   }
 
   /* 404 Glitch Effect */
-  .glitchText {
-    position: relative;
-    animation: glitch 1s linear infinite;
-  }
-
+  .glitchText { position: relative; animation: glitch 1s linear infinite; }
   @keyframes glitch {
     2%, 64% { transform: translate(2px,0) skew(0deg); }
     4%, 60% { transform: translate(-2px,0) skew(0deg); }
     62% { transform: translate(0,0) skew(5deg); }
   }
 
-  /* 🆕 AI Neural Expansion (V9.5) */
-  .aiNeuralContainer {
-    border-top: 1px solid var(--border-glass);
-    padding-top: 4rem;
-    margin-top: 4rem;
-  }
-
+  /* 🆕 AI Neural Expansion */
   .dropCap::first-letter {
-    float: left;
-    font-size: 4rem;
-    line-height: 0.8;
-    padding-top: 4px;
-    padding-right: 8px;
-    color: var(--primary-red);
-    font-weight: 1000;
-    font-style: italic;
-    text-shadow: 4px 4px 0px rgba(0,0,0,1);
+    float: left; font-size: 4rem; line-height: 0.8; padding-top: 4px; padding-right: 8px;
+    color: var(--primary-red); font-weight: 1000; font-style: italic; text-shadow: 4px 4px 0px rgba(0,0,0,1);
   }
 
   /* 📱 Responsive Adjustments */
@@ -500,6 +404,7 @@
     .gridContent { gap: 3rem; margin-top: 2rem; }
     .statsCard { padding: 2rem; }
     .jacketLabel { padding: 8px 15px; font-size: 8px; }
+    .debugCodeContainer pre { font-size: 8px; } /* スマホではさらに文字を小さく */
   }
 
   /* ==============================================================================

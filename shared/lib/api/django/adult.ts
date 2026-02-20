@@ -15,7 +15,7 @@ const safeExtract = (data: any): any[] => {
   return data.results || data.data || [];
 };
 
-/** 💡 クエリパラメータの正規化: 日本語破壊を防止 */
+/** 💡 クエリパラメータの正規化: 日本語破壊を防止 & 特殊パラメータの対応 */
 const normalizeParams = (params: any) => {
   const clean: Record<string, string> = {};
   Object.keys(params).forEach(key => {
@@ -27,12 +27,16 @@ const normalizeParams = (params: any) => {
       if (key === 'service') targetKey = 'service_code';
       if (key === 'floor') targetKey = 'floor_code';
 
-      // 💡 修正ポイント: 
-      // 1. service_code や floor_code は小文字でOK
-      // 2. それ以外（特に _slug がつく日本語名）は そのまま維持
-      if (targetKey.includes('_code') || targetKey === 'api_source') {
+      // 💡 判定ロジック:
+      // 1. 識別子系は小文字化して正規化（一貫性のため）
+      // 2. ID系やスラッグ（日本語含む）は破壊を防ぐためそのまま維持
+      const lowercaseKeys = ['service_code', 'floor_code', 'api_source', 'related_to_id'];
+      
+      // actress_id, maker_id, genre などの ID系（数値）は toLowerCase する必要がないため除外
+      if (lowercaseKeys.includes(targetKey)) {
         clean[targetKey] = String(val).toLowerCase();
       } else {
+        // 日本語スラッグや数値IDなどはそのまま文字列化
         clean[targetKey] = String(val); 
       }
     }
@@ -46,19 +50,30 @@ const normalizeParams = (params: any) => {
  * ==============================================================================
  */
 
-/** 商品一覧取得 (Unified) */
+/** * 商品一覧取得 (Unified) 
+ * 🎯 related_to_id が渡された場合、Django 側でスコアリングされた関連作品が返ります。
+ * ただし actress_id や genre が併用された場合は、そちらの軸の絞り込みを優先します。
+ */
 export async function getUnifiedProducts(params: any = {}) {
   const cleanParams = normalizeParams(params);
   const queryString = new URLSearchParams(cleanParams).toString();
+  
   // Django: /api/adult/unified-products/
   const targetUrl = resolveApiUrl(`/api/adult/unified-products/?${queryString}`);
 
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(),
-      cache: 'no-store' 
+      // 💡 関連商品の取得(RelatedArchives用)は、詳細ページの更新に追従するため revalidate: 0 (or no-store) を指定
+      // リストページなど通常の呼び出しは revalidate: 3600 を維持
+      cache: (params.related_to_id || params.actress_id || params.maker_id) ? 'no-store' : 'default',
+      next: (params.related_to_id || params.actress_id || params.maker_id) 
+        ? { revalidate: 0 } 
+        : { revalidate: 3600 }
     });
+
     if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
+    
     const data = await res.json();
     return { 
       results: safeExtract(data), 
@@ -70,11 +85,10 @@ export async function getUnifiedProducts(params: any = {}) {
   }
 }
 
-/** * 🎯 製品詳細取得 (修正ポイント)
+/** 🎯 製品詳細取得
  * Django: /api/adult/products/<str:product_id_unique>/ 
  */
 export async function getAdultProductDetail(id: string | number): Promise<AdultProduct | null> {
-  // 💡 エンドポイントを Django の定義に修正
   const endpoint = `/api/adult/products/${id}/`;
   const targetUrl = resolveApiUrl(endpoint);
 
@@ -84,7 +98,6 @@ export async function getAdultProductDetail(id: string | number): Promise<AdultP
       cache: 'no-store' 
     });
     
-    // handleResponseWithDebug 内で 404 等を適切に処理
     const data = await handleResponseWithDebug(res, targetUrl);
     
     // Django は見つからない場合に { detail: "Not found." } を返す
@@ -146,7 +159,6 @@ export const fetchLabels = (p?: any) => fetchAdultTaxonomyIndex('labels', p?.flo
 
 /** FANZAフロアナビゲーション */
 export async function getFanzaDynamicMenu() {
-  // Django: /api/adult/navigation/floors/
   const targetUrl = resolveApiUrl('/api/adult/navigation/floors/');
   try {
     const res = await fetch(targetUrl, { 
@@ -154,7 +166,7 @@ export async function getFanzaDynamicMenu() {
       next: { revalidate: 3600 } 
     });
     const json = await res.json();
-    // 構造に合わせて抽出
+    // 構造に合わせて抽出 (FANZA特化)
     return json.data?.['FANZA（アダルト）']?.services || json.services || {};
   } catch (error) {
     console.error("[Navigation] FETCH_FAILED:", error);
