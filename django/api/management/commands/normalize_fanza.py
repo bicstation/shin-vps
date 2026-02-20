@@ -127,11 +127,17 @@ class Command(BaseCommand):
             p.pop('image_url', None) 
             p.pop('raw_data_id', None)
             
-            # 💡 FloorMasterとの紐付けロジックの強化
+            # 💡 階層情報の抽出と正規化
+            # normalize_fanza_dataから渡される api_service と api_floor (floor_code) を取得
             s_code = p.get('api_source', source_label).lower().strip()
-            f_code = p.get('api_floor', '').lower().strip()
+            svc_code = (p.get('api_service') or "").lower().strip()
+            f_code = (p.get('api_floor') or "").lower().strip()
             
-            # 1. 直接マッチ 2. dmm.comとしてのフォールバック 3. fanzaとしてのフォールバック
+            # 💡 AdultProductモデルの物理カラム(api_service, floor_code)に明示的に値をセット
+            p['api_service'] = svc_code
+            p['floor_code'] = f_code
+            
+            # 💡 FanzaFloorMaster(外部キー)との紐付け
             f_id = (self.floor_map.get((s_code, f_code)) or 
                     self.floor_map.get(('dmm.com', f_code)) or 
                     self.floor_map.get(('fanza', f_code)))
@@ -149,9 +155,10 @@ class Command(BaseCommand):
             AdultProduct.objects.bulk_create(
                 upsert_list, update_conflicts=True, unique_fields=['product_id_unique'],
                 update_fields=[
-                    'title', 'affiliate_url', 'image_url_list', 'sample_movie_url', 'price', 
+                    'title', 'api_service', 'floor_code', 'floor_master_id', # 💡 文字列カラムとFK両方を更新
+                    'affiliate_url', 'image_url_list', 'sample_movie_url', 'price', 
                     'release_date', 'maker_id', 'label_id', 'director_id', 'series_id', 
-                    'floor_master_id', 'updated_at', 'rich_description', 'product_description',
+                    'updated_at', 'rich_description', 'product_description',
                     'is_unlimited', 'unlimited_channels', 'volume', 'maker_product_id',
                     'tachiyomi_url', 'jancode', 'stock_status', 'delivery_type'
                 ]
@@ -196,7 +203,7 @@ class Command(BaseCommand):
                 except FieldDoesNotExist:
                     continue
 
-            # 💡 FanzaFloorMasterの同期（物理フィールドがある場合のみ）
+            # 💡 FanzaFloorMasterの同期
             try:
                 FanzaFloorMaster._meta.get_field('product_count')
                 subq = AdultProduct.objects.filter(floor_master_id=OuterRef('pk')).values('floor_master_id').annotate(c=Count('id')).values('c')[:1]
