@@ -1,223 +1,249 @@
 /* ==============================================================================
- * 📂 AdultSidebar.module.css - Unified Tactical Registry Interface
+ * 📂 AdultSidebar.module.css - Advanced Tactical Registry Interface (V2.1)
+ * 🚀 Final Optimization: Zero-Overlap & High-Comfort Layout
  * ============================================================================== */
 
-.sidebar {
-  /* スクリプト側の修正: 変数管理を導入し、保守性を向上 */
-  --s-bg-main: rgba(10, 10, 12, 0.98);
+ .sidebar {
+  /* 変数定義: 彩度を調整し、より深みのある配色へ */
+  --s-bg-main: rgba(8, 8, 10, 0.98);
   --s-accent: #e94560;
+  --s-accent-rgb: 233, 69, 96;
   --s-accent-glow: rgba(233, 69, 96, 0.4);
   --s-border: rgba(255, 255, 255, 0.05);
-  --s-text-muted: #888;
+  --s-text-muted: #666;
   --s-text-active: #fff;
+  --s-glass: rgba(255, 255, 255, 0.02);
 
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1.5rem; /* セクション間の距離を確実に確保 */
   background: var(--s-bg-main);
-  padding: 1.25rem;
+  padding: 1.5rem;
   border-right: 1px solid var(--s-border);
   
-  /* 昨日作成のロジック: 高さを確保しつつ、最新の sticky 挙動を適用 */
+  /* 💡 高さを固定せず、コンテンツの最小限の表示を保証 */
   height: auto;
-  max-height: calc(100vh - 40px); 
-  position: sticky;
-  top: 80px; 
+  min-height: min-content;
+  max-height: calc(100vh - 60px); 
   
+  position: sticky;
+  top: 20px; 
+  
+  /* スクロール設定 */
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--s-accent) transparent;
-  font-family: 'JetBrains Mono', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  z-index: 10;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  z-index: 100;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
-/* 🧊 カスタムスクロールバー (WebKit用) */
-.sidebar::-webkit-scrollbar { width: 4px; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(233, 69, 96, 0.2); border-radius: 2px; }
-.sidebar::-webkit-scrollbar-thumb:hover { background: var(--s-accent); }
+/* 🧊 カスタムスクロールバー */
+.sidebar::-webkit-scrollbar { width: 3px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { 
+  background: linear-gradient(to bottom, transparent, var(--s-accent), transparent); 
+  border-radius: 10px; 
+}
 
 /* --- 🧊 SECTION_LAYOUT --- */
 .sectionWrapper {
+  display: flex;
+  flex-direction: column;
   margin-bottom: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--s-border);
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.01);
-  transition: border-color 0.3s ease;
+  background: var(--s-glass);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* 💡 重なり防止: height: auto を明示 */
+  height: auto;
+  overflow: hidden;
 }
 
-.sectionWrapper:hover { border-color: rgba(233, 69, 96, 0.2); }
+.sectionWrapper:hover { 
+  border-color: rgba(var(--s-accent-rgb), 0.3);
+  background: rgba(var(--s-accent-rgb), 0.02);
+}
 
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.85rem 1rem;
-  background: rgba(255, 255, 255, 0.02);
+  padding: 1.1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
+  position: relative;
+  /* 💡 ヘッダー自体の最小高さを確保 */
+  min-height: 56px; 
 }
 
-.sectionHeader:hover { background: rgba(255, 255, 255, 0.05); }
+.sectionHeader::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--s-accent), transparent);
+  opacity: 0;
+  transition: 0.3s;
+}
+.sectionWrapper:hover .sectionHeader::after { opacity: 0.5; }
 
 .headerTitle {
   font-size: 0.75rem;
-  font-weight: 900;
-  letter-spacing: 0.15em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
   color: var(--s-text-muted);
-  margin: 0;
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .icon {
   font-size: 1rem;
-  filter: grayscale(1);
-  transition: 0.3s;
+  filter: grayscale(1) brightness(0.7);
+  transition: 0.4s;
 }
 
-.sectionHeader:hover .headerTitle { color: var(--s-accent); }
-.sectionHeader:hover .icon { filter: grayscale(0) drop-shadow(0 0 5px var(--s-accent-glow)); }
+.sectionHeader:hover .headerTitle { color: var(--s-text-active); }
+.sectionHeader:hover .icon { 
+  filter: grayscale(0) brightness(1.2) drop-shadow(0 0 8px var(--s-accent-glow)); 
+}
 
 .arrow {
   font-size: 8px;
   color: #444;
-  transition: transform 0.3s ease, color 0.3s ease;
+  transition: 0.3s;
 }
-
-.sectionHeader:hover .arrow { color: var(--s-accent); }
 
 /* --- 📡 PLATFORM_MATRIX --- */
 .platformGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .platBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 12px 4px;
+  min-height: 40px;
   text-align: center;
-  font-size: 10px;
-  font-weight: 900;
-  background: #161618;
-  border: 1px solid #2a2a2e;
-  color: #666;
+  font-size: 9px;
+  font-weight: 800;
+  background: #121214;
+  border: 1px solid #222;
+  color: #555;
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  transition: all 0.2s;
+  letter-spacing: 0.1em;
 }
 
-.platBtn:hover { border-color: var(--s-accent); color: #aaa; background: rgba(233, 69, 96, 0.05); }
-
+.platBtn:hover { border-color: var(--s-accent); color: var(--s-text-active); }
 .platBtn.active {
   background: var(--s-accent);
   color: #fff;
   border-color: var(--s-accent);
-  box-shadow: 0 0 15px var(--s-accent-glow);
+  box-shadow: 0 0 12px var(--s-accent-glow);
 }
 
-/* --- 🎯 MASTER_LIST (昨日作成の主要エリア) --- */
+/* --- 🎯 MASTER_LIST --- */
 .masterList {
   list-style: none;
-  padding: 0;
-  margin: 0;
-  background: rgba(0, 0, 0, 0.15);
+  padding: 0; margin: 0;
+  background: rgba(0, 0, 0, 0.2);
+  /* 💡 リストが潰れないように height: auto を適用 */
+  height: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .masterLink {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.25rem;
+  padding: 1rem 1.25rem;
+  min-height: 52px; /* 💡 ここが 0 だと重なるため、最低高さを指定 */
   font-size: 0.8rem;
-  color: #999;
+  color: #888;
   text-decoration: none;
-  transition: all 0.25s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  transition: all 0.2s;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.01);
 }
 
 .masterLink:hover {
   color: var(--s-text-active);
-  background: rgba(233, 69, 96, 0.08);
+  background: rgba(var(--s-accent-rgb), 0.05);
   padding-left: 1.5rem;
-  box-shadow: inset 2px 0 0 var(--s-accent);
 }
 
 .itemName {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-right: 10px;
   flex: 1;
 }
 
 .itemCount {
-  font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
   color: var(--s-accent);
-  background: rgba(233, 69, 96, 0.12);
-  padding: 2px 8px;
-  border-radius: 4px;
-  min-width: 45px;
-  text-align: right;
-  border: 1px solid rgba(233, 69, 96, 0.1);
+  opacity: 0.8;
+  padding-left: 10px;
 }
 
-/* --- 📊 ANALYSIS_VISUALS (昨日作成のビジュアル) --- */
-.analysisContainer { padding: 15px; background: rgba(0, 0, 0, 0.2); }
-.distRow { margin-bottom: 15px; }
-.distInfo { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 6px; color: #999; font-family: 'JetBrains Mono', monospace; }
-
-.barContainer { height: 3px; background: rgba(255, 255, 255, 0.05); border-radius: 2px; overflow: hidden; }
-.barFill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--s-accent), #ff0055);
-  box-shadow: 0 0 10px var(--s-accent-glow);
-  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+/* --- 🚀 VIEW_MORE_ANCHOR --- */
+.viewMoreItem {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  height: auto;
 }
 
-/* --- 📄 LOGS_STREAM (昨日作成のリポートログ) --- */
-.logContainer { padding: 8px 0; background: rgba(0, 0, 0, 0.2); }
-.logItem {
+.viewMoreLink {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 1.25rem;
-  font-size: 0.75rem;
-  color: #777;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  min-height: 48px;
+  background: rgba(var(--s-accent-rgb), 0.08);
+  border: 1px solid rgba(var(--s-accent-rgb), 0.2);
   text-decoration: none;
-  transition: 0.2s;
-  border-left: 2px solid #222;
-  margin-bottom: 2px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
 }
 
-.logItem:hover { color: #fff; border-left-color: var(--s-accent); background: rgba(233, 69, 96, 0.05); }
-.logIndicator { font-size: 8px; color: var(--s-accent); font-weight: bold; margin-top: 2px; }
-.logTitle { line-height: 1.4; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.viewMoreLink:hover {
+  background: var(--s-accent);
+  border-color: var(--s-accent);
+}
+
+.viewMoreText {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--s-accent);
+  letter-spacing: 0.15em;
+}
+
+.viewMoreLink:hover .viewMoreText { color: #fff; }
 
 /* --- ⚙️ SYSTEM_FOOTER --- */
 .systemFooter {
-  margin-top: auto;
-  padding: 1.5rem 0.5rem 1rem;
+  margin-top: auto; /* 💡 残りのスペースを埋めて最下部に配置 */
+  padding: 2rem 0.5rem 1rem;
   border-top: 1px solid var(--s-border);
-  position: relative;
 }
 
 .statusRow { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.blinkContainer { display: flex; align-items: center; gap: 8px; }
 
 .blinkDot {
-  width: 6px;
-  height: 6px;
+  width: 6px; height: 6px;
   background: #00ffaa;
   border-radius: 50%;
-  box-shadow: 0 0 10px #00ffaa;
+  box-shadow: 0 0 8px #00ffaa;
   animation: pulse-blink 2s infinite;
 }
 
@@ -225,25 +251,19 @@
   font-size: 10px;
   font-weight: 900;
   color: #00ffaa;
-  text-shadow: 0 0 5px rgba(0, 255, 170, 0.5);
-  letter-spacing: 0.05em;
 }
 
-.timestamp { font-size: 9px; color: #444; font-family: 'JetBrains Mono', monospace; }
-
 @keyframes pulse-blink {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.2); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* --- 📱 MOBILE_ADAPTATION --- */
 @media (max-width: 1100px) {
   .sidebar {
-    height: auto;
     max-height: none;
     position: relative;
     top: 0;
-    border-right: none;
-    border-bottom: 1px solid var(--s-border);
+    padding: 1.25rem;
   }
 }

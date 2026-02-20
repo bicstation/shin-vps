@@ -33,11 +33,11 @@ ENTITY_RELATION_KEYS = {
 }
 
 class Command(BaseCommand):
-    help = 'RawApiDataをAdultProductへ統合正規化し、マスター各項目の整合性を保ちます。'
+    help = 'RawApiData(FANZA/DMM)をAdultProductへ統合正規化し、マスター各項目の整合性を保ちます。'
 
     def add_arguments(self, parser):
         parser.add_argument('--limit', type=int, help='処理件数制限')
-        parser.add_argument('--source', type=str, default=None, help='fanza, dmm, duga など')
+        parser.add_argument('--source', type=str, default=None, help='fanza または dmm')
         parser.add_argument('--re-run', action='store_true', help='migrated=Trueのデータも再処理する')
 
     def _optimize_url(self, url):
@@ -50,18 +50,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         source_input = options['source'].lower() if options['source'] else None
-        sources = [source_input] if source_input else ['fanza', 'dmm', 'duga']
+        sources = [source_input] if source_input else ['fanza', 'dmm']
         re_run = options.get('re_run', False)
 
-        # 💡 階層マッピングのロード（正規化して読み込み）
+        self.stdout.write("フロアマスタを読み込み中...")
         self.floor_map = {
             (f.site_code.lower().strip(), f.floor_code.lower().strip()): f.id 
             for f in FanzaFloorMaster.objects.all()
         }
         
+        total_processed = 0
+
         for source in sources:
             source_label = source.lower()
-            self.stdout.write(self.style.NOTICE(f'\n--- {source_label.upper()} 正規化処理 ---'))
+            self.stdout.write(self.style.NOTICE(f'\n--- {source_label.upper()} 正規化処理開始 ---'))
             
             filters = {'api_source__iexact': source_label}
             if not re_run:
@@ -70,11 +72,16 @@ class Command(BaseCommand):
             raw_qs = RawApiData.objects.filter(**filters).order_by('id')
             if options['limit']: raw_qs = raw_qs[:options['limit']]
 
-            if not raw_qs.exists():
+            count = raw_qs.count()
+            if count == 0:
                 self.stdout.write(self.style.WARNING(f"{source_label.upper()} の未処理データはありません。"))
                 continue
 
+            self.stdout.write(f"対象件数: {count} 件")
+
             batch_dict, batch_relations, processed_raw_ids = {}, {}, []
+            source_processed_count = 0
+
             for raw_instance in raw_qs:
                 try:
                     p_list, r_list = normalize_fanza_data(raw_instance)
@@ -99,19 +106,31 @@ class Command(BaseCommand):
 
                         if len(batch_dict) >= 500:
                             self._process_batch(list(batch_dict.values()), batch_relations, processed_raw_ids, source_label)
+                            source_processed_count += len(batch_dict)
+                            self.stdout.write(f"  > {source_label.upper()}: {source_processed_count} 件 完了...")
                             batch_dict, batch_relations, processed_raw_ids = {}, {}, []
+                    
                     processed_raw_ids.append(raw_instance.id)
+
                 except Exception as e:
-                    self.stdout.write(self.style.ERROR(f"解析エラー: {e}"))
+                    self.stdout.write(self.style.ERROR(f"解析エラー (RawID: {raw_instance.id}): {e}"))
 
             if batch_dict:
+                source_processed_count += len(batch_dict)
                 self._process_batch(list(batch_dict.values()), batch_relations, processed_raw_ids, source_label)
+                self.stdout.write(f"  > {source_label.upper()}: {source_processed_count} 件 完了 (最終)")
 
+            total_processed += source_processed_count
+
+        self.stdout.write(self.style.SUCCESS(f"\n合計 {total_processed} 件の作品情報を更新しました。"))
+
+        # 💡 ここで統計とカウント更新を実行
         self._update_all_counts()
         self.stdout.write(self.style.SUCCESS('\n✅ 全ての処理が完了しました'))
 
     def _process_batch(self, products_data, relations_map, raw_ids, source_label):
         all_names = {M: set() for M in ENTITY_MODELS}
+        
         for p in products_data:
             for M in [Maker, Label, Director, Series]:
                 if val := p.get(ENTITY_RELATION_KEYS[M]): all_names[M].add(val)
@@ -126,21 +145,17 @@ class Command(BaseCommand):
         for p in products_data:
             p.pop('image_url', None) 
             p.pop('raw_data_id', None)
+            p.pop('api_floor', None)
             
-            # 💡 階層情報の抽出と正規化
-            # normalize_fanza_dataから渡される api_service と api_floor (floor_code) を取得
             s_code = p.get('api_source', source_label).lower().strip()
-            svc_code = (p.get('api_service') or "").lower().strip()
-            f_code = (p.get('api_floor') or "").lower().strip()
+            flr_raw = (p.get('floor_code') or "").lower().strip()
             
-            # 💡 AdultProductモデルの物理カラム(api_service, floor_code)に明示的に値をセット
-            p['api_service'] = svc_code
-            p['floor_code'] = f_code
-            
-            # 💡 FanzaFloorMaster(外部キー)との紐付け
-            f_id = (self.floor_map.get((s_code, f_code)) or 
-                    self.floor_map.get(('dmm.com', f_code)) or 
-                    self.floor_map.get(('fanza', f_code)))
+            f_id = self.floor_map.get((s_code, flr_raw))
+            if not f_id:
+                if s_code in ['dmm', 'fanza', 'dmm.com']:
+                    f_id = (self.floor_map.get(('dmm.com', flr_raw)) or 
+                            self.floor_map.get(('fanza', flr_raw)) or
+                            self.floor_map.get(('dmm', flr_raw)))
             
             p['floor_master_id'] = f_id
             
@@ -155,7 +170,7 @@ class Command(BaseCommand):
             AdultProduct.objects.bulk_create(
                 upsert_list, update_conflicts=True, unique_fields=['product_id_unique'],
                 update_fields=[
-                    'title', 'api_service', 'floor_code', 'floor_master_id', # 💡 文字列カラムとFK両方を更新
+                    'title', 'api_service', 'floor_code', 'floor_master_id',
                     'affiliate_url', 'image_url_list', 'sample_movie_url', 'price', 
                     'release_date', 'maker_id', 'label_id', 'director_id', 'series_id', 
                     'updated_at', 'rich_description', 'product_description',
@@ -184,8 +199,24 @@ class Command(BaseCommand):
                 RawApiData.objects.filter(id__in=raw_ids).update(migrated=True, updated_at=timezone.now())
 
     def _update_all_counts(self):
-        """各種マスターモデルの作品数カウントを同期"""
-        self.stdout.write("作品数カウントを集計中...")
+        """各種マスターモデルの作品数カウント同期、およびサービス・フロア別の統計表示"""
+        
+        # 1. サービス・フロア別の実数統計を表示 (AdultProductから直接集計)
+        self.stdout.write(self.style.NOTICE("\n--- 現在の AdultProduct 保存統計 ---"))
+        
+        svc_stats = AdultProduct.objects.values('api_service').annotate(count=Count('id')).order_by('-count')
+        self.stdout.write(self.style.HTTP_SUCCESS("  [サービス別]"))
+        for stat in svc_stats:
+            self.stdout.write(f"    {stat['api_service'] or 'Unknown':<15}: {stat['count']:>6} 件")
+
+        flr_stats = AdultProduct.objects.values('floor_code').annotate(count=Count('id')).order_by('-count')
+        self.stdout.write(self.style.HTTP_SUCCESS("  [フロア別]"))
+        for stat in flr_stats:
+            self.stdout.write(f"    {stat['floor_code'] or 'Unknown':<15}: {stat['count']:>6} 件")
+
+        # 2. 各マスターモデルの product_count 更新
+        self.stdout.write(self.style.NOTICE("\n--- 各マスターの作品数カウントを集計中 ---"))
+        
         with transaction.atomic():
             M_LIST = [
                 (Actress, 'actresses'), (Genre, 'genres'), (Author, 'authors'), 
@@ -199,14 +230,18 @@ class Command(BaseCommand):
                     else:
                         fk = f"{Model.__name__.lower()}_id"
                         subq = getattr(AdultProduct, field).through.objects.filter(**{fk: OuterRef('pk')}).values(fk).annotate(c=Count('adultproduct_id')).values('c')[:1]
+                    
                     Model.objects.update(product_count=Coalesce(Subquery(subq, output_field=models.IntegerField()), 0))
+                    self.stdout.write(f"  {Model.__name__:<12}: {Model.objects.count():>6} 件のマスターをスキャン完了")
+
                 except FieldDoesNotExist:
                     continue
 
-            # 💡 FanzaFloorMasterの同期
+            # 3. FanzaFloorMasterの同期
             try:
                 FanzaFloorMaster._meta.get_field('product_count')
                 subq = AdultProduct.objects.filter(floor_master_id=OuterRef('pk')).values('floor_master_id').annotate(c=Count('id')).values('c')[:1]
                 FanzaFloorMaster.objects.update(product_count=Coalesce(Subquery(subq, output_field=models.IntegerField()), 0))
+                self.stdout.write(f"  {'FloorMaster':<12}: {FanzaFloorMaster.objects.count():>6} 件の階層をスキャン完了")
             except FieldDoesNotExist:
                 pass

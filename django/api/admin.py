@@ -70,6 +70,7 @@ class UserAdmin(BaseUserAdmin):
 class AdultProductAdmin(admin.ModelAdmin):
     change_list_template = "admin/api/change_list_with_actions.html"
     
+    # 一覧表示の設定
     list_display = (
         'display_image', 'product_id_unique', 'title_short', 
         'maker', 'matrix_scores', 'api_source_tag', 'is_posted_tag', 'open_link'
@@ -80,21 +81,27 @@ class AdultProductAdmin(admin.ModelAdmin):
     ordering = ('-release_date',)
     filter_horizontal = ('genres', 'actresses', 'authors', 'attributes') 
 
+    # 詳細（編集）画面のレイアウト
     fieldsets = (
         ('基本情報', {
             'fields': (
                 'product_id_unique', 'title', 
-                ('api_source', 'api_service'), 
-                ('floor_master', 'floor_code'), 
+                ('api_source', 'api_service'),  # 🚀 個別画面でサービスを表示
+                ('floor_master', 'floor_code'), # 🚀 個別画面でフロアコードを表示
                 'affiliate_url', 
                 ('price', 'list_price'), 'release_date'
             )
         }),
-        ('メディア', {'fields': ('image_url_list', 'sample_image_list', 'sample_movie_url', 'tachiyomi_url')}),
-        ('AI解析', {
+        ('コンテンツ内容', {
+            'fields': ('product_description', 'rich_description', 'volume', 'maker_product_id', 'jancode')
+        }),
+        ('メディア', {
+            'fields': ('image_url_list', 'sample_image_list', 'sample_movie_url', 'tachiyomi_url')
+        }),
+        ('AI解析・レビュー', {
             'fields': ('ai_summary', 'ai_content', 'target_segment', 'ai_chat_comments')
         }),
-        ('AIスコアリング', {
+        ('AIスコアリング (マトリックス)', {
             'fields': (
                 ('score_visual', 'score_story'),
                 ('score_erotic', 'score_rarity'),
@@ -102,16 +109,17 @@ class AdultProductAdmin(admin.ModelAdmin):
                 'spec_score'
             ),
         }),
-        ('リレーション', {
+        ('リレーション・分類', {
             'fields': ('maker', 'label', 'authors', 'director', 'series', 'actresses', 'genres', 'attributes')
         }),
-        ('販売設定', {
-            'fields': (('is_active', 'is_posted'), ('is_on_sale', 'discount_rate'))
+        ('ステータス・販売設定', {
+            'fields': (('is_active', 'is_posted'), ('is_on_sale', 'discount_rate'), 'stock_status', 'delivery_type')
         }),
     )
 
     def title_short(self, obj):
         return obj.title[:30] + '...' if len(obj.title) > 30 else obj.title
+    title_short.short_description = "作品タイトル"
 
     def display_image(self, obj):
         url = ""
@@ -123,6 +131,7 @@ class AdultProductAdmin(admin.ModelAdmin):
         if url:
             return mark_safe(f'<img src="{url}" width="90" style="border-radius:4px; border:1px solid #ddd; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />')
         return "No Image"
+    display_image.short_description = "メイン画像"
 
     def open_link(self, obj):
         if obj.affiliate_url:
@@ -215,17 +224,17 @@ class RawApiDataAdmin(admin.ModelAdmin):
 # --------------------------------------------------------------------------
 @admin.register(AdultAttribute)
 class AdultAttributeAdmin(admin.ModelAdmin):
-    # 💡 修正箇所: order を list_editable に含めるため、links を name に明示
     list_display = ('order', 'name', 'attr_type', 'slug')
-    list_display_links = ('name',) # 🚀 詳細画面へのリンクを name に変更
-    list_editable = ('order',)      # 🚀 一覧画面で order を直接編集可能
+    list_display_links = ('name',)
+    list_editable = ('order',)
     list_filter = ('attr_type',)
     search_fields = ('name', 'slug')
 
 @admin.register(FanzaFloorMaster)
 class FanzaFloorMasterAdmin(admin.ModelAdmin):
-    list_display = ('site_name', 'service_name', 'floor_name', 'floor_code', 'is_active')
-    list_filter = ('site_name', 'service_name')
+    list_display = ('site_code', 'site_name', 'service_code', 'service_name', 'floor_code', 'floor_name', 'is_active')
+    list_filter = ('site_code', 'service_code')
+    search_fields = ('site_name', 'service_name', 'floor_name', 'floor_code')
 
 # その他のインフラ系モデルを一括登録
 admin.site.register([PCProduct, PCAttribute, PriceHistory, LinkshareProduct])

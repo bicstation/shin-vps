@@ -11,7 +11,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters, pagination, response, views, status
 from rest_framework.permissions import AllowAny
 
-# 💡 FanzaProduct を削除し、存在するモデルのみをインポート
 from api.models import (
     AdultProduct, 
     LinkshareProduct, 
@@ -19,7 +18,6 @@ from api.models import (
     FanzaFloorMaster
 )
 
-# 💡 シリアライザーも同様に Fanza 用を削除（AdultProductSerializer に統合されている前提）
 from api.serializers import (
     AdultProductSerializer, 
     LinkshareProductSerializer
@@ -34,7 +32,7 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
     max_page_size = 100
 
 # --------------------------------------------------------------------------
-# 💡 1. 統合ゲートウェイView
+# 💡 1. 統合ゲートウェイView (FANZA / DMM / DUGA / etc.)
 # --------------------------------------------------------------------------
 class UnifiedAdultProductListView(generics.ListAPIView):
     """
@@ -56,7 +54,6 @@ class UnifiedAdultProductListView(generics.ListAPIView):
     ]
 
     def get_queryset(self):
-        # 💡 FanzaProduct との chain をやめ、AdultProduct のみを取得
         qs = AdultProduct.objects.filter(is_active=True).select_related(
             'maker', 'label', 'series', 'director', 'floor_master'
         ).prefetch_related('actresses', 'genres', 'attributes', 'authors')
@@ -93,29 +90,24 @@ class FanzaFloorNavigationAPIView(views.APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
-        # 1. フロアマスタを取得
         qs = FanzaFloorMaster.objects.filter(is_active=True)
         
-        # 2. AdultProductからフロアごとの件数を一括集計
-        # floor_master_id ごとの商品数を取得（Group By floor_master_id）
         floor_counts = AdultProduct.objects.filter(is_active=True)\
             .values('floor_master_id')\
             .annotate(count=Count('id'))
         
-        # 辞書形式に変換 {floor_master_id: count, ...}
         count_map = {item['floor_master_id']: item['count'] for item in floor_counts}
 
         structure = {}
         for item in qs:
             site = item.site_name
-            # このフロア単体の件数を取得
             current_floor_count = count_map.get(item.id, 0)
 
             if site not in structure:
                 structure[site] = {
                     "code": item.site_code.lower(), 
                     "name": site, 
-                    "product_count": 0,  # サービス単位の合計
+                    "product_count": 0, 
                     "services": {}
                 }
             
@@ -124,49 +116,100 @@ class FanzaFloorNavigationAPIView(views.APIView):
                 structure[site]["services"][svc] = {
                     "code": item.service_code.lower(), 
                     "name": svc, 
-                    "product_count": 0,  # フロア単位の合計
+                    "product_count": 0, 
                     "floors": []
                 }
             
-            # フロア情報を追加
             structure[site]["services"][svc]["floors"].append({
                 "code": item.floor_code.lower(), 
                 "name": item.floor_name,
                 "product_count": current_floor_count
             })
 
-            # 親階層（Service, Site）に件数を累積加算
             structure[site]["services"][svc]["product_count"] += current_floor_count
             structure[site]["product_count"] += current_floor_count
 
         return response.Response({"status": "NAV_SYNC_COMPLETE", "data": structure})
 
 # --------------------------------------------------------------------------
-# 💡 3. 全項目インデックス取得View
+# 💡 3. 全項目インデックス取得View (汎用タクソノミー)
 # --------------------------------------------------------------------------
 class AdultTaxonomyIndexAPIView(views.APIView):
+    """
+    ジャンル、メーカー、女優などのマスタ情報を、作品数カウント・動的ソート付きで取得。
+    """
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
+        # 1. パラメータ取得
         tax_type = request.query_params.get('type', 'genres')
+        ordering = request.query_params.get('ordering', '-product_count') # デフォルトはカウント順
+        limit = request.query_params.get('limit')
+        floor_code = request.query_params.get('floor_code')
+
+        # 2. リレーションマッピング
         mapping = {
-            'genres': 'genres', 'makers': 'maker', 'actresses': 'actresses',
-            'series': 'series', 'directors': 'director', 'authors': 'authors', 'labels': 'label',
+            'genres': 'genres', 
+            'makers': 'maker', 
+            'actresses': 'actresses',
+            'series': 'series', 
+            'directors': 'director', 
+            'authors': 'authors', 
+            'labels': 'label',
         }
         relation_name = mapping.get(tax_type, 'genres')
         
-        items = AdultProduct.objects.filter(is_active=True).values(
+        # 3. 基本クエリ構築
+        base_qs = AdultProduct.objects.filter(is_active=True)
+        
+        # フロア絞り込みがあれば適用
+        if floor_code:
+            base_qs = base_qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
+
+        # 4. 集計実行 (Group By マスタID)
+        # tmp_name順、tmp_id順、product_count順すべてに対応可能
+        items = base_qs.values(
             tmp_id=F(f'{relation_name}__id'),
             tmp_name=F(f'{relation_name}__name'),
             tmp_slug=F(f'{relation_name}__slug')
-        ).annotate(product_count=Count('id')).exclude(tmp_name=None).order_by('tmp_name')
+        ).annotate(
+            product_count=Count('id')
+        ).exclude(
+            tmp_name=None
+        )
 
+        # 5. ソート適用
+        # orderingパラメータが tmp_name なら名前順、-product_count ならカウント降順
+        # 入力されたorderingをそのまま信用せず、許可されたフィールドにマッピングする
+        valid_order_fields = {
+            'name': 'tmp_name',
+            '-name': '-tmp_name',
+            'product_count': 'product_count',
+            '-product_count': '-product_count',
+            'id': 'tmp_id',
+            '-id': '-tmp_id'
+        }
+        order_field = valid_order_fields.get(ordering, '-product_count')
+        items = items.order_by(order_field)
+
+        # 6. リミット適用
+        if limit and limit.isdigit():
+            items = items[:int(limit)]
+
+        # 7. レスポンス整形
         results = [{
-            "id": i['tmp_id'], "name": i['tmp_name'],
-            "slug": i['tmp_slug'] or i['tmp_name'], "product_count": i['product_count']
+            "id": i['tmp_id'], 
+            "name": i['tmp_name'],
+            "slug": i['tmp_slug'] or i['tmp_name'], 
+            "product_count": i['product_count']
         } for i in items]
 
-        return response.Response({"type": tax_type, "results": results})
+        return response.Response({
+            "type": tax_type, 
+            "ordering": order_field,
+            "count": len(results),
+            "results": results
+        })
 
 # --------------------------------------------------------------------------
 # 📊 4. サイドバー用集計View

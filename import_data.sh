@@ -8,16 +8,18 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CURRENT_HOSTNAME=$(hostname)
 CURRENT_USER=$USER
 
-# --- 1. 環境判別 (完全維持) ---
+# --- 1. 環境判別 ---
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]] || [[ "$CURRENT_USER" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
     IS_VPS=true; ENV_TYPE="PRODUCTION (VPS)"; COMPOSE_FILE="docker-compose.prod.yml"; DJANGO_CON="django-v2"; NEXT_CON="next-bicstation-v2"; COLOR="\e[32m"
+    BASE_URL="http://$(hostname -I | awk '{print $1}'):8083" # VPS用グローバルIP想定
 else
     IS_VPS=false; ENV_TYPE="LOCAL (Development)"; COMPOSE_FILE="docker-compose.yml"; DJANGO_CON="django-v2"; NEXT_CON="next-bicstation-v2"; COLOR="\e[36m"
+    BASE_URL="http://127.0.0.1:8083"
 fi
 
 RESET="\e[0m"; RED="\e[31m"; YELLOW="\e[33m"; BLUE="\e[34m"; MAGENTA="\e[35m"; CYAN="\e[36m"; BOLD="\e[1m"; GREEN="\e[32m"
 
-# --- 2. データ定義 (完全維持) ---
+# --- 2. データ定義 ---
 MAKERS=("DUMMY" "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse" "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom" "norton" "mcafee" "kingsoft" "cyberlink" "trendmicro" "sourcenext" "edion" "kojima" "sofmap" "bic_sofmap" "recollect" "ioplazy" "eizo" "ark")
 MAKER_NAMES=("DUMMY" "NEC [FTP]" "Sony [API]" "富士通FMV [FTP]" "Dynabook [FTP]" "HP [FTP]" "Dell [FTP]" "Lenovo" "ASUS [API]" "MSI" "Mouse" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom" "ノートン [API]" "マカフィー [API]" "キングソフト [API]" "サイバーリンク [API]" "トレンドマイクロ [FTP]" "ソースネクスト [FTP]" "エディオン [API]" "コジマネット [API]" "ソフマップ [API]" "アキバソフマップ [API]" "リコレ!(中古) [API]" "ioPLAZA [API]" "EIZO [FTP]" "アーク(ark) [JSON]")
 PC_KEYWORDS=("fmv" "lavie" "dynabook" "surface" "macbook" "lenovo")
@@ -26,9 +28,42 @@ EXCLUDE_KEYWORDS="ケース,カバー,フィルム,アダプタ,マウス,キー
 declare -A MID_MAP
 MID_MAP["nec"]="2780"; MID_MAP["sony"]="2980"; MID_MAP["fmv"]="2543"; MID_MAP["dynabook"]="36508"; MID_MAP["hp"]="35909"; MID_MAP["dell"]="2557"; MID_MAP["asus"]="43708"; MID_MAP["norton"]="24732"; MID_MAP["mcafee"]="3388"; MID_MAP["kingsoft"]="24623"; MID_MAP["cyberlink"]="36855"; MID_MAP["trendmicro"]="24501"; MID_MAP["sourcenext"]="2633"; MID_MAP["edion"]="43098"; MID_MAP["kojima"]="13993"; MID_MAP["sofmap"]="37641"; MID_MAP["bic_sofmap"]="43262"; MID_MAP["recollect"]="43860"; MID_MAP["ioplazy"]="24172"; MID_MAP["eizo"]="3256"
 
-# --- 3. 共通実行関数 (完全維持) ---
+# --- 3. 共通実行関数 ---
 run_django() { docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec "$DJANGO_CON" "$@"; }
 run_next() { docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" exec "$NEXT_CON" "$@"; }
+
+# show_urls.py 生成関数
+ensure_show_urls_cmd() {
+    CMD_PATH="/usr/src/app/api/management/commands/show_urls.py"
+    # ファイルが存在するかコンテナ内で確認
+    if ! run_django ls "$CMD_PATH" > /dev/null 2>&1; then
+        echo -e "${YELLOW}🛠️ show_urls コマンドを作成中...${RESET}"
+        run_django mkdir -p /usr/src/app/api/management/commands/
+        run_django touch /usr/src/app/api/management/__init__.py
+        run_django touch /usr/src/app/api/management/commands/__init__.py
+        run_django tee "$CMD_PATH" <<EOF > /dev/null
+from django.core.management.base import BaseCommand
+from django.urls import get_resolver
+
+class Command(BaseCommand):
+    help = 'Display all URL patterns'
+    def handle(self, *args, **options):
+        resolver = get_resolver()
+        self.show_urls(resolver.url_patterns)
+
+    def show_urls(self, patterns, prefix=''):
+        for pattern in patterns:
+            if hasattr(pattern, 'url_patterns'):
+                self.show_urls(pattern.url_patterns, prefix + str(pattern.pattern))
+            else:
+                path = prefix + str(pattern.pattern)
+                # パスの整形（アンカー削除、ダブルスラッシュ修正）
+                clean_path = path.replace('^', '').replace('$', '').replace('//', '/')
+                self.stdout.write(f"/{clean_path}")
+EOF
+        echo -e "${GREEN}✅ 作成完了。${RESET}"
+    fi
+}
 
 update_sitemap() {
     echo -e "\n${COLOR}🌐 サイトマップを更新中...${RESET}"
@@ -64,7 +99,7 @@ while true; do
 
     echo -e "\n${BLUE}${BOLD}[3. 🤖 AI WRITING & NEWS]${RESET}"
     echo -e "  30) 商品AI記事生成 & WordPress投稿  31) PCパーツ最新ニュース投稿 (RSS/URL)"
-    echo -e "  32) AI詳細スペック解析 (PC解析)     33) AIモデル一覧の確認 (Gemini/Gemma)"
+    echo -e "  32) AI詳細スペック解析 (PC解析)      33) AIモデル一覧の確認 (Gemini/Gemma)"
 
     echo -e "\n${CYAN}${BOLD}[4. 🛠️ SYSTEM & MASTER]${RESET}"
     echo -e "  40) マイグレーション (DB更新)         41) 属性マスタ同期 & 自動マッピング"
@@ -72,7 +107,7 @@ while true; do
     echo -e "  44) APIエンドポイント一覧表示 (URL) 🔍"
 
     echo -e "${CYAN}------------------------------------------------------------------${RESET}"
-    echo -e "  h) Help     8/q) 終了"
+    echo -e "  h) Help    8/q) 終了"
     echo -e "${CYAN}------------------------------------------------------------------${RESET}"
 
     read -p "選択してください: " CHOICE
@@ -222,13 +257,17 @@ EOF
             else run_django python manage.py export_products; fi ;;
         44)
             echo -e "\n${CYAN}🔎 有効なAPIエンドポイントを一覧表示します...${RESET}"
-            run_django python manage.py show_urls ;;
+            ensure_show_urls_cmd
+            echo -e "${YELLOW}ベースURL: ${BASE_URL}${RESET}\n"
+            # 出力の置換。行頭のスラッシュをベースURLに書き換える
+            run_django python manage.py show_urls | sed "s|^\/|${BASE_URL}/|g"
+            ;;
 
         8|q) exit 0 ;;
         h) echo "SHIN-VPS Help: 各カテゴリの番号を選択して運用を開始してください。" ;;
     esac
 
-    # ポスト処理 (VPS環境ならスケジューラー再起動)
+    # ポスト処理
     if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(10|11|12|20|21|23|32|41)$ ]]; then
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
     fi

@@ -1,0 +1,153 @@
+/* ==============================================================================
+ * 📂 videos.module.css - Video Archive Registry Interface
+ * ============================================================================== */
+
+.pageContainer {
+  min-height: 100vh;
+  background-color: #050508;
+  color: #e0e0e0;
+  position: relative;
+  /* 📺 背景の奥行き演出 */
+  background-image: 
+    radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.12) 0%, transparent 70%),
+    linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+}
+
+.wrapper {
+  max-width: 1700px;
+  margin: 0 auto;
+  padding: 40px 3%;
+  display: grid;
+  /* 👈 サイドバー320px固定、コンテンツ1frの黄金比 */
+  grid-template-columns: 320px 1fr;
+  gap: 50px;
+  align-items: start;
+}
+
+/* --- 🏛️ サイドバー追従設定 (トップと共通) --- */
+.sidebar {
+  position: relative;
+}
+
+.sidebarSticky {
+  position: sticky;
+  top: 40px; 
+  /* 💡 Sidebar.module.css側の自律性を優先するため、max-heightをあえて指定しない */
+  height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 🎬 コンテンツメインストリーム --- */
+.contentStream {
+  min-width: 0;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.debugSection {
+  margin-bottom: 40px;
+}
+
+/* --- 📋 ヘッダーセクション --- */
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 45px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(233, 69, 96, 0.2);
+  position: relative;
+}
+
+.sectionHeader::after {
+  content: "";
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 80px; height: 2px;
+  background: #e94560;
+  box-shadow: 0 0 10px #e94560;
+}
+
+.mainTitle {
+  font-size: 32px;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.titleThin {
+  font-weight: 100;
+  opacity: 0.3;
+  margin-right: 10px;
+}
+
+.resultCount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.1em;
+}
+
+.countNumber {
+  color: #e94560;
+  font-weight: 800;
+}
+
+/* --- 📀 ビデオグリッド (ProductCard用) --- */
+.videoGrid {
+  display: grid;
+  /* 💡 240px以上で自動調整、ゆったりとしたグリッド */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 35px;
+  margin-bottom: 80px;
+}
+
+/* 万が一のデータなし表示 */
+.emptyArea {
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.glitchText {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 0.5em;
+  color: rgba(233, 69, 96, 0.6);
+}
+
+/* --- 📑 ページネーションフッター --- */
+.paginationFooter {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0 120px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 📱 モバイル対応 */
+@media (max-width: 1100px) {
+  .wrapper { 
+    grid-template-columns: 1fr; 
+    padding: 20px;
+  }
+  .sidebarSticky { 
+    position: static; 
+    margin-bottom: 40px; 
+  }
+  .mainTitle {
+    font-size: 24px;
+  }
+}

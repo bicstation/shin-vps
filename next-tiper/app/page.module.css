@@ -1,33 +1,35 @@
 /* ==============================================================================
- * 📂 page.module.css - Tactical Archive Interface (Zenith Edition - Optimized)
+ * 📂 page.module.css - Zenith Tactical Archive Interface (Relaxed Sidebar)
  * ============================================================================== */
 
 .pageContainer {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #06060a;
+  background-color: #050508;
+  /* 💡 奥行きのある多層背景グラデーション */
   background-image: 
-    radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.15) 0%, transparent 60%),
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
+    radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.18) 0%, transparent 70%),
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 30px 30px, 30px 30px;
   color: #e0e0e0;
   overflow-x: hidden;
   font-family: 'Inter', 'JetBrains Mono', 'Noto Sans JP', sans-serif;
   position: relative;
 }
 
+/* 📺 CRT走査線・ノイズエフェクト */
 .pageContainer::before {
   content: " ";
   position: fixed;
   top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-              linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+              linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.01));
   background-size: 100% 4px, 3px 100%;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.2;
+  opacity: 0.15; /* 少し薄めて視認性を向上 */
 }
 
 /* --- 🏗️ 1. レイアウト構造 --- */
@@ -36,65 +38,53 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .wrapper {
-  max-width: 1800px;
+  max-width: 1700px;
   width: 100%;
-  margin: 40px auto;
-  padding: 0 4%;
+  margin: 20px auto 60px;
+  padding: 0 3%;
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 50px;
+  grid-template-columns: 320px 1fr;
+  gap: 50px; /* ギャップを広げてゆとりを持たせる */
   position: relative;
   z-index: 10;
-  /* 💡 修正: stretchからstartに変更。
-     これにより、隣のカラム（デバッグエリア等）が伸びてもサイドバーの枠が強制的に引き伸ばされなくなります */
   align-items: start; 
 }
 
-/* --- 🏛️ 2. サイドバー (Tactical Sidebar Area) --- */
+/* --- 🏛️ 2. サイドバーエリア --- */
 .sidebar {
   position: relative;
-  /* min-height: 100%; 💡 stretchを止めたのでこれも不要、自然な高さに任せます */
+  z-index: 20; /* 走査線より前に出るよう調整 */
 }
 
 .sidebarSticky {
   position: sticky;
-  top: 40px; 
-  max-height: calc(100vh - 80px); 
-  overflow-y: auto;
-  padding-right: 20px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(233, 69, 96, 0.5) transparent;
+  top: 40px; /* 上部の余白を少し詰めて開始位置を調整 */
+  /* ✅ 高さを制限せず、コンテンツに合わせて自然に伸びるように変更 */
+  height: auto;
+  max-height: none; 
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-/* 🎨 カスタムスクロールバー（モダンな細めデザイン） */
-.sidebarSticky::-webkit-scrollbar { width: 3px; }
-.sidebarSticky::-webkit-scrollbar-track { background: transparent; }
-.sidebarSticky::-webkit-scrollbar-thumb { 
-  background: linear-gradient(to bottom, transparent, #e94560, transparent);
-  border-radius: 10px;
-}
-
-/* --- 📊 2.5 デバッグセクション用追加 --- */
-.debugHeroWrapper {
-  width: 100%;
-  /* コンテンツストリームの上に配置される際の余白調整 */
-  margin-bottom: 30px;
-  border: 1px solid rgba(0, 255, 204, 0.1);
-  background: rgba(0, 0, 0, 0.4);
+  gap: 30px; /* 各セクション間の距離をゆったりさせる */
+  padding-bottom: 50px;
+  overflow-y: visible; /* 👈 ここが重要：中身を隠さない */
 }
 
 /* --- 🎬 3. コンテンツストリーム --- */
 .contentStream {
   min-width: 0;
+  animation: fadeIn 0.8s ease-out;
 }
 
-/* --- 📰 ニュースセクション --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 📰 ニュースセクション (Hero Area) --- */
 .newsSection { margin-bottom: 80px; }
 
 .sectionHeader {
@@ -102,8 +92,8 @@
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 30px;
-  border-bottom: 1px solid rgba(233, 69, 96, 0.2);
-  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
   position: relative;
 }
 
@@ -111,69 +101,59 @@
   content: "";
   position: absolute;
   bottom: -1px; left: 0;
-  width: 60px; height: 3px;
+  width: 100px; height: 2px;
   background: #e94560;
-  box-shadow: 0 0 10px #e94560;
-}
-
-.titleGroup {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+  box-shadow: 0 0 15px #e94560;
 }
 
 .sectionHeading {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 900;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.3em;
   color: #fff;
-  margin: 0;
+  text-transform: uppercase;
   font-family: 'JetBrains Mono', monospace;
+}
+
+/* ニュースカードのグリッド */
+.newsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
 }
 
 .newsCard {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-  text-decoration: none;
-  display: block;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   overflow: hidden;
-  height: 100%;
+  position: relative;
+  border-radius: 2px;
 }
 
 .newsCard:hover {
-  border-color: rgba(233, 69, 96, 0.8);
-  background: rgba(233, 69, 96, 0.05);
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  border-color: rgba(233, 69, 96, 0.5);
+  background: rgba(233, 69, 96, 0.03);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .newsThumbWrap {
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  background: #000;
   position: relative;
 }
 
 .newsThumb {
   width: 100%; height: 100%;
   object-fit: cover;
-  opacity: 0.6;
-  transition: 1.2s cubic-bezier(0.19, 1, 0.22, 1);
-  filter: grayscale(0.4) contrast(1.1);
+  transition: 1s cubic-bezier(0.19, 1, 0.22, 1);
+  filter: grayscale(0.3) brightness(0.8);
 }
 
 .newsCard:hover .newsThumb {
-  opacity: 1;
-  transform: scale(1.08);
-  filter: grayscale(0) contrast(1.0);
-}
-
-.newsOverlay {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.8));
-  pointer-events: none;
+  filter: grayscale(0) brightness(1);
+  transform: scale(1.05);
 }
 
 .newsContent { padding: 20px; }
@@ -182,7 +162,6 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: #e94560;
-  font-weight: 800;
   margin-bottom: 8px;
   display: block;
 }
@@ -191,156 +170,118 @@
   font-size: 15px;
   font-weight: 700;
   line-height: 1.6;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* --- 📀 統合データストリーム (Archive Registry) --- */
-.archiveRegistry { margin-top: 20px; }
-.registryHeader { margin-bottom: 60px; }
+/* --- 📀 データストリーム (Archive Registry) --- */
+.archiveRegistry { margin-top: 60px; }
+
+.registryHeader { margin-bottom: 50px; }
 
 .registryMainTitle {
-  font-size: 5vw;
+  font-size: clamp(32px, 5vw, 56px);
   font-weight: 950;
-  letter-spacing: -0.04em;
-  margin: 0;
+  letter-spacing: -0.02em;
   color: #fff;
-  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
-  line-height: 0.9;
+  line-height: 1.1;
   text-transform: uppercase;
-}
-
-.registryLine {
-  width: 120px; height: 6px;
-  background: linear-gradient(90deg, #e94560, transparent);
-  margin-top: 20px;
-}
-
-.platformSection {
-  margin-bottom: 100px;
-  animation: sectionSlideIn 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-}
-
-@keyframes sectionSlideIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.platformTitle {
-  font-size: 32px;
-  font-weight: 900;
-  font-style: italic;
-  letter-spacing: -0.04em;
-  margin: 0;
-  text-transform: uppercase;
-  color: #fff;
 }
 
 .titleThin {
-  font-weight: 200;
+  display: block;
+  font-weight: 100;
   opacity: 0.3;
-  font-style: normal;
-  font-family: 'Inter', sans-serif;
+  font-size: 0.4em;
+  letter-spacing: 0.6em;
+  margin-top: 5px;
 }
 
-.pulseDot {
-  width: 10px; height: 10px;
+/* ⚡ プラットフォームセクションタイトル */
+.platformSection { margin-bottom: 100px; }
+
+.platformTitle {
+  font-size: 26px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  color: #fff;
+  margin-bottom: 35px;
+}
+
+.platformTitle::before {
+  content: "";
+  width: 4px; height: 28px;
   background: #e94560;
-  border-radius: 50%;
-  box-shadow: 0 0 15px #e94560;
-  animation: pulseDotAnim 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+  box-shadow: 0 0 10px #e94560;
 }
 
-@keyframes pulseDotAnim {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.5; }
-}
-
+/* 🔍 ローディング・エラー表示 */
 .loadingArea {
-  height: 350px;
+  height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.01);
-  border: 1px dashed rgba(233, 69, 96, 0.2);
-  margin: 40px 0;
 }
 
 .glitchText {
   font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
   letter-spacing: 0.4em;
-  color: #e94560;
-  animation: glitchTextAnim 3s infinite;
+  color: rgba(233, 69, 96, 0.8);
+  animation: pulse 2s infinite;
 }
 
-.errorBox {
-  margin-top: 20px;
-  padding: 15px;
-  background: rgba(255, 56, 96, 0.1);
-  border-left: 4px solid #ff3860;
-  color: #ff3860;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; transform: scale(0.98); }
+  50% { opacity: 1; color: #fff; transform: scale(1); }
 }
 
 /* --- 🔘 メガアクション --- */
 .footerAction {
-  margin: 80px 0 150px;
-  text-align: center;
+  margin: 120px 0;
+  display: flex;
+  justify-content: center;
 }
 
 .megaTerminalBtn {
   position: relative;
-  display: inline-block;
-  padding: 24px 70px;
+  padding: 24px 60px;
   background: transparent;
-  border: 2px solid #e94560;
+  border: 1px solid rgba(233, 69, 96, 0.4);
   color: #fff;
-  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 900;
-  font-size: 16px;
-  letter-spacing: 0.5em;
+  font-size: 15px;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  overflow: hidden;
-  transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-  z-index: 1;
-}
-
-.megaTerminalBtn::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: #e94560;
-  transition: 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-  z-index: -1;
+  transition: 0.4s;
+  cursor: pointer;
+  border-radius: 2px;
 }
 
 .megaTerminalBtn:hover {
+  background: #e94560;
   color: #000;
-  box-shadow: 0 0 50px rgba(233, 69, 96, 0.5);
+  box-shadow: 0 0 40px rgba(233, 69, 96, 0.5);
+  border-color: #e94560;
 }
 
-.megaTerminalBtn:hover::before { left: 0; }
-
-/* --- 📱 レスポンシブ最適化 --- */
-@media (max-width: 1440px) {
-  .registryMainTitle { font-size: 6vw; }
-  .wrapper { grid-template-columns: 300px 1fr; gap: 40px; }
-}
-
+/* --- 📱 モバイル対応 --- */
 @media (max-width: 1100px) {
   .wrapper { 
     grid-template-columns: 1fr; 
-    margin-top: 20px;
+    padding: 0 20px;
+    gap: 30px;
   }
   .sidebarSticky { 
     position: static; 
     max-height: none; 
     margin-bottom: 40px;
-    padding-right: 0;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
+  .registryMainTitle { font-size: 38px; }
 }

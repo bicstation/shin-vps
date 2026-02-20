@@ -39,7 +39,7 @@ def _safe_int(value: Any, default: int = 0) -> int:
     """ハイフン、カンマ、記号を含む文字列を安全に数値変換する"""
     if value is None:
         return default
-    # 数字以外をすべて除去（ハイフン '-' や カンマ ',' も除去される）
+    # 数字以外をすべて除去
     clean_val = re.sub(r'[^0-9]', '', str(value))
     if not clean_val:
         return default
@@ -48,7 +48,7 @@ def _safe_int(value: Any, default: int = 0) -> int:
     except (ValueError, TypeError):
         return default
 
-# --- 🚀 最強の心臓部（メイン関数） ---
+# --- 🚀 メイン関数 ---
 
 def normalize_fanza_data(raw_instance: RawApiData) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
@@ -91,8 +91,10 @@ def _parse_scraping_flow(json_data: dict, source: str) -> Tuple[List[Dict[str, A
         'api_product_id': cid,
         'product_id_unique': generate_product_unique_id(source, cid),
         'title': c.get('title'),
-        'floor_code': 'videoa',
-        'rich_description': c.get('text'), # 濃厚なあらすじ
+        # 修正：モデルのカラム名 (floor_code) に合わせ、api_floor は削除
+        'api_service': 'digital',
+        'floor_code': 'videoa', 
+        'rich_description': c.get('text'), 
         'release_date': parse_date(c.get('releaseDate').replace('/', '-')) if c.get('releaseDate') else None,
         'image_url_list': [img_l] if img_l else [],
         'sample_movie_url': {
@@ -128,6 +130,10 @@ def _parse_api_flow(items: list, raw_json: dict, source: str) -> Tuple[List[Dict
         if not cid: continue
         item_info = data.get('iteminfo', {})
         
+        # 修正：モデルに存在しないキー名 'api_floor' を廃止し 'floor_code' に統一
+        raw_service_code = data.get('service_code') or req_params.get('service')
+        raw_floor_code = data.get('floor_code') or req_params.get('floor')
+
         # 特殊エンティティ救出
         maker_n, _ = _safe_extract_single_entity(item_info, 'maker')
         if not maker_n: maker_n, _ = _safe_extract_single_entity(item_info, 'manufacture')
@@ -161,11 +167,14 @@ def _parse_api_flow(items: list, raw_json: dict, source: str) -> Tuple[List[Dict
             'api_product_id': str(cid),
             'product_id_unique': generate_product_unique_id(source, str(cid)),
             'title': data.get('title'),
-            'floor_code': req_params.get('floor') or data.get('floor_code', 'videoa'),
+
+            # 🚀 修正ポイント: AdultProductモデルに存在するフィールド名のみをセット
+            'api_service': raw_service_code,
+            'floor_code': raw_floor_code,
+
             'product_description': data.get('description'),
             'release_date': parse_date(data.get('date').split(' ')[0]) if data.get('date') else None,
             'affiliate_url': data.get('affiliateURL') or "",
-            # 修正ポイント: どんな記号が来ても数字だけを抽出
             'price': _safe_int(data.get('prices', {}).get('price')),
             'is_unlimited': is_unl,
             'unlimited_channels': [data.get('service_name')] if is_unl else [],
@@ -178,6 +187,9 @@ def _parse_api_flow(items: list, raw_json: dict, source: str) -> Tuple[List[Dict
             'label': _safe_extract_single_entity(item_info, 'label')[0],
             'series': _safe_extract_single_entity(item_info, 'series')[0],
             'director': _safe_extract_single_entity(item_info, 'director')[0],
+            # 通販(mono)用に追加のカラムがある場合。モデルに定義されていることが前提。
+            # 'jancode': data.get('jancode'), 
+            # 'stock_status': data.get('stock'),
             'updated_at': timezone.now(),
             'is_active': True,
         })

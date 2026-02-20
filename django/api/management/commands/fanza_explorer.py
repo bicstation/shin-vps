@@ -19,6 +19,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("📡 最新のフロア情報を取得中..."))
         
         try:
+            # get_dynamic_menu() は get_flattened_floors() を呼び出します
             menu_list = client.get_dynamic_menu()
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"エラー: フロアリストの取得に失敗しました。{e}"))
@@ -27,7 +28,9 @@ class Command(BaseCommand):
         # 1. メニューの表示
         self.stdout.write("\n=== FANZA/DMM サービスメニュー ===")
         for i, m in enumerate(menu_list):
-            self.stdout.write(f"[{i:2}] {m['label']}")
+            # 🚀 修正ポイント: 'label' キーが存在しないため、取得したデータから動的にラベルを作成します
+            label = f"[{m['site_name']}] {m['service_name']} > {m['floor_name']}"
+            self.stdout.write(f"[{i:2}] {label}")
 
         # 2. ユーザー入力
         try:
@@ -40,8 +43,11 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("無効な番号です。"))
             return
 
+        # 💡 表示用ラベルを再定義
+        display_label = f"[{selected['site_name']}] {selected['service_name']} > {selected['floor_name']}"
+
         # 3. ItemListの取得
-        self.stdout.write(self.style.WARNING(f"\n{selected['label']} のデータを取得します..."))
+        self.stdout.write(self.style.WARNING(f"\n{display_label} のデータを取得します..."))
         try:
             items_json = client.fetch_item_list(
                 site=selected['site'],
@@ -60,6 +66,7 @@ class Command(BaseCommand):
         # 5. 指定のルール「フロア名_サービス名」で保存
         save_choice = input("\nこの結果を api_samples に保存しますか？ (y/n): ")
         if save_choice.lower() == 'y':
+            # サイト名でディレクトリを分ける (DMM.com / FANZA)
             site_dir = os.path.join(sample_root, selected['site_name'])
 
             if not os.path.exists(site_dir):
@@ -73,6 +80,9 @@ class Command(BaseCommand):
             with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(formatted_json)
             
+            # 書き込み権限を付与
             os.chmod(file_path, 0o666)
             
             self.stdout.write(self.style.SUCCESS(f"✅ 保存完了: {file_path}"))
+
+        input("\n処理完了。Enterで戻ります。")

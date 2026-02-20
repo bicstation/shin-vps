@@ -1,50 +1,87 @@
-/* app/[category]/page.tsx */
+/* eslint-disable react/no-unescaped-entities */
 import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { fetchAdultTaxonomyIndex } from '@/shared/lib/api/django/adult';
+import Link from 'next/link';
+
+import styles from '../videos/videos.module.css';
+import Sidebar from '@/shared/layout/Sidebar/AdultSidebar'; 
 import SystemDiagnosticHero from '@/shared/debug/SystemDiagnosticHero';
-import TaxonomyClientContent from './TaxonomyClientContent'; // 後ほど作成する子コンポーネント
 
-export async function generateMetadata({ params }: { params: { category: string } }): Promise<Metadata> {
-    const titleMap: Record<string, string> = {
-        genres: 'ジャンル一覧', actresses: '女優一覧', makers: 'メーカー一覧',
-        series: 'シリーズ一覧', directors: '監督一覧', authors: '著者一覧',
-    };
-    const title = titleMap[params.category] || 'カテゴリ一覧';
-    return {
-        title: `${title} | 大人向け総合マトリックス`,
-        description: `${title}を商品数順・50音順で自在にソートして探せます。`,
-    };
-}
+import { getSiteMainPosts } from '@/shared/lib/api/wordpress';
+import { 
+  getPlatformAnalysis,
+  fetchMakers, fetchGenres, fetchActresses, fetchSeries,
+  fetchDirectors, fetchAuthors, fetchLabels
+} from '@/shared/lib/api/django/adult';
 
-export default async function CategoryTaxonomyPage({ params }: { params: { category: string } }) {
-    const { category } = params;
-    const validCategories = ['genres', 'actresses', 'makers', 'series', 'directors', 'authors'];
-    if (!validCategories.includes(category)) notFound();
+export const dynamic = 'force-dynamic';
 
-    const taxonomy = await fetchAdultTaxonomyIndex(category as any);
+const API_MAP: Record<string, any> = {
+  'genres': fetchGenres,
+  'makers': fetchMakers,
+  'actresses': fetchActresses,
+  'series': fetchSeries,
+  'directors': fetchDirectors,
+  'authors': fetchAuthors,
+  'labels': fetchLabels,
+};
 
-    return (
-        <div className="bg-gray-50 dark:bg-black min-h-screen">
-            <SystemDiagnosticHero 
-                title={`${category.toUpperCase()} MASTER INDEX`}
-                status="OPERATIONAL"
-                stats={[
-                    { label: 'DATA_POINTS', value: taxonomy.total_count },
-                    { label: 'PATH_FORMAT', value: `/${category}/[slug]` },
-                    { label: 'INDEX_STATUS', value: 'READY' }
-                ]}
+export default async function CategoryIndexPage(props: { 
+  params: Promise<{ category: string }>;
+}) {
+  const { category } = await props.params;
+  const fetchFn = API_MAP[category];
+  if (!fetchFn) return notFound();
+
+  const [listRes, analysisData, wpData] = await Promise.all([
+    fetchFn({ limit: 500 }).catch(() => ({ results: [] })),
+    getPlatformAnalysis('unified', { mode: 'summary' }).catch(() => null),
+    getSiteMainPosts(0, 5).catch(() => ({ results: [] })),
+  ]);
+
+  const items = listRes?.results || [];
+
+  // サイドバー用データ整形ロジック
+  const extract = (key: string) => {
+    const data = analysisData?.[key] || analysisData?.results?.[key];
+    return Array.isArray(data) ? data : [];
+  };
+
+  return (
+    <div className={styles.pageContainer}>
+      <div className={styles.wrapper}>
+        <aside className={styles.sidebar}>
+          <div className={styles.sidebarSticky}>
+            <Sidebar 
+              genres={extract('genres')} makers={extract('makers')}
+              actresses={extract('actresses')} series={extract('series')}
+              directors={extract('directors')} authors={extract('authors')}
+              labels={extract('labels')}
+              recentPosts={(wpData?.results || []).map((p: any) => ({ id: p.id, title: p.title.rendered, slug: p.slug }))}
             />
+          </div>
+        </aside>
 
-            <div className="container mx-auto px-4 py-8">
-                {/* 🚀 クライアントコンポーネントへデータを渡す */}
-                <TaxonomyClientContent 
-                    initialData={taxonomy.results} 
-                    category={category} 
-                    totalCount={taxonomy.total_count}
-                />
+        <main className={styles.contentStream}>
+          <SystemDiagnosticHero status="ACTIVE" moduleName={`INDEX: ${category.toUpperCase()}`} />
+          
+          <section className={styles.archiveSection}>
+            <div className={styles.sectionHeader}>
+              <h1 className={styles.mainTitle}><span className={styles.titleThin}>MASTER_INDEX //</span> {category.toUpperCase()}</h1>
             </div>
-        </div>
-    );
+
+            <div className={styles.indexGrid}>
+              {items.map((item: any) => (
+                <Link key={item.id} href={`/${category}/${item.id}`} className={styles.indexItem}>
+                  <span className={styles.indexName}>{item.name}</span>
+                  <span className={styles.indexCount}>{item.product_count}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  );
 }
