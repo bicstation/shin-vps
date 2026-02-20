@@ -130,7 +130,7 @@ while true; do
                         run_django python manage.py import_t_fanza --start_page "$START_PG" --pages "$PG_COUNT"
                     fi 
                     echo -e "\n${YELLOW}自動正規化(Normalize)を実行しますか？ (y/N): ${RESET}"
-                    read N_CONFIRM; [[ "$N_CONFIRM" == "y" ]] && run_django python manage.py normalize_adult ;;
+                    read N_CONFIRM; [[ "$N_CONFIRM" == "y" ]] && run_django python manage.py normalize_duga && run_django python manage.py normalize_fanza;;
                 4)
                     echo -e "\n${CYAN}どのソースをリセット（未処理に戻す）しますか？${RESET}"
                     echo "1) ALL / 2) FANZA / 3) DMM / 4) DUGA"

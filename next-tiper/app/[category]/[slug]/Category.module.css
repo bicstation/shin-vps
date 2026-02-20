@@ -1,41 +1,58 @@
 /* ==============================================================================
- * 🎬 TIPER Archive - Category Listing CSS (Tactical Edition)
+ * 🚀 TIPER Archive - Tactical Cyber Edition (Full Integration)
  * ============================================================================== */
 
-/* :root を削除し .container に統合することでビルドエラーを回避 */
 .container {
   /* テーマカラー定義 */
-  --accent-primary: #e94560;    /* エネルギッシュ・レッド */
-  --accent-secondary: #00d1b2;  /* サイバー・ターコイズ */
-  --accent-debug: #22c55e;      /* システム・グリーン */
+  --accent-primary: #e94560;    /* 警告レッド */
+  --accent-secondary: #00d1b2;  /* データターコイズ */
+  --accent-debug: #22c55e;      /* システムグリーン */
   --text-main: #ffffff;
   --text-dim: #64748b;
   --bg-black: #05050a;
   --bg-darker: #0a0a12;
   --border-white: rgba(255, 255, 255, 0.05);
-  --glass-bg: rgba(10, 10, 18, 0.85);
+  --glass-bg: rgba(5, 5, 10, 0.9);
 
   min-height: 100vh;
   background-color: var(--bg-black);
   color: var(--text-main);
-  font-family: 'Inter', 'JetBrains Mono', sans-serif;
+  font-family: 'Inter', 'JetBrains Mono', 'Meiryo', sans-serif;
   overflow-x: hidden;
   position: relative;
 }
 
-/* 🌌 動的背景グリッド（スキャンライン込） */
-.container::after {
+/* 🌌 背景：ダイナミックグリッド & スキャンライン */
+.container::before {
   content: "";
   position: fixed;
   inset: 0;
   background-image: 
     linear-gradient(var(--border-white) 1px, transparent 1px),
     linear-gradient(90deg, var(--border-white) 1px, transparent 1px);
-  background-size: 50px 50px;
-  mask-image: radial-gradient(circle at 50% 50%, black, transparent 90%);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(circle at 50% 50%, black, transparent 95%);
+  z-index: 0;
   pointer-events: none;
-  z-index: 0; /* 修正：背景として確実に背面に配置 */
-  opacity: 0.5;
+}
+
+.container::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.06),
+    rgba(0, 255, 0, 0.02),
+    rgba(0, 0, 255, 0.06)
+  );
+  background-size: 100% 4px, 3px 100%;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.15; /* スキャンラインを少し控えめに調整 */
 }
 
 .inner {
@@ -46,21 +63,19 @@
   z-index: 10;
 }
 
-/* 1. タクティカル・ナビゲーション */
+/* 1. タクティカル・ナビゲーション (グローバル) */
 .navBar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(15px);
   border-bottom: 1px solid var(--border-white);
   padding: 0.75rem 0;
+  margin-bottom: 2rem;
 }
 
 .navInner {
-  max-width: 1800px;
-  margin: 0 auto;
-  padding: 0 4%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -69,172 +84,192 @@
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  font-weight: 900;
-  letter-spacing: 0.1em;
+  font-weight: 800;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
 .breadcrumbLink {
   color: var(--text-dim);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: color 0.2s;
 }
 
 .breadcrumbLink:hover {
-  color: var(--accent-primary);
-}
-
-.breadcrumbCurrent {
-  background: var(--accent-primary);
   color: white;
-  padding: 0.1rem 0.5rem;
-  border-radius: 2px;
-  box-shadow: 0 0 10px rgba(233, 69, 96, 0.4);
 }
 
-/* 2. ページヘッダー */
-.header {
-  padding: 6rem 0 4rem;
-  border-bottom: 1px solid var(--border-white);
-  margin-bottom: 4rem;
+/* 2. メインレイアウト構造 */
+.mainLayout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 4rem;
+  align-items: flex-start;
 }
 
-.nodeLabel {
+.sidebar {
+  position: relative;
+}
+
+.content {
+  min-width: 0; /* flex/grid内での崩れ防止 */
+}
+
+/* 3. 【修正】メインコンテンツ内ヘッダー (統合ユニット) */
+.contentHeader {
+  background: linear-gradient(90deg, rgba(233, 69, 96, 0.08) 0%, transparent 100%);
+  border-left: 4px solid var(--accent-primary);
+  padding: 2rem 2.5rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 20px 0 50px rgba(0, 0, 0, 0.3);
+}
+
+/* 背景の透かし文字 */
+.contentHeader::before {
+  content: "NODE_DATA_UNIT";
+  position: absolute;
+  right: -5%;
+  bottom: -10%;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 5rem;
+  font-weight: 950;
+  color: rgba(255, 255, 255, 0.03);
+  font-style: italic;
+  pointer-events: none;
+}
+
+.nodeStatus {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  color: var(--accent-primary);
-  letter-spacing: 0.4em;
+  color: var(--accent-secondary);
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  margin-bottom: 1rem;
-  display: block;
-  opacity: 0.8;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .titleMain {
-  font-size: clamp(3.5rem, 8vw, 8rem);
+  font-size: clamp(2rem, 5vw, 3.8rem);
   font-weight: 950;
-  line-height: 0.85;
-  letter-spacing: -0.06em;
-  font-style: italic;
+  line-height: 1;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
   margin: 0;
-  color: white;
-  text-shadow: 
-    3px 3px 0px rgba(233, 69, 96, 0.1),
-    -1px -1px 0px rgba(0, 209, 178, 0.1);
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
-/* 3. ツールバー */
-.toolbar {
+/* 4. ツールバー（コンテンツ直上） */
+.contentToolbar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-.metrics {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--text-dim);
-}
-
-.metricValue {
-  color: var(--accent-secondary);
-  font-weight: bold;
-  font-size: 1.2rem;
-  margin-left: 0.5rem;
+  align-items: center;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border-white);
+  margin-bottom: 3.5rem;
 }
 
 .sortGroup {
   display: flex;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 2px;
-  border: 1px solid var(--border-white);
-  border-radius: 4px;
+  gap: 0.4rem;
 }
 
 .sortBtn {
-  padding: 0.6rem 1.2rem;
-  font-size: 0.65rem;
-  font-weight: 900;
+  padding: 0.4rem 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
   color: var(--text-dim);
   text-decoration: none;
-  transition: all 0.2s;
-  letter-spacing: 0.1em;
+  border: 1px solid var(--border-white);
+  clip-path: polygon(8% 0, 100% 0, 92% 100%, 0% 100%);
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .sortBtnActive {
   background: var(--accent-primary);
   color: white !important;
-  box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
 }
 
-/* 4. メイングリッド & サイドバー配置 */
-.mainLayout {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 4rem;
+.sortBtn:hover:not(.sortBtnActive) {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
+.metrics {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.metricValue {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--accent-primary);
+}
+
+/* 5. 商品グリッド */
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 3rem 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 3.5rem 1.5rem;
 }
 
-/* 5. ページネーション */
+/* 6. ページネーション */
 .pagination {
   margin-top: 6rem;
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 2rem;
 }
 
-.pageBtn {
-  padding: 1rem 2rem;
-  border: 1px solid var(--accent-primary);
-  color: var(--accent-primary);
-  font-weight: 900;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  text-decoration: none;
-  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
-  transition: all 0.3s;
-}
-
-.pageBtn:hover:not(.disabled) {
-  background: var(--accent-primary);
-  color: black;
-  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
-}
-
-.disabled {
-  opacity: 0.2;
-  pointer-events: none;
-}
-
-/* アニメーション */
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
+/* 装飾要素 */
 .liveDot {
   width: 8px;
   height: 8px;
   background: var(--accent-debug);
   border-radius: 50%;
-  display: inline-block;
   box-shadow: 0 0 10px var(--accent-debug);
-  animation: pulse 2s infinite;
+  animation: blink 2s infinite;
 }
 
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.9); }
+}
+
+/* 7. レスポンシブ */
 @media (max-width: 1200px) {
-  .mainLayout { grid-template-columns: 1fr; }
-  .sidebar { order: 2; }
-  .content { order: 1; }
+  .mainLayout {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .sidebar {
+    order: 2;
+  }
+  .content {
+    order: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .contentHeader {
+    padding: 1.5rem;
+  }
+  .contentToolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
 }

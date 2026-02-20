@@ -22,6 +22,11 @@ import Footer from '@shared/layout/Footer';
  */
 import { constructMetadata } from '@shared/lib/metadata';
 
+/**
+ * ✅ 4. ページ遷移プログレスバー (くるくる)
+ */
+import RouteProgressBar from '@shared/common/RouteProgressBar';
+
 const inter = Inter({ subsets: ["latin"] });
 
 /**
@@ -73,6 +78,9 @@ export default async function RootLayout({
           "--grid-color": "rgba(233, 69, 96, 0.03)",
         } as React.CSSProperties}
       >
+        {/* 🚀 ページ遷移時のプログレスバー & くるくるスピナー */}
+        <RouteProgressBar />
+
         {/* 背景のシステムグリッド */}
         <div className={styles.systemGrid} />
 
@@ -80,7 +88,6 @@ export default async function RootLayout({
         <Header />
 
         {/* 2. 告知バー（広告・年齢制限） */}
-        {/* 💡 [修正] site_group が 'adult' の場合のみ、年齢制限警告を表示 */}
         <div 
           className={styles.adDisclosure} 
           style={{ 

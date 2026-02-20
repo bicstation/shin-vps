@@ -5,27 +5,36 @@ import { AdultProduct } from '../types';
 
 /**
  * ==============================================================================
- * 🚀 1. 内部ユーティリティ (共通ロジックの集約)
+ * 🚀 1. 内部ユーティリティ
  * ==============================================================================
  */
 
-/** 💡 汎用データ抽出: Django REST Framework の results または単一配列を正規化 */
 const safeExtract = (data: any): any[] => {
   if (!data) return [];
   if (Array.isArray(data)) return data;
   return data.results || data.data || [];
 };
 
-/** 💡 クエリパラメータの正規化: サービス/フロア等のエイリアスを吸収 */
+/** 💡 クエリパラメータの正規化: 日本語破壊を防止 */
 const normalizeParams = (params: any) => {
   const clean: Record<string, string> = {};
   Object.keys(params).forEach(key => {
     const val = params[key];
     if (val !== undefined && val !== null && val !== 'undefined' && val !== '') {
       let targetKey = key;
+      
+      // エイリアスの変換
       if (key === 'service') targetKey = 'service_code';
       if (key === 'floor') targetKey = 'floor_code';
-      clean[targetKey] = String(val).toLowerCase(); 
+
+      // 💡 修正ポイント: 
+      // 1. service_code や floor_code は小文字でOK
+      // 2. それ以外（特に _slug がつく日本語名）は そのまま維持
+      if (targetKey.includes('_code') || targetKey === 'api_source') {
+        clean[targetKey] = String(val).toLowerCase();
+      } else {
+        clean[targetKey] = String(val); 
+      }
     }
   });
   return clean;
@@ -37,10 +46,11 @@ const normalizeParams = (params: any) => {
  * ==============================================================================
  */
 
-/** 💡 統合製品一覧取得: /api/adult/unified-products/ を使用 */
+/** 商品一覧取得 (Unified) */
 export async function getUnifiedProducts(params: any = {}) {
   const cleanParams = normalizeParams(params);
   const queryString = new URLSearchParams(cleanParams).toString();
+  // Django: /api/adult/unified-products/
   const targetUrl = resolveApiUrl(`/api/adult/unified-products/?${queryString}`);
 
   try {
@@ -60,16 +70,29 @@ export async function getUnifiedProducts(params: any = {}) {
   }
 }
 
-/** 💡 製品詳細取得 */
+/** * 🎯 製品詳細取得 (修正ポイント)
+ * Django: /api/adult/products/<str:product_id_unique>/ 
+ */
 export async function getAdultProductDetail(id: string | number): Promise<AdultProduct | null> {
-  const endpoint = `/api/adult-products/${id}/`;
+  // 💡 エンドポイントを Django の定義に修正
+  const endpoint = `/api/adult/products/${id}/`;
+  const targetUrl = resolveApiUrl(endpoint);
+
   try {
-    const res = await fetch(resolveApiUrl(endpoint), { 
+    const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
       cache: 'no-store' 
     });
-    const data = await handleResponseWithDebug(res, resolveApiUrl(endpoint));
-    return (data && !data._error) ? data : null;
+    
+    // handleResponseWithDebug 内で 404 等を適切に処理
+    const data = await handleResponseWithDebug(res, targetUrl);
+    
+    // Django は見つからない場合に { detail: "Not found." } を返す
+    if (data?.detail === "Not found." || data?._error) {
+      return null;
+    }
+    
+    return data;
   } catch (error) {
     console.error(`[Detail] FETCH_FAILED [${id}]:`, error);
     return null; 
@@ -82,16 +105,17 @@ export async function getAdultProductDetail(id: string | number): Promise<AdultP
  * ==============================================================================
  */
 
-/** 💡 共通マスタ取得ロジック: /api/adult/taxonomy/ を使用しカウント順で取得 */
+/** タクソノミー汎用取得 (集計が必要な場合) */
 export async function fetchAdultTaxonomyIndex(type: string, floorCode?: string, limit?: number) {
   try {
     const params = new URLSearchParams({ 
       type,
-      ordering: '-product_count' // ✅ 作品数カウント順
+      ordering: '-product_count'
     });
     if (floorCode) params.append('floor_code', floorCode.toLowerCase());
     if (limit) params.append('limit', limit.toString());
 
+    // Django: /api/adult/taxonomy/
     const url = `/api/adult/taxonomy/?${params.toString()}`;
     const res = await fetch(resolveApiUrl(url), { 
       headers: getDjangoHeaders(), 
@@ -111,25 +135,27 @@ export async function fetchAdultTaxonomyIndex(type: string, floorCode?: string, 
   }
 }
 
-/** 💡 マスタ系エイリアス関数群 (著者・監督を含む全項目) */
+// 💡 ショートカット関数群
 export const fetchGenres = (p?: any) => fetchAdultTaxonomyIndex('genres', p?.floor_code, p?.limit);
 export const fetchMakers = (p?: any) => fetchAdultTaxonomyIndex('makers', p?.floor_code, p?.limit);
 export const fetchActresses = (p?: any) => fetchAdultTaxonomyIndex('actresses', p?.floor_code, p?.limit);
 export const fetchSeries = (p?: any) => fetchAdultTaxonomyIndex('series', p?.floor_code, p?.limit);
 export const fetchDirectors = (p?: any) => fetchAdultTaxonomyIndex('directors', p?.floor_code, p?.limit);
-export const fetchAuthors = (p?: any) => fetchAdultTaxonomyIndex('authors', p?.floor_code, p?.limit); // ✅ 著者
+export const fetchAuthors = (p?: any) => fetchAdultTaxonomyIndex('authors', p?.floor_code, p?.limit);
 export const fetchLabels = (p?: any) => fetchAdultTaxonomyIndex('labels', p?.floor_code, p?.limit);
 
-/** 💡 ナビゲーション取得 */
+/** FANZAフロアナビゲーション */
 export async function getFanzaDynamicMenu() {
-  const targetUrl = resolveApiUrl('/api/navigation/floors/');
+  // Django: /api/adult/navigation/floors/
+  const targetUrl = resolveApiUrl('/api/adult/navigation/floors/');
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
     });
     const json = await res.json();
-    return json.data?.['FANZA（アダルト）']?.services || {};
+    // 構造に合わせて抽出
+    return json.data?.['FANZA（アダルト）']?.services || json.services || {};
   } catch (error) {
     console.error("[Navigation] FETCH_FAILED:", error);
     return {};

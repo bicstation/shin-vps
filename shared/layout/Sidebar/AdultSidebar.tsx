@@ -37,6 +37,7 @@ interface SidebarProps {
   officialHierarchy?: OfficialService[];
   makers?: MasterItem[];
   genres?: MasterItem[];
+  actresses?: MasterItem[];
   series?: MasterItem[];
   directors?: MasterItem[];
   authors?: MasterItem[]; 
@@ -48,6 +49,7 @@ export default function AdultSidebar({
   officialHierarchy = [],
   makers = [],
   genres = [],
+  actresses = [], 
   series = [],
   directors = [],
   authors = [],
@@ -63,6 +65,7 @@ export default function AdultSidebar({
     'PLATFORMS': true,
     'GENRES': true,
     'MAKERS': true,
+    'ACTRESSES': true, // 女優セクションも初期で開くように追加
     'LOGS': true
   });
 
@@ -80,7 +83,6 @@ export default function AdultSidebar({
   const toggleSection = (section: string) => 
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
 
-  // 公式ブランドレイヤー用リンク (既存ロジック維持)
   const getOfficialLink = (sCode: string, fCode?: string) => {
     const base = `/brand/${currentPlatform}/svc`;
     return fCode ? `${base}/${sCode}/${fCode}` : `${base}/${sCode}`;
@@ -89,9 +91,6 @@ export default function AdultSidebar({
   const isSvcActive = (sCode: string) => pathname?.includes(`/svc/${sCode}`);
   const isFlrActive = (sCode: string, fCode: string) => pathname?.includes(`/svc/${sCode}/${fCode}`);
 
-  /** * 💡 スラッグ優先のパス生成ロジック
-   * /makers/prestige-group や /genres/mosaic-less 形式
-   */
   const getSafeLink = (category: string, item: any) => {
     const identifier = item.slug || item.id;
     return `/${category}/${identifier}`;
@@ -173,11 +172,13 @@ export default function AdultSidebar({
 
       {/* 🛠️ MASTER_DATA_INDEXES */}
       {[
-        { id: 'GENRES', type: 'genres', data: genres.slice(0, 10), icon: '🏷️', label: 'ジャンル' },
-        { id: 'MAKERS', type: 'makers', data: makers.slice(0, 10), icon: '🏢', label: 'メーカー' },
-        { id: 'ACTRESSES', type: 'actresses', data: actresses.slice(0, 10), icon: '👩', label: '女優' },
-        { id: 'LABELS', type: 'labels', data: labels.slice(0, 5), icon: '🏷️', label: 'レーベル' },
-        { id: 'SERIES', type: 'series', data: series.slice(0, 5), icon: '📚', label: 'シリーズ' },
+        { id: 'GENRES', type: 'genres', data: genres, icon: '🏷️', label: 'ジャンル' },
+        { id: 'MAKERS', type: 'makers', data: makers, icon: '🏢', label: 'メーカー' },
+        { id: 'ACTRESSES', type: 'actresses', data: actresses, icon: '👩', label: '女優' },
+        { id: 'LABELS', type: 'labels', data: labels, icon: '🏷️', label: 'レーベル' },
+        { id: 'SERIES', type: 'series', data: series, icon: '📚', label: 'シリーズ' },
+        { id: 'DIRECTORS', type: 'directors', data: directors, icon: '🎬', label: '監督' },
+        { id: 'AUTHORS', type: 'authors', data: authors, icon: '✍️', label: '著者' },
       ].map((cat) => (
         <section key={cat.id} className={styles.sectionWrapper}>
           <div className={styles.sectionHeader} onClick={() => toggleSection(cat.id)}>
@@ -189,20 +190,26 @@ export default function AdultSidebar({
           {openSections[cat.id] && (
             <div className={styles.contentBody}>
               <ul className={styles.masterList}>
-                {cat.data.map(item => (
-                  <li key={item.id} className={styles.masterListItem}>
-                    <Link href={getSafeLink(cat.type, item)} className={styles.masterLink}>
-                      <span className={styles.itemName}>{item.name}</span>
-                      <span className={styles.itemCount}>{(item.product_count || 0).toLocaleString()}</span>
-                    </Link>
-                  </li>
-                ))}
-                <li className={styles.viewMoreItem}>
-                  <Link href={`/${cat.type}`} className={styles.viewMoreLink}>
-                    <span className={styles.viewMoreText}>{cat.label}の全目録へ</span>
-                    <span className={styles.viewMoreArrow}>→</span>
-                  </Link>
-                </li>
+                {cat.data && cat.data.length > 0 ? (
+                  <>
+                    {cat.data.slice(0, 10).map(item => (
+                      <li key={item.id} className={styles.masterListItem}>
+                        <Link href={getSafeLink(cat.type, item)} className={styles.masterLink}>
+                          <span className={styles.itemName}>{item.name}</span>
+                          <span className={styles.itemCount}>{(item.product_count || 0).toLocaleString()}</span>
+                        </Link>
+                      </li>
+                    ))}
+                    <li className={styles.viewMoreItem}>
+                      <Link href={`/${cat.type}`} className={styles.viewMoreLink}>
+                        <span className={styles.viewMoreText}>{cat.label}の全目録へ</span>
+                        <span className={styles.viewMoreArrow}>→</span>
+                      </Link>
+                    </li>
+                  </>
+                ) : (
+                  <li className={styles.emptyStatus}>[!] NO_DATA</li>
+                )}
               </ul>
             </div>
           )}

@@ -28,3 +28,53 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* ==============================================================================
+ * 🚀 NProgress (Route Loading Indicator) Custom Style
+ * ============================================================================== */
+
+/* 1. ページ上部を走るプログレスバー */
+#nprogress .bar {
+  background: var(--accent) !important;
+  height: 3px !important;
+  box-shadow: 0 0 15px var(--accent), 0 0 5px var(--accent) !important;
+  z-index: 10001 !important;
+}
+
+/* 2. 右上のくるくるスピナー */
+#nprogress .spinner-icon {
+  border-top-color: var(--accent) !important;
+  border-left-color: var(--accent) !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-width: 3px !important;
+  border-radius: 50% !important;
+}
+
+#nprogress .spinner {
+  top: 15px !important;
+  right: 15px !important;
+  z-index: 10001 !important;
+}
+
+/* 3. バーの先端の光の粉（ペグ） */
+#nprogress .peg {
+  box-shadow: 0 0 10px var(--accent), 0 0 5px var(--accent) !important;
+  opacity: 1.0 !important;
+}
+
+/* ==============================================================================
+ * 🛠️ ユーティリティクラス（必要に応じて）
+ * ============================================================================== */
+.loading-pulse {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  animation: pulse 2s infinite ease-in-out;
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
