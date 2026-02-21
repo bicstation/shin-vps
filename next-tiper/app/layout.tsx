@@ -1,3 +1,4 @@
+/* /app/layout.tsx */
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -23,7 +24,7 @@ import Footer from '@shared/layout/Footer';
 import { constructMetadata } from '@shared/lib/metadata';
 
 /**
- * ✅ 4. ページ遷移プログレスバー (くるくる)
+ * ✅ 4. ページ遷移プログレスバー
  */
 import RouteProgressBar from '@shared/common/RouteProgressBar';
 
@@ -72,6 +73,7 @@ export default async function RootLayout({
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
+          position: "relative",
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": BG_COLOR,
@@ -81,82 +83,35 @@ export default async function RootLayout({
         {/* 🚀 ページ遷移時のプログレスバー & くるくるスピナー */}
         <RouteProgressBar />
 
-        {/* 背景のシステムグリッド */}
+        {/* 背景のシステムグリッド（layout.module.css で定義） */}
         <div className={styles.systemGrid} />
 
         {/* 1. 共通ヘッダー */}
         <Header />
 
         {/* 2. 告知バー（広告・年齢制限） */}
-        <div 
-          className={styles.adDisclosure} 
-          style={{ 
-            width: '100%',
-            padding: "8px 15px", 
-            fontSize: "11px", 
-            textAlign: "center",
-            backgroundColor: "rgba(0, 0, 0, 0.85)", 
-            color: "#94a3b8",
-            borderBottom: "1px solid rgba(233, 69, 96, 0.3)",
-            backdropFilter: "blur(12px)",
-            zIndex: 1000,
-            position: "relative",
-            fontFamily: "'JetBrains Mono', monospace"
-          }}
-        >
-          【PR】本サイトは広告を利用しています。
-          {site.site_group === 'adult' && (
-            <span 
-              className={styles.ageLimit} 
-              style={{ 
-                marginLeft: "10px", 
-                color: "#e94560", 
-                fontWeight: "900",
-                letterSpacing: "0.1em"
-              }}
-            >
-              ※18歳未満の閲覧は固く禁止されています。
-            </span>
-          )}
+        <div className={styles.adDisclosure}>
+          <div className={styles.adDisclosureInner}>
+            【PR】本サイトは広告を利用しています。
+            {site.site_group === 'adult' && (
+              <span className={styles.ageLimit}>
+                ※18歳未満の閲覧は固く禁止されています。
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* 3. メインレイアウト構造 */}
-        <div 
-          className={styles.layoutContainer} 
-          style={{ 
-            flex: "1 0 auto", 
-            display: "flex", 
-            flexDirection: "column",
-            width: "100%",
-            position: "relative"
-          }}
-        >
-          <main 
-            className={styles.mainContent} 
-            style={{ 
-              flex: "1 0 auto", 
-              display: "flex", 
-              flexDirection: "column",
-              width: "100%"
-            }}
-          >
+        {/* 3. メインレイアウト構造（全幅・可変） */}
+        <div className={styles.layoutContainer}>
+          <main className={styles.mainContent}>
             <Suspense 
               fallback={
-                <div 
-                  style={{ 
-                    flex: 1, 
-                    display: "flex", 
-                    alignItems: "center", 
-                    justifyContent: "center", 
-                    minHeight: "60vh",
-                    fontFamily: "'JetBrains Mono', monospace",
-                    color: "#e94560"
-                  }}
-                >
+                <div className={styles.loadingWrapper}>
                   <div className={styles.loadingPulse}>SYNCING_UNIFIED_GATEWAY...</div>
                 </div>
               }
             >
+              {/* 💡 ここに Page 側の grid (wrapper) が入ります */}
               {children}
             </Suspense>
           </main>

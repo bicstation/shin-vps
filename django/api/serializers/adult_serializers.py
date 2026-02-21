@@ -39,8 +39,8 @@ class FanzaFloorMasterSerializer(serializers.ModelSerializer):
 class BaseMasterSerializer(serializers.ModelSerializer):
     """
     辞書型(values)取得とオブジェクト型の両方に対応した基底クラス。
+    タクソノミー集計View(AdultTaxonomyIndexAPIView)からの出力を正確に変換する。
     """
-    # 💡 修正: 明示的に id を含め、Meta.fields にも追加
     id = serializers.IntegerField(read_only=True)
     slug = serializers.CharField(read_only=True)
     ruby = serializers.CharField(read_only=True)
@@ -48,31 +48,39 @@ class BaseMasterSerializer(serializers.ModelSerializer):
     product_count = serializers.IntegerField(read_only=True, required=False)
     
     class Meta:
-        # 💡 修正: 'id' を Meta.fields に追加
         fields = ('id', 'name', 'slug', 'ruby', 'api_source', 'product_count')
 
     def get_api_source(self, obj):
+        """
+        集計時の 'tmp_source' またはオブジェクトの 'api_source' を取得し小文字化する。
+        """
         if isinstance(obj, dict):
-            val = obj.get('api_source') or obj.get('tmp_source') or 'common'
+            # View側の values() で tmp_source として取得した値を優先
+            val = obj.get('tmp_source') or obj.get('api_source') or 'common'
         else:
             val = getattr(obj, 'api_source', 'common')
+        
         return val.lower() if val else 'common'
 
     def to_representation(self, instance):
-        # 💡 辞書型（タクソノミー集計時など）の対応
+        """
+        辞書型（タクソノミー集計時）とオブジェクト型の両方を Next.js 側が期待する形式に正規化。
+        """
         if isinstance(instance, dict):
+            # 💡 Viewの F() 式による別名を ID/Name/Slug にマッピング
             return {
-                'id': instance.get('id') or instance.get('tmp_id'),
-                'name': instance.get('name') or instance.get('tmp_name'),
-                'slug': instance.get('slug') or instance.get('tmp_slug'),
-                'ruby': instance.get('ruby') or instance.get('tmp_ruby', ''),
+                'id': instance.get('tmp_id') or instance.get('id'),
+                'name': instance.get('tmp_name') or instance.get('name'),
+                'slug': instance.get('tmp_slug') or instance.get('slug') or instance.get('tmp_name'),
+                'ruby': instance.get('tmp_ruby') or instance.get('ruby', ''),
                 'api_source': self.get_api_source(instance),
                 'product_count': instance.get('product_count', 0)
             }
-        # 💡 オブジェクト型（通常の製品紐付け）の対応
+        
+        # 通常のオブジェクト（AdultProductのネスト表示など）
         return super().to_representation(instance)
 
-# --- 継承クラス群 ---
+# --- 継承クラス群 (Meta.model を指定) ---
 class MakerSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Maker
 class LabelSerializer(BaseMasterSerializer):
@@ -143,12 +151,12 @@ class AdultProductSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         
-        # Next.jsとの整合性（小文字統一）
+        # Next.js側との整合性（小文字統一）
         for key in ['api_source', 'api_service', 'floor_code']:
             if ret.get(key):
                 ret[key] = ret[key].lower()
         
-        # 欠損補完
+        # 欠損補完: api_source が空の場合は floor_master から補完
         if not ret.get('api_source') and instance.floor_master:
             ret['api_source'] = instance.floor_master.site_code.lower()
 

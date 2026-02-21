@@ -32,11 +32,9 @@ const normalizeParams = (params: any) => {
       // 2. ID系やスラッグ（日本語含む）は破壊を防ぐためそのまま維持
       const lowercaseKeys = ['service_code', 'floor_code', 'api_source', 'related_to_id'];
       
-      // actress_id, maker_id, genre などの ID系（数値）は toLowerCase する必要がないため除外
       if (lowercaseKeys.includes(targetKey)) {
         clean[targetKey] = String(val).toLowerCase();
       } else {
-        // 日本語スラッグや数値IDなどはそのまま文字列化
         clean[targetKey] = String(val); 
       }
     }
@@ -52,20 +50,16 @@ const normalizeParams = (params: any) => {
 
 /** * 商品一覧取得 (Unified) 
  * 🎯 related_to_id が渡された場合、Django 側でスコアリングされた関連作品が返ります。
- * ただし actress_id や genre が併用された場合は、そちらの軸の絞り込みを優先します。
  */
 export async function getUnifiedProducts(params: any = {}) {
   const cleanParams = normalizeParams(params);
   const queryString = new URLSearchParams(cleanParams).toString();
   
-  // Django: /api/adult/unified-products/
   const targetUrl = resolveApiUrl(`/api/adult/unified-products/?${queryString}`);
 
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(),
-      // 💡 関連商品の取得(RelatedArchives用)は、詳細ページの更新に追従するため revalidate: 0 (or no-store) を指定
-      // リストページなど通常の呼び出しは revalidate: 3600 を維持
       cache: (params.related_to_id || params.actress_id || params.maker_id) ? 'no-store' : 'default',
       next: (params.related_to_id || params.actress_id || params.maker_id) 
         ? { revalidate: 0 } 
@@ -85,9 +79,7 @@ export async function getUnifiedProducts(params: any = {}) {
   }
 }
 
-/** 🎯 製品詳細取得
- * Django: /api/adult/products/<str:product_id_unique>/ 
- */
+/** 🎯 製品詳細取得 */
 export async function getAdultProductDetail(id: string | number): Promise<AdultProduct | null> {
   const endpoint = `/api/adult/products/${id}/`;
   const targetUrl = resolveApiUrl(endpoint);
@@ -100,7 +92,6 @@ export async function getAdultProductDetail(id: string | number): Promise<AdultP
     
     const data = await handleResponseWithDebug(res, targetUrl);
     
-    // Django は見つからない場合に { detail: "Not found." } を返す
     if (data?.detail === "Not found." || data?._error) {
       return null;
     }
@@ -118,18 +109,26 @@ export async function getAdultProductDetail(id: string | number): Promise<AdultP
  * ==============================================================================
  */
 
-/** タクソノミー汎用取得 (集計が必要な場合) */
-export async function fetchAdultTaxonomyIndex(type: string, floorCode?: string, limit?: number) {
+/** タクソノミー汎用取得 */
+export async function fetchAdultTaxonomyIndex(type: string, floorCodeOrParams?: string | any, limit?: number) {
   try {
-    const params = new URLSearchParams({ 
-      type,
-      ordering: '-product_count'
-    });
-    if (floorCode) params.append('floor_code', floorCode.toLowerCase());
-    if (limit) params.append('limit', limit.toString());
+    const isParamObj = typeof floorCodeOrParams === 'object' && floorCodeOrParams !== null;
+    
+    const floor_code = isParamObj ? floorCodeOrParams.floor_code : floorCodeOrParams;
+    const finalLimit = isParamObj ? floorCodeOrParams.limit : limit;
+    const api_source = isParamObj ? floorCodeOrParams.api_source : null;
+    const ordering = isParamObj ? (floorCodeOrParams.ordering || '-product_count') : '-product_count';
 
-    // Django: /api/adult/taxonomy/
-    const url = `/api/adult/taxonomy/?${params.toString()}`;
+    const queryParams = new URLSearchParams({ 
+      type,
+      ordering: ordering
+    });
+
+    if (floor_code) queryParams.append('floor_code', String(floor_code).toLowerCase());
+    if (finalLimit) queryParams.append('limit', String(finalLimit));
+    if (api_source) queryParams.append('api_source', String(api_source).toLowerCase());
+
+    const url = `/api/adult/taxonomy/?${queryParams.toString()}`;
     const res = await fetch(resolveApiUrl(url), { 
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
@@ -148,28 +147,47 @@ export async function fetchAdultTaxonomyIndex(type: string, floorCode?: string, 
   }
 }
 
-// 💡 ショートカット関数群
-export const fetchGenres = (p?: any) => fetchAdultTaxonomyIndex('genres', p?.floor_code, p?.limit);
-export const fetchMakers = (p?: any) => fetchAdultTaxonomyIndex('makers', p?.floor_code, p?.limit);
-export const fetchActresses = (p?: any) => fetchAdultTaxonomyIndex('actresses', p?.floor_code, p?.limit);
-export const fetchSeries = (p?: any) => fetchAdultTaxonomyIndex('series', p?.floor_code, p?.limit);
-export const fetchDirectors = (p?: any) => fetchAdultTaxonomyIndex('directors', p?.floor_code, p?.limit);
-export const fetchAuthors = (p?: any) => fetchAdultTaxonomyIndex('authors', p?.floor_code, p?.limit);
-export const fetchLabels = (p?: any) => fetchAdultTaxonomyIndex('labels', p?.floor_code, p?.limit);
+// ショートカット関数群
+export const fetchGenres = (p?: any) => fetchAdultTaxonomyIndex('genres', p);
+export const fetchMakers = (p?: any) => fetchAdultTaxonomyIndex('makers', p);
+export const fetchActresses = (p?: any) => fetchAdultTaxonomyIndex('actresses', p);
+export const fetchSeries = (p?: any) => fetchAdultTaxonomyIndex('series', p);
+export const fetchDirectors = (p?: any) => fetchAdultTaxonomyIndex('directors', p);
+export const fetchAuthors = (p?: any) => fetchAdultTaxonomyIndex('authors', p);
+export const fetchLabels = (p?: any) => fetchAdultTaxonomyIndex('labels', p);
 
-/** FANZAフロアナビゲーション */
-export async function getFanzaDynamicMenu() {
-  const targetUrl = resolveApiUrl('/api/adult/navigation/floors/');
+/**
+ * ==============================================================================
+ * 💡 4. ナビゲーションメニュー取得 (Real-time product_count 対応)
+ * ==============================================================================
+ */
+
+/** 共通のナビゲーションリスト取得 (Django: /api/master/nav-list/) */
+async function fetchNavList() {
+  const targetUrl = resolveApiUrl('/api/master/nav-list/');
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
     });
-    const json = await res.json();
-    // 構造に合わせて抽出 (FANZA特化)
-    return json.data?.['FANZA（アダルト）']?.services || json.services || {};
+    if (!res.ok) throw new Error(`NAV_FETCH_ERROR_${res.status}`);
+    return await res.json();
   } catch (error) {
-    console.error("[Navigation] FETCH_FAILED:", error);
-    return {};
+    console.error("[NavList] FETCH_FAILED:", error);
+    return { data: {} };
   }
+}
+
+/** FANZAフロアナビゲーション */
+export async function getFanzaDynamicMenu() {
+  const json = await fetchNavList();
+  // JSON内の日本語キー「FANZA（アダルト）」からサービス一覧を抽出
+  return json?.data?.['FANZA（アダルト）']?.services || {};
+}
+
+/** DMMフロアナビゲーション */
+export async function getDmmDynamicMenu() {
+  const json = await fetchNavList();
+  // JSON内の日本語キー「DMM.com（一般）直下、または DMM.com」からサービス一覧を抽出
+  return json?.data?.['DMM.com（一般）']?.services || json?.data?.['DMM.com']?.services || {};
 }

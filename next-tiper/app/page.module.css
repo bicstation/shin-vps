@@ -1,13 +1,14 @@
 /* ==============================================================================
- * 📂 page.module.css - Zenith Tactical Archive Interface (Relaxed Sidebar)
+ * 📂 page.module.css - Zenith Tactical Archive Interface (Integrated Edition)
  * ============================================================================== */
 
 .pageContainer {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  /* 💡 layout.tsx の背景色(#06060a)と重なり、より深い黒を表現 */
   background-color: #050508;
-  /* 💡 奥行きのある多層背景グラデーション */
+  /* 🧬 奥行きのある多層背景グラデーション */
   background-image: 
     radial-gradient(circle at 50% -20%, rgba(233, 69, 96, 0.18) 0%, transparent 70%),
     linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
@@ -19,7 +20,7 @@
   position: relative;
 }
 
-/* 📺 CRT走査線・ノイズエフェクト */
+/* 📺 CRT走査線・ノイズエフェクト (z-indexを調整して全体に適用) */
 .pageContainer::before {
   content: " ";
   position: fixed;
@@ -29,16 +30,17 @@
   background-size: 100% 4px, 3px 100%;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.15; /* 少し薄めて視認性を向上 */
+  opacity: 0.15;
 }
 
-/* --- 🏗️ 1. レイアウト構造 --- */
+/* --- 🏗️ 1. レイアウト構造 (共通サイドバーと共存) --- */
 .main {
   flex: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
+  min-width: 0; /* 💡 Flexアイテムのハミ出しを防止 */
 }
 
 .wrapper {
@@ -47,35 +49,36 @@
   margin: 20px auto 60px;
   padding: 0 3%;
   display: grid;
+  /* 💡 サイドバー領域(320px)を確保しつつ、右側のメインを可変に */
   grid-template-columns: 320px 1fr;
-  gap: 50px; /* ギャップを広げてゆとりを持たせる */
+  gap: 50px; 
   position: relative;
   z-index: 10;
   align-items: start; 
+  box-sizing: border-box;
 }
 
-/* --- 🏛️ 2. サイドバーエリア --- */
+/* --- 🏛️ 2. 内部サイドバーエリア --- */
 .sidebar {
   position: relative;
-  z-index: 20; /* 走査線より前に出るよう調整 */
+  z-index: 20;
 }
 
 .sidebarSticky {
   position: sticky;
-  top: 40px; /* 上部の余白を少し詰めて開始位置を調整 */
-  /* ✅ 高さを制限せず、コンテンツに合わせて自然に伸びるように変更 */
+  top: 40px; 
   height: auto;
   max-height: none; 
   display: flex;
   flex-direction: column;
-  gap: 30px; /* 各セクション間の距離をゆったりさせる */
+  gap: 30px;
   padding-bottom: 50px;
-  overflow-y: visible; /* 👈 ここが重要：中身を隠さない */
+  overflow-y: visible; 
 }
 
 /* --- 🎬 3. コンテンツストリーム --- */
 .contentStream {
-  min-width: 0;
+  min-width: 0; /* 💡 グリッド内での画像ハミ出し防止 */
   animation: fadeIn 0.8s ease-out;
 }
 
@@ -115,7 +118,7 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* ニュースカードのグリッド */
+/* ニュースカードグリッド */
 .newsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -123,6 +126,8 @@
 }
 
 .newsCard {
+  display: block;
+  text-decoration: none;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -196,7 +201,7 @@
   margin-top: 5px;
 }
 
-/* ⚡ プラットフォームセクションタイトル */
+/* --- ⚡ プラットフォームセクション --- */
 .platformSection { margin-bottom: 100px; }
 
 .platformTitle {
@@ -216,7 +221,7 @@
   box-shadow: 0 0 10px #e94560;
 }
 
-/* 🔍 ローディング・エラー表示 */
+/* --- 🔍 ローディング・表示系 --- */
 .loadingArea {
   height: 300px;
   display: flex;
@@ -237,6 +242,34 @@
 @keyframes pulse {
   0%, 100% { opacity: 0.6; transform: scale(0.98); }
   50% { opacity: 1; color: #fff; transform: scale(1); }
+}
+
+/* --- 💰 Price ＆ AI Summary 統合用追加スタイル --- */
+.visualGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+
+@media (min-width: 1280px) {
+  .visualGrid {
+    grid-template-columns: 450px 1fr;
+  }
+}
+
+.aiSummaryCard {
+  background: rgba(10, 10, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.priceContainer {
+  margin-top: auto; /* 💡 これで価格を最下部に押し出す */
+  padding-top: 40px;
 }
 
 /* --- 🔘 メガアクション --- */
@@ -260,6 +293,8 @@
   transition: 0.4s;
   cursor: pointer;
   border-radius: 2px;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .megaTerminalBtn:hover {
@@ -278,10 +313,10 @@
   }
   .sidebarSticky { 
     position: static; 
-    max-height: none; 
     margin-bottom: 40px;
     padding-bottom: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
   .registryMainTitle { font-size: 38px; }
+  .visualGrid { grid-template-columns: 1fr; }
 }

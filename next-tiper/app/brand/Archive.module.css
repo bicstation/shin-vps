@@ -1,73 +1,111 @@
-/* --- 🎨 THEME_PROTOCOL (テーマカラー統合管理) --- */
+/* --- 🎨 THEME_SYSTEM: 共通変数とプラットフォーム別定義 --- */
 
 .pageWrapper { 
-  /* デフォルト: FANZA (Pink/Red) */
-  --accent: #e94560; 
-  --accent-glow: rgba(233, 69, 96, 0.2);
-  --bg-deep: #05050a;
-  --bg-surface: rgba(255, 255, 255, 0.03);
-  --border-dim: rgba(255, 255, 255, 0.08);
+  /* Default Protocol: FANZA (Pink/Red) */
+  --accent: #ff3366; 
+  --accent-glow: rgba(255, 51, 102, 0.2);
+  --bg-deep: #06060a;
+  --bg-surface: rgba(255, 255, 255, 0.02);
+  --border-dim: rgba(255, 255, 255, 0.06);
+  --text-main: #e2e8f0;
+  --text-dim: #64748b;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
   
   background-color: var(--bg-deep);
-  color: #e0e0e5;
+  color: var(--text-main);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* DMMテーマ (Orange) */
+/* Platform Protocol Overrides */
 .pageWrapper[data-platform="dmm"] { 
   --accent: #ff9900; 
   --accent-glow: rgba(255, 153, 0, 0.2);
 }
 
-/* DUGAテーマ (Turquoise) */
 .pageWrapper[data-platform="duga"] { 
   --accent: #00d1b2; 
   --accent-glow: rgba(0, 209, 178, 0.2);
 }
 
-/* --- 🛰️ BACKGROUND_EFFECTS --- */
+.pageWrapper[data-platform="video"] { 
+  --accent: #e94560; 
+  --accent-glow: rgba(233, 69, 96, 0.2);
+}
+
+/* --- 🛰️ ATMOSPHERE: 背景エフェクト --- */
 
 .ambientGlow {
   position: absolute;
-  top: 0; left: 0; right: 0; height: 800px;
+  top: 0; left: 0; right: 0; height: 100vh;
   background: 
-    radial-gradient(circle at 15% 0%, var(--accent-glow) 0%, transparent 50%),
-    linear-gradient(to bottom, transparent, var(--bg-deep));
+    radial-gradient(circle at 15% 0%, var(--accent-glow) 0%, transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(0, 0, 0, 0) 0%, var(--bg-deep) 100%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* 背景にスキャンライン・グリッドを追加 */
 .pageWrapper::before {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: linear-gradient(var(--border-dim) 1px, transparent 1px),
-                    linear-gradient(90deg, var(--border-dim) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(circle at 50% 0%, black, transparent 80%);
+  background-image: 
+    linear-gradient(var(--border-dim) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-dim) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(circle at 50% 30%, black, transparent 90%);
   pointer-events: none;
-  opacity: 0.3;
+  opacity: 0.4;
+  z-index: 0;
 }
 
-/* --- 🏗️ LAYOUT_ENGINE --- */
+/* --- 🏗️ CORE_LAYOUT: アーキテクチャ --- */
 
 .container {
   display: flex;
-  gap: 40px;
-  max-width: 1800px;
+  gap: 50px;
+  max-width: 1920px;
   margin: 0 auto;
-  padding: 40px 4% 80px;
+  padding: 40px 3% 100px;
   position: relative;
   z-index: 1;
+  /* サイドバーをコンテンツの高さに合わせる */
+  align-items: flex-start; 
 }
 
 .sidebarWrapper {
-  width: 300px;
+  width: 280px;
   flex-shrink: 0;
+}
+
+.stickySidebar {
+  position: sticky;
+  top: 40px; /* ブラウザ上部からの余白を詰め、表示領域を拡大 */
+  
+  /* 高さを動的に計算し、スクロール可能に */
+  height: auto;
+  max-height: calc(100vh - 80px); 
+  overflow-y: auto;
+  padding-right: 15px;
+  
+  /* スクロールバーのカスタマイズ (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+
+/* スクロールバーのカスタマイズ (Webkit/Chrome/Safari) */
+.stickySidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.stickySidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.stickySidebar::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 .mainContent {
@@ -75,158 +113,168 @@
   min-width: 0;
 }
 
-/* --- 🛰️ UI_COMPONENTS --- */
+/* --- 🛰️ NAV_ELEMENTS: パンくず --- */
 
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  margin-bottom: 40px;
   letter-spacing: 0.15em;
-  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 .bcLink {
-  color: #64748b;
+  color: var(--text-dim);
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
+  padding: 2px 4px;
 }
 
 .bcLink:hover { 
   color: var(--accent); 
-  text-shadow: 0 0 8px var(--accent-glow);
+  background: rgba(255, 255, 255, 0.05);
 }
+
+.bcDivider { color: var(--border-dim); }
 
 .bcActive { 
   color: var(--accent); 
-  font-weight: 800;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 2px 6px;
-  border-radius: 2px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--accent);
 }
 
-/* 🛰️ HEADER_SECTION */
+/* --- 🛰️ HEADER_PROTOCOLS: ヘッダーセクション --- */
+
 .headerSection {
-  margin-bottom: 50px;
-  border-left: 2px solid var(--accent);
-  padding-left: 24px;
+  margin-bottom: 60px;
+  position: relative;
 }
 
-.systemLabel {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--accent);
-  letter-spacing: 0.2em;
-  margin-bottom: 8px;
+.titleGroup {
+  position: relative;
+  padding-left: 20px;
 }
 
-.mainTitle {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 950;
-  line-height: 1.1;
-  margin: 0 0 16px;
-  letter-spacing: -0.04em;
+.titleGroup::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.titleMain {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 15px;
+  letter-spacing: -0.05em;
   font-style: italic;
   text-transform: uppercase;
+  background: linear-gradient(to bottom, #fff, #888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
-
-.titleAccent { color: var(--accent); opacity: 0.8; }
 
 .statusInfo {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.statusValue {
-  color: #fff;
-  font-weight: 700;
-  font-size: 14px;
-  margin-left: 8px;
-}
-
-/* 🏎️ FILTER_CONTROL (Tactical Edition) */
-.filterControl {
   display: flex;
-  gap: 24px;
-  background: var(--bg-surface);
-  padding: 20px;
+  align-items: center;
+  gap: 15px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.statusLabel { color: var(--text-dim); letter-spacing: 0.1em; }
+.statusValue { 
+  color: #fff; 
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
   border: 1px solid var(--border-dim);
-  border-radius: 4px;
-  backdrop-filter: blur(10px);
 }
 
-.fieldLabel {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: var(--accent);
-  margin-bottom: 8px;
-  display: block;
-}
+/* --- 📦 GRID_DYNAMICS: 商品リスト --- */
 
-.filterInput, .selectInput {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--border-dim);
-  color: #fff;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-family: 'JetBrains Mono', monospace;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.filterInput:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 15px var(--accent-glow);
-  background: rgba(0, 0, 0, 0.5);
-}
-
-/* 📦 PRODUCT_GRID */
 .productGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 32px 24px;
+  gap: 40px 24px;
   margin-top: 40px;
 }
 
-.noData {
-  padding: 120px 0;
-  text-align: center;
-  font-family: 'JetBrains Mono', monospace;
-  color: #475569;
-  border: 1px dashed var(--border-dim);
-  background: rgba(255, 255, 255, 0.01);
-  letter-spacing: 0.1em;
+.productGrid > div {
+  animation: nodeAppear 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
 }
 
-/* 🔢 PAGINATION_AREA */
+@keyframes nodeAppear {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 🔢 PAGINATION_PROTOCOLS --- */
+
 .paginationArea {
-  margin-top: 80px;
-  padding-top: 40px;
+  margin-top: 100px;
+  padding: 60px 0;
   border-top: 1px solid var(--border-dim);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.02), transparent 70%);
 }
 
-.pageStatus {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: #64748b;
-  letter-spacing: 0.2em;
+/* --- 📱 MOBILE_ADAPTATION: レスポンシブ --- */
+
+@media (max-width: 1400px) {
+  .container { gap: 30px; }
+  .sidebarWrapper { width: 260px; }
 }
 
-/* 📱 RESPONSIVE_STRATEGY */
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
   .container { flex-direction: column; }
-  .sidebarWrapper { width: 100%; order: 2; }
-  .mainContent { order: 1; }
+  .sidebarWrapper { 
+    width: 100%; 
+    border-right: none;
+    border-bottom: 1px solid var(--border-dim);
+    padding-bottom: 30px;
+  }
+  .stickySidebar { 
+    position: relative; 
+    top: 0; 
+    max-height: 400px; /* モバイル時は逆に長すぎないように制御 */
+    display: block;
+    overflow-y: auto;
+  }
 }
 
 @media (max-width: 768px) {
-  .filterControl { flex-direction: column; }
-  .sortField { width: 100%; }
-  .mainTitle { font-size: 2.5rem; }
+  .container { padding: 20px 5%; }
+  .titleMain { font-size: 2.5rem; }
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 12px;
+  }
+  .headerSection { margin-bottom: 30px; }
+}
+
+/* --- 🛠️ DEBUG_UTILS --- */
+.debugCodeContainer {
+  background: #000;
+  border: 1px solid #1e293b;
+  border-radius: 4px;
+  padding: 15px;
+  overflow-x: auto;
+  margin-top: 40px;
+}
+
+.debugCodeContainer pre {
+  margin: 0;
+  font-size: 10px;
+  color: #38bdf8;
+  line-height: 1.5;
 }

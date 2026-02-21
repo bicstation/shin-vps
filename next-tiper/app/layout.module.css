@@ -1,139 +1,76 @@
-/**
- * 🏗️ [TIPER-LIVE-LAYOUT-CSS] - UNIFIED & FULL-WIDTH OPTIMIZED
- * バックエンド統合環境に合わせた全幅レイアウト ＆ サイドバー可動域最大化
- */
+/* /app/layout.module.css */
 
-/* 1. 全体を包むラッパー */
 .bodyWrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  background-color: #06060a;
-  color: #ffffff;
-  /* 💡 stickyを維持しつつ横スクロールのみを防止 */
-  overflow-x: hidden;
-  overflow-y: visible; 
+  position: relative;
+  width: 100%;
 }
 
-/* 2. 告知バー（広告・年齢制限） */
+/* 🧬 システムグリッド背景 */
+.systemGrid {
+  position: fixed;
+  top: 0; left: 0; 
+  width: 100%; height: 100%;
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 📢 告知バー */
 .adDisclosure {
   width: 100%;
+  background-color: rgba(0, 0, 0, 0.85);
+  border-bottom: 1px solid rgba(233, 69, 96, 0.3);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+  position: relative;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.adDisclosureInner {
+  max-width: 1800px;
+  margin: 0 auto;
   padding: 8px 15px;
   font-size: 11px;
   text-align: center;
-  background-color: rgba(0, 0, 0, 0.85); 
   color: #94a3b8;
-  border-bottom: 1px solid rgba(233, 69, 96, 0.2);
   letter-spacing: 0.05em;
-  z-index: 1000;
-  box-sizing: border-box;
-  font-family: 'JetBrains Mono', monospace;
-  backdrop-filter: blur(10px);
-  /* 💡 site_group が DMM の場合、ageLimit が消えても高さが変わらないよう min-height を確保 */
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .ageLimit {
-  margin-left: 12px;
-  color: #e94560; 
-  font-weight: 800;
-  text-shadow: 0 0 10px rgba(233, 69, 96, 0.4);
-  /* 💡 強調したいキーワードへのアクセント */
-  border-left: 1px solid rgba(233, 69, 96, 0.3);
-  padding-left: 12px;
+  margin-left: 10px;
+  color: #e94560;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
 }
 
-/* 3. レイアウトの外枠 (全幅設定) */
+/* 🏗️ コンテナ構造 */
 .layoutContainer {
   flex: 1 0 auto;
-  width: 100%;
-  max-width: 100%; 
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  position: relative;
-}
-
-/* 4. サイドバーとメインを横並びにするインナー */
-.layoutInner {
-  display: flex;
   width: 100%;
-  gap: 0;
-  padding: 0;
-  /* 💡 重要: サイドバーを右側コンテンツと同じ高さまで強制的に引き伸ばす */
-  align-items: stretch; 
   position: relative;
-  flex: 1;
 }
 
-/* 5. メインコンテンツ */
 .mainContent {
   flex: 1 0 auto;
-  width: 100%;
-  min-width: 0;
-  min-height: 100vh;
-  /* 💡 バックエンド統合後のデータ読み込みを考慮したスムーズな登場 */
-  animation: fadeIn 0.4s ease-out;
   display: flex;
   flex-direction: column;
-  position: relative;
-}
-
-/* 6. モバイル対応 (1024px以下) */
-@media (max-width: 1024px) {
-  .layoutInner {
-    flex-direction: column;
-    gap: 0;
-  }
-}
-
-/* 7. モバイル対応 (768px以下) */
-@media (max-width: 768px) {
-  .adDisclosure {
-    font-size: 10px;
-    padding: 6px 10px;
-    flex-wrap: wrap; /* 💡 狭い画面でPRと制限が2行になってもOKなように */
-  }
-  .ageLimit {
-    margin-left: 0;
-    margin-top: 2px;
-    border-left: none;
-    padding-left: 0;
-    width: 100%; /* モバイルでは改行して目立たせる */
-  }
-}
-
-/* 8. ページフェードイン */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* 9. ユーティリティ */
-.contentContainer {
   width: 100%;
-  max-width: 1920px; /* 💡 4K/大型モニター向けに少し拡張 */
-  margin: 0 auto;
-  padding: 0 2%; /* 💡 全幅を活かすため余白をタイトに */
-  box-sizing: border-box;
+  min-width: 0; /* Flexアイテムのハミ出し防止 */
 }
 
-.systemGrid {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background-image: 
-    linear-gradient(rgba(233, 69, 96, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(233, 69, 96, 0.02) 1px, transparent 1px);
-  background-size: 50px 50px; /* 少しグリッドを広げて視認性を向上 */
-  pointer-events: none;
-  z-index: -1;
+/* 🔍 ローディング */
+.loadingWrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
 }
 
 .loadingPulse {
@@ -145,6 +82,14 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+  0%, 100% { opacity: 0.4; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* 📱 モバイル対応 */
+@media (max-width: 768px) {
+  .adDisclosureInner {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
 }

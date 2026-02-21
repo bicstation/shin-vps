@@ -15,7 +15,9 @@ from api.models import (
     AdultProduct, 
     LinkshareProduct, 
     AdultAttribute, 
-    FanzaFloorMaster
+    FanzaFloorMaster,
+    # 💡 追加: マスターモデルを直接インポート
+    Actress, Genre, Maker, Label, Series, Director, Author
 )
 
 from api.serializers import (
@@ -32,18 +34,12 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
     max_page_size = 100
 
 # --------------------------------------------------------------------------
-# 💡 1. 統合ゲートウェイView (関連作品ロジック：各軸の出し分け対応版)
+# 💡 1. 統合ゲートウェイView (ブランド・軸絞り込み対応版)
 # --------------------------------------------------------------------------
 class UnifiedAdultProductListView(generics.ListAPIView):
-    """
-    FANZA / DMM / DUGA を AdultProduct モデルで一括管理。
-    related_to_id パラメータがある場合でも、具体的なID指定(genre, actress_id等)がある場合は
-    その軸での絞り込みを優先し、RelatedArchives.tsx の各セクション表示をサポートする。
-    """
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    
     serializer_class = AdultProductSerializer
     
     search_fields = [
@@ -56,23 +52,17 @@ class UnifiedAdultProductListView(generics.ListAPIView):
     ]
 
     def get_queryset(self):
-        # 共通のベースクエリ
         qs = AdultProduct.objects.filter(is_active=True).select_related(
             'maker', 'label', 'series', 'director', 'floor_master'
         ).prefetch_related('actresses', 'genres', 'attributes', 'authors')
 
         p = self.request.query_params
 
-        # --- 🎯 関連作品ロジックの判定 ---
+        # --- 🎯 関連作品ロジック ---
         related_id = p.get('related_to_id')
-        
-        # フロントエンド(RelatedArchives.tsx)から特定の軸が指定されているかチェック
-        # 修正ポイント: actress_id や maker_id をより確実に検知するように修正
         axis_params = ['actress_id', 'maker_id', 'genre', 'actress', 'maker', 'series_id', 'label_id']
         has_specific_axis = any(p.get(k) for k in axis_params)
 
-        # related_to_id があり、かつ「特定の軸指定がない」場合のみ、従来の統合関連モード
-        # 軸指定がある場合は、下の A, B フィルタセクションに処理を流す
         if related_id and not has_specific_axis:
             try:
                 base_obj = AdultProduct.objects.get(product_id_unique=related_id)
@@ -96,8 +86,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         if service_code: qs = qs.filter(api_service__iexact=service_code)
         if floor_code:  qs = qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
 
-        # --- B. 全方位スラッグ・IDフィルタリング ---
-        # 💡 修正ポイント: actress__id へのフィルタリングを確実に通すためのマッピング
+        # --- B. 全方位フィルタリング ---
         filter_map = {
             'genre': ('genres__id', 'genres__slug'),
             'actress': ('actresses__id', 'actresses__slug'),
@@ -109,24 +98,21 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         }
 
         for key, fields in filter_map.items():
-            # actress と actress_id の両方をチェック
             id_val = p.get(key) or p.get(f"{key}_id")
             slug_val = p.get(f"{key}_slug")
 
             if id_val and str(id_val).isdigit():
-                # 🎯 確実なID指定によるフィルタ
                 qs = qs.filter(**{fields[0]: id_val})
             elif slug_val:
                 qs = qs.filter(**{fields[1]: slug_val})
 
-        # 最後に自分自身を除外（related_to_idがある場合）
         if related_id:
             qs = qs.exclude(product_id_unique=related_id)
 
         return qs.distinct().order_by('-release_date')
 
 # --------------------------------------------------------------------------
-# 💡 2. 階層ナビゲーションView (リアルタイム集計版)
+# 💡 2. 階層ナビゲーションView
 # --------------------------------------------------------------------------
 class FanzaFloorNavigationAPIView(views.APIView):
     permission_classes = [AllowAny]
@@ -149,25 +135,76 @@ class FanzaFloorNavigationAPIView(views.APIView):
         return response.Response({"status": "NAV_SYNC_COMPLETE", "data": structure})
 
 # --------------------------------------------------------------------------
-# 💡 3. 全項目インデックス取得View (汎用タクソノミー)
+# 💡 3. 全項目インデックス取得View (マスター直接参照・高速版)
 # --------------------------------------------------------------------------
 class AdultTaxonomyIndexAPIView(views.APIView):
+    """
+    女優、ジャンル、メーカー等の一覧を、ブランド(api_source)ごとに独立して取得します。
+    複雑なJOIN集計を避け、各マスターテーブルの product_count を直接参照します。
+    """
     permission_classes = [AllowAny]
+
     def get(self, request, *args, **kwargs):
-        tax_type = request.query_params.get('type', 'genres')
-        ordering = request.query_params.get('ordering', '-product_count')
-        limit = request.query_params.get('limit')
-        floor_code = request.query_params.get('floor_code')
-        mapping = {'genres': 'genres', 'makers': 'maker', 'actresses': 'actresses', 'series': 'series', 'directors': 'director', 'authors': 'authors', 'labels': 'label'}
-        relation_name = mapping.get(tax_type, 'genres')
-        base_qs = AdultProduct.objects.filter(is_active=True)
-        if floor_code: base_qs = base_qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
-        items = base_qs.values(tmp_id=F(f'{relation_name}__id'), tmp_name=F(f'{relation_name}__name'), tmp_slug=F(f'{relation_name}__slug')).annotate(product_count=Count('id')).exclude(tmp_name=None)
-        valid_order_fields = {'name': 'tmp_name', '-name': '-tmp_name', 'product_count': 'product_count', '-product_count': '-product_count', 'id': 'tmp_id', '-id': '-tmp_id'}
-        items = items.order_by(valid_order_fields.get(ordering, '-product_count'))
-        if limit and limit.isdigit(): items = items[:int(limit)]
-        results = [{"id": i['tmp_id'], "name": i['tmp_name'], "slug": i['tmp_slug'] or i['tmp_name'], "product_count": i['product_count']} for i in items]
-        return response.Response({"type": tax_type, "results": results})
+        p = request.query_params
+        tax_type = p.get('type', 'genres')
+        ordering = p.get('ordering', '-product_count')
+        limit = p.get('limit')
+        api_source = p.get('api_source')
+
+        # 1. タクソノミー名とモデルの紐付け
+        model_map = {
+            'genres': Genre, 
+            'makers': Maker, 
+            'actresses': Actress, 
+            'series': Series, 
+            'directors': Director, 
+            'authors': Author, 
+            'labels': Label
+        }
+        TargetModel = model_map.get(tax_type)
+
+        if not TargetModel:
+            return response.Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2. マスターテーブルからクエリ開始
+        qs = TargetModel.objects.all()
+
+        # 3. ブランド(api_source)で絞り込み
+        # これにより DMM ページでは DMM 用に作成された女優レコードのみが抽出されます
+        if api_source:
+            qs = qs.filter(api_source__iexact=api_source)
+
+        # 4. 商品が存在するものに限定（不要なマスターを表示しない）
+        qs = qs.filter(product_count__gt=0)
+
+        # 5. 並び替え (デフォルトは商品数が多い順)
+        # 既存の ordering パラメータに対応
+        valid_order_fields = ['name', '-name', 'product_count', '-product_count', 'id', '-id']
+        if ordering not in valid_order_fields:
+            ordering = '-product_count'
+        
+        qs = qs.order_by(ordering)
+
+        # 6. リミット適用
+        if limit and limit.isdigit():
+            qs = qs[:int(limit)]
+
+        # 7. レスポンス整形
+        results = [
+            {
+                "id": item.id, 
+                "name": item.name, 
+                "slug": item.slug or item.name, 
+                "product_count": item.product_count,
+                "api_source": item.api_source
+            } for item in qs
+        ]
+
+        return response.Response({
+            "type": tax_type, 
+            "api_source": api_source,
+            "results": results
+        })
 
 # --------------------------------------------------------------------------
 # 💡 4. サイドバー用分析View
@@ -176,7 +213,10 @@ class PlatformMarketAnalysisAPIView(views.APIView):
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
         base_qs = AdultProduct.objects.filter(is_active=True)
-        return response.Response({"total_nodes": base_qs.count(), "platform_avg_score": round(base_qs.aggregate(avg=Avg('spec_score'))['avg'] or 0, 2)})
+        return response.Response({
+            "total_nodes": base_qs.count(), 
+            "platform_avg_score": round(base_qs.aggregate(avg=Avg('spec_score'))['avg'] or 0, 2)
+        })
 
 # --------------------------------------------------------------------------
 # 💡 5. 各種個別リスト・詳細View

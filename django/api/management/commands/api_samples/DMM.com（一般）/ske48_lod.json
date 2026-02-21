@@ -1,0 +1,273 @@
+{
+  "request": {
+    "parameters": {
+      "api_id": "GkGxcxhcMKUgQGWzPnp9",
+      "affiliate_id": "bicbic-990",
+      "site": "DMM.com",
+      "service": "lod",
+      "floor": "ske48",
+      "hits": "10",
+      "offset": "1",
+      "sort": "date",
+      "output": "json"
+    }
+  },
+  "result": {
+    "status": 200,
+    "result_count": 10,
+    "total_count": 42,
+    "first_position": 1,
+    "items": [
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26022001",
+        "product_id": "ske48c26022001",
+        "title": "2026年2月20日（金） SKE48 本気(マジ)の本気(マジ)！12期生vs13期生ガチンコバトル",
+        "volume": "81",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26022001/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26022001%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-21 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26021981",
+        "product_id": "ske48c26021981",
+        "title": "【定点映像】2026年2月19日（木） 「制服の芽」公演",
+        "volume": "103",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26021981/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26021981%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-20 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26021901",
+        "product_id": "ske48c26021901",
+        "title": "2026年2月19日（木） 「制服の芽」公演",
+        "volume": "103",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26021901/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26021901%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-20 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26021801",
+        "product_id": "ske48c26021801",
+        "title": "2026年2月18日（水） SKE48 バラエティアイドル育成プロジェクト「ミカンのむき方」",
+        "volume": "77",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26021801/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26021801%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-19 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48x26021701",
+        "product_id": "ske48x26021701",
+        "title": "2023年2月17日（金） PlayBack!!!!! チームE「SKEフェスティバル」公演",
+        "volume": "114",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48x26021701/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48x26021701%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-17 21:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26021601",
+        "product_id": "ske48c26021601",
+        "title": "2026年2月16日（月） SKE48 THEATER IDOL COLLECTION",
+        "volume": "85",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26021601/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26021601%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-17 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26021581",
+        "product_id": "ske48c26021581",
+        "title": "【定点映像】2026年2月15日（日） 「可能性こそが未来」公演",
+        "volume": "94",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26021581/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26021581%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-16 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26021501",
+        "product_id": "ske48c26021501",
+        "title": "2026年2月15日（日） 「可能性こそが未来」公演",
+        "volume": "94",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26021501/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26021501%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-16 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26021402",
+        "product_id": "ske48c26021402",
+        "title": "2026年2月14日（土）17:00～ バレンタイン特別企画 先輩！大好きです！大作戦～第2部",
+        "volume": "81",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26021402/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26021402%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-15 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      },
+      {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26021401",
+        "product_id": "ske48c26021401",
+        "title": "2026年2月14日（土）13:00～ バレンタイン特別企画 先輩！大好きです！大作戦～第1部",
+        "volume": "83",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26021401/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26021401%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-15 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

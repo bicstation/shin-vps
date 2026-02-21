@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+/* /app/brand/[platform]/products/[id]/_components/AnalysisColumn.tsx */
 // @ts-nocheck
 import React from 'react';
 import Link from 'next/link';
@@ -7,39 +7,36 @@ import styles from '../ProductDetail.module.css';
 
 export default function AnalysisColumn({ product, radarData }) {
   return (
-    <section className="space-y-8">
-      {/* 🆕 NEURAL DIALOGUE LOG */}
-      {product.ai_chat_comments && product.ai_chat_comments.length > 0 && (
-        <div className="bg-[#0f0f1a] border border-white/10 p-6 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-2 opacity-10 text-[10px] font-black italic text-[#e94560]">AI_COMM_LOG</div>
-          <h4 className="text-[10px] font-black text-[#e94560] mb-6 tracking-[0.3em] uppercase border-b border-[#e94560]/20 pb-2">Neural_Dialogue_Archive</h4>
-          <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar font-mono">
-            {product.ai_chat_comments.map((chat, idx) => (
-              <div key={idx} className={`p-3 text-[11px] leading-relaxed ${idx % 2 === 0 ? 'bg-white/5 border-l border-white/20 text-gray-400' : 'bg-[#e94560]/5 border-l border-[#e94560] text-gray-300'}`}>
-                <div className="text-[9px] font-black opacity-50 mb-1">[{chat.user}]</div>
-                <div>{chat.comment}</div>
-              </div>
-            ))}
-          </div>
+    <section className="space-y-12">
+      {/* NEURAL DEEP CONTENT */}
+      <div className="relative p-8 bg-gradient-to-b from-white/[0.03] to-transparent border-t border-white/10">
+        <div className="absolute top-0 left-0 w-12 h-[2px] bg-[#00d1b2]" />
+        <h3 className="text-[10px] font-black text-[#00d1b2] mb-6 uppercase tracking-[0.4em] flex items-center gap-2">
+          <span className="w-2 h-2 bg-[#00d1b2] animate-pulse" /> Neural_Deep_Analysis_Report
+        </h3>
+        <div className="text-gray-300 leading-relaxed font-light space-y-4 text-base italic">
+          {product.ai_content ? (
+            product.ai_content.split('\n').map((p, i) => p && <p key={i}>{p}</p>)
+          ) : (
+            <p className="opacity-30 uppercase tracking-widest text-xs">Waiting for neural expansion data...</p>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* RADAR & SUMMARY */}
-      <div className={styles.aiSummaryCard}>
-        <div className={styles.aiLabel}>Expert AI_Report</div>
-        <p className={styles.aiText}>"{product.ai_summary || 'No summary available.'}"</p>
-        <div className="mt-8 p-6 bg-black/40 rounded border border-white/5 flex flex-col items-center justify-center min-h-[280px]">
-            <RadarChart data={radarData} />
+      {/* RADAR CHART UNIT */}
+      <div className="bg-[#0a0a0f] border border-white/5 p-8 flex flex-col items-center">
+        <h4 className="text-[9px] font-black text-zinc-500 uppercase mb-8 tracking-[0.5em] w-full text-left">Volatility_Spectrum_Analysis</h4>
+        <div className="w-full max-w-[400px] aspect-square flex items-center justify-center">
+          <RadarChart data={radarData} />
         </div>
-        <div className={styles.aiReflection} />
       </div>
 
       {/* TAGS */}
-      <div className="p-8 bg-[#111125]/40 rounded-sm border border-white/5">
-        <h4 className="text-[10px] font-black text-gray-400 uppercase mb-6 tracking-[0.4em]">Semantic_Tags</h4>
+      <div className="p-8 bg-white/[0.02] border border-white/5">
+        <h4 className="text-[10px] font-black text-gray-500 uppercase mb-6 tracking-[0.4em]">Semantic_Tags</h4>
         <div className="flex flex-wrap gap-2">
           {product.genres?.map((genre) => (
-            <Link key={genre.id} href={`/genre/${genre.slug || genre.id}`} className="px-3 py-1.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-[#e94560] text-[11px] font-black italic uppercase transition-colors">
+            <Link key={genre.id} href={`/genre/${genre.slug || genre.id}`} className="px-3 py-1.5 bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-[#e94560] text-[10px] font-black italic uppercase transition-all duration-300">
               #{genre.name}
             </Link>
           ))}
