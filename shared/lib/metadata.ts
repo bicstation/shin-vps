@@ -2,6 +2,7 @@
  * =====================================================================
  * 🛠️ [SHARED-FINAL] 統合メタデータ生成ライブラリ (shared/lib/metadata.ts)
  * SEO最適化、SNSシェア（OGP）、インデックス制御を全サイトで共通化。
+ * Next.js 15.x 完全対応版
  * =====================================================================
  */
 
@@ -13,8 +14,8 @@ import type { Metadata } from 'next';
  * Next.js の Metadata 型を戻り値に指定することで、型安全性を確保します。
  * * @param title ページタイトル (例: "商品一覧")
  * @param description ページの説明
- * @param image シェア用画像URL
- * @param path 現在のパス (例: "/search")
+ * @param image シェア用画像URL (外部URLまたは相対パス)
+ * @param path 現在のパス (例: "/search" または "adults/123")
  * @param noIndex trueに設定すると検索エンジンから除外 (マイページ等に使用)
  */
 export function constructMetadata(
@@ -24,49 +25,56 @@ export function constructMetadata(
   path: string = "",
   noIndex: boolean = false
 ): Metadata {
-  // 現在のサイト設定を取得
+  // 1. 現在のサイト設定を取得
   const { site_name, origin_domain, site_prefix } = getSiteMetadata();
 
-  // 💡 ベースパスの決定 (末尾のスラッシュを除去して正規化)
+  // 2. ベースパスの決定 (サブディレクトリ運用のための prefix 処理)
+  // 末尾のスラッシュを除去して正規化
   const rawBasePath = site_prefix || process.env.NEXT_PUBLIC_BASE_PATH || "";
   const basePath = rawBasePath.endsWith('/') ? rawBasePath.slice(0, -1) : rawBasePath;
 
-  // デフォルトの説明文
+  // 3. デフォルトの説明文
   const defaultDescription = description || `${site_name} - AI解析と最新データに基づく情報プラットフォーム`;
   
-  // 🌐 ベースURLの構築 (Next.js 15 の metadataBase 用)
-  // metadataBase は相対パスを解決するための基準。末尾スラッシュなしが推奨。
+  // 4. ベースURLの構築 (Next.js 15 の metadataBase 用)
+  // metadataBase は絶対URLの解決基準。末尾スラッシュなしが推奨。
   const isLocal = origin_domain === 'localhost' || origin_domain === '127.0.0.1' || !origin_domain;
   const siteBaseUrl = isLocal
-    ? 'http://localhost:8083' 
+    ? 'http://localhost:3000' 
     : `https://${origin_domain}`;
 
-  // サイト全体のフルタイトル
+  // 5. サイト全体のフルタイトル
   const fullTitle = title ? `${title} | ${site_name}` : site_name;
 
-  // 🔗 正規URL (canonical) の構築
-  // 常に "/" から始まるように調整
+  // 6. 正規URL (canonical) の構築
+  // pathが "/" の場合は basePath/ に、それ以外は basePath/path に結合
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  const canonicalPath = (path === "/" || path === "") ? `${basePath}/` : `${basePath}${cleanPath}`;
+  const canonicalPath = (path === "/" || path === "") 
+    ? `${basePath}/` 
+    : `${basePath}${cleanPath}`;
 
-  // 🖼️ OGP画像パス (外部URLならそのまま、相対ならbasePathを付与)
-  const ogImage = image?.startsWith('http') ? image : `${basePath}/og-image.png`;
+  // 7. OGP画像パスの解決
+  // 外部URL(http)で始まる場合はそのまま、それ以外は basePath を付与
+  const ogImage = image?.startsWith('http') 
+    ? image 
+    : `${basePath}/og-image.png`;
 
+  // 8. メタデータオブジェクトの返却
   return {
     title: fullTitle,
     description: defaultDescription,
     
     // 💡 キーワード設定 (SEOの補助)
-    keywords: [`${site_name}`, "AI比較", "最新ランキング", "仕様解析"],
+    keywords: [`${site_name}`, "AI比較", "最新ランキング", "仕様解析", "エンタメデータ"],
 
-    // 基本設定
-    // ⚠️ Next.js 15では URL オブジェクトとして渡すことが推奨されます
+    // 🌐 Next.js 15 推奨の URL 基準設定
     metadataBase: new URL(siteBaseUrl),
+    
     alternates: {
       canonical: canonicalPath,
     },
 
-    // 💡 インデックス制御
+    // 💡 インデックス制御 (robots.txt 相当)
     robots: {
       index: !noIndex,
       follow: !noIndex,
@@ -79,7 +87,7 @@ export function constructMetadata(
       },
     },
 
-    // SNS (Facebook, LINE等)
+    // 💡 SNS (Facebook, LINE, Discord 等)
     openGraph: {
       title: fullTitle,
       description: defaultDescription,
@@ -97,16 +105,16 @@ export function constructMetadata(
       locale: "ja_JP",
     },
 
-    // Twitter (X)
+    // 💡 Twitter (X)
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description: defaultDescription,
       images: [ogImage],
-      // creator: "@your_twitter_handle", // 必要に応じて
+      // creator: "@your_account", // 運用に合わせて追加可能
     },
 
-    // アイコン設定
+    // 💡 アイコン・ファビコン設定
     icons: {
       icon: [
         { url: `${basePath}/favicon.ico` },
@@ -117,15 +125,17 @@ export function constructMetadata(
       ],
     },
 
-    // 💡 モバイル最適化とその他のメタ
+    // 💡 モバイル・アプリ連携およびその他の情報
     applicationName: site_name,
-    authors: [{ name: "SHIN-VPS Team" }],
-    generator: "Next.js",
+    authors: [{ name: "SHIN-VPS / TIPER Project" }],
+    generator: "Next.js 15",
     referrer: "origin-when-cross-origin",
     formatDetection: {
       email: false,
       address: false,
       telephone: false,
     },
+
+    // その他、拡張が必要な場合はここに追加
   };
 }

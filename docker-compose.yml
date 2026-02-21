@@ -1,20 +1,16 @@
 # =====================================================================
 # 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 2026 最終修正版
 # ---------------------------------------------------------------------
-# 【コア設計思想: Single Source of Truth & Shared Dockerfile】
-# 1. 共通Dockerfile: ./shared/docker/NextJS.Dockerfile を全Next.jsサイトで使用。
-# 2. 共通基盤: ルート直下の `./shared` を「唯一の正解」として管理。
-# 3. 強制マウント: 開発時は ./shared を各コンテナの /usr/src/app/shared に直接結合。
-# 4. AI・開発者への指示: 
-#     - 各プロジェクト(next-*)配下に shared フォルダをコピーしてはならない。
-#     - 変更はすべてルートの `./shared` で行い、全サイトに即時反映させること。
-#     - ビルド時は PROJECT_NAME 引数で対象プロジェクトを切り替えること。
+# 【設計思想: Single Source of Truth & Shared Dockerfile】
+# 1. Django API: Gemini APIキー10個を含む全環境変数を .env から自動注入。
+# 2. 共通Dockerfile: ./shared/docker/NextJS.Dockerfile を全サイトで使用。
+# 3. 強制マウント: ルートの `./shared` を各コンテナへマウントし、即時反映を実現。
+# 4. Traefikルーティング: api-tiper-host 等の各ホスト名に基づく柔軟な振り分け。
 # =====================================================================
 
 services:
 
   # --- 0. Traefik (エッジプロキシ / ゲートウェイ) ---
-  # 全ドメインのリクエストを受け取り、適切なコンテナへ振り分ける司令塔
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy
@@ -28,8 +24,8 @@ services:
       - "--providers.docker.network=shared-proxy"
       - "--entrypoints.web.address=:80"
     ports:
-      - "8083:80"       # メイン入口 (http://tiper-host:8083 または http://api-tiper-host:8083)
-      - "8085:8080"     # Traefik ダッシュボード (http://localhost:8085)
+      - "8083:80"      # メイン入口
+      - "8085:8080"    # Traefik ダッシュボード
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -67,7 +63,6 @@ services:
       retries: 5
 
   # --- 2. バックエンド層 (Django API) ---
-  # API専用ホスト `api-tiper-host` を中心としたルーティング設定
   django-v2:
     build:
       context: ./django
@@ -79,11 +74,21 @@ services:
     env_file: .env
     environment:
       - DB_HOST=postgres-db-v2
+      # 💡 Gemini APIキーを10個分、明示的に注入するように追加
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_API_KEY_1=${GEMINI_API_KEY_1}
+      - GEMINI_API_KEY_2=${GEMINI_API_KEY_2}
+      - GEMINI_API_KEY_3=${GEMINI_API_KEY_3}
+      - GEMINI_API_KEY_4=${GEMINI_API_KEY_4}
+      - GEMINI_API_KEY_5=${GEMINI_API_KEY_5}
+      - GEMINI_API_KEY_6=${GEMINI_API_KEY_6}
+      - GEMINI_API_KEY_7=${GEMINI_API_KEY_7}
+      - GEMINI_API_KEY_8=${GEMINI_API_KEY_8}
+      - GEMINI_API_KEY_9=${GEMINI_API_KEY_9}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.django-router.priority=150"
-      # 💡 修正ポイント: Host(`api-tiper-host`) を明示的に受け入れ
       - "traefik.http.routers.django-router.rule=(Host(`localhost`) || Host(`127.0.0.1`) || Host(`api-tiper-host`) || Host(`tiper-host`) || Host(`bicstation-host`) || Host(`saving-host`) || Host(`avflash-host`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
     volumes:
@@ -94,7 +99,6 @@ services:
       - shared-proxy
 
   # --- 3. フロントエンド層 (Next.js) ---
-
   next-bicstation-v2:
     build:
       context: .

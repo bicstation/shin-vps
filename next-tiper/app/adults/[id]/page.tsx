@@ -1,190 +1,219 @@
+/* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
-export const dynamic = 'force-dynamic';
-
 import React, { Suspense } from 'react';
+import { Metadata } from 'next';
 import Link from 'next/link';
 import styles from './ProductDetail.module.css';
 
-import { getAdultProductDetail } from '@shared/lib/api/django/adult';
-import SystemDiagnostic from '@shared/ui/SystemDiagnostic';
-import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
+// --- Components (切り出したパーツたち) ---
+import VisualSection from './_components/VisualSection';
+import ProductHeader from './_components/ProductHeader';
+import ExpertChatSection from './_components/ExpertChatSection';
+import TechnicalMeta from './_components/TechnicalMeta';
+import NeuralNarrative from './_components/NeuralNarrative';
+import ActionArea from './_components/ActionArea';
+import RelationArea from './_components/RelationArea';
 
-// 分割された 3大カラム + 関連
-import VisualHeroColumn from './_components/VisualHeroColumn';
-import AnalysisColumn from './_components/AnalysisColumn';
-import InfoColumn from './_components/InfoColumn';
-import RelatedArchives from './RelatedArchives';
+import { 
+  getAdultProductDetail, 
+  resolveApiUrl, 
+  getDjangoHeaders 
+} from '@shared/lib/api/django';
+import { constructMetadata } from '@shared/lib/metadata'; 
+import SystemDiagnostic from '@shared/ui/SystemDiagnostic';
+
+// --- Helpers ---
+const getIdentifier = (item: any) => {
+  if (!item) return '';
+  return item.slug && item.slug !== "null" ? item.slug : item.id;
+};
 
 const getSafeScore = (val: any) => (typeof val === 'number' ? val : (parseInt(val) || 0));
 
+const generateSeoDescription = (product: any) => {
+  if (product.ai_summary && product.ai_summary !== "解析準備中...") return product.ai_summary;
+  const actresses = product.actresses?.map(a => a.name).join(', ') || '';
+  const maker = product.maker?.name || '人気メーカー';
+  return `${product.title}は、${maker}がおくる${actresses ? actresses + '出演の' : ''}注目作品。`;
+};
+
 /**
- * 💡 関連商品のデバッグ表示用ラッパー
+ * 💡 メタデータ生成 (SEO詳細版)
  */
-async function RelatedArchivesWithDebug({ product, isDebugMode }: { product: any, isDebugMode: boolean }) {
-  return (
-    <>
-      <RelatedArchives product={product} />
-      
-      {/* 🛠️ 関連商品の RAW JSON デバッグ表示 (debug=true時のみ) */}
-      {isDebugMode && (
-        <div className="mt-20 p-6 bg-black/40 border border-blue-500/20 rounded-lg font-mono">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            <h3 className="text-blue-500 text-[11px] tracking-widest uppercase">Debug: Related_Archives_Raw_Data</h3>
-          </div>
-          <div className={styles.debugCodeContainer}>
-            <pre>
-              {JSON.stringify({
-                target_product_id: product.product_id_unique,
-                actresses: product.actresses?.map(a => a.name) || [],
-                note: "RelatedArchives内部で女優全員分の並列フェッチを実行中"
-              }, null, 2)}
-            </pre>
-          </div>
-        </div>
-      )}
-    </>
-  );
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+
+  // 🚨 IDガード: 不正なパスでのAPI呼び出しを防止
+  if (!id || id === 'main' || id === '_components' || id.includes('.')) {
+    return { title: "System Node | TIPER" };
+  }
+
+  try {
+    const product = await getAdultProductDetail(id);
+    if (!product || product._error) return { title: "Signal Lost | TIPER" };
+
+    const seoTitle = `${product.title} - AI解析詳細アーカイブ | TIPER`;
+    const seoDesc = generateSeoDescription(product);
+    const seoImage = product.thumbnail || '/og-image.png';
+    const seoPath = `/adults/${id}`;
+
+    return constructMetadata(seoTitle, seoDesc, seoImage, seoPath, false);
+  } catch (error) {
+    return { title: "System Error | TIPER" };
+  }
 }
 
-export default async function ProductDetailPage(props: { 
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ source?: string; debug?: string }>;
-}) {
-  /**
-   * ✅ Next.js 15 Promise 解決
-   */
-  const { id: rawId } = await props.params;
-  const { source: querySource, debug: debugParam } = await props.searchParams;
-  
-  const id = decodeURIComponent(rawId);
-  const isDebugMode = debugParam === 'true';
+/**
+ * 💡 APIデータフェッチ
+ */
+async function fetchRelated(params: string) {
+  try {
+    const res = await fetch(resolveApiUrl(`/api/adult/unified-products/?${params}&page_size=12`), {
+      headers: getDjangoHeaders(),
+      next: { revalidate: 3600 }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.results || [];
+    }
+  } catch (e) { console.warn("Fetch Related Error:", e); }
+  return [];
+}
 
-  // 📡 API 呼び出し
-  const product = await getAdultProductDetail(id);
+/**
+ * 💡 メインページコンポーネント
+ */
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
-  /**
-   * 🚨 404/Error Handling
-   */
-  if (!product || product._error || product.detail === "Not found.") {
+  // 🚨 【修正】不正なID（main, _components, favicon等）を弾くガードレール
+  if (!id || id === 'main' || id === '_components' || id.includes('.')) {
     return (
-      <div className="min-h-screen bg-[#06060a] flex flex-col items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]"></div>
-        <div className="z-10 flex flex-col items-center p-6 text-center">
-          <h1 className="text-[#e94560] font-black text-6xl italic tracking-tighter animate-pulse shadow-pink-500/20">
-            SIGNAL_LOST
-          </h1>
-          <div className="mt-6 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded backdrop-blur-sm">
-            <p className="text-red-500 font-mono text-[10px] uppercase tracking-[0.2em]">
-              Node_ID: {id} // Status: 404_NOT_FOUND
-            </p>
-          </div>
-          {isDebugMode && (
-            <div className={styles.debugCodeContainer + " mt-4 max-w-md"}>
-              <pre>{JSON.stringify(product || { status: "null_response" }, null, 2)}</pre>
-            </div>
-          )}
-          <Link href="/adults" className="mt-12 px-10 py-3 border border-[#e94560] text-[#e94560] font-mono hover:bg-[#e94560] hover:text-white transition-all duration-500 tracking-widest text-sm">
-            « RETURN_TO_CORE_STREAM
-          </Link>
-        </div>
+      <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center p-4 font-mono text-gray-500">
+        <p className="text-xs uppercase tracking-[0.5em] animate-pulse">Invalid_Data_Node: {id}</p>
+        <Link href="/adults" className="mt-8 text-[#e94560] border border-[#e94560] px-8 py-2 text-[10px] font-black italic hover:bg-[#e94560] hover:text-white transition-all">
+          RETURN_TO_ARCHIVE_STREAM
+        </Link>
       </div>
     );
   }
 
-  const source = (product.api_source || querySource || '').toUpperCase();
-  const isFanza = source === 'FANZA' || source === 'DMM';
+  let product = await getAdultProductDetail(id);
 
-  const statsData = [
-    { label: 'VISUAL', val: getSafeScore(product.score_visual), color: 'from-pink-500 to-rose-500' },
-    { label: 'STORY', val: getSafeScore(product.score_story), color: 'from-blue-500 to-indigo-500' },
-    { label: 'EROTIC', val: getSafeScore(product.score_erotic || product.score_acting), color: 'from-red-600 to-orange-500' },
-    { label: 'RARITY', val: getSafeScore(product.score_rarity || product.score_direction), color: 'from-amber-400 to-yellow-500' },
-    { label: 'COST', val: getSafeScore(product.score_cost || product.score_value), color: 'from-emerald-400 to-teal-500' }, 
+  // 製品が見つからない、またはエラーの場合
+  if (!product || product._error) {
+    return (
+      <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center p-4 font-mono">
+        <h1 className="text-white text-2xl font-black italic mb-8 tracking-widest uppercase">Signal_Lost_404</h1>
+        <Link href="/adults" className="text-[#e94560] border border-[#e94560] px-8 py-3 hover:bg-[#e94560] hover:text-white transition-all font-black">
+          RETURN_TO_LOBBY
+        </Link>
+      </div>
+    );
+  }
+
+  // 関連作品の並列取得
+  const [actressRelated, genreRelated, makerRelated] = await Promise.all([
+    product.actresses?.[0] ? fetchRelated(`actress_id=${product.actresses[0].id}&exclude_id=${product.id}`) : [],
+    product.genres?.[0] ? fetchRelated(`genre_id=${product.genres[0].id}&exclude_id=${product.id}`) : [],
+    product.maker ? fetchRelated(`maker_id=${product.maker.id}&exclude_id=${product.id}`) : [],
+  ]);
+
+  const source = (product.api_source || '').toUpperCase();
+  const isFanza = source === 'FANZA' || source === 'DMM';
+  
+  // 画像処理（高画質化）
+  let jacketImage = product.image_url_list?.[0] || product.thumbnail || '/placeholder.png';
+  if (isFanza && jacketImage !== '/placeholder.png') {
+    jacketImage = jacketImage.replace(/p[s|t|m]\.jpg/i, 'pl.jpg').replace(/_[s|m]\.jpg/i, '_l.jpg');
+  }
+  const galleryImages = product.image_url_list?.length > 0 ? product.image_url_list : [jacketImage];
+
+  // 動画データ
+  let movieData = null;
+  if (product.sample_movie_url) {
+    const url = typeof product.sample_movie_url === 'object' ? product.sample_movie_url.url : product.sample_movie_url;
+    if (url) movieData = { url, preview_image: jacketImage };
+  }
+
+  // レーダーチャート用スコア設定
+  const radarData = [
+    { subject: 'VISUAL', A: getSafeScore(product.score_visual), fullMark: 100 },
+    { subject: 'STORY', A: getSafeScore(product.score_story), fullMark: 100 },
+    { subject: 'EROTIC', A: getSafeScore(product.score_erotic), fullMark: 100 },
+    { subject: 'RARITY', A: getSafeScore(product.score_rarity), fullMark: 100 },
+    { subject: 'FETISH', A: getSafeScore(product.score_fetish), fullMark: 100 },
+  ];
+  const barChartData = [
+    { label: 'VISUAL', score: getSafeScore(product.score_visual), color: 'bg-blue-500' },
+    { label: 'STORY', score: getSafeScore(product.score_story), color: 'bg-purple-500' },
+    { label: 'EROTIC', score: getSafeScore(product.score_erotic), color: 'bg-pink-500' },
+    { label: 'RARITY', score: getSafeScore(product.score_rarity), color: 'bg-yellow-500' },
+    { label: 'COST', score: getSafeScore(product.score_cost_performance), color: 'bg-green-500' },
+    { label: 'FETISH', score: getSafeScore(product.score_fetish), color: 'bg-orange-500' },
   ];
 
   return (
-    <div className={`${styles.wrapper} ${isFanza ? styles.fanzaTheme : ''}`}>
-      
-      {/**
-       * 🛠️ DEBUG UI (debug=true 時のみ表示)
-       */}
-      {isDebugMode && (
-        <>
-          {/* 最上部ステータスバー */}
-          <div className="w-full bg-pink-600 text-white text-[10px] font-mono py-1 px-4 flex justify-between items-center shadow-lg z-[9999] sticky top-0">
-            <div className="flex gap-4">
-              <span>[DEBUG_MODE: ACTIVE]</span>
-              <span>NODE: {id}</span>
-            </div>
-            <div className="opacity-80">
-              TRACED: {new Date().toLocaleTimeString()}
-            </div>
-          </div>
-
-          {/* 🛰️ 以前常時表示されていたパネルを here (isDebugMode) に移動 */}
-          <SystemDiagnosticHero 
-            id={id} 
-            source={source} 
-            data={product} 
-            params={props.params}
-            rawJson={product} 
-          />
-        </>
-      )}
-
+    <div className={`${styles.wrapper} ${isFanza ? styles.fanzaTheme : styles.dugaTheme}`}>
       <nav className={styles.nav}>
-        <div className="max-w-[1440px] mx-auto px-[5%] flex justify-between items-center w-full">
-          <div className="flex items-center gap-6">
-            <Link href="/adults" className={styles.backLink}>« EXPLORE_STREAM</Link>
-            {isDebugMode && (
-              <span className="text-pink-500 animate-pulse font-mono text-[10px] border border-pink-500/30 px-2 py-0.5 rounded">
-                LIVE_DATA_INJECTED
-              </span>
-            )}
+        <div className="max-w-[1440px] w-full mx-auto px-6 flex justify-between items-center">
+          <Link href="/adults" className={styles.backLink}>« ARCHIVE_STREAM</Link>
+          <div className="flex items-center gap-4">
+            <span className="text-[9px] font-mono text-gray-500 hidden md:block">DATA_STREAM_ACTIVE</span>
+            <div className="bg-[#e94560] text-white px-3 py-1 text-[10px] font-black italic uppercase">{source}</div>
           </div>
-          <div className={isFanza ? styles.sourceBadgeFanza : styles.sourceBadge}>{source}</div>
         </div>
       </nav>
 
       <main className={styles.mainContainer}>
-        <VisualHeroColumn product={product} source={source} />
-
         <div className={styles.gridContent}>
-          <AnalysisColumn 
-            product={product} 
-            radarData={statsData.map(s => ({ subject: s.label, A: s.val, fullMark: 100 }))} 
-          />
-          <InfoColumn 
-            product={product} 
-            statsData={statsData} 
-            isFanza={isFanza} 
-            source={source} 
-          />
+          
+          {/* 🧩 左サイド: ビジュアルパーツ */}
+          <aside className="lg:sticky lg:top-24 space-y-8 h-fit">
+            <VisualSection 
+              product={product} 
+              jacketImage={jacketImage} 
+              galleryImages={galleryImages} 
+              radarData={radarData}
+              barChartData={barChartData} // 👈 追加
+              specScore={product.spec_score} // 👈 合計スコアも渡すと便利
+              movieData={movieData} 
+              source={source} 
+            />
+          </aside>
+
+          {/* 🧩 右サイド: メインコンテンツ（パズルエリア） */}
+          <article className="space-y-12">
+            <ProductHeader product={product} source={source} />
+            
+            {/* ★ LINE風チャットセクション */}
+            <ExpertChatSection logs={product.ai_chat_comments} />
+
+            <TechnicalMeta product={product} getIdentifier={getIdentifier} />
+            
+            <NeuralNarrative content={product.ai_content} />
+            
+            <ActionArea 
+              product={product} 
+              movieData={movieData} 
+              isFanza={isFanza} 
+              id={id} 
+              source={source} 
+            />
+          </article>
         </div>
 
-        <Suspense fallback={
-          <div className="h-60 flex flex-col items-center justify-center font-mono text-gray-600 gap-3">
-            <div className="w-6 h-6 border-2 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
-            <span className="text-[10px] tracking-[0.3em] animate-pulse">RECONSTRUCTING_ARCHIVE...</span>
-          </div>
-        }>
-          <RelatedArchivesWithDebug product={product} isDebugMode={isDebugMode} />
-        </Suspense>
-
-        {/* 下部診断パネルも debug=true の時のみ表示するように変更 */}
-        {isDebugMode && (
-          <SystemDiagnostic 
-            id={id} 
-            source={source} 
-            targetUrl={`/api/adult/products/${id}/`} 
-            data={product} 
-          />
-        )}
+        {/* 🧩 関連作品セクション */}
+        <RelationArea 
+          actressRelated={actressRelated} 
+          genreRelated={genreRelated} 
+          makerRelated={makerRelated} 
+          product={product} 
+        />
       </main>
+
+      {/* システム診断用データ表示 */}
+      <SystemDiagnostic id={id} source={source} data={product} />
     </div>
   );
 }

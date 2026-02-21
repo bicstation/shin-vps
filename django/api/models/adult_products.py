@@ -9,6 +9,7 @@ from .raw_and_entities import RawApiData, Maker, Label, Director, Series, Genre,
 # ==========================================================================
 # 🚀 階層マスタモデル
 # ==========================================================================
+# 階層マスタモデル（AI解析設定拡張版）
 class FanzaFloorMaster(models.Model):
     site_code = models.CharField('サイトコード', max_length=50, db_index=True, help_text="FANZA / DMM.com")
     site_name = models.CharField('サイト名', max_length=100)
@@ -16,6 +17,27 @@ class FanzaFloorMaster(models.Model):
     service_name = models.CharField('サービス名', max_length=100)
     floor_code = models.CharField('フロアコード', max_length=50, unique=True, db_index=True)
     floor_name = models.CharField('フロア名', max_length=100)
+    
+    # 🤖 AI解析・運用設定
+    is_adult = models.BooleanField(
+        'アダルトフラグ', 
+        default=True, 
+        help_text="Trueならアダルト向け、Falseなら一般向けのトーンを適用"
+    )
+    ai_system_prompt = models.TextField(
+        'AIシステムプロンプト', 
+        blank=True, 
+        null=True, 
+        help_text="AIへの性格付け指示（例：音楽批評家風、官能的ストーリーテラー等）"
+    )
+    ai_tone_keywords = models.CharField(
+        'トーンキーワード', 
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        help_text="AIに意識させたいキーワード、または禁止語（カンマ区切り）"
+    )
+
     is_active = models.BooleanField('有効', default=True)
     last_synced_at = models.DateTimeField('最終同期日', auto_now=True)
 
@@ -26,7 +48,8 @@ class FanzaFloorMaster(models.Model):
         ordering = ['site_code', 'service_code', 'floor_code']
 
     def __str__(self):
-        return f"[{self.site_code}] {self.service_name} > {self.floor_name}"
+        status = "R18" if self.is_adult else "一般"
+        return f"[{self.site_code}:{status}] {self.service_name} > {self.floor_name}"
 
 # ==========================================================================
 # 1. 作品属性
