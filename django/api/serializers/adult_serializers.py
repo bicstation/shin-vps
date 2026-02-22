@@ -6,7 +6,8 @@ import logging
 from rest_framework import serializers
 from api.models import (
     Maker, Label, Director, Series, Genre, Actress, Author,
-    AdultProduct, AdultAttribute, LinkshareProduct, FanzaFloorMaster
+    AdultProduct, AdultAttribute, LinkshareProduct, FanzaFloorMaster,
+    AdultActressProfile
 )
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class FanzaFloorMasterSerializer(serializers.ModelSerializer):
     def get_floor_code(self, obj): return obj.floor_code.lower() if obj.floor_code else ''
 
 # --------------------------------------------------------------------------
-# 1. マスターデータ用ベースシリアライザー
+# 1. マスターデータ用ベースシリアライザー (女優プロフィール統合)
 # --------------------------------------------------------------------------
 class BaseMasterSerializer(serializers.ModelSerializer):
     """
@@ -48,26 +49,18 @@ class BaseMasterSerializer(serializers.ModelSerializer):
     product_count = serializers.IntegerField(read_only=True, required=False)
     
     class Meta:
+        model = None
         fields = ('id', 'name', 'slug', 'ruby', 'api_source', 'product_count')
 
     def get_api_source(self, obj):
-        """
-        集計時の 'tmp_source' またはオブジェクトの 'api_source' を取得し小文字化する。
-        """
         if isinstance(obj, dict):
-            # View側の values() で tmp_source として取得した値を優先
             val = obj.get('tmp_source') or obj.get('api_source') or 'common'
         else:
             val = getattr(obj, 'api_source', 'common')
-        
         return val.lower() if val else 'common'
 
     def to_representation(self, instance):
-        """
-        辞書型（タクソノミー集計時）とオブジェクト型の両方を Next.js 側が期待する形式に正規化。
-        """
         if isinstance(instance, dict):
-            # 💡 Viewの F() 式による別名を ID/Name/Slug にマッピング
             return {
                 'id': instance.get('tmp_id') or instance.get('id'),
                 'name': instance.get('tmp_name') or instance.get('name'),
@@ -76,11 +69,9 @@ class BaseMasterSerializer(serializers.ModelSerializer):
                 'api_source': self.get_api_source(instance),
                 'product_count': instance.get('product_count', 0)
             }
-        
-        # 通常のオブジェクト（AdultProductのネスト表示など）
         return super().to_representation(instance)
 
-# --- 継承クラス群 (Meta.model を指定) ---
+# --- 各マスタの継承 ---
 class MakerSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Maker
 class LabelSerializer(BaseMasterSerializer):
@@ -91,10 +82,46 @@ class SeriesSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Series
 class GenreSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Genre
-class ActressSerializer(BaseMasterSerializer):
-    class Meta(BaseMasterSerializer.Meta): model = Actress
 class AuthorSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Author
+
+# --- 💡 女優用シリアライザー (黄金比スコアを統合) ---
+class ActressSerializer(BaseMasterSerializer):
+    """
+    Actressモデルと紐付いた AdultActressProfile から黄金比スコアを取得して表示する。
+    辞書型(values)とオブジェクト型の両方でスコアをマッピングする。
+    """
+    ai_power_score = serializers.IntegerField(read_only=True, required=False)
+    score_style = serializers.IntegerField(read_only=True, required=False)
+    cup = serializers.CharField(read_only=True, required=False)
+
+    class Meta(BaseMasterSerializer.Meta):
+        model = Actress
+        # 基底クラスのフィールド + AIスコア系を追加
+        fields = BaseMasterSerializer.Meta.fields + ('ai_power_score', 'score_style', 'cup')
+
+    def to_representation(self, instance):
+        # まず基底クラス（BaseMasterSerializer）の共通処理を呼び出す
+        ret = super().to_representation(instance)
+
+        if isinstance(instance, dict):
+            # 💡 辞書型（values()取得）の場合: 注釈(annotate)などで取得した値をセット
+            ret['ai_power_score'] = instance.get('ai_power_score')
+            ret['score_style'] = instance.get('score_style')
+            ret['cup'] = instance.get('cup')
+        else:
+            # 💡 オブジェクト型の場合: 1対1リレーション(profile)から取得
+            profile = getattr(instance, 'profile', None)
+            if profile:
+                ret['ai_power_score'] = profile.ai_power_score
+                ret['score_style'] = profile.score_style
+                ret['cup'] = profile.cup
+            else:
+                ret['ai_power_score'] = None
+                ret['score_style'] = None
+                ret['cup'] = None
+        
+        return ret
 
 # --------------------------------------------------------------------------
 # 2. 属性・タグ用シリアライザー
@@ -108,7 +135,7 @@ class AdultAttributeSerializer(serializers.ModelSerializer):
         fields = ('id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order', 'product_count')
 
 # --------------------------------------------------------------------------
-# 3. 統合商品データ用シリアライザー (AdultProduct 一本化)
+# 3. 統合商品データ用シリアライザー (AI解析・黄金比を完全統合)
 # --------------------------------------------------------------------------
 class AdultProductSerializer(serializers.ModelSerializer): 
     maker = MakerSerializer(read_only=True)
@@ -134,7 +161,9 @@ class AdultProductSerializer(serializers.ModelSerializer):
             'image_url_list', 'thumbnail', 'sample_movie_url',
             'api_source', 'api_service', 'floor_code', 'floor_master',
             'maker', 'label', 'director', 'series', 'authors', 'genres', 'actresses',
-            'attributes', 'ai_content', 'ai_summary', 'target_segment', 'ai_chat_comments',
+            'attributes', 'ai_content', 'ai_summary', 'ai_catchcopy',
+            'target_segment', 'ai_chat_comments',
+            'ai_score_visual', 'ai_score_story', 'ai_score_erotic',
             'score_visual', 'score_story', 'score_erotic', 'score_rarity', 'score_cost_performance', 
             'score_fetish', 'spec_score', 'rel_score', 
             'is_active', 'updated_at'
@@ -160,8 +189,10 @@ class AdultProductSerializer(serializers.ModelSerializer):
         if not ret.get('api_source') and instance.floor_master:
             ret['api_source'] = instance.floor_master.site_code.lower()
 
-        # AI解析データのデフォルト値
+        # AI解析データのデフォルト値補完
         if ret.get('ai_summary') is None:
             ret['ai_summary'] = "解析準備中..."
+        if ret.get('ai_catchcopy') is None:
+            ret['ai_catchcopy'] = instance.title
 
         return ret

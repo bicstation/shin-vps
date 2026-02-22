@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/models/adult_models.py
+
 from django.db import models
 from django.utils import timezone
 import unicodedata
@@ -9,7 +11,6 @@ from .raw_and_entities import RawApiData, Maker, Label, Director, Series, Genre,
 # ==========================================================================
 # 🚀 階層マスタモデル
 # ==========================================================================
-# 階層マスタモデル（AI解析設定拡張版）
 class FanzaFloorMaster(models.Model):
     site_code = models.CharField('サイトコード', max_length=50, db_index=True, help_text="FANZA / DMM.com")
     site_name = models.CharField('サイト名', max_length=100)
@@ -71,13 +72,14 @@ class AdultAttribute(models.Model):
     class Meta:
         verbose_name = '作品属性'
         verbose_name_plural = '作品属性一覧'
+        # 管理画面のエラーを回避するため、nameをデフォルトのリンク対象にする設計
         ordering = ['attr_type', 'order', 'name']
 
     def __str__(self):
         return f"[{self.get_attr_type_display()}] {self.name}"
 
 # ==========================================================================
-# 2. 統合アダルト商品モデル（AIマトリックス対応版）
+# 2. 統合アダルト商品モデル（AIマトリックス完全対応版）
 # ==========================================================================
 class AdultProduct(models.Model):
     # 基本リレーション
@@ -138,18 +140,25 @@ class AdultProduct(models.Model):
     attributes = models.ManyToManyField(AdultAttribute, blank=True, related_name='products')
 
     # ==========================================================================
-    # 🤖 AI解析セクション (マトリックス完全対応版)
+    # 🤖 AI解析セクション (管理画面との不整合を修正)
     # ==========================================================================
-    ai_summary = models.CharField(max_length=500, null=True, blank=True, verbose_name="AIキャッチコピー")
+    # admin.py で ai_catchcopy を参照しているため、フィールド名を統一または統合
+    ai_catchcopy = models.CharField(max_length=500, null=True, blank=True, verbose_name="AIキャッチコピー")
+    ai_summary = models.TextField(null=True, blank=True, verbose_name="AIサマリー文")
     ai_content = models.TextField(null=True, blank=True, verbose_name="AI生成独自レビュー")
     target_segment = models.CharField(max_length=255, null=True, blank=True, verbose_name="ターゲット層")
     ai_chat_comments = models.JSONField(default=list, blank=True, verbose_name="疑似チャット")
     
-    # マトリックス5項目
+    # 🚀 拡張：AIソムリエ評価項目
+    ai_score_visual = models.IntegerField(default=0, verbose_name="AI映像評価")
+    ai_score_story = models.IntegerField(default=0, verbose_name="AIストーリー評価")
+    ai_score_erotic = models.IntegerField(default=0, verbose_name="AI刺激評価")
+
+    # マトリックス5項目（手動/システム評価用）
     score_visual = models.IntegerField(default=0, verbose_name="視覚的完成度(VISUAL)")
     score_story = models.IntegerField(default=0, verbose_name="シナリオ強度(STORY)")
-    score_erotic = models.IntegerField(default=0, verbose_name="エロティズム(EROTIC)")  # 追加
-    score_rarity = models.IntegerField(default=0, verbose_name="希少性(RARITY)")      # 追加
+    score_erotic = models.IntegerField(default=0, verbose_name="エロティズム(EROTIC)")
+    score_rarity = models.IntegerField(default=0, verbose_name="希少性(RARITY)")
     score_cost_performance = models.IntegerField(default=0, verbose_name="コスパ(COST)")
     
     # 総合・運用
@@ -173,16 +182,12 @@ class AdultProduct(models.Model):
         return f"[{self.api_source}] {self.title}"
 
     def save(self, *args, **kwargs):
-        # タイトルの正規化 (NFKC)
         if self.title:
             self.title = unicodedata.normalize('NFKC', self.title).strip()
-        # ソース名を大文字に統一
         if self.api_source:
             self.api_source = self.api_source.upper()
-        # システム内一意識別子の自動生成
         if not self.product_id_unique:
             self.product_id_unique = f"{self.api_source}_{self.floor_code}_{self.api_product_id}".lower()
-        # セール判定
         if self.list_price and self.price and int(self.list_price) > int(self.price):
             self.is_on_sale = True
             self.discount_rate = int((1 - (int(self.price) / int(self.list_price))) * 100)
@@ -192,15 +197,13 @@ class AdultProduct(models.Model):
 # 3. 統合アダルト女優プロファイル（詳細スペック・AI解析・外部リンク対応）
 # ==========================================================================
 class AdultActressProfile(models.Model):
-    # 仕訳用マスターモデル（Actress）との1対1リレーション
-    # これにより actress.profile.bust のようにアクセス可能
     master_actress = models.OneToOneField(
         Actress, 
         on_delete=models.CASCADE, 
         related_name='profile',
         verbose_name="マスター女優",
-        null=True,   # 👈 追加：マスターがいなくても保存可能に
-        blank=True   # 👈 追加：管理画面でも空欄を許可
+        null=True,
+        blank=True
     )
     
     # 識別子
@@ -208,7 +211,7 @@ class AdultActressProfile(models.Model):
     name = models.CharField('女優名', max_length=255)
     ruby = models.CharField('読み仮名', max_length=255, null=True, blank=True)
     
-    # 📏 フィジカルスペック (API取得データ)
+    # 📏 フィジカルスペック
     bust = models.IntegerField('バスト', null=True, blank=True)
     cup = models.CharField('カップ', max_length=10, null=True, blank=True)
     waist = models.IntegerField('ウエスト', null=True, blank=True)
@@ -224,7 +227,6 @@ class AdultActressProfile(models.Model):
     image_url_large = models.URLField('画像URL(大)', max_length=500, null=True, blank=True)
     
     # 🔗 外部リンク群（JSON形式）
-    # {"x": "...", "wikipedia": "...", "official_site": "...", "instagram": "..."} 等を格納
     external_links = models.JSONField(
         '外部リンク集', 
         default=dict, 
@@ -244,7 +246,7 @@ class AdultActressProfile(models.Model):
     score_performance = models.IntegerField('表現力(PERFORMANCE)', default=0)
     score_popularity = models.IntegerField('市場人気度(POPULARITY)', default=0)
     
-    # 総合評価
+    # 総合評価（黄金比スコア）
     ai_power_score = models.IntegerField('おすすめ総合評価', default=0)
     
     # 運用・状態
@@ -263,7 +265,6 @@ class AdultActressProfile(models.Model):
         return f"{self.name} ({self.actress_id})"
 
     def save(self, *args, **kwargs):
-        # 名前の正規化
         if self.name:
             self.name = unicodedata.normalize('NFKC', self.name).strip()
         super().save(*args, **kwargs)

@@ -1,0 +1,100 @@
+.container {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  color: #e0e0e0;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.aiBadge {
+  display: inline-block;
+  background: linear-gradient(90deg, #ff0055, #ffc107);
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+.title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.rankingGrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.rankCard {
+  display: flex;
+  align-items: center;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.rankCard:hover {
+  transform: translateX(10px);
+  border-color: #ff0055;
+}
+
+.rankBadge {
+  font-size: 1.5rem;
+  font-weight: 900;
+  width: 40px;
+  color: #666;
+}
+
+.rankCard[data-rank="1"] .rankBadge { color: #ffc107; font-size: 2rem; }
+.rankCard[data-rank="2"] .rankBadge { color: #c0c0c0; }
+.rankCard[data-rank="3"] .rankBadge { color: #cd7f32; }
+
+.info { flex: 1; }
+.name { font-size: 1.2rem; margin: 0; }
+.spec { font-size: 0.85rem; color: #999; margin-top: 4px; }
+.cup { margin-right: 15px; font-weight: bold; color: #ff0055; }
+
+.scoreSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+}
+
+.scoreCircle {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.circularChart { display: block; margin: 0 auto; }
+.circleBg { fill: none; stroke: #333; stroke-width: 2.8; }
+.circle {
+  fill: none;
+  stroke: #ff0055;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1s ease;
+}
+
+.scoreText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.scoreNum { display: block; font-size: 1rem; font-weight: bold; }
+.scoreUnit { font-size: 0.5rem; color: #666; }
+.rankText { font-size: 0.7rem; font-weight: bold; margin-top: 5px; color: #ffc107; }

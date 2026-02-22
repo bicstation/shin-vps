@@ -87,6 +87,7 @@ while true; do
     echo -e "${MAGENTA}${BOLD}[1. 🔞 ADULT CONTENT]${RESET}"
     echo -e "  10) FANZA/DUGA インポート (Tiper)   11) FANZA サービス・フロア階層同期 ✨"
     echo -e "  12) アダルト作品AI解析 (Sommelier)  13) FANZA APIエクスプローラー & 正規化解析 🔍"
+    echo -e "  14) FANZA 全女優スペック同期 (5万件) 15) AI 黄金比スタイル解析 (精鋭選抜) 💎"
 
     echo -e "\n${YELLOW}${BOLD}[2. 🛒 PC & SHOPPING SYNC]${RESET}"
     echo -e "  20) メーカー別同期 (API/FTP/Scrape) 21) 価格履歴の一斉記録 (Record)"
@@ -97,7 +98,7 @@ while true; do
     echo -e "  32) AI詳細スペック解析 (PC解析)       33) AIモデル一覧の確認 (Gemini/Gemma)"
 
     echo -e "\n${CYAN}${BOLD}[4. 🛠️ SYSTEM & MASTER]${RESET}"
-    echo -e "  40) マイグレーション (DB更新)          41) 属性マスタ同期 & 自動マッピング"
+    echo -e "  40) マイグレーション (DB更新)           41) 属性マスタ同期 & 自動マッピング"
     echo -e "  42) サイトマップ手動更新 (SEO)        43) スーパーユーザー作成 / TSV出力"
     echo -e "  44) APIエンドポイント一覧表示 (URL) 🔎"
 
@@ -170,6 +171,10 @@ EOF
                    run_django python manage.py fanza_explorer --analyze-normalization
                    ;;
             esac ;;
+        14) echo -e "\n${COLOR}📡 FANZA 女優スペック（全件）の同期を開始します...${RESET}"
+            run_django python manage.py import_t_fanza_actress ;;
+        15) echo -e "\n${MAGENTA}💎 AI 黄金比スタイル解析（全女優スキャン）を実行します...${RESET}"
+            run_django python manage.py analyze_actress_style ;;
 
         # --- 2. PC & SHOP SECTION ---
         20) 
@@ -263,7 +268,7 @@ EOF
         h) echo "SHIN-VPS Help: 各カテゴリの番号を選択してください。" ;;
     esac
 
-    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(10|11|12|20|21|23|32|41)$ ]]; then
+    if [ "$IS_VPS" = true ] && [[ "$CHOICE" =~ ^(10|11|12|14|15|20|21|23|32|41)$ ]]; then
         docker compose -f "$SCRIPT_DIR/$COMPOSE_FILE" up -d scheduler
     fi
     echo -e "\n${GREEN}完了。Enterで戻ります。${RESET}"; read
