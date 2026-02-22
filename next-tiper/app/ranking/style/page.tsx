@@ -1,130 +1,189 @@
+// -*- coding: utf-8 -*-
+// components/StyleRankingPage.tsx (Next.js App Router)
+
 import React from 'react';
+import Image from 'next/image';
 import styles from './StyleRanking.module.css';
 
 /**
- * 💡 バックエンド (Django) のシリアライザーから渡されるデータ構造を定義
+ * 💡 バックエンド (Django) の修正済みシリアライザーに合わせたインターフェース
  */
 interface Actress {
   id: number;
   name: string;
   slug: string;
   product_count: number;
-  ai_power_score: number | null;
-  score_style: number | string | null; // 数値でも文字列でも受け取れるように許容
+  api_source: string;
+  // 追加された詳細メタデータ
+  image_url_large: string | null;
+  image_url_small: string | null;
+  bust: number | null;
+  waist: number | null;
+  hip: number | null;
   cup: string;
+  height: number | null;
+  // AI 5軸スコア
+  ai_power_score: number | null;
+  score_visual: number | null;
+  score_style: number | null;
+  score_performance: number | null;
+  score_popularity: number | null;
 }
 
 /**
- * スコア数値をランク称号に変換するヘルパー関数
+ * スコア数値をランク称号に変換
  */
 const getRankLabel = (score: number | null): string => {
   if (!score) return "---";
-  if (score >= 92) return "👑 GOD";
-  if (score >= 85) return "💎 S-Rank";
-  if (score >= 78) return "✨ A-Rank";
+  if (score >= 95) return "👑 GOD";
+  if (score >= 90) return "💎 S-Rank";
+  if (score >= 80) return "✨ A-Rank";
   if (score >= 70) return "B-Rank";
   return "C-Rank";
 };
 
 /**
- * AIによる黄金比ランキングデータを取得
- * サーバーサイド(Next.js)から Djangoコンテナへ内部通信を行います。
+ * AIランキングデータをサーバーサイドで取得
  */
-async function getStyleRanking(): Promise<Actress[]> {
-  // 内部通信用のURL設定。コンテナ名とポートを環境に合わせて調整
+async function getStyleRanking(): Promise<{ data: Actress[]; debugInfo: any }> {
+  // 内部ネットワーク用URL（dockerなど）
   const internalBaseUrl = process.env.API_INTERNAL_URL || "http://django-v2:8000/api";
-  
-  // 順序を明確にするため ordering パラメータを付与
   const endpoint = `${internalBaseUrl}/adult/taxonomy/?type=actresses&ordering=-profile__ai_power_score&limit=100`;
+
+  let debugInfo = { endpoint, status: null as number | null, statusText: "", count: 0, error: null as string | null };
 
   try {
     const res = await fetch(endpoint, {
-      // 💡 開発・データ更新直後は 'no-store' でキャッシュを無効化して最新データを強制取得
-      cache: 'no-store', 
-      headers: {
-        'Content-Type': 'application/json',
-      }
+      cache: 'no-store', // 常に最新のランキングを取得
+      headers: { 'Content-Type': 'application/json' }
     });
 
+    debugInfo.status = res.status;
+    debugInfo.statusText = res.statusText;
+
     if (!res.ok) {
-      const errorDetail = await res.text();
-      console.error(`[Ranking Fetch Error] Status: ${res.status}`, errorDetail);
-      return [];
+      debugInfo.error = await res.text();
+      return { data: [], debugInfo };
     }
 
     const data = await res.json();
-    return data.results || [];
-  } catch (error) {
-    console.error("[getStyleRanking Connection Error]:", error);
-    return [];
+    debugInfo.count = data.results?.length || 0;
+    return { data: data.results || [], debugInfo };
+  } catch (error: any) {
+    debugInfo.error = error.message;
+    return { data: [], debugInfo };
   }
 }
 
 /**
- * ランキングページ コンポーネント
+ * 🛠️ デバッグ用診断コンポーネント
  */
-export default async function StyleRankingPage() {
-  const actresses = await getStyleRanking();
+function SystemDiagnosticHero({ info }: { info: any }) {
+  return (
+    <div className={styles.debugBox}>
+      <h3>🛠️ System Diagnostic (API Sync Status)</h3>
+      <p>Endpoint: <code>{info.endpoint}</code></p>
+      <p>Status: {info.status} / Fetched: {info.count} items</p>
+      {info.error && <p style={{ color: '#ff6b6b' }}>Error: {info.error}</p>}
+    </div>
+  );
+}
+
+/**
+ * 🏁 メインページコンポーネント
+ */
+export default async function StyleRankingPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const isDebug = searchParams.debug === 'true';
+  const { data: actresses, debugInfo } = await getStyleRanking();
 
   return (
     <div className={styles.container}>
+      {isDebug && <SystemDiagnosticHero info={debugInfo} />}
+
       <header className={styles.header}>
-        <h1 className={styles.title}>
-          <span className={styles.aiBadge}>AI ANALYSIS</span>
-          黄金比スタイルランキング
-        </h1>
+        <div className={styles.titleWrapper}>
+          <span className={styles.aiBadge}>AI DEEP LEARNING</span>
+          <h1 className={styles.title}>黄金比スタイルランキング</h1>
+        </div>
         <p className={styles.description}>
-          最新のAIアルゴリズムが8,698名のデータを解析。ウエスト・ヒップ比 0.7 を基準とした
-          「科学的に美しい」とされる黄金比スタイル TOP 100。
+          ウエスト・ヒップ比「0.7」の黄金比を解析。
+          科学的に最も美しい曲線を持つ TOP 100 名をリアルタイム集計。
         </p>
       </header>
 
       <div className={styles.rankingGrid}>
         {actresses.length > 0 ? (
-          actresses.map((actress, index) => (
-            <div key={actress.id} className={styles.rankCard} data-rank={index + 1}>
-              {/* 順位表示 */}
-              <div className={styles.rankBadge}>{index + 1}</div>
-              
-              {/* 女優基本情報 */}
-              <div className={styles.info}>
-                <h2 className={styles.name}>{actress.name}</h2>
-                <div className={styles.spec}>
-                  <span className={styles.cup}>{actress.cup || '?'} Cup</span>
-                  <span className={styles.count}>出演作品: {actress.product_count}</span>
-                </div>
-              </div>
-
-              {/* AI スコアセクション (円形プログレス) */}
-              <div className={styles.scoreSection}>
-                <div className={styles.scoreCircle}>
-                  <svg viewBox="0 0 36 36" className={styles.circularChart}>
-                    <path 
-                      className={styles.circleBg} 
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+          actresses.map((actress, index) => {
+            const rank = index + 1;
+            return (
+              <div key={actress.id} className={styles.rankCard} data-rank={rank}>
+                {/* 1. 背景画像セクション */}
+                <div className={styles.imageWrapper}>
+                  {actress.image_url_large ? (
+                    <img 
+                      src={actress.image_url_large} 
+                      alt={actress.name} 
+                      className={styles.actressImage}
+                      loading="lazy"
                     />
-                    <path 
-                      className={styles.circle} 
-                      strokeDasharray={`${actress.ai_power_score || 0}, 100`} 
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                    />
-                  </svg>
-                  <div className={styles.scoreText}>
-                    <span className={styles.scoreNum}>{actress.ai_power_score || 0}</span>
-                    <span className={styles.scoreUnit}>pt</span>
+                  ) : (
+                    <div className={styles.noImage}>NO IMAGE</div>
+                  )}
+                  <div className={styles.rankOverlay}>{rank}</div>
+                  <div className={styles.scoreBadge}>
+                    {actress.ai_power_score} <small>pts</small>
                   </div>
                 </div>
-                {/* AI ランク称号を数値からラベルに変換して表示 */}
-                <div className={styles.rankText}>
-                  {getRankLabel(Number(actress.ai_power_score))}
+
+                {/* 2. プロフィール情報 */}
+                <div className={styles.content}>
+                  <div className={styles.nameRow}>
+                    <h2 className={styles.name}>{actress.name}</h2>
+                    <span className={styles.rankLabel}>{getRankLabel(actress.ai_power_score)}</span>
+                  </div>
+
+                  <div className={styles.specGrid}>
+                    <div className={styles.specItem}>
+                      <span className={styles.label}>CUP</span>
+                      <span className={styles.value}>{actress.cup || '不明'}</span>
+                    </div>
+                    <div className={styles.specItem}>
+                      <span className={styles.label}>HEIGHT</span>
+                      <span className={styles.value}>{actress.height ? `${actress.height}cm` : '---'}</span>
+                    </div>
+                    <div className={styles.specItem}>
+                      <span className={styles.label}>3-SIZE</span>
+                      <span className={styles.value}>
+                        {actress.bust}/{actress.waist}/{actress.hip}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 3. AI 5軸ステータスバー */}
+                  <div className={styles.aiStats}>
+                    <div className={styles.statBar}>
+                      <div className={styles.statLabel}>Style Beauty</div>
+                      <div className={styles.barBg}>
+                        <div className={styles.barFill} style={{ width: `${actress.score_style || 0}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.footer}>
+                    <span className={styles.productCount}>出演作品: {actress.product_count}本</span>
+                    <button className={styles.detailBtn}>PROFILE</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className={styles.noData}>
-            解析データが見つからないか、キャッシュを読み込んでいます。<br />
-            ブラウザを強制更新（Ctrl+F5）するか、しばらくお待ちください。
+            <p>ランキングデータを生成中です。しばらくお待ちください。</p>
           </div>
         )}
       </div>

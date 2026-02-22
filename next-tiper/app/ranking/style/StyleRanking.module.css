@@ -1,100 +1,296 @@
+/* StyleRanking.module.css */
+
+/* --------------------------------------------------------------------------
+   1. Base Container & Typography
+   -------------------------------------------------------------------------- */
 .container {
-  padding: 2rem;
-  max-width: 1000px;
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  max-width: 1300px;
   margin: 0 auto;
-  color: #e0e0e0;
+  background-color: #0a0a0c; /* より深い黒で高級感を演出 */
+  color: #f0f0f0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 5rem;
+  position: relative;
 }
 
 .aiBadge {
   display: inline-block;
-  background: linear-gradient(90deg, #ff0055, #ffc107);
+  background: linear-gradient(90deg, #ff0055, #ff8c00);
   color: white;
-  font-size: 0.7rem;
-  padding: 2px 8px;
-  border-radius: 4px;
-  vertical-align: middle;
-  margin-right: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.4);
 }
 
 .title {
-  font-size: 2.2rem;
-  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 3.2rem); /* レスポンシブなフォントサイズ */
+  font-weight: 900;
   margin-bottom: 1rem;
+  background: linear-gradient(to bottom, #fff, #888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
 }
 
+.description {
+  max-width: 700px;
+  margin: 0 auto;
+  color: #888;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   2. Ranking Grid (横3列レイアウト)
+   -------------------------------------------------------------------------- */
 .rankingGrid {
   display: grid;
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
 }
 
+/* レスポンシブ対応 */
+@media (max-width: 1100px) { .rankingGrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) { .rankingGrid { grid-template-columns: 1fr; } }
+
+/* --------------------------------------------------------------------------
+   3. Rank Card Design
+   -------------------------------------------------------------------------- */
 .rankCard {
-  display: flex;
-  align-items: center;
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
+  background: #16161a;
+  border: 1px solid #2a2a2e;
+  border-radius: 20px;
+  overflow: hidden;
   position: relative;
-  transition: transform 0.2s;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  display: flex;
+  flex-direction: column;
 }
 
 .rankCard:hover {
-  transform: translateX(10px);
+  transform: translateY(-10px);
   border-color: #ff0055;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 0, 85, 0.1);
 }
 
-.rankBadge {
-  font-size: 1.5rem;
+/* 画像エリア */
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  background: #222;
+}
+
+.actressImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.6s ease;
+}
+
+.rankCard:hover .actressImage {
+  transform: scale(1.08);
+}
+
+/* 画像上のオーバーレイ */
+.imageWrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(to top, #16161a 0%, transparent 100%);
+}
+
+.rankOverlay {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 10;
+  font-size: 2.5rem;
   font-weight: 900;
-  width: 40px;
-  color: #666;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.15);
+  line-height: 1;
 }
 
-.rankCard[data-rank="1"] .rankBadge { color: #ffc107; font-size: 2rem; }
-.rankCard[data-rank="2"] .rankBadge { color: #c0c0c0; }
-.rankCard[data-rank="3"] .rankBadge { color: #cd7f32; }
+/* 上位3名の特別な数字色 */
+.rankCard[data-rank="1"] .rankOverlay { color: #ffc107; opacity: 0.8; }
+.rankCard[data-rank="2"] .rankOverlay { color: #c0c0c0; opacity: 0.8; }
+.rankCard[data-rank="3"] .rankOverlay { color: #cd7f32; opacity: 0.8; }
 
-.info { flex: 1; }
-.name { font-size: 1.2rem; margin: 0; }
-.spec { font-size: 0.85rem; color: #999; margin-top: 4px; }
-.cup { margin-right: 15px; font-weight: bold; color: #ff0055; }
+.scoreBadge {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  z-index: 10;
+  background: rgba(255, 0, 85, 0.9);
+  padding: 6px 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  font-weight: 800;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
 
-.scoreSection {
+.scoreBadge small {
+  font-size: 0.6rem;
+  margin-left: 2px;
+  opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   4. Content Area
+   -------------------------------------------------------------------------- */
+.content {
+  padding: 1.5rem;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  width: 80px;
 }
 
-.scoreCircle {
-  position: relative;
-  width: 60px;
-  height: 60px;
+.nameRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
-.circularChart { display: block; margin: 0 auto; }
-.circleBg { fill: none; stroke: #333; stroke-width: 2.8; }
-.circle {
-  fill: none;
-  stroke: #ff0055;
-  stroke-width: 2.8;
-  stroke-linecap: round;
-  transition: stroke-dasharray 1s ease;
+.name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0;
+  color: #fff;
 }
 
-.scoreText {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.rankLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #ffc107;
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* スペックグリッド */
+.specGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.specItem {
+  background: #212126;
+  padding: 8px;
+  border-radius: 10px;
   text-align: center;
 }
 
-.scoreNum { display: block; font-size: 1rem; font-weight: bold; }
-.scoreUnit { font-size: 0.5rem; color: #666; }
-.rankText { font-size: 0.7rem; font-weight: bold; margin-top: 5px; color: #ffc107; }
+.label {
+  display: block;
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ddd;
+}
+
+/* --------------------------------------------------------------------------
+   5. AI Stats & Footer
+   -------------------------------------------------------------------------- */
+.aiStats {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.statBar {
+  margin-bottom: 1rem;
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: #888;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.barBg {
+  height: 4px;
+  background: #2a2a2e;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff0055, #ff8c00);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #2a2a2e;
+}
+
+.productCount {
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.detailBtn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #aaa;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.detailBtn:hover {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+/* --------------------------------------------------------------------------
+   6. State Handling (No Data)
+   -------------------------------------------------------------------------- */
+.noData {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 5rem;
+  background: #16161a;
+  border-radius: 20px;
+  border: 2px dashed #333;
+  color: #666;
+}

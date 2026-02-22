@@ -29,51 +29,53 @@ from api.serializers import (
 # 0. ページネーション設定
 # --------------------------------------------------------------------------
 class StandardResultsSetPagination(pagination.PageNumberPagination):
+    """
+    標準的な一覧表示用のページネーション。1ページあたり24件。
+    """
     page_size = 24
     page_size_query_param = 'page_size'
     max_page_size = 100
 
 # --------------------------------------------------------------------------
-# 💡 1. 統合ゲートウェイView (AIスコア・並び替え拡張版)
+# 💡 1. 統合ゲートウェイView
 # --------------------------------------------------------------------------
 class UnifiedAdultProductListView(generics.ListAPIView):
+    """
+    アダルト商品の統合一覧View。
+    検索、フィルタリング、並び替え、および関連商品の取得をサポート。
+    """
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     serializer_class = AdultProductSerializer
     
-    # AI解析テキスト（キャッチコピーやサマリー）も検索対象に含める
     search_fields = [
         'title', 'product_description', 'ai_summary', 'ai_content', 'ai_catchcopy',
         'target_segment', 'actresses__name', 'genres__name', 'maker__name'
     ]
     
-    # 🚀 AIソムリエのスコアとスペックスコアを並び替え可能に
     ordering_fields = [
         'release_date', 'price', 'review_average', 'spec_score',
         'score_visual', 'score_story', 'score_erotic', 'score_rarity', 'score_cost_performance',
-        'ai_score_visual', 'ai_score_story', 'ai_score_erotic' # 追加: AI解析スコア
+        'ai_score_visual', 'ai_score_story', 'ai_score_erotic'
     ]
 
     def get_queryset(self):
-        # 女優のプロフィール（黄金比）も同時に引けるよう select_related/prefetch_related を最適化
         qs = AdultProduct.objects.filter(is_active=True).select_related(
             'maker', 'label', 'series', 'director', 'floor_master'
         ).prefetch_related(
             'actresses', 
-            'actresses__adultactressprofile', # 💡 修正: 正しい逆参照名に変更
             'genres', 
             'attributes', 
             'authors'
         )
 
         p = self.request.query_params
-
-        # --- 🎯 関連作品ロジック ---
         related_id = p.get('related_to_id')
         axis_params = ['actress_id', 'maker_id', 'genre', 'actress', 'maker', 'series_id', 'label_id']
         has_specific_axis = any(p.get(k) for k in axis_params)
 
+        # 関連商品の取得ロジック
         if related_id and not has_specific_axis:
             try:
                 base_obj = AdultProduct.objects.get(product_id_unique=related_id)
@@ -82,13 +84,12 @@ class UnifiedAdultProductListView(generics.ListAPIView):
                     Q(actresses__in=base_obj.actresses.all()) |
                     Q(genres__in=base_obj.genres.all())
                 ).exclude(product_id_unique=related_id).distinct()
-                
                 if related_qs.exists():
                     return related_qs.order_by('-release_date')
             except AdultProduct.DoesNotExist:
                 pass
 
-        # --- A. 基本ソース・階層フィルタ ---
+        # 基本フィルタリング
         source_param = p.get('api_source', '').strip().lower()
         service_code = p.get('service_code', '').strip().lower()
         floor_code = p.get('floor_code', '').strip().lower()
@@ -97,7 +98,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         if service_code: qs = qs.filter(api_service__iexact=service_code)
         if floor_code:  qs = qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
 
-        # --- B. 全方位フィルタリング ---
+        # タクソノミー（ID/Slug）フィルタリング
         filter_map = {
             'genre': ('genres__id', 'genres__slug'),
             'actress': ('actresses__id', 'actresses__slug'),
@@ -111,7 +112,6 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         for key, fields in filter_map.items():
             id_val = p.get(key) or p.get(f"{key}_id")
             slug_val = p.get(f"{key}_slug")
-
             if id_val and str(id_val).isdigit():
                 qs = qs.filter(**{fields[0]: id_val})
             elif slug_val:
@@ -126,6 +126,9 @@ class UnifiedAdultProductListView(generics.ListAPIView):
 # 💡 2. 階層ナビゲーションView
 # --------------------------------------------------------------------------
 class FanzaFloorNavigationAPIView(views.APIView):
+    """
+    FANZAのサイト・サービス・フロア構造を階層的に返すView。
+    """
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
         qs = FanzaFloorMaster.objects.filter(is_active=True)
@@ -146,18 +149,18 @@ class FanzaFloorNavigationAPIView(views.APIView):
         return response.Response({"status": "NAV_SYNC_COMPLETE", "data": structure})
 
 # --------------------------------------------------------------------------
-# 💡 3. 全項目インデックス取得View (黄金比スコア対応版)
+# 💡 3. 全項目インデックス取得View (エラー修正・画像強化版)
 # --------------------------------------------------------------------------
 class AdultTaxonomyIndexAPIView(views.APIView):
     """
-    女優、ジャンル、メーカー等の一覧を、ブランド(api_source)ごとに独立して取得します。
+    女優、ジャンル、メーカー等のマスタ一覧を返すView。
     """
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
         p = request.query_params
         tax_type = p.get('type', 'genres')
-        ordering = p.get('ordering', '-product_count')
+        ordering_raw = p.get('ordering', '-product_count')
         limit = p.get('limit')
         api_source = p.get('api_source')
 
@@ -175,39 +178,29 @@ class AdultTaxonomyIndexAPIView(views.APIView):
         if not TargetModel:
             return response.Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        qs = TargetModel.objects.all()
-
-        # 女優一覧の場合はスコア順の並び替えも可能にする
+        # 🚀 効率化: 女優の場合はリレーション 'profile' をロード
         if tax_type == 'actresses':
-            # 💡 修正: 正しい逆参照名 adultactressprofile を指定
-            qs = qs.select_related('adultactressprofile')
+            qs = TargetModel.objects.all().select_related('profile')
+        else:
+            qs = TargetModel.objects.all()
 
         if api_source:
             qs = qs.filter(api_source__iexact=api_source)
 
         qs = qs.filter(product_count__gt=0)
 
-        # 女優専用の並び替えフィールド（黄金比スコア）を許可
-        valid_order_fields = ['name', '-name', 'product_count', '-product_count', 'id', '-id']
-        if tax_type == 'actresses':
-            # 💡 修正: 正しい逆参照名ベースで並び替え
-            valid_order_fields += ['adultactressprofile__ai_power_score', '-adultactressprofile__ai_power_score']
-        
-        if ordering not in valid_order_fields:
-            # 💡 補足: profile__... できた場合も adultactressprofile__... に読み替える
-            if 'profile__' in ordering:
-                ordering = ordering.replace('profile__', 'adultactressprofile__')
-            else:
-                ordering = '-product_count'
-        
-        qs = qs.order_by(ordering)
+        # DB側ソート (安全なフィールドのみ)
+        valid_db_fields = ['name', '-name', 'product_count', '-product_count', 'id', '-id']
+        db_ordering = ordering_raw if ordering_raw in valid_db_fields else '-product_count'
+        qs = qs.order_by(db_ordering)
 
-        if limit and limit.isdigit():
-            qs = qs[:int(limit)]
+        # スコア要求時は全件から選別するために取得制限を緩和
+        fetch_limit = 1000 if 'score' in ordering_raw else (int(limit) if limit and limit.isdigit() else 100)
+        qs = qs[:fetch_limit]
 
-        # 🚀 レスポンス整形 (女優の場合はスコアとカップ数を追加)
         results = []
         for item in qs:
+            # Slug仕様の維持
             data = {
                 "id": item.id, 
                 "name": item.name, 
@@ -215,14 +208,49 @@ class AdultTaxonomyIndexAPIView(views.APIView):
                 "product_count": item.product_count,
                 "api_source": item.api_source
             }
+            
+            # 🚀 女優の場合、詳細な解析データを注入 (AttributeError対策版)
             if tax_type == 'actresses':
-                # 💡 修正: 逆参照名 adultactressprofile を使用してデータを取得
-                profile = getattr(item, 'adultactressprofile', None)
-                data["ai_power_score"] = profile.ai_power_score if profile else None
-                data["score_style"] = profile.score_style if profile else None
-                data["cup"] = profile.cup if profile else ""
+                profile = getattr(item, 'profile', None)
+                if profile:
+                    # 🖼️ ビジュアルデータ
+                    data["image_url_small"] = getattr(profile, 'image_url_small', None)
+                    data["image_url_large"] = getattr(profile, 'image_url_large', None)
+                    
+                    # 📏 フィジカルデータ
+                    data["bust"] = getattr(profile, 'bust', None)
+                    data["waist"] = getattr(profile, 'waist', None)
+                    data["hip"] = getattr(profile, 'hip', None)
+                    data["cup"] = getattr(profile, 'cup', None)
+                    data["height"] = getattr(profile, 'height', None)
+                    
+                    # 📊 AI 5軸評価スコア
+                    data["ai_power_score"] = getattr(profile, 'ai_power_score', 0)
+                    data["score_visual"] = getattr(profile, 'score_visual', 0)
+                    data["score_style"] = getattr(profile, 'score_style', 0)
+                    data["score_performance"] = getattr(profile, 'score_performance', 0)
+                    data["score_popularity"] = getattr(profile, 'score_popularity', 0)
+                else:
+                    # プロフィールが存在しない場合のデフォルト値
+                    data["image_url_large"] = None
+                    data["ai_power_score"] = 0
+                    data["cup"] = ""
             
             results.append(data)
+
+        # 🚀 AIスコアによるランキング並び替え (Python側で安全に実行)
+        if 'score' in ordering_raw or 'ai_power_score' in ordering_raw:
+            reverse_flag = '-' in ordering_raw
+            # キーの抽出
+            sort_key = ordering_raw.replace('-', '').split('__')[-1]
+            
+            results = sorted(
+                results, 
+                key=lambda x: (x.get(sort_key) is not None, x.get(sort_key) or 0), 
+                reverse=reverse_flag
+            )
+            if limit and limit.isdigit():
+                results = results[:int(limit)]
 
         return response.Response({
             "type": tax_type, 
