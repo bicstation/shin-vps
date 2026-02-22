@@ -187,3 +187,83 @@ class AdultProduct(models.Model):
             self.is_on_sale = True
             self.discount_rate = int((1 - (int(self.price) / int(self.list_price))) * 100)
         super().save(*args, **kwargs)
+        
+# ==========================================================================
+# 3. 統合アダルト女優プロファイル（詳細スペック・AI解析・外部リンク対応）
+# ==========================================================================
+class AdultActressProfile(models.Model):
+    # 仕訳用マスターモデル（Actress）との1対1リレーション
+    # これにより actress.profile.bust のようにアクセス可能
+    master_actress = models.OneToOneField(
+        Actress, 
+        on_delete=models.CASCADE, 
+        related_name='profile',
+        verbose_name="マスター女優",
+        null=True,   # 👈 追加：マスターがいなくても保存可能に
+        blank=True   # 👈 追加：管理画面でも空欄を許可
+    )
+    
+    # 識別子
+    actress_id = models.CharField('FANZA女優ID', max_length=100, unique=True, db_index=True)
+    name = models.CharField('女優名', max_length=255)
+    ruby = models.CharField('読み仮名', max_length=255, null=True, blank=True)
+    
+    # 📏 フィジカルスペック (API取得データ)
+    bust = models.IntegerField('バスト', null=True, blank=True)
+    cup = models.CharField('カップ', max_length=10, null=True, blank=True)
+    waist = models.IntegerField('ウエスト', null=True, blank=True)
+    hip = models.IntegerField('ヒップ', null=True, blank=True)
+    height = models.IntegerField('身長', null=True, blank=True)
+    birthday = models.DateField('生年月日', null=True, blank=True)
+    blood_type = models.CharField('血液型', max_length=10, null=True, blank=True)
+    prefectures = models.CharField('出身地', max_length=100, null=True, blank=True)
+    hobby = models.TextField('趣味', null=True, blank=True)
+    
+    # 🖼️ メディア
+    image_url_small = models.URLField('画像URL(小)', max_length=500, null=True, blank=True)
+    image_url_large = models.URLField('画像URL(大)', max_length=500, null=True, blank=True)
+    
+    # 🔗 外部リンク群（JSON形式）
+    # {"x": "...", "wikipedia": "...", "official_site": "...", "instagram": "..."} 等を格納
+    external_links = models.JSONField(
+        '外部リンク集', 
+        default=dict, 
+        blank=True, 
+        help_text="SNSやWikipedia、公式サイトのURLをJSON形式で保持"
+    )
+
+    # ==========================================================================
+    # 🤖 AI解析セクション (女優ポテンシャル評価)
+    # ==========================================================================
+    ai_catchcopy = models.CharField('AIキャッチコピー', max_length=500, null=True, blank=True)
+    ai_description = models.TextField('AI生成紹介文', null=True, blank=True)
+    
+    # 女優用マトリックス項目
+    score_visual = models.IntegerField('視覚的評価(VISUAL)', default=0)
+    score_style = models.IntegerField('スタイル評価(STYLE)', default=0)
+    score_performance = models.IntegerField('表現力(PERFORMANCE)', default=0)
+    score_popularity = models.IntegerField('市場人気度(POPULARITY)', default=0)
+    
+    # 総合評価
+    ai_power_score = models.IntegerField('おすすめ総合評価', default=0)
+    
+    # 運用・状態
+    product_count = models.PositiveIntegerField('出演作品数', default=0)
+    is_active = models.BooleanField('有効', default=True)
+    last_synced_at = models.DateTimeField('最終同期日', auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'adult_actress_profile'
+        verbose_name = 'アダルト女優プロファイル'
+        verbose_name_plural = 'アダルト女優プロファイル一覧'
+        ordering = ['-ai_power_score', '-product_count']
+
+    def __str__(self):
+        return f"{self.name} ({self.actress_id})"
+
+    def save(self, *args, **kwargs):
+        # 名前の正規化
+        if self.name:
+            self.name = unicodedata.normalize('NFKC', self.name).strip()
+        super().save(*args, **kwargs)

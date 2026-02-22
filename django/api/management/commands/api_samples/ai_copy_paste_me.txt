@@ -1,0 +1,128 @@
+### API Structure Report ###
+
+【AKB48】
+Keys: ['maker']
+---
+【SKE48】
+Keys: ['maker']
+---
+【NMB48】
+Keys: ['maker']
+---
+【HKT48】
+Keys: ['maker']
+---
+【NGT48】
+Keys: ['maker']
+---
+【REVIVAL!! ON DEMAND】
+Keys: ['maker']
+---
+【STU48】
+Keys: ['maker']
+---
+【コミック】
+Keys: ['genre', 'series', 'manufacture', 'author']
+---
+【写真集】
+Keys: ['genre', 'series', 'manufacture', 'actor', 'author']
+---
+【文芸・ラノベ】
+Keys: ['genre', 'series', 'manufacture', 'author']
+---
+【ビジネス・実用】
+Keys: ['genre', 'series', 'manufacture', 'author']
+---
+【PCゲーム】
+Keys: ['genre', 'maker']
+---
+【ソフトウェア】
+Keys: ['genre', 'series', 'maker']
+---
+【DVD・Blu-ray】
+Keys: ['maker', 'actor', 'director']
+---
+【CD】
+Keys: ['maker', 'artist']
+---
+【本・コミック】
+Keys: ['maker', 'author', 'label']
+---
+【ホビー】
+Keys: ['genre', 'maker']
+---
+【家電・日用品】
+Keys: ['maker']
+---
+【DMMTV】
+Keys: []
+---
+【ビデオ】
+Keys: ['genre', 'series', 'maker', 'actress', 'director', 'label']
+---
+【素人】
+Keys: ['genre', 'maker', 'label']
+---
+【成人映画】
+Keys: ['genre', 'maker', 'actress']
+---
+【アニメ動画】
+Keys: ['genre', 'series', 'maker', 'label']
+---
+【見放題ch デラックス】
+Keys: ['genre', 'maker', 'label']
+---
+【VRch】
+Keys: ['genre', 'series', 'maker', 'actress', 'director', 'label']
+---
+【見放題ch】
+Keys: ['genre', 'series', 'maker', 'actress', 'label']
+---
+【DVD】
+Keys: ['genre', 'maker', 'actress', 'label']
+---
+【大人のおもちゃ】
+Keys: ['genre', 'maker']
+---
+【アニメ】
+Keys: ['genre', 'series', 'maker', 'label']
+---
+【PCゲーム】
+Keys: ['genre', 'maker', 'author']
+---
+【ブック】
+Keys: ['genre', 'maker', 'author', 'label']
+---
+【フィギュア・グッズ】
+Keys: ['genre', 'maker']
+---
+【アダルトPCゲーム】
+Keys: ['genre', 'maker', 'author']
+---
+【同人】
+Keys: ['genre', 'maker']
+---
+【らぶカル（BL）】
+Keys: ['genre', 'maker']
+---
+【らぶカル（TL）】
+Keys: ['genre', 'maker']
+---
+【コミック】
+Keys: ['genre', 'series', 'manufacture', 'author']
+---
+【美少女ノベル・官能小説】
+Keys: ['genre', 'series', 'manufacture', 'author']
+---
+【アダルト写真集・雑誌】
+Keys: ['genre', 'series', 'manufacture', 'actress', 'author']
+---
+【BL】
+Keys: ['genre', 'series', 'manufacture', 'author']
+---
+【TL】
+Keys: ['genre', 'series', 'manufacture', 'author']
+---
+【FANZAブックス読み放題】
+Keys: ['genre', 'series', 'manufacture', 'author']
+---

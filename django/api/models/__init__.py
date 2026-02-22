@@ -11,7 +11,7 @@ from .raw_and_entities import (
 # from .fanza_products import FanzaProduct  # ← これを消す！
 
 # 3. アダルト製品（FANZA / DMM / DUGA 統合モデル）
-from .adult_products import AdultProduct, FanzaFloorMaster, AdultAttribute
+from .adult_products import AdultProduct, FanzaFloorMaster, AdultAttribute ,AdultActressProfile
 
 # 4. Linkshare 関連
 from .linkshare_products import LinkshareProduct

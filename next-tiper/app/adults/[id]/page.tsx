@@ -28,7 +28,14 @@ const getIdentifier = (item: any) => {
   return item.slug && item.slug !== "null" ? item.slug : item.id;
 };
 
-const getSafeScore = (val: any) => (typeof val === 'number' ? val : (parseInt(val) || 0));
+/**
+ * 💡 数値変換ヘルパー
+ * 0点やnullの場合にチャートが消滅するのを防ぐため、最小値を5に設定
+ */
+const getSafeScore = (val: any) => {
+  const n = typeof val === 'number' ? val : (parseInt(val) || 0);
+  return n > 0 ? n : 5; 
+};
 
 const generateSeoDescription = (product: any) => {
   if (product.ai_summary && product.ai_summary !== "解析準備中...") return product.ai_summary;
@@ -86,7 +93,7 @@ async function fetchRelated(params: string) {
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  // 🚨 【修正】不正なID（main, _components, favicon等）を弾くガードレール
+  // 🚨 不正なIDを弾くガードレール
   if (!id || id === 'main' || id === '_components' || id.includes('.')) {
     return (
       <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center p-4 font-mono text-gray-500">
@@ -136,21 +143,23 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     if (url) movieData = { url, preview_image: jacketImage };
   }
 
-  // レーダーチャート用スコア設定
+  // レーダーチャート用スコア設定（モデルのカラム名と一致、最小値保証付き）
   const radarData = [
-    { subject: 'VISUAL', A: getSafeScore(product.score_visual), fullMark: 100 },
-    { subject: 'STORY', A: getSafeScore(product.score_story), fullMark: 100 },
-    { subject: 'EROTIC', A: getSafeScore(product.score_erotic), fullMark: 100 },
-    { subject: 'RARITY', A: getSafeScore(product.score_rarity), fullMark: 100 },
-    { subject: 'FETISH', A: getSafeScore(product.score_fetish), fullMark: 100 },
+    { subject: 'VISUAL', value: getSafeScore(product.score_visual), fullMark: 100 },
+    { subject: 'STORY', value: getSafeScore(product.score_story), fullMark: 100 },
+    { subject: 'EROTIC', value: getSafeScore(product.score_erotic), fullMark: 100 },
+    { subject: 'RARITY', value: getSafeScore(product.score_rarity), fullMark: 100 },
+    { subject: 'FETISH', value: getSafeScore(product.score_fetish), fullMark: 100 },
   ];
+
+  // 棒グラフ用スコア設定（COSTなどはDBのカラム score_cost_performance を参照）
   const barChartData = [
-    { label: 'VISUAL', score: getSafeScore(product.score_visual), color: 'bg-blue-500' },
-    { label: 'STORY', score: getSafeScore(product.score_story), color: 'bg-purple-500' },
-    { label: 'EROTIC', score: getSafeScore(product.score_erotic), color: 'bg-pink-500' },
-    { label: 'RARITY', score: getSafeScore(product.score_rarity), color: 'bg-yellow-500' },
-    { label: 'COST', score: getSafeScore(product.score_cost_performance), color: 'bg-green-500' },
-    { label: 'FETISH', score: getSafeScore(product.score_fetish), color: 'bg-orange-500' },
+    { label: 'VISUAL', value: getSafeScore(product.score_visual), color: 'bg-blue-500' },
+    { label: 'STORY', value: getSafeScore(product.score_story), color: 'bg-purple-500' },
+    { label: 'EROTIC', value: getSafeScore(product.score_erotic), color: 'bg-pink-500' },
+    { label: 'RARITY', value: getSafeScore(product.score_rarity), color: 'bg-yellow-500' },
+    { label: 'COST', value: getSafeScore(product.score_cost_performance), color: 'bg-green-500' },
+    { label: 'FETISH', value: getSafeScore(product.score_fetish), color: 'bg-orange-500' },
   ];
 
   return (
@@ -175,23 +184,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               jacketImage={jacketImage} 
               galleryImages={galleryImages} 
               radarData={radarData}
-              barChartData={barChartData} // 👈 追加
-              specScore={product.spec_score} // 👈 合計スコアも渡すと便利
+              barChartData={barChartData}
+              specScore={product.spec_score} 
               movieData={movieData} 
               source={source} 
             />
           </aside>
 
-          {/* 🧩 右サイド: メインコンテンツ（パズルエリア） */}
+          {/* 🧩 右サイド: メインコンテンツ */}
           <article className="space-y-12">
             <ProductHeader product={product} source={source} />
             
+            <NeuralNarrative content={product.ai_content} />
+
             {/* ★ LINE風チャットセクション */}
             <ExpertChatSection logs={product.ai_chat_comments} />
 
             <TechnicalMeta product={product} getIdentifier={getIdentifier} />
             
-            <NeuralNarrative content={product.ai_content} />
+            
             
             <ActionArea 
               product={product} 

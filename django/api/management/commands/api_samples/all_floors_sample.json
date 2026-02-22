@@ -1,0 +1,3640 @@
+{
+  "metadata": {
+    "total": 42,
+    "at": "2026-02-22 12:19:56"
+  },
+  "floors": {
+    "DMM.com_lod_akb48": {
+      "info": {
+        "site": "DMM.com",
+        "service": "lod",
+        "floor": "akb48",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "akb48",
+        "floor_name": "AKB48"
+      },
+      "sample": {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "akb48",
+        "floor_name": "AKB48",
+        "category_name": "AKB48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "akb48c26022001",
+        "product_id": "akb48c26022001",
+        "title": "2026年2月20日（金） 「手をつなぎながら」公演",
+        "volume": "110",
+        "URL": "https://www.dmm.com/lod/akb48/-/detail/=/cid=akb48c26022001/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fakb48%2F-%2Fdetail%2F%3D%2Fcid%3Dakb48c26022001%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-21 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66226,
+              "name": "AKB48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_lod_ske48": {
+      "info": {
+        "site": "DMM.com",
+        "service": "lod",
+        "floor": "ske48",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48"
+      },
+      "sample": {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ske48",
+        "floor_name": "SKE48",
+        "category_name": "SKE48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48c26022181",
+        "product_id": "ske48c26022181",
+        "title": "【定点映像】2026年2月21日（土） 「可能性こそが未来」公演",
+        "volume": "94",
+        "URL": "https://www.dmm.com/lod/ske48/-/detail/=/cid=ske48c26022181/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fske48%2F-%2Fdetail%2F%3D%2Fcid%3Dske48c26022181%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-22 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_lod_nmb48": {
+      "info": {
+        "site": "DMM.com",
+        "service": "lod",
+        "floor": "nmb48",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "nmb48",
+        "floor_name": "NMB48"
+      },
+      "sample": {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "nmb48",
+        "floor_name": "NMB48",
+        "category_name": "NMB48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "nmb48c26022102",
+        "product_id": "nmb48c26022102",
+        "title": "2026年2月21日（土）18:00～ 「青春！恋のDestination」公演",
+        "volume": "104",
+        "URL": "https://www.dmm.com/lod/nmb48/-/detail/=/cid=nmb48c26022102/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fnmb48%2F-%2Fdetail%2F%3D%2Fcid%3Dnmb48c26022102%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-22 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66402,
+              "name": "NMB48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_lod_hkt48": {
+      "info": {
+        "site": "DMM.com",
+        "service": "lod",
+        "floor": "hkt48",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "hkt48",
+        "floor_name": "HKT48"
+      },
+      "sample": {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "hkt48",
+        "floor_name": "HKT48",
+        "category_name": "HKT48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "hkt48x26022203",
+        "product_id": "hkt48x26022203",
+        "title": "【リバイバル配信】2022年8月4日（木） ひまわり組「パジャマドライブ」公演",
+        "volume": "114",
+        "URL": "https://www.dmm.com/lod/hkt48/-/detail/=/cid=hkt48x26022203/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fhkt48%2F-%2Fdetail%2F%3D%2Fcid%3Dhkt48x26022203%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-22 12:00:02",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66394,
+              "name": "HKT48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_lod_ngt48": {
+      "info": {
+        "site": "DMM.com",
+        "service": "lod",
+        "floor": "ngt48",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ngt48",
+        "floor_name": "NGT48"
+      },
+      "sample": {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "ngt48",
+        "floor_name": "NGT48",
+        "category_name": "NGT48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "ngt48c26022102",
+        "product_id": "ngt48c26022102",
+        "title": "2026年2月21日（土）17:00～ 「パジャマドライブ」公演",
+        "volume": "106",
+        "URL": "https://www.dmm.com/lod/ngt48/-/detail/=/cid=ngt48c26022102/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fngt48%2F-%2Fdetail%2F%3D%2Fcid%3Dngt48c26022102%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-22 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66419,
+              "name": "NGT48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_lod_rod": {
+      "info": {
+        "site": "DMM.com",
+        "service": "lod",
+        "floor": "rod",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND"
+      },
+      "sample": {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "rod",
+        "floor_name": "REVIVAL!! ON DEMAND",
+        "category_name": "REVIVAL!! ON DEMAND (AKB48グループ)",
+        "content_id": "ske48s21020101",
+        "product_id": "ske48s21020101",
+        "title": "2021年2月1日（月） チームS「重ねた足跡」公演",
+        "volume": "83",
+        "URL": "https://www.dmm.com/lod/rod/-/detail/=/cid=ske48s21020101/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Frod%2F-%2Fdetail%2F%3D%2Fcid%3Dske48s21020101%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-17 10:00:09",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66344,
+              "name": "SKE48 LIVE！！ ON DEMAND"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_lod_stu48": {
+      "info": {
+        "site": "DMM.com",
+        "service": "lod",
+        "floor": "stu48",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "stu48",
+        "floor_name": "STU48"
+      },
+      "sample": {
+        "service_code": "lod",
+        "service_name": "AKB48グループ",
+        "floor_code": "stu48",
+        "floor_name": "STU48",
+        "category_name": "STU48 LIVE!! ON DEMAND (AKB48グループ)",
+        "content_id": "stu48c26021701",
+        "product_id": "stu48c26021701",
+        "title": "2026年2月17日（火） STU48 課外活動「勝手に！四国観光大使×Charming Trip」公演",
+        "volume": "87",
+        "URL": "https://www.dmm.com/lod/stu48/-/detail/=/cid=stu48c26021701/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Flod%2Fstu48%2F-%2Fdetail%2F%3D%2Fcid%3Dstu48c26021701%2F&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "-"
+        },
+        "date": "2026-02-18 12:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 66590,
+              "name": "STU48"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_ebook_comic": {
+      "info": {
+        "site": "DMM.com",
+        "service": "ebook",
+        "floor": "comic",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "b204bozr15690",
+        "product_id": "b204bozr15690",
+        "title": "恋愛白書パステル2026年4月号",
+        "volume": "550",
+        "URL": "https://book.dmm.com/product/611731/b204bozr15690/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F611731%2Fb204bozr15690%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b204bozr15690/b204bozr15690pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b204bozr15690/b204bozr15690ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b204bozr15690/b204bozr15690pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaAQZSVQ4fRAcFD10JThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaAQZSVQ4fRAcFD10JThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "770"
+        },
+        "date": "2026-02-24 00:00:16",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 91535,
+              "name": "恋愛"
+            },
+            {
+              "id": 94326,
+              "name": "雑誌"
+            }
+          ],
+          "series": [
+            {
+              "id": 611731,
+              "name": "恋愛白書パステル"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 94301,
+              "name": "宙出版"
+            }
+          ],
+          "author": [
+            {
+              "id": 390382,
+              "name": "比叡山おにく"
+            },
+            {
+              "id": 326330,
+              "name": "よしざわ未菜子"
+            },
+            {
+              "id": 259530,
+              "name": "佐倉紫"
+            },
+            {
+              "id": 26031,
+              "name": "すらだまみ"
+            },
+            {
+              "id": 22515,
+              "name": "DUO BRAND."
+            },
+            {
+              "id": 60117,
+              "name": "阿部摘花"
+            },
+            {
+              "id": 205144,
+              "name": "冬森雪湖"
+            },
+            {
+              "id": 228169,
+              "name": "桃果コウ"
+            },
+            {
+              "id": 243001,
+              "name": "武浦すぐる"
+            },
+            {
+              "id": 244593,
+              "name": "水月あるみ"
+            },
+            {
+              "id": 245112,
+              "name": "七里慧"
+            },
+            {
+              "id": 251070,
+              "name": "みずの雪見"
+            },
+            {
+              "id": 251653,
+              "name": "縞島おせろう"
+            },
+            {
+              "id": 257094,
+              "name": "芳村かなみ"
+            },
+            {
+              "id": 258674,
+              "name": "さんずい尺"
+            },
+            {
+              "id": 274911,
+              "name": "浅島ヨシユキ"
+            },
+            {
+              "id": 277613,
+              "name": "小爪ろっく"
+            },
+            {
+              "id": 307164,
+              "name": "まるはな郁哉"
+            },
+            {
+              "id": 310995,
+              "name": "玄野さわ"
+            },
+            {
+              "id": 324371,
+              "name": "戸瀬つぐみ"
+            },
+            {
+              "id": 326477,
+              "name": "春名ソマリ"
+            },
+            {
+              "id": 327909,
+              "name": "真白しろいろ"
+            },
+            {
+              "id": 356643,
+              "name": "ちょめ仔"
+            },
+            {
+              "id": 359371,
+              "name": "深石千尋"
+            },
+            {
+              "id": 361251,
+              "name": "冬見六花"
+            },
+            {
+              "id": 368142,
+              "name": "Adria"
+            },
+            {
+              "id": 373296,
+              "name": "春夜くる佳"
+            },
+            {
+              "id": 374870,
+              "name": "千面子"
+            },
+            {
+              "id": 381128,
+              "name": "しぃたろ"
+            },
+            {
+              "id": 400843,
+              "name": "おうじちゃん"
+            },
+            {
+              "id": 414636,
+              "name": "ヨドミ"
+            }
+          ]
+        },
+        "number": "120"
+      }
+    },
+    "DMM.com_ebook_photo": {
+      "info": {
+        "site": "DMM.com",
+        "service": "ebook",
+        "floor": "photo",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "photo",
+        "floor_name": "写真集"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "photo",
+        "floor_name": "写真集",
+        "category_name": "写真集 (電子書籍)",
+        "content_id": "k740aplst08536",
+        "product_id": "k740aplst08536",
+        "title": "まみれる 雨宮留菜 【グラビア写真集】",
+        "volume": "42",
+        "URL": "https://book.dmm.com/product/6250760/k740aplst08536/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F6250760%2Fk740aplst08536%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/k740aplst08536/k740aplst08536pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/k740aplst08536/k740aplst08536ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/k740aplst08536/k740aplst08536pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxTBAJWVhEJRUIAAVEKVE5EDl0VClQMBllNB1o*VVoKXlMfQgdUCQxPWV1QWQg_&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxTBAJWVhEJRUIAAVEKVE5EDl0VClQMBllNB1o%2AVVoKXlMfQgdUCQxPWV1QWQg_%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1980"
+        },
+        "date": "2026-02-27 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 92703,
+              "name": "タレント・女優・俳優"
+            },
+            {
+              "id": 92706,
+              "name": "セクシー"
+            },
+            {
+              "id": 92708,
+              "name": "巨乳"
+            },
+            {
+              "id": 92729,
+              "name": "ランジェリー"
+            },
+            {
+              "id": 92733,
+              "name": "水着"
+            },
+            {
+              "id": 92735,
+              "name": "美尻"
+            },
+            {
+              "id": 92736,
+              "name": "美脚"
+            },
+            {
+              "id": 92738,
+              "name": "美女"
+            },
+            {
+              "id": 6661,
+              "name": "先行販売"
+            }
+          ],
+          "series": [
+            {
+              "id": 6250760,
+              "name": "雨宮留菜"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 56174,
+              "name": "プレステージ出版"
+            }
+          ],
+          "actor": [
+            {
+              "id": 232742,
+              "name": "雨宮留菜"
+            }
+          ],
+          "author": [
+            {
+              "id": 320916,
+              "name": "街田和由"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_ebook_novel": {
+      "info": {
+        "site": "DMM.com",
+        "service": "ebook",
+        "floor": "novel",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "novel",
+        "floor_name": "文芸・ラノベ"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "novel",
+        "floor_name": "文芸・ラノベ",
+        "category_name": "文芸・ラノベ (電子書籍)",
+        "content_id": "b204bozr15641",
+        "product_id": "b204bozr15641",
+        "title": "婚約解消を言い渡してきた王太子殿下が、今さら迫ってくるとは思いませんでした！？",
+        "URL": "https://book.dmm.com/product/6250247/b204bozr15641/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F6250247%2Fb204bozr15641%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b204bozr15641/b204bozr15641pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b204bozr15641/b204bozr15641ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b204bozr15641/b204bozr15641pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaAQZSVQ4fRAcFD1AIThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaAQZSVQ4fRAcFD1AIThFfCUJYU1kCCERYCmkGUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1210"
+        },
+        "date": "2026-02-22 00:00:11",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 308810,
+              "name": "異世界系"
+            }
+          ],
+          "series": [
+            {
+              "id": 6250247,
+              "name": "婚約解消を言い渡してきた王太子殿下が、今さら迫ってくるとは思いませんでした！？"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 94301,
+              "name": "宙出版"
+            }
+          ],
+          "author": [
+            {
+              "id": 365316,
+              "name": "澤谷弥"
+            },
+            {
+              "id": 345002,
+              "name": "藤咲ねねば"
+            }
+          ]
+        },
+        "number": "1"
+      }
+    },
+    "DMM.com_ebook_otherbooks": {
+      "info": {
+        "site": "DMM.com",
+        "service": "ebook",
+        "floor": "otherbooks",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "otherbooks",
+        "floor_name": "ビジネス・実用"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "DMMブックス",
+        "floor_code": "otherbooks",
+        "floor_name": "ビジネス・実用",
+        "category_name": "ビジネス・実用 (電子書籍)",
+        "content_id": "b217afuso04596",
+        "product_id": "b217afuso04596",
+        "title": "失敗しない 別荘民泊のはじめ方",
+        "URL": "https://book.dmm.com/product/6251288/b217afuso04596/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Fproduct%2F6251288%2Fb217afuso04596%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.com/digital/e-book/b217afuso04596/b217afuso04596pt.jpg",
+          "small": "https://ebook-assets.dmm.com/digital/e-book/b217afuso04596/b217afuso04596ps.jpg",
+          "large": "https://ebook-assets.dmm.com/digital/e-book/b217afuso04596/b217afuso04596pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.com/tachiyomi/?cid=FRNfXRNVFW1RAQxaAQdRVgcQRVkADVEAVE5EDl0VClQMBllNB1o*VVoKXlMfQgdUCQxPWV1QWQg_&lin=2&sd=0",
+          "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fbook.dmm.com%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxaAQdRVgcQRVkADVEAVE5EDl0VClQMBllNB1o%2AVVoKXlMfQgdUCQxPWV1QWQg_%26lin%3D2%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1760"
+        },
+        "date": "2026-02-22 00:00:13",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 90102,
+              "name": "経営"
+            }
+          ],
+          "series": [
+            {
+              "id": 6251288,
+              "name": "失敗しない 別荘民泊のはじめ方"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 95065,
+              "name": "扶桑社"
+            }
+          ],
+          "author": [
+            {
+              "id": 310153,
+              "name": "羽田徹"
+            }
+          ]
+        },
+        "number": "1"
+      }
+    },
+    "DMM.com_pcsoft_digital_pcgame": {
+      "info": {
+        "site": "DMM.com",
+        "service": "pcsoft",
+        "floor": "digital_pcgame",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム"
+      },
+      "sample": {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "PCゲーム (PCゲーム/ソフトウェア)",
+        "content_id": "dengeki_0050",
+        "product_id": "dengeki_0050",
+        "title": "飼い猫ぐらし〜黒猫にゃーちゃんの恩返し〜【CV:川村玲奈】",
+        "URL": "https://dlsoft.dmm.com/detail/dengeki_0050/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fdetail%2Fdengeki_0050%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/dengeki_0050/dengeki_0050pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/dengeki_0050/dengeki_0050ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/dengeki_0050/dengeki_0050pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.com/digital/pcgame/dengeki_0050/dengeki_0050js-001.jpg",
+              "https://pics.dmm.com/digital/pcgame/dengeki_0050/dengeki_0050js-002.jpg",
+              "https://pics.dmm.com/digital/pcgame/dengeki_0050/dengeki_0050js-003.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "1372"
+        },
+        "date": "2026-02-22 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7403,
+              "name": "全年齢向け"
+            },
+            {
+              "id": 7404,
+              "name": "音声作品"
+            },
+            {
+              "id": 307635,
+              "name": "ASMR"
+            },
+            {
+              "id": 7276,
+              "name": "『飼い猫ぐらし〜黒猫にゃーちゃんの恩返し〜』早期購入割引キャンペーン"
+            },
+            {
+              "id": 100907,
+              "name": "【プレミアム新規登録された方へ】DMM GAMES（PCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "maker": [
+            {
+              "id": 301397,
+              "name": "電撃G’s magazine"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_pcsoft_digital_pcsoft": {
+      "info": {
+        "site": "DMM.com",
+        "service": "pcsoft",
+        "floor": "digital_pcsoft",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcsoft",
+        "floor_name": "ソフトウェア"
+      },
+      "sample": {
+        "service_code": "pcsoft",
+        "service_name": "PCゲーム/ソフトウェア",
+        "floor_code": "digital_pcsoft",
+        "floor_name": "ソフトウェア",
+        "category_name": "ソフトウェア (PCゲーム/ソフトウェア)",
+        "content_id": "runup_0132",
+        "product_id": "runup_0132",
+        "title": "かんたん給与印刷11 DL版",
+        "URL": "https://dlsoft.dmm.com/pcsoft/detail/runup_0132/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fdlsoft.dmm.com%2Fpcsoft%2Fdetail%2Frunup_0132%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/digital/pcgame/runup_0132/runup_0132pt.jpg",
+          "small": "https://pics.dmm.com/digital/pcgame/runup_0132/runup_0132ps.jpg",
+          "large": "https://pics.dmm.com/digital/pcgame/runup_0132/runup_0132pl.jpg"
+        },
+        "prices": {
+          "price": "4480",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "4480",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2026-02-20 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 100302,
+              "name": "事務・管理"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            }
+          ],
+          "series": [
+            {
+              "id": 4090119,
+              "name": "激安革命"
+            }
+          ],
+          "maker": [
+            {
+              "id": 69015,
+              "name": "アイアールティー"
+            }
+          ]
+        }
+      }
+    },
+    "DMM.com_mono_dvd": {
+      "info": {
+        "site": "DMM.com",
+        "service": "mono",
+        "floor": "dvd",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "dvd",
+        "floor_name": "DVD・Blu-ray"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "dvd",
+        "floor_name": "DVD・Blu-ray",
+        "category_name": "DVD・Blu-ray通販",
+        "content_id": "n_1058tcbd1247",
+        "product_id": "n_1058tcbd1247",
+        "title": "ジャスト・ア・ジゴロ HDニューマスター （ブルーレイディスク）",
+        "URL": "https://www.dmm.com/mono/dvd/-/detail/=/cid=n_1058tcbd1247/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fdvd%2F-%2Fdetail%2F%3D%2Fcid%3Dn_1058tcbd1247%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/movie/foreign/n_1058tcbd1247/n_1058tcbd1247pt.jpg",
+          "small": "https://pics.dmm.com/mono/movie/foreign/n_1058tcbd1247/n_1058tcbd1247ps.jpg"
+        },
+        "prices": {
+          "price": "5742",
+          "list_price": "6380"
+        },
+        "date": "2038-01-01 10:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 60458,
+              "name": "TCエンタテインメント"
+            }
+          ],
+          "actor": [
+            {
+              "id": 277152,
+              "name": "デビット・ヘミングス",
+              "ruby": "でびっとへみんぐす"
+            },
+            {
+              "id": 64738,
+              "name": "デヴィッド・ボウイ",
+              "ruby": "でう゛ぃっどぼうい"
+            },
+            {
+              "id": 65665,
+              "name": "マレーネ・ディートリッヒ",
+              "ruby": "まれーねでぃーとりっひ"
+            },
+            {
+              "id": 63595,
+              "name": "キム・ノヴァク",
+              "ruby": "きむのう゛ぁく"
+            },
+            {
+              "id": 190496,
+              "name": "シドニー・ローム",
+              "ruby": "しどにーろーむ"
+            }
+          ],
+          "director": [
+            {
+              "id": 119415,
+              "name": "デビット・ヘミングス",
+              "ruby": "でびっとへみんぐす"
+            }
+          ]
+        },
+        "jancode": "4571519906924",
+        "maker_product": "TCBD-1247",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 101,
+            "name": "Blu-ray"
+          },
+          {
+            "id": 105,
+            "name": "外国映画"
+          },
+          {
+            "id": 149,
+            "name": "ドラマ"
+          },
+          {
+            "id": 516,
+            "name": "その他"
+          }
+        ]
+      }
+    },
+    "DMM.com_mono_cd": {
+      "info": {
+        "site": "DMM.com",
+        "service": "mono",
+        "floor": "cd",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "cd",
+        "floor_name": "CD",
+        "category_name": "CD通販",
+        "content_id": "cd_077wlplc48937s",
+        "product_id": "cd_077wlplc48937s",
+        "title": "レーナ・マリア/フラワー",
+        "URL": "https://www.dmm.com/mono/cd/-/detail/=/cid=cd_077wlplc48937s/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fcd%2F-%2Fdetail%2F%3D%2Fcid%3Dcd_077wlplc48937s%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/cd/foreign_music/cd_077wlplc48937s/cd_077wlplc48937spt.jpg",
+          "small": "https://pics.dmm.com/mono/cd/foreign_music/cd_077wlplc48937s/cd_077wlplc48937sps.jpg"
+        },
+        "prices": {
+          "price": "1999",
+          "list_price": "1999"
+        },
+        "date": "2049-12-31 10:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 80077,
+              "name": "インディペンデントレーベル"
+            }
+          ],
+          "artist": [
+            {
+              "id": 130833,
+              "name": "レーナ・マリア",
+              "ruby": "れーなまりあ"
+            }
+          ]
+        },
+        "jancode": "4939323489376",
+        "maker_product": "WLPLC-48937",
+        "stock": "reserve_empty",
+        "cdinfo": {
+          "kind": "アルバム"
+        },
+        "directory": [
+          {
+            "id": 774,
+            "name": "洋楽"
+          },
+          {
+            "id": 790,
+            "name": "ロック・ポップス"
+          }
+        ]
+      }
+    },
+    "DMM.com_mono_book": {
+      "info": {
+        "site": "DMM.com",
+        "service": "mono",
+        "floor": "book",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "book",
+        "floor_name": "本・コミック"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "book",
+        "floor_name": "本・コミック",
+        "category_name": "本・コミック通販",
+        "content_id": "bktdmm2601271517003",
+        "product_id": "bktdmm2601271517003",
+        "title": "実験地区13（4）",
+        "URL": "https://www.dmm.com/mono/book/-/detail/=/cid=bktdmm2601271517003/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fbook%2F-%2Fdetail%2F%3D%2Fcid%3Dbktdmm2601271517003%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/book/comic/bktdmm2601271517003/bktdmm2601271517003pt.jpg",
+          "small": "https://pics.dmm.com/mono/book/comic/bktdmm2601271517003/bktdmm2601271517003ps.jpg"
+        },
+        "prices": {
+          "price": "880",
+          "list_price": "880"
+        },
+        "date": "2026-03-31 10:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 308217,
+              "name": "ジーオーティー"
+            }
+          ],
+          "author": [
+            {
+              "id": 237760,
+              "name": "瓦屋根",
+              "ruby": "かわらやね"
+            },
+            {
+              "id": 239609,
+              "name": "狂気太郎",
+              "ruby": "きょうきたろう"
+            }
+          ],
+          "label": [
+            {
+              "id": 121464,
+              "name": "MeDu COMICS"
+            }
+          ]
+        },
+        "isbn": "9784823610356",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 1431,
+            "name": "コミック"
+          },
+          {
+            "id": 1435,
+            "name": "全般"
+          }
+        ]
+      }
+    },
+    "DMM.com_mono_hobby": {
+      "info": {
+        "site": "DMM.com",
+        "service": "mono",
+        "floor": "hobby",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "hobby",
+        "floor_name": "ホビー"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "hobby",
+        "floor_name": "ホビー",
+        "category_name": "ホビー通販",
+        "content_id": "c260201423",
+        "product_id": "c260201423",
+        "title": "6119 821系福北ゆたか線2編成6両セット",
+        "URL": "https://www.dmm.com/mono/hobby/-/detail/=/cid=c260201423/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fhobby%2F-%2Fdetail%2F%3D%2Fcid%3Dc260201423%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/hobby/c260201423/c260201423pt.jpg",
+          "small": "https://pics.dmm.com/mono/hobby/c260201423/c260201423ps.jpg"
+        },
+        "prices": {
+          "price": "32453",
+          "list_price": "39930"
+        },
+        "date": "2027-12-31 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 308214,
+              "name": "電車"
+            },
+            {
+              "id": 308224,
+              "name": "2010〜年代"
+            },
+            {
+              "id": 308232,
+              "name": "九州地方"
+            }
+          ],
+          "maker": [
+            {
+              "id": 302064,
+              "name": "ポポンデッタ"
+            }
+          ]
+        },
+        "jancode": "4571621227092",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 4936,
+            "name": "鉄道模型"
+          },
+          {
+            "id": 4978,
+            "name": "鉄道模型Nゲージ"
+          },
+          {
+            "id": 5277,
+            "name": "車両_完成品"
+          },
+          {
+            "id": 5538,
+            "name": "その他_車両_完成品"
+          }
+        ]
+      }
+    },
+    "DMM.com_mono_kaden": {
+      "info": {
+        "site": "DMM.com",
+        "service": "mono",
+        "floor": "kaden",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "kaden",
+        "floor_name": "家電・日用品"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "kaden",
+        "floor_name": "家電・日用品",
+        "category_name": "家電・日用品通販",
+        "content_id": "storegka00263nnah7rhxr3",
+        "product_id": "storegka00263nnah7rhxr3",
+        "title": "KEIYO ケイヨー AN-S151 スマホ用自撮りモニター Camee キャミー スマホの外カメラを 自撮りモニター化 Vlogモニタ",
+        "URL": "https://www.dmm.com/mono/kaden/-/detail/=/cid=storegka00263nnah7rhxr3/",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Fwww.dmm.com%2Fmono%2Fkaden%2F-%2Fdetail%2F%3D%2Fcid%3Dstoregka00263nnah7rhxr3%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.com/mono/store/storegka00263nnah7rhxr3/storegka00263nnah7rhxr3pt.jpg",
+          "small": "https://pics.dmm.com/mono/store/storegka00263nnah7rhxr3/storegka00263nnah7rhxr3ps.jpg"
+        },
+        "prices": {
+          "price": "5980"
+        },
+        "date": "2026-06-26 00:00:00",
+        "iteminfo": {
+          "maker": [
+            {
+              "id": 302236,
+              "name": "KEIYO"
+            }
+          ]
+        },
+        "jancode": "4545708006597",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 5850,
+            "name": "カメラ"
+          },
+          {
+            "id": 5959,
+            "name": "スタジオ撮影用品"
+          },
+          {
+            "id": 6867,
+            "name": "その他_スタジオ撮影用品"
+          }
+        ]
+      }
+    },
+    "DMM.com_dmmtv_dmmtv_video": {
+      "info": {
+        "site": "DMM.com",
+        "service": "dmmtv",
+        "floor": "dmmtv_video",
+        "site_code": "DMM.com",
+        "site_name": "DMM.com（一般）",
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV"
+      },
+      "sample": {
+        "service_code": "dmmtv",
+        "service_name": "DMMTV",
+        "floor_code": "dmmtv_video",
+        "floor_name": "DMMTV",
+        "category_name": "DMMTV",
+        "content_id": "85ypfg5n6q2tih7op05pt7qwh",
+        "title": "メダリスト",
+        "review": {
+          "count": 10,
+          "average": "4.80"
+        },
+        "URL": "https://tv.dmm.com/vod/detail/?title=e9bxrbfr2fkogriw9jjc2e8&season=85ypfg5n6q2tih7op05pt7qwh",
+        "affiliateURL": "https://al.dmm.com/?lurl=https%3A%2F%2Ftv.dmm.com%2Fvod%2Fdetail%2F%3Ftitle%3De9bxrbfr2fkogriw9jjc2e8%26season%3D85ypfg5n6q2tih7op05pt7qwh&af_id=bicbic-990&ch=api",
+        "prices": {
+          "price": "220"
+        },
+        "date": "2026-02-21 17:00:00"
+      }
+    },
+    "FANZA_digital_videoa": {
+      "info": {
+        "site": "FANZA",
+        "service": "digital",
+        "floor": "videoa",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "digital",
+        "service_name": "動画",
+        "floor_code": "videoa",
+        "floor_name": "ビデオ"
+      },
+      "sample": {
+        "service_code": "digital",
+        "service_name": "動画",
+        "floor_code": "videoa",
+        "floor_name": "ビデオ",
+        "category_name": "ビデオ (動画)",
+        "content_id": "vrkm01783",
+        "product_id": "vrkm01783",
+        "title": "【VR】天井特化アングルVR ～これが僕と兄嫁の秘密～ 足立友梨",
+        "volume": "80",
+        "URL": "https://video.dmm.co.jp/av/content/?id=vrkm01783",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fvideo.dmm.co.jp%2Fav%2Fcontent%2F%3Fid%3Dvrkm01783&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "large": "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783pl.jpg",
+          "small": "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783ps.jpg",
+          "list": "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783pt.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-9.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-10.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-11.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-12.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-13.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-14.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-15.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-16.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-17.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783-18.jpg"
+            ]
+          },
+          "sample_l": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-9.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-10.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-11.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-12.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-13.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-14.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-15.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-16.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-17.jpg",
+              "https://pics.dmm.co.jp/digital/video/vrkm01783/vrkm01783jp-18.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "998~",
+          "list_price": "998~",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "8k",
+                "price": "1780",
+                "list_price": "1780"
+              },
+              {
+                "type": "hd",
+                "price": "1304",
+                "list_price": "1304"
+              },
+              {
+                "type": "download",
+                "price": "998",
+                "list_price": "998"
+              }
+            ]
+          }
+        },
+        "date": "2026-04-13 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 6925,
+              "name": "ハイクオリティVR"
+            },
+            {
+              "id": 307935,
+              "name": "8KVR"
+            },
+            {
+              "id": 4025,
+              "name": "単体作品"
+            },
+            {
+              "id": 6793,
+              "name": "VR専用"
+            },
+            {
+              "id": 6548,
+              "name": "独占配信"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5063,
+              "name": "主観"
+            }
+          ],
+          "series": [
+            {
+              "id": 233244,
+              "name": "天井特化アングル"
+            }
+          ],
+          "maker": [
+            {
+              "id": 40071,
+              "name": "ケイ・エム・プロデュース"
+            }
+          ],
+          "actress": [
+            {
+              "id": 1092211,
+              "name": "足立友梨",
+              "ruby": "あだちゆり"
+            }
+          ],
+          "director": [
+            {
+              "id": 116932,
+              "name": "宮迫メンバー",
+              "ruby": "みやさこめんばー"
+            }
+          ],
+          "label": [
+            {
+              "id": 25637,
+              "name": "KMPVR"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_digital_videoc": {
+      "info": {
+        "site": "FANZA",
+        "service": "digital",
+        "floor": "videoc",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "digital",
+        "service_name": "動画",
+        "floor_code": "videoc",
+        "floor_name": "素人"
+      },
+      "sample": {
+        "service_code": "digital",
+        "service_name": "動画",
+        "floor_code": "videoc",
+        "floor_name": "素人",
+        "category_name": "素人 (動画)",
+        "content_id": "smro026",
+        "product_id": "smro026",
+        "title": "ひなちゃん",
+        "volume": "0:45:00",
+        "URL": "https://video.dmm.co.jp/amateur/content/?id=smro026",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fvideo.dmm.co.jp%2Famateur%2Fcontent%2F%3Fid%3Dsmro026&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "small": "https://pics.dmm.co.jp/digital/amateur/smro026/smro026jp.jpg",
+          "list": "https://pics.dmm.co.jp/digital/amateur/smro026/smro026jm.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026js-001.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026js-002.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026js-003.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026js-004.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026js-005.jpg"
+            ]
+          },
+          "sample_l": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026jp-001.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026jp-002.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026jp-003.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026jp-004.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/smro026/smro026jp-005.jpg"
+            ]
+          }
+        },
+        "sampleMovieURL": {
+          "size_476_306": "https://www.dmm.co.jp/litevideo/-/part/=/cid=smro026/size=476_306/affi_id=bicbic-990/",
+          "size_560_360": "https://www.dmm.co.jp/litevideo/-/part/=/cid=smro026/size=560_360/affi_id=bicbic-990/",
+          "size_644_414": "https://www.dmm.co.jp/litevideo/-/part/=/cid=smro026/size=644_414/affi_id=bicbic-990/",
+          "size_720_480": "https://www.dmm.co.jp/litevideo/-/part/=/cid=smro026/size=720_480/affi_id=bicbic-990/",
+          "pc_flag": 1,
+          "sp_flag": 1
+        },
+        "prices": {
+          "price": "490~",
+          "list_price": "490~",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "hd",
+                "price": "1480",
+                "list_price": "1480"
+              },
+              {
+                "type": "download",
+                "price": "1280",
+                "list_price": "1280"
+              },
+              {
+                "type": "stream",
+                "price": "490",
+                "list_price": "490"
+              },
+              {
+                "type": "iosdl",
+                "price": "1280",
+                "list_price": "1280"
+              },
+              {
+                "type": "androiddl",
+                "price": "1280",
+                "list_price": "1280"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-22 00:00:13",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 6548,
+              "name": "独占配信"
+            },
+            {
+              "id": 6533,
+              "name": "ハイビジョン"
+            },
+            {
+              "id": 6002,
+              "name": "ハメ撮り"
+            },
+            {
+              "id": 8503,
+              "name": "ギャル"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 8508,
+              "name": "巨乳"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            }
+          ],
+          "maker": [
+            {
+              "id": 312399,
+              "name": "素人ムクムク-ROOM-"
+            }
+          ],
+          "label": [
+            {
+              "id": 2067707,
+              "name": "素人ムクムク-ROOM-"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_digital_nikkatsu": {
+      "info": {
+        "site": "FANZA",
+        "service": "digital",
+        "floor": "nikkatsu",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "digital",
+        "service_name": "動画",
+        "floor_code": "nikkatsu",
+        "floor_name": "成人映画"
+      },
+      "sample": {
+        "service_code": "digital",
+        "service_name": "動画",
+        "floor_code": "nikkatsu",
+        "floor_name": "成人映画",
+        "category_name": "成人映画 (動画)",
+        "content_id": "h_721pcr00188",
+        "product_id": "h_721pcr00188",
+        "title": "極上美人女性たちの淫らな秘め事…",
+        "volume": "59",
+        "URL": "https://video.dmm.co.jp/cinema/content/?id=h_721pcr00188",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fvideo.dmm.co.jp%2Fcinema%2Fcontent%2F%3Fid%3Dh_721pcr00188&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "large": "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188pl.jpg",
+          "small": "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188ps.jpg",
+          "list": "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188pt.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-9.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-10.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-11.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-12.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-13.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-14.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-15.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-16.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-17.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-18.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-19.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188-20.jpg"
+            ]
+          },
+          "sample_l": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-9.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-10.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-11.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-12.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-13.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-14.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-15.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-16.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-17.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-18.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-19.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_721pcr00188/h_721pcr00188jp-20.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "400~",
+          "list_price": "400~",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "hd",
+                "price": "1480",
+                "list_price": "1480"
+              },
+              {
+                "type": "download",
+                "price": "980",
+                "list_price": "980"
+              },
+              {
+                "type": "stream",
+                "price": "400",
+                "list_price": "400"
+              },
+              {
+                "type": "iosdl",
+                "price": "980",
+                "list_price": "980"
+              },
+              {
+                "type": "androiddl",
+                "price": "980",
+                "list_price": "980"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-21 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 6533,
+              "name": "ハイビジョン"
+            },
+            {
+              "id": 1033,
+              "name": "お姉さん"
+            },
+            {
+              "id": 4024,
+              "name": "素人"
+            },
+            {
+              "id": 4114,
+              "name": "ドラマ"
+            },
+            {
+              "id": 4103,
+              "name": "成人映画"
+            }
+          ],
+          "maker": [
+            {
+              "id": 46016,
+              "name": "パワークリエイト"
+            }
+          ],
+          "actress": [
+            {
+              "id": 1071825,
+              "name": "赤木紗耶",
+              "ruby": "あかぎさや"
+            },
+            {
+              "id": 1066373,
+              "name": "椎名はる",
+              "ruby": "しいなはる"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_digital_anime": {
+      "info": {
+        "site": "FANZA",
+        "service": "digital",
+        "floor": "anime",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "digital",
+        "service_name": "動画",
+        "floor_code": "anime",
+        "floor_name": "アニメ動画"
+      },
+      "sample": {
+        "service_code": "digital",
+        "service_name": "動画",
+        "floor_code": "anime",
+        "floor_name": "アニメ動画",
+        "category_name": "アニメ動画 (動画)",
+        "content_id": "h_1379jdxa57816",
+        "product_id": "h_1379jdxa57816",
+        "title": "メイド教育。-没落貴族 瑠璃川椿- THE ANIMATION 第2巻",
+        "volume": "22",
+        "URL": "https://video.dmm.co.jp/anime/content/?id=h_1379jdxa57816",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fvideo.dmm.co.jp%2Fanime%2Fcontent%2F%3Fid%3Dh_1379jdxa57816&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "large": "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816pl.jpg",
+          "small": "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816ps.jpg",
+          "list": "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816pt.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816-9.jpg"
+            ]
+          },
+          "sample_l": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/h_1379jdxa57816/h_1379jdxa57816jp-9.jpg"
+            ]
+          }
+        },
+        "sampleMovieURL": {
+          "size_476_306": "https://www.dmm.co.jp/litevideo/-/part/=/cid=h_1379jdxa57816/size=476_306/affi_id=bicbic-990/",
+          "size_560_360": "https://www.dmm.co.jp/litevideo/-/part/=/cid=h_1379jdxa57816/size=560_360/affi_id=bicbic-990/",
+          "size_644_414": "https://www.dmm.co.jp/litevideo/-/part/=/cid=h_1379jdxa57816/size=644_414/affi_id=bicbic-990/",
+          "size_720_480": "https://www.dmm.co.jp/litevideo/-/part/=/cid=h_1379jdxa57816/size=720_480/affi_id=bicbic-990/",
+          "pc_flag": 1,
+          "sp_flag": 1
+        },
+        "prices": {
+          "price": "4180~",
+          "list_price": "4180~",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "hd",
+                "price": "4840",
+                "list_price": "4840"
+              },
+              {
+                "type": "download",
+                "price": "4180",
+                "list_price": "4180"
+              },
+              {
+                "type": "iosdl",
+                "price": "4180",
+                "list_price": "4180"
+              },
+              {
+                "type": "androiddl",
+                "price": "4180",
+                "list_price": "4180"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-20 00:00:03",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 6153,
+              "name": "ハイビジョン"
+            },
+            {
+              "id": 5041,
+              "name": "中出し"
+            },
+            {
+              "id": 4071,
+              "name": "クンニ"
+            },
+            {
+              "id": 5058,
+              "name": "羞恥"
+            },
+            {
+              "id": 4064,
+              "name": "辱め"
+            },
+            {
+              "id": 1044,
+              "name": "メイド"
+            }
+          ],
+          "series": [
+            {
+              "id": 4341163,
+              "name": "メイド教育。"
+            }
+          ],
+          "maker": [
+            {
+              "id": 45018,
+              "name": "ピンクパイナップル"
+            }
+          ],
+          "label": [
+            {
+              "id": 102,
+              "name": "Pink Pineapple"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_monthly_premium": {
+      "info": {
+        "site": "FANZA",
+        "service": "monthly",
+        "floor": "premium",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "monthly",
+        "service_name": "月額動画",
+        "floor_code": "premium",
+        "floor_name": "見放題ch デラックス"
+      },
+      "sample": {
+        "service_code": "monthly",
+        "service_name": "月額動画",
+        "floor_code": "premium",
+        "floor_name": "見放題ch デラックス",
+        "category_name": "見放題ch デラックス (月額動画)",
+        "content_id": "yryr012",
+        "product_id": "yryr012",
+        "title": "もも",
+        "volume": "1:38:00",
+        "URL": "https://www.dmm.co.jp/monthly/premium/-/detail/=/cid=yryr012/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmonthly%2Fpremium%2F-%2Fdetail%2F%3D%2Fcid%3Dyryr012%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012jm.jpg",
+          "small": "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012jm.jpg",
+          "large": "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012jm.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012js-001.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012js-002.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012js-003.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012js-004.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012js-005.jpg"
+            ]
+          },
+          "sample_l": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012jp-001.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012jp-002.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012jp-003.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012jp-004.jpg",
+              "https://pics.dmm.co.jp/digital/amateur/yryr012/yryr012jp-005.jpg"
+            ]
+          }
+        },
+        "sampleMovieURL": {
+          "size_476_306": "https://www.dmm.co.jp/litevideo/-/part/=/cid=yryr012/size=476_306/affi_id=bicbic-990/",
+          "size_560_360": "https://www.dmm.co.jp/litevideo/-/part/=/cid=yryr012/size=560_360/affi_id=bicbic-990/",
+          "size_644_414": "https://www.dmm.co.jp/litevideo/-/part/=/cid=yryr012/size=644_414/affi_id=bicbic-990/",
+          "size_720_480": "https://www.dmm.co.jp/litevideo/-/part/=/cid=yryr012/size=720_480/affi_id=bicbic-990/",
+          "pc_flag": 1,
+          "sp_flag": 1
+        },
+        "prices": {
+          "price": "8980"
+        },
+        "date": "2026-02-22 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 6548,
+              "name": "独占配信"
+            },
+            {
+              "id": 6533,
+              "name": "ハイビジョン"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 8508,
+              "name": "巨乳"
+            },
+            {
+              "id": 4005,
+              "name": "乱交"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            }
+          ],
+          "maker": [
+            {
+              "id": 304536,
+              "name": "ヤリサーちゃん。"
+            }
+          ],
+          "label": [
+            {
+              "id": 2065576,
+              "name": "ヤリサーちゃん。"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_monthly_vr": {
+      "info": {
+        "site": "FANZA",
+        "service": "monthly",
+        "floor": "vr",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "monthly",
+        "service_name": "月額動画",
+        "floor_code": "vr",
+        "floor_name": "VRch"
+      },
+      "sample": {
+        "service_code": "monthly",
+        "service_name": "月額動画",
+        "floor_code": "vr",
+        "floor_name": "VRch",
+        "category_name": "VRch (月額動画)",
+        "content_id": "hnvr00152",
+        "product_id": "hnvr00152",
+        "title": "【VR】幽霊ちゃんと中出し 地縛霊ちゃんにHしよっとつきまとわれる事故物件で子作り同棲性活 香水じゅん",
+        "volume": "110",
+        "review": {
+          "count": 55,
+          "average": "4.75"
+        },
+        "URL": "https://www.dmm.co.jp/monthly/vr/-/detail/=/cid=hnvr00152/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmonthly%2Fvr%2F-%2Fdetail%2F%3D%2Fcid%3Dhnvr00152%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-9.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-10.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-11.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152-12.jpg"
+            ]
+          },
+          "sample_l": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-9.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-10.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-11.jpg",
+              "https://pics.dmm.co.jp/digital/video/hnvr00152/hnvr00152jp-12.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "2800"
+        },
+        "date": "2026-02-22 10:00:06",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 6925,
+              "name": "ハイクオリティVR"
+            },
+            {
+              "id": 4025,
+              "name": "単体作品"
+            },
+            {
+              "id": 6793,
+              "name": "VR専用"
+            },
+            {
+              "id": 6548,
+              "name": "独占配信"
+            },
+            {
+              "id": 4059,
+              "name": "キス・接吻"
+            },
+            {
+              "id": 4106,
+              "name": "騎乗位"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            }
+          ],
+          "series": [
+            {
+              "id": 4033507,
+              "name": "本中-VR"
+            }
+          ],
+          "maker": [
+            {
+              "id": 6304,
+              "name": "本中"
+            }
+          ],
+          "actress": [
+            {
+              "id": 1070303,
+              "name": "香水じゅん",
+              "ruby": "かすいじゅん"
+            }
+          ],
+          "director": [
+            {
+              "id": 111768,
+              "name": "ジーニアス膝",
+              "ruby": "じーにあすひざ"
+            }
+          ],
+          "label": [
+            {
+              "id": 25913,
+              "name": "本中-VR"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_monthly_standard": {
+      "info": {
+        "site": "FANZA",
+        "service": "monthly",
+        "floor": "standard",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "monthly",
+        "service_name": "月額動画",
+        "floor_code": "standard",
+        "floor_name": "見放題ch"
+      },
+      "sample": {
+        "service_code": "monthly",
+        "service_name": "月額動画",
+        "floor_code": "standard",
+        "floor_name": "見放題ch",
+        "category_name": "見放題ch (月額動画)",
+        "content_id": "focs00260",
+        "product_id": "focs00260",
+        "title": "夫不在の自宅エステサロンに性欲モンスター襲来！絶倫キモおぢに屈辱顔射をくらい…連続中出し＆大量ハメ潮で堕ちた若妻エステティシャン 依本しおり",
+        "volume": "121",
+        "review": {
+          "count": 14,
+          "average": "5.00"
+        },
+        "URL": "https://www.dmm.co.jp/monthly/standard/-/detail/=/cid=focs00260/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmonthly%2Fstandard%2F-%2Fdetail%2F%3D%2Fcid%3Dfocs00260%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/video/focs00260/focs00260pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/video/focs00260/focs00260ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/video/focs00260/focs00260pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-9.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-10.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-11.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-12.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-13.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-14.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-15.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-16.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-17.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-18.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260-19.jpg"
+            ]
+          },
+          "sample_l": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-1.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-2.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-3.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-4.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-5.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-6.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-7.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-8.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-9.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-10.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-11.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-12.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-13.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-14.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-15.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-16.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-17.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-18.jpg",
+              "https://pics.dmm.co.jp/digital/video/focs00260/focs00260jp-19.jpg"
+            ]
+          }
+        },
+        "sampleMovieURL": {
+          "size_476_306": "https://www.dmm.co.jp/litevideo/-/part/=/cid=focs260/size=476_306/affi_id=bicbic-990/",
+          "size_560_360": "https://www.dmm.co.jp/litevideo/-/part/=/cid=focs260/size=560_360/affi_id=bicbic-990/",
+          "size_644_414": "https://www.dmm.co.jp/litevideo/-/part/=/cid=focs260/size=644_414/affi_id=bicbic-990/",
+          "size_720_480": "https://www.dmm.co.jp/litevideo/-/part/=/cid=focs260/size=720_480/affi_id=bicbic-990/",
+          "pc_flag": 1,
+          "sp_flag": 1
+        },
+        "prices": {
+          "price": "3980"
+        },
+        "date": "2026-02-22 10:00:59",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 6533,
+              "name": "ハイビジョン"
+            },
+            {
+              "id": 4124,
+              "name": "マッサージ・リフレ"
+            },
+            {
+              "id": 6995,
+              "name": "妄想族"
+            },
+            {
+              "id": 4025,
+              "name": "単体作品"
+            },
+            {
+              "id": 5016,
+              "name": "潮吹き"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 1039,
+              "name": "人妻・主婦"
+            },
+            {
+              "id": 4111,
+              "name": "寝取り・寝取られ・NTR"
+            }
+          ],
+          "series": [
+            {
+              "id": 4527409,
+              "name": "完堕ちした人妻エステティシャン"
+            }
+          ],
+          "maker": [
+            {
+              "id": 5534,
+              "name": "ABC/妄想族"
+            }
+          ],
+          "actress": [
+            {
+              "id": 1097983,
+              "name": "依本しおり",
+              "ruby": "よりもとしおり"
+            }
+          ],
+          "label": [
+            {
+              "id": 2063131,
+              "name": "FOCUS"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_mono_dvd": {
+      "info": {
+        "site": "FANZA",
+        "service": "mono",
+        "floor": "dvd",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "dvd",
+        "floor_name": "DVD"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "dvd",
+        "floor_name": "DVD",
+        "category_name": "DVD通販",
+        "content_id": "n_709mbraa362",
+        "product_id": "n_709mbraa362",
+        "title": "なりゆきボーダーライン/音羽さな",
+        "volume": "70",
+        "URL": "https://www.dmm.co.jp/mono/dvd/-/detail/=/cid=n_709mbraa362/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmono%2Fdvd%2F-%2Fdetail%2F%3D%2Fcid%3Dn_709mbraa362%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/mono/movie/adult/n_709mbraa362/n_709mbraa362pt.jpg",
+          "small": "https://pics.dmm.co.jp/mono/movie/adult/n_709mbraa362/n_709mbraa362ps.jpg"
+        },
+        "prices": {
+          "price": "3511",
+          "list_price": "4620"
+        },
+        "date": "2026-05-27 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 4025,
+              "name": "単体作品"
+            },
+            {
+              "id": 6014,
+              "name": "イメージビデオ"
+            },
+            {
+              "id": 4118,
+              "name": "アイドル・芸能人"
+            }
+          ],
+          "maker": [
+            {
+              "id": 60109,
+              "name": "スパイスビジュアル"
+            }
+          ],
+          "actress": [
+            {
+              "id": 1108796,
+              "name": "音羽さな",
+              "ruby": "おとわさな"
+            }
+          ],
+          "label": [
+            {
+              "id": 60109,
+              "name": "スパイスビジュアル"
+            }
+          ]
+        },
+        "jancode": "4570106860120",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 764,
+            "name": "DVD"
+          }
+        ]
+      }
+    },
+    "FANZA_mono_goods": {
+      "info": {
+        "site": "FANZA",
+        "service": "mono",
+        "floor": "goods",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "goods",
+        "floor_name": "大人のおもちゃ"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "goods",
+        "floor_name": "大人のおもちゃ",
+        "category_name": "大人のおもちゃ通販",
+        "content_id": "di1618",
+        "product_id": "di1618",
+        "title": "TINGON A1",
+        "URL": "https://www.dmm.co.jp/mono/goods/-/detail/=/cid=di1618/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmono%2Fgoods%2F-%2Fdetail%2F%3D%2Fcid%3Ddi1618%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/mono/goods/di1618/di1618pt.jpg",
+          "small": "https://pics.dmm.co.jp/mono/goods/di1618/di1618ps.jpg"
+        },
+        "prices": {
+          "price": "6792",
+          "list_price": "7150"
+        },
+        "date": "2026-03-30 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 308842,
+              "name": "アナニー"
+            },
+            {
+              "id": 308838,
+              "name": "静音仕様"
+            }
+          ],
+          "maker": [
+            {
+              "id": 313263,
+              "name": "TINGON"
+            }
+          ]
+        },
+        "jancode": "6977535310000",
+        "maker_product": "MCOL-474",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 860,
+            "name": "ディルド"
+          },
+          {
+            "id": 17880,
+            "name": "アナルグッズ"
+          },
+          {
+            "id": 17890,
+            "name": "プラグ・ストッパー（電動）"
+          }
+        ]
+      }
+    },
+    "FANZA_mono_anime": {
+      "info": {
+        "site": "FANZA",
+        "service": "mono",
+        "floor": "anime",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "anime",
+        "floor_name": "アニメ"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "anime",
+        "floor_name": "アニメ",
+        "category_name": "アニメ通販",
+        "content_id": "62wbr123",
+        "product_id": "62wbr123",
+        "title": "王女＆女騎士Wド下品露出 完全版 恥辱の見世物奴●",
+        "URL": "https://www.dmm.co.jp/mono/anime/-/detail/=/cid=62wbr123/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmono%2Fanime%2F-%2Fdetail%2F%3D%2Fcid%3D62wbr123%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/mono/movie/adult/62wbr123/62wbr123pt.jpg",
+          "small": "https://pics.dmm.co.jp/mono/movie/adult/62wbr123/62wbr123ps.jpg"
+        },
+        "prices": {
+          "price": "3880",
+          "list_price": "4620"
+        },
+        "date": "2026-06-05 00:00:01",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 1078,
+              "name": "お姫様"
+            },
+            {
+              "id": 2017,
+              "name": "巨乳"
+            },
+            {
+              "id": 1051,
+              "name": "美少女"
+            },
+            {
+              "id": 6013,
+              "name": "ベスト・総集編"
+            },
+            {
+              "id": 1087,
+              "name": "女戦士"
+            },
+            {
+              "id": 5041,
+              "name": "中出し"
+            }
+          ],
+          "series": [
+            {
+              "id": 224818,
+              "name": "王女＆女騎士Wド下品露出"
+            }
+          ],
+          "maker": [
+            {
+              "id": 40048,
+              "name": "メディアバンク"
+            }
+          ],
+          "label": [
+            {
+              "id": 959,
+              "name": "White Bear"
+            }
+          ]
+        },
+        "jancode": "4562109583236",
+        "maker_product": "WBR-123",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 1391,
+            "name": "DVD"
+          }
+        ]
+      }
+    },
+    "FANZA_mono_pcgame": {
+      "info": {
+        "site": "FANZA",
+        "service": "mono",
+        "floor": "pcgame",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "pcgame",
+        "floor_name": "PCゲーム"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "pcgame",
+        "floor_name": "PCゲーム",
+        "category_name": "アダルトPCゲーム通販",
+        "content_id": "2235apc14963_t",
+        "product_id": "2235apc14963_t",
+        "title": "【FANZA限定】双子の恋は見抜けない オリジナルA4イラストクロス付き",
+        "URL": "https://www.dmm.co.jp/mono/pcgame/-/detail/=/cid=2235apc14963_t/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmono%2Fpcgame%2F-%2Fdetail%2F%3D%2Fcid%3D2235apc14963_t%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/mono/game/2235apc14963_t/2235apc14963_tpt.jpg",
+          "small": "https://pics.dmm.co.jp/mono/game/2235apc14963_t/2235apc14963_tps.jpg"
+        },
+        "prices": {
+          "price": "4730"
+        },
+        "date": "2026-05-29 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 30016,
+              "name": "制服"
+            },
+            {
+              "id": 30082,
+              "name": "3P・4P"
+            },
+            {
+              "id": 300499,
+              "name": "イチャラブ"
+            },
+            {
+              "id": 30132,
+              "name": "ラブコメ"
+            },
+            {
+              "id": 30042,
+              "name": "美少女"
+            },
+            {
+              "id": 30123,
+              "name": "学園もの"
+            },
+            {
+              "id": 30094,
+              "name": "フェラ"
+            },
+            {
+              "id": 30057,
+              "name": "巨乳"
+            },
+            {
+              "id": 30124,
+              "name": "恋愛"
+            },
+            {
+              "id": 300500,
+              "name": "青春"
+            },
+            {
+              "id": 30155,
+              "name": "FANZA限定商品"
+            },
+            {
+              "id": 30034,
+              "name": "女子校生"
+            },
+            {
+              "id": 30087,
+              "name": "姉・妹"
+            }
+          ],
+          "maker": [
+            {
+              "id": 31771,
+              "name": "あざらしそふと＋1"
+            }
+          ],
+          "author": [
+            {
+              "id": 298588,
+              "name": "まめおじたん",
+              "ruby": "まめおじたん"
+            }
+          ]
+        },
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 1397,
+            "name": "アドベンチャー"
+          }
+        ]
+      }
+    },
+    "FANZA_mono_book": {
+      "info": {
+        "site": "FANZA",
+        "service": "mono",
+        "floor": "book",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "book",
+        "floor_name": "ブック"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "book",
+        "floor_name": "ブック",
+        "category_name": "ブック通販",
+        "content_id": "294book97847992199042024",
+        "product_id": "294book97847992199042024",
+        "title": "影斬カラー単行本 （仮）",
+        "URL": "https://www.dmm.co.jp/mono/book/-/detail/=/cid=294book97847992199042024/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmono%2Fbook%2F-%2Fdetail%2F%3D%2Fcid%3D294book97847992199042024%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/mono/comic/294book97847992199042024/294book97847992199042024pt.jpg",
+          "small": "https://pics.dmm.co.jp/mono/comic/294book97847992199042024/294book97847992199042024ps.jpg"
+        },
+        "prices": {
+          "price": "1400"
+        },
+        "date": "2030-01-01 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 54,
+              "name": "単行本"
+            }
+          ],
+          "maker": [
+            {
+              "id": 40291,
+              "name": "キルタイムコミュニケーション"
+            }
+          ],
+          "author": [
+            {
+              "id": 253047,
+              "name": "影斬",
+              "ruby": "えいざん"
+            }
+          ],
+          "label": [
+            {
+              "id": 10146,
+              "name": "アンリアルコミックス"
+            }
+          ]
+        },
+        "isbn": "9784799219904",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 1402,
+            "name": "コミック"
+          }
+        ]
+      }
+    },
+    "FANZA_mono_figure": {
+      "info": {
+        "site": "FANZA",
+        "service": "mono",
+        "floor": "figure",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "figure",
+        "floor_name": "フィギュア・グッズ"
+      },
+      "sample": {
+        "service_code": "mono",
+        "service_name": "通販",
+        "floor_code": "figure",
+        "floor_name": "フィギュア・グッズ",
+        "category_name": "フィギュア・グッズ通販",
+        "content_id": "fig_2602061705481",
+        "product_id": "fig_2602061705481",
+        "title": "野々原柚花ちゃん ヒミツの下着Ver.",
+        "URL": "https://www.dmm.co.jp/mono/figure/-/detail/=/cid=fig_2602061705481/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fmono%2Ffigure%2F-%2Fdetail%2F%3D%2Fcid%3Dfig_2602061705481%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/mono/figure/fig_2602061705481/fig_2602061705481pt.jpg",
+          "small": "https://pics.dmm.co.jp/mono/figure/fig_2602061705481/fig_2602061705481ps.jpg"
+        },
+        "prices": {
+          "price": "41045",
+          "list_price": "43780"
+        },
+        "date": "2027-05-31 10:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 300243,
+              "name": "フィギュア"
+            }
+          ],
+          "maker": [
+            {
+              "id": 309412,
+              "name": "PURE"
+            }
+          ]
+        },
+        "jancode": "4902273516102",
+        "stock": "reserve",
+        "directory": [
+          {
+            "id": 1154,
+            "name": "フィギュア"
+          },
+          {
+            "id": 1157,
+            "name": "キャラクターフィギュア_スケール"
+          }
+        ]
+      }
+    },
+    "FANZA_pcgame_digital_pcgame": {
+      "info": {
+        "site": "FANZA",
+        "service": "pcgame",
+        "floor": "digital_pcgame",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム"
+      },
+      "sample": {
+        "service_code": "pcgame",
+        "service_name": "アダルトPCゲーム",
+        "floor_code": "digital_pcgame",
+        "floor_name": "アダルトPCゲーム",
+        "category_name": "アダルトPCゲーム",
+        "content_id": "next_0469",
+        "product_id": "next_0469",
+        "title": "双子の恋は見抜けない",
+        "URL": "https://dlsoft.dmm.co.jp/detail/next_0469/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fdlsoft.dmm.co.jp%2Fdetail%2Fnext_0469%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469pt.jpg",
+          "small": "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469ps.jpg",
+          "large": "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_s": {
+            "image": [
+              "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469js-001.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469js-002.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469js-003.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469js-004.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469js-005.jpg",
+              "https://pics.dmm.co.jp/digital/pcgame/next_0469/next_0469js-006.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "3850",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "3850",
+                "list_price": ""
+              }
+            ]
+          }
+        },
+        "date": "2026-05-29 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 7218,
+              "name": "ラブコメ"
+            },
+            {
+              "id": 7252,
+              "name": "ハーレム"
+            },
+            {
+              "id": 7266,
+              "name": "姉妹"
+            },
+            {
+              "id": 7486,
+              "name": "DL版独占販売"
+            },
+            {
+              "id": 7502,
+              "name": "学園もの"
+            },
+            {
+              "id": 307544,
+              "name": "Windows11対応作品"
+            },
+            {
+              "id": 300081,
+              "name": "予約作品16%ポイント還元キャンペーン"
+            },
+            {
+              "id": 300064,
+              "name": "【プレミアム新規登録された方へ】FANZA GAMES（アダルトPCゲーム）で使える最大90％OFFクーポン対象"
+            }
+          ],
+          "maker": [
+            {
+              "id": 31771,
+              "name": "あざらしそふと＋1"
+            }
+          ],
+          "author": [
+            {
+              "id": 298588,
+              "name": "まめおじたん",
+              "ruby": "まめおじたん"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_doujin_digital_doujin": {
+      "info": {
+        "site": "FANZA",
+        "service": "doujin",
+        "floor": "digital_doujin",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人"
+      },
+      "sample": {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin",
+        "floor_name": "同人",
+        "category_name": "同人 (同人)",
+        "content_id": "d_737002",
+        "product_id": "d_737002",
+        "title": "初めて西川口のソープに行った話",
+        "volume": "11",
+        "URL": "https://www.dmm.co.jp/dc/doujin/-/detail/=/cid=d_737002/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fwww.dmm.co.jp%2Fdc%2Fdoujin%2F-%2Fdetail%2F%3D%2Fcid%3Dd_737002%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_737002/d_737002pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_737002/d_737002pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_737002/d_737002jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_737002/d_737002jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_737002/d_737002jp-003.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "550",
+          "list_price": "550",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "550",
+                "list_price": "550"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-22 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 5002,
+              "name": "フェラ"
+            },
+            {
+              "id": 150003,
+              "name": "ノンフィクション・体験談"
+            },
+            {
+              "id": 152017,
+              "name": "風俗・ソープ"
+            },
+            {
+              "id": 156022,
+              "name": "男性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160162,
+              "name": "シックスナイン"
+            }
+          ],
+          "maker": [
+            {
+              "id": 220755,
+              "name": "mangakakuzo"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_doujin_digital_doujin_bl": {
+      "info": {
+        "site": "FANZA",
+        "service": "doujin",
+        "floor": "digital_doujin_bl",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin_bl",
+        "floor_name": "らぶカル（BL）"
+      },
+      "sample": {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin_bl",
+        "floor_name": "らぶカル（BL）",
+        "category_name": "らぶカル（BL）",
+        "content_id": "d_736897",
+        "product_id": "d_736897",
+        "title": "お仕置き乳首いぢめ",
+        "volume": "38",
+        "URL": "https://lovecul.dmm.co.jp/bl/-/detail/=/cid=d_736897/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Flovecul.dmm.co.jp%2Fbl%2F-%2Fdetail%2F%3D%2Fcid%3Dd_736897%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897jp-003.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897jp-004.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897jp-005.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897jp-006.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_736897/d_736897jp-007.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "440",
+          "list_price": "440",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "440",
+                "list_price": "440"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-22 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 25,
+              "name": "拘束"
+            },
+            {
+              "id": 97,
+              "name": "筋肉"
+            },
+            {
+              "id": 558,
+              "name": "BL（ボーイズラブ）"
+            },
+            {
+              "id": 152004,
+              "name": "ラブラブ・あまあま"
+            },
+            {
+              "id": 155002,
+              "name": "おもらし"
+            },
+            {
+              "id": 155024,
+              "name": "着衣"
+            },
+            {
+              "id": 156006,
+              "name": "女性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160042,
+              "name": "アヘ顔"
+            },
+            {
+              "id": 160144,
+              "name": "乳首責め"
+            },
+            {
+              "id": 160219,
+              "name": "雄っぱい"
+            }
+          ],
+          "maker": [
+            {
+              "id": 78655,
+              "name": "ああだば3"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_doujin_digital_doujin_tl": {
+      "info": {
+        "site": "FANZA",
+        "service": "doujin",
+        "floor": "digital_doujin_tl",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin_tl",
+        "floor_name": "らぶカル（TL）"
+      },
+      "sample": {
+        "service_code": "doujin",
+        "service_name": "同人",
+        "floor_code": "digital_doujin_tl",
+        "floor_name": "らぶカル（TL）",
+        "category_name": "TL (電子書籍)",
+        "content_id": "d_735139",
+        "product_id": "d_735139",
+        "title": "くうねるやる",
+        "volume": "31",
+        "URL": "https://lovecul.dmm.co.jp/tl/-/detail/=/cid=d_735139/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Flovecul.dmm.co.jp%2Ftl%2F-%2Fdetail%2F%3D%2Fcid%3Dd_735139%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://doujin-assets.dmm.co.jp/digital/comic/d_735139/d_735139pt.jpg",
+          "large": "https://doujin-assets.dmm.co.jp/digital/comic/d_735139/d_735139pl.jpg"
+        },
+        "sampleImageURL": {
+          "sample_l": {
+            "image": [
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_735139/d_735139jp-001.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_735139/d_735139jp-002.jpg",
+              "https://doujin-assets.dmm.co.jp/digital/comic/d_735139/d_735139jp-003.jpg"
+            ]
+          }
+        },
+        "prices": {
+          "price": "440",
+          "list_price": "440",
+          "deliveries": {
+            "delivery": [
+              {
+                "type": "download",
+                "price": "440",
+                "list_price": "440"
+              }
+            ]
+          }
+        },
+        "date": "2026-02-22 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 2007,
+              "name": "ぽっちゃり"
+            },
+            {
+              "id": 152004,
+              "name": "ラブラブ・あまあま"
+            },
+            {
+              "id": 153003,
+              "name": "おっぱい"
+            },
+            {
+              "id": 156006,
+              "name": "女性向け"
+            },
+            {
+              "id": 156023,
+              "name": "成人向け"
+            },
+            {
+              "id": 160144,
+              "name": "乳首責め"
+            }
+          ],
+          "maker": [
+            {
+              "id": 204712,
+              "name": "およぎ"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_ebook_comic": {
+      "info": {
+        "site": "FANZA",
+        "service": "ebook",
+        "floor": "comic",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "comic",
+        "floor_name": "コミック",
+        "category_name": "コミック (電子書籍)",
+        "content_id": "s246asnph03774",
+        "product_id": "s246asnph03774",
+        "title": "「今夜お持ち帰りしませんか？」酔ってぐずぐずになったナカを貫く絶倫ピストン（2）",
+        "volume": "71",
+        "URL": "https://book.dmm.co.jp/product/6200546/s246asnph03774/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6200546%2Fs246asnph03774%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/s246asnph03774/s246asnph03774pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/s246asnph03774/s246asnph03774ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/s246asnph03774/s246asnph03774pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxLAQJQVhILRl4AClMOVk5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxLAQJQVhILRl4AClMOVk5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "550"
+        },
+        "date": "2026-02-28 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 54,
+              "name": "単行本"
+            },
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 4098,
+              "name": "セクシー"
+            },
+            {
+              "id": 6071,
+              "name": "アンソロジー"
+            },
+            {
+              "id": 308791,
+              "name": "小悪魔"
+            }
+          ],
+          "series": [
+            {
+              "id": 6200546,
+              "name": "「今夜お持ち帰りしませんか？」酔ってぐずぐずになったナカを貫く絶倫ピストン"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 301329,
+              "name": "株式会社渋谷六花舎"
+            }
+          ],
+          "author": [
+            {
+              "id": 350456,
+              "name": "鮭ちゃん"
+            },
+            {
+              "id": 311028,
+              "name": "ひげた"
+            },
+            {
+              "id": 326891,
+              "name": "はがー"
+            },
+            {
+              "id": 338879,
+              "name": "分福ナギ"
+            },
+            {
+              "id": 260228,
+              "name": "南郷じんげる"
+            },
+            {
+              "id": 276400,
+              "name": "雪國"
+            },
+            {
+              "id": 419754,
+              "name": "雪谷るる"
+            }
+          ]
+        },
+        "number": "2"
+      }
+    },
+    "FANZA_ebook_novel": {
+      "info": {
+        "site": "FANZA",
+        "service": "ebook",
+        "floor": "novel",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "novel",
+        "floor_name": "美少女ノベル・官能小説"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "novel",
+        "floor_name": "美少女ノベル・官能小説",
+        "category_name": "美少女ノベル・官能小説 (電子書籍)",
+        "content_id": "s741asnxe00012",
+        "product_id": "s741asnxe00012",
+        "title": "貞操逆転ハードモード異世界を鋼メンタル冒険者が生き抜く",
+        "review": {
+          "count": 2,
+          "average": "5.00"
+        },
+        "URL": "https://book.dmm.co.jp/product/6250516/s741asnxe00012/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6250516%2Fs741asnxe00012%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/s741asnxe00012/s741asnxe00012pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/s741asnxe00012/s741asnxe00012ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/s741asnxe00012/s741asnxe00012pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxLBAJXVhILTlMACVQIUE5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=2&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxLBAJXVhILTlMACVQIUE5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D2%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1100"
+        },
+        "date": "2026-02-20 00:00:02",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 5,
+              "name": "ギャグ・コメディ"
+            },
+            {
+              "id": 17,
+              "name": "ファンタジー"
+            },
+            {
+              "id": 55,
+              "name": "処女"
+            },
+            {
+              "id": 97,
+              "name": "筋肉"
+            },
+            {
+              "id": 1027,
+              "name": "美少女"
+            },
+            {
+              "id": 1033,
+              "name": "お姉さん"
+            },
+            {
+              "id": 1082,
+              "name": "女戦士"
+            },
+            {
+              "id": 2001,
+              "name": "巨乳"
+            },
+            {
+              "id": 4020,
+              "name": "野外・露出"
+            },
+            {
+              "id": 4021,
+              "name": "盗撮・のぞき"
+            },
+            {
+              "id": 4120,
+              "name": "逆ナン"
+            },
+            {
+              "id": 5008,
+              "name": "オナニー"
+            },
+            {
+              "id": 5016,
+              "name": "潮吹き"
+            },
+            {
+              "id": 5071,
+              "name": "ハーレム"
+            }
+          ],
+          "series": [
+            {
+              "id": 6250516,
+              "name": "貞操逆転ハードモード異世界を鋼メンタル冒険者が生き抜く"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 311187,
+              "name": "MM社"
+            }
+          ],
+          "author": [
+            {
+              "id": 419418,
+              "name": "風見ひなた"
+            },
+            {
+              "id": 310267,
+              "name": "トコビ"
+            }
+          ]
+        },
+        "number": "1"
+      }
+    },
+    "FANZA_ebook_photo": {
+      "info": {
+        "site": "FANZA",
+        "service": "ebook",
+        "floor": "photo",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "photo",
+        "floor_name": "アダルト写真集・雑誌"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "photo",
+        "floor_name": "アダルト写真集・雑誌",
+        "category_name": "アダルト写真集・雑誌 (電子書籍)",
+        "content_id": "s739agrob00158",
+        "product_id": "s739agrob00158",
+        "title": "中出しソープ 麗しの熟女湯屋 美肌美乳のドMボディ浴場 原望美 完全版",
+        "volume": "635",
+        "URL": "https://book.dmm.co.jp/product/6203774/s739agrob00158/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6203774%2Fs739agrob00158%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/s739agrob00158/s739agrob00158pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/s739agrob00158/s739agrob00158ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/s739agrob00158/s739agrob00158pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxLBAVfVgYXWVQACVUMWk5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxLBAVfVgYXWVQACVUMWk5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "1650"
+        },
+        "date": "2026-02-28 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 80,
+              "name": "写真集"
+            },
+            {
+              "id": 6661,
+              "name": "先行販売"
+            }
+          ],
+          "series": [
+            {
+              "id": 6203774,
+              "name": "中出しソープ 麗しの熟女湯屋 美肌美乳のドMボディ浴場 原望美 完全版"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 311170,
+              "name": "グローバルメディアエンタテインメント"
+            }
+          ],
+          "actress": [
+            {
+              "id": 1014462,
+              "name": "原望美"
+            }
+          ],
+          "author": [
+            {
+              "id": 359858,
+              "name": "グローバルメディアエンタテインメント"
+            }
+          ]
+        }
+      }
+    },
+    "FANZA_ebook_bl": {
+      "info": {
+        "site": "FANZA",
+        "service": "ebook",
+        "floor": "bl",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "bl",
+        "floor_name": "BL"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "bl",
+        "floor_name": "BL",
+        "category_name": "BL (電子書籍)",
+        "content_id": "k804annbn22326",
+        "product_id": "k804annbn22326",
+        "title": "メランコリー（単話）",
+        "volume": "48",
+        "URL": "https://book.dmm.co.jp/product/6028821/k804annbn22326/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6028821%2Fk804annbn22326%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/k804annbn22326/k804annbn22326pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/k804annbn22326/k804annbn22326ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/k804annbn22326/k804annbn22326pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxTCwZSVg8LVFgCC1cLVE5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxTCwZSVg8LVFgCC1cLVE5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "330"
+        },
+        "date": "2026-02-22 00:00:04",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 53,
+              "name": "単話"
+            }
+          ],
+          "series": [
+            {
+              "id": 6028821,
+              "name": "メランコリー"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 56231,
+              "name": "ナンバーナイン"
+            }
+          ],
+          "author": [
+            {
+              "id": 400089,
+              "name": "いずみあきゅ"
+            }
+          ]
+        },
+        "number": "5"
+      }
+    },
+    "FANZA_ebook_tl": {
+      "info": {
+        "site": "FANZA",
+        "service": "ebook",
+        "floor": "tl",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "tl",
+        "floor_name": "TL"
+      },
+      "sample": {
+        "service_code": "ebook",
+        "service_name": "FANZAブックス",
+        "floor_code": "tl",
+        "floor_name": "TL",
+        "category_name": "TL (電子書籍)",
+        "content_id": "s645asmmi00987",
+        "product_id": "s645asmmi00987",
+        "title": "触手の神に愛される淫らな夜 R18版（単話）",
+        "volume": "39",
+        "URL": "https://book.dmm.co.jp/product/6250058/s645asmmi00987/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Fproduct%2F6250058%2Fs645asmmi00987%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/s645asmmi00987/s645asmmi00987pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/s645asmmi00987/s645asmmi00987ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/s645asmmi00987/s645asmmi00987pl.jpg"
+        },
+        "tachiyomi": {
+          "URL": "https://book.dmm.co.jp/tachiyomi/?cid=FRNfXRNVFW1RAQxLBQJTVhIIW18ACV0BVU5EDl0VClQMBllNB1o*UFcKWhRHVwVfCBxZW1kEVQ__&lin=1&sd=0",
+          "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Fbook.dmm.co.jp%2Ftachiyomi%2F%3Fcid%3DFRNfXRNVFW1RAQxLBQJTVhIIW18ACV0BVU5EDl0VClQMBllNB1o%2AUFcKWhRHVwVfCBxZW1kEVQ__%26lin%3D1%26sd%3D0&af_id=bicbic-990&ch=api"
+        },
+        "prices": {
+          "price": "660"
+        },
+        "date": "2026-02-21 00:00:04",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 555,
+              "name": "恋愛"
+            },
+            {
+              "id": 53,
+              "name": "単話"
+            }
+          ],
+          "series": [
+            {
+              "id": 6250058,
+              "name": "触手の神に愛される淫らな夜 R18版"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 309773,
+              "name": "ばたぁさんど"
+            }
+          ],
+          "author": [
+            {
+              "id": 418844,
+              "name": "発熱"
+            },
+            {
+              "id": 414488,
+              "name": "Shuffle Waffle"
+            }
+          ]
+        },
+        "number": "1"
+      }
+    },
+    "FANZA_unlimited_book_unlimited_comic": {
+      "info": {
+        "site": "FANZA",
+        "service": "unlimited_book",
+        "floor": "unlimited_comic",
+        "site_code": "FANZA",
+        "site_name": "FANZA（アダルト）",
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題"
+      },
+      "sample": {
+        "service_code": "unlimited_book",
+        "service_name": "FANZAブックス読み放題",
+        "floor_code": "unlimited_comic",
+        "floor_name": "FANZAブックス読み放題",
+        "category_name": "FANZAブックス読み放題",
+        "content_id": "b139amagy00208",
+        "product_id": "b139amagy00208st",
+        "title": "誘淫母（単話）",
+        "URL": "https://unlimited.book.dmm.co.jp/products/b139amagy00208/",
+        "affiliateURL": "https://al.fanza.co.jp/?lurl=https%3A%2F%2Funlimited.book.dmm.co.jp%2Fproducts%2Fb139amagy00208%2F&af_id=bicbic-990&ch=api",
+        "imageURL": {
+          "list": "https://ebook-assets.dmm.co.jp/digital/e-book/b139amagy00208/b139amagy00208pt.jpg",
+          "small": "https://ebook-assets.dmm.co.jp/digital/e-book/b139amagy00208/b139amagy00208ps.jpg",
+          "large": "https://ebook-assets.dmm.co.jp/digital/e-book/b139amagy00208/b139amagy00208pl.jpg"
+        },
+        "prices": {
+          "price": "1480"
+        },
+        "date": "2026-02-22 00:00:00",
+        "iteminfo": {
+          "genre": [
+            {
+              "id": 1032,
+              "name": "お母さん"
+            },
+            {
+              "id": 4002,
+              "name": "近親相姦"
+            },
+            {
+              "id": 5001,
+              "name": "中出し"
+            },
+            {
+              "id": 5004,
+              "name": "手コキ"
+            }
+          ],
+          "series": [
+            {
+              "id": 530259,
+              "name": "誘淫母（単話）"
+            }
+          ],
+          "manufacture": [
+            {
+              "id": 50219,
+              "name": "メディアックス"
+            }
+          ],
+          "author": [
+            {
+              "id": 25336,
+              "name": "PJ-1"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

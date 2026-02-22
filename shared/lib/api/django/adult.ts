@@ -191,3 +191,39 @@ export async function getDmmDynamicMenu() {
   // JSON内の日本語キー「DMM.com（一般）直下、または DMM.com」からサービス一覧を抽出
   return json?.data?.['DMM.com（一般）']?.services || json?.data?.['DMM.com']?.services || {};
 }
+
+/**
+ * ==============================================================================
+ * 💡 5. ランキング・解析データ取得
+ * ==============================================================================
+ */
+
+/** 🎯 アダルト作品AI解析ランキング取得 */
+export async function fetchAdultProductRanking(limit: number = 100) {
+  // AIスコア（spec_score）の降順で取得するようクエリを構築
+  const params = {
+    ordering: '-spec_score', // AI解析スコアの高い順
+    limit: String(limit),
+  };
+
+  const queryString = new URLSearchParams(params).toString();
+  const targetUrl = resolveApiUrl(`/api/adult/unified-products/?${queryString}`);
+
+  try {
+    const res = await fetch(targetUrl, { 
+      headers: getDjangoHeaders(),
+      // ランキングは頻繁に更新される可能性があるため、1時間キャッシュ
+      next: { revalidate: 3600 } 
+    });
+
+    if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
+    
+    const data = await res.json();
+    
+    // page.tsx 側が配列を期待しているため、results を返します
+    return safeExtract(data); 
+  } catch (error) { 
+    console.error("[Ranking] FETCH_FAILED:", error);
+    return []; 
+  }
+}

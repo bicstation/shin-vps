@@ -1,0 +1,1535 @@
+### SYSTEM INSTRUCTION FOR GEMMA ###
+あなたはDMM/FANZA APIのエキスパートエンジニアです。
+提供する全フロアの構造サマリーを解析し、あらゆるサービスに対応できる『汎用正規化パス・マップ』を作成してください。
+
+【重点解析項目】
+1. 動画URL: どのフロアにどの解像度キーが存在するか。優先順位を決定せよ。
+2. 人物名: actress, author, artist, actor, directorの出現パターンを整理せよ。
+3. ブランド: maker, label, series, publisherのどれを主ブランドとすべきか。
+4. キャンペーン: prices構造内の割引フラグや、genre内のセール文言パスを特定せよ。
+5. サンプル画像: sampleImageURL配下の画像リストへの正確なパスを特定せよ。
+
+--- START OF DATA SUMMARY ---
+
+{
+  "floor_id": "DMM.com_lod_akb48",
+  "display": "[DMM.com（一般）] AKB48グループ > AKB48",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_lod_ske48",
+  "display": "[DMM.com（一般）] AKB48グループ > SKE48",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_lod_nmb48",
+  "display": "[DMM.com（一般）] AKB48グループ > NMB48",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_lod_hkt48",
+  "display": "[DMM.com（一般）] AKB48グループ > HKT48",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_lod_ngt48",
+  "display": "[DMM.com（一般）] AKB48グループ > NGT48",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_lod_rod",
+  "display": "[DMM.com（一般）] AKB48グループ > REVIVAL!! ON DEMAND",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_lod_stu48",
+  "display": "[DMM.com（一般）] AKB48グループ > STU48",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_ebook_comic",
+  "display": "[DMM.com（一般）] DMMブックス > コミック",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo",
+      "number"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_ebook_photo",
+  "display": "[DMM.com（一般）] DMMブックス > 写真集",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "actor",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_ebook_novel",
+  "display": "[DMM.com（一般）] DMMブックス > 文芸・ラノベ",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo",
+      "number"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_ebook_otherbooks",
+  "display": "[DMM.com（一般）] DMMブックス > ビジネス・実用",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo",
+      "number"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_pcsoft_digital_pcgame",
+  "display": "[DMM.com（一般）] PCゲーム/ソフトウェア > PCゲーム",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_pcsoft_digital_pcsoft",
+  "display": "[DMM.com（一般）] PCゲーム/ソフトウェア > ソフトウェア",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "deliveries"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_mono_dvd",
+  "display": "[DMM.com（一般）] 通販 > DVD・Blu-ray",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "jancode",
+      "maker_product",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "maker",
+      "actor",
+      "director"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_mono_cd",
+  "display": "[DMM.com（一般）] 通販 > CD",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "jancode",
+      "maker_product",
+      "stock",
+      "cdinfo",
+      "directory"
+    ],
+    "iteminfo": [
+      "maker",
+      "artist"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_mono_book",
+  "display": "[DMM.com（一般）] 通販 > 本・コミック",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "isbn",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "maker",
+      "author",
+      "label"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_mono_hobby",
+  "display": "[DMM.com（一般）] 通販 > ホビー",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "jancode",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_mono_kaden",
+  "display": "[DMM.com（一般）] 通販 > 家電・日用品",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "jancode",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "DMM.com_dmmtv_dmmtv_video",
+  "display": "[DMM.com（一般）] DMMTV > DMMTV",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "title",
+      "review",
+      "URL",
+      "affiliateURL",
+      "prices",
+      "date"
+    ],
+    "iteminfo": [],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_digital_videoa",
+  "display": "[FANZA（アダルト）] 動画 > ビデオ",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "maker",
+      "actress",
+      "director",
+      "label"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price",
+      "deliveries"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_digital_videoc",
+  "display": "[FANZA（アダルト）] 動画 > 素人",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "sampleMovieURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker",
+      "label"
+    ],
+    "video": [
+      "size_476_306",
+      "size_560_360",
+      "size_644_414",
+      "size_720_480",
+      "pc_flag",
+      "sp_flag"
+    ],
+    "prices": [
+      "price",
+      "list_price",
+      "deliveries"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_digital_nikkatsu",
+  "display": "[FANZA（アダルト）] 動画 > 成人映画",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker",
+      "actress"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price",
+      "deliveries"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_digital_anime",
+  "display": "[FANZA（アダルト）] 動画 > アニメ動画",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "sampleMovieURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "maker",
+      "label"
+    ],
+    "video": [
+      "size_476_306",
+      "size_560_360",
+      "size_644_414",
+      "size_720_480",
+      "pc_flag",
+      "sp_flag"
+    ],
+    "prices": [
+      "price",
+      "list_price",
+      "deliveries"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_monthly_premium",
+  "display": "[FANZA（アダルト）] 月額動画 > 見放題ch デラックス",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "sampleMovieURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker",
+      "label"
+    ],
+    "video": [
+      "size_476_306",
+      "size_560_360",
+      "size_644_414",
+      "size_720_480",
+      "pc_flag",
+      "sp_flag"
+    ],
+    "prices": [
+      "price"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_monthly_vr",
+  "display": "[FANZA（アダルト）] 月額動画 > VRch",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "review",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "maker",
+      "actress",
+      "director",
+      "label"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_monthly_standard",
+  "display": "[FANZA（アダルト）] 月額動画 > 見放題ch",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "sampleMovieURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker",
+      "label"
+    ],
+    "video": [
+      "size_476_306",
+      "size_560_360",
+      "size_644_414",
+      "size_720_480",
+      "pc_flag",
+      "sp_flag"
+    ],
+    "prices": [
+      "price"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_mono_dvd",
+  "display": "[FANZA（アダルト）] 通販 > DVD",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "jancode",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker",
+      "actress",
+      "label"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_mono_goods",
+  "display": "[FANZA（アダルト）] 通販 > 大人のおもちゃ",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "jancode",
+      "maker_product",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_mono_anime",
+  "display": "[FANZA（アダルト）] 通販 > アニメ",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "jancode",
+      "maker_product",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "maker",
+      "label"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_mono_pcgame",
+  "display": "[FANZA（アダルト）] 通販 > PCゲーム",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_mono_book",
+  "display": "[FANZA（アダルト）] 通販 > ブック",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "isbn",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker",
+      "author",
+      "label"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_mono_figure",
+  "display": "[FANZA（アダルト）] 通販 > フィギュア・グッズ",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo",
+      "jancode",
+      "stock",
+      "directory"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_pcgame_digital_pcgame",
+  "display": "[FANZA（アダルト）] アダルトPCゲーム > アダルトPCゲーム",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "deliveries"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_doujin_digital_doujin",
+  "display": "[FANZA（アダルト）] 同人 > 同人",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price",
+      "deliveries"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_doujin_digital_doujin_bl",
+  "display": "[FANZA（アダルト）] 同人 > らぶカル（BL）",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price",
+      "deliveries"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_doujin_digital_doujin_tl",
+  "display": "[FANZA（アダルト）] 同人 > らぶカル（TL）",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "sampleImageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "maker"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price",
+      "list_price",
+      "deliveries"
+    ],
+    "sample_images": "EXIST"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_ebook_comic",
+  "display": "[FANZA（アダルト）] FANZAブックス > コミック",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo",
+      "number"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_ebook_novel",
+  "display": "[FANZA（アダルト）] FANZAブックス > 美少女ノベル・官能小説",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "review",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo",
+      "number"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_ebook_photo",
+  "display": "[FANZA（アダルト）] FANZAブックス > アダルト写真集・雑誌",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "actress",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_ebook_bl",
+  "display": "[FANZA（アダルト）] FANZAブックス > BL",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo",
+      "number"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_ebook_tl",
+  "display": "[FANZA（アダルト）] FANZAブックス > TL",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "volume",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "tachiyomi",
+      "prices",
+      "date",
+      "iteminfo",
+      "number"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+{
+  "floor_id": "FANZA_unlimited_book_unlimited_comic",
+  "display": "[FANZA（アダルト）] FANZAブックス読み放題 > FANZAブックス読み放題",
+  "structure": {
+    "top_level": [
+      "service_code",
+      "service_name",
+      "floor_code",
+      "floor_name",
+      "category_name",
+      "content_id",
+      "product_id",
+      "title",
+      "URL",
+      "affiliateURL",
+      "imageURL",
+      "prices",
+      "date",
+      "iteminfo"
+    ],
+    "iteminfo": [
+      "genre",
+      "series",
+      "manufacture",
+      "author"
+    ],
+    "video": "NONE",
+    "prices": [
+      "price"
+    ],
+    "sample_images": "NONE"
+  }
+}
+--------------------
+
+--- END OF DATA SUMMARY ---
+
+上記データを基に、Pythonの辞書形式で最適なマッピングロジックを出力してください。
