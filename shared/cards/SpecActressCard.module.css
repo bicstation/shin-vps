@@ -1,0 +1,229 @@
+/* -*- coding: utf-8 -*- */
+/**
+ * SpecActressCard Styles (v5.2 - Marketing & AI Integrated)
+ * アフィリエイト誘導とポータルリンクを最適化したUI
+ */
+
+.rankCard {
+  background: rgba(18, 18, 23, 0.75);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.rankCard:hover {
+  transform: translateY(-8px);
+  border-color: rgba(0, 242, 254, 0.4);
+  background: rgba(24, 24, 32, 0.9);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 242, 254, 0.1);
+}
+
+/* --- A. ビジュアル・スプリット --- */
+.visualSection {
+  display: flex;
+  height: 250px;
+  background: #000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.imageWrapper {
+  width: 46%;
+  position: relative;
+  overflow: hidden;
+}
+
+.actressImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 1.2s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.rankCard:hover .actressImage {
+  transform: scale(1.08);
+}
+
+.rankNumber {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #ffc107;
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  z-index: 2;
+}
+
+.specialLabel {
+  position: absolute;
+  top: 48px;
+  left: 14px;
+  background: #ff0055;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.chartArea {
+  width: 54%;
+  background: radial-gradient(circle at center, rgba(35, 35, 50, 1) 0%, rgba(10, 10, 15, 1) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.chartTitle {
+  position: absolute;
+  top: 12px;
+  font-size: 7px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.2);
+  font-weight: 900;
+}
+
+.scoreBadge {
+  position: absolute;
+  bottom: 16px;
+  right: -1px;
+  background: linear-gradient(135deg, #ff0055 0%, #ff4081 100%);
+  padding: 6px 14px;
+  border-radius: 10px 0 0 10px;
+  z-index: 3;
+}
+
+.scoreValue { font-size: 1.5rem; font-weight: 900; line-height: 1; color: #fff; }
+.scoreLabel { font-size: 7px; font-weight: 800; color: #fff; opacity: 0.8; text-align: right; }
+
+/* --- B. 情報セクション --- */
+.infoSection { padding: 1.4rem; flex-grow: 1; display: flex; flex-direction: column; }
+
+.headerRow { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.nameBlock { flex: 1; }
+.name { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 4px; }
+.catchcopy { font-size: 11px; color: #00f2fe; font-weight: 600; font-style: italic; }
+
+.rankTag { font-size: 9px; padding: 3px 8px; border-radius: 6px; font-weight: 900; margin-left: 8px; }
+.rankGod { background: rgba(255, 193, 7, 0.1); color: #ffc107; border: 1px solid #ffc107; box-shadow: 0 0 10px rgba(255, 193, 7, 0.2); }
+.rankS   { background: rgba(0, 242, 254, 0.1); color: #00f2fe; border: 1px solid #00f2fe; }
+
+.personalMeta { display: flex; gap: 6px; margin-bottom: 1.2rem; }
+.metaBadge { background: rgba(255,255,255,0.04); padding: 4px 10px; border-radius: 8px; font-size: 10px; color: #999; border: 1px solid rgba(255,255,255,0.06); }
+
+.bioBox {
+  background: linear-gradient(90deg, rgba(0, 242, 254, 0.08) 0%, transparent 100%);
+  border-left: 3px solid #00f2fe;
+  padding: 10px 14px;
+  margin-bottom: 1.2rem;
+  border-radius: 0 12px 12px 0;
+}
+.bioLabel { font-size: 8px; font-weight: 900; color: #00f2fe; margin-bottom: 4px; display: block; letter-spacing: 1px; }
+.bioText { font-size: 12px; color: #ccc; line-height: 1.6; margin: 0; }
+
+.specTable { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.4rem; }
+.specCell { text-align: center; background: rgba(0,0,0,0.2); padding: 10px 4px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.04); }
+.specCell label { display: block; font-size: 8px; color: #555; margin-bottom: 4px; font-weight: 800; }
+.specVal { font-size: 12px; font-weight: 800; color: #eee; }
+
+/* --- C. アクションエリア (Buttons) --- */
+.actionGrid {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.snsLinks { display: flex; gap: 6px; }
+.snsBtn {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: #888; display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s; cursor: pointer;
+}
+.snsBtn:hover { color: #00f2fe; border-color: #00f2fe; background: rgba(0,242,254,0.05); }
+
+.mainActions { display: flex; flex: 1; gap: 8px; }
+
+/* 💎 公式サイトボタン (アフィリエイト用ネオン演出) */
+.officialBtn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid #ff0055;
+  color: #ff0055;
+  font-size: 10px;
+  font-weight: 900;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  animation: neonPulse 2s infinite ease-in-out;
+}
+
+.officialBtn:hover {
+  background: #ff0055;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255, 0, 85, 0.5);
+}
+
+.officialBtn:disabled {
+  opacity: 0.3;
+  filter: grayscale(1);
+  animation: none;
+  cursor: not-allowed;
+}
+
+/* 📺 作品一覧ボタン */
+.analyzeBtn {
+  flex: 1.2;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.analyzeBtn:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* --- D. フッター --- */
+.cardFooter {
+  padding: 0.8rem 1.4rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.productStatus { font-size: 10px; color: #666; display: flex; align-items: center; gap: 6px; }
+.statusDot { width: 6px; height: 6px; background: #00f2fe; border-radius: 50%; box-shadow: 0 0 8px #00f2fe; }
+
+/* 🌀 Animations */
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 0, 85, 0.2); border-color: rgba(255, 0, 85, 0.4); }
+  50% { box-shadow: 0 0 15px rgba(255, 0, 85, 0.5); border-color: rgba(255, 0, 85, 1); }
+}

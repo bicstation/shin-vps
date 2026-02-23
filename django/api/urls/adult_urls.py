@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/urls/adult_urls.py
-
 from django.urls import path
 from api.views import adult_views, master_views
 
@@ -31,13 +29,20 @@ urlpatterns = [
     path('taxonomy/', adult_views.AdultTaxonomyIndexAPIView.as_view(), name='taxonomy_index'),
 
     # ==========================================================
-    # 3. 🗺️ 階層ナビゲーション (Navigation)
+    # 3. 🤖 AIソムリエ・高度検索 (AI Concierge & Smart Search)
+    # ==========================================================
+    # 🚀 AIソムリエ専用検索 (ai_description からの全文検索・レコメンド用)
+    # Next.jsの sommelier-handler からここが呼ばれます。
+    path('actress-search/', adult_views.ActressSearchAPIView.as_view(), name='actress_search_api'),
+
+    # ==========================================================
+    # 4. 🗺️ 階層ナビゲーション (Navigation)
     # ==========================================================
     # FANZA/DMMのフロア構造と製品カウント
     path('navigation/floors/', adult_views.FanzaFloorNavigationAPIView.as_view(), name='floor_navigation'),
 
     # ==========================================================
-    # 4. 🏷️ マスターデータ（アダルト専用）
+    # 5. 🏷️ マスターデータ（アダルト専用）
     # ==========================================================
     # 基本的なマスタリスト
     path('actresses/', master_views.ActressListAPIView.as_view(), name='actress_list'),

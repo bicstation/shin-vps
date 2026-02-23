@@ -1,0 +1,22 @@
+/* /home/maya/dev/shin-vps/shared/product/SpecRadarChart.module.css */
+
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.chartWrapper {
+  width: 100%;
+  height: 180px; /* カードの高さに合わせて微調整してください */
+  position: relative;
+}
+
+/* レーダーチャートのフォントが見えにくい場合の補正 */
+.chartWrapper canvas {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}

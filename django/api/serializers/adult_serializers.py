@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/serializers/adult_serializers.py
-
 import re
 import logging
 from rest_framework import serializers
@@ -35,7 +33,7 @@ class FanzaFloorMasterSerializer(serializers.ModelSerializer):
     def get_floor_code(self, obj): return obj.floor_code.lower() if obj.floor_code else ''
 
 # --------------------------------------------------------------------------
-# 1. マスターデータ用ベースシリアライザー (女優プロフィール統合)
+# 1. マスターデータ用ベースシリアライザー (共通ロジック)
 # --------------------------------------------------------------------------
 class BaseMasterSerializer(serializers.ModelSerializer):
     """
@@ -85,41 +83,52 @@ class GenreSerializer(BaseMasterSerializer):
 class AuthorSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Author
 
-# --- 💡 女優用シリアライザー (黄金比スコアを統合) ---
+# --- 💡 女優用シリアライザー (AIソムリエ・データ強化版) ---
 class ActressSerializer(BaseMasterSerializer):
     """
-    Actressモデルと紐付いた AdultActressProfile から黄金比スコアを取得して表示する。
-    辞書型(values)とオブジェクト型の両方でスコアをマッピングする。
+    Actressモデルと紐付いた AdultActressProfile からAI紹介文やスコアを統合。
+    Next.jsのAIソムリエが画像カードを表示するために必要なフィールドを網羅。
     """
+    ai_description = serializers.CharField(read_only=True, required=False)
+    ai_catchcopy = serializers.CharField(read_only=True, required=False)
+    image_url_large = serializers.CharField(read_only=True, required=False)
     ai_power_score = serializers.IntegerField(read_only=True, required=False)
     score_style = serializers.IntegerField(read_only=True, required=False)
     cup = serializers.CharField(read_only=True, required=False)
 
     class Meta(BaseMasterSerializer.Meta):
         model = Actress
-        # 基底クラスのフィールド + AIスコア系を追加
-        fields = BaseMasterSerializer.Meta.fields + ('ai_power_score', 'score_style', 'cup')
+        # 既存フィールドにAIソムリエ用フィールドを追加
+        fields = BaseMasterSerializer.Meta.fields + (
+            'ai_description', 'ai_catchcopy', 'image_url_large', 
+            'ai_power_score', 'score_style', 'cup'
+        )
 
     def to_representation(self, instance):
-        # まず基底クラス（BaseMasterSerializer）の共通処理を呼び出す
+        # 基底クラスの共通処理（ID, name, slug等）
         ret = super().to_representation(instance)
 
         if isinstance(instance, dict):
-            # 💡 辞書型（values()取得）の場合: 注釈(annotate)などで取得した値をセット
+            # 💡 辞書型（annotate取得）の場合
+            ret['ai_description'] = instance.get('ai_description')
+            ret['ai_catchcopy'] = instance.get('ai_catchcopy')
+            ret['image_url_large'] = instance.get('image_url_large')
             ret['ai_power_score'] = instance.get('ai_power_score')
             ret['score_style'] = instance.get('score_style')
             ret['cup'] = instance.get('cup')
         else:
-            # 💡 オブジェクト型の場合: 1対1リレーション(profile)から取得
+            # 💡 オブジェクト型の場合（リレーションから取得）
             profile = getattr(instance, 'profile', None)
             if profile:
+                ret['ai_description'] = profile.ai_description
+                ret['ai_catchcopy'] = profile.ai_catchcopy
+                ret['image_url_large'] = profile.image_url_large
                 ret['ai_power_score'] = profile.ai_power_score
                 ret['score_style'] = profile.score_style
                 ret['cup'] = profile.cup
             else:
-                ret['ai_power_score'] = None
-                ret['score_style'] = None
-                ret['cup'] = None
+                for field in ['ai_description', 'ai_catchcopy', 'image_url_large', 'ai_power_score', 'score_style', 'cup']:
+                    ret[field] = None
         
         return ret
 

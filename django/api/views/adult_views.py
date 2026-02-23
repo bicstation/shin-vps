@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-# /usr/src/app/api/views/adult_views.py
-
 import re
+import json
 from datetime import date
 from itertools import chain
 
 from django.db.models import Q, Count, Avg, F
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, filters, pagination, response, views, status
 from rest_framework.permissions import AllowAny
@@ -126,9 +125,6 @@ class UnifiedAdultProductListView(generics.ListAPIView):
 # 💡 2. 階層ナビゲーションView
 # --------------------------------------------------------------------------
 class FanzaFloorNavigationAPIView(views.APIView):
-    """
-    FANZAのサイト・サービス・フロア構造を階層的に返すView。
-    """
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
         qs = FanzaFloorMaster.objects.filter(is_active=True)
@@ -149,12 +145,9 @@ class FanzaFloorNavigationAPIView(views.APIView):
         return response.Response({"status": "NAV_SYNC_COMPLETE", "data": structure})
 
 # --------------------------------------------------------------------------
-# 💡 3. 全項目インデックス取得View (エラー修正・画像強化版)
+# 💡 3. 全項目インデックス取得View (AIソムリエ・データ強化版)
 # --------------------------------------------------------------------------
 class AdultTaxonomyIndexAPIView(views.APIView):
-    """
-    女優、ジャンル、メーカー等のマスタ一覧を返すView。
-    """
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
@@ -178,7 +171,6 @@ class AdultTaxonomyIndexAPIView(views.APIView):
         if not TargetModel:
             return response.Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 🚀 効率化: 女優の場合はリレーション 'profile' をロード
         if tax_type == 'actresses':
             qs = TargetModel.objects.all().select_related('profile')
         else:
@@ -189,18 +181,15 @@ class AdultTaxonomyIndexAPIView(views.APIView):
 
         qs = qs.filter(product_count__gt=0)
 
-        # DB側ソート (安全なフィールドのみ)
         valid_db_fields = ['name', '-name', 'product_count', '-product_count', 'id', '-id']
         db_ordering = ordering_raw if ordering_raw in valid_db_fields else '-product_count'
         qs = qs.order_by(db_ordering)
 
-        # スコア要求時は全件から選別するために取得制限を緩和
         fetch_limit = 1000 if 'score' in ordering_raw else (int(limit) if limit and limit.isdigit() else 100)
         qs = qs[:fetch_limit]
 
         results = []
         for item in qs:
-            # Slug仕様の維持
             data = {
                 "id": item.id, 
                 "name": item.name, 
@@ -209,57 +198,82 @@ class AdultTaxonomyIndexAPIView(views.APIView):
                 "api_source": item.api_source
             }
             
-            # 🚀 女優の場合、詳細な解析データを注入 (AttributeError対策版)
             if tax_type == 'actresses':
                 profile = getattr(item, 'profile', None)
                 if profile:
-                    # 🖼️ ビジュアルデータ
+                    # 🖼️ ビジュアル & AI説明
                     data["image_url_small"] = getattr(profile, 'image_url_small', None)
                     data["image_url_large"] = getattr(profile, 'image_url_large', None)
+                    data["ai_description"] = getattr(profile, 'ai_description', "")
+                    data["ai_catchcopy"] = getattr(profile, 'ai_catchcopy', "")
                     
                     # 📏 フィジカルデータ
                     data["bust"] = getattr(profile, 'bust', None)
-                    data["waist"] = getattr(profile, 'waist', None)
-                    data["hip"] = getattr(profile, 'hip', None)
                     data["cup"] = getattr(profile, 'cup', None)
                     data["height"] = getattr(profile, 'height', None)
+                    data["hobby"] = getattr(profile, 'hobby', None)
                     
-                    # 📊 AI 5軸評価スコア
+                    # 🔗 SNS
+                    data["x_url"] = getattr(profile, 'x_url', None)
+                    data["instagram_url"] = getattr(profile, 'instagram_url', None)
+                    
+                    # 📊 スコア
                     data["ai_power_score"] = getattr(profile, 'ai_power_score', 0)
                     data["score_visual"] = getattr(profile, 'score_visual', 0)
-                    data["score_style"] = getattr(profile, 'score_style', 0)
-                    data["score_performance"] = getattr(profile, 'score_performance', 0)
-                    data["score_popularity"] = getattr(profile, 'score_popularity', 0)
                 else:
-                    # プロフィールが存在しない場合のデフォルト値
-                    data["image_url_large"] = None
                     data["ai_power_score"] = 0
-                    data["cup"] = ""
             
             results.append(data)
 
-        # 🚀 AIスコアによるランキング並び替え (Python側で安全に実行)
         if 'score' in ordering_raw or 'ai_power_score' in ordering_raw:
             reverse_flag = '-' in ordering_raw
-            # キーの抽出
             sort_key = ordering_raw.replace('-', '').split('__')[-1]
-            
-            results = sorted(
-                results, 
-                key=lambda x: (x.get(sort_key) is not None, x.get(sort_key) or 0), 
-                reverse=reverse_flag
-            )
+            results = sorted(results, key=lambda x: (x.get(sort_key) is not None, x.get(sort_key) or 0), reverse=reverse_flag)
             if limit and limit.isdigit():
                 results = results[:int(limit)]
 
-        return response.Response({
-            "type": tax_type, 
-            "api_source": api_source,
-            "results": results
-        })
+        return response.Response({"type": tax_type, "api_source": api_source, "results": results})
 
 # --------------------------------------------------------------------------
-# 💡 4. サイドバー用分析View
+# 💡 4. 🚀 AIソムリエ専用: 女優検索API (新規追加)
+# --------------------------------------------------------------------------
+class ActressSearchAPIView(views.APIView):
+    """
+    Next.jsのAIソムリエから呼ばれる検索専用エンドポイント。
+    AIが作成した紹介文(ai_description)を対象に全文検索を行います。
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('q', '').strip()
+        if not query:
+            return response.Response({"results": []})
+
+        # 名前、読み、AI紹介文、趣味をまたいで検索
+        # 5.9万人の中から、より精鋭(ai_power_score)を優先して3件抽出
+        results = Actress.objects.filter(
+            Q(name__icontains=query) |
+            Q(ruby__icontains=query) |
+            Q(profile__ai_description__icontains=query) |
+            Q(profile__hobby__icontains=query)
+        ).select_related('profile').filter(product_count__gt=0).order_by('-profile__ai_power_score', '-product_count')[:3]
+
+        data = []
+        for act in results:
+            profile = getattr(act, 'profile', None)
+            data.append({
+                "actress_id": act.id,
+                "name": act.name,
+                "ai_description": getattr(profile, 'ai_description', ""),
+                "image_url_large": getattr(profile, 'image_url_large', ""),
+                "cup": getattr(profile, 'cup', ""),
+                "ai_power_score": getattr(profile, 'ai_power_score', 0)
+            })
+
+        return response.Response({"results": data})
+
+# --------------------------------------------------------------------------
+# 💡 5. サイドバー用分析View
 # --------------------------------------------------------------------------
 class PlatformMarketAnalysisAPIView(views.APIView):
     permission_classes = [AllowAny]
@@ -271,7 +285,7 @@ class PlatformMarketAnalysisAPIView(views.APIView):
         })
 
 # --------------------------------------------------------------------------
-# 💡 5. 各種個別リスト・詳細View
+# 💡 6. 各種個別リスト・詳細View
 # --------------------------------------------------------------------------
 class AdultProductListAPIView(generics.ListAPIView):
     serializer_class = AdultProductSerializer
