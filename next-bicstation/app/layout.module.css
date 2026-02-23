@@ -1,33 +1,48 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-LAYOUT-CSS] - 2026 Tactical Optimized Edition
+ * 🏗️ [BICSTATION-LAYOUT-CSS] - Full-Width Production Edition
  * ---------------------------------------------------------------------
- * 💡 設計思想: 
- * 1. bodyWrapperにpadding-topを付与し、浮遊ヘッダーの裏側を物理的に封鎖。
- * 2. adDisclosure(PR)はstickyで配置し、スクロール時もヘッダー直下をキープ。
- * 3. INTELLIGENCE_REPORT等のヒーロー要素が絶対に被らない余白設計。
+ * 💡 修正内容:
+ * 1. 1440pxの制限を解除し、全幅表示 (100%) に最適化
+ * 2. 左右の余白を画面比率 (%) に変更し、ワイドモニターでの開放感を確保
+ * 3. サイドバーの安定性を高め、メイン領域の拡張性を最大化
  * ===================================================================== */
 
-/* 1. 全体を包むラッパー：フッターを常に最下部へ */
+/* 1. 全体を包むラッパー */
 .bodyWrapper {
-  margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   -webkit-font-smoothing: antialiased;
-  padding-top: 0px; /* 🪄 魔法のクッション */
   background-color: #0a0a0a;
-}
-.adDisclosure {
-  background-color: rgba(26, 26, 26, 0.95);
-  font-size: 10px; color: #94a3b8; text-align: center; padding: 10px 0;
-  border-bottom: 1px solid rgba(233, 69, 96, 0.4); /* レッド */
-  position: sticky; top: 0px; z-index: 900; backdrop-filter: blur(8px);
+  color: #e2e8f0;
+  overflow-x: hidden;
 }
 
-/* 3. レイアウトの外枠：中央寄せと最大幅制限 */
+/* 2. 広告告知（PR表記）：全幅でボーダーを走らせる */
+.adDisclosure {
+  width: 100%;
+  background-color: rgba(26, 26, 26, 0.95);
+  font-size: 10px;
+  color: #94a3b8;
+  text-align: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(233, 69, 96, 0.4); 
+  position: sticky;
+  top: 70px; /* ヘッダー高さ */
+  z-index: 900;
+  backdrop-filter: blur(8px);
+}
+
+/* 3. レイアウトの外枠：全幅 (100%) 仕様 */
 .layoutContainer {
   flex: 1;
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 24px;
+  max-width: 100%; /* 制限解除 */
+  margin: 0;
+  /* 左右に 4% のセーフティエリアを確保（端に張り付きすぎない黄金比） */
+  padding: 0 4%; 
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -36,36 +51,56 @@
 /* 4. サイドバーとメインを横並びにするインナー */
 .layoutInner {
   display: flex;
-  gap: 32px;
-  /* 💡 修正ポイント：上部に更なるゆとり(40px)を設け、タイトルとの被りを完全排除 */
-  padding: 40px 0 60px 0; 
+  gap: 40px; /* 全幅に合わせて溝を少し広めに設定 */
+  padding: 24px 0 80px 0;
+  width: 100%;
 }
 
-/* 5. メインコンテンツ領域（右側） */
+/* 5. サイドバー領域（左側）：存在感を出すために 300px へ微増 */
+.sidebarSection {
+  width: 300px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 130px; /* ヘッダー(70) + PR(35) + 余裕(25) */
+  height: fit-content;
+  /* サイドバーが浮いて見えないよう、右側に薄い境界線を置くのもアリ */
+}
+
+/* 6. メインコンテンツ領域（右側）：ここが全幅で広がる */
 .mainContent {
   flex: 1;
-  min-width: 0; /* Flex突き破り防止 */
+  min-width: 0;
   animation: tacticalFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
 }
 
-/* 6. モバイル対応：レスポンシブ設定 */
+/* 7. モバイル対応：レスポンシブ設定 */
 
-/* タブレットサイズ：サイドバーを上、メインを下に */
-@media (max-width: 1024px) {
+/* タブレット・中画面 */
+@media (max-width: 1100px) {
+  .layoutContainer {
+    padding: 0 24px;
+  }
+  
   .layoutInner {
     flex-direction: column;
-    gap: 32px;
-    padding: 30px 0;
+    gap: 24px;
+    padding: 16px 0;
+  }
+
+  .sidebarSection {
+    width: 100%;
+    position: static;
+    order: 1; /* モバイルではフィルターを先に */
+  }
+  
+  .mainContent {
+    order: 2;
   }
 }
 
-/* スマートフォンサイズ：余白の最小化 */
+/* スマートフォンサイズ */
 @media (max-width: 768px) {
-  .bodyWrapper {
-    padding-top: 70px; /* モバイルもヘッダー高さを維持 */
-  }
-
   .layoutContainer {
     padding: 0 16px;
   }
@@ -73,19 +108,14 @@
   .adDisclosure {
     font-size: 9px;
     padding: 8px 4px;
-    top: 70px;
-  }
-
-  .layoutInner {
-    padding: 20px 0;
   }
 }
 
-/* 7. ページ読み込み時のフェードイン（タクティカルな動き） */
+/* 8. アニメーション */
 @keyframes tacticalFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -93,16 +123,12 @@
   }
 }
 
-/* 吹きこぼれ防止用のユーティリティ */
-.noOverflow {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* 💡 デバッグヒーロー等の重なりを強制回避するクラス */
+/* ヒーローセクション等の全幅ラッパー */
 .heroSectionWrapper {
-  margin-top: 15px;
-  border-radius: 12px;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }

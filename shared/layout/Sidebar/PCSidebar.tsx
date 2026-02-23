@@ -1,12 +1,19 @@
-'use client';
+// /home/maya/dev/shin-vps/shared/layout/Sidebar/PCSidebar.tsx
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { headers } from 'next/headers';
 import { COLORS } from '../../styles/constants';
-import { MakerCount } from '@/lib/api/django/pc'; 
+
+/**
+ * ✅ 修正済みインポート
+ * fetchPostList は WordPress API 層から、fetchMakers は Django API 層から正しく取得します。
+ */
+import { fetchMakers } from '@shared/lib/api/django/pc';
+import { fetchPostList } from '@shared/lib/api/wordpress';
 import styles from './PCSidebar.module.css';
 
+// サーバー側で取得するための型定義
 interface AttributeItem {
   id: number;
   name: string;
@@ -19,74 +26,51 @@ interface SidebarData {
   [category: string]: AttributeItem[];
 }
 
-interface SidebarProps {
-  activeMenu?: string;
-  makers?: MakerCount[]; 
-  recentPosts?: { id: string; title: string; slug?: string }[];
-}
-
-export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: SidebarProps) {
-  const pathname = usePathname(); 
-  const searchParams = useSearchParams(); 
-  const attribute = searchParams.get('attribute');
+export default async function Sidebar() {
+  // 1. ヘッダーからパス名等を取得（Middlewareによる x-url 付与を想定）
+  const headerList = await headers();
+  const pathname = headerList.get('x-url') || '/';
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
-  const [specStats, setSpecStats] = useState<SidebarData | null>(null);
-  
-  // アコーディオンの開閉状態を管理
-  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
-    'RANKING': true,
-    'BRANDS': true,
-    'LATEST': true,
-    'DOMESTIC': true,
-    'OVERSEAS': true
-  });
-
-  const toggleSection = (section: string) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
   /**
-   * 💡 スペック統計（CPU/メモリ等）の取得
-   * Next.jsのAPIルート経由ではなく、Djangoエンドポイントを直接叩くことでHTML誤取得を回避します。
+   * 🛡️ フェッチ・セーフティ・ラッパー
+   * 個別のAPIが失敗（500/404）しても、サイドバー全体をクラッシュさせず
+   * デフォルト値を返してレンダリングを続行させます。
    */
-  useEffect(() => {
-    async function fetchSpecStats() {
-      try {
-        // NEXT_PUBLIC_API_URL が未設定の場合は、ブラウザからアクセス可能なデフォルト値を使用
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const targetUrl = `${baseUrl.replace(/\/$/, '')}/api/general/pc-sidebar-stats/`;
-
-        const res = await fetch(targetUrl, {
-          headers: { 'Accept': 'application/json' },
-          cache: 'no-store'
-        });
-        
-        const contentType = res.headers.get("content-type") || "";
-        if (!res.ok || contentType.includes("text/html")) {
-          throw new Error(`Invalid response: ${res.status} ${contentType}`);
-        }
-
-        const data = await res.json();
-        setSpecStats(data);
-      } catch (error) {
-        console.error("Sidebar stats fetch failed:", error);
-      }
+  async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
+    try {
+      const result = await promise;
+      return result ?? fallback;
+    } catch (e) {
+      console.error("[PCSidebar Fetch Error]:", e);
+      return fallback;
     }
-    fetchSpecStats();
-  }, []);
-
-  // --- デバッグログ (データが空の場合にコンソールで確認可能) ---
-  if (makers.length === 0) {
-    console.warn("Sidebar: 'makers' prop is empty. Check server-side fetch in page.tsx.");
   }
 
-  // --- メーカーをグループ分けするロジック ---
-  const domesticNames = ['mouse', 'panasonic', 'vaio', 'dynabook', 'fujitsu', 'nec', 'iiyama'];
+  // 2. データのフェッチ（Promise.allで効率的に並列実行）
+  const [makers, wpData, specStatsRes] = await Promise.all([
+    safeFetch(fetchMakers(), []),
+    safeFetch(fetchPostList('post', 10, 0), { results: [], count: 0 }),
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/general/pc-sidebar-stats/`, {
+      headers: { 'Accept': 'application/json' },
+      next: { revalidate: 3600 } // 1時間キャッシュ
+    }).catch(() => ({ ok: false }))
+  ]);
+
+  const recentPosts = (wpData as any).results || [];
   
+  // スペック統計データの処理
+  let specStats: SidebarData | null = null;
+  if (specStatsRes && 'ok' in specStatsRes && specStatsRes.ok) {
+    try {
+      specStats = await (specStatsRes as Response).json();
+    } catch (e) {
+      console.error("[PCSidebar Stats Parse Error]:", e);
+    }
+  }
+
+  // メーカー分けロジック（国内 vs 海外）
+  const domesticNames = ['mouse', 'panasonic', 'vaio', 'dynabook', 'fujitsu', 'nec', 'iiyama'];
   const categorizedMakers = (makers || []).reduce((acc, curr) => {
     if (!curr || !curr.maker) return acc;
     const name = curr.maker.toLowerCase();
@@ -96,166 +80,100 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
       acc.overseas.push(curr);
     }
     return acc;
-  }, { domestic: [] as MakerCount[], overseas: [] as MakerCount[] });
+  }, { domestic: [] as any[], overseas: [] as any[] });
 
-  const getFilterHref = (attrSlug: string) => {
-    const isBrandPage = pathname.startsWith('/brand');
-    if (isBrandPage && activeMenu) {
-      return { pathname: `/brand/${activeMenu.toLowerCase()}`, query: { attribute: attrSlug } };
-    }
-    return { pathname: '/pc-products', query: { attribute: attrSlug } };
+  /**
+   * WPタイトルのHTMLエンティティをデコード
+   */
+  const decodeTitle = (title: string) => {
+    if (!title) return '';
+    return title.replace(/&amp;/g, '&').replace(/&#039;/g, "'").replace(/&quot;/g, '"');
   };
-
-  const formatHref = (hrefObj: { pathname: string; query: { attribute: string } }) => {
-    return `${hrefObj.pathname}?attribute=${hrefObj.query.attribute}`;
-  };
-
-  // セクション見出し（トリガー）コンポーネント
-  const SectionHeader = ({ title, id, sub = false }: { title: string, id: string, sub?: boolean }) => (
-    <h3 
-      className={styles.sectionTitle} 
-      onClick={() => toggleSection(id)}
-      style={{ 
-        cursor: 'pointer', 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        fontSize: sub ? '0.85rem' : undefined,
-        opacity: sub ? 0.8 : 1,
-        marginTop: sub ? '10px' : undefined,
-        paddingLeft: sub ? '10px' : undefined,
-        borderLeft: sub ? `2px solid ${siteColor}44` : undefined
-      }}
-    >
-      {title}
-      <span style={{ 
-        fontSize: '0.7rem', 
-        transition: 'transform 0.3s', 
-        transform: openSections[id] ? 'rotate(180deg)' : 'rotate(0deg)' 
-      }}>
-        ▼
-      </span>
-    </h3>
-  );
-
-  // メーカーアイテムを描画する共通関数
-  const renderMakerList = (makerItems: MakerCount[]) => (
-    <ul className={styles.accordionContent}>
-      {makerItems.map((item) => {
-        const isActive = activeMenu?.toLowerCase() === item.maker.toLowerCase();
-        return (
-          <li key={item.maker}>
-            <Link href={`/brand/${item.maker.toLowerCase()}`} className={styles.link}
-              style={{ color: isActive ? siteColor : undefined, fontWeight: isActive ? 'bold' : 'normal' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>💻 {item.maker.toUpperCase()}</span>
-              <span className={styles.badge}>{item.count}</span>
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
-  );
 
   return (
-    <aside className={styles.sidebar} style={{ height: 'auto', minHeight: '100%', maxHeight: 'none', overflowY: 'visible' }}>
+    <aside className={styles.sidebar}>
       
-      {/* 🏆 RANKING & TOOLS */}
-      <SectionHeader title="SPECIAL" id="RANKING" />
-      {openSections['RANKING'] && (
+      {/* 🏆 SPECIAL (コンバージョン導線) */}
+      <h3 className={styles.sectionTitle}>SPECIAL</h3>
+      <ul className={styles.accordionContent}>
+        <li style={{ marginBottom: '8px' }}>
+          <Link href="/pc-finder/" className={styles.link} style={{ 
+              background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+              color: '#ffffff', borderRadius: '12px', padding: '12px', display: 'block'
+            }}>
+            <span style={{ fontWeight: '900' }}>🔍 PC-FINDER (AI選定)</span>
+          </Link>
+        </li>
+      </ul>
+
+      {/* 1. BRANDS: メーカー別絞り込み */}
+      <h3 className={styles.sectionTitle}>BRANDS</h3>
+      <div style={{ marginBottom: '20px' }}>
+        <p className={styles.subLabel}>国内メーカー</p>
         <ul className={styles.accordionContent}>
-          <li style={{ marginBottom: '8px' }}>
-            <Link href="/pc-finder/" className={styles.link} style={{ 
-                background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-                color: '#ffffff',
-                borderRadius: '12px', padding: '12px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}>
-              <span style={{ fontWeight: '900', letterSpacing: '0.05em' }}>🔍 PC-FINDER (AI選定)</span>
-            </Link>
-          </li>
-          <li>
-            <Link href="/ranking/" className={styles.link} style={{ 
-                color: pathname === '/ranking/' ? siteColor : undefined,
-                background: 'rgba(236, 201, 75, 0.1)',
-                borderRadius: '8px', padding: '10px'
-              }}>
-              <span>🏆 スペック解析ランキング</span>
-            </Link>
-          </li>
-        </ul>
-      )}
-
-      {/* 1. BRANDS (Grouped) */}
-      <SectionHeader title="BRANDS" id="BRANDS" />
-      {openSections['BRANDS'] && (
-        <div style={{ marginBottom: '20px' }}>
-          {/* 国内ブランド */}
-          <SectionHeader title="国内メーカー" id="DOMESTIC" sub />
-          {openSections['DOMESTIC'] && renderMakerList(categorizedMakers.domestic)}
-
-          {/* 海外ブランド */}
-          <SectionHeader title="海外メーカー" id="OVERSEAS" sub />
-          {openSections['OVERSEAS'] && renderMakerList(categorizedMakers.overseas)}
-        </div>
-      )}
-
-      {/* 2. SPECS (動的生成セクション) */}
-      {specStats && Object.entries(specStats)
-        .sort((a, b) => a[0].localeCompare(b[0], 'ja'))
-        .map(([category, items]) => (
-        <div key={category}>
-          <SectionHeader title={category.toUpperCase()} id={category} />
-          {openSections[category] && (
-            <ul className={styles.accordionContent}>
-              {items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((item) => {
-                const isActive = attribute === item.slug;
-                const icon = category.includes('CPU') ? '🚀' : category.includes('メモリ') ? '🧠' : category.includes('NPU') ? '🤖' : '✨';
-                return (
-                  <li key={item.id}>
-                    <Link href={formatHref(getFilterHref(item.slug))} className={styles.link}
-                      style={{ color: isActive ? siteColor : undefined, fontWeight: isActive ? 'bold' : 'normal' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{icon} {item.name}</span>
-                      <span className={styles.badge}>{item.count}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      ))}
-
-      {/* 3. LATEST ARTICLES */}
-      <SectionHeader title="LATEST ARTICLES" id="LATEST" />
-      {openSections['LATEST'] && (
-        <ul className={styles.accordionContent}>
-          {recentPosts.map((post) => (
-            <li key={post.id} style={{ marginBottom: '10px' }}>
-              <Link href={`/bicstation/${post.slug || post.id}`} className={styles.link}>
-                <span style={{ fontSize: '0.85rem', lineHeight: '1.4', display: 'block' }}>📄 {post.title}</span>
+          {categorizedMakers.domestic.map((item) => (
+            <li key={item.maker}>
+              <Link href={`/brand/${item.maker.toLowerCase()}`} 
+                    className={styles.link}
+                    style={{ color: pathname.includes(item.maker.toLowerCase()) ? siteColor : undefined }}>
+                <span>💻 {item.maker.toUpperCase()}</span>
+                <span className={styles.badge}>{item.count}</span>
               </Link>
             </li>
           ))}
         </ul>
-      )}
 
-      {/* 4. OTHERS */}
-      <SectionHeader title="OTHERS" id="OTHERS" />
-      {openSections['OTHERS'] && (
+        <p className={styles.subLabel} style={{ marginTop: '10px' }}>海外メーカー</p>
         <ul className={styles.accordionContent}>
-          <li>
-            <Link href="/pc-products" className={styles.link} 
-              style={{ color: !attribute && (!activeMenu || activeMenu === 'all') ? siteColor : undefined }}>
-              <span>🏠 全製品一覧</span>
-            </Link>
-          </li>
-          <li>
-            <Link href="/contact" className={styles.link}>
-              <span>✉️ スペック相談</span>
-            </Link>
-          </li>
+          {categorizedMakers.overseas.map((item) => (
+            <li key={item.maker}>
+              <Link href={`/brand/${item.maker.toLowerCase()}`} 
+                    className={styles.link}
+                    style={{ color: pathname.includes(item.maker.toLowerCase()) ? siteColor : undefined }}>
+                <span>💻 {item.maker.toUpperCase()}</span>
+                <span className={styles.badge}>{item.count}</span>
+              </Link>
+            </li>
+          ))}
         </ul>
-      )}
+      </div>
+
+      {/* 2. SPECS: Djangoから取得した動的な属性統計 */}
+      {specStats && Object.entries(specStats).map(([category, items]) => (
+        <div key={category}>
+          <h3 className={styles.sectionTitle}>{category.toUpperCase()}</h3>
+          <ul className={styles.accordionContent}>
+            {items.map((item) => (
+              <li key={item.id}>
+                <Link href={`/pc-products?attribute=${item.slug}`} className={styles.link}>
+                  <span>✨ {item.name}</span>
+                  <span className={styles.badge}>{item.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      {/* 3. LATEST: WordPress最新記事 */}
+      <h3 className={styles.sectionTitle}>LATEST ARTICLES</h3>
+      <ul className={styles.accordionContent}>
+        {recentPosts.length > 0 ? (
+          recentPosts.map((post: any) => (
+            <li key={post.id} style={{ marginBottom: '10px' }}>
+              <Link href={`/blog/${post.id}`} className={styles.link}>
+                <span style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
+                  📄 {decodeTitle(post.title?.rendered || '無題の記事')}
+                </span>
+              </Link>
+            </li>
+          ))
+        ) : (
+          <li className={styles.link} style={{ fontSize: '0.8rem', color: '#999' }}>
+            最新記事を読み込み中...
+          </li>
+        )}
+      </ul>
     </aside>
   );
 }

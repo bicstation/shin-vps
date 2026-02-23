@@ -257,3 +257,93 @@ class FanzaFloorNavigationAPIView(views.APIView):
         return Response({
             "officialHierarchy": serializer.data
         }, status=status.HTTP_200)
+
+# --- ファイルの末尾に、行頭（スペースなし）から貼り付けてください ---
+
+# --- ファイルの末尾に、行頭（スペースなし）から貼り付けてください ---
+
+import json
+import requests
+from django.http import StreamingHttpResponse
+from django.shortcuts import get_object_or_404
+from urllib.parse import unquote
+from rest_framework import views
+from rest_framework.permissions import AllowAny
+
+# 💡 ヒント: PCProductが別ファイルにある場合はインポートが必要ですが、
+# 同ファイル内にある前提、または既存のviews.pyの末尾ならそのままでOKです。
+
+class PCProductMaidStreamView(views.APIView):
+    """
+    指定された製品(unique_id)に対して、Ollama(Gemma 3)を使用して
+    リアルタイムにメイド接客文を生成・ストリーミングするView
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, unique_id):
+        # 1. データベースから製品情報を取得（URLデコード済み）
+        product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
+        
+        # 2. AIへの指示文（プロンプト）
+        prompt = f"""
+あなたはアキバのPCショップ「BIC STATION」の看板娘です。
+以下のPCの魅力を、メイドさんらしく情熱的に10行以内で語ってください。
+語尾は「〜だよ」「〜かな」。最後は必ず猫の鳴き声「ニャン！」で締めて。
+
+【商品名】: {product.name}
+【価格】: {product.price}円
+【CPUスコア】: {product.score_cpu}/100
+【特徴】: {"AI PC対応！最新のNPU搭載だよ" if product.is_ai_pc else "質実剛健で使いやすいよ"}
+"""
+
+        # 3. ストリーミング生成用の内部関数
+        def stream_generator():
+            # ブラウザへの初期レスポンス
+            yield "……あ、お客様！今おすすめのポイントをまとめますね！少々お待ちを……🐾\n\n"
+
+            # 💡 修正ポイント: 先ほど curl で成功した「確実なルート」を使用
+            url = "http://172.17.0.1:11434/api/generate"
+            
+            # 💡 修正ポイント: 余計な空白が入らないよう strip() を追加
+            payload = {
+                "model": "gemma3:4b",
+                "prompt": prompt.strip(),
+                "stream": True
+            }
+            
+            try:
+                # 💡 修正ポイント: requestsのタイムアウトを適切に設定
+                response = requests.post(
+                    url, 
+                    json=payload, 
+                    stream=True, 
+                    timeout=(5, 60) # (接続タイムアウト, 読み取りタイムアウト)
+                )
+                
+                if response.status_code != 200:
+                    yield f"【Ollama Error】ステータス: {response.status_code} ニャン…\n"
+                    yield f"詳細: {response.text[:100]}"
+                    return
+
+                # 逐次トークンを取得して返却
+                for line in response.iter_lines():
+                    if line:
+                        chunk = json.loads(line.decode('utf-8'))
+                        token = chunk.get('response', '')
+                        
+                        if token:
+                            yield token
+                        
+                        if chunk.get('done'):
+                            break
+                            
+            except requests.exceptions.ConnectionError:
+                yield "\n\n【通信エラー】Ollamaの門が閉まっているみたいニャ… sudo systemctl restart ollama を試してほしいニャ！"
+            except Exception as e:
+                yield f"\n\n【システムエラー】予期せぬエラーが発生したニャ… {str(e)}"
+
+        # 4. ストリーミングレスポンスを返却
+        return StreamingHttpResponse(
+            stream_generator(), 
+            content_type='text/plain; charset=utf-8'
+        )

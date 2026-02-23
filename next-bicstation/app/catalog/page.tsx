@@ -1,20 +1,20 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
+// /home/maya/dev/shin-vps/next-bicstation/app/catalog/page.tsx
+
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import Pagination from '@shared/common/Pagination';
-
-/**
- * ✅ 修正ポイント: インポートパスの変更
- */
 import ProductCard from '@shared/cards/ProductCard';
 
-import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/lib/api';
+// APIインポート先を役割ごとに分離
+import { fetchPCProducts } from '@shared/lib/api/django/pc';
+
 import styles from './CatalogPage.module.css';
 
 /**
- * ✅ 修正ポイント: Next.js 15 でのビルドエラー（Missing Suspense boundary）を強制回避
- * このページはクエリパラメータに依存するため、静的生成をスキップして動的レンダリングを強制します。
+ * ✅ 修正ポイント: 動的レンダリングを強制
  */
 export const dynamic = "force-dynamic";
 
@@ -34,16 +34,14 @@ interface PageProps {
 }
 
 /**
- * ✅ Next.js 15 ビルドエラー対策:
- * 子コンポーネント（Pagination等）で useSearchParams が使われている可能性があるため、
- * ページ全体を Suspense でラップします。
+ * ✅ Next.js 15 対策: ページ全体を Suspense でラップ
  */
 export default function CatalogPage(props: PageProps) {
     return (
         <Suspense fallback={
             <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-500 font-mono text-xs uppercase tracking-[0.2em]">
                 <div className="w-8 h-8 border-t-2 border-slate-500 animate-spin mb-4 rounded-full"></div>
-                Loading Catalog Data...
+                Fetching_PC_Database...
             </div>
         }>
             <CatalogPageContent {...props} />
@@ -52,7 +50,7 @@ export default function CatalogPage(props: PageProps) {
 }
 
 /**
- * 実際のページロジックを async 関数として保持
+ * 実際のページロジック
  */
 async function CatalogPageContent({ searchParams }: PageProps) {
     const sParams = await searchParams;
@@ -64,47 +62,27 @@ async function CatalogPageContent({ searchParams }: PageProps) {
     const maker = (Array.isArray(sParams.maker) ? sParams.maker[0] : sParams.maker) || '';
     const attribute = (Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute) || '';
     
-    // Offset計算（検索時は1ページ目に戻るのが一般的）
+    // Offset計算
     const currentOffset = sParams.offset ? parseInt(sParams.offset) : (currentPage - 1) * limit;
 
-    // データの取得（検索クエリ q を含めて API を叩く）
-    const [pcData, makersData, wpData] = await Promise.all([
-        fetchPCProducts(searchQuery, currentOffset, limit, attribute || maker),
-        fetchMakers(),
-        fetchPostList(10)
+    // 🛡️ APIガード
+    async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
+        try {
+            return (await promise) || fallback;
+        } catch (e) {
+            console.error("[Catalog API Error]:", e);
+            return fallback;
+        }
+    }
+
+    // データの取得
+    const [pcData] = await Promise.all([
+        safeFetch(fetchPCProducts(searchQuery, currentOffset, limit, attribute || maker), { results: [], count: 0 }),
     ]);
 
-    const allPosts = wpData.results || [];
-    const safeDecode = (str: string) => {
-        if (!str) return '';
-        return str
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .replace(/&#039;/g, "'");
-    };
-
     return (
-        <div className={styles.wrapper}>
-            <aside className={styles.sidebarSection}>
-                {/* Sidebar内で useSearchParams を使っている可能性があるため、
-                   コンポーネント単位でも Suspense を適用して安全性を高めます 
-                */}
-                <Suspense fallback={<div className="h-40 animate-pulse bg-slate-900 rounded-lg" />}>
-                    <Sidebar 
-                        activeMenu="all" 
-                        makers={makersData} 
-                        recentPosts={allPosts.map((p: any) => ({
-                            id: p.id,
-                            title: safeDecode(p.title.rendered),
-                            slug: p.slug
-                        }))}
-                    />
-                </Suspense>
-            </aside>
-
-            <main className={styles.main}>
+        <div className={styles.fullWidthWrapper}>
+            <main className={styles.fullMain}>
                 <header className={styles.pageHeader}>
                     <h1 className={styles.mainTitle}>PC製品カタログ</h1>
                     <p className={styles.subDescription}>
@@ -112,7 +90,7 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                     </p>
                 </header>
 
-                {/* 🔍 検索セクション */}
+                {/* 🔍 検索セクション - 全幅に合わせて配置を最適化 */}
                 <section className={styles.searchSection}>
                     <form action="/catalog" method="GET" className={styles.searchForm}>
                         <input 
@@ -122,7 +100,6 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                             placeholder="型番、CPU、GPU、製品名で検索..." 
                             className={styles.searchInput}
                         />
-                        {/* メーカーや属性が選択されている場合、hiddenで引き継ぐ */}
                         {maker && <input type="hidden" name="maker" value={maker} />}
                         {attribute && <input type="hidden" name="attribute" value={attribute} />}
                         <button type="submit" className={styles.searchButton}>検索</button>
@@ -140,10 +117,12 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                 )}
 
                 <section className={styles.productSection}>
-                    <h2 className={styles.productGridTitle}>
-                        <span className={styles.titleIndicator}></span>
-                        {searchQuery ? `「${searchQuery}」の検索結果` : '製品一覧'}
-                    </h2>
+                    <div className={styles.gridHeader}>
+                        <h2 className={styles.productGridTitle}>
+                            <span className={styles.titleIndicator}></span>
+                            {searchQuery ? `「${searchQuery}」の検索結果` : '製品一覧'}
+                        </h2>
+                    </div>
 
                     <div className={styles.productGrid}>
                         {pcData.results.length > 0 ? (
@@ -151,14 +130,14 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                                 <ProductCard key={product.unique_id || product.id} product={product} />
                             ))
                         ) : (
-                            <p className="py-20 text-center text-gray-500 w-full">該当する製品が見つかりませんでした。</p>
+                            <div className="py-20 text-center text-gray-500 w-full bg-slate-900/50 rounded-xl border border-white/5">
+                                <p>該当する製品が見つかりませんでした。</p>
+                                <p className="text-xs mt-2">条件を変えて再度お試しください。</p>
+                            </div>
                         )}
                     </div>
 
                     <div className={styles.paginationWrapper}>
-                        {/* ✅ 修正ポイント: Pagination を個別に Suspense でラップ
-                           ビルド時の useSearchParams() bailout を防ぐための最も強力な対策です。
-                        */}
                         <Suspense fallback={<div className="h-10 w-full bg-slate-900 animate-pulse rounded" />}>
                             <Pagination 
                                 currentOffset={currentOffset}

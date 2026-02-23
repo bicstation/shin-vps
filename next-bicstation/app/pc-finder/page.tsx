@@ -1,15 +1,27 @@
-// ✅ Next.js 15 のビルドルールを強制回避
-export const dynamic = "force-dynamic";
+/* eslint-disable @next/next/no-img-element */
+// /home/maya/dev/shin-vps/next-bicstation/app/pc-finder/page.tsx
 
+import React, { Suspense } from 'react';
 import { Metadata } from 'next';
-import { Suspense } from 'react';
-import PCFinderClient from './PCFinderClient'; // クライアントコンポーネントを読み込む
+import PCFinderClient from './PCFinderClient';
+
+/**
+ * =============================================================================
+ * 🌐 サーバーセクション (Metadata & Configuration)
+ * =============================================================================
+ */
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: 'PC Finder | あなたに最適な構成を診断',
-  description: '予算や用途に合わせて、最適なPCパーツ構成を自動で提案します。',
+  description: '予算や用途に合わせて、約4,000件のデータベースから最適なPCを自動で提案します。',
 };
 
+/**
+ * =============================================================================
+ * 🏗️ ページエントリポイント (Root Export)
+ * =============================================================================
+ */
 export default function PCFinderPage() {
   return (
     <Suspense fallback={

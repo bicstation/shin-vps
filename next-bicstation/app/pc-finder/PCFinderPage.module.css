@@ -1,323 +1,142 @@
-/* =====================================================================
-    💻 PC-FINDER ページ全体レイアウト・フィルター設定
-   ===================================================================== */
+/* /app/pc-finder/PCFinderPage.module.css */
 
-.pageContainer {
+.fullWidthContainer {
+  width: 100%;
+  background-color: #050505;
+  color: #fff;
   min-height: 100vh;
-  background-color: #f8fafc;
-  padding: 3rem 1.5rem;
-  color: #0f172a;
-  font-family: sans-serif;
+  font-family: 'Inter', -apple-system, sans-serif;
 }
 
-.contentWrapper {
-  max-width: 1400px;
-  margin: 0 auto;
+/* 🚀 ヒーローセクション：文字を中央に寄せず、左から大胆に配置 */
+.heroHeader {
+  padding: 100px 5% 60px;
+  background: radial-gradient(circle at 0% 0%, #111 0%, #050505 100%);
+  border-bottom: 1px solid #222;
 }
 
-/* --- ヘッダーセクション --- */
-.header {
-  margin-bottom: 3.5rem;
-  text-align: center;
-}
-
-.badge {
-  display: inline-block;
-  background-color: #2563eb;
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: 900;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  margin-bottom: 1rem;
+.neonBadge {
+  background: rgba(0, 242, 255, 0.1);
+  color: #00f2ff;
+  padding: 4px 12px;
+  border-radius: 2px;
+  font-size: 0.7rem;
+  font-weight: 800;
   letter-spacing: 0.2em;
+  border: 1px solid rgba(0, 242, 255, 0.3);
 }
 
-.mainTitle {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+.heroTitle {
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
   font-weight: 900;
-  letter-spacing: -0.05em;
-  font-style: italic;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  margin: 20px 0 10px;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  background: linear-gradient(to bottom, #fff, #666);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.subTitle {
-  color: #64748b;
-  font-weight: 500;
-}
-
-/* --- レイアウト：グリッドシステム --- */
-.layoutGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  align-items: start;
-}
-
-@media (min-width: 1024px) {
-  .layoutGrid {
-    /* サイドバー1 : メイン3 の比率 */
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* フィルターサイドバー (左側 1/4) */
-.sidebar {
-  grid-column: span 1;
-  background: #ffffff;
-  padding: 2rem;
-  border-radius: 2rem;
-  border: 1px solid #e2e8f0;
-  height: fit-content;
+/* 🛠️ コントロールパネル：浮かび上がるガラス感 */
+.controlPanel {
   position: sticky;
-  top: 2rem;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+  top: 0;
+  z-index: 100;
+  background: rgba(5, 5, 5, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid #222;
+  padding: 20px 5%;
 }
 
-/* メインコンテンツ (右側 3/4) */
-.mainContent {
-  grid-column: span 1;
+.filterRow {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr; /* 配置を固定してプロっぽく */
+  gap: 30px;
+  align-items: end;
 }
 
-@media (min-width: 1024px) {
-  .mainContent {
-    grid-column: span 3;
-  }
-}
-
-/* --- ツールバー (ソート・件数) --- */
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 2rem;
-  padding: 0 0.5rem;
-}
-
-.resultLabel {
+.inlineLabel {
   display: block;
-  font-size: 10px;
-  font-weight: 900;
-  color: #94a3b8;
+  font-size: 0.7rem;
+  color: #666;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.25rem;
-}
-
-.resultCount {
-  font-size: 1.25rem;
-  font-weight: 900;
-}
-
-.highlight {
-  color: #2563eb;
-}
-
-.sortSelect {
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 0.5rem 1rem;
-  border-radius: 0.75rem;
+  margin-bottom: 8px;
   font-weight: 700;
-  font-size: 13px;
+}
+
+/* スライダーを細く、モダンに */
+.modernRange {
+  width: 100%;
+  height: 2px;
+  background: #333;
+  accent-color: #00f2ff;
   cursor: pointer;
+}
+
+.minimalSelect {
+  width: 100%;
+  background: #111;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: border 0.2s;
+}
+
+.minimalSelect:focus {
+  border-color: #00f2ff;
   outline: none;
+}
+
+/* チップ：余計な枠を消し、光らせる */
+.chipRow {
+  margin-top: 25px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.chip, .chipActive {
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
-.sortSelect:hover {
-  border-color: #cbd5e1;
+.chip {
+  background: #111;
+  border: 1px solid #222;
+  color: #888;
 }
 
-/* --- 製品グリッド --- */
+.chipActive {
+  background: #00f2ff;
+  border: 1px solid #00f2ff;
+  color: #000;
+  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+}
+
+.counterDisplay {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.counterDisplay strong {
+  color: #fff;
+}
+
+/* 📦 ギャラリー：余白をたっぷりと */
+.mainGallery {
+  padding: 60px 5%;
+}
+
 .productGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 40px;
 }
-
-@media (min-width: 768px) {
-  .productGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1400px) {
-  .productGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* --- ✅ ローディング・検索中メッセージ関連 (追加箇所) --- */
-.loadingContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  width: 100%;
-}
-
-.loaderContent {
-  text-align: center;
-  padding: 4rem 2rem;
-  background-color: #ffffff;
-  border-radius: 2rem;
-  border: 2px dashed #cbd5e1;
-  box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f1f5f9;
-  border-top: 5px solid #2563eb;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loadingTitle {
-  font-size: 1.25rem;
-  font-weight: 900;
-  color: #1e293b;
-  margin: 1.5rem 0 0.5rem;
-}
-
-.loadingText {
-  font-size: 0.95rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-/* --- フィルターパーツ (サイドバー内) --- */
-.filterGroup {
-  margin-bottom: 2rem;
-}
-
-.filterLabel {
-  display: block;
-  font-size: 10px;
-  font-weight: 900;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.75rem;
-}
-
-.rangeInput {
-  width: 100%;
-  accent-color: #2563eb;
-  cursor: pointer;
-}
-
-.priceDisplay {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-top: 0.5rem;
-}
-
-.priceMin { font-size: 12px; color: #94a3b8; font-weight: 700; }
-.priceMax { font-size: 1.25rem; font-weight: 900; color: #2563eb; }
-
-.buttonGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-}
-
-.btnActive {
-  background: #0f172a;
-  color: white;
-  border: 2px solid #0f172a;
-  padding: 0.6rem 0.5rem;
-  border-radius: 0.75rem;
-  font-size: 11px;
-  font-weight: 900;
-  cursor: pointer;
-  text-align: center;
-}
-
-.btnInactive {
-  background: white;
-  color: #94a3b8;
-  border: 2px solid #f1f5f9;
-  padding: 0.6rem 0.5rem;
-  border-radius: 0.75rem;
-  font-size: 11px;
-  font-weight: 900;
-  cursor: pointer;
-  transition: 0.2s;
-  text-align: center;
-}
-
-.btnInactive:hover {
-  border-color: #e2e8f0;
-  color: #64748b;
-}
-
-.selectInput {
-  width: 100%;
-  background: #f8fafc;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-  font-weight: 700;
-  font-size: 13px;
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-
-.selectInput:focus {
-  border-color: #2563eb;
-}
-
-.checkboxGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  color: #475569;
-}
-
-/* --- スケルトン・空表示 --- */
-.skeletonCard {
-  background: linear-gradient(90deg, #f1f5f9 25%, #f8fafc 50%, #f1f5f9 75%);
-  background-size: 200% 100%;
-  height: 450px;
-  border-radius: 1.5rem;
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.emptyState {
-  text-align: center;
-  padding: 5rem 2rem;
-  background: white;
-  border-radius: 2rem;
-  border: 2px dashed #e2e8f0;
-  grid-column: 1 / -1;
-}
-
-.emptyIcon { font-size: 3rem; margin-bottom: 1rem; }
-.emptyTitle { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.5rem; }
-.emptyText { color: #64748b; }

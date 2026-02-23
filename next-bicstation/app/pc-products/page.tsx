@@ -1,17 +1,25 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
+// /home/maya/dev/shin-vps/next-bicstation/app/pc-products/page.tsx
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-import React from 'react';
-// ✅ 修正ポイント: インポートパスの変更
+import React, { Suspense } from 'react';
+import { Metadata } from 'next';
+// ✅ 修正ポイント: インポートパスの統一
 import ProductCard from '@shared/cards/ProductCard';
 import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import Pagination from '@shared/common/Pagination';
-import { fetchPCProducts, fetchPostList, fetchMakers } from '@shared/lib/api';
+
+// APIインポート
+import { fetchPCProducts, fetchMakers } from '@shared/lib/api/django/pc';
 import { COLORS } from "@/shared/styles/constants";
 import styles from './BrandPage.module.css';
+
+/**
+ * ✅ 修正ポイント: 動的レンダリングを強制
+ * クエリパラメータによるフィルタリングを正しく動作させるために必須です。
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * 💡 属性スラッグから日本語表示名を取得するマッピング
@@ -40,24 +48,34 @@ function getAttributeDisplayName(slug: string) {
     return mapping[slug] || "";
 }
 
-const decodeHtml = (html: string) => {
-    if (!html) return '';
-    const map: { [key: string]: string } = { 
-        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
-    };
-    return html.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(parseInt(dec, 10)))
-        .replace(/&[a-z]+;/gi, (match) => map[match] || map[match.toLowerCase()] || match);
-};
-
 interface PageProps {
     params: Promise<{ slug?: string }>;
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function PCProductsPage(props: PageProps) {
+/**
+ * ✅ 修正ポイント: ページ全体を Suspense でラップして bailout を回避
+ */
+export default function PCProductsPage(props: PageProps) {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-500 font-mono text-xs uppercase tracking-[0.2em]">
+                <div className="w-8 h-8 border-t-2 border-blue-500 animate-spin mb-4 rounded-full"></div>
+                Loading_Product_Database...
+            </div>
+        }>
+            <PCProductsContent {...props} />
+        </Suspense>
+    );
+}
+
+/**
+ * メインのコンテンツロジック
+ */
+async function PCProductsContent(props: PageProps) {
     const sParams = await props.searchParams;
     
-    // クエリパラメータの抽出
+    // クエリパラメータの抽出（Next.js 15 形式）
     const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
     const attributeSlug = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     const makerSlug = Array.isArray(sParams.maker) ? sParams.maker[0] : sParams.maker;
@@ -65,25 +83,24 @@ export default async function PCProductsPage(props: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 20;
 
-    // データ並列取得
-    const [wpData, pcData, makersData] = await Promise.all([
-        fetchPostList(5).catch(() => ({ results: [] })),
-        fetchPCProducts(makerSlug || '', currentOffset, limit, attributeSlug || '').catch(() => ({ results: [], count: 0 })), 
-        fetchMakers().catch(() => []) 
+    // データの並列取得 (Sidebarが自律化したため fetchMakers, fetchPostList のバケツリレーを廃止)
+    const [pcData, makersData] = await Promise.all([
+        fetchPCProducts(makerSlug || '', currentOffset, limit, attributeSlug || '').catch(() => ({ results: [], count: 0 })),
+        fetchMakers().catch(() => [])
     ]);
 
-    const posts = wpData.results || [];
     const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
+    // メーカー名と属性名の解決
     const makerObj = makerSlug ? (makersData.find((m: any) => m.slug === makerSlug) as any) : null;
     const makerName = makerObj ? (makerObj.name || makerObj.maker) : (makerSlug ? makerSlug.toUpperCase() : "");
     const attrName = attributeSlug ? getAttributeDisplayName(attributeSlug) : "";
 
     let pageTitle = "";
     if (makerName && attrName) {
-        pageTitle = `${makerName} ${attrName} 搭載モデル一覧`;
+        pageTitle = `${makerName} × ${attrName} 搭載モデル`;
     } else if (makerName) {
-        pageTitle = `${makerName} の製品一覧`;
+        pageTitle = `${makerName} 製品一覧`;
     } else if (attrName) {
         pageTitle = `${attrName} 搭載モデル一覧`;
     } else {
@@ -94,11 +111,12 @@ export default async function PCProductsPage(props: PageProps) {
     const startRange = totalCount > 0 ? currentOffset + 1 : 0;
     const endRange = Math.min(currentOffset + limit, totalCount);
 
+    // JSON-LD
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
         "name": pageTitle,
-        "description": `${pageTitle}のスペック・価格をリアルタイム比較。BICSTATIONが厳選した最新モデルを網羅しています。`,
+        "description": `${pageTitle}のスペック・価格を比較。BICSTATIONが厳選した最新モデルを網羅。`,
         "mainEntity": {
             "@type": "ItemList",
             "itemListElement": (pcData.results || []).slice(0, 10).map((p: any, i: number) => ({
@@ -125,7 +143,7 @@ export default async function PCProductsPage(props: PageProps) {
                         {pageTitle}
                     </h1>
                     <p className={styles.lead}>
-                        {pageTitle}のスペック・価格をリアルタイム比較。
+                        最新の {pageTitle} スペック・価格をリアルタイム比較。
                         {totalCount > 0 && `現在、${totalCount}件のモデルが掲載中です。`}
                     </p>
                 </div>
@@ -133,15 +151,8 @@ export default async function PCProductsPage(props: PageProps) {
 
             <div className={styles.wrapper}>
                 <aside className={styles.sidebarSection}>
-                    <Sidebar 
-                        activeMenu={makerSlug || ''} 
-                        makers={makersData} 
-                        recentPosts={posts.map((p: any) => ({
-                            id: p.id,
-                            title: decodeHtml(p.title.rendered),
-                            slug: p.slug
-                        }))}
-                    />
+                    {/* ✅ Sidebar は自律データ取得型サーバーコンポーネントのため、propsを渡さず呼び出し */}
+                    <Sidebar />
                 </aside>
 
                 <main className={styles.main}>
@@ -158,14 +169,13 @@ export default async function PCProductsPage(props: PageProps) {
 
                         {!pcData.results || pcData.results.length === 0 ? (
                             <div className={styles.noDataLarge}>
-                                <p>申し訳ございません。該当する製品データが見つかりませんでした。</p>
+                                <p>該当する製品データが見つかりませんでした。</p>
                                 <p style={{ fontSize: '0.9rem', color: '#666', marginTop: '10px' }}>
                                     条件を変更して再度お試しください。
                                 </p>
                             </div>
                         ) : (
                             <>
-                                {/* 🚩 Grid自体の最小高さを確保 */}
                                 <div className={styles.productGrid} style={{ minHeight: '400px' }}>
                                     {pcData.results.map((product: any) => (
                                         <ProductCard key={product.id || product.unique_id} product={product} />
@@ -173,12 +183,15 @@ export default async function PCProductsPage(props: PageProps) {
                                 </div>
 
                                 <div className={styles.paginationWrapper}>
-                                    <Pagination 
-                                        currentOffset={currentOffset}
-                                        limit={limit}
-                                        totalCount={totalCount}
-                                        baseUrl={`/pc-products`} 
-                                    />
+                                    {/* ✅ Pagination 内の useSearchParams 対策で個別に Suspense */}
+                                    <Suspense fallback={<div className="h-10 w-full bg-slate-900 animate-pulse rounded" />}>
+                                        <Pagination 
+                                            currentOffset={currentOffset}
+                                            limit={limit}
+                                            totalCount={totalCount}
+                                            baseUrl={`/pc-products`} 
+                                        />
+                                    </Suspense>
                                 </div>
                             </>
                         )}

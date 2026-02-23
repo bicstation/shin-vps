@@ -1,0 +1,154 @@
+/* StaticPageLayout.module.css */
+.container {
+  background-color: #f8fafc; /* slate-50 */
+  min-height: 100vh;
+  padding-bottom: 5rem;
+}
+
+.header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 5rem 0 4rem 0;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.headerInner {
+  width: 100%; /* 全幅対応 */
+  max-width: 1200px; /* 極端に広がりすぎないようガード */
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem); /* 画面幅に応じて可変 */
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.description {
+  font-size: 1.25rem;
+  color: #64748b;
+  line-height: 1.75;
+  max-width: 800px;
+}
+
+.updateBadge {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.5rem 1rem;
+  background-color: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 0.5rem;
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.contentArea {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 2rem;
+  padding: 4rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+/* 目次の最適化 */
+.tocSection {
+  background-color: #f1f5f9;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  margin-bottom: 4rem;
+}
+
+.tocTitle {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #94a3b8;
+  letter-spacing: 0.2em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tocTitle::before {
+  content: "";
+  width: 1rem;
+  height: 2px;
+  background-color: #2563eb;
+}
+
+.tocGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.tocLink {
+  color: #475569;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all 0.2s;
+}
+
+.tocLink:hover {
+  color: #2563eb;
+  padding-left: 0.25rem;
+}
+
+/* 本文Hタグ・文章の最適化 */
+.mainContent h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #0f172a;
+  background-color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border-left: 8px solid #2563eb;
+  margin: 4rem 0 2rem 0;
+}
+
+.mainContent h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 3rem 0 1.5rem 0;
+}
+
+.mainContent p {
+  font-size: 1.125rem;
+  color: #334155;
+  line-height: 2;
+  margin-bottom: 2rem;
+}
+
+.mainContent ul {
+  margin-bottom: 2rem;
+  padding-left: 1.5rem;
+}
+
+.mainContent li {
+  font-size: 1.125rem;
+  color: #334155;
+  line-height: 1.8;
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .card { padding: 2rem; }
+  .title { font-size: 2.5rem; }
+}

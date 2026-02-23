@@ -1,82 +1,71 @@
 /* ==========================================================
-   MainPage.module.css - サイドバー表示修正・統合デザイン版
+   MainPage.module.css - Tactical Content Design Edition
    ========================================================== */
 
-/* --- 全体レイアウト --- */
-.wrapper {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f8f9fa; /* サイト全体の基調色 */
-  width: 100%;
-  overflow-x: hidden;
-  align-items: stretch; /* 子要素の高さを揃える */
-}
-
-/* サイドバー外枠：中身が表示されるよう高さを確保 */
-.sidebarSection {
-  width: 280px;
-  flex-shrink: 0;
-  background: #0a0a14; /* Sidebar.module.css との整合性 */
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  z-index: 10;
-}
-
-.main {
-  flex-grow: 1;
-  padding: 40px 50px;
-  width: 100%;
-  max-width: 100%; 
-  margin: 0;
-  min-width: 0;
-  background: #f8f9fa;
+/* --- メインコンテナ --- */
+.mainContainer {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  animation: tacticalFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* --- 📣 ページヘッダー --- */
 .pageHeader {
   margin-bottom: 40px;
+  border-left: 4px solid #e94560; /* アクセントレッド */
+  padding-left: 20px;
 }
 
 .mainTitle {
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   font-weight: 900;
-  color: #0f172a;
+  color: #ffffff;
   letter-spacing: -0.02em;
+  margin: 0;
 }
 
 .subTitle {
   display: block;
-  font-size: 0.9rem;
-  color: #64748b;
+  font-size: 1rem;
+  color: #94a3b8;
   font-weight: 500;
-  margin-top: 5px;
+  margin-top: 8px;
+}
+
+.pageDescription {
+  margin-top: 15px;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 /* --- 🏆 共通セクション設定 --- */
 .rankingSection, 
 .categorySearchSection, 
 .newsSection, 
-.productSection,
-.archiveSection {
-  margin-bottom: 60px;
+.productSection {
+  margin-bottom: 80px;
   width: 100%;
 }
 
 .sectionHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
+  align-items: flex-end;
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 15px;
 }
 
 .sectionTitle {
   font-size: 1.6rem;
   font-weight: 800;
-  color: #1e293b;
+  color: #f8fafc;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
 }
 
@@ -85,22 +74,23 @@
 }
 
 .rankingLink {
-  font-size: 0.95rem;
-  color: #28a745;
+  font-size: 0.9rem;
+  color: #e94560;
   text-decoration: none;
   font-weight: 700;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
 }
 
 .rankingLink:hover {
   opacity: 0.7;
+  transform: translateX(5px);
 }
 
-/* --- 👑 ランキングカード (横長リスト形式) --- */
+/* --- 👑 ランキングカード (タクティカル・ホリゾンタル) --- */
 .topThreeGrid {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
   width: 100%;
 }
 
@@ -108,68 +98,62 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  background: #fff;
-  border-radius: 12px;
-  padding: 15px 25px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  background: #16161a;
+  border-radius: 16px;
+  padding: 20px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   width: 100%;
   box-sizing: border-box; 
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .topThreeCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  transform: scale(1.01);
+  border-color: rgba(233, 69, 96, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .rankBadge {
   position: absolute;
-  top: -10px;
-  left: 20px;
-  padding: 4px 15px;
+  top: -12px;
+  left: 24px;
+  padding: 4px 18px;
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 900;
   color: #fff;
   z-index: 10;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.rank_1 .rankBadge { background: #ecc94b; color: #000; }
-.rank_2 .rankBadge { background: #a0aec0; color: #fff; }
-.rank_3 .rankBadge { background: #ed8936; color: #fff; }
+.rank_1 .rankBadge { background: linear-gradient(135deg, #ecc94b, #b7791f); color: #000; }
+.rank_2 .rankBadge { background: linear-gradient(135deg, #a0aec0, #4a5568); }
+.rank_3 .rankBadge { background: linear-gradient(135deg, #ed8936, #9c4221); }
 
 .topThreeImage {
-  flex: 0 0 160px;
-  height: 120px;
+  flex: 0 0 180px;
+  height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
-  border-radius: 10px;
-  margin-right: 30px;
-  padding: 10px;
+  background: #ffffff; /* PC画像を見やすくするため白背景 */
+  border-radius: 12px;
+  margin-right: 35px;
+  padding: 12px;
   position: relative;
 }
 
-.topThreeImage img,
 .rankingImgTag {
-  width: 100% !important;
-  height: auto !important;
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
 .topThreeContent {
   flex: 1;
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 25px;
 }
 
 .topThreeNameArea {
@@ -179,32 +163,33 @@
 
 .topThreeMaker {
   font-size: 0.8rem;
-  color: #94a3b8;
-  font-weight: 700;
-  display: block;
+  color: #e94560;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .topThreeName {
-  font-size: 1.25rem;
+  font-size: 1.4rem;
   font-weight: 800;
-  margin: 4px 0;
-  color: #0f172a;
-  white-space: nowrap;
+  margin: 6px 0;
+  color: #f8fafc;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .topThreeScore {
-  flex: 0 0 100px;
+  flex: 0 0 120px;
   text-align: center;
-  padding: 0 20px;
-  border-left: 1px solid #f1f5f9;
+  padding: 0 25px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .scoreValue {
-  font-size: 2rem;
+  font-size: 2.4rem;
   font-weight: 900;
-  color: #1e293b;
+  color: #ffffff;
   line-height: 1;
 }
 
@@ -212,237 +197,220 @@
   font-size: 0.65rem;
   color: #94a3b8;
   font-weight: 700;
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .chartMini {
-  flex: 0 0 200px;
+  flex: 0 0 180px;
   height: 120px;
   display: flex;
   align-items: center;
 }
 
 .detailButton {
-  flex: 0 0 100px;
-  background: #0f172a;
+  flex: 0 0 130px;
+  background: #e94560;
   color: #fff;
-  padding: 12px 0;
+  padding: 14px 0;
   border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 800;
   text-decoration: none;
   text-align: center;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .detailButton:hover {
-  background: #334155;
+  background: #ff5e78;
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
 }
 
-/* 🔥 注目度ランキング用の背景調整 */
+/* --- 🔥 注目度ランキング (トレンド) --- */
 .popularityBg {
-  background: #f1f5f9;
+  background: rgba(26, 26, 31, 0.5);
   padding: 40px;
-  border-radius: 20px;
-  margin-left: -20px;
-  margin-right: -20px;
-  width: calc(100% + 40px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.trendCard {
-  border: none;
-}
-
-.trendBadge {
-  background: #64748b;
-}
+.trendCard .topThreeMaker { color: #64748b; }
+.trendBadge { background: #475569; }
 
 .trendingInfo {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  text-align: right;
+  padding-right: 20px;
 }
 
 .trendLabel {
-  color: #ef4444;
+  color: #e94560;
   font-weight: 800;
   font-size: 0.75rem;
-  margin-bottom: 2px;
+  letter-spacing: 0.1em;
 }
 
 .trendPrice {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 900;
-  color: #0f172a;
+  color: #ffffff;
 }
 
-/* --- 🔍 カテゴリー別検索 --- */
+/* --- 🔍 カテゴリー・スペック検索 --- */
 .categorySearchSection {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-}
-
-.searchGroup {
-  margin-top: 25px;
+  background: #16161a;
+  padding: 40px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .groupLabel {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 800;
-  color: #64748b;
-  margin-bottom: 15px;
-  padding-left: 10px;
-  border-left: 4px solid #28a745;
+  color: #f8fafc;
+  margin-bottom: 20px;
+  padding-left: 15px;
+  border-left: 4px solid #e94560;
 }
 
 .categoryGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
 }
 
 .categoryCardSmall {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 20px 10px;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .categoryCardSmall:hover {
-  background: #ffffff;
-  border-color: #28a745;
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.1);
-  transform: translateY(-2px);
+  background: #1e293b;
+  border-color: #e94560;
+  transform: translateY(-4px);
 }
 
-.catIcon { font-size: 1.4rem; }
-.catNameSmall { font-size: 0.85rem; font-weight: 700; color: #334155; }
+.catIcon { font-size: 2rem; }
+.catNameSmall { font-size: 0.85rem; font-weight: 700; color: #cbd5e1; }
 
-/* スペックタグ */
-.tagCloud { display: flex; flex-wrap: wrap; gap: 10px; }
+.tagCloud { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
 .specTag {
-  padding: 8px 16px;
-  background: #eff6ff;
-  color: #2563eb;
+  padding: 10px 20px;
+  background: #1e293b;
+  color: #f8fafc;
   border-radius: 50px;
   font-size: 0.85rem;
   font-weight: 700;
   text-decoration: none;
-  border: 1px solid #dbeafe;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s;
 }
-.specTag:hover { background: #2563eb; color: #ffffff; }
+.specTag:hover { 
+  background: #e94560; 
+  border-color: #e94560;
+}
 
-/* --- 🚀 注目のPCトピック --- */
+/* --- 🚀 ニュース --- */
 .newsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 30px;
 }
 
 .newsCard {
-  background: #fff;
-  border-radius: 14px;
+  background: #16161a;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   text-decoration: none;
-  color: inherit;
-  border: 1px solid #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.3s;
 }
 
 .newsCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transform: translateY(-8px);
+  border-color: #e94560;
 }
 
 .imageWrapper {
   width: 100%;
   aspect-ratio: 16 / 9;
   position: relative;
-  overflow: hidden;
+  background: #000;
 }
 
-.eyecatch {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.contentBody { padding: 25px; }
+.postDate { font-size: 0.8rem; color: #64748b; font-weight: 700; margin-bottom: 10px; display: block; }
+.articleTitle { font-size: 1.15rem; font-weight: 800; line-height: 1.5; color: #f8fafc; }
 
-.contentBody { padding: 20px; }
-.postDate { font-size: 0.8rem; color: #94a3b8; font-weight: 600; margin-bottom: 8px; display: block; }
-.articleTitle { font-size: 1.1rem; font-weight: 700; line-height: 1.5; margin: 0; color: #1e293b; }
-
-/* --- 📦 製品カタログ --- */
+/* --- 📦 カタログ --- */
 .productGridTitle {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 800;
-  margin-bottom: 25px;
+  color: #fff;
   display: flex;
-  align-items: center; gap: 12px;
+  align-items: center; 
+  gap: 15px;
 }
 
-.titleIndicator { width: 6px; height: 24px; background: #28a745; border-radius: 10px; }
+.titleIndicator { width: 6px; height: 30px; background: #e94560; border-radius: 10px; }
 
 .productGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px; 
-  width: 100%;
-  margin: 20px 0;
+  gap: 30px;
+  margin: 30px 0;
 }
 
-.noData {
-  text-align: center;
-  color: #94a3b8;
-  grid-column: 1 / -1;
-  padding: 40px;
-}
-
-.viewMoreContainer { text-align: center; margin-top: 40px; }
+.viewMoreContainer { text-align: center; margin-top: 50px; }
 .catalogFullLink {
-  padding: 15px 40px;
-  background: #0f172a;
+  padding: 18px 50px;
+  background: #e94560;
   color: white;
   text-decoration: none;
   border-radius: 50px;
-  font-weight: 700;
+  font-weight: 800;
   display: inline-block;
-  transition: background 0.2s;
+  transition: all 0.3s;
 }
-.catalogFullLink:hover { background: #334155; }
+.catalogFullLink:hover { 
+  background: #ff5e78;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+}
 
 /* --- 📱 レスポンシブ --- */
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
   .topThreeContent { gap: 15px; }
   .chartMini { flex: 0 0 150px; }
-  .categoryGrid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  .topThreeName { font-size: 1.2rem; }
 }
 
-@media (max-width: 1024px) {
-  .wrapper { flex-direction: column; }
-  .sidebarSection { width: 100%; border-right: none; height: auto; }
-  .main { padding: 30px 20px; }
-  .topThreeCard { flex-direction: column; padding: 30px 20px; text-align: center; }
-  .topThreeImage { margin-right: 0; margin-bottom: 15px; }
-  .topThreeContent { flex-direction: column; width: 100%; gap: 10px; }
-  .topThreeScore { border: none; margin: 15px 0; padding: 0; }
-  .chartMini { margin: 0 auto; height: 150px; }
-  .popularityBg { width: 100%; margin-left: 0; margin-right: 0; padding: 30px 15px; }
-  .topThreeName { white-space: normal; }
+@media (max-width: 900px) {
+  .topThreeCard { flex-direction: column; padding: 40px 20px; text-align: center; }
+  .topThreeImage { margin-right: 0; margin-bottom: 25px; width: 220px; height: 160px; flex: none; }
+  .topThreeContent { flex-direction: column; width: 100%; gap: 20px; }
+  .topThreeScore { border: none; padding: 0; flex: none; }
+  .trendingInfo { text-align: center; padding: 0; }
+  .chartMini { margin: 0 auto; }
+  .detailButton { width: 100%; flex: none; }
 }
 
 @media (max-width: 640px) {
+  .mainTitle { font-size: 1.6rem; }
   .categoryGrid { grid-template-columns: 1fr 1fr; }
   .sectionTitle { font-size: 1.3rem; }
-  .categorySearchSection { padding: 20px 15px; }
   .newsGrid { grid-template-columns: 1fr; }
+}
+
+/* アニメーション */
+@keyframes tacticalFadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
 }

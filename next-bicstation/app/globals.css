@@ -1,0 +1,7 @@
+/* app/globals.css の冒頭に追加 */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #0a0a0a;
+  overflow-x: hidden;
+}

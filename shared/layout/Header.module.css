@@ -1,26 +1,43 @@
+/* =====================================================================
+ * 🏗️ [BICSTATION-HEADER-CSS] - Full-Width & Fix Overflow Edition
+ * ---------------------------------------------------------------------
+ * 💡 修正内容:
+ * 1. PCサイズでのモバイルメニュー完全封印（!important）
+ * 2. 全幅化に伴う z-index と overflow の再定義
+ * 3. layout.module.css の 4% パディングとの完全同期
+ * ===================================================================== */
+
 .header {
+  width: 100%;
   background: #1a1a1a;
   color: white;
-  padding: 0 20px;
+  padding: 0; 
   height: 70px;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   z-index: 1000;
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 15px rgba(0,0,0,0.3);
+  /* 横方向のハミ出しを強制カット */
+  overflow: visible; 
 }
 
-.generalBg { background: #ffffff; }
-.adultBg { background: #0a0a0a; }
+.generalBg { background: #ffffff; color: #1a1a1a; }
+.adultBg { background: #0a0a0a; color: #ffffff; }
 
+/* 🌟 コンテナ：全幅制限解除 & 左右 4% 余白 */
 .container {
-  max-width: 1240px;
   width: 100%;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 4%; 
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-sizing: border-box;
+  position: relative; /* 子要素の基準点 */
 }
 
 .logoWrapper {
@@ -32,52 +49,63 @@
 
 .brandInfo { line-height: 1.2; }
 .siteName { font-weight: 900; font-size: 1.2rem; white-space: nowrap; }
-.tagline { font-size: 0.6rem; font-weight: bold; white-space: nowrap; }
+.tagline { font-size: 0.6rem; font-weight: bold; white-space: nowrap; opacity: 0.8; }
 
-/* PC用ナビゲーション & ドロップダウン */
+/* PC用ナビゲーション */
 .desktopNav {
   display: flex;
   align-items: center;
-  gap: 30px;
-  margin: 0 30px;
+  gap: 40px; 
+  margin: 0 40px;
+  flex: 1;
+  justify-content: flex-start;
 }
 
 .navGroup {
   position: relative;
-  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  height: 70px; 
   cursor: pointer;
 }
 
 .navTitle {
   font-weight: bold;
   font-size: 0.9rem;
-  transition: opacity 0.2s;
+  transition: color 0.2s;
 }
 
+.navTitle:hover {
+  color: #e94560;
+}
+
+/* ドロップダウン：全幅でも中央を維持 */
 .dropdown {
   position: absolute;
-  top: 100%;
+  top: 70px;
   left: 50%;
   transform: translateX(-50%);
   background: #1a1a1a;
-  min-width: 180px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  min-width: 200px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   border-radius: 0 0 8px 8px;
   padding: 10px 0;
   display: flex;
   flex-direction: column;
+  z-index: 1010;
 }
 
 .dropdownItem {
-  padding: 12px 20px;
+  padding: 14px 20px;
   color: #ccc;
   text-decoration: none;
   font-size: 0.85rem;
   white-space: nowrap;
+  transition: all 0.2s;
 }
 
 .dropdownItem:hover {
-  background: #333;
+  background: #252525;
   color: #fff;
 }
 
@@ -85,96 +113,80 @@
 .authSection {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
   flex-shrink: 0;
 }
 
-.guestLinks { display: flex; align-items: center; gap: 15px; }
-.loginLink { text-decoration: none; font-size: 0.85rem; }
+.guestLinks { display: flex; align-items: center; gap: 20px; }
+.loginLink { 
+  text-decoration: none; 
+  font-size: 0.85rem; 
+  color: #e2e8f0;
+}
+
 .regBtn {
-  padding: 8px 18px;
+  padding: 8px 20px;
   border-radius: 20px;
+  background: #e94560;
   color: white;
   text-decoration: none;
   font-size: 0.8rem;
   font-weight: bold;
+  transition: transform 0.2s;
 }
 
-.loggedInWrapper { display: flex; align-items: center; gap: 12px; }
-.userNameDisplay { font-size: 0.85rem; white-space: nowrap; }
-.mypageLink { color: #888; text-decoration: none; font-size: 0.85rem; }
-.logoutBtn { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+.regBtn:hover {
+  transform: scale(1.05);
+}
 
 /* スマホ用トグルボタン */
 .menuToggle {
   display: none;
   background: none;
   border: none;
+  color: white;
   font-size: 28px;
   cursor: pointer;
   padding: 5px;
 }
 
-/* 📱 スマホ用展開メニュー */
+/* 📱 スマホ用展開メニュー (PC時は強制非表示) */
 .mobileMenu {
-  display: none;
+  display: none; /* 基本は非表示 */
   position: absolute;
   top: 70px;
   left: 0;
   width: 100%;
-  max-height: calc(100vh - 70px);
-  overflow-y: auto;
+  background: #1a1a1a;
   padding: 20px;
   box-sizing: border-box;
   z-index: 999;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
-.mobileMenu.open { display: block; }
-
-.mobileSearchWrapper { margin-bottom: 25px; }
-.searchBox {
-  width: 100%;
-  padding: 12px;
-  background: #2a2a2a;
-  border: 1px solid #444;
-  color: white;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  outline: none;
+/* ---------------------------------------------------------------------
+ * 🖥️ PC表示時のガード (993px以上)
+ * --------------------------------------------------------------------- */
+@media (min-width: 993px) {
+  .mobileMenu {
+    display: none !important; /* 絶対に表示させない */
+  }
 }
 
-.menuSection { margin-bottom: 25px; }
-.sectionTitle {
-  font-size: 0.75rem;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid #333;
-  padding-bottom: 5px;
-}
-
-.mobileMenu a {
-  display: block;
-  padding: 12px 0;
-  text-decoration: none;
-  font-size: 1rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.mobileLogoutBtn {
-  width: 100%;
-  text-align: left;
-  padding: 12px 0;
-  background: none;
-  border: none;
-  color: #ff4d4f;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
+/* ---------------------------------------------------------------------
+ * 📱 スマホ表示時 (992px以下)
+ * --------------------------------------------------------------------- */
 @media (max-width: 992px) {
   .desktopNav { display: none !important; }
   .menuToggle { display: block !important; }
+  
+  .container { 
+    padding: 0 20px; /* スマホは端に寄せすぎない程度に */
+  }
+
+  .mobileMenu.open {
+    display: block;
+    position: fixed; /* 全画面追従 */
+    height: calc(100vh - 70px);
+    overflow-y: auto;
+  }
 }

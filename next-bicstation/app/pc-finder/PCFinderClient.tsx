@@ -1,274 +1,128 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import ProductCard from '@shared/cards/ProductCard';
 import styles from './PCFinderPage.module.css';
 
-/**
- * ✅ 修正ポイント: インポートパスの変更
- * @/shared/components/product/ProductCard から @shared/cards/ProductCard へ
- */
-import ProductCard from '@shared/cards/ProductCard';
-
-/**
- * =====================================================================
- * 💻 PC-FINDER ページコンポーネント
- * 4,000件のデータベース検索に対応したローディング強化版
- * =====================================================================
- */
-
-export default function PCFinderPage() {
+export default function PCFinderClient() {
   const [products, setProducts] = useState<any[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-
-  // 環境変数の取得
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-
-  // 🚩 フィルター条件の初期値
+  
   const [filters, setFilters] = useState({
     budget: 300000,
-    type: 'all',         // type-laptop, type-desktop 等
-    usage: 'all',        // usage-gaming, usage-business 等
+    type: 'all',
     brand: 'all',
-    ram: 0,
     npuRequired: false,
     gpuRequired: false,
   });
-
   const [sortBy, setSortBy] = useState('newest');
 
-  // 🚀 API通信ロジック
-  const fetchProductsFromDatabase = useCallback(async () => {
+  // スライダー表示用
+  const [tempBudget, setTempBudget] = useState(filters.budget);
+
+  const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
       const query = new URLSearchParams({
         budget: filters.budget.toString(),
         type: filters.type !== 'all' ? filters.type : '',
-        usage: filters.usage !== 'all' ? filters.usage : '',
         brand: filters.brand !== 'all' ? filters.brand : '',
-        ram: filters.ram.toString(),
         npu: filters.npuRequired.toString(),
         gpu: filters.gpuRequired.toString(),
         sort: sortBy,
       });
-
-      const endpoint = `${apiUrl}/pc-products/?${query.toString()}`;
-      const response = await fetch(endpoint);
-      console.log("Fetching from:", endpoint);  
-
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status}`);
-      }
-
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pc-products/?${query}`);
       const data = await response.json();
-
-      // Djangoのレスポンス形式に合わせてデータをセット
-      if (data.results && Array.isArray(data.results)) {
-        setProducts(data.results);
-        setTotalCount(data.count);
-      } else if (Array.isArray(data)) {
-        setProducts(data);
-        setTotalCount(data.length);
-      } else {
-        setProducts([]);
-        setTotalCount(0);
-      }
-    } catch (error) {
-      console.error("❌ Fetch failed:", error);
-      setProducts([]);
-      setTotalCount(0);
+      setProducts(data.results || data);
+      setTotalCount(data.count || (Array.isArray(data) ? data.length : 0));
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsLoading(false);
     }
-  }, [filters, sortBy, apiUrl]);
+  }, [filters, sortBy]);
 
+  // スライダーを止めてからリクエストを送る
   useEffect(() => {
-    fetchProductsFromDatabase();
-  }, [fetchProductsFromDatabase]);
+    const timer = setTimeout(() => {
+      setFilters(f => ({ ...f, budget: tempBudget }));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [tempBudget]);
+
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   return (
-    <div className={styles.pageContainer}>
-      
-      <div className={styles.contentWrapper}>
-        <header className={styles.header}>
-          <div className={styles.badge}>BICSTATION LIVE DATABASE</div>
-          <h1 className={styles.mainTitle}>PC-FINDER</h1>
-          <p className={styles.subTitle}>
-            Django データベース直結。AI解析スコアと価格をリアルタイム反映。
-          </p>
-        </header>
+    <div className={styles.fullWidthContainer}>
+      <header className={styles.heroHeader}>
+        <span className={styles.neonBadge}>LIVE DATABASE v2.0</span>
+        <h1 className={styles.heroTitle}>PC_FINDER</h1>
+        <p className={styles.heroSubText}>理想のスペックを、4,000件のアーカイブから即座に抽出。</p>
+      </header>
 
-        <div className={styles.layoutGrid}>
-          {/* 左側：検索フィルター (サイドバー) */}
-          <aside className={styles.sidebar}>
-            <div className={styles.filterSection}>
+      <nav className={styles.controlPanel}>
+        <div className={styles.filterRow}>
+          <div className={styles.filterGroup}>
+            <label className={styles.inlineLabel}>Budget: ¥{tempBudget.toLocaleString()}</label>
+            <input 
+              type="range" min="50000" max="1000000" step="10000" 
+              value={tempBudget} onChange={e => setTempBudget(Number(e.target.value))}
+              className={styles.modernRange}
+            />
+          </div>
 
-              {/* 01. 予算 */}
-              <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>01. Budget (Max)</label>
-                <input
-                  type="range" min="50000" max="500000" step="10000"
-                  value={filters.budget}
-                  onChange={(e) => setFilters({ ...filters, budget: Number(e.target.value) })}
-                  className={styles.rangeInput}
-                />
-                <div className={styles.priceDisplay}>
-                  <span className={styles.priceMin}>~ ¥{filters.budget.toLocaleString()}</span>
-                </div>
-              </section>
+          <div className={styles.filterGroup}>
+            <label className={styles.inlineLabel}>Form Factor</label>
+            <select value={filters.type} onChange={e => setFilters({...filters, type: e.target.value})} className={styles.minimalSelect}>
+              <option value="all">ALL SHAPES</option>
+              <option value="type-laptop">LAPTOP</option>
+              <option value="type-desktop">DESKTOP</option>
+            </select>
+          </div>
 
-              {/* 02. PC形状 */}
-              <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>02. Form Factor</label>
-                <div className={styles.buttonGrid}>
-                  {[
-                    { label: '全て', val: 'all' },
-                    { label: 'ノート', val: 'type-laptop' },
-                    { label: 'デスク', val: 'type-desktop' },
-                    { label: '小型', val: 'type-mini-pc' }
-                  ].map((t) => (
-                    <button
-                      key={t.val}
-                      onClick={() => setFilters({ ...filters, type: t.val })}
-                      className={filters.type === t.val ? styles.btnActive : styles.btnInactive}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              </section>
+          <div className={styles.filterGroup}>
+            <label className={styles.inlineLabel}>Manufacturer</label>
+            <select value={filters.brand} onChange={e => setFilters({...filters, brand: e.target.value})} className={styles.minimalSelect}>
+              <option value="all">ALL BRANDS</option>
+              <option value="apple">Apple</option>
+              <option value="lenovo">Lenovo</option>
+              <option value="dell">DELL</option>
+            </select>
+          </div>
 
-              {/* 03. 主な用途 */}
-              <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>03. Purpose</label>
-                <select
-                  value={filters.usage}
-                  onChange={(e) => setFilters({ ...filters, usage: e.target.value })}
-                  className={styles.selectInput}
-                >
-                  <option value="all">全ての用途</option>
-                  <option value="usage-general">一般・スタンダード</option>
-                  <option value="usage-gaming">ゲーミングPC</option>
-                  <option value="usage-business">ビジネス・法人</option>
-                  <option value="usage-creator">クリエイター向け</option>
-                  <option value="usage-ai-dev">AI開発・生成AI</option>
-                </select>
-              </section>
-
-              {/* 04. メーカー */}
-              <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>04. Manufacturer</label>
-                <select
-                  value={filters.brand}
-                  onChange={(e) => setFilters({ ...filters, brand: e.target.value })}
-                  className={styles.selectInput}
-                >
-                  <option value="all">全てのブランド</option>
-                  <option value="lenovo">Lenovo</option>
-                  <option value="dell">DELL</option>
-                  <option value="hp">HP</option>
-                  <option value="apple">Apple</option>
-                  <option value="mouse">Mouse</option>
-                  <option value="asus">ASUS</option>
-                  <option value="dynabook">Dynabook</option>
-                  <option value="panasonic">Panasonic</option>
-                </select>
-              </section>
-
-              {/* 05. メモリ */}
-              <section className={styles.filterGroup}>
-                <label className={styles.filterLabel}>05. Memory (Min)</label>
-                <div className={styles.buttonGrid}>
-                  {[0, 16, 32].map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => setFilters({ ...filters, ram: r })}
-                      className={filters.ram === r ? styles.btnActive : styles.btnInactive}
-                    >
-                      {r === 0 ? '不問' : `${r}GB+`}
-                    </button>
-                  ))}
-                </div>
-              </section>
-
-              {/* 06. 特殊要件 */}
-              <section className={styles.checkboxGroup}>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={filters.npuRequired}
-                    onChange={(e) => setFilters({ ...filters, npuRequired: e.target.checked })}
-                  />
-                  <span>AI PC (NPU 搭載)</span>
-                </label>
-                <label className={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={filters.gpuRequired}
-                    onChange={(e) => setFilters({ ...filters, gpuRequired: e.target.checked })}
-                  />
-                  <span>独立GPU (GeForce等)</span>
-                </label>
-              </section>
-            </div>
-          </aside>
-
-          {/* 右側：検索結果表示エリア */}
-          <main className={styles.mainContent}>
-            <div className={styles.toolbar}>
-              <div className={styles.resultInfo}>
-                <span className={styles.resultLabel}>Search Results</span>
-                <div className={styles.resultCount}>
-                  <span className={styles.highlight}>{totalCount}</span> Products Found
-                </div>
-              </div>
-
-              <div className={styles.sortBox}>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className={styles.sortSelect}
-                >
-                  <option value="newest">発売日が新しい順</option>
-                  <option value="price_asc">価格が安い順</option>
-                  <option value="price_desc">価格が高い順</option>
-                  <option value="spec_score">総合評価が高い順</option>
-                </select>
-              </div>
-            </div>
-
-            {/* ✅ ローディング中の表示をユーザーに優しく強化 */}
-            {isLoading ? (
-              <div className={styles.loadingContainer}>
-                <div className={styles.loaderContent}>
-                  <div className={styles.spinner}></div>
-                  <h3 className={styles.loadingTitle}>ただいま検索中です...</h3>
-                  <p className={styles.loadingText}>
-                    約4,000件のデータベースから最適なPCを抽出しています。
-                  </p>
-                </div>
-                <div className={styles.productGrid}>
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className={styles.skeletonCard}></div>
-                  ))}
-                </div>
-              </div>
-            ) : products.length > 0 ? (
-              <div className={styles.productGrid}>
-                {products.map(product => (
-                  <ProductCard key={product.unique_id || product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className={styles.emptyState}>
-                <div className={styles.emptyIcon}>🔍</div>
-                <h3 className={styles.emptyTitle}>一致する製品が見つかりませんでした</h3>
-                <p className={styles.emptyText}>条件を緩めて再検索してみてください。</p>
-              </div>
-            )}
-          </main>
+          <div className={styles.filterGroup}>
+            <label className={styles.inlineLabel}>Order By</label>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.minimalSelect}>
+              <option value="newest">NEWEST</option>
+              <option value="price_asc">PRICE: LOW</option>
+              <option value="spec_score">SCORE: HIGH</option>
+            </select>
+          </div>
         </div>
-      </div>
+
+        <div className={styles.chipRow}>
+          <button onClick={() => setFilters({...filters, npuRequired: !filters.npuRequired})} className={filters.npuRequired ? styles.chipActive : styles.chip}>
+            NPU (AI PC)
+          </button>
+          <button onClick={() => setFilters({...filters, gpuRequired: !filters.gpuRequired})} className={filters.gpuRequired ? styles.chipActive : styles.chip}>
+            DEDICATED GPU
+          </button>
+          <div className={styles.counterDisplay}>
+            HITS: <strong>{totalCount}</strong>
+          </div>
+        </div>
+      </nav>
+
+      <main className={styles.mainGallery}>
+        <div className={styles.productGrid}>
+          {isLoading ? (
+            [...Array(8)].map((_, i) => <div key={i} className={styles.skeleton} />)
+          ) : (
+            products.map(p => <ProductCard key={p.id} product={p} />)
+          )}
+        </div>
+      </main>
     </div>
   );
 }

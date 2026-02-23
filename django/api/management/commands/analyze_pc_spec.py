@@ -13,12 +13,11 @@ from django.utils import timezone
 from django.db.models import Q
 
 # === APIキー設定 (10個のキーに対応) ===
-# 環境変数 GEMINI_API_KEY_0 〜 GEMINI_API_KEY_9 を読み込みます
 API_KEYS = [
     os.getenv(f"GEMINI_API_KEY_{i}", "") for i in range(10)
 ]
 
-# デフォルトのキー（以前のもの）も予備として含める設定
+# デフォルトのキーも予備として含める
 LEGACY_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs")
 if LEGACY_KEY not in API_KEYS:
     API_KEYS.append(LEGACY_KEY)
@@ -27,18 +26,19 @@ if LEGACY_KEY not in API_KEYS:
 VALID_KEYS = [k for k in API_KEYS if k and len(k) > 10]
 key_cycle = itertools.cycle(VALID_KEYS)
 
-# === レート制限の設定 (10キー用に最適化) ===
-# 無料枠(Gemini 1.5 Flash)は1キーあたり15RPM程度が安定
-# 10キーあれば理論上150RPM、安全マージンを見て100RPM程度を目標にします
+# === レート制限の設定 (安定版: 10キー用に最適化) ===
+# 無料枠は「連射」に弱いため、理論値より余裕を持たせます。
+# 1キーあたり 6リクエスト/分 (RPM6) で計算。10キーあれば 60 RPM = 1.0秒間隔。
 MAX_WORKERS = len(VALID_KEYS) if len(VALID_KEYS) > 0 else 1
-SAFE_TOTAL_RPM = len(VALID_KEYS) * 12  # 1キー12リクエスト/分で計算
-INTERVAL = 60 / SAFE_TOTAL_RPM if SAFE_TOTAL_RPM > 0 else 1
+SAFE_KEY_RPM = 6  
+SAFE_TOTAL_RPM = len(VALID_KEYS) * SAFE_KEY_RPM
+INTERVAL = 60 / SAFE_TOTAL_RPM if SAFE_TOTAL_RPM > 0 else 2.0  # デフォルト2秒
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = '10個のAPIキーをローテーションし、PC製品をAI解析・5軸スコアリングする（超高速並列版）'
+    help = '10個のAPIキーをローテーションし、PC製品をAI解析・5軸スコアリングする（安定並列版）'
 
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
@@ -137,7 +137,6 @@ class Command(BaseCommand):
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
             for i, product in enumerate(products):
-                # 均等にリクエストを投げるためのスリープ
                 if i > 0:
                     time.sleep(INTERVAL) 
                 
@@ -153,19 +152,16 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR(f"❌ 致命的エラー ({product.unique_id}): {str(e)}"))
 
     def analyze_product(self, product, model_id, count, total, retry_count=0):
-        # 💡 ローテーションから次のキーを取得
         current_api_key = next(key_cycle)
-        key_hint = current_api_key[-4:] # デバッグ用末尾4桁
+        key_hint = current_api_key[-4:]
 
-        # 1. プロンプト組み立て
         base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt') or "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析せよ。"
         target_maker_slug = self.get_maker_slug(product.maker)
         maker_prompt_file = f"analyze_{target_maker_slug}_prompt.txt"
         brand_rules = self.load_prompt_file(maker_prompt_file) or self.load_prompt_file('analyze_pc_prompt.txt')
-        if not brand_rules: brand_rules = "【標準ルール】正確なスペックと5軸スコアを抽出してください。"
-
+        
         structure_instruction = """
-必ず以下のJSON形式を [SPEC_JSON] タグ内に含めてください。
+必ず以下のJSON形式を [SPEC_JSON] タグ内に含めてください。コメントや余計な文字は入れないでください。
 [SPEC_JSON]
 {
   "cpu_model": "型番",
@@ -194,7 +190,7 @@ class Command(BaseCommand):
 }
 [/SPEC_JSON]
 
-紹介文（HTML形式、CSSクラスなしのクリーンなタグのみ）の後に、以下の注目ポイントを [SUMMARY_DATA] タグ内に含めてください：
+紹介文（HTML形式、CSSクラスなし）の後に注目ポイントを [SUMMARY_DATA] タグ内に入れてください。
 [SUMMARY_DATA]
 POINT1: 特徴1
 POINT2: 特徴2
@@ -207,47 +203,49 @@ TARGET: おすすめ対象
                                        .replace("{price}", f"{product.price:,}")\
                                        .replace("{description}", str(product.description or ""))
 
-        full_prompt = f"{formatted_base}\n\nブランド別追加ルール:\n{brand_rules}\n\n{structure_instruction}"
+        full_prompt = f"{formatted_base}\n\nブランド別ルール:\n{brand_rules}\n\n{structure_instruction}"
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={current_api_key}"
         
         try:
             current_time = datetime.now().strftime("%H:%M:%S")
-            self.stdout.write(f"[{current_time}] 📤 解析中 ({count}/{total}) [Key:..{key_hint}]: [{product.maker}] {product.name}")
+            self.stdout.write(f"[{current_time}] 📤 解析中 ({count}/{total}) [Key:..{key_hint}]: {product.name[:30]}")
 
             response = requests.post(api_url, json={
                 "contents": [{"parts": [{"text": full_prompt}]}],
                 "generationConfig": {"temperature": 0.2}
             }, timeout=120)
             
-            # 💡 429(Rate Limit) または 5xxエラー の場合は別のキーに期待してリトライ
+            # 💡 429(Rate Limit) 等のエラーハンドリングを強化
             if response.status_code in [429, 500, 503, 504]:
-                if retry_count < len(VALID_KEYS): # 全てのキーを一巡するまでリトライ可能
-                    # 429のときは少し待機時間を増やす
-                    wait_time = (retry_count + 1) * 5 
+                if retry_count < len(VALID_KEYS):
+                    # 429のときはクールダウン時間を長め(15秒〜)に取る
+                    wait_time = 15 if response.status_code == 429 else 5
                     self.stdout.write(self.style.WARNING(
-                        f"⚠️ 制限検知 ({product.unique_id}) [Key:..{key_hint}]: ステータス {response.status_code}。別のキーでリトライ({retry_count+1}/{len(VALID_KEYS)})"
+                        f"⚠️ 制限/エラー検知 ({product.unique_id}) [Key:..{key_hint}]: Status {response.status_code}。{wait_time}秒待機してリトライ({retry_count+1}/{len(VALID_KEYS)})"
                     ))
                     time.sleep(wait_time)
                     return self.analyze_product(product, model_id, count, total, retry_count + 1)
                 else:
-                    self.stdout.write(self.style.ERROR(f"❌ 全てのキーで制限超過またはエラー: {product.unique_id}"))
+                    self.stdout.write(self.style.ERROR(f"❌ 全キー制限超過: {product.unique_id}"))
                     return
 
             response.raise_for_status()
             res_json = response.json()
             
             if 'candidates' not in res_json or not res_json['candidates']:
-                raise ValueError("APIからのレスポンスにコンテンツが含まれていません。")
+                raise ValueError("APIレスポンスが空です。")
 
             full_text = res_json['candidates'][0]['content']['parts'][0]['text']
 
-            # --- データ抽出処理 ---
+            # --- データ抽出 & JSONクリーニング ---
             spec_data = {}
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
                 try:
-                    # コメント行の削除とクリーニング
-                    clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
+                    raw_json_str = spec_match.group(1).strip()
+                    # JSONパースを阻害する要素を徹底除去
+                    clean_json = re.sub(r'//.*', '', raw_json_str) # コメント削除
+                    clean_json = clean_json.replace('、', ',').replace('：', ':') # 全角記号置換
                     spec_data = json.loads(clean_json)
                 except Exception as je:
                     self.stdout.write(self.style.WARNING(f"⚠️ JSONパース失敗 ({product.unique_id}): {str(je)}"))
@@ -255,7 +253,6 @@ TARGET: おすすめ対象
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
             summary_text = summary_match.group(0).strip() if summary_match else ""
 
-            # プロンプト内のタグを除去してHTMLコンテンツを抽出
             html_content = full_text
             if summary_match: html_content = html_content.replace(summary_match.group(0), '')
             if spec_match: html_content = html_content.replace(spec_match.group(0), '')
@@ -265,7 +262,8 @@ TARGET: おすすめ対象
                 if val is None or val == "": return default
                 try: 
                     if isinstance(val, int): return val
-                    return int(re.sub(r'[^0-9]', '', str(val)))
+                    num = re.sub(r'[^0-9]', '', str(val))
+                    return int(num) if num else default
                 except: return default
 
             # --- DB保存 ---
@@ -303,7 +301,7 @@ TARGET: おすすめ対象
             product.last_spec_parsed_at = timezone.now()
             product.save()
 
-            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id} [Key:..{key_hint}]"))
+            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id}"))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.unique_id}): {str(e)}"))

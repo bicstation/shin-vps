@@ -1,4 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
+// /home/maya/dev/shin-vps/next-bicstation/app/blog/page.tsx
+
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
