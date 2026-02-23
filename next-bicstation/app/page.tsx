@@ -10,7 +10,7 @@ export const revalidate = 3600;
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Sidebar from '@shared/layout/Sidebar';
+import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import RadarChart from '@shared/ui/RadarChart';
 
 /**
@@ -18,13 +18,19 @@ import RadarChart from '@shared/ui/RadarChart';
  */
 import ProductCard from '@shared/cards/ProductCard';
 
+// 1. WordPress 関連は wordpress.ts からインポート
 import {
-    fetchPostList,
+    fetchPostList, 
+} from '@shared/lib/api/wordpress'; // ← パスを修正
+
+// 2. Django (PC製品) 関連は pc.ts からインポート
+import {
     fetchPCProducts,
     fetchMakers,
     fetchPCProductRanking,
     fetchPCPopularityRanking
-} from '@shared/lib/api';
+} from '@shared/lib/api/django/pc';
+
 import styles from './MainPage.module.css';
 
 interface PageProps {
@@ -45,7 +51,7 @@ export default async function Page({ searchParams }: PageProps) {
      * 🚀 APIリクエストの並列化 (Parallel Data Fetching)
      */
     const [wpData, pcData, makersData, rankingData, popularityData] = await Promise.all([
-        fetchPostList(10).catch(() => ({ results: [], count: 0 })),
+        fetchPostList('post',10).catch(() => ({ results: [], count: 0 })),
         fetchPCProducts('', 0, PRODUCT_LIMIT, attribute || '').catch(() => ({ results: [], count: 0 })),
         fetchMakers().catch(() => []),
         fetchPCProductRanking().catch(() => []),

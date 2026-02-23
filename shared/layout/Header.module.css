@@ -1,5 +1,3 @@
-/* components/Header.module.css */
-
 .header {
   background: #1a1a1a;
   color: white;
@@ -13,6 +11,9 @@
   box-shadow: 0 2px 15px rgba(0,0,0,0.2);
 }
 
+.generalBg { background: #ffffff; }
+.adultBg { background: #0a0a0a; }
+
 .container {
   max-width: 1240px;
   width: 100%;
@@ -22,48 +23,128 @@
   align-items: center;
 }
 
-/* PC用ナビゲーション */
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.brandInfo { line-height: 1.2; }
+.siteName { font-weight: 900; font-size: 1.2rem; white-space: nowrap; }
+.tagline { font-size: 0.6rem; font-weight: bold; white-space: nowrap; }
+
+/* PC用ナビゲーション & ドロップダウン */
 .desktopNav {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 30px;
+  margin: 0 30px;
 }
+
+.navGroup {
+  position: relative;
+  padding: 24px 0;
+  cursor: pointer;
+}
+
+.navTitle {
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  min-width: 180px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  border-radius: 0 0 8px 8px;
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdownItem {
+  padding: 12px 20px;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.dropdownItem:hover {
+  background: #333;
+  color: #fff;
+}
+
+/* 認証セクション */
+.authSection {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.guestLinks { display: flex; align-items: center; gap: 15px; }
+.loginLink { text-decoration: none; font-size: 0.85rem; }
+.regBtn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  color: white;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.loggedInWrapper { display: flex; align-items: center; gap: 12px; }
+.userNameDisplay { font-size: 0.85rem; white-space: nowrap; }
+.mypageLink { color: #888; text-decoration: none; font-size: 0.85rem; }
+.logoutBtn { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
 
 /* スマホ用トグルボタン */
 .menuToggle {
-  display: none; /* 基本は非表示 */
+  display: none;
   background: none;
   border: none;
-  color: white;
   font-size: 28px;
   cursor: pointer;
   padding: 5px;
 }
 
-/* 📱 スマホ用展開メニュー（サイドバー要素を統合） */
+/* 📱 スマホ用展開メニュー */
 .mobileMenu {
-  display: none; /* デフォルト非表示 */
+  display: none;
   position: absolute;
   top: 70px;
   left: 0;
   width: 100%;
-  max-height: calc(100vh - 70px); /* 画面からはみ出さないよう調整 */
-  overflow-y: auto; /* メニュー内スクロール可能に */
-  background: #1a1a1a;
+  max-height: calc(100vh - 70px);
+  overflow-y: auto;
   padding: 20px;
   box-sizing: border-box;
   z-index: 999;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
-.mobileMenu.open {
-  display: block; /* 開いている時だけ表示 */
+.mobileMenu.open { display: block; }
+
+.mobileSearchWrapper { margin-bottom: 25px; }
+.searchBox {
+  width: 100%;
+  padding: 12px;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
 }
 
-/* メニュー内のセクション分け */
-.menuSection {
-  margin-bottom: 25px;
-}
-
+.menuSection { margin-bottom: 25px; }
 .sectionTitle {
   font-size: 0.75rem;
   color: #888;
@@ -77,30 +158,23 @@
 .mobileMenu a {
   display: block;
   padding: 12px 0;
-  color: #eee;
   text-decoration: none;
   font-size: 1rem;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-/* 検索窓（サイドバーからの移植） */
-.searchBox {
+.mobileLogoutBtn {
   width: 100%;
-  padding: 12px;
-  background: #2a2a2a;
-  border: 1px solid #444;
-  color: white;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  outline: none;
+  text-align: left;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  color: #ff4d4f;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
-.searchBox:focus {
-  /* border-color: var(--site-color); */
-  border-color: #666;
-}
-
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .desktopNav { display: none !important; }
   .menuToggle { display: block !important; }
 }

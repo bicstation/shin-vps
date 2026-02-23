@@ -4,7 +4,7 @@
 import React from "react";
 import { Metadata } from 'next';
 import ProductCard from "@shared/cards/ProductCard";
-import Sidebar from "@shared/layout/Sidebar";
+import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import { fetchPCProducts, fetchMakers, fetchPostList } from '@shared/lib/api';
 import { COLORS } from "@shared/styles/constants";
 import styles from "./BrandPage.module.css";

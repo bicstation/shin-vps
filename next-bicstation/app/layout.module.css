@@ -1,57 +1,52 @@
-/**
- * 🏗️ [BICSTATION-LAYOUT-CSS]
- * PCカタログ・比較ポータル専用レイアウト構造
- * コンテンツの「吹きこぼれ」を徹底的に防ぐ設計です。
- */
+/* =====================================================================
+ * 🏗️ [BICSTATION-LAYOUT-CSS] - 2026 Tactical Optimized Edition
+ * ---------------------------------------------------------------------
+ * 💡 設計思想: 
+ * 1. bodyWrapperにpadding-topを付与し、浮遊ヘッダーの裏側を物理的に封鎖。
+ * 2. adDisclosure(PR)はstickyで配置し、スクロール時もヘッダー直下をキープ。
+ * 3. INTELLIGENCE_REPORT等のヒーロー要素が絶対に被らない余白設計。
+ * ===================================================================== */
 
 /* 1. 全体を包むラッパー：フッターを常に最下部へ */
 .bodyWrapper {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  /* フォントのレンダリングを最適化 */
+  margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding-top: 0px; /* 🪄 魔法のクッション */
+  background-color: #0a0a0a;
 }
-
-/* 2. ステマ規制対策：PR表記（控えめかつ視認性確保） */
 .adDisclosure {
-  background-color: transparent;
-  font-size: 10px;
-  color: #94a3b8;
-  text-align: center;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
-  letter-spacing: 0.05em;
-  font-weight: 400;
-  opacity: 0.8;
-  width: 100%;
+  background-color: rgba(26, 26, 26, 0.95);
+  font-size: 10px; color: #94a3b8; text-align: center; padding: 10px 0;
+  border-bottom: 1px solid rgba(233, 69, 96, 0.4); /* レッド */
+  position: sticky; top: 0px; z-index: 900; backdrop-filter: blur(8px);
 }
 
-/* 3. レイアウトの外枠：画面中央寄せと最大幅の制限 */
+/* 3. レイアウトの外枠：中央寄せと最大幅制限 */
 .layoutContainer {
-  flex: 1; /* コンテンツが少なくてもフッターを押し下げる */
+  flex: 1;
   width: 100%;
-  max-width: 1440px; /* PCスペック比較表を考慮し、ゆとりある幅に */
+  max-width: 1440px;
   margin: 0 auto;
   padding: 0 24px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 4. サイドバーとメインを横並びにするインナー */
 .layoutInner {
   display: flex;
-  gap: 32px; /* サイドバーとメインコンテンツの間の余白 */
-  padding: 32px 0;
+  gap: 32px;
+  /* 💡 修正ポイント：上部に更なるゆとり(40px)を設け、タイトルとの被りを完全排除 */
+  padding: 40px 0 60px 0; 
 }
 
 /* 5. メインコンテンツ領域（右側） */
 .mainContent {
   flex: 1;
-  min-width: 0; /* 💡 重要：Flex内の子要素（テーブル等）が親を突き破るのを防ぐ */
-  animation: fadeIn 0.5s ease-out;
+  min-width: 0; /* Flex突き破り防止 */
+  animation: tacticalFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
 }
 
 /* 6. モバイル対応：レスポンシブ設定 */
@@ -60,28 +55,37 @@
 @media (max-width: 1024px) {
   .layoutInner {
     flex-direction: column;
-    gap: 24px;
-    padding: 20px 0;
+    gap: 32px;
+    padding: 30px 0;
   }
 }
 
 /* スマートフォンサイズ：余白の最小化 */
 @media (max-width: 768px) {
+  .bodyWrapper {
+    padding-top: 70px; /* モバイルもヘッダー高さを維持 */
+  }
+
   .layoutContainer {
     padding: 0 16px;
   }
   
   .adDisclosure {
     font-size: 9px;
-    padding: 6px 4px;
+    padding: 8px 4px;
+    top: 70px;
+  }
+
+  .layoutInner {
+    padding: 20px 0;
   }
 }
 
-/* 7. ページ読み込み時のフェードイン */
-@keyframes fadeIn {
+/* 7. ページ読み込み時のフェードイン（タクティカルな動き） */
+@keyframes tacticalFadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -89,8 +93,16 @@
   }
 }
 
-/* 吹きこぼれ防止用のユーティリティ（必要に応じてメイン要素に付与） */
+/* 吹きこぼれ防止用のユーティリティ */
 .noOverflow {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* 💡 デバッグヒーロー等の重なりを強制回避するクラス */
+.heroSectionWrapper {
+  margin-top: 15px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }

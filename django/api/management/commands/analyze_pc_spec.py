@@ -12,32 +12,33 @@ from api.models.pc_products import PCProduct
 from django.utils import timezone
 from django.db.models import Q
 
-# === APIキー設定 (6つのキーを定義) ===
-# 💡 環境変数から読み込むか、ここに直接リストとして定義します
+# === APIキー設定 (10個のキーに対応) ===
+# 環境変数 GEMINI_API_KEY_0 〜 GEMINI_API_KEY_9 を読み込みます
 API_KEYS = [
-    os.getenv("GEMINI_API_KEY", "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs"), # 元のキー
-    os.getenv("GEMINI_API_KEY_1", "ここに1つ目の追加キー"),
-    os.getenv("GEMINI_API_KEY_2", "ここに2つ目の追加キー"),
-    os.getenv("GEMINI_API_KEY_3", "ここに3つ目の追加キー"),
-    os.getenv("GEMINI_API_KEY_4", "ここに4つ目の追加キー"),
-    os.getenv("GEMINI_API_KEY_5", "ここに5つ目の追加キー"),
+    os.getenv(f"GEMINI_API_KEY_{i}", "") for i in range(10)
 ]
 
-# 💡 有効なキー（空でないもの）のみを抽出してローテーションを作成
-VALID_KEYS = [k for k in API_KEYS if k and "ここに" not in k]
+# デフォルトのキー（以前のもの）も予備として含める設定
+LEGACY_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyC080GbwuffBIgwq0_lNoJ25BIHQYJ3tRs")
+if LEGACY_KEY not in API_KEYS:
+    API_KEYS.append(LEGACY_KEY)
+
+# 有効なキーのみを抽出
+VALID_KEYS = [k for k in API_KEYS if k and len(k) > 10]
 key_cycle = itertools.cycle(VALID_KEYS)
 
-# === レート制限の設定 (6キー並列用に最適化) ===
-# 無料枠でもキーを分ければ並列度を上げられます
-MAX_WORKERS = 6       # キーの数に合わせて最大6スレッド
-SAFE_RPM_LIMIT = 50   # 6キー合計で1分間に50リクエスト（安全マージン）
-INTERVAL = 60 / SAFE_RPM_LIMIT  # 1リクエストあたり約1.2秒の間隔
+# === レート制限の設定 (10キー用に最適化) ===
+# 無料枠(Gemini 1.5 Flash)は1キーあたり15RPM程度が安定
+# 10キーあれば理論上150RPM、安全マージンを見て100RPM程度を目標にします
+MAX_WORKERS = len(VALID_KEYS) if len(VALID_KEYS) > 0 else 1
+SAFE_TOTAL_RPM = len(VALID_KEYS) * 12  # 1キー12リクエスト/分で計算
+INTERVAL = 60 / SAFE_TOTAL_RPM if SAFE_TOTAL_RPM > 0 else 1
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = '複数のAPIキーをローテーションし、PC製品をAI解析・5軸スコアリングする（並列・高速版）'
+    help = '10個のAPIキーをローテーションし、PC製品をAI解析・5軸スコアリングする（超高速並列版）'
 
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
@@ -82,6 +83,10 @@ class Command(BaseCommand):
         force = options['force']
         null_only = options['null_only']
 
+        if not VALID_KEYS:
+            self.stdout.write(self.style.ERROR("❌ 有効なAPIキーが設定されていません。"))
+            return
+
         query = PCProduct.objects.all()
         
         if null_only:
@@ -122,12 +127,17 @@ class Command(BaseCommand):
             models_content = self.load_prompt_file('ai_models.txt')
             model_id = models_content.split('\n')[0].strip() if models_content else "gemini-1.5-flash"
 
-        self.stdout.write(self.style.SUCCESS(f"🚀 解析開始: 全 {len(products)} 件 / 稼働キー数: {len(VALID_KEYS)} / スレッド数: {MAX_WORKERS} / モデル: {model_id}"))
+        self.stdout.write(self.style.SUCCESS(
+            f"🚀 解析開始: 全 {len(products)} 件\n"
+            f"🔑 稼働キー数: {len(VALID_KEYS)} / スレッド数: {MAX_WORKERS}\n"
+            f"⏱️ リクエスト間隔: {INTERVAL:.2f}秒 / モデル: {model_id}"
+        ))
 
         self.counter = 0
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             future_to_product = {}
             for i, product in enumerate(products):
+                # 均等にリクエストを投げるためのスリープ
                 if i > 0:
                     time.sleep(INTERVAL) 
                 
@@ -209,19 +219,26 @@ TARGET: おすすめ対象
                 "generationConfig": {"temperature": 0.2}
             }, timeout=120)
             
-            # 💡 429(Rate Limit) の場合は別のキーに期待してリトライ
-            if response.status_code in [429, 500, 503]:
-                if retry_count < 5: # キーが多いのでリトライ回数を少し増やす
-                    wait_time = (retry_count + 1) * 10 
-                    self.stdout.write(self.style.WARNING(f"⚠️ 制限/エラー検知 ({product.unique_id}) [Key:..{key_hint}]: 次のキーでリトライ({retry_count+1}/5)"))
+            # 💡 429(Rate Limit) または 5xxエラー の場合は別のキーに期待してリトライ
+            if response.status_code in [429, 500, 503, 504]:
+                if retry_count < len(VALID_KEYS): # 全てのキーを一巡するまでリトライ可能
+                    # 429のときは少し待機時間を増やす
+                    wait_time = (retry_count + 1) * 5 
+                    self.stdout.write(self.style.WARNING(
+                        f"⚠️ 制限検知 ({product.unique_id}) [Key:..{key_hint}]: ステータス {response.status_code}。別のキーでリトライ({retry_count+1}/{len(VALID_KEYS)})"
+                    ))
                     time.sleep(wait_time)
                     return self.analyze_product(product, model_id, count, total, retry_count + 1)
                 else:
-                    self.stdout.write(self.style.ERROR(f"❌ リトライ上限超過: {product.unique_id}"))
+                    self.stdout.write(self.style.ERROR(f"❌ 全てのキーで制限超過またはエラー: {product.unique_id}"))
                     return
 
             response.raise_for_status()
             res_json = response.json()
+            
+            if 'candidates' not in res_json or not res_json['candidates']:
+                raise ValueError("APIからのレスポンスにコンテンツが含まれていません。")
+
             full_text = res_json['candidates'][0]['content']['parts'][0]['text']
 
             # --- データ抽出処理 ---
@@ -229,13 +246,16 @@ TARGET: おすすめ対象
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
                 try:
+                    # コメント行の削除とクリーニング
                     clean_json = re.sub(r'//.*', '', spec_match.group(1).strip())
                     spec_data = json.loads(clean_json)
-                except: pass
+                except Exception as je:
+                    self.stdout.write(self.style.WARNING(f"⚠️ JSONパース失敗 ({product.unique_id}): {str(je)}"))
 
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
             summary_text = summary_match.group(0).strip() if summary_match else ""
 
+            # プロンプト内のタグを除去してHTMLコンテンツを抽出
             html_content = full_text
             if summary_match: html_content = html_content.replace(summary_match.group(0), '')
             if spec_match: html_content = html_content.replace(spec_match.group(0), '')
@@ -243,7 +263,9 @@ TARGET: おすすめ対象
 
             def safe_int(val, default=0):
                 if val is None or val == "": return default
-                try: return int(re.sub(r'[^0-9]', '', str(val)))
+                try: 
+                    if isinstance(val, int): return val
+                    return int(re.sub(r'[^0-9]', '', str(val)))
                 except: return default
 
             # --- DB保存 ---
@@ -264,8 +286,13 @@ TARGET: おすすめ対象
             product.device_count = safe_int(spec_data.get('device_count'), product.device_count)
             product.edition = spec_data.get('edition', product.edition)
             product.is_ai_pc = spec_data.get('is_ai_pc', False)
-            try: product.npu_tops = float(spec_data.get('npu_tops', 0.0))
-            except: product.npu_tops = 0.0
+            
+            try: 
+                npu_val = spec_data.get('npu_tops', 0.0)
+                product.npu_tops = float(npu_val) if npu_val else 0.0
+            except: 
+                product.npu_tops = 0.0
+                
             product.cpu_socket = spec_data.get('cpu_socket', product.cpu_socket)
             product.motherboard_chipset = spec_data.get('chipset', product.motherboard_chipset)
             product.ram_type = spec_data.get('ram_type', product.ram_type)
@@ -276,7 +303,7 @@ TARGET: おすすめ対象
             product.last_spec_parsed_at = timezone.now()
             product.save()
 
-            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id}"))
+            self.stdout.write(self.style.SUCCESS(f" ✅ 解析完了: {product.unique_id} [Key:..{key_hint}]"))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.unique_id}): {str(e)}"))

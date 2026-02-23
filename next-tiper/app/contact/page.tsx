@@ -16,31 +16,32 @@ interface Message {
 }
 
 /**
- * 🤖 AI Chat Inner Component
- * 実際のアナリティクスやチャットロジックをここに集約
+ * 🥂 AI Sommelier Chat Inner Component
+ * 文脈を読み解き、貴方の理想の一人をエスコートします。
  */
 function ChatInner() {
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([
         { 
             role: 'ai', 
-            text: '<b>tiper.live AIコンシェルジュへようこそ！</b><br />ご予算や用途、重視するポイントなど、あなたに最適なコンテンツやデバイスをご提案します。' 
+            text: '<b>tiper.live へようこそ。私は貴方の専属ソムリエでございます。</b><br />今夜はどのような「夢」をお探しでしょうか？ 貴方の心の奥にある理想を、私にそっとお聞かせください。最高の一人をご案内いたしましょう。' 
         }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     
     const messageListRef = useRef<HTMLDivElement>(null);
 
-    // ✅ リスト内を自動スクロールさせる
+    // ✅ メッセージ追加時に最下部へ優雅にスクロール
     const scrollToBottom = () => {
         if (messageListRef.current) {
             const scrollContainer = messageListRef.current;
+            // 短いラグを設けることでDOM更新後の高さを確実に取得
             setTimeout(() => {
                 scrollContainer.scrollTo({
                     top: scrollContainer.scrollHeight,
                     behavior: 'smooth'
                 });
-            }, 100);
+            }, 50);
         }
     };
 
@@ -53,31 +54,37 @@ function ChatInner() {
         if (!input.trim() || isLoading) return;
 
         const userMsg = input.trim();
+        // APIへ送るための現在の履歴をキャプチャ
+        const historyContext = [...messages];
+
         setInput('');
         setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
         setIsLoading(true);
 
         try {
-            // ✅ APIエンドポイントはプロジェクトの設定に合わせて調整してください
+            // ✅ APIエンドポイントへ最新メッセージと履歴を送信
             const response = await fetch('/api/chat', { 
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ message: userMsg }),
+                body: JSON.stringify({ 
+                    message: userMsg,
+                    history: historyContext // これで会話が成立します
+                }),
             });
 
             const contentType = response.headers.get("content-type");
             if (!response.ok || (contentType && contentType.includes("text/html"))) {
-                throw new Error("Invalid response from server (HTML instead of JSON)");
+                throw new Error("Invalid response from server");
             }
 
             const data = await response.json();
 
             setMessages(prev => [...prev, { 
                 role: 'ai', 
-                text: data.text || '申し訳ありません、回答を生成できませんでした。',
+                text: data.text || '申し訳ございません。私の言葉が詰まってしまいました。',
                 product: data.productName ? {
                     name: data.productName,
                     url: data.productUrl,
@@ -88,7 +95,7 @@ function ChatInner() {
             console.error("Chat error:", error);
             setMessages(prev => [...prev, { 
                 role: 'ai', 
-                text: '<b>通信エラーが発生しました</b><br />現在コンシェルジュが混み合っているか、サーバーとの接続に問題があります。しばらくしてから再度お試しください。' 
+                text: '<b>申し訳ございません。</b><br />今夜は少々混み合っているようです。貴方との対話を途切れさせたくはございませんが、少し時間を置いて再度お声がけいただけますか？' 
             }]);
         } finally {
             setIsLoading(false);
@@ -98,13 +105,13 @@ function ChatInner() {
     return (
         <div className={styles.fullScreenWrapper}>
             <div className={styles.chatContainer}>
-                {/* ヘッダーエリア */}
+                {/* 🥂 ヘッダーエリア：アダルトで高級感のあるデザイン */}
                 <div className={styles.heroHeader}>
-                    <h1 className="text-xl font-black italic tracking-tighter text-white">AI CONCIERGE</h1>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">Real-time Smart Assistant</p>
+                    <h1 className="text-xl font-black italic tracking-tighter text-white">ADULT SOMMELIER</h1>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">tiper.live Premium Concierge</p>
                 </div>
 
-                {/* メッセージ表示エリア */}
+                {/* 💬 メッセージ表示エリア */}
                 <div className={styles.messageList} ref={messageListRef}>
                     {messages.map((msg, index) => (
                         <div key={index} className={msg.role === 'user' ? styles.userRow : styles.aiRow}>
@@ -114,7 +121,7 @@ function ChatInner() {
                                     alt="avatar" 
                                     className={styles.avatar}
                                     onError={(e) => {
-                                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23222244'/%3E%3C/svg%3E";
+                                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%231a237e'/%3E%3C/svg%3E";
                                     }}
                                 />
                             </div>
@@ -138,7 +145,7 @@ function ChatInner() {
                                             <a href={msg.product.url} target="_blank" rel="noopener noreferrer" className={styles.productNameLink}>
                                                 {msg.product.name}
                                             </a>
-                                            <p className={styles.productDetailBtn}>VIEW DETAILS »</p>
+                                            <p className={styles.productDetailBtn}>GO TO THE DREAM »</p>
                                         </div>
                                     </div>
                                 )}
@@ -158,12 +165,12 @@ function ChatInner() {
                     )}
                 </div>
 
-                {/* 入力エリア */}
+                {/* ⌨️ 入力エリア：常に最下部に固定 */}
                 <form className={styles.inputSection} onSubmit={handleSend}>
                     <input 
                         type="text" 
                         className={styles.mainInput}
-                        placeholder="知りたいことを入力してください..."
+                        placeholder={isLoading ? "貴方の理想を吟味しております..." : "こだわりをお聞かせください..."}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         disabled={isLoading}
@@ -183,14 +190,13 @@ function ChatInner() {
 
 /**
  * ✅ 最終エクスポート
- * Next.js 15 のビルドエラーを回避するため、全体を Suspense でラップ
  */
 export default function ContactPage() {
     return (
         <Suspense fallback={
             <div className={styles.fullScreenWrapper}>
-                <div className="flex items-center justify-center h-full text-[#e94560] font-mono animate-pulse">
-                    INITIALIZING_CONCIERGE...
+                <div className="flex items-center justify-center h-full text-[#c62828] font-mono animate-pulse">
+                    PREPARING_GORGEOUS_NIGHT...
                 </div>
             </div>
         }>

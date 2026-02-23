@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { COLORS } from '@/constants';
-import { MakerCount } from '@/lib/api'; 
-import styles from './PcSidebar.module.css';
+import { COLORS } from '../../styles/constants';
+import { MakerCount } from '@/lib/api/django/pc'; 
+import styles from './PCSidebar.module.css';
 
 interface AttributeItem {
   id: number;
@@ -38,8 +38,8 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
     'RANKING': true,
     'BRANDS': true,
     'LATEST': true,
-    'DOMESTIC': true, // 追加
-    'OVERSEAS': true  // 追加
+    'DOMESTIC': true,
+    'OVERSEAS': true
   });
 
   const toggleSection = (section: string) => {
@@ -49,24 +49,46 @@ export default function Sidebar({ activeMenu, makers = [], recentPosts = [] }: S
     }));
   };
 
+  /**
+   * 💡 スペック統計（CPU/メモリ等）の取得
+   * Next.jsのAPIルート経由ではなく、Djangoエンドポイントを直接叩くことでHTML誤取得を回避します。
+   */
   useEffect(() => {
     async function fetchSpecStats() {
       try {
-        const res = await fetch('/api/pc-sidebar-stats/');
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        // NEXT_PUBLIC_API_URL が未設定の場合は、ブラウザからアクセス可能なデフォルト値を使用
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const targetUrl = `${baseUrl.replace(/\/$/, '')}/api/general/pc-sidebar-stats/`;
+
+        const res = await fetch(targetUrl, {
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store'
+        });
+        
+        const contentType = res.headers.get("content-type") || "";
+        if (!res.ok || contentType.includes("text/html")) {
+          throw new Error(`Invalid response: ${res.status} ${contentType}`);
+        }
+
         const data = await res.json();
         setSpecStats(data);
       } catch (error) {
-        console.error("スペック統計の取得に失敗しました:", error);
+        console.error("Sidebar stats fetch failed:", error);
       }
     }
     fetchSpecStats();
   }, []);
 
+  // --- デバッグログ (データが空の場合にコンソールで確認可能) ---
+  if (makers.length === 0) {
+    console.warn("Sidebar: 'makers' prop is empty. Check server-side fetch in page.tsx.");
+  }
+
   // --- メーカーをグループ分けするロジック ---
   const domesticNames = ['mouse', 'panasonic', 'vaio', 'dynabook', 'fujitsu', 'nec', 'iiyama'];
   
-  const categorizedMakers = makers.reduce((acc, curr) => {
+  const categorizedMakers = (makers || []).reduce((acc, curr) => {
+    if (!curr || !curr.maker) return acc;
     const name = curr.maker.toLowerCase();
     if (domesticNames.includes(name)) {
       acc.domestic.push(curr);

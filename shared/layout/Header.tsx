@@ -7,135 +7,206 @@ import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
 import styles from './Header.module.css';
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  
-  const pathname = usePathname(); 
+    const [isOpen, setIsOpen] = useState(false); // スマホメニュー用
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null); // PCドロップダウン用
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const [userName, setUserName] = useState<string | null>(null);
+    
+    const pathname = usePathname(); 
 
-  const site = getSiteMetadata();
-  const themeColor = getSiteColor(site.site_name);
+    // ✅ siteConfig から全メタデータを取得
+    const site = getSiteMetadata();
+    const themeColor = getSiteColor(site.site_name);
 
-  const checkAuthStatus = useCallback(() => {
-    if (typeof window === 'undefined') return;
+    // 🌐 ドメインごとの判定フラグ
+    const isAdult = site.site_group === 'adult';
+    const isTiper = site.site_name === 'Tiper';
+    const isAVFlash = site.site_name === 'AV Flash';
+    const isBicSaving = site.site_name === 'Bic Saving';
+    const isBicStation = site.site_name === 'Bic Station';
 
-    const token = localStorage.getItem('access_token');
-    const userDataStr = localStorage.getItem('user'); 
-    const storedRole = localStorage.getItem('user_role');
-
-    if (userDataStr || token) {
-      setIsLoggedIn(true);
-      setUserRole(storedRole || '一般');
-      
-      if (userDataStr) {
-        try {
-          const userObj = JSON.parse(userDataStr);
-          setUserName(userObj.username || userObj.name || 'ユーザー');
-        } catch (e) {
-          setUserName('ユーザー');
+    // 🛠️ 3カラムメニューの定義 (ここを編集して自由に項目を追加可能)
+    const menuConfig = {
+        col1: {
+            title: isAdult ? '🔥 注目コンテンツ' : '🔍 診断・検索',
+            links: isTiper ? [{label: '艶華ランキング', href: '/ranking'}, {label: '新人女優', href: '/newface'}] :
+                   isAVFlash ? [{label: '新着動画', href: '/new-arrival'}, {label: 'ランキング', href: '/ranking'}] :
+                   isBicStation ? [{label: 'PC診断', href: '/pc-finder'}, {label: 'おすすめPC', href: '/recommend'}] :
+                   [{label: 'キャンペーン', href: '/campaign'}, {label: '特売品', href: '/sale'}]
+        },
+        col2: {
+            title: isAdult ? '🎞️ カテゴリ' : '📦 プロダクト',
+            links: isAdult ? [{label: '女優名鑑', href: '/ranking/style'}, {label: 'メーカー一覧', href: '/maker'}] :
+                            [{label: '製品カタログ', href: '/catalog'}, {label: '性能比較', href: '/comparison'}]
+        },
+        col3: {
+            title: '✨ サポート',
+            links: [
+                {label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/contact'},
+                {label: 'ご利用ガイド', href: '/guide'}
+            ]
         }
-      }
-    } else {
-      setIsLoggedIn(false);
-      setUserRole(null);
-      setUserName(null);
-    }
-  }, []);
+    };
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, [pathname, checkAuthStatus]);
+    /**
+     * 🔐 認証ステータス確認
+     */
+    const checkAuthStatus = useCallback(() => {
+        if (typeof window === 'undefined') return;
 
-  const closeMenu = () => setIsOpen(false);
+        const token = localStorage.getItem('access_token');
+        const userDataStr = localStorage.getItem('user'); 
+        const storedRole = localStorage.getItem('user_role');
 
-  const handleLogout = () => {
-    if (confirm('ログアウトしますか？')) {
-      localStorage.clear();
-      window.location.href = '/';
-    }
-  };
+        if (userDataStr || token) {
+            setIsLoggedIn(true);
+            setUserRole(storedRole || '一般');
+            if (userDataStr) {
+                try {
+                    const userObj = JSON.parse(userDataStr);
+                    setUserName(userObj.username || userObj.name || 'ユーザー');
+                } catch (e) { setUserName('ユーザー'); }
+            }
+        } else {
+            setIsLoggedIn(false);
+            setUserRole(null);
+            setUserName(null);
+        }
+    }, []);
 
-  return (
-    <header 
-      className={styles.header} 
-      style={{ 
-        borderBottom: `3px solid ${themeColor}`,
-        backgroundColor: site.site_group === 'adult' ? '#111' : '#1a1a1a',
-      }}
-    >
-      <div className={styles.container}>
-        {/* ロゴエリア */}
-        <Link href="/" onClick={closeMenu} style={{ textDecoration: 'none', color: 'white' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ 
-              background: themeColor, color: 'white', padding: '4px 8px', 
-              borderRadius: '4px', fontWeight: '900', fontSize: '1.2em'
-            }}>
-              {site.site_name.charAt(0)}
-            </span>
-            <div style={{ margin: 0, fontSize: '1.2em', fontWeight: 'bold', letterSpacing: '1px' }}>
-              {site.site_name.toUpperCase()}
+    useEffect(() => {
+        checkAuthStatus();
+        setIsOpen(false);
+        setActiveDropdown(null);
+    }, [pathname, checkAuthStatus]);
+
+    const handleLogout = () => {
+        const confirmMsg = isAdult ? 'ログアウトして、よろしいですか？' : 'ログアウトしますか？';
+        if (confirm(confirmMsg)) {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+    };
+
+    return (
+        <header 
+            className={`${styles.header} ${isAdult ? styles.adultBg : styles.generalBg}`} 
+            style={{ borderBottom: `3px solid ${themeColor}` }}
+        >
+            <div className={styles.container}>
+                {/* --- ロゴエリア --- */}
+                <Link href="/" onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
+                    <div className={styles.logoWrapper}>
+                        <span style={{ 
+                            background: themeColor, color: 'white', padding: '4px 10px', 
+                            borderRadius: '6px', fontWeight: '900', fontSize: '1.2em'
+                        }}>
+                            {site.site_name.charAt(0)}
+                        </span>
+                        <div className={styles.brandInfo}>
+                            <div className={styles.siteName} style={{ color: isAdult ? 'white' : '#111' }}>
+                                {site.site_name.toUpperCase()}
+                            </div>
+                            <span className={styles.tagline} style={{ color: themeColor }}>
+                                {isTiper && "PREMIUM ADULT SOMMELIER"}
+                                {isAVFlash && "ULTIMATE MOVIE ARCHIVE"}
+                                {isBicSaving && "SMART SAVING GUIDE"}
+                                {isBicStation && "TOTAL PC SUPPORT"}
+                            </span>
+                        </div>
+                    </div>
+                </Link>
+
+                {/* --- PC用: 3カラムドロップダウンナビ --- */}
+                <nav className={styles.desktopNav}>
+                    {Object.entries(menuConfig).map(([key, section]) => (
+                        <div 
+                            key={key} 
+                            className={styles.navGroup}
+                            onMouseEnter={() => setActiveDropdown(key)}
+                            onMouseLeave={() => setActiveDropdown(null)}
+                        >
+                            <span className={styles.navTitle} style={{ color: isAdult ? '#eee' : '#333' }}>
+                                {section.title}
+                            </span>
+                            {activeDropdown === key && (
+                                <div className={styles.dropdown} style={{ borderTop: `2px solid ${themeColor}` }}>
+                                    {section.links.map((link, i) => (
+                                        <Link key={i} href={link.href} className={styles.dropdownItem}>
+                                            {link.label}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </nav>
+
+                {/* --- 認証・アクション --- */}
+                <div className={styles.authSection}>
+                    {!isLoggedIn ? (
+                        <div className={styles.guestLinks}>
+                            <Link href="/login" className={styles.loginLink} style={{ color: isAdult ? '#bbb' : '#666' }}>ログイン</Link>
+                            <Link href="/register" className={styles.regBtn} style={{ background: themeColor }}>
+                                {isAdult ? '会員入会' : '新規登録'}
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className={styles.loggedInWrapper}>
+                            <span className={styles.userNameDisplay} style={{ color: isAdult ? '#fff' : '#333' }}>
+                                {isTiper ? '貴賓：' : ''}{userName} <small>様</small>
+                            </span>
+                            <Link href="/mypage" className={styles.mypageLink}>My</Link>
+                            <button onClick={handleLogout} className={styles.logoutBtn}>🚪</button>
+                        </div>
+                    )}
+                    
+                    {/* スマホ用トグル */}
+                    <button 
+                        className={styles.menuToggle} 
+                        onClick={() => setIsOpen(!isOpen)} 
+                        style={{ color: isAdult ? '#fff' : '#333' }}
+                    >
+                        {isOpen ? '✕' : '☰'}
+                    </button>
+                </div>
             </div>
-          </div>
-        </Link>
 
-        {/* 右側ナビゲーション */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <nav className={styles.desktopNav} style={{ gap: '25px', marginRight: '20px' }}>
-            {site.site_group === 'general' ? (
-              <Link href="/pc-finder" style={{ color: themeColor, textDecoration: 'none', fontWeight: 'bold' }}>
-                🔍 PC診断
-              </Link>
-            ) : (
-              <Link href="/ranking" style={{ color: themeColor, textDecoration: 'none', fontWeight: 'bold' }}>
-                🔥 人気ランキング
-              </Link>
-            )}
-            <Link href="/" style={{ color: '#eee', textDecoration: 'none' }}>カタログ</Link>
-          </nav>
+            {/* --- 📱 スマホ用展開メニュー --- */}
+            <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} style={{ background: isAdult ? '#111' : '#fff' }}>
+                <div className={styles.mobileSearchWrapper}>
+                    <input type="text" placeholder="キーワード検索..." className={styles.searchBox} />
+                </div>
 
-          <div className={styles.desktopNav} style={{ gap: '10px', alignItems: 'center' }}>
-            {!isLoggedIn ? (
-              <>
-                <Link href="/login" style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.85em' }}>ログイン</Link>
-                <Link href="/register" style={{ 
-                  background: themeColor, color: 'white', textDecoration: 'none', 
-                  fontSize: '0.85em', fontWeight: 'bold', padding: '8px 18px', borderRadius: '20px' 
-                }}>新規登録</Link>
-              </>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ 
-                  fontSize: '0.75em', padding: '2px 8px', borderRadius: '10px', 
-                  background: site.site_group === 'adult' ? '#ff4d4f' : '#52c41a', color: 'white' 
-                }}>
-                  {site.site_group === 'adult' ? 'ADULT' : '一般'}
-                </span>
-                <span style={{ color: '#fff', fontSize: '0.9em' }}>{userName} 様</span>
-                <Link href="/mypage" style={{ color: '#eee', textDecoration: 'none', fontSize: '0.9em' }}>マイページ</Link>
-                <button onClick={handleLogout} className={styles.logoutBtn}>ログアウト</button>
-              </div>
-            )}
-          </div>
+                {Object.entries(menuConfig).map(([key, section]) => (
+                    <div key={key} className={styles.menuSection}>
+                        <p className={styles.sectionTitle} style={{ color: themeColor }}>{section.title}</p>
+                        {section.links.map((link, i) => (
+                            <Link key={i} href={link.href} onClick={() => setIsOpen(false)} style={{ color: isAdult ? '#eee' : '#444' }}>
+                                {link.label}
+                            </Link>
+                        ))}
+                    </div>
+                ))}
 
-          <button className={styles.menuToggle} onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? '✕' : '☰'}
-          </button>
-        </div>
-      </div>
-
-      {/* スマホ用メニュー */}
-      <div 
-        className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} 
-        style={{ borderBottom: `2px solid ${themeColor}` }}
-      >
-        <div className={styles.menuSection}>
-          <p className={styles.sectionTitle}>Navigation</p>
-          <Link href="/" onClick={closeMenu}>トップページ</Link>
-          <input type="text" placeholder="キーワード検索..." className={styles.searchBox} />
-        </div>
-      </div>
-    </header>
-  );
+                <div className={styles.menuSection}>
+                    <p className={styles.sectionTitle}>Account</p>
+                    {!isLoggedIn ? (
+                        <>
+                            <Link href="/login" onClick={() => setIsOpen(false)}>ログイン</Link>
+                            <Link href="/register" onClick={() => setIsOpen(false)} style={{ color: themeColor }}>
+                                {isAdult ? '会員入会' : '新規登録'}
+                            </Link>
+                        </>
+                    ) : (
+                        <>
+                            <Link href="/mypage" onClick={() => setIsOpen(false)}>マイページ</Link>
+                            <button onClick={handleLogout} className={styles.mobileLogoutBtn}>ログアウト 🚪</button>
+                        </>
+                    )}
+                </div>
+            </div>
+        </header>
+    );
 }

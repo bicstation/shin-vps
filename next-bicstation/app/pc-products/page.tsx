@@ -7,7 +7,7 @@ export const revalidate = 0;
 import React from 'react';
 // ✅ 修正ポイント: インポートパスの変更
 import ProductCard from '@shared/cards/ProductCard';
-import Sidebar from '@shared/layout/Sidebar';
+import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import Pagination from '@shared/common/Pagination';
 import { fetchPCProducts, fetchPostList, fetchMakers } from '@shared/lib/api';
 import { COLORS } from "@/shared/styles/constants";

@@ -2,8 +2,8 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { fetchPostList, fetchMakers } from '@shared/lib/api';
-import Sidebar from '@shared/layout/Sidebar';
+import { fetchPostList, fetchMakers } from '@shared/lib/api/django/pc';
+import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import Pagination from '@shared/common/Pagination';
 import styles from '../MainPage.module.css';
 

@@ -1,15 +1,14 @@
 /* ==============================================================================
- * 📂 Footer.module.css - Optimized Tactical Interface (Pure CSS Modules fix)
+ * 📂 Footer.module.css - Optimized Tactical Interface
  * ============================================================================== */
 
-/* --- Footer 全体 --- */
 .footer {
-  /* 変数をコンポーネントスコープ内に移動 */
+  /* 基本色定義（JS側のstyle属性で --accent-red は動的に上書きされます） */
   --footer-bg: #0a0a0f;
   --footer-text: #888;
   --footer-text-bright: #eee;
   --footer-border: #1a1a20;
-  --accent-red: #e94560;
+  --accent-red: #e94560; /* JSから渡される siteColor で上書きされる変数 */
 
   background: var(--footer-bg);
   color: var(--footer-text);
@@ -19,14 +18,15 @@
   overflow: hidden;
 }
 
-/* --- 🚀 デバッグセクションのラッパー --- */
-.debugSection {
+/* 🚀 デバッグセクション */
+.debugContainer {
   width: 100%;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   background: #050508;
+  padding-bottom: 20px;
 }
 
-/* --- レイアウトコンテナ (3列構成) --- */
+/* レイアウトコンテナ */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -36,7 +36,11 @@
   gap: 60px;
 }
 
-/* --- タイトル関連 --- */
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
 .siteTitle {
   color: #fff;
   margin-bottom: 25px;
@@ -62,7 +66,7 @@
   bottom: 0;
   width: 30px;
   height: 2px;
-  background: var(--accent-red);
+  background: var(--accent-red); /* 動的なアクセントカラー */
 }
 
 .miniTitle {
@@ -75,28 +79,13 @@
   text-transform: uppercase;
 }
 
-/* --- テキスト・説明文 --- */
 .description {
   font-size: 0.95rem;
   line-height: 1.8;
   color: var(--footer-text);
 }
 
-.note {
-  margin-top: 25px;
-  font-size: 0.8rem;
-  color: #555;
-  line-height: 1.6;
-  border-left: 2px solid var(--footer-border);
-  padding-left: 15px;
-  transition: border-color 0.3s;
-}
-
-.note:hover {
-  border-left-color: var(--accent-red);
-}
-
-/* --- ナビゲーションリンク --- */
+/* ナビゲーション */
 .linkList {
   list-style: none;
   padding: 0;
@@ -120,13 +109,10 @@
   transform: translateX(6px);
 }
 
-/* --- ブランドグリッド --- */
+/* ブランドグリッド */
 .brandGrid {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 10px;
-  line-height: 2.2;
+  flex-direction: column;
 }
 
 .brandLinks {
@@ -134,6 +120,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0 8px;
+  line-height: 2;
 }
 
 .brandLink {
@@ -154,7 +141,7 @@
   user-select: none;
 }
 
-/* --- 下部コピーライト --- */
+/* 下部バー */
 .bottomBar {
   max-width: 1200px;
   margin: 0 auto;
@@ -170,17 +157,12 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* --- 📱 モバイル最適化 --- */
+/* 📱 モバイル対応 */
 @media (max-width: 768px) {
   .container {
     padding: 60px 6% 40px;
     gap: 45px;
   }
-  
-  .siteTitle {
-    font-size: 1.3rem;
-  }
-
   .linkItem a:hover {
     transform: none;
     color: var(--accent-red);

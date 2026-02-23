@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Sidebar from '@shared/layout/Sidebar';
+import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import Pagination from '@shared/common/Pagination';
 
 /**

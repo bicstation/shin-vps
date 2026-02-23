@@ -1,134 +1,169 @@
-/* 全体外枠：画面いっぱいに広げる */
+/* -*- coding: utf-8 -*- */
+
+/* 全体外枠：夜の静寂を感じさせる深い背景 */
 .fullScreenWrapper {
     width: 100%;
     height: 100vh;
-    background: #f0f2f5;
+    background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 10px;
     box-sizing: border-box;
-}
-
-/* メインコンテナ：チャット画面 */
-.chatContainer {
-    width: 100%;
-    max-width: 1100px;
-    height: 95vh;
-    background: white;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
 }
 
-/* ヘッダー：コンシェルジュのタイトル */
+/* メインコンテナ：高級クラブのラウンジのような重厚感 */
+.chatContainer {
+    width: 100%;
+    max-width: 1100px;
+    height: 100%;
+    max-height: 92vh;
+    background: #0f0f0f;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 20px rgba(142, 14, 14, 0.2);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #2a2a2a;
+}
+
+/* ヘッダー：情熱的なワインレッドとゴールドのアクセント */
 .heroHeader {
-    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
-    color: white;
-    padding: 25px;
+    background: linear-gradient(135deg, #4b0000 0%, #8e0e0e 100%);
+    color: #f0f0f0;
+    padding: 22px 25px;
     text-align: center;
     flex-shrink: 0;
+    z-index: 10;
+    border-bottom: 2px solid #d4af37; /* ゴールドのライン */
 }
 
 .heroHeader h1 {
     margin: 0;
     font-size: 1.8rem;
-    letter-spacing: 1px;
+    font-style: italic;
+    font-family: 'Times New Roman', serif;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .heroHeader p {
-    margin: 5px 0 0;
-    opacity: 0.8;
-    font-size: 0.9rem;
+    margin: 8px 0 0;
+    opacity: 0.7;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: #e0e0e0;
 }
 
-/* メッセージ履歴エリア */
+/* 💬 メッセージリスト：会話が浮き上がるようなダークモード */
 .messageList {
     flex: 1;
     overflow-y: auto;
-    padding: 40px;
+    padding: 30px 40px;
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    background-color: #ffffff;
+    gap: 30px;
+    background: #0a0a0a; /* より深い黒 */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* メッセージの行（画像と吹き出しのセット） */
+/* スクロールバーのカスタマイズ */
+.messageList::-webkit-scrollbar {
+    width: 6px;
+}
+.messageList::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 10px;
+}
+
+/* 行のレイアウト */
 .aiRow, .userRow {
     display: flex;
-    gap: 15px;
-    max-width: 85%;
+    gap: 18px;
+    max-width: 88%;
 }
 
 .aiRow {
     align-self: flex-start;
-    flex-direction: row;
 }
 
 .userRow {
     align-self: flex-end;
-    flex-direction: row-reverse; /* ユーザー側は右にアイコン */
+    flex-direction: row-reverse;
 }
 
-/* アバター画像 */
+/* アバター */
+.avatarWrapper {
+    flex-shrink: 0;
+}
+
 .avatar {
-    width: 45px;
-    height: 45px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     object-fit: cover;
-    flex-shrink: 0;
-    border: 2px solid #eee;
+    border: 1px solid #d4af37; /* ソムリエはゴールドの縁 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-/* 共通の吹き出しスタイル */
+/* 吹き出し：AIはエレガントに、ユーザーはスマートに */
 .aiBubble, .userBubble {
-    padding: 18px 24px;
-    border-radius: 20px;
+    padding: 18px 25px;
+    border-radius: 22px;
     line-height: 1.8;
-    font-size: 1rem;
+    font-size: 0.98rem;
     position: relative;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    word-break: break-word;
 }
 
 .aiBubble {
-    background: #f1f3f9;
-    color: #333;
+    background: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #333;
     border-top-left-radius: 4px;
 }
 
 .userBubble {
-    background: #1a237e;
-    color: white;
+    background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+    color: #fff;
+    border: 1px solid #444;
     border-top-right-radius: 4px;
 }
 
-/* 💡 製品提案カード：AIの吹き出し内に表示 */
+/* 女優提案カード：特別な逸品を提示するように */
 .productCard {
-    margin-top: 15px;
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
+    margin-top: 20px;
+    background: #151515;
+    border-radius: 15px;
+    padding: 20px;
     display: flex;
-    gap: 15px;
+    gap: 20px;
     align-items: center;
-    border: 1px solid #e0e0e0;
-    transition: transform 0.2s ease;
+    border: 1px solid #d4af37; /* ゴールドの枠線で特別感を演出 */
+    transition: all 0.3s ease;
 }
 
 .productCard:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+}
+
+.productImageWrapper {
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid #333;
 }
 
 .productImage {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    background: #fff;
-    border-radius: 8px;
-    flex-shrink: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .productInfo {
@@ -137,70 +172,114 @@
 
 .productNameLink {
     display: block;
-    color: #c62828;
+    color: #d4af37;
     font-weight: bold;
     text-decoration: none;
-    font-size: 1.1rem;
-    margin-bottom: 5px;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    font-family: 'serif';
 }
 
-.productNameLink:hover {
-    text-decoration: underline;
+.productDetailBtn {
+    font-size: 0.75rem;
+    color: #8e0e0e;
+    letter-spacing: 2px;
+    font-weight: bold;
 }
 
-/* ローディングアニメーション */
-.loading {
-    align-self: flex-start;
-    padding: 10px 20px;
-    background: #eee;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    color: #666;
-    margin-left: 60px;
-}
-
-/* 入力セクション */
+/* ⌨️ 入力セクション：操作感を損なわない洗練された黒 */
 .inputSection {
     padding: 25px 40px;
-    background: #fafafa;
-    border-top: 1px solid #eee;
+    background: #121212;
+    border-top: 1px solid #2a2a2a;
     display: flex;
-    gap: 20px;
+    gap: 15px;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .mainInput {
     flex: 1;
-    padding: 18px 25px;
-    border: 2px solid #e0e0e0;
-    border-radius: 30px;
+    padding: 16px 28px;
+    border: 1px solid #333;
+    border-radius: 35px;
     font-size: 1rem;
     outline: none;
-    transition: border-color 0.3s;
+    transition: all 0.3s;
+    background: #1a1a1a;
+    color: #fff;
 }
 
 .mainInput:focus {
-    border-color: #1a237e;
+    border-color: #d4af37;
+    background: #222;
 }
 
 .sendBtn {
-    padding: 15px 35px;
-    background: #c62828;
-    color: white;
+    padding: 16px 35px;
+    background: #8e0e0e;
+    color: #fff;
     border: none;
-    border-radius: 30px;
+    border-radius: 35px;
     font-weight: bold;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.3s;
+    white-space: nowrap;
 }
 
-.sendBtn:hover {
-    background: #b71c1c;
-    box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+.sendBtn:hover:not(:disabled) {
+    background: #b00;
+    box-shadow: 0 0 15px rgba(142, 14, 14, 0.5);
 }
 
 .sendBtn:disabled {
-    background: #ccc;
+    opacity: 0.3;
     cursor: not-allowed;
+}
+
+/* ローディング・アニメーション */
+.loadingPulse {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #333;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.dotFlashing {
+    display: flex;
+    gap: 5px;
+    padding: 10px;
+}
+
+.dotFlashing::after, .dotFlashing::before, .dotFlashing div {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #d4af37;
+    animation: dotFlashing 1s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.5; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+@keyframes dotFlashing {
+    0% { opacity: 0.2; }
+    100% { opacity: 1; }
+}
+
+/* モバイル対応 */
+@media (max-width: 600px) {
+    .chatContainer { height: 100vh; max-height: 100vh; border-radius: 0; border: none; }
+    .fullScreenWrapper { padding: 0; }
+    .inputSection { padding: 15px; background: #0a0a0a; }
+    .messageList { padding: 20px 15px; }
+    .aiRow, .userRow { max-width: 95%; }
+    .heroHeader h1 { font-size: 1.4rem; }
 }

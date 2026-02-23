@@ -1,95 +1,131 @@
-/* /app/layout.module.css */
+/* =====================================================================
+ * 🏗️ [BICSTATION-LAYOUT-CSS] - 2026 Tactical Final Edition
+ * ---------------------------------------------------------------------
+ * ヘッダー(70px)とPR表記のスタックを完全に分離し、重なりをゼロにする設計。
+ * ===================================================================== */
 
+/* 1. 全体を包むラッパー：フッターを常に最下部へ */
 .bodyWrapper {
-  position: relative;
-  width: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* フォントレンダリング最適化 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* 🪄 【魔法のクッション】: ヘッダー(70px)分、ページ全体を最初から押し下げる */
+  /* これにより、後続の要素がヘッダーの裏に潜り込むのを物理的に防ぎます */
+  padding-top: 70px;
+
+  /* アンカーリンク位置の補正 */
+  scroll-padding-top: 70px;
+  background-color: #0a0a0a; /* コンテキストに馴染むタクティカルブラック */
 }
 
-/* 🧬 システムグリッド背景 */
-.systemGrid {
-  position: fixed;
-  top: 0; left: 0; 
-  width: 100%; height: 100%;
-  background-image: 
-    linear-gradient(var(--grid-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-  background-size: 50px 50px;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* 📢 告知バー */
+/* 2. ステマ規制対策：PR表記（ヘッダー直下に張り付く） */
 .adDisclosure {
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
-  border-bottom: 1px solid rgba(233, 69, 96, 0.3);
-  backdrop-filter: blur(12px);
-  z-index: 1000;
-  position: relative;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.adDisclosureInner {
-  max-width: 1800px;
-  margin: 0 auto;
-  padding: 8px 15px;
-  font-size: 11px;
-  text-align: center;
+  background-color: rgba(26, 26, 26, 0.95); /* ヘッダーの #1a1a1a に合わせた色 */
+  font-size: 10px;
   color: #94a3b8;
-  letter-spacing: 0.05em;
-}
-
-.ageLimit {
-  margin-left: 10px;
-  color: #e94560;
-  font-weight: 900;
+  text-align: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(233, 69, 96, 0.3); /* アクセントレッドの境界線 */
   letter-spacing: 0.1em;
-  text-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
+  font-weight: 500;
+  width: 100%;
+  
+  /* 🪄 【第2の魔法】: スクロール時、ヘッダー(70px)のすぐ下で固定される設定 */
+  position: sticky;
+  top: 70px; 
+  z-index: 900; /* ヘッダーの 1000 より一段低く設定 */
+  backdrop-filter: blur(8px); /* 背後をうっすら透かす高級感 */
 }
 
-/* 🏗️ コンテナ構造 */
+/* 3. レイアウトの外枠：中央寄せと最大幅制限 */
 .layoutContainer {
-  flex: 1 0 auto;
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  width: 100%;
+}
+
+/* 4. サイドバーとメインを横並びにするインナー */
+.layoutInner {
+  display: flex;
+  gap: 32px;
+  /* 🪄 【第3の魔法】: PR帯との間にさらに余白を設け、診断タイトルとの被りを完全排除 */
+  padding: 40px 0 60px 0; 
+}
+
+/* 5. メインコンテンツ領域（右側） */
+.mainContent {
+  flex: 1;
+  min-width: 0; /* Flex突き破り防止 */
+  animation: tacticalFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
 }
 
-.mainContent {
-  flex: 1 0 auto;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-width: 0; /* Flexアイテムのハミ出し防止 */
-}
+/* 6. モバイル対応：レスポンシブ設定 */
 
-/* 🔍 ローディング */
-.loadingWrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-}
-
-.loadingPulse {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  letter-spacing: 2px;
-  color: #e94560;
-  animation: pulse 1.5s infinite ease-in-out;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; transform: scale(0.98); }
-  50% { opacity: 1; transform: scale(1); }
-}
-
-/* 📱 モバイル対応 */
-@media (max-width: 768px) {
-  .adDisclosureInner {
-    font-size: 10px;
-    padding: 6px 10px;
+/* タブレットサイズ：サイドバーを上、メインを下に */
+@media (max-width: 1024px) {
+  .layoutInner {
+    flex-direction: column;
+    gap: 32px;
+    padding: 30px 0;
   }
+}
+
+/* スマートフォンサイズ：余白の最小化 */
+@media (max-width: 768px) {
+  .bodyWrapper {
+    /* モバイルヘッダーも70px想定。もし違う場合はここを調整 */
+    padding-top: 70px; 
+  }
+
+  .layoutContainer {
+    padding: 0 16px;
+  }
+  
+  .adDisclosure {
+    font-size: 9px;
+    padding: 8px 4px;
+    top: 70px;
+  }
+
+  .layoutInner {
+    padding: 20px 0;
+  }
+}
+
+/* 7. ページ読み込み時のフェードイン（タクティカルな動き） */
+@keyframes tacticalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 吹きこぼれ防止用のユーティリティ */
+.noOverflow {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 💡 デバッグヒーロー等の重なりを強制回避するクラス */
+.heroSectionWrapper {
+  margin-top: 15px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }

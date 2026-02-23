@@ -5,23 +5,20 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getSiteMetadata, getSiteColor } from '../lib/siteConfig';
 import styles from './Footer.module.css';
-
-/** * ✅ 指定パス: プロジェクト構成に合わせてエイリアス (@shared/...) でインポート 
- */
 import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
 
 interface FooterProps {
   debugData?: {
     id?: string;
     source?: string;
-    targetUrl?: string;      // スクリプト側
-    data?: any;              // メイン商品のRAWデータ
-    sidebarData?: any;       // サイドバー（関連商品）のRAWデータ
+    targetUrl?: string;
+    data?: any;
+    sidebarData?: any;
     fetchError?: string | null;
-    errorMsg?: string | null; // スクリプト側のエラー名
-    relatedError?: any;       // 関連商品のエラー
-    params?: any;            // 昨日作成
-    apiInternalUrl?: string;  // スクリプト側
+    errorMsg?: string | null;
+    relatedError?: any;
+    params?: any;
+    apiInternalUrl?: string;
   };
 }
 
@@ -31,38 +28,60 @@ export default function Footer({ debugData }: FooterProps) {
   const siteColor = getSiteColor(site.site_name);
   const searchParams = useSearchParams();
   
-  // URLに ?debug=true が含まれているか判定
   const isDebugMode = searchParams.get('debug') === 'true';
   const isAdult = site.site_group === 'adult';
 
-  const siteDescription = isAdult 
-    ? "新作から人気作品まで、最新の動画情報を網羅。独自の5軸解析データに基づき、あなたに最適なエンタメ体験を提案します。"
-    : "AIによる最新スペック解析と価格比較。メーカー直販モデルから自作PCパーツまで、ハードウェア性能を数値化して最適な1台を提案します。";
+  /**
+   * 🛠️ リンク定義（後でここを編集してリンクを増やせます）
+   */
+  const siteConfigs: Record<string, any> = {
+    'Tiper': {
+      desc: "大人のためのプレミアム・エンターテインメント・ガイド。AIソムリエがあなたの感性に響く最高の1本をエスコートします。",
+      brands: [{ name: 'FANZA', slug: 'fanza' }, { name: 'DUGA', slug: 'duga' }, { name: 'MGS', slug: 'mgs' }],
+      content: [{ name: '🏠 トップ', path: '/' }, { name: '🔥 艶華ランキング', path: '/ranking' }, { name: '📅 発売カレンダー', path: '/calendar' }],
+      suffix: 'Tactical Archive Interface'
+    },
+    'AV Flash': {
+      desc: "圧倒的なアーカイブ量を誇る動画情報ポータル。メーカー・女優・ジャンル別の詳細解析で、見たい動画がすぐに見つかります。",
+      brands: [{ name: 'S1', slug: 's1' }, { name: 'MOODYZ', slug: 'moodyz' }, { name: 'SOD', slug: 'sod' }],
+      content: [{ name: '🏠 トップ', path: '/' }, { name: '🎬 新着動画', path: '/new-arrival' }, { name: '🏢 メーカー一覧', path: '/maker' }],
+      suffix: 'Ultimate Movie Registry'
+    },
+    'Bic Saving': {
+      desc: "「賢く買う」をAIが徹底サポート。主要ECサイトの価格推移とポイント還元率をリアルタイムに解析し、最安値をお届けします。",
+      brands: [{ name: 'Amazon', slug: 'amazon' }, { name: '楽天', slug: 'rakuten' }, { name: 'Yahoo!', slug: 'yahoo' }],
+      content: [{ name: '🏠 トップ', path: '/' }, { name: '🉐 特売情報', path: '/campaign' }, { name: '🎫 クーポン', path: '/coupon' }],
+      suffix: 'Smart Saving Index'
+    },
+    'Bic Station': {
+      desc: "ハードウェア性能の真実を数値化。最新PCスペック診断とBTOメーカー比較で、あなたの用途に最適な1台を提案します。",
+      brands: [{ name: 'Lenovo', slug: 'lenovo' }, { name: 'DELL', slug: 'dell' }, { name: 'Apple', slug: 'apple' }],
+      content: [{ name: '🏠 カタログ', path: '/' }, { name: '🔍 PC診断', path: '/pc-finder' }, { name: '🛠 パーツ比較', path: '/ranking' }],
+      suffix: 'Performance Registry'
+    }
+  };
 
-  const mainCategories = isAdult 
-    ? [ { name: 'FANZA', slug: 'fanza' }, { name: 'DUGA', slug: 'duga' }, { name: 'MGS', slug: 'mgs' } ]
-    : [ { name: 'Lenovo', slug: 'lenovo' }, { name: 'DELL', slug: 'dell' }, { name: 'Apple', slug: 'apple' } ];
-
-  const contentLinks = isAdult
-    ? [ { name: '🏠 トップページ', path: '/' }, { name: '🔥 人気ランキング', path: '/ranking' }, { name: '📅 発売カレンダー', path: '/calendar' } ]
-    : [ { name: '🏠 製品カタログ', path: '/' }, { name: '🔍 PC診断', path: '/pc-finder' }, { name: '🛠 パーツ比較', path: '/ranking' } ];
+  const config = siteConfigs[site.site_name] || siteConfigs['Bic Station'];
 
   return (
-    <footer className={styles.footer} style={{ borderTop: `4px solid ${siteColor}` }}>
+    <footer 
+      className={styles.footer} 
+      style={{ '--accent-red': siteColor } as React.CSSProperties}
+    >
       <div className={styles.container}>
         {/* --- 1. サイト概要 --- */}
         <div className={styles.column}>
           <h3 className={styles.siteTitle}>{site.site_name.toUpperCase()}</h3>
-          <p className={styles.description}>{siteDescription}</p>
+          <p className={styles.description}>{config.desc}</p>
           <div className={styles.brandGrid}>
-            <h4 className={styles.miniTitle}>{isAdult ? '主要プラットフォーム' : '主要ブランド'}</h4>
+            <h4 className={styles.miniTitle}>{isAdult ? 'MAIN PLATFORMS' : 'MAJOR BRANDS'}</h4>
             <div className={styles.brandLinks}>
-              {mainCategories.map((item, index) => (
+              {config.brands.map((item: any, index: number) => (
                 <React.Fragment key={item.slug}>
                   <Link href={`${site.site_prefix}/brand/${item.slug}`} className={styles.brandLink}>
                     {item.name}
                   </Link>
-                  {index < mainCategories.length - 1 && <span className={styles.brandSeparator}>|</span>}
+                  {index < config.brands.length - 1 && <span className={styles.brandSeparator}>|</span>}
                 </React.Fragment>
               ))}
             </div>
@@ -71,9 +90,9 @@ export default function Footer({ debugData }: FooterProps) {
 
         {/* --- 2. メインナビ --- */}
         <div className={styles.column}>
-          <h3 className={styles.sectionTitle}>コンテンツ</h3>
+          <h3 className={styles.sectionTitle}>CONTENTS</h3>
           <ul className={styles.linkList}>
-            {contentLinks.map((link) => (
+            {config.content.map((link: any) => (
               <li key={link.path} className={styles.linkItem}>
                 <Link href={`${site.site_prefix}${link.path}`}>{link.name}</Link>
               </li>
@@ -83,52 +102,35 @@ export default function Footer({ debugData }: FooterProps) {
 
         {/* --- 3. リーガル/情報 --- */}
         <div className={styles.column}>
-          <h3 className={styles.sectionTitle}>インフォメーション</h3>
+          <h3 className={styles.sectionTitle}>INFORMATION</h3>
           <ul className={styles.linkList}>
-            <li className={styles.linkItem}>
-              <Link href={`${site.site_prefix}/privacy-policy`}>🛡 プライバシーポリシー</Link>
-            </li>
-            <li className={styles.linkItem}>
-              <Link href={`${site.site_prefix}/disclaimer`}>⚠️ 免責事項</Link>
-            </li>
-            <li className={styles.linkItem}>
-              <Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link>
-            </li>
+            <li className={styles.linkItem}><Link href={`${site.site_prefix}/privacy-policy`}>🛡 プライバシーポリシー</Link></li>
+            <li className={styles.linkItem}><Link href={`${site.site_prefix}/disclaimer`}>⚠️ 免責事項</Link></li>
+            <li className={styles.linkItem}><Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link></li>
           </ul>
         </div>
       </div>
 
       <div className={styles.bottomBar}>
         <p className={styles.copyright}>
-          &copy; {currentYear} {site.site_name.toUpperCase()} - {isAdult ? 'Tactical Archive Interface' : 'Performance Registry'}
+          &copy; {currentYear} {site.site_name.toUpperCase()} - {config.suffix}
         </p>
       </div>
 
-      {/* --- 🚀 診断ターミナル (最下部: SystemDiagnosticHero) --- */}
-      {/* 昨日作成した配線 + スクリプト側の新プロパティをすべて統合 */}
+      {/* --- 🚀 診断ターミナル --- */}
       {isDebugMode && debugData && (
-        <div className={styles.debugContainer} style={{ marginTop: '30px' }}>
+        <div className={styles.debugContainer}>
           <SystemDiagnosticHero 
             id={debugData.id}
             source={debugData.source}
             data={debugData.data}
-            rawJson={debugData.data} // スクリプト側対応
+            rawJson={debugData.data}
             sidebarData={debugData.sidebarData}
             fetchError={debugData.fetchError || debugData.errorMsg}
             relatedError={debugData.relatedError}
             params={debugData.params}
-            componentPath={debugData.apiInternalUrl} // 内部URLをパスとして流用
+            componentPath={debugData.apiInternalUrl}
           />
-          <div style={{ 
-            textAlign: 'center', 
-            background: '#ffcc00', 
-            color: '#000', 
-            fontSize: '10px', 
-            fontWeight: 'bold', 
-            padding: '2px' 
-          }}>
-            DEBUG_MODE_ACTIVE: Data stream from /shared/debug/SystemDiagnosticHero.tsx
-          </div>
         </div>
       )}
     </footer>
