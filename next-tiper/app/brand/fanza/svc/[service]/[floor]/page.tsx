@@ -3,17 +3,9 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { 
-    getUnifiedProducts, // 💡 getAdultProducts から修正
-    fetchMakers, 
-    fetchGenres, 
-    fetchActresses,
-    fetchSeries,
-    fetchDirectors,
-    fetchAuthors,
-    fetchLabels,
+    getUnifiedProducts, 
     getFanzaDynamicMenu 
 } from '@shared/lib/api/django/adult';
-import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 import { constructMetadata } from '@shared/lib/metadata';
 import ArchiveTemplate from '@/app/brand/ArchiveTemplate'; 
 import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
@@ -36,17 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ service: 
 }
 
 /**
- * 🛠️ 補助関数: 安全なデータ抽出
- */
-const safeExtract = (data: any) => {
-    if (!data) return [];
-    if (Array.isArray(data)) return data;
-    if (data.results && Array.isArray(data.results)) return data.results;
-    return [];
-};
-
-/**
- * 🔳 FANZA_FLOOR_LIST_PAGE
+ * 🔳 FANZA_FLOOR_LIST_PAGE (Deep Segment Optimized)
  */
 export default async function FanzaFloorListPage(props: {
     params: Promise<{ service: string; floor: string }>;
@@ -61,44 +43,25 @@ export default async function FanzaFloorListPage(props: {
     const limit = 24;
     const currentPage = Number(resolvedSearchParams.page) || 1;
 
-    // --- 🏗️ 1. データ取得（並列） ---
+    // --- 🏗️ 1. データ取得（最小構成） ---
+    // 💡 サイドバー用のタクソノミー取得(fetchMakers等)は Layout 側に集約されたため削除
     const [
         dataRes, 
-        dynamicMenu, 
-        makersArray, 
-        genresArray, 
-        actressesArray,
-        seriesArray,
-        directorsArray,
-        authorsArray,
-        labelsArray,
-        wRes
+        dynamicMenu
     ] = await Promise.all([
-        getUnifiedProducts({ // 💡 正しい関数名を使用
+        getUnifiedProducts({ 
             api_source: 'fanza',
-            service: service, // adult.ts 内で service_code に自動変換されます
-            floor: floor,     // adult.ts 内で floor_code に自動変換されます
+            service: service, 
+            floor: floor,
             page: currentPage,
             ordering: sort,
             limit: limit
         }).catch(() => ({ results: [], count: 0 })),
         
         getFanzaDynamicMenu().catch(() => ({})), 
-
-        // カテゴリ別マスタ取得
-        fetchMakers({ limit: 40, api_source: 'fanza', ordering: '-product_count' }).catch(() => []),
-        fetchGenres({ limit: 40, api_source: 'fanza', ordering: '-product_count' }).catch(() => []),
-        fetchActresses({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchSeries({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchDirectors({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchAuthors({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchLabels({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        
-        getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
 
-    // --- 🛡️ 2. サイドバー用データの整理（FANZA階層構造） ---
-    // dynamicMenu は getFanzaDynamicMenu() によりサービス一覧(services)が返ってきている想定
+    // --- 🛡️ 2. サイドバー用データの整理（パンくず・タイトル生成用） ---
     const fanzaHierarchy = Object.entries(dynamicMenu || {}).map(([serviceName, content]: [string, any]) => {
         const floorItems = (content.floors || []).map((f: any) => ({
             id: f.code,
@@ -126,51 +89,40 @@ export default async function FanzaFloorListPage(props: {
             {/* 🐞 デバッグモード */}
             {isDebug && (
                 <SystemDiagnosticHero 
-                    id={`FANZA_SVC_${service}_${floor}`}
+                    id={`FANZA_SVC_${service}_${floor}_OPTIMIZED`}
                     source="FANZA"
                     data={{
+                        mode: 'DEEP_SEGMENT_STREAM',
                         service,
                         floor,
                         totalCount: dataRes.count,
                         currentPage,
-                        actressesFound: safeExtract(actressesArray).length,
-                        authorsFound: safeExtract(authorsArray).length,
-                        wpStatus: wRes?.results ? 'OK' : 'EMPTY'
+                        apiSource: 'fanza'
+                    }}
+                    rawJson={{
+                        sampleProduct: dataRes.results?.[0],
+                        hierarchy: fanzaHierarchy
                     }}
                 />
             )}
 
             <ArchiveTemplate 
                 platform="fanza"
+                /* 💡 タイトルをよりタクティカルに */
                 title={`${floor.toUpperCase()} SECTOR`}
                 products={dataRes.results || []}
                 totalCount={dataRes.count || 0}
                 
-                // サイドバーデータの完全注入
+                // パンくず・ナビゲーション用データ
                 officialHierarchy={fanzaHierarchy} 
-                makers={safeExtract(makersArray)}
-                genres={safeExtract(genresArray)} 
-                series={safeExtract(seriesArray)}
-                directors={safeExtract(directorsArray)}
-                labels={safeExtract(labelsArray)}
-
-                // 属性の分離（ビデオ系なら女優、電子書籍系なら著者が優先表示されるロジック用）
-                actresses={safeExtract(actressesArray)}
-                authors={safeExtract(authorsArray)}
                 
-                recentPosts={safeExtract(wRes).map((p: any) => ({
-                    id: p.id,
-                    title: p.title?.rendered || 'No Title',
-                    slug: p.slug,
-                    date: p.date
-                }))}
+                // 💡 タクソノミーPropsは Layout 側が処理するため、ここでは渡さず Template 内で透過させます
                 
                 currentPage={currentPage}
                 currentSort={sort}
                 
                 // パス設定（ページネーション等の基準URL）
                 basePath={`/brand/fanza/svc/${service}/${floor}`}
-                categoryPathPrefix="/brand/fanza/cat" 
                 
                 extraParams={{ 
                     service, 

@@ -10,12 +10,9 @@ import {
     fetchActresses, 
     fetchSeries,
     fetchDirectors,
-    fetchAuthors,
-    getFanzaDynamicMenu 
+    fetchAuthors 
 } from '@shared/lib/api/django/adult';
-import { getSiteMainPosts } from '@shared/lib/api/wordpress';
-import AdultSidebar from '@shared/layout/Sidebar/AdultSidebar';
-import styles from '@/app/brand/Archive.module.css'; // 既存のスタイルを再利用
+import styles from '@/app/brand/Archive.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +25,9 @@ const VALID_CATEGORIES: Record<string, { label: string; fetcher: any }> = {
     author: { label: 'AUTHOR', fetcher: fetchAuthors },
 };
 
+/**
+ * 🛰️ METADATA_GENERATOR
+ */
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
     const { category } = await params;
     const label = VALID_CATEGORIES[category]?.label || 'CATEGORY';
@@ -37,6 +37,9 @@ export async function generateMetadata({ params }: { params: Promise<{ category:
     };
 }
 
+/**
+ * 🔳 FANZA_CATEGORY_LIST_PAGE (Layout-Aware Optimized)
+ */
 export default async function FanzaCategoryListPage(props: { 
     params: Promise<{ category: string }> 
 }) {
@@ -46,123 +49,88 @@ export default async function FanzaCategoryListPage(props: {
     const config = VALID_CATEGORIES[category];
     if (!config) notFound();
 
-    // 2. データ並列取得
-    const [
-        itemsRes,
-        dynamicMenu,
-        wpData,
-        // サイドバー用のミニマスタ
-        sideMakers,
-        sideGenres
-    ] = await Promise.all([
-        config.fetcher({ limit: 500, api_source: 'fanza', ordering: '-product_count' }).catch(() => []),
-        getFanzaDynamicMenu().catch(() => ({})), 
-        getSiteMainPosts(0, 8).catch(() => ({ results: [] })),
-        fetchMakers({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchGenres({ limit: 40, api_source: 'fanza' }).catch(() => [])
-    ]);
+    // 2. データ取得 (このカテゴリのリストだけを取得)
+    // 💡 サイドバー用の fetchMakers などの重複取得をすべて削除
+    const itemsRes = await config.fetcher({ 
+        limit: 500, 
+        api_source: 'fanza', 
+        ordering: '-product_count' 
+    }).catch(() => []);
 
     const items = Array.isArray(itemsRes) ? itemsRes : (itemsRes?.results || []);
-
-    // 3. サイドバー用階層データの整理
-    const fanzaHierarchy = Object.entries(dynamicMenu).map(([serviceName, content]: [string, any]) => {
-        const floorItems = (content.floors || []).map((f: any) => ({
-            id: f.code,
-            name: f.name,
-            floor_name: f.name,
-            floor_code: f.code,
-            href: `/brand/fanza/svc/${content.code}/${f.code}`,
-        }));
-        return {
-            id: content.code,
-            name: serviceName,
-            service_code: content.code,
-            floors: floorItems,
-        };
-    }).filter(item => item.floors.length > 0);
-
     const accentColor = '#ff3366'; // FANZA PINK
 
     return (
         <div 
             className={styles.pageWrapper} 
             style={{ '--accent': accentColor } as any}
+            data-platform="fanza"
         >
             <div className={styles.ambientGlow} />
 
-            <div className={styles.container}>
-                {/* --- 🛰️ SIDEBAR AREA (FANZA共通) --- */}
-                <aside className={styles.sidebarWrapper}>
-                    <div className={styles.stickySidebar}>
-                        <AdultSidebar 
-                            officialHierarchy={fanzaHierarchy}
-                            makers={Array.isArray(sideMakers) ? sideMakers : sideMakers.results} 
-                            genres={Array.isArray(sideGenres) ? sideGenres : sideGenres.results}
-                            recentPosts={Array.isArray(wpData) ? wpData : wpData.results}
-                        />
-                    </div>
-                </aside>
+            {/* 🏗️ CORE_CONTENT
+                layout.tsx の grid-area (1fr) に直接配置されます。
+                .container や .sidebarWrapper は不要になりました。
+            */}
+            <main className={styles.mainContent}>
+                <nav className={styles.breadcrumb}>
+                    <Link href="/" className={styles.bcLink}>ROOT</Link>
+                    <span className={styles.bcDivider}>/</span>
+                    <Link href="/brand/fanza" className={styles.bcLink}>FANZA</Link>
+                    <span className={styles.bcDivider}>/</span>
+                    <span className={styles.bcActive}>{config.label}</span>
+                </nav>
 
-                {/* --- 🚀 MAIN CONTENT AREA --- */}
-                <main className={styles.mainContent}>
-                    <nav className={styles.breadcrumb}>
-                        <Link href="/" className={styles.bcLink}>ROOT</Link>
-                        <span className={styles.bcDivider}>/</span>
-                        <Link href="/brand/fanza" className={styles.bcLink}>FANZA</Link>
-                        <span className={styles.bcDivider}>/</span>
-                        <span className={styles.bcActive}>{config.label}</span>
-                    </nav>
-
-                    <header className={styles.headerSection}>
-                        <div className={styles.titleGroup}>
-                            <div className="flex items-center gap-3 mb-2">
-                                <span className="w-8 h-[1px] bg-[var(--accent)]"></span>
-                                <span className="text-[10px] font-mono tracking-[0.4em] text-[var(--accent)] uppercase">
-                                    Index Scan: {category}
-                                </span>
-                            </div>
-                            <h1 className={styles.titleMain}>{config.label} LIST</h1>
-                            <div className={styles.statusInfo}>
-                                <span className={styles.statusLabel}>NODES_COUNT:</span>
-                                <span className={styles.statusValue}>{items.length}</span>
-                            </div>
+                <header className={styles.headerSection}>
+                    <div className={styles.titleGroup}>
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="w-8 h-[1px] bg-[var(--accent)]"></span>
+                            <span className="text-[10px] font-mono tracking-[0.4em] text-[var(--accent)] uppercase opacity-80">
+                                Index Scan: {category}
+                            </span>
                         </div>
-                    </header>
-
-                    {/* 🔳 カテゴリグリッド */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
-                        {items.length > 0 ? (
-                            items.map((item: any) => (
-                                <Link 
-                                    key={item.id} 
-                                    href={`/brand/fanza/cat/${category}/${item.slug || item.id}`}
-                                    className="group relative bg-black/40 border border-white/10 p-4 hover:border-[var(--accent)] transition-all duration-300"
-                                >
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-gray-400 text-[10px] font-mono group-hover:text-[var(--accent)] transition-colors">
-                                            #{item.id}
-                                        </span>
-                                        <span className="text-white font-bold text-sm leading-tight">
-                                            {item.name}
-                                        </span>
-                                        <div className="mt-2 flex items-center justify-between">
-                                            <span className="text-[var(--accent)] text-[10px] font-mono">
-                                                {item.product_count || 0} ITEMS
-                                            </span>
-                                            <span className="text-white/20 group-hover:text-[var(--accent)] transition-colors">→</span>
-                                        </div>
-                                    </div>
-                                    <div className="absolute inset-0 bg-[var(--accent)] opacity-0 group-hover:opacity-[0.03] transition-opacity pointer-events-none" />
-                                </Link>
-                            ))
-                        ) : (
-                            <div className="col-span-full py-20 text-center border border-dashed border-white/10">
-                                <p className="text-gray-500 font-mono italic">NO_DATA_STREAM_AVAILABLE</p>
-                            </div>
-                        )}
+                        <h1 className={styles.titleMain}>{config.label} INDEX</h1>
+                        <div className={styles.statusInfo}>
+                            <span className={styles.statusLabel}>NODES_DETECTED:</span>
+                            <span className={styles.statusValue}>{items.length}</span>
+                        </div>
                     </div>
-                </main>
-            </div>
+                </header>
+
+                {/* 🔳 カテゴリグリッド (全幅を活かしたタクティカル・レイアウト) */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-8">
+                    {items.length > 0 ? (
+                        items.map((item: any) => (
+                            <Link 
+                                key={item.id} 
+                                href={`/brand/fanza/cat/${category}/${item.slug || item.id}`}
+                                className="group relative bg-black/40 border border-white/5 p-4 hover:border-[var(--accent)] transition-all duration-300 overflow-hidden"
+                            >
+                                <div className="flex flex-col gap-1 relative z-10">
+                                    <span className="text-gray-500 text-[9px] font-mono group-hover:text-[var(--accent)] transition-colors">
+                                        ID_{String(item.id).padStart(6, '0')}
+                                    </span>
+                                    <span className="text-white font-bold text-sm leading-tight group-hover:translate-x-1 transition-transform duration-300">
+                                        {item.name}
+                                    </span>
+                                    <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between">
+                                        <span className="text-[var(--accent)] text-[10px] font-mono opacity-70">
+                                            {item.product_count || 0} RECS
+                                        </span>
+                                        <span className="text-white/10 group-hover:text-[var(--accent)] group-hover:translate-x-1 transition-all">→</span>
+                                    </div>
+                                </div>
+                                {/* 装飾用スキャンライン */}
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-0 group-hover:opacity-100 group-hover:top-full transition-all duration-1000 ease-in-out" />
+                            </Link>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-40 text-center border border-dashed border-white/5 rounded">
+                            <p className="text-gray-500 font-mono tracking-widest uppercase">No data nodes available in this sector.</p>
+                        </div>
+                    )}
+                </div>
+            </main>
         </div>
     );
 }

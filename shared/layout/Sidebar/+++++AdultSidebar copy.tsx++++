@@ -41,7 +41,7 @@ interface SidebarProps {
   series?: MasterItem[];
   directors?: MasterItem[];
   authors?: MasterItem[]; 
-  labels?: MasterItem[];   
+  labels?: MasterItem[];  
   recentPosts?: { id: string; title: string; slug?: string }[];
 }
 
@@ -65,7 +65,7 @@ export default function AdultSidebar({
     'PLATFORMS': true,
     'GENRES': true,
     'MAKERS': true,
-    'ACTRESSES': true,
+    'ACTRESSES': true, // 女優セクションも初期で開くように追加
     'LOGS': true
   });
 
@@ -126,7 +126,7 @@ export default function AdultSidebar({
       </section>
 
       {/* 🚀 OFFICIAL_LAYERS */}
-      {currentPlatform && (officialHierarchy.length > 0) && (
+      {currentPlatform && officialHierarchy.length > 0 && (
         <section className={styles.sectionWrapper}>
           <div className={styles.sectionHeader} onClick={() => toggleSection('OFFICIAL_NAV')}>
             <h3 className={styles.headerTitle}>
@@ -146,7 +146,7 @@ export default function AdultSidebar({
                     <React.Fragment key={`svc-${sCode}`}>
                       <li className={styles.masterListItem}>
                         <Link href={getOfficialLink(sCode)} className={`${styles.masterLink} ${isSvcActive(sCode) ? styles.active : ''}`}>
-                          <span className={styles.itemName} style={{ color: 'var(--site-theme-color)', fontWeight: 'bold' }}>{sName}</span>
+                          <span className={styles.itemName} style={{ color: 'var(--accent)', fontWeight: 'bold' }}>{sName}</span>
                         </Link>
                       </li>
                       {floors.map((floor) => {
@@ -156,7 +156,7 @@ export default function AdultSidebar({
                         return (
                           <li key={`flr-${fCode}`} className={styles.masterListItem}>
                             <Link href={getOfficialLink(sCode, fCode)} className={`${styles.masterLink} ${isFlrActive(sCode, fCode) ? styles.active : ''}`} style={{ paddingLeft: '1.2rem' }}>
-                              <span className={styles.itemName}><span style={{ color: 'var(--site-theme-color)', marginRight: '6px', opacity: 0.5 }}>└</span>{fName}</span>
+                              <span className={styles.itemName}><span style={{ color: 'var(--accent)', marginRight: '6px', opacity: 0.5 }}>└</span>{fName}</span>
                             </Link>
                           </li>
                         );
@@ -170,12 +170,12 @@ export default function AdultSidebar({
         </section>
       )}
 
-      {/* 🛠️ MASTER_DATA_INDEXES (Genres, Makers, Actresses, etc.) */}
+      {/* 🛠️ MASTER_DATA_INDEXES */}
       {[
         { id: 'GENRES', type: 'genres', data: genres, icon: '🏷️', label: 'ジャンル' },
         { id: 'MAKERS', type: 'makers', data: makers, icon: '🏢', label: 'メーカー' },
         { id: 'ACTRESSES', type: 'actresses', data: actresses, icon: '👩', label: '女優' },
-        { id: 'LABELS', type: 'labels', data: labels, icon: '🔖', label: 'レーベル' },
+        { id: 'LABELS', type: 'labels', data: labels, icon: '🏷️', label: 'レーベル' },
         { id: 'SERIES', type: 'series', data: series, icon: '📚', label: 'シリーズ' },
         { id: 'DIRECTORS', type: 'directors', data: directors, icon: '🎬', label: '監督' },
         { id: 'AUTHORS', type: 'authors', data: authors, icon: '✍️', label: '著者' },
@@ -215,33 +215,6 @@ export default function AdultSidebar({
           )}
         </section>
       ))}
-
-      {/* 📰 RECENT_LOGS (WordPress 連携) */}
-      <section className={styles.sectionWrapper}>
-        <div className={styles.sectionHeader} onClick={() => toggleSection('LOGS')}>
-          <h3 className={styles.headerTitle}>
-            <span className={styles.icon}>📝</span> RECENT_REPORTS
-          </h3>
-          <span className={styles.arrow}>{openSections['LOGS'] ? '▲' : '▼'}</span>
-        </div>
-        {openSections['LOGS'] && (
-          <div className={styles.contentBody}>
-            <ul className={styles.masterList}>
-              {recentPosts.length > 0 ? (
-                recentPosts.map((post) => (
-                  <li key={post.id} className={styles.masterListItem}>
-                    <Link href={`/news/${post.slug}`} className={styles.masterLink}>
-                      <span className={styles.itemName}>{post.title}</span>
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                <li className={styles.emptyStatus}>[!] NO_REPORTS</li>
-              )}
-            </ul>
-          </div>
-        )}
-      </section>
 
       <div className={styles.systemFooter}>
         <div className={styles.statusRow}>

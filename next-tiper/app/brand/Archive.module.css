@@ -1,3 +1,9 @@
+/* ==============================================================================
+ * 📂 Archive.module.css - Zenith Tactical Archive Interface (Final Edition)
+ * 🚀 Protocol: Override Root Layout & Re-Establish Tactical Sidebar
+ * 🛠️ Status: Build Error Fixed (Pure Selector Optimized)
+ * ============================================================================== */
+
 /* --- 🎨 THEME_SYSTEM: 共通変数とプラットフォーム別定義 --- */
 
 .pageWrapper { 
@@ -64,52 +70,29 @@
 /* --- 🏗️ CORE_LAYOUT: アーキテクチャ --- */
 
 .container {
-  display: flex;
-  gap: 50px;
+  width: 100%;
   max-width: 1920px;
   margin: 0 auto;
-  padding: 40px 3% 100px;
+  padding: 20px 40px 100px;
   position: relative;
-  z-index: 1;
-  /* サイドバーをコンテンツの高さに合わせる */
-  align-items: flex-start; 
+  z-index: 10;
+
+  /* 💡 司令塔スタイル: テンプレート内部で横並びを実現 */
+  display: flex;
+  align-items: flex-start;
+  gap: 50px;
 }
 
+/* 🛰️ テンプレート側サイドバー設定（本物のサイドバー） */
 .sidebarWrapper {
-  width: 280px;
+  width: 320px; 
   flex-shrink: 0;
-}
-
-.stickySidebar {
   position: sticky;
-  top: 40px; /* ブラウザ上部からの余白を詰め、表示領域を拡大 */
-  
-  /* 高さを動的に計算し、スクロール可能に */
-  height: auto;
-  max-height: calc(100vh - 80px); 
-  overflow-y: auto;
-  padding-right: 15px;
-  
-  /* スクロールバーのカスタマイズ (Firefox) */
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent) transparent;
-}
-
-/* スクロールバーのカスタマイズ (Webkit/Chrome/Safari) */
-.stickySidebar::-webkit-scrollbar {
-  width: 4px;
-}
-.stickySidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.stickySidebar::-webkit-scrollbar-thumb {
-  background: var(--accent);
-  border-radius: 10px;
-  box-shadow: 0 0 10px var(--accent-glow);
+  top: 140px; /* PR帯とヘッダー分を考慮 */
 }
 
 .mainContent {
-  flex-grow: 1;
+  flex: 1;
   min-width: 0;
 }
 
@@ -169,14 +152,14 @@
 }
 
 .titleMain {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.1;
   margin-bottom: 15px;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
   font-style: italic;
   text-transform: uppercase;
-  background: linear-gradient(to bottom, #fff, #888);
+  background: linear-gradient(to bottom, #fff, #aaa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -230,36 +213,54 @@
 
 /* --- 📱 MOBILE_ADAPTATION: レスポンシブ --- */
 
-@media (max-width: 1400px) {
-  .container { gap: 30px; }
-  .sidebarWrapper { width: 260px; }
+@media (max-width: 1200px) {
+  .container { padding: 20px 20px 100px; gap: 30px; }
+  .sidebarWrapper { width: 250px; }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1024px) {
   .container { flex-direction: column; }
-  .sidebarWrapper { 
-    width: 100%; 
-    border-right: none;
-    border-bottom: 1px solid var(--border-dim);
-    padding-bottom: 30px;
-  }
-  .stickySidebar { 
-    position: relative; 
-    top: 0; 
-    max-height: 400px; /* モバイル時は逆に長すぎないように制御 */
-    display: block;
-    overflow-y: auto;
-  }
+  .sidebarWrapper { width: 100%; position: relative; top: 0; }
+  .titleMain { font-size: 2.8rem; }
 }
 
 @media (max-width: 768px) {
-  .container { padding: 20px 5%; }
-  .titleMain { font-size: 2.5rem; }
+  .container { padding: 20px 15px; }
+  .titleMain { font-size: 2rem; }
   .productGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px 12px;
   }
-  .headerSection { margin-bottom: 30px; }
+}
+
+/* --- 🚨 ROOT_LAYOUT_FORCE_OVERRIDE: 二重サイドバー強制削除 --- */
+
+/* * 💡 Next.js Build Fix:
+ * .pageWrapper (ローカルクラス) をセレクタの起点に置くことで、
+ * 「Pure Selector」エラーを回避しつつ、外側のクラスを上書きします。
+ */
+
+.pageWrapper :global([class*="layoutWrapper"]) {
+  display: block !important;
+  grid-template-columns: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.pageWrapper :global([class*="sidebarArea"]) {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+}
+
+.pageWrapper :global([class*="mainContent"]) {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
 }
 
 /* --- 🛠️ DEBUG_UTILS --- */

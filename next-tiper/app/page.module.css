@@ -1,5 +1,6 @@
 /* ==============================================================================
- * 📂 page.module.css - Zenith Tactical Archive Interface (Integrated Edition)
+ * 📂 page.module.css - Zenith Tactical Archive Interface (Optimized Edition)
+ * 🚀 Final Optimization: Dedicated Content Stream Design
  * ============================================================================== */
 
 .pageContainer {
@@ -20,7 +21,7 @@
   position: relative;
 }
 
-/* 📺 CRT走査線・ノイズエフェクト (z-indexを調整して全体に適用) */
+/* 📺 CRT走査線・ノイズエフェクト */
 .pageContainer::before {
   content: " ";
   position: fixed;
@@ -33,53 +34,13 @@
   opacity: 0.15;
 }
 
-/* --- 🏗️ 1. レイアウト構造 (共通サイドバーと共存) --- */
-.main {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  min-width: 0; /* 💡 Flexアイテムのハミ出しを防止 */
-}
-
-.wrapper {
-  max-width: 1700px;
-  width: 100%;
-  margin: 20px auto 60px;
-  padding: 0 3%;
-  display: grid;
-  /* 💡 サイドバー領域(320px)を確保しつつ、右側のメインを可変に */
-  grid-template-columns: 320px 1fr;
-  gap: 50px; 
-  position: relative;
-  z-index: 10;
-  align-items: start; 
-  box-sizing: border-box;
-}
-
-/* --- 🏛️ 2. 内部サイドバーエリア --- */
-.sidebar {
-  position: relative;
-  z-index: 20;
-}
-
-.sidebarSticky {
-  position: sticky;
-  top: 40px; 
-  height: auto;
-  max-height: none; 
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  padding-bottom: 50px;
-  overflow-y: visible; 
-}
-
-/* --- 🎬 3. コンテンツストリーム --- */
+/* --- 🏗️ 1. レイアウト構造 (Layout側の mainContent 内で動作) --- */
 .contentStream {
+  width: 100%;
   min-width: 0; /* 💡 グリッド内での画像ハミ出し防止 */
   animation: fadeIn 0.8s ease-out;
+  /* 🪄 Layout側の余白を考慮しつつ、ストリームの独立性を担保 */
+  padding-bottom: 80px;
 }
 
 @keyframes fadeIn {
@@ -88,7 +49,9 @@
 }
 
 /* --- 📰 ニュースセクション (Hero Area) --- */
-.newsSection { margin-bottom: 80px; }
+.newsSection { 
+  margin-bottom: 80px; 
+}
 
 .sectionHeader {
   display: flex;
@@ -116,6 +79,19 @@
   color: #fff;
   text-transform: uppercase;
   font-family: 'JetBrains Mono', monospace;
+}
+
+.headerLink {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: none;
+  transition: 0.3s;
+  letter-spacing: 0.1em;
+}
+
+.headerLink:hover {
+  color: #e94560;
 }
 
 /* ニュースカードグリッド */
@@ -179,9 +155,13 @@
 }
 
 /* --- 📀 データストリーム (Archive Registry) --- */
-.archiveRegistry { margin-top: 60px; }
+.archiveRegistry { 
+  margin-top: 60px; 
+}
 
-.registryHeader { margin-bottom: 50px; }
+.registryHeader { 
+  margin-bottom: 50px; 
+}
 
 .registryMainTitle {
   font-size: clamp(32px, 5vw, 56px);
@@ -202,7 +182,9 @@
 }
 
 /* --- ⚡ プラットフォームセクション --- */
-.platformSection { margin-bottom: 100px; }
+.platformSection { 
+  margin-bottom: 100px; 
+}
 
 .platformTitle {
   font-size: 26px;
@@ -231,6 +213,10 @@
   background: rgba(255, 255, 255, 0.01);
 }
 
+.glitchBox {
+  position: relative;
+}
+
 .glitchText {
   font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
@@ -242,34 +228,6 @@
 @keyframes pulse {
   0%, 100% { opacity: 0.6; transform: scale(0.98); }
   50% { opacity: 1; color: #fff; transform: scale(1); }
-}
-
-/* --- 💰 Price ＆ AI Summary 統合用追加スタイル --- */
-.visualGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 40px;
-}
-
-@media (min-width: 1280px) {
-  .visualGrid {
-    grid-template-columns: 450px 1fr;
-  }
-}
-
-.aiSummaryCard {
-  background: rgba(10, 10, 20, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 30px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.priceContainer {
-  margin-top: auto; /* 💡 これで価格を最下部に押し出す */
-  padding-top: 40px;
 }
 
 /* --- 🔘 メガアクション --- */
@@ -306,17 +264,24 @@
 
 /* --- 📱 モバイル対応 --- */
 @media (max-width: 1100px) {
-  .wrapper { 
-    grid-template-columns: 1fr; 
-    padding: 0 20px;
-    gap: 30px;
+  .registryMainTitle { 
+    font-size: 38px; 
   }
-  .sidebarSticky { 
-    position: static; 
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  .platformTitle {
+    font-size: 20px;
+    margin-bottom: 25px;
   }
-  .registryMainTitle { font-size: 38px; }
-  .visualGrid { grid-template-columns: 1fr; }
+  .newsSection {
+    margin-bottom: 60px;
+  }
+  .footerAction {
+    margin: 80px 0;
+  }
+  .megaTerminalBtn {
+    padding: 20px 30px;
+    font-size: 13px;
+    width: 100%;
+    text-align: center;
+    letter-spacing: 0.2em;
+  }
 }

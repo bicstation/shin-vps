@@ -19,12 +19,18 @@ import Header from '@shared/layout/Header';
 import Footer from '@shared/layout/Footer';
 
 /**
- * ✅ 3. SEO設定
+ * ✅ 3. 新規追加: サイドバーラッパー
+ * Propsを渡さなくても、内部でデータを自動取得するサーバーコンポーネント
+ */
+import SidebarWrapper from '@shared/layout/Sidebar/SidebarWrapper';
+
+/**
+ * ✅ 4. SEO設定
  */
 import { constructMetadata } from '@shared/lib/metadata';
 
 /**
- * ✅ 4. ページ遷移プログレスバー
+ * ✅ 5. ページ遷移プログレスバー
  */
 import RouteProgressBar from '@shared/common/RouteProgressBar';
 
@@ -101,20 +107,36 @@ export default async function RootLayout({
           </div>
         </div>
 
-        {/* 3. メインレイアウト構造（全幅・可変） */}
+        {/* 3. メインレイアウト構造（サイドバー固定 + コンテンツ可変） */}
         <div className={styles.layoutContainer}>
-          <main className={styles.mainContent}>
-            <Suspense 
-              fallback={
-                <div className={styles.loadingWrapper}>
-                  <div className={styles.loadingPulse}>SYNCING_UNIFIED_GATEWAY...</div>
-                </div>
-              }
-            >
-              {/* 💡 ここに Page 側の grid (wrapper) が入ります */}
-              {children}
-            </Suspense>
-          </main>
+          <div className={styles.layoutWrapper}>
+            
+            {/* 🏛️ 共通サイドバーエリア */}
+            <aside className={styles.sidebarArea}>
+              <div className={styles.sidebarSticky}>
+                <Suspense fallback={<div className={styles.sidebarLoading}>LOADING_SYSTEM_MATRIX...</div>}>
+                  <SidebarWrapper />
+                </Suspense>
+              </div>
+            </aside>
+
+            {/* 🏗️ コンテンツストリーム（ここが全幅で広がります） */}
+            <main className={styles.mainContent}>
+              <Suspense 
+                fallback={
+                  <div className={styles.loadingWrapper}>
+                    <div className={styles.loadingPulse}>SYNCING_UNIFIED_GATEWAY...</div>
+                  </div>
+                }
+              >
+                {/* 💡 各Pageコンポーネントが表示されます。
+                   サイドバーがあることを前提とした幅広のレイアウトになります。
+                */}
+                {children}
+              </Suspense>
+            </main>
+
+          </div>
         </div>
 
         {/* 4. 共通フッター */}

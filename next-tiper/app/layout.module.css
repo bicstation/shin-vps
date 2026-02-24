@@ -1,7 +1,8 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-LAYOUT-CSS] - 2026 Tactical Final Edition
+ * 🏗️ [TIPER.LIVE-LAYOUT-CSS] - 2026 Zenith Edition
  * ---------------------------------------------------------------------
- * ヘッダー(70px)とPR表記のスタックを完全に分離し、重なりをゼロにする設計。
+ * サイドバー(320px)とメインストリームをGridで完全制御。
+ * 全幅レイアウトを活かしつつ、ヘッダー・PR帯との重なりを排除。
  * ===================================================================== */
 
 /* 1. 全体を包むラッパー：フッターを常に最下部へ */
@@ -11,121 +12,146 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* フォントレンダリング最適化 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* 🪄 【魔法のクッション】: ヘッダー(70px)分、ページ全体を最初から押し下げる */
-  /* これにより、後続の要素がヘッダーの裏に潜り込むのを物理的に防ぎます */
+  /* 🪄 【魔法のクッション】: 固定ヘッダー(70px)分の押し下げ */
   padding-top: 70px;
-
-  /* アンカーリンク位置の補正 */
   scroll-padding-top: 70px;
-  background-color: #0a0a0a; /* コンテキストに馴染むタクティカルブラック */
+  background-color: #06060a; /* tiper.live 専用の漆黒 */
 }
 
-/* 2. ステマ規制対策：PR表記（ヘッダー直下に張り付く） */
+/* 2. ステマ規制対策：PR表記（ヘッダー直下に張り付き、スクロール追従） */
 .adDisclosure {
-  background-color: rgba(26, 26, 26, 0.95); /* ヘッダーの #1a1a1a に合わせた色 */
-  font-size: 10px;
-  color: #94a3b8;
+  background-color: rgba(6, 6, 10, 0.9); /* 背景に溶け込ませる */
+  font-size: 11px;
+  color: #888;
   text-align: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(233, 69, 96, 0.3); /* アクセントレッドの境界線 */
-  letter-spacing: 0.1em;
-  font-weight: 500;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(233, 69, 96, 0.15); /* 微細なグリッドライン */
+  letter-spacing: 0.15em;
   width: 100%;
   
-  /* 🪄 【第2の魔法】: スクロール時、ヘッダー(70px)のすぐ下で固定される設定 */
+  /* 🪄 【第2の魔法】: ヘッダー(70px)のすぐ下で固定 */
   position: sticky;
   top: 70px; 
-  z-index: 900; /* ヘッダーの 1000 より一段低く設定 */
-  backdrop-filter: blur(8px); /* 背後をうっすら透かす高級感 */
+  z-index: 900;
+  backdrop-filter: blur(12px);
 }
 
-/* 3. レイアウトの外枠：中央寄せと最大幅制限 */
+.ageLimit {
+  color: #e94560; /* 警告レッド */
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+/* 3. レイアウトの外枠：全幅を活かす設計 */
 .layoutContainer {
   flex: 1;
   width: 100%;
-  max-width: 1440px;
+  /* tiper.live はアーカイブとしての視認性を重視し、BICSTATIONより広めの設定 */
+  max-width: 1800px; 
   margin: 0 auto;
-  padding: 0 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
 
-/* 4. サイドバーとメインを横並びにするインナー */
-.layoutInner {
-  display: flex;
-  gap: 32px;
-  /* 🪄 【第3の魔法】: PR帯との間にさらに余白を設け、診断タイトルとの被りを完全排除 */
-  padding: 40px 0 60px 0; 
+/* 4. サイドバーとメインを横並びにする Grid ラッパー */
+.layoutWrapper {
+  display: grid;
+  /* 🪄 【核となる設定】: 左側固定320px、右側は残り全幅(1fr) */
+  grid-template-columns: 320px 1fr;
+  gap: 0; /* tiper.live は境界線を際立たせるため、あえて隙間をゼロに */
+  min-height: calc(100vh - 150px);
 }
 
-/* 5. メインコンテンツ領域（右側） */
+/* 5. 🏛️ サイドバーエリア */
+.sidebarArea {
+  border-right: 1px solid rgba(233, 69, 96, 0.1); /* 垂直のシステムライン */
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.sidebarSticky {
+  position: sticky;
+  top: 130px; /* ヘッダー(70) + PR(40〜50) + 余裕 */
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  padding: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--site-theme-color) transparent;
+}
+
+/* 6. 🏗️ メインコンテンツ領域（右側・全幅） */
 .mainContent {
   flex: 1;
-  min-width: 0; /* Flex突き破り防止 */
-  animation: tacticalFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  min-width: 0;
+  padding: 40px 32px 80px 32px; /* 広い余白で高級感を演出 */
+  animation: zenithFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
 
-/* 6. モバイル対応：レスポンシブ設定 */
+/* 7. 背景システムグリッド（layout.tsx で呼び出し） */
+.systemGrid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.5;
+}
 
-/* タブレットサイズ：サイドバーを上、メインを下に */
-@media (max-width: 1024px) {
-  .layoutInner {
-    flex-direction: column;
-    gap: 32px;
-    padding: 30px 0;
+/* 8. レスポンシブ：モバイル対応 */
+
+/* タブレット：サイドバーを非表示にするか折りたたむ */
+@media (max-width: 1100px) {
+  .layoutWrapper {
+    grid-template-columns: 1fr; /* 1カラム化 */
+  }
+  .sidebarArea {
+    display: none; /* スマホ・タブではハンバーガーメニュー等に集約推奨 */
+  }
+  .mainContent {
+    padding: 30px 20px;
   }
 }
 
-/* スマートフォンサイズ：余白の最小化 */
-@media (max-width: 768px) {
-  .bodyWrapper {
-    /* モバイルヘッダーも70px想定。もし違う場合はここを調整 */
-    padding-top: 70px; 
-  }
-
-  .layoutContainer {
-    padding: 0 16px;
-  }
-  
-  .adDisclosure {
-    font-size: 9px;
-    padding: 8px 4px;
-    top: 70px;
-  }
-
-  .layoutInner {
-    padding: 20px 0;
-  }
-}
-
-/* 7. ページ読み込み時のフェードイン（タクティカルな動き） */
-@keyframes tacticalFadeIn {
+/* 9. アニメーション */
+@keyframes zenithFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    filter: blur(10px);
+    transform: translateX(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    filter: blur(0);
+    transform: translateX(0);
   }
 }
 
-/* 吹きこぼれ防止用のユーティリティ */
-.noOverflow {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+/* ローディング表示用 */
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }
 
-/* 💡 デバッグヒーロー等の重なりを強制回避するクラス */
-.heroSectionWrapper {
-  margin-top: 15px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+.loadingPulse {
+  font-family: monospace;
+  color: var(--site-theme-color);
+  letter-spacing: 0.2em;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }

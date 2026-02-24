@@ -2,36 +2,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import ArchiveTemplate from '@/app/brand/ArchiveTemplate';
 import { 
     getUnifiedProducts, 
-    fetchMakers, 
-    fetchGenres,
-    fetchActresses, 
-    fetchSeries,
-    fetchDirectors,
-    fetchAuthors,
-    fetchLabels,
     getFanzaDynamicMenu 
 } from '@shared/lib/api/django/adult';
-import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * 🛠️ 補助関数: 安全なデータ抽出
- */
-const safeExtract = (data: any) => {
-    if (!data) return [];
-    if (Array.isArray(data)) return data;
-    if (data.results && Array.isArray(data.results)) return data.results;
-    return [];
-};
-
-/**
- * 🔳 FANZA_CATEGORY_DETAIL_PAGE (商品一覧)
+ * 🔳 FANZA_CATEGORY_DETAIL_PAGE (Optimized Data Stream)
  */
 export default async function FanzaCategoryDetailPage(props: {
     params: Promise<{ category: string; id: string }>;
@@ -44,56 +25,46 @@ export default async function FanzaCategoryDetailPage(props: {
     const currentPage = Number(searchParams?.page) || 1;
     const currentSort = searchParams?.sort || '-release_date';
 
-    // カテゴリキーの正規化 (API引数名に変換)
-    // actress -> actress_id, maker -> maker_id ...
+    // カテゴリキーの正規化 (API引数名に変換: actress -> actress_id)
     const categoryKey = `${category}_id`;
 
-    // --- 🏗️ 1. データ取得（並列） ---
+    // --- 🏗️ 1. データ取得（最小並列構成） ---
+    // 💡 サイドバー用の fetchMakers 等の大群をすべて削除。
+    // コンテンツ表示に必要な「商品リスト」と「パンくず用階層」のみに絞ります。
     const [
         productData, 
-        dynamicMenu, 
-        makersArray, 
-        genresArray, 
-        actressesArray,
-        seriesArray,
-        directorsArray,
-        authorsArray,
-        labelsArray,
-        wpData
+        dynamicMenu
     ] = await Promise.all([
         getUnifiedProducts({
             api_source: 'fanza',
-            [categoryKey]: id, // 動的にカテゴリIDを指定
+            [categoryKey]: id, 
             page: currentPage,
             ordering: currentSort,
+            limit: 24,
         }).catch(() => ({ results: [], count: 0 })),
         
         getFanzaDynamicMenu().catch(() => ({})), 
-
-        fetchMakers({ limit: 40, api_source: 'fanza' }).catch(() => []), 
-        fetchGenres({ limit: 40, api_source: 'fanza' }).catch(() => []), 
-        fetchActresses({ limit: 40, api_source: 'fanza' }).catch(() => []), 
-        fetchSeries({ limit: 40, api_source: 'fanza' }).catch(() => []), 
-        fetchDirectors({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchAuthors({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchLabels({ limit: 40, api_source: 'fanza' }).catch(() => []),
-
-        getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
 
-    // 該当するアイテムの名前を特定するロジック（簡易版）
-    // 本来は各カテゴリの単体取得APIを叩くのが理想ですが、一覧から探します
-    const allMaster = [
-        ...safeExtract(makersArray), 
-        ...safeExtract(genresArray), 
-        ...safeExtract(actressesArray),
-        ...safeExtract(authorsArray),
-        ...safeExtract(seriesArray)
-    ];
-    const currentItem = allMaster.find(m => String(m.slug) === id || String(m.id) === id);
-    const displayName = currentItem ? currentItem.name : id.toUpperCase();
+    // --- 🛠️ 2. 表示名の特定ロジック ---
+    // 別途マスターAPIを叩かずに、取得した商品データの最初の1件から
+    // 該当するカテゴリの名称（女優名やメーカー名）を抽出してタイトルにします。
+    let displayName = id.toUpperCase();
+    if (productData.results?.length > 0) {
+        const sample = productData.results[0];
+        // カテゴリに応じたフィールドから名称を探す
+        const targetMap: any = {
+            actress: sample.actresses?.find((a: any) => String(a.id) === id || a.slug === id)?.name,
+            maker: sample.maker?.name,
+            genre: sample.genres?.find((g: any) => String(g.id) === id || g.slug === id)?.name,
+            series: sample.series?.name,
+            author: sample.authors?.find((a: any) => String(a.id) === id || a.slug === id)?.name,
+            director: sample.director?.name,
+        };
+        displayName = targetMap[category] || displayName;
+    }
 
-    // --- 🛡️ 2. サイドバー用データの整理 ---
+    // --- 🛡️ 3. サイドバー用階層データの整理（パンくず生成用） ---
     const fanzaHierarchy = Object.entries(dynamicMenu).map(([serviceName, content]: [string, any]) => {
         const floorItems = (content.floors || []).map((f: any) => ({
             id: f.code,
@@ -115,12 +86,14 @@ export default async function FanzaCategoryDetailPage(props: {
             {/* 🐞 デバッグモード */}
             {isDebug && (
                 <SystemDiagnosticHero 
-                    id={`FANZA_CAT_${category}_${id}`}
+                    id={`FANZA_CAT_${category}_${id}_STREAM`}
                     source="FANZA"
                     data={{
                         category,
                         targetId: id,
+                        resolvedName: displayName,
                         totalCount: productData.count,
+                        currentPage,
                         apiParam: categoryKey
                     }}
                 />
@@ -128,27 +101,16 @@ export default async function FanzaCategoryDetailPage(props: {
 
             <ArchiveTemplate 
                 platform="fanza"
+                // 💡 解読された名称をタイトルに適用
                 title={`${category.toUpperCase()}: ${decodeURIComponent(displayName)}`}
                 products={productData.results || []}
                 totalCount={productData.count || 0}
                 
-                // 共通サイドバーデータ
+                // パンくず用データ
                 officialHierarchy={fanzaHierarchy} 
-                makers={safeExtract(makersArray)}
-                genres={safeExtract(genresArray)}
-                actresses={safeExtract(actressesArray)}
-                authors={safeExtract(authorsArray)}
-                series={safeExtract(seriesArray)}
-                directors={safeExtract(directorsArray)}
-                labels={safeExtract(labelsArray)}
                 
-                recentPosts={safeExtract(wpData).map((p: any) => ({
-                    id: p.id,
-                    title: p.title?.rendered || 'No Title',
-                    slug: p.slug,
-                    date: p.date
-                }))}
-
+                // 💡 最適化: タクソノミーPropsは Layout 側が自動注入するため、ここでは空のままでOK
+                
                 currentPage={currentPage}
                 currentSort={currentSort}
                 

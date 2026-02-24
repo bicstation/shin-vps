@@ -5,16 +5,8 @@ import { Metadata } from 'next';
 import ArchiveTemplate from '@/app/brand/ArchiveTemplate'; 
 import { 
     getUnifiedProducts, 
-    fetchMakers, 
-    fetchGenres,
-    fetchActresses, 
-    fetchSeries,
-    fetchDirectors,
-    fetchAuthors,
-    fetchLabels,
     getFanzaDynamicMenu 
 } from '@shared/lib/api/django/adult';
-import { getSiteMainPosts } from '@shared/lib/api/wordpress';
 import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
 
 export const dynamic = 'force-dynamic';
@@ -25,26 +17,9 @@ export const metadata: Metadata = {
 };
 
 /**
- * 🛠️ 補助関数: 安全なデータ抽出
+ * 🎬 FANZA ブランド特化型ページ
+ * サイドバーのタクソノミー取得を Layout 側に委ね、商品取得を最小化
  */
-const safeExtract = (data: any) => {
-    if (!data) return [];
-    if (Array.isArray(data)) return data;
-    if (data.results && Array.isArray(data.results)) return data.results;
-    return [];
-};
-
-/**
- * 🛠️ 補助関数: ブランド（FANZA/COMMON）に属するもののみフィルタリング
- */
-const filterByBrand = (list: any) => {
-    const rawList = safeExtract(list);
-    return rawList.filter((item: any) => {
-        const source = (item.api_source || '').toUpperCase(); 
-        return source === 'FANZA' || source === 'COMMON' || source === '';
-    });
-};
-
 export default async function FanzaBrandPage(props: {
     searchParams: Promise<{ 
         page?: string; 
@@ -59,23 +34,15 @@ export default async function FanzaBrandPage(props: {
     const currentPage = Number(searchParams?.page) || 1;
     const currentSort = searchParams?.sort || '-release_date';
     
-    // 💡 サービス・フロアのクエリ取得
+    // 💡 クエリ取得
     const currentService = searchParams?.service || '';
     const currentFloor = searchParams?.floor || '';
 
-    // --- 🏗️ 1. 並列データ取得 (ブランド特化型リクエスト) ---
-    // Djangoの backend 側でも api_source=fanza で絞り込みをかけて取得
+    // --- 🏗️ 1. 並列データ取得 (コンテンツに必須なデータのみ) ---
+    // タクソノミー（メーカー・ジャンル等）はサイドバー(Layout)側で取得するため、ここでは不要。
     const [
         productData, 
-        dynamicMenu, 
-        makersArray, 
-        genresArray, 
-        actressesArray, 
-        seriesArray,
-        directorsArray,
-        authorsArray,
-        labelsArray,
-        wpData
+        dynamicMenu
     ] = await Promise.all([
         getUnifiedProducts({
             api_source: 'fanza',
@@ -83,22 +50,13 @@ export default async function FanzaBrandPage(props: {
             ordering: currentSort,
             api_service: currentService,
             floor_code: currentFloor,
+            limit: 24, // ArchiveTemplate の limit と同期
         }).catch(() => ({ results: [], count: 0 })),
         
         getFanzaDynamicMenu().catch(() => ({})), 
-
-        fetchMakers({ limit: 40, api_source: 'fanza' }).catch(() => []), 
-        fetchGenres({ limit: 40, api_source: 'fanza' }).catch(() => []), 
-        fetchActresses({ limit: 40, api_source: 'fanza' }).catch(() => []), 
-        fetchSeries({ limit: 40, api_source: 'fanza' }).catch(() => []), 
-        fetchDirectors({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchAuthors({ limit: 40, api_source: 'fanza' }).catch(() => []),
-        fetchLabels({ limit: 40, api_source: 'fanza' }).catch(() => []),
-
-        getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
 
-    // --- 🛡️ 2. サイドバー用データの整理（サービス階層） ---
+    // --- 🛡️ 2. サービス階層の整理 (パンくず・タイトル生成用) ---
     const fanzaHierarchy = Object.entries(dynamicMenu).map(([serviceName, content]: [string, any]) => {
         const floorItems = (content.floors || []).map((f: any) => ({
             id: f.code,
@@ -120,16 +78,7 @@ export default async function FanzaBrandPage(props: {
         };
     });
 
-    // --- 🎨 3. 各タクソノミーの整理（フィルタリングの徹底） ---
-    const filteredActresses = filterByBrand(actressesArray);
-    const filteredMakers = filterByBrand(makersArray);
-    const filteredGenres = filterByBrand(genresArray);
-    const filteredSeries = filterByBrand(seriesArray);
-    const filteredDirectors = filterByBrand(directorsArray);
-    const filteredAuthors = filterByBrand(authorsArray);
-    const filteredLabels = filterByBrand(labelsArray);
-
-    // 表示タイトルの決定
+    // --- 🎨 3. 表示タイトルの決定 ---
     let displayTitle = "FANZA ARCHIVE";
     if (currentService) {
         const foundSvc = fanzaHierarchy.find(s => s.service_code === currentService);
@@ -145,57 +94,41 @@ export default async function FanzaBrandPage(props: {
             {/* 🐞 デバッグモード */}
             {isDebug && (
                 <SystemDiagnosticHero 
-                    id="BRAND_FANZA_RECONSTRUCTED"
+                    id="BRAND_FANZA_OPTIMIZED"
                     source="FANZA"
                     data={{
-                        mode: 'SERVER_BRAND_PAGE_FINAL',
+                        mode: 'CORE_BRAND_STREAM',
                         totalProducts: productData.count,
-                        actressesCount: filteredActresses.length,
-                        authorsCount: filteredAuthors.length,
-                        apiSourceUsed: 'fanza'
+                        currentPage,
+                        currentSort,
+                        apiService: currentService,
+                        floorCode: currentFloor
                     }}
                     rawJson={{ 
-                        actressSample: filteredActresses[0],
-                        authorSample: filteredAuthors[0]
+                        sampleProduct: productData.results?.[0],
+                        hierarchySample: fanzaHierarchy?.[0]
                     }}
                 />
             )}
 
             {/* 📦 メインアーカイブテンプレート */}
+            {/* 💡 最適化: 
+                makers, genres, actresses などの props は 
+                Layout 側のサイドバーが処理するため、ここでは渡す必要がなくなりました。
+            */}
             <ArchiveTemplate 
                 platform="fanza"
                 title={displayTitle}
                 products={productData.results || []}
                 totalCount={productData.count || 0}
                 
-                // 💡 サイドバーデータの注入
+                // パンくず生成用の階層データのみ維持
                 officialHierarchy={fanzaHierarchy} 
-                makers={filteredMakers}
-                genres={filteredGenres}
                 
-                // 🚀 【重要】女優と著者の明示的な分離
-                // ArchiveTemplate側で "著者がいない場合に女優を出す" ロジックがある場合でも、
-                // ページ側から空配列を渡すことで、意図しない表示を防ぎます。
-                actresses={filteredActresses} 
-                authors={filteredAuthors} 
-                
-                series={filteredSeries}
-                directors={filteredDirectors}
-                labels={filteredLabels}
-                
-                // WordPress最新投稿
-                recentPosts={safeExtract(wpData).map((p: any) => ({
-                    id: p.id,
-                    title: p.title?.rendered || 'No Title',
-                    slug: p.slug,
-                    date: p.date
-                }))}
-
                 // 状態管理用
                 currentPage={currentPage}
                 currentSort={currentSort}
                 basePath="/brand/fanza"
-                categoryPathPrefix="/brand/fanza/cat" 
                 
                 // 追加パラメータ
                 extraParams={{ 

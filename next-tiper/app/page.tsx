@@ -7,20 +7,10 @@ import Link from 'next/link';
 // ✅ スタイル & 共通コンポーネント
 import styles from './page.module.css';
 import ProductCard from '@/shared/cards/AdultProductCard';
-import Sidebar from '@/shared/layout/Sidebar/AdultSidebar'; 
 import SystemDiagnosticHero from '@/shared/debug/SystemDiagnosticHero';
 
 import { getSiteMainPosts, getWpFeaturedImage } from '@/shared/lib/api/wordpress';
-import { 
-  getUnifiedProducts, 
-  fetchMakers, 
-  fetchGenres, 
-  fetchActresses, 
-  fetchSeries,
-  fetchDirectors,
-  fetchAuthors, 
-  fetchLabels
-} from '@/shared/lib/api/django/adult'; 
+import { getUnifiedProducts } from '@/shared/lib/api/django/adult'; 
 import { AdultProduct } from '@/shared/lib/api/types';
 import { constructMetadata } from '@/shared/lib/metadata';
 
@@ -67,28 +57,14 @@ export default async function Home(props: {
   const searchParams = await props.searchParams;
   const isDebugMode = searchParams.debug === 'true';
 
-  // --- 1. データ取得 (並列実行) ---
+  // --- 1. データ取得 (コンテンツに必要な分だけを最小限に取得) ---
   const [
     wpData, 
-    genresRes, 
-    makersRes, 
-    actressesRes,
-    seriesRes,
-    directorsRes,
-    authorsRes, 
-    labelsRes,
     fanzaRes,
     dugaRes,
     dmmRes
   ] = await Promise.all([
     getSiteMainPosts(0, 6).catch(() => ({ results: [] })),
-    fetchGenres({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchMakers({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchActresses({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchSeries({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchDirectors({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchAuthors({ limit: 15 }).catch(() => ({ results: [] })), 
-    fetchLabels({ limit: 15 }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'FANZA', ordering: '-release_date' }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'DUGA', ordering: '-release_date' }).catch(() => ({ results: [] })),
     getUnifiedProducts({ limit: 4, api_source: 'DMM', ordering: '-release_date' }).catch(() => ({ results: [] })),
@@ -96,22 +72,6 @@ export default async function Home(props: {
 
   const latestPosts = wpData?.results || [];
   
-  // --- 2. サイドバーPropsの構築 (すべてのタクソノミーを注入) ---
-  const sidebarProps = {
-    genres: genresRes?.results || [],
-    makers: makersRes?.results || [],
-    actresses: actressesRes?.results || [],
-    series: seriesRes?.results || [],
-    directors: directorsRes?.results || [],
-    authors: authorsRes?.results || [], 
-    labels: labelsRes?.results || [],   
-    recentPosts: latestPosts.map((p: any) => ({
-      id: p.id.toString(),
-      title: decodeHtml(p.title?.rendered || ''),
-      slug: p.slug
-    }))
-  };
-
   const isApiConnected = 
     (fanzaRes?.results?.length || 0) > 0 || 
     (dugaRes?.results?.length || 0) > 0 || 
@@ -140,89 +100,75 @@ export default async function Home(props: {
           id="V1.9_FINAL_ZENITH" 
           source="CORE_DATA_STREAM" 
           rawJson={{ 
-            authors: authorsRes?.results?.length, 
-            labels: labelsRes?.results?.length,
-            fanzaCount: fanzaRes?.results?.length
+            fanzaCount: fanzaRes?.results?.length,
+            wpCount: latestPosts.length
           }} 
         />
       )}
 
-      <main className={styles.main}>
-        <div className={styles.wrapper}>
-          
-          {/* 🏛️ 1. サイドバーエリア (CSSの 320px 指定に準拠) */}
-          <aside className={styles.sidebar}>
-            <div className={styles.sidebarSticky}>
-              <Sidebar {...sidebarProps} />
+      {/* 🏗️ コンテンツストリーム (Layout側の grid-area: 1fr に流し込まれる) */}
+      <div className={styles.contentStream}>
+        
+        {/* 📰 Intelligence Reports (WordPress連携) */}
+        {latestPosts.length > 0 && (
+          <section className={styles.newsSection}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionHeading}>INTELLIGENCE_REPORTS</h2>
+              <Link href="/news" className={styles.headerLink}>OPEN_ALL_FILES →</Link>
             </div>
-          </aside>
-
-          {/* 🏗️ 2. コンテンツストリーム */}
-          <div className={styles.contentStream}>
-            
-            {/* 📰 Intelligence Reports (WordPress連携) */}
-            {latestPosts.length > 0 && (
-              <section className={styles.newsSection}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionHeading}>INTELLIGENCE_REPORTS</h2>
-                  <Link href="/news" className={styles.headerLink}>OPEN_ALL_FILES →</Link>
-                </div>
-                <div className={styles.newsGrid}>
-                  {latestPosts.slice(0, 3).map((post: any) => (
-                    <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
-                      <div className={styles.newsThumbWrap}>
-                        <img 
-                          src={getWpFeaturedImage(post, 'large')} 
-                          alt={decodeHtml(post.title?.rendered)} 
-                          className={styles.newsThumb} 
-                        />
-                      </div>
-                      <div className={styles.newsContent}>
-                        <span className={styles.newsDate}>{formatDate(post.date)}</span>
-                        <h3 className={styles.newsTitle}>
-                          {decodeHtml(post.title?.rendered)}
-                        </h3>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* 📀 Archive Registry (メインデータストリーム) */}
-            <div className={styles.archiveRegistry}>
-              <div className={styles.registryHeader}>
-                <h1 className={styles.registryMainTitle}>
-                  UNIFIED_DATA_STREAM
-                  <span className={styles.titleThin}>ZENITH_REGISTRY_v2.0</span>
-                </h1>
-              </div>
-
-              {isApiConnected ? (
-                <div className={styles.registryStack}>
-                  {fanzaRes?.results?.length > 0 && renderPlatformSection("FANZA", fanzaRes.results, "FANZA")}
-                  {dugaRes?.results?.length > 0 && renderPlatformSection("DUGA", dugaRes.results, "DUGA")}
-                  {dmmRes?.results?.length > 0 && renderPlatformSection("DMM", dmmRes.results, "DMM")}
-                </div>
-              ) : (
-                <div className={styles.loadingArea}>
-                  <div className={styles.glitchBox}>
-                    <div className={styles.glitchText}>SYNCHRONIZING_DATABASE...</div>
+            <div className={styles.newsGrid}>
+              {latestPosts.slice(0, 3).map((post: any) => (
+                <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
+                  <div className={styles.newsThumbWrap}>
+                    <img 
+                      src={getWpFeaturedImage(post, 'large')} 
+                      alt={decodeHtml(post.title?.rendered)} 
+                      className={styles.newsThumb} 
+                    />
                   </div>
-                </div>
-              )}
+                  <div className={styles.newsContent}>
+                    <span className={styles.newsDate}>{formatDate(post.date)}</span>
+                    <h3 className={styles.newsTitle}>
+                      {decodeHtml(post.title?.rendered)}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
             </div>
+          </section>
+        )}
 
-            {/* 🔘 ターミナル風 CTA */}
-            <div className={styles.footerAction}>
-              <Link href="/videos" className={styles.megaTerminalBtn}>
-                ACCESS_FULL_REGISTRY_DATABASE
-              </Link>
+        {/* 📀 Archive Registry (メインデータストリーム) */}
+        <div className={styles.archiveRegistry}>
+          <div className={styles.registryHeader}>
+            <h1 className={styles.registryMainTitle}>
+              UNIFIED_DATA_STREAM
+              <span className={styles.titleThin}>ZENITH_REGISTRY_v2.0</span>
+            </h1>
+          </div>
+
+          {isApiConnected ? (
+            <div className={styles.registryStack}>
+              {fanzaRes?.results?.length > 0 && renderPlatformSection("FANZA", fanzaRes.results, "FANZA")}
+              {dugaRes?.results?.length > 0 && renderPlatformSection("DUGA", dugaRes.results, "DUGA")}
+              {dmmRes?.results?.length > 0 && renderPlatformSection("DMM", dmmRes.results, "DMM")}
             </div>
-          </div> {/* END contentStream */}
-          
-        </div> {/* END wrapper */}
-      </main>
+          ) : (
+            <div className={styles.loadingArea}>
+              <div className={styles.glitchBox}>
+                <div className={styles.glitchText}>SYNCHRONIZING_DATABASE...</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 🔘 ターミナル風 CTA */}
+        <div className={styles.footerAction}>
+          <Link href="/videos" className={styles.megaTerminalBtn}>
+            ACCESS_FULL_REGISTRY_DATABASE
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
