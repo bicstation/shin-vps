@@ -221,3 +221,23 @@ export async function fetchRelatedProducts(maker: string, exclude_id: string): P
         return []; 
     }
 }
+
+/**
+ * 💡 PCスペック統計取得 (サイドバー用)
+ */
+export async function fetchPCSidebarStats(): Promise<any | null> {
+    const url = resolveApiUrl(`/api/general/pc-sidebar-stats/`);
+    console.log(`[DEBUG: STATS] Fetching sidebar stats from: ${url}`);
+
+    try {
+        const res = await fetch(url, { 
+            headers: getDjangoHeaders(), 
+            next: { revalidate: 3600 } 
+        });
+        const data = await handleResponseWithDebug(res, url);
+        return data;
+    } catch (e: any) {
+        console.error(`[STATS API ERROR]: ${e.message}`);
+        return null;
+    }
+}

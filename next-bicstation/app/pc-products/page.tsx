@@ -4,9 +4,7 @@
 
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
-// ✅ 修正ポイント: インポートパスの統一
 import ProductCard from '@shared/cards/ProductCard';
-import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import Pagination from '@shared/common/Pagination';
 
 // APIインポート
@@ -16,7 +14,6 @@ import styles from './BrandPage.module.css';
 
 /**
  * ✅ 修正ポイント: 動的レンダリングを強制
- * クエリパラメータによるフィルタリングを正しく動作させるために必須です。
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -53,9 +50,6 @@ interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-/**
- * ✅ 修正ポイント: ページ全体を Suspense でラップして bailout を回避
- */
 export default function PCProductsPage(props: PageProps) {
     return (
         <Suspense fallback={
@@ -69,13 +63,9 @@ export default function PCProductsPage(props: PageProps) {
     );
 }
 
-/**
- * メインのコンテンツロジック
- */
 async function PCProductsContent(props: PageProps) {
     const sParams = await props.searchParams;
     
-    // クエリパラメータの抽出（Next.js 15 形式）
     const offsetStr = Array.isArray(sParams.offset) ? sParams.offset[0] : sParams.offset;
     const attributeSlug = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     const makerSlug = Array.isArray(sParams.maker) ? sParams.maker[0] : sParams.maker;
@@ -83,7 +73,7 @@ async function PCProductsContent(props: PageProps) {
     const currentOffset = parseInt(offsetStr || '0', 10);
     const limit = 20;
 
-    // データの並列取得 (Sidebarが自律化したため fetchMakers, fetchPostList のバケツリレーを廃止)
+    // データの並列取得
     const [pcData, makersData] = await Promise.all([
         fetchPCProducts(makerSlug || '', currentOffset, limit, attributeSlug || '').catch(() => ({ results: [], count: 0 })),
         fetchMakers().catch(() => [])
@@ -91,7 +81,6 @@ async function PCProductsContent(props: PageProps) {
 
     const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
-    // メーカー名と属性名の解決
     const makerObj = makerSlug ? (makersData.find((m: any) => m.slug === makerSlug) as any) : null;
     const makerName = makerObj ? (makerObj.name || makerObj.maker) : (makerSlug ? makerSlug.toUpperCase() : "");
     const attrName = attributeSlug ? getAttributeDisplayName(attributeSlug) : "";
@@ -111,7 +100,6 @@ async function PCProductsContent(props: PageProps) {
     const startRange = totalCount > 0 ? currentOffset + 1 : 0;
     const endRange = Math.min(currentOffset + limit, totalCount);
 
-    // JSON-LD
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
@@ -150,11 +138,10 @@ async function PCProductsContent(props: PageProps) {
             </div>
 
             <div className={styles.wrapper}>
-                <aside className={styles.sidebarSection}>
-                    {/* ✅ Sidebar は自律データ取得型サーバーコンポーネントのため、propsを渡さず呼び出し */}
-                    <Sidebar />
-                </aside>
-
+                {/* ✅ 修正ポイント: 
+                  RootLayout 側の PCSidebar と重複するため、ここにあったサイドバー領域を削除。
+                  main コンテンツが styles.wrapper 内で適切に配置されます。
+                */}
                 <main className={styles.main}>
                     <section className={styles.productSection}>
                         <div className={styles.productGridTitle}>
@@ -183,7 +170,6 @@ async function PCProductsContent(props: PageProps) {
                                 </div>
 
                                 <div className={styles.paginationWrapper}>
-                                    {/* ✅ Pagination 内の useSearchParams 対策で個別に Suspense */}
                                     <Suspense fallback={<div className="h-10 w-full bg-slate-900 animate-pulse rounded" />}>
                                         <Pagination 
                                             currentOffset={currentOffset}

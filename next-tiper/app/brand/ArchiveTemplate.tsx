@@ -8,22 +8,48 @@ import Pagination from '@shared/common/Pagination';
 import AdultSidebar from '@shared/layout/Sidebar/AdultSidebar';
 
 /**
+ * 💡 カテゴリラベルの日本語変換マップ
+ */
+const CATEGORY_DISPLAY_LABELS: Record<string, string> = {
+  actress: '女優',
+  genre: 'ジャンル',
+  series: 'シリーズ',
+  maker: 'メーカー',
+  director: '監督',
+  author: '著者',
+};
+
+/**
+ * 💡 サービス・単語の日本語変換マップ
+ * タイトルなどに含まれる英語コードを日本語に置換します
+ */
+const WORD_TRANSLATE_MAP: Record<string, string> = {
+  'nikkatsu': '日活ロマンポルノ',
+  'videoa': 'ビデオ',
+  'videoc': '素人',
+  'digital': 'デジタル',
+  'anime': 'アニメ',
+  'pc': 'PCソフト',
+  'book': '電子書籍',
+};
+
+/**
  * ArchiveTemplate
- * 物理的なレイアウトハック機能を搭載し、二重サイドバーを強制排除。
- * さらに、ページ遷移時に元のレイアウトへ「復元」する安全装置付き。
+ * 物理的なレイアウトハック機能を維持しつつ、パンくずやタイトルの表示を
+ * 人間が読みやすい「名称（日本語）」に最適化した最終形態。
  */
 export default function ArchiveTemplate({ 
   products = [], 
   totalCount = 0, 
   platform, 
-  title, 
+  title, // 親から渡される「カテゴリ: 名前」形式のタイトル
   currentSort = '-release_date', 
   currentPage = 1, 
   basePath, 
   category, 
   id,
   extraParams = {},
-  // --- サイドバーへの指令データ ---
+  // --- サイドバーデータ ---
   officialHierarchy = [],
   makers = [],
   genres = [],
@@ -43,7 +69,6 @@ export default function ArchiveTemplate({
   // 🚨 LAYOUT_HACK_PROTOCOL: ページ表示時に消し、離れる時に必ず「復元」する
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    // 復元のために変更前の要素と値を保持しておく配列
     const restoreTargets: {
       parent: HTMLElement;
       aside: HTMLElement;
@@ -52,10 +77,8 @@ export default function ArchiveTemplate({
       originalWidth: string;
     }[] = [];
 
-    // 1. 共通レイアウトが生成している「外側のサイドバー」を特定して非表示にする
     const mainTags = document.querySelectorAll('main');
     mainTags.forEach((main) => {
-      // Archive.module.css の中身ではない「外側の枠」を探す
       if (!main.className.includes('Archive_mainContent')) {
         const parent = main.parentElement;
         const aside = main.previousElementSibling;
@@ -63,7 +86,6 @@ export default function ArchiveTemplate({
         if (parent && aside && aside.tagName === 'ASIDE') {
           const asideHtml = aside as HTMLElement;
 
-          // 復元用データをバックアップ
           restoreTargets.push({
             parent,
             aside: asideHtml,
@@ -72,12 +94,10 @@ export default function ArchiveTemplate({
             originalWidth: parent.style.width
           });
 
-          // 🛠️ アーカイブページ専用：親のGridを破壊して全幅化
           parent.style.display = 'block';
           parent.style.gridTemplateColumns = 'none';
           parent.style.width = '100%';
 
-          // 🛠️ 外側のサイドバーを物理的に隠す
           asideHtml.style.display = 'none';
           asideHtml.style.width = '0';
           asideHtml.style.visibility = 'hidden';
@@ -85,23 +105,21 @@ export default function ArchiveTemplate({
       }
     });
 
-    // 2. 🚨 重要：ページを離れる（アンマウント）時に実行されるクリーンアップ
-    // これによりトップページに戻った時にサイドバーが復活します
     return () => {
       restoreTargets.forEach((target) => {
-        target.parent.style.display = target.originalDisplay;
-        target.parent.style.gridTemplateColumns = target.originalGrid;
-        target.parent.style.width = target.originalWidth;
-
-        target.aside.style.display = '';
-        target.aside.style.width = '';
-        target.aside.style.visibility = '';
+        if (target.parent) {
+          target.parent.style.display = target.originalDisplay;
+          target.parent.style.gridTemplateColumns = target.originalGrid;
+          target.parent.style.width = target.originalWidth;
+        }
+        if (target.aside) {
+          target.aside.style.display = '';
+          target.aside.style.width = '';
+          target.aside.style.visibility = '';
+        }
       });
     };
   }, []);
-
-  // デバッグモード判定
-  const isDebug = extraParams.debug === 'true' || extraParams.debug === true;
 
   // プラットフォームごとのアクセントカラー設定
   const platformColors: Record<string, string> = {
@@ -112,6 +130,23 @@ export default function ArchiveTemplate({
   };
 
   const accentColor = platformColors[platform] || platformColors.video;
+  const isDebug = extraParams.debug === 'true' || extraParams.debug === true;
+
+  // 💡 タイトルの翻訳ロジック
+  // 例: "VIDEOA SECTOR" -> "ビデオ SECTOR"
+  let translatedTitle = title || '';
+  Object.entries(WORD_TRANSLATE_MAP).forEach(([en, jp]) => {
+    const regex = new RegExp(en, 'gi');
+    translatedTitle = translatedTitle.replace(regex, jp);
+  });
+
+  // 💡 パンくず表示用のロジック
+  // titleが「女優: 三上悠亜」の場合、三上悠亜だけを取り出す。
+  const breadcrumbName = translatedTitle.includes(':') 
+    ? translatedTitle.split(':')[1].trim() 
+    : (id ? decodeURIComponent(id) : 'ALL');
+
+  const categoryLabel = CATEGORY_DISPLAY_LABELS[category] || category?.toUpperCase();
 
   // クライアントサイドでの簡易フィルタリング
   const filteredProducts = products.filter((p: any) => 
@@ -139,10 +174,9 @@ export default function ArchiveTemplate({
         </div>
       )}
 
-      {/* 🏗️ 構造の要: styles.container (Flexbox) */}
       <div className={styles.container}>
         
-        {/* --- 🛰️ LEFT SIDEBAR AREA (このテンプレート自前のサイドバー) --- */}
+        {/* --- 🛰️ LEFT SIDEBAR AREA --- */}
         <aside className={styles.sidebarWrapper}>
           <div className={styles.stickySidebar}>
             <AdultSidebar 
@@ -170,12 +204,10 @@ export default function ArchiveTemplate({
               <>
                 <span className={styles.bcDivider}>/</span>
                 <Link href={`/brand/${platform}/cat/${category}`} className={styles.bcLink}>
-                  {category.toUpperCase()}
+                  {categoryLabel}
                 </Link>
-                <span className={styles.bcDivider}>:</span>
-                <span className={styles.bcActive}>
-                  {id ? decodeURIComponent(id) : 'ALL'}
-                </span>
+                <span className={styles.bcDivider}>/</span>
+                <span className={styles.bcActive}>{breadcrumbName}</span>
               </>
             )}
           </nav>
@@ -188,7 +220,8 @@ export default function ArchiveTemplate({
                   Data Stream: {platform}
                 </span>
               </div>
-              <h1 className={styles.titleMain}>{title}</h1>
+              {/* 💡 翻訳済みのタイトルを表示 */}
+              <h1 className={styles.titleMain}>{translatedTitle}</h1>
               <div className={styles.statusInfo}>
                 <span className={styles.statusLabel}>RECORDS_DETECTED:</span>
                 <span className={styles.statusValue}>{totalCount.toLocaleString()}</span>

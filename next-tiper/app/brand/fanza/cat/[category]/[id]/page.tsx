@@ -24,6 +24,19 @@ const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
 };
 
 /**
+ * 💡 サービス名の日本語変換定義
+ * APIから返ってくる 'videoa' などのコードを日本語に変換します。
+ */
+const SERVICE_NAME_MAP: Record<string, string> = {
+    'digital': 'デジタル',
+    'videoa': 'ビデオ',
+    'videoc': 'ビデオ (C)',
+    'anime': 'アニメ',
+    'pc': 'PCソフト',
+    'book': '電子書籍',
+};
+
+/**
  * 🔳 FANZA_CATEGORY_DETAIL_PAGE (Optimized Data Stream)
  */
 export default async function FanzaCategoryDetailPage(props: {
@@ -80,6 +93,9 @@ export default async function FanzaCategoryDetailPage(props: {
 
     // --- 🛡️ 3. サイドバー用階層データの整理 ---
     const fanzaHierarchy = Object.entries(dynamicMenu).map(([serviceName, content]: [string, any]) => {
+        // 💡 サービス名(serviceName)が英語コード（videoa等）の場合は日本語に置換
+        const translatedServiceName = SERVICE_NAME_MAP[serviceName.toLowerCase()] || serviceName;
+
         const floorItems = (content.floors || []).map((f: any) => ({
             id: f.code,
             name: f.name,
@@ -87,9 +103,10 @@ export default async function FanzaCategoryDetailPage(props: {
             floor_code: f.code,
             href: `/brand/fanza/svc/${content.code}/${f.code}`,
         }));
+
         return {
             id: content.code,
-            name: serviceName,
+            name: translatedServiceName, // 日本語化された名前をセット
             service_code: content.code,
             floors: floorItems,
         };

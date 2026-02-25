@@ -7,9 +7,11 @@ import { COLORS } from '../../styles/constants';
 
 /**
  * ✅ 修正済みインポート
- * fetchPostList は WordPress API 層から、fetchMakers は Django API 層から正しく取得します。
+ * Django API 層の共通ユーティリティ（resolveApiUrl, getDjangoHeaders）を使用して
+ * 環境変数やパスの不整合を自動的に吸収します。
  */
 import { fetchMakers } from '@shared/lib/api/django/pc';
+import { resolveApiUrl, getDjangoHeaders } from '@shared/lib/api/django/client'; 
 import { fetchPostList } from '@shared/lib/api/wordpress';
 import styles from './PCSidebar.module.css';
 
@@ -27,15 +29,13 @@ interface SidebarData {
 }
 
 export default async function Sidebar() {
-  // 1. ヘッダーからパス名等を取得（Middlewareによる x-url 付与を想定）
+  // 1. ヘッダーからパス名等を取得
   const headerList = await headers();
   const pathname = headerList.get('x-url') || '/';
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
   /**
    * 🛡️ フェッチ・セーフティ・ラッパー
-   * 個別のAPIが失敗（500/404）しても、サイドバー全体をクラッシュさせず
-   * デフォルト値を返してレンダリングを続行させます。
    */
   async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     try {
@@ -47,21 +47,32 @@ export default async function Sidebar() {
     }
   }
 
+  /**
+   * 🌐 スペック統計取得用のURL構築
+   * pc.ts の他の関数と同様に resolveApiUrl を使用して /api の重複を回避します。
+   */
+  const statsUrl = resolveApiUrl('/api/general/pc-sidebar-stats/');
+
   // 2. データのフェッチ（Promise.allで効率的に並列実行）
   const [makers, wpData, specStatsRes] = await Promise.all([
     safeFetch(fetchMakers(), []),
     safeFetch(fetchPostList('post', 10, 0), { results: [], count: 0 }),
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/general/pc-sidebar-stats/`, {
-      headers: { 'Accept': 'application/json' },
-      next: { revalidate: 3600 } // 1時間キャッシュ
-    }).catch(() => ({ ok: false }))
+    
+    // 手動 fetch ではなく Django API 層と同じヘッダーとパス解決を使用
+    fetch(statsUrl, {
+      headers: getDjangoHeaders(), 
+      next: { revalidate: 3600 } 
+    }).catch((e) => {
+      console.error("[PCSidebar Stats Fetch Failed]:", e);
+      return { ok: false };
+    })
   ]);
 
   const recentPosts = (wpData as any).results || [];
   
   // スペック統計データの処理
   let specStats: SidebarData | null = null;
-  if (specStatsRes && 'ok' in specStatsRes && specStatsRes.ok) {
+  if (specStatsRes && 'ok' in specStatsRes && (specStatsRes as any).ok) {
     try {
       specStats = await (specStatsRes as Response).json();
     } catch (e) {
