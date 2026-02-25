@@ -85,7 +85,7 @@ export default function AdultProductCard({ product }: ProductCardProps) {
     { subject: 'S', value: getSafeScore(product.score_story), fullMark: 100 },
     { subject: 'E', value: getSafeScore(product.score_erotic), fullMark: 100 },
     { subject: 'R', value: getSafeScore(product.score_rarity), fullMark: 100 },
-    { subject: 'C', value: getSafeScore(product.score_cost), fullMark: 100 },
+    { subject: 'F', value: getSafeScore(product.score_fetish), fullMark: 100 },
   ], [product]);
 
   const releaseDate = product.release_date || '';

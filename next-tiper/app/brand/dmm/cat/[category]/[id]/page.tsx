@@ -7,6 +7,11 @@ import {
     getAdultProducts, 
     fetchMakers, 
     fetchGenres, 
+    fetchActresses,
+    fetchSeries,
+    fetchDirectors,
+    fetchAuthors,
+    fetchLabels,
     getFanzaDynamicMenu 
 } from '@shared/lib/api/django/adult';
 import { constructMetadata } from '@shared/lib/metadata';
@@ -26,11 +31,15 @@ export async function generateMetadata({ params }: any): Promise<Metadata> {
     );
 }
 
+/**
+ * DMM/FANZA カテゴリー詳細ページ
+ * 🛠️ 司令塔(ArchiveTemplate)へ、サイドバー網羅用の全データを供給します。
+ */
 export default async function DmmCategoryPage(props: {
     params: Promise<{ category: string; id: string }>;
     searchParams: Promise<{ page?: string; sort?: string; offset?: string }>;
 }) {
-    // App Router の最新仕様に基づき Promise を解明
+    // App Router の仕様に基づき Promise を解決
     const resolvedParams = await props.params;
     const resolvedSearchParams = await props.searchParams;
     const { category, id } = resolvedParams;
@@ -38,14 +47,14 @@ export default async function DmmCategoryPage(props: {
     // パラメータの整理
     const limit = 24;
     const sort = resolvedSearchParams.sort || '-release_date';
+    const currentPage = Number(resolvedSearchParams.page || 1);
     const offset = resolvedSearchParams.offset 
         ? Number(resolvedSearchParams.offset) 
-        : (Number(resolvedSearchParams.page || 1) - 1) * limit;
+        : (currentPage - 1) * limit;
 
     // --- 🚀 統合APIパラメータの構築 ---
-    // APIが期待する形式（genre_id / maker_id / actress_id）にマッピング
     const apiParams: any = {
-        api_source: 'fanza', // DMM商品の取得も現在はfanzaソース経由
+        api_source: 'fanza', 
         offset: offset,
         ordering: sort,
         limit: limit,
@@ -56,29 +65,53 @@ export default async function DmmCategoryPage(props: {
     else if (category === 'maker') apiParams.maker_id = id;
     else if (category === 'actress') apiParams.actress_id = id;
     else if (category === 'series') apiParams.series_id = id;
+    else if (category === 'author') apiParams.author_id = id;
+    else if (category === 'director') apiParams.director_id = id;
+    else if (category === 'label') apiParams.label_id = id;
 
-    // --- 📡 並列データフェッチ ---
-    const [dataRes, dynamicMenu, makersData, genresData] = await Promise.all([
-        // 商品一覧（統合APIを使用）
+    // --- 📡 サイドバー網羅のための並列データフェッチ ---
+    // ここで取得したデータが、ArchiveTemplate を通じてサイドバーに反映されます。
+    const [
+        dataRes, 
+        dynamicMenu, 
+        makersRes, 
+        genresRes, 
+        actressesRes,
+        seriesRes,
+        authorsRes,
+        directorsRes,
+        labelsRes
+    ] = await Promise.all([
         getAdultProducts(apiParams, '/unified-adult-products/').catch(() => ({ results: [], count: 0 })),
-        // 共通サイドメニュー（階層ナビゲーション）
         getFanzaDynamicMenu().catch(() => ({})),
-        // 共通パーツ用
-        fetchMakers({ limit: 40, ordering: '-product_count' }).catch(() => ({ results: [] })),
-        fetchGenres({ limit: 40, ordering: '-product_count' }).catch(() => ({ results: [] }))
+        fetchMakers({ limit: 20, ordering: '-product_count' }).catch(() => ({ results: [] })),
+        fetchGenres({ limit: 30, ordering: '-product_count' }).catch(() => ({ results: [] })),
+        fetchActresses({ limit: 20, ordering: '-product_count' }).catch(() => ({ results: [] })),
+        fetchSeries({ limit: 15 }).catch(() => ({ results: [] })),
+        fetchAuthors({ limit: 15 }).catch(() => ({ results: [] })),
+        fetchDirectors({ limit: 15 }).catch(() => ({ results: [] })),
+        fetchLabels({ limit: 15 }).catch(() => ({ results: [] })),
     ]);
 
     return (
         <ArchiveTemplate 
             products={dataRes?.results || []}
             totalCount={dataRes?.count || 0}
-            platform="dmm" // 🍊 オレンジテーマを適用
+            platform="dmm" 
             title={`DMM ${category.toUpperCase()}: ${id}`}
-            makers={makersData?.results || []}
-            genres={genresData?.results || []}
-            officialHierarchy={dynamicMenu} // 💡 共通サイドメニューを流し込み
+            
+            // --- 🛰️ サイドバーへ供給する網羅データ ---
+            officialHierarchy={dynamicMenu} 
+            makers={makersRes?.results || []}
+            genres={genresRes?.results || []}
+            actresses={actressesRes?.results || []}
+            series={seriesRes?.results || []}
+            authors={authorsRes?.results || []}
+            directors={directorsRes?.results || []}
+            labels={labelsRes?.results || []}
+
             currentSort={sort}
-            currentOffset={offset}
+            currentPage={currentPage}
             basePath={`/brand/dmm/${category}/${id}`}
             category={category}
             id={id}

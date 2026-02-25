@@ -1,12 +1,16 @@
 // -*- coding: utf-8 -*-
 /**
- * AI Gold Ratio Style Ranking Page (v4.5 - Component Optimized)
+ * AI Gold Ratio Style Ranking Page (v4.6 - Performance Optimized)
  * Location: /app/ranking/style/page.tsx
  */
 
 import React from 'react';
 import styles from './StyleRanking.module.css';
 import { SpecActressCard } from '@/shared/cards/SpecActressCard';
+
+// 💡 ISR: 1時間キャッシュ（バックグラウンドで更新し、ユーザーには常に高速なページを返す）
+// export const revalidate = 3600; 
+export const revalidate = 600; 
 
 /**
  * 💡 バックエンド構造準拠インターフェース
@@ -36,11 +40,26 @@ interface Actress {
 }
 
 /**
- * サーバーサイドデータフェッチ
+ * サーバーサイドデータフェッチ (フィルタリング最適化版)
  */
 async function getStyleRanking(): Promise<{ data: Actress[]; debugInfo: any }> {
   const internalBaseUrl = process.env.API_INTERNAL_URL || "http://django-v2:8000/api";
-  const endpoint = `${internalBaseUrl}/adult/taxonomy/?type=actresses&ordering=-profile__ai_power_score&limit=100`;
+  
+  /**
+   * 💡 修正のポイント:
+   * 1. profile__isnull=false : プロフィール情報が存在する女優のみ
+   * 2. profile__bust__gt=0  : バストデータが0より大きい（実数がある）ものに限定
+   * 3. limit=50 : 100件から50件に絞ることで、最初の通信量を半分にし、描画を高速化
+   */
+  const params = new URLSearchParams({
+    type: 'actresses',
+    profile__isnull: 'false',
+    profile__bust__gt: '0',
+    ordering: '-profile__ai_power_score',
+    limit: '50' 
+  });
+
+  const endpoint = `${internalBaseUrl}/adult/taxonomy/?${params.toString()}`;
 
   let debugInfo = { 
     endpoint, 
@@ -48,17 +67,21 @@ async function getStyleRanking(): Promise<{ data: Actress[]; debugInfo: any }> {
     statusText: "", 
     timestamp: new Date().toISOString(),
     count: 0, 
-    error: null as string | null 
+    error: null as string | null,
+    duration: 0
   };
+
+  const startTime = Date.now();
 
   try {
     const res = await fetch(endpoint, {
-      cache: 'no-store',
+      next: { revalidate: 3600 }, 
       headers: { 'Accept': 'application/json' }
     });
 
     debugInfo.status = res.status;
     debugInfo.statusText = res.statusText;
+    debugInfo.duration = Date.now() - startTime;
 
     if (!res.ok) {
       debugInfo.error = `HTTP Error: ${res.status}`;
@@ -70,6 +93,7 @@ async function getStyleRanking(): Promise<{ data: Actress[]; debugInfo: any }> {
     return { data: data.results || [], debugInfo };
   } catch (error: any) {
     debugInfo.error = error.message;
+    debugInfo.duration = Date.now() - startTime;
     return { data: [], debugInfo };
   }
 }
@@ -82,13 +106,14 @@ function SystemDiagnosticHero({ info }: { info: any }) {
     <div className={styles.debugBox}>
       <div className={styles.debugHeader}>
         <span className={styles.debugPulse}></span>
-        <strong>AI ANALYTICS SYSTEM DIAGNOSTIC</strong>
+        <strong>AI ANALYTICS SYSTEM DIAGNOSTIC (v4.6)</strong>
       </div>
       <div className={styles.debugGrid}>
-        <div className={styles.debugItem}><span>Endpoint:</span> <code>{info.endpoint}</code></div>
-        <div className={styles.debugItem}><span>Status:</span> {info.status} {info.statusText}</div>
-        <div className={styles.debugItem}><span>Fetched:</span> {info.count} records</div>
+        <div className={styles.debugItem}><span>API Time:</span> {info.duration}ms</div>
+        <div className={styles.debugItem}><span>Status:</span> {info.status}</div>
+        <div className={styles.debugItem}><span>Count:</span> {info.count} effective records</div>
       </div>
+      <div className={styles.debugEndpoint}><code>{info.endpoint}</code></div>
     </div>
   );
 }
@@ -96,12 +121,14 @@ function SystemDiagnosticHero({ info }: { info: any }) {
 /**
  * 🏁 メインコンポーネント
  */
-export default async function StyleRankingPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
+export default async function StyleRankingPage(props: {
+  searchParams: Promise<{ debug?: string }>;
 }) {
+  // Next.js 15+ 準拠のparams解決
+  const searchParams = await props.searchParams;
   const isDebug = searchParams?.debug === 'true';
+  
+  // データの取得（フィルタリング済み）
   const { data: actresses, debugInfo } = await getStyleRanking();
 
   return (
@@ -110,13 +137,13 @@ export default async function StyleRankingPage({
 
       <header className={styles.header}>
         <div className={styles.titleWrapper}>
-          <div className={styles.aiBadge}>AI BIOMETRIC ANALYZER v4.5</div>
+          <div className={styles.aiBadge}>AI BIOMETRIC ANALYZER v4.6</div>
           <h1 className={styles.title}>黄金比スタイルランキング</h1>
           <div className={styles.titleLine}></div>
         </div>
         <p className={styles.description}>
           AIがB/W/H比率、骨格、曲線の連続性をディープラーニングで解析。<br />
-          科学が証明する「見惚れるスタイル」の頂点を、詳細なパーソナルデータと共に公開。
+          データが確認されたキャストの中から、科学が証明する「見惚れるスタイル」の頂点を公開。
         </p>
       </header>
 
@@ -124,10 +151,11 @@ export default async function StyleRankingPage({
         {actresses.length > 0 ? (
           actresses.map((actress, index) => (
             <SpecActressCard 
-              key={actress.id} 
+              key={`${actress.id}`} 
               actress={actress} 
               rank={index + 1}
-              priority={index < 4} // 上位4件は画像読み込みを優先
+              // 上位はLCP向上のため優先読み込み
+              priority={index < 4} 
             />
           ))
         ) : (

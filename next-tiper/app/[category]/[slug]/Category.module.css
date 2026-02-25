@@ -1,5 +1,5 @@
 /* ==============================================================================
- * 🚀 TIPER Archive - Tactical Cyber Edition (Full Integration)
+ * 🚀 TIPER Archive - Tactical Cyber Edition (Full Width Integration)
  * ============================================================================== */
 
 .container {
@@ -52,7 +52,7 @@
   background-size: 100% 4px, 3px 100%;
   z-index: 100;
   pointer-events: none;
-  opacity: 0.15; /* スキャンラインを少し控えめに調整 */
+  opacity: 0.15;
 }
 
 .inner {
@@ -102,50 +102,45 @@
   color: white;
 }
 
-/* 2. メインレイアウト構造 */
+/* 2. 【修正】メインレイアウト構造（1カラム全幅化） */
 .mainLayout {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 4rem;
-  align-items: flex-start;
-}
-
-.sidebar {
-  position: relative;
+  display: block; /* サイドバー撤去につき、gridからblockへ変更 */
+  width: 100%;
 }
 
 .content {
-  min-width: 0; /* flex/grid内での崩れ防止 */
+  width: 100%;
+  min-width: 0;
 }
 
-/* 3. 【修正】メインコンテンツ内ヘッダー (統合ユニット) */
+/* 3. メインコンテンツ内ヘッダー */
 .contentHeader {
   background: linear-gradient(90deg, rgba(233, 69, 96, 0.08) 0%, transparent 100%);
   border-left: 4px solid var(--accent-primary);
-  padding: 2rem 2.5rem;
+  padding: 2.5rem 3rem;
   margin-bottom: 2.5rem;
   position: relative;
   overflow: hidden;
   box-shadow: 20px 0 50px rgba(0, 0, 0, 0.3);
 }
 
-/* 背景の透かし文字 */
 .contentHeader::before {
   content: "NODE_DATA_UNIT";
   position: absolute;
-  right: -5%;
-  bottom: -10%;
+  right: -2%;
+  bottom: -5%;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 5rem;
+  font-size: 6rem;
   font-weight: 950;
   color: rgba(255, 255, 255, 0.03);
   font-style: italic;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 .nodeStatus {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: var(--accent-secondary);
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -156,35 +151,36 @@
 }
 
 .titleMain {
-  font-size: clamp(2rem, 5vw, 3.8rem);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 950;
   line-height: 1;
   letter-spacing: -0.03em;
   text-transform: uppercase;
   margin: 0;
   color: #fff;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
 
-/* 4. ツールバー（コンテンツ直上） */
+/* 4. ツールバー */
 .contentToolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 0;
+  padding: 1.5rem 0;
   border-bottom: 1px solid var(--border-white);
   margin-bottom: 3.5rem;
 }
 
 .sortGroup {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .sortBtn {
-  padding: 0.4rem 1rem;
+  padding: 0.5rem 1.25rem;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 700;
   color: var(--text-dim);
   text-decoration: none;
@@ -198,7 +194,7 @@
   background: var(--accent-primary);
   color: white !important;
   border-color: var(--accent-primary);
-  box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
 }
 
 .sortBtn:hover:not(.sortBtnActive) {
@@ -215,32 +211,33 @@
 }
 
 .metricValue {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 900;
   color: var(--accent-primary);
 }
 
-/* 5. 商品グリッド */
+/* 5. 【最適化】商品グリッド（全幅用にカラム数を自動調整） */
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 3.5rem 1.5rem;
+  /* サイドバーが消えた広大な幅を活かすため、最小幅 260px で自動充填 */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 4rem 2rem;
 }
 
 /* 6. ページネーション */
 .pagination {
-  margin-top: 6rem;
+  margin-top: 8rem;
   display: flex;
   justify-content: center;
 }
 
 /* 装飾要素 */
 .liveDot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background: var(--accent-debug);
   border-radius: 50%;
-  box-shadow: 0 0 10px var(--accent-debug);
+  box-shadow: 0 0 12px var(--accent-debug);
   animation: blink 2s infinite;
 }
 
@@ -250,26 +247,26 @@
 }
 
 /* 7. レスポンシブ */
-@media (max-width: 1200px) {
-  .mainLayout {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
-  .sidebar {
-    order: 2;
-  }
-  .content {
-    order: 1;
+@media (max-width: 1024px) {
+  .inner { padding: 0 20px 8rem; }
+  .titleMain { font-size: 3rem; }
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2rem 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .contentHeader {
-    padding: 1.5rem;
+    padding: 1.5rem 2rem;
   }
   .contentToolbar {
     flex-direction: column;
     align-items: flex-start;
     gap: 1.5rem;
+  }
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr); /* スマホでは2カラム固定 */
+    gap: 1.5rem 0.75rem;
   }
 }

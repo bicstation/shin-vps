@@ -1,3 +1,4 @@
+/* /app/brand/dmm/page.tsx (またはルートの構成に応じて) */
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 import React from 'react';
@@ -21,7 +22,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
     title: 'DMM Archive | TIPER Archive',
-    description: 'DMM.R18 / FANZA 共通基盤を含むアーカイブデータを統合。',
+    description: 'DMM.R18 / FANZA 共通基盤を含むアーカイブデータを統合解析。',
 };
 
 /**
@@ -45,6 +46,10 @@ const filterByBrand = (list: any) => {
     });
 };
 
+/**
+ * 🔳 DMM_BRAND_ROOT_PAGE
+ * DMMブランドの全データを統括するメインハブページ。
+ */
 export default async function DmmBrandPage(props: {
     searchParams: Promise<{ 
         page?: string; 
@@ -62,7 +67,8 @@ export default async function DmmBrandPage(props: {
     const currentService = searchParams?.service || '';
     const currentFloor = searchParams?.floor || '';
 
-    // --- 🏗️ 1. データ取得（並列・DMM特化） ---
+    // --- 🏗️ 1. データ取得（DMM特化の全方位フェッチ） ---
+    // 司令塔(ArchiveTemplate)のサイドバーを埋め尽くすための全マスタデータを取得します。
     const startTime = Date.now();
     const [
         productData, 
@@ -86,20 +92,19 @@ export default async function DmmBrandPage(props: {
         
         getDmmDynamicMenu().catch(() => ({})), 
 
-        fetchMakers({ limit: 40, api_source: 'dmm' }).catch(() => []), 
-        fetchGenres({ limit: 40, api_source: 'dmm' }).catch(() => []), 
-        fetchActresses({ limit: 40, api_source: 'dmm' }).catch(() => []), 
-        fetchSeries({ limit: 40, api_source: 'dmm' }).catch(() => []), 
-        fetchDirectors({ limit: 40, api_source: 'dmm' }).catch(() => []),
-        fetchAuthors({ limit: 40, api_source: 'dmm' }).catch(() => []),
-        fetchLabels({ limit: 40, api_source: 'dmm' }).catch(() => []),
+        fetchMakers({ limit: 40, api_source: 'dmm', ordering: '-product_count' }).catch(() => []), 
+        fetchGenres({ limit: 40, api_source: 'dmm', ordering: '-product_count' }).catch(() => []), 
+        fetchActresses({ limit: 40, api_source: 'dmm', ordering: '-product_count' }).catch(() => []), 
+        fetchSeries({ limit: 30, api_source: 'dmm' }).catch(() => []), 
+        fetchDirectors({ limit: 30, api_source: 'dmm' }).catch(() => []),
+        fetchAuthors({ limit: 30, api_source: 'dmm' }).catch(() => []),
+        fetchLabels({ limit: 30, api_source: 'dmm' }).catch(() => []),
 
         getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
     const duration = Date.now() - startTime;
 
-    // --- 🛡️ 2. サイドバー用データの整理 ---
-    // 🚀 スクショの構造 `svc/[service]/[floor]` に基づくリンク生成
+    // --- 🛡️ 2. サイドバー用階層データの整理 ---
     const dmmHierarchy = Object.entries(dynamicMenu).map(([serviceName, content]: [string, any]) => {
         const floorItems = (content.floors || []).map((f: any) => ({
             id: f.code,
@@ -107,8 +112,7 @@ export default async function DmmBrandPage(props: {
             floor_name: f.name,
             floor_code: f.code,
             slug: f.code,
-            // 💡 修正: /brand/dmm/svc/[service]/[floor] 形式
-            href: `/brand/dmm/svc/${content.code}/${f.code}`,
+            href: `/brand/dmm/svc/${content.code}/${f.code}`, // フロア階層へ
         }));
 
         return {
@@ -117,33 +121,25 @@ export default async function DmmBrandPage(props: {
             service_name: serviceName,
             service_code: content.code,
             slug: content.code,
-            // 💡 修正: サービス単体は /brand/dmm/svc/[service] (その下のpage.tsxで処理)
-            href: `/brand/dmm/svc/${content.code}`,
+            href: `/brand/dmm/svc/${content.code}`, // サービス階層へ
             floors: floorItems,
             items: floorItems,
             active: currentService === content.code,
         };
-    });
-
-    const filteredActresses = filterByBrand(actressesArray);
-    const filteredMakers = filterByBrand(makersArray);
-    const filteredGenres = filterByBrand(genresArray);
-    const filteredSeries = filterByBrand(seriesArray);
-    const filteredDirectors = filterByBrand(directorsArray);
-    const filteredAuthors = filterByBrand(authorsArray);
-    const filteredLabels = filterByBrand(labelsArray);
+    }).filter(item => item.floors.length > 0);
 
     return (
         <>
+            {/* 🐞 診断ツール */}
             {isDebug && (
                 <SystemDiagnosticHero 
                     stats={{
                         fetchTime: `${duration}ms`,
-                        mode: 'SERVER_DMM_PAGE_V4',
+                        mode: 'SERVER_DMM_HUB_V4',
                         platform: 'dmm',
                         productCount: productData.count,
                     }}
-                    raw={{ dmmHierarchy, params: { currentService, currentFloor } }}
+                    raw={{ dmmHierarchy, currentService, currentFloor }}
                 />
             )}
 
@@ -153,15 +149,15 @@ export default async function DmmBrandPage(props: {
                 products={productData.results || []}
                 totalCount={productData.count || 0}
                 
+                // 🛰️ 司令塔(ArchiveTemplate)に全データをパス
                 officialHierarchy={dmmHierarchy} 
-                
-                makers={filteredMakers}
-                genres={filteredGenres}
-                actresses={filteredActresses} 
-                authors={filteredAuthors} 
-                series={filteredSeries}
-                directors={filteredDirectors}
-                labels={filteredLabels}
+                makers={filterByBrand(makersArray)}
+                genres={filterByBrand(genresArray)}
+                actresses={filterByBrand(actressesArray)} 
+                authors={filterByBrand(authorsArray)} 
+                series={filterByBrand(seriesArray)}
+                directors={filterByBrand(directorsArray)}
+                labels={filterByBrand(labelsArray)}
                 
                 recentPosts={safeExtract(wpData).map((p: any) => ({
                     id: p.id,

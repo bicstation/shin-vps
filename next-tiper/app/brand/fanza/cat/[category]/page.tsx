@@ -16,13 +16,18 @@ import styles from '@/app/brand/Archive.module.css';
 
 export const dynamic = 'force-dynamic';
 
-const VALID_CATEGORIES: Record<string, { label: string; fetcher: any }> = {
-    actress: { label: 'ACTRESS', fetcher: fetchActresses },
-    genre: { label: 'GENRE', fetcher: fetchGenres },
-    series: { label: 'SERIES', fetcher: fetchSeries },
-    maker: { label: 'MAKER', fetcher: fetchMakers },
-    director: { label: 'DIRECTOR', fetcher: fetchDirectors },
-    author: { label: 'AUTHOR', fetcher: fetchAuthors },
+/**
+ * 💡 カテゴリ定義の拡張
+ * label: システム表示用
+ * displayName: 日本語タイトル用
+ */
+const VALID_CATEGORIES: Record<string, { label: string; displayName: string; fetcher: any }> = {
+    actress: { label: 'ACTRESS', displayName: '女優', fetcher: fetchActresses },
+    genre: { label: 'GENRE', displayName: 'ジャンル', fetcher: fetchGenres },
+    series: { label: 'SERIES', displayName: 'シリーズ', fetcher: fetchSeries },
+    maker: { label: 'MAKER', displayName: 'メーカー', fetcher: fetchMakers },
+    director: { label: 'DIRECTOR', displayName: '監督', fetcher: fetchDirectors },
+    author: { label: 'AUTHOR', displayName: '著者', fetcher: fetchAuthors },
 };
 
 /**
@@ -30,15 +35,17 @@ const VALID_CATEGORIES: Record<string, { label: string; fetcher: any }> = {
  */
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
     const { category } = await params;
-    const label = VALID_CATEGORIES[category]?.label || 'CATEGORY';
+    const config = VALID_CATEGORIES[category];
+    const displayTitle = config ? `${config.displayName}一覧` : 'カテゴリ一覧';
+    
     return {
-        title: `FANZA ${label} LIST | ARCHIVE SCAN`,
-        description: `FANZAの${label}別アーカイブ一覧ページ。`,
+        title: `FANZA ${displayTitle} | TIPER ARCHIVE`,
+        description: `FANZAの${displayTitle}別アーカイブ。最新の解析データを網羅。`,
     };
 }
 
 /**
- * 🔳 FANZA_CATEGORY_LIST_PAGE (Layout-Aware Optimized)
+ * 🔳 FANZA_CATEGORY_LIST_PAGE
  */
 export default async function FanzaCategoryListPage(props: { 
     params: Promise<{ category: string }> 
@@ -49,8 +56,7 @@ export default async function FanzaCategoryListPage(props: {
     const config = VALID_CATEGORIES[category];
     if (!config) notFound();
 
-    // 2. データ取得 (このカテゴリのリストだけを取得)
-    // 💡 サイドバー用の fetchMakers などの重複取得をすべて削除
+    // 2. データ取得
     const itemsRes = await config.fetcher({ 
         limit: 500, 
         api_source: 'fanza', 
@@ -68,17 +74,14 @@ export default async function FanzaCategoryListPage(props: {
         >
             <div className={styles.ambientGlow} />
 
-            {/* 🏗️ CORE_CONTENT
-                layout.tsx の grid-area (1fr) に直接配置されます。
-                .container や .sidebarWrapper は不要になりました。
-            */}
             <main className={styles.mainContent}>
                 <nav className={styles.breadcrumb}>
                     <Link href="/" className={styles.bcLink}>ROOT</Link>
                     <span className={styles.bcDivider}>/</span>
                     <Link href="/brand/fanza" className={styles.bcLink}>FANZA</Link>
                     <span className={styles.bcDivider}>/</span>
-                    <span className={styles.bcActive}>{config.label}</span>
+                    {/* 💡 スラッグではなく displayName (女優、メーカー等) を表示 */}
+                    <span className={styles.bcActive}>{config.displayName}</span>
                 </nav>
 
                 <header className={styles.headerSection}>
@@ -86,10 +89,12 @@ export default async function FanzaCategoryListPage(props: {
                         <div className="flex items-center gap-3 mb-2">
                             <span className="w-8 h-[1px] bg-[var(--accent)]"></span>
                             <span className="text-[10px] font-mono tracking-[0.4em] text-[var(--accent)] uppercase opacity-80">
-                                Index Scan: {category}
+                                INDEX_SCAN / {config.label}
                             </span>
                         </div>
-                        <h1 className={styles.titleMain}>{config.label} INDEX</h1>
+                        {/* 💡 メインタイトルを日本語（config.displayName）に変更 */}
+                        <h1 className={styles.titleMain}>{config.displayName} INDEX</h1>
+                        
                         <div className={styles.statusInfo}>
                             <span className={styles.statusLabel}>NODES_DETECTED:</span>
                             <span className={styles.statusValue}>{items.length}</span>
@@ -97,7 +102,7 @@ export default async function FanzaCategoryListPage(props: {
                     </div>
                 </header>
 
-                {/* 🔳 カテゴリグリッド (全幅を活かしたタクティカル・レイアウト) */}
+                {/* 🔳 カテゴリグリッド */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-8">
                     {items.length > 0 ? (
                         items.map((item: any) => (
@@ -110,6 +115,7 @@ export default async function FanzaCategoryListPage(props: {
                                     <span className="text-gray-500 text-[9px] font-mono group-hover:text-[var(--accent)] transition-colors">
                                         ID_{String(item.id).padStart(6, '0')}
                                     </span>
+                                    {/* 💡 個別アイテムの名称を表示 */}
                                     <span className="text-white font-bold text-sm leading-tight group-hover:translate-x-1 transition-transform duration-300">
                                         {item.name}
                                     </span>
@@ -120,7 +126,6 @@ export default async function FanzaCategoryListPage(props: {
                                         <span className="text-white/10 group-hover:text-[var(--accent)] group-hover:translate-x-1 transition-all">→</span>
                                     </div>
                                 </div>
-                                {/* 装飾用スキャンライン */}
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-0 group-hover:opacity-100 group-hover:top-full transition-all duration-1000 ease-in-out" />
                             </Link>
                         ))

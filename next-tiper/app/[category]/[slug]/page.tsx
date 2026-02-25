@@ -7,7 +7,6 @@ import Link from 'next/link';
 // CSSモジュールとコンポーネントのインポート
 import styles from './Category.module.css'; 
 import ProductCard from '@/shared/cards/AdultProductCard';
-import Sidebar from '@/shared/layout/Sidebar/AdultSidebar'; 
 import Pagination from '@/shared/common/Pagination';
 import SystemDiagnosticHero from '@/shared/debug/SystemDiagnosticHero';
 
@@ -17,10 +16,10 @@ import {
   fetchMakers, 
   fetchGenres, 
   fetchActresses,
-  fetchSeries,     // 💡 追加
-  fetchDirectors,  // 💡 追加
-  fetchAuthors,    // 💡 追加
-  fetchLabels      // 💡 追加
+  fetchSeries,
+  fetchDirectors,
+  fetchAuthors,
+  fetchLabels
 } from '@/shared/lib/api/django/adult';
 
 export const dynamic = 'force-dynamic';
@@ -58,6 +57,7 @@ export async function generateMetadata(props: { params: Promise<{ category: stri
 
 /**
  * カテゴリ詳細ページ メインコンポーネント
+ * 🛠️ サイドバーを排除し、コンテンツをメインストリームのみに集中させた構成
  */
 export default async function CategoryDetailPage(props: { 
   params: Promise<{ category: string; slug: string }>;
@@ -77,17 +77,9 @@ export default async function CategoryDetailPage(props: {
   const isNumberId = /^\d+$/.test(slug);
   const filterKey = isNumberId ? baseKey : `${baseKey}_slug`;
 
-  // --- 📡 データの並列取得（サイドバー用データを網羅） ---
+  // --- 📡 データの取得（メインコンテンツのみ） ---
   const [
-    productRes, 
-    genresRes, 
-    makersRes, 
-    actressesRes, 
-    seriesRes,    // 💡 追加
-    directorsRes, // 💡 追加
-    authorsRes,   // 💡 追加
-    labelsRes,    // 💡 追加
-    wpData
+    productRes,
   ] = await Promise.all([
     getUnifiedProducts({ 
       page: currentPage, 
@@ -95,14 +87,6 @@ export default async function CategoryDetailPage(props: {
       [filterKey]: slug, 
       ordering: currentOrdering
     }).catch(() => ({ results: [], count: 0 })),
-    fetchGenres({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchMakers({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchActresses({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchSeries({ limit: 10 }).catch(() => ({ results: [] })),    // 💡 追加
-    fetchDirectors({ limit: 10 }).catch(() => ({ results: [] })), // 💡 追加
-    fetchAuthors({ limit: 10 }).catch(() => ({ results: [] })),   // 💡 追加
-    fetchLabels({ limit: 10 }).catch(() => ({ results: [] })),    // 💡 追加
-    getSiteMainPosts(0, 5).catch(() => ({ results: [] })),
   ]);
 
   const items = productRes?.results || [];
@@ -126,27 +110,13 @@ export default async function CategoryDetailPage(props: {
       </nav>
 
       <div className={styles.inner}>
+        {/* 🛠️ mainLayout のサイドバー (aside) を削除しました。
+            styles.mainLayout で grid を使用している場合は、CSS側で 
+            grid-template-columns: 1fr; に修正することをお勧めします。
+        */}
         <div className={styles.mainLayout}>
           
-          {/* 📊 サイドバー (左) - 全データを注入 */}
-          <aside className={styles.sidebar}>
-            <div className="sticky top-24">
-              <Sidebar 
-                genres={genresRes.results || []} 
-                makers={makersRes.results || []}
-                actresses={actressesRes.results || []}
-                series={seriesRes.results || []}       // 💡 追加
-                directors={directorsRes.results || []} // 💡 追加
-                authors={authorsRes.results || []}     // 💡 追加
-                labels={labelsRes.results || []}       // 💡 追加
-                recentPosts={(wpData?.results || []).map((p: any) => ({ 
-                  id: p.id.toString(), title: p.title.rendered, slug: p.slug 
-                }))}
-              />
-            </div>
-          </aside>
-
-          {/* 📺 メインストリーム (右) */}
+          {/* 📺 メインストリーム (全幅展開) */}
           <main className={styles.content}>
             
             <header className={styles.contentHeader}>
@@ -185,6 +155,7 @@ export default async function CategoryDetailPage(props: {
               </div>
             )}
             
+            {/* 商品グリッド - サイドバーがなくなった分、より多くのカラムを表示可能 */}
             <div className={styles.productGrid}>
               {items.map((product: any) => (
                 <ProductCard key={product.id} product={product} />

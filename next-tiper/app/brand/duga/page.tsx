@@ -42,7 +42,9 @@ const safeExtract = (data: any) => {
 };
 
 /**
- * 🔳 DUGA_BRAND_PAGE (Structured Layout)
+ * 🔳 DUGA_BRAND_PAGE
+ * DUGAブランドのトップページ。
+ * 女優だけでなく「著者(Author)」が重要な役割を果たすDUGA独自のデータ構造をサイドバーに反映します。
  */
 export default async function DugaBrandPage(props: {
     searchParams: Promise<{ page?: string; sort?: string; debug?: string }>;
@@ -52,8 +54,8 @@ export default async function DugaBrandPage(props: {
     const currentPage = Number(searchParams?.page) || 1;
     const currentSort = searchParams?.sort || '-release_date';
 
-    // --- 🏗️ 1. データ取得（ブランド特化型リクエスト） ---
-    // DUGAに関連するマスタデータのみをフィルタリングして取得
+    // --- 🏗️ 1. データ取得（DUGA特化型フェッチ） ---
+    // DUGAに関連する全マスタデータを並列取得し、サイドバーの密度を最大化します。
     const [
         productData, 
         makersArray, 
@@ -69,15 +71,16 @@ export default async function DugaBrandPage(props: {
             api_source: 'DUGA',
             page: currentPage,
             ordering: currentSort,
+            limit: 24,
         }).catch(() => ({ results: [], count: 0 })),
 
         fetchMakers({ limit: 40, api_source: 'duga', ordering: '-product_count' }).catch(() => []), 
         fetchGenres({ limit: 40, api_source: 'duga', ordering: '-product_count' }).catch(() => []), 
-        fetchActresses({ limit: 40, api_source: 'duga' }).catch(() => []),
-        fetchSeries({ limit: 40, api_source: 'duga' }).catch(() => []),
-        fetchDirectors({ limit: 40, api_source: 'duga' }).catch(() => []),
-        fetchAuthors({ limit: 40, api_source: 'duga' }).catch(() => []),
-        fetchLabels({ limit: 40, api_source: 'duga' }).catch(() => []),
+        fetchActresses({ limit: 40, api_source: 'duga', ordering: '-product_count' }).catch(() => []),
+        fetchSeries({ limit: 30, api_source: 'duga' }).catch(() => []),
+        fetchDirectors({ limit: 20, api_source: 'duga' }).catch(() => []),
+        fetchAuthors({ limit: 40, api_source: 'duga', ordering: '-product_count' }).catch(() => []),
+        fetchLabels({ limit: 20, api_source: 'duga' }).catch(() => []),
 
         getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
@@ -85,21 +88,15 @@ export default async function DugaBrandPage(props: {
     // --- 🎨 2. ArchiveTemplate への流し込み ---
     return (
         <>
-            {/* 🐞 デバッグモード (DUGA特化) */}
+            {/* 🐞 診断ツール (DUGA Source) */}
             {isDebug && (
                 <SystemDiagnosticHero 
                     id="BRAND_DUGA_ARCHIVE"
                     source="DUGA"
                     data={{
-                        mode: 'SERVER_BRAND_PAGE',
+                        mode: 'SERVER_BRAND_PAGE_V4',
                         totalProducts: productData.count,
-                        makersFound: safeExtract(makersArray).length,
-                        genresFound: safeExtract(genresArray).length,
-                        authorsFound: safeExtract(authorsArray).length,
-                    }}
-                    rawJson={{ 
-                        firstProduct: productData.results?.[0],
-                        authorSample: safeExtract(authorsArray)[0]
+                        records: productData.results?.length,
                     }}
                 />
             )}
@@ -110,21 +107,18 @@ export default async function DugaBrandPage(props: {
                 products={productData.results || []}
                 totalCount={productData.count || 0}
                 
-                // 補助マスタ (DUGAに紐づくもの)
+                // 🛰️ サイドバー・フルデータ供給
                 makers={safeExtract(makersArray)}
                 genres={safeExtract(genresArray)}
                 series={safeExtract(seriesArray)}
                 directors={safeExtract(directorsArray)}
                 labels={safeExtract(labelsArray)}
-
-                // 🚀 女優と著者を分離して渡す
                 actresses={safeExtract(actressesArray)}
                 authors={safeExtract(authorsArray)}
                 
-                // 階層データ (DUGAはフラットなため空配列)
+                // 階層データ (DUGAは現状APIによる動的メニューがないため空、または静的定義)
                 officialHierarchy={[]}
 
-                // WP最新投稿
                 recentPosts={safeExtract(wpData).map((p: any) => ({
                     id: p.id,
                     title: p.title?.rendered || 'No Title',
@@ -132,7 +126,6 @@ export default async function DugaBrandPage(props: {
                     date: p.date
                 }))}
                 
-                // 状態
                 currentPage={currentPage}
                 currentSort={currentSort}
                 basePath="/brand/duga"

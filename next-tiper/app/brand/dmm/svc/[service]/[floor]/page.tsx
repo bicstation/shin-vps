@@ -3,7 +3,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { 
-    getUnifiedProducts, // 💡 getAdultProducts から修正
+    getUnifiedProducts, 
     fetchMakers, 
     fetchGenres, 
     fetchActresses,
@@ -47,12 +47,13 @@ const safeExtract = (data: any) => {
 
 /**
  * 🔳 DMM_FLOOR_LIST_PAGE (Structured Layout)
+ * DMM特有のサービス/フロア階層を ArchiveTemplate に適合させて流し込みます。
  */
 export default async function DmmFloorListPage(props: {
     params: Promise<{ service: string; floor: string }>;
     searchParams: Promise<{ page?: string; sort?: string; offset?: string; debug?: string }>;
 }) {
-    // 1. パラメータの解決 (Next.js 15 Promise 対応)
+    // 1. パラメータの解決
     const resolvedParams = await props.params;
     const resolvedSearchParams = await props.searchParams;
     const { service, floor } = resolvedParams;
@@ -63,6 +64,7 @@ export default async function DmmFloorListPage(props: {
     const currentPage = Number(resolvedSearchParams.page) || 1;
 
     // --- 🏗️ 2. データ取得（並列） ---
+    // サイドバーを「全サービス・全フロア」で埋めるために網羅的にフェッチします。
     const [
         dataRes, 
         dynamicMenu, 
@@ -75,10 +77,10 @@ export default async function DmmFloorListPage(props: {
         labelsArray,
         wRes
     ] = await Promise.all([
-        getUnifiedProducts({ // 💡 正しい関数名を使用
+        getUnifiedProducts({ 
             api_source: 'dmm',
-            service: service, // adult.ts 内で service_code に自動変換されます
-            floor: floor,     // adult.ts 内で floor_code に自動変換されます
+            service: service, 
+            floor: floor,
             page: currentPage,
             ordering: sort,
             limit: limit
@@ -86,19 +88,18 @@ export default async function DmmFloorListPage(props: {
         
         getDmmDynamicMenu().catch(() => ({})), 
 
-        // DMMソースのマスタ取得
-        fetchMakers({ limit: 40, api_source: 'dmm', ordering: '-product_count' }).catch(() => []),
+        fetchMakers({ limit: 30, api_source: 'dmm', ordering: '-product_count' }).catch(() => []),
         fetchGenres({ limit: 40, api_source: 'dmm', ordering: '-product_count' }).catch(() => []),
-        fetchActresses({ limit: 40, api_source: 'dmm' }).catch(() => []),
-        fetchSeries({ limit: 40, api_source: 'dmm' }).catch(() => []),
-        fetchDirectors({ limit: 40, api_source: 'dmm' }).catch(() => []),
-        fetchAuthors({ limit: 40, api_source: 'dmm' }).catch(() => []),
-        fetchLabels({ limit: 40, api_source: 'dmm' }).catch(() => []),
+        fetchActresses({ limit: 20, api_source: 'dmm' }).catch(() => []),
+        fetchSeries({ limit: 15, api_source: 'dmm' }).catch(() => []),
+        fetchDirectors({ limit: 15, api_source: 'dmm' }).catch(() => []),
+        fetchAuthors({ limit: 15, api_source: 'dmm' }).catch(() => []),
+        fetchLabels({ limit: 15, api_source: 'dmm' }).catch(() => []),
         
         getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
     ]);
 
-    // --- 🛡️ 3. サイドバー用データの整理（DMM階層構造） ---
+    // --- 🛡️ 3. サイドバー用データの整理（DMM階層構造をサイドバー用に正規化） ---
     const dmmHierarchy = Object.entries(dynamicMenu || {}).map(([serviceName, content]: [string, any]) => {
         const floorItems = (content.floors || []).map((f: any) => ({
             id: f.code,
@@ -111,19 +112,19 @@ export default async function DmmFloorListPage(props: {
 
         return {
             id: content.code,
-            name: serviceName,
+            name: serviceName, // '動画', '電子書籍' など
             service_name: serviceName,
             service_code: content.code,
             slug: content.code,
             floors: floorItems,
-            active: service === content.code,
+            active: service === content.code, // 現在選択中のサービスを強調
         };
     }).filter(item => item.floors.length > 0);
 
     // --- 🎨 4. ArchiveTemplate への流し込み ---
     return (
         <>
-            {/* 🐞 デバッグモード */}
+            {/* 🐞 デバッグモード用オーバーレイ */}
             {isDebug && (
                 <SystemDiagnosticHero 
                     id={`DMM_SVC_${service}_${floor}`}
@@ -133,8 +134,7 @@ export default async function DmmFloorListPage(props: {
                         floor,
                         totalCount: dataRes.count,
                         currentPage,
-                        apiStatus: dataRes.results?.length > 0 ? 'OK' : 'EMPTY',
-                        wpStatus: wRes?.results ? 'OK' : 'WP_ERROR'
+                        apiStatus: dataRes.results?.length > 0 ? 'OK' : 'EMPTY'
                     }}
                 />
             )}
@@ -145,15 +145,15 @@ export default async function DmmFloorListPage(props: {
                 products={dataRes.results || []}
                 totalCount={dataRes.count || 0}
                 
-                // サイドバーデータの完全注入
+                // 🛰️ サイドバーへの全データ供給
                 officialHierarchy={dmmHierarchy} 
                 makers={safeExtract(makersArray)}
                 genres={safeExtract(genresArray)} 
+                actresses={safeExtract(actressesArray)}
                 series={safeExtract(seriesArray)}
                 directors={safeExtract(directorsArray)}
-                labels={safeExtract(labelsArray)}
-                actresses={safeExtract(actressesArray)}
                 authors={safeExtract(authorsArray)}
+                labels={safeExtract(labelsArray)}
                 
                 recentPosts={safeExtract(wRes).map((p: any) => ({
                     id: p.id,
@@ -165,7 +165,7 @@ export default async function DmmFloorListPage(props: {
                 currentPage={currentPage}
                 currentSort={sort}
                 
-                // パス設定
+                // ナビゲーションパスの整合性
                 basePath={`/brand/dmm/svc/${service}/${floor}`}
                 categoryPathPrefix="/brand/dmm/cat" 
                 

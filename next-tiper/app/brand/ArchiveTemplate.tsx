@@ -9,8 +9,8 @@ import AdultSidebar from '@shared/layout/Sidebar/AdultSidebar';
 
 /**
  * ArchiveTemplate
- * 物理的なレイアウトハック機能を搭載し、二重サイドバーを強制排除する
- * 司令塔コンポーネント。
+ * 物理的なレイアウトハック機能を搭載し、二重サイドバーを強制排除。
+ * さらに、ページ遷移時に元のレイアウトへ「復元」する安全装置付き。
  */
 export default function ArchiveTemplate({ 
   products = [], 
@@ -40,38 +40,64 @@ export default function ArchiveTemplate({
   const [filterText, setFilterText] = useState('');
 
   // ---------------------------------------------------------------------------
-  // 🚨 LAYOUT_HACK_PROTOCOL: 二重サイドバーを物理的に抹殺するロジック
+  // 🚨 LAYOUT_HACK_PROTOCOL: ページ表示時に消し、離れる時に必ず「復元」する
   // ---------------------------------------------------------------------------
   useEffect(() => {
+    // 復元のために変更前の要素と値を保持しておく配列
+    const restoreTargets: {
+      parent: HTMLElement;
+      aside: HTMLElement;
+      originalDisplay: string;
+      originalGrid: string;
+      originalWidth: string;
+    }[] = [];
+
     // 1. 共通レイアウトが生成している「外側のサイドバー」を特定して非表示にする
-    // mainContent の外側にある aside 要素を探して、強制的に消します
     const mainTags = document.querySelectorAll('main');
     mainTags.forEach((main) => {
-      // Archive.module.css の中身ではない「外側のメイン」を探す
+      // Archive.module.css の中身ではない「外側の枠」を探す
       if (!main.className.includes('Archive_mainContent')) {
         const parent = main.parentElement;
-        if (parent) {
-          // 親のGrid設定を破壊して1カラム化（全幅）にする
+        const aside = main.previousElementSibling;
+
+        if (parent && aside && aside.tagName === 'ASIDE') {
+          const asideHtml = aside as HTMLElement;
+
+          // 復元用データをバックアップ
+          restoreTargets.push({
+            parent,
+            aside: asideHtml,
+            originalDisplay: parent.style.display,
+            originalGrid: parent.style.gridTemplateColumns,
+            originalWidth: parent.style.width
+          });
+
+          // 🛠️ アーカイブページ専用：親のGridを破壊して全幅化
           parent.style.display = 'block';
           parent.style.gridTemplateColumns = 'none';
           parent.style.width = '100%';
-        }
-        
-        // メインの横にある「共通サイドバー(aside)」を探して隠す
-        const aside = main.previousElementSibling;
-        if (aside && aside.tagName === 'ASIDE') {
-          (aside as HTMLElement).style.display = 'none';
-          (aside as HTMLElement).style.width = '0';
-          (aside as HTMLElement).style.visibility = 'hidden';
+
+          // 🛠️ 外側のサイドバーを物理的に隠す
+          asideHtml.style.display = 'none';
+          asideHtml.style.width = '0';
+          asideHtml.style.visibility = 'hidden';
         }
       }
     });
 
-    // 2. Bodyのパディング（ヘッダー分の余白以外）をリセット
-    const bodyWrapper = document.querySelector('[class*="bodyWrapper"]');
-    if (bodyWrapper) {
-      (bodyWrapper as HTMLElement).style.display = 'block';
-    }
+    // 2. 🚨 重要：ページを離れる（アンマウント）時に実行されるクリーンアップ
+    // これによりトップページに戻った時にサイドバーが復活します
+    return () => {
+      restoreTargets.forEach((target) => {
+        target.parent.style.display = target.originalDisplay;
+        target.parent.style.gridTemplateColumns = target.originalGrid;
+        target.parent.style.width = target.originalWidth;
+
+        target.aside.style.display = '';
+        target.aside.style.width = '';
+        target.aside.style.visibility = '';
+      });
+    };
   }, []);
 
   // デバッグモード判定
@@ -101,7 +127,6 @@ export default function ArchiveTemplate({
       } as React.CSSProperties}
       data-platform={platform}
     >
-      {/* 背景のグロウエフェクト */}
       <div className={styles.ambientGlow} />
 
       {/* 🛠️ DEBUG BAR */}
@@ -114,10 +139,10 @@ export default function ArchiveTemplate({
         </div>
       )}
 
-      {/* 🏗️ 構造の要: styles.container */}
+      {/* 🏗️ 構造の要: styles.container (Flexbox) */}
       <div className={styles.container}>
         
-        {/* --- 🛰️ LEFT SIDEBAR AREA (本物のサイドバー) --- */}
+        {/* --- 🛰️ LEFT SIDEBAR AREA (このテンプレート自前のサイドバー) --- */}
         <aside className={styles.sidebarWrapper}>
           <div className={styles.stickySidebar}>
             <AdultSidebar 
@@ -137,7 +162,6 @@ export default function ArchiveTemplate({
         {/* --- 🚀 MAIN CONTENT AREA --- */}
         <main className={styles.mainContent}>
           
-          {/* 📍 パンくずリスト */}
           <nav className={styles.breadcrumb}>
             <Link href="/" className={styles.bcLink}>ROOT</Link>
             <span className={styles.bcDivider}>/</span>
@@ -156,7 +180,6 @@ export default function ArchiveTemplate({
             )}
           </nav>
 
-          {/* ヘッダーセクション */}
           <header className={styles.headerSection}>
             <div className={styles.titleGroup}>
               <div className="flex items-center gap-3 mb-2">
@@ -172,7 +195,6 @@ export default function ArchiveTemplate({
               </div>
             </div>
 
-            {/* クイックフィルタ入力 */}
             <div className="mt-8 flex justify-end">
               <div className="relative group">
                 <input 
@@ -186,7 +208,6 @@ export default function ArchiveTemplate({
             </div>
           </header>
 
-          {/* 商品グリッド */}
           <div className={styles.productGrid}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product: any) => (
@@ -215,7 +236,6 @@ export default function ArchiveTemplate({
             </div>
           )}
         </main>
-
       </div>
     </div>
   );
