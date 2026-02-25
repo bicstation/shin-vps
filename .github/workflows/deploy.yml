@@ -25,17 +25,16 @@ jobs:
           port: 2222
           source: "." 
           target: "/home/maya/shin-vps"
-          
+          strip_components: 0
+          overwrite: true
+          # scp-action に直接 exclude を書くと稀に後続ジョブと干渉するため、
+          # 本来は .dockerignore を活用するのがベストですが、もし書く場合は以下のように密着させます
           exclude: |
             .git
             .github
             .venv
             __pycache__
             node_modules
-          
-
-          strip_components: 0
-          overwrite: true
 
       # 2. SSH経由でネットワーク構築・Docker起動・DBマイグレーション・掃除を実行
       - name: Deploy to Production via SSH
