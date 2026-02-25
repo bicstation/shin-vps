@@ -104,7 +104,7 @@ services:
   # 2. バックエンド層 (Django API - 10連APIキー注入)
   # ---------------------------------------------------------------------
   django-v2:
-    build: { context: ./api_django_v2 }
+    build: { context: ./django }
     container_name: django-v2
     restart: always
     depends_on:
@@ -137,7 +137,7 @@ services:
       - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
       - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
     volumes:
-      - ./api_django_v2:/usr/src/app
+      - ./django:/usr/src/app
       - static_volume_prod:/usr/src/app/staticfiles
     networks:
       - internal-net
