@@ -1,416 +1,416 @@
-/* ==========================================================
-   MainPage.module.css - Tactical Content Design Edition
-   ========================================================== */
+/* =====================================================================
+ * 🏗️ [BICSTATION-MAIN-LAYOUT] - FINAL SYSTEM-INTEGRATED EDITION
+ * ---------------------------------------------------------------------
+ * 💡 徹底修正ポイント:
+ * 1. 【h2 視認性】背景に沈まないシアンブルー + 暗色プレート背景
+ * 2. 【h3 視認性】トピックを際立たせるアンバーゴールド + 左アクセント
+ * 3. 【属性統合】VPSの「用途・スペック検索」セクションを完全網羅
+ * 4. 【省略禁止】全セクション、全デバイス対応コードを完全記述
+ * ===================================================================== */
 
-/* --- メインコンテナ --- */
 .mainContainer {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 100%;
-  animation: tacticalFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  animation: tacticalFadeIn 0.8s ease-out;
 }
 
-/* --- 📣 ページヘッダー --- */
-.pageHeader {
-  margin-bottom: 40px;
-  border-left: 4px solid #e94560; /* アクセントレッド */
-  padding-left: 20px;
+/* --- 🚀 ヒーローヘッダー (サイトの顔) --- */
+.heroHeader {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 100px 40px;
+  border-radius: 30px;
+  margin-bottom: 80px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroHeader::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+  background-size: 32px 32px;
+  z-index: 1;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+}
+
+.heroBadge {
+  background: #e94560;
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 900;
+  margin-bottom: 25px;
+  display: inline-block;
+  letter-spacing: 0.1em;
 }
 
 .mainTitle {
-  font-size: 2.2rem;
+  font-size: 3.5rem;
   font-weight: 900;
   color: #ffffff;
+  line-height: 1.1;
   letter-spacing: -0.02em;
-  margin: 0;
 }
 
-.subTitle {
-  display: block;
-  font-size: 1rem;
-  color: #94a3b8;
-  font-weight: 500;
-  margin-top: 8px;
+.highlight {
+  color: #e94560;
+  text-shadow: 0 0 30px rgba(233, 69, 96, 0.4);
 }
 
 .pageDescription {
-  margin-top: 15px;
-  color: #64748b;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  color: #cbd5e1;
+  font-size: 1.3rem;
+  margin-top: 30px;
+  line-height: 1.7;
+  max-width: 850px;
 }
 
-/* --- 🏆 共通セクション設定 --- */
-.rankingSection, 
-.categorySearchSection, 
-.newsSection, 
-.productSection {
-  margin-bottom: 80px;
-  width: 100%;
-}
-
+/* --- 🏆 h2: セクションヘッダー (総合ランキング、属性検索、ニュース共通) --- */
 .sectionHeader {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 30px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 15px;
+  margin-bottom: 35px;
+  padding: 18px 25px;
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 12px;
+  border-left: 8px solid #00f2ff; /* シアンの極太ライン */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .sectionTitle {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #f8fafc;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #00f2ff !important; /* シアンブルー確定 */
+  margin: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 0;
-}
-
-.emoji {
-  font-size: 1.8rem;
+  gap: 15px;
+  text-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+  letter-spacing: -0.01em;
 }
 
 .rankingLink {
-  font-size: 0.9rem;
-  color: #e94560;
+  color: #94a3b8;
   text-decoration: none;
   font-weight: 700;
-  transition: all 0.2s;
+  font-size: 0.9rem;
+  transition: color 0.2s;
 }
 
 .rankingLink:hover {
-  opacity: 0.7;
-  transform: translateX(5px);
+  color: #00f2ff;
 }
 
-/* --- 👑 ランキングカード (タクティカル・ホリゾンタル) --- */
-.topThreeGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
+/* --- 👑 ランキングレイアウト --- */
+.overallSection {
+  margin-bottom: 100px;
 }
 
-.topThreeCard {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background: #16161a;
-  border-radius: 16px;
-  padding: 20px 30px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  width: 100%;
-  box-sizing: border-box; 
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.rankingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
 }
 
-.topThreeCard:hover {
-  transform: scale(1.01);
-  border-color: rgba(233, 69, 96, 0.4);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.rankBadge {
-  position: absolute;
-  top: -12px;
-  left: 24px;
-  padding: 4px 18px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 900;
-  color: #fff;
-  z-index: 10;
-}
-
-.rank_1 .rankBadge { background: linear-gradient(135deg, #ecc94b, #b7791f); color: #000; }
-.rank_2 .rankBadge { background: linear-gradient(135deg, #a0aec0, #4a5568); }
-.rank_3 .rankBadge { background: linear-gradient(135deg, #ed8936, #9c4221); }
-
-.topThreeImage {
-  flex: 0 0 180px;
-  height: 130px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #ffffff; /* PC画像を見やすくするため白背景 */
-  border-radius: 12px;
-  margin-right: 35px;
-  padding: 12px;
-  position: relative;
-}
-
-.rankingImgTag {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.topThreeContent {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 25px;
-}
-
-.topThreeNameArea {
-  flex: 1;
-  min-width: 0;
-}
-
-.topThreeMaker {
-  font-size: 0.8rem;
-  color: #e94560;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.topThreeName {
-  font-size: 1.4rem;
-  font-weight: 800;
-  margin: 6px 0;
-  color: #f8fafc;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.topThreeScore {
-  flex: 0 0 120px;
-  text-align: center;
-  padding: 0 25px;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.scoreValue {
-  font-size: 2.4rem;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1;
-}
-
-.scoreLabel {
-  font-size: 0.65rem;
-  color: #94a3b8;
-  font-weight: 700;
-  margin-top: 5px;
-}
-
-.chartMini {
-  flex: 0 0 180px;
-  height: 120px;
-  display: flex;
-  align-items: center;
-}
-
-.detailButton {
-  flex: 0 0 130px;
-  background: #e94560;
-  color: #fff;
-  padding: 14px 0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 800;
-  text-decoration: none;
-  text-align: center;
-  transition: all 0.2s;
-}
-
-.detailButton:hover {
-  background: #ff5e78;
-  box-shadow: 0 0 15px rgba(233, 69, 96, 0.4);
-}
-
-/* --- 🔥 注目度ランキング (トレンド) --- */
-.popularityBg {
-  background: rgba(26, 26, 31, 0.5);
+/* --- 🔍 VPS属性検索セクション (用途・スペック検索) --- */
+.attributeSearchSection {
+  margin-bottom: 100px;
   padding: 40px;
+  background: rgba(255, 255, 255, 0.02);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.trendCard .topThreeMaker { color: #64748b; }
-.trendBadge { background: #475569; }
-
-.trendingInfo {
-  flex: 1;
-  text-align: right;
-  padding-right: 20px;
+.searchGroup {
+  margin-bottom: 45px;
 }
 
-.trendLabel {
-  color: #e94560;
-  font-weight: 800;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
+.searchGroup:last-child {
+  margin-bottom: 0;
 }
 
-.trendPrice {
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: #ffffff;
-}
-
-/* --- 🔍 カテゴリー・スペック検索 --- */
-.categorySearchSection {
-  background: #16161a;
-  padding: 40px;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
+/* 🚩 h3: 属性グループ見出し (ゴールド) */
 .groupLabel {
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  color: #f8fafc;
-  margin-bottom: 20px;
-  padding-left: 15px;
-  border-left: 4px solid #e94560;
+  color: #ffcc00 !important; /* アンバーゴールド */
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(255, 204, 0, 0.2);
+  display: block;
 }
 
 .categoryGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 15px;
 }
 
 .categoryCardSmall {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 18px;
+  border-radius: 12px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 20px 10px;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  gap: 12px;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .categoryCardSmall:hover {
-  background: #1e293b;
-  border-color: #e94560;
-  transform: translateY(-4px);
+  background: rgba(0, 242, 255, 0.1);
+  border-color: #00f2ff;
+  transform: translateY(-3px);
 }
 
-.catIcon { font-size: 2rem; }
-.catNameSmall { font-size: 0.85rem; font-weight: 700; color: #cbd5e1; }
+.catIcon { font-size: 1.4rem; }
+.catNameSmall {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+}
 
-.tagCloud { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.tagCloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .specTag {
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
   padding: 10px 20px;
-  background: #1e293b;
-  color: #f8fafc;
-  border-radius: 50px;
-  font-size: 0.85rem;
+  border-radius: 30px;
+  font-size: 0.95rem;
   font-weight: 700;
   text-decoration: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.2s;
-}
-.specTag:hover { 
-  background: #e94560; 
-  border-color: #e94560;
+  transition: 0.3s;
 }
 
-/* --- 🚀 ニュース --- */
+.specTag:hover {
+  background: #ffcc00;
+  color: #000;
+  border-color: #ffcc00;
+  box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
+}
+
+/* --- 📚 h3: 部門別ランキングヘッダー (ゴールド) --- */
+.departmentArea {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+  margin-bottom: 100px;
+}
+
+.categoryRankingSection {
+  /* RankingCategoryコンポーネント用 */
+}
+
+.categoryHeader {
+  margin-bottom: 30px;
+  padding-left: 5px;
+}
+
+.categoryTitle {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #ffcc00 !important; /* 視認性最強のアンバーゴールド */
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.9);
+}
+
+.categoryIcon {
+  font-size: 1.8rem;
+}
+
+.topThreeLabel {
+  font-size: 0.9rem;
+  color: #e94560;
+  background: rgba(233, 69, 96, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+}
+
+.titleLine {
+  height: 4px;
+  width: 120px;
+  background: linear-gradient(90deg, #ffcc00 0%, transparent 100%);
+  border-radius: 2px;
+}
+
+/* --- 📊 チャート・属性バッジ --- */
+.chartPolygon {
+  fill: rgba(233, 69, 96, 0.4);
+  stroke: #e94560;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.chartBg {
+  fill: rgba(255, 255, 255, 0.03);
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 1;
+}
+
+.attributeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.attrBadge {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+/* --- 🚀 ニュースセクション --- */
+.newsSection {
+  margin-bottom: 100px;
+}
+
 .newsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 30px;
+  gap: 25px;
 }
 
 .newsCard {
-  background: #16161a;
-  border-radius: 16px;
-  overflow: hidden;
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 25px;
+  border-radius: 20px;
   text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .newsCard:hover {
-  transform: translateY(-8px);
-  border-color: #e94560;
+  background: #2d3a4f;
+  border-color: #00f2ff;
+  transform: translateY(-5px);
 }
 
-.imageWrapper {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  position: relative;
-  background: #000;
+.postDate {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 10px;
 }
 
-.contentBody { padding: 25px; }
-.postDate { font-size: 0.8rem; color: #64748b; font-weight: 700; margin-bottom: 10px; display: block; }
-.articleTitle { font-size: 1.15rem; font-weight: 800; line-height: 1.5; color: #f8fafc; }
-
-/* --- 📦 カタログ --- */
-.productGridTitle {
-  font-size: 1.8rem;
+.articleTitle {
+  font-size: 1.15rem;
   font-weight: 800;
-  color: #fff;
-  display: flex;
-  align-items: center; 
-  gap: 15px;
+  color: #ffffff !important;
+  line-height: 1.5;
+  margin-bottom: 15px;
 }
 
-.titleIndicator { width: 6px; height: 30px; background: #e94560; border-radius: 10px; }
+.newsReadMore {
+  font-size: 0.85rem;
+  color: #00f2ff;
+  font-weight: 800;
+  margin-top: auto;
+}
+
+/* --- 📦 製品カタログセクション --- */
+.productSection {
+  margin-bottom: 100px;
+}
+
+.productGridTitle {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #ffffff !important;
+  margin-bottom: 0;
+}
+
+.countBadge {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  background: rgba(255,255,255,0.05);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
 
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 30px;
-  margin: 30px 0;
+  margin-top: 30px;
 }
 
-.viewMoreContainer { text-align: center; margin-top: 50px; }
-.catalogFullLink {
-  padding: 18px 50px;
-  background: #e94560;
-  color: white;
-  text-decoration: none;
-  border-radius: 50px;
+.viewMoreContainer {
+  margin-top: 50px;
+  display: flex;
+  justify-content: center;
+}
+
+.fullCatalogBtn {
+  background: transparent;
+  color: #fff;
+  border: 2px solid #e94560;
+  padding: 15px 40px;
+  border-radius: 12px;
   font-weight: 800;
-  display: inline-block;
+  text-decoration: none;
   transition: all 0.3s;
 }
-.catalogFullLink:hover { 
-  background: #ff5e78;
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+
+.fullCatalogBtn:hover {
+  background: #e94560;
+  box-shadow: 0 0 25px rgba(233, 69, 96, 0.4);
 }
 
 /* --- 📱 レスポンシブ --- */
 @media (max-width: 1100px) {
-  .topThreeContent { gap: 15px; }
-  .chartMini { flex: 0 0 150px; }
-  .topThreeName { font-size: 1.2rem; }
+  .rankingGrid { grid-template-columns: repeat(2, 1fr); }
+  .mainTitle { font-size: 2.8rem; }
 }
 
-@media (max-width: 900px) {
-  .topThreeCard { flex-direction: column; padding: 40px 20px; text-align: center; }
-  .topThreeImage { margin-right: 0; margin-bottom: 25px; width: 220px; height: 160px; flex: none; }
-  .topThreeContent { flex-direction: column; width: 100%; gap: 20px; }
-  .topThreeScore { border: none; padding: 0; flex: none; }
-  .trendingInfo { text-align: center; padding: 0; }
-  .chartMini { margin: 0 auto; }
-  .detailButton { width: 100%; flex: none; }
+@media (max-width: 768px) {
+  .heroHeader { padding: 60px 25px; }
+  .mainTitle { font-size: 2.2rem; }
+  .pageDescription { font-size: 1.1rem; }
+  .sectionTitle { font-size: 1.7rem; }
+  .categoryTitle { font-size: 1.4rem; }
+  .groupLabel { font-size: 1.2rem; }
 }
 
-@media (max-width: 640px) {
-  .mainTitle { font-size: 1.6rem; }
-  .categoryGrid { grid-template-columns: 1fr 1fr; }
-  .sectionTitle { font-size: 1.3rem; }
-  .newsGrid { grid-template-columns: 1fr; }
+@media (max-width: 650px) {
+  .rankingGrid { grid-template-columns: 1fr; }
+  .productGrid { grid-template-columns: 1fr; }
+  .categoryGrid { grid-template-columns: 1fr; }
 }
 
-/* アニメーション */
+/* --- ✨ アニメーション --- */
 @keyframes tacticalFadeIn {
-  from { opacity: 0; transform: translateY(15px); }
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }

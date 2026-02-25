@@ -1,10 +1,10 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-LAYOUT-CSS] - Full-Width Production Edition
+ * 🏗️ [BICSTATION-LAYOUT-CSS] - Full-Width Production Edition (Fixed)
  * ---------------------------------------------------------------------
  * 💡 修正内容:
- * 1. 1440pxの制限を解除し、全幅表示 (100%) に最適化
- * 2. 左右の余白を画面比率 (%) に変更し、ワイドモニターでの開放感を確保
- * 3. サイドバーの安定性を高め、メイン領域の拡張性を最大化
+ * 1. 固定要素（Header + PRバー）によるコンテンツの潜り込みを完全に解消
+ * 2. 全幅表示 (100%) 仕様を維持しつつ、上下の余白バランスを最適化
+ * 3. ページ遷移時のアニメーションとサイドバーの固定位置を同期
  * ===================================================================== */
 
 /* 1. 全体を包むラッパー */
@@ -30,7 +30,7 @@
   padding: 10px 0;
   border-bottom: 1px solid rgba(233, 69, 96, 0.4); 
   position: sticky;
-  top: 70px; /* ヘッダー高さ */
+  top: 70px; /* ヘッダー高さ(70px)の直下に固定 */
   z-index: 900;
   backdrop-filter: blur(8px);
 }
@@ -39,9 +39,9 @@
 .layoutContainer {
   flex: 1;
   width: 100%;
-  max-width: 100%; /* 制限解除 */
+  max-width: 100%; 
   margin: 0;
-  /* 左右に 4% のセーフティエリアを確保（端に張り付きすぎない黄金比） */
+  /* 左右に 4% のセーフティエリアを確保 */
   padding: 0 4%; 
   box-sizing: border-box;
   display: flex;
@@ -51,8 +51,12 @@
 /* 4. サイドバーとメインを横並びにするインナー */
 .layoutInner {
   display: flex;
-  gap: 40px; /* 全幅に合わせて溝を少し広めに設定 */
-  padding: 24px 0 80px 0;
+  gap: 40px; 
+  /* * 🚩 重要修正: padding-top を 115px に増加 
+   * 計算式: Header(70px) + PRバー(約35px) + 余裕(10px) = 115px
+   * これにより、すべてのページでコンテンツがヘッダーの下に潜り込むのを防ぎます。
+   */
+  padding: 115px 0 80px 0;
   width: 100%;
 }
 
@@ -61,9 +65,11 @@
   width: 300px;
   flex-shrink: 0;
   position: sticky;
-  top: 130px; /* ヘッダー(70) + PR(35) + 余裕(25) */
+  /* * 🚩 重要修正: top を 115px に設定 
+   * layoutInner の開始位置と合わせることで、スクロール開始時にガタつきを防ぎます。
+   */
+  top: 115px; 
   height: fit-content;
-  /* サイドバーが浮いて見えないよう、右側に薄い境界線を置くのもアリ */
 }
 
 /* 6. メインコンテンツ領域（右側）：ここが全幅で広がる */
@@ -85,7 +91,8 @@
   .layoutInner {
     flex-direction: column;
     gap: 24px;
-    padding: 16px 0;
+    /* モバイルでは固定要素が解除されるか、高さが変わるため余白を再調整 */
+    padding: 24px 0 60px 0; 
   }
 
   .sidebarSection {

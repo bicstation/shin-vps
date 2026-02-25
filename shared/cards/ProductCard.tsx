@@ -1,167 +1,164 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
+import React from 'react';
 import Link from 'next/link';
 import styles from './ProductCard.module.css';
-import { ReactNode } from 'react';
-// ✅ 新しく作成したデコードユーティリティをインポート
 import { decodeHtml } from '../lib/decode';
-
-/**
- * =====================================================================
- * 🗂️ 拡張版 ProductCard コンポーネント
- * Finder, Ranking, Catalog すべてに対応可能なユニバーサル設計
- * =====================================================================
- */
 
 interface ProductCardProps {
   product: any;
-  rank?: number;        // ランキング順位 (オプション)
-  children?: ReactNode; // レーダーチャート等の追加コンテンツ (オプション)
-  showActions?: boolean; // 詳細・購入ボタンを表示するか (デフォルト true)
+  rank?: number;         // 1, 2, 3...
+  showActions?: boolean;
 }
 
+// 属性ごとのカラー定義
 const attrColorMap: { [key: string]: { bg: string, text: string, border: string } } = {
   cpu: { bg: '#eef2ff', text: '#3730a3', border: '#e0e7ff' },
-  mem: { bg: '#f0fdf4', text: '#166534', border: '#dcfce7' },
-  storage: { bg: '#fffbeb', text: '#92400e', border: '#fef3c7' },
   gpu: { bg: '#fef2f2', text: '#991b1b', border: '#fee2e2' },
   'GPUモデル': { bg: '#fef2f2', text: '#991b1b', border: '#fee2e2' },
-  npu: { bg: '#faf5ff', text: '#6b21a8', border: '#f3e8ff' },
   '1. 画面サイズ': { bg: '#f8fafc', text: '#475569', border: '#e2e8f0' },
-  'PC形状': { bg: '#f5f5f5', text: '#666666', border: '#e5e5e5' },
 };
 
 export default function ProductCard({ 
   product, 
   rank, 
-  children, 
   showActions = true 
 }: ProductCardProps) {
   
   if (!product) return null;
 
-  // 🚩 各種データの正規化
+  // 🚩 データの正規化
   const buyLink = product.affiliate_url || product.url || '#';
   const displayMaker = product.maker || product.maker_name || 'Brand';
   const displayPrice = product.price ? Number(product.price) : 0;
-
-  // ✅ 商品名をデコード済みの状態で変数に格納
   const decodedProductName = decodeHtml(product.name || '');
+  
+  // AIコメント（「不明」を回避する思考型ロジック）
+  const aiComment = product.ai_analysis || product.short_description || 
+    `${displayMaker}の注目モデル。AI査定では、${product.cpu_model || '標準的なプロセッサ'}を搭載し、${(product.score_portable || product.portable_score) > 8 ? '優れた携帯性' : '安定した動作環境'}を実現していると評価されています。`;
 
   const getSafeImageUrl = () => {
-    // 画像URLがない場合
-    if (!product?.image_url) {
-      return 'https://placehold.jp/24/3b82f6/ffffff/300x200.png?text=No%20Image';
-    }
-    // 文字列であることを保証しつつ、httpをhttpsに置換
+    if (!product?.image_url) return 'https://placehold.jp/24/3b82f6/ffffff/300x200.png?text=No%20Image';
     return String(product.image_url).replace('http://', 'https://');
   };
 
-  const getAttrHref = (attrSlug: string) => {
-    return displayMaker 
-      ? `/brand/${displayMaker.toLowerCase()}?attribute=${attrSlug}`
-      : `/catalog?attribute=${attrSlug}`;
+  /**
+   * 📊 五角形レーダーチャート描画
+   */
+  const renderPentagonChart = () => {
+    const normalize = (val: any) => {
+      let s = Number(val) || 50;
+      return s <= 10 ? s * 10 : s; 
+    };
+
+    // 5軸の定義
+    const scores = [
+      normalize(product.score_cpu || product.cpu_score),      // 演算
+      normalize(product.score_gpu || product.gpu_score),      // 描画
+      normalize(product.score_ai || product.ai_score),        // AI
+      normalize(product.score_portable || product.portable_score), // 軽さ
+      normalize(product.score_cost || product.cost_performance)    // コスパ
+    ];
+
+    const radius = 40;
+    const points = scores.map((score, i) => {
+      const angle = (i * 72 - 90) * (Math.PI / 180);
+      const r = (score / 100) * radius;
+      return `${50 + r * Math.cos(angle)},${50 + r * Math.sin(angle)}`;
+    }).join(" ");
+
+    return (
+      <div className={styles.chartContainer}>
+        <svg viewBox="0 0 100 100" className={styles.chartSvg}>
+          <circle cx="50" cy="50" r="40" className={styles.chartBg} />
+          {[1, 2, 3, 4, 5].map((_, i) => {
+            const a = (i * 72 - 90) * (Math.PI / 180);
+            return <line key={i} x1="50" y1="50" x2={50 + 40 * Math.cos(a)} y2={50 + 40 * Math.sin(a)} className={styles.chartLine} />;
+          })}
+          <polygon points={points} className={styles.chartPolygon} />
+        </svg>
+      </div>
+    );
   };
 
-  // 🚩 ランキングに応じたクラス付与 (rank_1, rank_2, rank_3 ...)
-  const cardClassName = `${styles.card} ${rank ? styles[`rank_${rank}`] : ''}`;
-
   return (
-    <article className={cardClassName}>
-      {/* 🚩 順位バッジ */}
-      {rank && (
-        <div className={`${styles.rankBadge} ${styles[`rankBadge_${rank}`]}`}>
-          {rank}
-        </div>
-      )}
-
-      {/* 🚩 スコア表示 */}
-      {product.spec_score && (
+    <article className={`${styles.card} ${rank ? styles.rankingMode : ''} ${rank ? styles[`rank_${rank}`] : ''}`}>
+      {rank && <div className={`${styles.rankBadge} ${styles[`rankBadge_${rank}`]}`}>{rank}</div>}
+      
+      {(product.spec_score || product.score_total) && (
         <div className={styles.scoreBadge}>
-          AI SCORE: <span>{product.spec_score}</span>
+          AI SCORE: <span>{product.spec_score || product.score_total}</span>
         </div>
       )}
 
       <div className={styles.imageArea}>
-        <img 
-          src={getSafeImageUrl()} 
-          alt={`${displayMaker} ${decodedProductName}`} 
-          className={styles.image}
-          loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://placehold.jp/24/3b82f6/ffffff/300x200.png?text=No%20Image';
-          }}
-        />
+        <img src={getSafeImageUrl()} alt={decodedProductName} className={styles.image} loading="lazy" />
       </div>
 
-      <div className={styles.metaInfo}>
-        <span className={styles.makerBadge}>{displayMaker}</span>
-        {product.stock_status && (
-          <span className={`${styles.stockStatus} ${product.stock_status === '在庫あり' ? styles.inStock : ''}`}>
-            {product.stock_status}
-          </span>
-        )}
-      </div>
-
-      <h3 className={styles.productName}>
-        {/* ✅ 表示テキストにデコード済みの名前を適用 */}
-        <Link href={`/product/${product.unique_id}`}>{decodedProductName}</Link>
-      </h3>
-
-      {/* 🚩 追加コンテンツスロット (ここにレーダーチャートなどが入る) */}
-      {children && (
-        <div className={styles.extraContent}>
-          {/* ResponsiveContainerがこのコンポーネントの外側（親側）で定義されている場合、
-            ここでの children に minWidth={0} などのプロパティが伝播しないことがあります。
-            もし警告が消えない場合は、親側（チャートを渡している側）の 
-            <ResponsiveContainer> に minWidth={0} を追加してください。
-          */}
-          {children}
+      <div className={styles.cardBody}>
+        <div className={styles.metaInfo}>
+          <span className={styles.makerBadge}>{displayMaker}</span>
+          {(product.is_ai_pc || (product.score_ai || product.ai_score) > 80) && <span className={styles.aiBadge}>AI PC</span>}
         </div>
-      )}
 
-      <div className={styles.attributeList}>
-        {/* 詳細属性がある場合 */}
-        {product.attributes?.map((attr: any) => {
-          const colors = attrColorMap[attr.attr_type] || attrColorMap[attr.attr_type_display] || { bg: '#f9fafb', text: '#374151', border: '#f3f4f6' };
-          return (
-            <Link key={attr.id} href={getAttrHref(attr.slug)} className={styles.attrBadge} style={{ backgroundColor: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}>
-              <span className={styles.attrTypeLabel}>{attr.attr_type_display}:</span> {attr.name}
-            </Link>
-          );
-        })}
+        <h3 className={styles.productName}>
+          <Link href={`/product/${product.unique_id}`}>{decodedProductName}</Link>
+        </h3>
 
-        {/* 属性がない場合の簡易タグ (スペックを文字列で表示) */}
-        {!product.attributes && (
-          <div className={styles.simpleTags}>
-            {product.cpu_model && <span className={styles.simpleTag}>{product.cpu_model}</span>}
-            {product.memory_gb && <span className={styles.simpleTag}>{product.memory_gb}GB RAM</span>}
-            {product.storage_gb && <span className={styles.simpleTag}>{product.storage_gb}GB SSD</span>}
-            {product.is_ai_pc && <span className={styles.aiBadge}>AI PC</span>}
+        {/* 🔗 属性リンク（意味の回廊） */}
+        <div className={styles.attributeList}>
+          {product.attributes?.map((attr: any) => {
+            const colors = attrColorMap[attr.attr_type] || { bg: '#f1f5f9', text: '#475569', border: '#e2e8f0' };
+            return (
+              <Link 
+                key={attr.id} 
+                href={`/catalog?attribute=${attr.slug}`}
+                className={styles.attrBadge} 
+                style={{ backgroundColor: colors.bg, color: colors.text, border: `1px solid ${colors.border}`, textDecoration: 'none' }}
+              >
+                <span className={styles.attrTypeLabel}>{attr.attr_type_display || attr.attr_type}:</span> {attr.name}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* 📊 5軸解析セクション */}
+        <div className={styles.analysisSection}>
+          {renderPentagonChart()}
+          <div className={styles.scoreDetail}>
+             <div className={styles.scoreRow}><span>演算</span><strong>{product.score_cpu || product.cpu_score || '-'}</strong></div>
+             <div className={styles.scoreRow}><span>描画</span><strong>{product.score_gpu || product.gpu_score || '-'}</strong></div>
+             <div className={styles.scoreRow}><span>AI</span><strong>{product.score_ai || product.ai_score || '-'}</strong></div>
+             <div className={styles.scoreRow}><span>携帯</span><strong>{product.score_portable || product.portable_score || '-'}</strong></div>
+             <div className={styles.scoreRow}><span>コスパ</span><strong>{product.score_cost || product.cost_performance || '-'}</strong></div>
+          </div>
+        </div>
+
+        <div className={styles.aiCommentBox}>
+          <span className={styles.aiLabel}>AI DIAGNOSIS</span>
+          <p className={styles.aiText}>{aiComment}</p>
+        </div>
+
+        <div className={styles.priceContainer}>
+          <p className={styles.price}>
+            {displayPrice > 0 ? (
+              <>
+                <span className={styles.currency}>¥</span>
+                <span className={styles.amount}>{displayPrice.toLocaleString()}</span>
+                <span className={styles.taxLabel}>(税込)</span>
+              </>
+            ) : <span className={styles.priceUnknown}>価格情報なし</span>}
+          </p>
+        </div>
+
+        {showActions && (
+          <div className={styles.actions}>
+            <Link href={`/product/${product.unique_id}`} className={styles.detailBtn}>詳細を分析</Link>
+            <a href={buyLink} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>公式サイト</a>
           </div>
         )}
       </div>
-
-      <div className={styles.priceContainer}>
-        <p className={styles.price}>
-          {displayPrice > 0 ? (
-            <>
-              <span className={styles.currency}>¥</span>
-              <span className={styles.amount}>{displayPrice.toLocaleString()}</span>
-              <span className={styles.taxLabel}>(税込)</span>
-            </>
-          ) : <span className={styles.priceUnknown}>価格不明</span>}
-        </p>
-      </div>
-
-      {/* 🚩 ボタンエリア (フラグで非表示も可能) */}
-      {showActions && (
-        <div className={styles.actions}>
-          <Link href={`/product/${product.unique_id}`} className={styles.detailBtn}>詳細スペック</Link>
-          <a href={buyLink} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>公式サイト</a>
-        </div>
-      )}
     </article>
   );
 }
