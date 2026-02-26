@@ -4,7 +4,11 @@
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { fetchPostList, fetchMakers } from '@shared/lib/api/django/pc';
+// import { fetchPostList, fetchMakers } from '@shared/lib/api/django/pc';
+// APIインポート
+import { fetchPostList } from '@shared/lib/api/wordpress';
+import { fetchPCProducts, fetchPCProductRanking } from '@shared/lib/api/django/pc';
+
 import Sidebar from '@shared/layout/Sidebar/PCSidebar';
 import Pagination from '@shared/common/Pagination';
 import styles from '../MainPage.module.css';

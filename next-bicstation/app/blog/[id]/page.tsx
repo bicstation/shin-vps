@@ -6,7 +6,11 @@ import { notFound } from 'next/navigation';
 import { PostHeader } from '@shared/blog/PostHeader';
 import PostLayout from '@shared/layout/PostLayout';
 import { COLORS } from '@shared/styles/constants';
-import { fetchPostData, fetchProductDetail, fetchPostList } from '@shared/lib/api';
+// import { fetchPostData, fetchProductDetail, fetchPostList } from '@shared/lib/api';
+// APIインポート
+import { fetchPostList } from '@shared/lib/api/wordpress';
+import { fetchPCProducts, fetchPCProductRanking } from '@shared/lib/api/django/pc';
+
 import Link from 'next/link';
 import styles from './PostPage.module.css';
 
