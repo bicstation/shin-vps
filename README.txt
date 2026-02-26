@@ -77,3 +77,88 @@ maya@Marya:/mnt/e/dev/shin-vps$ save -h
 127.0.0.1     b-tiper-host               # blog.tiper.live
 127.0.0.1     b-bicstation-host          # blog.bicstation.com
 127.0.0.1     b-saving-host              # blog.bic-saving.com
+
+
+シンサーバーのCPU状況
+
+maya@x162-43-73-204:~/shin-vps$ lscpu
+アーキテクチャ:                        x86_64
+  CPU 操作モード:                      32-bit, 64-bit
+  Address sizes:                       40 bits physical, 48 bits
+                                        virtual
+  バイト順序:                          Little Endian
+CPU:                                   4
+  オンラインになっている CPU のリスト: 0-3
+ベンダー ID:                           AuthenticAMD
+  モデル名:                            AMD EPYC-Milan Processor
+    CPU ファミリー:                    25
+    モデル:                            1
+    コアあたりのスレッド数:            1
+    ソケットあたりのコア数:            1
+    ソケット数:                        4
+    ステッピング:                      1
+    BogoMIPS:                          3992.50
+    フラグ:                            fpu vme de pse tsc msr pa
+                                       e mce cx8 apic sep mtrr p
+                                       ge mca cmov pat pse36 clf
+                                       lush mmx fxsr sse sse2 sy
+                                       scall nx mmxext fxsr_opt 
+                                       pdpe1gb rdtscp lm rep_goo
+                                       d nopl cpuid extd_apicid 
+                                       tsc_known_freq pni pclmul
+                                       qdq ssse3 fma cx16 pcid s
+                                       se4_1 sse4_2 x2apic movbe
+                                        popcnt tsc_deadline_time
+                                       r aes xsave avx f16c rdra
+                                       nd hypervisor lahf_lm cmp
+                                       _legacy svm cr8_legacy ab
+                                       m sse4a misalignsse 3dnow
+                                       prefetch osvw topoext per
+                                       fctr_core ssbd ibrs ibpb 
+                                       stibp vmmcall fsgsbase ts
+                                       c_adjust bmi1 avx2 smep b
+                                       mi2 rdseed adx smap clflu
+                                       shopt clwb sha_ni xsaveop
+                                       t xsavec xgetbv1 xsaves c
+                                       lzero xsaveerptr wbnoinvd
+                                        arat npt nrip_save umip 
+                                       vaes vpclmulqdq rdpid arc
+                                       h_capabilities
+Virtualization features:               
+  仮想化:                              AMD-V
+  ハイパーバイザのベンダー:            KVM
+  仮想化タイプ:                        完全仮想化
+Caches (sum of all):                   
+  L1d:                                 128 KiB (4 instances)
+  L1i:                                 128 KiB (4 instances)
+  L2:                                  2 MiB (4 instances)
+  L3:                                  128 MiB (4 instances)
+NUMA:                                  
+  NUMA ノード数:                       1
+  NUMA ノード 0 CPU:                   0-3
+Vulnerabilities:                       
+  Gather data sampling:                Not affected
+  Itlb multihit:                       Not affected
+  L1tf:                                Not affected
+  Mds:                                 Not affected
+  Meltdown:                            Not affected
+  Mmio stale data:                     Not affected
+  Reg file data sampling:              Not affected
+  Retbleed:                            Not affected
+  Spec rstack overflow:                Vulnerable: Safe RET, no 
+                                       microcode
+  Spec store bypass:                   Mitigation; Speculative S
+                                       tore Bypass disabled via 
+                                       prctl
+  Spectre v1:                          Mitigation; usercopy/swap
+                                       gs barriers and __user po
+                                       inter sanitization
+  Spectre v2:                          Mitigation; Retpolines; I
+                                       BPB conditional; IBRS_FW;
+                                        STIBP disabled; RSB fill
+                                       ing; PBRSB-eIBRS Not affe
+                                       cted; BHI Not affected
+  Srbds:                               Not affected
+  Tsx async abort:                     Not affected
+  Vmscape:                             Not affected
+maya@x162-43-73-204:~/shin-vps$ 

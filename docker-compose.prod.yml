@@ -101,7 +101,7 @@ services:
       retries: 3
 
   # ---------------------------------------------------------------------
-  # 2. バックエンド層 (Django API - 10連APIキー注入)
+  # 2. バックエンド層 (Django API)
   # ---------------------------------------------------------------------
   django-v2:
     build: { context: ./django }
@@ -303,6 +303,7 @@ services:
       - internal-net
       - shared-proxy
 
+  # 💡 内部連携の要: Nginx (WordPress APIへのプロキシ)
   nginx-v2:
     image: nginx:alpine
     container_name: nginx-v2
@@ -333,8 +334,10 @@ services:
       - "traefik.http.routers.blog-adult.tls.certresolver=le"
       - "traefik.http.services.nginx-svc.loadbalancer.server.port=80"
     networks:
-      - internal-net
-      - shared-proxy
+      internal-net:
+      shared-proxy:
+        aliases:
+          - nginx-wp-v2  # 👈 重要: これで frontend コードから名前解決が可能になります
 
   # ---------------------------------------------------------------------
   # 5. 管理ツール層
