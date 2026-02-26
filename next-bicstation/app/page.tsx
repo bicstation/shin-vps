@@ -173,7 +173,7 @@ export default async function Page({ searchParams }: PageProps) {
                 </div>
                 <div className={styles.newsGrid}>
                     {wpResults.map((post: any) => (
-                        <Link href={`/blog/${post.id}`} key={post.id} className={styles.newsCard}>
+                        <Link href={`/blog/${post.slug}`} key={post.id} className={styles.newsCard}>
                             <div className={styles.newsBody}>
                                 <time className={styles.postDate}>
                                     {new Date(post.date).toLocaleDateString('ja-JP')}
