@@ -10,7 +10,7 @@ import { COLORS } from '@shared/styles/constants';
 // APIインポート
 import { fetchPostList ,fetchPostData} from '@shared/lib/api/wordpress';
 // import { fetchPCProducts, fetchPCProductRanking } from '@shared/lib/api/django/pc';
-
+import { fetchProductDetail } from '@shared/lib/api/django';
 import Link from 'next/link';
 import styles from './PostPage.module.css';
 
