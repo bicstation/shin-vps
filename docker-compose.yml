@@ -1,11 +1,11 @@
 # =====================================================================
 # 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 2026 最終安定版
 # ---------------------------------------------------------------------
-# 【主な修正ポイント】
-# 1. Djangoの優先度(Priority)を200へ上げ、localhost/127.0.0.1を確実に奪取。
-# 2. Next.jsからHost(`localhost`)を削除し、ホスト名(bicstation-host等)に専念。
-# 3. ネットワークエイリアスの定義を完全固定。
-# 4. TraefikのDEBUGログを継続し、問題発生時の可視性を維持。
+# 【最終修正ポイント】
+# 1. Djangoへのルーティングを「PathPrefix」優先に変更し、確実に貫通させる。
+# 2. ポート競合を回避するため、Next.js側のHost設定からlocalhostを完全に除外。
+# 3. TraefikのDEBUGログを維持し、WSL/Windows間の通信可視化を継続。
+# 4. 救済用ポート 8000 (Django直通) を残し、二段構えで管理画面を保護。
 # =====================================================================
 
 services:
@@ -26,8 +26,8 @@ services:
       - "--providers.docker.watch=true"
       - "--entrypoints.web.address=:80"
     ports:
-      - "8083:80"
-      - "8085:8080"
+      - "8083:80"    # ブラウザからは http://127.0.0.1:8083
+      - "8085:8080"  # ダッシュボード
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -75,7 +75,7 @@ services:
         condition: service_healthy
     env_file: .env
     ports:
-      - "8000:8000"  # 直接アクセス用（デバッグ継続）
+      - "8000:8000"  # 8083経由がダメな時の救済用直結ポート
     environment:
       - DB_HOST=postgres-db-v2
       - GEMINI_API_KEY=${GEMINI_API_KEY}
@@ -91,8 +91,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.django-router.priority=200" # 👈 優先度を最高に
-      - "traefik.http.routers.django-router.rule=(Host(`localhost`) || Host(`127.0.0.1`) || Host(`api-tiper-host`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.django-router.priority=200"
+      # ルールを簡略化：Hostを問わず、パスが /admin, /api, /static なら Django に転送する
+      - "traefik.http.routers.django-router.rule=PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`)"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
     volumes:
       - ./django:/usr/src/app
@@ -127,7 +128,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bic-router.priority=100"
-      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`)" # 👈 localhostを削除
+      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`)"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
 
   next-tiper-v2:
@@ -286,7 +287,7 @@ services:
     networks:
       - internal-net
 
-  # --- 6. 管理ツール層 ---
+  # --- 5. 管理ツール層 ---
   phpmyadmin-v2:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin-v2
