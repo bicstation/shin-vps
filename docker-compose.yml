@@ -1,11 +1,11 @@
 # =====================================================================
-# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 2026 最終修正版
+# 💡 SHIN-VPS 統合環境構成定義 (docker-compose.yml) - 2026 最終安定版
 # ---------------------------------------------------------------------
-# 【設計思想: Single Source of Truth & Shared Dockerfile】
-# 1. Django API: Gemini APIキー10個を含む全環境変数を .env から自動注入。
-# 2. 共通Dockerfile: ./shared/docker/NextJS.Dockerfile を全サイトで使用。
-# 3. 強制マウント: ルートの `./shared` を各コンテナへマウントし、即時反映を実現。
-# 4. Traefikルーティング: api-tiper-host 等の各ホスト名に基づく柔軟な振り分け。
+# 【主な修正ポイント】
+# 1. Djangoの優先度(Priority)を200へ上げ、localhost/127.0.0.1を確実に奪取。
+# 2. Next.jsからHost(`localhost`)を削除し、ホスト名(bicstation-host等)に専念。
+# 3. ネットワークエイリアスの定義を完全固定。
+# 4. TraefikのDEBUGログを継続し、問題発生時の可視性を維持。
 # =====================================================================
 
 services:
@@ -18,14 +18,16 @@ services:
     command:
       - "--api.insecure=true"
       - "--api.dashboard=true"
+      - "--log.level=DEBUG"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.endpoint=unix:///var/run/docker.sock"
       - "--providers.docker.network=shared-proxy"
+      - "--providers.docker.watch=true"
       - "--entrypoints.web.address=:80"
     ports:
-      - "8083:80"      # メイン入口
-      - "8085:8080"    # Traefik ダッシュボード
+      - "8083:80"
+      - "8085:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -72,9 +74,10 @@ services:
       postgres-db-v2:
         condition: service_healthy
     env_file: .env
+    ports:
+      - "8000:8000"  # 直接アクセス用（デバッグ継続）
     environment:
       - DB_HOST=postgres-db-v2
-      # 💡 Gemini APIキーを10個分、明示的に注入するように追加
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_API_KEY_1=${GEMINI_API_KEY_1}
       - GEMINI_API_KEY_2=${GEMINI_API_KEY_2}
@@ -88,8 +91,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.django-router.priority=150"
-      - "traefik.http.routers.django-router.rule=(Host(`localhost`) || Host(`127.0.0.1`) || Host(`api-tiper-host`) || Host(`tiper-host`) || Host(`bicstation-host`) || Host(`saving-host`) || Host(`avflash-host`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.django-router.priority=200" # 👈 優先度を最高に
+      - "traefik.http.routers.django-router.rule=(Host(`localhost`) || Host(`127.0.0.1`) || Host(`api-tiper-host`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
     volumes:
       - ./django:/usr/src/app
@@ -112,6 +115,8 @@ services:
     env_file: .env
     environment:
       - NODE_ENV=${NODE_ENV:-production}
+      - API_INTERNAL_URL=http://django-v2:8000/api
+      - WORDPRESS_INTERNAL_URL=http://nginx-wp-v2:80
     volumes:
       - ./next-bicstation:/usr/src/app
       - ./shared:/usr/src/app/shared
@@ -122,7 +127,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bic-router.priority=100"
-      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`) || Host(`localhost`)"
+      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`)" # 👈 localhostを削除
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
 
   next-tiper-v2:
@@ -132,7 +137,6 @@ services:
       args:
         PROJECT_NAME: next-tiper
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        NEXT_PUBLIC_BASE_PATH: ""
         NODE_ENV: ${NODE_ENV:-production}
     container_name: next-tiper-v2
     restart: always
@@ -141,6 +145,8 @@ services:
       - HOSTNAME=0.0.0.0
       - PORT=3000
       - NODE_ENV=${NODE_ENV:-production}
+      - API_INTERNAL_URL=http://django-v2:8000/api
+      - WORDPRESS_INTERNAL_URL=http://nginx-wp-v2:80
     volumes:
       - ./next-tiper:/usr/src/app
       - ./shared:/usr/src/app/shared
@@ -167,6 +173,8 @@ services:
     env_file: .env
     environment:
       - NODE_ENV=${NODE_ENV:-production}
+      - API_INTERNAL_URL=http://django-v2:8000/api
+      - WORDPRESS_INTERNAL_URL=http://nginx-wp-v2:80
     volumes:
       - ./next-bic-saving:/usr/src/app
       - ./shared:/usr/src/app/shared
@@ -193,6 +201,8 @@ services:
     env_file: .env
     environment:
       - NODE_ENV=${NODE_ENV:-production}
+      - API_INTERNAL_URL=http://django-v2:8000/api
+      - WORDPRESS_INTERNAL_URL=http://nginx-wp-v2:80
     volumes:
       - ./next-avflash:/usr/src/app
       - ./shared:/usr/src/app/shared
@@ -217,8 +227,12 @@ services:
       - ../vps-data/wordpress-adult:/var/www/html/adult:ro
       - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
     networks:
-      - internal-net
-      - shared-proxy
+      internal-net: {}
+      shared-proxy:
+        aliases:
+          - nginx-wp-v2
+          - nginx-wp-saving
+          - nginx-wp-adult
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"

@@ -12,9 +12,12 @@ import { getWpConfig, IS_SERVER } from './config';
 const resolveWPUrl = (endpoint: string) => {
     const { baseUrl } = getWpConfig();
     
+    // Server Components (Node.js環境) の場合
     if (IS_SERVER) {
-        // サーバーサイド (Server Components) からのリクエストは Docker 内部ネットワークを使用
-        return `http://nginx-wp-v2:80${endpoint}`;
+        // 環境変数（例: WORDPRESS_INTERNAL_URL）があればそれを使う。
+        // なければデフォルトの docker サービス名にする。
+        const internalUrl = process.env.WORDPRESS_INTERNAL_URL || 'http://nginx-wp-v2';
+        return `${internalUrl}${endpoint}`;
     }
     
     // クライアントサイド（ブラウザ）
