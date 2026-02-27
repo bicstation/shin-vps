@@ -6,19 +6,14 @@ import { notFound } from 'next/navigation';
 import { PostHeader } from '@shared/blog/PostHeader';
 import PostLayout from '@shared/layout/PostLayout';
 import { COLORS } from '@shared/styles/constants';
-// import { fetchPostData, fetchProductDetail, fetchPostList } from '@shared/lib/api';
-// APIインポート
-import { fetchPostList ,fetchPostData} from '@shared/lib/api/wordpress';
-// import { fetchPCProducts, fetchPCProductRanking } from '@shared/lib/api/django/pc';
+// 修正されたAPIをインポート
+import { fetchPostList, fetchPostData, getWpFeaturedImage } from '../../../shared/lib/api/wordpress';
 import { fetchProductDetail } from '@shared/lib/api/django';
 import Link from 'next/link';
 import styles from './PostPage.module.css';
 
 // --- ユーティリティ ---
 
-/**
- * HTMLエンティティをデコードする
- */
 const safeDecode = (str: string) => {
   if (!str) return '';
   return str
@@ -30,9 +25,6 @@ const safeDecode = (str: string) => {
     .replace(/&nbsp;/g, ' ');
 };
 
-/**
- * 日本語の日付形式に変換
- */
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('ja-JP', {
     year: 'numeric',
@@ -41,9 +33,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-/**
- * 本文から目次を抽出・ID付与加工
- */
 function processContent(content: string) {
   const toc: { text: string; id: string; level: number }[] = [];
   let index = 0;
@@ -57,7 +46,7 @@ function processContent(content: string) {
   return { toc, processedContent };
 }
 
-// --- SEO・メタデータ (Next.js 15 Async Params 準拠) ---
+// --- SEO・メタデータ ---
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -65,13 +54,14 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const post = await fetchPostData(id);
+  // 引数を ('post', id) に修正
+  const post = await fetchPostData('post', id);
   
   if (!post) return { title: "記事が見つかりません | BICSTATION" };
 
   const title = `${safeDecode(post.title.rendered)} | BICSTATION`;
   const description = post.excerpt?.rendered.replace(/<[^>]*>/g, '').slice(0, 120).trim();
-  const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '';
+  const eyeCatchUrl = getWpFeaturedImage(post, 'large');
 
   return {
     title,
@@ -98,19 +88,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function PostPage({ params }: PageProps) {
   const { id: postId } = await params;
   
-  // データの並列取得によるパフォーマンス最適化
-  const post = await fetchPostData(postId);
+  // データの並列取得 (引数を修正)
+  const post = await fetchPostData('post', postId);
   if (!post) notFound();
 
   const [postListData, { toc, processedContent }] = await Promise.all([
-    fetchPostList(20, 0), // 前後記事検索用に少し多めに取得
+    fetchPostList('post', 20, 0), // 第1引数に 'post' を指定
     Promise.resolve(processContent(post.content.rendered))
   ]);
 
   // 1. 関連製品データの取得
   const relatedProductId = post.acf?.related_product_id || null;
   const relatedProduct = relatedProductId ? await fetchProductDetail(relatedProductId) : null;
-  const eyeCatchUrl = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
+  
+  // 画像URLの解決に getWpFeaturedImage を使用
+  const eyeCatchUrl = getWpFeaturedImage(post, 'large');
 
   // 2. 関連記事・前後ナビゲーションの算出
   const allPosts = Array.isArray(postListData?.results) ? postListData.results : [];
@@ -123,7 +115,7 @@ export default async function PostPage({ params }: PageProps) {
     .filter((p: any) => String(p.id) !== String(post.id))
     .slice(0, 3);
 
-  // 3. JSON-LD 構造化データ (SEO用)
+  // 3. JSON-LD
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -190,7 +182,6 @@ export default async function PostPage({ params }: PageProps) {
         )}
 
         <main className={styles.mainContent}>
-          {/* メインアイキャッチ（LCP最適化のため loading="eager"） */}
           {eyeCatchUrl && (
             <div className={styles.mainEyeCatch}>
               <img 
@@ -251,7 +242,7 @@ export default async function PostPage({ params }: PageProps) {
                     </a>
                     <Link 
                       href={`/product/${relatedProduct.unique_id}`} 
-                      className={styles.ctaDetailBtn}
+                      className={styles.detailBtn} // クラス名は適宜調整
                     >
                       詳細スペックを確認
                     </Link>
@@ -261,31 +252,31 @@ export default async function PostPage({ params }: PageProps) {
             </section>
           )}
 
-          {/* 記事ナビゲーション */}
+          {/* 記事ナビゲーション: パスを /blog/ に統一 */}
           <nav className={styles.postNav} aria-label="前後記事ナビゲーション">
             {prevPost ? (
-              <Link href={`/news/${prevPost.id}`} className={styles.prevLink}>
+              <Link href={`/blog/${prevPost.id}`} className={styles.prevLink}>
                 <span className={styles.navLabel}>← 前の記事</span>
                 <span className={styles.navTitle}>{safeDecode(prevPost.title.rendered)}</span>
               </Link>
             ) : <div />}
             {nextPost ? (
-              <Link href={`/news/${nextPost.id}`} className={styles.nextLink}>
+              <Link href={`/blog/${nextPost.id}`} className={styles.nextLink}>
                 <span className={styles.navLabel}>次の記事 →</span>
                 <span className={styles.navTitle}>{safeDecode(nextPost.title.rendered)}</span>
               </Link>
             ) : <div />}
           </nav>
 
-          {/* おすすめ記事 */}
+          {/* おすすめ記事: パスを /blog/ に統一 */}
           <section className={styles.recommendSection}>
             <h3 className={styles.recommendTitle}>💡 この記事を読んだ人におすすめ</h3>
             <div className={styles.recommendGrid}>
               {recommendedPosts.map((rPost: any) => (
-                <Link key={rPost.id} href={`/news/${rPost.id}`} className={styles.recommendCard}>
+                <Link key={rPost.id} href={`/blog/${rPost.id}`} className={styles.recommendCard}>
                   <div className={styles.recommendThumb}>
                     <img 
-                      src={rPost._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png'} 
+                      src={getWpFeaturedImage(rPost, 'medium')} 
                       alt="" 
                       loading="lazy"
                     />
@@ -300,7 +291,7 @@ export default async function PostPage({ params }: PageProps) {
           </section>
 
           <footer className={styles.postFooter}>
-            <Link href="/bicstation" className={styles.backLink}>記事一覧へ戻る</Link>
+            <Link href="/" className={styles.backLink}>トップへ戻る</Link>
             <p className={styles.modifiedDate}>最終更新日: {formatDate(post.modified)}</p>
           </footer>
         </main>

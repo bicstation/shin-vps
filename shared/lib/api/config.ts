@@ -1,134 +1,82 @@
 /**
  * =====================================================================
  * 🌍 API 環境設定 (shared/components/lib/api/config.ts)
- * 4つのブログ系統（tiper / avflash / saving / bicstation）を正しく振り分け
- * VPS: api.tiper.live / Local: api-tiper-host & 8083ポート対応版
+ * 3つのドメイン系統（BicStation / Saving / Tiper・AVFLASH）完全対応版
  * =====================================================================
  */
 import { getSiteMetadata } from '../../lib/siteConfig';
 
-// サーバーサイド判定
 export const IS_SERVER = typeof window === 'undefined';
 
 /**
- * 📝 WordPress接続用の設定を取得
+ * 📝 ドメインとHostヘッダー・サイトキーの対応定義
  */
-export const getWpConfig = () => {
-    // 💡 metadata から現在のサイト設定を取得
-    const metadata = getSiteMetadata();
-    const site_prefix = metadata?.site_prefix || '';
-    
-    // スラッシュを除去して判定用のキーを作成 ("/tiper/" -> "tiper")
-    const rawKey = site_prefix.replace(/\//g, '');
-    
-    let siteKey = '';
-    let hostHeader = '';
+const DOMAIN_MAP: Record<string, { host: string; siteKey: string }> = {
+    // ① BicStation系統
+    'b-bicstation-host': { host: 'b-bicstation-host', siteKey: 'station' },
+    'bicstation-host':   { host: 'b-bicstation-host', siteKey: 'station' },
+    'blog.bicstation.com': { host: 'b-bicstation-host', siteKey: 'station' },
+    'bicstation.com':      { host: 'b-bicstation-host', siteKey: 'station' },
 
-    // --- 振り分けロジック (統合・拡張版) ---
-    if (rawKey === 'saving') {
-        /**
-         * ① 節約ブログ系統
-         */
-        siteKey = 'saving';
-        hostHeader = 'b-saving-host';
-    } else if (rawKey === 'station' || rawKey === 'bicstation') {
-        /**
-         * ② 駅名ブログ系統
-         */
-        siteKey = 'station';
-        hostHeader = 'b-bicstation-host';
-    } else if (rawKey === 'avflash') {
-        /**
-         * ③ アダルトブログ系統 (AVFLASH専用)
-         * tiper-host上の WordPress を使用するが、投稿タイプは avflash を優先
-         */
-        siteKey = 'avflash';
-        hostHeader = 'b-tiper-host';
-    } else {
-        /**
-         * ④ アダルトブログ系統 (TIPER / Default)
-         */
-        siteKey = 'tiper';
-        hostHeader = 'b-tiper-host';
-    }
+    // ② 節約ブログ系統 (saving)
+    'b-bic-saving-host': { host: 'b-saving-host', siteKey: 'saving' },
+    'saving-host':       { host: 'b-saving-host', siteKey: 'saving' },
+    'blog.bic-saving.com': { host: 'b-saving-host', siteKey: 'saving' },
+    'bic-saving.com':      { host: 'b-saving-host', siteKey: 'saving' },
+
+    // ③ TIPER / AVFLASH 系統
+    'b-tiper-host':    { host: 'b-tiper-host', siteKey: 'tiper' },
+    'tiper-host':      { host: 'b-tiper-host', siteKey: 'tiper' },
+    'blog.tiper.live': { host: 'b-tiper-host', siteKey: 'tiper' },
+    'tiper.live':      { host: 'b-tiper-host', siteKey: 'tiper' },
+    'avflash.xyz':     { host: 'b-tiper-host', siteKey: 'avflash' },
+};
+
+export const getWpConfig = () => {
+    // 閲覧中のホスト名を取得
+    const hostname = !IS_SERVER ? window.location.hostname : '';
+    const metadata = getSiteMetadata();
+    const prefix = (metadata?.site_prefix || '').replace(/\//g, '');
+
+    // マップから設定を取得（見つからない場合はtiperをデフォルトに）
+    const config = DOMAIN_MAP[hostname] || DOMAIN_MAP[prefix] || DOMAIN_MAP['b-tiper-host'];
 
     let baseUrl = '';
-
     if (IS_SERVER) {
-        // SSR: Next.js サーバーコンテナから Nginx コンテナへ直接通信
-        baseUrl = 'http://nginx-wp-v2:80'; 
+        // SSR時はDocker内部ネットワークへ
+        baseUrl = 'http://nginx-wp-v2:80';
     } else {
-        // ブラウザ: 現在閲覧しているドメインをベースにする
-        baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+        // クライアント側はブラウザのOrigin（/genを含まない）を使用
+        baseUrl = window.location.origin;
     }
 
     return {
         baseUrl,
-        host: hostHeader,
-        siteKey
+        host: config.host,
+        siteKey: config.siteKey
     };
 };
 
-/**
- * 💻 Django API接続用のベースURLを取得
- */
 export const getDjangoBaseUrl = () => {
-    // 1. 環境変数 (NEXT_PUBLIC_API_URL) があれば最優先
     const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envApiUrl) {
-        return envApiUrl.replace(/\/api\/?$/, '');
-    }
+    if (envApiUrl) return envApiUrl.replace(/\/api\/?$/, '');
 
-    // 2. サーバーサイド (SSR)
-    if (IS_SERVER) {
-        /**
-         * 💡 重要修正ポイント:
-         * サーバー間通信でも api-tiper-host:8083 を明示的に指定します。
-         */
-        return 'http://api-tiper-host:8083'; 
-    }
-    
-    // 3. クライアントサイド (ブラウザ)
+    if (IS_SERVER) return 'http://api-tiper-host:8083';
+
     if (typeof window !== 'undefined') {
-        /**
-         * 💡 ローカル環境でブラウザから直接叩く場合も考慮。
-         * ホスト名に tiper-host が含まれる場合は 8083 ポートを付与します。
-         */
         const origin = window.location.origin;
-        if (origin.includes('tiper-host')) {
-            return 'http://api-tiper-host:8083';
+        if (origin.includes('-host')) {
+            const url = new URL(origin);
+            return `${url.protocol}//${url.hostname}:8083`;
         }
         return origin;
     }
-    
-    // 4. 最終的なフォールバック
     return 'http://api-tiper-host:8083';
 };
 
-// 設定値の確定
-const djangoBase = getDjangoBaseUrl();
-const wpConfig = getWpConfig();
-
-/**
- * 💡 API 統合設定オブジェクト
- */
 export const API_CONFIG = {
-    djangoBase: djangoBase,
-    // Django通信時に必要なHostヘッダーを保持（Traefik用）
+    get djangoBase() { return getDjangoBaseUrl(); },
     djangoHost: 'api-tiper-host',
-    wp: wpConfig,
+    get wp() { return getWpConfig(); },
     timeout: 10000,
 };
-
-/**
- * 🔍 デバッグ情報の出力 (ブラウザのF12コンソール用)
- */
-if (!IS_SERVER) {
-    console.group("%c🚀 API CONFIG DEBUG", "color: white; background: #333; padding: 4px; border-radius: 4px;");
-    console.log("%cDjango Base URL:", "color: #00ff00; font-weight: bold;", API_CONFIG.djangoBase);
-    console.log("%cDjango Host Header:", "color: #00ff00;", API_CONFIG.djangoHost);
-    console.log("%cWordPress Base URL:", "color: #00bfff; font-weight: bold;", API_CONFIG.wp.baseUrl);
-    console.log("%cWordPress Host Header:", "color: #00bfff;", API_CONFIG.wp.host);
-    console.log("%cSite Key (Post Filter):", "color: #ff8c00; font-weight: bold;", API_CONFIG.wp.siteKey);
-    console.groupEnd();
-}
