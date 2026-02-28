@@ -38,7 +38,6 @@ class FanzaFloorMasterSerializer(serializers.ModelSerializer):
 class BaseMasterSerializer(serializers.ModelSerializer):
     """
     辞書型(values)取得とオブジェクト型の両方に対応した基底クラス。
-    タクソノミー集計View(AdultTaxonomyIndexAPIView)からの出力を正確に変換する。
     """
     id = serializers.IntegerField(read_only=True)
     slug = serializers.CharField(read_only=True)
@@ -69,7 +68,6 @@ class BaseMasterSerializer(serializers.ModelSerializer):
             }
         return super().to_representation(instance)
 
-# --- 各マスタの継承 ---
 class MakerSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Maker
 class LabelSerializer(BaseMasterSerializer):
@@ -83,11 +81,9 @@ class GenreSerializer(BaseMasterSerializer):
 class AuthorSerializer(BaseMasterSerializer):
     class Meta(BaseMasterSerializer.Meta): model = Author
 
-# --- 💡 女優用シリアライザー (AIソムリエ・データ強化版) ---
 class ActressSerializer(BaseMasterSerializer):
     """
     Actressモデルと紐付いた AdultActressProfile からAI紹介文やスコアを統合。
-    Next.jsのAIソムリエが画像カードを表示するために必要なフィールドを網羅。
     """
     ai_description = serializers.CharField(read_only=True, required=False)
     ai_catchcopy = serializers.CharField(read_only=True, required=False)
@@ -98,18 +94,14 @@ class ActressSerializer(BaseMasterSerializer):
 
     class Meta(BaseMasterSerializer.Meta):
         model = Actress
-        # 既存フィールドにAIソムリエ用フィールドを追加
         fields = BaseMasterSerializer.Meta.fields + (
             'ai_description', 'ai_catchcopy', 'image_url_large', 
             'ai_power_score', 'score_style', 'cup'
         )
 
     def to_representation(self, instance):
-        # 基底クラスの共通処理（ID, name, slug等）
         ret = super().to_representation(instance)
-
         if isinstance(instance, dict):
-            # 💡 辞書型（annotate取得）の場合
             ret['ai_description'] = instance.get('ai_description')
             ret['ai_catchcopy'] = instance.get('ai_catchcopy')
             ret['image_url_large'] = instance.get('image_url_large')
@@ -117,7 +109,6 @@ class ActressSerializer(BaseMasterSerializer):
             ret['score_style'] = instance.get('score_style')
             ret['cup'] = instance.get('cup')
         else:
-            # 💡 オブジェクト型の場合（リレーションから取得）
             profile = getattr(instance, 'profile', None)
             if profile:
                 ret['ai_description'] = profile.ai_description
@@ -129,19 +120,27 @@ class ActressSerializer(BaseMasterSerializer):
             else:
                 for field in ['ai_description', 'ai_catchcopy', 'image_url_large', 'ai_power_score', 'score_style', 'cup']:
                     ret[field] = None
-        
         return ret
 
 # --------------------------------------------------------------------------
-# 2. 属性・タグ用シリアライザー
+# 2. 💎 属性・タグ用シリアライザー (Next.js サイドバー対応版)
 # --------------------------------------------------------------------------
 class AdultAttributeSerializer(serializers.ModelSerializer):
+    """
+    サイドバーの 'SYSTEM_SPEC_TAGS' 表示に最適化。
+    Next.js側が期待する 'count' プロパティを明示的に返します。
+    """
     attr_type_display = serializers.CharField(source='get_attr_type_display', read_only=True)
+    # 💡 Next.jsのコンポーネントが item.count を参照するためエイリアスを定義
+    count = serializers.IntegerField(source='product_count', read_only=True, required=False)
     product_count = serializers.IntegerField(read_only=True, required=False)
 
     class Meta:
         model = AdultAttribute
-        fields = ('id', 'attr_type', 'attr_type_display', 'name', 'slug', 'order', 'product_count')
+        fields = (
+            'id', 'attr_type', 'attr_type_display', 'name', 'slug', 
+            'order', 'count', 'product_count'
+        )
 
 # --------------------------------------------------------------------------
 # 3. 統合商品データ用シリアライザー (AI解析・黄金比を完全統合)
@@ -183,7 +182,7 @@ class AdultProductSerializer(serializers.ModelSerializer):
         if isinstance(imgs, dict):
             return imgs.get('large') or imgs.get('main') or imgs.get('list')
         if isinstance(imgs, list) and len(imgs) > 0:
-            return imgs[0]
+            return imgs
         return None
 
     def to_representation(self, instance):

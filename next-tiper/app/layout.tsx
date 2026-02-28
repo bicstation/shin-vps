@@ -1,4 +1,3 @@
-/* /app/layout.tsx */
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -19,8 +18,8 @@ import Header from '@shared/layout/Header';
 import Footer from '@shared/layout/Footer';
 
 /**
- * ✅ 3. 新規追加: サイドバーラッパー
- * Propsを渡さなくても、内部でデータを自動取得するサーバーコンポーネント
+ * ✅ 3. サイドバーラッパー
+ * 内部でホスト判定を行い、適切なサイドバー（Adult/PC）を呼び出すサーバーコンポーネント
  */
 import SidebarWrapper from '@shared/layout/Sidebar/SidebarWrapper';
 
@@ -38,6 +37,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 /**
  * 💡 強制的動的レンダリングの設定
+ * ユーザーのホスト名によって表示を切り替えるため dynamic 必須
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -62,7 +62,7 @@ export default async function RootLayout({
   const site = getSiteMetadata(host);
   const themeColor = getSiteColor(site.site_name);
 
-  // 背景色や基本定数を一元管理
+  // システムカラー定義
   const BG_COLOR = "#06060a";
 
   return (
@@ -80,6 +80,7 @@ export default async function RootLayout({
           display: "flex",
           flexDirection: "column",
           position: "relative",
+          // CSS変数としてテーマカラーを注入
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": BG_COLOR,
@@ -89,7 +90,7 @@ export default async function RootLayout({
         {/* 🚀 ページ遷移時のプログレスバー & くるくるスピナー */}
         <RouteProgressBar />
 
-        {/* 背景のシステムグリッド（layout.module.css で定義） */}
+        {/* 背景のシステムグリッド */}
         <div className={styles.systemGrid} />
 
         {/* 1. 共通ヘッダー */}
@@ -114,13 +115,20 @@ export default async function RootLayout({
             {/* 🏛️ 共通サイドバーエリア */}
             <aside className={styles.sidebarArea}>
               <div className={styles.sidebarSticky}>
-                <Suspense fallback={<div className={styles.sidebarLoading}>LOADING_SYSTEM_MATRIX...</div>}>
+                <Suspense fallback={
+                  <div className={styles.sidebarLoading}>
+                    <span className={styles.loadingPulse}>LOADING_SYSTEM_MATRIX...</span>
+                  </div>
+                }>
+                  {/* SidebarWrapper自体が非同期サーバーコンポーネントとなり、
+                    内部で Django API (fetchAdultAttributes等) を叩きます。
+                  */}
                   <SidebarWrapper />
                 </Suspense>
               </div>
             </aside>
 
-            {/* 🏗️ コンテンツストリーム（ここが全幅で広がります） */}
+            {/* 🏗️ コンテンツストリーム */}
             <main className={styles.mainContent}>
               <Suspense 
                 fallback={
@@ -129,8 +137,8 @@ export default async function RootLayout({
                   </div>
                 }
               >
-                {/* 💡 各Pageコンポーネントが表示されます。
-                   サイドバーがあることを前提とした幅広のレイアウトになります。
+                {/* 各ページコンポーネント 
+                  サイドバーの存在を前提としたグリッドレイアウト内で描画されます。
                 */}
                 {children}
               </Suspense>

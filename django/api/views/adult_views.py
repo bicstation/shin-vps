@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
 import re
-import json
-from datetime import date
-from itertools import chain
-
-from django.db.models import Q, Count, Avg, F
-from django.http import Http404, JsonResponse
+from django.db.models import Q, Count
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, filters, pagination, response, views, status
+from rest_framework import generics, filters, pagination, views, status
 from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from api.models import (
     AdultProduct, 
     LinkshareProduct, 
     AdultAttribute, 
     FanzaFloorMaster,
-    # マスターモデル
     Actress, Genre, Maker, Label, Series, Director, Author
 )
 
@@ -28,20 +24,18 @@ from api.serializers import (
 # 0. ページネーション設定
 # --------------------------------------------------------------------------
 class StandardResultsSetPagination(pagination.PageNumberPagination):
-    """
-    標準的な一覧表示用のページネーション。1ページあたり24件。
-    """
+    """標準的な一覧表示用のページネーション。1ページあたり24件。"""
     page_size = 24
     page_size_query_param = 'page_size'
     max_page_size = 100
 
 # --------------------------------------------------------------------------
-# 💡 1. 統合ゲートウェイView
+# 💡 1. 統合ゲートウェイView (Core Logic)
 # --------------------------------------------------------------------------
 class UnifiedAdultProductListView(generics.ListAPIView):
     """
     アダルト商品の統合一覧View。
-    検索、フィルタリング、並び替え、および関連商品の取得をサポート。
+    【重要】AI属性(AdultAttribute)が1つ以上存在する商品のみを対象とします。
     """
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
@@ -60,44 +54,57 @@ class UnifiedAdultProductListView(generics.ListAPIView):
     ]
 
     def get_queryset(self):
-        qs = AdultProduct.objects.filter(is_active=True).select_related(
+        # 1. 基本セット + attributesが空のものを除外
+        # annotateで属性数をカウントし、1以上のもの(属性あり)のみに絞り込む
+        qs = AdultProduct.objects.filter(is_active=True).annotate(
+            attr_count=Count('attributes')
+        ).filter(attr_count__gt=0).select_related(
             'maker', 'label', 'series', 'director', 'floor_master'
         ).prefetch_related(
-            'actresses', 
-            'genres', 
-            'attributes', 
-            'authors'
+            'actresses', 'genres', 'attributes', 'authors'
         )
 
         p = self.request.query_params
+        
+        # 2. AI属性（AdultAttribute）フィルタリング
+        # Next.jsから送られてくる attribute_id を最優先で適用
+        attr_id = p.get('attribute_id')
+        attr_slug = p.get('attribute_slug')
+        
+        if attr_id and str(attr_id).isdigit():
+            qs = qs.filter(attributes__id=int(attr_id))
+        elif attr_slug:
+            qs = qs.filter(attributes__slug=attr_slug)
+
+        # 3. 関連商品の取得ロジック (related_to_id がある場合)
         related_id = p.get('related_to_id')
         axis_params = ['actress_id', 'maker_id', 'genre', 'actress', 'maker', 'series_id', 'label_id']
         has_specific_axis = any(p.get(k) for k in axis_params)
 
-        # 関連商品の取得ロジック
-        if related_id and not has_specific_axis:
+        if related_id and not has_specific_axis and not attr_id:
             try:
                 base_obj = AdultProduct.objects.get(product_id_unique=related_id)
-                related_qs = qs.filter(
+                return qs.filter(
                     Q(maker=base_obj.maker) | 
                     Q(actresses__in=base_obj.actresses.all()) |
                     Q(genres__in=base_obj.genres.all())
-                ).exclude(product_id_unique=related_id).distinct()
-                if related_qs.exists():
-                    return related_qs.order_by('-release_date')
+                ).exclude(product_id_unique=related_id).distinct().order_by('-release_date')
             except AdultProduct.DoesNotExist:
                 pass
 
-        # 基本フィルタリング
+        # 4. 基本フィルタリング (Source / Service / Floor)
         source_param = p.get('api_source', '').strip().lower()
         service_code = p.get('service_code', '').strip().lower()
         floor_code = p.get('floor_code', '').strip().lower()
         
-        if source_param: qs = qs.filter(api_source__iexact=source_param)
-        if service_code: qs = qs.filter(api_service__iexact=service_code)
-        if floor_code:  qs = qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
+        if source_param: 
+            qs = qs.filter(api_source__iexact=source_param)
+        if service_code: 
+            qs = qs.filter(api_service__iexact=service_code)
+        if floor_code:   
+            qs = qs.filter(Q(floor_code=floor_code) | Q(floor_master__floor_code=floor_code))
 
-        # タクソノミー（ID/Slug）フィルタリング
+        # 5. タクソノミー（ID/Slug）共通フィルタリング
         filter_map = {
             'genre': ('genres__id', 'genres__slug'),
             'actress': ('actresses__id', 'actresses__slug'),
@@ -108,28 +115,54 @@ class UnifiedAdultProductListView(generics.ListAPIView):
             'label': ('label__id', 'label__slug'),
         }
 
-        for key, fields in filter_map.items():
+        for key, (id_field, slug_field) in filter_map.items():
             id_val = p.get(key) or p.get(f"{key}_id")
             slug_val = p.get(f"{key}_slug")
+            
             if id_val and str(id_val).isdigit():
-                qs = qs.filter(**{fields[0]: id_val})
+                qs = qs.filter(**{id_field: id_val})
             elif slug_val:
-                qs = qs.filter(**{fields[1]: slug_val})
+                qs = qs.filter(**{slug_field: slug_val})
 
         if related_id:
             qs = qs.exclude(product_id_unique=related_id)
 
+        # 重複を排除して最新順に
         return qs.distinct().order_by('-release_date')
 
 # --------------------------------------------------------------------------
-# 💡 2. 階層ナビゲーションView
+# 💡 2. サイドバー統計 (属性分析用)
+# --------------------------------------------------------------------------
+class AdultSidebarStatsAPIView(views.APIView):
+    """サイドバーに表示するAI属性（熟女、人妻など）の一覧と該当件数"""
+    permission_classes = [AllowAny]
+    def get(self, request, *args, **kwargs):
+        # 属性ごとに、紐付いている有効な商品数を集計
+        stats = AdultAttribute.objects.annotate(
+            attr_count=Count('products', filter=Q(products__is_active=True))
+        ).filter(attr_count__gt=0).order_by('-attr_count')[:20]
+        
+        results = [
+            {"id": a.id, "name": a.name, "slug": a.slug or str(a.id), "count": a.attr_count} 
+            for a in stats
+        ]
+        return Response({"status": "ANALYSIS_COMPLETE", "attributes": results})
+
+# --------------------------------------------------------------------------
+# 💡 3. ナビゲーション・インデックスView
 # --------------------------------------------------------------------------
 class FanzaFloorNavigationAPIView(views.APIView):
+    """サイト名、サービス、フロアごとの階層構造を生成"""
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
         qs = FanzaFloorMaster.objects.filter(is_active=True)
-        floor_counts = AdultProduct.objects.filter(is_active=True).values('floor_master_id').annotate(count=Count('id'))
+        # 属性が付与されている商品のみをカウント対象にする
+        floor_counts = AdultProduct.objects.filter(is_active=True).annotate(
+            attr_count=Count('attributes')
+        ).filter(attr_count__gt=0).values('floor_master_id').annotate(count=Count('id'))
+        
         count_map = {item['floor_master_id']: item['count'] for item in floor_counts}
+        
         structure = {}
         for item in qs:
             site = item.site_name
@@ -139,174 +172,72 @@ class FanzaFloorNavigationAPIView(views.APIView):
             svc = item.service_name
             if svc not in structure[site]["services"]:
                 structure[site]["services"][svc] = {"code": item.service_code.lower(), "name": svc, "product_count": 0, "floors": []}
-            structure[site]["services"][svc]["floors"].append({"code": item.floor_code.lower(), "name": item.floor_name, "product_count": current_floor_count})
+            structure[site]["services"][svc]["floors"].append({
+                "code": item.floor_code.lower(), "name": item.floor_name, "product_count": current_floor_count
+            })
             structure[site]["services"][svc]["product_count"] += current_floor_count
             structure[site]["product_count"] += current_floor_count
-        return response.Response({"status": "NAV_SYNC_COMPLETE", "data": structure})
+        return Response({"status": "NAV_SYNC_COMPLETE", "data": structure})
 
-# --------------------------------------------------------------------------
-# 💡 3. 全項目インデックス取得View (AIソムリエ・データ強化版)
-# --------------------------------------------------------------------------
 class AdultTaxonomyIndexAPIView(views.APIView):
+    """ジャンルや女優などのマスターデータ一覧取得"""
     permission_classes = [AllowAny]
-
     def get(self, request, *args, **kwargs):
         p = request.query_params
         tax_type = p.get('type', 'genres')
-        ordering_raw = p.get('ordering', '-product_count')
-        limit = p.get('limit')
-        api_source = p.get('api_source')
-
         model_map = {
-            'genres': Genre, 
-            'makers': Maker, 
-            'actresses': Actress, 
-            'series': Series, 
-            'directors': Director, 
-            'authors': Author, 
-            'labels': Label
+            'genres': Genre, 'makers': Maker, 'actresses': Actress, 
+            'series': Series, 'directors': Director, 'authors': Author, 'labels': Label
         }
         TargetModel = model_map.get(tax_type)
-
-        if not TargetModel:
-            return response.Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if tax_type == 'actresses':
-            qs = TargetModel.objects.all().select_related('profile')
-        else:
-            qs = TargetModel.objects.all()
-
-        if api_source:
-            qs = qs.filter(api_source__iexact=api_source)
-
-        qs = qs.filter(product_count__gt=0)
-
-        valid_db_fields = ['name', '-name', 'product_count', '-product_count', 'id', '-id']
-        db_ordering = ordering_raw if ordering_raw in valid_db_fields else '-product_count'
-        qs = qs.order_by(db_ordering)
-
-        fetch_limit = 1000 if 'score' in ordering_raw else (int(limit) if limit and limit.isdigit() else 100)
-        qs = qs[:fetch_limit]
-
-        results = []
-        for item in qs:
-            data = {
-                "id": item.id, 
-                "name": item.name, 
-                "slug": item.slug or item.name, 
-                "product_count": item.product_count,
-                "api_source": item.api_source
-            }
-            
-            if tax_type == 'actresses':
-                profile = getattr(item, 'profile', None)
-                if profile:
-                    # 🖼️ ビジュアル & AI説明
-                    data["image_url_small"] = getattr(profile, 'image_url_small', None)
-                    data["image_url_large"] = getattr(profile, 'image_url_large', None)
-                    data["ai_description"] = getattr(profile, 'ai_description', "")
-                    data["ai_catchcopy"] = getattr(profile, 'ai_catchcopy', "")
-                    
-                    # 📏 フィジカルデータ
-                    data["bust"] = getattr(profile, 'bust', None)
-                    data["cup"] = getattr(profile, 'cup', None)
-                    data["height"] = getattr(profile, 'height', None)
-                    data["hobby"] = getattr(profile, 'hobby', None)
-                    
-                    # 🔗 SNS
-                    data["x_url"] = getattr(profile, 'x_url', None)
-                    data["instagram_url"] = getattr(profile, 'instagram_url', None)
-                    
-                    # 📊 スコア
-                    data["ai_power_score"] = getattr(profile, 'ai_power_score', 0)
-                    data["score_visual"] = getattr(profile, 'score_visual', 0)
-                else:
-                    data["ai_power_score"] = 0
-            
-            results.append(data)
-
-        if 'score' in ordering_raw or 'ai_power_score' in ordering_raw:
-            reverse_flag = '-' in ordering_raw
-            sort_key = ordering_raw.replace('-', '').split('__')[-1]
-            results = sorted(results, key=lambda x: (x.get(sort_key) is not None, x.get(sort_key) or 0), reverse=reverse_flag)
-            if limit and limit.isdigit():
-                results = results[:int(limit)]
-
-        return response.Response({"type": tax_type, "api_source": api_source, "results": results})
+        if not TargetModel: return Response({"error": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        qs = TargetModel.objects.filter(product_count__gt=0).order_by('-product_count')[:100]
+        results = [{"id": item.id, "name": item.name, "slug": item.slug or str(item.id), "product_count": item.product_count} for item in qs]
+        return Response({"type": tax_type, "results": results})
 
 # --------------------------------------------------------------------------
-# 💡 4. 🚀 AIソムリエ専用: 女優検索API (新規追加)
+# 💡 4. 詳細・ランキング・検索
 # --------------------------------------------------------------------------
-class ActressSearchAPIView(views.APIView):
-    """
-    Next.jsのAIソムリエから呼ばれる検索専用エンドポイント。
-    AIが作成した紹介文(ai_description)を対象に全文検索を行います。
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request, *args, **kwargs):
-        query = request.GET.get('q', '').strip()
-        if not query:
-            return response.Response({"results": []})
-
-        # 名前、読み、AI紹介文、趣味をまたいで検索
-        # 5.9万人の中から、より精鋭(ai_power_score)を優先して3件抽出
-        results = Actress.objects.filter(
-            Q(name__icontains=query) |
-            Q(ruby__icontains=query) |
-            Q(profile__ai_description__icontains=query) |
-            Q(profile__hobby__icontains=query)
-        ).select_related('profile').filter(product_count__gt=0).order_by('-profile__ai_power_score', '-product_count')[:3]
-
-        data = []
-        for act in results:
-            profile = getattr(act, 'profile', None)
-            data.append({
-                "actress_id": act.id,
-                "name": act.name,
-                "ai_description": getattr(profile, 'ai_description', ""),
-                "image_url_large": getattr(profile, 'image_url_large', ""),
-                "cup": getattr(profile, 'cup', ""),
-                "ai_power_score": getattr(profile, 'ai_power_score', 0)
-            })
-
-        return response.Response({"results": data})
-
-# --------------------------------------------------------------------------
-# 💡 5. サイドバー用分析View
-# --------------------------------------------------------------------------
-class PlatformMarketAnalysisAPIView(views.APIView):
-    permission_classes = [AllowAny]
-    def get(self, request, *args, **kwargs):
-        base_qs = AdultProduct.objects.filter(is_active=True)
-        return response.Response({
-            "total_nodes": base_qs.count(), 
-            "platform_avg_score": round(base_qs.aggregate(avg=Avg('spec_score'))['avg'] or 0, 2)
-        })
-
-# --------------------------------------------------------------------------
-# 💡 6. 各種個別リスト・詳細View
-# --------------------------------------------------------------------------
-class AdultProductListAPIView(generics.ListAPIView):
-    serializer_class = AdultProductSerializer
-    permission_classes = [AllowAny]
-    pagination_class = StandardResultsSetPagination
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    queryset = AdultProduct.objects.filter(is_active=True).order_by('-release_date')
-
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
+    """商品詳細取得"""
     queryset = AdultProduct.objects.all()
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
     lookup_field = 'product_id_unique'
 
 class AdultProductRankingAPIView(generics.ListAPIView):
+    """AI解析スコアに基づくランキング（属性あり限定）"""
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
     def get_queryset(self):
-        return AdultProduct.objects.filter(spec_score__gt=0, is_active=True).order_by('-spec_score')[:30]
+        return AdultProduct.objects.filter(
+            is_active=True, spec_score__gt=0
+        ).annotate(attr_count=Count('attributes')).filter(attr_count__gt=0).order_by('-spec_score')[:30]
+
+class ActressSearchAPIView(views.APIView):
+    """女優検索"""
+    permission_classes = [AllowAny]
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get('q', '').strip()
+        if not query: return Response({"results": []})
+        results = Actress.objects.filter(
+            Q(name__icontains=query) | Q(ruby__icontains=query)
+        ).filter(product_count__gt=0)[:10]
+        data = [{"id": a.id, "name": a.name} for a in results]
+        return Response({"results": data})
 
 class LinkshareProductListAPIView(generics.ListAPIView):
+    """外部連携商品一覧"""
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')
     serializer_class = LinkshareProductSerializer
     permission_classes = [AllowAny]
+
+# --------------------------------------------------------------------------
+# 💡 5. エラー回避用スタブView (URLs.pyとの整合性維持)
+# --------------------------------------------------------------------------
+class PlatformMarketAnalysisAPIView(APIView):
+    """URL設定で定義されている分析Viewのスタブ"""
+    permission_classes = [AllowAny]
+    def get(self, request):
+        return Response({"status": "under_construction", "message": "Market analysis is coming soon."})

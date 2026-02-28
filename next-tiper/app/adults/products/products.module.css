@@ -1,0 +1,191 @@
+/* /home/maya/dev/shin-vps/app/adult/products/products.module.css */
+
+.container {
+  min-height: 100vh;
+  background-color: transparent; /* Layout側の背景を活かす */
+  padding: 1.5rem;
+}
+
+.debugHeroWrapper {
+  margin-bottom: 2rem;
+}
+
+.layoutMain {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* 🏛️ Page Header */
+.pageHeader {
+  margin-bottom: 3rem;
+  padding: 1.5rem 2rem;
+  background: rgba(10, 10, 18, 0.6);
+  backdrop-filter: blur(10px);
+  border-left: 4px solid var(--site-theme-color, #e94560);
+  border-radius: 0 1rem 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.headerTop {
+  margin-bottom: 0.5rem;
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pulseDot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--site-theme-color, #e94560);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--site-theme-color, #e94560);
+  animation: pulse 2s infinite;
+}
+
+.sectorLabel {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--site-theme-color, #e94560);
+  opacity: 0.8;
+}
+
+.titleContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.mainTitle {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.counterBox {
+  font-family: var(--font-mono, monospace);
+  text-align: right;
+}
+
+.countLabel {
+  font-size: 10px;
+  color: #888;
+  display: block;
+}
+
+.countValue {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--site-theme-color, #e94560);
+}
+
+.headerUnderline {
+  height: 1px;
+  background: linear-gradient(90deg, var(--site-theme-color, #e94560), transparent);
+  margin-top: 1rem;
+  opacity: 0.3;
+}
+
+/* 🏗️ Grid Section */
+.gridSection {
+  position: relative;
+  min-height: 400px;
+}
+
+.glowCanvas {
+  position: absolute;
+  inset: -1rem;
+  background: radial-gradient(circle at top left, rgba(233, 69, 96, 0.05), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gridContainer {
+  position: relative;
+  z-index: 1;
+}
+
+/* States */
+.loadingState, .emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 0;
+  text-align: center;
+}
+
+.loadingPulse {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.2rem;
+  color: var(--site-theme-color, #e94560);
+  animation: pulse 1.5s infinite;
+}
+
+.emptyIcon {
+  font-size: 2rem;
+  color: #ff4d4d;
+  margin-bottom: 1rem;
+}
+
+.emptyText {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.emptySub {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* 💡 Pagination */
+.pagination {
+  margin-top: 4rem;
+  padding: 2rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+}
+
+.pageInfo {
+  font-family: var(--font-mono, monospace);
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.pageLabel {
+  color: #888;
+  margin-right: 8px;
+}
+
+.pageValue {
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Footer Log */
+.footerLog {
+  margin-top: 3rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 255, 65, 0.1);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  color: #00ff41;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}

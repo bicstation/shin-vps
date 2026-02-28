@@ -1,77 +1,90 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// ✅ 修正ポイント: shared/lib/api から共通のフェッチ関数をインポート
-import { getAdultProducts } from '@shared/lib/api';
+export const dynamic = 'force-dynamic';
 
-/**
- * 💡 RSSフィード生成ロジック
- * Route Handlers を使用して XML を動的に返します。
- */
+import { getUnifiedProducts } from '@shared/lib/api/django/adult';
+import { fetchPostList } from '@shared/lib/api/wordpress';
+
+// 💡 ソース名を名寄せして統一するヘルパー
+const getNormalizedSource = (apiSource: string): string => {
+  const s = (apiSource || '').toLowerCase();
+  if (s.includes('dmm')) return 'DMM';
+  if (s.includes('fanza')) return 'FANZA';
+  if (s.includes('duga')) return 'DUGA';
+  return apiSource.toUpperCase();
+};
+
 export async function GET() {
-  const baseURL = 'https://tiper.live/tiper';
-  
-  // 💡 最新の動画データを取得
-  // shared/lib/api 内で定義された型やオプションを利用します
-  const data = await getAdultProducts({ 
-    limit: 50, 
-    ordering: '-created_at' 
-  }).catch((err) => {
-    console.error("❌ RSS Generation Error:", err);
-    return { results: [] };
-  });
-  
-  const products = data?.results || [];
+  const baseURL = 'https://tiper.live';
+  const feedURL = `${baseURL}/rss.xml`;
 
-  const items = products
-    .map((product: any) => {
-      // 日付のバリデーション（不正な日付によるエラー防止）
-      const pubDate = product.release_date 
-        ? new Date(product.release_date).toUTCString() 
-        : new Date().toUTCString();
+  try {
+    // 1. 最新データの取得 (動画20件 + 記事10件)
+    const [productsData, postsData] = await Promise.all([
+      getUnifiedProducts({ limit: 20, ordering: '-created_at' }).catch(() => ({ results: [] })),
+      fetchPostList('post', 10).catch(() => ({ results: [] })),
+    ]);
 
-      // サムネイル画像の取得（最初の1枚）
-      const thumbnail = product.image_url_list?.[0] || '';
+    const items: string[] = [];
 
-      // RSS項目の組み立て（CDAATAセクションを使用して特殊文字を保護）
-      return `
+    // 2. 動画データをRSSアイテムに変換
+    (productsData?.results || []).forEach((product: any) => {
+      // 💡 サイトマップのロジックと完全に同期
+      const finalId = product.display_id || product.product_id_unique;
+      const displaySource = getNormalizedSource(product.api_source);
+      
+      if (finalId) {
+        // 💡 URL形式をサイトマップと統一: /adults/DISPLAY_ID?source=SOURCE
+        const productUrl = `${baseURL}/adults/${finalId}?source=${displaySource}`;
+        const pubDate = new Date(product.updated_at || product.created_at || new Date()).toUTCString();
+        
+        items.push(`
       <item>
         <title><![CDATA[${product.title}]]></title>
-        <link>${baseURL}/adults/${product.id}</link>
-        <description><![CDATA[
-          ${thumbnail ? `<img src="${thumbnail}" style="max-width:300px;display:block;margin-bottom:10px;" /><br/>` : ''}
-          メーカー: ${product.maker?.name || '---'}<br/>
-          出演者: ${product.actresses?.map((a: any) => a.name).join(', ') || '---'}
-        ]]></description>
-        ${thumbnail ? `<enclosure url="${thumbnail}" length="0" type="image/jpeg" />` : ''}
+        <link>${productUrl}</link>
+        <guid isPermaLink="true">${productUrl}</guid>
         <pubDate>${pubDate}</pubDate>
-        <guid isPermaLink="false">${product.id}</guid>
-        <category><![CDATA[アダルト動画]]></category>
-      </item>`;
-    })
-    .join('');
+        <description><![CDATA[${product.ai_summary || product.title}]]></description>
+      </item>`);
+      }
+    });
 
-  const rss = `<?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0" 
-  xmlns:atom="http://www.w3.org/2005/Atom"
-  xmlns:content="http://purl.org/rss/1.0/modules/content/"
-  xmlns:media="http://search.yahoo.com/mrss/"
->
+    // 3. マガジン記事をRSSアイテムに変換
+    (postsData?.results || []).forEach((post: any) => {
+      const postUrl = `${baseURL}/blog/${post.slug}`;
+      const pubDate = new Date(post.date || new Date()).toUTCString();
+      
+      items.push(`
+      <item>
+        <title><![CDATA[${post.title?.rendered || post.title}]]></title>
+        <link>${postUrl}</link>
+        <guid isPermaLink="true">${postUrl}</guid>
+        <pubDate>${pubDate}</pubDate>
+        <description><![CDATA[${post.excerpt?.rendered || ''}]]></description>
+      </item>`);
+    });
+
+    // 4. RSS全体の組み立て
+    const rss = `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Tiper - 最新動画情報アーカイブ</title>
+    <title>Tiper.live - 最新動画・マガジン</title>
     <link>${baseURL}</link>
-    <description>最新の商品入荷情報をサイバーパンクなスピードでお届けします</description>
+    <description>最新の動画情報とマガジン記事をお届けします。</description>
     <language>ja</language>
-    <copyright>Copyright 2026 Tiper Live</copyright>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="${baseURL}/rss.xml" rel="self" type="application/rss+xml" />
-    ${items}
+    <atom:link href="${feedURL}" rel="self" type="application/rss+xml" />
+    ${items.join('')}
   </channel>
 </rss>`;
 
-  return new Response(rss, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      // ✅ キャッシュ戦略: 1時間キャッシュ (s-maxage=3600)
-      'Cache-Control': 's-maxage=3600, stale-while-revalidate',
-    },
-  });
+    return new Response(rss.trim(), {
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59',
+      },
+    });
+
+  } catch (error) {
+    console.error("RSS generation failed:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }

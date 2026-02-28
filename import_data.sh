@@ -14,7 +14,7 @@ if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" 
     BASE_URL="http://$(hostname -I | awk '{print $1}'):8083"
 else
     IS_VPS=false; ENV_TYPE="LOCAL (Development)"; COMPOSE_FILE="docker-compose.yml"; DJANGO_CON="django-v2"; NEXT_CON="next-bicstation-v2"; COLOR="\e[36m"
-    BASE_URL="http://127.0.0.1:8083"
+    BASE_URL="http://api-tiper-host:8083"
 fi
 
 RESET="\e[0m"; RED="\e[31m"; YELLOW="\e[33m"; BLUE="\e[34m"; MAGENTA="\e[35m"; CYAN="\e[36m"; BOLD="\e[1m"; GREEN="\e[32m"

@@ -13,6 +13,14 @@ interface MasterItem {
   product_count: number;
 }
 
+interface AiAttributeItem {
+  id: number;
+  name: string;
+  slug: string;
+  count: number;
+  // attr_type は将来的な拡張用
+}
+
 interface OfficialFloor {
   id: string | number;
   name?: string;
@@ -42,6 +50,7 @@ interface SidebarProps {
   directors?: MasterItem[];
   authors?: MasterItem[]; 
   labels?: MasterItem[];   
+  aiAttributes?: AiAttributeItem[];
   recentPosts?: { id: string; title: string; slug?: string }[];
 }
 
@@ -54,17 +63,20 @@ export default function AdultSidebar({
   directors = [],
   authors = [],
   labels = [],
+  aiAttributes = [], 
   recentPosts = [],
 }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   const [mounted, setMounted] = useState(false);
+
+  // セクション開閉状態（AI_SPECS と ACTRESSES は重要度が高いためデフォルト Open）
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    'OFFICIAL_NAV': true,
     'PLATFORMS': true,
-    'GENRES': true,
-    'MAKERS': true,
+    'OFFICIAL_NAV': true,
+    'AI_SPECS': true, 
+    'GENRES': false,
+    'MAKERS': false,
     'ACTRESSES': true,
     'LOGS': true
   });
@@ -117,10 +129,46 @@ export default function AdultSidebar({
               const isActive = currentPlatform === platId;
               return (
                 <Link key={p} href={`/brand/${platId}`} className={`${styles.platBtn} ${isActive ? styles.active : ''}`}>
-                  <span className={styles.btnDot} /> {p}
+                  {p}
                 </Link>
               );
             })}
+          </div>
+        )}
+      </section>
+
+      {/* 💎 SYSTEM_SPEC_TAGS: AI属性（分析結果） */}
+      <section className={styles.sectionWrapper} style={{ border: '1px solid var(--site-theme-alpha)' }}>
+        <div className={`${styles.sectionHeader} ${styles.aiHeader}`} onClick={() => toggleSection('AI_SPECS')}>
+          <h3 className={styles.headerTitle}>
+            <span className={styles.icon}>💎</span> SYSTEM_SPEC_TAGS
+          </h3>
+          <span className={styles.arrow}>{openSections['AI_SPECS'] ? '▲' : '▼'}</span>
+        </div>
+        {openSections['AI_SPECS'] && (
+          <div className={styles.contentBody}>
+            <ul className={styles.masterList}>
+              {aiAttributes.length > 0 ? (
+                aiAttributes.map(item => (
+                  <li key={`ai-attr-${item.id}`} className={styles.masterListItem}>
+                    <Link href={`/adult/products?attribute_id=${item.id}`} className={styles.masterLink}>
+                      <span className={styles.itemName}>
+                        <span className={styles.tagPrefix}>#</span>{item.name}
+                      </span>
+                      <span className={styles.itemCount}>{item.count.toLocaleString()}</span>
+                    </Link>
+                    {/* PC推奨バッジ：スラッグに特定のキーワードが含まれる場合のみ表示 */}
+                    {/4k|vr|high-spec|8k/.test(item.slug.toLowerCase()) && (
+                      <Link href={`/spec-lab/pc-recommend?attr=${item.slug}`} className={styles.specLinkBadge}>
+                        推奨PC ↗
+                      </Link>
+                    )}
+                  </li>
+                ))
+              ) : (
+                <li className={styles.emptyStatus}>[!] ANALYZING_DATABASE...</li>
+              )}
+            </ul>
           </div>
         )}
       </section>
@@ -143,7 +191,7 @@ export default function AdultSidebar({
                   if (!sCode) return null;
                   const floors = service.floors || service.items || [];
                   return (
-                    <React.Fragment key={`svc-${sCode}`}>
+                    <React.Fragment key={`svc-wrap-${sCode}`}>
                       <li className={styles.masterListItem}>
                         <Link href={getOfficialLink(sCode)} className={`${styles.masterLink} ${isSvcActive(sCode) ? styles.active : ''}`}>
                           <span className={styles.itemName} style={{ color: 'var(--site-theme-color)', fontWeight: 'bold' }}>{sName}</span>
@@ -154,7 +202,7 @@ export default function AdultSidebar({
                         const fCode = floor.floor_code || floor.code || floor.slug;
                         if (!fCode) return null;
                         return (
-                          <li key={`flr-${fCode}`} className={styles.masterListItem}>
+                          <li key={`flr-item-${fCode}`} className={styles.masterListItem}>
                             <Link href={getOfficialLink(sCode, fCode)} className={`${styles.masterLink} ${isFlrActive(sCode, fCode) ? styles.active : ''}`} style={{ paddingLeft: '1.2rem' }}>
                               <span className={styles.itemName}><span style={{ color: 'var(--site-theme-color)', marginRight: '6px', opacity: 0.5 }}>└</span>{fName}</span>
                             </Link>
@@ -170,17 +218,13 @@ export default function AdultSidebar({
         </section>
       )}
 
-      {/* 🛠️ MASTER_DATA_INDEXES (Genres, Makers, Actresses, etc.) */}
+      {/* 🛠️ MASTER_DATA_INDEXES */}
       {[
-        { id: 'GENRES', type: 'genres', data: genres, icon: '🏷️', label: 'ジャンル' },
-        { id: 'MAKERS', type: 'makers', data: makers, icon: '🏢', label: 'メーカー' },
-        { id: 'ACTRESSES', type: 'actresses', data: actresses, icon: '👩', label: '女優' },
-        { id: 'LABELS', type: 'labels', data: labels, icon: '🔖', label: 'レーベル' },
-        { id: 'SERIES', type: 'series', data: series, icon: '📚', label: 'シリーズ' },
-        { id: 'DIRECTORS', type: 'directors', data: directors, icon: '🎬', label: '監督' },
-        { id: 'AUTHORS', type: 'authors', data: authors, icon: '✍️', label: '著者' },
+        { id: 'ACTRESSES', type: 'actress', data: actresses, icon: '👩', label: '女優' },
+        { id: 'GENRES', type: 'genre', data: genres, icon: '🏷️', label: 'ジャンル' },
+        { id: 'MAKERS', type: 'maker', data: makers, icon: '🏢', label: 'メーカー' },
       ].map((cat) => (
-        <section key={cat.id} className={styles.sectionWrapper}>
+        <section key={`master-sec-${cat.id}`} className={styles.sectionWrapper}>
           <div className={styles.sectionHeader} onClick={() => toggleSection(cat.id)}>
             <h3 className={styles.headerTitle}>
               <span className={styles.icon}>{cat.icon}</span> {cat.id}
@@ -193,7 +237,7 @@ export default function AdultSidebar({
                 {cat.data && cat.data.length > 0 ? (
                   <>
                     {cat.data.slice(0, 10).map(item => (
-                      <li key={item.id} className={styles.masterListItem}>
+                      <li key={`${cat.id}-${item.id}`} className={styles.masterListItem}>
                         <Link href={getSafeLink(cat.type, item)} className={styles.masterLink}>
                           <span className={styles.itemName}>{item.name}</span>
                           <span className={styles.itemCount}>{(item.product_count || 0).toLocaleString()}</span>
@@ -208,7 +252,7 @@ export default function AdultSidebar({
                     </li>
                   </>
                 ) : (
-                  <li className={styles.emptyStatus}>[!] NO_DATA</li>
+                  <li className={styles.emptyStatus}>[!] NO_DATA_AVAILABLE</li>
                 )}
               </ul>
             </div>
@@ -216,7 +260,7 @@ export default function AdultSidebar({
         </section>
       ))}
 
-      {/* 📰 RECENT_LOGS (WordPress 連携) */}
+      {/* 📰 RECENT_REPORTS */}
       <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeader} onClick={() => toggleSection('LOGS')}>
           <h3 className={styles.headerTitle}>
@@ -229,20 +273,21 @@ export default function AdultSidebar({
             <ul className={styles.masterList}>
               {recentPosts.length > 0 ? (
                 recentPosts.map((post) => (
-                  <li key={post.id} className={styles.masterListItem}>
+                  <li key={`post-${post.id}`} className={styles.masterListItem}>
                     <Link href={`/news/${post.slug}`} className={styles.masterLink}>
                       <span className={styles.itemName}>{post.title}</span>
                     </Link>
                   </li>
                 ))
               ) : (
-                <li className={styles.emptyStatus}>[!] NO_REPORTS</li>
+                <li className={styles.emptyStatus}>[!] NO_REPORTS_FOUND</li>
               )}
             </ul>
           </div>
         )}
       </section>
 
+      {/* 🛰️ SYSTEM_FOOTER */}
       <div className={styles.systemFooter}>
         <div className={styles.statusRow}>
           <div className={styles.blinkContainer}>

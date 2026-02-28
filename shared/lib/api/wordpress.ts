@@ -4,6 +4,7 @@
  * 🛡️ Maya's Logic: ドメイン一括置換・矛盾根絶・究極デバッグ版
  * =====================================================================
  */
+// /home/maya/dev/shin-vps/shared/lib/api/wordpress.ts
 import { getWpConfig, IS_SERVER } from './config';
 
 /**

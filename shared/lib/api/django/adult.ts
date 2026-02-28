@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
+// /home/maya/dev/shin-vps/shared/lib/api/django/adult.ts
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from './client';
 import { AdultProduct } from '../types';
 
@@ -23,18 +24,19 @@ const normalizeParams = (params: any) => {
     if (val !== undefined && val !== null && val !== 'undefined' && val !== '') {
       let targetKey = key;
       
-      // エイリアスの変換
+      // エイリアスの変換 (Frontend -> Django Field Name)
       if (key === 'service') targetKey = 'service_code';
       if (key === 'floor') targetKey = 'floor_code';
 
       // 💡 判定ロジック:
-      // 1. 識別子系は小文字化して正規化（一貫性のため）
-      // 2. ID系やスラッグ（日本語含む）は破壊を防ぐためそのまま維持
+      // 1. 識別子系・コード系は小文字化して正規化
+      // 2. ID系（attribute_id含む）やスラッグは破壊を防ぐためそのまま維持
       const lowercaseKeys = ['service_code', 'floor_code', 'api_source', 'related_to_id'];
       
       if (lowercaseKeys.includes(targetKey)) {
         clean[targetKey] = String(val).toLowerCase();
       } else {
+        // attribute_id や search, ordering などはそのまま文字列としてセット
         clean[targetKey] = String(val); 
       }
     }
@@ -49,19 +51,22 @@ const normalizeParams = (params: any) => {
  */
 
 /** * 商品一覧取得 (Unified) 
- * 🎯 related_to_id が渡された場合、Django 側でスコアリングされた関連作品が返ります。
+ * 🎯 attribute_id が params に含まれる場合、特定のAI属性で絞り込みます。
  */
 export async function getUnifiedProducts(params: any = {}) {
+  // 💡 パラメータの正規化（ここで attribute_id が確実に保持されます）
   const cleanParams = normalizeParams(params);
   const queryString = new URLSearchParams(cleanParams).toString();
   
+  // Django側エンドポイント: /api/adult/unified-products/
   const targetUrl = resolveApiUrl(`/api/adult/unified-products/?${queryString}`);
 
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(),
-      cache: (params.related_to_id || params.actress_id || params.maker_id) ? 'no-store' : 'default',
-      next: (params.related_to_id || params.actress_id || params.maker_id) 
+      // 絞り込み条件（ID系）がある場合は、動的変化を優先するためキャッシュを調整
+      cache: (params.attribute_id || params.related_to_id || params.actress_id) ? 'no-store' : 'default',
+      next: (params.attribute_id || params.related_to_id || params.actress_id) 
         ? { revalidate: 0 } 
         : { revalidate: 3600 }
     });
@@ -69,9 +74,15 @@ export async function getUnifiedProducts(params: any = {}) {
     if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
     
     const data = await res.json();
+    
+    // 🔍 デバッグ用: データが空の場合にURLをコンソール出力
+    if (!data.results || data.results.length === 0) {
+      console.warn(`[UnifiedList] NO_DATA_RETURNED from: ${targetUrl}`);
+    }
+
     return { 
       results: safeExtract(data), 
-      count: data?.count || 0
+      count: data?.count || (Array.isArray(data) ? data.length : 0)
     };
   } catch (error) { 
     console.error("[UnifiedList] FETCH_FAILED:", error);
@@ -139,7 +150,7 @@ export async function fetchAdultTaxonomyIndex(type: string, floorCodeOrParams?: 
     
     return { 
       results: safeExtract(data),
-      count: data?.count || 0 
+      count: data?.count || (Array.isArray(data.results) ? data.results.length : 0)
     };
   } catch (error) {
     console.error(`[Taxonomy] ${type} FETCH_FAILED:`, error);
@@ -158,72 +169,76 @@ export const fetchLabels = (p?: any) => fetchAdultTaxonomyIndex('labels', p);
 
 /**
  * ==============================================================================
- * 💡 4. ナビゲーションメニュー取得 (Real-time product_count 対応)
+ * 💡 4. ナビゲーションメニュー取得
  * ==============================================================================
  */
 
-/** 共通のナビゲーションリスト取得 (Django: /api/master/nav-list/) */
-async function fetchNavList() {
-  const targetUrl = resolveApiUrl('/api/master/nav-list/');
+export async function getAdultNavigationFloors() {
+  const targetUrl = resolveApiUrl('/api/adult/navigation/floors/');
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
     });
     if (!res.ok) throw new Error(`NAV_FETCH_ERROR_${res.status}`);
-    return await res.json();
+    const json = await res.json();
+    return json?.data || {};
   } catch (error) {
-    console.error("[NavList] FETCH_FAILED:", error);
-    return { data: {} };
+    console.error("[NavFloors] FETCH_FAILED:", error);
+    return {};
   }
 }
 
-/** FANZAフロアナビゲーション */
 export async function getFanzaDynamicMenu() {
-  const json = await fetchNavList();
-  // JSON内の日本語キー「FANZA（アダルト）」からサービス一覧を抽出
-  return json?.data?.['FANZA（アダルト）']?.services || {};
+  const data = await getAdultNavigationFloors();
+  return data?.['FANZA（アダルト）']?.services || {};
 }
 
-/** DMMフロアナビゲーション */
 export async function getDmmDynamicMenu() {
-  const json = await fetchNavList();
-  // JSON内の日本語キー「DMM.com（一般）直下、または DMM.com」からサービス一覧を抽出
-  return json?.data?.['DMM.com（一般）']?.services || json?.data?.['DMM.com']?.services || {};
+  const data = await getAdultNavigationFloors();
+  return data?.['DMM.com（一般）']?.services || data?.['DMM.com']?.services || {};
 }
 
 /**
  * ==============================================================================
- * 💡 5. ランキング・解析データ取得
+ * 💡 5. ランキングデータ取得
  * ==============================================================================
  */
 
-/** 🎯 アダルト作品AI解析ランキング取得 */
-export async function fetchAdultProductRanking(limit: number = 100) {
-  // AIスコア（spec_score）の降順で取得するようクエリを構築
-  const params = {
-    ordering: '-spec_score', // AI解析スコアの高い順
-    limit: String(limit),
-  };
-
-  const queryString = new URLSearchParams(params).toString();
-  const targetUrl = resolveApiUrl(`/api/adult/unified-products/?${queryString}`);
-
+export async function fetchAdultProductRanking(limit: number = 30) {
+  const targetUrl = resolveApiUrl(`/api/adult/ranking/`);
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(),
-      // ランキングは頻繁に更新される可能性があるため、1時間キャッシュ
       next: { revalidate: 3600 } 
     });
-
     if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
-    
     const data = await res.json();
-    
-    // page.tsx 側が配列を期待しているため、results を返します
     return safeExtract(data); 
   } catch (error) { 
     console.error("[Ranking] FETCH_FAILED:", error);
+    return []; 
+  }
+}
+
+/**
+ * ==============================================================================
+ * 💡 6. 属性（Attribute）統計取得 (サイドバー専用)
+ * ==============================================================================
+ */
+
+export async function fetchAdultAttributes() {
+  const targetUrl = resolveApiUrl('/api/adult/sidebar-stats/');
+  try {
+    const res = await fetch(targetUrl, { 
+      headers: getDjangoHeaders(),
+      next: { revalidate: 3600 } 
+    });
+    if (!res.ok) throw new Error(`ATTR_FETCH_ERROR_${res.status}`);
+    const data = await res.json();
+    return data.attributes || []; 
+  } catch (error) { 
+    console.error("[AdultAttributes] FETCH_FAILED:", error);
     return []; 
   }
 }

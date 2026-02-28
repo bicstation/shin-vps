@@ -1,6 +1,6 @@
 /* ==============================================================================
- * 📂 AdultSidebar.module.css - Advanced Tactical Registry Interface (V2.1)
- * 🚀 Final Optimization: Zero-Overlap & High-Comfort Layout
+ * 📂 AdultSidebar.module.css - Advanced Tactical Registry Interface (V2.2)
+ * 🚀 Final Optimization: Zero-Overlap & AI Spec Integration
  * ============================================================================== */
 
 .sidebar {
@@ -13,16 +13,16 @@
   --s-text-muted: #666;
   --s-text-active: #fff;
   --s-glass: rgba(255, 255, 255, 0.02);
+  --s-ai-gold: #ffb800; /* AI属性用のアクセントカラー */
 
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem; /* セクション間の距離を確実に確保 */
+  gap: 1.5rem;
   background: var(--s-bg-main);
   padding: 1.5rem;
   border-right: 1px solid var(--s-border);
   
-  /* 💡 高さを固定せず、コンテンツの最小限の表示を保証 */
   height: auto;
   min-height: min-content;
   max-height: calc(100vh - 60px); 
@@ -30,7 +30,6 @@
   position: sticky;
   top: 20px; 
   
-  /* スクロール設定 */
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
@@ -40,7 +39,7 @@
   box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
-/* 🧊 カスタムスクロールバー (Webkit) */
+/* 🧊 カスタムスクロールバー */
 .sidebar::-webkit-scrollbar { width: 3px; }
 .sidebar::-webkit-scrollbar-track { background: transparent; }
 .sidebar::-webkit-scrollbar-thumb { 
@@ -57,7 +56,6 @@
   border-radius: 4px;
   background: var(--s-glass);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* 💡 重なり防止: height: auto を明示 */
   height: auto;
   overflow: hidden;
 }
@@ -75,19 +73,14 @@
   background: rgba(255, 255, 255, 0.03);
   cursor: pointer;
   position: relative;
-  /* 💡 ヘッダー自体の最小高さを確保 */
   min-height: 56px; 
 }
 
-.sectionHeader::after {
-  content: "";
-  position: absolute;
-  bottom: 0; left: 0; width: 100%; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--s-accent), transparent);
-  opacity: 0;
-  transition: 0.3;
+/* AI属性セクション用の特別ヘッダー */
+.aiHeader {
+  background: linear-gradient(90deg, rgba(255, 184, 0, 0.05), transparent);
+  border-left: 3px solid var(--s-ai-gold);
 }
-.sectionWrapper:hover .sectionHeader::after { opacity: 0.5; }
 
 .headerTitle {
   font-size: 0.75rem;
@@ -156,7 +149,6 @@
   list-style: none;
   padding: 0; margin: 0;
   background: rgba(0, 0, 0, 0.2);
-  /* 💡 リストが潰れないように height: auto を適用 */
   height: auto;
   display: flex;
   flex-direction: column;
@@ -164,6 +156,9 @@
 
 .masterListItem {
   height: auto;
+  display: flex;
+  flex-direction: column; /* 推奨PCリンクを下に並べる用 */
+  position: relative;
 }
 
 .masterLink {
@@ -171,7 +166,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.25rem;
-  min-height: 52px; /* 💡 ここが 0 だと重なるため、最低高さを指定 */
+  min-height: 52px; 
   font-size: 0.8rem;
   color: #888;
   text-decoration: none;
@@ -183,6 +178,12 @@
   color: var(--s-text-active);
   background: rgba(var(--s-accent-rgb), 0.05);
   padding-left: 1.5rem;
+}
+
+.tagPrefix {
+  color: var(--s-ai-gold);
+  margin-right: 4px;
+  font-weight: bold;
 }
 
 .itemName {
@@ -197,6 +198,28 @@
   color: var(--s-accent);
   opacity: 0.8;
   padding-left: 10px;
+}
+
+/* --- 💎 CROSS_OVER_BADGE (推奨PCリンク) --- */
+.specLinkBadge {
+  display: inline-block;
+  align-self: flex-start;
+  margin: -10px 1.25rem 10px 2.5rem; /* 上に食い込ませて配置 */
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #000;
+  background: var(--s-ai-gold);
+  text-decoration: none;
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+  transition: 0.3s;
+  z-index: 5;
+}
+
+.specLinkBadge:hover {
+  background: #fff;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px var(--s-ai-gold);
 }
 
 /* --- 🚀 VIEW_MORE_ANCHOR --- */
@@ -247,7 +270,7 @@
 
 /* --- ⚙️ SYSTEM_FOOTER --- */
 .systemFooter {
-  margin-top: auto; /* 💡 残りのスペースを埋めて最下部に配置 */
+  margin-top: auto; 
   padding: 2rem 0.5rem 1rem;
   border-top: 1px solid var(--s-border);
 }
@@ -277,6 +300,19 @@
   font-size: 10px;
   font-weight: 900;
   color: #00ffaa;
+}
+
+/* --- 🪐 EXTRA_GLITCH_TEXT --- */
+.glitchText {
+  position: relative;
+  animation: glitch-anim 4s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { text-shadow: 2px 0 red; }
+  2% { text-shadow: -2px 0 blue; }
+  4% { text-shadow: 0 0 white; }
+  100% { text-shadow: 0 0 white; }
 }
 
 @keyframes pulse-blink {
