@@ -16,9 +16,8 @@ interface MasterItem {
 interface AiAttributeItem {
   id: number;
   name: string;
-  slug: string;
+  slug: string; 
   count: number;
-  // attr_type は将来的な拡張用
 }
 
 interface OfficialFloor {
@@ -42,7 +41,7 @@ interface OfficialService {
 }
 
 interface SidebarProps {
-  officialHierarchy?: OfficialService[];
+  navigation?: OfficialService[]; // 🚀 Wrapper側の名称に統一
   makers?: MasterItem[];
   genres?: MasterItem[];
   actresses?: MasterItem[];
@@ -52,10 +51,12 @@ interface SidebarProps {
   labels?: MasterItem[];   
   aiAttributes?: AiAttributeItem[];
   recentPosts?: { id: string; title: string; slug?: string }[];
+  currentBrand?: string; // 🚀 Wrapperから渡される 'FANZA' | 'DMM' | 'DUGA'
+  siteName?: string;
 }
 
 export default function AdultSidebar({
-  officialHierarchy = [],
+  navigation = [], // 🚀 共通名称化
   makers = [],
   genres = [],
   actresses = [], 
@@ -65,17 +66,18 @@ export default function AdultSidebar({
   labels = [],
   aiAttributes = [], 
   recentPosts = [],
+  currentBrand = 'FANZA',
 }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [mounted, setMounted] = useState(false);
 
-  // セクション開閉状態（AI_SPECS と ACTRESSES は重要度が高いためデフォルト Open）
+  // 🪄 セクション開閉状態：Tiperは情報量重視のため主要項目をOpen
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'PLATFORMS': true,
     'OFFICIAL_NAV': true,
     'AI_SPECS': true, 
-    'GENRES': false,
+    'GENRES': true,
     'MAKERS': false,
     'ACTRESSES': true,
     'LOGS': true
@@ -85,18 +87,16 @@ export default function AdultSidebar({
     setMounted(true);
   }, []);
 
-  const currentPlatform = useMemo(() => {
-    if (pathname?.includes('/brand/fanza')) return 'fanza';
-    if (pathname?.includes('/brand/dmm')) return 'dmm';
-    if (pathname?.includes('/brand/duga')) return 'duga';
-    return searchParams.get('brand')?.toLowerCase() || 'fanza';
-  }, [pathname, searchParams]);
+  // 現在表示中のブランドを小文字で取得（URL生成用）
+  const activePlat = useMemo(() => {
+    return currentBrand.toLowerCase();
+  }, [currentBrand]);
 
   const toggleSection = (section: string) => 
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
 
   const getOfficialLink = (sCode: string, fCode?: string) => {
-    const base = `/brand/${currentPlatform}/svc`;
+    const base = `/brand/${activePlat}/svc`;
     return fCode ? `${base}/${sCode}/${fCode}` : `${base}/${sCode}`;
   };
 
@@ -113,7 +113,7 @@ export default function AdultSidebar({
   return (
     <aside className={styles.sidebar}>
       
-      {/* 🌐 PLATFORM_MATRIX */}
+      {/* 🌐 PLATFORM_MATRIX: ブランド切り替え機能 */}
       <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeader} onClick={() => toggleSection('PLATFORMS')}>
           <h3 className={styles.headerTitle}>
@@ -126,7 +126,7 @@ export default function AdultSidebar({
           <div className={styles.platformGrid}>
             {['FANZA', 'DMM', 'DUGA'].map((p) => {
               const platId = p.toLowerCase();
-              const isActive = currentPlatform === platId;
+              const isActive = activePlat === platId;
               return (
                 <Link key={p} href={`/brand/${platId}`} className={`${styles.platBtn} ${isActive ? styles.active : ''}`}>
                   {p}
@@ -137,55 +137,19 @@ export default function AdultSidebar({
         )}
       </section>
 
-      {/* 💎 SYSTEM_SPEC_TAGS: AI属性（分析結果） */}
-      <section className={styles.sectionWrapper} style={{ border: '1px solid var(--site-theme-alpha)' }}>
-        <div className={`${styles.sectionHeader} ${styles.aiHeader}`} onClick={() => toggleSection('AI_SPECS')}>
-          <h3 className={styles.headerTitle}>
-            <span className={styles.icon}>💎</span> SYSTEM_SPEC_TAGS
-          </h3>
-          <span className={styles.arrow}>{openSections['AI_SPECS'] ? '▲' : '▼'}</span>
-        </div>
-        {openSections['AI_SPECS'] && (
-          <div className={styles.contentBody}>
-            <ul className={styles.masterList}>
-              {aiAttributes.length > 0 ? (
-                aiAttributes.map(item => (
-                  <li key={`ai-attr-${item.id}`} className={styles.masterListItem}>
-                    <Link href={`/adult/products?attribute_id=${item.id}`} className={styles.masterLink}>
-                      <span className={styles.itemName}>
-                        <span className={styles.tagPrefix}>#</span>{item.name}
-                      </span>
-                      <span className={styles.itemCount}>{item.count.toLocaleString()}</span>
-                    </Link>
-                    {/* PC推奨バッジ：スラッグに特定のキーワードが含まれる場合のみ表示 */}
-                    {/4k|vr|high-spec|8k/.test(item.slug.toLowerCase()) && (
-                      <Link href={`/spec-lab/pc-recommend?attr=${item.slug}`} className={styles.specLinkBadge}>
-                        推奨PC ↗
-                      </Link>
-                    )}
-                  </li>
-                ))
-              ) : (
-                <li className={styles.emptyStatus}>[!] ANALYZING_DATABASE...</li>
-              )}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      {/* 🚀 OFFICIAL_LAYERS */}
-      {currentPlatform && (officialHierarchy.length > 0) && (
+      {/* 🚀 OFFICIAL_LAYERS: 動的に取得したサービス・フロア */}
+      {navigation.length > 0 && (
         <section className={styles.sectionWrapper}>
           <div className={styles.sectionHeader} onClick={() => toggleSection('OFFICIAL_NAV')}>
             <h3 className={styles.headerTitle}>
-              <span className={styles.icon}>⚡</span> {currentPlatform.toUpperCase()}_LAYERS
+              <span className={styles.icon}>⚡</span> {currentBrand}_LAYERS
             </h3>
             <span className={styles.arrow}>{openSections['OFFICIAL_NAV'] ? '▲' : '▼'}</span>
           </div>
           {openSections['OFFICIAL_NAV'] && (
             <div className={styles.contentBody}>
               <ul className={styles.masterList}>
-                {officialHierarchy.map((service) => {
+                {navigation.map((service) => {
                   const sName = service.service_name || service.name;
                   const sCode = service.service_code || service.code || service.slug;
                   if (!sCode) return null;
@@ -218,49 +182,86 @@ export default function AdultSidebar({
         </section>
       )}
 
-      {/* 🛠️ MASTER_DATA_INDEXES */}
+      {/* 💎 SYSTEM_SPEC_TAGS: AI属性 */}
+      <section className={styles.sectionWrapper} style={{ border: '1px solid var(--site-theme-alpha)' }}>
+        <div className={`${styles.sectionHeader} ${styles.aiHeader}`} onClick={() => toggleSection('AI_SPECS')}>
+          <h3 className={styles.headerTitle}>
+            <span className={styles.icon}>💎</span> SYSTEM_SPEC_TAGS
+          </h3>
+          <span className={styles.arrow}>{openSections['AI_SPECS'] ? '▲' : '▼'}</span>
+        </div>
+        {openSections['AI_SPECS'] && (
+          <div className={styles.contentBody}>
+            <ul className={styles.masterList}>
+              {aiAttributes.length > 0 ? (
+                aiAttributes.map(item => {
+                  const attrIdentifier = item.slug || String(item.id);
+                  return (
+                    <li key={`ai-attr-${item.id}`} className={styles.masterListItem}>
+                      <Link href={`/adults/products?attribute=${attrIdentifier}`} className={styles.masterLink}>
+                        <span className={styles.itemName}>
+                          <span className={styles.tagPrefix}>#</span>{item.name}
+                        </span>
+                        <span className={styles.itemCount}>{item.count.toLocaleString()}</span>
+                      </Link>
+                    </li>
+                  );
+                })
+              ) : (
+                <li className={styles.emptyStatus}>[!] ANALYZING_DATABASE...</li>
+              )}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      {/* 🛠️ MASTER_DATA_INDEXES (女優・ジャンル・メーカー) */}
       {[
         { id: 'ACTRESSES', type: 'actress', data: actresses, icon: '👩', label: '女優' },
         { id: 'GENRES', type: 'genre', data: genres, icon: '🏷️', label: 'ジャンル' },
         { id: 'MAKERS', type: 'maker', data: makers, icon: '🏢', label: 'メーカー' },
-      ].map((cat) => (
-        <section key={`master-sec-${cat.id}`} className={styles.sectionWrapper}>
-          <div className={styles.sectionHeader} onClick={() => toggleSection(cat.id)}>
-            <h3 className={styles.headerTitle}>
-              <span className={styles.icon}>{cat.icon}</span> {cat.id}
-            </h3>
-            <span className={styles.arrow}>{openSections[cat.id] ? '▲' : '▼'}</span>
-          </div>
-          {openSections[cat.id] && (
-            <div className={styles.contentBody}>
-              <ul className={styles.masterList}>
-                {cat.data && cat.data.length > 0 ? (
-                  <>
-                    {cat.data.slice(0, 10).map(item => (
-                      <li key={`${cat.id}-${item.id}`} className={styles.masterListItem}>
-                        <Link href={getSafeLink(cat.type, item)} className={styles.masterLink}>
-                          <span className={styles.itemName}>{item.name}</span>
-                          <span className={styles.itemCount}>{(item.product_count || 0).toLocaleString()}</span>
+      ].map((cat) => {
+        const items = Array.isArray(cat.data) ? cat.data : (cat.data as any)?.results || [];
+        
+        return (
+          <section key={`master-sec-${cat.id}`} className={styles.sectionWrapper}>
+            <div className={styles.sectionHeader} onClick={() => toggleSection(cat.id)}>
+              <h3 className={styles.headerTitle}>
+                <span className={styles.icon}>{cat.icon}</span> {cat.id}
+              </h3>
+              <span className={styles.arrow}>{openSections[cat.id] ? '▲' : '▼'}</span>
+            </div>
+            {openSections[cat.id] && (
+              <div className={styles.contentBody}>
+                <ul className={styles.masterList}>
+                  {items.length > 0 ? (
+                    <>
+                      {items.slice(0, 20).map((item: any) => (
+                        <li key={`${cat.id}-${item.id}`} className={styles.masterListItem}>
+                          <Link href={getSafeLink(cat.type, item)} className={styles.masterLink}>
+                            <span className={styles.itemName}>{item.name}</span>
+                            <span className={styles.itemCount}>{(item.product_count || 0).toLocaleString()}</span>
+                          </Link>
+                        </li>
+                      ))}
+                      <li className={styles.viewMoreItem}>
+                        <Link href={`/${cat.type}`} className={styles.viewMoreLink}>
+                          <span className={styles.viewMoreText}>{cat.label}の全目録へ</span>
+                          <span className={styles.viewMoreArrow}>→</span>
                         </Link>
                       </li>
-                    ))}
-                    <li className={styles.viewMoreItem}>
-                      <Link href={`/${cat.type}`} className={styles.viewMoreLink}>
-                        <span className={styles.viewMoreText}>{cat.label}の全目録へ</span>
-                        <span className={styles.viewMoreArrow}>→</span>
-                      </Link>
-                    </li>
-                  </>
-                ) : (
-                  <li className={styles.emptyStatus}>[!] NO_DATA_AVAILABLE</li>
-                )}
-              </ul>
-            </div>
-          )}
-        </section>
-      ))}
+                    </>
+                  ) : (
+                    <li className={styles.emptyStatus}>[!] NO_DATA_AVAILABLE</li>
+                  )}
+                </ul>
+              </div>
+            )}
+          </section>
+        );
+      })}
 
-      {/* 📰 RECENT_REPORTS */}
+      {/* 📰 RECENT_REPORTS (WP記事) */}
       <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeader} onClick={() => toggleSection('LOGS')}>
           <h3 className={styles.headerTitle}>

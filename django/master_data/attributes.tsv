@@ -65,6 +65,7 @@ actor_type	単体女優	solo-actress	単体, 専属, 独占, ソロ作品	1001
 actor_type	素人・ナンパ	amateur	素人, 投稿, ナンパ, 街録, 一般人	1002
 actor_type	熟女・人妻	mature	熟女, 人妻, お母さん, 義母, 40代, 50代	1003
 actor_type	女子大生	college-girl	女子大生, 現役JD, 女子大, 20歳	1004
+actor_type	女子高生	college-girl	女子高生, 現役高校生, 女子高, 18歳	1005
 body	巨乳	big-breasts	巨乳, 爆乳, ボイン, デカパイ, Kカップ, 豊満	1010
 body	美少女	beautiful-girl	美少女, 美人, 美白, モデル級, 透明感	1011
 body	スレンダー	slender	スレンダー, 細身, モデル体型, 美脚	1012
@@ -76,7 +77,7 @@ feature	AI解析済 / 高圧縮	ai-analyzed	AI解析, 高効率, 最適化済, G
 scene	制服・コスプレ	cosplay	制服, セーラー服, CA, 看護師, ナース, コスプレ	1030
 scene	巨乳・フェチ	fetish	足コキ, 手コキ, フェチ, 匂い, ストッキング	1031
 scene	痴漢・露出	public-exposure	痴漢, 露出, 野外, 密室	1032
-scene	介護・看病	nursing	介護, 看病, リハビリ, お世話	1033
+scene	白衣・奉仕	nursing	ナース,白衣,介護, 看病, リハビリ, お世話	1033
 style	中出し	creampie	中出し, 生ハメ, 膣内, ザーメン	1040
 style	拘束・SM	sm-bondage	拘束, 緊縛, SM, 放置, 責め	1041
 style	潮吹き	squirting	潮吹き, 絶頂, 噴射, 感度	1042
