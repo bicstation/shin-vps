@@ -1,4 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
+// /home/maya/dev/shin-vps/next-avflash/app/layout.tsx
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import React, { Suspense } from 'react'; 
@@ -7,6 +9,7 @@ import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
+ * globals.css は全体に適用、layout.module.css はこのファイル内の構造に使用
  */
 import '@shared/styles/globals.css';
 
@@ -17,7 +20,6 @@ import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
 
 /**
  * ✅ 3. 共通レイアウトコンポーネントのインポート
- * Sidebar は SidebarWrapper を通じて動的に出し分けます。
  */
 import Header from '@shared/layout/Header';
 import Footer from '@shared/layout/Footer';
@@ -35,7 +37,6 @@ const inter = Inter({
 
 /**
  * 💡 強制的動的レンダリングの設定
- * ドメイン判定やサーバーサイドでのデータ取得を伴うため。
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -105,7 +106,7 @@ export default async function RootLayout({
   const BG_COLOR = "#0f0f0f";
 
   return (
-    <html lang="ja" style={{ height: '100%' }}>
+    <html lang="ja" style={{ height: '100%', backgroundColor: BG_COLOR }}>
       <body
         className={`${inter.className} ${styles.bodyWrapper}`}
         style={{
@@ -123,7 +124,7 @@ export default async function RootLayout({
           "--bg-deep": BG_COLOR,
         } as React.CSSProperties}
       >
-        {/* 🚀 ページ遷移プログレスバー */}
+        {/* 🚀 ページ遷移プログレスバー (nprogress) */}
         <RouteProgressBar />
 
         {/* 1. 共通ヘッダー */}
@@ -135,21 +136,21 @@ export default async function RootLayout({
         <div className={styles.adDisclosure}>
           <div className={styles.adDisclosureInner}>
             【PR】本サイトはアフィリエイト広告を利用しています。
-            <span className={styles.ageLimit}>
+            <span style={{ marginLeft: '10px', opacity: 0.8 }}>
               ※18歳未満の方の閲覧は固くお断りいたします。
             </span>
           </div>
         </div>
 
-        {/* 3. メインレイアウト構造 */}
+        {/* 3. メインレイアウト構造 (2カラム構成) */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
             
-            {/* 🏛️ 共通サイドバーエリア (SidebarWrapper が AV Flash 用を自動選択) */}
+            {/* 🏛️ 共通サイドバーエリア */}
             <aside className={styles.sidebarArea}>
               <div className={styles.sidebarSticky}>
                 <Suspense fallback={
-                  <div className={styles.sidebarLoading}>
+                  <div style={{ textAlign: 'center', padding: '20px' }}>
                     <span className={styles.loadingPulse}>LOADING_SYSTEM_MATRIX...</span>
                   </div>
                 }>
@@ -160,7 +161,11 @@ export default async function RootLayout({
 
             {/* 🏗️ メインコンテンツ領域 */}
             <main className={styles.mainContent}>
-              <Suspense fallback={<div className={styles.loadingPulse}>SYNCING_GATEWAY...</div>}>
+              <Suspense fallback={
+                <div style={{ padding: '40px' }}>
+                  <span className={styles.loadingPulse}>SYNCING_GATEWAY...</span>
+                </div>
+              }>
                 {children}
               </Suspense>
             </main>

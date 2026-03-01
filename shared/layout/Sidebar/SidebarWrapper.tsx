@@ -1,71 +1,64 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 import React from 'react';
-import Sidebar from './AdultSidebar'; // 💡 Tiper / 一般用サイドバー
-import AdultSidebarAvFlash from './AdultSidebarAvFlash'; // 💡 AV Flash 専用サイドバー
+import Sidebar from './AdultSidebar'; 
+import AdultSidebarAvFlash from './AdultSidebarAvFlash'; 
 import { 
   fetchGenres, 
   fetchMakers, 
   fetchActresses, 
-  getAdultNavigationFloors, 
-  fetchAdultAttributes 
+  getAdultNavigationFloors,
 } from '@/shared/lib/api/django/adult';
 import { getSiteMetadata } from '@/shared/lib/siteConfig';
 
 /**
  * =====================================================================
- * 🛸 SidebarWrapper
+ * 🛸 SidebarWrapper - Tactical Data Aggregator (V4.2)
  * ---------------------------------------------------------------------
- * ドメイン（AV Flash / Tiper 等）に基づいて、表示すべきブランド（DUGA / FANZA / DMM）を
- * 自動判別し、サイドバーに必要なデータを一括取得して最適なコンポーネントへ渡します。
+ * sidebar-stats から属性データを取得し、AV Flash 用マトリックスを生成します。
  * =====================================================================
  */
 export default async function SidebarWrapper() {
-  // 1. サイトのメタデータを取得（AV Flash ドメインなら default_brand は 'DUGA'）
   const { default_brand, site_name } = getSiteMetadata();
-  const isAvFlash = site_name === 'AV Flash';
+  const isAvFlash = site_name === 'AV Flash' || site_name.includes('FLASH');
 
-  // サーバーログで現在の動作状況を確認（デバッグ用）
-  console.log(`📡 [SidebarWrapper] Site: ${site_name} | Targeting Brand: ${default_brand} | Mode: ${isAvFlash ? 'Exclusive' : 'Standard'}`);
+  // APIベースURL
+  const API_BASE = "http://api-tiper-host:8083";
 
-  // 2. 指定されたブランド（api_source）に基づいてデータを並列取得
-  // getAdultNavigationFloors は内部で site_code による仕分けを行います
-  const [navigationData, genresData, makersData, actressesData, aiAttributes] = await Promise.all([
+  // 1. データの並列取得
+  const [navigationData, genresData, makersData, actressesData, statsResponse] = await Promise.all([
     getAdultNavigationFloors({ site: default_brand }),
-    fetchGenres({ limit: 20, api_source: default_brand }),
+    fetchGenres({ limit: 40, api_source: default_brand }),
     fetchMakers({ limit: 20, api_source: default_brand }),
     fetchActresses({ limit: 20, api_source: default_brand, ordering: '-profile__ai_power_score' }),
-    fetchAdultAttributes()
+    // 🚀 taxonomy API ではなく、データが詰まっている sidebar-stats を取得
+    fetch(`${API_BASE}/api/adult/sidebar-stats/`, { cache: 'no-store' })
+      .then(res => res.json())
+      .catch(() => ({ attributes: [] }))
   ]);
 
-  // 3. ナビゲーションデータの整形ロジック
-  // DUGA の場合、階層構造が FANZA/DMM と異なるケースがあるため抽出します
-  let processedNavigation = navigationData;
-  if (default_brand === 'DUGA') {
-    // DUGA マスタが辞書形式で返ってきた場合、最初のキーの中身（servicesなど）を優先
+  // 2. ナビゲーションデータの整形 (DUGA階層構造パース)
+  let processedNavigation = [];
+  if (navigationData) {
     const keys = Object.keys(navigationData);
     if (keys.length > 0) {
-      if (navigationData[keys].services) {
-        processedNavigation = navigationData[keys].services;
-      } else {
-        // servicesキーがない場合は、マスタの配列として扱う
-        processedNavigation = Array.isArray(navigationData) ? navigationData : Object.values(navigationData);
-      }
+      const firstKeyData = navigationData[keys];
+      processedNavigation = firstKeyData?.services || 
+                            (Array.isArray(navigationData) ? navigationData : Object.values(navigationData));
     }
   }
 
-  // 4. コンポーネントへ流し込む Props の集約
   const commonProps = {
-    navigation: processedNavigation,
-    genres: genresData.results || [],
-    makers: makersData.results || [],
-    actresses: actressesData.results || [],
-    aiAttributes: aiAttributes || [],
+    navigation: processedNavigation || [],
+    genres: genresData?.results || [],
+    makers: makersData?.results || [],
+    actresses: actressesData?.results || [],
+    // 💡 Stats API の attributes 配列を渡す
+    aiAttributes: statsResponse?.attributes || [], 
     currentBrand: default_brand,
     siteName: site_name
   };
 
-  // 5. サイト判定に基づいて、表示する「看板（コンポーネント）」を切り替え
   return (
     <>
       {isAvFlash ? (

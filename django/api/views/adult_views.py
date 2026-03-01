@@ -26,7 +26,7 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
     max_page_size = 100
 
 # --------------------------------------------------------------------------
-# 💡 1. 統合製品一覧 (属性フィルタリング・AI解析優先ロジック)
+# 💡 1. 統合製品一覧 (ソース・サービス・属性フィルタリング完全対応版)
 # --------------------------------------------------------------------------
 class UnifiedAdultProductListView(generics.ListAPIView):
     permission_classes = [AllowAny]
@@ -42,6 +42,12 @@ class UnifiedAdultProductListView(generics.ListAPIView):
     ordering_fields = ['release_date', 'price', 'spec_score']
 
     def get_queryset(self):
+        """
+        🚀 修正ポイント: 
+        1. api_source (FANZA/DUGA等) での厳密な絞り込みを追加
+        2. service_code / floor_code での絞り込みを追加 (tiper.live対応)
+        3. 属性フィルタとソースフィルタを両立
+        """
         # 🚀 属性表示に必須の prefetch_related を確実に実行
         qs = AdultProduct.objects.filter(is_active=True).select_related(
             'maker', 'label', 'series', 'director', 'floor_master'
@@ -49,7 +55,21 @@ class UnifiedAdultProductListView(generics.ListAPIView):
 
         p = self.request.query_params
         
-        # 属性フィルタ (attribute または attribute_slug)
+        # --- 🛸 A. ソースフィルタ (api_source: DUGA, FANZA, DMM ...) ---
+        api_source = p.get('api_source')
+        if api_source:
+            qs = qs.filter(api_source__iexact=str(api_source))
+
+        # --- 🛸 B. サービス・フロアフィルタ (service_code, floor_code) ---
+        service_code = p.get('service_code')
+        if service_code:
+            qs = qs.filter(floor_master__service_code=service_code)
+            
+        floor_code = p.get('floor_code')
+        if floor_code:
+            qs = qs.filter(floor_master__floor_code=floor_code)
+
+        # --- 🛸 C. 属性フィルタ (attribute または attribute_slug) ---
         attr_val = p.get('attribute') or p.get('attribute_slug')
         
         if attr_val:
@@ -60,12 +80,13 @@ class UnifiedAdultProductListView(generics.ListAPIView):
                 qs = qs.filter(attributes__slug__iexact=str(attr_val))
         else:
             # 🚀 指定なしの場合：AI解析済みの商品（属性が1つ以上ある）を優先表示
+            # ※上記 A, B のフィルタがかかった状態での「属性あり」になるため、ソースが混ざらない
             qs = qs.annotate(attr_count=Count('attributes')).filter(attr_count__gt=0)
             
         return qs.distinct().order_by('-release_date')
 
 # --------------------------------------------------------------------------
-# 💡 2. 詳細・検索・ランキング (URL定義に必要なクラスを完全網羅)
+# 💡 2. 詳細・検索・ランキング
 # --------------------------------------------------------------------------
 class AdultProductDetailAPIView(generics.RetrieveAPIView):
     """商品詳細。ID(product_id_unique)で取得"""
@@ -84,7 +105,7 @@ class AdultProductRankingAPIView(generics.ListAPIView):
         ).filter(ac__gt=0).order_by('-spec_score')[:30]
 
 class ActressSearchAPIView(views.APIView):
-    """女優検索エンドポイント (URLエラーの主因を解決)"""
+    """女優検索エンドポイント"""
     permission_classes = [AllowAny]
     def get(self, request):
         query = request.GET.get('q', '').strip()
@@ -95,7 +116,7 @@ class ActressSearchAPIView(views.APIView):
         return Response({"results": [{"id": a.id, "name": a.name} for a in res]})
 
 class AdultSidebarStatsAPIView(views.APIView):
-    """サイドバー用AI属性リスト (スラグがない場合のガード付き)"""
+    """サイドバー用AI属性リスト"""
     permission_classes = [AllowAny]
     def get(self, request):
         stats = AdultAttribute.objects.annotate(
@@ -117,7 +138,6 @@ class FanzaFloorNavigationAPIView(views.APIView):
     """サービス・フロア構造"""
     permission_classes = [AllowAny]
     def get(self, request):
-        # 簡略化ロジック (URLエラー回避用)
         return Response({"status": "OK", "data": {}})
 
 class AdultTaxonomyIndexAPIView(views.APIView):

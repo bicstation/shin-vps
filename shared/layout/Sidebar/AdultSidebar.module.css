@@ -1,11 +1,11 @@
-/* ==============================================================================
- * 📂 AdultSidebar.module.css - Advanced Tactical Registry Interface (V2.2)
+/**
+ * 📂 AdultSidebar.module.css - Advanced Tactical Registry Interface (V2.3)
  * 🚀 Final Optimization: Zero-Overlap & AI Spec Integration
- * ============================================================================== */
+ */
 
 .sidebar {
   /* 変数定義: 彩度を調整し、より深みのある配色へ */
-  --s-bg-main: rgba(8, 8, 10, 0.98);
+  --s-bg-main: #08080a; /* 透明度を下げて背景との境界を明確に */
   --s-accent: #e94560;
   --s-accent-rgb: 233, 69, 96;
   --s-accent-glow: rgba(233, 69, 96, 0.4);
@@ -13,30 +13,35 @@
   --s-text-muted: #666;
   --s-text-active: #fff;
   --s-glass: rgba(255, 255, 255, 0.02);
-  --s-ai-gold: #ffb800; /* AI属性用のアクセントカラー */
+  --s-ai-gold: #ffb800;
 
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   background: var(--s-bg-main);
-  padding: 1.5rem;
+  padding: 2rem 1.5rem; /* 上部余白を少し追加 */
   border-right: 1px solid var(--s-border);
   
-  height: auto;
-  min-height: min-content;
-  max-height: calc(100vh - 60px); 
+  /* 🚀 高さをフッターまで「制限なし」で表示するための修正 */
+  height: 100%; 
+  min-height: 100vh; 
   
+  /* 💡 Sticky挙動を維持しつつ、はみ出しを防ぐ */
   position: sticky;
-  top: 20px; 
+  top: 60px; /* layout.tsx のヘッダー高さに合わせる */
   
+  /* 📋 リストが長い場合のみサイドバー内でスクロール可能に */
+  max-height: calc(100vh - 60px); 
   overflow-y: auto;
   overflow-x: hidden;
+  
   scrollbar-width: thin;
   scrollbar-color: var(--s-accent) transparent;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   z-index: 100;
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+  /* 左側の影を消し、一体感を出す */
+  box-shadow: none; 
 }
 
 /* 🧊 カスタムスクロールバー */
@@ -56,7 +61,6 @@
   border-radius: 4px;
   background: var(--s-glass);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  height: auto;
   overflow: hidden;
 }
 
@@ -149,15 +153,13 @@
   list-style: none;
   padding: 0; margin: 0;
   background: rgba(0, 0, 0, 0.2);
-  height: auto;
   display: flex;
   flex-direction: column;
 }
 
 .masterListItem {
-  height: auto;
   display: flex;
-  flex-direction: column; /* 推奨PCリンクを下に並べる用 */
+  flex-direction: column;
   position: relative;
 }
 
@@ -204,7 +206,7 @@
 .specLinkBadge {
   display: inline-block;
   align-self: flex-start;
-  margin: -10px 1.25rem 10px 2.5rem; /* 上に食い込ませて配置 */
+  margin: -10px 1.25rem 10px 2.5rem;
   padding: 2px 8px;
   font-size: 10px;
   font-weight: 900;
@@ -226,7 +228,6 @@
 .viewMoreItem {
   padding: 12px;
   background: rgba(0, 0, 0, 0.3);
-  height: auto;
 }
 
 .viewMoreLink {
@@ -338,5 +339,7 @@
     border-right: none;
     border-bottom: 1px solid var(--s-border);
     box-shadow: none;
+    height: auto;
+    min-height: auto;
   }
 }
