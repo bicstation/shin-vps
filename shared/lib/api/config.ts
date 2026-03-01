@@ -24,12 +24,17 @@ const DOMAIN_MAP: Record<string, { host: string; siteKey: string }> = {
     'blog.bic-saving.com': { host: 'b-saving-host', siteKey: 'saving' },
     'bic-saving.com':      { host: 'b-saving-host', siteKey: 'saving' },
 
-    // ③ TIPER / AVFLASH 系統
+    // ③ TIPER 系統
     'b-tiper-host':    { host: 'b-tiper-host', siteKey: 'tiper' },
     'tiper-host':      { host: 'b-tiper-host', siteKey: 'tiper' },
     'blog.tiper.live': { host: 'b-tiper-host', siteKey: 'tiper' },
     'tiper.live':      { host: 'b-tiper-host', siteKey: 'tiper' },
-    'avflash.xyz':     { host: 'b-tiper-host', siteKey: 'avflash' },
+
+    // 4 AVFLASH 系統
+    'b-avflash-host':    { host: 'b-avflash-host', siteKey: 'avflash' },
+    'avflash-host':      { host: 'b-avflash-host', siteKey: 'avflash' },
+    'blog.avflash.xyz': { host: 'b-avflash-host', siteKey: 'avflash' },
+    'avflash.xyz':     { host: 'b-avflash-host', siteKey: 'avflash' },
 };
 
 export const getWpConfig = () => {

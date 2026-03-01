@@ -14,6 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 💡 修正: 転送前に不要なファイルを削除 (scp-action に exclude がないため)
+      - name: Cleanup unnecessary files before sync
+        run: |
+          rm -rf .git .github .venv __pycache__ node_modules
+          echo "🧹 不要なファイルを削除しました。"
+
       # 1. ファイルを VPS のディレクトリへ同期
       - name: Sync Files to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -27,14 +33,7 @@ jobs:
           target: "/home/maya/shin-vps"
           strip_components: 0
           overwrite: true
-          # scp-action に直接 exclude を書くと稀に後続ジョブと干渉するため、
-          # 本来は .dockerignore を活用するのがベストですが、もし書く場合は以下のように密着させます
-          exclude: |
-            .git
-            .github
-            .venv
-            __pycache__
-            node_modules
+          # 💡 exclude 引数は削除しました (エラー回避)
 
       # 2. SSH経由でネットワーク構築・Docker起動・DBマイグレーション・掃除を実行
       - name: Deploy to Production via SSH
@@ -45,6 +44,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: 2222
+          command_timeout: 30m # 💡 修正: ビルド中のタイムアウト（Playwright対策）を防ぐために延長
           script: |
             set -e
             cd /home/maya/shin-vps
@@ -53,6 +53,7 @@ jobs:
             docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || docker network create shin-vps_shared-proxy
 
             echo "🚀 本番環境(prod)をビルド・起動します..."
+            # 💡 Playwright 等の重いビルドが含まれるため、ビルド成功をしっかり待ちます
             docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans --wait
             
             echo "📦 データベースを更新します..."

@@ -1,71 +1,71 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
-// /home/maya/dev/shin-vps/shared/layout/Sidebar/SidebarWrapper.tsx
-import AdultSidebar from './AdultSidebar';
+import React from 'react';
+import Sidebar from './AdultSidebar'; 
+import AdultSidebarAvFlash from './AdultSidebarAvFlash'; 
 import { 
   fetchGenres, 
   fetchMakers, 
   fetchActresses, 
-  fetchSeries, 
-  fetchDirectors, 
-  fetchAuthors, 
-  fetchLabels,
-  fetchAdultAttributes 
+  getAdultNavigationFloors,
 } from '@/shared/lib/api/django/adult';
-import { getSiteMainPosts } from '@/shared/lib/api/wordpress';
+import { getSiteMetadata } from '@/shared/lib/siteConfig';
 
+/**
+ * =====================================================================
+ * 🛸 SidebarWrapper - Tactical Data Aggregator (V4.2)
+ * ---------------------------------------------------------------------
+ * sidebar-stats から属性データを取得し、AV Flash 用マトリックスを生成します。
+ * =====================================================================
+ */
 export default async function SidebarWrapper() {
-  /**
-   * 💡 並列で全データを一括取得 (High-Speed Fetching)
-   * 1つでもコケても全体を止めないよう、個別に catch 処理を徹底。
-   */
-  const [
-    aiAttributes, 
-    genresData, 
-    makersData, 
-    actressesData, 
-    seriesData, 
-    directorsData, 
-    authorsData, 
-    labelsData, 
-    wpData
-  ] = await Promise.all([
-    fetchAdultAttributes().catch(() => []), 
-    fetchGenres({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchMakers({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchActresses({ limit: 15, ordering: '-profile__ai_power_score' }).catch(() => ({ results: [] })),
-    fetchSeries({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchDirectors({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchAuthors({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchLabels({ limit: 15 }).catch(() => ({ results: [] })),
-    getSiteMainPosts(0, 5).catch(() => ({ results: [] })),
+  const { default_brand, site_name } = getSiteMetadata();
+  const isAvFlash = site_name === 'AV Flash' || site_name.includes('FLASH');
+
+  // APIベースURL
+  const API_BASE = "http://api-tiper-host:8083";
+
+  // 1. データの並列取得
+  const [navigationData, genresData, makersData, actressesData, statsResponse] = await Promise.all([
+    getAdultNavigationFloors({ site: default_brand }),
+    fetchGenres({ limit: 40, api_source: default_brand }),
+    fetchMakers({ limit: 20, api_source: default_brand }),
+    fetchActresses({ limit: 20, api_source: default_brand, ordering: '-profile__ai_power_score' }),
+    // 🚀 taxonomy API ではなく、データが詰まっている sidebar-stats を取得
+    fetch(`${API_BASE}/api/adult/sidebar-stats/`, { cache: 'no-store' })
+      .then(res => res.json())
+      .catch(() => ({ attributes: [] }))
   ]);
 
-  /**
-   * 💡 AdultSidebarに渡すPropsの整形
-   * APIのレスポンス形式が { results: [...] } か [...] かを意識して展開します。
-   */
-  const sidebarProps = {
-    // 🤖 AI解析特化属性 (熟女、巨乳、4K、VR等)
-    aiAttributes: Array.isArray(aiAttributes) ? aiAttributes : [], 
-    
-    // 🏷️ 各種タクソノミー (上位15件)
+  // 2. ナビゲーションデータの整形 (DUGA階層構造パース)
+  let processedNavigation = [];
+  if (navigationData) {
+    const keys = Object.keys(navigationData);
+    if (keys.length > 0) {
+      const firstKeyData = navigationData[keys];
+      processedNavigation = firstKeyData?.services || 
+                            (Array.isArray(navigationData) ? navigationData : Object.values(navigationData));
+    }
+  }
+
+  const commonProps = {
+    navigation: processedNavigation || [],
     genres: genresData?.results || [],
     makers: makersData?.results || [],
     actresses: actressesData?.results || [],
-    series: seriesData?.results || [],
-    directors: directorsData?.results || [],
-    authors: authorsData?.results || [],
-    labels: labelsData?.results || [],
-
-    // 📰 WordPressの最新記事
-    recentPosts: (wpData?.results || []).map((p: any) => ({
-      id: p.id.toString(),
-      title: p.title?.rendered || 'No Title',
-      slug: p.slug
-    }))
+    // 💡 Stats API の attributes 配列を渡す
+    aiAttributes: statsResponse?.attributes || [], 
+    currentBrand: default_brand,
+    siteName: site_name
   };
 
-  // 🚀 クライアントコンポーネントまたは表示用コンポーネントへ流し込み
-  return <AdultSidebar {...sidebarProps} />;
+  return (
+    <>
+      {isAvFlash ? (
+        <AdultSidebarAvFlash {...commonProps} />
+      ) : (
+        <Sidebar {...commonProps} />
+      )}
+    </>
+  );
 }

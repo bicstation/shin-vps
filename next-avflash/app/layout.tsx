@@ -1,10 +1,15 @@
+/* eslint-disable @next/next/no-img-element */
+// /home/maya/dev/shin-vps/next-avflash/app/layout.tsx
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import React, { Suspense } from 'react'; 
+import { headers } from "next/headers";
 import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
+ * globals.css は全体に適用、layout.module.css はこのファイル内の構造に使用
  */
 import '@shared/styles/globals.css';
 
@@ -18,28 +23,35 @@ import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
  */
 import Header from '@shared/layout/Header';
 import Footer from '@shared/layout/Footer';
-import Sidebar from '@shared/layout/Sidebar';
+import SidebarWrapper from '@shared/layout/Sidebar/SidebarWrapper';
 
 /**
- * ✅ 4. チャットボットコンポーネントのインポート
+ * ✅ 4. チャットボット・プログレスバー
  */
 import ChatBot from '@shared/common/ChatBot';
+import RouteProgressBar from '@shared/common/RouteProgressBar';
 
 const inter = Inter({
   subsets: ["latin"],
 });
 
 /**
- * 💡 SEOメタデータの設定
+ * 💡 強制的動的レンダリングの設定
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+/**
+ * 💡 SEOメタデータの設定 (AV FLASH 専用)
  */
 export const metadata: Metadata = {
   metadataBase: new URL("https://avflash.xyz"),
   title: {
     template: "%s | AV FLASH - 新作・人気動画カタログ",
-    default: "AV FLASH - MGS動画・新作作品の最安比較ポータル",
+    default: "AV FLASH - DUGA作品・新作作品の最安比較ポータル",
   },
-  description: "MGS（ミュージック・グラビア・ソフトウェア）の最新作から人気作までを網羅。価格比較、出演者情報、ユーザーレビューをリアルタイムに集約したアダルトエンタメポータルです。",
-  keywords: ["MGS動画", "新作AV", "動画比較", "アダルトアフィリエイト", "AV FLASH", "サンプル動画"],
+  description: "DUGAの最新作から人気作までを網羅。価格比較、出演者情報、AI解析による属性情報をリアルタイムに集約したアダルトエンタメポータルです。",
+  keywords: ["DUGA", "新作AV", "動画比較", "アダルトアフィリエイト", "AV FLASH", "サンプル動画"],
   authors: [{ name: "AV FLASH Team" }],
   robots: {
     index: true,
@@ -52,7 +64,7 @@ export const metadata: Metadata = {
     url: "https://avflash.xyz/",
     siteName: "AV FLASH",
     title: "AV FLASH - 新作動画・作品情報ポータル",
-    description: "MGSの人気作品を独自の視点で紹介。あなたの好みの作品がすぐに見つかる動画カタログサイト。",
+    description: "DUGAの人気作品を独自の視点で紹介。あなたの好みの作品がすぐに見つかる動画カタログサイト。",
     images: [
       {
         url: "/og-image-adult.png",
@@ -79,64 +91,94 @@ export const viewport = {
   themeColor: "#ffc107",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   // ✅ 共通設定からサイト情報を取得
-  const site = getSiteMetadata();
+  const headerList = await headers();
+  const host = headerList.get('host') || "avflash.xyz";
+  const site = getSiteMetadata(host);
   const themeColor = getSiteColor(site.site_name);
 
+  // システムのベースカラー
+  const BG_COLOR = "#0f0f0f";
+
   return (
-    <html lang="ja">
+    <html lang="ja" style={{ height: '100%', backgroundColor: BG_COLOR }}>
       <body
         className={`${inter.className} ${styles.bodyWrapper}`}
         style={{
-          backgroundColor: "#0f0f0f",
+          backgroundColor: BG_COLOR,
           color: "#ffffff",
+          margin: 0,
+          padding: 0,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+          // CSS変数としてテーマカラーを注入
           // @ts-ignore
           "--site-theme-color": themeColor,
+          "--bg-deep": BG_COLOR,
         } as React.CSSProperties}
       >
-        {/* 💡 Header: 認証ロジック等でURLを参照するため必須 */}
+        {/* 🚀 ページ遷移プログレスバー (nprogress) */}
+        <RouteProgressBar />
+
+        {/* 1. 共通ヘッダー */}
         <Suspense fallback={<div style={{ height: '60px', backgroundColor: '#1a1a1a' }} />}>
           <Header />
         </Suspense>
 
-        <div 
-          className={styles.adDisclosure} 
-          style={{ backgroundColor: "#1a1a1a", borderBottom: "1px solid #333", color: "#ccc", padding: "8px 15px", fontSize: "12px", textAlign: "center" }}
-        >
-          【PR】本サイトはアフィリエイト広告を利用しています。
-          <span style={{ marginLeft: "10px", color: "#ff4444", fontWeight: "bold" }}>
-            ※18歳未満の方の閲覧は固くお断りいたします。
-          </span>
-        </div>
-
-        <div className={styles.layoutContainer}>
-          <div className={styles.layoutInner}>
-            {/* 💡 Sidebar: ナビゲーションリンク生成のため必須 */}
-            <Suspense fallback={<div style={{ width: '250px' }} />}>
-              <Sidebar />
-            </Suspense>
-
-            <main className={styles.mainContent}>
-              {/* 💡 ページ本体: 404エラーページを含む全ページの防波堤 */}
-              <Suspense fallback={<div style={{ padding: '20px', color: '#888' }}>読み込み中...</div>}>
-                {children}
-              </Suspense>
-            </main>
+        {/* 2. 告知バー（広告・年齢制限） */}
+        <div className={styles.adDisclosure}>
+          <div className={styles.adDisclosureInner}>
+            【PR】本サイトはアフィリエイト広告を利用しています。
+            <span style={{ marginLeft: '10px', opacity: 0.8 }}>
+              ※18歳未満の方の閲覧は固くお断りいたします。
+            </span>
           </div>
         </div>
 
-        {/* 💡 Footer: デバッグ機能等で useSearchParams を利用しているため、
-             ここを Suspense で囲まないと 404 ページでビルドエラーになります */}
+        {/* 3. メインレイアウト構造 (2カラム構成) */}
+        <div className={styles.layoutContainer}>
+          <div className={styles.layoutInner}>
+            
+            {/* 🏛️ 共通サイドバーエリア */}
+            <aside className={styles.sidebarArea}>
+              <div className={styles.sidebarSticky}>
+                <Suspense fallback={
+                  <div style={{ textAlign: 'center', padding: '20px' }}>
+                    <span className={styles.loadingPulse}>LOADING_SYSTEM_MATRIX...</span>
+                  </div>
+                }>
+                  <SidebarWrapper />
+                </Suspense>
+              </div>
+            </aside>
+
+            {/* 🏗️ メインコンテンツ領域 */}
+            <main className={styles.mainContent}>
+              <Suspense fallback={
+                <div style={{ padding: '40px' }}>
+                  <span className={styles.loadingPulse}>SYNCING_GATEWAY...</span>
+                </div>
+              }>
+                {children}
+              </Suspense>
+            </main>
+
+          </div>
+        </div>
+
+        {/* 4. 共通フッター */}
         <Suspense fallback={<div style={{ height: '200px', backgroundColor: '#0a0a0a' }} />}>
           <Footer />
         </Suspense>
 
-        {/* 💡 ChatBot: クライアントサイドフックを多用するため必須 */}
+        {/* 5. チャットボット */}
         <Suspense fallback={null}>
           <ChatBot />
         </Suspense>

@@ -19,7 +19,8 @@ import Footer from '@shared/layout/Footer';
 
 /**
  * ✅ 3. サイドバーラッパー
- * 内部でホスト判定を行い、適切なサイドバー（Adult/PC）を呼び出すサーバーコンポーネント
+ * 内部でホスト判定を行い、適切なサイドバー（AdultSidebar / AdultSidebarAvFlash）を
+ * 呼び出すサーバーコンポーネント。非同期でのデータ取得を内包します。
  */
 import SidebarWrapper from '@shared/layout/Sidebar/SidebarWrapper';
 
@@ -37,7 +38,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 /**
  * 💡 強制的動的レンダリングの設定
- * ユーザーのホスト名によって表示を切り替えるため dynamic 必須
+ * ユーザーのホスト名（ドメイン）によって表示やブランド設定を切り替えるため、
+ * 静的生成（SSG）ではなく dynamic 必須となります。
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -56,13 +58,14 @@ export default async function RootLayout({
 }>) {
   /**
    * ✅ サイト設定の取得
+   * リクエストヘッダーからホスト名を取得し、siteConfig からブランド情報を特定します。
    */
   const headerList = await headers();
   const host = headerList.get('host') || "localhost";
   const site = getSiteMetadata(host);
   const themeColor = getSiteColor(site.site_name);
 
-  // システムカラー定義
+  // システムのベースカラー（深宇宙ブラック）
   const BG_COLOR = "#06060a";
 
   return (
@@ -80,26 +83,26 @@ export default async function RootLayout({
           display: "flex",
           flexDirection: "column",
           position: "relative",
-          // CSS変数としてテーマカラーを注入
+          // CSS変数としてテーマカラーを注入。CSS側で var(--site-theme-color) として利用可能。
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": BG_COLOR,
           "--grid-color": "rgba(233, 69, 96, 0.03)",
         } as React.CSSProperties}
       >
-        {/* 🚀 ページ遷移時のプログレスバー & くるくるスピナー */}
+        {/* 🚀 ページ遷移時のプログレスバー & インジケーター */}
         <RouteProgressBar />
 
-        {/* 背景のシステムグリッド */}
+        {/* 背景のシステムグリッド・エフェクト */}
         <div className={styles.systemGrid} />
 
-        {/* 1. 共通ヘッダー */}
+        {/* 1. 共通ヘッダー（サイト名等は内部で getSiteMetadata により自動解決） */}
         <Header />
 
         {/* 2. 告知バー（広告・年齢制限） */}
         <div className={styles.adDisclosure}>
           <div className={styles.adDisclosureInner}>
-            【PR】本サイトは広告を利用しています。
+            <span className={styles.prLabel}>【PR】</span>本サイトは広告を利用しています。
             {site.site_group === 'adult' && (
               <span className={styles.ageLimit}>
                 ※18歳未満の閲覧は固く禁止されています。
@@ -117,18 +120,19 @@ export default async function RootLayout({
               <div className={styles.sidebarSticky}>
                 <Suspense fallback={
                   <div className={styles.sidebarLoading}>
+                    <div className={styles.loadingSpinner}></div>
                     <span className={styles.loadingPulse}>LOADING_SYSTEM_MATRIX...</span>
                   </div>
                 }>
-                  {/* SidebarWrapper自体が非同期サーバーコンポーネントとなり、
-                    内部で Django API (fetchAdultAttributes等) を叩きます。
+                  {/* SidebarWrapper自体が非同期サーバーコンポーネントです。
+                    ホスト判定を行い、Tiper用(Sidebar) か AV Flash用(AdultSidebarAvFlash) を自動返却します。
                   */}
                   <SidebarWrapper />
                 </Suspense>
               </div>
             </aside>
 
-            {/* 🏗️ コンテンツストリーム */}
+            {/* 🏗️ コンテンツストリーム（メイン表示領域） */}
             <main className={styles.mainContent}>
               <Suspense 
                 fallback={
@@ -137,9 +141,7 @@ export default async function RootLayout({
                   </div>
                 }
               >
-                {/* 各ページコンポーネント 
-                  サイドバーの存在を前提としたグリッドレイアウト内で描画されます。
-                */}
+                {/* 各ページコンポーネント (page.tsx) */}
                 {children}
               </Suspense>
             </main>

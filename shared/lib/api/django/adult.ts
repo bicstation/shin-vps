@@ -16,28 +16,36 @@ const safeExtract = (data: any): any[] => {
   return data.results || data.data || [];
 };
 
-/** 💡 クエリパラメータの正規化: 日本語破壊を防止 & 特殊パラメータの対応 */
+/** 💡 クエリパラメータの正規化: 日本語破壊防止 & モデル（大文字 api_source）適合 */
 const normalizeParams = (params: any) => {
   const clean: Record<string, string> = {};
+  
+  if (!params) return clean;
+
   Object.keys(params).forEach(key => {
     const val = params[key];
+    
+    // 有効な値のみを抽出
     if (val !== undefined && val !== null && val !== 'undefined' && val !== '') {
       let targetKey = key;
       
-      // エイリアスの変換 (Frontend -> Django Field Name)
+      // 🚀 Frontendのクエリ名をDjangoのフィールド名にマッピング
       if (key === 'service') targetKey = 'service_code';
       if (key === 'floor') targetKey = 'floor_code';
-
-      // 💡 判定ロジック:
-      // 1. 識別子系・コード系は小文字化して正規化
-      // 2. ID系（attribute_id含む）やスラッグは破壊を防ぐためそのまま維持
-      const lowercaseKeys = ['service_code', 'floor_code', 'api_source', 'related_to_id'];
       
-      if (lowercaseKeys.includes(targetKey)) {
-        clean[targetKey] = String(val).toLowerCase();
+      // 💡 モデルの仕様（api_sourceは大文字）に合わせるための特殊処理
+      if (targetKey === 'api_source') {
+        clean[targetKey] = String(val).toUpperCase(); // FANZA, DMM, DUGA
       } else {
-        // attribute_id や search, ordering などはそのまま文字列としてセット
-        clean[targetKey] = String(val); 
+        // 小文字化が必要な特定のキー
+        const lowercaseKeys = ['service_code', 'floor_code', 'related_to_id'];
+        
+        if (lowercaseKeys.includes(targetKey)) {
+          clean[targetKey] = String(val).toLowerCase();
+        } else {
+          // attribute (スラッグ) や attribute_id はそのままの文字列で維持
+          clean[targetKey] = String(val); 
+        }
       }
     }
   });
@@ -50,34 +58,34 @@ const normalizeParams = (params: any) => {
  * ==============================================================================
  */
 
-/** * 商品一覧取得 (Unified) 
- * 🎯 attribute_id が params に含まれる場合、特定のAI属性で絞り込みます。
- */
+/** * 商品一覧取得 (Unified) */
 export async function getUnifiedProducts(params: any = {}) {
-  // 💡 パラメータの正規化（ここで attribute_id が確実に保持されます）
+  // 🚀 1. パラメータの正規化
   const cleanParams = normalizeParams(params);
   const queryString = new URLSearchParams(cleanParams).toString();
   
-  // Django側エンドポイント: /api/adult/unified-products/
+  // 🚀 2. ターゲットURLの生成
   const targetUrl = resolveApiUrl(`/api/adult/unified-products/?${queryString}`);
+
+  const isFiltered = !!(
+    cleanParams.attribute || 
+    cleanParams.attribute_id || 
+    cleanParams.actress_id || 
+    cleanParams.related_to_id
+  );
 
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(),
-      // 絞り込み条件（ID系）がある場合は、動的変化を優先するためキャッシュを調整
-      cache: (params.attribute_id || params.related_to_id || params.actress_id) ? 'no-store' : 'default',
-      next: (params.attribute_id || params.related_to_id || params.actress_id) 
-        ? { revalidate: 0 } 
-        : { revalidate: 3600 }
+      cache: isFiltered ? 'no-store' : 'default',
+      next: isFiltered ? { revalidate: 0 } : { revalidate: 3600 }
     });
 
     if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
-    
     const data = await res.json();
     
-    // 🔍 デバッグ用: データが空の場合にURLをコンソール出力
-    if (!data.results || data.results.length === 0) {
-      console.warn(`[UnifiedList] NO_DATA_RETURNED from: ${targetUrl}`);
+    if (isFiltered) {
+      console.log(`[UnifiedList] FILTER_ACTIVE: URL=${targetUrl} | FOUND=${data?.count}`);
     }
 
     return { 
@@ -100,13 +108,8 @@ export async function getAdultProductDetail(id: string | number): Promise<AdultP
       headers: getDjangoHeaders(), 
       cache: 'no-store' 
     });
-    
     const data = await handleResponseWithDebug(res, targetUrl);
-    
-    if (data?.detail === "Not found." || data?._error) {
-      return null;
-    }
-    
+    if (data?.detail === "Not found." || data?._error) return null;
     return data;
   } catch (error) {
     console.error(`[Detail] FETCH_FAILED [${id}]:`, error);
@@ -125,21 +128,20 @@ export async function fetchAdultTaxonomyIndex(type: string, floorCodeOrParams?: 
   try {
     const isParamObj = typeof floorCodeOrParams === 'object' && floorCodeOrParams !== null;
     
-    const floor_code = isParamObj ? floorCodeOrParams.floor_code : floorCodeOrParams;
-    const finalLimit = isParamObj ? floorCodeOrParams.limit : limit;
-    const api_source = isParamObj ? floorCodeOrParams.api_source : null;
-    const ordering = isParamObj ? (floorCodeOrParams.ordering || '-product_count') : '-product_count';
-
-    const queryParams = new URLSearchParams({ 
+    const rawParams = isParamObj ? floorCodeOrParams : { 
+      floor_code: floorCodeOrParams, 
+      limit: limit 
+    };
+    
+    const cleanParams = normalizeParams({
       type,
-      ordering: ordering
+      ordering: rawParams.ordering || '-product_count',
+      ...rawParams
     });
 
-    if (floor_code) queryParams.append('floor_code', String(floor_code).toLowerCase());
-    if (finalLimit) queryParams.append('limit', String(finalLimit));
-    if (api_source) queryParams.append('api_source', String(api_source).toLowerCase());
-
+    const queryParams = new URLSearchParams(cleanParams);
     const url = `/api/adult/taxonomy/?${queryParams.toString()}`;
+    
     const res = await fetch(resolveApiUrl(url), { 
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
@@ -169,12 +171,16 @@ export const fetchLabels = (p?: any) => fetchAdultTaxonomyIndex('labels', p);
 
 /**
  * ==============================================================================
- * 💡 4. ナビゲーションメニュー取得
+ * 💡 4. ナビゲーションメニュー取得 (仕分け完全防衛版)
  * ==============================================================================
  */
 
-export async function getAdultNavigationFloors() {
-  const targetUrl = resolveApiUrl('/api/adult/navigation/floors/');
+export async function getAdultNavigationFloors(params: { site?: string } = {}) {
+  // 🚀 api_source クエリを構築（モデルに合わせて大文字）
+  const siteVal = params.site ? params.site.toUpperCase() : '';
+  const query = siteVal ? `?api_source=${siteVal}` : '';
+  const targetUrl = resolveApiUrl(`/api/adult/navigation/floors/${query}`);
+  
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
@@ -182,36 +188,51 @@ export async function getAdultNavigationFloors() {
     });
     if (!res.ok) throw new Error(`NAV_FETCH_ERROR_${res.status}`);
     const json = await res.json();
-    return json?.data || {};
+    const data = json?.data || {};
+
+    // 🚀 ブランドごとの厳密な仕分け
+    if (siteVal) {
+      const filteredData: any = {};
+      Object.keys(data).forEach(key => {
+        const k = key.toUpperCase();
+        // DMM の場合は FANZA（アダルト）を巻き込まないように除外ガード
+        const isMatch = (siteVal === 'DMM') 
+          ? (k.includes('DMM') && !k.includes('FANZA'))
+          : k.includes(siteVal);
+          
+        if (isMatch) filteredData[key] = data[key];
+      });
+      
+      // 💡 DUGAなど階層がフラットな場合、servicesではなくその階層自体を返すロジックを担保
+      if (Object.keys(filteredData).length > 0) {
+        return filteredData;
+      }
+    }
+
+    return data;
   } catch (error) {
     console.error("[NavFloors] FETCH_FAILED:", error);
     return {};
   }
 }
 
+/** 💡 既存の特定ブランド取得ショートカットの互換性維持 */
 export async function getFanzaDynamicMenu() {
-  const data = await getAdultNavigationFloors();
-  return data?.['FANZA（アダルト）']?.services || {};
-}
-
-export async function getDmmDynamicMenu() {
-  const data = await getAdultNavigationFloors();
-  return data?.['DMM.com（一般）']?.services || data?.['DMM.com']?.services || {};
+  const data = await getAdultNavigationFloors({ site: 'FANZA' });
+  const matchedKey = Object.keys(data).find(k => k.includes('FANZA'));
+  return matchedKey ? data[matchedKey].services : {};
 }
 
 /**
  * ==============================================================================
- * 💡 5. ランキングデータ取得
+ * 💡 5. ランキング & 属性統計
  * ==============================================================================
  */
 
 export async function fetchAdultProductRanking(limit: number = 30) {
   const targetUrl = resolveApiUrl(`/api/adult/ranking/`);
   try {
-    const res = await fetch(targetUrl, { 
-      headers: getDjangoHeaders(),
-      next: { revalidate: 3600 } 
-    });
+    const res = await fetch(targetUrl, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
     if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
     const data = await res.json();
     return safeExtract(data); 
@@ -221,19 +242,10 @@ export async function fetchAdultProductRanking(limit: number = 30) {
   }
 }
 
-/**
- * ==============================================================================
- * 💡 6. 属性（Attribute）統計取得 (サイドバー専用)
- * ==============================================================================
- */
-
 export async function fetchAdultAttributes() {
   const targetUrl = resolveApiUrl('/api/adult/sidebar-stats/');
   try {
-    const res = await fetch(targetUrl, { 
-      headers: getDjangoHeaders(),
-      next: { revalidate: 3600 } 
-    });
+    const res = await fetch(targetUrl, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
     if (!res.ok) throw new Error(`ATTR_FETCH_ERROR_${res.status}`);
     const data = await res.json();
     return data.attributes || []; 

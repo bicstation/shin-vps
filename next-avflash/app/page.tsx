@@ -1,144 +1,119 @@
-// ファイル名: app/page.tsx
-
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react/no-danger */
 // @ts-nocheck 
 
 import React from 'react';
 import Link from 'next/link';
-import { getAdultProductsByMaker } from '@shared/lib/api';
+// ✅ 共通APIライブラリから取得関数をインポート
+import { getUnifiedProducts } from '@shared/lib/api/django/adult';
 import AdultProductCard from '@shared/cards/AdultProductCard';
-import { decodeHtml } from '@shared/lib/decode';
-
-// 💡 日付フォーマット用のヘルパー
-const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('ja-JP');
-};
-
-interface WpPost {
-    id: number;
-    slug: string;
-    title: { rendered: string };
-    date: string;
-    _embedded?: {
-        'wp:featuredmedia'?: Array<{ source_url: string }>;
-    };
-}
+import styles from './page.module.css';
 
 /**
- * 💡 WordPress 記事取得
+ * 💡 Next.js 15 用の動的レンダリング設定
+ * Djangoからのレスポンスをキャッシュせず、常に最新のDUGAデータを表示します
  */
-async function fetchPostList(): Promise<WpPost[]> {
-    const WP_API_URL = `http://nginx-wp-v2/wp-json/wp/v2/avflash?_embed&per_page=4`;
-    try {
-        const res = await fetch(WP_API_URL, {
-            headers: { 'Host': 'stg.blog.tiper.live' },
-            next: { revalidate: 60 }
-        });
-        return res.ok ? await res.json() : [];
-    } catch (error) {
-        console.error("WP API Error:", error);
-        return [];
-    }
-}
+export const dynamic = 'force-dynamic';
 
-/**
- * 💡 メインページコンポーネント
- * 🚨 注意: viewport 設定などは layout.tsx に集約したため、ここでは定義しません
- */
 export default async function Page() {
-    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'AVFLASH.xyz';
+    // サイトタイトルの設定
+    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'AV FLASH';
     
-    // データ取得
-    const [posts, products] = await Promise.all([
-        fetchPostList(),
-        getAdultProductsByMaker('mgs', 12) 
-    ]);
+    // --- 🛠️ データ取得ロジック ---
+    let products = [];
+    let totalCount = 0;
 
-    const SITE_COLOR = '#ff4500';
+    try {
+        /**
+         * 🚀 getUnifiedProducts の実行
+         * api_source: 'duga' を指定することで、Django側のフィルタリングが作動します
+         */
+        const response = await getUnifiedProducts({ 
+            api_source: 'duga', 
+            limit: 40 // メイングリッドなので少し多めに取得
+        });
+
+        // Djangoの戻り値 { results, count } を展開
+        products = response.results || [];
+        totalCount = response.count || 0;
+
+        console.log(`[AvFlash] DUGA API Success: Found ${totalCount} items.`);
+    } catch (error) {
+        console.error("[AvFlash] API Fetch Error:", error);
+    }
 
     return (
-        <div style={{ backgroundColor: '#0f0f0f', color: '#fff', minHeight: '100vh' }}>
+        <div className={styles.container}>
             
-            {/* --- ヒーローセクション --- */}
-            <section style={{ 
-                padding: '60px 20px', 
-                textAlign: 'center', 
-                background: 'linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%)',
-                borderBottom: `1px solid #333`
-            }}>
-                <h1 style={{ fontSize: '3rem', color: SITE_COLOR, marginBottom: '10px', fontWeight: 'bold' }}>
-                    {title}
-                </h1>
-                <p style={{ color: '#aaa', fontSize: '1.2rem' }}>
-                    MGS動画・新作作品の最速比較ポータル
+            {/* --- 🛸 ヒーローヘッダー (メインコンテンツ内) --- */}
+            <header className={styles.heroHeader}>
+                <div className={styles.heroBadge}>DUGA OFFICIAL ARCHIVE</div>
+                <h1 className={styles.heroTitle}>{title}</h1>
+                <p className={styles.heroSubtitle}>
+                    AI解析によって厳選された <span style={{ color: '#ffc107' }}>DUGA</span> の最新作品・サンプル動画
                 </p>
+                <div className={styles.statsInfo}>
+                    Total <strong>{totalCount.toLocaleString()}</strong> curated items
+                </div>
+            </header>
+
+            {/* --- 💎 DUGA NEW RELEASES グリッド --- */}
+            <section className={styles.section}>
+                <div className={styles.sectionHeader}>
+                    <div className={styles.titleWrapper}>
+                        <h2 className={styles.sectionTitle}>NEW RELEASES</h2>
+                        <div className={styles.titleLine} />
+                    </div>
+                    <Link href="/brand/duga" className={styles.viewAllLink}>
+                        VIEW ALL DUGA →
+                    </Link>
+                </div>
+                
+                {/* layout.module.css の mainContent (padding: 40px) 内に 
+                    この productGrid が全幅で展開されます 
+                */}
+                <div className={styles.productGrid}>
+                    {products && products.length > 0 ? (
+                        products.map((item) => (
+                            <AdultProductCard key={item.id} product={item} />
+                        ))
+                    ) : (
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon}>🔍</div>
+                            <h3>NO PRODUCTS FOUND</h3>
+                            <p>
+                                Djangoサーバー <code>api_source='DUGA'</code> のデータを確認してください。<br />
+                                現在、同期またはAI解析待ちの可能性があります。
+                            </p>
+                            <button 
+                                onClick="window.location.reload()" 
+                                style={{ 
+                                    marginTop: '20px', 
+                                    padding: '10px 20px', 
+                                    background: '#222', 
+                                    color: '#fff', 
+                                    border: '1px solid #444',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                再読み込みを試す
+                            </button>
+                        </div>
+                    )}
+                </div>
             </section>
 
-            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px' }}>
-                
-                {/* --- 商品セクション --- */}
-                <section style={{ marginBottom: '60px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                        <h2 style={{ borderLeft: `6px solid ${SITE_COLOR}`, paddingLeft: '15px', margin: 0 }}>
-                            NEW RELEASES
-                        </h2>
-                    </div>
-                    
-                    <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
-                        gap: '30px' 
-                    }}>
-                        {products && products.length > 0 ? (
-                            products.map((item) => (
-                                <AdultProductCard key={item.id} product={item} />
-                            ))
-                        ) : (
-                            <p style={{ color: '#888' }}>最新作品がありません。</p>
-                        )}
-                    </div>
-                </section>
-
-                {/* --- カラムセクション --- */}
-                <section>
-                    <h2 style={{ borderLeft: `6px solid ${SITE_COLOR}`, paddingLeft: '15px', marginBottom: '25px' }}>
-                        AVFLASH COLUMN
-                    </h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '25px' }}>
-                        {posts && posts.length > 0 ? (
-                            posts.map((post) => (
-                                <article key={post.id} style={{ 
-                                    display: 'flex', 
-                                    background: '#1a1a1a', 
-                                    borderRadius: '12px', 
-                                    overflow: 'hidden',
-                                    border: '1px solid #222'
-                                }}>
-                                    <div style={{ width: '180px', flexShrink: 0 }}>
-                                        <img 
-                                            src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/no-image.png'} 
-                                            alt="" 
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                    </div>
-                                    <div style={{ padding: '20px', flex: 1 }}>
-                                        <Link href={`/avflash/${post.slug}`} style={{ textDecoration: 'none' }}>
-                                            <h3 style={{ color: '#fff', fontSize: '1.2rem', margin: '0 0 10px 0' }}>
-                                                {decodeHtml(post.title.rendered)}
-                                            </h3>
-                                        </Link>
-                                        <span style={{ fontSize: '0.8rem', color: '#666' }}>{formatDate(post.date)}</span>
-                                    </div>
-                                </article>
-                            ))
-                        ) : (
-                            <p style={{ color: '#555' }}>記事を準備中です。</p>
-                        )}
-                    </div>
-                </section>
-            </div>
+            {/* ページ下部：インフォメーションセクション */}
+            <section className={styles.infoSection}>
+                <div className={styles.infoCard}>
+                    <h3>AI ANALYSIS SITE</h3>
+                    <p>
+                        本ポータルは、最新のアダルトコンテンツをAI技術を用いて多角的に分析し、
+                        ユーザーの好みに最適な作品を提案する次世代のエンタメポータルです。
+                    </p>
+                </div>
+            </section>
         </div>
     );
 }

@@ -3,6 +3,7 @@
  * ---------------------------------------------------------------------
  * サイドバー(320px)とメインストリームをGridで完全制御。
  * 全幅レイアウトを活かしつつ、ヘッダー・PR帯との重なりを排除。
+ * サイドバーの高さ制限を解除し、全データを一気に見せる設計へ。
  * ===================================================================== */
 
 /* 1. 全体を包むラッパー：フッターを常に最下部へ */
@@ -49,7 +50,7 @@
 .layoutContainer {
   flex: 1;
   width: 100%;
-  /* tiper.live はアーカイブとしての視認性を重視し、BICSTATIONより広めの設定 */
+  /* tiper.live はアーカイブとしての視認性を重視し、広めの設定 */
   max-width: 1800px; 
   margin: 0 auto;
   box-sizing: border-box;
@@ -62,7 +63,7 @@
   display: grid;
   /* 🪄 【核となる設定】: 左側固定320px、右側は残り全幅(1fr) */
   grid-template-columns: 320px 1fr;
-  gap: 0; /* tiper.live は境界線を際立たせるため、あえて隙間をゼロに */
+  gap: 0; 
   min-height: calc(100vh - 150px);
 }
 
@@ -70,16 +71,22 @@
 .sidebarArea {
   border-right: 1px solid rgba(233, 69, 96, 0.1); /* 垂直のシステムライン */
   background-color: rgba(0, 0, 0, 0.2);
+  /* 親要素を底まで確実に伸ばす */
+  height: 100%;
 }
 
 .sidebarSticky {
+  /* 🪄 sticky設定：スクロール時に上部で止まるが、高さ制限は設けない */
   position: sticky;
-  top: 130px; /* ヘッダー(70) + PR(40〜50) + 余裕 */
-  max-height: calc(100vh - 150px);
-  overflow-y: auto;
+  top: 130px; 
+  
+  /* 🚀 【修正の核心】: 高さを中身(女優・属性等)に完全に委ねる */
+  height: fit-content;
+  max-height: none; /* 画面内スクロールを強制しない */
+  overflow-y: visible; /* 内部スクロールバーを排除し、全データを露出させる */
+  
   padding: 20px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--site-theme-color) transparent;
+  box-sizing: border-box;
 }
 
 /* 6. 🏗️ メインコンテンツ領域（右側・全幅） */
@@ -108,14 +115,12 @@
 }
 
 /* 8. レスポンシブ：モバイル対応 */
-
-/* タブレット：サイドバーを非表示にするか折りたたむ */
 @media (max-width: 1100px) {
   .layoutWrapper {
     grid-template-columns: 1fr; /* 1カラム化 */
   }
   .sidebarArea {
-    display: none; /* スマホ・タブではハンバーガーメニュー等に集約推奨 */
+    display: none; /* タブレット以下ではメインストリームに集中 */
   }
   .mainContent {
     padding: 30px 20px;

@@ -1,4 +1,5 @@
 "use client";
+// /home/maya/dev/shin-vps/next-bic-saving/app/login/page.tsx
 
 
 // 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
