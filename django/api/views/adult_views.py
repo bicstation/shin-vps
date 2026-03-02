@@ -26,7 +26,7 @@ class StandardResultsSetPagination(pagination.PageNumberPagination):
     max_page_size = 100
 
 # --------------------------------------------------------------------------
-# 💡 1. 統合製品一覧 (ソース・サービス・属性フィルタリング完全対応版)
+# 💡 1. 統合製品一覧 (爆速インデックス活用版)
 # --------------------------------------------------------------------------
 class UnifiedAdultProductListView(generics.ListAPIView):
     permission_classes = [AllowAny]
@@ -43,10 +43,9 @@ class UnifiedAdultProductListView(generics.ListAPIView):
 
     def get_queryset(self):
         """
-        🚀 修正ポイント: 
-        1. api_source (FANZA/DUGA等) での厳密な絞り込みを追加
-        2. service_code / floor_code での絞り込みを追加 (tiper.live対応)
-        3. 属性フィルタとソースフィルタを両立
+        🚀 爆速化のポイント:
+        1. annotate(Count('attributes')) を廃止し has_attributes フラグを使用
+        2. 作成済みの複合インデックス (is_active, has_attributes, -release_date) を強制発動
         """
         # 🚀 属性表示に必須の prefetch_related を確実に実行
         qs = AdultProduct.objects.filter(is_active=True).select_related(
@@ -73,15 +72,15 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         attr_val = p.get('attribute') or p.get('attribute_slug')
         
         if attr_val:
-            # 🚀 属性指定がある場合：その属性を最優先
+            # 🚀 属性指定がある場合：その属性を最優先（特定タグの絞り込み）
             if str(attr_val).isdigit():
                 qs = qs.filter(attributes__id=int(attr_val))
             else:
                 qs = qs.filter(attributes__slug__iexact=str(attr_val))
         else:
-            # 🚀 指定なしの場合：AI解析済みの商品（属性が1つ以上ある）を優先表示
-            # ※上記 A, B のフィルタがかかった状態での「属性あり」になるため、ソースが混ざらない
-            qs = qs.annotate(attr_count=Count('attributes')).filter(attr_count__gt=0)
+            # 🚀 爆速ポイント: 指定なしの場合、Countを使わずフラグで絞り込み
+            # これにより DB の Index Scan が走り、ミリ秒単位でレスポンスが返ります
+            qs = qs.filter(has_attributes=True)
             
         return qs.distinct().order_by('-release_date')
 
@@ -96,13 +95,16 @@ class AdultProductDetailAPIView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
 class AdultProductRankingAPIView(generics.ListAPIView):
-    """AI解析スコアに基づくランキング"""
+    """AI解析スコアに基づくランキング (爆速版)"""
     serializer_class = AdultProductSerializer
     permission_classes = [AllowAny]
+    
     def get_queryset(self):
-        return AdultProduct.objects.filter(is_active=True).annotate(
-            ac=Count('attributes')
-        ).filter(ac__gt=0).order_by('-spec_score')[:30]
+        # 🚀 ここもフラグを利用して集計処理を完全排除
+        return AdultProduct.objects.filter(
+            is_active=True,
+            has_attributes=True
+        ).order_by('-spec_score')[:30]
 
 class ActressSearchAPIView(views.APIView):
     """女優検索エンドポイント"""
@@ -116,11 +118,12 @@ class ActressSearchAPIView(views.APIView):
         return Response({"results": [{"id": a.id, "name": a.name} for a in res]})
 
 class AdultSidebarStatsAPIView(views.APIView):
-    """サイドバー用AI属性リスト"""
+    """サイドバー用AI属性リスト (高速版)"""
     permission_classes = [AllowAny]
     def get(self, request):
+        # サイドバーは属性ごとのカウントが必要なため、ここでは filter Q を使って効率化
         stats = AdultAttribute.objects.annotate(
-            c=Count('products', filter=Q(products__is_active=True))
+            c=Count('products', filter=Q(products__is_active=True, products__has_attributes=True))
         ).filter(c__gt=0).order_by('-c')[:20]
         
         results = [{
@@ -138,6 +141,7 @@ class FanzaFloorNavigationAPIView(views.APIView):
     """サービス・フロア構造"""
     permission_classes = [AllowAny]
     def get(self, request):
+        # 将来的にマスタデータを返すよう拡張可能
         return Response({"status": "OK", "data": {}})
 
 class AdultTaxonomyIndexAPIView(views.APIView):

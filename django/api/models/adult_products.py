@@ -19,27 +19,11 @@ class FanzaFloorMaster(models.Model):
     floor_code = models.CharField('フロアコード', max_length=50, unique=True, db_index=True)
     floor_name = models.CharField('フロア名', max_length=100)
     
-    # 🤖 AI解析・運用設定
-    is_adult = models.BooleanField(
-        'アダルトフラグ', 
-        default=True, 
-        help_text="Trueならアダルト向け、Falseなら一般向けのトーンを適用"
-    )
-    ai_system_prompt = models.TextField(
-        'AIシステムプロンプト', 
-        blank=True, 
-        null=True, 
-        help_text="AIへの性格付け指示（例：音楽批評家風、官能的ストーリーテラー等）"
-    )
-    ai_tone_keywords = models.CharField(
-        'トーンキーワード', 
-        max_length=255, 
-        blank=True, 
-        null=True, 
-        help_text="AIに意識させたいキーワード、または禁止語（カンマ区切り）"
-    )
+    is_adult = models.BooleanField('アダルトフラグ', default=True)
+    ai_system_prompt = models.TextField('AIシステムプロンプト', blank=True, null=True)
+    ai_tone_keywords = models.CharField('トーンキーワード', max_length=255, blank=True, null=True)
 
-    is_active = models.BooleanField('有効', default=True)
+    is_active = models.BooleanField('有効', default=True, db_index=True)
     last_synced_at = models.DateTimeField('最終同期日', auto_now=True)
 
     class Meta:
@@ -63,7 +47,7 @@ class AdultAttribute(models.Model):
         ('feature', '技術・物理仕様'),
         ('event', '販売形態・催事'),
     ]
-    attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES)
+    attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES, db_index=True)
     name = models.CharField('表示名', max_length=100)
     slug = models.CharField('スラッグ', max_length=100, unique=True, db_index=True)
     search_keywords = models.TextField('抽出キーワード', blank=True)
@@ -72,20 +56,19 @@ class AdultAttribute(models.Model):
     class Meta:
         verbose_name = '作品属性'
         verbose_name_plural = '作品属性一覧'
-        # 管理画面のエラーを回避するため、nameをデフォルトのリンク対象にする設計
         ordering = ['attr_type', 'order', 'name']
 
     def __str__(self):
         return f"[{self.get_attr_type_display()}] {self.name}"
 
 # ==========================================================================
-# 2. 統合アダルト商品モデル（AIマトリックス完全対応版）
+# 2. 統合アダルト商品モデル（既存完全維持 + 複合インデックス高速化）
 # ==========================================================================
 class AdultProduct(models.Model):
     # 基本リレーション
     raw_data = models.ForeignKey(RawApiData, on_delete=models.SET_NULL, null=True, blank=True, related_name='adult_products')
-    api_source = models.CharField(max_length=20, verbose_name="ソース元")
-    api_service = models.CharField(max_length=50, null=True, blank=True, verbose_name="サービス種別")
+    api_source = models.CharField(max_length=20, verbose_name="ソース元", db_index=True)
+    api_service = models.CharField(max_length=50, null=True, blank=True, verbose_name="サービス種別", db_index=True)
     floor_master = models.ForeignKey(FanzaFloorMaster, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
     floor_code = models.CharField(max_length=50, verbose_name="フロア識別", db_index=True)
     
@@ -98,16 +81,16 @@ class AdultProduct(models.Model):
     title = models.CharField(max_length=512, verbose_name="作品タイトル")
     product_description = models.TextField(null=True, blank=True, verbose_name="標準紹介文")
     rich_description = models.TextField(null=True, blank=True, verbose_name="詳細ストーリー")
-    release_date = models.DateField(null=True, blank=True, verbose_name="発売・公開日")
+    release_date = models.DateField(null=True, blank=True, verbose_name="発売・公開日", db_index=True)
     affiliate_url = models.URLField(max_length=2048, verbose_name="アフィリエイトURL")
     
     # 価格・販売情報
-    price = models.IntegerField(null=True, blank=True, verbose_name="現在の最安値")
+    price = models.IntegerField(null=True, blank=True, verbose_name="現在の最安値", db_index=True)
     list_price = models.IntegerField(null=True, blank=True, verbose_name="定価")
     price_all_options = models.JSONField(default=list, blank=True, verbose_name="価格バリエーション")
-    is_unlimited = models.BooleanField(default=False, verbose_name="サブスク対象")
+    is_unlimited = models.BooleanField(default=False, verbose_name="サブスク対象", db_index=True)
     unlimited_channels = models.JSONField(default=list, blank=True, verbose_name="所属サブスク名")
-    is_on_sale = models.BooleanField(default=False, verbose_name="セール中")
+    is_on_sale = models.BooleanField(default=False, verbose_name="セール中", db_index=True)
     discount_rate = models.IntegerField(default=0, verbose_name="割引率(%)")
     campaign_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="セール名")
     campaign_date_end = models.DateTimeField(null=True, blank=True, verbose_name="セール終了期限")
@@ -120,7 +103,7 @@ class AdultProduct(models.Model):
     jancode = models.CharField(max_length=20, null=True, blank=True, db_index=True, verbose_name="JANコード")
     
     # 評価
-    review_average = models.FloatField(default=0.0, verbose_name="評価平均点")
+    review_average = models.FloatField(default=0.0, verbose_name="評価平均点", db_index=True)
     review_count = models.PositiveIntegerField(default=0, verbose_name="レビュー投稿数")
 
     # メディア
@@ -139,22 +122,27 @@ class AdultProduct(models.Model):
     actresses = models.ManyToManyField(Actress, related_name='products')
     attributes = models.ManyToManyField(AdultAttribute, blank=True, related_name='products')
 
-    # ==========================================================================
-    # 🤖 AI解析セクション (管理画面との不整合を修正)
-    # ==========================================================================
-    # admin.py で ai_catchcopy を参照しているため、フィールド名を統一または統合
+    # 🤖 AI解析セクション
     ai_catchcopy = models.CharField(max_length=500, null=True, blank=True, verbose_name="AIキャッチコピー")
     ai_summary = models.TextField(null=True, blank=True, verbose_name="AIサマリー文")
     ai_content = models.TextField(null=True, blank=True, verbose_name="AI生成独自レビュー")
     target_segment = models.CharField(max_length=255, null=True, blank=True, verbose_name="ターゲット層")
     ai_chat_comments = models.JSONField(default=list, blank=True, verbose_name="疑似チャット")
     
-    # 🚀 拡張：AIソムリエ評価項目
+    # 🚀 高速検索用キャッシュフラグ（追加：重いCount計算を代替）
+    has_attributes = models.BooleanField(
+        default=False, 
+        db_index=True, 
+        verbose_name="属性あり", 
+        help_text="検索を高速化するために、属性が1つ以上ある場合にTrueにする"
+    )
+
+    # 評価スコア（既存維持）
     ai_score_visual = models.IntegerField(default=0, verbose_name="AI映像評価")
     ai_score_story = models.IntegerField(default=0, verbose_name="AIストーリー評価")
     ai_score_erotic = models.IntegerField(default=0, verbose_name="AI刺激評価")
 
-    # マトリックス5項目（手動/システム評価用）
+    # マトリックス5項目（既存維持）
     score_visual = models.IntegerField(default=0, verbose_name="視覚的完成度(VISUAL)")
     score_story = models.IntegerField(default=0, verbose_name="シナリオ強度(STORY)")
     score_erotic = models.IntegerField(default=0, verbose_name="エロティズム(EROTIC)")
@@ -162,14 +150,14 @@ class AdultProduct(models.Model):
     score_cost_performance = models.IntegerField(default=0, verbose_name="コスパ(COST)")
     
     # 総合・運用
-    spec_score = models.IntegerField(default=0, verbose_name="おすすめ総合スコア")
+    spec_score = models.IntegerField(default=0, verbose_name="おすすめ総合スコア", db_index=True)
     score_fetish = models.IntegerField(default=0, verbose_name="フェティシズム濃度")
     last_spec_parsed_at = models.DateTimeField(null=True, blank=True, verbose_name="AI解析実施日")
     
     # 状態管理
-    is_posted = models.BooleanField(default=False, verbose_name="公開状態")
-    is_active = models.BooleanField(default=True, verbose_name="有効")
-    created_at = models.DateTimeField(auto_now_add=True)
+    is_posted = models.BooleanField(default=False, verbose_name="公開状態", db_index=True)
+    is_active = models.BooleanField(default=True, verbose_name="有効", db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -177,6 +165,12 @@ class AdultProduct(models.Model):
         verbose_name = '統合アダルト商品'
         verbose_name_plural = '統合アダルト商品一覧'
         ordering = ['-release_date']
+        # 🚀 複合インデックスによる超高速化
+        indexes = [
+            models.Index(fields=['is_active', 'has_attributes', '-release_date']),
+            models.Index(fields=['api_source', 'is_active', '-release_date']),
+            models.Index(fields=['floor_code', 'is_active', '-release_date']),
+        ]
 
     def __str__(self):
         return f"[{self.api_source}] {self.title}"
@@ -188,70 +182,57 @@ class AdultProduct(models.Model):
             self.api_source = self.api_source.upper()
         if not self.product_id_unique:
             self.product_id_unique = f"{self.api_source}_{self.floor_code}_{self.api_product_id}".lower()
+        
+        # セール判定
         if self.list_price and self.price and int(self.list_price) > int(self.price):
             self.is_on_sale = True
             self.discount_rate = int((1 - (int(self.price) / int(self.list_price))) * 100)
-        super().save(*args, **kwargs)
         
+        super().save(*args, **kwargs)
+
 # ==========================================================================
-# 3. 統合アダルト女優プロファイル（詳細スペック・AI解析・外部リンク対応）
+# 3. 統合アダルト女優プロファイル（既存フィールド完全復活）
 # ==========================================================================
 class AdultActressProfile(models.Model):
     master_actress = models.OneToOneField(
-        Actress, 
-        on_delete=models.CASCADE, 
-        related_name='profile',
-        verbose_name="マスター女優",
-        null=True,
-        blank=True
+        Actress, on_delete=models.CASCADE, related_name='profile', null=True, blank=True
     )
-    
-    # 識別子
     actress_id = models.CharField('FANZA女優ID', max_length=100, unique=True, db_index=True)
-    name = models.CharField('女優名', max_length=255)
+    name = models.CharField('女優名', max_length=255, db_index=True)
     ruby = models.CharField('読み仮名', max_length=255, null=True, blank=True)
     
-    # 📏 フィジカルスペック
+    # フィジカルスペック
     bust = models.IntegerField('バスト', null=True, blank=True)
-    cup = models.CharField('カップ', max_length=10, null=True, blank=True)
+    cup = models.CharField('カップ', max_length=10, null=True, blank=True, db_index=True)
     waist = models.IntegerField('ウエスト', null=True, blank=True)
     hip = models.IntegerField('ヒップ', null=True, blank=True)
-    height = models.IntegerField('身長', null=True, blank=True)
+    height = models.IntegerField('身長', null=True, blank=True, db_index=True)
     birthday = models.DateField('生年月日', null=True, blank=True)
     blood_type = models.CharField('血液型', max_length=10, null=True, blank=True)
     prefectures = models.CharField('出身地', max_length=100, null=True, blank=True)
     hobby = models.TextField('趣味', null=True, blank=True)
     
-    # 🖼️ メディア
+    # メディア
     image_url_small = models.URLField('画像URL(小)', max_length=500, null=True, blank=True)
     image_url_large = models.URLField('画像URL(大)', max_length=500, null=True, blank=True)
-    
-    # 🔗 外部リンク群（JSON形式）
-    external_links = models.JSONField(
-        '外部リンク集', 
-        default=dict, 
-        blank=True, 
-        help_text="SNSやWikipedia、公式サイトのURLをJSON形式で保持"
-    )
+    external_links = models.JSONField('外部リンク集', default=dict, blank=True)
 
-    # ==========================================================================
-    # 🤖 AI解析セクション (女優ポテンシャル評価)
-    # ==========================================================================
+    # 🤖 AI解析・スコアセクション（admin.py参照用フィールドを完全維持）
     ai_catchcopy = models.CharField('AIキャッチコピー', max_length=500, null=True, blank=True)
     ai_description = models.TextField('AI生成紹介文', null=True, blank=True)
     
     # 女優用マトリックス項目
-    score_visual = models.IntegerField('視覚的評価(VISUAL)', default=0)
-    score_style = models.IntegerField('スタイル評価(STYLE)', default=0)
-    score_performance = models.IntegerField('表現力(PERFORMANCE)', default=0)
-    score_popularity = models.IntegerField('市場人気度(POPULARITY)', default=0)
+    score_visual = models.IntegerField('視覚的評価(VISUAL)', default=0, db_index=True)
+    score_style = models.IntegerField('スタイル評価(STYLE)', default=0, db_index=True) # 🚨adminのエラー原因: 復活
+    score_performance = models.IntegerField('表現力(PERFORMANCE)', default=0, db_index=True)
+    score_popularity = models.IntegerField('市場人気度(POPULARITY)', default=0, db_index=True)
     
-    # 総合評価（黄金比スコア）
-    ai_power_score = models.IntegerField('おすすめ総合評価', default=0)
+    # 総合評価
+    ai_power_score = models.IntegerField('おすすめ総合評価', default=0, db_index=True)
     
     # 運用・状態
-    product_count = models.PositiveIntegerField('出演作品数', default=0)
-    is_active = models.BooleanField('有効', default=True)
+    product_count = models.PositiveIntegerField('出演作品数', default=0, db_index=True)
+    is_active = models.BooleanField('有効', default=True, db_index=True)
     last_synced_at = models.DateTimeField('最終同期日', auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -260,6 +241,9 @@ class AdultActressProfile(models.Model):
         verbose_name = 'アダルト女優プロファイル'
         verbose_name_plural = 'アダルト女優プロファイル一覧'
         ordering = ['-ai_power_score', '-product_count']
+        indexes = [
+            models.Index(fields=['is_active', '-ai_power_score']),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.actress_id})"
