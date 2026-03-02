@@ -140,7 +140,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'api.middleware.DomainDiscoveryMiddleware', # 自作ミドルウェア
+    # 'api.middleware.DomainDiscoveryMiddleware', # 自作ミドルウェア
 ]
 
 ROOT_URLCONF = 'tiper_api.urls'
