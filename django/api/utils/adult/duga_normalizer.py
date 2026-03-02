@@ -32,17 +32,20 @@ def _optimize_duga_url(url: Optional[str]) -> str:
         # パターンB: _s.jpg / _m.jpg (Small/Medium) -> _l.jpg (Large)
         url = re.sub(r'_[ms]\.jpg', '_l.jpg', url, flags=re.IGNORECASE)
         
+    # 🚀 VPS(HTTPS環境)向けに強制置換
+    if url.startswith('http://'):
+        url = url.replace('http://', 'https://')
+        
     return url
 
 def normalize_duga_data(raw_data_instance: RawApiData) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     DUGAのJSONデータを抽出し、正規化された辞書形式のリストを返します。
-    ※ 1つのRawApiDataに複数の商品(items)が含まれているリスト構造に対応。
     """
     try:
         raw_json_data = getattr(raw_data_instance, 'raw_json_data', None)
         
-        # 💡 重要: 文字列が二重にエンコードされている場合に備え、辞書になるまでデコード
+        # 文字列が二重にエンコードされている場合に備え、辞書になるまでデコード
         data = raw_json_data
         while isinstance(data, str):
             try:
@@ -54,10 +57,10 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> Tuple[List[Dict[str, A
             logger.warning(f"RawApiData ID {raw_data_instance.id}: データが辞書形式ではありません。")
             return [], []
 
-        # 💡 重要: DUGAの検索結果APIは "items" 配列の中に商品が入っています
+        # DUGAの検索結果APIは "items" 配列の中に商品が入っています
         items_entries = data.get('items', [])
         if not items_entries and data.get('productid'):
-            # 直下に商品データがある場合（単体取得時など）のフォールバック
+            # 直下に商品データがある場合のフォールバック
             items_entries = [{'item': data}]
 
     except Exception as e:
@@ -121,20 +124,31 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> Tuple[List[Dict[str, A
             if isinstance(t, dict):
                 add_url(t.get('image'))
         
-        # --- 🎥 サンプル動画データ ---
+        # --- 🎥 サンプル動画データ (修正版) ---
         sample_movies = item.get('samplemovie', [])
         movie_json_data = {}
         
         if isinstance(sample_movies, list) and sample_movies:
-            # 優先度の高い動画情報を取得
-            m_info = sample_movies[0].get('midium') or sample_movies[0].get('large') or sample_movies[0].get('small') or {}
+            # 🚀 修正ポイント: midium(誤) と medium(正) の両方をチェック
+            m_info = (
+                sample_movies[0].get('medium') or 
+                sample_movies[0].get('midium') or 
+                sample_movies[0].get('large') or 
+                sample_movies[0].get('small') or 
+                {}
+            )
+            
             movie_url = m_info.get('movie', "")
             capture_url = m_info.get('capture', "")
             
             if movie_url:
+                # 🚀 修正ポイント: 全て https に統一
+                safe_movie_url = movie_url.replace('http://', 'https://')
+                safe_capture_url = _optimize_duga_url(capture_url).replace('http://', 'https://')
+                
                 movie_json_data = {
-                    'url': movie_url,
-                    'preview_image': _optimize_duga_url(capture_url)
+                    'url': safe_movie_url,
+                    'preview_image': safe_capture_url
                 }
 
         # --- 日付のパース ---
@@ -162,7 +176,6 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> Tuple[List[Dict[str, A
                 min_price = min(prices)
 
         # --- AdultProduct用データ辞書 ---
-        # 💡 content_id (管理コマンドが期待するキー) に修正
         product_dict = {
             'content_id': str(api_id),
             'product_id_unique': generate_product_unique_id(API_SOURCE, str(api_id)), 
@@ -189,7 +202,7 @@ def normalize_duga_data(raw_data_instance: RawApiData) -> Tuple[List[Dict[str, A
             'content_id': str(api_id),
             'genres': [c.get('data', {}).get('name') for c in item.get('category', []) if isinstance(c, dict) and c.get('data', {}).get('name')],
             'actresses': [p.get('name') for p in item.get('performer', []) if isinstance(p, dict) and p.get('name')],
-            'authors': [], # 明示的に空リストを追加
+            'authors': [], 
         }
 
         normalized_products.append(product_dict)
