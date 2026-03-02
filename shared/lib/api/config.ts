@@ -66,7 +66,7 @@ export const getDjangoBaseUrl = () => {
     const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (envApiUrl) return envApiUrl.replace(/\/api\/?$/, '');
 
-    if (IS_SERVER) return 'http://api-tiper-host:8083';
+    if (IS_SERVER) return 'http://django-v2:8000';
 
     if (typeof window !== 'undefined') {
         const origin = window.location.origin;
@@ -76,7 +76,7 @@ export const getDjangoBaseUrl = () => {
         }
         return origin;
     }
-    return 'http://api-tiper-host:8083';
+    return 'http://django-v2:8000';
 };
 
 export const API_CONFIG = {

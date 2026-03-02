@@ -1,0 +1,21 @@
+/* /home/maya/dev/shin-vps/next-avflash/app/adults/[id]/page.module.css */
+.container {
+  min-height: 100vh;
+  padding: 20px;
+  background-color: var(--bg-deep);
+}
+
+.heroHeader {
+  margin-bottom: 40px;
+  border-left: 4px solid var(--site-theme-color);
+  padding-left: 20px;
+}
+
+.heroTitle {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+/* 他のスタイルも必要に応じて追加 */
