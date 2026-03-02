@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/views/adult_views.py
 from django.db.models import Q, Count
 from rest_framework import generics, filters, pagination, views, status
 from rest_framework.permissions import AllowAny
