@@ -34,4 +34,7 @@ urlpatterns = [
     
     # 📦 物販・Linkshare系
     path('linkshare/', include('api.urls.linkshare_urls')),
+    
+    # 📱 Bic-saving (通信・端末比較) 系
+    path('bs/', include('api.urls.bs_urls')),
 ]

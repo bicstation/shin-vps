@@ -1,25 +1,60 @@
 # -*- coding: utf-8 -*-
 # api/models/__init__.py
 
-# 1. 共通エンティティ・基盤
+"""
+Bic-v2 API Models Definition
+役割ごとにモデルを整理し、外部（Views/Admin）から参照可能にします。
+"""
+
+# ==============================================================================
+# 1. 共通エンティティ・基盤・マスターデータ
+# ==============================================================================
 from .raw_and_entities import (
-    RawApiData, Maker, Label, Genre, Actress, Director, Series, 
-    EntityBase, Author
+    RawApiData,    # 外部APIからの生データ保存
+    Maker,         # メーカー
+    Label,         # レーベル
+    Genre,         # ジャンル
+    Actress,       # 出演者
+    Director,      # 監督
+    Series,        # シリーズ
+    Author,        # 著者・作家
+    EntityBase     # 基盤抽象モデル
 )
 
-# 2. 【統合完了】FanzaProductはAdultProductに一本化されたため削除
-# from .fanza_products import FanzaProduct  # ← これを消す！
+# ==============================================================================
+# 2. アダルト製品（統合モデル）
+# ==============================================================================
+from .adult_products import (
+    AdultProduct,           # FANZA / DMM / DUGA 統合製品
+    FanzaFloorMaster,       # フロアマスター
+    AdultAttribute,         # 製品属性（タグ等）
+    AdultActressProfile     # 出演者詳細プロフィール
+)
 
-# 3. アダルト製品（FANZA / DMM / DUGA 統合モデル）
-from .adult_products import AdultProduct, FanzaFloorMaster, AdultAttribute ,AdultActressProfile
+# ==============================================================================
+# 3. アフィリエイト・API連携関連（Linkshare / ValueCommerce）
+# ==============================================================================
+from .linkshare_products import LinkshareProduct         # 基本製品
+from .linkshare_api_product import LinkshareApiProduct   # API直接取得データ
+from .bc_linkshare_products import BcLinkshareProduct    # Bic-v2 拡張用
 
-# 4. Linkshare 関連
-from .linkshare_products import LinkshareProduct
-from .linkshare_api_product import LinkshareApiProduct
-from .bc_linkshare_products import BcLinkshareProduct
+# ==============================================================================
+# 4. PC・ハードウェア関連
+# ==============================================================================
+from .pc_products import (
+    PCProduct,      # PC本体
+    PCAttribute,    # PCスペック属性
+    PriceHistory    # 価格推移履歴
+)
 
-# 5. PC製品・価格履歴・属性
-from .pc_products import PCProduct, PCAttribute, PriceHistory
+# ==============================================================================
+# 5. 【NEW】Bic-saving（通信・スマホ節約）関連
+# ==============================================================================
+from .bs_carrier import BSCarrier                               # キャリア・ブランド（ahamo, UQ等）
+from .bs_device import BSDevice, BSDevicePrice, BSDeviceColor   # 端末スペックおよびキャリア別価格
+from .bs_plan import BSMobilePlan                               # 通信プラン・割引ロジック
 
-# 6. ユーザー管理
-from .users import User
+# ==============================================================================
+# 6. ユーザー・システム管理
+# ==============================================================================
+from .users import User  # 拡張ユーザーモデル

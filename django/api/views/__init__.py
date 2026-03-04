@@ -12,6 +12,7 @@ from .auth_views import *
 from .general_views import *
 from .adult_views import *
 from .master_views import *
+from .bs_views import *
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,11 @@ def api_root(request, format=None):
                 "navigation_floors": safe_reverse('api:adult:floor_navigation'),
                 "taxonomy_index": safe_reverse('api:adult:taxonomy_index'),
             },
+            "bic_saving": {
+                "devices": safe_reverse('api:bs:device-list'),
+                "plans": safe_reverse('api:bs:plan-list'),
+                "carriers": safe_reverse('api:bs:carrier-list'),
+            },            
             "auth": {
                 # 💡 auth_urls.py の定義 (name='login' 等) に完全に一致させました
                 "login": safe_reverse('api:auth:login'),
@@ -72,6 +78,7 @@ def api_root(request, format=None):
                 "series": safe_reverse('api:series_list'),
                 "authors": safe_reverse('api:author_list'),
             }
+            
         }
     })
 

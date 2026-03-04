@@ -1,0 +1,60 @@
+[
+  {
+    "model": "api.bsdevice",
+    "pk": 2,
+    "fields": {
+      "name": "iPhone 16 Pro",
+      "brand": "Apple",
+      "storage_gb": 128,
+      "weight": 199,
+      "battery_mah": 3582,
+      "waterproof_dustproof": "IP68",
+      "cpu_chipset": "A18 Pro",
+      "npu_performance": "35 TOPS",
+      "ram_gb": 8,
+      "display_info": "OLED 6.3インチ",
+      "refresh_rate": 120,
+      "has_nfc_felica": true,
+      "main_image": "https://tshop.r10s.jp/rakutenmobile-store/cabinet/product/iphone-16-pro/pc/main_01.jpg?downsize=600:*",
+      "sim_free_price": 159800
+    }
+  },
+  {
+    "model": "api.bsdevice",
+    "pk": 3,
+    "fields": {
+      "name": "Google Pixel 9",
+      "brand": "Google",
+      "storage_gb": 128,
+      "weight": 198,
+      "battery_mah": 4700,
+      "waterproof_dustproof": "IP68",
+      "cpu_chipset": "Google Tensor G4",
+      "npu_performance": "45 TOPS",
+      "ram_gb": 12,
+      "display_info": "Actua 6.3インチ",
+      "refresh_rate": 120,
+      "has_nfc_felica": true,
+      "main_image": "https://tshop.r10s.jp/rakutenmobile-store/cabinet/product/google-pixel-9/pc/main_01.jpg?downsize=600:*",
+      "sim_free_price": 128900
+    }
+  },
+  {
+    "model": "api.bsdevicecolor",
+    "fields": {
+      "device": 2,
+      "color_name": "デザートチタニウム",
+      "color_code": "#BAA38D",
+      "image_url": "https://tshop.r10s.jp/rakutenmobile-store/cabinet/product/iphone-16-pro/pc/main_01.jpg?downsize=600:*"
+    }
+  },
+  {
+    "model": "api.bsdeviceprice",
+    "fields": {
+      "device": 3,
+      "carrier": 1,
+      "total_price": 128900,
+      "program_price": 64000
+    }
+  }
+]

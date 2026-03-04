@@ -216,6 +216,9 @@ class Command(BaseCommand):
                 return
             if mid_list_to_process:
                 self._fetch_and_output_products(client, mid_list_to_process, options)
+                
+                
+                
             else:
                 self.stderr.write(self.style.WARNING('⚠️ 検索オプションを指定してください。'))
         except Exception as e:

@@ -11,12 +11,15 @@ from django.http import HttpResponseRedirect
 from django.urls import path
 from django.db.models import Count
 
+# モデルのインポート（BSDeviceColorを追加）
 from .models import (
     User, RawApiData, AdultProduct, 
     Genre, Actress, Maker, Label, Director, Series, 
     Author, PCAttribute, LinkshareProduct, 
     PriceHistory, PCProduct, FanzaFloorMaster, AdultAttribute,
-    AdultActressProfile
+    AdultActressProfile,
+    BSCarrier, BSDevice, BSDevicePrice, BSMobilePlan,
+    BSDeviceColor  # ← 追加
 )
 
 logger = logging.getLogger(__name__)
@@ -25,7 +28,7 @@ logger = logging.getLogger(__name__)
 # 🎨 共通ユーティリティ（視覚的アシスト）
 # --------------------------------------------------------------------------
 def get_score_bar(value, label="", width="100px", max_val=100):
-    """スコアを視覚的なバーに変換。AI評価や黄金比の直感的な把握用"""
+    """スコアを視覚的なバーに変換。AI評価やスペック強度の直感的な把握用"""
     val = value or 0
     if val >= 90: color = "#ffc107"   # 👑 ゴールド（神ランク）
     elif val >= 80: color = "#ff0055" # プレミアム
@@ -72,8 +75,6 @@ class UserAdmin(BaseUserAdmin):
 # --------------------------------------------------------------------------
 @admin.register(AdultProduct)
 class AdultProductAdmin(admin.ModelAdmin):
-    change_list_template = "admin/api/change_list_with_actions.html"
-    
     list_display = (
         'display_image', 'product_id_unique', 'title_short', 
         'maker', 'ai_sommelier_scores', 'api_source_tag', 'is_posted_tag', 'open_link'
@@ -102,9 +103,8 @@ class AdultProductAdmin(admin.ModelAdmin):
         }),
         ('AIソムリエ解析', {
             'fields': ('ai_catchcopy', 'ai_summary', 'ai_content', 'target_segment', 'ai_chat_comments'),
-            'description': 'AIが生成した紹介文とキャッチコピー。'
         }),
-        ('AIスコアリング (マトリックス)', {
+        ('AIスコアリング', {
             'fields': (
                 ('ai_score_visual', 'ai_score_story', 'ai_score_erotic'),
                 ('score_visual', 'score_story'),
@@ -122,7 +122,6 @@ class AdultProductAdmin(admin.ModelAdmin):
     )
 
     def title_short(self, obj):
-        # フィールド名が ai_catchcopy に統一されている前提
         text = obj.ai_catchcopy if obj.ai_catchcopy else obj.title
         return text[:40] + '...' if len(text) > 40 else text
     title_short.short_description = "キャッチコピー/タイトル"
@@ -134,132 +133,202 @@ class AdultProductAdmin(admin.ModelAdmin):
         elif isinstance(obj.image_url_list, dict):
             url = obj.image_url_list.get('large') or obj.image_url_list.get('list')
         if url:
-            return mark_safe(f'<img src="{url}" width="90" style="border-radius:4px; border:1px solid #ddd; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />')
+            return mark_safe(f'<img src="{url}" width="90" style="border-radius:4px; border:1px solid #ddd;" />')
         return "No Image"
-    display_image.short_description = "メイン画像"
 
     def ai_sommelier_scores(self, obj):
         return mark_safe(
             f'<div style="min-width: 120px;">'
             f'{get_score_bar(obj.ai_score_visual * 20, "AI映像")}'
             f'{get_score_bar(obj.ai_score_erotic * 20, "AI刺激")}'
-            f'<div style="border-top:1px solid #eee; padding-top:3px;">'
-            f'{get_score_bar(obj.spec_score, "TOTAL", width="90px")}'
-            f'</div></div>'
+            f'</div>'
         )
-    ai_sommelier_scores.short_description = "AI解析スコア"
 
     def api_source_tag(self, obj):
         colors = {"fanza": "#ff3860", "duga": "#ff9f00", "dmm": "#00d1b2"}
         src = str(obj.api_source).lower()
-        return mark_safe(f'<span style="background:{colors.get(src, "#666")}; color:white; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">{src.upper()}</span>')
-    api_source_tag.short_description = "ソース"
+        return mark_safe(f'<span style="background:{colors.get(src, "#666")}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">{src.upper()}</span>')
 
     def is_posted_tag(self, obj):
         return "✅" if obj.is_posted else "⏳"
-    is_posted_tag.short_description = "公開"
 
     def open_link(self, obj):
         if obj.affiliate_url:
-            return mark_safe(f'<a href="{obj.affiliate_url}" target="_blank" style="display:inline-block; padding:3px 8px; background:#007bff; color:white; border-radius:3px; text-decoration:none; font-size:10px; font-weight:bold;">🔗 Open</a>')
+            return mark_safe(f'<a href="{obj.affiliate_url}" target="_blank" style="padding:3px 8px; background:#007bff; color:white; border-radius:3px; text-decoration:none; font-size:10px;">🔗 Open</a>')
         return "-"
-    open_link.short_description = "リンク"
 
 # --------------------------------------------------------------------------
-# 3. マスターデータ（女優は黄金比表示に対応）
+# 3. マスターデータ (Adult系)
 # --------------------------------------------------------------------------
 @admin.register(Actress)
 class ActressAdmin(admin.ModelAdmin):
     list_display = ('name', 'ruby', 'golden_ratio_score', 'product_count_badge', 'api_source_badge')
     search_fields = ('name', 'ruby')
-    list_filter = ('api_source',)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('profile').annotate(_count=Count('products', distinct=True))
+        return super().get_queryset(request).annotate(_count=Count('products', distinct=True))
 
     def golden_ratio_score(self, obj):
         if hasattr(obj, 'profile') and obj.profile:
-            return get_score_bar(obj.profile.ai_power_score, f"{obj.profile.cup}カップ")
-        return mark_safe('<span style="color:#ccc;">データなし</span>')
-    golden_ratio_score.short_description = "黄金比スタイル"
+            return get_score_bar(obj.profile.ai_power_score, f"{obj.profile.cup}Cup")
+        return "No Data"
 
     def product_count_badge(self, obj):
         return mark_safe(f'<b style="color:#007bff;">{obj._count}</b>')
-    product_count_badge.short_description = "作品数"
 
     def api_source_badge(self, obj):
         return mark_safe(f'<span style="color:#999; font-size:10px;">[{obj.api_source}]</span>')
-    api_source_badge.short_description = "ソース"
 
 @admin.register(Genre, Maker, Author, Label, Director, Series)
 class OtherMasterAdmin(admin.ModelAdmin):
     list_display = ('name', 'ruby', 'product_count_badge', 'api_source_badge')
     search_fields = ('name', 'ruby')
-    list_filter = ('api_source',)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        rel_map = {
-            'Maker': 'products_made', 'Author': 'products_authored', 
-            'Label': 'products_labeled', 'Director': 'products_directed', 'Series': 'products_in_series'
-        }
+        rel_map = {'Maker': 'products_made', 'Author': 'products_authored', 'Label': 'products_labeled', 'Director': 'products_directed', 'Series': 'products_in_series'}
         target = rel_map.get(self.model.__name__, 'products')
         return qs.annotate(_count=Count(target, distinct=True))
 
     def product_count_badge(self, obj):
         return mark_safe(f'<b>{obj._count}</b>')
-    product_count_badge.short_description = "作品数"
 
     def api_source_badge(self, obj):
         return mark_safe(f'<span style="color:#999; font-size:10px;">[{obj.api_source}]</span>')
-    api_source_badge.short_description = "ソース"
 
 # --------------------------------------------------------------------------
-# 4. RawApiData (生データ表示)
+# 4. Bic-saving (bs_) スマホ・通信比較管理
+# --------------------------------------------------------------------------
+@admin.register(BSCarrier)
+class BSCarrierAdmin(admin.ModelAdmin):
+    list_display = ('name', 'parent_company', 'is_mvno', 'plan_count')
+    list_filter = ('parent_company', 'is_mvno')
+    search_fields = ('name',)
+
+    def plan_count(self, obj):
+        count = obj.plans.count()
+        return mark_safe(f'<span style="background:#eee; padding:2px 8px; border-radius:10px;">{count} Plans</span>')
+    plan_count.short_description = "登録プラン数"
+
+@admin.register(BSMobilePlan)
+class BSMobilePlanAdmin(admin.ModelAdmin):
+    list_display = ('name', 'carrier', 'base_fee_display', 'data_gb_display', 'discount_summary')
+    list_filter = ('carrier', 'data_gb')
+    search_fields = ('name',)
+    
+    fieldsets = (
+        ('基本情報', {
+            'fields': ('carrier', 'name', ('base_fee', 'data_gb'), 'wp_article_id')
+        }),
+        ('割引設定 (月額からマイナスする額)', {
+            'fields': (
+                ('family_discount_step1', 'family_discount_step2'),
+                ('fixed_line_discount', 'card_discount')
+            ),
+            'description': 'シミュレーション時に基本料金から差し引かれる金額を設定します。'
+        }),
+    )
+
+    def base_fee_display(self, obj):
+        return f"¥{obj.base_fee:,}"
+    base_fee_display.short_description = "基本月額"
+
+    def data_gb_display(self, obj):
+        if obj.data_gb >= 999: return mark_safe('<b style="color:#ff3860;">無制限</b>')
+        return f"{obj.data_gb} GB"
+    data_gb_display.short_description = "容量"
+
+    def discount_summary(self, obj):
+        max_d = obj.family_discount_step2 + obj.fixed_line_discount + obj.card_discount
+        return mark_safe(f'<span style="color:#28a745;">最大 -¥{max_d:,} 割引</span>')
+    discount_summary.short_description = "割引ポテンシャル"
+
+# --- BSDevice 用のインライン設定 ---
+class BSDeviceColorInline(admin.TabularInline):
+    model = BSDeviceColor
+    extra = 2  # 最初から表示する空欄の数
+    fields = ('color_name', 'color_code', 'image_url')
+
+class BSDevicePriceInline(admin.TabularInline):
+    model = BSDevicePrice
+    extra = 1
+
+@admin.register(BSDevice)
+class BSDeviceAdmin(admin.ModelAdmin):
+    list_display = ('display_thumbnail', 'display_name', 'cpu_chipset', 'performance_visual', 'sim_free_price_display')
+    list_filter = ('brand', 'ram_gb', 'has_nfc_felica')
+    search_fields = ('name', 'cpu_chipset')
+    inlines = [BSDeviceColorInline, BSDevicePriceInline] # カラーと価格をインライン化
+    
+    fieldsets = (
+        ('基本スペック・画像', {
+            'fields': (('name', 'brand'), 'storage_gb', 'sim_free_price', 'main_image')
+        }),
+        ('パフォーマンス (PC的スペック)', {
+            'fields': (('cpu_chipset', 'npu_performance'), 'ram_gb')
+        }),
+        ('ディスプレイ・外装', {
+            'fields': (('display_info', 'refresh_rate'), ('weight', 'battery_mah'))
+        }),
+        ('機能', {
+            'fields': ('has_nfc_felica', 'waterproof_dustproof')
+        }),
+    )
+
+    def display_thumbnail(self, obj):
+        if obj.main_image:
+            return mark_safe(f'<img src="{obj.main_image}" width="50" height="50" style="object-fit: contain; border: 1px solid #eee;" />')
+        return "-"
+    display_thumbnail.short_description = "画像"
+
+    def display_name(self, obj):
+        return f"{obj.brand} {obj.name} ({obj.storage_gb}GB)"
+    display_name.short_description = "機種名"
+
+    def performance_visual(self, obj):
+        score = min(obj.ram_gb * 8, 100) 
+        return get_score_bar(score, label=f"RAM {obj.ram_gb}GB", width="80px")
+    performance_visual.short_description = "推定処理能力"
+
+    def sim_free_price_display(self, obj):
+        return f"¥{obj.sim_free_price:,}"
+    sim_free_price_display.short_description = "直販価格"
+
+# --------------------------------------------------------------------------
+# 5. システム・生データ管理
 # --------------------------------------------------------------------------
 @admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
-    list_display = ('api_source_tag', 'api_service', 'api_floor', 'api_product_id', 'created_at', 'migrated')
-    list_filter = ('api_source', 'api_service', 'migrated')
-    search_fields = ('api_product_id',)
+    list_display = ('api_source_tag', 'api_service', 'api_product_id', 'created_at', 'migrated')
+    list_filter = ('api_source', 'migrated')
     readonly_fields = ('display_json',)
 
     def api_source_tag(self, obj):
         colors = {"fanza": "#ff3860", "duga": "#ff9f00", "dmm": "#00d1b2"}
         src = str(obj.api_source).lower()
-        return mark_safe(f'<span style="background:{colors.get(src, "#666")}; color:white; padding:2px 8px; border-radius:4px; font-weight:bold;">{src.upper()}</span>')
-    api_source_tag.short_description = "ソース"
+        return mark_safe(f'<span style="background:{colors.get(src, "#666")}; color:white; padding:2px 8px; border-radius:4px;">{src.upper()}</span>')
 
     def display_json(self, obj):
         data = obj.raw_json_data or {}
         return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:5px; font-size:12px; overflow:auto; max-height:600px;">{json.dumps(data, indent=2, ensure_ascii=False)}</pre>')
-    display_json.short_description = "生JSON"
 
-# --------------------------------------------------------------------------
-# 5. その他・属性管理
-# --------------------------------------------------------------------------
 @admin.register(AdultActressProfile)
 class AdultActressProfileAdmin(admin.ModelAdmin):
     list_display = ('name', 'cup', 'bust', 'waist', 'hip', 'style_score_tag')
-    search_fields = ('name',)
-    list_filter = ('cup', 'score_style')
-
+    
     def style_score_tag(self, obj):
         return get_score_bar(obj.ai_power_score, f"Rank: {obj.score_style}")
-    style_score_tag.short_description = "黄金比スコア"
 
 @admin.register(AdultAttribute)
 class AdultAttributeAdmin(admin.ModelAdmin):
-    # 💡 E124エラー回避：list_displayの1番目をリンク対象以外にするか、
-    # list_display_linksを明示的に指定して list_editable と重複させない
     list_display = ('name', 'order', 'attr_type', 'slug')
     list_editable = ('order',)
-    list_display_links = ('name',) # リンクをnameに固定することでorderの編集を可能にする
+    list_display_links = ('name',)
     list_filter = ('attr_type',)
 
 @admin.register(FanzaFloorMaster)
 class FanzaFloorMasterAdmin(admin.ModelAdmin):
     list_display = ('site_code', 'service_code', 'floor_code', 'floor_name', 'is_active')
-    list_filter = ('site_code', 'service_code')
 
-admin.site.register([PCProduct, PCAttribute, PriceHistory, LinkshareProduct])
+# シンプルな登録
+admin.site.register([PCProduct, PCAttribute, PriceHistory, LinkshareProduct, BSDeviceColor])

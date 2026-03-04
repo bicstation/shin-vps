@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/serializers.py
+# /home/maya/dev/shin-vps/django/api/serializers/__init__.py
 
 # 👤 認証系 (register, login, user_profile)
 from .auth_serializers import UserSerializer
@@ -16,4 +16,11 @@ from .general_serializers import (
     PriceHistorySerializer,
     LinkshareProductSerializer,
     PCProductSerializer
+)
+from .bs_device_serializers import (
+    BSCarrierSerializer,
+    BSMobilePlanSerializer,
+    BSDeviceSerializer,
+    BSDeviceColorSerializer,
+    BSDevicePriceSerializer
 )

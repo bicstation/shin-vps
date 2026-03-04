@@ -261,3 +261,6 @@ networks:
 
 volumes:
   static_volume_home:
+  wordpress_data_home:    # これを追加
+  postgres_data_home:     # これを追加
+  mariadb_data_home:      # これも必要かもしれません（エラーに出ていれば追加）
