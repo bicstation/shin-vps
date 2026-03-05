@@ -1,24 +1,22 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN-VPS 究極フルスペック再構築スクリプト (2026 最終統合版)
+# 🚀 SHIN-VPS 究極フルスペック再構築スクリプト (2026 最終統合版 - v3対応)
 # ------------------------------------------------------------------------------
 # 1. 自動ネットワーク復旧 (shared-proxy)
-# 2. WP 5サイト DB自動生成 & Django 管理者(maya)自動作成
-# 3. エイリアス変換 (wp-all, db, django等)
-# 4. 【究極】リフレッシュ機能 (-R / --refresh) : イメージ・ボリューム・全消去
+# 2. .env連動型 DB自動生成 (WordPress 4サイト分)
+# 3. Django 管理者(maya)自動作成 & ロックエラー対策
+# 4. 実行後、ログ確認 -> プロセス表示 -> 自動終了
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CURRENT_HOSTNAME=$(hostname)
 CURRENT_USER=$USER
 
-# 💡 VPS・ローカル環境の判定
+# 1. 環境判定
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]] || [[ "$CURRENT_USER" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
-    IS_VPS=true
     TARGET="prod"
 else
-    IS_VPS=false
     TARGET="home"
 fi
 
@@ -34,13 +32,8 @@ TAIL_LOGS=true
 RAW_SERVICES=""
 
 # ---------------------------------------------------------
-# 🚨 3. ヘルプ & 引数解析
+# 🚨 3. 引数解析
 # ---------------------------------------------------------
-show_help() {
-    echo "Usage: ./rebuild.sh [SERVICE_KEYWORDS...] [OPTIONS]"
-    echo "Options: -R (究極リフレッシュ), -a (データ削除), -w (Watch), -c (クリーンビルド)"
-}
-
 for arg in "$@"; do
     case $arg in
         "--no-cache") NO_CACHE="--no-cache" ;;
@@ -49,82 +42,118 @@ for arg in "$@"; do
         "-R"|"--refresh") REFRESH_MODE=true; CLEAN_ALL=true; NO_CACHE="--no-cache" ;;
         "-w"|"--watch") WATCH_MODE=true ;;
         "-n"|"--no-log") TAIL_LOGS=false ;;
-        "--help"|"-h") show_help; exit 0 ;;
         *) RAW_SERVICES="$RAW_SERVICES $arg" ;;
     esac
 done
 
-# 🚀 サービス名のマッピング
+# 🚀 サービス名のマッピング (v2 -> v3 に全置換)
 SERVICES=""
 for s in $RAW_SERVICES; do
     case $s in
-        "bicstation") SERVICES="$SERVICES next-bicstation-v2" ;;
-        "tiper")       SERVICES="$SERVICES next-tiper-v2" ;;
-        "saving")      SERVICES="$SERVICES next-bic-saving-v2" ;;
-        "avflash")     SERVICES="$SERVICES next-avflash-v2" ;;
-        "django")      SERVICES="$SERVICES django-v2" ;;
-        "db")          SERVICES="$SERVICES mariadb-v2 postgres-db-v2" ;;
-        "wp-all")      SERVICES="$SERVICES wordpress-gen-v2 wordpress-saving-v2 wordpress-adult-v2 wordpress-avflash-v2 nginx-wp-v2" ;;
+        "bicstation") SERVICES="$SERVICES next-bicstation-v3" ;;
+        "tiper")       SERVICES="$SERVICES next-tiper-v3" ;;
+        "saving")      SERVICES="$SERVICES next-bic-saving-v3" ;;
+        "avflash")     SERVICES="$SERVICES next-avflash-v3" ;;
+        "django")      SERVICES="$SERVICES django-v3" ;;
+        "db")          SERVICES="$SERVICES mariadb-v3 postgres-db-v3" ;;
+        "wp-all")      SERVICES="$SERVICES wordpress-gen-v3 wordpress-saving-v3 wordpress-adult-v3 wordpress-avflash-v3 nginx-wp-v3" ;;
         *)             SERVICES="$SERVICES $s" ;;
     esac
 done
 SERVICES=$(echo "$SERVICES" | tr ' ' '\n' | sort -u | tr '\n' ' ')
 
 # ---------------------------------------------------------
-# 4. 前処理 (ネットワーク & ウォッチ)
+# 4. 前処理 (ネットワーク)
 # ---------------------------------------------------------
 COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"
 EXTERNAL_NET="shared-proxy"
 
 if ! docker network inspect "$EXTERNAL_NET" >/dev/null 2>&1; then
+    echo "🌐 Creating network: $EXTERNAL_NET"
     docker network create "$EXTERNAL_NET"
 fi
 
 if [ "$WATCH_MODE" = true ]; then
-    [ "$IS_VPS" = true ] && { echo "❌ PROD WATCH FORBIDDEN"; exit 1; }
-    nodemon --watch "$SCRIPT_DIR" -e ts,tsx,js,jsx,css,scss,json,html,py --delay 3 --exec "$0 $(echo "$@" | sed 's/-w//g' | sed 's/--watch//g')"
+    [ "$TARGET" = "prod" ] && { echo "❌ PROD WATCH FORBIDDEN"; exit 1; }
+    nodemon --watch "$SCRIPT_DIR" -e ts,tsx,js,jsx,css,scss,json,html,py --delay 3 --exec "$0 $(echo "$@" | sed 's/-w//g')"
     exit 0
 fi
 
 # ---------------------------------------------------------
-# 5. 実行シーケンス (停止 -> クリーン -> ビルド -> 起動)
+# 5. 実行シーケンス (ロック対策強化)
 # ---------------------------------------------------------
-echo "📍 TARGET: $TARGET | SERVICES: ${SERVICES:-ALL}"
+echo "📍 TARGET: $TARGET | SERVICES: ${SERVICES:-ALL (Full Stack)}"
 
 if [ "$REFRESH_MODE" = true ]; then
-    echo "🔥 [ULTIMATE REFRESH] 全データを削除し、イメージを再ビルドします..."
+    echo "🔥 [ULTIMATE REFRESH] 全データを削除し、再構築します..."
     docker compose -f "$COMPOSE_FILE" down --volumes --remove-orphans
     docker system prune -af --volumes 
     docker network create "$EXTERNAL_NET" 2>/dev/null
 elif [ "$CLEAN_ALL" = true ]; then
-    echo "🚨 [FULL CLEAN] ボリュームを削除してリセットします..."
+    echo "🚨 [FULL CLEAN] ボリュームをリセットします..."
     docker compose -f "$COMPOSE_FILE" down --volumes --remove-orphans
 else
+    # 既存プロセスの完全停止を待つ
     docker compose -f "$COMPOSE_FILE" stop $SERVICES
+    sleep 2
 fi
 
 docker compose -f "$COMPOSE_FILE" build --pull $NO_CACHE $SERVICES
 docker compose -f "$COMPOSE_FILE" up -d --remove-orphans $SERVICES
 
 # ---------------------------------------------------------
-# 6. 自動データセットアップ
+# 6. 自動データセットアップ (.env連動)
 # ---------------------------------------------------------
-sleep 2
-DB_PASS=$(grep WP_DB_ROOT_PASSWORD "$SCRIPT_DIR/.env" | cut -d '=' -f2)
-docker compose exec -T mariadb-v2 mariadb -u root -p"$DB_PASS" -e "
-CREATE DATABASE IF NOT EXISTS wp_gen; CREATE DATABASE IF NOT EXISTS wp_saving;
-CREATE DATABASE IF NOT EXISTS wp_adult; CREATE DATABASE IF NOT EXISTS wp_avflash;
-CREATE DATABASE IF NOT EXISTS wp_tiper; GRANT ALL PRIVILEGES ON *.* TO 'root'@'%'; FLUSH PRIVILEGES;
+echo "⏳ DBの完全起動を待機中 (15秒)..."
+sleep 15
+
+get_env_val() {
+    grep "^$1=" "$SCRIPT_DIR/.env" | cut -d '=' -f2- | tr -d '"' | tr -d "'"
+}
+
+WP_ROOT_PASS=$(get_env_val "WP_DB_ROOT_PASSWORD")
+DB_GEN=$(get_env_val "WP_GEN_DB_NAME")
+DB_SAVING=$(get_env_val "WP_SAVING_DB_NAME")
+DB_ADULT=$(get_env_val "WP_ADULT_DB_NAME")
+DB_AVFLASH=$(get_env_val "WP_AVFLASH_DB_NAME")
+PG_PASS=$(get_env_val "PGADMIN_PASSWORD")
+PG_EMAIL=$(get_env_val "PGADMIN_EMAIL")
+
+echo "🗄️ MariaDB: データベース作成..."
+docker compose exec -T mariadb-v3 mariadb -u root -p"$WP_ROOT_PASS" -e "
+CREATE DATABASE IF NOT EXISTS \`${DB_GEN}\`;
+CREATE DATABASE IF NOT EXISTS \`${DB_SAVING}\`;
+CREATE DATABASE IF NOT EXISTS \`${DB_ADULT}\`;
+CREATE DATABASE IF NOT EXISTS \`${DB_AVFLASH}\`;
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%';
+FLUSH PRIVILEGES;
 " 2>/dev/null
 
-docker compose exec -T django-v2 python manage.py shell -c "
-from django.contrib.auth import get_user_model; User = get_user_model();
+echo "👤 Django: 管理者(maya)作成..."
+docker compose exec -T django-v3 python manage.py shell -c "
+from django.contrib.auth import get_user_model;
+User = get_user_model();
 if not User.objects.filter(username='maya').exists():
-    User.objects.create_superuser('maya', 'admin@example.com', 'maya_pass')
+    User.objects.create_superuser('maya', '$PG_EMAIL', '$PG_PASS')
+    print('✅ User maya created.')
 " 2>/dev/null
 
 # ---------------------------------------------------------
-# 7. ログ出力
+# 7. ログ出力 & プロセス確認 (Finish)
 # ---------------------------------------------------------
+echo "---------------------------------------------------"
 echo "🎉 再構築完了！"
-[ "$TAIL_LOGS" = true ] && docker compose -f "$COMPOSE_FILE" logs -f --tail=50 $SERVICES
+echo "🌐 API: http://api-tiper-host:8083"
+echo "🐬 phpMyAdmin: http://phpmyadmin-host:8083"
+echo "---------------------------------------------------"
+
+if [ "$TAIL_LOGS" = true ]; then
+    echo "📋 起動ログを表示します (5秒後に自動でプロセス一覧へ切替)..."
+    # ログを5秒間だけ流して自動終了させる
+    timeout 5s docker compose -f "$COMPOSE_FILE" logs -f --tail=20 $SERVICES
+fi
+
+echo -e "\n📊 現在のコンテナ稼働状況:"
+docker compose -f "$COMPOSE_FILE" ps
+
+echo -e "\n✅ すべての処理が終了しました。プロンプトに戻ります。"
