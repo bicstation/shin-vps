@@ -30,7 +30,7 @@ async function generate() {
 
   // 3. ブランド取得
   try {
-    const res = await fetch('http://django-v2:8000/api/pc-makers/', { headers: { 'Host': 'localhost' } });
+    const res = await fetch('http://django-v3:8000/api/pc-makers/', { headers: { 'Host': 'localhost' } });
     if (res.ok) {
       const makers = await res.json();
       makers.forEach(m => { if (m.maker) allUrls.push(`${baseUrl}/brand/${m.maker.toLowerCase()}`); });
@@ -38,14 +38,14 @@ async function generate() {
   } catch (e) { console.error("❌ Maker API Error"); }
 
   // 4. 商品全件 (Whileループ)
-  let djangoApiUrl = 'http://django-v2:8000/api/pc-products/';
+  let djangoApiUrl = 'http://django-v3:8000/api/pc-products/';
   try {
     while (djangoApiUrl) {
       const res = await fetch(djangoApiUrl, { headers: { 'Host': 'localhost' } });
       if (!res.ok) break;
       const data = await res.json();
       (data.results || []).forEach(p => { if (p.unique_id) allUrls.push(`${baseUrl}/products/${p.unique_id}`); });
-      djangoApiUrl = data.next ? data.next.replace(/https?:\/\/[^\/]+/, 'http://django-v2:8000') : null;
+      djangoApiUrl = data.next ? data.next.replace(/https?:\/\/[^\/]+/, 'http://django-v3:8000') : null;
     }
   } catch (e) { console.error("❌ Product API Error"); }
 

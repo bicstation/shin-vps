@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 async function generate() {
-  const DJANGO_API = 'http://django-v2:8000/api/pc-products/?limit=500';
+  const DJANGO_API = 'http://django-v3:8000/api/pc-products/?limit=500';
   const baseUrl = 'https://bicstation.com';
 
   console.log('Fetching products from Django...');

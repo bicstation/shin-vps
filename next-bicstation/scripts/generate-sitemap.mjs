@@ -39,7 +39,7 @@ async function generate() {
 
   // --- 3. ブランド（メーカー）一覧 (Django API経由) ---
   try {
-    const res = await fetch('http://django-v2:8000/api/pc-makers/', { 
+    const res = await fetch('http://django-v3:8000/api/pc-makers/', { 
       headers: { 'Host': 'localhost' } 
     });
     if (res.ok) {
@@ -56,7 +56,7 @@ async function generate() {
   }
 
   // --- 4. 商品全件取得 (Django API / ページネーション対応) ---
-  let djangoApiUrl = 'http://django-v2:8000/api/pc-products/';
+  let djangoApiUrl = 'http://django-v3:8000/api/pc-products/';
   try {
     while (djangoApiUrl) {
       const res = await fetch(djangoApiUrl, { headers: { 'Host': 'localhost' } });
@@ -70,7 +70,7 @@ async function generate() {
       });
 
       // data.nextがあればURLをDocker内部ネットワーク用に書き換えてループ継続
-      djangoApiUrl = data.next ? data.next.replace(/https?:\/\/[^\/]+/, 'http://django-v2:8000') : null;
+      djangoApiUrl = data.next ? data.next.replace(/https?:\/\/[^\/]+/, 'http://django-v3:8000') : null;
     }
     console.log(`✅ 全商品の取得が完了しました。`);
   } catch (e) {

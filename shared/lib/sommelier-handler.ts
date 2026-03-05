@@ -16,7 +16,7 @@ export async function handleSommelierRequest(req: NextRequest) {
         const { message, history = [] } = await req.json();
 
         // 1. Django側の検索エンドポイントへリクエスト (API_INTERNAL_URL を使用)
-        const baseUrl = process.env.API_INTERNAL_URL || 'http://django-v2:8000';
+        const baseUrl = process.env.API_INTERNAL_URL || 'http://django-v3:8000';
         const djangoApiUrl = `${baseUrl}/api/actress-search/?q=${encodeURIComponent(message)}`;
         
         let actress: ActressSearchResult | null = null;

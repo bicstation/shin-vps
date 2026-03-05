@@ -10,10 +10,10 @@ export const resolveApiUrl = (endpoint: string) => {
     const rootUrl = getDjangoBaseUrl(); 
     const base = rootUrl.endsWith('/') ? rootUrl.slice(0, -1) : rootUrl;
 
-    // 💡 もし内部通信(django-v2)が動かない場合は、ここを直接 
+    // 💡 もし内部通信(django-v3)が動かない場合は、ここを直接 
     // "http://localhost:8000" 等に書き換えると疎通が確認できます。
     if (IS_SERVER) {
-        return `http://django-v2:8000${endpoint}`;
+        return `http://django-v3:8000${endpoint}`;
     }
 
     return `${base}${endpoint}`;

@@ -47,7 +47,7 @@ const getWpConfig = () => {
  */
 const getDjangoBaseUrl = () => {
     if (IS_SERVER) {
-        return 'http://django-v2:8000';
+        return 'http://django-v3:8000';
     }
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
     if (envUrl) {

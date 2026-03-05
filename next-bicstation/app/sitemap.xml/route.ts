@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const DJANGO_INTERNAL_API = 'http://django-v2:8000/api/pc-products/';
+const DJANGO_INTERNAL_API = 'http://django-v3:8000/api/pc-products/';
 const WP_INTERNAL_API = 'http://nginx-wp-v2/wp-json/wp/v2/posts';
 
 export async function GET() {

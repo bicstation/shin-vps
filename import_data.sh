@@ -10,10 +10,10 @@ CURRENT_USER=$USER
 
 # --- 1. 環境判別 ---
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" ]] || [[ "$CURRENT_USER" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
-    IS_VPS=true; ENV_TYPE="PRODUCTION (VPS)"; COMPOSE_FILE="docker-compose.prod.yml"; DJANGO_CON="django-v2"; NEXT_CON="next-bicstation-v2"; COLOR="\e[32m"
+    IS_VPS=true; ENV_TYPE="PRODUCTION (VPS)"; COMPOSE_FILE="docker-compose.prod.yml"; DJANGO_CON="django-v3"; NEXT_CON="next-bicstation-v2"; COLOR="\e[32m"
     BASE_URL="http://$(hostname -I | awk '{print $1}'):8083"
 else
-    IS_VPS=false; ENV_TYPE="LOCAL (Development)"; COMPOSE_FILE="docker-compose.yml"; DJANGO_CON="django-v2"; NEXT_CON="next-bicstation-v2"; COLOR="\e[36m"
+    IS_VPS=false; ENV_TYPE="LOCAL (Development)"; COMPOSE_FILE="docker-compose.yml"; DJANGO_CON="django-v3"; NEXT_CON="next-bicstation-v2"; COLOR="\e[36m"
     BASE_URL="http://api-tiper-host:8083"
 fi
 

@@ -54,7 +54,7 @@ export async function handleChatRequest(req: Request) {
         const config = SITE_SETTINGS[siteKey];
 
         // 2. Django から在庫を取得
-        const DJANGO_URL = process.env.DJANGO_API_URL || "http://django-v2:8000";
+        const DJANGO_URL = process.env.DJANGO_API_URL || "http://django-v3:8000";
         let productListContext = "現在、最新の在庫リストを取得できませんでした。";
         let allProducts: any[] = [];
 

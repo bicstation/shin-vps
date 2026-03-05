@@ -25,7 +25,7 @@ export default async function AdultDetailPage({ params }: PageProps) {
 
     // 🚀 2. データの取得
     // shared/lib/api/django/client.ts の resolveApiUrl が 
-    // IS_SERVER 時に http://django-v2:8000 を返すように修正されていることが前提です
+    // IS_SERVER 時に http://django-v3:8000 を返すように修正されていることが前提です
     const product = await getAdultProductDetail(id);
 
     // 🚀 3. データがない場合は 404

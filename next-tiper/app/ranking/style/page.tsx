@@ -43,7 +43,7 @@ interface Actress {
  * サーバーサイドデータフェッチ (フィルタリング最適化版)
  */
 async function getStyleRanking(): Promise<{ data: Actress[]; debugInfo: any }> {
-  const internalBaseUrl = process.env.API_INTERNAL_URL || "http://django-v2:8000/api";
+  const internalBaseUrl = process.env.API_INTERNAL_URL || "http://django-v3:8000/api";
   
   /**
    * 💡 修正のポイント:

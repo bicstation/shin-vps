@@ -28,7 +28,7 @@ for i in "${!MIDS[@]}"; do
         MATCHES="0"
         
         # 💡 APIにはキーワードのみを送る (これが最も安定して100件前後の正しい数字を返す)
-        RAW_RESULT=$(docker compose exec -T django-v2 python manage.py linkshare_bc_api_parser \
+        RAW_RESULT=$(docker compose exec -T django-v3 python manage.py linkshare_bc_api_parser \
             --mid "$MID" \
             --keyword "$KEY" \
             --max-pages 1 \
