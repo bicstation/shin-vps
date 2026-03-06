@@ -24,15 +24,15 @@ COPY ${PROJECT_NAME}/ ./
 COPY shared/ ./shared/
 
 # ✅ 4. ファイル配置の自動検証 (重要：エラー回避のため柔軟にログ出力)
-# components/layout 階層があってもなくても、shared フォルダが存在すれば続行します
 RUN echo "--- 📂 Checking Directory Structure ---" && \
     ls -d shared && \
     ls -R shared/ && \
     echo "✅ Shared directory structure check completed" || (echo "❌ Shared directory not found" && exit 1)
 
 # ✅ 5. 依存関係の強制解決
-# 4つのドメインの管理画面やAIチャットで共通して使うライブラリを確実にインストールします
-RUN npm install @google/generative-ai lucide-react clsx tailwind-merge --save
+# 4つのドメインの管理画面、AIチャット、およびMarkdownブログエンジンに必要なライブラリを確実にインストールします
+RUN npm install @google/generative-ai lucide-react clsx tailwind-merge \
+    gray-matter remark remark-html --save
 
 # 6. プロジェクト固有の依存関係インストール
 RUN npm install --include=optional

@@ -66,17 +66,25 @@ maya@Marya:/mnt/e/dev/shin-vps$ save -h
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
-127.0.0.1     tiper-host                 # tiper.live
-127.0.0.1     bicstation-host            # bicstation.com
-127.0.0.1     saving-host                # bic-saving.com
-127.0.0.1     avflash-host               # avflash.xyz
-127.0.0.1     log-host                   # log.tiper.live Dozzle
-127.0.0.1     phpmyadmin-host            # phpmyadmin.tiper.live
-127.0.0.1     pgadmin-host               # pgadmin.tiper.live
-127.0.0.1     traefck-host               # traefil.tiper.live
-127.0.0.1     b-tiper-host               # blog.tiper.live
-127.0.0.1     b-bicstation-host          # blog.bicstation.com
-127.0.0.1     b-saving-host              # blog.bic-saving.com
+# --- SHIN-VPS v3 Web Services (Next.js) ---
+172.30.194.109  tiper-host
+172.30.194.109  bicstation-host
+172.30.194.109  saving-host
+172.30.194.109  avflash-host
+
+# --- Backend & API (Django) ---
+172.30.194.109  api-tiper-host
+
+# --- Infrastructure Management ---
+172.30.194.109  traefik-host
+172.30.194.109  log-host
+172.30.194.109  pgadmin-host
+
+# --- Docker System (Default) ---
+127.0.0.1       localhost
+::1             localhost
+192.168.0.106   host.docker.internal
+192.168.0.106   gateway.docker.internal
 
 
 シンサーバーのCPU状況

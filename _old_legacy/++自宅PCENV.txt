@@ -1,0 +1,106 @@
+# =====================================================================
+# 🐘 1. データベース設定 (PostgreSQL専用)
+# ---------------------------------------------------------------------
+# WordPress(MariaDB)は卒業したため、Postgresのみに集約します。
+# =====================================================================
+DB_HOST=postgres-db-v3
+DB_PORT=5432
+DB_NAME=tiper_db
+DB_USER=tiper_user
+DB_PASSWORD=1492nabe
+
+# pgAdmin ログイン用
+PGADMIN_EMAIL=bicstation@gmail.com
+PGADMIN_PASSWORD=1492nabe
+
+# =====================================================================
+# 🔐 2. アプリケーション共通シークレット
+# =====================================================================
+DJANGO_SECRET_KEY='a_very_secure_secret_key_for_django_123456789'
+ADMIN_JWT_SECRET="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY="
+APP_KEYS="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY="
+
+# =====================================================================
+# 🔑 3. 外部API認証情報 (商品データ取得用)
+# =====================================================================
+# DUGA
+DUGA_PREFIX=dg_
+DUGA_API_ID="HJtCqdpgl8tVorhyz7Lr"
+DUGA_AFFILIATE_ID="48043"
+DUGA_API_URL="http://affapi.duga.jp/search"
+DUGA_TOTAL_LIMIT=1000
+
+# FANZA
+FANZA_PREFIX=fz_
+FANZA_API_ID="GkGxcxhcMKUgQGWzPnp9"
+FANZA_AFFILIATE_ID="bicbic-990"
+FANZA_API_URL="https://api.dmm.com/affiliate/v3/ItemList"
+FANZA_TOTAL_LIMIT=1000
+
+# LINKSHARE (楽天・他)
+LINKSHARE_FTP_HOST=aftp.linksynergy.com
+LS_CLIENT_ID="ybRFc2fz6l9Wc1rDgywekOuMfBRzOyUO"
+LS_CLIENT_SECRET="2J72oAHLaIbSocWC2RaA2Wm3oZ7TuLhL"
+LS_TOKEN_URL="https://api.linksynergy.com/token"
+LS_ACCOUNT_ID=3750988
+
+# =====================================================================
+# 🌐 4. サイト別設定 (サイト識別プレフィックス)
+# =====================================================================
+SITE_PREFIX_SAVING=bs_
+LINKSHARE_BS_SID=3750988
+LINKSHARE_BS_USER=rkp_3750988
+LINKSHARE_BS_PASS=u5NetPVZEAhABD7HuW2VRymP
+
+SITE_PREFIX_BICSTATION=bc_
+LINKSHARE_BC_SID=3273700
+LINKSHARE_BC_USER=rkp_3273700
+LINKSHARE_BC_PASS=5OqF1NfuruvJlmuJXKQDRuzh
+
+SITE_PREFIX_TIPER=ts_
+SITE_PREFIX_AVFLASH=af_
+
+# =====================================================================
+# 🖥️ 5. フロントエンド (Next.js) 設定
+# =====================================================================
+TITLE_BICSTATION="メインの Bicstation"
+TITLE_TIPER="Tiper デモ"
+TITLE_SAVING="Saving デモ"
+TITLE_AVFLASH="Avflash デモ"
+
+# サーバー間通信 (Next.js -> Django)
+API_INTERNAL_URL=http://django-v3:8000/api
+
+# ブラウザから見た共通API入口 (Traefik経由)
+NEXT_PUBLIC_API_URL=http://api-tiper-host:8083/api
+NEXT_PUBLIC_AUTH_API_URL=http://api-tiper-host:8083/api
+
+# =====================================================================
+# 📂 6. ストレージパス設定 (絶対パスで統一)
+# =====================================================================
+# 権限トラブルを防ぐため、常に絶対パスを使用します
+DATA_ROOT=/home/maya/dev/vps-data
+PROJECT_ROOT=/home/maya/dev/shin-vps
+
+POSTGRES_DATA_PATH=${DATA_ROOT}/postgres
+# ※ WordPress用のパスは不要になりました
+
+
+# =====================================================================
+# 🤖 9. AI API 設定 (Gemini API Keys)
+# ---------------------------------------------------------------------
+# 大量投稿・並列処理のために10個のキーをフル活用します
+# =====================================================================
+
+GEMINI_API_KEY_1=
+GEMINI_API_KEY_2=
+GEMINI_API_KEY_3=
+GEMINI_API_KEY_4=
+GEMINI_API_KEY_5=
+GEMINI_API_KEY_6=
+GEMINI_API_KEY_7=
+GEMINI_API_KEY_8=
+GEMINI_API_KEY_9=
+GEMINI_API_KEY_10=
+
+GPU_COUNT=0

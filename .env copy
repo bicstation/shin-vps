@@ -1,0 +1,139 @@
+# ====================================================
+## 1. 🐘 データベース設定 (PostgreSQL & MariaDB)
+# ====================================================
+
+# --- Django API用 (PostgreSQL) ---
+# コンテナ名を現在の v3 に統一
+DB_HOST=postgres-db-v3
+DB_PORT=5432
+DB_NAME=tiper_db
+DB_USER=tiper_user
+DB_PASSWORD=1492nabe 
+
+# --- WordPress用 (MariaDB/MySQL) ---
+# コンテナ名を現在の v3 に統一
+WORDPRESS_DB_HOST=mariadb-v3
+WP_DB_ROOT_PASSWORD=1492nabe
+
+# --- 1. Bicstation (PC専門) ---
+WP_GEN_DB_NAME=wp_gen
+WP_GEN_DB_USER=wp_gen_user
+WP_GEN_DB_PASSWORD=1492nabe
+
+# --- 2. Bic-saving (節約専門) ---
+WP_SAVING_DB_NAME=wp_saving
+WP_SAVING_DB_USER=wp_saving_user
+WP_SAVING_DB_PASSWORD=1492nabe
+
+# --- 3. Adult (Tiper) ---
+WP_ADULT_DB_NAME=wp_tiper
+WP_ADULT_DB_USER=wp_tiper_user
+WP_ADULT_DB_PASSWORD=1492nabe
+
+# --- 4. Adult (avflsh) ---
+WP_AVFLASH_DB_NAME=wp_avflash
+WP_AVFLASH_DB_USER=wp_avflash_user
+WP_AVFLASH_DB_PASSWORD=1492nabe
+
+# pgAdmin ログイン用
+PGADMIN_EMAIL=bicstation@gmail.com
+PGADMIN_PASSWORD=1492nabe
+
+# ====================================================
+## 2. 🔐 アプリケーション共通シークレット
+# ====================================================
+DJANGO_SECRET_KEY='a_very_secure_secret_key_for_django_123456789'  
+ADMIN_JWT_SECRET="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY="
+APP_KEYS="SX3JWqxNU57hO7pVVfrXjXk8IqOnW/gM/QltAEjdfSY="
+
+# ====================================================
+## 3. 🔑 外部API認証情報
+# ====================================================
+DUGA_PREFIX=dg_
+DUGA_API_ID="HJtCqdpgl8tVorhyz7Lr"
+DUGA_AFFILIATE_ID="48043" 
+DUGA_API_URL="http://affapi.duga.jp/search"
+DUGA_TOTAL_LIMIT=1000 
+
+FANZA_PREFIX=fz_
+FANZA_API_ID="GkGxcxhcMKUgQGWzPnp9"
+FANZA_AFFILIATE_ID="bicbic-990"
+FANZA_API_URL="https://api.dmm.com/affiliate/v3/ItemList"
+FANZA_TOTAL_LIMIT=1000
+
+LINKSHARE_FTP_HOST=aftp.linksynergy.com 
+LS_CLIENT_ID="ybRFc2fz6l9Wc1rDgywekOuMfBRzOyUO"
+LS_CLIENT_SECRET="2J72oAHLaIbSocWC2RaA2Wm3oZ7TuLhL"
+LS_TOKEN_URL="https://api.linksynergy.com/token"
+LS_ACCOUNT_ID=3750988 
+
+# ====================================================
+## 4. 🌐 サイト別設定 (Next.js プレフィックス)
+# ====================================================
+SITE_PREFIX_SAVING=bs_ 
+LINKSHARE_BS_SID=3750988
+LINKSHARE_BS_USER=rkp_3750988
+LINKSHARE_BS_PASS=u5NetPVZEAhABD7HuW2VRymP
+LINKSHARE_BS_DATA_PATH="/"
+
+SITE_PREFIX_BICSTATION=bc_
+LINKSHARE_BC_SID=3273700
+LINKSHARE_BC_USER=rkp_3273700
+LINKSHARE_BC_PASS=5OqF1NfuruvJlmuJXKQDRuzh
+LINKSHARE_BC_DATA_PATH="/"
+
+SITE_PREFIX_TIPER=ts_
+SITE_PREFIX_AVFLASH=af_
+
+# ====================================================
+## 5. 🖥️ Next.js/フロントエンド設定
+# ====================================================
+TITLE_BICSTATION="メインの Bicstation"
+TITLE_TIPER="Tiper デモ"
+TITLE_SAVING="Saving デモ"
+TITLE_AVFLASH="Avflash デモ"
+
+# プロジェクトルート定義
+DATA_ROOT=/home/maya/dev/vps-data
+PROJECT_ROOT=/home/maya/dev/shin-vps
+
+# ====================================================
+## 6. 🛡️ Traefik/デプロイ設定
+# ====================================================
+TRAEFIK_ACME_EMAIL=bicstation@gmail.com
+
+# ====================================================
+## 7. 📂 ストレージパス設定 (環境に合わせて切り替え)
+# ====================================================
+
+# --- 【職場PC用設定】 (Ubuntuネイティブパス) ---
+POSTGRES_DATA_PATH=/home/maya/dev/vps-data/postgres
+MARIADB_DATA_PATH=/home/maya/dev/vps-data/mariadb
+WP_DATA_PATH=/home/maya/dev/vps-data/wordpress
+
+# --- 【自宅PC用設定】 (相対パスで権限問題を回避する場合) ---
+# 自宅で動かす際は上記3行を # で消し、以下3行の # を外してください
+# POSTGRES_DATA_PATH=../vps-data/postgres
+# MARIADB_DATA_PATH=../vps-data/mariadb
+# WP_DATA_PATH=../vps-data/wordpress
+
+# ====================================================
+## 8. 🌐 ブラウザ用 API 接続設定 (ゲートウェイ経由)
+# ====================================================
+
+# 1. サーバー間内部通信 (Next.js -> Django)
+# コンテナ名を v3 に修正
+API_INTERNAL_URL=http://django-v3:8000/api
+
+# 2. ブラウザ・フロントエンド通信 (Browser -> Traefik)
+# 自宅/職場のブラウザからアクセスするURL
+NEXT_PUBLIC_API_URL=http://localhost:8083/api
+NEXT_PUBLIC_AUTH_API_URL=http://localhost:8083/api
+
+# WordPress内部プロキシ用
+WORDPRESS_INTERNAL_URL=http://nginx-wp-v3:80
+
+NEXT_PUBLIC_BASE_BICSTATION=/bicstation
+
+
+GPU_COUNT=0

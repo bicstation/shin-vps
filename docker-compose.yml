@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS 統合環境構成定義 - 2026 最終安定・完全修復版
+# 🚀 SHIN-VPS v3 Next.js & Django 統合・AI特化型定義 (完全版)
 # =====================================================================
 
 services:
@@ -8,40 +8,20 @@ services:
     image: traefik:v2.11
     container_name: traefik-proxy-v3
     restart: always
-    user: "0:0"
-    privileged: true
     command:
-      - "--log.level=DEBUG"
       - "--api.insecure=true"
-      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
-      - "--providers.docker.network=shared-proxy"
       - "--entrypoints.web.address=:80"
     ports:
-      - "8083:80"      # メインHTTP入口
-      - "8085:8080"    # ダッシュボード (http://localhost:8085)
+      - "8083:80"
+      - "8085:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - shared-proxy
 
   # --- 1. データベース層 ---
-  mariadb-v3:
-    image: mariadb:10.11
-    container_name: mariadb-v3
-    restart: always
-    # 👻 亡霊（不整合）を無視して強制起動させる呪文
-    # command: mysqld --innodb-force-recovery=4
-    environment:
-      MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${WP_GEN_DB_NAME}
-    volumes:
-      - ../vps-data/mariadb:/var/lib/mysql
-    networks:
-      - internal-net
-
   postgres-db-v3:
     image: postgres:15-alpine
     container_name: postgres-db-v3
@@ -51,7 +31,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - ../vps-data/postgres:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
@@ -60,7 +40,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- 2. バックエンド層 (Django) ---
+  # --- 2. バックエンド層 (Django: AI記事生成・管理) ---
   django-v3:
     build: ./django
     container_name: django-v3
@@ -71,20 +51,18 @@ services:
     env_file: .env
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      # 【重要】最優先順位を設定
-      - "traefik.http.routers.django-router-v3.priority=3000"
-      # 【重要】ホスト制限を加えてフロントエンドとの干渉を完全に防止
-      - "traefik.http.routers.django-router-v3.rule=(Host(`api-tiper-host`) || Host(`bicstation-host`) || Host(`tiper-host`) || Host(`saving-host`) || Host(`avflash-host`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.django-router.priority=3000"
+      - "traefik.http.routers.django-router.rule=Host(`api-tiper-host`) || (Host(`tiper-host`, `bicstation-host`, `saving-host`, `avflash-host`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`)))"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
     volumes:
       - ./django:/usr/src/app
-      - ../vps-data/django_static:/usr/src/app/staticfiles
+      - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
     networks:
       - internal-net
       - shared-proxy
 
   # --- 3. フロントエンド層 (Next.js 4サイト) ---
+  # ビルド時にAPIキーを注入し、AIコンテンツの生成・取得を可能にします
   next-bicstation-v3:
     build: 
       context: .
@@ -92,13 +70,14 @@ services:
       args: 
         PROJECT_NAME: next-bicstation
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
+        GEMINI_API_KEY_1: "${GEMINI_API_KEY_1}"
+        GEMINI_API_KEY_2: "${GEMINI_API_KEY_2}"
     container_name: next-bicstation-v3
     restart: always
     env_file: .env
-    networks: [internal-net, shared-proxy]
+    networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`)"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
 
@@ -109,13 +88,14 @@ services:
       args: 
         PROJECT_NAME: next-tiper
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
+        GEMINI_API_KEY_3: "${GEMINI_API_KEY_3}"
+        GEMINI_API_KEY_4: "${GEMINI_API_KEY_4}"
     container_name: next-tiper-v3
     restart: always
     env_file: .env
-    networks: [internal-net, shared-proxy]
+    networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.tiper-router.rule=Host(`tiper-host`)"
       - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
 
@@ -126,13 +106,14 @@ services:
       args: 
         PROJECT_NAME: next-bic-saving
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
+        GEMINI_API_KEY_5: "${GEMINI_API_KEY_5}"
+        GEMINI_API_KEY_6: "${GEMINI_API_KEY_6}"
     container_name: next-bic-saving-v3
     restart: always
     env_file: .env
-    networks: [internal-net, shared-proxy]
+    networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.saving-router.rule=Host(`saving-host`)"
       - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
 
@@ -143,83 +124,18 @@ services:
       args: 
         PROJECT_NAME: next-avflash
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
+        GEMINI_API_KEY_7: "${GEMINI_API_KEY_7}"
+        GEMINI_API_KEY_8: "${GEMINI_API_KEY_8}"
     container_name: next-avflash-v3
     restart: always
     env_file: .env
-    networks: [internal-net, shared-proxy]
+    networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.avflash-router.rule=Host(`avflash-host`)"
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
 
-  # --- 4. WordPress 配信層 (Nginx経由) ---
-  nginx-wp-v3:
-    image: nginx:alpine
-    container_name: nginx-wp-v3
-    restart: always
-    volumes:
-      - ../vps-data/wordpress-gen:/var/www/html/gen:ro
-      - ../vps-data/wordpress-saving:/var/www/html/saving:ro
-      - ../vps-data/wordpress-adult:/var/www/html/adult:ro
-      - ./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf
-    networks: [internal-net, shared-proxy]
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.blog-router.rule=Host(`b-bicstation-host`) || Host(`b-saving-host`) || Host(`b-tiper-host`) || Host(`b-avflash-host`)"
-      - "traefik.http.services.blog-svc.loadbalancer.server.port=80"
-
-  wordpress-gen-v3:
-    image: wordpress:6-fpm-alpine
-    container_name: wordpress-gen-v3
-    environment:
-      WORDPRESS_DB_HOST: mariadb-v3
-      WORDPRESS_DB_NAME: ${WP_GEN_DB_NAME}
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: ${WP_DB_ROOT_PASSWORD}
-    volumes:
-      - ../vps-data/wordpress-gen:/var/www/html
-    networks: [internal-net]
-
-  wordpress-saving-v3:
-    image: wordpress:6-fpm-alpine
-    container_name: wordpress-saving-v3
-    environment:
-      WORDPRESS_DB_HOST: mariadb-v3
-      WORDPRESS_DB_NAME: ${WP_SAVING_DB_NAME}
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: ${WP_DB_ROOT_PASSWORD}
-    volumes:
-      - ../vps-data/wordpress-saving:/var/www/html
-    networks: [internal-net]
-
-  wordpress-adult-v3:
-    image: wordpress:6-fpm-alpine
-    container_name: wordpress-adult-v3
-    environment:
-      WORDPRESS_DB_HOST: mariadb-v3
-      WORDPRESS_DB_NAME: ${WP_ADULT_DB_NAME}
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: ${WP_DB_ROOT_PASSWORD}
-    volumes:
-      - ../vps-data/wordpress-adult:/var/www/html
-    networks: [internal-net]
-
-  # --- 5. 管理ツール層 ---
-  phpmyadmin-v3:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin-v3
-    environment:
-      PMA_HOST: mariadb-v3
-      PMA_ABSOLUTE_URI: http://phpmyadmin-host:8083/
-    networks: [internal-net, shared-proxy]
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.pma-router.rule=Host(`phpmyadmin-host`)"
-      - "traefik.http.services.pma-svc.loadbalancer.server.port=80"
-
+  # --- 4. 管理・監視ツール ---
   pgadmin-v3:
     image: dpage/pgadmin4
     container_name: pgadmin-v3
@@ -227,39 +143,26 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_LISTEN_PORT: 80
-      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
-    networks: [internal-net, shared-proxy]
+    networks: [shared-proxy, internal-net]
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin-host`)"
       - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
 
   dozzle-v3:
     image: amir20/dozzle:latest
     container_name: dozzle-v3
-    privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - internal-net
+    networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
-      # 【重要】Traefikが認識している正確なネットワーク名（プロジェクト名付き）を指定
-      - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.dozzle-router.rule=Host(`log-host`)"
-      - "traefik.http.routers.dozzle-router.entrypoints=web"
-      # Dozzleの内部ポートは8080なのでここを明示
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
-# --- ネットワーク・リソース定義 ---
 networks:
   internal-net:
     name: "shin-vps_internal-net"
-    driver: bridge
   shared-proxy:
+    external: true
     name: "shared-proxy"
-    driver: bridge
-
-volumes:
-  static_volume_home:
