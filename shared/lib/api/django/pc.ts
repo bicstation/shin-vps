@@ -74,7 +74,7 @@ export async function fetchPCProducts(
     console.log(`[DEBUG: LIST] Fetching products from: ${url}`);
 
     try {
-        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
+        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 600 } });
         const data = await handleResponseWithDebug(res, url);
         return { 
             results: data.results || [], 
@@ -175,7 +175,7 @@ export async function fetchPCProductRanking(): Promise<PCProduct[]> {
     const url = resolveApiUrl(`/api/general/pc-products/ranking/`);
     
     try {
-        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
+        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 600 } });
         const data = await handleResponseWithDebug(res, url);
         if (Array.isArray(data)) return data;
         return data.results || [];
@@ -213,7 +213,7 @@ export async function fetchRelatedProducts(maker: string, exclude_id: string): P
     const url = resolveApiUrl(`/api/general/pc-products/?${queryParams.toString()}`);
     
     try {
-        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
+        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 600 } });
         const data = await handleResponseWithDebug(res, url);
         return data.results || [];
     } catch (e: any) { 
@@ -232,7 +232,7 @@ export async function fetchPCSidebarStats(): Promise<any | null> {
     try {
         const res = await fetch(url, { 
             headers: getDjangoHeaders(), 
-            next: { revalidate: 3600 } 
+            next: { revalidate: 600 } 
         });
         const data = await handleResponseWithDebug(res, url);
         return data;

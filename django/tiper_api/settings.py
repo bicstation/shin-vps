@@ -6,6 +6,7 @@ Django settings for tiper_api project.
 - tiper.live, bicstation.com, bic-saving.com, avflash.xyz および全サブドメイン対応
 - Traefik リバースプロキシ (HTTPS) 整合性設定済み
 - ローカル (HTTP) / 本番 (HTTPS) 自動切り替え
+- 外部API (DUGA/FANZA) 認証情報を環境変数からロード
 """
 
 import os
@@ -96,14 +97,12 @@ CSRF_TRUSTED_ORIGINS = [
 # ----------------------------------------------------
 # 🛡️ Traefik リバースプロキシ設定 (重要：404/403回避用)
 # ----------------------------------------------------
-# これにより、Traefikが受け取った「Host」と「HTTPS」情報をDjangoが正しく解釈します
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # ----------------------------------------------------
 # 🍪 セッション・Cookie 設定
 # ----------------------------------------------------
-# 本番(HTTPS)なら Secure=True、ローカル(HTTP)なら False
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 
@@ -121,7 +120,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', # 開発サーバーでもWhiteNoiseを使用
+    'whitenoise.runserver_nostatic', 
     'django.contrib.staticfiles',
     'django_filters', 
     'rest_framework', 
@@ -131,7 +130,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # 最上部
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -140,7 +139,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'api.middleware.DomainDiscoveryMiddleware', # 自作ミドルウェア
 ]
 
 ROOT_URLCONF = 'tiper_api.urls'
@@ -171,11 +169,27 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'tiper_db'),
         'USER': os.environ.get('DB_USER', 'tiper_user'),
         'PASSWORD': os.environ.get('DB_PASSWORD', '1492nabe'),
-        'HOST': os.environ.get('DB_HOST', 'postgres-db-v2'),
+        'HOST': os.environ.get('DB_HOST', 'postgres-db-v3'),
         'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
+# ----------------------------------------------------
+# 🔑 外部API認証情報 (DUGA / FANZA) - .env から取得
+# ----------------------------------------------------
+# スクレイパーがこれらを参照してデータをインポートします
+API_CONFIG = {
+    'DUGA': {
+        'API_ID': os.environ.get('DUGA_API_ID'),
+        'API_KEY': os.environ.get('DUGA_AFFILIATE_ID'),  # 既存の変数名に合わせる
+        'API_URL': 'http://affapi.duga.jp/search', # 標準的なDUGA APIのURL
+    },
+    'FANZA': {
+        'API_ID': os.environ.get('FANZA_API_ID'),
+        'API_KEY': os.environ.get('FANZA_AFFILIATE_ID'),
+        'API_URL': 'https://api.dmm.com/affiliate/v3/ItemList',
+    }
+}
 # ----------------------------------------------------
 # 👥 認証 / 国際化
 # ----------------------------------------------------

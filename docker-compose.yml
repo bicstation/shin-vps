@@ -32,6 +32,8 @@ services:
     image: mariadb:10.11
     container_name: mariadb-v3
     restart: always
+    # 👻 亡霊（不整合）を無視して強制起動させる呪文
+    # command: mysqld --innodb-force-recovery=4
     environment:
       MARIADB_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${WP_GEN_DB_NAME}
@@ -239,11 +241,15 @@ services:
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks: [shared-proxy]
+    networks:
+      - internal-net
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
+      # 【重要】Traefikが認識している正確なネットワーク名（プロジェクト名付き）を指定
+      - "traefik.docker.network=shin-vps_internal-net"
       - "traefik.http.routers.dozzle-router.rule=Host(`log-host`)"
+      - "traefik.http.routers.dozzle-router.entrypoints=web"
+      # Dozzleの内部ポートは8080なのでここを明示
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 # --- ネットワーク・リソース定義 ---
