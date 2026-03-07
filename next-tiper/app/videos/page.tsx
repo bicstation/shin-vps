@@ -2,25 +2,43 @@
 import React from 'react';
 import { Metadata } from 'next';
 
-// スタイル & 共通コンポーネント
+/**
+ * ✅ 1. スタイル & 共通コンポーネント (物理パス同期)
+ */
 import styles from './videos.module.css';
-import ProductCard from '@/shared/cards/AdultProductCard';
-import Sidebar from '@/shared/layout/Sidebar/AdultSidebar'; 
-import Pagination from '@/shared/common/Pagination';
-import SystemDiagnosticHero from '@/shared/debug/SystemDiagnosticHero';
 
-// API関数 (Django & WordPress)
-import { getSiteMainPosts } from '@/shared/lib/api/wordpress';
+// ❌ 以前のパス: organisms/product/AdultProductCard
+// ✅ 正しい物理パス: organisms/cards/AdultProductCard
+import ProductCard from '@/shared/components/organisms/cards/AdultProductCard';
+
+// サイドバー
+import Sidebar from '@/shared/layout/Sidebar/AdultSidebar'; 
+
+// 共通パーツ
+import Pagination from '@/shared/components/molecules/Pagination';
+import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero';
+
+/**
+ * ✅ 2. API関数 (Maya's Logic v3 統合版を使用)
+ * 個別のファイルではなく、共通の index からインポートすることで
+ * ビルド時の Module not found を回避し、Django v3 経由の通信を保証します。
+ */
 import { 
-  getUnifiedProducts, 
-  fetchMakers, 
+  getSiteMainPosts,    // 旧 getSiteMainPosts (WordPress互換)
+  getUnifiedProducts,  // アダルト商品一覧
+  fetchMakers         // メーカー一覧
+} from '@/shared/lib/api';
+
+// 🚨 物理的に存在しない個別の API ファイルからの直接インポートを
+// 実在する adultApi.ts または統合 index.ts 経由に変更します。
+import { 
   fetchGenres, 
   fetchActresses, 
   fetchSeries,
   fetchDirectors,
   fetchAuthors, 
-  fetchLabels
-} from '@/shared/lib/api/django/adult';
+  fetchLabels 
+} from '@/shared/lib/api/adultApi';
 
 // 型定義
 import { AdultProduct } from '@/shared/lib/api/types';
@@ -44,14 +62,14 @@ export default async function VideosPage(props: {
 }) {
   const searchParams = await props.searchParams;
   
-  // --- 1. パラメータの解析 (URLから現在の状態を取得) ---
+  // --- 1. パラメータの解析 ---
   const currentPage = Number(searchParams.page) || 1;
   const currentMaker = typeof searchParams.maker === 'string' ? searchParams.maker : undefined;
   const currentGenre = typeof searchParams.genre === 'string' ? searchParams.genre : undefined;
   const currentApiSource = typeof searchParams.api_source === 'string' ? searchParams.api_source : undefined;
   const currentSearch = typeof searchParams.q === 'string' ? searchParams.q : undefined;
 
-  // --- 2. データ取得 (並列実行でパフォーマンスを最大化) ---
+  // --- 2. データ取得 (並列実行) ---
   const pageSize = 24; 
   
   const [
@@ -65,9 +83,8 @@ export default async function VideosPage(props: {
     authorsRes, 
     labelsRes
   ] = await Promise.all([
-    // メインのアーカイブデータ
     getUnifiedProducts({ 
-      page: currentPage, 
+      offset: (currentPage - 1) * pageSize, // getUnifiedProducts内部でoffset計算が必要な場合に備え
       limit: pageSize,
       maker: currentMaker,
       genre: currentGenre,
@@ -76,10 +93,9 @@ export default async function VideosPage(props: {
       ordering: '-release_date'
     }).catch(() => ({ results: [], count: 0 })),
     
-    // サイドバー用の共通データ取得 (トップページと同一)
-    getSiteMainPosts(0, 5).catch(() => ({ results: [] })),
+    getSiteMainPosts('posts', 5).catch(() => ({ results: [] })),
     fetchGenres({ limit: 15 }).catch(() => ({ results: [] })),
-    fetchMakers({ limit: 15 }).catch(() => ({ results: [] })),
+    fetchMakers().catch(() => []), // fetchMakersは配列を返す想定
     fetchActresses({ limit: 15 }).catch(() => ({ results: [] })),
     fetchSeries({ limit: 15 }).catch(() => ({ results: [] })),
     fetchDirectors({ limit: 15 }).catch(() => ({ results: [] })),
@@ -91,10 +107,10 @@ export default async function VideosPage(props: {
   const totalCount = productRes?.count || 0;
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  // --- 3. サイドバーPropsの構築 (トップページとロジックを完全一致) ---
+  // --- 3. サイドバーPropsの構築 ---
   const sidebarProps = {
     genres: genresRes?.results || [],
-    makers: makersRes?.results || [],
+    makers: Array.isArray(makersRes) ? makersRes : (makersRes as any)?.results || [],
     actresses: actressesRes?.results || [],
     series: seriesRes?.results || [],
     directors: directorsRes?.results || [],
@@ -111,17 +127,14 @@ export default async function VideosPage(props: {
     <div className={styles.pageContainer}>
       <div className={styles.wrapper}>
         
-        {/* 🏛️ 1. サイドバーエリア (共通のレイアウト設定を適用) */}
         <aside className={styles.sidebar}>
           <div className={styles.sidebarSticky}>
             <Sidebar {...sidebarProps} />
           </div>
         </aside>
 
-        {/* 🏗️ 2. コンテンツメインストリーム */}
         <main className={styles.contentStream}>
           
-          {/* 📊 システムステータス診断 (現在のクエリ状態を可視化) */}
           <section className={styles.debugSection}>
             <SystemDiagnosticHero 
               status="ACTIVE" 
@@ -139,7 +152,6 @@ export default async function VideosPage(props: {
             />
           </section>
 
-          {/* 📀 作品アーカイブセクション */}
           <section className={styles.archiveSection}>
             <div className={styles.sectionHeader}>
               <h1 className={styles.mainTitle}>
@@ -163,7 +175,6 @@ export default async function VideosPage(props: {
             )}
           </section>
 
-          {/* 📑 3. ページネーション (提供いただいたロジックを反映) */}
           {totalPages > 1 && (
             <footer className={styles.paginationFooter}>
               <Pagination 

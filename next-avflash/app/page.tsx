@@ -5,14 +5,20 @@
 
 import React from 'react';
 import Link from 'next/link';
-// ✅ 共通APIライブラリから取得関数をインポート
+
+/**
+ * ✅ インポートパスの修正
+ * 1. API: shared/lib/api/django/adult.ts (既存)
+ * 2. Card: shared/components/organisms/cards/AdultProductCard.tsx (修正)
+ */
 import { getUnifiedProducts } from '@shared/lib/api/django/adult';
-import AdultProductCard from '@shared/cards/AdultProductCard';
+import AdultProductCard from '@shared/components/organisms/cards/AdultProductCard';
+
 import styles from './page.module.css';
 
 /**
  * 💡 Next.js 15 用の動的レンダリング設定
- * Djangoからのレスポンスをキャッシュせず、常に最新のDUGAデータを表示します
+ * Djangoからのレスポンスをキャッシュせず、常に最新のデータを表示します
  */
 export const dynamic = 'force-dynamic';
 
@@ -35,8 +41,8 @@ export default async function Page() {
         });
 
         // Djangoの戻り値 { results, count } を展開
-        products = response.results || [];
-        totalCount = response.count || 0;
+        products = response?.results || [];
+        totalCount = response?.count || 0;
 
         console.log(`[AvFlash] DUGA API Success: Found ${totalCount} items.`);
     } catch (error) {
@@ -46,7 +52,7 @@ export default async function Page() {
     return (
         <div className={styles.container}>
             
-            {/* --- 🛸 ヒーローヘッダー (メインコンテンツ内) --- */}
+            {/* --- 🛸 ヒーローヘッダー --- */}
             <header className={styles.heroHeader}>
                 <div className={styles.heroBadge}>DUGA OFFICIAL ARCHIVE</div>
                 <h1 className={styles.heroTitle}>{title}</h1>
@@ -59,7 +65,7 @@ export default async function Page() {
             </header>
 
             {/* --- 💎 DUGA NEW RELEASES グリッド --- */}
-            <section className={styles.section}>
+            <section className={section}>
                 <div className={styles.sectionHeader}>
                     <div className={styles.titleWrapper}>
                         <h2 className={styles.sectionTitle}>NEW RELEASES</h2>
@@ -70,9 +76,6 @@ export default async function Page() {
                     </Link>
                 </div>
                 
-                {/* layout.module.css の mainContent (padding: 40px) 内に 
-                    この productGrid が全幅で展開されます 
-                */}
                 <div className={styles.productGrid}>
                     {products && products.length > 0 ? (
                         products.map((item) => (
@@ -86,19 +89,6 @@ export default async function Page() {
                                 Djangoサーバー <code>api_source='DUGA'</code> のデータを確認してください。<br />
                                 現在、同期またはAI解析待ちの可能性があります。
                             </p>
-                            <button 
-                                onClick="window.location.reload()" 
-                                style={{ 
-                                    marginTop: '20px', 
-                                    padding: '10px 20px', 
-                                    background: '#222', 
-                                    color: '#fff', 
-                                    border: '1px solid #444',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                再読み込みを試す
-                            </button>
                         </div>
                     )}
                 </div>

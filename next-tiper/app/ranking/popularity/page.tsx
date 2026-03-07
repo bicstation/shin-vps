@@ -1,28 +1,24 @@
+/* /app/ranking/popularity/page.tsx */
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import { TrendingUp, Activity, Flame } from 'lucide-react';
 
 /**
- * 🛠️ インポートセクション
- * 指定されたパスのコンポーネントを使用
+ * 🛠️ インポートセクション (物理構造同期済み)
  */
-import { fetchAdultPopularityRanking } from '@shared/lib/api';
-import AdultProductCard from '@shared/cards/AdultProductCard';
-import Pagination from '@shared/common/Pagination';
+import { fetchAdultPopularityRanking } from '@/shared/lib/api';
+import AdultProductCard from '@/shared/components/organisms/cards/AdultProductCard.tsx';
+import Pagination from '@/shared/components/molecules/Pagination';
 import styles from './Popularity.module.css';
 
 /**
  * ✅ SEOメタデータ
- * tiper.live 用に検索エンジン最適化した設定
  */
 export const metadata: Metadata = {
   title: '【24時間集計】注目アダルト作品アクセスランキング | Tiper',
   description: '今、最も閲覧されているアダルト作品をリアルタイム集計。過去24時間のアクセスデータに基づいた売れ筋・注目ランキングTOP100を公開中。',
   keywords: ['アダルトランキング', '人気作品', 'Tiper', 'リアルタイムトレンド'],
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
   openGraph: {
     title: '注目アダルト作品アクセスランキング | Tiper',
     description: '今、最も閲覧されているアダルト作品をリアルタイム集計。',
@@ -40,43 +36,35 @@ async function RankingContent({
 }: { 
   searchParams: Promise<{ page?: string }> 
 }) {
-  // Next.js 15+ の非同期 searchParams 対応
   const sParams = await searchParams;
   const currentPage = parseInt(sParams.page || '1', 10);
   const limit = 20; 
   const offset = (currentPage - 1) * limit;
 
-  // DBからランキングデータを取得
-  const allProducts = await fetchAdultPopularityRanking();
+  // DBからランキングデータを取得 (エラーハンドリング追加)
+  const allProducts = await fetchAdultPopularityRanking().catch(() => []);
   
-  // ページネーション用にスライス
   const products = allProducts.slice(offset, offset + limit);
   const totalPages = Math.ceil(allProducts.length / limit);
 
-  /**
-   * 構造化データ (JSON-LD)
-   * 商品リストとしてGoogleに認識させ、検索結果での視認性を高める
-   */
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "itemListElement": products.map((product, index) => ({
       "@type": "ListItem",
       "position": offset + index + 1,
-      "url": `https://tiper.live/product/${product.unique_id}`,
-      "name": product.name
+      "url": `https://tiper.live/product/${product.unique_id || product.id}`,
+      "name": product.name || product.title
     }))
   };
 
   return (
     <>
-      {/* 構造化データのレンダリング */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ページヘッダー */}
       <header className={styles.header}>
         <div className={styles.badgeContainer}>
           <Flame className="w-4 h-4 text-orange-500" />
@@ -91,19 +79,16 @@ async function RankingContent({
         </p>
       </header>
 
-      {/* ランキンググリッド表示 */}
       <div className={styles.grid}>
         {products.map((product, index) => {
           const rank = offset + index + 1;
           return (
-            <div key={product.unique_id || product.id} className={styles.cardWrapper}>
-              {/* 指定された AdultProductCard を使用 */}
+            <div key={product.unique_id || product.id || `rank-${rank}`} className={styles.cardWrapper}>
               <AdultProductCard 
                 product={product} 
                 rank={rank}
               />
               
-              {/* 3位以内の場合は「注目」バッジをオーバーレイ表示 */}
               {rank <= 3 && (
                 <div className={styles.trendingTag}>
                   <Activity className="w-3 h-3 mr-1" />
@@ -115,7 +100,6 @@ async function RankingContent({
         })}
       </div>
 
-      {/* 共通 Pagination コンポーネントを使用 */}
       <div className={styles.paginationSection}>
         <Pagination 
           currentPage={currentPage} 
@@ -127,11 +111,6 @@ async function RankingContent({
   );
 }
 
-/**
- * ✅ ページエントリポイント
- * Next.js 15 の「Missing Suspense Boundary」を回避するため、
- * 動的パラメータ（searchParams）を扱うコンテンツを Suspense で保護します。
- */
 export default function AdultPopularityRankingPage(props: { 
   searchParams: Promise<{ page?: string }> 
 }) {

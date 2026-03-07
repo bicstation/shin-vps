@@ -1,6 +1,6 @@
 /* VisualSection.tsx */
-import AdultProductGallery from '@shared/cards/AdultProductGallery';
-import RadarChart from '@shared/ui/RadarChart';
+import AdultProductGallery from '@/shared/components/organisms/cards/AdultProductGallery';
+import RadarChart from '@/shared/components/atoms/RadarChart';
 
 /**
  * 💡 VisualSection

@@ -1,5 +1,5 @@
 // サンプル発売日カレンダーのpage.tsxを作成てください。import React from 'react';
-import StaticPageLayout from '@shared/static/StaticPageLayout';
+import StaticPageLayout from '@/shared/components/templates/StaticPageLayout';
 import { Calendar as CalendarIcon, Clock, ChevronRight } from 'lucide-react';
 
 export const metadata = {

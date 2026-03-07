@@ -1,4 +1,4 @@
-import StaticPageLayout from '@shared/static/StaticPageLayout';
+import StaticPageLayout from '@/shared/components/templates/StaticPageLayout';
 
 export const metadata = {
   title: 'tiper.liveについて - 究極の作品選びをサポートするデータプラットフォーム',

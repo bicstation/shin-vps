@@ -1,4 +1,4 @@
-import StaticPageLayout from '@shared/static/StaticPageLayout';
+import StaticPageLayout from '@/shared/components/templates/StaticPageLayout';
 
 export const metadata = {
   title: '広告掲載規定および免責事項 | tiper.live',

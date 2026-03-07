@@ -9,30 +9,50 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    /* ✅ 1. Next.js 15 の推奨設定: 外部パッケージや shared の解決を安定化 */
+    
+    /* ✅ 1. Next.js 15 の推奨設定: bundler 解決により shared パッケージ等の解決を安定化 */
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    /* ✅ 2. ベースディレクトリをカレントに設定 */
+
+    /* ✅ 2. ベースディレクトリ設定 (shared を含む親階層から見たルート) */
     "baseUrl": ".",
-    /* ✅ 3. エイリアスの解決ルール */
+
+    /* ✅ 3. 新しい Atomic Design 構造に基づいたエイリアス定義 */
+    /* これにより、インポートが `@shared/atoms/Button` のように爆速で書けます */
     "paths": {
       "@/*": ["./*"],
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["shared/*"],
+      "@shared/components/*": ["shared/components/*"],
+      "@shared/atoms/*": ["shared/components/atoms/*"],
+      "@shared/molecules/*": ["shared/components/molecules/*"],
+      "@shared/organisms/*": ["shared/components/organisms/*"],
+      "@shared/templates/*": ["shared/components/templates/*"],
+      "@shared/lib/*": ["shared/lib/*"],
+      "@shared/api/*": ["shared/lib/api/*"],
+      "@shared/utils/*": ["shared/lib/utils/*"],
+      "@shared/styles/*": ["shared/styles/*"],
+      "@shared/types": ["shared/types/index.ts"]
     }
   },
-  /* ✅ 4. ビルド対象の拡張 */
+
+  /* ✅ 4. ビルド・型チェック対象の包括的設定 */
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    /* 共通ディレクトリ内のロジック、コンポーネント、スタイルをすべて含める */
-    "shared/**/*.ts",
-    "shared/**/*.tsx",
-    "shared/**/*.css"
+    
+    /* 共通ディレクトリ内の整理された全アセットを明示的に含める */
+    "shared/components/**/*.ts",
+    "shared/components/**/*.tsx",
+    "shared/lib/**/*.ts",
+    "shared/lib/**/*.tsx",
+    "shared/styles/**/*.css",
+    "shared/types/**/*.ts"
   ],
+
   "exclude": ["node_modules"]
 }

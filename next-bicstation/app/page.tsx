@@ -1,22 +1,26 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
-// /home/maya/dev/shin-vps/next-bicstation/app/page.tsx
-
 /**
- * ✅ 属性ジャンル・最新プロセッサ検索を統合した完全版
- * 総合ランキング ➔ 属性検索 ➔ 部門別ランキング ➔ ニュース ➔ カタログ の流れで構成
+ * =====================================================================
+ * 🏠 BICSTATION Main Portal
+ * 🛡️ Maya's Logic: 物理構造 v3.2 完全同期版
+ * 物理パス: app/page.tsx
+ * =====================================================================
  */
 
 export const revalidate = 600;
 
 import React from 'react';
 import Link from 'next/link';
-import ProductCard from '@shared/cards/ProductCard';
-import styles from './MainPage.module.css';
 
-// APIインポート
-import { fetchPostList } from '@shared/lib/api/wordpress';
-import { fetchPCProducts, fetchPCProductRanking } from '@shared/lib/api/django/pc';
+// ✅ 修正ポイント 1: インポートパスを最新の物理構造（cards）に合わせる
+import ProductCard from '@/shared/components/organisms/cards/ProductCard';
+import styles from './page.module.css';
+
+// ✅ 修正ポイント 2: APIインポートパスを django-bridge.ts に変更
+// WordPressのロジックは django-bridge が吸収しているため、こちらを参照
+import { fetchPostList } from '@/shared/lib/api/django-bridge';
+import { fetchPCProducts, fetchPCProductRanking } from '@/shared/lib/api/django/pc';
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -41,7 +45,7 @@ function RankingCategory({ title, products, icon }: { title: string, products: a
             <div className={styles.rankingGrid}>
                 {topThree.map((p, i) => (
                     <ProductCard 
-                        key={p.unique_id} 
+                        key={p.unique_id || p.id} 
                         product={p} 
                         rank={i + 1} 
                     />
@@ -66,8 +70,9 @@ export default async function Page({ searchParams }: PageProps) {
         }
     }
 
-    // データの並列取得 (VPSの最新構造を維持)
+    // データの並列取得
     const [wpData, pcData, rankingData, gamingData, creatorData, mobileData] = await Promise.all([
+        // ✅ WordPress互換のデータ取得（django-bridge経由）
         safeFetch(fetchPostList('post', 8), { results: [], count: 0 }),
         safeFetch(fetchPCProducts('', 0, 12, attribute || ''), { results: [], count: 0 }),
         safeFetch(fetchPCProductRanking(), []),
@@ -78,7 +83,7 @@ export default async function Page({ searchParams }: PageProps) {
 
     const pcResults = pcData?.results || [];
     const wpResults = wpData?.results || [];
-    const topThreeOverall = rankingData.slice(0, 3);
+    const topThreeOverall = (rankingData || []).slice(0, 3);
 
     return (
         <article className={styles.mainContainer}>
@@ -107,7 +112,7 @@ export default async function Page({ searchParams }: PageProps) {
                     <div className={styles.rankingGrid}>
                         {topThreeOverall.map((p, i) => (
                             <ProductCard 
-                                key={p.unique_id} 
+                                key={p.unique_id || p.id} 
                                 product={p} 
                                 rank={i + 1} 
                             />
@@ -116,7 +121,7 @@ export default async function Page({ searchParams }: PageProps) {
                 </section>
             )}
 
-            {/* 🔍 属性検索セクション (追加: 用途・スペックから探す) */}
+            {/* 🔍 属性検索セクション */}
             <section className={styles.attributeSearchSection}>
                 <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>🔍 目的・スペックから探す</h2>
@@ -192,12 +197,12 @@ export default async function Page({ searchParams }: PageProps) {
             <section className={styles.productSection}>
                 <div className={styles.sectionHeader}>
                     <h2 className={styles.productGridTitle}>最新PC製品カタログ</h2>
-                    <span className={styles.countBadge}>{pcData.count} 件の製品</span>
+                    <span className={styles.countBadge}>{pcData.count || 0} 件の製品</span>
                 </div>
                 <div className={styles.productGrid}>
                     {pcResults.map((product: any) => (
                         <ProductCard 
-                            key={product.unique_id} 
+                            key={product.unique_id || product.id} 
                             product={product} 
                         />
                     ))}

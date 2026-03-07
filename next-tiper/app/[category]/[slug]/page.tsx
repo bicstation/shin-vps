@@ -4,23 +4,14 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-// CSSモジュールとコンポーネントのインポート
+// ✅ 修正: 物理構造 [STRUCTURE] に基づく正規インポートパス
 import styles from './Category.module.css'; 
-import ProductCard from '@/shared/cards/AdultProductCard';
-import Pagination from '@/shared/common/Pagination';
-import SystemDiagnosticHero from '@/shared/debug/SystemDiagnosticHero';
+import ProductCard from '@/shared/components/organisms/cards/AdultProductCard';
+import Pagination from '@/shared/components/molecules/Pagination';
+import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero';
 
-import { getSiteMainPosts } from '@/shared/lib/api/wordpress';
-import { 
-  getUnifiedProducts, 
-  fetchMakers, 
-  fetchGenres, 
-  fetchActresses,
-  fetchSeries,
-  fetchDirectors,
-  fetchAuthors,
-  fetchLabels
-} from '@/shared/lib/api/django/adult';
+// ✅ 修正: WordPressを廃止し、Django/Unified APIへ統合
+import { getUnifiedProducts } from '@/shared/lib/api/django-bridge';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +48,7 @@ export async function generateMetadata(props: { params: Promise<{ category: stri
 
 /**
  * カテゴリ詳細ページ メインコンポーネント
- * 🛠️ サイドバーを排除し、コンテンツをメインストリームのみに集中させた構成
+ * 🛠️ 物理構造同期 v6.3 [STRUCTURE_SYNC_COMPLETED]
  */
 export default async function CategoryDetailPage(props: { 
   params: Promise<{ category: string; slug: string }>;
@@ -77,46 +68,44 @@ export default async function CategoryDetailPage(props: {
   const isNumberId = /^\d+$/.test(slug);
   const filterKey = isNumberId ? baseKey : `${baseKey}_slug`;
 
-  // --- 📡 データの取得（メインコンテンツのみ） ---
-  const [
-    productRes,
-  ] = await Promise.all([
-    getUnifiedProducts({ 
-      page: currentPage, 
-      limit: pageSize,
-      [filterKey]: slug, 
-      ordering: currentOrdering
-    }).catch(() => ({ results: [], count: 0 })),
-  ]);
+  // --- 📡 データの取得（Django Bridge経由） ---
+  const productRes = await getUnifiedProducts({ 
+    page: currentPage, 
+    limit: pageSize,
+    [filterKey]: slug, 
+    ordering: currentOrdering
+  }).catch((err) => {
+    console.error("API_FETCH_ERROR:", err);
+    return { results: [], count: 0 };
+  });
 
   const items = productRes?.results || [];
   const totalCount = productRes?.count || 0;
   const totalPages = Math.ceil(totalCount / pageSize);
 
+  // 1ページ目でデータが空の場合は404
   if (items.length === 0 && currentPage === 1) return notFound();
 
   return (
     <div className={styles.container}>
-      {/* 📟 シンプルなトップナビ */}
+      {/* 📟 トップナビゲーション */}
       <nav className={styles.navBar}>
         <div className={styles.navInner}>
           <div className={styles.breadcrumb}>
             <Link href="/" className={styles.breadcrumbLink}>CORE_SYSTEM</Link>
             <span className="opacity-20">/</span>
             <Link href={`/${category}`} className={styles.breadcrumbLink}>{category.toUpperCase()}</Link>
+            <span className="opacity-20">/</span>
+            <span className="text-pink-500 font-bold">{slug}</span>
           </div>
           <div className={styles.liveDot}></div>
         </div>
       </nav>
 
       <div className={styles.inner}>
-        {/* 🛠️ mainLayout のサイドバー (aside) を削除しました。
-            styles.mainLayout で grid を使用している場合は、CSS側で 
-            grid-template-columns: 1fr; に修正することをお勧めします。
-        */}
         <div className={styles.mainLayout}>
           
-          {/* 📺 メインストリーム (全幅展開) */}
+          {/* 📺 メインストリームコンテンツ */}
           <main className={styles.content}>
             
             <header className={styles.contentHeader}>
@@ -155,13 +144,14 @@ export default async function CategoryDetailPage(props: {
               </div>
             )}
             
-            {/* 商品グリッド - サイドバーがなくなった分、より多くのカラムを表示可能 */}
+            {/* 商品グリッドエリア */}
             <div className={styles.productGrid}>
               {items.map((product: any) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
+            {/* ページネーション */}
             {totalPages > 1 && (
               <div className={styles.pagination}>
                 <Pagination 

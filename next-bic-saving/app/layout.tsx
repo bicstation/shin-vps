@@ -1,40 +1,46 @@
-// 💡 Linter と TypeScript のチェックを無効化
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
+import { headers } from "next/headers";
 import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
- * 構造変更に合わせて components/ を削除
  */
 import '@shared/styles/globals.css';
 
 /**
  * ✅ 2. 共通設定のインポート
- * lib/ を経由するパスに修正
+ * 物理パス: shared/lib/utils/siteConfig.ts
  */
-import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@shared/lib/utils/siteConfig';
 
 /**
  * ✅ 3. 共通レイアウトコンポーネントのインポート
- * 構造変更に合わせて components/ を削除
+ * 物理パス: shared/components/organisms/common/
+ * エイリアス解決を確実にするため、詳細なパスを指定します
  */
-import Header from '@shared/layout/Header';
-import Footer from '@shared/layout/Footer';
-import ChatBot from '@shared/common/ChatBot';
+import Header from '@shared/components/organisms/common/Header';
+import Footer from '@shared/components/organisms/common/Footer';
+import ChatBot from '@shared/components/organisms/common/ChatBot';
 
 const inter = Inter({ subsets: ["latin"] });
+
+/**
+ * 💡 強制的動的レンダリングの設定 (Next.js 15)
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * 💡 SEOメタデータの設定
  */
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://bic-saving.com'),
   title: {
     template: "%s | ビック professional的節約生活",
     default: "ビック的節約生活 - 賢い買い物と最新テックで暮らしを最適化",
@@ -58,23 +64,27 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#ffcc00", // 節約生活のテーマカラーに合わせる
+  themeColor: "#ffcc00",
 };
 
 /**
  * 🏠 ルートレイアウトコンポーネント
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // 共通ロジックから現在のサイト情報を取得
-  const site = getSiteMetadata();
+  // ✅ 共通設定から現在のホスト情報を取得 (Next.js 15 対応)
+  const headerList = await headers();
+  const host = headerList.get('host') || "bic-saving.com";
+  
+  // 物理パス: shared/lib/utils/siteConfig.ts
+  const site = getSiteMetadata(host);
   const themeColor = getSiteColor(site.site_name);
 
   return (
-    <html lang="ja">
+    <html lang="ja" style={{ height: '100%' }}>
       <body 
         className={`${inter.className} ${styles.bodyWrapper}`}
         style={{ 
@@ -86,11 +96,14 @@ export default function RootLayout({
           padding: 0,
           minHeight: '100vh',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          position: 'relative'
         } as React.CSSProperties}
       >
         {/* ① 共通ヘッダー */}
-        <Header />
+        <Suspense fallback={<div style={{ height: '60px', backgroundColor: '#fff' }} />}>
+          <Header />
+        </Suspense>
 
         {/* ② 告知バー (PR表記など) */}
         <div className={styles.adDisclosure} style={{ 
@@ -111,11 +124,13 @@ export default function RootLayout({
               コンテンツを読み込み中...
             </div>
           }>
-            {children}
+            <main style={{ flexGrow: 1 }}>
+              {children}
+            </main>
           </Suspense>
         </div>
 
-{/* ✅ 修正: FooterをSuspenseで囲む */}
+        {/* ④ フッター */}
         <Suspense fallback={<div className="h-40 bg-gray-50 animate-pulse" />}>
           <Footer />
         </Suspense>

@@ -1,4 +1,6 @@
+/* /app/layout.tsx */
 /* eslint-disable @next/next/no-img-element */
+import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
@@ -8,41 +10,33 @@ import styles from "./layout.module.css";
 /**
  * ✅ 1. スタイルのインポート
  */
-import '@shared/styles/globals.css';
+import '@/shared/styles/globals.css';
 
 /**
- * ✅ 2. 共通設定とコンポーネント
+ * ✅ 2. 共通設定とコンポーネント (物理パス同期)
  */
-import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
-import Header from '@shared/layout/Header';
-import Footer from '@shared/layout/Footer';
+import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
+
+// 🚀 発見された物理パスに合わせて修正
+import Header from '@/shared/components/organisms/common/Header';
+import Footer from '@/shared/components/organisms/common/Footer';
 
 /**
  * ✅ 3. サイドバーラッパー
- * 内部でホスト判定を行い、適切なサイドバー（AdultSidebar / AdultSidebarAvFlash）を
- * 呼び出すサーバーコンポーネント。非同期でのデータ取得を内包します。
  */
-import SidebarWrapper from '@shared/layout/Sidebar/SidebarWrapper';
+import SidebarWrapper from '@/shared/layout/Sidebar/SidebarWrapper';
 
 /**
  * ✅ 4. SEO設定
  */
-import { constructMetadata } from '@shared/lib/metadata';
+import { constructMetadata } from '@/shared/lib/utils/metadata';
 
 /**
  * ✅ 5. ページ遷移プログレスバー
  */
-import RouteProgressBar from '@shared/common/RouteProgressBar';
+import RouteProgressBar from '@/shared/components/atoms/RouteProgressBar';
 
 const inter = Inter({ subsets: ["latin"] });
-
-/**
- * 💡 強制的動的レンダリングの設定
- * ユーザーのホスト名（ドメイン）によって表示やブランド設定を切り替えるため、
- * 静的生成（SSG）ではなく dynamic 必須となります。
- */
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 /**
  * 💡 メタデータの動的生成
@@ -51,14 +45,19 @@ export async function generateMetadata(): Promise<Metadata> {
   return constructMetadata();
 }
 
+/**
+ * 💡 強制的動的レンダリングの設定
+ */
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   /**
-   * ✅ サイト設定の取得
-   * リクエストヘッダーからホスト名を取得し、siteConfig からブランド情報を特定します。
+   * ✅ サイト設定の取得 (Next.js 15 Async Request APIs 対応)
    */
   const headerList = await headers();
   const host = headerList.get('host') || "localhost";
@@ -83,23 +82,23 @@ export default async function RootLayout({
           display: "flex",
           flexDirection: "column",
           position: "relative",
-          // CSS変数としてテーマカラーを注入。CSS側で var(--site-theme-color) として利用可能。
+          // CSS変数としてテーマカラーを注入
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": BG_COLOR,
           "--grid-color": "rgba(233, 69, 96, 0.03)",
         } as React.CSSProperties}
       >
-        {/* 🚀 ページ遷移時のプログレスバー & インジケーター */}
+        {/* 🚀 ページ遷移時のプログレスバー */}
         <RouteProgressBar />
 
         {/* 背景のシステムグリッド・エフェクト */}
         <div className={styles.systemGrid} />
 
-        {/* 1. 共通ヘッダー（サイト名等は内部で getSiteMetadata により自動解決） */}
+        {/* 1. 共通ヘッダー */}
         <Header />
 
-        {/* 2. 告知バー（広告・年齢制限） */}
+        {/* 2. 告知バー */}
         <div className={styles.adDisclosure}>
           <div className={styles.adDisclosureInner}>
             <span className={styles.prLabel}>【PR】</span>本サイトは広告を利用しています。
@@ -111,7 +110,7 @@ export default async function RootLayout({
           </div>
         </div>
 
-        {/* 3. メインレイアウト構造（サイドバー固定 + コンテンツ可変） */}
+        {/* 3. メインレイアウト構造 */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutWrapper}>
             
@@ -124,15 +123,12 @@ export default async function RootLayout({
                     <span className={styles.loadingPulse}>LOADING_SYSTEM_MATRIX...</span>
                   </div>
                 }>
-                  {/* SidebarWrapper自体が非同期サーバーコンポーネントです。
-                    ホスト判定を行い、Tiper用(Sidebar) か AV Flash用(AdultSidebarAvFlash) を自動返却します。
-                  */}
                   <SidebarWrapper />
                 </Suspense>
               </div>
             </aside>
 
-            {/* 🏗️ コンテンツストリーム（メイン表示領域） */}
+            {/* 🏗️ コンテンツストリーム */}
             <main className={styles.mainContent}>
               <Suspense 
                 fallback={
@@ -141,7 +137,6 @@ export default async function RootLayout({
                   </div>
                 }
               >
-                {/* 各ページコンポーネント (page.tsx) */}
                 {children}
               </Suspense>
             </main>

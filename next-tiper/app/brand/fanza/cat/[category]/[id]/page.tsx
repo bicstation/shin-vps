@@ -3,11 +3,25 @@
 import React from 'react';
 import { Metadata } from 'next';
 import ArchiveTemplate from '@/app/brand/ArchiveTemplate';
+
+/**
+ * 🛰️ API インポート
+ * 物理構造 shared/lib/api/django/adult.ts に準拠
+ */
 import { 
     getUnifiedProducts, 
     getFanzaDynamicMenu 
-} from '@shared/lib/api/django/adult';
-import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
+} from '@/shared/lib/api/django/adult';
+
+/**
+ * ✅ 修正: 物理構造 shared/lib/utils/metadata.ts に合わせる
+ */
+import { constructMetadata } from '@/shared/lib/utils/metadata';
+
+/**
+ * ✅ 修正: 物理構造 shared/components/molecules/SystemDiagnosticHero.tsx に合わせる
+ */
+import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +39,6 @@ const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
 
 /**
  * 💡 サービス名の日本語変換定義
- * APIから返ってくる 'videoa' などのコードを日本語に変換します。
  */
 const SERVICE_NAME_MAP: Record<string, string> = {
     'digital': 'デジタル',
@@ -37,23 +50,43 @@ const SERVICE_NAME_MAP: Record<string, string> = {
 };
 
 /**
- * 🔳 FANZA_CATEGORY_DETAIL_PAGE (Optimized Data Stream)
+ * 🛰️ METADATA_GENERATOR
+ */
+export async function generateMetadata({ params }: { params: Promise<{ category: string, id: string }> }): Promise<Metadata> {
+    const { category, id } = await params;
+    const decodedId = decodeURIComponent(id);
+    const categoryLabel = CATEGORY_DISPLAY_NAMES[category] || category.toUpperCase();
+    
+    return constructMetadata({
+        title: `FANZA ${categoryLabel} [${decodedId}] アーカイブ解析 | TIPER`,
+        description: `FANZAの${categoryLabel}（ID:${decodedId}）に基づいた全作品アーカイブ。最新の市場解析データを表示。`,
+        canonical: `/brand/fanza/cat/${category}/${id}`
+    });
+}
+
+/**
+ * 🔳 FANZA_CATEGORY_DETAIL_PAGE
+ * 役割: 特定の属性(女優・ジャンル等)に基づいた商品一覧を表示し、名前の逆引き解決を行う。
  */
 export default async function FanzaCategoryDetailPage(props: {
     params: Promise<{ category: string; id: string }>;
     searchParams: Promise<{ page?: string; sort?: string; debug?: string }>;
 }) {
-    const { category, id } = await props.params;
-    const searchParams = await props.searchParams;
+    // 1. パラメータの非同期解決
+    const [resolvedParams, resolvedSearchParams] = await Promise.all([
+        props.params,
+        props.searchParams
+    ]);
+    const { category, id } = resolvedParams;
 
-    const isDebug = searchParams?.debug === 'true';
-    const currentPage = Number(searchParams?.page) || 1;
-    const currentSort = searchParams?.sort || '-release_date';
+    const isDebug = resolvedSearchParams?.debug === 'true';
+    const currentPage = Number(resolvedSearchParams?.page) || 1;
+    const currentSort = resolvedSearchParams?.sort || '-release_date';
 
     // カテゴリキーの正規化 (API引数名に変換: actress -> actress_id)
     const categoryKey = `${category}_id`;
 
-    // --- 🏗️ 1. データ取得 ---
+    // --- 🏗️ 2. データ取得（並列実行） ---
     const [
         productData, 
         dynamicMenu
@@ -69,31 +102,27 @@ export default async function FanzaCategoryDetailPage(props: {
         getFanzaDynamicMenu().catch(() => ({})), 
     ]);
 
-    // --- 🛠️ 2. 表示名の特定ロジック (重要) ---
-    // 💡 スラッグ(id)ではなく、商品データから「本名(name)」を抽出
+    // --- 🛠️ 3. 表示名の特定ロジック (Reverse Lookup) ---
     let displayName = id.toUpperCase();
-    if (productData.results?.length > 0) {
+    if ((productData.results?.length ?? 0) > 0) {
         const sample = productData.results[0];
         
-        // 取得した1件目の商品に含まれる各タクソノミー配列から、IDが一致するものを探す
         const targetMap: any = {
             actress: sample.actresses?.find((a: any) => String(a.id) === id || a.slug === id)?.name,
-            maker: sample.maker?.id === Number(id) || sample.maker?.slug === id ? sample.maker?.name : null,
+            maker: (String(sample.maker?.id) === id || sample.maker?.slug === id) ? sample.maker?.name : null,
             genre: sample.genres?.find((g: any) => String(g.id) === id || g.slug === id)?.name,
-            series: sample.series?.id === Number(id) || sample.series?.slug === id ? sample.series?.name : null,
+            series: (String(sample.series?.id) === id || sample.series?.slug === id) ? sample.series?.name : null,
             author: sample.authors?.find((a: any) => String(a.id) === id || a.slug === id)?.name,
-            director: sample.director?.id === Number(id) || sample.director?.slug === id ? sample.director?.name : null,
+            director: (String(sample.director?.id) === id || sample.director?.slug === id) ? sample.director?.name : null,
         };
         
         displayName = targetMap[category] || displayName;
     }
 
-    // カテゴリの日本語名を取得（例: actress -> 女優）
     const categoryLabel = CATEGORY_DISPLAY_NAMES[category] || category.toUpperCase();
 
-    // --- 🛡️ 3. サイドバー用階層データの整理 ---
+    // --- 🛡️ 4. サイドバー用階層データの整理 ---
     const fanzaHierarchy = Object.entries(dynamicMenu).map(([serviceName, content]: [string, any]) => {
-        // 💡 サービス名(serviceName)が英語コード（videoa等）の場合は日本語に置換
         const translatedServiceName = SERVICE_NAME_MAP[serviceName.toLowerCase()] || serviceName;
 
         const floorItems = (content.floors || []).map((f: any) => ({
@@ -106,7 +135,7 @@ export default async function FanzaCategoryDetailPage(props: {
 
         return {
             id: content.code,
-            name: translatedServiceName, // 日本語化された名前をセット
+            name: translatedServiceName,
             service_code: content.code,
             floors: floorItems,
         };
@@ -114,16 +143,19 @@ export default async function FanzaCategoryDetailPage(props: {
 
     return (
         <>
-            {/* 🐞 デバッグモード */}
+            {/* 🐞 診断ツール: shared/components/molecules/SystemDiagnosticHero.tsx */}
             {isDebug && (
                 <SystemDiagnosticHero 
-                    id={`FANZA_CAT_${category}_${id}_STREAM`}
-                    source="FANZA"
-                    data={{
+                    stats={{
+                        mode: 'BRAND_CAT_DETAIL',
+                        platform: 'FANZA',
+                        fetchTime: 'Parallel-Stream',
+                        productCount: productData?.count || 0,
+                    }}
+                    raw={{
                         category,
                         targetId: id,
                         resolvedName: displayName,
-                        totalCount: productData.count,
                         currentPage,
                         apiParam: categoryKey
                     }}
@@ -132,18 +164,15 @@ export default async function FanzaCategoryDetailPage(props: {
 
             <ArchiveTemplate 
                 platform="fanza"
-                // 💡 メインタイトルを 「女優: 三上悠亜」 のような形式に修正
                 title={`${categoryLabel}: ${decodeURIComponent(displayName)}`}
-                products={productData.results || []}
-                totalCount={productData.count || 0}
+                products={productData?.results || []}
+                totalCount={productData?.count || 0}
                 
-                // パンくず用データ
                 officialHierarchy={fanzaHierarchy} 
                 
                 currentPage={currentPage}
                 currentSort={currentSort}
                 
-                // ページネーションとパンくず用
                 basePath={`/brand/fanza/cat/${category}/${id}`}
                 categoryPathPrefix="/brand/fanza/cat" 
                 category={category}

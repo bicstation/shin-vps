@@ -1,0 +1,12 @@
+/* app/blog/Page.module.css */
+.wrapper { display: flex; max-width: 1200px; margin: 0 auto; gap: 2rem; }
+.sidebarSection { width: 300px; flex-shrink: 0; }
+.main { flex: 1; padding: 1rem; }
+.newsGrid { display: grid; grid-template-cols: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+.newsCard { border: 1px solid #eee; border-radius: 8px; overflow: hidden; text-decoration: none; color: inherit; transition: transform 0.2s; }
+.newsCard:hover { transform: translateY(-4px); }
+.imageWrapper { position: relative; aspect-ratio: 16/9; background: #f0f0f0; }
+.eyecatch { width: 100%; height: 100%; object-fit: cover; }
+.contentBody { padding: 1rem; }
+.articleTitle { font-size: 1.1rem; font-weight: bold; line-height: 1.4; }
+.mdBadge { position: absolute; top: 8px; left: 8px; background: #007bff; color: #fff; padding: 2px 8px; font-size: 0.75rem; border-radius: 4px; z-index: 1; }

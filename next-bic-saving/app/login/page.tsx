@@ -1,58 +1,67 @@
 "use client";
-// /home/maya/dev/shin-vps/next-bic-saving/app/login/page.tsx
-
-
-// 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
+/**
+ * ファイルパス: /home/maya/dev/shin-vps/next-bic-saving/app/login/page.tsx
+ * * 💡 Next.jsの静的解析を回避し、ランタイムでの動作を保証します
+ */
 export const dynamic = "force-dynamic";
 
 import React, { useState, FormEvent } from 'react';
 import Link from 'next/link'; 
-// ✅ 物理構造にあわせて /lib/ を経由するパスに固定
-import { loginUser } from '@shared/lib/auth';
-import { getSiteMetadata } from '@shared/lib/siteConfig';
+
+/**
+ * ✅ インポートパスの修正
+ * 物理構造 (/shared/lib/utils/...) に基づき、
+ * Webpackの Module not found エラーを回避するために正確なエイリアスパスを指定します。
+ */
+import { loginUser } from '@shared/lib/utils/auth';
+import { getSiteMetadata } from '@shared/lib/utils/siteConfig';
 
 export default function LoginPage() {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [debugMsg, setDebugMsg] = useState<string>(''); // 🚀 どこで止まったか表示する用
+  const [debugMsg, setDebugMsg] = useState<string>(''); // 🚀 進行状況の可視化
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    setDebugMsg('1. フォーム送信開始...');
+    setDebugMsg('1. 認証プロセスを開始...');
     setLoading(true);
 
     try {
-      console.log("Login sequence initiated...");
+      console.log("Login sequence initiated for:", username);
       
-      setDebugMsg('2. API通信(auth.ts)を呼び出し中...');
+      setDebugMsg('2. 認証サーバー(Django/Auth)に問い合わせ中...');
+      /**
+       * 💡 auth.tsx 内で実際の fetch やクッキーセット、リダイレクトが行われます。
+       * 物理パス: shared/lib/utils/auth.tsx
+       */
       await loginUser(username, password);
       
-      // 通常、成功すれば auth.ts 側でリダイレクトされるのでここには来ません
-      setDebugMsg('3. 通信成功！リダイレクトを待機中...');
+      setDebugMsg('3. 認証成功。ダッシュボードへ移動します...');
 
     } catch (err: any) {
       console.error("Login Error:", err);
-      setDebugMsg(`❌ エラー発生: ${err.message}`);
-      setError(err.message || 'ログインに失敗しました。');
+      setDebugMsg(`❌ エラー: ${err.message}`);
+      setError(err.message || 'ログインに失敗しました。ユーザー名とパスワードを確認してください。');
       setLoading(false);
     }
   };
 
-  // ✅ getSiteMetadata から情報を取得（siteConfig.ts 内の関数）
-  const { site_prefix } = getSiteMetadata();
-  const registerHref = site_prefix ? `${site_prefix}/register` : '/register';
+  // ✅ サイト設定から情報を取得（ホスト名に応じた接頭辞など）
+  // 物理パス: shared/lib/utils/siteConfig.ts
+  const site = getSiteMetadata();
+  const registerHref = site?.site_prefix ? `${site.site_prefix}/register` : '/register';
 
   return (
     <div className="flex justify-center items-center min-h-[70vh] px-4">
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-8">ログイン</h1>
         
-        {/* ステータス表示（デバッグ用） */}
+        {/* ステータス表示（デバッグ・進捗用） */}
         {loading && (
-          <div className="mb-4 text-xs text-blue-500 font-mono text-center bg-blue-50 p-2 rounded">
+          <div className="mb-4 text-xs text-blue-500 font-mono text-center bg-blue-50 p-2 rounded animate-pulse">
             {debugMsg}
           </div>
         )}
@@ -72,7 +81,8 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)} 
               required
               autoComplete="username"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all"
+              placeholder="Username"
             />
           </div>
 
@@ -84,23 +94,24 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)} 
               required
               autoComplete="current-password"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-gray-900 focus:ring-2 focus:ring-blue-500 transition-all"
+              placeholder="••••••••"
             />
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className={`w-full py-4 rounded-xl font-bold text-white transition-all ${
-              loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+            className={`w-full py-4 rounded-xl font-bold text-white transition-all shadow-lg ${
+              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-[0.98]'
             }`}
           >
-            {loading ? '処理中...' : 'ログイン'}
+            {loading ? '認証中...' : 'ログイン'}
           </button>
         </form>
 
         <div className="mt-8 pt-6 border-t border-gray-50 text-center">
-          <Link href={registerHref} className="text-blue-600 font-bold hover:underline text-sm">
+          <Link href={registerHref} className="text-blue-600 font-bold hover:underline text-sm transition-all">
             新規会員登録はこちら
           </Link>
         </div>

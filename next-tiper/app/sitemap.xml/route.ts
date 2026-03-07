@@ -1,5 +1,7 @@
 export const dynamic = 'force-dynamic';
 
+import { getSiteMainPosts } from '@/shared/lib/api';
+
 export async function GET() {
   const baseURL = 'https://tiper.live';
   

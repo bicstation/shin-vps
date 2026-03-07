@@ -1,0 +1,153 @@
+/* --- フローティングボタン --- */
+.floatingButton {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--theme-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floatingButton:hover {
+    transform: translateY(-5px) scale(1.05);
+}
+
+/* --- チャットウィンドウ本体 --- */
+.chatWindow {
+    position: fixed;
+    bottom: 110px;
+    right: 30px;
+    width: 380px;
+    height: 600px;
+    max-height: 75vh; /* 📱 モバイルでヘッダーと被らないよう少し抑える */
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    animation: openWindow 0.3s ease-out;
+}
+
+@keyframes openWindow {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- ヘッダー --- */
+.chatHeader {
+    background: var(--theme-color);
+    padding: 16px 20px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.headerTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* --- チャット本文 (スクロールエリア) --- */
+.chatBody {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #fdfdfd;
+}
+
+/* スクロールバーのカスタマイズ */
+.chatBody::-webkit-scrollbar { width: 5px; }
+.chatBody::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+}
+
+.aiRow { display: flex; justify-content: flex-start; }
+.userRow { display: flex; justify-content: flex-end; }
+
+.aiBubble {
+    background: #f0f2f5;
+    color: #1c1e21;
+    padding: 10px 14px;
+    border-radius: 18px 18px 18px 4px;
+    max-width: 85%;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.userBubble {
+    background: var(--theme-color);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 18px 18px 4px 18px;
+    max-width: 85%;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* --- 入力エリア (やっぱりここが落ち着く！) --- */
+.chatInputArea {
+    padding: 16px;
+    background: white;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 8px;
+}
+
+.inputField {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #e4e6eb;
+    border-radius: 20px;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.inputField:focus {
+    border-color: var(--theme-color);
+}
+
+.sendButton {
+    background: none;
+    color: var(--theme-color);
+    border: none;
+    padding: 0 10px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 13px;
+    transition: opacity 0.2s;
+}
+
+.sendButton:disabled { opacity: 0.3; }
+
+/* 📱 モバイル対応 */
+@media (max-width: 480px) {
+    .chatWindow {
+        width: calc(100% - 40px);
+        right: 20px;
+        bottom: 90px;
+    }
+}

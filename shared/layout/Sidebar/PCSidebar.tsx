@@ -1,18 +1,14 @@
-// /home/maya/dev/shin-vps/shared/layout/Sidebar/PCSidebar.tsx
-
 import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import { COLORS } from '../../styles/constants';
 
 /**
- * ✅ 修正済みインポート
- * Django API 層の共通ユーティリティ（resolveApiUrl, getDjangoHeaders）を使用して
- * 環境変数やパスの不整合を自動的に吸収します。
+ * ✅ 修正ポイント: django-bridge.ts を使用して Django 経由でコンテンツ取得
  */
-import { fetchMakers } from '@shared/lib/api/django/pc';
-import { resolveApiUrl, getDjangoHeaders } from '@shared/lib/api/django/client'; 
-import { fetchPostList } from '@shared/lib/api/wordpress';
+import { fetchMakers } from '@/shared/lib/api/django/pc';
+import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge'; // 👈 ブリッジを使用
+import { resolveApiUrl, getDjangoHeaders } from '@/shared/lib/api/django/client'; 
 import styles from './PCSidebar.module.css';
 
 // サーバー側で取得するための型定義
@@ -49,16 +45,15 @@ export default async function Sidebar() {
 
   /**
    * 🌐 スペック統計取得用のURL構築
-   * pc.ts の他の関数と同様に resolveApiUrl を使用して /api の重複を回避します。
    */
   const statsUrl = resolveApiUrl('/api/general/pc-sidebar-stats/');
 
-  // 2. データのフェッチ（Promise.allで効率的に並列実行）
-  const [makers, wpData, specStatsRes] = await Promise.all([
+  // 2. データのフェッチ（WPを完全に排除し、Django Bridgeに差し替え）
+  const [makers, bridgeData, specStatsRes] = await Promise.all([
     safeFetch(fetchMakers(), []),
-    safeFetch(fetchPostList('post', 10, 0), { results: [], count: 0 }),
+    // Django Bridge経由で「お知らせ」や「最新レポート」を取得する想定
+    safeFetch(fetchDjangoBridgeContent('latest_news', 5), []), 
     
-    // 手動 fetch ではなく Django API 層と同じヘッダーとパス解決を使用
     fetch(statsUrl, {
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
@@ -68,7 +63,7 @@ export default async function Sidebar() {
     })
   ]);
 
-  const recentPosts = (wpData as any).results || [];
+  const recentArticles = Array.isArray(bridgeData) ? bridgeData : [];
   
   // スペック統計データの処理
   let specStats: SidebarData | null = null;
@@ -80,7 +75,7 @@ export default async function Sidebar() {
     }
   }
 
-  // メーカー分けロジック（国内 vs 海外）
+  // メーカー分けロジック
   const domesticNames = ['mouse', 'panasonic', 'vaio', 'dynabook', 'fujitsu', 'nec', 'iiyama'];
   const categorizedMakers = (makers || []).reduce((acc, curr) => {
     if (!curr || !curr.maker) return acc;
@@ -93,18 +88,10 @@ export default async function Sidebar() {
     return acc;
   }, { domestic: [] as any[], overseas: [] as any[] });
 
-  /**
-   * WPタイトルのHTMLエンティティをデコード
-   */
-  const decodeTitle = (title: string) => {
-    if (!title) return '';
-    return title.replace(/&amp;/g, '&').replace(/&#039;/g, "'").replace(/&quot;/g, '"');
-  };
-
   return (
     <aside className={styles.sidebar}>
       
-      {/* 🏆 SPECIAL (コンバージョン導線) */}
+      {/* 🏆 SPECIAL (AIツールへの導線) */}
       <h3 className={styles.sectionTitle}>SPECIAL</h3>
       <ul className={styles.accordionContent}>
         <li style={{ marginBottom: '8px' }}>
@@ -117,7 +104,7 @@ export default async function Sidebar() {
         </li>
       </ul>
 
-      {/* 1. BRANDS: メーカー別絞り込み */}
+      {/* 1. BRANDS: メーカー別 */}
       <h3 className={styles.sectionTitle}>BRANDS</h3>
       <div style={{ marginBottom: '20px' }}>
         <p className={styles.subLabel}>国内メーカー</p>
@@ -149,7 +136,7 @@ export default async function Sidebar() {
         </ul>
       </div>
 
-      {/* 2. SPECS: Djangoから取得した動的な属性統計 */}
+      {/* 2. SPECS: Django動的統計 */}
       {specStats && Object.entries(specStats).map(([category, items]) => (
         <div key={category}>
           <h3 className={styles.sectionTitle}>{category.toUpperCase()}</h3>
@@ -166,22 +153,22 @@ export default async function Sidebar() {
         </div>
       ))}
 
-      {/* 3. LATEST: WordPress最新記事 */}
-      <h3 className={styles.sectionTitle}>LATEST ARTICLES</h3>
+      {/* 3. UPDATES: Django Bridge 経由の最新情報 */}
+      <h3 className={styles.sectionTitle}>LATEST UPDATES</h3>
       <ul className={styles.accordionContent}>
-        {recentPosts.length > 0 ? (
-          recentPosts.map((post: any) => (
-            <li key={post.id} style={{ marginBottom: '10px' }}>
-              <Link href={`/blog/${post.id}`} className={styles.link}>
+        {recentArticles.length > 0 ? (
+          recentArticles.map((item: any) => (
+            <li key={item.id} style={{ marginBottom: '10px' }}>
+              <Link href={`/news/${item.slug || item.id}`} className={styles.link}>
                 <span style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
-                  📄 {decodeTitle(post.title?.rendered || '無題の記事')}
+                  📄 {item.title}
                 </span>
               </Link>
             </li>
           ))
         ) : (
           <li className={styles.link} style={{ fontSize: '0.8rem', color: '#999' }}>
-            最新記事を読み込み中...
+            最新情報を取得中...
           </li>
         )}
       </ul>

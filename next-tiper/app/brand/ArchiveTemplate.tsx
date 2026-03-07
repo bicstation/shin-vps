@@ -3,15 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './Archive.module.css'; 
-import ProductCard from '@shared/cards/AdultProductCard';
-import Pagination from '@shared/common/Pagination';
-import AdultSidebar from '@shared/layout/Sidebar/AdultSidebar';
 
 /**
- * 💡 カテゴリラベルの日本語変換マップ
+ * ✅ STRUCTURE v3.2 物理パス準拠
+ * shared/components/organisms/cards/AdultProductCard.tsx
+ * shared/components/molecules/Pagination.tsx
+ * shared/layout/Sidebar/AdultSidebar.tsx
+ */
+import ProductCard from '@/shared/components/organisms/cards/AdultProductCard';
+import Pagination from '@/shared/components/molecules/Pagination';
+import AdultSidebar from '@/shared/layout/Sidebar/AdultSidebar';
+
+/**
+ * 💡 翻訳・表示設定
  */
 const CATEGORY_DISPLAY_LABELS: Record<string, string> = {
-  actress: '女優',
+  actress: '出演者',
   genre: 'ジャンル',
   series: 'シリーズ',
   maker: 'メーカー',
@@ -19,10 +26,6 @@ const CATEGORY_DISPLAY_LABELS: Record<string, string> = {
   author: '著者',
 };
 
-/**
- * 💡 サービス・単語の日本語変換マップ
- * タイトルなどに含まれる英語コードを日本語に置換します
- */
 const WORD_TRANSLATE_MAP: Record<string, string> = {
   'nikkatsu': '日活ロマンポルノ',
   'videoa': 'ビデオ',
@@ -33,23 +36,39 @@ const WORD_TRANSLATE_MAP: Record<string, string> = {
   'book': '電子書籍',
 };
 
-/**
- * ArchiveTemplate
- * 物理的なレイアウトハック機能を維持しつつ、パンくずやタイトルの表示を
- * 人間が読みやすい「名称（日本語）」に最適化した最終形態。
- */
+interface ArchiveTemplateProps {
+  products?: any[];
+  totalCount?: number;
+  platform?: string;
+  title?: string;
+  currentSort?: string;
+  currentPage?: number;
+  basePath?: string;
+  category?: string;
+  id?: string;
+  extraParams?: Record<string, any>;
+  officialHierarchy?: any[];
+  makers?: any[];
+  genres?: any[];
+  actresses?: any[];
+  authors?: any[];
+  series?: any[];
+  directors?: any[];
+  labels?: any[];
+  recentPosts?: any[];
+}
+
 export default function ArchiveTemplate({ 
   products = [], 
   totalCount = 0, 
-  platform, 
-  title, // 親から渡される「カテゴリ: 名前」形式のタイトル
+  platform = 'video', 
+  title = '', 
   currentSort = '-release_date', 
   currentPage = 1, 
-  basePath, 
-  category, 
-  id,
+  basePath = '', 
+  category = '', 
+  id = '',
   extraParams = {},
-  // --- サイドバーデータ ---
   officialHierarchy = [],
   makers = [],
   genres = [],
@@ -59,15 +78,16 @@ export default function ArchiveTemplate({
   directors = [],
   labels = [],
   recentPosts = []
-}: any) {
+}: ArchiveTemplateProps) {
   
   const limit = 24;
   const displayTotalPages = Math.ceil(totalCount / limit) || 1;
   const [filterText, setFilterText] = useState('');
 
-  // ---------------------------------------------------------------------------
-  // 🚨 LAYOUT_HACK_PROTOCOL: ページ表示時に消し、離れる時に必ず「復元」する
-  // ---------------------------------------------------------------------------
+  /**
+   * 🚨 LAYOUT_HACK_PROTOCOL (Next.js App Router Sidebar Isolation)
+   * 既存のグローバルサイドバーが干渉する場合、それを非表示にしてアーカイブ専用空間を確保します。
+   */
   useEffect(() => {
     const restoreTargets: {
       parent: HTMLElement;
@@ -76,16 +96,17 @@ export default function ArchiveTemplate({
       originalGrid: string;
       originalWidth: string;
     }[] = [];
-
+    
     const mainTags = document.querySelectorAll('main');
+
     mainTags.forEach((main) => {
-      if (!main.className.includes('Archive_mainContent')) {
+      // 自身のコンポーネント（Archive_mainContent）以外を対象にする
+      if (!main.className.includes('mainContent')) {
         const parent = main.parentElement;
         const aside = main.previousElementSibling;
 
         if (parent && aside && aside.tagName === 'ASIDE') {
           const asideHtml = aside as HTMLElement;
-
           restoreTargets.push({
             parent,
             aside: asideHtml,
@@ -94,10 +115,10 @@ export default function ArchiveTemplate({
             originalWidth: parent.style.width
           });
 
+          // レイアウトの上書き
           parent.style.display = 'block';
           parent.style.gridTemplateColumns = 'none';
           parent.style.width = '100%';
-
           asideHtml.style.display = 'none';
           asideHtml.style.width = '0';
           asideHtml.style.visibility = 'hidden';
@@ -106,49 +127,39 @@ export default function ArchiveTemplate({
     });
 
     return () => {
-      restoreTargets.forEach((target) => {
-        if (target.parent) {
-          target.parent.style.display = target.originalDisplay;
-          target.parent.style.gridTemplateColumns = target.originalGrid;
-          target.parent.style.width = target.originalWidth;
-        }
-        if (target.aside) {
-          target.aside.style.display = '';
-          target.aside.style.width = '';
-          target.aside.style.visibility = '';
-        }
+      restoreTargets.forEach((t) => {
+        t.parent.style.display = t.originalDisplay;
+        t.parent.style.gridTemplateColumns = t.originalGrid;
+        t.parent.style.width = t.originalWidth;
+        t.aside.style.display = '';
+        t.aside.style.width = '';
+        t.aside.style.visibility = '';
       });
     };
   }, []);
 
-  // プラットフォームごとのアクセントカラー設定
-  const platformColors: Record<string, string> = {
+  // アクセントカラーの動的解決
+  const platformKey = platform.toLowerCase();
+  const accentColor = {
     fanza: '#ff3366',
     dmm: '#ff9900',
     duga: '#00d1b2',
     video: '#e94560'
-  };
+  }[platformKey as keyof typeof accentColor] || '#e94560';
 
-  const accentColor = platformColors[platform] || platformColors.video;
-  const isDebug = extraParams.debug === 'true' || extraParams.debug === true;
-
-  // 💡 タイトルの翻訳ロジック
-  // 例: "VIDEOA SECTOR" -> "ビデオ SECTOR"
-  let translatedTitle = title || '';
+  // タイトル翻訳
+  let translatedTitle = title;
   Object.entries(WORD_TRANSLATE_MAP).forEach(([en, jp]) => {
-    const regex = new RegExp(en, 'gi');
-    translatedTitle = translatedTitle.replace(regex, jp);
+    translatedTitle = translatedTitle.replace(new RegExp(en, 'gi'), jp);
   });
 
-  // 💡 パンくず表示用のロジック
-  // titleが「女優: 三上悠亜」の場合、三上悠亜だけを取り出す。
   const breadcrumbName = translatedTitle.includes(':') 
     ? translatedTitle.split(':')[1].trim() 
     : (id ? decodeURIComponent(id) : 'ALL');
 
-  const categoryLabel = CATEGORY_DISPLAY_LABELS[category] || category?.toUpperCase();
+  const categoryLabel = CATEGORY_DISPLAY_LABELS[category] || (category ? category.toUpperCase() : '');
 
-  // クライアントサイドでの簡易フィルタリング
+  // クライアントサイドフィルタリング
   const filteredProducts = products.filter((p: any) => 
     (p.title || '').toLowerCase().includes(filterText.toLowerCase())
   );
@@ -156,46 +167,30 @@ export default function ArchiveTemplate({
   return (
     <div 
       className={styles.pageWrapper} 
-      style={{ 
-        '--accent': accentColor, 
-        '--accent-glow': `${accentColor}33` 
-      } as React.CSSProperties}
-      data-platform={platform}
+      style={{ '--accent': accentColor, '--accent-glow': `${accentColor}33` } as React.CSSProperties}
     >
       <div className={styles.ambientGlow} />
 
-      {/* 🛠️ DEBUG BAR */}
-      {isDebug && (
-        <div className="w-full bg-black/90 text-[10px] font-mono py-1 px-4 flex justify-between items-center border-b border-[var(--accent)] sticky top-0 z-[9999] backdrop-blur-md">
-          <div className="flex gap-4 items-center">
-            <span className="text-[var(--accent)] animate-pulse">● ARCHIVE_SCAN_ACTIVE</span>
-            <span className="text-gray-400">PATH: {basePath}</span>
-          </div>
-        </div>
-      )}
-
       <div className={styles.container}>
-        
-        {/* --- 🛰️ LEFT SIDEBAR AREA --- */}
+        {/* --- 🛰️ SIDEBAR (アーカイブ専用) --- */}
         <aside className={styles.sidebarWrapper}>
           <div className={styles.stickySidebar}>
             <AdultSidebar 
               officialHierarchy={officialHierarchy}
-              makers={makers}
-              genres={genres}
+              makers={makers} 
+              genres={genres} 
               actresses={actresses}
-              authors={authors}
-              series={series}
+              authors={authors} 
+              series={series} 
               directors={directors}
-              labels={labels}
+              labels={labels} 
               recentPosts={recentPosts}
             />
           </div>
         </aside>
 
-        {/* --- 🚀 MAIN CONTENT AREA --- */}
+        {/* --- 🚀 MAIN STREAM --- */}
         <main className={styles.mainContent}>
-          
           <nav className={styles.breadcrumb}>
             <Link href="/" className={styles.bcLink}>ROOT</Link>
             <span className={styles.bcDivider}>/</span>
@@ -203,9 +198,7 @@ export default function ArchiveTemplate({
             {category && (
               <>
                 <span className={styles.bcDivider}>/</span>
-                <Link href={`/brand/${platform}/cat/${category}`} className={styles.bcLink}>
-                  {categoryLabel}
-                </Link>
+                <Link href={`/brand/${platform}/cat/${category}`} className={styles.bcLink}>{categoryLabel}</Link>
                 <span className={styles.bcDivider}>/</span>
                 <span className={styles.bcActive}>{breadcrumbName}</span>
               </>
@@ -217,47 +210,44 @@ export default function ArchiveTemplate({
               <div className="flex items-center gap-3 mb-2">
                 <span className="w-8 h-[1px] bg-[var(--accent)]"></span>
                 <span className="text-[10px] font-mono tracking-[0.4em] text-[var(--accent)] uppercase opacity-80">
-                  Data Stream: {platform}
+                  Matrix Stream: {platform}
                 </span>
               </div>
-              {/* 💡 翻訳済みのタイトルを表示 */}
               <h1 className={styles.titleMain}>{translatedTitle}</h1>
               <div className={styles.statusInfo}>
-                <span className={styles.statusLabel}>RECORDS_DETECTED:</span>
+                <span className={styles.statusLabel}>RECORDS:</span>
                 <span className={styles.statusValue}>{totalCount.toLocaleString()}</span>
               </div>
             </div>
 
             <div className="mt-8 flex justify-end">
-              <div className="relative group">
+              <div className={styles.filterContainer}>
                 <input 
                   type="text"
-                  placeholder="FILTER_IN_PAGE..."
+                  placeholder="FILTER_NODES..."
                   value={filterText}
                   onChange={(e) => setFilterText(e.target.value)}
-                  className="bg-black/40 border border-white/10 px-4 py-1.5 text-[11px] font-mono focus:outline-none focus:border-[var(--accent)] transition-all w-64 text-gray-300 outline-none"
+                  className={styles.filterInput}
                 />
               </div>
             </div>
           </header>
 
+          {/* 🖼️ アーカイブグリッド */}
+          
           <div className={styles.productGrid}>
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product: any) => (
-                <div key={`${product.api_source}-${product.id}`}>
-                  <ProductCard product={product} />
-                </div>
+                <ProductCard key={`${product.api_source || 'adult'}-${product.id}`} product={product} />
               ))
             ) : (
-              <div className="col-span-full py-40 text-center border border-dashed border-white/5 rounded-lg">
-                <p className="font-mono text-gray-500 tracking-widest uppercase">
-                  No data nodes found.
-                </p>
+              <div className="col-span-full py-20 text-center opacity-30 font-mono italic">
+                -- NO_MATCHING_NODES_FOUND --
               </div>
             )}
           </div>
 
-          {/* ページネーション */}
+          {/* 💡 ページネーション */}
           {totalCount > limit && (
             <div className={styles.paginationArea}>
               <Pagination

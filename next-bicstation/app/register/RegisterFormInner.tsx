@@ -1,21 +1,27 @@
+/* eslint-disable @next/next/no-img-element */
+/**
+ * 👤 会員登録フォーム (Next.js 15 Optimized)
+ * 🛡️ Maya's Logic: 物理構造 v3.1 統合版
+ * 物理パス: app/register/RegisterFormInner.tsx (or similar)
+ */
+
 "use client";
 
-// 💡 Next.jsの静的解析を強制的にバイパスします
+// 💡 Next.jsの静的解析を強制的にバイパス
 export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, FormEvent, Suspense } from 'react';
 import Link from 'next/link';
-// ✅ 実際の利用がなくても、ビルド時の「Suspense境界エラー」を防ぐためにインポート
 import { useSearchParams } from 'next/navigation';
-// ✅ ディレクトリ構造に合わせたインポート
-import { registerUser } from '@shared/lib/auth';
+
+// ✅ 修正ポイント 1: インポートパスを物理構造 (shared/lib/utils/auth.ts) に適応
+import { registerUser } from '@shared/lib/utils/auth';
 
 /**
  * 💡 フォーム本体のコンポーネント
- * Next.js 15 のビルドエラーを回避するため、ロジックをここに分離します。
  */
 function RegisterFormInner() {
-  // 💡 フックを呼び出しておくことで、Suspenseがこのコンポーネントを監視するようにします
+  // useSearchParams を呼び出すコンポーネントは必ず Suspense で囲む必要があります
   const searchParams = useSearchParams();
 
   const [username, setUsername] = useState<string>('');
@@ -52,18 +58,22 @@ function RegisterFormInner() {
     }
 
     try {
+      // 外部API (Django等) への登録処理
       await registerUser(username, email, password);
       alert('会員登録が完了しました！ログインしてください。');
+      
+      // ログインページへリダイレクト
       window.location.href = `${window.location.origin}${basePath}/login`;
     } catch (err: any) {
-      setError(err.message || '登録に失敗しました。');
+      setError(err.message || '登録に失敗しました。サーバーとの通信を確認してください。');
     } finally {
       setLoading(false);
     }
   };
 
   const loginHref = `${basePath}/login`;
-  const ACCENT_COLOR = '#ff4500'; // avflash用のアクセントカラー
+  // プロジェクト（bicstation/avflash）に応じて動的に変更も可能ですが、現状は定数として定義
+  const ACCENT_COLOR = basePath === '/bicstation' ? '#0070f3' : '#ff4500';
 
   return (
     <div style={{ 
@@ -81,7 +91,7 @@ function RegisterFormInner() {
           新規会員登録
         </h1>
         <p style={{ color: '#666', fontSize: '0.9rem' }}>
-          お気に入りの作品やレビューを保存しましょう。
+          お気に入りの記事やスペック比較を保存しましょう。
         </p>
       </div>
       
@@ -105,7 +115,7 @@ function RegisterFormInner() {
             onChange={(e) => setUsername(e.target.value)}
             required
             style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-            placeholder="例: av_taro"
+            placeholder="例: user_name"
           />
         </div>
 
@@ -156,7 +166,7 @@ function RegisterFormInner() {
           style={{
             width: '100%', padding: '14px', backgroundColor: loading ? '#cbd5e0' : ACCENT_COLOR,
             color: 'white', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold', fontSize: '1rem'
+            fontWeight: 'bold', fontSize: '1rem', transition: 'background 0.2s'
           }}
         >
           {loading ? '登録処理中...' : '会員登録を完了する'}
@@ -175,13 +185,13 @@ function RegisterFormInner() {
 
 /**
  * ✅ Next.js 15 用のエントリポイント
- * Suspense境界を作ることで、ビルド時のエラーを解消します。
+ * useSearchParams() を含むコンポーネントを Suspense でラップ
  */
 export default function RegisterPage() {
   return (
     <Suspense fallback={
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <p>読み込み中...</p>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <p style={{ color: '#888', fontSize: '0.9rem' }}>読み込み中...</p>
       </div>
     }>
       <RegisterFormInner />

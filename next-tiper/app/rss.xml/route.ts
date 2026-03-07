@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { getUnifiedProducts } from '@shared/lib/api/django/adult';
-import { fetchPostList } from '@shared/lib/api/wordpress';
+import { fetchPostList } from '@shared/lib/api/django-bridge.ts';
 
 // 💡 ソース名を名寄せして統一するヘルパー
 const getNormalizedSource = (apiSource: string): string => {

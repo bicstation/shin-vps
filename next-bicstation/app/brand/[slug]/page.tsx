@@ -1,16 +1,23 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
-// /home/maya/dev/shin-vps/next-bicstation/app/brand/[slug]/page.tsx
+/**
+ * =====================================================================
+ * 🏷️ BICSTATION ブランド別製品一覧 (Brand Page)
+ * 🛡️ Maya's Logic: 物理構造 v3.2 完全同期版
+ * 物理パス: app/brand/[slug]/page.tsx
+ * =====================================================================
+ */
 
 import React from "react";
 import { Metadata } from 'next';
 import Link from "next/link";
-import ProductCard from "@shared/cards/ProductCard";
-import { COLORS } from "@shared/styles/constants";
-import styles from "./BrandPage.module.css";
 
-// API インポート
-import { fetchPCProducts, fetchMakers } from '@shared/lib/api/django/pc';
+// ✅ 修正ポイント 1: インポートパスを物理構造に合わせる
+import ProductCard from '@/shared/components/organisms/cards/ProductCard';
+import { COLORS } from '@/shared/styles/constants';
+import { fetchPCProducts, fetchMakers } from '@/shared/lib/api/django/pc';
+
+import styles from "./BrandPage.module.css";
 
 interface PageProps {
     params: Promise<{ slug: string }>;
@@ -18,76 +25,76 @@ interface PageProps {
 }
 
 /**
- * 💡 属性スラッグから日本語表示名を取得するマッピング
+ * 💡 属性表示名マッピング
  */
-function getAttributeDisplayName(slug: string) {
-    const mapping: { [key: string]: string } = {
-        'intel-core-ultra-9': 'Core Ultra 9', 'intel-core-ultra-7': 'Core Ultra 7', 'intel-core-ultra-5': 'Core Ultra 5',
-        'intel-core-i9': 'Core i9', 'intel-core-i7': 'Core i7', 'intel-core-i5': 'Core i5', 'intel-core-i3': 'Core i3',
-        'intel-low-end': 'Celeron / Pentium', 'amd-ryzen-ai-300': 'Ryzen AI 300', 'amd-ryzen-9': 'Ryzen 9',
-        'amd-ryzen-7': 'Ryzen 7', 'amd-ryzen-5': 'Ryzen 5', 'amd-ryzen-3': 'Ryzen 3', 'amd-threadripper': 'Ryzen Threadripper',
-        'intel-14th-gen': '第14世代インテル', 'intel-13th-gen': '第13世代インテル', 'amd-ryzen-9000': 'Ryzen 9000',
-        'intel-xeon': 'Intel Xeon', 'amd-ryzen-pro': 'Ryzen PRO',
-        'feature-npu-ai': 'NPU搭載 (AI PC)', 'npu-all': 'AIプロセッサ(NPU)',
-        'gpu-rtx-5090': 'RTX 5090', 'gpu-rtx-5080': 'RTX 5080', 'gpu-rtx-5070': 'RTX 5070',
-        'gpu-rtx-4070-ti': 'RTX 4070 Ti', 'gpu-rtx-4060': 'RTX 4060', 'gpu-rtx-40-series': 'RTX 40シリーズ',
-        'gpu-intel-arc': 'Intel Arc', 'vram-16gb-plus': 'VRAM 16GB以上',
-        'usage-gaming': 'ゲーミング', 'usage-business': 'ビジネス', 'usage-creative': 'クリエイター',
-        'panel-oled': '有機EL', 'res-4k': '4K',
+function getAttributeDisplayName(slug: string): string {
+    const mapping: Record<string, string> = {
+        'intel-core-ultra-9': 'Core Ultra 9', 
+        'intel-core-ultra-7': 'Core Ultra 7', 
+        'intel-core-ultra-5': 'Core Ultra 5',
+        'intel-core-i9': 'Core i9', 
+        'intel-core-i7': 'Core i7', 
+        'intel-core-i5': 'Core i5',
+        'feature-npu-ai': 'NPU搭載 (AI PC)', 
+        'gpu-rtx-4060': 'RTX 4060',
+        'usage-gaming': 'ゲーミング', 
+        'usage-creative': 'クリエイター',
     };
-
-    if (mapping[slug]) return mapping[slug];
-    return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return mapping[slug] || slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 /**
- * SEOメタデータの動的生成
+ * 📈 SEOメタデータ生成
  */
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
-    const [{ slug }, sParams] = await Promise.all([params, searchParams]);
+    const { slug } = await params;
+    const sParams = await searchParams;
     const decodedSlug = decodeURIComponent(slug);
     
     try {
         const makers = await fetchMakers();
-        const makerObj = makers.find((m: any) => m.slug === decodedSlug || m.maker?.toLowerCase() === decodedSlug.toLowerCase());
+        const makerObj = makers.find((m: any) => 
+            m.slug === decodedSlug || m.maker?.toLowerCase() === decodedSlug.toLowerCase()
+        );
         const brandName = makerObj ? (makerObj.name || makerObj.maker) : decodedSlug.toUpperCase();
-        const attrName = sParams.attribute ? getAttributeDisplayName(sParams.attribute) : "";
+        const attrName = sParams.attribute ? getAttributeDisplayName(sParams.attribute as string) : "";
+        const pageNum = sParams.page ? ` (${sParams.page}ページ目)` : "";
         
-        const titleText = attrName ? `${brandName} × ${attrName} PC一覧` : `${brandName} 最新PCスペック比較・最安価格一覧`;
-
         return {
-            title: `${titleText} | BICSTATION`,
-            description: `${brandName}${attrName ? `の${attrName}搭載モデル` : 'の最新PC'}をスペック・価格で徹底比較。`,
+            title: `${brandName}${attrName ? ` × ${attrName}` : ""} 最新PC一覧${pageNum} | BICSTATION`,
+            description: `${brandName}${attrName ? `の${attrName}搭載モデル` : 'の最新PC'}をスペック・価格で徹底比較。${pageNum}`,
         };
     } catch (e) {
-        return { title: "製品一覧 | BICSTATION" };
+        return { title: "ブランド製品一覧 | BICSTATION" };
     }
 }
 
+/**
+ * 💡 ブランドページメインコンポーネント
+ */
 export default async function BrandPage({ params, searchParams }: PageProps) {
-    const [{ slug }, sParams] = await Promise.all([params, searchParams]);
-    const decodedSlug = decodeURIComponent(slug);
+    // 1. パラメータの解決
+    const resolvedParams = await params;
+    const resolvedSearchParams = await searchParams;
     
-    const currentPage = Math.max(1, Number(sParams.page) || 1);
-    const attributeSlug = sParams.attribute || "";
+    const decodedSlug = decodeURIComponent(resolvedParams.slug);
+    const currentPage = Math.max(1, Number(resolvedSearchParams.page) || 1);
+    const attributeSlug = (resolvedSearchParams.attribute as string) || "";
     const limit = 12; 
     const offset = (currentPage - 1) * limit;
 
-    async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
-        try {
-            return (await promise) || fallback;
-        } catch (e) {
-            console.error("[BrandPage API Error]:", e);
-            return fallback;
-        }
-    }
-
+    // 2. データフェッチ
+    // 引数の順序は fetchPCProducts(q, offset, limit, attribute, budget_max, budget_min, npu, gpu, sort)
     const [pcData, makersData] = await Promise.all([
-        safeFetch(fetchPCProducts(decodedSlug, offset, limit, attributeSlug), { results: [], count: 0 }),
-        safeFetch(fetchMakers(), []),
+        fetchPCProducts(decodedSlug, offset, limit, attributeSlug, "1000000", "0", false, false, "newest")
+            .catch(() => ({ results: [], count: 0 })),
+        fetchMakers().catch(() => []),
     ]);
 
-    const makerObj = makersData.find((m: any) => m.slug === decodedSlug || m.maker?.toLowerCase() === decodedSlug.toLowerCase());
+    // 3. 表示名の決定
+    const makerObj = makersData.find((m: any) => 
+        m.slug === decodedSlug || m.maker?.toLowerCase() === decodedSlug.toLowerCase()
+    );
     const brandDisplayName = makerObj ? (makerObj.name || makerObj.maker) : decodedSlug.toUpperCase();
     const attrDisplayName = attributeSlug ? getAttributeDisplayName(attributeSlug) : "";
     
@@ -95,12 +102,11 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
         ? `${brandDisplayName} × ${attrDisplayName}` 
         : `${brandDisplayName} の最新PC一覧`;
 
-    const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
     const totalCount = pcData?.count || 0;
     const totalPages = Math.ceil(totalCount / limit);
-    const startRange = totalCount > 0 ? offset + 1 : 0;
-    const endRange = Math.min(offset + limit, totalCount);
+    const primaryColor = COLORS?.SITE_COLOR || '#3b82f6';
 
+    // 4. 構造化データ (JSON-LD)
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
@@ -130,61 +136,54 @@ export default async function BrandPage({ params, searchParams }: PageProps) {
                         {pageTitle}
                     </h1>
                     <p className={styles.lead}>
-                        {brandDisplayName} {attrDisplayName && `の「${attrDisplayName}」搭載モデル`} を独自のAIスコアで比較。
-                        {totalCount > 0 && `現在 ${totalCount} 件のモデルを掲載中。`}
+                        {brandDisplayName} の最新ラインナップをスペックと価格で比較。
+                        最適な1台を見つけるための技術ステーション。
                     </p>
                 </div>
             </header>
 
-            {/* 💡 SidebarSectionを削除し、wrapperの構造を簡略化 */}
             <div className={styles.wrapperSingle}>
                 <main className={styles.mainFull}>
                     <section className={styles.productSection}>
                         <div className={styles.sectionHeader}>
                             <h2 className={styles.productGridTitle}>
-                                <span className={styles.titleIndicator} style={{ backgroundColor: primaryColor }}></span>
-                                登録製品カタログ
-                                {totalCount > 0 && (
-                                    <span className={styles.countDetail}>
-                                        ({startRange}～{endRange} / 全 {totalCount} 件)
-                                    </span>
-                                )}
+                                製品カタログ ({totalCount}件)
                             </h2>
                         </div>
 
                         {!pcData?.results || pcData.results.length === 0 ? (
                             <div className={styles.noDataLarge}>
-                                <p>該当する製品が見つかりませんでした。</p>
+                                <p>お探しの製品は見かりませんでした。</p>
                                 <Link href={`/brand/${decodedSlug}`} className={styles.resetLink}>
-                                    絞り込みを解除して全モデルを表示
+                                    条件をリセットする
                                 </Link>
                             </div>
                         ) : (
                             <>
                                 <div className={styles.productGrid}>
                                     {pcData.results.map((product: any) => (
-                                        <ProductCard key={product.unique_id} product={product} />
+                                        <ProductCard key={product.unique_id || product.id} product={product} />
                                     ))}
                                 </div>
 
                                 {totalPages > 1 && (
-                                    <nav className={styles.paginationWrapper} aria-label="ページ選択">
+                                    <nav className={styles.paginationWrapper}>
                                         <div className={styles.pagination}>
-                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
-                                                const query: Record<string, string> = { page: String(p) };
-                                                if (attributeSlug) query.attribute = attributeSlug;
-                                                const queryString = new URLSearchParams(query).toString();
-
-                                                return (
-                                                    <Link
-                                                        key={p}
-                                                        href={`/brand/${decodedSlug}?${queryString}`}
-                                                        className={p === currentPage ? styles.pageActive : styles.pageLink}
-                                                    >
-                                                        {p}
-                                                    </Link>
-                                                );
-                                            })}
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                                                <Link
+                                                    key={p}
+                                                    href={{
+                                                        pathname: `/brand/${decodedSlug}`,
+                                                        query: { 
+                                                            ...(attributeSlug ? { attribute: attributeSlug } : {}),
+                                                            page: p 
+                                                        }
+                                                    }}
+                                                    className={p === currentPage ? styles.pageActive : styles.pageLink}
+                                                >
+                                                    {p}
+                                                </Link>
+                                            ))}
                                         </div>
                                     </nav>
                                 )}

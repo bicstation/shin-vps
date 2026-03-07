@@ -1,22 +1,26 @@
 "use client";
 
-// 💡 Next.jsの静的解析を強制的にバイパスします
+// 💡 Next.jsの静的解析を強制的にバイパス
 export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, FormEvent, Suspense } from 'react';
 import Link from 'next/link';
-// ✅ 実際の利用がなくても、ビルド時の「Suspense境界エラー」を防ぐためにインポート
-import { useSearchParams } from 'next/navigation';
-// ✅ ディレクトリ構造に合わせたインポート
-import { registerUser } from '@shared/lib/auth';
+import { useSearchParams, useRouter } from 'next/navigation';
+
+/**
+ * ✅ インポートパスの修正
+ * 物理パス: shared/lib/utils/auth.tsx, siteConfig.ts
+ * Webpackの Module not found エラーを回避するため、正確なパスを指定します。
+ */
+import { registerUser } from '@shared/lib/utils/auth';
+import { getSiteMetadata, getSiteColor } from '@shared/lib/utils/siteConfig';
 
 /**
  * 💡 フォーム本体のコンポーネント
- * Next.js 15 のビルドエラーを回避するため、ロジックをここに分離します。
  */
 function RegisterFormInner() {
-  // 💡 フックを呼び出しておくことで、Suspenseがこのコンポーネントを監視するようにします
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [username, setUsername] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -24,15 +28,11 @@ function RegisterFormInner() {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [basePath, setBasePath] = useState("");
-
-  // 環境判別（サブパス対応）
-  useEffect(() => {
-    const currentPath = window.location.pathname;
-    const prefix = currentPath.startsWith('/bicstation') ? '/bicstation' : 
-                   currentPath.startsWith('/avflash') ? '/avflash' : '';
-    setBasePath(prefix);
-  }, []);
+  
+  // サイト設定の取得
+  const site = getSiteMetadata();
+  const ACCENT_COLOR = getSiteColor(site.site_name) || '#ff4500';
+  const loginHref = site.site_prefix ? `${site.site_prefix}/login` : '/login';
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,16 +54,14 @@ function RegisterFormInner() {
     try {
       await registerUser(username, email, password);
       alert('会員登録が完了しました！ログインしてください。');
-      window.location.href = `${window.location.origin}${basePath}/login`;
+      // ログイン状態の確実な反映のために location.href を使用
+      window.location.href = `${window.location.origin}${loginHref}`;
     } catch (err: any) {
       setError(err.message || '登録に失敗しました。');
     } finally {
       setLoading(false);
     }
   };
-
-  const loginHref = `${basePath}/login`;
-  const ACCENT_COLOR = '#ff4500'; // avflash用のアクセントカラー
 
   return (
     <div style={{ 
@@ -104,6 +102,7 @@ function RegisterFormInner() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
+            autoComplete="username"
             style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
             placeholder="例: av_taro"
           />
@@ -118,6 +117,7 @@ function RegisterFormInner() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
             style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
             placeholder="example@mail.com"
           />
@@ -132,6 +132,7 @@ function RegisterFormInner() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="new-password"
             style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
             placeholder="8文字以上"
           />
@@ -146,6 +147,7 @@ function RegisterFormInner() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            autoComplete="new-password"
             style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
           />
         </div>
@@ -156,7 +158,7 @@ function RegisterFormInner() {
           style={{
             width: '100%', padding: '14px', backgroundColor: loading ? '#cbd5e0' : ACCENT_COLOR,
             color: 'white', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: 'bold', fontSize: '1rem'
+            fontWeight: 'bold', fontSize: '1rem', transition: 'background-color 0.2s'
           }}
         >
           {loading ? '登録処理中...' : '会員登録を完了する'}
@@ -175,13 +177,12 @@ function RegisterFormInner() {
 
 /**
  * ✅ Next.js 15 用のエントリポイント
- * Suspense境界を作ることで、ビルド時のエラーを解消します。
  */
 export default function RegisterPage() {
   return (
     <Suspense fallback={
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-        <p>読み込み中...</p>
+        <p style={{ color: '#999', fontSize: '0.9rem' }}>SYNCING_REGISTRATION_SERVER...</p>
       </div>
     }>
       <RegisterFormInner />

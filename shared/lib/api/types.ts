@@ -1,16 +1,18 @@
 /**
  * =====================================================================
  * 📋 統合型定義 (shared/lib/api/types.ts)
+ * 🛡️ Maya's Logic: マルチドメイン・AIスコアリング対応版
  * =====================================================================
  */
 
 /**
  * 📊 レーダーチャート用共通データ構造
+ * Recharts などのライブラリでそのまま扱える形式
  */
 export interface RadarChartData {
-  subject: string;
-  value: number;
-  fullMark: number;
+  subject: string;   // 項目名 (例: "性能", "コスパ")
+  value: number;     // スコア
+  fullMark: number;  // 最大値 (通常 100)
 }
 
 /**
@@ -20,11 +22,12 @@ export interface MasterBase {
   id: number;
   name: string;
   slug?: string;
-  api_source?: string;
+  api_source?: string; // DMM, FANZA, DUGA, etc.
 }
 
 /**
  * 🏷️ 属性タグ (PCAttribute / AdultAttribute)
+ * 製品のメタ情報（「SALE中」「AI搭載」「独占配信」など）
  */
 export interface ProductAttribute extends MasterBase {
   attr_type: string;
@@ -32,33 +35,33 @@ export interface ProductAttribute extends MasterBase {
 }
 
 /**
- * 💻 PC製品型定義
+ * 💻 PC製品型定義 (BicStation等)
  */
 export interface PCProduct {
   id: number;
   unique_id: string;
   site_prefix: string;
-  maker: MasterBase | string; // オブジェクトまたは文字列
+  maker: MasterBase | string; 
   name: string;
   price: number | null;
   image_url: string;
   affiliate_url: string;
   description?: string;
   
-  // AI生成・解析
+  // 🧠 AI生成・解析コンテンツ
   ai_content?: string;
   ai_summary?: string;
-  target_segment?: string;
-  spec_score: number; // 0-100
+  target_segment?: string; // ターゲット層 (例: "ゲーマー向け")
+  spec_score: number;      // 0-100 の総合評価
   
-  // スコア詳細 (Radar Chart用)
+  // 📈 スコア詳細 (5軸レーダーチャート用)
   score_cpu?: number;
   score_gpu?: number;
   score_ai?: number;
   score_cost?: number;
   score_portable?: number;
 
-  // ハードウェアスペック
+  // ⚙️ ハードウェアスペック
   stock_status: 'instock' | 'outofstock' | 'preorder';
   unified_genre?: string;
   cpu_model?: string;
@@ -73,8 +76,7 @@ export interface PCProduct {
 }
 
 /**
- * 🔞 アダルト製品型定義
- * PCProductと共通の構造を持ちつつ、アダルト特有のフィールドを網羅
+ * 🔞 アダルト製品型定義 (AVFLASH, TIPER等)
  */
 export interface AdultProduct {
   id: number;
@@ -85,24 +87,24 @@ export interface AdultProduct {
   release_date: string | null;
   affiliate_url: string;
   image_url_list: string[];
-  sample_movie_url: string | null; // 🎥 追加
+  sample_movie_url: string | null; 
 
-  // リレーション (シリアライザで入れ子にされたオブジェクト)
+  // 🔗 リレーション (Djangoシリアライザで展開済み)
   maker: MasterBase | null;
   label: MasterBase | null;
   series: MasterBase | null;
   director: MasterBase | null;
   actresses: MasterBase[];
   genres: MasterBase[];
-  attributes: ProductAttribute[]; // 🏷️ 属性タグ
+  attributes: ProductAttribute[];
 
-  // AI解析・評価
+  // 🧠 AI解析・評価
   ai_summary?: string;
   ai_content?: string;
   target_segment?: string;
-  spec_score: number; // 総合点
+  spec_score: number; 
   
-  // 📊 5軸評価 (Radar Chart用)
+  // 📊 5軸評価スコア
   score_visual: number;
   score_story: number;
   score_cost: number;
@@ -115,7 +117,7 @@ export interface AdultProduct {
 }
 
 /**
- * 📝 WordPress 投稿用型定義
+ * 📝 WordPress 投稿用型定義 (旧WP記事 / Bridge用)
  */
 export interface WPPost {
   id: number;

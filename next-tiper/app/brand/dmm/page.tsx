@@ -1,9 +1,13 @@
-/* /app/brand/dmm/page.tsx (またはルートの構成に応じて) */
-/* eslint-disable @next/next/no-img-element */
+/* /app/brand/dmm/page.tsx */
 // @ts-nocheck
 import React from 'react';
 import { Metadata } from 'next';
 import ArchiveTemplate from '../ArchiveTemplate'; 
+
+/**
+ * 🛰️ API インポートセクション
+ * 物理構造 shared/lib/api/ 配下のファイルを参照
+ */
 import { 
     getUnifiedProducts, 
     fetchMakers, 
@@ -14,15 +18,22 @@ import {
     fetchAuthors,
     fetchLabels,
     getDmmDynamicMenu 
-} from '@shared/lib/api/django/adult';
-import { getSiteMainPosts } from '@shared/lib/api/wordpress';
-import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
+} from '@/shared/lib/api/django/adult';
+
+// ✅ Django Bridge 経由
+import { getWpPostsFromBridge } from '@/shared/lib/api/django-bridge';
+
+/**
+ * ✅ 修正: 物理構造に合わせたインポート
+ * [STRUCTURE] より: shared/components/molecules/SystemDiagnosticHero.tsx
+ */
+import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
     title: 'DMM Archive | TIPER Archive',
-    description: 'DMM.R18 / FANZA 共通基盤を含むアーカイブデータを統合解析。',
+    description: 'DMM.R18 / FANZA 共通基盤を含むアーカイブデータを Django Bridge 経由で統合解析。',
 };
 
 /**
@@ -48,7 +59,6 @@ const filterByBrand = (list: any) => {
 
 /**
  * 🔳 DMM_BRAND_ROOT_PAGE
- * DMMブランドの全データを統括するメインハブページ。
  */
 export default async function DmmBrandPage(props: {
     searchParams: Promise<{ 
@@ -67,8 +77,7 @@ export default async function DmmBrandPage(props: {
     const currentService = searchParams?.service || '';
     const currentFloor = searchParams?.floor || '';
 
-    // --- 🏗️ 1. データ取得（DMM特化の全方位フェッチ） ---
-    // 司令塔(ArchiveTemplate)のサイドバーを埋め尽くすための全マスタデータを取得します。
+    // --- 🏗️ 1. データ取得 ---
     const startTime = Date.now();
     const [
         productData, 
@@ -80,7 +89,7 @@ export default async function DmmBrandPage(props: {
         directorsArray,
         authorsArray,
         labelsArray,
-        wpData
+        bridgeCmsData 
     ] = await Promise.all([
         getUnifiedProducts({
             api_source: 'dmm',
@@ -100,19 +109,19 @@ export default async function DmmBrandPage(props: {
         fetchAuthors({ limit: 30, api_source: 'dmm' }).catch(() => []),
         fetchLabels({ limit: 30, api_source: 'dmm' }).catch(() => []),
 
-        getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
+        getWpPostsFromBridge({ limit: 8, brand: 'dmm' }).catch(() => ({ results: [] }))
     ]);
     const duration = Date.now() - startTime;
 
-    // --- 🛡️ 2. サイドバー用階層データの整理 ---
-    const dmmHierarchy = Object.entries(dynamicMenu).map(([serviceName, content]: [string, any]) => {
+    // --- 🛡️ 2. サイドバー用階層データの構造化 ---
+    const dmmHierarchy = Object.entries(dynamicMenu || {}).map(([serviceName, content]: [string, any]) => {
         const floorItems = (content.floors || []).map((f: any) => ({
             id: f.code,
             name: f.name,
             floor_name: f.name,
             floor_code: f.code,
             slug: f.code,
-            href: `/brand/dmm/svc/${content.code}/${f.code}`, // フロア階層へ
+            href: `/brand/dmm/svc/${content.code}/${f.code}`,
         }));
 
         return {
@@ -121,35 +130,35 @@ export default async function DmmBrandPage(props: {
             service_name: serviceName,
             service_code: content.code,
             slug: content.code,
-            href: `/brand/dmm/svc/${content.code}`, // サービス階層へ
+            href: `/brand/dmm/svc/${content.code}`,
             floors: floorItems,
             items: floorItems,
             active: currentService === content.code,
         };
-    }).filter(item => item.floors.length > 0);
+    }).filter(item => item.floors && item.floors.length > 0);
 
+    // --- 🎨 3. レンダリング ---
     return (
         <>
-            {/* 🐞 診断ツール */}
+            {/* 🐞 診断ツール: パス修正済み */}
             {isDebug && (
                 <SystemDiagnosticHero 
                     stats={{
                         fetchTime: `${duration}ms`,
-                        mode: 'SERVER_DMM_HUB_V4',
+                        mode: 'SERVER_DMM_HUB_BRIDGE_V5',
                         platform: 'dmm',
-                        productCount: productData.count,
+                        productCount: productData?.count || 0,
                     }}
-                    raw={{ dmmHierarchy, currentService, currentFloor }}
+                    raw={{ dmmHierarchy, currentService, currentFloor, bridgeCmsData }}
                 />
             )}
 
             <ArchiveTemplate 
                 platform="dmm"
                 title={currentFloor ? `DMM - ${currentFloor.toUpperCase()}` : "DMM ARCHIVE"}
-                products={productData.results || []}
-                totalCount={productData.count || 0}
+                products={productData?.results || []}
+                totalCount={productData?.count || 0}
                 
-                // 🛰️ 司令塔(ArchiveTemplate)に全データをパス
                 officialHierarchy={dmmHierarchy} 
                 makers={filterByBrand(makersArray)}
                 genres={filterByBrand(genresArray)}
@@ -159,9 +168,9 @@ export default async function DmmBrandPage(props: {
                 directors={filterByBrand(directorsArray)}
                 labels={filterByBrand(labelsArray)}
                 
-                recentPosts={safeExtract(wpData).map((p: any) => ({
+                recentPosts={safeExtract(bridgeCmsData).map((p: any) => ({
                     id: p.id,
-                    title: p.title?.rendered || 'No Title',
+                    title: p.title || 'No Title',
                     slug: p.slug,
                     date: p.date
                 }))}

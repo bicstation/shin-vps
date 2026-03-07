@@ -1,22 +1,25 @@
 "use client";
 
-// 💡 Next.jsの静的解析を強制的にバイパスします
+// 💡 Next.jsの静的解析を強制的にバイパス
 export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, FormEvent, Suspense } from 'react';
 import Link from 'next/link';
-// ✅ 実際の利用がなくても、ビルド時の「Suspense境界エラー」を防ぐためにインポート
 import { useSearchParams } from 'next/navigation';
-// ✅ ディレクトリ構造に合わせたインポート
-import { registerUser } from '@shared/lib/auth';
+
+/**
+ * ✅ インポートパスの修正
+ * 物理構造: /shared/lib/utils/auth.tsx
+ * tsconfigのエイリアス設定に基づき '@/shared/lib/utils/auth' を使用
+ */
+import { registerUser } from '@/shared/lib/utils/auth';
 
 /**
  * 💡 フォーム本体のコンポーネント
- * Next.js 15 のビルドエラーを回避するため、ロジックをここに分離します。
+ * useSearchParams() を含むため、Suspense境界の内部で実行する必要があります。
  */
 function RegisterFormInner() {
-  // 💡 フックを呼び出しておくことで、Suspenseがこのコンポーネントを監視するようにします
-  // Next.js 15 では、この呼び出しが含まれるコンポーネントが Suspense の「外側」にあるとビルドエラーになります
+  // Next.js 15: このコンポーネントを Suspense で包むことが必須
   const searchParams = useSearchParams();
 
   const [username, setUsername] = useState<string>('');
@@ -27,7 +30,7 @@ function RegisterFormInner() {
   const [loading, setLoading] = useState<boolean>(false);
   const [basePath, setBasePath] = useState("");
 
-  // 環境判別（サブパス対応）
+  // 環境判別（サブパス対応：Bicstation / AV-Flash 等）
   useEffect(() => {
     const currentPath = window.location.pathname;
     const prefix = currentPath.startsWith('/bicstation') ? '/bicstation' : 
@@ -55,6 +58,7 @@ function RegisterFormInner() {
     try {
       await registerUser(username, email, password);
       alert('会員登録が完了しました！ログインしてください。');
+      // window.location.origin を使用してリダイレクト
       window.location.href = `${window.location.origin}${basePath}/login`;
     } catch (err: any) {
       setError(err.message || '登録に失敗しました。');
@@ -64,7 +68,7 @@ function RegisterFormInner() {
   };
 
   const loginHref = `${basePath}/login`;
-  const ACCENT_COLOR = '#ff4500'; // avflash用のアクセントカラー
+  const ACCENT_COLOR = '#ff4500'; // AV-Flash / TIPER 共通アクセント
 
   return (
     <div style={{ 
@@ -106,7 +110,7 @@ function RegisterFormInner() {
             onChange={(e) => setUsername(e.target.value)}
             required
             style={{ width: '100%', padding: '12px', boxSizing: 'border-box', border: '1px solid #ddd', borderRadius: '8px', fontSize: '1rem' }}
-            placeholder="例: av_taro"
+            placeholder="例: tiper_user"
           />
         </div>
 
@@ -176,14 +180,13 @@ function RegisterFormInner() {
 
 /**
  * ✅ Next.js 15 用のエントリポイント
- * Suspense境界を作ることで、ビルド時のエラーを解消します。
- * 💡 内部コンポーネントを確実に Suspense で包む形式を維持します。
+ * Suspense境界を設けることで、ビルド時の deopt エラーを解消します。
  */
 export default function RegisterPage() {
   return (
     <Suspense fallback={
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh', fontFamily: 'sans-serif' }}>
-        <p style={{ color: '#666', animatePulse: 'true' } as any}>読み込み中...</p>
+        <p style={{ color: '#666' }}>読み込み中...</p>
       </div>
     }>
       <RegisterFormInner />

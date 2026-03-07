@@ -5,8 +5,8 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, FormEvent, Suspense, useEffect } from 'react';
 import Link from 'next/link'; 
-import { loginUser } from '@shared/lib/auth';
-import { getSiteMetadata } from '@shared/lib/siteConfig';
+import { loginUser } from '@shared/lib/utils/auth';
+import { getSiteMetadata } from '@shared/lib/utils/siteConfig';
 // ✅ 修正ポイント: クライアントサイドでのURLパラメータ取得に必須
 import { useSearchParams } from 'next/navigation';
 

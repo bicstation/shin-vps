@@ -3,9 +3,15 @@
 
 import React from 'react';
 import { notFound } from 'next/navigation';
-// ✅ 既存のライブラリから取得関数をインポート
+
+// ✅ 物理構造と tsconfig のエイリアスに基づきパスを修正
+// shared/lib/api/django/adult.ts を参照
 import { getAdultProductDetail } from '@shared/lib/api/django/adult';
-import AdultProductGallery from '@shared/cards/AdultProductGallery';
+
+// ✅ shared/components/organisms/cards/AdultProductGallery.tsx を参照
+// tsconfig に @shared/organisms/* があるため、cards を含めて指定
+import AdultProductGallery from '@shared/components/organisms/cards/AdultProductGallery';
+
 import styles from './page.module.css';
 
 /**
@@ -16,7 +22,7 @@ import styles from './page.module.css';
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+    params: Promise<{ id: string }>;
 }
 
 export default async function AdultDetailPage({ params }: PageProps) {
@@ -24,17 +30,17 @@ export default async function AdultDetailPage({ params }: PageProps) {
     const { id } = await params;
 
     // 🚀 2. データの取得
-    // shared/lib/api/django/client.ts の resolveApiUrl が 
-    // IS_SERVER 時に http://django-v3:8000 を返すように修正されていることが前提です
+    // shared 内の API クライアントが内部通信用 URL (http://django-v3:8000) を
+    // 正しく解決できる設定になっていることが前提です
     const product = await getAdultProductDetail(id);
 
-    // 🚀 3. データがない場合は 404
-    if (!product || product._error) {
-        console.error(`[AVFLASH] Product Not Found. ID: ${id}`);
+    // 🚀 3. データがない、またはエラーレスポンスの場合は 404
+    if (!product || product._error || !product.title) {
+        console.error(`[AVFLASH] Product Not Found or Error. ID: ${id}`);
         notFound();
     }
 
-    // 画像配列の正規化
+    // 画像配列の正規化（サンプルがない場合はメイン画像を使用）
     const allImages = (product.sample_image_urls && product.sample_image_urls.length > 0)
         ? product.sample_image_urls
         : [product.image_url];
@@ -44,12 +50,12 @@ export default async function AdultDetailPage({ params }: PageProps) {
             {/* --- 🛸 ヒーローヘッダー --- */}
             <header className={styles.heroHeader}>
                 <div className={styles.heroBadge}>
-                    {product.api_source?.toUpperCase()} _DATABANK
+                    {product.api_source?.toUpperCase() || 'UNKNOWN'} _DATABANK
                 </div>
                 <h1 className={styles.heroTitle}>{product.title}</h1>
                 <div className={styles.statsInfo}>
-                    IDENT_ID: <strong>{product.product_id_unique}</strong> | 
-                    SYNC_DATE: <strong>{product.release_date}</strong>
+                    IDENT_ID: <strong>{product.product_id_unique || product.id}</strong> | 
+                    SYNC_DATE: <strong>{product.release_date || '---'}</strong>
                 </div>
             </header>
 
@@ -80,9 +86,13 @@ export default async function AdultDetailPage({ params }: PageProps) {
                         <div className={styles.tagSection}>
                             <p className={styles.tagLabel}>CAST_ID:</p>
                             <div className={styles.tags}>
-                                {product.actresses?.map(act => (
-                                    <span key={act.id} className={styles.tagItem}>{act.name}</span>
-                                ))}
+                                {product.actresses && product.actresses.length > 0 ? (
+                                    product.actresses.map(act => (
+                                        <span key={act.id} className={styles.tagItem}>{act.name}</span>
+                                    ))
+                                ) : (
+                                    <span className={styles.tagItem}>N/A</span>
+                                )}
                             </div>
                         </div>
 
@@ -105,7 +115,7 @@ export default async function AdultDetailPage({ params }: PageProps) {
                     <div className={styles.titleUnderline} />
                 </div>
                 <p className={styles.descriptionText}>
-                    {product.product_description}
+                    {product.product_description || 'No description available in the archive.'}
                 </p>
             </section>
         </div>

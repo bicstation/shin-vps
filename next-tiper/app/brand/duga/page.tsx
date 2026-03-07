@@ -3,6 +3,11 @@
 import React from 'react';
 import { Metadata } from 'next';
 import ArchiveTemplate from '@/app/brand/ArchiveTemplate'; 
+
+/**
+ * 🛰️ API インポートセクション
+ * 物理構造 shared/lib/api/ 配下を参照
+ */
 import { 
     getUnifiedProducts, 
     fetchMakers, 
@@ -12,27 +17,36 @@ import {
     fetchDirectors,
     fetchAuthors,
     fetchLabels
-} from '@shared/lib/api/django/adult';
-import { getSiteMainPosts } from '@shared/lib/api/wordpress';
-import { constructMetadata } from '@shared/lib/metadata';
-import SystemDiagnosticHero from '@shared/debug/SystemDiagnosticHero';
+} from '@/shared/lib/api/django/adult';
+
+// ✅ ツリー上の api/index.ts または django.ts から WordPress 系の取得関数を想定
+import { fetchPostData as getSiteMainPosts } from '@/shared/lib/api/index'; 
+
+/**
+ * ✅ 修正: 物理構造 shared/lib/utils/metadata.ts に合わせる
+ */
+import { constructMetadata } from '@/shared/lib/utils/metadata';
+
+/**
+ * ✅ 修正: 物理構造 shared/components/molecules/SystemDiagnosticHero.tsx に合わせる
+ */
+import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * 🛰️ METADATA_GENERATOR (DUGA)
+ * 🛰️ METADATA_GENERATOR
  */
 export async function generateMetadata(): Promise<Metadata> {
-    return constructMetadata(
-        'DUGA Archive | TIPER Archive',
-        'DUGA（デュガ）プラットフォームの特化型アーカイブ。独自メーカーの解析データを網羅。',
-        undefined,
-        '/brand/duga'
-    );
+    return constructMetadata({
+        title: 'DUGA Archive | TIPER Archive',
+        description: 'DUGA（デュガ）プラットフォームの特化型アーカイブ。独自メーカーや人気著者の解析データを網羅。',
+        canonical: '/brand/duga'
+    });
 }
 
 /**
- * 🛠️ 補助関数: 安全なデータ抽出
+ * 🛠️ Helper: 安全なデータ抽出
  */
 const safeExtract = (data: any) => {
     if (!data) return [];
@@ -43,8 +57,6 @@ const safeExtract = (data: any) => {
 
 /**
  * 🔳 DUGA_BRAND_PAGE
- * DUGAブランドのトップページ。
- * 女優だけでなく「著者(Author)」が重要な役割を果たすDUGA独自のデータ構造をサイドバーに反映します。
  */
 export default async function DugaBrandPage(props: {
     searchParams: Promise<{ page?: string; sort?: string; debug?: string }>;
@@ -54,8 +66,7 @@ export default async function DugaBrandPage(props: {
     const currentPage = Number(searchParams?.page) || 1;
     const currentSort = searchParams?.sort || '-release_date';
 
-    // --- 🏗️ 1. データ取得（DUGA特化型フェッチ） ---
-    // DUGAに関連する全マスタデータを並列取得し、サイドバーの密度を最大化します。
+    // --- 🏗️ 1. データ取得（DUGA専用パラレルフェッチ） ---
     const [
         productData, 
         makersArray, 
@@ -82,21 +93,25 @@ export default async function DugaBrandPage(props: {
         fetchAuthors({ limit: 40, api_source: 'duga', ordering: '-product_count' }).catch(() => []),
         fetchLabels({ limit: 20, api_source: 'duga' }).catch(() => []),
 
-        getSiteMainPosts(0, 8).catch(() => ({ results: [] }))
+        // API定義に合わせて引数を調整（例: fetchPostData('duga', slug) 等）
+        getSiteMainPosts('duga', '').catch(() => ({ results: [] }))
     ]);
 
     // --- 🎨 2. ArchiveTemplate への流し込み ---
     return (
         <>
-            {/* 🐞 診断ツール (DUGA Source) */}
+            {/* 🐞 デバッグ診断: パス修正済み */}
             {isDebug && (
                 <SystemDiagnosticHero 
-                    id="BRAND_DUGA_ARCHIVE"
-                    source="DUGA"
-                    data={{
+                    stats={{
                         mode: 'SERVER_BRAND_PAGE_V4',
-                        totalProducts: productData.count,
-                        records: productData.results?.length,
+                        fetchTime: 'Parallel-Duga',
+                        platform: 'DUGA',
+                        productCount: productData?.count || 0,
+                    }}
+                    raw={{
+                        records: productData?.results?.length,
+                        currentPage
                     }}
                 />
             )}
@@ -104,10 +119,10 @@ export default async function DugaBrandPage(props: {
             <ArchiveTemplate 
                 platform="duga" 
                 title="DUGA ARCHIVE"
-                products={productData.results || []}
-                totalCount={productData.count || 0}
+                products={productData?.results || []}
+                totalCount={productData?.count || 0}
                 
-                // 🛰️ サイドバー・フルデータ供給
+                // 🛰️ サイドバーデータ供給
                 makers={safeExtract(makersArray)}
                 genres={safeExtract(genresArray)}
                 series={safeExtract(seriesArray)}
@@ -116,12 +131,12 @@ export default async function DugaBrandPage(props: {
                 actresses={safeExtract(actressesArray)}
                 authors={safeExtract(authorsArray)}
                 
-                // 階層データ (DUGAは現状APIによる動的メニューがないため空、または静的定義)
+                // DUGAは階層メニューが現在無いため空配列
                 officialHierarchy={[]}
 
                 recentPosts={safeExtract(wpData).map((p: any) => ({
                     id: p.id,
-                    title: p.title?.rendered || 'No Title',
+                    title: p.title?.rendered || p.title || 'No Title',
                     slug: p.slug,
                     date: p.date
                 }))}

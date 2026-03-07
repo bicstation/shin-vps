@@ -1,47 +1,49 @@
 /**
  * =====================================================================
  * 💻 Next.js API Route Handler (app/api/products/route.ts)
+ * AVFLASH アダルト製品取得用
  * =====================================================================
  */
 
 import { NextResponse } from 'next/server';
-import { fetchPCProducts } from '@shared/lib/api'; 
+// ✅ アダルト用の取得関数にインポートを修正
+import { fetchAdultProducts } from '@shared/lib/api/django/adult'; 
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
 
-    // ✅ 引用符をしっかり閉じるように修正しました
-    const budget = searchParams.get('budget') || '300000';
-    const ram = searchParams.get('ram') || '0';
-    const npu = searchParams.get('npu') === 'true';
-    const gpu = searchParams.get('gpu') === 'true';
-    const type = searchParams.get('type') || '';    // ← ここ！
-    const brand = searchParams.get('brand') || '';  // ← ここ！
-    const offset = Number(searchParams.get('offset')) || 0;
-    const limit = Number(searchParams.get('limit')) || 20;
+    // ✅ アダルトサイトのクエリパラメータに合わせて調整
+    const page = Number(searchParams.get('page')) || 1;
+    const limit = Number(searchParams.get('limit')) || 24;
+    const category = searchParams.get('category') || '';   // 例: 'video', 'anime'
+    const actress = searchParams.get('actress') || '';     // 女優ID
+    const maker = searchParams.get('maker') || '';         // メーカー
+    const sort = searchParams.get('sort') || '-release_date'; // 並び替え
+    const keyword = searchParams.get('keyword') || '';     // 検索キーワード
 
-    const data = await fetchPCProducts(
-      brand === 'all' ? '' : brand, 
-      offset,
+    // 💡 fetchAdultProducts の引数順序はプロジェクトの定義に合わせてください
+    // 一般的に page 指定がある場合は offset ではなく page を渡すことが多いです
+    const data = await fetchAdultProducts({
+      page,
       limit,
-      '', 
-      budget,
-      ram,
-      npu,
-      gpu,
-      type === 'all' ? '' : type
-    );
+      category,
+      actress,
+      maker,
+      sort,
+      keyword
+    });
 
     return NextResponse.json({
       success: true,
       products: data.results,
       totalCount: data.count,
-      debugUrl: data.debugUrl
+      next: data.next,
+      previous: data.previous
     });
 
   } catch (error: any) {
-    console.error("Next.js API Route Error:", error);
+    console.error("[AVFLASH] API Route Error:", error);
     return NextResponse.json(
       { 
         success: false,

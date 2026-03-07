@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-import { fetchPostList } from '@shared/lib/api/wordpress';
+import { fetchPostList } from '@/shared/lib/api';
 
 export async function GET() {
   const baseURL = 'https://tiper.live';

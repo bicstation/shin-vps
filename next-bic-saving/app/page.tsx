@@ -6,13 +6,17 @@
 import React from 'react';
 import Link from 'next/link';
 
-// ✅ 共通コンポーネントと共通APIのインポート（新構造に対応）
+/**
+ * ✅ 共通コンポーネントと共通APIのインポート
+ * 物理パス: shared/layout/Sidebar/index.tsx (または SidebarWrapper)
+ * 物理パス: shared/lib/api.ts
+ */
 import Sidebar from '@shared/layout/Sidebar';
 import { fetchPostList } from '@shared/lib/api'; 
 
-// 💡 ビルド時の静的生成エラーを回避するための設定
+// 💡 Next.js 15 用の動的レンダリング設定
 export const dynamic = 'force-dynamic'; 
-export const fetchCache = 'force-no-store';
+export const revalidate = 0;
 
 /**
  * ユーティリティ: HTMLエンティティのデコード
@@ -40,95 +44,114 @@ const formatDate = (dateString: string) => {
 };
 
 /**
- * Next.js Server Component: メインページ
+ * 🏠 BICSTATION メインページ (Server Component)
  */
 export default async function Page() {
-    // サイトタイトルを環境変数から取得（fallback付き）
+    // サイトタイトルを環境変数から取得
     const title = process.env.NEXT_PUBLIC_APP_TITLE || 'ビック的節約生活';
 
     /**
-     * ✅ 共通APIを使用して記事を取得
-     * shared/lib/api.ts の fetchPostList('saving', limit) を利用
+     * ✅ 共通APIを使用して WordPress (Django経由等) から記事を取得
      */
     let posts = [];
     try {
-        const response = await fetchPostList('saving', 5);
-        if (response && response.results && Array.isArray(response.results)) {
-            posts = response.results;
-        }
+        // 'saving' カテゴリの記事を 10件 取得
+        const response = await fetchPostList('saving', 10);
+        posts = response?.results || [];
     } catch (error) {
-        console.warn("[Build Warning] API fetch failed. Using empty list for prerender.");
+        console.error("[BICSTATION] API fetch failed:", error);
         posts = []; 
     }
 
     return (
-        <div style={{ display: 'flex', flexGrow: 1, backgroundColor: '#f4f4f4', width: '100%' }}> 
+        <div style={{ display: 'flex', flexGrow: 1, backgroundColor: '#f4f4f4', width: '100%', minHeight: '100vh' }}> 
             
-            {/* ✅ 1. サイドバー（shared/layout/Sidebar） */}
+            {/* ✅ 1. 共通サイドバー */}
             <Sidebar />
             
             {/* ✅ 2. メインコンテンツエリア */}
             <main style={{ flexGrow: 1, padding: '20px', minWidth: 0 }}>
                 <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-                    <h2 style={{ 
-                        color: '#ffcc00', 
-                        borderBottom: '2px solid #ddd', 
-                        paddingBottom: '10px',
-                        marginTop: 0,
-                        fontSize: '1.5rem',
-                        fontWeight: 'bold'
-                    }}>
-                        {title} 最新記事一覧
-                    </h2>
+                    <header style={{ marginBottom: '30px' }}>
+                        <h2 style={{ 
+                            color: '#333', 
+                            borderLeft: '5px solid #ffcc00', 
+                            padding: '5px 15px',
+                            marginTop: 0,
+                            fontSize: '1.5rem',
+                            fontWeight: 'bold'
+                        }}>
+                            {title} 最新記事
+                        </h2>
+                    </header>
                     
-                    {/* 記事リストまたはエラー表示 */}
-                    {posts.length === 0 ? (
+                    {/* 記事グリッド表示 */}
+                    {!posts || posts.length === 0 ? (
                         <div style={{ 
-                            padding: '40px', 
+                            padding: '60px 20px', 
                             textAlign: 'center', 
                             background: 'white', 
-                            borderRadius: '8px', 
-                            border: '1px dashed #ccc' 
+                            borderRadius: '12px', 
+                            border: '1px solid #eee' 
                         }}>
-                            <p style={{ color: '#666', fontWeight: 'bold' }}>現在、表示できる記事はありません。</p>
-                            <p style={{ color: '#999', fontSize: '0.85em' }}>
-                                記事が公開されているか、WordPressの接続設定を確認してください。
+                            <p style={{ color: '#666', fontSize: '1.1rem' }}>現在、新しい記事を準備中です。</p>
+                            <p style={{ color: '#999', fontSize: '0.85rem', marginTop: '10px' }}>
+                                しばらくしてから再度アクセスしてください。
                             </p>
                         </div>
                     ) : (
-                        <div style={{ display: 'grid', gap: '15px' }}>
+                        <div style={{ display: 'grid', gap: '20px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
                             {posts.map((post) => (
                                 <article key={post.id} style={{ 
-                                    padding: '20px', 
+                                    padding: '0', 
                                     background: 'white', 
-                                    border: '1px solid #ddd', 
-                                    borderRadius: '8px', 
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                                    transition: 'transform 0.2s'
-                                }}>
-                                    {/* 🚨 個別記事へのリンクパスを /saving/ に固定 */}
-                                    <Link href={`/saving/${post.slug}`} style={{ 
-                                        textDecoration: 'none', 
-                                        color: '#007bff', 
-                                        fontSize: '1.2rem', 
-                                        fontWeight: 'bold',
-                                        display: 'block'
-                                    }}>
-                                        {decodeHtml(post?.title?.rendered || '無題の記事')}
-                                    </Link>
-                                    <div style={{ color: '#888', fontSize: '0.85rem', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                        <span>📅</span>
-                                        <time dateTime={post.date}>{formatDate(post.date)}</time>
+                                    border: '1px solid #eee', 
+                                    borderRadius: '12px', 
+                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+                                    transition: 'transform 0.2s, box-shadow 0.2s'
+                                }} className="hover-card">
+                                    <div style={{ padding: '20px', flexGrow: 1 }}>
+                                        <Link href={`/saving/${post.slug}`} style={{ textDecoration: 'none' }}>
+                                            <h3 style={{ 
+                                                color: '#222', 
+                                                fontSize: '1.15rem', 
+                                                fontWeight: 'bold',
+                                                lineHeight: '1.5',
+                                                margin: '0 0 12px 0'
+                                            }}>
+                                                {decodeHtml(post?.title?.rendered || '無題の記事')}
+                                            </h3>
+                                        </Link>
+                                        <div style={{ color: '#888', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span>📅</span>
+                                            <time dateTime={post.date}>{formatDate(post.date)}</time>
+                                        </div>
                                     </div>
+                                    <Link href={`/saving/${post.slug}`} style={{ 
+                                        display: 'block',
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                        background: '#f9f9f9',
+                                        color: '#555',
+                                        fontSize: '0.85rem',
+                                        fontWeight: 'bold',
+                                        borderTop: '1px solid #eee',
+                                        textDecoration: 'none'
+                                    }}>
+                                        記事を読む →
+                                    </Link>
                                 </article>
                             ))}
                         </div>
                     )}
                 </div>
-                {/* デバッグ用：正常に読み込まれているか確認 */}
-                <div style={{ marginTop: '20px', fontSize: '12px', color: '#ccc', textAlign: 'center' }}>
-                    Next.js 15/16 Shared-Container Build Mode
-                </div>
+
+                <footer style={{ marginTop: '40px', fontSize: '11px', color: '#bbb', textAlign: 'center' }}>
+                    BICSTATION Node-Container-V3 / Next.js 15
+                </footer>
             </main>
         </div>
     );

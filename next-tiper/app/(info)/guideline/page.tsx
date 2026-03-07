@@ -1,4 +1,4 @@
-import StaticPageLayout from '@shared/static/StaticPageLayout';
+import StaticPageLayout from '@/shared/components/templates/StaticPageLayout';
 
 export const metadata = {
   title: 'コンテンツ制作ガイドライン | tiper.live',

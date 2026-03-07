@@ -7,7 +7,7 @@ import React, { useState, useEffect, FormEvent, Suspense } from 'react';
 import Link from 'next/link';
 // 💡 URLパラメータを取得するためのフック。これがビルドエラーの直接的な原因になります。
 import { useSearchParams } from 'next/navigation';
-import { registerUser } from '@shared/lib/auth';
+import { registerUser } from '@shared/lib/utils/auth';
 
 /**
  * 💡 フォーム本体のコンポーネント

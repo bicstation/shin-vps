@@ -9,27 +9,33 @@ import styles from "./layout.module.css";
 
 /**
  * ✅ 1. スタイルのインポート
- * globals.css は全体に適用、layout.module.css はこのファイル内の構造に使用
  */
 import '@shared/styles/globals.css';
 
 /**
  * ✅ 2. 共通ロジックのインポート
+ * 修正: @shared/utils/siteConfig -> @shared/lib/utils/siteConfig
  */
-import { getSiteMetadata, getSiteColor } from '@shared/lib/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@shared/lib/utils/siteConfig';
 
 /**
  * ✅ 3. 共通レイアウトコンポーネントのインポート
  */
-import Header from '@shared/layout/Header';
-import Footer from '@shared/layout/Footer';
+import Header from '@shared/components/organisms/common/Header';
+import Footer from '@shared/components/organisms/common/Footer';
+
+/**
+ * ✅ 4. サイドバー
+ * 修正: 不要な拡張子 (.tsx) を削除
+ */
 import SidebarWrapper from '@shared/layout/Sidebar/SidebarWrapper';
 
 /**
- * ✅ 4. チャットボット・プログレスバー
+ * ✅ 5. チャットボット・プログレスバー
+ * 修正: 物理階層 components/ を追加
  */
-import ChatBot from '@shared/common/ChatBot';
-import RouteProgressBar from '@shared/common/RouteProgressBar';
+import ChatBot from '@shared/components/organisms/common/ChatBot';
+import RouteProgressBar from '@shared/components/atoms/RouteProgressBar';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -48,10 +54,10 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://avflash.xyz"),
   title: {
     template: "%s | AV FLASH - 新作・人気動画カタログ",
-    default: "AV FLASH - DUGA作品・新作作品の最安比較ポータル",
+    default: "AV FLASH - 新作作品の最安比較ポータル",
   },
-  description: "DUGAの最新作から人気作までを網羅。価格比較、出演者情報、AI解析による属性情報をリアルタイムに集約したアダルトエンタメポータルです。",
-  keywords: ["DUGA", "新作AV", "動画比較", "アダルトアフィリエイト", "AV FLASH", "サンプル動画"],
+  description: "最新作から人気作までを網羅。価格比較、出演者情報、AI解析による属性情報をリアルタイムに集約したアダルトエンタメポータルです。",
+  keywords: ["新作AV", "動画比較", "アダルトアフィリエイト", "AV FLASH", "サンプル動画"],
   authors: [{ name: "AV FLASH Team" }],
   robots: {
     index: true,
@@ -64,7 +70,7 @@ export const metadata: Metadata = {
     url: "https://avflash.xyz/",
     siteName: "AV FLASH",
     title: "AV FLASH - 新作動画・作品情報ポータル",
-    description: "DUGAの人気作品を独自の視点で紹介。あなたの好みの作品がすぐに見つかる動画カタログサイト。",
+    description: "人気作品を独自の視点で紹介。あなたの好みの作品がすぐに見つかる動画カタログサイト。",
     images: [
       {
         url: "/og-image-adult.png",
@@ -99,6 +105,8 @@ export default async function RootLayout({
   // ✅ 共通設定からサイト情報を取得
   const headerList = await headers();
   const host = headerList.get('host') || "avflash.xyz";
+  
+  // 💡 siteConfig の関数を使用して動的にテーマを決定
   const site = getSiteMetadata(host);
   const themeColor = getSiteColor(site.site_name);
 
@@ -124,7 +132,7 @@ export default async function RootLayout({
           "--bg-deep": BG_COLOR,
         } as React.CSSProperties}
       >
-        {/* 🚀 ページ遷移プログレスバー (nprogress) */}
+        {/* 🚀 ページ遷移プログレスバー */}
         <RouteProgressBar />
 
         {/* 1. 共通ヘッダー */}

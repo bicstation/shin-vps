@@ -1,5 +1,5 @@
 /* RelationArea.tsx */
-import AdultProductCard from '@shared/cards/AdultProductCard';
+import AdultProductCard from '@/shared/components/organisms/cards/AdultProductCard';
 
 const RelationSection = ({ title, subTitle, products }) => {
   if (!products || products.length === 0) return null;

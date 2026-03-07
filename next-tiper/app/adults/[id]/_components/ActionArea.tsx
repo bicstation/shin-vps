@@ -1,5 +1,5 @@
 /* ActionArea.tsx */
-import MoviePlayerModal from '@shared/product/MoviePlayerModal';
+import MoviePlayerModal from '@/shared/components/organisms/product/MoviePlayerModal';
 
 export default function ActionArea({ product, movieData, isFanza, id, source }) {
   return (

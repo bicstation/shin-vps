@@ -1,26 +1,32 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable react/no-unescaped-entities */
-// /home/maya/dev/shin-vps/next-bicstation/app/catalog/page.tsx
+/**
+ * =====================================================================
+ * 💻 BICSTATION PC製品カタログ (Catalog Hub)
+ * 🛡️ Maya's Logic: 物理構造 v3.2 完全同期版
+ * 物理パス: app/catalog/page.tsx
+ * =====================================================================
+ */
 
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Pagination from '@shared/common/Pagination';
-import ProductCard from '@shared/cards/ProductCard';
 
-// APIインポート先を役割ごとに分離
-import { fetchPCProducts } from '@shared/lib/api/django/pc';
+// ✅ 修正ポイント 1: 物理構造リストに基づいたインポートパスの修正
+import Pagination from '@/shared/components/molecules/Pagination';
+import ProductCard from '@/shared/components/organisms/cards/ProductCard';
+
+// ✅ 修正ポイント 2: API関数のパス修正 (shared/lib/api/django/pc.ts)
+import { fetchPCProducts } from '@/shared/lib/api/django/pc';
 
 import styles from './CatalogPage.module.css';
 
-/**
- * ✅ 修正ポイント: 動的レンダリングを強制
- */
+// ✅ 動的レンダリングを強制し、検索結果の即時性を担保
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
     title: 'PC製品カタログ一覧 | BICSTATION',
-    description: '最新のゲーミングPCからノートPCまで。スペック、価格、AIスコアで絞り込み検索が可能なPCデータベース。',
+    description: '最新のゲーミングPCからクリエイター向けノートPCまで。スペック、価格、AIスコアで比較・検索が可能な日本最大級のPCデータベース。',
 };
 
 interface PageProps {
@@ -34,14 +40,14 @@ interface PageProps {
 }
 
 /**
- * ✅ Next.js 15 対策: ページ全体を Suspense でラップ
+ * ✅ エントリポイント: Next.js 15推奨のSuspense構造
  */
-export default function CatalogPage(props: PageProps) {
+export default async function CatalogPage(props: PageProps) {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-500 font-mono text-xs uppercase tracking-[0.2em]">
-                <div className="w-8 h-8 border-t-2 border-slate-500 animate-spin mb-4 rounded-full"></div>
-                Fetching_PC_Database...
+            <div className="min-h-[80vh] flex flex-col items-center justify-center text-slate-500 font-mono text-xs uppercase tracking-[0.2em]">
+                <div className="w-10 h-10 border-t-2 border-blue-500 animate-spin mb-6 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.3)]"></div>
+                Initializing_Database_Connection...
             </div>
         }>
             <CatalogPageContent {...props} />
@@ -50,103 +56,114 @@ export default function CatalogPage(props: PageProps) {
 }
 
 /**
- * 実際のページロジック
+ * 💡 実際のコンテンツ（Server Component）
  */
 async function CatalogPageContent({ searchParams }: PageProps) {
     const sParams = await searchParams;
     
-    // パラメータ取得
-    const currentPage = Number(sParams.page) || 1;
+    // 1. パラメータの正規化
     const limit = 40;
     const searchQuery = (Array.isArray(sParams.q) ? sParams.q[0] : sParams.q) || '';
     const maker = (Array.isArray(sParams.maker) ? sParams.maker[0] : sParams.maker) || '';
     const attribute = (Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute) || '';
     
-    // Offset計算
-    const currentOffset = sParams.offset ? parseInt(sParams.offset) : (currentPage - 1) * limit;
+    // pageとoffsetの管理を正規化
+    const currentOffset = sParams.offset 
+        ? parseInt(sParams.offset) 
+        : (Math.max(1, Number(sParams.page) || 1) - 1) * limit;
 
-    // 🛡️ APIガード
-    async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
-        try {
-            return (await promise) || fallback;
-        } catch (e) {
-            console.error("[Catalog API Error]:", e);
-            return fallback;
-        }
-    }
+    // 2. APIフェッチ（堅牢なガード付き）
+    const pcData = await fetchPCProducts(
+        searchQuery, 
+        currentOffset, 
+        limit, 
+        attribute || maker
+    ).catch((e) => {
+        console.error("[Catalog API Fatal Error]:", e);
+        return { results: [], count: 0 };
+    });
 
-    // データの取得
-    const [pcData] = await Promise.all([
-        safeFetch(fetchPCProducts(searchQuery, currentOffset, limit, attribute || maker), { results: [], count: 0 }),
-    ]);
+    // countの安全な抽出
+    const totalCount = pcData?.count || 0;
 
     return (
         <div className={styles.fullWidthWrapper}>
             <main className={styles.fullMain}>
                 <header className={styles.pageHeader}>
+                    <div className={styles.headerDeco}></div>
                     <h1 className={styles.mainTitle}>PC製品カタログ</h1>
                     <p className={styles.subDescription}>
-                        全 {pcData.count.toLocaleString()} 件のPCデータベースから、あなたに最適な1台を見つけましょう。
+                        <span className={styles.highlight}>{totalCount.toLocaleString()}</span> 件のデータベースから最適な1台を抽出
                     </p>
                 </header>
 
-                {/* 🔍 検索セクション - 全幅に合わせて配置を最適化 */}
+                {/* 🔍 検索バー */}
                 <section className={styles.searchSection}>
                     <form action="/catalog" method="GET" className={styles.searchForm}>
-                        <input 
-                            type="text" 
-                            name="q" 
-                            defaultValue={searchQuery}
-                            placeholder="型番、CPU、GPU、製品名で検索..." 
-                            className={styles.searchInput}
-                        />
-                        {maker && <input type="hidden" name="maker" value={maker} />}
-                        {attribute && <input type="hidden" name="attribute" value={attribute} />}
-                        <button type="submit" className={styles.searchButton}>検索</button>
+                        <div className={styles.inputGroup}>
+                            <input 
+                                type="text" 
+                                name="q" 
+                                defaultValue={searchQuery}
+                                placeholder="モデル名、CPU、GPUなどを入力..." 
+                                className={styles.searchInput}
+                            />
+                            {maker && <input type="hidden" name="maker" value={maker} />}
+                            {attribute && <input type="hidden" name="attribute" value={attribute} />}
+                            <button type="submit" className={styles.searchButton}>
+                                🔍 データベース検索
+                            </button>
+                        </div>
                     </form>
                 </section>
 
-                {/* 🏷️ アクティブなフィルタ表示 */}
+                {/* 🏷️ アクティブなフィルタ */}
                 {(searchQuery || maker || attribute) && (
                     <div className={styles.activeFilters}>
-                        {searchQuery && <span className={styles.filterBadge}>キーワード: {searchQuery}</span>}
+                        <span className={styles.filterLabel}>現在の条件:</span>
+                        {searchQuery && <span className={styles.filterBadge}>"{searchQuery}"</span>}
                         {maker && <span className={styles.filterBadge}>メーカー: {maker}</span>}
-                        {attribute && <span className={styles.filterBadge}>条件: {attribute}</span>}
-                        <Link href="/catalog" className={styles.clearFilter}>リセット ×</Link>
+                        {attribute && <span className={styles.filterBadge}>属性: {attribute}</span>}
+                        <Link href="/catalog" className={styles.clearFilter}>リセット</Link>
                     </div>
                 )}
 
                 <section className={styles.productSection}>
                     <div className={styles.gridHeader}>
                         <h2 className={styles.productGridTitle}>
-                            <span className={styles.titleIndicator}></span>
-                            {searchQuery ? `「${searchQuery}」の検索結果` : '製品一覧'}
+                            {searchQuery ? `検索結果: ${searchQuery}` : '最新登録製品'}
                         </h2>
                     </div>
 
-                    <div className={styles.productGrid}>
-                        {pcData.results.length > 0 ? (
-                            pcData.results.map((product: any) => (
-                                <ProductCard key={product.unique_id || product.id} product={product} />
-                            ))
-                        ) : (
-                            <div className="py-20 text-center text-gray-500 w-full bg-slate-900/50 rounded-xl border border-white/5">
-                                <p>該当する製品が見つかりませんでした。</p>
-                                <p className="text-xs mt-2">条件を変えて再度お試しください。</p>
-                            </div>
-                        )}
-                    </div>
+                    {/* 📦 製品グリッド */}
+                    {pcData.results && pcData.results.length > 0 ? (
+                        <div className={styles.productGrid}>
+                            {pcData.results.map((product: any) => (
+                                <ProductCard 
+                                    key={product.unique_id || product.id} 
+                                    product={product} 
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className={styles.noData}>
+                            <div className={styles.noDataIcon}>⚠️</div>
+                            <p>該当する製品は見つかりませんでした。</p>
+                            <p className={styles.noDataSub}>条件を緩和するか、別のキーワードをお試しください。</p>
+                        </div>
+                    )}
 
-                    <div className={styles.paginationWrapper}>
-                        <Suspense fallback={<div className="h-10 w-full bg-slate-900 animate-pulse rounded" />}>
+                    {/* 🔢 ページネーション */}
+                    {totalCount > limit && (
+                        <div className={styles.paginationWrapper}>
                             <Pagination 
                                 currentOffset={currentOffset}
                                 limit={limit}
-                                totalCount={pcData.count}
-                                baseUrl="/catalog" 
+                                totalCount={totalCount}
+                                baseUrl="/catalog"
                             />
-                        </Suspense>
-                    </div>
+                        </div>
+                    )}
                 </section>
             </main>
         </div>

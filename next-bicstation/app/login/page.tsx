@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 import React, { useState, FormEvent } from 'react';
 import Link from 'next/link'; 
 // ✅ 共通ライブラリのパスをプロジェクトの設定に合わせて最適化
-import { loginUser } from '@shared/lib/auth';
-import { getSiteMetadata } from '@shared/lib/siteConfig';
+import { loginUser } from '@shared/lib/utils/auth';
+import { getSiteMetadata } from '@shared/lib/utils/siteConfig';
 
 /**
  * ログインページ

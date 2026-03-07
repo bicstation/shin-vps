@@ -17,7 +17,6 @@ interface Message {
 
 /**
  * 🥂 AI Sommelier Chat Inner Component
- * 文脈を読み解き、貴方の理想の一人をエスコートします。
  */
 function ChatInner() {
     const [input, setInput] = useState('');
@@ -30,19 +29,15 @@ function ChatInner() {
     const [isLoading, setIsLoading] = useState(false);
     
     const messageListRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // ✅ メッセージ追加時に最下部へ優雅にスクロール
+    /**
+     * ✅ スクロール制御の最適化
+     * messagesEndRef への scrollIntoView を使用することで、
+     * 要素が追加された直後に確実に最下部へエスコートします。
+     */
     const scrollToBottom = () => {
-        if (messageListRef.current) {
-            const scrollContainer = messageListRef.current;
-            // 短いラグを設けることでDOM更新後の高さを確実に取得
-            setTimeout(() => {
-                scrollContainer.scrollTo({
-                    top: scrollContainer.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 50);
-        }
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
     useEffect(() => {
@@ -54,7 +49,6 @@ function ChatInner() {
         if (!input.trim() || isLoading) return;
 
         const userMsg = input.trim();
-        // APIへ送るための現在の履歴をキャプチャ
         const historyContext = [...messages];
 
         setInput('');
@@ -62,7 +56,6 @@ function ChatInner() {
         setIsLoading(true);
 
         try {
-            // ✅ APIエンドポイントへ最新メッセージと履歴を送信
             const response = await fetch('/api/chat', { 
                 method: 'POST',
                 headers: { 
@@ -71,14 +64,11 @@ function ChatInner() {
                 },
                 body: JSON.stringify({ 
                     message: userMsg,
-                    history: historyContext // これで会話が成立します
+                    history: historyContext
                 }),
             });
 
-            const contentType = response.headers.get("content-type");
-            if (!response.ok || (contentType && contentType.includes("text/html"))) {
-                throw new Error("Invalid response from server");
-            }
+            if (!response.ok) throw new Error("Connection lost in the night");
 
             const data = await response.json();
 
@@ -105,13 +95,23 @@ function ChatInner() {
     return (
         <div className={styles.fullScreenWrapper}>
             <div className={styles.chatContainer}>
-                {/* 🥂 ヘッダーエリア：アダルトで高級感のあるデザイン */}
+                {/* 🥂 BRANDING HEADER */}
                 <div className={styles.heroHeader}>
-                    <h1 className="text-xl font-black italic tracking-tighter text-white">ADULT SOMMELIER</h1>
-                    <p className="text-[10px] text-gray-400 uppercase tracking-widest">tiper.live Premium Concierge</p>
+                    <div className="flex flex-col items-center">
+                        <h1 className="text-2xl font-black italic tracking-tighter text-white drop-shadow-lg">
+                            ADULT SOMMELIER
+                        </h1>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className="h-[1px] w-4 bg-[var(--accent)] opacity-50"></span>
+                            <p className="text-[9px] text-gray-400 uppercase tracking-[0.3em]">
+                                tiper.live Premium Concierge
+                            </p>
+                            <span className="h-[1px] w-4 bg-[var(--accent)] opacity-50"></span>
+                        </div>
+                    </div>
                 </div>
 
-                {/* 💬 メッセージ表示エリア */}
+                {/* 💬 MESSAGE STREAM */}
                 <div className={styles.messageList} ref={messageListRef}>
                     {messages.map((msg, index) => (
                         <div key={index} className={msg.role === 'user' ? styles.userRow : styles.aiRow}>
@@ -121,7 +121,7 @@ function ChatInner() {
                                     alt="avatar" 
                                     className={styles.avatar}
                                     onError={(e) => {
-                                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%231a237e'/%3E%3C/svg%3E";
+                                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23121212'/%3E%3Cpath d='M20 10c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10z' fill='%23333'/%3E%3C/svg%3E";
                                     }}
                                 />
                             </div>
@@ -140,12 +140,17 @@ function ChatInner() {
                                     <div className={styles.productCard}>
                                         <div className={styles.productImageWrapper}>
                                             <img src={msg.product.image} alt={msg.product.name} className={styles.productImage} />
+                                            <div className={styles.imageOverlay} />
                                         </div>
                                         <div className={styles.productInfo}>
+                                            <p className={styles.recommendLabel}>Special Selection</p>
                                             <a href={msg.product.url} target="_blank" rel="noopener noreferrer" className={styles.productNameLink}>
                                                 {msg.product.name}
                                             </a>
-                                            <p className={styles.productDetailBtn}>GO TO THE DREAM »</p>
+                                            <div className="mt-2 flex items-center justify-between">
+                                                <span className="text-[9px] font-mono text-gray-500 uppercase">Archive ID: TP-{Math.floor(Math.random() * 100000)}</span>
+                                                <p className={styles.productDetailBtn}>GO TO DREAM »</p>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -163,40 +168,50 @@ function ChatInner() {
                             </div>
                         </div>
                     )}
+                    {/* アンカー要素: スクロール位置の基準点 */}
+                    <div ref={messagesEndRef} className="h-4 w-full" />
                 </div>
 
-                {/* ⌨️ 入力エリア：常に最下部に固定 */}
-                <form className={styles.inputSection} onSubmit={handleSend}>
-                    <input 
-                        type="text" 
-                        className={styles.mainInput}
-                        placeholder={isLoading ? "貴方の理想を吟味しております..." : "こだわりをお聞かせください..."}
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        disabled={isLoading}
-                    />
-                    <button 
-                        type="submit" 
-                        className={styles.sendBtn} 
-                        disabled={isLoading || !input.trim()}
-                    >
-                        {isLoading ? '...' : 'SEND'}
-                    </button>
-                </form>
+                {/* ⌨️ INPUT SECTION */}
+                <div className={styles.inputWrapper}>
+                    <form className={styles.inputSection} onSubmit={handleSend}>
+                        <input 
+                            type="text" 
+                            className={styles.mainInput}
+                            placeholder={isLoading ? "理想のノードを探索中..." : "どのような「こだわり」をお持ちですか？"}
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            disabled={isLoading}
+                        />
+                        <button 
+                            type="submit" 
+                            className={styles.sendBtn} 
+                            disabled={isLoading || !input.trim()}
+                        >
+                            {isLoading ? '...' : 'SEND'}
+                        </button>
+                    </form>
+                    <p className="text-[8px] text-center text-gray-600 mt-2 tracking-widest uppercase">
+                        Secure Transmission / Adult Concierge Protocol v3.0
+                    </p>
+                </div>
             </div>
         </div>
     );
 }
 
 /**
- * ✅ 最終エクスポート
+ * ✅ EXPORT WITH SUSPENSE
  */
 export default function ContactPage() {
     return (
         <Suspense fallback={
             <div className={styles.fullScreenWrapper}>
-                <div className="flex items-center justify-center h-full text-[#c62828] font-mono animate-pulse">
-                    PREPARING_GORGEOUS_NIGHT...
+                <div className="flex flex-col items-center justify-center h-full gap-4">
+                    <div className="w-12 h-12 border-t-2 border-[var(--accent)] rounded-full animate-spin"></div>
+                    <div className="text-[var(--accent)] font-mono text-xs tracking-[0.5em] animate-pulse">
+                        CONNECTING_TO_SOMMELIER...
+                    </div>
                 </div>
             </div>
         }>

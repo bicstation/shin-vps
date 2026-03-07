@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 import React, { Suspense } from 'react';
 // ✅ 修正ポイント: useSearchParams を明示的にインポート
 import { useSearchParams } from 'next/navigation';
-import StaticPageLayout from '@shared/static/StaticPageLayout';
+import StaticPageLayout from '@shared/components/templates/StaticPageLayout';
 
 // ❌ export const metadata = { ... } は削除しました。
 // "use client" のファイルには置けないため、ビルドエラーの原因になります。

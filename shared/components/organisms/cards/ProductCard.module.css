@@ -1,0 +1,188 @@
+/* =====================================================================
+ * 🏗️ [BICSTATION-UNIVERSAL-CARD] - THE FINAL MASTERPIECE (COMPLETE)
+ * ---------------------------------------------------------------------
+ * 💡 修正点: 5軸解析セクションのバーグラフ完全実装
+ * ===================================================================== */
+
+/* --- 🏆 セクションタイトル --- */
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #0f172a;
+  padding: 0.5rem 1rem;
+  margin: 2.5rem 0 1.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-left: 6px solid var(--theme-color, #3b82f6);
+  background: linear-gradient(to right, #f8fafc, transparent);
+  letter-spacing: -0.02em;
+}
+
+/* --- 🏗️ カード基本構造 --- */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  height: 100%;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: var(--theme-color, #3b82f6);
+}
+
+/* 🚩 ランキングスタイル */
+.rankingMode { border-width: 2px; }
+.rank_1 { border-color: #fbbf24; background-color: #fffbeb; }
+.rank_2 { border-color: #94a3b8; background-color: #f8fafc; }
+.rank_3 { border-color: #cd7f32; background-color: #fff7ed; }
+
+.rankBadge {
+  position: absolute;
+  top: 10px; left: 10px;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  font-weight: 900; font-size: 1.1rem;
+  color: white; z-index: 10;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rankBadge_1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #451a03; }
+.rankBadge_2 { background: linear-gradient(135deg, #94a3b8, #475569); }
+.rankBadge_3 { background: linear-gradient(135deg, #d97706, #92400e); }
+
+.scoreBadge {
+  position: absolute; top: 1rem; right: 1rem;
+  background-color: #0f172a; color: #38bdf8;
+  padding: 0.4rem 0.8rem; border-radius: 8px;
+  font-size: 10px; font-weight: 800; z-index: 5;
+}
+.scoreBadge span { font-size: 16px; color: #fff; margin-left: 4px; }
+
+/* 📸 画像エリア */
+.imageArea {
+  width: 100%; height: 220px;
+  background-color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem; border-bottom: 1px solid #f1f5f9;
+}
+.image { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.5s ease; }
+.card:hover .image { transform: scale(1.05); }
+
+.cardBody { padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
+
+.metaInfo { display: flex; gap: 8px; align-items: center; margin-bottom: 0.5rem; }
+.makerBadge { font-size: 11px; font-weight: 800; color: #1e293b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; }
+
+.productName {
+  font-size: 1.15rem; font-weight: 800; color: #0f172a; line-height: 1.4;
+  margin-bottom: 0.75rem; height: 3.2em;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.productName a { text-decoration: none; color: inherit; transition: color 0.2s; }
+.productName a:hover { color: var(--theme-color, #3b82f6); }
+
+/* 🏷️ 属性リスト */
+.attributeList { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 1rem; }
+.attrBadge { 
+  font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; 
+  transition: all 0.2s ease; border: 1px solid transparent; cursor: pointer;
+  text-decoration: none; display: inline-flex; align-items: center;
+}
+.attrBadge:hover { filter: brightness(0.95); transform: translateY(-1px); }
+.attrTypeLabel { opacity: 0.7; margin-right: 3px; font-weight: 900; }
+
+.aiBadge { background: linear-gradient(135deg, #8b5cf6, #d946ef); color: white; padding: 2px 8px; font-size: 10px; font-weight: 800; border-radius: 4px; }
+
+/* 📊 5軸解析セクション（ここが今回の心臓部） */
+.analysisSection {
+  display: flex; align-items: center; gap: 1rem;
+  background: #f8fafc; padding: 0.8rem; border-radius: 12px;
+  margin-bottom: 1rem; border: 1px solid #edf2f7;
+}
+
+.chartContainer { width: 75px; height: 75px; position: relative; flex-shrink: 0; }
+.chartSvg { width: 100%; height: 100%; }
+.chartBg { fill: rgba(255,255,255,0.8); stroke: #e2e8f0; stroke-width: 1; }
+.chartLine { stroke: #e2e8f0; stroke-width: 0.5; }
+.chartPolygon { 
+  fill: rgba(59, 130, 246, 0.2); 
+  stroke: var(--theme-color, #3b82f6); 
+  stroke-width: 2.5; 
+  stroke-linejoin: round;
+}
+
+.scoreDetail { flex-grow: 1; display: flex; flex-direction: column; gap: 6px; }
+
+.scoreRow { 
+  display: flex; 
+  flex-direction: column; /* ラベルの下にバーを表示 */
+  gap: 2px;
+}
+
+.scoreLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748b;
+  line-height: 1;
+}
+.scoreLabel strong { color: #0f172a; }
+
+/* 📈 バーグラフのトラック */
+.barTrack {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+/* 📈 バーグラフの本体 */
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 💬 AI診断コメント */
+.aiCommentBox {
+  background: #f1f5f9; border-radius: 12px; padding: 12px;
+  margin-bottom: 1.25rem; border-left: 4px solid var(--theme-color, #3b82f6);
+}
+.aiLabel { font-size: 9px; font-weight: 900; color: var(--theme-color, #3b82f6); display: block; margin-bottom: 2px; }
+.aiText { font-size: 0.8rem; color: #334155; line-height: 1.5; margin: 0; }
+
+/* 💰 価格表示 */
+.priceContainer { margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 0.75rem; }
+.price { font-weight: 900; color: #0f172a; display: flex; align-items: baseline; margin: 0; }
+.currency { font-size: 1rem; margin-right: 2px; }
+.amount { font-size: 1.5rem; letter-spacing: -0.02em; }
+.taxLabel { font-size: 10px; color: #94a3b8; margin-left: 4px; }
+
+/* 🚀 アクションボタン */
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem; }
+.detailBtn, .buyBtn {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0.75rem 0.5rem; border-radius: 0.6rem; font-size: 0.8rem; font-weight: 700; text-decoration: none;
+}
+.detailBtn { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.buyBtn { background: #0f172a; color: #fff; }
+
+/* 📱 モバイル対応 */
+@media (max-width: 640px) {
+  .sectionTitle { font-size: 1.4rem; }
+  .imageArea { height: 180px; }
+  .analysisSection { gap: 0.5rem; padding: 0.5rem; }
+  .chartContainer { width: 60px; height: 60px; }
+}

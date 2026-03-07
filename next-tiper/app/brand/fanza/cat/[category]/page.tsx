@@ -4,6 +4,11 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+
+/**
+ * 🛰️ API インポート
+ * 物理構造 shared/lib/api/django/adult.ts に準拠
+ */
 import { 
     fetchMakers, 
     fetchGenres, 
@@ -11,15 +16,18 @@ import {
     fetchSeries,
     fetchDirectors,
     fetchAuthors 
-} from '@shared/lib/api/django/adult';
+} from '@/shared/lib/api/django/adult';
+
+/**
+ * ✅ 修正: 物理構造 shared/lib/utils/metadata.ts に合わせる
+ */
+import { constructMetadata } from '@/shared/lib/utils/metadata';
 import styles from '@/app/brand/Archive.module.css';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * 💡 カテゴリ定義の拡張
- * label: システム表示用
- * displayName: 日本語タイトル用
  */
 const VALID_CATEGORIES: Record<string, { label: string; displayName: string; fetcher: any }> = {
     actress: { label: 'ACTRESS', displayName: '女優', fetcher: fetchActresses },
@@ -36,27 +44,33 @@ const VALID_CATEGORIES: Record<string, { label: string; displayName: string; fet
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
     const { category } = await params;
     const config = VALID_CATEGORIES[category];
-    const displayTitle = config ? `${config.displayName}一覧` : 'カテゴリ一覧';
+    if (!config) return {};
+
+    const displayTitle = `${config.displayName}一覧`;
     
-    return {
+    // ✅ 修正: 参照エラーを避けるため、メタデータ用に別途軽量なカウント取得、または静的な説明文に
+    return constructMetadata({
         title: `FANZA ${displayTitle} | TIPER ARCHIVE`,
-        description: `FANZAの${displayTitle}別アーカイブ。最新の解析データを網羅。`,
-    };
+        description: `FANZAの${displayTitle}別アーカイブ。最新の解析データを網羅し、主要な${config.displayName}ノードをスキャン。`,
+        canonical: `/brand/fanza/cat/${category}`
+    });
 }
 
 /**
  * 🔳 FANZA_CATEGORY_LIST_PAGE
+ * 役割: 特定カテゴリに属する全マスタデータ（女優一覧など）をグリッド表示する。
  */
 export default async function FanzaCategoryListPage(props: { 
     params: Promise<{ category: string }> 
 }) {
+    // 1. パラメータの解決
     const { category } = await props.params;
 
-    // 1. カテゴリの検証
+    // 2. カテゴリの検証
     const config = VALID_CATEGORIES[category];
     if (!config) notFound();
 
-    // 2. データ取得
+    // 3. データ取得 (一括スキャン)
     const itemsRes = await config.fetcher({ 
         limit: 500, 
         api_source: 'fanza', 
@@ -74,14 +88,14 @@ export default async function FanzaCategoryListPage(props: {
         >
             <div className={styles.ambientGlow} />
 
-            <main className={styles.mainContent}>
+            <main className={`${styles.mainContent} Archive_mainContent`}>
+                {/* 🗺️ パンくずリスト */}
                 <nav className={styles.breadcrumb}>
                     <Link href="/" className={styles.bcLink}>ROOT</Link>
                     <span className={styles.bcDivider}>/</span>
                     <Link href="/brand/fanza" className={styles.bcLink}>FANZA</Link>
                     <span className={styles.bcDivider}>/</span>
-                    {/* 💡 スラッグではなく displayName (女優、メーカー等) を表示 */}
-                    <span className={styles.bcActive}>{config.displayName}</span>
+                    <span className={styles.bcActive}>{config.displayName} INDEX</span>
                 </nav>
 
                 <header className={styles.headerSection}>
@@ -89,20 +103,20 @@ export default async function FanzaCategoryListPage(props: {
                         <div className="flex items-center gap-3 mb-2">
                             <span className="w-8 h-[1px] bg-[var(--accent)]"></span>
                             <span className="text-[10px] font-mono tracking-[0.4em] text-[var(--accent)] uppercase opacity-80">
-                                INDEX_SCAN / {config.label}
+                                CLASSIFICATION_INDEX / {config.label}
                             </span>
                         </div>
-                        {/* 💡 メインタイトルを日本語（config.displayName）に変更 */}
-                        <h1 className={styles.titleMain}>{config.displayName} INDEX</h1>
+                        <h1 className={styles.titleMain}>{config.displayName} 一覧</h1>
                         
                         <div className={styles.statusInfo}>
-                            <span className={styles.statusLabel}>NODES_DETECTED:</span>
+                            <span className={styles.statusLabel}>ACTIVE_NODES:</span>
                             <span className={styles.statusValue}>{items.length}</span>
                         </div>
                     </div>
                 </header>
 
-                {/* 🔳 カテゴリグリッド */}
+                {/* 🔳 インデックス・グリッド */}
+                
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-8">
                     {items.length > 0 ? (
                         items.map((item: any) => (
@@ -115,7 +129,6 @@ export default async function FanzaCategoryListPage(props: {
                                     <span className="text-gray-500 text-[9px] font-mono group-hover:text-[var(--accent)] transition-colors">
                                         ID_{String(item.id).padStart(6, '0')}
                                     </span>
-                                    {/* 💡 個別アイテムの名称を表示 */}
                                     <span className="text-white font-bold text-sm leading-tight group-hover:translate-x-1 transition-transform duration-300">
                                         {item.name}
                                     </span>
@@ -126,6 +139,7 @@ export default async function FanzaCategoryListPage(props: {
                                         <span className="text-white/10 group-hover:text-[var(--accent)] group-hover:translate-x-1 transition-all">→</span>
                                     </div>
                                 </div>
+                                {/* 💡 ホバー時に走るスキャンライン・エフェクト */}
                                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-0 group-hover:opacity-100 group-hover:top-full transition-all duration-1000 ease-in-out" />
                             </Link>
                         ))

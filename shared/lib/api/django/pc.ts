@@ -1,10 +1,22 @@
+/**
+ * =====================================================================
+ * 🖥️ PC製品（General）統合サービス
+ * 🛡️ Maya's Logic: 物理構造 v3.2 完全同期版
+ * 物理パス: shared/lib/api/django/pc.ts
+ * =====================================================================
+ * 【責務】
+ * 1. PC製品（BicStation等）のカタログデータ・詳細情報の取得
+ * 2. AI解析スコア・レーダーチャートデータの型定義と同期
+ * 3. サイトグループ（site_group）に基づいたフィルタリング
+ * =====================================================================
+ */
+
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from './client';
-import { getSiteMetadata } from '../../siteConfig';
+// ✅ 修正ポイント: 物理構造 [STRUCTURE] shared/lib/utils/siteConfig.ts に合わせる
+import { siteConfig } from '../../utils/siteConfig';
 
 /**
- * ==========================================
- * 💎 型定義
- * ==========================================
+ * 💎 型定義 (Maya's Logic Spec Edition)
  */
 export interface RadarChartData {
     subject: string;
@@ -24,7 +36,7 @@ export interface PCProduct {
     url: string;           // 直リンクURL
     affiliate_url: string; // 正式アフィリエイトURL
     description: string;
-    ai_content: string;    // AI生成コンテンツ
+    ai_content: string;    // AI生成コンテンツ（詳細レビュー等）
     ai_summary?: string;
     stock_status: string;
     unified_genre: string;
@@ -36,6 +48,12 @@ export interface PCProduct {
     display_info?: string;
     spec_score?: number;   // AI解析総合スコア
     radar_chart?: RadarChartData[]; // 5軸チャート用データ
+    // 各スコアの個別プロパティ (ランキング等で使用)
+    score_cpu?: number;
+    score_gpu?: number;
+    score_cost?: number;
+    score_portable?: number;
+    score_ai?: number;
 }
 
 export interface MakerCount {
@@ -45,13 +63,13 @@ export interface MakerCount {
 
 /**
  * ==========================================
- * 🖥️ API 関数群
+ * 🚀 API 関数群
  * ==========================================
  */
 
 /**
  * 💡 PC製品一覧取得
- * ページネーションと属性フィルタに対応
+ * サイトグループを自動付与し、適切な範囲の製品のみを抽出します。
  */
 export async function fetchPCProducts(
     maker: string = '', 
@@ -59,9 +77,10 @@ export async function fetchPCProducts(
     limit: number = 12, 
     attribute: string = ''
 ): Promise<{ results: PCProduct[]; count: number; _debug?: any }> {
-    const { site_group } = getSiteMetadata(); 
+    // ✅ siteConfig から site_group を取得 (BicStation なら 'pc' 等)
+    const site_group = siteConfig.site_group || 'common'; 
     const queryParams = new URLSearchParams({ 
-        site_group: site_group || 'common',
+        site_group,
         offset: offset.toString(),
         limit: limit.toString()
     });
@@ -71,153 +90,90 @@ export async function fetchPCProducts(
 
     const url = resolveApiUrl(`/api/general/pc-products/?${queryParams.toString()}`);
 
-    console.log(`[DEBUG: LIST] Fetching products from: ${url}`);
-
     try {
-        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 600 } });
+        const res = await fetch(url, { 
+            headers: getDjangoHeaders(), 
+            next: { revalidate: 600 } // 10分間のキャッシュ
+        });
         const data = await handleResponseWithDebug(res, url);
+        
         return { 
             results: data.results || [], 
             count: data.count || 0, 
             _debug: data._debug 
         };
     } catch (e: any) {
-        console.error(`[FETCH ERROR] fetchPCProducts failed: ${e.message}`);
+        console.error(`🚨 [PC-List Error] Fetch failed: ${e.message}`);
         return { results: [], count: 0, _debug: { error: e.message, url } };
     }
 }
 
 /**
- * 💡 PC製品詳細取得 (最強のデバッグログ搭載)
+ * 💡 PC製品詳細取得
+ * 強固なエラー検知機能を備え、Django側の不備（HTML返却）を即座に判定します。
  */
 export async function fetchPCProductDetail(unique_id: string): Promise<PCProduct | null> {
     const url = resolveApiUrl(`/api/general/pc-products/${unique_id}/`); 
     
-    console.log(`\n--- 🔍 API CALL: DETAIL START ---`);
-    console.log(`[URL]: ${url}`);
-    console.log(`[ID ]: ${unique_id}`);
-
     try {
         const res = await fetch(url, { 
             headers: getDjangoHeaders(), 
-            cache: 'no-store' 
+            cache: 'no-store' // 個別詳細は常に最新情報を優先
         });
 
-        console.log(`[STATUS]: ${res.status} ${res.statusText}`);
+        // 🛡️ Guard: HTML（エラーページ）が返ってきた場合の即時遮断ロジック
         const contentType = res.headers.get('content-type');
-        console.log(`[CONTENT-TYPE]: ${contentType}`);
+        if (contentType && contentType.includes('text/html')) {
+            console.error(`🚨 [PC-Detail Critical] HTML response detected (Django Error). ID: ${unique_id}`);
+            return null;
+        }
 
         const data = await handleResponseWithDebug(res, url);
         
-        if (!data) {
-            console.error(`[CRITICAL] Data is null or undefined for ID: ${unique_id}`);
+        // 🛡️ Guard: ID欠如チェック
+        if (!data || (!data.unique_id && !data.id)) {
+            console.error(`🚨 [PC-Detail Error] Data missing unique_id for: ${unique_id}`);
             return null;
         }
-
-        // HTMLが返ってきた（Djangoのエラー画面）場合の判定
-        if (data.isHtml || (typeof data === 'string' && data.includes('<!DOCTYPE html>'))) {
-            console.error(`[🚨 ALERT] Received HTML instead of JSON! Django error page detected.`);
-            return null;
-        }
-
-        if (!data.unique_id && !data.id) {
-            console.error(`[API ERROR] Missing ID in response. Keys found: ${Object.keys(data).join(', ')}`);
-            return null;
-        }
-
-        console.log(`[✅ SUCCESS] Data retrieved for: ${data.unique_id || data.id}`);
-        console.log(`--- 🔍 API CALL: DETAIL END ---\n`);
         
         return data as PCProduct;
 
     } catch (e: any) {
-        console.error(`[🚨 FATAL FETCH ERROR] fetchPCProductDetail failed!`);
-        console.error(`[MESSAGE]: ${e.message}`);
-        console.error(`--- 🔍 API CALL: DETAIL END ---\n`);
+        console.error(`🚨 [PC-Detail Fatal] Fetch failed: ${e.message}`);
         return null;
     }
 }
 
 /**
  * 💡 メーカー一覧取得 (カウント付き)
- * 修正: APIが直接配列を返す場合と results 配列を返す場合の両方に対応
  */
 export async function fetchMakers(): Promise<MakerCount[]> {
     const url = resolveApiUrl(`/api/general/pc-makers/`);
-
     try {
-        const res = await fetch(url, { headers: getDjangoHeaders(), cache: 'no-store' });
+        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
         const data = await handleResponseWithDebug(res, url);
         
-        // デバッグログ: APIから実際に返ってきたデータの型を確認
-        console.log(`[DEBUG: fetchMakers] Received data type: ${Array.isArray(data) ? 'Array' : typeof data}`);
-
-        // 1. 直配列の場合 [{}, {}]
-        if (Array.isArray(data)) {
-            return data;
-        }
-        // 2. オブジェクトの中に results がある場合 { results: [] }
-        if (data && Array.isArray(data.results)) {
-            return data.results;
-        }
-        
-        return [];
-    } catch (e) {
-        console.error(`[Makers API ERROR]:`, e);
-        return [];
-    }
-}
-
-/**
- * 💡 AIスコアランキング取得
- */
-export async function fetchPCProductRanking(): Promise<PCProduct[]> {
-    const url = resolveApiUrl(`/api/general/pc-products/ranking/`);
-    
-    try {
-        const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 600 } });
-        const data = await handleResponseWithDebug(res, url);
-        if (Array.isArray(data)) return data;
-        return data.results || [];
-    } catch (e: any) { 
-        console.error(`[RANKING ERROR]: ${e.message}`);
-        return []; 
-    }
-}
-
-/**
- * 💡 注目度ランキング取得 (PV順)
- */
-export async function fetchPCPopularityRanking(): Promise<PCProduct[]> {
-    const url = resolveApiUrl(`/api/general/pc-products/popularity-ranking/`);
-
-    try {
-        const res = await fetch(url, { headers: getDjangoHeaders(), cache: 'no-store' });
-        const data = await handleResponseWithDebug(res, url);
+        // 直配列形式と results オブジェクト形式の両方をサポート
         return Array.isArray(data) ? data : (data.results || []);
     } catch (e) {
-        console.error(`[Popularity Ranking API ERROR]:`, e);
+        console.error(`🚨 [Makers Error]:`, e);
         return [];
     }
 }
 
 /**
- * 💡 関連製品取得
+ * 💡 AIスコアランキング / 注目度ランキング
  */
-export async function fetchRelatedProducts(maker: string, exclude_id: string): Promise<PCProduct[]> {
-    const queryParams = new URLSearchParams({ 
-        maker, 
-        exclude_unique_id: exclude_id, 
-        limit: '8' 
-    });
-    const url = resolveApiUrl(`/api/general/pc-products/?${queryParams.toString()}`);
+export async function fetchPCProductRanking(type: 'score' | 'popularity' = 'score'): Promise<PCProduct[]> {
+    const endpoint = type === 'score' ? 'ranking' : 'popularity-ranking';
+    const url = resolveApiUrl(`/api/general/pc-products/${endpoint}/`);
     
     try {
         const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 600 } });
         const data = await handleResponseWithDebug(res, url);
-        return data.results || [];
+        return Array.isArray(data) ? data : (data.results || []);
     } catch (e: any) { 
-        console.error(`[Related Products ERROR]:`, e.message);
+        console.error(`🚨 [Ranking Error ${type}]: ${e.message}`);
         return []; 
     }
 }
@@ -227,17 +183,14 @@ export async function fetchRelatedProducts(maker: string, exclude_id: string): P
  */
 export async function fetchPCSidebarStats(): Promise<any | null> {
     const url = resolveApiUrl(`/api/general/pc-sidebar-stats/`);
-    console.log(`[DEBUG: STATS] Fetching sidebar stats from: ${url}`);
-
     try {
         const res = await fetch(url, { 
             headers: getDjangoHeaders(), 
             next: { revalidate: 600 } 
         });
-        const data = await handleResponseWithDebug(res, url);
-        return data;
+        return await handleResponseWithDebug(res, url);
     } catch (e: any) {
-        console.error(`[STATS API ERROR]: ${e.message}`);
+        console.error(`🚨 [Stats Error]: ${e.message}`);
         return null;
     }
 }

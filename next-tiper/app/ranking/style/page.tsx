@@ -6,10 +6,13 @@
 
 import React from 'react';
 import styles from './StyleRanking.module.css';
-import { SpecActressCard } from '@/shared/cards/SpecActressCard';
 
-// 💡 ISR: 1時間キャッシュ（バックグラウンドで更新し、ユーザーには常に高速なページを返す）
-// export const revalidate = 3600; 
+/**
+ * ✅ 修正ポイント: 確定した物理パスを適用
+ */
+import { SpecActressCard } from '@/shared/components/organisms/cards/SpecActressCard';
+
+// 💡 ISR: 10分キャッシュ
 export const revalidate = 600; 
 
 /**
@@ -45,12 +48,6 @@ interface Actress {
 async function getStyleRanking(): Promise<{ data: Actress[]; debugInfo: any }> {
   const internalBaseUrl = process.env.API_INTERNAL_URL || "http://django-v3:8000/api";
   
-  /**
-   * 💡 修正のポイント:
-   * 1. profile__isnull=false : プロフィール情報が存在する女優のみ
-   * 2. profile__bust__gt=0  : バストデータが0より大きい（実数がある）ものに限定
-   * 3. limit=50 : 100件から50件に絞ることで、最初の通信量を半分にし、描画を高速化
-   */
   const params = new URLSearchParams({
     type: 'actresses',
     profile__isnull: 'false',
@@ -75,7 +72,7 @@ async function getStyleRanking(): Promise<{ data: Actress[]; debugInfo: any }> {
 
   try {
     const res = await fetch(endpoint, {
-      next: { revalidate: 3600 }, 
+      next: { revalidate: 600 }, 
       headers: { 'Accept': 'application/json' }
     });
 
@@ -111,9 +108,8 @@ function SystemDiagnosticHero({ info }: { info: any }) {
       <div className={styles.debugGrid}>
         <div className={styles.debugItem}><span>API Time:</span> {info.duration}ms</div>
         <div className={styles.debugItem}><span>Status:</span> {info.status}</div>
-        <div className={styles.debugItem}><span>Count:</span> {info.count} effective records</div>
+        <div className={styles.debugItem}><span>Count:</span> {info.count} records</div>
       </div>
-      <div className={styles.debugEndpoint}><code>{info.endpoint}</code></div>
     </div>
   );
 }
@@ -124,11 +120,9 @@ function SystemDiagnosticHero({ info }: { info: any }) {
 export default async function StyleRankingPage(props: {
   searchParams: Promise<{ debug?: string }>;
 }) {
-  // Next.js 15+ 準拠のparams解決
   const searchParams = await props.searchParams;
   const isDebug = searchParams?.debug === 'true';
   
-  // データの取得（フィルタリング済み）
   const { data: actresses, debugInfo } = await getStyleRanking();
 
   return (
@@ -154,7 +148,6 @@ export default async function StyleRankingPage(props: {
               key={`${actress.id}`} 
               actress={actress} 
               rank={index + 1}
-              // 上位はLCP向上のため優先読み込み
               priority={index < 4} 
             />
           ))
