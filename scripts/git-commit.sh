@@ -137,5 +137,6 @@ if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
         fi
     else
         echo "☕ 終了します（コミットのみ完了）。"
-    fi
+    fi  
 fi
+# saveコマンドの修正
