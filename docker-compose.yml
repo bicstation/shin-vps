@@ -1,9 +1,7 @@
-# =====================================================================
-# 🚀 SHIN-VPS v3 Next.js & Django 統合・AI特化型定義 (完全版)
-# =====================================================================
+# /home/maya/dev/shin-vps/docker-compose.yml
 
 services:
-  # --- 0. Traefik (管制塔) ---
+  # --- 0. Traefik (管制塔: インターフェース) ---
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy-v3
@@ -14,14 +12,14 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
-      - "8083:80"
-      - "8085:8080"
+      - "8083:80"    # メインアクセスポート
+      - "8085:8080"  # Traefik ダッシュボード
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - shared-proxy
 
-  # --- 1. データベース層 ---
+  # --- 1. データベース層 (データの心臓部) ---
   postgres-db-v3:
     image: postgres:15-alpine
     container_name: postgres-db-v3
@@ -40,7 +38,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- 2. バックエンド層 (Django: AI記事生成・管理) ---
+  # --- 2. バックエンド層 (Django: AI司令塔) ---
   django-v3:
     build: ./django
     container_name: django-v3
@@ -61,8 +59,9 @@ services:
       - internal-net
       - shared-proxy
 
-  # --- 3. フロントエンド層 (Next.js 4サイト) ---
-  # ビルド時にAPIキーを注入し、AIコンテンツの生成・取得を可能にします
+  # --- 3. フロントエンド層 (Next.js 4サイト: 修正版ボリュームマウント) ---
+  
+  # BicStation (PCサイト)
   next-bicstation-v3:
     build: 
       context: .
@@ -71,16 +70,19 @@ services:
         PROJECT_NAME: next-bicstation
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
         GEMINI_API_KEY_1: "${GEMINI_API_KEY_1}"
-        GEMINI_API_KEY_2: "${GEMINI_API_KEY_2}"
     container_name: next-bicstation-v3
     restart: always
     env_file: .env
+    volumes:
+      - ./shared:/usr/src/app/shared                # 💡 共有APIライブラリの同期
+      - ./next-bicstation/content:/usr/src/app/content/bicstation # 💡 コンテンツパスの同期
     networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`)"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
 
+  # Tiper (アダルト情報サイト)
   next-tiper-v3:
     build: 
       context: .
@@ -89,16 +91,19 @@ services:
         PROJECT_NAME: next-tiper
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
         GEMINI_API_KEY_3: "${GEMINI_API_KEY_3}"
-        GEMINI_API_KEY_4: "${GEMINI_API_KEY_4}"
     container_name: next-tiper-v3
     restart: always
     env_file: .env
+    volumes:
+      - ./shared:/usr/src/app/shared
+      - ./next-tiper/content:/usr/src/app/content/tiper
     networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tiper-router.rule=Host(`tiper-host`)"
       - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
 
+  # Bic-Saving (節約情報サイト)
   next-bic-saving-v3:
     build: 
       context: .
@@ -107,16 +112,19 @@ services:
         PROJECT_NAME: next-bic-saving
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
         GEMINI_API_KEY_5: "${GEMINI_API_KEY_5}"
-        GEMINI_API_KEY_6: "${GEMINI_API_KEY_6}"
     container_name: next-bic-saving-v3
     restart: always
     env_file: .env
+    volumes:
+      - ./shared:/usr/src/app/shared
+      - ./next-bic-saving/content:/usr/src/app/content/saving
     networks: [shared-proxy]
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.saving-router.rule=Host(`saving-host`)"
       - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
 
+  # AV-Flash (アダルト総合サイト)
   next-avflash-v3:
     build: 
       context: .
@@ -125,10 +133,12 @@ services:
         PROJECT_NAME: next-avflash
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL}"
         GEMINI_API_KEY_7: "${GEMINI_API_KEY_7}"
-        GEMINI_API_KEY_8: "${GEMINI_API_KEY_8}"
     container_name: next-avflash-v3
     restart: always
     env_file: .env
+    volumes:
+      - ./shared:/usr/src/app/shared
+      - ./next-avflash/content:/usr/src/app/content/avflash
     networks: [shared-proxy]
     labels:
       - "traefik.enable=true"

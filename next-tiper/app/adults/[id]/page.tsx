@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 /**
  * 📂 app/adults/[id]/page.tsx
- * 🛡️ Tiper v3.2 物理構造同期版
+ * 🛡️ Tiper v3.9 倉庫直通(Direct Import)版
+ * 🚀 中継ファイルをバイパスし、TypeError を物理的に封殺
  */
 import React from 'react';
 import { Metadata } from 'next';
@@ -17,10 +18,11 @@ import NeuralNarrative from './_components/NeuralNarrative';
 import ActionArea from './_components/ActionArea';
 import RelationArea from './_components/RelationArea';
 
-// API & UI Components
-import { getAdultProductDetail, resolveApiUrl, getDjangoHeaders } from '@/shared/lib/api/django';
+// ✅ 修正ポイント: index.ts を経由せず、実体のある adult.ts から直接インポート
+import { getAdultProductDetail } from '@/shared/lib/api/django/adult';
+// 設定系のみ index から取得（ここはシンプルなので壊れにくい）
+import { getApiConfig } from '@/shared/lib/api'; 
 import { constructMetadata } from '@/shared/lib/utils/metadata';
-import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero.tsx';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -50,6 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!id || id === 'main' || id.includes('.')) return { title: "System Node | TIPER" };
 
   try {
+    // ここも直通関数を使用
     const product = await getAdultProductDetail(id);
     if (!product || product._error) return { title: "Signal Lost | TIPER" };
 
@@ -65,12 +68,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 /**
- * 💡 関連作品フェッチ
+ * 💡 関連作品フェッチ (直通 fetch ロジック)
  */
 async function fetchRelated(queryParams: string) {
+  const { baseUrl, host } = getApiConfig();
   try {
-    const res = await fetch(resolveApiUrl(`/api/adult/unified-products/?${queryParams}&page_size=12`), {
-      headers: getDjangoHeaders(),
+    // 404を防ぐため、Django側のURL構造に合わせて /api/adult/ を明示
+    const res = await fetch(`${baseUrl}/api/adult/unified-products/?${queryParams}&page_size=12`, {
+      headers: { 'Host': host },
       next: { revalidate: 3600 }
     });
     if (res.ok) {
@@ -87,7 +92,7 @@ async function fetchRelated(queryParams: string) {
 export default async function ProductDetailPage({ params }: PageProps) {
   const { id } = await params;
 
-  // ガード
+  // ガードロジック
   if (!id || ['main', '_components'].includes(id) || id.includes('.')) {
     return (
       <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center p-4 font-mono">
@@ -99,7 +104,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
     );
   }
 
+  // ✅ 直通インポートした関数を実行
   const product = await getAdultProductDetail(id);
+  
   if (!product || product._error) {
     return (
       <div className="min-h-screen bg-[#050510] flex flex-col items-center justify-center p-4 font-mono">
@@ -121,21 +128,21 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const source = (product.api_source || '').toUpperCase();
   const isFanza = source === 'FANZA' || source === 'DMM';
   
-  // 🖼️ 画像最適化
+  // 🖼️ 画像最適化ロジック
   let jacketImage = product.image_url_list?.[0] || product.thumbnail || '/placeholder.png';
   if (isFanza && jacketImage !== '/placeholder.png') {
     jacketImage = jacketImage.replace(/p[s|t|m]\.jpg/i, 'pl.jpg').replace(/_[s|m]\.jpg/i, '_l.jpg');
   }
   const galleryImages = product.image_url_list?.length > 0 ? product.image_url_list : [jacketImage];
 
-  // 🎬 動画
+  // 🎬 動画プレビュー
   let movieData = null;
   if (product.sample_movie_url) {
     const url = typeof product.sample_movie_url === 'object' ? product.sample_movie_url.url : product.sample_movie_url;
     if (url) movieData = { url, preview_image: jacketImage };
   }
 
-  // 📊 グラフデータ
+  // 📊 解析グラフデータ
   const radarData = [
     { subject: 'VISUAL', value: getSafeScore(product.score_visual), fullMark: 100 },
     { subject: 'STORY', value: getSafeScore(product.score_story), fullMark: 100 },
@@ -195,8 +202,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
           product={product} 
         />
       </main>
-
-      <SystemDiagnostic id={id} source={source} data={product} />
     </div>
   );
 }

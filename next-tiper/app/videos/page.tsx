@@ -38,7 +38,7 @@ import {
   fetchDirectors,
   fetchAuthors, 
   fetchLabels 
-} from '@/shared/lib/api/adultApi';
+} from '@/shared/lib/api';
 
 // 型定義
 import { AdultProduct } from '@/shared/lib/api/types';

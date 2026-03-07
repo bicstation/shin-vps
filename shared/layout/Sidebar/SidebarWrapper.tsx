@@ -22,7 +22,7 @@ import {
   fetchMakers, 
   fetchActresses, 
   getAdultNavigationFloors,
-} from '@/shared/lib/api/django-bridge'; 
+} from '@/shared/lib/api/django/adult'; 
 
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 

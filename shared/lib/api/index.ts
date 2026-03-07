@@ -1,250 +1,133 @@
 /**
  * =====================================================================
- * 💡 SHIN-VPS 統合 API サービス層 (shared/lib/api/index.ts)
- * 🛡️ Maya's Logic: v3 統合・物理パス完全同期版
+ * 🛰️ SHIN-VPS 統合 API ゲートウェイ (shared/lib/api/index.ts)
+ * 🛡️ Maya's Zenith v3.7: 個別明示エクスポートによる「is not a function」完全封殺版
  * =====================================================================
  */
-// 物理パス: /home/maya/shin-dev/shin-vps/shared/lib/api/index.ts
-
 import { getSiteMetadata } from '../utils/siteConfig';
 
-const IS_SERVER = typeof window === 'undefined';
+// 🚀 本体のロジックを一度すべてインポート
+import * as adultApi from './django/adult';
 
 /**
- * 🔗 API 接続設定の共通解決
- * すべてのリクエストを Django v3 (Docker内部ネットワーク) 経由に統合
+ * 🔗 1. 接続設定解決
  */
-const getApiConfig = () => {
+const IS_SERVER = typeof window === 'undefined';
+
+export const getApiConfig = () => {
     const site = getSiteMetadata();
-    const { origin_domain } = site;
-    
-    // サイト名から Django が識別可能な Host 名を解決
-    const hostHeader = origin_domain || 'localhost';
+    const hostHeader = site.origin_domain || 'localhost';
 
     if (IS_SERVER) {
-        // Next.js サーバー内部からは Docker ネットワーク経由で Django へ
-        // 🚨 以前の nginx-wp-v2 は廃止。すべて django-v3:8000/api へ。
+        // ✅ Djangoコンテナへの直接通信用ベースURL（末尾に /api を含めない）
         return {
-            baseUrl: 'http://django-v3:8000/api',
+            baseUrl: 'http://django-v3:8000',
             host: hostHeader
         };
     }
-
-    // クライアントサイド (ブラウザ)
-    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    // クライアントサイド (ブラウザ) 通信
+    const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
     return {
-        baseUrl: envUrl ? envUrl.replace(/\/$/, '') : '/api',
+        baseUrl: envUrl.replace(/\/$/, '') || '/api',
         host: hostHeader
     };
 };
 
-// --- 型定義 (Type Definitions) ---
+/**
+ * 🔞 2. アダルト統合ロジックの「個別・明示」エクスポート
+ * 💡 修正の核心:
+ * まとめて re-export せず、1つずつ変数に代入してエクスポートすることで、
+ * Next.jsのビルドチャンク（chunks/xxx.js）内での未定義エラーを物理的に阻止します。
+ */
+export const getUnifiedProducts = adultApi.getUnifiedProducts;
+export const getAdultProductDetail = adultApi.getAdultProductDetail;
+export const getAdultNavigationFloors = adultApi.getAdultNavigationFloors; // ⚡ ログの犯人を個別確保
+export const fetchAdultTaxonomyIndex = adultApi.fetchAdultTaxonomyIndex;
+export const fetchGenres = adultApi.fetchGenres;
+export const fetchMakers = adultApi.fetchMakers;
+export const fetchActresses = adultApi.fetchActresses;
+export const fetchSeries = adultApi.fetchSeries;
 
-export interface RadarChartData {
-    subject: string;
-    value: number;
-    fullMark: number;
-}
-
-export interface PCProduct {
-    id: number;
-    unique_id: string;
-    site_prefix: string;
-    maker: string;
-    maker_name?: string;
-    name: string;
-    price: number;
-    image_url: string;
-    url: string;
-    affiliate_url: string;
-    description: string;
-    ai_content: string;
-    ai_summary?: string;
-    stock_status: string;
-    unified_genre: string;
-    cpu_model?: string;
-    gpu_model?: string;
-    memory_gb?: number;
-    storage_gb?: number;
-    display_info?: string;
-    spec_score?: number;
-    radar_chart?: RadarChartData[];
-}
-
-export interface MakerCount {
-    maker: string;
-    count: number;
-}
-
-// --- API 関数群 (WordPress 互換エンドポイント) ---
+// 互換性維持のためのエイリアス
+export const fetchUnifiedProducts = adultApi.getUnifiedProducts;
 
 /**
- * 📝 [Django-WP] 投稿一覧取得
+ * 🛠️ 3. 共通 Fetch ラッパー
  */
-export async function fetchPostList(postType = 'posts', perPage = 12, offset = 0) {
+async function fetchFromBridge(endpoint: string, options: any = {}) {
+    const { baseUrl, host } = getApiConfig();
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${baseUrl}${cleanEndpoint}`;
+
+    try {
+        const res = await fetch(url, {
+            ...options,
+            headers: {
+                'Host': host,
+                'Accept': 'application/json',
+                ...(options.headers || {}),
+            }
+        });
+
+        if (!res.ok) {
+            console.error(`[Bridge] HTTP_${res.status}: ${url}`);
+            return { data: null, status: res.status };
+        }
+        const data = await res.json();
+        return { data, status: 200 };
+    } catch (e) {
+        console.error(`[Bridge] Network Error: ${e}`);
+        return { data: null, error: e };
+    }
+}
+
+/**
+ * 💻 4. PC製品 (BicStation用)
+ */
+export async function getPCProducts(params: any = {}) {
+    const query = new URLSearchParams({
+        limit: (params.limit || 10).toString(),
+        offset: (params.offset || 0).toString(),
+    });
+    
+    // ✅ Django v3 エンドポイントに合わせて /api プレフィックスを付与
+    const { data } = await fetchFromBridge(`/api/pc-products/?${query.toString()}`, {
+        next: { revalidate: 3600 }
+    });
+    return { results: data?.results || [], count: data?.count || 0 };
+}
+
+/**
+ * 🛠️ 5. WordPress 連携 (Intelligence Reports)
+ */
+export async function getSiteMainPosts(offset = 0, perPage = 6, postType = 'posts') {
     const { baseUrl, host } = getApiConfig();
     const url = `${baseUrl}/wp-json/wp/v2/${postType}?_embed&per_page=${perPage}&offset=${offset}`;
 
     try {
         const res = await fetch(url, {
-            headers: { 
-                'Host': host,
-                'Accept': 'application/json'
-            },
-            next: { revalidate: 60 },
-            signal: AbortSignal.timeout(8000)
+            headers: { 'Host': host },
+            next: { revalidate: 60 }
         });
-
-        if (!res.ok) return { results: [], count: 0, status: res.status };
-
-        const data = await res.json();
-        const totalCount = parseInt(res.headers.get('X-WP-Total') || '0', 10);
-
-        return { 
-            results: Array.isArray(data) ? data : [], 
-            count: totalCount,
-            status: res.status 
-        };
-    } catch (error: any) {
-        console.error(`[fetchPostList FAILED]: ${error.message} at ${url}`);
-        return { results: [], count: 0, error: error.message };
-    }
-}
-
-/**
- * 📝 [Django-WP] 個別記事取得
- */
-export async function fetchPostData(postType = 'posts', slug: string) {
-    const { baseUrl, host } = getApiConfig();
-    const safeSlug = encodeURIComponent(decodeURIComponent(slug));
-    const url = `${baseUrl}/wp-json/wp/v2/${postType}?slug=${safeSlug}&_embed`;
-
-    try {
-        const res = await fetch(url, {
-            headers: { 'Host': host, 'Accept': 'application/json' },
-            next: { revalidate: 3600 },
-            signal: AbortSignal.timeout(8000)
-        });
-
-        if (!res.ok) return null;
-        const posts = await res.json();
-        return Array.isArray(posts) && posts.length > 0 ? posts[0] : null;
-    } catch (error) {
-        console.error(`[fetchPostData ERROR]:`, error);
-        return null;
-    }
-}
-
-// --- Django API 関数群 (PC/Adult プロダクト用) ---
-
-/**
- * 💻 [Django API] 商品一覧取得
- */
-export async function fetchPCProducts(params: any = {}) {
-    const { baseUrl, host } = getApiConfig();
-    const { site_group } = getSiteMetadata(); 
-    
-    const query = new URLSearchParams({
-        site_group: site_group || '',
-        limit: (params.limit || 10).toString(),
-        offset: (params.offset || 0).toString(),
-        ...(params.maker && { maker: params.maker }),
-        ...(params.budget && { budget: params.budget }),
-        ...(params.type && params.type !== 'all' && { type: params.type })
-    });
-
-    const url = `${baseUrl}/pc-products/?${query.toString()}`;
-    
-    try {
-        const res = await fetch(url, { 
-            headers: { 'Host': host, 'Accept': 'application/json' },
-            next: { revalidate: 3600 },
-            signal: AbortSignal.timeout(8000)
-        });
-
         if (!res.ok) return { results: [], count: 0 };
         const data = await res.json();
-        return { results: data.results || [], count: data.count || 0 };
-    } catch (e: any) { 
-        console.error(`[fetchPCProducts ERROR]: ${e.message}`);
-        return { results: [], count: 0 }; 
-    }
-}
-
-/**
- * 🔞 [Django API] アダルト商品一覧取得
- */
-export async function getAdultProducts(params: any = {}) {
-    const { baseUrl, host } = getApiConfig();
-    const { site_group } = getSiteMetadata(); 
-    
-    const query = new URLSearchParams({
-        site_group: site_group || '',
-        limit: (params.limit || 20).toString(),
-        offset: (params.offset || 0).toString(),
-        ordering: params.ordering || '-id'
-    });
-
-    const url = `${baseUrl}/adult-products/?${query.toString()}`;
-
-    try {
-        const res = await fetch(url, { 
-            headers: { 'Host': host, 'Accept': 'application/json' },
-            next: { revalidate: 60 },
-            signal: AbortSignal.timeout(8000)
-        });
-
-        if (!res.ok) return { results: [], count: 0 };
-        const data = await res.json();
-        return { results: data.results || [], count: data.count || 0 };
+        const total = parseInt(res.headers.get('X-WP-Total') || '0', 10);
+        return { results: Array.isArray(data) ? data : [], count: total };
     } catch (e) {
-        console.error(`[getAdultProducts ERROR]:`, e);
         return { results: [], count: 0 };
     }
 }
 
-/**
- * 💻 [Django API] メーカ一覧取得
- */
-export async function fetchMakers(): Promise<MakerCount[]> {
-    const { baseUrl, host } = getApiConfig();
-    const url = `${baseUrl}/pc-makers/`;
-    try {
-        const res = await fetch(url, {
-            headers: { 'Host': host, 'Accept': 'application/json' },
-            cache: 'no-store'
-        });
-        return res.ok ? await res.json() : [];
-    } catch (e) {
-        return [];
+/** 🖼️ WPアイキャッチ画像解決 */
+export function getWpFeaturedImage(post: any, size: 'thumbnail' | 'medium' | 'large' | 'full' = 'large'): string {
+    if (!post?._embedded?.['wp:featuredmedia']?.[0]) {
+        return '/images/common/no-image.jpg';
     }
+    const media = post._embedded['wp:featuredmedia'][0];
+    return media.media_details?.sizes?.[size]?.source_url || media.source_url;
 }
 
 /**
- * 💻 [Django API] ランキング取得
+ * 🔄 6. 型定義の統合
  */
-export async function fetchPCProductRanking(): Promise<PCProduct[]> {
-    const { baseUrl, host } = getApiConfig();
-    const { site_group } = getSiteMetadata();
-    const url = `${baseUrl}/pc-products/ranking/?site_group=${site_group}`;
-    try {
-        const res = await fetch(url, {
-            headers: { 'Host': host, 'Accept': 'application/json' },
-            next: { revalidate: 3600 }
-        });
-        const data = await res.json();
-        return Array.isArray(data) ? data : (data.results || []);
-    } catch (e) {
-        return [];
-    }
-}
-
-// --- 実在するファイルのみを再エクスポート (Webpack エラー回避) ---
-// 🚨 存在しない ./django/pc-products 等の参照を完全に除去しました
-export * from './adultApi';
-export * from './django';
 export * from './types';
-
-// 既存コードとの互換性維持（エイリアス）
-export { getAdultProducts as getUnifiedProducts };
-export { fetchPostList as getSiteMainPosts };

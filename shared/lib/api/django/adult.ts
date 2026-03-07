@@ -3,57 +3,45 @@
  * =====================================================================
  * 🔞 アダルトコンテンツ統合サービス (shared/lib/api/django/adult.ts)
  * =====================================================================
- * 【責務】
- * 1. 複数APIソース（FANZA/DMM/DUGA）のクエリ正規化と統合
- * 2. タクソノミー（女優/ジャンル/メーカー等）の横断取得
- * 3. サイト別ナビゲーション（フロア/サービス）の動的生成
+ * 🛡️ Maya's Zenith v4.1: URL二重化(404) & 文字列分解バグ修正版
  * =====================================================================
  */
-// shared/lib/api/django/adult.ts
-
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from './client';
 import { AdultProduct } from '../types';
 
-/**
- * 🛠️ 1. 内部ユーティリティ
- */
-
-/** 🛡️ レスポンス抽出の安全性確保 */
+/** 🛡️ 内部ユーティリティ: 安全なデータ抽出 */
 const safeExtract = (data: any): any[] => {
   if (!data) return [];
   if (Array.isArray(data)) return data;
-  return data.results || data.data || [];
+  if (data.results && Array.isArray(data.results)) return data.results;
+  if (data.data && Array.isArray(data.data)) return data.data;
+  return [];
 };
 
-/** * 🔄 クエリパラメータ正規化エンジン
- * フロントエンドの命名規則を Django モデルのフィールド名へ翻訳します。
- * 特に 'api_source' の大文字化は、Django 側でのフィルタリング精度に直結します。
- */
+/** 🔄 クエリパラメータ正規化 (?0=D&1=U バグ防止) */
 const normalizeParams = (params: any) => {
+  // params がオブジェクトではなく単なる文字列（"FANZA"など）で来た場合の救済
+  if (typeof params === 'string') {
+    return { api_source: params.toUpperCase() };
+  }
+  
   const clean: Record<string, string> = {};
-  if (!params) return clean;
+  if (!params || typeof params !== 'object') return clean;
 
   Object.keys(params).forEach(key => {
     const val = params[key];
-    
-    // 無効な値 (undefined, null, 空文字) を徹底排除
     if (val !== undefined && val !== null && val !== 'undefined' && val !== '') {
       let targetKey = key;
-      
-      // 🚀 マッピング: Frontend Key -> Django Model Field
       if (key === 'service') targetKey = 'service_code';
       if (key === 'floor') targetKey = 'floor_code';
       
-      // 💡 api_source はモデル側で大文字（CHOICE）管理されているため強制変換
       if (targetKey === 'api_source') {
-        clean[targetKey] = String(val).toUpperCase(); // e.g., 'fanza' -> 'FANZA'
+        clean[targetKey] = String(val).toUpperCase();
       } else {
-        // 小文字化が必要なコード系キーの処理
         const lowercaseKeys = ['service_code', 'floor_code', 'related_to_id'];
         if (lowercaseKeys.includes(targetKey)) {
           clean[targetKey] = String(val).toLowerCase();
         } else {
-          // スラッグやIDは文字列として維持
           clean[targetKey] = String(val); 
         }
       }
@@ -66,36 +54,28 @@ const normalizeParams = (params: any) => {
  * 💡 2. 製品データ取得 (Core)
  */
 
-/** * 📦 統合製品リスト取得
- * キャッシュ戦略: フィルタリング時は鮮度優先 (no-store)、一覧時は速度優先 (3600s)
- */
+/** 📦 統合製品リスト取得 */
 export async function getUnifiedProducts(params: any = {}) {
   const cleanParams = normalizeParams(params);
   const queryString = new URLSearchParams(cleanParams).toString();
-  const targetUrl = resolveApiUrl(`/api/adult/unified-products/?${queryString}`);
+  
+  // 💡 修正: client.ts が内部で /api を付けるため、ここでは /adult から開始
+  const targetUrl = resolveApiUrl(`/adult/unified-products/?${queryString}`);
 
-  // 特定の属性（女優、メーカー等）による絞り込みがあるか判定
-  const isFiltered = !!(
-    cleanParams.attribute || 
-    cleanParams.attribute_id || 
-    cleanParams.actress_id || 
-    cleanParams.related_to_id
-  );
+  const isFiltered = !!(cleanParams.actress_id || cleanParams.genre_id || cleanParams.maker_id);
 
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(),
-      // フィルタ時は常に最新、それ以外は1時間キャッシュ
       cache: isFiltered ? 'no-store' : 'default',
       next: isFiltered ? { revalidate: 0 } : { revalidate: 3600 }
     });
 
-    if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
-    const data = await res.json();
+    const data = await handleResponseWithDebug(res, targetUrl);
     
     return { 
       results: safeExtract(data), 
-      count: data?.count || (Array.isArray(data) ? data.length : 0)
+      count: data?.count || 0
     };
   } catch (error) { 
     console.error("[UnifiedList Bridge] FETCH_FAILED:", error);
@@ -105,15 +85,20 @@ export async function getUnifiedProducts(params: any = {}) {
 
 /** 🎯 製品詳細取得 */
 export async function getAdultProductDetail(id: string | number): Promise<AdultProduct | null> {
-  const targetUrl = resolveApiUrl(`/api/adult/products/${id}/`);
+  if (!id || id === 'main') return null;
+  
+  // 💡 修正: /api/api を防ぐため /adult に修正
+  const targetUrl = resolveApiUrl(`/adult/products/${id}/`);
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
       cache: 'no-store' 
     });
+    
     const data = await handleResponseWithDebug(res, targetUrl);
+    
     if (data?.detail === "Not found." || data?._error) return null;
-    return data;
+    return data as AdultProduct;
   } catch (error) {
     console.error(`[ProductDetail Bridge] FETCH_FAILED [${id}]:`, error);
     return null; 
@@ -121,79 +106,65 @@ export async function getAdultProductDetail(id: string | number): Promise<AdultP
 }
 
 /**
- * 💡 3. タクソノミー（マスターデータ）取得
+ * 💡 3. タクソノミー取得
  */
 
 /** 🏷️ タクソノミー汎用フェッチャー */
-export async function fetchAdultTaxonomyIndex(type: string, floorCodeOrParams?: string | any, limit?: number) {
+export async function fetchAdultTaxonomyIndex(type: string, floorCodeOrParams?: string | any) {
   try {
-    const isParamObj = typeof floorCodeOrParams === 'object' && floorCodeOrParams !== null;
-    const rawParams = isParamObj ? floorCodeOrParams : { floor_code: floorCodeOrParams, limit };
+    const rawParams = typeof floorCodeOrParams === 'object' ? floorCodeOrParams : { floor_code: floorCodeOrParams };
+    const cleanParams = normalizeParams({ type, ...rawParams });
+    const query = new URLSearchParams(cleanParams).toString();
     
-    const cleanParams = normalizeParams({
-      type,
-      ordering: rawParams.ordering || '-product_count', // 投稿数が多い順がデフォルト
-      ...rawParams
-    });
-
-    const queryParams = new URLSearchParams(cleanParams);
-    const url = resolveApiUrl(`/api/adult/taxonomy/?${queryParams.toString()}`);
+    // 💡 修正: /api/api を防ぐため /adult に修正
+    const url = resolveApiUrl(`/adult/taxonomy/?${query}`);
     
-    const res = await fetch(url, { 
-      headers: getDjangoHeaders(), 
-      next: { revalidate: 3600 } 
-    });
-    
-    if (!res.ok) throw new Error(`HTTP_ERROR_${res.status}`);
-    const data = await res.json();
+    const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
+    const data = await handleResponseWithDebug(res, url);
     
     return { 
       results: safeExtract(data),
-      count: data?.count || (Array.isArray(data.results) ? data.results.length : 0)
+      count: data?.count || 0
     };
   } catch (error) {
-    console.error(`[Taxonomy Bridge] ${type} FETCH_FAILED:`, error);
     return { results: [], count: 0 };
   }
 }
 
-// 🏷️ ショートカット関数群
 export const fetchGenres = (p?: any) => fetchAdultTaxonomyIndex('genres', p);
 export const fetchMakers = (p?: any) => fetchAdultTaxonomyIndex('makers', p);
 export const fetchActresses = (p?: any) => fetchAdultTaxonomyIndex('actresses', p);
-export const fetchSeries = (p?: any) => fetchAdultTaxonomyIndex('series', p);
 
 /**
- * 💡 4. ナビゲーションメニュー取得 (防衛的フィルタリング)
+ * 💡 4. ナビゲーションメニュー取得 (TypeError の主原因)
  */
-
-export async function getAdultNavigationFloors(params: { site?: string } = {}) {
-  const siteVal = params.site ? params.site.toUpperCase() : '';
-  const query = siteVal ? `?api_source=${siteVal}` : '';
-  const targetUrl = resolveApiUrl(`/api/adult/navigation/floors/${query}`);
+export async function getAdultNavigationFloors(params: any = {}) {
+  const cleanParams = normalizeParams(params);
+  const query = new URLSearchParams(cleanParams).toString();
+  const siteVal = cleanParams.api_source || '';
+  
+  // 💡 修正: /api/api を防ぐため /adult に修正
+  const targetUrl = resolveApiUrl(`/adult/navigation/floors/?${query}`);
   
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
     });
-    if (!res.ok) throw new Error(`NAV_FETCH_ERROR_${res.status}`);
     const json = await res.json();
-    const data = json?.data || {};
+    const data = json?.data || json || {};
 
-    // 🚀 特定サイト向けの厳密な抽出ロジック
     if (siteVal) {
       const filteredData: any = {};
       Object.keys(data).forEach(key => {
         const k = key.toUpperCase();
-        // DMM と FANZA の混同を防止するガードロジック
         const isMatch = (siteVal === 'DMM') 
           ? (k.includes('DMM') && !k.includes('FANZA'))
           : k.includes(siteVal);
           
         if (isMatch) filteredData[key] = data[key];
       });
-      if (Object.keys(filteredData).length > 0) return filteredData;
+      return Object.keys(filteredData).length > 0 ? filteredData : data;
     }
 
     return data;

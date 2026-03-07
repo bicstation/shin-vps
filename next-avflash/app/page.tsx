@@ -5,25 +5,28 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { headers } from 'next/headers';
 
 /**
- * ✅ インポートパスの修正
- * 1. API: shared/lib/api/django/adult.ts (既存)
- * 2. Card: shared/components/organisms/cards/AdultProductCard.tsx (修正)
+ * ✅ 重要: 「管制塔 (index.ts)」をスルーして「実体ファイル」を直撃します。
+ * これにより、index.ts 内で getAdultNavigationFloors 等が undefined になる
+ * Next.js 15 特有の依存関係エラー (TypeError) を物理的に回避します。
  */
-import { getUnifiedProducts } from '@shared/lib/api/django/adult';
+import { getUnifiedProducts } from '@shared/lib/api/django/adult'; // 直通パスに変更
 import AdultProductCard from '@shared/components/organisms/cards/AdultProductCard';
 
 import styles from './page.module.css';
 
 /**
  * 💡 Next.js 15 用の動的レンダリング設定
- * Djangoからのレスポンスをキャッシュせず、常に最新のデータを表示します
  */
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
-    // サイトタイトルの設定
+    // 1. Next.js 15 の headers() を await
+    const headerList = await headers();
+    const host = headerList.get('host') || 'localhost';
+
     const title = process.env.NEXT_PUBLIC_APP_TITLE || 'AV FLASH';
     
     // --- 🛠️ データ取得ロジック ---
@@ -32,19 +35,19 @@ export default async function Page() {
 
     try {
         /**
-         * 🚀 getUnifiedProducts の実行
-         * api_source: 'duga' を指定することで、Django側のフィルタリングが作動します
+         * 🚀 直通インポートした関数を実行
+         * ログで 115 items 取れていることが確認できているため、
+         * 関数の実体さえ正しく参照できれば、このままレンダリングへ進めます。
          */
         const response = await getUnifiedProducts({ 
-            api_source: 'duga', 
-            limit: 40 // メイングリッドなので少し多めに取得
+            api_source: 'DUGA',
+            limit: 20 // 必要に応じて追加
         });
 
-        // Djangoの戻り値 { results, count } を展開
         products = response?.results || [];
         totalCount = response?.count || 0;
 
-        console.log(`[AvFlash] DUGA API Success: Found ${totalCount} items.`);
+        console.log(`[AvFlash] Rendering ${products.length} items for host: ${host}`);
     } catch (error) {
         console.error("[AvFlash] API Fetch Error:", error);
     }
@@ -65,7 +68,7 @@ export default async function Page() {
             </header>
 
             {/* --- 💎 DUGA NEW RELEASES グリッド --- */}
-            <section className={section}>
+            <section className={styles.section}>
                 <div className={styles.sectionHeader}>
                     <div className={styles.titleWrapper}>
                         <h2 className={styles.sectionTitle}>NEW RELEASES</h2>
@@ -87,7 +90,7 @@ export default async function Page() {
                             <h3>NO PRODUCTS FOUND</h3>
                             <p>
                                 Djangoサーバー <code>api_source='DUGA'</code> のデータを確認してください。<br />
-                                現在、同期またはAI解析待ちの可能性があります。
+                                現在、ホスト <strong>{host}</strong> 用のコンテンツが同期待ちの可能性があります。
                             </p>
                         </div>
                     )}

@@ -6,7 +6,7 @@
  */
 
 import { getWpConfig, IS_SERVER } from './config';
-// index.ts や api.ts との循環参照を防ぐため、型定義はここか types.ts で管理
+// 型定義の循環参照を防ぐため
 import { PCProduct, MakerCount } from './index'; 
 
 /**
@@ -19,34 +19,44 @@ export const replaceInternalUrls = (data: any): any => {
     let content = isObject ? JSON.stringify(data) : data;
 
     const { baseUrl } = getWpConfig();
+    // baseUrlが http://.../api の場合、ベース部分だけを抽出
     const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
 
     // 内部・開発ドメインを公開ドメインへ一本化
     const internalPattern = /http:\/\/(django-v3|nginx-wp-v[23]|wordpress-.+v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
     
     content = content.replace(internalPattern, cleanBaseUrl);
-    content = content.replace(/([^:])\/\//g, '$1/'); // スラッシュ重複修正
+    // スラッシュの重複 (//) を修正（プロトコル直後を除く）
+    content = content.replace(/([^:])\/\//g, '$1/'); 
 
     return isObject ? JSON.parse(content) : content;
 };
 
 /**
- * 💡 内部URL解決 (ネットワーク最適化)
+ * 💡 内部URL解決 (ネットワーク最適化 & /api 重複防止)
  */
 const resolveApiUrl = (endpoint: string) => {
     const { baseUrl } = getWpConfig();
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    
+    // endpointの先頭の /api を除去（ベース側と重複させないため）
+    const cleanEndpoint = endpoint.replace(/^\/?api\//, '/').startsWith('/') 
+        ? endpoint.replace(/^\/?api\//, '/') 
+        : `/${endpoint}`;
 
     if (IS_SERVER) {
-        // SSR/ビルド時は Docker内部 (django-v3) を直接叩き、外部解決をバイパス
-        const internalApiBase = process.env.API_INTERNAL_URL || 'http://django-v3:8000/api';
-        return `${internalApiBase}${cleanEndpoint}`;
+        // SSR時は Docker内部ネットワークを利用
+        // 環境変数に末尾 /api があってもなくても対応
+        const internalBase = (process.env.API_INTERNAL_URL || 'http://django-v3:8000/api').replace(/\/$/, '');
+        return `${internalBase}${cleanEndpoint}`;
     }
-    return `${baseUrl}${cleanEndpoint}`;
+
+    // クライアントサイド用
+    const clientBase = baseUrl.replace(/\/$/, '');
+    return `${clientBase}${cleanEndpoint}`;
 };
 
 /**
- * 🛠️ 共通 Fetch ラッパー (Hostヘッダー & エラーハンドリング)
+ * 🛠️ 共通 Fetch ラッパー
  */
 async function fetchFromBridge(url: string, options: any = {}) {
     const { host } = getWpConfig();
@@ -58,9 +68,14 @@ async function fetchFromBridge(url: string, options: any = {}) {
                 'Accept': 'application/json',
                 ...(options.headers || {}),
             },
+            // Next.js 15+ 向けのタイムアウト制御
             signal: AbortSignal.timeout(options.timeout || 8000)
         });
-        if (!res.ok) return { data: null, total: 0, status: res.status };
+
+        if (!res.ok) {
+            console.warn(`⚠️ [Bridge 404/Error]: ${res.status} | ${url}`);
+            return { data: null, total: 0, status: res.status };
+        }
         
         const data = await res.json();
         const total = parseInt(res.headers.get('X-WP-Total') || res.headers.get('X-Total-Count') || '0', 10);
@@ -72,7 +87,25 @@ async function fetchFromBridge(url: string, options: any = {}) {
     }
 }
 
-// --- 📝 WordPress 互換機能 (旧記事・カスタム投稿用) ---
+// --- 📝 統合コンテンツ取得 (page.tsx エラー対策用) ---
+
+/**
+ * page.tsx から (0 , j.fetchDjangoBridgeContent) として呼ばれるためのメイン関数
+ */
+export async function fetchDjangoBridgeContent(params: any = {}) {
+    // サイトグループに応じた出し分けロジック
+    const siteGroup = params.site_group || '';
+    
+    if (siteGroup === 'bicstation') {
+        return await fetchPCProducts(params);
+    } else if (siteGroup === 'tiper' || siteGroup === 'avflash') {
+        return await getAdultProducts(params);
+    }
+    
+    return await fetchPostList('post', params.limit, params.offset);
+}
+
+// --- 📝 WordPress 互換機能 ---
 
 export async function fetchPostList(postType: string = 'post', limit = 12, offset = 0) {
     const type = postType === 'post' ? 'posts' : postType;
@@ -91,15 +124,13 @@ export async function fetchPostData(postType: string = 'post', identifier: strin
 
 // --- 🔞 アダルトコンテンツ機能 (AVFLASH, TIPER) ---
 
-/**
- * 統合プロダクト取得 (Adult用)
- */
 export async function getAdultProducts(params: any = {}) {
+    const safeParams = params || {};
     const query = new URLSearchParams({
-        limit: (params.limit || 20).toString(),
-        offset: (params.offset || 0).toString(),
-        ordering: params.ordering || '-id',
-        ...(params.site_group && { site_group: params.site_group })
+        limit: (safeParams.limit || 20).toString(),
+        offset: (safeParams.offset || 0).toString(),
+        ordering: safeParams.ordering || '-id',
+        ...(safeParams.site_group && { site_group: safeParams.site_group })
     });
     const url = resolveApiUrl(`/adult-products/?${query.toString()}`);
     const { data, total } = await fetchFromBridge(url, { next: { revalidate: 60 } });
@@ -109,18 +140,22 @@ export async function getAdultProducts(params: any = {}) {
 // --- 💻 PC製品・ランキング機能 (BicStation) ---
 
 export async function fetchPCProducts(params: any = {}) {
+    const safeParams = params || {};
     const query = new URLSearchParams({
-        limit: (params.limit || 10).toString(),
-        offset: (params.offset || 0).toString(),
-        ...(params.maker && { maker: params.maker }),
-        ...(params.site_group && { site_group: params.site_group })
+        limit: (safeParams.limit || 10).toString(),
+        offset: (safeParams.offset || 0).toString(),
+        ...(safeParams.maker && { maker: safeParams.maker }),
+        ...(safeParams.site_group && { site_group: safeParams.site_group })
     });
-    const { data } = await fetchFromBridge(resolveApiUrl(`/pc-products/?${query.toString()}`));
+    
+    // BICSTATION 404対策: 正しいエンドポイントパスを確認
+    const url = resolveApiUrl(`/pc-products/?${query.toString()}`);
+    const { data } = await fetchFromBridge(url);
     return { results: data?.results || [], count: data?.count || 0 };
 }
 
 /**
- * 既存関数とのエイリアス互換
+ * エイリアス互換設定
  */
 export { fetchPostList as getSiteMainPosts };
 export { getAdultProducts as getUnifiedProducts };
