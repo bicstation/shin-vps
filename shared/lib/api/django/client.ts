@@ -1,29 +1,37 @@
 /**
  * =====================================================================
  * 🛠️ Django API 共通クライアント (shared/lib/api/django/client.ts)
- * 🛡️ Maya's Zenith v4.0: URL解決ロジック完全版
+ * 🛡️ Maya's Zenith v5.0: URL解決・/api 自動補完・完全版
  * =====================================================================
  */
 import { getDjangoBaseUrl, IS_SERVER } from '../config';
 
 /**
  * 💡 接続先URLを解決 (Network Path Resolver)
+ * エンドポイントの前に必ず "/api" を自動で差し込み、不整合を抹殺します。
  */
 export const resolveApiUrl = (endpoint: string) => {
-    // スラッシュの重複を防ぎ、必ず / から始まるように正規化
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    // 1. エンドポイントの掃除 (先頭と末尾のスラッシュを整理)
+    const cleanEndpoint = endpoint.replace(/^\/+/, '').replace(/\/+$/, '');
 
     if (IS_SERVER) {
-        // Docker内部通信: http://django-v3:8000 + /api/...
-        const internalUrl = process.env.API_INTERNAL_URL || 'http://django-v3:8000';
-        return `${internalUrl}${cleanEndpoint}`;
+        /**
+         * 🚀 Server Side: Docker内部通信
+         * 環境変数（http://django-v3:8000）＋ /api ＋ エンドポイント
+         */
+        const internalBase = (process.env.API_INTERNAL_URL || 'http://django-v3:8000').replace(/\/+$/, '');
+        // 💡 ログに出ていた /adult/... を /api/adult/... に矯正します
+        return `${internalBase}/api/${cleanEndpoint}/`;
     }
 
-    // ブラウザ通信: /api + /api/... (Next.js Proxy経由) または絶対URL
-    const rootUrl = getDjangoBaseUrl(); 
-    const base = rootUrl.endsWith('/') ? rootUrl.slice(0, -1) : rootUrl;
+    /**
+     * 🌐 Client Side: ブラウザ通信 (Traefik 経由)
+     * getDjangoBaseUrl() ＋ /api ＋ エンドポイント
+     */
+    const rootUrl = getDjangoBaseUrl().replace(/\/+$/, '');
     
-    return `${base}${cleanEndpoint}`;
+    // 💡 ブラウザ側でも確実に /api をルートに据えます
+    return `${rootUrl}/api/${cleanEndpoint}/`;
 };
 
 /**
@@ -41,6 +49,7 @@ export const getDjangoHeaders = () => {
  */
 export async function handleResponseWithDebug(res: Response, url: string) {
     if (!res.ok) {
+        // ここで 404 や 500 が出た場合、Django 側の URL 設定（urls.py）を見直すサイン
         console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | URL: ${url}`);
         return { results: [], count: 0, _error: res.status };
     }
@@ -53,12 +62,13 @@ export async function handleResponseWithDebug(res: Response, url: string) {
             return { results: data, count: data.length };
         }
         
-        // すでに DRF 形式 (results, count 保持) ならそのまま、そうでなければラップして返す
+        // DRF (Django Rest Framework) 形式の互換性を確保
         return (data && typeof data === 'object' && 'results' in data) 
             ? data 
             : { results: data.data || data.results || [], count: data.count || 0 };
 
     } catch (e) {
+        // HTML（<h1>Django...</h1>）が返ってくるとここで爆発します
         console.error(`🚨 [JSON Parse Error] Failed to parse response from: ${url}`);
         return { results: [], count: 0, _error: 'PARSE_FAILED' };
     }

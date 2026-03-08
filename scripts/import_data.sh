@@ -41,12 +41,8 @@ run_next() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec "$NEXT_CON" "$
 # サイトマップ更新の修正版
 update_sitemap() {
     echo -e "\n${COLOR}🌐 サイトマップを更新中...${RESET}"
-    # Next.js v3 のディレクトリ名に合わせて調整が必要な場合はここを変更
     run_next node /app/generate-sitemap.mjs
 }
-
-# --- [中略：show_maker_menu, ensure_show_urls_cmd 等のロジックは完全維持] ---
-# (文字数制限のため内部ロジックは維持した状態でメインループへ)
 
 ensure_show_urls_cmd() {
     CMD_PATH="/usr/src/app/api/management/commands/show_urls.py"
@@ -103,7 +99,8 @@ while true; do
 
     echo -e "\n${BLUE}${BOLD}[3. 🤖 AI WRITING & NEWS]${RESET}"
     echo -e "  30) 商品AI記事生成 & WordPress投稿  31) PCパーツ最新ニュース投稿 (RSS/URL)"
-    echo -e "  32) AI詳細スペック解析 (PC解析)      33) AIモデル一覧の確認 (Gemini/Gemma)"
+    echo -e "  32) AI詳細スペック解析 (PC解析)     33) AIモデル一覧の確認 (Gemini/Gemma)"
+    echo -e "  34) 【一括】既存行のSEOタイトル更新 (PC解析 --update-all) 🔥"
 
     echo -e "\n${CYAN}${BOLD}[4. 🛠️ SYSTEM & MASTER]${RESET}"
     echo -e "  40) マイグレーション (DB更新)       41) 属性マスタ同期 & 自動マッピング"
@@ -145,21 +142,36 @@ EOF
             show_maker_menu; read -p ">> " SUB_CHOICE
             [[ "$SUB_CHOICE" == "99" || -z "$SUB_CHOICE" ]] && continue
             SLUG=${MAKERS[$SUB_CHOICE]}; MID=${MID_MAP[$SLUG]}
-            # スクリーンスクレイパー実行 (PYTHONPATH付与)
             case $SUB_CHOICE in
                 7)  run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/scrape_lenovo.py ;;
                 10) run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_mouse.py ;;
-                # --- 他のメーカーも同様の形式で実行 ---
                 *)  run_django python manage.py linkshare_bc_api_parser --mid "$MID" --save-db --limit 100
                     run_django env PYTHONPATH=/usr/src/app python /usr/src/app/scrapers/src/shops/import_bc_api_to_db.py --mid "$MID" --maker "$SLUG" ;;
             esac
             run_django python manage.py record_price_history --maker "$SLUG" ;;
         21) run_django python manage.py record_price_history --all ;;
         22) read -p "ファイル名: " FILE_NAME; run_django python manage.py import_av "/usr/src/app/data/$FILE_NAME" ;;
+        23) 
+            show_maker_menu; read -p "削除対象メーカーの番号: " DEL_SUB
+            [[ "$DEL_SUB" == "99" || -z "$DEL_SUB" ]] && continue
+            DEL_SLUG=${MAKERS[$DEL_SUB]}
+            read -p "本当に ${DEL_SLUG} の製品データを削除しますか？ (y/N): " DEL_CONFIRM
+            [[ "$DEL_CONFIRM" == "y" ]] && run_django python manage.py shell -c "from api.models.pc_products import PCProduct; PCProduct.objects.filter(maker__icontains='$DEL_SLUG').delete(); print('🗑️ Deleted.')" ;;
         30) run_django python manage.py ai_blog_from_db ;;
         31) run_django python manage.py ai_post_pc_news ;;
-        32) run_django python manage.py analyze_pc_spec --limit 999999 ;;
+        32) 
+            read -p "処理件数 (100): " LIMIT; LIMIT=${LIMIT:-100}
+            run_django python manage.py analyze_pc_spec --limit "$LIMIT" ;;
         33) run_django python manage.py ai_model_name ;;
+        34) 
+            echo -e "\n${RED}${BOLD}🔥 既存行のSEOタイトル一括更新モード${RESET}"
+            read -p "更新件数 (10): " LIMIT; LIMIT=${LIMIT:-10}
+            read -p "メーカー絞り込み (省略可): " M_FLT
+            if [ -n "$M_FLT" ]; then
+                run_django python manage.py analyze_pc_spec --limit "$LIMIT" --maker "$M_FLT" --update-all
+            else
+                run_django python manage.py analyze_pc_spec --limit "$LIMIT" --update-all
+            fi ;;
         40) run_django python manage.py makemigrations api; run_django python manage.py migrate ;;
         41) run_django python manage.py import_specs "/usr/src/app/master_data/attributes.tsv"; run_django python manage.py auto_map_attributes ;;
         42) update_sitemap ;;

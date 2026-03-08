@@ -59,6 +59,7 @@ class UnifiedAdultProductListView(generics.ListAPIView):
         api_source = p.get('api_source')
         if api_source:
             qs = qs.filter(api_source__iexact=str(api_source))
+            # pass
 
         # --- 🛸 B. サービス・フロアフィルタ (service_code, floor_code) ---
         service_code = p.get('service_code')

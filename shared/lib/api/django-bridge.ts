@@ -1,16 +1,22 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge サービス層 (Maya's Logic v3 - Unified)
+ * 🌉 Django-Bridge サービス層 (Maya's Logic v5.0 - Unified)
  * =====================================================================
- * [Path]: /shared/lib/api/django-bridge.ts
+ * 物理パス: /shared/lib/api/django-bridge.ts
+ * * 【責務】
+ * 1. 各サイト（BicStation, Tiper等）のデータ取得を統合管理
+ * 2. 内部コンテナ通信と外部公開URLの変換（replaceInternalUrls）
+ * 3. WordPress依存を排し、将来のマークダウン(MD)記事実装へのブリッジとなる
+ * =====================================================================
  */
 
-import { getWpConfig, IS_SERVER } from './config';
-// 型定義の循環参照を防ぐため
+import { getWpConfig, IS_SERVER, getDjangoBaseUrl } from './config';
+// 型定義
 import { PCProduct, MakerCount } from './index'; 
 
 /**
- * 🔄 【核心】ドメイン・一括置換ユーティリティ
+ * 🔄 【変換】ドメイン・一括置換ユーティリティ
+ * APIから返却される内部ドメイン（django-v3等）を公開ドメインに置換します。
  */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
@@ -18,45 +24,39 @@ export const replaceInternalUrls = (data: any): any => {
     const isObject = typeof data === 'object';
     let content = isObject ? JSON.stringify(data) : data;
 
-    const { baseUrl } = getWpConfig();
-    // baseUrlが http://.../api の場合、ベース部分だけを抽出
-    const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
+    // configからベースとなるホストを取得
+    const cleanBaseUrl = getDjangoBaseUrl().replace(/\/api$/, '').replace(/\/$/, '');
 
-    // 内部・開発ドメインを公開ドメインへ一本化
+    // 内部・開発ドメインのパターン
     const internalPattern = /http:\/\/(django-v3|nginx-wp-v[23]|wordpress-.+v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
     
     content = content.replace(internalPattern, cleanBaseUrl);
-    // スラッシュの重複 (//) を修正（プロトコル直後を除く）
+    // 重複スラッシュ (//) をプロトコル以外で修正
     content = content.replace(/([^:])\/\//g, '$1/'); 
 
     return isObject ? JSON.parse(content) : content;
 };
 
 /**
- * 💡 内部URL解決 (ネットワーク最適化 & /api 重複防止)
+ * 💡 【解決】内部URL解決ロジック
+ * 二重 "/api" を徹底的に防ぎ、SSR/Client環境に合わせた最適なURLを生成します。
  */
 const resolveApiUrl = (endpoint: string) => {
-    const { baseUrl } = getWpConfig();
+    // endpointから "/api/" の重複を除去
+    const cleanEndpoint = endpoint.replace(/^\/?api\//, '').replace(/^\//, '');
     
-    // endpointの先頭の /api を除去（ベース側と重複させないため）
-    const cleanEndpoint = endpoint.replace(/^\/?api\//, '/').startsWith('/') 
-        ? endpoint.replace(/^\/?api\//, '/') 
-        : `/${endpoint}`;
+    // ベースURLの選定
+    const base = getDjangoBaseUrl().replace(/\/$/, '');
+    
+    // Django(DRF)の仕様に合わせ、末尾にスラッシュを付与（クエリパラメータがない場合）
+    const suffix = (cleanEndpoint.includes('?') || cleanEndpoint.endsWith('/')) ? '' : '/';
 
-    if (IS_SERVER) {
-        // SSR時は Docker内部ネットワークを利用
-        // 環境変数に末尾 /api があってもなくても対応
-        const internalBase = (process.env.API_INTERNAL_URL || 'http://django-v3:8000/api').replace(/\/$/, '');
-        return `${internalBase}${cleanEndpoint}`;
-    }
-
-    // クライアントサイド用
-    const clientBase = baseUrl.replace(/\/$/, '');
-    return `${clientBase}${cleanEndpoint}`;
+    return `${base}/api/${cleanEndpoint}${suffix}`;
 };
 
 /**
- * 🛠️ 共通 Fetch ラッパー
+ * 🛠️ 【通信】共通 Fetch ラッパー
+ * タイムアウト制御とエラーハンドリングを統合。
  */
 async function fetchFromBridge(url: string, options: any = {}) {
     const { host } = getWpConfig();
@@ -68,32 +68,32 @@ async function fetchFromBridge(url: string, options: any = {}) {
                 'Accept': 'application/json',
                 ...(options.headers || {}),
             },
-            // Next.js 15+ 向けのタイムアウト制御
+            // ネットワーク遅延によるハングを防ぐ
             signal: AbortSignal.timeout(options.timeout || 8000)
         });
 
         if (!res.ok) {
-            console.warn(`⚠️ [Bridge 404/Error]: ${res.status} | ${url}`);
+            console.warn(`⚠️ [Bridge Status Error]: ${res.status} | URL: ${url}`);
             return { data: null, total: 0, status: res.status };
         }
         
         const data = await res.json();
+        // WP互換ヘッダーまたは標準ヘッダーから件数を抽出
         const total = parseInt(res.headers.get('X-WP-Total') || res.headers.get('X-Total-Count') || '0', 10);
         
         return { data: replaceInternalUrls(data), total, status: res.status };
     } catch (e: any) {
-        console.error(`🚨 [Bridge Fetch Failed]: ${url} | ${e.message}`);
+        console.error(`🚨 [Bridge Fatal Error]: ${url} | ${e.message}`);
         return { data: null, total: 0, error: e.message };
     }
 }
 
-// --- 📝 統合コンテンツ取得 (page.tsx エラー対策用) ---
+// --- 📝 統合コンテンツ取得 (page.tsx 呼び出し用) ---
 
 /**
- * page.tsx から (0 , j.fetchDjangoBridgeContent) として呼ばれるためのメイン関数
+ * サイトグループに基づき、適切なコンテンツ取得関数へルーティングします。
  */
 export async function fetchDjangoBridgeContent(params: any = {}) {
-    // サイトグループに応じた出し分けロジック
     const siteGroup = params.site_group || '';
     
     if (siteGroup === 'bicstation') {
@@ -102,24 +102,24 @@ export async function fetchDjangoBridgeContent(params: any = {}) {
         return await getAdultProducts(params);
     }
     
+    // 記事データ（将来のマークダウン用）
     return await fetchPostList('post', params.limit, params.offset);
 }
 
-// --- 📝 WordPress 互換機能 ---
+// --- 📝 記事コンテンツ機能 (Markdown 移行準備) ---
 
+/**
+ * 【重要】現在は空配列を返します。
+ * 準備ができ次第、ここを local file system (fs) の読み込みに差し替えることでMD化が完了します。
+ */
 export async function fetchPostList(postType: string = 'post', limit = 12, offset = 0) {
-    const type = postType === 'post' ? 'posts' : postType;
-    const url = resolveApiUrl(`/wp-json/wp/v2/${type}?_embed&per_page=${limit}&offset=${offset}`);
-    const { data, total } = await fetchFromBridge(url, { next: { revalidate: 60 } });
-    return { results: data || [], count: total };
+    // 以前の WP への fetch ロジックは Django 404 回避のため封印
+    return { results: [], count: 0 };
 }
 
 export async function fetchPostData(postType: string = 'post', identifier: string) {
-    const type = postType === 'post' ? 'posts' : postType;
-    const isId = /^\d+$/.test(identifier);
-    const query = isId ? `/${identifier}?_embed` : `?slug=${encodeURIComponent(identifier)}&_embed`;
-    const { data } = await fetchFromBridge(resolveApiUrl(`/wp-json/wp/v2/${type}${query}`));
-    return Array.isArray(data) ? (data[0] || null) : data;
+    // 個別記事もMD化まで null を返却
+    return null;
 }
 
 // --- 🔞 アダルトコンテンツ機能 (AVFLASH, TIPER) ---
@@ -132,30 +132,39 @@ export async function getAdultProducts(params: any = {}) {
         ordering: safeParams.ordering || '-id',
         ...(safeParams.site_group && { site_group: safeParams.site_group })
     });
-    const url = resolveApiUrl(`/adult-products/?${query.toString()}`);
+    
+    const url = resolveApiUrl(`adult-products/?${query.toString()}`);
     const { data, total } = await fetchFromBridge(url, { next: { revalidate: 60 } });
     return { results: data?.results || [], count: data?.count || total };
 }
 
 // --- 💻 PC製品・ランキング機能 (BicStation) ---
 
+/**
+ * PC製品データを取得。
+ * resolveApiUrl により "/api/general/pc-products/" へ正しく接続されます。
+ */
 export async function fetchPCProducts(params: any = {}) {
     const safeParams = params || {};
     const query = new URLSearchParams({
         limit: (safeParams.limit || 10).toString(),
         offset: (safeParams.offset || 0).toString(),
         ...(safeParams.maker && { maker: safeParams.maker }),
-        ...(safeParams.site_group && { site_group: safeParams.site_group })
+        ...(safeParams.site_group && { site_group: safeParams.site_group }),
+        ...(safeParams.attribute && { attribute: safeParams.attribute })
     });
     
-    // BICSTATION 404対策: 正しいエンドポイントパスを確認
-    const url = resolveApiUrl(`/pc-products/?${query.toString()}`);
+    const url = resolveApiUrl(`general/pc-products/?${query.toString()}`);
     const { data } = await fetchFromBridge(url);
-    return { results: data?.results || [], count: data?.count || 0 };
+    
+    return { 
+        results: data?.results || [], 
+        count: data?.count || 0 
+    };
 }
 
 /**
- * エイリアス互換設定
+ * 互換性のためのエイリアス
  */
 export { fetchPostList as getSiteMainPosts };
 export { getAdultProducts as getUnifiedProducts };
