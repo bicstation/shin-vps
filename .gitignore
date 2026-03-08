@@ -84,3 +84,12 @@ traefik/letsencrypt/*.json
 *.tar.gz
 *.zip
 *.deb
+
+
+# 仮想環境
+.venv/
+
+# Google APIの鍵（絶対公開しちゃダメなやつ）
+client_secrets.json
+token.json
+django/api/management/commands/bs_json/client_secrets.json
