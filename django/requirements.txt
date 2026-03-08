@@ -63,6 +63,12 @@ feedparser==6.0.10
 Pillow==10.1.0
 
 # ------------------------------------------------------------------
-# 🤖 AI 解析 (LLM SDK)
+# 🤖 AI 解析 & Google API (LLM SDK & Google API Client)
 # ------------------------------------------------------------------
 google-generativeai
+# Blogger API / Google Drive 等の操作に必須
+google-api-python-client
+# Google API 認証・HTTP通信用
+google-auth-httplib2
+# OAuth2.0 認証フロー用
+google-auth-oauthlib

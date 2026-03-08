@@ -86,6 +86,7 @@ services:
     volumes:
       - ./django:/usr/src/app
       - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
+      - ./django/api/management/commands/bs_json:/usr/src/app/api/management/commands/bs_json
     networks:
       - internal-net
       - shared-proxy

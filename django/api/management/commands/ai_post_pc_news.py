@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/management/commands/ai_post_pc_news.py
 import os, re, json, random, requests, feedparser, urllib.parse, time, hashlib, base64
 import xmlrpc.client
 from datetime import datetime
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from api.models.pc_products import PCProduct
+
+# === Google API / Blogger 用の追加インポート ===
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
 
 # === APIキー取得設定 ===
 def get_all_keys():
@@ -32,6 +38,11 @@ SS_USER = "bicstation@gmail.com"
 SS_PW = "1492nabe"
 SS_BLOG_ID = "7242363"
 
+# === パス設定 (Docker/ホスト両対応) ===
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BLOGGER_TOKEN_FILE = os.path.join(CURRENT_DIR, 'bs_json', 'token.json')
+BLOGGER_SCOPES = ['https://www.googleapis.com/auth/blogger']
+
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--url', type=str)
@@ -39,9 +50,8 @@ class Command(BaseCommand):
         parser.add_argument('--target', type=str, default='all')
 
     def handle(self, *args, **options):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        PROMPT_FILE = os.path.join(current_dir, "prompt", "ai_prompt_news.txt")
-        HISTORY_FILE = os.path.join(current_dir, "post_history.txt")
+        PROMPT_FILE = os.path.join(CURRENT_DIR, "prompt", "ai_prompt_news.txt")
+        HISTORY_FILE = os.path.join(CURRENT_DIR, "post_history.txt")
         
         if not os.path.exists(PROMPT_FILE):
             self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルなし: {PROMPT_FILE}"))
@@ -56,12 +66,12 @@ class Command(BaseCommand):
             return
 
         targets = [{"url": e.link} for e in random.sample(feed.entries, min(options['limit'], len(feed.entries)))]
-        self.stdout.write(self.style.SUCCESS(f"🚀 配信開始 (Gemma 3 / デバッグ出力有効)"))
+        self.stdout.write(self.style.SUCCESS(f"🚀 配信開始 (Gemma 3 / Blogger統合 / Docker Ready)"))
 
         for t in targets:
             self.process_task(t['url'], PROMPT_TEMPLATE, HISTORY_FILE, options.get('target'))
 
-    # --- 認証 & 投稿関数 ---
+    # --- 認証 & 投稿関数 (AtomPub / XML-RPC) ---
     def generate_wsse(self, user_id, api_key):
         created = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
         nonce_binary = os.urandom(16)
@@ -100,8 +110,41 @@ class Command(BaseCommand):
             return True
         except: return False
 
+    # --- Blogger用メソッド ---
+    def get_blogger_service(self):
+        creds = None
+        if os.path.exists(BLOGGER_TOKEN_FILE):
+            creds = Credentials.from_authorized_user_file(BLOGGER_TOKEN_FILE, BLOGGER_SCOPES)
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                self.stdout.write(self.style.ERROR(f"❌ Bloggerのtoken.jsonが無効です。場所: {BLOGGER_TOKEN_FILE}"))
+                return None
+        return build('blogger', 'v3', credentials=creds)
+
+    def post_to_blogger(self, title, content_html):
+        try:
+            service = self.get_blogger_service()
+            if not service: return False
+            
+            blogs = service.blogs().listByUser(userId='self').execute()
+            blog_id = blogs['items'][0]['id']
+            
+            body = {
+                'kind': 'blogger#post',
+                'title': title,
+                'content': content_html
+            }
+            service.posts().insert(blogId=blog_id, body=body).execute()
+            return True
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"❌ Blogger Error: {e}"))
+            return False
+
+    # --- メインタスク処理 ---
     def process_task(self, current_url, prompt_temp, history_file, target_opt):
-        # 1. Scraping & OGP画像取得
+        # 1. Scraping
         res = requests.get(current_url, timeout=15)
         res.encoding = res.apparent_encoding
         soup = BeautifulSoup(res.text, 'html.parser')
@@ -114,7 +157,6 @@ class Command(BaseCommand):
         body_container = soup.find('article') or soup.find('div', class_='entry-content') or soup.body
         page_content = body_container.get_text(strip=True)[:4000]
 
-        # 関連商品取得
         rel_prod = PCProduct.objects.filter(is_active=True).order_by('?').first()
         maker = rel_prod.name.split()[0] if rel_prod else "不明"
         
@@ -132,14 +174,9 @@ class Command(BaseCommand):
                 ai_text = r.json()['candidates'][0]['content']['parts'][0]['text']
                 ai_text = ai_text.replace('```html', '').replace('```', '').strip()
 
-                # --- デバッグ表示用（コンソール出力） ---
                 self.stdout.write(self.style.HTTP_INFO("\n" + "="*60))
-                self.stdout.write(self.style.HTTP_INFO("🤖 AI GENERATED CONTENT (RAW)"))
-                self.stdout.write(self.style.HTTP_INFO("="*60))
                 print(ai_text)
                 self.stdout.write(self.style.HTTP_INFO("="*60 + "\n"))
-                # ---------------------------------------
-
                 break
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Key No.{item['index']} Error: {e}"))
@@ -147,22 +184,20 @@ class Command(BaseCommand):
         
         if not ai_text: return
 
-        # 3. コンテンツ解析と整形
-        # 要約データのパース
+        # 3. 整形
         summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', ai_text, re.DOTALL)
         summary_raw = summary_match.group(1).strip() if summary_match else ""
         summary_items = "".join([f'<li style="margin-bottom:5px;">{line.split(": ", 1)[1]}</li>' for line in summary_raw.splitlines() if ": " in line])
         summary_box = f'<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:20px; border-radius:8px; margin-bottom:30px;"><strong style="color:#1e293b; display:block; margin-bottom:10px;">📌 本記事の重要ポイント</strong><ul style="margin:0; padding-left:20px; color:#475569;">{summary_items}</ul></div>'
 
-        # 本文の抽出
         clean_text = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', ai_text, flags=re.DOTALL)
         clean_text = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', clean_text, flags=re.DOTALL).strip()
         
         lines = [l for l in clean_text.splitlines() if l.strip()]
+        if not lines: return
         final_title = lines[0].strip()
         main_html_body = "\n".join(lines[1:]).strip()
 
-        # おすすめ商品リンク
         rel_html = ""
         if rel_prod:
             rel_html = f'<div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); padding:25px; margin:40px 0; border-radius:12px; border:1px solid #bfdbfe; text-align:center;">' \
@@ -170,18 +205,17 @@ class Command(BaseCommand):
                        f'<h4 style="margin-top:15px; color:#1e3a8a;">{rel_prod.name}</h4>' \
                        f'<a href="{rel_prod.url}" style="display:inline-block; margin-top:10px; padding:12px 30px; background:#2563eb; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">この製品の公式ページを見る</a></div>'
 
-        # 最終HTMLの組み立て
         full_html = f"{image_html}{summary_box}{main_html_body}{rel_html}" \
                     f'<p style="margin-top:40px; font-size:0.8em; color:#94a3b8; border-top:1px solid #f1f5f9; padding-top:20px;">' \
                     f'参照元：<a href="{current_url}" style="color:#94a3b8;">{raw_title} (PC Watch)</a></p>'
 
         # 4. 配信実行
-        targets = [
+        targets_atom = [
             ('Livedoor', LD_URL, LD_USER, LD_API_KEY, True),
             ('Hatena', HT_URL, HT_ID, HT_API_KEY, False)
         ]
 
-        for name, url, user, key, is_ld in targets:
+        for name, url, user, key, is_ld in targets_atom:
             if target_opt in ['all', name.lower()]:
                 if self.post_to_atompub(url, user, key, final_title, full_html, is_livedoor=is_ld):
                     self.stdout.write(self.style.SUCCESS(f"✅ {name}投稿成功"))
@@ -189,6 +223,10 @@ class Command(BaseCommand):
         if target_opt in ['all', 'seesaa']:
             if self.post_to_seesaa(final_title, full_html):
                 self.stdout.write(self.style.SUCCESS("✅ Seesaa投稿成功"))
+
+        if target_opt in ['all', 'blogger']:
+            if self.post_to_blogger(final_title, full_html):
+                self.stdout.write(self.style.SUCCESS("✅ Blogger投稿成功"))
 
         with open(history_file, "a", encoding='utf-8') as f:
             f.write(f"{datetime.now()}\t{current_url}\t{final_title}\n")
