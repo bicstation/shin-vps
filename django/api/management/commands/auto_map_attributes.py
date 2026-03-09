@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-dev/shin-vps/django/api/management/commands/auto_map_attributes.py
 import re
 from django.core.management.base import BaseCommand
 from django.db import transaction

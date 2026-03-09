@@ -28,8 +28,6 @@ RESET="\e[0m"; RED="\e[31m"; YELLOW="\e[33m"; BLUE="\e[34m"; MAGENTA="\e[35m"; C
 # --- 2. データ定義 ---
 MAKERS=("DUMMY" "nec" "sony" "fmv" "dynabook" "hp" "dell" "lenovo" "asus" "msi" "mouse" "acer" "minisforum" "geekom" "vspec" "storm" "frontier" "sycom" "norton" "mcafee" "kingsoft" "cyberlink" "trendmicro" "sourcenext" "edion" "kojima" "sofmap" "bic_sofmap" "recollect" "ioplazy" "eizo" "ark")
 MAKER_NAMES=("DUMMY" "NEC [FTP]" "Sony [API]" "富士通FMV [FTP]" "Dynabook [FTP]" "HP [FTP]" "Dell [FTP]" "Lenovo" "ASUS [API]" "MSI" "Mouse" "Acer" "Minisforum" "GEEKOM" "VSPEC" "STORM" "FRONTIER" "Sycom" "ノートン [API]" "マカフィー [API]" "キングソフト [API]" "サイバーリンク [API]" "トレンドマイクロ [FTP]" "ソースネクスト [FTP]" "エディオン [API]" "コジマネット [API]" "ソフマップ [API]" "アキバソフマップ [API]" "リコレ!(中古) [API]" "ioPLAZA [API]" "EIZO [FTP]" "アーク(ark) [JSON]")
-PC_KEYWORDS=("fmv" "lavie" "dynabook" "surface" "macbook" "lenovo")
-EXCLUDE_KEYWORDS="ケース,カバー,フィルム,アダプタ,マウス,キーボード,バッグ,ケーブル"
 
 declare -A MID_MAP
 MID_MAP["nec"]="2780"; MID_MAP["sony"]="2980"; MID_MAP["fmv"]="2543"; MID_MAP["dynabook"]="36508"; MID_MAP["hp"]="35909"; MID_MAP["dell"]="2557"; MID_MAP["asus"]="43708"; MID_MAP["norton"]="24732"; MID_MAP["mcafee"]="3388"; MID_MAP["kingsoft"]="24623"; MID_MAP["cyberlink"]="36855"; MID_MAP["trendmicro"]="24501"; MID_MAP["sourcenext"]="2633"; MID_MAP["edion"]="43098"; MID_MAP["kojima"]="13993"; MID_MAP["sofmap"]="37641"; MID_MAP["bic_sofmap"]="43262"; MID_MAP["recollect"]="43860"; MID_MAP["ioplazy"]="24172"; MID_MAP["eizo"]="3256"
@@ -38,7 +36,6 @@ MID_MAP["nec"]="2780"; MID_MAP["sony"]="2980"; MID_MAP["fmv"]="2543"; MID_MAP["d
 run_django() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec "$DJANGO_CON" "$@"; }
 run_next() { docker compose -f "$PROJECT_ROOT/$COMPOSE_FILE" exec "$NEXT_CON" "$@"; }
 
-# サイトマップ更新の修正版
 update_sitemap() {
     echo -e "\n${COLOR}🌐 サイトマップを更新中...${RESET}"
     run_next node /app/generate-sitemap.mjs
@@ -89,26 +86,26 @@ while true; do
     echo -e "${CYAN}==================================================================${RESET}"
 
     echo -e "${MAGENTA}${BOLD}[1. 🔞 ADULT CONTENT]${RESET}"
-    echo -e "  10) FANZA/DUGA インポート (Tiper)   11) FANZA サービス・フロア階層同期 ✨"
-    echo -e "  12) アダルト作品AI解析 (Sommelier)  13) FANZA APIエクスプローラー & 解析 🔍"
-    echo -e "  14) FANZA 女優スペック同期 (5万件)  15) AI 黄金比スタイル解析 💎"
+    echo -e "   10) FANZA/DUGA インポート (Tiper)   11) FANZA サービス・フロア階層同期 ✨"
+    echo -e "   12) アダルト作品AI解析 (Sommelier)  13) FANZA APIエクスプローラー & 解析 🔍"
+    echo -e "   14) FANZA 女優スペック同期 (5万件)  15) AI 黄金比スタイル解析 💎"
 
     echo -e "\n${YELLOW}${BOLD}[2. 🛒 PC & SHOPPING SYNC]${RESET}"
-    echo -e "  20) メーカー別同期 (API/FTP/Scrape) 21) 価格履歴の一斉記録 (Record)"
-    echo -e "  22) AV-Flash インポート             23) 特定ショップDBデータ一括削除 🗑️"
+    echo -e "   20) メーカー別同期 (API/FTP/Scrape) 21) 価格履歴の一斉記録 (Record)"
+    echo -e "   22) AV-Flash インポート             23) 特定ショップDBデータ一括削除 🗑️"
 
     echo -e "\n${BLUE}${BOLD}[3. 🤖 AI WRITING & NEWS]${RESET}"
-    echo -e "  30) 商品AI記事生成 & WordPress投稿  31) PCパーツ最新ニュース投稿 (RSS/URL)"
-    echo -e "  32) AI詳細スペック解析 (PC解析)     33) AIモデル一覧の確認 (Gemini/Gemma)"
-    echo -e "  34) 【一括】既存行のSEOタイトル更新 (PC解析 --update-all) 🔥"
+    echo -e "   30) 商品AI記事生成 & WordPress投稿  31) PCパーツ最新ニュース投稿 (RSS/URL)"
+    echo -e "   32) AI詳細スペック解析 (PC解析)     33) AIモデル一覧の確認 (Gemini/Gemma)"
+    echo -e "   34) 【一括】既存行のSEOタイトル更新 (PC解析 --update-all) 🔥"
 
     echo -e "\n${CYAN}${BOLD}[4. 🛠️ SYSTEM & MASTER]${RESET}"
-    echo -e "  40) マイグレーション (DB更新)       41) 属性マスタ同期 & 自動マッピング"
-    echo -e "  42) サイトマップ手動更新 (SEO)      43) スーパーユーザー作成 / TSV出力"
-    echo -e "  44) APIエンドポイント一覧表示 🔎"
+    echo -e "   40) マイグレーション (DB更新)       41) 属性マスタ同期 & 自動マッピング"
+    echo -e "   42) サイトマップ手動更新 (SEO)      43) スーパーユーザー作成 / TSV出力"
+    echo -e "   44) APIエンドポイント一覧表示 🔎"
 
     echo -e "${CYAN}------------------------------------------------------------------${RESET}"
-    echo -e "  h) Help    8/q) 終了"
+    echo -e "   h) Help    8/q) 終了"
     echo -e "${CYAN}------------------------------------------------------------------${RESET}"
 
     read -p "選択してください: " CHOICE
@@ -172,13 +169,72 @@ EOF
             else
                 run_django python manage.py analyze_pc_spec --limit "$LIMIT" --update-all
             fi ;;
-        40) run_django python manage.py makemigrations api; run_django python manage.py migrate ;;
-        41) run_django python manage.py import_specs "/usr/src/app/master_data/attributes.tsv"; run_django python manage.py auto_map_attributes ;;
+        40) 
+            echo -e "\n${YELLOW}🛠️ マイグレーションを実行中...${RESET}"
+            run_django python manage.py makemigrations api
+            run_django python manage.py migrate ;;
+        41) 
+            echo -e "\n${YELLOW}📦 属性マスタを同期中...${RESET}"
+            docker cp "${PROJECT_ROOT}/django/master_data/attributes.tsv" "${DJANGO_CON}:/usr/src/app/master_data/attributes.tsv"
+            
+            docker exec -i "${DJANGO_CON}" python manage.py shell <<'EOF'
+import os
+import re
+from django.db import connection, transaction
+from api.models.pc_products import PCAttribute
+
+file_path = '/usr/src/app/master_data/attributes.tsv'
+
+# 1. SQLで直接テーブルを空にする（トランザクションを待たずに即時解放）
+with connection.cursor() as cursor:
+    cursor.execute('TRUNCATE TABLE api_pcattribute RESTART IDENTITY CASCADE;')
+print("🧹 DB: Table api_pcattribute truncated.")
+
+# 2. メモリ上で一意性を確保
+unique_attrs = {}
+if os.path.exists(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('attr_type'): continue
+            parts = re.split(r'\t+|\s{2,}', line)
+            if len(parts) < 3: continue
+            
+            slug = parts[2].strip().lower()
+            unique_attrs[slug] = {
+                'attr_type': parts[0].strip(),
+                'name': parts[1].strip(),
+                'order': int(float(parts[-1])) if parts[-1].replace('.','').isdigit() else 0
+            }
+
+    # 3. 1件ずつ安全に保存（万が一の衝突も無視する）
+    count = 0
+    for slug, data in unique_attrs.items():
+        # 既に存在していてもエラーを出さない get_or_create 方式
+        PCAttribute.objects.get_or_create(
+            slug=slug,
+            defaults=data
+        )
+        count += 1
+    print(f"✅ {count} 件の属性を同期完了しました。")
+else:
+    print("❌ Error: attributes.tsv not found.")
+EOF
+
+            echo -e "${CYAN}🚀 商品データへの属性紐付けを更新中...${RESET}"
+            run_django python manage.py auto_map_attributes 
+            ;;
         42) update_sitemap ;;
-        43) echo "1) SU / 2) TSV"; read -p ">> " S_C; [[ "$S_C" == "1" ]] && run_django python manage.py createsuperuser || run_django python manage.py export_products ;;
-        44) ensure_show_urls_cmd; echo -e "${YELLOW}URL: ${BASE_URL}${RESET}"; run_django python manage.py show_urls | sed "s|^\/|${BASE_URL}/|g" ;;
+        43) 
+            echo "1) スーパーユーザー作成 / 2) 製品TSV出力"
+            read -p ">> " S_C
+            [[ "$S_C" == "1" ]] && run_django python manage.py createsuperuser || run_django python manage.py export_products ;;
+        44) 
+            ensure_show_urls_cmd
+            echo -e "${YELLOW}URL一覧 (Base: ${BASE_URL})${RESET}"
+            run_django python manage.py show_urls | sed "s|^\/|${BASE_URL}/|g" ;;
         8|q) exit 0 ;;
-        h) echo "Help: カテゴリ番号を選択。" ;;
+        h) echo "Help: カテゴリ番号を選択して運用タスクを実行します。" ;;
     esac
     echo -e "\n${GREEN}完了。Enterで戻ります。${RESET}"; read
 done

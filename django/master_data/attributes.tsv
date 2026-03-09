@@ -42,43 +42,42 @@ gpu	ビデオメモリ 6GB	vram-6gb-plus	6GB Video, VRAM 6GB, 6GB, GDDR6 6GB	66
 gpu	プロ向け (NVIDIA RTX / Quadro)	gpu-professional	NVIDIA RTX, Quadro, A2000, A4000, Ada Generation, T1000, T600, ワークステーション向けGPU	67
 gpu	Intel Graphics (内蔵)	gpu-intel-graphics	Intel UHD, Intel Iris, Intel Graphics, 内蔵グラフィックス, Iris Xe, UHD Graphics	68
 gpu	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内蔵グラフィックス, Radeon 780M, Radeon 760M, 680M, 880M, 890M	69
-size	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, 13.4型, 12.6型, 12.1型, 11.6型, 10.1型, 14.0型, モバイルモニター, 軽量ノート, EliteBook 630, Latitude 3340, dynabook G83	510
-size	15-16インチ (標準)	size-laptop-standard	15.6型, 16型, 15.4型, 16.0型, 15.0型, 標準ノート, ProBook 450, Latitude 3540, LIFEBOOK A5513	510.5
-size	24-25インチ (標準)	size-standard	23.8型, 24.5型, 24型, 標準サイズ, 23.8インチ, EV24, EV23, S2133, CS24, G-MASTER, 23.8W	511
-size	27インチ (大画面)	size-large	27型, 27-inch, 27インチ, WQHDモニタ, EV27, CS27, CG27, ROG Swift, 27W	512
-size	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上, ウルトラワイド, 49型, 43型, 湾曲モニタ, EV38, EV32, CG31, 曲面モニタ, 32型	513
-os	Windows 11 Pro	win-11-pro	Windows 11 Pro, Win11 Pro, 11 Pro 64bit, 11 Pro for Business	300
-os	Windows 11 Home	win-11-home	Windows 11 Home, Win11 Home, 11 Home 64bit, Sモード	301
-memory	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GB（LPDDR5）, 16GB（LPDDR5X）, DDR4-16GB, DDR5-16GB, 16GBメモリ	210
-memory	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GB（LPDDR5）, 32GB（LPDDR5X）, 32GBオンボード, DDR5-32GB, 32GBメモリ	211
-memory	メモリ 64GB以上	mem-64gb-plus	64GB, 64 GB, 128GB, 大容量メモリ, 96GB, 192GB, 256GB	212
-memory	メモリ 8GB (低容量)	mem-8gb	8GB, 8 GB, 4GBx2, 8GB（LPDDR4X）, 8GBメモリ	213
-storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, 512GB（PCIe）, 500GB SSD, M.2 512GB	400
-storage	SSD 1TB以上	ssd-1tb-plus	1TB SSD, 1 TB, 2TB, 4TB, 8TB, NVMe 1TB, M.2 1TB, Gen4 1TB	401
-storage	SSD 256GB	ssd-256gb	256GB SSD, 256 GB SSD, 240GB SSD, M.2 256GB	402
-usage	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, RTX, ROG, OMEN, Legion	711
-usage	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, Adobe, DAIV, ProArt, 4K OLED	712
-usage	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, MousePro, Latitude, EliteBook, VersaPro	713
-feature	軽量・1kg未満	feat-lightweight	900g, 800g, 700g, 超軽量, LIFEBOOK UH, dynabook G	804
-feature	AI PC (Copilot+)	feature-copilot-plus	Copilot+, 40+ TOPS, NPU 45TOPS, AI要件適合	280
+size	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, 13.4型, 12.6型, 12.1型, 11.6型, 10.1型, 14.0型, モバイルモニター, 軽量ノート	510
+size	15-16インチ (標準)	size-laptop-standard	15.6型, 16型, 15.4型, 16.0型, 15.0型, 標準ノート	510.5
+size	24-25インチ (標準)	size-standard	23.8型, 24.5型, 24型, 標準サイズ, 23.8インチ	511
+size	27インチ (大画面)	size-large	27型, 27-inch, 27インチ, WQHDモニタ	512
+size	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上, ウルトラワイド, 49型, 43型	513
+os	Windows 11 Pro	win-11-pro	Windows 11 Pro, Win11 Pro, 11 Pro 64bit	300
+os	Windows 11 Home	win-11-home	Windows 11 Home, Win11 Home, 11 Home 64bit	301
+memory	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GBメモリ	210
+memory	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GBメモリ	211
+memory	メモリ 64GB以上	mem-64gb-plus	64GB, 64 GB, 128GB, 大容量メモリ	212
+memory	メモリ 8GB (低容量)	mem-8gb	8GB, 8 GB, 4GBx2, 8GBメモリ	213
+storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, M.2 512GB	400
+storage	SSD 1TB以上	ssd-1tb-plus	1TB SSD, 1 TB, 2TB, 4TB, 8TB, NVMe 1TB	401
+storage	SSD 256GB	ssd-256gb	256GB SSD, 256 GB SSD, M.2 256GB	402
+usage	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, RTX	711
+usage	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, Adobe, DAIV	712
+usage	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, VersaPro	713
+feature	軽量・1kg未満	feat-lightweight	900g, 800g, 700g, 超軽量, UH, dynabook G	804
 actor_type	単体女優	solo-actress	単体, 専属, 独占, ソロ作品	1001
-actor_type	素人・ナンパ	amateur	素人, 投稿, ナンパ, 街録, 一般人	1002
+actor_type	素人・ナンパ	amateur	素人, 投稿, ナンパ, 街録	1002
 actor_type	熟女・人妻	mature	熟女, 人妻, お母さん, 義母, 40代, 50代	1003
 actor_type	女子大生	college-girl	女子大生, 現役JD, 女子大, 20歳	1004
-actor_type	女子高生	college-girl	女子高生, 現役高校生, 女子高, 18歳	1005
-body	巨乳	big-breasts	巨乳, 爆乳, ボイン, デカパイ, Kカップ, 豊満	1010
-body	美少女	beautiful-girl	美少女, 美人, 美白, モデル級, 透明感	1011
+actor_type	女子高生	high-school-girl	女子高生, 現役高校生, 女子高, 18歳	1005
+body	巨乳	big-breasts	巨乳, 爆乳, ボイン, デカパイ, Kカップ	1010
+body	美少女	beautiful-girl	美少女, 美人, 美白, モデル級	1011
 body	スレンダー	slender	スレンダー, 細身, モデル体型, 美脚	1012
 body	ぽっちゃり	chubby	ぽっちゃり, マシュマロ, デブ, 肉感	1013
 feature	4K / 高画質	ultra-hd-4k	4K, UHD, 高画質, 最高画質	1020
 feature	VR / 3D	vr-content	VR, バーチャルリアリティ, 3D, 立体	1021
 feature	個人撮影	self-shot	自撮り, 個人撮影, スマホ撮影, 縦動画	1022
 feature	AI解析済 / 高圧縮	ai-analyzed	AI解析, 高効率, 最適化済, Gemma	1023
-scene	制服・コスプレ	cosplay	制服, セーラー服, CA, 看護師, ナース, コスプレ	1030
-scene	巨乳・フェチ	fetish	足コキ, 手コキ, フェチ, 匂い, ストッキング	1031
+scene	制服・コスプレ	cosplay	制服, セーラー服, CA, 看護師	1030
+scene	巨乳・フェチ	fetish	足コキ, 手コキ, フェチ, 匂い	1031
 scene	痴漢・露出	public-exposure	痴漢, 露出, 野外, 密室	1032
-scene	白衣・奉仕	nursing	ナース,白衣,介護, 看病, リハビリ, お世話	1033
-style	中出し	creampie	中出し, 生ハメ, 膣内, ザーメン	1040
-style	拘束・SM	sm-bondage	拘束, 緊縛, SM, 放置, 責め	1041
+scene	白衣・奉仕	nursing	ナース,白衣,介護, 看病	1033
+style	中出し	creampie	中出し, 生ハメ, ザーメン	1040
+style	拘束・SM	sm-bondage	拘束, 緊縛, SM, 放置	1041
 style	潮吹き	squirting	潮吹き, 絶頂, 噴射, 感度	1042
 style	逆レイ・攻め	female-led	逆レイ, 女攻め, 騎乗位, 逆ナン	1043
