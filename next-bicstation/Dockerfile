@@ -20,29 +20,28 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 WORKDIR /app
 
 # ✅ OSパッケージのインストール (Node 20 / Debian Bookworm 対応)
-RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libc6 libstdc++6 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # ✅ 1. ファイルのコピーと Shared の実体化
-# アプリ本体をコピー
 COPY next-bicstation/ ./
-# リンク切れや古いキャッシュを防ぐため、既存の shared を削除
 RUN rm -rf ./shared
-
-# ルートの shared フォルダを「実体」としてコピー (重要)
 COPY shared/ ./shared/
 
 # ✅ 2. 依存関係のインストール
-RUN npm cache clean --force
+# npm install 時に権限問題を最小限にするため unsafe-perm を有効化
+RUN npm config set unsafe-perm true
 RUN npm install --include=optional
 
 # ✅ 3. クリーンビルドの実行
-# Turbopack(Wasm)エラーを回避し、Webpackで安定ビルド
 RUN rm -rf .next .cache node_modules/.cache
-RUN npx next build
+
+# 🚨 【重要】Permission Denied 対策：npx を使わず node で直接実行ファイルを指定
+# node_modules/.bin/next は実行権限が必要なシンボリックリンクですが、
+# node コマンドで実体の JS ファイルを指定すれば権限に関係なくビルドが可能です。
+RUN node node_modules/next/dist/bin/next build
 
 # --- ステージ 2: プロダクションステージ (Node 20 に統一) ---
 FROM node:20-slim AS runner 
@@ -64,16 +63,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends libc6 && \
 # ✅ 4. 成果物の配置 (standalone モード)
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # 🚀 【展開処理】特定のフォルダ名に依存せず、中身をルートに引き出す
-# standalone フォルダ内のサブディレクトリ（next-bicstation等）をカレントディレクトリに移動
 RUN cp -r .next/standalone/* . 2>/dev/null || true
 
 # 不要になったサブフォルダを削除してクリーンな状態にする
 RUN rm -rf ./next-bicstation ./next-tiper ./next-bic-saving ./next-avflash
-
-# staticファイルをコピー
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000

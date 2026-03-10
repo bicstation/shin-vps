@@ -1,232 +1,256 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/management/commands/ai_post_pc_news.py
 import os, re, json, random, requests, feedparser, urllib.parse, time, hashlib, base64
 import xmlrpc.client
 from datetime import datetime
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
-from api.models.pc_products import PCProduct
 
-# === Google API / Blogger 用の追加インポート ===
+# モデルのインポート
+from api.models.pc_products import PCProduct
+from api.models.article import Article
+
+# Google API / Blogger インポート
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 
-# === APIキー取得設定 ===
-def get_all_keys():
-    keys = []
-    for i in range(1, 11):
-        val = os.getenv(f"GEMINI_API_KEY_{i}") or os.getenv(f"GEMINI_API_KEY{i}")
-        if val: keys.append({"index": i, "key": val})
-    return keys
-
-ACTIVE_KEYS = get_all_keys()
-
-# === 配信先設定 ===
-LD_USER = "pbic" 
-LD_BLOG_NAME = "pbic-bcorjo9q" 
-LD_API_KEY = "n9T6n0czGX"
-LD_URL = f"https://livedoor.blogcms.jp/atom/blog/{LD_BLOG_NAME}/article"
-
-HT_ID = "bicstation"
-HT_BLOG_DOMAIN = "bicstation.hatenablog.com"
-HT_API_KEY = "se0o5znod6"
-HT_URL = f"https://blog.hatena.ne.jp/{HT_ID}/{HT_BLOG_DOMAIN}/atom/entry"
-
-SS_RPC_URL = "https://blog.seesaa.jp/rpc"
-SS_USER = "bicstation@gmail.com"
-SS_PW = "1492nabe"
-SS_BLOG_ID = "7242363"
-
-# === パス設定 (Docker/ホスト両対応) ===
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-BLOGGER_TOKEN_FILE = os.path.join(CURRENT_DIR, 'bs_json', 'token.json')
-BLOGGER_SCOPES = ['https://www.googleapis.com/auth/blogger']
-
 class Command(BaseCommand):
+    help = '外部ブログ投稿・DB保存・Next.js用Markdown生成を1ステップで実行します'
+
+    # --- 配信先設定 ---
+    BLOG_CONFIGS = {
+        'hatena': {
+            'id': "bicstation",
+            'domain': "bicstation.hatenablog.com",
+            'api_key': "se0o5znod6",
+            'url': "https://blog.hatena.ne.jp/bicstation/bicstation.hatenablog.com/atom/entry"
+        },
+        'livedoor': {
+            'user': "pbic",
+            'blog_name': "pbic-bcorjo9q",
+            'api_key': "a4lnDJzzXU",
+            'url': "https://livedoor.blogcms.jp/atompub/pbic-bcorjo9q/article"
+        },
+        'seesaa': {
+            'rpc_url': "https://blog.seesaa.jp/rpc",
+            'user': "bicstation@gmail.com",
+            'pw': "1492nabe",
+            'blog_id': "7242363"
+        },
+        'blogger': {
+            'client_json_dir': 'bs_json'
+        }
+    }
+
+    # --- RSSリスト ---
+    RSS_SOURCES = [
+        "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf",
+        "https://rss.itmedia.co.jp/rss/2.0/pcuser.xml",
+        "https://news.mynavi.jp/rss/digital/pc",
+        "https://www.4gamer.net/rss/index.xml",
+        "https://www.gizmodo.jp/index.xml"
+    ]
+
+    # --- Next.js出力設定 ---
+    MD_OUTPUT_DIR = "/home/maya/dev/shin-vps/next-bicstation/content/posts"
+
     def add_arguments(self, parser):
-        parser.add_argument('--url', type=str)
-        parser.add_argument('--limit', type=int, default=1)
-        parser.add_argument('--target', type=str, default='all')
+        parser.add_argument('--limit', type=int, default=1, help='各媒体に投稿する記事数')
+        parser.add_argument('--target', type=str, default='all', help='配信先 (all/hatena/livedoor/seesaa/blogger)')
 
     def handle(self, *args, **options):
-        PROMPT_FILE = os.path.join(CURRENT_DIR, "prompt", "ai_prompt_news.txt")
-        HISTORY_FILE = os.path.join(CURRENT_DIR, "post_history.txt")
-        
-        if not os.path.exists(PROMPT_FILE):
-            self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルなし: {PROMPT_FILE}"))
+        self.stdout.write(self.style.SUCCESS("--- 🚀 Maya's Logic v5.0: Triple Output System ---"))
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        prompt_path = os.path.join(current_dir, "prompt", "ai_prompt_news.txt")
+
+        if not os.path.exists(prompt_path):
+            self.stdout.write(self.style.ERROR("❌ プロンプトファイルなし"))
             return
 
-        with open(PROMPT_FILE, "r", encoding='utf-8') as f:
-            PROMPT_TEMPLATE = f.read()
+        with open(prompt_path, "r", encoding='utf-8') as f:
+            template = f.read()
 
-        feed = feedparser.parse("https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf")
-        if not feed.entries:
-            self.stdout.write(self.style.ERROR("❌ RSSの取得に失敗しました"))
+        api_keys = [os.getenv(f"GEMINI_API_KEY_{i}") for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
+        if not api_keys:
+            self.stdout.write(self.style.ERROR("❌ APIキー未設定"))
             return
 
-        targets = [{"url": e.link} for e in random.sample(feed.entries, min(options['limit'], len(feed.entries)))]
-        self.stdout.write(self.style.SUCCESS(f"🚀 配信開始 (Gemma 3 / Blogger統合 / Docker Ready)"))
+        targets = ['hatena', 'livedoor', 'seesaa', 'blogger'] if options['target'] == 'all' else [options['target']]
+        random.shuffle(self.RSS_SOURCES)
+        rss_pool = self.RSS_SOURCES[:]
 
-        for t in targets:
-            self.process_task(t['url'], PROMPT_TEMPLATE, HISTORY_FILE, options.get('target'))
+        for i in range(options['limit']):
+            for blog_type in targets:
+                self.stdout.write(self.style.NOTICE(f"\n--- 📦 Processing: {blog_type} (Round {i+1}) ---"))
+                
+                # 1. 独立した新着記事の確保
+                entry = None
+                checked_sources = 0
+                while rss_pool and not entry and checked_sources < len(self.RSS_SOURCES):
+                    source_url = rss_pool.pop(0)
+                    rss_pool.append(source_url)
+                    feed = feedparser.parse(source_url)
+                    for e in feed.entries:
+                        if not Article.objects.filter(source_url=e.link).exists():
+                            entry = e
+                            break
+                    checked_sources += 1
+                
+                if not entry:
+                    self.stdout.write(self.style.WARNING(f"⚠️ {blog_type} 用の新しい記事が見つかりませんでした"))
+                    continue
 
-    # --- 認証 & 投稿関数 (AtomPub / XML-RPC) ---
-    def generate_wsse(self, user_id, api_key):
-        created = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        nonce_binary = os.urandom(16)
-        nonce_base64 = base64.b64encode(nonce_binary).decode('utf-8')
-        sha1_input = nonce_binary + created.encode('utf-8') + api_key.encode('utf-8')
-        digest_base64 = base64.b64encode(hashlib.sha1(sha1_input).digest()).decode('utf-8')
-        return (f'UsernameToken Username="{user_id}", PasswordDigest="{digest_base64}", '
-                f'Nonce="{nonce_base64}", Created="{created}"')
+                # 2. スクレイピング & OGP取得
+                article_data = self.scrape_article(entry)
+                if not article_data: continue
 
-    def post_to_atompub(self, url, user_id, api_key, title, content_html, is_livedoor=False):
-        wsse = self.generate_wsse(user_id, api_key)
-        headers = {
-            'X-WSSE': wsse,
-            'Content-Type': 'application/atom+xml;type=entry' if is_livedoor else 'application/atom+xml',
-            'User-Agent': 'Gemma3-AutoPost/1.2'
-        }
-        if is_livedoor:
-            headers['Authorization'] = 'WSSE profile="UsernameToken"'
+                # 3. AI生成 (APIキーシャッフル)
+                random.shuffle(api_keys)
+                ai_content = self.get_ai_content(template, api_keys, entry.link, article_data['body'], article_data['title'])
+                if not ai_content: continue
 
-        xml = f"""<?xml version="1.0" encoding="utf-8"?>
-<entry xmlns="http://www.w3.org/2005/Atom">
-  <title>{title}</title>
-  <content type="text/html"><![CDATA[{content_html}]]></content>
-  <app:control xmlns:app="http://www.w3.org/2007/app"><app:draft>no</app:draft></app:control>
-</entry>""".encode('utf-8')
+                # 4. タグ抽出
+                extracted = self.extract_all_tags(ai_content, article_data['title'])
+
+                # 5. 外部ブログ投稿
+                success = self.post_to_specific_blog(blog_type, extracted, article_data, current_dir)
+                
+                # 6. DB保存
+                self.save_to_db(blog_type, extracted, article_data, success)
+
+                # 7. Next.js用Markdown生成 (追加)
+                md_path = self.save_as_markdown(extracted, article_data)
+                if md_path:
+                    self.stdout.write(self.style.SUCCESS(f"📝 Markdown作成完了: {os.path.basename(md_path)}"))
+
+    def save_as_markdown(self, ext, data):
+        """Next.jsのコンテンツディレクトリにMDファイルを生成します"""
         try:
-            res = requests.post(url, data=xml, headers=headers, timeout=30)
-            return res.status_code in [200, 201]
-        except: return False
+            os.makedirs(self.MD_OUTPUT_DIR, exist_ok=True)
+            # ファイル名を一意にする (日付 + URLのハッシュ)
+            file_hash = hashlib.md5(data['url'].encode()).hexdigest()[:8]
+            filename = f"{datetime.now().strftime('%Y%m%d')}_{file_hash}.md"
+            filepath = os.path.join(self.MD_OUTPUT_DIR, filename)
 
-    def post_to_seesaa(self, title, content_html):
-        try:
-            server = xmlrpc.client.ServerProxy(SS_RPC_URL)
-            post_data = {'title': title, 'description': content_html, 'mt_allow_comments': 1, 'dateCreated': datetime.utcnow()}
-            server.metaWeblog.newPost(SS_BLOG_ID, SS_USER, SS_PW, post_data, True)
-            return True
-        except: return False
+            # Frontmatter付きのMarkdown
+            md_content = f"""---
+title: "{ext['title_g'].replace('"', "'")}"
+date: "{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+image: "{data['img'] or ''}"
+description: "{ext['summary'].replace('"', "'")[:160]}"
+source_url: "{data['url']}"
+---
 
-    # --- Blogger用メソッド ---
-    def get_blogger_service(self):
-        creds = None
-        if os.path.exists(BLOGGER_TOKEN_FILE):
-            creds = Credentials.from_authorized_user_file(BLOGGER_TOKEN_FILE, BLOGGER_SCOPES)
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                self.stdout.write(self.style.ERROR(f"❌ Bloggerのtoken.jsonが無効です。場所: {BLOGGER_TOKEN_FILE}"))
-                return None
-        return build('blogger', 'v3', credentials=creds)
+{ext['summary']}
 
-    def post_to_blogger(self, title, content_html):
-        try:
-            service = self.get_blogger_service()
-            if not service: return False
-            
-            blogs = service.blogs().listByUser(userId='self').execute()
-            blog_id = blogs['items'][0]['id']
-            
-            body = {
-                'kind': 'blogger#post',
-                'title': title,
-                'content': content_html
-            }
-            service.posts().insert(blogId=blog_id, body=body).execute()
-            return True
+{ext['cont_g']}
+
+---
+*出典: [{data['title']}]({data['url']})*
+"""
+            with open(filepath, "w", encoding='utf-8') as f:
+                f.write(md_content)
+            return filepath
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f"❌ Blogger Error: {e}"))
-            return False
+            self.stdout.write(self.style.ERROR(f"❌ Markdown生成失敗: {e}"))
+            return None
 
-    # --- メインタスク処理 ---
-    def process_task(self, current_url, prompt_temp, history_file, target_opt):
-        # 1. Scraping
-        res = requests.get(current_url, timeout=15)
-        res.encoding = res.apparent_encoding
-        soup = BeautifulSoup(res.text, 'html.parser')
-        
-        og_image = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
-        image_url = og_image["content"] if og_image else None
-        image_html = f'<div style="text-align:center; margin-bottom:25px;"><img src="{image_url}" style="width:100%; max-width:700px; border-radius:12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);"></div>' if image_url else ""
-        
-        raw_title = soup.title.string.split('|')[0].strip() if soup.title else "Latest Tech News"
-        body_container = soup.find('article') or soup.find('div', class_='entry-content') or soup.body
-        page_content = body_container.get_text(strip=True)[:4000]
+    def scrape_article(self, entry):
+        try:
+            res = requests.get(entry.link, timeout=15)
+            res.encoding = res.apparent_encoding
+            soup = BeautifulSoup(res.text, 'html.parser')
+            og_img = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
+            return {
+                'url': entry.link,
+                'title': entry.title,
+                'img': og_img["content"] if og_img else None,
+                'body': (soup.find('article') or soup.body).get_text(strip=True)[:4000]
+            }
+        except: return None
 
+    def get_ai_content(self, template, keys, url, body, raw_title):
         rel_prod = PCProduct.objects.filter(is_active=True).order_by('?').first()
         maker = rel_prod.name.split()[0] if rel_prod else "不明"
+        prompt = template.format(current_url=url, description=body, maker=maker, name=rel_prod.name if rel_prod else "PC", price=rel_prod.price if rel_prod else "要確認")
         
-        prompt = prompt_temp.replace("{maker}", maker)
-        prompt = prompt.replace("{name}", rel_prod.name if rel_prod else "最新PC/ソフトウェア")
-        prompt = prompt.replace("{price}", str(rel_prod.price) if rel_prod else "要確認")
-        prompt = prompt.replace("{description}", page_content)
-
-        # 2. AI生成
-        ai_text = None
-        for item in ACTIVE_KEYS:
+        for key in keys:
             try:
-                r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key={item['key']}", 
-                                  json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.5}}, timeout=90)
-                ai_text = r.json()['candidates'][0]['content']['parts'][0]['text']
-                ai_text = ai_text.replace('```html', '').replace('```', '').strip()
+                res = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key={key}",
+                    json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.7}}, timeout=60)
+                return re.sub(r'```[a-z]*\n|```', '', res.json()['candidates'][0]['content']['parts'][0]['text']).strip()
+            except: continue
+        return None
 
-                self.stdout.write(self.style.HTTP_INFO("\n" + "="*60))
-                print(ai_text)
-                self.stdout.write(self.style.HTTP_INFO("="*60 + "\n"))
-                break
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Key No.{item['index']} Error: {e}"))
-                continue
+    def extract_all_tags(self, text, default_title):
+        def get_tag(tag):
+            m = re.search(rf'\[\*{{0,2}}{tag}\*{{0,2}}\]\s*(.*?)\s*\[/\*{{0,2}}{tag}\*{{0,2}}\]', text, re.DOTALL | re.IGNORECASE)
+            return m.group(1).strip() if m else None
+        return {
+            'title_h': get_tag("TITLE_HATENA") or default_title,
+            'title_g': get_tag("TITLE_GENERAL") or default_title,
+            'cont_h': get_tag("CONTENT_HATENA") or text,
+            'cont_g': get_tag("CONTENT_GENERAL") or text,
+            'summary': get_tag("SUMMARY_BOX") or ""
+        }
+
+    def post_to_specific_blog(self, b_type, ext, data, current_dir):
+        rel_prod = PCProduct.objects.filter(is_active=True).order_by('?').first()
+        img_html = f'<div style="text-align:center;margin-bottom:20px;"><img src="{data["img"]}" style="max-width:100%;border-radius:10px;"></div>' if data["img"] else ""
+        rel_html = f'<div style="background:#f8fbff;padding:20px;border:1px solid #d1e9ff;border-radius:10px;text-align:center;margin:30px 0;"><h4>紹介製品: {rel_prod.name if rel_prod else ""}</h4><a href="{rel_prod.url if rel_prod else "#"}" style="background:#007bff;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">詳細はこちら</a></div>'
+        footer = f'<p style="font-size:12px;color:#888;border-top:1px dotted #ccc;padding-top:10px;">出典: <a href="{data["url"]}">{data["title"]}</a></p>'
         
-        if not ai_text: return
+        if b_type == 'hatena':
+            conf = self.BLOG_CONFIGS['hatena']
+            body = f"{img_html}{ext['summary']}{ext['cont_h']}{rel_html}{footer}"
+            return self.post_to_atom(conf['url'], conf['id'], conf['api_key'], ext['title_h'], body)
+        elif b_type == 'livedoor':
+            conf = self.BLOG_CONFIGS['livedoor']
+            body = f"{img_html}{ext['summary']}{ext['cont_g']}{rel_html}{footer}"
+            return self.post_to_atom(conf['url'], conf['user'], conf['api_key'], ext['title_g'], body, True)
+        elif b_type == 'seesaa':
+            conf = self.BLOG_CONFIGS['seesaa']
+            body = f"{img_html}{ext['summary']}{ext['cont_g']}{rel_html}{footer}"
+            try:
+                s = xmlrpc.client.ServerProxy(conf['rpc_url'])
+                s.metaWeblog.newPost(conf['blog_id'], conf['user'], conf['pw'], {'title': ext['title_g'], 'description': body}, True)
+                return True
+            except: return False
+        elif b_type == 'blogger':
+            body = f"{img_html}{ext['summary']}{ext['cont_g']}{rel_html}{footer}"
+            return self.post_to_blogger(ext['title_g'], body, current_dir)
+        return False
 
-        # 3. 整形
-        summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', ai_text, re.DOTALL)
-        summary_raw = summary_match.group(1).strip() if summary_match else ""
-        summary_items = "".join([f'<li style="margin-bottom:5px;">{line.split(": ", 1)[1]}</li>' for line in summary_raw.splitlines() if ": " in line])
-        summary_box = f'<div style="background:#f8fafc; border:1px solid #e2e8f0; padding:20px; border-radius:8px; margin-bottom:30px;"><strong style="color:#1e293b; display:block; margin-bottom:10px;">📌 本記事の重要ポイント</strong><ul style="margin:0; padding-left:20px; color:#475569;">{summary_items}</ul></div>'
+    def post_to_atom(self, url, user, key, title, body, is_ld=False):
+        created = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        nonce = os.urandom(16)
+        digest = base64.b64encode(hashlib.sha1(nonce + created.encode() + key.encode()).digest()).decode()
+        wsse = f'UsernameToken Username="{user}", PasswordDigest="{digest}", Nonce="{base64.b64encode(nonce).decode()}", Created="{created}"'
+        headers = {'X-WSSE': wsse, 'Content-Type': 'application/atom+xml'}
+        if is_ld: headers['Authorization'] = 'WSSE profile="UsernameToken"'
+        xml = f'<?xml version="1.0" encoding="utf-8"?><entry xmlns="http://www.w3.org/2005/Atom"><title>{title}</title><content type="text/html"><![CDATA[{body}]]></content></entry>'
+        try:
+            r = requests.post(url, data=xml.encode('utf-8'), headers=headers, timeout=30)
+            return r.status_code in [200, 201]
+        except: return False
 
-        clean_text = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', ai_text, flags=re.DOTALL)
-        clean_text = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', clean_text, flags=re.DOTALL).strip()
-        
-        lines = [l for l in clean_text.splitlines() if l.strip()]
-        if not lines: return
-        final_title = lines[0].strip()
-        main_html_body = "\n".join(lines[1:]).strip()
+    def post_to_blogger(self, title, body, current_dir):
+        try:
+            p = os.path.join(current_dir, self.BLOG_CONFIGS['blogger']['client_json_dir'], 'token.json')
+            creds = Credentials.from_authorized_user_file(p, ['https://www.googleapis.com/auth/blogger'])
+            if creds.expired: creds.refresh(Request())
+            s = build('blogger', 'v3', credentials=creds)
+            b = s.blogs().listByUser(userId='self').execute()
+            s.posts().insert(blogId=b['items'][0]['id'], body={'title': title, 'content': body}).execute()
+            return True
+        except: return False
 
-        rel_html = ""
-        if rel_prod:
-            rel_html = f'<div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); padding:25px; margin:40px 0; border-radius:12px; border:1px solid #bfdbfe; text-align:center;">' \
-                       f'<span style="background:#2563eb; color:white; padding:4px 12px; border-radius:20px; font-size:0.8em; font-weight:bold;">PICK UP</span>' \
-                       f'<h4 style="margin-top:15px; color:#1e3a8a;">{rel_prod.name}</h4>' \
-                       f'<a href="{rel_prod.url}" style="display:inline-block; margin-top:10px; padding:12px 30px; background:#2563eb; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">この製品の公式ページを見る</a></div>'
-
-        full_html = f"{image_html}{summary_box}{main_html_body}{rel_html}" \
-                    f'<p style="margin-top:40px; font-size:0.8em; color:#94a3b8; border-top:1px solid #f1f5f9; padding-top:20px;">' \
-                    f'参照元：<a href="{current_url}" style="color:#94a3b8;">{raw_title} (PC Watch)</a></p>'
-
-        # 4. 配信実行
-        targets_atom = [
-            ('Livedoor', LD_URL, LD_USER, LD_API_KEY, True),
-            ('Hatena', HT_URL, HT_ID, HT_API_KEY, False)
-        ]
-
-        for name, url, user, key, is_ld in targets_atom:
-            if target_opt in ['all', name.lower()]:
-                if self.post_to_atompub(url, user, key, final_title, full_html, is_livedoor=is_ld):
-                    self.stdout.write(self.style.SUCCESS(f"✅ {name}投稿成功"))
-
-        if target_opt in ['all', 'seesaa']:
-            if self.post_to_seesaa(final_title, full_html):
-                self.stdout.write(self.style.SUCCESS("✅ Seesaa投稿成功"))
-
-        if target_opt in ['all', 'blogger']:
-            if self.post_to_blogger(final_title, full_html):
-                self.stdout.write(self.style.SUCCESS("✅ Blogger投稿成功"))
-
-        with open(history_file, "a", encoding='utf-8') as f:
-            f.write(f"{datetime.now()}\t{current_url}\t{final_title}\n")
+    def save_to_db(self, b_type, ext, data, success):
+        try:
+            Article.objects.create(
+                site=f'bicstation_{b_type}', content_type='news', title=ext['title_g'],
+                body_text=ext['cont_g'], main_image_url=data['img'], source_url=data['url'],
+                is_exported=success, extra_metadata={"target_blog": b_type, "scraped_at": datetime.now().isoformat()}
+            )
+            self.stdout.write(self.style.SUCCESS(f"⭐ DB保存完了 [{b_type}]"))
+        except: pass

@@ -8,23 +8,36 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const nextConfig = {
-  // 1. 共通設定（shared/next.config.base.mjs）をマージ
+  // 1. 共通設定をマージ
   ...baseNextConfig,
 
   // 2. Dockerビルド（standalone）の設定
   output: 'standalone',
 
-  // 3. Next.js 15 で外部の shared フォルダを許可する設定
+  // 3. 外部の shared フォルダを許可
   experimental: {
     ...baseNextConfig.experimental,
     externalDir: true,
   },
 
-  // 4. Webpackによるエイリアスの強制紐付け（Module not found 対策の核心）
+  // 4. Webpack設定（エイリアス設定 + Node.jsモジュールの回避）
   webpack: (config, { isServer }) => {
-    // 既存の webpack 設定があれば継承
+    // 既存の webpack 設定を継承
     if (baseNextConfig.webpack) {
       config = baseNextConfig.webpack(config, { isServer });
+    }
+
+    // 🚩 クライアントサイドでの Node.js モジュールエラー（fs等）を回避
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        child_process: false,
+        os: false,
+        net: false,
+        tls: false,
+      };
     }
 
     config.resolve.alias = {

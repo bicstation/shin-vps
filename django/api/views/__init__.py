@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/views/__init__.py
+# api/views/__init__.py
 
 import logging
 from rest_framework.decorators import api_view, permission_classes
@@ -13,6 +13,10 @@ from .general_views import *
 from .adult_views import *
 from .master_views import *
 from .bs_views import *
+# ==============================================================================
+# 🆕 統合コンテンツ管理（Article）の追加
+# ==============================================================================
+from .article_view import ArticleViewSet
 
 logger = logging.getLogger(__name__)
 
@@ -50,13 +54,17 @@ def api_root(request, format=None):
                 "navigation_floors": safe_reverse('api:adult:floor_navigation'),
                 "taxonomy_index": safe_reverse('api:adult:taxonomy_index'),
             },
+            # 🆕 4サイト統合配信コンテンツ
+            "articles": {
+                "list_create": safe_reverse('api:article-list'),  # urls.pyのbasenameが 'article' の場合
+                "bulk_export_done": f"{safe_reverse('api:article-list')}bulk-export-done/",
+            },
             "bic_saving": {
                 "devices": safe_reverse('api:bs:device-list'),
                 "plans": safe_reverse('api:bs:plan-list'),
                 "carriers": safe_reverse('api:bs:carrier-list'),
             },            
             "auth": {
-                # 💡 auth_urls.py の定義 (name='login' 等) に完全に一致させました
                 "login": safe_reverse('api:auth:login'),
                 "logout": safe_reverse('api:auth:logout'),
                 "register": safe_reverse('api:auth:register'),
@@ -78,7 +86,6 @@ def api_root(request, format=None):
                 "series": safe_reverse('api:series_list'),
                 "authors": safe_reverse('api:author_list'),
             }
-            
         }
     })
 

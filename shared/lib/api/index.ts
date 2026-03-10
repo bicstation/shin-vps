@@ -1,31 +1,30 @@
 /**
  * =====================================================================
  * 🛰️ SHIN-VPS 統合 API ゲートウェイ (shared/lib/api/index.ts)
- * 🛡️ Maya's Zenith v3.7: 個別明示エクスポートによる「is not a function」完全封殺版
+ * 🛡️ Maya's Zenith v3.9: Bridge統合・WP維持・型エラー封殺版
  * =====================================================================
  */
 import { getSiteMetadata } from '../utils/siteConfig';
 
-// 🚀 本体のロジックを一度すべてインポート
+// 🚀 ロジックのインポート
 import * as adultApi from './django/adult';
+import * as bridgeApi from './django-bridge';
 
 /**
  * 🔗 1. 接続設定解決
  */
-const IS_SERVER = typeof window === 'undefined';
+export const IS_SERVER = typeof window === 'undefined';
 
 export const getApiConfig = () => {
     const site = getSiteMetadata();
     const hostHeader = site.origin_domain || 'localhost';
 
     if (IS_SERVER) {
-        // ✅ Djangoコンテナへの直接通信用ベースURL（末尾に /api を含めない）
         return {
             baseUrl: 'http://django-v3:8000',
             host: hostHeader
         };
     }
-    // クライアントサイド (ブラウザ) 通信
     const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
     return {
         baseUrl: envUrl.replace(/\/$/, '') || '/api',
@@ -34,73 +33,37 @@ export const getApiConfig = () => {
 };
 
 /**
- * 🔞 2. アダルト統合ロジックの「個別・明示」エクスポート
- * 💡 修正の核心:
- * まとめて re-export せず、1つずつ変数に代入してエクスポートすることで、
- * Next.jsのビルドチャンク（chunks/xxx.js）内での未定義エラーを物理的に阻止します。
+ * 📰 2. ニュース記事 & コンテンツ統合 (BicStation News / MD移行準備)
+ * 💡 django-bridge 側の最適化されたロジックを明示的にエクスポート
+ */
+export const fetchNewsArticles = bridgeApi.fetchNewsArticles;
+export const fetchPostData = bridgeApi.fetchPostData;
+export const fetchDjangoBridgeContent = bridgeApi.fetchDjangoBridgeContent;
+
+/**
+ * 🔞 3. アダルト統合ロジック
  */
 export const getUnifiedProducts = adultApi.getUnifiedProducts;
 export const getAdultProductDetail = adultApi.getAdultProductDetail;
-export const getAdultNavigationFloors = adultApi.getAdultNavigationFloors; // ⚡ ログの犯人を個別確保
+export const getAdultNavigationFloors = adultApi.getAdultNavigationFloors;
 export const fetchAdultTaxonomyIndex = adultApi.fetchAdultTaxonomyIndex;
 export const fetchGenres = adultApi.fetchGenres;
 export const fetchMakers = adultApi.fetchMakers;
 export const fetchActresses = adultApi.fetchActresses;
 export const fetchSeries = adultApi.fetchSeries;
-
-// 互換性維持のためのエイリアス
-export const fetchUnifiedProducts = adultApi.getUnifiedProducts;
-
-/**
- * 🛠️ 3. 共通 Fetch ラッパー
- */
-async function fetchFromBridge(endpoint: string, options: any = {}) {
-    const { baseUrl, host } = getApiConfig();
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const url = `${baseUrl}${cleanEndpoint}`;
-
-    try {
-        const res = await fetch(url, {
-            ...options,
-            headers: {
-                'Host': host,
-                'Accept': 'application/json',
-                ...(options.headers || {}),
-            }
-        });
-
-        if (!res.ok) {
-            console.error(`[Bridge] HTTP_${res.status}: ${url}`);
-            return { data: null, status: res.status };
-        }
-        const data = await res.json();
-        return { data, status: 200 };
-    } catch (e) {
-        console.error(`[Bridge] Network Error: ${e}`);
-        return { data: null, error: e };
-    }
-}
+export const fetchUnifiedProducts = adultApi.getUnifiedProducts; // Alias
 
 /**
  * 💻 4. PC製品 (BicStation用)
+ * 💡 Bridge経由に差し替えることで URL置換ロジックを適用
  */
-export async function getPCProducts(params: any = {}) {
-    const query = new URLSearchParams({
-        limit: (params.limit || 10).toString(),
-        offset: (params.offset || 0).toString(),
-    });
-    
-    // ✅ Django v3 エンドポイントに合わせて /api プレフィックスを付与
-    const { data } = await fetchFromBridge(`/api/pc-products/?${query.toString()}`, {
-        next: { revalidate: 3600 }
-    });
-    return { results: data?.results || [], count: data?.count || 0 };
-}
+export const getPCProducts = bridgeApi.fetchPCProducts;
 
 /**
- * 🛠️ 5. WordPress 連携 (Intelligence Reports)
+ * 🛠️ 5. WordPress 連携 & 互換レイヤー
+ * 💡 既存の WP 依存パーツも完全に維持します
  */
-export async function getSiteMainPosts(offset = 0, perPage = 6, postType = 'posts') {
+export async function getWpPosts(offset = 0, perPage = 6, postType = 'posts') {
     const { baseUrl, host } = getApiConfig();
     const url = `${baseUrl}/wp-json/wp/v2/${postType}?_embed&per_page=${perPage}&offset=${offset}`;
 
@@ -118,6 +81,12 @@ export async function getSiteMainPosts(offset = 0, perPage = 6, postType = 'post
     }
 }
 
+/**
+ * 💡 getSiteMainPosts は将来的に MD/Django記事へスイッチできるよう 
+ * Bridge 側の fetchPostList をエイリアスとして採用しつつ、WP機能も内部で保持
+ */
+export const getSiteMainPosts = bridgeApi.fetchPostList;
+
 /** 🖼️ WPアイキャッチ画像解決 */
 export function getWpFeaturedImage(post: any, size: 'thumbnail' | 'medium' | 'large' | 'full' = 'large'): string {
     if (!post?._embedded?.['wp:featuredmedia']?.[0]) {
@@ -129,5 +98,6 @@ export function getWpFeaturedImage(post: any, size: 'thumbnail' | 'medium' | 'la
 
 /**
  * 🔄 6. 型定義の統合
+ * 💡 ここで MakerCount 等が export されるため、bridge.ts のエラーが解消されます
  */
 export * from './types';

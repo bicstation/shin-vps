@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS NEXT.JS 共通 Dockerfile (AI・管理画面・構造自動適応版)
+# 🚀 SHIN-VPS NEXT.JS 共通 Dockerfile (Node 20 安定版)
 # =====================================================================
 
 # --- ステージ 1: ビルドステージ ---
@@ -11,65 +11,59 @@ ARG NEXT_PUBLIC_API_URL
 
 WORKDIR /app
 
-# 1. 必要最低限のOSライブラリ (Next.jsの動作に必須)
+# 1. 必要最低限のOSライブラリ
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libc6 libstdc++6 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ✅ 2. プロジェクト本体を /app 直下に展開
-# $(PROJECT_NAME) フォルダの中身（next.config.mjs等）が /app 直下に来るようにコピーします
+# ✅ 2. プロジェクト本体のコピー
 COPY ${PROJECT_NAME}/ ./
 
-# ✅ 3. 親階層の「共通 shared フォルダ」を /app/shared へコピー
+# ✅ 3. 共通 shared フォルダを /app/shared へコピー
 COPY shared/ ./shared/
 
-# ✅ 4. ファイル配置の自動検証 (重要：エラー回避のため柔軟にログ出力)
-RUN echo "--- 📂 Checking Directory Structure ---" && \
-    ls -d shared && \
-    ls -R shared/ && \
-    echo "✅ Shared directory structure check completed" || (echo "❌ Shared directory not found" && exit 1)
-
-# ✅ 5. 依存関係の強制解決
-# 4つのドメインの管理画面、AIチャット、およびMarkdownブログエンジンに必要なライブラリを確実にインストールします
+# ✅ 4. 依存関係のインストール
+# npm 9+ では unsafe-perm は不要です。
+# 権限問題を避けるため、rootユーザーのまま実行を継続します。
 RUN npm install @google/generative-ai lucide-react clsx tailwind-merge \
     gray-matter remark remark-html --save
-
-# 6. プロジェクト固有の依存関係インストール
 RUN npm install --include=optional
 
-# 7. 環境変数の注入 (ビルド時に必要)
+# 5. 環境変数の注入
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NODE_ENV=production
 
-# ✅ 8. ビルド実行
-# standalone 出力が next.config.mjs で設定されている必要があります
-RUN npx next build
+# ✅ 6. ビルド実行 (npxを使わず node で直接実行することで実行権限をバイパス)
+RUN rm -rf .next .cache node_modules/.cache
+RUN node node_modules/next/dist/bin/next build
 
 # --- ステージ 2: 実行ステージ ---
 FROM node:20-slim AS runner
 WORKDIR /app
 
-# 実行環境の設定
 ENV NODE_ENV=production
 ENV HOSTNAME "0.0.0.0"
 ENV PORT 3000
 
-# 実行時に必要なOSライブラリの最小構成
 RUN apt-get update && apt-get install -y --no-install-recommends libc6 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# セキュリティ強化：実行ユーザーの作成
+# 実行ユーザーの定義
 RUN addgroup --gid 1001 nodejs || true && \
     adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
 
-# ✅ 9. 成果物の配置 (standalone モード)
-# builderステージから、Next.jsを最小限で動かすためのファイルをコピーします
+# ✅ 7. 成果物の配置 (standalone モード)
+COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# 実行ユーザーに切り替え
+# ✅ 8. 構造の自動適応 (server.js をルートに配置)
+# 各プロジェクトフォルダをルートに展開します
+RUN cp -r .next/standalone/* . 2>/dev/null || true
+RUN rm -rf ./next-bicstation ./next-tiper ./next-bic-saving ./next-avflash
+
 USER nextjs
 EXPOSE 3000
 
-# Next.js サーバー起動
+# server.js を実行して起動
 CMD ["node", "server.js"]

@@ -16,8 +16,8 @@ services:
       - "--entrypoints.web.transport.respondingTimeouts.readTimeout=300s"
       - "--entrypoints.web.transport.respondingTimeouts.idleTimeout=300s"
     ports:
-      - "18083:80"       # メイン窓口
-      - "18085:8080"     # Traefik ダッシュボード (ここで15個を確認)
+      - "8083:80"       # メイン窓口
+      - "8085:8080"     # Traefik ダッシュボード (ここで15個を確認)
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/admin.py
-
 import logging
 import json
 from django.contrib import admin
@@ -8,7 +6,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.safestring import mark_safe
 from django.db.models import Count
 
-# モデルのインポート
+# モデルのインポート（Articleを追加）
 from .models import (
     User, RawApiData, AdultProduct, 
     Genre, Actress, Maker, Label, Director, Series, 
@@ -16,7 +14,8 @@ from .models import (
     PriceHistory, PCProduct, FanzaFloorMaster, AdultAttribute,
     AdultActressProfile,
     BSCarrier, BSDevice, BSDevicePrice, BSMobilePlan,
-    BSDeviceColor
+    BSDeviceColor,
+    Article  # 🆕 追加
 )
 
 logger = logging.getLogger(__name__)
@@ -45,7 +44,58 @@ def get_score_bar(value, label="", width="100px"):
     )
 
 # --------------------------------------------------------------------------
-# 1. PCProduct (PC製品管理) - 最終修正版
+# 📝 1. Article (統合配信記事管理) - 🆕
+# --------------------------------------------------------------------------
+@admin.register(Article)
+class ArticleAdmin(admin.ModelAdmin):
+    list_display = (
+        'display_image', 'site_badge', 'type_badge', 'title_short', 
+        'is_exported_tag', 'created_at'
+    )
+    list_display_links = ('display_image', 'title_short')
+    list_filter = ('site', 'content_type', 'is_exported', 'created_at')
+    search_fields = ('title', 'body_text', 'source_url')
+    ordering = ('-created_at',)
+    readonly_fields = ('display_extra_metadata', 'updated_at')
+
+    def display_image(self, obj):
+        if obj.main_image_url:
+            return mark_safe(f'<img src="{obj.main_image_url}" width="100" style="border-radius:6px; border:1px solid #ddd; background:#f8f9fa;" />')
+        return "No Image"
+    display_image.short_description = "メインビジュアル"
+
+    def site_badge(self, obj):
+        colors = {
+            'tiper': '#6f42c1',      # パープル
+            'avflash': '#ff0055',    # ピンク
+            'bicstation': '#007bff', # ブルー
+            'saving': '#28a745',     # グリーン
+        }
+        bg = colors.get(obj.site, '#6c757d')
+        return mark_safe(f'<span style="background:{bg}; color:white; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">{obj.get_site_display()}</span>')
+    site_badge.short_description = "サイト"
+
+    def type_badge(self, obj):
+        color = "#17a2b8" if obj.content_type == 'news' else "#ffc107"
+        text_color = "white" if obj.content_type == 'news' else "black"
+        return mark_safe(f'<span style="background:{color}; color:{text_color}; padding:2px 6px; border-radius:4px; font-size:10px;">{obj.get_content_type_display()}</span>')
+    type_badge.short_description = "種別"
+
+    def title_short(self, obj):
+        return obj.title[:50] + '...' if len(obj.title) > 50 else obj.title
+    title_short.short_description = "タイトル"
+
+    def is_exported_tag(self, obj):
+        return mark_safe("✅ <small>済</small>" if obj.is_exported else "<span style='color:#bbb;'>⏳ 未</span>")
+    is_exported_tag.short_description = "出力"
+
+    def display_extra_metadata(self, obj):
+        """JSONデータを綺麗に表示"""
+        return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:8px;">{json.dumps(obj.extra_metadata, indent=2, ensure_ascii=False)}</pre>')
+    display_extra_metadata.short_description = "拡張メタデータ詳細"
+
+# --------------------------------------------------------------------------
+# 💻 2. PCProduct (PC製品管理)
 # --------------------------------------------------------------------------
 @admin.register(PCProduct)
 class PCProductAdmin(admin.ModelAdmin):
@@ -58,32 +108,24 @@ class PCProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'unique_id', 'cpu_model', 'gpu_model')
     ordering = ('-last_spec_parsed_at', '-created_at')
     
-    # パフォーマンス対策: 存在するフィールドのみスキップ指定
     def get_queryset(self, request):
-        # rich_description を削除し、存在する ai_content と description だけを defer
         return super().get_queryset(request).defer('ai_content', 'description')
 
     def display_image(self, obj):
         if obj.image_url:
             return mark_safe(f'<img src="{obj.image_url}" width="80" style="border-radius:4px; border:1px solid #ddd; background:white;" />')
         return "No Image"
-    display_image.short_description = "画像"
 
     def name_short(self, obj):
         return obj.name[:40] + '...' if len(obj.name) > 40 else obj.name
-    name_short.short_description = "製品名"
 
     def maker_tag(self, obj):
         return mark_safe(f'<span style="background:#444; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">{obj.maker}</span>')
-    maker_tag.short_description = "メーカー"
 
     def price_display(self, obj):
         if not obj.price: return "---"
-        try:
-            return f"¥{int(float(obj.price)):,}"
-        except:
-            return f"¥{obj.price}"
-    price_display.short_description = "価格"
+        try: return f"¥{int(float(obj.price)):,}"
+        except: return f"¥{obj.price}"
 
     def pc_scores(self, obj):
         return mark_safe(
@@ -92,16 +134,12 @@ class PCProductAdmin(admin.ModelAdmin):
             f'{get_score_bar(obj.score_gpu, "GPU", width="70px")}'
             f'</div>'
         )
-    pc_scores.short_description = "スペック解析"
 
     def is_ai_pc_tag(self, obj):
-        if obj.is_ai_pc:
-            return mark_safe('<span style="color:#007bff; font-weight:bold;">🤖 AI PC</span>')
-        return "---"
-    is_ai_pc_tag.short_description = "AI対応"
+        return mark_safe('<span style="color:#007bff; font-weight:bold;">🤖 AI PC</span>') if obj.is_ai_pc else "---"
 
 # --------------------------------------------------------------------------
-# 2. AdultProduct (統合アダルト製品)
+# 🔞 3. AdultProduct (統合アダルト製品)
 # --------------------------------------------------------------------------
 @admin.register(AdultProduct)
 class AdultProductAdmin(admin.ModelAdmin):
@@ -150,7 +188,7 @@ class AdultProductAdmin(admin.ModelAdmin):
         return "-"
 
 # --------------------------------------------------------------------------
-# 3. User & Masters
+# 👥 4. User & Masters
 # --------------------------------------------------------------------------
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -180,7 +218,7 @@ class OtherMasterAdmin(admin.ModelAdmin):
     def product_count_badge(self, obj): return mark_safe(f'<b>{obj._count}</b>')
 
 # --------------------------------------------------------------------------
-# 4. Bic-saving (スマホ系)
+# 📱 5. Bic-saving (スマホ系)
 # --------------------------------------------------------------------------
 class BSDeviceColorInline(admin.TabularInline):
     model = BSDeviceColor
@@ -204,7 +242,7 @@ class BSDeviceAdmin(admin.ModelAdmin):
 class MobileAdmin(admin.ModelAdmin): pass
 
 # --------------------------------------------------------------------------
-# 5. システム管理
+# ⚙️ 6. システム管理
 # --------------------------------------------------------------------------
 @admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):
@@ -213,5 +251,8 @@ class RawApiDataAdmin(admin.ModelAdmin):
     def display_json(self, obj):
         return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; max-height:400px; overflow:auto;">{json.dumps(obj.raw_json_data, indent=2, ensure_ascii=False)}</pre>')
 
-# シンプル登録
-admin.site.register([PCAttribute, PriceHistory, LinkshareProduct, AdultAttribute, AdultActressProfile, FanzaFloorMaster])
+# シンプル登録（一括）
+admin.site.register([
+    PCAttribute, PriceHistory, LinkshareProduct, 
+    AdultAttribute, AdultActressProfile, FanzaFloorMaster
+])

@@ -17,11 +17,13 @@ urlpatterns = [
     # ==========================================================
     # 2. 📁 各ドメイン別エンドポイント
     # ==========================================================
-    # 💡 各子ファイル内で app_name (adult, auth等) が定義されているため、
-    # ここで namespace を重ねて指定せずシンプルに include します。
     
     # 👤 認証・ユーザー系
     path('auth/', include('api.urls.auth_urls')),
+    
+    # 📰 ニュース・記事系 (Next.js の api/news/ に対応)
+    # 💡 新しく作成した article_urls.py をここに紐付けます
+    path('news/', include('api.urls.article_urls')),
     
     # 💻 一般・PC製品・共通系
     path('general/', include('api.urls.general_urls')),
