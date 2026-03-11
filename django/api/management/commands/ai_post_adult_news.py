@@ -1,12 +1,15 @@
-# -*- coding: utf-8 -*-
-import os, re, json, random, requests, feedparser, urllib.parse, time, hashlib, base64, traceback
-import xmlrpc.client
+import os, re, random, requests, feedparser, time
 from datetime import datetime
-from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 from django.core.management.base import BaseCommand
 from django.db import connection
+from api.management.commands.blog_drivers.data_mapper import ArticleMapper
 
-# === APIキー・配信先設定 ===
+RSS_SOURCES = {
+    "DVD新着": "https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=date/",
+    "DVD予約": "https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=p_date/",
+}
+
 def get_all_keys():
     keys = []
     for i in range(1, 11):
@@ -14,253 +17,85 @@ def get_all_keys():
         if val: keys.append({"index": i, "key": val})
     return keys
 
-# --- ライブドアブログ設定 ---
-LD_USER = "pbic"
-LD_BLOG_NAME = "pbic"
-LD_API_KEY = "a4lnDJzzXU"
-LD_FILE_PW = "jZ8ZL9cl4q96fmO0YB4MUNMYFGoRfLQO"
-LD_URL = f"https://livedoor.blogcms.jp/atompub/{LD_BLOG_NAME}/article"
-LD_IMAGE_URL = f"https://livedoor.blogcms.jp/atompub/{LD_BLOG_NAME}/image"
-
-# --- WordPress / FC2 設定 ---
-CONFIG_RPC = {
-    'wp_a': {'url': "https://blog.bic-erog.com/xmlrpc.php", 'user': "bicstation", 'pw': "a0H2 McUX 3XK6 apzh JZ82 SzTm", 'blog_id': '1'},
-    'wp_b': {'url': "https://blog.adult-search.xyz/xmlrpc.php", 'user': "bicstation", 'pw': "OBlD Yz2v lR8F wswY zwaW cF43", 'blog_id': '1'},
-    'fc2_a': {'url': "http://blog.fc2.com/xmlrpc.php", 'user': "tiperlive", 'pw': "1492Nabe", 'blog_id': "tiperlive"},
-    'fc2_b': {'url': "http://blog.fc2.com/xmlrpc.php", 'user': "tiper", 'pw': "3EAH4JthsGEnvNa", 'blog_id': "tiper"}
-}
-
-RSS_SOURCES = {
-    "DVD新着": "https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=date/",
-    "DVD予約": "https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=p_date/",
-    "アニメ新着": "https://www.dmm.co.jp/digital/anime/-/list/=/rss=create/sort=date/",
-    "ブック新着": "https://www.dmm.co.jp/dc/book/-/list/=/rss=create/sort=date/",
-    "おもちゃ総合": "https://www.dmm.co.jp/mono/goods/-/list/=/rss=create/sort=date/",
-    "オナホール": "https://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=1012/rss=create/",
-}
-
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-
 class Command(BaseCommand):
-    help = 'FC2投稿制限(10件/日) + NGワード自動変換機能付き'
-
     def add_arguments(self, parser):
-        parser.add_argument('--limit', type=int, default=1)
-        parser.add_argument('--target', type=str, default='all')
-
-    def get_now(self):
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # --- 今日の投稿数をカウント ---
-    def count_today_posts(self, history_file):
-        if not os.path.exists(history_file): return 0
-        today_str = datetime.now().strftime("%Y-%m-%d")
-        count = 0
-        with open(history_file, "r", encoding='utf-8') as f:
-            for line in f:
-                if today_str in line:
-                    count += 1
-        return count
-
-    # --- 安全フィルター: FC2対策用 ---
-    def clean_safety_text(self, text):
-        bad_words = {
-            "恥辱": "背徳", "中毒": "虜", "監禁": "密室", "強制": "魅惑",
-            "依存": "陶酔", "洗脳": "魅了", "奴隷": "愛好家", "強引": "情熱的",
-            "奪う": "暴く", "支配": "翻弄"
-        }
-        for bad, good in bad_words.items():
-            text = text.replace(bad, good)
-        return text
+        parser.add_argument("--limit", type=int, default=2)
 
     def handle(self, *args, **options):
-        limit = options.get('limit', 1)
-        target_opt = options.get('target', 'all').lower()
-        PROMPT_FILE = os.path.join(CURRENT_DIR, "prompt", "ai_prompt_adult.txt")
-        HISTORY_FILE = os.path.join(CURRENT_DIR, "post_history_adult.txt")
+        limit = options.get("limit", 2)
         ACTIVE_KEYS = get_all_keys()
+        PROMPT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompt", "ai_prompt_adult.txt")
         
-        if not os.path.exists(PROMPT_FILE):
-            self.stdout.write(self.style.ERROR(f"Prompt file not found: {PROMPT_FILE}"))
-            return
-            
-        with open(PROMPT_FILE, "r", encoding='utf-8') as f:
-            PROMPT_TEMPLATE = f.read()
+        with open(PROMPT_FILE, "r", encoding="utf-8") as f:
+            prompt_temp = f.read()
 
-        self.stdout.write(self.style.MIGRATE_LABEL(f"[{self.get_now()}] 🚀 処理開始"))
-
-        for _ in range(limit):
-            connection.close() 
-
-            posted_urls = []
-            if os.path.exists(HISTORY_FILE):
-                with open(HISTORY_FILE, "r", encoding='utf-8') as f:
-                    posted_urls = [line.split('\t').strip() for line in f if len(line.split('\t')) > 1]
-
-            target_entry, selected_genre = None, ""
-            for i in range(15):
-                genre_name, rss_url = random.choice(list(RSS_SOURCES.items()))
-                try:
-                    res = requests.get(rss_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=20)
-                    feed = feedparser.parse(res.text)
-                    new_entries = [e for e in feed.entries if e.link.strip() not in posted_urls]
-                    if new_entries:
-                        target_entry, selected_genre = random.choice(new_entries[:10]), genre_name
-                        break
-                except:
-                    continue
-
-            if target_entry:
-                self.process_task(target_entry, PROMPT_TEMPLATE, HISTORY_FILE, target_opt, selected_genre, ACTIVE_KEYS)
-                if limit > 1:
-                    time.sleep(20)
-
-        self.stdout.write(self.style.MIGRATE_LABEL(f"[{self.get_now()}] ✨ 全行程完了"))
-
-    def ask_ai(self, keys, prompt):
-        random.shuffle(keys)
-        for item in keys:
+        all_entries = []
+        for name, url in RSS_SOURCES.items():
             try:
-                api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={item['key']}"
-                r = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
+                res = requests.get(url, timeout=20)
+                feed = feedparser.parse(res.text)
+                all_entries.extend(feed.entries)
+            except: continue
+        
+        # 重複削除
+        seen = set()
+        unique_entries = []
+        for e in all_entries:
+            if e.link not in seen:
+                seen.add(e.link)
+                unique_entries.append(e)
+
+        target_entries = random.sample(unique_entries, min(len(unique_entries), limit))
+        self.stdout.write(f"🚀 並列エンジン起動: {len(target_entries)} 記事の独立生成を開始...")
+
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            for entry in target_entries:
+                executor.submit(self.process_article, entry, ACTIVE_KEYS, prompt_temp)
+
+    def process_article(self, entry, keys, prompt_temp):
+        # 画像抽出の精度を上げる (src="の後、"またはスペースまで)
+        desc = getattr(entry, "summary", "") or getattr(entry, "description", "")
+        img_match = re.search(r"src=\"(https://pics.dmm.co.jp/[^\s\"]+)\"", desc)
+        main_img = img_match.group(1) if img_match else "" # 取れない場合は空文字（Nullではない）
+
+        targets = ["livedoor", "wp_a", "wp_b", "fc2_a", "fc2_b"]
+        for t in targets:
+            try:
+                ai_res = self.ask_ai(keys, prompt_temp, entry.title)
+                if not ai_res: continue
+
+                title_match = re.search(r"\[TITLE\](.*?)\[/TITLE\]", ai_res, re.DOTALL)
+                final_title = title_match.group(1).strip() if title_match else entry.title
+                final_content = ai_res.replace(title_match.group(0), "").strip() if title_match else ai_res
+
+                # 明示的にDB接続を閉じて再接続（スレッドセーフ）
+                connection.close() 
+                ArticleMapper.save_post_result(
+                    t, 
+                    {"title_g": final_title, "cont_g": final_content, "main_image_url": main_img},
+                    {"title": entry.title, "url": entry.link}, 
+                    True
+                )
+                print(f" ✅ {t.upper()} 成功: {final_title[:20]}...")
+            except Exception as e:
+                print(f" ❌ {t.upper()} 失敗: {str(e)}")
+
+    def ask_ai(self, keys, prompt_temp, raw_title):
+        # 入力そのものから強すぎる単語を伏せる
+        clean_input = raw_title.replace("オナニー", "秘密の戯れ").replace("性行為", "愛の交わり").replace("なめくじ", "ぬらりとした")
+        full_prompt = f"{prompt_temp}\n\n対象: {raw_title}\nスタイル: ブログ個別最適化\n元ネタ: {clean_input}"
+        
+        random.shuffle(keys)
+        for key_item in keys:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key={key_item['key']}"
+                payload = {
+                    "contents": [{"parts": [{"text": full_prompt}]}],
+                    "safetySettings": [{"category": c, "threshold": "BLOCK_NONE"} for c in ["HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_DANGEROUS_CONTENT"]]
+                }
+                r = requests.post(url, json=payload, timeout=60)
                 if r.status_code == 200:
-                    data = r.json()
-                    text = data['candidates']['content']['parts']['text']
-                    return text.replace('```html', '').replace('```', '').strip()
-            except:
-                continue
+                    text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+                    return text.replace("```html", "").replace("```", "").strip()
+            except: continue
         return None
-
-    def post_image_to_livedoor(self, img_url):
-        try:
-            img_res = requests.get(img_url, timeout=20)
-            if img_res.status_code != 200: return img_url
-            wsse = self.generate_wsse(LD_USER, LD_FILE_PW)
-            headers = {'X-WSSE': wsse, 'Authorization': 'WSSE profile="UsernameToken"', 'Content-Type': 'image/jpeg'}
-            r = requests.post(LD_IMAGE_URL, data=img_res.content, headers=headers, timeout=40)
-            if r.status_code in '':
-                soup = BeautifulSoup(r.text, 'xml')
-                return soup.find('content').get('src')
-        except:
-            pass
-        return img_url
-
-    def post_to_livedoor(self, title, content_html, tags, origin_img_url):
-        try:
-            final_img_url = self.post_image_to_livedoor(origin_img_url)
-            image_tag_new = f'<div style="text-align:center; margin-bottom:20px;"><img src="{final_img_url}" class="pict" style="max-width:100%;"></div>'
-            content_html = content_html.replace('__IMG_TAG_PLACEHOLDER__', image_tag_new)
-            
-            wsse = self.generate_wsse(LD_USER, LD_API_KEY)
-            headers = {'X-WSSE': wsse, 'Authorization': 'WSSE profile="UsernameToken"', 'Content-Type': 'application/atom+xml;type=entry'}
-            cat_xml = "".join([f'<category term="{c}" />' for c in tags[:3]])
-            xml_body = f'<?xml version="1.0" encoding="utf-8"?><entry xmlns="http://www.w3.org/2005/Atom"><title>{title}</title><content type="text/html"><![CDATA[{content_html}]]></content>{cat_xml}</entry>'.encode('utf-8')
-            r = requests.post(LD_URL, data=xml_body, headers=headers, timeout=40)
-            return r.status_code in ''
-        except:
-            return False
-
-    def post_to_xmlrpc(self, target_key, title, content_html, categories, tags, img_url):
-        conf = CONFIG_RPC[target_key]
-        server = xmlrpc.client.ServerProxy(conf['url'], allow_none=True)
-        thumbnail_id = None
-        try:
-            if img_url:
-                try:
-                    img_res = requests.get(img_url, timeout=20)
-                    if img_res.status_code == 200:
-                        up_res = server.wp.uploadFile(conf['blog_id'], conf['user'], conf['pw'], {
-                            'name': f"t_{int(time.time())}.jpg", 'type': 'image/jpeg',
-                            'bits': xmlrpc.client.Binary(img_res.content), 'overwrite': True
-                        })
-                        if 'id' in up_res:
-                            thumbnail_id = int(up_res['id'])
-                except:
-                    pass
-
-            image_tag_std = f'<div style="text-align:center; margin-bottom:20px;"><img src="{img_url}" style="max-width:100%;"></div>'
-            content_html = content_html.replace('__IMG_TAG_PLACEHOLDER__', image_tag_std)
-
-            post_data = {
-                'title': title, 'description': content_html, 'post_status': 'publish',
-                'categories': categories, 'mt_keywords': tags
-            }
-            if thumbnail_id:
-                post_data['post_thumbnail'] = thumbnail_id
-            
-            server.metaWeblog.newPost(conf['blog_id'], conf['user'], conf['pw'], post_data, True)
-            return True
-        except:
-            return False
-
-    def generate_wsse(self, user_id, api_password):
-        created = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        nonce_binary = os.urandom(16)
-        nonce_base64 = base64.b64encode(nonce_binary).decode('utf-8')
-        sha1_input = nonce_binary + created.encode('utf-8') + api_password.encode('utf-8')
-        digest_base64 = base64.b64encode(hashlib.sha1(sha1_input).digest()).decode('utf-8')
-        return f'UsernameToken Username="{user_id}", PasswordDigest="{digest_base64}", Nonce="{nonce_base64}", Created="{created}"'
-
-    def process_task(self, entry, prompt_temp, history_file, target_opt, genre_label, keys):
-        try:
-            # 今日の累計投稿数を確認
-            today_count = self.count_today_posts(history_file)
-
-            # 画像取得・置換
-            img_url = entry.get('package', '') 
-            content_html = entry.get('content_encoded', '') or entry.get('description', '')
-            soup = BeautifulSoup(content_html, 'html.parser')
-            if not img_url:
-                img_tag = soup.find('img')
-                if img_tag: img_url = img_tag.get('src', '')
-            if img_url:
-                img_url = re.sub(r'(pt|ps|-1)\.jpg$', 'pl.jpg', img_url)
-            
-            clean_desc = soup.get_text(separator=' ', strip=True)
-            extracted_tags = [a.get_text() for a in soup.find_all('a') if 'article=' in a.get('href', '')] or [genre_label]
-
-            item_term, btn_label = ("このビデオ", "動画詳細・サンプル視聴はこちら")
-
-            self.stdout.write(f"[{self.get_now()}] 📦 素材抽出: {entry.title[:25]}...")
-
-            all_targets = ['livedoor'] + list(CONFIG_RPC.keys())
-            site_styles = {'livedoor': "SNS風", 'wp_a': "解説風", 'wp_b': "熱弁風", 'fc2_a': "まとめ風", 'fc2_b': "断定風"}
-
-            for t in all_targets:
-                if target_opt != 'all' and target_opt != t: continue
-
-                # FC2制限チェック (1日10件)
-                if "fc2" in t and today_count >= 10:
-                    self.stdout.write(self.style.WARNING(f" ⚠️ {t.upper()} は今日の投稿上限(10件)に達したためスキップします"))
-                    continue
-                
-                ai_text = self.ask_ai(keys, f"{prompt_temp}\n対象: {item_term}\nスタイル: {site_styles.get(t)}\n元ネタ: {clean_desc}")
-                if not ai_text: continue
-
-                title_match = re.search(r'\[TITLE\](.*?)\[/TITLE\]', ai_text, re.DOTALL)
-                raw_title = title_match.group(1).strip() if title_match else f"【{genre_label}】{entry.title}"
-                raw_body = re.sub(r'\[TITLE\].*?\[/TITLE\]', '', ai_text, flags=re.DOTALL).strip()
-
-                final_title = self.clean_safety_text(raw_title)
-                main_body = self.clean_safety_text(raw_body)
-
-                btn_html = f'<div style="text-align:center; margin-top:25px;"><a href="{entry.link}" style="background:#ff4500; color:#fff; padding:15px 35px; text-decoration:none; border-radius:50px; font-weight:bold; display:inline-block;">▶ {btn_label}</a></div>'
-                full_html_base = f"__IMG_TAG_PLACEHOLDER__\n{main_body}\n{btn_html}"
-
-                if t == 'livedoor':
-                    success = self.post_to_livedoor(final_title, full_html_base, extracted_tags, img_url)
-                else:
-                    success = self.post_to_xmlrpc(t, final_title, full_html_base, [genre_label], extracted_tags, img_url)
-
-                if success: 
-                    self.stdout.write(self.style.SUCCESS(f"[{self.get_now()}] ✅ {t.upper()} 完了 (今日:{today_count+1}件目)"))
-                    # 1件投稿成功したらカウントアップ（同ループ内での他ターゲット制御用）
-                    if "fc2" in t: today_count += 1
-                
-                time.sleep(5)
-
-            # 履歴保存
-            with open(history_file, "a", encoding='utf-8') as f: 
-                f.write(f"{self.get_now()}\t{entry.link}\t{entry.title}\n")
-        except: 
-            self.stdout.write(self.style.ERROR(f"[{self.get_now()}] 💥 エラー: {traceback.format_exc()}"))

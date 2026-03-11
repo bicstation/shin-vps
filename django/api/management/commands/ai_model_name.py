@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # --- 1. 環境変数のチェック ---
-        api_key = os.getenv("GEMINI_API_KEY")
+        api_key = os.getenv("GEMINI_API_KEY_1")
         if not api_key:
             self.stdout.write(self.style.ERROR("\n[!] GEMINI_API_KEY が設定されていません。"))
             self.stdout.write("    export GEMINI_API_KEY='your_key_here' を実行してください。\n")

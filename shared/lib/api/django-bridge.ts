@@ -1,23 +1,19 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge サービス層 (Maya's Logic v5.2 - Unified)
+ * 🌉 Django-Bridge サービス層 (Maya's Logic v5.3 - Fully Patched)
  * =====================================================================
  * 物理パス: /shared/lib/api/django-bridge.ts
- * 【機能】
- * 1. Django API 経由のデータ取得 (Adult/PC Products/Articles)
- * 2. ローカルファイルシステム (/content/posts) からの MD 記事取得
- * 3. 内部ドメインから公開 URL への自動置換
  */
 
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { getWpConfig, IS_SERVER, getDjangoBaseUrl } from './config';
-// 型定義 (MakerCount 等のエラーを防ぐため index/types から取得)
+// 型定義
 import { PCProduct, MakerCount } from './index'; 
 
-// --- 設定 ---
-const POSTS_PATH = '/home/maya/dev/shin-vps/next-bicstation/content/posts';
+// --- ✨ 【修正】Docker環境とホスト環境の両方で動くよう process.cwd() を使用 ---
+const POSTS_PATH = path.join(process.cwd(), 'content', 'posts');
 
 /**
  * 🔄 【変換】ドメイン・一括置換ユーティリティ
@@ -34,13 +30,21 @@ export const replaceInternalUrls = (data: any): any => {
 };
 
 /**
- * 💡 【解決】内部URL解決ロジック
+ * 💡 【解決】内部URL解決ロジック (Djangoのスラッシュ厳格化に対応)
  */
 const resolveApiUrl = (endpoint: string) => {
     const cleanEndpoint = endpoint.replace(/^\/?api\//, '').replace(/^\//, '');
     const base = getDjangoBaseUrl().replace(/\/$/, '');
-    const suffix = (cleanEndpoint.includes('?') || cleanEndpoint.endsWith('/')) ? '' : '/';
-    return `${base}/api/${cleanEndpoint}${suffix}`;
+    
+    // クエリパラメータの分離
+    const hasQuery = cleanEndpoint.includes('?');
+    const pathPart = hasQuery ? cleanEndpoint.split('?')[0] : cleanEndpoint;
+    const queryPart = hasQuery ? '?' + cleanEndpoint.split('?')[1] : '';
+    
+    // パス末尾にスラッシュを強制（Django API仕様）
+    const slashedPath = pathPart.endsWith('/') ? pathPart : `${pathPart}/`;
+    
+    return `${base}/api/${slashedPath}${queryPart}`;
 };
 
 /**
@@ -56,14 +60,19 @@ async function fetchFromBridge(url: string, options: any = {}) {
                 'Accept': 'application/json',
                 ...(options.headers || {}),
             },
+            // デフォルトのタイムアウトを設定
             signal: AbortSignal.timeout(options.timeout || 8000)
         });
+
         if (!res.ok) {
             console.warn(`⚠️ [Bridge Status Error]: ${res.status} | URL: ${url}`);
             return { data: null, total: 0, status: res.status };
         }
+        
         const data = await res.json();
         const total = parseInt(res.headers.get('X-WP-Total') || res.headers.get('X-Total-Count') || '0', 10);
+        
+        // URL置換を適用して返す
         return { data: replaceInternalUrls(data), total, status: res.status };
     } catch (e: any) {
         console.error(`🚨 [Bridge Fatal Error]: ${url} | ${e.message}`);
@@ -89,54 +98,62 @@ export async function fetchNewsArticles(limit = 12, offset = 0) {
     const query = new URLSearchParams({
         limit: limit.toString(),
         offset: offset.toString(),
-        ordering: '-created_at'
+        ordering: '-created_at',
+        is_exported: 'true' // 公開済みのみ取得
     });
-    const url = resolveApiUrl(`articles/?${query.toString()}`);
+    // ⭕ エンドポイントを 'news' に修正済
+    const url = resolveApiUrl(`news/?${query.toString()}`);
     const { data } = await fetchFromBridge(url, { next: { revalidate: 300 } });
-    return { results: data?.results || [], count: data?.count || 0 };
+    
+    return { 
+        results: data?.results || [], 
+        count: data?.count || 0 
+    };
 }
 
 // --- 📝 記事コンテンツ機能 (Markdown File System) ---
 
 /**
- * ローカルの Markdown ファイルを読み込み、記事リストを返します。
- * ファイルが存在しない場合は Django API (fetchNewsArticles) にフォールバックします。
+ * ローカルの Markdown ファイルを優先し、なければ Django API へフォールバック
  */
 export async function fetchPostList(postType: string = 'post', limit = 12, offset = 0) {
-    // サーバーサイドかつディレクトリが存在する場合のみ実行
-    if (IS_SERVER && fs.existsSync(POSTS_PATH)) {
+    if (IS_SERVER) {
         try {
-            const files = fs.readdirSync(POSTS_PATH).filter(fn => fn.endsWith('.md'));
-            const posts = files.map(filename => {
-                const filePath = path.join(POSTS_PATH, filename);
-                const fileContent = fs.readFileSync(filePath, 'utf-8');
-                const { data, content } = matter(fileContent);
-                return {
-                    id: filename.replace('.md', ''),
-                    slug: filename.replace('.md', ''),
-                    title: data.title || 'No Title',
-                    date: data.date || '',
-                    image: data.image || '',
-                    description: data.description || '',
-                    body_text: content, // Articleモデルと互換性を持たせる
-                    source_url: data.source_url || '',
-                    ...data
-                };
-            });
+            if (fs.existsSync(POSTS_PATH)) {
+                const files = fs.readdirSync(POSTS_PATH).filter(fn => fn.endsWith('.md'));
+                
+                if (files.length > 0) {
+                    const posts = files.map(filename => {
+                        const filePath = path.join(POSTS_PATH, filename);
+                        const fileContent = fs.readFileSync(filePath, 'utf-8');
+                        const { data, content } = matter(fileContent);
+                        return {
+                            id: filename.replace('.md', ''),
+                            slug: filename.replace('.md', ''),
+                            title: data.title || 'No Title',
+                            date: data.date || '',
+                            image: data.image || '',
+                            description: data.description || '',
+                            body_text: content,
+                            source_url: data.source_url || '',
+                            ...data
+                        };
+                    });
 
-            // 日付順ソート
-            posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-            
-            return { 
-                results: posts.slice(offset, offset + limit), 
-                count: posts.length 
-            };
+                    posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+                    
+                    return { 
+                        results: posts.slice(offset, offset + limit), 
+                        count: posts.length 
+                    };
+                }
+            }
         } catch (e) {
-            console.error("🚨 MD Loading Error:", e);
+            console.error("🚨 MD Loading Error (Falling back to API):", e);
         }
     }
 
-    // MD読み込みに失敗、またはクライアントサイドの場合は API にフォールバック
+    // MDがない、または読み込み失敗時は API にフォールバック
     return await fetchNewsArticles(limit, offset);
 }
 
@@ -147,13 +164,17 @@ export async function fetchPostData(postType: string = 'post', identifier: strin
     const mdFilePath = path.join(POSTS_PATH, `${identifier}.md`);
 
     if (IS_SERVER && fs.existsSync(mdFilePath)) {
-        const fileContent = fs.readFileSync(mdFilePath, 'utf-8');
-        const { data, content } = matter(fileContent);
-        return { ...data, body_text: content };
+        try {
+            const fileContent = fs.readFileSync(mdFilePath, 'utf-8');
+            const { data, content } = matter(fileContent);
+            return { ...data, body_text: content };
+        } catch (e) {
+            console.error("🚨 MD Detail Read Error:", e);
+        }
     }
 
-    // MDがなければ Django API
-    const url = resolveApiUrl(`articles/${identifier}/`);
+    // ⭕ MDがなければ Django API (newsエンドポイント)
+    const url = resolveApiUrl(`news/${identifier}/`);
     const { data } = await fetchFromBridge(url);
     return data;
 }
