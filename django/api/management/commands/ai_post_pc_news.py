@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-import os, re, json, random, requests, feedparser, urllib.parse, time, hashlib, base64
+import os, re, json, random, requests, feedparser, urllib.parse, time, hashlib, base64, traceback
 import xmlrpc.client
 from datetime import datetime
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
+from django.db import connection
 
 # モデルのインポート
 from api.models.pc_products import PCProduct
@@ -42,7 +43,6 @@ class Command(BaseCommand):
         }
     }
 
-    # --- RSSリスト ---
     RSS_SOURCES = [
         "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf",
         "https://rss.itmedia.co.jp/rss/2.0/pcuser.xml",
@@ -51,7 +51,6 @@ class Command(BaseCommand):
         "https://www.gizmodo.jp/index.xml"
     ]
 
-    # --- Next.js出力設定 ---
     MD_OUTPUT_DIR = "/home/maya/dev/shin-vps/next-bicstation/content/posts"
 
     def add_arguments(self, parser):
@@ -59,12 +58,12 @@ class Command(BaseCommand):
         parser.add_argument('--target', type=str, default='all', help='配信先 (all/hatena/livedoor/seesaa/blogger)')
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.SUCCESS("--- 🚀 Maya's Logic v5.0: Triple Output System ---"))
+        self.stdout.write(self.style.SUCCESS("--- 🚀 Maya's Logic v5.8: Final Check ---"))
         current_dir = os.path.dirname(os.path.abspath(__file__))
         prompt_path = os.path.join(current_dir, "prompt", "ai_prompt_news.txt")
 
         if not os.path.exists(prompt_path):
-            self.stdout.write(self.style.ERROR("❌ プロンプトファイルなし"))
+            self.stdout.write(self.style.ERROR(f"❌ プロンプトファイルなし: {prompt_path}"))
             return
 
         with open(prompt_path, "r", encoding='utf-8') as f:
@@ -80,59 +79,55 @@ class Command(BaseCommand):
         rss_pool = self.RSS_SOURCES[:]
 
         for i in range(options['limit']):
+            connection.close() 
+
             for blog_type in targets:
                 self.stdout.write(self.style.NOTICE(f"\n--- 📦 Processing: {blog_type} (Round {i+1}) ---"))
                 
-                # 1. 独立した新着記事の確保
                 entry = None
                 checked_sources = 0
                 while rss_pool and not entry and checked_sources < len(self.RSS_SOURCES):
                     source_url = rss_pool.pop(0)
                     rss_pool.append(source_url)
-                    feed = feedparser.parse(source_url)
-                    for e in feed.entries:
-                        if not Article.objects.filter(source_url=e.link).exists():
-                            entry = e
-                            break
+                    try:
+                        res = requests.get(source_url, timeout=15)
+                        feed = feedparser.parse(res.text)
+                        for e in feed.entries:
+                            if not Article.objects.filter(source_url=e.link).exists():
+                                entry = e
+                                break
+                    except: continue
                     checked_sources += 1
                 
                 if not entry:
-                    self.stdout.write(self.style.WARNING(f"⚠️ {blog_type} 用の新しい記事が見つかりませんでした"))
+                    self.stdout.write(self.style.WARNING(f"⚠️ {blog_type} 用の新記事なし"))
                     continue
 
-                # 2. スクレイピング & OGP取得
                 article_data = self.scrape_article(entry)
                 if not article_data: continue
 
-                # 3. AI生成 (APIキーシャッフル)
                 random.shuffle(api_keys)
                 ai_content = self.get_ai_content(template, api_keys, entry.link, article_data['body'], article_data['title'])
                 if not ai_content: continue
 
-                # 4. タグ抽出
                 extracted = self.extract_all_tags(ai_content, article_data['title'])
-
-                # 5. 外部ブログ投稿
                 success = self.post_to_specific_blog(blog_type, extracted, article_data, current_dir)
                 
-                # 6. DB保存
                 self.save_to_db(blog_type, extracted, article_data, success)
 
-                # 7. Next.js用Markdown生成 (追加)
                 md_path = self.save_as_markdown(extracted, article_data)
                 if md_path:
                     self.stdout.write(self.style.SUCCESS(f"📝 Markdown作成完了: {os.path.basename(md_path)}"))
+                
+                time.sleep(10)
 
     def save_as_markdown(self, ext, data):
-        """Next.jsのコンテンツディレクトリにMDファイルを生成します"""
         try:
             os.makedirs(self.MD_OUTPUT_DIR, exist_ok=True)
-            # ファイル名を一意にする (日付 + URLのハッシュ)
             file_hash = hashlib.md5(data['url'].encode()).hexdigest()[:8]
             filename = f"{datetime.now().strftime('%Y%m%d')}_{file_hash}.md"
             filepath = os.path.join(self.MD_OUTPUT_DIR, filename)
 
-            # Frontmatter付きのMarkdown
             md_content = f"""---
 title: "{ext['title_g'].replace('"', "'")}"
 date: "{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
@@ -157,7 +152,7 @@ source_url: "{data['url']}"
 
     def scrape_article(self, entry):
         try:
-            res = requests.get(entry.link, timeout=15)
+            res = requests.get(entry.link, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
             res.encoding = res.apparent_encoding
             soup = BeautifulSoup(res.text, 'html.parser')
             og_img = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
@@ -170,15 +165,24 @@ source_url: "{data['url']}"
         except: return None
 
     def get_ai_content(self, template, keys, url, body, raw_title):
-        rel_prod = PCProduct.objects.filter(is_active=True).order_by('?').first()
-        maker = rel_prod.name.split()[0] if rel_prod else "不明"
-        prompt = template.format(current_url=url, description=body, maker=maker, name=rel_prod.name if rel_prod else "PC", price=rel_prod.price if rel_prod else "要確認")
+        try:
+            count = PCProduct.objects.filter(is_active=True).count()
+            rel_prod = PCProduct.objects.filter(is_active=True)[random.randint(0, count - 1)] if count > 0 else None
+        except: rel_prod = None
+
+        maker = rel_prod.name.split() if rel_prod else "不明"
+        prompt = template.format(current_url=url, description=body, maker=maker, 
+                                 name=rel_prod.name if rel_prod else "PC", 
+                                 price=rel_prod.price if rel_prod else "要確認")
         
         for key in keys:
             try:
-                res = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key={key}",
-                    json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.7}}, timeout=60)
-                return re.sub(r'```[a-z]*\n|```', '', res.json()['candidates'][0]['content']['parts'][0]['text']).strip()
+                api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+                res = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
+                if res.status_code == 200:
+                    data = res.json()
+                    text = data['candidates']['content']['parts']['text']
+                    return re.sub(r'```[a-z]*\n|```', '', text).strip()
             except: continue
         return None
 
@@ -195,7 +199,11 @@ source_url: "{data['url']}"
         }
 
     def post_to_specific_blog(self, b_type, ext, data, current_dir):
-        rel_prod = PCProduct.objects.filter(is_active=True).order_by('?').first()
+        try:
+            count = PCProduct.objects.filter(is_active=True).count()
+            rel_prod = PCProduct.objects.filter(is_active=True)[random.randint(0, count - 1)] if count > 0 else None
+        except: rel_prod = None
+
         img_html = f'<div style="text-align:center;margin-bottom:20px;"><img src="{data["img"]}" style="max-width:100%;border-radius:10px;"></div>' if data["img"] else ""
         rel_html = f'<div style="background:#f8fbff;padding:20px;border:1px solid #d1e9ff;border-radius:10px;text-align:center;margin:30px 0;"><h4>紹介製品: {rel_prod.name if rel_prod else ""}</h4><a href="{rel_prod.url if rel_prod else "#"}" style="background:#007bff;color:#fff;padding:10px 20px;text-decoration:none;border-radius:5px;">詳細はこちら</a></div>'
         footer = f'<p style="font-size:12px;color:#888;border-top:1px dotted #ccc;padding-top:10px;">出典: <a href="{data["url"]}">{data["title"]}</a></p>'
@@ -223,26 +231,31 @@ source_url: "{data['url']}"
 
     def post_to_atom(self, url, user, key, title, body, is_ld=False):
         created = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        nonce = os.urandom(16)
-        digest = base64.b64encode(hashlib.sha1(nonce + created.encode() + key.encode()).digest()).decode()
-        wsse = f'UsernameToken Username="{user}", PasswordDigest="{digest}", Nonce="{base64.b64encode(nonce).decode()}", Created="{created}"'
+        nonce_raw = os.urandom(16)
+        digest = base64.b64encode(hashlib.sha1(nonce_raw + created.encode() + key.encode()).digest()).decode()
+        nonce_b64 = base64.b64encode(nonce_raw).decode()
+        wsse = f'UsernameToken Username="{user}", PasswordDigest="{digest}", Nonce="{nonce_b64}", Created="{created}"'
         headers = {'X-WSSE': wsse, 'Content-Type': 'application/atom+xml'}
         if is_ld: headers['Authorization'] = 'WSSE profile="UsernameToken"'
         xml = f'<?xml version="1.0" encoding="utf-8"?><entry xmlns="http://www.w3.org/2005/Atom"><title>{title}</title><content type="text/html"><![CDATA[{body}]]></content></entry>'
         try:
             r = requests.post(url, data=xml.encode('utf-8'), headers=headers, timeout=30)
-            return r.status_code in [200, 201]
+            # ここを確実に で閉じました
+            # return r.status_code in
+            return r.status_code in ''
         except: return False
 
     def post_to_blogger(self, title, body, current_dir):
         try:
             p = os.path.join(current_dir, self.BLOG_CONFIGS['blogger']['client_json_dir'], 'token.json')
+            if not os.path.exists(p): return False
             creds = Credentials.from_authorized_user_file(p, ['https://www.googleapis.com/auth/blogger'])
-            if creds.expired: creds.refresh(Request())
+            if creds.expired and creds.refresh_token: creds.refresh(Request())
             s = build('blogger', 'v3', credentials=creds)
             b = s.blogs().listByUser(userId='self').execute()
-            s.posts().insert(blogId=b['items'][0]['id'], body={'title': title, 'content': body}).execute()
-            return True
+            if 'items' in b:
+                s.posts().insert(blogId=b['items']['id'], body={'title': title, 'content': body}).execute()
+                return True
         except: return False
 
     def save_to_db(self, b_type, ext, data, success):
@@ -253,4 +266,5 @@ source_url: "{data['url']}"
                 is_exported=success, extra_metadata={"target_blog": b_type, "scraped_at": datetime.now().isoformat()}
             )
             self.stdout.write(self.style.SUCCESS(f"⭐ DB保存完了 [{b_type}]"))
-        except: pass
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"❌ DB保存失敗: {e}"))
