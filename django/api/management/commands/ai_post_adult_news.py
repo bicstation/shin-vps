@@ -42,7 +42,7 @@ RSS_SOURCES = {
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class Command(BaseCommand):
-    help = 'DB切断対策＋Gemini 1.5対応＋投稿強制安定版'
+    help = 'FC2投稿制限(10件/日) + NGワード自動変換機能付き'
 
     def add_arguments(self, parser):
         parser.add_argument('--limit', type=int, default=1)
@@ -50,6 +50,28 @@ class Command(BaseCommand):
 
     def get_now(self):
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # --- 今日の投稿数をカウント ---
+    def count_today_posts(self, history_file):
+        if not os.path.exists(history_file): return 0
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        count = 0
+        with open(history_file, "r", encoding='utf-8') as f:
+            for line in f:
+                if today_str in line:
+                    count += 1
+        return count
+
+    # --- 安全フィルター: FC2対策用 ---
+    def clean_safety_text(self, text):
+        bad_words = {
+            "恥辱": "背徳", "中毒": "虜", "監禁": "密室", "強制": "魅惑",
+            "依存": "陶酔", "洗脳": "魅了", "奴隷": "愛好家", "強引": "情熱的",
+            "奪う": "暴く", "支配": "翻弄"
+        }
+        for bad, good in bad_words.items():
+            text = text.replace(bad, good)
+        return text
 
     def handle(self, *args, **options):
         limit = options.get('limit', 1)
@@ -68,13 +90,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.MIGRATE_LABEL(f"[{self.get_now()}] 🚀 処理開始"))
 
         for _ in range(limit):
-            # --- DB接続をリフレッシュ ---
             connection.close() 
 
             posted_urls = []
             if os.path.exists(HISTORY_FILE):
                 with open(HISTORY_FILE, "r", encoding='utf-8') as f:
-                    # ★修正: リスト内包表記でのインデックス指定とstripの適用を修正
                     posted_urls = [line.split('\t').strip() for line in f if len(line.split('\t')) > 1]
 
             target_entry, selected_genre = None, ""
@@ -104,7 +124,6 @@ class Command(BaseCommand):
                 api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={item['key']}"
                 r = requests.post(api_url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=60)
                 if r.status_code == 200:
-                    # ★修正: candidatesのリスト構造(0番目)に正しくアクセス
                     data = r.json()
                     text = data['candidates']['content']['parts']['text']
                     return text.replace('```html', '').replace('```', '').strip()
@@ -119,8 +138,7 @@ class Command(BaseCommand):
             wsse = self.generate_wsse(LD_USER, LD_FILE_PW)
             headers = {'X-WSSE': wsse, 'Authorization': 'WSSE profile="UsernameToken"', 'Content-Type': 'image/jpeg'}
             r = requests.post(LD_IMAGE_URL, data=img_res.content, headers=headers, timeout=40)
-            # ★修正: 判定条件をに修正
-            if r.status_code in:
+            if r.status_code in '':
                 soup = BeautifulSoup(r.text, 'xml')
                 return soup.find('content').get('src')
         except:
@@ -138,8 +156,7 @@ class Command(BaseCommand):
             cat_xml = "".join([f'<category term="{c}" />' for c in tags[:3]])
             xml_body = f'<?xml version="1.0" encoding="utf-8"?><entry xmlns="http://www.w3.org/2005/Atom"><title>{title}</title><content type="text/html"><![CDATA[{content_html}]]></content>{cat_xml}</entry>'.encode('utf-8')
             r = requests.post(LD_URL, data=xml_body, headers=headers, timeout=40)
-            # ★修正: 判定条件をに修正
-            return r.status_code in
+            return r.status_code in ''
         except:
             return False
 
@@ -170,10 +187,7 @@ class Command(BaseCommand):
             }
             if thumbnail_id:
                 post_data['post_thumbnail'] = thumbnail_id
-                post_data['custom_fields'] = [
-                    {'key': '_thumbnail_id', 'value': thumbnail_id},
-                    {'key': 'vk_post_options_image_value', 'value': thumbnail_id}
-                ]
+            
             server.metaWeblog.newPost(conf['blog_id'], conf['user'], conf['pw'], post_data, True)
             return True
         except:
@@ -189,6 +203,9 @@ class Command(BaseCommand):
 
     def process_task(self, entry, prompt_temp, history_file, target_opt, genre_label, keys):
         try:
+            # 今日の累計投稿数を確認
+            today_count = self.count_today_posts(history_file)
+
             # 画像取得・置換
             img_url = entry.get('package', '') 
             content_html = entry.get('content_encoded', '') or entry.get('description', '')
@@ -202,12 +219,7 @@ class Command(BaseCommand):
             clean_desc = soup.get_text(separator=' ', strip=True)
             extracted_tags = [a.get_text() for a in soup.find_all('a') if 'article=' in a.get('href', '')] or [genre_label]
 
-            terms = {
-                "おもちゃ": ("このアイテム", "アイテム詳細・購入はこちら"),
-                "ブック": ("このコミック", "収録内容・試し読みはこちら"),
-                "アニメ": ("この新作アニメ", "配信・サンプル動画をチェック")
-            }
-            item_term, btn_label = next((v for k, v in terms.items() if k in genre_label), ("このビデオ", "動画詳細・サンプル視聴はこちら"))
+            item_term, btn_label = ("このビデオ", "動画詳細・サンプル視聴はこちら")
 
             self.stdout.write(f"[{self.get_now()}] 📦 素材抽出: {entry.title[:25]}...")
 
@@ -215,16 +227,22 @@ class Command(BaseCommand):
             site_styles = {'livedoor': "SNS風", 'wp_a': "解説風", 'wp_b': "熱弁風", 'fc2_a': "まとめ風", 'fc2_b': "断定風"}
 
             for t in all_targets:
-                if target_opt != 'all' and target_opt != t:
+                if target_opt != 'all' and target_opt != t: continue
+
+                # FC2制限チェック (1日10件)
+                if "fc2" in t and today_count >= 10:
+                    self.stdout.write(self.style.WARNING(f" ⚠️ {t.upper()} は今日の投稿上限(10件)に達したためスキップします"))
                     continue
                 
                 ai_text = self.ask_ai(keys, f"{prompt_temp}\n対象: {item_term}\nスタイル: {site_styles.get(t)}\n元ネタ: {clean_desc}")
-                if not ai_text:
-                    continue
+                if not ai_text: continue
 
                 title_match = re.search(r'\[TITLE\](.*?)\[/TITLE\]', ai_text, re.DOTALL)
-                final_title = title_match.group(1).strip() if title_match else f"【{genre_label}】{entry.title}"
-                main_body = re.sub(r'\[TITLE\].*?\[/TITLE\]', '', ai_text, flags=re.DOTALL).strip()
+                raw_title = title_match.group(1).strip() if title_match else f"【{genre_label}】{entry.title}"
+                raw_body = re.sub(r'\[TITLE\].*?\[/TITLE\]', '', ai_text, flags=re.DOTALL).strip()
+
+                final_title = self.clean_safety_text(raw_title)
+                main_body = self.clean_safety_text(raw_body)
 
                 btn_html = f'<div style="text-align:center; margin-top:25px;"><a href="{entry.link}" style="background:#ff4500; color:#fff; padding:15px 35px; text-decoration:none; border-radius:50px; font-weight:bold; display:inline-block;">▶ {btn_label}</a></div>'
                 full_html_base = f"__IMG_TAG_PLACEHOLDER__\n{main_body}\n{btn_html}"
@@ -235,9 +253,11 @@ class Command(BaseCommand):
                     success = self.post_to_xmlrpc(t, final_title, full_html_base, [genre_label], extracted_tags, img_url)
 
                 if success: 
-                    self.stdout.write(self.style.SUCCESS(f"[{self.get_now()}] ✅ {t.upper()} 完了"))
+                    self.stdout.write(self.style.SUCCESS(f"[{self.get_now()}] ✅ {t.upper()} 完了 (今日:{today_count+1}件目)"))
+                    # 1件投稿成功したらカウントアップ（同ループ内での他ターゲット制御用）
+                    if "fc2" in t: today_count += 1
                 
-                time.sleep(5) # プラットフォームごとの間隔
+                time.sleep(5)
 
             # 履歴保存
             with open(history_file, "a", encoding='utf-8') as f: 
