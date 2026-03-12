@@ -1,5 +1,5 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v3 最終完全統合版 (15 Routers / Priority 調整済み)
+# 🛡️ SHIN-VPS v3 最終完全統合版 (Django-Next.js パス完全同期版)
 # =====================================================================
 
 services:
@@ -17,7 +17,7 @@ services:
       - "--entrypoints.web.transport.respondingTimeouts.idleTimeout=300s"
     ports:
       - "8083:80"       # メイン窓口
-      - "8085:8080"     # Traefik ダッシュボード (ここで15個を確認)
+      - "8085:8080"     # Traefik ダッシュボード
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -53,40 +53,29 @@ services:
     env_file: .env
     labels:
       - "traefik.enable=true"
-      
-      # (1) django-api-main: API専用ホスト (管理画面/静的ファイルも完全網羅)
       - "traefik.http.routers.django-api-main.rule=Host(`api-tiper-host`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-api-main.entrypoints=web"
       - "traefik.http.routers.django-api-main.priority=3000"
       - "traefik.http.routers.django-api-main.service=django-svc"
-
-      # (2) django-router-tiper: tiper-host 用の横取り設定
       - "traefik.http.routers.django-router-tiper.rule=Host(`tiper-host`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/blog`))"
       - "traefik.http.routers.django-router-tiper.priority=2000"
       - "traefik.http.routers.django-router-tiper.service=django-svc"
-
-      # (3) django-router-bic: bicstation-host 用
       - "traefik.http.routers.django-router-bic.rule=Host(`bicstation-host`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/blog`))"
       - "traefik.http.routers.django-router-bic.priority=2000"
       - "traefik.http.routers.django-router-bic.service=django-svc"
-
-      # (4) django-router-saving: saving-host 用
       - "traefik.http.routers.django-router-saving.rule=Host(`saving-host`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/blog`))"
       - "traefik.http.routers.django-router-saving.priority=2000"
       - "traefik.http.routers.django-router-saving.service=django-svc"
-
-      # (5) django-router-avflash: avflash-host 用
       - "traefik.http.routers.django-router-avflash.rule=Host(`avflash-host`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/blog`))"
       - "traefik.http.routers.django-router-avflash.priority=2000"
       - "traefik.http.routers.django-router-avflash.service=django-svc"
-
-      # 共通のサービス定義 (ポート8000)
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
-
     volumes:
       - ./django:/usr/src/app
       - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
       - ./django/api/management/commands/bs_json:/usr/src/app/api/management/commands/bs_json
+      # ✅ 修正：ホストの content フォルダを Djangoコンテナ内の正しい位置にマウント
+      - ./next-bicstation/content:/usr/src/app/next-bicstation/content
     networks:
       - internal-net
       - shared-proxy
@@ -105,7 +94,8 @@ services:
     env_file: .env
     volumes:
       - ./shared:/usr/src/app/shared
-      - ./next-bicstation/content:/usr/src/app/content/bicstation
+      # ✅ 修正：django-bridge.ts (path.join(process.cwd(), 'content', 'posts')) の期待に合わせる
+      - ./next-bicstation/content:/usr/src/app/content
     networks:
       - shared-proxy
     labels:
@@ -126,7 +116,7 @@ services:
     env_file: .env
     volumes:
       - ./shared:/usr/src/app/shared
-      - ./next-tiper/content:/usr/src/app/content/tiper
+      - ./next-tiper/content:/usr/src/app/content
     networks:
       - shared-proxy
     labels:
@@ -147,7 +137,7 @@ services:
     env_file: .env
     volumes:
       - ./shared:/usr/src/app/shared
-      - ./next-bic-saving/content:/usr/src/app/content/saving
+      - ./next-bic-saving/content:/usr/src/app/content
     networks:
       - shared-proxy
     labels:
@@ -168,7 +158,7 @@ services:
     env_file: .env
     volumes:
       - ./shared:/usr/src/app/shared
-      - ./next-avflash/content:/usr/src/app/content/avflash
+      - ./next-avflash/content:/usr/src/app/content
     networks:
       - shared-proxy
     labels:

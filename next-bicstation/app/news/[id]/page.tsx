@@ -1,38 +1,9 @@
-// /home/maya/dev/shin-vps/next-bicstation/app/news/[id]/page.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/news/[id]/page.tsx
 
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { fetchPostData } from '@/shared/lib/api';
-import ReactMarkdown from 'react-markdown';
 import Link from 'next/link';
-
-/**
- * 💡 AI 生成の独自タグを HTML の装飾コンポーネントに変換する
- */
-const renderAiContent = (text: string) => {
-    if (!text) return null;
-
-    let content = text;
-    // [SUMMARY_BOX] をリッチな注釈ボックスに変換
-    content = content.replace(
-        /\[SUMMARY_BOX\]([\s\S]*?)\[\/SUMMARY_BOX\]/g,
-        '<div class="my-8 p-6 bg-pink-50 border-l-4 border-pink-500 rounded-r-xl shadow-sm"><strong class="text-pink-600 block mb-2">✨ 今回の作品の見どころ</strong><div class="text-gray-700 italic">$1</div></div>'
-    );
-    // その他のシステムタグを消去して整理
-    content = content
-        .replace(/\[TITLE_GENERAL\][\s\S]*?\[\/TITLE_GENERAL\]/g, '') // タイトル重複防止
-        .replace(/\[CONTENT_GENERAL\]/g, '<div class="mt-8">')
-        .replace(/\[\/CONTENT_GENERAL\]/g, '</div>')
-        .replace(/\[CAT\].*?\[\/CAT\]/g, '')
-        .replace(/\[TAG\].*?\[\/TAG\]/g, '');
-
-    return (
-        <div 
-            className="ai-custom-content prose prose-pink max-w-none"
-            dangerouslySetInnerHTML={{ __html: content }} 
-        />
-    );
-};
 
 export default async function NewsDetailPage({ params }: { params: { id: string } }) {
     const { id } = params;
@@ -40,75 +11,118 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
 
     if (!post) notFound();
 
-    // 画像と日付のフォールバック処理
     const displayImage = post.image || post.main_image_url;
     const displayDate = post.date || (post.created_at ? new Date(post.created_at).toLocaleDateString('ja-JP') : '');
-    const isAiGenerated = post.body_text?.includes('[CONTENT_GENERAL]');
+
+    // 💡 本文のクリーンアップと整形ロジック
+    const renderContent = (text: string) => {
+        if (!text) return null;
+
+        // 1. 不要なAIシステムタグを削除
+        let cleaned = text
+            .replace(/\[\/?CONTENT_GENERAL\]/g, '')
+            .replace(/\[TITLE_GENERAL\][\s\S]*?\[\/TITLE_GENERAL\]/g, '')
+            .replace(/\[CAT\].*?\[\/CAT\]/g, '')
+            .replace(/\[TAG\].*?\[\/TAG\]/g, '')
+            // 二重に出ている重要ポイントボックスなどを正規化（もしあれば）
+            .replace(/\[SUMMARY_BOX\]/g, '<div class="ai-summary-box">')
+            .replace(/\[\/SUMMARY_BOX\]/g, '</div>');
+
+        // 2. Markdownの基本要素を簡易HTML置換（ビルドエラー回避のため）
+        // ※ 本格的なパースが必要な場合は remark-html 等が必要ですが、
+        // 今回は dangerouslySetInnerHTML で AI生成HTMLをそのまま活かす方針にします。
+        const finalHtml = cleaned
+            .replace(/^## (.*$)/gim, '<h2 class="text-3xl font-black text-gray-900 mt-20 mb-8 pb-4 border-b-4 border-gray-100 italic">$1</h2>')
+            .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold text-gray-800 mt-12 mb-6 pl-4 border-l-4 border-pink-500">$1</h3>')
+            .replace(/^\* (.*$)/gim, '<li class="flex items-start gap-3 mb-3 font-bold text-gray-700 before:content-[\'⚡\'] before:text-pink-500">$1</li>')
+            .replace(/\*\*(.*)\*\*/gim, '<strong class="font-black text-gray-900 bg-yellow-50 px-1">$1</strong>');
+
+        return (
+            <div 
+                className="article-rich-text text-[18px] leading-[2.2] text-gray-800"
+                dangerouslySetInnerHTML={{ __html: finalHtml }} 
+            />
+        );
+    };
 
     return (
-        <article className="max-w-4xl mx-auto px-4 py-12">
-            {/* ナビゲーション */}
-            <nav className="mb-12">
-                <Link href="/news" className="group text-sm font-bold text-gray-400 hover:text-pink-600 transition-colors flex items-center gap-2">
-                    <span className="group-hover:-translate-x-1 transition-transform">←</span> 
-                    BACK TO FEED
+        <article className="min-h-screen bg-white pb-32 selection:bg-pink-100">
+            {/* 🌌 ナビゲーション */}
+            <div className="max-w-5xl mx-auto px-6 pt-12">
+                <Link href="/news" className="inline-flex items-center text-[10px] font-black tracking-[0.3em] text-gray-400 hover:text-pink-600 transition-all gap-4 group uppercase">
+                    <span className="w-8 h-px bg-gray-200 group-hover:w-12 group-hover:bg-pink-500 transition-all"></span>
+                    Back to Feed
                 </Link>
-            </nav>
+            </div>
 
-            <header className="mb-12 text-center">
-                {(post.category || post.site_display) && (
-                    <span className="inline-block bg-gray-900 text-white text-[10px] font-black px-3 py-1 rounded-full mb-6 uppercase tracking-[0.2em]">
-                        {post.category || post.site_display?.replace('bicstation_', '')}
+            {/* 🏷️ ヘッダー */}
+            <header className="max-w-4xl mx-auto px-6 mt-16 text-center">
+                <div className="flex justify-center gap-2 mb-8">
+                    <span className="bg-pink-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-pink-200">
+                        {post.category || post.site_display?.replace('bicstation_', '') || 'NEWS'}
                     </span>
-                )}
-                <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-[1.1] mb-8 tracking-tighter">
+                    <span className="bg-gray-100 text-gray-500 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">AI Verified</span>
+                </div>
+                <h1 className="text-4xl md:text-7xl font-black text-gray-900 leading-[1.1] mb-12 tracking-tighter italic uppercase">
                     {post.title}
                 </h1>
-                <div className="flex items-center justify-center gap-4 text-sm font-bold text-gray-400">
+                <div className="flex items-center justify-center gap-6 text-[11px] font-black text-gray-400 tracking-widest uppercase">
                     <time>{displayDate}</time>
-                    <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                    <span>BY SHIN-VPS EDITOR</span>
+                    <span className="w-1.5 h-1.5 bg-pink-500 rounded-full"></span>
+                    <span>By Bicstation AI Engine</span>
                 </div>
             </header>
 
-            {/* アイキャッチ画像 */}
+            {/* 📸 メインビジュアル */}
             {displayImage && (
-                <div className="mb-16 rounded-[2rem] overflow-hidden shadow-2xl shadow-pink-100 rotate-[-1deg]">
-                    <img 
-                        src={displayImage} 
-                        alt={post.title} 
-                        className="w-full h-auto object-cover max-h-[600px] scale-[1.02]"
-                    />
+                <div className="max-w-6xl mx-auto px-6 mt-20">
+                    <div className="relative rounded-[4rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.2)] rotate-[-0.5deg] bg-gray-50 border border-gray-100">
+                        <img 
+                            src={displayImage} 
+                            alt={post.title} 
+                            className="w-full h-auto object-cover max-h-[750px] hover:scale-[1.03] transition-transform duration-1000" 
+                        />
+                    </div>
                 </div>
             )}
 
-            {/* 本文エリア */}
-            <div className="px-2 md:px-6">
-                {isAiGenerated ? (
-                    // AI 生成記事 (Django) の場合
-                    renderAiContent(post.body_text)
-                ) : (
-                    // Markdown 記事 (Local) の場合
-                    <div className="prose prose-lg prose-blue max-w-none">
-                        <ReactMarkdown>{post.body_text}</ReactMarkdown>
-                    </div>
-                )}
+            {/* 🖋️ 本文エリア */}
+            <div className="max-w-3xl mx-auto px-6 mt-24">
+                <style dangerouslySetInnerHTML={{ __html: `
+                    .ai-summary-box { 
+                        margin: 3rem 0;
+                        padding: 2.5rem;
+                        background: #fffdfd;
+                        border: 2px solid #ffe4e6;
+                        border-radius: 2.5rem;
+                        box-shadow: inset 0 2px 10px rgba(255,192,203,0.2);
+                    }
+                    .article-rich-text p { margin-bottom: 2rem; }
+                `}} />
+                {renderContent(post.body_text)}
             </div>
 
-            {/* フッター：著者・免責 */}
-            <footer className="mt-20">
-                <div className="bg-black text-white rounded-[2rem] p-10 md:p-16 relative overflow-hidden">
-                    <div className="relative z-10">
-                        <h4 className="text-2xl font-black mb-4 tracking-tighter">BICSTATION INTELLIGENCE</h4>
-                        <p className="text-gray-400 leading-relaxed max-w-2xl">
-                            この記事は SHIN-VPS の統合 AI ネットワークによって解析・生成、または編集部によって執筆されました。
-                            最新のトレンドを独自の視点で切り取り、あなたのデジタルライフを刺激します。
-                        </p>
+            {/* 🏁 フッター */}
+            <footer className="max-w-5xl mx-auto px-6 mt-40">
+                <div className="bg-[#0c0c0c] text-white rounded-[4rem] p-12 md:p-20 relative overflow-hidden group shadow-2xl">
+                    <div className="relative z-10 grid md:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <h4 className="text-4xl font-black mb-6 tracking-tighter leading-none italic uppercase">
+                                Bicstation<br/>
+                                <span className="text-pink-600">Intelligence</span>
+                            </h4>
+                            <p className="text-gray-400 text-sm font-medium max-w-sm">
+                                このコンテンツは次世代AIネットワークによって解析・最適化されました。最新のトレンドを独自のアルゴリズムで提供します。
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-4">
+                            {post.source_url && (
+                                <a href={post.source_url} target="_blank" className="bg-white text-black text-center py-5 rounded-2xl font-black text-[10px] tracking-[0.2em] hover:bg-pink-600 hover:text-white transition-all shadow-xl shadow-white/5 uppercase">Visit Source</a>
+                            )}
+                            <Link href="/news" className="border border-white/20 text-white text-center py-5 rounded-2xl font-black text-[10px] tracking-[0.2em] hover:bg-white/10 transition-all uppercase">Back to Feeds</Link>
+                        </div>
                     </div>
-                    {/* 装飾用背景文字 */}
-                    <div className="absolute -bottom-10 -right-10 text-[12rem] font-black text-white/[0.03] pointer-events-none uppercase">
-                        Shin
-                    </div>
+                    <div className="absolute -bottom-10 -right-10 text-[18rem] font-black text-white/[0.02] italic pointer-events-none uppercase">Shin</div>
                 </div>
             </footer>
         </article>

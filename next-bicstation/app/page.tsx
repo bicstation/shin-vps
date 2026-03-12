@@ -1,24 +1,15 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/page.tsx
+
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
-/**
- * =====================================================================
- * 🏠 BICSTATION Main Portal
- * 🛡️ Maya's Logic: 物理構造 v3.2 完全同期版
- * 物理パス: app/page.tsx
- * =====================================================================
- */
 
 export const revalidate = 600;
 
 import React from 'react';
 import Link from 'next/link';
-
-// ✅ 修正ポイント 1: インポートパスを最新の物理構造（cards）に合わせる
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import styles from './page.module.css';
 
-// ✅ 修正ポイント 2: APIインポートパスを django-bridge.ts に変更
-// WordPressのロジックは django-bridge が吸収しているため、こちらを参照
 import { fetchPostList } from '@/shared/lib/api/django-bridge';
 import { fetchPCProducts, fetchPCProductRanking } from '@/shared/lib/api/django/pc';
 
@@ -59,7 +50,6 @@ export default async function Page({ searchParams }: PageProps) {
     const sParams = await searchParams;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     
-    // APIフェッチの安全策
     async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
         try {
             const data = await promise;
@@ -72,13 +62,12 @@ export default async function Page({ searchParams }: PageProps) {
 
     // データの並列取得
     const [wpData, pcData, rankingData, gamingData, creatorData, mobileData] = await Promise.all([
-        // ✅ WordPress互換のデータ取得（django-bridge経由）
-        safeFetch(fetchPostList('post', 8), { results: [], count: 0 }),
-        safeFetch(fetchPCProducts('', 0, 12, attribute || ''), { results: [], count: 0 }),
+        safeFetch(fetchPostList('post', 6), { results: [], count: 0 }), // ニュースは6件程度がグリッドで見栄えが良い
+        safeFetch(fetchPCProducts({ limit: 12, attribute: attribute || '' }), { results: [], count: 0 }),
         safeFetch(fetchPCProductRanking(), []),
-        safeFetch(fetchPCProducts('', 0, 3, 'gaming-pc'), { results: [] }),
-        safeFetch(fetchPCProducts('', 0, 3, 'gpu-professional'), { results: [] }),
-        safeFetch(fetchPCProducts('', 0, 3, 'size-mobile'), { results: [] }),
+        safeFetch(fetchPCProducts({ limit: 3, attribute: 'gaming-pc' }), { results: [] }),
+        safeFetch(fetchPCProducts({ limit: 3, attribute: 'gpu-professional' }), { results: [] }),
+        safeFetch(fetchPCProducts({ limit: 3, attribute: 'size-mobile' }), { results: [] }),
     ]);
 
     const pcResults = pcData?.results || [];
@@ -96,8 +85,7 @@ export default async function Page({ searchParams }: PageProps) {
                         <span className={styles.highlight}>次世代PCスペック比較ポータル</span>
                     </h1>
                     <p className={styles.pageDescription}>
-                        膨大なスペックデータと実測値をAIが独自にスコアリング。<br />
-                        あなたの用途に最適な「正解の1台」を視覚的なデータとともに導き出します。
+                        膨大なスペックデータと実測値をAIが独自にスコアリング。
                     </p>
                 </div>
             </header>
@@ -121,46 +109,25 @@ export default async function Page({ searchParams }: PageProps) {
                 </section>
             )}
 
-            {/* 🔍 属性検索セクション */}
+            {/* 🔍 目的・スペックから探す (中略) */}
             <section className={styles.attributeSearchSection}>
-                <div className={styles.sectionHeader}>
+                 <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>🔍 目的・スペックから探す</h2>
                 </div>
-                
-                <div className={styles.searchGroup}>
-                    <h3 className={styles.groupLabel}>用途・スタイル</h3>
-                    <div className={styles.categoryGrid}>
-                        {[
-                            { name: 'ビジネス・法人向け', slug: 'usage-business', icon: '💼' },
-                            { name: 'ゲーミングPC', slug: 'gaming-pc', icon: '🎮' },
-                            { name: 'クリエイター向け', slug: 'gpu-professional', icon: '🎨' },
-                            { name: 'AI開発・生成AI', slug: 'usage-ai-dev', icon: '🤖' },
-                            { name: '軽量・1kg未満', slug: 'feat-lightweight', icon: '🪶' },
-                            { name: 'モバイルノート', slug: 'size-mobile', icon: '💻' },
-                        ].map((cat) => (
-                            <Link key={cat.slug} href={`/catalog/?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
-                                <span className={styles.catIcon}>{cat.icon}</span>
-                                <span className={styles.catNameSmall}>{cat.name}</span>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-
-                <div className={styles.searchGroup}>
-                    <h3 className={styles.groupLabel}>最新AIプロセッサ</h3>
-                    <div className={styles.tagCloud}>
-                        {[
-                            { name: 'Core Ultra 9', slug: 'intel-core-ultra-9' },
-                            { name: 'Core Ultra 7', slug: 'intel-core-ultra-7' },
-                            { name: 'Ryzen AI 300', slug: 'amd-ryzen-ai-300' },
-                            { name: 'Snapdragon X', slug: 'arm-snapdragon-x' },
-                            { name: 'Copilot+ PC', slug: 'feature-copilot-plus' },
-                        ].map((tag) => (
-                            <Link key={tag.slug} href={`/catalog/?attribute=${tag.slug}`} className={styles.specTag}>
-                                {tag.name}
-                            </Link>
-                        ))}
-                    </div>
+                <div className={styles.categoryGrid}>
+                    {[
+                        { name: 'ビジネス・法人向け', slug: 'usage-business', icon: '💼' },
+                        { name: 'ゲーミングPC', slug: 'gaming-pc', icon: '🎮' },
+                        { name: 'クリエイター向け', slug: 'gpu-professional', icon: '🎨' },
+                        { name: 'AI開発・生成AI', slug: 'usage-ai-dev', icon: '🤖' },
+                        { name: '軽量・1kg未満', slug: 'feat-lightweight', icon: '🪶' },
+                        { name: 'モバイルノート', slug: 'size-mobile', icon: '💻' },
+                    ].map((cat) => (
+                        <Link key={cat.slug} href={`/catalog/?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
+                            <span className={styles.catIcon}>{cat.icon}</span>
+                            <span className={styles.catNameSmall}>{cat.name}</span>
+                        </Link>
+                    ))}
                 </div>
             </section>
 
@@ -171,25 +138,42 @@ export default async function Page({ searchParams }: PageProps) {
                 <RankingCategory title="モバイル・超軽量ノート" products={mobileData.results} icon="🏃" />
             </div>
 
-            {/* 🚀 最新トピック */}
+            {/* 🚀 最新トピック (画像表示版) */}
             <section className={styles.newsSection}>
                 <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>🚀 PC業界・最新トピック</h2>
+                    <Link href="/news" className={styles.rankingLink}>ニュース一覧へ →</Link>
                 </div>
                 <div className={styles.newsGrid}>
-                    {wpResults.map((post: any) => (
-                        <Link href={`/blog/${post.id}`} key={post.id} className={styles.newsCard}>
-                            <div className={styles.newsBody}>
-                                <time className={styles.postDate}>
-                                    {new Date(post.date).toLocaleDateString('ja-JP')}
-                                </time>
-                                <h3 className={styles.articleTitle}>
-                                    {post.title?.rendered.replace(/&nbsp;/g, ' ')}
-                                </h3>
-                                <span className={styles.newsReadMore}>記事を読む →</span>
-                            </div>
-                        </Link>
-                    ))}
+                    {wpResults.map((post: any) => {
+                        const displayTitle = (typeof post.title === 'string' ? post.title : post.title?.rendered) || 'No Title';
+                        // 画像URLの取得 (Django API経由のimage または WP経由のmain_image_url)
+                        const imageUrl = post.image || post.main_image_url;
+
+                        return (
+                            <Link href={`/news/${post.id}`} key={post.id} className={styles.newsCard}>
+                                <div className={styles.newsImageContainer}>
+                                    {imageUrl ? (
+                                        <img src={imageUrl} alt={displayTitle} className={styles.newsThumbnail} />
+                                    ) : (
+                                        <div className={styles.newsNoImage}>AI VISUALIZING...</div>
+                                    )}
+                                    <span className={styles.newsCategoryBadge}>
+                                        {post.category || 'TECH'}
+                                    </span>
+                                </div>
+                                <div className={styles.newsBody}>
+                                    <time className={styles.postDate}>
+                                        {post.date ? new Date(post.date).toLocaleDateString('ja-JP') : ''}
+                                    </time>
+                                    <h3 className={styles.articleTitle}>
+                                        {displayTitle.replace(/&nbsp;/g, ' ')}
+                                    </h3>
+                                    <span className={styles.newsReadMore}>READ ARTICLE</span>
+                                </div>
+                            </Link>
+                        );
+                    })}
                 </div>
             </section>
 

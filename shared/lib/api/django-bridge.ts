@@ -1,6 +1,6 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge サービス層 (Maya's Logic v5.3 - Fully Patched)
+ * 🌉 Django-Bridge サービス層 (Maya's Logic v5.4 - Stability & Safety)
  * =====================================================================
  * 物理パス: /shared/lib/api/django-bridge.ts
  */
@@ -12,43 +12,67 @@ import { getWpConfig, IS_SERVER, getDjangoBaseUrl } from './config';
 // 型定義
 import { PCProduct, MakerCount } from './index'; 
 
-// --- ✨ 【修正】Docker環境とホスト環境の両方で動くよう process.cwd() を使用 ---
+// --- ✨ 【修正】環境を問わないパス解決 ---
 const POSTS_PATH = path.join(process.cwd(), 'content', 'posts');
 
 /**
- * 🔄 【変換】ドメイン・一括置換ユーティリティ
+ * 🔄 【修正済】ドメイン・一括置換ユーティリティ
+ * 文字列でないデータや undefined が来ても落ちないようにガードを大幅強化
  */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
-    const isObject = typeof data === 'object';
-    let content = isObject ? JSON.stringify(data) : data;
-    const cleanBaseUrl = getDjangoBaseUrl().replace(/\/api$/, '').replace(/\/$/, '');
-    const internalPattern = /http:\/\/(django-v3|nginx-wp-v[23]|wordpress-.+v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
-    content = content.replace(internalPattern, cleanBaseUrl);
-    content = content.replace(/([^:])\/\//g, '$1/'); 
-    return isObject ? JSON.parse(content) : content;
+
+    // オブジェクト/配列の場合は、一度文字列化して一括置換を試みる
+    if (typeof data === 'object') {
+        try {
+            let content = JSON.stringify(data);
+            const baseUrl = getDjangoBaseUrl();
+            if (!baseUrl) return data;
+
+            const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
+            const internalPattern = /http:\/\/(django-v3|nginx-wp-v[23]|wordpress-.+v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
+            
+            content = content.replace(internalPattern, cleanBaseUrl);
+            content = content.replace(/([^:])\/\//g, '$1/'); 
+            
+            return JSON.parse(content);
+        } catch (e) {
+            return data; // パースに失敗したら生データを返す
+        }
+    }
+
+    // 文字列の場合の安全な置換
+    if (typeof data === 'string') {
+        const baseUrl = getDjangoBaseUrl();
+        if (!baseUrl) return data;
+        
+        const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
+        return data.replace(/http:\/\/(django-v3|nginx-wp-v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g, cleanBaseUrl);
+    }
+
+    return data;
 };
 
 /**
- * 💡 【解決】内部URL解決ロジック (Djangoのスラッシュ厳格化に対応)
+ * 💡 【解決】内部URL解決ロジック
  */
 const resolveApiUrl = (endpoint: string) => {
     const cleanEndpoint = endpoint.replace(/^\/?api\//, '').replace(/^\//, '');
-    const base = getDjangoBaseUrl().replace(/\/$/, '');
+    const baseUrl = getDjangoBaseUrl();
+    const base = (baseUrl || '').replace(/\/$/, '');
     
-    // クエリパラメータの分離
     const hasQuery = cleanEndpoint.includes('?');
     const pathPart = hasQuery ? cleanEndpoint.split('?')[0] : cleanEndpoint;
     const queryPart = hasQuery ? '?' + cleanEndpoint.split('?')[1] : '';
     
-    // パス末尾にスラッシュを強制（Django API仕様）
+    // Djangoの末尾スラッシュ厳格化に対応
     const slashedPath = pathPart.endsWith('/') ? pathPart : `${pathPart}/`;
     
     return `${base}/api/${slashedPath}${queryPart}`;
 };
 
 /**
- * 🛠️ 【通信】共通 Fetch ラッパー
+ * 🛠️ 【通信】共通 Fetch ラッパー (エラーログ強化版)
  */
 async function fetchFromBridge(url: string, options: any = {}) {
     const { host } = getWpConfig();
@@ -60,7 +84,6 @@ async function fetchFromBridge(url: string, options: any = {}) {
                 'Accept': 'application/json',
                 ...(options.headers || {}),
             },
-            // デフォルトのタイムアウトを設定
             signal: AbortSignal.timeout(options.timeout || 8000)
         });
 
@@ -72,7 +95,6 @@ async function fetchFromBridge(url: string, options: any = {}) {
         const data = await res.json();
         const total = parseInt(res.headers.get('X-WP-Total') || res.headers.get('X-Total-Count') || '0', 10);
         
-        // URL置換を適用して返す
         return { data: replaceInternalUrls(data), total, status: res.status };
     } catch (e: any) {
         console.error(`🚨 [Bridge Fatal Error]: ${url} | ${e.message}`);
@@ -83,13 +105,13 @@ async function fetchFromBridge(url: string, options: any = {}) {
 // --- 📝 統合コンテンツ取得 (page.tsx 呼び出し用) ---
 
 export async function fetchDjangoBridgeContent(params: any = {}) {
-    const siteGroup = params.site_group || '';
+    const siteGroup = params?.site_group || '';
     if (siteGroup === 'bicstation') {
         return await fetchPCProducts(params);
     } else if (siteGroup === 'tiper' || siteGroup === 'avflash') {
         return await getAdultProducts(params);
     }
-    return await fetchPostList('post', params.limit, params.offset);
+    return await fetchPostList('post', params?.limit, params?.offset);
 }
 
 // --- 📰 ニュース記事（Articleモデル）取得機能 ---
@@ -99,9 +121,8 @@ export async function fetchNewsArticles(limit = 12, offset = 0) {
         limit: limit.toString(),
         offset: offset.toString(),
         ordering: '-created_at',
-        is_exported: 'true' // 公開済みのみ取得
+        is_exported: 'true'
     });
-    // ⭕ エンドポイントを 'news' に修正済
     const url = resolveApiUrl(`news/?${query.toString()}`);
     const { data } = await fetchFromBridge(url, { next: { revalidate: 300 } });
     
@@ -124,26 +145,30 @@ export async function fetchPostList(postType: string = 'post', limit = 12, offse
                 
                 if (files.length > 0) {
                     const posts = files.map(filename => {
-                        const filePath = path.join(POSTS_PATH, filename);
-                        const fileContent = fs.readFileSync(filePath, 'utf-8');
-                        const { data, content } = matter(fileContent);
-                        return {
-                            id: filename.replace('.md', ''),
-                            slug: filename.replace('.md', ''),
-                            title: data.title || 'No Title',
-                            date: data.date || '',
-                            image: data.image || '',
-                            description: data.description || '',
-                            body_text: content,
-                            source_url: data.source_url || '',
-                            ...data
-                        };
-                    });
+                        try {
+                            const filePath = path.join(POSTS_PATH, filename);
+                            const fileContent = fs.readFileSync(filePath, 'utf-8');
+                            const { data, content } = matter(fileContent);
+                            return {
+                                id: filename.replace('.md', ''),
+                                slug: filename.replace('.md', ''),
+                                title: data.title || 'No Title',
+                                date: data.date || '',
+                                image: data.image || '',
+                                description: data.description || '',
+                                body_text: content,
+                                source_url: data.source_url || '',
+                                ...data
+                            };
+                        } catch (err) {
+                            return null;
+                        }
+                    }).filter(Boolean);
 
                     posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     
                     return { 
-                        results: posts.slice(offset, offset + limit), 
+                        results: posts.slice(offset, offset + (limit || 12)), 
                         count: posts.length 
                     };
                 }
@@ -173,7 +198,6 @@ export async function fetchPostData(postType: string = 'post', identifier: strin
         }
     }
 
-    // ⭕ MDがなければ Django API (newsエンドポイント)
     const url = resolveApiUrl(`news/${identifier}/`);
     const { data } = await fetchFromBridge(url);
     return data;
