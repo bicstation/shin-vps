@@ -1,4 +1,5 @@
 #!/bin/bash
+# /home/maya/shin-dev/shin-vps/post_all_blogs.sh
 
 # --- 設定項目 ---
 PROJECT_ROOT="/home/maya/shin-dev/shin-vps"
@@ -19,18 +20,24 @@ run_post() {
     sleep 10
 }
 
-# --- 実行フェーズ ---
+# --- 実行フェーズ 1: PCニュース系 ---
 
 # 1. 外部メディア
 run_post "hatena"
 run_post "livedoor"
 run_post "blogger"
 
-# 2. Seesaa ネットワーク (各サイトを直接指定して確実に1記事ずつ入れる)
+# 2. Seesaa ネットワーク
 run_post "seesaa"        # メイン
 run_post "seesaa_ai"     # AI
 run_post "seesaa_game"   # ゲーム
 run_post "seesaa_mobile" # モバイル
 run_post "seesaa_work"   # ワーク
+
+# --- 実行フェーズ 2: 🔞 アダルトニュース系 (v17.4) ---
+echo "Starting Adult News Post & GitHub Sync..." >> $LOG_FILE
+
+# アダルトニュースは --target all で全ブログ一括処理 & GitHub Push を実行
+cd $PROJECT_ROOT && /usr/bin/docker compose exec -T django-v3 python manage.py ai_post_adult_news --target all >> $LOG_FILE 2>&1
 
 echo "--- 🏁 全ブログ更新完了: $(date) ---" >> $LOG_FILE
