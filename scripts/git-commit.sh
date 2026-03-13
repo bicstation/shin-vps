@@ -1,6 +1,5 @@
 #!/bin/bash
-# /home/maya/shin-dev/shin-vps/deploy.sh
-
+# /home/maya/dev/shin-vps/scripts/git-commit.sh
 # ==============================================================================
 # 🚀 SHIN-VPS v3 Git 統合デプロイスクリプト (WSL2 & Actions 完全対応版)
 # ==============================================================================
@@ -11,12 +10,16 @@ CURRENT_HOST=$(hostname)
 CURRENT_USER=$USER
 
 # プロジェクトルートの動的決定 (v3パスを最優先)
-if [[ -d "/home/$CURRENT_USER/shin-dev/shin-vps" ]]; then
-    PROJECT_ROOT="/home/$CURRENT_USER/shin-dev/shin-vps"
-elif [ -f "$SCRIPT_DIR/.git/config" ]; then
-    PROJECT_ROOT="$SCRIPT_DIR"
-else
+# 優先順位：1. 現在のディレクトリに.gitがあるか 2. 指定の固定パス
+if [ -d "./.git" ]; then
+    PROJECT_ROOT="$(pwd)"
+elif [[ -d "/home/$CURRENT_USER/dev/shin-vps" ]]; then
     PROJECT_ROOT="/home/$CURRENT_USER/dev/shin-vps"
+elif [[ -d "/home/$CURRENT_USER/shin-dev/shin-vps" ]]; then
+    PROJECT_ROOT="/home/$CURRENT_USER/shin-dev/shin-vps"
+else
+    echo "❌ プロジェクトルートが見つかりません。git initされているか確認してください。"
+    exit 1
 fi
 
 # --- [関数] ヘルプ・注意事項の表示 ---
