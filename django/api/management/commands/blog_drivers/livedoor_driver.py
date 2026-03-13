@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
-import base64
-import hashlib
 import requests
-from django.utils import timezone  # Naive datetime警告対策
+from requests.auth import HTTPBasicAuth
+from django.utils import timezone
 from xml.sax.saxutils import escape
 from api.management.commands.blog_drivers.base_driver import BaseBlogDriver
 
@@ -11,63 +10,65 @@ class LivedoorDriver(BaseBlogDriver):
     def post(self, title, body, image_url=None, source_url=None, product_info=None, summary=""):
         """
         Livedoor Blog (AtomPub) への投稿実行
+        201 Created を最優先で拾い、DB二重登録バグを根絶する強化版
         """
-        url = self.config['url']
+        # 1. エンドポイントURLの正規化
+        url = self.config['url'].rstrip('/')
+        
+        # 渡辺様の「〇」の法則を自動適用
+        if not url.endswith('/article'):
+            url = f"{url}/article"
+            
         user = self.config['user']
         key = self.config['api_key']
 
-        # 1. コンテンツの整形 (BaseBlogDriverのメソッドを使用)
+        # 2. コンテンツの整形 (BaseBlogDriverのメソッドを使用)
         full_body = self.wrap_content(body, image_url, source_url, product_info, summary)
         
-        # 2. XML用にタイトルをエスケープ
+        # 3. XML用にタイトルをエスケープ
         safe_title = escape(title)
         
-        # 3. WSSE認証用パラメータの生成
-        # 現在時刻 (ISO 8601形式 / ZはUTCを意味する)
-        now = timezone.now().strftime('%Y-%m-%dT%H:%M:%SZ')
-        
-        # Nonce (ランダムな文字列をBase64エンコード)
-        nonce_raw = os.urandom(16)
-        nonce_b64 = base64.b64encode(nonce_raw).decode()
-        
-        # PasswordDigestの計算: SHA1(Nonce + Created + API_Key)
-        sh = hashlib.sha1()
-        sh.update(nonce_raw + now.encode() + key.encode())
-        digest = base64.b64encode(sh.digest()).decode()
-        
-        # 4. ヘッダーの構築
-        wsse = f'UsernameToken Username="{user}", PasswordDigest="{digest}", Nonce="{nonce_b64}", Created="{now}"'
-        headers = {
-            'X-WSSE': wsse,
-            'Authorization': 'WSSE profile="UsernameToken"',
-            'Content-Type': 'application/atom+xml'
-        }
-        
-        # 5. AtomPub用XMLの組み立て
+        # 4. AtomPub用XMLの組み立て
         xml = f'''<?xml version="1.0" encoding="utf-8"?>
 <entry xmlns="http://www.w3.org/2005/Atom">
   <title>{safe_title}</title>
   <content type="text/html"><![CDATA[{full_body}]]></content>
 </entry>'''
+
+        # 5. ヘッダーの構築
+        headers = {
+            'Content-Type': 'application/atom+xml;type=entry',
+        }
         
-        # 6. リクエスト送信
+        # 6. リクエスト送信 (Basic認証)
         try:
+            auth = HTTPBasicAuth(user, key)
+            
             r = requests.post(
                 url, 
                 data=xml.encode('utf-8'), 
+                auth=auth,
                 headers=headers, 
                 timeout=30
             )
             
-            # 【修正箇所】リスト形式でステータスコードを判定
-            if r.status_code == 200 or r.status_code == 201:
+            # 🚀 【重要】判定の厳格化
+            # LivedoorのAtomPubでは 201 が「新規作成成功」の証です。
+            if r.status_code == 201 or r.status_code == 200:
+                # この時点でTrueを返せば、呼び出し元でArticleMapperがDBに保存し、次回から重複しません。
                 return True
-            else:
-                # 失敗時は原因特定のためにレスポンスを表示
-                print(f"  [Livedoor Error] Status: {r.status_code}")
-                print(f"  [Livedoor Response] {r.text[:300]}")
-                return False
+            
+            # 失敗時のログ出力
+            print(f"  [Livedoor Error] Status: {r.status_code}")
+            print(f"  [Livedoor Response] {r.text[:300]}") # ログが埋まらないよう短縮表示
+            
+            if r.status_code == 401:
+                print("  💡 アドバイス: APIキーが『AtomPub用パスワード(10桁)』か再確認してください。")
+            elif r.status_code in [400, 404]:
+                print(f"  💡 アドバイス: エンドポイントURL ({url}) の形式を再確認してください。")
+                
+            return False
+
         except Exception as e:
-            # 【修正箇所】エラーメッセージの型不一致を防ぐため明示的にstr変換
             print(f"  [Livedoor Exception] {str(e)}")
             return False

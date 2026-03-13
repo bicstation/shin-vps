@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
     BLOG_CONFIGS = {
         'hatena': {'id': "bicstation", 'api_key': "se0o5znod6", 'url': "https://blog.hatena.ne.jp/bicstation/bicstation.hatenablog.com/atom/entry"},
-        'livedoor': {'user': "pbic", 'api_key': "a4lnDJzzXU", 'url': "https://livedoor.blogcms.jp/atompub/pbic-bcorjo9q/article"},
+        'livedoor': {'user': "pbic", 'api_key': "lNh8lSooOq", 'url': "https://livedoor.blogcms.jp/atompub/pbic-bcorjo9q/article"},
         'blogger': {'client_json_dir': 'bs_json'},
         'seesaa': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242363"},
         'seesaa_ai': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242440"},

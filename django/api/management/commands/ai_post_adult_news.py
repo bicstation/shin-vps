@@ -1,101 +1,239 @@
+# -*- coding: utf-8 -*-
 import os, re, random, requests, feedparser, time
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.core.management.base import BaseCommand
-from django.db import connection
+from django.db import connection, IntegrityError
+from bs4 import BeautifulSoup
+
+# モデルとユーティリティ
+from api.models.article import Article
+from api.utils.html_utils import HTMLConverter
+from api.management.commands.blog_drivers.livedoor_driver import LivedoorDriver
+from api.management.commands.blog_drivers.wordpress_driver import WordPressDriver # XML-RPC対応ドライバ
 from api.management.commands.blog_drivers.data_mapper import ArticleMapper
-
-RSS_SOURCES = {
-    "DVD新着": "https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=date/",
-    "DVD予約": "https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=p_date/",
-}
-
-def get_all_keys():
-    keys = []
-    for i in range(1, 11):
-        val = os.getenv(f"GEMINI_API_KEY_{i}") or os.getenv(f"GEMINI_API_KEY{i}")
-        if val: keys.append({"index": i, "key": val})
-    return keys
+from api.management.commands.blog_drivers.adult_ai_processor import AdultAIProcessor as AIProcessor
 
 class Command(BaseCommand):
+    help = 'Gemini-3 Adult Multi-Blog System v15.1 (Full RSS + Livedoor + Dual WP)'
+
+    SHARED_API_KEY = "lNh8lSooOq" 
+
+    # --- Livedoor Blog Configs ---
+    BLOG_CONFIGS = {
+        "tiper": {
+            "name": "Tiper.Live", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic/article", "keywords": []
+        },
+        "reserve": {
+            "name": "先行予約！エロ動画最速ニュース", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-br9qoupv/article", "keywords": ["予約", "先行", "2026", "発売予定"] 
+        },
+        "jukujo": {
+            "name": "熟成の蜜月 ～熟女・人妻の背徳～", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-eaenvfmg/article", "keywords": ["熟女", "人妻", "母", "40代", "50代", "女上司", "奥様", "佐久間楓", "沢口紫乃"]
+        },
+        "vr": {
+            "name": "VR快楽研究所 360°の没入体験", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-7vu6rapd/article", "keywords": ["VR", "360", "没入"]
+        },
+        "amateur": {
+            "name": "【禁断】素人・ハメ撮り暴露録", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-ldp7wpxx/article", "keywords": ["素人", "ハメ", "流出", "個人", "自撮り"]
+        },
+        "idol": {
+            "name": "美少女・アイドルの登竜門", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-ldp7wpxx/article", "keywords": ["新人", "単体", "美少女", "アイドル", "女子大生", "専属", "イメージビデオ"]
+        },
+        "ntr": {
+            "name": "背徳 of 淫靡 ～NTR・不倫の深淵～", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-xem23smb/article", "keywords": ["NTR", "寝取", "不倫", "略奪", "妻", "浮気", "近親相姦", "母と息子"]
+        },
+        "fetish": {
+            "name": "巨乳・美尻の黄金比フェチ図鑑", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-txjhpcdr/article", "keywords": ["巨乳", "爆乳", "美尻", "フェチ", "パイパン", "美脚", "アナル", "ナース"]
+        },
+        "wiki": {
+            "name": "【神作】歴代アダルト名作まとめ", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-ihotsur8/article", "keywords": ["神作", "名作", "殿堂", "まとめ", "ベスト", "総集編"]
+        },
+        "nakadashi": {
+            "name": "中出し背徳…愛欲의 種付け記録", "user": "pbic", "api_key": SHARED_API_KEY, 
+            "url": "https://livedoor.blogcms.jp/atompub/pbic-znfejpqv/article", "keywords": ["中出し", "生ハメ", "種付け", "無修正", "ゴムなし"]
+        }
+    }
+
+    # --- WordPress Configs (🌟 追加分) ---
+    WP_CONFIGS = {
+        "wp_a": {
+            "name": "WordPress A (bic-erog.com)",
+            "url": "https://blog.bic-erog.com/xmlrpc.php",
+            "user": "bicstation",
+            "password": "a0H2 McUX 3XK6 apzh JZ82 SzTm",
+            "keywords": [] # 総合なので全通し
+        },
+        "wp_b": {
+            "name": "WordPress B (adult-search.xyz)",
+            "url": "https://blog.adult-search.xyz/xmlrpc.php",
+            "user": "bicstation",
+            "password": "OBlD Yz2v lR8F wswY zwaW cF43",
+            "keywords": [] # 総合なので全通し
+        }
+    }
+
+    RSS_SOURCES = [
+        "https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=p_date/",
+        "https://www.dmm.co.jp/rental/ppr/-/list/=/reserve=only/rss=create/sort=date/",
+        "https://www.dmm.co.jp/rental/-/list/=/rss=create/sort=date/",
+        "https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=date/",
+        "https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/",
+    ]
+
+    def log(self, msg, style_func=None):
+        ts = datetime.now().strftime('%H:%M:%S')
+        text = f"[{ts}] {msg}"
+        if style_func: self.stdout.write(style_func(text))
+        else: self.stdout.write(text)
+
     def add_arguments(self, parser):
-        parser.add_argument("--limit", type=int, default=2)
+        parser.add_argument('--limit', type=int, default=1)
+        parser.add_argument('--target', type=str, default='all')
 
     def handle(self, *args, **options):
-        limit = options.get("limit", 2)
-        ACTIVE_KEYS = get_all_keys()
-        PROMPT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompt", "ai_prompt_adult.txt")
+        self.log("--- 🔞 RSS Multi-Hybrid v15.1 (Livedoor & Dual WP) 始動 ---", self.style.SUCCESS)
         
-        with open(PROMPT_FILE, "r", encoding="utf-8") as f:
-            prompt_temp = f.read()
+        api_keys = [os.getenv(f"GEMINI_API_KEY_{i}").strip() for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
+        if not api_keys:
+            self.log("❌ APIキーなし。", self.style.ERROR)
+            return
 
-        all_entries = []
-        for name, url in RSS_SOURCES.items():
+        prompt_path = os.path.join(os.path.dirname(__file__), "prompt", "ai_prompt_adult.txt")
+        with open(prompt_path, "r", encoding='utf-8') as f:
+            template = f.read()
+
+        all_entries = self.get_rss_pool()
+        if not all_entries:
+            self.log("⚠️ 新着なし。")
+            return
+
+        process_count = min(len(all_entries), options['limit'])
+        selected_entries = random.sample(all_entries, process_count)
+
+        for entry in selected_entries:
+            # データの共通解析
+            data = self.parse_item(entry)
+            processor = AIProcessor(api_keys, template)
+
+            # --- Livedoor投稿セクション ---
+            ld_targets = self.auto_route_logic(entry, self.BLOG_CONFIGS, options['target'])
+            for b_type in ld_targets:
+                self.process_single_post(b_type, data, processor, "livedoor")
+
+            # --- WordPress投稿セクション ---
+            wp_targets = self.auto_route_logic(entry, self.WP_CONFIGS, options['target'])
+            for b_type in wp_targets:
+                self.process_single_post(b_type, data, processor, "wordpress")
+
+    def get_rss_pool(self):
+        pool = []
+        seen_urls = set()
+        for url in self.RSS_SOURCES:
             try:
-                res = requests.get(url, timeout=20)
+                res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=20)
                 feed = feedparser.parse(res.text)
-                all_entries.extend(feed.entries)
-            except: continue
-        
-        # 重複削除
-        seen = set()
-        unique_entries = []
-        for e in all_entries:
-            if e.link not in seen:
-                seen.add(e.link)
-                unique_entries.append(e)
-
-        target_entries = random.sample(unique_entries, min(len(unique_entries), limit))
-        self.stdout.write(f"🚀 並列エンジン起動: {len(target_entries)} 記事の独立生成を開始...")
-
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            for entry in target_entries:
-                executor.submit(self.process_article, entry, ACTIVE_KEYS, prompt_temp)
-
-    def process_article(self, entry, keys, prompt_temp):
-        # 画像抽出の精度を上げる (src="の後、"またはスペースまで)
-        desc = getattr(entry, "summary", "") or getattr(entry, "description", "")
-        img_match = re.search(r"src=\"(https://pics.dmm.co.jp/[^\s\"]+)\"", desc)
-        main_img = img_match.group(1) if img_match else "" # 取れない場合は空文字（Nullではない）
-
-        targets = ["livedoor", "wp_a", "wp_b", "fc2_a", "fc2_b"]
-        for t in targets:
-            try:
-                ai_res = self.ask_ai(keys, prompt_temp, entry.title)
-                if not ai_res: continue
-
-                title_match = re.search(r"\[TITLE\](.*?)\[/TITLE\]", ai_res, re.DOTALL)
-                final_title = title_match.group(1).strip() if title_match else entry.title
-                final_content = ai_res.replace(title_match.group(0), "").strip() if title_match else ai_res
-
-                # 明示的にDB接続を閉じて再接続（スレッドセーフ）
-                connection.close() 
-                ArticleMapper.save_post_result(
-                    t, 
-                    {"title_g": final_title, "cont_g": final_content, "main_image_url": main_img},
-                    {"title": entry.title, "url": entry.link}, 
-                    True
-                )
-                print(f" ✅ {t.upper()} 成功: {final_title[:20]}...")
+                for e in feed.entries:
+                    if e.link not in seen_urls and not Article.objects.filter(source_url=e.link).exists():
+                        pool.append(e)
+                        seen_urls.add(e.link)
             except Exception as e:
-                print(f" ❌ {t.upper()} 失敗: {str(e)}")
+                self.log(f"⚠️ RSS取得失敗: {str(e)}")
+        return pool
 
-    def ask_ai(self, keys, prompt_temp, raw_title):
-        # 入力そのものから強すぎる単語を伏せる
-        clean_input = raw_title.replace("オナニー", "秘密の戯れ").replace("性行為", "愛の交わり").replace("なめくじ", "ぬらりとした")
-        full_prompt = f"{prompt_temp}\n\n対象: {raw_title}\nスタイル: ブログ個別最適化\n元ネタ: {clean_input}"
+    def auto_route_logic(self, entry, config_dict, target_arg):
+        matched = []
+        content_val = entry.title + getattr(entry, "summary", "")
+        if hasattr(entry, 'content'): content_val += entry.content[0].value
+
+        for b_id, cfg in config_dict.items():
+            if target_arg != 'all' and b_id != target_arg: continue
+            # キーワードが空の場合は「総合」として全通し、ある場合はマッチング
+            if not cfg.get("keywords") or any(k in content_val for k in cfg["keywords"]):
+                matched.append(b_id)
+        return matched
+
+    def process_single_post(self, b_type, data, processor, mode):
+        connection.close() 
+        self.log(f"🧵 [{mode.upper()}:{b_type}] AI解析中...")
+
+        ext = processor.generate_blog_content(data, b_type)
+        if not ext or not ext.get('title_g'): return
+
+        ext['html_body'] = HTMLConverter.md_to_html(ext.get('cont_g', ''))
         
-        random.shuffle(keys)
-        for key_item in keys:
+        # ギャラリー生成
+        if data.get('samples'):
+            gallery = '<div style="margin-top:25px; display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">'
+            for img in data['samples'][:20]:
+                gallery += f'<img src="{img}" style="width:100%; border-radius:6px; box-shadow:0 3px 8px rgba(0,0,0,0.15);">'
+            gallery += '</div>'
+            ext['html_body'] += gallery
+        
+        # 投稿ドライバの切り替え
+        success = False
+        if mode == "livedoor":
+            driver = LivedoorDriver(self.BLOG_CONFIGS[b_type])
+            success = self.execute_post_action(driver, ext, data)
+        else: # wordpress
+            driver = WordPressDriver(self.WP_CONFIGS[b_type])
+            success = self.execute_post_action(driver, ext, data)
+
+        if success:
             try:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key={key_item['key']}"
-                payload = {
-                    "contents": [{"parts": [{"text": full_prompt}]}],
-                    "safetySettings": [{"category": c, "threshold": "BLOCK_NONE"} for c in ["HARM_CATEGORY_SEXUALLY_EXPLICIT", "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_HARASSMENT", "HARM_CATEGORY_DANGEROUS_CONTENT"]]
-                }
-                r = requests.post(url, json=payload, timeout=60)
-                if r.status_code == 200:
-                    text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-                    return text.replace("```html", "").replace("```", "").strip()
-            except: continue
-        return None
+                ArticleMapper.save_post_result(f"{mode}_{b_type}", ext, data, True)
+                self.log(f"✅ [{mode.upper()}:{b_type}] 成功", self.style.SUCCESS)
+            except IntegrityError: pass
+
+    def execute_post_action(self, driver, ext, data):
+        raw_title = ext.get('title_g', data['title'])
+        safe_title = (raw_title[:87] + '...') if len(raw_title) > 90 else raw_title
+        eye_catch = f'<div style="text-align:center;margin-bottom:25px;"><img src="{data["img"]}" style="max-width:100%;border-radius:10px;"></div>'
+        
+        try:
+            return driver.post(
+                title=safe_title, body=eye_catch + ext.get('html_body', ''),
+                image_url=data['img'], source_url=data['url'], summary=ext.get('summary', '')
+            )
+        except Exception as e:
+            self.log(f"❌ 投稿エラー: {str(e)}", self.style.ERROR)
+            return False
+
+    def parse_item(self, entry):
+        content = entry.content[0].value if hasattr(entry, 'content') else getattr(entry, "summary", "")
+        soup = BeautifulSoup(content, 'html.parser')
+
+        actresses = [a.get_text() for a in soup.find_all('a') if 'article=actress' in a.get('href', '')]
+        genres = [a.get_text() for a in soup.find_all('a') if 'article=keyword' in a.get('href', '')]
+        maker = next((a.get_text() for a in soup.find_all('a') if 'article=maker' in a.get('href', '')), "")
+        
+        text_content = soup.get_text(separator="\n")
+        if "コメント：" in text_content:
+            rich_body = text_content.split("コメント：")[-1].split("ムービープレビュー")[0].split("品番：")[0].split("販売価格：")[0].strip()
+        else:
+            rich_body = text_content.split("収録時間：")[0].strip()[:1000]
+
+        samples = [img.get('src') for img in soup.find_all('img') if 'サンプル画像' in img.get('alt', '') or '/digital/video/' in img.get('src', '')]
+        
+        img_url = ""
+        package_tag = soup.find('package')
+        if package_tag: img_url = package_tag.get_text().replace("pt.jpg", "pl.jpg")
+        if not img_url:
+            p_link = soup.find('a', attrs={'name': 'package-image'})
+            if p_link: img_url = p_link.get('href', '')
+        if not img_url:
+            f_img = soup.find('img')
+            if f_img: img_url = f_img.get('src', '').replace("ps.jpg", "pl.jpg").replace("pt.jpg", "pl.jpg")
+        
+        return {
+            'url': entry.link, 'title': entry.title, 'img': img_url, 'body': rich_body,
+            'samples': samples, 'actresses': actresses, 'genres': genres, 'maker': maker
+        }
