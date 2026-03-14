@@ -82,6 +82,9 @@ $(function(){
 <div id="wrapper">
 
     <!-- コンテンツ全体 はじまり-->
+    <div id="container">
+
+        <!-- 相互RSS はじまり-->
         <div class="rss-blogroll">
 
             <!-- 相互RSSを設置する場合の注意事項

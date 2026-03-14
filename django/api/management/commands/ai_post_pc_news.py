@@ -23,10 +23,10 @@ class Command(BaseCommand):
 
     # --- 🚀 艦隊構成 ---
     BLOG_CONFIGS = {
-        'wp_main': {'endpoint': "https://bicstation.com", 'user': "admin", 'app_password': "xxxx xxxx xxxx xxxx"},
+        # 'wp_main': {'endpoint': "https://bicstation.com", 'user': "admin", 'app_password': "xxxx xxxx xxxx xxxx"},
         
         # 🚨 節約系メイン (WordPress)
-        'wp_saving': {'endpoint': "https://bic-saving.com", 'user': "admin", 'app_password': "xxxx xxxx xxxx xxxx"},
+        # 'wp_saving': {'endpoint': "https://bic-saving.com", 'user': "admin", 'app_password': "xxxx xxxx xxxx xxxx"},
         
         # Seesaa艦隊
         'seesaa': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242363"},
@@ -138,17 +138,18 @@ class Command(BaseCommand):
             return 'wp_main'
         
         mapping = {
-            'ld_apple': ['apple', 'macbook', 'ipad'],
-            'ld_asus': ['asus', 'rog'],
-            'ld_msi': ['msi'],
-            'ld_sony': ['sony', 'playstation', 'ps5'],
-            'ld_dell': ['dell'],
-            'ld_hp': ['hp'],
-            'ld_lenovo': ['lenovo'],
-            'ld_logicool': ['logicool', 'razer'],
-            'ld_intel': ['intel', 'nvidia', 'rtx'],
-            'ld_amd': ['amd', 'ryzen'],
+           'ld_apple': ['apple', 'macbook', 'ipad', 'iphone', 'ios', 'm3 chip', 'm4 chip', 'airpods', 'vision pro'],
+            'ld_asus': ['asus', 'rog', 'zenbook', 'vivobook', 'tuf gaming', 'proart', 'ally'],
+            'ld_msi': ['msi', 'stealth', 'raider', 'cyborg', 'prestige', 'modern', 'claw'],
+            'ld_sony': ['sony', 'playstation', 'ps5', 'vaio', 'xperia', 'bravia', 'inzone', 'walkman'],
+            'ld_dell': ['dell', 'alienware', 'xps', 'inspiron', 'latitude', 'precision', 'vostro'],
+            'ld_hp': ['hp', 'omen', 'victus', 'spectre', 'envoy', 'pavilion', 'elitebook'],
+            'ld_lenovo': ['lenovo', 'thinkpad', 'legion', 'yoga', 'ideapad', 'loq', 'thinkbook'],
+            'ld_logicool': ['logicool', 'logitech', 'razer', 'corsair', 'steelseries', 'elecom', 'mechanical keyboard', 'gaming mouse'],
+            'ld_intel': ['intel', 'nvidia', 'rtx', 'geforce', 'core ultra', 'arc gpu', 'cuda', 'dlss', 'motherboard'],
+            'ld_amd': ['amd', 'ryzen', 'radeon', 'rdna', 'epyc', 'am5', 'fsr', 'rog ally'], # handheldもAMDが多いので
         }
+        
         for target, keys in mapping.items():
             if any(k in text for k in keys): return target
 
