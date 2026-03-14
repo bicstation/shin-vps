@@ -92,7 +92,7 @@ $(function(){
                  <!-- 相互RSSのコード ひとつ目-->
             <script type="text/javascript">
             <!--
-                   var blogroll_channel_id = 356093;
+                   var blogroll_channel_id = 360804;;
             // -->
             </script>
             <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
@@ -100,7 +100,7 @@ $(function(){
             <!-- 相互RSSのコード ふたつ目-->
             <script type="text/javascript">
             <!--
-                   var blogroll_channel_id = 356093;
+                   var blogroll_channel_id = 360808;
             // -->
             </script>
             <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
@@ -108,7 +108,7 @@ $(function(){
             <!-- 相互RSSのコード みっつ目-->
             <script type="text/javascript">
             <!--
-                 var blogroll_channel_id = 356378;
+                 var blogroll_channel_id = 360809;
             // -->
             </script>
             <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
@@ -136,7 +136,7 @@ $(function(){
 
                  <!-- 広告コード　720px X 90px はじまり-->
                  <div class="main-container-ads">
-                    <iframe width="720" height="90" frameborder="0" scrolling="auto" src="https://ad.duga.jp/iframe/table-duga-ppv-1/48043-01/" marginwidth="0" marginheight="0"><a href="https://click.duga.jp/48043-01" target="_blank">DUGA</a></iframe>
+                    
                 </div>
                 <!-- /広告コード　720px X 90px ここまで-->
 
