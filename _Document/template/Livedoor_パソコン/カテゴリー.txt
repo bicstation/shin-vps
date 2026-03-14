@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja" itemscope itemtype="http://schema.org/Blog">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=1190">
+<$HeadSectionCommon$>
+<$OGP$>
+<link rel="alternate" media="handheld" type="application/xhtml+xml" href="<$BlogMobileUrl$>" />
+<IfFoafUrl><link rel="meta" type="application/rdf+xml" title="FOAF" href="<$FoafUrl$>" /></IfFoafUrl>
+<title><$CategoryName ESCAPE$> : <$BlogTitle ESCAPE$></title>
+<!--[if lt IE 9]>
+<script src="<$PartsBaseUrl$>/js/html5.js"></script>
+<![endif]-->
+<script src="<$PartsBaseUrl$>/js/usr/import.js"></script>
+<script>
+$(function(){
+  if($('.header-inner01').children('#blog-header-image').length) {
+    $(window).bind('load', function() {
+      var title1 = $('#blog-header-image').height();
+      var title2 = $('.header-menu').height();
+      var headerHeight = title1-title2-15;
+      $("hgroup").css("height", headerHeight);
+    });
+  }
+});
+</script>
+</head>
+<body class="default_2012 page-category layout-2col sidebar-right<IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
+
+<$BlogHeader$><!-- 共通ヘッダー表示 -->
+
+<!-- ブログタイトル はじまり-->
+<header id="blog-header">
+
+    <div id="blog-header01">
+
+        <div class="header-inner01<IfBlogHeaderImageUrl> show-image<IfBlogHeaderHideText> hide-text</IfBlogHeaderHideText></IfBlogHeaderImageUrl>">
+
+            <hgroup>
+                <!--ブログタイトル　はじまり-->
+                <h1 id="blog-title"><a href="<$BlogUrl$>"><$BlogTitle ESCAPE$></a></h1>
+                <!--ブログタイトル　ここまで-->
+                <!--ブログ説明　はじまり-->
+                <h2 id="blog-description"><$BlogDescription$></h2>
+                <!--ブログ説明　ここまで-->
+            </hgroup>
+
+            <IfBlogHeaderImageUrl><IfBlogHeaderHideText><a href="<$BlogUrl$>"></IfBlogHeaderHideText><img src="<$BlogHeaderImageUrl$>" id="blog-header-image" /><IfBlogHeaderHideText></a></IfBlogHeaderHideText></IfBlogHeaderImageUrl>
+
+            <div id="blog-header02">
+                <div class="header-inner02">
+                    <ul class="header-menu">
+                        <li><a href="<$BlogUrl$>">ホーム</a></li><!--メニューを入れてください-->
+                        <li><a href="http://www.facebook.com/">フェイスブック</a></li><!--メニューを入れてください-->
+                        <li><a href="#">コンタクト</a></li><!--メニューを入れてください-->
+                        <li><a href="#">アバウト</a></li><!--メニューを入れてください-->
+                    </ul>
+                    <ul class="header-sarch">
+                        <li><a href="http://twitter.com"><img src="https://parts.blog.livedoor.jp/img/usr/ver06_km_matomegray_3c/icon_twitter.png" alt="X" /></a></li><!--Twitter-->
+                        <li><a href="<$RSSUrl$>"><img src="https://parts.blog.livedoor.jp/img/usr/ver06_km_matomegray_3c/icon_rss.png" alt="RSS" /></a></li><!--RSS-->
+                        <li>
+                        <form action="<$BlogUrl$>search" method="GET" style="padding:0;margin:0px;">
+                        <input type="TEXT" name="q" class="sf">
+                        <input type="SUBMIT" value="検索" class="sfbtn">
+                        </form>
+                        </li><!--検索窓-->
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</header>
+<!-- /ブログタイトル ここまで-->
+
+
+<!-- コンテンツエリア はじまり-->
+<div id="wrapper">
+
+    <!-- コンテンツ全体 はじまり-->
+    <div id="container">
+
+
+        <!-- 相互RSS はじまり-->
+        <div class="rss-blogroll">
+
+            <!-- 相互RSSを設置する場合の注意事項
+                コードに含まれる以下のCSSは外して設置してください
+                https://blogroll.livedoor.net/css/default2.css -->
+
+                 <!-- 相互RSSのコード ひとつ目-->
+            <script type="text/javascript">
+            <!--
+                   var blogroll_channel_id = 356093;
+            // -->
+            </script>
+            <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
+
+            <!-- 相互RSSのコード ふたつ目-->
+            <script type="text/javascript">
+            <!--
+                   var blogroll_channel_id = 356093;
+            // -->
+            </script>
+            <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
+
+            <!-- 相互RSSのコード みっつ目-->
+            <script type="text/javascript">
+            <!--
+                 var blogroll_channel_id = 356378;
+            // -->
+            </script>
+            <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
+        </div>
+        <!-- 相互RSS ここまで-->
+
+
+        <!-- コンテンツの箱の中　真ん中728px はじまり-->
+        <div class="main-container">
+            <div class="main-column-inner">
+
+                 <!-- 画像付きRTorコメントリスト はじまり-->
+                <div class="listWithImage">
+                    <SetVar popularArticlesListWithImageCount>3</SetVar><!-- 件数 -->
+                    <SetVar popularArticlesListWithImageImageWidth>233</SetVar>
+                    <SetVar popularArticlesListWithImageImageHeight>180</SetVar>
+                    <SetVar popularArticlesListWithImageComment>0</SetVar><!-- RT(0)かコメント(1) -->
+                    <SetVar popularArticlesListWithImageRangeType>month0</SetVar><!-- 集計範囲：今週(week0) 今月(month0) -->
+                    <SetVar popularArticlesListWithImageForegroundColor>#ffffff</SetVar><!-- 文字色 -->
+                    <SetVar popularArticlesListWithImageBackgroundColor>#000000</SetVar><!-- 背景色 -->
+                    <$PopularArticlesWithImageList$><!-- 人気記事 -->
+                </div>
+                <!-- 画像付きRTorコメントリスト  ここまで--
+
+
+                 <!-- 広告コード　720px X 90px はじまり-->
+                 <div class="main-container-ads">
+                    <iframe width="720" height="90" frameborder="0" scrolling="auto" src="https://ad.duga.jp/iframe/table-duga-ppv-1/48043-01/" marginwidth="0" marginheight="0"><a href="https://click.duga.jp/48043-01" target="_blank">DUGA</a></iframe>
+                </div>
+                <!-- /広告コード　720px X 90px ここまで-->
+
+                <!-- メッセージボード -->
+                <$MessageBoard$>
+
+                <!-- カテゴリーページタイトル　はじまり-->
+                <div class="archives-header" id="category-header">
+                <h1><$CategoryName ESCAPE$></h1>
+                </div>
+                <!-- カテゴリーページタイトル　ここまで-->
+
+<IfIsSearchTemplate>
+<UnlessSearchResults>
+<div class="noresult-message"><p>該当する記事はありません</p></div>
+</UnlessSearchResults>
+</IfIsSearchTemplate>
+<IfIsSearchTagsTemplate>
+<UnlessSearchResults>
+<div class="noresult-message"><p>該当する記事はありません</p></div>
+</UnlessSearchResults>
+</IfIsSearchTagsTemplate>
+
+                <!-- ページ送り　上部 はじまり-->
+                <$IndexNavigator$>
+                <!-- /ページ送り　上部 ここまで-->
+
+
+
+                <!-- カテゴリー記事ページ一覧　はじまり -->
+                <CategorizedArticlesLoop><!-- カテゴリの記事一覧 -->
+
+                <!-- カテゴリー記事ページ　はじまり -->
+<article class="custom-card-container">
+    <div class="card-link-wrapper">
+        
+        <div class="card-image-box" id="thumb-container-<$ArticleId$>">
+            </div>
+
+        <div class="card-content-box">
+            <header class="card-header">
+                <div class="card-meta">
+                    <time><$ArticleDate$></time>
+                </div>
+                <h1 class="card-title"><a href="<$ArticlePermalink$>"><$ArticleTitle ESCAPE$></a></h1>
+            </header>
+
+            <div class="card-excerpt" id="desc-<$ArticleId$>">
+                <$ArticleDescription ESCAPE$>
+            </div>
+            <div style="margin-top:10px;"><a href="<$ArticlePermalink$>" style="color:#ff4500; font-weight:bold; text-decoration:none;">詳細を見る ≫</a></div>
+        </div>
+    </div>
+
+    <div id="hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
+
+    <script>
+    (function() {
+        var bodyHtml = document.getElementById('hidden-body-<$ArticleId$>').innerHTML;
+        var thumbContainer = document.getElementById('thumb-container-<$ArticleId$>');
+        
+        // 1. HTMLのimgタグを探す
+        // 2. なければ Markdownの ![...](url) を探す
+        // 3. なければ 直リンクのURLを探す
+        var imgUrl = "";
+        var imgMatch = bodyHtml.match(/<img [^>]*src=["']([^"']+)["']/);
+        var mdMatch = bodyHtml.match(/!\[.*\]\((https?:\/\/[^\)]+)\)/);
+
+        if (imgMatch) {
+            imgUrl = imgMatch[1];
+        } else if (mdMatch) {
+            imgUrl = mdMatch[1];
+        }
+
+        if (imgUrl) {
+            thumbContainer.innerHTML = '<a href="<$ArticlePermalink$>"><img src="' + imgUrl + '" style="width:100%; height:100%; object-fit:cover;"></a>';
+        } else {
+            thumbContainer.innerHTML = '<div style="background:#222; height:100%;"></div>';
+        }
+    })();
+    </script>
+</article>
+                <!-- /月刊アーカイブページ ここまで-->
+
+
+                <IfFirstArticle><$Advertise$></IfFirstArticle><!-- 広告表示 -->
+
+
+                </CategorizedArticlesLoop>
+                <!-- 月刊アーカイブページ一覧　ここまで -->
+
+
+                <!-- ページ送り 下部　はじまり-->
+                <$IndexNavigator$>
+                <!-- /ページ送り 下部　ここまで-->
+
+            </div><!-- /main-column-inner-->
+        </div>
+        <!-- コンテンツの箱の中　真ん中728px ここまで-->
+
+
+        <!-- コンテンツの箱の中　左側200px はじまり-->
+        <aside class="left-container">
+            <div class="left-column-inner">
+            <$PluginList_A$><!-- 「A」設定のブログパーツ表示 -->
+            </div>
+        </aside>
+        <!-- コンテンツの箱の中　左側200px ここまで-->
+
+
+        <!-- コンテンツの箱の中　右側200px はじまり-->
+        <aside class="right-container">
+            <div class="right-column-inner">
+            <$PluginList_B$><!-- 「B」設定のブログパーツ表示 -->
+            <$LDServices$><!-- LDR・RSSリンクとブログのロゴ表示 -->
+            </div>
+        </aside>
+        <!-- コンテンツの箱の中　右側200px ここまで-->
+
+        <!-- このページのトップヘ　はじまり -->
+        <p class="to-pagetop"><a href="#"><img src="https://parts.blog.livedoor.jp/img/usr/default_2012/common/to_pagetop.png" width="70" height="70" alt="このページのトップヘ" /></a></p>
+        <!-- このページのトップヘ ここまで -->
+
+    </div>
+    <!-- コンテンツ全体 ここまで-->
+
+    <!-- ブログのフッター はじまり-->
+    <footer id="blog-footer">
+    <$BlogFooter$><!-- 共通フッター表示 -->
+    </footer>
+    <!-- /ブログのフッター ここまで-->
+
+</div>
+<!-- コンテンツエリア ここまで-->
+
+</body>
+</html>

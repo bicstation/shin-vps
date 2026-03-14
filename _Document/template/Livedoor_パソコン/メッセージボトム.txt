@@ -1,0 +1,30 @@
+専門ジャンル
+
+<div style="padding: 12px; border: 1px solid #e5e5e5; background: #fff; font-family: sans-serif;">
+    <div style="border-left: 4px solid #ff4444; padding-left: 10px; margin-bottom: 12px;">
+        <p style="font-size: 13px; font-weight: bold; color: #333; margin: 0;">専門アーカイブ</p>
+    </div>
+    
+    <table style="width: 100%; font-size: 11px; line-height: 2.0; border-collapse: collapse; text-align: left;">
+        <tr>
+            <td style="width: 50%; padding-left: 5px;"><a href="https://tiper.ldblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ 総合</a></td>
+            <td style="width: 50%; padding-left: 5px;"><a href="https://amateur-person.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ 素人・投稿</a></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 5px;"><a href="https://adult-reserve.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ 新作予約</a></td>
+            <td style="padding-left: 5px;"><a href="http://jukujo-honey.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ 熟女・人妻</a></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 5px;"><a href="https://vr-labo-360.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ VR動画</a></td>
+            <td style="padding-left: 5px;"><a href="https://idol-angel.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ 美少女新人</a></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 5px;"><a href="https://story-betrayal.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ NTR・不倫</a></td>
+            <td style="padding-left: 5px;"><a href="https://fetish-body.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ 巨乳・美尻</a></td>
+        </tr>
+        <tr>
+            <td style="padding-left: 5px;"><a href="https://adult-wiki-review.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ 歴代神作</a></td>
+            <td style="padding-left: 5px;"><a href="https://nakadashi-record.doorblog.jp/" target="_blank" style="color: #0066cc; text-decoration: none;">▶ 中出し特化</a></td>
+        </tr>
+    </table>
+</div>

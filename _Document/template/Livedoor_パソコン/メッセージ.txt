@@ -1,0 +1,21 @@
+<div style="background: linear-gradient(135deg, #000 0%, #222 100%); color: #fff; padding: 25px; border-radius: 10px; border: 2px solid #ff4444; margin-bottom: 30px; text-align: center; box-shadow: 0 10px 30px rgba(255,68,68,0.2);">
+    <h1 style="color: #ff4444; font-size: 1.8em; margin-bottom: 15px; letter-spacing: 2px;">🔞 Tiper.Live OFFICIAL</h1>
+    <p style="font-size: 1.1em; line-height: 1.6; color: #eee; font-weight: bold;">
+        官能の最前線へようこそ。
+    </p>
+    <p style="font-size: 0.9em; color: #ccc;">
+        ここは、あらゆる欲望が交差する情報の集積地。<br>
+        厳選されたサンプル画像、最速の新作速報、そして至高のレビュー。
+    </p>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;">
+        <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; font-size: 0.8em;">✨ 美少女・アイドル</div>
+        <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; font-size: 0.8em;">🌹 熟女・人妻</div>
+        <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; font-size: 0.8em;">📽️ VR・360°</div>
+        <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; font-size: 0.8em;">🔥 禁断の特選</div>
+    </div>
+
+    <p style="font-size: 0.85em; color: #ff8888; margin-top: 10px; font-weight: bold;">
+        ※全編の閲覧・購入リンクは各記事内の詳細ボタンより。
+    </p>
+</div>
