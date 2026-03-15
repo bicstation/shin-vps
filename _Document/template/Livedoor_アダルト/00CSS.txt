@@ -1358,3 +1358,70 @@ body.layout-2col .message-board{
         height: 200px;
     }
 }
+
+
+/* BICSTATION 弩級艦隊 共通メニュー装飾 */
+.header-menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    list-style: none;
+    padding: 10px 0;
+    gap: 8px; /* ボタン同士の間隔 */
+}
+
+.header-menu li a {
+    display: block;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #444, #222); /* 重厚感のあるグラデ */
+    color: #fff !important;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    border: 1px solid #555;
+    transition: all 0.3s ease;
+    white-space: nowrap; /* 改行防止 */
+}
+
+.header-menu li a:hover {
+    background: linear-gradient(135deg, #ff4444, #cc0000); /* ホバーで情熱の赤 */
+    border-color: #ff8888;
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.6); /* 発光エフェクト */
+    transform: translateY(-2px); /* 少し浮き上がる */
+}
+
+/* ブログタイトルを劇的に目立たせる魔改造 */
+#blog-title {
+    color: #fff !important; /* 文字色は白を維持 */
+    font-weight: bold;
+    font-size: 28px; /* 好みで調整してください */
+    
+    /* 1. 黒い縁取り（袋文字）: これで背景が白くても読めます */
+    text-shadow: 
+        2px  2px 0 #000,
+       -2px  2px 0 #000,
+        2px -2px 0 #000,
+       -2px -2px 0 #000,
+        0px  4px 10px rgba(0,0,0,0.8); /* 強い影で立体感を出す */
+}
+
+/* ブログの説明文（タイトル下の小文字）も目立たせる */
+#blog-description {
+    color: #fff !important;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px #000, -1px -1px 3px #000;
+    background: rgba(0,0,0,0.4); /* 説明文の背景を少し暗くして読みやすく */
+    display: inline-block;
+    padding: 2px 10px;
+}
+
+/* スマホ対応：横に並びきらない場合はスクロール可能に */
+@media screen and (max-width: 768px) {
+    .header-menu {
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px 5px;
+    }
+}

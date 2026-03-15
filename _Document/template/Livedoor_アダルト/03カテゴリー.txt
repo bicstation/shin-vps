@@ -50,10 +50,14 @@ $(function(){
             <div id="blog-header02">
                 <div class="header-inner02">
                     <ul class="header-menu">
-                        <li><a href="<$BlogUrl$>">ホーム</a></li><!--メニューを入れてください-->
-                        <li><a href="http://www.facebook.com/">フェイスブック</a></li><!--メニューを入れてください-->
-                        <li><a href="#">コンタクト</a></li><!--メニューを入れてください-->
-                        <li><a href="#">アバウト</a></li><!--メニューを入れてください-->
+                    <ul class="header-menu">
+                        <li><a href="https://tiper.live">🎥Tiper</a></li>
+                        <li><a href="https://avflash.xyz">🎥AVFlash</a></li>
+                        <li><a href="https://bic-erog.com">🌐ポータル</a></li>
+                        <li><a href="https://blog.bic-erog.com">📝レビュー</a></li>
+                        <li><a href="https://adult-search.xyz">🏰㊙</a></li>
+                        <li><a href="https://blog.adult-search.xyz">🏰㊙ビュー</a></li>
+                    </ul>
                     </ul>
                     <ul class="header-sarch">
                         <li><a href="http://twitter.com"><img src="https://parts.blog.livedoor.jp/img/usr/ver06_km_matomegray_3c/icon_twitter.png" alt="X" /></a></li><!--Twitter-->
@@ -100,7 +104,7 @@ $(function(){
             <!-- 相互RSSのコード ふたつ目-->
             <script type="text/javascript">
             <!--
-                   var blogroll_channel_id = 356093;
+                   var blogroll_channel_id = 356377;
             // -->
             </script>
             <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
