@@ -4,36 +4,35 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=1190">
 <$HeadSectionCommon$>
+<meta name="description" content="<$BlogDescription ESCAPE$>" />
 <$OGP$>
 <link rel="alternate" media="handheld" type="application/xhtml+xml" href="<$BlogMobileUrl$>" />
 <IfFoafUrl><link rel="meta" type="application/rdf+xml" title="FOAF" href="<$FoafUrl$>" /></IfFoafUrl>
-<title><$CategoryName ESCAPE$> : <$BlogTitle ESCAPE$></title>
+<title><$BlogTitle ESCAPE$></title>
 <!--[if lt IE 9]>
 <script src="<$PartsBaseUrl$>/js/html5.js"></script>
 <![endif]-->
 <script src="<$PartsBaseUrl$>/js/usr/import.js"></script>
 <script>
 $(function(){
-  if($('.header-inner01').children('#blog-header-image').length) {
-    $(window).bind('load', function() {
-      var title1 = $('#blog-header-image').height();
-      var title2 = $('.header-menu').height();
-      var headerHeight = title1-title2-15;
-      $("hgroup").css("height", headerHeight);
-    });
-  }
+ if($('.header-inner01').children('#blog-header-image').length) {
+  $(window).bind('load', function() {
+   var title1 = $('#blog-header-image').height();
+   var title2 = $('.header-menu').height();
+   var headerHeight = title1-title2-15;
+   $("hgroup").css("height", headerHeight);
+  });
+ }
 });
 </script>
 </head>
-<body class="default_2012 page-category layout-2col sidebar-right<IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
+<body class="default_2012 page-index layout-2col sidebar-right<IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
 
 <$BlogHeader$><!-- 共通ヘッダー表示 -->
 
 <!-- ブログタイトル はじまり-->
 <header id="blog-header">
-
     <div id="blog-header01">
-
         <div class="header-inner01<IfBlogHeaderImageUrl> show-image<IfBlogHeaderHideText> hide-text</IfBlogHeaderHideText></IfBlogHeaderImageUrl>">
 
             <hgroup>
@@ -70,7 +69,6 @@ $(function(){
 
         </div>
     </div>
-
 </header>
 <!-- /ブログタイトル ここまで-->
 
@@ -92,7 +90,7 @@ $(function(){
                  <!-- 相互RSSのコード ひとつ目-->
             <script type="text/javascript">
             <!--
-                   var blogroll_channel_id = 360804;;
+                   var blogroll_channel_id = 360807;
             // -->
             </script>
             <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
@@ -120,6 +118,7 @@ $(function(){
         <div class="main-container">
             <div class="main-column-inner">
 
+
                  <!-- 画像付きRTorコメントリスト はじまり-->
                 <div class="listWithImage">
                     <SetVar popularArticlesListWithImageCount>3</SetVar><!-- 件数 -->
@@ -131,45 +130,30 @@ $(function(){
                     <SetVar popularArticlesListWithImageBackgroundColor>#000000</SetVar><!-- 背景色 -->
                     <$PopularArticlesWithImageList$><!-- 人気記事 -->
                 </div>
-                <!-- 画像付きRTorコメントリスト  ここまで--
+                <!-- 画像付きRTorコメントリスト  ここまで-->
 
 
                  <!-- 広告コード　720px X 90px はじまり-->
                  <div class="main-container-ads">
-                    
+
                 </div>
                 <!-- /広告コード　720px X 90px ここまで-->
+
 
                 <!-- メッセージボード -->
                 <$MessageBoard$>
 
-                <!-- カテゴリーページタイトル　はじまり-->
-                <div class="archives-header" id="category-header">
-                <h1><$CategoryName ESCAPE$></h1>
-                </div>
-                <!-- カテゴリーページタイトル　ここまで-->
-
-<IfIsSearchTemplate>
-<UnlessSearchResults>
-<div class="noresult-message"><p>該当する記事はありません</p></div>
-</UnlessSearchResults>
-</IfIsSearchTemplate>
-<IfIsSearchTagsTemplate>
-<UnlessSearchResults>
-<div class="noresult-message"><p>該当する記事はありません</p></div>
-</UnlessSearchResults>
-</IfIsSearchTagsTemplate>
 
                 <!-- ページ送り　上部 はじまり-->
                 <$IndexNavigator$>
                 <!-- /ページ送り　上部 ここまで-->
 
 
+                <!-- 記事の一覧の開始　はじまり -->
+                <IndexArticlesLoop><!-- トップページの記事一覧ループ -->
+                <$TrackBackAutoDiscovery$><!-- 記事のトラックバック・オートディスカバリー -->
 
-                <!-- カテゴリー記事ページ一覧　はじまり -->
-                <CategorizedArticlesLoop><!-- カテゴリの記事一覧 -->
-
-                <!-- カテゴリー記事ページ　はじまり -->
+                <!-- 記事　はじまり -->
 <article class="custom-card-container">
     <div class="card-link-wrapper">
         
@@ -219,14 +203,15 @@ $(function(){
     })();
     </script>
 </article>
-                <!-- /月刊アーカイブページ ここまで-->
+
+                <!-- /記事 ここまで-->
 
 
                 <IfFirstArticle><$Advertise$></IfFirstArticle><!-- 広告表示 -->
 
 
-                </CategorizedArticlesLoop>
-                <!-- 月刊アーカイブページ一覧　ここまで -->
+                </IndexArticlesLoop>
+                <!-- 記事の一覧の開始　ここまで -->
 
 
                 <!-- ページ送り 下部　はじまり-->

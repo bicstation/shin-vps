@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 # /home/maya/shin-dev/shin-vps/django/api/management/commands/ai_post_pc_news.py
-import os, re, random, requests, feedparser, time, hashlib, base64
+import os, re, random, requests, feedparser, time, hashlib
 from datetime import datetime
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from django.db import connection
 
-# モデルとユーティリティ
 from api.models.article import Article
 from api.utils.html_utils import HTMLConverter
-
-# 専門ロジック
 from api.management.commands.blog_drivers.hatena_driver import HatenaDriver
 from api.management.commands.blog_drivers.livedoor_driver import LivedoorDriver
 from api.management.commands.blog_drivers.seesaa_driver import SeesaaDriver
@@ -19,26 +16,35 @@ from api.management.commands.blog_drivers.data_mapper import ArticleMapper
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'Gemini-3 BICSTATION v16.8：節約系(bic-saving)完全対応モデル'
+    help = 'Gemini-3 BICSTATION v17.3：全艦隊配給・WP投稿・MD保存 統合モデル'
 
     # --- 🚀 艦隊構成 ---
     BLOG_CONFIGS = {
-        # 'wp_main': {'endpoint': "https://bicstation.com", 'user': "admin", 'app_password': "xxxx xxxx xxxx xxxx"},
+        # WordPress本拠地 (アプリケーションパスワードを使用)
+        'wp_main': {'endpoint': "https://bicstation.com", 'user': "admin", 'app_password': "xxxx xxxx xxxx xxxx"},
+        'wp_saving': {'endpoint': "https://bic-saving.com", 'user': "admin", 'app_password': "xxxx xxxx xxxx xxxx"},
         
-        # 🚨 節約系メイン (WordPress)
-        # 'wp_saving': {'endpoint': "https://bic-saving.com", 'user': "admin", 'app_password': "xxxx xxxx xxxx xxxx"},
-        
-        # Seesaa艦隊
+        # Seesaa
         'seesaa': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242363"},
         'seesaa_ai': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242440"},
         'seesaa_game': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242441"},
         'seesaa_mobile': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242442"},
         'seesaa_work': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242443"},
         
-        # Livedoor艦隊
+        # Livedoor (Shop/Global)
+        'ld_mouse': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station/article"},
+        'ld_iiyama': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-zq1gwghp/article"},
+        'ld_dospara': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-gevemmot/article"},
+        'ld_tsukumo': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-jcjp5tqh/article"},
+        'ld_ark': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-fbtird2v/article"},
+        'ld_frontier': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-qpmycvvo/article"},
+        'ld_sycom': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-ufhdrs8l/article"},
+        'ld_dynabook': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-d00amao5/article"},
+        'ld_nec': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-a3wiv6xl/article"},
+        'ld_fujitsu': {'user': "pbic_station", 'api_key': "ULL2YG8X0z", 'url': "https://livedoor.blogcms.jp/atompub/pbic_station-mujuq4ew/article"},
         'ld_apple': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation/article"},
         'ld_asus': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-rstaipkg/article"},
-        'ld_msi': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-1if6nwcy/article"},
+        'ld_msi': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-mw56ftkt/article"},
         'ld_sony': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-is61wtfe/article"},
         'ld_dell': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-ufgtyxdn/article"},
         'ld_hp': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-tiodrmio/article"},
@@ -46,22 +52,21 @@ class Command(BaseCommand):
         'ld_logicool': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-tjicu3hv/article"},
         'ld_intel': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-zftrmwub/article"},
         'ld_amd': {'user': "bicstation", 'api_key': "lmSZuzJO6O", 'url': "https://livedoor.blogcms.jp/atompub/bicstation-u5yjy0lt/article"},
-
-        # はてな艦隊
+        
+        # Hatena
         'h_main': {'user': "bicstation", 'api_key': "se0o5znod6", 'endpoint': "https://blog.hatena.ne.jp/bicstation/bicstation.hatenablog.com/atom/entry"},
         'h_money': {'user': "bicstation", 'api_key': "se0o5znod6", 'endpoint': "https://blog.hatena.ne.jp/bicstation/bic-money.hatenadiary.com/atom/entry"},
         'h_ai': {'user': "bicstation", 'api_key': "se0o5znod6", 'endpoint': "https://blog.hatena.ne.jp/bicstation/bic-ai.hatenablog.jp/atom/entry"},
     }
 
-    DRIVERS = {
-        'wp_main': WordPressDriver, 'wp_saving': WordPressDriver,
-        'seesaa': SeesaaDriver, 'seesaa_ai': SeesaaDriver, 'seesaa_game': SeesaaDriver, 
-        'seesaa_mobile': SeesaaDriver, 'seesaa_work': SeesaaDriver,
-        'ld_apple': LivedoorDriver, 'ld_asus': LivedoorDriver, 'ld_msi': LivedoorDriver,
-        'ld_sony': LivedoorDriver, 'ld_dell': LivedoorDriver, 'ld_hp': LivedoorDriver,
-        'ld_lenovo': LivedoorDriver, 'ld_logicool': LivedoorDriver, 'ld_intel': LivedoorDriver,
-        'ld_amd': LivedoorDriver,
-        'h_main': HatenaDriver, 'h_money': HatenaDriver, 'h_ai': HatenaDriver
+    DRIVERS = {k: LivedoorDriver for k in BLOG_CONFIGS.keys() if k.startswith('ld_')}
+    DRIVERS.update({k: SeesaaDriver for k in BLOG_CONFIGS.keys() if k.startswith('seesaa')})
+    DRIVERS.update({k: HatenaDriver for k in BLOG_CONFIGS.keys() if k.startswith('h_')})
+    DRIVERS.update({'wp_main': WordPressDriver, 'wp_saving': WordPressDriver})
+
+    MD_PATHS = {
+        'default': "/home/maya/shin-dev/shin-vps/next-bicstation/content/posts",
+        'saving': "/home/maya/shin-dev/shin-vps/next-bic-saving/content/posts"
     }
 
     RSS_SOURCES = [
@@ -70,15 +75,7 @@ class Command(BaseCommand):
         "https://news.mynavi.jp/rss/digital/pc",
         "https://ascii.jp/rss.xml",
         "https://www.gizmodo.jp/index.xml",
-        "https://www.theverge.com/rss/index.xml",
-        "https://www.engadget.com/rss.xml",
     ]
-
-    # Markdown保存先の定義
-    MD_PATHS = {
-        'default': "/home/maya/shin-dev/shin-vps/next-bicstation/content/posts",
-        'saving': "/home/maya/shin-dev/shin-vps/next-bic-saving/content/posts"
-    }
 
     def log(self, msg, style_func=None):
         ts = datetime.now().strftime('%H:%M:%S')
@@ -87,142 +84,137 @@ class Command(BaseCommand):
         else: self.stdout.write(text)
 
     def handle(self, *args, **options):
-        self.log("--- 🚀 BICSTATION Multi-Fleet v16.8 (Saving-Ready) ---", self.style.SUCCESS)
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        api_keys = [os.getenv(f"GEMINI_API_KEY_{i}").strip() for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
+        self.log("--- 🚀 BICSTATION Multi-Fleet v17.3 統合運用 ---", self.style.SUCCESS)
         
-        prompt_path = os.path.join(current_dir, "prompt", "ai_prompt_news.txt")
-        with open(prompt_path, "r", encoding='utf-8') as f: template = f.read()
-
-        all_entries = self.get_random_rss_pool()
-        random.shuffle(all_entries)
-        
-        if not all_entries: 
+        rss_pool = self.get_fresh_rss_pool()
+        if not rss_pool:
             self.log("🏁 新着記事はありません。")
             return
 
-        assigned_tasks = {}
+        final_tasks = {}
         used_links = set()
+        routing_map = self.get_routing_map()
 
-        for b_type in self.BLOG_CONFIGS.keys():
-            for entry in all_entries:
+        # ブログキーをシャッフルして配給の公平性を担保
+        blog_keys = list(self.BLOG_CONFIGS.keys())
+        random.shuffle(blog_keys)
+
+        for b_key in blog_keys:
+            best_entry = None
+            keys = routing_map.get(b_key, [])
+            
+            for entry in rss_pool:
                 if entry.link in used_links: continue
-                if self.auto_route_all(entry) == b_type:
-                    assigned_tasks[b_type] = entry
-                    used_links.add(entry.link)
-                    break 
+                text = (entry.title + (entry.summary if hasattr(entry, 'summary') else "")).lower()
+                if any(k in text for k in keys):
+                    best_entry = entry
+                    break
+            
+            if not best_entry and b_key in ['seesaa', 'h_main', 'wp_main']:
+                for entry in rss_pool:
+                    if entry.link in used_links: continue
+                    best_entry = entry
+                    break
 
-        task_list = list(assigned_tasks.items())
-        random.shuffle(task_list)
+            if best_entry:
+                final_tasks[b_key] = best_entry
+                used_links.add(best_entry.link)
 
-        for b_type, entry in task_list:
-            try: 
-                success = self.process_single_post(b_type, entry, template, api_keys, current_dir)
-                if not success: continue
-                time.sleep(45) 
-            except Exception as e: 
-                self.log(f"🔥 [{b_type.upper()}] 処理異常: {str(e)}", self.style.ERROR)
+        if not final_tasks:
+            self.log("⚠️ 割り当てタスクなし。")
+            return
 
-    def auto_route_all(self, entry):
-        text = (entry.title + (entry.summary if hasattr(entry, 'summary') else "")).lower()
-        
-        # 🚨 節約・マネー系キーワードの優先振り分け
-        if any(k in text for k in ['得', '節約', 'ポイント', '還元', '無料', 'セール', 'キャンペーン']):
-            # 節約系のメインは wp_saving または h_money
-            return random.choice(['wp_saving', 'h_money'])
+        api_keys = [os.getenv(f"GEMINI_API_KEY_{i}").strip() for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(current_dir, "prompt", "ai_prompt_news.txt"), "r", encoding='utf-8') as f:
+            template = f.read()
 
-        if any(k in text for k in ['ai', 'chatgpt', 'gemini']):
-            return random.choice(['h_ai', 'seesaa_ai'])
+        for b_key, entry in final_tasks.items():
+            try:
+                self.process_single_post(b_key, entry, template, api_keys)
+                time.sleep(35) 
+            except Exception as e:
+                self.log(f"🔥 [{b_key}] エラー: {str(e)}", self.style.ERROR)
 
-        if any(k in text for k in ['新型', 'レビュー', 'リーク']):
-            return 'wp_main'
-        
-        mapping = {
-           'ld_apple': ['apple', 'macbook', 'ipad', 'iphone', 'ios', 'm3 chip', 'm4 chip', 'airpods', 'vision pro'],
-            'ld_asus': ['asus', 'rog', 'zenbook', 'vivobook', 'tuf gaming', 'proart', 'ally'],
-            'ld_msi': ['msi', 'stealth', 'raider', 'cyborg', 'prestige', 'modern', 'claw'],
-            'ld_sony': ['sony', 'playstation', 'ps5', 'vaio', 'xperia', 'bravia', 'inzone', 'walkman'],
-            'ld_dell': ['dell', 'alienware', 'xps', 'inspiron', 'latitude', 'precision', 'vostro'],
-            'ld_hp': ['hp', 'omen', 'victus', 'spectre', 'envoy', 'pavilion', 'elitebook'],
-            'ld_lenovo': ['lenovo', 'thinkpad', 'legion', 'yoga', 'ideapad', 'loq', 'thinkbook'],
-            'ld_logicool': ['logicool', 'logitech', 'razer', 'corsair', 'steelseries', 'elecom', 'mechanical keyboard', 'gaming mouse'],
-            'ld_intel': ['intel', 'nvidia', 'rtx', 'geforce', 'core ultra', 'arc gpu', 'cuda', 'dlss', 'motherboard'],
-            'ld_amd': ['amd', 'ryzen', 'radeon', 'rdna', 'epyc', 'am5', 'fsr', 'rog ally'], # handheldもAMDが多いので
-        }
-        
-        for target, keys in mapping.items():
-            if any(k in text for k in keys): return target
-
-        if any(k in text for k in ['便利', 'ツール']): return 'h_main'
-        
-        return 'seesaa'
-
-    def get_random_rss_pool(self):
+    def get_fresh_rss_pool(self):
         pool = []
         for url in self.RSS_SOURCES:
             try:
                 res = requests.get(url, timeout=10)
                 feed = feedparser.parse(res.text)
                 for e in feed.entries:
-                    if not Article.objects.filter(source_url=e.link).exists(): 
+                    if not Article.objects.filter(source_url=e.link).exists():
                         pool.append(e)
             except: continue
         return pool
 
-    def process_single_post(self, b_type, entry, template, api_keys, current_dir):
+    def get_routing_map(self):
+        return {
+            'ld_mouse': ['mouse', 'g-tune', 'daiv'],
+            'ld_iiyama': ['iiyama', 'パソコン工房', 'level∞'],
+            'ld_dospara': ['dospara', 'ドスパラ', 'galleria'],
+            'ld_tsukumo': ['tsukumo', 'ツクモ', 'g-gear'],
+            'ld_ark': ['ark', 'アーク'],
+            'ld_frontier': ['frontier', 'フロンティア'],
+            'ld_sycom': ['sycom', 'サイコム'],
+            'ld_dynabook': ['dynabook', 'ダイナブック'],
+            'ld_nec': ['nec', 'lavie'],
+            'ld_fujitsu': ['fujitsu', '富士通', 'fmv'],
+            'ld_apple': ['apple', 'mac', 'ipad', 'iphone'],
+            'ld_asus': ['asus', 'rog', 'zenbook'],
+            'ld_msi': ['msi', 'claw'],
+            'ld_sony': ['sony', 'playstation', 'vaio', 'xperia'],
+            'ld_dell': ['dell', 'alienware'],
+            'ld_hp': ['hp', 'omen'],
+            'ld_lenovo': ['lenovo', 'thinkpad'],
+            'ld_logicool': ['logicool', 'razer', 'mouse', 'keyboard'],
+            'ld_intel': ['intel', 'nvidia', 'rtx'],
+            'ld_amd': ['amd', 'ryzen', 'radeon'],
+            'wp_saving': ['得', '節約', 'ポイント', '還元', '無料'],
+            'h_money': ['得', '節約', '金', '投資'],
+            'h_ai': ['ai', 'chatgpt', 'gemini'],
+            'seesaa_ai': ['生成', '人工知能'],
+        }
+
+    def process_single_post(self, b_key, entry, template, api_keys):
         connection.close()
-        self.log(f"🧵 [{b_type.upper()}] 処理中: {entry.title[:30]}...")
+        self.log(f"🧵 [{b_key.upper()}] 処理中...")
         data = self.scrape_article(entry)
-        if not data: return False
+        if not data: return
         
         processor = AIProcessor(api_keys, template)
-        ext = processor.generate_blog_content(data, b_type)
-        if not ext: return False
+        ext = processor.generate_blog_content(data, b_key)
+        if not ext: return
         
-        title = ext.get('title_g', '').strip()
-        if not re.search(r'[ぁ-んァ-ヶー一-龠]', title): return False
-
-        title = title.replace('\n', '').strip()
-        raw_body = ext.get('cont_h') if b_type.startswith('h_') else ext.get('cont_g')
-        ext['html_body'] = HTMLConverter.md_to_html(raw_body)
+        title = ext.get('title_g', '').replace('\n', '').strip()
+        raw_body = ext.get('cont_h') if b_key.startswith('h_') else ext.get('cont_g')
+        html_body = HTMLConverter.md_to_html(raw_body)
         
-        success_post = self.execute_blog_post(b_type, title, ext['html_body'], data)
-        
-        if success_post:
-            ArticleMapper.save_post_result(b_type, ext, data, True)
-            # 🚨 保存先の動的切り替え
-            save_path = self.MD_PATHS['saving'] if (b_type == 'wp_saving' or b_type == 'h_money') else self.MD_PATHS['default']
-            self.save_as_markdown(ext, data, save_path)
-            self.log(f"📊 [{b_type.upper()}] ✅ 成功")
-            return True
-        return False
-
-    def execute_blog_post(self, b_type, title, html_body, data):
-        DriverClass = self.DRIVERS.get(b_type)
-        if not DriverClass: return False
-        driver = DriverClass(self.BLOG_CONFIGS.get(b_type))
-        
-        # 節約系とPC系でフッターURLを切り替え
-        is_saving = (b_type == 'wp_saving' or b_type == 'h_money')
-        brand = "賢い節約・ポイ活情報" if is_saving else "最新PC・ガジェット"
-        url = "https://bic-saving.com" if is_saving else "https://bicstation.com"
-        
-        footer = f'<hr><div style="text-align:center;"><p>🚀 <b>{brand}</b> をチェック！</p><a href="{url}">公式サイトはこちら</a></div>'
-        try:
-            return driver.post(title=title, body=html_body + footer, image_url=data['img'], source_url=data['url'])
-        except Exception as e:
-            self.log(f"❌ {b_type.upper()}投稿エラー: {str(e)}")
-            return False
+        # 1. ブログサービスへ投稿
+        driver_class = self.DRIVERS.get(b_key)
+        if driver_class:
+            driver = driver_class(self.BLOG_CONFIGS[b_key])
+            is_saving = (b_key == 'wp_saving' or b_key == 'h_money')
+            brand_name = "賢い節約情報" if is_saving else "最新PCガジェット"
+            base_url = "https://bic-saving.com" if is_saving else "https://bicstation.com"
+            footer = f'<hr><p style="text-align:center;">🚀 <b>{brand_name}</b>: <a href="{base_url}">{base_url}</a></p>'
+            
+            if driver.post(title=title, body=html_body + footer, image_url=data['img'], source_url=data['url']):
+                ArticleMapper.save_post_result(b_key, ext, data, True)
+                self.log(f"📊 [{b_key.upper()}] ✅ 投稿完了")
+                
+                # 2. Markdownとしてローカル保存（Hugo/Next.js用）
+                save_dir = self.MD_PATHS['saving'] if is_saving else self.MD_PATHS['default']
+                self.save_as_markdown(ext, data, save_dir)
 
     def scrape_article(self, entry):
         try:
-            headers = {'User-Agent': 'Mozilla/5.0'}
-            res = requests.get(entry.link, timeout=10, headers=headers)
+            res = requests.get(entry.link, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
             res.encoding = res.apparent_encoding
             soup = BeautifulSoup(res.text, 'html.parser')
             og_img = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
-            content_area = soup.find('article') or soup.find('main') or soup.body
-            return {'url': entry.link, 'title': entry.title, 'img': og_img["content"] if og_img else "", 'body': content_area.get_text(strip=True)[:5000]}
+            content = soup.find('article') or soup.find('main') or soup.body
+            return {'url': entry.link, 'title': entry.title, 'img': og_img["content"] if og_img else "", 'body': content.get_text(strip=True)[:5000]}
         except: return None
 
     def save_as_markdown(self, ext, data, output_dir):
@@ -233,4 +225,6 @@ class Command(BaseCommand):
             m = ArticleMapper.format_for_markdown(ext, data)
             md_content = f'---\ntitle: "{m["title"]}"\ndate: "{datetime.now().strftime("%Y-%m-%d")}"\ncategory: "News"\nimage: "{m["image"]}"\nsource_url: "{m["source"]}"\n---\n\n{m["content"]}\n'
             with open(path, "w", encoding='utf-8') as f: f.write(md_content)
-        except: pass
+            self.log(f"📝 MD保存: {os.path.basename(path)}")
+        except Exception as e:
+            self.log(f"⚠️ MD保存失敗: {str(e)}")

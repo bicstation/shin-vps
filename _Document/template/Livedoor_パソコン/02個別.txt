@@ -94,7 +94,7 @@ $(function(){
                  <!-- 相互RSSのコード ひとつ目-->
             <script type="text/javascript">
             <!--
-                   var blogroll_channel_id = 360804;;
+                   var blogroll_channel_id = 360807;
             // -->
             </script>
             <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>

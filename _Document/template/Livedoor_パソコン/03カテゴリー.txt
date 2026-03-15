@@ -25,7 +25,7 @@ $(function(){
 });
 </script>
 </head>
-<body class="default_2012 page-monthly layout-2col sidebar-right<IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
+<body class="default_2012 page-category layout-2col sidebar-right<IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
 
 <$BlogHeader$><!-- 共通ヘッダー表示 -->
 
@@ -92,7 +92,7 @@ $(function(){
                  <!-- 相互RSSのコード ひとつ目-->
             <script type="text/javascript">
             <!--
-                   var blogroll_channel_id = 360804;;
+                   var blogroll_channel_id = 360807;
             // -->
             </script>
             <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
@@ -143,12 +143,22 @@ $(function(){
                 <!-- メッセージボード -->
                 <$MessageBoard$>
 
-                <!-- 月刊アーカイブページタイトル　はじまり -->
-                <div class="archives-header" id="monthly-header">
-                    <h1><$MonthLabel$></h1>
+                <!-- カテゴリーページタイトル　はじまり-->
+                <div class="archives-header" id="category-header">
+                <h1><$CategoryName ESCAPE$></h1>
                 </div>
-                <!-- 月刊アーカイブページタイトル　ここまで -->
+                <!-- カテゴリーページタイトル　ここまで-->
 
+<IfIsSearchTemplate>
+<UnlessSearchResults>
+<div class="noresult-message"><p>該当する記事はありません</p></div>
+</UnlessSearchResults>
+</IfIsSearchTemplate>
+<IfIsSearchTagsTemplate>
+<UnlessSearchResults>
+<div class="noresult-message"><p>該当する記事はありません</p></div>
+</UnlessSearchResults>
+</IfIsSearchTagsTemplate>
 
                 <!-- ページ送り　上部 はじまり-->
                 <$IndexNavigator$>
@@ -156,10 +166,10 @@ $(function(){
 
 
 
-                <!-- 月刊アーカイブページ一覧　はじまり -->
-                <MonthlyArticlesLoop><!-- カテゴリの記事一覧 -->
+                <!-- カテゴリー記事ページ一覧　はじまり -->
+                <CategorizedArticlesLoop><!-- カテゴリの記事一覧 -->
 
-                <!-- 月刊アーカイブページ　はじまり -->
+                <!-- カテゴリー記事ページ　はじまり -->
 <article class="custom-card-container">
     <div class="card-link-wrapper">
         
@@ -215,7 +225,7 @@ $(function(){
                 <IfFirstArticle><$Advertise$></IfFirstArticle><!-- 広告表示 -->
 
 
-                </MonthlyArticlesLoop>
+                </CategorizedArticlesLoop>
                 <!-- 月刊アーカイブページ一覧　ここまで -->
 
 
