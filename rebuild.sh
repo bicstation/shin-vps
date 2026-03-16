@@ -1,8 +1,8 @@
 #!/bin/bash
-# /home/maya/shin-dev/shin-vps/rebuild.sh
+# /home/maya/dev/shin-vps/rebuild.sh
 
 # ==============================================================================
-# 🚀 SHIN-VPS v3 究極フルスペック再構築スクリプト (職場PC・Gateway Timeout対策済)
+# 🚀 SHIN-VPS v3 究極フルスペック再構築スクリプト (自宅PC・パス修正済)
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -73,11 +73,11 @@ done
 echo "🧹 [1/4] Network & Container Detox..."
 docker compose -f "$COMPOSE_FILE" down --remove-orphans >/dev/null 2>&1
 
-# 🔥 【重要】 -a オプション時の物理削除ロジック
+# 🔥 【重要】 -a オプション時の物理削除ロジック（パスを修正済み）
 if [ "$CLEAN_VOLUMES" = "true" ]; then
     echo "⚠️ [DANGER] Full Reset: Deleting physical database data..."
-    # .envから読み取るまでもなく、特定した物理パスを掃除
-    sudo rm -rf /home/maya/shin-dev/vps-data/postgres/*
+    # 現在の更地ディレクトリにあわせて修正
+    sudo rm -rf /home/maya/dev/vps-data/postgres/*
     echo "✅ Physical data cleared."
 fi
 
@@ -93,7 +93,7 @@ docker compose -f "$COMPOSE_FILE" up -d --remove-orphans $SERVICES
 
 # --- 5. バックエンド・セットアップ ---
 echo "⏳ [3/4] Setting up Backend... (Waiting for DB)"
-sleep 10  # 職場PC用に少し長めに待機
+sleep 15  # 自宅PCの負荷を考慮し、少し長めに待機
 
 get_env_val() {
     grep "^$1=" "$SCRIPT_DIR/.env" | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d '\r'
@@ -113,12 +113,15 @@ if not User.objects.filter(username='maya').exists():
     print('✅ Superuser maya created.')
 "
 
-# 🚀 【追加】Gateway Timeout対策: 表示フラグの自動一括更新
+# 🚀 Gateway Timeout対策: 表示フラグの自動一括更新
 echo "⚡ Django: Enabling products for API display..."
 docker compose exec -T django-v3 python manage.py shell -c "
-from api.models import AdultProduct;
-updated = AdultProduct.objects.all().update(has_attributes=True, is_active=True);
-print(f'✅ {updated} products activated for API.');
+try:
+    from api.models import AdultProduct;
+    updated = AdultProduct.objects.all().update(has_attributes=True, is_active=True);
+    print(f'✅ {updated} products activated for API.');
+except Exception as e:
+    print(f'❌ Activation skipped (no table yet): {e}')
 "
 
 # --- 6. 完了表示 ---

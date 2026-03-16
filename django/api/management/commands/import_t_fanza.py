@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# /home/maya/dev/shin-vps/django/api/management/commands/import_t_fanza.py
+
 import json
 import time
 import logging

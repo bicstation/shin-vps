@@ -38,13 +38,15 @@ import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 export default async function SidebarWrapper() {
   // getSiteMetadata の返り値が undefined の場合のフォールバック
   const metadata = getSiteMetadata() || {};
-  const default_brand = metadata.default_brand || 'dmm';
+  // const default_brand = metadata.default_brand || 'dmm';
+  const default_brand = 'fanza';
   const site_name = metadata.site_name || 'TIPER';
   
   const isAvFlash = site_name === 'AV Flash' || site_name.includes('FLASH');
 
   // APIベースURL (Dockerネットワーク内部名)
-  const API_BASE = "http://api-tiper-host:8083";
+  // const API_BASE = "http://api-tiper-host:8083";
+  const API_BASE = "http://127.0.0.1:8083";
 
   // 1. データの並列取得
   const [navigationData, genresData, makersData, actressesData, statsResponse] = await Promise.all([
