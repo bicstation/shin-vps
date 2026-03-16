@@ -17,11 +17,10 @@ import AdultProductCard from '@shared/components/organisms/cards/AdultProductCar
 import SystemDiagnosticHero from '@shared/components/molecules/SystemDiagnosticHero';
 
 /**
- * 🛰️ API・ロジック・インポート (完全直通化)
- * 💡 修正: 中継所 (@shared/lib/api) を使わず、実体ファイルを直接参照します。
- * これにより TypeError: ... is not a function を物理的に封殺します。
+ * 🛰️ API・ロジック・インポート
+ * 💡 徹底除去: getWpFeaturedImage はもう存在しないため、インポートリストから削除しました。
  */
-import { getSiteMainPosts, getWpFeaturedImage } from '@shared/lib/api/django-bridge';
+import { getSiteMainPosts } from '@shared/lib/api/django-bridge';
 import { getUnifiedProducts } from '@shared/lib/api/django/adult'; 
 import { constructMetadata } from '@shared/lib/utils/metadata';
 
@@ -64,15 +63,14 @@ const formatDate = (dateString: string) => {
 export default async function Home(props: { 
     searchParams: Promise<{ [key: string]: string | string[] | undefined }> 
 }) {
+    // Next.js 15: searchParams と headers は await が必要
     const searchParams = await props.searchParams;
     const isDebugMode = searchParams.debug === 'true';
 
-    // Next.js 15 headers 対策
     const head = await headers();
     const host = head.get('host') || 'localhost';
 
     // --- 1. データ取得 (並列実行) ---
-    // 直通インポートされた getUnifiedProducts を使用
     const [
         wpData, 
         fanzaRes,
@@ -85,6 +83,7 @@ export default async function Home(props: {
         getUnifiedProducts({ api_source: 'DMM', limit: 4 }).catch(() => ({ results: [] })),
     ]);
 
+    // Django-Bridge v5.4 以降、MarkdownとAPI両方の結果が results に入ります
     const latestPosts = wpData?.results || [];
     
     const isApiConnected = 
@@ -120,7 +119,7 @@ export default async function Home(props: {
                         productCount: (fanzaRes?.results?.length || 0) + (dugaRes?.results?.length || 0) + (dmmRes?.results?.length || 0),
                     }}
                     raw={{ 
-                        id: "V3.2_FINAL_ZENITH", 
+                        id: "V3.5_FINAL_PURGE", 
                         wpCount: latestPosts.length,
                         host: host
                     }} 
@@ -130,7 +129,7 @@ export default async function Home(props: {
             {/* 🏗️ コンテンツストリーム */}
             <div className={styles.contentStream}>
                 
-                {/* 📰 Intelligence Reports */}
+                {/* 📰 Intelligence Reports (Markdown / Django News) */}
                 {latestPosts.length > 0 && (
                     <section className={styles.newsSection}>
                         <div className={styles.sectionHeader}>
@@ -138,23 +137,35 @@ export default async function Home(props: {
                             <Link href="/news" className={styles.headerLink}>OPEN_ALL_FILES →</Link>
                         </div>
                         <div className={styles.newsGrid}>
-                            {latestPosts.slice(0, 3).map((post: any) => (
-                                <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
-                                    <div className={styles.newsThumbWrap}>
-                                        <img 
-                                            src={getWpFeaturedImage(post, 'large')} 
-                                            alt={decodeHtml(post.title?.rendered)} 
-                                            className={styles.newsThumb} 
-                                        />
-                                    </div>
-                                    <div className={styles.newsContent}>
-                                        <span className={styles.newsDate}>{formatDate(post.date)}</span>
-                                        <h3 className={styles.newsTitle}>
-                                            {decodeHtml(post.title?.rendered)}
-                                        </h3>
-                                    </div>
-                                </Link>
-                            ))}
+                            {latestPosts.slice(0, 3).map((post: any) => {
+                                /**
+                                 * 💡 インライン画像判定ロジック
+                                 * 関数を使わず、データから直接フォールバックチェーンを作成
+                                 */
+                                const displayImage = post.image || 
+                                                     post.featured_image || 
+                                                     post.thumbnail_url || 
+                                                     post._embedded?.['wp:featuredmedia']?.[0]?.source_url || 
+                                                     '/no-image.jpg';
+
+                                return (
+                                    <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
+                                        <div className={styles.newsThumbWrap}>
+                                            <img 
+                                                src={displayImage} 
+                                                alt={decodeHtml(post.title?.rendered || post.title)} 
+                                                className={styles.newsThumb} 
+                                            />
+                                        </div>
+                                        <div className={styles.newsContent}>
+                                            <span className={styles.newsDate}>{formatDate(post.date || post.created_at)}</span>
+                                            <h3 className={styles.newsTitle}>
+                                                {decodeHtml(post.title?.rendered || post.title)}
+                                            </h3>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </section>
                 )}
@@ -164,7 +175,7 @@ export default async function Home(props: {
                     <div className={styles.registryHeader}>
                         <h1 className={styles.registryMainTitle}>
                             UNIFIED_DATA_STREAM
-                            <span className={styles.titleThin}>ZENITH_REGISTRY_v3.2</span>
+                            <span className={styles.titleThin}>ZENITH_REGISTRY_v3.5</span>
                         </h1>
                     </div>
 

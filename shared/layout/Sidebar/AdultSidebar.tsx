@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import styles from './AdultSidebar.module.css';
 
 // --- インターフェース定義 ---
@@ -39,17 +39,18 @@ interface SidebarProps {
   makers?: MasterItem[];
   genres?: MasterItem[];
   actresses?: MasterItem[];
-  aiAttributes?: MasterItem[]; // 🚀 Wrapper (sidebar-stats) から渡される属性
+  aiAttributes?: MasterItem[];
   recentPosts?: { id: string; title: string; slug?: string }[];
-  currentBrand?: string;       // 'FANZA' | 'DMM' | 'DUGA'
+  currentBrand?: string;
   siteName?: string;
 }
 
 /**
  * =====================================================================
- * 🛰️ AdultSidebar - Standard Tactical Edition (V4.2)
+ * 🛰️ AdultSidebar - Fleet Integrated Edition (V5.0)
  * ---------------------------------------------------------------------
- * Tiper/一般サイト向け。情報密度を優先し、目録（Index）への導線を強化。
+ * BICSTATION 黄金艦隊アンテナを完全統合。
+ * サブドメイン群への回遊をシステムレベルで自動化。
  * =====================================================================
  */
 export default function AdultSidebar({
@@ -64,9 +65,10 @@ export default function AdultSidebar({
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
-  // 🪄 セクション開閉状態：標準サイドバーは基本項目をデフォルト展開
+  // 🪄 セクション開閉状態：黄金艦隊（FLEET）は常時展開を推奨
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'PLATFORMS': true,
+    'FLEET': true,       // 🚀 黄金艦隊セクション
     'OFFICIAL_NAV': true,
     'AI_SPECS': true, 
     'GENRES': true,
@@ -97,6 +99,29 @@ export default function AdultSidebar({
     return `/${category}/${identifier}`;
   };
 
+  // ⚜️ 黄金艦隊データ定義（管理用）
+  const fleetNetwork = [
+    { name: '先行予約', slug: 'reserve', icon: '📅', tag: '速報' },
+    { name: '熟女・人妻', slug: 'jukujo', icon: '💋', tag: '人妻' },
+    { name: 'VR快楽', slug: 'vr', icon: '👓', tag: '360°' },
+    { name: '美少女', slug: 'idol', icon: '💎', tag: 'アイドル' },
+    { name: 'NTR・不倫', slug: 'ntr', icon: '💔', tag: '寝取' },
+    { name: 'フェチ・巨乳', slug: 'fetish', icon: '🍓', tag: '爆乳' },
+    { name: '名作まとめ', slug: 'wiki', icon: '📚', tag: 'Wiki' },
+    { name: '中出し', slug: 'nakadashi', icon: '💦', tag: '生ハメ' },
+    { name: '素人', slug: 'amateur', icon: '🔰', tag: '18禁' },
+    { name: '処女・初体験', slug: 'virgin', icon: '🌸', tag: 'Debut' },
+    { name: '現役女子校生', slug: 'jk', icon: '🏫', tag: 'JK' },
+    { name: '現役女子大生', slug: 'jd', icon: '🎓', tag: 'JD' },
+    { name: 'パパ活・放課後', slug: 'enkou', icon: '💰', tag: '援交' },
+    { name: '新婚若妻', slug: 'wakazuma', icon: '💍', tag: 'エプロン' },
+    { name: '白衣・ナース', slug: 'nurse', icon: '💉', tag: '病院' },
+    { name: '背徳OL・女上司', slug: 'ol', icon: '👠', tag: 'スーツ' },
+    { name: '痴女・野外', slug: 'chijo', icon: '👙', tag: '露出' },
+    { name: '爆乳ギャル', slug: 'gal', icon: '👱‍♀️', tag: 'ヤリマン' },
+    { name: '極薄スレンダー', slug: 'slender', icon: '👗', tag: '美体' },
+  ];
+
   if (!mounted) return null;
 
   return (
@@ -126,7 +151,41 @@ export default function AdultSidebar({
         )}
       </section>
 
-      {/* 🚀 OFFICIAL_LAYERS (サービス・フロア) */}
+      {/* ⚜️ BICSTATION_FLEET (黄金艦隊アンテナ統合) */}
+      <section className={styles.sectionWrapper} style={{ border: '1px solid #d4af37' }}>
+        <div className={`${styles.sectionHeader} ${styles.fleetHeader}`} onClick={() => toggleSection('FLEET')}>
+          <h3 className={styles.headerTitle} style={{ color: '#d4af37' }}>
+            <span className={styles.icon}>⚜️</span> BICSTATION_FLEET
+          </h3>
+          <span className={styles.arrow} style={{ color: '#d4af37' }}>{openSections['FLEET'] ? '▲' : '▼'}</span>
+        </div>
+        {openSections['FLEET'] && (
+          <div className={styles.contentBody}>
+            <ul className={styles.masterList}>
+              {/* メインポータル */}
+              <li className={styles.masterListItem}>
+                <a href="https://main.tiper.live" target="_blank" rel="noopener noreferrer" className={styles.masterLink} style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
+                  <span className={styles.itemName} style={{ color: '#d4af37', fontWeight: 'bold' }}>▶ Tiper.Live (Main Portal)</span>
+                </a>
+              </li>
+              {/* サブドメイン艦隊ループ */}
+              {fleetNetwork.map((site) => (
+                <li key={site.slug} className={styles.masterListItem}>
+                  <a href={`https://${site.slug}.tiper.live`} target="_blank" rel="noopener noreferrer" className={styles.masterLink}>
+                    <span className={styles.itemName}>
+                      <span style={{ marginRight: '8px', filter: 'drop-shadow(0 0 2px rgba(212,175,55,0.5))' }}>{site.icon}</span>
+                      {site.name}
+                    </span>
+                    <span className={styles.itemCount} style={{ fontSize: '9px', opacity: 0.6 }}>{site.tag}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      {/* 🚀 OFFICIAL_LAYERS */}
       <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeader} onClick={() => toggleSection('OFFICIAL_NAV')}>
           <h3 className={styles.headerTitle}>
@@ -206,7 +265,7 @@ export default function AdultSidebar({
         )}
       </section>
 
-      {/* 🛠️ MASTER_DATA_INDEXES (女優・ジャンル・メーカー) */}
+      {/* 🛠️ MASTER_DATA_INDEXES */}
       {[
         { id: 'ACTRESSES', type: 'actress', data: actresses, icon: '👩', label: '女優' },
         { id: 'GENRES', type: 'genre', data: genres, icon: '🏷️', label: 'ジャンル' },

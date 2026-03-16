@@ -1,11 +1,11 @@
 /**
- * 📂 AdultSidebar.module.css - Advanced Tactical Registry Interface (V2.3)
- * 🚀 Final Optimization: Zero-Overlap & AI Spec Integration
+ * 📂 AdultSidebar.module.css - Imperial Overdrive Edition (V3.0)
+ * 🚀 Final Optimization: Gold-Fleet Integration & Zero-Overlap
  */
 
 .sidebar {
   /* 変数定義: 彩度を調整し、より深みのある配色へ */
-  --s-bg-main: #08080a; /* 透明度を下げて背景との境界を明確に */
+  --s-bg-main: #08080a; 
   --s-accent: #e94560;
   --s-accent-rgb: 233, 69, 96;
   --s-accent-glow: rgba(233, 69, 96, 0.4);
@@ -14,13 +14,15 @@
   --s-text-active: #fff;
   --s-glass: rgba(255, 255, 255, 0.02);
   --s-ai-gold: #ffb800;
+  --s-fleet-gold: #d4af37; /* ⚜️ 黄金艦隊専用ゴールド */
+  --s-fleet-gold-glow: rgba(212, 175, 55, 0.3);
 
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   background: var(--s-bg-main);
-  padding: 2rem 1.5rem; /* 上部余白を少し追加 */
+  padding: 2rem 1.2rem;
   border-right: 1px solid var(--s-border);
   
   /* 🚀 高さをフッターまで「制限なし」で表示するための修正 */
@@ -29,7 +31,7 @@
   
   /* 💡 Sticky挙動を維持しつつ、はみ出しを防ぐ */
   position: sticky;
-  top: 60px; /* layout.tsx のヘッダー高さに合わせる */
+  top: 60px; 
   
   /* 📋 リストが長い場合のみサイドバー内でスクロール可能に */
   max-height: calc(100vh - 60px); 
@@ -40,7 +42,6 @@
   scrollbar-color: var(--s-accent) transparent;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   z-index: 100;
-  /* 左側の影を消し、一体感を出す */
   box-shadow: none; 
 }
 
@@ -73,11 +74,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.1rem 1.25rem;
+  padding: 1rem 1.25rem;
   background: rgba(255, 255, 255, 0.03);
   cursor: pointer;
   position: relative;
-  min-height: 56px; 
+  min-height: 52px; 
+}
+
+/* ⚜️ 黄金艦隊セクション用の特別ヘッダー */
+.fleetHeader {
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), transparent);
+  border-left: 3px solid var(--s-fleet-gold);
+}
+
+.fleetHeader .headerTitle {
+  color: var(--s-fleet-gold);
+  text-shadow: 0 0 10px var(--s-fleet-gold-glow);
 }
 
 /* AI属性セクション用の特別ヘッダー */
@@ -87,18 +99,18 @@
 }
 
 .headerTitle {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   color: var(--s-text-muted);
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .icon {
-  font-size: 1rem;
+  font-size: 0.9rem;
   filter: grayscale(1) brightness(0.7);
   transition: 0.4s;
 }
@@ -118,8 +130,8 @@
 .platformGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding: 15px;
+  gap: 6px;
+  padding: 12px;
   background: rgba(0, 0, 0, 0.4);
 }
 
@@ -127,17 +139,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 4px;
-  min-height: 40px;
+  padding: 10px 2px;
+  min-height: 36px;
   text-align: center;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
   background: #121214;
   border: 1px solid #222;
   color: #555;
   text-decoration: none;
   transition: all 0.2s;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
 }
 
 .platBtn:hover { border-color: var(--s-accent); color: var(--s-text-active); }
@@ -167,9 +179,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.25rem;
-  min-height: 52px; 
-  font-size: 0.8rem;
+  padding: 0.85rem 1.25rem;
+  min-height: 48px; 
+  font-size: 0.75rem;
   color: #888;
   text-decoration: none;
   transition: all 0.2s;
@@ -179,7 +191,14 @@
 .masterLink:hover {
   color: var(--s-text-active);
   background: rgba(var(--s-accent-rgb), 0.05);
-  padding-left: 1.5rem;
+  padding-left: 1.4rem;
+}
+
+/* ⚜️ 黄金艦隊リンク用ホバー */
+.fleetHeader + .contentBody .masterLink:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-left: 2px solid var(--s-fleet-gold);
+  color: var(--s-fleet-gold);
 }
 
 .tagPrefix {
@@ -196,37 +215,16 @@
 }
 
 .itemCount {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--s-accent);
   opacity: 0.8;
-  padding-left: 10px;
-}
-
-/* --- 💎 CROSS_OVER_BADGE (推奨PCリンク) --- */
-.specLinkBadge {
-  display: inline-block;
-  align-self: flex-start;
-  margin: -10px 1.25rem 10px 2.5rem;
-  padding: 2px 8px;
-  font-size: 10px;
-  font-weight: 900;
-  color: #000;
-  background: var(--s-ai-gold);
-  text-decoration: none;
-  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
-  transition: 0.3s;
-  z-index: 5;
-}
-
-.specLinkBadge:hover {
-  background: #fff;
-  transform: scale(1.05);
-  box-shadow: 0 0 10px var(--s-ai-gold);
+  padding-left: 8px;
+  font-weight: 700;
 }
 
 /* --- 🚀 VIEW_MORE_ANCHOR --- */
 .viewMoreItem {
-  padding: 12px;
+  padding: 8px 12px;
   background: rgba(0, 0, 0, 0.3);
 }
 
@@ -234,14 +232,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  min-height: 48px;
+  padding: 10px 14px;
+  min-height: 42px;
   background: rgba(var(--s-accent-rgb), 0.08);
   border: 1px solid rgba(var(--s-accent-rgb), 0.2);
   text-decoration: none;
   transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
 }
 
 .viewMoreLink:hover {
@@ -250,16 +246,16 @@
 }
 
 .viewMoreText {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 900;
   color: var(--s-accent);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.1em;
 }
 
 .viewMoreLink:hover .viewMoreText { color: #fff; }
 
 .viewMoreArrow {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--s-accent);
   transition: transform 0.3s;
 }
@@ -272,7 +268,7 @@
 /* --- ⚙️ SYSTEM_FOOTER --- */
 .systemFooter {
   margin-top: auto; 
-  padding: 2rem 0.5rem 1rem;
+  padding: 1.5rem 0.5rem 0.5rem;
   border-top: 1px solid var(--s-border);
 }
 
@@ -280,7 +276,7 @@
   display: flex; 
   justify-content: space-between; 
   align-items: center; 
-  margin-bottom: 8px; 
+  margin-bottom: 6px; 
 }
 
 .blinkContainer {
@@ -290,7 +286,7 @@
 }
 
 .blinkDot {
-  width: 6px; height: 6px;
+  width: 5px; height: 5px;
   background: #00ffaa;
   border-radius: 50%;
   box-shadow: 0 0 8px #00ffaa;
@@ -298,9 +294,10 @@
 }
 
 .statusLabel {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   color: #00ffaa;
+  letter-spacing: 0.1em;
 }
 
 /* --- 🪐 EXTRA_GLITCH_TEXT --- */
@@ -310,20 +307,20 @@
 }
 
 @keyframes glitch-anim {
-  0% { text-shadow: 2px 0 red; }
-  2% { text-shadow: -2px 0 blue; }
+  0% { text-shadow: 1px 0 #e94560; }
+  2% { text-shadow: -1px 0 #00ffaa; }
   4% { text-shadow: 0 0 white; }
   100% { text-shadow: 0 0 white; }
 }
 
 @keyframes pulse-blink {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.3; }
 }
 
 .emptyStatus {
-  padding: 1.5rem;
-  font-size: 0.7rem;
+  padding: 1rem;
+  font-size: 0.65rem;
   color: #444;
   text-align: center;
   font-style: italic;
@@ -335,10 +332,9 @@
     max-height: none;
     position: relative;
     top: 0;
-    padding: 1.25rem;
+    padding: 1rem;
     border-right: none;
     border-bottom: 1px solid var(--s-border);
-    box-shadow: none;
     height: auto;
     min-height: auto;
   }
