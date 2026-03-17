@@ -1,14 +1,14 @@
 /**
  * =====================================================================
  * 🖥️ PC製品（General）統合サービス
- * 🛡️ Maya's Logic: 物理構造 v5.1 完全同期版 (Next.js 15+ 対応)
+ * 🛡️ Maya's Logic: 物理構造 v5.2 完全同期版 (Next.js 15+ 対応)
+ * 修正内容: resolveApiUrl の仕様変更に伴い、引数から冗長なパスを排除。
  * 物理パス: shared/lib/api/django/pc.ts
  * =====================================================================
  */
 
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from './client';
-// ✅ 修正: 定数 siteConfig ではなく、関数 getSiteMetadata を直接呼ぶ形式に変更
-import { getSiteMetadata, SiteMetadata } from '../../utils/siteConfig';
+import { getSiteMetadata } from '../../utils/siteConfig';
 
 /**
  * 💎 型定義 (Maya's Logic Spec Edition)
@@ -75,6 +75,7 @@ const getSafeSiteGroup = (): string => {
 
 /**
  * 💡 PC製品一覧取得
+ * [Correct Path]: /api/general/pc-products/
  */
 export async function fetchPCProducts(
     maker: string = '', 
@@ -83,7 +84,6 @@ export async function fetchPCProducts(
     attribute: string = ''
 ): Promise<{ results: PCProduct[]; count: number; _debug?: any }> {
     
-    // ✅ 実行時に関数から取得することで undefined エラーを封殺
     const site_group = getSafeSiteGroup();
     
     const queryParams = new URLSearchParams({ 
@@ -95,7 +95,8 @@ export async function fetchPCProducts(
     if (maker) queryParams.append('maker', maker);
     if (attribute) queryParams.append('attribute', attribute);
 
-    const url = resolveApiUrl(`/general/pc-products/?${queryParams.toString()}`);
+    // ✅ resolveApiUrl が自動で /api/ と末尾の / を補完するため「パスのみ」を渡す
+    const url = resolveApiUrl(`general/pc-products?${queryParams.toString()}`);
 
     try {
         const res = await fetch(url, { 
@@ -117,9 +118,11 @@ export async function fetchPCProducts(
 
 /**
  * 💡 PC製品詳細取得
+ * [Correct Path]: /api/general/pc-products/${unique_id}/
  */
 export async function fetchPCProductDetail(unique_id: string): Promise<PCProduct | null> {
-    const url = resolveApiUrl(`/general/pc-products/${unique_id}/`); 
+    // ✅ 末尾スラッシュは client.ts で自動付与されるため、変数を渡すだけで完結
+    const url = resolveApiUrl(`general/pc-products/${unique_id}`); 
     
     try {
         const res = await fetch(url, { 
@@ -135,11 +138,14 @@ export async function fetchPCProductDetail(unique_id: string): Promise<PCProduct
 
         const data = await handleResponseWithDebug(res, url);
         
-        if (!data || (!data.unique_id && !data.id)) {
+        // handleResponseWithDebug の正規化を考慮し、results[0] または data本体を確認
+        const product = data.results ? data.results[0] : data;
+
+        if (!product || (!product.unique_id && !product.id)) {
             return null;
         }
         
-        return data as PCProduct;
+        return product as PCProduct;
 
     } catch (e: any) {
         console.error(`🚨 [PC-Detail Fatal]: ${e.message}`);
@@ -149,13 +155,15 @@ export async function fetchPCProductDetail(unique_id: string): Promise<PCProduct
 
 /**
  * 💡 メーカー一覧取得
+ * [Correct Path]: /api/general/pc-makers/
  */
 export async function fetchMakers(): Promise<MakerCount[]> {
-    const url = resolveApiUrl(`/general/pc-makers/`);
+    const url = resolveApiUrl(`general/pc-makers`);
     try {
         const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
         const data = await handleResponseWithDebug(res, url);
-        return Array.isArray(data) ? data : (data.results || []);
+        // results配列があればそれを返し、なければdataが配列であると期待
+        return Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
     } catch (e) {
         return [];
     }
@@ -163,15 +171,16 @@ export async function fetchMakers(): Promise<MakerCount[]> {
 
 /**
  * 💡 AIスコアランキング / 注目度ランキング
+ * [Correct Path]: /api/general/pc-products/ranking/
  */
 export async function fetchPCProductRanking(type: 'score' | 'popularity' = 'score'): Promise<PCProduct[]> {
     const endpoint = type === 'score' ? 'ranking' : 'popularity-ranking';
-    const url = resolveApiUrl(`/general/pc-products/${endpoint}/`);
+    const url = resolveApiUrl(`general/pc-products/${endpoint}`);
     
     try {
         const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 600 } });
         const data = await handleResponseWithDebug(res, url);
-        return Array.isArray(data) ? data : (data.results || []);
+        return Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
     } catch (e: any) { 
         return []; 
     }
@@ -179,16 +188,20 @@ export async function fetchPCProductRanking(type: 'score' | 'popularity' = 'scor
 
 /**
  * 💡 PCスペック統計取得
+ * [Correct Path]: /api/general/pc-sidebar-stats/
  */
 export async function fetchPCSidebarStats(): Promise<any | null> {
-    const url = resolveApiUrl(`/general/pc-sidebar-stats/`);
+    const url = resolveApiUrl(`general/pc-sidebar-stats`);
     try {
         const res = await fetch(url, { 
             headers: getDjangoHeaders(), 
             next: { revalidate: 600 } 
         });
-        return await handleResponseWithDebug(res, url);
+        const data = await handleResponseWithDebug(res, url);
+        // 統計データは単一オブジェクトまたはresultsに含まれる
+        return data.results ? data.results : data;
     } catch (e: any) {
+        console.error(`🚨 [PC-Sidebar-Stats Error]: ${e.message}`);
         return null;
     }
 }

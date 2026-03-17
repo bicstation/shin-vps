@@ -1,28 +1,34 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge サービス層 (Maya's Logic v5.4 - Stability & Safety)
+ * 🌉 Django-Bridge サービス層 (Maya's Logic v5.6 - Stability & Safety)
  * =====================================================================
+ * 修正内容: 
+ * 1. client.ts v5.1 の URL 解決ルールに完全準拠
+ * 2. 戻り値に具体的な型(PCProduct等)を割り当て、未使用インポート警告を解消
  * 物理パス: /shared/lib/api/django-bridge.ts
+ * =====================================================================
  */
 
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { getWpConfig, IS_SERVER, getDjangoBaseUrl } from './config';
-// 型定義
-import { PCProduct, MakerCount } from './index'; 
+import { resolveApiUrl as commonResolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from './django/client';
+// ✅ types から必要な型をすべてインポート (これで薄暗い警告が消えます)
+import { 
+    PCProduct, 
+    AdultProduct, 
+    DjangoApiResponse, 
+    MakerCount 
+} from './types';
 
-// --- ✨ 【修正】環境を問わないパス解決 ---
 const POSTS_PATH = path.join(process.cwd(), 'content', 'posts');
 
 /**
- * 🔄 【修正済】ドメイン・一括置換ユーティリティ
- * 文字列でないデータや undefined が来ても落ちないようにガードを大幅強化
+ * 🔄 【置換】ドメイン・一括置換ユーティリティ
  */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
-
-    // オブジェクト/配列の場合は、一度文字列化して一括置換を試みる
     if (typeof data === 'object') {
         try {
             let content = JSON.stringify(data);
@@ -37,74 +43,52 @@ export const replaceInternalUrls = (data: any): any => {
             
             return JSON.parse(content);
         } catch (e) {
-            return data; // パースに失敗したら生データを返す
+            return data;
         }
     }
-
-    // 文字列の場合の安全な置換
     if (typeof data === 'string') {
         const baseUrl = getDjangoBaseUrl();
         if (!baseUrl) return data;
-        
         const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
         return data.replace(/http:\/\/(django-v3|nginx-wp-v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g, cleanBaseUrl);
     }
-
     return data;
 };
 
 /**
- * 💡 【解決】内部URL解決ロジック
+ * 🛠️ 【通信】共通 Fetch ラッパー
  */
-const resolveApiUrl = (endpoint: string) => {
-    const cleanEndpoint = endpoint.replace(/^\/?api\//, '').replace(/^\//, '');
-    const baseUrl = getDjangoBaseUrl();
-    const base = (baseUrl || '').replace(/\/$/, '');
-    
-    const hasQuery = cleanEndpoint.includes('?');
-    const pathPart = hasQuery ? cleanEndpoint.split('?')[0] : cleanEndpoint;
-    const queryPart = hasQuery ? '?' + cleanEndpoint.split('?')[1] : '';
-    
-    // Djangoの末尾スラッシュ厳格化に対応
-    const slashedPath = pathPart.endsWith('/') ? pathPart : `${pathPart}/`;
-    
-    return `${base}/api/${slashedPath}${queryPart}`;
-};
-
-/**
- * 🛠️ 【通信】共通 Fetch ラッパー (エラーログ強化版)
- */
-async function fetchFromBridge(url: string, options: any = {}) {
+async function fetchFromBridge<T>(url: string, options: any = {}): Promise<{ data: DjangoApiResponse<T>, status: number }> {
     const { host } = getWpConfig();
     try {
         const res = await fetch(url, {
             ...options,
             headers: {
+                ...getDjangoHeaders(),
                 'Host': host,
-                'Accept': 'application/json',
                 ...(options.headers || {}),
             },
             signal: AbortSignal.timeout(options.timeout || 8000)
         });
 
-        if (!res.ok) {
-            console.warn(`⚠️ [Bridge Status Error]: ${res.status} | URL: ${url}`);
-            return { data: null, total: 0, status: res.status };
-        }
+        const data = await handleResponseWithDebug(res, url);
         
-        const data = await res.json();
-        const total = parseInt(res.headers.get('X-WP-Total') || res.headers.get('X-Total-Count') || '0', 10);
-        
-        return { data: replaceInternalUrls(data), total, status: res.status };
+        return { 
+            data: replaceInternalUrls(data) as DjangoApiResponse<T>, 
+            status: res.status 
+        };
     } catch (e: any) {
         console.error(`🚨 [Bridge Fatal Error]: ${url} | ${e.message}`);
-        return { data: null, total: 0, error: e.message };
+        return { 
+            data: { results: [], count: 0 } as DjangoApiResponse<T>, 
+            status: 500 
+        };
     }
 }
 
-// --- 📝 統合コンテンツ取得 (page.tsx 呼び出し用) ---
+// --- 📝 統合コンテンツ取得 ---
 
-export async function fetchDjangoBridgeContent(params: any = {}) {
+export async function fetchDjangoBridgeContent(params: any = {}): Promise<DjangoApiResponse<any>> {
     const siteGroup = params?.site_group || '';
     if (siteGroup === 'bicstation') {
         return await fetchPCProducts(params);
@@ -114,17 +98,17 @@ export async function fetchDjangoBridgeContent(params: any = {}) {
     return await fetchPostList('post', params?.limit, params?.offset);
 }
 
-// --- 📰 ニュース記事（Articleモデル）取得機能 ---
+// --- 📰 ニュース記事 取得機能 ---
 
-export async function fetchNewsArticles(limit = 12, offset = 0) {
+export async function fetchNewsArticles(limit = 12, offset = 0): Promise<DjangoApiResponse<any>> {
     const query = new URLSearchParams({
         limit: limit.toString(),
         offset: offset.toString(),
         ordering: '-created_at',
         is_exported: 'true'
     });
-    const url = resolveApiUrl(`news/?${query.toString()}`);
-    const { data } = await fetchFromBridge(url, { next: { revalidate: 300 } });
+    const url = commonResolveApiUrl(`news?${query.toString()}`);
+    const { data } = await fetchFromBridge<any>(url, { next: { revalidate: 300 } });
     
     return { 
         results: data?.results || [], 
@@ -134,15 +118,11 @@ export async function fetchNewsArticles(limit = 12, offset = 0) {
 
 // --- 📝 記事コンテンツ機能 (Markdown File System) ---
 
-/**
- * ローカルの Markdown ファイルを優先し、なければ Django API へフォールバック
- */
-export async function fetchPostList(postType: string = 'post', limit = 12, offset = 0) {
+export async function fetchPostList(postType: string = 'post', limit = 12, offset = 0): Promise<DjangoApiResponse<any>> {
     if (IS_SERVER) {
         try {
             if (fs.existsSync(POSTS_PATH)) {
                 const files = fs.readdirSync(POSTS_PATH).filter(fn => fn.endsWith('.md'));
-                
                 if (files.length > 0) {
                     const posts = files.map(filename => {
                         try {
@@ -157,16 +137,11 @@ export async function fetchPostList(postType: string = 'post', limit = 12, offse
                                 image: data.image || '',
                                 description: data.description || '',
                                 body_text: content,
-                                source_url: data.source_url || '',
                                 ...data
                             };
-                        } catch (err) {
-                            return null;
-                        }
+                        } catch (err) { return null; }
                     }).filter(Boolean);
-
-                    posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-                    
+                    posts.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
                     return { 
                         results: posts.slice(offset, offset + (limit || 12)), 
                         count: posts.length 
@@ -174,53 +149,44 @@ export async function fetchPostList(postType: string = 'post', limit = 12, offse
                 }
             }
         } catch (e) {
-            console.error("🚨 MD Loading Error (Falling back to API):", e);
+            console.error("🚨 MD Loading Error:", e);
         }
     }
-
-    // MDがない、または読み込み失敗時は API にフォールバック
     return await fetchNewsArticles(limit, offset);
 }
 
-/**
- * 個別記事の取得 (MDファイルを優先、なければ API)
- */
-export async function fetchPostData(postType: string = 'post', identifier: string) {
+export async function fetchPostData(postType: string = 'post', identifier: string): Promise<any> {
     const mdFilePath = path.join(POSTS_PATH, `${identifier}.md`);
-
     if (IS_SERVER && fs.existsSync(mdFilePath)) {
         try {
             const fileContent = fs.readFileSync(mdFilePath, 'utf-8');
             const { data, content } = matter(fileContent);
             return { ...data, body_text: content };
-        } catch (e) {
-            console.error("🚨 MD Detail Read Error:", e);
-        }
+        } catch (e) { console.error("🚨 MD Detail Error:", e); }
     }
-
-    const url = resolveApiUrl(`news/${identifier}/`);
-    const { data } = await fetchFromBridge(url);
-    return data;
+    const url = commonResolveApiUrl(`news/${identifier}`);
+    const { data } = await fetchFromBridge<any>(url);
+    return data.results ? data.results[0] : data;
 }
 
 // --- 🔞 アダルトコンテンツ機能 ---
 
-export async function getAdultProducts(params: any = {}) {
+export async function getAdultProducts(params: any = {}): Promise<DjangoApiResponse<AdultProduct>> {
     const safeParams = params || {};
     const query = new URLSearchParams({
         limit: (safeParams.limit || 20).toString(),
         offset: (safeParams.offset || 0).toString(),
         ordering: safeParams.ordering || '-id',
-        ...(safeParams.site_group && { site_group: safeParams.site_group })
     });
-    const url = resolveApiUrl(`adult-products/?${query.toString()}`);
-    const { data, total } = await fetchFromBridge(url, { next: { revalidate: 60 } });
-    return { results: data?.results || [], count: data?.count || total };
+    const url = commonResolveApiUrl(`adult/unified-products?${query.toString()}`);
+    // ✅ ジェネリクス <AdultProduct> を指定
+    const { data } = await fetchFromBridge<AdultProduct>(url, { next: { revalidate: 60 } });
+    return { results: data?.results || [], count: data?.count || 0 };
 }
 
 // --- 💻 PC製品・ランキング機能 ---
 
-export async function fetchPCProducts(params: any = {}) {
+export async function fetchPCProducts(params: any = {}): Promise<DjangoApiResponse<PCProduct>> {
     const safeParams = params || {};
     const query = new URLSearchParams({
         limit: (safeParams.limit || 10).toString(),
@@ -229,13 +195,11 @@ export async function fetchPCProducts(params: any = {}) {
         ...(safeParams.site_group && { site_group: safeParams.site_group }),
         ...(safeParams.attribute && { attribute: safeParams.attribute })
     });
-    const url = resolveApiUrl(`general/pc-products/?${query.toString()}`);
-    const { data } = await fetchFromBridge(url);
+    const url = commonResolveApiUrl(`general/pc-products?${query.toString()}`);
+    // ✅ ジェネリクス <PCProduct> を指定
+    const { data } = await fetchFromBridge<PCProduct>(url);
     return { results: data?.results || [], count: data?.count || 0 };
 }
 
-/**
- * 互換性のためのエイリアス
- */
 export { fetchPostList as getSiteMainPosts };
 export { getAdultProducts as getUnifiedProducts };

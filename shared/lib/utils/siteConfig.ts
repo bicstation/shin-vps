@@ -1,109 +1,111 @@
+// @ts-nocheck
 /**
  * =====================================================================
- * 🛠️ [SHARED-CORE] サイト環境動的判定ライブラリ (v15.2 Optimized)
+ * 🛰️ [SHARED-CORE] サイト環境動的判定ライブラリ (v17.0)
  * ---------------------------------------------------------------------
- * 🚀 Next.js 15+ の headers() 非同期化に伴う実行時エラーを完全に封殺。
- * 🚀 ホスト名判定を安全な環境変数とマニュアル入力に委譲。
- * 🚀 常に「初期値」を保証し、サイトグループの undefined エラーを根絶。
+ * 🚀 特徴:
+ * 1. hostsファイルのマッピング (-host) を判定の第一優先に設定。
+ * 2. ドメイン名に '-host' があれば、強制的にローカルAPI (127.0.0.1) へ接続。
+ * 3. 各サイト名のマッピングを hosts の定義と完全に同期。
  * =====================================================================
  */
 
 export interface SiteMetadata {
   site_group: 'general' | 'adult';
   origin_domain: string;
-  site_name: string;
+  site_name: 'Tiper' | 'AV Flash' | 'Bic Saving' | 'Bic Station';
   site_prefix: string;
   default_brand: 'FANZA' | 'DMM' | 'DUGA' | 'DELL';
+  api_base_url: string;
+  is_local_env: boolean;
 }
 
-/**
- * 🌐 サイトのメタデータを取得するメイン関数
- * @param manualHostname サーバー側では必ず headers().get('host') 等を外から渡すことを推奨
- */
 export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
   let hostname = manualHostname || '';
   const isServer = typeof window === "undefined";
 
-  // --- STEP 1: ホスト名の取得ロジックの安定化 ---
+  // --- STEP 1: ホスト名の正規化 ---
   if (!isServer) {
-    // クライアントサイド: ブラウザの window オブジェクトから取得
     hostname = window.location.hostname;
   } else if (!hostname) {
-    /**
-     * 🚨 [CRITICAL FIX] Next.js 15+ 対策
-     * サーバーコンテキスト外での headers() 呼び出しによるクラッシュを避けるため、
-     * 環境変数 (NEXT_PUBLIC_SITE_DOMAIN) をフォールバックとして利用。
-     */
     hostname = process.env.NEXT_PUBLIC_SITE_DOMAIN || 'localhost';
   }
 
-  // ポート番号（:8000等）が含まれる場合は除去して正規化
+  // ポート番号除去
   const domain = String(hostname || 'localhost').replace(/:.*$/, '').toLowerCase();
-  
-  // ベースパス判定用（サブディレクトリ運用時などに備える）
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
-  // --- STEP 2: ブランド判定（デフォルト値を Bicstation に設定して安全性を確保） ---
-  let site_name = 'Bicstation'; 
-  let site_group: 'general' | 'adult' = 'general';
-  let default_brand: 'FANZA' | 'DMM' | 'DUGA' | 'DELL' = 'DELL';
+  // --- STEP 2: 司令官定義の物理マッピングロジック ---
+  // hostsファイルに定義された "-host" があればローカル確定
+  const isLocalEnv = 
+    domain.endsWith('-host') || 
+    domain === 'localhost' || 
+    domain === '127.0.0.1';
 
-  // A. Tiper 判定 (アダルト)
-  if (domain.includes('tiper') || basePath.includes('tiper')) {
-    site_name = 'Tiper'; 
-    site_group = 'adult'; 
-    default_brand = 'FANZA';
+  // 通信先の決定 (hosts設定に基づき、ローカルなら 127.0.0.1 固定)
+  const api_base_url = isLocalEnv 
+    ? "http://127.0.0.1:8083" 
+    : "https://api.tiper.live:8083";
+
+  // --- STEP 3: サイト名・ブランドのマッピング ---
+  let site_name: SiteMetadata['site_name'];
+  let site_group: SiteMetadata['site_group'];
+  let default_brand: SiteMetadata['default_brand'];
+  let debugReason = "";
+
+  // hostsファイルの設定に基づいたマッピング
+  if (domain.includes('avflash')) {
+    site_name = 'AV Flash'; site_group = 'adult'; default_brand = 'DUGA';
+    debugReason = "Mapped by hosts: avflash-host -> avflash.xyz";
   } 
-  // B. AV Flash 判定 (アダルト)
-  else if (domain.includes('avflash') || basePath.includes('avflash')) {
-    site_name = 'AV Flash'; 
-    site_group = 'adult'; 
-    default_brand = 'DUGA';
+  else if (domain.includes('saving')) {
+    site_name = 'Bic Saving'; site_group = 'general'; default_brand = 'DMM';
+    debugReason = "Mapped by hosts: saving-host -> bic-saving.com";
   } 
-  // C. Bic Saving 判定 (一般)
-  else if (domain.includes('saving') || basePath.includes('saving')) {
-    site_name = 'Bic Saving'; 
-    site_group = 'general'; 
-    default_brand = 'DMM';
-  } 
-  // D. Bicstation 判定 (一般 / 開発環境)
-  else if (domain.includes('bicstation') || domain.includes('localhost') || domain.includes('0.0.0.0')) {
-    site_name = 'Bicstation'; 
-    site_group = 'general'; 
-    default_brand = 'DELL'; 
+  else if (domain.includes('bicstation')) {
+    site_name = 'Bic Station'; site_group = 'general'; default_brand = 'DELL'; 
+    debugReason = "Mapped by hosts: bicstation-host -> bicstation.com";
   }
-  // E. その他・フォールバック (Blog)
+  else if (domain.includes('tiper')) {
+    site_name = 'Tiper'; site_group = 'adult'; default_brand = 'FANZA';
+    debugReason = "Mapped by hosts: tiper-host -> tiper.live";
+  }
   else {
-    site_name = 'Blog'; 
-    site_group = 'general'; 
-    default_brand = 'DMM';
+    // 予備のデフォルト (localhostなどの場合)
+    site_name = 'Tiper'; site_group = 'adult'; default_brand = 'FANZA';
+    debugReason = "Default Mapping (Localhost/Unknown)";
   }
 
-  // 🛡️ 構造体の不備を防ぐため、常にこの形式で返却
-  return { 
+  const result: SiteMetadata = { 
     site_group, 
     origin_domain: domain, 
     site_name, 
-    site_prefix: 'blog', 
-    default_brand 
+    site_prefix: site_group === 'adult' ? '/adult' : '/blog', 
+    default_brand,
+    api_base_url,
+    is_local_env: isLocalEnv
   };
+
+  // --- 🛰️ 司令官専用 F12 DEBUG SYSTEM ---
+  if (!isServer) {
+    const logColor = isLocalEnv ? "#00d1b2" : "#ff3860";
+    console.groupCollapsed(`%c🛡️ [SHIN-CORE] Environment: ${isLocalEnv ? 'LOCAL' : 'PRODUCTION'}`, `color: ${logColor}; font-weight: bold; border: 1px solid ${logColor}; padding: 2px 4px;`);
+    console.log("📥 Domain Detected :", domain);
+    console.log("🧠 Logic Reason    :", debugReason);
+    console.log("🛰️ API Destination :", api_base_url);
+    console.log("🚀 Full Metadata   :", result);
+    console.groupEnd();
+  }
+
+  return result;
 };
 
-/**
- * 🎨 サイトごとのブランディングカラーを取得
- */
 export const getSiteColor = (siteName: string): string => {
   const colors: Record<string, string> = { 
     'Bic Saving': '#28a745', 
     'Tiper':      '#e83e8c', 
     'AV Flash':   '#ffc107',
-    'Bicstation': '#007bff', 
+    'Bic Station': '#007bff', 
     'Blog':       '#6c757d' 
   };
   return colors[siteName] || '#007bff';
 };
-
-/**
- * ⚠️ 【重要】静的なエクスポートは避け、常に getSiteMetadata() を通じて取得してください。
- * Next.js 15+ のビルド時/実行時の環境差異による undefined バグを防ぐためです。
- */

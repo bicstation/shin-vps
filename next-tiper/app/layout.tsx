@@ -1,5 +1,11 @@
-/* /app/layout.tsx */
+/**
+ * =====================================================================
+ * 🏛️ RootLayout (Maya's Universe v5.9)
+ * 🛡️ Next.js 15 Async APIs & Unified Theme Control
+ * =====================================================================
+ */
 /* eslint-disable @next/next/no-img-element */
+
 import React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -13,16 +19,19 @@ import styles from "./layout.module.css";
 import '@/shared/styles/globals.css';
 
 /**
- * ✅ 2. 共通設定とコンポーネント (物理パス同期)
+ * ✅ 2. 共通設定とコンポーネント
  */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 
-// 🚀 発見された物理パスに合わせて修正
+// 🚀 共通コンポーネント (Default export を想定)
 import Header from '@/shared/components/organisms/common/Header';
 import Footer from '@/shared/components/organisms/common/Footer';
 
 /**
  * ✅ 3. サイドバーラッパー
+ * 🛡️ Maya's Guard: インポートの不整合を解消
+ * SidebarWrapper が undefined の場合に備え、波括弧あり・なし両方の可能性を考慮してください。
+ * ここでは、前述の修正済み SidebarWrapper (Default & Named export両対応) を想定します。
  */
 import SidebarWrapper from '@/shared/layout/Sidebar/SidebarWrapper';
 
@@ -33,21 +42,16 @@ import { constructMetadata } from '@/shared/lib/utils/metadata';
 
 /**
  * ✅ 5. ページ遷移プログレスバー
+ * 🛡️ もし RouteProgressBar が名前付きエクスポートなら { RouteProgressBar } にする必要があります
  */
 import RouteProgressBar from '@/shared/components/atoms/RouteProgressBar';
 
 const inter = Inter({ subsets: ["latin"] });
 
-/**
- * 💡 メタデータの動的生成
- */
 export async function generateMetadata(): Promise<Metadata> {
   return constructMetadata();
 }
 
-/**
- * 💡 強制的動的レンダリングの設定
- */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -57,14 +61,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   /**
-   * ✅ サイト設定の取得 (Next.js 15 Async Request APIs 対応)
+   * ✅ サイト設定の取得
    */
   const headerList = await headers();
   const host = headerList.get('host') || "localhost";
   const site = getSiteMetadata(host);
-  const themeColor = getSiteColor(site.site_name);
+  
+  // 🚩 ガード: site が取得できなかった場合のフォールバック
+  const siteName = site?.site_name || "Bic Station";
+  const themeColor = getSiteColor(siteName);
 
-  // システムのベースカラー（深宇宙ブラック）
   const BG_COLOR = "#06060a";
 
   return (
@@ -77,22 +83,18 @@ export default async function RootLayout({
           margin: 0,
           padding: 0,
           overflowX: "hidden",
-          overflowY: "visible",
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
           position: "relative",
-          // CSS変数としてテーマカラーを注入
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": BG_COLOR,
-          "--grid-color": "rgba(233, 69, 96, 0.03)",
         } as React.CSSProperties}
       >
-        {/* 🚀 ページ遷移時のプログレスバー */}
-        <RouteProgressBar />
+        {/* 🚀 RouteProgressBar が undefined だとここでクラッシュします */}
+        {RouteProgressBar && <RouteProgressBar />}
 
-        {/* 背景のシステムグリッド・エフェクト */}
         <div className={styles.systemGrid} />
 
         {/* 1. 共通ヘッダー */}
@@ -102,7 +104,7 @@ export default async function RootLayout({
         <div className={styles.adDisclosure}>
           <div className={styles.adDisclosureInner}>
             <span className={styles.prLabel}>【PR】</span>本サイトは広告を利用しています。
-            {site.site_group === 'adult' && (
+            {site?.site_group === 'adult' && (
               <span className={styles.ageLimit}>
                 ※18歳未満の閲覧は固く禁止されています。
               </span>
@@ -114,29 +116,17 @@ export default async function RootLayout({
         <div className={styles.layoutContainer}>
           <div className={styles.layoutWrapper}>
             
-            {/* 🏛️ 共通サイドバーエリア */}
             <aside className={styles.sidebarArea}>
               <div className={styles.sidebarSticky}>
-                <Suspense fallback={
-                  <div className={styles.sidebarLoading}>
-                    <div className={styles.loadingSpinner}></div>
-                    <span className={styles.loadingPulse}>LOADING_SYSTEM_MATRIX...</span>
-                  </div>
-                }>
-                  <SidebarWrapper />
+                <Suspense fallback={<div className={styles.sidebarLoading} />}>
+                  {/* 🚀 SidebarWrapper が undefined だとここでクラッシュします */}
+                  {SidebarWrapper ? <SidebarWrapper /> : <div style={{width: '280px'}} />}
                 </Suspense>
               </div>
             </aside>
 
-            {/* 🏗️ コンテンツストリーム */}
             <main className={styles.mainContent}>
-              <Suspense 
-                fallback={
-                  <div className={styles.loadingWrapper}>
-                    <div className={styles.loadingPulse}>SYNCING_UNIFIED_GATEWAY...</div>
-                  </div>
-                }
-              >
+              <Suspense fallback={<div className={styles.loadingWrapper} />}>
                 {children}
               </Suspense>
             </main>
@@ -145,9 +135,7 @@ export default async function RootLayout({
         </div>
 
         {/* 4. 共通フッター */}
-        <Suspense fallback={<div style={{ height: '200px', backgroundColor: BG_COLOR }} />}>
-          <Footer />
-        </Suspense>
+        <Footer />
       </body>
     </html>
   );

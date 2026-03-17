@@ -1,10 +1,8 @@
 /* =====================================================================
  * 🏗️ [BICSTATION-LAYOUT-CSS] - Full-Width Production Edition (Fixed)
  * ---------------------------------------------------------------------
- * 💡 修正内容:
  * 1. 固定要素（Header + PRバー）によるコンテンツの潜り込みを完全に解消
  * 2. 全幅表示 (100%) 仕様を維持しつつ、上下の余白バランスを最適化
- * 3. ページ遷移時のアニメーションとサイドバーの固定位置を同期
  * ===================================================================== */
 
 /* 1. 全体を包むラッパー */
@@ -15,9 +13,13 @@
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
+  /* Bicstation特有の「重厚かつ清潔な」ダークトーン */
   background-color: #0a0a0a;
   color: #e2e8f0;
   overflow-x: hidden;
+  
+  /* 固定ヘッダー分の余白確保 */
+  padding-top: 70px;
 }
 
 /* 2. 広告告知（PR表記）：全幅でボーダーを走らせる */
@@ -30,9 +32,10 @@
   padding: 10px 0;
   border-bottom: 1px solid rgba(233, 69, 96, 0.4); 
   position: sticky;
-  top: 70px; /* ヘッダー高さ(70px)の直下に固定 */
+  top: 70px; /* Header(70px)の直下に固定 */
   z-index: 900;
   backdrop-filter: blur(8px);
+  letter-spacing: 0.1em;
 }
 
 /* 3. レイアウトの外枠：全幅 (100%) 仕様 */
@@ -41,7 +44,7 @@
   width: 100%;
   max-width: 100%; 
   margin: 0;
-  /* 左右に 4% のセーフティエリアを確保 */
+  /* 左右に 4% のセーフティエリアを確保し、視認性を向上 */
   padding: 0 4%; 
   box-sizing: border-box;
   display: flex;
@@ -52,27 +55,28 @@
 .layoutInner {
   display: flex;
   gap: 40px; 
-  /* * 🚩 重要修正: padding-top を 115px に増加 
+  /**
+   * 🚩 コンテンツ潜り込み防止の核心
    * 計算式: Header(70px) + PRバー(約35px) + 余裕(10px) = 115px
-   * これにより、すべてのページでコンテンツがヘッダーの下に潜り込むのを防ぎます。
    */
   padding: 115px 0 80px 0;
   width: 100%;
 }
 
-/* 5. サイドバー領域（左側）：存在感を出すために 300px へ微増 */
+/* 5. サイドバー領域（左側）：スペック・メーカー選定用 */
 .sidebarSection {
   width: 300px;
   flex-shrink: 0;
   position: sticky;
-  /* * 🚩 重要修正: top を 115px に設定 
-   * layoutInner の開始位置と合わせることで、スクロール開始時にガタつきを防ぎます。
+  /**
+   * 🚩 layoutInner の開始位置と同期させ、スクロール時のガタつきを排除
    */
   top: 115px; 
   height: fit-content;
+  z-index: 800;
 }
 
-/* 6. メインコンテンツ領域（右側）：ここが全幅で広がる */
+/* 6. メインコンテンツ領域（右側）：PCカタログのグリッドが広がる場所 */
 .mainContent {
   flex: 1;
   min-width: 0;
@@ -82,7 +86,7 @@
 
 /* 7. モバイル対応：レスポンシブ設定 */
 
-/* タブレット・中画面 */
+/* タブレット・中画面：1カラム化 */
 @media (max-width: 1100px) {
   .layoutContainer {
     padding: 0 24px;
@@ -91,14 +95,14 @@
   .layoutInner {
     flex-direction: column;
     gap: 24px;
-    /* モバイルでは固定要素が解除されるか、高さが変わるため余白を再調整 */
+    /* モバイルでは固定を解除するため、上部余白を通常値へ */
     padding: 24px 0 60px 0; 
   }
 
   .sidebarSection {
     width: 100%;
     position: static;
-    order: 1; /* モバイルではフィルターを先に */
+    order: 1; /* フィルターを先に表示 */
   }
   
   .mainContent {
@@ -130,7 +134,7 @@
   }
 }
 
-/* ヒーローセクション等の全幅ラッパー */
+/* 9. 特設ヒーローセクション用（必要に応じて利用） */
 .heroSectionWrapper {
   width: 100%;
   margin-top: 10px;
@@ -138,4 +142,27 @@
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(0,0,0,0.6);
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ローディング・スピナー関連 */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 100px 0;
+  gap: 16px;
+}
+
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(233, 69, 96, 0.1);
+  border-top-color: var(--site-theme-color, #007bff);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

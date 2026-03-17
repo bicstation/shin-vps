@@ -1,91 +1,79 @@
 /**
  * =====================================================================
  * 🛰️ SHIN-VPS 統合 API ゲートウェイ (shared/lib/api/index.ts)
- * 🛡️ Maya's Zenith v3.9: Bridge統合・WP維持・型エラー封殺版
+ * 🛡️ Maya's Zenith v5.8: 全専門家 統合・衝突回避・型安全版
  * =====================================================================
  */
-import { getSiteMetadata } from '../utils/siteConfig';
 
-// 🚀 ロジックのインポート
+// 1. 基盤・設定のインポート
+import { IS_SERVER as SERVER_CHECK } from './config'; // 直下の config.ts を参照
 import * as adultApi from './django/adult';
+import * as pcApi from './django/pc';
+import * as masterApi from './django/master'; // ✅ マスター専用線を統合
 import * as bridgeApi from './django-bridge';
 
 /**
- * 🔗 1. 接続設定解決
+ * 🔗 1. 定数・環境フラグ
  */
-export const IS_SERVER = typeof window === 'undefined';
-
-export const getApiConfig = () => {
-    const site = getSiteMetadata();
-    const hostHeader = site.origin_domain || 'localhost';
-
-    if (IS_SERVER) {
-        return {
-            baseUrl: 'http://django-v3:8000',
-            host: hostHeader
-        };
-    }
-    const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    return {
-        baseUrl: envUrl.replace(/\/$/, '') || '/api',
-        host: hostHeader
-    };
-};
+export const IS_SERVER = SERVER_CHECK;
 
 /**
- * 📰 2. ニュース記事 & コンテンツ統合 (BicStation News / MD移行準備)
- * 💡 django-bridge 側の最適化されたロジックを明示的にエクスポート
+ * 📰 2. ニュース・記事・統合ハブ (bridgeApi)
  */
-export const fetchNewsArticles = bridgeApi.fetchNewsArticles;
-export const fetchPostData = bridgeApi.fetchPostData;
-export const fetchDjangoBridgeContent = bridgeApi.fetchDjangoBridgeContent;
+export const {
+    fetchNewsArticles,
+    fetchPostData,
+    fetchDjangoBridgeContent,
+    fetchPostList
+} = bridgeApi;
 
-/**
- * 🔞 3. アダルト統合ロジック
- */
-export const getUnifiedProducts = adultApi.getUnifiedProducts;
-export const getAdultProductDetail = adultApi.getAdultProductDetail;
-export const getAdultNavigationFloors = adultApi.getAdultNavigationFloors;
-export const fetchAdultTaxonomyIndex = adultApi.fetchAdultTaxonomyIndex;
-export const fetchGenres = adultApi.fetchGenres;
-export const fetchMakers = adultApi.fetchMakers;
-export const fetchActresses = adultApi.fetchActresses;
-export const fetchSeries = adultApi.fetchSeries;
-export const fetchUnifiedProducts = adultApi.getUnifiedProducts; // Alias
-
-/**
- * 💻 4. PC製品 (BicStation用)
- * 💡 Bridge経由に差し替えることで URL置換ロジックを適用
- */
-export const getPCProducts = bridgeApi.fetchPCProducts;
-
-/**
- * 🛠️ 5. WordPress 連携 & 互換レイヤー
- * 💡 既存の WP 依存パーツも完全に維持します
- */
-export async function getWpPosts(offset = 0, perPage = 6, postType = 'posts') {
-    const { baseUrl, host } = getApiConfig();
-    const url = `${baseUrl}/wp-json/wp/v2/${postType}?_embed&per_page=${perPage}&offset=${offset}`;
-
-    try {
-        const res = await fetch(url, {
-            headers: { 'Host': host },
-            next: { revalidate: 60 }
-        });
-        if (!res.ok) return { results: [], count: 0 };
-        const data = await res.json();
-        const total = parseInt(res.headers.get('X-WP-Total') || '0', 10);
-        return { results: Array.isArray(data) ? data : [], count: total };
-    } catch (e) {
-        return { results: [], count: 0 };
-    }
-}
-
-/**
- * 💡 getSiteMainPosts は将来的に MD/Django記事へスイッチできるよう 
- * Bridge 側の fetchPostList をエイリアスとして採用しつつ、WP機能も内部で保持
- */
+// 互換用エイリアス
 export const getSiteMainPosts = bridgeApi.fetchPostList;
+
+/**
+ * 🔞 3. アダルト専用 API (adultApi)
+ */
+export const {
+    getUnifiedProducts,
+    getAdultProductDetail,
+    getAdultNavigationFloors,
+    fetchAdultTaxonomyIndex,
+    fetchActresses,
+} = adultApi;
+
+// 互換用エイリアス
+export const fetchUnifiedProducts = adultApi.getUnifiedProducts;
+
+/**
+ * 💻 4. PC・ランキング専用 API (pcApi)
+ */
+export const {
+    fetchPCProducts,
+    fetchPCProductDetail,
+    fetchPCProductRanking,
+    fetchPCSidebarStats
+} = pcApi;
+
+// 互換用エイリアス
+export const getPCProducts = pcApi.fetchPCProducts;
+
+/**
+ * 🏷️ 5. 共通マスターデータ (masterApi)
+ * 💡 ジャンル、メーカー、女優、シリーズ等、全ドメイン共通のマスター取得
+ * 💡 ここで公開することで fetchPCMakers 等の命名重複を回避し、シンプルに扱えます
+ */
+export const {
+    fetchGenres,
+    fetchMakers, // 全ドメイン共通メーカー取得
+    fetchSeries,
+    fetchLabels,
+    fetchDirectors,
+    fetchAuthors
+} = masterApi;
+
+/**
+ * 🛠️ 6. WordPress 互換レイヤー & ユーティリティ
+ */
 
 /** 🖼️ WPアイキャッチ画像解決 */
 export function getWpFeaturedImage(post: any, size: 'thumbnail' | 'medium' | 'large' | 'full' = 'large'): string {
@@ -97,7 +85,7 @@ export function getWpFeaturedImage(post: any, size: 'thumbnail' | 'medium' | 'la
 }
 
 /**
- * 🔄 6. 型定義の統合
- * 💡 ここで MakerCount 等が export されるため、bridge.ts のエラーが解消されます
+ * 🔄 7. 型定義の統合
+ * 💡 types.ts ですべての共通型を管理しているため、これ一行で OK です
  */
 export * from './types';

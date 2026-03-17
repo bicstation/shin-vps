@@ -47,10 +47,10 @@ interface SidebarProps {
 
 /**
  * =====================================================================
- * 🛰️ AdultSidebar - Fleet Integrated Edition (V5.0)
+ * 🛰️ AdultSidebar - Fleet Integrated Edition (V5.1 Final)
  * ---------------------------------------------------------------------
  * BICSTATION 黄金艦隊アンテナを完全統合。
- * サブドメイン群への回遊をシステムレベルで自動化。
+ * ラッパーからの動的ブランド指定に基づき、PLATFORM_MATRIX を自動制御。
  * =====================================================================
  */
 export default function AdultSidebar({
@@ -60,15 +60,15 @@ export default function AdultSidebar({
   actresses = [], 
   aiAttributes = [], 
   recentPosts = [],
-  currentBrand = 'FANZA',
+  currentBrand = 'FANZA', // SidebarWrapper から渡される小文字/大文字を許容
 }: SidebarProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
-  // 🪄 セクション開閉状態：黄金艦隊（FLEET）は常時展開を推奨
+  // 🪄 セクション開閉状態
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     'PLATFORMS': true,
-    'FLEET': true,       // 🚀 黄金艦隊セクション
+    'FLEET': true,      
     'OFFICIAL_NAV': true,
     'AI_SPECS': true, 
     'GENRES': true,
@@ -81,7 +81,8 @@ export default function AdultSidebar({
     setMounted(true);
   }, []);
 
-  const activePlat = useMemo(() => currentBrand.toLowerCase(), [currentBrand]);
+  // 💡 ブランド判定の正規化 (常に小文字で比較・利用)
+  const activePlat = useMemo(() => (currentBrand || 'fanza').toLowerCase(), [currentBrand]);
 
   const toggleSection = (section: string) => 
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -99,7 +100,7 @@ export default function AdultSidebar({
     return `/${category}/${identifier}`;
   };
 
-  // ⚜️ 黄金艦隊データ定義（管理用）
+  // ⚜️ 黄金艦隊データ定義
   const fleetNetwork = [
     { name: '先行予約', slug: 'reserve', icon: '📅', tag: '速報' },
     { name: '熟女・人妻', slug: 'jukujo', icon: '💋', tag: '人妻' },
@@ -162,13 +163,11 @@ export default function AdultSidebar({
         {openSections['FLEET'] && (
           <div className={styles.contentBody}>
             <ul className={styles.masterList}>
-              {/* メインポータル */}
               <li className={styles.masterListItem}>
                 <a href="https://main.tiper.live" target="_blank" rel="noopener noreferrer" className={styles.masterLink} style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
                   <span className={styles.itemName} style={{ color: '#d4af37', fontWeight: 'bold' }}>▶ Tiper.Live (Main Portal)</span>
                 </a>
               </li>
-              {/* サブドメイン艦隊ループ */}
               {fleetNetwork.map((site) => (
                 <li key={site.slug} className={styles.masterListItem}>
                   <a href={`https://${site.slug}.tiper.live`} target="_blank" rel="noopener noreferrer" className={styles.masterLink}>
@@ -189,7 +188,7 @@ export default function AdultSidebar({
       <section className={styles.sectionWrapper}>
         <div className={styles.sectionHeader} onClick={() => toggleSection('OFFICIAL_NAV')}>
           <h3 className={styles.headerTitle}>
-            <span className={styles.icon}>⚡</span> {currentBrand.toUpperCase()}_LAYERS
+            <span className={styles.icon}>⚡</span> {activePlat.toUpperCase()}_LAYERS
           </h3>
           <span className={styles.arrow}>{openSections['OFFICIAL_NAV'] ? '▲' : '▼'}</span>
         </div>
@@ -265,7 +264,7 @@ export default function AdultSidebar({
         )}
       </section>
 
-      {/* 🛠️ MASTER_DATA_INDEXES */}
+      {/* 🛠️ MASTER_DATA_INDEXES (ACTRESSES / GENRES / MAKERS) */}
       {[
         { id: 'ACTRESSES', type: 'actress', data: actresses, icon: '👩', label: '女優' },
         { id: 'GENRES', type: 'genre', data: genres, icon: '🏷️', label: 'ジャンル' },

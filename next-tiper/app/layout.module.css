@@ -2,8 +2,7 @@
  * 🏗️ [TIPER.LIVE-LAYOUT-CSS] - 2026 Zenith Edition
  * ---------------------------------------------------------------------
  * サイドバー(320px)とメインストリームをGridで完全制御。
- * 全幅レイアウトを活かしつつ、ヘッダー・PR帯との重なりを排除。
- * サイドバーの高さ制限を解除し、全データを一気に見せる設計へ。
+ * 2026年のフラッグシップデザインとしての視認性と操作性を統合。
  * ===================================================================== */
 
 /* 1. 全体を包むラッパー：フッターを常に最下部へ */
@@ -19,7 +18,7 @@
   /* 🪄 【魔法のクッション】: 固定ヘッダー(70px)分の押し下げ */
   padding-top: 70px;
   scroll-padding-top: 70px;
-  background-color: #06060a; /* tiper.live 専用の漆黒 */
+  background-color: #06060a; /* tiper.live 専用の漆黒：深宇宙ブラック */
 }
 
 /* 2. ステマ規制対策：PR表記（ヘッダー直下に張り付き、スクロール追従） */
@@ -40,8 +39,13 @@
   backdrop-filter: blur(12px);
 }
 
+.prLabel {
+  color: #ccc;
+  font-weight: bold;
+}
+
 .ageLimit {
-  color: #e94560; /* 警告レッド */
+  color: #e94560; /* 警告レッド：システムアラート */
   margin-left: 10px;
   font-weight: bold;
 }
@@ -50,7 +54,7 @@
 .layoutContainer {
   flex: 1;
   width: 100%;
-  /* tiper.live はアーカイブとしての視認性を重視し、広めの設定 */
+  /* アーカイブとしての視認性を重視し、最大幅を1800pxまで解放 */
   max-width: 1800px; 
   margin: 0 auto;
   box-sizing: border-box;
@@ -77,23 +81,25 @@
 
 .sidebarSticky {
   /* 🪄 sticky設定：スクロール時に上部で止まるが、高さ制限は設けない */
+  /* ヘッダー(70px) + PR帯(約40px) + 余裕(20px) = 130px */
   position: sticky;
   top: 130px; 
   
   /* 🚀 【修正の核心】: 高さを中身(女優・属性等)に完全に委ねる */
   height: fit-content;
-  max-height: none; /* 画面内スクロールを強制しない */
-  overflow-y: visible; /* 内部スクロールバーを排除し、全データを露出させる */
+  max-height: none; /* 画面内スクロールを強制せず、ページ全体でスクロール */
+  overflow-y: visible; /* 内部スクロールバーを排除し、全データを露出 */
   
   padding: 20px;
   box-sizing: border-box;
+  transition: top 0.3s ease;
 }
 
 /* 6. 🏗️ メインコンテンツ領域（右側・全幅） */
 .mainContent {
   flex: 1;
   min-width: 0;
-  padding: 40px 32px 80px 32px; /* 広い余白で高級感を演出 */
+  padding: 40px 32px 80px 32px; /* 広い余白でデータ密度を緩和 */
   animation: zenithFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
@@ -107,6 +113,7 @@
   height: 100%;
   pointer-events: none;
   z-index: -1;
+  /* 🪄 layout.tsx から注入される --grid-color を使用 */
   background-image: 
     linear-gradient(var(--grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
@@ -117,17 +124,21 @@
 /* 8. レスポンシブ：モバイル対応 */
 @media (max-width: 1100px) {
   .layoutWrapper {
-    grid-template-columns: 1fr; /* 1カラム化 */
+    grid-template-columns: 1fr; /* 1カラム化：メインを優先 */
   }
   .sidebarArea {
-    display: none; /* タブレット以下ではメインストリームに集中 */
+    display: none; /* モバイルでは別途ハンバーガーメニュー等で対応 */
   }
   .mainContent {
     padding: 30px 20px;
   }
+  .adDisclosure {
+    top: 60px; /* モバイル用ヘッダー高さに合わせる */
+    font-size: 10px;
+  }
 }
 
-/* 9. アニメーション */
+/* 9. アニメーション & ローディング */
 @keyframes zenithFadeIn {
   from {
     opacity: 0;
@@ -141,19 +152,35 @@
   }
 }
 
-/* ローディング表示用 */
 .loadingWrapper {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 400px;
+  gap: 20px;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(233, 69, 96, 0.1);
+  border-top-color: var(--site-theme-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 .loadingPulse {
-  font-family: monospace;
+  font-family: 'Inter', monospace;
+  font-size: 12px;
   color: var(--site-theme-color);
+  text-transform: uppercase;
   letter-spacing: 0.2em;
   animation: pulse 1.5s infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes pulse {

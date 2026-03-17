@@ -4,20 +4,18 @@ import { headers } from 'next/headers';
 import { COLORS } from '../../styles/constants';
 
 /**
- * ✅ 修正ポイント: django-bridge.ts を使用して Django 経由でコンテンツ取得
+ * ✅ 司令部統合：API & Bridge
  */
 import { fetchMakers } from '@/shared/lib/api/django/pc';
-import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge'; // 👈 ブリッジを使用
-import { resolveApiUrl, getDjangoHeaders } from '@/shared/lib/api/django/client'; 
+import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
+import { getDjangoHeaders } from '@/shared/lib/api/django/client'; 
 import styles from './PCSidebar.module.css';
 
-// サーバー側で取得するための型定義
 interface AttributeItem {
   id: number;
   name: string;
   slug: string;
   count: number;
-  order?: number;
 }
 
 interface SidebarData {
@@ -25,13 +23,16 @@ interface SidebarData {
 }
 
 export default async function Sidebar() {
-  // 1. ヘッダーからパス名等を取得
   const headerList = await headers();
   const pathname = headerList.get('x-url') || '/';
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
+  // 💡 通信経路の最適化 (VPS環境ではDocker内部、ローカルでは8083)
+  const API_BASE = process.env.INTERNAL_API_URL || "http://127.0.0.1:8083";
+  const statsUrl = `${API_BASE}/api/general/pc-sidebar-stats/`;
+
   /**
-   * 🛡️ フェッチ・セーフティ・ラッパー
+   * 🛡️ フェッチ・セーフティ
    */
   async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     try {
@@ -43,29 +44,19 @@ export default async function Sidebar() {
     }
   }
 
-  /**
-   * 🌐 スペック統計取得用のURL構築
-   */
-  const statsUrl = resolveApiUrl('/api/general/pc-sidebar-stats/');
-
-  // 2. データのフェッチ（WPを完全に排除し、Django Bridgeに差し替え）
+  // 1. 並列データ取得
   const [makers, bridgeData, specStatsRes] = await Promise.all([
     safeFetch(fetchMakers(), []),
-    // Django Bridge経由で「お知らせ」や「最新レポート」を取得する想定
     safeFetch(fetchDjangoBridgeContent('latest_news', 5), []), 
-    
     fetch(statsUrl, {
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
-    }).catch((e) => {
-      console.error("[PCSidebar Stats Fetch Failed]:", e);
-      return { ok: false };
-    })
+    }).catch(() => ({ ok: false }))
   ]);
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : [];
   
-  // スペック統計データの処理
+  // 2. スペック統計の解析
   let specStats: SidebarData | null = null;
   if (specStatsRes && 'ok' in specStatsRes && (specStatsRes as any).ok) {
     try {
@@ -75,15 +66,16 @@ export default async function Sidebar() {
     }
   }
 
-  // メーカー分けロジック
+  // 3. 国内外ブランドの自動仕分け
   const domesticNames = ['mouse', 'panasonic', 'vaio', 'dynabook', 'fujitsu', 'nec', 'iiyama'];
   const categorizedMakers = (makers || []).reduce((acc, curr) => {
-    if (!curr || !curr.maker) return acc;
-    const name = curr.maker.toLowerCase();
-    if (domesticNames.includes(name)) {
-      acc.domestic.push(curr);
+    // APIの構造に合わせて curr.maker または curr.name を考慮
+    const rawName = curr.maker || curr.name || '';
+    const name = rawName.toLowerCase();
+    if (domesticNames.some(d => name.includes(d))) {
+      acc.domestic.push({ ...curr, displayName: rawName.toUpperCase() });
     } else {
-      acc.overseas.push(curr);
+      acc.overseas.push({ ...curr, displayName: rawName.toUpperCase() });
     }
     return acc;
   }, { domestic: [] as any[], overseas: [] as any[] });
@@ -91,56 +83,57 @@ export default async function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       
-      {/* 🏆 SPECIAL (AIツールへの導線) */}
-      <h3 className={styles.sectionTitle}>SPECIAL</h3>
-      <ul className={styles.accordionContent}>
-        <li style={{ marginBottom: '8px' }}>
-          <Link href="/pc-finder/" className={styles.link} style={{ 
-              background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-              color: '#ffffff', borderRadius: '12px', padding: '12px', display: 'block'
-            }}>
-            <span style={{ fontWeight: '900' }}>🔍 PC-FINDER (AI選定)</span>
-          </Link>
-        </li>
-      </ul>
+      {/* 🏆 SPECIAL: AIツール導線 */}
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>SPECIAL</h3>
+        <Link href="/pc-finder/" className={styles.specialBanner}>
+          <span className={styles.finderIcon}>🔍</span>
+          <div className={styles.finderText}>
+            <span className={styles.finderMain}>PC-FINDER</span>
+            <span className={styles.finderSub}>AIが最適な1台を提案</span>
+          </div>
+        </Link>
+      </section>
 
-      {/* 1. BRANDS: メーカー別 */}
-      <h3 className={styles.sectionTitle}>BRANDS</h3>
-      <div style={{ marginBottom: '20px' }}>
-        <p className={styles.subLabel}>国内メーカー</p>
-        <ul className={styles.accordionContent}>
-          {categorizedMakers.domestic.map((item) => (
-            <li key={item.maker}>
-              <Link href={`/brand/${item.maker.toLowerCase()}`} 
-                    className={styles.link}
-                    style={{ color: pathname.includes(item.maker.toLowerCase()) ? siteColor : undefined }}>
-                <span>💻 {item.maker.toUpperCase()}</span>
-                <span className={styles.badge}>{item.count}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+      {/* 🏢 BRANDS: メーカー別索引 */}
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>BRANDS</h3>
+        <div className={styles.brandGroup}>
+          <p className={styles.subLabel}>国内メーカー</p>
+          <ul className={styles.list}>
+            {categorizedMakers.domestic.map((item: any) => (
+              <li key={item.id || item.maker}>
+                <Link href={`/brand/${(item.maker || item.name).toLowerCase()}`} 
+                      className={`${styles.link} ${pathname.includes((item.maker || item.name).toLowerCase()) ? styles.active : ''}`}
+                      style={pathname.includes((item.maker || item.name).toLowerCase()) ? { color: siteColor } : {}}>
+                  <span>💻 {item.displayName}</span>
+                  <span className={styles.badge}>{item.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
 
-        <p className={styles.subLabel} style={{ marginTop: '10px' }}>海外メーカー</p>
-        <ul className={styles.accordionContent}>
-          {categorizedMakers.overseas.map((item) => (
-            <li key={item.maker}>
-              <Link href={`/brand/${item.maker.toLowerCase()}`} 
-                    className={styles.link}
-                    style={{ color: pathname.includes(item.maker.toLowerCase()) ? siteColor : undefined }}>
-                <span>💻 {item.maker.toUpperCase()}</span>
-                <span className={styles.badge}>{item.count}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
+          <p className={styles.subLabel} style={{ marginTop: '12px' }}>海外メーカー</p>
+          <ul className={styles.list}>
+            {categorizedMakers.overseas.map((item: any) => (
+              <li key={item.id || item.maker}>
+                <Link href={`/brand/${(item.maker || item.name).toLowerCase()}`} 
+                      className={`${styles.link} ${pathname.includes((item.maker || item.name).toLowerCase()) ? styles.active : ''}`}
+                      style={pathname.includes((item.maker || item.name).toLowerCase()) ? { color: siteColor } : {}}>
+                  <span>💻 {item.displayName}</span>
+                  <span className={styles.badge}>{item.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
-      {/* 2. SPECS: Django動的統計 */}
+      {/* ⚙️ SPECS: Djangoによる動的属性 */}
       {specStats && Object.entries(specStats).map(([category, items]) => (
-        <div key={category}>
-          <h3 className={styles.sectionTitle}>{category.toUpperCase()}</h3>
-          <ul className={styles.accordionContent}>
+        <section key={category} className={styles.section}>
+          <h3 className={styles.sectionTitle}>{category.replace('_', ' ').toUpperCase()}</h3>
+          <ul className={styles.list}>
             {items.map((item) => (
               <li key={item.id}>
                 <Link href={`/pc-products?attribute=${item.slug}`} className={styles.link}>
@@ -150,28 +143,33 @@ export default async function Sidebar() {
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       ))}
 
-      {/* 3. UPDATES: Django Bridge 経由の最新情報 */}
-      <h3 className={styles.sectionTitle}>LATEST UPDATES</h3>
-      <ul className={styles.accordionContent}>
-        {recentArticles.length > 0 ? (
-          recentArticles.map((item: any) => (
-            <li key={item.id} style={{ marginBottom: '10px' }}>
-              <Link href={`/news/${item.slug || item.id}`} className={styles.link}>
-                <span style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
-                  📄 {item.title}
-                </span>
-              </Link>
-            </li>
-          ))
-        ) : (
-          <li className={styles.link} style={{ fontSize: '0.8rem', color: '#999' }}>
-            最新情報を取得中...
-          </li>
-        )}
-      </ul>
+      {/* 📄 UPDATES: Bridge経由の最新レポート */}
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle}>LATEST UPDATES</h3>
+        <ul className={styles.list}>
+          {recentArticles.length > 0 ? (
+            recentArticles.map((item: any) => (
+              <li key={item.id} className={styles.newsItem}>
+                <Link href={`/news/${item.slug || item.id}`} className={styles.newsLink}>
+                   <span className={styles.newsIcon}>📄</span>
+                   <span className={styles.newsTitle}>{item.title}</span>
+                </Link>
+              </li>
+            ))
+          ) : (
+            <li className={styles.empty}>最新情報を取得中...</li>
+          )}
+        </ul>
+      </section>
+
+      {/* 🚀 SYSTEM FOOTER */}
+      <div className={styles.sidebarFooter}>
+        <span className={styles.statusDot}></span>
+        <span className={styles.statusText}>BICSTATION PC_NODE ONLINE</span>
+      </div>
     </aside>
   );
 }

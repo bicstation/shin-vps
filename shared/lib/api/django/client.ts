@@ -1,37 +1,45 @@
 /**
  * =====================================================================
  * 🛠️ Django API 共通クライアント (shared/lib/api/django/client.ts)
- * 🛡️ Maya's Zenith v5.0: URL解決・/api 自動補完・完全版
+ * 🛡️ Maya's Zenith v5.1: URL解決・二重API防止・スラッシュ自動補完
  * =====================================================================
  */
 import { getDjangoBaseUrl, IS_SERVER } from '../config';
 
 /**
  * 💡 接続先URLを解決 (Network Path Resolver)
- * エンドポイントの前に必ず "/api" を自動で差し込み、不整合を抹殺します。
+ * 1. エンドポイントから重複する "api/" やスラッシュを徹底排除
+ * 2. サーバー/クライアント環境に応じたベースURLを付与
+ * 3. 常に "/api/endpoint/" の形に整形し、Djangoの404を根絶します。
  */
 export const resolveApiUrl = (endpoint: string) => {
-    // 1. エンドポイントの掃除 (先頭と末尾のスラッシュを整理)
-    const cleanEndpoint = endpoint.replace(/^\/+/, '').replace(/\/+$/, '');
+    // 1. エンドポイントの正規化
+    // 先頭の "api/" 削除 -> 先頭/末尾のスラッシュ削除
+    const cleanEndpoint = endpoint
+        .replace(/^api\//, '')
+        .replace(/^\/+/, '')
+        .replace(/\/+$/, '');
+
+    // 2. ベースURLの決定
+    let baseUrl: string;
 
     if (IS_SERVER) {
         /**
-         * 🚀 Server Side: Docker内部通信
-         * 環境変数（http://django-v3:8000）＋ /api ＋ エンドポイント
+         * 🚀 Server Side: Docker内部ネットワーク通信
+         * django-v3 コンテナへ直接ルートを飛ばします
          */
-        const internalBase = (process.env.API_INTERNAL_URL || 'http://django-v3:8000').replace(/\/+$/, '');
-        // 💡 ログに出ていた /adult/... を /api/adult/... に矯正します
-        return `${internalBase}/api/${cleanEndpoint}/`;
+        baseUrl = (process.env.API_INTERNAL_URL || 'http://django-v3:8000').replace(/\/+$/, '');
+    } else {
+        /**
+         * 🌐 Client Side: ブラウザからの通信
+         * Traefik Proxy 経由で解決します
+         */
+        baseUrl = getDjangoBaseUrl().replace(/\/+$/, '');
     }
 
-    /**
-     * 🌐 Client Side: ブラウザ通信 (Traefik 経由)
-     * getDjangoBaseUrl() ＋ /api ＋ エンドポイント
-     */
-    const rootUrl = getDjangoBaseUrl().replace(/\/+$/, '');
-    
-    // 💡 ブラウザ側でも確実に /api をルートに据えます
-    return `${rootUrl}/api/${cleanEndpoint}/`;
+    // 3. 結合: [Base] + [/api/] + [CleanEndpoint] + [/]
+    // Djangoは末尾スラッシュがないと 301 Redirect または 404 を返すため厳守
+    return `${baseUrl}/api/${cleanEndpoint}/`;
 };
 
 /**
@@ -41,34 +49,51 @@ export const getDjangoHeaders = () => {
     return {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        // 必要に応じてここにキャッシュ制御やAPIキーを追加可能
     };
 };
 
 /**
  * 💡 フェッチレスポンス・セーフハンドラ
+ * Django DRFの標準形式 { results: [], count: 0 } への正規化を保証
  */
 export async function handleResponseWithDebug(res: Response, url: string) {
     if (!res.ok) {
-        // ここで 404 や 500 が出た場合、Django 側の URL 設定（urls.py）を見直すサイン
-        console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | URL: ${url}`);
+        // 404/500エラーのログ出力を強化
+        console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | Target: ${url}`);
         return { results: [], count: 0, _error: res.status };
     }
 
     try {
         const data = await res.json();
         
-        // データの形状を { results, count } に統一
+        // 1. すでに DRF 標準形式（resultsあり）の場合
+        if (data && typeof data === 'object' && 'results' in data) {
+            return {
+                results: Array.isArray(data.results) ? data.results : [],
+                count: typeof data.count === 'number' ? data.count : 0
+            };
+        }
+        
+        // 2. 単純な配列が返ってきた場合
         if (Array.isArray(data)) {
             return { results: data, count: data.length };
         }
         
-        // DRF (Django Rest Framework) 形式の互換性を確保
-        return (data && typeof data === 'object' && 'results' in data) 
-            ? data 
-            : { results: data.data || data.results || [], count: data.count || 0 };
+        // 3. オブジェクト単体（Detail系）が返ってきた場合
+        if (data && typeof data === 'object') {
+            // data.data 等に包まれている可能性も考慮
+            const payload = data.data || data;
+            return { 
+                results: Array.isArray(payload) ? payload : [payload], 
+                count: Array.isArray(payload) ? payload.length : 1 
+            };
+        }
+
+        return { results: [], count: 0 };
 
     } catch (e) {
-        // HTML（<h1>Django...</h1>）が返ってくるとここで爆発します
+        // JSONパース失敗（DjangoがエラーHTMLを返した時など）の防護
         console.error(`🚨 [JSON Parse Error] Failed to parse response from: ${url}`);
         return { results: [], count: 0, _error: 'PARSE_FAILED' };
     }

@@ -1,13 +1,12 @@
 /**
  * =====================================================================
  * 📋 統合型定義 (shared/lib/api/types.ts)
- * 🛡️ Maya's Logic: マルチドメイン・AIスコアリング対応版
+ * 🛡️ Maya's Logic: マルチドメイン・循環参照防止・AI対応版
  * =====================================================================
  */
 
 /**
  * 📊 レーダーチャート用共通データ構造
- * Recharts などのライブラリでそのまま扱える形式
  */
 export interface RadarChartData {
   subject: string;   // 項目名 (例: "性能", "コスパ")
@@ -26,8 +25,15 @@ export interface MasterBase {
 }
 
 /**
+ * 📊 統計・カウント用
+ */
+export interface MakerCount {
+  maker: string;
+  count: number;
+}
+
+/**
  * 🏷️ 属性タグ (PCAttribute / AdultAttribute)
- * 製品のメタ情報（「SALE中」「AI搭載」「独占配信」など）
  */
 export interface ProductAttribute extends MasterBase {
   attr_type: string;
@@ -51,7 +57,7 @@ export interface PCProduct {
   // 🧠 AI生成・解析コンテンツ
   ai_content?: string;
   ai_summary?: string;
-  target_segment?: string; // ターゲット層 (例: "ゲーマー向け")
+  target_segment?: string; 
   spec_score: number;      // 0-100 の総合評価
   
   // 📈 スコア詳細 (5軸レーダーチャート用)
@@ -60,6 +66,7 @@ export interface PCProduct {
   score_ai?: number;
   score_cost?: number;
   score_portable?: number;
+  radar_chart?: RadarChartData[]; // ✅ 追加: コンポーネント用
 
   // ⚙️ ハードウェアスペック
   stock_status: 'instock' | 'outofstock' | 'preorder';
@@ -89,7 +96,7 @@ export interface AdultProduct {
   image_url_list: string[];
   sample_movie_url: string | null; 
 
-  // 🔗 リレーション (Djangoシリアライザで展開済み)
+  // 🔗 リレーション
   maker: MasterBase | null;
   label: MasterBase | null;
   series: MasterBase | null;
@@ -134,4 +141,15 @@ export interface WPPost {
     'wp:featuredmedia'?: Array<{ source_url: string; alt_text: string }>;
     'wp:term'?: any[][];
   };
+}
+
+/**
+ * 📦 Django API 共通レスポンスラップ
+ * ✅ これを追加することで bridge.ts や client.ts の戻り値を型安全に扱えます
+ */
+export interface DjangoApiResponse<T> {
+  results: T[];
+  count: number;
+  _error?: string | number;
+  _debug?: any;
 }

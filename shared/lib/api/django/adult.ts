@@ -3,7 +3,7 @@
  * =====================================================================
  * 🔞 アダルトコンテンツ統合サービス (shared/lib/api/django/adult.ts)
  * =====================================================================
- * 🛡️ Maya's Zenith v4.1: URL二重化(404) & 文字列分解バグ修正版
+ * 🛡️ Maya's Zenith v5.2: v5.1クライアント完全適合・スラッシュ競合排除版
  * =====================================================================
  */
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from './client';
@@ -12,15 +12,15 @@ import { AdultProduct } from '../types';
 /** 🛡️ 内部ユーティリティ: 安全なデータ抽出 */
 const safeExtract = (data: any): any[] => {
   if (!data) return [];
-  if (Array.isArray(data)) return data;
+  // handleResponseWithDebug が保証する results を優先
   if (data.results && Array.isArray(data.results)) return data.results;
+  if (Array.isArray(data)) return data;
   if (data.data && Array.isArray(data.data)) return data.data;
   return [];
 };
 
 /** 🔄 クエリパラメータ正規化 (?0=D&1=U バグ防止) */
 const normalizeParams = (params: any) => {
-  // params がオブジェクトではなく単なる文字列（"FANZA"など）で来た場合の救済
   if (typeof params === 'string') {
     return { api_source: params.toUpperCase() };
   }
@@ -59,8 +59,9 @@ export async function getUnifiedProducts(params: any = {}) {
   const cleanParams = normalizeParams(params);
   const queryString = new URLSearchParams(cleanParams).toString();
   
-  // 💡 修正: client.ts が内部で /api を付けるため、ここでは /adult から開始
-  const targetUrl = resolveApiUrl(`/adult/unified-products/?${queryString}`);
+  // ✅ 修正: 先頭スラッシュを除去。client.ts が /api/adult/unified-products/ に整形します。
+  // ✅ クエリ直前の /? を ? に修正。
+  const targetUrl = resolveApiUrl(`adult/unified-products?${queryString}`);
 
   const isFiltered = !!(cleanParams.actress_id || cleanParams.genre_id || cleanParams.maker_id);
 
@@ -87,8 +88,8 @@ export async function getUnifiedProducts(params: any = {}) {
 export async function getAdultProductDetail(id: string | number): Promise<AdultProduct | null> {
   if (!id || id === 'main') return null;
   
-  // 💡 修正: /api/api を防ぐため /adult に修正
-  const targetUrl = resolveApiUrl(`/adult/products/${id}/`);
+  // ✅ 修正: resolveApiUrl('adult/products/${id}') 形式に。
+  const targetUrl = resolveApiUrl(`adult/products/${id}`);
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
@@ -97,8 +98,11 @@ export async function getAdultProductDetail(id: string | number): Promise<AdultP
     
     const data = await handleResponseWithDebug(res, targetUrl);
     
-    if (data?.detail === "Not found." || data?._error) return null;
-    return data as AdultProduct;
+    // handleResponseWithDebug の wrap により、単体データは results[0] か data自体にある
+    const product = data.results ? data.results[0] : data;
+    
+    if (!product || product.detail === "Not found." || data?._error) return null;
+    return product as AdultProduct;
   } catch (error) {
     console.error(`[ProductDetail Bridge] FETCH_FAILED [${id}]:`, error);
     return null; 
@@ -116,8 +120,8 @@ export async function fetchAdultTaxonomyIndex(type: string, floorCodeOrParams?: 
     const cleanParams = normalizeParams({ type, ...rawParams });
     const query = new URLSearchParams(cleanParams).toString();
     
-    // 💡 修正: /api/api を防ぐため /adult に修正
-    const url = resolveApiUrl(`/adult/taxonomy/?${query}`);
+    // ✅ 修正: パスを整理。
+    const url = resolveApiUrl(`adult/taxonomy?${query}`);
     
     const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
     const data = await handleResponseWithDebug(res, url);
@@ -136,23 +140,25 @@ export const fetchMakers = (p?: any) => fetchAdultTaxonomyIndex('makers', p);
 export const fetchActresses = (p?: any) => fetchAdultTaxonomyIndex('actresses', p);
 
 /**
- * 💡 4. ナビゲーションメニュー取得 (TypeError の主原因)
+ * 💡 4. ナビゲーションメニュー取得
  */
 export async function getAdultNavigationFloors(params: any = {}) {
   const cleanParams = normalizeParams(params);
   const query = new URLSearchParams(cleanParams).toString();
   const siteVal = cleanParams.api_source || '';
   
-  // 💡 修正: /api/api を防ぐため /adult に修正
-  const targetUrl = resolveApiUrl(`/adult/navigation/floors/?${query}`);
+  // ✅ 修正: パスを整理。
+  const targetUrl = resolveApiUrl(`adult/navigation/floors?${query}`);
   
   try {
     const res = await fetch(targetUrl, { 
       headers: getDjangoHeaders(), 
       next: { revalidate: 3600 } 
     });
+    
+    // ここは構造が特殊なため直接 handleResponseWithDebug を使わずに処理
     const json = await res.json();
-    const data = json?.data || json || {};
+    const data = json?.data || json?.results || json || {};
 
     if (siteVal) {
       const filteredData: any = {};

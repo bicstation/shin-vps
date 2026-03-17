@@ -1,22 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 /**
  * ✅ 物理パスに基づいた正しいインポート
- * tree構造に従い、@shared の後に lib/utils や components/molecules を明示しています。
+ * エイリアスを @/shared に統一し、解決の確実性を高めます。
  */
-import { getSiteMetadata, getSiteColor } from '@shared/lib/utils/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import styles from './Footer.module.css';
-import SystemDiagnosticHero from '@shared/components/molecules/SystemDiagnosticHero';
+import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero';
 
 /**
  * =====================================================================
  * 🧱 [ORGANISM] Footer (shared/components/organisms/common/Footer.tsx)
- * 全サイト共通のフッター。
- * サイト切替ネットワーク、デバッグターミナル、法的情報を統合。
+ * 🛡️ Maya's Logic: ハイドレーション・ガード & デバッグターミナル統合版
  * =====================================================================
  */
 interface FooterProps {
@@ -34,25 +33,39 @@ interface FooterProps {
     };
 }
 
-export default function Footer({ debugData }: FooterProps) {
-    const currentYear = new Date().getFullYear();
-    const site = getSiteMetadata();
-    const siteColor = getSiteColor(site.site_name);
+// 🌐 内部コンポーネント: searchParams を安全に使用するため分離
+function FooterContent({ debugData }: FooterProps) {
+    const [mounted, setMounted] = useState(false);
     const searchParams = useSearchParams();
-    
+    const currentYear = new Date().getFullYear();
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // 🛰️ サイト情報の動的取得
+    const site = useMemo(() => {
+        if (!mounted || typeof window === 'undefined') return null;
+        const host = window.location.hostname;
+        return getSiteMetadata(host);
+    }, [mounted]);
+
+    // 🚩 ガード: 準備ができるまでレンダリングをスキップ
+    if (!mounted || !site) {
+        return <footer className={styles.footer} style={{ height: '200px', visibility: 'hidden' }} />;
+    }
+
+    const siteColor = getSiteColor(site.site_name);
     const isDebugMode = searchParams.get('debug') === 'true';
     const isAdult = site.site_group === 'adult';
-
-    // 🌐 ローカル・VPS 判定ロジック
-    const isLocal = typeof window !== 'undefined' && 
-                   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
     /**
      * 🛰️ SHIN-VPS ネットワーク設定
      */
     const networkSites = [
-        { name: 'Bic Station', domain: 'bic-station.com', port: 3000, color: '#0055ff' },
-        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900' },
+        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff' },
+        { name: 'Bic Saving', domain: 'bicsaving.com', port: 3001, color: '#ff9900' },
         { name: 'AV Flash', domain: 'av-flash.com', port: 3002, color: '#e60012' },
         { name: 'Tiper', domain: 'tiper.jp', port: 3003, color: '#d4af37' },
     ];
@@ -62,31 +75,27 @@ export default function Footer({ debugData }: FooterProps) {
     };
 
     /**
-     * 🛠️ リンク定義
+     * 🛠️ サイト別リンク・テキスト定義
      */
     const siteConfigs: Record<string, any> = {
         'Tiper': {
             desc: "大人のためのプレミアム・エンターテインメント・ガイド。AIソムリエがあなたの感性に響く最高の1本をエスコートします。",
             brands: [{ name: 'FANZA', slug: 'fanza' }, { name: 'DUGA', slug: 'duga' }, { name: 'MGS', slug: 'mgs' }],
-            content: [{ name: '🏠 トップ', path: '/' }, { name: '🔥 艶華ランキング', path: '/ranking' }, { name: '📅 発売カレンダー', path: '/calendar' }],
             suffix: 'Tactical Archive Interface'
         },
         'AV Flash': {
             desc: "圧倒的なアーカイブ量を誇る動画情報ポータル。メーカー・女優・ジャンル別の詳細解析で、見たい動画がすぐに見つかります。",
             brands: [{ name: 'S1', slug: 's1' }, { name: 'MOODYZ', slug: 'moodyz' }, { name: 'SOD', slug: 'sod' }],
-            content: [{ name: '🏠 トップ', path: '/' }, { name: '🎬 新着動画', path: '/new-arrival' }, { name: '🏢 メーカー一覧', path: '/maker' }],
             suffix: 'Ultimate Movie Registry'
         },
         'Bic Saving': {
             desc: "「賢く買う」をAIが徹底サポート。主要ECサイトの価格推移とポイント還元率をリアルタイムに解析し、最安値をお届けします。",
             brands: [{ name: 'Amazon', slug: 'amazon' }, { name: '楽天', slug: 'rakuten' }, { name: 'Yahoo!', slug: 'yahoo' }],
-            content: [{ name: '🏠 トップ', path: '/' }, { name: '🉐 特売情報', path: '/campaign' }, { name: '🎫 クーポン', path: '/coupon' }],
             suffix: 'Smart Saving Index'
         },
         'Bic Station': {
             desc: "ハードウェア性能の真実を数値化。最新PCスペック診断とBTOメーカー比較で、あなたの用途に最適な1台を提案します。",
             brands: [{ name: 'Lenovo', slug: 'lenovo' }, { name: 'DELL', slug: 'dell' }, { name: 'Apple', slug: 'apple' }],
-            content: [{ name: '🏠 カタログ', path: '/' }, { name: '🔍 PC診断', path: '/pc-finder' }, { name: '🛠 パーツ比較', path: '/ranking' }],
             suffix: 'Performance Registry'
         }
     };
@@ -118,7 +127,7 @@ export default function Footer({ debugData }: FooterProps) {
                     </div>
                 </div>
 
-                {/* --- 2. ネットワーク (サイト切替) --- */}
+                {/* --- 2. ネットワーク --- */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>SHIN-VPS NETWORK</h3>
                     <ul className={styles.networkList}>
@@ -136,7 +145,7 @@ export default function Footer({ debugData }: FooterProps) {
                     </ul>
                 </div>
 
-                {/* --- 3. リーガル/情報 --- */}
+                {/* --- 3. リーガル --- */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>INFORMATION</h3>
                     <ul className={styles.linkList}>
@@ -170,5 +179,14 @@ export default function Footer({ debugData }: FooterProps) {
                 </div>
             )}
         </footer>
+    );
+}
+
+// 🏛️ Root Footer Component (Next.js 15 Suspense Guard)
+export default function Footer(props: FooterProps) {
+    return (
+        <Suspense fallback={<footer className={styles.footer} style={{ height: '200px' }} />}>
+            <FooterContent {...props} />
+        </Suspense>
     );
 }
