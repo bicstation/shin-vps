@@ -1,0 +1,278 @@
+# =====================================================================
+# 🛡️ SHIN-VPS v3.2 本番環境構成定義 (SSL対応・4ドメイン特化型)
+# ---------------------------------------------------------------------
+# 【AI 厳命事項遵守】
+# 1. サービス名/コンテナ名の変更なし。
+# 2. build context はすべてルート(.)に設定。
+# 3. NEXT_PUBLIC_BASE_PATH は "" 固定。
+# 4. 不要なWordPress/MariaDB/Nginxはすべて削除。
+# =====================================================================
+
+services:
+
+  # ---------------------------------------------------------------------
+  # 0. Traefik (エッジプロキシ / SSL終端)
+  # ---------------------------------------------------------------------
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik-proxy
+    restart: always
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.email=${SSL_EMAIL:-bicstation@gmail.com}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
+      - "traefik.http.routers.traefik-dash.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dash.tls.certresolver=le"
+      - "traefik.http.routers.traefik-dash.service=api@internal"
+      - "traefik.http.routers.traefik-dash.priority=4000"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/maya/docker_volumes/traefik/acme.json:/letsencrypt/acme.json
+    networks:
+      - shared-proxy
+
+  # ---------------------------------------------------------------------
+  # 0.5 Ofelia (ジョブスケジューラ)
+  # ---------------------------------------------------------------------
+  scheduler:
+    image: mcuadros/ofelia:latest
+    container_name: bicstation-scheduler
+    restart: always
+    depends_on:
+      - django-v2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - shared-proxy
+    command: daemon --docker
+
+  # ---------------------------------------------------------------------
+  # 1. データベース層 (Postgres)
+  # ---------------------------------------------------------------------
+  postgres-db-v2:
+    image: postgres:15-alpine
+    container_name: postgres-db-v2
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - /home/maya/docker_volumes/postgres:/var/lib/postgresql/data
+    networks:
+      - internal-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------
+  # 2. バックエンド層 (Django API)
+  # ---------------------------------------------------------------------
+  django-v2:
+    build: { context: ./django }
+    container_name: django-v2
+    restart: always
+    depends_on:
+      postgres-db-v2:
+        condition: service_healthy
+    env_file: [.env]
+    environment:
+      - DB_HOST=postgres-db-v2
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bic-saving.com`, `bicstation.com`, `avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.django-router.entrypoints=websecure"
+      - "traefik.http.routers.django-router.tls.certresolver=le"
+      - "traefik.http.routers.django-router.priority=2000"
+      - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
+      - "ofelia.enabled=true"
+      - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
+      - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
+      - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
+      - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
+    volumes:
+      - ./django:/usr/src/app
+      - static_volume_prod:/usr/src/app/staticfiles
+    networks:
+      - internal-net
+      - shared-proxy
+
+  # ---------------------------------------------------------------------
+  # 3. フロントエンド層 (Next.js 4ドメイン完全独立)
+  # ---------------------------------------------------------------------
+  next-bicstation-v2:
+    build: 
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-bicstation
+        NEXT_PUBLIC_API_URL: https://bicstation.com/api
+        NEXT_PUBLIC_BASE_PATH: ""
+    container_name: next-bicstation-v2
+    restart: always
+    env_file: [.env]
+    volumes:
+      - ./next-bicstation:/usr/src/app
+      - ./shared:/usr/src/app/shared 
+      - sitemap_data:/app/public/sitemap_gen
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.bicstation-router.rule=Host(`bicstation.com`)"
+      - "traefik.http.routers.bicstation-router.entrypoints=websecure"
+      - "traefik.http.routers.bicstation-router.tls.certresolver=le"
+      - "traefik.http.routers.bicstation-router.priority=100"
+      - "traefik.http.services.bicstation-svc.loadbalancer.server.port=3000"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  next-tiper-v2:
+    build: 
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-tiper
+        NEXT_PUBLIC_API_URL: https://tiper.live/api
+        NEXT_PUBLIC_BASE_PATH: ""
+    container_name: next-tiper-v2
+    restart: always
+    env_file: [.env]
+    volumes:
+      - ./next-tiper:/usr/src/app
+      - ./shared:/usr/src/app/shared
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.tiper-router.rule=Host(`tiper.live`)"
+      - "traefik.http.routers.tiper-router.entrypoints=websecure"
+      - "traefik.http.routers.tiper-router.tls.certresolver=le"
+      - "traefik.http.routers.tiper-router.priority=100"
+      - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  next-bic-saving-v2:
+    build: 
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-bic-saving
+        NEXT_PUBLIC_API_URL: https://bic-saving.com/api
+        NEXT_PUBLIC_BASE_PATH: ""
+    container_name: next-bic-saving-v2
+    restart: always
+    env_file: [.env]
+    volumes:
+      - ./next-bic-saving:/usr/src/app
+      - ./shared:/usr/src/app/shared
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.saving-router.rule=Host(`bic-saving.com`)"
+      - "traefik.http.routers.saving-router.entrypoints=websecure"
+      - "traefik.http.routers.saving-router.tls.certresolver=le"
+      - "traefik.http.routers.saving-router.priority=100"
+      - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  next-avflash-v2:
+    build: 
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-avflash
+        NEXT_PUBLIC_API_URL: https://avflash.xyz/api
+        NEXT_PUBLIC_BASE_PATH: ""
+    container_name: next-avflash-v2
+    restart: always
+    env_file: [.env]
+    volumes:
+      - ./next-avflash:/usr/src/app
+      - ./shared:/usr/src/app/shared
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.avflash-router.rule=Host(`avflash.xyz`)"
+      - "traefik.http.routers.avflash-router.entrypoints=websecure"
+      - "traefik.http.routers.avflash-router.tls.certresolver=le"
+      - "traefik.http.routers.avflash-router.priority=100"
+      - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  # ---------------------------------------------------------------------
+  # 4. 管理ツール層
+  # ---------------------------------------------------------------------
+  pgadmin-v2:
+    image: dpage/pgadmin4
+    container_name: pgadmin-v2
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_LISTEN_PORT: 80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin.tiper.live`)"
+      - "traefik.http.routers.pgadmin-router.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin-router.tls.certresolver=le"
+      - "traefik.http.routers.pgadmin-router.priority=3100"
+      - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    restart: always
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.dozzle-router.rule=Host(`logs.tiper.live`)"
+      - "traefik.http.routers.dozzle-router.entrypoints=websecure"
+      - "traefik.http.routers.dozzle-router.tls.certresolver=le"
+      - "traefik.http.routers.dozzle-router.priority=3500"
+      - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
+    networks:
+      - shared-proxy
+
+# ---------------------------------------------------------------------
+# 共通設定
+# ---------------------------------------------------------------------
+networks:
+  internal-net:
+    driver: bridge
+  shared-proxy:
+    name: shin-vps_shared-proxy
+    external: true
+
+volumes:
+  static_volume_prod:
+  sitemap_data:
