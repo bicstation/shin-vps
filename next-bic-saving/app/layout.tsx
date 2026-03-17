@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import React, { Suspense } from "react";
 import { headers } from "next/headers";
+import Script from "next/script"; // ✅ 必須: Scriptコンポーネント
 import styles from "./layout.module.css";
 
 /**
@@ -15,14 +16,11 @@ import '@shared/styles/globals.css';
 
 /**
  * ✅ 2. 共通設定のインポート
- * 物理パス: shared/lib/utils/siteConfig.ts
  */
 import { getSiteMetadata, getSiteColor } from '@shared/lib/utils/siteConfig';
 
 /**
  * ✅ 3. 共通レイアウトコンポーネントのインポート
- * 物理パス: shared/components/organisms/common/
- * エイリアス解決を確実にするため、詳細なパスを指定します
  */
 import Header from '@shared/components/organisms/common/Header';
 import Footer from '@shared/components/organisms/common/Footer';
@@ -47,6 +45,10 @@ export const metadata: Metadata = {
   },
   description: "日常の買い物から最新ガジェット、ネット回線の選び方まで。AI解析を活用して、あなたの生活コストを下げ、クオリティを上げる節約術を提案します。",
   keywords: ["節約術", "ポイ活", "ガジェット比較", "生活最適化", "ビック的節約生活"],
+  // ✅ 4. Google AdSense 所有権確認タグの追加
+  other: {
+    "google-adsense-account": "ca-pub-9068876333048216",
+  },
   openGraph: {
     type: "website",
     locale: "ja_JP",
@@ -79,12 +81,20 @@ export default async function RootLayout({
   const headerList = await headers();
   const host = headerList.get('host') || "bic-saving.com";
   
-  // 物理パス: shared/lib/utils/siteConfig.ts
   const site = getSiteMetadata(host);
   const themeColor = getSiteColor(site.site_name);
 
   return (
     <html lang="ja" style={{ height: '100%' }}>
+      <head>
+        {/* ✅ 5. Google AdSense 審査・配信スクリプトの配置 */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9068876333048216"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+      </head>
       <body 
         className={`${inter.className} ${styles.bodyWrapper}`}
         style={{ 

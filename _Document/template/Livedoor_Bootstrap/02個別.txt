@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja" itemscope itemtype="http://schema.org/Blog">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="google-adsense-account" content="ca-pub-9068876333048216">
+
+<$HeadSectionCommon$>
+<meta name="description" content="<$ArticleDescription ESCAPE$>" />
+<$OGP$>
+<title><$ArticleTitle ESCAPE$> : <$BlogTitle ESCAPE$></title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="<$BlogStylesheet$>" type="text/css" />
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9068876333048216" crossorigin="anonymous"></script>
+</head>
+
+<body class="page-article">
+
+<$BlogHeader$>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-navy shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand text-info" href="<$BlogUrl$>">連合艦隊ポータル</a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#fleetNav" aria-controls="fleetNav" aria-expanded="false" aria-label="メニュー開閉">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="fleetNav">
+      <ul class="navbar-nav ms-auto text-center text-lg-start">
+        <li class="nav-item"><a class="nav-link text-white" href="https://bicstation.com" target="_blank">BICSTATION</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="https://bicsaving.com" target="_blank">BIC SAVING</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="https://av-flash.com" target="_blank">AV-FLASH</a></li>
+        <li class="nav-item"><a class="nav-link text-white" href="https://tiper.jp" target="_blank">TIPER</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4 mt-md-5">
+  <div class="row">
+    
+    <main class="col-lg-8">
+      
+      <article class="card shadow-sm border-0 overflow-hidden mb-4">
+        <header class="card-header bg-white border-0 p-4 p-md-5 pb-0">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <span class="badge bg-primary px-3 py-2"><$ArticleCategory1$></span>
+            <time class="text-muted small">📅 <$ArticleDate$></time>
+          </div>
+          <h1 class="display-6 fw-bold mb-4 article-main-title"><$ArticleTitle ESCAPE$></h1>
+          <div class="article-social-top mb-4 border-bottom pb-3">
+            <$ArticleToolBox$>
+          </div>
+        </header>
+
+        <div class="card-body p-4 p-md-5 pt-0">
+          <div class="article-body">
+            <$ArticleBody$>
+            <IfArticleBodyMore>
+              <div id="more" class="mt-4"><$ArticleBodyMore$></div>
+            </IfArticleBodyMore>
+          </div>
+        </div>
+
+        <footer class="card-footer bg-light border-0 p-4">
+          <div class="mb-4">
+            <$ArticleTagsList$>
+          </div>
+          <div class="d-flex justify-content-center py-3">
+            <$ArticleToolBox$>
+          </div>
+        </footer>
+      </article>
+
+      <section class="related-articles-box shadow-sm bg-white p-4 p-md-5 rounded mb-4">
+        <h4 class="fw-bold mb-4 border-bottom pb-2">📂 関連記事</h4>
+        <div class="related-content">
+          <$RelatedArticles$>
+        </div>
+      </section>
+
+      <div class="ad-container text-center my-4 shadow-sm bg-white p-3 rounded">
+        <$Advertise$>
+      </div>
+
+      <section class="popular-section-article mb-5">
+        <h4 class="fw-bold mb-4 px-2">🔥 今月の人気記事</h4>
+        <div class="row g-3">
+          <$PopularArticlesWithImageList$>
+        </div>
+      </section>
+
+      <IfArticleAllowComment>
+        <section id="comments" class="comment-section shadow-sm bg-white p-4 p-md-5 rounded mb-5">
+          <h4 class="fw-bold border-bottom pb-3 mb-4">💬 コメント</h4>
+          <div class="comment-list-container">
+            <$CommentsList$>
+          </div>
+          <div class="mt-5 p-4 bg-light rounded shadow-sm">
+            <h5 class="fw-bold mb-3">コメントを書き込む</h5>
+            <div class="comment-form-wrapper">
+              <$CommentForm2$>
+            </div>
+          </div>
+        </section>
+      </IfArticleAllowComment>
+
+      <nav class="my-5">
+        <SetVar ArticlePagerType>2</SetVar>
+        <SetVar UseTitlesForPager>1</SetVar>
+        <div class="article-pager-custom">
+          <$ArticlePager$>
+        </div>
+      </nav>
+
+    </main>
+
+    <aside class="col-lg-4">
+      <div class="sidebar-inner shadow-sm bg-white p-4 rounded mb-4">
+        <h5 class="fw-bold border-bottom pb-2 mb-3">⚓ 艦隊指令部</h5>
+        <div class="plugin-content"><$PluginList_A$></div>
+      </div>
+      <div class="sidebar-inner shadow-sm bg-white p-4 rounded mb-4">
+        <h5 class="fw-bold border-bottom pb-2 mb-3">📅 アーカイブ</h5>
+        <div class="plugin-content"><$PluginList_B$></div>
+      </div>
+      <div class="d-lg-none mb-4"></div>
+    </aside>
+
+  </div>
+</div>
+
+<footer class="bg-dark text-white py-5 mt-5 border-top border-4 border-info">
+  <div class="container text-center">
+    <p class="mb-3 fw-bold"><$BlogTitle ESCAPE$></p>
+    <p class="small text-muted mb-4">&copy; 2026 - Powered by Shin-VPS Fleet System</p>
+    <div class="small text-muted">
+      <$BlogFooter$>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+site_key,platform,site_urls,user,api_key_or_pw,url_or_endpoint,blog_id_or_rpc
+seesaa,seesaa,ss.main.bicstation.com,bicstation@gmail.com,1492nabe,https://blog.seesaa.jp/rpc,7242363
+seesaa_ai,seesaa,ss.ai.bicstation.com,bicstation@gmail.com,1492nabe,https://blog.seesaa.jp/rpc,7242440
+seesaa_game,seesaa,ss.game.bicstation.com,bicstation@gmail.com,1492nabe,https://blog.seesaa.jp/rpc,7242441
+seesaa_mobile,seesaa,ss.game.bicstation.com,bicstation@gmail.com,1492nabe,https://blog.seesaa.jp/rpc,7242442
+seesaa_work,seesaa,ss.worl.bicstation.com,bicstation@gmail.com,1492nabe,https://blog.seesaa.jp/rpc,7242443
+ld_apple,livedoor,ld.apple.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation/article,
+ld_asus,livedoor,ld.asus.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-rstaipkg/article,
+ld_msi,livedoor,msi.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-1if6nwcy/article,
+ld_sony,livedoor,sony.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-is61wtfe/article,
+ld_dell,livedoor,dell.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-ufgtyxdn/article,
+ld_hp,livedoor,hp.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-tiodrmio/article,
+ld_lenovo,livedoor,lenovo.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-zbjz0l1a/article,
+ld_logicool,livedoor,logicool.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-tjicu3hv/article,
+ld_intel,livedoor,intel.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-zftrmwub/article,
+ld_amd,livedoor,amd.bicstation.com,bicstation,lmSZuzJO6O,https://livedoor.blogcms.jp/atompub/bicstation-u5yjy0lt/article,
+ld_mouse,livedoor,mouse.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station/article,
+ld_iiyama,livedoor,iiyama.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-zq1gwghp/article,
+ld_dospara,livedoor,dospara.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-gevemmot/article,
+ld_tsukumo,livedoor,tsukumo.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-jcjp5tqh/article,
+ld_ark,livedoor,ark.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-fbtird2v/article,
+ld_frontier,livedoor,frontier.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-qpmycvvo/article,
+ld_sycom,livedoor,sycom.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-ufhdrs8l/article,
+ld_dynabook,livedoor,dynabook.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-d00amao5/article,
+ld_nec,livedoor,nec.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-a3wiv6xl/article,
+ld_fujitsu,livedoor,fujitsu.bicstation.com,pbic_station,ULL2YG8X0z,https://livedoor.blogcms.jp/atompub/pbic_station-mujuq4ew/article,
+h_main,hatena,h.main.bicstation.com,bicstation,se0o5znod6,https://blog.hatena.ne.jp/bicstation/bicstation.hatenablog.com/atom/entry,
+h_money,hatena,h.money.bic-saving.com,bicstation,se0o5znod6,https://blog.hatena.ne.jp/bic-money.hatenadiary.com/atom/entry,
+h_ai,hatena,h.ai.bicstation.com,bicstation,se0o5znod6,https://blog.hatena.ne.jp/bicstation/bic-ai.hatenablog.jp/atom/entry,
+wp_main,wordpress,,admin,xxxx xxxx xxxx xxxx,https://bicstation.com,
+wp_saving,wordpress,,admin,xxxx xxxx xxxx xxxx,https://bic-saving.com,

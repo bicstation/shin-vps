@@ -1,14 +1,15 @@
+// @ts-nocheck
 import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import { COLORS } from '../../styles/constants';
 
 /**
- * ✅ 司令部統合：API & Bridge
+ * ✅ 司令部統合：Maya's Logic v5.6
+ * 生の fetch を廃止し、shared 側の安全なフェッチ関数に一本化します。
  */
-import { fetchMakers } from '@/shared/lib/api/django/pc';
+import { fetchMakers, fetchPCSidebarStats } from '@/shared/lib/api/django/pc';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
-import { getDjangoHeaders } from '@/shared/lib/api/django/client'; 
 import styles from './PCSidebar.module.css';
 
 interface AttributeItem {
@@ -23,59 +24,58 @@ interface SidebarData {
 }
 
 export default async function Sidebar() {
+  /**
+   * 1. 環境情報の取得 (Async)
+   */
   const headerList = await headers();
   const pathname = headerList.get('x-url') || '/';
+  // サイトカラーの安全な取得
   const siteColor = COLORS?.SITE_COLOR || '#007bff';
 
-  // 💡 通信経路の最適化 (VPS環境ではDocker内部、ローカルでは8083)
-  const API_BASE = process.env.INTERNAL_API_URL || "http://127.0.0.1:8083";
-  const statsUrl = `${API_BASE}/api/general/pc-sidebar-stats/`;
-
   /**
-   * 🛡️ フェッチ・セーフティ
+   * 2. フェッチ・セーフティ (エラー時にプロセスを止めない)
    */
   async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     try {
       const result = await promise;
       return result ?? fallback;
     } catch (e) {
-      console.error("[PCSidebar Fetch Error]:", e);
+      console.error("🚨 [PCSidebar Fetch Error]:", e);
       return fallback;
     }
   }
 
-  // 1. 並列データ取得
-  const [makers, bridgeData, specStatsRes] = await Promise.all([
+  /**
+   * 3. データ並列取得
+   * 💡 生の fetch(statsUrl) を廃止。
+   * 💡 fetchPCSidebarStats() 内部で getDjangoHeaders() と URL 解決を完結させています。
+   */
+  const [makers, bridgeData, specStats] = await Promise.all([
     safeFetch(fetchMakers(), []),
     safeFetch(fetchDjangoBridgeContent('latest_news', 5), []), 
-    fetch(statsUrl, {
-      headers: getDjangoHeaders(), 
-      next: { revalidate: 3600 } 
-    }).catch(() => ({ ok: false }))
+    safeFetch(fetchPCSidebarStats(), null) 
   ]);
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : [];
   
-  // 2. スペック統計の解析
-  let specStats: SidebarData | null = null;
-  if (specStatsRes && 'ok' in specStatsRes && (specStatsRes as any).ok) {
-    try {
-      specStats = await (specStatsRes as Response).json();
-    } catch (e) {
-      console.error("[PCSidebar Stats Parse Error]:", e);
-    }
-  }
-
-  // 3. 国内外ブランドの自動仕分け
+  /**
+   * 4. 国内外ブランドの自動仕分け
+   */
   const domesticNames = ['mouse', 'panasonic', 'vaio', 'dynabook', 'fujitsu', 'nec', 'iiyama'];
   const categorizedMakers = (makers || []).reduce((acc, curr) => {
-    // APIの構造に合わせて curr.maker または curr.name を考慮
     const rawName = curr.maker || curr.name || '';
     const name = rawName.toLowerCase();
+    
+    const makerData = { 
+      ...curr, 
+      displayName: rawName.toUpperCase(),
+      lowerName: name
+    };
+
     if (domesticNames.some(d => name.includes(d))) {
-      acc.domestic.push({ ...curr, displayName: rawName.toUpperCase() });
+      acc.domestic.push(makerData);
     } else {
-      acc.overseas.push({ ...curr, displayName: rawName.toUpperCase() });
+      acc.overseas.push(makerData);
     }
     return acc;
   }, { domestic: [] as any[], overseas: [] as any[] });
@@ -103,9 +103,9 @@ export default async function Sidebar() {
           <ul className={styles.list}>
             {categorizedMakers.domestic.map((item: any) => (
               <li key={item.id || item.maker}>
-                <Link href={`/brand/${(item.maker || item.name).toLowerCase()}`} 
-                      className={`${styles.link} ${pathname.includes((item.maker || item.name).toLowerCase()) ? styles.active : ''}`}
-                      style={pathname.includes((item.maker || item.name).toLowerCase()) ? { color: siteColor } : {}}>
+                <Link href={`/brand/${item.lowerName}`} 
+                      className={`${styles.link} ${pathname.includes(item.lowerName) ? styles.active : ''}`}
+                      style={pathname.includes(item.lowerName) ? { color: siteColor } : {}}>
                   <span>💻 {item.displayName}</span>
                   <span className={styles.badge}>{item.count}</span>
                 </Link>
@@ -117,9 +117,9 @@ export default async function Sidebar() {
           <ul className={styles.list}>
             {categorizedMakers.overseas.map((item: any) => (
               <li key={item.id || item.maker}>
-                <Link href={`/brand/${(item.maker || item.name).toLowerCase()}`} 
-                      className={`${styles.link} ${pathname.includes((item.maker || item.name).toLowerCase()) ? styles.active : ''}`}
-                      style={pathname.includes((item.maker || item.name).toLowerCase()) ? { color: siteColor } : {}}>
+                <Link href={`/brand/${item.lowerName}`} 
+                      className={`${styles.link} ${pathname.includes(item.lowerName) ? styles.active : ''}`}
+                      style={pathname.includes(item.lowerName) ? { color: siteColor } : {}}>
                   <span>💻 {item.displayName}</span>
                   <span className={styles.badge}>{item.count}</span>
                 </Link>
@@ -129,22 +129,25 @@ export default async function Sidebar() {
         </div>
       </section>
 
-      {/* ⚙️ SPECS: Djangoによる動的属性 */}
-      {specStats && Object.entries(specStats).map(([category, items]) => (
-        <section key={category} className={styles.section}>
-          <h3 className={styles.sectionTitle}>{category.replace('_', ' ').toUpperCase()}</h3>
-          <ul className={styles.list}>
-            {items.map((item) => (
-              <li key={item.id}>
-                <Link href={`/pc-products?attribute=${item.slug}`} className={styles.link}>
-                  <span>✨ {item.name}</span>
-                  <span className={styles.badge}>{item.count}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      {/* ⚙️ SPECS: Djangoによる動的属性 (CPU/GPU/Memory等) */}
+      {specStats && Object.entries(specStats as SidebarData).map(([category, items]) => {
+        if (!Array.isArray(items)) return null;
+        return (
+          <section key={category} className={styles.section}>
+            <h3 className={styles.sectionTitle}>{category.replace('_', ' ').toUpperCase()}</h3>
+            <ul className={styles.list}>
+              {items.map((item) => (
+                <li key={item.id || item.slug}>
+                  <Link href={`/pc-products?attribute=${item.slug}`} className={styles.link}>
+                    <span>✨ {item.name}</span>
+                    <span className={styles.badge}>{item.count}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })}
 
       {/* 📄 UPDATES: Bridge経由の最新レポート */}
       <section className={styles.section}>

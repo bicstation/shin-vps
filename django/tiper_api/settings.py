@@ -2,11 +2,10 @@
 """
 Django settings for tiper_api project.
 
-💡 SHIN-VPS 統合開発環境用【最終確定・全ドメイン網羅版】
-- tiper.live, bicstation.com, bic-saving.com, avflash.xyz および全サブドメイン対応
-- Traefik リバースプロキシ (HTTPS) 整合性設定済み
-- ローカル (HTTP) / 本番 (HTTPS) 自動切り替え
-- 外部API (DUGA/FANZA) 認証情報を環境変数からロード
+🛡️ SHIN-VPS v3.6 最終完全統合版 (Workplace/Home Sync)
+- 🚀 blog.*** および phpmyadmin サブドメインを完全に排除
+- 🚀 自宅PC (ポート8083) および本番環境 (HTTPS) の両方に対応
+- 🚀 Traefik リバースプロキシ整合性設定済み
 """
 
 import os
@@ -20,82 +19,74 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 🔐 セキュリティ設定
 # ----------------------------------------------------
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-default-key-please-change-in-prod')
-
-# 💡 本番環境では環境変数 DEBUG=False を設定することを推奨
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # ----------------------------------------------------
-# 🌐 ホスト / サブドメイン設定 (全ドメインを網羅)
+# 🌐 ホスト / ドメイン設定 (冗長なサブドメインを排除・ポート8083対応)
 # ----------------------------------------------------
 ALLOWED_HOSTS = [
-    # --- tiper.live グループ ---
-    'tiper.live', 
-    'api.tiper.live', 
-    'blog.tiper.live', 
-    'phpmyadmin.tiper.live', 
-    'pgadmin.tiper.live', 
-    'logs.tiper.live',
-    
-    # --- bicstation.com グループ ---
-    'bicstation.com',
-    'blog.bicstation.com',
-    
-    # --- bic-saving.com グループ ---
-    'bic-saving.com',
-    'blog.bic-saving.com',
-    
-    # --- avflash.xyz グループ ---
+    # --- 本番ドメイン (サブドメインは api / 管理用のみ維持) ---
+    'tiper.live', 'api.tiper.live', 
+    'bicstation.com', 
+    'bic-saving.com', 
     'avflash.xyz',
-    'blog.avflash.xyz',
 
-    # --- インフラ・ローカル開発用 ---
-    'django-v2',
+    # --- インフラ・管理ツール (phpmyadminは排除) ---
+    'pgadmin.tiper.live', 'logs.tiper.live',
+    'django-v3',
     'localhost',
     '127.0.0.1',
-    'api-tiper-host', 'tiper-host', 'bicstation-host', 'saving-host', 'avflash-host',
-    '*' # 予備のワイルドカード
+
+    # --- ローカル開発用ドメイン (ポート8083付きを網羅) ---
+    'tiper-host', 'tiper-host:8083',
+    'bicstation-host', 'bicstation-host:8083',
+    'saving-host', 'saving-host:8083',
+    'avflash-host', 'avflash-host:8083',
+    'api-tiper-host', 'api-tiper-host:8083',
+    
+    '*' # 安全策としてのワイルドカード
 ]
 
 # ----------------------------------------------------
 # 🔗 CORS / CSRF 設定 (フロントエンド連携用)
 # ----------------------------------------------------
 CORS_ALLOWED_ORIGINS = [ 
-    # 本番環境のメインドメイン
-    "https://tiper.live", 
-    "https://bicstation.com",
-    "https://bic-saving.com",
-    "https://avflash.xyz",
-    "https://blog.tiper.live",
-    "https://blog.bicstation.com",
-    "https://blog.bic-saving.com",
-    "https://blog.avflash.xyz",
+    # 本番環境
+    "https://tiper.live", "https://bicstation.com", "https://bic-saving.com", "https://avflash.xyz",
     
-    # ローカル開発環境用
+    # ローカル開発環境 (Next.js サーバーサイド/クライアントサイド両対応)
     "http://localhost:3000", 
     "http://localhost:8083",
     "http://tiper-host:8083",
+    "http://bicstation-host:8083",
+    "http://saving-host:8083",
+    "http://avflash-host:8083",
     "http://api-tiper-host:8083",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRFトークンを信頼するオリジン (サブドメインをすべて含める)
+# CSRFトークンを信頼するオリジン (プロトコル必須、不要なサブドメインは排除済)
 CSRF_TRUSTED_ORIGINS = [
-    'https://tiper.live', 'https://api.tiper.live', 'https://blog.tiper.live',
-    'https://phpmyadmin.tiper.live', 'https://pgadmin.tiper.live', 'https://logs.tiper.live',
-    'https://bicstation.com', 'https://blog.bicstation.com',
-    'https://bic-saving.com', 'https://blog.bic-saving.com',
-    'https://avflash.xyz', 'https://blog.avflash.xyz',
+    'https://tiper.live', 'https://api.tiper.live',
+    'https://pgadmin.tiper.live', 'https://logs.tiper.live',
+    'https://bicstation.com', 
+    'https://bic-saving.com', 
+    'https://avflash.xyz',
     
     # ローカル開発用
     'http://localhost:3000', 
     'http://localhost:8083', 
+    'http://tiper-host:8083',
+    'http://bicstation-host:8083',
+    'http://saving-host:8083',
+    'http://avflash-host:8083',
     'http://api-tiper-host:8083',
     'http://127.0.0.1:8083', 
 ]
 
 # ----------------------------------------------------
-# 🛡️ Traefik リバースプロキシ設定 (重要：404/403回避用)
+# 🛡️ Traefik リバースプロキシ設定
 # ----------------------------------------------------
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -105,7 +96,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # ----------------------------------------------------
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
-
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
@@ -175,14 +165,13 @@ DATABASES = {
 }
 
 # ----------------------------------------------------
-# 🔑 外部API認証情報 (DUGA / FANZA) - .env から取得
+# 🔑 外部API認証情報 (DUGA / FANZA)
 # ----------------------------------------------------
-# スクレイパーがこれらを参照してデータをインポートします
 API_CONFIG = {
     'DUGA': {
         'API_ID': os.environ.get('DUGA_API_ID'),
-        'API_KEY': os.environ.get('DUGA_AFFILIATE_ID'),  # 既存の変数名に合わせる
-        'API_URL': 'http://affapi.duga.jp/search', # 標準的なDUGA APIのURL
+        'API_KEY': os.environ.get('DUGA_AFFILIATE_ID'),
+        'API_URL': 'http://affapi.duga.jp/search',
     },
     'FANZA': {
         'API_ID': os.environ.get('FANZA_API_ID'),
@@ -190,6 +179,7 @@ API_CONFIG = {
         'API_URL': 'https://api.dmm.com/affiliate/v3/ItemList',
     }
 }
+
 # ----------------------------------------------------
 # 👥 認証 / 国際化
 # ----------------------------------------------------
@@ -200,7 +190,7 @@ USE_I18N = True
 USE_TZ = True
 
 # ----------------------------------------------------
-# 📁 静的ファイル (WhiteNoise / STORAGES)
+# 📁 静的ファイル (WhiteNoise)
 # ----------------------------------------------------
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -256,7 +246,7 @@ LOGGING = {
 }
 
 # ----------------------------------------------------
-# 🚀 起動時 collectstatic (開発環境用便利機能)
+# 🚀 起動時 collectstatic (開発環境用)
 # ----------------------------------------------------
 if DEBUG and 'runserver' in sys.argv:
     import subprocess
