@@ -5,7 +5,6 @@
 # 1. サービス名/コンテナ名の変更なし。
 # 2. build context はすべてルート(.)に設定。
 # 3. NEXT_PUBLIC_BASE_PATH は "" 固定。
-# 4. 不要なWordPress/MariaDB/Nginxはすべて削除。
 # =====================================================================
 
 services:
@@ -41,8 +40,8 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/maya/docker_volumes/traefik/acme.json:/letsencrypt/acme.json
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/home/maya/docker_volumes/traefik/acme.json:/letsencrypt/acme.json"
     networks:
       - shared-proxy
 
@@ -56,7 +55,7 @@ services:
     depends_on:
       - django-v2
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - shared-proxy
     command: daemon --docker
@@ -73,7 +72,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - /home/maya/docker_volumes/postgres:/var/lib/postgresql/data
+      - "/home/maya/docker_volumes/postgres:/var/lib/postgresql/data"
     networks:
       - internal-net
     healthcheck:
@@ -86,13 +85,16 @@ services:
   # 2. バックエンド層 (Django API)
   # ---------------------------------------------------------------------
   django-v2:
-    build: { context: ./django }
+    build:
+      context: .
+      dockerfile: ./django/Dockerfile # または環境に合わせたパス
     container_name: django-v2
     restart: always
     depends_on:
       postgres-db-v2:
         condition: service_healthy
-    env_file: [.env]
+    env_file:
+      - .env
     environment:
       - DB_HOST=postgres-db-v2
     labels:
@@ -104,35 +106,38 @@ services:
       - "traefik.http.routers.django-router.priority=2000"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
       - "ofelia.enabled=true"
-      - "ofelia.job-exec.ai_blog_post.schedule=0 */30 * * * *"
-      - "ofelia.job-exec.ai_blog_post.command=python manage.py ai_blog_from_db"
-      - "ofelia.job-exec.ai_rss_news_post.schedule=0 15 */2 * * *"
-      - "ofelia.job-exec.ai_rss_news_post.command=python manage.py ai_post_pc_news"
+      - "ofelia.job-exec.collect_news_task.schedule=0 0 * * * *"
+      - "ofelia.job-exec.collect_news_task.command=/usr/src/app/scripts/post_all_blogs.sh"
+      - "ofelia.job-exec.publish_db_task.schedule=0 */30 * * * *"
+      - "ofelia.job-exec.publish_db_task.command=/usr/src/app/scripts/post_all_db.sh"
     volumes:
       - ./django:/usr/src/app
       - static_volume_prod:/usr/src/app/staticfiles
+      - /home/maya/shin-dev/shin-vps/post_all_blogs.sh:/usr/src/app/scripts/post_all_blogs.sh:ro
+      - /home/maya/shin-dev/shin-vps/post_all_db.sh:/usr/src/app/scripts/post_all_db.sh:ro
     networks:
       - internal-net
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 3. フロントエンド層 (Next.js 4ドメイン完全独立)
+  # 3. フロントエンド層 (Next.js 各ドメイン)
   # ---------------------------------------------------------------------
   next-bicstation-v2:
-    build: 
+    build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bicstation
-        NEXT_PUBLIC_API_URL: https://bicstation.com/api
+        NEXT_PUBLIC_API_URL: "https://bicstation.com/api"
         NEXT_PUBLIC_BASE_PATH: ""
     container_name: next-bicstation-v2
     restart: always
-    env_file: [.env]
+    env_file:
+      - .env
     volumes:
-      - ./next-bicstation:/usr/src/app
-      - ./shared:/usr/src/app/shared 
-      - sitemap_data:/app/public/sitemap_gen
+      - "./next-bicstation:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
+      - "sitemap_data:/app/public/sitemap_gen"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -146,19 +151,20 @@ services:
       - shared-proxy
 
   next-tiper-v2:
-    build: 
+    build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-tiper
-        NEXT_PUBLIC_API_URL: https://tiper.live/api
+        NEXT_PUBLIC_API_URL: "https://tiper.live/api"
         NEXT_PUBLIC_BASE_PATH: ""
     container_name: next-tiper-v2
     restart: always
-    env_file: [.env]
+    env_file:
+      - .env
     volumes:
-      - ./next-tiper:/usr/src/app
-      - ./shared:/usr/src/app/shared
+      - "./next-tiper:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -172,19 +178,20 @@ services:
       - shared-proxy
 
   next-bic-saving-v2:
-    build: 
+    build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bic-saving
-        NEXT_PUBLIC_API_URL: https://bic-saving.com/api
+        NEXT_PUBLIC_API_URL: "https://bic-saving.com/api"
         NEXT_PUBLIC_BASE_PATH: ""
     container_name: next-bic-saving-v2
     restart: always
-    env_file: [.env]
+    env_file:
+      - .env
     volumes:
-      - ./next-bic-saving:/usr/src/app
-      - ./shared:/usr/src/app/shared
+      - "./next-bic-saving:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -198,19 +205,20 @@ services:
       - shared-proxy
 
   next-avflash-v2:
-    build: 
+    build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-avflash
-        NEXT_PUBLIC_API_URL: https://avflash.xyz/api
+        NEXT_PUBLIC_API_URL: "https://avflash.xyz/api"
         NEXT_PUBLIC_BASE_PATH: ""
     container_name: next-avflash-v2
     restart: always
-    env_file: [.env]
+    env_file:
+      - .env
     volumes:
-      - ./next-avflash:/usr/src/app
-      - ./shared:/usr/src/app/shared
+      - "./next-avflash:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -240,7 +248,6 @@ services:
       - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin.tiper.live`)"
       - "traefik.http.routers.pgadmin-router.entrypoints=websecure"
       - "traefik.http.routers.pgadmin-router.tls.certresolver=le"
-      - "traefik.http.routers.pgadmin-router.priority=3100"
       - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
     networks:
       - internal-net
@@ -250,21 +257,20 @@ services:
     image: amir20/dozzle:latest
     container_name: dozzle
     restart: always
-    volumes: 
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
       - "traefik.http.routers.dozzle-router.rule=Host(`logs.tiper.live`)"
       - "traefik.http.routers.dozzle-router.entrypoints=websecure"
       - "traefik.http.routers.dozzle-router.tls.certresolver=le"
-      - "traefik.http.routers.dozzle-router.priority=3500"
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
     networks:
       - shared-proxy
 
 # ---------------------------------------------------------------------
-# 共通設定
+# 共通設定 (最上位階層)
 # ---------------------------------------------------------------------
 networks:
   internal-net:

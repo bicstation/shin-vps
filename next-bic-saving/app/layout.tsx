@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import React, { Suspense } from "react";
 import { headers } from "next/headers";
-import Script from "next/script"; // ✅ 必須: Scriptコンポーネント
+import Script from "next/script";
 import styles from "./layout.module.css";
 
 /**
@@ -15,12 +15,13 @@ import styles from "./layout.module.css";
 import '@shared/styles/globals.css';
 
 /**
- * ✅ 2. 共通設定のインポート
+ * ✅ 2. 共通設定・サイドバーラッパーのインポート
  */
 import { getSiteMetadata, getSiteColor } from '@shared/lib/utils/siteConfig';
+import SidebarWrapper from '@shared/layout/Sidebar/SidebarWrapper'; // 👈 追加
 
 /**
- * ✅ 3. 共通レイアウトコンポーネントのインポート
+ * ✅ 3. 共通コンポーネント
  */
 import Header from '@shared/components/organisms/common/Header';
 import Footer from '@shared/components/organisms/common/Footer';
@@ -28,40 +29,21 @@ import ChatBot from '@shared/components/organisms/common/ChatBot';
 
 const inter = Inter({ subsets: ["latin"] });
 
-/**
- * 💡 強制的動的レンダリングの設定 (Next.js 15)
- */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-/**
- * 💡 SEOメタデータの設定
- */
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://bic-saving.com'),
   title: {
-    template: "%s | ビック professional的節約生活",
+    template: "%s | ビック的節約生活",
     default: "ビック的節約生活 - 賢い買い物と最新テックで暮らしを最適化",
   },
   description: "日常の買い物から最新ガジェット、ネット回線の選び方まで。AI解析を活用して、あなたの生活コストを下げ、クオリティを上げる節約術を提案します。",
-  keywords: ["節約術", "ポイ活", "ガジェット比較", "生活最適化", "ビック的節約生活"],
-  // ✅ 4. Google AdSense 所有権確認タグの追加
   other: {
     "google-adsense-account": "ca-pub-9068876333048216",
   },
-  openGraph: {
-    type: "website",
-    locale: "ja_JP",
-    url: "https://bic-saving.com/",
-    siteName: "ビック的節約生活",
-    title: "ビック的節約生活 - 賢い買い物ガイド",
-    description: "AI解析で最適な節約プランを提案するライフスタイルメディア",
-  },
 };
 
-/**
- * 💡 ビューポート設定
- */
 export const viewport = {
   width: "device-width",
   initialScale: 1,
@@ -69,15 +51,12 @@ export const viewport = {
   themeColor: "#ffcc00",
 };
 
-/**
- * 🏠 ルートレイアウトコンポーネント
- */
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // ✅ 共通設定から現在のホスト情報を取得 (Next.js 15 対応)
+  // ✅ ホスト情報の取得とメタデータ判定
   const headerList = await headers();
   const host = headerList.get('host') || "bic-saving.com";
   
@@ -87,7 +66,6 @@ export default async function RootLayout({
   return (
     <html lang="ja" style={{ height: '100%' }}>
       <head>
-        {/* ✅ 5. Google AdSense 審査・配信スクリプトの配置 */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9068876333048216"
@@ -98,7 +76,6 @@ export default async function RootLayout({
       <body 
         className={`${inter.className} ${styles.bodyWrapper}`}
         style={{ 
-          // @ts-ignore -- CSSカスタムプロパティの注入
           '--site-theme-color': themeColor,
           '--bg-primary': '#ffffff',
           '--text-primary': '#333333',
@@ -110,42 +87,53 @@ export default async function RootLayout({
           position: 'relative'
         } as React.CSSProperties}
       >
-        {/* ① 共通ヘッダー */}
+        {/* ① ヘッダー */}
         <Suspense fallback={<div style={{ height: '60px', backgroundColor: '#fff' }} />}>
           <Header />
         </Suspense>
 
-        {/* ② 告知バー (PR表記など) */}
-        <div className={styles.adDisclosure} style={{ 
-          padding: "8px 15px", 
-          fontSize: "12px", 
-          textAlign: "center", 
-          backgroundColor: "#f8f9fa", 
-          color: "#666", 
-          borderBottom: "1px solid #eee" 
+        {/* ② 告知バー */}
+        <div style={{ 
+          padding: "8px 15px", fontSize: "12px", textAlign: "center", 
+          backgroundColor: "#f8f9fa", color: "#666", borderBottom: "1px solid #eee" 
         }}>
           【PR】本サイトはアフィリエイト広告を利用して運営されています。
         </div>
 
-        {/* ③ メインコンテンツ領域 */}
-        <div className={styles.layoutContainer} style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-          <Suspense fallback={
-            <div style={{ padding: '50px', textAlign: 'center', color: '#999' }}>
-              コンテンツを読み込み中...
-            </div>
-          }>
-            <main style={{ flexGrow: 1 }}>
-              {children}
-            </main>
+        {/* ③ メインレイアウト領域 (Sidebar + Main Content) */}
+        <div style={{ 
+          display: 'flex', 
+          flex: 1, 
+          width: '100%', 
+          maxWidth: '100vw',
+          overflowX: 'hidden' 
+        }}>
+          {/* 🛰️ 司令部直轄: サイドバーラッパー */}
+          <Suspense fallback={<div style={{ width: '280px', backgroundColor: '#f4f4f4' }} />}>
+            <SidebarWrapper />
           </Suspense>
+
+          {/* コンテンツ本体 */}
+          <main style={{ 
+            flexGrow: 1, 
+            minWidth: 0, // Flexboxの崩れ防止
+            backgroundColor: site.site_group === 'adult' ? '#000' : '#f4f4f4',
+            padding: '20px'
+          }}>
+            <Suspense fallback={
+              <div style={{ padding: '50px', textAlign: 'center', color: '#999' }}>コンテンツを読み込み中...</div>
+            }>
+              {children}
+            </Suspense>
+          </main>
         </div>
 
         {/* ④ フッター */}
-        <Suspense fallback={<div className="h-40 bg-gray-50 animate-pulse" />}>
+        <Suspense fallback={<div className="h-40 bg-gray-50" />}>
           <Footer />
         </Suspense>
 
-        {/* ⑤ AIチャットコンシェルジュ */}
+        {/* ⑤ チャットボット */}
         <Suspense fallback={null}>
           <ChatBot />
         </Suspense>

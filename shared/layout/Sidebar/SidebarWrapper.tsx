@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
+// /home/maya/shin-dev/shin-vps/shared/layout/Sidebar/SidebarWrapper.tsx
 import React from 'react';
 import { headers } from 'next/headers';
 
