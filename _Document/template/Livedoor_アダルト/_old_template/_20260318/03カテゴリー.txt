@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja" itemscope itemtype="http://schema.org/Blog">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <$HeadSectionCommon$>
+    <$OGP$>
+    <title><$MonthLabel$> : <$BlogTitle ESCAPE$></title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<$CSSUrl$>">
+
+    <style>
+        /* アーカイブページ専用：リストカードスタイル */
+        .archive-card {
+            background: var(--card-bg);
+            border: 1px solid #222;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: 0.3s;
+            margin-bottom: 20px;
+            display: flex;
+            text-decoration: none !important;
+        }
+        .archive-card:hover { 
+            transform: translateX(5px); 
+            border-color: var(--accent); 
+            background: #161616;
+        }
+        
+        /* サムネイルエリア */
+        .card-thumb { 
+            width: 35%; 
+            min-width: 140px; 
+            max-width: 280px; 
+            aspect-ratio: 16/9; 
+            overflow: hidden; 
+            background: #222;
+        }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* テキストエリア */
+        .card-body-custom { 
+            padding: 20px; 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            min-width: 0;
+        }
+        .card-body-custom .date { color: #666; font-size: 0.75rem; margin-bottom: 5px; font-weight: bold; }
+        .card-body-custom .title { 
+            color: #fff; 
+            font-weight: bold; 
+            font-size: 1.1rem; 
+            line-height: 1.4; 
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-body-custom .desc { 
+            color: #888; 
+            font-size: 0.85rem; 
+            display: -webkit-box; 
+            -webkit-line-clamp: 2; 
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
+            line-height: 1.5;
+        }
+
+        /* アーカイブヘッダー */
+        .archive-info-bar {
+            background: #111;
+            border-left: 4px solid var(--accent);
+            padding: 15px 25px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 576px) {
+            .archive-card { flex-direction: column; }
+            .card-thumb { width: 100%; max-width: none; }
+            .card-body-custom { padding: 15px; }
+        }
+    </style>
+</head>
+
+<body class="page-monthly">
+
+<div class="stema-bar">【PR】本サイトはアフィリエイト広告を利用して作品を紹介しています</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container-fluid-custom d-flex justify-content-between align-items-center">
+        <a class="navbar-brand" href="<$BlogUrl$>">TIPER.LIVE</a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navContent">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">HOME</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropCat" role="button" data-bs-toggle="dropdown" aria-expanded="false">CATEGORY</a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="<$BlogUrl$>archives/cat_1.html">美少女・アイドル</a></li>
+                        <li><a class="dropdown-item" href="<$BlogUrl$>archives/cat_2.html">人妻・熟女</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<$BlogUrl$>archives/cat_vr.html">VR特集</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="https://bic-erog.com">PORTAL</a></li>
+                <li class="nav-item"><a class="nav-link text-warning fw-bold" href="https://main.tiper.live/archives/12505161.html">POLICY</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="top-banner-wrapper">
+    <img src="https://livedoor.blogimg.jp/pbic/imgs/5/9/590332e9.jpg" class="top-banner-img" alt="Archive Banner">
+    <div class="top-banner-text">
+        <h1 class="text-white text-uppercase"><$MonthLabel$></h1>
+    </div>
+</div>
+
+<main class="container-fluid-custom mt-5">
+    <div class="row g-5">
+        
+        <div class="col-lg-9">
+            
+            <div class="archive-info-bar">
+                <span class="text-danger small fw-bold d-block mb-1">MONTHLY ARCHIVES</span>
+                <h2 class="h4 m-0 fw-bold text-white"><$MonthLabel$>の記事一覧</h2>
+            </div>
+
+            <MonthlyArticlesLoop>
+                <a href="<$ArticlePermalink$>" class="archive-card">
+                    <div class="card-thumb" id="thumb-<$ArticleId$>"></div>
+                    
+                    <div class="card-body-custom">
+                        <div class="date">📅 <$ArticleDate$></div>
+                        <div class="title"><$ArticleTitle ESCAPE$></div>
+                        <div class="desc"><$ArticleDescription ESCAPE$></div>
+                    </div>
+
+                    <div id="hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
+                    <script>
+                    (function() {
+                        var bodyHtml = document.getElementById('hidden-body-<$ArticleId$>').innerHTML;
+                        var thumbBox = document.getElementById('thumb-<$ArticleId$>');
+                        var imgMatch = bodyHtml.match(/<img [^>]*src=["']([^"']+)["']/);
+                        if (imgMatch) {
+                            thumbBox.innerHTML = '<img src="' + imgMatch[1] + '" alt="thumbnail">';
+                        } else {
+                            thumbBox.innerHTML = '<div style="background:#222; height:100%; display:flex; align-items:center; justify-content:center; color:#444; font-size:10px;">NO IMAGE</div>';
+                        }
+                    })();
+                    </script>
+                </a>
+                <IfFirstArticle><$Advertise$></IfFirstArticle>
+            </MonthlyArticlesLoop>
+
+            <div class="pager-container d-flex justify-content-center">
+                <$IndexNavigator$>
+            </div>
+        </div>
+
+        <aside class="col-lg-3">
+            <div class="sidebar-box">
+                <div class="sidebar-title">NAVIGATION</div>
+                <div class="side">
+                    <$PluginList_B$>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</main>
+
+<footer class="py-5 mt-5">
+    <div class="container text-center text-muted small">
+        <div class="mb-3">
+            <a href="https://main.tiper.live/archives/12505161.html" class="text-muted text-decoration-none mx-2">免責事項・ポリシー</a>
+        </div>
+        <p>&copy; Tiper.Live OFFICIAL. All Rights Reserved.</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,41 +1,43 @@
 # =====================================================================
-# 🚀 SHIN-VPS NEXT.JS 共通 Dockerfile (Node 20 安定版)
+# 🚀 SHIN-VPS NEXT.JS 共通 Dockerfile (v3.2 パス解決・完全版)
 # =====================================================================
 
 # --- ステージ 1: ビルドステージ ---
 FROM node:20-slim AS builder 
 
-# ビルド引数の定義
 ARG PROJECT_NAME
 ARG NEXT_PUBLIC_API_URL
 
 WORKDIR /app
 
-# 1. 必要最低限のOSライブラリ
+# 1. OSライブラリの最小インストール
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libc6 libstdc++6 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ✅ 2. プロジェクト本体のコピー
-COPY ${PROJECT_NAME}/ ./
+# ✅ 2. package.json のコピー (PROJECT_NAME フォルダから取得)
+COPY ${PROJECT_NAME}/package*.json ./
 
-# ✅ 3. 共通 shared フォルダを /app/shared へコピー
-COPY shared/ ./shared/
+# ✅ 3. 全依存関係のインストール
+RUN npm install --frozen-lockfile || npm install
 
-# ✅ 4. 依存関係のインストール
-# npm 9+ では unsafe-perm は不要です。
-# 権限問題を避けるため、rootユーザーのまま実行を継続します。
+# ✅ 4. 追加パッケージの注入
 RUN npm install @google/generative-ai lucide-react clsx tailwind-merge \
     gray-matter remark remark-html --save
-RUN npm install --include=optional
 
-# 5. 環境変数の注入
+# ✅ 5. ソースコードと shared フォルダをコピー
+# ${PROJECT_NAME} の中身を /app 直下に展開
+COPY ${PROJECT_NAME}/ ./
+COPY shared/ ./shared/
+
+# 6. 環境変数の注入
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NODE_ENV=production
+ENV NEXT_PRIVATE_STANDALONE=true 
 
-# ✅ 6. ビルド実行 (npxを使わず node で直接実行することで実行権限をバイパス)
+# ✅ 7. ビルド実行
 RUN rm -rf .next .cache node_modules/.cache
-RUN node node_modules/next/dist/bin/next build
+RUN ./node_modules/.bin/next build
 
 # --- ステージ 2: 実行ステージ ---
 FROM node:20-slim AS runner
@@ -45,25 +47,15 @@ ENV NODE_ENV=production
 ENV HOSTNAME "0.0.0.0"
 ENV PORT 3000
 
-RUN apt-get update && apt-get install -y --no-install-recommends libc6 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# 実行ユーザーの定義
-RUN addgroup --gid 1001 nodejs || true && \
-    adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
-
-# ✅ 7. 成果物の配置 (standalone モード)
+# ✅ 8. 成果物の配置
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# ✅ 8. 構造の自動適応 (server.js をルートに配置)
-# 各プロジェクトフォルダをルートに展開します
-RUN cp -r .next/standalone/* . 2>/dev/null || true
-RUN rm -rf ./next-bicstation ./next-tiper ./next-bic-saving ./next-avflash
-
 USER nextjs
 EXPOSE 3000
 
-# server.js を実行して起動
 CMD ["node", "server.js"]
