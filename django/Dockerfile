@@ -6,14 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # 2. OSの依存関係をインストール
-# --allow-releaseinfo-change を含め、PlaywrightとPostgreSQLに必要なライブラリを網羅
 RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
     libpq-dev \
     gcc \
     netcat-openbsd \
     curl \
     gnupg \
-    # --- Playwright用の依存ライブラリ群 ---
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -28,7 +26,6 @@ RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
     libpango-1.0-0 \
     libcairo2 \
     libasound2 \
-    # 日本語フォント (スクレイピング時の文字化け防止)
     fonts-ipafont-gothic \
     fonts-wqy-zenhei \
     && rm -rf /var/lib/apt/lists/*
@@ -37,18 +34,19 @@ RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
 WORKDIR /usr/src/app
 
 # 4. requirements.txtをコピーし、パッケージをインストール
-COPY requirements.txt .
+# 💡 修正ポイント：ルートコンテキストから django フォルダ内を指定
+COPY django/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # 5. Playwright本体とChromiumブラウザのインストール
-# install-deps を実行することで、ブラウザ実行に必要なOSライブラリを最終確定させます
 RUN pip install --no-cache-dir playwright && \
     playwright install chromium && \
     playwright install-deps chromium
 
 # 6. Djangoプロジェクトのコード全体をコンテナにコピー
-COPY . .
+# 💡 修正ポイント：ルートコンテキストから django フォルダの中身をコピー
+COPY django/ .
 
 # 7. entrypoint.sh に実行権限を付与
 RUN chmod +x /usr/src/app/entrypoint.sh
@@ -57,5 +55,4 @@ RUN chmod +x /usr/src/app/entrypoint.sh
 EXPOSE 8000
 
 # 9. 実行コマンド
-# ENTRYPOINTがある場合はその引数として、ない場合は直接実行されます
 CMD ["gunicorn", "tiper_api.wsgi:application", "--bind", "0.0.0.0:8000"]
