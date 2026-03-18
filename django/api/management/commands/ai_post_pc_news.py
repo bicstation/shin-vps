@@ -19,8 +19,6 @@ class Command(BaseCommand):
 
     # --- 🏘 艦隊構成：全サイト網羅 ---
     BLOG_CONFIGS = {
-        'wp_main': {'url': "https://bicstation.com/xmlrpc.php", 'user': "admin", 'app_password': "a0H2 McUX 3XK6 apzh JZ82 SzTm"},
-        'wp_saving': {'url': "https://blog.bic-erog.com/xmlrpc.php", 'user': "bicstation", 'app_password': "a0H2 McUX 3XK6 apzh JZ82 SzTm"},
         'seesaa': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242363"},
         'seesaa_ai': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242440"},
         'seesaa_game': {'rpc_url': "https://blog.seesaa.jp/rpc", 'user': "bicstation@gmail.com", 'pw': "1492nabe", 'blog_id': "7242441"},

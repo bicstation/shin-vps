@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-dev/shin-vps/django/api/management/commands/blog_drivers/blogger_driver.py
+
 import os
 import json
 from googleapiclient.discovery import build

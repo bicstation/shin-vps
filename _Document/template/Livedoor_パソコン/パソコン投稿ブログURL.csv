@@ -27,5 +27,8 @@ ld_fujitsu,livedoor,fujitsu.bicstation.com,pbic_station,ULL2YG8X0z,https://lived
 h_main,hatena,h.main.bicstation.com,bicstation,se0o5znod6,https://blog.hatena.ne.jp/bicstation/bicstation.hatenablog.com/atom/entry,
 h_money,hatena,h.money.bic-saving.com,bicstation,se0o5znod6,https://blog.hatena.ne.jp/bic-money.hatenadiary.com/atom/entry,
 h_ai,hatena,h.ai.bicstation.com,bicstation,se0o5znod6,https://blog.hatena.ne.jp/bicstation/bic-ai.hatenablog.jp/atom/entry,
-wp_main,wordpress,,admin,xxxx xxxx xxxx xxxx,https://bicstation.com,
-wp_saving,wordpress,,admin,xxxx xxxx xxxx xxxx,https://bic-saving.com,
+blogger_pc,blogger,pc.bicstation.com,google_account,oauth2,https://www.googleapis.com/blogger/v3/blogs/,600277910318387930
+blogger_ai,blogger,ai.bicstation.com,google_account,oauth2,https://www.googleapis.com/blogger/v3/blogs/,5331584125081893967
+blogger_game,blogger,game.bicstation.com,google_account,oauth2,https://www.googleapis.com/blogger/v3/blogs/,3782702388373440214
+blogger_mobile,blogger,mobile.bicstation.com,google_account,oauth2,https://www.googleapis.com/blogger/v3/blogs/,7045700179882745227
+blogger_work,blogger,work.bicstation.com,google_account,oauth2,https://www.googleapis.com/blogger/v3/blogs/,5829333097263276457
