@@ -87,7 +87,7 @@ services:
   django-v2:
     build:
       context: .
-      dockerfile: ./django/Dockerfile # または環境に合わせたパス
+      dockerfile: ./django/Dockerfile
     container_name: django-v2
     restart: always
     depends_on:
