@@ -50,7 +50,7 @@ cd "$PROJECT_ROOT" || { echo "Error: Cannot cd to $PROJECT_ROOT"; exit 1; }
 
     # 2. アダルトニュース系 (22サイト艦隊)
     echo "[Adult News] 投稿開始..."
-    docker compose exec -T $TARGET_CONTAINER python manage.py ai_post_adult_news --target all
+    docker compose exec -T $TARGET_CONTAINER python manage.py ai_post_adult_news
 
     echo "--- 🏁 完了: $(date '+%Y-%m-%d %H:%M:%S') ---"
 } >> "$LOG_FILE" 2>&1
