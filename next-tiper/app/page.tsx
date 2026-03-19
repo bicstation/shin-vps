@@ -1,135 +1,131 @@
 /* /app/page.tsx */
-/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
 // @ts-nocheck
 
 import React from 'react';
 import Link from 'next/link';
-import { headers } from 'next/headers';
+import fs from 'fs';
+import path from 'path';
 
 // ✅ スタイル & 共通コンポーネント
 import styles from './page.module.css';
-
-/**
- * 🛰️ コンポーネント・インポート
- */
 import AdultProductCard from '@shared/components/organisms/cards/AdultProductCard';
-import SystemDiagnosticHero from '@shared/components/molecules/SystemDiagnosticHero';
 
-/**
- * 🛰️ API・ロジック・インポート
- * 💡 徹底除去: getWpFeaturedImage はもう存在しないため、インポートリストから削除しました。
- */
-import { getSiteMainPosts } from '@shared/lib/api/django-bridge';
+// ✅ API・ロジック
 import { getUnifiedProducts } from '@shared/lib/api/django/adult'; 
 import { constructMetadata } from '@shared/lib/utils/metadata';
 
-// Next.js 15 最適化設定
+// 🚀 Next.js 15 キャッシュ破壊設定（常に最新のファイルを読み込む）
 export const dynamic = 'force-dynamic';
-export const revalidate = 60; 
+export const revalidate = 0; 
 
 /**
- * 💡 メタデータ生成
+ * 🛰️ メタデータ生成
  */
 export async function generateMetadata() {
     return constructMetadata({
         title: "TIPER Live | プレミアム・統合デジタルアーカイブ",
-        description: "AI解析に基づいたFANZA・DUGA・DMMの全件横断アーカイブ。",
+        description: "AI解析に基づいたFANZA・DUGAの全件横断アーカイブ。",
         canonical: '/'
     });
 }
 
 /**
- * 💡 ユーティリティ
+ * 🛰️ ローカルのMarkdownファイルを直接読み込む (絶対パス・非キャッシュ版)
  */
-const decodeHtml = (html: string) => {
-    if (!html) return '';
-    const map: { [key: string]: string } = { 
-        '&nbsp;': ' ', '&amp;': '&', '&quot;': '"', '&apos;': "'", '&lt;': '<', '&gt;': '>' 
-    };
-    return html.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
-               .replace(/&[a-z]+;/gi, (match) => map[match] || match);
-};
+async function getLocalMarkdownPosts() {
+    // コンテナ内の絶対パスを固定
+    const postsDirectory = '/usr/src/app/content/posts';
 
-const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
-};
+    try {
+        if (!fs.existsSync(postsDirectory)) {
+            console.error("❌ Directory not found:", postsDirectory);
+            return [];
+        }
+
+        const fileNames = fs.readdirSync(postsDirectory);
+        const posts = fileNames
+            .filter(fn => fn.endsWith('.md'))
+            .map(fileName => {
+                const fullPath = path.join(postsDirectory, fileName);
+                const content = fs.readFileSync(fullPath, 'utf8');
+                
+                // 改行で分割して確実にデータを抜く（正規表現のブレを防止）
+                const lines = content.split('\n');
+                const getVal = (key: string) => {
+                    const line = lines.find(l => l.startsWith(`${key}:`));
+                    return line ? line.split(':')[1].replace(/["']/g, '').trim() : null;
+                };
+
+                return {
+                    id: fileName,
+                    slug: fileName.replace(/\.md$/, ''),
+                    title: getVal('title') || 'INTELLIGENCE_REPORT',
+                    date: getVal('date') || '2026-03-20',
+                    image: getVal('featured_image') || '/no-image.jpg',
+                };
+            });
+
+        // 日付順にソートして最新6件を返す
+        return posts.sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 6);
+    } catch (e) {
+        console.error("[MARKDOWN FETCH ERROR]:", e);
+        return [];
+    }
+}
+
+/**
+ * 🛰️ セーフフェッチ
+ */
+async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
+    try {
+        const data = await promise;
+        return data ?? fallback;
+    } catch (e) {
+        console.error("[API ERROR]:", e);
+        return fallback;
+    }
+}
+
+/**
+ * 🎬 プラットフォーム別セクションレンダラー (1行4枚固定)
+ */
+const renderPlatformSection = (title: string, items: any[], source: string) => (
+    <section className={styles.platformSection} key={source}>
+        <div className={styles.platformTitle}>
+            {title} <span className={styles.titleThin}>/LATEST_NODES</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {items.slice(0, 4).map((product) => (
+                <AdultProductCard key={`${source}-${product.id}`} product={product} />
+            ))}
+        </div>
+    </section>
+);
 
 /**
  * 🎬 メインホームコンポーネント
  */
-export default async function Home(props: { 
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }> 
-}) {
-    // Next.js 15: searchParams と headers は await が必要
-    const searchParams = await props.searchParams;
-    const isDebugMode = searchParams.debug === 'true';
-
-    const head = await headers();
-    const host = head.get('host') || 'localhost';
-
-    // --- 1. データ取得 (並列実行) ---
+export default async function Home() {
+    // --- データ取得 ---
     const [
-        wpData, 
+        latestPosts,
         fanzaRes,
-        dugaRes,
-        dmmRes
+        dugaRes
     ] = await Promise.all([
-        getSiteMainPosts(0, 6).catch(() => ({ results: [] })),
-        getUnifiedProducts({ api_source: 'FANZA', limit: 4 }).catch(() => ({ results: [] })),
-        getUnifiedProducts({ api_source: 'DUGA', limit: 4 }).catch(() => ({ results: [] })),
-        getUnifiedProducts({ api_source: 'DMM', limit: 4 }).catch(() => ({ results: [] })),
+        getLocalMarkdownPosts(),
+        safeFetch(getUnifiedProducts({ api_source: 'FANZA', limit: 4 }), { results: [] }),
+        safeFetch(getUnifiedProducts({ api_source: 'DUGA', limit: 4 }), { results: [] }),
     ]);
 
-    // Django-Bridge v5.4 以降、MarkdownとAPI両方の結果が results に入ります
-    const latestPosts = wpData?.results || [];
-    
-    const isApiConnected = 
-        (fanzaRes?.results?.length || 0) > 0 || 
-        (dugaRes?.results?.length || 0) > 0 || 
-        (dmmRes?.results?.length || 0) > 0;
-
-    /**
-     * 🎬 プラットフォーム別セクションレンダラー
-     */
-    const renderPlatformSection = (title: string, items: any[], source: string) => (
-        <section className={styles.platformSection} key={source}>
-            <div className={styles.platformTitle}>
-                {title} <span className={styles.titleThin}>/LATEST_NODES</span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                {items.map((product) => (
-                    <AdultProductCard key={`${source}-${product.id}`} product={product} />
-                ))}
-            </div>
-        </section>
-    );
+    const isApiConnected = (fanzaRes?.results?.length || 0) > 0 || (dugaRes?.results?.length || 0) > 0;
 
     return (
         <div className={styles.pageContainer}>
-            {/* 🐞 診断ツール */}
-            {isDebugMode && (
-                <SystemDiagnosticHero 
-                    stats={{
-                        mode: 'CORE_ZENITH',
-                        platform: 'HYBRID_CLUSTER',
-                        fetchTime: 'Parallel-Async',
-                        productCount: (fanzaRes?.results?.length || 0) + (dugaRes?.results?.length || 0) + (dmmRes?.results?.length || 0),
-                    }}
-                    raw={{ 
-                        id: "V3.5_FINAL_PURGE", 
-                        wpCount: latestPosts.length,
-                        host: host
-                    }} 
-                />
-            )}
-
-            {/* 🏗️ コンテンツストリーム */}
             <div className={styles.contentStream}>
                 
-                {/* 📰 Intelligence Reports (Markdown / Django News) */}
+                {/* 📰 1. INTELLIGENCE_REPORTS (最上部) */}
                 {latestPosts.length > 0 && (
                     <section className={styles.newsSection}>
                         <div className={styles.sectionHeader}>
@@ -137,40 +133,27 @@ export default async function Home(props: {
                             <Link href="/news" className={styles.headerLink}>OPEN_ALL_FILES →</Link>
                         </div>
                         <div className={styles.newsGrid}>
-                            {latestPosts.slice(0, 3).map((post: any) => {
-                                /**
-                                 * 💡 インライン画像判定ロジック
-                                 * 関数を使わず、データから直接フォールバックチェーンを作成
-                                 */
-                                const displayImage = post.image || 
-                                                     post.featured_image || 
-                                                     post.thumbnail_url || 
-                                                     post._embedded?.['wp:featuredmedia']?.[0]?.source_url || 
-                                                     '/no-image.jpg';
-
-                                return (
-                                    <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
-                                        <div className={styles.newsThumbWrap}>
-                                            <img 
-                                                src={displayImage} 
-                                                alt={decodeHtml(post.title?.rendered || post.title)} 
-                                                className={styles.newsThumb} 
-                                            />
-                                        </div>
-                                        <div className={styles.newsContent}>
-                                            <span className={styles.newsDate}>{formatDate(post.date || post.created_at)}</span>
-                                            <h3 className={styles.newsTitle}>
-                                                {decodeHtml(post.title?.rendered || post.title)}
-                                            </h3>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
+                            {latestPosts.map((post) => (
+                                <Link key={post.id} href={`/news/${post.slug}`} className={styles.newsCard}>
+                                    <div className={styles.newsThumbWrap}>
+                                        <img 
+                                            src={post.image} 
+                                            alt={post.title} 
+                                            className={styles.newsThumb} 
+                                            onError={(e) => { e.currentTarget.src = '/no-image.jpg'; }}
+                                        />
+                                    </div>
+                                    <div className={styles.newsContent}>
+                                        <span className={styles.newsDate}>{post.date}</span>
+                                        <h3 className={styles.newsTitle}>{post.title}</h3>
+                                    </div>
+                                </Link>
+                            ))}
                         </div>
                     </section>
                 )}
 
-                {/* 📀 Archive Registry */}
+                {/* 📀 2. UNIFIED_DATA_STREAM (FANZA & DUGA) */}
                 <div className={styles.archiveRegistry}>
                     <div className={styles.registryHeader}>
                         <h1 className={styles.registryMainTitle}>
@@ -181,9 +164,11 @@ export default async function Home(props: {
 
                     {isApiConnected ? (
                         <div className={styles.registryStack}>
+                            {/* 1行目: FANZA */}
                             {fanzaRes?.results?.length > 0 && renderPlatformSection("FANZA", fanzaRes.results, "fanza")}
+                            
+                            {/* 2行目: DUGA */}
                             {dugaRes?.results?.length > 0 && renderPlatformSection("DUGA", dugaRes.results, "duga")}
-                            {dmmRes?.results?.length > 0 && renderPlatformSection("DMM", dmmRes.results, "dmm")}
                         </div>
                     ) : (
                         <div className={styles.loadingArea}>
@@ -194,6 +179,7 @@ export default async function Home(props: {
                     )}
                 </div>
 
+                {/* 底部アクションリンク */}
                 <div className={styles.footerAction}>
                     <Link href="/videos" className={styles.megaTerminalBtn}>
                         ACCESS_FULL_REGISTRY_DATABASE

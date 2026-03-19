@@ -39,34 +39,34 @@ BLOGGER_CONFIGS = {
     "blogger_fashion": {
         "name": "制服の聖域：エステティクス",
         "blog_id": "取得したID_06",
-        "custom_domain": "fashion.tiper.live",
+        "custom_domain": "3155835040589844080",
         "keywords": ["制服", "OL", "ナース", "コスチューム"],
         "persona": "ファッション史家：衣装が持つ記号的魅力を力説し、本体(MD記事)へ誘導"
     },
     "blogger_reality": {
         "name": "街角の偶然：ルポルタージュ",
-        "blog_id": "取得したID_07",
+        "blog_id": "1144538257509804330",
         "custom_domain": "real.tiper.live",
         "keywords": ["素人", "逆ナン", "野外", "偶然"],
         "persona": "ルポライター：日常に潜む非日常を臨場感たっぷりに報告し、本体(MD記事)へ誘導"
     },
     "blogger_archive": {
         "name": "永劫のミューズ：名作選",
-        "blog_id": "取得したID_08",
+        "blog_id": "8728610744967590163",
         "custom_domain": "archive.tiper.live",
         "keywords": ["伝説", "引退", "名作", "殿堂入り"],
         "persona": "映画評論家：名作を文化遺産として重厚にアーカイブし、本体(MD記事)へ誘導"
     },
     "blogger_maker": {
         "name": "メーカー別・演出の美学",
-        "blog_id": "取得したID_09",
+        "blog_id": "834594888882331642",
         "custom_domain": "lab.tiper.live",
         "keywords": ["S1", "SOD", "Moodyz", "演出", "脚本"],
         "persona": "映像演出家：監督のこだわりやカメラワークをプロ視点で解説し、本体(MD記事)へ誘導"
     },
     "blogger_portal": {
         "name": "Tiper.Live プレミアムガイド",
-        "blog_id": "取得したID_10",
+        "blog_id": "2891668877988452747",
         "custom_domain": "news.tiper.live",
         "keywords": ["セール", "特報", "総合", "ランキング"],
         "persona": "コンシェルジュ：全ジャンルから厳選した逸品を本体(MD記事)へナビゲート"

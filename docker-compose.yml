@@ -1,5 +1,5 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v3.2 自宅PC完全制覇版 (Route Priority Optimized)
+# 🛡️ SHIN-VPS v3.2 自宅PC完全制覇版 (Volume & Path Optimized)
 # =====================================================================
 
 services:
@@ -71,7 +71,6 @@ services:
       - shared-proxy
 
   # --- 3. フロントエンド層 (Next.js) ---
-  # 💡 ポイント: build.args で PROJECT_NAME を明示的に渡す
   
   next-bicstation-v3:
     build: 
@@ -88,8 +87,8 @@ services:
       - NEXT_PUBLIC_SITE_DOMAIN=bicstation-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./shared:/app/shared
-      - ./next-bicstation/content:/app/content
+      - ./shared:/usr/src/app/shared
+      - ./next-bicstation/content:/usr/src/app/content
     networks:
       - shared-proxy
       - internal-net
@@ -114,8 +113,8 @@ services:
       - NEXT_PUBLIC_SITE_DOMAIN=tiper-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./shared:/app/shared
-      - ./next-tiper/content:/app/content
+      - ./shared:/usr/src/app/shared
+      - ./next-tiper/content:/usr/src/app/content
     networks:
       - shared-proxy
       - internal-net
@@ -140,8 +139,8 @@ services:
       - NEXT_PUBLIC_SITE_DOMAIN=saving-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./shared:/app/shared
-      - ./next-bic-saving/content:/app/content
+      - ./shared:/usr/src/app/shared
+      - ./next-bic-saving/content:/usr/src/app/content
     networks:
       - shared-proxy
       - internal-net
@@ -166,8 +165,8 @@ services:
       - NEXT_PUBLIC_SITE_DOMAIN=avflash-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./shared:/app/shared
-      - ./next-avflash/content:/app/content
+      - ./shared:/usr/src/app/shared
+      - ./next-avflash/content:/usr/src/app/content
     networks:
       - shared-proxy
       - internal-net

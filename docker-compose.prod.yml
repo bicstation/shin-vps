@@ -1,10 +1,9 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v3.2 本番環境構成定義 (SSL対応・4ドメイン特化型)
+# 🛡️ SHIN-VPS v3.2 本番環境構成定義 (SSL対応・データ永続化強化型)
 # ---------------------------------------------------------------------
-# 【AI 厳命事項遵守】
-# 1. サービス名/コンテナ名の変更なし。
-# 2. build context はすべてルート(.)に設定。
-# 3. NEXT_PUBLIC_BASE_PATH は "" 固定。
+# 【変更点】
+# 1. postgres-db-v2 のマウントを Named Volume "postgres-data-v3" に変更。
+# 2. 外部ディレクトリへの依存を排除。自宅・職場で独立した金庫を自動生成。
 # =====================================================================
 
 services:
@@ -41,7 +40,7 @@ services:
       - "443:443"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "/home/maya/docker_volumes/traefik/acme.json:/letsencrypt/acme.json"
+      - "traefik_ssl_data:/letsencrypt"
     networks:
       - shared-proxy
 
@@ -72,7 +71,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - "/home/maya/docker_volumes/postgres:/var/lib/postgresql/data"
+      # 【重要】ホストパスを廃止し、名前付きボリューム「金庫」を指定
+      - postgres-data-v3:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
@@ -97,16 +97,6 @@ services:
       - .env
     environment:
       - DB_HOST=postgres-db-v2
-      - GEMINI_API_KEY_1=${GEMINI_API_KEY_1}
-      - GEMINI_API_KEY_2=${GEMINI_API_KEY_2}
-      - GEMINI_API_KEY_3=${GEMINI_API_KEY_3}
-      - GEMINI_API_KEY_4=${GEMINI_API_KEY_4}
-      - GEMINI_API_KEY_5=${GEMINI_API_KEY_5}
-      - GEMINI_API_KEY_6=${GEMINI_API_KEY_6}
-      - GEMINI_API_KEY_7=${GEMINI_API_KEY_7}
-      - GEMINI_API_KEY_8=${GEMINI_API_KEY_8}
-      - GEMINI_API_KEY_9=${GEMINI_API_KEY_9}
-      - GEMINI_API_KEY_10=${GEMINI_API_KEY_10}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -115,11 +105,9 @@ services:
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.routers.django-router.priority=2000"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
-      # --- 🗑️ Ofelia ラベルを削除しました ---
     volumes:
       - ./django:/usr/src/app
       - static_volume_prod:/usr/src/app/staticfiles
-      # --- 🗑️ スクリプト用ボリュームマウントを削除しました（cronはホスト側で動くため不要） ---
     networks:
       - internal-net
       - shared-proxy
@@ -287,3 +275,6 @@ networks:
 volumes:
   static_volume_prod:
   sitemap_data:
+  # 【重要】ここに名前を書くだけで、Dockerが自動で保存領域（金庫）を確保します
+  postgres-data-v3:
+  traefik_ssl_data:
