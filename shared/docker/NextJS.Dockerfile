@@ -37,6 +37,7 @@ ENV NEXT_PRIVATE_STANDALONE=true
 
 # ✅ 7. ビルド実行
 RUN rm -rf .next .cache node_modules/.cache
+RUN chmod +x ./node_modules/.bin/next
 RUN ./node_modules/.bin/next build
 
 # --- ステージ 2: 実行ステージ ---

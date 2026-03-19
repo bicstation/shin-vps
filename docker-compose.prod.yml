@@ -97,6 +97,16 @@ services:
       - .env
     environment:
       - DB_HOST=postgres-db-v2
+      - GEMINI_API_KEY_1=${GEMINI_API_KEY_1}
+      - GEMINI_API_KEY_2=${GEMINI_API_KEY_2}
+      - GEMINI_API_KEY_3=${GEMINI_API_KEY_3}
+      - GEMINI_API_KEY_4=${GEMINI_API_KEY_4}
+      - GEMINI_API_KEY_5=${GEMINI_API_KEY_5}
+      - GEMINI_API_KEY_6=${GEMINI_API_KEY_6}
+      - GEMINI_API_KEY_7=${GEMINI_API_KEY_7}
+      - GEMINI_API_KEY_8=${GEMINI_API_KEY_8}
+      - GEMINI_API_KEY_9=${GEMINI_API_KEY_9}
+      - GEMINI_API_KEY_10=${GEMINI_API_KEY_10}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
