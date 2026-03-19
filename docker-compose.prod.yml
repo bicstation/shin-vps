@@ -123,8 +123,8 @@ services:
     volumes:
       - ./django:/usr/src/app
       - static_volume_prod:/usr/src/app/staticfiles
-      - /home/maya/shin-dev/shin-vps/post_all_blogs.sh:/usr/src/app/scripts/post_all_blogs.sh:ro
-      - /home/maya/shin-dev/shin-vps/post_all_db.sh:/usr/src/app/scripts/post_all_db.sh:ro
+      - /home/maya/shin-vps/post_all_blogs.sh:/usr/src/app/scripts/post_all_blogs.sh:ro
+      - /home/maya/shin-vps/post_all_db.sh:/usr/src/app/scripts/post_all_db.sh:ro
     networks:
       - internal-net
       - shared-proxy
