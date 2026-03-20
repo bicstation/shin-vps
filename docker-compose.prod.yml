@@ -1,17 +1,19 @@
 # =====================================================================
 # 🛡️ SHIN-VPS v3.3 (Full v3 Migration / Internal Volume Native)
 # ---------------------------------------------------------------------
-# 【変更点】
-# 1. サービス名を v2 → v3 へ全面刷新 (django-v3, postgres-db-v3 等)。
-# 2. DB保存先を Named Volume "postgres-data-v3" へ完全移行。
-# 3. Markdown (content) 依存を完全に排除した API 駆動構成。
-# 4. Traefik, Ofelia, Dozzle を含む全エコシステムを v3 で統合。
+# 【構成内容】
+# 1. Traefik 2.11 (SSL/Proxy)
+# 2. Ofelia (Scheduler)
+# 3. Postgres 15 (DB v3 Named Volume)
+# 4. Django API (v3)
+# 5. Next.js Frontend (4 Domains: Tiper, BICSTATION, Saving, AVFlash)
+# 6. Monitoring Tools (Dozzle, pgAdmin, Netdata)
 # =====================================================================
 
 services:
 
   # ---------------------------------------------------------------------
-  # 0. Traefik (管制塔 / SSL終端 / SSL証明書自動更新)
+  # 0. Traefik (管制塔 / SSL終端)
   # ---------------------------------------------------------------------
   traefik:
     image: traefik:v2.11
@@ -47,7 +49,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 0.5 Ofelia (ジョブスケジューラ - 自動投稿の定時実行)
+  # 0.5 Ofelia (ジョブスケジューラ)
   # ---------------------------------------------------------------------
   scheduler:
     image: mcuadros/ofelia:latest
@@ -73,7 +75,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # 🏆 内部の Named Volume "postgres-data-v3" を使用
       - postgres-data-v3:/var/lib/postgresql/data
     networks:
       - internal-net
@@ -259,6 +260,36 @@ services:
     networks:
       - shared-proxy
 
+  # 🏆 リアルタイム監視 Netdata (NEW)
+  netdata:
+    image: netdata/netdata:stable
+    container_name: netdata-v3
+    restart: always
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.netdata-router.rule=Host(`monitor.tiper.live`)"
+      - "traefik.http.routers.netdata-router.entrypoints=websecure"
+      - "traefik.http.routers.netdata-router.tls.certresolver=le"
+    networks:
+      - shared-proxy
+      - internal-net
+
 # ---------------------------------------------------------------------
 # 共通設定 (最上位階層)
 # ---------------------------------------------------------------------
@@ -273,5 +304,8 @@ volumes:
   static_volume_prod:
   sitemap_data:
   traefik_ssl_data:
-  # 🏆 全データの根幹となる名前付きボリューム
   postgres-data-v3:
+  # Netdata用ボリューム
+  netdataconfig:
+  netdatalib:
+  netdatacache:
