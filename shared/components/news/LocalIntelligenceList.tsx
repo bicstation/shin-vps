@@ -1,20 +1,18 @@
 /* shared/components/news/LocalIntelligenceList.tsx */
 // @ts-nocheck
-import fs from 'fs';
-import path from 'path';
 import Link from 'next/link';
 import SafeImage from '@shared/components/atoms/SafeImage';
 
 /**
  * 💡 プレビューテキストを抽出
- * HTMLタグ、Markdown記法、Frontmatterをすべて除去して純粋なテキストのみにする
+ * APIから取得したHTMLやMarkdownから純粋なテキストのみを抽出
  */
 const getCleanPreview = (content: string, length: number = 90) => {
     if (!content) return "";
     const cleanText = content
         .replace(/---[\s\S]*?---/, '') // Frontmatter除去
-        .replace(/<[^>]*>?/gm, '')    // HTMLタグ除去 (追加)
-        .replace(/\[.*?\]/g, '')       // Markdownリンク/タグ除去
+        .replace(/<[^>]*>?/gm, '')    // HTMLタグ除去
+        .replace(/\[.*?\]/g, '')       // Markdownリンク除去
         .replace(/[#*`]/g, '')         // 装飾記号除去
         .replace(/\n+/g, ' ')          // 改行をスペースに
         .trim();
@@ -25,52 +23,46 @@ const getCleanPreview = (content: string, length: number = 90) => {
 };
 
 /**
- * 🛰️ コンテナ内のMarkdownを取得
+ * 🛰️ Django APIから記事を取得 (ファイルシステム依存を排除)
  */
-async function getLocalPosts() {
-    const postsDirectory = '/usr/src/app/content/posts';
+async function getApiPosts() {
+    // コンテナ間通信用のURL（環境変数がない場合のフォールバック付）
+    const apiUrl = process.env.INTERNAL_API_URL || 'http://django-v2:8000';
+    const projectSlug = process.env.PROJECT_NAME || 'next-tiper';
+
     try {
-        if (!fs.existsSync(postsDirectory)) return [];
-        const fileNames = fs.readdirSync(postsDirectory);
-        
-        const posts = fileNames.filter(fn => fn.endsWith('.md')).map(fileName => {
-            const fullPath = path.join(postsDirectory, fileName);
-            const fileContent = fs.readFileSync(fullPath, 'utf8');
-            
-            // 改良版メタデータ抽出 (ダブルクォートの有無に対応)
-            const getMeta = (key: string) => {
-                const match = fileContent.match(new RegExp(`${key}:\\s*["']?(.*?)["']?(\\n|$)`));
-                return match ? match[1].trim() : null;
-            };
-
-            // サムネイル優先、なければ featured_image
-            const image = getMeta('thumbnail') || getMeta('featured_image') || '/no-image.jpg';
-
-            return {
-                id: fileName,
-                slug: fileName.replace(/\.md$/, ''),
-                title: getMeta('title') || 'INTELLIGENCE_REPORT',
-                date: getMeta('date') || '2026-03-20',
-                image: image,
-                content: fileContent
-            };
+        // 特定のプロジェクトに関連付けられた最新記事をAPI経由で取得
+        const res = await fetch(`${apiUrl}/api/articles/?project=${projectSlug}&limit=6`, {
+            next: { revalidate: 60 } // 60秒キャッシュ（ISR対応）
         });
+
+        if (!res.ok) throw new Error(`HTTP_ERROR: ${res.status}`);
+
+        const data = await res.json();
         
-        // 最新順にソートして上位6件
-        return posts.sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime())).slice(0, 6);
+        // Djangoのモデル構造をコンポーネント用オブジェクトに変換
+        return data.results.map((article: any) => ({
+            id: article.id,
+            slug: article.slug,
+            title: article.title,
+            date: article.created_at || article.date,
+            image: article.thumbnail || article.featured_image || '/no-image.jpg',
+            content: article.content
+        }));
     } catch (e) {
-        console.error("❌ FAILED_TO_LOAD_LOCAL_POSTS:", e);
+        console.error("❌ FAILED_TO_LOAD_API_POSTS:", e);
         return [];
     }
 }
 
 export default async function LocalIntelligenceList() {
-    const articles = await getLocalPosts();
+    // getLocalPosts() から getApiPosts() へ変更
+    const articles = await getApiPosts();
 
     if (articles.length === 0) {
         return (
             <div className="py-10 text-center border border-dashed border-gray-800 rounded-xl">
-                <p className="text-gray-500 font-mono text-xs italic">[DATABASE_OFFLINE]: NO_LOCAL_FILES_FOUND</p>
+                <p className="text-gray-500 font-mono text-xs italic">[DATABASE_OFFLINE]: NO_REMOTE_ARTICLES_FOUND</p>
             </div>
         );
     }
@@ -91,7 +83,7 @@ export default async function LocalIntelligenceList() {
                         />
                         <div className="absolute top-2 left-2">
                             <span className="bg-pink-600/80 backdrop-blur-sm text-white text-[9px] px-2 py-0.5 rounded-sm font-bold tracking-tighter uppercase border border-pink-400/30">
-                                Report_Node
+                                DB_NODE
                             </span>
                         </div>
                     </Link>
@@ -118,7 +110,7 @@ export default async function LocalIntelligenceList() {
                                 href={`/news/${article.slug}`} 
                                 className="inline-flex items-center text-[10px] font-bold text-pink-500 hover:text-pink-300 transition-colors uppercase tracking-widest"
                             >
-                                Access_File →
+                                Access_Data →
                             </Link>
                         </footer>
                     </div>
