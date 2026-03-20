@@ -10,7 +10,7 @@ if [[ "$HOSTNAME" == "Marya" ]]; then
 else
     # VPS環境（x162-43-73-204）
     PROJECT_ROOT="/home/maya/shin-vps"
-    TARGET_CONTAINER="django-v2"
+    TARGET_CONTAINER="django-v3"
 fi
 
 # パス設定（PROJECT_ROOTベースで統一）
