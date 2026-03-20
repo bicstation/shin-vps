@@ -1,3 +1,5 @@
+// /home/maya/shin-dev/shin-vps/shared/components/molecules/Pagination.tsx
+
 'use client';
 
 import React, { Suspense } from 'react';

@@ -1,0 +1,15 @@
+/* /app/news/[slug]/detail.module.css */
+.detailContainer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.title {
+    color: #e83e8c; /* Tiperカラー */
+    font-size: 2rem;
+    border-left: 4px solid #e83e8c;
+    padding-left: 1rem;
+}
+/* 他のスタイル */

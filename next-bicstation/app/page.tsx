@@ -1,5 +1,4 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/page.tsx
-
+/* /app/page.tsx (BICSTATION) */
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
 
@@ -8,8 +7,10 @@ export const revalidate = 600;
 import React from 'react';
 import Link from 'next/link';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
+import SafeImage from '@/shared/components/atoms/SafeImage';
 import styles from './page.module.css';
 
+// APIブリッジ
 import { fetchPostList } from '@/shared/lib/api/django-bridge';
 import { fetchPCProducts, fetchPCProductRanking } from '@/shared/lib/api/django/pc';
 
@@ -50,6 +51,7 @@ export default async function Page({ searchParams }: PageProps) {
     const sParams = await searchParams;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     
+    // 安全なデータ取得用ラッパー
     async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
         try {
             const data = await promise;
@@ -60,9 +62,9 @@ export default async function Page({ searchParams }: PageProps) {
         }
     }
 
-    // データの並列取得
-    const [wpData, pcData, rankingData, gamingData, creatorData, mobileData] = await Promise.all([
-        safeFetch(fetchPostList('post', 6), { results: [], count: 0 }), // ニュースは6件程度がグリッドで見栄えが良い
+    // 🏎️ 全データの並列取得 (ハイブリッドニュース + PC製品各種)
+    const [newsData, pcData, rankingData, gamingData, creatorData, mobileData] = await Promise.all([
+        safeFetch(fetchPostList('news', 6), { results: [], count: 0 }), 
         safeFetch(fetchPCProducts({ limit: 12, attribute: attribute || '' }), { results: [], count: 0 }),
         safeFetch(fetchPCProductRanking(), []),
         safeFetch(fetchPCProducts({ limit: 3, attribute: 'gaming-pc' }), { results: [] }),
@@ -71,7 +73,7 @@ export default async function Page({ searchParams }: PageProps) {
     ]);
 
     const pcResults = pcData?.results || [];
-    const wpResults = wpData?.results || [];
+    const newsResults = newsData?.results || [];
     const topThreeOverall = (rankingData || []).slice(0, 3);
 
     return (
@@ -86,6 +88,7 @@ export default async function Page({ searchParams }: PageProps) {
                     </h1>
                     <p className={styles.pageDescription}>
                         膨大なスペックデータと実測値をAIが独自にスコアリング。
+                        あなたのクリエイティビティを最大化する1台を、論理的に導き出します。
                     </p>
                 </div>
             </header>
@@ -109,7 +112,7 @@ export default async function Page({ searchParams }: PageProps) {
                 </section>
             )}
 
-            {/* 🔍 目的・スペックから探す (中略) */}
+            {/* 🔍 目的・スペックから探す */}
             <section className={styles.attributeSearchSection}>
                  <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>🔍 目的・スペックから探す</h2>
@@ -138,42 +141,58 @@ export default async function Page({ searchParams }: PageProps) {
                 <RankingCategory title="モバイル・超軽量ノート" products={mobileData.results} icon="🏃" />
             </div>
 
-            {/* 🚀 最新トピック (画像表示版) */}
+            {/* 🚀 最新インテリジェンス (Django AIニュース) */}
             <section className={styles.newsSection}>
                 <div className={styles.sectionHeader}>
-                    <h2 className={styles.sectionTitle}>🚀 PC業界・最新トピック</h2>
-                    <Link href="/news" className={styles.rankingLink}>ニュース一覧へ →</Link>
+                    <h2 className={styles.sectionTitle}>
+                        <span className={styles.titleIcon}>🚀</span> PC業界・最新インテリジェンス
+                    </h2>
+                    <Link href="/news" className={styles.rankingLink}>全レポートを閲覧する →</Link>
                 </div>
+                
                 <div className={styles.newsGrid}>
-                    {wpResults.map((post: any) => {
-                        const displayTitle = (typeof post.title === 'string' ? post.title : post.title?.rendered) || 'No Title';
-                        // 画像URLの取得 (Django API経由のimage または WP経由のmain_image_url)
-                        const imageUrl = post.image || post.main_image_url;
+                    {newsResults.length > 0 ? (
+                        newsResults.map((post: any) => {
+                            const identifier = post.slug || post.id;
+                            const displayTitle = post.title || 'Untitled Report';
+                            const imageUrl = post.image || post.main_image_url;
 
-                        return (
-                            <Link href={`/news/${post.id}`} key={post.id} className={styles.newsCard}>
-                                <div className={styles.newsImageContainer}>
-                                    {imageUrl ? (
-                                        <img src={imageUrl} alt={displayTitle} className={styles.newsThumbnail} />
-                                    ) : (
-                                        <div className={styles.newsNoImage}>AI VISUALIZING...</div>
-                                    )}
-                                    <span className={styles.newsCategoryBadge}>
-                                        {post.category || 'TECH'}
-                                    </span>
-                                </div>
-                                <div className={styles.newsBody}>
-                                    <time className={styles.postDate}>
-                                        {post.date ? new Date(post.date).toLocaleDateString('ja-JP') : ''}
-                                    </time>
-                                    <h3 className={styles.articleTitle}>
-                                        {displayTitle.replace(/&nbsp;/g, ' ')}
-                                    </h3>
-                                    <span className={styles.newsReadMore}>READ ARTICLE</span>
-                                </div>
-                            </Link>
-                        );
-                    })}
+                            return (
+                                <Link href={`/news/${identifier}`} key={identifier} className={styles.newsCard}>
+                                    <div className={styles.newsImageContainer}>
+                                        <SafeImage 
+                                            src={imageUrl} 
+                                            alt={displayTitle} 
+                                            className={styles.newsThumbnail}
+                                            fallback="/no-image.jpg"
+                                        />
+                                        <div className={styles.newsCategoryBadge}>
+                                            {post.category || 'ANALYSIS'}
+                                        </div>
+                                    </div>
+                                    <div className={styles.newsBody}>
+                                        <div className={styles.newsMeta}>
+                                            <time className={styles.postDate}>
+                                                {post.date ? new Date(post.date).toLocaleDateString('ja-JP') : ''}
+                                            </time>
+                                            {post.site && <span className={styles.newsSource}>{post.site}</span>}
+                                        </div>
+                                        <h3 className={styles.articleTitle}>
+                                            {displayTitle}
+                                        </h3>
+                                        <p className={styles.newsExcerpt}>
+                                            {post.description || (post.body_text ? post.body_text.substring(0, 60).replace(/[#*]/g, '') : '最新のデバイス動向と市場分析レポートをチェック。')}...
+                                        </p>
+                                        <span className={styles.newsReadMore}>VIEW REPORT _</span>
+                                    </div>
+                                </Link>
+                            );
+                        })
+                    ) : (
+                        <div className={styles.emptyNews}>
+                            📡 ネットワークから最新のインテリジェンスを同期中です...
+                        </div>
+                    )}
                 </div>
             </section>
 

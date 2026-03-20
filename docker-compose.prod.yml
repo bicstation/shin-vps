@@ -1,15 +1,16 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v3.2 本番環境構成定義 (SSL対応・データ永続化強化型)
+# 🛡️ SHIN-VPS v3.2 本番環境構成定義 (DB一元管理・完全ペーパーレス)
 # ---------------------------------------------------------------------
-# 【変更点】
-# 1. postgres-db-v2 のマウントを Named Volume "postgres-data-v3" に変更。
-# 2. 外部ディレクトリへの依存を排除。自宅・職場で独立した金庫を自動生成。
+# 【最終変更点】
+# 1. 各サービスから Markdown (content) 用のホストマウントをすべて削除。
+# 2. postgres-db-v2 を Named Volume "postgres-data-v3" で永続化。
+# 3. SSL (Traefik/Let's Encrypt) およびジョブスケジューラ (Ofelia) 完備。
 # =====================================================================
 
 services:
 
   # ---------------------------------------------------------------------
-  # 0. Traefik (エッジプロキシ / SSL終端)
+  # 0. Traefik (管制塔 / SSL終端 / SSL証明書自動更新)
   # ---------------------------------------------------------------------
   traefik:
     image: traefik:v2.11
@@ -45,7 +46,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 0.5 Ofelia (ジョブスケジューラ)
+  # 0.5 Ofelia (ジョブスケジューラ - 自動投稿の定時実行)
   # ---------------------------------------------------------------------
   scheduler:
     image: mcuadros/ofelia:latest
@@ -60,7 +61,7 @@ services:
     command: daemon --docker
 
   # ---------------------------------------------------------------------
-  # 1. データベース層 (Postgres)
+  # 1. データベース層 (Postgres 15)
   # ---------------------------------------------------------------------
   postgres-db-v2:
     image: postgres:15-alpine
@@ -71,7 +72,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # 【重要】ホストパスを廃止し、名前付きボリューム「金庫」を指定
+      # ホストパス依存を排除した名前付きボリューム
       - postgres-data-v3:/var/lib/postgresql/data
     networks:
       - internal-net
@@ -108,6 +109,7 @@ services:
     volumes:
       - ./django:/usr/src/app
       - static_volume_prod:/usr/src/app/staticfiles
+      # 🚨 以前あった Markdown content 用のマウントはすべて削除しました
     networks:
       - internal-net
       - shared-proxy
@@ -115,6 +117,8 @@ services:
   # ---------------------------------------------------------------------
   # 3. フロントエンド層 (Next.js 各ドメイン)
   # ---------------------------------------------------------------------
+  
+  # BICSTATION
   next-bicstation-v2:
     build:
       context: .
@@ -143,6 +147,7 @@ services:
       - internal-net
       - shared-proxy
 
+  # Tiper.Live
   next-tiper-v2:
     build:
       context: .
@@ -170,6 +175,7 @@ services:
       - internal-net
       - shared-proxy
 
+  # BIC-SAVING
   next-bic-saving-v2:
     build:
       context: .
@@ -197,6 +203,7 @@ services:
       - internal-net
       - shared-proxy
 
+  # AVFLASH
   next-avflash-v2:
     build:
       context: .
@@ -225,7 +232,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 4. 管理ツール層
+  # 4. 管理・監視ツール層
   # ---------------------------------------------------------------------
   pgadmin-v2:
     image: dpage/pgadmin4
@@ -275,6 +282,6 @@ networks:
 volumes:
   static_volume_prod:
   sitemap_data:
-  # 【重要】ここに名前を書くだけで、Dockerが自動で保存領域（金庫）を確保します
-  postgres-data-v3:
   traefik_ssl_data:
+  # 🏆 全記事データを守るメイン金庫
+  postgres-data-v3:

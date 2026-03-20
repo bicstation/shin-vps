@@ -4,9 +4,10 @@ import json
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django.db.models import Count
 
-# モデルのインポート（Articleを追加）
+# モデルのインポート
 from .models import (
     User, RawApiData, AdultProduct, 
     Genre, Actress, Maker, Label, Director, Series, 
@@ -15,7 +16,7 @@ from .models import (
     AdultActressProfile,
     BSCarrier, BSDevice, BSDevicePrice, BSMobilePlan,
     BSDeviceColor,
-    Article  # 🆕 追加
+    Article
 )
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,11 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------
 def get_score_bar(value, label="", width="100px"):
     """スコアを視覚的なバーに変換"""
-    val = value or 0
+    try:
+        val = int(float(value)) if value else 0
+    except (ValueError, TypeError):
+        val = 0
+        
     if val >= 90: color = "#ffc107"   # 👑 ゴールド
     elif val >= 80: color = "#ff0055" # プレミアム
     elif val >= 65: color = "#e83e8c" # 高評価
@@ -44,7 +49,7 @@ def get_score_bar(value, label="", width="100px"):
     )
 
 # --------------------------------------------------------------------------
-# 📝 1. Article (統合配信記事管理) - 🆕
+# 📝 1. Article (統合配信記事管理)
 # --------------------------------------------------------------------------
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
@@ -65,20 +70,33 @@ class ArticleAdmin(admin.ModelAdmin):
     display_image.short_description = "メインビジュアル"
 
     def site_badge(self, obj):
+        """
+        [修正箇所] get_site_display() が存在しないため、直接値を参照するか辞書から取得
+        """
         colors = {
             'tiper': '#6f42c1',      # パープル
             'avflash': '#ff0055',    # ピンク
             'bicstation': '#007bff', # ブルー
             'saving': '#28a745',     # グリーン
         }
+        # モデル内の SITE_CHOICES 辞書からラベルを取得を試みる
+        site_labels = dict(getattr(Article, 'SITE_CHOICES', []))
+        display_text = site_labels.get(obj.site, obj.site)
+        
         bg = colors.get(obj.site, '#6c757d')
-        return mark_safe(f'<span style="background:{bg}; color:white; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">{obj.get_site_display()}</span>')
+        return mark_safe(f'<span style="background:{bg}; color:white; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">{display_text}</span>')
     site_badge.short_description = "サイト"
 
     def type_badge(self, obj):
+        # content_type には choices が設定されているので get_content_type_display() が使えます
         color = "#17a2b8" if obj.content_type == 'news' else "#ffc107"
         text_color = "white" if obj.content_type == 'news' else "black"
-        return mark_safe(f'<span style="background:{color}; color:{text_color}; padding:2px 6px; border-radius:4px; font-size:10px;">{obj.get_content_type_display()}</span>')
+        try:
+            display_text = obj.get_content_type_display()
+        except AttributeError:
+            display_text = obj.content_type
+            
+        return mark_safe(f'<span style="background:{color}; color:{text_color}; padding:2px 6px; border-radius:4px; font-size:10px;">{display_text}</span>')
     type_badge.short_description = "種別"
 
     def title_short(self, obj):

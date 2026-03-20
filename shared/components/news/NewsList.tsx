@@ -1,4 +1,4 @@
-// components/news/NewsList.tsx
+// /home/maya/shin-dev/shin-vps/shared/components/news/NewsList.tsx
 import { fetchNewsArticles } from '@/shared/lib/api';
 import Link from 'next/link';
 

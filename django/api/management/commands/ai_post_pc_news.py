@@ -15,7 +15,7 @@ from api.management.commands.blog_drivers.data_mapper import ArticleMapper
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'Gemini-3 BICSTATION v18.0: Image-Engine Optimized Multi-Fleet'
+    help = 'Gemini-3 BICSTATION v18.0: Image-Engine Optimized Multi-Fleet (DB Centric)'
 
     # --- 🏘 艦隊構成：全サイト網羅 ---
     BLOG_CONFIGS = {
@@ -82,10 +82,11 @@ class Command(BaseCommand):
     DRIVERS.update({k: HatenaDriver for k in BLOG_CONFIGS.keys() if k.startswith('h_')})
     DRIVERS.update({'wp_main': WordPressDriver, 'wp_saving': WordPressDriver})
 
-    MD_PATHS = {
-        'default': "/home/maya/shin-dev/shin-vps/next-bicstation/content/posts",
-        'saving': "/home/maya/shin-dev/shin-vps/next-bic-saving/content/posts"
-    }
+    # 🚨 Markdown管理は廃止されたため、パス設定をコメントアウト
+    # MD_PATHS = {
+    #     'default': "/home/maya/shin-dev/shin-vps/next-bicstation/content/posts",
+    #     'saving': "/home/maya/shin-dev/shin-vps/next-bic-saving/content/posts"
+    # }
 
     RSS_SOURCES = [
         "https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf",
@@ -219,18 +220,21 @@ class Command(BaseCommand):
             
             # 🚨 image_urlを明示的に渡す（Driverが1枚だけ大きく表示する）
             if driver.post(title=title, body=html_body + footer, image_url=data['img'], source_url=data['url']):
+                # 🏆 Django DBへの保存（これがマスターデータになる）
                 ArticleMapper.save_post_result(b_key, ext, data, True)
-                self.log(f"📊 [{b_key.upper()}] ✅ Posted")
+                self.log(f"📊 [{b_key.upper()}] ✅ Posted & DB Saved")
                 
-                save_dir = self.MD_PATHS['saving'] if is_saving else self.MD_PATHS['default']
-                self.save_as_markdown(ext, data, save_dir)
+                # 🚨 Markdown保存はDB管理に移行したためコメントアウト
+                # save_dir = self.MD_PATHS['saving'] if is_saving else self.MD_PATHS['default']
+                # self.save_as_markdown(ext, data, save_dir)
 
-    def save_as_markdown(self, ext, data, output_dir):
-        try:
-            if not os.path.exists(output_dir): os.makedirs(output_dir, exist_ok=True)
-            file_hash = hashlib.md5(data['url'].encode()).hexdigest()[:8]
-            path = os.path.join(output_dir, f"{datetime.now().strftime('%Y%m%d')}_{file_hash}.md")
-            m = ArticleMapper.format_for_markdown(ext, data)
-            md_content = f'---\ntitle: "{m["title"]}"\ndate: "{datetime.now().strftime("%Y-%m-%d")}"\ncategory: "News"\nimage: "{m["image"]}"\nsource_url: "{m["source"]}"\n---\n\n{m["content"]}\n'
-            with open(path, "w", encoding='utf-8') as f: f.write(md_content)
-        except: pass
+    # 🚨 DB一元管理のため、以下のMD保存関数は不要（コメントアウト）
+    # def save_as_markdown(self, ext, data, output_dir):
+    #     try:
+    #         if not os.path.exists(output_dir): os.makedirs(output_dir, exist_ok=True)
+    #         file_hash = hashlib.md5(data['url'].encode()).hexdigest()[:8]
+    #         path = os.path.join(output_dir, f"{datetime.now().strftime('%Y%m%d')}_{file_hash}.md")
+    #         m = ArticleMapper.format_for_markdown(ext, data)
+    #         md_content = f'---\ntitle: "{m["title"]}"\ndate: "{datetime.now().strftime("%Y-%m-%d")}"\ncategory: "News"\nimage: "{m["image"]}"\nsource_url: "{m["source"]}"\n---\n\n{m["content"]}\n'
+    #         with open(path, "w", encoding='utf-8') as f: f.write(md_content)
+    #     except: pass

@@ -11,10 +11,10 @@ from api.management.commands.blog_drivers.livedoor_driver import LivedoorDriver
 from api.management.commands.blog_drivers.adult_ai_processor import AdultAIProcessor as AIProcessor
 
 class Command(BaseCommand):
-    help = 'BICSTATION Adult Fleet v25.7.1: LIVEDOOR FOCUS (FIXED F-STRING)'
+    help = 'BICSTATION Adult Fleet v25.7.1: LIVEDOOR FOCUS (DB Centric Optimized)'
 
-    # --- 📂 保存先 ---
-    SAVE_DIR = "/home/maya/shin-dev/shin-vps/next-tiper/content/posts/"
+    # --- 🚨 Markdown保存先はDB管理へ移行したため不要（コメントアウト） ---
+    # SAVE_DIR = "/home/maya/shin-dev/shin-vps/next-tiper/content/posts/"
     
     # 認証情報
     LD_KEY_PBIC = "lNh8lSooOq"
@@ -59,7 +59,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.log("====================================================")
-        self.log("🔥 BICSTATION Adult Fleet v25.7.1 - LIVEDOOR FOCUS")
+        self.log("🔥 BICSTATION Adult Fleet v25.7.1 - DB OPTIMIZED")
         self.log("====================================================")
         
         rss_pool = self.get_raw_rss_pool()
@@ -86,6 +86,7 @@ class Command(BaseCommand):
                 is_match = not keywords or any(k.lower() in (item['title'] + item['body']).lower() for k in keywords)
 
                 if is_match:
+                    # サイト識別子にb_idを含めて重複投稿を厳密に防止
                     if Article.objects.filter(source_url=item['url'], site=f"livedoor_{b_id}").exists():
                         continue
 
@@ -155,6 +156,7 @@ class Command(BaseCommand):
         body_match = re.search(r'\[BODY\](.*?)\[/BODY\]', content_text, re.DOTALL)
         clean_body = body_match.group(1).strip() if body_match else content_text
 
+        # Next.js(Tiper.Live)側への内部リンク用URL生成（MDがなくてもハッシュで一貫性を保持）
         date_str = datetime.now().strftime('%Y%m%d')
         url_hash = hashlib.md5(data['url'].encode()).hexdigest()[:8]
         slug = f"{date_str}_{url_hash}"
@@ -176,13 +178,13 @@ class Command(BaseCommand):
 
         driver = LivedoorDriver(cfg)
         
-        # --- 🛠 SyntaxError 回避のための修正 ---
-        # f-stringの中でバックスラッシュを使わず、事前に処理
+        # SyntaxError回避済みの安全なタイトル処理
         clean_gen_title = re.sub(r'[\r\n\t]', ' ', gen_title)
         safe_title = f"[PR] {clean_gen_title}".strip()[:95]
 
         try:
             if driver.post(title=safe_title, body=html_body, image_url=data["img"], source_url=data['url']):
+                # 🏆 Django DBへの保存（マスターデータ）
                 Article.objects.update_or_create(
                     site=f"livedoor_{b_id}", 
                     source_url=data['url'], 
@@ -194,7 +196,7 @@ class Command(BaseCommand):
                         'is_exported': True
                     }
                 )
-                self.log(f"✅ DEPLOYED: [{b_id.upper()}]")
+                self.log(f"✅ DEPLOYED & DB SAVED: [{b_id.upper()}]")
                 return True
         except Exception as e:
             self.log(f"❌ ERROR: [{b_id.upper()}] {str(e)}")
