@@ -57,10 +57,10 @@ jobs:
             docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans --wait
             
             echo "📦 データベースを更新します..."
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py migrate --noinput
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v3 python manage.py migrate --noinput
 
             echo "🎨 静的ファイルを収集します..."
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v2 python manage.py collectstatic --noinput
+            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v3 python manage.py collectstatic --noinput
 
             echo "🧹 徹底的なクリーンアップを開始します..."
             docker image prune -af
