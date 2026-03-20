@@ -1,10 +1,11 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v3.3 本番環境構成定義 (Internal Volume Migration)
+# 🛡️ SHIN-VPS v3.3 (Full v3 Migration / Internal Volume Native)
 # ---------------------------------------------------------------------
 # 【変更点】
-# 1. DB保存先をホストパスから Named Volume "postgres-data-v3" へ移行。
-# 2. Markdown (content) 用の全マウントを排除 (API Native 運用)。
-# 3. SSL (Traefik) / Job Scheduler (Ofelia) / Logs (Dozzle) を完備。
+# 1. サービス名を v2 → v3 へ全面刷新 (django-v3, postgres-db-v3 等)。
+# 2. DB保存先を Named Volume "postgres-data-v3" へ完全移行。
+# 3. Markdown (content) 依存を完全に排除した API 駆動構成。
+# 4. Traefik, Ofelia, Dozzle を含む全エコシステムを v3 で統合。
 # =====================================================================
 
 services:
@@ -53,7 +54,7 @@ services:
     container_name: bicstation-scheduler
     restart: always
     depends_on:
-      - django-v2
+      - django-v3
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -61,18 +62,18 @@ services:
     command: daemon --docker
 
   # ---------------------------------------------------------------------
-  # 1. データベース層 (Postgres 15 - 内部ボリューム移行版)
+  # 1. データベース層 (Postgres 15 - v3)
   # ---------------------------------------------------------------------
-  postgres-db-v2:
+  postgres-db-v3:
     image: postgres:15-alpine
-    container_name: postgres-db-v2
+    container_name: postgres-db-v3
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      # 🏆 外部パスから Docker 内部ボリュームに変更
+      # 🏆 内部の Named Volume "postgres-data-v3" を使用
       - postgres-data-v3:/var/lib/postgresql/data
     networks:
       - internal-net
@@ -83,21 +84,21 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------------
-  # 2. バックエンド層 (Django API)
+  # 2. バックエンド層 (Django API - v3)
   # ---------------------------------------------------------------------
-  django-v2:
+  django-v3:
     build:
       context: .
       dockerfile: ./django/Dockerfile
-    container_name: django-v2
+    container_name: django-v3
     restart: always
     depends_on:
-      postgres-db-v2:
+      postgres-db-v3:
         condition: service_healthy
     env_file:
       - .env
     environment:
-      - DB_HOST=postgres-db-v2
+      - DB_HOST=postgres-db-v3
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -114,18 +115,18 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 3. フロントエンド層 (Next.js 各ドメイン)
+  # 3. フロントエンド層 (Next.js 各ドメイン - v3)
   # ---------------------------------------------------------------------
   
   # BICSTATION
-  next-bicstation-v2:
+  next-bicstation-v3:
     build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bicstation
         NEXT_PUBLIC_API_URL: "https://bicstation.com/api"
-    container_name: next-bicstation-v2
+    container_name: next-bicstation-v3
     restart: always
     env_file:
       - .env
@@ -140,20 +141,19 @@ services:
       - "traefik.http.routers.bicstation-router.entrypoints=websecure"
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
       - "traefik.http.routers.bicstation-router.priority=100"
-      - "traefik.http.services.bicstation-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
       - shared-proxy
 
   # Tiper.Live
-  next-tiper-v2:
+  next-tiper-v3:
     build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-tiper
         NEXT_PUBLIC_API_URL: "https://tiper.live/api"
-    container_name: next-tiper-v2
+    container_name: next-tiper-v3
     restart: always
     env_file:
       - .env
@@ -167,20 +167,19 @@ services:
       - "traefik.http.routers.tiper-router.entrypoints=websecure"
       - "traefik.http.routers.tiper-router.tls.certresolver=le"
       - "traefik.http.routers.tiper-router.priority=100"
-      - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
       - shared-proxy
 
   # BIC-SAVING
-  next-bic-saving-v2:
+  next-bic-saving-v3:
     build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bic-saving
         NEXT_PUBLIC_API_URL: "https://bic-saving.com/api"
-    container_name: next-bic-saving-v2
+    container_name: next-bic-saving-v3
     restart: always
     env_file:
       - .env
@@ -194,20 +193,19 @@ services:
       - "traefik.http.routers.saving-router.entrypoints=websecure"
       - "traefik.http.routers.saving-router.tls.certresolver=le"
       - "traefik.http.routers.saving-router.priority=100"
-      - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
       - shared-proxy
 
   # AVFLASH
-  next-avflash-v2:
+  next-avflash-v3:
     build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-avflash
         NEXT_PUBLIC_API_URL: "https://avflash.xyz/api"
-    container_name: next-avflash-v2
+    container_name: next-avflash-v3
     restart: always
     env_file:
       - .env
@@ -221,17 +219,16 @@ services:
       - "traefik.http.routers.avflash-router.entrypoints=websecure"
       - "traefik.http.routers.avflash-router.tls.certresolver=le"
       - "traefik.http.routers.avflash-router.priority=100"
-      - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
     networks:
       - internal-net
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 4. 管理・監視ツール層
+  # 4. 管理・監視ツール層 (v3 統一)
   # ---------------------------------------------------------------------
-  pgadmin-v2:
+  pgadmin-v3:
     image: dpage/pgadmin4
-    container_name: pgadmin-v2
+    container_name: pgadmin-v3
     restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
@@ -263,7 +260,7 @@ services:
       - shared-proxy
 
 # ---------------------------------------------------------------------
-# 共通設定
+# 共通設定 (最上位階層)
 # ---------------------------------------------------------------------
 networks:
   internal-net:
@@ -276,5 +273,5 @@ volumes:
   static_volume_prod:
   sitemap_data:
   traefik_ssl_data:
-  # 🥇 新しいメインDBボリューム
+  # 🏆 全データの根幹となる名前付きボリューム
   postgres-data-v3:
