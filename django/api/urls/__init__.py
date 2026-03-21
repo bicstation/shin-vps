@@ -39,4 +39,13 @@ urlpatterns = [
     
     # 📱 Bic-saving (通信・端末比較) 系
     path('bs/', include('api.urls.bs_urls')),
+    
+    # ==========================================================
+    # 🛡️ 3. 504 Timeout 防止用: 不明な自動リクエストを黙らせる
+    # ==========================================================
+    # フロントエンドや外部ライブラリが勝手に叩くエンドポイントを
+    # 404レンダリングさせずに「204 No Content」で即答してワーカーを解放する
+    path('events/stream', lambda r: HttpResponse(status=204)),
+    path('releases', lambda r: HttpResponse(status=204)),
+    
 ]

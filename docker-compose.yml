@@ -1,9 +1,9 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v3.2 完全DB移行版 (MD Path Cleaned)
+# 🛡️ SHIN-VPS v3.5 安定化・高スループット版 (Traefik & Gunicorn Optimized)
 # =====================================================================
 
 services:
-  # --- 0. Traefik (管制塔) ---
+  # --- 0. Traefik (管制塔: タイムアウト耐性強化) ---
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy-v3
@@ -14,6 +14,8 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--accesslog=true"
+      # タイムアウト対策の微調整
+      - "--entrypoints.web.transport.respondingtimeouts.idletimeout=90s"
     ports:
       - "8083:80"      # メイン窓口
       - "8085:8080"    # Traefik ダッシュボード
@@ -41,13 +43,23 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- 2. バックエンド層 (Django) ---
+  # --- 2. バックエンド層 (Django: マルチワーカー・高速応答設定) ---
   django-v3:
     build:
       context: .
       dockerfile: ./django/Dockerfile
     container_name: django-v3
     restart: always
+    # 🌟 修正: 窓口を5つに増やし、マルチスレッドで4サイト同時アクセスに耐える設定
+    command: >
+      gunicorn config.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 5
+      --threads 2
+      --worker-class gthread
+      --timeout 120
+      --max-requests 1000
+      --access-logfile -
     depends_on:
       postgres-db-v3:
         condition: service_healthy
@@ -56,17 +68,18 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     labels:
       - "traefik.enable=true"
+      # ルーティング設定
       - "traefik.http.routers.django-api.rule=(HostRegexp(`{sub:[a-z-]+}-host`) || HostRegexp(`{sub:[a-z-]+}.live`) || HostRegexp(`{sub:[a-z-]+}.com`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/blog`))"
       - "traefik.http.routers.django-api.priority=3000"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
+      # 🌟 修正: 謎のストリーム攻撃(events/stream)をTraefik側で無視してDjangoを守る
+      - "traefik.http.routers.django-blocker.rule=PathPrefix(`/api/events/stream`) || PathPrefix(`/api/releases`)"
+      - "traefik.http.routers.django-blocker.priority=10000"
+      - "traefik.http.routers.django-blocker.middlewares=block-errors"
+      - "traefik.http.middlewares.block-errors.errors.status=204"
     volumes:
       - ./django:/usr/src/app
       - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
-      # --- 🚨 Markdown content マウントを削除 ---
-      # - ./next-bicstation/content:/usr/src/app/next-bicstation/content
-      # - ./next-tiper/content:/usr/src/app/next-tiper/content
-      # - ./next-bic-saving/content:/usr/src/app/next-bic-saving/content
-      # - ./next-avflash/content:/usr/src/app/next-avflash/content
     networks:
       - internal-net
       - shared-proxy
@@ -89,8 +102,6 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
       - ./shared:/usr/src/app/shared
-      # --- 🚨 MDマウント削除 ---
-      # - ./next-bicstation/content:/usr/src/app/content
     networks:
       - shared-proxy
       - internal-net
@@ -116,8 +127,6 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
       - ./shared:/usr/src/app/shared
-      # --- 🚨 MDマウント削除 ---
-      # - ./next-tiper/content:/usr/src/app/content
     networks:
       - shared-proxy
       - internal-net
@@ -143,8 +152,6 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
       - ./shared:/usr/src/app/shared
-      # --- 🚨 MDマウント削除 ---
-      # - ./next-bic-saving/content:/usr/src/app/content
     networks:
       - shared-proxy
       - internal-net
@@ -170,8 +177,6 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
       - ./shared:/usr/src/app/shared
-      # --- 🚨 MDマウント削除 ---
-      # - ./next-avflash/content:/usr/src/app/content
     networks:
       - shared-proxy
       - internal-net
