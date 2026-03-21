@@ -1,8 +1,9 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge サービス層 (Maya's Logic v6.0 - Full API Native)
+ * 🌉 Django-Bridge サービス層 (Maya's Logic v6.1 - Safety PC Default)
  * =====================================================================
  * 物理パス: /shared/lib/api/django-bridge.ts
+ * 修正内容: アダルト記事の混入を防ぐため、デフォルトのプロジェクトを 'pc' に統一。
  * =====================================================================
  */
 
@@ -15,11 +16,8 @@ import {
     MakerCount 
 } from './types';
 
-// 🚨 【削除】 import fs, path, matter は不要になったため削除
-
 /**
  * 🔄 【置換】ドメイン・一括置換ユーティリティ
- * コンテナ内部のホスト名を、外部からアクセス可能なURLに変換する
  */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
@@ -30,7 +28,6 @@ export const replaceInternalUrls = (data: any): any => {
             if (!baseUrl) return data;
 
             const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
-            // django-v2, django-v3 両方の内部ホスト名に対応
             const internalPattern = /http:\/\/(django-v[23]|nginx-wp-v[23]|wordpress-.+v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
             
             content = content.replace(internalPattern, cleanBaseUrl);
@@ -63,7 +60,6 @@ async function fetchFromBridge<T>(url: string, options: any = {}): Promise<{ dat
                 'Host': host,
                 ...(options.headers || {}),
             },
-            // タイムアウトを10秒に設定し、高負荷時の504を抑制
             signal: AbortSignal.timeout(options.timeout || 10000)
         });
 
@@ -85,32 +81,40 @@ async function fetchFromBridge<T>(url: string, options: any = {}): Promise<{ dat
 // --- 📝 統合コンテンツ取得 (各サイトの振り分け) ---
 
 export async function fetchDjangoBridgeContent(params: any = {}): Promise<DjangoApiResponse<any>> {
-    const siteGroup = params?.site_group || process.env.PROJECT_NAME || '';
+    // サイトグループの判定。不明な場合は 'pc' を優先
+    const siteGroup = params?.site_group || process.env.PROJECT_NAME || 'pc';
     
-    if (siteGroup.includes('bicstation')) {
+    if (siteGroup.includes('bicstation') || siteGroup === 'pc') {
         return await fetchPCProducts(params);
     } else if (siteGroup.includes('tiper') || siteGroup.includes('avflash') || siteGroup.includes('saving')) {
         return await getAdultProducts(params);
     }
+
+    // いずれにも該当しない場合は安全策として PC ニュース記事を返す
     return await fetchPostList('post', params?.limit, params?.offset);
 }
 
 // --- 📰 ニュース記事 (Articleモデル) 取得機能 ---
 
-export async function fetchNewsArticles(limit = 12, offset = 0): Promise<DjangoApiResponse<any>> {
-    const projectSlug = process.env.PROJECT_NAME || 'next-tiper';
+/**
+ * 📰 プロジェクトごとのニュース記事を取得
+ * @param project 引数で指定があれば優先、なければ環境変数、最後は 'pc'
+ */
+export async function fetchNewsArticles(limit = 12, offset = 0, project?: string): Promise<DjangoApiResponse<any>> {
+    // 🚀 【修正】 デフォルト値を 'next-tiper' から 'pc' へ変更
+    const projectSlug = project || process.env.PROJECT_NAME || 'pc';
+    
     const query = new URLSearchParams({
         limit: limit.toString(),
         offset: offset.toString(),
         ordering: '-created_at',
-        project: projectSlug, // Django側でのフィルタリング
-        is_exported: 'true'   // 公開済み記事のみ
+        project: projectSlug, 
+        is_exported: 'true'   
     });
     
     const url = commonResolveApiUrl(`news/?${query.toString()}`);
     const { data } = await fetchFromBridge<any>(url, { next: { revalidate: 300 } });
     
-    // マッピング: フロントエンドが期待するプロパティ名に変換
     const results = (data?.results || []).map((item: any) => ({
         ...item,
         id: item.id.toString(),
@@ -130,7 +134,6 @@ export async function fetchNewsArticles(limit = 12, offset = 0): Promise<DjangoA
 // --- 📝 記事リスト取得 (旧Markdown互換関数) ---
 
 export async function fetchPostList(postType: string = 'post', limit = 12, offset = 0): Promise<DjangoApiResponse<any>> {
-    // 【変更】fs.existsSync のチェックを削除し、直接 API をコール
     return await fetchNewsArticles(limit, offset);
 }
 
@@ -138,8 +141,6 @@ export async function fetchPostList(postType: string = 'post', limit = 12, offse
  * 📝 特定の記事詳細データを取得 (スラッグまたはID)
  */
 export async function fetchPostData(postType: string = 'post', identifier: string): Promise<any> {
-    // 【変更】Markdownファイルの優先確認ロジックを完全に削除
-    
     const url = commonResolveApiUrl(`news/${identifier}/`);
     const { data, status } = await fetchFromBridge<any>(url, { next: { revalidate: 60 } });
 
@@ -154,7 +155,6 @@ export async function fetchPostData(postType: string = 'post', identifier: strin
             description: data.title,
         };
     }
-
     return null;
 }
 
@@ -203,7 +203,7 @@ export async function fetchPCProducts(params: any = {}): Promise<DjangoApiRespon
     };
 }
 
-// --- 🏷️ メーカー集計取得 (省略せずに追加) ---
+// --- 🏷️ メーカー集計取得 ---
 
 export async function fetchMakerCounts(siteGroup: string): Promise<MakerCount[]> {
     const url = commonResolveApiUrl(`general/maker-counts/?site_group=${siteGroup}`);

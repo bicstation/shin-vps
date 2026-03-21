@@ -1,7 +1,7 @@
 site_key|platform|site_urls|user|api_key_or_pw|url_or_endpoint|blog_id_or_rpc|routing_keywords
 ld_apple|livedoor|ld.apple.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation/article||apple,mac,ipad,iphone,アップル,マック,アイフォン,macbook,ios,macos,m3,m4
 ld_asus|livedoor|ld.asus.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-rstaipkg/article||asus,rog,zenbook,vivobook,エイスース,マザーボード,gpu,tuf,ゲーミングpc,rog ally
-ld_msi|livedoor|msi.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-mw56ftkt||msi,エムエスアイ,マザーボード,gpu,グラボ,ゲーミングノート,ビデオカード,meg,mpg,mag
+ld_msi|livedoor|msi.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-mw56ftkt/article||msi,エムエスアイ,マザーボード,gpu,グラボ,ゲーミングノート,ビデオカード,meg,mpg,mag
 ld_sony|livedoor|sony.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-is61wtfe/article||sony,ソニー,vaio,カメラ,α7,ブラビア,xperia,ヘッドホン,playstation,プレステ,センサー
 ld_dell|livedoor|dell.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-ufgtyxdn/article||dell,デル,alienware,xps,inspiron,エイリアンウェア,モニター,サーバー,法人pc,latitude
 ld_hp|livedoor|hp.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-tiodrmio/article||hp,ヒューレットパッカード,spectre,envy,omen,pavilion,プリンター,ワークステーション,elitebook,エイチピー

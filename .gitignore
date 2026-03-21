@@ -92,4 +92,5 @@ traefik/letsencrypt/*.json
 # Google APIの鍵（絶対公開しちゃダメなやつ）
 client_secrets.json
 token.json
-django/api/management/commands/bs_json/client_secrets.json
+django/api/management/commands/bs_json/client_secrets.json**/bs_json/*.json
+**/bs_json/*.json
