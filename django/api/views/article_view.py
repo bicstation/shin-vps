@@ -76,7 +76,6 @@ class ArticleViewSet(viewsets.ModelViewSet):
             "status": "success",
             "message": f"{updated_count}件の記事を外部公開済みとして更新しました。",
             "updated_count": updated_count
-         Dun": updated_count
         }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='check-source')
