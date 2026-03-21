@@ -93,7 +93,7 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     site_group, 
     origin_domain: domain, 
     site_name, 
-    site_prefix: site_group === 'adult' ? '/adult' : '/blog', 
+    site_prefix: '', 
     default_brand,
     api_base_url,
     is_local_env: isLocalEnv
