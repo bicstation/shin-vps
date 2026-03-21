@@ -43,7 +43,7 @@ cd "$PROJECT_ROOT" || { echo "Error: Cannot cd to $PROJECT_ROOT"; exit 1; }
 
     # 1. PCニュース系
     echo "[PC News] 投稿開始..."
-    docker compose exec -T $TARGET_CONTAINER python manage.py ai_post_pc_news
+    docker compose exec -T $TARGET_CONTAINER python manage.py ai_fleet_deployer --project pc
 
     echo "Waiting for cool down (30s)..."
     sleep 30
