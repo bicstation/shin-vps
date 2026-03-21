@@ -42,8 +42,8 @@ cd "$PROJECT_ROOT" || { echo "Error: Cannot cd to $PROJECT_ROOT"; exit 1; }
     echo "--- 開始時刻: $(date '+%Y-%m-%d %H:%M:%S') ---"
 
     # 1. PCニュース系
-    echo "[PC News] 投稿開始..."
-    docker compose exec -T $TARGET_CONTAINER python manage.py ai_fleet_deployer --project pc
+    echo "[PC News/Bicstation] 投稿開始..."
+    docker compose exec -T $TARGET_CONTAINER python manage.py ai_fleet_deployer --project bicstation
 
     echo "Waiting for cool down (30s)..."
     sleep 30
