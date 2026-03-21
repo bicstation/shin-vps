@@ -11,7 +11,7 @@ from ..serializers import ArticleSerializer
 class ArticleViewSet(viewsets.ModelViewSet):
     """
     4サイト（tiper, avflash, bicstation, saving）統合記事のAPI
-    - get_queryset により、各プロジェクトごとの記事を厳格に分離
+    - site フィールドにより、各プロジェクトごとの記事を厳格に分離
     - サイト別、投稿/ニュース別でのフィルタリングに対応
     """
     serializer_class = ArticleSerializer
@@ -24,6 +24,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     ]
     
     # 🔗 クエリパラメータでの絞り込み設定
+    # モデルの site フィールドを直接対象にする
     filterset_fields = ['site', 'content_type', 'is_exported']
     
     # 🔍 キーワード検索（タイトルと本文を対象）
@@ -35,19 +36,19 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        🌟 修正: プロジェクト分離ロジック
-        ?project=bicstation 等のパラメータがある場合、
-        extra_metadata 内の project キーで厳格にフィルタリングする。
+        🌟 修正: プロジェクト分離ロジック（siteカラム基準）
+        Next.jsからの ?project=xxx というパラメータを
+        モデルの 'site' フィールドと完全に一致させてフィルタリングします。
         """
         queryset = Article.objects.all()
         
-        # URLパラメータから project 名を取得
+        # URLパラメータから project 名（site名）を取得
         project_slug = self.request.query_params.get('project')
         
         if project_slug:
-            # JSONField(extra_metadata) 内の 'project' キーを検索
-            # これにより、アダルト記事が Bicstation に混ざるのを防ぎます
-            queryset = queryset.filter(extra_metadata__project=project_slug)
+            # 🛡️ 門番：モデルの 'site' カラムが一致するものだけに絞る
+            # これにより、[livedoor_virgin] 等の別サイト記事は物理的に排除されます
+            queryset = queryset.filter(site=project_slug)
         
         return queryset.order_by('-created_at')
 
