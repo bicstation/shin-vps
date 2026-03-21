@@ -1,0 +1,31 @@
+site_key|platform|site_urls|user|api_key_or_pw|url_or_endpoint|blog_id_or_rpc|routing_keywords
+ld_apple|livedoor|ld.apple.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation/article||apple,mac,ipad,iphone,アップル,マック,アイフォン,macbook,ios,macos,m3,m4
+ld_asus|livedoor|ld.asus.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-rstaipkg/article||asus,rog,zenbook,vivobook,エイスース,マザーボード,gpu,tuf,ゲーミングpc,rog ally
+ld_msi|livedoor|msi.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-mw56ftkt||msi,エムエスアイ,マザーボード,gpu,グラボ,ゲーミングノート,ビデオカード,meg,mpg,mag
+ld_sony|livedoor|sony.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-is61wtfe/article||sony,ソニー,vaio,カメラ,α7,ブラビア,xperia,ヘッドホン,playstation,プレステ,センサー
+ld_dell|livedoor|dell.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-ufgtyxdn/article||dell,デル,alienware,xps,inspiron,エイリアンウェア,モニター,サーバー,法人pc,latitude
+ld_hp|livedoor|hp.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-tiodrmio/article||hp,ヒューレットパッカード,spectre,envy,omen,pavilion,プリンター,ワークステーション,elitebook,エイチピー
+ld_lenovo|livedoor|lenovo.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-zbjz0l1a/article||lenovo,レノボ,thinkpad,yoga,ideapad,legion,シンクパッド,タブレット,ワークステーション,loq
+ld_logicool|livedoor|logicool.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-tjicu3hv/article||logicool,logitech,ロジクール,マウス,キーボード,ゲーミングデバイス,webカメラ,ヘッドセット,g-pro,mx master
+ld_intel|livedoor|intel.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-zftrmwub/article||intel,インテル,core,cpu,プロセッサ,arc,gpu,半導体,ファブ,チップセット,nuc
+ld_amd|livedoor|amd.bicstation.com|bicstation|lmSZuzJO6O|https://livedoor.blogcms.jp/atompub/bicstation-u5yjy0lt/article||amd,エーエムディー,ryzen,radeon,ライゼン,ラデオン,cpu,gpu,epyc,threadripper,半導体
+ld_mouse|livedoor|mouse.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station/article||mouse,マウスコンピューター,bto,国内生産,g-tune,daiv,ゲーミングpc,クリエイターpc,セール,国産
+ld_iiyama|livedoor|iiyama.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-zq1gwghp/article||iiyama,イイヤマ,monitor,display,モニター,ディスプレイ,液晶,prolite,g-master,4k,リフレッシュレート
+ld_dospara|livedoor|dospara.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-gevemmot/article||dospara,ドスパラ,galleria,ガレリア,diginnos,bto,ゲーミングpc,セール,上海問屋,palit,raytrek
+ld_tsukumo|livedoor|tsukumo.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-jcjp5tqh/article||tsukumo,ツクモ,excomputer,g-gear,bto,九十九,自作pc,パーツ,セール,ケース,電源
+ld_ark|livedoor|ark.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-fbtird2v/article||ark,アーク,gaming,ゲーミング,メモリ,ssd,パーツ,自作pc,秋葉原,msi,crucial
+ld_frontier|livedoor|frontier.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-qpmycvvo/article||frontier,フロンティア,bto,セール,激安,ゲーミングpc,コスパ,年末年始,キャンペーン,国内組立
+ld_sycom|livedoor|sycom.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-ufhdrs8l/article||sycom,サイコム,silent,静音,水冷,bto,自作pc,デュアル水冷,こだわり,カスタマイズ,パーツ
+ld_dynabook|livedoor|dynabook.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-d00amao5/article||dynabook,ダイナブック,toshiba,東芝,laptop,ノートpc,軽量,モバイルpc,ビジネスノート,dynabook direct
+ld_nec|livedoor|nec.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-a3wiv6xl/article||nec,エヌイーシー,lavie,ラヴィ,pc,日本電気,ノートパソコン,一体型,ルーター,aterm
+ld_fujitsu|livedoor|fujitsu.bicstation.com|pbic_station|ULL2YG8X0z|https://livedoor.blogcms.jp/atompub/pbic_station-mujuq4ew/article||fujitsu,富士通,fmv,arrows,ノートパソコン,法人pc,軽量pc,lifebook,esprimo,スパコン
+bicstation|hatena|h.main.bicstation.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/bicstation.hatenablog.com/atom/entry||pc,gadget,tech,ガジェット,テクノロジー,ニュース,最新,デジタル,レビュー,まとめ
+h-money|hatena|h.money.bic-saving.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/bic-money.hatenadiary.com/atom/entry||money,saving,point,お金,節約,ポイ活,還元,キャンペーン,投資,新nisa,ふるさと納税
+h_ai|hatena|h.ai.bicstation.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/bic-ai.hatenablog.jp/atom/entry||ai,gemini,gpt,nvidia,人工知能,機械学習,llm,openai,google,生成ai,画像生成,推論
+h-work|hatena|h.work.bicstation.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/h-work.hatenadiary.com/atom/entry||work,remote,office,仕事,働き方,リモートワーク,テレワーク,効率化,ビジネス,転職,キャリア
+h-pc-life|hatena|h.pc.life.bicstation.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/h-pc-life.hatenadiary.com/atom/entry||lifestyle,convenience,digital,生活,便利,デジタルライフ,スマートホーム,家電,暮らし,時短,ガジェット
+blogger_pc|blogger|pc.bicstation.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|600277910318387930|windows,pc,desktop,デスクトップ,自作,周辺機器,os,マイクロソフト,周辺機器,ハードウェア
+blogger_ai|blogger|ai.bicstation.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|5331584125081893967|ai,machinelearning,future,未来,技術,自動化,アルゴリズム,データ,クラウド,革新,サイエンス
+blogger_game|blogger|game.bicstation.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|3782702388373440214|game,steam,esports,ゲーム,ゲーミング,新作,攻略,実況,eスポーツ,コントローラー,fps
+blogger_mobile|blogger|mobile.bicstation.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|7045700179882745227|mobile,smartphone,android,ios,スマホ,スマートフォン,アプリ,格安sim,iphone,キャリア,通信
+blogger_work|blogger|work.bicstation.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|5829333097263276457|business,app,productivity,効率,アプリ,ツール,saas,管理,副業,スキル,学習

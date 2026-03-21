@@ -1,12 +1,12 @@
 // @ts-nocheck
 /**
  * =====================================================================
- * 🛰️ [SHARED-CORE] サイト環境動的判定ライブラリ (v17.2)
+ * 🛰️ [SHARED-CORE] サイト環境動的判定ライブラリ (v18.0)
  * ---------------------------------------------------------------------
- * 🚀 更新内容:
- * 1. API_BASE の二重解決: Server(Docker) と Client(Browser) でホスト名を自動切替。
- * 2. ドメイン判定の厳格化: '-host' 検出時は PRODUCTION へのマッピングを抑制。
- * 3. プレビュー環境等、未知のドメインに対するフォールバックの強化。
+ * 🚀 修正内容:
+ * 1. 【重要】デフォルトのフォールバックを 'adult' から 'general' (Bic Station) へ変更。
+ * 2. アドセンス審査対策として、判定不能なドメインは全て Bic Station として動作。
+ * 3. DMM/FANZA等のアダルトブランドが一般サイトに漏れないよう初期値を厳格化。
  * =====================================================================
  */
 
@@ -28,8 +28,9 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
   if (!isServer) {
     hostname = window.location.hostname;
   } else if (!hostname) {
-    // サーバーサイドでは環境変数、なければデフォルト値
-    hostname = process.env.NEXT_PUBLIC_SITE_DOMAIN || 'tiper-host';
+    // サーバーサイドでは環境変数を使用。
+    // 審査用ビルド時は NEXT_PUBLIC_SITE_DOMAIN に 'bicstation.com' を入れることを推奨
+    hostname = process.env.NEXT_PUBLIC_SITE_DOMAIN || 'bicstation-host';
   }
 
   // ポート番号除去
@@ -43,50 +44,49 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
 
   /**
    * 🛰️ API通信先の動的解決
-   * -----------------------------------------------------------------
-   * LOCAL時: 
-   * Server(Next.js) -> http://api-tiper-host:8083 (コンテナ間通信)
-   * Client(Browser) -> http://tiper-host:8083     (hostsファイル解決)
-   * PROD時: 
-   * https://api.tiper.live (通常ポート)
    */
   let api_base_url = "https://api.tiper.live";
   
   if (isLocalEnv) {
     if (isServer) {
-      // Server Component からの fetch 用
       api_base_url = "http://api-tiper-host:8083";
     } else {
-      // ブラウザからの画像読み込み・API実行用
-      // domain が 'tiper-host' 等であればそれを使用
       api_base_url = `http://${domain}:8083`;
     }
   }
 
   // --- STEP 3: サイト名・ブランドのマッピング ---
-  let site_name: SiteMetadata['site_name'] = 'Tiper';
-  let site_group: SiteMetadata['site_group'] = 'adult';
-  let default_brand: SiteMetadata['default_brand'] = 'FANZA';
+  // 🛡️ 審査防衛ロジック: 初期値を「一般・健全サイト」に固定
+  let site_name: SiteMetadata['site_name'] = 'Bic Station';
+  let site_group: SiteMetadata['site_group'] = 'general';
+  let default_brand: SiteMetadata['default_brand'] = 'DELL';
   let debugReason = "";
 
-  if (domain.includes('avflash')) {
+  // 1. BICSTATION (最優先判定)
+  if (domain.includes('bicstation')) {
+    site_name = 'Bic Station'; site_group = 'general'; default_brand = 'DELL'; 
+    debugReason = isLocalEnv ? "LOCAL_DEBUG: BIC_STATION" : "PRODUCTION: BIC_STATION";
+  } 
+  // 2. BIC-SAVING
+  else if (domain.includes('saving')) {
+    site_name = 'Bic Saving'; site_group = 'general'; default_brand = 'DELL'; // 念のため一般ブランドへ
+    debugReason = isLocalEnv ? "LOCAL_DEBUG: BIC_SAVING" : "PRODUCTION: BIC_SAVING";
+  } 
+  // 3. AV FLASH (明示的な場合のみアダルト化)
+  else if (domain.includes('avflash')) {
     site_name = 'AV Flash'; site_group = 'adult'; default_brand = 'DUGA';
     debugReason = isLocalEnv ? "LOCAL_DEBUG: AV_FLASH" : "PRODUCTION: AV_FLASH";
   } 
-  else if (domain.includes('saving')) {
-    site_name = 'Bic Saving'; site_group = 'general'; default_brand = 'DMM';
-    debugReason = isLocalEnv ? "LOCAL_DEBUG: BIC_SAVING" : "PRODUCTION: BIC_SAVING";
-  } 
-  else if (domain.includes('bicstation')) {
-    site_name = 'Bic Station'; site_group = 'general'; default_brand = 'DELL'; 
-    debugReason = isLocalEnv ? "LOCAL_DEBUG: BIC_STATION" : "PRODUCTION: BIC_STATION";
-  }
+  // 4. TIPER (明示的な場合のみアダルト化)
   else if (domain.includes('tiper')) {
     site_name = 'Tiper'; site_group = 'adult'; default_brand = 'FANZA';
     debugReason = isLocalEnv ? "LOCAL_DEBUG: TIPER" : "PRODUCTION: TIPER";
   }
+  // 5. その他（判定不能な場合）
   else {
-    debugReason = "DEFAULT_FALLBACK (TIPER)";
+    // 🛡️ 以前はここで Tiper/adult になっていたのを Bic Station に強制
+    site_name = 'Bic Station'; site_group = 'general'; default_brand = 'DELL';
+    debugReason = "SAFE_FALLBACK (BIC_STATION)";
   }
 
   const result: SiteMetadata = { 
@@ -101,11 +101,10 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
 
   // --- 🛰️ 司令官専用 F12 DEBUG SYSTEM ---
   if (!isServer) {
-    const logColor = isLocalEnv ? "#00d1b2" : "#ff3860";
-    console.groupCollapsed(`%c🛡️ [SHIN-CORE] Environment: ${isLocalEnv ? 'LOCAL' : 'PRODUCTION'}`, `color: ${logColor}; font-weight: bold; border: 1px solid ${logColor}; padding: 2px 4px;`);
+    const logColor = site_group === 'adult' ? "#ff3860" : "#00d1b2";
+    console.groupCollapsed(`%c🛡️ [SHIN-CORE] Environment: ${site_name}`, `color: white; background: ${logColor}; font-weight: bold; padding: 2px 4px; border-radius: 3px;`);
     console.log("📥 Domain Detected :", domain);
     console.log("🧠 Logic Reason    :", debugReason);
-    console.log("🛰️ API Destination :", api_base_url);
     console.log("🚀 Full Metadata   :", result);
     console.groupEnd();
   }

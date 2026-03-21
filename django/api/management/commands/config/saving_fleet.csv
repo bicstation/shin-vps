@@ -1,0 +1,6 @@
+site_key|platform|site_urls|user|api_key_or_pw|url_or_endpoint|blog_id_or_rpc|routing_keywords
+h-money|hatena|h.money.bic-saving.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/bic-money.hatenadiary.com/atom/entry||money,節約,ポイ活,貯金,家計簿,還元,節税
+h-point|hatena|h.point.bic-saving.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/bic-point.hatenablog.com/atom/entry||vpoint,rakuten,paypay,dpoint,マイル,ポンタ,キャンペーン
+h-invest|hatena|h.invest.bic-saving.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/bic-invest.hatenadiary.jp/atom/entry||nisa,ideco,株主優待,投資信託,米国株,配当,金利
+h-furusato|hatena|h.furusato.bic-saving.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/bic-furu.hatenablog.com/atom/entry||ふるさと納税,返礼品,自治体,楽天ふるさと,さとふる,チョイス
+h-life-hack|hatena|h.life.bic-saving.com|bicstation|se0o5znod6|https://blog.hatena.ne.jp/bicstation/h-life-save.hatenadiary.com/atom/entry||サブスク,格安sim,電気代,ガス代,保険,固定費,比較
