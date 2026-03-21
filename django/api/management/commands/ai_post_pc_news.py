@@ -14,127 +14,165 @@ from api.management.commands.blog_drivers.data_mapper import ArticleMapper
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'BICSTATION v32.0: Universal Multi-Fleet Engine (Final Report Edition)'
+    help = 'BICSTATION v33.4: Internal Link Building & Shuffle Fleet Engine'
 
     def add_arguments(self, parser):
-        parser.add_argument('--project', type=str, default='pc', help='Project name')
+        parser.add_argument('--project', type=str, default='pc', help='プロジェクト名 (pc/adult/saving等)')
+        parser.add_argument('--target', '-t', type=str, default=None, help='投稿先指定: LD, BG, HT')
 
     def handle(self, *args, **options):
         project = options['project']
-        self.log(f"--- 🚀 BICSTATION Universal Engine v32.0 [{project.upper()}] START ---", self.style.SUCCESS)
+        target = options['target'].upper() if options['target'] else None
         
-        # 1. パスの自動解決
+        self.log(f"--- 🚀 BICSTATION Engine v33.4 [{project.upper()}] START ---", self.style.SUCCESS)
+        
+        # 1. パスの解決
         current_cmd_dir = os.path.dirname(os.path.abspath(__file__))
         config_dir = os.path.join(current_cmd_dir, "config")
+        prompt_dir = os.path.join(current_cmd_dir, "prompt")
         
         fleet_csv = os.path.join(config_dir, f"{project}_fleet.csv")
         rss_csv = os.path.join(config_dir, f"{project}_rss_sources.csv")
 
+        # 🚀 CTAテキストの読み込み ({{internal_url}} を含む前提)
+        cta_path = os.path.join(prompt_dir, f"cta_{project}.txt")
+        if not os.path.exists(cta_path):
+            cta_path = os.path.join(prompt_dir, "cta_default.txt")
+        
+        cta_template = ""
+        if os.path.exists(cta_path):
+            with open(cta_path, "r", encoding='utf-8') as f:
+                cta_template = f.read()
+            self.log(f"📝 CTA Template Loaded: {os.path.basename(cta_path)}")
+
         # 2. データの読み込み
         rss_sources = self.load_csv_data(rss_csv)
-        fleet_data = self.load_csv_data(fleet_csv)
+        all_fleet_data = self.load_csv_data(fleet_csv)
 
-        if not fleet_data or not rss_sources:
+        if not all_fleet_data or not rss_sources:
             self.log(f"❌ 設定ファイル欠如: {project}", self.style.ERROR)
             return
 
-        # 3. RSSネタの一括取得
+        # 🚀 ターゲットフィルタリング & シャッフル (投稿順の分散)
+        fleet_data = [s for s in all_fleet_data if not target or s['platform'].upper().startswith(target)]
+        random.shuffle(fleet_data)
+        self.log(f"🎲 艦隊出撃順序をシャッフルしました ({len(fleet_data)} sites)")
+
+        # 3. RSS取得 & 全体重複チェック
         rss_urls = [row['url'] for row in rss_sources]
-        rss_pool = self.get_fresh_rss_pool(rss_urls)
+        raw_pool = self.get_fresh_rss_pool(rss_urls)
+        rss_pool = [e for e in raw_pool if not Article.objects.filter(source_url=e.link).exists()]
         
         if not rss_pool:
-            self.log("🏁 新着記事なし。終了。")
+            self.log("🏁 新着記事なし。処理を終了します。")
             return
 
-        # 4. Gemini API準備
+        # 4. AIプロンプト準備
         api_keys = [os.getenv(f"GEMINI_API_KEY_{i}").strip() for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
-        prompt_dir = os.path.join(current_cmd_dir, "prompt")
         prompt_path = os.path.join(prompt_dir, f"ai_prompt_{project}.txt")
         if not os.path.exists(prompt_path): prompt_path = os.path.join(prompt_dir, "ai_prompt_news.txt")
-        
-        with open(prompt_path, "r", encoding='utf-8') as f: template = f.read()
+        with open(prompt_path, "r", encoding='utf-8') as f: ai_template = f.read()
 
-        # 🏁 戦績記録用
         stats = {"success": [], "fail": [], "skip": []}
 
-        # 5. 全サイトへ順次デプロイ
+        # 5. 実行ループ
         for site in fleet_data:
             b_key = site['site_key']
             try:
-                kws = [k.strip() for k in site.get('routing_keywords', '').split(',') if k.strip()]
-                # 未投稿プール判定（DB重複チェック）
+                # サイト別二重チェック
                 unused_pool = [e for e in rss_pool if not Article.objects.filter(site=b_key, source_url=e.link).exists()]
-                
                 if not unused_pool:
-                    self.log(f"⏩ [{b_key.upper()}] 投稿可能記事なし。")
                     stats["skip"].append(b_key.upper())
                     continue
 
-                # キーワード優先マッチ
-                entry = next((e for e in unused_pool if any(k.lower() in (e.title + getattr(e, 'summary', '')).lower() for k in kws)), None)
-                if not entry: entry = random.choice(unused_pool)
-
-                # 実行
-                success = self.process_single_post(b_key, site, entry, template, api_keys, config_dir)
+                # ネタのランダム選定
+                entry = random.choice(unused_pool)
+                
+                # 🚀 記事デプロイ実行
+                success = self.process_single_post(b_key, site, entry, ai_template, cta_template, api_keys, config_dir)
                 
                 if success:
                     stats["success"].append(b_key.upper())
+                    # 今回のセッションで同じネタを何度も使わないようプールから除去
+                    if entry in rss_pool: rss_pool.remove(entry)
                 else:
                     stats["fail"].append(b_key.upper())
                 
-                time.sleep(10) # 負荷調整
+                # 🚀 隠密性のためのランダム待機 (15〜45秒)
+                wait = random.randint(15, 45)
+                self.log(f"⏳ 次のサイトまで待機中... ({wait}s)")
+                time.sleep(wait)
+                
             except Exception as e:
-                self.log(f"🔥 [{b_key}] Error: {str(e)}", self.style.ERROR)
+                self.log(f"🔥 [{b_key}] 致命的エラー: {str(e)}", self.style.ERROR)
                 stats["fail"].append(b_key.upper())
 
-        # 🏆 最終リザルト表示
         self.show_final_report(stats)
 
-    def process_single_post(self, b_key, cfg, entry, template, api_keys, config_dir):
+    def process_single_post(self, b_key, cfg, entry, ai_template, cta_template, api_keys, config_dir):
         connection.close()
-        self.log(f"🧵 [{b_key.upper()}] Deployment: {entry.title[:30]}...")
+        self.log(f"🧵 [{b_key.upper()}] 処理開始: {entry.title[:25]}...")
         
+        # 直前DBチェック (レースコンディション対策)
+        if Article.objects.filter(source_url=entry.link).exists(): return False
+
         data = self.scrape_article(entry)
         if not data: return False
         
-        processor = AIProcessor(api_keys, template)
+        # AIで記事本文を生成
+        processor = AIProcessor(api_keys, ai_template)
         ext = processor.generate_blog_content(data, b_key)
         if not ext: return False
         
+        # 🚀 SEOの要：先にBicstation本家DBに保存して、本家側の個別URLを確定させる
+        new_article = ArticleMapper.save_post_result(b_key, ext, data, is_published=False)
+        if not new_article:
+            return False
+
+        # 本家URLの組み立て (IDベース)
+        internal_url = f"https://bicstation.com/news/{new_article.id}"
+        
         title = ext.get('title_g', '').strip()
-        pf = cfg['platform']
+        pf = cfg['platform'].lower()
+        cfg['current_dir'] = config_dir 
 
-        # 💡 Blogger認証パスの固定解決 (v32.0 修正の要)
-        cfg['current_dir'] = config_dir # config/token.json を見に行くように指定
-
+        # ドライバー選定と本文変換
         if pf == 'hatena':
             raw_body = ext.get('cont_h'); driver_class = HatenaDriver
         elif pf == 'blogger':
             raw_body = ext.get('cont_g'); driver_class = BloggerDriver
-        else: # livedoor
+        else:
             raw_body = ext.get('cont_g'); driver_class = LivedoorDriver
-            # LivedoorのURL補正（末尾に/articleがない場合に自動付与）
             if 'atompub' in cfg['url_or_endpoint'] and not cfg['url_or_endpoint'].endswith('/article'):
                 cfg['url_or_endpoint'] += '/article'
             
         html_body = HTMLConverter.md_to_html(raw_body)
-        main_url = cfg.get('footer_url', 'https://bicstation.com')
-        footer = f'<hr><p style="text-align:center;">🚀 <b>連合艦隊ポータル</b>: <a href="{main_url}">{main_url}</a></p>'
         
-        # ドライバー互換性ブリッジ
-        cfg['api_key'] = cfg['api_key_or_pw']
-        cfg['endpoint'] = cfg['url_or_endpoint']
-        cfg['url'] = cfg['url_or_endpoint']
-        cfg['blog_id'] = cfg['blog_id_or_rpc']
+        # 🚀 CTA内のプレースホルダーを「本家個別記事URL」に置換
+        final_cta = cta_template.replace("{{internal_url}}", internal_url)
+        
+        # ドライバー用設定のブリッジ
+        cfg.update({
+            'api_key': cfg['api_key_or_pw'],
+            'endpoint': cfg['url_or_endpoint'], 
+            'url': cfg['url_or_endpoint'],
+            'blog_id': cfg['blog_id_or_rpc']
+        })
         
         try:
             driver = driver_class(cfg)
-            if driver.post(title=title, body=html_body + footer, image_url=data['img'], source_url=data['url']):
-                ArticleMapper.save_post_result(b_key, ext, data, True)
-                self.log(f"📊 [{b_key.upper()}] ✅ Success", self.style.SUCCESS)
+            if driver.post(title=title, body=html_body + final_cta, image_url=data['img'], source_url=data['url']):
+                # 投稿成功フラグ更新
+                new_article.is_published = True
+                new_article.save()
+                self.log(f"📊 [{b_key.upper()}] ✅ Success: {internal_url}", self.style.SUCCESS)
                 return True
+            else:
+                # 投稿失敗時はDBエントリを削除（再送可能にするため）
+                new_article.delete()
         except Exception as e:
             self.log(f"❌ Driver Error [{b_key}]: {str(e)}", self.style.WARNING)
+            new_article.delete()
         return False
 
     def load_csv_data(self, path):
@@ -171,14 +209,9 @@ class Command(BaseCommand):
         self.stdout.write("\n" + "="*50)
         self.stdout.write(self.style.SUCCESS("🏁 BICSTATION DEPLOYMENT FINAL REPORT"))
         self.stdout.write("="*50)
-        self.stdout.write(self.style.SUCCESS(f"✅ SUCCESS: {len(stats['success'])} sites"))
-        if stats['success']: self.stdout.write(f"   ({', '.join(stats['success'])})")
-        
-        self.stdout.write(self.style.ERROR(f"❌ FAILED : {len(stats['fail'])} sites"))
-        if stats['fail']: self.stdout.write(f"   ({', '.join(stats['fail'])})")
-        
-        self.stdout.write(self.style.WARNING(f"⏩ SKIPPED: {len(stats['skip'])} sites"))
-        if stats['skip']: self.stdout.write(f"   ({', '.join(stats['skip'])})")
+        self.stdout.write(self.style.SUCCESS(f"✅ SUCCESS: {len(stats['success'])}"))
+        self.stdout.write(self.style.ERROR(f"❌ FAILED : {len(stats['fail'])}"))
+        self.stdout.write(self.style.WARNING(f"⏩ SKIPPED: {len(stats['skip'])}"))
         self.stdout.write("="*50 + "\n")
 
     def log(self, msg, style_func=None):

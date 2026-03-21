@@ -8,7 +8,7 @@ HOSTNAME=$(hostname)
 
 # --- 環境判別 ---
 if [[ "$HOSTNAME" == *"x162-43-73-204"* ]]; then
-    ENV_TYPE="PROD"; COMPOSE_FILE="$SCRIPT_DIR/docker-compose.prod.yml"; SUFFIX="-v2"
+    ENV_TYPE="PROD"; COMPOSE_FILE="$SCRIPT_DIR/docker-compose.prod.yml"; SUFFIX="-v3"
     echo "🌐 [MODE] VPS Production detected."
 else
     ENV_TYPE="LOCAL"; COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"; SUFFIX="-v3"

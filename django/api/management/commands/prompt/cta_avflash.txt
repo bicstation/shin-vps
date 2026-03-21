@@ -1,0 +1,18 @@
+<br><hr>
+<div style="background:#fffcf0; padding:20px; border:2px dashed #ff8c00; border-radius:12px; text-align:center; margin-top:30px;">
+    <p style="color: #d35400; font-size: 1.1em; margin-bottom: 15px;">
+        💰 <b>【賢者の選択】知らなきゃ損する「最安・爆益」の視聴ルート</b>
+    </p>
+
+    <div style="margin-bottom: 20px;">
+        <a href="{{internal_url}}" style="display: inline-block; background: linear-gradient(135deg, #ff8c00 0%, #ff4500 100%); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);">
+            👉 この作品を「実質無料・最大還元」で楽しむ方法
+        </a>
+    </div>
+
+    <p style="font-size: 0.9em; color: #e67e22;">
+        <a href="https://avflash.xyz" style="color: #e67e22; text-decoration: underline;">
+            AVflash 節約ポータルで「神コスパ作品」をもっと探す
+        </a>
+    </p>
+</div>

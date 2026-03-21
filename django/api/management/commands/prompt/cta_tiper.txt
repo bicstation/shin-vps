@@ -1,0 +1,18 @@
+<br><hr>
+<div style="background:#fffcf0; padding:20px; border:2px dashed #dc2626; border-radius:12px; text-align:center; margin-top:30px;">
+    <p style="color: #991b1b; font-size: 1.1em; margin-bottom: 15px;">
+        💰 <b>【tiper.live 厳選】知らなきゃ損する「最安・爆益」の視聴ルート</b>
+    </p>
+
+    <div style="margin-bottom: 20px;">
+        <a href="{{internal_url}}" style="display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);">
+            👉 この作品を「実質無料・最大還元」で楽しむ方法
+        </a>
+    </div>
+
+    <p style="font-size: 0.9em; color: #7f1d1d;">
+        <a href="https://tiper.live" style="color: #7f1d1d; text-decoration: underline;">
+            tiper.live 節約ポータルで「神コスパ作品」をもっと探す
+        </a>
+    </p>
+</div>

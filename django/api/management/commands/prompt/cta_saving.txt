@@ -1,0 +1,18 @@
+<br><hr>
+<div style="background:#fffaf0; padding:20px; border:2px dashed #f59e0b; border-radius:12px; text-align:center; margin-top:30px;">
+    <p style="color: #92400e; font-size: 1.1em; margin-bottom: 15px;">
+        💰 <b>1円でも多く残す！知らなきゃ損する最新の「出口戦略」</b>
+    </p>
+
+    <div style="margin-bottom: 20px;">
+        <a href="{{internal_url}}" style="display: inline-block; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);">
+            👉 この案件の「最高還元ルート」を確認する
+        </a>
+    </div>
+
+    <p style="font-size: 0.9em; color: #b45309;">
+        <a href="https://bic-saving.com" style="color: #b45309; text-decoration: underline;">
+            Bic-Saving 節約ポータルで他の裏ワザも見る
+        </a>
+    </p>
+</div>
