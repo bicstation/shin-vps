@@ -1,14 +1,15 @@
 {
-  "extends": "./shared/tsconfig.base.json",
+  "extends": "../shared/tsconfig.base.json",  // 👈 ../ を追加（一つ上を見に行く）
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "react-jsx",                       // 👈 これを追加（React 18/19対応）
     "paths": {
-      "@/*": ["./*"],
-      /* ✅ ビルドエラー解決の鍵:
-         @shared を shared フォルダそのものに向けることで、
-         @shared/... も @shared/styles/... も一括で解決します。
+      "@/*": ["./src/*", "./*"],
+      /* ✅ 重要修正: 
+         shared は自分のフォルダ内ではなく、一つ上の階層 (../shared) にあります。
       */
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["../shared/*"],
+      "@/shared/*": ["../shared/*"]
     }
   },
   "include": [
@@ -16,11 +17,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    /* ✅ shared フォルダ内のすべての TS/TSX ファイルと、
-       globals.css を含む CSS ファイルをビルド対象として認識させます。
-    */
-    "shared/**/*.ts",
-    "shared/**/*.tsx",
-    "shared/**/*.css"
-  ]
+    "../shared/**/*.ts",   // 👈 ../ を追加
+    "../shared/**/*.tsx",  // 👈 ../ を追加
+    "../shared/**/*.css"   // 👈 ../ を追加
+  ],
+  "exclude": ["node_modules"]
 }

@@ -1,13 +1,15 @@
 {
-  "extends": "./shared/tsconfig.base.json",
+  "extends": "../shared/tsconfig.base.json",  // 👈 ここも ../ を追加
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "react-jsx",                       // 👈 React 18/19 の型エラーを消す魔法
     "paths": {
-      "@/*": ["./*"],
-      /* ✅ shared 直下のファイルを直接参照できるようにします。
-         これで @shared/lib/... や @shared/layout/... が物理パスと一致します。
+      "@/*": ["./src/*", "./*"],
+      /* ✅ 修正の要: 
+         shared は自分のフォルダ内ではなく、一つ上の階層 (../shared) にあります。
       */
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["../shared/*"],
+      "@/shared/*": ["../shared/*"]
     }
   },
   "include": [
@@ -15,12 +17,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    /* ✅ shared フォルダを明示的に include することで、
-       外部ディレクトリ扱い（externalDir）のエラーを防ぎます。
-    */
-    "shared/**/*.ts",
-    "shared/**/*.tsx",
-    "shared/**/*.css"
+    "../shared/**/*.ts",   // 👈 ../ を追加して、一個上の shared を含める
+    "../shared/**/*.tsx",  // 👈 ../ を追加
+    "../shared/**/*.css"   // 👈 ../ を追加
   ],
   "exclude": ["node_modules"]
 }
