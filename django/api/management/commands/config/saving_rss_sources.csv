@@ -1,5 +1,43 @@
 name|url
-Impress Money|https://www.watch.impress.co.jp/data/rss/m_watch/index.rdf
-ITmedia Mobile (Pay)|https://rss.itmedia.co.jp/rss/2.0/mobile.xml
-Yahoo Money|https://news.yahoo.co.jp/rss/categories/money.xml
 Nikkei Money|https://www.nikkei.com/rss/money.xml
+Impress Money|https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf|国内・決済・ポイ活
+ITmedia Mobile (Pay)|https://rss.itmedia.co.jp/rss/2.0/mobile.xml|国内・スマホ・還元
+Yahoo Money|https://news.yahoo.co.jp/rss/categories/money.xml|国内・生活・家計
+Nikkei Money|https://www.nikkei.com/rss/money.xml|国内・新NISA・投資
+Fintech Journal|https://www.sbbit.jp/rss/HotTopics.rss|国内・フィンテック・銀行
+ZUU online|https://zuuonline.com/feed|国内・資産運用・富裕層
+Money Post|https://www.moneypost.jp/feed|国内・節約・マネー誌
+Financial Field|https://financial-field.com/feed|国内・税金・年金・法律
+MoneySavingExpert News|https://www.moneysavingexpert.com/news/rss/|海外・節約の聖地(UK)
+CNBC Personal Finance|https://www.cnbc.com/id/21324812/device/rss/rss.xml|海外・米国金融トレンド
+The Penny Hoarder|https://www.thepennyhoarder.com/feed/|海外・副業・貯蓄アイデア
+Investopedia News|https://www.investopedia.com/rss|海外・投資用語・学習
+TechCrunch Fintech|https://techcrunch.com/category/fintech/feed/|海外・次世代決済技術
+MarketWatch Personal Finance|http://feeds.marketwatch.com/marketwatch/pf/|海外・リタイア・年金
+Barron's|https://www.barrons.com/articles/rss|海外・投資分析・米国株
+MoneyTalksNews|https://www.moneytalksnews.com/feed/|海外・生活防衛・ディスカウント
+NerdWallet|https://www.nerdwallet.com/blog/feed/|海外・クレカ比較・ローン
+Wise Bread|http://feeds.feedburner.com/wisebread|海外・ミニマリズム・節約生活
+Money Under 30|https://www.moneyunder30.com/feed|海外・若年層向け資産形成
+Kiplinger Personal Finance|https://www.kiplinger.com/rss/personal-finance|海外・家計管理・税制
+source_id|name|url|usage_policy
+JP_01|Impress Money|https://www.watch.impress.co.jp/data/rss/m_watch/index.rdf|要約・引用して執筆
+JP_02|ITmedia Mobile|https://rss.itmedia.co.jp/rss/2.0/mobile.xml|要約・引用して執筆
+JP_03|Yahoo Money|https://news.yahoo.co.jp/rss/categories/money.xml|個人利用・ネタ元として活用
+JP_04|Nikkei Money|https://www.nikkei.com/rss/money.xml|要約・分析用
+JP_05|Finasee|https://finasee.jp/feed|投資・家計のヒント
+JP_06|LIMO|https://limo.media/list/feed/rss|生活経済のネタ
+JP_07|Money Post|https://www.moneypost.jp/feed|節約・家計管理
+JP_08|Financial Field|https://financial-field.com/feed|年金・税金の解説ネタ
+EN_01|MoneySavingExpert|https://www.moneysavingexpert.com/news/rss/|海外の知恵を翻訳・紹介
+EN_02|The Penny Hoarder|https://www.thepennyhoarder.com/feed/|副業アイデアのネタ
+EN_03|Investopedia News|https://www.investopedia.com/rss|金融用語の解説・学習
+EN_04|CNBC Personal Finance|https://www.cnbc.com/id/21324812/device/rss/rss.xml|米国マネートレンド
+EN_05|MarketWatch PF|http://feeds.marketwatch.com/marketwatch/pf/|ライフプランの考察
+EN_06|NerdWallet|https://www.nerdwallet.com/blog/feed/|クレカ・ローンの比較ネタ
+EN_07|Reuters Money|https://www.reutersagency.com/feed/?best-topics=wealth|グローバル経済の要約
+EN_08|Guardian Money|https://www.theguardian.com/money/rss|海外の消費者動向
+EN_09|Forbes Wealth|https://www.forbes.com/wealth/feed/|資産形成のインスピレーション
+EN_10|Kiplinger|https://www.kiplinger.com/rss/personal-finance|税制・運用のヒント
+EN_11|Wise Bread|http://feeds.feedburner.com/wisebread|低コスト生活のアイデア
+EN_12|MoneyTalksNews|https://www.moneytalksnews.com/feed/|米国の節約ニュース

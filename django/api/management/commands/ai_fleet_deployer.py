@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# BIC-FLEET Engine v1.2: Full Spec & Pro Console
-# 修正内容: 全ロジックの復元 + 画像デバッグ + 終了推定時刻(ETA)表示
+# BIC-FLEET Engine v1.2: Integrated Project Mapping Edition
+# 修正内容: 引数 project による全プロセスの一括マッピング + タイトルタグ洗浄
 
 import os, re, random, requests, feedparser, time, csv
 from datetime import datetime, timedelta
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         target = options['target'].upper() if options['target'] else None
         self.log(f"--- 🚀 BIC-FLEET Engine v1.2 [{project.upper()}] START ---", self.style.SUCCESS)
         
-        # パス設定（固定値）
+        # パス設定
         current_cmd_dir = "/usr/src/app/api/management/commands"
         config_dir = os.path.join(current_cmd_dir, "config")
         prompt_dir = os.path.join(current_cmd_dir, "prompt")
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             
         random.shuffle(fleet_data)
 
-        # RSS取得と全体重複チェック
+        # RSS取得と重複チェック
         rss_urls = [row['url'] for row in rss_sources]
         raw_pool = self.get_fresh_rss_pool(rss_urls)
         rss_pool = [e for e in raw_pool if not Article.objects.filter(source_url=e.link).exists()]
@@ -74,17 +74,12 @@ class Command(BaseCommand):
         total_sites = len(fleet_data)
         start_ts = datetime.now()
 
-        # ---------------------------------------------------------
-        # メインループ（進捗管理付き）
-        # ---------------------------------------------------------
         for i, site in enumerate(fleet_data, 1):
             b_key = site['site_key']
-            
-            # ETA（終了予定）の算出（1サイトあたり約50秒と仮定）
             remaining = total_sites - i
             eta = (datetime.now() + timedelta(seconds=remaining * 50)).strftime('%H:%M')
             
-            self.stdout.write(self.style.HTTP_INFO(f"\n[{i}/{total_sites}] 🏹 Target: {b_key.upper()} (ETA: {eta})"))
+            self.stdout.write(self.style.HTTP_INFO(f"\n[{i}/{total_sites}] 🏹 Target: {b_key.upper()} (Project: {project.upper()}) (ETA: {eta})"))
 
             try:
                 # サイト別重複チェック
@@ -96,7 +91,7 @@ class Command(BaseCommand):
 
                 target_entry = random.choice(current_unused)
                 
-                # 個別投稿処理
+                # 個別投稿処理（project引数を渡して一貫性を持たせる）
                 success_url = self.process_single_post(b_key, site.copy(), target_entry, ai_template, cta_template, api_keys, current_cmd_dir, project)
                 
                 if success_url:
@@ -117,11 +112,10 @@ class Command(BaseCommand):
         self.show_final_report(stats, start_ts)
 
     def process_single_post(self, b_key, cfg, entry, ai_template, cta_template, api_keys, cmd_dir, project):
-        # DB接続リフレッシュ（必須）
         connection.close()
         self.log(f"🧵 処理開始: {entry.title[:30]}...")
         
-        # 1. スクレイピング（画像取得デバッグ入り）
+        # 1. スクレイピング
         data = self.scrape_article(entry)
         if not data: return None
         
@@ -130,17 +124,21 @@ class Command(BaseCommand):
         ext = processor.generate_blog_content(data, b_key)
         if not ext or not ext.get('title_g'): return None
         
-        # 3. DB保存（初期作成時に main_image_url を渡し制約を回避）
+        # 🛡️ タイトルの洗浄: [site_key] などのタグを正規表現で完全に除去
+        raw_title = ext.get('title_g', 'No Title').strip()
+        clean_title = re.sub(r'^\[.*?\]\s*', '', raw_title)
+
+        # 3. DB保存
         article_id = ArticleMapper.create_article(
             site_id=b_key, 
-            title=ext.get('title_g', 'No Title').strip(),
+            title=clean_title,
             body_text=ext.get('cont_g', ''),
             main_image_url=data['img'], 
             source_url=data['url'],
             content_type='post',
             extra_metadata={
                 'project': project,
-                'is_main_brand': (b_key == project),
+                'is_main_brand': True, # 引数 project に基づく配信なのでメインブランド扱い
                 'original_title': data['title'],
                 'source_img': data['img'],
                 'scraped_at': datetime.now().isoformat()
@@ -162,19 +160,26 @@ class Command(BaseCommand):
         html_body = HTMLConverter.md_to_html(raw_body)
         final_cta = cta_template.replace("{{internal_url}}", internal_url)
         
+        # 🔱 サイト設定の動的マッピング
+        # site_name を引数の project に基づいて上書き
+        display_name = project.replace('bicstation', 'Bic Station').replace('saving', 'Bic Saving').capitalize()
+        if project == 'avflash': display_name = 'AV Flash'
+
         post_config = {
             **cfg, 
             'api_key': cfg.get('api_key_or_pw') or cfg.get('api_key'), 
             'endpoint': cfg.get('url_or_endpoint') or cfg.get('endpoint'), 
             'url': cfg.get('url_or_endpoint') or cfg.get('url', ''),
-            'blog_id': cfg.get('blog_id_or_rpc') or cfg.get('blog_id')
+            'blog_id': cfg.get('blog_id_or_rpc') or cfg.get('blog_id'),
+            'site_name': display_name # 外部サービスへ渡すサイト名
         }
 
         try:
             driver = driver_class(post_config)
-            if driver.post(title=ext.get('title_g').strip(), body=html_body + final_cta, image_url=data['img'], source_url=data['url']):
+            # 洗浄済みタイトル (clean_title) で投稿
+            if driver.post(title=clean_title, body=html_body + final_cta, image_url=data['img'], source_url=data['url']):
                 ArticleMapper.save_post_result(article_id, blog_type=pf, post_url=post_config.get('url', ''), is_published=True)
-                self.log(f"✅ 配信成功: {internal_url}", self.style.SUCCESS)
+                self.log(f"✅ 配信成功: {internal_url} as {display_name}", self.style.SUCCESS)
                 return internal_url
         except Exception as e:
             self.log(f"❌ 外部投稿失敗 [{b_key}]: {str(e)}", self.style.WARNING)
@@ -182,7 +187,6 @@ class Command(BaseCommand):
         return None
 
     def scrape_article(self, entry):
-        """画像抽出デバッグを強化したスクレイピング"""
         try:
             target_url = entry.link
             headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
@@ -190,24 +194,18 @@ class Command(BaseCommand):
             res.encoding = res.apparent_encoding
             soup = BeautifulSoup(res.text, 'html.parser')
 
-            # 画像取得デバッグ
             img_url = ""
             og = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "og:image"})
-            
             if og and og.get("content"):
                 img_url = urljoin(target_url, og["content"])
-                self.log(f"  🖼️  ImgSource: [OGP] {os.path.basename(img_url)[:40]}...")
             else:
                 first_img = soup.find('img', src=re.compile(r'^http'))
                 if first_img:
                     img_url = first_img['src']
-                    self.log(f"  🖼️  ImgSource: [BodyFirst] {os.path.basename(img_url)[:40]}...")
                 else:
                     seed = random.randint(1000, 9999)
                     img_url = f"https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1024&sig={seed}"
-                    self.log(f"  🖼️  ImgSource: [Fallback] Unsplash (sig:{seed})")
 
-            # 本文抽出
             area = soup.find('article') or soup.find('main') or soup.find('div', class_=re.compile(r'content|post|entry')) or soup.body
             if area:
                 for tags in area.find_all(['script', 'style', 'nav', 'header', 'footer', 'aside']):
