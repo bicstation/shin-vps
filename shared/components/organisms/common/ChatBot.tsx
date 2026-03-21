@@ -1,12 +1,11 @@
-// /home/maya/shin-dev/shin-vps/shared/components/organisms/common/ChatBot.tsx
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+
 /**
- * ✅ 修正: 物理パスに合わせて lib/ を追加
- * 物理パス: shared/lib/utils/siteConfig.ts
+ * ✅ 修正: 物理パス shared/lib/utils/siteConfig.ts に完全準拠
  */
-import { getSiteMetadata, getSiteColor } from '@shared/lib/utils/siteConfig';
+import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import styles from './ChatBot.module.css';
 
 interface Message {
@@ -14,21 +13,42 @@ interface Message {
     text: string;
 }
 
+/**
+ * =====================================================================
+ * 🛡️ Maya's Logic: マルチブランド対応フローティング・チャットボット
+ * ---------------------------------------------------------------------
+ * 特徴: 
+ * 1. サイトごとのテーマカラー & 名称の自動適用
+ * 2. Next.js 15 クライアントサイド・セーフ (マウントガード)
+ * 3. 物理パス修正済み /api/chat への動的ルーティング
+ * =====================================================================
+ */
 export default function ChatBot() {
-    /**
-     * ✅ クライアントサイドでの実行を考慮し、
-     * window.location.host をフォールバックとして使用
-     */
-    const site = useMemo(() => {
-        const host = typeof window !== 'undefined' ? window.location.host : '';
-        return getSiteMetadata(host);
+    const [mounted, setMounted] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const [input, setInput] = useState('');
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const scrollEndRef = useRef<HTMLDivElement>(null);
+
+    // ✅ 初回マウント確認 (ハイドレーションエラー防止)
+    useEffect(() => {
+        setMounted(true);
     }, []);
 
-    const themeColor = useMemo(() => getSiteColor(site.site_name), [site]);
+    // ✅ サイト設定の動的取得
+    const site = useMemo(() => {
+        if (!mounted || typeof window === 'undefined') return null;
+        const host = window.location.hostname;
+        return getSiteMetadata(host);
+    }, [mounted]);
 
-    // 💡 環境に応じたAPIエンドポイントの解決
+    // ✅ テーマカラーとAPI設定の算出
     const siteConfig = useMemo(() => {
-        // App Router環境下で確実に /api/chat を叩くためのパス構築
+        if (!site) return { name: 'CONCIERGE', api: '/api/chat', color: '#333' };
+        
+        const themeColor = getSiteColor(site.site_name);
+        // site_prefix がある場合はそれを考慮 (例: /tiper/api/chat)
         const apiPath = `${site.site_prefix || ''}/api/chat`;
         
         return { 
@@ -36,30 +56,29 @@ export default function ChatBot() {
             api: apiPath, 
             color: themeColor 
         };
-    }, [site, themeColor]);
+    }, [site]);
 
-    const [isOpen, setIsOpen] = useState(false);
-    const [input, setInput] = useState('');
-    const [messages, setMessages] = useState<Message[]>([
-        { role: 'ai', text: `Welcome to ${siteConfig.name}. 何かお手伝いできることはありますか？` }
-    ]);
-    const [isLoading, setIsLoading] = useState(false);
-    const scrollEndRef = useRef<HTMLDivElement>(null);
+    // ✨ 最初の挨拶 (サイト名に合わせて動的に変化)
+    useEffect(() => {
+        if (mounted && site && messages.length === 0) {
+            const botName = site.site_group === 'adult' ? 'AIソムリエ' : 'AIコンシェルジュ';
+            setMessages([
+                { role: 'ai', text: `<b>${siteConfig.name} ${botName}</b>へようこそ。何かお手伝いできることはありますか？` }
+            ]);
+        }
+    }, [mounted, site, siteConfig.name, messages.length]);
 
-    // スムーススクロールの最適化
+    // ✨ メッセージ追加時の自動スクロール
     useEffect(() => {
         if (isOpen) {
-            const timer = setTimeout(() => {
-                scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-            return () => clearTimeout(timer);
+            scrollEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages, isOpen]);
+    }, [messages, isLoading, isOpen]);
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
-        const userMsg = input.trim();
         
+        const userMsg = input.trim();
         setInput('');
         setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
         setIsLoading(true);
@@ -68,31 +87,47 @@ export default function ChatBot() {
             const response = await fetch(siteConfig.api, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMsg }),
+                body: JSON.stringify({ 
+                    message: userMsg,
+                    context: 'floating_chat'
+                }),
             });
 
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) throw new Error('API Error');
 
             const data = await response.json();
-            setMessages(prev => [...prev, { role: 'ai', text: data.text }]);
+            const aiText = data.reply || data.text || '申し訳ありません、うまく聞き取れませんでした。';
+            
+            setMessages(prev => [...prev, { role: 'ai', text: aiText }]);
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'ai', text: '申し訳ありません。現在コンシェルジュが席を外しております。後ほどお試しください。' }]);
+            setMessages(prev => [...prev, { 
+                role: 'ai', 
+                text: '⚠️ 現在、通信エラーが発生しています。時間を置いて再度お試しください。' 
+            }]);
         } finally {
-            setIsLoading(true); // 実際には false に戻すべきですが、元コードのロジックを維持しつつ修正
             setIsLoading(false);
         }
     };
 
+    // 🚩 ガード: マウント前は何も表示しない
+    if (!mounted || !site) return null;
+
     return (
-        <div style={{ '--theme-color': siteConfig.color } as React.CSSProperties}>
+        <div 
+            className={styles.chatWrapper}
+            style={{ '--theme-color': siteConfig.color } as React.CSSProperties}
+        >
+            {/* --- フローティング起動ボタン --- */}
             <button 
-                className={styles.floatingButton} 
+                className={`${styles.floatingButton} ${isOpen ? styles.btnActive : ''}`} 
                 onClick={() => setIsOpen(!isOpen)}
-                aria-label="Open Chatbot"
+                aria-label="チャットを開く"
+                style={{ backgroundColor: siteConfig.color }}
             >
                 {isOpen ? '✕' : <span className={styles.pulseIcon}>💬</span>}
             </button>
 
+            {/* --- チャットウィンドウ --- */}
             {isOpen && (
                 <div className={styles.chatWindow}>
                     <div className={styles.chatHeader} style={{ background: siteConfig.color }}>
@@ -109,7 +144,6 @@ export default function ChatBot() {
                                 <div 
                                     className={msg.role === 'user' ? styles.userBubble : styles.aiBubble}
                                     dangerouslySetInnerHTML={{ 
-                                        // Markdownライクな強調と改行のパース
                                         __html: msg.text
                                             .replace(/\n/g, '<br />')
                                             .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
@@ -117,6 +151,7 @@ export default function ChatBot() {
                                 />
                             </div>
                         ))}
+                        
                         {isLoading && (
                             <div className={styles.aiRow}>
                                 <div className={styles.loadingBubble}>
@@ -130,7 +165,7 @@ export default function ChatBot() {
                     <div className={styles.chatInputArea}>
                         <input 
                             className={styles.inputField} 
-                            placeholder="メッセージを入力..."
+                            placeholder="知りたいことを入力..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => {
@@ -139,6 +174,7 @@ export default function ChatBot() {
                                     handleSend();
                                 }
                             }}
+                            disabled={isLoading}
                         />
                         <button 
                             className={styles.sendButton} 

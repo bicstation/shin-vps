@@ -1,15 +1,15 @@
 /**
  * =====================================================================
  * 🛰️ SHIN-VPS 統合 API ゲートウェイ (shared/lib/api/index.ts)
- * 🛡️ Maya's Zenith v5.8: 全専門家 統合・衝突回避・型安全版
+ * 🛡️ Maya's Zenith v5.9: 接続性・引数透過性 最大化版
  * =====================================================================
  */
 
 // 1. 基盤・設定のインポート
-import { IS_SERVER as SERVER_CHECK } from './config'; // 直下の config.ts を参照
+import { IS_SERVER as SERVER_CHECK } from './config';
 import * as adultApi from './django/adult';
 import * as pcApi from './django/pc';
-import * as masterApi from './django/master'; // ✅ マスター専用線を統合
+import * as masterApi from './django/master';
 import * as bridgeApi from './django-bridge';
 
 /**
@@ -19,6 +19,7 @@ export const IS_SERVER = SERVER_CHECK;
 
 /**
  * 📰 2. ニュース・記事・統合ハブ (bridgeApi)
+ * 🚀 ポイント: 分割代入による固定化を避け、透過的にリレーします
  */
 export const {
     fetchNewsArticles,
@@ -27,8 +28,16 @@ export const {
     fetchPostList
 } = bridgeApi;
 
-// 互換用エイリアス
-export const getSiteMainPosts = bridgeApi.fetchPostList;
+/**
+ * 💡 互換用エイリアス: getSiteMainPosts
+ * 引数 `project` (第4引数) を確実に Django-Bridge へ渡すためのラッパー
+ */
+export const getSiteMainPosts = (
+    postType: string = 'post',
+    limit: number = 12,
+    offset: number = 0,
+    project?: string // 🚀 これが Page.tsx からの 'bicstation' を受け取る！
+) => bridgeApi.fetchPostList(postType, limit, offset, project);
 
 /**
  * 🔞 3. アダルト専用 API (adultApi)
@@ -41,7 +50,6 @@ export const {
     fetchActresses,
 } = adultApi;
 
-// 互換用エイリアス
 export const fetchUnifiedProducts = adultApi.getUnifiedProducts;
 
 /**
@@ -54,17 +62,14 @@ export const {
     fetchPCSidebarStats
 } = pcApi;
 
-// 互換用エイリアス
 export const getPCProducts = pcApi.fetchPCProducts;
 
 /**
  * 🏷️ 5. 共通マスターデータ (masterApi)
- * 💡 ジャンル、メーカー、女優、シリーズ等、全ドメイン共通のマスター取得
- * 💡 ここで公開することで fetchPCMakers 等の命名重複を回避し、シンプルに扱えます
  */
 export const {
     fetchGenres,
-    fetchMakers, // 全ドメイン共通メーカー取得
+    fetchMakers,
     fetchSeries,
     fetchLabels,
     fetchDirectors,
@@ -86,6 +91,5 @@ export function getWpFeaturedImage(post: any, size: 'thumbnail' | 'medium' | 'la
 
 /**
  * 🔄 7. 型定義の統合
- * 💡 types.ts ですべての共通型を管理しているため、これ一行で OK です
  */
 export * from './types';

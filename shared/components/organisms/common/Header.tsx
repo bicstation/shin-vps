@@ -12,24 +12,28 @@ import styles from './Header.module.css';
 
 /**
  * =====================================================================
- * 🧱 [ORGANISM] Header (shared/components/organisms/common/Header.tsx)
- * 🛡️ Maya's Logic: ハイドレーション・ガード & マルチドメイン完全対応版
+ * 🛡️ Maya's Logic: マルチドメイン・マルチブランド対応ヘッダー [完全版]
+ * ---------------------------------------------------------------------
+ * 修正点:
+ * 1. AIコンシェルジュのリンクを /contact から /concierge へ変更
+ * 2. ハイドレーションエラー防止ロジックの強化
+ * 3. サイトごとの動的キャッチコピー & メニュー構成の最適化
  * =====================================================================
  */
 export default function Header() {
     const pathname = usePathname();
-    const [mounted, setMounted] = useState(false); // ハイドレーションエラー防止用
-    const [isOpen, setIsOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+    const [isOpen, setIsOpen] = useState(false); // スマホ用メニュー開閉
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState<string | null>(null);
 
-    // ✅ マウント状態の管理
+    // ✅ マウント状態の管理（ハイドレーションエラー防止の要）
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // ✅ サイト設定の動的取得 (クライアントサイドでの安全な判定)
+    // ✅ サイト設定の動的取得
     const site = useMemo(() => {
         if (!mounted || typeof window === 'undefined') return null;
         const host = window.location.hostname;
@@ -55,6 +59,7 @@ export default function Header() {
         }
     }, []);
 
+    // ページ遷移時やマウント時に状態をリセット
     useEffect(() => {
         checkAuthStatus();
         setIsOpen(false);
@@ -69,8 +74,7 @@ export default function Header() {
         }
     };
 
-    // 🚩 ガード: マウント前やサイトデータ未取得時は透明なプレースホルダーを返す
-    // これにより "Element type is invalid" やハイドレーションエラーを封殺します
+    // 🚩 ガード: サーバーサイドでのレンダリング時やサイト特定前は最小限の枠だけ返す
     if (!mounted || !site) {
         return <header className={styles.header} style={{ height: '70px', visibility: 'hidden' }} />;
     }
@@ -78,24 +82,41 @@ export default function Header() {
     const themeColor = getSiteColor(site.site_name);
     const isAdult = site.site_group === 'adult';
 
-    // 🛠️ ドメイン別メニュー設定
+    /**
+     * 🛠️ メニューコンフィグ（ドロップダウン & スマホ用）
+     * 💡 AIコンシェルジュのリンク先を /concierge に修正済み
+     */
     const menuConfig = {
         col1: {
-            title: isAdult ? '🔥 注目コンテンツ' : '🔍 診断・検索',
-            links: site.site_name === 'Tiper' ? [{label: '艶華ランキング', href: '/ranking'}, {label: '新人女優', href: '/newface'}] :
-                   site.site_name === 'Bic Station' ? [{label: 'PC診断', href: '/pc-finder'}, {label: 'おすすめPC', href: '/recommend'}] :
-                   [{label: '新着動画', href: '/new-arrival'}, {label: 'ランキング', href: '/ranking'}]
+            title: isAdult ? '🔥 注目' : '🔍 診断',
+            links: site.site_name === 'Tiper' ? [
+                {label: '艶華ランキング', href: '/ranking'}, 
+                {label: '新人女優', href: '/newface'}
+            ] : site.site_name === 'Bic Station' ? [
+                {label: 'PC診断', href: '/pc-finder'}, 
+                {label: 'おすすめPC', href: '/recommend'}
+            ] : [
+                {label: '新着記事', href: '/news'}, 
+                {label: 'ランキング', href: '/ranking'}
+            ]
         },
         col2: {
-            title: isAdult ? '🎞️ カテゴリ' : '📦 プロダクト',
-            links: isAdult ? [{label: '女優名鑑', href: '/ranking/style'}, {label: 'メーカー一覧', href: '/maker'}] :
-                            [{label: '製品カタログ', href: '/catalog'}, {label: '性能比較', href: '/comparison'}]
+            title: isAdult ? '🎞️ カテゴリ' : '📦 ツール',
+            links: isAdult ? [
+                {label: '女優名鑑', href: '/ranking/style'}, 
+                {label: 'メーカー名', href: '/maker'}
+            ] : [
+                {label: '性能比較', href: '/comparison'}, 
+                {label: 'カタログ', href: '/catalog'}
+            ]
         },
         col3: {
             title: '✨ サポート',
             links: [
-                {label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/contact'},
-                {label: 'ご利用ガイド', href: '/guide'}
+                {label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge'},
+                {label: 'お問い合わせ', href: '/contact'},
+                {label: '当サイトについて', href: '/about'},
+                {label: 'ご利用ガイド', href: '/guideline'}
             ]
         }
     };
@@ -106,7 +127,7 @@ export default function Header() {
             style={{ borderBottom: `3px solid ${themeColor}` }}
         >
             <div className={styles.container}>
-                {/* ロゴエリア */}
+                {/* --- ① ロゴ・ブランドエリア --- */}
                 <Link href="/" onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
                     <div className={styles.logoWrapper}>
                         <span style={{ 
@@ -122,12 +143,14 @@ export default function Header() {
                             <span className={styles.tagline} style={{ color: themeColor }}>
                                 {site.site_name === 'Tiper' && "PREMIUM ADULT SOMMELIER"}
                                 {site.site_name === 'Bic Station' && "TOTAL PC SUPPORT"}
+                                {site.site_name === 'AV Flash' && "NEWS & ARCHIVE"}
+                                {site.site_name === 'Saving' && "LIFE HACK & COST CUT"}
                             </span>
                         </div>
                     </div>
                 </Link>
 
-                {/* PCナビゲーション */}
+                {/* --- ② PCナビゲーション (Hover Dropdown) --- */}
                 <nav className={styles.desktopNav}>
                     {Object.entries(menuConfig).map(([key, section]) => (
                         <div 
@@ -137,10 +160,10 @@ export default function Header() {
                             onMouseLeave={() => setActiveDropdown(null)}
                         >
                             <span className={styles.navTitle} style={{ color: isAdult ? '#eee' : '#333' }}>
-                                {section.title}
+                                {section.title} <span className={styles.arrow}>▼</span>
                             </span>
                             {activeDropdown === key && (
-                                <div className={styles.dropdown} style={{ borderTop: `2px solid ${themeColor}` }}>
+                                <div className={styles.dropdown} style={{ borderTop: `3px solid ${themeColor}` }}>
                                     {section.links.map((link, i) => (
                                         <Link key={i} href={link.href} className={styles.dropdownItem}>
                                             {link.label}
@@ -152,7 +175,7 @@ export default function Header() {
                     ))}
                 </nav>
 
-                {/* 認証・アクション */}
+                {/* --- ③ 認証・アクションセクション --- */}
                 <div className={styles.authSection}>
                     {!isLoggedIn ? (
                         <div className={styles.guestLinks}>
@@ -166,11 +189,12 @@ export default function Header() {
                             <span className={styles.userNameDisplay} style={{ color: isAdult ? '#fff' : '#333' }}>
                                 {site.site_name === 'Tiper' ? '貴賓：' : ''}{userName} <small>様</small>
                             </span>
-                            <Link href="/mypage" className={styles.mypageLink}>My</Link>
+                            <Link href="/mypage" className={styles.mypageLink} style={{ borderColor: themeColor, color: themeColor }}>My</Link>
                             <button onClick={handleLogout} className={styles.logoutBtn} title="ログアウト">🚪</button>
                         </div>
                     )}
                     
+                    {/* スマホ用トグル */}
                     <button 
                         className={styles.menuToggle} 
                         onClick={() => setIsOpen(!isOpen)} 
@@ -182,18 +206,30 @@ export default function Header() {
                 </div>
             </div>
 
-            {/* スマホ用メニュー */}
+            {/* --- ④ スマホ用展開メニュー (Accordion Style) --- */}
             <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} style={{ background: isAdult ? '#111' : '#fff' }}>
                 {Object.entries(menuConfig).map(([key, section]) => (
                     <div key={key} className={styles.menuSection}>
-                        <p className={styles.sectionTitle} style={{ color: themeColor }}>{section.title}</p>
-                        {section.links.map((link, i) => (
-                            <Link key={i} href={link.href} onClick={() => setIsOpen(false)} style={{ color: isAdult ? '#eee' : '#444' }}>
-                                {link.label}
-                            </Link>
-                        ))}
+                        <p className={styles.sectionTitle} style={{ color: themeColor, borderLeft: `4px solid ${themeColor}`, paddingLeft: '10px' }}>
+                            {section.title}
+                        </p>
+                        <div className={styles.mobileLinkGrid}>
+                            {section.links.map((link, i) => (
+                                <Link key={i} href={link.href} onClick={() => setIsOpen(false)} style={{ color: isAdult ? '#ccc' : '#444' }}>
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 ))}
+                
+                {/* スマホ用認証ボタン（未ログイン時） */}
+                {!isLoggedIn && (
+                    <div className={styles.mobileAuthActions}>
+                        <Link href="/login" onClick={() => setIsOpen(false)} className={styles.mobileLoginBtn}>ログイン</Link>
+                        <Link href="/register" onClick={() => setIsOpen(false)} className={styles.mobileRegBtn} style={{ background: themeColor }}>新規登録</Link>
+                    </div>
+                )}
             </div>
         </header>
     );

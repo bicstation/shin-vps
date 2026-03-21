@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 
 /**
  * ✅ 物理パスに基づいた正しいインポート
- * エイリアスを @/shared に統一し、解決の確実性を高めます。
+ * エイリアスを @/shared に統一し、マルチブランド対応を確実なものにします。
  */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import styles from './Footer.module.css';
@@ -16,6 +16,11 @@ import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnostic
  * =====================================================================
  * 🧱 [ORGANISM] Footer (shared/components/organisms/common/Footer.tsx)
  * 🛡️ Maya's Logic: ハイドレーション・ガード & デバッグターミナル統合版
+ * ---------------------------------------------------------------------
+ * 修正点:
+ * 1. AIコンシェルジュ(/concierge) と お問い合わせ(/contact) を分離・併記
+ * 2. Next.js 15 用の Suspense 境界を Root レベルで適用
+ * 3. ネットワークサイトの URL 生成ロジックを最新化
  * =====================================================================
  */
 interface FooterProps {
@@ -33,26 +38,29 @@ interface FooterProps {
     };
 }
 
-// 🌐 内部コンポーネント: searchParams を安全に使用するため分離
+/**
+ * 🌐 内部コンポーネント: searchParams を安全に使用するため分離
+ */
 function FooterContent({ debugData }: FooterProps) {
     const [mounted, setMounted] = useState(false);
     const searchParams = useSearchParams();
     const currentYear = new Date().getFullYear();
 
+    // ✅ ハイドレーション・ミスマッチ防止
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // 🛰️ サイト情報の動的取得
+    // 🛰️ サイト設定の動的取得
     const site = useMemo(() => {
         if (!mounted || typeof window === 'undefined') return null;
         const host = window.location.hostname;
         return getSiteMetadata(host);
     }, [mounted]);
 
-    // 🚩 ガード: 準備ができるまでレンダリングをスキップ
+    // 🚩 ガード: クライアントサイドの準備ができるまで不可視状態で枠だけ確保
     if (!mounted || !site) {
-        return <footer className={styles.footer} style={{ height: '200px', visibility: 'hidden' }} />;
+        return <footer className={styles.footer} style={{ height: '300px', visibility: 'hidden' }} />;
     }
 
     const siteColor = getSiteColor(site.site_name);
@@ -65,9 +73,9 @@ function FooterContent({ debugData }: FooterProps) {
      */
     const networkSites = [
         { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff' },
-        { name: 'Bic Saving', domain: 'bicsaving.com', port: 3001, color: '#ff9900' },
-        { name: 'AV Flash', domain: 'av-flash.com', port: 3002, color: '#e60012' },
-        { name: 'Tiper', domain: 'tiper.jp', port: 3003, color: '#d4af37' },
+        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900' },
+        { name: 'AV Flash', domain: 'av-flash.xyz', port: 3002, color: '#e60012' },
+        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37' },
     ];
 
     const getNetworkUrl = (s: typeof networkSites[0]) => {
@@ -75,7 +83,7 @@ function FooterContent({ debugData }: FooterProps) {
     };
 
     /**
-     * 🛠️ サイト別リンク・テキスト定義
+     * 🛠️ サイト別ブランド・テキスト定義
      */
     const siteConfigs: Record<string, any> = {
         'Tiper': {
@@ -103,8 +111,8 @@ function FooterContent({ debugData }: FooterProps) {
     const config = siteConfigs[site.site_name] || siteConfigs['Bic Station'];
 
     return (
-        <footer 
-            className={styles.footer} 
+        <footer
+            className={styles.footer}
             style={{ '--accent-red': siteColor } as React.CSSProperties}
         >
             <div className={styles.container}>
@@ -127,14 +135,14 @@ function FooterContent({ debugData }: FooterProps) {
                     </div>
                 </div>
 
-                {/* --- 2. ネットワーク --- */}
+                {/* --- 2. ネットワークリンク --- */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>SHIN-VPS NETWORK</h3>
                     <ul className={styles.networkList}>
                         {networkSites.map((s) => (
                             <li key={s.name} className={styles.linkItem}>
-                                <a 
-                                    href={getNetworkUrl(s)} 
+                                <a
+                                    href={getNetworkUrl(s)}
                                     className={styles.networkLink}
                                     style={{ borderLeft: `3px solid ${s.color}`, paddingLeft: '8px' }}
                                 >
@@ -145,13 +153,30 @@ function FooterContent({ debugData }: FooterProps) {
                     </ul>
                 </div>
 
-                {/* --- 3. リーガル --- */}
+                {/* --- 3. リーガル & インフォメーション (AIリンクを統合) --- */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>INFORMATION</h3>
                     <ul className={styles.linkList}>
-                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/privacy-policy`}>🛡 プライバシーポリシー</Link></li>
-                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/disclaimer`}>⚠️ 免責事項</Link></li>
-                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link></li>
+                        <li className={styles.linkItem}>
+                            <Link href={`${site.site_prefix}/concierge`}>
+                                {isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ'}
+                            </Link>
+                        </li>
+                        <li className={styles.linkItem}>
+                            <Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link>
+                        </li>
+                        <li className={styles.linkItem}>
+                            <Link href={`${site.site_prefix}/about`}>ℹ️ 当サイトについて</Link>
+                        </li>
+                        <li className={styles.linkItem}>
+                            <Link href={`${site.site_prefix}/privacy-policy`}>🛡️ 規約とポリシー</Link>
+                        </li>
+                        <li className={styles.linkItem}>
+                            <Link href={`${site.site_prefix}/disclaimer`}>⚠️ 免責事項</Link>
+                        </li>
+                        <li className={styles.linkItem}>
+                            <Link href={`${site.site_prefix}/guideline`}>📝 ご利用ガイドライン</Link>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -162,10 +187,10 @@ function FooterContent({ debugData }: FooterProps) {
                 </p>
             </div>
 
-            {/* --- 🚀 診断ターミナル --- */}
+            {/* --- 🚀 診断ターミナル (デバッグモード用) --- */}
             {isDebugMode && debugData && (
                 <div className={styles.debugContainer}>
-                    <SystemDiagnosticHero 
+                    <SystemDiagnosticHero
                         id={debugData.id}
                         source={debugData.source}
                         data={debugData.data}
@@ -182,10 +207,13 @@ function FooterContent({ debugData }: FooterProps) {
     );
 }
 
-// 🏛️ Root Footer Component (Next.js 15 Suspense Guard)
+/**
+ * 🏛️ Root Footer Component
+ * Next.js 15: useSearchParams を内部で持つため Suspense でラップしてエクスポート
+ */
 export default function Footer(props: FooterProps) {
     return (
-        <Suspense fallback={<footer className={styles.footer} style={{ height: '200px' }} />}>
+        <Suspense fallback={<footer className={styles.footer} style={{ height: '300px' }} />}>
             <FooterContent {...props} />
         </Suspense>
     );

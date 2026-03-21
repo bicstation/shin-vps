@@ -1,14 +1,20 @@
-/* ==============================================================================
- * 📂 Footer.module.css - Optimized Tactical Interface
- * ============================================================================== */
+/* =====================================================================
+ * 🏗️ [BICSTATION-FOOTER-CSS] - Complete Tactical Edition
+ * ---------------------------------------------------------------------
+ * 💡 特徴:
+ * 1. CSS変数 (--accent-red) によるブランドカラー動的同期
+ * 2. INFORMATIONセクションのレスポンシブ・グリッド最適化
+ * 3. インタラクティブなホバーエフェクト (Translate + Color)
+ * 4. デバッグ・ブランドリンクエリアの視認性向上
+ * ===================================================================== */
 
 .footer {
-  /* 基本色定義（JS側のstyle属性で --accent-red は動的に上書きされます） */
+  /* 変数定義（JSから渡される siteColor で上書きされる想定） */
   --footer-bg: #0a0a0f;
   --footer-text: #888;
   --footer-text-bright: #eee;
   --footer-border: #1a1a20;
-  --accent-red: #e94560; /* JSから渡される siteColor で上書きされる変数 */
+  --accent-red: #e94560; 
 
   background: var(--footer-bg);
   color: var(--footer-text);
@@ -16,23 +22,17 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   position: relative;
   overflow: hidden;
+  border-top: 1px solid var(--footer-border);
 }
 
-/* 🚀 デバッグセクション */
-.debugContainer {
-  width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: #050508;
-  padding-bottom: 20px;
-}
-
-/* レイアウトコンテナ */
+/* 🚀 レイアウトコンテナ */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 80px 4% 60px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  /* サイト説明、リンク、情報の3カラム構成を基本に */
+  grid-template-columns: 1.5fr 1fr 1fr;
   gap: 60px;
 }
 
@@ -41,6 +41,7 @@
   flex-direction: column;
 }
 
+/* サイト名 & セクションタイトル */
 .siteTitle {
   color: #fff;
   margin-bottom: 25px;
@@ -59,33 +60,30 @@
   padding-bottom: 10px;
 }
 
+/* アクセントライン：動的に色が変わる */
 .sectionTitle::after {
   content: "";
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 30px;
-  height: 2px;
-  background: var(--accent-red); /* 動的なアクセントカラー */
+  width: 35px;
+  height: 3px;
+  background: var(--accent-red);
+  transition: width 0.3s ease;
 }
 
-.miniTitle {
-  color: var(--accent-red);
-  margin-top: 30px;
-  margin-bottom: 15px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+.column:hover .sectionTitle::after {
+  width: 50px;
 }
 
 .description {
   font-size: 0.95rem;
   line-height: 1.8;
   color: var(--footer-text);
+  max-width: 400px;
 }
 
-/* ナビゲーション */
+/* 🔗 ナビゲーションリスト */
 .linkList {
   list-style: none;
   padding: 0;
@@ -93,78 +91,115 @@
 }
 
 .linkItem {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
 }
 
 .linkItem a {
   color: var(--footer-text);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .linkItem a:hover {
   color: #fff;
-  transform: translateX(6px);
+  transform: translateX(8px);
 }
 
-/* ブランドグリッド */
+/* 🏷️ ブランドリンクエリア */
 .brandGrid {
   display: flex;
   flex-direction: column;
+}
+
+.miniTitle {
+  color: var(--accent-red);
+  margin-top: 30px;
+  margin-bottom: 15px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
 }
 
 .brandLinks {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0 8px;
-  line-height: 2;
+  gap: 0 10px;
+  line-height: 2.2;
 }
 
 .brandLink {
-  color: #777;
+  color: #555;
   text-decoration: none;
-  font-size: 0.85rem;
-  transition: color 0.2s, text-shadow 0.2s;
+  font-size: 0.8rem;
+  transition: all 0.2s;
 }
 
 .brandLink:hover {
-  color: #fff;
-  text-shadow: 0 0 8px rgba(255,255,255,0.3);
+  color: var(--footer-text-bright);
 }
 
 .brandSeparator {
-  color: #333;
-  font-size: 0.8rem;
+  color: #222;
+  font-size: 0.7rem;
   user-select: none;
 }
 
-/* 下部バー */
+/* ⚖️ 下部コピーライトエリア */
 .bottomBar {
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 4%;
   border-top: 1px solid var(--footer-border);
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .copyright {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #444;
   letter-spacing: 0.05em;
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* 📱 モバイル対応 */
-@media (max-width: 768px) {
+/* 📱 モバイル対応 (レスポンシブ・ハック) */
+@media (max-width: 992px) {
   .container {
-    padding: 60px 6% 40px;
-    gap: 45px;
+    grid-template-columns: 1fr 1fr; /* 2列にする */
   }
+  .column:first-child {
+    grid-column: span 2; /* サイト説明を横いっぱいに */
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    grid-template-columns: 1fr; /* 1列にスタック */
+    padding: 60px 8% 40px;
+    gap: 40px;
+  }
+  .column:first-child { grid-column: span 1; }
+  
   .linkItem a:hover {
-    transform: none;
+    transform: none; /* スマホでは横移動させない（誤タップ防止） */
     color: var(--accent-red);
   }
+
+  /* スマホ版 INFORMATION を2列グリッドにして高さを抑える */
+  .linkList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .linkItem { margin-bottom: 0; }
 }
