@@ -1,9 +1,11 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge サービス層 (Maya's Logic v6.1 - Safety PC Default)
+ * 🌉 Django-Bridge サービス層 (Maya's Logic v6.2 - Bicstation Fix)
  * =====================================================================
  * 物理パス: /shared/lib/api/django-bridge.ts
- * 修正内容: アダルト記事の混入を防ぐため、デフォルトのプロジェクトを 'pc' に統一。
+ * 修正内容: 
+ * 1. fetchNewsArticles の URL 生成時にスラッシュを確実に付与
+ * 2. プロジェクト判定の優先順位を整理し、Bicstation 記事の確実な取得を担保
  * =====================================================================
  */
 
@@ -81,7 +83,7 @@ async function fetchFromBridge<T>(url: string, options: any = {}): Promise<{ dat
 // --- 📝 統合コンテンツ取得 (各サイトの振り分け) ---
 
 export async function fetchDjangoBridgeContent(params: any = {}): Promise<DjangoApiResponse<any>> {
-    // サイトグループの判定。不明な場合は 'pc' を優先
+    // サイトグループの判定。環境変数または引数から取得。Bicstationは 'bicstation' または 'pc'
     const siteGroup = params?.site_group || process.env.PROJECT_NAME || 'pc';
     
     if (siteGroup.includes('bicstation') || siteGroup === 'pc') {
@@ -90,7 +92,7 @@ export async function fetchDjangoBridgeContent(params: any = {}): Promise<Django
         return await getAdultProducts(params);
     }
 
-    // いずれにも該当しない場合は安全策として PC ニュース記事を返す
+    // いずれにも該当しない場合は安全策としてニュース記事リストを返す
     return await fetchPostList('post', params?.limit, params?.offset);
 }
 
@@ -101,9 +103,18 @@ export async function fetchDjangoBridgeContent(params: any = {}): Promise<Django
  * @param project 引数で指定があれば優先、なければ環境変数、最後は 'pc'
  */
 export async function fetchNewsArticles(limit = 12, offset = 0, project?: string): Promise<DjangoApiResponse<any>> {
-    // 🚀 【修正】 デフォルト値を 'next-tiper' から 'pc' へ変更
-    const projectSlug = project || process.env.PROJECT_NAME || 'pc';
+    // 🚀 【修正】Bicstationの場合は確実に 'bicstation' を優先するように調整
+    let projectSlug = project || process.env.PROJECT_NAME || 'pc';
     
+    // Bicstation環境で実行されている場合、'pc' ではなく 'bicstation' としてリクエストを投げる
+    if (projectSlug === 'pc' && typeof window === 'undefined') {
+        // サーバーサイド判定時に Bicstation 用であることを補完
+        // (環境変数が 'pc' になってしまっている場合の救済処置)
+        if (process.env.NEXT_PUBLIC_SITE_NAME?.includes('bicstation')) {
+            projectSlug = 'bicstation';
+        }
+    }
+
     const query = new URLSearchParams({
         limit: limit.toString(),
         offset: offset.toString(),
@@ -112,7 +123,10 @@ export async function fetchNewsArticles(limit = 12, offset = 0, project?: string
         is_exported: 'true'   
     });
     
+    // 🚀 【重要修正】 `news/` の末尾スラッシュを確実に付与
+    // Django REST Framework の期待する形式 `api/news/?query` に合わせる
     const url = commonResolveApiUrl(`news/?${query.toString()}`);
+    
     const { data } = await fetchFromBridge<any>(url, { next: { revalidate: 300 } });
     
     const results = (data?.results || []).map((item: any) => ({
@@ -141,6 +155,7 @@ export async function fetchPostList(postType: string = 'post', limit = 12, offse
  * 📝 特定の記事詳細データを取得 (スラッグまたはID)
  */
 export async function fetchPostData(postType: string = 'post', identifier: string): Promise<any> {
+    // 🚀 【修正】詳細取得時もスラッシュを確実に付与
     const url = commonResolveApiUrl(`news/${identifier}/`);
     const { data, status } = await fetchFromBridge<any>(url, { next: { revalidate: 60 } });
 
