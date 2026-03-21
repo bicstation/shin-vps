@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# BIC-FLEET Engine v1.2: Imperial Edition (Project Identity: bicstation)
 # /home/maya/shin-dev/shin-vps/django/api/management/commands/ai_fleet_deployer.py
 
 import os, re, random, requests, feedparser, time, csv
@@ -16,20 +17,21 @@ from api.management.commands.blog_drivers.data_mapper import ArticleMapper
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'BIC-FLEET v1.0: Multi-Project Auto Deployment Engine'
+    help = 'BIC-FLEET v1.2: Multi-Project Auto Deployment Engine (Brand Consistent)'
 
     def add_arguments(self, parser):
-        parser.add_argument('--project', type=str, default='pc', help='プロジェクト名 (pc/adult/saving等)')
+        # デフォルトプロジェクトを 'bicstation' に変更
+        parser.add_argument('--project', type=str, default='bicstation', help='プロジェクト名 (bicstation/adult/saving等)')
         parser.add_argument('--target', '-t', type=str, default=None, help='投稿先指定: LD, BG, HT')
 
     def handle(self, *args, **options):
         project = options['project']
         target = options['target'].upper() if options['target'] else None
         
-        self.log(f"--- 🚀 BIC-FLEET Engine v1.0 [{project.upper()}] START ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 BIC-FLEET Engine v1.2 [{project.upper()}] START ---", self.style.SUCCESS)
         
-        # 1. パスの解決
-        current_cmd_dir = os.path.dirname(os.path.abspath(__file__))
+        # 1. パスの解決 (コンテナ内部の絶対パスを優先)
+        current_cmd_dir = "/usr/src/app/api/management/commands"
         config_dir = os.path.join(current_cmd_dir, "config")
         prompt_dir = os.path.join(current_cmd_dir, "prompt")
         
@@ -52,7 +54,7 @@ class Command(BaseCommand):
         all_fleet_data = self.load_csv_data(fleet_csv)
 
         if not all_fleet_data or not rss_sources:
-            self.log(f"❌ 設定ファイル欠如: {project}", self.style.ERROR)
+            self.log(f"❌ 設定ファイル欠如: {project} (path: {fleet_csv})", self.style.ERROR)
             return
 
         # ターゲットフィルタリング & シャッフル
@@ -63,10 +65,11 @@ class Command(BaseCommand):
         # 3. RSS取得 & 重複チェック
         rss_urls = [row['url'] for row in rss_sources]
         raw_pool = self.get_fresh_rss_pool(rss_urls)
+        # DB全体で既に source_url が存在するかチェック
         rss_pool = [e for e in raw_pool if not Article.objects.filter(source_url=e.link).exists()]
         
         if not rss_pool:
-            self.log("🏁 新着記事なし。処理を終了します。")
+            self.log("🏁 全サイト共通の新着記事はありません。")
             return
 
         # 4. AIプロンプト準備
@@ -81,17 +84,22 @@ class Command(BaseCommand):
         for site in fleet_data:
             b_key = site['site_key']
             try:
-                unused_pool = [e for e in rss_pool if not Article.objects.filter(site=b_key, source_url=e.link).exists()]
-                if not unused_pool:
+                # この特定のサイト(b_key)でまだ投稿していない記事を抽出
+                current_unused = [e for e in rss_pool if not Article.objects.filter(site=b_key, source_url=e.link).exists()]
+                
+                if not current_unused:
                     stats["skip"].append(b_key.upper())
                     continue
 
-                entry = random.choice(unused_pool)
-                success = self.process_single_post(b_key, site, entry, ai_template, cta_template, api_keys, config_dir, project)
+                # 🌟 修正ポイント: 記事情報を target_entry に隔離して固定
+                target_entry = random.choice(current_unused)
+                
+                success = self.process_single_post(b_key, site.copy(), target_entry, ai_template, cta_template, api_keys, current_cmd_dir, project)
                 
                 if success:
                     stats["success"].append(b_key.upper())
-                    if entry in rss_pool: rss_pool.remove(entry)
+                    # 🌟 成功したら即座にプールから削除（同一ループ内での重複を回避）
+                    rss_pool = [e for e in rss_pool if e.link != target_entry.link]
                 else:
                     stats["fail"].append(b_key.upper())
                 
@@ -105,8 +113,9 @@ class Command(BaseCommand):
 
         self.show_final_report(stats)
 
-    def process_single_post(self, b_key, cfg, entry, ai_template, cta_template, api_keys, config_dir, project):
+    def process_single_post(self, b_key, cfg, entry, ai_template, cta_template, api_keys, cmd_dir, project):
         connection.close()
+        # 🌟 ここで entry.title を使うことで、DB保存とAI生成の整合性を担保
         self.log(f"🧵 [{b_key.upper()}] 処理開始: {entry.title[:25]}...")
         
         data = self.scrape_article(entry)
@@ -114,62 +123,74 @@ class Command(BaseCommand):
         
         processor = AIProcessor(api_keys, ai_template)
         ext = processor.generate_blog_content(data, b_key)
-        if not ext: return False
+        if not ext or not ext.get('title_g'): return False
         
-        # 🚀 修正ポイント: ArticleMapperのメソッド名と引数を整合
-        # 1. まずはDBに新規作成
+        # 🌟 修正ポイント: メタデータにプロジェクト識別子と役割を明記
         article_id = ArticleMapper.create_article(
             site_id=b_key,
             title=ext.get('title_g', 'No Title').strip(),
             body_text=ext.get('cont_g', ''),
             source_url=data['url'],
             content_type='post',
-            extra_metadata={'project': project, 'original_title': data['title']}
+            extra_metadata={
+                'project': project, 
+                'is_main_brand': True if b_key == 'bicstation' else False,
+                'original_title': data['title'], # 隔離されたentryから取得
+                'source_img': data['img'],
+                'scraped_at': datetime.now().isoformat()
+            }
         )
         
         if not article_id: return False
 
-        # 本家URLの組み立て (サイトドメインはプロジェクトごとに切り替え可能)
-        domain_map = {'pc': 'bicstation.com', 'saving': 'bic-saving.com', 'adult': 'tiper.live'}
+        # ドメインマップ (pcをbicstationに統合)
+        domain_map = {'bicstation': 'bicstation.com', 'saving': 'bic-saving.com', 'adult': 'tiper.live'}
         domain = domain_map.get(project, 'bicstation.com')
         internal_url = f"https://{domain}/news/{article_id}"
         
         title = ext.get('title_g', '').strip()
         pf = cfg['platform'].lower()
-        cfg['current_dir'] = config_dir 
+        cfg['current_dir'] = cmd_dir 
 
-        # ドライバー選定
         if pf == 'hatena':
-            raw_body = ext.get('cont_h'); driver_class = HatenaDriver
+            raw_body = ext.get('cont_h') or ext.get('cont_g')
+            driver_class = HatenaDriver
         elif pf == 'blogger':
-            raw_body = ext.get('cont_g'); driver_class = BloggerDriver
+            raw_body = ext.get('cont_g')
+            driver_class = BloggerDriver
         else:
-            raw_body = ext.get('cont_g'); driver_class = LivedoorDriver
-            if 'atompub' in cfg['url_or_endpoint'] and not cfg['url_or_endpoint'].endswith('/article'):
+            raw_body = ext.get('cont_g')
+            driver_class = LivedoorDriver
+            if 'atompub' in cfg.get('url_or_endpoint', '') and not cfg['url_or_endpoint'].endswith('/article'):
                 cfg['url_or_endpoint'] += '/article'
             
         html_body = HTMLConverter.md_to_html(raw_body)
         final_cta = cta_template.replace("{{internal_url}}", internal_url)
         
-        cfg.update({
-            'api_key': cfg['api_key_or_pw'],
-            'endpoint': cfg['url_or_endpoint'], 
-            'url': cfg['url_or_endpoint'],
-            'blog_id': cfg['blog_id_or_rpc']
-        })
+        post_config = {
+            **cfg,
+            'api_key': cfg.get('api_key_or_pw'),
+            'endpoint': cfg.get('url_or_endpoint'), 
+            'url': cfg.get('url_or_endpoint'),
+            'blog_id': cfg.get('blog_id_or_rpc')
+        }
         
         try:
-            driver = driver_class(cfg)
+            driver = driver_class(post_config)
             if driver.post(title=title, body=html_body + final_cta, image_url=data['img'], source_url=data['url']):
-                # 🚀 修正ポイント: 投稿成功後にフラグを更新（ArticleMapperのメソッドに合わせる）
-                ArticleMapper.save_post_result(article_id, blog_type=pf, post_url=cfg['url_or_endpoint'], is_published=True)
+                ArticleMapper.save_post_result(
+                    article_id, 
+                    blog_type=pf, 
+                    post_url=post_config['url'], 
+                    is_published=True
+                )
                 self.log(f"📊 [{b_key.upper()}] ✅ Success: {internal_url}", self.style.SUCCESS)
                 return True
             else:
                 return False
         except Exception as e:
             self.log(f"❌ Driver Error [{b_key}]: {str(e)}", self.style.WARNING)
-        return False
+            return False
 
     def load_csv_data(self, path):
         data = []

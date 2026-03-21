@@ -17,7 +17,7 @@ class BloggerDriver(BaseBlogDriver):
         try:
             # 2. 【最重要】token.json の絶対パスを指定
             # お師匠様が教えてくれたパスを直接指定するか、configから組み立てます
-            token_path = "/home/maya/shin-dev/shin-vps/django/api/management/commands/bs_json/token.json"
+            token_path = "/usr/src/app/api/management/commands/bs_json/token.json"
             
             if not os.path.exists(token_path):
                 print(f"  [Blogger Error] Token file not found at: {token_path}")
