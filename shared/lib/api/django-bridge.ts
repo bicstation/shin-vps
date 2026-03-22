@@ -1,53 +1,59 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge サービス層 (Maya's Logic v6.3 - Bicstation Perfect Fix)
+ * 🌉 Django-Bridge 統合サービス層 (v7.0 - 分割統治・完全機能維持版)
+ * =====================================================================
+ * 修正内容: v6.3 の置換ロジックと共通 Fetch 機能を維持しつつ、
+ * 各専門ドメイン (PC, Adult, News) へのゲートウェイとして機能。
  * =====================================================================
  */
 
-import { getWpConfig, IS_SERVER, getDjangoBaseUrl } from './config';
-import { resolveApiUrl as commonResolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from './django/client';
+import { getWpConfig, getDjangoBaseUrl } from './config';
+import { 
+    resolveApiUrl as commonResolveApiUrl, 
+    getDjangoHeaders, 
+    handleResponseWithDebug 
+} from './django/client';
+
+// 🚀 専門部隊からのインポート
+import { fetchPCProducts as fetchPCProductsLogic } from './django/pc';
+import { getUnifiedProducts as getAdultProductsLogic } from './django/adult';
+import { fetchNewsArticles as fetchNewsLogic, fetchPostData as fetchNewsDetail } from './django/news';
+
 import { 
     PCProduct, 
     AdultProduct, 
-    DjangoApiResponse, 
-    MakerCount 
+    DjangoApiResponse 
 } from './types';
 
 /**
- * 🔄 【置換】ドメイン・一括置換ユーティリティ
+ * 🔄 【共通機能】ドメイン・一括置換ユーティリティ
+ * ※ v6.3 から継承。全ドメインのデータに対して実行
  */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
+    const baseUrl = getDjangoBaseUrl();
+    if (!baseUrl) return data;
+    const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
+
     if (typeof data === 'object') {
         try {
             let content = JSON.stringify(data);
-            const baseUrl = getDjangoBaseUrl();
-            if (!baseUrl) return data;
-
-            const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
             const internalPattern = /http:\/\/(django-v[23]|nginx-wp-v[23]|wordpress-.+v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
-            
-            content = content.replace(internalPattern, cleanBaseUrl);
-            content = content.replace(/([^:])\/\//g, '$1/'); 
-            
+            content = content.replace(internalPattern, cleanBaseUrl).replace(/([^:])\/\//g, '$1/'); 
             return JSON.parse(content);
-        } catch (e) {
-            return data;
-        }
+        } catch (e) { return data; }
     }
     if (typeof data === 'string') {
-        const baseUrl = getDjangoBaseUrl();
-        if (!baseUrl) return data;
-        const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
         return data.replace(/http:\/\/(django-v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g, cleanBaseUrl);
     }
     return data;
 };
 
 /**
- * 🛠️ 【通信】共通 Fetch ラッパー
+ * 🛠️ 【共通機能】通信 Fetch ラッパー (fetchFromBridge)
+ * ※ 各専門ロジックからも利用可能にするため維持
  */
-async function fetchFromBridge<T>(url: string, options: any = {}): Promise<{ data: any, status: number }> {
+export async function fetchFromBridge<T>(url: string, options: any = {}): Promise<{ data: any, status: number }> {
     const { host } = getWpConfig();
     try {
         const res = await fetch(url, {
@@ -59,141 +65,50 @@ async function fetchFromBridge<T>(url: string, options: any = {}): Promise<{ dat
             },
             signal: AbortSignal.timeout(options.timeout || 10000)
         });
-
         const data = await handleResponseWithDebug(res, url);
-        
-        return { 
-            data: replaceInternalUrls(data), 
-            status: res.status 
-        };
+        return { data: replaceInternalUrls(data), status: res.status };
     } catch (e: any) {
         console.error(`🚨 [Bridge Fatal Error]: ${url} | ${e.message}`);
-        return { 
-            data: null, 
-            status: 500 
-        };
+        return { data: null, status: 500 };
     }
 }
 
-// --- 📰 ニュース記事 (Articleモデル) 取得機能 ---
-
 /**
- * 📰 プロジェクトごとのニュース記事を取得
+ * 🚀 【司令塔】統合コンテンツ・スイッチャー
  */
-export async function fetchNewsArticles(limit = 12, offset = 0, project?: string): Promise<DjangoApiResponse<any>> {
-    // 1. プロジェクト判定 (引数 > 環境変数 > デフォルト)
-    let projectSlug = project || process.env.PROJECT_NAME || 'pc';
-    
-    // 🚀 【救済処置】環境変数が 'pc' でもサイト名が bicstation なら書き換える
-    if (typeof window === 'undefined') {
-        const siteName = (process.env.NEXT_PUBLIC_SITE_NAME || '').toLowerCase();
-        if (projectSlug === 'pc' && siteName.includes('bicstation')) {
-            projectSlug = 'bicstation';
-        }
-    }
-
-    const query = new URLSearchParams({
-        limit: limit.toString(),
-        offset: offset.toString(),
-        ordering: '-created_at',
-        project: projectSlug, 
-        is_exported: 'true'   
-    });
-    
-    // 🚀 `news/` の末尾スラッシュとクエリを正規化
-    const url = commonResolveApiUrl(`news/?${query.toString()}`);
-    
-    const { data } = await fetchFromBridge<any>(url, { next: { revalidate: 300 } });
-    
-    const results = (data?.results || []).map((item: any) => ({
-        ...item,
-        id: item.id.toString(),
-        slug: item.slug || item.id.toString(),
-        image: item.main_image_url || item.thumbnail || '/images/common/no-image.jpg',
-        date: item.created_at || item.date,
-        body_text: item.body_text || item.content,
-        content: item.body_text || item.content
-    }));
-
-    return { 
-        results: results, 
-        count: data?.count || 0 
-    };
-}
-
-/**
- * 📝 記事リスト取得 (統合エイリアス元)
- * 🚀 【超重要修正】第4引数 project を追加し、fetchNewsArticles へリレーする
- */
-export async function fetchPostList(
-    postType: string = 'post', 
-    limit = 12, 
-    offset = 0, 
-    project?: string // 🚀 これを受け取れるように拡張！
-): Promise<DjangoApiResponse<any>> {
-    // 🚀 受け取った project をそのまま渡す
-    return await fetchNewsArticles(limit, offset, project);
-}
-
-/**
- * 📝 特定の記事詳細データを取得
- */
-export async function fetchPostData(postType: string = 'post', identifier: string): Promise<any> {
-    const url = commonResolveApiUrl(`news/${identifier}/`);
-    const { data, status } = await fetchFromBridge<any>(url, { next: { revalidate: 60 } });
-
-    if (status === 200 && data) {
-        return {
-            ...data,
-            slug: data.slug || data.id.toString(),
-            date: data.created_at || data.date,
-            image: data.main_image_url || data.thumbnail || '/images/common/no-image.jpg',
-            content: data.body_text || data.content,
-            body_text: data.body_text || data.content,
-            description: data.title,
-        };
-    }
-    return null;
-}
-
-// --- 🔞 アダルト・PC製品・その他 (既存ロジック維持) ---
-
 export async function fetchDjangoBridgeContent(params: any = {}): Promise<DjangoApiResponse<any>> {
     const siteGroup = params?.site_group || process.env.PROJECT_NAME || 'pc';
+
     if (siteGroup.includes('bicstation') || siteGroup === 'pc') {
-        return await fetchPCProducts(params);
+        return await fetchPCProductsLogic(params);
     } else if (siteGroup.includes('tiper') || siteGroup.includes('avflash') || siteGroup.includes('saving')) {
-        return await getAdultProducts(params);
+        return await getAdultProductsLogic(params);
     }
     return await fetchPostList('post', params?.limit, params?.offset, siteGroup);
 }
 
-export async function getAdultProducts(params: any = {}): Promise<DjangoApiResponse<AdultProduct>> {
-    const safeParams = params || {};
-    const query = new URLSearchParams({
-        limit: (safeParams.limit || 20).toString(),
-        offset: (safeParams.offset || 0).toString(),
-        ordering: safeParams.ordering || '-id',
-        ...(safeParams.site_group && { site_group: safeParams.site_group }),
-    });
-    const url = commonResolveApiUrl(`adult/unified-products/?${query.toString()}`);
-    const { data } = await fetchFromBridge<AdultProduct>(url, { next: { revalidate: 60 } });
-    return { results: data?.results || [], count: data?.count || 0 };
+/**
+ * 📰 ニュース・記事取得
+ */
+export const fetchNewsArticles = fetchNewsLogic;
+export const fetchPostData = fetchNewsDetail;
+
+export async function fetchPostList(postType = 'post', limit = 12, offset = 0, project?: string) {
+    return await fetchNewsLogic(limit, offset, project);
 }
 
-export async function fetchPCProducts(params: any = {}): Promise<DjangoApiResponse<PCProduct>> {
-    const safeParams = params || {};
-    const query = new URLSearchParams({
-        limit: (safeParams.limit || 10).toString(),
-        offset: (safeParams.offset || 0).toString(),
-        ordering: safeParams.ordering || '-id',
-        ...(safeParams.site_group && { site_group: safeParams.site_group }),
-    });
-    const url = commonResolveApiUrl(`general/pc-products/?${query.toString()}`);
-    const { data } = await fetchFromBridge<PCProduct>(url);
-    return { results: data?.results || [], count: data?.count || 0 };
-}
+/**
+ * 🖥️ PC製品取得
+ */
+export const fetchPCProducts = fetchPCProductsLogic;
 
-// エイリアス設定
+/**
+ * 🔞 アダルト製品取得
+ */
+export const getAdultProducts = getAdultProductsLogic;
+export const getUnifiedProducts = getAdultProductsLogic;
+
+/**
+ * 💎 エイリアス設定
+ */
 export { fetchPostList as getSiteMainPosts };
-export { getAdultProducts as getUnifiedProducts };

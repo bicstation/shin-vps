@@ -1,9 +1,8 @@
 /**
  * =====================================================================
  * 🖥️ PC製品（General）統合サービス
- * 🛡️ Maya's Logic: 物理構造 v5.2 完全同期版 (Next.js 15+ 対応)
- * 修正内容: resolveApiUrl の仕様変更に伴い、引数から冗長なパスを排除。
- * 物理パス: shared/lib/api/django/pc.ts
+ * 🛡️ Maya's Logic: 物理構造 v5.3 完全同期版 (属性解除・復旧仕様)
+ * 修正内容: データの不一致による非表示を回避するため、site_group の厳格な制限を緩和。
  * =====================================================================
  */
 
@@ -11,7 +10,7 @@ import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from './clie
 import { getSiteMetadata } from '../../utils/siteConfig';
 
 /**
- * 💎 型定義 (Maya's Logic Spec Edition)
+ * 💎 型定義
  */
 export interface RadarChartData {
     subject: string;
@@ -55,15 +54,15 @@ export interface MakerCount {
 }
 
 /**
- * 🛠️ 内部ユーティリティ: サイトグループの安全な取得
+ * 🛠️ 内部ユーティリティ: サイトグループの取得
+ * 🚀 【属性解除】一致しない場合でも wide 検索を許容するためデフォルトを調整
  */
 const getSafeSiteGroup = (): string => {
     try {
         const metadata = getSiteMetadata();
-        return metadata?.site_group || 'general';
+        return metadata?.site_group || ''; // 空文字にすることでDjango側で全件取得を可能にする
     } catch (e) {
-        // SSR時の AsyncLocalStorage エラー等の際も 'general' を返して死なせない
-        return 'general';
+        return ''; 
     }
 };
 
@@ -75,7 +74,7 @@ const getSafeSiteGroup = (): string => {
 
 /**
  * 💡 PC製品一覧取得
- * [Correct Path]: /api/general/pc-products/
+ * 🚀 【超重要修正】site_group が存在する場合のみクエリに追加し、条件を緩和
  */
 export async function fetchPCProducts(
     maker: string = '', 
@@ -87,23 +86,32 @@ export async function fetchPCProducts(
     const site_group = getSafeSiteGroup();
     
     const queryParams = new URLSearchParams({ 
-        site_group,
         offset: offset.toString(),
         limit: limit.toString()
     });
     
+    // 🛡️ site_group が明示されている場合のみ追加（なければ全件表示）
+    if (site_group && site_group !== 'general') {
+        queryParams.append('site_group', site_group);
+    }
+    
     if (maker) queryParams.append('maker', maker);
     if (attribute) queryParams.append('attribute', attribute);
 
-    // ✅ resolveApiUrl が自動で /api/ と末尾の / を補完するため「パスのみ」を渡す
-    const url = resolveApiUrl(`general/pc-products?${queryParams.toString()}`);
+    // 🚀 URL末尾に確実にスラッシュを入れることでDjangoの404を回避
+    const url = resolveApiUrl(`general/pc-products/?${queryParams.toString()}`);
 
     try {
         const res = await fetch(url, { 
             headers: getDjangoHeaders(), 
-            next: { revalidate: 600 } 
+            cache: 'no-store' // 🔄 最新データを強制取得
         });
         const data = await handleResponseWithDebug(res, url);
+        
+        // 🕵️ デバッグログ (開発環境用)
+        if (process.env.NODE_ENV !== 'production') {
+            console.log(`📡 [PC-Fetch] Project: ${site_group || 'ALL'}, Count: ${data.count}`);
+        }
         
         return { 
             results: data.results || [], 
@@ -118,11 +126,9 @@ export async function fetchPCProducts(
 
 /**
  * 💡 PC製品詳細取得
- * [Correct Path]: /api/general/pc-products/${unique_id}/
  */
 export async function fetchPCProductDetail(unique_id: string): Promise<PCProduct | null> {
-    // ✅ 末尾スラッシュは client.ts で自動付与されるため、変数を渡すだけで完結
-    const url = resolveApiUrl(`general/pc-products/${unique_id}`); 
+    const url = resolveApiUrl(`general/pc-products/${unique_id}/`); // 末尾スラッシュを固定
     
     try {
         const res = await fetch(url, { 
@@ -132,13 +138,12 @@ export async function fetchPCProductDetail(unique_id: string): Promise<PCProduct
 
         const contentType = res.headers.get('content-type');
         if (contentType && contentType.includes('text/html')) {
-            console.error(`🚨 [PC-Detail Critical] HTML response (404/500). ID: ${unique_id}`);
             return null;
         }
 
         const data = await handleResponseWithDebug(res, url);
         
-        // handleResponseWithDebug の正規化を考慮し、results[0] または data本体を確認
+        // 🚀 【属性解除】data.results[0] または data本体から、存在する方を採用
         const product = data.results ? data.results[0] : data;
 
         if (!product || (!product.unique_id && !product.id)) {
@@ -155,14 +160,12 @@ export async function fetchPCProductDetail(unique_id: string): Promise<PCProduct
 
 /**
  * 💡 メーカー一覧取得
- * [Correct Path]: /api/general/pc-makers/
  */
 export async function fetchMakers(): Promise<MakerCount[]> {
-    const url = resolveApiUrl(`general/pc-makers`);
+    const url = resolveApiUrl(`general/pc-makers/`);
     try {
         const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 3600 } });
         const data = await handleResponseWithDebug(res, url);
-        // results配列があればそれを返し、なければdataが配列であると期待
         return Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
     } catch (e) {
         return [];
@@ -170,12 +173,11 @@ export async function fetchMakers(): Promise<MakerCount[]> {
 }
 
 /**
- * 💡 AIスコアランキング / 注目度ランキング
- * [Correct Path]: /api/general/pc-products/ranking/
+ * 💡 AIスコアランキング
  */
 export async function fetchPCProductRanking(type: 'score' | 'popularity' = 'score'): Promise<PCProduct[]> {
     const endpoint = type === 'score' ? 'ranking' : 'popularity-ranking';
-    const url = resolveApiUrl(`general/pc-products/${endpoint}`);
+    const url = resolveApiUrl(`general/pc-products/${endpoint}/`);
     
     try {
         const res = await fetch(url, { headers: getDjangoHeaders(), next: { revalidate: 600 } });
@@ -188,17 +190,15 @@ export async function fetchPCProductRanking(type: 'score' | 'popularity' = 'scor
 
 /**
  * 💡 PCスペック統計取得
- * [Correct Path]: /api/general/pc-sidebar-stats/
  */
 export async function fetchPCSidebarStats(): Promise<any | null> {
-    const url = resolveApiUrl(`general/pc-sidebar-stats`);
+    const url = resolveApiUrl(`general/pc-sidebar-stats/`);
     try {
         const res = await fetch(url, { 
             headers: getDjangoHeaders(), 
             next: { revalidate: 600 } 
         });
         const data = await handleResponseWithDebug(res, url);
-        // 統計データは単一オブジェクトまたはresultsに含まれる
         return data.results ? data.results : data;
     } catch (e: any) {
         console.error(`🚨 [PC-Sidebar-Stats Error]: ${e.message}`);
