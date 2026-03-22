@@ -28,7 +28,7 @@ class Command(BaseCommand):
         
         # 1. パスの解決
         current_cmd_dir = os.path.dirname(os.path.abspath(__file__))
-        config_dir = os.path.join(current_cmd_dir, "config")
+        config_dir = os.path.join(current_cmd_dir, "teitoku_setteing")
         prompt_dir = os.path.join(current_cmd_dir, "prompt")
         
         fleet_csv = os.path.join(config_dir, f"{project}_fleet.csv")

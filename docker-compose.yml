@@ -52,7 +52,7 @@ services:
     restart: always
     # 🌟 修正: 窓口を5つに増やし、マルチスレッドで4サイト同時アクセスに耐える設定
     command: >
-      gunicorn config.wsgi:application
+      gunicorn tiper_api.wsgi:application
       --bind 0.0.0.0:8000
       --workers 5
       --threads 2

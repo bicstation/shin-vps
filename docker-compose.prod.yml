@@ -93,6 +93,7 @@ services:
       dockerfile: ./django/Dockerfile
     container_name: django-v3
     restart: always
+    command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000 --workers 3
     depends_on:
       postgres-db-v3:
         condition: service_healthy
