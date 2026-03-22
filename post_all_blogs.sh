@@ -45,7 +45,8 @@ echo "[PC News] 投稿開始..." | tee -a "$LOG_FILE"
 # docker exec $TARGET_CONTAINER python manage.py ai_fleet_deployer --project bicstation --platform blogger >> "$LOG_FILE" 2>&1
 # docker exec $TARGET_CONTAINER python manage.py ai_fleet_deployer --project bicstation >> "$LOG_FILE" 2>&1
 
-docker exec $TARGET_CONTAINER python manage.py ai_fleet_deployer --project tiper --platform livedoor >> "$LOG_FILE" 2>&1
+# docker exec $TARGET_CONTAINER python manage.py ai_fleet_deployer --project tiper --platform livedoor >> "$LOG_FILE" 2>&1
+docker exec $TARGET_CONTAINER python manage.py ai_fleet_deployer --project tiper >> "$LOG_FILE" 2>&1
 
 # 待機
 echo "⏳ クールダウン中 (30s)..." | tee -a "$LOG_FILE"

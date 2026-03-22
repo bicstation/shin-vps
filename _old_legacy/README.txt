@@ -1,3 +1,10 @@
+
+chmod +x /home/maya/dev/shin-vps/deploy_menu.sh
+
+echo "alias menu='/home/maya/dev/shin-vps/deploy_menu.sh'" >> ~/.bashrc
+source ~/.bashrc
+
+
 maya@Marya:/mnt/e/dev/shin-vps$ vps-import -h
 
 【運用フローのガイド】
