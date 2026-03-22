@@ -2,10 +2,10 @@
 """
 Django settings for tiper_api project.
 
-🛡️ SHIN-VPS v3.6 最終完全統合版 (Workplace/Home Sync)
-- 🚀 blog.*** および phpmyadmin サブドメインを完全に排除
-- 🚀 自宅PC (ポート8083) および本番環境 (HTTPS) の両方に対応
-- 🚀 Traefik リバースプロキシ整合性設定済み
+🛡️ SHIN-VPS v3.7 マルチドメイン完全統合版 (Workplace/Home Sync)
+- 🚀 マルチドメイン判定ミドルウェア搭載
+- 🚀 冗長なサブドメインを排除し、必要なホストのみを厳選
+- 🚀 Traefik リバースプロキシおよびローカル(8083)両対応
 """
 
 import os
@@ -22,39 +22,32 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-default-key-pl
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # ----------------------------------------------------
-# 🌐 ホスト / ドメイン設定 (冗長なサブドメインを排除・ポート8083対応)
+# 🌐 ホスト / ドメイン設定
 # ----------------------------------------------------
 ALLOWED_HOSTS = [
-    # --- 本番ドメイン (サブドメインは api / 管理用のみ維持) ---
+    # --- 本番ドメイン ---
     'tiper.live', 'api.tiper.live', 
     'bicstation.com', 
     'bic-saving.com', 
     'avflash.xyz',
 
-    # --- インフラ・管理ツール (phpmyadminは排除) ---
+    # --- インフラ・管理ツール ---
     'pgadmin.tiper.live', 'logs.tiper.live',
     'django-v3',
     'localhost',
     '127.0.0.1',
 
-    # --- ローカル開発用ドメイン (ポート8083付きを網羅) ---
-    'tiper-host', 'tiper-host:8083',
-    'bicstation-host', 'bicstation-host:8083',
-    'saving-host', 'saving-host:8083',
-    'avflash-host', 'avflash-host:8083',
-    'api-tiper-host', 'api-tiper-host:8083',
+    # --- ローカル開発用ドメイン (ポート8083対応) ---
+    'tiper-host', 'bicstation-host', 'saving-host', 'avflash-host', 'api-tiper-host',
     
     '*' # 安全策としてのワイルドカード
 ]
 
 # ----------------------------------------------------
-# 🔗 CORS / CSRF 設定 (フロントエンド連携用)
+# 🔗 CORS / CSRF 設定
 # ----------------------------------------------------
 CORS_ALLOWED_ORIGINS = [ 
-    # 本番環境
     "https://tiper.live", "https://bicstation.com", "https://bic-saving.com", "https://avflash.xyz",
-    
-    # ローカル開発環境 (Next.js サーバーサイド/クライアントサイド両対応)
     "http://localhost:3000", 
     "http://localhost:8083",
     "http://tiper-host:8083",
@@ -66,7 +59,6 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRFトークンを信頼するオリジン (プロトコル必須、不要なサブドメインは排除済)
 CSRF_TRUSTED_ORIGINS = [
     'https://tiper.live', 'https://api.tiper.live',
     'https://pgadmin.tiper.live', 'https://logs.tiper.live',
@@ -74,7 +66,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://bic-saving.com', 
     'https://avflash.xyz',
     
-    # ローカル開発用
     'http://localhost:3000', 
     'http://localhost:8083', 
     'http://tiper-host:8083',
@@ -82,7 +73,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://saving-host:8083',
     'http://avflash-host:8083',
     'http://api-tiper-host:8083',
-    'http://127.0.0.1:8083', 
 ]
 
 # ----------------------------------------------------
@@ -101,7 +91,7 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_HTTPONLY = True
 
 # ----------------------------------------------------
-# アプリケーション定義
+# ⚙️ アプリケーション定義
 # ----------------------------------------------------
 INSTALLED_APPS = [
     'corsheaders', 
@@ -123,6 +113,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 🚀 ここにマルチドメイン判定を追加 (セッション開始前が望ましい)
+    'tiper_api.middleware.MultiDomainProjectMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -165,7 +157,7 @@ DATABASES = {
 }
 
 # ----------------------------------------------------
-# 🔑 外部API認証情報 (DUGA / FANZA)
+# 🔑 外部API認証情報
 # ----------------------------------------------------
 API_CONFIG = {
     'DUGA': {
@@ -215,7 +207,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10, 
+    'PAGE_SIZE': 12, 
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',

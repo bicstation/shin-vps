@@ -1,9 +1,9 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v3.5 安定化・高スループット版 (Traefik & Gunicorn Optimized)
+# 🛡️ SHIN-VPS v3.8 マルチドメイン・ローカル開発完全版 (Traefik 8083対応)
 # =====================================================================
 
 services:
-  # --- 0. Traefik (管制塔: タイムアウト耐性強化) ---
+  # --- 0. Traefik (管制塔: 8083窓口から複数ホストを識別) ---
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy-v3
@@ -14,17 +14,16 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--accesslog=true"
-      # タイムアウト対策の微調整
       - "--entrypoints.web.transport.respondingtimeouts.idletimeout=90s"
     ports:
-      - "8083:80"      # メイン窓口
+      - "8083:80"      # ローカルメイン窓口
       - "8085:8080"    # Traefik ダッシュボード
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - shared-proxy
 
-  # --- 1. データベース層 ---
+  # --- 1. データベース層 (PostgreSQL) ---
   postgres-db-v3:
     image: postgres:15-alpine
     container_name: postgres-db-v3
@@ -43,14 +42,13 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- 2. バックエンド層 (Django: マルチワーカー・高速応答設定) ---
+  # --- 2. バックエンド層 (Django: ドメイン判定ミドルウェア対応) ---
   django-v3:
     build:
       context: .
       dockerfile: ./django/Dockerfile
     container_name: django-v3
     restart: always
-    # 🌟 修正: 窓口を5つに増やし、マルチスレッドで4サイト同時アクセスに耐える設定
     command: >
       gunicorn tiper_api.wsgi:application
       --bind 0.0.0.0:8000
@@ -68,11 +66,11 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     labels:
       - "traefik.enable=true"
-      # ルーティング設定
-      - "traefik.http.routers.django-api.rule=(HostRegexp(`{sub:[a-z-]+}-host`) || HostRegexp(`{sub:[a-z-]+}.live`) || HostRegexp(`{sub:[a-z-]+}.com`)) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`) || PathPrefix(`/blog`))"
+      # 🚀 修正: API専用ホスト(api-*-host)をルーティングルールに完全網羅
+      - "traefik.http.routers.django-api.rule=Host(`api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`, `api-tiper-host`, `api-bicstation-host`, `api-avflash-host`, `api-saving-host`, `django-v3`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-api.priority=3000"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
-      # 🌟 修正: 謎のストリーム攻撃(events/stream)をTraefik側で無視してDjangoを守る
+      # 🛡️ 不審なストリーム攻撃の遮断
       - "traefik.http.routers.django-blocker.rule=PathPrefix(`/api/events/stream`) || PathPrefix(`/api/releases`)"
       - "traefik.http.routers.django-blocker.priority=10000"
       - "traefik.http.routers.django-blocker.middlewares=block-errors"
@@ -92,7 +90,8 @@ services:
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bicstation
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        # 🔗 各フロントエンドが「自分の専用API窓口」を叩くように設定
+        NEXT_PUBLIC_API_URL: http://api-bicstation-host:8083/api
     container_name: next-bicstation-v3
     restart: always
     env_file: .env
@@ -117,7 +116,7 @@ services:
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-tiper
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_API_URL: http://api-tiper-host:8083/api
     container_name: next-tiper-v3
     restart: always
     env_file: .env
@@ -142,7 +141,7 @@ services:
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bic-saving
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_API_URL: http://api-saving-host:8083/api
     container_name: next-bic-saving-v3
     restart: always
     env_file: .env
@@ -167,7 +166,7 @@ services:
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-avflash
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_API_URL: http://api-avflash-host:8083/api
     container_name: next-avflash-v3
     restart: always
     env_file: .env

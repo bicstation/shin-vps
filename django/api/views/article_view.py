@@ -10,9 +10,10 @@ from ..serializers import ArticleSerializer
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """
-    4サイト（tiper, avflash, bicstation, saving）統合記事のAPI
-    - site フィールドにより、各プロジェクトごとの記事を厳格に分離
-    - サイト別、投稿/ニュース別でのフィルタリングに対応
+    🚀 4サイト（tiper, avflash, bicstation, saving）統合記事のAPI
+    [マルチドメイン完全隔離版]
+    - ミドルウェアで判定された project_id に基づき、表示する記事を自動で切り替えます。
+    - これにより、PCサイト(BICSTATION)にアダルト記事が混入するリスクをゼロにします。
     """
     serializer_class = ArticleSerializer
     
@@ -24,39 +25,54 @@ class ArticleViewSet(viewsets.ModelViewSet):
     ]
     
     # 🔗 クエリパラメータでの絞り込み設定
-    # モデルの site フィールドを直接対象にする
-    filterset_fields = ['site', 'content_type', 'is_exported']
+    # ※ site は get_queryset で自動付与されるため、基本的には content_type 等を指定
+    filterset_fields = ['content_type', 'is_exported']
     
     # 🔍 キーワード検索（タイトルと本文を対象）
     search_fields = ['title', 'body_text']
     
-    # 🔃 並び替え（デフォルトは作成日の降順）
+    # 🔃 並び替え
     ordering_fields = ['created_at', 'updated_at']
     ordering = ['-created_at']
 
     def get_queryset(self):
         """
-        🌟 修正: プロジェクト分離ロジック（siteカラム基準）
-        Next.jsからの ?project=xxx というパラメータを
-        モデルの 'site' フィールドと完全に一致させてフィルタリングします。
+        🌟 修正: ドメインベースの自動プロジェクト分離
+        ミドルウェアがセットした request.project_id を使用します。
         """
+        # 1. 基礎となるクエリセット
         queryset = Article.objects.all()
         
-        # URLパラメータから project 名（site名）を取得
-        project_slug = self.request.query_params.get('project')
+        # 2. ミドルウェアから判定済みプロジェクトIDを取得
+        project_id = getattr(self.request, 'project_id', None)
         
-        if project_slug:
-            # 🛡️ 門番：モデルの 'site' カラムが一致するものだけに絞る
-            # これにより、[livedoor_virgin] 等の別サイト記事は物理的に排除されます
-            queryset = queryset.filter(site=project_slug)
-        
+        # 3. 強制フィルタリング
+        # クエリパラメータで ?project=... と送られてきても、
+        # ドメイン判定 (project_id) が存在する場合はそちらを「絶対」として優先します。
+        if project_id and project_id != 'default':
+            # モデルの 'site' フィールドがドメインと一致するものだけに絞る
+            # 例: bicstation.com からのアクセスなら site='bicstation' の記事のみ
+            queryset = queryset.filter(site=project_id)
+        else:
+            # プロジェクトが特定できない（直IPアクセス等）場合、
+            # クエリパラメータの project を予備としてチェック
+            project_slug = self.request.query_params.get('project')
+            if project_slug:
+                queryset = queryset.filter(site=project_slug)
+
         return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         """
         保存時のフック
+        作成時、現在のドメインに基づいて自動的に site フィールドを埋めることも可能です。
         """
-        serializer.save()
+        project_id = getattr(self.request, 'project_id', 'default')
+        # 保存時に site が未指定なら、現在のプロジェクト名を自動セット
+        if project_id != 'default':
+            serializer.save(site=project_id)
+        else:
+            serializer.save()
 
     @action(detail=False, methods=['post'], url_path='bulk-export-done')
     def bulk_mark_as_exported(self, request):
@@ -71,7 +87,13 @@ class ArticleViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        updated_count = Article.objects.filter(id__in=ids).update(is_exported=True)
+        # セキュリティ強化: 自分のプロジェクトに属する記事のみを更新可能にする
+        project_id = getattr(self.request, 'project_id', None)
+        update_filter = {"id__in": ids}
+        if project_id and project_id != 'default':
+            update_filter["site"] = project_id
+
+        updated_count = Article.objects.filter(**update_filter).update(is_exported=True)
         
         return Response({
             "status": "success",
@@ -85,5 +107,8 @@ class ArticleViewSet(viewsets.ModelViewSet):
         特定のURLが既にDBに存在するかチェック
         """
         url = request.query_params.get('url')
+        if not url:
+            return Response({"error": "urlを指定してください。"}, status=400)
+            
         exists = Article.objects.filter(source_url=url).exists()
         return Response({"exists": exists, "source_url": url})
