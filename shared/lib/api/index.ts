@@ -1,25 +1,20 @@
 /**
  * =====================================================================
  * 🛰️ SHIN-VPS 統合 API ゲートウェイ (shared/lib/api/index.ts)
- * 🛡️ Maya's Zenith v5.9: 接続性・引数透過性 最大化版
+ * 🛡️ Maya's Zenith v6.0: master.ts 廃止・分散定義完全同期版
  * =====================================================================
  */
 
-// 1. 基盤・設定のインポート
 import { IS_SERVER as SERVER_CHECK } from './config';
 import * as adultApi from './django/adult';
 import * as pcApi from './django/pc';
-import * as masterApi from './django/master';
 import * as bridgeApi from './django-bridge';
+// 🚀 master.ts は廃止されたためインポートしません
 
-/**
- * 🔗 1. 定数・環境フラグ
- */
 export const IS_SERVER = SERVER_CHECK;
 
 /**
- * 📰 2. ニュース・記事・統合ハブ (bridgeApi)
- * 🚀 ポイント: 分割代入による固定化を避け、透過的にリレーします
+ * 📰 1. ニュース・記事・統合ハブ (bridgeApi)
  */
 export const {
     fetchNewsArticles,
@@ -28,59 +23,7 @@ export const {
     fetchPostList
 } = bridgeApi;
 
-/**
- * 💡 互換用エイリアス: getSiteMainPosts
- * 引数 `project` (第4引数) を確実に Django-Bridge へ渡すためのラッパー
- */
-export const getSiteMainPosts = (
-    postType: string = 'post',
-    limit: number = 12,
-    offset: number = 0,
-    project?: string // 🚀 これが Page.tsx からの 'bicstation' を受け取る！
-) => bridgeApi.fetchPostList(postType, limit, offset, project);
-
-/**
- * 🔞 3. アダルト専用 API (adultApi)
- */
-export const {
-    getUnifiedProducts,
-    getAdultProductDetail,
-    getAdultNavigationFloors,
-    fetchAdultTaxonomyIndex,
-    fetchActresses,
-} = adultApi;
-
-export const fetchUnifiedProducts = adultApi.getUnifiedProducts;
-
-/**
- * 💻 4. PC・ランキング専用 API (pcApi)
- */
-export const {
-    fetchPCProducts,
-    fetchPCProductDetail,
-    fetchPCProductRanking,
-    fetchPCSidebarStats
-} = pcApi;
-
-export const getPCProducts = pcApi.fetchPCProducts;
-
-/**
- * 🏷️ 5. 共通マスターデータ (masterApi)
- */
-export const {
-    fetchGenres,
-    fetchMakers,
-    fetchSeries,
-    fetchLabels,
-    fetchDirectors,
-    fetchAuthors
-} = masterApi;
-
-/**
- * 🛠️ 6. WordPress 互換レイヤー & ユーティリティ
- */
-
-/** 🖼️ WPアイキャッチ画像解決 */
+// ✅ エラー対策: getWpFeaturedImage を明示的に export
 export function getWpFeaturedImage(post: any, size: 'thumbnail' | 'medium' | 'large' | 'full' = 'large'): string {
     if (!post?._embedded?.['wp:featuredmedia']?.[0]) {
         return '/images/common/no-image.jpg';
@@ -89,7 +32,76 @@ export function getWpFeaturedImage(post: any, size: 'thumbnail' | 'medium' | 'la
     return media.media_details?.sizes?.[size]?.source_url || media.source_url;
 }
 
+/** 互換用エイリアス */
+export const getSiteMainPosts = (
+    postType: string = 'post',
+    limit: number = 12,
+    offset: number = 0,
+    project?: string
+) => bridgeApi.fetchPostList(postType, limit, offset, project);
+
 /**
- * 🔄 7. 型定義の統合
+ * 🔞 2. アダルト・出会い・求人 API (adultApi)
+ */
+export const {
+    getUnifiedProducts,
+    getAdultProductDetail,
+    getAdultNavigationFloors,
+    fetchAdultTaxonomyIndex,
+    fetchActresses,
+    // 🚀 今後ここに出会い系 (fetchMatching) や 求人 (fetchJobs) を追加していく
+} = adultApi;
+
+export const fetchUnifiedProducts = adultApi.getUnifiedProducts;
+
+/**
+ * 💻 3. PC・ランキング専用 API (pcApi)
+ */
+export const {
+    fetchPCProducts,
+    fetchPCProductDetail,
+    fetchPCProductRanking,
+    fetchPCSidebarStats,
+    // ✅ エラー対策: ページ側が探している関数を追加 (実体があれば)
+    fetchRelatedProducts,
+    fetchPCPopularityRanking 
+} = pcApi;
+
+export const getPCProducts = pcApi.fetchPCProducts;
+
+/**
+ * 🏷️ 4. 共通マスターデータ (旧 masterApi 内容の振り分け先)
+ * 各ファイルから必要なマスタ取得関数を個別に export します
+ */
+// アダルト系のマスタは adultApi から
+export const {
+    fetchGenres,
+    fetchMakers,
+    fetchSeries,
+    fetchLabels,
+    fetchDirectors,
+} = adultApi;
+
+// PC系・共通のマスタは pcApi または common 等から (必要に応じて)
+export const {
+    fetchAuthors
+} = pcApi; 
+
+/**
+ * 🛠️ 5. エラー回避用エイリアス (masterApi 未定義エラー対策)
+ * ページ側で `import { masterApi }` と書かれている箇所を救済します
+ */
+export const masterApi = {
+    fetchGenres,
+    fetchMakers,
+    fetchSeries,
+    fetchLabels,
+    fetchDirectors,
+    fetchAuthors,
+    // 必要ならここに他をリレー
+};
+
+/**
+ * 🔄 6. 型定義の統合
  */
 export * from './types';

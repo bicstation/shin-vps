@@ -1,5 +1,5 @@
 # =====================================================================
-# 🚀 SHIN-VPS NEXT.JS 共通 Dockerfile (v3.5 パス解決・完全版)
+# 🚀 SHIN-VPS NEXT.JS 共通 Dockerfile (v3.6 パス解決・完全版)
 # =====================================================================
 
 # --- ステージ 1: ビルドステージ ---
@@ -16,7 +16,9 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ✅ 2. package.json のコピー (各プロジェクトフォルダから取得)
+# ここで tsconfig.json も確実に含めるため、ワイルドカードや個別コピーを検討
 COPY ${PROJECT_NAME}/package*.json ./
+COPY ${PROJECT_NAME}/tsconfig*.json ./
 
 # ✅ 3. 全依存関係のインストール
 RUN npm install --frozen-lockfile || npm install
@@ -26,15 +28,19 @@ RUN npm install @google/generative-ai lucide-react clsx tailwind-merge \
     gray-matter remark remark-html --save
 
 # ✅ 5. 全ソースコードの依存関係をコピー
-# 各プロジェクト固有のソース
+# 各プロジェクト固有のソースを展開
 COPY ${PROJECT_NAME}/ ./
 
 # 📁 共通ロジック (APIクライアント等)
 COPY shared/ ./shared/
 
 # 📁 重要: Django側のマスタデータ・型定義の参照を解決するためにコピー
-# PC製品、スマホ、アダルト、すべての型解決に必要です
 COPY django/ ./django/
+
+# 🛠️ 【パス解決の追加】
+# shared/lib/api/index.ts 等から '../django/master' を見つけやすくするため
+# 物理的な階層を一致させるシンボリックリンクを作成
+RUN ln -s /app/django /app/shared/django || true
 
 # 6. 環境変数の注入
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL

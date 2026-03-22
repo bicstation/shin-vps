@@ -10,20 +10,20 @@
     "esModuleInterop": true,
     "module": "esnext",
     
-    /* ✅ 1. Next.js 15 の推奨設定: bundler 解決により shared パッケージ等の解決を安定化 */
+    /* ✅ 1. Next.js 15 推奨: bundler 解決 */
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
 
-    /* ✅ 2. ベースディレクトリ設定 (shared を含む親階層から見たルート) */
+    /* ✅ 2. ベースディレクトリ設定 */
     "baseUrl": ".",
 
-    /* ✅ 3. 新しい Atomic Design 構造に基づいたエイリアス定義 */
-    /* これにより、インポートが `@shared/atoms/Button` のように爆速で書けます */
+    /* ✅ 3. エイリアス定義 (django を追加) */
     "paths": {
       "@/*": ["./*"],
+      "@django/*": ["django/*"],
       "@shared/*": ["shared/*"],
       "@shared/components/*": ["shared/components/*"],
       "@shared/atoms/*": ["shared/components/atoms/*"],
@@ -38,14 +38,15 @@
     }
   },
 
-  /* ✅ 4. ビルド・型チェック対象の包括的設定 */
+  /* ✅ 4. ビルド・型チェック対象 (django を追加) */
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
     
-    /* 共通ディレクトリ内の整理された全アセットを明示的に含める */
+    /* 外部ディレクトリの定義を明示的に含める */
+    "django/**/*.ts",
     "shared/components/**/*.ts",
     "shared/components/**/*.tsx",
     "shared/lib/**/*.ts",
