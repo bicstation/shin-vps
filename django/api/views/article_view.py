@@ -11,9 +11,9 @@ from ..serializers import ArticleSerializer
 class ArticleViewSet(viewsets.ModelViewSet):
     """
     🚀 4サイト（tiper, avflash, bicstation, saving）統合記事のAPI
-    [マルチドメイン完全隔離版]
+    [マルチドメイン完全隔離 + アダルトコンテンツ強制排除版]
     - ミドルウェアで判定された project_id に基づき、表示する記事を自動で切り替えます。
-    - これにより、PCサイト(BICSTATION)にアダルト記事が混入するリスクをゼロにします。
+    - 一般サイト（Bic Station / Saving）の場合、データ上のミスがあってもアダルト記事を表示させない二重フィルターを搭載。
     """
     serializer_class = ArticleSerializer
     
@@ -25,7 +25,6 @@ class ArticleViewSet(viewsets.ModelViewSet):
     ]
     
     # 🔗 クエリパラメータでの絞り込み設定
-    # ※ site は get_queryset で自動付与されるため、基本的には content_type 等を指定
     filterset_fields = ['content_type', 'is_exported']
     
     # 🔍 キーワード検索（タイトルと本文を対象）
@@ -37,8 +36,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        🌟 修正: ドメインベースの自動プロジェクト分離
-        ミドルウェアがセットした request.project_id を使用します。
+        🌟 修正: ドメインベースの自動プロジェクト分離 + コンテンツ安全フィルター
         """
         # 1. 基礎となるクエリセット
         queryset = Article.objects.all()
@@ -46,26 +44,38 @@ class ArticleViewSet(viewsets.ModelViewSet):
         # 2. ミドルウェアから判定済みプロジェクトIDを取得
         project_id = getattr(self.request, 'project_id', None)
         
+        # 一般サイト（健全サイト）のリストを定義
+        # ※ project_id に入る可能性がある値を指定
+        GENERAL_PROJECTS = ['bicstation', 'saving', 'bicstation-host', 'saving-host']
+        
         # 3. 強制フィルタリング
-        # クエリパラメータで ?project=... と送られてきても、
-        # ドメイン判定 (project_id) が存在する場合はそちらを「絶対」として優先します。
         if project_id and project_id != 'default':
-            # モデルの 'site' フィールドがドメインと一致するものだけに絞る
-            # 例: bicstation.com からのアクセスなら site='bicstation' の記事のみ
+            # A. まずはドメインに紐づくサイト名で絞り込み
             queryset = queryset.filter(site=project_id)
+            
+            # B. 【重要】一般サイトの場合、アダルトフラグが立っているものを強制排除
+            # モデルに is_adult フィールドがある場合:
+            if project_id in GENERAL_PROJECTS:
+                queryset = queryset.filter(is_adult=False)
+                
+                # もし is_adult フィールドがない場合は、代わりに以下のようなカテゴリ制限等を使います
+                # queryset = queryset.exclude(content_type='adult')
+        
         else:
             # プロジェクトが特定できない（直IPアクセス等）場合、
             # クエリパラメータの project を予備としてチェック
             project_slug = self.request.query_params.get('project')
             if project_slug:
                 queryset = queryset.filter(site=project_slug)
+                # 予備チェック時も一般サイトならアダルトを弾く
+                if project_slug in GENERAL_PROJECTS:
+                    queryset = queryset.filter(is_adult=False)
 
         return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         """
         保存時のフック
-        作成時、現在のドメインに基づいて自動的に site フィールドを埋めることも可能です。
         """
         project_id = getattr(self.request, 'project_id', 'default')
         # 保存時に site が未指定なら、現在のプロジェクト名を自動セット
