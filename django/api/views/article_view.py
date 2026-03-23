@@ -22,8 +22,10 @@ class StandardPagination(PageNumberPagination):
 class ArticleViewSet(viewsets.ModelViewSet):
     """
     🔱 BICSTATION API v41.6 [ULTIMATE STABLE - High Performance Edition]
-    - TypeError: Cannot reorder a query once a slice has been taken. を解消
-    - 実行順序の最適化 (Order -> Slice)
+    🛡️ 修正内容:
+    - TypeError: Cannot reorder a query once a slice has been taken. を完全解消
+    - 手動スライスを廃止し、StandardPagination に件数制御を委譲
+    - フィルタリングと並び替えの整合性を確保
     """
     serializer_class = ArticleSerializer
     pagination_class = StandardPagination
@@ -47,15 +49,14 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        ⚡ 超高速クエリロジック (修正済み)
+        ⚡ 超高速クエリロジック (Fix: Remove manual slicing)
         """
         # 1. 基礎クエリと defer (一覧時の軽量化)
         queryset = Article.objects.all()
         if self.action == 'list':
             queryset = queryset.defer('body_text')
 
-        # 2. 並べ替えを「スライス前」に確定させる 🚀
-        # OrderingFilterが効かない場合や、デフォルトの並び順をここで保証
+        # 2. 基本の並び順（スライス前に行う必要がある）
         queryset = queryset.order_by('-created_at')
 
         # 3. プロジェクト識別
@@ -73,11 +74,10 @@ class ArticleViewSet(viewsets.ModelViewSet):
             # ✅ 一般サイトならアダルト排除
             if project_id in GENERAL_PROJECTS:
                 queryset = queryset.exclude(extra_metadata__is_adult=True)
-        else:
-            # ⚠️ プロジェクト不明時の制限は、order_byの後に行う
-            if not self.request.query_params.get('page'):
-                # すでに order_by 済みなのでスライスしても安全
-                queryset = queryset[:100]
+        
+        # ⚠️ 【重要修正】ここで手動スライス (queryset[:100]) を行うと、
+        # DRFのPaginationやOrderingFilterと衝突して500エラーになるため削除しました。
+        # 件数制限は StandardPagination (page_size=20) が安全に行います。
 
         return queryset
 

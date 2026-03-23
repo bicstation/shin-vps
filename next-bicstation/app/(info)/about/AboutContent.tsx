@@ -32,7 +32,7 @@ function AboutPageContent() {
     <StaticPageLayout 
       title="About BICSTATION"
       description="私たちは「納得感のあるガジェット選び」を加速させるための、技術と情報のステーションです。"
-      lastUpdated="2026年1月26日"
+      lastUpdated="2026年3月24日"
       toc={toc}
     >
       <section id="mission">

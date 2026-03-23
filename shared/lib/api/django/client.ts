@@ -36,7 +36,8 @@ export const resolveApiUrl = (endpoint: string) => {
             const shortName = rawProject.replace('next-', ''); // "next-bicstation" -> "bicstation"
             
             // 3. ローカルPCのTraefikを通る内部ホスト名を動的に組み立て (8083ポート経由)
-            baseUrl = `http://api-${shortName}-host:8083`;
+            // baseUrl = `http://api-${shortName}-host:8083`;
+            baseUrl = `http://django-v3:8000`;
         }
     } else {
         /**

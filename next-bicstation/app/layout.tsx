@@ -39,6 +39,7 @@ const inter = Inter({
  */
 export const metadata: Metadata = {
   title: "BICSTATION - PCカタログ",
+  // title: "1111111111 - 接続テスト", // ここを書き換える
   description: "PC専門ポータルサイト",
   other: {
     "google-adsense-account": "ca-pub-9068876333048216",
@@ -57,8 +58,8 @@ export const viewport: Viewport = {
 /**
  * 💡 実行設定
  */
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// export const dynamic = 'force-dynamic';
+// export const revalidate = 0;
 
 export default async function RootLayout({
   children,

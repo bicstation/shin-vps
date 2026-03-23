@@ -1,9 +1,10 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v3.8 マルチドメイン・ローカル開発完全版 (Traefik 8083対応)
+# 🛡️ SHIN-VPS v3.9 [Next.js ホットリロード対応・同期修正版]
 # ---------------------------------------------------------------------
 # 🚀 修正内容:
-# 1. django-blocker のエラーを解消 (service: noop@internal を採用)
-# 2. 不要になった不完全な middlewares 定義を削除
+# 1. 各 Next.js コンテナの volumes に本体ディレクトリを追加し、同期を有効化
+# 2. django-v3 のルーティング優先順位を整理
+# 3. node_modules の重複マウントを避けるための定義を追加
 # =====================================================================
 
 services:
@@ -70,16 +71,12 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     labels:
       - "traefik.enable=true"
-      # 🚀 API専用ホストのルーティング
       - "traefik.http.routers.django-api.rule=Host(`api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`, `api-tiper-host`, `api-bicstation-host`, `api-avflash-host`, `api-saving-host`, `django-v3`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-api.priority=3000"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
-
-      # 🛡️ 不審なストリーム攻撃の遮断 (修正箇所: noop@internal を使用)
       - "traefik.http.routers.django-blocker.rule=PathPrefix(`/api/events/stream`) || PathPrefix(`/api/releases`)"
       - "traefik.http.routers.django-blocker.priority=10000"
       - "traefik.http.routers.django-blocker.service=noop@internal"
-      - "traefik.http.routers.django-blocker.entrypoints=web"
     volumes:
       - ./django:/usr/src/app
       - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
@@ -104,7 +101,9 @@ services:
       - NEXT_PUBLIC_SITE_DOMAIN=bicstation-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./shared:/usr/src/app/shared
+      - ./next-bicstation:/usr/src/app         # 👈 【重要】ここが欠けていました
+      - ./shared:/usr/src/app/shared           # 共通ライブラリ
+      - /usr/src/app/node_modules              # ホストのnode_modulesを無視してコンテナ内のものを使用
     networks:
       - shared-proxy
       - internal-net
@@ -120,7 +119,6 @@ services:
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-tiper
-        NEXT_PUBLIC_API_URL: http://api-tiper-host:8083/api
     container_name: next-tiper-v3
     restart: always
     env_file: .env
@@ -129,7 +127,9 @@ services:
       - NEXT_PUBLIC_SITE_DOMAIN=tiper-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
+      - ./next-tiper:/usr/src/app              # 👈 【重要】
       - ./shared:/usr/src/app/shared
+      - /usr/src/app/node_modules
     networks:
       - shared-proxy
       - internal-net
@@ -145,7 +145,6 @@ services:
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bic-saving
-        NEXT_PUBLIC_API_URL: http://api-saving-host:8083/api
     container_name: next-bic-saving-v3
     restart: always
     env_file: .env
@@ -154,7 +153,9 @@ services:
       - NEXT_PUBLIC_SITE_DOMAIN=saving-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
+      - ./next-bic-saving:/usr/src/app         # 👈 【重要】
       - ./shared:/usr/src/app/shared
+      - /usr/src/app/node_modules
     networks:
       - shared-proxy
       - internal-net
@@ -170,7 +171,6 @@ services:
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-avflash
-        NEXT_PUBLIC_API_URL: http://api-avflash-host:8083/api
     container_name: next-avflash-v3
     restart: always
     env_file: .env
@@ -179,7 +179,9 @@ services:
       - NEXT_PUBLIC_SITE_DOMAIN=avflash-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
+      - ./next-avflash:/usr/src/app            # 👈 【重要】
       - ./shared:/usr/src/app/shared
+      - /usr/src/app/node_modules
     networks:
       - shared-proxy
       - internal-net
@@ -196,23 +198,20 @@ services:
     restart: always
     env_file: .env
     environment:
-      # .env にない場合のフォールバック（接続できないと起動しないため）
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-bicstation@gmail.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-1402nabe}
-      PGADMIN_CONFIG_SERVER_MODE: 'False' # ローカルシングルユーザーモード
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
     networks:
       - shared-proxy
       - internal-net
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin-host`)"
-      - "traefik.http.routers.pgadmin-router.entrypoints=web"
       - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
 
   dozzle-v3:
     image: amir20/dozzle:latest
     container_name: dozzle-v3
-    # user: root  # 👈 これを追記
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
@@ -222,12 +221,17 @@ services:
       - "traefik.http.routers.dozzle-router.rule=Host(`log-host`)"
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
     environment:
-      - DOZZLE_FILTER=status=running  # 起動中のコンテナだけに絞る（任意）
-      - DOCKER_HOST=unix:///var/run/docker.sock # ソケットパスを明示
+      - DOCKER_HOST=unix:///var/run/docker.sock
 
 networks:
   internal-net:
     name: "shin-vps_internal-net"
+    driver: bridge
+    enable_ipv6: false  # 💡 職場と自宅の環境差（IPv6有効/無効）による衝突を強制回避
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 # 必要に応じてサブネットを固定するとさらに安定します
+
   shared-proxy:
     external: true
     name: "shared-proxy"
