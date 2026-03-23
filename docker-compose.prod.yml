@@ -1,10 +1,10 @@
 # =====================================================================
 # 🛡️ SHIN-VPS v3.9 (VPS Production Optimized / Multi-Domain API)
 # ---------------------------------------------------------------------
-# 【修正のポイント】
-# 1. 各Next.jsサービスのビルド引数(args)と環境変数(env)をドメインごとに完全分離
-# 2. .env 内の共通 NEXT_PUBLIC_API_URL に依存せず、混信を物理的に排除
-# 3. Traefik の SSL 判定およびルーティングを 4ドメイン + サブドメインで最適化
+# 【主な最適化】
+# 1. 各Next.jsのビルド引数(args)を完全に分離。ビルド時にAPI URLを静的に注入。
+# 2. TraefikによるSSL管理とドメインベースのルーティングを全サービスで統一。
+# 3. 監視・ログ・DB管理ツールを専用サブドメインで保護・公開。
 # =====================================================================
 
 version: '3.8'
@@ -48,7 +48,7 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 1. データベース層 (Postgres 15 - v3)
+  # 1. データベース層 (Postgres 15)
   # ---------------------------------------------------------------------
   postgres-db-v3:
     image: postgres:15-alpine
@@ -69,7 +69,7 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------------
-  # 2. バックエンド層 (Django API - v3)
+  # 2. バックエンド層 (Django API)
   # ---------------------------------------------------------------------
   django-v3:
     build:
@@ -88,7 +88,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # 全ドメインのAPIとAdminをここへ集約（ドメイン判定ミドルウェアが振り分け実行）
       - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.tls.certresolver=le"
@@ -102,10 +101,10 @@ services:
       - shared-proxy
 
   # ---------------------------------------------------------------------
-  # 3. フロントエンド層 (Next.js 各ドメイン - v3)
+  # 3. フロントエンド層 (Next.js マルチドメイン)
   # ---------------------------------------------------------------------
   
-  # BICSTATION (PC/IT)
+  # BICSTATION
   next-bicstation-v3:
     build:
       context: .
@@ -133,7 +132,7 @@ services:
       - internal-net
       - shared-proxy
 
-  # Tiper.Live (General)
+  # Tiper.Live
   next-tiper-v3:
     build:
       context: .
@@ -160,7 +159,7 @@ services:
       - internal-net
       - shared-proxy
 
-  # BIC-SAVING (Mobile/Life)
+  # BIC-SAVING
   next-bic-saving-v3:
     build:
       context: .
@@ -187,7 +186,7 @@ services:
       - internal-net
       - shared-proxy
 
-  # AVFLASH (Adult)
+  # AVFLASH
   next-avflash-v3:
     build:
       context: .
@@ -298,6 +297,8 @@ networks:
   internal-net:
     driver: bridge
   shared-proxy:
+    # 外部のTraefik用共通ネットワークを参照
+    # 事前に docker network create shin-vps_shared-proxy が必要
     name: shin-vps_shared-proxy
     external: true
 
