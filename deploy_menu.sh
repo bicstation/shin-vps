@@ -78,7 +78,7 @@ while true; do
             echo -e "  1) ALL (全ブログ)"
             echo -e "  2) Livedoor"
             echo -e "  3) Blogger"
-            echo -e "  4) WordPress (自作MVC API)"
+            echo -e "  4) hatena"
             echo -n "  SELECT PLATFORM >> "
             read plat_choice
             
@@ -86,7 +86,7 @@ while true; do
                 1) deploy_mission $PROJ "" ;;
                 2) deploy_mission $PROJ "livedoor" ;;
                 3) deploy_mission $PROJ "blogger" ;;
-                4) deploy_mission $PROJ "wp" ;;
+                4) deploy_mission $PROJ "hatena" ;;
                 *) echo -e "${R}⚠️ 無効な選択です${NC}" ; sleep 1 ;;
             esac
             ;;

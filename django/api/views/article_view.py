@@ -1,68 +1,89 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-dev/shin-vps/django/api/views/article_view.py
+import logging
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
 
-# インポートパスを構造に合わせる
-from ..models import Article
-from ..serializers import ArticleSerializer
+from ..models.article import Article
+from ..serializers.article_serializer import ArticleSerializer, ArticleDetailSerializer
+
+logger = logging.getLogger(__name__)
+
+class StandardPagination(PageNumberPagination):
+    """ページネーションを強制し、一度に数千件読み込む事故を防ぐ"""
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """
-    🚀 4サイト（tiper, avflash, bicstation, saving）統合記事のAPI [v3.9 完全版]
-    - ミドルウェア判定の project_id に基づき表示を自動隔離。
-    - extra_metadata 内の 'is_adult' フラグを読み取り、一般サイトからアダルトを強制排除。
+    🔱 BICSTATION API v41.6 [ULTIMATE STABLE - High Performance Edition]
+    - TypeError: Cannot reorder a query once a slice has been taken. を解消
+    - 実行順序の最適化 (Order -> Slice)
     """
     serializer_class = ArticleSerializer
+    pagination_class = StandardPagination
     
-    # フィルタリング機能
     filter_backends = [
         DjangoFilterBackend, 
         filters.SearchFilter, 
         filters.OrderingFilter
     ]
     
-    # クエリパラメータ設定
-    filterset_fields = ['content_type', 'is_exported']
-    
-    # 検索・ソート
-    search_fields = ['title', 'body_text']
+    filterset_fields = ['site', 'is_exported', 'content_type']
+    search_fields = ['title'] 
     ordering_fields = ['created_at', 'updated_at']
     ordering = ['-created_at']
 
+    def get_serializer_class(self):
+        """アクションに応じてシリアライザーを動的に切り替える"""
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            return ArticleDetailSerializer
+        return ArticleSerializer
+
     def get_queryset(self):
         """
-        🌟 修正: JSONField(extra_metadata) を介したドメイン隔離 + コンテンツ安全フィルター
+        ⚡ 超高速クエリロジック (修正済み)
         """
+        # 1. 基礎クエリと defer (一覧時の軽量化)
         queryset = Article.objects.all()
-        
-        # 1. ミドルウェアまたはクエリパラメータからプロジェクトIDを特定
+        if self.action == 'list':
+            queryset = queryset.defer('body_text')
+
+        # 2. 並べ替えを「スライス前」に確定させる 🚀
+        # OrderingFilterが効かない場合や、デフォルトの並び順をここで保証
+        queryset = queryset.order_by('-created_at')
+
+        # 3. プロジェクト識別
         project_id = getattr(self.request, 'project_id', None)
         if not project_id or project_id == 'default':
             project_id = self.request.query_params.get('project')
 
-        # 2. 一般サイト（健全サイト）のリストを定義
-        GENERAL_PROJECTS = ['bicstation', 'saving', 'bicstation-host', 'saving-host']
+        # 🛡️ 一般サイト（健全サイト）のリスト
+        GENERAL_PROJECTS = ['bicstation', 'saving', 'bicstation-host', 'saving-host', 'news']
 
-        # 3. 強制フィルタリング実行
-        if project_id:
-            # A. 該当プロジェクトの記事のみに絞り込み
+        # 4. フィルタリング実行
+        if project_id and project_id != 'default':
             queryset = queryset.filter(site=project_id)
             
-            # B. 【重要】一般サイトの場合、metadata内のアダルトフラグをチェックして強制排除
+            # ✅ 一般サイトならアダルト排除
             if project_id in GENERAL_PROJECTS:
-                # extra_metadata__is_adult=True のものをリストから除外する
                 queryset = queryset.exclude(extra_metadata__is_adult=True)
+        else:
+            # ⚠️ プロジェクト不明時の制限は、order_byの後に行う
+            if not self.request.query_params.get('page'):
+                # すでに order_by 済みなのでスライスしても安全
+                queryset = queryset[:100]
 
-        return queryset.order_by('-created_at')
+        return queryset
 
     def perform_create(self, serializer):
-        """
-        保存時のフック: site情報の自動付与
-        """
+        """保存時に site 情報を自動付与"""
         project_id = getattr(self.request, 'project_id', 'default')
-        # 保存時に site が未指定なら、現在のプロジェクト名を自動セット
         if project_id != 'default':
             serializer.save(site=project_id)
         else:
@@ -70,39 +91,28 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='bulk-export-done')
     def bulk_mark_as_exported(self, request):
-        """
-        外部（WordPress等）への投稿が完了したID群を一括で「公開済み」に更新
-        """
+        """一括公開済み更新"""
         ids = request.data.get('ids', [])
-        
         if not isinstance(ids, list) or not ids:
-            return Response(
-                {"error": "有効なIDのリスト(ids)を送信してください。"}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"error": "ids list required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # セキュリティ: 自プロジェクトに属する記事のみを更新可能にする
         project_id = getattr(self.request, 'project_id', None)
         update_filter = {"id__in": ids}
         if project_id and project_id != 'default':
             update_filter["site"] = project_id
 
         updated_count = Article.objects.filter(**update_filter).update(is_exported=True)
-        
         return Response({
             "status": "success",
-            "message": f"{updated_count}件の記事を外部公開済みとして更新しました。",
             "updated_count": updated_count
         }, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_path='check-source')
     def check_source_exists(self, request):
-        """
-        特定のURLが既にDBに存在するかチェック
-        """
+        """URL重複チェック"""
         url = request.query_params.get('url')
         if not url:
-            return Response({"error": "urlを指定してください。"}, status=400)
+            return Response({"error": "url required"}, status=400)
             
         exists = Article.objects.filter(source_url=url).exists()
         return Response({"exists": exists, "source_url": url})

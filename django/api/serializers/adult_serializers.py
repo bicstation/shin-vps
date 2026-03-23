@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-dev/shin-vps/django/api/serializers/adult_serializers.py
 import re
 import logging
 from rest_framework import serializers
