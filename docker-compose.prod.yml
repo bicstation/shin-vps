@@ -296,7 +296,7 @@ networks:
     enable_ipv6: false   # 💡 職場・自宅との環境ズレ防止
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.28.0.0/16
 
   shared-proxy:
     name: "shin-vps_shared-proxy"
