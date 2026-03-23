@@ -2,9 +2,9 @@
 # 🛡️ SHIN-VPS v3.9 (VPS Production Optimized / Multi-Domain API)
 # ---------------------------------------------------------------------
 # 【主な最適化】
-# 1. 各Next.jsのビルド引数(args)を完全に分離。ビルド時にAPI URLを静的に注入。
-# 2. TraefikによるSSL管理とドメインベースのルーティングを全サービスで統一。
-# 3. 監視・ログ・DB管理ツールを専用サブドメインで保護・公開。
+# 1. 各Next.jsのビルド引数(args)を完全に分離。SSL(https)対応。
+# 2. ネットワーク設定をローカルと同期し、IPv6衝突を防止。
+# 3. 監視・管理ツールを専用サブドメインで保護。
 # =====================================================================
 
 version: '3.8'
@@ -104,7 +104,6 @@ services:
   # 3. フロントエンド層 (Next.js マルチドメイン)
   # ---------------------------------------------------------------------
   
-  # BICSTATION
   next-bicstation-v3:
     build:
       context: .
@@ -132,7 +131,6 @@ services:
       - internal-net
       - shared-proxy
 
-  # Tiper.Live
   next-tiper-v3:
     build:
       context: .
@@ -159,7 +157,6 @@ services:
       - internal-net
       - shared-proxy
 
-  # BIC-SAVING
   next-bic-saving-v3:
     build:
       context: .
@@ -186,7 +183,6 @@ services:
       - internal-net
       - shared-proxy
 
-  # AVFLASH
   next-avflash-v3:
     build:
       context: .
@@ -291,15 +287,19 @@ services:
       - internal-net
 
 # ---------------------------------------------------------------------
-# 共通設定 (最上位階層)
+# 共通ネットワーク・ボリューム設定
 # ---------------------------------------------------------------------
 networks:
   internal-net:
+    name: "shin-vps_internal-net"
     driver: bridge
+    enable_ipv6: false   # 💡 職場・自宅との環境ズレ防止
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
   shared-proxy:
-    # 外部のTraefik用共通ネットワークを参照
-    # 事前に docker network create shin-vps_shared-proxy が必要
-    name: shin-vps_shared-proxy
+    name: "shin-vps_shared-proxy"
     external: true
 
 volumes:

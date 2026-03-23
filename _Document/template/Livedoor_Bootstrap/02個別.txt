@@ -63,6 +63,7 @@
             <IfArticleBodyMore>
               <div id="more" class="mt-4"><$ArticleBodyMore$></div>
             </IfArticleBodyMore>
+            <$MessageBoard$>
           </div>
         </div>
 
