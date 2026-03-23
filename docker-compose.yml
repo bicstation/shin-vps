@@ -230,7 +230,7 @@ networks:
     enable_ipv6: false  # 💡 職場と自宅の環境差（IPv6有効/無効）による衝突を強制回避
     ipam:
       config:
-        - subnet: 172.20.0.0/16 # 必要に応じてサブネットを固定するとさらに安定します
+        - subnet: 172.28.0.0/16 # 必要に応じてサブネットを固定するとさらに安定します
 
   shared-proxy:
     external: true

@@ -212,17 +212,17 @@ services:
   # ---------------------------------------------------------------------
   # 4. インフラ管理・監視ツール層
   # ---------------------------------------------------------------------
-  scheduler:
-    image: mcuadros/ofelia:latest
-    container_name: bicstation-scheduler
-    restart: always
-    depends_on:
-      - django-v3
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    networks:
-      - shared-proxy
-    command: daemon --docker
+  # scheduler:
+  #   image: mcuadros/ofelia:latest
+  #   container_name: bicstation-scheduler
+  #   restart: always
+  #   depends_on:
+  #     - django-v3
+  #   volumes:
+  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  #   networks:
+  #     - shared-proxy
+  #   command: daemon --docker
 
   pgadmin-v3:
     image: dpage/pgadmin4
