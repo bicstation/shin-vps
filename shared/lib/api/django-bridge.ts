@@ -1,33 +1,29 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge 統合サービス層 (v7.0 - 分割統治・完全機能維持版)
+ * 🌉 Django-Bridge 統合サービス層 (v7.1 - 交通整理・最適化版)
  * =====================================================================
- * 修正内容: v6.3 の置換ロジックと共通 Fetch 機能を維持しつつ、
- * 各専門ドメイン (PC, Adult, News) へのゲートウェイとして機能。
+ * 修正ポイント: 
+ * 1. サイト名(bicstation)による「PC製品」への強制分岐を廃止。
+ * 2. contentType (post/news) を最優先し、記事取得を確実に行う。
+ * 3. 取りこぼしを防ぐため、デフォルトのフォールバックを記事取得に設定。
  * =====================================================================
  */
 
 import { getWpConfig, getDjangoBaseUrl } from './config';
 import { 
-    resolveApiUrl as commonResolveApiUrl, 
     getDjangoHeaders, 
     handleResponseWithDebug 
 } from './django/client';
 
-// 🚀 専門部隊からのインポート
+// 🚀 専門部隊（各ドメインのロジック）
 import { fetchPCProducts as fetchPCProductsLogic } from './django/pc';
 import { getUnifiedProducts as getAdultProductsLogic } from './django/adult';
 import { fetchNewsArticles as fetchNewsLogic, fetchPostData as fetchNewsDetail } from './django/news';
 
-import { 
-    PCProduct, 
-    AdultProduct, 
-    DjangoApiResponse 
-} from './types';
+import { DjangoApiResponse } from './types';
 
 /**
- * 🔄 【共通機能】ドメイン・一括置換ユーティリティ
- * ※ v6.3 から継承。全ドメインのデータに対して実行
+ * 🔄 【共通】URL置換ユーティリティ (既存機能維持)
  */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
@@ -43,72 +39,58 @@ export const replaceInternalUrls = (data: any): any => {
             return JSON.parse(content);
         } catch (e) { return data; }
     }
-    if (typeof data === 'string') {
-        return data.replace(/http:\/\/(django-v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g, cleanBaseUrl);
-    }
     return data;
 };
 
 /**
- * 🛠️ 【共通機能】通信 Fetch ラッパー (fetchFromBridge)
- * ※ 各専門ロジックからも利用可能にするため維持
- */
-export async function fetchFromBridge<T>(url: string, options: any = {}): Promise<{ data: any, status: number }> {
-    const { host } = getWpConfig();
-    try {
-        const res = await fetch(url, {
-            ...options,
-            headers: {
-                ...getDjangoHeaders(),
-                'Host': host,
-                ...(options.headers || {}),
-            },
-            signal: AbortSignal.timeout(options.timeout || 10000)
-        });
-        const data = await handleResponseWithDebug(res, url);
-        return { data: replaceInternalUrls(data), status: res.status };
-    } catch (e: any) {
-        console.error(`🚨 [Bridge Fatal Error]: ${url} | ${e.message}`);
-        return { data: null, status: 500 };
-    }
-}
-
-/**
- * 🚀 【司令塔】統合コンテンツ・スイッチャー
+ * 🚀 【司令塔】統合コンテンツ・スイッチャー (最適化版)
+ * サイト名での「決め打ち」をやめ、目的（ContentType）で仕分けます。
  */
 export async function fetchDjangoBridgeContent(params: any = {}): Promise<DjangoApiResponse<any>> {
     const siteGroup = params?.site_group || process.env.PROJECT_NAME || 'pc';
+    const contentType = params?.content_type || 'post'; // 👈 ニュースか製品かの鍵
 
-    if (siteGroup.includes('bicstation') || siteGroup === 'pc') {
+    // --- 🚦 交通整理開始 ---
+
+    // 1️⃣ 【最優先】ニュース記事 (news / post) のリクエストなら、迷わずニュース窓口へ
+    if (contentType === 'news' || contentType === 'post') {
+        return await fetchNewsLogic(params?.limit || 12, params?.offset || 0, siteGroup);
+    }
+
+    // 2️⃣ PC製品 (product) かつ bicstation/pc サイトの場合
+    if (contentType === 'product' && (siteGroup.includes('bicstation') || siteGroup === 'pc')) {
         return await fetchPCProductsLogic(params);
-    } else if (siteGroup.includes('tiper') || siteGroup.includes('avflash') || siteGroup.includes('saving')) {
+    }
+
+    // 3️⃣ アダルト系ドメインの場合
+    if (siteGroup.includes('tiper') || siteGroup.includes('avflash') || siteGroup.includes('saving')) {
         return await getAdultProductsLogic(params);
     }
-    return await fetchPostList('post', params?.limit, params?.offset, siteGroup);
+
+    // 4️⃣ 【フォールバック】どれにも該当しない場合は、安全策として記事一覧を返す
+    return await fetchNewsLogic(params?.limit || 12, params?.offset || 0, siteGroup);
 }
 
 /**
- * 📰 ニュース・記事取得
+ * 📰 ニュース・記事取得の専門窓口
  */
 export const fetchNewsArticles = fetchNewsLogic;
 export const fetchPostData = fetchNewsDetail;
 
+// NewsListPage から呼ばれるメイン関数
 export async function fetchPostList(postType = 'post', limit = 12, offset = 0, project?: string) {
+    // 司令塔を通さず、直接ニュースロジックを叩いて「取りこぼし」をゼロに
     return await fetchNewsLogic(limit, offset, project);
 }
 
 /**
- * 🖥️ PC製品取得
+ * 🖥️ PC / 🔞 アダルト エイリアス
  */
 export const fetchPCProducts = fetchPCProductsLogic;
-
-/**
- * 🔞 アダルト製品取得
- */
 export const getAdultProducts = getAdultProductsLogic;
 export const getUnifiedProducts = getAdultProductsLogic;
 
 /**
- * 💎 エイリアス設定
+ * 💎 互換用エイリアス
  */
 export { fetchPostList as getSiteMainPosts };

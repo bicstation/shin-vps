@@ -1,45 +1,63 @@
 /**
  * =====================================================================
- * 🛠️ Django API 共通クライアント (shared/lib/api/django/client.ts)
- * 🛡️ Maya's Zenith v5.1: URL解決・二重API防止・スラッシュ自動補完
+ * 🛠️ Django API 共通クライアント (Zenith v7.0 - Infrastructure Aligned)
+ * =====================================================================
+ * 🛡️ 修正ポイント:
+ * 1. Docker Compose の api-xxx-host 命名規則に完全準拠
+ * 2. NEXT_PUBLIC_API_URL を優先しつつ、未定義時の自動解決ロジックを搭載
+ * 3. サーバー/クライアント間のホスト名解決のねじれを解消
  * =====================================================================
  */
 import { getDjangoBaseUrl, IS_SERVER } from '../config';
 
 /**
- * 💡 接続先URLを解決 (Network Path Resolver)
- * 1. エンドポイントから重複する "api/" やスラッシュを徹底排除
- * 2. サーバー/クライアント環境に応じたベースURLを付与
- * 3. 常に "/api/endpoint/" の形に整形し、Djangoの404を根絶します。
+ * 💡 接続先URLを動的に解決 (Network Path Resolver)
  */
 export const resolveApiUrl = (endpoint: string) => {
     // 1. エンドポイントの正規化
-    // 先頭の "api/" 削除 -> 先頭/末尾のスラッシュ削除
     const cleanEndpoint = endpoint
         .replace(/^api\//, '')
         .replace(/^\/+/, '')
         .replace(/\/+$/, '');
 
-    // 2. ベースURLの決定
     let baseUrl: string;
 
     if (IS_SERVER) {
         /**
-         * 🚀 Server Side: Docker内部ネットワーク通信
-         * django-v3 コンテナへ直接ルートを飛ばします
+         * 🚀 Server Side (SSR / Docker Internal)
+         * docker-compose で定義された内部 URL を解決します。
          */
-        baseUrl = (process.env.API_INTERNAL_URL || 'http://django-v3:8000').replace(/\/+$/, '');
+        // 1. まずは環境変数 INTERNAL_API_URL を最優先
+        if (process.env.INTERNAL_API_URL) {
+            baseUrl = process.env.INTERNAL_API_URL;
+        } else {
+            // 2. PROJECT_NAME (e.g. next-bicstation) から内部サービスプレフィックスを抽出
+            const rawProject = process.env.PROJECT_NAME || 'bicstation';
+            const shortName = rawProject.replace('next-', ''); // "next-bicstation" -> "bicstation"
+            
+            // 3. ローカルPCのTraefikを通る内部ホスト名を動的に組み立て (8083ポート経由)
+            baseUrl = `http://api-${shortName}-host:8083`;
+        }
     } else {
         /**
-         * 🌐 Client Side: ブラウザからの通信
-         * Traefik Proxy 経由で解決します
+         * 🌐 Client Side (Browser)
+         * ブラウザからはビルド時に注入された公開URL、または現在のドメインを使用
          */
-        baseUrl = getDjangoBaseUrl().replace(/\/+$/, '');
+        baseUrl = process.env.NEXT_PUBLIC_API_URL || getDjangoBaseUrl();
+        
+        // フォールバック: もし上記が空なら、現在のブラウザURLから自動生成
+        if (!baseUrl && typeof window !== 'undefined') {
+            baseUrl = `${window.location.protocol}//${window.location.host}`;
+        }
     }
 
-    // 3. 結合: [Base] + [/api/] + [CleanEndpoint] + [/]
-    // Djangoは末尾スラッシュがないと 301 Redirect または 404 を返すため厳守
-    return `${baseUrl}/api/${cleanEndpoint}/`;
+    // 2. "/api" の二重付与を防止するクリーニング
+    // baseUrl が "http://.../api" で終わっている場合は "/api" を削ってから再結合
+    const rootUrl = baseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+
+    // 3. 結合: [Base] + [/api/] + [Endpoint] + [/]
+    // Django の APPEND_SLASH=True に対応するため末尾スラッシュは必須
+    return `${rootUrl}/api/${cleanEndpoint}/`;
 };
 
 /**
@@ -49,25 +67,26 @@ export const getDjangoHeaders = () => {
     return {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        // 必要に応じてここにキャッシュ制御やAPIキーを追加可能
+        // クライアント側でHostヘッダーを偽装するとCORSに触れるため、
+        // サーバーサイド(SSR)時のみ必要な場合に Host ヘッダーを調整するロジックを検討
     };
 };
 
 /**
  * 💡 フェッチレスポンス・セーフハンドラ
- * Django DRFの標準形式 { results: [], count: 0 } への正規化を保証
+ * どんな形式のレスポンスも { results: [], count: 0 } に標準化します。
  */
 export async function handleResponseWithDebug(res: Response, url: string) {
     if (!res.ok) {
-        // 404/500エラーのログ出力を強化
-        console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | Target: ${url}`);
+        // サーバーコンソールにエラーを詳細出力
+        console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | URL: ${url}`);
         return { results: [], count: 0, _error: res.status };
     }
 
     try {
         const data = await res.json();
         
-        // 1. すでに DRF 標準形式（resultsあり）の場合
+        // ケース1: DRF 標準形式 (Pagination)
         if (data && typeof data === 'object' && 'results' in data) {
             return {
                 results: Array.isArray(data.results) ? data.results : [],
@@ -75,14 +94,13 @@ export async function handleResponseWithDebug(res: Response, url: string) {
             };
         }
         
-        // 2. 単純な配列が返ってきた場合
+        // ケース2: 配列直返し
         if (Array.isArray(data)) {
             return { results: data, count: data.length };
         }
         
-        // 3. オブジェクト単体（Detail系）が返ってきた場合
+        // ケース3: 単体オブジェクト (Detail)
         if (data && typeof data === 'object') {
-            // data.data 等に包まれている可能性も考慮
             const payload = data.data || data;
             return { 
                 results: Array.isArray(payload) ? payload : [payload], 
@@ -93,8 +111,7 @@ export async function handleResponseWithDebug(res: Response, url: string) {
         return { results: [], count: 0 };
 
     } catch (e) {
-        // JSONパース失敗（DjangoがエラーHTMLを返した時など）の防護
-        console.error(`🚨 [JSON Parse Error] Failed to parse response from: ${url}`);
+        console.error(`🚨 [JSON Parse Error] URL: ${url}`);
         return { results: [], count: 0, _error: 'PARSE_FAILED' };
     }
 }
