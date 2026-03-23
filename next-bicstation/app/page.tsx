@@ -51,7 +51,6 @@ export default async function Page({ searchParams }: PageProps) {
     const sParams = await searchParams;
     const attribute = Array.isArray(sParams.attribute) ? sParams.attribute[0] : sParams.attribute;
     
-    // 安全なデータ取得用ラッパー
     async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
         try {
             const data = await promise;
@@ -62,9 +61,9 @@ export default async function Page({ searchParams }: PageProps) {
         }
     }
 
-    // 🏎️ 全データの並列取得 (ハイブリッドニュース + PC製品各種)
+    // 🏎️ 並列取得
     const [newsData, pcData, rankingData, gamingData, creatorData, mobileData] = await Promise.all([
-        safeFetch(fetchPostList('news', 6), { results: [], count: 0 }), 
+        safeFetch(fetchPostList('news', 8), { results: [], count: 0 }), 
         safeFetch(fetchPCProducts({ limit: 12, attribute: attribute || '' }), { results: [], count: 0 }),
         safeFetch(fetchPCProductRanking(), []),
         safeFetch(fetchPCProducts({ limit: 3, attribute: 'gaming-pc' }), { results: [] }),
@@ -72,24 +71,51 @@ export default async function Page({ searchParams }: PageProps) {
         safeFetch(fetchPCProducts({ limit: 3, attribute: 'size-mobile' }), { results: [] }),
     ]);
 
+    // 🛡️ アダルト混入対策：タイトルのキーワードフィルタリング (API側が直るまでの暫定)
+    const ADULT_KEYWORDS = ['セフレ', '中出し', 'アヘアヘ', 'マン']; 
+    const newsResults = (newsData?.results || []).filter((post: any) => {
+        const title = post.title || '';
+        return !ADULT_KEYWORDS.some(keyword => title.includes(keyword));
+    });
+
     const pcResults = pcData?.results || [];
-    const newsResults = newsData?.results || [];
     const topThreeOverall = (rankingData || []).slice(0, 3);
 
     return (
         <article className={styles.mainContainer}>
-            {/* 🚀 ヒーローセクション */}
-            <header className={styles.heroHeader}>
-                <div className={styles.heroContent}>
-                    <span className={styles.heroBadge}>BICSTATION AI LAB</span>
-                    <h1 className={styles.mainTitle}>
-                        AIが解析する<br />
-                        <span className={styles.highlight}>次世代PCスペック比較ポータル</span>
-                    </h1>
-                    <p className={styles.pageDescription}>
-                        膨大なスペックデータと実測値をAIが独自にスコアリング。
-                        あなたのクリエイティビティを最大化する1台を、論理的に導き出します。
-                    </p>
+            {/* 🚀 改良版：スマート・ヒーローセクション */}
+            <header className={styles.smartHero}>
+                <div className={styles.heroInner}>
+                    <div className={styles.heroTextSide}>
+                        <div className={styles.heroBadgeRow}>
+                            <span className={styles.heroLabel}>BICSTATION v3.9</span>
+                            <span className={styles.aiStatus}>● AI Engine Online</span>
+                        </div>
+                        <h1 className={styles.smartTitle}>
+                            論理で選ぶ、<br />
+                            <span className={styles.textGradient}>次世代スペック解析。</span>
+                        </h1>
+                        <p className={styles.smartDescription}>
+                            膨大な実測値をAIが独自にスコアリング。
+                            あなたのクリエイティビティを最大化する1台を、論理的に導き出します。
+                        </p>
+                        <div className={styles.heroActionArea}>
+                            <Link href="/catalog/" className={styles.primaryBtn}>カタログを探索する</Link>
+                            <Link href="/ranking/" className={styles.secondaryBtn}>最新ランキング</Link>
+                        </div>
+                    </div>
+                    
+                    <div className={styles.heroVisualSide}>
+                        {/* 統計カード風のデザインパーツ */}
+                        <div className={styles.statCard}>
+                            <span className={styles.statLabel}>Analyzed Devices</span>
+                            <span className={styles.statValue}>12,480+</span>
+                        </div>
+                        <div className={styles.statCardSmall}>
+                            <span className={styles.statLabel}>Update Rate</span>
+                            <span className={styles.statValue}>Real-time</span>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -98,7 +124,7 @@ export default async function Page({ searchParams }: PageProps) {
                 <section className={styles.overallSection}>
                     <div className={styles.sectionHeader}>
                         <h2 className={styles.sectionTitle}>🏆 総合 AIスペックランキング</h2>
-                        <Link href="/ranking/" className={styles.rankingLink}>ランキング一覧を見る →</Link>
+                        <Link href="/ranking/" className={styles.rankingLink}>もっと見る →</Link>
                     </div>
                     <div className={styles.rankingGrid}>
                         {topThreeOverall.map((p, i) => (
@@ -112,19 +138,16 @@ export default async function Page({ searchParams }: PageProps) {
                 </section>
             )}
 
-            {/* 🔍 目的・スペックから探す */}
+            {/* 🔍 目的から探す（アイコンをシンプル化） */}
             <section className={styles.attributeSearchSection}>
-                 <div className={styles.sectionHeader}>
-                    <h2 className={styles.sectionTitle}>🔍 目的・スペックから探す</h2>
-                </div>
                 <div className={styles.categoryGrid}>
                     {[
-                        { name: 'ビジネス・法人向け', slug: 'usage-business', icon: '💼' },
-                        { name: 'ゲーミングPC', slug: 'gaming-pc', icon: '🎮' },
-                        { name: 'クリエイター向け', slug: 'gpu-professional', icon: '🎨' },
-                        { name: 'AI開発・生成AI', slug: 'usage-ai-dev', icon: '🤖' },
-                        { name: '軽量・1kg未満', slug: 'feat-lightweight', icon: '🪶' },
-                        { name: 'モバイルノート', slug: 'size-mobile', icon: '💻' },
+                        { name: 'ビジネス', slug: 'usage-business', icon: '💼' },
+                        { name: 'ゲーミング', slug: 'gaming-pc', icon: '🎮' },
+                        { name: 'クリエイター', slug: 'gpu-professional', icon: '🎨' },
+                        { name: 'AI開発', slug: 'usage-ai-dev', icon: '🤖' },
+                        { name: '1kg未満', slug: 'feat-lightweight', icon: '🪶' },
+                        { name: 'モバイル', slug: 'size-mobile', icon: '💻' },
                     ].map((cat) => (
                         <Link key={cat.slug} href={`/catalog/?attribute=${cat.slug}`} className={styles.categoryCardSmall}>
                             <span className={styles.catIcon}>{cat.icon}</span>
@@ -138,21 +161,18 @@ export default async function Page({ searchParams }: PageProps) {
             <div className={styles.departmentArea}>
                 <RankingCategory title="ゲーミングPC部門" products={gamingData.results} icon="🎮" />
                 <RankingCategory title="クリエイター・プロ向け" products={creatorData.results} icon="🎨" />
-                <RankingCategory title="モバイル・超軽量ノート" products={mobileData.results} icon="🏃" />
             </div>
 
-            {/* 🚀 最新インテリジェンス (Django AIニュース) */}
+            {/* 🚀 最新インテリジェンス */}
             <section className={styles.newsSection}>
                 <div className={styles.sectionHeader}>
-                    <h2 className={styles.sectionTitle}>
-                        <span className={styles.titleIcon}>🚀</span> PC業界・最新インテリジェンス
-                    </h2>
-                    <Link href="/news" className={styles.rankingLink}>全レポートを閲覧する →</Link>
+                    <h2 className={styles.sectionTitle}>🚀 PC業界・最新レポート</h2>
+                    <Link href="/news" className={styles.rankingLink}>全件表示 →</Link>
                 </div>
                 
                 <div className={styles.newsGrid}>
                     {newsResults.length > 0 ? (
-                        newsResults.map((post: any) => {
+                        newsResults.slice(0, 6).map((post: any) => {
                             const identifier = post.slug || post.id;
                             const displayTitle = post.title || 'Untitled Report';
                             const imageUrl = post.image || post.main_image_url;
@@ -166,32 +186,19 @@ export default async function Page({ searchParams }: PageProps) {
                                             className={styles.newsThumbnail}
                                             fallback="/no-image.jpg"
                                         />
-                                        <div className={styles.newsCategoryBadge}>
-                                            {post.category || 'ANALYSIS'}
-                                        </div>
                                     </div>
                                     <div className={styles.newsBody}>
                                         <div className={styles.newsMeta}>
-                                            <time className={styles.postDate}>
-                                                {post.date ? new Date(post.date).toLocaleDateString('ja-JP') : ''}
-                                            </time>
-                                            {post.site && <span className={styles.newsSource}>{post.site}</span>}
+                                            <time>{post.date ? new Date(post.date).toLocaleDateString('ja-JP') : ''}</time>
                                         </div>
-                                        <h3 className={styles.articleTitle}>
-                                            {displayTitle}
-                                        </h3>
-                                        <p className={styles.newsExcerpt}>
-                                            {post.description || (post.body_text ? post.body_text.substring(0, 60).replace(/[#*]/g, '') : '最新のデバイス動向と市場分析レポートをチェック。')}...
-                                        </p>
-                                        <span className={styles.newsReadMore}>VIEW REPORT _</span>
+                                        <h3 className={styles.articleTitle}>{displayTitle}</h3>
+                                        <span className={styles.newsReadMore}>READ MORE _</span>
                                     </div>
                                 </Link>
                             );
                         })
                     ) : (
-                        <div className={styles.emptyNews}>
-                            📡 ネットワークから最新のインテリジェンスを同期中です...
-                        </div>
+                        <div className={styles.emptyNews}>📡 最新のデータを同期中です...</div>
                     )}
                 </div>
             </section>
@@ -199,11 +206,11 @@ export default async function Page({ searchParams }: PageProps) {
             {/* 📦 製品カタログ */}
             <section className={styles.productSection}>
                 <div className={styles.sectionHeader}>
-                    <h2 className={styles.productGridTitle}>最新PC製品カタログ</h2>
-                    <span className={styles.countBadge}>{pcData.count || 0} 件の製品</span>
+                    <h2 className={styles.productGridTitle}>最新カタログ</h2>
+                    <span className={styles.countBadge}>{pcData.count || 0} 件</span>
                 </div>
                 <div className={styles.productGrid}>
-                    {pcResults.map((product: any) => (
+                    {pcResults.slice(0, 8).map((product: any) => (
                         <ProductCard 
                             key={product.unique_id || product.id} 
                             product={product} 
@@ -211,9 +218,7 @@ export default async function Page({ searchParams }: PageProps) {
                     ))}
                 </div>
                 <div className={styles.viewMoreContainer}>
-                    <Link href="/catalog/" className={styles.fullCatalogBtn}>
-                        カタログを詳しく見る
-                    </Link>
+                    <Link href="/catalog/" className={styles.fullCatalogBtn}>カタログ全文を見る</Link>
                 </div>
             </section>
         </article>

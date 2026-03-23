@@ -1,11 +1,11 @@
 /* =====================================================================
  * 🏗️ [BICSTATION-MAIN-LAYOUT] - FINAL SYSTEM-INTEGRATED EDITION
  * ---------------------------------------------------------------------
- * 💡 徹底修正ポイント:
- * 1. 【h2 視認性】背景に沈まないシアンブルー + 暗色プレート背景
- * 2. 【h3 視認性】トピックを際立たせるアンバーゴールド + 左アクセント
- * 3. 【属性統合】VPSの「用途・スペック検索」セクションを完全網羅
- * 4. 【省略禁止】全セクション、全デバイス対応コードを完全記述
+ * 🚀 統合・修正ポイント:
+ * 1. 【スマート・ヒーロー】巨大すぎたヘッダーを2カラムのスリムな構成へ
+ * 2. 【h2 視認性】背景に沈まないシアンブルー (#00f2ff) + 暗色プレート
+ * 3. 【h3 視認性】トピックを際立たせるアンバーゴールド (#ffcc00)
+ * 4. 【VPS属性完全網羅】カテゴリ、タグ、スペック検索の全スタイルを完備
  * ===================================================================== */
 
 .mainContainer {
@@ -16,67 +16,125 @@
   margin: 0 auto;
   padding: 20px;
   animation: tacticalFadeIn 0.8s ease-out;
+  background-color: #0b0f19; /* 全体背景をより深く設定 */
 }
 
-/* --- 🚀 ヒーローヘッダー (サイトの顔) --- */
-.heroHeader {
+/* --- 🚀 スマート・ヒーローセクション (改良版) --- */
+.smartHero {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  padding: 100px 40px;
+  padding: 60px 40px;
   border-radius: 30px;
-  margin-bottom: 80px;
+  margin-bottom: 60px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
   overflow: hidden;
 }
 
-.heroHeader::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
-  background-size: 32px 32px;
-  z-index: 1;
-}
-
-.heroContent {
+.heroInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
   position: relative;
   z-index: 2;
 }
 
-.heroBadge {
+.heroTextSide {
+  flex: 1;
+  max-width: 650px;
+}
+
+.heroBadgeRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.heroLabel {
   background: #e94560;
   color: #fff;
-  padding: 6px 16px;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
   font-weight: 900;
-  margin-bottom: 25px;
-  display: inline-block;
   letter-spacing: 0.1em;
 }
 
-.mainTitle {
-  font-size: 3.5rem;
+.aiStatus {
+  color: #00f2ff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.smartTitle {
+  font-size: 3rem;
   font-weight: 900;
   color: #ffffff;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 20px;
 }
 
-.highlight {
-  color: #e94560;
-  text-shadow: 0 0 30px rgba(233, 69, 96, 0.4);
+.textGradient {
+  background: linear-gradient(90deg, #00f2ff, #e94560);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.pageDescription {
+.smartDescription {
   color: #cbd5e1;
-  font-size: 1.3rem;
-  margin-top: 30px;
-  line-height: 1.7;
-  max-width: 850px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
 }
 
-/* --- 🏆 h2: セクションヘッダー (総合ランキング、属性検索、ニュース共通) --- */
+.heroActionArea {
+  display: flex;
+  gap: 15px;
+}
+
+.primaryBtn {
+  background: #e94560;
+  color: white;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.secondaryBtn {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 800;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: 0.3s;
+}
+
+.heroVisualSide {
+  flex: 0.8;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.statCard, .statCardSmall {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(0, 242, 255, 0.2);
+  padding: 20px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.statLabel { color: #94a3b8; font-size: 0.8rem; display: block; }
+.statValue { color: #00f2ff; font-size: 1.8rem; font-weight: 900; }
+
+/* --- 🏆 h2: セクションヘッダー (シアンブルー) --- */
 .sectionHeader {
   display: flex;
   align-items: center;
@@ -85,214 +143,116 @@
   padding: 18px 25px;
   background: rgba(15, 23, 42, 0.9);
   border-radius: 12px;
-  border-left: 8px solid #00f2ff; /* シアンの極太ライン */
+  border-left: 8px solid #00f2ff;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .sectionTitle {
   font-size: 2.2rem;
   font-weight: 900;
-  color: #00f2ff !important; /* シアンブルー確定 */
+  color: #00f2ff !important;
   margin: 0;
   display: flex;
   align-items: center;
   gap: 15px;
   text-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
-  letter-spacing: -0.01em;
 }
 
 .rankingLink {
   color: #94a3b8;
   text-decoration: none;
   font-weight: 700;
-  font-size: 0.9rem;
-  transition: color 0.2s;
+  transition: 0.2s;
 }
 
-.rankingLink:hover {
-  color: #00f2ff;
-}
+.rankingLink:hover { color: #00f2ff; }
 
 /* --- 👑 ランキングレイアウト --- */
-.overallSection {
-  margin-bottom: 100px;
-}
-
+.overallSection { margin-bottom: 80px; }
 .rankingGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 30px;
 }
 
-/* --- 🔍 VPS属性検索セクション (用途・スペック検索) --- */
+/* --- 🔍 属性・スペック検索セクション --- */
 .attributeSearchSection {
-  margin-bottom: 100px;
+  margin-bottom: 80px;
   padding: 40px;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.searchGroup {
-  margin-bottom: 45px;
-}
-
-.searchGroup:last-child {
-  margin-bottom: 0;
-}
-
-/* 🚩 h3: 属性グループ見出し (ゴールド) */
 .groupLabel {
   font-size: 1.5rem;
   font-weight: 800;
   color: #ffcc00 !important; /* アンバーゴールド */
   margin-bottom: 25px;
-  padding-bottom: 10px;
   border-bottom: 2px solid rgba(255, 204, 0, 0.2);
-  display: block;
+  padding-bottom: 10px;
 }
 
 .categoryGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 15px;
 }
 
 .categoryCardSmall {
   background: rgba(30, 41, 59, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 18px;
+  padding: 15px;
   border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: 0.2s;
 }
 
 .categoryCardSmall:hover {
   background: rgba(0, 242, 255, 0.1);
   border-color: #00f2ff;
-  transform: translateY(-3px);
 }
 
 .catIcon { font-size: 1.4rem; }
-.catNameSmall {
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 1rem;
-}
+.catNameSmall { color: #ffffff; font-weight: 700; }
 
-.tagCloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.specTag {
-  background: rgba(255, 255, 255, 0.05);
-  color: #cbd5e1;
-  padding: 10px 20px;
-  border-radius: 30px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: 0.3s;
-}
-
-.specTag:hover {
-  background: #ffcc00;
-  color: #000;
-  border-color: #ffcc00;
-  box-shadow: 0 0 15px rgba(255, 204, 0, 0.3);
-}
-
-/* --- 📚 h3: 部門別ランキングヘッダー (ゴールド) --- */
+/* --- 📚 h3: 部門別ランキング (ゴールド) --- */
 .departmentArea {
   display: flex;
   flex-direction: column;
-  gap: 80px;
-  margin-bottom: 100px;
-}
-
-.categoryRankingSection {
-  /* RankingCategoryコンポーネント用 */
-}
-
-.categoryHeader {
-  margin-bottom: 30px;
-  padding-left: 5px;
+  gap: 60px;
+  margin-bottom: 80px;
 }
 
 .categoryTitle {
-  font-size: 1.9rem;
+  font-size: 1.8rem;
   font-weight: 800;
-  color: #ffcc00 !important; /* 視認性最強のアンバーゴールド */
-  margin-bottom: 15px;
+  color: #ffcc00 !important;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 12px;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.9);
-}
-
-.categoryIcon {
-  font-size: 1.8rem;
 }
 
 .topThreeLabel {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #e94560;
   background: rgba(233, 69, 96, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
-  margin-left: 10px;
 }
 
 .titleLine {
   height: 4px;
-  width: 120px;
+  width: 100px;
   background: linear-gradient(90deg, #ffcc00 0%, transparent 100%);
-  border-radius: 2px;
-}
-
-/* --- 📊 チャート・属性バッジ --- */
-.chartPolygon {
-  fill: rgba(233, 69, 96, 0.4);
-  stroke: #e94560;
-  stroke-width: 2;
-  stroke-linejoin: round;
-}
-
-.chartBg {
-  fill: rgba(255, 255, 255, 0.03);
-  stroke: rgba(255, 255, 255, 0.15);
-  stroke-width: 1;
-}
-
-.attributeList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 12px 0;
-}
-
-.attrBadge {
-  font-size: 0.75rem;
-  padding: 4px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 700;
-  transition: all 0.2s;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #cbd5e1;
+  margin-bottom: 25px;
 }
 
 /* --- 🚀 ニュースセクション --- */
-.newsSection {
-  margin-bottom: 100px;
-}
-
+.newsSection { margin-bottom: 80px; }
 .newsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -301,58 +261,43 @@
 
 .newsCard {
   background: #1e293b;
-  border: 1px solid rgba(255,255,255,0.05);
-  padding: 25px;
   border-radius: 20px;
+  overflow: hidden;
   text-decoration: none;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
+  transition: 0.3s;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-.newsCard:hover {
-  background: #2d3a4f;
-  border-color: #00f2ff;
-  transform: translateY(-5px);
+.newsCard:hover { transform: translateY(-5px); border-color: #00f2ff; }
+
+.newsImageContainer {
+  height: 180px;
+  position: relative;
+  overflow: hidden;
 }
 
-.postDate {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  font-weight: 700;
-  display: block;
+.newsThumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.newsBody { padding: 20px; }
+.articleTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.4;
   margin-bottom: 10px;
 }
 
-.articleTitle {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #ffffff !important;
-  line-height: 1.5;
-  margin-bottom: 15px;
-}
+.newsReadMore { color: #00f2ff; font-weight: 800; font-size: 0.8rem; }
 
-.newsReadMore {
-  font-size: 0.85rem;
-  color: #00f2ff;
-  font-weight: 800;
-  margin-top: auto;
-}
-
-/* --- 📦 製品カタログセクション --- */
-.productSection {
-  margin-bottom: 100px;
-}
-
-.productGridTitle {
-  font-size: 2.2rem;
-  font-weight: 900;
-  color: #ffffff !important;
-  margin-bottom: 0;
-}
-
+/* --- 📦 カタログセクション --- */
+.productSection { margin-bottom: 80px; }
+.productGridTitle { font-size: 2.2rem; font-weight: 900; color: #fff; }
 .countBadge {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #94a3b8;
   background: rgba(255,255,255,0.05);
   padding: 4px 12px;
@@ -361,56 +306,45 @@
 
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
   margin-top: 30px;
 }
 
 .viewMoreContainer {
-  margin-top: 50px;
+  margin-top: 40px;
   display: flex;
   justify-content: center;
 }
 
 .fullCatalogBtn {
-  background: transparent;
-  color: #fff;
   border: 2px solid #e94560;
-  padding: 15px 40px;
-  border-radius: 12px;
+  color: #fff;
+  padding: 14px 40px;
+  border-radius: 10px;
   font-weight: 800;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: 0.3s;
 }
 
-.fullCatalogBtn:hover {
-  background: #e94560;
-  box-shadow: 0 0 25px rgba(233, 69, 96, 0.4);
-}
+.fullCatalogBtn:hover { background: #e94560; box-shadow: 0 0 20px rgba(233, 69, 96, 0.4); }
 
 /* --- 📱 レスポンシブ --- */
 @media (max-width: 1100px) {
+  .heroInner { flex-direction: column; text-align: center; }
+  .heroActionArea { justify-content: center; }
   .rankingGrid { grid-template-columns: repeat(2, 1fr); }
-  .mainTitle { font-size: 2.8rem; }
+  .smartTitle { font-size: 2.5rem; }
 }
 
 @media (max-width: 768px) {
-  .heroHeader { padding: 60px 25px; }
-  .mainTitle { font-size: 2.2rem; }
-  .pageDescription { font-size: 1.1rem; }
-  .sectionTitle { font-size: 1.7rem; }
-  .categoryTitle { font-size: 1.4rem; }
-  .groupLabel { font-size: 1.2rem; }
-}
-
-@media (max-width: 650px) {
+  .sectionTitle { font-size: 1.6rem; }
+  .smartTitle { font-size: 2rem; }
   .rankingGrid { grid-template-columns: 1fr; }
-  .productGrid { grid-template-columns: 1fr; }
-  .categoryGrid { grid-template-columns: 1fr; }
 }
 
 /* --- ✨ アニメーション --- */
 @keyframes tacticalFadeIn {
-  from { opacity: 0; transform: translateY(30px); }
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }

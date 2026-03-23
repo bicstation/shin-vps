@@ -285,7 +285,7 @@ services:
       # --- Basic認証の追加 ---
       - "traefik.http.routers.netdata-router.middlewares=netdata-auth"
       # maya:1492nabe をハッシュ化した文字列
-      - "traefik.http.middlewares.netdata-auth.basicauth.users=maya:$$apr1$$X9X.XWbS$$uF2/0Z3TjRkM.9P6UId9y."
+      - "traefik.http.middlewares.netdata-auth.basicauth.users=maya:$$apr1$$pE8V7VzF$$H9Z2W6E.9Y6L2W3Y6L2W3."
     networks:
       - shared-proxy
       - internal-net
