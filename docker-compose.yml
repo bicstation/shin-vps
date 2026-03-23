@@ -1,5 +1,9 @@
 # =====================================================================
 # 🛡️ SHIN-VPS v3.8 マルチドメイン・ローカル開発完全版 (Traefik 8083対応)
+# ---------------------------------------------------------------------
+# 🚀 修正内容:
+# 1. django-blocker のエラーを解消 (service: noop@internal を採用)
+# 2. 不要になった不完全な middlewares 定義を削除
 # =====================================================================
 
 services:
@@ -42,7 +46,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- 2. バックエンド層 (Django: ドメイン判定ミドルウェア対応) ---
+  # --- 2. バックエンド層 (Django) ---
   django-v3:
     build:
       context: .
@@ -66,15 +70,16 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     labels:
       - "traefik.enable=true"
-      # 🚀 修正: API専用ホスト(api-*-host)をルーティングルールに完全網羅
+      # 🚀 API専用ホストのルーティング
       - "traefik.http.routers.django-api.rule=Host(`api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`, `api-tiper-host`, `api-bicstation-host`, `api-avflash-host`, `api-saving-host`, `django-v3`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-api.priority=3000"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
-      # 🛡️ 不審なストリーム攻撃の遮断
+
+      # 🛡️ 不審なストリーム攻撃の遮断 (修正箇所: noop@internal を使用)
       - "traefik.http.routers.django-blocker.rule=PathPrefix(`/api/events/stream`) || PathPrefix(`/api/releases`)"
       - "traefik.http.routers.django-blocker.priority=10000"
-      - "traefik.http.routers.django-blocker.middlewares=block-errors"
-      - "traefik.http.middlewares.block-errors.errors.status=204"
+      - "traefik.http.routers.django-blocker.service=noop@internal"
+      - "traefik.http.routers.django-blocker.entrypoints=web"
     volumes:
       - ./django:/usr/src/app
       - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
@@ -90,7 +95,6 @@ services:
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bicstation
-        # 🔗 各フロントエンドが「自分の専用API窓口」を叩くように設定
         NEXT_PUBLIC_API_URL: http://api-bicstation-host:8083/api
     container_name: next-bicstation-v3
     restart: always
