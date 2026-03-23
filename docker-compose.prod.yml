@@ -282,6 +282,10 @@ services:
       - "traefik.http.routers.netdata-router.rule=Host(`monitor.tiper.live`)"
       - "traefik.http.routers.netdata-router.entrypoints=websecure"
       - "traefik.http.routers.netdata-router.tls.certresolver=le"
+      # --- Basic認証の追加 ---
+      - "traefik.http.routers.netdata-router.middlewares=netdata-auth"
+      # maya:1492nabe をハッシュ化した文字列
+      - "traefik.http.middlewares.netdata-auth.basicauth.users=maya:$$apr1$$X9X.XWbS$$uF2/0Z3TjRkM.9P6UId9y."
     networks:
       - shared-proxy
       - internal-net
