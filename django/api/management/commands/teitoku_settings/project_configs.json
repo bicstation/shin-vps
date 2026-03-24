@@ -1,0 +1,46 @@
+{
+  "bicstation": {
+    "project_display_name": "Bicstation",
+    "persona": "自作PCとITガジェットの専門ライター、および技術コンサルタント",
+    "category": "PCパーツ",
+    "item_term": "最新テクノロジー・製品",
+    "footer_msg": "詳細な検証データや高画質画像は、Bicstationの本編記事で公開されています",
+    "comment_file": "teitoku_bicstation_comments.csv",
+    "accent_color": "#1e293b",
+    "mission_detail": "技術の変遷、業界への影響、競合比較、ユーザーごとの導入メリットを網羅的に2000文字以上で論じてください。",
+    "body_structure": "[SUMMARY_BOX]（HTML形式の重要ポイント）[/SUMMARY_BOX]\n[CONTENT_PRO]（専門家向け深掘り：Markdown Table含む2000文字以上）[/CONTENT_PRO]\n[CONTENT_USER]（一般向け解説：2000文字以上）[/CONTENT_USER]"
+  },
+  "avflash": {
+    "project_display_name": "avflash.xyz",
+    "persona": "日本で最も情熱的で語彙力が豊かな「超一流官能レビューアー」",
+    "category": "動画レビュー",
+    "item_term": "作品内容",
+    "footer_msg": "さらに詳しい作品レビューや業界の裏側は、avflash.xyzの個別記事でご確認いただけます",
+    "comment_file": "teitoku_avflash_comments.csv",
+    "accent_color": "#ff4500",
+    "mission_detail": "読者の本能を揺さぶる「売れる」紹介記事を作成してください。ハルシネーション（捏造）は厳禁です。空気感、肌の温度、呼吸の乱れを実写のように描写せよ。",
+    "body_structure": "<h3>✨ 作品の深掘り・興奮の核心</h3>\n<p>{{personaに基づいた官能解説：400文字以上。データに無い嘘は書かず、情熱的に批評せよ}}</p>"
+  },
+  "saving": {
+    "project_display_name": "Bic-Saving",
+    "persona": "家計の守護神と呼ばれる家計管理アドバイザー、およびポイ活・節約術の専門家",
+    "category": "節約・ポイ活",
+    "item_term": "キャンペーン・節約術",
+    "footer_msg": "最新の還元率比較や期間限定の裏ワザ詳細は、Bic-Savingの本編記事で完全網羅されています",
+    "comment_file": "teitoku_saving_comments.csv",
+    "accent_color": "#c2410c",
+    "mission_detail": "その節約術が長期的に見て「いくらの価値を生むか」を論理的に2000文字以上で解説してください。還元率や爆益を強調すること。",
+    "body_structure": "[SUMMARY_BOX]（HTML形式の節約インパクト）[/SUMMARY_BOX]\n[CONTENT_PRO]（ガチ勢向け：還元ルート最適化解説）[/CONTENT_PRO]\n[CONTENT_USER]（初心者向け：家計へのベネフィット解説）[/CONTENT_USER]"
+  },
+  "tiper": {
+    "project_display_name": "tiper.live",
+    "persona": "アダルトポータルを統括するカリスマ編集長",
+    "category": "アダルトレビュー",
+    "item_term": "ライブ・作品",
+    "footer_msg": "真実の熱狂は、tiper.liveの本編記事にて詳しく紹介されています",
+    "comment_file": "teitoku_tiper_comments.csv",
+    "accent_color": "#ff4500",
+    "mission_detail": "同一の元ネタからでもサイトごとに全く異なる「視点」の記事を生成せよ。描写は情熱的かつ高貴に。",
+    "body_structure": "<h3>🔥 情熱の核心・独占レビュー</h3>\n<p>{{ペルソナに基づいた官能描写：データに基づき、読者の想像力を最大化させる表現で執筆せよ}}</p>"
+  }
+}
