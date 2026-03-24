@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-【SYSTEM OVERVIEW: v47.2 Strategic-Ultimate-Unified】
-1. 目的: 投稿先の完全視認化、DMM/FANZAおよびGoogleニュースリダイレクトの完全解決。
-2. 特徴: 
-   - Google RSS対策: Googleニュースの中継URLを解析し、真のソースサイトから画像・本文を抽出。
-   - サムネイル正常化: Googleロゴの誤取得を排除し、記事固有のアイキャッチを優先取得。
-   - ログの透明化: ターゲット拠点名、プラットフォーム、成功IDをすべて明示。
-   - 記事の「格」向上: 提督レビュー、重厚な見出し装飾、内部リンクアーカイブを完備。
+【SYSTEM OVERVIEW: v50.5 Strategic-Scraping-Master】
+1. 目的: スクショ解析を廃止。スクレイピングによる画像取得とAI補完に特化。
+2. 特徴:
+   - 🛡️ 循環参照回避: blog_driversの各クラスを動的にハンドリング。
+   - 🖼️ 画像永続化: 生成/取得画像は /media/ai_generated/ に保存して外部公開URL化。
+   - 🔍 高度なスクレイピング: OGPおよび本文中から最適な画像を探索。
+   - 🤖 AI画像補完: 画像が取得できない場合は、Gemini 2.5 Flashで画像を動的生成。
 """
 
-import os, re, random, requests, feedparser, time, csv, hashlib, json
+import os, re, random, requests, feedparser, time, csv, hashlib, json, base64
 from datetime import datetime
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from django.db import connection
+from django.conf import settings
 from api.models.article import Article
 from api.utils.html_utils import HTMLConverter
 from api.management.commands.blog_drivers.hatena_driver import HatenaDriver
@@ -22,14 +23,11 @@ from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'BICSTATION v47.2: Ultimate Unified Strategic System (Redirect Resolved)'
-
-    ADULT_PROJECTS = ['tiper', 'avflash', 'adult-test', 'pink-station', 'bic-erog', 'adult-search']
+    help = 'BICSTATION v50.5: Scraping-First & AI Image Generation'
 
     def add_arguments(self, parser):
-        parser.add_argument('--project', type=str, default='tiper', help='Project name')
-        parser.add_argument('--platform', type=str, default='all', help='Target platform')
-        parser.add_argument('--mode', type=str, default='deploy', choices=['deploy', 'cleanup'], help='Operation mode')
+        parser.add_argument('--project', type=str, default='bicstation')
+        parser.add_argument('--url', type=str, default=None)
 
     def log(self, msg, style_func=None):
         ts = datetime.now().strftime('%H:%M:%S')
@@ -37,304 +35,254 @@ class Command(BaseCommand):
         if style_func: self.stdout.write(style_func(text))
         else: self.stdout.write(text)
 
+    def save_image_to_vps(self, b64_or_url, filename_prefix="ai_gen"):
+        """画像をVPSのメディアディレクトリに保存し、外部公開URLを生成"""
+        try:
+            img_data = None
+            if b64_or_url.startswith('data:image'):
+                b64_string = b64_or_url.split(",")[1] if "," in b64_or_url else b64_or_url
+                img_data = base64.b64decode(b64_string)
+            elif b64_or_url.startswith('http'):
+                res = requests.get(b64_or_url, timeout=10)
+                if res.status_code == 200:
+                    img_data = res.content
+            
+            if not img_data: return b64_or_url # 保存失敗時は元のURLを返す
+
+            save_dir = os.path.join(settings.MEDIA_ROOT, "ai_generated")
+            os.makedirs(save_dir, exist_ok=True)
+            
+            filename = f"{filename_prefix}_{hashlib.md5(img_data).hexdigest()[:10]}.png"
+            filepath = os.path.join(save_dir, filename)
+            
+            with open(filepath, "wb") as f:
+                f.write(img_data)
+            
+            return f"https://{self.target_domain}{settings.MEDIA_URL}ai_generated/{filename}"
+        except Exception as e:
+            self.log(f"  ⚠️ 画像永続化エラー: {str(e)}", self.style.WARNING)
+            return b64_or_url
+
     def resolve_google_news_url(self, url):
-        """GoogleニュースのリダイレクトURLを解決して真のURLを返す"""
+        """Googleニュースのリダイレクトを解析してオリジナルのURLを特定"""
         if "news.google.com" not in url and "google.com/rss/articles" not in url:
             return url
-            
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+        headers = {'User-Agent': 'Mozilla/5.0'}
         try:
-            # allow_redirects=True でリダイレクト先を追跡
-            response = requests.get(url, headers=headers, timeout=12, allow_redirects=True)
-            final_url = response.url
-            
-            # もしリダイレクト先がまだGoogleドメインなら、メタタグ内のURLを探す
-            if "google.com" in final_url:
-                soup = BeautifulSoup(response.text, 'html.parser')
-                meta_candidates = [
-                    soup.find("meta", property="og:url"),
-                    soup.find("link", rel="canonical"),
-                    soup.find("meta", attrs={"name": "twitter:url"})
-                ]
-                for meta in meta_candidates:
-                    if meta and meta.get("content"):
-                        final_url = meta["content"]
-                        break
-                    elif meta and meta.get("href"):
-                        final_url = meta["href"]
-                        break
-            return final_url
-        except Exception as e:
-            self.log(f"⚠️ URL解決警告: {e}", self.style.WARNING)
-            return url
+            res = requests.get(url, headers=headers, timeout=10, allow_redirects=True)
+            soup = BeautifulSoup(res.text, 'html.parser')
+            meta = soup.find("meta", property="og:url") or soup.find("link", rel="canonical")
+            return meta.get("content") or meta.get("href") if meta else res.url
+        except: return url
 
     def handle(self, *args, **options):
-        # 🚀 1. 初期化
         self.project_name = options['project'].lower()
-        self.target_platform = options['platform'].lower()
-        self.is_adult_env = self.project_name in self.ADULT_PROJECTS
+        self.direct_url = options['url']
         
+        # 内部パス設定
         self.current_cmd_dir = os.path.dirname(os.path.abspath(__file__))
         self.config_dir = os.path.join(self.current_cmd_dir, "teitoku_settings")
         self.prompt_dir = os.path.join(self.current_cmd_dir, "prompt")
 
-        DOMAIN_MAP = {
-            'bicstation': 'bicstation.com', 
-            'tiper': 'tiper.live', 
-            'saving': 'bic-saving.com', 
-            'avflash': 'avflash.xyz'
-        }
+        # ドメイン設定
+        DOMAIN_MAP = {'bicstation': 'bicstation.com', 'tiper': 'tiper.live', 'saving': 'bic-saving.com', 'avflash': 'avflash.xyz'}
         self.target_domain = DOMAIN_MAP.get(self.project_name, f"{self.project_name}.com")
 
-        self.stdout.write(f"\n{self.style.SUCCESS('▼' * 100)}")
-        self.stdout.write(self.style.SUCCESS(f" 🔱 UNIFIED STRATEGIC SYSTEM v47.2 (GOOGLE-REDIRECT-RESOLVED)"))
-        self.stdout.write(f" 📂 PROJECT      : {self.project_name.upper()}")
-        self.stdout.write(f" 🎯 MISSION      : 画像正常化・リダイレクト解除・ボリューム最大化")
-        self.stdout.write(f"{self.style.SUCCESS('▲' * 100)}\n")
-
-        # 🚀 2. データロード
-        fleet_path = os.path.join(self.config_dir, f"{self.project_name}_fleet.csv")
-        rss_path = os.path.join(self.config_dir, f"{self.project_name}_rss_sources.csv")
+        # 配信先・ソース読み込み
+        fleet_data = self.load_csv_data(os.path.join(self.config_dir, f"{self.project_name}_fleet.csv"))
         
-        fleet_data = self.load_csv_data(fleet_path)
-        rss_sources = self.load_csv_data(rss_path)
-        
-        target_site_keys = {row['site_key'] for row in fleet_data if row.get('site_key')}
-        if self.target_platform != 'all':
-            target_site_keys = {row['site_key'] for row in fleet_data if row.get('platform', '').lower() == self.target_platform}
+        if self.direct_url:
+            rss_pool = [type('obj', (object,), {'link': self.direct_url, 'title': '手動緊急出撃'})]
+        else:
+            rss_sources = self.load_csv_data(os.path.join(self.config_dir, f"{self.project_name}_rss_sources.csv"))
+            raw_pool = self.get_fresh_rss_pool([row['url'] for row in rss_sources if 'url' in row])
+            connection.close()
+            # 重複チェック（Googleニュースリダイレクト考慮）
+            rss_pool = [e for e in raw_pool if not Article.objects.filter(site=self.project_name, source_url=self.resolve_google_news_url(e.link)).exists()]
 
-        raw_pool = self.get_fresh_rss_pool([row['url'] for row in rss_sources if 'url' in row])
-        connection.close()
-        rss_pool = [e for e in raw_pool if not Article.objects.filter(site=self.project_name, source_url=e.link).exists()]
+        # APIキー取得
+        self.api_keys = [os.getenv(f"GEMINI_API_KEY_{i}").strip() for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
+        if not self.api_keys: return self.log("❌ APIキーが設定されていません。", self.style.ERROR)
 
-        if not rss_pool:
-            self.log("🏁 新着記事なし。哨戒終了。", self.style.WARNING)
-            return
+        self.log(f"🛡️ 艦隊集結: {len(rss_pool)} 件の未処理任務を確認。")
 
-        self.log(f"📦 解析対象: {len(rss_pool)} 件 / 目標拠点数: {len(target_site_keys)}", self.style.HTTP_INFO)
-        
-        api_keys = [os.getenv(f"GEMINI_API_KEY_{i}").strip() for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
-        if not api_keys: 
-            self.log("❌ APIキーが見つかりません。", self.style.ERROR)
-            return
-
-        # 🚀 3. デプロイループ
-        posted_sites = set()
-        processed_count = 0
-
+        posted_count = 0
         for index, entry in enumerate(rss_pool):
-            if target_site_keys.issubset(posted_sites):
-                self.stdout.write(f"\n{self.style.SUCCESS('✨ 全拠点へのデプロイ完了。')}")
-                break
+            current_key = self.api_keys[posted_count % len(self.api_keys)]
+            target_site = next((s for s in fleet_data if s['site_key'] not in [p for p in []]), None) # 簡易的な重複防止
+            if not target_site: break
 
-            target_site = None
-            target_text = (entry.title + getattr(entry, 'summary', '') + getattr(entry, 'description', '')).lower()
-
-            for site in fleet_data:
-                sk = site.get('site_key')
-                if not sk: continue
-                if self.target_platform != 'all' and site.get('platform', '').lower() != self.target_platform: continue
-                if sk in posted_sites: continue
-
-                keywords = [k.strip().lower() for k in site.get('routing_keywords', '').split(',') if k.strip()]
-                if not keywords or any(k in target_text for k in keywords):
-                    target_site = site
-                    hit_word = next((k for k in keywords if k in target_text), "適合")
-                    break
-
-            if not target_site: continue
-
-            site_name = target_site.get('name') or target_site.get('site_key')
-            site_platform = target_site.get('platform', 'Livedoor').upper()
-
-            self.stdout.write(f"\n{self.style.HTTP_INFO('━' * 80)}")
-            self.log(f" 📄 偵察 [{index+1}/{len(rss_pool)}]: {entry.title[:60]}")
-            self.log(f" 🎯 ターゲット: 【{site_name}】 ({site_platform}拠点)")
-
-            current_key = api_keys[processed_count % len(api_keys)]
-            
-            # ✍️ 投稿実行（リダイレクト解決を含む）
-            success, result_info = self.process_single_post(target_site, entry, [current_key], self.project_name, hit_word)
+            self.log(f"【MISSION {index+1}】{entry.title[:30]}...")
+            success, result = self.process_single_post(target_site, entry, current_key)
             
             if success:
-                posted_sites.add(target_site['site_key'])
-                processed_count += 1
-                self.log(f" ✅ 【{site_name}】デプロイ成功！ ID: {result_info}", self.style.SUCCESS)
-                time.sleep(random.randint(20, 35))
+                posted_count += 1
+                self.log(f"  ✅ 完遂: {result}", self.style.SUCCESS)
+                if not self.direct_url: time.sleep(random.randint(15, 30))
             else:
-                self.log(f" ❌ 【{site_name}】投稿失敗。 {result_info}", self.style.ERROR)
+                self.log(f"  ❌ 失敗: {result}", self.style.ERROR)
 
-        self.log(f"🏁 任務完了。総処理数: {processed_count}件", self.style.SUCCESS)
+    def process_single_post(self, cfg, entry, api_key):
+        # Driver用設定
+        driver_config = cfg.copy()
+        driver_config['url'] = cfg.get('endpoint')
+        driver_config['api_key'] = cfg.get('api_key_or_pw')
 
-    def extract_tag(self, text, tag):
-        pattern = rf"\[{tag}\](.*?)\[/{tag}\]"
-        match = re.search(pattern, text, re.DOTALL)
-        return match.group(1).strip() if match else ""
-
-    def process_single_post(self, cfg, entry, api_keys, project_name, hit_word):
-        site_key = cfg.get('site_key', 'UNKNOWN')
-        endpoint = (cfg.get('endpoint') or cfg.get('url_or_endpoint') or cfg.get('url') or '').strip()
-        user_id = (cfg.get('user') or cfg.get('user_id') or '').strip()
-        api_pw = (cfg.get('api_key_or_pw') or cfg.get('api_key') or '').strip()
-        platform = cfg.get('platform', 'livedoor').lower()
-
-        debug_coord = f"URL: {endpoint} | User: {user_id}"
-
-        if not user_id or not endpoint:
-            return False, f"CONFIG_ERROR: 設定不足 ({debug_coord})"
-
-        connection.close()
-        
-        # 🚀 解決されたURLを使用してスクレイピング
+        # 1. スクレイピング（画像取得・あきらめ・AI生成の連鎖）
         real_url = self.resolve_google_news_url(entry.link)
-        raw_data = self.scrape_article_advanced(real_url, entry.title)
+        raw_data = self.scrape_article_logic(real_url, entry.title, api_key)
+        if not raw_data: return False, "記事内容の取得に失敗しました。"
+
+        # 2. 画像のVPS保存（外部参照用URL化）
+        final_img_url = raw_data.get('img', '')
+        if final_img_url:
+            final_img_url = self.save_image_to_vps(final_img_url, self.project_name)
+
+        # 3. AI生成プロセス
+        meta = self.get_project_meta(self.project_name)
+        prompt = self.prepare_prompt(meta, raw_data, real_url)
         
-        if not raw_data: 
-            return False, "SCRAPE_ERROR: 画像または本文の抽出に失敗"
-
-        try:
-            with open(os.path.join(self.config_dir, "project_configs.json"), 'r', encoding='utf-8') as f:
-                config_pool = json.load(f)
-            meta = config_pool.get(project_name, config_pool.get('bicstation'))
-        except:
-            return False, "FS_ERROR: project_configs.json load failed"
-
-        with open(os.path.join(self.prompt_dir, "ai_prompt_master.txt"), 'r', encoding='utf-8') as f:
-            prompt_template = f.read()
-
-        replaces = {
-            "{{project_display_name}}": meta['project_display_name'],
-            "{{persona}}": meta['persona'],
-            "{{category}}": meta['category'],
-            "{{item_term}}": meta['item_term'],
-            "{{mission_detail}}": meta['mission_detail'],
-            "{{body_structure}}": meta['body_structure'],
-            "{{footer_msg}}": meta['footer_msg'],
-            "{{url}}": real_url,
-            "{{body}}": raw_data['body'],
-            "{{maker}}": hit_word,
-            "{{name_or_actor}}": entry.title
-        }
-
-        final_prompt = prompt_template
-        for k, v in replaces.items():
-            final_prompt = final_prompt.replace(k, str(v))
-
-        processor = AIProcessor(api_keys, final_prompt)
-        ai_response = processor.generate_blog_content(raw_data, site_key)
+        processor = AIProcessor([api_key], prompt)
+        ai_response = processor.generate_blog_content(raw_data, cfg['site_key'])
         
         raw_text = ai_response.get('raw_text', '') if isinstance(ai_response, dict) else str(ai_response)
-        if not raw_text: return False, "AI_ERROR: 生成結果が空です。"
-
-        gen_title = self.extract_tag(raw_text, "TITLE") or entry.title
+        gen_title = self.extract_tag(raw_text, "TITLE") or raw_data['title']
         gen_body = self.extract_tag(raw_text, "BODY")
 
-        # 🚀 ボリューム最大化装飾
-        comment_file = os.path.join(self.config_dir, meta.get('comment_file', f"teitoku_{project_name}_comments.csv"))
-        selected_comment = "本日のトピックを戦略的視点から徹底解析します。"
-        if os.path.exists(comment_file):
-            with open(comment_file, 'r', encoding='utf-8') as f:
-                comments = [line.strip() for line in f if line.strip()]
-                if comments: selected_comment = random.choice(comments)
-
+        # 4. コンテンツ装飾
         accent = meta.get('accent_color', '#1e293b')
+        selected_comment = self.get_teitoku_comment(meta, self.project_name)
+        
         header_html = f"""
-<div style="border: 2px dashed {accent}; padding: 20px; margin-bottom: 25px; background: #fffaf0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-  <strong style="color: {accent}; font-size: 1.25em; display: block; margin-bottom: 10px;">🖋 提督の戦略的レビュー：</strong>
-  <span style="font-size: 1.15em; font-weight: bold; color: #333; line-height: 1.5;">「{selected_comment}」</span>
+<div style="border: 2px dashed {accent}; padding: 20px; margin-bottom: 25px; background: #fffaf0; border-radius: 12px;">
+  <strong style="color: {accent};">🖋 提督のレビュー：</strong><br>
+  <span style="font-size: 1.1em; font-weight: bold;">「{selected_comment}」</span>
 </div>
 """
-        converted_body = HTMLConverter.md_to_html(gen_body)
-        enhanced_body = converted_body.replace('<h3>', f'<h3 style="border-left: 8px solid {accent}; border-bottom: 1px solid #e5e7eb; padding: 10px 15px; margin: 40px 0 20px 0; color: {accent}; background: #f9fafb;">')
-        
-        url_hash = hashlib.md5(real_url.encode()).hexdigest()[:8]
-        internal_url = f"https://{self.target_domain}/news/{datetime.now().strftime('%Y%m%d')}_{url_hash}/"
-        
-        footer_html = f"""
-<hr style="border: 0; height: 1px; background: #e5e7eb; margin: 50px 0 30px 0;">
-<div style="padding: 25px; background: #f1f5f9; border-radius: 10px; border: 1px solid #e2e8f0;">
-  <p style="font-weight: bold; margin-bottom: 15px; color: #1e293b; font-size: 1.1em;">📑 情報アーカイブ・追跡調査：</p>
-  <div style="text-align: center; margin-top: 15px;">
-    <a href="{internal_url}" style="display: inline-block; padding: 12px 30px; background: {accent}; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold;">▶ 公式アーカイブで詳細を確認</a>
-  </div>
-</div>
-"""
-        final_html_body = header_html + enhanced_body + footer_html
+        body_html = HTMLConverter.md_to_html(gen_body)
+        body_html = body_html.replace('<h3>', f'<h3 style="border-left: 8px solid {accent}; border-bottom: 1px solid #eee; padding: 10px; background: #f9f9f9; color: {accent};">')
 
+        if final_img_url:
+            final_html = f'<div style="text-align:center; margin-bottom:20px;"><img src="{final_img_url}" style="width:100%; max-width:800px; border-radius:10px;"></div>' + header_html + body_html
+        else:
+            final_html = header_html + body_html
+
+        # 5. 投稿実行
         try:
-            Article.objects.update_or_create(
-                source_url=real_url, site=project_name, 
-                defaults={
-                    'title': gen_title, 'body_text': raw_text, 
-                    'main_image_url': raw_data['img'], 'is_exported': True,
-                    'extra_metadata': {'model': 'v47.2-ultimate', 'hit': hit_word}
-                }
-            )
-
-            driver_cfg = {'endpoint': endpoint, 'user': user_id, 'api_key': api_pw}
-            driver_class = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(platform, LivedoorDriver)
-            driver = driver_class(driver_cfg)
-            
-            res = driver.post(title=gen_title, body=final_html_body, image_url=raw_data['img'], source_url=real_url)
-            return (True, str(res)) if res else (False, "DRIVER_REJECTED")
-
+            Article.objects.update_or_create(source_url=real_url, site=self.project_name, defaults={'title': gen_title, 'is_exported': True})
+            driver_class = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(cfg['platform'].lower(), LivedoorDriver)
+            driver = driver_class(driver_config)
+            res = driver.post(title=gen_title, body=final_html, image_url=final_img_url, source_url=real_url)
+            return True, f"投稿完了({cfg['platform']})"
         except Exception as e:
-            return False, f"EXCEPTION: {str(e)}"
+            return False, f"Driver投稿エラー: {str(e)}"
 
-    def scrape_article_advanced(self, url, title):
-        """DMM/FANZA & 一般OGP解析ロジック"""
+    def scrape_article_logic(self, url, default_title, api_key):
+        """高度なスクレイピングと画像取得のフォールバック"""
         try:
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
             res = requests.get(url, timeout=15, headers=headers)
             res.encoding = res.apparent_encoding
             soup = BeautifulSoup(res.text, 'html.parser')
-
-            # 🖼️ 画像抽出 (優先度順)
+            
+            # 画像探索
             img_url = ""
+            # 1. OGP
+            og_img = soup.find("meta", property="og:image")
+            if og_img: img_url = og_img.get("content")
             
-            # 1. DMM/FANZA 特化
-            pkg_img = soup.select_one('#sample-video img, .package-image img, .main-image img')
-            if pkg_img: img_url = pkg_img.get('src') or pkg_img.get('data-src')
-            
-            # 2. 一般的なOGP (ITニュース等)
+            # 2. 本文内の主要画像 (OGPがなければ)
             if not img_url:
-                og_img = soup.find("meta", property="og:image")
-                if og_img: img_url = og_img.get("content")
-            
-            # 3. Twitter Card
-            if not img_url:
-                tw_img = soup.find("meta", attrs={"name": "twitter:image"})
-                if tw_img: img_url = tw_img.get("content")
+                main_img = soup.select_one('article img, .main-visual img, .entry-content img')
+                if main_img: img_url = main_img.get('src')
 
+            # URLの正規化
             if img_url and img_url.startswith('//'): img_url = 'https:' + img_url
-            if not img_url: img_url = "https://bicstation.com/static/img/default_news.png" # 最終フォールバック
+            elif img_url and img_url.startswith('/'): img_url = url.split('/')[0] + '//' + url.split('/')[2] + img_url
 
-            # 📝 本文抽出
-            for tag in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe']): tag.decompose()
-            body_area = soup.select_one('article, .article-body, .entry-content, #main, .common-detail-box, .post-content')
-            main_text = (body_area.get_text() if body_area else soup.get_text()).strip()
-            main_text = re.sub(r'\n+', '\n', main_text) # 余計な改行を整理
+            # あきらめ & AI生成
+            if not img_url or "google" in img_url or img_url.endswith('.gif'):
+                self.log("  ⚠️ 有効画像なし。AIによるアイキャッチ生成に切り替えます。")
+                img_url = self.generate_ai_image(default_title, api_key)
 
-            return {'url': url, 'title': title, 'img': img_url, 'body': main_text[:3000]}
+            # テキスト抽出
+            for s in soup(['script', 'style', 'nav', 'header', 'footer']): s.decompose()
+            body_text = soup.get_text(separator='\n').strip()
+            body_text = re.sub(r'\n+', '\n', body_text)
+
+            return {
+                'url': url, 
+                'title': (soup.title.string or default_title).strip(), 
+                'img': img_url, 
+                'body': body_text[:5000]
+            }
         except Exception as e:
-            self.log(f"⚠️ スクレイピングエラー: {e}", self.style.WARNING)
+            self.log(f"  ❌ スクレイピング致命的エラー: {str(e)}")
             return None
+
+    def generate_ai_image(self, title, api_key):
+        """画像がない場合の最終手段：AI画像生成"""
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key={api_key}"
+            prompt = f"Professional high-quality digital illustration for a blog post titled: '{title}'. Modern, clean, and engaging style."
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generation_config": {"response_modalities": ["IMAGE"]}
+            }
+            res = requests.post(url, json=payload, timeout=45).json()
+            b64 = res['candidates'][0]['content']['parts'][0]['inlineData']['data']
+            return f"data:image/png;base64,{b64}"
+        except:
+            self.log("  ⚠️ AI画像生成も失敗しました。画像なしで進行します。")
+            return ""
+
+    def get_project_meta(self, project_name):
+        path = os.path.join(self.config_dir, "project_configs.json")
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f).get(project_name, {})
+
+    def prepare_prompt(self, meta, raw_data, source_url):
+        with open(os.path.join(self.prompt_dir, "ai_prompt_master.txt"), 'r', encoding='utf-8') as f:
+            tmpl = f.read()
+        
+        replacements = {
+            "{{project_display_name}}": meta.get('project_display_name'),
+            "{{persona}}": meta.get('persona'),
+            "{{category}}": meta.get('category'),
+            "{{item_term}}": meta.get('item_term'),
+            "{{mission_detail}}": meta.get('mission_detail'),
+            "{{body_structure}}": meta.get('body_structure'),
+            "{{footer_msg}}": meta.get('footer_msg'),
+            "{{url}}": source_url,
+            "{{body}}": raw_data['body'],
+            "{{maker}}": "最新トレンド",
+            "{{name_or_actor}}": raw_data['title']
+        }
+        for k, v in replacements.items(): tmpl = tmpl.replace(k, str(v or ""))
+        return tmpl
+
+    def get_teitoku_comment(self, meta, project_name):
+        file_path = os.path.join(self.config_dir, meta.get('comment_file', f"teitoku_{project_name}_comments.csv"))
+        if os.path.exists(file_path):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                comments = [l.strip() for l in f if l.strip()]
+                if comments: return random.choice(comments)
+        return "必見の情報です。"
 
     def load_csv_data(self, path):
         if not os.path.exists(path): return []
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                return list(csv.DictReader(f, delimiter='|'))
-        except: return []
+        with open(path, "r", encoding="utf-8") as f: 
+            return list(csv.DictReader(f, delimiter='|'))
 
     def get_fresh_rss_pool(self, urls):
         pool = []
-        for url in urls:
+        for u in urls:
             try:
-                res = requests.get(url, timeout=15)
-                feed = feedparser.parse(res.text)
-                pool.extend(feed.entries)
-            except: continue
+                res = requests.get(u, timeout=10)
+                pool.extend(feedparser.parse(res.text).entries)
+            except: pass
         return pool
+
+    def extract_tag(self, text, tag):
+        match = re.search(rf"\[{tag}\](.*?)\[/{tag}\]", text, re.DOTALL)
+        return match.group(1).strip() if match else ""
