@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-【SYSTEM OVERVIEW: v47.1 Strategic-Ultimate-Unified】
-1. 目的: 投稿先の完全視認化、DMM/FANZA画像抽出の復旧、記事ボリュームの最大化。
+【SYSTEM OVERVIEW: v47.2 Strategic-Ultimate-Unified】
+1. 目的: 投稿先の完全視認化、DMM/FANZAおよびGoogleニュースリダイレクトの完全解決。
 2. 特徴: 
-   - ログの完全透明化: ターゲット拠点名、プラットフォーム、成功IDをすべて明示。
-   - 解析力の復元: RSS内のHTMLおよび遷移先サイトからの多段画像抽出ロジック（DMM対応）。
-   - 記事の「格」の向上: 提督レビュー、重厚な見出し装飾、内部リンクアーカイブを完備。
-   - 精密デバッグ: 失敗時のエンドポイント・ユーザー情報の強制露出。
+   - Google RSS対策: Googleニュースの中継URLを解析し、真のソースサイトから画像・本文を抽出。
+   - サムネイル正常化: Googleロゴの誤取得を排除し、記事固有のアイキャッチを優先取得。
+   - ログの透明化: ターゲット拠点名、プラットフォーム、成功IDをすべて明示。
+   - 記事の「格」向上: 提督レビュー、重厚な見出し装飾、内部リンクアーカイブを完備。
 """
 
 import os, re, random, requests, feedparser, time, csv, hashlib, json
@@ -22,7 +22,7 @@ from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'BICSTATION v47.1: Ultimate Unified Strategic System'
+    help = 'BICSTATION v47.2: Ultimate Unified Strategic System (Redirect Resolved)'
 
     ADULT_PROJECTS = ['tiper', 'avflash', 'adult-test', 'pink-station', 'bic-erog', 'adult-search']
 
@@ -36,6 +36,39 @@ class Command(BaseCommand):
         text = f"[{ts}] {msg}"
         if style_func: self.stdout.write(style_func(text))
         else: self.stdout.write(text)
+
+    def resolve_google_news_url(self, url):
+        """GoogleニュースのリダイレクトURLを解決して真のURLを返す"""
+        if "news.google.com" not in url and "google.com/rss/articles" not in url:
+            return url
+            
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        try:
+            # allow_redirects=True でリダイレクト先を追跡
+            response = requests.get(url, headers=headers, timeout=12, allow_redirects=True)
+            final_url = response.url
+            
+            # もしリダイレクト先がまだGoogleドメインなら、メタタグ内のURLを探す
+            if "google.com" in final_url:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                meta_candidates = [
+                    soup.find("meta", property="og:url"),
+                    soup.find("link", rel="canonical"),
+                    soup.find("meta", attrs={"name": "twitter:url"})
+                ]
+                for meta in meta_candidates:
+                    if meta and meta.get("content"):
+                        final_url = meta["content"]
+                        break
+                    elif meta and meta.get("href"):
+                        final_url = meta["href"]
+                        break
+            return final_url
+        except Exception as e:
+            self.log(f"⚠️ URL解決警告: {e}", self.style.WARNING)
+            return url
 
     def handle(self, *args, **options):
         # 🚀 1. 初期化
@@ -56,9 +89,9 @@ class Command(BaseCommand):
         self.target_domain = DOMAIN_MAP.get(self.project_name, f"{self.project_name}.com")
 
         self.stdout.write(f"\n{self.style.SUCCESS('▼' * 100)}")
-        self.stdout.write(self.style.SUCCESS(f" 🔱 UNIFIED STRATEGIC SYSTEM v47.1 (ULTIMATE-UNIFIED)"))
+        self.stdout.write(self.style.SUCCESS(f" 🔱 UNIFIED STRATEGIC SYSTEM v47.2 (GOOGLE-REDIRECT-RESOLVED)"))
         self.stdout.write(f" 📂 PROJECT      : {self.project_name.upper()}")
-        self.stdout.write(f" 🎯 MISSION      : 全機能統合（画像解析復旧・投稿先明示・ボリューム強化）")
+        self.stdout.write(f" 🎯 MISSION      : 画像正常化・リダイレクト解除・ボリューム最大化")
         self.stdout.write(f"{self.style.SUCCESS('▲' * 100)}\n")
 
         # 🚀 2. データロード
@@ -113,7 +146,6 @@ class Command(BaseCommand):
 
             if not target_site: continue
 
-            # 投稿先の情報を取得
             site_name = target_site.get('name') or target_site.get('site_key')
             site_platform = target_site.get('platform', 'Livedoor').upper()
 
@@ -123,14 +155,13 @@ class Command(BaseCommand):
 
             current_key = api_keys[processed_count % len(api_keys)]
             
-            # ✍️ 投稿実行
+            # ✍️ 投稿実行（リダイレクト解決を含む）
             success, result_info = self.process_single_post(target_site, entry, [current_key], self.project_name, hit_word)
             
             if success:
                 posted_sites.add(target_site['site_key'])
                 processed_count += 1
-                self.log(f" ✅ 【{site_name}】へのデプロイ成功！ ID: {result_info}", self.style.SUCCESS)
-                self.log(f" 🚩 進捗: {len(posted_sites)}/{len(target_site_keys)} 拠点完了", self.style.SUCCESS)
+                self.log(f" ✅ 【{site_name}】デプロイ成功！ ID: {result_info}", self.style.SUCCESS)
                 time.sleep(random.randint(20, 35))
             else:
                 self.log(f" ❌ 【{site_name}】投稿失敗。 {result_info}", self.style.ERROR)
@@ -149,14 +180,17 @@ class Command(BaseCommand):
         api_pw = (cfg.get('api_key_or_pw') or cfg.get('api_key') or '').strip()
         platform = cfg.get('platform', 'livedoor').lower()
 
-        debug_coord = f"URL: {endpoint} | User: {user_id} | Key: {api_pw[:4]}***"
+        debug_coord = f"URL: {endpoint} | User: {user_id}"
 
         if not user_id or not endpoint:
             return False, f"CONFIG_ERROR: 設定不足 ({debug_coord})"
 
         connection.close()
-        # 🚀 進化版スクレイピング（DMM解析ロジックを含む）
-        raw_data = self.scrape_article_advanced(entry)
+        
+        # 🚀 解決されたURLを使用してスクレイピング
+        real_url = self.resolve_google_news_url(entry.link)
+        raw_data = self.scrape_article_advanced(real_url, entry.title)
+        
         if not raw_data: 
             return False, "SCRAPE_ERROR: 画像または本文の抽出に失敗"
 
@@ -178,7 +212,7 @@ class Command(BaseCommand):
             "{{mission_detail}}": meta['mission_detail'],
             "{{body_structure}}": meta['body_structure'],
             "{{footer_msg}}": meta['footer_msg'],
-            "{{url}}": entry.link,
+            "{{url}}": real_url,
             "{{body}}": raw_data['body'],
             "{{maker}}": hit_word,
             "{{name_or_actor}}": entry.title
@@ -197,7 +231,7 @@ class Command(BaseCommand):
         gen_title = self.extract_tag(raw_text, "TITLE") or entry.title
         gen_body = self.extract_tag(raw_text, "BODY")
 
-        # 🚀 ボリューム最大化装飾（v46.9より継承・強化）
+        # 🚀 ボリューム最大化装飾
         comment_file = os.path.join(self.config_dir, meta.get('comment_file', f"teitoku_{project_name}_comments.csv"))
         selected_comment = "本日のトピックを戦略的視点から徹底解析します。"
         if os.path.exists(comment_file):
@@ -206,49 +240,36 @@ class Command(BaseCommand):
                 if comments: selected_comment = random.choice(comments)
 
         accent = meta.get('accent_color', '#1e293b')
-        
-        # ヘッダー装飾
         header_html = f"""
 <div style="border: 2px dashed {accent}; padding: 20px; margin-bottom: 25px; background: #fffaf0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
   <strong style="color: {accent}; font-size: 1.25em; display: block; margin-bottom: 10px;">🖋 提督の戦略的レビュー：</strong>
   <span style="font-size: 1.15em; font-weight: bold; color: #333; line-height: 1.5;">「{selected_comment}」</span>
 </div>
-<p style="font-size: 1.1em; line-height: 1.9; color: #374151; margin-bottom: 30px;">
-  司令部が精査した最新データに基づき、本件の重要性を多角的に解析しました。以下の通り、詳細なレポートを展開します。
-</p>
 """
-        # 本文装飾
         converted_body = HTMLConverter.md_to_html(gen_body)
         enhanced_body = converted_body.replace('<h3>', f'<h3 style="border-left: 8px solid {accent}; border-bottom: 1px solid #e5e7eb; padding: 10px 15px; margin: 40px 0 20px 0; color: {accent}; background: #f9fafb;">')
-        enhanced_body = enhanced_body.replace('<h4>', f'<h4 style="color: {accent}; border-bottom: 2px solid {accent}33; padding-bottom: 5px; margin-top: 25px;">')
         
-        # フッター装飾（重厚なアーカイブセクション）
-        url_hash = hashlib.md5(entry.link.encode()).hexdigest()[:8]
+        url_hash = hashlib.md5(real_url.encode()).hexdigest()[:8]
         internal_url = f"https://{self.target_domain}/news/{datetime.now().strftime('%Y%m%d')}_{url_hash}/"
         
         footer_html = f"""
 <hr style="border: 0; height: 1px; background: #e5e7eb; margin: 50px 0 30px 0;">
 <div style="padding: 25px; background: #f1f5f9; border-radius: 10px; border: 1px solid #e2e8f0;">
   <p style="font-weight: bold; margin-bottom: 15px; color: #1e293b; font-size: 1.1em;">📑 情報アーカイブ・追跡調査：</p>
-  <p style="font-size: 0.95em; color: #475569; line-height: 1.6;">
-    本件に関する追加情報や、過去のアーカイブとの相関関係については、以下の特設セクションにて継続的にアップデートしております。
-    詳細な仕様や、より深いバックグラウンドに興味がある読者諸君は、是非チェックしていただきたい。
-  </p>
-  <div style="text-align: center; margin-top: 25px;">
-    <a href="{internal_url}" style="display: inline-block; padding: 15px 40px; background: {accent}; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1em; transition: all 0.3s ease;">▶ 続きを詳しく読む（公式アーカイブへ）</a>
+  <div style="text-align: center; margin-top: 15px;">
+    <a href="{internal_url}" style="display: inline-block; padding: 12px 30px; background: {accent}; color: #ffffff !important; text-decoration: none; border-radius: 5px; font-weight: bold;">▶ 公式アーカイブで詳細を確認</a>
   </div>
 </div>
-<p style="text-align: right; font-size: 0.8em; color: #94a3b8; margin-top: 15px;">※最終更新: {datetime.now().strftime('%Y/%m/%d %H:%M')}</p>
 """
         final_html_body = header_html + enhanced_body + footer_html
 
         try:
             Article.objects.update_or_create(
-                source_url=entry.link, site=project_name, 
+                source_url=real_url, site=project_name, 
                 defaults={
                     'title': gen_title, 'body_text': raw_text, 
                     'main_image_url': raw_data['img'], 'is_exported': True,
-                    'extra_metadata': {'model': 'v47.1-ultimate', 'hit': hit_word}
+                    'extra_metadata': {'model': 'v47.2-ultimate', 'hit': hit_word}
                 }
             )
 
@@ -256,57 +277,50 @@ class Command(BaseCommand):
             driver_class = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(platform, LivedoorDriver)
             driver = driver_class(driver_cfg)
             
-            res = driver.post(title=gen_title, body=final_html_body, image_url=raw_data['img'], source_url=entry.link)
-            if res:
-                return True, str(res)
-            else:
-                return False, f"DRIVER_REJECTED: 認証失敗またはURL不正 ({debug_coord})"
+            res = driver.post(title=gen_title, body=final_html_body, image_url=raw_data['img'], source_url=real_url)
+            return (True, str(res)) if res else (False, "DRIVER_REJECTED")
 
         except Exception as e:
-            return False, f"EXCEPTION: {str(e)} | {debug_coord}"
+            return False, f"EXCEPTION: {str(e)}"
 
-    def scrape_article_advanced(self, entry):
-        """DMM/FANZA解析ロジックを含む進化版スクレイピング"""
+    def scrape_article_advanced(self, url, title):
+        """DMM/FANZA & 一般OGP解析ロジック"""
         try:
-            url = entry.link
-            img_url = ""
-
-            # 1. RSSの概要文から抽出
-            summary_text = getattr(entry, 'summary', getattr(entry, 'description', ''))
-            if summary_text:
-                img_match = re.search(r'src=["\'](https?://.*?\.(?:jpg|jpeg|png|gif|webp)(?:\?.*?)?)["\']', summary_text, re.I)
-                if img_match: img_url = img_match.group(1)
-
-            # 2. サイト本体から抽出（DMM等の特殊タグ対応）
-            if not img_url or "dmm.co.jp" in url or "fanza.com" in url:
-                res = requests.get(url, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
-                soup = BeautifulSoup(res.text, 'html.parser')
-                
-                # DMM/FANZA 特化型セレクタ
-                pkg_img = soup.select_one('#sample-video img, .package-image img, .main-image img, meta[property="og:image"]')
-                if pkg_img:
-                    img_url = pkg_img.get('src') or pkg_img.get('content') or pkg_img.get('href')
-                
-                # 一般的なOGP
-                if not img_url:
-                    og_img = soup.find("meta", property="og:image")
-                    if og_img: img_url = og_img.get("content")
-
-            if not img_url: return None
-            if img_url.startswith('//'): img_url = 'https:' + img_url
-
-            # 本文抽出
-            res = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+            res = requests.get(url, timeout=15, headers=headers)
             res.encoding = res.apparent_encoding
             soup = BeautifulSoup(res.text, 'html.parser')
-            for tag in soup(['script', 'style', 'nav', 'header', 'footer', 'aside']): tag.decompose()
-            
-            # 本文エリアの特定（DMM系 detail-box 対応）
-            body_area = soup.select_one('article, .article-body, .entry-content, #main, .common-detail-box, .mg-b20.lh4')
-            main_text = (body_area.get_text() if body_area else soup.get_text()).strip()
 
-            return {'url': url, 'title': entry.title, 'img': img_url, 'body': main_text[:2500]}
-        except: return None
+            # 🖼️ 画像抽出 (優先度順)
+            img_url = ""
+            
+            # 1. DMM/FANZA 特化
+            pkg_img = soup.select_one('#sample-video img, .package-image img, .main-image img')
+            if pkg_img: img_url = pkg_img.get('src') or pkg_img.get('data-src')
+            
+            # 2. 一般的なOGP (ITニュース等)
+            if not img_url:
+                og_img = soup.find("meta", property="og:image")
+                if og_img: img_url = og_img.get("content")
+            
+            # 3. Twitter Card
+            if not img_url:
+                tw_img = soup.find("meta", attrs={"name": "twitter:image"})
+                if tw_img: img_url = tw_img.get("content")
+
+            if img_url and img_url.startswith('//'): img_url = 'https:' + img_url
+            if not img_url: img_url = "https://bicstation.com/static/img/default_news.png" # 最終フォールバック
+
+            # 📝 本文抽出
+            for tag in soup(['script', 'style', 'nav', 'header', 'footer', 'aside', 'iframe']): tag.decompose()
+            body_area = soup.select_one('article, .article-body, .entry-content, #main, .common-detail-box, .post-content')
+            main_text = (body_area.get_text() if body_area else soup.get_text()).strip()
+            main_text = re.sub(r'\n+', '\n', main_text) # 余計な改行を整理
+
+            return {'url': url, 'title': title, 'img': img_url, 'body': main_text[:3000]}
+        except Exception as e:
+            self.log(f"⚠️ スクレイピングエラー: {e}", self.style.WARNING)
+            return None
 
     def load_csv_data(self, path):
         if not os.path.exists(path): return []
