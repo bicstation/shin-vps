@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-【SYSTEM OVERVIEW: v50.5 Strategic-Scraping-Master】
-1. 目的: スクショ解析を廃止。スクレイピングによる画像取得とAI補完に特化。
+【SYSTEM OVERVIEW: v50.6 Strategic-Fleet-Broadcast】
+1. 目的: 全ブログへの一斉出撃（各サイト最低1回投稿）を保証。
 2. 特徴:
-   - 🛡️ 循環参照回避: blog_driversの各クラスを動的にハンドリング。
-   - 🖼️ 画像永続化: 生成/取得画像は /media/ai_generated/ に保存して外部公開URL化。
-   - 🔍 高度なスクレイピング: OGPおよび本文中から最適な画像を探索。
-   - 🤖 AI画像補完: 画像が取得できない場合は、Gemini 2.5 Flashで画像を動的生成。
+    - 🛡️ 艦隊主導ループ: 記事数ではなく、ブログ（Fleet）の数だけループを回します。
+    - 📦 記事の自動消費: 1ブログに対し1つの未処理記事を割り当て。
+    - 🖼️ 画像永続化: 生成/取得画像は /media/ai_generated/ に保存。
+    - 🤖 AI補完: 画像なし記事はGemini 2.5 Flashで動的生成。
 """
 
 import os, re, random, requests, feedparser, time, csv, hashlib, json, base64
@@ -23,7 +23,7 @@ from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'BICSTATION v50.5: Scraping-First & AI Image Generation'
+    help = 'BICSTATION v50.6: One-Post-Per-Blog Fleet Strategy'
 
     def add_arguments(self, parser):
         parser.add_argument('--project', type=str, default='bicstation')
@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 if res.status_code == 200:
                     img_data = res.content
             
-            if not img_data: return b64_or_url # 保存失敗時は元のURLを返す
+            if not img_data: return b64_or_url
 
             save_dir = os.path.join(settings.MEDIA_ROOT, "ai_generated")
             os.makedirs(save_dir, exist_ok=True)
@@ -88,57 +88,78 @@ class Command(BaseCommand):
         DOMAIN_MAP = {'bicstation': 'bicstation.com', 'tiper': 'tiper.live', 'saving': 'bic-saving.com', 'avflash': 'avflash.xyz'}
         self.target_domain = DOMAIN_MAP.get(self.project_name, f"{self.project_name}.com")
 
-        # 配信先・ソース読み込み
+        # 1. ブログリスト（艦隊データ）の読み込み
         fleet_data = self.load_csv_data(os.path.join(self.config_dir, f"{self.project_name}_fleet.csv"))
-        
+        if not fleet_data:
+            return self.log(f"❌ 艦隊データ(fleet.csv)が空、または存在しません。", self.style.ERROR)
+
+        # 2. ソース記事（RSSプール）の読み込み
         if self.direct_url:
             rss_pool = [type('obj', (object,), {'link': self.direct_url, 'title': '手動緊急出撃'})]
         else:
             rss_sources = self.load_csv_data(os.path.join(self.config_dir, f"{self.project_name}_rss_sources.csv"))
             raw_pool = self.get_fresh_rss_pool([row['url'] for row in rss_sources if 'url' in row])
             connection.close()
-            # 重複チェック（Googleニュースリダイレクト考慮）
+            # 未処理記事のみにフィルタリング
             rss_pool = [e for e in raw_pool if not Article.objects.filter(site=self.project_name, source_url=self.resolve_google_news_url(e.link)).exists()]
 
-        # APIキー取得
+        # 3. APIキーの準備
         self.api_keys = [os.getenv(f"GEMINI_API_KEY_{i}").strip() for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
         if not self.api_keys: return self.log("❌ APIキーが設定されていません。", self.style.ERROR)
 
-        self.log(f"🛡️ 艦隊集結: {len(rss_pool)} 件の未処理任務を確認。")
+        if not rss_pool:
+            return self.log("🛡️ 未処理の任務（新着記事）はありません。全艦待機。")
 
-        posted_count = 0
-        for index, entry in enumerate(rss_pool):
-            current_key = self.api_keys[posted_count % len(self.api_keys)]
-            target_site = next((s for s in fleet_data if s['site_key'] not in [p for p in []]), None) # 簡易的な重複防止
-            if not target_site: break
+        self.log(f"🛡️ 艦隊一斉出撃モード: {len(fleet_data)} サイトへの順次投稿を開始します。")
 
-            self.log(f"【MISSION {index+1}】{entry.title[:30]}...")
-            success, result = self.process_single_post(target_site, entry, current_key)
+        # 4. 全ブログに対して順に投稿
+        posted_success_count = 0
+        
+        for index, target_blog in enumerate(fleet_data):
+            # 記事が尽きたら終了
+            if not rss_pool:
+                self.log(f"⚠️ 記事プールが空になりました。{index}件で終了します。")
+                break
+
+            # 記事を1つ取り出す
+            entry = rss_pool.pop(0)
+            current_key = self.api_keys[posted_success_count % len(self.api_keys)]
+
+            self.log(f"【TARGET BLOG: {target_blog['site_key']}】{entry.title[:30]}...")
+            
+            success, result = self.process_single_post(target_blog, entry, current_key)
             
             if success:
-                posted_count += 1
-                self.log(f"  ✅ 完遂: {result}", self.style.SUCCESS)
-                if not self.direct_url: time.sleep(random.randint(15, 30))
+                posted_success_count += 1
+                self.log(f"  ✅ 完遂: {target_blog['site_key']} への投稿に成功しました。", self.style.SUCCESS)
+                
+                # スパム対策: 最後のブログでなければ待機
+                if index < len(fleet_data) - 1:
+                    wait = random.randint(30, 60)
+                    self.log(f"  ⏳ 次のブログまで {wait}秒 待機...")
+                    time.sleep(wait)
             else:
-                self.log(f"  ❌ 失敗: {result}", self.style.ERROR)
+                self.log(f"  ❌ 失敗: {target_blog['site_key']} - {result}", self.style.ERROR)
+
+        self.log(f"🏁 任務完了。全 {posted_success_count} ブログへの投稿試行を終了しました。")
 
     def process_single_post(self, cfg, entry, api_key):
-        # Driver用設定
+        """1ブログに対するスクレイピングから投稿までの全工程"""
         driver_config = cfg.copy()
         driver_config['url'] = cfg.get('endpoint')
         driver_config['api_key'] = cfg.get('api_key_or_pw')
 
-        # 1. スクレイピング（画像取得・あきらめ・AI生成の連鎖）
+        # 1. スクレイピング
         real_url = self.resolve_google_news_url(entry.link)
         raw_data = self.scrape_article_logic(real_url, entry.title, api_key)
-        if not raw_data: return False, "記事内容の取得に失敗しました。"
+        if not raw_data: return False, "スクレイピング不能"
 
-        # 2. 画像のVPS保存（外部参照用URL化）
+        # 2. 画像永続化
         final_img_url = raw_data.get('img', '')
         if final_img_url:
             final_img_url = self.save_image_to_vps(final_img_url, self.project_name)
 
-        # 3. AI生成プロセス
+        # 3. AIによる記事生成
         meta = self.get_project_meta(self.project_name)
         prompt = self.prepare_prompt(meta, raw_data, real_url)
         
@@ -149,7 +170,7 @@ class Command(BaseCommand):
         gen_title = self.extract_tag(raw_text, "TITLE") or raw_data['title']
         gen_body = self.extract_tag(raw_text, "BODY")
 
-        # 4. コンテンツ装飾
+        # 4. 装飾
         accent = meta.get('accent_color', '#1e293b')
         selected_comment = self.get_teitoku_comment(meta, self.project_name)
         
@@ -172,10 +193,10 @@ class Command(BaseCommand):
             Article.objects.update_or_create(source_url=real_url, site=self.project_name, defaults={'title': gen_title, 'is_exported': True})
             driver_class = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(cfg['platform'].lower(), LivedoorDriver)
             driver = driver_class(driver_config)
-            res = driver.post(title=gen_title, body=final_html, image_url=final_img_url, source_url=real_url)
+            driver.post(title=gen_title, body=final_html, image_url=final_img_url, source_url=real_url)
             return True, f"投稿完了({cfg['platform']})"
         except Exception as e:
-            return False, f"Driver投稿エラー: {str(e)}"
+            return False, f"投稿エラー: {str(e)}"
 
     def scrape_article_logic(self, url, default_title, api_key):
         """高度なスクレイピングと画像取得のフォールバック"""
@@ -187,25 +208,20 @@ class Command(BaseCommand):
             
             # 画像探索
             img_url = ""
-            # 1. OGP
             og_img = soup.find("meta", property="og:image")
             if og_img: img_url = og_img.get("content")
             
-            # 2. 本文内の主要画像 (OGPがなければ)
             if not img_url:
                 main_img = soup.select_one('article img, .main-visual img, .entry-content img')
                 if main_img: img_url = main_img.get('src')
 
-            # URLの正規化
             if img_url and img_url.startswith('//'): img_url = 'https:' + img_url
             elif img_url and img_url.startswith('/'): img_url = url.split('/')[0] + '//' + url.split('/')[2] + img_url
 
-            # あきらめ & AI生成
             if not img_url or "google" in img_url or img_url.endswith('.gif'):
                 self.log("  ⚠️ 有効画像なし。AIによるアイキャッチ生成に切り替えます。")
                 img_url = self.generate_ai_image(default_title, api_key)
 
-            # テキスト抽出
             for s in soup(['script', 'style', 'nav', 'header', 'footer']): s.decompose()
             body_text = soup.get_text(separator='\n').strip()
             body_text = re.sub(r'\n+', '\n', body_text)
@@ -223,6 +239,7 @@ class Command(BaseCommand):
     def generate_ai_image(self, title, api_key):
         """画像がない場合の最終手段：AI画像生成"""
         try:
+            # フォールバックモデル: gemini-2.5-flash-image-preview
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key={api_key}"
             prompt = f"Professional high-quality digital illustration for a blog post titled: '{title}'. Modern, clean, and engaging style."
             payload = {
