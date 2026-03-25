@@ -1,0 +1,81 @@
+/* --- 🚀 Livedoor標準スタイルの徹底鎮圧 --- */
+/* 既存の固定幅やフロートをすべて破壊します */
+#wrapper, #container, .main-container, .header-inner01, .header-inner02, 
+.left-container, .right-container, .main-column-inner {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    float: none !important;
+    border: none !important;
+}
+
+/* Livedoorが自動挿入する余計な余白と背景の削除 */
+body {
+    padding: 0 !important;
+    margin: 0 !important;
+    background-color: #f8f9fa !important; /* Bootstrapのlight背景 */
+    font-family: 'Noto Sans JP', sans-serif !important;
+}
+
+/* --- 💎 モダンUIパーツの定義 --- */
+
+/* 記事カード */
+.article-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px !important;
+    border: none !important;
+    background: #ffffff !important;
+    overflow: hidden;
+}
+.article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+}
+
+/* 画像コンテナの比率維持 */
+.card-img-container div {
+    transition: transform 0.3s ease;
+}
+.article-card:hover .card-img-container div {
+    transform: scale(1.05);
+}
+
+/* ナビゲーションバーの箇条書きドットを消去 */
+.navbar-nav, .navbar-nav li {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* サイドバー・プラグインの整形 */
+.side, .plugin-list {
+    list-style: none !important;
+    padding: 0 !important;
+}
+.side a, .plugin-list a, .side li, .plugin-list li {
+    text-decoration: none !important;
+    color: #495057 !important;
+    display: block;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e9ecef;
+    transition: background 0.2s;
+}
+.side a:hover, .plugin-list a:hover {
+    background-color: #f1f3f5;
+    color: #0d6efd !important;
+}
+
+/* --- 📱 スマホ対応の微調整 --- */
+@media (max-width: 768px) {
+    .main-header {
+        height: 200px !important;
+    }
+    .article-card {
+        flex-direction: column !important; /* スマホでは縦並び */
+    }
+    .card-img-container div {
+        height: 200px !important; /* スマホ時の画像高さ */
+    }
+}

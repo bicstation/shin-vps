@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">    
+    <title><$CategoryName ESCAPE$> - <$BlogTitle ESCAPE$></title>
+    <meta name="description" content="<$BlogTitle ESCAPE$>の「<$CategoryName ESCAPE$>」に属する記事の一覧です。最新情報から過去の人気記事まで、<$CategoryName ESCAPE$>に関する情報をまとめてチェックできます。">
+    <link rel="canonical" href="<$CategoryUrl$>">
+    <$HeadSectionCommon$>   
+    <$OGP$>
+    <meta property="og:title" content="<$CategoryName ESCAPE$> カテゴリの記事一覧 - <$BlogTitle ESCAPE$>">
+    <meta property="og:description" content="<$BlogTitle ESCAPE$>の「<$CategoryName ESCAPE$>」に関する記事をまとめたアーカイブページです。">
+    <meta property="og:type" content="article">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<$CSSUrl$>">
+</head>
+
+
+<body class="bg-light <IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
+    <div style="display:none;"><$BlogHeader$></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="<$BlogUrl$>"><$BlogTitle ESCAPE$></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarsMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" href="https://bic-saving.com">TOP</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="<$BlogUrl$>">ホーム</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">メニュー</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="https://bic-saving.com/about">アバウト</a></li>
+                            <li><a class="dropdown-item" href="https://bic-saving.com/contact">コンタクト</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="<$RSSUrl$>">RSSフィード</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <form action="<$BlogUrl$>search" method="GET" class="d-flex">
+                    <input class="form-control me-2" type="search" name="q" placeholder="キーワード検索...">
+                    <button class="btn btn-primary" type="submit">検索</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <header class="main-header d-flex align-items-center text-white" 
+            style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('<$BlogHeaderImageUrl$>') no-repeat center center; background-size: cover; height: 260px;">
+        <div class="container text-center">
+            <span class="badge bg-primary mb-2 px-3 py-2 rounded-pill fw-bold shadow-sm">CATEGORY ARCHIVE</span>
+            <h1 class="display-5 fw-bold mb-2"><$CategoryName ESCAPE$></h1>
+            <p class="lead mb-0 text-light opacity-75"><$BlogTitle ESCAPE$> の「<$CategoryName ESCAPE$>」に関する記事一覧</p>
+        </div>
+    </header>
+
+    <div class="container my-5">
+        <div class="row g-4">
+            
+            <main class="col-lg-8">
+                
+                <div class="mb-5 p-3 bg-white rounded shadow-sm d-flex justify-content-center gap-2 overflow-auto border-top border-primary border-3">
+                    <script type="text/javascript">var blogroll_channel_id = 360807;</script>
+                    <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
+                </div>
+
+                <IfIsSearchTemplate><UnlessSearchResults>
+                    <div class="alert alert-warning shadow-sm border-0 p-4 mb-5">
+                        <h4 class="fw-bold">該当する記事はありません</h4>
+                        <p class="mb-0">別のキーワードで検索するか、トップページからお探しください。</p>
+                    </div>
+                </UnlessSearchResults></IfIsSearchTemplate>
+
+                <CategorizedArticlesLoop>
+                    <article class="card article-card mb-4 shadow-sm flex-md-row border-0 overflow-hidden">
+                        <div class="col-md-5 card-img-container" id="category-thumb-<$ArticleId$>"></div>
+                        
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="text-primary fw-bold small mb-2"><$ArticleDate$></div>
+                            <h2 class="card-title h5 fw-bold mb-3">
+                                <a href="<$ArticlePermalink$>" class="text-dark text-decoration-none"><$ArticleTitle ESCAPE$></a>
+                            </h2>
+                            <p class="card-text text-muted small mb-4">
+                                <$ArticleDescription ESCAPE$>
+                            </p>
+                            <div class="mt-auto">
+                                <a href="<$ArticlePermalink$>" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold">詳しく見る</a>
+                            </div>
+                        </div>
+                        <div id="category-hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
+                    </article>
+
+                    <script>
+                    (function() {
+                        var bodyHtml = document.getElementById('category-hidden-body-<$ArticleId$>').innerHTML;
+                        var thumbContainer = document.getElementById('category-thumb-<$ArticleId$>');
+                        var imgMatch = bodyHtml.match(/<img [^>]*src=["']([^"']+)["']/);
+                        var imgUrl = imgMatch ? imgMatch[1] : 'https://via.placeholder.com/600x400?text=No+Image';
+                        thumbContainer.innerHTML = '<a href="<$ArticlePermalink$>" class="h-100 d-block"><div style="background: url(' + imgUrl + ') center center / cover; height: 100%; min-height: 220px;"></div></a>';
+                    })();
+                    </script>
+                    
+                    <IfFirstArticle><$Advertise$></IfFirstArticle>
+                </CategorizedArticlesLoop>
+
+                <nav class="d-flex justify-content-center my-5">
+                    <$IndexNavigator$>
+                </nav>
+            </main>
+
+            <aside class="col-lg-4">
+                <div class="sticky-top" style="top: 90px;">
+                    
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white fw-bold border-0 pt-4 px-4">
+                            <span class="border-start border-primary border-4 ps-2">このカテゴリの人気記事</span>
+                        </div>
+                        <div class="card-body p-2">
+                             <div class="listWithImage">
+                                <SetVar popularArticlesListWithImageCount>5</SetVar>
+                                <SetVar popularArticlesListWithImageImageWidth>80</SetVar>
+                                <SetVar popularArticlesListWithImageImageHeight>80</SetVar>
+                                <$PopularArticlesWithImageList$>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white fw-bold border-0 pt-4 px-4">
+                            <span class="border-start border-primary border-4 ps-2">カレンダー</span>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <$PluginList_A$>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white fw-bold border-0 pt-4 px-4">
+                            <span class="border-start border-primary border-4 ps-2">他のカテゴリー</span>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <$PluginList_B$>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-5 mt-5">
+        <div class="container text-center">
+            <div class="mb-3 fs-5 fw-bold"><$BlogTitle ESCAPE$></div>
+            <div class="small text-secondary mb-3"><$BlogFooter$></div>
+            <div class="pt-4 border-top border-secondary small text-muted">
+                © 2026 BICSTATION Fleet. Categorized View.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

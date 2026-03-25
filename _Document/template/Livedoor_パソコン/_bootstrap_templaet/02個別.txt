@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <$HeadSectionCommon$>
+    <meta name="description" content="<$ArticleDescription ESCAPE$>" />
+    <$OGP$>
+    <title><$ArticleTitle ESCAPE$> : <$BlogTitle ESCAPE$></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<$CSSUrl$>">
+</head>
+
+<body class="bg-light <IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
+    <div style="display:none;"><$BlogHeader$></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="<$BlogUrl$>"><$BlogTitle ESCAPE$></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarsMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">ホーム</a></li>
+                    <li class="nav-item"><a class="nav-link" href="<$RSSUrl$>">RSS</a></li>
+                </ul>
+                <form action="<$BlogUrl$>search" method="GET" class="d-flex">
+                    <input class="form-control me-2" type="search" name="q" placeholder="検索...">
+                    <button class="btn btn-primary" type="submit">検索</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <header class="main-header d-flex align-items-center text-white" 
+            style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('<$BlogHeaderImageUrl$>') no-repeat center center; background-size: cover; height: 260px;">
+        <div class="container text-center">
+            <h1 class="display-5 fw-bold mb-2"><$BlogTitle ESCAPE$></h1>
+            <p class="lead mb-0 text-light opacity-75"><$BlogDescription$></p>
+        </div>
+    </header>
+
+    <div class="container my-5">
+        <div class="row g-4">
+            
+            <main class="col-lg-8">
+                <article class="bg-white rounded shadow-sm p-4 p-md-5 mb-4" itemscope itemtype="http://schema.org/BlogPosting">
+                    
+                    <header class="mb-5 border-bottom pb-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <time class="badge bg-secondary text-white fw-normal p-2" datetime="<$ArticleDateISO8601$>"><$ArticleDate$></time>
+                            <IfArticleCategory1>
+                                <span class="small text-muted">カテゴリ:</span>
+                                <a href="<$ArticleCategory1Url$>" class="text-decoration-none badge bg-primary opacity-75 p-2"><$ArticleCategory1$></a>
+                            </IfArticleCategory1>
+                        </div>
+                        <h1 class="h2 fw-bold text-dark mb-4" itemprop="name"><$ArticleTitle ESCAPE$></h1>
+                        
+                        <div class="article-social-top py-2 border-top border-bottom border-light mt-3">
+                            <$ArticleToolBox$>
+                        </div>
+                    </header>
+
+                    <div class="article-body lh-lg fs-5 text-dark overflow-hidden mb-5" itemprop="articleBody">
+                        <$ArticleBody$>
+                        <IfArticleBodyMore>
+                            <div class="mt-4" id="more"><$ArticleBodyMore$></div>
+                        </IfArticleBodyMore>
+                        <$MessageBoard$>
+                    </div>
+
+                    <div class="mb-5 py-3 border-top border-light">
+                        <$ArticleTagsList$>
+                    </div>
+
+                    <footer class="bg-light p-4 rounded-3 d-flex justify-content-between align-items-center mb-5">
+                        <div class="fw-bold text-secondary">SNSでシェア</div>
+                        <div class="article-social-btn d-flex gap-2">
+                            <$ArticleToolBox$>
+                        </div>
+                    </footer>
+
+                    <div class="related-articles border-top pt-5 mb-5">
+                        <h4 class="fw-bold mb-4 border-start border-primary border-4 ps-2 small text-uppercase tracking-wider">Related Posts</h4>
+                        <$RelatedArticles$>
+                    </div>
+
+                    <IfArticleAllowComment>
+                    <section id="comments" class="mt-5 pt-5 border-top">
+                        <h4 class="fw-bold mb-4">コメント (<$ArticleCommentCount$>)</h4>
+                        <div class="mb-5">
+                            <$CommentsList$>
+                        </div>
+                        <div class="card bg-light border-0 p-4 shadow-sm">
+                            <h5 class="fw-bold mb-3">コメントを投稿する</h5>
+                            <$CommentForm2$>
+                        </div>
+                    </section>
+                    </IfArticleAllowComment>
+
+                </article>
+
+                <div class="article-pager my-5">
+                    <SetVar ArticlePagerType>2</SetVar>
+                    <SetVar UseTitlesForPager>1</SetVar>
+                    <$ArticlePager$>
+                </div>
+            </main>
+
+            <aside class="col-lg-4">
+                <div class="sticky-top" style="top: 90px;">
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white fw-bold border-0 pt-4 px-4">
+                            <span class="border-start border-primary border-4 ps-2">注目記事</span>
+                        </div>
+                        <div class="card-body p-2">
+                             <div class="listWithImage">
+                                <SetVar popularArticlesListWithImageCount>5</SetVar>
+                                <SetVar popularArticlesListWithImageImageWidth>80</SetVar>
+                                <SetVar popularArticlesListWithImageImageHeight>80</SetVar>
+                                <$PopularArticlesWithImageList$>
+                             </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white fw-bold border-0 pt-4 px-4">
+                            <span class="border-start border-primary border-4 ps-2">カレンダー</span>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <$PluginList_A$>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-white fw-bold border-0 pt-4 px-4">
+                            <span class="border-start border-primary border-4 ps-2">カテゴリー</span>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <$PluginList_B$>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-5 mt-5">
+        <div class="container text-center">
+            <div class="mb-3 fs-5 fw-bold"><$BlogTitle ESCAPE$></div>
+            <div class="small text-secondary mb-4"><$BlogFooter$></div>
+            <div class="pt-4 border-top border-secondary small text-muted">
+                © 2026 BICSTATION Fleet. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
