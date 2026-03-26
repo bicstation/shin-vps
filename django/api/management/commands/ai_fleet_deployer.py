@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 ================================================================================
-C-PLAN: ULTIMATE FLEET DEPLOYER - VERSION 2026.03
+C-PLAN: ULTIMATE FLEET DEPLOYER - FIXED DOMAIN VERSION
 ================================================================================
 【更新内容】
-1. 案内人コメント対応: {project}_comments.csv からランダムに一言を抽出し、レビューとして挿入。
-2. 文字化け(Mojibake)完全防衛: requests.apparent_encoding と多段階デコードを実装。
-3. TOAST破損防止: DB保存を外部API送信から完全に切り離し、最短時間でコミット。
-4. フィルタリング強化: --site 引数によるピンポイント投稿が可能。
+1. ドメイン自動判定: project_label に応じて internal_url のドメインを正確に切り替え。
+2. 案内人レビュー挿入: 冒頭に編集長の一言レビューを追加。
+3. 文字化け完全防衛: requests.apparent_encoding + 多段階デコード。
+4. 堅牢なDB処理: 外部投稿前にコミットし、失敗時はロールバック（削除）を実行。
 ================================================================================
 """
 
@@ -25,12 +25,7 @@ from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = """
-    Ultimate Fleet Deployer:
-    --project [tiper, saving] : プロジェクトCSVの選択
-    --target  [livedoor, hatena] : プラットフォーム絞り込み
-    --site    [site_key] : 特定の1サイトのみ実行
-    """
+    help = "Deploy articles to various platforms with domain-specific CTA."
 
     def add_arguments(self, parser):
         parser.add_argument('--project', type=str, default='tiper', help='Project Name')
@@ -53,13 +48,12 @@ class Command(BaseCommand):
         rss_csv = os.path.join(config_dir, f"{project_label}_rss_sources.csv")
         comment_csv = os.path.join(config_dir, f"{project_label}_comments.csv")
         
-        # 1. データロード
+        # データロード
         fleet_data = self.load_csv_data(fleet_csv)
         rss_sources = self.load_csv_data(rss_csv)
         char_comments = self.load_character_comments(comment_csv)
         
         if not fleet_data: return self.log(f"❌ Fleet CSV Load Error: {fleet_csv}")
-        self.log(f"🗨️ Character Comments: {len(char_comments)} lines loaded.")
 
         # フィルタリング
         if target_site_key:
@@ -69,12 +63,12 @@ class Command(BaseCommand):
 
         if not fleet_data: return self.log("⚠️ No matching site found.")
 
-        # 2. RSSプール作成
+        # RSSプール作成
         self.log(f"📡 Pooling RSS for {project_label}...")
         all_rss_entries = self.get_all_rss_entries(rss_sources)
         self.log(f"✅ {len(all_rss_entries)} entries found in pool.")
 
-        # 3. APIキー準備
+        # APIキー準備
         api_keys = [{"id": i, "key": os.getenv(f"GEMINI_API_KEY_{i}").strip()} 
                     for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
         if not api_keys: return self.log("❌ No Gemini API Keys found.")
@@ -86,7 +80,7 @@ class Command(BaseCommand):
 
         success_count, used_links = 0, set()
 
-        # 4. メインループ
+        # メインループ
         for site_cfg in fleet_data:
             site_key = site_cfg.get('site_key', 'gen')
             kws = [k.strip() for k in site_cfg.get('routing_keywords', '').split(',') if k.strip()]
@@ -96,33 +90,21 @@ class Command(BaseCommand):
 
             if not target_entry: continue
 
-            # コンテンツ取得
+            # コンテンツ取得・パース
             parser = RSSParserFactory.get_parser(target_entry['link'])
             parsed_data = parser.parse(target_entry['link'])
             
-            # 本文が空ならRSSから持ってきた生データ(raw_body)で補完
+            # 本文補完（Parser失敗時）
             if (not parsed_data or not parsed_data.get('body')) and target_entry.get('raw_body'):
                 parsed_data = parsed_data or {}
                 parsed_data['body'] = target_entry['raw_body']
 
-            if not parsed_data or not parsed_data.get('body'):
-                self.log(f"🚫 [{site_key}] Parse failed.")
-                continue
+            if not parsed_data or not parsed_data.get('body'): continue
 
-            # 画像Rescue (DMM/FANZA)
-            cid_m = re.search(r'cid=([^/&?]+)', target_entry['link']) or re.search(r'/cid/([^/&?]+)', target_entry['link'])
-            if cid_m and ("dummy" in str(parsed_data.get('img')) or not parsed_data.get('img')):
-                cid = cid_m.group(1)
-                parsed_data['img'] = f"https://p.dmm.co.jp/p/mono/movie/adult/{cid}/{cid}pl.jpg"
+            # 案内人コメント選出
+            selected_comment = random.choice(char_comments) if char_comments else "注目の最新作が登場。見逃せません。"
 
-            self.log("="*60)
-            self.log(f"📊 DEST: {site_key.upper()} | 📝 TLE: {target_entry['title'][:40]}...")
-            self.log("="*60)
-
-            # 案内人コメントを1つ選出
-            selected_comment = random.choice(char_comments) if char_comments else "業界注目の最新作。要チェックです。"
-
-            # 5. 実行
+            # 実行
             if self.deploy_balanced_unit(site_cfg, target_entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, selected_comment):
                 success_count += 1
                 used_links.add(target_entry['link'])
@@ -142,7 +124,6 @@ class Command(BaseCommand):
         for attempt in range(5):
             selected = random.choice(api_keys)
             try:
-                self.log(f"🤖 AI Request (Key ID: {selected['id']})")
                 processor = AIProcessor([selected['key']], ai_template)
                 ext = processor.generate_blog_content({
                     'url': entry['link'], 'title': entry['title'], 
@@ -150,13 +131,12 @@ class Command(BaseCommand):
                     'is_adult': str(site.get('is_adult', '0')).strip() == '1'
                 }, site.get('site_key'))
                 if ext: break
-            except Exception as e:
-                self.log(f"⏳ API Error: {str(e)[:40]}")
+            except:
                 time.sleep(10)
         
         if not ext: return False
 
-        # PHASE 2: DB記録 (最短化)
+        # PHASE 2: DB記録
         try:
             with transaction.atomic():
                 new_art = Article.objects.create(
@@ -168,9 +148,9 @@ class Command(BaseCommand):
                 )
                 art_id, p_body, p_title = new_art.id, new_art.body_text, new_art.title
         except Exception as e:
-            self.log(f"🔥 DB Write Error: {e}"); return False
+            self.log(f"🔥 DB Error: {e}"); return False
 
-        # PHASE 3: 外部デプロイ (案内人コメントを結合)
+        # PHASE 3: 外部デプロイ (ドメイン判定ロジック実装)
         try:
             cfg = site.copy()
             cfg.update({'api_key': site.get('api_key_or_pw'), 'url': site.get('url_or_endpoint'), 'current_dir': config_dir})
@@ -178,12 +158,25 @@ class Command(BaseCommand):
             pf = site.get('platform', '').lower()
             driver = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(pf, LivedoorDriver)(cfg)
             
+            # --- プロジェクトに応じたドメイン判定 ---
+            domain_map = {
+                'tiper': 'https://tiper.live',
+                'saving': 'https://bic-saving.com',
+                'bicstation': 'https://bicstation.com',
+                'avflash': 'https://avflash.xyz'
+            }
+            # 該当がない場合は project_label.com をフォールバック
+            base_url = domain_map.get(project_label, f"https://{project_label}.com")
+            full_internal_url = f"{base_url}/news/{art_id}"
+
             # HTML構築
             img_html = f'<div style="text-align:center; margin-bottom:15px;"><img src="{parsed_data.get("img")}" style="max-width:100%;"></div><br>'
-            # 案内人コメントを「レビュー」として上部に挿入
             review_html = f'<div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff6600; margin-bottom:20px;"><strong>🖋 編集長の一言レビュー：</strong><br>「{comment}」</div>'
             
-            final_content = img_html + review_html + HTMLConverter.md_to_html(p_body) + cta_template.replace("{{internal_url}}", f"https://{project_label}.com/news/{art_id}")
+            # CTAの {{internal_url}} を置換
+            final_cta = cta_template.replace("{{internal_url}}", full_internal_url)
+            
+            final_content = img_html + review_html + HTMLConverter.md_to_html(p_body) + final_cta
             
             if driver.post(title=p_title, body=final_content, source_url=entry['link']):
                 Article.objects.filter(id=art_id).update(is_exported=True)
@@ -191,7 +184,7 @@ class Command(BaseCommand):
             else:
                 Article.objects.filter(id=art_id).delete(); return False
         except Exception as e:
-            self.log(f"🚨 Error: {e}")
+            self.log(f"🚨 Deployment Error: {e}")
             Article.objects.filter(id=art_id).delete(); return False
 
     def get_all_rss_entries(self, sources):
@@ -204,7 +197,6 @@ class Command(BaseCommand):
             if not url: continue
             try:
                 res = requests.get(url, timeout=15, cookies=cookies, headers=headers)
-                # 文字化け対策
                 res.encoding = res.apparent_encoding
                 if 'ISO' in (res.encoding or '').upper(): res.encoding = 'utf-8'
                 
@@ -214,8 +206,7 @@ class Command(BaseCommand):
                     if link:
                         summary = getattr(e, 'summary', '') or getattr(e, 'description', '')
                         pool.append({
-                            'title': e.title, 
-                            'link': link,
+                            'title': e.title, 'link': link,
                             'raw_body': re.sub(r'<[^>]+>', '', summary).strip()
                         })
             except: continue
@@ -229,9 +220,7 @@ class Command(BaseCommand):
                 for line in f:
                     line = line.strip()
                     if line and "キャラ設定" not in line:
-                        # カンマ等が含まれる場合のクリーンアップ
-                        clean_line = line.strip('"').strip(',')
-                        comments.append(clean_line)
+                        comments.append(line.strip('"').strip(','))
             return comments
         except: return []
 
