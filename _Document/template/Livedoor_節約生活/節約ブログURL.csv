@@ -24,14 +24,14 @@ ld_shop|livedoor|shop.bic-saving.com|bic-saving2|WtdgZUxq3W|https://livedoor.blo
 ld_convenience|livedoor|con.bic-saving.com|bic-saving2|WtdgZUxq3W|https://livedoor.blogcms.jp/atompub/bic_saving2-vdnpa0so||コンビニ,セブンイレブン,ローソン,ファミリーマート,アプリ,無料券,プライベートブランド,スイーツ,増量,キャンペーン,支払,マルチコピー機,お試し引換券,増量キャンペーン
 ld_gift|livedoor|gift.bic-saving.com|bic-saving2|WtdgZUxq3W|https://livedoor.blogcms.jp/atompub/bic_saving2-1lzzraen/article||金券,カタログギフト,amazonギフト券,クオカード,商品券,図書カード,株主優待,ギフトカード,換金,買取,安く買う,有効期限,懸賞,当選,プレゼント,優待生活
 ld_saving_all|livedoor|all.bic-saving.com|bic-saving2|WtdgZUxq3W|https://livedoor.blogcms.jp/atompub/bic_saving2-msqqxtpn/article||節約,まとめ,全集,保存版,究極,ライフハック,固定費,変動費,貯金,資産形成,お得情報,裏技,初心者向け,ガイド,ランキング,徹底比較,1ヶ月,チャレンジ
-blogger_money|blogger|money.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|7734215874475663494|節約,マネー,貯金,家計,経済,インフレ,対策,資産運用,生活防衛,低コスト,シンプルライフ,ミニマリズム,お金の知識,マネーリテラシー,教育,老後,2000万円
-blogger_invest|blogger|invest.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|7948955311338225052|投資,nisa,ideco,米国株,全世界,投資信託,etf,配当,インデックス,アクティブ,リスク管理,アセットアロケーション,ポートフォリオ,長期,積立,分散,新nisa
-blogger_point|blogger|point.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|ID03|ポイ活,ポイント,還元,キャンペーン,攻略,キャッシュレス,pay,スマホ決済,お得,マイル,旅行,宿泊,特典,ランク,ステージ,優遇,効率的,ポイ活術
-blogger_tax|blogger|tax.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|ID04|税金,確定申告,節税,ふるさと納税,所得税,住民税,事業所得,雑所得,控除,医療費控除,住宅ローン控除,年末調整,副業,開業,青色申告,会計,e-tax
-blogger_sim|blogger|sim.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|ID05|格安sim,スマホ,通信費,mnp,キャリア,料金比較,ahamo,linemo,povo,格安スマホ,テザリング,通信速度,esim,端末セット,キャンペーン,一括1円
-blogger_house|blogger|house.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|ID06|住宅,賃貸,持ち家,住宅ローン,金利,借り換え,固定費,節電,節水,省エネ,リフォーム,断熱,diy,スマートホーム,家賃,交渉,火災保険,地震保険
-blogger_car|blogger|car.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|ID07|車,自動車,維持費,ガソリン,保険,車検,中古車,買取,リセール,カーリース,サブスク,電気自動車,ev,燃費,走行距離,税金,駐車場,洗車,修理
-blogger_insurance|blogger|ins.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|ID08|保険,見直し,生命保険,医療保険,掛け捨て,貯蓄,学資,共済,リスク,備え,年金,介護,控除,無料相談,ランキング,比較,必要性,特約,契約変更
-blogger_work|blogger|work.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|ID09|副業,収入,アップ,スキル,メルカリ,せどり,ライター,動画編集,クラウドソーシング,ポイ活,不労所得,資産収入,ストック型,フロー型,効率化,稼ぐ,在宅
-blogger_guide|blogger|guide.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|ID10|ガイド,初心者,まとめ,入門,ステップアップ,お金の基本,貯め方,増やし方,守り方,使い方,生活設計,ライフプラン,教科書,バイブル,ロードマップ,実践
+blogger_money|blogger|bg.money.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|7734215874475663494|節約,マネー,貯金,家計,経済,インフレ,対策,資産運用,生活防衛,低コスト,シンプルライフ,ミニマリズム,お金の知識,マネーリテラシー,教育,老後,2000万円
+blogger_invest|blogger|bg.invest.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|7948955311338225052|投資,nisa,ideco,米国株,全世界,投資信託,etf,配当,インデックス,アクティブ,リスク管理,アセットアロケーション,ポートフォリオ,長期,積立,分散,新nisa
+blogger_point|blogger|bg.point.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|3268903736519665410|ポイ活,ポイント,還元,キャンペーン,攻略,キャッシュレス,pay,スマホ決済,お得,マイル,旅行,宿泊,特典,ランク,ステージ,優遇,効率的,ポイ活術
+blogger_tax|blogger|bg.tax.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|5423832184970223488|税金,確定申告,節税,ふるさと納税,所得税,住民税,事業所得,雑所得,控除,医療費控除,住宅ローン控除,年末調整,副業,開業,青色申告,会計,e-tax
+blogger_sim|blogger|bg.sim.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|8400729228466642605|格安sim,スマホ,通信費,mnp,キャリア,料金比較,ahamo,linemo,povo,格安スマホ,テザリング,通信速度,esim,端末セット,キャンペーン,一括1円
+blogger_house|blogger|bg.house.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|8730584914442440497|住宅,賃貸,持ち家,住宅ローン,金利,借り換え,固定費,節電,節水,省エネ,リフォーム,断熱,diy,スマートホーム,家賃,交渉,火災保険,地震保険
+blogger_car|blogger|bg.car.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|8139626667604185190|車,自動車,維持費,ガソリン,保険,車検,中古車,買取,リセール,カーリース,サブスク,電気自動車,ev,燃費,走行距離,税金,駐車場,洗車,修理
+blogger_insurance|blogger|bg.ins.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|5883936288038027716|保険,見直し,生命保険,医療保険,掛け捨て,貯蓄,学資,共済,リスク,備え,年金,介護,控除,無料相談,ランキング,比較,必要性,特約,契約変更
+blogger_work|blogger|bg.work.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|7533442418439677026|副業,収入,アップ,スキル,メルカリ,せどり,ライター,動画編集,クラウドソーシング,ポイ活,不労所得,資産収入,ストック型,フロー型,効率化,稼ぐ,在宅
+blogger_guide|blogger|bg.guide.bic-saving.com|google_account|oauth2|https://www.googleapis.com/blogger/v3/blogs/|7915352388085210230|ガイド,初心者,まとめ,入門,ステップアップ,お金の基本,貯め方,増やし方,守り方,使い方,生活設計,ライフプラン,教科書,バイブル,ロードマップ,実践
 

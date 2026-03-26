@@ -13,6 +13,7 @@
 </head>
 
 <body class="bg-light <IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
+
     <div style="display:none;"><$BlogHeader$></div>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow">
@@ -23,8 +24,17 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarsMain">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">ホーム</a></li>
-                    <li class="nav-item"><a class="nav-link" href="<$RSSUrl$>">RSS</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="<$BlogUrl$>">ホーム</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="https://bicstation.com">TOP</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">メニュー</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="https://bicstation.com/about">アバウト</a></li>
+                            <li><a class="dropdown-item" href="https://bicstation.com/contact">コンタクト</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="<$RSSUrl$>">RSSフィード</a></li>
+                        </ul>
+                    </li>
                 </ul>
                 <form action="<$BlogUrl$>search" method="GET" class="d-flex">
                     <input class="form-control me-2" type="search" name="q" placeholder="検索...">
