@@ -1,18 +1,30 @@
-<br><hr>
-<div style="background:#fffcf0; padding:20px; border:2px dashed #dc2626; border-radius:12px; text-align:center; margin-top:30px;">
-    <p style="color: #991b1b; font-size: 1.1em; margin-bottom: 15px;">
-        💰 <b>【tiper.live 厳選】知らなきゃ損する「最安・爆益」の視聴ルート</b>
+<br><hr style="border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), #b91c1c, rgba(0, 0, 0, 0)); margin: 40px 0;">
+
+<div style="background: #fffaf0; padding: 35px 20px; border: 1px solid #b91c1c; border-radius: 4px; text-align: center; margin-top: 30px; box-shadow: 0 15px 35px rgba(185, 28, 28, 0.08);">
+    
+    <p style="color: #991b1b; font-size: 0.85em; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 15px; font-weight: 300;">
+        Special Benefit for You
+    </p>
+    
+    <p style="color: #1a1a1a; font-size: 1.2em; margin-bottom: 25px; line-height: 1.6;">
+        💰 <b>【tiper.live 厳選】</b><br>
+        知らなきゃ損する<b>「最安・爆益」</b>の視聴ルート
     </p>
 
-    <div style="margin-bottom: 20px;">
-        <a href="{{internal_url}}" style="display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);">
-            👉 この作品を「実質無料・最大還元」で楽しむ方法
+    <div style="margin-bottom: 25px;">
+        <a href="{{internal_url}}" style="display: inline-block; background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%); color: #ffffff; padding: 18px 45px; text-decoration: none; border-radius: 2px; font-weight: bold; font-size: 1.1em; letter-spacing: 0.05em; box-shadow: 0 8px 20px rgba(159, 18, 57, 0.25); transition: 0.3s;">
+            👉 この作品を「実質無料・最大還元」で堪能する
         </a>
     </div>
 
-    <p style="font-size: 0.9em; color: #7f1d1d;">
-        <a href="https://tiper.live" style="color: #7f1d1d; text-decoration: underline;">
-            tiper.live 節約ポータルで「神コスパ作品」をもっと探す
-        </a>
-    </p>
+    <div style="border-top: 1px solid #fee2e2; padding-top: 20px; margin-top: 10px;">
+        <p style="font-size: 0.9em; color: #7f1d1d;">
+            <a href="https://tiper.live" style="color: #9f1239; text-decoration: none; font-weight: 600; border-bottom: 1px solid #9f1239; padding-bottom: 2px;">
+                tiper.live ポータルで「至高のコスパ作品」をもっと探す
+            </a>
+        </p>
+        <p style="font-size: 0.75em; color: #94a3b8; margin-top: 12px; letter-spacing: 0.1em;">
+            ※ 期間限定の優待情報を含みます。
+        </p>
+    </div>
 </div>

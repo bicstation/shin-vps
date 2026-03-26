@@ -1,18 +1,25 @@
-<br><hr>
-<div style="background:#fffcf0; padding:20px; border:2px dashed #ff8c00; border-radius:12px; text-align:center; margin-top:30px;">
-    <p style="color: #d35400; font-size: 1.1em; margin-bottom: 15px;">
-        💰 <b>【賢者の選択】知らなきゃ損する「最安・爆益」の視聴ルート</b>
+<br><hr style="border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(184, 134, 11, 0.75), rgba(0, 0, 0, 0)); margin: 40px 0;">
+
+<div style="background: #ffffff; padding: 30px 20px; border: 1px solid #d4af37; border-radius: 4px; text-align: center; margin-top: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); font-family: 'Times New Roman', serif;">
+    
+    <p style="color: #8b7355; font-size: 0.9em; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 10px;">
+        Exclusive Information
+    </p>
+    <p style="color: #1a1a1a; font-size: 1.2em; margin-bottom: 25px; font-weight: 600;">
+        【選ばれし者の選択】至高の体験を、最適なルートで。
     </p>
 
-    <div style="margin-bottom: 20px;">
-        <a href="{{internal_url}}" style="display: inline-block; background: linear-gradient(135deg, #ff8c00 0%, #ff4500 100%); color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);">
-            👉 この作品を「実質無料・最大還元」で楽しむ方法
+    <div style="margin-bottom: 25px;">
+        <a href="{{internal_url}}" style="display: inline-block; background: #b8860b; color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 2px; font-weight: bold; font-size: 1em; letter-spacing: 0.05em; transition: 0.3s; box-shadow: 0 4px 15px rgba(184, 134, 11, 0.2);">
+            この作品を「最大還元・優待価格」で鑑賞する
         </a>
     </div>
 
-    <p style="font-size: 0.9em; color: #e67e22;">
-        <a href="https://avflash.xyz" style="color: #e67e22; text-decoration: underline;">
-            AVflash 節約ポータルで「神コスパ作品」をもっと探す
+    <p style="font-size: 0.85em; color: #999;">
+        <span style="margin: 0 10px; color: #d4af37;">✦</span>
+        <a href="https://avflash.xyz" style="color: #666; text-decoration: none; border-bottom: 1px solid #d4af37; padding-bottom: 2px;">
+            AVflash Premium ポータルで「厳選名作」を探索する
         </a>
+        <span style="margin: 0 10px; color: #d4af37;">✦</span>
     </p>
 </div>

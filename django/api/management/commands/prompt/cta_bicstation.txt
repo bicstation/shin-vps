@@ -1,22 +1,28 @@
-<br><hr>
-<div style="margin-top: 30px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc;">
-    <p style="text-align:center; margin-bottom: 20px; color: #1e293b; font-weight: bold; font-size: 1.1em;">
-        🚀 この製品の導入を検討中の方へ
+<br><hr style="border: 0; height: 1px; background: #e2e8f0; margin: 40px 0;">
+
+<div style="margin-top: 30px; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);">
+    
+    <p style="text-align:center; margin-bottom: 25px; color: #0f172a; font-weight: 800; font-size: 1.15em; letter-spacing: -0.025em;">
+        <span style="background: #eff6ff; color: #2563eb; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; margin-right: 8px;">Update</span> 導入・購入をご検討中の方へ
     </p>
     
     <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
-        <a href="{{internal_url}}" style="flex: 1; min-width: 240px; background-color: #2563eb; color: #ffffff; padding: 14px; text-decoration: none; border-radius: 8px; font-weight: bold; text-align: center; transition: 0.2s;">
-            🔍 スペック・詳細を確認
+        
+        <a href="{{internal_url}}" style="flex: 1; min-width: 260px; background-color: #2563eb; color: #ffffff; padding: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; text-align: center; font-size: 1em; box-shadow: 0 4px 0 #1d4ed8; transition: all 0.2s ease;">
+            🔍 スペック・詳細を徹底確認
         </a>
 
-        <a href="{{affiliate_url}}" style="flex: 1; min-width: 240px; background-color: #059669; color: #ffffff; padding: 14px; text-decoration: none; border-radius: 8px; font-weight: bold; text-align: center; transition: 0.2s;">
-            🛒 最安値をチェックする
+        <a href="{{affiliate_url}}" style="flex: 1; min-width: 260px; background-color: #10b981; color: #ffffff; padding: 16px; text-decoration: none; border-radius: 8px; font-weight: bold; text-align: center; font-size: 1em; box-shadow: 0 4px 0 #059669; transition: all 0.2s ease;">
+            🛒 提携ショップで最安値をチェック
         </a>
     </div>
 
-    <p style="text-align: center; margin-top: 20px; font-size: 0.85em;">
-        <a href="https://bicstation.com" style="color: #64748b; text-decoration: underline;">
-            Bicstation 公式ポータルサイト TOP
+    <div style="text-align: center; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+        <p style="font-size: 0.85em; color: #64748b; margin: 0;">
+            最新のガジェット情報・節約術をもっと見る
+        </p>
+        <a href="https://bicstation.com" style="display: inline-block; margin-top: 5px; color: #2563eb; text-decoration: none; font-weight: 600; font-size: 0.9em; border-bottom: 1px dashed #2563eb;">
+            Bicstation 公式ポータル TOPへ
         </a>
-    </p>
+    </div>
 </div>
