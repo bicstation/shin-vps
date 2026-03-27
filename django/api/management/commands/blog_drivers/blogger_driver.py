@@ -52,6 +52,7 @@ class BloggerDriver(BaseBlogDriver):
             # 6. 記事の投稿
             service.posts().insert(
                 blogId=blog_id, 
+                isDraft=False,
                 body={
                     'title': title,
                     'content': full_body
