@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 ================================================================================
-C-PLAN: SUPREME FLEET DEPLOYER - FULL VISIBILITY & DEBUG EDITION
+C-PLAN: SUPREME FLEET DEPLOYER - HATENA & BLOGGER FULL SYNC EDITION
 ================================================================================
-【強化ポイント】
-1. 投稿詳細ログ: 投稿先URL、生成タイトル、本文抜粋(80文字)を表示。
-2. 画像ステータス: 画像URLの有無を [🖼️ あり/❌ なし] で明示。
-3. 既存機能完全維持: --help、CSVパイプパース、DB不整合防止、案内人コメント。
-4. Blogger対応: isDraft=False による即時公開設定を統合。
+【修正内容】
+1. CSVの 'user' 列を HatenaDriver に渡すよう修正
+2. 'url_or_endpoint' を 'endpoint' キーに変換して Driver へブリッジ
+3. AI生成結果から [CONTENT_HATENA] を自動抽出するロジックを統合
 ================================================================================
 """
 
@@ -25,23 +24,12 @@ from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = "Deploy articles with full content visibility and robust error handling."
+    help = "Deploy articles to Hatena, Blogger, and Livedoor with platform optimization."
 
     def add_arguments(self, parser):
-        parser.add_argument('--project', type=str, default=None, help='Project Name (e.g., saving)')
-        parser.add_argument('--target', type=str, default=None, help='Filter platform')
-        parser.add_argument('--site', type=str, default=None, help='Specific site_key')
-
-    def print_custom_help(self):
-        """ヘルプガイドの表示"""
-        self.stdout.write(self.style.WARNING("\n📖 【C-PLAN 艦隊運用ガイド】"))
-        self.stdout.write("使用例:")
-        self.stdout.write("  python manage.py ai_fleet_deployer --project saving --site blogger_money")
-        self.stdout.write("  python manage.py ai_fleet_deployer --project bicstation --target livedoor\n")
-        self.stdout.write("オプション:")
-        self.stdout.write("  --project : 必須。設定ファイル名に対応")
-        self.stdout.write("  --target  : プラットフォーム(livedoor/hatena/blogger)で絞り込み")
-        self.stdout.write("  --site    : 特定のsite_keyのみ実行\n")
+        parser.add_argument('--project', type=str, default=None)
+        parser.add_argument('--target', type=str, default=None)
+        parser.add_argument('--site', type=str, default=None)
 
     def handle(self, *args, **options):
         if not options['project']:
@@ -70,7 +58,7 @@ class Command(BaseCommand):
         if target_site_key:
             fleet_data = [f for f in fleet_data if f.get('site_key', '').lower() == target_site_key]
         elif target_platform:
-            fleet_data = [f for f in fleet_data if target_platform in f.get('platform', '').lower() or target_platform in f.get('site_key', '').lower()]
+            fleet_data = [f for f in fleet_data if target_platform in f.get('platform', '').lower()]
 
         if not fleet_data:
             return self.log(f"⚠️ 条件に一致するサイトがありません。")
@@ -81,7 +69,7 @@ class Command(BaseCommand):
         self.log(f"✅ プール内記事数: {len(all_rss_entries)}")
 
         # 4. API & Template 準備
-        api_keys = [{"id": i, "key": os.getenv(f"GEMINI_API_KEY_{i}").strip()} 
+        api_keys = [{"key": os.getenv(f"GEMINI_API_KEY_{i}").strip()} 
                     for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
         if not api_keys:
             return self.log("❌ APIキーが未設定です。", self.style.ERROR)
@@ -94,15 +82,13 @@ class Command(BaseCommand):
 
         success_count = 0
         used_links = set()
-        total_sites = len(fleet_data)
 
         # 5. メインループ
         for idx, site_cfg in enumerate(fleet_data, 1):
             site_key = site_cfg.get('site_key', 'UNKNOWN')
-            platform = site_cfg.get('platform', 'N/A')
-            site_url = site_cfg.get('site_urls', 'N/A')
+            platform = site_cfg.get('platform', '').lower()
             
-            self.log(f"🔄 [{idx}/{total_sites}] 展開開始: {site_key} ({platform})")
+            self.log(f"🔄 [{idx}/{len(fleet_data)}] 展開開始: {site_key} ({platform})")
             
             kws = [k.strip() for k in site_cfg.get('routing_keywords', '').split(',') if k.strip()]
             target_entry = self.find_best_entry(all_rss_entries, kws, project_label, used_links)
@@ -114,10 +100,7 @@ class Command(BaseCommand):
             # コンテンツ解析
             parser = RSSParserFactory.get_parser(target_entry['link'])
             parsed_data = parser.parse(target_entry['link'])
-            if (not parsed_data or not parsed_data.get('body')) and target_entry.get('raw_body'):
-                parsed_data = parsed_data or {}
-                parsed_data['body'] = target_entry['raw_body']
-
+            
             if not parsed_data or not parsed_data.get('body'):
                 self.log(f"⚠️ 本文取得失敗: {target_entry['title']}")
                 continue
@@ -130,23 +113,13 @@ class Command(BaseCommand):
             if success:
                 success_count += 1
                 used_links.add(target_entry['link'])
-                
-                # --- 詳細ログ表示 ---
-                snippet = re.sub(r'<[^>]+>', '', result.get('body', ''))[:80].replace('\n', ' ')
-                img_status = f"🖼️ {result.get('img')}" if result.get('img') else "❌ 画像なし"
-                
-                self.log(f"🔗 投稿先: https://{site_url}", self.style.HTTP_INFO)
-                self.log(f"📝 題名: {result.get('title')}", self.style.SUCCESS)
-                self.log(f"📄 抜粋: {snippet}...")
-                self.log(f"📸 状態: {img_status}")
-                self.log(f"✨ [{site_key}] 投稿完了！", self.style.SUCCESS)
-                
+                self.log(f"✨ [{site_key}] 投稿完了！: {result.get('title')}", self.style.SUCCESS)
                 time.sleep(random.randint(20, 35))
             else:
-                self.log(f"❌ [{site_key}] 投稿フェーズでエラーが発生しました。")
+                self.log(f"❌ [{site_key}] 投稿失敗")
 
         self.log(f"============================================================")
-        self.log(f"🏁 MISSION COMPLETE: {success_count} / {total_sites} 成功", self.style.SUCCESS)
+        self.log(f"🏁 MISSION COMPLETE: {success_count} / {len(fleet_data)} 成功", self.style.SUCCESS)
         self.log(f"============================================================")
 
     def deploy_balanced_unit(self, site, entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, comment):
@@ -169,34 +142,44 @@ class Command(BaseCommand):
         
         if not ext: return False, {}
 
+        # --- プラットフォーム別抽出 ---
+        platform = site.get('platform', '').lower()
+        if platform == 'hatena':
+            p_title = ext.get('title_h') or ext.get('title_g') or entry['title']
+            p_body = ext.get('cont_h') or ext.get('cont_g') or ext.get('raw_text', '')
+        else:
+            p_title = ext.get('title_g') or entry['title']
+            p_body = ext.get('cont_g') or ext.get('raw_text', '')
+
         # DB記録
         try:
             with transaction.atomic():
                 new_art = Article.objects.create(
                     site=project_label, 
-                    title=(ext.get('title_g') or entry['title'])[:100],
-                    body_text=ext.get('cont_g') or ext.get('raw_text', ''),
+                    title=p_title[:100],
+                    body_text=p_body,
                     main_image_url=parsed_data.get('img'), 
                     source_url=entry['link']
                 )
-                art_id, p_body, p_title = new_art.id, new_art.body_text, new_art.title
+                art_id = new_art.id
         except Exception as e:
-            self.log(f"🔥 DB Error: {e}"); return False, {}
+            return False, {}
 
-        # 外部デプロイ
+        # 外部デプロイ (修正の核心部)
         try:
-            api_key = str(site.get('api_key_or_pw') or "").strip()
-            url_endpoint = str(site.get('url_or_endpoint') or "").strip()
-            blog_id = str(site.get('blog_id_or_rpc') or "").strip()
-            
-            if not api_key or not url_endpoint:
-                return False, {}
-
             cfg = site.copy()
-            cfg.update({'api_key': api_key, 'url': url_endpoint, 'blog_id': blog_id, 'current_dir': config_dir})
+            # HatenaDriverが必要とするキー(user, api_key, endpoint)をCSVからマッピング
+            cfg.update({
+                'api_key': str(site.get('api_key_or_pw', '')).strip(),
+                'endpoint': str(site.get('url_or_endpoint', '')).strip(), # CSVの url_or_endpoint を endpoint へ
+                'user': str(site.get('user', '')).strip(),               # CSVの user 列を明示的に追加
+                'blog_id': str(site.get('blog_id_or_rpc', '')).strip(),
+                'current_dir': config_dir
+            })
             
-            pf = site.get('platform', '').lower()
-            driver = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(pf, LivedoorDriver)(cfg)
+            # ドライバ選択
+            driver_class = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(platform, LivedoorDriver)
+            driver = driver_class(cfg)
             
             domain_map = {'tiper': 'https://tiper.live', 'saving': 'https://bic-saving.com', 'bicstation': 'https://bicstation.com', 'avflash': 'https://avflash.xyz'}
             base_url = domain_map.get(project_label, f"https://{project_label}.com")
@@ -210,9 +193,11 @@ class Command(BaseCommand):
                 Article.objects.filter(id=art_id).update(is_exported=True)
                 return True, {'title': p_title, 'body': p_body, 'img': parsed_data.get('img')}
             else:
-                Article.objects.filter(id=art_id).delete(); return False, {}
+                Article.objects.filter(id=art_id).delete()
+                return False, {}
         except Exception as e:
-            Article.objects.filter(id=art_id).delete(); return False, {}
+            Article.objects.filter(id=art_id).delete()
+            return False, {}
 
     def load_csv_data(self, path):
         if not os.path.exists(path): return []
@@ -220,18 +205,16 @@ class Command(BaseCommand):
             with open(path, "r", encoding="utf-8-sig") as f:
                 reader = csv.DictReader(f, delimiter='|')
                 return [{str(k).strip(): str(v).strip() for k, v in row.items() if k} for row in reader]
-        except Exception as e:
-            self.log(f"🚨 CSVロード失敗 [{os.path.basename(path)}]: {e}")
+        except:
             return []
 
     def get_all_rss_entries(self, sources):
         pool = []
-        headers = {'User-Agent': 'Mozilla/5.0'}
         for src in sources:
             url = src.get('url') or next((v for v in src.values() if "http" in str(v)), None)
             if not url: continue
             try:
-                res = requests.get(url, timeout=15, headers=headers)
+                res = requests.get(url, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
                 feed = feedparser.parse(res.text)
                 for e in feed.entries:
                     link = getattr(e, 'link', None) or getattr(e, 'id', None)
@@ -260,3 +243,7 @@ class Command(BaseCommand):
         ts = datetime.now().strftime('%H:%M:%S')
         if style_func: self.stdout.write(style_func(f"[{ts}] {msg}"))
         else: self.stdout.write(f"[{ts}] {msg}")
+
+    def print_custom_help(self):
+        self.stdout.write(self.style.WARNING("\n📖 【C-PLAN 艦隊運用ガイド v3.9】"))
+        self.stdout.write("  python manage.py ai_fleet_deployer --project saving --site h_money")
