@@ -7,7 +7,7 @@ export default function MatchingGuide() {
     const [progress, setProgress] = useState(0);
     const [matchCount, setMatchCount] = useState(247);
 
-    const LINK_HAPPY = 'https://px.a8.net/svt/ejp?a8mat=UB0PF+7K54RM+HCG+60H7N'; 
+    const LINK_HAPPY = 'https://px.a8.net/svt/ejp?a8mat=2TVVK1+4TI5E+HCG+ZQNG3'; 
     const LINK_PCMAX = 'https://px.a8.net/svt/ejp?a8mat=1HYB57+48H06A+YQK+7HUIB'; 
     const LINK_WAKU  = 'https://px.a8.net/svt/ejp?a8mat=2TVVK1+778KI+1KZ4+NTZCJ'; 
 
