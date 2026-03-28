@@ -11,9 +11,11 @@ from api.management.commands.blog_drivers.hatena_driver import HatenaDriver
 from api.management.commands.blog_drivers.livedoor_driver import LivedoorDriver
 from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
+# 🚀 分離した抽出ロジックをインポート
+from api.management.commands.blog_drivers.rss_extractors import ExtractorFactory
 
 class Command(BaseCommand):
-    help = "Deploy articles to fleet sites with ultimate robustness against CSV shifts."
+    help = "Deploy articles to fleet sites with robust RSS extraction and AI cleaning."
 
     def add_arguments(self, parser):
         parser.add_argument('--project', type=str, default=None)
@@ -40,12 +42,10 @@ class Command(BaseCommand):
         rss_path = os.path.join(config_dir, "master_rss_sources.csv")
         comment_path = os.path.join(config_dir, f"{project_label}_comments.csv")
 
-        # 1. データのロード
         all_fleet = self.load_master_csv(fleet_path)
         rss_master = self.load_master_csv(rss_path)
         char_comments = self.load_character_comments(comment_path)
 
-        # 2. フィルタリング
         fleet_data = [f for f in all_fleet if str(f.get('project', '')).strip().lower() == project_label]
         if target_platform:
             fleet_data = [f for f in fleet_data if str(f.get('platform', '')).strip().lower() == target_platform]
@@ -55,7 +55,6 @@ class Command(BaseCommand):
         if not fleet_data:
             return self.log(f"❌ 該当データなし (Project: {project_label})", self.style.ERROR)
 
-        # 3. 共通リソース準備
         api_keys = [{"key": os.getenv(f"GEMINI_API_KEY_{i}").strip()} for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
         try:
             with open(os.path.join(prompt_dir, f"ai_prompt_{project_label}.txt"), "r", encoding='utf-8') as f: ai_template = f.read()
@@ -63,16 +62,12 @@ class Command(BaseCommand):
         except Exception as e:
             return self.log(f"❌ テンプレート読込失敗: {e}", self.style.ERROR)
 
-        # 4. RSSプール構築 (画像抽出ロジック強化)
         needed_cats = set(f.get('rss_category') or self.guess_category(f.get('site_key')) for f in fleet_data)
         rss_pool = self.build_rss_pool(rss_master, list(needed_cats))
 
         success_count = 0
         used_links = set()
 
-        # 5. メインループ
-        self.log(f"📡 ターゲット: {len(fleet_data)} サイト")
-        
         for idx, site_cfg in enumerate(fleet_data, 1):
             site_key = site_cfg.get('site_key', 'UNKNOWN')
             platform = site_cfg.get('platform', '').lower()
@@ -88,28 +83,22 @@ class Command(BaseCommand):
                 if entry['link'] in used_links: continue
                 if Article.objects.filter(site=project_label, source_url=entry['link']).exists(): continue
 
-                # パース実行（本文取得）
                 parser = RSSParserFactory.get_parser(entry['link'])
                 parsed_data = parser.parse(entry['link'])
                 if not parsed_data or not parsed_data.get('body'): continue
 
-                # --- 🖼️ RSS由来の画像があれば最優先で適用し、最高画質化 ---
+                # RSSプール時に抽出済みの画像があれば優先適用
                 if entry.get('rss_img'):
                     parsed_data['img'] = entry['rss_img']
 
-                # --- 🚀 強化版キーワード判定 ---
                 if keywords:
                     search_text = (entry['title'] + " " + parsed_data.get('body', '')).lower()
                     search_text = search_text.replace('ｖｒ', 'vr').replace('ヴイアール', 'vr')
-                    
-                    is_match = any(kw.lower() in search_text for kw in keywords)
-                    if not is_match: continue
+                    if not any(kw.lower() in search_text for kw in keywords): continue
 
                 self.log(f"   🎯 マッチ: {entry['title'][:40]}...")
-                
                 selected_comment = random.choice(char_comments) if char_comments else "おすすめの最新情報です。"
                 
-                # デプロイ実行
                 success, result = self.deploy_unit(site_cfg, entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, selected_comment)
 
                 if success:
@@ -126,7 +115,6 @@ class Command(BaseCommand):
         self.log(f"🏁 完了: {success_count} / {len(fleet_data)} SUCCESS", self.style.SUCCESS)
 
     def deploy_unit(self, site, entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, comment):
-        # AI生成
         ext = None
         for _ in range(3):
             selected = random.choice(api_keys)
@@ -144,27 +132,19 @@ class Command(BaseCommand):
 
         platform = site.get('platform', '').lower()
         p_title = ext.get('title_h') if platform == 'hatena' and ext.get('title_h') else ext.get('title_g', entry['title'])
-        p_body = ext.get('cont_h') if platform == 'hatena' and ext.get('cont_h') else ext.get('cont_g', ext.get('raw_text', ''))
+        p_body = ext.get('cont_g', ext.get('raw_text', ''))
         
-        # 🚀 不要なラベルとメタデータを削除 (Multiline対応で強化)
-        unwanted_labels = [
-            r"📥\s*入力データ.*?\n", 
-            r"元ネタ:.*?\n",
-            r"メーカー:.*?\n",
-            r"出演者:.*?\n",
-            r"対象:.*?\n",
-            r"📤\s*出力.*?\n",
-            r"【出力】.*?\n",
-            r"^出力[:：].*?\n"
+        # 🚀 不要なAI生成時のラベル・メタデータを徹底削除 (MULTILINE対応)
+        unwanted_patterns = [
+            r"📥\s*入力データ.*?\n", r"元ネタ:.*?\n", r"メーカー:.*?\n",
+            r"出演者:.*?\n", r"対象:.*?\n", r"📤\s*出力.*?\n",
+            r"【出力】.*?\n", r"^出力[:：].*?\n"
         ]
-
-        for pattern in unwanted_labels:
+        for pattern in unwanted_patterns:
             p_body = re.sub(pattern, "", p_body, flags=re.IGNORECASE | re.MULTILINE)
 
-        # 文頭・文末の余計な空白と改行を掃除
         p_body = p_body.strip()
 
-        # DB保存
         try:
             with transaction.atomic():
                 new_art = Article.objects.create(
@@ -174,7 +154,6 @@ class Command(BaseCommand):
                 art_id = new_art.id
         except: return False, {}
 
-        # 投稿設定
         target_url = str(site.get('endpoint') or site.get('url') or '').strip()
         target_api = str(site.get('api_key') or site.get('api_key_or_pw') or '').strip()
         target_user = str(site.get('user') or '').strip()
@@ -186,9 +165,7 @@ class Command(BaseCommand):
         try:
             cfg = site.copy()
             cfg.update({'api_key': target_api, 'endpoint': target_url, 'user': target_user, 'current_dir': config_dir})
-            
-            driver_class = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(platform, LivedoorDriver)
-            driver = driver_class(cfg)
+            driver = ({'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(platform, LivedoorDriver))(cfg)
             
             domain_map = {'tiper': 'https://tiper.live', 'avflash': 'https://avflash.xyz'}
             base_url = domain_map.get(project_label, f"https://{project_label}.com")
@@ -209,6 +186,34 @@ class Command(BaseCommand):
             Article.objects.filter(id=art_id).delete()
             return False, {}
 
+    def build_rss_pool(self, rss_master, categories):
+        pool = {}
+        for cat in categories:
+            if not cat: continue
+            entries = []
+            rss_sources = [r for r in rss_master if str(r.get('rss_category')).strip() == cat]
+            for source in rss_sources:
+                url = source.get('rss_url')
+                try:
+                    res = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
+                    feed = feedparser.parse(res.text)
+                    for e in feed.entries:
+                        link = getattr(e, 'link', None) or getattr(e, 'id', None)
+                        if not link: continue
+
+                        content_val = ""
+                        if hasattr(e, 'content'): content_val = e.content[0].value
+                        elif hasattr(e, 'description'): content_val = e.description
+                        
+                        # 🚀 ExtractorFactoryを使用して最適な抽出器を取得し画像を抽出
+                        extractor = ExtractorFactory.get_extractor(url, cat)
+                        rss_img = extractor.extract(content_val)
+
+                        entries.append({'title': e.title, 'link': link, 'rss_img': rss_img})
+                except: continue
+            pool[cat] = entries
+        return pool
+
     def load_master_csv(self, path):
         if not os.path.exists(path): return []
         data = []
@@ -221,58 +226,8 @@ class Command(BaseCommand):
                     vals = [v.strip() for v in line.split('\t')]
                     row = dict(zip(header, vals))
                     if row.get('project'): data.append(row)
-        except Exception as e:
-            self.log(f"❌ CSV Load Error: {e}")
+        except Exception as e: self.log(f"❌ CSV Error: {e}")
         return data
-
-    def build_rss_pool(self, rss_master, categories):
-        pool = {}
-        for cat in categories:
-            if not cat: continue
-            entries = []
-            urls = [r['rss_url'] for r in rss_master if str(r.get('rss_category')).strip() == cat]
-            for url in urls:
-                try:
-                    res = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
-                    feed = feedparser.parse(res.text)
-                    for e in feed.entries:
-                        link = getattr(e, 'link', None) or getattr(e, 'id', None)
-                        if not link: continue
-
-                        # --- 🖼️ RSS内部の画像抽出ロジック強化 (DMM/FANZAのダミー回避) ---
-                        rss_img = ""
-                        content_val = ""
-                        if hasattr(e, 'content'):
-                            content_val = e.content[0].value
-                        elif hasattr(e, 'description'):
-                            content_val = e.description
-                        
-                        # 全てのimgタグのsrcを抽出
-                        img_candidates = re.findall(r'<img [^>]*src="([^"]+)"', content_val)
-                        for candidate in img_candidates:
-                            # ダミー画像や1x1ピクセル画像が含まれる場合はスキップして次を探す
-                            if "dummy" in candidate or "pixel.gif" in candidate:
-                                continue
-                            
-                            # 有効な画像URLが見つかったら採用
-                            rss_img = candidate.strip()
-                            # 🚀 ここで最高画質化 (pt.jpg, ps.jpg, pm.jpg -> pl.jpg)
-                            rss_img = re.sub(r'p([s|t|m])\.jpg', 'pl.jpg', rss_img)
-                            break # パッケージ画像が見つかればループを抜ける
-
-                        entries.append({
-                            'title': e.title, 
-                            'link': link, 
-                            'rss_img': rss_img # 正しいURLがプールに保存される
-                        })
-                except: continue
-            pool[cat] = entries
-        return pool
-
-    def guess_category(self, site_key):
-        sk = str(site_key).lower()
-        if 'vr' in sk: return 'adult_vr'
-        return 'adult_video'
 
     def load_character_comments(self, path):
         if not os.path.exists(path): return []
@@ -280,6 +235,9 @@ class Command(BaseCommand):
             with open(path, "r", encoding="utf-8-sig") as f:
                 return [l.strip().strip('"') for l in f if l.strip() and "キャラ設定" not in l]
         except: return []
+
+    def guess_category(self, site_key):
+        return 'adult_vr' if 'vr' in str(site_key).lower() else 'adult_video'
 
     def log(self, msg, style_func=None):
         ts = datetime.now().strftime('%H:%M:%S')
