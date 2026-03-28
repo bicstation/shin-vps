@@ -99,14 +99,13 @@ class Command(BaseCommand):
 
                 # --- 🚀 強化版キーワード判定 ---
                 if keywords:
-                    # 判定対象: タイトル + 本文 (全角VR/小文字vr対応)
                     search_text = (entry['title'] + " " + parsed_data.get('body', '')).lower()
                     search_text = search_text.replace('ｖｒ', 'vr').replace('ヴイアール', 'vr')
                     
                     is_match = any(kw.lower() in search_text for kw in keywords)
                     if not is_match: continue
 
-                self.log(f"  🎯 マッチ: {entry['title'][:40]}...")
+                self.log(f"   🎯 マッチ: {entry['title'][:40]}...")
                 
                 selected_comment = random.choice(char_comments) if char_comments else "おすすめの最新情報です。"
                 
@@ -117,12 +116,12 @@ class Command(BaseCommand):
                     used_links.add(entry['link'])
                     success_count += 1
                     posted_successfully = True
-                    self.log(f"  ✅ 成功: {result.get('title')[:30]}", self.style.SUCCESS)
+                    self.log(f"   ✅ 成功: {result.get('title')[:30]}", self.style.SUCCESS)
                     time.sleep(random.randint(20, 35))
                     break 
 
             if not posted_successfully:
-                self.log(f"  ⚠️ 合致記事なし (Category: {cat})", self.style.WARNING)
+                self.log(f"   ⚠️ 合致記事なし (Category: {cat})", self.style.WARNING)
 
         self.log(f"🏁 完了: {success_count} / {len(fleet_data)} SUCCESS", self.style.SUCCESS)
 
@@ -147,7 +146,7 @@ class Command(BaseCommand):
         p_title = ext.get('title_h') if platform == 'hatena' and ext.get('title_h') else ext.get('title_g', entry['title'])
         p_body = ext.get('cont_h') if platform == 'hatena' and ext.get('cont_h') else ext.get('cont_g', ext.get('raw_text', ''))
         
-        # 🚀 【追加】不要なラベルとメタデータを削除
+        # 🚀 不要なラベルとメタデータを削除 (Multiline対応で強化)
         unwanted_labels = [
             r"📥\s*入力データ.*?\n", 
             r"元ネタ:.*?\n",
@@ -155,12 +154,12 @@ class Command(BaseCommand):
             r"出演者:.*?\n",
             r"対象:.*?\n",
             r"📤\s*出力.*?\n",
-            r"【出力】.*?\n"
+            r"【出力】.*?\n",
+            r"^出力[:：].*?\n"
         ]
 
         for pattern in unwanted_labels:
-            # re.DOTALLを使わず、各行のラベルを消す
-            p_body = re.sub(pattern, "", p_body, flags=re.IGNORECASE)
+            p_body = re.sub(pattern, "", p_body, flags=re.IGNORECASE | re.MULTILINE)
 
         # 文頭・文末の余計な空白と改行を掃除
         p_body = p_body.strip()
@@ -240,7 +239,7 @@ class Command(BaseCommand):
                         link = getattr(e, 'link', None) or getattr(e, 'id', None)
                         if not link: continue
 
-                        # --- 🖼️ RSS内部の画像抽出 (item内のcontent:encodedを優先) ---
+                        # --- 🖼️ RSS内部の画像抽出ロジック強化 (DMM/FANZAのダミー回避) ---
                         rss_img = ""
                         content_val = ""
                         if hasattr(e, 'content'):
@@ -248,17 +247,23 @@ class Command(BaseCommand):
                         elif hasattr(e, 'description'):
                             content_val = e.description
                         
-                        # imgタグのsrcを探す
-                        img_match = re.search(r'<img src="(.*?)"', content_val)
-                        if img_match:
-                            rss_img = img_match.group(1).strip()
+                        # 全てのimgタグのsrcを抽出
+                        img_candidates = re.findall(r'<img [^>]*src="([^"]+)"', content_val)
+                        for candidate in img_candidates:
+                            # ダミー画像や1x1ピクセル画像が含まれる場合はスキップして次を探す
+                            if "dummy" in candidate or "pixel.gif" in candidate:
+                                continue
+                            
+                            # 有効な画像URLが見つかったら採用
+                            rss_img = candidate.strip()
                             # 🚀 ここで最高画質化 (pt.jpg, ps.jpg, pm.jpg -> pl.jpg)
                             rss_img = re.sub(r'p([s|t|m])\.jpg', 'pl.jpg', rss_img)
-                        
+                            break # パッケージ画像が見つかればループを抜ける
+
                         entries.append({
                             'title': e.title, 
                             'link': link, 
-                            'rss_img': rss_img # プールに保存
+                            'rss_img': rss_img # 正しいURLがプールに保存される
                         })
                 except: continue
             pool[cat] = entries
