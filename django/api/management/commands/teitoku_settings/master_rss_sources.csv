@@ -1,0 +1,76 @@
+project	rss_category	rss_url	source_name
+avflash	adult_video	https://www.dmm.co.jp/mono/dvd/-/list/=/rss=create/sort=p_date/	DMM通販DVD
+avflash	adult_video	https://www.dmm.co.jp/digital/videoa/-/list/=/rss=create/sort=p_date/	FANZA動画
+avflash	adult_video	https://www.dmm.co.jp/rental/-/list/=/rss=create/sort=date/	DMMレンタル
+avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/rss=create/sort=date/	FANZA同人_新着
+avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=comic/rss=create/sort=date/	FANZA同人_コミック
+avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=cg/rss=create/sort=date/	FANZA同人_CG
+avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=game/rss=create/sort=date/	FANZA同人_ゲーム
+avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/rss=create/sort=date/	FANZA同人_ボイス
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/rss=create/sort=date/	らぶカルTL_新着
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=comic/rss=create/sort=date/	らぶカルTL_コミック
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=cg/rss=create/sort=date/	らぶカルTL_CG
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=game/rss=create/sort=date/	らぶカルTL_ゲーム
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=voice/rss=create/sort=date/	らぶカルTL_ボイス
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/rss=create/sort=date/	らぶカルBL_総合
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=comic/rss=create/sort=date/	らぶカルBL_コミック
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=cg/rss=create/sort=date/	らぶカルBL_CG
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=game/rss=create/sort=date/	らぶカルBL_ゲーム
+avflash	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=voice/rss=create/sort=date/	らぶカルBL_ボイス
+avflash	adult_reserve	https://www.dmm.co.jp/rental/-/list/=/reserve=only/rss=create/sort=date/	レンタル月額_予約
+avflash	adult_rental	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	レンタル単品_新着
+avflash	adult_reserve	https://www.dmm.co.jp/rental/ppr/-/list/=/reserve=only/rss=create/sort=date/	レンタル単品_予約
+avflash	adult_reserve	http://www.dmm.co.jp/mono/dvd/-/list/=/reserve=only/rss=create/sort=date/	通販DVD_予約
+avflash	adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/rss=create/sort=date/	通販アニメ_新着
+avflash	adult_reserve	http://www.dmm.co.jp/mono/anime/-/list/=/reserve=only/rss=create/sort=date/	通販アニメ_予約
+avflash	adult_game	http://www.dmm.co.jp/mono/pcgame/-/list/=/rss=create/sort=date/	通販PCゲーム_新着
+avflash	adult_reserve	http://www.dmm.co.jp/mono/pcgame/-/list/=/reserve=only/rss=create/sort=date/	通販PCゲーム_予約
+avflash	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/rss=create/sort=date/	通販ブック_新着
+avflash	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=comic/rss=create/sort=date/	通販コミック_新着
+avflash	adult_book	http://www.dmm.co.jp/mono/book/-/list/=/media=photo/rss=create/sort=date/	通販エロ本_新着
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/rss=create/sort=date/	グッズ_新着
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10001/rss=create/sort=date/	グッズ_バイブ
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10013/rss=create/sort=date/	グッズ_ローター
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10062/rss=create/sort=date/	グッズ_オナホール
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10074/rss=create/sort=date/	グッズ_ラブドール
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10019/rss=create/sort=date/	グッズ_アナル
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10065/rss=create/sort=date/	グッズ_補強
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10053/rss=create/sort=date/	グッズ_包茎矯正
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10082/rss=create/sort=date/	グッズ_SM
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10079/rss=create/sort=date/	グッズ_ローション
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10026/rss=create/sort=date/	グッズ_コンドーム
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10034/rss=create/sort=date/	グッズ_コスプレ
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10052/rss=create/sort=date/	グッズ_ランジェリー
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=19999/rss=create/sort=date/	グッズ_その他
+avflash	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10095/rss=create/sort=date/	グッズ_1000円以下
+bicstation	tech_pc	https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf	PC Watch
+bicstation	tech_news	https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml	ITmedia News
+bicstation	tech_pc	https://rss.itmedia.co.jp/rss/2.0/pcuser.xml	ITmedia PCUSER
+bicstation	tech_gadget	https://www.gizmodo.jp/index.xml	Gizmodo Japan
+bicstation	tech_pc	https://ascii.jp/rss.xml	ASCII Main
+bicstation	tech_business	https://ascii.jp/biz/rss.xml	ASCII Biz
+bicstation	tech_news	https://ascii.jp/tech/rss.xml	ASCII Tech
+bicstation	tech_news	https://ascii.jp/web/rss.xml	ASCII Web
+bicstation	tech_gadget	https://ascii.jp/digital/rss.xml	ASCII Digital
+bicstation	tech_apple	https://ascii.jp/mac/rss.xml	ASCII Mac
+bicstation	tech_hobby	https://ascii.jp/hobby/rss.xml	ASCII Hobby
+bicstation	tech_pc	https://ascii.jp/pc/rss.xml	ASCII PC
+bicstation	tech_news	https://techcrunch.com/feed/	TechCrunch
+bicstation	tech_network	https://internet.watch.impress.co.jp/data/rss/1.0/iw/feed.rdf	Internet Watch
+bicstation	tech_business	https://rss.itmedia.co.jp/rss/2.0/business.xml	ITmedia Business
+bicstation	tech_mobile	https://rss.itmedia.co.jp/rss/2.0/mobile.xml	ITmedia Mobile
+bicstation	tech_gadget	https://www.phileweb.com/rss/rss.php	Phile-web
+saving	finance_tech	https://www.sbbit.jp/rss/HotTopics.rss	Fintech Journal
+saving	finance_jp	https://zuuonline.com/feed	ZUU online
+saving	finance_jp	https://financial-field.com/feed	Financial Field
+saving	finance_tech	https://techcrunch.com/category/fintech/feed/	TechCrunch Fintech
+saving	finance_global	https://www.moneytalksnews.com/feed/	MoneyTalksNews
+saving	finance_global	https://www.nerdwallet.com/blog/feed/	NerdWallet
+saving	finance_global	https://www.moneyunder30.com/feed	Money Under 30
+saving	finance_jp	https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf	Impress Money
+saving	finance_mobile	https://rss.itmedia.co.jp/rss/2.0/mobile.xml	ITmedia Mobile
+saving	finance_tech	https://rss.itmedia.co.jp/rss/2.0/itmedia_all.xml	ITmedia All
+saving	finance_gadget	https://www.gizmodo.jp/index.xml	Gizmodo Japan
+saving	finance_jp	https://news.yahoo.co.jp/rss/categories/business.xml	Yahoo Economy
+saving	finance_jp	https://limo.media/list/feed/rss	LIMO
+saving	finance_global	https://www.theguardian.com/money/rss	Guardian Money

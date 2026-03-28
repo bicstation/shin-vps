@@ -1,15 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-================================================================================
-C-PLAN: SUPREME FLEET DEPLOYER - HATENA & BLOGGER FULL SYNC EDITION
-================================================================================
-【修正内容】
-1. CSVの 'user' 列を HatenaDriver に渡すよう修正
-2. 'url_or_endpoint' を 'endpoint' キーに変換して Driver へブリッジ
-3. AI生成結果から [CONTENT_HATENA] を自動抽出するロジックを統合
-================================================================================
-"""
-
 import os, random, requests, feedparser, time, csv, re
 from datetime import datetime
 from django.core.management.base import BaseCommand
@@ -24,12 +13,12 @@ from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = "Deploy articles to Hatena, Blogger, and Livedoor with platform optimization."
+    help = "Deploy articles to fleet sites with ultimate robustness against CSV shifts."
 
     def add_arguments(self, parser):
         parser.add_argument('--project', type=str, default=None)
-        parser.add_argument('--target', type=str, default=None)
         parser.add_argument('--site', type=str, default=None)
+        parser.add_argument('--platform', type=str, default=None)
 
     def handle(self, *args, **options):
         if not options['project']:
@@ -37,97 +26,110 @@ class Command(BaseCommand):
             return
 
         project_label = options['project'].lower()
-        target_platform = options['target'].lower() if options['target'] else None
         target_site_key = options['site'].lower() if options['site'] else None
+        target_platform = options['platform'].lower() if options['platform'] else None
         
-        self.log(f"--- 🚀 MISSION START: [{project_label.upper()}] ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 STRATEGIC DEPLOYMENT START: [{project_label.upper()}] ---", self.style.SUCCESS)
         
-        base_path = "/usr/src/app/api/management/commands"
-        config_dir = os.path.join(base_path, "teitoku_settings")
-        prompt_dir = os.path.join(base_path, "prompt")
+        config_dir = "/usr/src/app/api/management/commands/teitoku_settings"
+        if not os.path.exists(config_dir):
+            config_dir = "/home/maya/shin-dev/shin-vps/django/api/management/commands/teitoku_settings"
         
-        # 1. データロード
-        fleet_data = self.load_csv_data(os.path.join(config_dir, f"{project_label}_fleet.csv"))
-        rss_sources = self.load_csv_data(os.path.join(config_dir, f"{project_label}_rss_sources.csv"))
-        char_comments = self.load_character_comments(os.path.join(config_dir, f"{project_label}_comments.csv"))
-        
-        if not fleet_data:
-            return self.log(f"❌ Fleetデータが見つかりません。", self.style.ERROR)
+        prompt_dir = "/usr/src/app/api/management/commands/prompt"
+        fleet_path = os.path.join(config_dir, "master_fleet.csv")
+        rss_path = os.path.join(config_dir, "master_rss_sources.csv")
+        comment_path = os.path.join(config_dir, f"{project_label}_comments.csv")
+
+        # 1. データのロード
+        all_fleet = self.load_master_csv(fleet_path)
+        rss_master = self.load_master_csv(rss_path)
+        char_comments = self.load_character_comments(comment_path)
 
         # 2. フィルタリング
+        fleet_data = [f for f in all_fleet if str(f.get('project', '')).strip().lower() == project_label]
+        if target_platform:
+            fleet_data = [f for f in fleet_data if str(f.get('platform', '')).strip().lower() == target_platform]
         if target_site_key:
-            fleet_data = [f for f in fleet_data if f.get('site_key', '').lower() == target_site_key]
-        elif target_platform:
-            fleet_data = [f for f in fleet_data if target_platform in f.get('platform', '').lower()]
+            fleet_data = [f for f in fleet_data if str(f.get('site_key', '')).strip().lower() == target_site_key]
 
         if not fleet_data:
-            return self.log(f"⚠️ 条件に一致するサイトがありません。")
+            return self.log(f"❌ 該当データなし (Project: {project_label})", self.style.ERROR)
 
-        # 3. RSS巡回
-        self.log(f"📡 RSSフィードを巡回中...")
-        all_rss_entries = self.get_all_rss_entries(rss_sources)
-        self.log(f"✅ プール内記事数: {len(all_rss_entries)}")
-
-        # 4. API & Template 準備
-        api_keys = [{"key": os.getenv(f"GEMINI_API_KEY_{i}").strip()} 
-                    for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
-        if not api_keys:
-            return self.log("❌ APIキーが未設定です。", self.style.ERROR)
-
+        # 3. 共通リソース準備
+        api_keys = [{"key": os.getenv(f"GEMINI_API_KEY_{i}").strip()} for i in range(1, 11) if os.getenv(f"GEMINI_API_KEY_{i}")]
         try:
             with open(os.path.join(prompt_dir, f"ai_prompt_{project_label}.txt"), "r", encoding='utf-8') as f: ai_template = f.read()
             with open(os.path.join(prompt_dir, f"cta_{project_label}.txt"), "r", encoding='utf-8') as f: cta_template = f.read()
         except Exception as e:
             return self.log(f"❌ テンプレート読込失敗: {e}", self.style.ERROR)
 
+        # 4. RSSプール構築 (画像抽出ロジック強化)
+        needed_cats = set(f.get('rss_category') or self.guess_category(f.get('site_key')) for f in fleet_data)
+        rss_pool = self.build_rss_pool(rss_master, list(needed_cats))
+
         success_count = 0
         used_links = set()
 
         # 5. メインループ
+        self.log(f"📡 ターゲット: {len(fleet_data)} サイト")
+        
         for idx, site_cfg in enumerate(fleet_data, 1):
             site_key = site_cfg.get('site_key', 'UNKNOWN')
             platform = site_cfg.get('platform', '').lower()
+            cat = site_cfg.get('rss_category') or self.guess_category(site_key)
+            keywords = [k.strip() for k in site_cfg.get('keywords', '').split(',') if k.strip()]
             
-            self.log(f"🔄 [{idx}/{len(fleet_data)}] 展開開始: {site_key} ({platform})")
+            self.log(f"🔄 [{idx}/{len(fleet_data)}] {site_key} ({platform})")
             
-            kws = [k.strip() for k in site_cfg.get('routing_keywords', '').split(',') if k.strip()]
-            target_entry = self.find_best_entry(all_rss_entries, kws, project_label, used_links)
+            target_entries = rss_pool.get(cat, [])
+            posted_successfully = False
 
-            if not target_entry:
-                self.log(f"⏭️ キーワード不一致のためスキップ。")
-                continue
+            for entry in target_entries:
+                if entry['link'] in used_links: continue
+                if Article.objects.filter(site=project_label, source_url=entry['link']).exists(): continue
 
-            # コンテンツ解析
-            parser = RSSParserFactory.get_parser(target_entry['link'])
-            parsed_data = parser.parse(target_entry['link'])
-            
-            if not parsed_data or not parsed_data.get('body'):
-                self.log(f"⚠️ 本文取得失敗: {target_entry['title']}")
-                continue
+                # パース実行（本文取得）
+                parser = RSSParserFactory.get_parser(entry['link'])
+                parsed_data = parser.parse(entry['link'])
+                if not parsed_data or not parsed_data.get('body'): continue
 
-            selected_comment = random.choice(char_comments) if char_comments else "注目の最新ニュースです。"
+                # --- 🖼️ RSS由来の画像があれば最優先で適用し、最高画質化 ---
+                if entry.get('rss_img'):
+                    parsed_data['img'] = entry['rss_img']
 
-            # 🚀 デプロイ実行
-            success, result = self.deploy_balanced_unit(site_cfg, target_entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, selected_comment)
-            
-            if success:
-                success_count += 1
-                used_links.add(target_entry['link'])
-                self.log(f"✨ [{site_key}] 投稿完了！: {result.get('title')}", self.style.SUCCESS)
-                time.sleep(random.randint(20, 35))
-            else:
-                self.log(f"❌ [{site_key}] 投稿失敗")
+                # --- 🚀 強化版キーワード判定 ---
+                if keywords:
+                    # 判定対象: タイトル + 本文 (全角VR/小文字vr対応)
+                    search_text = (entry['title'] + " " + parsed_data.get('body', '')).lower()
+                    search_text = search_text.replace('ｖｒ', 'vr').replace('ヴイアール', 'vr')
+                    
+                    is_match = any(kw.lower() in search_text for kw in keywords)
+                    if not is_match: continue
 
-        self.log(f"============================================================")
-        self.log(f"🏁 MISSION COMPLETE: {success_count} / {len(fleet_data)} 成功", self.style.SUCCESS)
-        self.log(f"============================================================")
+                self.log(f"  🎯 マッチ: {entry['title'][:40]}...")
+                
+                selected_comment = random.choice(char_comments) if char_comments else "おすすめの最新情報です。"
+                
+                # デプロイ実行
+                success, result = self.deploy_unit(site_cfg, entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, selected_comment)
 
-    def deploy_balanced_unit(self, site, entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, comment):
-        if connection.connection is not None and not connection.is_usable():
-            connection.close()
-            
+                if success:
+                    used_links.add(entry['link'])
+                    success_count += 1
+                    posted_successfully = True
+                    self.log(f"  ✅ 成功: {result.get('title')[:30]}", self.style.SUCCESS)
+                    time.sleep(random.randint(20, 35))
+                    break 
+
+            if not posted_successfully:
+                self.log(f"  ⚠️ 合致記事なし (Category: {cat})", self.style.WARNING)
+
+        self.log(f"🏁 完了: {success_count} / {len(fleet_data)} SUCCESS", self.style.SUCCESS)
+
+    def deploy_unit(self, site, entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, comment):
+        # AI生成
         ext = None
-        for attempt in range(3):
+        for _ in range(3):
             selected = random.choice(api_keys)
             try:
                 processor = AIProcessor([selected['key']], ai_template)
@@ -137,51 +139,41 @@ class Command(BaseCommand):
                     'is_adult': str(site.get('is_adult', '0')).strip() == '1'
                 }, site.get('site_key'))
                 if ext: break
-            except:
-                time.sleep(5)
+            except: time.sleep(2)
         
         if not ext: return False, {}
 
-        # --- プラットフォーム別抽出 ---
         platform = site.get('platform', '').lower()
-        if platform == 'hatena':
-            p_title = ext.get('title_h') or ext.get('title_g') or entry['title']
-            p_body = ext.get('cont_h') or ext.get('cont_g') or ext.get('raw_text', '')
-        else:
-            p_title = ext.get('title_g') or entry['title']
-            p_body = ext.get('cont_g') or ext.get('raw_text', '')
+        p_title = ext.get('title_h') if platform == 'hatena' and ext.get('title_h') else ext.get('title_g', entry['title'])
+        p_body = ext.get('cont_h') if platform == 'hatena' and ext.get('cont_h') else ext.get('cont_g', ext.get('raw_text', ''))
 
-        # DB記録
+        # DB保存
         try:
             with transaction.atomic():
                 new_art = Article.objects.create(
-                    site=project_label, 
-                    title=p_title[:100],
-                    body_text=p_body,
-                    main_image_url=parsed_data.get('img'), 
-                    source_url=entry['link']
+                    site=project_label, title=p_title[:200], body_text=p_body,
+                    main_image_url=parsed_data.get('img'), source_url=entry['link']
                 )
                 art_id = new_art.id
-        except Exception as e:
+        except: return False, {}
+
+        # 投稿設定
+        target_url = str(site.get('endpoint') or site.get('url') or '').strip()
+        target_api = str(site.get('api_key') or site.get('api_key_or_pw') or '').strip()
+        target_user = str(site.get('user') or '').strip()
+        
+        if not target_url.startswith('http'):
+            Article.objects.filter(id=art_id).delete()
             return False, {}
 
-        # 外部デプロイ (修正の核心部)
         try:
             cfg = site.copy()
-            # HatenaDriverが必要とするキー(user, api_key, endpoint)をCSVからマッピング
-            cfg.update({
-                'api_key': str(site.get('api_key_or_pw', '')).strip(),
-                'endpoint': str(site.get('url_or_endpoint', '')).strip(), # CSVの url_or_endpoint を endpoint へ
-                'user': str(site.get('user', '')).strip(),               # CSVの user 列を明示的に追加
-                'blog_id': str(site.get('blog_id_or_rpc', '')).strip(),
-                'current_dir': config_dir
-            })
+            cfg.update({'api_key': target_api, 'endpoint': target_url, 'user': target_user, 'current_dir': config_dir})
             
-            # ドライバ選択
             driver_class = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(platform, LivedoorDriver)
             driver = driver_class(cfg)
             
-            domain_map = {'tiper': 'https://tiper.live', 'saving': 'https://bic-saving.com', 'bicstation': 'https://bicstation.com', 'avflash': 'https://avflash.xyz'}
+            domain_map = {'tiper': 'https://tiper.live', 'avflash': 'https://avflash.xyz'}
             base_url = domain_map.get(project_label, f"https://{project_label}.com")
             full_internal_url = f"{base_url}/news/{art_id}"
 
@@ -191,46 +183,73 @@ class Command(BaseCommand):
             
             if driver.post(title=p_title, body=final_content, source_url=entry['link']):
                 Article.objects.filter(id=art_id).update(is_exported=True)
-                return True, {'title': p_title, 'body': p_body, 'img': parsed_data.get('img')}
+                return True, {'title': p_title}
             else:
                 Article.objects.filter(id=art_id).delete()
                 return False, {}
         except Exception as e:
+            self.log(f"    ❌ Driver Error: {e}")
             Article.objects.filter(id=art_id).delete()
             return False, {}
 
-    def load_csv_data(self, path):
+    def load_master_csv(self, path):
         if not os.path.exists(path): return []
+        data = []
         try:
             with open(path, "r", encoding="utf-8-sig") as f:
-                reader = csv.DictReader(f, delimiter='|')
-                return [{str(k).strip(): str(v).strip() for k, v in row.items() if k} for row in reader]
-        except:
-            return []
+                lines = f.readlines()
+                if not lines: return []
+                header = [h.strip() for h in lines[0].split('\t')]
+                for line in lines[1:]:
+                    vals = [v.strip() for v in line.split('\t')]
+                    row = dict(zip(header, vals))
+                    if row.get('project'): data.append(row)
+        except Exception as e:
+            self.log(f"❌ CSV Load Error: {e}")
+        return data
 
-    def get_all_rss_entries(self, sources):
-        pool = []
-        for src in sources:
-            url = src.get('url') or next((v for v in src.values() if "http" in str(v)), None)
-            if not url: continue
-            try:
-                res = requests.get(url, timeout=15, headers={'User-Agent': 'Mozilla/5.0'})
-                feed = feedparser.parse(res.text)
-                for e in feed.entries:
-                    link = getattr(e, 'link', None) or getattr(e, 'id', None)
-                    if link:
-                        summary = getattr(e, 'summary', '') or getattr(e, 'description', '')
-                        pool.append({'title': e.title, 'link': link, 'raw_body': re.sub(r'<[^>]+>', '', summary).strip()})
-            except: continue
+    def build_rss_pool(self, rss_master, categories):
+        pool = {}
+        for cat in categories:
+            if not cat: continue
+            entries = []
+            urls = [r['rss_url'] for r in rss_master if str(r.get('rss_category')).strip() == cat]
+            for url in urls:
+                try:
+                    res = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
+                    feed = feedparser.parse(res.text)
+                    for e in feed.entries:
+                        link = getattr(e, 'link', None) or getattr(e, 'id', None)
+                        if not link: continue
+
+                        # --- 🖼️ RSS内部の画像抽出 (item内のcontent:encodedを優先) ---
+                        rss_img = ""
+                        content_val = ""
+                        if hasattr(e, 'content'):
+                            content_val = e.content[0].value
+                        elif hasattr(e, 'description'):
+                            content_val = e.description
+                        
+                        # imgタグのsrcを探す
+                        img_match = re.search(r'<img src="(.*?)"', content_val)
+                        if img_match:
+                            rss_img = img_match.group(1).strip()
+                            # 🚀 ここで最高画質化 (pt.jpg, ps.jpg, pm.jpg -> pl.jpg)
+                            rss_img = re.sub(r'p([s|t|m])\.jpg', 'pl.jpg', rss_img)
+                        
+                        entries.append({
+                            'title': e.title, 
+                            'link': link, 
+                            'rss_img': rss_img # プールに保存
+                        })
+                except: continue
+            pool[cat] = entries
         return pool
 
-    def find_best_entry(self, entries, keywords, project_label, used_links):
-        for e in entries:
-            if e['link'] in used_links: continue
-            if keywords and not any(kw.lower() in e['title'].lower() for kw in keywords): continue
-            if not Article.objects.filter(site=project_label, source_url=e['link']).exists():
-                return e
-        return None
+    def guess_category(self, site_key):
+        sk = str(site_key).lower()
+        if 'vr' in sk: return 'adult_vr'
+        return 'adult_video'
 
     def load_character_comments(self, path):
         if not os.path.exists(path): return []
@@ -245,5 +264,4 @@ class Command(BaseCommand):
         else: self.stdout.write(f"[{ts}] {msg}")
 
     def print_custom_help(self):
-        self.stdout.write(self.style.WARNING("\n📖 【C-PLAN 艦隊運用ガイド v3.9】"))
-        self.stdout.write("  python manage.py ai_fleet_deployer --project saving --site h_money")
+        self.stdout.write(self.style.WARNING("Usage: python manage.py ai_fleet_deployer --project [tiper|avflash]"))

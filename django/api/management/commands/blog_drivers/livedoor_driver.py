@@ -10,12 +10,21 @@ class LivedoorDriver(BaseBlogDriver):
     def post(self, title, body, image_url=None, source_url=None, product_info=None, summary=""):
         """
         Livedoor Blog (AtomPub) 投稿実行
-        URLの自動補正を完全に撤廃し、configのURLをそのまま使用する
+        config から url または endpoint を柔軟に取得する
         """
-        # URLを一切加工せずそのまま使用（/article の有無は管理コマンド側に一任）
-        url = self.config.get('url', '').strip()
-        user = self.config.get('user')
-        key = self.config.get('api_key')
+        # --- 修正ポイント：URL取得の柔軟性を確保 ---
+        url = (self.config.get('url') or self.config.get('endpoint') or '').strip()
+        user = str(self.config.get('user') or '').strip()
+        key = str(self.config.get('api_key') or self.config.get('api_key_or_pw') or '').strip()
+
+        # 基本的なバリデーション
+        if not url.startswith('http'):
+            print(f"  [Livedoor Error] Invalid Endpoint URL: '{url}'")
+            return False
+        
+        if not user or not key:
+            print(f"  [Livedoor Error] Missing Credentials (User/API Key)")
+            return False
 
         # コンテンツ整形
         full_body = self.wrap_content(body, image_url, source_url, product_info, summary)
@@ -24,7 +33,7 @@ class LivedoorDriver(BaseBlogDriver):
         full_body = "".join(ch for ch in full_body if ord(ch) >= 32 or ch in "\n\r\t")
         full_body = full_body.replace("]]>", "]]&gt;")
         
-        # タイトルのエスケープ（AI生成タイトルを尊重）
+        # タイトルのエスケープ
         safe_title = escape(title.strip()) 
         
         # AtomPub XML
@@ -47,10 +56,10 @@ class LivedoorDriver(BaseBlogDriver):
             if r.status_code in [200, 201]:
                 return True
             
-            print(f"  [Livedoor Error] Status: {r.status_code}")
-            print(f"  [Livedoor Response] {r.text[:300]}") 
+            print(f"   [Livedoor Error] Status: {r.status_code}")
+            print(f"   [Livedoor Response] {r.text[:300]}") 
             return False
 
         except Exception as e:
-            print(f"  [Livedoor Exception] {str(e)}")
+            print(f"   [Livedoor Exception] {str(e)}")
             return False

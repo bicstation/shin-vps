@@ -11,14 +11,22 @@ class BloggerDriver(BaseBlogDriver):
         """
         Google Blogger V3 API への投稿実行
         """
-        # 1. コンテンツの整形（BaseBlogDriverのメソッドを使用）
+        # 1. コンテンツの整形
         full_body = self.wrap_content(body, image_url, source_url, product_info, summary)
         
         try:
-            # 2. 【最重要】token.json の絶対パスを指定
-            # お師匠様が教えてくれたパスを直接指定するか、configから組み立てます
+            # 2. token.json のパス解決
+            # Docker環境の絶対パスを優先しつつ、configからの相対指定も受け付ける
             token_path = "/usr/src/app/api/management/commands/bs_json/token.json"
             
+            # コンテナ外やディレクトリ構造が変わった場合のフォールバック
+            if not os.path.exists(token_path):
+                # current_dir が渡されていればそこからの相対パスを探す
+                base_dir = self.config.get('current_dir', '')
+                alt_path = os.path.join(os.path.dirname(base_dir), "bs_json", "token.json")
+                if os.path.exists(alt_path):
+                    token_path = alt_path
+
             if not os.path.exists(token_path):
                 print(f"  [Blogger Error] Token file not found at: {token_path}")
                 return False
@@ -26,21 +34,25 @@ class BloggerDriver(BaseBlogDriver):
             # 3. 認証情報の読み込み
             creds = Credentials.from_authorized_user_file(token_path, ['https://www.googleapis.com/auth/blogger'])
             
-            # トークンが期限切れなら更新
+            # トークンが期限切れなら更新（Requestを投げてリフレッシュ）
             if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-                with open(token_path, 'w') as token:
-                    token.write(creds.to_json())
+                try:
+                    creds.refresh(Request())
+                    with open(token_path, 'w') as token:
+                        token.write(creds.to_json())
+                except Exception as ref_e:
+                    print(f"  [Blogger Error] Token refresh failed: {ref_e}")
+                    return False
             
             # 4. APIサービスの構築
-            service = build('blogger', 'v3', credentials=creds)
+            service = build('blogger', 'v3', credentials=creds, cache_discovery=False)
             
             # 5. Blog ID の決定
-            # CSVの 'blog_id_or_rpc' 列に入れた値が self.config['blog_id'] に格納されています
-            blog_id = self.config.get('blog_id')
+            # CSVのヘッダー揺れ（blog_id / blog_id_or_rpc）に対応
+            blog_id = str(self.config.get('blog_id') or self.config.get('blog_id_or_rpc') or '').strip()
             
             if not blog_id:
-                # もしCSVにIDがなければ、最初に見つかったブログを使う（バックアップ）
+                # IDが不明な場合は、紐付いている最初のブログを取得
                 blogs = service.blogs().listByUser(userId='self').execute()
                 if 'items' in blogs and len(blogs['items']) > 0:
                     blog_id = blogs['items'][0]['id']
@@ -49,7 +61,7 @@ class BloggerDriver(BaseBlogDriver):
                 print("  [Blogger Error] Blog ID is missing.")
                 return False
             
-            # 6. 記事の投稿
+            # 6. 記事の投稿実行
             service.posts().insert(
                 blogId=blog_id, 
                 isDraft=False,
@@ -62,6 +74,5 @@ class BloggerDriver(BaseBlogDriver):
             return True
 
         except Exception as e:
-            # ここで KeyError: 'client_json_dir' が出ていたのを、直接パス指定にすることで撲滅
             print(f"  [Blogger Exception] {str(e)}")
             return False
