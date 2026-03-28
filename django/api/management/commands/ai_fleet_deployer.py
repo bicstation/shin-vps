@@ -146,6 +146,24 @@ class Command(BaseCommand):
         platform = site.get('platform', '').lower()
         p_title = ext.get('title_h') if platform == 'hatena' and ext.get('title_h') else ext.get('title_g', entry['title'])
         p_body = ext.get('cont_h') if platform == 'hatena' and ext.get('cont_h') else ext.get('cont_g', ext.get('raw_text', ''))
+        
+        # 🚀 【追加】不要なラベルとメタデータを削除
+        unwanted_labels = [
+            r"📥\s*入力データ.*?\n", 
+            r"元ネタ:.*?\n",
+            r"メーカー:.*?\n",
+            r"出演者:.*?\n",
+            r"対象:.*?\n",
+            r"📤\s*出力.*?\n",
+            r"【出力】.*?\n"
+        ]
+
+        for pattern in unwanted_labels:
+            # re.DOTALLを使わず、各行のラベルを消す
+            p_body = re.sub(pattern, "", p_body, flags=re.IGNORECASE)
+
+        # 文頭・文末の余計な空白と改行を掃除
+        p_body = p_body.strip()
 
         # DB保存
         try:
