@@ -1,0 +1,103 @@
+/* --- Tiper.Live Ultra Modern Common CSS --- */
+:root {
+    --accent: #ff4444;
+    --bg-dark: #000000;
+    --card-bg: #111111;
+    --text-muted: #aaa;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: #ffffff;
+    font-family: 'Helvetica Neue', 'Noto Sans JP', Arial, sans-serif;
+    margin: 0; padding: 0;
+    line-height: 1.6;
+}
+
+/* 全幅コンテナ（最大1600px） */
+.container-fluid-custom {
+    width: 96%;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* ステマ規制バー */
+.stema-bar { background: #111; color: #555; font-size: 10px; text-align: center; padding: 5px 0; border-bottom: 1px solid #222; letter-spacing: 1px; }
+
+/* ナビゲーション */
+.navbar { background: rgba(0,0,0,0.95) !important; border-bottom: 1px solid #222; padding: 12px 0; }
+.navbar-brand { font-weight: 900; color: var(--accent) !important; font-size: 1.6rem; letter-spacing: 1px; }
+.nav-link { color: #ccc !important; font-weight: bold; font-size: 0.9rem; transition: 0.3s; }
+.nav-link:hover { color: var(--accent) !important; }
+.dropdown-menu-dark { background-color: #111; border: 1px solid #333; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.dropdown-item { font-size: 0.85rem; padding: 10px 20px; color: #ccc !important; }
+.dropdown-item:hover { background-color: var(--accent) !important; color: #fff !important; }
+
+/* スリム・トップバナー（全幅 120px） */
+.top-banner-wrapper {
+    width: 100%; height: 120px;
+    position: relative; overflow: hidden; background: #000;
+}
+.top-banner-img {
+    width: 100%; height: 100%;
+    object-fit: cover; opacity: 0.5;
+    filter: brightness(0.6) grayscale(20%);
+}
+.top-banner-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; width: 100%; z-index: 2;
+}
+.top-banner-text h1 { 
+    font-size: 1.4rem; font-weight: 800; 
+    text-shadow: 0 0 15px #000; margin: 0; 
+    letter-spacing: 4px; color: #fff; text-transform: uppercase;
+}
+
+/* 記事カード（1件目・注目記事） */
+.featured-card {
+    background: var(--card-bg); border: 1px solid #333;
+    border-radius: 15px; overflow: hidden;
+    margin-bottom: 40px; transition: 0.3s;
+    text-decoration: none; display: block;
+}
+.featured-card:hover { border-color: var(--accent); }
+.featured-img-container img { width: 100%; max-height: 450px; object-fit: cover; }
+.featured-content { padding: 30px; }
+
+/* 通常記事カード */
+.article-card {
+    background: var(--card-bg); border: 1px solid #222;
+    border-radius: 10px; transition: 0.3s;
+    height: 100%; display: flex; flex-direction: column;
+}
+.article-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+.card-img-container img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 10px 10px 0 0; }
+.card-body-custom { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+.card-title { font-size: 0.95rem; font-weight: bold; line-height: 1.5; margin: 0 0 15px 0; height: 3em; overflow: hidden; }
+.card-title a { color: #fff; text-decoration: none; }
+.btn-detail { background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: bold; width: 100%; padding: 10px; border-radius: 5px; text-decoration: none; display: block; text-align: center; border: none; transition: 0.3s; }
+.btn-detail:hover { background: #ff6666; color: #fff; }
+
+/* サイドバー */
+.sidebar-box { background: #0a0a0a; border: 1px solid #222; padding: 20px; border-radius: 10px; font-size: 0.85rem; }
+.sidebar-title { color: var(--accent); font-weight: bold; border-bottom: 1px solid #333; margin-bottom: 15px; padding-bottom: 10px; letter-spacing: 1px; }
+.side ul { list-style: none; padding: 0; }
+.side li { margin-bottom: 10px; border-bottom: 1px dotted #222; padding-bottom: 8px; }
+.side a { color: #aaa; text-decoration: none; transition: 0.2s; }
+.side a:hover { color: var(--accent); padding-left: 3px; }
+
+/* ページャー */
+.pager-container { padding: 40px 0; }
+.pager-container a, .pager-container span { background: #111; color: #fff; border: 1px solid #333; padding: 8px 16px; text-decoration: none; border-radius: 4px; margin: 0 4px; }
+.pager-container .current { background: var(--accent); border-color: var(--accent); }
+
+/* フッター */
+footer { background: #000; border-top: 1px solid #222; padding: 50px 0; }
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+    .top-banner-wrapper { height: 100px; }
+    .top-banner-text h1 { font-size: 1.1rem; }
+    .featured-content { padding: 15px; }
+}

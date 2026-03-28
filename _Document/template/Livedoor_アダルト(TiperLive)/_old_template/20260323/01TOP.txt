@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja" itemscope itemtype="http://schema.org/Blog">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=1190">
+<$HeadSectionCommon$>
+<meta name="description" content="<$BlogDescription ESCAPE$>" />
+<$OGP$>
+<link rel="alternate" media="handheld" type="application/xhtml+xml" href="<$BlogMobileUrl$>" />
+<IfFoafUrl><link rel="meta" type="application/rdf+xml" title="FOAF" href="<$FoafUrl$>" /></IfFoafUrl>
+<title><$BlogTitle ESCAPE$></title>
+<script src="<$PartsBaseUrl$>/js/usr/import.js"></script>
+<script>
+$(function(){
+ if($('.header-inner01').children('#blog-header-image').length) {
+  $(window).bind('load', function() {
+   var title1 = $('#blog-header-image').height();
+   var title2 = $('.header-menu').height();
+   var headerHeight = title1-title2-15;
+   $("hgroup").css("height", headerHeight);
+  });
+ }
+});
+</script>
+<style>
+/* ステマ規制対応：PR表記のスタイル */
+.ad-notices-top {
+    background: #1a1a1a;
+    color: #999;
+    font-size: 11px;
+    text-align: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #333;
+    letter-spacing: 1px;
+}
+/* フッターナビのスタイル */
+.footer-nav {
+    text-align: center;
+    padding: 20px 0;
+    border-top: 1px solid #333;
+    background: #000;
+}
+.footer-nav a {
+    color: #888;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 13px;
+}
+.footer-nav a:hover {
+    color: #ff4500;
+}
+</style>
+</head>
+<body class="default_2012 page-index layout-2col sidebar-right<IfBlogBackgroundImageUrl> show-bg-image" style="background-image:url(<$BlogBackgroundImageUrl$>);</IfBlogBackgroundImageUrl>">
+
+<div class="ad-notices-top">
+    【PR】本ページはアフィリエイト広告を利用して商品を紹介しています
+</div>
+
+<$BlogHeader$><header id="blog-header">
+    <div id="blog-header01">
+        <div class="header-inner01<IfBlogHeaderImageUrl> show-image<IfBlogHeaderHideText> hide-text</IfBlogHeaderHideText></IfBlogHeaderImageUrl>">
+
+            <hgroup>
+                <h1 id="blog-title"><a href="<$BlogUrl$>"><$BlogTitle ESCAPE$></a></h1>
+                <h2 id="blog-description"><$BlogDescription$></h2>
+                </hgroup>
+
+            <IfBlogHeaderImageUrl><IfBlogHeaderHideText><a href="<$BlogUrl$>"></IfBlogHeaderHideText><img src="<$BlogHeaderImageUrl$>" id="blog-header-image" /><IfBlogHeaderHideText></a></IfBlogHeaderHideText></IfBlogHeaderImageUrl>
+
+            <div id="blog-header02">
+                <div class="header-inner02">
+                    <ul class="header-menu">
+                        <li><a href="https://tiper.live">🎥Tiper</a></li>
+                        <li><a href="https://avflash.xyz">🎥AVFlash</a></li>
+                        <li><a href="https://bic-erog.com">🌐ポータル</a></li>
+                        <li><a href="https://blog.bic-erog.com">📝レビュー</a></li>
+                        <li><a href="https://adult-search.xyz">🏰㊙</a></li>
+                        <li><a href="https://blog.adult-search.xyz">🏰㊙ビュー</a></li>
+                    </ul>
+                    <ul class="header-sarch">
+                        <li><a href="http://twitter.com"><img src="https://parts.blog.livedoor.jp/img/usr/ver06_km_matomegray_3c/icon_twitter.png" alt="X" /></a></li><li><a href="<$RSSUrl$>"><img src="https://parts.blog.livedoor.jp/img/usr/ver06_km_matomegray_3c/icon_rss.png" alt="RSS" /></a></li><li>
+                        <form action="<$BlogUrl$>search" method="GET" style="padding:0;margin:0px;">
+                        <input type="TEXT" name="q" class="sf">
+                        <input type="SUBMIT" value="検索" class="sfbtn">
+                        </form>
+                        </li></ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</header>
+<div id="wrapper">
+
+    <div id="container">
+
+        <div class="rss-blogroll">
+            <script type="text/javascript">
+            </script>
+            <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
+
+            <script type="text/javascript">
+            </script>
+            <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
+
+            <script type="text/javascript">
+            </script>
+            <script type="text/javascript" charset="utf-8" src="https://blogroll.livedoor.net/js/blogroll.js"></script>
+        </div>
+        <div class="main-container">
+            <div class="main-column-inner">
+
+                 <div class="listWithImage">
+                    <SetVar popularArticlesListWithImageCount>3</SetVar><SetVar popularArticlesListWithImageImageWidth>233</SetVar>
+                    <SetVar popularArticlesListWithImageImageHeight>180</SetVar>
+                    <SetVar popularArticlesListWithImageComment>0</SetVar>
+                    <SetVar popularArticlesListWithImageRangeType>month0</SetVar>
+                    <SetVar popularArticlesListWithImageForegroundColor>#ffffff</SetVar>
+                    <SetVar popularArticlesListWithImageBackgroundColor>#000000</SetVar>
+                    <$PopularArticlesWithImageList$>
+                </div>
+
+                 <div class="main-container-ads">
+                    <iframe width="720" height="90" frameborder="0" scrolling="auto" src="https://ad.duga.jp/iframe/table-duga-ppv-1/48043-01/" marginwidth="0" marginheight="0"><a href="https://click.duga.jp/48043-01" target="_blank">DUGA</a></iframe>
+                </div>
+
+                <$MessageBoard$>
+
+                <$IndexNavigator$>
+
+                <IndexArticlesLoop>
+                <$TrackBackAutoDiscovery$>
+
+<article class="custom-card-container">
+    <div class="card-link-wrapper">
+        <div class="card-image-box" id="thumb-container-<$ArticleId$>"></div>
+
+        <div class="card-content-box">
+            <header class="card-header">
+                <div class="card-meta">
+                    <time><$ArticleDate$></time>
+                </div>
+                <h1 class="card-title"><a href="<$ArticlePermalink$>"><$ArticleTitle ESCAPE$></a></h1>
+            </header>
+
+            <div class="card-excerpt" id="desc-<$ArticleId$>">
+                <$ArticleDescription ESCAPE$>
+            </div>
+            <div style="margin-top:10px;"><a href="<$ArticlePermalink$>" style="color:#ff4500; font-weight:bold; text-decoration:none;">詳細を見る ≫</a></div>
+        </div>
+    </div>
+
+    <div id="hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
+
+    <script>
+    (function() {
+        var bodyHtml = document.getElementById('hidden-body-<$ArticleId$>').innerHTML;
+        var thumbContainer = document.getElementById('thumb-container-<$ArticleId$>');
+        
+        var imgUrl = "";
+        var imgMatch = bodyHtml.match(/<img [^>]*src=["']([^"']+)["']/);
+        var mdMatch = bodyHtml.match(/!\[.*\]\((https?:\/\/[^\)]+)\)/);
+
+        if (imgMatch) {
+            imgUrl = imgMatch[1];
+        } else if (mdMatch) {
+            imgUrl = mdMatch[1];
+        }
+
+        if (imgUrl) {
+            thumbContainer.innerHTML = '<a href="<$ArticlePermalink$>"><img src="' + imgUrl + '" style="width:100%; height:100%; object-fit:cover;"></a>';
+        } else {
+            thumbContainer.innerHTML = '<div style="background:#222; height:100%;"></div>';
+        }
+    })();
+    </script>
+</article>
+
+                <IfFirstArticle><$Advertise$></IfFirstArticle>
+
+                </IndexArticlesLoop>
+
+                <$IndexNavigator$>
+
+            </div>
+        </div>
+
+        <aside class="left-container">
+            <div class="left-column-inner">
+            <$PluginList_A$>
+            </div>
+        </aside>
+
+        <aside class="right-container">
+            <div class="right-column-inner">
+            <$PluginList_B$>
+            <$LDServices$>
+            </div>
+        </aside>
+
+        <p class="to-pagetop"><a href="#"><img src="https://parts.blog.livedoor.jp/img/usr/default_2012/common/to_pagetop.png" width="70" height="70" alt="このページのトップヘ" /></a></p>
+
+    </div>
+
+    <nav class="footer-nav">
+        <a href="<$BlogUrl$>archives/profile.html">運営者情報・免責事項</a>
+        <a href="<$BlogUrl$>archives/contact.html">お問い合わせ</a>
+        <a href="https://main.tiper.live/index.rdf">RSSフィード</a>
+    </nav>
+
+    <footer id="blog-footer">
+    <$BlogFooter$>
+    </footer>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+/* --- Tiper.Live 2026 Reset & Modern CSS --- */
+:root {
+    --accent: #ff4444;
+    --bg-dark: #000000;
+    --card-bg: #111111;
+    --text-muted: #888;
+    --border-color: #222;
+}
+
+/* 全体リセット */
+body {
+    background-color: var(--bg-dark);
+    color: #ffffff;
+    font-family: 'Helvetica Neue', 'Noto Sans JP', Arial, sans-serif;
+    margin: 0; padding: 0;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* コンテナ・ナビ・バナーは共通のため中略（以前のコードを維持） */
+.container-fluid-custom { width: 95%; max-width: 1400px; margin: 0 auto; }
+.stema-bar { background: #0a0a0a; color: #444; font-size: 10px; text-align: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+.navbar { background: rgba(0,0,0,0.95) !important; border-bottom: 1px solid var(--border-color); padding: 15px 0; }
+.navbar-brand { font-weight: 900; color: var(--accent) !important; font-size: 1.5rem; letter-spacing: 2px; }
+.nav-link { color: #eee !important; font-weight: bold; font-size: 0.85rem; margin: 0 10px; transition: 0.3s; }
+.top-banner-wrapper { width: 100%; height: 120px; position: relative; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; }
+.top-banner-img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
+.top-banner-text h1 { font-size: 1.6rem; font-weight: 900; letter-spacing: 5px; color: #fff; margin: 0; }
+
+/* 記事グリッド */
+.article-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 50px; }
+@media (max-width: 1100px) { .article-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .article-grid { grid-template-columns: 1fr; } }
+
+.article-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: 0.3s; text-decoration: none !important; }
+.article-card:hover { border-color: var(--accent); transform: translateY(-8px); }
+.card-img-container { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
+.card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+.card-body-custom { padding: 20px; }
+.card-title { font-size: 1rem; font-weight: bold; color: #fff; margin-bottom: 15px; }
+
+/* ======================================================
+   ★ 記事本文内の「白背景・文字消え」完全封殺ロジック
+   ====================================================== */
+
+/* 1. 記事エリアの基本文字色 */
+.article-content { color: #eeeeee !important; }
+
+/* 2. 背景色指定がある要素を「一律で透過・暗色化」する（これが最も確実） */
+.article-content [style*="background"] {
+    background-color: rgba(255, 255, 255, 0.08) !important; /* 薄いグレー */
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid #333 !important;
+    border-radius: 8px;
+    color: #ffffff !important;
+}
+
+/* 3. 救済：画像3枚目の「オレンジ点線ボックス」を保護して上書き */
+/* 2の設定よりも後に書くことで、点線デザインを優先させます */
+.article-content blockquote, 
+.article-content .quote {
+    background: rgba(255, 68, 68, 0.05) !important;
+    border: 1px dashed var(--accent) !important; 
+    border-radius: 8px;
+    padding: 20px !important;
+    margin: 20px 0 !important;
+    color: #ffffff !important;
+}
+
+/* 4. 文字色救済：どんな色で指定されていても「白系」に強制固定 */
+.article-content span[style*="color"],
+.article-content p[style*="color"],
+.article-content div[style*="color"],
+.article-content font[color] {
+    color: #ffffff !important;
+}
+
+/* 5. 強い強調やリンク */
+.article-content strong, .article-content b { color: #ffffff !important; font-weight: bold; }
+.article-content a { color: var(--accent) !important; text-decoration: underline; }
+.article-content img { max-width: 100% !important; height: auto !important; border-radius: 10px; }
+
+/* サイドバー・フッター（共通） */
+.sidebar-box { background: #0a0a0a; border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 30px; }
+.sidebar-title { color: var(--accent); font-weight: 900; border-bottom: 2px solid var(--accent); padding-bottom: 8px; font-size: 0.9rem; }
+
+/* --- ユーティリティクラス（定義漏れ補完） --- */
+
+/* 文字を白くする */
+.text-white {
+    color: #ffffff !important;
+}
+
+/* 英字をすべて大文字にする */
+.text-uppercase {
+    text-transform: uppercase !important;
+    letter-spacing: 1px; /* 大文字は見出しに使うことが多いので、少し字間を広げると高級感が出ます */
+}
+
+/* （ついでに）下線なしを保証 */
+.text-decoration-none {
+    text-decoration: none !important;
+}
+
+/* --- トップバナー（センタリング・レイアウト修正） --- */
+
+.top-banner-wrapper {
+    width: 100%;
+    /* バナーの高さ（お好みで調整してください） */
+    height: 120px; 
+    position: relative; 
+    overflow: hidden;
+    background: #000;
+    
+    /* ★ここが重要：中にある要素（画像とテキスト）を中央に集める設定 */
+    display: flex; 
+    align-items: center; /* 縦方向の中央 */
+    justify-content: center; /* 横方向の中央 */
+}
+
+.top-banner-img {
+    /* 画像を「バナーの背景」として扱う設定 */
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    
+    /* ★ここが最重要：画像を比率を保ったまま中央で切り取る */
+    object-fit: cover; 
+    object-position: center; /* 画像の中心を基準にする */
+    
+    opacity: 0.4; /* テキストを見やすくするために少し暗く */
+    z-index: 1; /* 画像は下層 */
+}
+
+/* （参考）テキストエリアの設定 */
+.top-banner-text { 
+    position: relative; 
+    z-index: 2; /* テキストは画像の上に重ねる */
+    text-align: center; 
+}

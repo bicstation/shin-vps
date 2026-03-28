@@ -1,0 +1,91 @@
+<style>
+/* アンテナ全体のスタイル */
+.fleet-container {
+    background: #000;
+    padding: 15px;
+    border: 2px solid #d4af37;
+    border-radius: 10px;
+    font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
+    color: #fff;
+}
+.fleet-header {
+    color: #d4af37;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+.fleet-cat-title {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin: 15px 0 5px 5px;
+    font-weight: bold;
+    border-left: 2px solid #d4af37;
+    padding-left: 8px;
+}
+/* リンク単体のスタイル */
+.fleet-link {
+    display: block;
+    padding: 7px 10px;
+    margin: 3px 0;
+    background: #1a1a1a;
+    color: #eee !important;
+    text-decoration: none !important;
+    font-size: 13px;
+    border-radius: 4px;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+}
+.fleet-link:hover {
+    background: #d4af37;
+    color: #000 !important;
+    transform: translateX(5px);
+    border-color: #fff;
+}
+.fleet-link span {
+    font-size: 10px;
+    opacity: 0.7;
+    float: right;
+}
+</style>
+
+<div class="fleet-container">
+    <div class="fleet-header">⚜️ BICSTATION NETWORK ⚜️</div>
+
+    <span class="fleet-cat-title">総合ポータル</span>
+    <a href="https://main.tiper.live" class="fleet-link">▶ Tiper.Live <span>(Main)</span></a>
+
+    <span class="fleet-cat-title">PBIC SERIES</span>
+    <a href="https://reserve.tiper.live" class="fleet-link">📅 先行予約 <span>(速報)</span></a>
+    <a href="https://jukujo.tiper.live" class="fleet-link">💋 熟女・人妻 <span>(人妻)</span></a>
+    <a href="https://vr.tiper.live" class="fleet-link">👓 VR快楽 <span>(360°)</span></a>
+    <a href="https://idol.tiper.live" class="fleet-link">💎 美少女 <span>(アイドル)</span></a>
+    <a href="https://ntr.tiper.live" class="fleet-link">💔 NTR・不倫 <span>(寝取)</span></a>
+    <a href="https://fetish.tiper.live" class="fleet-link">🍓 フェチ・巨乳 <span>(爆乳)</span></a>
+    <a href="https://wiki.tiper.live" class="fleet-link">📚 名作まとめ <span>(Wiki)</span></a>
+    <a href="https://nakadashi.tiper.live" class="fleet-link">💦 中出し <span>(生ハメ)</span></a>
+    <a href="https://amateur.tiper.live" class="fleet-link">🔰 素人 <span>(18禁)</span></a>
+
+    <span class="fleet-cat-title">ADULT SPECIALTY</span>
+    <a href="https://virgin.tiper.live" class="fleet-link">🌸 処女・初体験 <span>(Debut)</span></a>
+    <a href="https://jk.tiper.live" class="fleet-link">🏫 現役女子校生 <span>(JK)</span></a>
+    <a href="https://jd.tiper.live" class="fleet-link">🎓 現役女子大生 <span>(JD)</span></a>
+    <a href="https://enkou.tiper.live" class="fleet-link">💰 パパ活・放課後 <span>(援交)</span></a>
+    <a href="https://wakazuma.tiper.live" class="fleet-link">💍 新婚若妻 <span>(エプロン)</span></a>
+    <a href="https://nurse.tiper.live" class="fleet-link">💉 白衣・ナース <span>(病院)</span></a>
+    <a href="https://ol.tiper.live" class="fleet-link">👠 背徳OL・女上司 <span>(スーツ)</span></a>
+    <a href="https://chijo.tiper.live" class="fleet-link">👙 痴女・野外 <span>(露出)</span></a>
+    <a href="https://gal.tiper.live" class="fleet-link">👱‍♀️ 爆乳ギャル <span>(ヤリマン)</span></a>
+    <a href="https://slender.tiper.live" class="fleet-link">👗 極薄スレンダー <span>(美体)</span></a>
+
+    <span class="fleet-cat-title">SEO & SEARCH HUB</span>
+    <a href="https://blog.bic-erog.com" class="fleet-link">🌐 WP A: BIC-EROG <span>(News)</span></a>
+    <a href="https://blog.adult-search.xyz" class="fleet-link">🔍 WP B: ADULT-SEARCH <span>(Review)</span></a>
+
+    <div style="text-align:center; margin-top:15px; font-size:9px; color:#444;">
+        &copy; BICSTATION ADULT FLEET SYSTEM
+    </div>
+</div>

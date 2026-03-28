@@ -1,0 +1,74 @@
+# --- 🏘 Blogger 分遣艦隊：10サイト・サブドメイン定義 (完全版) ---
+# 独自ドメイン: ○○.tiper.live をBloggerに割り当て済み
+BLOGGER_CONFIGS = {
+    "blogger_vr": {
+        "name": "VR Visionary",
+        "blog_id": "7585311913329082481",
+        "custom_domain": "vr.tiper.live",
+        "keywords": ["VR", "360", "Meta", "バーチャル"],
+        "persona": "技術評論家：解像度や没入感を論理的に絶賛し、本体(MD記事)へ誘導"
+    },
+    "blogger_idol": {
+        "name": "2026年 期待の新星名鑑",
+        "blog_id": "8841182029240994540",
+        "custom_domain": "idol.tiper.live",
+        "keywords": ["新人", "デビュー", "専属", "単体"],
+        "persona": "スカウトマン：期待の新人のポテンシャルを分析し、本体(MD記事)へ誘導"
+    },
+    "blogger_jukujo": {
+        "name": "淑女の流儀：エレガンス",
+        "blog_id": "627106354784272906",
+        "custom_domain": "jukujo.tiper.live",
+        "keywords": ["熟女", "人妻", "女上司", "40代", "50代"],
+        "persona": "紳士：落ち着いた筆致で大人の色気を文学的に考察し、本体(MD記事)へ誘導"
+    },
+    "blogger_ntr": {
+        "name": "背徳の心理学：愛執の考察",
+        "blog_id": "7239743296699982121",
+        "custom_domain": "ntr.tiper.live",
+        "keywords": ["NTR", "不倫", "略奪", "寝取り"],
+        "persona": "心理学士：行為よりも「心の葛藤」を深掘りする分析を行い、本体(MD記事)へ誘導"
+    },
+    "blogger_fetish": {
+        "name": "曲線美の極致：美学",
+        "blog_id": "2332271981188564655",
+        "custom_domain": "fetish.tiper.live",
+        "keywords": ["巨乳", "爆乳", "美尻", "フェチ"],
+        "persona": "美学者：肉体の造形美を「芸術」として称賛し、本体(MD記事)へ誘導"
+    },
+    "blogger_fashion": {
+        "name": "制服の聖域：エステティクス",
+        "blog_id": "取得したID_06",
+        "custom_domain": "3155835040589844080",
+        "keywords": ["制服", "OL", "ナース", "コスチューム"],
+        "persona": "ファッション史家：衣装が持つ記号的魅力を力説し、本体(MD記事)へ誘導"
+    },
+    "blogger_reality": {
+        "name": "街角の偶然：ルポルタージュ",
+        "blog_id": "1144538257509804330",
+        "custom_domain": "real.tiper.live",
+        "keywords": ["素人", "逆ナン", "野外", "偶然"],
+        "persona": "ルポライター：日常に潜む非日常を臨場感たっぷりに報告し、本体(MD記事)へ誘導"
+    },
+    "blogger_archive": {
+        "name": "永劫のミューズ：名作選",
+        "blog_id": "8728610744967590163",
+        "custom_domain": "archive.tiper.live",
+        "keywords": ["伝説", "引退", "名作", "殿堂入り"],
+        "persona": "映画評論家：名作を文化遺産として重厚にアーカイブし、本体(MD記事)へ誘導"
+    },
+    "blogger_maker": {
+        "name": "メーカー別・演出の美学",
+        "blog_id": "834594888882331642",
+        "custom_domain": "lab.tiper.live",
+        "keywords": ["S1", "SOD", "Moodyz", "演出", "脚本"],
+        "persona": "映像演出家：監督のこだわりやカメラワークをプロ視点で解説し、本体(MD記事)へ誘導"
+    },
+    "blogger_portal": {
+        "name": "Tiper.Live プレミアムガイド",
+        "blog_id": "2891668877988452747",
+        "custom_domain": "news.tiper.live",
+        "keywords": ["セール", "特報", "総合", "ランキング"],
+        "persona": "コンシェルジュ：全ジャンルから厳選した逸品を本体(MD記事)へナビゲート"
+    },
+}

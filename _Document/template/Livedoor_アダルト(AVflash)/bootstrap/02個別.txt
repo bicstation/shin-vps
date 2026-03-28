@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <$HeadSectionCommon$>
+    <meta name="description" content="<$ArticleDescription ESCAPE$>" />
+    <$OGP$>
+    <title><$ArticleTitle ESCAPE$> : <$BlogTitle ESCAPE$></title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<$CSSUrl$>">
+    <style>
+        /* 検索バーの微調整（共通） */
+        .search-input {
+            background: rgba(255,255,255,0.1); border: 1px solid #444; color: #fff;
+            font-size: 0.8rem; border-radius: 20px 0 0 20px; padding-left: 15px;
+        }
+        .search-input:focus { background: rgba(255,255,255,0.15); border-color: var(--accent); color: #fff; box-shadow: none; }
+        .search-btn { border-radius: 0 20px 20px 0; font-size: 0.8rem; padding: 0 15px; border: 1px solid #444; border-left: none; background: #222; color: #aaa; }
+        @media (max-width: 991px) { .navbar-search { margin-top: 15px; width: 100%; } }
+
+        /* 記事詳細：本文装飾 */
+        .article-content img { max-width: 100% !important; height: auto !important; border-radius: 8px; }
+        .article-tags a { display: inline-block; background: #222; color: #aaa; padding: 2px 10px; border-radius: 4px; text-decoration: none; font-size: 0.8rem; margin-right: 5px; margin-bottom: 5px; border: 1px solid #333; }
+        .article-tags a:hover { background: var(--accent); color: #fff; }
+
+        /* ★完全修正：記事末尾のCTA導線 */
+        .article-footer-cta {
+            background: linear-gradient(135deg, #111 0%, #222 100%) !important;
+            border: 1px solid #e11d48 !important; border-radius: 12px; padding: 30px; margin-top: 50px;
+        }
+        .cta-btn {
+            display: block; width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 6px;
+            text-align: center; text-decoration: none !important; font-weight: 900; transition: 0.3s;
+        }
+        /* メインボタン（赤背景・白文字） */
+        .cta-btn-main { background: #e11d48 !important; color: #ffffff !important; }
+        .cta-btn-main:hover { background: #f43f5e !important; color: #ffffff !important; opacity: 1; transform: translateY(-2px); }
+        
+        /* サブボタン（白背景・赤文字） */
+        .cta-btn-sub { background: #ffffff !important; color: #e11d48 !important; }
+        .cta-btn-sub:hover { background: #f1f5f9 !important; color: #e11d48 !important; opacity: 1; transform: translateY(-2px); }
+
+        /* ★追加: スマホ固定メニュー */
+        .mobile-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px); display: none; border-top: 1px solid #333; z-index: 10000;
+        }
+        @media (max-width: 991px) {
+            .mobile-nav { display: flex; }
+            .footer-padding { height: 80px; }
+        }
+        .mobile-nav-item { flex: 1; text-align: center; color: #fff !important; text-decoration: none !important; padding: 10px 0; font-size: 0.65rem; font-weight: bold; }
+        .mobile-nav-item i { display: block; font-size: 1.2rem; margin-bottom: 2px; }
+
+        /* サイドバー用 */
+        .side-guide-link { display: block; padding: 10px; color: #ccc !important; text-decoration: none !important; font-size: 0.85rem; border-bottom: 1px solid #333; }
+        .side-guide-link:hover { color: #fff !important; background: #222; }
+    </style>
+</head>
+
+<body class="page-article">
+
+<div class="stema-bar">【PR】本サイトはアフィリエイト広告を利用して作品を紹介しています</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container-fluid-custom d-flex justify-content-between align-items-center">
+        <a class="navbar-brand" href="<$BlogUrl$>">TIPER.LIVE</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navContent">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <li class="nav-item"><a class="nav-link" href="https://tiper.live">HOME</a></li>
+                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">TOP</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropCat" role="button" data-bs-toggle="dropdown">GUIDES</a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="https://tiper.live/guide/live-chat">視聴ガイド</a></li>
+                        <li><a class="dropdown-item" href="https://tiper.live/guide/matching">マッチング解析</a></li>
+                        <li><a class="dropdown-item" href="https://tiper.live/guide/chat-lady">高額副業(求人)</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item ms-lg-3 navbar-search">
+                    <form action="<$BlogSearchUrl$>" method="get" class="d-flex">
+                        <input type="text" name="q" class="form-control search-input" placeholder="キーワード検索...">
+                        <button class="btn search-btn" type="submit">🔍</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="top-banner-wrapper">
+    <img src="https://livedoor.blogimg.jp/pbic/imgs/5/9/590332e9.jpg" class="top-banner-img" alt="Banner">
+    <div class="top-banner-text">
+        <span style="color:#e11d48; font-weight:bold; letter-spacing:5px; font-size:0.8rem;">NOW READING</span>
+        <h1 class="text-white text-uppercase" style="font-size:1.2rem; opacity:0.8; margin-top:5px;">Exclusive Review</h1>
+    </div>
+    <div class="banner-overlay-text">PREMIUM</div>
+</div>
+
+<main class="container-fluid-custom mt-5">
+    <div class="row g-5">
+        <div class="col-lg-9">
+            <article class="article-container p-4 p-md-5" style="background: rgba(255,255,255,0.02); border: 1px solid #222; border-radius: 15px;">
+                <header class="article-header mb-4">
+                    <div class="mb-2">
+                        <IfArticleCategory1>
+                            <a href="<$ArticleCategory1Url$>" class="badge bg-danger px-3 py-2 text-decoration-none"><$ArticleCategory1$></a>
+                        </IfArticleCategory1>
+                    </div>
+                    <h1 class="article-main-title fw-bold" style="font-size: 2rem; color: #fff; line-height: 1.4;"><$ArticleTitle ESCAPE$></h1>
+                    <div class="d-flex align-items-center gap-3 small text-secondary mt-3">
+                        <span>📅 <$ArticleDate$></span>
+                        <span>✍️ BY EDITOR</span>
+                    </div>
+                </header>
+
+                <div class="article-content" style="color: #ccc; line-height: 1.8; font-size: 1.05rem;">
+                    <$ArticleBody$>
+                    <IfArticleBodyMore>
+                        <div id="more" class="mt-4"><$ArticleBodyMore$></div>
+                    </IfArticleBodyMore>
+
+                    <div class="article-footer-cta text-center">
+                        <p style="color:#e11d48; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">TIPER.LIVE OFFICIAL GUIDE</p>
+                        <h3 style="color:#fff; font-size:1.3rem; margin-bottom:20px; font-weight:800;">この記事の関連解析レポート</h3>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <a href="https://tiper.live/guide/live-chat" class="cta-btn cta-btn-main">🎥 ライブチャット視聴ガイド</a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="https://tiper.live/guide/matching" class="cta-btn cta-btn-sub">💌 マッチングアプリ解析</a>
+                            </div>
+                        </div>
+                        <a href="https://tiper.live/guide/chat-lady" style="color:#aaa !important; font-size:0.8rem; text-decoration:underline !important; display:inline-block; margin-top:15px;">【女性専用】在宅高額副業の公式募集要項はこちら ≫</a>
+                    </div>
+                </div>
+
+                <$MessageBoard$>
+
+                <div class="mt-5 pt-4 border-top border-secondary">
+                    <div class="article-tags mb-3">
+                        <span class="text-secondary small me-2">TAGS:</span>
+                        <$ArticleTagsList$>
+                    </div>
+                </div>
+
+                <nav class="d-flex justify-content-between mt-5 pt-4 border-top border-secondary">
+                    <div class="prev-box">
+                        <IfPrevArticle><a href="<$PrevArticlePermalink$>" class="btn btn-outline-light btn-sm px-3" style="border-radius: 20px; text-decoration:none !important;">« PREV POST</a></IfPrevArticle>
+                    </div>
+                    <div class="next-box">
+                        <IfNextArticle><a href="<$NextArticlePermalink$>" class="btn btn-outline-light btn-sm px-3" style="border-radius: 20px; text-decoration:none !important;">NEXT POST »</a></IfNextArticle>
+                    </div>
+                </nav>
+            </article>
+
+            <div class="mt-5">
+                <h4 class="sidebar-title" style="border-left: 4px solid #e11d48; padding-left: 15px;">RECOMMEND SELECTION</h4>
+                <div class="row g-3 mt-2">
+                    <$RelatedArticles$>
+                </div>
+            </div>
+
+            <IfArticleAllowComment>
+                <section class="article-footer-box rounded-3 mt-5 p-4" style="background:#0a0a0a; border:1px solid #222;">
+                    <h3 class="sidebar-title mb-4">COMMENTS</h3>
+                    <div class="comment-list-wrapper"><$CommentsList$></div>
+                    <div class="mt-4 comment-form-wrapper"><$CommentForm2$></div>
+                </section>
+            </IfArticleAllowComment>
+        </div>
+
+        <aside class="col-lg-3">
+            <div class="sidebar-box mb-4">
+                <div class="sidebar-title">OFFICIAL GUIDES</div>
+                <a href="https://tiper.live/guide/live-chat" class="side-guide-link">🎥 ライブチャット視聴攻略</a>
+                <a href="https://tiper.live/guide/matching" class="side-guide-link">💌 マッチングアプリ解析</a>
+                <a href="https://tiper.live/guide/chat-lady" class="side-guide-link" style="color:#e11d48 !important; font-weight:bold;">💎 女性向け・高収入副業</a>
+            </div>
+
+            <div class="sidebar-box">
+                <div class="sidebar-title">POPULAR POSTS</div>
+                <div class="side"><$PluginList_B$></div>
+            </div>
+            
+            <div class="sidebar-box mt-4">
+                <div class="sidebar-title">ARCHIVE</div>
+                <div class="side"><$PluginList_A$></div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<div class="footer-padding"></div>
+
+<footer class="py-5 border-top border-secondary text-center text-muted small">
+    <p>&copy; Tiper.Live OFFICIAL. All Rights Reserved.</p>
+</footer>
+
+<div class="mobile-nav">
+    <a href="https://tiper.live/guide/live-chat" class="mobile-nav-item"><i>🎥</i>視聴ガイド</a>
+    <a href="https://tiper.live/guide/matching" class="mobile-nav-item"><i>💌</i>出会い解析</a>
+    <a href="https://tiper.live/guide/chat-lady" class="mobile-nav-item" style="color: #fb7185 !important;"><i>💎</i>高額副業</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

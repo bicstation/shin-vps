@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja" itemscope itemtype="http://schema.org/Blog">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<$HeadSectionCommon$>
+<$OGP$>
+<link rel="alternate" media="handheld" type="application/xhtml+xml" href="<$BlogMobileUrl$>" />
+<IfFoafUrl><link rel="meta" type="application/rdf+xml" title="FOAF" href="<$FoafUrl$>" /></IfFoafUrl>
+<title><$MonthLabel ESCAPE$> : <$BlogTitle ESCAPE$></title>
+<!--[if lt IE 9]>
+<script src="<$PartsBaseUrl$>/js/html5.js"></script>
+<![endif]-->
+<script src="<$PartsBaseUrl$>/js/usr/import.js"></script>
+</head>
+<body class="default_2012 page-monthly layout-2col sidebar-right">
+
+<$BlogHeader$>
+
+<div id="wrapper">
+	<div id="wrapper-inner">
+		<div id="wrapper-inner-2">
+<div id="container">
+
+<!-- ブログタイトル、説明 -->
+<header id="blog-header">
+	<div id="blog-header-inner">
+		<h1 id="blog-title"><a href="<$BlogUrl$>"><$BlogTitle ESCAPE$></a></h1>
+		<p id="blog-description"><$BlogDescription$></p>
+	</div>
+</header>
+<!-- /ブログタイトル、説明 -->
+
+<!-- メニューバー -->
+<$MenuList$>
+<!-- /メニューバー -->
+
+<div id="content">
+
+<div id="main" class="column">
+<div id="main-inner">
+
+<header class="archives-header" id="monthly-header">
+	<h1><$MonthLabel$></h1>
+</header>
+
+<!-- ArticlesLoop Start -->
+<!-- google_ad_section_start -->
+<MonthlyArticlesLoop>
+
+<$TrackBackAutoDiscovery$>
+<!-- 記事全体 -->
+<article class="article<IfFirstArticle> first-article</IfFirstArticle><IfLastArticle> last-article</IfLastArticle>" id="<$ArticleDateTag$>" itemscope itemtype="http://schema.org/BlogPosting">
+<!-- 記事ヘッダー、記事タイトル -->
+<header class="article-header">
+	<p class="article-date"><time datetime="<$ArticleDateISO8601$>" itemprop="datePublished"><$ArticleDate$></time></p>
+	<h1 class="article-title" itemprop="name"><a href="<$ArticlePermalink$>" itemprop="url"><$ArticleTitle ESCAPE$></a></h1>
+	<IfArticleRating><span class="article-rating"><$ArticleRatingIcon$></span></IfArticleRating>
+</header>
+<!-- /記事ヘッダー、記事タイトル -->
+
+<!-- 記事本文 -->
+<div class="article-body">
+	<div class="article-body-inner">
+	<$CommonTheme$>
+	<$ArticleBody$>
+	<IfArticleBodyMore><span class="article-continue"><a href="<$ArticlePermalink$>#more">続きを読む</a></span></IfArticleBodyMore>
+	<$ArticleTagsList$>
+	</div>
+</div>
+<!-- /記事本文 -->
+
+<!-- 記事フッター、カテゴリ、コメント、ソーシャルボタン -->
+<footer class="article-footer">
+	<ul class="article-meta">
+		<IfArticleAllowComment>
+		<li class="article-comment-count">
+			<dl><dt>コメント数:</dt><dd><a href="<$ArticlePermalink$>#comments"><$ArticleCommentCount$> コメント</a></dd></dl>
+		</li>
+		</IfArticleAllowComment>
+		<IfArticleCategory1>
+		<li class="article-category">
+			<dl><dt>カテゴリ:</dt><dd class="article-category1"><a href="<$ArticleCategory1Url$>"><$ArticleCategory1$></a></dd><IfArticleCategory2><dd class="article-category2"><a href="<$ArticleCategory2Url$>"><$ArticleCategory2$></a></dd></IfArticleCategory2></dl>
+		</li>
+		</IfArticleCategory1>
+		<li class="article-author">by <span itemprop="author"><$ArticleAuthorNickname$></span></li>
+	</ul>
+	<div class="article-social-btn">
+		<$ArticleToolBox$>
+	</div>
+</footer>
+<!-- /記事フッター、カテゴリ、コメント、ソーシャルボタン -->
+
+</article>
+<!-- /記事全体 -->
+
+<IfFirstArticle><$Advertise$></IfFirstArticle>
+
+</MonthlyArticlesLoop>
+<!-- google_ad_section_end -->
+<!-- ArticlesLoop End -->
+
+<!-- ページ送り -->
+<SetVar ArchivesPagerType>2</SetVar>
+<SetVar PrevPageText>前の1件</SetVar>
+<SetVar NextPageText>次の1件</SetVar>
+<$ArchivesPager$>
+<!-- /ページ送り -->
+
+<!-- /#main-inner --></div>
+<!-- /#main --></div>
+
+<!-- サイドバー -->
+<aside id="sidebar" class="column">
+<div id="sidebar-inner">
+<$PluginList_A$>
+<$PluginList_B$>
+</div>
+<$LDServices$>
+</aside>
+<!-- /サイドバー -->
+
+<p class="to-pagetop"><a href="#">↑このページのトップヘ</a></p>
+
+<!-- /#content --></div>
+<!-- /#container --></div>
+
+<!-- ブログのフッター -->
+<footer id="blog-footer">
+<$BlogFooter$>
+</footer>
+<!-- /ブログのフッター -->
+
+		<!-- /#wrapper-inner-2 --></div>
+	<!-- /#wrapper-inner --></div>
+<!-- /#wrapper --></div>
+
+</body>
+</html>

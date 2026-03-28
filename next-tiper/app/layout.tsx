@@ -1,7 +1,8 @@
 /**
  * =====================================================================
- * 🏛️ RootLayout (Maya's Universe v5.9)
+ * 🏛️ RootLayout (Maya's Universe v6.0)
  * 🛡️ Next.js 15 Async APIs & Unified Theme Control
+ * 🚀 Fixed: Metadata Host-Aware Detection (Bic Station Issue Resolved)
  * =====================================================================
  */
 /* eslint-disable @next/next/no-img-element */
@@ -23,15 +24,12 @@ import '@/shared/styles/globals.css';
  */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 
-// 🚀 共通コンポーネント (Default export を想定)
+// 🚀 共通コンポーネント
 import Header from '@/shared/components/organisms/common/Header';
 import Footer from '@/shared/components/organisms/common/Footer';
 
 /**
  * ✅ 3. サイドバーラッパー
- * 🛡️ Maya's Guard: インポートの不整合を解消
- * SidebarWrapper が undefined の場合に備え、波括弧あり・なし両方の可能性を考慮してください。
- * ここでは、前述の修正済み SidebarWrapper (Default & Named export両対応) を想定します。
  */
 import SidebarWrapper from '@/shared/layout/Sidebar/SidebarWrapper';
 
@@ -42,14 +40,22 @@ import { constructMetadata } from '@/shared/lib/utils/metadata';
 
 /**
  * ✅ 5. ページ遷移プログレスバー
- * 🛡️ もし RouteProgressBar が名前付きエクスポートなら { RouteProgressBar } にする必要があります
  */
 import RouteProgressBar from '@/shared/components/atoms/RouteProgressBar';
 
 const inter = Inter({ subsets: ["latin"] });
 
+/**
+ * 🛰️ [FIXED] generateMetadata
+ * Next.js 15のサーバーコンポーネントでは、明示的にheadersからホスト名を取得しない限り、
+ * constructMetadata内部の判定ロジックがデフォルト(Bic Station)に流れてしまいます。
+ */
 export async function generateMetadata(): Promise<Metadata> {
-  return constructMetadata();
+  const headerList = await headers();
+  const host = headerList.get('host') || "tiper.live"; // 判定不能時のデフォルトをTiperに設定
+  
+  // constructMetadataに現在のホスト名を注入し、正しいサイト名(Tiper等)を取得させます
+  return constructMetadata({ host });
 }
 
 export const dynamic = 'force-dynamic';
@@ -67,8 +73,12 @@ export default async function RootLayout({
   const host = headerList.get('host') || "localhost";
   const site = getSiteMetadata(host);
   
-  // 🚩 ガード: site が取得できなかった場合のフォールバック
-  const siteName = site?.site_name || "Bic Station";
+  /**
+   * 🚩 ガード: site が取得できなかった場合のフォールバック
+   * ここを "Tiper" に変更することで、万が一判定が漏れても
+   * ユーザーに "Bic Station" が表示される事故を防ぎます。
+   */
+  const siteName = site?.site_name || "Tiper"; 
   const themeColor = getSiteColor(siteName);
 
   const BG_COLOR = "#06060a";
@@ -92,7 +102,7 @@ export default async function RootLayout({
           "--bg-deep": BG_COLOR,
         } as React.CSSProperties}
       >
-        {/* 🚀 RouteProgressBar が undefined だとここでクラッシュします */}
+        {/* 🚀 RouteProgressBar 存在チェック */}
         {RouteProgressBar && <RouteProgressBar />}
 
         <div className={styles.systemGrid} />
@@ -119,7 +129,7 @@ export default async function RootLayout({
             <aside className={styles.sidebarArea}>
               <div className={styles.sidebarSticky}>
                 <Suspense fallback={<div className={styles.sidebarLoading} />}>
-                  {/* 🚀 SidebarWrapper が undefined だとここでクラッシュします */}
+                  {/* SidebarWrapper 安全レンダリング */}
                   {SidebarWrapper ? <SidebarWrapper /> : <div style={{width: '280px'}} />}
                 </Suspense>
               </div>

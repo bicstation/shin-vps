@@ -12,9 +12,9 @@
     <link rel="stylesheet" href="<$CSSUrl$>">
 
     <style>
-        /* アーカイブページ共通：リストカードスタイル */
+        /* アーカイブページ専用：リストカードスタイル */
         .archive-card {
-            background: rgba(255,255,255,0.02);
+            background: var(--card-bg);
             border: 1px solid #222;
             border-radius: 12px;
             overflow: hidden;
@@ -24,9 +24,9 @@
             text-decoration: none !important;
         }
         .archive-card:hover { 
-            transform: translateX(8px); 
+            transform: translateX(5px); 
             border-color: var(--accent); 
-            background: rgba(255,255,255,0.05);
+            background: #161616;
         }
         
         /* サムネイルエリア */
@@ -36,7 +36,7 @@
             max-width: 280px; 
             aspect-ratio: 16/9; 
             overflow: hidden; 
-            background: #111;
+            background: #222;
         }
         .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -71,19 +71,13 @@
             line-height: 1.5;
         }
 
-        /* 検索バーの微調整（共通） */
-        .search-input { background: rgba(255,255,255,0.1); border: 1px solid #444; color: #fff; border-radius: 20px 0 0 20px; font-size: 0.8rem; }
-        .search-btn { border-radius: 0 20px 20px 0; border: 1px solid #444; border-left: none; background: #222; color: #aaa; font-size: 0.8rem; }
-
         /* アーカイブヘッダー */
         .archive-info-bar {
-            background: #0a0a0a;
+            background: #111;
             border-left: 4px solid var(--accent);
-            padding: 20px 25px;
+            padding: 15px 25px;
             margin-bottom: 30px;
             border-radius: 4px;
-            border: 1px solid #222;
-            border-left-width: 4px;
         }
 
         @media (max-width: 576px) {
@@ -107,39 +101,28 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navContent">
-            <ul class="navbar-nav ms-auto align-items-lg-center">
-                <li class="nav-item"><a class="nav-link" href="https://tiper.live">HOME</a></li>
-                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">TOP</a></li>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">HOME</a></li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="dropCat" role="button" data-bs-toggle="dropdown" aria-expanded="false">CATEGORY</a>
-                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropCat">
-                        <li><a class="dropdown-item" href="https://tiper.live/concierge">AIソムリエ</a></li>
-                        <li><a class="dropdown-item" href="https://tiper.live/ranking">ランキング</a></li>
-                        <li><a class="dropdown-item" href="https://tiper.live/ranking/style">黄金比スタイル</a></li>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="<$BlogUrl$>archives/cat_1.html">美少女・アイドル</a></li>
+                        <li><a class="dropdown-item" href="<$BlogUrl$>archives/cat_2.html">人妻・熟女</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="https://tiper.live/about">当サイトについて</a></li>
-                        <li><a class="dropdown-item" href="https://tiper.live/guideline">ご利用ガイド</a></li>
+                        <li><a class="dropdown-item" href="<$BlogUrl$>archives/cat_vr.html">VR特集</a></li>
                     </ul>
                 </li>
-                <li class="nav-item"><a class="nav-link" href="https://tiper.live">PORTAL</a></li>
-                <li class="nav-item"><a class="nav-link text-warning fw-bold" href="https://tiper.live/privacy-policy">POLICY</a></li>
-                
-                <li class="nav-item ms-lg-3 navbar-search">
-                    <form action="<$BlogSearchUrl$>" method="get" class="d-flex">
-                        <input type="text" name="q" class="form-control search-input" placeholder="キーワード検索..." aria-label="Search">
-                        <button class="btn search-btn" type="submit">🔍</button>
-                    </form>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="https://bic-erog.com">PORTAL</a></li>
+                <li class="nav-item"><a class="nav-link text-warning fw-bold" href="https://main.tiper.live/archives/12505161.html">POLICY</a></li>
             </ul>
         </div>
     </div>
 </nav>
 
 <div class="top-banner-wrapper">
-    <img src="https://livedoor.blogimg.jp/pbic/imgs/5/9/590332e9.jpg" class="top-banner-img" alt="Monthly Banner">
+    <img src="https://livedoor.blogimg.jp/pbic/imgs/5/9/590332e9.jpg" class="top-banner-img" alt="Archive Banner">
     <div class="top-banner-text">
-        <span style="color:var(--accent); font-weight:bold; letter-spacing:5px; font-size:0.8rem;">MONTHLY ARCHIVE</span>
-        <h1 class="text-white text-uppercase" style="font-size:1.5rem; margin-top:5px;"><$MonthLabel$></h1>
+        <h1 class="text-white text-uppercase"><$MonthLabel$></h1>
     </div>
 </div>
 
@@ -149,13 +132,13 @@
         <div class="col-lg-9">
             
             <div class="archive-info-bar">
-                <span class="text-danger small fw-bold d-block mb-1">CALENDAR ARCHIVES</span>
-                <h2 class="h4 m-0 fw-bold text-white"><$MonthLabel$>に投稿された記事一覧</h2>
+                <span class="text-danger small fw-bold d-block mb-1">MONTHLY ARCHIVES</span>
+                <h2 class="h4 m-0 fw-bold text-white"><$MonthLabel$>の記事一覧</h2>
             </div>
 
             <MonthlyArticlesLoop>
                 <a href="<$ArticlePermalink$>" class="archive-card">
-                    <div class="card-thumb" id="mon-thumb-<$ArticleId$>"></div>
+                    <div class="card-thumb" id="thumb-<$ArticleId$>"></div>
                     
                     <div class="card-body-custom">
                         <div class="date">📅 <$ArticleDate$></div>
@@ -163,11 +146,11 @@
                         <div class="desc"><$ArticleDescription ESCAPE$></div>
                     </div>
 
-                    <div id="mon-hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
+                    <div id="hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
                     <script>
                     (function() {
-                        var bodyHtml = document.getElementById('mon-hidden-body-<$ArticleId$>').innerHTML;
-                        var thumbBox = document.getElementById('mon-thumb-<$ArticleId$>');
+                        var bodyHtml = document.getElementById('hidden-body-<$ArticleId$>').innerHTML;
+                        var thumbBox = document.getElementById('thumb-<$ArticleId$>');
                         var imgMatch = bodyHtml.match(/<img [^>]*src=["']([^"']+)["']/);
                         if (imgMatch) {
                             thumbBox.innerHTML = '<img src="' + imgMatch[1] + '" alt="thumbnail">';
@@ -180,7 +163,7 @@
                 <IfFirstArticle><$Advertise$></IfFirstArticle>
             </MonthlyArticlesLoop>
 
-            <div class="pager-container d-flex justify-content-center mt-5">
+            <div class="pager-container d-flex justify-content-center">
                 <$IndexNavigator$>
             </div>
         </div>
@@ -192,22 +175,15 @@
                     <$PluginList_B$>
                 </div>
             </div>
-            
-            <div class="sidebar-box mt-4">
-                <div class="sidebar-title">LATEST POSTS</div>
-                <div class="side">
-                    <$PluginList_A$>
-                </div>
-            </div>
         </aside>
 
     </div>
 </main>
 
-<footer class="py-5 mt-5 border-top border-secondary">
+<footer class="py-5 mt-5">
     <div class="container text-center text-muted small">
         <div class="mb-3">
-            <a href="https://tiper.live/privacy-policy" class="text-muted text-decoration-none mx-2">免責事項・ポリシー</a>
+            <a href="https://main.tiper.live/archives/12505161.html" class="text-muted text-decoration-none mx-2">免責事項・ポリシー</a>
         </div>
         <p>&copy; Tiper.Live OFFICIAL. All Rights Reserved.</p>
     </div>
