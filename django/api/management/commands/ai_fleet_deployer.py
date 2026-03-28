@@ -5,10 +5,8 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils.text import slugify
 
-# モデルのインポート（Category, Tagモデルが存在することを想定）
+# モデルのインポート
 from api.models.article import Article
-# もしCategory/Tagモデルが別なら適宜書き換えてください
-# from api.models.taxonomy import Category, Tag 
 
 from api.utils.html_utils import HTMLConverter
 from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory 
@@ -19,7 +17,7 @@ from api.management.commands.blog_drivers.ai_processor import AIProcessor
 from api.management.commands.blog_drivers.rss_extractors import ExtractorFactory
 
 class Command(BaseCommand):
-    help = "Deploy articles to fleet sites with robust RSS extraction, AI cleaning, and Auto-Taxonomy."
+    help = "Deploy articles to fleet sites with robust RSS extraction, AI cleaning, and JSON metadata auto-fill."
 
     def add_arguments(self, parser):
         parser.add_argument('--project', type=str, default=None)
@@ -102,7 +100,7 @@ class Command(BaseCommand):
                 self.log(f"   🎯 マッチ: {entry['title'][:40]}...")
                 selected_comment = random.choice(char_comments) if char_comments else "おすすめの最新情報です。"
                 
-                # 🚀 投稿ユニット呼び出し（cat_nameを渡す）
+                # 🚀 投稿ユニット呼び出し
                 success, result = self.deploy_unit(site_cfg, entry, parsed_data, ai_template, cta_template, api_keys, project_label, config_dir, selected_comment, cat_name)
 
                 if success:
@@ -138,7 +136,7 @@ class Command(BaseCommand):
         p_title = ext.get('title_h') if platform == 'hatena' and ext.get('title_h') else ext.get('title_g', entry['title'])
         p_body = ext.get('cont_g', ext.get('raw_text', ''))
         
-        # 不要なラベルの削除
+        # 不要なパターンの削除
         unwanted_patterns = [
             r"📥\s*入力データ.*?\n", r"元ネタ:.*?\n", r"メーカー:.*?\n",
             r"出演者:.*?\n", r"対象:.*?\n", r"📤\s*出力.*?\n",
@@ -149,33 +147,27 @@ class Command(BaseCommand):
 
         p_body = p_body.strip()
 
-        # 🚀 データベースへの保存とカテゴリ・タグの自動生成
+        # 🚀 Articleモデルに合わせて extra_metadata を構築
+        meta = {
+            "category": cat_name,
+            "tags": entry.get('raw_tags', []),
+            "is_adult": str(site.get('is_adult', '0')).strip() == '1',
+            "original_title": entry['title'],
+            "extracted_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+
         try:
             with transaction.atomic():
-                # 1. 記事作成
+                # JSONField(extra_metadata) を活用して保存
                 new_art = Article.objects.create(
-                    site=project_label, title=p_title[:200], body_text=p_body,
-                    main_image_url=parsed_data.get('img'), source_url=entry['link']
+                    site=project_label,
+                    content_type='news' if project_label in ['saving', 'it'] else 'post',
+                    title=p_title[:500],
+                    body_text=p_body,
+                    main_image_url=parsed_data.get('img'),
+                    source_url=entry['link'],
+                    extra_metadata=meta 
                 )
-                
-                # 2. カテゴリの自動生成・紐付け
-                # Articleモデルに category フィールドがある前提
-                if hasattr(new_art, 'category'):
-                    # get_or_create で存在しなければ作成
-                    # cat_obj, _ = Category.objects.get_or_create(name=cat_name)
-                    # new_art.category = cat_obj
-                    pass # プロジェクト固有のモデル設計に合わせてコメント解除して使用してください
-
-                # 3. タグの自動生成・紐付け (RSSのタグやキーワードから)
-                raw_tags = entry.get('raw_tags', [])
-                if hasattr(new_art, 'tags'):
-                    for t_name in raw_tags:
-                        if not t_name: continue
-                        # tag_obj, _ = Tag.objects.get_or_create(name=t_name.strip())
-                        # new_art.tags.add(tag_obj)
-                        pass
-                
-                new_art.save()
                 art_id = new_art.id
         except Exception as e:
             self.log(f"❌ DB Save Error: {e}")
@@ -201,12 +193,12 @@ class Command(BaseCommand):
             img_html = f'<div style="text-align:center; margin-bottom:15px;"><img src="{parsed_data.get("img")}" style="max-width:100%;"></div><br>' if parsed_data.get("img") else ""
             review_html = f'<div style="background:#fefefe; padding:15px; border:1px solid #ddd; border-left:5px solid #ff6600; margin-bottom:20px;"><strong>🖋 編集部レビュー：</strong><br>「{comment}」</div>'
             
-            # 🚀 カテゴリ/タグ情報をHTMLフッターに付与（任意）
-            tax_html = f'<p style="font-size:0.8em; color:#888;">カテゴリー: {cat_name}</p>'
+            # カテゴリ情報をHTMLに反映（外部ブログ表示用）
+            tax_html = f'<p style="font-size:0.8em; color:#888; margin-top:20px;">カテゴリー: {cat_name}</p>'
             
             final_content = img_html + review_html + HTMLConverter.md_to_html(p_body) + tax_html + cta_template.replace("{{internal_url}}", full_internal_url)
             
-            # 外部ブログへ投稿（カテゴリ名を引数に渡す）
+            # 外部ブログへ投稿
             if driver.post(title=p_title, body=final_content, source_url=entry['link'], category=cat_name):
                 Article.objects.filter(id=art_id).update(is_exported=True)
                 return True, {'title': p_title}
@@ -238,10 +230,9 @@ class Command(BaseCommand):
                         elif hasattr(e, 'description'): content_val = e.description
                         
                         extractor = ExtractorFactory.get_extractor(url, cat)
-                        # entryオブジェクトを丸ごと渡してOGPやメタデータに対応
                         rss_img = extractor.extract(content_val, entry=e)
 
-                        # RSSから既存のカテゴリ/タグを取得しておく
+                        # RSSからタグを取得
                         raw_tags = [t.term for t in e.tags] if hasattr(e, 'tags') else []
 
                         entries.append({
@@ -286,4 +277,4 @@ class Command(BaseCommand):
         else: self.stdout.write(f"[{ts}] {msg}")
 
     def print_custom_help(self):
-        self.stdout.write(self.style.WARNING("Usage: python manage.py ai_fleet_deployer --project [tiper|avflash]"))
+        self.stdout.write(self.style.WARNING("Usage: python manage.py ai_fleet_deployer --project [tiper|avflash|saving]"))

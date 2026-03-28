@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.safestring import mark_safe
 from django.db.models import Count
+from django.utils.text import slugify
 
 # モデルのインポート
 from .models import (
@@ -54,17 +55,38 @@ def get_thumbnail(url, width=80):
     return mark_safe('<div style="width:{0}px; height:40px; background:#eee; color:#999; text-align:center; line-height:40px; font-size:10px; border-radius:4px;">No Image</div>'.format(width))
 
 # --------------------------------------------------------------------------
-# 📝 1. Article (統合配信記事管理)
+# 📝 1. Article (統合配信記事管理 / JSONField対応版)
 # --------------------------------------------------------------------------
+
+# JSONField内のカテゴリでフィルタリングするためのカスタムフィルター
+class ArticleCategoryFilter(admin.SimpleListFilter):
+    title = 'カテゴリ(JSON)'
+    parameter_name = 'json_category'
+
+    def lookups(self, request, model_admin):
+        # 実際にDBに存在するカテゴリ名を重複なく取得
+        # データ量が多い場合は .distinct() よりも .values_list('extra_metadata__category') を使用
+        categories = Article.objects.exclude(extra_metadata__category__isnull=True) \
+                            .values_list('extra_metadata__category', flat=True).distinct()
+        return [(c, c) for c in categories if c]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(extra_metadata__category=self.value())
+        return queryset
+
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
     list_display = (
-        'display_image', 'site_badge', 'type_badge', 'title_short', 
+        'display_image', 'site_badge', 'type_badge', 'json_category_tag', 'title_short', 
         'is_exported_tag', 'created_at'
     )
     list_display_links = ('display_image', 'title_short')
-    list_filter = ('site', 'content_type', 'is_exported', 'created_at')
-    search_fields = ('title', 'body_text', 'source_url')
+    
+    # 標準フィルタに JSON用カスタムフィルタを追加
+    list_filter = ('site', 'content_type', ArticleCategoryFilter, 'is_exported', 'created_at')
+    
+    search_fields = ('title', 'body_text', 'source_url', 'extra_metadata__category', 'extra_metadata__tags')
     ordering = ('-created_at',)
     readonly_fields = ('display_extra_metadata', 'updated_at')
 
@@ -83,11 +105,13 @@ class ArticleAdmin(admin.ModelAdmin):
             if p_id != 'default': obj.site = p_id
         super().save_model(request, obj, form, change)
 
+    # --- 表示カスタマイズ ---
     def display_image(self, obj): return get_thumbnail(obj.main_image_url, 100)
     display_image.short_description = "画像"
 
     def site_badge(self, obj):
         colors = {'tiper': '#6f42c1', 'avflash': '#ff0055', 'bicstation': '#007bff', 'saving': '#28a745'}
+        # モデルにSITE_CHOICESがない場合を想定したフォールバック
         site_labels = dict(getattr(Article, 'SITE_CHOICES', []))
         display_text = site_labels.get(obj.site, obj.site)
         bg = colors.get(obj.site, '#6c757d')
@@ -102,10 +126,23 @@ class ArticleAdmin(admin.ModelAdmin):
         return mark_safe(f'<span style="background:{color}; color:{text_color}; padding:2px 6px; border-radius:4px; font-size:10px;">{display_text}</span>')
     type_badge.short_description = "種別"
 
+    def json_category_tag(self, obj):
+        """extra_metadata内のカテゴリをバッジ表示"""
+        cat = obj.extra_metadata.get('category')
+        if cat:
+            return mark_safe(f'<span style="color:#28a745; border:1px solid #28a745; padding:1px 5px; border-radius:3px; font-size:10px;">🏷 {cat}</span>')
+        return "-"
+    json_category_tag.short_description = "カテゴリ"
+
     def title_short(self, obj): return obj.title[:50] + '...' if len(obj.title) > 50 else obj.title
+    
     def is_exported_tag(self, obj): return mark_safe("✅ <small>済</small>" if obj.is_exported else "<span style='color:#bbb;'>⏳ 未</span>")
+    
     def display_extra_metadata(self, obj):
-        return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:8px;">{json.dumps(obj.extra_metadata, indent=2, ensure_ascii=False)}</pre>')
+        """JSONデータをシンタックスハイライト風に表示"""
+        json_data = json.dumps(obj.extra_metadata, indent=2, ensure_ascii=False)
+        return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:8px; font-family:Monaco, monospace; font-size:12px;">{json_data}</pre>')
+    display_extra_metadata.short_description = "メタデータ(JSON)"
 
 # --------------------------------------------------------------------------
 # 💻 2. PCProduct (PC製品管理)
@@ -121,7 +158,7 @@ class PCProductAdmin(admin.ModelAdmin):
         """bicstationドメイン以外では基本表示しない（または全表示）"""
         qs = super().get_queryset(request).defer('ai_content', 'description')
         p_id = getattr(request, 'project_id', 'default')
-        if p_id == 'avflash': return qs.none() # アダルトドメインではPC製品を隠す
+        if p_id == 'avflash': return qs.none() 
         return qs
 
     def display_image(self, obj): return get_thumbnail(obj.image_url, 80)
@@ -210,7 +247,7 @@ class BSDeviceAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         p_id = getattr(request, 'project_id', 'default')
-        if p_id == 'avflash': return qs.none() # アダルトドメインではスマホを隠す
+        if p_id == 'avflash': return qs.none() 
         return qs
 
     def display_thumbnail(self, obj): return get_thumbnail(obj.main_image, 60)
