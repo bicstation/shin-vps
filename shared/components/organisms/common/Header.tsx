@@ -12,37 +12,32 @@ import styles from './Header.module.css';
 
 /**
  * =====================================================================
- * 🛡️ Maya's Logic: マルチドメイン・マルチブランド対応ヘッダー [完全版]
+ * 🛡️ Maya's Logic: マルチドメイン・ガイド出し分け対応ヘッダー
  * ---------------------------------------------------------------------
- * 修正点:
- * 1. AIコンシェルジュのリンクを /contact から /concierge へ変更
- * 2. ハイドレーションエラー防止ロジックの強化
- * 3. サイトごとの動的キャッチコピー & メニュー構成の最適化
+ * 更新内容:
+ * 1. ガイドリンク (matching, live-chat, chat-lady) を
+ * Tiper / AV Flash (isAdult判定) の時のみ表示するよう制御。
+ * 2. 既存のAIコンシェルジュ/ソムリエの切り替えロジックと統合。
  * =====================================================================
  */
 export default function Header() {
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
-    const [isOpen, setIsOpen] = useState(false); // スマホ用メニュー開閉
+    const [isOpen, setIsOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState<string | null>(null);
 
-    // ✅ マウント状態の管理（ハイドレーションエラー防止の要）
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // ✅ サイト設定の動的取得
     const site = useMemo(() => {
         if (!mounted || typeof window === 'undefined') return null;
         const host = window.location.hostname;
         return getSiteMetadata(host);
     }, [mounted]);
 
-    /**
-     * 🔐 認証ステータス確認
-     */
     const checkAuthStatus = useCallback(() => {
         if (typeof window === 'undefined') return;
         const userDataStr = localStorage.getItem('user');
@@ -59,7 +54,6 @@ export default function Header() {
         }
     }, []);
 
-    // ページ遷移時やマウント時に状態をリセット
     useEffect(() => {
         checkAuthStatus();
         setIsOpen(false);
@@ -74,7 +68,6 @@ export default function Header() {
         }
     };
 
-    // 🚩 ガード: サーバーサイドでのレンダリング時やサイト特定前は最小限の枠だけ返す
     if (!mounted || !site) {
         return <header className={styles.header} style={{ height: '70px', visibility: 'hidden' }} />;
     }
@@ -83,41 +76,48 @@ export default function Header() {
     const isAdult = site.site_group === 'adult';
 
     /**
-     * 🛠️ メニューコンフィグ（ドロップダウン & スマホ用）
-     * 💡 AIコンシェルジュのリンク先を /concierge に修正済み
+     * 🛠️ メニューコンフィグ
+     * 🛡️ Maya's Guard: isAdult が true の場合のみガイド3種を配列に結合
      */
+    const supportLinks = [
+        { label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge' },
+        ...(isAdult ? [
+            { label: '🎯 マッチング解析ガイド', href: '/guide/matching' },
+            { label: '📺 ライブチャット案内', href: '/guide/live-chat' },
+            { label: '💌 チャットレディ募集', href: '/guide/chat-lady' }
+        ] : []),
+        { label: 'お問い合わせ', href: '/contact' },
+        { label: '当サイトについて', href: '/about' },
+        { label: 'ご利用ガイド', href: '/guideline' }
+    ];
+
     const menuConfig = {
         col1: {
             title: isAdult ? '🔥 注目' : '🔍 診断',
             links: site.site_name === 'Tiper' ? [
-                {label: '艶華ランキング', href: '/ranking'}, 
-                {label: '新人女優', href: '/newface'}
+                { label: '艶華ランキング', href: '/ranking' }, 
+                { label: '新人女優', href: '/newface' }
             ] : site.site_name === 'Bic Station' ? [
-                {label: 'PC診断', href: '/pc-finder'}, 
-                {label: 'おすすめPC', href: '/recommend'}
+                { label: 'PC診断', href: '/pc-finder' }, 
+                { label: 'おすすめPC', href: '/recommend' }
             ] : [
-                {label: '新着記事', href: '/news'}, 
-                {label: 'ランキング', href: '/ranking'}
+                { label: '新着記事', href: '/news' }, 
+                { label: 'ランキング', href: '/ranking' }
             ]
         },
         col2: {
             title: isAdult ? '🎞️ カテゴリ' : '📦 ツール',
             links: isAdult ? [
-                {label: '女優名鑑', href: '/ranking/style'}, 
-                {label: 'メーカー名', href: '/maker'}
+                { label: '女優名鑑', href: '/ranking/style' }, 
+                { label: 'メーカー名', href: '/maker' }
             ] : [
-                {label: '性能比較', href: '/comparison'}, 
-                {label: 'カタログ', href: '/catalog'}
+                { label: '性能比較', href: '/comparison' }, 
+                { label: 'カタログ', href: '/catalog' }
             ]
         },
         col3: {
-            title: '✨ サポート',
-            links: [
-                {label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge'},
-                {label: 'お問い合わせ', href: '/contact'},
-                {label: '当サイトについて', href: '/about'},
-                {label: 'ご利用ガイド', href: '/guideline'}
-            ]
+            title: isAdult ? '✨ ガイド & サポート' : '✨ サポート',
+            links: supportLinks
         }
     };
 
@@ -127,7 +127,6 @@ export default function Header() {
             style={{ borderBottom: `3px solid ${themeColor}` }}
         >
             <div className={styles.container}>
-                {/* --- ① ロゴ・ブランドエリア --- */}
                 <Link href="/" onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
                     <div className={styles.logoWrapper}>
                         <span style={{ 
@@ -150,7 +149,6 @@ export default function Header() {
                     </div>
                 </Link>
 
-                {/* --- ② PCナビゲーション (Hover Dropdown) --- */}
                 <nav className={styles.desktopNav}>
                     {Object.entries(menuConfig).map(([key, section]) => (
                         <div 
@@ -175,7 +173,6 @@ export default function Header() {
                     ))}
                 </nav>
 
-                {/* --- ③ 認証・アクションセクション --- */}
                 <div className={styles.authSection}>
                     {!isLoggedIn ? (
                         <div className={styles.guestLinks}>
@@ -194,7 +191,6 @@ export default function Header() {
                         </div>
                     )}
                     
-                    {/* スマホ用トグル */}
                     <button 
                         className={styles.menuToggle} 
                         onClick={() => setIsOpen(!isOpen)} 
@@ -206,7 +202,6 @@ export default function Header() {
                 </div>
             </div>
 
-            {/* --- ④ スマホ用展開メニュー (Accordion Style) --- */}
             <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} style={{ background: isAdult ? '#111' : '#fff' }}>
                 {Object.entries(menuConfig).map(([key, section]) => (
                     <div key={key} className={styles.menuSection}>
@@ -223,7 +218,6 @@ export default function Header() {
                     </div>
                 ))}
                 
-                {/* スマホ用認証ボタン（未ログイン時） */}
                 {!isLoggedIn && (
                     <div className={styles.mobileAuthActions}>
                         <Link href="/login" onClick={() => setIsOpen(false)} className={styles.mobileLoginBtn}>ログイン</Link>
