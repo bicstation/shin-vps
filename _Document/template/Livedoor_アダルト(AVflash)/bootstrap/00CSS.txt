@@ -1,4 +1,4 @@
-/* --- Tiper.Live 2026 Reset & Modern CSS --- */
+/* --- AVFlash.xyz 2026 Reset & Modern CSS --- */
 :root {
     --accent: #ff4444;
     --bg-dark: #000000;

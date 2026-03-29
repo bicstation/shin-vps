@@ -67,20 +67,20 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container-fluid-custom d-flex justify-content-between align-items-center">
-        <a class="navbar-brand" href="<$BlogUrl$>">TIPER.LIVE</a>
+        <a class="navbar-brand" href="<$BlogUrl$>">AVFlash</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navContent">
             <ul class="navbar-nav ms-auto align-items-lg-center">
-                <li class="nav-item"><a class="nav-link" href="https://tiper.live">HOME</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://avflash.xyz">HOME</a></li>
                 <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">TOP</a></li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="dropCat" role="button" data-bs-toggle="dropdown">GUIDES</a>
                     <ul class="dropdown-menu dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="https://tiper.live/guide/live-chat">視聴ガイド</a></li>
-                        <li><a class="dropdown-item" href="https://tiper.live/guide/matching">マッチング解析</a></li>
-                        <li><a class="dropdown-item" href="https://tiper.live/guide/chat-lady">高額副業(求人)</a></li>
+                        <li><a class="dropdown-item" href="https://avflash.xyz/guide/live-chat">視聴ガイド</a></li>
+                        <li><a class="dropdown-item" href="https://avflash.xyz/guide/matching">マッチング解析</a></li>
+                        <li><a class="dropdown-item" href="https://avflash.xyz/guide/chat-lady">高額副業(求人)</a></li>
                     </ul>
                 </li>
                 <li class="nav-item ms-lg-3 navbar-search">
@@ -127,17 +127,17 @@
                     </IfArticleBodyMore>
 
                     <div class="article-footer-cta text-center">
-                        <p style="color:#e11d48; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">TIPER.LIVE OFFICIAL GUIDE</p>
+                        <p style="color:#e11d48; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">avflash.xyz OFFICIAL GUIDE</p>
                         <h3 style="color:#fff; font-size:1.3rem; margin-bottom:20px; font-weight:800;">この記事の関連解析レポート</h3>
                         <div class="row g-2">
                             <div class="col-md-6">
-                                <a href="https://tiper.live/guide/live-chat" class="cta-btn cta-btn-main">🎥 ライブチャット視聴ガイド</a>
+                                <a href="https://avflash.xyz/guide/live-chat" class="cta-btn cta-btn-main">🎥 ライブチャット視聴ガイド</a>
                             </div>
                             <div class="col-md-6">
-                                <a href="https://tiper.live/guide/matching" class="cta-btn cta-btn-sub">💌 マッチングアプリ解析</a>
+                                <a href="https://avflash.xyz/guide/matching" class="cta-btn cta-btn-sub">💌 マッチングアプリ解析</a>
                             </div>
                         </div>
-                        <a href="https://tiper.live/guide/chat-lady" style="color:#aaa !important; font-size:0.8rem; text-decoration:underline !important; display:inline-block; margin-top:15px;">【女性専用】在宅高額副業の公式募集要項はこちら ≫</a>
+                        <a href="https://avflash.xyz/guide/chat-lady" style="color:#aaa !important; font-size:0.8rem; text-decoration:underline !important; display:inline-block; margin-top:15px;">【女性専用】在宅高額副業の公式募集要項はこちら ≫</a>
                     </div>
                 </div>
 
@@ -179,9 +179,9 @@
         <aside class="col-lg-3">
             <div class="sidebar-box mb-4">
                 <div class="sidebar-title">OFFICIAL GUIDES</div>
-                <a href="https://tiper.live/guide/live-chat" class="side-guide-link">🎥 ライブチャット視聴攻略</a>
-                <a href="https://tiper.live/guide/matching" class="side-guide-link">💌 マッチングアプリ解析</a>
-                <a href="https://tiper.live/guide/chat-lady" class="side-guide-link" style="color:#e11d48 !important; font-weight:bold;">💎 女性向け・高収入副業</a>
+                <a href="https://avflash.xyz/guide/live-chat" class="side-guide-link">🎥 ライブチャット視聴攻略</a>
+                <a href="https://avflash.xyz/guide/matching" class="side-guide-link">💌 マッチングアプリ解析</a>
+                <a href="https://avflash.xyz/guide/chat-lady" class="side-guide-link" style="color:#e11d48 !important; font-weight:bold;">💎 女性向け・高収入副業</a>
             </div>
 
             <div class="sidebar-box">
@@ -200,13 +200,13 @@
 <div class="footer-padding"></div>
 
 <footer class="py-5 border-top border-secondary text-center text-muted small">
-    <p>&copy; Tiper.Live OFFICIAL. All Rights Reserved.</p>
+    <p>&copy; AVFlash.xyz OFFICIAL. All Rights Reserved.</p>
 </footer>
 
 <div class="mobile-nav">
-    <a href="https://tiper.live/guide/live-chat" class="mobile-nav-item"><i>🎥</i>視聴ガイド</a>
-    <a href="https://tiper.live/guide/matching" class="mobile-nav-item"><i>💌</i>出会い解析</a>
-    <a href="https://tiper.live/guide/chat-lady" class="mobile-nav-item" style="color: #fb7185 !important;"><i>💎</i>高額副業</a>
+    <a href="https://avflash.xyz/guide/live-chat" class="mobile-nav-item"><i>🎥</i>視聴ガイド</a>
+    <a href="https://avflash.xyz/guide/matching" class="mobile-nav-item"><i>💌</i>出会い解析</a>
+    <a href="https://avflash.xyz/guide/chat-lady" class="mobile-nav-item" style="color: #fb7185 !important;"><i>💎</i>高額副業</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
