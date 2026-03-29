@@ -1,3 +1,5 @@
+# /home/maya/shin-vps/analyze_rss_nouns.py
+
 import feedparser
 import csv
 import os
