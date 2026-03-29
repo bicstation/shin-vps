@@ -51,7 +51,7 @@ class DefaultParser:
 class FanzaParser(DefaultParser):
     def parse(self, url):
         """
-        DMM/FANZA 特化型スクラッパー（文字化け徹底対策版）
+        DMM/FANZA 特化型スクラッパー（究極の画像パス修正版）
         """
         try:
             headers = {
@@ -62,10 +62,9 @@ class FanzaParser(DefaultParser):
             
             res = requests.get(url, timeout=15, headers=headers, allow_redirects=True)
 
-            # --- 🛠 文字化け対策: res.textを使わず、バイナリから強制デコード ---
+            # --- 🛠 文字化け対策 ---
             if 'dmm.co.jp' in url or 'dmm.com' in url:
                 try:
-                    # DMM/FANZAの基本はEUC-JP。errors='replace'で壊れたバイトを無視
                     html_content = res.content.decode('euc-jp', errors='replace')
                 except:
                     html_content = res.content.decode(res.apparent_encoding, errors='replace')
@@ -74,40 +73,57 @@ class FanzaParser(DefaultParser):
 
             soup = BeautifulSoup(html_content, 'html.parser')
 
-            # --- 1. 画像取得 (高画質化) ---
+            # --- 1. 画像取得 ---
             img_url = ""
             selectors = [
-                '#sample-video img', '.p-article__visual img', 
-                'a[name="package-image"] img', '#package-src',
-                '.main-visual img', 'meta[property="og:image"]'
+                'meta[property="og:image"]',
+                '#sample-video img', 
+                '.p-article__visual img', 
+                'a[name="package-image"] img', 
+                '#package-src',
+                '.main-visual img'
             ]
             
             for sel in selectors:
                 tag = soup.select_one(sel)
                 if not tag: continue
-                
-                if sel.startswith('meta'):
-                    img_candidate = tag.get('content')
-                else:
-                    img_candidate = tag.get('src') or tag.get('data-src')
-                
+                img_candidate = tag.get('content') if sel.startswith('meta') else (tag.get('src') or tag.get('data-src'))
                 if img_candidate:
                     img_url = img_candidate
                     break
 
             if img_url:
-                # 高画質化置換
-                img_url = re.sub(r'p([s|t|m])\.jpg', 'pl.jpg', img_url)
+                # 🛠 高画質化・パス修正プロセス
+                # 1. ホスト名を安定版に
+                img_url = img_url.replace('pics.dmm.co.jp', 'pics.dmm.com')
+                
+                # 2. 末尾のサイズ指定(ps, pt, pm)をpl(大画像)に置換
+                if re.search(r'p[s|t|m]\.jpg$', img_url):
+                    img_url = re.sub(r'p[s|t|m]\.jpg$', 'pl.jpg', img_url)
+
+                # 3. 🔥 【最重要】n_ 重複問題の解消
+                # フォルダ名に n_ があり、かつファイル名にも n_ があるとエラーになる対策
+                # 例: /n_1428ss148tk/n_1428ss148tkpl.jpg -> /n_1428ss148tk/1428ss148tkpl.jpg
+                parts = img_url.split('/')
+                if len(parts) >= 2:
+                    folder_name = parts[-2]
+                    file_name = parts[-1]
+                    if folder_name.startswith('n_') and file_name.startswith('n_'):
+                        # ファイル名側の先頭の n_ を削除して再構成
+                        parts[-1] = file_name.replace('n_', '', 1)
+                        img_url = '/'.join(parts)
+
+                # 4. ニュース・特設サイト系の置換
                 img_url = img_url.replace('small.jpg', 'large.jpg')
                 if 'cms' in img_url:
-                    img_url = img_url.replace('-thumb', '-full')
+                    img_url = img_url.replace('-thumb', '').replace('-full', '')
 
             # --- 2. 本文取得 ---
             body_text = ""
             content_selectors = [
                 '.mg-b20.lh4',          # ビデオ詳細
                 '.common-description',   # 電子書籍
-                '.p-article__body',      # FANZAニュース
+                '.p-article__body',       # FANZAニュース
                 '#mu .mg-b20',           # 旧タイプ
                 '.product_description',  # 通販
                 '#item-info'             # 共通
@@ -120,7 +136,6 @@ class FanzaParser(DefaultParser):
                     break
             
             if not body_text:
-                # フォールバック: DefaultParserのロジックを手動適用（エンコード済みHTMLを使用）
                 area = soup.find('article') or soup.find('main') or soup.body
                 if area:
                     for s in area(['script', 'style', 'nav', 'header', 'footer', 'aside']):
@@ -138,17 +153,13 @@ class FanzaParser(DefaultParser):
 
 # --- 特定メディア用 (Defaultを継承) ---
 class ImpressParser(DefaultParser):
-    def parse(self, url):
-        return super().parse(url)
+    def parse(self, url): return super().parse(url)
 
 class ITmediaParser(DefaultParser):
-    def parse(self, url):
-        return super().parse(url)
+    def parse(self, url): return super().parse(url)
 
 class ASCIIParser(DefaultParser):
-    def parse(self, url):
-        return super().parse(url)
+    def parse(self, url): return super().parse(url)
 
 class PhileWebParser(DefaultParser):
-    def parse(self, url):
-        return super().parse(url)
+    def parse(self, url): return super().parse(url)

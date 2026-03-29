@@ -7,12 +7,16 @@ from .base_driver import BaseBlogDriver
 class WordPressDriver(BaseBlogDriver):
     """
     WordPress XML-RPC APIを使用した投稿ドライバー
-    KeyErrorを防止し、接続の安定性を向上させた強化版
+    KeyErrorを防止し、引数の整合性と接続の安定性を向上させた強化版
     """
-    def post(self, title, body, image_url=None, categories=None, tags=None, **kwargs):
+    def post(self, title, body, image_url=None, category=None, categories=None, tags=None, **kwargs):
+        """
+        WordPressへの投稿実行
+        category 引数に対応し、WPの 'category' terms として反映
+        """
         conf = self.config
         
-        # 🚨 [修正] キー名が 'url' でも 'base_url' でも動くようにガード
+        # 🚨 キー名が 'url' でも 'base_url' でも動くようにガード
         target_url = conf.get('url') or conf.get('base_url')
         
         if not target_url:
@@ -28,9 +32,9 @@ class WordPressDriver(BaseBlogDriver):
 
         # 設定の正規化 (KeyError防止)
         blog_id = conf.get('blog_id', 0)
-        username = conf.get('user')
+        username = str(conf.get('user') or '').strip()
         # password または pw のどちらかがある方を採用
-        password = conf.get('password') or conf.get('pw')
+        password = str(conf.get('password') or conf.get('pw') or '').strip()
 
         if not username or not password:
             print(f"   [WP Auth Error] ユーザー名またはパスワードが未設定です。")
@@ -43,7 +47,7 @@ class WordPressDriver(BaseBlogDriver):
             try:
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Referer': 'https://www.dmm.co.jp/'
+                    'Referer': 'https://www.google.com/'
                 }
                 img_res = requests.get(image_url, headers=headers, timeout=20)
                 
@@ -64,26 +68,38 @@ class WordPressDriver(BaseBlogDriver):
 
         # 2. 本文内のプレースホルダー置換
         img_tag = f'<div style="text-align:center; margin-bottom:20px;"><img src="{image_url}" style="max-width:100%; border-radius:8px;"></div>' if image_url else ""
-        # NoneTypeエラー防止のため空文字を考慮
         safe_body = body if body else ""
         full_body = safe_body.replace('__IMG_TAG_PLACEHOLDER__', img_tag)
 
-        # 3. 投稿データ作成
+        # 3. カテゴリとタグの整理
+        # 司令部からの 'category' を最優先し、リスト形式に変換
+        wp_categories = []
+        if category:
+            wp_categories = [c.strip() for c in str(category).split(',') if c.strip()]
+        elif categories:
+            wp_categories = categories if isinstance(categories, list) else [categories]
+        
+        if not wp_categories:
+            wp_categories = ["未分類"]
+
+        wp_tags = tags if tags else []
+
+        # 4. 投稿データ作成
         post_content = {
             'post_type': 'post',
             'post_status': 'publish',
             'post_title': title,
             'post_content': full_body,
             'terms_names': {
-                'category': categories or ["未分類"],
-                'post_tag': tags or []
+                'category': wp_categories,
+                'post_tag': wp_tags
             }
         }
         
         if thumbnail_id:
             post_content['post_thumbnail'] = thumbnail_id
         
-        # 4. 投稿の実行
+        # 5. 投稿の実行
         try:
             post_id = server.wp.newPost(blog_id, username, password, post_content)
             if post_id:
@@ -91,6 +107,5 @@ class WordPressDriver(BaseBlogDriver):
                 return True
             return False
         except Exception as e:
-            # 🚨 403エラー(XML-RPC無効)や認証失敗をキャッチ
             print(f"   [WP Post Error] {e}")
             return False
