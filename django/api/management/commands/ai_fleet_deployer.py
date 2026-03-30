@@ -1,310 +1,240 @@
 # -*- coding: utf-8 -*-
-import os, random, requests, feedparser, time, csv, re
+import feedparser, csv, os, re, random, time, urllib.request, requests, json, unicodedata
 from datetime import datetime
 from django.core.management.base import BaseCommand
-from django.db import connection, transaction
-from google import genai
-
-# プロジェクト内資産のインポート
-from api.models.article import Article
+from django.db import transaction
+from api.models.article import Article 
 from api.utils.html_utils import HTMLConverter
-from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory 
-from api.management.commands.blog_drivers.hatena_driver import HatenaDriver
+
+# --- 外部ドライバー群 ---
 from api.management.commands.blog_drivers.livedoor_driver import LivedoorDriver
 from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
-from api.management.commands.blog_drivers.ai_processor import AIProcessor
-from api.management.commands.blog_drivers.rss_extractors import ExtractorFactory
+from api.management.commands.blog_drivers.hatena_driver import HatenaDriver
+from api.management.commands.blog_drivers.wordpress_driver import WordPressDriver
+from api.management.commands.blog_drivers.data_mapper import ArticleMapper
+from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 
 class Command(BaseCommand):
-    help = "Gemini自律選別 × v1.0.502投稿エンジン (タブ区切り・DictReader完全準拠版)"
+    help = 'Gemma 3 艦隊司令部 v1.4.2 (Next.js SiteID防衛・ターゲット投稿システム)'
+
+    # Next.js側と共通の正式なサイト識別子リスト（これ以外はDBに入れない/投稿しない）
+    ALLOWED_SITES = ['bicstation', 'saving', 'tiper', 'avflash']
 
     def add_arguments(self, parser):
-        parser.add_argument('--project', type=str, default=None, help="プロジェクト名 (tiper, saving等)")
-        parser.add_argument('--platform', type=str, default=None, help="プラットフォーム制限 (livedoor, hatena等)")
-        parser.add_argument('--limit', type=int, default=None, help="最大投稿サイト数を制限")
+        """コマンドライン引数の定義"""
+        parser.add_argument('--project', type=str, help='実行するサイトキーを指定 (tiper, bicstation等)')
+        parser.add_argument('--platform', type=str, help='実行するブログ基盤を指定 (livedoor, wordpress等)')
+        parser.add_argument('--limit', type=int, default=1, help='1サイトあたりの最大投稿数')
+        parser.add_argument('--skip-rss', action='store_true', help='RSS取得をスキップしてDBから即投稿')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.selected_in_this_run = []
-        # APIキーの取得と検証
+        # APIキーのロード
         self.api_keys = [os.getenv(f'GEMINI_API_KEY_{i}') for i in range(1, 11)]
         self.api_keys = [k for k in self.api_keys if k and not k.startswith('GEMINI')]
-        if not self.api_keys:
-            self.api_keys = [os.getenv('GEMINI_API_KEY')]
-
-    def handle(self, *args, **options):
-        if not options['project']:
-            self.log("Usage: python manage.py ai_fleet_deployer --project [tiper|...] (--limit 1)", self.style.WARNING)
-            return
-
-        # 入力パラメータの浄化
-        project_label = self._super_clean(options['project']).lower()
-        target_platform = self._super_clean(options['platform']).lower() if options['platform'] else None
-        limit = options.get('limit')
-
-        self.log(f"--- 🚀 STRATEGIC FLEET START: [{project_label.upper()}] ---", self.style.SUCCESS)
+        if not self.api_keys: self.api_keys = [os.getenv('GEMINI_API_KEY')]
         
         # パス設定
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        config_dir = os.path.join(current_dir, "teitoku_settings")
-        prompt_dir = os.path.join(current_dir, "prompt")
+        self.base_path = os.path.dirname(os.path.abspath(__file__))
+        self.PROMPT_DIR = os.path.join(self.base_path, 'prompt')
+        self.SETTING_DIR = os.path.join(self.base_path, 'teitoku_settings')
+
+    def handle(self, *args, **options):
+        target_site = options.get('project')
+        target_platform = options.get('platform')
+        post_limit = options.get('limit')
+        skip_rss = options.get('skip_rss')
+
+        self.log(f"--- 🚀 MISSION START: v1.4.2 (Target: {target_site or 'ALL'}) ---", self.style.SUCCESS)
         
-        fleet_path = os.path.join(config_dir, "master_fleet.csv")
-        rss_path = os.path.join(config_dir, "master_rss_sources.csv")
-        comment_path = os.path.join(config_dir, f"{project_label}_comments.csv")
+        RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
+        FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
 
-        # 1. マスターデータの読み込み (成功実績のある方式)
-        all_fleet = self.load_strict_tab_csv(fleet_path)
-        rss_master = self.load_strict_tab_csv(rss_path)
-        char_comments = self.load_character_comments(comment_path)
+        # 1. RSSフェッチ（許可リストによる水際対策付き）
+        if not skip_rss:
+            self.fetch_all_rss(RSS_CSV)
+        else:
+            self.log("⏩ RSSフェッチをスキップし、既存のDBデータを使用します。")
 
-        # 2. 対象ブログの抽出
-        fleet_data = []
-        for f in all_fleet:
-            # 読み込み時にキーと値は strip 済み
-            if f.get('project') == project_label:
-                if target_platform and f.get('platform') != target_platform:
+        if not os.path.exists(FLEET_CSV): return
+
+        # 2. 投稿ループ
+        with open(FLEET_CSV, "r", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            for blog_config in reader:
+                site_key = blog_config.get('site_key')
+                platform = blog_config.get('platform', 'livedoor').lower()
+
+                # 【防衛】許可リストにないサイトはスキップ
+                if site_key not in self.ALLOWED_SITES:
                     continue
-                fleet_data.append(f)
 
-        if not fleet_data and all_fleet:
-            sample_val = all_fleet[0].get('project', 'KeyNotFound')
-            self.log(f"🔎 判定失敗デバッグ: 検索[{project_label}] vs CSV1行目[{sample_val}]", self.style.WARNING)
+                # 引数フィルタリング
+                if target_site and site_key != target_site: continue
+                if target_platform and platform != target_platform.lower(): continue
 
-        if limit:
-            self.log(f"⚠️ 実行制限：最初の {limit} サイトのみ処理します。")
-            fleet_data = fleet_data[:limit]
-
-        if not fleet_data:
-            return self.log(f"❌ 該当データなし (Project: {project_label}, 全データ: {len(all_fleet)}件)", self.style.ERROR)
-
-        # 3. RSSプールの構築
-        needed_cats = set()
-        for f in fleet_data:
-            cat_str = f.get('rss_category', '')
-            if cat_str:
-                for c in cat_str.split(','):
-                    c_clean = c.strip()
-                    if c_clean: needed_cats.add(c_clean)
-        
-        if not needed_cats:
-            needed_cats = {self.guess_category(f.get('site_key')) for f in fleet_data}
-
-        rss_pool = self.build_rss_pool(rss_master, list(needed_cats))
-        success_count = 0
-
-        # --- 艦隊展開ループ ---
-        for idx, site_cfg in enumerate(fleet_data, 1):
-            site_key = site_cfg.get('site_key', 'UNKNOWN')
-            platform = site_cfg.get('platform', 'livedoor').lower()
-            raw_cats = site_cfg.get('rss_category', '').split(',')
-            primary_cat = raw_cats[0].strip() if raw_cats and raw_cats[0].strip() else self.guess_category(site_key)
-            persona = site_cfg.get('persona', '冷静な分析官') 
-            
-            self.log(f"🚢 [{idx}/{len(fleet_data)}] {site_key} ({platform}) 展開中...")
-
-            entries = rss_pool.get(primary_cat, [])
-            # 重複排除
-            candidates = [e for e in entries if e['link'] not in self.selected_in_this_run 
-                          and not Article.objects.filter(source_url=e['link']).exists()]
-
-            if not candidates:
-                self.log(f"  ⚠️ カテゴリ [{primary_cat}] に新規ネタなし。スキップします。", self.style.WARNING)
-                continue
-
-            # 4. Gemini選別
-            selected_entry = self.let_persona_choose(persona, candidates[:15])
-            
-            if selected_entry:
-                self.selected_in_this_run.append(selected_entry['link'])
-                self.log(f"  🎯 AI選択: {selected_entry['title'][:40]}...")
-
-                # 5. 詳細パース
-                parser = RSSParserFactory.get_parser(selected_entry['link'])
-                parsed_data = parser.parse(selected_entry['link'])
-                if not parsed_data or not parsed_data.get('body'): 
-                    self.log(f"  ❌ 本文抽出失敗: {selected_entry['link']}", self.style.ERROR)
-                    continue
-                if selected_entry.get('rss_img'): 
-                    parsed_data['img'] = selected_entry['rss_img']
-
-                # 6. プロンプトテンプレート読込
-                try:
-                    with open(os.path.join(prompt_dir, f"ai_prompt_{project_label}.txt"), "r", encoding='utf-8') as f: ai_template = f.read()
-                    with open(os.path.join(prompt_dir, f"cta_{project_label}.txt"), "r", encoding='utf-8') as f: cta_template = f.read()
-                except:
-                    ai_template, cta_template = "読者が楽しめるブログ記事をMarkdownで書いてください。", ""
-
-                # 7. 投稿ユニット実行
-                selected_comment = random.choice(char_comments) if char_comments else "今注目のニュースです。"
+                self.log(f"🚢 【巡回】: {site_key} ({platform})")
                 
-                success, result = self.deploy_unit(
-                    site_cfg, selected_entry, parsed_data, ai_template, cta_template, 
-                    project_label, config_dir, selected_comment, primary_cat
-                )
+                # 指定数分投稿を試行
+                for i in range(post_limit):
+                    # 【整合】Next.jsで重要な 'site' カラムで候補を抽出
+                    candidates = Article.objects.filter(
+                        site=site_key, 
+                        is_exported=False
+                    ).exclude(id__in=self.selected_in_this_run).order_by('-created_at')[:20]
 
-                if success:
-                    success_count += 1
-                    self.log(f"  ✅ 成功: {result.get('title')[:30]}", self.style.SUCCESS)
-                    # 連続投稿による制限回避
-                    time.sleep(random.randint(10, 20))
+                    if not candidates.exists():
+                        self.log(f"  ⚠️ {site_key}: 候補記事切れです。")
+                        break
 
-        self.log(f"🏁 ミッション完了: {success_count} SUCCESS", self.style.SUCCESS)
+                    selected = self.let_persona_choose_rest(blog_config.get('persona'), list(candidates))
+                    if not selected or ArticleMapper.check_exists(site_key, selected.source_url):
+                        continue
 
-    def _super_clean(self, text):
-        """制御文字やBOM、不可視文字を完全に除去"""
-        if not text: return ""
-        text = str(text).replace('\ufeff', '').strip()
-        # 英数字、アンダースコア、ハイフン、ドット以外を除去
-        return re.sub(r'[^a-zA-Z0-9_.-]', '', text)
+                    self.selected_in_this_run.append(selected.id)
 
-    def load_strict_tab_csv(self, path):
-        """csv.DictReaderを使用した厳格なタブ区切り読み込み"""
-        if not os.path.exists(path): return []
-        data = []
-        try:
-            with open(path, "r", encoding="utf-8-sig") as f:
-                reader = csv.DictReader(f, delimiter='\t')
-                for row in reader:
-                    # キーと値の両方の空白/不可視文字を掃除
-                    clean_row = {str(k).strip(): str(v).strip() for k, v in row.items() if k}
-                    if clean_row.get('project') or clean_row.get('site_key'):
-                        data.append(clean_row)
-            return data
-        except Exception as e:
-            self.log(f"❌ CSV解析失敗: {e}")
-            return []
+                    # 執筆準備
+                    clean_title = re.sub(r'[^\w\s\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]', ' ', selected.title).strip()
+                    clean_title = re.sub(r'\s+', ' ', clean_title)
+                    if len(clean_title) > 85: clean_title = clean_title[:82] + "..."
 
-    def let_persona_choose(self, persona, entries):
-        """AIにリストから最も適した1つを選ばせる"""
-        if not self.api_keys: return entries[0]
-        client = genai.Client(api_key=random.choice(self.api_keys))
-        list_txt = "\n".join([f"[{i}] {e['title']}" for i, e in enumerate(entries)])
-        prompt = (f"あなたは【{persona}】です。\n"
-                  f"以下のニュースリストから、あなたのブログの読者が最も喜びそうなネタを1つだけ選んでください。\n"
-                  f"回答は [番号] の形式（例: [3]）で、その番号のみを返してください。\n\n{list_txt}")
-        try:
-            res = client.models.generate_content(model='gemini-1.5-flash', contents=prompt)
-            match = re.search(r'\[(\d+)\]', res.text)
-            idx = int(match.group(1)) if match else 0
-            return entries[idx] if 0 <= idx < len(entries) else entries[0]
-        except: return entries[0]
+                    prompt_content = self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{site_key}.txt")
+                    cta_content = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt")
+                    teitoku_comment = self.get_random_teitoku_comment(site_key)
 
-    def deploy_unit(self, site, entry, parsed_data, ai_template, cta_template, project_label, config_dir, comment, cat_name):
-        """AI執筆から投稿までを一括実行"""
-        ext = None
-        for _ in range(3):
-            selected_key = random.choice(self.api_keys)
-            try:
-                processor = AIProcessor([selected_key], ai_template)
-                ext = processor.generate_blog_content({
-                    'url': entry['link'], 'title': entry['title'], 
-                    'img': parsed_data.get('img'), 'body': parsed_data.get('body'),
-                    'is_adult': str(site.get('is_adult', '0')).strip() == '1'
-                }, site.get('site_key'))
-                if ext: break
-            except: time.sleep(2)
-        
-        if not ext: return False, {}
+                    parser = RSSParserFactory.get_parser(selected.source_url)
+                    p_data = parser.parse(selected.source_url)
+                    if not p_data or not p_data.get('body'): continue
 
-        platform = site.get('platform', 'livedoor').lower()
-        # タイトル選定
-        p_title = ext.get('title_h') if platform == 'hatena' and ext.get('title_h') else ext.get('title_g', entry['title'])
-        p_body = ext.get('cont_g', ext.get('raw_text', ''))
-        
-        # AIのメタ情報の残りを除去
-        unwanted = [r"📥\s*入力データ.*?\n", r"元ネタ:.*?\n", r"📤\s*出力.*?\n", r"^出力[:：].*?\n"]
-        for pattern in unwanted:
-            p_body = re.sub(pattern, "", p_body, flags=re.IGNORECASE | re.MULTILINE)
-        p_body = p_body.strip()
+                    # Gemma 3 執筆
+                    write_res = self.generate_with_gemma_strategy(
+                        site_key, prompt_content, cta_content, clean_title, p_data, blog_config
+                    )
+                    
+                    if write_res:
+                        img_url = p_data.get('img') or selected.main_image_url
+                        body_html = self.extract_tag(write_res, "BODY")
+                        final_title = self.extract_tag(write_res, "TITLE") or clean_title
+                        final_cat = self.extract_tag(write_res, "CAT") or "最新情報"
 
-        # DB保存
-        try:
-            with transaction.atomic():
-                new_art = Article.objects.create(
-                    site=project_label, content_type='post',
-                    title=p_title[:500], body_text=p_body,
-                    main_image_url=parsed_data.get('img'), source_url=entry['link'],
-                    extra_metadata={"category": cat_name, "is_adult": site.get('is_adult') == '1'}
-                )
-                art_id = new_art.id
-        except Exception as e:
-            self.log(f"DB保存失敗: {e}")
-            return False, {}
+                        full_post_body = self.assemble_final_html(body_html, img_url, teitoku_comment)
 
-        # 投稿実行
-        try:
-            cfg = site.copy()
-            # 既存ドライバーが期待するキー名へ変換
-            cfg.update({
-                'api_key': str(site.get('api_key') or site.get('api_key_or_pw') or '').strip(),
-                'endpoint': str(site.get('endpoint') or site.get('url') or '').strip(),
-                'user': str(site.get('user') or '').strip(),
-                'current_dir': config_dir
-            })
-            
-            driver_class = {'hatena': HatenaDriver, 'blogger': BloggerDriver}.get(platform, LivedoorDriver)
-            driver = driver_class(cfg)
-            
-            img_html = f'<div style="text-align:center; margin-bottom:15px;"><img src="{parsed_data.get("img")}" style="max-width:100%;"></div>' if parsed_data.get("img") else ""
-            review_html = f'<div style="background:#f9f9f9; padding:15px; border-left:5px solid #ff6600; margin-bottom:20px;"><strong>🖋 編集部ピックアップ：</strong><br>「{comment}」</div>'
-            
-            # ドメインマップ
-            domain_map = {'tiper': 'https://tiper.live', 'avflash': 'https://avflash.xyz', 'saving': 'https://saving-tech.com'}
-            base_url = domain_map.get(project_label, f"https://{project_label}.com")
-            full_internal_url = f"{base_url}/news/{art_id}"
+                        try:
+                            DriverClass = {'livedoor': LivedoorDriver, 'blogger': BloggerDriver, 'hatena': HatenaDriver, 'wordpress': WordPressDriver}.get(platform)
+                            if not DriverClass: continue
+                            
+                            driver = DriverClass(blog_config)
+                            if driver.post(title=final_title, body=full_post_body, image_url=img_url or "", source_url=selected.source_url, category=final_cat):
+                                self.mark_as_success(selected, site_key, final_title, full_post_body, img_url, platform)
+                                self.log(f"  ✅ 成功({i+1}/{post_limit}): {final_title[:20]}", self.style.SUCCESS)
+                        except Exception as e:
+                            self.log(f"  ❌ エラー: {str(e)}", self.style.ERROR)
+                    
+                    if i < post_limit - 1:
+                        time.sleep(random.randint(20, 40))
 
-            # HTML組み立て
-            final_content = img_html + review_html + HTMLConverter.md_to_html(p_body) + cta_template.replace("{{internal_url}}", full_internal_url)
-            
-            if driver.post(title=p_title, body=final_content, source_url=entry['link'], category=cat_name):
-                Article.objects.filter(id=art_id).update(is_exported=True)
-                return True, {'title': p_title}
-            else:
-                Article.objects.filter(id=art_id).delete() # 失敗時はレコード削除
-                return False, {}
-        except Exception as e:
-            self.log(f"Driver Error: {e}")
-            return False, {}
+                time.sleep(random.randint(5, 10))
 
-    def build_rss_pool(self, rss_master, categories):
-        """RSSソースから情報を収集"""
-        pool = {}
-        for cat in categories:
-            if not cat: continue
-            entries = []
-            rss_sources = [r for r in rss_master if cat in r.get('rss_category', '')]
-            for source in rss_sources:
-                url = source.get('rss_url', '').strip()
-                if not url: continue
+    def fetch_all_rss(self, csv_path):
+        """RSS取得時、ALLOWED_SITES（Next.js判別用）以外はDBに入れない"""
+        if not os.path.exists(csv_path): return
+        self.log("📡 RSSフェッチ開始（サイト識別子チェック有効）")
+        with open(csv_path, "r", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f, delimiter='\t')
+            for row in reader:
+                project_name = row['project']
+                # 【防衛】許可リストにないサイトの記事はDBに保存しない
+                if project_name not in self.ALLOWED_SITES:
+                    continue
+
                 try:
-                    res = requests.get(url, timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
-                    feed = feedparser.parse(res.text)
-                    for e in feed.entries:
-                        link = getattr(e, 'link', None) or getattr(e, 'id', None)
-                        if not link: continue
-                        extractor = ExtractorFactory.get_extractor(url, cat)
-                        content_val = e.content[0].value if hasattr(e, 'content') else e.get('description', '')
-                        rss_img = extractor.extract(content_val, entry=e)
-                        entries.append({'title': e.title, 'link': link, 'rss_img': rss_img})
+                    req = urllib.request.Request(row['rss_url'], headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req, timeout=10) as r:
+                        feed = feedparser.parse(r.read())
+                        for entry in feed.entries:
+                            Article.objects.get_or_create(
+                                source_url=entry.link, 
+                                defaults={
+                                    'site': project_name, # Next.js表示用の重要カラム
+                                    'title': entry.title, 
+                                    'body_text': entry.description, 
+                                    'extra_metadata': {'rss_category': row['rss_category']}
+                                }
+                            )
                 except: continue
-            pool[cat] = entries
-        return pool
 
-    def load_character_comments(self, path):
-        """プロジェクトごとのランダムコメント集をロード"""
-        if not os.path.exists(path): return []
+    def get_random_teitoku_comment(self, site_key):
+        comment_file = os.path.join(self.SETTING_DIR, f"teitoku_{site_key}_comments.csv")
+        if not os.path.exists(comment_file): return "要チェックの最新トレンドです！"
         try:
-            with open(path, "r", encoding="utf-8-sig") as f:
-                return [l.strip().strip('"') for l in f if l.strip() and "キャラ設定" not in l]
-        except: return []
+            with open(comment_file, "r", encoding="utf-8") as f:
+                comments = [line.strip() for line in f if line.strip()]
+                return random.choice(comments) if comments else "必見のクオリティです。"
+        except: return "注目の内容です。"
 
-    def guess_category(self, site_key):
-        """サイト名からカテゴリを推測"""
-        sk = str(site_key).lower()
-        if 'vr' in sk: return 'adult_vr'
-        if 'jukujo' in sk: return 'adult_video'
-        return 'adult_video'
+    def load_external_file(self, directory, filename):
+        path = os.path.join(directory, filename)
+        if os.path.exists(path):
+            try:
+                with open(path, 'r', encoding='utf-8') as f: return f.read().strip()
+            except: pass
+        return ""
+
+    def generate_with_gemma_strategy(self, site_key, prompt_base, cta, title, p_data, config):
+        key = random.choice(self.api_keys)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key={key}"
+        
+        full_instruction = f"""
+{prompt_base}
+📥 補足データ
+タイトル: {title}
+内容詳細: {p_data['body'][:800]}
+ペルソナ: {config.get('persona')}
+⚠️【重要】変数は実名化し、[TITLE][BODY][CAT]形式を厳守。最後に以下を配置:
+{cta}
+"""
+        try:
+            r = requests.post(url, json={"contents": [{"parts": [{"text": full_instruction}]}], "generationConfig": {"temperature": 0.8}}, timeout=60)
+            if r.status_code == 200:
+                return r.json()['candidates'][0]['content']['parts'][0]['text']
+        except: pass
+        return None
+
+    def extract_tag(self, text, tag):
+        match = re.search(f"\\[{tag}\\](.*?)\\[/{tag}\\]", text, re.DOTALL)
+        return match.group(1).strip() if match else ""
+
+    def assemble_final_html(self, body_content, img_url, comment):
+        img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px;"></p>' if img_url else ""
+        comment_html = f'''
+<div style="border: 2px dashed #ff4500; padding: 15px; margin: 20px 0; background: #fffaf0; border-radius: 10px;">
+  <strong style="color: #ff4500;">🖋 編集長の一言レビュー：</strong><br>
+  <span style="font-size: 1.1em; font-weight: bold;">「{comment}」</span>
+</div>
+'''
+        return (img_tag + comment_html + body_content).strip()
+
+    def let_persona_choose_rest(self, persona, articles):
+        key = random.choice(self.api_keys)
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
+        list_txt = "\n".join([f"[{i}] {a.title}" for i, a in enumerate(articles)])
+        prompt = f"あなたは【{persona}】です。最も惹かれる番号を1つ選び [番号] の形式で答えて。\n\n{list_txt}"
+        try:
+            r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=25)
+            if r.status_code == 200:
+                m = re.search(r'\[(\d+)\]', r.json()['candidates'][0]['content']['parts'][0]['text'])
+                idx = int(m.group(1)) if m else 0
+                return articles[idx] if idx < len(articles) else articles[0]
+        except: pass
+        return articles[0]
+
+    def mark_as_success(self, selected, site_key, title, body, img, platform):
+        with transaction.atomic():
+            new_id = ArticleMapper.create_article(site_id=site_key, title=title, body_text=body, source_url=selected.source_url, main_image_url=img)
+            ArticleMapper.save_post_result(new_id, blog_type=platform, is_published=True)
+            selected.is_exported = True
+            selected.save()
 
     def log(self, msg, style_func=None):
         ts = datetime.now().strftime('%H:%M:%S')

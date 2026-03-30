@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         """コマンドライン引数の定義"""
-        parser.add_argument('--site', type=str, help='実行するサイトキーを指定 (tiper, bicstation等)')
+        parser.add_argument('--project', type=str, help='実行するサイトキーを指定 (tiper, bicstation等)')
         parser.add_argument('--platform', type=str, help='実行するブログ基盤を指定 (livedoor, wordpress等)')
         parser.add_argument('--limit', type=int, default=1, help='1サイトあたりの最大投稿数')
         parser.add_argument('--skip-rss', action='store_true', help='RSS取得をスキップしてDBから即投稿')
@@ -41,7 +41,7 @@ class Command(BaseCommand):
         self.SETTING_DIR = os.path.join(self.base_path, 'teitoku_settings')
 
     def handle(self, *args, **options):
-        target_site = options.get('site')
+        target_site = options.get('project')
         target_platform = options.get('platform')
         post_limit = options.get('limit')
         skip_rss = options.get('skip_rss')
