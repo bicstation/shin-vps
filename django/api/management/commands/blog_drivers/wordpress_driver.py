@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/management/commands/blog_drivers/wordpress_driver.py
 import time
 import requests
 import xmlrpc.client

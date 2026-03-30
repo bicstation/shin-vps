@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/management/commands/blog_drivers/rss_parsers.py
 import requests, re, time
 from bs4 import BeautifulSoup
 

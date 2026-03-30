@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/management/commands/blog_drivers/data_mapper.py
 import logging
 from api.models.article import Article
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/management/commands/blog_drivers/ai_processor.py
 import re, random, requests, time, json
 from api.models.pc_products import PCProduct
 

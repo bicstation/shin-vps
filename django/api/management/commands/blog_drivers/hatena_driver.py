@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/management/commands/blog_drivers/hatena_driver.py
 import os, base64, hashlib, requests
 from django.utils import timezone
 from xml.sax.saxutils import escape
