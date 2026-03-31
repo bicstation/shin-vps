@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import feedparser, csv, os, re, random, time, urllib.request, requests, json, unicodedata
+import feedparser, csv, os, re, random, time, requests, json, unicodedata
 from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -21,7 +21,7 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 class Command(BaseCommand):
     # .envから司令部名を取得（デフォルトは Marya）
     CMD_NAME = os.getenv('CMD_NAME', 'Marya')
-    VERSION = "v1.5.0"
+    VERSION = "v1.5.1"
     help = f'Gemma 3 艦隊司令部 {VERSION} ({CMD_NAME} Edition)'
 
     ALLOWED_SITES = ['bicstation', 'saving', 'tiper', 'avflash']
@@ -166,8 +166,10 @@ class Command(BaseCommand):
             self.log(f"  ⚠️ [Indexing API] 失敗: {str(e)}", self.style.WARNING)
 
     def fetch_all_rss(self, csv_path):
+        """年齢確認Cookie(ckcy=1)をセットしてRSSを取得"""
         if not os.path.exists(csv_path): return
         self.log(f"📡 RSSフェッチ開始（司令部: {self.CMD_NAME}）")
+        
         with open(csv_path, "r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
@@ -175,20 +177,35 @@ class Command(BaseCommand):
                 if project_name not in self.ALLOWED_SITES: continue
 
                 try:
-                    req = urllib.request.Request(row['rss_url'], headers={'User-Agent': 'Mozilla/5.0'})
-                    with urllib.request.urlopen(req, timeout=10) as r:
-                        feed = feedparser.parse(r.read())
+                    # 盾（User-Agent）と通行証（Cookie）を装備
+                    cookies = {'ckcy': '1'}
+                    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+                    
+                    response = requests.get(row['rss_url'], headers=headers, cookies=cookies, timeout=15)
+                    
+                    if response.status_code == 200:
+                        feed = feedparser.parse(response.content)
+                        count = 0
                         for entry in feed.entries:
-                            Article.objects.get_or_create(
+                            # 既存重複チェックをしつつ保存
+                            obj, created = Article.objects.get_or_create(
                                 source_url=entry.link, 
                                 defaults={
                                     'site': project_name, 
                                     'title': entry.title, 
-                                    'body_text': entry.description, 
-                                    'extra_metadata': {'rss_category': row['rss_category']}
+                                    'body_text': getattr(entry, 'description', entry.title), 
+                                    'extra_metadata': {'rss_category': row.get('rss_category', 'general')}
                                 }
                             )
-                except: continue
+                            if created: count += 1
+                        
+                        if count > 0:
+                            self.log(f"  📥 {project_name}: {count}件の新規物資を確保。")
+                    else:
+                        self.log(f"  ⚠️ {project_name} 接続失敗 (HTTP {response.status_code})", self.style.WARNING)
+                except Exception as e:
+                    self.log(f"  ❌ {project_name} 取得エラー: {str(e)}", self.style.ERROR)
+                    continue
 
     def get_random_teitoku_comment(self, site_key):
         comment_file = os.path.join(self.SETTING_DIR, f"teitoku_{site_key}_comments.csv")
