@@ -1,13 +1,15 @@
-/* --- Tiper.Live 2026 Reset & Modern CSS --- */
+/* --- TIPER.LIVE 2026 : Tactical Branding Core --- */
+
 :root {
-    --accent: #ff4444;
+    --accent: #ff4444;       /* 鮮やかな赤 */
+    --accent-dark: #e11d48;  /* 深みのある赤 */
     --bg-dark: #000000;
-    --card-bg: #111111;
+    --card-bg: #0a0a0a;
+    --border-color: #1a1a1a;
     --text-muted: #888;
-    --border-color: #222;
 }
 
-/* 全体リセット */
+/* 1. 基本設定 */
 body {
     background-color: var(--bg-dark);
     color: #ffffff;
@@ -17,126 +19,455 @@ body {
     overflow-x: hidden;
 }
 
-/* コンテナ・ナビ・バナーは共通のため中略（以前のコードを維持） */
-.container-fluid-custom { width: 95%; max-width: 1400px; margin: 0 auto; }
-.stema-bar { background: #0a0a0a; color: #444; font-size: 10px; text-align: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
-.navbar { background: rgba(0,0,0,0.95) !important; border-bottom: 1px solid var(--border-color); padding: 15px 0; }
-.navbar-brand { font-weight: 900; color: var(--accent) !important; font-size: 1.5rem; letter-spacing: 2px; }
-.nav-link { color: #eee !important; font-weight: bold; font-size: 0.85rem; margin: 0 10px; transition: 0.3s; }
-.top-banner-wrapper { width: 100%; height: 120px; position: relative; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; }
-.top-banner-img { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
-.top-banner-text h1 { font-size: 1.6rem; font-weight: 900; letter-spacing: 5px; color: #fff; margin: 0; }
-
-/* 記事グリッド */
-.article-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 50px; }
-@media (max-width: 1100px) { .article-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 768px) { .article-grid { grid-template-columns: 1fr; } }
-
-.article-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: 0.3s; text-decoration: none !important; }
-.article-card:hover { border-color: var(--accent); transform: translateY(-8px); }
-.card-img-container { width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
-.card-img-container img { width: 100%; height: 100%; object-fit: cover; }
-.card-body-custom { padding: 20px; }
-.card-title { font-size: 1rem; font-weight: bold; color: #fff; margin-bottom: 15px; }
-
-/* ======================================================
-   ★ 記事本文内の「白背景・文字消え」完全封殺ロジック
-   ====================================================== */
-
-/* 1. 記事エリアの基本文字色 */
-.article-content { color: #eeeeee !important; }
-
-/* 2. 背景色指定がある要素を「一律で透過・暗色化」する（これが最も確実） */
-.article-content [style*="background"] {
-    background-color: rgba(255, 255, 255, 0.08) !important; /* 薄いグレー */
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1px solid #333 !important;
-    border-radius: 8px;
-    color: #ffffff !important;
+/* 2. ステマバー & ナビゲーション */
+.stema-bar {
+    background: #050505;
+    color: #555;
+    font-size: 10px;
+    text-align: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #111;
+    letter-spacing: 1px;
 }
 
-/* 3. 救済：画像3枚目の「オレンジ点線ボックス」を保護して上書き */
-/* 2の設定よりも後に書くことで、点線デザインを優先させます */
-.article-content blockquote, 
-.article-content .quote {
-    background: rgba(255, 68, 68, 0.05) !important;
-    border: 1px dashed var(--accent) !important; 
-    border-radius: 8px;
-    padding: 20px !important;
-    margin: 20px 0 !important;
-    color: #ffffff !important;
+.navbar {
+    background: rgba(0,0,0,0.95) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--accent) !important;
+    padding: 12px 0 !important;
 }
 
-/* 4. 文字色救済：どんな色で指定されていても「白系」に強制固定 */
-.article-content span[style*="color"],
-.article-content p[style*="color"],
-.article-content div[style*="color"],
-.article-content font[color] {
-    color: #ffffff !important;
+.container-fluid-custom {
+    width: 95%;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-/* 5. 強い強調やリンク */
-.article-content strong, .article-content b { color: #ffffff !important; font-weight: bold; }
-.article-content a { color: var(--accent) !important; text-decoration: underline; }
-.article-content img { max-width: 100% !important; height: auto !important; border-radius: 10px; }
-
-/* サイドバー・フッター（共通） */
-.sidebar-box { background: #0a0a0a; border: 1px solid var(--border-color); padding: 20px; border-radius: 12px; margin-bottom: 30px; }
-.sidebar-title { color: var(--accent); font-weight: 900; border-bottom: 2px solid var(--accent); padding-bottom: 8px; font-size: 0.9rem; }
-
-/* --- ユーティリティクラス（定義漏れ補完） --- */
-
-/* 文字を白くする */
-.text-white {
-    color: #ffffff !important;
+.navbar-brand {
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    color: var(--accent) !important;
 }
 
-/* 英字をすべて大文字にする */
-.text-uppercase {
-    text-transform: uppercase !important;
-    letter-spacing: 1px; /* 大文字は見出しに使うことが多いので、少し字間を広げると高級感が出ます */
+.nav-link {
+    color: #ddd !important;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-left: 20px;
+    transition: 0.3s;
 }
+.nav-link:hover { color: var(--accent) !important; }
 
-/* （ついでに）下線なしを保証 */
-.text-decoration-none {
-    text-decoration: none !important;
-}
-
-/* --- トップバナー（センタリング・レイアウト修正） --- */
-
+/* 3. トップバナー */
 .top-banner-wrapper {
     width: 100%;
-    /* バナーの高さ（お好みで調整してください） */
-    height: 120px; 
-    position: relative; 
+    height: 200px;
+    position: relative;
     overflow: hidden;
     background: #000;
-    
-    /* ★ここが重要：中にある要素（画像とテキスト）を中央に集める設定 */
-    display: flex; 
-    align-items: center; /* 縦方向の中央 */
-    justify-content: center; /* 横方向の中央 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .top-banner-img {
-    /* 画像を「バナーの背景」として扱う設定 */
-    position: absolute; 
-    top: 0;
-    left: 0;
-    width: 100%; 
-    height: 100%;
-    
-    /* ★ここが最重要：画像を比率を保ったまま中央で切り取る */
-    object-fit: cover; 
-    object-position: center; /* 画像の中心を基準にする */
-    
-    opacity: 0.4; /* テキストを見やすくするために少し暗く */
-    z-index: 1; /* 画像は下層 */
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0.45;
+    z-index: 1;
 }
 
-/* （参考）テキストエリアの設定 */
-.top-banner-text { 
-    position: relative; 
-    z-index: 2; /* テキストは画像の上に重ねる */
-    text-align: center; 
+.top-banner-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+.top-banner-text {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    width: 90%;
+}
+
+.top-banner-text h1 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #fff;
+    margin: 0;
+    text-shadow: 0 0 20px rgba(0,0,0,1), 0 0 10px rgba(255,68,68,0.4);
+}
+
+/* 4. 注目記事（オーバーレイ） */
+.featured-card {
+    position: relative;
+    width: 100%;
+    min-height: 450px;
+    background: #000;
+    margin-bottom: 40px;
+    border: 1px solid var(--accent);
+    overflow: hidden;
+}
+
+.featured-img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+}
+
+.featured-card::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 75%;
+    background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);
+    z-index: 2;
+}
+
+.featured-content {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; padding: 40px;
+    z-index: 3;
+}
+
+.h2-title { font-size: 2.2rem; font-weight: 900; color: #fff; line-height: 1.2; }
+
+/* 5. 記事グリッド & カード */
+.article-grid {
+    display: flex !important; flex-wrap: wrap !important; gap: 15px !important;
+}
+
+.article-card {
+    flex: 0 0 calc(33.333% - 10px) !important;
+    max-width: calc(33.333% - 10px) !important;
+    background: var(--card-bg); border: 1px solid var(--border-color);
+    display: flex; flex-direction: column; transition: 0.3s;
+}
+.article-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+
+.card-img-container { width: 100%; height: 180px; overflow: hidden; background: #000; }
+.card-img-container img { width: 100%; height: 100%; object-fit: cover; }
+
+.card-body-custom { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+.card-title { font-size: 0.95rem; font-weight: bold; margin-bottom: 10px; }
+.card-title a { color: #fff; text-decoration: none; }
+
+.btn-detail {
+    display: block; width: 100%; padding: 7px 0; margin-top: auto;
+    background: transparent; border: 1px solid #333;
+    color: #888; font-size: 0.7rem; font-weight: bold; text-align: center;
+    text-decoration: none !important;
+}
+.article-card:hover .btn-detail { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* 6. サイドバー：収益導線 */
+.sidebar-box { background: #0a0a0a; border: 1px solid var(--border-color); padding: 20px; }
+
+.side-guide-link {
+    display: block;
+    position: relative;
+    margin-bottom: 12px;
+    padding: 15px 12px 15px 45px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    border: 1px solid #333;
+    border-radius: 8px;
+    color: #eee !important;
+    text-decoration: none !important;
+    font-size: 0.85rem;
+    font-weight: bold;
+    transition: 0.3s;
+    overflow: hidden;
+}
+
+.side-guide-link::after {
+    content: "";
+    position: absolute;
+    top: -50%; left: -60%;
+    width: 20%; height: 200%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(30deg);
+    transition: 0.5s;
+}
+
+.side-guide-link:hover::after { left: 120%; }
+.side-guide-link:hover {
+    border-color: var(--accent);
+    background: #111;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(255, 68, 68, 0.2);
+}
+
+.side-guide-link i {
+    position: absolute; left: 15px; top: 50%;
+    transform: translateY(-50%); font-style: normal; font-size: 1.2rem;
+}
+
+.side-guide-link.highlight {
+    border-color: #fb7185;
+    background: linear-gradient(135deg, #2d161a 0%, #0a0a0a 100%);
+}
+
+/* 7. レスポンシブ */
+@media (max-width: 991px) {
+    .mobile-nav { display: flex !important; }
+    .article-card { flex: 0 0 calc(50% - 10px) !important; max-width: calc(50% - 10px) !important; }
+}
+@media (max-width: 768px) {
+    .featured-card { min-height: 350px; }
+    .top-banner-text h1 { font-size: 1.5rem; letter-spacing: 4px; }
+    .article-card { flex: 0 0 100% !important; max-width: 100% !important; }
+}
+
+/* 8. 記事下：3つの出口デザイン */
+.article-post-exit { background: #050505; border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; }
+.exit-header { font-size: 0.75rem; font-weight: 900; color: var(--accent); text-align: center; letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; }
+.exit-card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px 10px; background: #111; border: 1px solid #222; border-radius: 8px; text-decoration: none !important; transition: 0.3s; height: 100%; }
+.exit-card:hover { border-color: var(--accent); background: #000; transform: translateY(-5px); }
+.exit-icon { font-size: 1.8rem; margin-bottom: 10px; }
+.exit-title { color: #fff; font-weight: bold; font-size: 0.95rem; margin-bottom: 5px; }
+.exit-desc { color: #888; font-size: 0.7rem; line-height: 1.3; }
+.exit-card.highlight { border-color: #fb7185; background: linear-gradient(145deg, #1a0b0d, #000); }
+.exit-card.highlight .exit-title { color: #fb7185; }
+
+/* 9. スマホ固定ナビゲーション */
+.mobile-nav {
+    position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.95);
+    backdrop-filter: blur(10px); border-top: 1px solid #333; z-index: 10000; display: none;
+    justify-content: space-around; padding: 10px 0;
+}
+.mobile-nav-item { color: #fff !important; text-decoration: none !important; font-size: 0.7rem; text-align: center; font-weight: bold; }
+.mobile-nav-item i { display: block; font-size: 1.2rem; margin-bottom: 2px; font-style: normal; }
+
+/* 🚀 10. 【重要】記事本文内の可読性修正（白飛び対策） */
+.article-content {
+    color: #eeeeee !important;
+    line-height: 2.0;
+}
+
+/* 背景に色が指定されている要素内のテキストを強制的に可視化 */
+.article-content div[style*="background"],
+.article-content section[style*="background"],
+.article-content blockquote {
+    /* 背景が明るい色（白系）か暗い色かを判定して文字色をセット */
+    color: #111111 !important; /* 基本は黒（明るい背景想定） */
+}
+
+/* 明示的に背景が黒い場合の例外処理 */
+.article-content div[style*="background-color:#000"],
+.article-content div[style*="background-color: #000"],
+.article-content div[style*="background:#000"],
+.article-content div[style*="background: #000"] {
+    color: #ffffff !important;
+}
+
+/* image_05bad7.png のような「決定打」セクションへの対策 */
+.article-content div[style*="background"] b, 
+.article-content div[style*="background"] span,
+.article-content div[style*="background"] strong {
+    color: inherit !important; /* 親の文字色設定を引き継ぐ */
+}
+
+/* 記事内のリンク */
+.article-content a {
+    color: var(--accent) !important;
+    font-weight: bold;
+    text-decoration: underline !important;
+}
+
+
+/* --- 2.1 ネットワーク・ドロップダウン（メガメニュー化） --- */
+
+/* ドロップダウンメニュー本体 */
+.dropdown-menu-fleet {
+    min-width: 450px !important; /* 横幅をしっかり確保 */
+    background: rgba(10, 10, 10, 0.98) !important;
+    border: 1px solid var(--accent) !important;
+    border-radius: 8px !important;
+    padding: 25px !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 15px rgba(255, 68, 68, 0.2);
+    backdrop-filter: blur(15px);
+    margin-top: 10px !important;
+}
+
+/* 内部グリッドレイアウト */
+.fleet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2列で綺麗に並べる */
+    gap: 12px;
+}
+
+/* ヘッダータイトル */
+.fleet-header-nav {
+    grid-column: span 2;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+    text-transform: uppercase;
+}
+
+/* カテゴリラベル（MAIN / PBIC SERIES 等） */
+.fleet-cat-label {
+    grid-column: span 2;
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: #666;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+/* 各リンクアイテム */
+.fleet-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    background: #151515;
+    border: 1px solid #222;
+    border-radius: 5px;
+    color: #ddd !important;
+    text-decoration: none !important;
+    font-size: 0.8rem;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.fleet-item span {
+    font-size: 0.6rem;
+    color: #888;
+    margin-left: 5px;
+}
+
+/* ホバー時の挙動 */
+.fleet-item:hover {
+    background: var(--accent);
+    color: #fff !important;
+    border-color: var(--accent);
+    transform: scale(1.02);
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.4);
+}
+
+.fleet-item:hover span {
+    color: #eee;
+}
+
+/* スマホ表示での調整 */
+@media (max-width: 768px) {
+    .dropdown-menu-fleet {
+        min-width: 90vw !important;
+        margin-left: 5vw !important;
+        margin-right: 5vw !important;
+    }
+    .fleet-grid {
+        grid-template-columns: 1fr; /* スマホでは1列 */
+    }
+}
+
+/* --- カテゴリ・アーカイブ専用：横長カードデザイン --- */
+.archive-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: 0.3s ease;
+    margin-bottom: 20px;
+    display: flex;
+    text-decoration: none !important;
+}
+
+.archive-card:hover { 
+    transform: translateX(8px); 
+    border-color: var(--accent);
+    background: #111;
+}
+
+.card-thumb { 
+    width: 35%; 
+    min-width: 140px; 
+    max-width: 280px; 
+    aspect-ratio: 16/9; 
+    overflow: hidden; 
+    background: #000;
+}
+.card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.no-image-box {
+    height: 100%; display: flex; align-items: center; justify-content: center; 
+    color: #444; font-size: 10px; background: #1a1a1a; letter-spacing: 2px;
+}
+
+.card-body-custom { 
+    padding: 25px; 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center;
+    min-width: 0;
+}
+.card-body-custom .date { color: var(--text-muted); font-size: 0.75rem; margin-bottom: 8px; font-weight: bold; }
+.card-body-custom .title { 
+    color: #fff; 
+    font-weight: 900; 
+    font-size: 1.15rem; 
+    line-height: 1.4; 
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.card-body-custom .desc { 
+    color: #777; 
+    font-size: 0.85rem; 
+    display: -webkit-box; 
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical; 
+    overflow: hidden; 
+    line-height: 1.6;
+}
+
+.category-info-bar {
+    background: #0a0a0a;
+    border-left: 5px solid var(--accent);
+    padding: 20px 30px;
+    border: 1px solid #1a1a1a;
+    border-left: 5px solid var(--accent);
+    border-radius: 4px;
+}
+
+/* ページャーのデザイン微調整 */
+.pager-container .current {
+    background: var(--accent);
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 4px;
+    margin: 0 5px;
+}
+.pager-container a {
+    color: #888;
+    text-decoration: none;
+    padding: 5px 15px;
+    transition: 0.3s;
+}
+.pager-container a:hover { color: #fff; }
+
+@media (max-width: 768px) {
+    .archive-card { flex-direction: column; }
+    .card-thumb { width: 100%; max-width: none; }
+    .card-body-custom { padding: 20px; }
 }
