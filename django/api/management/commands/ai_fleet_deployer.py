@@ -19,17 +19,18 @@ from api.management.commands.blog_drivers.data_mapper import ArticleMapper
 from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 
 class Command(BaseCommand):
-    help = 'Gemma 3 艦隊司令部 v1.4.5 (Google Indexing API 搭載型)'
+    # .envから司令部名を取得（デフォルトは Marya）
+    CMD_NAME = os.getenv('CMD_NAME', 'Marya')
+    VERSION = "v1.5.0"
+    help = f'Gemma 3 艦隊司令部 {VERSION} ({CMD_NAME} Edition)'
 
-    # Next.js側と共通の正式なサイト識別子リスト
     ALLOWED_SITES = ['bicstation', 'saving', 'tiper', 'avflash']
 
     def add_arguments(self, parser):
-        """コマンドライン引数の定義"""
-        parser.add_argument('--project', type=str, help='実行するサイトキーを指定 (tiper, bicstation等)')
-        parser.add_argument('--platform', type=str, help='実行するブログ基盤を指定 (livedoor, wordpress等)')
-        parser.add_argument('--limit', type=int, default=1, help='1サイトあたりの最大投稿数')
-        parser.add_argument('--skip-rss', action='store_true', help='RSS取得をスキップしてDBから即投稿')
+        parser.add_argument('--project', type=str, help='実行するサイトキーを指定')
+        parser.add_argument('--platform', type=str, help='ブログ基盤を指定')
+        parser.add_argument('--limit', type=int, default=1, help='最大投稿数')
+        parser.add_argument('--skip-rss', action='store_true', help='RSS取得をスキップ')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,11 +40,11 @@ class Command(BaseCommand):
         self.api_keys = [k for k in self.api_keys if k and not k.startswith('GEMINI')]
         if not self.api_keys: self.api_keys = [os.getenv('GEMINI_API_KEY')]
         
-        # パス設定
+        # パス設定（Docker環境で確実に設定ファイルを掴むための絶対パス）
         self.base_path = os.path.dirname(os.path.abspath(__file__))
-        self.PROMPT_DIR = os.path.join(self.base_path, 'prompt')
         self.SETTING_DIR = os.path.join(self.base_path, 'teitoku_settings')
-        # Google Indexing JSONパス (提督がリネームしたもの)
+        self.PROMPT_DIR = os.path.join(self.base_path, 'prompt')
+        # Google Indexing JSONパス
         self.GOOGLE_KEY_PATH = os.path.join(self.base_path, 'bs_json', 'google-indexing-key.json')
 
     def handle(self, *args, **options):
@@ -52,7 +53,8 @@ class Command(BaseCommand):
         post_limit = options.get('limit')
         skip_rss = options.get('skip_rss')
 
-        self.log(f"--- 🚀 MISSION START: v1.4.5 (Target: {target_site or 'ALL'}) ---", self.style.SUCCESS)
+        # 司令部名を表示に反映
+        self.log(f"--- 🚀 MISSION START: {self.VERSION} (Commander: {self.CMD_NAME} | Target: {target_site or 'ALL'}) ---", self.style.SUCCESS)
         
         RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
         FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
@@ -60,10 +62,10 @@ class Command(BaseCommand):
         # 1. RSSフェッチ
         if not skip_rss:
             self.fetch_all_rss(RSS_CSV)
-        else:
-            self.log("⏩ RSSフェッチをスキップし、既存のDBデータを使用します。")
 
-        if not os.path.exists(FLEET_CSV): return
+        if not os.path.exists(FLEET_CSV):
+            self.log(f"❌ Fleet CSVが見つかりません: {FLEET_CSV}", self.style.ERROR)
+            return
 
         # 2. 投稿ループ
         with open(FLEET_CSV, "r", encoding="utf-8-sig") as f:
@@ -72,13 +74,11 @@ class Command(BaseCommand):
                 site_key = blog_config.get('site_key')
                 platform = blog_config.get('platform', 'livedoor').lower()
 
-                if site_key not in self.ALLOWED_SITES:
-                    continue
-
+                if site_key not in self.ALLOWED_SITES: continue
                 if target_site and site_key != target_site: continue
                 if target_platform and platform != target_platform.lower(): continue
 
-                self.log(f"🚢 【巡回】: {site_key} ({platform})")
+                self.log(f"🚢 【巡回開始】: {site_key} ({platform})")
                 
                 for i in range(post_limit):
                     candidates = Article.objects.filter(
@@ -98,7 +98,6 @@ class Command(BaseCommand):
 
                     # 執筆準備
                     clean_title = re.sub(r'[^\w\s\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]', ' ', selected.title).strip()
-                    clean_title = re.sub(r'\s+', ' ', clean_title)
                     if len(clean_title) > 85: clean_title = clean_title[:82] + "..."
 
                     prompt_content = self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{site_key}.txt")
@@ -123,36 +122,35 @@ class Command(BaseCommand):
                         full_post_body = self.assemble_final_html(body_html, img_url, teitoku_comment)
 
                         try:
-                            DriverClass = {'livedoor': LivedoorDriver, 'blogger': BloggerDriver, 'hatena': HatenaDriver, 'wordpress': WordPressDriver}.get(platform)
+                            DriverClass = {
+                                'livedoor': LivedoorDriver, 
+                                'blogger': BloggerDriver, 
+                                'hatena': HatenaDriver, 
+                                'wordpress': WordPressDriver
+                            }.get(platform)
+                            
                             if not DriverClass: continue
                             
                             driver = DriverClass(blog_config)
-                            # 投稿実行
                             posted_url = driver.post(title=final_title, body=full_post_body, image_url=img_url or "", source_url=selected.source_url, category=final_cat)
                             
                             if posted_url:
                                 self.mark_as_success(selected, site_key, final_title, full_post_body, img_url, platform)
-                                self.log(f"  ✅ 成功({i+1}/{post_limit}): {final_title[:20]}", self.style.SUCCESS)
+                                self.log(f"  ✅ 投稿成功({i+1}/{post_limit}): {final_title[:20]}", self.style.SUCCESS)
                                 
-                                # --- ⚡ Google Indexing API 通報開始 ---
-                                # 投稿されたURL（返り値がURLの場合）をサチコに通知
-                                target_notify_url = posted_url if isinstance(posted_url, str) and posted_url.startswith('http') else None
-                                if target_notify_url:
-                                    self.submit_to_google_indexing(target_notify_url)
-                                # --------------------------------------
+                                # Google Indexing API 通知
+                                if isinstance(posted_url, str) and posted_url.startswith('http'):
+                                    self.submit_to_google_indexing(posted_url)
 
                         except Exception as e:
-                            self.log(f"  ❌ エラー: {str(e)}", self.style.ERROR)
+                            self.log(f"  ❌ ドライバエラー: {str(e)}", self.style.ERROR)
                     
                     if i < post_limit - 1:
                         time.sleep(random.randint(20, 40))
 
-                time.sleep(random.randint(5, 10))
-
     def submit_to_google_indexing(self, target_url):
-        """Google Indexing APIにURLを送信し、即時クロールを促す"""
+        """Google Indexing APIに即時クロールを依頼"""
         if not os.path.exists(self.GOOGLE_KEY_PATH):
-            self.log(f"  ⚠️ Indexing鍵が見つかりません: {self.GOOGLE_KEY_PATH}", self.style.WARNING)
             return
 
         try:
@@ -163,19 +161,18 @@ class Command(BaseCommand):
             service = build('indexing', 'v3', credentials=credentials)
             body = {'url': target_url, 'type': 'URL_UPDATED'}
             service.urlNotifications().publish(body=body).execute()
-            self.log(f"  🚀 [Indexing API] Googleへ速報を送信完了: {target_url}", self.style.SUCCESS)
+            self.log(f"  🚀 [Indexing API] 通知完了: {target_url}", self.style.SUCCESS)
         except Exception as e:
-            self.log(f"  ⚠️ [Indexing API] 通知失敗: {str(e)}", self.style.WARNING)
+            self.log(f"  ⚠️ [Indexing API] 失敗: {str(e)}", self.style.WARNING)
 
     def fetch_all_rss(self, csv_path):
         if not os.path.exists(csv_path): return
-        self.log("📡 RSSフェッチ開始（サイト識別子チェック有効）")
+        self.log(f"📡 RSSフェッチ開始（司令部: {self.CMD_NAME}）")
         with open(csv_path, "r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
                 project_name = row['project']
-                if project_name not in self.ALLOWED_SITES:
-                    continue
+                if project_name not in self.ALLOWED_SITES: continue
 
                 try:
                     req = urllib.request.Request(row['rss_url'], headers={'User-Agent': 'Mozilla/5.0'})
@@ -199,7 +196,7 @@ class Command(BaseCommand):
         try:
             with open(comment_file, "r", encoding="utf-8") as f:
                 comments = [line.strip() for line in f if line.strip()]
-                return random.choice(comments) if comments else "必見のクオリティです。"
+                return random.choice(comments) if comments else "必見の内容です。"
         except: return "注目の内容です。"
 
     def load_external_file(self, directory, filename):
@@ -212,6 +209,7 @@ class Command(BaseCommand):
 
     def generate_with_gemma_strategy(self, site_key, prompt_base, cta, title, p_data, config):
         key = random.choice(self.api_keys)
+        # Gemma 3 モデルを明示的に使用
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key={key}"
         
         full_instruction = f"""
@@ -220,13 +218,15 @@ class Command(BaseCommand):
 タイトル: {title}
 内容詳細: {p_data['body'][:800]}
 ペルソナ: {config.get('persona')}
-⚠️【重要】変数は実名化し、[TITLE][BODY][CAT]形式を厳守。最後に以下を配置:
+⚠️【重要】[TITLE][BODY][CAT]形式を厳守し、最後に以下を配置せよ:
 {cta}
 """
         try:
-            r = requests.post(url, json={"contents": [{"parts": [{"text": full_instruction}]}], "generationConfig": {"temperature": 0.8}}, timeout=60)
+            r = requests.post(url, json={"contents": [{"parts": [{"text": full_instruction}]}], "generationConfig": {"temperature": 0.7}}, timeout=60)
             if r.status_code == 200:
                 return r.json()['candidates'][0]['content']['parts'][0]['text']
+            else:
+                self.log(f"  ⚠️ Gemma API Error: {r.status_code}", self.style.WARNING)
         except: pass
         return None
 
@@ -238,7 +238,7 @@ class Command(BaseCommand):
         img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px;"></p>' if img_url else ""
         comment_html = f'''
 <div style="border: 2px dashed #ff4500; padding: 15px; margin: 20px 0; background: #fffaf0; border-radius: 10px;">
-  <strong style="color: #ff4500;">🖋 編集長の一言レビュー：</strong><br>
+  <strong style="color: #ff4500;">🖋 司令部（{self.CMD_NAME}）レビュー：</strong><br>
   <span style="font-size: 1.1em; font-weight: bold;">「{comment}」</span>
 </div>
 '''
