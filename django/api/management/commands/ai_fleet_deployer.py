@@ -6,6 +6,10 @@ from django.db import transaction
 from api.models.article import Article 
 from api.utils.html_utils import HTMLConverter
 
+# --- Google API ライブラリ ---
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+
 # --- 外部ドライバー群 ---
 from api.management.commands.blog_drivers.livedoor_driver import LivedoorDriver
 from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
@@ -15,9 +19,9 @@ from api.management.commands.blog_drivers.data_mapper import ArticleMapper
 from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 
 class Command(BaseCommand):
-    help = 'Gemma 3 艦隊司令部 v1.4.2 (Next.js SiteID防衛・ターゲット投稿システム)'
+    help = 'Gemma 3 艦隊司令部 v1.4.5 (Google Indexing API 搭載型)'
 
-    # Next.js側と共通の正式なサイト識別子リスト（これ以外はDBに入れない/投稿しない）
+    # Next.js側と共通の正式なサイト識別子リスト
     ALLOWED_SITES = ['bicstation', 'saving', 'tiper', 'avflash']
 
     def add_arguments(self, parser):
@@ -39,6 +43,8 @@ class Command(BaseCommand):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.PROMPT_DIR = os.path.join(self.base_path, 'prompt')
         self.SETTING_DIR = os.path.join(self.base_path, 'teitoku_settings')
+        # Google Indexing JSONパス (提督がリネームしたもの)
+        self.GOOGLE_KEY_PATH = os.path.join(self.base_path, 'bs_json', 'google-indexing-key.json')
 
     def handle(self, *args, **options):
         target_site = options.get('project')
@@ -46,12 +52,12 @@ class Command(BaseCommand):
         post_limit = options.get('limit')
         skip_rss = options.get('skip_rss')
 
-        self.log(f"--- 🚀 MISSION START: v1.4.2 (Target: {target_site or 'ALL'}) ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v1.4.5 (Target: {target_site or 'ALL'}) ---", self.style.SUCCESS)
         
         RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
         FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
 
-        # 1. RSSフェッチ（許可リストによる水際対策付き）
+        # 1. RSSフェッチ
         if not skip_rss:
             self.fetch_all_rss(RSS_CSV)
         else:
@@ -66,19 +72,15 @@ class Command(BaseCommand):
                 site_key = blog_config.get('site_key')
                 platform = blog_config.get('platform', 'livedoor').lower()
 
-                # 【防衛】許可リストにないサイトはスキップ
                 if site_key not in self.ALLOWED_SITES:
                     continue
 
-                # 引数フィルタリング
                 if target_site and site_key != target_site: continue
                 if target_platform and platform != target_platform.lower(): continue
 
                 self.log(f"🚢 【巡回】: {site_key} ({platform})")
                 
-                # 指定数分投稿を試行
                 for i in range(post_limit):
-                    # 【整合】Next.jsで重要な 'site' カラムで候補を抽出
                     candidates = Article.objects.filter(
                         site=site_key, 
                         is_exported=False
@@ -125,9 +127,20 @@ class Command(BaseCommand):
                             if not DriverClass: continue
                             
                             driver = DriverClass(blog_config)
-                            if driver.post(title=final_title, body=full_post_body, image_url=img_url or "", source_url=selected.source_url, category=final_cat):
+                            # 投稿実行
+                            posted_url = driver.post(title=final_title, body=full_post_body, image_url=img_url or "", source_url=selected.source_url, category=final_cat)
+                            
+                            if posted_url:
                                 self.mark_as_success(selected, site_key, final_title, full_post_body, img_url, platform)
                                 self.log(f"  ✅ 成功({i+1}/{post_limit}): {final_title[:20]}", self.style.SUCCESS)
+                                
+                                # --- ⚡ Google Indexing API 通報開始 ---
+                                # 投稿されたURL（返り値がURLの場合）をサチコに通知
+                                target_notify_url = posted_url if isinstance(posted_url, str) and posted_url.startswith('http') else None
+                                if target_notify_url:
+                                    self.submit_to_google_indexing(target_notify_url)
+                                # --------------------------------------
+
                         except Exception as e:
                             self.log(f"  ❌ エラー: {str(e)}", self.style.ERROR)
                     
@@ -136,15 +149,31 @@ class Command(BaseCommand):
 
                 time.sleep(random.randint(5, 10))
 
+    def submit_to_google_indexing(self, target_url):
+        """Google Indexing APIにURLを送信し、即時クロールを促す"""
+        if not os.path.exists(self.GOOGLE_KEY_PATH):
+            self.log(f"  ⚠️ Indexing鍵が見つかりません: {self.GOOGLE_KEY_PATH}", self.style.WARNING)
+            return
+
+        try:
+            scopes = ['https://www.googleapis.com/auth/indexing']
+            credentials = service_account.Credentials.from_service_account_file(
+                self.GOOGLE_KEY_PATH, scopes=scopes
+            )
+            service = build('indexing', 'v3', credentials=credentials)
+            body = {'url': target_url, 'type': 'URL_UPDATED'}
+            service.urlNotifications().publish(body=body).execute()
+            self.log(f"  🚀 [Indexing API] Googleへ速報を送信完了: {target_url}", self.style.SUCCESS)
+        except Exception as e:
+            self.log(f"  ⚠️ [Indexing API] 通知失敗: {str(e)}", self.style.WARNING)
+
     def fetch_all_rss(self, csv_path):
-        """RSS取得時、ALLOWED_SITES（Next.js判別用）以外はDBに入れない"""
         if not os.path.exists(csv_path): return
         self.log("📡 RSSフェッチ開始（サイト識別子チェック有効）")
         with open(csv_path, "r", encoding="utf-8-sig") as f:
             reader = csv.DictReader(f, delimiter='\t')
             for row in reader:
                 project_name = row['project']
-                # 【防衛】許可リストにないサイトの記事はDBに保存しない
                 if project_name not in self.ALLOWED_SITES:
                     continue
 
@@ -156,7 +185,7 @@ class Command(BaseCommand):
                             Article.objects.get_or_create(
                                 source_url=entry.link, 
                                 defaults={
-                                    'site': project_name, # Next.js表示用の重要カラム
+                                    'site': project_name, 
                                     'title': entry.title, 
                                     'body_text': entry.description, 
                                     'extra_metadata': {'rss_category': row['rss_category']}
