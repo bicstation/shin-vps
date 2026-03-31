@@ -3,6 +3,7 @@
 # /home/maya/shin-vps/scripts/post_all_blogs.sh
 # C-PLAN: SUPREME FLEET COMMANDER - v4.5 (VPS PRODUCTION OPTIMIZED)
 # ------------------------------------------------------------------------------
+# /home/maya/shin-vps/post_all_blogs.sh
 
 # 1. 引数チェック (livedoor, hatena, blogger 等)
 if [[ "$1" == "--target" ]]; then
