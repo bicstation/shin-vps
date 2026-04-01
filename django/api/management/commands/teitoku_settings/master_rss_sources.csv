@@ -17,7 +17,7 @@ avflash	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=cg/rss=create/
 avflash	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=game/rss=create/sort=date/	らぶカルBL_ゲーム
 avflash	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=voice/rss=create/sort=date/	らぶカルBL_ボイス
 avflash	adult_reserve	https://www.dmm.co.jp/rental/-/list/=/reserve=only/rss=create/sort=date/	レンタル月額_予約
-avflash	adult_rental	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	レンタル単品_新着
+avflash	adult_video	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	レンタル単品_新着
 avflash	adult_reserve	https://www.dmm.co.jp/rental/ppr/-/list/=/reserve=only/rss=create/sort=date/	レンタル単品_予約
 avflash	adult_reserve	http://www.dmm.co.jp/mono/dvd/-/list/=/reserve=only/rss=create/sort=date/	通販DVD_予約
 avflash	adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/rss=create/sort=date/	通販アニメ_新着
@@ -60,7 +60,7 @@ tiper	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=cg/rss=create/so
 tiper	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=game/rss=create/sort=date/	らぶカルBL_ゲーム
 tiper	adult_lovecul	https://lovecul.dmm.co.jp/bl/-/list/=/media=voice/rss=create/sort=date/	らぶカルBL_ボイス
 tiper	adult_reserve	https://www.dmm.co.jp/rental/-/list/=/reserve=only/rss=create/sort=date/	レンタル月額_予約
-tiper	adult_rental	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	レンタル単品_新着
+tiper	adult_video	https://www.dmm.co.jp/rental/ppr/-/list/=/rss=create/sort=date/	レンタル単品_新着
 tiper	adult_reserve	https://www.dmm.co.jp/rental/ppr/-/list/=/reserve=only/rss=create/sort=date/	レンタル単品_予約
 tiper	adult_reserve	http://www.dmm.co.jp/mono/dvd/-/list/=/reserve=only/rss=create/sort=date/	通販DVD_予約
 tiper	adult_anime	http://www.dmm.co.jp/mono/anime/-/list/=/rss=create/sort=date/	通販アニメ_新着
