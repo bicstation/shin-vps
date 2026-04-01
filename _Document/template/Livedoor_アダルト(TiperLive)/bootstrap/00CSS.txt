@@ -471,3 +471,55 @@ body {
     .card-thumb { width: 100%; max-width: none; }
     .card-body-custom { padding: 20px; }
 }
+
+/* カードを包む Aタグの設定 */
+.guide-grid-card {
+    display: flex; /* 内部を整列させる */
+    flex-direction: column;
+    text-decoration: none !important;
+    background: #000;
+    padding: 25px;
+    border-radius: 12px;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
+    height: 100%; /* 高さを揃える */
+    width: 100%; /* 親の col-md-4 に合わせる */
+    box-sizing: border-box; /* 👈 重要：サイズ計算を正確に */
+    overflow: hidden;
+}
+
+/* 1pxグラデーション枠線（疑似要素） */
+.guide-grid-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 12px; 
+    padding: 1px; /* 👈 極細枠線 */
+    background: var(--grad-linear);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    z-index: -1;
+}
+
+.guide-grid-card:hover {
+    transform: translateY(-5px);
+    background: #080808;
+    box-shadow: 0 10px 30px rgba(255, 105, 180, 0.15);
+}
+
+.guide-grid-card h4 {
+    color: #ffd700;
+    font-size: 1.1rem; 
+    font-weight: 900;
+    margin-bottom: 10px; 
+    margin-top: 0;
+}
+
+.guide-grid-card p {
+    color: #999; 
+    font-size: 0.8rem; 
+    line-height: 1.5; 
+    margin: 0;
+}

@@ -5,6 +5,10 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from api.models.article import Article 
 
+# --- 外部ライブラリ (Indexing API) ---
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+
 # --- 外部ドライバー群 ---
 from api.management.commands.blog_drivers.livedoor_driver import LivedoorDriver
 from api.management.commands.blog_drivers.blogger_driver import BloggerDriver
@@ -15,21 +19,28 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'Gemma 3 艦隊司令部 v1.9.2 [Visual Integrity Edition]'
+    help = 'Gemma 3 艦隊司令部 v2.0 [Strategic Indexing Edition]'
 
     # プロジェクト単位での許可リスト
     ALLOWED_PROJECTS = ['bicstation', 'saving', 'tiper', 'avflash']
+    
+    # プロジェクトとドメインの紐付け（サチコ通知用）
+    DOMAIN_MAP = {
+        'tiper': 'https://tiper.live',
+        'avflash': 'https://av-flash.com',
+        'bicstation': 'https://bic-station.com',
+        'saving': 'https://bic-saving.com',
+    }
 
     def add_arguments(self, parser):
         parser.add_argument('--project', type=str, help='実行するプロジェクト名またはsite_keyを指定')
+        parser.add_argument('--platform', type=str, help='投稿先プラットフォームを指定 (livedoor, hatena, blogger, wordpress)')
         parser.add_argument('--limit', type=int, default=1, help='1サイトあたりの最大投稿数')
+        parser.add_argument('--index', action='store_true', help='サチコ(Indexing API)への通知を有効にする')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # セッション内重複回避用リスト
         self.selected_urls_in_this_session = []
-
-        # APIキーの収集
         self.api_keys = [os.getenv(f'GEMINI_API_KEY_{i}') for i in range(1, 11)]
         self.api_keys = [k for k in self.api_keys if k and not k.startswith('GEMINI')]
         if not self.api_keys: self.api_keys = [os.getenv('GEMINI_API_KEY')]
@@ -37,12 +48,16 @@ class Command(BaseCommand):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.PROMPT_DIR = os.path.join(self.base_path, 'prompt')
         self.SETTING_DIR = os.path.join(self.base_path, 'teitoku_settings')
+        # サチコ鍵のパス
+        self.SACHIKO_KEY = os.path.join(self.base_path, 'bs_json', 'google-indexing-key.json')
 
     def handle(self, *args, **options):
         target = options.get('project')
+        target_platform = options.get('platform')
         post_limit = options.get('limit')
+        use_index = options.get('index')
 
-        self.log(f"--- 🚀 MISSION START: v1.9.2 (Target: {target or 'ALL FLEET'}) ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v2.0 (Target: {target or 'ALL'}, Platform: {target_platform or 'ALL'}) ---", self.style.SUCCESS)
         
         RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
         FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
@@ -59,37 +74,33 @@ class Command(BaseCommand):
                 site_key = (blog_config.get('site_key') or '').strip().lower()
                 platform = (blog_config.get('platform') or 'livedoor').strip().lower()
 
-                if project_name not in self.ALLOWED_PROJECTS:
-                    continue
-
-                if target:
-                    target_low = target.lower()
-                    if target_low != project_name and target_low != site_key:
-                        continue
-
-                self.log(f"🚢 【出撃開始】: {project_name} > {site_key} ({platform})")
+                # プロジェクト制限
+                if project_name not in self.ALLOWED_PROJECTS: continue
+                if target and target.lower() not in [project_name, site_key]: continue
                 
-                # プロンプト読み込み
-                prompt_tpl = self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{site_key}.txt")
-                if not prompt_tpl:
-                    prompt_tpl = self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{project_name}.txt")
+                # プラットフォーム制限（引数指定がある場合）
+                if target_platform and target_platform.lower() != platform: continue
+
+                self.log(f"🚢 【出撃】: {project_name} > {site_key} [{platform}]")
+                
+                prompt_tpl = self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{site_key}.txt") or \
+                             self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{project_name}.txt")
                 
                 if not prompt_tpl:
                     self.log(f"  ⚠️ プロンプト欠如: スキップ ({site_key})")
                     continue
 
                 processor = AIProcessor(api_keys=self.api_keys, template=prompt_tpl)
-                self.deploy_mission(site_key, platform, blog_config, post_limit, RSS_CSV, processor)
+                self.deploy_mission(site_key, platform, blog_config, post_limit, RSS_CSV, processor, use_index)
 
         self.log("--- 🏁 全ミッション終了 ---", self.style.SUCCESS)
 
-    def deploy_mission(self, site_key, platform, blog_config, limit, rss_csv_path, processor):
+    def deploy_mission(self, site_key, platform, blog_config, limit, rss_csv_path, processor, use_index):
         project_name = (blog_config.get('project') or '').strip().lower()
         persona = blog_config.get('persona')
         rss_category_str = (blog_config.get('rss_category') or '').strip()
         target_cats = [c.strip().lower() for c in rss_category_str.split(',')]
 
-        # RSSフェッチ
         rss_urls = []
         if os.path.exists(rss_csv_path):
             with open(rss_csv_path, "r", encoding="utf-8-sig") as f:
@@ -115,7 +126,6 @@ class Command(BaseCommand):
             except: pass
 
         if not all_entries: return
-            
         random.shuffle(all_entries)
         success_count = 0
         temp_entries = all_entries[:]
@@ -123,20 +133,14 @@ class Command(BaseCommand):
         for i in range(limit):
             if success_count >= limit or not temp_entries: break
 
-            # 1. ペルソナ選定
             selected_entry = self.let_persona_choose_rest(persona, temp_entries[:40], rss_category_str)
             if not selected_entry: break
             
             self.selected_urls_in_this_session.append(selected_entry.link)
             self.log(f"  🎯 選定: {selected_entry.title[:35]}...")
             
-            # 2. 執筆ミッション & 画像処理の撃ち分け
-            # DMM/FANZA系ドメインの判定
             is_adult_site = any(domain in selected_entry.link.lower() for domain in ['dmm.co.jp', 'dmm.com', 'fanza.jp', 'fanza.news'])
-            
-            # get_parsed_data内でRSSParserFactoryの処理を呼び出し
             p_data = self.get_parsed_data(selected_entry, is_adult_site=is_adult_site)
-            
             input_data = {'url': selected_entry.link, 'title': selected_entry.title, 'body': p_data.get('body', '')}
             
             try:
@@ -160,8 +164,16 @@ class Command(BaseCommand):
                         driver = DriverClass(blog_config)
                         post_category = rss_category_str.split(',')[0] if rss_category_str else "最新情報"
                         if driver.post(title=final_title, body=full_html, image_url=p_data.get('img', ''), source_url=selected_entry.link, category=post_category):
-                            self.save_to_db(selected_entry, blog_config, final_title, full_html, p_data.get('img'), platform)
+                            new_article_id = self.save_to_db(selected_entry, blog_config, final_title, full_html, p_data.get('img'), platform)
                             self.log(f"  ✅ 成功: {final_title[:25]}...", self.style.SUCCESS)
+                            
+                            # サチコ通知 (Next.js側のURL)
+                            if use_index and new_article_id:
+                                base_domain = self.DOMAIN_MAP.get(project_name)
+                                if base_domain:
+                                    target_url = f"{base_domain}/article/{new_article_id}"
+                                    self.notify_google_indexing(target_url)
+
                             success_count += 1
                             if success_count < limit: time.sleep(random.randint(20, 45))
             except Exception as e:
@@ -169,46 +181,20 @@ class Command(BaseCommand):
             
             temp_entries = [e for e in temp_entries if e.link != selected_entry.link]
 
-    def assemble_final_html(self, body_content, img_url, comment, cta):
-        img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px;"></p>' if img_url else ""
-        comment_html = f'''
-<div style="border: 2px dashed #ff4500; padding: 15px; margin: 20px 0; background: #fffaf0; border-radius: 10px;">
-  <strong style="color: #ff4500;">🖋 編集長レビュー：</strong><br>
-  <span style="font-size: 1.1em; font-weight: bold;">「{comment}」</span>
-</div>
-'''
-        return (img_tag + comment_html + body_content + f"<br><hr><br>{cta}").strip()
-
-    def get_parsed_data(self, entry, is_adult_site=False):
-        """
-        RSSParserFactoryを使用して本文と画像を取得。
-        一般ニュースサイト(bicstation等)の場合は、加工前のOGP画像を優先する。
-        """
-        # RSSからの初期値
-        data = {'body': getattr(entry, 'description', getattr(entry, 'summary', entry.title)).replace('\x00', ''), 'img': ''}
-        
+    def notify_google_indexing(self, target_url):
+        """サチコ(Indexing API)への通知"""
+        if not os.path.exists(self.SACHIKO_KEY):
+            self.log(f"  ⚠️ サチコ鍵欠如: {self.SACHIKO_KEY}", self.style.WARNING)
+            return
         try:
-            parser = RSSParserFactory.get_parser(entry.link)
-            parsed = parser.parse(entry.link)
-            
-            if parsed:
-                # 本文の更新
-                if len(parsed.get('body', '')) > 20:
-                    data['body'] = parsed['body']
-                
-                # 画像の更新（アダルト以外は加工しないルールを適用）
-                if is_adult_site:
-                    # DMM/FANZA系はParserが既に行っている高画質化・パス修正をそのまま採用
-                    data['img'] = parsed.get('img', '')
-                else:
-                    # 一般ニュース系は、Parserが抽出したURLをそのまま利用。
-                    # 万が一Parser側で加工ロジックが入っていても、ここでは「そのまま」を優先
-                    data['img'] = parsed.get('img', '')
-                    
+            scopes = ['https://www.googleapis.com/auth/indexing']
+            credentials = service_account.Credentials.from_service_account_file(self.SACHIKO_KEY, scopes=scopes)
+            service = build('indexing', 'v3', credentials=credentials)
+            body = {"url": target_url, "type": "URL_UPDATED"}
+            service.urlNotifications().publish(body=body).execute()
+            self.log(f"  🚀 サチコ通報完了: {target_url}", self.style.SUCCESS)
         except Exception as e:
-            pass
-            
-        return data
+            self.log(f"  ❌ サチコエラー: {str(e)}", self.style.ERROR)
 
     def save_to_db(self, entry, blog_config, title, body, img, platform):
         site_key = blog_config.get('site_key')
@@ -219,6 +205,23 @@ class Command(BaseCommand):
             new_id = ArticleMapper.create_article(site_id=site_key, title=title, body_text=body, source_url=entry.link, main_image_url=img, category=primary_cat, tags=raw_cat, is_adult=is_adult_flag)
             ArticleMapper.save_post_result(new_id, blog_type=platform, is_published=True)
             Article.objects.filter(source_url=entry.link, site=site_key).update(is_exported=True)
+            return new_id
+
+    def assemble_final_html(self, body_content, img_url, comment, cta):
+        img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px;"></p>' if img_url else ""
+        comment_html = f'<div style="border: 2px dashed #ff4500; padding: 15px; margin: 20px 0; background: #fffaf0; border-radius: 10px;"><strong style="color: #ff4500;">🖋 編集長レビュー：</strong><br><span style="font-size: 1.1em; font-weight: bold;">「{comment}」</span></div>'
+        return (img_tag + comment_html + body_content + f"<br><hr><br>{cta}").strip()
+
+    def get_parsed_data(self, entry, is_adult_site=False):
+        data = {'body': getattr(entry, 'description', getattr(entry, 'summary', entry.title)).replace('\x00', ''), 'img': ''}
+        try:
+            parser = RSSParserFactory.get_parser(entry.link)
+            parsed = parser.parse(entry.link)
+            if parsed:
+                if len(parsed.get('body', '')) > 20: data['body'] = parsed['body']
+                data['img'] = parsed.get('img', '')
+        except: pass
+        return data
 
     def load_external_file(self, directory, filename):
         path = os.path.join(directory, filename)
@@ -240,7 +243,7 @@ class Command(BaseCommand):
         key = random.choice(self.api_keys)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
         list_txt = "\n".join([f"[{i}] {a.title}" for i, a in enumerate(articles)])
-        prompt = f"あなたは【ペルソナ】{persona}です。専門：{category_hint}。リストから最高の一記事を[番号]のみで選べ。\n{list_txt}"
+        prompt = f"あなたは【ペルソナ】{persona}です。リストから最高の一記事を[番号]のみで選べ。\n{list_txt}"
         try:
             r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=25)
             res_text = r.json()['candidates'][0]['content']['parts'][0]['text']
