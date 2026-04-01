@@ -1,7 +1,7 @@
 #!/bin/bash
 # ------------------------------------------------------------------------------
 # /home/maya/shin-vps/post_all_blogs.sh
-# C-PLAN: SUPREME FLEET COMMANDER - v4.5.3 (ai_fleet Integration)
+# C-PLAN: SUPREME FLEET COMMANDER - v4.6.0 (Indexing Quota Optimization)
 # ------------------------------------------------------------------------------
 
 # 1. 引数チェック (livedoor, hatena, blogger 等)
@@ -30,15 +30,13 @@ DISPLAY_NAME=${CMD_NAME:-$(hostname)}
 
 if [ -d "/home/maya/shin-vps" ]; then
     PROJECT_ROOT="/home/maya/shin-vps"
-    echo "☁️ VPS本番環境 ($DISPLAY_NAME) を検知。"
 else
     PROJECT_ROOT="/home/maya/shin-dev/shin-vps"
-    echo "💻 ローカル環境 ($DISPLAY_NAME) を検知。"
 fi
 
 # 3. 💥 重要：新旗艦コマンドの定義
 TARGET_CONTAINER="django-v3"
-COMMAND_NAME="ai_fleet"  # ai_fleet.py を呼び出すための名称
+COMMAND_NAME="ai_fleet"
 
 # 4. パス・ログ設定
 LOG_DIR="$PROJECT_ROOT/scripts/logs"
@@ -59,25 +57,46 @@ trap 'rm -f "$LOCK_FILE"' EXIT
 # 6. 実行ディレクトリへ移動
 cd "$PROJECT_ROOT" || { echo "❌ Error: $PROJECT_ROOT が見つかりません。"; exit 1; }
 
-# 7. 💥 出撃シークエンス開始
+# 7. ⚖️ サチコ通報（Indexing API）の弾薬節約判定
+# 現在の「時(0-23)」を取得
+CURRENT_HOUR=$(date +%H | sed 's/^0//') # 08時を8として扱う
+INDEX_FLAG=""
+
+# 【戦略設定】サチコ連絡を許可する時間帯 (1日2回、メイン投稿に合わせて調整)
+# 例: 9時台と21時台の投稿のみ --index を付与する
+INDEX_HOURS=(9 21)
+
+for HOUR in "${INDEX_HOURS[@]}"; do
+    if [ "$CURRENT_HOUR" -eq "$HOUR" ]; then
+        INDEX_FLAG="--index"
+        break
+    fi
+done
+
+# 8. 💥 出撃シークエンス開始
 {
     echo "============================================================"
     echo "--- 🚀 統合艦隊 [${TARGET_PF^^}] ターゲット哨戒開始 ---"
     echo "--- 艦隊司令部: $DISPLAY_NAME | コンテナ: $TARGET_CONTAINER ---"
+    echo "--- インデックス通報: $([[ -n "$INDEX_FLAG" ]] && echo "ENABLED (Quota Priority)" || echo "DISABLED (Natural Crawl)") ---"
     echo "--- 作戦開始時刻: $(date '+%Y-%m-%d %H:%M:%S') ---"
     echo "============================================================"
 
     # CSVの 'project' カラムに記載されている正式なラベル
-    PROJECTS=("tiper" "bicstation" "avflash" "saving")
+    PROJECTS=("tiper" "avflash" "bicstation" "saving")
 
     for PRJ in "${PROJECTS[@]}"; do
         echo "[$(date '+%H:%M:%S')] 📡 Project: [$PRJ] -> Platform: [$TARGET_PF] 展開中..."
         
-        # 🛠️ 修正ポイント: python manage.py ai_fleet を直接叩く
-        # --limit 1 は各プロジェクト1件ずつ投稿する設定
-        docker exec $TARGET_CONTAINER python manage.py $COMMAND_NAME --project "$PRJ" --platform "$TARGET_PF" --limit 1
+        # 🛠️ 実行コマンド
+        # --limit 1 は各プロジェクトの全サイトに対して1記事ずつ投稿
+        docker exec $TARGET_CONTAINER python manage.py $COMMAND_NAME \
+            --project "$PRJ" \
+            --platform "$TARGET_PF" \
+            --limit 1 \
+            $INDEX_FLAG
         
-        # 8. ⏱️ クールダウン (20-40秒のランダム待機でBot検知を回避)
+        # 9. ⏱️ クールダウン (20-40秒のランダム待機でBot検知を回避)
         SLEEP_TIME=$(( (RANDOM % 20) + 20 ))
         
         echo "⏳ フェーズ完了。クールダウン (${SLEEP_TIME}s)..."
