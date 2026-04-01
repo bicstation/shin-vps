@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import feedparser, csv, os, re, random, time, urllib.request, requests, json, unicodedata
+import markdown  # Markdown変換用に追加
 from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -19,7 +20,7 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'Gemma 3 艦隊司令部 v2.0 [Strategic Indexing Edition]'
+    help = 'Gemma 3 艦隊司令部 v2.1 [Strategic Indexing & HTML Edition]'
 
     # プロジェクト単位での許可リスト
     ALLOWED_PROJECTS = ['bicstation', 'saving', 'tiper', 'avflash']
@@ -48,7 +49,6 @@ class Command(BaseCommand):
         self.base_path = os.path.dirname(os.path.abspath(__file__))
         self.PROMPT_DIR = os.path.join(self.base_path, 'prompt')
         self.SETTING_DIR = os.path.join(self.base_path, 'teitoku_settings')
-        # サチコ鍵のパス
         self.SACHIKO_KEY = os.path.join(self.base_path, 'bs_json', 'google-indexing-key.json')
 
     def handle(self, *args, **options):
@@ -57,7 +57,7 @@ class Command(BaseCommand):
         post_limit = options.get('limit')
         use_index = options.get('index')
 
-        self.log(f"--- 🚀 MISSION START: v2.0 (Target: {target or 'ALL'}, Platform: {target_platform or 'ALL'}) ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v2.1 (Target: {target or 'ALL'}, Platform: {target_platform or 'ALL'}) ---", self.style.SUCCESS)
         
         RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
         FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
@@ -74,11 +74,8 @@ class Command(BaseCommand):
                 site_key = (blog_config.get('site_key') or '').strip().lower()
                 platform = (blog_config.get('platform') or 'livedoor').strip().lower()
 
-                # プロジェクト制限
                 if project_name not in self.ALLOWED_PROJECTS: continue
                 if target and target.lower() not in [project_name, site_key]: continue
-                
-                # プラットフォーム制限（引数指定がある場合）
                 if target_platform and target_platform.lower() != platform: continue
 
                 self.log(f"🚢 【出撃】: {project_name} > {site_key} [{platform}]")
@@ -156,8 +153,10 @@ class Command(BaseCommand):
                     cta_content = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt") or \
                                   self.load_external_file(self.PROMPT_DIR, f"cta_{project_name}.txt")
                     
-                    full_content = f"{summary_box}\n\n{final_body}" if summary_box else final_body
-                    full_html = self.assemble_final_html(full_content, p_data.get('img'), teitoku_comment, cta_content)
+                    full_content_md = f"{summary_box}\n\n{final_body}" if summary_box else final_body
+                    
+                    # --- [修正点] 組み立て時にMarkdownをHTML化し、画像重複を防ぐ ---
+                    full_html = self.assemble_final_html(full_content_md, p_data.get('img'), teitoku_comment, cta_content)
 
                     DriverClass = {'livedoor': LivedoorDriver, 'blogger': BloggerDriver, 'hatena': HatenaDriver, 'wordpress': WordPressDriver}.get(platform)
                     if DriverClass:
@@ -167,7 +166,6 @@ class Command(BaseCommand):
                             new_article_id = self.save_to_db(selected_entry, blog_config, final_title, full_html, p_data.get('img'), platform)
                             self.log(f"  ✅ 成功: {final_title[:25]}...", self.style.SUCCESS)
                             
-                            # サチコ通知 (Next.js側のURL)
                             if use_index and new_article_id:
                                 base_domain = self.DOMAIN_MAP.get(project_name)
                                 if base_domain:
@@ -182,7 +180,6 @@ class Command(BaseCommand):
             temp_entries = [e for e in temp_entries if e.link != selected_entry.link]
 
     def notify_google_indexing(self, target_url):
-        """サチコ(Indexing API)への通知"""
         if not os.path.exists(self.SACHIKO_KEY):
             self.log(f"  ⚠️ サチコ鍵欠如: {self.SACHIKO_KEY}", self.style.WARNING)
             return
@@ -207,10 +204,32 @@ class Command(BaseCommand):
             Article.objects.filter(source_url=entry.link, site=site_key).update(is_exported=True)
             return new_id
 
-    def assemble_final_html(self, body_content, img_url, comment, cta):
-        img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px;"></p>' if img_url else ""
-        comment_html = f'<div style="border: 2px dashed #ff4500; padding: 15px; margin: 20px 0; background: #fffaf0; border-radius: 10px;"><strong style="color: #ff4500;">🖋 編集長レビュー：</strong><br><span style="font-size: 1.1em; font-weight: bold;">「{comment}」</span></div>'
-        return (img_tag + comment_html + body_content + f"<br><hr><br>{cta}").strip()
+    def assemble_final_html(self, md_content, img_url, comment, cta):
+        """
+        MarkdownをHTML化し、画像を適切に配置して最終的なHTMLを作成する。
+        """
+        # 1. 本文MarkdownをHTMLに変換 (extensions=['extra'] でテーブル等に対応)
+        # nl2br を入れると改行がそのまま<br>になるため、Markdownらしい挙動を優先するなら外してもOK
+        html_body = markdown.markdown(md_content, extensions=['extra', 'nl2br'])
+        
+        # 2. 画像の重複チェック
+        # AIが生成した本文の中にすでに <img> タグがある場合は、アイキャッチ画像を挿入しない
+        img_tag = ""
+        if img_url and '<img' not in html_body:
+            img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px;"></p>'
+        
+        # 3. 編集長コメント（ここもHTMLとして構成）
+        comment_html = (
+            f'<div style="border: 2px dashed #ff4500; padding: 15px; margin: 20px 0; '
+            f'background: #fffaf0; border-radius: 10px;">'
+            f'<strong style="color: #ff4500;">🖋 編集長レビュー：</strong><br>'
+            f'<span style="font-size: 1.1em; font-weight: bold;">「{comment}」</span></div>'
+        )
+        
+        # 4. CTAもMarkdown変換
+        cta_html = markdown.markdown(cta, extensions=['extra']) if cta else ""
+        
+        return (img_tag + comment_html + html_body + f"<br><hr><br>{cta_html}").strip()
 
     def get_parsed_data(self, entry, is_adult_site=False):
         data = {'body': getattr(entry, 'description', getattr(entry, 'summary', entry.title)).replace('\x00', ''), 'img': ''}

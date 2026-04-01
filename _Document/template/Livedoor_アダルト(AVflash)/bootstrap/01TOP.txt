@@ -80,7 +80,44 @@
         <div class="collapse navbar-collapse" id="navContent">
             <ul class="navbar-nav ms-auto align-items-lg-center">
                 <li class="nav-item"><a class="nav-link" href="https://avflash.xyz">HOME</a></li>
-                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">TOP</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://portal.avflash.xyz">TOP</a></li>
+                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">BLOG TOP</a></li>
+
+                                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-warning" href="#" id="fleetDrop" role="button" data-bs-toggle="dropdown">
+                        NETWORK
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-dark dropdown-menu-end dropdown-menu-fleet" aria-labelledby="fleetDrop">
+                        <div class="fleet-grid">
+                            <div class="fleet-header-nav">⚜️ AV-FLASH ULTIMATE FLEET ⚜️</div>
+                            
+                            <div class="fleet-cat-label">MAIN PORTAL</div>
+                            <a href="https://portal.avflash.xyz" class="fleet-item" style="grid-column: span 2;">📡 AV-FLASH Portal <span>(総合案内)</span></a>
+                            
+                            <div class="fleet-cat-label">CORE CATEGORIES</div>
+                            <a href="https://reserve.avflash.xyz" class="fleet-item">📅 先行予約 <span>(速報)</span></a>
+                            <a href="https://jukujo.avflash.xyz" class="fleet-item">💄 熟女・人妻 <span>(40-50代)</span></a>
+                            <a href="https://vr.avflash.xyz" class="fleet-item">👓 VR没入 <span>(360°)</span></a>
+                            <a href="https://idol.avflash.xyz" class="fleet-item">💎 美少女 <span>(新人単体)</span></a>
+                            <a href="https://ntr.avflash.xyz" class="fleet-item">💔 NTR・略奪 <span>(背徳)</span></a>
+                            <a href="https://fetish.avflash.xyz" class="fleet-item">🍓 フェチ <span>(部位特化)</span></a>
+                            <a href="https://nakadashi.avflash.xyz" class="fleet-item">💧 中出し <span>(生感)</span></a>
+                            <a href="https://amateur.avflash.xyz" class="fleet-item">📸 素人・投稿 <span>(リアル)</span></a>
+
+                            <div class="fleet-cat-label">ADULT SPECIALTY (L2)</div>
+                            <a href="https://virgin.avflash.xyz" class="fleet-item">🌸 処女喪失 <span>(Debut)</span></a>
+                            <a href="https://jk.avflash.xyz" class="fleet-item">🏫 現役JK <span>(制服)</span></a>
+                            <a href="https://jd.avflash.xyz" class="fleet-item">🎓 女子大生 <span>(キャンパス)</span></a>
+                            <a href="https://enkou.avflash.xyz" class="fleet-item">💴 援交・パパ活 <span>(秘密)</span></a>
+                            <a href="https://wakazuma.avflash.xyz" class="fleet-item">💍 新婚若妻 <span>(人妻)</span></a>
+                            <a href="https://nurse.avflash.xyz" class="fleet-item">💉 白衣ナース <span>(奉仕)</span></a>
+                            <a href="https://ol.avflash.xyz" class="fleet-item">👠 背徳OL <span>(スーツ)</span></a>
+                            <a href="https://chijo.avflash.xyz" class="fleet-item">👗 痴女・露出 <span>(野外)</span></a>
+                            <a href="https://gal.avflash.xyz" class="fleet-item">🐆 ギャル <span>(肉食)</span></a>
+                            <a href="https://slender.avflash.xyz" class="fleet-item">美 スレンダー <span>(細身)</span></a>
+                        </div>
+                    </div>
+                </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="dropCat" role="button" data-bs-toggle="dropdown">GUIDES</a>
                     <ul class="dropdown-menu dropdown-menu-dark">

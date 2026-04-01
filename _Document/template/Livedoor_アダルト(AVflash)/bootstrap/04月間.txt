@@ -5,136 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <$HeadSectionCommon$>
     <$OGP$>
-    <title><$MonthLabel$> : <$BlogTitle ESCAPE$></title>
+    <title><$ArchiveTitle$> : AVFLASH.XYZ</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<$CSSUrl$>">
 
     <style>
-        /* アーカイブページ共通：リストカードスタイル */
+        /* アーカイブカード：洗練された比率とエフェクト */
         .archive-card {
-            background: rgba(255,255,255,0.02) !important;
-            border: 1px solid #222 !important;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: 0.3s;
-            margin-bottom: 20px;
             display: flex;
+            background: rgba(255,255,255,0.03) !important;
+            border: 1px solid #222 !important;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
             text-decoration: none !important;
+            transition: all 0.3s ease;
         }
-        .archive-card:hover { 
-            transform: translateX(8px); 
-            border-color: #e11d48 !important; 
-            background: rgba(255,255,255,0.05) !important;
+        .archive-card:hover {
+            transform: translateY(-3px);
+            border-color: #e11d48 !important;
+            background: rgba(255,255,255,0.06) !important;
         }
         
-        /* サムネイルエリア */
         .card-thumb { 
-            width: 35%; 
+            width: 38%; 
             min-width: 140px; 
-            max-width: 280px; 
             aspect-ratio: 16/9; 
             overflow: hidden; 
             background: #111;
+            flex-shrink: 0;
         }
         .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* テキストエリア（文字色強制固定） */
-        .card-body-custom { 
-            padding: 20px; 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center;
-            min-width: 0;
+        .no-image-box { 
+            height: 100%; display: flex; align-items: center; justify-content: center; 
+            color: #444; font-size: 11px; letter-spacing: 1px; 
         }
-        .card-body-custom .date { color: #666 !important; font-size: 0.75rem; margin-bottom: 5px; font-weight: bold; }
+
+        .card-body-custom { 
+            padding: 1.25rem 1.5rem; flex: 1; display: flex; flex-direction: column; 
+            justify-content: center; min-width: 0;
+        }
+        .card-body-custom .date { color: #e11d48 !important; font-size: 0.75rem; font-weight: bold; margin-bottom: 6px; }
         .card-body-custom .title { 
-            color: #ffffff !important; 
-            font-weight: bold; 
-            font-size: 1.1rem; 
-            line-height: 1.4; 
-            margin-bottom: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            color: #ffffff !important; font-weight: bold; font-size: 1.15rem; line-height: 1.4; margin-bottom: 10px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
         .card-body-custom .desc { 
-            color: #888888 !important; 
-            font-size: 0.85rem; 
-            display: -webkit-box; 
-            -webkit-line-clamp: 2; 
-            -webkit-box-orient: vertical; 
-            overflow: hidden; 
-            line-height: 1.5;
+            color: #999 !important; font-size: 0.85rem; line-height: 1.6;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        /* 検索バー */
-        .search-input { background: rgba(255,255,255,0.1); border: 1px solid #444; color: #fff; border-radius: 20px 0 0 20px; font-size: 0.8rem; }
-        .search-btn { border-radius: 0 20px 20px 0; border: 1px solid #444; border-left: none; background: #222; color: #aaa; font-size: 0.8rem; }
+        /* 検索・ナビ周り */
+        .search-input { background: rgba(255,255,255,0.1); border: 1px solid #444; color: #fff; border-radius: 20px 0 0 20px; }
+        .search-btn { border-radius: 0 20px 20px 0; border: 1px solid #444; background: #222; color: #aaa; }
+        .archive-info-bar { background: #0a0a0a; border-left: 4px solid #e11d48; padding: 20px 25px; margin-bottom: 30px; border: 1px solid #222; border-radius: 4px; }
 
-        /* アーカイブヘッダー */
-        .archive-info-bar {
-            background: #0a0a0a;
-            border-left: 4px solid #e11d48;
-            padding: 20px 25px;
-            margin-bottom: 30px;
-            border-radius: 4px;
-            border: 1px solid #222;
-        }
-
-        /* サイドバーガイド */
-        .side-guide-link { display: block; padding: 12px; color: #ccc !important; text-decoration: none !important; font-size: 0.85rem; border-bottom: 1px solid #333; }
+        .side-guide-link { display: block; padding: 12px; color: #ccc !important; text-decoration: none !important; font-size: 0.85rem; border-bottom: 1px solid #333; transition: 0.2s; }
         .side-guide-link:hover { color: #fff !important; background: #222; }
 
-        /* スマホ固定メニュー */
-        .mobile-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.95);
-            backdrop-filter: blur(10px); display: none; border-top: 1px solid #333; z-index: 10000;
-        }
-        @media (max-width: 991px) {
-            .mobile-nav { display: flex; }
-            .footer-padding { height: 80px; }
-        }
-        .mobile-nav-item { flex: 1; text-align: center; color: #fff !important; text-decoration: none !important; padding: 10px 0; font-size: 0.65rem; font-weight: bold; }
-        .mobile-nav-item i { display: block; font-size: 1.2rem; margin-bottom: 2px; }
-
-        @media (max-width: 576px) {
-            .archive-card { flex-direction: column; }
-            .card-thumb { width: 100%; max-width: none; }
-            .card-body-custom { padding: 15px; }
-        }
+        /* モバイルナビ */
+        .mobile-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.95); display: none; border-top: 1px solid #333; z-index: 10000; }
+        @media (max-width: 991px) { .mobile-nav { display: flex; } .footer-padding { height: 80px; } }
+        .mobile-nav-item { flex: 1; text-align: center; color: #fff !important; text-decoration: none !important; padding: 10px 0; font-size: 0.65rem; }
+        @media (max-width: 576px) { .archive-card { flex-direction: column; } .card-thumb { width: 100%; } }
     </style>
 </head>
 
-<body class="page-monthly">
+<body class="page-archive">
 
 <div class="stema-bar">【PR】本サイトはアフィリエイト広告を利用して作品を紹介しています</div>
 
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
     <div class="container-fluid-custom d-flex justify-content-between align-items-center">
-        <a class="navbar-brand" href="<$BlogUrl$>">AVFlash</a>
+        <a class="navbar-brand" href="<$BlogUrl$>">AVFLASH.XYZ</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navContent">
             <ul class="navbar-nav ms-auto align-items-lg-center">
-                <li class="nav-item"><a class="nav-link" href="https://avflash.xyz">HOME</a></li>
-                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">TOP</a></li>
+                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">HOME</a></li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="dropCat" role="button" data-bs-toggle="dropdown" aria-expanded="false">GUIDES</a>
-                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropCat">
-                        <li><a class="dropdown-item" href="https://avflash.xyz/guide/live-chat">視聴ガイド</a></li>
-                        <li><a class="dropdown-item" href="https://avflash.xyz/guide/matching">マッチング解析</a></li>
-                        <li><a class="dropdown-item" href="https://avflash.xyz/guide/chat-lady">高額副業(求人)</a></li>
-                    </ul>
+                    <a class="nav-link dropdown-toggle text-warning" href="#" id="fleetDrop" role="button" data-bs-toggle="dropdown">NETWORK</a>
+                    <div class="dropdown-menu dropdown-menu-dark dropdown-menu-end dropdown-menu-fleet" aria-labelledby="fleetDrop">
+                        <div class="fleet-grid">
+                            <div class="fleet-header-nav">⚜️ AVFLASH ULTIMATE FLEET ⚜️</div>
+                            <div class="fleet-cat-label">MAIN</div>
+                            <a href="https://avflash.xyz" class="fleet-item" style="grid-column: span 2;">▶ AVFLASH.XYZ <span>(Portal)</span></a>
+                            <div class="fleet-cat-label">CORE CATEGORIES</div>
+                            <a href="https://reserve.avflash.xyz" class="fleet-item">📅 先行予約 <span>(速報)</span></a>
+                            <a href="https://jukujo.avflash.xyz" class="fleet-item">💋 熟女・人妻 <span>(人妻)</span></a>
+                            <a href="https://vr.avflash.xyz" class="fleet-item">👓 VR快楽 <span>(360°)</span></a>
+                            <a href="https://idol.avflash.xyz" class="fleet-item">💎 美少女 <span>(アイドル)</span></a>
+                            <a href="https://ntr.avflash.xyz" class="fleet-item">💔 NTR・不倫 <span>(寝取)</span></a>
+                            <a href="https://fetish.avflash.xyz" class="fleet-item">🍓 フェチ <span>(爆乳)</span></a>
+                        </div>
+                    </div>
                 </li>
-                <li class="nav-item ms-lg-3 navbar-search">
+                <li class="nav-item"><a class="nav-link text-warning fw-bold" href="https://avflash.xyz/policy">POLICY</a></li>
+                <li class="nav-item ms-lg-3">
                     <form action="<$BlogSearchUrl$>" method="get" class="d-flex">
-                        <input type="text" name="q" class="form-control search-input" placeholder="キーワード検索..." aria-label="Search">
+                        <input type="text" name="q" class="form-control search-input" placeholder="検索...">
                         <button class="btn search-btn" type="submit">🔍</button>
                     </form>
                 </li>
@@ -144,10 +117,10 @@
 </nav>
 
 <div class="top-banner-wrapper">
-    <img src="https://livedoor.blogimg.jp/pbic/imgs/5/9/590332e9.jpg" class="top-banner-img" alt="Monthly Banner">
+    <img src="https://livedoor.blogimg.jp/pbic/imgs/5/9/590332e9.jpg" class="top-banner-img" alt="Archive Banner">
     <div class="top-banner-text">
         <span style="color:#e11d48; font-weight:bold; letter-spacing:5px; font-size:0.8rem;">MONTHLY ARCHIVE</span>
-        <h1 class="text-white text-uppercase" style="font-size:1.5rem; margin-top:5px;"><$MonthLabel$></h1>
+        <h1 class="text-white text-uppercase" style="font-size:1.5rem; margin-top:5px;"><$ArchiveTitle$></h1>
     </div>
 </div>
 
@@ -155,13 +128,13 @@
     <div class="row g-5">
         <div class="col-lg-9">
             <div class="archive-info-bar">
-                <span class="text-danger small fw-bold d-block mb-1">CALENDAR ARCHIVES</span>
-                <h2 class="h4 m-0 fw-bold text-white"><$MonthLabel$>に投稿された記事一覧</h2>
+                <span class="text-danger small fw-bold d-block mb-1">CHRONOLOGICAL POSTS</span>
+                <h2 class="h4 m-0 fw-bold text-white"><$ArchiveTitle$>の記事一覧</h2>
             </div>
 
-            <MonthlyArticlesLoop>
+            <ArchiveArticlesLoop>
                 <a href="<$ArticlePermalink$>" class="archive-card">
-                    <div class="card-thumb" id="mon-thumb-<$ArticleId$>"></div>
+                    <div class="card-thumb" id="arc-thumb-<$ArticleId$>"></div>
                     
                     <div class="card-body-custom">
                         <div class="date">📅 <$ArticleDate$></div>
@@ -169,22 +142,22 @@
                         <div class="desc"><$ArticleDescription ESCAPE$></div>
                     </div>
 
-                    <div id="mon-hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
+                    <div id="arc-hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
                     <script>
                     (function() {
-                        var bodyHtml = document.getElementById('mon-hidden-body-<$ArticleId$>').innerHTML;
-                        var thumbBox = document.getElementById('mon-thumb-<$ArticleId$>');
+                        var bodyHtml = document.getElementById('arc-hidden-body-<$ArticleId$>').innerHTML;
+                        var thumbBox = document.getElementById('arc-thumb-<$ArticleId$>');
                         var imgMatch = bodyHtml.match(/<img [^>]*src=["']([^"']+)["']/);
                         if (imgMatch) {
                             thumbBox.innerHTML = '<img src="' + imgMatch[1] + '" alt="thumbnail">';
                         } else {
-                            thumbBox.innerHTML = '<div style="background:#222; height:100%; display:flex; align-items:center; justify-content:center; color:#444; font-size:10px;">NO IMAGE</div>';
+                            thumbBox.innerHTML = '<div class="no-image-box">NO IMAGE</div>';
                         }
                     })();
                     </script>
                 </a>
                 <IfFirstArticle><$Advertise$></IfFirstArticle>
-            </MonthlyArticlesLoop>
+            </ArchiveArticlesLoop>
 
             <div class="pager-container d-flex justify-content-center mt-5">
                 <$IndexNavigator$>
@@ -193,23 +166,18 @@
 
         <aside class="col-lg-3">
             <div class="sidebar-box mb-4">
-                <div class="sidebar-title">OFFICIAL GUIDES</div>
-                <a href="https://avflash.xyz/guide/live-chat" class="side-guide-link">🎥 ライブチャット視聴攻略</a>
-                <a href="https://avflash.xyz/guide/matching" class="side-guide-link">💌 マッチングアプリ解析</a>
-                <a href="https://avflash.xyz/guide/chat-lady" class="side-guide-link" style="color:#e11d48 !important; font-weight:bold;">💎 女性向け・高収入副業</a>
+                <div class="sidebar-title" style="color:#e11d48; border-bottom:2px solid #e11d48; padding-bottom:8px; margin-bottom:20px; font-weight:900; font-size:1.1rem;">
+                    OFFICIAL GUIDES
+                </div>
+                <a href="https://avflash.xyz/guide/live-chat" class="side-guide-link">🎥 視聴ガイド</a>
+                <a href="https://avflash.xyz/guide/matching" class="side-guide-link">💌 出会い解析</a>
+                <a href="https://avflash.xyz/guide/chat-lady" class="side-guide-link" style="color: #fb7185 !important; font-weight: bold;">💎 高額副業</a>
             </div>
 
             <div class="sidebar-box">
-                <div class="sidebar-title">NAVIGATION</div>
+                <div class="sidebar-title" style="color:#666; font-size:0.8rem; letter-spacing:2px; border-bottom: 1px solid #222; padding-bottom: 5px; margin-bottom:15px;">NAVIGATION</div>
                 <div class="side">
                     <$PluginList_B$>
-                </div>
-            </div>
-            
-            <div class="sidebar-box mt-4">
-                <div class="sidebar-title">LATEST POSTS</div>
-                <div class="side">
-                    <$PluginList_A$>
                 </div>
             </div>
         </aside>
@@ -220,17 +188,14 @@
 
 <footer class="py-5 mt-5 border-top border-secondary">
     <div class="container text-center text-muted small">
-        <div class="mb-3">
-            <a href="https://avflash.xyz/privacy-policy" class="text-muted text-decoration-none mx-2">免責事項・ポリシー</a>
-        </div>
-        <p>&copy; avflash.xyz OFFICIAL. All Rights Reserved.</p>
+        <p>&copy; AVFLASH.XYZ OFFICIAL. All Rights Reserved.</p>
     </div>
 </footer>
 
 <div class="mobile-nav">
-    <a href="https://avflash.xyz/guide/live-chat" class="mobile-nav-item"><i>🎥</i>視聴ガイド</a>
-    <a href="https://avflash.xyz/guide/matching" class="mobile-nav-item"><i>💌</i>出会い解析</a>
-    <a href="https://avflash.xyz/guide/chat-lady" class="mobile-nav-item" style="color: #fb7185 !important;"><i>💎</i>高額副業</a>
+    <a href="<$BlogUrl$>" class="mobile-nav-item"><i>🏠</i>HOME</a>
+    <a href="https://avflash.xyz/guide/matching" class="mobile-nav-item"><i>💌</i>出会い</a>
+    <a href="https://avflash.xyz/guide/chat-lady" class="mobile-nav-item" style="color: #fb7185;"><i>💎</i>副業</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

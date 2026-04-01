@@ -140,3 +140,23 @@ body {
     z-index: 2; /* テキストは画像の上に重ねる */
     text-align: center; 
 }
+
+/* ドロップダウンメニュー本体 */
+.dropdown-menu-fleet {
+    min-width: 450px !important; /* 横幅をしっかり確保 */
+    background: rgba(10, 10, 10, 0.98) !important;
+    border: 1px solid var(--accent) !important;
+    border-radius: 8px !important;
+    padding: 25px !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 15px rgba(255, 68, 68, 0.2);
+    backdrop-filter: blur(15px);
+    margin-top: 10px !important;
+}
+
+/* 内部グリッドレイアウト */
+.fleet-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2列で綺麗に並べる */
+    gap: 12px;
+}
+
