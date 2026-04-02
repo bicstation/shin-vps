@@ -5,29 +5,39 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { headers } from "next/headers"; // ✅ Next.js 15: ドメイン特定に必須
 import styles from './page.module.css';
 
 // ✅ 共通コンポーネント
-import AdultProductCard from '@shared/components/organisms/cards/AdultProductCard';
-import SafeImage from '@shared/components/atoms/SafeImage';
+import AdultProductCard from '@/shared/components/organisms/cards/AdultProductCard';
+import SafeImage from '@/shared/components/atoms/SafeImage';
 
-// ✅ API・ロジック (整備した bridge を使用)
+// ✅ API・判定ロジック
 import { getUnifiedProducts, fetchPostList } from '@/shared/lib/api/django-bridge';
-import { constructMetadata } from '@shared/lib/utils/metadata';
+import { constructMetadata } from '@/shared/lib/utils/metadata';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig'; // ✅ 判定器を導入
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; 
 
+/**
+ * 🛰️ メタデータ生成
+ */
 export async function generateMetadata() {
+    // サーバーサイドでホスト名を取得
+    const headerList = await headers();
+    const host = headerList.get('host') || "";
+    const siteConfig = getSiteMetadata(host);
+
     return constructMetadata({
-        title: "TIPER Live | プレミアム・統合デジタルアーカイブ",
+        title: `${siteConfig.site_name} | プレミアム・統合デジタルアーカイブ`,
         description: "AI解析に基づいたデジタルアーカイブ。最新のインテリジェンスを同期中。",
         canonical: '/'
     });
 }
 
 /**
- * 🛰️ API通信の安全な実行
+ * 🛡️ API通信の安全な実行
  */
 async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     try {
@@ -39,6 +49,9 @@ async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     }
 }
 
+/**
+ * 🧱 プラットフォーム別セクションのレンダリング
+ */
 const renderPlatformSection = (title: string, items: any[], source: string) => (
     <section className={styles.platformSection} key={source}>
         <div className={styles.platformTitle}>
@@ -53,14 +66,25 @@ const renderPlatformSection = (title: string, items: any[], source: string) => (
 );
 
 export default async function Home() {
-    // 1. ハイブリッド記事の取得 (Markdown + Django AI記事)
-    // 最初の6件をトップに表示
-    const { results: latestPosts } = await safeFetch(fetchPostList('post', 6, 0), { results: [], count: 0 });
+    // --- 🎯 STEP 1: ドメインの特定 (Next.js 15 サーバーサイド) ---
+    const headerList = await headers();
+    const host = headerList.get('host') || "";
+    const siteConfig = getSiteMetadata(host); // 先ほど修正した v18.2 を使用
     
-    // 2. Django APIからの商品データ取得 (並列実行)
+    const siteTag = siteConfig.site_tag; // 'tiper', 'avflash' など
+
+    // --- 🎯 STEP 2: 特定した siteTag を使って Django からデータを抽出 ---
+    
+    // 1. ハイブリッド記事の取得 (引数に siteTag を渡す)
+    const { results: latestPosts } = await safeFetch(
+        fetchPostList('post', 6, 0, siteTag), 
+        { results: [], count: 0 }
+    );
+    
+    // 2. 商品データ取得 (site_group に siteTag を反映)
     const [fanzaRes, dugaRes] = await Promise.all([
-        safeFetch(getUnifiedProducts({ site_group: 'tiper', limit: 4 }), { results: [] }),
-        safeFetch(getUnifiedProducts({ site_group: 'avflash', limit: 4 }), { results: [] }),
+        safeFetch(getUnifiedProducts({ site_group: siteTag, limit: 4, brand: 'FANZA' }), { results: [] }),
+        safeFetch(getUnifiedProducts({ site_group: siteTag, limit: 4, brand: 'DUGA' }), { results: [] }),
     ]);
 
     const isApiConnected = (fanzaRes?.results?.length || 0) > 0 || (dugaRes?.results?.length || 0) > 0;
@@ -69,18 +93,18 @@ export default async function Home() {
         <div className={styles.pageContainer}>
             <div className={styles.contentStream}>
                 
-                {/* 📰 1. INTELLIGENCE_REPORTS (ハイブリッド・ニュース) */}
+                {/* 📰 1. INTELLIGENCE_REPORTS (ドメインに応じた記事を表示) */}
                 <section className={styles.newsSection}>
                     <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionHeading}>INTELLIGENCE_REPORTS</h2>
-                        <Link href="/news" className={styles.headerLink}>OPEN_ALL_FILES →</Link>
+                        <h2 className={styles.sectionHeading}>INTELLIGENCE_REPORTS [{siteConfig.site_name.toUpperCase()}]</h2>
+                        <Link href="/post" className={styles.headerLink}>OPEN_ALL_FILES →</Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {latestPosts.map((post) => {
                             const identifier = post.slug || post.id;
                             return (
-                                <Link key={identifier} href={`/news/${identifier}`} className={styles.newsCard}>
+                                <Link key={identifier} href={`/post/${identifier}`} className={styles.newsCard}>
                                     <div className={styles.newsCardThumb}>
                                         <SafeImage 
                                             src={post.image || post.main_image_url} 
@@ -101,17 +125,17 @@ export default async function Home() {
 
                     {latestPosts.length === 0 && (
                         <div className={styles.loadingArea}>
-                            <div className={styles.glitchText}>NO_INTELLIGENCE_FOUND_IN_STREAM</div>
+                            <div className={styles.glitchText}>NO_DATA_FOR_{siteConfig.site_name.toUpperCase()}</div>
                         </div>
                     )}
                 </section>
 
-                {/* 📀 2. UNIFIED_DATA_STREAM (商品アーカイブ) */}
+                {/* 📀 2. UNIFIED_DATA_STREAM */}
                 <div className={styles.archiveRegistry}>
                     <div className={styles.registryHeader}>
                         <h1 className={styles.registryMainTitle}>
                             UNIFIED_DATA_STREAM
-                            <span className={styles.titleThin}>ZENITH_REGISTRY_v3.6</span>
+                            <span className={styles.titleThin}>{siteConfig.site_name}_ZENITH_v3.6</span>
                         </h1>
                     </div>
 
@@ -123,7 +147,7 @@ export default async function Home() {
                     ) : (
                         <div className={styles.loadingArea}>
                             <div className={styles.glitchBox}>
-                                <div className={styles.glitchText}>DATABASE_SYNCHRONIZING...</div>
+                                <div className={styles.glitchText}>CONNECTING_TO_{siteConfig.site_tag.toUpperCase()}_DB...</div>
                             </div>
                         </div>
                     )}
@@ -131,8 +155,8 @@ export default async function Home() {
 
                 {/* 🚀 フッターアクション */}
                 <div className={styles.footerAction}>
-                    <Link href="/news" className={styles.megaTerminalBtn}>
-                        ACCESS_FULL_INTELLIGENCE_DATABASE
+                    <Link href="/post" className={styles.megaTerminalBtn}>
+                        ACCESS_FULL_{siteConfig.site_name.toUpperCase()}_DATABASE
                     </Link>
                 </div>
             </div>

@@ -14,18 +14,18 @@ from ..serializers.article_serializer import ArticleSerializer, ArticleDetailSer
 logger = logging.getLogger(__name__)
 
 class StandardPagination(PageNumberPagination):
-    """ページネーションを強制し、一度に数千件読み込む事故を防ぐ"""
+    """ページネーションにより、一度に大量のデータを読み込む事故を防止"""
     page_size = 20
     page_size_query_param = 'page_size'
     max_page_size = 100
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """
-    🔱 BICSTATION API v41.6 [ULTIMATE STABLE - High Performance Edition]
+    🔱 BICSTATION API v5.0 [ULTIMATE STABLE - Physical Filter Edition]
     🛡️ 修正内容:
-    - TypeError: Cannot reorder a query once a slice has been taken. を完全解消
-    - 手動スライスを廃止し、StandardPagination に件数制御を委譲
-    - フィルタリングと並び替えの整合性を確保
+    - v5.0新モデルに対応（is_adult, show_on_main, body_main 等）
+    - extra_metadata 依存のフィルタリングを廃止し、物理カラムによる爆速検問を実装
+    - 一般サイト（Bic Station等）へのアダルト混入を DB レベルで完全に遮断
     """
     serializer_class = ArticleSerializer
     pagination_class = StandardPagination
@@ -36,7 +36,8 @@ class ArticleViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter
     ]
     
-    filterset_fields = ['site', 'is_exported', 'content_type']
+    # 物理カラムによるフィルタリングを有効化
+    filterset_fields = ['site', 'is_adult', 'show_on_main', 'show_on_satellite', 'is_exported', 'content_type']
     search_fields = ['title'] 
     ordering_fields = ['created_at', 'updated_at']
     ordering = ['-created_at']
@@ -49,17 +50,15 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        ⚡ 超高速クエリロジック (Fix: Remove manual slicing)
+        ⚡ 物理カラムによる超高速クエリロジック
         """
-        # 1. 基礎クエリと defer (一覧時の軽量化)
+        # 1. 基礎クエリと defer (一覧時は重いテキストカラムを除外)
         queryset = Article.objects.all()
         if self.action == 'list':
-            queryset = queryset.defer('body_text')
+            # v5.0 では body_main と body_satellite を除外して軽量化
+            queryset = queryset.defer('body_main', 'body_satellite')
 
-        # 2. 基本の並び順（スライス前に行う必要がある）
-        queryset = queryset.order_by('-created_at')
-
-        # 3. プロジェクト識別
+        # 2. プロジェクト識別 (ミドルウェアまたはクエリパラメータから取得)
         project_id = getattr(self.request, 'project_id', None)
         if not project_id or project_id == 'default':
             project_id = self.request.query_params.get('project')
@@ -67,25 +66,31 @@ class ArticleViewSet(viewsets.ModelViewSet):
         # 🛡️ 一般サイト（健全サイト）のリスト
         GENERAL_PROJECTS = ['bicstation', 'saving', 'bicstation-host', 'saving-host', 'news']
 
-        # 4. フィルタリング実行
+        # 3. 配信ロジックの適用
         if project_id and project_id != 'default':
+            # 基本は対象サイトで絞り込み
             queryset = queryset.filter(site=project_id)
             
-            # ✅ 一般サイトならアダルト排除
+            # ✅ 一般サイト向け：アダルトを「物理カラム」で完全に排除
             if project_id in GENERAL_PROJECTS:
-                queryset = queryset.exclude(extra_metadata__is_adult=True)
-        
-        # ⚠️ 【重要修正】ここで手動スライス (queryset[:100]) を行うと、
-        # DRFのPaginationやOrderingFilterと衝突して500エラーになるため削除しました。
-        # 件数制限は StandardPagination (page_size=20) が安全に行います。
+                queryset = queryset.filter(is_adult=False, show_on_main=True)
+            
+            # ✅ アダルトサイト向け：アダルト属性のみを配信
+            else:
+                queryset = queryset.filter(is_adult=True)
 
-        return queryset
+        # 4. 並び替え (スライスは Pagination に任せる)
+        return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
-        """保存時に site 情報を自動付与"""
+        """保存時に site 情報を自動付与し、用途を判定"""
         project_id = getattr(self.request, 'project_id', 'default')
-        if project_id != 'default':
-            serializer.save(site=project_id)
+        
+        # 保存時のデフォルト属性を設定
+        if project_id in ['bicstation', 'saving']:
+            serializer.save(site=project_id, is_adult=False, show_on_main=True)
+        elif project_id in ['tiper', 'avflash']:
+            serializer.save(site=project_id, is_adult=True, show_on_main=True)
         else:
             serializer.save()
 
@@ -109,10 +114,15 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='check-source')
     def check_source_exists(self, request):
-        """URL重複チェック"""
+        """URL重複チェック (全サイト横断またはサイト別)"""
         url = request.query_params.get('url')
+        site = request.query_params.get('site')
         if not url:
             return Response({"error": "url required"}, status=400)
             
-        exists = Article.objects.filter(source_url=url).exists()
+        filters = Q(source_url=url)
+        if site:
+            filters &= Q(site=site)
+            
+        exists = Article.objects.filter(filters).exists()
         return Response({"exists": exists, "source_url": url})

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-dev/shin-vps/django/api/admin.py
+
 import logging
 import json
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.safestring import mark_safe
 from django.db.models import Count
-from django.utils.text import slugify
 
 # モデルのインポート
 from .models import (
@@ -22,7 +23,7 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------
-# 🎨 共通ユーティリティ
+# 🎨 共通ユーティリティ (Visual Components)
 # --------------------------------------------------------------------------
 def get_score_bar(value, label="", width="100px"):
     """スコアを視覚的なバーに変換"""
@@ -52,97 +53,93 @@ def get_thumbnail(url, width=80):
     """汎用サムネイル表示"""
     if url:
         return mark_safe(f'<img src="{url}" width="{width}" style="border-radius:6px; border:1px solid #ddd; background:#f8f9fa; object-fit:cover;" />')
-    return mark_safe('<div style="width:{0}px; height:40px; background:#eee; color:#999; text-align:center; line-height:40px; font-size:10px; border-radius:4px;">No Image</div>'.format(width))
+    return mark_safe(f'<div style="width:{width}px; height:40px; background:#eee; color:#999; text-align:center; line-height:40px; font-size:10px; border-radius:4px;">No Image</div>')
 
 # --------------------------------------------------------------------------
-# 📝 1. Article (統合配信記事管理 / JSONField対応版)
+# 📝 1. Article (統合配信記事管理 / v5.0 物理分離対応版)
 # --------------------------------------------------------------------------
-
-# JSONField内のカテゴリでフィルタリングするためのカスタムフィルター
-class ArticleCategoryFilter(admin.SimpleListFilter):
-    title = 'カテゴリ(JSON)'
-    parameter_name = 'json_category'
-
-    def lookups(self, request, model_admin):
-        # 実際にDBに存在するカテゴリ名を重複なく取得
-        # データ量が多い場合は .distinct() よりも .values_list('extra_metadata__category') を使用
-        categories = Article.objects.exclude(extra_metadata__category__isnull=True) \
-                            .values_list('extra_metadata__category', flat=True).distinct()
-        return [(c, c) for c in categories if c]
-
-    def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(extra_metadata__category=self.value())
-        return queryset
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
+    # 一覧に表示する項目（物理カラムとJSONメディアの状態を即座に確認可能）
     list_display = (
-        'display_image', 'site_badge', 'type_badge', 'json_category_tag', 'title_short', 
-        'is_exported_tag', 'created_at'
+        'display_main_thumb', 'site_badge', 'adult_status', 'delivery_badge', 
+        'title_short', 'is_exported_tag', 'created_at'
     )
-    list_display_links = ('display_image', 'title_short')
+    list_display_links = ('display_main_thumb', 'title_short')
     
-    # 標準フィルタに JSON用カスタムフィルタを追加
-    list_filter = ('site', 'content_type', ArticleCategoryFilter, 'is_exported', 'created_at')
+    # 物理カラムによる強力なフィルタリング（VPSでの大量データ検索用）
+    list_filter = (
+        'site', 'is_adult', 'show_on_main', 'show_on_satellite', 
+        'content_type', 'is_exported', 'created_at'
+    )
     
-    search_fields = ('title', 'body_text', 'source_url', 'extra_metadata__category', 'extra_metadata__tags')
+    search_fields = ('title', 'body_main', 'body_satellite', 'source_url')
     ordering = ('-created_at',)
-    readonly_fields = ('display_extra_metadata', 'updated_at')
-
-    def get_queryset(self, request):
-        """ドメインによる自動絞り込み"""
-        qs = super().get_queryset(request)
-        p_id = getattr(request, 'project_id', 'default')
-        if p_id not in ['default', 'tiper']:
-            return qs.filter(site=p_id)
-        return qs
-
-    def save_model(self, request, obj, form, change):
-        """保存時に現在のドメインを自動セット"""
-        if not obj.site:
-            p_id = getattr(request, 'project_id', 'default')
-            if p_id != 'default': obj.site = p_id
-        super().save_model(request, obj, form, change)
+    
+    # 詳細画面：新旧データの混同を防ぐためのフィールドセット分割
+    fieldsets = (
+        ('基本情報', {
+            'fields': ('site', 'is_adult', 'content_type', 'title', 'source_url')
+        }),
+        ('配信設定', {
+            'fields': ('show_on_main', 'show_on_satellite', 'is_exported')
+        }),
+        ('コンテンツ (v5.0 用途別本文)', {
+            'fields': ('body_main', 'body_satellite'),
+            'description': 'メインサイト用とサテライト用でAIが生成した内容を保持します。'
+        }),
+        ('メディア・拡張データ (JSON形式)', {
+            'fields': ('images_json', 'videos_json', 'extra_metadata'),
+            'classes': ('collapse',),
+            'description': 'VPS移行後はここに配列データが格納されます。'
+        }),
+        ('システム管理 (ReadOnly)', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ('created_at', 'updated_at')
 
     # --- 表示カスタマイズ ---
-    def display_image(self, obj): return get_thumbnail(obj.main_image_url, 100)
-    display_image.short_description = "画像"
+    def display_main_thumb(self, obj):
+        """images_json の 1 枚目、または旧 main_image_url を表示"""
+        url = None
+        if obj.images_json and isinstance(obj.images_json, list) and len(obj.images_json) > 0:
+            url = obj.images_json[0].get('url')
+        
+        # 移行期間中のフォールバック
+        if not url and hasattr(obj, 'main_image_url'):
+            url = obj.main_image_url
+            
+        return get_thumbnail(url, 100)
+    display_main_thumb.short_description = "画像"
+
+    def adult_status(self, obj):
+        color = "#ff0055" if obj.is_adult else "#28a745"
+        label = "🔞 ADULT" if obj.is_adult else "🌐 GENERAL"
+        return mark_safe(f'<b style="color:{color}; font-size:10px;">{label}</b>')
+    adult_status.short_description = "属性"
+
+    def delivery_badge(self, obj):
+        badges = []
+        if obj.show_on_main:
+            badges.append('<span style="background:#007bff; color:white; padding:2px 5px; border-radius:3px; margin-right:2px; font-size:9px;">💎Main</span>')
+        if obj.show_on_satellite:
+            badges.append('<span style="background:#6c757d; color:white; padding:2px 5px; border-radius:3px; font-size:9px;">🛰️Sat</span>')
+        return mark_safe(" ".join(badges)) if badges else "-"
+    delivery_badge.short_description = "配信先"
 
     def site_badge(self, obj):
         colors = {'tiper': '#6f42c1', 'avflash': '#ff0055', 'bicstation': '#007bff', 'saving': '#28a745'}
-        # モデルにSITE_CHOICESがない場合を想定したフォールバック
         site_labels = dict(getattr(Article, 'SITE_CHOICES', []))
         display_text = site_labels.get(obj.site, obj.site)
         bg = colors.get(obj.site, '#6c757d')
         return mark_safe(f'<span style="background:{bg}; color:white; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">{display_text}</span>')
     site_badge.short_description = "サイト"
 
-    def type_badge(self, obj):
-        color = "#17a2b8" if obj.content_type == 'news' else "#ffc107"
-        text_color = "white" if obj.content_type == 'news' else "black"
-        try: display_text = obj.get_content_type_display()
-        except: display_text = obj.content_type
-        return mark_safe(f'<span style="background:{color}; color:{text_color}; padding:2px 6px; border-radius:4px; font-size:10px;">{display_text}</span>')
-    type_badge.short_description = "種別"
-
-    def json_category_tag(self, obj):
-        """extra_metadata内のカテゴリをバッジ表示"""
-        cat = obj.extra_metadata.get('category')
-        if cat:
-            return mark_safe(f'<span style="color:#28a745; border:1px solid #28a745; padding:1px 5px; border-radius:3px; font-size:10px;">🏷 {cat}</span>')
-        return "-"
-    json_category_tag.short_description = "カテゴリ"
-
     def title_short(self, obj): return obj.title[:50] + '...' if len(obj.title) > 50 else obj.title
-    
-    def is_exported_tag(self, obj): return mark_safe("✅ <small>済</small>" if obj.is_exported else "<span style='color:#bbb;'>⏳ 未</span>")
-    
-    def display_extra_metadata(self, obj):
-        """JSONデータをシンタックスハイライト風に表示"""
-        json_data = json.dumps(obj.extra_metadata, indent=2, ensure_ascii=False)
-        return mark_safe(f'<pre style="background:#272822; color:#f8f8f2; padding:15px; border-radius:8px; font-family:Monaco, monospace; font-size:12px;">{json_data}</pre>')
-    display_extra_metadata.short_description = "メタデータ(JSON)"
+    def is_exported_tag(self, obj): return mark_safe("✅" if obj.is_exported else "<span style='color:#bbb;'>⏳</span>")
 
 # --------------------------------------------------------------------------
 # 💻 2. PCProduct (PC製品管理)
@@ -154,13 +151,6 @@ class PCProductAdmin(admin.ModelAdmin):
     list_filter = ('maker', 'is_ai_pc') 
     search_fields = ('name', 'unique_id', 'cpu_model')
     
-    def get_queryset(self, request):
-        """bicstationドメイン以外では基本表示しない（または全表示）"""
-        qs = super().get_queryset(request).defer('ai_content', 'description')
-        p_id = getattr(request, 'project_id', 'default')
-        if p_id == 'avflash': return qs.none() 
-        return qs
-
     def display_image(self, obj): return get_thumbnail(obj.image_url, 80)
     def name_short(self, obj): return obj.name[:40] + '...' if len(obj.name) > 40 else obj.name
     def maker_tag(self, obj): return mark_safe(f'<span style="background:#444; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">{obj.maker}</span>')
@@ -182,13 +172,6 @@ class AdultProductAdmin(admin.ModelAdmin):
     list_filter = ('api_source', 'is_posted', 'maker')
     search_fields = ('title', 'product_id_unique')
     filter_horizontal = ('genres', 'actresses', 'attributes') 
-
-    def get_queryset(self, request):
-        """クリーンなドメインではアダルト製品を隠す"""
-        qs = super().get_queryset(request)
-        p_id = getattr(request, 'project_id', 'default')
-        if p_id in ['bicstation', 'saving']: return qs.none()
-        return qs
 
     def display_image(self, obj):
         url = ""
@@ -243,13 +226,6 @@ class BSDevicePriceInline(admin.TabularInline):
 class BSDeviceAdmin(admin.ModelAdmin):
     list_display = ('display_thumbnail', 'name', 'brand', 'performance_visual', 'sim_free_price')
     inlines = [BSDeviceColorInline, BSDevicePriceInline]
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        p_id = getattr(request, 'project_id', 'default')
-        if p_id == 'avflash': return qs.none() 
-        return qs
-
     def display_thumbnail(self, obj): return get_thumbnail(obj.main_image, 60)
     def performance_visual(self, obj):
         score = min((obj.ram_gb or 0) * 8, 100)

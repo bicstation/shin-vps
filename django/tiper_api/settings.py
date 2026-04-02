@@ -2,10 +2,10 @@
 """
 Django settings for tiper_api project.
 
-🛡️ SHIN-VPS v3.7 マルチドメイン完全統合版 (Workplace/Home Sync)
-- 🚀 マルチドメイン判定ミドルウェア搭載
-- 🚀 冗長なサブドメインを排除し、必要なホストのみを厳選
-- 🚀 Traefik リバースプロキシおよびローカル(8083)両対応
+🚀 SHIN-VPS v3.9 完全復旧・マルチドメイン統合版
+- 🛠️ [FIX] ValueError: Missing staticfiles manifest entry を回避
+- 🛠️ [FIX] Admin 500エラーを物理的に排除 (StaticFilesStorage)
+- 🌐 [CORS] ローカル(8083)・本番ドメイン全開放
 """
 
 import os
@@ -19,76 +19,34 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 🔐 セキュリティ設定
 # ----------------------------------------------------
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-default-key-please-change-in-prod')
+# 開発中は True に固定してエラー内容を可視化
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # ----------------------------------------------------
 # 🌐 ホスト / ドメイン設定
 # ----------------------------------------------------
-ALLOWED_HOSTS = [
-    # --- 本番ドメイン ---
-    'tiper.live', 'api.tiper.live', 
-    'bicstation.com', 
-    'bic-saving.com', 
-    'avflash.xyz',
-
-    # --- インフラ・管理ツール ---
-    'pgadmin.tiper.live', 'logs.tiper.live',
-    'django-v3',
-    'localhost',
-    '127.0.0.1',
-
-    # --- ローカル開発用ドメイン (ポート8083対応) ---
-    'tiper-host', 'bicstation-host', 'saving-host', 'avflash-host', 'api-tiper-host',
-    
-    '*' # 安全策としてのワイルドカード
-]
+ALLOWED_HOSTS = ['*'] # 500エラー回避のため、一旦全て許可
 
 # ----------------------------------------------------
 # 🔗 CORS / CSRF 設定
 # ----------------------------------------------------
-CORS_ALLOWED_ORIGINS = [ 
-    "https://tiper.live", "https://bicstation.com", "https://bic-saving.com", "https://avflash.xyz",
-    "http://localhost:3000", 
-    "http://localhost:8083",
-    "http://tiper-host:8083",
-    "http://bicstation-host:8083",
-    "http://saving-host:8083",
-    "http://avflash-host:8083",
-    "http://api-tiper-host:8083",
-]
-
+CORS_ALLOW_ALL_ORIGINS = True # 開発・マルチドメイン運用のための全開放
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://tiper.live', 'https://api.tiper.live',
-    'https://pgadmin.tiper.live', 'https://logs.tiper.live',
-    'https://bicstation.com', 
-    'https://bic-saving.com', 
-    'https://avflash.xyz',
-    
-    'http://localhost:3000', 
-    'http://localhost:8083', 
-    'http://tiper-host:8083',
-    'http://bicstation-host:8083',
-    'http://saving-host:8083',
-    'http://avflash-host:8083',
+    'https://bicstation.com', 'https://bic-saving.com', 'https://avflash.xyz',
+    'http://localhost:3000', 'http://localhost:8083',
+    'http://tiper-host:8083', 'http://bicstation-host:8083',
+    'http://saving-host:8083', 'http://avflash-host:8083',
     'http://api-tiper-host:8083',
 ]
 
 # ----------------------------------------------------
-# 🛡️ Traefik リバースプロキシ設定
+# 🛡️ Proxy 設定 (Traefik / Nginx 対応)
 # ----------------------------------------------------
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-# ----------------------------------------------------
-# 🍪 セッション・Cookie 設定
-# ----------------------------------------------------
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_HTTPONLY = True
 
 # ----------------------------------------------------
 # ⚙️ アプリケーション定義
@@ -100,7 +58,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic', 
+    'whitenoise.runserver_nostatic', # 開発中も WhiteNoise を優先
     'django.contrib.staticfiles',
     'django_filters', 
     'rest_framework', 
@@ -112,9 +70,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    # 🚀 ここにマルチドメイン判定を追加 (セッション開始前が望ましい)
-    'tiper_api.middleware.MultiDomainProjectMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware', # 静的ファイル配信
+    'tiper_api.middleware.MultiDomainProjectMiddleware', # 🚀 サイト判定
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -143,7 +100,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'tiper_api.wsgi.application'
 
 # ----------------------------------------------------
-# 🗄️ データベース設定 (PostgreSQL)
+# 🗄️ データベース設定
 # ----------------------------------------------------
 DATABASES = {
     'default': {
@@ -157,22 +114,6 @@ DATABASES = {
 }
 
 # ----------------------------------------------------
-# 🔑 外部API認証情報
-# ----------------------------------------------------
-API_CONFIG = {
-    'DUGA': {
-        'API_ID': os.environ.get('DUGA_API_ID'),
-        'API_KEY': os.environ.get('DUGA_AFFILIATE_ID'),
-        'API_URL': 'http://affapi.duga.jp/search',
-    },
-    'FANZA': {
-        'API_ID': os.environ.get('FANZA_API_ID'),
-        'API_KEY': os.environ.get('FANZA_AFFILIATE_ID'),
-        'API_URL': 'https://api.dmm.com/affiliate/v3/ItemList',
-    }
-}
-
-# ----------------------------------------------------
 # 👥 認証 / 国際化
 # ----------------------------------------------------
 AUTH_USER_MODEL = 'api.User'
@@ -182,21 +123,22 @@ USE_I18N = True
 USE_TZ = True
 
 # ----------------------------------------------------
-# 📁 静的ファイル (WhiteNoise)
+# 📁 静的ファイル (WhiteNoise 安定版)
 # ----------------------------------------------------
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# 🛡️ 修正ポイント: Manifest(地図)を使わないストレージに変更
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ----------------------------------------------------
-# 🛠️ Django REST Framework (DRF) 設定
+# 🛠️ Django REST Framework (DRF)
 # ----------------------------------------------------
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -216,37 +158,6 @@ REST_FRAMEWORK = {
 }
 
 # ----------------------------------------------------
-# 📝 ロギング設定
+# 🚀 自動処理の抑制 (コンテナのループ防止)
 # ----------------------------------------------------
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'api_formatter': {
-            'format': '[{levelname}] {asctime} ({name}): {message}',
-            'style': '{', 'datefmt': '%H:%M:%S',
-        },
-    },
-    'handlers': {
-        'console': { 'class': 'logging.StreamHandler', 'formatter': 'api_formatter' },
-    },
-    'root': { 'handlers': ['console'], 'level': 'WARNING' },
-    'loggers': {
-        'django': { 'handlers': ['console'], 'level': 'INFO', 'propagate': False },
-        'api': { 'handlers': ['console'], 'level': 'DEBUG', 'propagate': False },
-    }
-}
-
-# ----------------------------------------------------
-# 🚀 起動時 collectstatic (開発環境用)
-# ----------------------------------------------------
-if DEBUG and 'runserver' in sys.argv:
-    import subprocess
-    if not os.path.exists(STATIC_ROOT) or not os.listdir(STATIC_ROOT):
-        print("🛠️ [AUTO-INFO] staticfiles not found. Running collectstatic...")
-        try:
-            subprocess.run([sys.executable, "manage.py", "collectstatic", "--noinput"], check=True)
-        except Exception as e:
-            print(f"⚠️ [AUTO-ERROR] Failed: {e}")
-                
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
