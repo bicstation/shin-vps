@@ -93,3 +93,5 @@ traefik/letsencrypt/*.json
 client_secrets.json
 token.json
 **/bs_json/*.json
+
+vps-data/
