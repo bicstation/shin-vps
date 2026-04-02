@@ -71,3 +71,5 @@ google-api-python-client
 google-auth-httplib2
 # ★ 末尾の誤字 'v' を修正
 google-auth-oauthlib
+
+markdown
