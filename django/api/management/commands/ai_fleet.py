@@ -27,7 +27,7 @@ class Command(BaseCommand):
     DOMAIN_MAP = {
         'tiper': 'https://tiper.live',
         'avflash': 'https://avflash.xyz',
-        'bicstation': 'https://bic-station.com',
+        'bicstation': 'https://bicstation.com',
         'saving': 'https://bic-saving.com',
     }
 
