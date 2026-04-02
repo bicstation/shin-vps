@@ -18,13 +18,13 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = 'Gemma 3 艦隊司令部 v2.6 https://www.fordedgeforum.com/topic/19764-sync-indexing-each-time-new-music-added-what/'
+    help = 'Gemma 3 艦隊司令部 v2.5 [Livedoor Optimized Edition]'
 
     ALLOWED_PROJECTS = ['bicstation', 'saving', 'tiper', 'avflash']
     
     DOMAIN_MAP = {
         'tiper': 'https://tiper.live',
-        'avflash': 'https://avflash.xyz', # 提督指定のメインドメイン
+        'avflash': 'https://av-flash.com',
         'bicstation': 'https://bic-station.com',
         'saving': 'https://bic-saving.com',
     }
@@ -53,7 +53,7 @@ class Command(BaseCommand):
         post_limit = options.get('limit')
         use_index = options.get('index')
 
-        self.log(f"--- 🚀 MISSION START: v2.6 (URL Sync & Indexing API) ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v2.5 (No Eye-Catch / Pure Body) ---", self.style.SUCCESS)
         
         FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
         RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
@@ -120,8 +120,8 @@ class Command(BaseCommand):
             if not selected_entry: break
             
             all_entries = [e for e in all_entries if e.link != selected_entry.link]
+            self.log(f" 🎯 選定: {selected_entry.title[:35]}...")
             
-            # 1. 【画像チェックの防波堤】
             is_adult_site = any(dm in selected_entry.link.lower() for dm in ['dmm.co.jp', 'dmm.com', 'fanza'])
             p_data = self.get_parsed_data(selected_entry, is_adult_site=is_adult_site)
             
@@ -129,11 +129,8 @@ class Command(BaseCommand):
                 self.log(f" ⏩ 画像なしを検知。次を探します。")
                 continue 
 
-            self.log(f" 🎯 選定(画像OK): {selected_entry.title[:35]}...")
-
             input_data = {'url': selected_entry.link, 'title': selected_entry.title, 'body': p_data.get('body', '')}
             try:
-                # 2. AI本文生成
                 ai_res = processor.generate_blog_content(input_data, platform)
                 if not ai_res: raise Exception("AI生成失敗")
 
@@ -142,42 +139,27 @@ class Command(BaseCommand):
                 summary_box = ai_res.get('summary', '')
 
                 if final_body:
-                    # 3. 【重要】先にDB保存して「ブログNO(ID)」を確定させる
-                    new_article_id = self.save_to_db(selected_entry, blog_config, final_title, "pending...", p_data.get('img'), platform)
-                    
-                    if not new_article_id:
-                        raise Exception("DB保存失敗。IDが取得できませんでした。")
-
-                    # 4. メインサイトURLの組み立て (avflash.xyz/post/ID)
-                    base_domain = self.DOMAIN_MAP.get(project_name, "https://avflash.xyz")
-                    main_site_url = f"{base_domain}/post/{new_article_id}"
-
-                    # 5. CTAの読み込みと {{internal_url}} の置換
-                    cta_raw = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt") or \
-                              self.load_external_file(self.PROMPT_DIR, f"cta_{project_name}.txt")
-                    cta_replaced = cta_raw.replace('{{internal_url}}', main_site_url) if cta_raw else ""
-
-                    # 6. HTML最終構築
                     teitoku_comment = self.get_random_teitoku_comment(project_name)
+                    cta_content = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt") or \
+                                  self.load_external_file(self.PROMPT_DIR, f"cta_{project_name}.txt")
+                    
                     full_content_md = f"{summary_box}\n\n{final_body}" if summary_box else final_body
-                    full_html = self.assemble_final_html(full_content_md, p_data.get('img'), teitoku_comment, cta_replaced)
+                    # 本文HTML構築（画像を先頭に挿入）
+                    full_html = self.assemble_final_html(full_content_md, p_data.get('img'), teitoku_comment, cta_content)
 
-                    # 7. ブログへ投稿
                     DriverClass = {'livedoor': LivedoorDriver, 'blogger': BloggerDriver, 'hatena': HatenaDriver, 'wordpress': WordPressDriver}.get(platform)
                     if DriverClass:
                         driver = DriverClass(blog_config)
                         post_category = rss_category_str.split(',')[0] if rss_category_str else "最新情報"
                         
-                        # image_url='' でLivedoor側アイキャッチを無効化
+                        # 重要：image_url='' とすることでLivedoor側の自動アイキャッチ機能を殺す
                         if driver.post(title=final_title, body=full_html, image_url='', source_url=selected_entry.link, category=post_category):
-                            # 8. DBの本文を完成版HTMLで更新
-                            Article.objects.filter(id=new_article_id).update(body_text=full_html)
+                            new_article_id = self.save_to_db(selected_entry, blog_config, final_title, full_html, p_data.get('img'), platform)
+                            self.log(f" ✅ 成功: {final_title[:25]}...", self.style.SUCCESS)
                             
-                            self.log(f" ✅ 成功(ID:{new_article_id}): {final_title[:25]}...", self.style.SUCCESS)
-                            
-                            # 9. 【サチコ連絡】Google Indexing API通知 (メインサイトURLを通知)
-                            if use_index:
-                                self.notify_google_indexing(main_site_url)
+                            if use_index and new_article_id:
+                                base_domain = self.DOMAIN_MAP.get(project_name)
+                                if base_domain: self.notify_google_indexing(f"{base_domain}/article/{new_article_id}")
 
                             success_count += 1
                             if success_count < limit: time.sleep(random.randint(20, 45))
@@ -210,15 +192,26 @@ class Command(BaseCommand):
         return data
 
     def assemble_final_html(self, md_content, img_url, comment, cta):
+        """
+        本文の最上部に最高画質画像を1枚配置し、プラットフォーム側の自動挿入に頼らない
+        """
         html_body = markdown.markdown(md_content, extensions=['extra', 'nl2br'])
-        img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px; margin-bottom:25px;"></p>' if img_url else ""
+        
+        # 🖼 画像タグ生成（マージンを持たせて配置）
+        img_tag = ""
+        if img_url:
+            img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px; margin-bottom:25px;"></p>'
+        
+        # 🖋 編集長レビュー
         comment_html = (
             f'<div style="border-left: 5px solid #ff4500; padding: 10px 15px; margin: 20px 0; '
             f'background: #fffaf0; border-radius: 0 10px 10px 0;">'
             f'<strong style="color: #ff4500;">🖋 編集長レビュー</strong><br>'
             f'<span style="font-size: 1.05em; font-weight: bold;">「{comment}」</span></div>'
         )
+        
         cta_html = markdown.markdown(cta, extensions=['extra']) if cta else ""
+        
         return (img_tag + comment_html + html_body + f"<br><hr><br>{cta_html}").strip()
 
     def notify_google_indexing(self, target_url):
@@ -229,21 +222,18 @@ class Command(BaseCommand):
             service = build('indexing', 'v3', credentials=credentials)
             body = {"url": target_url, "type": "URL_UPDATED"}
             service.urlNotifications().publish(body=body).execute()
-            self.log(f" 🚀 Index通知完了: {target_url}", self.style.SUCCESS)
-        except Exception as e:
-            self.log(f" ⚠️ Index通知失敗: {str(e)}")
+            self.log(f" 🚀 Index通知: {target_url}", self.style.SUCCESS)
+        except: pass
 
     def save_to_db(self, entry, blog_config, title, body, img, platform):
         site_key = blog_config.get('site_key')
         raw_cat = blog_config.get('rss_category', '')
         primary_cat = raw_cat.split(',')[0] if raw_cat else "未分類"
         is_adult_flag = True if str(blog_config.get('is_adult', '0')) == '1' else False
-        try:
-            with transaction.atomic():
-                new_id = ArticleMapper.create_article(site_id=site_key, title=title, body_text=body, source_url=entry.link, main_image_url=img, category=primary_cat, tags=raw_cat, is_adult=is_adult_flag)
-                ArticleMapper.save_post_result(new_id, blog_type=platform, is_published=True)
-                return new_id
-        except: return None
+        with transaction.atomic():
+            new_id = ArticleMapper.create_article(site_id=site_key, title=title, body_text=body, source_url=entry.link, main_image_url=img, category=primary_cat, tags=raw_cat, is_adult=is_adult_flag)
+            ArticleMapper.save_post_result(new_id, blog_type=platform, is_published=True)
+            return new_id
 
     def load_external_file(self, directory, filename):
         path = os.path.join(directory, filename)

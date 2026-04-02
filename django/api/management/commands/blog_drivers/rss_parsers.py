@@ -7,11 +7,9 @@ class RSSParserFactory:
     @staticmethod
     def get_parser(url):
         u = url.lower()
-        # --- DMM / FANZA / ニュース 判定 ---
         if any(domain in u for domain in ['dmm.co.jp', 'dmm.com', 'fanza.jp', 'fanza.news']):
             return FanzaParser()
         
-        # --- IT/Tech系 判定 ---
         if 'impress.co.jp' in u: return ImpressParser()
         if 'itmedia.co.jp' in u: return ITmediaParser()
         if 'ascii.jp' in u: return ASCIIParser()
@@ -21,16 +19,11 @@ class RSSParserFactory:
 
 class DefaultParser:
     def parse(self, url, rss_description=""):
-        """
-        rss_description: RSSの <description> タグの中身を受け取れるように拡張
-        """
         try:
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
             res = requests.get(url, timeout=15, headers=headers)
-            
-            # 汎用エンコード処理
             res.encoding = res.apparent_encoding
             soup = BeautifulSoup(res.text, 'html.parser')
             
@@ -55,8 +48,7 @@ class DefaultParser:
 class FanzaParser(DefaultParser):
     def parse(self, url, rss_description=""):
         """
-        DMM/FANZA 特化型スクラッパー
-        RSSの description から「コメント」と「サンプル画像」を抽出して合成する
+        DMM/FANZA 特化型スクラッパー (レンタル・通販・アニメ全対応)
         """
         try:
             headers = {
@@ -66,96 +58,87 @@ class FanzaParser(DefaultParser):
             }
             
             res = requests.get(url, timeout=15, headers=headers, allow_redirects=True)
-
-            # --- 🛠 文字化け対策 ---
-            if 'dmm.co.jp' in url or 'dmm.com' in url:
-                try:
-                    html_content = res.content.decode('euc-jp', errors='replace')
-                except:
-                    html_content = res.content.decode(res.apparent_encoding, errors='replace')
-            else:
+            # 文字化け対策
+            try:
+                html_content = res.content.decode('euc-jp', errors='replace')
+            except:
                 html_content = res.content.decode(res.apparent_encoding, errors='replace')
 
             soup = BeautifulSoup(html_content, 'html.parser')
 
             # --- 1. メイン画像取得 ---
             img_url = ""
-            selectors = [
-                'meta[property="og:image"]',
-                '#sample-video img', 
-                '.p-article__visual img', 
-                'a[name="package-image"] img', 
-                '#package-src',
-                '.main-visual img'
-            ]
+            # RSS内の <package> タグや pl.jpg を優先
+            package_match = re.search(r'<(?:package|link)>(https://pics\.dmm\.co\.jp/[^<]+)</(?:package|link)>', rss_description)
+            pl_match = re.search(r'href="(https://pics\.dmm\.co\.jp/[^"]+pl\.jpg)"', rss_description)
             
-            for sel in selectors:
-                tag = soup.select_one(sel)
-                if not tag: continue
-                img_candidate = tag.get('content') if sel.startswith('meta') else (tag.get('src') or tag.get('data-src'))
-                if img_candidate:
-                    img_url = img_candidate
-                    break
+            if pl_match:
+                img_url = pl_match.group(1)
+            elif package_match:
+                img_url = package_match.group(1)
+            
+            if not img_url or "noimage" in img_url:
+                selectors = ['meta[property="og:image"]', 'a[name="package-image"] img', '#package-src', '.tdmm-ext-artwork img']
+                for sel in selectors:
+                    tag = soup.select_one(sel)
+                    if not tag: continue
+                    img_candidate = tag.get('content') if sel.startswith('meta') else (tag.get('src') or tag.get('data-src'))
+                    if img_candidate and "noimage" not in img_candidate:
+                        img_url = img_candidate
+                        break
 
+            # 画像URLの整形
             if img_url:
-                # 高画質化・パス修正
                 img_url = img_url.replace('pics.dmm.co.jp', 'pics.dmm.com')
                 if re.search(r'p[s|t|m]\.jpg$', img_url):
                     img_url = re.sub(r'p[s|t|m]\.jpg$', 'pl.jpg', img_url)
-                
-                # n_ 重複問題の解消
+                # n_ 重複問題
                 parts = img_url.split('/')
-                if len(parts) >= 2:
-                    folder_name = parts[-2]
-                    file_name = parts[-1]
-                    if folder_name.startswith('n_') and file_name.startswith('n_'):
-                        parts[-1] = file_name.replace('n_', '', 1)
-                        img_url = '/'.join(parts)
+                if len(parts) >= 2 and parts[-2].startswith('n_') and parts[-1].startswith('n_'):
+                    parts[-1] = parts[-1].replace('n_', '', 1)
+                    img_url = '/'.join(parts)
 
-            # --- 2. RSS description から「熱いコメント」と「サンプル画像」を抽出 ---
+            # --- 2. RSS description / content:encoded から情報を抽出 ---
             extra_comment = ""
             sample_images = []
             if rss_description:
-                # メーカーコメント抽出 (<strong>コメント：</strong>以降)
-                comment_match = re.search(r'<strong>コメント：</strong><br/>(.*?)<br/>', rss_description, re.DOTALL)
+                # メーカーコメント抽出
+                comment_match = re.search(r'<strong>コメント：</strong>.*?<br/>(.*?)<br/>', rss_description, re.DOTALL)
                 if comment_match:
-                    # HTMLタグを除去してテキストのみにする
                     raw_comment = comment_match.group(1)
-                    extra_comment = re.sub(r'<[^>]+>', '', raw_comment).strip()
+                    clean_comment = re.sub(r'<span style="color:red">.*?</span>', '', raw_comment, flags=re.DOTALL)
+                    extra_comment = re.sub(r'<[^>]+>', '', clean_comment).strip()
                 
-                # サンプル画像 (ムービープレビュー) 抽出
-                # description内の全てのimgタグのsrcを取得
-                samples = re.findall(r'src="(https://pics.dmm.co.jp/[^"]+/video/[^"]+-\d+\.jpg)"', rss_description)
+                # サンプル画像抽出
+                samples = re.findall(r'src="(https://pics\.dmm\.co\.jp/[^"]+-[0-9]+\.jpg)"', rss_description)
                 if samples:
-                    sample_images = list(dict.fromkeys(samples)) # 重複排除
+                    sample_images = list(dict.fromkeys([s.replace('pics.dmm.co.jp', 'pics.dmm.com') for s in samples]))
 
             # --- 3. 本文取得 (サイト側) ---
             body_text = ""
             content_selectors = ['.mg-b20.lh4', '.common-description', '.p-article__body', '#mu .mg-b20', '.product_description']
-            
             for sel in content_selectors:
                 area = soup.select_one(sel)
                 if area:
                     body_text = area.get_text(separator='\n', strip=True)
                     break
-            
-            if not body_text:
-                area = soup.find('article') or soup.find('main') or soup.body
-                if area:
-                    for s in area(['script', 'style', 'nav', 'header', 'footer', 'aside']): s.decompose()
-                    body_text = area.get_text(separator='\n', strip=True)
 
-            # --- 4. データの統合 ---
-            # AIが読みやすいように、コメントを先頭に配置
+            # --- 4. データの統合（重複チェック付き） ---
             full_body = ""
             if extra_comment:
                 full_body += f"【メーカー推薦コメント】\n{extra_comment}\n\n"
-            full_body += f"【詳細情報】\n{body_text}"
+            
+            # サイト本文がコメントと似すぎていない場合のみ追加
+            if body_text:
+                normalized_body = body_text.replace('\n', '')[:50]
+                normalized_comment = extra_comment.replace('\n', '')[:50]
+                if normalized_body != normalized_comment:
+                    full_body += f"【詳細情報】\n{body_text}"
 
             return {
                 'img': img_url,
                 'body': full_body[:8000],
-                'samples': sample_images[:10], # 最大10枚まで
+                'samples': sample_images[:20],
                 'raw_comment': extra_comment
             }
             
@@ -163,15 +146,12 @@ class FanzaParser(DefaultParser):
             print(f"DEBUG: FanzaParser Error on {url}: {e}")
             return None
 
-# --- 特定メディア用 ---
+# --- 他メディア用 ---
 class ImpressParser(DefaultParser):
     def parse(self, url, rss_description=""): return super().parse(url, rss_description)
-
 class ITmediaParser(DefaultParser):
     def parse(self, url, rss_description=""): return super().parse(url, rss_description)
-
 class ASCIIParser(DefaultParser):
     def parse(self, url, rss_description=""): return super().parse(url, rss_description)
-
 class PhileWebParser(DefaultParser):
     def parse(self, url, rss_description=""): return super().parse(url, rss_description)
