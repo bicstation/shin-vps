@@ -20,7 +20,10 @@ class RSSParserFactory:
         return DefaultParser()
 
 class DefaultParser:
-    def parse(self, url):
+    def parse(self, url, rss_description=""):
+        """
+        rss_description: RSSの <description> タグの中身を受け取れるように拡張
+        """
         try:
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -50,9 +53,10 @@ class DefaultParser:
             return None
 
 class FanzaParser(DefaultParser):
-    def parse(self, url):
+    def parse(self, url, rss_description=""):
         """
-        DMM/FANZA 特化型スクラッパー（究極の画像パス修正版）
+        DMM/FANZA 特化型スクラッパー
+        RSSの description から「コメント」と「サンプル画像」を抽出して合成する
         """
         try:
             headers = {
@@ -74,7 +78,7 @@ class FanzaParser(DefaultParser):
 
             soup = BeautifulSoup(html_content, 'html.parser')
 
-            # --- 1. 画像取得 ---
+            # --- 1. メイン画像取得 ---
             img_url = ""
             selectors = [
                 'meta[property="og:image"]',
@@ -94,41 +98,40 @@ class FanzaParser(DefaultParser):
                     break
 
             if img_url:
-                # 🛠 高画質化・パス修正プロセス
-                # 1. ホスト名を安定版に
+                # 高画質化・パス修正
                 img_url = img_url.replace('pics.dmm.co.jp', 'pics.dmm.com')
-                
-                # 2. 末尾のサイズ指定(ps, pt, pm)をpl(大画像)に置換
                 if re.search(r'p[s|t|m]\.jpg$', img_url):
                     img_url = re.sub(r'p[s|t|m]\.jpg$', 'pl.jpg', img_url)
-
-                # 3. 🔥 【最重要】n_ 重複問題の解消
-                # フォルダ名に n_ があり、かつファイル名にも n_ があるとエラーになる対策
-                # 例: /n_1428ss148tk/n_1428ss148tkpl.jpg -> /n_1428ss148tk/1428ss148tkpl.jpg
+                
+                # n_ 重複問題の解消
                 parts = img_url.split('/')
                 if len(parts) >= 2:
                     folder_name = parts[-2]
                     file_name = parts[-1]
                     if folder_name.startswith('n_') and file_name.startswith('n_'):
-                        # ファイル名側の先頭の n_ を削除して再構成
                         parts[-1] = file_name.replace('n_', '', 1)
                         img_url = '/'.join(parts)
 
-                # 4. ニュース・特設サイト系の置換
-                img_url = img_url.replace('small.jpg', 'large.jpg')
-                if 'cms' in img_url:
-                    img_url = img_url.replace('-thumb', '').replace('-full', '')
+            # --- 2. RSS description から「熱いコメント」と「サンプル画像」を抽出 ---
+            extra_comment = ""
+            sample_images = []
+            if rss_description:
+                # メーカーコメント抽出 (<strong>コメント：</strong>以降)
+                comment_match = re.search(r'<strong>コメント：</strong><br/>(.*?)<br/>', rss_description, re.DOTALL)
+                if comment_match:
+                    # HTMLタグを除去してテキストのみにする
+                    raw_comment = comment_match.group(1)
+                    extra_comment = re.sub(r'<[^>]+>', '', raw_comment).strip()
+                
+                # サンプル画像 (ムービープレビュー) 抽出
+                # description内の全てのimgタグのsrcを取得
+                samples = re.findall(r'src="(https://pics.dmm.co.jp/[^"]+/video/[^"]+-\d+\.jpg)"', rss_description)
+                if samples:
+                    sample_images = list(dict.fromkeys(samples)) # 重複排除
 
-            # --- 2. 本文取得 ---
+            # --- 3. 本文取得 (サイト側) ---
             body_text = ""
-            content_selectors = [
-                '.mg-b20.lh4',          # ビデオ詳細
-                '.common-description',   # 電子書籍
-                '.p-article__body',       # FANZAニュース
-                '#mu .mg-b20',           # 旧タイプ
-                '.product_description',  # 通販
-                '#item-info'             # 共通
-            ]
+            content_selectors = ['.mg-b20.lh4', '.common-description', '.p-article__body', '#mu .mg-b20', '.product_description']
             
             for sel in content_selectors:
                 area = soup.select_one(sel)
@@ -139,28 +142,36 @@ class FanzaParser(DefaultParser):
             if not body_text:
                 area = soup.find('article') or soup.find('main') or soup.body
                 if area:
-                    for s in area(['script', 'style', 'nav', 'header', 'footer', 'aside']):
-                        s.decompose()
+                    for s in area(['script', 'style', 'nav', 'header', 'footer', 'aside']): s.decompose()
                     body_text = area.get_text(separator='\n', strip=True)
+
+            # --- 4. データの統合 ---
+            # AIが読みやすいように、コメントを先頭に配置
+            full_body = ""
+            if extra_comment:
+                full_body += f"【メーカー推薦コメント】\n{extra_comment}\n\n"
+            full_body += f"【詳細情報】\n{body_text}"
 
             return {
                 'img': img_url,
-                'body': body_text[:8000]
+                'body': full_body[:8000],
+                'samples': sample_images[:10], # 最大10枚まで
+                'raw_comment': extra_comment
             }
             
         except Exception as e:
             print(f"DEBUG: FanzaParser Error on {url}: {e}")
             return None
 
-# --- 特定メディア用 (Defaultを継承) ---
+# --- 特定メディア用 ---
 class ImpressParser(DefaultParser):
-    def parse(self, url): return super().parse(url)
+    def parse(self, url, rss_description=""): return super().parse(url, rss_description)
 
 class ITmediaParser(DefaultParser):
-    def parse(self, url): return super().parse(url)
+    def parse(self, url, rss_description=""): return super().parse(url, rss_description)
 
 class ASCIIParser(DefaultParser):
-    def parse(self, url): return super().parse(url)
+    def parse(self, url, rss_description=""): return super().parse(url, rss_description)
 
 class PhileWebParser(DefaultParser):
-    def parse(self, url): return super().parse(url)
+    def parse(self, url, rss_description=""): return super().parse(url, rss_description)
