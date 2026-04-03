@@ -1,14 +1,15 @@
+# -*- coding: utf-8 -*-
+# /home/maya/shin-vps/docker-compose.yml
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9 [Next.js ホットリロード対応・Django同期修正版]
-# ---------------------------------------------------------------------
-# 🚀 最終同期アップデート:
-# 1. 各 Next.js コンテナの volumes を追加し、ローカル編集を即反映
-# 2. Django の volumes に ./django をマウントし、プロンプト編集を即反映
-# 3. ネットワーク干渉を避けるため IPv6 を明示的に無効化
+# 🛡️ SHIN-VPS v3.9 [Complete Stable Edition]
+# 🚀 修正ログ:
+# 1. [FIX] pgAdmin の環境変数を追加し起動ループを解消
+# 2. [FIX] 全コンテナに traefik.docker.network を追加（IP不明エラー根絶）
+# 3. [FIX] ネットワーク名を shin-vps_internal-net に統一
 # =====================================================================
 
 services:
-  # --- 0. Traefik (管制塔: リバースプロキシ) ---
+  # --- 0. Traefik (管制塔) ---
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy-v3
@@ -20,14 +21,14 @@ services:
       - "--entrypoints.web.address=:80"
       - "--accesslog=true"
     ports:
-      - "8083:80"      # ローカルメイン窓口
+      - "8083:80"      # API / Frontend ローカル窓口
       - "8085:8080"    # Traefik ダッシュボード
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - shared-proxy
 
-  # --- 1. データベース層 (PostgreSQL) ---
+  # --- 1. データベース層 ---
   postgres-db-v3:
     image: postgres:15-alpine
     container_name: postgres-db-v3
@@ -53,32 +54,26 @@ services:
       dockerfile: ./django/Dockerfile
     container_name: django-v3
     restart: always
-    command: >
-      gunicorn tiper_api.wsgi:application
-      --bind 0.0.0.0:8000
-      --workers 5
-      --threads 2
-      --worker-class gthread
-      --timeout 120
-      --max-requests 1000
+    command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000 --workers 5 --threads 2 --worker-class gthread --timeout 120 --max-requests 1000
     depends_on:
       postgres-db-v3:
         condition: service_healthy
     env_file: .env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.django-api.rule=Host(`api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`, `api-tiper-host`, `api-bicstation-host`, `api-avflash-host`, `api-saving-host`, `django-v3`) && (PathPrefix(`/api`) || PathPrefix(`/admin`) || PathPrefix(`/static`))"
+      - "traefik.docker.network=shared-proxy"
+      - "traefik.http.routers.django-api.rule=(HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`))"
       - "traefik.http.routers.django-api.priority=3000"
+      - "traefik.http.routers.django-api.service=django-svc"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
     volumes:
-      - ./django:/usr/src/app                                 # 👈 プロンプトやコードの即時同期
+      - ./django:/usr/src/app
       - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
     networks:
       - internal-net
       - shared-proxy
 
   # --- 3. フロントエンド層 (Next.js) ---
-
   next-bicstation-v3:
     build:
       context: .
@@ -90,17 +85,17 @@ services:
     env_file: .env
     environment:
       - PROJECT_NAME=next-bicstation
-      - NEXT_PUBLIC_SITE_DOMAIN=bicstation-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./next-bicstation:/usr/src/app                        # 👈 同期有効化
+      - ./next-bicstation:/usr/src/app
       - ./shared:/usr/src/app/shared
-      - /usr/src/app/node_modules                             # コンテナ内ライブラリを優先
+      - /usr/src/app/node_modules
     networks:
       - shared-proxy
       - internal-net
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`)"
       - "traefik.http.routers.bic-router.priority=5000"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
@@ -116,10 +111,9 @@ services:
     env_file: .env
     environment:
       - PROJECT_NAME=next-tiper
-      - NEXT_PUBLIC_SITE_DOMAIN=tiper-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./next-tiper:/usr/src/app                             # 👈 同期有効化
+      - ./next-tiper:/usr/src/app
       - ./shared:/usr/src/app/shared
       - /usr/src/app/node_modules
     networks:
@@ -127,6 +121,7 @@ services:
       - internal-net
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.tiper-router.rule=Host(`tiper-host`)"
       - "traefik.http.routers.tiper-router.priority=4000"
       - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
@@ -142,10 +137,9 @@ services:
     env_file: .env
     environment:
       - PROJECT_NAME=next-bic-saving
-      - NEXT_PUBLIC_SITE_DOMAIN=saving-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./next-bic-saving:/usr/src/app                        # 👈 同期有効化
+      - ./next-bic-saving:/usr/src/app
       - ./shared:/usr/src/app/shared
       - /usr/src/app/node_modules
     networks:
@@ -153,6 +147,7 @@ services:
       - internal-net
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.saving-router.rule=Host(`saving-host`)"
       - "traefik.http.routers.saving-router.priority=4000"
       - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
@@ -168,10 +163,9 @@ services:
     env_file: .env
     environment:
       - PROJECT_NAME=next-avflash
-      - NEXT_PUBLIC_SITE_DOMAIN=avflash-host
       - INTERNAL_API_URL=http://django-v3:8000
     volumes:
-      - ./next-avflash:/usr/src/app                           # 👈 同期有効化
+      - ./next-avflash:/usr/src/app
       - ./shared:/usr/src/app/shared
       - /usr/src/app/node_modules
     networks:
@@ -179,6 +173,7 @@ services:
       - internal-net
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.avflash-router.rule=Host(`avflash-host`)"
       - "traefik.http.routers.avflash-router.priority=4000"
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
@@ -188,38 +183,40 @@ services:
     image: dpage/pgadmin4
     container_name: pgadmin-v3
     restart: always
-    env_file: .env
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-bicstation@gmail.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-1402nabe}
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      # 🚀 重要: 起動失敗回避のためのログイン設定
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@tiper.live}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_password_1234}
+      PGADMIN_CONFIG_SERVER_MODE: 'false'
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
     networks:
       - shared-proxy
       - internal-net
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin-host`)"
+      - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
 
   dozzle-v3:
     image: amir20/dozzle:latest
     container_name: dozzle-v3
+    restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - shared-proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.dozzle-router.rule=Host(`log-host`)"
+      - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
 
 networks:
   internal-net:
     name: "shin-vps_internal-net"
     driver: bridge
-    enable_ipv6: false
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
-
   shared-proxy:
     external: true
     name: "shared-proxy"
