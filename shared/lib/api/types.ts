@@ -41,6 +41,33 @@ export interface ProductAttribute extends MasterBase {
 }
 
 /**
+ * 📰 統合投稿型定義 (UnifiedPost) ✅ v7.6 追加
+ * 🛡️ Djangoの /api/posts/ エンドポイントからのデータをフロントエンドで一律に扱うための型。
+ * 💡 posts.ts の map 処理後の成果物を定義。
+ */
+export interface UnifiedPost {
+  id: string;               // 文字列化されたID (APIの id)
+  slug: string;             // スラッグ（なければID）
+  title: string;
+  image: string;            // main_image_url 等から統合されたパス
+  content: string;          // body_main 等から統合された本文
+  site: string;             // 識別ドメイン (af_gal, bicstation等)
+  is_adult: boolean;        // アダルト判定フラグ
+  content_type: string;     // news, review, product 等
+  created_at: string;
+  updated_at: string;
+  
+  // --- 以下、APIの生データ保持用 ---
+  main_image_url?: string;
+  extra_metadata?: any;
+  images_json?: { url: string; type: string }[];
+  videos_json?: any[];
+  site_display?: string;
+  content_type_display?: string;
+  source_url?: string;
+}
+
+/**
  * 💻 PC製品型定義 (BicStation等)
  */
 export interface PCProduct {
@@ -66,7 +93,7 @@ export interface PCProduct {
   score_ai?: number;
   score_cost?: number;
   score_portable?: number;
-  radar_chart?: RadarChartData[]; // ✅ 追加: コンポーネント用
+  radar_chart?: RadarChartData[]; 
 
   // ⚙️ ハードウェアスペック
   stock_status: 'instock' | 'outofstock' | 'preorder';
@@ -96,6 +123,10 @@ export interface AdultProduct {
   image_url_list: string[];
   sample_movie_url: string | null; 
 
+  // 🚩 v5.1 物理カラム対応
+  is_adult: boolean;
+  site: string;
+
   // 🔗 リレーション
   maker: MasterBase | null;
   label: MasterBase | null;
@@ -124,7 +155,7 @@ export interface AdultProduct {
 }
 
 /**
- * 📝 WordPress 投稿用型定義 (旧WP記事 / Bridge用)
+ * 📝 WordPress 投稿用型定義 (旧WP記事 / Bridge用 互換維持)
  */
 export interface WPPost {
   id: number;
@@ -145,7 +176,6 @@ export interface WPPost {
 
 /**
  * 📦 Django API 共通レスポンスラップ
- * ✅ これを追加することで bridge.ts や client.ts の戻り値を型安全に扱えます
  */
 export interface DjangoApiResponse<T> {
   results: T[];

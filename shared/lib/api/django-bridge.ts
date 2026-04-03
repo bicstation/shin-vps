@@ -10,7 +10,7 @@
  * =====================================================================
  */
 
-import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
+import { getSiteMetadata } from '../utils/siteConfig';
 import { getDjangoBaseUrl } from './config';
 
 // 🚀 各ドメイン専門ロジック（shared内相対パス、またはエイリアス）
