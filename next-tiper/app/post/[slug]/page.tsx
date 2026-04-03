@@ -1,15 +1,28 @@
-/* /app/post/slug]/page.tsx */
+/* /app/post/[slug]/page.tsx */
+// @ts-nocheck
+
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { fetchPostData } from '@/shared/lib/api';
+import { fetchPostData } from '@/shared/lib/api/django-bridge';
 import Link from 'next/link';
 
+/**
+ * 💡 Next.js 15 レンダリングポリシー
+ * 機密情報の即時更新を優先し force-dynamic を維持。
+ */
 export const dynamic = 'force-dynamic';
 
-export default async function NewsDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
-    // django-bridge.ts の fetchPostData を使用
-    const post = await fetchPostData('news', id);
+export default async function NewsDetailPage({ 
+    params 
+}: { 
+    params: Promise<{ slug: string }> 
+}) {
+    // 1. Next.js 15 仕様: params を await して取得
+    const resolvedParams = await params;
+    const { slug } = resolvedParams;
+
+    // 2. django-bridge.ts を使用してデータを取得 (slug または id に対応)
+    const post = await fetchPostData('news', slug);
 
     if (!post) notFound();
 
@@ -17,23 +30,31 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
     const displayDate = post.date || (post.created_at ? new Date(post.created_at).toLocaleDateString('ja-JP') : '2026-03-18');
 
     /**
-     * 🖋️ 本文のパース & HTML変換ロジック
+     * 🖋️ 本文のパース & HTML変換ロジック (Maya's Custom Parser v2.1)
+     * Markdown 記法を Tiper 専用のサイバー・タクティカルな HTML へ変換します。
      */
     const renderContentHtml = (text: string) => {
         if (!text) return "";
 
         let html = text
+            // 不要な独自タグの除去
             .replace(/\[\/?CONTENT_GENERAL\]/g, '')
             .replace(/\[TITLE_GENERAL\][\s\S]*?\[\/TITLE_GENERAL\]/g, '')
             .replace(/\[CAT\].*?\[\/CAT\]/g, '')
             .replace(/\[TAG\].*?\[\/TAG\]/g, '')
+            // 要約ボックスの装飾
             .replace(/\[SUMMARY_BOX\]/g, '<div style="margin: 3rem 0; padding: 2rem; background: rgba(232,62,140,0.05); border-left: 4px solid #e83e8c; border-radius: 4px; font-style: italic; color: #e5e7eb;">')
             .replace(/\[\/SUMMARY_BOX\]/g, '</div>')
+            // 画像のタクティカル・レンダリング
             .replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" style="width:100%; border-radius:4px; margin:3rem 0; box-shadow:0 20px 50px rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.1);" alt="intelligence_asset" />')
-            .replace(/^## (.*$)/gim, '<h2 style="font-size: 2rem; font-weight: 900; color: #ffffff; margin-top: 5rem; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(232,62,140,0.5); font-style: italic; letter-spacing: -0.05em;">$1</h2>')
-            .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.5rem; font-weight: 800; color: #f3f4f6; margin-top: 3rem; margin-bottom: 1.5rem; padding-left: 1rem; border-left: 4px solid #e83e8c;">$1</h3>')
+            // 見出し (H2/H3) のスタイリング
+            .replace(/^## (.*$)/gim, '<h2 style="font-size: 2.2rem; font-weight: 900; color: #ffffff; margin-top: 5rem; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(232,62,140,0.5); font-style: italic; letter-spacing: -0.05em; text-transform: uppercase;">$1</h2>')
+            .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.6rem; font-weight: 800; color: #f3f4f6; margin-top: 3.5rem; margin-bottom: 1.5rem; padding-left: 1rem; border-left: 4px solid #e83e8c; text-transform: uppercase;">$1</h3>')
+            // リスト項目の電撃装飾
             .replace(/^\* (.*$)/gim, '<div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; color: #d1d5db;"><span style="color:#e83e8c;">⚡</span><span>$1</span></div>')
+            // 強調（太字）のグロー効果
             .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 900; color: #ff4500; text-shadow: 0 0 10px rgba(255,69,0,0.2);">$1</strong>')
+            // 改行
             .replace(/\n\n/g, '<br/><br/>');
 
         return html;
@@ -56,7 +77,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
             </nav>
 
             <article className="max-w-4xl mx-auto px-6 pt-12 pb-32">
-                {/* 🏷️ ヘッダー */}
+                {/* 🏷️ ヘッダーセクション */}
                 <header className="mb-16 border-l-4 border-pink-600 pl-8 py-2">
                     <div className="flex items-center gap-4 mb-6">
                         <span className="bg-pink-600 text-white text-[10px] px-3 py-1 font-black tracking-tighter rounded-sm uppercase">
@@ -69,8 +90,8 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                     </h1>
                 </header>
 
-                {/* 📸 メインビジュアル */}
-                <div className="relative aspect-video w-full mb-12 overflow-hidden rounded-sm border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.8)]">
+                {/* 📸 メインビジュアル (シネマティック・エフェクト) */}
+                <div className="relative aspect-video w-full mb-12 overflow-hidden rounded-sm border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.8)] bg-gray-900">
                     <img 
                         src={displayImage} 
                         alt={post.title} 
@@ -79,8 +100,8 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                     <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-transparent to-transparent opacity-80" />
                 </div>
 
-                {/* ✨ AI ANALYSIS LOG (要約セクション) */}
-                {post.extra_metadata?.summary && (
+                {/* ✨ AI ANALYSIS LOG (AI要約) */}
+                {(post.extra_metadata?.summary || post.summary) && (
                     <section className="mb-16 p-6 bg-pink-900/5 border border-pink-900/20 rounded-sm relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-2 text-[8px] font-mono text-pink-900/40 uppercase tracking-widest">
                             AI_Generated_Summary
@@ -91,15 +112,14 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                                 Analysis_Results
                             </h2>
                         </div>
-                        {/* summary の中身（HTML）を表示 */}
                         <div 
-                            className="text-gray-300 text-sm md:text-base leading-relaxed"
-                            dangerouslySetInnerHTML={{ __html: post.extra_metadata.summary }} 
+                            className="text-gray-300 text-sm md:text-base leading-relaxed italic"
+                            dangerouslySetInnerHTML={{ __html: post.extra_metadata?.summary || post.summary }} 
                         />
                     </section>
                 )}
 
-                {/* 🖋️ 本文エリア */}
+                {/* 🖋️ 本文エリア (リッチテキスト) */}
                 <div className="max-w-none px-2">
                     <div 
                         className="article-rich-text text-lg md:text-xl leading-[2.2] text-gray-300"
@@ -107,7 +127,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                     />
                 </div>
 
-                {/* 🏁 フッター / CTA */}
+                {/* 🏁 フッター CTA (機密アクセス誘導) */}
                 <section className="mt-32 p-[1px] bg-gradient-to-r from-pink-900/50 via-pink-500 to-pink-900/50 rounded-lg overflow-hidden">
                     <div className="bg-[#080808] p-10 md:p-16 text-center rounded-lg shadow-2xl">
                         <h4 className="text-pink-500 font-mono text-[10px] tracking-[0.5em] mb-6 uppercase animate-pulse">
@@ -138,10 +158,11 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                     </div>
                 </section>
 
+                {/* ステータスバー */}
                 <footer className="mt-20 pt-8 border-t border-white/5 font-mono text-[10px] text-gray-700 flex justify-between items-center italic">
                     <div className="flex items-center gap-3">
                         <span className="w-2 h-2 bg-pink-600 rounded-full animate-ping"></span>
-                        FILE_STATUS: READ_ONLY / NODE: TIPER_V3 / ID: {id}
+                        FILE_STATUS: READ_ONLY / NODE: TIPER_V3 / ID: {slug}
                     </div>
                     <div className="tracking-[0.2em]">© SHIN_NETWORK_2026</div>
                 </footer>

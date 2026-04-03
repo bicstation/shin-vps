@@ -1,29 +1,40 @@
 /**
  * =====================================================================
- * 🛰️ BICSTATION Main Intelligence Console (v5.2.0)
- * 🛡️ Maya's Logic: 生ログの軟化 & 統合アーカイブへの全自動誘導
- * 💡 6,500件の鼓動を、洗練されたUIでプレビューします。
+ * 🛰️ BICSTATION Main Intelligence Console (v5.2.1)
+ * 🛡️ Maya's Logic: ビルド安全装置 & 統合アーカイブ誘導版
+ * 💡 force-dynamic を付与し、ビルド時の API 接続失敗による中断を防ぎます。
  * =====================================================================
  */
 
 import React from 'react';
 import Link from 'next/link';
-// ✅ Bridge から最新記事取得ロジックをインポート
 import { fetchPostList } from '@/shared/lib/api/django-bridge';
 import SafeImage from '@shared/components/atoms/SafeImage';
 import styles from './page.module.css';
 
+// 🚨 【重要】ビルド時の静的生成をスキップし、ランタイムでの取得を強制
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function HomePageMain() {
     /**
      * 🛰️ データ同期
-     * limit: 4 (最新4件をピックアップ)
-     * project は Bridge 内の headers() で自動判定されます。
+     * try-catch で保護し、API 未接続時（ビルド時等）のクラッシュを回避
      */
-    const { results: recentPosts, count: totalCount } = await fetchPostList('post', 4, 0);
+    let recentPosts = [];
+    let totalCount = 0;
+
+    try {
+        const response = await fetchPostList('post', 4, 0);
+        recentPosts = response.results || [];
+        totalCount = response.count || 0;
+    } catch (e) {
+        console.warn("⚠️ Home: API connection deferred (Runtime only).");
+    }
 
     return (
         <div className={styles.mainWrapper}>
-            {/* 🛡️ システムステータス（旧ログを柔らかく再構築） */}
+            {/* 🛡️ システムステータス */}
             <header className={styles.systemStatus}>
                 <div className={styles.statusInner}>
                     <div className={styles.pulseIndicator}>
@@ -51,16 +62,16 @@ export default async function HomePageMain() {
                 </p>
             </section>
 
-            {/* 📰 最新アーカイブ・プレビュー (最新4件) */}
+            {/* 📰 最新アーカイブ・プレビュー */}
             <div className={styles.previewGrid}>
                 {recentPosts && recentPosts.length > 0 ? (
-                    recentPosts.map((post) => {
+                    recentPosts.map((post: any) => {
                         const identifier = post.id || post.slug;
                         const displayImage = post.main_image_url || post.image || '/no-image.jpg';
                         const displayDate = post.created_at ? new Date(post.created_at).toLocaleDateString('ja-JP') : 'RECENT';
 
                         return (
-                            <Link key={identifier} href={`/news/${identifier}`} className={styles.previewCard}>
+                            <Link key={identifier} href={`/post/${identifier}`} className={styles.previewCard}>
                                 <div className={styles.thumbContainer}>
                                     <SafeImage 
                                         src={displayImage} 
@@ -80,14 +91,13 @@ export default async function HomePageMain() {
                         );
                     })
                 ) : (
-                    <div className={styles.noData}>CONNECTING_TO_DATA_STREAM...</div>
+                    <div className={styles.noData}>INITIALIZING_DATA_STREAM...</div>
                 )}
             </div>
 
-            {/* 🔗 統合リンク・セクション (既存のリンクを網羅) */}
+            {/* 🔗 統合リンク・セクション */}
             <nav className={styles.archiveNav}>
                 <div className={styles.navGrid}>
-                    {/* 1. 記事一覧（今回のメイン導線） */}
                     <Link href="/post" className={styles.navItem}>
                         <span className={styles.navIcon}>📂</span>
                         <div className={styles.navContent}>
@@ -97,7 +107,6 @@ export default async function HomePageMain() {
                         <span className={styles.navArrow}>→</span>
                     </Link>
 
-                    {/* 2. 旧来のニュースリンク（互換性維持） */}
                     <Link href="/news" className={styles.navItem}>
                         <span className={styles.navIcon}>📡</span>
                         <div className={styles.navContent}>
@@ -107,7 +116,6 @@ export default async function HomePageMain() {
                         <span className={styles.navArrow}>→</span>
                     </Link>
 
-                    {/* 3. プロジェクト情報（任意） */}
                     <Link href="/about" className={styles.navItem}>
                         <span className={styles.navIcon}>🛡️</span>
                         <div className={styles.navContent}>
@@ -119,7 +127,6 @@ export default async function HomePageMain() {
                 </div>
             </nav>
 
-            {/* 🛠️ 管理用フッターフック */}
             <footer className={styles.systemFooter}>
                 <p className={styles.copyright}>&copy; 2026 BICSTATION INTEGRATED FLEET</p>
             </footer>

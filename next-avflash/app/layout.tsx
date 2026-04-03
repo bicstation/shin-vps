@@ -14,7 +14,6 @@ import '@shared/styles/globals.css';
 
 /**
  * ✅ 2. 共通ロジックのインポート
- * 修正: @shared/utils/siteConfig -> @shared/lib/utils/siteConfig
  */
 import { getSiteMetadata, getSiteColor } from '@shared/lib/utils/siteConfig';
 
@@ -26,13 +25,11 @@ import Footer from '@shared/components/organisms/common/Footer';
 
 /**
  * ✅ 4. サイドバー
- * 修正: 不要な拡張子 (.tsx) を削除
  */
 import SidebarWrapper from '@shared/layout/Sidebar/SidebarWrapper';
 
 /**
  * ✅ 5. チャットボット・プログレスバー
- * 修正: 物理階層 components/ を追加
  */
 import ChatBot from '@shared/components/organisms/common/ChatBot';
 import RouteProgressBar from '@shared/components/atoms/RouteProgressBar';
@@ -43,6 +40,7 @@ const inter = Inter({
 
 /**
  * 💡 強制的動的レンダリングの設定
+ * これによりビルド時の API 接続試行を防止し、ENOTFOUND エラーを回避します。
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -102,19 +100,27 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // ✅ 共通設定からサイト情報を取得
-  const headerList = await headers();
-  const host = headerList.get('host') || "avflash.xyz";
-  
-  // 💡 siteConfig の関数を使用して動的にテーマを決定
-  const site = getSiteMetadata(host);
-  const themeColor = getSiteColor(site.site_name);
+  // ✅ 共通設定からサイト情報を取得 (ビルド時の安全策を適用)
+  let host = "avflash.xyz";
+  let currentProject = "avflash";
+  let themeColor = "#ffc107";
+
+  try {
+    const headerList = await headers();
+    host = headerList.get('host') || "avflash.xyz";
+    const site = getSiteMetadata(host);
+    currentProject = site?.site_name || "avflash";
+    themeColor = getSiteColor(currentProject);
+  } catch (error) {
+    // ビルド時は headers() が使えないため、ここを通ります。
+    console.warn("Layout: Build-time context detected. Using default fallback.");
+  }
 
   // システムのベースカラー
   const BG_COLOR = "#0f0f0f";
 
   return (
-    <html lang="ja" style={{ height: '100%', backgroundColor: BG_COLOR }}>
+    <html lang="ja" style={{ height: '100%', backgroundColor: BG_COLOR }} data-project={currentProject}>
       <body
         className={`${inter.className} ${styles.bodyWrapper}`}
         style={{
@@ -126,10 +132,10 @@ export default async function RootLayout({
           display: "flex",
           flexDirection: "column",
           position: "relative",
-          // CSS変数としてテーマカラーを注入
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": BG_COLOR,
+          "--current-project": currentProject,
         } as React.CSSProperties}
       >
         {/* 🚀 ページ遷移プログレスバー */}
@@ -140,7 +146,7 @@ export default async function RootLayout({
           <Header />
         </Suspense>
 
-        {/* 2. 告知バー（広告・年齢制限） */}
+        {/* 2. 告知バー */}
         <div className={styles.adDisclosure}>
           <div className={styles.adDisclosureInner}>
             【PR】本サイトはアフィリエイト広告を利用しています。
@@ -150,7 +156,7 @@ export default async function RootLayout({
           </div>
         </div>
 
-        {/* 3. メインレイアウト構造 (2カラム構成) */}
+        {/* 3. メインレイアウト構造 */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
             
@@ -158,8 +164,8 @@ export default async function RootLayout({
             <aside className={styles.sidebarArea}>
               <div className={styles.sidebarSticky}>
                 <Suspense fallback={
-                  <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <span className={styles.loadingPulse}>LOADING_SYSTEM_MATRIX...</span>
+                  <div className="p-5 text-center animate-pulse text-gray-500 text-xs">
+                    LOADING_SYSTEM_MATRIX...
                   </div>
                 }>
                   <SidebarWrapper />
@@ -170,8 +176,8 @@ export default async function RootLayout({
             {/* 🏗️ メインコンテンツ領域 */}
             <main className={styles.mainContent}>
               <Suspense fallback={
-                <div style={{ padding: '40px' }}>
-                  <span className={styles.loadingPulse}>SYNCING_GATEWAY...</span>
+                <div className="p-10 text-center text-gray-500 italic text-sm">
+                  SYNCING_GATEWAY...
                 </div>
               }>
                 {children}

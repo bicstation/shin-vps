@@ -1,23 +1,56 @@
-/* /app/post/slug]/page.tsx */
+/* /app/post/[slug]/page.tsx */
+// /home/maya/shin-dev/shin-vps/next-avflash/app/post/[slug]/page.tsx
+
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { fetchPostData } from '@/shared/lib/api';
+import { headers } from 'next/headers';
+import { fetchPostData } from '@/shared/lib/api/django-bridge';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 import Link from 'next/link';
 
+/**
+ * 💡 Next.js 15 用の動的レンダリング設定
+ * ビルド時の外部API依存によるエラーを物理的に遮断します。
+ */
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export default async function NewsDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
-    // django-bridge.ts の fetchPostData を使用
-    const post = await fetchPostData('news', id);
+export default async function NewsDetailPage({ 
+    params 
+}: { 
+    params: Promise<{ slug: string }> 
+}) {
+    // 1. Next.js 15 仕様: params を await して slug を取得
+    const { slug } = await params;
+    
+    // 2. ホスト判定を行い、適切なプロジェクトコンテキストを取得
+    let currentProject = 'avflash';
+    try {
+        const headerList = await headers();
+        const host = headerList.get('host') || "avflash.xyz";
+        currentProject = getSiteMetadata(host)?.site_name || 'avflash';
+    } catch (e) {
+        // Build time fallback
+    }
+
+    // 3. データ取得 (django-bridge 経由)
+    let post = null;
+    try {
+        // slug を ID または Slug として検索
+        post = await fetchPostData('news', slug, currentProject);
+    } catch (e) {
+        console.warn(`[Detail] API connection deferred for slug: ${slug}`);
+    }
 
     if (!post) notFound();
 
     const displayImage = post.image || post.main_image_url || '/no-image.jpg';
-    const displayDate = post.date || (post.created_at ? new Date(post.created_at).toLocaleDateString('ja-JP') : '2026-03-18');
+    const displayDate = post.created_at 
+        ? new Date(post.created_at).toLocaleDateString('ja-JP') 
+        : (post.date || '2026-03-18');
 
     /**
-     * 🖋️ 本文のパース & HTML変換ロジック
+     * 🖋️ 本文のパース & HTML変換ロジック (Maya's Logic)
      */
     const renderContentHtml = (text: string) => {
         if (!text) return "";
@@ -60,7 +93,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                 <header className="mb-16 border-l-4 border-pink-600 pl-8 py-2">
                     <div className="flex items-center gap-4 mb-6">
                         <span className="bg-pink-600 text-white text-[10px] px-3 py-1 font-black tracking-tighter rounded-sm uppercase">
-                            {post.site || 'INTELLIGENCE'}
+                            {post.category || 'INTELLIGENCE'}
                         </span>
                         <time className="text-[11px] font-mono text-gray-500 tracking-widest">[{displayDate}]</time>
                     </div>
@@ -91,7 +124,6 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                                 Analysis_Results
                             </h2>
                         </div>
-                        {/* summary の中身（HTML）を表示 */}
                         <div 
                             className="text-gray-300 text-sm md:text-base leading-relaxed"
                             dangerouslySetInnerHTML={{ __html: post.extra_metadata.summary }} 
@@ -141,7 +173,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                 <footer className="mt-20 pt-8 border-t border-white/5 font-mono text-[10px] text-gray-700 flex justify-between items-center italic">
                     <div className="flex items-center gap-3">
                         <span className="w-2 h-2 bg-pink-600 rounded-full animate-ping"></span>
-                        FILE_STATUS: READ_ONLY / NODE: TIPER_V3 / ID: {id}
+                        FILE_STATUS: READ_ONLY / NODE: {currentProject.toUpperCase()} / SLUG: {slug}
                     </div>
                     <div className="tracking-[0.2em]">© SHIN_NETWORK_2026</div>
                 </footer>

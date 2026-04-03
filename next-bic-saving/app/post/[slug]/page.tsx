@@ -1,23 +1,55 @@
-/* /app/post/slug]/page.tsx */
+/* /app/post/[slug]/page.tsx */
+// /home/maya/shin-dev/shin-vps/next-bic-saving/app/post/[slug]/page.tsx
+
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { fetchPostData } from '@/shared/lib/api';
+import { headers } from 'next/headers';
+import { fetchPostData } from '@/shared/lib/api/django-bridge';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 import Link from 'next/link';
 
+/**
+ * 💡 Next.js 15 用の動的レンダリング設定
+ */
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-export default async function NewsDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
-    // django-bridge.ts の fetchPostData を使用
-    const post = await fetchPostData('news', id);
+export default async function SavingsDetailPage({ 
+    params 
+}: { 
+    params: Promise<{ slug: string }> 
+}) {
+    // 1. Next.js 15 仕様: params を await
+    const { slug } = await params;
+    
+    // 2. ホスト判定 (bic-saving コンテキストの確定)
+    let currentProject = 'bic-saving';
+    try {
+        const headerList = await headers();
+        const host = headerList.get('host') || "bic-saving.com";
+        currentProject = getSiteMetadata(host)?.site_name || 'bic-saving';
+    } catch (e) {
+        // Build time fallback
+    }
+
+    // 3. データ取得
+    let post = null;
+    try {
+        post = await fetchPostData('saving', slug, currentProject);
+    } catch (e) {
+        console.warn(`[Detail] Connection deferred for slug: ${slug}`);
+    }
 
     if (!post) notFound();
 
     const displayImage = post.image || post.main_image_url || '/no-image.jpg';
-    const displayDate = post.date || (post.created_at ? new Date(post.created_at).toLocaleDateString('ja-JP') : '2026-03-18');
+    const displayDate = post.created_at 
+        ? new Date(post.created_at).toLocaleDateString('ja-JP') 
+        : (post.date || '2026-03-18');
 
     /**
-     * 🖋️ 本文のパース & HTML変換ロジック
+     * 🖋️ 本文のパース & HTML変換ロジック (Savings Edition)
+     * 節約サイト向けに、よりクリーンで強調が分かりやすいスタイルに調整。
      */
     const renderContentHtml = (text: string) => {
         if (!text) return "";
@@ -27,13 +59,13 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
             .replace(/\[TITLE_GENERAL\][\s\S]*?\[\/TITLE_GENERAL\]/g, '')
             .replace(/\[CAT\].*?\[\/CAT\]/g, '')
             .replace(/\[TAG\].*?\[\/TAG\]/g, '')
-            .replace(/\[SUMMARY_BOX\]/g, '<div style="margin: 3rem 0; padding: 2rem; background: rgba(232,62,140,0.05); border-left: 4px solid #e83e8c; border-radius: 4px; font-style: italic; color: #e5e7eb;">')
+            .replace(/\[SUMMARY_BOX\]/g, '<div style="margin: 2rem 0; padding: 2rem; background: #fffbeb; border: 1px solid #fef08a; border-left: 5px solid #eab308; border-radius: 8px; color: #713f12;">')
             .replace(/\[\/SUMMARY_BOX\]/g, '</div>')
-            .replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" style="width:100%; border-radius:4px; margin:3rem 0; box-shadow:0 20px 50px rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.1);" alt="intelligence_asset" />')
-            .replace(/^## (.*$)/gim, '<h2 style="font-size: 2rem; font-weight: 900; color: #ffffff; margin-top: 5rem; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(232,62,140,0.5); font-style: italic; letter-spacing: -0.05em;">$1</h2>')
-            .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.5rem; font-weight: 800; color: #f3f4f6; margin-top: 3rem; margin-bottom: 1.5rem; padding-left: 1rem; border-left: 4px solid #e83e8c;">$1</h3>')
-            .replace(/^\* (.*$)/gim, '<div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; color: #d1d5db;"><span style="color:#e83e8c;">⚡</span><span>$1</span></div>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 900; color: #ff4500; text-shadow: 0 0 10px rgba(255,69,0,0.2);">$1</strong>')
+            .replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" style="width:100%; border-radius:12px; margin:2.5rem 0; box-shadow:0 10px 30px rgba(0,0,0,0.1);" alt="savings_asset" />')
+            .replace(/^## (.*$)/gim, '<h2 style="font-size: 1.75rem; font-weight: 800; color: #1f2937; margin-top: 4rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid #fde047;">$1</h2>')
+            .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.35rem; font-weight: 700; color: #374151; margin-top: 2.5rem; margin-bottom: 1.25rem; padding-left: 1rem; border-left: 4px solid #facc15;">$1</h3>')
+            .replace(/^\* (.*$)/gim, '<div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.75rem; color: #4b5563;"><span style="color:#eab308;">✔</span><span>$1</span></div>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 800; color: #c2410c; background: linear-gradient(transparent 70%, #fef08a 70%);">$1</strong>')
             .replace(/\n\n/g, '<br/><br/>');
 
         return html;
@@ -42,108 +74,99 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
     const contentHtml = renderContentHtml(post.body_text || post.content);
 
     return (
-        <div className="min-h-screen bg-[#020202] text-gray-300 font-sans selection:bg-pink-600/40" suppressHydrationWarning={true}>
+        <div className="min-h-screen bg-white text-gray-800 font-sans selection:bg-yellow-200" suppressHydrationWarning={true}>
             {/* 🛰️ ナビゲーション */}
-            <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5">
+            <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
                 <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-                    <Link href="/news" className="text-[10px] font-mono tracking-widest text-gray-500 hover:text-pink-500 transition-all flex items-center gap-2 uppercase">
-                        « Back to Database
+                    <Link href="/news" className="text-xs font-bold tracking-tight text-gray-400 hover:text-yellow-600 transition-all flex items-center gap-2">
+                        ← BACK TO FEED
                     </Link>
-                    <div className="text-[9px] font-mono text-pink-600/50 animate-pulse tracking-tighter uppercase">
-                        Encrypted Session Active
+                    <div className="text-[10px] font-mono text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-100">
+                        SECURE_SAVINGS_DATA_LINK
                     </div>
                 </div>
             </nav>
 
             <article className="max-w-4xl mx-auto px-6 pt-12 pb-32">
                 {/* 🏷️ ヘッダー */}
-                <header className="mb-16 border-l-4 border-pink-600 pl-8 py-2">
-                    <div className="flex items-center gap-4 mb-6">
-                        <span className="bg-pink-600 text-white text-[10px] px-3 py-1 font-black tracking-tighter rounded-sm uppercase">
-                            {post.site || 'INTELLIGENCE'}
+                <header className="mb-12">
+                    <div className="flex items-center gap-3 mb-6">
+                        <span className="bg-yellow-400 text-yellow-900 text-[10px] px-2.5 py-1 font-bold rounded-full uppercase tracking-wider">
+                            {post.category || 'SAVING_STRATEGY'}
                         </span>
-                        <time className="text-[11px] font-mono text-gray-500 tracking-widest">[{displayDate}]</time>
+                        <time className="text-xs font-mono text-gray-400">[{displayDate}]</time>
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-black text-white leading-[1.05] tracking-tighter mb-4 italic drop-shadow-[0_0_15px_rgba(232,62,140,0.2)] uppercase">
+                    <h1 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight tracking-tight mb-6">
                         {post.title}
                     </h1>
                 </header>
 
                 {/* 📸 メインビジュアル */}
-                <div className="relative aspect-video w-full mb-12 overflow-hidden rounded-sm border border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.8)]">
+                <div className="relative aspect-video w-full mb-12 overflow-hidden rounded-2xl border border-gray-100 shadow-xl">
                     <img 
                         src={displayImage} 
                         alt={post.title} 
-                        className="w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-1000" 
+                        className="w-full h-full object-cover" 
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-transparent to-transparent opacity-80" />
                 </div>
 
-                {/* ✨ AI ANALYSIS LOG (要約セクション) */}
+                {/* ✨ AI SUMMARY (節約アドバイス) */}
                 {post.extra_metadata?.summary && (
-                    <section className="mb-16 p-6 bg-pink-900/5 border border-pink-900/20 rounded-sm relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-2 text-[8px] font-mono text-pink-900/40 uppercase tracking-widest">
-                            AI_Generated_Summary
-                        </div>
-                        <div className="flex items-center gap-2 mb-6">
-                            <span className="w-1.5 h-1.5 bg-pink-600 rounded-full animate-ping"></span>
-                            <h2 className="text-[10px] font-mono font-bold text-pink-600 tracking-[0.3em] uppercase">
-                                Analysis_Results
+                    <section className="mb-16 p-8 bg-gray-50 border border-gray-200 rounded-2xl relative">
+                        <div className="flex items-center gap-2 mb-4">
+                            <span className="text-xl">💡</span>
+                            <h2 className="text-xs font-bold text-gray-500 tracking-widest uppercase">
+                                Quick_Analysis_Summary
                             </h2>
                         </div>
-                        {/* summary の中身（HTML）を表示 */}
                         <div 
-                            className="text-gray-300 text-sm md:text-base leading-relaxed"
+                            className="text-gray-700 text-base md:text-lg leading-relaxed italic"
                             dangerouslySetInnerHTML={{ __html: post.extra_metadata.summary }} 
                         />
                     </section>
                 )}
 
                 {/* 🖋️ 本文エリア */}
-                <div className="max-w-none px-2">
+                <div className="max-w-none">
                     <div 
-                        className="article-rich-text text-lg md:text-xl leading-[2.2] text-gray-300"
+                        className="article-rich-text text-lg leading-loose text-gray-700"
                         dangerouslySetInnerHTML={{ __html: contentHtml }} 
                     />
                 </div>
 
                 {/* 🏁 フッター / CTA */}
-                <section className="mt-32 p-[1px] bg-gradient-to-r from-pink-900/50 via-pink-500 to-pink-900/50 rounded-lg overflow-hidden">
-                    <div className="bg-[#080808] p-10 md:p-16 text-center rounded-lg shadow-2xl">
-                        <h4 className="text-pink-500 font-mono text-[10px] tracking-[0.5em] mb-6 uppercase animate-pulse">
-                            Authentication Required
-                        </h4>
-                        <p className="text-white text-2xl md:text-4xl font-black mb-12 tracking-tighter italic">
-                            その「悦び」の続きを、あなたの肉眼で。
+                <section className="mt-32 p-1 bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 rounded-3xl">
+                    <div className="bg-white p-10 md:p-16 text-center rounded-[20px]">
+                        <p className="text-gray-900 text-2xl md:text-3xl font-black mb-10 tracking-tight">
+                            賢い選択で、あなたの暮らしを最適化。
                         </p>
                         
-                        <div className="flex flex-col md:flex-row justify-center gap-6">
+                        <div className="flex flex-col md:flex-row justify-center gap-4">
                             {post.source_url && (
                                 <a 
                                     href={post.source_url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="px-12 py-5 font-black text-white bg-pink-600 hover:bg-pink-500 transition-all rounded-sm shadow-[0_10px_40px_rgba(232,62,140,0.4)] text-sm tracking-widest uppercase text-center"
+                                    className="px-10 py-4 font-bold text-white bg-gray-900 hover:bg-black transition-all rounded-xl shadow-lg text-sm"
                                 >
-                                    Access Source _
+                                    詳細・公式サイトを確認する
                                 </a>
                             )}
                             <Link 
                                 href="/news" 
-                                className="px-12 py-5 font-black text-gray-400 border border-white/10 hover:bg-white/5 transition-all rounded-sm text-sm tracking-widest uppercase text-center"
+                                className="px-10 py-4 font-bold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all rounded-xl text-sm"
                             >
-                                Return to Feed
+                                記事一覧に戻る
                             </Link>
                         </div>
                     </div>
                 </section>
 
-                <footer className="mt-20 pt-8 border-t border-white/5 font-mono text-[10px] text-gray-700 flex justify-between items-center italic">
-                    <div className="flex items-center gap-3">
-                        <span className="w-2 h-2 bg-pink-600 rounded-full animate-ping"></span>
-                        FILE_STATUS: READ_ONLY / NODE: TIPER_V3 / ID: {id}
+                <footer className="mt-20 pt-8 border-t border-gray-100 font-mono text-[10px] text-gray-400 flex justify-between items-center">
+                    <div>
+                        NODE: {currentProject.toUpperCase()} / REF_ID: {slug.substring(0, 8)}
                     </div>
-                    <div className="tracking-[0.2em]">© SHIN_NETWORK_2026</div>
+                    <div>© BIC_SAVING_NETWORK_2026</div>
                 </footer>
             </article>
         </div>
