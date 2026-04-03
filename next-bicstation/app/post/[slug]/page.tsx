@@ -1,23 +1,40 @@
-/* /app/post/slug]/page.tsx */
+/**
+ * =====================================================================
+ * 🛰️ BICSTATION Intelligence Detail Master (v7.5.0)
+ * 🛡️ Maya's Logic: 自動ドメイン同期 & 物理カラム完全抽出版
+ * 💡 収益の心臓部として、あらゆるソースからのデータを美しくレンダリングします。
+ * =====================================================================
+ */
+
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { fetchPostData } from '@/shared/lib/api';
+// ✅ Bridge から取得 (内部で headers() によるドメイン判定が走ります)
+import { fetchPostData } from '@/shared/lib/api/django-bridge';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function NewsDetailPage({ params }: { params: { id: string } }) {
     const { id } = params;
-    // django-bridge.ts の fetchPostData を使用
+
+    /**
+     * 🛰️ データ取得
+     * 第1引数は 'news' または 'post'。第2引数に ID。
+     * Bridge v7.2 により、現在のドメインに最適なAPIからデータを引き抜きます。
+     */
     const post = await fetchPostData('news', id);
 
     if (!post) notFound();
 
-    const displayImage = post.image || post.main_image_url || '/no-image.jpg';
-    const displayDate = post.date || (post.created_at ? new Date(post.created_at).toLocaleDateString('ja-JP') : '2026-03-18');
+    // 🛠️ データの正規化 (取りこぼし防止)
+    const displayImage = post.main_image_url || post.image || '/no-image.jpg';
+    const displayDate = post.date || (post.created_at ? new Date(post.created_at).toLocaleDateString('ja-JP') : '2026-04-03');
+    const displaySite = post.site_display?.split('(')[0] || post.site || 'INTELLIGENCE';
 
     /**
      * 🖋️ 本文のパース & HTML変換ロジック
+     * 💡 [SUMMARY_BOX] や Markdown 記法をサイバーパンクなHTMLに変換します。
      */
     const renderContentHtml = (text: string) => {
         if (!text) return "";
@@ -27,30 +44,38 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
             .replace(/\[TITLE_GENERAL\][\s\S]*?\[\/TITLE_GENERAL\]/g, '')
             .replace(/\[CAT\].*?\[\/CAT\]/g, '')
             .replace(/\[TAG\].*?\[\/TAG\]/g, '')
+            // 要約ボックスの装飾
             .replace(/\[SUMMARY_BOX\]/g, '<div style="margin: 3rem 0; padding: 2rem; background: rgba(232,62,140,0.05); border-left: 4px solid #e83e8c; border-radius: 4px; font-style: italic; color: #e5e7eb;">')
             .replace(/\[\/SUMMARY_BOX\]/g, '</div>')
+            // 画像の変換とリッチな装飾
             .replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" style="width:100%; border-radius:4px; margin:3rem 0; box-shadow:0 20px 50px rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.1);" alt="intelligence_asset" />')
+            // 見出し (H2, H3)
             .replace(/^## (.*$)/gim, '<h2 style="font-size: 2rem; font-weight: 900; color: #ffffff; margin-top: 5rem; margin-bottom: 2rem; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(232,62,140,0.5); font-style: italic; letter-spacing: -0.05em;">$1</h2>')
             .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.5rem; font-weight: 800; color: #f3f4f6; margin-top: 3rem; margin-bottom: 1.5rem; padding-left: 1rem; border-left: 4px solid #e83e8c;">$1</h3>')
+            // リスト表示
             .replace(/^\* (.*$)/gim, '<div style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1rem; color: #d1d5db;"><span style="color:#e83e8c;">⚡</span><span>$1</span></div>')
+            // 太字強調
             .replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 900; color: #ff4500; text-shadow: 0 0 10px rgba(255,69,0,0.2);">$1</strong>')
+            // 改行処理
             .replace(/\n\n/g, '<br/><br/>');
 
         return html;
     };
 
-    const contentHtml = renderContentHtml(post.body_text || post.content);
+    // 💡 body_text が空でも body_main や content から絞り出す
+    const rawContent = post.body_text || post.body_main || post.content || "";
+    const contentHtml = renderContentHtml(rawContent);
 
     return (
         <div className="min-h-screen bg-[#020202] text-gray-300 font-sans selection:bg-pink-600/40" suppressHydrationWarning={true}>
             {/* 🛰️ ナビゲーション */}
             <nav className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5">
                 <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-                    <Link href="/news" className="text-[10px] font-mono tracking-widest text-gray-500 hover:text-pink-500 transition-all flex items-center gap-2 uppercase">
-                        « Back to Database
+                    <Link href="/post" className="text-[10px] font-mono tracking-widest text-gray-500 hover:text-pink-500 transition-all flex items-center gap-2 uppercase">
+                        « Back to Archive Index
                     </Link>
                     <div className="text-[9px] font-mono text-pink-600/50 animate-pulse tracking-tighter uppercase">
-                        Encrypted Session Active
+                        Encrypted Session Active // NODE_STABLE
                     </div>
                 </div>
             </nav>
@@ -60,7 +85,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                 <header className="mb-16 border-l-4 border-pink-600 pl-8 py-2">
                     <div className="flex items-center gap-4 mb-6">
                         <span className="bg-pink-600 text-white text-[10px] px-3 py-1 font-black tracking-tighter rounded-sm uppercase">
-                            {post.site || 'INTELLIGENCE'}
+                            {displaySite}
                         </span>
                         <time className="text-[11px] font-mono text-gray-500 tracking-widest">[{displayDate}]</time>
                     </div>
@@ -80,10 +105,10 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                 </div>
 
                 {/* ✨ AI ANALYSIS LOG (要約セクション) */}
-                {post.extra_metadata?.summary && (
+                {(post.extra_metadata?.summary || post.summary) && (
                     <section className="mb-16 p-6 bg-pink-900/5 border border-pink-900/20 rounded-sm relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-2 text-[8px] font-mono text-pink-900/40 uppercase tracking-widest">
-                            AI_Generated_Summary
+                            AI_Generated_Analysis
                         </div>
                         <div className="flex items-center gap-2 mb-6">
                             <span className="w-1.5 h-1.5 bg-pink-600 rounded-full animate-ping"></span>
@@ -91,10 +116,9 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                                 Analysis_Results
                             </h2>
                         </div>
-                        {/* summary の中身（HTML）を表示 */}
                         <div 
                             className="text-gray-300 text-sm md:text-base leading-relaxed"
-                            dangerouslySetInnerHTML={{ __html: post.extra_metadata.summary }} 
+                            dangerouslySetInnerHTML={{ __html: post.extra_metadata?.summary || post.summary }} 
                         />
                     </section>
                 )}
@@ -107,7 +131,7 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                     />
                 </div>
 
-                {/* 🏁 フッター / CTA */}
+                {/* 🏁 フッター / CTA (収益導線) */}
                 <section className="mt-32 p-[1px] bg-gradient-to-r from-pink-900/50 via-pink-500 to-pink-900/50 rounded-lg overflow-hidden">
                     <div className="bg-[#080808] p-10 md:p-16 text-center rounded-lg shadow-2xl">
                         <h4 className="text-pink-500 font-mono text-[10px] tracking-[0.5em] mb-6 uppercase animate-pulse">
@@ -118,30 +142,31 @@ export default async function NewsDetailPage({ params }: { params: { id: string 
                         </p>
                         
                         <div className="flex flex-col md:flex-row justify-center gap-6">
-                            {post.source_url && (
+                            {(post.source_url || post.affiliate_url) && (
                                 <a 
-                                    href={post.source_url} 
+                                    href={post.affiliate_url || post.source_url} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="px-12 py-5 font-black text-white bg-pink-600 hover:bg-pink-500 transition-all rounded-sm shadow-[0_10px_40px_rgba(232,62,140,0.4)] text-sm tracking-widest uppercase text-center"
                                 >
-                                    Access Source _
+                                    Access Full Content _
                                 </a>
                             )}
                             <Link 
-                                href="/news" 
+                                href="/post" 
                                 className="px-12 py-5 font-black text-gray-400 border border-white/10 hover:bg-white/5 transition-all rounded-sm text-sm tracking-widest uppercase text-center"
                             >
-                                Return to Feed
+                                Return to Archive
                             </Link>
                         </div>
                     </div>
                 </section>
 
+                {/* 📊 システム情報フッター */}
                 <footer className="mt-20 pt-8 border-t border-white/5 font-mono text-[10px] text-gray-700 flex justify-between items-center italic">
                     <div className="flex items-center gap-3">
                         <span className="w-2 h-2 bg-pink-600 rounded-full animate-ping"></span>
-                        FILE_STATUS: READ_ONLY / NODE: TIPER_V3 / ID: {id}
+                        FILE_STATUS: READ_ONLY / NODE: {displaySite}_V5 / ID: {id}
                     </div>
                     <div className="tracking-[0.2em]">© SHIN_NETWORK_2026</div>
                 </footer>

@@ -1,8 +1,8 @@
 /**
  * =====================================================================
- * 🏗️ BICSTATION Root Layout (v6.4.0 Lean)
- * 🛡️ Maya's Logic: メタデータ最小化・構造保護版
- * 💡 Digestエラーを回避するため、SEO設定を極限までシンプルにしました。
+ * 🏗️ BICSTATION Root Layout (v6.5.0 Multi-Domain Master)
+ * 🛡️ Maya's Logic: 司令塔機能搭載・ドメイン自動判別版
+ * 💡 headers() からプロジェクトを特定し、全コンポーネントへ伝播させます。
  * =====================================================================
  */
 /* eslint-disable @next/next/no-img-element */
@@ -35,11 +35,10 @@ const inter = Inter({
 
 /**
  * 💡 SEO設定 (最小構成)
- * 🚨 Digest エラー回避のため、OGP画像や template 判定を一旦すべて削除しました。
+ * 🚨 Digest エラー回避のため、Metadata API のみを使用。
  */
 export const metadata: Metadata = {
   title: "BICSTATION - PCカタログ",
-  // title: "1111111111 - 接続テスト", // ここを書き換える
   description: "PC専門ポータルサイト",
   other: {
     "google-adsense-account": "ca-pub-9068876333048216",
@@ -55,35 +54,33 @@ export const viewport: Viewport = {
   themeColor: "#007bff",
 };
 
-/**
- * 💡 実行設定
- */
-// export const dynamic = 'force-dynamic';
-// export const revalidate = 0;
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   /**
-   * ✅ 非同期情報の取得
-   * 💡 失敗してもテーマカラーだけは死守します。
+   * ✅ プロジェクト識別子の決定 (司令塔ロジック)
    */
   let themeColor = "#007bff"; 
+  let currentProject = "bicstation"; // デフォルト
 
   try {
     const headerList = await headers();
-    const host = headerList.get('host') || "bicstation-host";
+    const host = headerList.get('host') || "bicstation.com";
+    
+    // 🛰️ ホスト名からサイト設定を解決
     const siteData = getSiteMetadata(host);
-    themeColor = getSiteColor(siteData?.site_name || "bicstation");
+    currentProject = siteData?.site_name || "bicstation";
+    
+    // プロジェクトに基づいたカラーを決定
+    themeColor = getSiteColor(currentProject);
   } catch (error) {
     console.error("Layout Async Resolution Error:", error);
   }
 
   return (
-    <html lang="ja" suppressHydrationWarning>
-      {/* 🚨 <head> は Metadata API に任せるため、ここには書きません */}
+    <html lang="ja" suppressHydrationWarning data-project={currentProject}>
       <body
         className={`${inter.className} ${styles.bodyWrapper}`}
         suppressHydrationWarning={true} 
@@ -92,6 +89,7 @@ export default async function RootLayout({
           color: "#333",
           // @ts-ignore
           "--site-theme-color": themeColor,
+          "--current-project": currentProject, // CSSから参照可能にする
         } as React.CSSProperties}
       >
         {/* AdSense スクリプト */}
@@ -101,7 +99,7 @@ export default async function RootLayout({
           strategy="afterInteractive" 
         />
 
-        {/* クライアント側スタイル補正 */}
+        {/* クライアント側スタイル補正 (テーマカラー反映) */}
         <ClientStyles themeColor={themeColor} />
 
         {/* 1. ヘッダー (Suspense) */}
@@ -121,6 +119,7 @@ export default async function RootLayout({
             {/* サイドバー (Suspense) */}
             <aside className={styles.sidebarSection}>
               <Suspense fallback={<div style={{ width: '280px', height: '100vh', background: '#f8f9fa' }} />}>
+                {/* 必要に応じて PCSidebar に currentProject を渡すことも可能 */}
                 <PCSidebar />
               </Suspense>
             </aside>
@@ -129,9 +128,12 @@ export default async function RootLayout({
             <main className={styles.mainContent}>
               <Suspense fallback={
                 <div style={{ padding: '2rem', textAlign: 'center' }}>
-                  <p>LOADING...</p>
+                  <p>LOADING ARCHIVE...</p>
                 </div>
               }>
+                {/* 💡 子要素 (page.tsx) は headers() を呼ぶことで、
+                   この Layout と同じ currentProject 判定を共有できます。
+                */}
                 {children}
               </Suspense>
             </main>
