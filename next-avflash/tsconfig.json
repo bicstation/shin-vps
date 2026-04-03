@@ -1,5 +1,5 @@
 {
-  /* ✅ extends のパスを環境に合わせて調整 */
+  /* ✅ ポイント1: extends のパスを `./` にする */
   "extends": "./shared/tsconfig.base.json", 
   
   "compilerOptions": {
@@ -7,12 +7,10 @@
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "paths": {
-      /* ✅ @/ 形式を優先。srcあり/なしの両方をカバー */
       "@/*": ["./src/*", "./*"],
-      
-      /* ✅ Docker(shared/*) と ローカル(../shared/*) の両方を解決 */
-      "@shared/*": ["./shared/*", "../shared/*"],
-      "@/shared/*": ["./shared/*", "../shared/*"]
+      /* ✅ ポイント2: Dockerの構造にあわせつつ、VS Codeでも通る書き方 */
+      "@shared/*": ["shared/*", "../shared/*"],
+      "@/shared/*": ["shared/*", "../shared/*"]
     }
   },
   "include": [
@@ -20,9 +18,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    /* ✅ 型定義の読み込み範囲を確実に確保 */
-    "./shared/**/*.ts",
-    "./shared/**/*.tsx",
+    /* ✅ ポイント3: 両方の可能性を含める */
+    "shared/**/*.ts",
+    "shared/**/*.tsx",
     "../shared/**/*.ts",
     "../shared/**/*.tsx"
   ],

@@ -10,19 +10,32 @@ import { headers } from 'next/headers';
 /**
  * 🛰️ [BRIDGE] 統合サービス層
  * tsconfig.json で定義した @/shared エイリアスを使用してインポート。
- * Dockerビルド時は直下の shared/ を、ローカル時は ../shared/ を自動参照します。
  */
-import { fetchDjangoBridgeContent, fetchPostList } from '@/shared/lib/api/bridge';
+import { fetchDjangoBridgeContent, fetchPostList } from '@/shared/lib/api/django-bridge';
 import AdultProductCard from '@/shared/components/organisms/cards/AdultProductCard';
+import SafeImage from '@/shared/components/atoms/SafeImage';
 
 import styles from './page.module.css';
 
 /**
- * 💡 Next.js 15 用の動的レンダリング設定
+ * 💡 Next.js 15 レンダリングポリシー
  * リクエストごとに最新データを Django から取得します。
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+/**
+ * 🛡️ API通信の安全な実行（Django停止時でもフロントを落とさない）
+ */
+async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
+    try {
+        const data = await promise;
+        return data ?? fallback;
+    } catch (e) {
+        console.warn(`⚠️ [${new Date().toISOString()}] API_SKIP:`, e.message);
+        return fallback;
+    }
+}
 
 export default async function Page() {
     // --- 🛠️ データ格納用変数 ---
@@ -31,42 +44,40 @@ export default async function Page() {
     let totalCount = 0;
     const title = process.env.NEXT_PUBLIC_APP_TITLE || 'AV FLASH';
 
-    // 🛡️ Middlewareから渡された「判定済みホスト(身分証)」を取得
-    // これにより SSR 時のドメイン判定ミスを物理的に防ぎます。
+    // 🛡️ Middlewareから渡された判定済みホストを取得
     const headerList = await headers();
     const djangoHost = headerList.get('x-django-host') || '';
 
     try {
         /**
          * 🚀 並列データ取得実行
-         * 1. 商品データ (api_source: DUGA)
+         * 1. 商品データ (DUGA)
          * 2. サイト固有のブログ記事 (News)
          */
         const [productRes, articleRes] = await Promise.all([
-            fetchDjangoBridgeContent({ 
-                content_type: 'product', 
-                api_source: 'DUGA', 
-                limit: 12, 
-                host: djangoHost 
-            }),
-            fetchPostList(6, 0, djangoHost)
+            safeFetch(
+                fetchDjangoBridgeContent({ 
+                    content_type: 'product', 
+                    api_source: 'DUGA', 
+                    limit: 12, 
+                    host: djangoHost 
+                }),
+                { results: [], count: 0 }
+            ),
+            safeFetch(
+                fetchPostList(6, 0, djangoHost),
+                { results: [], count: 0 }
+            )
         ]);
 
-        // 商品データの抽出
-        if (productRes) {
-            products = productRes.results || [];
-            totalCount = productRes.count || 0;
-        }
+        // 各データの展開
+        products = productRes?.results || [];
+        totalCount = productRes?.count || 0;
+        articles = articleRes?.results || [];
 
-        // 記事データの抽出
-        if (articleRes) {
-            articles = articleRes.results || [];
-        }
-
-        console.log(`[AvFlash] Sync Complete | Host: ${djangoHost} | Products: ${products.length} | News: ${articles.length}`);
-
+        console.log(`[AvFlash] Sync Success | Host: ${djangoHost} | Products: ${products.length} | News: ${articles.length}`);
     } catch (error) {
-        console.error("[AvFlash] API Fetch Critical Error:", error);
+        console.error("[AvFlash] Critical Page Load Error:", error);
     }
 
     return (
@@ -101,10 +112,14 @@ export default async function Page() {
                         articles.map((post) => (
                             <Link href={`/posts/${post.id}`} key={post.id} className={styles.articleCard}>
                                 <div className={styles.articleThumb}>
-                                    <img src={post.thumbnail || '/img/no-image.png'} alt={post.title} />
+                                    <SafeImage 
+                                        src={post.thumbnail || '/img/no-image.png'} 
+                                        alt={post.title} 
+                                        className="object-cover w-full h-full"
+                                    />
+                                    <div className={styles.articleDate}>[{post.created_at?.split('T')[0] || 'RECENT'}]</div>
                                 </div>
                                 <div className={styles.articleBody}>
-                                    <span className={styles.articleDate}>{post.created_at?.split('T')[0]}</span>
                                     <h3 className={styles.articleTitle}>{post.title}</h3>
                                     <p className={styles.articleExerpt}>
                                         {post.excerpt ? post.excerpt.substring(0, 50) : post.title.substring(0, 30)}...
@@ -113,8 +128,8 @@ export default async function Page() {
                             </Link>
                         ))
                     ) : (
-                        <div className={styles.emptyStateSimple}>
-                            現在、最新記事を同期中です...
+                        <div className="col-span-full py-12 text-center border border-dashed border-white/10 rounded-lg">
+                            <p className={styles.glitchText}>NO_INTELLIGENCE_DATA_IN_STREAM</p>
                         </div>
                     )}
                 </div>
