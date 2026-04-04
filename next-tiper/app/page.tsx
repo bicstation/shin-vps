@@ -1,11 +1,10 @@
-/* /app/page.tsx */
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
 // @ts-nocheck
 
 import React from 'react';
 import Link from 'next/link';
-import { headers } from "next/headers"; // ✅ Next.js 15: ドメイン特定に必須
+import { headers } from "next/headers";
 import styles from './page.module.css';
 
 // ✅ 共通コンポーネント
@@ -13,13 +12,15 @@ import AdultProductCard from '@/shared/components/organisms/cards/AdultProductCa
 import SafeImage from '@/shared/components/atoms/SafeImage';
 
 // ✅ API・判定ロジック
-import { getUnifiedProducts, fetchPostList } from '@/shared/lib/api/django-bridge';
+// fetchPostList は最新の django/posts.ts から直結
+import { fetchPostList } from '@/shared/lib/api/django/posts';
+import { getUnifiedProducts } from '@/shared/lib/api/django-bridge';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
+import { UnifiedPost } from '@/shared/lib/api/types';
 
 /**
  * 💡 Next.js 15 レンダリングポリシー
- * 各ドメインのリクエストを即座に反映させるため force-dynamic を採用
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; 
@@ -34,21 +35,20 @@ export async function generateMetadata() {
 
     return constructMetadata({
         title: `${siteConfig.site_name} | プレミアム・統合デジタルアーカイブ`,
-        description: `${siteConfig.site_name}のAI解析に基づいた最新アーカイブ。インテリジェンス・データストリームを同期中。`,
-        canonical: '/',
-        host: host // constructMetadata内部での判定用
+        description: `${siteConfig.site_name}のAI解析に基づいた最新アーカイブ。`,
+        host: host 
     });
 }
 
 /**
- * 🛡️ API通信の安全な実行（Django停止時でもフロントを落とさない）
+ * 🛡️ API通信の安全な実行
  */
 async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     try {
         const data = await promise;
         return data ?? fallback;
     } catch (e) {
-        console.warn(`⚠️ [${new Date().toISOString()}] API_SKIP:`, e.message);
+        console.warn(`⚠️ [API_SKIP]:`, e.message);
         return fallback;
     }
 }
@@ -70,61 +70,72 @@ const renderPlatformSection = (title: string, items: any[], source: string) => (
 );
 
 export default async function Home() {
-    // --- 🎯 STEP 1: ドメインの特定 (Next.js 15 Server Component) ---
+    // --- 🎯 STEP 1: ドメインの特定 ---
     const headerList = await headers();
-    const host = headerList.get('host') || "tiper.live";
+    const host = headerList.get('x-django-host') || headerList.get('host') || "tiper.live";
     const siteConfig = getSiteMetadata(host); 
-    const siteTag = siteConfig.site_tag; // 'tiper', 'avflash' など
+    const siteTag = siteConfig.site_name.toLowerCase(); // 'tiper'
 
-    // --- 🎯 STEP 2: Django Bridge 経由でのデータ同期 ---
-    
-    // 1. ハイブリッド記事の取得 (siteTag をフィルタとして渡す)
-    const postResponse = await safeFetch(
-        fetchPostList('post', 6, 0, siteTag), 
-        { results: [], count: 0 }
-    );
-    const latestPosts = postResponse?.results || [];
-    
-    // 2. 商品データ取得 (site_group = siteTag でドメイン専用データを抽出)
-    const [fanzaRes, dugaRes] = await Promise.all([
-        safeFetch(getUnifiedProducts({ site_group: siteTag, limit: 4, brand: 'FANZA' }), { results: [] }),
-        safeFetch(getUnifiedProducts({ site_group: siteTag, limit: 4, brand: 'DUGA' }), { results: [] }),
+    // --- 🎯 STEP 2: 並列データ同期実行 ---
+    const [postResponse, fanzaRes, dugaRes] = await Promise.all([
+        // 1. 最新記事 (UnifiedPost) - プロジェクト識別子でフィルタ
+        safeFetch(
+            fetchPostList(6, 0, siteTag), 
+            { results: [], count: 0 }
+        ),
+        // 2. FANZA 商品
+        safeFetch(
+            getUnifiedProducts({ site_group: siteTag, limit: 4, brand: 'FANZA' }), 
+            { results: [] }
+        ),
+        // 3. DUGA 商品
+        safeFetch(
+            getUnifiedProducts({ site_group: siteTag, limit: 4, brand: 'DUGA' }), 
+            { results: [] }
+        ),
     ]);
 
+    const latestPosts: UnifiedPost[] = postResponse?.results || [];
     const isApiConnected = (fanzaRes?.results?.length || 0) > 0 || (dugaRes?.results?.length || 0) > 0;
 
     return (
         <div className={styles.pageContainer}>
             <div className={styles.contentStream}>
                 
-                {/* 📰 1. INTELLIGENCE_REPORTS (ドメイン特化型) */}
+                {/* 📰 1. INTELLIGENCE_REPORTS (ブログ記事セクション) */}
                 <section className={styles.newsSection}>
                     <div className={styles.sectionHeader}>
                         <h2 className={styles.sectionHeading}>
-                            INTELLIGENCE_REPORTS <span className={styles.siteHighlight}>[{siteConfig.site_name.toUpperCase()}]</span>
+                            LATEST_REPORTS <span className={styles.siteHighlight}>[{siteTag.toUpperCase()}]</span>
                         </h2>
-                        <Link href="/post" className={styles.headerLink}>OPEN_ALL_FILES →</Link>
+                        <Link href="/posts" className={styles.headerLink}>OPEN_ALL_FILES →</Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {latestPosts.length > 0 ? (
                             latestPosts.map((post) => {
+                                // 🆔 IDかSlugを選択 (URLの一貫性)
                                 const identifier = post.slug || post.id;
-                                const displayImage = post.image || post.main_image_url || '/no-image.jpg';
+                                // 🖼️ 画像パスの正規化 (UnifiedPost仕様)
+                                const displayImage = post.image || '/img/no-image.png';
+                                
                                 return (
-                                    <Link key={identifier} href={`/post/${identifier}`} className={styles.newsCard}>
+                                    <Link key={post.id} href={`/posts/${identifier}`} className={styles.newsCard}>
                                         <div className={styles.newsCardThumb}>
                                             <SafeImage 
                                                 src={displayImage} 
                                                 alt={post.title}
-                                                fallback="/no-image.jpg"
                                                 className="object-cover w-full h-full"
                                             />
-                                            <div className={styles.newsDate}>[{post.date || 'RECENT'}]</div>
+                                            <div className={styles.newsDate}>
+                                                [{new Date(post.created_at).toLocaleDateString('ja-JP')}]
+                                            </div>
                                         </div>
                                         <div className={styles.newsCardBody}>
                                             <h3 className={styles.newsCardTitle}>{post.title}</h3>
-                                            <div className={styles.newsCardCategory}>#{post.category || 'AI_ANALYSIS'}</div>
+                                            <p className={styles.newsExcerpt}>
+                                                {post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 50) : ""}...
+                                            </p>
                                         </div>
                                     </Link>
                                 );
@@ -137,12 +148,12 @@ export default async function Home() {
                     </div>
                 </section>
 
-                {/* 📀 2. UNIFIED_DATA_STREAM (商品アーカイブ) */}
+                {/* 📀 2. UNIFIED_DATA_STREAM (FANZA & DUGA) */}
                 <div className={styles.archiveRegistry}>
                     <div className={styles.registryHeader}>
                         <h1 className={styles.registryMainTitle}>
                             UNIFIED_DATA_STREAM
-                            <span className={styles.titleThin}>{siteConfig.site_name}_ZENITH_v3.6</span>
+                            <span className={styles.titleThin}>/{siteTag.toUpperCase()}_v7.9</span>
                         </h1>
                     </div>
 
@@ -155,7 +166,7 @@ export default async function Home() {
                         <div className={styles.loadingArea}>
                             <div className={styles.glitchBox}>
                                 <div className={styles.glitchText}>
-                                    CONNECTING_TO_{siteConfig.site_tag.toUpperCase()}_DB...
+                                    CONNECTING_TO_{siteTag.toUpperCase()}_DATABASE...
                                 </div>
                             </div>
                         </div>
@@ -164,8 +175,8 @@ export default async function Home() {
 
                 {/* 🚀 フッターアクション */}
                 <div className={styles.footerAction}>
-                    <Link href="/post" className={styles.megaTerminalBtn}>
-                        ACCESS_FULL_{siteConfig.site_name.toUpperCase()}_DATABASE
+                    <Link href="/posts" className={styles.megaTerminalBtn}>
+                        ACCESS_FULL_{siteTag.toUpperCase()}_INTELLIGENCE
                     </Link>
                 </div>
             </div>
