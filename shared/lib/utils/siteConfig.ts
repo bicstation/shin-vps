@@ -82,12 +82,22 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
 
   const django_host = (isLocalEnv && !cfg.external) ? `api-${siteKey}-host` : cfg.prod;
 
-  let api_base_url = "";
+let api_base_url = "";
+  
   if (cfg.external) {
     api_base_url = `https://${cfg.prod}`;
   } else if (isServer) {
-    api_base_url = process.env.INTERNAL_API_URL || `http://django-v3:8000`;
+    /**
+     * 🚀 提督、ここを修正しました！
+     * django-v3:8000 を直接叩くのではなく、
+     * それぞれの api-xxx-host:8083 を通るように強制します。
+     * これにより Django 側に正しい Host ヘッダーが伝わります。
+     */
+    api_base_url = isLocalEnv 
+        ? `http://api-${siteKey}-host:8083` // ローカル開発時は固有の門を通る
+        : `https://${cfg.prod}`;           // 本番 VPS ではドメイン直
   } else {
+    // クライアントサイド (ブラウザ)
     api_base_url = isLocalEnv ? `http://localhost:8083` : `https://${django_host}`;
   }
 

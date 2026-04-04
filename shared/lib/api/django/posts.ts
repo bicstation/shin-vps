@@ -1,6 +1,6 @@
 /**
  * 📝 記事取得サービス (shared/lib/api/django/posts.ts)
- * 🛡️ Maya's Logic v7.7 - SHIN-VPS v3.9 [POSTS UNIFICATION - DATABASE_MATCHED]
+ * 🛡️ Maya's Logic v7.8 - SHIN-VPS [POSTS UNIFICATION - HOST_STRICT_MODE]
  */
 import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from './client';
 import { getWpConfig, getDjangoBaseUrl } from '../config';
@@ -11,29 +11,46 @@ export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
     const baseUrl = getDjangoBaseUrl();
     if (!baseUrl) return data;
+    
+    // api-base-url から末尾のスラッシュ等を除去して純粋なベースURLを抽出
     const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
-    const content = JSON.stringify(data);
     
-    const internalPattern = /http:\/\/(django-v[23]|nginx-wp-v[23]|wordpress-.+v[23]|api-[a-z-]+-host|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
-    
-    try {
-        const replaced = content.replace(internalPattern, cleanBaseUrl).replace(/([^:])\/\//g, '$1/');
-        return JSON.parse(replaced);
-    } catch (e) { return data; }
+    if (typeof data === 'object') {
+        try {
+            let content = JSON.stringify(data);
+            /**
+             * 🔍 内部ネットワーク用ドメインを網羅的に検知して置換
+             */
+            const internalPattern = /http:\/\/(django-v[23]|nginx-wp-v[23]|wordpress-.+v[23]|api-[a-z-]+-host|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
+            content = content.replace(internalPattern, cleanBaseUrl).replace(/([^:])\/\//g, '$1/'); 
+            return JSON.parse(content);
+        } catch (e) { 
+            return data; 
+        }
+    }
+    return data;
 };
 
-/** 🛠️ 記事リソース専用 Fetch */
-async function fetchPostRaw(url: string, options: any = {}) {
-    const { host } = getWpConfig();
+/** * 🛠️ 記事リソース専用 Fetch 
+ * 🚀 修正: manualHost を受け取り、Django への身分証 (Hostヘッダー) を確定させる
+ */
+async function fetchPostRaw(url: string, options: any = {}, manualHost?: string) {
+    // getWpConfig に manualHost を渡して、そのサイト用の host (api-xxx-host) を取得
+    const config = getWpConfig(manualHost);
+    const targetHost = manualHost || config.host;
+
     const res = await fetch(url, {
         ...options,
         headers: { 
             ...getDjangoHeaders(), 
-            'Host': host, 
+            // 🛡️ CRITICAL: Djangoの洗浄エンジンが識別するためのHost名
+            'Host': targetHost, 
+            'x-django-host': targetHost,
             ...(options.headers || {}) 
         },
         signal: AbortSignal.timeout(10000)
     });
+
     const data = await handleResponseWithDebug(res, url);
     return { data: replaceInternalUrls(data), status: res.status };
 }
@@ -42,11 +59,14 @@ async function fetchPostRaw(url: string, options: any = {}) {
 export async function fetchPostList(
     limit = 12, 
     offset = 0, 
-    project?: string,
-    options: any = {} // 👈 追加：外部からの fetchOptions (Hostヘッダー等) を受け取れるように
+    project?: string, // 'bicstation', 'tiper', 'avflash' 等が渡される
+    options: any = {} 
 ): Promise<{ results: UnifiedPost[], count: number }> {
     
+    // 一般サイトかどうかの判定 (アダルト除外フィルタ用)
     const isGeneralSite = ['bicstation', 'saving', 'bicstation-host', 'saving-host'].includes(project || '');
+    
+    // 一般サイトはフィルタで減る分を考慮して多めに取得
     const fetchLimit = isGeneralSite ? limit * 3 : limit; 
 
     const query = new URLSearchParams({
@@ -56,20 +76,25 @@ export async function fetchPostList(
     });
 
     /**
-     * 🎯 [CRITICAL_FIX]
-     * Django Shell の調査結果により、識別フィールドは 'site' であることが判明。
-     * 引数の project (bicstation等) を 'site' パラメータとして送信する。
+     * 🎯 Django API パラメータ設定
+     * project がある場合は site パラメータとして付与
      */
     if (project && project !== 'all') {
         query.append('site', project); 
     }
 
-    // もし Django側が posts ではなく articles という URL ならここを修正
-    const url = commonResolveApiUrl(`posts/?${query.toString()}`);
+    /**
+     * 🛰️ URL解決
+     * 🚀 [FIX]: commonResolveApiUrl にも project を渡し、
+     * siteConfig 経由で api-xxx-host:8083 へのパスを生成させる
+     */
+    const url = commonResolveApiUrl(`posts/?${query.toString()}`, project); 
+
+    // 🚀 fetchPostRaw に project (身分証) を渡して実行
     const { data } = await fetchPostRaw(url, { 
         ...options,
-        next: { revalidate: 0 } // デバッグ中につきキャッシュ無効化
-    });
+        next: { revalidate: 0 } 
+    }, project);
 
     let rawResults = data?.results || [];
 
@@ -88,17 +113,15 @@ export async function fetchPostList(
         });
     }
 
-    // 🔄 UnifiedPost への変換処理 (Django Articleモデルのフィールド名に対応)
+    // 🔄 UnifiedPost への変換処理
     const results: UnifiedPost[] = rawResults.slice(0, limit).map((item: any) => ({
         ...item,
         id: item.id.toString(),
         slug: item.slug || item.id.toString(),
-        // 画像取得ロジックの強化
         image: item.main_image_url || 
                (item.images_json && Array.isArray(item.images_json) && item.images_json[0]?.url) || 
                item.thumbnail || 
                '/images/common/no-image.jpg',
-        // 💡 [FIX] Django側は body_main であることが判明したため最優先に
         content: item.body_main || item.body_text || item.content || "",
         is_adult: !!item.is_adult,
         site: item.site || 'unknown',
@@ -109,10 +132,12 @@ export async function fetchPostList(
 
 /** 📝 特定の記事詳細データを取得 */
 export async function fetchPostData(id: string, project?: string): Promise<UnifiedPost | null> {
-    const url = commonResolveApiUrl(`posts/${id}/`);
-    const { data, status } = await fetchPostRaw(url, { next: { revalidate: 60 } });
+    // 詳細取得時も Host 判定ができるよう project を渡す
+    const url = commonResolveApiUrl(`posts/${id}/`, project);
+    const { data, status } = await fetchPostRaw(url, { next: { revalidate: 60 } }, project);
 
     if (status === 200 && data) {
+        // 一般サイトでのアダルトコンテンツ誤表示防止
         if (data.is_adult === true && ['bicstation', 'saving'].includes(project || '')) {
             return null;
         }

@@ -1,40 +1,50 @@
 /**
  * =====================================================================
- * 🛠️ Django API 共通クライアント (Zenith v8.0 - Hybrid Host Resolution)
+ * 🛠️ Django API 共通クライアント (Zenith v8.2 - Multi-Tenant Final Fix)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. ローカル(api-xxx-host)と本番(api.xxx.com)の Host ヘッダー自動切替。
- * 2. サーバーサイド(SSR)通信時の Django コンテナ直撃ロジック。
- * 3. PROJECT_NAME に基づく動的なサイト識別。
+ * 1. 【物理パス解決】resolveApiUrl に manualHost を貫通させ、正しいポート(8083)へ誘導。
+ * 2. 【名前解決の保護】正規表現を修正し、ホスト名に含まれる 'api-' を誤って削らないように改善。
+ * 3. 【SSR身分証】getDjangoHeaders で Host ヘッダーを動的に生成し、Djangoの洗浄エンジンを起動。
  * =====================================================================
  */
 import { getWpConfig, IS_SERVER } from '../config';
+import { getSiteMetadata } from '../utils/siteConfig';
 
 /**
  * 💡 接続先URLを動的に解決 (Network Path Resolver)
+ * 🚀 manualHost を受け取り、各ドメイン専用の 8083 ポート等のパスを解決します。
  */
-export const resolveApiUrl = (endpoint: string) => {
-    const { baseUrl } = getWpConfig();
+export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
+    // 🎯 manualHost を渡して、siteConfig 側で定義された api_base_url (8083系) を取得
+    const config = getWpConfig(manualHost);
+    const baseUrl = config.baseUrl;
     
-    // 1. エンドポイントの正規化 (二重スラッシュ防止)
+    /**
+     * 1. エンドポイントの正規化
+     * ⚠️ [重要修正]: 以前の /^api\// を削除しました。
+     * これにより 'api-bicstation-host' のような文字列の先頭を削る事故を防ぎます。
+     */
     const cleanEndpoint = endpoint
-        .replace(/^api\//, '')
         .replace(/^\/+/, '')
         .replace(/\/+$/, '');
 
     // 2. "/api" の二重付与を防止
     const rootUrl = baseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
-    // 3. 結合: Django の APPEND_SLASH=True に対応するため末尾スラッシュを付与
+    // 3. 結合: Django の APPEND_SLASH=True に対応
+    // ここで生成される URL は http://api-bicstation-host:8083/api/posts/ のようになります。
     return `${rootUrl}/api/${cleanEndpoint}/`;
 };
 
 /**
  * 💡 Django リクエスト用ヘッダー生成
- * SSR時は、DjangoのMiddlewareがサイト判定に使用する「Hostヘッダー」を偽装・注入します。
+ * 🛡️ manualHost からそのサイト本来のドメイン名を解決し、Hostヘッダーにセットします。
  */
-export const getDjangoHeaders = () => {
-    const { host } = getWpConfig();
+export const getDjangoHeaders = (manualHost?: string) => {
+    // 判定ライブラリを用いて、リクエスト毎の正しいメタデータを取得
+    const siteConfig = getSiteMetadata(manualHost);
+    const targetHost = siteConfig.django_host; 
     
     const headers: Record<string, string> = {
         'Accept': 'application/json',
@@ -42,13 +52,15 @@ export const getDjangoHeaders = () => {
     };
 
     /**
-     * 🚀 Server Side (SSR) 限定の処理
-     * Django コンテナ(django-v3:8000)に直接リクエストを送る際、
-     * Host ヘッダーを本来のドメイン(api-avflash-host 等)に書き換えることで
-     * Django 側の Middleware 判定を正常に機能させます。
+     * 🚀 Server Side (SSR) 通信時の Host 書き換え
+     * これが Django 側の Middleware 判定（137件モード）を起動させるスイッチです。
      */
     if (IS_SERVER) {
-        headers['Host'] = host;
+        headers['Host'] = targetHost;
+        headers['x-django-host'] = targetHost; // 予備の識別ヘッダー
+        
+        // ログで「どの面構えでリクエストしているか」を追跡可能にする
+        console.log(`📡 [API-DEBUG] SSR Request Identity: ${targetHost}`);
     }
 
     return headers;
@@ -56,7 +68,6 @@ export const getDjangoHeaders = () => {
 
 /**
  * 💡 フェッチレスポンス・セーフハンドラ
- * どんな形式のレスポンスも { results: [], count: 0 } に標準化します。
  */
 export async function handleResponseWithDebug(res: Response, url: string) {
     if (!res.ok) {

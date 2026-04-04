@@ -33,12 +33,11 @@ export async function generateMetadata() {
 }
 
 /**
- * 🛠️ 高精度 safeFetch (Django Articleモデル適合版)
+ * 🛠️ 高精度 safeFetch
  */
 async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     try {
         const data = await promise;
-        // ログ出力を整理し、本番でも邪魔にならないように
         if (!data || (data.results && data.results.length === 0)) {
             console.warn("⚠️ [DATA_EMPTY]: Django returned 200 OK but 0 results.");
         } else {
@@ -57,36 +56,24 @@ export default async function HomePageMain() {
     const host = headerList.get('host') || "bicstation.com";
     const siteConfig = getSiteMetadata(host); 
     
-    const siteTag = siteConfig.site_tag; // "bicstation"
-    const INTERNAL_HOST = siteConfig.django_host; // "api-bicstation-host"
-    const API_BASE = siteConfig.api_base_url; 
+    const siteTag = siteConfig.site_tag; // "bicstation" 等
+    const INTERNAL_HOST = siteConfig.django_host; // "api-bicstation-host" 等
     
     const ROUTE_BASE = "/post"; 
 
+    console.log(`⚓ --- [SYSTEM_CHECK: ${siteTag.toUpperCase()}] ---`);
+    console.log(`NODE: ${INTERNAL_HOST} | TARGET: ${siteTag}`);
+
     /**
-     * 🛰️ 通信パラメータの最適化
-     * Djangoの Article モデルは 'site' フィールドでフィルタリングするため
-     * クエリパラメータを site=... に向ける必要があります。
+     * --- 🎯 STEP 2: データ同期 ---
+     * 🚀 [CRITICAL FIX]
+     * 手動の fetchOptions ルートを廃止。
+     * fetchPostList(limit, offset, siteTag) を呼ぶことで、
+     * client.ts 側の getDjangoHeaders(siteTag) が走り、
+     * 正しい Host ヘッダーと物理パス(:8083)が自動的に適用されます。
      */
-    const fetchOptions = {
-        cache: 'no-store',
-        headers: {
-            'Host': INTERNAL_HOST,
-            'Accept': 'application/json',
-            'X-Target-Model': 'Article' // Django側へのヒント
-        },
-        next: { revalidate: 0 }
-    };
-
-    console.log(`⚓ --- [BICSTATION_SYSTEM_CHECK] ---`);
-    console.log(`NODE: ${INTERNAL_HOST} | TARGET_SITE: ${siteTag}`);
-
-    // --- 🎯 STEP 2: データ同期 ---
-    // 💡 修正：第三引数に siteTag を渡し、内部的に ?site=bicstation となるように運用
-    // ※ fetchPostList 内部が tag=${tag} となっている場合は、この関数の手前で
-    //   URLを書き換えるか、API側のViewで tag パラメータを site フィルタに回してください。
     const postResponse = await safeFetch(
-        fetchPostList(10, 0, siteTag, fetchOptions), 
+        fetchPostList(12, 0, siteTag), 
         { results: [], count: 0 }
     );
 
@@ -112,7 +99,7 @@ export default async function HomePageMain() {
                         <span className={styles.statusLabel}>SYSTEM_LIVE</span>
                     </div>
                     <div className={styles.versionTag}>
-                        {siteConfig.site_name}_OS <span className={styles.verNum}>v5.5.0 [FINAL]</span>
+                        {siteConfig.site_name}_OS <span className={styles.verNum}>v5.5.0 [DB_SYNC]</span>
                     </div>
                     <div className={styles.nodeStats}>
                         ACTIVE_ARTICLES: <span className={styles.countNum}>{totalCount}</span>
@@ -147,8 +134,7 @@ export default async function HomePageMain() {
                             <div className="text-left text-[10px] font-mono opacity-60 mt-4 p-4 border border-white/10 bg-black/20">
                                 <p className="text-yellow-400 font-bold">--- RECOVERY_DIAGNOSTICS ---</p>
                                 <p>IDENTIFIER: {siteTag}</p>
-                                <p>TARGET_FIELD: site</p>
-                                <p>STATUS: Django Articleモデルへの接続は成功。クエリ条件を再確認中。</p>
+                                <p>STATUS: Django接続は正常。DBクエリ条件(site={siteTag})を再試行中。</p>
                             </div>
                         </div>
                     </div>
