@@ -22,11 +22,11 @@ class StandardPagination(PageNumberPagination):
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """
-    🔱 BICSTATION API v5.1 [SHIN-VPS FINAL - Domain Matching Edition]
+    🔱 BICSTATION API v5.2 [SHIN-VPS FINAL - Domain Matching Edition]
     🛡️ 修正内容:
-    - Middleware の判定結果(project_id)に基づき、各サイトに最適な記事を物理カラムでフィルタ。
-    - 一般サイト/アダルトサイトの判定リストを v3.9 の実環境に完全適合。
-    - 判定漏れ時に「全件アダルト」になる危険な else 処理を回避。
+    - 外部からの 'site' クエリパラメータを最優先で受け付けるよう get_queryset を強化。
+    - Middleware の project_id とクエリパラメータの site を統合し、正確なサイト記事を抽出。
+    - フィルタリングの優先順位を整理し、NO_DATA 事故を防止。
     """
     serializer_class = ArticleSerializer
     pagination_class = StandardPagination
@@ -37,6 +37,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter
     ]
     
+    # site を含めることで DjangoFilterBackend が自動的に ?site=... を処理可能にする
     filterset_fields = ['site', 'is_adult', 'show_on_main', 'show_on_satellite', 'is_exported', 'content_type']
     search_fields = ['title'] 
     ordering_fields = ['created_at', 'updated_at']
@@ -50,51 +51,54 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        ⚡ プロジェクト別の配信フィルタリングロジック
+        ⚡ プロジェクト別の配信フィルタリングロジック (統合修正版)
         """
         # 1. 基礎クエリ
         queryset = Article.objects.all()
         if self.action == 'list':
             queryset = queryset.defer('body_main', 'body_satellite')
 
-        # 2. プロジェクト識別
+        # 2. パラメータ及び識別子の取得
+        # Middlewareからの識別子
         project_id = getattr(self.request, 'project_id', 'default')
+        # クエリパラメータからの直接指定 (site または project)
+        param_site = self.request.query_params.get('site') or self.request.query_params.get('project')
         
-        # 🛡️ 判定グループの定義 (ドメイン名・ホスト名・プロジェクト名を網羅)
+        # ターゲットとなる識別子を確定 (パラメータがあればそれを優先)
+        target_id = param_site if param_site else project_id
+
+        # 🛡️ 判定グループの定義
         GENERAL_PROJECTS = ['bicstation', 'saving', 'bicstation-host', 'saving-host', 'news', 'bic-saving']
         ADULT_PROJECTS = ['tiper', 'avflash', 'tiper-host', 'avflash-host']
 
         # 3. 配信ロジックの適用
-        # ✅ 一般サイト向け：アダルト排除 ＋ 一般記事のみ
-        if project_id in GENERAL_PROJECTS:
+        if target_id in GENERAL_PROJECTS:
+            # 一般サイト: アダルト排除 + メイン表示ON
             queryset = queryset.filter(is_adult=False, show_on_main=True)
-            # さらに site が特定されている場合は絞り込む（混合を防ぐ場合）
-            # queryset = queryset.filter(site__in=['bicstation', 'saving', 'news'])
+            
+            # 🎯 重要: 'bicstation-host' などの場合は DB上の 'bicstation' にマッピングしてフィルタ
+            site_filter = target_id.replace('-host', '')
+            if site_filter in ['bicstation', 'saving']:
+                 queryset = queryset.filter(site=site_filter)
 
-        # ✅ アダルトサイト向け：アダルト属性のみを配信
-        elif project_id in ADULT_PROJECTS:
+        elif target_id in ADULT_PROJECTS:
+            # アダルトサイト: アダルト属性のみ
             queryset = queryset.filter(is_adult=True)
+            site_filter = target_id.replace('-host', '')
+            queryset = queryset.filter(site=site_filter)
 
-        # ✅ それ以外（管理画面や判定不能時）
-        else:
-            # クエリパラメータ ?project= があればそれを優先
-            param_project = self.request.query_params.get('project')
-            if param_project in GENERAL_PROJECTS:
-                queryset = queryset.filter(is_adult=False)
-            elif param_project in ADULT_PROJECTS:
-                queryset = queryset.filter(is_adult=True)
-            # パラメータもなければ全件表示（管理画面用）
-
+        # 4. DjangoFilterBackend による後続フィルタ (?site= 等) を有効にするため queryset を返す
         return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         """保存時に site 情報を自動付与"""
         project_id = getattr(self.request, 'project_id', 'default')
+        site_val = project_id.replace('-host', '')
         
         if project_id in ['bicstation', 'saving', 'bicstation-host', 'saving-host']:
-            serializer.save(site=project_id, is_adult=False, show_on_main=True)
+            serializer.save(site=site_val, is_adult=False, show_on_main=True)
         elif project_id in ['tiper', 'avflash', 'tiper-host', 'avflash-host']:
-            serializer.save(site=project_id, is_adult=True, show_on_main=True)
+            serializer.save(site=site_val, is_adult=True, show_on_main=True)
         else:
             serializer.save()
 
@@ -108,7 +112,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         project_id = getattr(self.request, 'project_id', None)
         update_filter = {"id__in": ids}
         if project_id and project_id != 'default':
-            update_filter["site"] = project_id
+            update_filter["site"] = project_id.replace('-host', '')
 
         updated_count = Article.objects.filter(**update_filter).update(is_exported=True)
         return Response({
