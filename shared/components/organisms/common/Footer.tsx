@@ -74,8 +74,11 @@ function FooterContent({ debugData }: FooterProps) {
     const networkSites = [
         { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff' },
         { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900' },
-        { name: 'AV Flash', domain: 'av-flash.xyz', port: 3002, color: '#e60012' },
+        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012' },
         { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37' },
+        // --- 🆕 追加ノード ---
+        { name: 'ビックAV動画', domain: 'bic-erog.com', port: 3003, color: '#bc00ff' }, // 💜 刺激的なネオンパープル
+        { name: 'シークレットXYZ', domain: 'adult-search.xyz', port: 3003, color: '#6a0dad' }, // 🔮 秘匿性の高いディープパープル
     ];
 
     const getNetworkUrl = (s: typeof networkSites[0]) => {

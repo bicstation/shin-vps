@@ -24,7 +24,7 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     'bic-saving':  { name: 'Bic Saving',  group: 'general', brand: 'DELL',  prod: 'api.bic-saving.com' },
     'saving':      { name: 'Bic Saving',  group: 'general', brand: 'DELL',  prod: 'api.bic-saving.com' },
     'avflash':     { name: 'AV Flash',    group: 'adult',   brand: 'DUGA',  prod: 'api.avflash.xyz' },
-    'tiper':       { name: 'Tiper.Live',       group: 'adult',   brand: 'FANZA', prod: 'api.tiper.live' },
+    'tiper':       { name: 'Tiper.Live',  group: 'adult',   brand: 'FANZA', prod: 'api.tiper.live' },
     'bicstation':  { name: 'Bic Station', group: 'general', brand: 'DELL',  prod: 'api.bicstation.com' },
   };
 
