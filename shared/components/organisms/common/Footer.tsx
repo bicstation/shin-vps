@@ -6,23 +6,11 @@ import { useSearchParams } from 'next/navigation';
 
 /**
  * ✅ 物理パスに基づいた正しいインポート
- * エイリアスを @/shared に統一し、マルチブランド対応を確実なものにします。
  */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import styles from './Footer.module.css';
 import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero';
 
-/**
- * =====================================================================
- * 🧱 [ORGANISM] Footer (shared/components/organisms/common/Footer.tsx)
- * 🛡️ Maya's Logic: ハイドレーション・ガード & デバッグターミナル統合版
- * ---------------------------------------------------------------------
- * 修正点:
- * 1. AIコンシェルジュ(/concierge) と お問い合わせ(/contact) を分離・併記
- * 2. Next.js 15 用の Suspense 境界を Root レベルで適用
- * 3. ネットワークサイトの URL 生成ロジックを最新化
- * =====================================================================
- */
 interface FooterProps {
     debugData?: {
         id?: string;
@@ -72,13 +60,12 @@ function FooterContent({ debugData }: FooterProps) {
      * 🛰️ SHIN-VPS ネットワーク設定
      */
     const networkSites = [
-        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff' },
-        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900' },
-        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012' },
-        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37' },
-        // --- 🆕 追加ノード ---
-        { name: 'ビックAV動画', domain: 'bic-erog.com', port: 3003, color: '#bc00ff' }, // 💜 刺激的なネオンパープル
-        { name: 'シークレットXYZ', domain: 'adult-search.xyz', port: 3003, color: '#6a0dad' }, // 🔮 秘匿性の高いディープパープル
+        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff', external: false },
+        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900', external: false },
+        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012', external: false },
+        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37', external: false },
+        { name: 'ビックAV動画', domain: 'bic-erog.com', port: 3004, color: '#bc00ff', external: true },
+        { name: 'シークレットXYZ', domain: 'adult-search.xyz', port: 3005, color: '#6a0dad', external: true },
     ];
 
     const getNetworkUrl = (s: typeof networkSites[0]) => {
@@ -108,6 +95,16 @@ function FooterContent({ debugData }: FooterProps) {
             desc: "ハードウェア性能の真実を数値化。最新PCスペック診断とBTOメーカー比較で、あなたの用途に最適な1台を提案します。",
             brands: [{ name: 'Lenovo', slug: 'lenovo' }, { name: 'DELL', slug: 'dell' }, { name: 'Apple', slug: 'apple' }],
             suffix: 'Performance Registry'
+        },
+        'Bic的AV動画': {
+            desc: "FANZA作品に特化した超速報レビューサイト。独自のAI解析スコアで、今最も熱いトレンド作品をダイレクトに抽出します。",
+            brands: [{ name: 'FANZA', slug: 'fanza' }, { name: 'PRESTIGE', slug: 'prestige' }],
+            suffix: 'Direct Stream Index'
+        },
+        'シークレットXYZ': {
+            desc: "秘匿性の高い検索体験を提供するアダルトサーチエンジン。あらゆるプラットフォームを横断し、あなたの理想を瞬時に形にします。",
+            brands: [{ name: 'Deep Search', slug: 'search' }, { name: 'Premium', slug: 'premium' }],
+            suffix: 'Private Search Node'
         }
     };
 
@@ -119,7 +116,6 @@ function FooterContent({ debugData }: FooterProps) {
             style={{ '--accent-red': siteColor } as React.CSSProperties}
         >
             <div className={styles.container}>
-                {/* --- 1. サイト概要 --- */}
                 <div className={styles.column}>
                     <h3 className={styles.siteTitle}>{site.site_name.toUpperCase()}</h3>
                     <p className={styles.description}>{config.desc}</p>
@@ -138,7 +134,6 @@ function FooterContent({ debugData }: FooterProps) {
                     </div>
                 </div>
 
-                {/* --- 2. ネットワークリンク --- */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>SHIN-VPS NETWORK</h3>
                     <ul className={styles.networkList}>
@@ -148,15 +143,16 @@ function FooterContent({ debugData }: FooterProps) {
                                     href={getNetworkUrl(s)}
                                     className={styles.networkLink}
                                     style={{ borderLeft: `3px solid ${s.color}`, paddingLeft: '8px' }}
+                                    target={s.external ? "_blank" : "_self"}
+                                    rel={s.external ? "noopener noreferrer" : ""}
                                 >
-                                    {s.name} <small>{isLocal ? `(:${s.port})` : ''}</small>
+                                    {s.name} {s.external && <small>(EXT)</small>} <small>{isLocal ? `(:${s.port})` : ''}</small>
                                 </a>
                             </li>
                         ))}
                     </ul>
                 </div>
 
-                {/* --- 3. リーガル & インフォメーション (AIリンクを統合) --- */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>INFORMATION</h3>
                     <ul className={styles.linkList}>
@@ -190,7 +186,6 @@ function FooterContent({ debugData }: FooterProps) {
                 </p>
             </div>
 
-            {/* --- 🚀 診断ターミナル (デバッグモード用) --- */}
             {isDebugMode && debugData && (
                 <div className={styles.debugContainer}>
                     <SystemDiagnosticHero

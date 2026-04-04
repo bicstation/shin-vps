@@ -1,10 +1,10 @@
 /**
  * 📝 記事取得サービス (shared/lib/api/django/posts.ts)
- * 🛡️ Maya's Logic v7.6 - SHIN-VPS v3.9 [POSTS UNIFICATION - FINAL]
+ * 🛡️ Maya's Logic v7.7 - SHIN-VPS v3.9 [POSTS UNIFICATION - DATABASE_MATCHED]
  */
 import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from './client';
 import { getWpConfig, getDjangoBaseUrl } from '../config';
-import { UnifiedPost, DjangoApiResponse } from '../types'; // 型をインポート
+import { UnifiedPost } from '../types';
 
 /** 🔄 内部URL置換 (Traefik/Container ホスト名対応) */
 export const replaceInternalUrls = (data: any): any => {
@@ -42,11 +42,12 @@ async function fetchPostRaw(url: string, options: any = {}) {
 export async function fetchPostList(
     limit = 12, 
     offset = 0, 
-    project?: string
+    project?: string,
+    options: any = {} // 👈 追加：外部からの fetchOptions (Hostヘッダー等) を受け取れるように
 ): Promise<{ results: UnifiedPost[], count: number }> {
     
     const isGeneralSite = ['bicstation', 'saving', 'bicstation-host', 'saving-host'].includes(project || '');
-    const fetchLimit = isGeneralSite ? limit * 3 : limit; // 一般サイトはフィルタリング分多めに取得
+    const fetchLimit = isGeneralSite ? limit * 3 : limit; 
 
     const query = new URLSearchParams({
         limit: fetchLimit.toString(),
@@ -54,12 +55,21 @@ export async function fetchPostList(
         ordering: '-created_at',
     });
 
+    /**
+     * 🎯 [CRITICAL_FIX]
+     * Django Shell の調査結果により、識別フィールドは 'site' であることが判明。
+     * 引数の project (bicstation等) を 'site' パラメータとして送信する。
+     */
     if (project && project !== 'all') {
-        query.append('project', project);
+        query.append('site', project); 
     }
 
+    // もし Django側が posts ではなく articles という URL ならここを修正
     const url = commonResolveApiUrl(`posts/?${query.toString()}`);
-    const { data } = await fetchPostRaw(url, { next: { revalidate: 300 } });
+    const { data } = await fetchPostRaw(url, { 
+        ...options,
+        next: { revalidate: 0 } // デバッグ中につきキャッシュ無効化
+    });
 
     let rawResults = data?.results || [];
 
@@ -78,19 +88,18 @@ export async function fetchPostList(
         });
     }
 
-    // 🔄 UnifiedPost への変換処理
+    // 🔄 UnifiedPost への変換処理 (Django Articleモデルのフィールド名に対応)
     const results: UnifiedPost[] = rawResults.slice(0, limit).map((item: any) => ({
         ...item,
         id: item.id.toString(),
         slug: item.slug || item.id.toString(),
-        // 優先順位を明確にして「画像なし」を回避
+        // 画像取得ロジックの強化
         image: item.main_image_url || 
-               (item.images_json && item.images_json[0]?.url) || 
+               (item.images_json && Array.isArray(item.images_json) && item.images_json[0]?.url) || 
                item.thumbnail || 
                '/images/common/no-image.jpg',
-        // 本文の統合
+        // 💡 [FIX] Django側は body_main であることが判明したため最優先に
         content: item.body_main || item.body_text || item.content || "",
-        // v5.1 物理カラムの保証
         is_adult: !!item.is_adult,
         site: item.site || 'unknown',
     }));
@@ -104,7 +113,6 @@ export async function fetchPostData(id: string, project?: string): Promise<Unifi
     const { data, status } = await fetchPostRaw(url, { next: { revalidate: 60 } });
 
     if (status === 200 && data) {
-        // 安全ガード
         if (data.is_adult === true && ['bicstation', 'saving'].includes(project || '')) {
             return null;
         }
@@ -114,7 +122,7 @@ export async function fetchPostData(id: string, project?: string): Promise<Unifi
             id: data.id.toString(),
             slug: data.slug || data.id.toString(),
             image: data.main_image_url || 
-                   (data.images_json && data.images_json[0]?.url) || 
+                   (data.images_json && Array.isArray(data.images_json) && data.images_json[0]?.url) || 
                    data.thumbnail || 
                    '/images/common/no-image.jpg',
             content: data.body_main || data.body_text || data.content || "",

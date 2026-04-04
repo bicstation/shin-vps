@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Django settings for tiper_api project.
-🚀 SHIN-VPS v3.9 完全復旧・マルチドメイン統合版
+🚀 SHIN-VPS v3.9.1 完全復旧・マルチドメイン統合版
+修正内容: CSRF信頼ドメインの厳格化、内部通信ホストのプロトコル追加
 """
 
 import os
@@ -14,21 +15,37 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-default-key-pl
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # --- 🌐 ホスト / ドメイン設定 ---
+# 開発・復旧を優先しワイルドカードを維持しますが、本番では具体的なドメインに絞ることを推奨します
 ALLOWED_HOSTS = ['*']
 
 # --- 🔗 CORS / CSRF 設定 ---
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+# 🚀 重要: Django 4.x以降は 'http://' または 'https://' が必須です
 CSRF_TRUSTED_ORIGINS = [
+    # 本番ドメイン
     'https://tiper.live', 'https://api.tiper.live',
     'https://bicstation.com', 'https://api.bicstation.com',
     'https://bic-saving.com', 'https://api.bic-saving.com',
     'https://avflash.xyz', 'https://api.avflash.xyz',
+    
+    # ローカル・デバッグ環境
     'http://localhost:3000', 'http://localhost:8083',
-    'http://tiper-host:8083', 'http://bicstation-host:8083',
-    'http://saving-host:8083', 'http://avflash-host:8083',
-    'http://api-tiper-host:8083', 'http://api-bicstation-host:8083',
+    'http://127.0.0.1:3000', 'http://127.0.0.1:8083',
+
+    # 🛰️ 内部Dockerネットワーク通信 (Next.js server-side fetch用)
+    # ポート 8083 経由および直接通信の両方をカバー
+    'http://tiper-host', 'http://tiper-host:8083',
+    'http://bicstation-host', 'http://bicstation-host:8083',
+    'http://saving-host', 'http://saving-host:8083',
+    'http://avflash-host', 'http://avflash-host:8083',
+    
+    # 🛰️ API用識別子 (ページ側コードで指定している Host ヘッダーに一致)
+    'http://api-tiper-host', 'http://api-tiper-host:8083',
+    'http://api-bicstation-host', 'http://api-bicstation-host:8083',
+    'http://api-saving-host', 'http://api-saving-host:8083',
+    'http://api-avflash-host', 'http://api-avflash-host:8083',
 ]
 
 # --- 🛡️ Proxy 設定 ---
@@ -56,7 +73,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'tiper_api.middleware.MultiDomainProjectMiddleware',
+    'tiper_api.middleware.MultiDomainProjectMiddleware', # 👈 サイト識別の核心
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

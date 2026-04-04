@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { headers } from "next/headers";
 
 import '@/shared/styles/globals.css';
+// ✅ siteConfig v21.4 を使用
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import ClientStyles from '@/shared/components/atoms/ClientStyles';
 import PCSidebar from '@/shared/layout/Sidebar/PCSidebar';
@@ -20,6 +21,7 @@ const inter = Inter({
   display: 'swap',
 });
 
+// メタデータは別途 constructMetadata を使うのが理想ですが、一旦静的に定義
 export const metadata: Metadata = {
   title: "BICSTATION - PCカタログ & インテリジェンスアーカイブ",
   description: "次世代の知覚とPCデバイスの専門ポータルサイト",
@@ -40,30 +42,31 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   
-  // ✅ 司令塔ロジックの修正
+  // ✅ 初期値の設定
   let themeColor = "#007bff"; 
-  let currentProjectTag = "bicstation"; // 💡 ID（タグ）を基準にする
+  let currentProjectTag = "bicstation"; 
   let siteName = "Bic Station";
 
   try {
     const headerList = await headers();
-    const host = headerList.get('host') || "bicstation.com";
+    // host を取得 (例: api-bicstation-host:3000 -> bicstation-host)
+    const host = headerList.get('host')?.split(':')[0] || "bicstation.com";
     
     // 🛰️ ホスト名からサイト設定を解決
     const siteData = getSiteMetadata(host);
     
-    // 💡 修正ポイント: システム全体で使うのは 'site_tag' (例: bicstation)
-    currentProjectTag = siteData?.site_tag || "bicstation";
-    siteName = siteData?.site_name || "Bic Station";
-    
-    // プロジェクトに基づいたカラーを決定
-    themeColor = getSiteColor(currentProjectTag);
+    if (siteData) {
+      currentProjectTag = siteData.site_tag; // "bicstation"
+      siteName = siteData.site_name;         // "Bic Station"
+      
+      // 🔥 重要: getSiteColor は 'site_name' を引数に取る設計になっています
+      themeColor = getSiteColor(siteData.site_name);
+    }
   } catch (error) {
-    console.warn("Layout Async Resolution: Fallback used.");
+    console.warn("Layout Async Resolution: Fallback used.", error);
   }
 
   return (
-    // 💡 data-project にタグをセット
     <html lang="ja" suppressHydrationWarning data-project={currentProjectTag}>
       <head>
         <meta name="theme-color" content={themeColor} />
@@ -74,7 +77,7 @@ export default async function RootLayout({
         style={{
           backgroundColor: "#f4f7f9",
           color: "#333",
-          // ✅ CSS変数を一貫性のあるものに修正
+          // ✅ CSS変数の適用
           "--site-theme-color": themeColor,
           "--current-project-tag": currentProjectTag, 
         } as React.CSSProperties}
@@ -87,7 +90,7 @@ export default async function RootLayout({
 
         <ClientStyles themeColor={themeColor} />
 
-        {/* 1. ヘッダー：currentProjectTag を渡せるなら渡す（コンポーネント側の設計によります） */}
+        {/* ヘッダー */}
         <Suspense fallback={<div className="h-16 bg-white border-b border-gray-100" />}>
           <Header />
         </Suspense>
@@ -99,14 +102,14 @@ export default async function RootLayout({
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
             
-            {/* 2. サイドバー：タグに基づいてフィルタリング */}
+            {/* サイドバー */}
             <aside className={styles.sidebarSection}>
               <Suspense fallback={<div className="w-[280px] h-screen bg-gray-50 border-r border-gray-100 animate-pulse" />}>
                 <PCSidebar />
               </Suspense>
             </aside>
 
-            {/* 3. メインコンテンツ */}
+            {/* メインコンテンツ */}
             <main className={styles.mainContent}>
               <Suspense fallback={
                 <div className="flex flex-col items-center justify-center p-20 text-gray-400">
@@ -121,6 +124,7 @@ export default async function RootLayout({
           </div>
         </div>
 
+        {/* フッター */}
         <Suspense fallback={<div className="h-64 bg-gray-900" />}>
           <Footer />
         </Suspense>
