@@ -1,20 +1,20 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react/no-danger */
 // @ts-nocheck 
 
 import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 
-/**
- * 🛰️ [CORE SERVICES]
- * 最新の django/posts.ts を使用。旧 bridge は商品データ取得(DUGA)に限定。
- */
-import { fetchPostList } from '@/shared/lib/api/django/posts';
-import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
-import AdultProductCard from '@/shared/components/organisms/cards/AdultProductCard';
+// ✅ 共通コンポーネント (最新の UnifiedCard を採用)
+import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 import SafeImage from '@/shared/components/atoms/SafeImage';
+
+// ✅ API・判定ロジック
+import { fetchPostList } from '@/shared/lib/api/django/posts';
+import { getUnifiedProducts } from '@/shared/lib/api/django-bridge';
+import { constructMetadata } from '@/shared/lib/utils/metadata';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 import { UnifiedPost } from '@/shared/lib/api/types';
 
 import styles from './page.module.css';
@@ -24,6 +24,21 @@ import styles from './page.module.css';
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+/**
+ * 🛰️ メタデータ生成 (AV Flash 専用に自動構成)
+ */
+export async function generateMetadata() {
+    const headerList = await headers();
+    const host = headerList.get('host') || "avflash.xyz";
+    const siteConfig = getSiteMetadata(host);
+
+    return constructMetadata({
+        title: `${siteConfig.site_name} | AI解析・最新アダルトアーカイブ`,
+        description: `${siteConfig.site_name}のAI解析に基づいたDUGA最新アーカイブ。`,
+        host: host 
+    });
+}
 
 /**
  * 🛡️ API通信の安全な実行
@@ -39,134 +54,136 @@ async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
 }
 
 export default async function Page() {
-    const title = process.env.NEXT_PUBLIC_APP_TITLE || 'AV FLASH';
-
-    // 🛡️ Middlewareから渡された判定済みプロジェクトIDを取得
+    // --- 🎯 STEP 1: サイトアイデンティティの自動特定 ---
     const headerList = await headers();
-    const project = headerList.get('x-django-host') || 'avflash'; 
+    const host = headerList.get('x-django-host') || headerList.get('host') || "avflash.xyz";
+    const siteConfig = getSiteMetadata(host); 
+    
+    // 自動判定されたタグ (avflash)
+    const siteTag = siteConfig.site_tag; 
+    const ROUTE_BASE = "/post"; 
 
-    /**
-     * 🚀 並列データ取得実行
-     * 1. 商品データ (DUGA) -> 旧Bridge経由（AdultProduct型）
-     * 2. サイト記事 (UnifiedPost) -> 新Postサービス直結
-     */
-    const [productRes, articleRes] = await Promise.all([
+    // 🚀 デバッグログ (サーバー側)
+    console.log("⚓ --- AVFLASH_DEPLOY_REPORT ---");
+    console.log("HOSTNAME:", host);
+    console.log("SITE_NAME:", siteConfig.site_name); // "AV Flash"
+    console.log("SITE_TAG:", siteConfig.site_tag);   // "avflash"
+    console.log("---------------------------------");
+
+    // --- 🎯 STEP 2: 並列データ取得実行 ---
+    const [postResponse, dugaRes] = await Promise.all([
+        // 1. 最新記事 (Django API)
         safeFetch(
-            fetchDjangoBridgeContent({ 
-                content_type: 'product', 
-                api_source: 'DUGA', 
-                limit: 12, 
-                host: project 
-            }),
+            fetchPostList(6, 0, siteTag), 
             { results: [], count: 0 }
         ),
+        // 2. DUGA 商品 (AV Flashのメインストリーム)
         safeFetch(
-            fetchPostList(6, 0, project),
+            getUnifiedProducts({ site_group: siteTag, limit: 12, brand: 'DUGA' }), 
             { results: [], count: 0 }
-        )
+        ),
     ]);
 
-    const products = productRes?.results || [];
-    const totalCount = productRes?.count || 0;
-    const articles: UnifiedPost[] = articleRes?.results || [];
+    const latestPosts: UnifiedPost[] = postResponse?.results || [];
+    const products = dugaRes?.results || [];
+    const totalCount = dugaRes?.count || 0;
 
     return (
-        <div className={styles.container}>
-            
-            {/* --- 🛸 ヒーローヘッダー --- */}
-            <header className={styles.heroHeader}>
-                <div className={styles.heroBadge}>AI ANALYSIS & ARCHIVE</div>
-                <h1 className={styles.heroTitle}>{title}</h1>
-                <p className={styles.heroSubtitle}>
-                    AI解析によって厳選された <span style={{ color: '#ffc107' }}>DUGA</span> 最新作品と業界分析記事
-                </p>
-                <div className={styles.statsInfo}>
-                    Total <strong>{totalCount.toLocaleString()}</strong> curated items
-                </div>
-            </header>
+        <div className={styles.pageContainer}>
+            {/* 🛠️ ブラウザデバッグ用シグナル */}
+            <script dangerouslySetInnerHTML={{
+                __html: `console.log("🛰️ AVFLASH_SYNC:", ${JSON.stringify({ 
+                    site: siteConfig.site_name, 
+                    tag: siteConfig.site_tag,
+                    host: host 
+                })})`
+            }} />
 
-            {/* --- 📰 LATEST ARTICLES (UnifiedPost形式) --- */}
-            <section className={styles.section}>
-                <div className={styles.sectionHeader}>
-                    <div className={styles.titleWrapper}>
-                        <h2 className={styles.sectionTitle}>LATEST ARTICLES</h2>
-                        <div className={styles.titleLine} />
-                    </div>
-                    <Link href="/posts" className={styles.viewAllLink}>
-                        VIEW ALL ARTICLES →
-                    </Link>
-                </div>
-
-                <div className={styles.articleGrid}>
-                    {articles.length > 0 ? (
-                        articles.map((post) => (
-                            <Link href={`/posts/${post.slug}`} key={post.id} className={styles.articleCard}>
-                                <div className={styles.articleThumb}>
-                                    <SafeImage 
-                                        src={post.image} 
-                                        alt={post.title} 
-                                        className="object-cover w-full h-full"
-                                    />
-                                    <div className={styles.articleDate}>
-                                        [{new Date(post.created_at).toLocaleDateString('ja-JP')}]
-                                    </div>
-                                </div>
-                                <div className={styles.articleBody}>
-                                    <h3 className={styles.articleTitle}>{post.title}</h3>
-                                    <p className={styles.articleExerpt}>
-                                        {post.content ? post.content.replace(/<[^>]*>?/gm, '').substring(0, 60) : ""}...
-                                    </p>
-                                </div>
-                            </Link>
-                        ))
-                    ) : (
-                        <div className="col-span-full py-12 text-center border border-dashed border-white/10 rounded-lg">
-                            <p className={styles.glitchText}>NO_INTELLIGENCE_DATA_IN_STREAM</p>
-                        </div>
-                    )}
-                </div>
-            </section>
-
-            {/* --- 💎 DUGA NEW RELEASES --- */}
-            <section className={styles.section}>
-                <div className={styles.sectionHeader}>
-                    <div className={styles.titleWrapper}>
-                        <h2 className={styles.sectionTitle}>NEW RELEASES</h2>
-                        <div className={styles.titleLine} />
-                    </div>
-                    <Link href="/brand/duga" className={styles.viewAllLink}>
-                        VIEW ALL DUGA →
-                    </Link>
-                </div>
+            <div className={styles.contentStream}>
                 
-                <div className={styles.productGrid}>
-                    {products.length > 0 ? (
-                        products.map((item) => (
-                            <AdultProductCard key={item.id} product={item} />
-                        ))
-                    ) : (
-                        <div className={styles.emptyState}>
-                            <div className={styles.emptyIcon}>🔍</div>
-                            <h3>CONNECTING_TO_MATRIX...</h3>
-                            <p>
-                                Djangoサーバー <code>DUGA_STREAM</code> を待機中...<br />
-                                Project: <strong>{project}</strong>
-                            </p>
-                        </div>
-                    )}
-                </div>
-            </section>
-
-            {/* --- 🛡️ インフォメーション --- */}
-            <section className={styles.infoSection}>
-                <div className={styles.infoCard}>
-                    <h3>AI ANALYSIS SITE</h3>
-                    <p>
-                        本ポータルは、最新のアダルトコンテンツをAI技術を用いて多角的に分析し、
-                        ユーザーの好みに最適な作品を提案する次世代のエンタメポータルです。
+                {/* --- 🛸 ヒーローヘッダー --- */}
+                <header className={styles.heroHeader}>
+                    <div className={styles.heroBadge}>AI ANALYSIS & ARCHIVE</div>
+                    <h1 className={styles.heroTitle}>{siteConfig.site_name}</h1>
+                    <p className={styles.heroSubtitle}>
+                        AI解析によって厳選された <span style={{ color: '#ffc107' }}>DUGA</span> 最新作品と業界分析記事
                     </p>
-                </div>
-            </section>
+                    <div className={styles.statsInfo}>
+                        Total <strong>{totalCount.toLocaleString()}</strong> curated items in Matrix
+                    </div>
+                </header>
+
+                {/* --- 📰 LATEST ARTICLES (新・共通カード採用) --- */}
+                <section className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                        <div className={styles.titleWrapper}>
+                            <h2 className={styles.sectionTitle}>LATEST_REPORTS</h2>
+                            <div className={styles.titleLine} />
+                        </div>
+                        <Link href={ROUTE_BASE} className={styles.viewAllLink}>
+                            VIEW ALL ARTICLES →
+                        </Link>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {latestPosts.length > 0 ? (
+                            latestPosts.map((post) => (
+                                <UnifiedProductCard 
+                                    key={post.id} 
+                                    data={post} 
+                                    siteConfig={siteConfig} 
+                                />
+                            ))
+                        ) : (
+                            <div className="col-span-full py-12 text-center border border-dashed border-white/10 rounded-lg">
+                                <p className={styles.glitchText}>NO_INTELLIGENCE_DATA_IN_STREAM</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* --- 💎 DUGA NEW RELEASES (新・共通カード採用) --- */}
+                <section className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                        <div className={styles.titleWrapper}>
+                            <h2 className={styles.sectionTitle}>DUGA_NEW_RELEASES</h2>
+                            <div className={styles.titleLine} />
+                        </div>
+                        <Link href="/brand/duga" className={styles.viewAllLink}>
+                            VIEW ALL DUGA →
+                        </Link>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                        {products.length > 0 ? (
+                            products.map((item) => (
+                                <UnifiedProductCard 
+                                    key={item.id} 
+                                    data={item} 
+                                    siteConfig={siteConfig} 
+                                />
+                            ))
+                        ) : (
+                            <div className={styles.emptyState}>
+                                <div className={styles.emptyIcon}>🔍</div>
+                                <h3>CONNECTING_TO_DUGA_STREAM...</h3>
+                                <p>Target Project: <strong>{siteTag}</strong></p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* --- 🛡️ インフォメーション --- */}
+                <section className={styles.infoSection}>
+                    <div className={styles.infoCard}>
+                        <h3>AI ANALYSIS SYSTEM [{siteTag.toUpperCase()}]</h3>
+                        <p>
+                            本ポータルは、最新のアダルトコンテンツをAI技術を用いて多角的に分析。
+                            {siteConfig.site_name}独自のアルゴリズムにより、最適なアーカイブを提供します。
+                        </p>
+                    </div>
+                </section>
+            </div>
         </div>
     );
 }

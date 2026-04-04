@@ -114,7 +114,8 @@ class Command(BaseCommand):
                 res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=15)
                 feed = feedparser.parse(res.content)
                 for entry in feed.entries:
-                    if not Article.objects.filter(source_url=entry.link, site=site_key).exists():
+                    # if not Article.objects.filter(source_url=entry.link, site=site_key).exists():
+                    if not Article.objects.filter(source_url=entry.link, site=project_name).exists():
                         all_entries.append(entry)
             except: pass
 
@@ -155,7 +156,8 @@ class Command(BaseCommand):
                     
                     with transaction.atomic():
                         new_article = Article.objects.create(
-                            site=site_key,
+                            # site=site_key,
+                            site=project_name,
                             is_adult=is_adult_val,
                             title=final_title,
                             source_url=selected_entry.link,

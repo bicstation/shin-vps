@@ -1,10 +1,3 @@
-/**
- * =====================================================================
- * 🏗️ BICSTATION Root Layout (v6.5.1 Multi-Domain Master)
- * 🛡️ Maya's Logic: 司令塔機能搭載・ビルド安全・ドメイン自動判別版
- * 💡 headers() からプロジェクトを特定し、全コンポーネントへ伝播させます。
- * =====================================================================
- */
 /* eslint-disable @next/next/no-img-element */
 
 import type { Metadata, Viewport } from "next";
@@ -12,19 +5,13 @@ import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import { headers } from "next/headers";
 
-// ✅ 共通スタイル・設定
 import '@/shared/styles/globals.css';
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
-
-// ✅ レイアウト & サイドバー
 import ClientStyles from '@/shared/components/atoms/ClientStyles';
 import PCSidebar from '@/shared/layout/Sidebar/PCSidebar';
-
-// ✅ 共通コンポーネント
 import Header from '@/shared/components/organisms/common/Header';
 import Footer from '@/shared/components/organisms/common/Footer';
 import ChatBot from '@/shared/components/organisms/common/ChatBot';
-
 import styles from "./layout.module.css";
 import Script from 'next/script';
 
@@ -33,10 +20,6 @@ const inter = Inter({
   display: 'swap',
 });
 
-/**
- * 💡 SEO設定 (最小構成)
- * 🚨 Digest エラー回避のため、Metadata API のみを使用。
- */
 export const metadata: Metadata = {
   title: "BICSTATION - PCカタログ & インテリジェンスアーカイブ",
   description: "次世代の知覚とPCデバイスの専門ポータルサイト",
@@ -45,9 +28,6 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * 💡 Viewport 設定
- */
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -59,33 +39,33 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  /**
-   * ✅ プロジェクト識別子の決定 (司令塔ロジック)
-   * 💡 ビルド時や headers() が未定義の環境でもクラッシュしないよう
-   * 徹底的なフォールバックを構築しています。
-   */
+  
+  // ✅ 司令塔ロジックの修正
   let themeColor = "#007bff"; 
-  let currentProject = "bicstation"; // デフォルト
+  let currentProjectTag = "bicstation"; // 💡 ID（タグ）を基準にする
+  let siteName = "Bic Station";
 
   try {
     const headerList = await headers();
-    const host = headerList.get('host') || "";
+    const host = headerList.get('host') || "bicstation.com";
     
     // 🛰️ ホスト名からサイト設定を解決
     const siteData = getSiteMetadata(host);
-    currentProject = siteData?.site_name || "bicstation";
+    
+    // 💡 修正ポイント: システム全体で使うのは 'site_tag' (例: bicstation)
+    currentProjectTag = siteData?.site_tag || "bicstation";
+    siteName = siteData?.site_name || "Bic Station";
     
     // プロジェクトに基づいたカラーを決定
-    themeColor = getSiteColor(currentProject);
+    themeColor = getSiteColor(currentProjectTag);
   } catch (error) {
-    // ビルド時などはここを通るため、静的なデフォルト値を維持
-    console.warn("Layout Async Resolution: Using static fallback during build.");
+    console.warn("Layout Async Resolution: Fallback used.");
   }
 
   return (
-    <html lang="ja" suppressHydrationWarning data-project={currentProject}>
+    // 💡 data-project にタグをセット
+    <html lang="ja" suppressHydrationWarning data-project={currentProjectTag}>
       <head>
-        {/* プロジェクト固有のテーマカラー反映用メタタグ */}
         <meta name="theme-color" content={themeColor} />
       </head>
       <body
@@ -94,51 +74,44 @@ export default async function RootLayout({
         style={{
           backgroundColor: "#f4f7f9",
           color: "#333",
-          // ✅ TypeScriptの型エラーを回避しつつ、CSS変数として注入
-          // @ts-ignore
+          // ✅ CSS変数を一貫性のあるものに修正
           "--site-theme-color": themeColor,
-          "--current-project": currentProject, 
+          "--current-project-tag": currentProjectTag, 
         } as React.CSSProperties}
       >
-        {/* AdSense スクリプト (検証済みコード) */}
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9068876333048216"
           crossOrigin="anonymous"
           strategy="afterInteractive" 
         />
 
-        {/* クライアント側スタイル補正 (スクロールバー等のテーマカラー化) */}
         <ClientStyles themeColor={themeColor} />
 
-        {/* 1. ヘッダー (Suspense) */}
+        {/* 1. ヘッダー：currentProjectTag を渡せるなら渡す（コンポーネント側の設計によります） */}
         <Suspense fallback={<div className="h-16 bg-white border-b border-gray-100" />}>
           <Header />
         </Suspense>
         
-        {/* 2. ステマ規制対応：透明性確保のための常設表示 */}
         <aside className={styles.adDisclosure} aria-label="広告告知">
           本サイトはアフィリエイト広告を利用しています
         </aside>
 
-        {/* --- 🏗️ メイン構造 --- */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutInner}>
             
-            {/* サイドバー：プロジェクトごとに中身が動的に変わる PCSidebar */}
+            {/* 2. サイドバー：タグに基づいてフィルタリング */}
             <aside className={styles.sidebarSection}>
-              <Suspense fallback={
-                <div className="w-[280px] h-screen bg-gray-50 border-r border-gray-100 animate-pulse" />
-              }>
+              <Suspense fallback={<div className="w-[280px] h-screen bg-gray-50 border-r border-gray-100 animate-pulse" />}>
                 <PCSidebar />
               </Suspense>
             </aside>
 
-            {/* メインコンテンツ：page.tsx の内容が展開される */}
+            {/* 3. メインコンテンツ */}
             <main className={styles.mainContent}>
               <Suspense fallback={
                 <div className="flex flex-col items-center justify-center p-20 text-gray-400">
-                  <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-4" />
-                  <p className="font-mono text-xs tracking-widest uppercase">Initializing Intelligence...</p>
+                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="font-mono text-xs tracking-widest uppercase">Initializing {siteName}...</p>
                 </div>
               }>
                 {children}
@@ -148,12 +121,10 @@ export default async function RootLayout({
           </div>
         </div>
 
-        {/* 3. フッター：ドメイン共通の基本情報を表示 */}
         <Suspense fallback={<div className="h-64 bg-gray-900" />}>
           <Footer />
         </Suspense>
 
-        {/* 4. AIチャットボット：Maya または BicStation AI が起動 */}
         <Suspense fallback={null}>
           <ChatBot />
         </Suspense>

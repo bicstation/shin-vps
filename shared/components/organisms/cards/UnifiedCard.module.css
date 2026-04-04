@@ -1,0 +1,109 @@
+/* shared/components/organisms/cards/UnifiedCard.module.css */
+
+.cardContainer {
+  display: flex;
+  flex-direction: column;
+  background: rgba(20, 20, 25, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  position: relative;
+  height: 100%;
+}
+
+/* 🚀 ホバー時にサイトカラーの光を放つ */
+.cardContainer:hover {
+  transform: translateY(-5px);
+  border-color: var(--theme-color);
+  box-shadow: 0 10px 30px -10px var(--theme-color);
+  background: rgba(30, 30, 35, 1);
+}
+
+.imageWrapper {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.imageWrapper img {
+  transition: transform 0.5s ease;
+}
+
+.cardContainer:hover .imageWrapper img {
+  transform: scale(1.08);
+}
+
+/* 🏷️ サイトバッジ（Tiper/AVFlash等のラベル） */
+.siteBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #fff;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.cardBody {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #efefef;
+  line-height: 1.4;
+  margin: 0 0 10px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 2行で省略 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.2s ease;
+}
+
+.cardContainer:hover .title {
+  color: var(--theme-color);
+}
+
+.metaInfo {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 10px;
+}
+
+.date {
+  font-size: 0.75rem;
+  color: #888;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* 💠 グリッチ風の装飾（オプション） */
+.cardContainer::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: var(--theme-color);
+  transition: width 0.3s ease;
+}
+
+.cardContainer:hover::after {
+  width: 100%;
+}
