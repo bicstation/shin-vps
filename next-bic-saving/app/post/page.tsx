@@ -1,126 +1,143 @@
-/* eslint-disable react/no-unescaped-entities */
+/**
+ * =====================================================================
+ * 🛰️ AVFLASH Intelligence Archive Index (v12.0.1)
+ * 🛡️ Maya's Logic: Secure Node Grid / Adult Sector Optimized
+ * =====================================================================
+ */
 // @ts-nocheck
 import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 
-// ✅ トップページと同じ API パスとコンポーネントを使用
-import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
-import { fetchPostList } from '@/shared/lib/api/django/posts'; // Bridgeから最新APIへ変更
+import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
-// ✅ コンポーネント
-import Pagination from '@/shared/components/molecules/Pagination';
-import styles from './post.module.css'; 
+import styles from './news.module.css';
 
-/**
- * 💡 Next.js 15 用の動的レンダリング設定
- */
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 const POSTS_PER_PAGE = 12;
 
-export default async function SavingArchivePage({
-    searchParams
-}: {
-    searchParams: Promise<{ page?: string }>;
-}) {
-    // 1. パラメータの解決
-    const { page } = await searchParams;
-    const currentPage = Number(page) || 1;
+export default async function ArchiveIndexPage({ searchParams }: { searchParams: { page?: string } }) {
+    const params = await searchParams;
+    const currentPage = parseInt(params.page || '1', 10);
     const offset = (currentPage - 1) * POSTS_PER_PAGE;
 
-    // 2. 識別情報の取得（トップページと共通の localhost 翻訳ロジック）
+    // --- 🎯 STEP 1: 環境特定 (AVFlash専用) ---
     const headerList = await headers();
-    const rawHost = headerList.get('x-django-host') || headerList.get('host') || "bic-saving.com";
-    
-    const host = (rawHost.includes('localhost') || rawHost.includes('127.0.0.1')) 
-        ? "bic-saving.com" 
-        : rawHost;
-
+    const host = headerList.get('x-forwarded-host') || headerList.get('host') || "av-flash.xc";
     const siteConfig = getSiteMetadata(host);
+    const currentProject = siteConfig?.site_name || 'avflash'; // 明示的にavflashを指定
 
-    // 3. データフェッチ (トップページと同じ引数順序: limit, offset, host)
-    let displayPosts = [];
-    let totalCount = 0;
+    // --- 🎯 STEP 2: データ取得 ---
+    const response = await fetchDjangoBridgeContent('posts', POSTS_PER_PAGE, { 
+        offset: offset,
+        site: currentProject, 
+    });
 
-    try {
-        // fetchPostList(12, 0, host) というトップページの成功パターンをページネーション対応で適用
-        const response = await fetchPostList(POSTS_PER_PAGE, offset, host);
-        displayPosts = response?.results || [];
-        totalCount = response?.count || 0;
-    } catch (e) {
-        console.error("🚨 [Archive-Fetch-Error] 通信失敗:", e.message);
-    }
-
-    const totalPages = Math.max(1, Math.ceil(totalCount / POSTS_PER_PAGE));
-
-    // 🛡️ データ安全性ガード (TypeError: b.replace 対策)
-    const sanitizedPosts = displayPosts.map(post => ({
-        ...post,
-        title: post.title || "Untitled Intelligence",
-        body_text: typeof post.body_text === 'string' ? post.body_text : "",
-        description: typeof post.description === 'string' ? post.description : "",
-        content: typeof post.content === 'string' ? post.content : "",
-    }));
+    const allPosts = response?.results || (Array.isArray(response) ? response : []);
+    const totalCount = response?.count || allPosts.length || 0;
+    const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE);
 
     return (
-        <main className={styles.archiveContainer}>
-            {/* 🛸 アーカイブヘッダー */}
+        <div className={styles.archiveContainer}>
+            {/* 🛰️ 背景演出: AVFlash用に少し紫を混ぜたグローを入れると雰囲気が増します */}
+            <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0 bg-[radial-gradient(circle_at_50%_0%,#ff00ea,transparent),radial-gradient(circle_at_10%_100%,#00f2ff,transparent)]"></div>
+
             <header className={styles.archiveHeader}>
-                <div className={styles.headerInner}>
-                    <div className={styles.breadcrumb}>
-                        <Link href="/">HOME</Link> <span>/</span> SAVING_ARCHIVE
-                    </div>
-                    <h1 className={styles.mainTitle}>
-                        暮らしの知恵アーカイブ
-                        <span className={styles.subTitle}>/UNIFIED_DATA_INDEX</span>
-                    </h1>
-                    <div className={styles.statusLine}>
-                        <span className={styles.infoLabel}>ACTIVE_HOST:</span> {host} | 
-                        <span className={styles.infoLabel}>TOTAL_NODES:</span> {totalCount}
-                    </div>
+                <div className={styles.statusBadge}>
+                    <span className={styles.pulseDot}></span>
+                    RAW_DATA_STREAM: UNLOCKED
+                </div>
+                
+                <h1 className={styles.mainTitle}>
+                    AVFLASH_ARCHIVE
+                    <span className={styles.subTitle}>// {currentProject.toUpperCase()}_SYSTEM</span>
+                </h1>
+
+                <div className={styles.statusLine}>
+                    <span>STATUS: <span className={styles.statusActive} style={{color: '#00f2ff'}}>CONNECTED</span></span>
+                    <span>TOTAL_ASSETS: <span className={styles.countNum}>{totalCount.toLocaleString()}</span></span>
+                    <span>SIGNAL: STABLE</span>
                 </div>
             </header>
 
-            {/* 📰 記事グリッド */}
-            <div className={styles.gridWrapper}>
-                {sanitizedPosts.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {sanitizedPosts.map((post) => (
-                            <UnifiedProductCard 
-                                key={post.id} 
-                                data={post} 
-                                siteConfig={siteConfig} 
-                            />
-                        ))}
-                    </div>
+            <main className={styles.contentGrid}>
+                {allPosts.length > 0 ? (
+                    allPosts.map((post) => (
+                        <Link 
+                            href={`/post/${post.slug}`} 
+                            key={post.id} 
+                            className={styles.nodeCard}
+                        >
+                            <div className={styles.scanLine}></div>
+                            
+                            <div className={styles.cardThumbWrap}>
+                                <img 
+                                    src={post.image || '/api/placeholder/400/225'} 
+                                    alt="" 
+                                    className={styles.cardThumb} 
+                                />
+                                <span className={styles.categoryTag} style={{ borderColor: '#ff00ea', color: '#ff00ea' }}>
+                                    {post.category || 'UNCENSORED'}
+                                </span>
+                            </div>
+
+                            <div className={styles.cardBody}>
+                                <div className={styles.cardMeta}>
+                                    <span className={styles.cardDate}>
+                                        {new Date(post.created_at).toLocaleDateString('ja-JP')}
+                                    </span>
+                                    <span className={styles.nodeId}>HASH: {post.slug?.slice(0, 10)}</span>
+                                </div>
+                                <h2 className={styles.cardTitle}>{post.title}</h2>
+                                <p className={styles.cardDescription}>
+                                    {post.summary || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 80) + '...'}
+                                </p>
+                                <div className={styles.cardFooter}>
+                                    <span className={styles.accessBtn}>DECRYPT_AND_OPEN _</span>
+                                    <span className={styles.arrow}>▶</span>
+                                </div>
+                            </div>
+                        </Link>
+                    ))
                 ) : (
-                    <div className={styles.emptyState}>
-                        <div className={styles.glitchText}>NO_DATA_STREAM_FOUND</div>
-                        <p className="text-gray-400 mt-4 font-mono text-xs">
-                            API_TARGET: {host} <br />
-                            STATUS: DATA_EMPTY_OR_FETCH_FAILED
+                    <div className={styles.noDataArea} style={{ gridColumn: '1/-1', textAlign: 'center', padding: '10rem 0' }}>
+                        <p className={styles.errorMessage} style={{ color: '#ff00ea', letterSpacing: '4px' }}>
+                            [!] NO_ARCHIVE_DATA_IN_THIS_SECTOR
                         </p>
                     </div>
                 )}
-            </div>
-            
+            </main>
+
             {/* 🔢 ページネーション */}
             {totalPages > 1 && (
-                <div className={styles.paginationWrapper}>
-                    <Pagination 
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        baseUrl="/post" 
-                    />
-                </div>
+                <nav className={styles.paginationWrapper}>
+                    <div className={styles.pageControls}>
+                        {currentPage > 1 ? (
+                            <Link href={`?page=${currentPage - 1}`} className={styles.pageBtn}>
+                                [« PREV]
+                            </Link>
+                        ) : <span style={{ opacity: 0.1 }}>[« PREV]</span>}
+                        
+                        <span className={styles.pageInfo}>
+                            TRACK: {currentPage} / {totalPages}
+                        </span>
+
+                        {currentPage < totalPages ? (
+                            <Link href={`?page=${currentPage + 1}`} className={styles.pageBtn}>
+                                [NEXT »]
+                            </Link>
+                        ) : <span style={{ opacity: 0.1 }}>[NEXT »]</span>}
+                    </div>
+                </nav>
             )}
 
-            <footer className={styles.archiveFooterOuter}>
-                <Link href="/" className={styles.backBtn}>← RETURN_TO_SYSTEM_ROOT</Link>
+            <footer className={styles.archiveFooter}>
+                <Link href="/" className={styles.backBtn}>
+                    « TERMINATE_SESSION
+                </Link>
             </footer>
-        </main>
+        </div>
     );
 }

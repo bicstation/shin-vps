@@ -1,15 +1,263 @@
-/* /app/news/[slug]/detail.module.css */
+/* =====================================================================
+ * 🏗️ [Tiper-DETAIL-CSS] - STRATEGIC ARCHIVE LAYOUT (v12.7.0)
+ * ---------------------------------------------------------------------
+ * 🚀 統合・最適化ポイント: 
+ * 1. 【漆黒の没入感】背景色をインデックスと同期し、境界のない遷移を実現。
+ * 2. 【HTMLインジェクション特化】h2/h3, strong, img に強力なネオン定義を付与。
+ * 3. 【CTAインパルス】最下部のボタンエリアに最高輝度の発光エフェクトを配置。
+ * ===================================================================== */
+
 .detailContainer {
-    max-width: 800px;
+    max-width: 1000px; /* 読みやすさを考慮した最適幅 */
     margin: 0 auto;
-    padding: 2rem;
-    font-family: 'JetBrains Mono', monospace;
+    padding: 8rem 2rem 12rem;
+    background: transparent;
+    color: #cbd5e1;
+    font-family: 'Inter', 'JetBrains Mono', -apple-system, sans-serif;
+    line-height: 2.2; /* 長文読解時の疲労を軽減 */
+    position: relative;
+    z-index: 10;
+}
+
+/* --- 📋 ヘッダーセクション --- */
+.headerArea {
+    margin-bottom: 6rem;
+    position: relative;
 }
 
 .title {
-    color: #e83e8c; /* Tiperカラー */
-    font-size: 2rem;
-    border-left: 4px solid #e83e8c;
-    padding-left: 1rem;
+    color: #ffffff;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+    border-left: 10px solid #00f2ff;
+    padding-left: 2.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
-/* 他のスタイル */
+
+.metaInfo {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: #475569;
+    margin-top: 4rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.siteBadge {
+    background: #00f2ff;
+    color: #05070a;
+    padding: 4px 16px;
+    font-weight: 900;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+}
+
+/* --- 🖼️ メインビジュアル --- */
+.heroImageWrap {
+    width: 100%;
+    margin: 5rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.9);
+}
+
+.heroImage {
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0.6;
+    filter: grayscale(0.4) contrast(1.1);
+    transition: 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heroImageWrap:hover .heroImage {
+    opacity: 0.9;
+    filter: grayscale(0) contrast(1);
+    transform: scale(1.03);
+}
+
+/* --- 🖋️ 本文コンテンツ (dangerouslySetInnerHTML 制御) --- */
+.contentBody {
+    font-size: 1.15rem;
+    color: #cbd5e1;
+    letter-spacing: 0.015em;
+}
+
+/* 記事内の大見出し: シアンのグラデーション */
+.contentBody h2 {
+    font-size: clamp(1.8rem, 5vw, 2.4rem);
+    font-weight: 900;
+    color: #ffffff;
+    margin: 7rem 0 3rem;
+    padding: 1.2rem 2rem;
+    background: linear-gradient(90deg, rgba(0, 242, 255, 0.1), transparent);
+    border-left: 5px solid #00f2ff;
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    text-transform: uppercase;
+    box-shadow: -15px 0 30px -15px rgba(0, 242, 255, 0.5);
+    letter-spacing: -0.02em;
+}
+
+/* 記事内の中見出し: ダイヤモンドチップ */
+.contentBody h3 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin: 5rem 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.contentBody h3::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: #00f2ff;
+    transform: rotate(45deg);
+    box-shadow: 0 0 15px #00f2ff;
+}
+
+.contentBody p {
+    margin-bottom: 3rem;
+    opacity: 0.9;
+}
+
+.contentBody strong {
+    color: #00f2ff;
+    font-weight: 900;
+    text-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+}
+
+.contentBody img {
+    max-width: 100%;
+    height: auto;
+    margin: 5rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+    transition: 0.5s;
+}
+
+.contentBody img:hover {
+    border-color: rgba(0, 242, 255, 0.3);
+    transform: translateY(-5px);
+}
+
+/* --- 🧪 分析ボックス (Summary) --- */
+.analysisBox {
+    background: rgba(0, 242, 255, 0.02);
+    border: 1px solid rgba(0, 242, 255, 0.1);
+    padding: 4rem;
+    margin: 6rem 0;
+    position: relative;
+    backdrop-blur: 5px;
+}
+
+.analysisBox::before {
+    content: "INTELLIGENCE_SUMMARY";
+    position: absolute;
+    top: -12px;
+    left: 30px;
+    background: #05070a;
+    padding: 0 15px;
+    color: #00f2ff;
+    font-size: 0.75rem;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 4px;
+}
+
+/* --- 🛡️ アクションエリア (CTA) --- */
+.actionSection {
+    margin-top: 10rem;
+    padding: 8rem 4rem;
+    background: radial-gradient(circle at top, rgba(0, 242, 255, 0.08), transparent);
+    border: 1px solid rgba(0, 242, 255, 0.15);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.actionTitle {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 900;
+    color: #ffffff;
+    margin-bottom: 4.5rem;
+    font-style: italic;
+    letter-spacing: -2px;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 5;
+}
+
+.primaryBtn {
+    background: #00f2ff;
+    color: #05070a;
+    padding: 1.6rem 4.5rem;
+    font-weight: 900;
+    text-decoration: none;
+    font-size: 0.9rem;
+    letter-spacing: 4px;
+    transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 40px rgba(0, 242, 255, 0.3);
+    text-transform: uppercase;
+}
+
+.primaryBtn:hover {
+    background: #ffffff;
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(0, 242, 255, 0.5);
+}
+
+.secondaryBtn {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    color: #475569;
+    padding: 1.6rem 4.5rem;
+    font-weight: 900;
+    text-decoration: none;
+    font-size: 0.9rem;
+    letter-spacing: 4px;
+    transition: 0.4s;
+    text-transform: uppercase;
+}
+
+.secondaryBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* --- 📱 レスポンシブ --- */
+@media (max-width: 768px) {
+    .detailContainer { padding: 6rem 1.5rem 8rem; }
+    .title { font-size: 2.2rem; padding-left: 1.5rem; border-left-width: 6px; }
+    .metaInfo { gap: 15px; font-size: 0.65rem; }
+    .contentBody h2 { margin-top: 5rem; padding: 1rem; }
+    .analysisBox { padding: 2.5rem 1.5rem; }
+    .actionSection { padding: 5rem 2rem; }
+    .buttonGroup { flex-direction: column; width: 100%; }
+    .primaryBtn, .secondaryBtn { width: 100%; padding: 1.4rem; text-align: center; }
+}

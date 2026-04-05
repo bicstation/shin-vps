@@ -5,19 +5,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 /**
- * ✅ エイリアスを @/shared に統一
+ * ✅ 内部ライブラリのインポート
  */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import styles from './Header.module.css';
 
 /**
  * =====================================================================
- * 🛡️ Maya's Logic: マルチドメイン・ガイド出し分け対応ヘッダー
+ * 🛡️ Maya's Logic: ハイブリッド・アイデンティティ確定ヘッダー
  * ---------------------------------------------------------------------
- * 更新内容:
- * 1. ガイドリンク (matching, live-chat, chat-lady) を
- * Tiper / AV Flash (isAdult判定) の時のみ表示するよう制御。
- * 2. 既存のAIコンシェルジュ/ソムリエの切り替えロジックと統合。
+ * 🚀 修正ポイント:
+ * 1. SSR (サーバーサイド) 時も環境変数からサイト情報を確定し、undefined を撲滅。
+ * 2. クライアントサイドでは従来通り window.location で補完。
+ * 3. 初期表示の「隠し」を撤廃し、SEO と ログ精度を向上。
  * =====================================================================
  */
 export default function Header() {
@@ -28,15 +28,20 @@ export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState<string | null>(null);
 
+    // 🛰️ アイデンティティの確定 (SSR & Client 両対応)
+    const site = useMemo(() => {
+        // 1. ブラウザ環境なら hostname、サーバー環境なら環境変数を参照
+        const identifier = typeof window !== 'undefined' 
+            ? window.location.hostname 
+            : process.env.NEXT_PUBLIC_SITE_DOMAIN;
+
+        // 2. 識別子を元にメタデータを解決 (これで SSR 時の undefined が消える)
+        return getSiteMetadata(identifier || "");
+    }, []); // 依存配列を空にすることで、レンダリングサイクル全体で安定化
+
     useEffect(() => {
         setMounted(true);
     }, []);
-
-    const site = useMemo(() => {
-        if (!mounted || typeof window === 'undefined') return null;
-        const host = window.location.hostname;
-        return getSiteMetadata(host);
-    }, [mounted]);
 
     const checkAuthStatus = useCallback(() => {
         if (typeof window === 'undefined') return;
@@ -68,7 +73,9 @@ export default function Header() {
         }
     };
 
-    if (!mounted || !site) {
+    // 🛡️ ガードロジックの最適化
+    // site が取得できない致命的な場合のみ hidden にする (通常は SSR 時点で取得済み)
+    if (!site) {
         return <header className={styles.header} style={{ height: '70px', visibility: 'hidden' }} />;
     }
 
@@ -76,8 +83,7 @@ export default function Header() {
     const isAdult = site.site_group === 'adult';
 
     /**
-     * 🛠️ メニューコンフィグ
-     * 🛡️ Maya's Guard: isAdult が true の場合のみガイド3種を配列に結合
+     * 🛠️ メニュー構成
      */
     const supportLinks = [
         { label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge' },

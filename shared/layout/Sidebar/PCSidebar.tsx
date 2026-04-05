@@ -2,91 +2,78 @@
 import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
-import { COLORS } from '../../styles/constants';
 
 /**
- * ✅ 司令部統合：Maya's Logic v5.6
- * 生の fetch を廃止し、shared 側の安全なフェッチ関数に一本化します。
+ * ✅ Maya's Logic: 実データ(News) + ダミー(Specs/Brands) 統合運用
  */
-import { fetchMakers, fetchPCSidebarStats } from '@/shared/lib/api/django/pc';
+import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import styles from './PCSidebar.module.css';
 
-interface AttributeItem {
-  id: number;
-  name: string;
-  slug: string;
-  count: number;
-}
-
-interface SidebarData {
-  [category: string]: AttributeItem[];
-}
-
 export default async function Sidebar() {
   /**
-   * 1. 環境情報の取得 (Async)
+   * 1. アイデンティティ確定
    */
   const headerList = await headers();
+  const host = headerList.get('x-forwarded-host') || headerList.get('host') || '';
+  const site = getSiteMetadata(host);
   const pathname = headerList.get('x-url') || '/';
-  // サイトカラーの安全な取得
-  const siteColor = COLORS?.SITE_COLOR || '#007bff';
+  const siteColor = site ? getSiteColor(site.site_name) : '#00f2ff';
 
   /**
-   * 2. フェッチ・セーフティ (エラー時にプロセスを止めない)
+   * 2. データ取得 (最新記事のみ実戦投入)
    */
   async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     try {
       const result = await promise;
       return result ?? fallback;
     } catch (e) {
-      console.error("🚨 [PCSidebar Fetch Error]:", e);
       return fallback;
     }
   }
 
-  /**
-   * 3. データ並列取得
-   * 💡 生の fetch(statsUrl) を廃止。
-   * 💡 fetchPCSidebarStats() 内部で getDjangoHeaders() と URL 解決を完結させています。
-   */
-  const [makers, bridgeData, specStats] = await Promise.all([
-    safeFetch(fetchMakers(), []),
-    safeFetch(fetchDjangoBridgeContent('latest_news', 5), []), 
-    safeFetch(fetchPCSidebarStats(), null) 
-  ]);
+  const bridgeData = await safeFetch(
+    fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }), 
+    { results: [] }
+  );
 
-  const recentArticles = Array.isArray(bridgeData) ? bridgeData : [];
-  
-  /**
-   * 4. 国内外ブランドの自動仕分け
-   */
-  const domesticNames = ['mouse', 'panasonic', 'vaio', 'dynabook', 'fujitsu', 'nec', 'iiyama'];
-  const categorizedMakers = (makers || []).reduce((acc, curr) => {
-    const rawName = curr.maker || curr.name || '';
-    const name = rawName.toLowerCase();
-    
-    const makerData = { 
-      ...curr, 
-      displayName: rawName.toUpperCase(),
-      lowerName: name
-    };
+  const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
 
-    if (domesticNames.some(d => name.includes(d))) {
-      acc.domestic.push(makerData);
-    } else {
-      acc.overseas.push(makerData);
-    }
-    return acc;
-  }, { domestic: [] as any[], overseas: [] as any[] });
+  /**
+   * 3. ダミーデータ定義 (DB設定完了までこれを使用)
+   */
+  const dummyMakers = {
+    domestic: [
+      { id: 'd1', lowerName: 'mouse', displayName: 'MOUSE', count: '-' },
+      { id: 'd2', lowerName: 'fujitsu', displayName: 'FUJITSU', count: '-' }
+    ],
+    overseas: [
+      { id: 'o1', lowerName: 'dell', displayName: 'DELL', count: '-' },
+      { id: 'o2', lowerName: 'hp', displayName: 'HP', count: '-' },
+      { id: 'o3', lowerName: 'lenovo', displayName: 'LENOVO', count: '-' }
+    ]
+  };
+
+  const dummySpecs = {
+    "CPU_SERIES": [
+      { slug: 'core-i7', name: 'Core i7', count: 0 },
+      { slug: 'ryzen-7', name: 'Ryzen 7', count: 0 }
+    ],
+    "GPU_SERIES": [
+      { slug: 'rtx-4060', name: 'RTX 4060', count: 0 },
+      { slug: 'rtx-4070', name: 'RTX 4070', count: 0 }
+    ]
+  };
+
+  const siteUpperName = site ? site.site_name.toUpperCase() : 'BICSTATION';
 
   return (
     <aside className={styles.sidebar}>
       
-      {/* 🏆 SPECIAL: AIツール導線 */}
+      {/* 🏆 SPECIAL */}
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>SPECIAL</h3>
-        <Link href="/pc-finder/" className={styles.specialBanner}>
+        <h3 className={styles.sectionTitle} style={{ color: siteColor }}>SPECIAL</h3>
+        <Link href="/pc-finder/" className={styles.specialBanner} style={{ borderLeft: `4px solid ${siteColor}` }}>
           <span className={styles.finderIcon}>🔍</span>
           <div className={styles.finderText}>
             <span className={styles.finderMain}>PC-FINDER</span>
@@ -95,31 +82,26 @@ export default async function Sidebar() {
         </Link>
       </section>
 
-      {/* 🏢 BRANDS: メーカー別索引 */}
+      {/* 🏢 BRANDS (Dummy Mode) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle}>BRANDS</h3>
         <div className={styles.brandGroup}>
           <p className={styles.subLabel}>国内メーカー</p>
           <ul className={styles.list}>
-            {categorizedMakers.domestic.map((item: any) => (
-              <li key={item.id || item.maker}>
-                <Link href={`/brand/${item.lowerName}`} 
-                      className={`${styles.link} ${pathname.includes(item.lowerName) ? styles.active : ''}`}
-                      style={pathname.includes(item.lowerName) ? { color: siteColor } : {}}>
+            {dummyMakers.domestic.map((item) => (
+              <li key={item.id}>
+                <Link href={`/brand/${item.lowerName}`} className={styles.link}>
                   <span>💻 {item.displayName}</span>
                   <span className={styles.badge}>{item.count}</span>
                 </Link>
               </li>
             ))}
           </ul>
-
           <p className={styles.subLabel} style={{ marginTop: '12px' }}>海外メーカー</p>
           <ul className={styles.list}>
-            {categorizedMakers.overseas.map((item: any) => (
-              <li key={item.id || item.maker}>
-                <Link href={`/brand/${item.lowerName}`} 
-                      className={`${styles.link} ${pathname.includes(item.lowerName) ? styles.active : ''}`}
-                      style={pathname.includes(item.lowerName) ? { color: siteColor } : {}}>
+            {dummyMakers.overseas.map((item) => (
+              <li key={item.id}>
+                <Link href={`/brand/${item.lowerName}`} className={styles.link}>
                   <span>💻 {item.displayName}</span>
                   <span className={styles.badge}>{item.count}</span>
                 </Link>
@@ -129,49 +111,46 @@ export default async function Sidebar() {
         </div>
       </section>
 
-      {/* ⚙️ SPECS: Djangoによる動的属性 (CPU/GPU/Memory等) */}
-      {specStats && Object.entries(specStats as SidebarData).map(([category, items]) => {
-        if (!Array.isArray(items)) return null;
-        return (
-          <section key={category} className={styles.section}>
-            <h3 className={styles.sectionTitle}>{category.replace('_', ' ').toUpperCase()}</h3>
-            <ul className={styles.list}>
-              {items.map((item) => (
-                <li key={item.id || item.slug}>
-                  <Link href={`/pc-products?attribute=${item.slug}`} className={styles.link}>
-                    <span>✨ {item.name}</span>
-                    <span className={styles.badge}>{item.count}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
-        );
-      })}
+      {/* ⚙️ SPECS (Dummy Mode) */}
+      {Object.entries(dummySpecs).map(([category, items]) => (
+        <section key={category} className={styles.section}>
+          <h3 className={styles.sectionTitle}>{category}</h3>
+          <ul className={styles.list}>
+            {items.map((item) => (
+              <li key={item.slug}>
+                <div className={styles.link} style={{ opacity: 0.6, cursor: 'default' }}>
+                  <span>✨ {item.name}</span>
+                  <span className={styles.badge}>-</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
 
-      {/* 📄 UPDATES: Bridge経由の最新レポート */}
+      {/* 📄 UPDATES (Real Data) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle}>LATEST UPDATES</h3>
         <ul className={styles.list}>
           {recentArticles.length > 0 ? (
             recentArticles.map((item: any) => (
               <li key={item.id} className={styles.newsItem}>
-                <Link href={`/news/${item.slug || item.id}`} className={styles.newsLink}>
+                <Link href={`/post/${item.id}`} className={styles.newsLink}>
                    <span className={styles.newsIcon}>📄</span>
                    <span className={styles.newsTitle}>{item.title}</span>
                 </Link>
               </li>
             ))
           ) : (
-            <li className={styles.empty}>最新情報を取得中...</li>
+            <li className={styles.empty}>最新ニュースを同期中...</li>
           )}
         </ul>
       </section>
 
       {/* 🚀 SYSTEM FOOTER */}
       <div className={styles.sidebarFooter}>
-        <span className={styles.statusDot}></span>
-        <span className={styles.statusText}>BICSTATION PC_NODE ONLINE</span>
+        <span className={styles.statusDot} style={{ backgroundColor: siteColor }}></span>
+        <span className={styles.statusText}>{siteUpperName} PC_NODE ONLINE</span>
       </div>
     </aside>
   );

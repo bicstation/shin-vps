@@ -1,9 +1,6 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-LAYOUT-CSS] - Full-Width Production Edition (Fixed)
- * ---------------------------------------------------------------------
- * 1. 固定要素（Header + PRバー）によるコンテンツの潜り込みを完全に解消
- * 2. 全幅表示 (100%) 仕様を維持しつつ、上下の余白バランスを最適化
- * ===================================================================== */
+ * 🏗️ [BICSTATION-LAYOUT-CSS] - Final Visibility & Layout Adjustment
+ * --------------------------------------------------------------------- */
 
 /* 1. 全体を包むラッパー */
 .bodyWrapper {
@@ -13,156 +10,99 @@
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
-  /* Bicstation特有の「重厚かつ清潔な」ダークトーン */
-  background-color: #0a0a0a;
+  background-color: #050505; /* より深い黒でコントラストを強調 */
   color: #e2e8f0;
   overflow-x: hidden;
-  
-  /* 固定ヘッダー分の余白確保 */
-  padding-top: 70px;
+  padding-top: 70px; /* Header分 */
 }
 
-/* 2. 広告告知（PR表記）：全幅でボーダーを走らせる */
+/* 2. 広告告知（PR表記） */
 .adDisclosure {
   width: 100%;
-  background-color: rgba(26, 26, 26, 0.95);
-  font-size: 10px;
-  color: #94a3b8;
+  background-color: rgba(10, 10, 10, 0.9);
+  font-size: 11px;
+  color: #64748b;
   text-align: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(233, 69, 96, 0.4); 
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
   position: sticky;
-  top: 70px; /* Header(70px)の直下に固定 */
+  top: 70px;
   z-index: 900;
-  backdrop-filter: blur(8px);
-  letter-spacing: 0.1em;
+  backdrop-filter: blur(10px);
 }
 
-/* 3. レイアウトの外枠：全幅 (100%) 仕様 */
+/* 3. レイアウトの外枠 */
 .layoutContainer {
   flex: 1;
   width: 100%;
-  max-width: 100%; 
-  margin: 0;
-  /* 左右に 4% のセーフティエリアを確保し、視認性を向上 */
   padding: 0 4%; 
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
 
-/* 4. サイドバーとメインを横並びにするインナー */
+/* 4. レイアウトインナー：ここがコンテンツの開始位置 */
 .layoutInner {
   display: flex;
   gap: 40px; 
-  /**
-   * 🚩 コンテンツ潜り込み防止の核心
-   * 計算式: Header(70px) + PRバー(約35px) + 余裕(10px) = 115px
-   */
-  padding: 115px 0 80px 0;
+  /* Header(70) + PR(35) + 余裕(30) = 135px 程度が理想 */
+  padding: 40px 0 80px 0; 
   width: 100%;
 }
 
-/* 5. サイドバー領域（左側）：スペック・メーカー選定用 */
+/* 5. サイドバー領域：文字をクッキリさせるための補正 */
 .sidebarSection {
-  width: 300px;
+  width: 280px;
   flex-shrink: 0;
   position: sticky;
-  /**
-   * 🚩 layoutInner の開始位置と同期させ、スクロール時のガタつきを排除
-   */
-  top: 115px; 
-  height: fit-content;
+  top: 110px; /* スクロール時にHeader+PRの下にピタッと止まる位置 */
+  height: calc(100vh - 140px); /* 画面内に収める */
+  overflow-y: auto; /* 長い場合にスクロール可能に */
   z-index: 800;
+  
+  /* 🚩 視認性向上のためのマジック */
+  scrollbar-width: none; /* Firefox用 */
 }
+.sidebarSection::-webkit-scrollbar { display: none; } /* Chrome/Safari用 */
 
-/* 6. メインコンテンツ領域（右側）：PCカタログのグリッドが広がる場所 */
+/* 6. メインコンテンツ領域 */
 .mainContent {
   flex: 1;
   min-width: 0;
-  animation: tacticalFadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
 }
 
-/* 7. モバイル対応：レスポンシブ設定 */
+/* 7. 【重要】サイドバー内の文字色・背景の強制補正 */
+/* ※ Sidebar.module.css と干渉する場合はこちらを優先 */
+.sidebarSection a {
+  color: #cbd5e1 !important; /* 少しグレーがかった白が一番読みやすい */
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
 
-/* タブレット・中画面：1カラム化 */
+.sidebarSection a:hover {
+  color: #ffffff !important;
+  text-shadow: 0 0 8px rgba(255,255,255,0.3);
+}
+
+.sidebarSection h3 {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+/* 8. レスポンシブ */
 @media (max-width: 1100px) {
-  .layoutContainer {
-    padding: 0 24px;
-  }
-  
   .layoutInner {
     flex-direction: column;
-    gap: 24px;
-    /* モバイルでは固定を解除するため、上部余白を通常値へ */
-    padding: 24px 0 60px 0; 
+    padding-top: 20px;
   }
-
   .sidebarSection {
     width: 100%;
     position: static;
-    order: 1; /* フィルターを先に表示 */
+    height: auto;
   }
-  
-  .mainContent {
-    order: 2;
-  }
-}
-
-/* スマートフォンサイズ */
-@media (max-width: 768px) {
-  .layoutContainer {
-    padding: 0 16px;
-  }
-  
-  .adDisclosure {
-    font-size: 9px;
-    padding: 8px 4px;
-  }
-}
-
-/* 8. アニメーション */
-@keyframes tacticalFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 9. 特設ヒーローセクション用（必要に応じて利用） */
-.heroSectionWrapper {
-  width: 100%;
-  margin-top: 10px;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* ローディング・スピナー関連 */
-.loadingContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 100px 0;
-  gap: 16px;
-}
-
-.spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid rgba(233, 69, 96, 0.1);
-  border-top-color: var(--site-theme-color, #007bff);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }

@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 
 /**
- * ✅ 修正: 物理パス shared/lib/utils/siteConfig.ts に完全準拠
+ * ✅ 修正: 物理パス準拠
  */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import styles from './ChatBot.module.css';
@@ -15,12 +15,11 @@ interface Message {
 
 /**
  * =====================================================================
- * 🛡️ Maya's Logic: マルチブランド対応フローティング・チャットボット
+ * 🛡️ Maya's Logic: ハイブリッド・アイデンティティ対応チャットボット
  * ---------------------------------------------------------------------
- * 特徴: 
- * 1. サイトごとのテーマカラー & 名称の自動適用
- * 2. Next.js 15 クライアントサイド・セーフ (マウントガード)
- * 3. 物理パス修正済み /api/chat への動的ルーティング
+ * 修正ポイント:
+ * 1. SSR時も環境変数から site を確定させ、ログの undefined を根絶。
+ * 2. 最初の挨拶メッセージ生成を SSR と Client で一致させ、整合性を保持。
  * =====================================================================
  */
 export default function ChatBot() {
@@ -31,24 +30,21 @@ export default function ChatBot() {
     const [isLoading, setIsLoading] = useState(false);
     const scrollEndRef = useRef<HTMLDivElement>(null);
 
-    // ✅ 初回マウント確認 (ハイドレーションエラー防止)
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    // ✅ サイト設定の動的取得
+    // 🛰️ サイト設定の動的取得 (SSR & Client 両対応)
     const site = useMemo(() => {
-        if (!mounted || typeof window === 'undefined') return null;
-        const host = window.location.hostname;
-        return getSiteMetadata(host);
-    }, [mounted]);
+        // 1. サーバーなら環境変数、ブラウザなら hostname を参照
+        const identifier = typeof window !== 'undefined' 
+            ? window.location.hostname 
+            : process.env.NEXT_PUBLIC_SITE_DOMAIN;
+
+        return getSiteMetadata(identifier || "");
+    }, []);
 
     // ✅ テーマカラーとAPI設定の算出
     const siteConfig = useMemo(() => {
         if (!site) return { name: 'CONCIERGE', api: '/api/chat', color: '#333' };
         
         const themeColor = getSiteColor(site.site_name);
-        // site_prefix がある場合はそれを考慮 (例: /tiper/api/chat)
         const apiPath = `${site.site_prefix || ''}/api/chat`;
         
         return { 
@@ -58,15 +54,20 @@ export default function ChatBot() {
         };
     }, [site]);
 
-    // ✨ 最初の挨拶 (サイト名に合わせて動的に変化)
+    // ✨ 最初の挨拶 (SSR時にも一貫性を保つため mounted を条件から外す、または site 確定に合わせる)
     useEffect(() => {
-        if (mounted && site && messages.length === 0) {
+        if (site && messages.length === 0) {
             const botName = site.site_group === 'adult' ? 'AIソムリエ' : 'AIコンシェルジュ';
             setMessages([
                 { role: 'ai', text: `<b>${siteConfig.name} ${botName}</b>へようこそ。何かお手伝いできることはありますか？` }
             ]);
         }
-    }, [mounted, site, siteConfig.name, messages.length]);
+    }, [site, siteConfig.name, messages.length]);
+
+    // ✅ 初回マウント確認
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // ✨ メッセージ追加時の自動スクロール
     useEffect(() => {
@@ -109,8 +110,8 @@ export default function ChatBot() {
         }
     };
 
-    // 🚩 ガード: マウント前は何も表示しない
-    if (!mounted || !site) return null;
+    // 🚩 サイト情報が確定できない場合のみガード
+    if (!site) return null;
 
     return (
         <div 
@@ -146,7 +147,7 @@ export default function ChatBot() {
                                     dangerouslySetInnerHTML={{ 
                                         __html: msg.text
                                             .replace(/\n/g, '<br />')
-                                            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                                            .replace(/\*\?(.*?)\*\*/g, '<b>$1</b>')
                                     }}
                                 />
                             </div>

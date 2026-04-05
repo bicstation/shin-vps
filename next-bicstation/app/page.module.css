@@ -2,9 +2,8 @@
  * 🏗️ [BICSTATION-MAIN-LAYOUT] - FINAL SYSTEM-INTEGRATED EDITION
  * ---------------------------------------------------------------------
  * 🚀 修正・統合ポイント:
- * 1. 【構造同期】Page.tsx の全要素（systemStatus, glitchTitle等）を完全網羅
- * 2. 【高彩度視認性】背景に沈まないシアンブルー (#00f2ff) を基調に設定
- * 3. 【タクティカル・アニメーション】システムが稼働している臨場感を演出
+ * 1. 【構造同期】Page.tsx の全要素（systemStatus, glitchTitle等）を網羅
+ * 2. 【タクティカル】共通パーツ（sectionTitle, link, badge）を最新定義へ
  * ===================================================================== */
 
 .mainWrapper {
@@ -18,7 +17,7 @@
   animation: tacticalFadeIn 0.8s ease-out;
 }
 
-/* --- 🛠️ システムステータスバー (Top Bar) --- */
+/* --- 🛠️ システムステータスバー --- */
 .systemStatus {
   background: rgba(15, 23, 42, 0.9);
   border-bottom: 1px solid rgba(0, 242, 255, 0.2);
@@ -66,7 +65,7 @@
 .verNum { color: #e94560; margin-left: 5px; }
 .countNum { color: #00f2ff; font-family: 'JetBrains Mono', monospace; }
 
-/* --- 🚀 スマート・ヒーローセクション --- */
+/* --- 🚀 ヒーローセクション --- */
 .heroSection {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   padding: 80px 40px;
@@ -104,7 +103,7 @@
   line-height: 1.6;
 }
 
-/* --- 📰 コンテンツエリア --- */
+/* --- 📰 コンテンツエリア & 共通パーツ --- */
 .contentContainer {
   max-width: 1400px;
   margin: 0 auto;
@@ -112,53 +111,65 @@
   width: 100%;
 }
 
-.sectionTitleArea {
+/* 提督指定の最新定義: sectionTitle */
+.sectionTitle {
+  color: #00f2ff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+  margin-bottom: 15px;
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 40px;
+  gap: 8px;
 }
 
-.sectionHeader {
-  font-size: 1.8rem;
+.sectionTitle::before {
+  content: ">";
   font-weight: 900;
+}
+
+/* 提督指定の最新定義: link & badge */
+.link {
+  color: #cbd5e1;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  text-decoration: none;
+}
+
+.link:hover {
   color: #00f2ff !important;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  transform: translateX(5px);
+  text-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
 }
 
-.titleLine {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(0, 242, 255, 0.5), transparent);
+.badge {
+  background: rgba(0, 242, 255, 0.1);
+  color: #00f2ff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 242, 255, 0.2);
 }
 
-/* --- 🛡️ 待機状態 (Loading / No Data) --- */
-.noDataArea {
-  padding: 100px 40px;
-  text-align: center;
-  background: rgba(15, 23, 42, 0.5);
-  border-radius: 24px;
-  border: 1px dashed rgba(0, 242, 255, 0.2);
+/* 最新ニュース部分の視認性強化 */
+.newsTitle {
+  color: #ffffff;
+  line-height: 1.4;
+  font-size: 0.9rem;
 }
 
-.loader {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(0, 242, 255, 0.1);
-  border-radius: 50%;
-  border-top-color: #00f2ff;
-  animation: spin 1s ease-in-out infinite;
-  margin-bottom: 20px;
+.newsLink:hover .newsTitle {
+  color: #00f2ff;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* --- 🛡️ ミッションセクション (審査対策) --- */
+/* --- 🛡️ ミッションセクション --- */
 .missionSection {
   padding: 40px 20px;
   max-width: 1400px;
@@ -170,37 +181,8 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   padding: 40px;
   border-radius: 24px;
-  border-left: 4px solid #e94560; /* アクセントカラーを左端に */
+  border-left: 4px solid #e94560;
 }
-
-/* --- 📂 ナビゲーション --- */
-.archiveNav {
-  max-width: 1400px;
-  margin: 40px auto 80px;
-  padding: 0 20px;
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  background: #1e293b;
-  padding: 24px;
-  border-radius: 16px;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: 0.3s;
-}
-
-.navItem:hover {
-  background: rgba(0, 242, 255, 0.05);
-  border-color: #00f2ff;
-  transform: translateX(10px);
-}
-
-.navIcon { font-size: 2rem; margin-right: 20px; }
-.navTitle { display: block; color: #fff; font-weight: 800; font-size: 1.1rem; }
-.navDesc { color: #94a3b8; font-size: 0.85rem; }
-.navArrow { margin-left: auto; color: #00f2ff; font-weight: 900; }
 
 /* --- 👣 フッター --- */
 .systemFooter {
@@ -227,6 +209,5 @@
 @media (max-width: 768px) {
   .heroSection { padding: 60px 20px; }
   .glitchTitle { font-size: 2.2rem; }
-  .sectionHeader { font-size: 1.4rem; }
   .statusInner { flex-direction: column; gap: 10px; }
 }

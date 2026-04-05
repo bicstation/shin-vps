@@ -39,22 +39,30 @@ function FooterContent({ debugData }: FooterProps) {
         setMounted(true);
     }, []);
 
-    // 🛰️ サイト設定の動的取得
+    // 🛰️ サイト設定の動的取得 (SSR & Client 両対応)
     const site = useMemo(() => {
-        if (!mounted || typeof window === 'undefined') return null;
-        const host = window.location.hostname;
-        return getSiteMetadata(host);
-    }, [mounted]);
+        // 1. サーバーサイドなら環境変数、クライアントサイドなら hostname を優先
+        const identifier = typeof window !== 'undefined' 
+            ? window.location.hostname 
+            : process.env.NEXT_PUBLIC_SITE_DOMAIN;
 
-    // 🚩 ガード: クライアントサイドの準備ができるまで不可視状態で枠だけ確保
-    if (!mounted || !site) {
+        // 2. 識別子を元にメタデータを解決 (SSR時の undefined ログを根絶)
+        return getSiteMetadata(identifier || "");
+    }, []);
+
+    // 🚩 サイト情報が確定できない致命的な場合のみガード (SSR時は環境変数から確定済み)
+    if (!site) {
         return <footer className={styles.footer} style={{ height: '300px', visibility: 'hidden' }} />;
     }
 
     const siteColor = getSiteColor(site.site_name);
     const isDebugMode = searchParams.get('debug') === 'true';
     const isAdult = site.site_group === 'adult';
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    
+    // hostname の判定も SSR 安全に
+    const isLocal = typeof window !== 'undefined' 
+        ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        : process.env.NODE_ENV === 'development';
 
     /**
      * 🛰️ SHIN-VPS ネットワーク設定

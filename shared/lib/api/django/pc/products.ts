@@ -1,3 +1,5 @@
+// /home/maya/shin-vps/shared/lib/api/django/pc/products.ts
+
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '../client';
 import { getSiteMetadata } from '../../../utils/siteConfig';
 import { PCProduct, MakerCount } from './types';

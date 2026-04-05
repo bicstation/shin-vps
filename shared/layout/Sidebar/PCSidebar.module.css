@@ -1,118 +1,113 @@
-/* --- サイドバー本体 --- */
+/* --- サイドバー本体：システムパネルとしての定義 --- */
 .sidebar {
-  width: 260px;
-  background: #fff;
-  padding: 20px;
-  border-right: 1px solid #eee;
+  width: 280px;
+  /* メインの背景色に合わせた半透明ネイビー */
+  background: rgba(15, 23, 42, 0.8);
+  padding: 30px 20px;
+  border-right: 1px solid rgba(0, 242, 255, 0.1);
   height: fit-content;
   position: sticky;
-  top: 90px;
-  /* スクロールが必要な場合に備えて */
-  max-height: calc(100vh - 100px);
+  top: 110px; /* Header + PRバーの直下 */
+  max-height: calc(100vh - 140px);
   overflow-y: auto;
+  backdrop-filter: blur(12px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 242, 255, 0.2) transparent;
 }
 
-/* --- アコーディオンのトリガー (セクションタイトル) --- */
+/* --- セクションタイトル (アコーディオン・トリガー) --- */
 .sectionTitle {
-  font-size: 0.75rem;
-  color: #aaa;
-  margin-top: 25px;
-  margin-bottom: 10px;
-  letter-spacing: 1.5px;
-  font-weight: bold;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 8px;
+  font-size: 0.7rem;
+  color: #00f2ff; /* 高彩度シアンで視認性を確保 */
+  margin-top: 30px;
+  margin-bottom: 12px;
+  letter-spacing: 0.15em;
+  font-weight: 800;
+  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+  padding-bottom: 10px;
   text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
   
-  /* アコーディオン用設定 */
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
   user-select: none;
-  transition: color 0.2s, background 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sectionTitle:hover {
-  color: #555;
-  background: #fafafa;
+  color: #ffffff;
+  background: rgba(0, 242, 255, 0.05);
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
 }
 
-/* 最初のセクションの余白調整 */
+/* 最初の余白調整 */
 .sectionTitle:first-of-type {
   margin-top: 0;
 }
 
-/* --- コンテンツリスト --- */
-.accordionContent {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  /* 開閉時のカクつき防止 */
-  overflow: hidden;
-}
-
-/* --- リンクスタイル --- */
+/* --- リンクスタイル：読みやすさを最優先 --- */
 .link {
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 8px 6px;
-  transition: all 0.2s;
-  color: #444;
-  border-radius: 6px;
+  padding: 10px 8px;
+  transition: all 0.2s ease;
+  color: #cbd5e1; /* 沈まないグレーホワイト */
+  border-radius: 4px;
 }
 
 .link:hover {
-  background: #f9f9f9;
-  color: #000;
+  background: rgba(255, 255, 255, 0.03);
+  color: #00f2ff;
+  padding-left: 12px; /* タクティカル・スライド */
 }
 
-/* --- バッジ (カウント表示) --- */
+/* --- バッジ (カウント表示)：計器風デザイン --- */
 .badge {
-  font-size: 0.7rem;
-  color: #888;
-  background: #f5f5f5;
+  font-size: 0.65rem;
+  color: #00f2ff;
+  background: rgba(0, 242, 255, 0.1);
   padding: 2px 8px;
-  border-radius: 12px;
-  min-width: 28px;
+  border-radius: 2px; /* 角丸を抑えてシャープに */
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  min-width: 32px;
   text-align: center;
-  margin-left: 8px;
+  font-family: 'JetBrains Mono', monospace;
 }
 
-/* --- アコーディオン矢印アイコン --- */
+/* --- アコーディオン矢印：シアンの光 --- */
 .arrow {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   transition: transform 0.3s ease;
-  color: #ccc;
+  color: rgba(0, 242, 255, 0.5);
 }
 
 .arrowOpen {
   transform: rotate(180deg);
+  color: #00f2ff;
 }
 
-/* --- スクロールバーのカスタマイズ (任意) --- */
+/* --- スクロールバー：サイバーパンク・カスタム --- */
 .sidebar::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 .sidebar::-webkit-scrollbar-thumb {
-  background: #eee;
-  border-radius: 10px;
+  background: rgba(0, 242, 255, 0.2);
 }
 
-/* --- レスポンシブ対応 --- */
-@media (max-width: 992px) {
+/* --- レスポンシブ --- */
+@media (max-width: 1100px) {
   .sidebar {
-    width: 220px;
-    padding: 15px;
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    display: none; /* モバイルではハンバーガーメニュー等に移行することを想定 */
+    width: 100%;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 242, 255, 0.1);
+    max-height: none;
+    background: #0b0f19;
   }
 }
