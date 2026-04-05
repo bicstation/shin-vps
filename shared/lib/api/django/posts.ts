@@ -1,10 +1,10 @@
 /**
  * 📝 記事取得サービス (shared/lib/api/django/posts.ts)
- * 🛡️ Zenith v8.8 - [PROD_READY_FINAL]
+ * 🛡️ Zenith v8.9 - [ULTIMATE_DOMAIN_CLEANUP]
  * 修正内容:
- * - siteTag を .toLowerCase() で強制小文字化し、本番DBの site__exact 検索に完全合致させる。
- * - project 引数からポート番号 (:8083 等) を物理的に切断。
- * - getDjangoHeaders() をベースに、Hostヘッダーの整合性を維持。
+ * - siteTag 生成時に .split('.') を追加し、avflash.xyz などのドメイン拡張子を完全に除去。
+ * - 全ての識別子を強制的に小文字化し、DBの site__exact 検索に適合させる。
+ * - project 引数からのポート番号・パス・ホスト接尾辞の徹底洗浄。
  */
 import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from './client';
 import { getWpConfig, getDjangoBaseUrl } from '../config';
@@ -33,7 +33,6 @@ export const replaceInternalUrls = (data: any): any => {
 
 /** 🛠️ 記事リソース専用 Fetch */
 async function fetchPostRaw(url: string, options: any = {}, manualHost?: string) {
-    // client.ts で生成された正規化済みヘッダーを使用
     const djangoHeaders = getDjangoHeaders(manualHost);
 
     const res = await fetch(url, {
@@ -57,17 +56,20 @@ export async function fetchPostList(
     options: any = {} 
 ): Promise<{ results: UnifiedPost[], count: number }> {
     
-    // 🛡️ [CRITICAL FIX] サイト識別子の「絶対洗浄」
-    // .toLowerCase() を追加し、DBの site__exact=bicstation 等に確実にヒットさせる
+    /**
+     * 🛡️ [CRITICAL CLEANUP] サイト識別子の「絶対洗浄」
+     * 'avflash.xyz', 'api-tiper-host:8083', 'saving.live/' 等を全て純粋なIDに変換する
+     */
     const siteTag = (project || 'bicstation')
-        .split(':')[0]             // 🔥 1. ポート番号を真っ先に切断
-        .split('/')[0]             // 🔥 2. スラッシュ以降も切断
-        .replace('api-', '')       // 3. プレフィックス除去
-        .replace('-host', '')      // 4. サフィックス除去
-        .toLowerCase()             // 🚀 [NEW] 全て小文字化（DB検索の精度向上）
+        .split(':')[0]             // 1. ポート番号除去 (:8083)
+        .split('/')[0]             // 2. パス除去 (/)
+        .split('.')[0]             // 🔥 3. ドメイン拡張子除去 (.xyz, .live, .com)
+        .replace('api-', '')       // 4. プレフィックス除去
+        .replace('-host', '')      // 5. サフィックス除去
+        .toLowerCase()             // 6. DB検索用小文字化
         .trim();
 
-    // 保存されているデータが 'saving' なのにドメインが 'bic-saving' 等の場合の補正
+    // サイト名に 'saving' が含まれる場合は一律 'saving' として扱う補正
     const finalSiteTag = siteTag.includes('saving') ? 'saving' : siteTag;
 
     const isGeneralSite = ['bicstation', 'saving'].includes(finalSiteTag);
@@ -80,7 +82,7 @@ export async function fetchPostList(
         ordering: '-created_at',
     });
 
-    // Djangoが期待する「純粋なsite名」を付与
+    // Djangoの site__exact フィルタに適合させる
     if (finalSiteTag !== 'all') {
         queryParams.append('site', finalSiteTag); 
     }
@@ -126,13 +128,17 @@ export async function fetchPostList(
 export async function fetchPostData(id: string, project?: string): Promise<UnifiedPost | null> {
     const cleanId = id.toString().replace(/\//g, '');
     
-    // project からポートを除去し、小文字化して解決
-    const cleanProject = (project || '').split(':')[0].toLowerCase();
+    // project からドメイン名・ポートを徹底除去
+    const cleanProject = (project || '')
+        .split(':')[0]
+        .split('.')[0]
+        .toLowerCase();
+        
     const url = commonResolveApiUrl(`posts/${cleanId}/`, cleanProject);
-    
     const { data, status } = await fetchPostRaw(url, { next: { revalidate: 60 } }, cleanProject);
 
     if (status === 200 && data) {
+        // フィルタリング用のサイト判定
         const siteTag = cleanProject.replace('api-', '').replace('-host', '').replace(/\//g, '');
         if (data.is_adult === true && ['bicstation', 'saving'].includes(siteTag)) {
             return null;
