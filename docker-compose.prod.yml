@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.3 (Full Specification / Prod-Optimized)
+# 🛡️ SHIN-VPS v3.9.3 (Final Stable / SSR-Network-Optimized)
 # ---------------------------------------------------------------------
 # 【修正・復元内容】
-# 1. Django: ボリュームマウントを解除し、ビルド済みの最新ソースを強制。
-# 2. Next.js: args と environment の両方に API URL を完全配置。
-# 3. Traefik: priority 設定とマルチドメインルールを完全復元。
-# 4. 管理ツール: Basic認証(Netdata)と各サブドメイン設定を完全維持。
-# 5. [VPS PATCH]: 各Next.jsコンテナに内部解決用の extra_hosts を追加。
+# 1. Django: ボリュームマウント解除、ビルド済みソース強制。
+# 2. Next.js: args/env に API URL を完全配置。
+# 3. Traefik: priority (4000/2000/100) と全ドメインルールを完全維持。
+# 4. 管理ツール: NetdataのBasic認証とログ監視(Dozzle)を完全復元。
+# 5. [DNS Patch]: aliases を追加し、SSR時の getaddrinfo エラーを物理的に解消。
 # =====================================================================
 
 version: '3.8'
@@ -99,8 +99,10 @@ services:
     volumes:
       - static_volume_prod:/usr/src/app/staticfiles
     networks:
-      - internal-net
-      - shared-proxy
+      internal-net:
+        aliases:
+          - django-api-host
+      shared-proxy:
 
   # ---------------------------------------------------------------------
   # 3. フロントエンド層 (Next.js 艦隊)
@@ -134,8 +136,10 @@ services:
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
       - "traefik.http.routers.bicstation-router.priority=100"
     networks:
-      - internal-net
-      - shared-proxy
+      internal-net:
+        aliases:
+          - api-bicstation-host
+      shared-proxy:
 
   next-tiper-v3:
     build:
@@ -164,8 +168,10 @@ services:
       - "traefik.http.routers.tiper-router.tls.certresolver=le"
       - "traefik.http.routers.tiper-router.priority=100"
     networks:
-      - internal-net
-      - shared-proxy
+      internal-net:
+        aliases:
+          - api-tiper-host
+      shared-proxy:
 
   next-bic-saving-v3:
     build:
@@ -194,8 +200,10 @@ services:
       - "traefik.http.routers.saving-router.tls.certresolver=le"
       - "traefik.http.routers.saving-router.priority=100"
     networks:
-      - internal-net
-      - shared-proxy
+      internal-net:
+        aliases:
+          - api-bic-saving-host
+      shared-proxy:
 
   next-avflash-v3:
     build:
@@ -224,8 +232,10 @@ services:
       - "traefik.http.routers.avflash-router.tls.certresolver=le"
       - "traefik.http.routers.avflash-router.priority=100"
     networks:
-      - internal-net
-      - shared-proxy
+      internal-net:
+        aliases:
+          - api-avflash-host
+      shared-proxy:
 
   # ---------------------------------------------------------------------
   # 4. インフラ管理・監視ツール層
@@ -289,7 +299,6 @@ services:
       - "traefik.http.routers.netdata-router.entrypoints=websecure"
       - "traefik.http.routers.netdata-router.tls.certresolver=le"
       - "traefik.http.routers.netdata-router.middlewares=netdata-auth"
-      # Basic Auth: ID(maya) PASS(maya_password_1234 等)
       - "traefik.http.middlewares.netdata-auth.basicauth.users=maya:$$apr1$$pE8V7VzF$$H9Z2W6E.9Y6L2W3Y6L2W3."
     networks:
       - shared-proxy
