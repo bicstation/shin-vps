@@ -1,10 +1,9 @@
 /**
  * 📝 記事取得サービス (shared/lib/api/django/posts.ts)
- * 🛡️ Zenith v8.9 - [ULTIMATE_DOMAIN_CLEANUP]
+ * 🛡️ Zenith v9.0 - [THE_FINAL_BRIDGE]
  * 修正内容:
- * - siteTag 生成時に .split('.') を追加し、avflash.xyz などのドメイン拡張子を完全に除去。
- * - 全ての識別子を強制的に小文字化し、DBの site__exact 検索に適合させる。
- * - project 引数からのポート番号・パス・ホスト接尾辞の徹底洗浄。
+ * - api.bicstation.com 等のドメインから 'api' ではなく 'bicstation' を正確に抽出。
+ * - ドメイン拡張子 (.xyz, .live) の除去と小文字化を徹底し、DjangoのDB照合を確実に成功させる。
  */
 import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from './client';
 import { getWpConfig, getDjangoBaseUrl } from '../config';
@@ -57,19 +56,29 @@ export async function fetchPostList(
 ): Promise<{ results: UnifiedPost[], count: number }> {
     
     /**
-     * 🛡️ [CRITICAL CLEANUP] サイト識別子の「絶対洗浄」
-     * 'avflash.xyz', 'api-tiper-host:8083', 'saving.live/' 等を全て純粋なIDに変換する
+     * 🛡️ [ULTIMATE_CLEANUP] サイト識別子の「高精度抽出」
+     * 例1: 'api.bicstation.com' -> ['api', 'bicstation', 'com'] -> 'bicstation'
+     * 例2: 'avflash.xyz' -> ['avflash', 'xyz'] -> 'avflash'
      */
-    const siteTag = (project || 'bicstation')
-        .split(':')[0]             // 1. ポート番号除去 (:8083)
-        .split('/')[0]             // 2. パス除去 (/)
-        .split('.')[0]             // 🔥 3. ドメイン拡張子除去 (.xyz, .live, .com)
-        .replace('api-', '')       // 4. プレフィックス除去
-        .replace('-host', '')      // 5. サフィックス除去
-        .toLowerCase()             // 6. DB検索用小文字化
+    const parts = (project || 'bicstation')
+        .split(':')[0]   // ポート除去
+        .split('/')[0]   // パス除去
+        .split('.');     // ドメイン分割
+
+    let rawTag = parts[0];
+
+    // 🔥 [CRITICAL] 最初の節が 'api' の場合は、ドメイン主体である2番目の節を採用
+    if (rawTag === 'api' && parts.length > 1) {
+        rawTag = parts[1];
+    }
+
+    const siteTag = rawTag
+        .replace('api-', '')       // api-xxx-host 形式の救済
+        .replace('-host', '')      // サフィックス除去
+        .toLowerCase()             // DB照合用（重要）
         .trim();
 
-    // サイト名に 'saving' が含まれる場合は一律 'saving' として扱う補正
+    // 'saving' を含むドメイン（bic-saving等）を 'saving' IDに正規化
     const finalSiteTag = siteTag.includes('saving') ? 'saving' : siteTag;
 
     const isGeneralSite = ['bicstation', 'saving'].includes(finalSiteTag);
@@ -128,18 +137,19 @@ export async function fetchPostList(
 export async function fetchPostData(id: string, project?: string): Promise<UnifiedPost | null> {
     const cleanId = id.toString().replace(/\//g, '');
     
-    // project からドメイン名・ポートを徹底除去
-    const cleanProject = (project || '')
-        .split(':')[0]
-        .split('.')[0]
-        .toLowerCase();
+    // 詳細取得時もリスト取得時と同じ高精度ロジックを適用
+    const parts = (project || '').split(':')[0].split('/')[0].split('.');
+    let rawProject = parts[0];
+    if (rawProject === 'api' && parts.length > 1) {
+        rawProject = parts[1];
+    }
+    const cleanProject = rawProject.replace('api-', '').replace('-host', '').toLowerCase();
         
     const url = commonResolveApiUrl(`posts/${cleanId}/`, cleanProject);
     const { data, status } = await fetchPostRaw(url, { next: { revalidate: 60 } }, cleanProject);
 
     if (status === 200 && data) {
-        // フィルタリング用のサイト判定
-        const siteTag = cleanProject.replace('api-', '').replace('-host', '').replace(/\//g, '');
+        const siteTag = cleanProject.replace(/\//g, '');
         if (data.is_adult === true && ['bicstation', 'saving'].includes(siteTag)) {
             return null;
         }
