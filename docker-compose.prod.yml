@@ -1,34 +1,31 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.3 (Final Decisive Edition / SSR-Network-Patch)
+# 🛡️ SHIN-VPS v3.9.9.3 (Final Strategic Overhaul)
 # ---------------------------------------------------------------------
 # 【修正の核心】
-# 1. Django: 内部エイリアス "django-api-host" を設定。
-# 2. Next.js: INTERNAL_API_URL を http://django-api-host:8000/api に固定。
-# 3. Next.js: PROJECT_NAME を args と env の両方に完全配置し undefined を防止。
-# 4. DNS: aliases を各 Next.js にも配置し、ログ上の getaddrinfo エラーを解決。
-# 5. Traefik: priority と SSL 設定、全ドメインルールを完全維持。
+# 1. 物理IPの完全固定: 
+#    django-v3 を 172.28.0.6 に固定。DNS解決を待たずに接続を確立。
+# 2. 接続拒否(ECONNREFUSED)の封殺: 
+#    Gunicornを 0.0.0.0:8000 にバインドし、iptables開放と併せて疎通を確保。
+# 3. サービス依存関係の最適化: 
+#    DBの起動（Healthcheck）を待ってからバックエンドを起動する堅牢な順序。
 # =====================================================================
 
 version: '3.8'
 
 services:
 
-  # ---------------------------------------------------------------------
-  # 0. Traefik (管制塔 / SSL終端 / Let's Encrypt)
-  # ---------------------------------------------------------------------
+  # --- 0. Traefik (管制塔 / SSL終端) ---
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy
     restart: always
     command:
       - "--api.dashboard=true"
-      - "--api.insecure=false"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.le.acme.tlschallenge=true"
       - "--certificatesresolvers.le.acme.email=${TRAEFIK_ACME_EMAIL:-bicstation@gmail.com}"
@@ -50,9 +47,7 @@ services:
     networks:
       - shared-proxy
 
-  # ---------------------------------------------------------------------
-  # 1. データベース層 (Postgres 15)
-  # ---------------------------------------------------------------------
+  # --- 1. データベース層 ---
   postgres-db-v3:
     image: postgres:15-alpine
     container_name: postgres-db-v3
@@ -64,22 +59,22 @@ services:
     volumes:
       - postgres-data-v3:/var/lib/postgresql/data
     networks:
-      - internal-net
+      internal-net:
+        ipv4_address: 172.28.0.2  # IP固定
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
-  # ---------------------------------------------------------------------
-  # 2. バックエンド層 (Django API - Marya司令部)
-  # ---------------------------------------------------------------------
+  # --- 2. バックエンド層 (Django API) ---
   django-v3:
     build:
       context: .
       dockerfile: ./django/Dockerfile
     container_name: django-v3
     restart: always
+    # 🚨 核心: 0.0.0.0 でバインドし、コンテナ間通信を開放
     command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000 --workers 5 --threads 2 --worker-class gthread
     depends_on:
       postgres-db-v3:
@@ -87,7 +82,7 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=postgres-db-v3
+      - DB_HOST=172.28.0.2
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -100,14 +95,14 @@ services:
       - static_volume_prod:/usr/src/app/staticfiles
     networks:
       internal-net:
+        ipv4_address: 172.28.0.6  # 🚨 Next.jsが探しているIPに物理固定
         aliases:
-          - django-api-host # 🚨 Next.jsが内部通信で狙う名前
+          - django-api-host
       shared-proxy:
 
-  # ---------------------------------------------------------------------
-  # 3. フロントエンド層 (Next.js 艦隊)
-  # ---------------------------------------------------------------------
-  
+  # --- 3. フロントエンド層 (Next.js 艦隊) ---
+  # ※全艦、名前解決の呪いを避けるため INTERNAL_API_URL を IP直書きに設定
+
   next-bicstation-v3:
     build:
       context: .
@@ -121,9 +116,7 @@ services:
     environment:
       - PROJECT_NAME=next-bicstation
       - NEXT_PUBLIC_API_URL=https://api.bicstation.com/api
-      - INTERNAL_API_URL=http://django-api-host:8000/api # 🚨 8000ポートを強制指定
-    extra_hosts:
-      - "api.bicstation.com:host-gateway"
+      - INTERNAL_API_URL=http://172.28.0.6:8000/api  # 🚨 IP直撃
     volumes:
       - "./next-bicstation:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -136,10 +129,8 @@ services:
       - "traefik.http.routers.bicstation-router.tls.certresolver=le"
       - "traefik.http.routers.bicstation-router.priority=100"
     networks:
-      internal-net:
-        aliases:
-          - api-bicstation-host # 🚨 ログの EAI_AGAIN エラーを解消
-      shared-proxy:
+      - internal-net
+      - shared-proxy
 
   next-tiper-v3:
     build:
@@ -154,9 +145,7 @@ services:
     environment:
       - PROJECT_NAME=next-tiper
       - NEXT_PUBLIC_API_URL=https://api.tiper.live/api
-      - INTERNAL_API_URL=http://django-api-host:8000/api
-    extra_hosts:
-      - "api.tiper.live:host-gateway"
+      - INTERNAL_API_URL=http://172.28.0.6:8000/api  # 🚨 IP直撃
     volumes:
       - "./next-tiper:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -168,10 +157,8 @@ services:
       - "traefik.http.routers.tiper-router.tls.certresolver=le"
       - "traefik.http.routers.tiper-router.priority=100"
     networks:
-      internal-net:
-        aliases:
-          - api-tiper-host
-      shared-proxy:
+      - internal-net
+      - shared-proxy
 
   next-bic-saving-v3:
     build:
@@ -186,9 +173,7 @@ services:
     environment:
       - PROJECT_NAME=next-bic-saving
       - NEXT_PUBLIC_API_URL=https://api.bic-saving.com/api
-      - INTERNAL_API_URL=http://django-api-host:8000/api
-    extra_hosts:
-      - "api.bic-saving.com:host-gateway"
+      - INTERNAL_API_URL=http://172.28.0.6:8000/api  # 🚨 IP直撃
     volumes:
       - "./next-bic-saving:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -200,10 +185,8 @@ services:
       - "traefik.http.routers.saving-router.tls.certresolver=le"
       - "traefik.http.routers.saving-router.priority=100"
     networks:
-      internal-net:
-        aliases:
-          - api-bic-saving-host
-      shared-proxy:
+      - internal-net
+      - shared-proxy
 
   next-avflash-v3:
     build:
@@ -218,9 +201,7 @@ services:
     environment:
       - PROJECT_NAME=next-avflash
       - NEXT_PUBLIC_API_URL=https://api.avflash.xyz/api
-      - INTERNAL_API_URL=http://django-api-host:8000/api
-    extra_hosts:
-      - "api.avflash.xyz:host-gateway"
+      - INTERNAL_API_URL=http://172.28.0.6:8000/api  # 🚨 IP直撃
     volumes:
       - "./next-avflash:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -232,14 +213,10 @@ services:
       - "traefik.http.routers.avflash-router.tls.certresolver=le"
       - "traefik.http.routers.avflash-router.priority=100"
     networks:
-      internal-net:
-        aliases:
-          - api-avflash-host
-      shared-proxy:
+      - internal-net
+      - shared-proxy
 
-  # ---------------------------------------------------------------------
-  # 4. インフラ管理・監視ツール層
-  # ---------------------------------------------------------------------
+  # --- 4. 管理・監視ツール ---
   pgadmin-v3:
     image: dpage/pgadmin4
     container_name: pgadmin-v3
@@ -277,11 +254,8 @@ services:
     image: netdata/netdata:stable
     container_name: netdata-v3
     restart: always
-    cap_add:
-      - SYS_PTRACE
-      - SYS_ADMIN
-    security_opt:
-      - apparmor:unconfined
+    cap_add: [SYS_PTRACE, SYS_ADMIN]
+    security_opt: [apparmor:unconfined]
     volumes:
       - netdataconfig:/etc/netdata
       - netdatalib:/var/lib/netdata
@@ -304,9 +278,7 @@ services:
       - shared-proxy
       - internal-net
 
-# ---------------------------------------------------------------------
-# 共通ネットワーク・ボリューム設定
-# ---------------------------------------------------------------------
+# --- Networks & Volumes ---
 networks:
   internal-net:
     name: "shin-vps_internal-net"
