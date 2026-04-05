@@ -19,7 +19,8 @@ import { UnifiedPost } from '@/shared/lib/api/types';
 import styles from './page.module.css';
 
 /**
- * 💡 Next.js 15 レンダリングポリシー
+ * 💡 レンダリングポリシー
+ * 本番環境での確実なデータ更新を保証
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -34,7 +35,7 @@ export async function generateMetadata() {
 
     return constructMetadata({
         title: `${siteConfig.site_name} | AI解析・最新アダルトアーカイブ`,
-        description: `${siteConfig.site_name}のAI解析に基づいたDUGA最新アーカイブ。`,
+        description: `${siteConfig.site_name}のAI解析に基づいた最新アーカイブ。`,
         host: host 
     });
 }
@@ -47,39 +48,30 @@ async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
         const data = await promise;
         return data ?? fallback;
     } catch (e) {
+        // 本番ではログのみに留め、UIを壊さない
         console.warn(`⚠️ [API_SKIP]:`, e.message);
         return fallback;
     }
 }
 
 export default async function Page() {
-    // --- 🎯 STEP 1: サイトアイデンティティの自動特定 ---
+    // --- 🎯 STEP 1: サイトアイデンティティの特定 ---
     const headerList = await headers();
-    
-    // Middlewareが焼成した識別子を最優先
     const host = headerList.get('x-django-host') || headerList.get('host') || "avflash.xyz";
     const siteConfig = getSiteMetadata(host); 
     
-    // 🛡️ サイトタグの洗浄 (スラッシュ混入をここでも念のためガード)
+    // サイトタグの正規化
     const siteTag = (siteConfig.site_tag || 'avflash').replace(/\/+$/, ''); 
     const ROUTE_BASE = "/post"; 
 
-    // 🚀 サーバーログ
-    console.log("⚓ --- AVFLASH_DEPLOY_REPORT ---");
-    console.log("HOSTNAME:", host);
-    console.log("SITE_NAME:", siteConfig.site_name);
-    console.log("SITE_TAG:", siteTag);
-    console.log("---------------------------------");
-
-    // --- 🎯 STEP 2: 並列データ取得実行 ---
-    // client.ts v8.3 の恩恵により、ここでの引数 siteTag は 400エラー を起こしません
+    // --- 🎯 STEP 2: 並列データ取得 ---
     const [postResponse, dugaRes] = await Promise.all([
-        // 1. 最新記事 (Django API)
+        // 1. 最新分析記事 (Django API)
         safeFetch(
-            fetchPostList(6, 0, host), // プロジェクト識別として host または siteTag を渡す
+            fetchPostList(6, 0, host), 
             { results: [], count: 0 }
         ),
-        // 2. DUGA 商品
+        // 2. DUGA アーカイブ
         safeFetch(
             getUnifiedProducts({ site_group: siteTag, limit: 12, brand: 'DUGA', host: host }), 
             { results: [], count: 0 }
@@ -92,38 +84,30 @@ export default async function Page() {
 
     return (
         <div className={styles.pageContainer}>
-            {/* 🛠️ ブラウザデバッグ用シグナル */}
-            <script dangerouslySetInnerHTML={{
-                __html: `console.log("🛰️ AVFLASH_SYNC:", ${JSON.stringify({ 
-                    site: siteConfig.site_name, 
-                    tag: siteTag,
-                    host: host 
-                })})`
-            }} />
-
             <div className={styles.contentStream}>
                 
-                {/* --- 🛸 ヒーローヘッダー --- */}
+                {/* --- 🛸 ヒーローヘッダー [PROD_DESIGN] --- */}
                 <header className={styles.heroHeader}>
-                    <div className={styles.heroBadge}>AI ANALYSIS & ARCHIVE</div>
+                    <div className={styles.heroBadge}>AI ANALYSIS & ARCHIVE SYSTEM</div>
                     <h1 className={styles.heroTitle}>{siteConfig.site_name}</h1>
                     <p className={styles.heroSubtitle}>
-                        AI解析によって厳選された <span style={{ color: '#ffc107' }}>DUGA</span> 最新作品と業界分析記事
+                        AI技術によって抽出された <span style={{ color: '#ffc107', fontWeight: 'bold' }}>DUGA</span> の最新トレンドと、独自視点のアーカイブ。
                     </p>
                     <div className={styles.statsInfo}>
-                        Total <strong>{totalCount.toLocaleString()}</strong> curated items in Matrix
+                        <span className={styles.pulseDot}></span>
+                        アーカイブ総数: <strong>{totalCount.toLocaleString()}</strong> アイテム
                     </div>
                 </header>
 
-                {/* --- 📰 LATEST ARTICLES --- */}
+                {/* --- 📰 LATEST ANALYSIS (最新記事) --- */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <div className={styles.titleWrapper}>
-                            <h2 className={styles.sectionTitle}>LATEST_REPORTS</h2>
+                            <h2 className={styles.sectionTitle}>LATEST REPORTS</h2>
                             <div className={styles.titleLine} />
                         </div>
                         <Link href={ROUTE_BASE} className={styles.viewAllLink}>
-                            VIEW ALL ARTICLES →
+                            すべての記事を見る →
                         </Link>
                     </div>
 
@@ -137,22 +121,22 @@ export default async function Page() {
                                 />
                             ))
                         ) : (
-                            <div className="col-span-full py-12 text-center border border-dashed border-white/10 rounded-lg">
-                                <p className={styles.glitchText}>NO_INTELLIGENCE_DATA_IN_STREAM (Check Django SQL)</p>
+                            <div className="col-span-full py-16 text-center bg-slate-900/50 border border-slate-800 rounded-xl">
+                                <p className="text-slate-400">現在、最新の分析データを同期中です。</p>
                             </div>
                         )}
                     </div>
                 </section>
 
-                {/* --- 💎 DUGA NEW RELEASES --- */}
+                {/* --- 💎 NEW RELEASES (商品リスト) --- */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <div className={styles.titleWrapper}>
-                            <h2 className={styles.sectionTitle}>DUGA_NEW_RELEASES</h2>
+                            <h2 className={styles.sectionTitle}>NEW ARCHIVES</h2>
                             <div className={styles.titleLine} />
                         </div>
                         <Link href="/brand/duga" className={styles.viewAllLink}>
-                            VIEW ALL DUGA →
+                            アーカイブ一覧 →
                         </Link>
                     </div>
                     
@@ -166,22 +150,23 @@ export default async function Page() {
                                 />
                             ))
                         ) : (
-                            <div className={styles.emptyState}>
-                                <div className={styles.emptyIcon}>🔍</div>
-                                <h3>CONNECTING_TO_DUGA_STREAM...</h3>
-                                <p>Target Project: <strong>{siteTag}</strong></p>
+                            <div className="col-span-full py-20 text-center bg-slate-900/30 border border-dashed border-slate-800 rounded-xl">
+                                <div className="text-3xl mb-4">🛰️</div>
+                                <h3 className="text-white font-medium">CONNECTING DATA STREAM</h3>
+                                <p className="text-sm text-slate-500 mt-2">データベースから最新情報を取得しています...</p>
                             </div>
                         )}
                     </div>
                 </section>
 
-                {/* --- 🛡️ インフォメーション --- */}
+                {/* --- 🛡️ サイト・インフォメーション [CREDIBILITY] --- */}
                 <section className={styles.infoSection}>
                     <div className={styles.infoCard}>
-                        <h3>AI ANALYSIS SYSTEM [{siteTag.toUpperCase()}]</h3>
-                        <p>
-                            本ポータルは、最新のアダルトコンテンツをAI技術を用いて多角的に分析。
-                            {siteConfig.site_name}独自のアルゴリズムにより、最適なアーカイブを提供します。
+                        <h3 className="text-blue-500 font-bold mb-3">ABOUT AI ANALYSIS SYSTEM</h3>
+                        <p className="text-slate-300 leading-relaxed text-sm">
+                            {siteConfig.site_name} は、日々更新される膨大なデジタルコンテンツをAIアルゴリズムによって解析。
+                            独自の基準に基づき、データの傾向分析とアーカイブ化を行っています。
+                            高度なフィルタリングにより、ユーザーに最適化されたインテリジェンスを提供することを目指しています。
                         </p>
                     </div>
                 </section>

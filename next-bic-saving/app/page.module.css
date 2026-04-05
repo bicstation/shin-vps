@@ -1,141 +1,225 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
+/**
+ * 🏗️ [SAVING-PAGE-CSS] - PRODUCTION READY
+ * 修正内容:
+ * - ライフスタイルメディアに相応しい「明るく清潔な」配色設計
+ * - 1,300件超のアーカイブを「知恵の宝庫」として演出するヒーロー装飾
+ * - Next.js 15 (page.tsx) の構造に完全準拠
+ */
 
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
+.mainContainer {
+  /* 🎨 ライフスタイル・カラーパレット */
+  --background: #ffffff;
+  --foreground: #f8f9fa;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #888888;
+  --accent-color: #2ecc71; /* 節約・安心をイメージするグリーン */
+  --accent-hover: #27ae60;
+  --border-color: #eee;
+  --transition-speed: 0.3s;
 
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  background-color: var(--background);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+/* 🛸 ヒーローセクション (Hero Section) */
+.heroSection {
+  padding: 100px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.heroContent {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+.brandBadge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: rgba(46, 204, 113, 0.1);
+  color: var(--accent-color);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: 100px;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+
+.mainTitle {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  color: var(--text-primary);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin-bottom: 20px;
+}
+
+.subTitle {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  text-wrap: balance;
+}
+
+/* ライブカウンター (点滅エフェクト) */
+.liveCounter {
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  gap: 10px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
-.main {
-  display: flex;
-  min-height: 100vh;
+.liveCounter strong {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.pulseDot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent-color);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 0.3; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+/* 📰 コンテンツエリア */
+.contentArea {
+  flex: 1;
   width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.sectionHeader {
+  margin-bottom: 48px;
   text-align: left;
-  gap: 24px;
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--text-primary);
+  margin-bottom: 12px;
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
+.titleUnderline {
+  width: 60px;
+  height: 4px;
+  background: var(--accent-color);
+  border-radius: 2px;
+}
+
+/* ☕ 待機状態 (Loading Area) */
+.loadingArea {
+  padding: 100px 40px;
+  text-align: center;
+  background: var(--foreground);
+  border-radius: 24px;
+}
+
+.loadingIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+/* 🛡️ 信頼性セクション (About Section) */
+.aboutSection {
+  background-color: var(--foreground);
+  padding: 80px 20px;
+}
+
+.aboutCard {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+  background: var(--background);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+}
+
+.aboutCard h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  margin-bottom: 16px;
+}
+
+.aboutCard p {
+  font-size: 1rem;
+  line-height: 1.7;
   color: var(--text-secondary);
 }
 
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
+/* 👣 フッター */
+.footer {
+  padding: 40px 20px;
+  background-color: var(--text-primary);
+  color: #fff;
+  text-align: center;
 }
 
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+.footerInner {
+  font-size: 0.85rem;
+  opacity: 0.7;
 }
 
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+.copyright {
+  margin-top: 12px;
+  font-weight: 600;
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
-}
-
-a.secondary {
-  border-color: var(--button-secondary-border);
-}
-
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
-}
-
+/* 📱 レスポンシブ対応 */
 @media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
+  .heroSection {
+    padding: 60px 24px;
   }
 
-  .intro {
-    gap: 16px;
+  .mainTitle {
+    font-size: 2.25rem;
   }
 
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
+  .contentArea {
+    padding: 40px 24px;
   }
 }
 
+/* 🌙 ダークモード対応 (OS設定尊重) */
 @media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
+  .mainContainer {
+    --background: #000000;
+    --foreground: #111111;
+    --text-primary: #ededed;
+    --text-secondary: #aaaaaa;
+    --border-color: #222222;
   }
 
-  .page {
-    --background: #000;
-    --foreground: #000;
+  .heroSection {
+    background: linear-gradient(135deg, #111 0%, #000 100%);
+  }
 
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
+  .aboutCard {
+    background: #0a0a0a;
   }
 }

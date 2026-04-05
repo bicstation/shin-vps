@@ -5,10 +5,10 @@
 import React from 'react';
 import { headers } from "next/headers";
 
-// ✅ 共通コンポーネント (最新の UnifiedCard を採用)
+// ✅ 共通コンポーネント
 import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 
-// ✅ API・判定ロジック (統合ルートへ切り替え)
+// ✅ API・判定ロジック
 import { fetchPostList } from '@/shared/lib/api/django/posts';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
@@ -16,7 +16,7 @@ import { constructMetadata } from '@/shared/lib/utils/metadata';
 import styles from './page.module.css';
 
 /**
- * 💡 Next.js 15 用の動的レンダリング設定
+ * 💡 Next.js 15 レンダリング設定
  */
 export const dynamic = 'force-dynamic'; 
 export const revalidate = 0;
@@ -40,56 +40,54 @@ export async function generateMetadata() {
  * 🏠 ビック的節約生活 メインページ
  */
 export default async function Page() {
-    // --- 🎯 STEP 1: ドメイン・コンテキストの特定 ---
+    // --- 🎯 STEP 1: コンテキスト特定 ---
     const headerList = await headers();
-    
-    // Middlewareの識別子を優先し、フォールバックをドメイン名に設定
     const host = headerList.get('x-django-host') || headerList.get('host') || "bic-saving.com";
     const siteConfig = getSiteMetadata(host); 
 
-    // 🚀 サーバーログ (他サイトと書式を統一)
-    console.log("⚓ --- SAVING_DEPLOY_REPORT ---");
-    console.log("HOSTNAME:", host);
-    console.log("SITE_NAME:", siteConfig.site_name); // "ビック的節約生活"
-    console.log("---------------------------------");
-
-    // --- 🎯 STEP 2: 統合API経由でのデータ取得 ---
-    /**
-     * 🛰️ fetchPostList を使用
-     * 内部で client.ts v8.3 を通るため、site=saving/ ではなく site=saving でリクエストされます。
-     */
+    // --- 🎯 STEP 2: データ取得 ---
     let displayPosts = [];
-    let errorLog = null;
+    let count = 0;
 
     try {
+        // fetchPostList v9.1 ロジックにより、ホスト名から正確に 'saving' を抽出
         const response = await fetchPostList(12, 0, host);
         displayPosts = response?.results || [];
-        
-        console.log(`📥 DATA_RECEIVED: ${displayPosts.length} items from Django fleet.`);
+        count = response?.count || 0;
     } catch (error) {
         console.error("❌ FETCH_FAILED:", error.message);
-        errorLog = error.message;
     }
 
     return (
         <div className={styles.mainContainer}>
-            {/* ヘッダーセクション */}
-            <header className={styles.header}>
-                <h2 className={styles.pageTitle}>
-                    {siteConfig.site_name} 
-                    <span className={styles.titleThin}>/INTEGRATED_NODE</span>
-                </h2>
-                {displayPosts.length > 0 && (
-                    <span className={styles.countBadge}>
-                        ONLINE: {displayPosts.length}
-                    </span>
-                )}
+            {/* 🛸 ヒーローセクション [LIFESTYLE_DESIGN] */}
+            <header className={styles.heroSection}>
+                <div className={styles.heroContent}>
+                    <div className={styles.brandBadge}>LIFESTYLE ARCHIVE</div>
+                    <h1 className={styles.mainTitle}>{siteConfig.site_name}</h1>
+                    <p className={styles.subTitle}>
+                        日々の暮らしをより豊かに、より賢く。
+                        <br className="hidden md:block" />
+                        最新の節約術からライフハックまで、厳選された知恵をお届けします。
+                    </p>
+                    {count > 0 && (
+                        <div className={styles.liveCounter}>
+                            <span className={styles.pulseDot}></span>
+                            現在 <strong>{count.toLocaleString()}</strong> 件の知恵を共有中
+                        </div>
+                    )}
+                </div>
             </header>
             
-            {/* メインコンテンツエリア */}
-            <div className={styles.contentArea}>
+            {/* 📰 メインコンテンツエリア */}
+            <main className={styles.contentArea}>
+                <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>LATEST ARTICLES</h2>
+                    <div className={styles.titleUnderline}></div>
+                </div>
+
                 {displayPosts.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {displayPosts.map((post) => (
                             <UnifiedProductCard 
                                 key={post.id} 
@@ -99,25 +97,31 @@ export default async function Page() {
                         ))}
                     </div>
                 ) : (
-                    /* 通信エラーまたはデータなしの場合 */
-                    <div className={styles.noDataArea}>
-                        <div className={styles.glitchBox}>
-                            <div className={styles.glitchIcon}>📡</div>
-                            <p className={styles.glitchText}>INTELLIGENCE_STREAM_DISCONNECTED</p>
-                            <p className="text-xs opacity-50 mt-4 font-mono">
-                                NODE: {host}<br />
-                                ERROR: {errorLog || "Zero results from Django Bridge"}
-                            </p>
+                    /* 待機・エラー状態の優雅な表示 */
+                    <div className={styles.loadingArea}>
+                        <div className={styles.statusBox}>
+                            <div className={styles.loadingIcon}>☕</div>
+                            <p>最新の節約術を準備しています...</p>
                         </div>
                     </div>
                 )}
-            </div>
+            </main>
 
-            {/* フッターセクション */}
+            {/* 🛡️ 信頼性セクション (審査対策) */}
+            <section className={styles.aboutSection}>
+                <div className={styles.aboutCard}>
+                    <h3>ABOUT OUR MISSION</h3>
+                    <p>
+                        {siteConfig.site_name} は、変化する経済環境の中で「無理のない豊かな暮らし」を実現するための情報ポータルです。
+                        独自の分析に基づき、実生活に役立つヒントをアーカイブ化し、皆様の賢い選択をサポートします。
+                    </p>
+                </div>
+            </section>
+
+            {/* フッター [PROD_READY] */}
             <footer className={styles.footer}>
                 <div className={styles.footerInner}>
-                    <p>SYSTEM_CORE: V8.3-FINAL / DOMAIN: {host} / PROTOCOL: Bridge-v3</p>
-                    <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name} INTEGRATED FLEET</p>
+                    <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name} - Smart Life Network</p>
                 </div>
             </footer>
         </div>

@@ -2,9 +2,9 @@
 # =====================================================================
 # 🛡️ SHIN-VPS v5.1 [Final Stability & Routing Edition]
 # 🚀 修正ログ:
-# 1. [FIX] Django API の優先度を全 Router 中最高の 6000 に設定 (通信の混線を防止)。
-# 2. [FIX] ALLOWED_HOSTS 用の内部ホスト名を Django のラベルに完全網羅。
-# 3. [FIX] Next.js 各コンテナの優先度を API より低くし、ドメインの衝突を解消。
+# 1. [FIX] Django API の優先度を全 Router 中最高の 6000 に設定。
+# 2. [FIX] 各 Next.js コンテナに NEXT_PUBLIC_SITE_DOMAIN を追加し、Identity Resolved: undefined を根絶。
+# 3. [FIX] ネットワーク shared-proxy を外部参照 (external) で固定。
 # =====================================================================
 
 services:
@@ -61,7 +61,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      # ✅ API の優先度を 6000 に引き上げ。これにより Next.js への誤ルーティングを阻止。
       - "traefik.http.routers.django-api.rule=(Host(`api-saving-host`, `api-bicstation-host`, `api-tiper-host`, `api-avflash-host`) || HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`))"
       - "traefik.http.routers.django-api.priority=6000"
       - "traefik.http.routers.django-api.service=django-svc"
@@ -87,6 +86,7 @@ services:
     env_file: .env
     environment:
       - PROJECT_NAME=next-bicstation
+      - NEXT_PUBLIC_SITE_DOMAIN=bicstation
       - INTERNAL_API_URL=http://django-v3:8000
     extra_hosts:
       - "api-bicstation-host:host-gateway"
@@ -101,7 +101,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`, `bicstation.com`)"
-      - "traefik.http.routers.bic-router.priority=2000" # API(6000)より低く設定
+      - "traefik.http.routers.bic-router.priority=2000"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
 
   # 🏠 Bic Saving (節約)
@@ -116,6 +116,7 @@ services:
     env_file: .env
     environment:
       - PROJECT_NAME=next-bic-saving
+      - NEXT_PUBLIC_SITE_DOMAIN=saving
       - INTERNAL_API_URL=http://django-v3:8000
     extra_hosts:
       - "api-saving-host:host-gateway"
@@ -145,6 +146,7 @@ services:
     env_file: .env
     environment:
       - PROJECT_NAME=next-tiper
+      - NEXT_PUBLIC_SITE_DOMAIN=tiper
       - INTERNAL_API_URL=http://django-v3:8000
     extra_hosts:
       - "api-tiper-host:host-gateway"
@@ -174,6 +176,7 @@ services:
     env_file: .env
     environment:
       - PROJECT_NAME=next-avflash
+      - NEXT_PUBLIC_SITE_DOMAIN=avflash
       - INTERNAL_API_URL=http://django-v3:8000
     extra_hosts:
       - "api-avflash-host:host-gateway"

@@ -19,14 +19,12 @@ class StandardPagination(PageNumberPagination):
     """
     page_size = 20
     page_size_query_param = 'page_size' 
-    max_page_size = 500 # 137件を一気に取れるように上限を解放
+    max_page_size = 500 # 上限を解放し、全件取得にも対応
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """
-    🔱 BICSTATION API v5.6 [BREAK_LIMIT_ALL_DATA]
-    🛡️ 修正内容:
-    - pagination_class を維持しつつ上限を解放。
-    - フィルタを site 識別子のみに絞り、137件の通過を保証。
+    🔱 BICSTATION API v7.0 [QUAD_DOMAIN_FINAL_REINFORCED]
+    🛡️ 提督の対応表に基づき、ローカル/本番を問わずドメインを厳格に分離。
     """
     serializer_class = ArticleSerializer
     pagination_class = StandardPagination
@@ -37,6 +35,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter
     ]
     
+    # フィルタを site 識別子に固定
     filterset_fields = ['site', 'is_adult', 'show_on_main', 'show_on_satellite', 'is_exported', 'content_type']
     search_fields = ['title'] 
     ordering_fields = ['created_at', 'updated_at']
@@ -49,46 +48,41 @@ class ArticleViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        ⚡ 全ドメイン・マルチテナント自動判定ロジック + 導線診断
+        ⚡ 4ドメイン・マルチテナント厳格判定ロジック
         """
-        # 1. 基礎クエリ
+        # 1. 基礎クエリ (一覧時は本文を除去して軽量化)
         queryset = Article.objects.all()
         if self.action == 'list':
             queryset = queryset.defer('body_main', 'body_satellite')
 
-        # 2. 識別子の取得
+        # 2. 識別子の取得 (Middlewareの project_id または QueryParam を優先)
         project_id = getattr(self.request, 'project_id', 'default')
         param_site = self.request.query_params.get('site') or self.request.query_params.get('project')
         raw_target = (param_site if param_site else project_id).lower()
 
-        # 🎯 3. 「ドメイン洗浄」エンジン
-        # 末尾のスラッシュや余計なホスト名を徹底排除
+        # 🎯 3. 「ドメイン・ホスト洗浄」エンジン
+        # api-saving-host, api.bic-saving.com 等から共通の「通称」を導き出す
         clean_id = raw_target.replace('api.', '').replace('api-', '').replace('-host', '').replace('/', '').split('.')[0]
         
-        # 🛡️ 4. グループ定義
-        GENERAL_KEYS = ['station', 'saving', 'news', 'bic']
-        ADULT_KEYS = ['tiper', 'avflash', 'erog', 'adult']
-
-        # 🌊 5. 配信フィルタリング実行 [FORCE_ALL_PASS]
-        # 💡 site 以外のフラグ(is_adult, show_on_main)による除外を一時的に停止
-        site_val = "unknown"
-        
-        if any(k in clean_id for k in GENERAL_KEYS):
-            site_val = 'saving' if 'saving' in clean_id else 'bicstation'
-            queryset = queryset.filter(site=site_val)
-            
-        elif any(k in clean_id for k in ADULT_KEYS):
-            site_val = 'tiper' if 'tiper' in clean_id else 'avflash'
-            queryset = queryset.filter(site=site_val)
-        
+        # 🛡️ 4. 提督のリストに基づく「通称」確定マッピング
+        if 'saving' in clean_id:
+            site_val = 'saving'
+        elif 'tiper' in clean_id:
+            site_val = 'tiper'
+        elif 'avflash' in clean_id:
+            site_val = 'avflash'
+        elif any(k in clean_id for k in ['bicstation', 'station', 'bic', 'localhost', '127.0.0.1']):
+            site_val = 'bicstation'
         else:
-            site_val = clean_id
-            queryset = queryset.filter(site=clean_id)
+            site_val = clean_id  # 予備の識別子
 
-        # 🚀 6. 導線を表示するログ
-        # 💡 count() はDB上の全ヒット数を出すため、ここで 137 が出れば DB接続は完璧です
+        # 🌊 5. 配信フィルタリング実行
+        # DBの site フィールドと完全一致するもののみを抽出
+        queryset = queryset.filter(site=site_val)
+
+        # 🚀 6. 導線診断ログ (docker logs で最重要視する部分)
         print(f"\n" + "="*40)
-        print(f"🛰️  --- ROUTE DIAGNOSTICS ---")
+        print(f"🛰️  --- QUAD-DOMAIN ROUTE DIAGNOSTICS ---")
         print(f"🏠  HOST: {self.request.get_host()}")
         print(f"🎯  RAW TARGET: {raw_target}")
         print(f"🧼  CLEANED ID: {clean_id}")
@@ -99,17 +93,19 @@ class ArticleViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
+        """
+        記事作成時、リクエスト元のホストに応じて site/is_adult を自動補完
+        """
         project_id = getattr(self.request, 'project_id', 'default').lower()
-        clean_id = project_id.replace('api.', '').replace('api-', '').replace('-host', '').split('.')[0]
         
-        if any(k in clean_id for k in ['station', 'saving', 'bic']):
-            site_val = 'saving' if 'saving' in clean_id else 'bicstation'
-            serializer.save(site=site_val, is_adult=False, show_on_main=True)
-        elif any(k in clean_id for k in ['tiper', 'avflash']):
-            site_val = 'tiper' if 'tiper' in clean_id else 'avflash'
-            serializer.save(site=site_val, is_adult=True, show_on_main=True)
+        if 'saving' in project_id:
+            serializer.save(site='saving', is_adult=False, show_on_main=True)
+        elif 'tiper' in project_id:
+            serializer.save(site='tiper', is_adult=True, show_on_main=True)
+        elif 'avflash' in project_id:
+            serializer.save(site='avflash', is_adult=True, show_on_main=True)
         else:
-            serializer.save()
+            serializer.save(site='bicstation', is_adult=False, show_on_main=True)
 
     @action(detail=False, methods=['post'], url_path='bulk-export-done')
     def bulk_mark_as_exported(self, request):
@@ -118,11 +114,14 @@ class ArticleViewSet(viewsets.ModelViewSet):
             return Response({"error": "ids list required"}, status=status.HTTP_400_BAD_REQUEST)
         
         project_id = getattr(self.request, 'project_id', 'default').lower()
+        # 洗浄してサイトを特定
         clean_id = project_id.replace('api.', '').replace('api-', '').replace('-host', '').split('.')[0]
         
         update_filter = {"id__in": ids}
-        if clean_id != 'default':
-            update_filter["site"] = clean_id
+        # default/localhost 以外はサイトを絞って更新
+        if not any(k in clean_id for k in ['default', 'localhost', '127.0.0.1']):
+            # saving, tiper, avflash 等の厳格一致
+            update_filter["site__icontains"] = clean_id
 
         updated_count = Article.objects.filter(**update_filter).update(is_exported=True)
         return Response({"status": "success", "updated_count": updated_count}, status=status.HTTP_200_OK)

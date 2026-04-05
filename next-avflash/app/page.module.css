@@ -1,76 +1,112 @@
 /**
- * 🏗️ [AVFLASH-PAGE-CSS]
- * メインコンテンツ内（page.tsx）の要素スタイル定義
+ * 🏗️ [AVFLASH-PAGE-CSS] - PRODUCTION READY
+ * 修正内容:
+ * - page.tsx の要素（heroHeader, contentStream等）とクラス名を完全同期
+ * - アドセンス審査を意識した、洗練されたダークテーマ用デコレーション
+ * - 1,700件のデータを引き立てる「グリッド・リズム」の最適化
  */
 
-/* 1. 変数定義 */
-.container {
-  --page-background: #0d0d0d;
-  --card-background: #161616;
-  --card-border: #222;
+/* 1. ベースコンテナ */
+.pageContainer {
+  --page-background: #080808;
+  --card-background: #111111;
+  --card-border: rgba(255, 255, 255, 0.08);
   --text-primary: #ffffff;
-  --text-secondary: #888888;
-  --text-muted: #555555;
-  --accent-color: var(--site-theme-color, #ffc107);
+  --text-secondary: #a0a0a0;
+  --text-muted: #666666;
+  --accent-color: #ffc107; /* AV FLASH THEME GOLD */
   --accent-hover: #e5ac00;
   --transition-speed: 0.3s;
   
+  background-color: var(--page-background);
+  min-height: 100vh;
+  color: var(--text-primary);
   width: 100%;
 }
 
-/* 2. ヒーローセクション */
-.hero {
-  padding: 80px 20px;
+/* 2. メインストリーム（コンテンツ幅制御） */
+.contentStream {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+/* 3. 🛸 ヒーローヘッダー (Hero Section) */
+.heroHeader {
+  padding: 100px 20px;
   text-align: center;
   background: radial-gradient(circle at center, #1a1a1a 0%, #080808 100%);
   border-bottom: 1px solid var(--card-border);
   position: relative;
   overflow: hidden;
-  margin-bottom: 40px;
-  border-radius: 16px;
+  margin-bottom: 60px;
+  border-radius: 0 0 32px 32px; /* 下部のみ丸みをつけて優雅に */
 }
 
-.heroGlow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 300px;
-  height: 300px;
-  background-color: var(--accent-color);
-  filter: blur(120px);
-  opacity: 0.05;
-  pointer-events: none;
+/* 装飾用の光る点（アニメーション付き） */
+.pulseDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #4caf50;
+  border-radius: 50%;
+  margin-right: 8px;
+  box-shadow: 0 0 8px #4caf50;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.heroBadge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  border-radius: 100px;
+  margin-bottom: 24px;
+  text-transform: uppercase;
 }
 
 .heroTitle {
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  color: var(--accent-color);
-  margin-bottom: 15px;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  color: var(--text-primary);
+  margin-bottom: 20px;
   font-weight: 900;
-  letter-spacing: 0.1em;
-  text-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
-  position: relative;
-  z-index: 1;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .heroSubtitle {
   color: var(--text-secondary);
-  font-size: 1.2rem;
-  max-width: 600px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
+  font-size: 1.25rem;
+  max-width: 700px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
 }
 
-/* 3. コンテンツ幅の制御 */
-.contentInner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px 40px;
+.statsInfo {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-/* 4. セクション構造 */
+.statsInfo strong {
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace; /* 数字を際立たせる */
+}
+
+/* 4. セクション構造 (LATEST_REPORTS / NEW_ARCHIVES) */
 .section {
   margin-bottom: 80px;
 }
@@ -78,145 +114,101 @@
 .sectionHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 30px;
+  align-items: center; /* 中央揃えに修正 */
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 16px;
+}
+
+.titleWrapper {
+  display: flex;
+  flex-direction: column;
 }
 
 .sectionTitle {
-  font-size: 1.8rem;
-  border-left: 6px solid var(--accent-color);
-  padding-left: 20px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   margin: 0;
-  line-height: 1;
   color: var(--text-primary);
-}
-
-.sectionSubtitle {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  margin-top: 8px;
-  padding-left: 26px;
-}
-
-/* 5. グリッドレイアウト */
-.productGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
-}
-
-.articleGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 25px;
-}
-
-/* 6. 記事カード */
-.articleCard {
-  display: flex;
-  background: var(--card-background);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--card-border);
-  transition: border-color var(--transition-speed), transform var(--transition-speed);
-}
-
-.articleCard:hover {
-  border-color: var(--accent-color);
-  transform: translateY(-2px);
-}
-
-.articleThumbnail {
-  width: 160px;
-  flex-shrink: 0;
-}
-
-.articleThumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.articleContent {
-  padding: 20px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.articleLink {
-  text-decoration: none;
-}
-
-.articleTitle {
-  color: var(--text-primary);
-  font-size: 1.1rem;
-  margin: 0 0 10px 0;
-  line-height: 1.4;
-  transition: color var(--transition-speed);
-}
-
-.articleLink:hover .articleTitle {
-  color: var(--accent-color);
-}
-
-.articleMeta {
+  text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 0.75rem;
 }
 
-.articleTag {
-  color: var(--accent-color);
-  font-weight: bold;
+.sectionTitle::before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 24px;
+  background-color: var(--accent-color);
+  margin-right: 16px;
 }
 
-.articleDate {
-  color: var(--text-muted);
-}
-
-/* 7. 共通コンポーネント */
+/* 5. 共通コンポーネント (リンク類) */
 .viewAllLink {
   color: var(--accent-color);
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: opacity var(--transition-speed);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all var(--transition-speed);
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(255, 193, 7, 0.05);
 }
 
 .viewAllLink:hover {
-  opacity: 0.7;
+  background: rgba(255, 193, 7, 0.15);
+  transform: translateX(5px);
 }
 
+/* 6. 特殊なステータス表示 */
 .emptyState {
-  padding: 40px;
+  padding: 80px 40px;
   text-align: center;
-  background: #111;
-  border-radius: 12px;
-  grid-column: 1/-1;
+  background: var(--card-background);
+  border: 1px dashed var(--card-border);
+  border-radius: 24px;
   color: var(--text-muted);
 }
 
-/* 8. レスポンシブ */
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+/* 7. 🛡️ サイト・インフォメーション (下部) */
+.infoSection {
+  margin-top: 40px;
+}
+
+.infoCard {
+  background: linear-gradient(145deg, #161616 0%, #0d0d0d 100%);
+  padding: 40px;
+  border-radius: 24px;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+/* 8. レスポンシブ設計 */
 @media (max-width: 768px) {
-  .hero {
-    padding: 48px 20px;
+  .heroHeader {
+    padding: 60px 20px;
+    margin-bottom: 40px;
   }
   
-  .articleCard {
-    flex-direction: column;
+  .heroTitle {
+    font-size: 2.2rem;
   }
-  
-  .articleThumbnail {
-    width: 100%;
-    height: 200px;
-  }
-  
+
   .sectionHeader {
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px;
+    gap: 20px;
+  }
+  
+  .viewAllLink {
+    align-self: flex-end;
   }
 }
