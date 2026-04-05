@@ -7,6 +7,7 @@
 # 2. Next.js: args と environment の両方に API URL を完全配置。
 # 3. Traefik: priority 設定とマルチドメインルールを完全復元。
 # 4. 管理ツール: Basic認証(Netdata)と各サブドメイン設定を完全維持。
+# 5. [VPS PATCH]: 各Next.jsコンテナに内部解決用の extra_hosts を追加。
 # =====================================================================
 
 version: '3.8'
@@ -90,7 +91,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # ✅ API, Admin, Static を一括で Django へ。優先度 2000 でドメインをカバー
       - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.tls.certresolver=le"
@@ -117,7 +117,11 @@ services:
     restart: always
     env_file: .env
     environment:
+      - PROJECT_NAME=next-bicstation
       - NEXT_PUBLIC_API_URL=https://api.bicstation.com/api
+      - INTERNAL_API_URL=http://django-v3:8000/api
+    extra_hosts:
+      - "api.bicstation.com:host-gateway"
     volumes:
       - "./next-bicstation:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -144,7 +148,11 @@ services:
     restart: always
     env_file: .env
     environment:
+      - PROJECT_NAME=next-tiper
       - NEXT_PUBLIC_API_URL=https://api.tiper.live/api
+      - INTERNAL_API_URL=http://django-v3:8000/api
+    extra_hosts:
+      - "api.tiper.live:host-gateway"
     volumes:
       - "./next-tiper:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -170,7 +178,11 @@ services:
     restart: always
     env_file: .env
     environment:
+      - PROJECT_NAME=next-bic-saving
       - NEXT_PUBLIC_API_URL=https://api.bic-saving.com/api
+      - INTERNAL_API_URL=http://django-v3:8000/api
+    extra_hosts:
+      - "api.bic-saving.com:host-gateway"
     volumes:
       - "./next-bic-saving:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -196,7 +208,11 @@ services:
     restart: always
     env_file: .env
     environment:
+      - PROJECT_NAME=next-avflash
       - NEXT_PUBLIC_API_URL=https://api.avflash.xyz/api
+      - INTERNAL_API_URL=http://django-v3:8000/api
+    extra_hosts:
+      - "api.avflash.xyz:host-gateway"
     volumes:
       - "./next-avflash:/usr/src/app"
       - "./shared:/usr/src/app/shared"
