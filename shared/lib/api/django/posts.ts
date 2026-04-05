@@ -1,9 +1,10 @@
 /**
  * 📝 記事取得サービス (shared/lib/api/django/posts.ts)
- * 🛡️ Zenith v8.7 - [TOTAL_PORT_CLEANUP]
+ * 🛡️ Zenith v8.8 - [PROD_READY_FINAL]
  * 修正内容:
+ * - siteTag を .toLowerCase() で強制小文字化し、本番DBの site__exact 検索に完全合致させる。
  * - project 引数からポート番号 (:8083 等) を物理的に切断。
- * - getDjangoHeaders() の結果を尊重し、Hostヘッダーの二重書き換えによる汚染を防止。
+ * - getDjangoHeaders() をベースに、Hostヘッダーの整合性を維持。
  */
 import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from './client';
 import { getWpConfig, getDjangoBaseUrl } from '../config';
@@ -32,8 +33,7 @@ export const replaceInternalUrls = (data: any): any => {
 
 /** 🛠️ 記事リソース専用 Fetch */
 async function fetchPostRaw(url: string, options: any = {}, manualHost?: string) {
-    // 🚀 [FIX] client.ts で生成された「正規化済みヘッダー」をベースにする
-    // これにより、ここでの手動な Host 上書きによる事故を防ぐ
+    // client.ts で生成された正規化済みヘッダーを使用
     const djangoHeaders = getDjangoHeaders(manualHost);
 
     const res = await fetch(url, {
@@ -58,15 +58,19 @@ export async function fetchPostList(
 ): Promise<{ results: UnifiedPost[], count: number }> {
     
     // 🛡️ [CRITICAL FIX] サイト識別子の「絶対洗浄」
-    // 入力が 'tiper-host:8083' でも 'tiper' に変換し、ポート番号を抹殺する
+    // .toLowerCase() を追加し、DBの site__exact=bicstation 等に確実にヒットさせる
     const siteTag = (project || 'bicstation')
         .split(':')[0]             // 🔥 1. ポート番号を真っ先に切断
         .split('/')[0]             // 🔥 2. スラッシュ以降も切断
         .replace('api-', '')       // 3. プレフィックス除去
         .replace('-host', '')      // 4. サフィックス除去
+        .toLowerCase()             // 🚀 [NEW] 全て小文字化（DB検索の精度向上）
         .trim();
 
-    const isGeneralSite = ['bicstation', 'saving'].includes(siteTag);
+    // 保存されているデータが 'saving' なのにドメインが 'bic-saving' 等の場合の補正
+    const finalSiteTag = siteTag.includes('saving') ? 'saving' : siteTag;
+
+    const isGeneralSite = ['bicstation', 'saving'].includes(finalSiteTag);
     const fetchLimit = isGeneralSite ? limit * 3 : limit; 
 
     // クエリパラメータの構築
@@ -76,23 +80,20 @@ export async function fetchPostList(
         ordering: '-created_at',
     });
 
-    // 🎯 Djangoが期待する「純粋なsite名」を付与
-    if (siteTag !== 'all') {
-        queryParams.append('site', siteTag); 
+    // Djangoが期待する「純粋なsite名」を付与
+    if (finalSiteTag !== 'all') {
+        queryParams.append('site', finalSiteTag); 
     }
 
-    /**
-     * 🛰️ URL解決の正規化
-     * siteTag を渡すことで、resolveApiUrl 内での Host 解決もクリーンに行う
-     */
+    /** 🛰️ URL解決の正規化 */
     const baseEndpoint = 'posts/'; 
     const finalEndpoint = `${baseEndpoint}?${queryParams.toString()}`;
-    const url = commonResolveApiUrl(finalEndpoint, siteTag); 
+    const url = commonResolveApiUrl(finalEndpoint, finalSiteTag); 
 
     const { data } = await fetchPostRaw(url, { 
         ...options,
         next: { revalidate: 0 } 
-    }, siteTag);
+    }, finalSiteTag);
 
     let rawResults = data?.results || [];
 
@@ -125,8 +126,8 @@ export async function fetchPostList(
 export async function fetchPostData(id: string, project?: string): Promise<UnifiedPost | null> {
     const cleanId = id.toString().replace(/\//g, '');
     
-    // 🔥 project からポートを除去して解決
-    const cleanProject = (project || '').split(':')[0];
+    // project からポートを除去し、小文字化して解決
+    const cleanProject = (project || '').split(':')[0].toLowerCase();
     const url = commonResolveApiUrl(`posts/${cleanId}/`, cleanProject);
     
     const { data, status } = await fetchPostRaw(url, { next: { revalidate: 60 } }, cleanProject);
