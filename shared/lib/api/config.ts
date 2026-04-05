@@ -1,12 +1,7 @@
 /**
  * =====================================================================
  * 🌍 API 環境設定 (shared/lib/api/config.ts)
- * 🛡️ Maya's Logic: Single Truth (siteConfig 依存) 統合版
- * =====================================================================
- * 🚀 修正ポイント:
- * 1. 独自判定を廃止し、getSiteMetadata() の結果に全責任を持たせました。
- * 2. サーバーサイド(SSR)とクライアントサイドで baseUrl / Host を自動同期。
- * 3. 二重パス (/api/api) の発生源を根本から遮断。
+ * 🛡️ SHIN-VPS v5.3 [Internal Routing via Traefik Gateway]
  * =====================================================================
  */
 import { getSiteMetadata } from '../utils/siteConfig';
@@ -16,44 +11,51 @@ export const IS_SERVER = typeof window === 'undefined';
 
 /**
  * 💡 API 接続設定の解決
- * siteConfig.ts (v19.5+) で確定された「django_host」と「api_base_url」を
- * Next.js の通信用設定としてパッケージングします。
  */
 export const getWpConfig = (manualHost?: string) => {
-    // 🛰️ 唯一の真実であるサイトメタデータを取得
-    const meta = getSiteMetadata(manualHost);
+    // 1. 識別子の特定 (最優先: 環境変数 NEXT_PUBLIC_SITE_DOMAIN)
+    const identifier = manualHost || (IS_SERVER ? process.env.NEXT_PUBLIC_SITE_DOMAIN : window.location.hostname);
+
+    // 🛰️ サイトメタデータを取得
+    const meta = getSiteMetadata(identifier || "");
+
+    /**
+     * 🚀 通信先 (baseUrl) の決定
+     * 提督の指示に従い、サーバーサイド(SSR)では 'api-xxx-host:8083' を使用します。
+     */
+    let baseUrl = meta.api_base_url;
+
+    if (IS_SERVER) {
+        // サイト名 (saving, avflash等) に応じた内部ホスト名を構築
+        const siteTag = meta.site_tag; // getSiteMetadata から返される識別子
+        
+        // 例: api-saving-host:8083
+        baseUrl = `http://api-${siteTag}-host:8083`;
+    }
 
     return {
-        /** * 🚀 物理的な通信先 (http://django-v3:8000 または https://api.xxx)
-         * siteConfig 側で既に末尾の /api は除去済みです。
+        /** * 🚀 物理的な通信先
+         * SSR時: http://api-saving-host:8083
+         * ブラウザ時: https://api.bic-saving.com (metaの値)
          */
-        baseUrl: meta.api_base_url, 
+        baseUrl: baseUrl, 
 
-        /** * 🛡️ Django Middleware 判定用の Host 名
-         * ローカルなら 'api-avflash-host'、本番なら 'api.avflash.xyz' が自動で入ります。
+        /** * 🛡️ Django 識別用 Host 名
+         * Traefik や Django が振り分けに使用する本来のドメイン名
          */
         host: meta.django_host,
 
-        /** サイト識別用キー */
+        /** サイト識別用キー (saving, avflash 等) */
         siteKey: meta.site_tag
     };
 };
 
-/**
- * 🛠️ Django 直接参照用のベースURL取得
- */
-export const getDjangoBaseUrl = () => {
-    const config = getWpConfig();
-    return config.baseUrl;
-};
+/** 🛠️ Django 直接参照用のベースURL取得 */
+export const getDjangoBaseUrl = () => getWpConfig().baseUrl;
 
-/**
- * 🚀 API 全体設定オブジェクト
- * 💡 djangoHost は固定値ではなく、実行時に動的に解決される getWpConfig().host を使用してください。
- */
+/** 🚀 API 全体設定オブジェクト */
 export const API_CONFIG = {
     get djangoBase() { return getDjangoBaseUrl(); },
-    // 🚩 djangoHost の直接指定は廃止し、wp.host を参照することを推奨
     get wp() { return getWpConfig(); },
     timeout: 10000,
 };
