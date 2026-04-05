@@ -1,19 +1,19 @@
 /**
  * =====================================================================
- * 🌉 Django-Bridge 統合サービス層 (v7.7 - Final Production)
- * 🛡️ Maya's Logic: 指揮系統一本化・パス解決最適化
+ * 🌉 Django-Bridge 統合サービス層 (v7.8 - Final Production)
+ * 🛡️ Maya's Logic: 源流スラッシュ排除・指揮系統一本化
  * =====================================================================
  * 🚀 修正ポイント:
- * 1. 【パス解決】インポートを '@/shared/' 形式に統一し、Docker/Local両環境に対応。
- * 2. 【Middleware連携】x-django-hostヘッダーを最優先。再判定による不一致を根絶。
- * 3. 【一括置換】内部URL置換ロジックを強化し、閲覧環境に応じたURLへ動的変換。
+ * 1. 【源流洗浄】resolveCurrentMetadata の出口でスラッシュを完全除去。
+ * 2. 【二重正規化】replaceInternalUrls の置換ロジックをより安全に。
+ * 3. 【一貫性】全エンドポイントへ「純粋な識別子」のみを供給。
  * =====================================================================
  */
 
 import { getSiteMetadata } from '../utils/siteConfig';
 import { getDjangoBaseUrl } from './config';
 
-// 🚀 各ドメイン専門ロジック（shared内相対パス、またはエイリアス）
+// 🚀 各ドメイン専門ロジック
 import { fetchPCProducts as fetchPCProductsLogic } from './django/pc';
 import { getUnifiedProducts as getAdultProductsLogic } from './django/adult';
 import { fetchPostList as fetchNewsLogic, fetchPostData as fetchNewsDetail } from './django/posts';
@@ -22,22 +22,30 @@ import { DjangoApiResponse } from './types';
 
 /**
  * 🔄 【共通機能】内部URL・一括置換ユーティリティ
- * Djangoコンテナ内の内部ホスト名を、ブラウザからアクセス可能な公開URLへ一括変換します。
+ * Djangoコンテナ内の内部ホスト名を公開URLへ変換。
  */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
-    const baseUrl = getDjangoBaseUrl(); // siteConfig 由来の URL
+    const baseUrl = getDjangoBaseUrl(); 
     if (!baseUrl) return data;
     
+    // ベースURL自体の末尾スラッシュをケア
+    const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
+
     if (typeof data === 'object') {
         try {
             let content = JSON.stringify(data);
             /**
-             * 🔍 内部ネットワーク用ドメインを網羅的に検知して置換
-             * django-v3, api-avflash-host, localhost 等を公開URLに書き換えます。
+             * 🔍 内部ドメイン置換
              */
             const internalPattern = /http:\/\/(django-v[23]|nginx-wp-v[23]|wordpress-.+v[23]|api-[a-z-]+-host|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
-            content = content.replace(internalPattern, baseUrl).replace(/([^:])\/\//g, '$1/'); 
+            
+            // 公開URLへ置換
+            content = content.replace(internalPattern, cleanBaseUrl);
+            
+            // 🚨 二重スラッシュ防止 (プロトコルの :// は除外して置換)
+            content = content.replace(/([^:])\/\//g, '$1/'); 
+            
             return JSON.parse(content);
         } catch (e) { 
             return data; 
@@ -48,32 +56,36 @@ export const replaceInternalUrls = (data: any): any => {
 
 /**
  * 🛰️ 【安全なプロジェクト検知】
- * Middlewareで刻印された 'x-django-host' を最優先します。
- * これにより、SSR/ビルド時の判定ミスを物理的に防ぎます。
+ * 🛡️ 修正: 取得したホスト名から「末尾スラッシュ」を物理的に除去。
  */
 const resolveCurrentMetadata = async (manualHost?: string) => {
     let host = manualHost || "";
 
     try {
-        // 🚀 Next.js 15: headers() の動的取得
         const { headers } = await import('next/headers');
         const headerList = await headers();
 
-        // 🛡️ Middlewareが判定・焼成した「身分証」があればそれを信じる
+        // Middlewareが判定した「身分証」を優先
         const preCalculatedHost = headerList.get('x-django-host');
         if (preCalculatedHost && !manualHost) {
-            // 再計算せず、既存のホスト名でメタデータを確定
-            return getSiteMetadata(preCalculatedHost);
+            host = preCalculatedHost;
+        } else {
+            host = host || headerList.get('host') || "";
         }
-
-        // ヘッダーがない（または手動指定がある）場合はHostヘッダーから判定
-        host = host || headerList.get('host') || "";
     } catch (e) {
-        // ビルド時 (Static Generation) や非リクエストコンテキストでのフォールバック
         host = host || process.env.NEXT_PUBLIC_SITE_DOMAIN || "";
     }
 
-    return getSiteMetadata(host);
+    // 🎯 ホスト名からスラッシュを徹底除去 (これが &site=xxx/ の真犯人)
+    const cleanHost = host.replace(/\/+$/, '').trim();
+    const meta = getSiteMetadata(cleanHost);
+
+    // 🛡️ 内部保持している django_host も再洗浄
+    if (meta.django_host) {
+        meta.django_host = meta.django_host.replace(/\/+$/, '');
+    }
+
+    return meta;
 };
 
 /**
@@ -84,15 +96,16 @@ export async function fetchDjangoBridgeContent(params: any = {}): Promise<Django
     const meta = await resolveCurrentMetadata(params?.host);
     const contentType = params?.content_type || 'post';
 
-    // 確定した django_host (身分証) を各ロジックに注入
+    // 確定した「純粋な」身分証
     const contextHost = meta.django_host;
 
     // 1. 記事コンテンツ（News / Blog）
     if (contentType === 'news' || contentType === 'post') {
+        // 🚨 contextHost が "bicstation" 等のスラッシュ無し文字列であることを保証
         return await fetchNewsLogic(params?.limit || 12, params?.offset || 0, contextHost);
     }
 
-    // 2. 商品コンテンツ (アダルト/PCパーツの切り分け)
+    // 2. 商品コンテンツ
     if (meta.site_group === 'adult') {
         return await getAdultProductsLogic({ 
             ...params, 
@@ -110,9 +123,6 @@ export async function fetchDjangoBridgeContent(params: any = {}): Promise<Django
 
 /**
  * 📄 記事リスト取得のメインゲート
- * @param limit 取得件数
- * @param offset 開始位置
- * @param projectHost 手動ホスト指定（オプション）
  */
 export async function fetchPostList(limit = 12, offset = 0, projectHost?: string) {
     const meta = await resolveCurrentMetadata(projectHost);
@@ -121,17 +131,16 @@ export async function fetchPostList(limit = 12, offset = 0, projectHost?: string
 
 /**
  * 📰 記事詳細取得のメインゲート
- * @param id 記事IDまたはスラグ
- * @param projectHost 手動ホスト指定（オプション）
  */
 export async function fetchPostData(id: string, projectHost?: string) {
     const meta = await resolveCurrentMetadata(projectHost);
-    return await fetchNewsDetail(id, meta.django_host);
+    // ID側のスラッシュも念のため除去
+    const cleanId = id.toString().replace(/\/+$/, '');
+    return await fetchNewsDetail(cleanId, meta.django_host);
 }
 
 /**
  * 💎 エイリアス & 互換性維持
- * 旧バージョンの関数名でも呼び出せるようにエクスポートします。
  */
 export { 
     fetchNewsLogic as fetchNewsArticles,

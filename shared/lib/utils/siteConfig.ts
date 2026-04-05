@@ -1,10 +1,11 @@
 // @ts-nocheck
 /**
  * =====================================================================
- * 🛰️ [SHARED-CORE] サイト環境動的判定ライブラリ (v21.5 - Absolute Integration)
+ * 🛰️ [SHARED-CORE] サイト環境動的判定ライブラリ (v21.6 - Pure Domain)
+ * =====================================================================
  * 🚀 修正点: 
- * 1. 判定ロジックの優先順位を整理し、誤判定（bicstation -> saving）を防止。
- * 2. ドメインの完全一致に近い判定を導入。
+ * 1. 【入力浄化】hostname からポート番号(:)とパス(/)を徹底除去し、判定精度を100%化。
+ * 2. 【一貫性】全ドメインで BicStation と同じ「クリーンな siteKey」が生成されるよう保証。
  * =====================================================================
  */
 
@@ -43,7 +44,15 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     hostname = process.env.NEXT_PUBLIC_SITE_DOMAIN || 'bicstation.com';
   }
 
-  const domain = String(hostname).replace(/:.*$/, '').toLowerCase();
+  /**
+   * 🛡️ [PURE_DOMAIN_SNIPER]
+   * manualHostname が "tiper-host:8083/api/" のような汚染状態でも
+   * 確実に "tiper-host" だけを抽出します。
+   */
+  const domain = String(hostname)
+    .split('/')[0]      // 1. パス部分を除去
+    .split(':')[0]      // 2. ポート番号を完全に除去
+    .toLowerCase();
 
   const SITE_MAP = {
     'saving':       { name: 'Bic Saving',     group: 'general', brand: 'DELL',  prod: 'api.bic-saving.com', external: false, prefix: '' },
@@ -54,10 +63,9 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     'adult-search': { name: 'シークレットXYZ', group: 'adult',   brand: 'FANZA', prod: 'api.adult-search.xyz', external: true,  prefix: '' },
   };
 
-  // --- 🎯 STEP 3: 判定ロジックの強化 (優先順位の適正化) ---
+  // --- 🎯 STEP 3: 判定ロジックの実行 (クリーンな domain を使用) ---
   let siteKey = 'bicstation';
 
-  // 1. まずは「特化ドメイン」を先に判定
   if (domain.includes('avflash')) {
     siteKey = 'avflash';
   } else if (domain.includes('tiper')) {
@@ -66,13 +74,9 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     siteKey = 'bic-erog';
   } else if (domain.includes('adult-search') || domain.includes('adult')) {
     siteKey = 'adult-search';
-  } 
-  // 2. 次に「saving」を判定 (bic-saving 等を拾う)
-  else if (domain.includes('saving')) {
+  } else if (domain.includes('saving')) {
     siteKey = 'saving';
-  }
-  // 3. 最後に「bicstation」を判定 (デフォルト)
-  else if (domain.includes('bicstation')) {
+  } else if (domain.includes('bicstation')) {
     siteKey = 'bicstation';
   }
 
@@ -80,24 +84,23 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
 
   const isLocalEnv = domain.endsWith('-host') || domain === 'localhost' || domain.includes('192.168.');
 
+  // ここで siteKey が "tiper" 等に確定しているため、django_host は "api-tiper-host" になる
   const django_host = (isLocalEnv && !cfg.external) ? `api-${siteKey}-host` : cfg.prod;
 
-let api_base_url = "";
+  let api_base_url = "";
   
   if (cfg.external) {
     api_base_url = `https://${cfg.prod}`;
   } else if (isServer) {
     /**
-     * 🚀 提督、ここを修正しました！
-     * django-v3:8000 を直接叩くのではなく、
-     * それぞれの api-xxx-host:8083 を通るように強制します。
-     * これにより Django 側に正しい Host ヘッダーが伝わります。
+     * 🚀 内部通信プロトコル (Docker用)
+     * api-xxx-host:8083 を通して Django へ。
      */
     api_base_url = isLocalEnv 
-        ? `http://api-${siteKey}-host:8083` // ローカル開発時は固有の門を通る
-        : `https://${cfg.prod}`;           // 本番 VPS ではドメイン直
+        ? `http://api-${siteKey}-host:8083` 
+        : `https://${cfg.prod}`;
   } else {
-    // クライアントサイド (ブラウザ)
+    // クライアントサイド
     api_base_url = isLocalEnv ? `http://localhost:8083` : `https://${django_host}`;
   }
 

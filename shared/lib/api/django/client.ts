@@ -1,66 +1,75 @@
 /**
  * =====================================================================
- * 🛠️ Django API 共通クライアント (Zenith v8.2 - Multi-Tenant Final Fix)
+ * 🛠️ Django API 共通クライアント (Zenith v8.6 - Final Protocol)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【物理パス解決】resolveApiUrl に manualHost を貫通させ、正しいポート(8083)へ誘導。
- * 2. 【名前解決の保護】正規表現を修正し、ホスト名に含まれる 'api-' を誤って削らないように改善。
- * 3. 【SSR身分証】getDjangoHeaders で Host ヘッダーを動的に生成し、Djangoの洗浄エンジンを起動。
+ * 1. 【ポート番号の抹殺】manualHost から ":8083" 等のポートを完全除去。
+ * 2. 【末尾スラッシュの制御】クエリ(?...)がある場合は直前のみスラッシュ、末尾はナシ。
+ * 3. 【SSR身分証の統一】Django Middleware が識別できる Host ヘッダーを動的生成。
  * =====================================================================
  */
 import { getWpConfig, IS_SERVER } from '../config';
-import { getSiteMetadata } from '../utils/siteConfig';
+import { getSiteMetadata } from '../../utils/siteConfig';
 
 /**
  * 💡 接続先URLを動的に解決 (Network Path Resolver)
- * 🚀 manualHost を受け取り、各ドメイン専用の 8083 ポート等のパスを解決します。
+ * 🚀 修正: クエリパラメータ(?...)の手前にはスラッシュを保証し、末尾には付けない。
  */
 export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
-    // 🎯 manualHost を渡して、siteConfig 側で定義された api_base_url (8083系) を取得
-    const config = getWpConfig(manualHost);
+    // 1. ポート番号を除去したクリーンなホスト名を取得 (URL解決用)
+    const cleanManualHost = manualHost ? manualHost.split(':')[0] : undefined;
+    const config = getWpConfig(cleanManualHost);
     const baseUrl = config.baseUrl;
     
-    /**
-     * 1. エンドポイントの正規化
-     * ⚠️ [重要修正]: 以前の /^api\// を削除しました。
-     * これにより 'api-bicstation-host' のような文字列の先頭を削る事故を防ぎます。
-     */
-    const cleanEndpoint = endpoint
-        .replace(/^\/+/, '')
-        .replace(/\/+$/, '');
+    // 2. エンドポイントの前後スラッシュを一旦除去して正規化
+    let cleanEndpoint = endpoint.replace(/^\/+/, '').replace(/\/+$/, '');
 
-    // 2. "/api" の二重付与を防止
+    // 3. "/api" の二重付与を防止
     const rootUrl = baseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
-    // 3. 結合: Django の APPEND_SLASH=True に対応
-    // ここで生成される URL は http://api-bicstation-host:8083/api/posts/ のようになります。
+    /**
+     * 🎯 結合ロジック (Slash vs Query Security)
+     * Django はパスの末尾にスラッシュを求めるが、クエリの末尾には不要。
+     * ここで site=xxx/ になるのを物理的に防ぐ。
+     */
+    if (cleanEndpoint.includes('?')) {
+        // クエリがある場合: posts/ + ?limit=... の形にする
+        const [path, query] = cleanEndpoint.split('?');
+        // パス部分の末尾にスラッシュを強制し、クエリを結合
+        const sanitizedPath = path.replace(/\/+$/, '') + '/';
+        return `${rootUrl}/api/${sanitizedPath}?${query}`;
+    }
+
+    // クエリがない場合: 純粋に末尾スラッシュを付けてディレクトリとして扱う
     return `${rootUrl}/api/${cleanEndpoint}/`;
 };
 
 /**
  * 💡 Django リクエスト用ヘッダー生成
- * 🛡️ manualHost からそのサイト本来のドメイン名を解決し、Hostヘッダーにセットします。
+ * 🚀 修正: manualHost からポート番号を切り落とし、正しい SiteConfig を解決。
  */
 export const getDjangoHeaders = (manualHost?: string) => {
-    // 判定ライブラリを用いて、リクエスト毎の正しいメタデータを取得
-    const siteConfig = getSiteMetadata(manualHost);
-    const targetHost = siteConfig.django_host; 
+    // --- 🎯 PORT SNIPER: "tiper-host:8083" -> "tiper-host" ---
+    const cleanHost = manualHost ? manualHost.split(':')[0] : undefined;
+
+    // 浄化されたホスト名でサイト設定を検索
+    const siteConfig = getSiteMetadata(cleanHost);
+    
+    // Djangoが識別に使用する内部ホスト名 (例: api-tiper-host)
+    const targetHost = siteConfig?.django_host || "api-bicstation-host"; 
     
     const headers: Record<string, string> = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
     };
 
-    /**
-     * 🚀 Server Side (SSR) 通信時の Host 書き換え
-     * これが Django 側の Middleware 判定（137件モード）を起動させるスイッチです。
-     */
     if (IS_SERVER) {
+        // SSR時は、この Host ヘッダーが Django Middleware の鍵になる
         headers['Host'] = targetHost;
-        headers['x-django-host'] = targetHost; // 予備の識別ヘッダー
+        headers['x-django-host'] = targetHost;
         
-        // ログで「どの面構えでリクエストしているか」を追跡可能にする
-        console.log(`📡 [API-DEBUG] SSR Request Identity: ${targetHost}`);
+        // ログで最終的な身分証を確認
+        console.log(`📡 [API-DEBUG] SSR Identity Resolved: ${cleanHost} -> Header: ${targetHost}`);
     }
 
     return headers;
@@ -78,7 +87,7 @@ export async function handleResponseWithDebug(res: Response, url: string) {
     try {
         const data = await res.json();
         
-        // 1. DRF 標準形式 (Pagination)
+        // 1. DRF 標準形式 (Pagination 込)
         if (data && typeof data === 'object' && 'results' in data) {
             return {
                 results: Array.isArray(data.results) ? data.results : [],
@@ -86,12 +95,12 @@ export async function handleResponseWithDebug(res: Response, url: string) {
             };
         }
         
-        // 2. 配列直返し
+        // 2. 配列直返し形式
         if (Array.isArray(data)) {
             return { results: data, count: data.length };
         }
         
-        // 3. 単体オブジェクト (Detail)
+        // 3. 単体オブジェクト形式
         if (data && typeof data === 'object') {
             const payload = data.data || data;
             return { 

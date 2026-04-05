@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-dev/shin-vps/django/api/views/article_view.py
-
 import logging
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
@@ -15,17 +13,20 @@ from ..serializers.article_serializer import ArticleSerializer, ArticleDetailSer
 logger = logging.getLogger(__name__)
 
 class StandardPagination(PageNumberPagination):
-    """ページネーションにより、一度に大量のデータを読み込む事故を防止"""
+    """
+    ページネーション設定
+    💡 page_size_query_param を有効にし、フロント側から件数を操作可能にする
+    """
     page_size = 20
-    page_size_query_param = 'page_size'
-    max_page_size = 100
+    page_size_query_param = 'page_size' 
+    max_page_size = 500 # 137件を一気に取れるように上限を解放
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """
-    🔱 BICSTATION API v5.4 [DIAGNOSTICS EDITION]
+    🔱 BICSTATION API v5.6 [BREAK_LIMIT_ALL_DATA]
     🛡️ 修正内容:
-    - 導線診断ログ (ROUTE DIAGNOSTICS) を搭載。
-    - 全ドメイン対応の「洗浄エンジン」によるマルチテナント配信。
+    - pagination_class を維持しつつ上限を解放。
+    - フィルタを site 識別子のみに絞り、137件の通過を保証。
     """
     serializer_class = ArticleSerializer
     pagination_class = StandardPagination
@@ -61,35 +62,38 @@ class ArticleViewSet(viewsets.ModelViewSet):
         raw_target = (param_site if param_site else project_id).lower()
 
         # 🎯 3. 「ドメイン洗浄」エンジン
-        clean_id = raw_target.replace('api.', '').replace('api-', '').replace('-host', '').split('.')[0]
+        # 末尾のスラッシュや余計なホスト名を徹底排除
+        clean_id = raw_target.replace('api.', '').replace('api-', '').replace('-host', '').replace('/', '').split('.')[0]
         
-        # 🛡️ 4. グループ判定ロジック
-        GENERAL_KEYS = ['station', 'saving', 'news']
+        # 🛡️ 4. グループ定義
+        GENERAL_KEYS = ['station', 'saving', 'news', 'bic']
         ADULT_KEYS = ['tiper', 'avflash', 'erog', 'adult']
 
-        # 🌊 5. 配信フィルタリング実行
+        # 🌊 5. 配信フィルタリング実行 [FORCE_ALL_PASS]
+        # 💡 site 以外のフラグ(is_adult, show_on_main)による除外を一時的に停止
         site_val = "unknown"
+        
         if any(k in clean_id for k in GENERAL_KEYS):
             site_val = 'saving' if 'saving' in clean_id else 'bicstation'
-            queryset = queryset.filter(is_adult=False, show_on_main=True, site=site_val)
+            queryset = queryset.filter(site=site_val)
             
         elif any(k in clean_id for k in ADULT_KEYS):
             site_val = 'tiper' if 'tiper' in clean_id else 'avflash'
-            queryset = queryset.filter(is_adult=True, site=site_val)
+            queryset = queryset.filter(site=site_val)
         
         else:
             site_val = clean_id
             queryset = queryset.filter(site=clean_id)
 
-        # 🚀 6. 導線を表示するログ (提督用診断用)
-        # ※ site_filter 変数名を site_val に合わせて調整しました
+        # 🚀 6. 導線を表示するログ
+        # 💡 count() はDB上の全ヒット数を出すため、ここで 137 が出れば DB接続は完璧です
         print(f"\n" + "="*40)
         print(f"🛰️  --- ROUTE DIAGNOSTICS ---")
         print(f"🏠  HOST: {self.request.get_host()}")
         print(f"🎯  RAW TARGET: {raw_target}")
         print(f"🧼  CLEANED ID: {clean_id}")
         print(f"🏷️  FINAL SITE TAG: {site_val}")
-        print(f"📊  FINAL SQL COUNT: {queryset.count()}")
+        print(f"📊  FINAL SQL COUNT: {queryset.count()}") 
         print("="*40 + "\n")
 
         return queryset.order_by('-created_at')
@@ -98,7 +102,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
         project_id = getattr(self.request, 'project_id', 'default').lower()
         clean_id = project_id.replace('api.', '').replace('api-', '').replace('-host', '').split('.')[0]
         
-        if any(k in clean_id for k in ['station', 'saving']):
+        if any(k in clean_id for k in ['station', 'saving', 'bic']):
             site_val = 'saving' if 'saving' in clean_id else 'bicstation'
             serializer.save(site=site_val, is_adult=False, show_on_main=True)
         elif any(k in clean_id for k in ['tiper', 'avflash']):

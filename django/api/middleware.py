@@ -30,7 +30,7 @@ class DomainDiscoveryMiddleware:
                 'paths': ['/saving'],
                 'name': 'Bic Saving'
             },
-            'station': {
+            'bicstation': {
                 'domains': ['bicstation', 'station'],
                 'paths': ['/bicstation'],
                 'name': 'Bic Station'
@@ -44,7 +44,7 @@ class DomainDiscoveryMiddleware:
 
         # 2. 判定ロジック
         # デフォルトを 'station' に設定
-        identified_type = 'station'
+        identified_type = 'bicstation'
         identified_name = 'Bic Station'
 
         for site_type, config in site_configs.items():

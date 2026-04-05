@@ -6,9 +6,8 @@ import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 
-// ✅ 共通コンポーネント (最新の UnifiedCard を採用)
+// ✅ 共通コンポーネント
 import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
-import SafeImage from '@/shared/components/atoms/SafeImage';
 
 // ✅ API・判定ロジック
 import { fetchPostList } from '@/shared/lib/api/django/posts';
@@ -26,11 +25,11 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
- * 🛰️ メタデータ生成 (AV Flash 専用に自動構成)
+ * 🛰️ メタデータ生成
  */
 export async function generateMetadata() {
     const headerList = await headers();
-    const host = headerList.get('host') || "avflash.xyz";
+    const host = headerList.get('x-django-host') || headerList.get('host') || "avflash.xyz";
     const siteConfig = getSiteMetadata(host);
 
     return constructMetadata({
@@ -56,30 +55,33 @@ async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
 export default async function Page() {
     // --- 🎯 STEP 1: サイトアイデンティティの自動特定 ---
     const headerList = await headers();
+    
+    // Middlewareが焼成した識別子を最優先
     const host = headerList.get('x-django-host') || headerList.get('host') || "avflash.xyz";
     const siteConfig = getSiteMetadata(host); 
     
-    // 自動判定されたタグ (avflash)
-    const siteTag = siteConfig.site_tag; 
+    // 🛡️ サイトタグの洗浄 (スラッシュ混入をここでも念のためガード)
+    const siteTag = (siteConfig.site_tag || 'avflash').replace(/\/+$/, ''); 
     const ROUTE_BASE = "/post"; 
 
-    // 🚀 デバッグログ (サーバー側)
+    // 🚀 サーバーログ
     console.log("⚓ --- AVFLASH_DEPLOY_REPORT ---");
     console.log("HOSTNAME:", host);
-    console.log("SITE_NAME:", siteConfig.site_name); // "AV Flash"
-    console.log("SITE_TAG:", siteConfig.site_tag);   // "avflash"
+    console.log("SITE_NAME:", siteConfig.site_name);
+    console.log("SITE_TAG:", siteTag);
     console.log("---------------------------------");
 
     // --- 🎯 STEP 2: 並列データ取得実行 ---
+    // client.ts v8.3 の恩恵により、ここでの引数 siteTag は 400エラー を起こしません
     const [postResponse, dugaRes] = await Promise.all([
         // 1. 最新記事 (Django API)
         safeFetch(
-            fetchPostList(6, 0, siteTag), 
+            fetchPostList(6, 0, host), // プロジェクト識別として host または siteTag を渡す
             { results: [], count: 0 }
         ),
-        // 2. DUGA 商品 (AV Flashのメインストリーム)
+        // 2. DUGA 商品
         safeFetch(
-            getUnifiedProducts({ site_group: siteTag, limit: 12, brand: 'DUGA' }), 
+            getUnifiedProducts({ site_group: siteTag, limit: 12, brand: 'DUGA', host: host }), 
             { results: [], count: 0 }
         ),
     ]);
@@ -94,7 +96,7 @@ export default async function Page() {
             <script dangerouslySetInnerHTML={{
                 __html: `console.log("🛰️ AVFLASH_SYNC:", ${JSON.stringify({ 
                     site: siteConfig.site_name, 
-                    tag: siteConfig.site_tag,
+                    tag: siteTag,
                     host: host 
                 })})`
             }} />
@@ -113,7 +115,7 @@ export default async function Page() {
                     </div>
                 </header>
 
-                {/* --- 📰 LATEST ARTICLES (新・共通カード採用) --- */}
+                {/* --- 📰 LATEST ARTICLES --- */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <div className={styles.titleWrapper}>
@@ -136,13 +138,13 @@ export default async function Page() {
                             ))
                         ) : (
                             <div className="col-span-full py-12 text-center border border-dashed border-white/10 rounded-lg">
-                                <p className={styles.glitchText}>NO_INTELLIGENCE_DATA_IN_STREAM</p>
+                                <p className={styles.glitchText}>NO_INTELLIGENCE_DATA_IN_STREAM (Check Django SQL)</p>
                             </div>
                         )}
                     </div>
                 </section>
 
-                {/* --- 💎 DUGA NEW RELEASES (新・共通カード採用) --- */}
+                {/* --- 💎 DUGA NEW RELEASES --- */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <div className={styles.titleWrapper}>

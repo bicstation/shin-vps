@@ -4,77 +4,68 @@
 
 import React from 'react';
 import { headers } from "next/headers";
+
+// ✅ 共通コンポーネント (最新の UnifiedCard を採用)
 import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
+
+// ✅ API・判定ロジック (統合ルートへ切り替え)
+import { fetchPostList } from '@/shared/lib/api/django/posts';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
+import { constructMetadata } from '@/shared/lib/utils/metadata';
+
 import styles from './page.module.css';
 
 /**
  * 💡 Next.js 15 用の動的レンダリング設定
- * キャッシュを無効化し、常に最新のAPIデータを取得します。
  */
 export const dynamic = 'force-dynamic'; 
 export const revalidate = 0;
 
 /**
- * 🏠 ビック的節約生活 メインページ (V5.1 Domain Matching Edition)
- * ドメイン名: bic-saving.com
+ * 🛰️ メタデータ生成
+ */
+export async function generateMetadata() {
+    const headerList = await headers();
+    const host = headerList.get('x-django-host') || headerList.get('host') || "bic-saving.com";
+    const siteConfig = getSiteMetadata(host);
+
+    return constructMetadata({
+        title: `${siteConfig.site_name} | 賢い選択、豊かな暮らし。`,
+        description: `${siteConfig.site_name}が提供する、最新の節約術とライフハック。`,
+        host: host 
+    });
+}
+
+/**
+ * 🏠 ビック的節約生活 メインページ
  */
 export default async function Page() {
     // --- 🎯 STEP 1: ドメイン・コンテキストの特定 ---
     const headerList = await headers();
-    // 提督指定のドメイン "bic-saving.com" を基準に設定をロード
-    const host = headerList.get('host') || "bic-saving.com";
+    
+    // Middlewareの識別子を優先し、フォールバックをドメイン名に設定
+    const host = headerList.get('x-django-host') || headerList.get('host') || "bic-saving.com";
     const siteConfig = getSiteMetadata(host); 
 
-    // --- 🎯 STEP 2: ターゲットURL設定 (ホスト名による仕分け) ---
-    /**
-     * 🛰️ ホスト名 'api-saving-host' を使用
-     * docker-compose の extra_hosts により、コンテナ内から Traefik 窓口へ繋がります。
-     */
-    const TARGET_API_URL = "http://api-saving-host:8083/api/posts/";
-    
-    console.log("\n" + "🏁".repeat(20));
-    console.log(`⚓ [V5.1_DOMAIN_LOCKED]: ${host}`);
-    console.log(`🔗 API_PROXY_TARGET: ${TARGET_API_URL}`);
+    // 🚀 サーバーログ (他サイトと書式を統一)
+    console.log("⚓ --- SAVING_DEPLOY_REPORT ---");
+    console.log("HOSTNAME:", host);
+    console.log("SITE_NAME:", siteConfig.site_name); // "ビック的節約生活"
+    console.log("---------------------------------");
 
+    // --- 🎯 STEP 2: 統合API経由でのデータ取得 ---
+    /**
+     * 🛰️ fetchPostList を使用
+     * 内部で client.ts v8.3 を通るため、site=saving/ ではなく site=saving でリクエストされます。
+     */
     let displayPosts = [];
     let errorLog = null;
 
     try {
-        /**
-         * 🚀 APIへリクエストを送信 (limit=20)
-         * Django側の V5.1 Middleware が 'Host' ヘッダーを読み取り、
-         * 自動的に「Savingサイト用」の記事（および共通記事）を抽出します。
-         */
-        const response = await fetch(`${TARGET_API_URL}?limit=20`, { 
-            cache: 'no-store',
-            headers: { 
-                'Accept': 'application/json',
-                // 重要: Django側が識別に使用する内部ホスト名を明示
-                'Host': 'api-saving-host'
-            },
-            signal: AbortSignal.timeout(5000) 
-        });
+        const response = await fetchPostList(12, 0, host);
+        displayPosts = response?.results || [];
         
-        if (!response.ok) throw new Error(`HTTP_STATUS: ${response.status}`);
-
-        const jsonPayload = await response.json();
-        const results = jsonPayload?.results || [];
-
-        console.log(`📥 DATA_RECEIVED: ${results.length} items from Django V5.1 engine.`);
-
-        /**
-         * 🛡️ フェイルセーフ・マッピング
-         * Django側でフィルタ済みですが、アダルトフラグ等の最終検閲を行います。
-         */
-        displayPosts = results.filter(item => {
-            if (item.is_adult === true) return false;
-            return true; 
-        });
-
-        console.log(`🎯 DISPLAY_READY: ${displayPosts.length} items matched.`);
-        console.log("🏁".repeat(20) + "\n");
-
+        console.log(`📥 DATA_RECEIVED: ${displayPosts.length} items from Django fleet.`);
     } catch (error) {
         console.error("❌ FETCH_FAILED:", error.message);
         errorLog = error.message;
@@ -86,7 +77,7 @@ export default async function Page() {
             <header className={styles.header}>
                 <h2 className={styles.pageTitle}>
                     {siteConfig.site_name} 
-                    <span className={styles.titleThin}>/DOMAIN_SYNC</span>
+                    <span className={styles.titleThin}>/INTEGRATED_NODE</span>
                 </h2>
                 {displayPosts.length > 0 && (
                     <span className={styles.countBadge}>
@@ -108,15 +99,14 @@ export default async function Page() {
                         ))}
                     </div>
                 ) : (
-                    /* 通信エラーまたはデータなしの場合の表示 */
+                    /* 通信エラーまたはデータなしの場合 */
                     <div className={styles.noDataArea}>
                         <div className={styles.glitchBox}>
                             <div className={styles.glitchIcon}>📡</div>
-                            <p className={styles.glitchText}>DOMAIN_CONNECTION_ERROR</p>
+                            <p className={styles.glitchText}>INTELLIGENCE_STREAM_DISCONNECTED</p>
                             <p className="text-xs opacity-50 mt-4 font-mono">
-                                TARGET: {TARGET_API_URL}<br />
-                                DOMAIN: {host}<br />
-                                ERROR: {errorLog || "Empty response from server"}
+                                NODE: {host}<br />
+                                ERROR: {errorLog || "Zero results from Django Bridge"}
                             </p>
                         </div>
                     </div>
@@ -126,7 +116,7 @@ export default async function Page() {
             {/* フッターセクション */}
             <footer className={styles.footer}>
                 <div className={styles.footerInner}>
-                    <p>SYSTEM_CORE: V5.1-FINAL / DOMAIN: {host} / NODE: api-saving-host</p>
+                    <p>SYSTEM_CORE: V8.3-FINAL / DOMAIN: {host} / PROTOCOL: Bridge-v3</p>
                     <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name} INTEGRATED FLEET</p>
                 </div>
             </footer>
