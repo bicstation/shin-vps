@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.3 (Final Stable / SSR-Network-Optimized)
+# 🛡️ SHIN-VPS v3.9.3 (Final Decisive Edition / SSR-Network-Patch)
 # ---------------------------------------------------------------------
-# 【修正・復元内容】
-# 1. Django: ボリュームマウント解除、ビルド済みソース強制。
-# 2. Next.js: args/env に API URL を完全配置。
-# 3. Traefik: priority (4000/2000/100) と全ドメインルールを完全維持。
-# 4. 管理ツール: NetdataのBasic認証とログ監視(Dozzle)を完全復元。
-# 5. [DNS Patch]: aliases を追加し、SSR時の getaddrinfo エラーを物理的に解消。
+# 【修正の核心】
+# 1. Django: 内部エイリアス "django-api-host" を設定。
+# 2. Next.js: INTERNAL_API_URL を http://django-api-host:8000/api に固定。
+# 3. Next.js: PROJECT_NAME を args と env の両方に完全配置し undefined を防止。
+# 4. DNS: aliases を各 Next.js にも配置し、ログ上の getaddrinfo エラーを解決。
+# 5. Traefik: priority と SSL 設定、全ドメインルールを完全維持。
 # =====================================================================
 
 version: '3.8'
@@ -101,7 +101,7 @@ services:
     networks:
       internal-net:
         aliases:
-          - django-api-host
+          - django-api-host # 🚨 Next.jsが内部通信で狙う名前
       shared-proxy:
 
   # ---------------------------------------------------------------------
@@ -121,7 +121,7 @@ services:
     environment:
       - PROJECT_NAME=next-bicstation
       - NEXT_PUBLIC_API_URL=https://api.bicstation.com/api
-      - INTERNAL_API_URL=http://django-v3:8000/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api # 🚨 8000ポートを強制指定
     extra_hosts:
       - "api.bicstation.com:host-gateway"
     volumes:
@@ -138,7 +138,7 @@ services:
     networks:
       internal-net:
         aliases:
-          - api-bicstation-host
+          - api-bicstation-host # 🚨 ログの EAI_AGAIN エラーを解消
       shared-proxy:
 
   next-tiper-v3:
@@ -154,7 +154,7 @@ services:
     environment:
       - PROJECT_NAME=next-tiper
       - NEXT_PUBLIC_API_URL=https://api.tiper.live/api
-      - INTERNAL_API_URL=http://django-v3:8000/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api
     extra_hosts:
       - "api.tiper.live:host-gateway"
     volumes:
@@ -186,7 +186,7 @@ services:
     environment:
       - PROJECT_NAME=next-bic-saving
       - NEXT_PUBLIC_API_URL=https://api.bic-saving.com/api
-      - INTERNAL_API_URL=http://django-v3:8000/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api
     extra_hosts:
       - "api.bic-saving.com:host-gateway"
     volumes:
@@ -218,7 +218,7 @@ services:
     environment:
       - PROJECT_NAME=next-avflash
       - NEXT_PUBLIC_API_URL=https://api.avflash.xyz/api
-      - INTERNAL_API_URL=http://django-v3:8000/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api
     extra_hosts:
       - "api.avflash.xyz:host-gateway"
     volumes:
