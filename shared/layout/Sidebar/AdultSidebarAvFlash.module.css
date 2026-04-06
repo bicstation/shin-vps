@@ -1,11 +1,11 @@
 /**
- * 📂 AdultSidebar.module.css - Imperial Overdrive Edition (V3.1)
+ * 📂 AdultSidebar.module.css - Imperial Overdrive Edition (V3.0)
  * 🚀 Final Optimization: Gold-Fleet Integration & Zero-Overlap
  * ---------------------------------------------------------------------
- * 修正ログ V3.1: 
- * - JS側のサーバーコンポーネント制約に合わせ、動的な色変更をCSS変数で一括管理
- * - スクロール挙動の安定化 (Viewport単位の再計算)
- * - 黄金艦隊専用エフェクトの深度向上
+ * デザイン指針: 
+ * 1. 黄金艦隊 (Gold-Fleet) 専用ゴールドとインペリアル・レッド (#e94560) の融合
+ * 2. 漆黒の背景 (#08080a) に浮かび上がるタクティカルな計器デザイン
+ * 3. Sticky制御による、無限に続くスクロール・エクスペリエンス
  * ===================================================================== */
 
 .sidebar {
@@ -75,18 +75,6 @@
   background: rgba(var(--s-accent-rgb), 0.02);
 }
 
-/* セクション全体のタイトル（h3等） */
-.sectionTitle {
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  padding: 0.5rem 0.5rem 0.8rem;
-  margin: 0;
-  color: var(--s-text-muted);
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--s-border);
-}
-
 .sectionHeader {
   display: flex;
   justify-content: space-between;
@@ -100,7 +88,7 @@
 
 /* ⚜️ 黄金艦隊セクション用の特別ヘッダー */
 .fleetHeader {
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.12), transparent);
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.08), transparent);
   border-left: 3px solid var(--s-fleet-gold);
 }
 
@@ -111,7 +99,7 @@
 
 /* AI属性セクション用の特別ヘッダー */
 .aiHeader {
-  background: linear-gradient(90deg, rgba(255, 184, 0, 0.08), transparent);
+  background: linear-gradient(90deg, rgba(255, 184, 0, 0.05), transparent);
   border-left: 3px solid var(--s-ai-gold);
 }
 
@@ -126,29 +114,6 @@
   gap: 10px;
 }
 
-/* 🏆 SPECIAL BANNER (AV-FINDER等) */
-.specialBanner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 1rem;
-  background: linear-gradient(135deg, rgba(var(--s-accent-rgb), 0.1), transparent);
-  text-decoration: none;
-  border-radius: 4px;
-  transition: 0.3s;
-  margin-top: 0.5rem;
-}
-
-.specialBanner:hover {
-  background: linear-gradient(135deg, rgba(var(--s-accent-rgb), 0.2), transparent);
-  transform: translateY(-2px);
-}
-
-.finderIcon { font-size: 1.5rem; }
-.finderText { display: flex; flex-direction: column; }
-.finderMain { font-size: 0.85rem; font-weight: 900; color: #fff; letter-spacing: 0.1em; }
-.finderSub { font-size: 0.6rem; color: var(--s-text-muted); }
-
 .icon {
   font-size: 0.9rem;
   filter: grayscale(1) brightness(0.7);
@@ -160,113 +125,206 @@
   filter: grayscale(0) brightness(1.2) drop-shadow(0 0 8px var(--s-accent-glow)); 
 }
 
-/* --- 🛰️ SATELLITE_GRID --- */
-.satelliteGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 10px;
+.arrow {
+  font-size: 8px;
+  color: #444;
+  transition: 0.3s;
 }
 
-.satelliteLink {
+/* --- 📡 PLATFORM_MATRIX --- */
+.platformGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.platBtn {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 6px;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--s-border);
+  padding: 10px 2px;
+  min-height: 36px;
+  text-align: center;
+  font-size: 8px;
+  font-weight: 800;
+  background: #121214;
+  border: 1px solid #222;
+  color: #555;
   text-decoration: none;
-  transition: 0.2s;
-  border-radius: 4px;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
 }
 
-.satelliteLink:hover {
-  background: rgba(16, 185, 129, 0.1); /* Emerald hint */
-  border-color: #10b981;
+.platBtn:hover { border-color: var(--s-accent); color: var(--s-text-active); }
+.platBtn.active {
+  background: var(--s-accent);
+  color: #fff;
+  border-color: var(--s-accent);
+  box-shadow: 0 0 12px var(--s-accent-glow);
 }
 
-.satIcon { font-size: 1.1rem; margin-bottom: 4px; }
-.satName { font-size: 0.55rem; color: #aaa; text-align: center; line-height: 1.2; font-weight: bold; }
-
-/* --- 🎯 LIST_LAYOUT --- */
-.list {
+/* --- 🎯 MASTER_LIST --- */
+.masterList {
   list-style: none;
-  padding: 0;
-  margin: 0;
+  padding: 0; margin: 0;
+  background: rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
 }
 
-.link, .newsLink {
+.masterListItem {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.masterLink {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.25rem;
+  min-height: 48px; 
   font-size: 0.75rem;
   color: #888;
   text-decoration: none;
   transition: all 0.2s;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.01);
 }
 
-.link:hover, .newsLink:hover {
+.masterLink:hover {
   color: var(--s-text-active);
-  background: rgba(var(--s-accent-rgb), 0.1);
-  padding-left: 1.2rem;
+  background: rgba(var(--s-accent-rgb), 0.05);
+  padding-left: 1.4rem;
 }
 
-.badge {
-  font-size: 0.55rem;
-  padding: 1px 4px;
-  background: var(--s-accent);
-  color: #fff;
-  border-radius: 2px;
-  font-weight: 900;
+/* ⚜️ 黄金艦隊リンク用ホバー効果 */
+.fleetHeader + .contentBody .masterLink:hover {
+  background: rgba(212, 175, 55, 0.08);
+  border-left: 2px solid var(--s-fleet-gold);
+  color: var(--s-fleet-gold);
 }
 
-.newsItem { border-bottom: 1px solid var(--s-border); }
-.newsIcon { margin-right: 8px; opacity: 0.6; }
-.newsTitle {
-  flex: 1;
+.tagPrefix {
+  color: var(--s-ai-gold);
+  margin-right: 4px;
+  font-weight: bold;
+}
+
+.itemName {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+}
+
+.itemCount {
+  font-size: 0.65rem;
+  color: var(--s-accent);
+  opacity: 0.8;
+  padding-left: 8px;
+  font-weight: 700;
+}
+
+/* --- 🚀 VIEW_MORE_ANCHOR --- */
+.viewMoreItem {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.viewMoreLink {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  min-height: 42px;
+  background: rgba(var(--s-accent-rgb), 0.08);
+  border: 1px solid rgba(var(--s-accent-rgb), 0.2);
+  text-decoration: none;
+  transition: all 0.3s;
+}
+
+.viewMoreLink:hover {
+  background: var(--s-accent);
+  border-color: var(--s-accent);
+}
+
+.viewMoreText {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--s-accent);
+  letter-spacing: 0.1em;
+}
+
+.viewMoreLink:hover .viewMoreText { color: #fff; }
+
+.viewMoreArrow {
+  font-size: 0.7rem;
+  color: var(--s-accent);
+  transition: transform 0.3s;
+}
+
+.viewMoreLink:hover .viewMoreArrow {
+  color: #fff;
+  transform: translateX(4px);
 }
 
 /* --- ⚙️ SYSTEM_FOOTER --- */
-.sidebarFooter {
+.systemFooter {
   margin-top: auto; 
-  padding: 2rem 0.5rem 0.5rem;
+  padding: 1.5rem 0.5rem 0.5rem;
+  border-top: 1px solid var(--s-border);
+}
+
+.statusRow { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 6px; 
+}
+
+.blinkContainer {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.statusDot {
-  width: 6px;
-  height: 6px;
+.blinkDot {
+  width: 5px; height: 5px;
+  background: #00ffaa;
   border-radius: 50%;
+  box-shadow: 0 0 8px #00ffaa;
   animation: pulse-blink 2s infinite;
-  box-shadow: 0 0 10px currentColor;
 }
 
-.statusText {
-  font-size: 0.6rem;
+.statusLabel {
+  font-size: 9px;
   font-weight: 900;
-  color: var(--s-text-muted);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  color: #00ffaa;
+  letter-spacing: 0.1em;
 }
 
-/* --- 🪐 ANIMATIONS --- */
+/* --- 🪐 EXTRA_GLITCH_TEXT --- */
+.glitchText {
+  position: relative;
+  animation: glitch-anim 4s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { text-shadow: 1px 0 #e94560; }
+  2% { text-shadow: -1px 0 #00ffaa; }
+  4% { text-shadow: 0 0 white; }
+  100% { text-shadow: 0 0 white; }
+}
+
 @keyframes pulse-blink {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.9); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
-.empty {
-  padding: 2rem 1rem;
+.emptyStatus {
+  padding: 1rem;
   font-size: 0.65rem;
   color: #444;
   text-align: center;
@@ -278,8 +336,5 @@
   .sidebar {
     max-height: none;
     position: relative;
-    top: 0;
-    border-right: none;
-    border-bottom: 1px solid var(--s-border);
   }
 }

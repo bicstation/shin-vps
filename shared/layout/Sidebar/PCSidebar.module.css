@@ -1,53 +1,135 @@
+/* =====================================================================
+   🛸 Bic Station PC_NODE - Tactical Sidebar Style (v17.7)
+   ---------------------------------------------------------------------
+   デザイン指針: 
+   1. 高彩度シアン (#00f2ff) をアクセントにした計器デザイン
+   2. サテライトネットワーク用のグリッドレイアウト追加
+   3. アコーディオン・ホバー時のタクティカル・フィードバック
+   ===================================================================== */
+
 /* --- サイドバー本体：システムパネルとしての定義 --- */
 .sidebar {
   width: 280px;
-  /* メインの背景色に合わせた半透明ネイビー */
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.9); /* 透明度を微調整して可読性UP */
   padding: 30px 20px;
-  border-right: 1px solid rgba(0, 242, 255, 0.1);
+  border-right: 1px solid rgba(0, 242, 255, 0.15);
   height: fit-content;
   position: sticky;
-  top: 110px; /* Header + PRバーの直下 */
+  top: 110px; 
   max-height: calc(100vh - 140px);
   overflow-y: auto;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px);
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 242, 255, 0.2) transparent;
+  scrollbar-color: rgba(0, 242, 255, 0.3) transparent;
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
-/* --- セクションタイトル (アコーディオン・トリガー) --- */
+/* --- セクションタイトル --- */
 .sectionTitle {
-  font-size: 0.7rem;
-  color: #00f2ff; /* 高彩度シアンで視認性を確保 */
-  margin-top: 30px;
-  margin-bottom: 12px;
-  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+  color: #00f2ff;
+  margin-top: 35px;
+  margin-bottom: 15px;
+  letter-spacing: 0.18em;
   font-weight: 800;
   border-bottom: 1px solid rgba(0, 242, 255, 0.2);
   padding-bottom: 10px;
   text-transform: uppercase;
-  font-family: 'JetBrains Mono', monospace;
-  
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
-  user-select: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sectionTitle:hover {
-  color: #ffffff;
-  background: rgba(0, 242, 255, 0.05);
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
-}
-
-/* 最初の余白調整 */
 .sectionTitle:first-of-type {
   margin-top: 0;
 }
 
-/* --- リンクスタイル：読みやすさを最優先 --- */
+/* --- 🛰️ サテライトネットワーク（新設） --- */
+.satelliteGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.satelliteLink {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(0, 242, 255, 0.03);
+  border: 1px solid rgba(0, 242, 255, 0.08);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.satelliteLink:hover {
+  background: rgba(0, 242, 255, 0.08);
+  border-color: rgba(0, 242, 255, 0.4);
+  transform: translateX(5px);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+}
+
+.satIcon {
+  font-size: 1rem;
+  margin-right: 12px;
+  filter: drop-shadow(0 0 5px rgba(0, 242, 255, 0.3));
+}
+
+.satName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.02em;
+}
+
+/* --- スペシャルバナー (PC-FINDER) --- */
+.specialBanner {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.1) 0%, transparent 100%);
+  text-decoration: none;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.specialBanner:hover {
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.2) 0%, transparent 100%);
+  filter: brightness(1.2);
+}
+
+.finderIcon {
+  font-size: 1.5rem;
+  margin-right: 15px;
+}
+
+.finderMain {
+  display: block;
+  font-weight: 900;
+  color: #ffffff;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+.finderSub {
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+/* --- 標準リスト・リンク --- */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 .link {
   text-decoration: none;
   font-size: 0.85rem;
@@ -57,47 +139,101 @@
   width: 100%;
   padding: 10px 8px;
   transition: all 0.2s ease;
-  color: #cbd5e1; /* 沈まないグレーホワイト */
+  color: #cbd5e1;
   border-radius: 4px;
 }
 
 .link:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   color: #00f2ff;
-  padding-left: 12px; /* タクティカル・スライド */
+  padding-left: 14px;
 }
 
-/* --- バッジ (カウント表示)：計器風デザイン --- */
+/* --- バッジ (計器風) --- */
 .badge {
   font-size: 0.65rem;
   color: #00f2ff;
   background: rgba(0, 242, 255, 0.1);
   padding: 2px 8px;
-  border-radius: 2px; /* 角丸を抑えてシャープに */
+  border-radius: 2px;
   border: 1px solid rgba(0, 242, 255, 0.3);
   min-width: 32px;
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* --- アコーディオン矢印：シアンの光 --- */
-.arrow {
-  font-size: 0.7rem;
-  transition: transform 0.3s ease;
-  color: rgba(0, 242, 255, 0.5);
+/* --- LATEST UPDATES (ニュースアイテム) --- */
+.newsItem {
+  margin-bottom: 8px;
+  border-left: 2px solid rgba(255, 255, 255, 0.05);
+  transition: border-color 0.3s ease;
 }
 
-.arrowOpen {
-  transform: rotate(180deg);
-  color: #00f2ff;
+.newsItem:hover {
+  border-left-color: #00f2ff;
 }
 
-/* --- スクロールバー：サイバーパンク・カスタム --- */
+.newsLink {
+  text-decoration: none;
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+}
+
+.newsIcon {
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+
+.newsTitle {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #94a3b8;
+  transition: color 0.2s ease;
+}
+
+.newsLink:hover .newsTitle {
+  color: #ffffff;
+}
+
+/* --- システムフッター --- */
+.sidebarFooter {
+  margin-top: 50px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+  animation: pulse 2s infinite;
+}
+
+.statusText {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: #475569;
+  letter-spacing: 0.1em;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* --- スクロールバー --- */
 .sidebar::-webkit-scrollbar {
-  width: 3px;
+  width: 4px;
 }
 .sidebar::-webkit-scrollbar-thumb {
   background: rgba(0, 242, 255, 0.2);
+  border-radius: 10px;
 }
 
 /* --- レスポンシブ --- */
@@ -109,5 +245,6 @@
     border-bottom: 1px solid rgba(0, 242, 255, 0.1);
     max-height: none;
     background: #0b0f19;
+    padding: 20px;
   }
 }
