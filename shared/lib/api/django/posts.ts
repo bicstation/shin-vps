@@ -2,9 +2,10 @@
  * 📝 記事取得サービス (shared/lib/api/django/posts.ts)
  * 🛡️ Zenith v10.2 - [UNIVERSAL_DOCKER_FINAL]
  * 🚀 修正内容: 
- * 1. プロジェクト識別ロジックを強化し、内部DNS (django-api-host) に対応。
- * 2. 検閲(検閲バイパス)の判定を site 識別子ベースで盤石化。
- * 3. 内部URL置換の置換対象に django-api-host を追加。
+ * 1. body_main と body_satellite (summary) の分離配信に完全対応。
+ * 2. プロジェクト識別ロジックを強化し、内部DNS (django-api-host) に対応。
+ * 3. 検閲の判定を site 識別子ベースで盤石化。
+ * 4. 内部URL置換の置換対象に django-api-host を追加。
  */
 import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from './client';
 import { getDjangoBaseUrl } from '../config';
@@ -71,7 +72,6 @@ export async function fetchPostList(limit = 12, offset = 0, project?: string, op
         site: finalSiteTag, // Django ViewSet の get_queryset に直撃させる
     });
 
-    // API URL の解決 (commonResolveApiUrl 内で ?site= が付く設計なら重複注意)
     const url = commonResolveApiUrl(`posts/?${queryParams.toString()}`, finalSiteTag); 
     const { data } = await fetchPostRaw(url, { ...options, next: { revalidate: 0 } }, finalSiteTag);
 
@@ -79,13 +79,9 @@ export async function fetchPostList(limit = 12, offset = 0, project?: string, op
     
     // 🛡️ [検閲ロジック]
     rawResults = rawResults.filter((item: any) => {
-        // 🔥 アダルトセクターは全記事を表示
         if (isAdultSector) return true;
-
-        // 🍃 クリーンサイト用のフィルタリング
         const BAN_WORDS = ['セフレ', '中出し', 'アヘアヘ', '不倫', '熟女', 'エロ', 'AV'];
         const title = item.title || "";
-        // show_on_main かつ 非アダルト かつ 禁止ワード無し のみ通過
         return item.show_on_main && !item.is_adult && !BAN_WORDS.some(word => title.includes(word));
     });
 
@@ -101,7 +97,8 @@ export async function fetchPostList(limit = 12, offset = 0, project?: string, op
             id: item.id?.toString() || "", 
             slug: item.slug || item.id?.toString() || "",
             image: mainImg,
-            content: item.body_main || item.body_text || "",
+            content: item.body_main || item.body_text || "", // メイン本文（詳細用）
+            summary: item.body_satellite || "",             // ✅ AI要約（サテライト一覧用）
             site: item.site || finalSiteTag,
         };
     });
@@ -127,13 +124,11 @@ export async function fetchPostData(id: string, project?: string): Promise<Unifi
     const { data, status } = await fetchPostRaw(url, { next: { revalidate: 0 } }, cleanProject);
 
     let finalItem = data;
-    // 詳細リクエストで results 配列が返ってきた場合のケア
     if (data && data.results && Array.isArray(data.results) && data.results.length > 0) {
         finalItem = data.results[0];
     }
 
     if (status === 200 && finalItem && finalItem.id !== undefined) {
-        // 🛡️ [表示ガード] アダルトセクター以外での非公開記事表示を阻止
         if (!isAdultSector && !finalItem.show_on_main) {
             console.warn(`⚠️ [API] Post ${cleanId} restricted.`);
             return null;
@@ -149,6 +144,7 @@ export async function fetchPostData(id: string, project?: string): Promise<Unifi
             id: finalItem.id.toString(),
             title: finalItem.title || "NO_TITLE",
             content: finalItem.body_main || finalItem.body_text || "",
+            summary: finalItem.body_satellite || "", // ✅ 詳細ページでも要約を利用可能に
             image: primaryImage,
             is_adult: !!finalItem.is_adult,
             site: finalItem.site || cleanProject,

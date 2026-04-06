@@ -20,7 +20,7 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = '🔱 Gemma 3 艦隊司令部 v3.0 [v5.0 DB規格完全準拠版]'
+    help = '🔱 Gemma 3 艦隊司令部 v3.1 [DB最適化・CTA分離版]'
 
     ALLOWED_PROJECTS = ['bicstation', 'saving', 'tiper', 'avflash']
     
@@ -40,7 +40,6 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.selected_urls_in_this_session = []
-        # APIキーの読み込み（最大10個）
         self.api_keys = [os.getenv(f'GEMINI_API_KEY_{i}') for i in range(1, 11)]
         self.api_keys = [k for k in self.api_keys if k and not k.startswith('GEMINI')]
         if not self.api_keys: self.api_keys = [os.getenv('GEMINI_API_KEY')]
@@ -56,7 +55,7 @@ class Command(BaseCommand):
         post_limit = options.get('limit')
         use_index = options.get('index')
 
-        self.log(f"--- 🚀 MISSION START: v3.0 (v5.0 DB Sync) ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v3.1 (CTA Separation) ---", self.style.SUCCESS)
         
         FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
         RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
@@ -114,7 +113,6 @@ class Command(BaseCommand):
                 res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=15)
                 feed = feedparser.parse(res.content)
                 for entry in feed.entries:
-                    # if not Article.objects.filter(source_url=entry.link, site=site_key).exists():
                     if not Article.objects.filter(source_url=entry.link, site=project_name).exists():
                         all_entries.append(entry)
             except: pass
@@ -128,8 +126,6 @@ class Command(BaseCommand):
             if not selected_entry: break
             
             all_entries = [e for e in all_entries if e.link != selected_entry.link]
-            
-            # 【画像チェック】
             is_adult_ref = any(dm in selected_entry.link.lower() for dm in ['dmm.co.jp', 'dmm.com', 'fanza'])
             p_data = self.get_parsed_data(selected_entry)
             
@@ -141,7 +137,6 @@ class Command(BaseCommand):
 
             input_data = {'url': selected_entry.link, 'title': selected_entry.title, 'body': p_data.get('body', '')}
             try:
-                # 2. AI本文生成 (Main用とSatellite用を想定)
                 ai_res = processor.generate_blog_content(input_data, platform)
                 if not ai_res: raise Exception("AI生成失敗")
 
@@ -150,18 +145,15 @@ class Command(BaseCommand):
                 summary_box = ai_res.get('summary', '')
 
                 if final_body_md:
-                    # v5.0新仕様: Articleを先に作成（ID確定）
-                    # is_adult は blog_config または URLドメインから判定
                     is_adult_val = True if str(blog_config.get('is_adult', '0')) == '1' or is_adult_ref else False
                     
                     with transaction.atomic():
                         new_article = Article.objects.create(
-                            # site=site_key,
                             site=project_name,
                             is_adult=is_adult_val,
                             title=final_title,
                             source_url=selected_entry.link,
-                            body_main="", # 後でHTML化して入れる
+                            body_main="", 
                             body_satellite="",
                             images_json=[{"url": p_data.get('img'), "type": "main"}],
                             show_on_main=True,
@@ -171,37 +163,38 @@ class Command(BaseCommand):
                         )
                         new_article_id = new_article.id
 
-                    # 4. メインサイトURLの組み立て (avflash.xyz/post/ID)
                     base_domain = self.DOMAIN_MAP.get(project_name, "https://avflash.xyz")
                     main_site_url = f"{base_domain}/post/{new_article_id}"
 
-                    # 5. CTA置換
+                    # --- CTA置換 (外部投稿用のみに使用) ---
                     cta_raw = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt") or \
                               self.load_external_file(self.PROMPT_DIR, f"cta_{project_name}.txt")
                     cta_replaced = cta_raw.replace('{{internal_url}}', main_site_url) if cta_raw else ""
 
-                    # 6. HTML最終構築
+                    # --- コンテンツ構築の分離 ---
                     teitoku_comment = self.get_random_teitoku_comment(project_name)
-                    full_content_md = f"{summary_box}\n\n{final_body_md}" if summary_box else final_body_md
-                    full_html = self.assemble_final_html(full_content_md, p_data.get('img'), teitoku_comment, cta_replaced)
+                    
+                    # 1. DB保存用：CTAを含まない純粋なHTML
+                    db_main_html = self.assemble_final_html(final_body_md, p_data.get('img'), teitoku_comment, cta="")
+                    
+                    # 2. 外部投稿用：DB用HTML + CTA
+                    external_html = db_main_html + (f"<br><hr><br>{markdown.markdown(cta_replaced)}" if cta_replaced else "")
 
-                    # 7. 外部ブログへ投稿
+                    # --- 外部ブログへ投稿 ---
                     DriverClass = {'livedoor': LivedoorDriver, 'blogger': BloggerDriver, 'hatena': HatenaDriver, 'wordpress': WordPressDriver}.get(platform)
                     if DriverClass:
                         driver = DriverClass(blog_config)
                         post_category = rss_category_str.split(',')[0] if rss_category_str else "最新情報"
                         
-                        if driver.post(title=final_title, body=full_html, image_url='', source_url=selected_entry.link, category=post_category):
-                            # 8. DBを完成版HTMLで更新 (v5.0仕様)
-                            # ここでは body_main にメインコンテンツを、body_satellite にも予備で入れます
+                        if driver.post(title=final_title, body=external_html, image_url='', source_url=selected_entry.link, category=post_category):
+                            # --- DB最終更新 (ここが重要) ---
                             Article.objects.filter(id=new_article_id).update(
-                                body_main=full_html,
-                                body_satellite=full_html
+                                body_main=db_main_html,      # ✅ CTAなしの純粋なコンテンツ
+                                body_satellite=summary_box,  # ✅ 100文字程度の要約のみを格納
                             )
                             
                             self.log(f" ✅ 成功(ID:{new_article_id}): {final_title[:25]}...", self.style.SUCCESS)
                             
-                            # 9. Google Indexing API
                             if use_index:
                                 self.notify_google_indexing(main_site_url)
 
@@ -236,6 +229,9 @@ class Command(BaseCommand):
         return data
 
     def assemble_final_html(self, md_content, img_url, comment, cta):
+        """
+        基本構造を組み立てる。CTAが空の場合はCTAセクションを生成しない。
+        """
         html_body = markdown.markdown(md_content, extensions=['extra', 'nl2br'])
         img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px; margin-bottom:25px;"></p>' if img_url else ""
         comment_html = (
@@ -244,8 +240,8 @@ class Command(BaseCommand):
             f'<strong style="color: #ff4500;">🖋 編集長レビュー</strong><br>'
             f'<span style="font-size: 1.05em; font-weight: bold;">「{comment}」</span></div>'
         )
-        cta_html = markdown.markdown(cta, extensions=['extra']) if cta else ""
-        return (img_tag + comment_html + html_body + f"<br><hr><br>{cta_html}").strip()
+        cta_html = f"<br><hr><br>{markdown.markdown(cta)}" if cta else ""
+        return (img_tag + comment_html + html_body + cta_html).strip()
 
     def notify_google_indexing(self, target_url):
         if not os.path.exists(self.SACHIKO_KEY): return
