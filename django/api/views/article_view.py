@@ -19,12 +19,13 @@ class StandardPagination(PageNumberPagination):
     """
     page_size = 20
     page_size_query_param = 'page_size' 
-    max_page_size = 500 # 上限を解放し、全件取得にも対応
+    max_page_size = 500 
 
 class ArticleViewSet(viewsets.ModelViewSet):
     """
-    🔱 BICSTATION API v7.0 [QUAD_DOMAIN_FINAL_REINFORCED]
+    🔱 BICSTATION API v7.1 [QUAD_DOMAIN_FINAL_REINFORCED]
     🛡️ 提督の対応表に基づき、ローカル/本番を問わずドメインを厳格に分離。
+    🚀 内部通信(Docker)時は QueryParam を、外部通信時は Host を優先。
     """
     serializer_class = ArticleSerializer
     pagination_class = StandardPagination
@@ -35,7 +36,6 @@ class ArticleViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter
     ]
     
-    # フィルタを site 識別子に固定
     filterset_fields = ['site', 'is_adult', 'show_on_main', 'show_on_satellite', 'is_exported', 'content_type']
     search_fields = ['title'] 
     ordering_fields = ['created_at', 'updated_at']
@@ -50,59 +50,65 @@ class ArticleViewSet(viewsets.ModelViewSet):
         """
         ⚡ 4ドメイン・マルチテナント厳格判定ロジック
         """
-        # 1. 基礎クエリ (一覧時は本文を除去して軽量化)
         queryset = Article.objects.all()
         if self.action == 'list':
             queryset = queryset.defer('body_main', 'body_satellite')
 
-        # 2. 識別子の取得 (Middlewareの project_id または QueryParam を優先)
-        project_id = getattr(self.request, 'project_id', 'default')
+        # 1. 識別子の優先順位取得
+        # 内部通信用: QueryParam (?site=) 
+        # Middleware用: request.project_id
+        # フォールバック: Host名
         param_site = self.request.query_params.get('site') or self.request.query_params.get('project')
-        raw_target = (param_site if param_site else project_id).lower()
+        middleware_project = getattr(self.request, 'project_id', None)
+        host_name = self.request.get_host().lower()
 
-        # 🎯 3. 「ドメイン・ホスト洗浄」エンジン
-        # api-saving-host, api.bic-saving.com 等から共通の「通称」を導き出す
-        clean_id = raw_target.replace('api.', '').replace('api-', '').replace('-host', '').replace('/', '').split('.')[0]
+        # ターゲットの決定 (QueryParamがあれば最優先)
+        raw_target = param_site if param_site else (middleware_project if middleware_project else host_name)
+
+        # 🎯 2. 「ドメイン・ホスト洗浄」エンジン
+        # api-saving-host, api.bic-saving.com 等をすべて正規化
+        clean_id = raw_target.replace('api.', '').replace('api-', '').replace('-host', '').replace('/', '').split(':')[0]
         
-        # 🛡️ 4. 提督のリストに基づく「通称」確定マッピング
+        # 🛡️ 3. 提督のリストに基づく「通称」確定マッピング
+        # ローカル/本番を問わず、キーワードが含まれていれば各艦隊へ振り分け
         if 'saving' in clean_id:
             site_val = 'saving'
         elif 'tiper' in clean_id:
             site_val = 'tiper'
         elif 'avflash' in clean_id:
             site_val = 'avflash'
-        elif any(k in clean_id for k in ['bicstation', 'station', 'bic', 'localhost', '127.0.0.1']):
+        # bicstation, station, localhost, django(内部通信デフォルト) はすべて基幹艦隊へ
+        elif any(k in clean_id for k in ['bicstation', 'station', 'bic', 'localhost', '127.0.0.1', 'django']):
             site_val = 'bicstation'
         else:
-            site_val = clean_id  # 予備の識別子
+            # 判別不能な場合は安全のためクリーンなIDをそのまま使用
+            site_val = clean_id 
 
-        # 🌊 5. 配信フィルタリング実行
-        # DBの site フィールドと完全一致するもののみを抽出
+        # 🌊 4. 配信フィルタリング実行
         queryset = queryset.filter(site=site_val)
 
-        # 🚀 6. 導線診断ログ (docker logs で最重要視する部分)
-        print(f"\n" + "="*40)
-        print(f"🛰️  --- QUAD-DOMAIN ROUTE DIAGNOSTICS ---")
-        print(f"🏠  HOST: {self.request.get_host()}")
-        print(f"🎯  RAW TARGET: {raw_target}")
-        print(f"🧼  CLEANED ID: {clean_id}")
-        print(f"🏷️  FINAL SITE TAG: {site_val}")
-        print(f"📊  FINAL SQL COUNT: {queryset.count()}") 
-        print("="*40 + "\n")
+        # 🚀 5. 導線診断ログ (VPSの docker logs での視認性を最大化)
+        print(f"\n" + "📡" + "="*45)
+        print(f"🛰️  ROUTE: {raw_target} ➔ 🧼 CLEAN: {clean_id} ➔ 🏷️ TAG: {site_val}")
+        print(f"📊 SQL COUNT: {queryset.count()} | ACTION: {self.action}")
+        print("="*47 + "\n")
 
         return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         """
-        記事作成時、リクエスト元のホストに応じて site/is_adult を自動補完
+        記事作成時、判定された site_val に基づいて属性を自動補完
         """
+        # queryset判定と同じロジックでサイトを特定
+        param_site = self.request.query_params.get('site')
         project_id = getattr(self.request, 'project_id', 'default').lower()
+        target = (param_site if param_site else project_id).lower()
         
-        if 'saving' in project_id:
+        if 'saving' in target:
             serializer.save(site='saving', is_adult=False, show_on_main=True)
-        elif 'tiper' in project_id:
+        elif 'tiper' in target:
             serializer.save(site='tiper', is_adult=True, show_on_main=True)
-        elif 'avflash' in project_id:
+        elif 'avflash' in target:
             serializer.save(site='avflash', is_adult=True, show_on_main=True)
         else:
             serializer.save(site='bicstation', is_adult=False, show_on_main=True)
@@ -113,14 +119,14 @@ class ArticleViewSet(viewsets.ModelViewSet):
         if not isinstance(ids, list) or not ids:
             return Response({"error": "ids list required"}, status=status.HTTP_400_BAD_REQUEST)
         
+        # サイト特定ロジック
+        param_site = self.request.query_params.get('site')
         project_id = getattr(self.request, 'project_id', 'default').lower()
-        # 洗浄してサイトを特定
-        clean_id = project_id.replace('api.', '').replace('api-', '').replace('-host', '').split('.')[0]
+        clean_id = (param_site if param_site else project_id).replace('api.', '').replace('api-', '').replace('-host', '').split('.')[0]
         
         update_filter = {"id__in": ids}
-        # default/localhost 以外はサイトを絞って更新
-        if not any(k in clean_id for k in ['default', 'localhost', '127.0.0.1']):
-            # saving, tiper, avflash 等の厳格一致
+        # 明確なサイト指定がある場合のみフィルタを強化
+        if clean_id not in ['default', 'localhost', '127.0.0.1', 'django']:
             update_filter["site__icontains"] = clean_id
 
         updated_count = Article.objects.filter(**update_filter).update(is_exported=True)

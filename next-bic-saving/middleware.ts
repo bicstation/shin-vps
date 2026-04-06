@@ -3,15 +3,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * 🌉 SHIN-VPS v5.0: ドメイン識別・強制刻印ロジック
- * 🚀 修正内容: 
- * 1. 内部リクエストや静的ファイルの除外。
- * 2. Django Bridge が要求する 'x-django-host' ヘッダーに 'saving' を強制注入。
+ * 🌉 SHIN-VPS v5.1: ドメイン識別・強制刻印ロジック [SAVING-REINFORCED]
  */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. 静的ファイル、画像、APIリクエスト、faviconなどは判定から除外してスルー
+  // 1. 静的ファイル、画像、APIリクエスト、faviconなどはスルー
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -21,21 +18,22 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. 新しいヘッダーオブジェクトを作成
   const requestHeaders = new Headers(request.headers);
 
-  // ✅ 現在のパスをセット（サイドバーのアクティブ表示等に利用）
+  // ✅ 現在のパスをセット
   requestHeaders.set('x-url', pathname);
 
   /**
-   * 🎯 【最重要】ドメイン・アイデンティティの固定
-   * このコンテナは Bic-Saving 専用です。
-   * Django Bridge (SSR) が Identity Resolved: undefined となるのを防ぎ、
-   * Django ViewSet が正確に site='saving' を抽出できるように身分を証明します。
+   * 🎯 【最重要】ドメイン・アイデンティティの固定 (Bic-Saving)
+   * Django ViewSet が 'saving' を確実に抽出できるよう、
+   * 複数の識別子ヘッダーをセットして網を張ります。
    */
   requestHeaders.set('x-django-host', 'saving');
+  requestHeaders.set('x-project-id', 'saving'); // 🚨 追加：Django Middleware との互換性向上
+  
+  // SSR時のHostヘッダーを明示
+  requestHeaders.set('host', 'bic-saving.com');
 
-  // 3. 修正したヘッダーをリクエストに反映させて次へ渡す
   return NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -43,10 +41,6 @@ export function middleware(request: NextRequest) {
   });
 }
 
-/**
- * 🛡️ マッチャー設定
- * 静的ファイル以外のすべてのルートで実行するように設定。
- */
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

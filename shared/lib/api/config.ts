@@ -1,7 +1,7 @@
 /**
  * =====================================================================
  * 🌍 API 環境設定 (shared/lib/api/config.ts)
- * 🛡️ SHIN-VPS v5.3 [Internal Routing via Traefik Gateway]
+ * 🛡️ SHIN-VPS v5.4 [Universal Routing: Local & VPS compatible]
  * =====================================================================
  */
 import { getSiteMetadata } from '../utils/siteConfig';
@@ -11,42 +11,51 @@ export const IS_SERVER = typeof window === 'undefined';
 
 /**
  * 💡 API 接続設定の解決
+ * 🚀 修正ポイント: 
+ * 1. サーバーサイド(SSR)通信先を Compose の alias (django-api-host) に統合
+ * 2. クエリパラメータ ?site=xxx を自動付与し、Django ViewSet の判定を盤石化
+ * 3. ポート番号を Compose (8000) と ローカル (8000) に完全同期
  */
 export const getWpConfig = (manualHost?: string) => {
-    // 1. 識別子の特定 (最優先: 環境変数 NEXT_PUBLIC_SITE_DOMAIN)
+    // 1. 識別子の特定
     const identifier = manualHost || (IS_SERVER ? process.env.NEXT_PUBLIC_SITE_DOMAIN : window.location.hostname);
 
-    // 🛰️ サイトメタデータを取得
+    // 🛰️ サイトメタデータを取得 (siteConfig.ts から site_tag: 'saving' 等を取得)
     const meta = getSiteMetadata(identifier || "");
+    const siteTag = meta.site_tag || 'bicstation';
 
     /**
      * 🚀 通信先 (baseUrl) の決定
-     * 提督の指示に従い、サーバーサイド(SSR)では 'api-xxx-host:8083' を使用します。
+     * SSR(サーバー側) か ブラウザ(クライアント側) かで切り替え
      */
-    let baseUrl = meta.api_base_url;
+    let baseUrl = meta.api_base_url; // デフォルトはブラウザ用 (https://api.xxx.com/api)
 
     if (IS_SERVER) {
-        // サイト名 (saving, avflash等) に応じた内部ホスト名を構築
-        const siteTag = meta.site_tag; // getSiteMetadata から返される識別子
+        /**
+         * 🛡️ サーバーサイド (Next.jsコンテナ内) からの通信
+         * VPS: http://django-api-host:8000/api
+         * ローカル: http://localhost:8000/api (環境変数で上書き可能)
+         */
+        const internalHost = process.env.INTERNAL_API_URL || 'http://django-api-host:8000/api';
         
-        // 例: api-saving-host:8083
-        baseUrl = `http://api-${siteTag}-host:8083`;
+        // 🚨 重要: Django ViewSet の get_queryset 判定を確実に通すため
+        // クエリパラメータに site 識別子を強制付与して通信
+        baseUrl = `${internalHost}${internalHost.includes('?') ? '&' : '?'}site=${siteTag}`;
     }
 
     return {
         /** * 🚀 物理的な通信先
-         * SSR時: http://api-saving-host:8083
-         * ブラウザ時: https://api.bic-saving.com (metaの値)
+         * SSR時: http://django-api-host:8000/api?site=saving
+         * ブラウザ時: https://api.bic-saving.com/api
          */
         baseUrl: baseUrl, 
 
-        /** * 🛡️ Django 識別用 Host 名
-         * Traefik や Django が振り分けに使用する本来のドメイン名
+        /** * 🛡️ Django 識別用 Host 名 (ヘッダー用)
          */
-        host: meta.django_host,
+        host: meta.django_host || `${siteTag}.com`,
 
-        /** サイト識別用キー (saving, avflash 等) */
-        siteKey: meta.site_tag
+        /** サイト識別用キー (saving, tiper, avflash, bicstation) */
+        siteKey: siteTag
     };
 };
 

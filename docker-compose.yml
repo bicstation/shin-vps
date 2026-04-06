@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v5.1 [Final Stability & Routing Edition]
-# 🚀 修正ログ:
-# 1. [FIX] Django API の優先度を全 Router 中最高の 6000 に設定。
-# 2. [FIX] 各 Next.js コンテナに NEXT_PUBLIC_SITE_DOMAIN を追加し、Identity Resolved: undefined を根絶。
-# 3. [FIX] ネットワーク shared-proxy を外部参照 (external) で固定。
+# 🛡️ SHIN-VPS v5.1 [Final Stability & Routing Edition - Complete]
 # =====================================================================
 
 services:
@@ -20,8 +16,8 @@ services:
       - "--entrypoints.web.address=:80"
       - "--accesslog=true"
     ports:
-      - "8083:80"      # API / Frontend 内部ゲートウェイ
-      - "8085:8080"    # Traefik ダッシュボード
+      - "8083:80"        # API / Frontend 内部ゲートウェイ
+      - "8085:8080"      # Traefik ダッシュボード
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
@@ -195,25 +191,6 @@ services:
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
 
   # --- 4. 管理・監視ツール ---
-  pgadmin-v3:
-    image: dpage/pgadmin4
-    container_name: pgadmin-v3
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@tiper.live}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin_password_1234}
-      PGADMIN_CONFIG_SERVER_MODE: 'false'
-    volumes:
-      - ./data/pgadmin:/var/lib/pgadmin
-    networks:
-      - shared-proxy
-      - internal-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin-host`)"
-      - "traefik.http.services.pgadmin-svc.loadbalancer.server.port=80"
-
   dozzle-v3:
     image: amir20/dozzle:latest
     container_name: dozzle-v3

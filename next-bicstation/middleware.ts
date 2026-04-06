@@ -6,7 +6,6 @@ import { getSiteMetadata } from './shared/lib/utils/siteConfig';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // 1. 静的ファイル・APIは最速でスルー
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -15,39 +14,41 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 🛡️ [Single Truth] ここで一度だけ判定を行う
+  // 🛡️ [Fixed Truth] ホスト名が不安定な内部通信でも、この艦のアイデンティティを保証する
   const host = request.headers.get('host') || "";
-  const meta = getSiteMetadata(host);
+  let meta = getSiteMetadata(host);
 
-  // 2. レスポンス・ヘッダーの準備
+  // 🚨 救済措置: もしホスト名判定が不安定でも、このコンテナが bicstation であることを強制する
+  if (!meta.site_tag || meta.site_tag === 'default') {
+    meta.site_tag = 'bicstation';
+    meta.django_host = 'bicstation';
+  }
+
   const requestHeaders = new Headers(request.headers);
 
   /**
-   * 🛰️ 重要: 判定結果をヘッダーに「刻印」する
-   * これにより、サーバーコンポーネント側で headers().get('x-django-host') を
-   * 呼ぶだけで、再判定なしに正しい接続先が分かります。
+   * 🛰️ [QUAD-DOMAIN-REINFORCED] 
+   * Django ViewSet が 100% 識別できるよう、あらゆる識別ヘッダーを網羅。
    */
   requestHeaders.set('x-url', pathname);
   requestHeaders.set('x-site-tag', meta.site_tag);
-  requestHeaders.set('x-site-group', meta.site_group);
-  requestHeaders.set('x-django-host', meta.django_host); // 🛡️ API通信の命綱
+  requestHeaders.set('x-site-group', meta.site_group || 'main');
+  requestHeaders.set('x-django-host', meta.django_host); // 命綱
+  requestHeaders.set('x-project-id', meta.site_tag);     // Django Middleware用
   requestHeaders.set('x-is-local', String(meta.is_local_env));
 
-  // 3. 管理画面認証 (クッキー名も動的に解決)
+  // 3. 管理画面認証
   const cookieName = `${meta.site_tag}_auth`;
   const isAuthenticated = request.cookies.get(cookieName);
   const isConsolePage = pathname.startsWith('/console');
 
-  // ログインチェックとリダイレクト
   if (isConsolePage && pathname !== '/login') {
     if (!isAuthenticated) {
-      // サイトごとのコンテキストを維持してログインへ
       const loginUrl = new URL('/login', request.url);
       return NextResponse.redirect(loginUrl);
     }
   }
 
-  // 4. 判定済みヘッダーを抱えて次へ進む
   return NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -56,8 +57,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // Next.jsの仕様に基づき、必要なパスだけを監視
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

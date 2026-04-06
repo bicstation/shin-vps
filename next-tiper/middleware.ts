@@ -2,6 +2,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+/**
+ * 🔞 SHIN-VPS v5.1: 成人向けドメイン(tiper)識別・刻印ロジック
+ */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -19,12 +22,16 @@ export function middleware(request: NextRequest) {
   // ✅ 重要：現在のパスをヘッダーにセット（サイドバーでの色付け用）
   requestHeaders.set('x-url', pathname);
 
-  // ✅ アダルト版固有の認証チェック（必要であれば）
-  // 例: 18歳確認フラグのチェックなど
-  // const hasConfirmedAge = request.cookies.get('age_confirmed');
-  // if (!hasConfirmedAge && pathname !== '/age-verification') {
-  //   return NextResponse.redirect(new URL('/age-verification', request.url));
-  // }
+  /**
+   * 🎯 【最重要】ドメイン・アイデンティティの固定 (tiper)
+   * Django ViewSet が site='tiper' で厳格にフィルタリングできるよう、
+   * ここで「tiper」の刻印を二重に打ちます。
+   */
+  requestHeaders.set('x-django-host', 'tiper');
+  requestHeaders.set('x-project-id', 'tiper'); 
+
+  // SSR時の内部通信用Hostヘッダー保険
+  requestHeaders.set('host', 'tiper.live');
 
   return NextResponse.next({
     request: {

@@ -1,11 +1,11 @@
 /**
  * =====================================================================
- * 🛠️ Django API 共通クライアント (Zenith v8.6 - Final Protocol)
+ * 🛠️ Django API 共通クライアント (Zenith v8.7 - Multi-Environment Final)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【ポート番号の抹殺】manualHost から ":8083" 等のポートを完全除去。
- * 2. 【末尾スラッシュの制御】クエリ(?...)がある場合は直前のみスラッシュ、末尾はナシ。
- * 3. 【SSR身分証の統一】Django Middleware が識別できる Host ヘッダーを動的生成。
+ * 1. 【ポート・スラッシュの完全洗浄】SSR時のURL組み立てを100%安全に。
+ * 2. 【Hostヘッダーの動的最適化】内部通信用の Host ヘッダーを Django 側に適合。
+ * 3. 【クエリ整合性】site=xxx パラメータが二重スラッシュにならないよう厳格管理。
  * =====================================================================
  */
 import { getWpConfig, IS_SERVER } from '../config';
@@ -13,50 +13,53 @@ import { getSiteMetadata } from '../../utils/siteConfig';
 
 /**
  * 💡 接続先URLを動的に解決 (Network Path Resolver)
- * 🚀 修正: クエリパラメータ(?...)の手前にはスラッシュを保証し、末尾には付けない。
+ * 🚀 修正: Djangoが求める「末尾スラッシュ」と「クエリ」の共存を保証。
  */
 export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
-    // 1. ポート番号を除去したクリーンなホスト名を取得 (URL解決用)
+    // 1. ポート番号を除去したクリーンなホスト名で設定を取得
     const cleanManualHost = manualHost ? manualHost.split(':')[0] : undefined;
     const config = getWpConfig(cleanManualHost);
-    const baseUrl = config.baseUrl;
+    const baseUrl = config.baseUrl; // config.ts側で既に ?site= が付いている可能性を考慮
     
-    // 2. エンドポイントの前後スラッシュを一旦除去して正規化
+    // 2. エンドポイントの前後スラッシュを正規化
     let cleanEndpoint = endpoint.replace(/^\/+/, '').replace(/\/+$/, '');
 
-    // 3. "/api" の二重付与を防止
-    const rootUrl = baseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+    // 3. APIルートの抽出 (末尾スラッシュなしの状態にする)
+    const rootUrl = baseUrl.split('?')[0].replace(/\/api\/?$/, '').replace(/\/$/, '');
+    const existingQuery = baseUrl.includes('?') ? baseUrl.split('?')[1] : '';
 
     /**
      * 🎯 結合ロジック (Slash vs Query Security)
-     * Django はパスの末尾にスラッシュを求めるが、クエリの末尾には不要。
-     * ここで site=xxx/ になるのを物理的に防ぐ。
+     * Djangoの各エンドポイントは末尾スラッシュを必須とするため、
+     * パス部分の末尾に確実に / を入れ、その後にクエリを結合する。
      */
+    let finalUrl = "";
     if (cleanEndpoint.includes('?')) {
-        // クエリがある場合: posts/ + ?limit=... の形にする
         const [path, query] = cleanEndpoint.split('?');
-        // パス部分の末尾にスラッシュを強制し、クエリを結合
         const sanitizedPath = path.replace(/\/+$/, '') + '/';
-        return `${rootUrl}/api/${sanitizedPath}?${query}`;
+        finalUrl = `${rootUrl}/api/${sanitizedPath}?${query}`;
+    } else {
+        finalUrl = `${rootUrl}/api/${cleanEndpoint}/`;
     }
 
-    // クエリがない場合: 純粋に末尾スラッシュを付けてディレクトリとして扱う
-    return `${rootUrl}/api/${cleanEndpoint}/`;
+    // config.ts 側で付与された site=xxx 等のクエリを維持して結合
+    if (existingQuery) {
+        finalUrl += (finalUrl.includes('?') ? '&' : '?') + existingQuery;
+    }
+
+    return finalUrl;
 };
 
 /**
  * 💡 Django リクエスト用ヘッダー生成
- * 🚀 修正: manualHost からポート番号を切り落とし、正しい SiteConfig を解決。
+ * 🚀 修正: manualHost からポートを除去し、Django Middleware が最も喜ぶヘッダーを生成。
  */
 export const getDjangoHeaders = (manualHost?: string) => {
-    // --- 🎯 PORT SNIPER: "tiper-host:8083" -> "tiper-host" ---
     const cleanHost = manualHost ? manualHost.split(':')[0] : undefined;
-
-    // 浄化されたホスト名でサイト設定を検索
     const siteConfig = getSiteMetadata(cleanHost);
     
-    // Djangoが識別に使用する内部ホスト名 (例: api-tiper-host)
-    const targetHost = siteConfig?.django_host || "api-bicstation-host"; 
+    // 判定されたサイトタグ (saving, tiper, avflash 等)
+    const siteTag = siteConfig?.site_tag || "bicstation";
     
     const headers: Record<string, string> = {
         'Accept': 'application/json',
@@ -64,12 +67,20 @@ export const getDjangoHeaders = (manualHost?: string) => {
     };
 
     if (IS_SERVER) {
-        // SSR時は、この Host ヘッダーが Django Middleware の鍵になる
-        headers['Host'] = targetHost;
-        headers['x-django-host'] = targetHost;
+        /**
+         * 🛰️ SSR身分証明プロトコル
+         * Django側の ArticleViewSet.get_queryset が識別できるように
+         * 複数のヘッダーを網羅的にセットします。
+         */
+        headers['x-django-host'] = siteTag;
+        headers['x-project-id'] = siteTag;
         
-        // ログで最終的な身分証を確認
-        console.log(`📡 [API-DEBUG] SSR Identity Resolved: ${cleanHost} -> Header: ${targetHost}`);
+        // 🚨 重要: 内部通信 (django-api-host) 時、Hostヘッダーを本来のドメインに
+        // 偽装（擬態）させることで、Django側の ALLOWED_HOSTS を通過させます。
+        headers['Host'] = siteConfig?.django_host || `${siteTag}.com`;
+        
+        // ログで最終的な身分証を確認 (VPSのコンソールで非常に役立ちます)
+        console.log(`📡 [API-DEBUG] SSR Identity Resolved: ${siteTag} (via ${cleanHost || 'default'})`);
     }
 
     return headers;
@@ -80,6 +91,7 @@ export const getDjangoHeaders = (manualHost?: string) => {
  */
 export async function handleResponseWithDebug(res: Response, url: string) {
     if (!res.ok) {
+        // 404や500エラー時の詳細ログ
         console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | URL: ${url}`);
         return { results: [], count: 0, _error: res.status };
     }

@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.9.3 (Final Strategic Overhaul)
+# 🛡️ SHIN-VPS v3.9.9.6 (Quad-Domain Query-Identified Edition)
 # ---------------------------------------------------------------------
 # 【修正の核心】
-# 1. 物理IPの完全固定: 
-#    django-v3 を 172.28.0.6 に固定。DNS解決を待たずに接続を確立。
-# 2. 接続拒否(ECONNREFUSED)の封殺: 
-#    Gunicornを 0.0.0.0:8000 にバインドし、iptables開放と併せて疎通を確保。
-# 3. サービス依存関係の最適化: 
-#    DBの起動（Healthcheck）を待ってからバックエンドを起動する堅牢な順序。
+# 1. サイト識別子の強制付与: 
+#    各Next.jsの INTERNAL_API_URL に ?site=識別子 を付与し、
+#    Django ViewSet の get_queryset 内の query_params 判定に確実にヒットさせる。
+# 2. ローカル/VPS共通エイリアス:
+#    'django-api-host' を共通の宛先とし、コードを書き換えずに環境を移行可能に。
+# 3. マルチテナント疎通の安定化:
+#    ホストヘッダーに依存せず、クエリパラメータでサイトを特定するため、
+#    Docker内部ネットワーク越しのSSR（Server Side Rendering）が確実に成功。
 # =====================================================================
 
 version: '3.8'
@@ -60,7 +62,8 @@ services:
       - postgres-data-v3:/var/lib/postgresql/data
     networks:
       internal-net:
-        ipv4_address: 172.28.0.2  # IP固定
+        aliases:
+          - db-host
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -74,7 +77,6 @@ services:
       dockerfile: ./django/Dockerfile
     container_name: django-v3
     restart: always
-    # 🚨 核心: 0.0.0.0 でバインドし、コンテナ間通信を開放
     command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000 --workers 5 --threads 2 --worker-class gthread
     depends_on:
       postgres-db-v3:
@@ -82,7 +84,7 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=172.28.0.2
+      - DB_HOST=db-host
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
@@ -95,14 +97,15 @@ services:
       - static_volume_prod:/usr/src/app/staticfiles
     networks:
       internal-net:
-        ipv4_address: 172.28.0.6  # 🚨 Next.jsが探しているIPに物理固定
         aliases:
           - django-api-host
+          - api-bicstation-host
+          - django-v3
       shared-proxy:
 
   # --- 3. フロントエンド層 (Next.js 艦隊) ---
-  # ※全艦、名前解決の呪いを避けるため INTERNAL_API_URL を IP直書きに設定
 
+  # 🏠 BICSTATION: 基幹艦隊
   next-bicstation-v3:
     build:
       context: .
@@ -116,7 +119,8 @@ services:
     environment:
       - PROJECT_NAME=next-bicstation
       - NEXT_PUBLIC_API_URL=https://api.bicstation.com/api
-      - INTERNAL_API_URL=http://172.28.0.6:8000/api  # 🚨 IP直撃
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=bicstation
+      - API_INTERNAL_URL=http://django-api-host:8000/api?site=bicstation
     volumes:
       - "./next-bicstation:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -132,6 +136,7 @@ services:
       - internal-net
       - shared-proxy
 
+  # 🔞 TIPER: 成人向けコンテンツ艦隊
   next-tiper-v3:
     build:
       context: .
@@ -145,7 +150,8 @@ services:
     environment:
       - PROJECT_NAME=next-tiper
       - NEXT_PUBLIC_API_URL=https://api.tiper.live/api
-      - INTERNAL_API_URL=http://172.28.0.6:8000/api  # 🚨 IP直撃
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=tiper
+      - API_INTERNAL_URL=http://django-api-host:8000/api?site=tiper
     volumes:
       - "./next-tiper:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -160,6 +166,7 @@ services:
       - internal-net
       - shared-proxy
 
+  # 💰 BIC-SAVING: 節約・生活情報艦隊
   next-bic-saving-v3:
     build:
       context: .
@@ -173,7 +180,8 @@ services:
     environment:
       - PROJECT_NAME=next-bic-saving
       - NEXT_PUBLIC_API_URL=https://api.bic-saving.com/api
-      - INTERNAL_API_URL=http://172.28.0.6:8000/api  # 🚨 IP直撃
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=saving
+      - API_INTERNAL_URL=http://django-api-host:8000/api?site=saving
     volumes:
       - "./next-bic-saving:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -188,6 +196,7 @@ services:
       - internal-net
       - shared-proxy
 
+  # ⚡ AVFLASH: 高速情報伝達艦隊
   next-avflash-v3:
     build:
       context: .
@@ -201,7 +210,8 @@ services:
     environment:
       - PROJECT_NAME=next-avflash
       - NEXT_PUBLIC_API_URL=https://api.avflash.xyz/api
-      - INTERNAL_API_URL=http://172.28.0.6:8000/api  # 🚨 IP直撃
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=avflash
+      - API_INTERNAL_URL=http://django-api-host:8000/api?site=avflash
     volumes:
       - "./next-avflash:/usr/src/app"
       - "./shared:/usr/src/app/shared"
@@ -283,9 +293,6 @@ networks:
   internal-net:
     name: "shin-vps_internal-net"
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
 
   shared-proxy:
     name: "shin-vps_shared-proxy"
