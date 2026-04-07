@@ -5,6 +5,11 @@
 import React from 'react';
 import { headers } from "next/headers";
 
+/** * 🚀 重要ポイント: 
+ * UnifiedProductCard 自身が内部で Link を持っているため、
+ * ここで Link を import してラップする必要はありません。
+ */
+
 // ✅ 共通コンポーネント
 import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 
@@ -50,7 +55,6 @@ export default async function Page() {
     let count = 0;
 
     try {
-        // fetchPostList v9.1 ロジックにより、ホスト名から正確に 'saving' を抽出
         const response = await fetchPostList(12, 0, host);
         displayPosts = response?.results || [];
         count = response?.count || 0;
@@ -87,8 +91,13 @@ export default async function Page() {
                 </div>
 
                 {displayPosts.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {displayPosts.map((post) => (
+                            /**
+                             * ✅ 修正済: 
+                             * UnifiedProductCard 自体が Link を持っているため、外側の Link を削除しました。
+                             * これで二重リンク問題が解消され、正しくクリックできるようになります。
+                             */
                             <UnifiedProductCard 
                                 key={post.id} 
                                 data={post} 
@@ -97,7 +106,6 @@ export default async function Page() {
                         ))}
                     </div>
                 ) : (
-                    /* 待機・エラー状態の優雅な表示 */
                     <div className={styles.loadingArea}>
                         <div className={styles.statusBox}>
                             <div className={styles.loadingIcon}>☕</div>
@@ -107,7 +115,7 @@ export default async function Page() {
                 )}
             </main>
 
-            {/* 🛡️ 信頼性セクション (審査対策) */}
+            {/* 🛡️ 信頼性セクション */}
             <section className={styles.aboutSection}>
                 <div className={styles.aboutCard}>
                     <h3>ABOUT OUR MISSION</h3>
@@ -118,7 +126,7 @@ export default async function Page() {
                 </div>
             </section>
 
-            {/* フッター [PROD_READY] */}
+            {/* フッター */}
             <footer className={styles.footer}>
                 <div className={styles.footerInner}>
                     <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name} - Smart Life Network</p>

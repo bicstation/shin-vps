@@ -1,4 +1,5 @@
 "use client";
+// /home/maya/shin-dev/shin-vps/next-bic-saving/app/not-found.tsx
 
 // 💡 Next.jsの静的解析を強制的にバイパスし、ランタイムでの動作を保証
 export const dynamic = "force-dynamic";

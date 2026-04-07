@@ -1,50 +1,63 @@
 /* =====================================================================
- * 🏗️ [AVFLASH-ARCHIVE-CSS] - NEON-CORE INTEGRATED EDITION
+ * 🏗️ [BIC-SAVING-ARCHIVE-CSS] - SIDEBAR-INTEGRATED EDITION (v12.9.2)
  * ---------------------------------------------------------------------
- * 🚀 修正・統合ポイント:
- * 1. 【ネオン・アクセント】シアンの発光量を 20% 増強
- * 2. 【深淵背景】背景をより深い紺黒 (#05070a) に調整しコントラストを最大化
- * 3. 【シグナル演出】グリッチ的なボーダーアニメーションを微細に追加
+ * 🚀 修正・統合内容:
+ * 1. 【SIDEBAR_SYNC】width: 100% を削除し、親の flex レイアウトに追従。
+ * 2. 【Z-INDEX_FIX】背景を擬似要素に分離し、サイドバーとの重なりを解消。
+ * 3. 【VIEWPORT_OPT】サイドバーの幅を考慮したレスポンシブ・パディング。
  * ===================================================================== */
 
 .archiveContainer {
-    background: #05070a; /* より深い闇へ */
     color: #cbd5e1;
     min-height: 100vh;
-    padding: 4rem 2rem;
+    /* 💡 width: 100% は削除。親の flex: 1 に任せるか、自動幅にする */
+    width: auto;
+    position: relative;
+    box-sizing: border-box;
+    /* サイドバーとの干渉を防ぐため、左側の余白を微調整 */
+    padding: 2rem 2rem 6rem;
     font-family: 'JetBrains Mono', 'Inter', monospace;
     overflow-x: hidden;
-    position: relative;
+}
+
+/* 🛰️ 背景レイヤー: Container直下の要素として描画せず、背面に配置 */
+.archiveContainer::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: #05070a; /* 深淵の紺黒 */
+    z-index: -1; /* コンテンツより後ろ */
 }
 
 /* --- 🛰️ ヘッダーセクション --- */
 .archiveHeader {
-    border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+    border-bottom: 1px solid rgba(0, 242, 255, 0.2);
     margin-bottom: 4rem;
-    padding-bottom: 2rem;
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
+    padding-bottom: 2.5rem;
+    width: 100%;
+    max-width: 100%;
     position: relative;
 }
 
 .statusBadge {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.7rem;
+    gap: 10px;
+    font-size: 0.65rem;
     color: #00f2ff;
     background: rgba(0, 242, 255, 0.08);
-    padding: 4px 14px;
-    border-radius: 2px; /* 直線的にして硬派な印象へ */
+    padding: 5px 14px;
     border: 1px solid rgba(0, 242, 255, 0.4);
     margin-bottom: 1.5rem;
-    text-shadow: 0 0 5px rgba(0, 242, 255, 0.5);
+    text-shadow: 0 0 8px rgba(0, 242, 255, 0.6);
+    letter-spacing: 2px;
+    font-weight: 800;
+    text-transform: uppercase;
 }
 
 .pulseDot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     background: #00f2ff;
     border-radius: 50%;
     box-shadow: 0 0 10px #00f2ff;
@@ -52,89 +65,73 @@
 }
 
 .mainTitle {
-    font-size: clamp(2rem, 6vw, 3rem);
+    font-size: clamp(1.8rem, 4vw, 3rem); /* 💡 サイドバー環境に合わせて少しだけスケールダウン */
     font-weight: 900;
-    letter-spacing: -2px;
+    letter-spacing: -1.5px;
     color: #ffffff;
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
     text-transform: uppercase;
     font-style: italic;
+    line-height: 1.1;
 }
 
 .subTitle {
     color: #475569;
-    font-size: 1rem;
+    font-size: 0.8rem;
     margin-left: 1rem;
     font-weight: 400;
     font-style: normal;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
 }
 
 .statusLine {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #475569;
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     display: flex;
-    gap: 25px;
+    gap: 20px;
     font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
 }
 
 .countNum {
     color: #00f2ff;
-    font-weight: bold;
-    text-shadow: 0 0 8px rgba(0, 242, 255, 0.3);
+    font-weight: 800;
 }
 
 /* --- 📰 アーカイブグリッド --- */
 .contentGrid {
-    max-width: 1400px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 3rem;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
 }
 
 /* --- 🃏 ノードカード --- */
 .nodeCard {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     text-decoration: none;
     color: inherit;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
-}
-
-/* カード外周のネオン枠 */
-.nodeCard::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border: 1px solid #00f2ff;
-    opacity: 0;
-    transition: 0.4s;
-    pointer-events: none;
-    z-index: 5;
+    height: 100%;
 }
 
 .nodeCard:hover {
-    transform: translateY(-12px) scale(1.02);
-    background: rgba(30, 41, 59, 0.8);
+    transform: translateY(-8px);
+    background: rgba(15, 23, 42, 0.8);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 255, 0.1);
-}
-
-.nodeCard:hover::after {
-    opacity: 0.4;
 }
 
 /* --- 🖼️ サムネイルエリア --- */
 .cardThumbWrap {
     position: relative;
-    height: 200px;
+    aspect-ratio: 16 / 9;
     overflow: hidden;
     background: #000;
 }
@@ -143,21 +140,19 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.6;
-    filter: grayscale(0.3);
-    transition: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0.7;
+    transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .nodeCard:hover .cardThumb {
     opacity: 1;
-    filter: grayscale(0);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
-/* 🧪 スキャンライン演出 (高速・鋭角化) */
+/* 🧪 高速スキャンライン */
 .scanLine {
     position: absolute;
-    top: 0; left: 0; width: 100%; height: 3px;
+    top: 0; left: 0; width: 100%; height: 2px;
     background: linear-gradient(to right, transparent, #00f2ff, transparent);
     opacity: 0;
     pointer-events: none;
@@ -169,98 +164,46 @@
     opacity: 0.8;
 }
 
-/* --- 🏷️ カテゴリーバッジ --- */
-.categoryTag {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background: #00f2ff;
-    color: #000;
-    font-size: 10px;
-    padding: 4px 12px;
-    font-weight: 900;
-    z-index: 15;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
 /* --- 📝 カードボディ --- */
 .cardBody {
-    padding: 1.8rem;
+    padding: 1.5rem;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
 
-.cardMeta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
-    color: #475569;
-    margin-bottom: 1.2rem;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.nodeId { color: #00f2ff; opacity: 0.6; }
-
 .cardTitle {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 800;
-    margin-bottom: 1rem;
-    line-height: 1.5;
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
     color: #f8fafc;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
 .cardDescription {
     font-size: 0.85rem;
     color: #94a3b8;
-    line-height: 1.7;
-    margin-bottom: 2rem;
-    flex-grow: 1;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
-.cardFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(0, 242, 255, 0.1);
-    padding-top: 1.2rem;
-}
-
-.accessBtn {
-    color: #00f2ff;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
-}
-
-.arrow {
-    color: #00f2ff;
-    font-size: 1.2rem;
-    transition: 0.3s;
-}
-
-.nodeCard:hover .arrow {
-    transform: translateX(8px);
-    text-shadow: 0 0 15px #00f2ff;
-}
-
 /* --- 🔢 ページネーション --- */
 .paginationWrapper {
-    margin-top: 6rem;
+    margin-top: 5rem;
     padding-top: 3rem;
     border-top: 1px solid rgba(0, 242, 255, 0.1);
     display: flex;
     justify-content: center;
+}
+
+.pageControls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .pageBtn {
@@ -268,64 +211,63 @@
     border: 1px solid rgba(0, 242, 255, 0.3);
     color: #00f2ff;
     padding: 10px 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 800;
     transition: 0.3s;
     text-decoration: none;
+    letter-spacing: 1px;
 }
 
 .pageBtn:hover {
     background: #00f2ff;
-    color: #000;
+    color: #05070a;
     box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
 }
 
-.pageInfo {
-    margin: 0 2rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
+.pageBtnDisabled {
+    opacity: 0.15;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
     color: #475569;
 }
 
+/* --- 🏁 フッターエリア --- */
 .archiveFooter {
-    margin-top: 8rem;
+    margin-top: 6rem;
     text-align: center;
-    padding-bottom: 6rem;
+    padding-bottom: 4rem;
 }
 
 .backBtn {
     color: #475569;
     text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 800;
+    font-size: 0.8rem;
+    font-weight: 700;
     letter-spacing: 2px;
-    transition: 0.4s;
-    border: 1px solid transparent;
+    transition: 0.3s;
     padding: 12px 30px;
+    border: 1px solid transparent;
 }
 
 .backBtn:hover {
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.02);
 }
 
-/* --- 🎭 アニメーション定義 --- */
+/* --- 🎭 アニメーション --- */
 @keyframes statusPulse {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.2; transform: scale(1.5); }
-    100% { opacity: 1; transform: scale(1); }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.2); }
 }
 
 @keyframes scanAnimation {
-    0% { top: -10%; }
-    100% { top: 110%; }
+    0% { top: -5%; }
+    100% { top: 105%; }
 }
 
 /* --- 📱 レスポンシブ --- */
 @media (max-width: 768px) {
-    .archiveContainer { padding: 3rem 1.2rem; }
-    .mainTitle { font-size: 1.8rem; letter-spacing: -1px; }
-    .contentGrid { gap: 2rem; grid-template-columns: 1fr; }
-    .cardThumbWrap { height: 220px; }
+    .archiveContainer { padding: 2rem 1rem; }
+    .mainTitle { font-size: 1.6rem; }
+    .statusLine { flex-direction: column; gap: 8px; }
 }
