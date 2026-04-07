@@ -1,6 +1,6 @@
 /**
  * =====================================================================
- * 🛰️ Tiper.live 個別記事 Intelligence Detail Omni (v15.0.4)
+ * 🛰️ Tiper.live Intelligence Detail Omni (v15.0.4)
  * 🛡️ Ultra-Secure Logic & High-Resolution Monitization
  * ---------------------------------------------------------------------
  * 🚀 更新ログ:

@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * =====================================================================
- * 🛡️ Maya's Logic: Live Chat Connection LP [v2.0-Optimized]
+ * 🛡️ Maya's Logic: Live Chat Connection LP [完全版]
  * ---------------------------------------------------------------------
  * 設置パス: /app/guide/live-chat/page.tsx
- * 🚀 更新ログ:
- * 1. FANZA LiveChat リアルタイムバナー (Lサイズ) を完全統合。
- * 2. モバイル表示での iframe 突き抜け防止コンテナを実装。
- * 3. 初期マウント時の時刻スプリットエラーをガード。
+ * 特徴:
+ * 1. リアルタイム・タイムスタンプによる「今」感の演出
+ * 2. 待機人数および擬似ログの動的変動
+ * 3. 視認性の高いパルスアニメーションボタン
  * =====================================================================
  */
 export default function LiveChatLP() {
@@ -17,13 +17,13 @@ export default function LiveChatLP() {
     const [activeUsers, setActiveUsers] = useState(12);
     const [currentTime, setCurrentTime] = useState('');
 
-    // 🥂 ライブチャット・エリート案件リンク
+    // 🥂 ライブチャット・エリート案件リンク（適切なリンクに差し替えてください）
     const LINK_CHAT = "https://px.a8.net/svt/ejp?a8mat=OET7H+CC7ELE+BM2+BYT9F";
-    const AFFILIATE_ID = "bicbic-014";
 
     useEffect(() => {
         setMounted(true);
         
+        // 現在時刻の更新
         const updateTime = () => {
             const now = new Date();
             setCurrentTime(now.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
@@ -31,6 +31,7 @@ export default function LiveChatLP() {
         updateTime();
         const timeInterval = setInterval(updateTime, 1000);
 
+        // リアルタイム感を出すためのユーザー数変動演出
         const userInterval = setInterval(() => {
             setActiveUsers(prev => {
                 const change = Math.floor(Math.random() * 5) - 2;
@@ -46,9 +47,6 @@ export default function LiveChatLP() {
     }, []);
 
     if (!mounted) return null;
-
-    // 時刻表示用の安全なスプリット
-    const timeParts = currentTime ? currentTime.split(':') : ['--', '--', '--'];
 
     return (
         <div style={{ backgroundColor: '#050505', minHeight: '100vh', color: '#fff', fontFamily: 'sans-serif', paddingBottom: '60px' }}>
@@ -87,11 +85,11 @@ export default function LiveChatLP() {
                     </p>
                     <div style={{ fontSize: '0.85rem', color: '#aaa', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <span style={{ color: '#444' }}>[{timeParts[0]}:{timeParts[1]}]</span>
+                            <span style={{ color: '#444' }}>[{currentTime.split(':')[0]}:{currentTime.split(':')[1]}]</span>
                             <p>👤 20代女性（事務職）がログインしました</p>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <span style={{ color: '#444' }}>[{timeParts[0]}:{timeParts[1]}]</span>
+                            <span style={{ color: '#444' }}>[{currentTime.split(':')[0]}:{currentTime.split(':')[1]}]</span>
                             <p>💎 佐藤さんが通話（15分）を終了しました</p>
                         </div>
                         <div style={{ display: 'flex', gap: '10px', color: '#eee' }}>
@@ -120,32 +118,6 @@ export default function LiveChatLP() {
                     </a>
                 </div>
 
-                {/* 🎯 FANZA LIVE CONTEXTUAL BANNER (Optimized for Mobile) */}
-                <div style={{ 
-                    marginTop: '40px', 
-                    overflowX: 'hidden', 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    background: 'rgba(255,255,255,0.02)',
-                    padding: '20px 0',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255,255,255,0.05)'
-                }}>
-                    <span style={{ fontSize: '0.65rem', color: '#555', marginBottom: '10px', letterSpacing: '0.2em' }}>REALTIME_AVAILABLE_CAST</span>
-                    <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', display: 'flex', justifyContent: 'center' }}>
-                        <iframe 
-                            id="onlineBanner" 
-                            frameBorder="0" 
-                            scrolling="no" 
-                            width="640" 
-                            height="200" 
-                            src={`https://livechat.dmm.co.jp/publicads?&size=L&design=A&affiliate_id=${AFFILIATE_ID}`}
-                            style={{ flexShrink: 0 }}
-                        />
-                    </div>
-                </div>
-
                 {/* 🛡️ メリット訴求 */}
                 <div style={{ marginTop: '50px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     {[
@@ -161,6 +133,11 @@ export default function LiveChatLP() {
                         </div>
                     ))}
                 </div>
+
+                    <div>
+                        <iframe id="onlineBanner" frameborder="0" scrolling="no" width="640" height="200" src="https://livechat.dmm.co.jp/publicads?&size=L&design=A&affiliate_id=bicbic-014"></iframe>
+                    </div>
+
             </main>
 
             <footer style={{ marginTop: '60px', padding: '30px 20px', textAlign: 'center', fontSize: '0.7rem', color: '#444', borderTop: '1px solid #111' }}>
@@ -190,10 +167,6 @@ export default function LiveChatLP() {
                 .main-pulse-button:hover {
                     background-color: #ff2b70;
                     transform: translateY(-2px);
-                }
-                /* スクロールバーの非表示（バナーエリア用） */
-                div::-webkit-scrollbar {
-                    display: none;
                 }
             `}</style>
         </div>
