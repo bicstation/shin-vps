@@ -1,16 +1,16 @@
 /**
  * =====================================================================
- * 🗺️ Bicstation 動的サイトマップ生成 (Tiper v3.1 / Next.js Route Handlers)
+ * 🗺️ Bics-Saving 動的サイトマップ生成 (Tiper v3.1 / Next.js Route Handlers)
  * 🛡️ Django API v7.1 完全準拠版
  * =====================================================================
  */
-// ファイルパス: /home/maya/shin-vps/next-bicstation/app/sitemap.xml/route.ts
+// ファイルパス: /home/maya/shin-vps/next-bic-saving/app/sitemap.xml/route.ts
 
 import { NextResponse } from 'next/server';
 
 // 🌐 外部エンドポイント（SSL経由で確実に取得）
-const DJANGO_API_URL = 'https://api.bicstation.com/api/posts/';
-const SITE_URL = 'https://bicstation.com';
+const DJANGO_API_URL = 'https://api.bic-saving.com/api/posts/';
+const SITE_URL = 'https://bic-saving.com';
 
 export async function GET() {
     try {
@@ -18,10 +18,10 @@ export async function GET() {
         // パラメータ説明:
         // page_size=100 : 一度に100件取得
         // site=bicstation : bicstationドメインの投稿のみに絞り込み
-        const res = await fetch(`${DJANGO_API_URL}?page_size=100&site=bicstation`, {
+        const res = await fetch(`${DJANGO_API_URL}?page_size=100&site=bicsaving`, {
             headers: { 
                 'Accept': 'application/json',
-                'Host': 'api.bicstation.com' 
+                'Host': 'api.bic-saving.com' 
             },
             next: { revalidate: 600 } // 1時間キャッシュ
         });
