@@ -1,13 +1,12 @@
 /**
  * =====================================================================
- * 🛰️ Tiper.live Intelligence Detail Omni (v15.0.4)
+ * 🛰️ Tiper.live Intelligence Detail Omni (v15.0.5 - Final Patch)
  * 🛡️ Ultra-Secure Logic & High-Resolution Monitization
  * ---------------------------------------------------------------------
- * 🚀 更新ログ:
- * 1. 関連記事のフィルタリングを強化し slug undefined エラーを物理的に排除。
- * 2. 4連装バナー (bicbic-014) をアダルトフラグ連動で統合。
- * 3. 二重サマリーロジックとサイバーレイアウトの完全復元。
- * 4. シリアライズ・エラーを防ぐためのデータクレンジング処理を実装。
+ * 🚀 修正点:
+ * 1. Next.js 15仕様に基づき Promise<params> を完全に解決。
+ * 2. プロジェクト名の正規化を徹底し、Django APIとのミスマッチを解消。
+ * 3. fetchPostData 失敗時の fallback 処理と null チェックを強化。
  * =====================================================================
  */
 // @ts-nocheck
@@ -23,44 +22,72 @@ import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProdu
 
 export const dynamic = 'force-dynamic';
 
-export default async function NewsDetailPage({ params }: { params: { slug: string } }) {
+// Next.js 15 では params は Promise で渡されるため型定義を変更
+interface PageProps {
+    params: Promise<{ slug: string }>;
+}
+
+export default async function NewsDetailPage({ params }: PageProps) {
     // --- 🛡️ PARAMS_SHIELD ---
+    // Await the params object first
     const resolvedParams = await params;
     const currentSlug = resolvedParams?.slug;
-    if (!currentSlug) return notFound();
+
+    if (!currentSlug) {
+        console.error("Critical Error: Slug is missing in params.");
+        return notFound();
+    }
 
     const headerList = await headers();
     
     // --- 🎯 ENVIRONMENT_DETECTION ---
+    // ホスト名から現在のプロジェクトを特定
     const host = headerList.get('x-forwarded-host') || headerList.get('host') || "";
     const siteConfig = getSiteMetadata(host);
+    
+    // Django APIに送るプロジェクト名の正規化 (avflash.xyz -> avflash)
     const rawProject = siteConfig?.site_name || 'avflash';
-    const currentProject = rawProject.replace(/\s+/g, '').toLowerCase();
+    const currentProject = rawProject.split('.')[0].replace(/\s+/g, '').toLowerCase();
+    
     const siteColor = siteConfig?.theme_color || '#00f2ff';
     const targetAffId = "bicbic-014"; 
 
     // --- 🎯 DATA_FETCHING ---
-    const post = await fetchPostData(currentSlug, currentProject);
-    if (!post || !post.id || !post.slug) return notFound();
+    // slug と project を使ってデータを取得
+    let post = null;
+    try {
+        post = await fetchPostData(currentSlug, currentProject);
+    } catch (e) {
+        console.error("Fetch Error:", e);
+        return notFound();
+    }
 
-    // 🔄 RELEVANT_NODES: 徹底したクレンジング（slugが存在しない「幽霊データ」を物理排除）
-    const relatedResponse = await fetchPostList(10, 0, currentProject);
-    const rawResults = relatedResponse?.results || [];
-    
-    const relatedPosts = rawResults
-        .filter(p => (
-            p && 
-            typeof p === 'object' && 
-            p.slug && 
-            p.slug !== currentSlug &&
-            p.id
-        ))
-        .slice(0, 3);
+    // データが存在しない、または slug が一致しない場合は 404
+    if (!post || !post.slug) {
+        console.warn(`Post not found for slug: ${currentSlug} in project: ${currentProject}`);
+        return notFound();
+    }
+
+    // 🔄 RELEVANT_NODES: 関連ポストの取得
+    let relatedPosts = [];
+    try {
+        const relatedResponse = await fetchPostList(10, 0, currentProject);
+        const rawResults = relatedResponse?.results || [];
+        relatedPosts = rawResults
+            .filter(p => (
+                p && 
+                p.slug && 
+                p.slug !== currentSlug &&
+                p.id
+            ))
+            .slice(0, 3);
+    } catch (e) {
+        console.error("Related Posts Fetch Error:", e);
+    }
 
     const { title, image, content, created_at, site, summary, extra_metadata, is_adult } = post;
     const displayDate = created_at ? new Date(created_at).toLocaleDateString('ja-JP') : '2026-04-07';
 
-    // 🔍 SUMMARY_LOGIC
     const primarySummary = summary;
     const secondarySummary = extra_metadata?.summary;
     const hasDifferentSummaries = secondarySummary && primarySummary !== secondarySummary;
@@ -85,7 +112,7 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
             content: ''; width: 12px; height: 12px; background: ${siteColor}; transform: rotate(45deg);
         }
         .cyber-content-stream strong { color: ${siteColor}; font-weight: 900; text-shadow: 0 0 12px ${siteColor}80; }
-        .cyber-content-stream img { width: 100%; height: auto; margin: 4.5rem 0; border: 1px solid rgba(255,255,255,0.1); }
+        .cyber-content-stream img { width: 100%; height: auto; margin: 4.5rem 0; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; }
         .cyber-content-stream p { margin-bottom: 2.8rem; }
         
         .summary-html-node p { margin-bottom: 1rem; }
@@ -165,15 +192,19 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
                     <div dangerouslySetInnerHTML={{ __html: content }} />
                 </main>
 
-                {/* 🚀 QUAD_CANNON_MATRIX (Adult Only) */}
-                {is_adult === 1 && (
+                {/* 🚀 QUAD_CANNON_MATRIX (Adult Only Flag) */}
+                {Number(is_adult) === 1 && (
                     <section className="mt-40 mb-32 p-8 bg-white/[0.02] border border-white/5 shadow-2xl relative overflow-hidden text-center">
-                        <div className="text-[10px] font-mono text-red-500 mb-10 tracking-[0.4em] uppercase">
+                        <div className="text-[10px] font-mono text-[#00f2ff] mb-10 tracking-[0.4em] uppercase">
                             📡 LINKING_TO_HIGH_RESOLUTION_COMMUNICATION_CHANNELS
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
-                            <div className="quad-slot"><iframe frameBorder="0" scrolling="no" width="300" height="250" src={`https://livechat.dmm.co.jp/publicads?&size=S&design=A&affiliate_id=${targetAffId}`} /></div>
-                            <div className="quad-slot"><iframe frameBorder="0" scrolling="no" width="300" height="250" src={`https://www.dmm.co.jp/live/api/-/online-banner/?size=300_250&type=avevent&af_id=${targetAffId}`} /></div>
+                            <div className="quad-slot">
+                                <iframe frameBorder="0" scrolling="no" width="300" height="250" src={`https://livechat.dmm.co.jp/publicads?&size=S&design=A&affiliate_id=${targetAffId}`} />
+                            </div>
+                            <div className="quad-slot">
+                                <iframe frameBorder="0" scrolling="no" width="300" height="250" src={`https://www.dmm.co.jp/live/api/-/online-banner/?size=300_250&type=avevent&af_id=${targetAffId}`} />
+                            </div>
                             <div className="quad-slot">
                                 <ins className="widget-banner"></ins>
                                 <script dangerouslySetInnerHTML={{ __html: `(function(){var s=document.createElement('script');s.src="https://widget-view.dmm.co.jp/js/banner_placement.js?affiliate_id=${targetAffId}&banner_id=1277_300_250";s.async=true;document.currentScript.parentNode.insertBefore(s,document.currentScript);})();` }} />
@@ -186,7 +217,7 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
                     </section>
                 )}
 
-                {/* --- RELATED_NODES (Unified Grid with Shield) --- */}
+                {/* --- RELATED_NODES --- */}
                 {relatedPosts.length > 0 && (
                     <section className="mt-40 pt-20 border-t border-white/10">
                         <div className="flex items-center gap-4 mb-16">
@@ -194,17 +225,13 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
                             <div className="h-[1px] flex-grow bg-[#00f2ff]/20"></div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {relatedPosts.map((relPost) => {
-                                // 各ループでも念のためガード（slugがない場合は描画しない）
-                                if (!relPost?.slug) return null;
-                                return (
-                                    <UnifiedProductCard 
-                                        key={relPost.id || Math.random().toString()} 
-                                        post={relPost} 
-                                        siteConfig={siteConfig} 
-                                    />
-                                );
-                            })}
+                            {relatedPosts.map((relPost) => (
+                                <UnifiedProductCard 
+                                    key={relPost.id || Math.random().toString()} 
+                                    post={relPost} 
+                                    siteConfig={siteConfig} 
+                                />
+                            ))}
                         </div>
                     </section>
                 )}
