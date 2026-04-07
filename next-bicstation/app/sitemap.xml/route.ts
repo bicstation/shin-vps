@@ -1,36 +1,32 @@
 /**
  * =====================================================================
- * 🗺️ Bicstation 動的サイトマップ生成 (Tiper v3.1 / Next.js Route Handlers)
- * 🛡️ Django API v7.1 完全準拠版
+ * 🗺️ Bicstation 動的サイトマップ生成 (Internal v3.3)
+ * 🛡️ Docker 内部ネットワーク経由のセキュア通信
  * =====================================================================
  */
 // ファイルパス: /home/maya/shin-vps/next-bicstation/app/sitemap.xml/route.ts
 
 import { NextResponse } from 'next/server';
 
-// 🌐 外部エンドポイント（SSL経由で確実に取得）
-const DJANGO_API_URL = 'https://api.bicstation.com/api/posts/';
+// 🚀 内部エンドポイント (Dockerコンテナ名:ポート)
+const INTERNAL_API_URL = 'http://django-v3:8000/api/posts/';
 const SITE_URL = 'https://bicstation.com';
 
 export async function GET() {
     try {
-        // 1. Django から投稿一覧を取得
-        // パラメータ説明:
-        // page_size=100 : 一度に100件取得
-        // site=bicstation : bicstationドメインの投稿のみに絞り込み
-        const res = await fetch(`${DJANGO_API_URL}?page_size=100&site=bicstation`, {
+        // 🎯 内部通信によるデータ取得
+        // Hostヘッダーを渡すことで、Django側のマルチドメイン判定を正確に作動させます
+        const res = await fetch(`${INTERNAL_API_URL}?page_size=100&site=bicstation`, {
             headers: { 
-                'Accept': 'application/json',
-                'Host': 'api.bicstation.com' 
+                'Host': 'api.bicstation.com', 
+                'Accept': 'application/json'
             },
-            next: { revalidate: 600 } // 1時間キャッシュ
+            next: { revalidate: 3600 } // 1時間ごとに更新
         });
 
-        if (!res.ok) throw new Error(`Django API Error: ${res.status}`);
+        if (!res.ok) throw new Error(`Django Internal Error: ${res.status}`);
         
         const data = await res.json();
-        
-        // Django API v7.1 の構造では、投稿リストは data.results に格納されています
         const posts = data.results || [];
 
         // 2. XML の組み立て
@@ -48,15 +44,11 @@ export async function GET() {
   </url>
 
   ${posts.map((post: any) => {
-    // スラッグが存在しない場合はスキップ
-    if (!post.id) return '';
-    
-    // 日付処理（APIのcreated_atを使用。無ければ現在時刻）
+    if (!post.slug) return '';
     const lastMod = post.created_at ? new Date(post.created_at).toISOString() : new Date().toISOString();
-    
     return `
   <url>
-    <loc>${SITE_URL}/post/${post.id}</loc>
+    <loc>${SITE_URL}/post/${post.slug}</loc>
     <lastmod>${lastMod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -64,25 +56,23 @@ export async function GET() {
   }).join('')}
 </urlset>`;
 
-        // XMLとしてレスポンスを返す
         return new NextResponse(sitemap.trim(), {
             headers: {
                 'Content-Type': 'application/xml',
                 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=600',
-                'X-Content-Type-Options': 'nosniff'
             },
         });
 
     } catch (error) {
         console.error('❌ Sitemap Generation Failed:', error);
         
-        // エラー発生時のフォールバック（トップページのみの最小構成）
-        const fallbackSitemap = `<?xml version="1.0" encoding="UTF-8"?>
+        // フォールバック: 最低限の構成
+        const fallback = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${SITE_URL}/</loc><priority>1.0</priority></url>
 </urlset>`;
 
-        return new NextResponse(fallbackSitemap, {
+        return new NextResponse(fallback, {
             headers: { 'Content-Type': 'application/xml' },
         });
     }
