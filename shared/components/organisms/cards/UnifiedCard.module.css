@@ -53,6 +53,23 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* 🔞 画像左上の18+オーバーレイ */
+.adultOverlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #ff4500; /* インテンス・オレンジレッド */
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  border: 1px solid #ff4500;
+  z-index: 11;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(4px);
+}
+
 .cardBody {
   padding: 15px;
   display: flex;
@@ -71,10 +88,22 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   transition: color 0.2s ease;
+  
+  /* アイコン並列用 */
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .cardContainer:hover .title {
   color: var(--theme-color);
+}
+
+/* 🔞 タイトル横の絵文字アイコン */
+.adultIcon {
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  filter: drop-shadow(0 0 3px rgba(255, 69, 0, 0.4));
 }
 
 .metaInfo {
@@ -92,7 +121,19 @@
   font-family: 'Courier New', Courier, monospace;
 }
 
-/* 💠 グリッチ風の装飾（オプション） */
+/* 🏷️ メタエリアのR18タグ */
+.adultTag {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #fff;
+  background-color: #e11d48; /* Crimson Red */
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 6px rgba(225, 29, 72, 0.3);
+}
+
+/* 💠 下部のプログレスバー装飾 */
 .cardContainer::after {
   content: '';
   position: absolute;

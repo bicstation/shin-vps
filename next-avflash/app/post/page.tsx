@@ -1,7 +1,8 @@
 /**
  * =====================================================================
- * 🛰️ BIC-SAVING Intelligence Archive Index (v12.0.0)
+ * 🛰️ BIC-SAVING Intelligence Archive Index (v12.5.0)
  * 🛡️ Maya's Logic: Secure Node Grid with Cyber-Render Style
+ * 🚀 Card Sync: UnifiedProductCard v5.1 Integration
  * =====================================================================
  */
 // @ts-nocheck
@@ -11,6 +12,7 @@ import { headers } from 'next/headers';
 
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
+import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 
 import styles from './news.module.css';
 
@@ -23,13 +25,13 @@ export default async function ArchiveIndexPage({ searchParams }: { searchParams:
     const currentPage = parseInt(params.page || '1', 10);
     const offset = (currentPage - 1) * POSTS_PER_PAGE;
 
-    // --- 🎯 STEP 1: 環境特定 ---
+    // --- 🎯 STEP 1: 環境特定 (サイト設定の解決) ---
     const headerList = await headers();
     const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bic-saving.com";
     const siteConfig = getSiteMetadata(host);
     const currentProject = siteConfig?.site_name || 'saving';
 
-    // --- 🎯 STEP 2: データ取得 (Saving専用フィルタ) ---
+    // --- 🎯 STEP 2: データ取得 (Django v5.1 API へのブリッジ) ---
     const response = await fetchDjangoBridgeContent('posts', POSTS_PER_PAGE, { 
         offset: offset,
         site: currentProject, 
@@ -41,7 +43,7 @@ export default async function ArchiveIndexPage({ searchParams }: { searchParams:
 
     return (
         <div className={styles.archiveContainer}>
-            {/* 🛰️ 背景装飾（CSS側にない演出を補完） */}
+            {/* 🛰️ 背景装飾（サイバー空間演出） */}
             <div className="fixed inset-0 pointer-events-none opacity-[0.02] z-0 bg-[radial-gradient(circle_at_50%_0%,#00f2ff,transparent)]"></div>
 
             <header className={styles.archiveHeader}>
@@ -62,64 +64,44 @@ export default async function ArchiveIndexPage({ searchParams }: { searchParams:
                 </div>
             </header>
 
+            {/* 🚀 メイングリッド: 先ほどの UnifiedProductCard を展開 */}
             <main className={styles.contentGrid}>
                 {allPosts.length > 0 ? (
                     allPosts.map((post) => (
-                        <Link 
-                            href={`/post/${post.slug}`} 
-                            key={post.id} 
-                            className={styles.nodeCard}
-                        >
-                            {/* スキャンライン演出用タグ */}
+                        <div key={post.id} className={styles.nodeWrapper}>
+                            {/* スキャンライン演出はカード外側で維持 */}
                             <div className={styles.scanLine}></div>
                             
-                            <div className={styles.cardThumbWrap}>
-                                <img 
-                                    src={post.image || '/api/placeholder/400/200'} 
-                                    alt={post.title} 
-                                    className={styles.cardThumb} 
-                                />
-                                <span className={styles.categoryTag}>
-                                    {post.site || 'INTEL'}
-                                </span>
-                            </div>
+                            <UnifiedProductCard 
+                                data={post} 
+                                siteConfig={siteConfig} 
+                            />
 
-                            <div className={styles.cardBody}>
-                                <div className={styles.cardMeta}>
-                                    <span className={styles.cardDate}>
-                                        {new Date(post.created_at).toLocaleDateString('ja-JP')}
-                                    </span>
-                                    <span className={styles.nodeId}>ID: {post.slug?.slice(0, 8)}</span>
-                                </div>
-                                <h2 className={styles.cardTitle}>{post.title}</h2>
-                                <p className={styles.cardDescription}>
-                                    {post.summary || post.content?.replace(/<[^>]*>?/gm, '').slice(0, 100) + '...'}
-                                </p>
-                                <div className={styles.cardFooter}>
-                                    <span className={styles.accessBtn}>READ_MORE _</span>
-                                    <span className={styles.arrow}>▶</span>
-                                </div>
+                            {/* アーカイブ特有のメタ情報をカード下に補完する場合（任意） */}
+                            <div className={styles.nodeStatusLine}>
+                                <span className={styles.nodeId}>SEQ_ID: {post.id}</span>
+                                <span className={styles.encryptStatus}>SECURE_LINK_ENCRYPTED</span>
                             </div>
-                        </Link>
+                        </div>
                     ))
                 ) : (
                     <div className={styles.noDataArea} style={{ gridColumn: '1/-1', textAlign: 'center', padding: '10rem 0' }}>
-                        <p className={styles.errorMessage} style={{ color: '#00f2ff', fontSzie: '0.8rem' }}>
+                        <p className={styles.errorMessage} style={{ color: '#00f2ff', fontSize: '0.8rem' }}>
                             [!] CRITICAL_ERROR: NO_INTEL_NODES_LOCATED
                         </p>
                     </div>
                 )}
             </main>
 
-            {/* 🔢 ページネーション */}
+            {/* 🔢 ページネーション (ナビゲーションコントロール) */}
             {totalPages > 1 && (
                 <nav className={styles.paginationWrapper}>
-                    <div className={styles.pageControls} style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                    <div className={styles.pageControls} style={{ display: 'flex', gap: '2rem', alignItems: 'center', justifyContent: 'center' }}>
                         {currentPage > 1 ? (
                             <Link href={`?page=${currentPage - 1}`} className={styles.pageBtn} style={{ color: '#00f2ff', fontSize: '0.8rem' }}>
                                 [« PREV_NODE]
                             </Link>
-                        ) : <span style={{ opacity: 0.2 }}>[« PREV_NODE]</span>}
+                        ) : <span style={{ opacity: 0.2, color: '#444' }}>[« PREV_NODE]</span>}
                         
                         <span className={styles.pageInfo} style={{ fontSize: '0.7rem', color: '#64748b' }}>
                             NODE_PATH: {currentPage} / {totalPages}
@@ -129,7 +111,7 @@ export default async function ArchiveIndexPage({ searchParams }: { searchParams:
                             <Link href={`?page=${currentPage + 1}`} className={styles.pageBtn} style={{ color: '#00f2ff', fontSize: '0.8rem' }}>
                                 [NEXT_NODE »]
                             </Link>
-                        ) : <span style={{ opacity: 0.2 }}>[NEXT_NODE »]</span>}
+                        ) : <span style={{ opacity: 0.2, color: '#444' }}>[NEXT_NODE »]</span>}
                     </div>
                 </nav>
             )}
