@@ -1,0 +1,35 @@
+<div className="my-12">
+  {/* ラベル演出 */}
+  <div className="text-[10px] font-mono text-red-500 mb-2 tracking-[0.3em] text-center">
+    📡 SELECT_YOUR_COMMUNICATION_LINK
+  </div>
+  
+  {/* 2×2 グリッド */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-items-center bg-black/5 p-4 border border-white/5">
+    
+    {/* Slot 01: ライブチャット（一般）- 5,240円 */}
+    <div className="w-[300px] h-[250px] bg-white/5 border border-white/10 flex items-center justify-center">
+       <ins className="widget-banner"></ins>
+       <iframe id="onlineBanner" frameborder="0" scrolling="no" width="300" height="250" src="https://livechat.dmm.co.jp/publicads?&size=S&design=A&affiliate_id=bicbic-001"></iframe>
+    </div>
+
+    {/* Slot 02: ライブチャット（AV女優）- 5,240円 */}
+    <div className="w-[300px] h-[250px] bg-white/5 border border-white/10 flex items-center justify-center">
+       <ins className="widget-banner"></ins>
+       <iframe id="onlineBanner" frameborder="0" scrolling="no" width="300" height="250" src="https://www.dmm.co.jp/live/api/-/online-banner/?size=300_250&type=avevent&af_id=bicbic-001"></iframe>
+    </div>
+
+    {/* Slot 03: FANZA TV（月額）- 4,400円 */}
+    <div className="w-[300px] h-[250px] bg-white/5 border border-white/10 flex items-center justify-center">
+       <ins className="widget-banner"></ins>
+       <ins class="widget-banner"></ins><script class="widget-banner-script" src="https://widget-view.dmm.co.jp/js/banner_placement.js?affiliate_id=bicbic-001&banner_id=1277_300_250"></script>
+    </div>
+
+    {/* Slot 04: おすすめ動画 / 特集 - 報酬色々 */}
+    <div className="w-[300px] h-[250px] bg-white/5 border border-white/10 flex items-center justify-center">
+       <ins className="widget-banner"></ins>
+       <ins class="widget-banner"></ins><script class="widget-banner-script" src="https://widget-view.dmm.co.jp/js/banner_placement.js?affiliate_id=bicbic-001&banner_id=122_300_250"></script>
+    </div>
+
+  </div>
+</div>
