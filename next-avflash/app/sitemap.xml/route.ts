@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 
-const SITE_URL = 'https://bicstation.com';
+const SITE_URL = 'https://avflash.xyz';
 const INTERNAL_API_URL = 'http://django-v3:8000/api/posts/';
 
 export async function GET() {
   try {
     // 【重要】 { cache: 'no-store' } を追加してキャッシュを強制無効化
-    const res = await fetch(`${INTERNAL_API_URL}?page_size=100&site=bicstation`, {
+    const res = await fetch(`${INTERNAL_API_URL}?page_size=100&site=avflash`, {
       headers: {
         'Accept': 'application/json',
       },
@@ -19,7 +19,7 @@ export async function GET() {
     const posts = data.results || [];
 
     // デバッグ用ログ（docker logs で確認できます）
-    console.log(`Sitemap Debug: Found ${posts.length} posts for bicstation`);
+    console.log(`Sitemap Debug: Found ${posts.length} posts for avflash`);
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

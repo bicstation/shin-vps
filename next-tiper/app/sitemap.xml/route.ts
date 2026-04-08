@@ -1,30 +1,55 @@
-export const dynamic = 'force-dynamic';
+import { NextResponse } from 'next/server';
 
-import { getSiteMainPosts } from '@/shared/lib/api';
+const SITE_URL = 'https://tiper.live';
+const INTERNAL_API_URL = 'http://django-v3:8000/api/posts/';
 
 export async function GET() {
-  const baseURL = 'https://tiper.live';
-  
-  // 💡 本来はAPIから全件数を取得すべきですが、一旦固定値で計算します
-  const counts = {
-    products: 300000, // 30万件
-    actresses: 65000,  // 6.5万件
-  };
-  const LIMIT = 50000; // Googleの1ファイル上限
+  try {
+    // 【重要】 { cache: 'no-store' } を追加してキャッシュを強制無効化
+    const res = await fetch(`${INTERNAL_API_URL}?page_size=100&site=tiper`, {
+      headers: {
+        'Accept': 'application/json',
+      },
+      cache: 'no-store', 
+    });
 
-  const generateSitemaps = (type: string, total: number) => {
-    const numFiles = Math.ceil(total / LIMIT);
-    return Array.from({ length: numFiles })
-      .map((_, i) => `<sitemap><loc>${baseURL}/sitemaps/${type}-${i}.xml</loc></sitemap>`)
-      .join('');
-  };
+    if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap><loc>${baseURL}/sitemaps/static.xml</loc></sitemap>
-  ${generateSitemaps('products', counts.products)}
-  ${generateSitemaps('actresses', counts.actresses)}
-</sitemapindex>`.trim();
+    const data = await res.json();
+    const posts = data.results || [];
 
-  return new Response(xml, { headers: { 'Content-Type': 'application/xml' } });
+    // デバッグ用ログ（docker logs で確認できます）
+    console.log(`Sitemap Debug: Found ${posts.length} posts for tiper`);
+
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+        <loc>${SITE_URL}/</loc>
+        <priority>1.0</priority>
+      </url>
+      ${posts.map((post: any) => `
+        <url>
+          <loc>${SITE_URL}/post/${post.id}</loc>
+          <lastmod>${new Date(post.updated_at).toISOString()}</lastmod>
+        </url>
+      `).join('')}
+    </urlset>`;
+
+    return new NextResponse(sitemap, {
+      headers: {
+        'Content-Type': 'application/xml',
+        // ブラウザキャッシュもさせない設定
+        'Cache-Control': 'no-store, max-age=0',
+      },
+    });
+  } catch (e) {
+    console.error('❌ Sitemap Error:', e);
+    // 失敗しても最低限トップページだけは出す
+    return new NextResponse(`<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url><loc>${SITE_URL}/</loc><priority>1.0</priority></url>
+    </urlset>`, {
+      headers: { 'Content-Type': 'application/xml' },
+    });
+  }
 }
