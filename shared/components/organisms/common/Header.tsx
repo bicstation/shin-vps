@@ -12,12 +12,12 @@ import styles from './Header.module.css';
 
 /**
  * =====================================================================
- * 🛡️ Maya's Logic: ハイブリッド・アイデンティティ確定ヘッダー
+ * 🛡️ Maya's Logic: ハイブリッド・アイデンティティ確定ヘッダー (完全版)
  * ---------------------------------------------------------------------
- * 🚀 修正ポイント:
- * 1. SSR (サーバーサイド) 時も環境変数からサイト情報を確定し、undefined を撲滅。
- * 2. クライアントサイドでは従来通り window.location で補完。
- * 3. 初期表示の「隠し」を撤廃し、SEO と ログ精度を向上。
+ * 🚀 更新内容:
+ * 1. 各ドメインの guide/ リンクを動的に生成し、ドロップダウンへ統合。
+ * 2. BIC STATION 用のガイド構成（BTO/周辺機器/パーツ）を追加。
+ * 3. SSR 時のアイデンティティ解決を維持しつつ、ナビゲーションを強化。
  * =====================================================================
  */
 export default function Header() {
@@ -28,16 +28,14 @@ export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState<string | null>(null);
 
-    // 🛰️ アイデンティティの確定 (SSR & Client 両対応)
+    // 🛰️ アイデンティティの確定
     const site = useMemo(() => {
-        // 1. ブラウザ環境なら hostname、サーバー環境なら環境変数を参照
         const identifier = typeof window !== 'undefined' 
             ? window.location.hostname 
             : process.env.NEXT_PUBLIC_SITE_DOMAIN;
 
-        // 2. 識別子を元にメタデータを解決 (これで SSR 時の undefined が消える)
         return getSiteMetadata(identifier || "");
-    }, []); // 依存配列を空にすることで、レンダリングサイクル全体で安定化
+    }, []);
 
     useEffect(() => {
         setMounted(true);
@@ -73,8 +71,6 @@ export default function Header() {
         }
     };
 
-    // 🛡️ ガードロジックの最適化
-    // site が取得できない致命的な場合のみ hidden にする (通常は SSR 時点で取得済み)
     if (!site) {
         return <header className={styles.header} style={{ height: '70px', visibility: 'hidden' }} />;
     }
@@ -83,15 +79,37 @@ export default function Header() {
     const isAdult = site.site_group === 'adult';
 
     /**
-     * 🛠️ メニュー構成
+     * 🛠️ サイト別「ガイド」メニュー動的生成
      */
+    const dynamicGuideLinks = useMemo(() => {
+        switch (site.site_name) {
+            case 'Saving':
+                return [
+                    { label: '💳 クレジットカード', href: '/guide/card' },
+                    { label: '📈 証券・FX口座', href: '/guide/broker' },
+                    { label: '📱 格安SIM比較', href: '/guide/sim' },
+                ];
+            case 'Tiper':
+            case 'AV Flash':
+                return [
+                    { label: '🎯 マッチング解析', href: '/guide/matching' },
+                    { label: '📺 ライブチャット案内', href: '/guide/live-chat' },
+                    { label: '💌 チャットレディ募集', href: '/guide/chat-lady' }
+                ];
+            case 'Bic Station':
+                return [
+                    { label: '🔥 BTOセール・裏技比較', href: '/guide/bto' },
+                    { label: '📊 パーツ別・コスパ分岐点', href: '/guide/parts' },
+                    { label: '🛒 周辺機器・底値リスト', href: '/guide/peripherals' }
+                ];
+            default:
+                return [];
+        }
+    }, [site.site_name]);
+
     const supportLinks = [
         { label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge' },
-        ...(isAdult ? [
-            { label: '🎯 マッチング解析ガイド', href: '/guide/matching' },
-            { label: '📺 ライブチャット案内', href: '/guide/live-chat' },
-            { label: '💌 チャットレディ募集', href: '/guide/chat-lady' }
-        ] : []),
+        ...dynamicGuideLinks,
         { label: 'お問い合わせ', href: '/contact' },
         { label: '当サイトについて', href: '/about' },
         { label: 'ご利用ガイド', href: '/guideline' }
@@ -122,7 +140,7 @@ export default function Header() {
             ]
         },
         col3: {
-            title: isAdult ? '✨ ガイド & サポート' : '✨ サポート',
+            title: '✨ ガイド & サポート',
             links: supportLinks
         }
     };
@@ -208,6 +226,7 @@ export default function Header() {
                 </div>
             </div>
 
+            {/* モバイルメニュー */}
             <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} style={{ background: isAdult ? '#111' : '#fff' }}>
                 {Object.entries(menuConfig).map(([key, section]) => (
                     <div key={key} className={styles.menuSection}>
