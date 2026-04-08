@@ -83,7 +83,7 @@ export default function Header() {
      */
     const dynamicGuideLinks = useMemo(() => {
         switch (site.site_name) {
-            case 'Saving':
+            case 'Bic Saving':
                 return [
                     { label: '💳 クレジットカード', href: '/guide/card' },
                     { label: '📈 証券・FX口座', href: '/guide/broker' },
