@@ -18,7 +18,7 @@ const CARDS = [
     catch: "楽天経済圏への必須補給艦",
     reward: "1,500円相当（楽天キャッシュ）",
     features: ["楽天市場でポイント3倍以上", "ふるさと納税に最適", "貯まったポイントで投資可能"],
-    url: "YOUR_RAKUTEN_LINK_HERE",
+    url: "https://hb.afl.rakuten.co.jp/hsc/52a89485.5758262d.14e8d4af.473ce7ec/?link_type=hybrid_url&ut=eyJwYWdlIjoic2hvcCIsInR5cGUiOiJoeWJyaWRfdXJsIiwiY29sIjoxLCJjYXQiOjEsImJhbiI6MTY3NDAxLCJhbXAiOmZhbHNlfQ%3D%3D",
     color: "bg-red-600",
     label: "補給：通販・納税",
   },
@@ -28,7 +28,7 @@ const CARDS = [
     catch: "実店舗・買い物防衛の要",
     reward: "特別プログラム実施中",
     features: ["イオングループで5%OFF優待", "WAONポイントがザクザク貯まる", "映画鑑賞1,000円特典（一部）"],
-    url: "YOUR_AEON_LINK_HERE",
+    url: "https://px.a8.net/svt/ejp?a8mat=25KY46+5870GY+2M7E+661TV",
     color: "bg-purple-700",
     label: "防衛：スーパー・実生活",
   }
