@@ -70,10 +70,9 @@ function FooterContent({ debugData }: FooterProps) {
     const networkSites = [
         { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff', external: false },
         { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900', external: false },
-        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012', external: false },
-        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37', external: false },
-        { name: 'ビックAV動画', domain: 'bic-erog.com', port: 3004, color: '#bc00ff', external: true },
-        { name: 'シークレットXYZ', domain: 'adult-search.xyz', port: 3005, color: '#6a0dad', external: true },
+        // { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012', external: false },
+        // { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37', external: false },
+        // { name: 'ビックAV動画', domain: 'bic-erog.com', port: 3004, color: '#bc00ff', external: true },
     ];
 
     const getNetworkUrl = (s: typeof networkSites[0]) => {

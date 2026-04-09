@@ -7,7 +7,6 @@ avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=comic/rss=cr
 avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=cg/rss=create/sort=date/	FANZA同人_CG
 avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=game/rss=create/sort=date/	FANZA同人_ゲーム
 avflash	adult_doujin	https://www.dmm.co.jp/dc/doujin/-/list/=/media=voice/rss=create/sort=date/	FANZA同人_ボイス
-avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/rss=create/sort=date/	らぶカルTL_新着
 avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=comic/rss=create/sort=date/	らぶカルTL_コミック
 avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=cg/rss=create/sort=date/	らぶカルTL_CG
 avflash	adult_lovecul	https://lovecul.dmm.co.jp/tl/-/list/=/media=game/rss=create/sort=date/	らぶカルTL_ゲーム
@@ -79,34 +78,74 @@ tiper	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10
 tiper	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10052/rss=create/sort=date/	グッズ_ランジェリー
 tiper	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=19999/rss=create/sort=date/	グッズ_その他
 tiper	adult_goods	http://www.dmm.co.jp/mono/goods/-/list/=/article=keyword/id=10095/rss=create/sort=date/	グッズ_1000円以下
-bicstation	tech_pc	https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf	PC	Watch
-bicstation	tech_news	https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml	ITmedia	News
-bicstation	tech_pc	https://rss.itmedia.co.jp/rss/2.0/pcuser.xml	ITmedia	PCUSER
-bicstation	tech_gadget	https://www.gizmodo.jp/index.xml	Gizmodo	Japan
-bicstation	tech_pc	https://ascii.jp/rss.xml	ASCII	Main
-bicstation	tech_business	https://ascii.jp/biz/rss.xml	ASCII	Biz
-bicstation	tech_news	https://ascii.jp/tech/rss.xml	ASCII	Tech
-bicstation	tech_news	https://ascii.jp/web/rss.xml	ASCII	Web
-bicstation	tech_gadget	https://ascii.jp/digital/rss.xml	ASCII	Digital
-bicstation	tech_apple	https://ascii.jp/mac/rss.xml	ASCII	Mac
-bicstation	tech_hobby	https://ascii.jp/hobby/rss.xml	ASCII	Hobby
-bicstation	tech_pc	https://ascii.jp/pc/rss.xml	ASCII	PC
+bicstation	tech_pc	https://pc.watch.impress.co.jp/data/rss/1.0/pcw/feed.rdf	PC
+bicstation	tech_news	https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml	ITmedia
+bicstation	tech_pc	https://rss.itmedia.co.jp/rss/2.0/pcuser.xml	ITmedia
+bicstation	tech_gadget	https://www.gizmodo.jp/index.xml	Gizmodo
+bicstation	tech_pc	https://ascii.jp/rss.xml	ASCII
+bicstation	tech_business	https://ascii.jp/biz/rss.xml	ASCII
+bicstation	tech_news	https://ascii.jp/tech/rss.xml	ASCII
+bicstation	tech_news	https://ascii.jp/web/rss.xml	ASCII
+bicstation	tech_gadget	https://ascii.jp/digital/rss.xml	ASCII
+bicstation	tech_apple	https://ascii.jp/mac/rss.xml	ASCII
+bicstation	tech_hobby	https://ascii.jp/hobby/rss.xml	ASCII
+bicstation	tech_pc	https://ascii.jp/pc/rss.xml	ASCII
 bicstation	tech_news	https://techcrunch.com/feed/	TechCrunch
-bicstation	tech_network	https://internet.watch.impress.co.jp/data/rss/1.0/iw/feed.rdf	Internet	Watch
-bicstation	tech_business	https://rss.itmedia.co.jp/rss/2.0/business.xml	ITmedia	Business
-bicstation	tech_mobile	https://rss.itmedia.co.jp/rss/2.0/mobile.xml	ITmedia	Mobile
+bicstation	tech_network	https://internet.watch.impress.co.jp/data/rss/1.0/iw/feed.rdf	Internet
+bicstation	tech_business	https://rss.itmedia.co.jp/rss/2.0/business.xml	ITmedia
+bicstation	tech_mobile	https://rss.itmedia.co.jp/rss/2.0/mobile.xml	ITmedia
 bicstation	tech_gadget	https://www.phileweb.com/rss/rss.php	Phile-web
-saving	finance_tech	https://www.sbbit.jp/rss/HotTopics.rss	Fintech	Journal
-saving	finance_jp	https://zuuonline.com/feed	ZUU	online
-saving	finance_jp	https://financial-field.com/feed	Financial	Field
-saving	finance_tech	https://techcrunch.com/category/fintech/feed/	TechCrunch	Fintech
+saving	finance_tech	https://www.sbbit.jp/rss/HotTopics.rss	Fintech
+saving	finance_jp	https://zuuonline.com/feed	ZUU
+saving	finance_jp	https://financial-field.com/feed	Financial
+saving	finance_tech	https://techcrunch.com/category/fintech/feed/	TechCrunch
 saving	finance_global	https://www.moneytalksnews.com/feed/	MoneyTalksNews
 saving	finance_global	https://www.nerdwallet.com/blog/feed/	NerdWallet
-saving	finance_global	https://www.moneyunder30.com/feed	Money	Under	30
-saving	finance_jp	https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf	Impress	Money
-saving	finance_mobile	https://rss.itmedia.co.jp/rss/2.0/mobile.xml	ITmedia	Mobile
-saving	finance_tech	https://rss.itmedia.co.jp/rss/2.0/itmedia_all.xml	ITmedia	All
-saving	finance_gadget	https://www.gizmodo.jp/index.xml	Gizmodo	Japan
-saving	finance_jp	https://news.yahoo.co.jp/rss/categories/business.xml	Yahoo	Economy
+saving	finance_global	https://www.moneyunder30.com/feed	Money
+saving	finance_jp	https://www.watch.impress.co.jp/data/rss/1.0/ipw/feed.rdf	Impress
+saving	finance_mobile	https://rss.itmedia.co.jp/rss/2.0/mobile.xml	ITmedia
+saving	finance_tech	https://rss.itmedia.co.jp/rss/2.0/itmedia_all.xml	ITmedia
+saving	finance_gadget	https://www.gizmodo.jp/index.xml	Gizmodo
+saving	finance_jp	https://news.yahoo.co.jp/rss/categories/business.xml	Yahoo
 saving	finance_jp	https://limo.media/list/feed/rss	LIMO
-saving	finance_global	https://www.theguardian.com/money/rss	Guardian	Money
+saving	finance_global	https://www.theguardian.com/money/rss	Guardian
+bicstation	Tech_Trend	https://news.yahoo.co.jp/rss/topics/it.xml	PC全般、コスパPC、ビジネスPC
+bicstation	Tech_Trend	https://news.yahoo.co.jp/rss/categories/it.xml	全般、自動化PC、データ防衛
+bicstation	Tech_Trend	https://news.yahoo.co.jp/rss/media/itm_nlab/all.xml	PC全般、リセールPC
+bicstation	Hard_and_Custom	https://news.yahoo.co.jp/rss/media/impahw/all.xml	コスパPC、リセールPC、最強デスク
+bicstation	Hard_and_Custom	https://news.yahoo.co.jp/rss/media/imppcw/all.xml	最強デスク、スッキリPC、ビジネスPC
+bicstation	Hard_and_Custom	https://news.yahoo.co.jp/rss/media/impdcw/all.xml	最強デスク、スッキリPC（周辺機器）
+bicstation	Hard_and_Custom	https://news.yahoo.co.jp/rss/media/bcn/all.xml	コスパPC、リセールPC（市場動向）
+bicstation	Gaming_Gear	https://news.yahoo.co.jp/rss/media/impgmw/all.xml	ゲーミングPC
+bicstation	Gaming_Gear	https://news.yahoo.co.jp/rss/media/famitsu/all.xml	ゲーミングPC
+bicstation	Gaming_Gear	https://news.yahoo.co.jp/rss/media/fourgamer/all.xml	ゲーミングPC
+bicstation	Lifestyle_and_Design	https://news.yahoo.co.jp/rss/media/andgp/all.xml	スッキリPC、最強デスク、モバイルPC
+bicstation	Lifestyle_and_Design	https://news.yahoo.co.jp/rss/media/giz/all.xml	全般、最強デスク（最新ガジェット）
+bicstation	Mobile_and_Network	https://news.yahoo.co.jp/rss/media/cnetj/all.xml	モバイルPC、ビジネスPC
+bicstation	Mobile_and_Network	https://news.yahoo.co.jp/rss/media/impcaw/all.xml	モバイルPC（車載・電源）
+bicstation	Mobile_and_Network	https://news.yahoo.co.jp/rss/media/impktw/all.xml	モバイルPC、データ防衛（通信）
+bicstation	Business_and_Productivity	https://news.yahoo.co.jp/rss/media/binsider/all.xml	ビジネスPC、自動化PC
+bicstation	Business_and_Productivity	https://news.yahoo.co.jp/rss/media/lht/all.xml	ビジネスPC、自動化PC（効率化）
+bicstation	Market_and_Economy	https://news.yahoo.co.jp/rss/topics/business.xml	ビジネスPC、リセールPC（経済）
+bicstation	Market_and_Economy	https://news.yahoo.co.jp/rss/categories/business.xml	ビジネスPC、リセールPC（企業動向）
+bicstation	Software_and_Utility	https://news.yahoo.co.jp/rss/media/impfsw/all.xml	データ防衛、自動化PC（ソフト・セキュリティ）
+saving	FX_Market_Flash	https://news.yahoo.co.jp/rss/media/reut/all.xml	ロイター：プロ視点のグローバル市場解説
+saving	FX_Market_Flash	https://news.yahoo.co.jp/rss/media/jij/all.xml	時事通信：経済指標の結果速報と解説
+saving	FX_Economy_Trend	https://news.yahoo.co.jp/rss/topics/business.xml	経済トピックス：為替に直結する重要ニュース
+saving	FX_Economy_Trend	https://news.yahoo.co.jp/rss/categories/business.xml	経済カテゴリ：国内外の景気動向と市場影響
+saving	FX_Global_Risk	https://news.yahoo.co.jp/rss/media/afpbb/all.xml	AFPBB：各国の政情不安・地政学リスク
+saving	FX_Strategy_Method	https://news.yahoo.co.jp/rss/media/moneyp/all.xml	マネーポスト：投資家向けの具体的な手法
+saving	FX_Strategy_Method	https://news.yahoo.co.jp/rss/media/zuuonline/all.xml	ZUU online：資産運用の最新トレンド
+saving	FX_Expert_Analysis	https://news.yahoo.co.jp/rss/media/diamond/all.xml	ダイヤモンド：経済の構造的な読み解き
+saving	FX_Expert_Analysis	https://news.yahoo.co.jp/rss/media/toyokeizai/all.xml	東洋経済：長期的な経済・企業予測
+saving	FX_Beginner_Life	https://news.yahoo.co.jp/rss/media/fincf/all.xml	基礎知識、税金、節約に関する投資論
+saving	FX_Beginner_Life	https://news.yahoo.co.jp/rss/media/gendai/all.xml	現代ビジネス：生活に身近な投資・経済論
+saving	FX_Trade_Mind	https://news.yahoo.co.jp/rss/media/lht/all.xml	ライフハッカー：時間管理、メンタル管理術
+saving	FX_Trade_Mind	https://news.yahoo.co.jp/rss/media/president/all.xml	プレジデント：勝ち組投資家の思考法
+saving	FX_Fintech_AI	https://news.yahoo.co.jp/rss/media/itm_nlab/all.xml	ITmedia：AIトレードやフィンテック動向
+saving	FX_Fintech_AI	https://news.yahoo.co.jp/rss/topics/it.xml	ITトピックス：ネット証券機能、セキュリティ
+saving	FX_Tech_Environment	https://news.yahoo.co.jp/rss/media/binsider/all.xml	副業としてのFX、投資スタイルの提案
+saving	FX_Tech_Environment	https://news.yahoo.co.jp/rss/media/giz/all.xml	ギズモード：多画面など投資効率化ツール
+saving	FX_Tech_Environment	https://news.yahoo.co.jp/rss/media/impktw/all.xml	ケータイWatch：スマホアプリ、通信環境
+saving	FX_Tech_Environment	https://news.yahoo.co.jp/rss/media/imppcw/all.xml	PC Watch：高解像度PC、チャート表示環境
+saving	FX_Tech_Environment	https://news.yahoo.co.jp/rss/media/bcn/all.xml	BCN：投資家に売れている周辺機器

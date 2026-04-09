@@ -2,7 +2,7 @@
 <html lang="ja" itemscope itemtype="http://schema.org/Blog">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <$HeadSectionCommon$>
     <$OGP$>
     <title><$CategoryName ESCAPE$> : <$BlogTitle ESCAPE$></title>
@@ -10,179 +10,134 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<$CSSUrl$>">
+    <style>
+        /* カテゴリーページ固有の追加スタイル */
+        .category-header {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://livedoor.blogimg.jp/pbic/imgs/5/9/590332e9.jpg') no-repeat center center;
+            background-size: cover; height: 300px;
+        }
+        .archive-card {
+            display: flex; background: #fff; border-radius: 12px; overflow: hidden;
+            text-decoration: none !important; color: inherit; transition: 0.3s;
+            margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .archive-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+        .card-thumb { width: 35%; min-width: 150px; background: #eee; overflow: hidden; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .card-body-custom { width: 65%; padding: 20px; }
+        .card-body-custom .date { font-size: 0.8rem; color: #0d6efd; font-weight: bold; margin-bottom: 5px; }
+        .card-body-custom .title { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; line-height: 1.4; }
+        .card-body-custom .desc { font-size: 0.85rem; color: #6c757d; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        @media (max-width: 768px) {
+            .archive-card { flex-direction: column; }
+            .card-thumb { width: 100%; height: 200px; }
+            .card-body-custom { width: 100%; }
+        }
+    </style>
 </head>
 
 <body class="page-category">
 
-<div class="stema-bar">【PR】本サイトはアフィリエイト広告を利用して作品を紹介しています</div>
+    <div style="display:none;"><$BlogHeader$></div>
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
-    <div class="container-fluid-custom d-flex justify-content-between align-items-center">
-        <a class="navbar-brand" href="<$BlogUrl$>">TIPER.LIVE</a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-lg">
+        <div class="container-fluid px-lg-5">
+            <a class="navbar-brand fw-bold fs-3" href="<$BlogUrl$>"><$BlogTitle ESCAPE$></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <div class="collapse navbar-collapse" id="navContent">
-            <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">HOME</a></li>
-                
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-warning" href="#" id="fleetDrop" role="button" data-bs-toggle="dropdown">
-                        NETWORK
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-dark dropdown-menu-end dropdown-menu-fleet" aria-labelledby="fleetDrop">
-                        <div class="fleet-grid">
-                            <div class="fleet-header-nav">⚜️ BICSTATION ADULT FLEET ⚜️</div>
-                            <div class="fleet-cat-label">MAIN</div>
-                            <a href="https://main.tiper.live" class="fleet-item" style="grid-column: span 2;">▶ Tiper.Live <span>(Portal)</span></a>
-                            <div class="fleet-cat-label">PBIC SERIES</div>
-                            <a href="https://reserve.tiper.live" class="fleet-item">📅 先行予約 <span>(速報)</span></a>
-                            <a href="https://jukujo.tiper.live" class="fleet-item">💋 熟女・人妻 <span>(人妻)</span></a>
-                            <a href="https://vr.tiper.live" class="fleet-item">👓 VR快楽 <span>(360°)</span></a>
-                            <a href="https://idol.tiper.live" class="fleet-item">💎 美少女 <span>(アイドル)</span></a>
-                            <a href="https://ntr.tiper.live" class="fleet-item">💔 NTR・不倫 <span>(寝取)</span></a>
-                            <a href="https://fetish.tiper.live" class="fleet-item">🍓 フェチ <span>(爆乳)</span></a>
-                            <div class="fleet-cat-label">ADULT SPECIALTY</div>
-                            <a href="https://virgin.tiper.live" class="fleet-item">🌸 処女 <span>(Debut)</span></a>
-                            <a href="https://jk.tiper.live" class="fleet-item">🏫 女子校生 <span>(JK)</span></a>
-                            <a href="https://jd.tiper.live" class="fleet-item">🎓 女子大生 <span>(JD)</span></a>
-                            <a href="https://wakazuma.tiper.live" class="fleet-item">💍 新婚若妻 <span>(若妻)</span></a>
-                            <a href="https://nurse.tiper.live" class="fleet-item">💉 ナース <span>(病院)</span></a>
-                            <a href="https://ol.tiper.live" class="fleet-item">👠 背徳OL <span>(スーツ)</span></a>
-                        </div>
-                    </div>
-                </li>
-
-                <li class="nav-item"><a class="nav-link" href="https://tiper.live">PORTAL</a></li>
-                <li class="nav-item"><a class="nav-link text-warning fw-bold" href="https://main.tiper.live/archives/12505161.html">POLICY</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<div class="top-banner-wrapper">
-    <img src="https://livedoor.blogimg.jp/pbic/imgs/5/9/590332e9.jpg" class="top-banner-img" alt="Category Banner">
-    <div class="top-banner-text">
-        <h1 class="text-white text-uppercase"><$CategoryName ESCAPE$></h1>
-        <div class="top-banner-description">CATEGORY ARCHIVE</div>
-    </div>
-</div>
-
-<main class="container-fluid-custom mt-5">
-    <div class="row g-5">
-        
-        <div class="col-lg-9">
-            <div class="category-info-bar mb-4">
-                <span class="text-danger small fw-bold d-block mb-1">SELECTED ARCHIVE</span>
-                <h2 class="h4 m-0 fw-bold text-white"><$CategoryName ESCAPE$></h2>
-            </div>
-
-            <CategorizedArticlesLoop>
-                <a href="<$ArticlePermalink$>" class="archive-card">
-                    <div class="card-thumb" id="thumb-<$ArticleId$>"></div>
+            <div class="collapse navbar-collapse" id="navContent">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="<$BlogUrl$>">HOME</a></li>
                     
-                    <div class="card-body-custom">
-                        <div class="date"><$ArticleDate$></div>
-                        <div class="title"><$ArticleTitle ESCAPE$></div>
-                        <div class="desc"><$ArticleDescription ESCAPE$></div>
-                    </div>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-warning fw-bold" href="#" id="fleetDrop" role="button" data-bs-toggle="dropdown">NETWORK</a>
+                        <div class="dropdown-menu dropdown-menu-dark dropdown-menu-end dropdown-menu-fleet shadow" aria-labelledby="fleetDrop">
+                            <div class="fleet-grid">
+                                <div class="fleet-header-nav">🛰️ BICSTATION SATELLITE NETWORK</div>
+                                <div class="fleet-cat-label">BRANDS</div>
+                                <a href="https://ld.apple.bicstation.com" class="fleet-item"><b>🍎 Apple</b><span>美学と体験</span></a>
+                                <a href="https://sony.bicstation.com" class="fleet-item"><b>📷 Sony</b><span>技術の融合</span></a>
+                                <a href="https://ld.asus.bicstation.com" class="fleet-item"><b>💻 ASUS</b><span>極限スペック</span></a>
+                                <div class="fleet-cat-label">SOLUTIONS</div>
+                                <a href="https://pc.automation.bicstation.com" class="fleet-item"><b>🧙 自動化</b><span>魔術的効率</span></a>
+                                <a href="https://pc.ai.tech.bicstation.com" class="fleet-item"><b>🤖 AI拡張</b><span>未来の脳</span></a>
+                                <a href="https://pc.sukkiri.bicstation.com" class="fleet-item"><b>⚡ 高速化</b><span>1秒を奪還</span></a>
+                                <div class="fleet-cat-label">PORTAL</div>
+                                <a href="https://pc.compass.bicstation.com" class="fleet-item" style="grid-column: span 3; background: linear-gradient(45deg, #0d6efd, #6610f2); border: none; text-align: center;">
+                                    <b>🌐 BICSTATION MAIN PORTAL</b>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
 
-                    <div id="hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
-                    <script>
-                    (function() {
-                        var bodyHtml = document.getElementById('hidden-body-<$ArticleId$>').innerHTML;
-                        var thumbBox = document.getElementById('thumb-<$ArticleId$>');
-                        var imgMatch = bodyHtml.match(/<img [^>]*src=["']([^"']+)["']/);
-                        var imgUrl = imgMatch ? imgMatch[1] : "";
-                        if (imgUrl) {
-                            thumbBox.innerHTML = '<img src="' + imgUrl + '" alt="thumbnail">';
-                        } else {
-                            thumbBox.innerHTML = '<div class="no-image-box">NO IMAGE</div>';
-                        }
-                    })();
-                    </script>
-                </a>
-            </CategorizedArticlesLoop>
-
-            <div class="pager-container d-flex justify-content-center my-5">
-                <$IndexNavigator$>
-            </div>
-
-            <div class="article-post-exit mt-5">
-                <div class="exit-header">TIPER.LIVE OFFICIAL GUIDES</div>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <a href="https://tiper.live/guide/live-chat" class="exit-card">
-                            <span class="exit-icon">🎥</span>
-                            <div class="exit-title">視聴ガイド</div>
-                            <div class="exit-desc">最安・爆益の攻略ルート</div>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="https://tiper.live/guide/matching" class="exit-card">
-                            <span class="exit-icon">💌</span>
-                            <div class="exit-title">出会い解析</div>
-                            <div class="exit-desc">地域別マッチング最適解</div>
-                        </a>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="https://tiper.live/guide/chat-lady" class="exit-card highlight">
-                            <span class="exit-icon">💎</span>
-                            <div class="exit-title">高額副業</div>
-                            <div class="exit-desc">在宅で月30万を稼ぐ</div>
-                        </a>
-                    </div>
-                </div>
+                    <li class="nav-item"><a class="nav-link" href="https://tiper.live">PORTAL</a></li>
+                    <li class="nav-item"><a class="nav-link text-warning fw-bold" href="https://main.tiper.live/archives/12505161.html">POLICY</a></li>
+                </ul>
             </div>
         </div>
+    </nav>
 
-        <aside class="col-lg-3">
-            <div class="sidebar-box">
-                <div class="sidebar-title" style="color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:8px; margin-bottom:20px; font-weight:900; font-size:1.1rem;">
-                    OFFICIAL GUIDES
-                </div>
-                
-                <a href="https://tiper.live/guide/live-chat" class="side-guide-link">
-                    <i>🎥</i> ライブチャット視聴攻略
-                </a>
-                
-                <a href="https://tiper.live/guide/matching" class="side-guide-link">
-                    <i>💌</i> マッチングアプリ解析
-                </a>
-                
-                <a href="https://tiper.live/guide/chat-lady" class="side-guide-link highlight">
-                    <i>💎</i> <span style="color: #fb7185;">女性向け・高収入副業</span>
-                </a>
-                
-                <div class="sidebar-title mt-5" style="color:var(--text-muted); font-size:0.8rem; letter-spacing:2px; border-bottom: 1px solid #222; padding-bottom: 5px;">
-                    POPULAR POSTS
-                </div>
-                <div class="side mt-3">
-                    <$PluginList_B$>
-                </div>
-            </div>
-        </aside>
-
-    </div>
-</main>
-
-<footer class="py-5 mt-5">
-    <div class="container text-center text-muted small">
-        <div class="mb-3">
-            <a href="https://main.tiper.live/archives/12505161.html" class="text-muted text-decoration-none mx-2">免責事項・ポリシー</a>
+    <header class="category-header d-flex align-items-center text-white mb-5">
+        <div class="container-fluid text-center px-lg-5">
+            <div class="text-warning small fw-bold mb-2">CATEGORY ARCHIVE</div>
+            <h1 class="display-3 fw-bold text-uppercase mb-0"><$CategoryName ESCAPE$></h1>
         </div>
-        <p>&copy; Tiper.Live OFFICIAL. All Rights Reserved.</p>
-    </div>
-</footer>
+    </header>
 
-<div class="mobile-nav">
-    <a href="https://tiper.live/guide/live-chat" class="mobile-nav-item"><i>🎥</i>視聴ガイド</a>
-    <a href="https://tiper.live/guide/matching" class="mobile-nav-item"><i>💌</i>出会い解析</a>
-    <a href="https://tiper.live/guide/chat-lady" class="mobile-nav-item" style="color: #fb7185;"><i>💎</i>高額副業</a>
-</div>
+    <main class="container-fluid px-lg-5 mt-5">
+        <div class="row g-5">
+            
+            <div class="col-lg-9">
+                <div class="category-info-bar mb-4 p-3 bg-dark rounded-3 d-flex align-items-center justify-content-between">
+                    <h2 class="h5 m-0 fw-bold text-white"><span class="text-warning me-2">#</span><$CategoryName ESCAPE$></h2>
+                    <span class="badge bg-secondary">Articles List</span>
+                </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+                <div class="archive-list">
+                    <CategorizedArticlesLoop>
+                        <article>
+                            <a href="<$ArticlePermalink$>" class="archive-card">
+                                <div class="card-thumb" id="thumb-<$ArticleId$>"></div>
+                                
+                                <div class="card-body-custom">
+                                    <div class="date"><$ArticleDate$></div>
+                                    <div class="title text-dark"><$ArticleTitle ESCAPE$></div>
+                                    <div class="desc"><$ArticleDescription ESCAPE$></div>
+                                </div>
+                            </a>
+                            <div id="hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
+                            <script>
+                            (function() {
+                                var bodyHtml = document.getElementById('hidden-body-<$ArticleId$>').innerHTML;
+                                var thumbBox = document.getElementById('thumb-<$ArticleId$>');
+                                var imgMatch = bodyHtml.match(/<img [^>]*src=["']([^"']+)["']/);
+                                var imgUrl = imgMatch ? imgMatch[1] : "";
+                                if (imgUrl) {
+                                    thumbBox.innerHTML = '<img src="' + imgUrl + '" alt="thumbnail">';
+                                } else {
+                                    thumbBox.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 bg-secondary text-white small">NO IMAGE</div>';
+                                }
+                            })();
+                            </script>
+                        </article>
+                    </CategorizedArticlesLoop>
+                </div>
+
+                <div class="pager-container d-flex justify-content-center my-5">
+                    <$IndexNavigator$>
+                </div>
+
+                <div class="article-post-exit mt-5 p-4 bg-light rounded-4">
+                    <div class="fw-bold mb-4 border-start border-primary border-4 ps-3">OFFICIAL GUIDES</div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="https://tiper.live/guide/live-chat" class="guide-grid-card">
+                                <div class="guide-icon">🎥</div>
+                                <div class="guide-content"><h4>視聴ガイド</h4><p>爆益の攻略ルート</p></div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="https://tiper

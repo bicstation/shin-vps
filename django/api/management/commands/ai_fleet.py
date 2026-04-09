@@ -20,7 +20,7 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = '🔱 Gemma 3 艦隊司令部 v3.1 [DB最適化・CTA分離版]'
+    help = '🔱 Gemma 3 艦隊司令部 v3.1 [デバッグ強化版]'
 
     ALLOWED_PROJECTS = ['bicstation', 'saving', 'tiper', 'avflash']
     
@@ -55,7 +55,7 @@ class Command(BaseCommand):
         post_limit = options.get('limit')
         use_index = options.get('index')
 
-        self.log(f"--- 🚀 MISSION START: v3.1 (CTA Separation) ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v3.1 (DEBUG MODE) ---", self.style.SUCCESS)
         
         FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
         RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
@@ -64,14 +64,25 @@ class Command(BaseCommand):
             self.log(f"❌ Fleet CSVが見つかりません: {FLEET_CSV}", self.style.ERROR)
             return
 
+        # --- master_fleet.csv の読み込みデバッグ ---
         with open(FLEET_CSV, "r", encoding="utf-8-sig") as f:
             fleet_reader = csv.DictReader(f, delimiter='\t')
+            
+            self.log(f"🔍 Fleet CSV ヘッダー確認: {fleet_reader.fieldnames}", self.style.WARNING)
+            
             for blog_config in fleet_reader:
+                # 行データの詳細ログ
+                self.log(f"--- 🛰 読み込まれた設定行 ---")
+                for k, v in blog_config.items():
+                    self.log(f"  [{repr(k)}]: {repr(v)}")
+
                 project_name = (blog_config.get('project') or '').strip().lower()
                 site_key = (blog_config.get('site_key') or '').strip().lower()
                 platform = (blog_config.get('platform') or 'livedoor').strip().lower()
 
-                if project_name not in self.ALLOWED_PROJECTS: continue
+                if project_name not in self.ALLOWED_PROJECTS:
+                    self.log(f" ⏩ プロジェクト名 '{project_name}' は許可リストにありません。スキップ。")
+                    continue
                 if target and target.lower() not in [project_name, site_key]: continue
                 if target_platform and target_platform.lower() != platform: continue
 
@@ -80,7 +91,7 @@ class Command(BaseCommand):
                              self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{project_name}.txt")
                 
                 if not prompt_tpl:
-                    self.log(f" ⏩ プロンプト不在のためスキップ")
+                    self.log(f" ⏩ プロンプト不在のためスキップ (場所: {self.PROMPT_DIR})")
                     continue
 
                 processor = AIProcessor(api_keys=self.api_keys, template=prompt_tpl)
@@ -94,30 +105,52 @@ class Command(BaseCommand):
         rss_category_str = (blog_config.get('rss_category') or '').strip()
         target_cats = [c.strip().lower() for c in rss_category_str.split(',')]
 
+        self.log(f" 📂 RSS検索条件: project='{project_name}', categories={target_cats}")
+
         rss_urls = []
         if os.path.exists(rss_csv_path):
             with open(rss_csv_path, "r", encoding="utf-8-sig") as f:
                 rss_reader = csv.DictReader(f, delimiter='\t')
+                
+                # RSSソースのデバッグ
+                self.log(f" 🔍 RSS CSV ヘッダー確認: {rss_reader.fieldnames}", self.style.WARNING)
+
                 for row in rss_reader:
-                    if (row.get('project') or '').strip().lower() == project_name and \
-                       (row.get('rss_category') or '').strip().lower() in target_cats:
-                        url = (row.get('rss_url') or '').strip()
-                        if url: rss_urls.append(url)
-        
+                    row_project = (row.get('project') or '').strip().lower()
+                    row_cat = (row.get('rss_category') or '').strip().lower()
+                    
+                    # 条件に一致するか詳細比較
+                    if row_project == project_name:
+                        if row_cat in target_cats:
+                            url = (row.get('rss_url') or '').strip()
+                            if url: 
+                                rss_urls.append(url)
+                                self.log(f"   ✅ RSS一致: {url[:50]}...")
+                        else:
+                            # カテゴリが合わない場合もログに出す（スペルミス防止）
+                            pass
+
         rss_urls = list(set(rss_urls))
-        if not rss_urls: return
+        if not rss_urls:
+            self.log(f" ⏩ 合致するRSS URLが見つかりませんでした。")
+            return
 
         all_entries = []
         for url in rss_urls:
             try:
+                self.log(f" 📡 RSS取得中: {url[:60]}")
                 res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=15)
                 feed = feedparser.parse(res.content)
                 for entry in feed.entries:
                     if not Article.objects.filter(source_url=entry.link, site=project_name).exists():
                         all_entries.append(entry)
-            except: pass
+            except Exception as e:
+                self.log(f"  ⚠️ RSS取得エラー: {str(e)}")
 
-        if not all_entries: return
+        if not all_entries:
+            self.log(f" ⏩ 未投稿の記事がありません。")
+            return
+            
         random.shuffle(all_entries)
         
         success_count = 0
@@ -166,31 +199,23 @@ class Command(BaseCommand):
                     base_domain = self.DOMAIN_MAP.get(project_name, "https://avflash.xyz")
                     main_site_url = f"{base_domain}/post/{new_article_id}"
 
-                    # --- CTA置換 (外部投稿用のみに使用) ---
                     cta_raw = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt") or \
                               self.load_external_file(self.PROMPT_DIR, f"cta_{project_name}.txt")
                     cta_replaced = cta_raw.replace('{{internal_url}}', main_site_url) if cta_raw else ""
 
-                    # --- コンテンツ構築の分離 ---
                     teitoku_comment = self.get_random_teitoku_comment(project_name)
-                    
-                    # 1. DB保存用：CTAを含まない純粋なHTML
                     db_main_html = self.assemble_final_html(final_body_md, p_data.get('img'), teitoku_comment, cta="")
-                    
-                    # 2. 外部投稿用：DB用HTML + CTA
                     external_html = db_main_html + (f"<br><hr><br>{markdown.markdown(cta_replaced)}" if cta_replaced else "")
 
-                    # --- 外部ブログへ投稿 ---
                     DriverClass = {'livedoor': LivedoorDriver, 'blogger': BloggerDriver, 'hatena': HatenaDriver, 'wordpress': WordPressDriver}.get(platform)
                     if DriverClass:
                         driver = DriverClass(blog_config)
                         post_category = rss_category_str.split(',')[0] if rss_category_str else "最新情報"
                         
                         if driver.post(title=final_title, body=external_html, image_url='', source_url=selected_entry.link, category=post_category):
-                            # --- DB最終更新 (ここが重要) ---
                             Article.objects.filter(id=new_article_id).update(
-                                body_main=db_main_html,      # ✅ CTAなしの純粋なコンテンツ
-                                body_satellite=summary_box,  # ✅ 100文字程度の要約のみを格納
+                                body_main=db_main_html,
+                                body_satellite=summary_box,
                             )
                             
                             self.log(f" ✅ 成功(ID:{new_article_id}): {final_title[:25]}...", self.style.SUCCESS)
@@ -203,6 +228,7 @@ class Command(BaseCommand):
             except Exception as e:
                 self.log(f" ❌ エラー: {str(e)}", self.style.ERROR)
 
+    # --- 以下、ユーティリティメソッドは変更なし ---
     def get_parsed_data(self, entry):
         data = {'body': getattr(entry, 'description', getattr(entry, 'summary', entry.title)).replace('\x00', ''), 'img': ''}
         try:
@@ -229,9 +255,6 @@ class Command(BaseCommand):
         return data
 
     def assemble_final_html(self, md_content, img_url, comment, cta):
-        """
-        基本構造を組み立てる。CTAが空の場合はCTAセクションを生成しない。
-        """
         html_body = markdown.markdown(md_content, extensions=['extra', 'nl2br'])
         img_tag = f'<p align="center"><img src="{img_url}" style="max-width:100%; border-radius:10px; margin-bottom:25px;"></p>' if img_url else ""
         comment_html = (
