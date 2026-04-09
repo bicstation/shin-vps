@@ -1,98 +1,131 @@
 import React from 'react';
 
-const BROKERS = [
+const BTO_MODELS = [
   {
-    rank: 1,
-    title: "SBI証券",
-    catch: "新NISA・クレカ積立の絶対王者",
-    reward: "三井住友カード積立でVポイント還元",
-    features: ["売買手数料が完全無料（ゼロ革命）", "三井住友カード(NL)との連携が最強", "米国株・投信の銘柄数が圧倒的"],
-    url: "YOUR_SBI_LINK_HERE",
-    color: "bg-blue-800",
-    label: "旗艦：資産形成",
+    id: 'entry',
+    rank: 'コスパ最強',
+    title: "ビジネス・デイトレ特化モデル",
+    target: "事務・株/FX・動画視聴",
+    cpu: "Intel Core i5 / Ryzen 5",
+    gpu: "内蔵グラフィックス（節約）",
+    price: "79,800円〜",
+    point: "グラボを削ってメモリに全振り。24時間稼働でも静かで低消費電力。",
+    recommend_vendor: "ドスパラ（Magnateシリーズ）",
+    color: "border-blue-500"
   },
   {
-    rank: 2,
-    title: "楽天証券",
-    catch: "ポイ活投資・UIの使いやすさNo.1",
-    reward: "楽天カード決済でポイント還元",
-    features: ["楽天ポイントで投資信託が買える", "日経新聞（日経テレコン）が無料で読める", "楽天銀行との連携（マネーブリッジ）で金利優遇"],
-    url: "YOUR_RAKUTEN_SEC_LINK_HERE",
-    color: "bg-red-700",
-    label: "補給：楽天経済圏",
+    id: 'standard',
+    rank: '一番人気',
+    title: "万能クリエイティブモデル",
+    target: "動画編集・ミドル級ゲーム・AI学習",
+    cpu: "Intel Core i7 / Ryzen 7",
+    gpu: "RTX 4060 / 4060 Ti",
+    price: "154,800円〜",
+    point: "性能の「損益分岐点」がここ。これ以上は価格だけが跳ね上がる黄金比スペック。",
+    recommend_vendor: "マウスコンピューター（NEXTGEAR）",
+    color: "border-indigo-600"
   },
   {
-    rank: 3,
-    title: "FX口座（マネーパートナーズ等）",
-    catch: "少額から始める「攻め」の外貨運用",
-    reward: "ビック流・スワップ運用対応",
-    features: ["100通貨などの少額から取引可能", "高スワップで外貨預金代わりの運用に最適", "ビック的FX戦略（FX Fleet）のメイン戦場"],
-    url: "YOUR_FX_LINK_HERE",
-    color: "bg-amber-600",
-    label: "加速：外貨戦略",
+    id: 'high',
+    rank: 'プロ推奨',
+    title: "4K・ハイエンド攻略モデル",
+    target: "4K動画・最新ゲーム・3DCG",
+    cpu: "Intel Core i9 / Ryzen 9",
+    gpu: "RTX 4080 / 4090",
+    price: "349,800円〜",
+    point: "1円を笑う者が最後に辿り着く「妥協なし」のインフラ。資産価値も落ちにくい。",
+    recommend_vendor: "パソコン工房（LEVEL∞）",
+    color: "border-purple-600"
   }
 ];
 
-export default function BrokerGuidePage() {
+export default function BtoGuidePage() {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12 bg-slate-50 min-h-screen font-sans">
+    <div className="max-w-6xl mx-auto px-4 py-12 bg-white">
+      {/* ヒーローセクション */}
       <header className="text-center mb-16">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
-          📈 BIC-SAVING：資産を加速させる「三種の口座」
+        <h1 className="text-4xl font-extrabold text-slate-900 mb-6">
+          🖥️ BIC-STATION：BTOパソコン「絶対コスパ」選定ガイド
         </h1>
-        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-          節約で浮かせた「種銭」を爆発させる出口戦略。<br />
-          カードと連携し、1円の無駄もなく複利の波に乗るための選定です。
+        <div className="inline-block bg-amber-100 text-amber-800 px-6 py-2 rounded-full text-sm font-bold mb-6">
+          2026年4月度：最新ベンチマーク/市場価格反映済み
+        </div>
+        <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+          「最新＝正解」ではない。Bic Stationは、各パーツの価格推移と性能スコアを徹底分析。<br />
+          あなたの用途において、**1円あたりの投資効率が最も高い1台**を提示します。
         </p>
       </header>
 
-      <div className="grid md:grid-cols-3 gap-8">
-        {BROKERS.map((broker) => (
-          <div key={broker.rank} className="relative flex flex-col bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 transition-all hover:shadow-2xl">
-            <div className={`${broker.color} text-white text-xs font-bold px-3 py-1 absolute top-4 left-4 rounded-full`}>
-              {broker.label}
+      {/* 診断セクション（ダミー） */}
+      <section className="mb-20 p-8 bg-slate-900 rounded-3xl text-white">
+        <div className="flex flex-col md:flex-row items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">💡 あなたに最適なスペックは？</h2>
+            <p className="text-slate-400">予算と用途を選ぶだけで、DBから最適解を抽出します。</p>
+          </div>
+          <button className="mt-6 md:mt-0 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-xl transition-all">
+            PC診断ツールを起動（準備中）
+          </button>
+        </div>
+      </section>
+
+      {/* メインカード */}
+      <div className="grid lg:grid-cols-3 gap-8">
+        {BTO_MODELS.map((model) => (
+          <div key={model.id} className={`flex flex-col border-2 ${model.color} rounded-2xl overflow-hidden shadow-lg transition-transform hover:-translate-y-2`}>
+            <div className="p-6 bg-white border-b border-slate-100">
+              <span className="text-xs font-black uppercase tracking-widest text-slate-400">{model.rank}</span>
+              <h3 className="text-xl font-bold text-slate-900 mt-1">{model.title}</h3>
             </div>
             
-            <div className="p-8 pt-12 text-center border-b border-slate-100">
-              <div className="text-4xl font-black text-slate-100 mb-2">0{broker.rank}</div>
-              <h2 className="text-xl font-bold text-slate-900 mb-2">{broker.name}</h2>
-              <p className="text-sm font-semibold text-blue-600 mb-4">{broker.catch}</p>
-            </div>
+            <div className="p-6 bg-slate-50 flex-grow">
+              <div className="space-y-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">主な用途</span>
+                  <span className="font-bold text-slate-800 text-right">{model.target}</span>
+                </div>
+                <div className="flex justify-between border-t border-slate-200 pt-2">
+                  <span className="text-slate-500">推奨CPU</span>
+                  <span className="font-medium text-slate-800">{model.cpu}</span>
+                </div>
+                <div className="flex justify-between border-t border-slate-200 pt-2">
+                  <span className="text-slate-500">推奨GPU</span>
+                  <span className="font-medium text-slate-800">{model.gpu}</span>
+                </div>
+              </div>
 
-            <div className="p-8 flex-grow bg-slate-50/50">
-              <ul className="space-y-3 mb-8">
-                {broker.features.map((feature, i) => (
-                  <li key={i} className="flex items-start text-sm text-slate-700">
-                    <span className="text-blue-500 mr-2">▶</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <div className="bg-white p-4 rounded-lg border border-indigo-100 text-center">
-                <span className="text-xs text-slate-500 block mb-1">ビック推奨シナジー</span>
-                <span className="text-sm font-bold text-indigo-700">{broker.reward}</span>
+              <div className="mt-8 p-4 bg-white rounded-lg border border-slate-200">
+                <p className="text-xs text-blue-600 font-bold mb-1">Bic's Eye：</p>
+                <p className="text-xs text-slate-700 leading-relaxed">{model.point}</p>
               </div>
             </div>
 
-            <div className="p-8 pt-0">
+            <div className="p-6 bg-white text-center">
+              <div className="mb-4">
+                <span className="text-3xl font-black text-slate-900">{model.price}</span>
+              </div>
+              <p className="text-xs text-slate-500 mb-6">推奨：{model.recommend_vendor}</p>
               <a 
-                href={broker.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`block w-full text-center py-4 rounded-xl font-bold text-white transition-transform active:scale-95 ${broker.color}`}
+                href="#" 
+                className="block w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors"
               >
-                口座開設（無料）で攻略開始
+                構成をカスタマイズする
               </a>
             </div>
           </div>
         ))}
       </div>
-      
-      <div className="mt-12 text-center">
-        <a href="/guide/card" className="text-blue-600 hover:underline font-bold">
-          ← セットで揃えたい「最強カード3選」はこちら
-        </a>
-      </div>
+
+      {/* フッター誘導 */}
+      <footer className="mt-20 text-center border-t border-slate-200 pt-12">
+        <p className="text-slate-500 text-sm mb-4">
+          ※表示価格は各メーカーのセール状況により変動します。
+        </p>
+        <div className="flex justify-center gap-6">
+          <a href="/guide/parts" className="text-blue-600 font-bold hover:underline">← パーツ別コスパ比較はこちら</a>
+          <a href="/guide/peripherals" className="text-blue-600 font-bold hover:underline">周辺機器の底値リストはこちら →</a>
+        </div>
+      </footer>
     </div>
   );
 }
