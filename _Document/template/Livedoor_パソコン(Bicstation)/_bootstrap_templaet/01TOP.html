@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <$HeadSectionCommon$>
-    <title><$MonthLabel$> : <$BlogTitle ESCAPE$></title>
+    <title><$BlogTitle ESCAPE$></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<$CSSUrl$>">
     <style>
         .main-header {
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('<$BlogHeaderImageUrl$>') no-repeat center center;
-            background-size: cover; height: 280px;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('<$BlogHeaderImageUrl$>') no-repeat center center;
+            background-size: cover; height: 250px;
         }
+        /* カードのホバーエフェクト（任意） */
+        .article-card { transition: transform 0.2s; }
+        .article-card:hover { transform: translateY(-3px); }
     </style>
 </head>
 
@@ -57,44 +60,54 @@
                         </div>
                     </li>
                 </ul>
+                <form action="<$BlogUrl$>search" method="GET" class="d-flex">
+                    <input class="form-control me-2 bg-secondary text-white border-0" type="search" name="q" placeholder="検索...">
+                    <button class="btn btn-warning fw-bold" type="submit">SEARCH</button>
+                </form>
             </div>
         </div>
     </nav>
 
     <header class="main-header d-flex align-items-center text-white mb-5">
         <div class="container-fluid text-center px-lg-5">
-            <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-bold shadow-sm">MONTHLY ARCHIVE</span>
-            <h1 class="display-4 fw-bold mb-2"><$MonthLabel$></h1>
-            <p class="lead fs-5 opacity-75">「<$MonthLabel$>」に公開された記事一覧</p>
+            <h1 class="display-4 fw-bold mb-2"><$BlogTitle ESCAPE$></h1>
+            <p class="lead fs-5 opacity-75"><$BlogDescription$></p>
         </div>
     </header>
 
     <div class="container-fluid px-lg-5">
         <div class="row g-5">
             <main class="col-lg-9">
-                <div class="mb-4">
-                    <$MessageBoard$>
+                <div class="row row-cols-2 row-cols-md-4 g-3 mb-5">
+                    <div class="col"><a href="https://bicstation.com/concierge" class="guide-grid-card card-concierge"><h4 class="h6 fw-bold">AI診断</h4><p class="small mb-0">コスパPC選定</p></a></div>
+                    <div class="col"><a href="https://bicstation.com/guide/bto" class="guide-grid-card card-bto"><h4 class="h6 fw-bold">BTO</h4><p class="small mb-0">性能コスト両立</p></a></div>
+                    <div class="col"><a href="https://bicstation.com/guide/parts" class="guide-grid-card card-parts"><h4 class="h6 fw-bold">パーツ</h4><p class="small mb-0">自作の最適解</p></a></div>
+                    <div class="col"><a href="https://bicstation.com/guide/peripherals" class="guide-grid-card card-money"><h4 class="h6 fw-bold">周辺機器</h4><p class="small mb-0">時短と投資</p></a></div>
                 </div>
 
-                <MonthlyArticlesLoop>
-                    <article class="card article-card mb-4 shadow-sm border-0 overflow-hidden">
-                        <div class="row g-0 flex-column flex-md-row">
-                            <div class="col-md-5 card-img-container" id="thumb-<$ArticleId$>"></div>
-                            <div class="col-md-7">
-                                <div class="card-body p-4 d-flex flex-column h-100">
-                                    <div class="text-primary fw-bold small mb-2">📅 <$ArticleDate$></div>
-                                    <h2 class="card-title h4 fw-bold mb-3">
-                                        <a href="<$ArticlePermalink$>" class="text-dark text-decoration-none"><$ArticleTitle ESCAPE$></a>
-                                    </h2>
-                                    <p class="card-text text-muted small mb-4"><$ArticleDescription ESCAPE$></p>
-                                    <div class="mt-auto">
-                                        <a href="<$ArticlePermalink$>" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold">READ MORE</a>
+                <div class="row row-cols-1 g-4">
+                    <IndexArticlesLoop>
+                    <div class="col">
+                        <article class="card article-card mb-4 shadow-sm border-0 overflow-hidden">
+                            <div class="row g-0 flex-column flex-md-row">
+                                <div class="col-md-5 card-img-container" id="thumb-<$ArticleId$>"></div>
+                                
+                                <div class="col-md-7">
+                                    <div class="card-body p-4 d-flex flex-column h-100">
+                                        <div class="text-primary fw-bold small mb-2">📅 <$ArticleDate$></div>
+                                        <h2 class="card-title h4 fw-bold mb-3">
+                                            <a href="<$ArticlePermalink$>" class="text-dark text-decoration-none"><$ArticleTitle ESCAPE$></a>
+                                        </h2>
+                                        <p class="card-text text-muted small mb-4"><$ArticleDescription ESCAPE$></p>
+                                        <div class="mt-auto text-end">
+                                            <a href="<$ArticlePermalink$>" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold">READ MORE</a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div id="hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
-                    </article>
+                            <div id="hidden-body-<$ArticleId$>" style="display:none;"><$ArticleBody$></div>
+                        </article>
+                    </div>
 
                     <script>
                     (function() {
@@ -105,22 +118,19 @@
                         thumbBox.innerHTML = '<a href="<$ArticlePermalink$>" class="h-100 d-block"><div style="background: url(' + imgUrl + ') center center / cover; height: 100%; min-height: 220px;"></div></a>';
                     })();
                     </script>
-                </MonthlyArticlesLoop>
+                    </IndexArticlesLoop>
+                </div>
 
-                <nav class="my-5 text-center">
-                    <div class="index-navigator">
-                        <$IndexNavigator$>
-                    </div>
-                </nav>
+                <nav class="my-5 text-center"><div class="index-navigator"><$IndexNavigator$></div></nav>
             </main>
 
             <aside class="col-lg-3">
                 <div class="sticky-top" style="top: 100px;">
-                    <div class="sidebar-box card border-0 shadow-sm mb-4 overflow-hidden">
+                    <div class="sidebar-box card border-0 shadow-sm overflow-hidden mb-4">
                         <div class="card-header bg-dark text-white fw-bold py-3">PICK UP</div>
                         <div class="card-body p-3 side"><$PluginList_A$></div>
                     </div>
-                    <div class="sidebar-box card border-0 shadow-sm mb-4 overflow-hidden">
+                    <div class="sidebar-box card border-0 shadow-sm overflow-hidden mb-4">
                         <div class="card-header bg-dark text-white fw-bold py-3">CATEGORY</div>
                         <div class="card-body p-3 side"><$PluginList_B$></div>
                     </div>

@@ -20,7 +20,7 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = '🔱 Gemma 3 艦隊司令部 v3.1 [デバッグ強化版]'
+    help = '🔱 Gemma 3 艦隊司令部 v3.2 [CTAリンク修正版]'
 
     ALLOWED_PROJECTS = ['bicstation', 'saving', 'tiper', 'avflash']
     
@@ -32,8 +32,9 @@ class Command(BaseCommand):
     }
 
     def add_arguments(self, parser):
-        parser.add_argument('--project', type=str, help='実行するプロジェクト名')
-        parser.add_argument('--platform', type=str, help='投稿先プラットフォーム')
+        parser.add_argument('--project', type=str, help='実行するプロジェクト名 (例: bicstation)')
+        parser.add_argument('--site', type=str, help='特定のサイトキーを指定 (例: pc-compass)')
+        parser.add_argument('--platform', type=str, help='投稿先プラットフォーム (livedoor, blogger等)')
         parser.add_argument('--limit', type=int, default=1, help='最大投稿数')
         parser.add_argument('--index', action='store_true', help='Indexing API有効化')
 
@@ -50,12 +51,16 @@ class Command(BaseCommand):
         self.SACHIKO_KEY = os.path.join(self.base_path, 'bs_json', 'google-indexing-key.json')
 
     def handle(self, *args, **options):
-        target = options.get('project')
+        target_project = options.get('project')
+        target_site = options.get('site')
         target_platform = options.get('platform')
         post_limit = options.get('limit')
         use_index = options.get('index')
 
-        self.log(f"--- 🚀 MISSION START: v3.1 (DEBUG MODE) ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v3.2 (Site Targeted) ---", self.style.SUCCESS)
+        
+        if target_site:
+            self.log(f"🎯 Target Site: {target_site}", self.style.SUCCESS)
         
         FLEET_CSV = os.path.join(self.SETTING_DIR, 'master_fleet.csv')
         RSS_CSV = os.path.join(self.SETTING_DIR, 'master_rss_sources.csv')
@@ -64,34 +69,30 @@ class Command(BaseCommand):
             self.log(f"❌ Fleet CSVが見つかりません: {FLEET_CSV}", self.style.ERROR)
             return
 
-        # --- master_fleet.csv の読み込みデバッグ ---
         with open(FLEET_CSV, "r", encoding="utf-8-sig") as f:
             fleet_reader = csv.DictReader(f, delimiter='\t')
             
-            self.log(f"🔍 Fleet CSV ヘッダー確認: {fleet_reader.fieldnames}", self.style.WARNING)
-            
             for blog_config in fleet_reader:
-                # 行データの詳細ログ
-                self.log(f"--- 🛰 読み込まれた設定行 ---")
-                for k, v in blog_config.items():
-                    self.log(f"  [{repr(k)}]: {repr(v)}")
-
                 project_name = (blog_config.get('project') or '').strip().lower()
                 site_key = (blog_config.get('site_key') or '').strip().lower()
                 platform = (blog_config.get('platform') or 'livedoor').strip().lower()
 
-                if project_name not in self.ALLOWED_PROJECTS:
-                    self.log(f" ⏩ プロジェクト名 '{project_name}' は許可リストにありません。スキップ。")
-                    continue
-                if target and target.lower() not in [project_name, site_key]: continue
+                if target_site:
+                    if site_key != target_site.lower(): continue
+                elif target_project:
+                    if project_name != target_project.lower(): continue
+                else:
+                    if project_name not in self.ALLOWED_PROJECTS: continue
+
                 if target_platform and target_platform.lower() != platform: continue
 
                 self.log(f"🚢 【出撃】: {project_name} > {site_key} [{platform}]")
+                
                 prompt_tpl = self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{site_key}.txt") or \
                              self.load_external_file(self.PROMPT_DIR, f"ai_prompt_{project_name}.txt")
                 
                 if not prompt_tpl:
-                    self.log(f" ⏩ プロンプト不在のためスキップ (場所: {self.PROMPT_DIR})")
+                    self.log(f" ⏩ プロンプト不在のためスキップ (site_key: {site_key})")
                     continue
 
                 processor = AIProcessor(api_keys=self.api_keys, template=prompt_tpl)
@@ -105,51 +106,32 @@ class Command(BaseCommand):
         rss_category_str = (blog_config.get('rss_category') or '').strip()
         target_cats = [c.strip().lower() for c in rss_category_str.split(',')]
 
-        self.log(f" 📂 RSS検索条件: project='{project_name}', categories={target_cats}")
-
         rss_urls = []
         if os.path.exists(rss_csv_path):
             with open(rss_csv_path, "r", encoding="utf-8-sig") as f:
                 rss_reader = csv.DictReader(f, delimiter='\t')
-                
-                # RSSソースのデバッグ
-                self.log(f" 🔍 RSS CSV ヘッダー確認: {rss_reader.fieldnames}", self.style.WARNING)
-
                 for row in rss_reader:
                     row_project = (row.get('project') or '').strip().lower()
                     row_cat = (row.get('rss_category') or '').strip().lower()
-                    
-                    # 条件に一致するか詳細比較
-                    if row_project == project_name:
-                        if row_cat in target_cats:
-                            url = (row.get('rss_url') or '').strip()
-                            if url: 
-                                rss_urls.append(url)
-                                self.log(f"   ✅ RSS一致: {url[:50]}...")
-                        else:
-                            # カテゴリが合わない場合もログに出す（スペルミス防止）
-                            pass
+                    if row_project == project_name and row_cat in target_cats:
+                        url = (row.get('rss_url') or '').strip()
+                        if url: rss_urls.append(url)
 
         rss_urls = list(set(rss_urls))
-        if not rss_urls:
-            self.log(f" ⏩ 合致するRSS URLが見つかりませんでした。")
-            return
+        if not rss_urls: return
 
         all_entries = []
         for url in rss_urls:
             try:
-                self.log(f" 📡 RSS取得中: {url[:60]}")
                 res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=15)
                 feed = feedparser.parse(res.content)
                 for entry in feed.entries:
                     if not Article.objects.filter(source_url=entry.link, site=project_name).exists():
                         all_entries.append(entry)
             except Exception as e:
-                self.log(f"  ⚠️ RSS取得エラー: {str(e)}")
+                self.log(f" ⚠️ RSS取得エラー: {str(e)}")
 
-        if not all_entries:
-            self.log(f" ⏩ 未投稿の記事がありません。")
-            return
+        if not all_entries: return
             
         random.shuffle(all_entries)
         
@@ -162,11 +144,9 @@ class Command(BaseCommand):
             is_adult_ref = any(dm in selected_entry.link.lower() for dm in ['dmm.co.jp', 'dmm.com', 'fanza'])
             p_data = self.get_parsed_data(selected_entry)
             
-            if not p_data.get('img'):
-                self.log(f" ⏩ 画像なしを検知。次を探します。")
-                continue 
+            if not p_data.get('img'): continue 
 
-            self.log(f" 🎯 選定: {selected_entry.title[:35]}...")
+            self.log(f" 🎯 選定記事: {selected_entry.title[:35]}...")
 
             input_data = {'url': selected_entry.link, 'title': selected_entry.title, 'body': p_data.get('body', '')}
             try:
@@ -196,15 +176,24 @@ class Command(BaseCommand):
                         )
                         new_article_id = new_article.id
 
+                    # --- CTAリンク置換ロジック修正 ---
                     base_domain = self.DOMAIN_MAP.get(project_name, "https://avflash.xyz")
                     main_site_url = f"{base_domain}/post/{new_article_id}"
+                    source_url = selected_entry.link # 元記事（アフィリンク等）
 
                     cta_raw = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt") or \
                               self.load_external_file(self.PROMPT_DIR, f"cta_{project_name}.txt")
-                    cta_replaced = cta_raw.replace('{{internal_url}}', main_site_url) if cta_raw else ""
+                    
+                    if cta_raw:
+                        # 内部リンクと元記事リンクの両方を置換
+                        cta_replaced = cta_raw.replace('{{internal_url}}', main_site_url)\
+                                              .replace('{{source_url}}', source_url)
+                    else:
+                        cta_replaced = ""
 
                     teitoku_comment = self.get_random_teitoku_comment(project_name)
                     db_main_html = self.assemble_final_html(final_body_md, p_data.get('img'), teitoku_comment, cta="")
+                    # 外部投稿用にはCTAを付加
                     external_html = db_main_html + (f"<br><hr><br>{markdown.markdown(cta_replaced)}" if cta_replaced else "")
 
                     DriverClass = {'livedoor': LivedoorDriver, 'blogger': BloggerDriver, 'hatena': HatenaDriver, 'wordpress': WordPressDriver}.get(platform)
@@ -217,18 +206,14 @@ class Command(BaseCommand):
                                 body_main=db_main_html,
                                 body_satellite=summary_box,
                             )
-                            
                             self.log(f" ✅ 成功(ID:{new_article_id}): {final_title[:25]}...", self.style.SUCCESS)
-                            
-                            if use_index:
-                                self.notify_google_indexing(main_site_url)
+                            if use_index: self.notify_google_indexing(main_site_url)
 
                             success_count += 1
                             if success_count < limit: time.sleep(random.randint(20, 45))
             except Exception as e:
                 self.log(f" ❌ エラー: {str(e)}", self.style.ERROR)
 
-    # --- 以下、ユーティリティメソッドは変更なし ---
     def get_parsed_data(self, entry):
         data = {'body': getattr(entry, 'description', getattr(entry, 'summary', entry.title)).replace('\x00', ''), 'img': ''}
         try:
@@ -263,8 +248,7 @@ class Command(BaseCommand):
             f'<strong style="color: #ff4500;">🖋 編集長レビュー</strong><br>'
             f'<span style="font-size: 1.05em; font-weight: bold;">「{comment}」</span></div>'
         )
-        cta_html = f"<br><hr><br>{markdown.markdown(cta)}" if cta else ""
-        return (img_tag + comment_html + html_body + cta_html).strip()
+        return (img_tag + comment_html + html_body).strip()
 
     def notify_google_indexing(self, target_url):
         if not os.path.exists(self.SACHIKO_KEY): return
@@ -298,7 +282,7 @@ class Command(BaseCommand):
         key = random.choice(self.api_keys)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
         list_txt = "\n".join([f"[{i}] {a.title}" for i, a in enumerate(articles)])
-        prompt = f"あなたは【{persona}】です。リストから最高の一記事を[番号]のみで選べ。\n{list_txt}"
+        prompt = f"あなたは【{persona}】です。リストから最高の一記事を[番号]のみで選べ。理由不要。\n{list_txt}"
         try:
             r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=25)
             res_text = r.json()['candidates'][0]['content']['parts'][0]['text']

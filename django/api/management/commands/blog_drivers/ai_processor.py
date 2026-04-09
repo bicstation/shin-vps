@@ -21,7 +21,6 @@ class AIProcessor:
             prod_name = "IT製品"
             prod_price = "要確認"
 
-        # 🚀 徹底した役割固定: RSSの本文(description)を核に、DB製品情報は末尾に添える指示を注入
         # 既存のテンプレート内のプレースホルダーを置換
         prompt_content = self.template.replace("{{current_url}}", data['url']) \
                                      .replace("{{description}}", data['body']) \
@@ -50,7 +49,7 @@ class AIProcessor:
                 payload = {
                     "contents": [{"parts": [{"text": enforced_prompt}]}],
                     "generationConfig": {
-                        "temperature": 0.2,    # 0.1〜0.2でハルシネーションを抑制
+                        "temperature": 0.2,    # ハルシネーションを抑制
                         "topP": 0.95,
                         "maxOutputTokens": 8192,
                         "responseMimeType": "text/plain"
@@ -67,15 +66,17 @@ class AIProcessor:
                         clean_text = re.sub(r'```[a-z]*\n|```', '', text).strip()
                         return self.extract_tags(clean_text, data['title'])
                 
-                elif res.status_code == 429:
-                    continue
+                # --- 修正: 200以外（503や429など）はすべてログを出して次のキーへ ---
                 else:
-                    print(f"DEBUG: API Error {res.status_code}")
+                    print(f"DEBUG: API Error {res.status_code} - Switching to next key...")
+                    continue 
                     
             except Exception as e:
                 print(f"DEBUG: Request Exception - {e}")
+                # ネットワークタイムアウト等でも止まらずに次のキーへ
                 continue
                 
+        # すべてのキーを試してダメだった場合のみ None を返す
         return None
 
     def _find_text_recursive(self, obj):
@@ -105,6 +106,7 @@ class AIProcessor:
             'raw_text': text
         }
         
+        # タグ抽出に失敗した場合のフォールバック
         if not res['cont_g'] or len(res['cont_g']) < 50:
             clean_body = re.sub(r'\[/?.*?\]', '', text).strip()
             res['cont_g'] = res['cont_h'] = clean_body
