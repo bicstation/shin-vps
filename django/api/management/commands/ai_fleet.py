@@ -20,7 +20,7 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = '🔱 Gemma 3 艦隊司令部 v3.2 [CTAリンク修正・耐障害性強化版]'
+    help = '🔱 Gemma 3 艦隊司令部 v3.2 [タイトル復元・欺瞞作戦搭載版]'
 
     ALLOWED_PROJECTS = ['bicstation', 'saving', 'tiper', 'avflash']
     
@@ -57,7 +57,7 @@ class Command(BaseCommand):
         post_limit = options.get('limit')
         use_index = options.get('index')
 
-        self.log(f"--- 🚀 MISSION START: v3.2 ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v3.2 (Title Recovery Mode) ---", self.style.SUCCESS)
         
         if target_site:
             self.log(f"🎯 Target Site: {target_site}", self.style.SUCCESS)
@@ -137,7 +137,6 @@ class Command(BaseCommand):
         
         success_count = 0
         while success_count < limit and all_entries:
-            # AI APIへの負荷分散のため、選定前に少し待機
             time.sleep(random.randint(3, 7))
             selected_entry = self.let_persona_choose_rest(persona, all_entries[:30], rss_category_str)
             if not selected_entry: break
@@ -148,17 +147,21 @@ class Command(BaseCommand):
             
             if not p_data.get('img'): continue 
 
-            self.log(f" 🎯 選定記事: {selected_entry.title[:35]}...")
+            original_title = selected_entry.title.strip()
+            self.log(f" 🎯 選定記事: {original_title[:35]}...")
 
-            # 本文生成前にもバッファを置く
             time.sleep(5)
-            input_data = {'url': selected_entry.link, 'title': selected_entry.title, 'body': p_data.get('body', '')}
+            # 【欺瞞作戦】AIには元のタイトルを渡しつつ、プロンプト指示側でマイルド化を期待する
+            input_data = {'url': selected_entry.link, 'title': original_title, 'body': p_data.get('body', '')}
             
             try:
                 ai_res = processor.generate_blog_content(input_data, platform)
                 if not ai_res: raise Exception("AI生成失敗（全てのキーを試行しましたが全滅しました）")
 
-                final_title = ai_res.get('title_h') if platform == 'hatena' else ai_res.get('title_g')
+                # 【重要】投稿タイトルにはRSSの元タイトルを復元する
+                # もし元タイトルが空、あるいは異常な場合のみAI生成タイトルを使用
+                final_title = original_title if len(original_title) > 5 else (ai_res.get('title_g') or original_title)
+                
                 final_body_md = ai_res.get('cont_h') if platform == 'hatena' else ai_res.get('cont_g')
                 summary_box = ai_res.get('summary', '')
 
@@ -169,7 +172,7 @@ class Command(BaseCommand):
                         new_article = Article.objects.create(
                             site=project_name,
                             is_adult=is_adult_val,
-                            title=final_title,
+                            title=final_title, # ここで元タイトルを保存
                             source_url=selected_entry.link,
                             body_main="", 
                             body_satellite="",
@@ -189,15 +192,10 @@ class Command(BaseCommand):
                     cta_raw = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt") or \
                               self.load_external_file(self.PROMPT_DIR, f"cta_{project_name}.txt")
                     
-                    if cta_raw:
-                        cta_replaced = cta_raw.replace('{{internal_url}}', main_site_url)\
-                                              .replace('{{source_url}}', source_url)
-                    else:
-                        cta_replaced = ""
+                    cta_replaced = cta_raw.replace('{{internal_url}}', main_site_url).replace('{{source_url}}', source_url) if cta_raw else ""
 
                     teitoku_comment = self.get_random_teitoku_comment(project_name)
                     db_main_html = self.assemble_final_html(final_body_md, p_data.get('img'), teitoku_comment, cta="")
-                    # 外部投稿用にはCTAを付加
                     external_html = db_main_html + (f"<br><hr><br>{markdown.markdown(cta_replaced)}" if cta_replaced else "")
 
                     DriverClass = {'livedoor': LivedoorDriver, 'blogger': BloggerDriver, 'hatena': HatenaDriver, 'wordpress': WordPressDriver}.get(platform)
@@ -205,6 +203,7 @@ class Command(BaseCommand):
                         driver = DriverClass(blog_config)
                         post_category = rss_category_str.split(',')[0] if rss_category_str else "最新情報"
                         
+                        # 投稿時にも final_title (元タイトル) を渡す
                         if driver.post(title=final_title, body=external_html, image_url='', source_url=selected_entry.link, category=post_category):
                             Article.objects.filter(id=new_article_id).update(
                                 body_main=db_main_html,
@@ -217,7 +216,7 @@ class Command(BaseCommand):
                             if success_count < limit: time.sleep(random.randint(30, 60))
             except Exception as e:
                 self.log(f" ❌ エラー: {str(e)}", self.style.ERROR)
-                time.sleep(10) # エラー時は少し休ませる
+                time.sleep(10)
 
     def get_parsed_data(self, entry):
         data = {'body': getattr(entry, 'description', getattr(entry, 'summary', entry.title)).replace('\x00', ''), 'img': ''}
@@ -284,16 +283,18 @@ class Command(BaseCommand):
 
     def let_persona_choose_rest(self, persona, articles, category_hint=""):
         if not articles: return None
-        # 選定時もAPIを使用するため、リトライ・キー分散を行う
         key = random.choice(self.api_keys)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
         list_txt = "\n".join([f"[{i}] {a.title}" for i, a in enumerate(articles)])
-        prompt = f"あなたは【{persona}】です。リストから最高の一記事を[番号]のみで選べ。理由不要。\n{list_txt}"
+        # 【選定時プロンプト】マイルドな記事を選ばせるためのヒントを追加
+        prompt = (
+            f"あなたは【{persona}】です。以下の記事リストから、ブログに掲載する最高の一記事を[番号]のみで選んでください。\n"
+            f"※性的・暴力的な表現が強すぎてAIが執筆拒否しそうなものは避け、ストーリー性や話題性があるものを選んでください。\n\n"
+            f"{list_txt}"
+        )
         try:
             r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=25)
-            if r.status_code != 200:
-                # 失敗時はランダムに逃げる
-                return random.choice(articles)
+            if r.status_code != 200: return random.choice(articles)
             res_text = r.json()['candidates'][0]['content']['parts'][0]['text']
             m = re.search(r'\[(\d+)\]', res_text)
             idx = int(m.group(1)) if m else 0
