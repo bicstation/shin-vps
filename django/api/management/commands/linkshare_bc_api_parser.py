@@ -3,7 +3,7 @@
 import json 
 import os
 import socket
-import xml.dom.minidom # 💡 生XMLを整形表示するために追加
+import xml.dom.minidom 
 from django.core.management.base import BaseCommand
 from django.db import transaction, connection
 from django.utils import timezone
@@ -56,6 +56,15 @@ class Command(BaseCommand):
             tqdm.write(self.style.ERROR('❌ モデルが見つからないため、DB保存をスキップします。'))
             return 0, 0
             
+        # 💡 精鋭6艦隊のマッピング定義
+        MID_MAP = {
+            '35909': 'HP',        # 修正
+            '43708': 'ASUS',      # 一致
+            '2557':  'DELL',      # 修正
+            '2543':  'FUJITSU',   # 修正
+            '36508': 'DYNABOOK',  # 一致
+        }
+
         total_saved = 0
         total_created = 0
         sync_count = 0
@@ -81,15 +90,14 @@ class Command(BaseCommand):
                 mid = item.get('mid')
                 link_id = item.get('linkid')
                 product_sku = item.get('sku', 'N/A')
-                link_url = item.get('linkurl') # 🚀 1円報酬等を含む正式アフィリンク
+                link_url = item.get('linkurl') 
                 product_name = item.get('productname', 'Unknown')
                 
                 if not link_id:
                     continue
 
                 try:
-                    # 1. BcLinkshareProduct (API生データ) を保存・更新
-                    # ⚠️ エラー回避のため、モデルに存在しない 'api_source_details' は除外しています
+                    # 1. BcLinkshareProduct (API生データ) を保存・更新（バックアップ・AI解析用）
                     obj, created = BcLinkshareProduct.objects.update_or_create(
                         linkid=link_id,
                         mid=mid,
@@ -102,12 +110,15 @@ class Command(BaseCommand):
                     total_saved += 1
                     if created:
                         total_created += 1
-                        tqdm.write(self.style.NOTICE(f"   [新規保存] {product_name[:40]}..."))
+                        # tqdm.write(self.style.NOTICE(f"   [新規保存] {product_name[:40]}..."))
                     
-                    # 2. 🚀 PCProduct への同期ロジック
-                    if product_sku and product_sku != 'N/A' and PCProduct.objects is not None:
-                        # unique_id(SKU) が一致するレコードを探してアフィリンクを書き込む
-                        updated_rows = PCProduct.objects.filter(unique_id=product_sku).update(
+                    # 2. 🚀 PCProduct への同期ロジック（精鋭6艦隊のみ）
+                    if mid in MID_MAP and product_sku != 'N/A' and PCProduct.objects is not None:
+                        # 💡 共通キー {Prefix}_{SKU} を生成してマッピング
+                        prefix = MID_MAP[mid]
+                        target_unique_id = f"{prefix}_{product_sku}"
+                        
+                        updated_rows = PCProduct.objects.filter(unique_id=target_unique_id).update(
                             affiliate_url=link_url,
                             affiliate_updated_at=timezone.now()
                         )
@@ -115,7 +126,7 @@ class Command(BaseCommand):
                             sync_count += updated_rows
 
                 except Exception as e:
-                    tqdm.write(self.style.ERROR(f'❌ DB処理エラー (linkid: {link_id}, SKU: {product_sku}): {e}'))
+                    tqdm.write(self.style.ERROR(f'❌ DB処理エラー (SKU: {product_sku}): {e}'))
         
         if sync_count > 0:
             tqdm.write(self.style.SUCCESS(f'    🔗 PCProductへのリンク同期: {sync_count} 件完了'))
@@ -144,29 +155,20 @@ class Command(BaseCommand):
             current_mid_fetched = 0
             
             try:
-                # API実行 (none引数を追加)
                 all_page_results = client.search_products(
-                    keyword=keyword, 
-                    mid=mid, 
-                    cat=cat, 
-                    page_size=page_size, 
-                    max_pages=max_pages, 
-                    none=none_kw
+                    keyword=keyword, mid=mid, cat=cat, 
+                    page_size=page_size, max_pages=max_pages, none=none_kw
                 )
 
                 if all_page_results:
                     page_results_to_save = []
-                    
                     for page_result in all_page_results:
                         items = page_result.get('items', [])
-                        
                         if mid_limit > 0:
                             remaining = mid_limit - current_mid_fetched
                             if remaining <= 0: break 
-                            if len(items) > remaining:
-                                items = items[:remaining]
+                            if len(items) > remaining: items = items[:remaining]
 
-                        # 各アイテムに除外条件の記録用メタデータを追加
                         for it in items:
                             it['none_query'] = none_kw
 
@@ -174,62 +176,37 @@ class Command(BaseCommand):
                         page_results_to_save.append(page_result)
                         total_products_fetched_all += len(items)
                         current_mid_fetched += len(items)
-                        
-                        if mid_limit > 0 and current_mid_fetched >= mid_limit:
-                            break 
+                        if mid_limit > 0 and current_mid_fetched >= mid_limit: break 
                             
                     if page_results_to_save and current_mid_fetched > 0:
-                        mid_data = {
-                            'mid': str(mid),
-                            'merchantname': mid_name,
-                            'query_parameters': {
-                                'keyword': keyword,
-                                'none': none_kw,
-                                'cat': cat,
-                                'pages_fetched': len(page_results_to_save),
-                                'total_products_fetched_by_mid': current_mid_fetched
-                            },
-                            'page_results': page_results_to_save
-                        }
-                        
+                        mid_data = {'mid': str(mid), 'merchantname': mid_name, 'page_results': page_results_to_save}
                         if save_db:
-                            self.stderr.write(self.style.NOTICE(f'💾 MID {mid} のデータ {current_mid_fetched} 件を処理中...'))
+                            self.stderr.write(self.style.NOTICE(f'💾 MID {mid} のデータ処理中...'))
                             total_saved, total_created = self._save_products_to_db([mid_data])
-                            self.stderr.write(self.style.SUCCESS(f'✅ DB保存・同期完了: {total_saved} 件処理 ({total_created} 件新規作成)。'))
-                        
-                        if not save_db:
+                            self.stderr.write(self.style.SUCCESS(f'✅ 完了: {total_saved}件処理'))
+                        else:
                             all_mids_data_for_json.append(mid_data)
-                        
                         mid_results.append({'mid': mid, 'name': mid_name, 'status': self.style.SUCCESS('◯'), 'count': current_mid_fetched})
                     else:
-                        mid_results.append({'mid': mid, 'name': mid_name, 'status': self.style.WARNING('△ (商品なし)'), 'count': 0})
+                        mid_results.append({'mid': mid, 'name': mid_name, 'status': self.style.WARNING('△'), 'count': 0})
                 else:
-                    mid_results.append({'mid': mid, 'name': mid_name, 'status': self.style.WARNING('☓ (商品なし)'), 'count': 0})
-            
+                    mid_results.append({'mid': mid, 'name': mid_name, 'status': self.style.WARNING('☓'), 'count': 0})
             except Exception as e:
-                mid_results.append({'mid': mid, 'name': mid_name, 'status': self.style.ERROR('☓ (エラー)'), 'count': 0})
-                self.stderr.write(self.style.ERROR(f'❌ MID {mid} の処理中にエラーが発生しました: {e}'))
+                mid_results.append({'mid': mid, 'name': mid_name, 'status': self.style.ERROR('ERR'), 'count': 0})
+                self.stderr.write(self.style.ERROR(f'❌ エラー: {e}'))
                 continue 
 
-        # 結果サマリー
         if mid_results:
-            self.stderr.write(self.style.NOTICE('\n--- 📝 MID巡回 結果サマリー ---'))
+            self.stderr.write(self.style.NOTICE('\n--- 📝 MID巡回サマリー ---'))
             for res in mid_results:
                 self.stderr.write(f"| {res['status']} | {res['mid']} | {res['name']} | {res['count']} 件 |")
-            self.stderr.write(self.style.NOTICE(f"\n💡 全MID合計の総取得件数: {total_products_fetched_all} 件"))
 
         if not save_db and all_mids_data_for_json:
-            final_data = {
-                'total_products_fetched_all': total_products_fetched_all,
-                'results_by_mid': all_mids_data_for_json
-            }
-            self.stdout.write(json.dumps(final_data, ensure_ascii=False, indent=4))
+            self.stdout.write(json.dumps(all_mids_data_for_json, ensure_ascii=False, indent=4))
 
     def handle(self, *args, **options):
-        # --- DB接続設定 ---
         db_config = settings.DATABASES['default']
         target_host = db_config.get('HOST', '')
-        
         try:
             socket.gethostbyname(target_host)
         except (socket.gaierror, TypeError):
@@ -237,69 +214,35 @@ class Command(BaseCommand):
                 db_config['HOST'] = '127.0.0.1'
                 db_config['PORT'] = '5433'
         
-        self.stdout.write(self.style.NOTICE('--- LinkShare API Parser (Bicstation) 開始 ---'))
+        self.stdout.write(self.style.NOTICE('--- LinkShare API Parser 起動 ---'))
         
         try:
             client = LinkShareAPIClient()
             client.get_access_token() 
 
-            # 💡 1. 生XML表示オプション (--show-raw) の処理
             if options['show_raw']:
-                self.stdout.write(self.style.WARNING('\n--- 🛠️ LinkShare API 生レスポンス (Raw XML) 表示 ---'))
                 target_mid = options['mid'][0] if options['mid'] else None
-                
-                # 💡 LinkShareAPIClient.fetch_raw_xml の引数に none=options['none'] を追加
-                raw_xml = client.fetch_raw_xml(
-                    keyword=options['keyword'], 
-                    mid=target_mid, 
-                    cat=options['cat'],
-                    pagenumber=1,
-                    max_results=1,
-                    none=options['none'] 
-                )
-                
-                if raw_xml:
-                    try:
-                        # XMLを綺麗に整形
-                        dom = xml.dom.minidom.parseString(raw_xml)
-                        pretty_xml = dom.toprettyxml(indent="  ")
-                        self.stdout.write(pretty_xml)
-                    except Exception as parse_err:
-                        # 整形に失敗した場合はそのまま表示
-                        self.stdout.write(raw_xml)
-                        self.stderr.write(self.style.ERROR(f"XMLの整形に失敗しました: {parse_err}"))
-                else:
-                    self.stdout.write(self.style.WARNING("データが空でした。"))
-                
-                self.stdout.write(self.style.NOTICE('--- Raw表示完了 ---'))
+                raw_xml = client.fetch_raw_xml(mid=target_mid, none=options['none'], max_results=1)
+                dom = xml.dom.minidom.parseString(raw_xml)
+                self.stdout.write(dom.toprettyxml(indent="  "))
                 return 
 
-            # 💡 2. 通常の取得・保存処理
             mid_list_to_process = []
-
             if options['all_mids']:
-                self.stdout.write(self.style.NOTICE('🆔 全提携広告主リストを取得中...'))
                 mid_list_to_process = client.get_advertiser_list()
-            
             elif options['mid']:
-                for m in options['mid']:
-                    mid_list_to_process.append({'mid': m, 'merchantname': f'指定MID:{m}'})
-            
-            elif options['keyword'] or options['cat']:
-                mid_list_to_process = [{'mid': None, 'merchantname': '全広告主検索'}]
-            
+                mid_list_to_process = [{'mid': m, 'merchantname': f'指定MID:{m}'} for m in options['mid']]
             elif options['mid_list']:
-                advertisers = client.get_advertiser_list()
-                if advertisers:
-                    self.stdout.write(json.dumps({'TotalMatches': len(advertisers), 'advertisers': advertisers}, ensure_ascii=False, indent=4))
-                    return
+                ads = client.get_advertiser_list()
+                self.stdout.write(json.dumps(ads, ensure_ascii=False, indent=4))
+                return
 
             if mid_list_to_process:
                 self._fetch_and_output_products(client, mid_list_to_process, options)
             else:
-                self.stderr.write(self.style.WARNING('⚠️ オプション（--mid, --all-mids, --keyword, --show-raw 等）を指定してください。'))
+                self.stderr.write(self.style.WARNING('⚠️ オプションを指定してください。'))
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f'致命的なエラー: {e}'))
 
-        self.stdout.write(self.style.NOTICE('--- LinkShare API Parser 処理完了 ---'))
+        self.stdout.write(self.style.NOTICE('--- 処理完了 ---'))

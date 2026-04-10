@@ -177,49 +177,8 @@ EOF
             echo -e "\n${YELLOW}📦 属性マスタを同期中...${RESET}"
             docker cp "${PROJECT_ROOT}/django/master_data/attributes.tsv" "${DJANGO_CON}:/usr/src/app/master_data/attributes.tsv"
             
-            docker exec -i "${DJANGO_CON}" python manage.py shell <<'EOF'
-import os
-import re
-from django.db import connection, transaction
-from api.models.pc_products import PCAttribute
-
-file_path = '/usr/src/app/master_data/attributes.tsv'
-
-# 1. SQLで直接テーブルを空にする（トランザクションを待たずに即時解放）
-with connection.cursor() as cursor:
-    cursor.execute('TRUNCATE TABLE api_pcattribute RESTART IDENTITY CASCADE;')
-print("🧹 DB: Table api_pcattribute truncated.")
-
-# 2. メモリ上で一意性を確保
-unique_attrs = {}
-if os.path.exists(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('attr_type'): continue
-            parts = re.split(r'\t+|\s{2,}', line)
-            if len(parts) < 3: continue
-            
-            slug = parts[2].strip().lower()
-            unique_attrs[slug] = {
-                'attr_type': parts[0].strip(),
-                'name': parts[1].strip(),
-                'order': int(float(parts[-1])) if parts[-1].replace('.','').isdigit() else 0
-            }
-
-    # 3. 1件ずつ安全に保存（万が一の衝突も無視する）
-    count = 0
-    for slug, data in unique_attrs.items():
-        # 既に存在していてもエラーを出さない get_or_create 方式
-        PCAttribute.objects.get_or_create(
-            slug=slug,
-            defaults=data
-        )
-        count += 1
-    print(f"✅ {count} 件の属性を同期完了しました。")
-else:
-    print("❌ Error: attributes.tsv not found.")
-EOF
+            # 2. 新しく作成した管理コマンドを実行
+            run_django python manage.py sync_master_attributes
 
             echo -e "${CYAN}🚀 商品データへの属性紐付けを更新中...${RESET}"
             run_django python manage.py auto_map_attributes 

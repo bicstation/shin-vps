@@ -1,83 +1,83 @@
-attr_type	name	slug	search_keywords	order
-cpu	Core Ultra 9	intel-core-ultra-9	Core Ultra 9, Ultra 285K, Ultra 185H, Ultra 9 185H, Ultra 9 285K, Ultra 9 200V, 288V	10
-cpu	Core Ultra 7	intel-core-ultra-7	Core Ultra 7, Ultra 265K, Ultra 155H, Ultra 165H, Ultra 155U, Ultra 7 265K, Ultra 7 258V, Ultra 7 256V, 155H	11
-cpu	Core Ultra 5	intel-core-ultra-5	Core Ultra 5, Ultra 245K, Ultra 125H, Ultra 135H, Ultra 125U, Ultra 5 245K, Ultra 5 226V, 125H	12
-cpu	Core i9	intel-core-i9	Core i9, i9-14900, i9-13900, i9-12900, 14900HX, 13980HX, i9-14900K, i9-14900KS	13
-cpu	Core i7	intel-core-i7	Core i7, i7-14700, i7-13700, i7-1360P, i7-1355U, i7-12700, i7-1260P, 14700HX, i7-14700K	14
-cpu	Core i5	intel-core-i5	Core i5, i5-14400, i5-13400, i5-1335U, i5-1340P, i5-12400, i5-1235U, i5-14600K	15
-cpu	Core i3	intel-core-i3	Core i3, i3-13100, i3-12100, i3-1215U, i3-1115G4, i3-N305, Core 3, Core 3 100U	16
-cpu	Celeron / Pentium	intel-low-end	Celeron, Pentium, Intel Processor, N100, N200, Gold 8505, 7305, セレロン, ペンティアム	17
-cpu	Snapdragon X Elite / Plus	arm-snapdragon-x	Snapdragon X Elite, Snapdragon X Plus, X1E-84-100, X1E-78-100, X1P-64-100, X1P-42-100, ARM Windows, クアルコム, スナップドラゴン	18
-cpu	Ryzen AI 300	amd-ryzen-ai-300	Ryzen AI 9, Ryzen AI 300, Strix Point, Ryzen AI 9 HX 370, Ryzen AI 9 365, Ryzen AI 7	19
-cpu	Ryzen 9	amd-ryzen-9	Ryzen 9, 9950X, 7950X, 7945HX, 8945HS, 7940HS, 5900X, 9900X, R9-	20
-cpu	Ryzen 7	amd-ryzen-7	Ryzen 7, 9700X, 7800X3D, 7700, 8845HS, 8840U, 7735HS, 7730U, 5800U, 5700U, 9800X3D, R7-	21
-cpu	Ryzen 5	amd-ryzen-5	Ryzen 5, 9600X, 7600, 7530U, 8645HS, 8640U, 7535HS, 7520U, 5625U, 5500U, 9600, R5-	22
-cpu	Ryzen 3	amd-ryzen-3	Ryzen 3, 7320U, 4300G, 5300U, 3300U, 3100, R3-	23
-cpu	Ryzen Threadripper	amd-threadripper	Threadripper, 7995WX, 7980X, 7970X, スレッドリッパー, WXシリーズ	24
-cpu	最新第14世代インテル	intel-14th-gen	i9-14, i7-14, i5-14, Raptor Lake Refresh, 第14世代, 14世代	25
-cpu	最新第13世代インテル	intel-13th-gen	i9-13, i7-13, i5-13, Raptor Lake, 第13世代, 13世代	26
-cpu	Ryzen 9000シリーズ	amd-ryzen-9000	Ryzen 9 9, Ryzen 7 9, Ryzen 5 9, Zen 5, 9000番台, 9950X, 9900X, 9700X, 9600X	27
-cpu	Copilot+ PC (AI基準適合)	feature-copilot-plus	Copilot+ PC, Copilotプラス, 40+ TOPS, NPU 45TOPS, 40TOPS以上, AI要件適合, コパイロットプラス	28
-cpu	NPU搭載 (AI PC)	feature-npu-ai	Ryzen AI, AI Boost, Intel NPU, NPU搭載, Neural Processing Unit, XDNA, NPU 10, NPU 11	29
-cpu	省電力モデル	feature-power-efficient	Core i7-U, Ryzen 7-U, 省電力, T-Series, 低電圧, 15Wモデル, 効率重視	30
-cpu	Intel Xeon	intel-xeon	Xeon, ジーオン, Xeon W, Xeon Silver, Xeon Gold	31
-cpu	Ryzen PRO	amd-ryzen-pro	Ryzen AI PRO, Ryzen 7 PRO, Ryzen 5 PRO, ビジネス向けRyzen	32
-gpu	GeForce RTX 5090	gpu-rtx-5090	RTX 5090, 5090, Blackwell	50
-gpu	GeForce RTX 5080	gpu-rtx-5080	RTX 5080, 5080	51
-gpu	GeForce RTX 5070 Ti	gpu-rtx-5070-ti	RTX 5070 Ti, 5070Ti	52
-gpu	GeForce RTX 5070	gpu-rtx-5070	RTX 5070, 5070	53
-gpu	GeForce RTX 50シリーズ	gpu-rtx-50-series	RTX 50, RTX 5090, RTX 5080, RTX 5070, Blackwell	54
-gpu	GeForce RTX 4070 Ti	gpu-rtx-4070-ti	RTX 4070 Ti, 4070Ti, 4070 Ti SUPER, 4070TiS	55
-gpu	GeForce RTX 4060 Ti	gpu-rtx-4060-ti	RTX 4060 Ti, 4060Ti, 4060 Ti 16GB	56
-gpu	GeForce RTX 4060	gpu-rtx-4060	RTX 4060, 4060	57
-gpu	GeForce RTX 4050	gpu-rtx-4050	RTX 4050, 4050	58
-gpu	GeForce RTX 40シリーズ	gpu-rtx-40-series	RTX 40, RTX 4090, RTX 4080, RTX 4070, RTX 4060, RTX 4050, Ada Lovelace	59
-gpu	Radeon AI PRO	gpu-radeon-ai-pro	R9700, Radeon AI PRO, W7900, W7800, W7600	60
-gpu	Intel Arc Graphics	gpu-intel-arc	Intel Arc, Arc Graphics, Arc A770, Arc A750, Arc A380, Arc A140V, Arc B580, Arc B570	61
-gpu	ノートPC用GPU	gpu-laptop	Laptop GPU, Mobile, ノート向け, Laptop GPU, モバイルGPU	62
-gpu	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT, Tower, ミニタワー, desktop, pc, グラフィックボード, ビデオカード, 拡張カード	63
-gpu	ビデオメモリ 16GB以上	vram-16gb-plus	16GB Video, VRAM 16GB, 24GB, GDDR6 16GB, GDDR7 16GB	64
-gpu	ビデオメモリ 8GB	vram-8gb-plus	8GB Video, VRAM 8GB, 8GB, GDDR6 8GB	65
-gpu	ビデオメモリ 6GB	vram-6gb-plus	6GB Video, VRAM 6GB, 6GB, GDDR6 6GB	66
-gpu	プロ向け (NVIDIA RTX / Quadro)	gpu-professional	NVIDIA RTX, Quadro, A2000, A4000, Ada Generation, T1000, T600, ワークステーション向けGPU	67
-gpu	Intel Graphics (内蔵)	gpu-intel-graphics	Intel UHD, Intel Iris, Intel Graphics, 内蔵グラフィックス, Iris Xe, UHD Graphics	68
-gpu	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内蔵グラフィックス, Radeon 780M, Radeon 760M, 680M, 880M, 890M	69
-size	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, 13.4型, 12.6型, 12.1型, 11.6型, 10.1型, 14.0型, モバイルモニター, 軽量ノート	510
-size	15-16インチ (標準)	size-laptop-standard	15.6型, 16型, 15.4型, 16.0型, 15.0型, 標準ノート	510.5
-size	24-25インチ (標準)	size-standard	23.8型, 24.5型, 24型, 標準サイズ, 23.8インチ	511
-size	27インチ (大画面)	size-large	27型, 27-inch, 27インチ, WQHDモニタ	512
-size	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上, ウルトラワイド, 49型, 43型	513
-os	Windows 11 Pro	win-11-pro	Windows 11 Pro, Win11 Pro, 11 Pro 64bit	300
-os	Windows 11 Home	win-11-home	Windows 11 Home, Win11 Home, 11 Home 64bit	301
-memory	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GBメモリ	210
-memory	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GBメモリ	211
-memory	メモリ 64GB以上	mem-64gb-plus	64GB, 64 GB, 128GB, 大容量メモリ	212
-memory	メモリ 8GB (低容量)	mem-8gb	8GB, 8 GB, 4GBx2, 8GBメモリ	213
-storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, M.2 512GB	400
-storage	SSD 1TB以上	ssd-1tb-plus	1TB SSD, 1 TB, 2TB, 4TB, 8TB, NVMe 1TB	401
-storage	SSD 256GB	ssd-256gb	256GB SSD, 256 GB SSD, M.2 256GB	402
-usage	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, RTX	711
-usage	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, Adobe, DAIV	712
-usage	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, VersaPro	713
-feature	軽量・1kg未満	feat-lightweight	900g, 800g, 700g, 超軽量, UH, dynabook G	804
-actor_type	単体女優	solo-actress	単体, 専属, 独占, ソロ作品	1001
-actor_type	素人・ナンパ	amateur	素人, 投稿, ナンパ, 街録	1002
-actor_type	熟女・人妻	mature	熟女, 人妻, お母さん, 義母, 40代, 50代	1003
-actor_type	女子大生	college-girl	女子大生, 現役JD, 女子大, 20歳	1004
-actor_type	女子高生	high-school-girl	女子高生, 現役高校生, 女子高, 18歳	1005
-body	巨乳	big-breasts	巨乳, 爆乳, ボイン, デカパイ, Kカップ	1010
-body	美少女	beautiful-girl	美少女, 美人, 美白, モデル級	1011
-body	スレンダー	slender	スレンダー, 細身, モデル体型, 美脚	1012
-body	ぽっちゃり	chubby	ぽっちゃり, マシュマロ, デブ, 肉感	1013
-feature	4K / 高画質	ultra-hd-4k	4K, UHD, 高画質, 最高画質	1020
-feature	VR / 3D	vr-content	VR, バーチャルリアリティ, 3D, 立体	1021
-feature	個人撮影	self-shot	自撮り, 個人撮影, スマホ撮影, 縦動画	1022
-feature	AI解析済 / 高圧縮	ai-analyzed	AI解析, 高効率, 最適化済, Gemma	1023
-scene	制服・コスプレ	cosplay	制服, セーラー服, CA, 看護師	1030
-scene	巨乳・フェチ	fetish	足コキ, 手コキ, フェチ, 匂い	1031
-scene	痴漢・露出	public-exposure	痴漢, 露出, 野外, 密室	1032
-scene	白衣・奉仕	nursing	ナース,白衣,介護, 看病	1033
-style	中出し	creampie	中出し, 生ハメ, ザーメン	1040
-style	拘束・SM	sm-bondage	拘束, 緊縛, SM, 放置	1041
-style	潮吹き	squirting	潮吹き, 絶頂, 噴射, 感度	1042
-style	逆レイ・攻め	female-led	逆レイ, 女攻め, 騎乗位, 逆ナン	1043
+attr_type	name	slug	search_keywords	order	is_adult
+cpu	Core Ultra 9	intel-core-ultra-9	Core Ultra 9, Ultra 285K, Ultra 185H, Ultra 9 185H, Ultra 9 285K, Ultra 9 200V, 288V	10	0
+cpu	Core Ultra 7	intel-core-ultra-7	Core Ultra 7, Ultra 265K, Ultra 155H, Ultra 165H, Ultra 155U, Ultra 7 265K, Ultra 7 258V, Ultra 7 256V, 155H	11	0
+cpu	Core Ultra 5	intel-core-ultra-5	Core Ultra 5, Ultra 245K, Ultra 125H, Ultra 135H, Ultra 125U, Ultra 5 245K, Ultra 5 226V, 125H	12	0
+cpu	Core i9	intel-core-i9	Core i9, i9-14900, i9-13900, i9-12900, 14900HX, 13980HX, i9-14900K, i9-14900KS	13	0
+cpu	Core i7	intel-core-i7	Core i7, i7-14700, i7-13700, i7-1360P, i7-1355U, i7-12700, i7-1260P, 14700HX, i7-14700K	14	0
+cpu	Core i5	intel-core-i5	Core i5, i5-14400, i5-13400, i5-1335U, i5-1340P, i5-12400, i5-1235U, i5-14600K	15	0
+cpu	Core i3	intel-core-i3	Core i3, i3-13100, i3-12100, i3-1215U, i3-1115G4, i3-N305, Core 3, Core 3 100U	16	0
+cpu	Celeron / Pentium	intel-low-end	Celeron, Pentium, Intel Processor, N100, N200, Gold 8505, 7305, セレロン, ペンティアム	17	0
+cpu	Snapdragon X Elite / Plus	arm-snapdragon-x	Snapdragon X Elite, Snapdragon X Plus, X1E-84-100, X1E-78-100, X1P-64-100, X1P-42-100, ARM Windows, クアルコム, スナップドラゴン	18	0
+cpu	Ryzen AI 300	amd-ryzen-ai-300	Ryzen AI 9, Ryzen AI 300, Strix Point, Ryzen AI 9 HX 370, Ryzen AI 9 365, Ryzen AI 7	19	0
+cpu	Ryzen 9	amd-ryzen-9	Ryzen 9, 9950X, 7950X, 7945HX, 8945HS, 7940HS, 5900X, 9900X, R9-	20	0
+cpu	Ryzen 7	amd-ryzen-7	Ryzen 7, 9700X, 7800X3D, 7700, 8845HS, 8840U, 7735HS, 7730U, 5800U, 5700U, 9800X3D, R7-	21	0
+cpu	Ryzen 5	amd-ryzen-5	Ryzen 5, 9600X, 7600, 7530U, 8645HS, 8640U, 7535HS, 7520U, 5625U, 5500U, 9600, R5-	22	0
+cpu	Ryzen 3	amd-ryzen-3	Ryzen 3, 7320U, 4300G, 5300U, 3300U, 3100, R3-	23	0
+cpu	Ryzen Threadripper	amd-threadripper	Threadripper, 7995WX, 7980X, 7970X, スレッドリッパー, WXシリーズ	24	0
+cpu	最新第14世代インテル	intel-14th-gen	i9-14, i7-14, i5-14, Raptor Lake Refresh, 第14世代, 14世代	25	0
+cpu	最新第13世代インテル	intel-13th-gen	i9-13, i7-13, i5-13, Raptor Lake, 第13世代, 13世代	26	0
+cpu	Ryzen 9000シリーズ	amd-ryzen-9000	Ryzen 9 9, Ryzen 7 9, Ryzen 5 9, Zen 5, 9000番台, 9950X, 9900X, 9700X, 9600X	27	0
+cpu	Copilot+ PC (AI基準適合)	feature-copilot-plus	Copilot+ PC, Copilotプラス, 40+ TOPS, NPU 45TOPS, 40TOPS以上, AI要件適合, コパイロットプラス	28	0
+cpu	NPU搭載 (AI PC)	feature-npu-ai	Ryzen AI, AI Boost, Intel NPU, NPU搭載, Neural Processing Unit, XDNA, NPU 10, NPU 11	29	0
+cpu	省電力モデル	feature-power-efficient	Core i7-U, Ryzen 7-U, 省電力, T-Series, 低電圧, 15Wモデル, 効率重視	30	0
+cpu	Intel Xeon	intel-xeon	Xeon, ジーオン, Xeon W, Xeon Silver, Xeon Gold	31	0
+cpu	Ryzen PRO	amd-ryzen-pro	Ryzen AI PRO, Ryzen 7 PRO, Ryzen 5 PRO, ビジネス向けRyzen	32	0
+gpu	GeForce RTX 5090	gpu-rtx-5090	RTX 5090, 5090, Blackwell	50	0
+gpu	GeForce RTX 5080	gpu-rtx-5080	RTX 5080, 5080	51	0
+gpu	GeForce RTX 5070 Ti	gpu-rtx-5070-ti	RTX 5070 Ti, 5070Ti	52	0
+gpu	GeForce RTX 5070	gpu-rtx-5070	RTX 5070, 5070	53	0
+gpu	GeForce RTX 50シリーズ	gpu-rtx-50-series	RTX 50, RTX 5090, RTX 5080, RTX 5070, Blackwell	54	0
+gpu	GeForce RTX 4070 Ti	gpu-rtx-4070-ti	RTX 4070 Ti, 4070Ti, 4070 Ti SUPER, 4070TiS	55	0
+gpu	GeForce RTX 4060 Ti	gpu-rtx-4060-ti	RTX 4060 Ti, 4060Ti, 4060 Ti 16GB	56	0
+gpu	GeForce RTX 4060	gpu-rtx-4060	RTX 4060, 4060	57	0
+gpu	GeForce RTX 4050	gpu-rtx-4050	RTX 4050, 4050	58	0
+gpu	GeForce RTX 40シリーズ	gpu-rtx-40-series	RTX 40, RTX 4090, RTX 4080, RTX 4070, RTX 4060, RTX 4050, Ada Lovelace	59	0
+gpu	Radeon AI PRO	gpu-radeon-ai-pro	R9700, Radeon AI PRO, W7900, W7800, W7600	60	0
+gpu	Intel Arc Graphics	gpu-intel-arc	Intel Arc, Arc Graphics, Arc A770, Arc A750, Arc A380, Arc A140V, Arc B580, Arc B570	61	0
+gpu	ノートPC用GPU	gpu-laptop	Laptop GPU, Mobile, ノート向け, Laptop GPU, モバイルGPU	62	0
+gpu	デスクトップ用GPU	gpu-desktop	デスクトップ, タワー, DT, Tower, ミニタワー, desktop, pc, グラフィックボード, ビデオカード, 拡張カード	63	0
+gpu	ビデオメモリ 16GB以上	vram-16gb-plus	16GB Video, VRAM 16GB, 24GB, GDDR6 16GB, GDDR7 16GB	64	0
+gpu	ビデオメモリ 8GB	vram-8gb-plus	8GB Video, VRAM 8GB, 8GB, GDDR6 8GB	65	0
+gpu	ビデオメモリ 6GB	vram-6gb-plus	6GB Video, VRAM 6GB, 6GB, GDDR6 6GB	66	0
+gpu	プロ向け (NVIDIA RTX / Quadro)	gpu-professional	NVIDIA RTX, Quadro, A2000, A4000, Ada Generation, T1000, T600, ワークステーション向けGPU	67	0
+gpu	Intel Graphics (内蔵)	gpu-intel-graphics	Intel UHD, Intel Iris, Intel Graphics, 内蔵グラフィックス, Iris Xe, UHD Graphics	68	0
+gpu	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	Radeon Graphics, 内蔵グラフィックス, Radeon 780M, Radeon 760M, 680M, 880M, 890M	69	0
+size	14インチ以下 (モバイル)	size-mobile	13.3型, 14型, 13.4型, 12.6型, 12.1型, 11.6型, 10.1型, 14.0型, モバイルモニター, 軽量ノート	510	0
+size	15-16インチ (標準)	size-laptop-standard	15.6型, 16型, 15.4型, 16.0型, 15.0型, 標準ノート	510.5	0
+size	24-25インチ (標準)	size-standard	23.8型, 24.5型, 24型, 標準サイズ, 23.8インチ	511	0
+size	27インチ (大画面)	size-large	27型, 27-inch, 27インチ, WQHDモニタ	512	0
+size	32インチ以上 (特大)	size-huge	31.5型, 34型, 40型以上, ウルトラワイド, 49型, 43型	513	0
+os	Windows 11 Pro	win-11-pro	Windows 11 Pro, Win11 Pro, 11 Pro 64bit	300	0
+os	Windows 11 Home	win-11-home	Windows 11 Home, Win11 Home, 11 Home 64bit	301	0
+memory	メモリ 16GB	mem-16gb	16GB, 16 GB, 8GBx2, 16GBメモリ	210	0
+memory	メモリ 32GB	mem-32gb	32GB, 32 GB, 16GBx2, 32GBメモリ	211	0
+memory	メモリ 64GB以上	mem-64gb-plus	64GB, 64 GB, 128GB, 大容量メモリ	212	0
+memory	メモリ 8GB (低容量)	mem-8gb	8GB, 8 GB, 4GBx2, 8GBメモリ	213	0
+storage	SSD 512GB	ssd-512gb	512GB SSD, 512 GB SSD, M.2 512GB	400	0
+storage	SSD 1TB以上	ssd-1tb-plus	1TB SSD, 1 TB, 2TB, 4TB, 8TB, NVMe 1TB	401	0
+storage	SSD 256GB	ssd-256gb	256GB SSD, 256 GB SSD, M.2 256GB	402	0
+usage	ゲーミングPC	usage-gaming	ゲーミング, ゲーム, G-Tune, NEXTGEAR, FPS, RTX	711	0
+usage	クリエイター向け	usage-creator	クリエイター, 動画編集, RAW現像, Adobe, DAIV	712	0
+usage	ビジネス・法人向け	usage-business	ビジネス, 事務, 法人, Office搭載, VersaPro	713	0
+feature	軽量・1kg未満	feat-lightweight	900g, 800g, 700g, 超軽量, UH, dynabook G	804	0
+actor_type	単体女優	solo-actress	単体, 専属, 独占, ソロ作品	1001	1
+actor_type	素人・ナンパ	amateur	素人, 投稿, ナンパ, 街録	1002	1
+actor_type	熟女・人妻	mature	熟女, 人妻, お母さん, 義母, 40代, 50代	1003	1
+actor_type	女子大生	college-girl	女子大生, 現役JD, 女子大, 20歳	1004	1
+actor_type	女子高生	high-school-girl	女子高生, 現役高校生, 女子高, 18歳	1005	1
+body	巨乳	big-breasts	巨乳, 爆乳, ボイン, デカパイ, Kカップ	1010	1
+body	美少女	beautiful-girl	美少女, 美人, 美白, モデル級	1011	1
+body	スレンダー	slender	スレンダー, 細身, モデル体型, 美脚	1012	1
+body	ぽっちゃり	chubby	ぽっちゃり, マシュマロ, デブ, 肉感	1013	1
+feature	4K / 高画質	ultra-hd-4k	4K, UHD, 高画質, 最高画質	1020	1
+feature	VR / 3D	vr-content	VR, バーチャルリアリティ, 3D, 立体	1021	1
+feature	個人撮影	self-shot	自撮り, 個人撮影, スマホ撮影, 縦動画	1022	1
+feature	AI解析済 / 高圧縮	ai-analyzed	AI解析, 高効率, 最適化済, Gemma	1023	1
+scene	制服・コスプレ	cosplay	制服, セーラー服, CA, 看護師	1030	1
+scene	巨乳・フェチ	fetish	足コキ, 手コキ, フェチ, 匂い	1031	1
+scene	痴漢・露出	public-exposure	痴漢, 露出, 野外, 密室	1032	1
+scene	白衣・奉仕	nursing	ナース,白衣,介護, 看病	1033	1
+style	中出し	creampie	中出し, 生ハメ, ザーメン	1040	1
+style	拘束・SM	sm-bondage	拘束, 緊縛, SM, 放置	1041	1
+style	潮吹き	squirting	潮吹き, 絶頂, 噴射, 感度	1042	1
+style	逆レイ・攻め	female-led	逆レイ, 女攻め, 騎乗位, 逆ナン	1043	1

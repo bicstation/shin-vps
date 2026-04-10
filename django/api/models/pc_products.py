@@ -4,7 +4,9 @@ from django.utils.timezone import now
 
 class PCAttribute(models.Model):
     """
-    CPU、メモリ、NPUなどのスペック情報、およびソフトのライセンス形態などを管理するマスターモデル
+    CPU、メモリ、NPUなどのスペック情報、およびソフトのライセンス形態、
+    さらにはアダルト属性までを一元管理するマスターモデル。
+    is_adult フラグによってドメイン間の汚染を物理的に防ぐ。
     """
     TYPE_CHOICES = [
         ('cpu', 'CPU'),
@@ -15,6 +17,8 @@ class PCAttribute(models.Model):
         ('os', 'OS'),
         ('software', 'ソフトウェア種別'),  # セキュリティ, 会計, 編集など
         ('license', 'ライセンス形態'),    # サブスク, 買い切りなど
+        ('actor_type', '出演者タイプ'),    # アダルト用拡張
+        ('genre', '作品ジャンル'),        # アダルト用拡張
     ]
     
     attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES)
@@ -28,21 +32,29 @@ class PCAttribute(models.Model):
     )
     order = models.PositiveIntegerField('並び順', default=0, help_text="数字が小さいほど上に表示されます")
 
+    # 💡 勝利の鍵：ドメイン隔離フラグ
+    is_adult = models.BooleanField(
+        'アダルト属性フラグ', 
+        default=False, 
+        db_index=True, 
+        help_text="Trueの場合、Bic Station（PCサイト）の解析・表示から除外されます"
+    )
+
     class Meta:
         verbose_name = 'スペック属性'
         verbose_name_plural = 'スペック属性一覧'
         ordering = ['attr_type', 'order', 'name']
 
     def __str__(self):
-        return f"[{self.get_attr_type_display()}] {self.name}"
+        domain = "🔞" if self.is_adult else "💻"
+        return f"{domain} [{self.get_attr_type_display()}] {self.name}"
 
 
 class PCProduct(models.Model):
     """
     PC製品およびソフトウェア・周辺機器を管理する汎用モデル
-    既存のカラムを完全維持しつつ、レーダーチャート用スコアおよび解析カラムを統合
     """
-    # === 1. 既存カラム（基本情報） ===
+    # === 1. 基本情報 ===
     unique_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name="固有ID")
     site_prefix = models.CharField(max_length=20, verbose_name="サイト接頭辞")
     maker = models.CharField(max_length=100, db_index=True, verbose_name="メーカー")
@@ -56,6 +68,7 @@ class PCProduct(models.Model):
     image_url = models.URLField(max_length=1000, null=True, blank=True, verbose_name="画像URL")
     description = models.TextField(null=True, blank=True, verbose_name="詳細スペック")
 
+    # 💡 紐付け先は PCAttribute（is_adult=False で運用）
     attributes = models.ManyToManyField(
         PCAttribute, 
         blank=True, 
@@ -67,7 +80,6 @@ class PCProduct(models.Model):
     affiliate_updated_at = models.DateTimeField(null=True, blank=True, verbose_name="アフィリエイトURL最終更新")
 
     ai_content = models.TextField(null=True, blank=True, verbose_name="AI生成記事本文")
-
     raw_html = models.TextField(null=True, blank=True, verbose_name="生のHTML内容")
     stock_status = models.CharField(max_length=100, default="在庫あり", verbose_name="在庫/受注状況") 
     
@@ -76,7 +88,7 @@ class PCProduct(models.Model):
     created_at = models.DateTimeField(default=now, verbose_name="登録日時")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
-    # === 2. PCスペック用追加カラム（具現化） ===
+    # === 2. PCスペック用解析カラム ===
     memory_gb = models.IntegerField(null=True, blank=True, verbose_name="メモリ(GB数値)")
     storage_gb = models.IntegerField(null=True, blank=True, verbose_name="ストレージ(GB数値)")
     npu_tops = models.FloatField(null=True, blank=True, verbose_name="NPU性能(TOPS)")
@@ -91,18 +103,17 @@ class PCProduct(models.Model):
     ram_type = models.CharField(max_length=20, null=True, blank=True, verbose_name="メモリ規格")
     power_recommendation = models.IntegerField(null=True, blank=True, verbose_name="推奨電源容量(W)")
 
-    # === 3. ソフトウェア・ライセンス用追加カラム ===
+    # === 3. ソフトウェア・ライセンス用カラム ===
     os_support = models.CharField(max_length=255, null=True, blank=True, verbose_name="対応OS詳細")
     license_term = models.CharField(max_length=100, null=True, blank=True, verbose_name="ライセンス期間")
     device_count = models.CharField(max_length=100, null=True, blank=True, verbose_name="利用可能台数")
     edition = models.CharField(max_length=100, null=True, blank=True, verbose_name="エディション/版番")
     is_download = models.BooleanField(default=False, verbose_name="DL版フラグ")
 
-    # === 4. 🚀 レーダーチャート・解析用追加カラム ===
+    # === 4. 🚀 レーダーチャート・解析用カラム ===
     target_segment = models.CharField(max_length=255, null=True, blank=True, verbose_name="AI判定ターゲット層")
     is_ai_pc = models.BooleanField(default=False, verbose_name="AI PC該当フラグ")
     
-    # 5軸スコア (1-100)
     score_cpu = models.IntegerField(default=0, verbose_name="CPU性能スコア(1-100)")
     score_gpu = models.IntegerField(default=0, verbose_name="GPU性能スコア(1-100)")
     score_cost = models.IntegerField(default=0, verbose_name="コスパスコア(1-100)")
@@ -121,13 +132,10 @@ class PCProduct(models.Model):
     def __str__(self):
         return f"[{self.maker}] {self.name[:30]}"
 
-    # 保存時の自動処理
     def save(self, *args, **kwargs):
-        # 1. 統合ジャンルのフォールバック
         if not self.unified_genre and self.raw_genre:
             self.unified_genre = self.raw_genre
         
-        # 2. 受注停止ワードの自動チェック
         if self.raw_html:
             stop_words = ["現在ご注文いただけません", "受注停止", "販売終了", "品切れ", "在庫切れ", "販売を終了いたしました"]
             if any(word in self.raw_html for word in stop_words):
@@ -136,13 +144,11 @@ class PCProduct(models.Model):
                 if self.stock_status == "受注停止中":
                     self.stock_status = "在庫あり"
         
-        # 3. AI PC判定
         if self.description:
             ai_keywords = ["NPU", "Ryzen AI", "Core Ultra", "TOPS", "Copilot+"]
             if any(key.lower() in self.description.lower() for key in ai_keywords):
                 self.is_ai_pc = True
         
-        # 4. ソフトウェア自動判定
         soft_makers = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT"]
         if any(sm in self.maker.upper() for sm in soft_makers):
             if "ダウンロード" in self.name or "DL版" in self.name:

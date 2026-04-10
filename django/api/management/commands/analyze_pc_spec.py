@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# /home/maya/shin-vps/django/api/management/commands/analyze_pc_spec.py
+
 import json
 import requests
 import re

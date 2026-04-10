@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/models/adult_models.py
+# /usr/src/app/api/models/adult_models.py
 
 from django.db import models
 from django.utils import timezone
@@ -37,7 +37,7 @@ class FanzaFloorMaster(models.Model):
         return f"[{self.site_code}:{status}] {self.service_name} > {self.floor_name}"
 
 # ==========================================================================
-# 1. 作品属性
+# 1. 作品属性（ドメイン隔離対応版）
 # ==========================================================================
 class AdultAttribute(models.Model):
     TYPE_CHOICES = [
@@ -46,6 +46,7 @@ class AdultAttribute(models.Model):
         ('scene', 'シチュエーション'),
         ('feature', '技術・物理仕様'),
         ('event', '販売形態・催事'),
+        ('actor_type', '出演者タイプ'),
     ]
     attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES, db_index=True)
     name = models.CharField('表示名', max_length=100)
@@ -53,16 +54,24 @@ class AdultAttribute(models.Model):
     search_keywords = models.TextField('抽出キーワード', blank=True)
     order = models.PositiveIntegerField('表示順', default=0)
 
+    # 💡 勝利の鍵：PCサイトとの混同を防ぐための明示的フラグ
+    is_adult = models.BooleanField(
+        'アダルト属性フラグ', 
+        default=True, 
+        db_index=True,
+        help_text="Trueに固定。Bic Station側の属性マスタ同期から除外するための識別子です。"
+    )
+
     class Meta:
         verbose_name = '作品属性'
         verbose_name_plural = '作品属性一覧'
         ordering = ['attr_type', 'order', 'name']
 
     def __str__(self):
-        return f"[{self.get_attr_type_display()}] {self.name}"
+        return f"🔞 [{self.get_attr_type_display()}] {self.name}"
 
 # ==========================================================================
-# 2. 統合アダルト商品モデル（既存完全維持 + 複合インデックス高速化）
+# 2. 統合アダルト商品モデル（複合インデックス高速化版）
 # ==========================================================================
 class AdultProduct(models.Model):
     # 基本リレーション
@@ -120,6 +129,8 @@ class AdultProduct(models.Model):
     authors = models.ManyToManyField(Author, blank=True, related_name='products_authored')
     genres = models.ManyToManyField(Genre, related_name='products')
     actresses = models.ManyToManyField(Actress, related_name='products')
+    
+    # 💡 作品属性リレーション
     attributes = models.ManyToManyField(AdultAttribute, blank=True, related_name='products')
 
     # 🤖 AI解析セクション
@@ -129,32 +140,29 @@ class AdultProduct(models.Model):
     target_segment = models.CharField(max_length=255, null=True, blank=True, verbose_name="ターゲット層")
     ai_chat_comments = models.JSONField(default=list, blank=True, verbose_name="疑似チャット")
     
-    # 🚀 高速検索用キャッシュフラグ（追加：重いCount計算を代替）
+    # 🚀 高速検索用キャッシュフラグ
     has_attributes = models.BooleanField(
         default=False, 
         db_index=True, 
         verbose_name="属性あり", 
-        help_text="検索を高速化するために、属性が1つ以上ある場合にTrueにする"
+        help_text="属性が1つ以上ある場合にTrue。検索高速化用。"
     )
 
-    # 評価スコア（既存維持）
+    # 評価・スコア
     ai_score_visual = models.IntegerField(default=0, verbose_name="AI映像評価")
     ai_score_story = models.IntegerField(default=0, verbose_name="AIストーリー評価")
     ai_score_erotic = models.IntegerField(default=0, verbose_name="AI刺激評価")
 
-    # マトリックス5項目（既存維持）
     score_visual = models.IntegerField(default=0, verbose_name="視覚的完成度(VISUAL)")
     score_story = models.IntegerField(default=0, verbose_name="シナリオ強度(STORY)")
     score_erotic = models.IntegerField(default=0, verbose_name="エロティズム(EROTIC)")
     score_rarity = models.IntegerField(default=0, verbose_name="希少性(RARITY)")
     score_cost_performance = models.IntegerField(default=0, verbose_name="コスパ(COST)")
     
-    # 総合・運用
     spec_score = models.IntegerField(default=0, verbose_name="おすすめ総合スコア", db_index=True)
     score_fetish = models.IntegerField(default=0, verbose_name="フェティシズム濃度")
     last_spec_parsed_at = models.DateTimeField(null=True, blank=True, verbose_name="AI解析実施日")
     
-    # 状態管理
     is_posted = models.BooleanField(default=False, verbose_name="公開状態", db_index=True)
     is_active = models.BooleanField(default=True, verbose_name="有効", db_index=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -165,7 +173,6 @@ class AdultProduct(models.Model):
         verbose_name = '統合アダルト商品'
         verbose_name_plural = '統合アダルト商品一覧'
         ordering = ['-release_date']
-        # 🚀 複合インデックスによる超高速化
         indexes = [
             models.Index(fields=['is_active', 'has_attributes', '-release_date']),
             models.Index(fields=['api_source', 'is_active', '-release_date']),
@@ -191,7 +198,7 @@ class AdultProduct(models.Model):
         super().save(*args, **kwargs)
 
 # ==========================================================================
-# 3. 統合アダルト女優プロファイル（既存フィールド完全復活）
+# 3. 統合アダルト女優プロファイル
 # ==========================================================================
 class AdultActressProfile(models.Model):
     master_actress = models.OneToOneField(
@@ -201,7 +208,6 @@ class AdultActressProfile(models.Model):
     name = models.CharField('女優名', max_length=255, db_index=True)
     ruby = models.CharField('読み仮名', max_length=255, null=True, blank=True)
     
-    # フィジカルスペック
     bust = models.IntegerField('バスト', null=True, blank=True)
     cup = models.CharField('カップ', max_length=10, null=True, blank=True, db_index=True)
     waist = models.IntegerField('ウエスト', null=True, blank=True)
@@ -212,25 +218,20 @@ class AdultActressProfile(models.Model):
     prefectures = models.CharField('出身地', max_length=100, null=True, blank=True)
     hobby = models.TextField('趣味', null=True, blank=True)
     
-    # メディア
     image_url_small = models.URLField('画像URL(小)', max_length=500, null=True, blank=True)
     image_url_large = models.URLField('画像URL(大)', max_length=500, null=True, blank=True)
     external_links = models.JSONField('外部リンク集', default=dict, blank=True)
 
-    # 🤖 AI解析・スコアセクション（admin.py参照用フィールドを完全維持）
     ai_catchcopy = models.CharField('AIキャッチコピー', max_length=500, null=True, blank=True)
     ai_description = models.TextField('AI生成紹介文', null=True, blank=True)
     
-    # 女優用マトリックス項目
     score_visual = models.IntegerField('視覚的評価(VISUAL)', default=0, db_index=True)
-    score_style = models.IntegerField('スタイル評価(STYLE)', default=0, db_index=True) # 🚨adminのエラー原因: 復活
+    score_style = models.IntegerField('スタイル評価(STYLE)', default=0, db_index=True)
     score_performance = models.IntegerField('表現力(PERFORMANCE)', default=0, db_index=True)
     score_popularity = models.IntegerField('市場人気度(POPULARITY)', default=0, db_index=True)
     
-    # 総合評価
     ai_power_score = models.IntegerField('おすすめ総合評価', default=0, db_index=True)
     
-    # 運用・状態
     product_count = models.PositiveIntegerField('出演作品数', default=0, db_index=True)
     is_active = models.BooleanField('有効', default=True, db_index=True)
     last_synced_at = models.DateTimeField('最終同期日', auto_now=True)
