@@ -20,7 +20,7 @@ from api.management.commands.blog_drivers.rss_parsers import RSSParserFactory
 from api.management.commands.blog_drivers.ai_processor import AIProcessor
 
 class Command(BaseCommand):
-    help = '🔱 Gemma 3 艦隊司令部 v3.2 [CTAリンク修正版]'
+    help = '🔱 Gemma 3 艦隊司令部 v3.2 [CTAリンク修正・耐障害性強化版]'
 
     ALLOWED_PROJECTS = ['bicstation', 'saving', 'tiper', 'avflash']
     
@@ -57,7 +57,7 @@ class Command(BaseCommand):
         post_limit = options.get('limit')
         use_index = options.get('index')
 
-        self.log(f"--- 🚀 MISSION START: v3.2 (Site Targeted) ---", self.style.SUCCESS)
+        self.log(f"--- 🚀 MISSION START: v3.2 ---", self.style.SUCCESS)
         
         if target_site:
             self.log(f"🎯 Target Site: {target_site}", self.style.SUCCESS)
@@ -137,6 +137,8 @@ class Command(BaseCommand):
         
         success_count = 0
         while success_count < limit and all_entries:
+            # AI APIへの負荷分散のため、選定前に少し待機
+            time.sleep(random.randint(3, 7))
             selected_entry = self.let_persona_choose_rest(persona, all_entries[:30], rss_category_str)
             if not selected_entry: break
             
@@ -148,10 +150,13 @@ class Command(BaseCommand):
 
             self.log(f" 🎯 選定記事: {selected_entry.title[:35]}...")
 
+            # 本文生成前にもバッファを置く
+            time.sleep(5)
             input_data = {'url': selected_entry.link, 'title': selected_entry.title, 'body': p_data.get('body', '')}
+            
             try:
                 ai_res = processor.generate_blog_content(input_data, platform)
-                if not ai_res: raise Exception("AI生成失敗")
+                if not ai_res: raise Exception("AI生成失敗（全てのキーを試行しましたが全滅しました）")
 
                 final_title = ai_res.get('title_h') if platform == 'hatena' else ai_res.get('title_g')
                 final_body_md = ai_res.get('cont_h') if platform == 'hatena' else ai_res.get('cont_g')
@@ -176,16 +181,15 @@ class Command(BaseCommand):
                         )
                         new_article_id = new_article.id
 
-                    # --- CTAリンク置換ロジック修正 ---
+                    # --- CTAリンク置換ロジック ---
                     base_domain = self.DOMAIN_MAP.get(project_name, "https://avflash.xyz")
                     main_site_url = f"{base_domain}/post/{new_article_id}"
-                    source_url = selected_entry.link # 元記事（アフィリンク等）
+                    source_url = selected_entry.link 
 
                     cta_raw = self.load_external_file(self.PROMPT_DIR, f"cta_{site_key}.txt") or \
                               self.load_external_file(self.PROMPT_DIR, f"cta_{project_name}.txt")
                     
                     if cta_raw:
-                        # 内部リンクと元記事リンクの両方を置換
                         cta_replaced = cta_raw.replace('{{internal_url}}', main_site_url)\
                                               .replace('{{source_url}}', source_url)
                     else:
@@ -210,9 +214,10 @@ class Command(BaseCommand):
                             if use_index: self.notify_google_indexing(main_site_url)
 
                             success_count += 1
-                            if success_count < limit: time.sleep(random.randint(20, 45))
+                            if success_count < limit: time.sleep(random.randint(30, 60))
             except Exception as e:
                 self.log(f" ❌ エラー: {str(e)}", self.style.ERROR)
+                time.sleep(10) # エラー時は少し休ませる
 
     def get_parsed_data(self, entry):
         data = {'body': getattr(entry, 'description', getattr(entry, 'summary', entry.title)).replace('\x00', ''), 'img': ''}
@@ -279,12 +284,16 @@ class Command(BaseCommand):
 
     def let_persona_choose_rest(self, persona, articles, category_hint=""):
         if not articles: return None
+        # 選定時もAPIを使用するため、リトライ・キー分散を行う
         key = random.choice(self.api_keys)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={key}"
         list_txt = "\n".join([f"[{i}] {a.title}" for i, a in enumerate(articles)])
         prompt = f"あなたは【{persona}】です。リストから最高の一記事を[番号]のみで選べ。理由不要。\n{list_txt}"
         try:
             r = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=25)
+            if r.status_code != 200:
+                # 失敗時はランダムに逃げる
+                return random.choice(articles)
             res_text = r.json()['candidates'][0]['content']['parts'][0]['text']
             m = re.search(r'\[(\d+)\]', res_text)
             idx = int(m.group(1)) if m else 0
