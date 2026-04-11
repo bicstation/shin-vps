@@ -9,21 +9,30 @@ import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import styles from './PCSidebar.module.css';
 
 /**
- * 🛰️ [DYNAMIC_PORT_RESOLUTION]
- * 環境変数があればそれを優先し、なければホスト名から 8000(VPS) or 8083(Local) を判定
+ * 🛰️ [DYNAMIC_PORT_RESOLUTION] - 修正版
+ * 環境変数があればそれを優先し、なければホスト名から内部通信先を判定
  */
 const getInternalApiBase = (host: string) => {
-  // すでに環境変数が設定されている場合はそれを優先
+  // 1. 環境変数が設定されている場合は最優先
   if (process.env.INTERNAL_API_URL) {
     return process.env.INTERNAL_API_URL.replace(/\/api\/?$/, '');
   }
   
-  const isVps = host.includes('django-api-host');
-  const port = isVps ? '8000' : '8083';
-  const protocol = 'http';
+  // 2. 実行環境の判定
+  // ホスト名に実際のドメイン名が含まれている、またはコンテナ名が含まれている場合はVPS環境とみなす
+  const isVpsEnvironment = 
+    host.includes('bicstation.com') || 
+    host.includes('tiper.live') || 
+    host.includes('django-api-host');
   
-  // django-api-host または各サイトのエイリアス(-host)を使用
-  return `${protocol}://${host.split(':')[0]}:${port}`;
+  if (isVpsEnvironment) {
+    // VPS内部通信: Dockerネットワーク内のコンテナ名を使用（ポートは8000固定）
+    return 'http://django-api-host:8000';
+  }
+  
+  // 3. ローカル開発環境（ポート8083を使用）
+  const cleanHost = host.split(':')[0];
+  return `http://${cleanHost}:8083`;
 };
 
 /**
@@ -65,11 +74,16 @@ const PC_SATELLITES = [
 /**
  * 🏢 メーカーリストの取得
  */
-async function getRealMakers(apiBase: string) {
+async function getRealMakers(apiBase: string, siteTag: string) {
   try {
-    // apiBase には /api が含まれていない想定
-    const res = await fetch(`${apiBase}/api/general/pc-makers/`, { next: { revalidate: 3600 } });
-    if (!res.ok) return [];
+    // 確実に末尾スラッシュを付け、siteパラメータでフィルタリングを有効にする
+    const url = `${apiBase}/api/general/pc-makers/?site=${siteTag}`;
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+    
+    if (!res.ok) {
+      console.error(`🚨 Sidebar Fetch Failed: ${res.status} URL: ${url}`);
+      return [];
+    }
     return await res.json();
   } catch (e) {
     console.error("Sidebar Maker Fetch Error:", e);
@@ -82,6 +96,7 @@ export default async function Sidebar() {
   const headerList = await headers();
   const host = headerList.get('x-forwarded-host') || headerList.get('host') || 'django-api-host';
   const site = getSiteMetadata(host);
+  const siteTag = site?.site_name || 'bicstation'; // siteTagの確定
   const siteColor = site ? getSiteColor(site.site_name) : '#00f2ff';
   
   // 環境に合わせたAPIベースURLを決定
@@ -90,7 +105,7 @@ export default async function Sidebar() {
   /** 2. データ取得 (並列実行) */
   const [bridgeData, makers] = await Promise.all([
     fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }).catch(() => ({ results: [] })),
-    getRealMakers(apiBase)
+    getRealMakers(apiBase, siteTag)
   ]);
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
@@ -175,8 +190,8 @@ export default async function Sidebar() {
             recentArticles.map((item: any) => (
               <li key={item.id} className={styles.newsItem}>
                 <Link href={`/post/${item.id}`} className={styles.newsLink}>
-                   <span className={styles.newsIcon}>📄</span>
-                   <span className={styles.newsTitle}>{item.title}</span>
+                    <span className={styles.newsIcon}>📄</span>
+                    <span className={styles.newsTitle}>{item.title}</span>
                 </Link>
               </li>
             ))
