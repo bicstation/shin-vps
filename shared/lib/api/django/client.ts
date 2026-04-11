@@ -1,11 +1,11 @@
 /**
  * =====================================================================
- * 🛠️ Django API 共通クライアント (Zenith v8.8 - Multi-Environment Final)
+ * 🛠️ Django API 共通クライアント (Zenith v8.9 - Path Security Final)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【クエリ正規化】siteパラメータの重複を完全に排除。
- * 2. 【Django互換パス】パス末尾のスラッシュ強制とクエリ結合の順序を厳格化。
- * 3. 【SSR身分証明】Hostヘッダーの擬態ロジックを維持しつつ、安定性を向上。
+ * 1. 【パス二重付与防止】endpoint 内の 'api/' 重複を確実に検知してストリップ。
+ * 2. 【Django互換パス】スラッシュ正規化を強化し、末尾スラッシュを保証。
+ * 3. 【セーフハンドラ】Unexpected token '<' (HTML 404) を安全に受け流す。
  * =====================================================================
  */
 import { getWpConfig, IS_SERVER } from '../config';
@@ -15,32 +15,41 @@ import { getSiteMetadata } from '../../utils/siteConfig';
  * 💡 接続先URLを動的に解決 (Network Path Resolver)
  */
 export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
-    // 1. ポート番号を除去したクリーンなホスト名で設定を取得
+    // 1. 設定の取得
     const cleanManualHost = manualHost ? manualHost.split(':')[0] : undefined;
     const config = getWpConfig(cleanManualHost);
-    const rootUrl = config.baseUrl; // config.ts側で末尾スラッシュ・クエリは除去済み
+    
+    // config.baseUrl は 'http://django-api-host:8000/api' か '...:8083/api'
+    // 末尾のスラッシュを一旦除去してベースを確定
+    const rootUrl = config.baseUrl.replace(/\/+$/, ''); 
     const siteTag = config.siteKey;
 
-    // 2. エンドポイントの前後スラッシュを正規化
-    let cleanEndpoint = endpoint.replace(/^\/+/, '').replace(/\/+$/, '');
-
     /**
-     * 🎯 結合ロジック (Slash vs Query Security)
-     * Djangoは「末尾スラッシュ」をパスの終端に求めるため、
-     * パスを確定させてからクエリを付与する。
+     * 🎯 パスの正規化
+     * 呼び出し側が 'api/general/...' と送ってきても 'general/...' と送ってきても
+     * 二重にならないように 'api/' を先頭から除去する。
      */
+    let cleanEndpoint = endpoint
+        .replace(/^\/+/, '')               // 先頭のスラッシュ削除
+        .replace(/^api\//, '')            // 先頭の 'api/' 削除 (二重付与防止)
+        .replace(/\/+$/, '');             // 末尾のスラッシュを一旦削除
+
     let finalUrl = "";
+
     if (cleanEndpoint.includes('?')) {
+        // クエリパラメータがある場合
         const [path, query] = cleanEndpoint.split('?');
+        // パス部分の末尾にスラッシュを強制（Django用）
         const sanitizedPath = path.replace(/\/+$/, '') + '/';
-        finalUrl = `${rootUrl}/api/${sanitizedPath}?${query}`;
+        finalUrl = `${rootUrl}/${sanitizedPath}?${query}`;
     } else {
-        finalUrl = `${rootUrl}/api/${cleanEndpoint}/`;
+        // パスのみの場合
+        finalUrl = `${rootUrl}/${cleanEndpoint}/`;
     }
 
     /**
      * 🛰️ サイト識別パラメータの注入
-     * 既に endpoint に site= が含まれていない場合のみ付与し、二重付与を防止。
+     * 既に endpoint に site= が含まれていない場合のみ付与。
      */
     if (!finalUrl.includes('site=')) {
         finalUrl += (finalUrl.includes('?') ? '&' : '?') + `site=${siteTag}`;
@@ -55,7 +64,6 @@ export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
 export const getDjangoHeaders = (manualHost?: string) => {
     const cleanHost = manualHost ? manualHost.split(':')[0] : undefined;
     const siteConfig = getSiteMetadata(cleanHost);
-    
     const siteTag = siteConfig?.site_tag || "bicstation";
     
     const headers: Record<string, string> = {
@@ -66,8 +74,6 @@ export const getDjangoHeaders = (manualHost?: string) => {
     if (IS_SERVER) {
         /**
          * 🛰️ SSR身分証明プロトコル
-         * 内部ネットワーク通信(django-api-host)でも、Django側が
-         * どのドメインへのリクエストか判別できるようにHostヘッダーをセット。
          */
         headers['x-django-host'] = siteTag;
         headers['x-project-id'] = siteTag;
@@ -89,15 +95,24 @@ export async function handleResponseWithDebug(res: Response, url: string) {
     if (!res.ok) {
         // Django側のエラー(404等)をキャッチ
         console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | URL: ${url}`);
-        
-        // もしHTMLが返ってきた場合でも、JSONとして解析して落ちるのを防ぐ
         return { results: [], count: 0, _error: res.status };
     }
 
     try {
-        const data = await res.json();
+        const text = await res.text(); // 一旦テキストで受ける
         
-        // 1. DRF 標準形式
+        // 空レスポンス対策
+        if (!text) return { results: [], count: 0 };
+
+        // HTMLが返ってきていないかチェック (SyntaxError 防止)
+        if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<h1')) {
+            console.error(`🚨 [JSON Parse Error] HTML content received instead of JSON. URL: ${url}`);
+            return { results: [], count: 0, _error: 'HTML_RECEIVED' };
+        }
+
+        const data = JSON.parse(text);
+        
+        // 1. DRF 標準形式 (results/count)
         if (data && typeof data === 'object' && 'results' in data) {
             return {
                 results: Array.isArray(data.results) ? data.results : [],
@@ -110,7 +125,7 @@ export async function handleResponseWithDebug(res: Response, url: string) {
             return { results: data, count: data.length };
         }
         
-        // 3. 単体オブジェクト形式
+        // 3. 単体オブジェクト形式 (詳細ページ等)
         if (data && typeof data === 'object') {
             const payload = data.data || data;
             return { 
@@ -122,9 +137,7 @@ export async function handleResponseWithDebug(res: Response, url: string) {
         return { results: [], count: 0 };
 
     } catch (e) {
-        // ここで「Unexpected token <」エラーをキャッチし、
-        // プロセスが死ぬのを防ぎつつ空のデータを返す
-        console.error(`🚨 [JSON Parse Error] HTML content received instead of JSON. URL: ${url}`);
+        console.error(`🚨 [Unexpected Error] URL: ${url}`, e);
         return { results: [], count: 0, _error: 'PARSE_FAILED' };
     }
 }
