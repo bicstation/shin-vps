@@ -1,11 +1,12 @@
 // @ts-nocheck
 /**
  * =====================================================================
- * 🛰️ [SHARED-CORE] サイト環境動的判定ライブラリ (v21.6 - Pure Domain)
+ * 🛰️ [SHARED-CORE] サイト環境動的判定ライブラリ (v21.7 - Hybrid Port Edition)
  * =====================================================================
  * 🚀 修正点: 
- * 1. 【入力浄化】hostname からポート番号(:)とパス(/)を徹底除去し、判定精度を100%化。
- * 2. 【一貫性】全ドメインで BicStation と同じ「クリーンな siteKey」が生成されるよう保証。
+ * 1. 【ハイブリッド・ポート】VPS(8000)とローカル(8083)をドメイン名から自動判別。
+ * 2. 【SSR最適化】Docker内部ネットワーク越しの通信において、適切なポートを選択。
+ * 3. 【入力浄化】ポート番号やパスの混入を排除し、判定精度を維持。
  * =====================================================================
  */
 
@@ -46,12 +47,11 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
 
   /**
    * 🛡️ [PURE_DOMAIN_SNIPER]
-   * manualHostname が "tiper-host:8083/api/" のような汚染状態でも
-   * 確実に "tiper-host" だけを抽出します。
+   * ポート番号やパスを除去して、判定用の純粋なドメイン名のみを抽出
    */
   const domain = String(hostname)
     .split('/')[0]      // 1. パス部分を除去
-    .split(':')[0]      // 2. ポート番号を完全に除去
+    .split(':')[0]      // 2. ポート番号を除去
     .toLowerCase();
 
   const SITE_MAP = {
@@ -63,9 +63,8 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     'adult-search': { name: 'シークレットXYZ', group: 'adult',   brand: 'FANZA', prod: 'api.adult-search.xyz', external: true,  prefix: '' },
   };
 
-  // --- 🎯 STEP 3: 判定ロジックの実行 (クリーンな domain を使用) ---
+  // --- 🎯 STEP 1: siteKey の判定 ---
   let siteKey = 'bicstation';
-
   if (domain.includes('avflash')) {
     siteKey = 'avflash';
   } else if (domain.includes('tiper')) {
@@ -82,9 +81,17 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
 
   const cfg = SITE_MAP[siteKey] || SITE_MAP['bicstation'];
 
+  // ローカル環境、またはDocker内部通信用エイリアス(-host)の判定
   const isLocalEnv = domain.endsWith('-host') || domain === 'localhost' || domain.includes('192.168.');
 
-  // ここで siteKey が "tiper" 等に確定しているため、django_host は "api-tiper-host" になる
+  /**
+   * 🛡️ [HYBRID_PORT_DETECTOR]
+   * VPS用の共通エイリアス "django-api-host" が含まれる場合は本番ポート 8000
+   * それ以外のローカル開発 (-host 等) は 8083 を使用
+   */
+  const internalPort = domain.includes('django-api-host') ? '8000' : '8083';
+
+  // 通信先のホスト名を決定
   const django_host = (isLocalEnv && !cfg.external) ? `api-${siteKey}-host` : cfg.prod;
 
   let api_base_url = "";
@@ -93,15 +100,17 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     api_base_url = `https://${cfg.prod}`;
   } else if (isServer) {
     /**
-     * 🚀 内部通信プロトコル (Docker用)
-     * api-xxx-host:8083 を通して Django へ。
+     * 🚀 サーバーサイド (SSR) 通信プロトコル
+     * VPS (django-api-host) なら 8000、ローカルなら各 siteKey-host:8083 へ
      */
     api_base_url = isLocalEnv 
-        ? `http://api-${siteKey}-host:8083` 
+        ? `http://${domain}:${internalPort}` 
         : `https://${cfg.prod}`;
   } else {
-    // クライアントサイド
-    api_base_url = isLocalEnv ? `http://localhost:8083` : `https://${django_host}`;
+    /**
+     * 💻 クライアントサイド (Browser) 通信
+     */
+    api_base_url = isLocalEnv ? `http://localhost:${internalPort}` : `https://${django_host}`;
   }
 
   return { 

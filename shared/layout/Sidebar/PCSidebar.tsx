@@ -8,13 +8,28 @@ import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import styles from './PCSidebar.module.css';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://api-bicstation-host:8083';
+/**
+ * 🛰️ [DYNAMIC_PORT_RESOLUTION]
+ * 環境変数があればそれを優先し、なければホスト名から 8000(VPS) or 8083(Local) を判定
+ */
+const getInternalApiBase = (host: string) => {
+  // すでに環境変数が設定されている場合はそれを優先
+  if (process.env.INTERNAL_API_URL) {
+    return process.env.INTERNAL_API_URL.replace(/\/api\/?$/, '');
+  }
+  
+  const isVps = host.includes('django-api-host');
+  const port = isVps ? '8000' : '8083';
+  const protocol = 'http';
+  
+  // django-api-host または各サイトのエイリアス(-host)を使用
+  return `${protocol}://${host.split(':')[0]}:${port}`;
+};
 
 /**
  * 🛰️ PC/ガジェット特化サテライトネットワーク (全30サイト)
  */
 const PC_SATELLITES = [
-  // --- 汎用・ガイド系 (新規追加分含む) ---
   { name: "PCコンパス総合案内", url: "https://pc.compass.bicstation.com", icon: "🧭", isMain: true },
   { name: "導入の伝道師", url: "https://pc.first-step.bicstation.com", icon: "🌱" },
   { name: "高速化レスキュー", url: "https://pc.sukkiri.bicstation.com", icon: "⚡" },
@@ -25,8 +40,6 @@ const PC_SATELLITES = [
   { name: "機動力ワーカー", url: "https://mobile.pc-life.bicstation.com", icon: "🏃" },
   { name: "自動化の魔術師", url: "https://pc.automation.bicstation.com", icon: "🪄" },
   { name: "AI拡張人間", url: "https://pc.ai.tech.bicstation.com", icon: "🤖" },
-
-  // --- メーカー特化系 ---
   { name: "Apple製品の美学", url: "https://ld.apple.bicstation.com", icon: "🍎" },
   { name: "ASUS技術オタク", url: "https://ld.asus.bicstation.com", icon: "🐉" },
   { name: "MSIハードウェアマニア", url: "https://msi.bicstation.com", icon: "❄️" },
@@ -52,12 +65,14 @@ const PC_SATELLITES = [
 /**
  * 🏢 メーカーリストの取得
  */
-async function getRealMakers() {
+async function getRealMakers(apiBase: string) {
   try {
-    const res = await fetch(`${API_BASE}/api/general/pc-makers/`, { next: { revalidate: 3600 } });
+    // apiBase には /api が含まれていない想定
+    const res = await fetch(`${apiBase}/api/general/pc-makers/`, { next: { revalidate: 3600 } });
     if (!res.ok) return [];
     return await res.json();
   } catch (e) {
+    console.error("Sidebar Maker Fetch Error:", e);
     return [];
   }
 }
@@ -65,28 +80,30 @@ async function getRealMakers() {
 export default async function Sidebar() {
   /** 1. アイデンティティ確定 */
   const headerList = await headers();
-  const host = headerList.get('x-forwarded-host') || headerList.get('host') || '';
+  const host = headerList.get('x-forwarded-host') || headerList.get('host') || 'django-api-host';
   const site = getSiteMetadata(host);
   const siteColor = site ? getSiteColor(site.site_name) : '#00f2ff';
+  
+  // 環境に合わせたAPIベースURLを決定
+  const apiBase = getInternalApiBase(host);
 
   /** 2. データ取得 (並列実行) */
   const [bridgeData, makers] = await Promise.all([
     fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }).catch(() => ({ results: [] })),
-    getRealMakers()
+    getRealMakers(apiBase)
   ]);
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
 
-  /** 3. サテライトの選出ロジック (メイン固定 + ランダム7件) */
+  /** 3. サテライトの選出ロジック */
   const mainSatellite = PC_SATELLITES.find(s => s.isMain);
   const otherSatellites = PC_SATELLITES.filter(s => !s.isMain);
   
   const shuffledOthers = [...otherSatellites]
     .sort(() => Math.random() - 0.5)
-    .slice(0, 7); // メインと合わせて合計8件表示
+    .slice(0, 7);
 
   const displaySatellites = [mainSatellite, ...shuffledOthers].filter(Boolean);
-
   const siteUpperName = site ? site.site_name.toUpperCase() : 'BICSTATION';
 
   return (
@@ -109,7 +126,7 @@ export default async function Sidebar() {
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>BRANDS</h3>
         <div className={styles.brandGroup}>
           <ul className={styles.list}>
-            {makers.length > 0 ? (
+            {makers && makers.length > 0 ? (
               makers.map((m: any) => (
                 <li key={m.maker}>
                   <Link href={`/product?maker=${m.maker}`} className={styles.link}>
@@ -130,7 +147,7 @@ export default async function Sidebar() {
         </div>
       </section>
 
-      {/* 🛰️ SATELLITE NETWORK (固定+ランダム) */}
+      {/* 🛰️ SATELLITE NETWORK */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>TECH NETWORK</h3>
         <div className={styles.satelliteGrid}>
@@ -143,7 +160,7 @@ export default async function Sidebar() {
               className={sat.isMain ? `${styles.satelliteLink} ${styles.mainSatellite}` : styles.satelliteLink}
               style={sat.isMain ? { borderColor: siteColor } : {}}
             >
-              <span className={styles.satIcon}>{sat.icon}</span>
+              <span className={sat.isMain ? `${styles.satIcon} ${styles.mainIcon}` : styles.satIcon}>{sat.icon}</span>
               <span className={styles.satName}>{sat.name}</span>
             </a>
           ))}

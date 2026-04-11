@@ -3,18 +3,17 @@
 'use client'; // ✅ インタラクティブな遷移ハンドラのために必須
 
 /**
- * SpecActressCard Component (v5.3 - Shared Library Physical Sync)
+ * SpecActressCard Component (v5.4 - Shared Library Physical Sync)
  * 🛡️ Maya's Logic: 物理構造 [STRUCTURE] v3.2 完全同期
- * 物理位置: shared/components/organisms/cards/SpecActressCard.tsx
+ * 🚀 修正: 8083ポートのハードコードを排除し、環境動的判定を導入
  */
 
 import React from 'react';
 import styles from './SpecActressCard.module.css';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
 /**
  * ✅ 修正: 物理構造に基づいたインポートパス
- * shared/components/atoms/RadarChart.tsx または専用の女優チャートを参照
- * ※ 構造図に合わせ、適切なパスに修正しています
  */
 import SpecRadarChart from '@/shared/components/atoms/RadarChart'; 
 
@@ -72,11 +71,26 @@ export const SpecActressCard: React.FC<SpecActressCardProps> = ({
   label, 
   priority = false 
 }) => {
+  // --- 🛰️ [DYNAMIC_PORT_LOGIC] ---
+  const site = getSiteMetadata();
+  const isLocal = site.is_local_env;
+  
+  /**
+   * 🔗 リンク先URLの動的解決
+   * VPSなら django-api-host:8000 (または本番ドメイン)
+   * ローカルなら tiper-host:8083
+   */
+  let portalUrl = "";
+  if (isLocal) {
+    // サイトの判定ロジックと同期させ、VPS環境(django-api-host)なら8000、それ以外なら8083
+    const port = site.origin_domain.includes('django-api-host') ? '8000' : '8083';
+    portalUrl = `http://tiper-host:${port}/actress/${encodeURIComponent(actress.slug || actress.id.toString())}`;
+  } else {
+    portalUrl = `https://tiper.live/actress/${encodeURIComponent(actress.slug || actress.id.toString())}`;
+  }
+
   const rankInfo = getRankData(actress.ai_power_score);
   const baseScore = actress.ai_power_score || 80;
-
-  // 🔗 リンク先URLの設定 (Tiperポータル: 8083)
-  const portalUrl = `http://tiper-host:8083/actress/${encodeURIComponent(actress.slug || actress.id.toString())}`;
   const officialUrl = actress.affiliate_url || "#";
 
   /**
