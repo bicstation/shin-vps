@@ -1,3 +1,5 @@
+# /home/maya/shin-dev/shin-vps/django/scrapers/src/shops/import_bc_api_to_db.py
+
 import os
 import django
 import sys
