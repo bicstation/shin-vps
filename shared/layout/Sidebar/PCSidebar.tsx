@@ -6,34 +6,9 @@ import { headers } from 'next/headers';
 
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
+// 🚀 共通クライアントから安全な関数をインポート
+import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '@/shared/lib/api/django/client';
 import styles from './PCSidebar.module.css';
-
-/**
- * 🛰️ [DYNAMIC_PORT_RESOLUTION] - 修正版
- * 環境変数があればそれを優先し、なければホスト名から内部通信先を判定
- */
-const getInternalApiBase = (host: string) => {
-  // 1. 環境変数が設定されている場合は最優先
-  if (process.env.INTERNAL_API_URL) {
-    return process.env.INTERNAL_API_URL.replace(/\/api\/?$/, '');
-  }
-  
-  // 2. 実行環境の判定
-  // ホスト名に実際のドメイン名が含まれている、またはコンテナ名が含まれている場合はVPS環境とみなす
-  const isVpsEnvironment = 
-    host.includes('bicstation.com') || 
-    host.includes('tiper.live') || 
-    host.includes('django-api-host');
-  
-  if (isVpsEnvironment) {
-    // VPS内部通信: Dockerネットワーク内のコンテナ名を使用（ポートは8000固定）
-    return 'http://django-api-host:8000';
-  }
-  
-  // 3. ローカル開発環境（ポート8083を使用）
-  const cleanHost = host.split(':')[0];
-  return `http://${cleanHost}:8083`;
-};
 
 /**
  * 🛰️ PC/ガジェット特化サテライトネットワーク (全30サイト)
@@ -73,20 +48,24 @@ const PC_SATELLITES = [
 
 /**
  * 🏢 メーカーリストの取得
+ * 🛡️ 修正版: 共通ハンドラを使用し、SyntaxErrorを根絶
  */
-async function getRealMakers(apiBase: string, siteTag: string) {
+async function getRealMakers(host: string) {
+  // 🚀 URL解決を共通ライブラリに任せ、二重 /api/ を防止
+  const url = resolveApiUrl('general/pc-makers/', host);
+  const headers = getDjangoHeaders(host);
+
   try {
-    // 確実に末尾スラッシュを付け、siteパラメータでフィルタリングを有効にする
-    const url = `${apiBase}/api/general/pc-makers/?site=${siteTag}`;
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    const res = await fetch(url, { 
+      headers,
+      next: { revalidate: 3600 } 
+    });
     
-    if (!res.ok) {
-      console.error(`🚨 Sidebar Fetch Failed: ${res.status} URL: ${url}`);
-      return [];
-    }
-    return await res.json();
+    // 🚀 HTMLが返ってきてもクラッシュしないように共通ハンドラで処理
+    const data = await handleResponseWithDebug(res, url);
+    return data.results || [];
   } catch (e) {
-    console.error("Sidebar Maker Fetch Error:", e);
+    console.error("🚨 [Sidebar Maker Fetch Critical Error]:", e);
     return [];
   }
 }
@@ -96,16 +75,12 @@ export default async function Sidebar() {
   const headerList = await headers();
   const host = headerList.get('x-forwarded-host') || headerList.get('host') || 'django-api-host';
   const site = getSiteMetadata(host);
-  const siteTag = site?.site_name || 'bicstation'; // siteTagの確定
   const siteColor = site ? getSiteColor(site.site_name) : '#00f2ff';
   
-  // 環境に合わせたAPIベースURLを決定
-  const apiBase = getInternalApiBase(host);
-
   /** 2. データ取得 (並列実行) */
   const [bridgeData, makers] = await Promise.all([
     fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }).catch(() => ({ results: [] })),
-    getRealMakers(apiBase, siteTag)
+    getRealMakers(host) // 🚀 修正後の関数を呼び出し
   ]);
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
