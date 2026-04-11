@@ -1,12 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 // -*- coding: utf-8 -*-
-'use client'; // ✅ インタラクティブな遷移ハンドラのために必須
-
 /**
- * SpecActressCard Component (v5.4 - Shared Library Physical Sync)
+ * /home/maya/shin-vps/shared/components/organisms/cards/SpecActressCard.tsx
+ * * SpecActressCard Component (v5.5 - Shared Library Physical Sync)
  * 🛡️ Maya's Logic: 物理構造 [STRUCTURE] v3.2 完全同期
- * 🚀 修正: 8083ポートのハードコードを排除し、環境動的判定を導入
+ * 🚀 修正: 8083ポートのハードコードを排除し、VPS/ローカル環境を完全自動判定
  */
+
+'use client'; 
 
 import React from 'react';
 import styles from './SpecActressCard.module.css';
@@ -23,7 +24,7 @@ import SpecRadarChart from '@/shared/components/atoms/RadarChart';
 export interface Actress {
   id: number;
   name: string;
-  slug: string;           // URL生成に使用
+  slug: string;           
   image_url_large: string | null;
   bust: number | null;
   waist: number | null;
@@ -42,11 +43,10 @@ export interface Actress {
   score_performance: number | null;
   score_popularity: number | null;
   product_count?: number;
-  // 外部リンク
   x_url?: string | null;
   instagram_url?: string | null;
   wiki_url?: string | null;
-  affiliate_url?: string | null; // 公式・販売サイトへのリンク
+  affiliate_url?: string | null; 
 }
 
 interface SpecActressCardProps {
@@ -71,19 +71,20 @@ export const SpecActressCard: React.FC<SpecActressCardProps> = ({
   label, 
   priority = false 
 }) => {
-  // --- 🛰️ [DYNAMIC_PORT_LOGIC] ---
+  // --- 🛰️ [DYNAMIC_PORT_RESOLUTION] ---
   const site = getSiteMetadata();
-  const isLocal = site.is_local_env;
+  const isLocal = site?.is_local_env ?? false;
   
   /**
    * 🔗 リンク先URLの動的解決
-   * VPSなら django-api-host:8000 (または本番ドメイン)
-   * ローカルなら tiper-host:8083
+   * 1. 本番: https://tiper.live
+   * 2. VPS: http://tiper-host:8000 (django-api-host経由)
+   * 3. ローカル: http://tiper-host:8083
    */
   let portalUrl = "";
   if (isLocal) {
-    // サイトの判定ロジックと同期させ、VPS環境(django-api-host)なら8000、それ以外なら8083
-    const port = site.origin_domain.includes('django-api-host') ? '8000' : '8083';
+    // ホスト名に 'django-api-host' が含まれる場合はVPS環境(8000)、それ以外はローカル(8083)
+    const port = site.origin_domain?.includes('django-api-host') ? '8000' : '8083';
     portalUrl = `http://tiper-host:${port}/actress/${encodeURIComponent(actress.slug || actress.id.toString())}`;
   } else {
     portalUrl = `https://tiper.live/actress/${encodeURIComponent(actress.slug || actress.id.toString())}`;
@@ -99,7 +100,7 @@ export const SpecActressCard: React.FC<SpecActressCardProps> = ({
   const navigateTo = (url: string, e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
-      e.stopPropagation(); // 親要素の onClick 発火を防止
+      e.stopPropagation(); 
     }
     if (url && url !== "#") {
       window.open(url, '_blank', 'noopener,noreferrer');
