@@ -1,0 +1,89 @@
+/* /shared/components/molecules/ProductSortSelector.module.css */
+
+/* 1. ソートバー全体のコンテナ */
+.sortContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 0;
+    width: 100%;
+    /* 背景が白なので、境界をうっすらと */
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* 2. ソート項目のラッパー */
+.sortList {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* 3. 各ソートボタン（リンク）の基本設定 */
+.sortLink {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 100px; /* 丸みのあるタブ状に */
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 通常時：落ち着いたグレー */
+    color: #64748b;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+/* 🚩 マウスオーバー時の挙動（ここが重要！） */
+.sortLink:hover {
+    /* 背景を少しだけ濃くし、文字をブランドカラーに */
+    background-color: #f1f5f9;
+    color: #3730a3;
+    border-color: #3730a3;
+    transform: translateY(-2px); /* わずかに浮かせる */
+    box-shadow: 0 4px 12px rgba(55, 48, 163, 0.08);
+}
+
+/* 4. アクティブ（現在選択されている）状態 */
+.sortLink.active {
+    background-color: #3730a3;
+    color: #ffffff !important;
+    border-color: #3730a3;
+}
+
+/* 5. アイコンの微調整 */
+.sortIcon {
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+}
+
+.sortLink:hover .sortIcon {
+    transform: scale(1.2); /* ホバー時にアイコンを少し大きく */
+}
+
+/* 6. セクションタイトル（「並び替え」などのラベルがある場合） */
+.selectorLabel {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+/* 7. レスポンシブ調整 */
+@media (max-width: 640px) {
+    .sortList {
+        gap: 8px;
+    }
+    .sortLink {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}

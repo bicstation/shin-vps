@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# /home/maya/shin-vps/django/api/management/commands/analyze_pc_spec.py
-
 import json
 import requests
 import re
@@ -15,22 +13,19 @@ from api.models.pc_products import PCProduct
 from django.utils import timezone
 from django.db.models import Q
 
-# === APIキー設定 (環境変数 GEMINI_API_KEY_0 〜 9 から取得) ===
-# ハードコードされたキーは一切含まず、環境変数のみを参照します
+# === APIキー設定 ===
 API_KEYS = []
 for i in range(10):
     key = os.getenv(f"GEMINI_API_KEY_{i}")
     if key:
         API_KEYS.append(key)
 
-# 汎用キーがあれば追加
 GENERAL_KEY = os.getenv("GEMINI_API_KEY")
 if GENERAL_KEY and GENERAL_KEY not in API_KEYS:
     API_KEYS.append(GENERAL_KEY)
 
 VALID_KEYS = [k for k in API_KEYS if k and len(k) > 10]
 
-# スレッドセーフなキーローテーション
 class ThreadSafeIter:
     def __init__(self, it):
         self.it = it
@@ -42,7 +37,7 @@ class ThreadSafeIter:
 
 key_cycle = ThreadSafeIter(itertools.cycle(VALID_KEYS))
 
-# === レート制限の設定 ===
+# === レート制限設定 ===
 MAX_WORKERS = len(VALID_KEYS) if len(VALID_KEYS) > 0 else 1
 SAFE_KEY_RPM = 6  
 SAFE_TOTAL_RPM = len(VALID_KEYS) * SAFE_KEY_RPM
@@ -52,16 +47,16 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = 'APIキーをローテーションし、Gemmaモデルを優先してスペック解析を行う'
+    help = 'APIキーをローテーションし、AIによるスペック解析とクリーンなコンテンツ生成を行う'
 
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
         parser.add_argument('--limit', type=int, default=1, help='処理件数')
         parser.add_argument('--maker', type=str, help='メーカー指定')
-        parser.add_argument('--model', type=str, help='モデルID (デフォルト: gemma-3-27b-it)')
+        parser.add_argument('--model', type=str, help='モデルID')
         parser.add_argument('--force', action='store_true', help='強制再解析')
         parser.add_argument('--null-only', action='store_true', help='未解析のみ対象')
-        parser.add_argument('--update-all', action='store_true', help='解析済みも含め全件更新')
+        parser.add_argument('--update-all', action='store_true', help='全件更新')
 
     def load_prompt_file(self, filename):
         path = os.path.join(PROMPT_BASE_DIR, filename)
@@ -84,19 +79,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if not VALID_KEYS:
-            self.stdout.write(self.style.ERROR("❌ 有効なAPIキーが環境変数に見つかりません。"))
+            self.stdout.write(self.style.ERROR("❌ 有効なAPIキーが見つかりません。"))
             return
 
         query = PCProduct.objects.all()
-
         if options['update_all']:
             self.stdout.write(self.style.WARNING("⚠️ --update-all モード"))
         elif options['null_only']:
             query = query.filter(last_spec_parsed_at__isnull=True)
         elif not options['force']:
-            query = query.filter(
-                Q(last_spec_parsed_at__isnull=True) | Q(score_cpu=0) | Q(score_ai=0)
-            )
+            query = query.filter(Q(last_spec_parsed_at__isnull=True) | Q(score_cpu=0) | Q(score_ai=0))
 
         if options['unique_id']:
             query = query.filter(unique_id=options['unique_id'])
@@ -108,12 +100,9 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("🔎 対象製品が見つかりませんでした。"))
             return
 
-        # デフォルトを gemma-3-27b-it に固定
         model_id = options['model'] or (self.load_prompt_file('ai_models.txt').split('\n')[0].strip() or "gemma-3-27b-it")
 
-        self.stdout.write(self.style.SUCCESS(
-            f"🚀 解析開始: 全 {len(products)} 件 (Workers: {MAX_WORKERS} / Model: {model_id})"
-        ))
+        self.stdout.write(self.style.SUCCESS(f"🚀 解析開始: 全 {len(products)} 件 (Workers: {MAX_WORKERS} / Model: {model_id})"))
 
         self.counter = 0
         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -133,7 +122,6 @@ class Command(BaseCommand):
 
     def analyze_product(self, product, model_id, count, total, retry_count=0):
         current_api_key = next(key_cycle)
-
         base_pc_prompt = self.load_prompt_file('analyze_pc_prompt.txt') or "メーカー:{maker}\n製品名:{name}\n価格:{price}\n説明:{description}\n上記を解析せよ。"
         target_maker_slug = self.get_maker_slug(product.maker)
         brand_rules = self.load_prompt_file(f"analyze_{target_maker_slug}_prompt.txt") or self.load_prompt_file('analyze_pc_prompt.txt')
@@ -142,7 +130,7 @@ class Command(BaseCommand):
 必ず以下のJSON形式を [SPEC_JSON] タグ内に含めてください。
 [SPEC_JSON]
 {
-  "seo_title": "【元の製品名を維持】魅力的なSEOタイトル",
+  "seo_title": "魅力的なSEOタイトル",
   "cpu_model": "型番",
   "gpu_model": "型番",
   "memory_gb": 数値,
@@ -167,6 +155,10 @@ POINT2: 特徴2
 POINT3: 特徴3
 TARGET: おすすめ対象
 [/SUMMARY_DATA]
+
+【重要】
+1. 本文はHTMLタグを使わず、Markdown形式（##, ###）で記述してください。
+2. 冒頭に製品名を繰り返すタイトル行は不要です。見出しから始めてください。
 """
         formatted_base = base_pc_prompt.replace("{maker}", str(product.maker))\
                                        .replace("{name}", str(product.name))\
@@ -174,8 +166,6 @@ TARGET: おすすめ対象
                                        .replace("{description}", str(product.description or ""))
 
         full_prompt = f"{formatted_base}\n\nブランド別ルール:\n{brand_rules}\n\n{structure_instruction}"
-        
-        # URLエンドポイント。gemmaモデルでもこのエンドポイントで動作します。
         api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={current_api_key}"
         
         try:
@@ -184,7 +174,6 @@ TARGET: おすすめ対象
                 "generationConfig": {"temperature": 0.2}
             }, timeout=120)
             
-            # レート制限等のリトライ
             if response.status_code in [429, 500, 503, 504]:
                 if retry_count < 3:
                     time.sleep(20)
@@ -195,7 +184,7 @@ TARGET: おすすめ対象
             res_json = response.json()
             full_text = res_json['candidates'][0]['content']['parts'][0]['text']
 
-            # --- JSON抽出 ---
+            # --- 1. JSON & SUMMARY 抽出 ---
             spec_data = {}
             spec_match = re.search(r'\[SPEC_JSON\](.*?)\[/SPEC_JSON\]', full_text, re.DOTALL)
             if spec_match:
@@ -207,7 +196,24 @@ TARGET: おすすめ対象
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
             summary_text = summary_match.group(0).strip() if summary_match else ""
 
-            # --- 保存処理 ---
+            # --- 2. コンテンツの徹底クリーニング (ai_content用) ---
+            # タグ部分を削除
+            clean_body = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', full_text, flags=re.DOTALL)
+            clean_body = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', clean_body, flags=re.DOTALL)
+            
+            # HTMLタグが混入していた場合のMarkdown置換
+            clean_body = clean_body.replace('<h2>', '## ').replace('</h2>', '\n')\
+                                   .replace('<h3>', '### ').replace('</h3>', '\n')\
+                                   .replace('<p>', '').replace('</p>', '\n')
+
+            # 冒頭の不要な製品名タイトル行（1行目）を削除
+            lines = clean_body.strip().split('\n')
+            if len(lines) > 0 and (product.maker.lower() in lines[0].lower() or "】" in lines[0]):
+                clean_body = '\n'.join(lines[1:]).strip()
+            else:
+                clean_body = clean_body.strip()
+
+            # --- 3. DB保存処理 ---
             new_title = spec_data.get('seo_title')
             if new_title and len(new_title) > 10:
                 product.name = new_title
@@ -229,13 +235,14 @@ TARGET: おすすめ対象
             product.score_portable = safe_int(spec_data.get('score_portable'), 0)
             product.score_ai = safe_int(spec_data.get('score_ai'), 0)
             product.is_ai_pc = spec_data.get('is_ai_pc', False)
-            product.ai_summary = summary_text
-            product.ai_content = f"{summary_text}\n\n{full_text}"
+            
+            # きれいに分離して保存
+            product.ai_summary = summary_text  # 要約タグ付き
+            product.ai_content = clean_body    # 徹底的に掃除された本文のみ
             product.last_spec_parsed_at = timezone.now()
             
             product.save()
             self.stdout.write(self.style.SUCCESS(f" ✅ 更新完了 ({count}/{total}): {product.unique_id}"))
 
         except Exception as e:
-            # 400エラー等が発生した際、キーを次へ送るためにエラーを記録して終了
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.unique_id}): {str(e)}"))

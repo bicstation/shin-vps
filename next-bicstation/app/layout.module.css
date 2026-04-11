@@ -1,5 +1,5 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-LAYOUT-CSS] - Final Visibility & Layout Adjustment
+ * 🏗️ [BICSTATION-LAYOUT-CSS] - White Mode Transformation
  * --------------------------------------------------------------------- */
 
 /* 1. 全体を包むラッパー */
@@ -10,21 +10,24 @@
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
-  background-color: #050505; /* より深い黒でコントラストを強調 */
-  color: #e2e8f0;
+  /* 🚩 背景を白（または極めて薄いグレー）に変更 */
+  background-color: #f8fafc; 
+  color: #1e293b; /* 文字色は濃いネイビーグレーに */
   overflow-x: hidden;
-  padding-top: 70px; /* Header分 */
+  padding-top: 0px;
 }
 
 /* 2. 広告告知（PR表記） */
 .adDisclosure {
   width: 100%;
-  background-color: rgba(10, 10, 10, 0.9);
+  /* 🚩 背景を白の透過に変更 */
+  background-color: rgba(255, 255, 255, 0.9);
   font-size: 11px;
-  color: #64748b;
+  color: #94a3b8;
   text-align: center;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+  /* 🚩 境界線を薄いグレーに */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05); 
   position: sticky;
   top: 70px;
   z-index: 900;
@@ -41,29 +44,26 @@
   flex-direction: column;
 }
 
-/* 4. レイアウトインナー：ここがコンテンツの開始位置 */
+/* 4. レイアウトインナー */
 .layoutInner {
   display: flex;
   gap: 40px; 
-  /* Header(70) + PR(35) + 余裕(30) = 135px 程度が理想 */
-  padding: 40px 0 80px 0; 
+  padding: 20px 0 80px 0; 
   width: 100%;
 }
 
-/* 5. サイドバー領域：文字をクッキリさせるための補正 */
+/* 5. サイドバー領域 */
 .sidebarSection {
   width: 280px;
   flex-shrink: 0;
   position: sticky;
-  top: 110px; /* スクロール時にHeader+PRの下にピタッと止まる位置 */
-  height: calc(100vh - 140px); /* 画面内に収める */
-  overflow-y: auto; /* 長い場合にスクロール可能に */
+  top: 110px;
+  height: calc(100vh - 140px);
+  overflow-y: auto;
   z-index: 800;
-  
-  /* 🚩 視認性向上のためのマジック */
-  scrollbar-width: none; /* Firefox用 */
+  scrollbar-width: none;
 }
-.sidebarSection::-webkit-scrollbar { display: none; } /* Chrome/Safari用 */
+.sidebarSection::-webkit-scrollbar { display: none; }
 
 /* 6. メインコンテンツ領域 */
 .mainContent {
@@ -72,26 +72,20 @@
   position: relative;
 }
 
-/* 7. 【重要】サイドバー内の文字色・背景の強制補正 */
-/* ※ Sidebar.module.css と干渉する場合はこちらを優先 */
-.sidebarSection a {
-  color: #cbd5e1 !important; /* 少しグレーがかった白が一番読みやすい */
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.sidebarSection a:hover {
-  color: #ffffff !important;
-  text-shadow: 0 0 8px rgba(255,255,255,0.3);
-}
-
+/* 7. サイドバー内の文字色・背景の補正（修正ポイント） */
+/* * 🚩 重要：aタグへの !important 指定を削除しました。
+ * スタイルは PCSidebar.module.css 側に任せます。
+ */
 .sidebarSection h3 {
-  color: #94a3b8;
+  /* 🚩 ラベル色を少し薄く */
+  color: #64748b;
   font-size: 0.75rem;
   letter-spacing: 0.15em;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  /* 🚩 境界線を薄く */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   padding-bottom: 8px;
   margin-bottom: 16px;
+  font-weight: 700;
 }
 
 /* 8. レスポンシブ */
@@ -104,5 +98,10 @@
     width: 100%;
     position: static;
     height: auto;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 }

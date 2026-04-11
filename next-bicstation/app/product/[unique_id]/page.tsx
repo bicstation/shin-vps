@@ -3,8 +3,7 @@
 /**
  * =====================================================================
  * 💻 BICSTATION 製品詳細レポート
- * 🛡️ Maya's Logic: 物理構造 v3.2 完全同期版 (ビルドエラー解消済み)
- * 物理パス: app/product/[unique_id]/page.tsx
+ * 🛡️ Maya's Logic: 物理構造 v3.8 クリーンデータ適応版
  * =====================================================================
  */
 
@@ -12,8 +11,10 @@ import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
-// ✅ 修正ポイント 1: APIインポートパスを物理構造に合わせる
+// APIインポート
 import {
     fetchPCProductDetail,
     fetchRelatedProducts,
@@ -22,50 +23,28 @@ import {
 
 import styles from './ProductDetail.module.css';
 
-// ✅ 修正ポイント 2: 物理構造 [STRUCTURE] に基づくインポートパスの修正
-// 1. PriceHistoryChart は molecules に存在
+// コンポーネントインポート
 import PriceHistoryChart from '@/shared/components/molecules/PriceHistoryChart';
-// 2. SpecRadarChart ではなく RadarChart (atoms) をインポートして別名で使用
 import SpecRadarChart from '@/shared/components/atoms/RadarChart';
-
-// 🚩 同一階層のコンポーネント (パス変更なし)
 import ProductCTA from './ProductCTA';
 import FinalCta from './FinalCta';
 
-/**
- * 📝 型定義
- */
 interface PageProps {
     params: Promise<{ unique_id: string }>;
     searchParams: Promise<{ attribute?: string }>;
 }
 
-/**
- * 🔍 SEO メタデータ生成 (Dynamic Metadata)
- */
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const { unique_id } = await props.params;
-
     try {
         const product = await fetchPCProductDetail(unique_id);
         if (!product) return { title: "製品が見つかりません | BICSTATION" };
-
         const title = `${product.name} のスペック・価格・評判 | ${product.maker}最新比較`;
-        const description = `${product.maker}の「${product.name}」詳細レポート。価格推移、スペック評価、AIによる解析データを掲載。`;
-
         return {
             title,
-            description,
+            description: `${product.maker}の「${product.name}」詳細レポート。AI解析データを掲載。`,
             openGraph: {
                 title,
-                description,
-                type: 'article',
-                images: [product.image_url || '/no-image.png'],
-            },
-            twitter: {
-                card: 'summary_large_image',
-                title,
-                description,
                 images: [product.image_url || '/no-image.png'],
             },
         };
@@ -74,78 +53,56 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     }
 }
 
-/**
- * 🏗️ メインページコンポーネント
- */
 export default async function ProductDetailPage(props: PageProps) {
-    // 1. Next.js 15 非同期 Props の解決
     const { unique_id } = await props.params;
     const sParams = await props.searchParams;
     const attribute = sParams.attribute;
 
-    // 2. データの並列取得 (SSR)
     const [product, rankingData] = await Promise.all([
         fetchPCProductDetail(unique_id).catch(() => null),
         fetchPCProductRanking().catch(() => [])
     ]);
 
-    // ガード：データがない場合は404へ
     if (!product || !product.unique_id) {
         notFound();
     }
 
-    // 3. 関連データの取得
     const rawRelated = await fetchRelatedProducts(product.maker || '', unique_id).catch(() => []);
     const displayRelated = Array.isArray(rawRelated) ? rawRelated.slice(0, 8) : [];
-
     const p = product as any;
     const finalUrl = product.affiliate_url || product.url || "#";
     const isPriceAvailable = typeof product.price === 'number' && product.price > 0;
 
-    // ランキング順位の算出
     const currentRank = Array.isArray(rankingData)
         ? rankingData.findIndex((item: any) => item.unique_id === unique_id) + 1
         : 0;
 
-    // ソフトウェア・特殊カテゴリ判定
     const isSoftware = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT", "EIZO", "ウイルスバスター"].some(keyword =>
         (product.maker?.toUpperCase() || "").includes(keyword.toUpperCase()) ||
         (product.name?.toUpperCase().includes(keyword.toUpperCase()))
     );
 
     /**
-     * AI解析タグ [SUMMARY_DATA] のパース
+     * 🛡️ 物理構造パースロジック v3.8
+     * DB側でai_contentがクリーン化されている前提
      */
-    const parseContent = (html: string) => {
-        if (!html || typeof html !== 'string') return { summary: null, cleanBody: "" };
-        
-        const summaryRegex = /\[SUMMARY_DATA\]([\s\S]*?)\[\/SUMMARY_DATA\]/;
-        const summaryMatch = html.match(summaryRegex);
-        let summary = null;
-        
-        if (summaryMatch) {
-            const data = summaryMatch[1];
-            summary = {
-                p1: data.match(/POINT1:\s*(.*)/)?.[1] || "",
-                p2: data.match(/POINT2:\s*(.*)/)?.[1] || "",
-                p3: data.match(/POINT3:\s*(.*)/)?.[1] || "",
-                target: data.match(/TARGET:\s*(.*)/)?.[1] || "",
-            };
-        }
-        return { summary, cleanBody: html.replace(summaryRegex, '').trim() };
+    const parseAiSummary = (summaryStr: string) => {
+        if (!summaryStr) return null;
+        // SUMMARY_DATAタグ内からPOINTを抽出
+        return {
+            p1: summaryStr.match(/POINT1:\s*(.*)/)?.[1] || "",
+            p2: summaryStr.match(/POINT2:\s*(.*)/)?.[1] || "",
+            p3: summaryStr.match(/POINT3:\s*(.*)/)?.[1] || "",
+            target: summaryStr.match(/TARGET:\s*(.*)/)?.[1] || "",
+        };
     };
 
-    const { summary, cleanBody } = parseContent(product.ai_content || "");
+    const summary = parseAiSummary(product.ai_summary || "");
+    // ai_contentは既にクリーンなのでそのまま使用
+    const cleanBody = product.ai_content || "";
+    
     const today = new Date().toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
-
-    // 履歴データの整形
     const priceHistory = Array.isArray(p.price_history) ? p.price_history : [];
-    const formattedRankHistory = Array.isArray(p.stats_history)
-        ? p.stats_history.map((s: any) => ({
-            date: s.date || s.formatted_date || "",
-            price: s.daily_rank || 0
-        }))
-        : [];
 
     return (
         <div className={styles.wrapper}>
@@ -156,14 +113,11 @@ export default async function ProductDetailPage(props: PageProps) {
                         "@context": "https://schema.org/",
                         "@type": "Product",
                         "name": product.name,
-                        "image": product.image_url,
-                        "description": product.description,
                         "brand": { "@type": "Brand", "name": product.maker },
                         "offers": {
                             "@type": "Offer",
                             "priceCurrency": "JPY",
                             "price": product.price || 0,
-                            "availability": "https://schema.org/InStock",
                             "url": finalUrl
                         }
                     })
@@ -171,7 +125,7 @@ export default async function ProductDetailPage(props: PageProps) {
             />
 
             <main className={styles.mainContainer}>
-                {/* 🏷️ トレンド・ステータスバー */}
+                {/* トレンドバナー */}
                 <div className={styles.trendBanner}>
                     <div className={styles.trendInfo}>
                         <span className={styles.updateBadge}>{today} UPDATE</span>
@@ -220,11 +174,9 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                 </section>
 
-                {/* 2. ビジュアル分析グリッド */}
                 <div className={styles.analysisGrid}>
                     <div className={styles.analysisChartItem}>
                         <h3 className={styles.chartTitle}>性能評価・AIスコアリング</h3>
-                        
                         <SpecRadarChart
                             data={[
                                 { subject: 'CPU', value: p.score_cpu || 0, fullMark: 100 },
@@ -238,7 +190,6 @@ export default async function ProductDetailPage(props: PageProps) {
                     </div>
                     <div className={styles.analysisChartItem}>
                         <h3 className={styles.chartTitle}>価格推移・トレンド分析</h3>
-                        
                         {priceHistory.length > 0 ? (
                             <PriceHistoryChart history={priceHistory} />
                         ) : (
@@ -246,16 +197,6 @@ export default async function ProductDetailPage(props: PageProps) {
                         )}
                     </div>
                 </div>
-
-                {/* 3. ランキング推移 (オプション) */}
-                {!isSoftware && formattedRankHistory.length > 0 && (
-                    <div className={styles.rankHistorySection}>
-                        <h3 className={styles.chartTitle}>カテゴリー内 注目度ランキング推移</h3>
-                        <div className={styles.rankChartWrapper}>
-                            <PriceHistoryChart history={formattedRankHistory} isRank={true} />
-                        </div>
-                    </div>
-                )}
 
                 {/* 4. AI要約ハイライト */}
                 {summary && (
@@ -289,13 +230,19 @@ export default async function ProductDetailPage(props: PageProps) {
                         </div>
                     </div>
 
+                    {/* ✅ クリーンになった本文をレンダリング */}
                     {cleanBody && (
                         <div className={styles.aiContentSection}>
                             <div className={styles.sectionHeader}>
                                 <h2 className={styles.specTitle}>エキスパートレポート</h2>
                                 <span className={styles.aiBadge}>AI ANALYSIS</span>
                             </div>
-                            <div className={styles.aiContentBody} dangerouslySetInnerHTML={{ __html: cleanBody }} />
+                            <div className={styles.aiContentBody}>
+                                {/* rehypeRawを残すことで、もしHTMLが含まれていても安全に表示可能 */}
+                                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                                    {cleanBody}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                     )}
                 </section>

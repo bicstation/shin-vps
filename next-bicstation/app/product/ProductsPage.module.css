@@ -1,0 +1,208 @@
+/* /app/product/ProductsPage.module.css */
+
+/* 1. レイアウト全体の構造 */
+.pageLayout {
+  display: flex;
+  gap: 40px;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  background-color: #ffffff; /* ベースは清潔感のある白 */
+  min-height: 100vh;
+}
+
+/* 2. サイドバー（属性リンク・メーカーナビ） */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 110px; /* ヘッダーとの兼ね合いで調整 */
+  height: fit-content;
+}
+
+.sidebarTitle {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.15em;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  text-transform: uppercase;
+}
+
+.makerNav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.makerLink {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: #475569;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.makerLink:hover {
+  background-color: #f1f5f9;
+  color: #3730a3;
+  transform: translateX(4px);
+}
+
+.activeMaker {
+  background-color: #eef2ff;
+  color: #3730a3;
+  box-shadow: inset 0 0 0 1px rgba(55, 48, 163, 0.1);
+}
+
+.makerCount {
+  font-size: 0.7rem;
+  background: rgba(148, 163, 184, 0.1);
+  color: #64748b;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* 3. メインコンテンツエリア */
+.container {
+  flex: 1;
+  min-width: 0; /* flexアイテムの縮小を許可 */
+}
+
+/* ヘッダーセクション */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #f8fafc;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.countText {
+  font-size: 1rem;
+  color: #64748b;
+}
+
+.hitCount {
+  font-weight: 800;
+  color: #3730a3;
+  font-family: 'Inter', sans-serif;
+}
+
+/* 4. グリッドレイアウト */
+.grid {
+  display: grid;
+  /* 最小340pxを維持しつつ自動配置 */
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 2.5rem;
+  margin-bottom: 5rem;
+}
+
+/* データなし表示 */
+.noData {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 40px;
+  background-color: #f8fafc;
+  border-radius: 20px;
+  color: #94a3b8;
+  border: 2px dashed #e2e8f0;
+}
+
+/* 5. フッター（ページネーション） */
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* 6. レスポンシブ対応 */
+@media (max-width: 1100px) {
+  .pageLayout {
+    flex-direction: column;
+    padding: 20px 16px;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: static;
+    margin-bottom: 30px;
+  }
+
+  .makerNav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .makerNav::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .makerNav::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+  }
+
+  .makerLink {
+    white-space: nowrap;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 1.75rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Loading Animation --- */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 16px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

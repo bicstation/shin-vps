@@ -1,21 +1,32 @@
+// /shared/components/organisms/sidebar/PCSidebar.tsx
 // @ts-nocheck
 import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 
-/**
- * ✅ Bic Station PC_NODE Specialized Sidebar (v17.7)
- * --------------------------------------------------
- * 1. 提督提供の全31サテライト（PCブランド/技術特化）を実装
- * 2. 既存のNews実データ + Brand/Specダミー表示を維持
- * 3. サイトカラーに連動した洗練されたUI
- */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import styles from './PCSidebar.module.css';
 
-// --- 提督提供：PC/ガジェット特化サテライトネットワーク ---
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://api-bicstation-host:8083';
+
+/**
+ * 🛰️ PC/ガジェット特化サテライトネットワーク (全30サイト)
+ */
 const PC_SATELLITES = [
+  // --- 汎用・ガイド系 (新規追加分含む) ---
+  { name: "PCコンパス総合案内", url: "https://pc.compass.bicstation.com", icon: "🧭", isMain: true },
+  { name: "導入の伝道師", url: "https://pc.first-step.bicstation.com", icon: "🌱" },
+  { name: "高速化レスキュー", url: "https://pc.sukkiri.bicstation.com", icon: "⚡" },
+  { name: "資産価値の鑑定士", url: "https://pc.resale.bicstation.com", icon: "💰" },
+  { name: "効率化マニア", url: "https://pc.biz-hack.bicstation.com", icon: "🚀" },
+  { name: "デジタル要塞の守護者", url: "https://data.defense.bicstation.com", icon: "🛡️" },
+  { name: "環境アーキテクト", url: "https://desk.setup.bicstation.com", icon: "🏗️" },
+  { name: "機動力ワーカー", url: "https://mobile.pc-life.bicstation.com", icon: "🏃" },
+  { name: "自動化の魔術師", url: "https://pc.automation.bicstation.com", icon: "🪄" },
+  { name: "AI拡張人間", url: "https://pc.ai.tech.bicstation.com", icon: "🤖" },
+
+  // --- メーカー特化系 ---
   { name: "Apple製品の美学", url: "https://ld.apple.bicstation.com", icon: "🍎" },
   { name: "ASUS技術オタク", url: "https://ld.asus.bicstation.com", icon: "🐉" },
   { name: "MSIハードウェアマニア", url: "https://msi.bicstation.com", icon: "❄️" },
@@ -35,19 +46,21 @@ const PC_SATELLITES = [
   { name: "Sycom静音・水冷", url: "https://sycom.bicstation.com", icon: "🌊" },
   { name: "Dynabook伝道師", url: "https://dynabook.bicstation.com", icon: "💻" },
   { name: "NEC安心ガイド", url: "https://nec.bicstation.com", icon: "🏠" },
-  { name: "Fujitsu匠の技", url: "https://fujitsu.bicstation.com", icon: "🇯🇵" },
-  { name: "IT潮流サマライズ", url: "https://h.main.bicstation.com", icon: "📰" },
-  { name: "お金の知恵袋", url: "https://h.money.bic-saving.com", icon: "💰" },
-  { name: "AI進化監視局", url: "https://h.ai.bicstation.com", icon: "🤖" },
-  { name: "ワーク最適化術", url: "https://h.work.bicstation.com", icon: "☕" },
-  { name: "PCライフハッカー", url: "https://h.pc.life.bicstation.com", icon: "💡" },
-  { name: "自作PC探求者", url: "https://pc.bicstation.com", icon: "🔧" },
-  { name: "AIアナリスト", url: "https://ai.bicstation.com", icon: "🧬" },
-  { name: "最前線PCゲーマー", url: "https://game.bicstation.com", icon: "🕹️" },
-  { name: "モバイルコンサル", url: "https://mobile.bicstation.com", icon: "📱" },
-  { name: "生産性・副業SaaS", url: "https://work.bicstation.com", icon: "📈" },
-  { name: "資産運用・自由への道", url: "https://bg.money.bicstation.com", icon: "🗽" }
+  { name: "Fujitsu匠の技", url: "https://fujitsu.bicstation.com", icon: "🇯🇵" }
 ];
+
+/**
+ * 🏢 メーカーリストの取得
+ */
+async function getRealMakers() {
+  try {
+    const res = await fetch(`${API_BASE}/api/general/pc-makers/`, { next: { revalidate: 3600 } });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch (e) {
+    return [];
+  }
+}
 
 export default async function Sidebar() {
   /** 1. アイデンティティ確定 */
@@ -56,48 +69,23 @@ export default async function Sidebar() {
   const site = getSiteMetadata(host);
   const siteColor = site ? getSiteColor(site.site_name) : '#00f2ff';
 
-  /** 2. データ取得 */
-  async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
-    try {
-      const result = await promise;
-      return result ?? fallback;
-    } catch (e) { return fallback; }
-  }
+  /** 2. データ取得 (並列実行) */
+  const [bridgeData, makers] = await Promise.all([
+    fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }).catch(() => ({ results: [] })),
+    getRealMakers()
+  ]);
 
-  const bridgeData = await safeFetch(
-    fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }), 
-    { results: [] }
-  );
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
 
-  /** 3. サテライトのランダム選出 (SSR) */
-  const shuffledSatellites = [...PC_SATELLITES]
+  /** 3. サテライトの選出ロジック (メイン固定 + ランダム7件) */
+  const mainSatellite = PC_SATELLITES.find(s => s.isMain);
+  const otherSatellites = PC_SATELLITES.filter(s => !s.isMain);
+  
+  const shuffledOthers = [...otherSatellites]
     .sort(() => Math.random() - 0.5)
-    .slice(0, 8);
+    .slice(0, 7); // メインと合わせて合計8件表示
 
-  /** 4. ダミーデータ定義 */
-  const dummyMakers = {
-    domestic: [
-      { id: 'd1', lowerName: 'mouse', displayName: 'MOUSE', count: '-' },
-      { id: 'fujitsu', lowerName: 'fujitsu', displayName: 'FUJITSU', count: '-' }
-    ],
-    overseas: [
-      { id: 'o1', lowerName: 'dell', displayName: 'DELL', count: '-' },
-      { id: 'o2', lowerName: 'hp', displayName: 'HP', count: '-' },
-      { id: 'o3', lowerName: 'lenovo', displayName: 'LENOVO', count: '-' }
-    ]
-  };
-
-  const dummySpecs = {
-    "CPU_SERIES": [
-      { slug: 'core-i7', name: 'Core i7' },
-      { slug: 'ryzen-7', name: 'Ryzen 7' }
-    ],
-    "GPU_SERIES": [
-      { slug: 'rtx-4060', name: 'RTX 4060' },
-      { slug: 'rtx-4070', name: 'RTX 4070' }
-    ]
-  };
+  const displaySatellites = [mainSatellite, ...shuffledOthers].filter(Boolean);
 
   const siteUpperName = site ? site.site_name.toUpperCase() : 'BICSTATION';
 
@@ -116,12 +104,45 @@ export default async function Sidebar() {
         </Link>
       </section>
 
-      {/* 🛰️ SATELLITE NETWORK (提督追加分) */}
+      {/* 🏢 BRANDS (API連動) */}
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle} style={{ color: siteColor }}>BRANDS</h3>
+        <div className={styles.brandGroup}>
+          <ul className={styles.list}>
+            {makers.length > 0 ? (
+              makers.map((m: any) => (
+                <li key={m.maker}>
+                  <Link href={`/product?maker=${m.maker}`} className={styles.link}>
+                    <span className={styles.brandLabel}>💻 {m.maker.toUpperCase()}</span>
+                    <span className={styles.badge}>{m.count}</span>
+                  </Link>
+                </li>
+              ))
+            ) : (
+              <li className={styles.empty}>ブランド取得中...</li>
+            )}
+            <li>
+              <Link href="/product" className={`${styles.link} ${styles.allLink}`}>
+                <span>🚀 全ての製品を見る</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      {/* 🛰️ SATELLITE NETWORK (固定+ランダム) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>TECH NETWORK</h3>
         <div className={styles.satelliteGrid}>
-          {shuffledSatellites.map((sat, idx) => (
-            <a key={idx} href={sat.url} target="_blank" rel="noopener noreferrer" className={styles.satelliteLink}>
+          {displaySatellites.map((sat, idx) => (
+            <a 
+              key={idx} 
+              href={sat.url} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className={sat.isMain ? `${styles.satelliteLink} ${styles.mainSatellite}` : styles.satelliteLink}
+              style={sat.isMain ? { borderColor: siteColor } : {}}
+            >
               <span className={styles.satIcon}>{sat.icon}</span>
               <span className={styles.satName}>{sat.name}</span>
             </a>
@@ -129,38 +150,9 @@ export default async function Sidebar() {
         </div>
       </section>
 
-      {/* 🏢 BRANDS */}
-      <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>BRANDS</h3>
-        <div className={styles.brandGroup}>
-          <p className={styles.subLabel}>国内ブランド</p>
-          <ul className={styles.list}>
-            {dummyMakers.domestic.map((item) => (
-              <li key={item.id}>
-                <Link href={`/brand/${item.lowerName}`} className={styles.link}>
-                  <span>💻 {item.displayName}</span>
-                  <span className={styles.badge}>{item.count}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <p className={styles.subLabel} style={{ marginTop: '12px' }}>海外ブランド</p>
-          <ul className={styles.list}>
-            {dummyMakers.overseas.map((item) => (
-              <li key={item.id}>
-                <Link href={`/brand/${item.lowerName}`} className={styles.link}>
-                  <span>💻 {item.displayName}</span>
-                  <span className={styles.badge}>{item.count}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
       {/* 📄 UPDATES (Real Data) */}
       <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>LATEST UPDATES</h3>
+        <h3 className={styles.sectionTitle} style={{ color: siteColor }}>LATEST UPDATES</h3>
         <ul className={styles.list}>
           {recentArticles.length > 0 ? (
             recentArticles.map((item: any) => (
