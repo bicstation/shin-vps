@@ -1,11 +1,11 @@
 /**
  * =====================================================================
- * 🛠️ Django API 共通クライアント (Zenith v8.7 - Multi-Environment Final)
+ * 🛠️ Django API 共通クライアント (Zenith v8.8 - Multi-Environment Final)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【ポート・スラッシュの完全洗浄】SSR時のURL組み立てを100%安全に。
- * 2. 【Hostヘッダーの動的最適化】内部通信用の Host ヘッダーを Django 側に適合。
- * 3. 【クエリ整合性】site=xxx パラメータが二重スラッシュにならないよう厳格管理。
+ * 1. 【クエリ正規化】siteパラメータの重複を完全に排除。
+ * 2. 【Django互換パス】パス末尾のスラッシュ強制とクエリ結合の順序を厳格化。
+ * 3. 【SSR身分証明】Hostヘッダーの擬態ロジックを維持しつつ、安定性を向上。
  * =====================================================================
  */
 import { getWpConfig, IS_SERVER } from '../config';
@@ -13,25 +13,21 @@ import { getSiteMetadata } from '../../utils/siteConfig';
 
 /**
  * 💡 接続先URLを動的に解決 (Network Path Resolver)
- * 🚀 修正: Djangoが求める「末尾スラッシュ」と「クエリ」の共存を保証。
  */
 export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
     // 1. ポート番号を除去したクリーンなホスト名で設定を取得
     const cleanManualHost = manualHost ? manualHost.split(':')[0] : undefined;
     const config = getWpConfig(cleanManualHost);
-    const baseUrl = config.baseUrl; // config.ts側で既に ?site= が付いている可能性を考慮
-    
+    const rootUrl = config.baseUrl; // config.ts側で末尾スラッシュ・クエリは除去済み
+    const siteTag = config.siteKey;
+
     // 2. エンドポイントの前後スラッシュを正規化
     let cleanEndpoint = endpoint.replace(/^\/+/, '').replace(/\/+$/, '');
 
-    // 3. APIルートの抽出 (末尾スラッシュなしの状態にする)
-    const rootUrl = baseUrl.split('?')[0].replace(/\/api\/?$/, '').replace(/\/$/, '');
-    const existingQuery = baseUrl.includes('?') ? baseUrl.split('?')[1] : '';
-
     /**
      * 🎯 結合ロジック (Slash vs Query Security)
-     * Djangoの各エンドポイントは末尾スラッシュを必須とするため、
-     * パス部分の末尾に確実に / を入れ、その後にクエリを結合する。
+     * Djangoは「末尾スラッシュ」をパスの終端に求めるため、
+     * パスを確定させてからクエリを付与する。
      */
     let finalUrl = "";
     if (cleanEndpoint.includes('?')) {
@@ -42,9 +38,12 @@ export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
         finalUrl = `${rootUrl}/api/${cleanEndpoint}/`;
     }
 
-    // config.ts 側で付与された site=xxx 等のクエリを維持して結合
-    if (existingQuery) {
-        finalUrl += (finalUrl.includes('?') ? '&' : '?') + existingQuery;
+    /**
+     * 🛰️ サイト識別パラメータの注入
+     * 既に endpoint に site= が含まれていない場合のみ付与し、二重付与を防止。
+     */
+    if (!finalUrl.includes('site=')) {
+        finalUrl += (finalUrl.includes('?') ? '&' : '?') + `site=${siteTag}`;
     }
 
     return finalUrl;
@@ -52,13 +51,11 @@ export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
 
 /**
  * 💡 Django リクエスト用ヘッダー生成
- * 🚀 修正: manualHost からポートを除去し、Django Middleware が最も喜ぶヘッダーを生成。
  */
 export const getDjangoHeaders = (manualHost?: string) => {
     const cleanHost = manualHost ? manualHost.split(':')[0] : undefined;
     const siteConfig = getSiteMetadata(cleanHost);
     
-    // 判定されたサイトタグ (saving, tiper, avflash 等)
     const siteTag = siteConfig?.site_tag || "bicstation";
     
     const headers: Record<string, string> = {
@@ -69,17 +66,16 @@ export const getDjangoHeaders = (manualHost?: string) => {
     if (IS_SERVER) {
         /**
          * 🛰️ SSR身分証明プロトコル
-         * Django側の ArticleViewSet.get_queryset が識別できるように
-         * 複数のヘッダーを網羅的にセットします。
+         * 内部ネットワーク通信(django-api-host)でも、Django側が
+         * どのドメインへのリクエストか判別できるようにHostヘッダーをセット。
          */
         headers['x-django-host'] = siteTag;
         headers['x-project-id'] = siteTag;
         
-        // 🚨 重要: 内部通信 (django-api-host) 時、Hostヘッダーを本来のドメインに
-        // 偽装（擬態）させることで、Django側の ALLOWED_HOSTS を通過させます。
-        headers['Host'] = siteConfig?.django_host || `${siteTag}.com`;
+        // ALLOWED_HOSTS 通過のための擬態
+        const djangoHost = siteConfig?.django_host || `${siteTag}.com`;
+        headers['Host'] = djangoHost;
         
-        // ログで最終的な身分証を確認 (VPSのコンソールで非常に役立ちます)
         console.log(`📡 [API-DEBUG] SSR Identity Resolved: ${siteTag} (via ${cleanHost || 'default'})`);
     }
 
@@ -91,15 +87,17 @@ export const getDjangoHeaders = (manualHost?: string) => {
  */
 export async function handleResponseWithDebug(res: Response, url: string) {
     if (!res.ok) {
-        // 404や500エラー時の詳細ログ
+        // Django側のエラー(404等)をキャッチ
         console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | URL: ${url}`);
+        
+        // もしHTMLが返ってきた場合でも、JSONとして解析して落ちるのを防ぐ
         return { results: [], count: 0, _error: res.status };
     }
 
     try {
         const data = await res.json();
         
-        // 1. DRF 標準形式 (Pagination 込)
+        // 1. DRF 標準形式
         if (data && typeof data === 'object' && 'results' in data) {
             return {
                 results: Array.isArray(data.results) ? data.results : [],
@@ -124,7 +122,9 @@ export async function handleResponseWithDebug(res: Response, url: string) {
         return { results: [], count: 0 };
 
     } catch (e) {
-        console.error(`🚨 [JSON Parse Error] URL: ${url}`);
+        // ここで「Unexpected token <」エラーをキャッチし、
+        // プロセスが死ぬのを防ぎつつ空のデータを返す
+        console.error(`🚨 [JSON Parse Error] HTML content received instead of JSON. URL: ${url}`);
         return { results: [], count: 0, _error: 'PARSE_FAILED' };
     }
 }

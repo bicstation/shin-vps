@@ -1,38 +1,18 @@
 // /app/product/page.tsx
 import React from 'react';
+import { headers } from 'next/headers'; // 🚀 追加: ホスト名取得用
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import Pagination from '@/shared/components/molecules/Pagination';
 import ProductSortSelector from '@/shared/components/molecules/ProductSortSelector';
+import { fetchPCProducts } from '@/shared/lib/api/django/pc/products'; // 🚀 追加: 共通パイプライン
 import styles from './ProductsPage.module.css';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://api-bicstation-host:8083';
-
 /**
- * 🛰️ サーバーサイドでのデータ取得
- * @param page ページ番号
- * @param maker メーカーフィルタ (任意)
- * @param ordering ソート順 (任意)
+ * 🛠️ 修正ポイント:
+ * 1. 古い API_BASE (8083) のハードコードを完全に撤廃。
+ * 2. getProducts 関数を fetchPCProducts 共通関数に統合。
+ * 3. headers() を使用して、SSR時でも正しいドメイン（bicstation.com等）をAPIに伝達。
  */
-async function getProducts(page: number, maker?: string, ordering?: string) {
-    const limit = 20;
-    const offset = (page - 1) * limit;
-    
-    const params = new URLSearchParams({
-        limit: limit.toString(),
-        offset: offset.toString(),
-        ordering: ordering || '-created_at' // デフォルトは新着順
-    });
-
-    if (maker) params.append('maker', maker);
-
-    const url = `${API_BASE}/api/general/pc-products/?${params.toString()}`;
-
-    // リアルタイム性を重視し、キャッシュは使用せずサーバーサイドで常に最新を取得
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Failed to fetch products');
-    
-    return res.json();
-}
 
 export default async function ProductsPage({
     searchParams,
@@ -44,9 +24,23 @@ export default async function ProductsPage({
     const currentMaker = typeof searchParams.maker === 'string' ? searchParams.maker : undefined;
     const currentSort = typeof searchParams.sort === 'string' ? searchParams.sort : '-created_at';
 
-    // 2. APIから製品データを取得
-    const data = await getProducts(currentPage, currentMaker, currentSort);
-    const totalPages = Math.ceil(data.count / 20);
+    // 🌐 現在のホスト名を取得（VPSの8000番かローカルの8083番かを自動判別する材料）
+    const host = headers().get('host') || '';
+    
+    const limit = 20;
+    const offset = (currentPage - 1) * limit;
+
+    // 2. 共通パイプラインを使って製品データを取得
+    // これにより、内部で site=bicstation の付与やポート解決が自動で行われます
+    const { results, count } = await fetchPCProducts(
+        currentMaker,
+        offset,
+        limit,
+        currentSort,
+        host
+    );
+
+    const totalPages = Math.ceil(count / limit);
 
     return (
         <main className={styles.container}>
@@ -57,7 +51,7 @@ export default async function ProductsPage({
                         {currentMaker ? `${currentMaker.toUpperCase()} 製品一覧` : '全PC製品ラインナップ'}
                     </h1>
                     <p className={styles.countText}>
-                        全 <span className={styles.hitCount}>{data.count}</span> 件のAI査定済みデータ
+                        全 <span className={styles.hitCount}>{count}</span> 件のAI査定済みデータ
                     </p>
                 </div>
 
@@ -69,10 +63,10 @@ export default async function ProductsPage({
 
             {/* 📋 商品カードグリッド */}
             <section className={styles.gridArea}>
-                {data.results.length > 0 ? (
+                {results && results.length > 0 ? (
                     <div className={styles.grid}>
-                        {data.results.map((product: any) => (
-                            <ProductCard key={product.id} product={product} />
+                        {results.map((product: any) => (
+                            <ProductCard key={product.id || product.unique_id} product={product} />
                         ))}
                     </div>
                 ) : (

@@ -3,23 +3,21 @@
 /**
  * =====================================================================
  * 💻 BICSTATION 製品詳細レポート
- * 🛡️ Maya's Logic: 物理構造 v3.8 クリーンデータ適応版
+ * 🛡️ SHIN-VPS v5.5 [Universal Routing 対応版]
  * =====================================================================
  */
 
 import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers'; // 🚀 追加: ホスト名取得用
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 
-// APIインポート
-import {
-    fetchPCProductDetail,
-    fetchRelatedProducts,
-    fetchPCProductRanking
-} from '@/shared/lib/api/django/pc';
+// APIインポート (個別にインポートして host を渡せるように修正)
+import { fetchPCProductDetail } from '@/shared/lib/api/django/pc/products';
+import { fetchRelatedProducts, fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
 
 import styles from './ProductDetail.module.css';
 
@@ -34,10 +32,16 @@ interface PageProps {
     searchParams: Promise<{ attribute?: string }>;
 }
 
+/**
+ * 🛰️ メタデータ生成
+ * 修正: 内部通信を成功させるため host を取得して API に渡す
+ */
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const { unique_id } = await props.params;
+    const host = (await headers()).get('host') || '';
+    
     try {
-        const product = await fetchPCProductDetail(unique_id);
+        const product = await fetchPCProductDetail(unique_id, host);
         if (!product) return { title: "製品が見つかりません | BICSTATION" };
         const title = `${product.name} のスペック・価格・評判 | ${product.maker}最新比較`;
         return {
@@ -57,22 +61,28 @@ export default async function ProductDetailPage(props: PageProps) {
     const { unique_id } = await props.params;
     const sParams = await props.searchParams;
     const attribute = sParams.attribute;
+    
+    // 🌐 現在のホスト名を取得 (これがないと VPS 内部で 8083 ポートを叩きに行ってしまう)
+    const host = (await headers()).get('host') || '';
 
+    // 全ての API 呼び出しに host を伝播させる
     const [product, rankingData] = await Promise.all([
-        fetchPCProductDetail(unique_id).catch(() => null),
-        fetchPCProductRanking().catch(() => [])
+        fetchPCProductDetail(unique_id, host).catch(() => null),
+        fetchPCProductRanking('score', host).catch(() => [])
     ]);
 
     if (!product || !product.unique_id) {
         notFound();
     }
 
-    const rawRelated = await fetchRelatedProducts(product.maker || '', unique_id).catch(() => []);
+    const rawRelated = await fetchRelatedProducts(product.maker || '', unique_id, host).catch(() => []);
     const displayRelated = Array.isArray(rawRelated) ? rawRelated.slice(0, 8) : [];
+    
     const p = product as any;
     const finalUrl = product.affiliate_url || product.url || "#";
     const isPriceAvailable = typeof product.price === 'number' && product.price > 0;
 
+    // ランキング順位の算出
     const currentRank = Array.isArray(rankingData)
         ? rankingData.findIndex((item: any) => item.unique_id === unique_id) + 1
         : 0;
@@ -84,11 +94,9 @@ export default async function ProductDetailPage(props: PageProps) {
 
     /**
      * 🛡️ 物理構造パースロジック v3.8
-     * DB側でai_contentがクリーン化されている前提
      */
     const parseAiSummary = (summaryStr: string) => {
         if (!summaryStr) return null;
-        // SUMMARY_DATAタグ内からPOINTを抽出
         return {
             p1: summaryStr.match(/POINT1:\s*(.*)/)?.[1] || "",
             p2: summaryStr.match(/POINT2:\s*(.*)/)?.[1] || "",
@@ -98,7 +106,6 @@ export default async function ProductDetailPage(props: PageProps) {
     };
 
     const summary = parseAiSummary(product.ai_summary || "");
-    // ai_contentは既にクリーンなのでそのまま使用
     const cleanBody = product.ai_content || "";
     
     const today = new Date().toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
@@ -230,7 +237,6 @@ export default async function ProductDetailPage(props: PageProps) {
                         </div>
                     </div>
 
-                    {/* ✅ クリーンになった本文をレンダリング */}
                     {cleanBody && (
                         <div className={styles.aiContentSection}>
                             <div className={styles.sectionHeader}>
@@ -238,7 +244,6 @@ export default async function ProductDetailPage(props: PageProps) {
                                 <span className={styles.aiBadge}>AI ANALYSIS</span>
                             </div>
                             <div className={styles.aiContentBody}>
-                                {/* rehypeRawを残すことで、もしHTMLが含まれていても安全に表示可能 */}
                                 <ReactMarkdown rehypePlugins={[rehypeRaw]}>
                                     {cleanBody}
                                 </ReactMarkdown>
