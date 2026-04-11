@@ -1,11 +1,11 @@
 /**
  * =====================================================================
- * 🛠️ Django API 共通クライアント (Zenith v8.9 - Path Security Final)
+ * 🛠️ Django API 共通クライアント (Zenith v9.5 - Ultimate Debugger)
  * =====================================================================
- * 🛡️ 修正ポイント:
- * 1. 【パス二重付与防止】endpoint 内の 'api/' 重複を確実に検知してストリップ。
- * 2. 【Django互換パス】スラッシュ正規化を強化し、末尾スラッシュを保証。
- * 3. 【セーフハンドラ】Unexpected token '<' (HTML 404) を安全に受け流す。
+ * 🛡️ 強化ポイント:
+ * 1. 【URL全出力】構築された最終URLを fetch 直前にコンソールへ強制出力。
+ * 2. 【ヘッダー可視化】Djangoに送っている擬態Hostヘッダー等をログに表示。
+ * 3. 【ブラウザ連携】SSR時のエラー情報をフロントエンドへ安全にリレー。
  * =====================================================================
  */
 import { getWpConfig, IS_SERVER } from '../config';
@@ -15,42 +15,30 @@ import { getSiteMetadata } from '../../utils/siteConfig';
  * 💡 接続先URLを動的に解決 (Network Path Resolver)
  */
 export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
-    // 1. 設定の取得
     const cleanManualHost = manualHost ? manualHost.split(':')[0] : undefined;
     const config = getWpConfig(cleanManualHost);
     
-    // config.baseUrl は 'http://django-api-host:8000/api' か '...:8083/api'
-    // 末尾のスラッシュを一旦除去してベースを確定
+    // config.baseUrl = 'http://django-api-host:8000/api' など
     const rootUrl = config.baseUrl.replace(/\/+$/, ''); 
     const siteTag = config.siteKey;
 
-    /**
-     * 🎯 パスの正規化
-     * 呼び出し側が 'api/general/...' と送ってきても 'general/...' と送ってきても
-     * 二重にならないように 'api/' を先頭から除去する。
-     */
+    // パスの重複・スラッシュ揺れを徹底排除
     let cleanEndpoint = endpoint
-        .replace(/^\/+/, '')               // 先頭のスラッシュ削除
+        .replace(/^\/+/, '')               // 先頭スラッシュ削除
         .replace(/^api\//, '')            // 先頭の 'api/' 削除 (二重付与防止)
-        .replace(/\/+$/, '');             // 末尾のスラッシュを一旦削除
+        .replace(/\/+$/, '');             // 末尾スラッシュを一旦削除
 
     let finalUrl = "";
 
     if (cleanEndpoint.includes('?')) {
-        // クエリパラメータがある場合
         const [path, query] = cleanEndpoint.split('?');
-        // パス部分の末尾にスラッシュを強制（Django用）
         const sanitizedPath = path.replace(/\/+$/, '') + '/';
         finalUrl = `${rootUrl}/${sanitizedPath}?${query}`;
     } else {
-        // パスのみの場合
         finalUrl = `${rootUrl}/${cleanEndpoint}/`;
     }
 
-    /**
-     * 🛰️ サイト識別パラメータの注入
-     * 既に endpoint に site= が含まれていない場合のみ付与。
-     */
+    // siteパラメータの付与
     if (!finalUrl.includes('site=')) {
         finalUrl += (finalUrl.includes('?') ? '&' : '?') + `site=${siteTag}`;
     }
@@ -72,17 +60,16 @@ export const getDjangoHeaders = (manualHost?: string) => {
     };
 
     if (IS_SERVER) {
-        /**
-         * 🛰️ SSR身分証明プロトコル
-         */
+        // Django側の認可・識別用
         headers['x-django-host'] = siteTag;
         headers['x-project-id'] = siteTag;
         
-        // ALLOWED_HOSTS 通過のための擬態
+        // 🚀 重要: ALLOWED_HOSTS を突破するためのドメイン擬態
         const djangoHost = siteConfig?.django_host || `${siteTag}.com`;
         headers['Host'] = djangoHost;
         
-        console.log(`📡 [API-DEBUG] SSR Identity Resolved: ${siteTag} (via ${cleanHost || 'default'})`);
+        // デバッグ用: どのような身分でリクエストを投げるか記録
+        console.log(`📡 [API-IDENTITY] Site: ${siteTag} | Fake-Host: ${djangoHost} | Target-Host: ${cleanHost || 'default'}`);
     }
 
     return headers;
@@ -92,27 +79,46 @@ export const getDjangoHeaders = (manualHost?: string) => {
  * 💡 フェッチレスポンス・セーフハンドラ
  */
 export async function handleResponseWithDebug(res: Response, url: string) {
+    // 🔍 【全リクエスト監視】
+    if (IS_SERVER) {
+        const statusIcon = res.ok ? '✅' : '❌';
+        console.log(`${statusIcon} [API-FETCH] STATUS: ${res.status} | URL: ${url}`);
+    }
+
     if (!res.ok) {
-        // Django側のエラー(404等)をキャッチ
         console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | URL: ${url}`);
-        return { results: [], count: 0, _error: res.status };
+        // 404の場合、Djangoが返したHTMLの一部をログに出して「理由」を探る
+        try {
+            const errorBody = await res.text();
+            console.error(`📝 [Error Body Snippet]: ${errorBody.substring(0, 200)}...`);
+        } catch {
+            console.error('📝 [Error Body]: (Could not read body)');
+        }
+        return { results: [], count: 0, _error: res.status, _url: url };
     }
 
     try {
-        const text = await res.text(); // 一旦テキストで受ける
+        const text = await res.text();
         
-        // 空レスポンス対策
         if (!text) return { results: [], count: 0 };
 
-        // HTMLが返ってきていないかチェック (SyntaxError 防止)
-        if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<h1')) {
-            console.error(`🚨 [JSON Parse Error] HTML content received instead of JSON. URL: ${url}`);
-            return { results: [], count: 0, _error: 'HTML_RECEIVED' };
+        // 🚨 HTML検知ロジックの強化
+        if (text.trim().startsWith('<')) {
+            console.error(`🚨 [Critical: HTML Returned] API expected JSON but got HTML.`);
+            console.error(`🔗 URL: ${url}`);
+            console.error(`📄 HTML Preview: ${text.substring(0, 150)}...`);
+            
+            return { 
+                results: [], 
+                count: 0, 
+                _error: 'HTML_RECEIVED', 
+                _html_preview: text.substring(0, 100) 
+            };
         }
 
         const data = JSON.parse(text);
         
-        // 1. DRF 標準形式 (results/count)
+        // データ形式の正規化
         if (data && typeof data === 'object' && 'results' in data) {
             return {
                 results: Array.isArray(data.results) ? data.results : [],
@@ -120,12 +126,10 @@ export async function handleResponseWithDebug(res: Response, url: string) {
             };
         }
         
-        // 2. 配列直返し形式
         if (Array.isArray(data)) {
             return { results: data, count: data.length };
         }
         
-        // 3. 単体オブジェクト形式 (詳細ページ等)
         if (data && typeof data === 'object') {
             const payload = data.data || data;
             return { 
@@ -137,7 +141,7 @@ export async function handleResponseWithDebug(res: Response, url: string) {
         return { results: [], count: 0 };
 
     } catch (e) {
-        console.error(`🚨 [Unexpected Error] URL: ${url}`, e);
+        console.error(`🚨 [JSON Parse Error] URL: ${url}`, e);
         return { results: [], count: 0, _error: 'PARSE_FAILED' };
     }
 }
