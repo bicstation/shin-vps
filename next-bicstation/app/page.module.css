@@ -1,213 +1,284 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-MAIN-LAYOUT] - FINAL SYSTEM-INTEGRATED EDITION
+ * 🏗️ [BICSTATION-MAIN-LAYOUT] - TACTICAL OVERHAUL V10.0
  * ---------------------------------------------------------------------
- * 🚀 修正・統合ポイント:
- * 1. 【構造同期】Page.tsx の全要素（systemStatus, glitchTitle等）を網羅
- * 2. 【タクティカル】共通パーツ（sectionTitle, link, badge）を最新定義へ
+ * 🚀 強化ポイント:
+ * 1. 【背景】グリッド・パターンと微細なスキャンラインで情報密度を演出
+ * 2. 【ランキング】ダブルパネル専用のサイバーパンク・レイアウト
+ * 3. 【インタラクション】ネオン発光と変位アニメーションの高度化
  * ===================================================================== */
 
 .mainWrapper {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #0b0f19; /* ディープ・スペース・ネイビー */
-  color: #ffffff;
-  font-family: 'Inter', 'JetBrains Mono', sans-serif;
-  animation: tacticalFadeIn 0.8s ease-out;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #0b0f19;
+    /* 🛰️ グリッド背景を追加してシステム感を強調 */
+    background-image: 
+        linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: #ffffff;
+    font-family: 'Inter', 'JetBrains Mono', sans-serif;
+    animation: tacticalFadeIn 0.8s ease-out;
 }
 
 /* --- 🛠️ システムステータスバー --- */
 .systemStatus {
-  background: rgba(15, 23, 42, 0.9);
-  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
-  padding: 10px 20px;
-  backdrop-filter: blur(10px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+    background: rgba(11, 15, 25, 0.95);
+    border-bottom: 1px solid rgba(0, 242, 255, 0.3);
+    padding: 12px 24px;
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .statusInner {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    font-family: 'JetBrains Mono', monospace;
 }
 
 .pulseIndicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #00f2ff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #00f2ff;
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
-  background: #00f2ff;
-  border-radius: 50%;
-  box-shadow: 0 0 10px #00f2ff;
-  animation: statusPulse 2s infinite;
+    width: 8px;
+    height: 8px;
+    background: #00f2ff;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #00f2ff;
+    animation: statusPulse 2s infinite ease-in-out;
 }
-
-@keyframes statusPulse {
-  0% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.2); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-.versionTag { color: #94a3b8; }
-.verNum { color: #e94560; margin-left: 5px; }
-.countNum { color: #00f2ff; font-family: 'JetBrains Mono', monospace; }
 
 /* --- 🚀 ヒーローセクション --- */
 .heroSection {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  padding: 80px 40px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 120px 40px;
+    text-align: center;
+    position: relative;
+    background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5) 0%, transparent 100%);
+    border-bottom: 1px solid rgba(0, 242, 255, 0.1);
 }
 
 .heroGlow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(0, 242, 255, 0.1) 0%, transparent 70%);
-  pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0, 242, 255, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 .glitchTitle {
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  margin-bottom: 20px;
-  text-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+    font-size: clamp(3rem, 10vw, 5.5rem);
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    position: relative;
+    text-shadow: 
+        0 0 30px rgba(0, 242, 255, 0.2),
+        2px 2px 0px rgba(233, 69, 96, 0.5);
 }
 
 .subText {
-  color: #cbd5e1;
-  font-size: 1.1rem;
-  max-width: 700px;
-  margin: 0 auto;
-  line-height: 1.6;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.8;
+    font-family: 'Inter', sans-serif;
 }
 
-/* --- 📰 コンテンツエリア & 共通パーツ --- */
+/* --- 🏆 ランキングパネル (New Section) --- */
+.rankingPanel {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(0, 242, 255, 0.15);
+    padding: 24px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(4px);
+    transition: border-color 0.3s ease;
+}
+
+.rankingPanel:hover {
+    border-color: rgba(0, 242, 255, 0.4);
+}
+
+.panelHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.panelTitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    color: #f8fafc;
+}
+
+.rankingRow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: 2px solid transparent;
+}
+
+.rankingRow:hover {
+    background: rgba(0, 242, 255, 0.05);
+    transform: translateX(8px);
+    border-left: 2px solid #00f2ff;
+}
+
+.rankNum {
+    font-size: 1.2rem;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', monospace;
+    color: #334155;
+    min-width: 24px;
+}
+
+.trendColor { color: #f97316; } /* トレンド用オレンジ */
+
+.rankInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.rankName {
+    color: #f1f5f9;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.rankDetail {
+    color: #64748b;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* --- 📰 コンテンツエリア --- */
 .contentContainer {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 60px 20px;
-  width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 80px 24px;
+    width: 100%;
 }
 
-/* 提督指定の最新定義: sectionTitle */
 .sectionTitle {
-  color: #00f2ff;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(0, 242, 255, 0.3);
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+    color: #00f2ff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(0, 242, 255, 0.2);
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.sectionTitle::before {
-  content: ">";
-  font-weight: 900;
+.viewAll {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-decoration: none;
+    margin-left: auto;
+    transition: color 0.2s;
 }
 
-/* 提督指定の最新定義: link & badge */
-.link {
-  color: #cbd5e1;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  text-decoration: none;
+.viewAll:hover { color: #00f2ff; }
+
+/* 📂 カテゴリカード */
+.categoryCard {
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 24px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #94a3b8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
 }
 
-.link:hover {
-  color: #00f2ff !important;
-  transform: translateX(5px);
-  text-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
-}
-
-.badge {
-  background: rgba(0, 242, 255, 0.1);
-  color: #00f2ff;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid rgba(0, 242, 255, 0.2);
-}
-
-/* 最新ニュース部分の視認性強化 */
-.newsTitle {
-  color: #ffffff;
-  line-height: 1.4;
-  font-size: 0.9rem;
-}
-
-.newsLink:hover .newsTitle {
-  color: #00f2ff;
+.categoryCard:hover {
+    background: rgba(0, 242, 255, 0.05);
+    border-color: rgba(0, 242, 255, 0.3);
+    color: #00f2ff;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* --- 🛡️ ミッションセクション --- */
-.missionSection {
-  padding: 40px 20px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
 .missionCard {
-  background: rgba(30, 41, 59, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 40px;
-  border-radius: 24px;
-  border-left: 4px solid #e94560;
+    background: linear-gradient(90deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 60px 40px;
+    border-radius: 12px;
+    border-left: 4px solid #e94560;
+    position: relative;
 }
 
-/* --- 👣 フッター --- */
-.systemFooter {
-  padding: 40px 20px;
-  text-align: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: #080b13;
-}
-
-.copyright {
-  font-size: 0.8rem;
-  color: #64748b;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+.missionCard::after {
+    content: "SECURE_ARCHIVE";
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(233, 69, 96, 0.3);
 }
 
 /* --- ✨ アニメーション --- */
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px #00f2ff; }
+    50% { opacity: 0.5; transform: scale(1.1); box-shadow: 0 0 20px #00f2ff; }
+}
+
 @keyframes tacticalFadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- 📱 レスポンシブ --- */
+@media (max-width: 1024px) {
+    .contentContainer { padding: 40px 20px; }
+}
+
 @media (max-width: 768px) {
-  .heroSection { padding: 60px 20px; }
-  .glitchTitle { font-size: 2.2rem; }
-  .statusInner { flex-direction: column; gap: 10px; }
+    .heroSection { padding: 80px 20px; }
+    .glitchTitle { font-size: 2.8rem; }
+    .statusInner { font-size: 0.6rem; }
+    .nodeStats { display: none; } /* スマホでは統計を隠してスッキリさせる */
 }
