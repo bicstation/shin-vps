@@ -1,44 +1,92 @@
-// /app/product/page.tsx
-import React from 'react';
-import { headers } from 'next/headers'; // 🚀 追加: ホスト名取得用
+/* eslint-disable @next/next/no-img-element */
+/**
+ * =====================================================================
+ * 📋 BICSTATION PC製品一覧 (Product Listing)
+ * 🛡️ Maya's Logic: 物理構造 v3.2 / Next.js 15 対応版
+ * 物理パス: app/product/page.tsx
+ * =====================================================================
+ */
+
+import React, { Suspense } from 'react';
+import { headers } from 'next/headers';
+import { Metadata } from 'next';
+
+// ✅ 修正ポイント 1: インポートパスを物理構造に合わせる
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import Pagination from '@/shared/components/molecules/Pagination';
 import ProductSortSelector from '@/shared/components/molecules/ProductSortSelector';
-import { fetchPCProducts } from '@/shared/lib/api/django/pc/products'; // 🚀 追加: 共通パイプライン
+
+// ✅ 修正ポイント 2: API関数のパス修正 (catalog版と合わせる)
+import { fetchPCProducts } from '@/shared/lib/api/django/pc';
+
 import styles from './ProductsPage.module.css';
 
+// メタデータの設定
+export const metadata: Metadata = {
+    title: 'PC製品一覧 | BICSTATION',
+    description: 'メーカー別・ソート別で探す最新PC製品データベース。',
+};
+
+// Next.js 15推奨の動的設定
+export const dynamic = "force-dynamic";
+
+interface PageProps {
+    searchParams: Promise<{ 
+        page?: string; 
+        maker?: string; 
+        sort?: string;
+        q?: string;
+    }>;
+}
+
 /**
- * 🛠️ 修正ポイント:
- * 1. 古い API_BASE (8083) のハードコードを完全に撤廃。
- * 2. getProducts 関数を fetchPCProducts 共通関数に統合。
- * 3. headers() を使用して、SSR時でも正しいドメイン（bicstation.com等）をAPIに伝達。
+ * ✅ エントリポイント: Next.js 15 の searchParams 処理
  */
+export default async function ProductsPage(props: PageProps) {
+    return (
+        <Suspense fallback={
+            <div className="min-h-[60vh] flex flex-col items-center justify-center font-mono text-xs uppercase tracking-widest text-slate-500">
+                <div className="w-8 h-8 border-t-2 border-blue-500 animate-spin mb-4 rounded-full"></div>
+                Loading_Product_Catalog...
+            </div>
+        }>
+            <ProductsPageContent {...props} />
+        </Suspense>
+    );
+}
 
-export default async function ProductsPage({
-    searchParams,
-}: {
-    searchParams: { [key: string]: string | string[] | undefined };
-}) {
-    // 1. クエリパラメータの抽出とバリデーション
-    const currentPage = Number(searchParams.page) || 1;
-    const currentMaker = typeof searchParams.maker === 'string' ? searchParams.maker : undefined;
-    const currentSort = typeof searchParams.sort === 'string' ? searchParams.sort : '-created_at';
-
-    // 🌐 現在のホスト名を取得（VPSの8000番かローカルの8083番かを自動判別する材料）
-    const host = headers().get('host') || '';
+/**
+ * 💡 実際のコンテンツ（Server Component）
+ */
+async function ProductsPageContent({ searchParams }: PageProps) {
+    // 1. Next.js 15 では searchParams は await が必須
+    const sParams = await searchParams;
+    
+    // パラメータの正規化
+    const currentPage = Math.max(1, Number(sParams.page) || 1);
+    const currentMaker = sParams.maker || undefined;
+    const currentSort = sParams.sort || '-created_at';
+    const searchQuery = sParams.q || '';
     
     const limit = 20;
     const offset = (currentPage - 1) * limit;
 
+    // 🌐 ホスト名を取得（resolveApiUrl の判定に使用）
+    const headerList = await headers();
+    const host = headerList.get('host') || '';
+
     // 2. 共通パイプラインを使って製品データを取得
-    // これにより、内部で site=bicstation の付与やポート解決が自動で行われます
+    // catalogページと同様に fetchPCProducts を使用
     const { results, count } = await fetchPCProducts(
-        currentMaker,
-        offset,
-        limit,
-        currentSort,
+        searchQuery, 
+        offset, 
+        limit, 
+        currentMaker || '', // フィルタとしてメーカーを渡す
         host
-    );
+    ).catch((e) => {
+        console.error("[Product List API Error]:", e);
+        return { results: [], count: 0 };
+    });
 
     const totalPages = Math.ceil(count / limit);
 
@@ -51,11 +99,11 @@ export default async function ProductsPage({
                         {currentMaker ? `${currentMaker.toUpperCase()} 製品一覧` : '全PC製品ラインナップ'}
                     </h1>
                     <p className={styles.countText}>
-                        全 <span className={styles.hitCount}>{count}</span> 件のAI査定済みデータ
+                        全 <span className={styles.hitCount}>{count.toLocaleString()}</span> 件のAI査定済みデータ
                     </p>
                 </div>
 
-                {/* 🛠️ ソート切り替えツールバー (Client Component) */}
+                {/* 🛠️ ソート切り替えツールバー */}
                 <div className={styles.toolbar}>
                     <ProductSortSelector currentSort={currentSort} />
                 </div>
@@ -66,13 +114,17 @@ export default async function ProductsPage({
                 {results && results.length > 0 ? (
                     <div className={styles.grid}>
                         {results.map((product: any) => (
-                            <ProductCard key={product.id || product.unique_id} product={product} />
+                            <ProductCard 
+                                key={product.unique_id || product.id} 
+                                product={product} 
+                            />
                         ))}
                     </div>
                 ) : (
                     <div className={styles.noData}>
-                        <p>該当する製品が見つかりませんでした。</p>
-                        <span>条件を変えて検索してみてください。</span>
+                        <div className="text-4xl mb-4">🔍</div>
+                        <p className="font-bold">該当する製品が見つかりませんでした。</p>
+                        <span className="text-sm text-slate-400">条件を変えて検索してみてください。</span>
                     </div>
                 )}
             </section>
@@ -80,13 +132,10 @@ export default async function ProductsPage({
             {/* 📑 フッター・ページネーション */}
             <footer className={styles.footer}>
                 <Pagination 
-                    currentPage={currentPage}
-                    totalPages={totalPages}
+                    currentOffset={offset} // catalog版に合わせて引数名を統一
+                    limit={limit}
+                    totalCount={count}
                     baseUrl="/product"
-                    query={{
-                        maker: currentMaker,
-                        sort: currentSort
-                    }}
                 />
             </footer>
         </main>

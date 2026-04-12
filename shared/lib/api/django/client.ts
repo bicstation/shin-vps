@@ -1,12 +1,11 @@
 /**
  * =====================================================================
- * 🛠️ Django API 共通クライアント (Zenith v10.2 - Network Infrastructure Fix)
+ * 🛰️ Django API 共通クライアント (Zenith v10.9 - Docker Network Native)
  * =====================================================================
- * 🛡️ 強化ポイント:
- * 1. 【ホスト名正規化】api.ドメイン や api-xxx-host から純粋な識別子を抽出。
- * 2. 【環境判定の厳格化】NODE_ENV とホスト名の両面から、VPS内部通信か否かを判定。
- * 3. 【サイト名クレンジング】スペースを含む site_name を安全な siteTag (小文字/連結) へ変換。
- * 4. 【DNSエラー対策】不完全なホスト名による getaddrinfo エラーをガード。
+ * 🛡️ 運用ロジック:
+ * 1. 【最優先】Dockerネットワーク内のサービス名 `django-v3:8000` を使用。
+ * 2. 【ホスト判定】ホスト名からサイトタグ（bicstation等）を自動抽出。
+ * 3. 【正規化】エンドポイントのスラッシュ重複やパラメータ付与を自動処理。
  * =====================================================================
  */
 import { getWpConfig, IS_SERVER } from '../config';
@@ -19,59 +18,61 @@ export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
     // 優先順位: 1. 手動引数 2. windowオブジェクト (ブラウザ) 3. フォールバック
     const host = manualHost || (typeof window !== 'undefined' ? window.location.host : '');
 
-    // 🚀 1. ホスト名の正規化
-    let normalizedHost = host.replace(/^api\./, '').split(':')[0];
+    // 🚀 1. ローカル・VPS固有ホストの判定フラグ
+    const isLocalSpecificHost = 
+        host.includes('api-bicstation-host') || 
+        host.includes('api-saving-host') || 
+        host.includes('api-tiper-host') || 
+        host.includes('api-avflash-host') ||
+        host.includes('localhost') ||
+        host.includes('127.0.0.1') ||
+        host.includes('bicstation-host');
 
-    // ローカル環境専用のホスト名マッピング (bicstation 等の名前解決エラーを防ぐ)
+    // 🚀 2. ホスト名の正規化 (site判定用)
+    let normalizedHost = host.replace(/^api\./, '').split(':')[0];
     if (host.includes('api-bicstation-host')) normalizedHost = 'bicstation.com';
     if (host.includes('api-saving-host')) normalizedHost = 'bic-saving.com';
     if (host.includes('api-tiper-host')) normalizedHost = 'tiper.live';
     if (host.includes('api-avflash-host')) normalizedHost = 'avflah.xyz';
 
-    // 🚀 2. サイトメタデータの取得と siteTag のクレンジング
+    // 🚀 3. サイトメタデータの取得と siteTag の生成
     const siteConfig = getSiteMetadata(normalizedHost);
-    
-    // 🚨 修正: 'Bic Station' -> 'bicstation' のように、スペースを除去して小文字化
-    // これにより Django 側のフィルタリング不一致を防ぎます。
     const siteTag = siteConfig?.site_name 
         ? siteConfig.site_name.toLowerCase().replace(/\s+/g, '') 
         : 'bicstation';
 
-    // 🚀 3. ベースURL (Root) の決定ロジック
-    // VPS環境であるかどうかの厳密なチェック
-    const isVpsEnvironment = 
-        process.env.NODE_ENV === 'production' || 
-        host.includes('bicstation.com') || 
-        host.includes('tiper.live') || 
-        host.includes('avflah.xyz') || 
-        host.includes('bic-saving.com') ||
-        host.includes('django-api-host');
-
+    // 🚀 4. 通信先(apiBase)の決定
     let apiBase = '';
     if (IS_SERVER) {
-        if (isVpsEnvironment) {
-            // VPS内部通信: コンテナ名を解決
-            apiBase = 'http://django-api-host:8000';
+        /**
+         * 💡 重要: VPS上のDockerネットワーク内では、localhost(8083) 経由ではなく
+         * サービス名 `django-v3` の 8000番ポートを直接叩くのが正解です。
+         */
+        if (
+            process.env.NODE_ENV === 'production' || 
+            host.includes('bicstation') || 
+            host.includes('tiper') || 
+            host.includes('avflah') || 
+            host.includes('saving')
+        ) {
+            // Docker Composeのサービス名(django-v3)を指定
+            apiBase = 'http://django-v3:8000';
         } else {
-            // ローカル開発環境: 
-            // host が不完全 (1000000 等) な場合は localhost に逃がして EAI_AGAIN を防ぐ
-            const localHost = (host && !host.includes('1000000') && host !== 'default') 
-                ? host.split(':')[0] 
-                : 'localhost';
-            apiBase = `http://${localHost}:8083`;
+            // 完全なローカル環境用
+            apiBase = 'http://127.0.0.1:8083';
         }
     } else {
-        // クライアントサイドは相対パス
+        // クライアントサイド（ブラウザ）からは相対パス
         apiBase = ''; 
     }
 
     const rootUrl = `${apiBase.replace(/\/+$/, '')}/api`;
 
-    // 🚀 4. エンドポイントの整形 (二重スラッシュ・二重API防止)
+    // 🚀 5. エンドポイントの整形 (二重スラッシュ・二重API防止)
     let cleanEndpoint = endpoint
-        .replace(/^\/+/, '')               // 先頭スラッシュ削除
-        .replace(/^api\//, '')            // 先頭の 'api/' 削除
-        .replace(/\/+$/, '');             // 末尾スラッシュを一旦削除
+        .replace(/^\/+/, '')               
+        .replace(/^api\//, '')            
+        .replace(/\/+$/, '');             
 
     let finalUrl = "";
     if (cleanEndpoint.includes('?')) {
@@ -82,12 +83,11 @@ export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
         finalUrl = `${rootUrl}/${cleanEndpoint}/`;
     }
 
-    // 🚀 5. siteパラメータの付与
+    // 🚀 6. siteパラメータの付与
     if (!finalUrl.includes('site=')) {
         const separator = finalUrl.includes('?') ? '&' : '?';
         finalUrl += `${separator}site=${siteTag}`;
     } else if (finalUrl.includes('site=api')) {
-        // 誤認された site=api を正しい siteTag に差し替え
         finalUrl = finalUrl.replace('site=api', `site=${siteTag}`);
     }
 
@@ -99,9 +99,8 @@ export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
  */
 export const getDjangoHeaders = (manualHost?: string) => {
     const host = manualHost || '';
-    
-    // ホスト名正規化 (resolveApiUrl とロジックを統一)
     let normalizedHost = host.replace(/^api\./, '').split(':')[0];
+    
     if (host.includes('api-bicstation-host')) normalizedHost = 'bicstation.com';
     if (host.includes('api-saving-host')) normalizedHost = 'bic-saving.com';
     if (host.includes('api-tiper-host')) normalizedHost = 'tiper.live';
@@ -120,8 +119,6 @@ export const getDjangoHeaders = (manualHost?: string) => {
     if (IS_SERVER) {
         headers['x-django-host'] = siteTag;
         headers['x-project-id'] = siteTag;
-        
-        // ALLOWED_HOSTS 突破用のドメイン擬態
         const djangoHost = siteConfig?.django_host || `${siteTag}.com`;
         headers['Host'] = djangoHost;
         
@@ -142,32 +139,18 @@ export async function handleResponseWithDebug(res: Response, url: string) {
 
     if (!res.ok) {
         console.error(`🚨 [Django API Error] ${res.status} ${res.statusText} | URL: ${url}`);
-        try {
-            const errorBody = await res.text();
-            console.error(`📝 [Error Body Snippet]: ${errorBody.substring(0, 150)}...`);
-        } catch {
-            console.error('📝 [Error Body]: (Could not read body)');
-        }
-        return { results: [], count: 0, _error: res.status, _url: url };
+        return { results: [], count: 0, _error: res.status };
     }
 
     try {
         const text = await res.text();
-        if (!text) return { results: [], count: 0 };
-
-        // 🚨 HTML検知ロジック
-        if (text.trim().startsWith('<')) {
-            console.error(`🚨 [Critical: HTML Returned] Expected JSON but got HTML. URL: ${url}`);
-            return { 
-                results: [], 
-                count: 0, 
-                _error: 'HTML_RECEIVED'
-            };
+        if (!text || text.trim().startsWith('<')) {
+            if (IS_SERVER) console.error(`🚨 [Critical: HTML Returned] URL: ${url}`);
+            return { results: [], count: 0, _error: 'HTML_RECEIVED' };
         }
 
         const data = JSON.parse(text);
         
-        // 🚀 データ形式の正規化
         if (data && typeof data === 'object' && 'results' in data) {
             return {
                 results: Array.isArray(data.results) ? data.results : [],

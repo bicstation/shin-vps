@@ -1,11 +1,11 @@
 /**
  * =====================================================================
- * 📊 PC 統計・関連データ取得サービス (Zenith v9.6)
+ * 📊 PC 統計・関連データ取得サービス (Zenith v10.0 - Pipeline Synced)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【データ抽出の統一】handleResponseWithDebug の戻り値から results を確実に抽出。
- * 2. 【ホスト伝播】すべての関数で host 引数をリレーし、VPS/Local 判定を維持。
- * 3. 【型安全】予期せぬレスポンスでも空配列を返し、サイドバー等のクラッシュを防止。
+ * 1. 【引数リレーの整合性】fetchPCProducts の新仕様 (q, offset, limit, maker) に準拠。
+ * 2. 【データ抽出の堅牢化】handleResponseWithDebug の戻り値を安全に処理。
+ * 3. 【VPS/Local 完全対応】すべてのエンドポイントで host 引数を伝播させ、接続先解決を保証。
  * =====================================================================
  */
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '../client';
@@ -30,11 +30,10 @@ export async function fetchPCProductRanking(
             next: { revalidate: 600 } 
         });
         
-        // 🚀 handleResponseWithDebug を使用
+        // handleResponseWithDebug は { results: [], count: 0 } を返す
         const data = await handleResponseWithDebug(res, url);
         
-        // data.results は handleResponseWithDebug 側で必ず配列であることが保証されています
-        return data.results;
+        return Array.isArray(data.results) ? data.results : [];
     } catch (e) {
         console.error(`🚨 [Ranking Fetch Error] type: ${type}`, e);
         return [];
@@ -56,9 +55,15 @@ export async function fetchPCSidebarStats(host: string = ''): Promise<any | null
         
         const data = await handleResponseWithDebug(res, url);
 
-        // 統計データは単一オブジェクトの場合が多いため、results があればそれを、なければ全体を返す
-        // handleResponseWithDebug の仕様に合わせ、正規化されたデータを取得
-        return data.results && data.results.length > 0 ? data.results[0] : (data.results || null);
+        /**
+         * 💡 正規化ロジック:
+         * 統計データが results: [ {stats_data} ] という配列で来る場合は 0 番目を抽出。
+         * オブジェクト直下で来る場合はそのまま data.results を返す。
+         */
+        if (data.results && Array.isArray(data.results)) {
+            return data.results.length > 1 ? data.results : data.results[0];
+        }
+        return data.results || null;
     } catch (e) {
         console.error(`🚨 [Sidebar Stats Fetch Error]`, e);
         return null;
@@ -67,24 +72,31 @@ export async function fetchPCSidebarStats(host: string = ''): Promise<any | null
 
 /**
  * 💡 関連製品取得 (メーカー一致製品から自分を除外)
- * @param maker - メーカー識別子
- * @param excludeId - 除外する現在の製品ID
+ * @param maker - メーカー識別子 (DELL, HP等)
+ * @param excludeId - 除外する現在の製品ID (unique_id)
  * @param host - 実行環境のホスト名
  */
 export async function fetchRelatedProducts(
     maker: string, 
     excludeId: string,
     host: string = ''
-): Promise<any[]> {
+): Promise<PCProduct[]> {
     try {
-        // 🚀 fetchPCProducts に host をリレーすることで、内部での URL 解決を正常化
-        const { results } = await fetchPCProducts(maker, 0, 9, '', host); 
+        /**
+         * 🚀 重要修正: fetchPCProducts の引数順序を v10.0 仕様に同期
+         * 第1引数(q): 空
+         * 第2引数(offset): 0
+         * 第3引数(limit): 10 (除外分を考慮して少し多めに取得)
+         * 第4引数(maker): maker識別子
+         * 第5引数(host): hostリレー
+         */
+        const { results } = await fetchPCProducts('', 0, 10, maker, host); 
         
         if (!results || !Array.isArray(results)) return [];
 
-        // 自分自身を除外して最大8件返す
+        // 自分自身を除外して最大8件を返却
         return results
-            .filter((p: any) => p.unique_id !== excludeId)
+            .filter((p: PCProduct) => p.unique_id !== excludeId)
             .slice(0, 8);
     } catch (e) {
         console.error(`🚨 [Related Products Fetch Error] maker: ${maker}`, e);
