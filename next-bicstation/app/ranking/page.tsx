@@ -10,7 +10,7 @@
 
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
-import { headers } from 'next/headers'; // 🚀 ホスト名取得用に追加
+import { headers } from 'next/headers';
 import Link from 'next/link';
 
 // インポートパスの物理構造整合
@@ -50,6 +50,8 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
             title,
             description,
             type: 'website',
+            title: title,
+            description: description,
         }
     };
 }
@@ -77,46 +79,48 @@ async function RankingContent(props: PageProps) {
     const sParams = await props.searchParams;
     const currentPage = parseInt(sParams.page || '1', 10);
     const limit = 20; 
-    const offset = (currentPage - 1) * limit;
 
     // 🌐 現在のホスト名を取得 (API疎通の生命線)
     const headerList = await headers();
     const host = headerList.get('host') || '';
 
-    // 1. APIデータの取得 (type: 'score', host を渡す)
-    const allProducts = await fetchPCProductRanking('score', host).catch(() => []);
+    /**
+     * 🚀 修正ポイント: 
+     * Django側で既にTOP20等に絞り込まれている可能性があるため、
+     * フロントエンドでの slice 処理を安全に行う。
+     */
+    const rawData = await fetchPCProductRanking('score', host).catch(() => []);
     
-    // スライス処理
-    const products = allProducts.slice(offset, offset + limit);
-    const totalPages = Math.ceil(allProducts.length / limit);
+    // results キーがある場合と、配列直下の場合の両方をハンドリング
+    const productsArray = Array.isArray(rawData) ? rawData : ((rawData as any)?.results || []);
+    
+    // フロントエンドでの仮想ページネーション処理
+    const offset = (currentPage - 1) * limit;
+    const products = productsArray.slice(offset, offset + limit);
+    const totalPages = Math.max(1, Math.ceil(productsArray.length / limit));
 
-    // 2. 構造化データの生成 (ItemList)
+    // 2. 構造化データの生成
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "PCスペック解析ランキング",
-        "description": "AIによる5軸スコアに基づいた最新PCランキング",
-        "numberOfItems": allProducts.length,
+        "numberOfItems": productsArray.length,
         "itemListElement": products.map((p: any, i: number) => ({
             "@type": "ListItem",
             "position": offset + i + 1,
             "item": {
                 "@type": "Product",
                 "name": p.name,
-                "image": p.image_url?.replace('http://', 'https://'),
                 "brand": { "@type": "Brand", "name": p.maker }
             }
         }))
     };
 
-    /**
-     * 順位に応じたアクセントカラー (TOP3を際立たせる)
-     */
     const getChartColor = (rank: number) => {
-        if (rank === 1) return '#FFD700'; // Gold
-        if (rank === 2) return '#C0C0C0'; // Silver
-        if (rank === 3) return '#CD7F32'; // Bronze
-        return '#3b82f6'; // BICSTATION Blue
+        if (rank === 1) return '#FFD700'; 
+        if (rank === 2) return '#C0C0C0'; 
+        if (rank === 3) return '#CD7F32'; 
+        return '#3b82f6';
     };
 
     return (
@@ -126,7 +130,6 @@ async function RankingContent(props: PageProps) {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
 
-            {/* 🌌 ヒーローセクション */}
             <header className={styles.header}>
                 <div className={styles.heroInner}>
                     <div className={styles.badge}>PC_ANALYTICS_v2.0</div>
@@ -141,13 +144,12 @@ async function RankingContent(props: PageProps) {
                 </div>
             </header>
             
-            {/* 📊 ランキンググリッド */}
             <div className={styles.grid}>
                 {products.length > 0 ? (
                     products.map((product: any, index: number) => {
                         const rank = offset + index + 1;
                         
-                        // レーダーチャートデータの構築 (API側のキー名に準拠)
+                        // レーダーチャートデータの構築
                         const chartData = [
                             { subject: 'CPU', value: product.score_cpu || 0, fullMark: 100 },
                             { subject: 'GPU', value: product.score_gpu || 0, fullMark: 100 },
@@ -188,11 +190,13 @@ async function RankingContent(props: PageProps) {
                         );
                     })
                 ) : (
-                    <div className={styles.noData}>ランキングデータが取得できませんでした。</div>
+                    <div className={styles.noData}>
+                        <p>現在ランキングデータを集計中です...</p>
+                        <p className="text-[10px] mt-2 opacity-50">NO_DATA_RECEIVED_FROM_BACKEND</p>
+                    </div>
                 )}
             </div>
 
-            {/* 🧭 ナビゲーション */}
             {totalPages > 1 && (
                 <nav className={styles.pagination} aria-label="Ranking pages">
                     <div className={styles.paginationInner}>

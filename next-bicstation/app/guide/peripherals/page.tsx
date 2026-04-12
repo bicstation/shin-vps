@@ -1,124 +1,169 @@
+/**
+ * =====================================================================
+ * 🖱️ BICSTATION: PERIPHERALS_TRACKER_V1.0
+ * 🛡️ Maya's Logic: 市場底値と連動した投資判断エンジンの実装
+ * =====================================================================
+ */
+
 import React from 'react';
+import { Monitor, MousePointer2, Link, TrendingDown, Clock, ChevronRight } from 'lucide-react';
+import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 
-const PERIPHERAL_GROUPS = [
-  {
-    category: "Monitor",
-    title: "視覚インフラ：解像度と作業効率",
-    description: "モニターは1枚増えるごとに生産性が40%向上します。4Kか、ウルトラワイドか。DBの価格推移を見て、今最も「買い」の1枚を特定。",
-    items: [
-      { name: "27インチ 4K IPSモニター", label: "デスクワークの終着点" },
-      { name: "34インチ ウルトラワイド", label: "デイトレ・動画編集の神器" }
-    ],
-    strategy: "Amazonプライムデー等の大型セールで「型落ち」を狙うのが最安。",
-    color: "border-l-cyan-500"
-  },
-  {
-    category: "Input",
-    title: "入力デバイス：腱鞘炎防止と打鍵感",
-    description: "キーボードとマウスはPCとの対話。ここは「安物買いの銭失い」が最も発生しやすい場所です。",
-    items: [
-      { name: "静電容量無接点方式キーボード", label: "一生モノの投資" },
-      { name: "高機能エルゴノミクスマウス", label: "ショートカットの鬼" }
-    ],
-    strategy: "楽天お買い物マラソンでポイント還元率を最大化して実質価格を下げる。",
-    color: "border-l-rose-500"
-  },
-  {
-    category: "Connectivity",
-    title: "接続・インフラ：1円まで削る領域",
-    description: "HDMIケーブルやUSBハブ。性能差が出にくい部分は、ノーブランド品の底値をDBで突き止めます。",
-    items: [
-      { name: "USB-C ドッキングステーション", label: "配線1本の快適さ" },
-      { name: "GaN採用 急速充電器", label: "電源周りの小型化" }
-    ],
-    strategy: "AliExpressやAmazon定期便、100均のガジェットコーナーを併用。",
-    color: "border-l-slate-400"
-  }
-];
+// 周辺機器グループの型
+interface PeripheralGroup {
+    category: string;
+    title: string;
+    description: string;
+    strategy: string;
+    theme_color: string;
+    items: { label: string; name: string }[];
+}
 
-export default function PeripheralsGuidePage() {
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-12 bg-white min-h-screen font-sans">
-      <header className="mb-16 text-center">
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
-          🖱️ PERIPHERALS：周辺機器・底値買い出しリスト
-        </h1>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-          「良い道具は、時間を生み出す投資である」<br />
-          デバイスごとの重要度を見極め、**投資すべきもの**と**削るべきもの**を明確にします。
-        </p>
-      </header>
+// 底値トラッカーの型
+interface PriceTrackItem {
+    id: string;
+    name: string;
+    current_price: number;
+    target_price: number;
+    status: 'HOT' | 'WAIT'; // 買い時か待ちか
+    last_updated: string;
+}
 
-      {/* 戦略セクション */}
-      <div className="grid md:grid-cols-3 gap-8 mb-20">
-        {PERIPHERAL_GROUPS.map((group, idx) => (
-          <div key={idx} className={`bg-slate-50 p-8 rounded-3xl border-l-8 ${group.color} shadow-sm transition-all hover:shadow-md`}>
-            <div className="text-xs font-black text-slate-400 mb-2 uppercase tracking-widest">{group.category}</div>
-            <h2 className="text-xl font-bold text-slate-900 mb-4">{group.title}</h2>
-            <p className="text-sm text-slate-600 leading-relaxed mb-6">{group.description}</p>
-            
-            <ul className="space-y-3 mb-8">
-              {group.items.map((item, i) => (
-                <li key={i} className="flex flex-col bg-white p-3 rounded-xl border border-slate-200">
-                  <span className="text-xs text-blue-600 font-bold mb-1">{item.label}</span>
-                  <span className="text-sm font-bold text-slate-800">{item.name}</span>
-                </li>
-              ))}
-            </ul>
+/**
+ * 🛠️ データを一括取得（実際はDjangoのエンドポイントから）
+ */
+async function getPeripheralsData() {
+    try {
+        // 並列でデータを取得
+        const [groups, tracker] = await Promise.all([
+            fetchDjangoBridgeContent('peripheral-groups', 0),
+            fetchDjangoBridgeContent('price-tracker', 0)
+        ]);
+        return { 
+            groups: groups?.results || [], 
+            tracker: tracker?.results || [] 
+        };
+    } catch (e) {
+        console.error("🚨 PERIPHERALS_FETCH_ERROR:", e);
+        return { groups: [], tracker: [] };
+    }
+}
 
-            <div className="bg-slate-900 text-white p-4 rounded-xl text-xs">
-              <span className="text-amber-400 font-black block mb-1">BIC'S STRATEGY:</span>
-              {group.strategy}
+export default async function PeripheralsGuidePage() {
+    const { groups, tracker } = await getPeripheralsData();
+    const now = new Date();
+
+    return (
+        <div className="max-w-6xl mx-auto px-4 py-12 bg-white min-h-screen font-sans">
+            {/* 🛰️ システムヘッダー */}
+            <header className="mb-16 text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-black tracking-widest mb-6">
+                    <Clock size={12} />
+                    <span>SYSTEM_SYNC: {now.toLocaleTimeString()}</span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-6 tracking-tighter">
+                    PERIPHERALS：底値買い出しアーカイブ
+                </h1>
+                <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
+                    「良い道具は、時間を生み出す投資である」<br />
+                    Bic StationのDBが、主要ECサイトの価格推移から**「投資価値のある逸品」**を自動選別します。
+                </p>
+            </header>
+
+            {/* 📋 カテゴリ別・投資戦略 */}
+            <div className="grid md:grid-cols-3 gap-8 mb-24">
+                {groups.map((group: PeripheralGroup, idx: number) => (
+                    <div key={idx} className={`bg-[#fbfcfd] p-8 rounded-2xl border-t-4 ${group.theme_color} shadow-sm hover:shadow-xl transition-all group`}>
+                        <div className="flex justify-between items-center mb-4">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{group.category}</span>
+                            {group.category === 'Monitor' && <Monitor size={18} className="text-slate-300" />}
+                            {group.category === 'Input' && <MousePointer2 size={18} className="text-slate-300" />}
+                            {group.category === 'Connectivity' && <Link size={18} className="text-slate-300" />}
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-900 mb-4 group-hover:text-blue-600 transition-colors">{group.title}</h2>
+                        <p className="text-sm text-slate-500 leading-relaxed mb-8 h-12 overflow-hidden">{group.description}</p>
+                        
+                        <div className="space-y-3 mb-8">
+                            {group.items.map((item, i) => (
+                                <div key={i} className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
+                                    <span className="text-[10px] text-blue-500 font-bold block mb-1 uppercase italic">{item.label}</span>
+                                    <span className="text-sm font-bold text-slate-800">{item.name}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="bg-slate-900 text-white p-5 rounded-xl text-[11px] leading-relaxed relative overflow-hidden">
+                            <div className="relative z-10">
+                                <span className="text-amber-400 font-black block mb-2 tracking-widest uppercase">Bic's Strategy</span>
+                                {group.strategy}
+                            </div>
+                            <TrendingDown className="absolute right-[-10px] bottom-[-10px] text-white/5" size={60} />
+                        </div>
+                    </div>
+                ))}
             </div>
-          </div>
-        ))}
-      </div>
 
-      {/* DB連携表示エリア（肉付け用ダミー） */}
-      <section className="bg-slate-50 rounded-3xl p-8 md:p-12 border border-slate-200">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-          <div>
-            <h2 className="text-2xl font-black text-slate-900">📉 リアルタイム底値トラッカー</h2>
-            <p className="text-slate-500 text-sm mt-1">Amazon / 楽天 / 価格.com のDBから「今」安くなっているものを抽出。</p>
-          </div>
-          <div className="bg-white px-4 py-2 rounded-full text-xs font-bold text-slate-400 border border-slate-200">
-            最終更新: 2026/04/09 03:55
-          </div>
+            {/* 📉 リアルタイム底値トラッカー（DB直結） */}
+            <section className="bg-slate-900 rounded-[2rem] p-8 md:p-16 text-white shadow-2xl relative overflow-hidden">
+                {/* 装飾 */}
+                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent)] pointer-events-none"></div>
+
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6 relative z-10">
+                    <div>
+                        <h2 className="text-3xl font-black mb-2 flex items-center gap-3 italic">
+                            <TrendingDown className="text-blue-400" />
+                            REALTIME_PRICE_TRACKER
+                        </h2>
+                        <p className="text-slate-400 text-sm font-mono">
+                            Monitoring: Amazon / Rakuten / Yahoo_Shopping / Kakaku_DB
+                        </p>
+                    </div>
+                    <div className="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-md text-[10px] font-mono text-blue-400">
+                        LAST_INDEX_UPDATE: {now.toISOString().split('T')[0]}
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto relative z-10">
+                    <table className="w-full text-left font-mono">
+                        <thead>
+                            <tr className="border-b border-white/10 text-slate-500 text-[10px] uppercase tracking-widest">
+                                <th className="py-6 px-4">Item_Identity</th>
+                                <th className="py-6 px-4 text-center">Market_Avg</th>
+                                <th className="py-6 px-4 text-center">Target_ROI</th>
+                                <th className="py-6 px-4 text-right">Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {tracker.map((product: PriceTrackItem) => (
+                                <tr key={product.id} className="hover:bg-white/5 transition-colors group">
+                                    <td className="py-6 px-4">
+                                        <div className="font-bold text-white group-hover:text-blue-400 transition-colors">{product.name}</div>
+                                        <div className="text-[10px] text-slate-500">ID: {product.id}</div>
+                                    </td>
+                                    <td className="py-6 px-4 text-center text-slate-400 italic">¥{product.current_price.toLocaleString()}</td>
+                                    <td className="py-6 px-4 text-center font-bold text-blue-400">¥{product.target_price.toLocaleString()}</td>
+                                    <td className="py-6 px-4 text-right">
+                                        <span className={`px-4 py-1.5 rounded-sm text-[10px] font-black tracking-tighter ${
+                                            product.status === 'HOT' 
+                                            ? 'bg-blue-600 text-white animate-pulse' 
+                                            : 'bg-slate-800 text-slate-500'
+                                        }`}>
+                                            {product.status === 'HOT' ? 'BUY_NOW' : 'HOLD_WAIT'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {/* 👣 ナビゲーション */}
+            <div className="mt-20 flex justify-center gap-8">
+                <a href="/" className="group flex items-center gap-2 font-mono text-xs font-bold text-slate-400 hover:text-slate-900 transition-all">
+                    RETURN_TO_BASE
+                </a>
+            </div>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b-2 border-slate-200 text-slate-400 text-xs uppercase tracking-tighter font-black">
-                <th className="py-4 px-2">Product Name</th>
-                <th className="py-4 px-2 text-center">Market Price</th>
-                <th className="py-4 px-2 text-center">Target Price</th>
-                <th className="py-4 px-2 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              <tr className="hover:bg-white transition-colors">
-                <td className="py-4 px-2 font-bold text-slate-800 text-sm">Logicool MX Master 3S</td>
-                <td className="py-4 px-2 text-center text-slate-500 text-sm italic">¥16,900</td>
-                <td className="py-4 px-2 text-center font-black text-slate-900 text-sm">¥14,800</td>
-                <td className="py-4 px-2 text-right"><span className="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-[10px] font-bold">買い時！</span></td>
-              </tr>
-              <tr className="hover:bg-white transition-colors">
-                <td className="py-4 px-2 font-bold text-slate-800 text-sm">Dell U2723QE</td>
-                <td className="py-4 px-2 text-center text-slate-500 text-sm italic">¥74,800</td>
-                <td className="py-4 px-2 text-center font-black text-slate-900 text-sm">¥65,000</td>
-                <td className="py-4 px-2 text-right"><span className="bg-slate-200 text-slate-500 px-3 py-1 rounded-full text-[10px] font-bold">待ち</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <div className="mt-16 text-center">
-        <a href="/" className="inline-block border-2 border-slate-900 text-slate-900 font-bold px-8 py-3 rounded-xl hover:bg-slate-900 hover:text-white transition-all">
-          Bic Station トップへ戻る
-        </a>
-      </div>
-    </div>
-  );
+    );
 }

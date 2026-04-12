@@ -197,16 +197,13 @@ TARGET: おすすめ対象
             summary_text = summary_match.group(0).strip() if summary_match else ""
 
             # --- 2. コンテンツの徹底クリーニング (ai_content用) ---
-            # タグ部分を削除
             clean_body = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', full_text, flags=re.DOTALL)
             clean_body = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', clean_body, flags=re.DOTALL)
             
-            # HTMLタグが混入していた場合のMarkdown置換
             clean_body = clean_body.replace('<h2>', '## ').replace('</h2>', '\n')\
                                    .replace('<h3>', '### ').replace('</h3>', '\n')\
                                    .replace('<p>', '').replace('</p>', '\n')
 
-            # 冒頭の不要な製品名タイトル行（1行目）を削除
             lines = clean_body.strip().split('\n')
             if len(lines) > 0 and (product.maker.lower() in lines[0].lower() or "】" in lines[0]):
                 clean_body = '\n'.join(lines[1:]).strip()
@@ -229,6 +226,8 @@ TARGET: おすすめ対象
             product.gpu_model = spec_data.get('gpu_model', product.gpu_model)
             product.memory_gb = safe_int(spec_data.get('memory_gb'), product.memory_gb)
             product.storage_gb = safe_int(spec_data.get('storage_gb'), product.storage_gb)
+            
+            # 各個別スコアの更新
             product.score_cpu = safe_int(spec_data.get('score_cpu'), 0)
             product.score_gpu = safe_int(spec_data.get('score_gpu'), 0)
             product.score_cost = safe_int(spec_data.get('score_cost'), 0)
@@ -236,9 +235,26 @@ TARGET: おすすめ対象
             product.score_ai = safe_int(spec_data.get('score_ai'), 0)
             product.is_ai_pc = spec_data.get('is_ai_pc', False)
             
-            # きれいに分離して保存
-            product.ai_summary = summary_text  # 要約タグ付き
-            product.ai_content = clean_body    # 徹底的に掃除された本文のみ
+            # ★ 自動化追加ロジック: ランキング表示を確実にするためのフラグとスコア計算
+            product.site_prefix = 'bicstation'  # BicStation用に固定
+            product.is_active = True           # 掲載中に設定
+            product.is_posted = True           # 投稿済みに設定
+            product.stock_status = "在庫あり"    # 在庫ありに強制（APIフィルター対策）
+            
+            # 総合スコア (spec_score) の算出。AIが返してきた値があればそれを使い、なければ平均を出す。
+            ai_spec_score = safe_int(spec_data.get('spec_score'), 0)
+            if ai_spec_score > 0:
+                product.spec_score = ai_spec_score
+            else:
+                scores = [product.score_cpu, product.score_gpu, product.score_cost, product.score_portable, product.score_ai]
+                product.spec_score = sum(scores) // len(scores) if any(scores) else 0
+
+            # ジャンルが未設定ならデフォルト値を埋める
+            if not product.unified_genre:
+                product.unified_genre = "PC"
+
+            product.ai_summary = summary_text
+            product.ai_content = clean_body
             product.last_spec_parsed_at = timezone.now()
             
             product.save()

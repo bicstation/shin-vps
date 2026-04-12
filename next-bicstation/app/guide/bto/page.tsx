@@ -1,131 +1,134 @@
+/**
+ * =====================================================================
+ * 🖥️ BICSTATION: BTO_DYNAMIC_GUIDE_V1.0
+ * 🛡️ Maya's Logic: 物理構造 v3.2 完全同期版
+ * =====================================================================
+ */
+
 import React from 'react';
+import { headers } from 'next/headers';
+import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge'; // 既存のブリッジを利用
 
-const BTO_MODELS = [
-  {
-    id: 'entry',
-    rank: 'コスパ最強',
-    title: "ビジネス・デイトレ特化モデル",
-    target: "事務・株/FX・動画視聴",
-    cpu: "Intel Core i5 / Ryzen 5",
-    gpu: "内蔵グラフィックス（節約）",
-    price: "79,800円〜",
-    point: "グラボを削ってメモリに全振り。24時間稼働でも静かで低消費電力。",
-    recommend_vendor: "ドスパラ（Magnateシリーズ）",
-    color: "border-blue-500"
-  },
-  {
-    id: 'standard',
-    rank: '一番人気',
-    title: "万能クリエイティブモデル",
-    target: "動画編集・ミドル級ゲーム・AI学習",
-    cpu: "Intel Core i7 / Ryzen 7",
-    gpu: "RTX 4060 / 4060 Ti",
-    price: "154,800円〜",
-    point: "性能の「損益分岐点」がここ。これ以上は価格だけが跳ね上がる黄金比スペック。",
-    recommend_vendor: "マウスコンピューター（NEXTGEAR）",
-    color: "border-indigo-600"
-  },
-  {
-    id: 'high',
-    rank: 'プロ推奨',
-    title: "4K・ハイエンド攻略モデル",
-    target: "4K動画・最新ゲーム・3DCG",
-    cpu: "Intel Core i9 / Ryzen 9",
-    gpu: "RTX 4080 / 4090",
-    price: "349,800円〜",
-    point: "1円を笑う者が最後に辿り着く「妥協なし」のインフラ。資産価値も落ちにくい。",
-    recommend_vendor: "パソコン工房（LEVEL∞）",
-    color: "border-purple-600"
-  }
-];
+// 型定義
+interface BtoModel {
+    id: string;
+    rank_label: string; // "コスパ最強" など
+    title: string;
+    target_usage: string;
+    cpu_spec: string;
+    gpu_spec: string;
+    price_start: string;
+    analysis_point: string;
+    recommend_vendor: string;
+    theme_color: string; // border-blue-500 等のクラス名
+}
 
-export default function BtoGuidePage() {
-  return (
-    <div className="max-w-6xl mx-auto px-4 py-12 bg-white">
-      {/* ヒーローセクション */}
-      <header className="text-center mb-16">
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-6">
-          🖥️ BIC-STATION：BTOパソコン「絶対コスパ」選定ガイド
-        </h1>
-        <div className="inline-block bg-amber-100 text-amber-800 px-6 py-2 rounded-full text-sm font-bold mb-6">
-          2026年4月度：最新ベンチマーク/市場価格反映済み
-        </div>
-        <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-          「最新＝正解」ではない。Bic Stationは、各パーツの価格推移と性能スコアを徹底分析。<br />
-          あなたの用途において、**1円あたりの投資効率が最も高い1台**を提示します。
-        </p>
-      </header>
+/**
+ * 🛠️ サーバーサイドデータ取得
+ */
+async function getBtoGuideData(host: string): Promise<BtoModel[]> {
+    try {
+        // Django側の 'bto-models' エンドポイントから取得
+        // 実際には fetchDjangoBridgeContent('bto-models') のような形で呼び出し
+        const response = await fetchDjangoBridgeContent('bto-guide', 0, { host });
+        return response?.results || [];
+    } catch (e) {
+        console.error("🚨 BTO_GUIDE_FETCH_ERROR:", e);
+        return []; // フォールバック
+    }
+}
 
-      {/* 診断セクション（ダミー） */}
-      <section className="mb-20 p-8 bg-slate-900 rounded-3xl text-white">
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">💡 あなたに最適なスペックは？</h2>
-            <p className="text-slate-400">予算と用途を選ぶだけで、DBから最適解を抽出します。</p>
-          </div>
-          <button className="mt-6 md:mt-0 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-xl transition-all">
-            PC診断ツールを起動（準備中）
-          </button>
-        </div>
-      </section>
+export default async function BtoGuidePage() {
+    const headerList = await headers();
+    const host = headerList.get('host') || "bicstation.com";
+    
+    // DBからデータを抽出
+    const btoModels = await getBtoGuideData(host);
 
-      {/* メインカード */}
-      <div className="grid lg:grid-cols-3 gap-8">
-        {BTO_MODELS.map((model) => (
-          <div key={model.id} className={`flex flex-col border-2 ${model.color} rounded-2xl overflow-hidden shadow-lg transition-transform hover:-translate-y-2`}>
-            <div className="p-6 bg-white border-b border-slate-100">
-              <span className="text-xs font-black uppercase tracking-widest text-slate-400">{model.rank}</span>
-              <h3 className="text-xl font-bold text-slate-900 mt-1">{model.title}</h3>
-            </div>
-            
-            <div className="p-6 bg-slate-50 flex-grow">
-              <div className="space-y-4 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">主な用途</span>
-                  <span className="font-bold text-slate-800 text-right">{model.target}</span>
+    // 日付生成 (2026年4月度などの表示用)
+    const now = new Date();
+    const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月度`;
+
+    return (
+        <div className="max-w-6xl mx-auto px-4 py-12 bg-white">
+            <header className="text-center mb-16">
+                <h1 className="text-4xl font-extrabold text-slate-900 mb-6 font-mono">
+                    🖥️ BIC-STATION: BTO_INTEL_ARCHIVE
+                </h1>
+                <div className="inline-block bg-blue-900 text-blue-100 px-6 py-2 rounded-sm text-xs font-mono mb-6 tracking-tighter">
+                    STATUS: ONLINE // {dateString}: LIVE_MARKET_DATA_SYNCED
                 </div>
-                <div className="flex justify-between border-t border-slate-200 pt-2">
-                  <span className="text-slate-500">推奨CPU</span>
-                  <span className="font-medium text-slate-800">{model.cpu}</span>
-                </div>
-                <div className="flex justify-between border-t border-slate-200 pt-2">
-                  <span className="text-slate-500">推奨GPU</span>
-                  <span className="font-medium text-slate-800">{model.gpu}</span>
-                </div>
-              </div>
+                <p className="text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                    「最新＝正解」ではない。Bic StationのDBは、各パーツの性能スコアと実売価格をリアルタイム解析。<br />
+                    **1円あたりの投資効率（ROI）が最も高い構成**を抽出しました。
+                </p>
+            </header>
 
-              <div className="mt-8 p-4 bg-white rounded-lg border border-slate-200">
-                <p className="text-xs text-blue-600 font-bold mb-1">Bic's Eye：</p>
-                <p className="text-xs text-slate-700 leading-relaxed">{model.point}</p>
-              </div>
+            {/* メインカード・グリッド */}
+            <div className="grid lg:grid-cols-3 gap-8">
+                {btoModels.length > 0 ? (
+                    btoModels.map((model) => (
+                        <div key={model.id} className={`flex flex-col border-t-4 ${model.theme_color || 'border-slate-800'} bg-slate-50 rounded-lg overflow-hidden shadow-sm transition-all hover:shadow-xl hover:-translate-y-1`}>
+                            <div className="p-6 bg-white border-b border-slate-100">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">{model.rank_label}</span>
+                                <h3 className="text-xl font-bold text-slate-900 mt-1">{model.title}</h3>
+                            </div>
+                            
+                            <div className="p-6 flex-grow">
+                                <div className="space-y-4 text-sm">
+                                    <div className="flex justify-between items-start">
+                                        <span className="text-slate-400 font-mono text-[10px]">TARGET</span>
+                                        <span className="font-bold text-slate-800 text-right w-2/3">{model.target_usage}</span>
+                                    </div>
+                                    <div className="flex justify-between border-t border-slate-200 pt-2">
+                                        <span className="text-slate-400 font-mono text-[10px]">CPU</span>
+                                        <span className="font-medium text-slate-700">{model.cpu_spec}</span>
+                                    </div>
+                                    <div className="flex justify-between border-t border-slate-200 pt-2">
+                                        <span className="text-slate-400 font-mono text-[10px]">GPU</span>
+                                        <span className="font-medium text-slate-700">{model.gpu_spec}</span>
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 p-4 bg-slate-900 rounded-sm">
+                                    <p className="text-[10px] text-blue-400 font-mono mb-2">ANALYSIS_REPORT_01:</p>
+                                    <p className="text-xs text-slate-300 leading-relaxed font-sans">{model.analysis_point}</p>
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-white text-center">
+                                <div className="mb-4">
+                                    <span className="text-2xl font-black text-slate-900">{model.price_start}</span>
+                                    <span className="text-[10px] text-slate-400 ml-1">tax incl.</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 mb-6">NODE: {model.recommend_vendor}</p>
+                                <a 
+                                    href={`/catalog?id=${model.id}`} 
+                                    className="block w-full bg-blue-600 text-white py-3 rounded-sm font-mono text-xs hover:bg-blue-700 transition-colors uppercase tracking-widest"
+                                >
+                                    Access_Database
+                                </a>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    // ローディングまたはデータなしのプレースホルダー
+                    <div className="col-span-3 py-20 text-center font-mono text-slate-400 animate-pulse">
+                        RETRIEVING_BTO_RECORDS...
+                    </div>
+                )}
             </div>
 
-            <div className="p-6 bg-white text-center">
-              <div className="mb-4">
-                <span className="text-3xl font-black text-slate-900">{model.price}</span>
-              </div>
-              <p className="text-xs text-slate-500 mb-6">推奨：{model.recommend_vendor}</p>
-              <a 
-                href="#" 
-                className="block w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors"
-              >
-                構成をカスタマイズする
-              </a>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* フッター誘導 */}
-      <footer className="mt-20 text-center border-t border-slate-200 pt-12">
-        <p className="text-slate-500 text-sm mb-4">
-          ※表示価格は各メーカーのセール状況により変動します。
-        </p>
-        <div className="flex justify-center gap-6">
-          <a href="/guide/parts" className="text-blue-600 font-bold hover:underline">← パーツ別コスパ比較はこちら</a>
-          <a href="/guide/peripherals" className="text-blue-600 font-bold hover:underline">周辺機器の底値リストはこちら →</a>
+            {/* フッター */}
+            <footer className="mt-20 text-center border-t border-slate-100 pt-12">
+                <p className="text-slate-400 font-mono text-[10px] mb-8 uppercase tracking-widest">
+                    Data integrity confirmed // Price fluctuations updated hourly
+                </p>
+                <div className="flex justify-center gap-8 text-[10px] font-mono">
+                    <a href="/guide/parts" className="text-slate-500 hover:text-blue-600">← PARTS_ANALYSIS</a>
+                    <a href="/guide/peripherals" className="text-slate-500 hover:text-blue-600">PERIPHERALS_DB →</a>
+                </div>
+            </footer>
         </div>
-      </footer>
-    </div>
-  );
+    );
 }

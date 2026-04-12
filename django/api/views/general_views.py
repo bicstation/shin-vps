@@ -86,22 +86,36 @@ class AuthorListAPIView(MasterEntityListView):
     queryset = Author.objects.all().order_by('-product_count', 'name')
     serializer_class = AuthorSerializer
 
+
 # --------------------------------------------------------------------------
-# 2. 🏆 PC製品ランキング View
+# 2. 🏆 PC製品ランキング View (完全版)
 # --------------------------------------------------------------------------
 
 class PCProductRankingView(generics.ListAPIView):
     """
     PC製品のランキング一覧を返す。
-    site_type に基づき、コスパ重視か総合スコア重視かを自動判定。
+    Next.jsからの /ranking/ および /popularity-ranking/ の両方に対応。
     """
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
+        # 基本セット：有効かつスペックスコアがあるもの
         queryset = PCProduct.objects.filter(is_active=True, spec_score__gt=0)
-        site_type = getattr(self.request, 'site_type', 'station')
         
+        # 💡 [タクティカル修正] リクエストURLから「注目度」か「売上」かを判定
+        path = self.request.path
+        is_popularity = 'popularity-ranking' in path
+        
+        site_type = getattr(self.request, 'site_type', 'station')
+
+        # A. 注目度ランキング (popularity-ranking) の場合
+        if is_popularity:
+            # 現状は「更新が新しい＝注目」としてソート。必要に応じてクリック数等に変更可能
+            return queryset.order_by('-updated_at', '-spec_score')[:20]
+
+        # B. 通常ランキング (ranking) の場合
+        # savingサイトならコスパ順、それ以外（station等）はスペック順
         if site_type == 'saving':
             return queryset.order_by('-score_cost', '-spec_score')[:20]
         

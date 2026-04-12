@@ -3,9 +3,9 @@
  * 📦 PC 製品一覧・詳細取得サービス (Zenith v10.0 - Search Optimized)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【引数順序の最適化】catalog/product ページでの呼び出し順序に完全準拠。
- * 2. 【キーワード検索対応】第1引数を q (Query) とし、自由入力検索を有効化。
- * 3. 【デバッグ情報の強化】URL生成プロセスを可視化し、トラブルシューティングを容易に。
+ * 1. 【検索パラメータの同期】Django SearchFilter に合わせ q → search へ修正。
+ * 2. 【引数順序の最適化】catalog/product ページでの呼び出し順序に完全準拠。
+ * 3. 【デバッグ情報の強化】URL生成プロセスを可視化。
  * =====================================================================
  */
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '../client';
@@ -51,11 +51,12 @@ export async function fetchPCProducts(
     }
     
     // 🚀 B. 検索・フィルタパラメータの付与
-    if (q) queryParams.append('q', q);          // キーワード検索
-    if (maker) queryParams.append('maker', maker); // メーカー指定
-    if (attribute) queryParams.append('attribute', attribute); // 属性指定
+    // 💡 Django REST Framework の SearchFilter 仕様に合わせ 'search' キーを使用
+    if (q) queryParams.append('search', q); 
+    if (maker) queryParams.append('maker', maker); 
+    if (attribute) queryParams.append('attribute', attribute); 
 
-    // 🔗 API URL の解決 (127.0.0.1:8083 または django-v3:8000)
+    // 🔗 API URL の解決
     const url = resolveApiUrl(`general/pc-products/?${queryParams.toString()}`, host);
 
     try {
@@ -64,7 +65,6 @@ export async function fetchPCProducts(
             cache: 'no-store' 
         });
         
-        // 🚀 共通ハンドラによるレスポンス正規化
         const data = await handleResponseWithDebug(res, url);
         
         return { 
@@ -74,7 +74,6 @@ export async function fetchPCProducts(
         };
     } catch (e: any) {
         console.error("🚨 [fetchPCProducts Error]", e);
-        // url が未定義の場合のフォールバック
         const errorUrl = typeof url !== 'undefined' ? url : 'unknown_api_path';
         return { 
             results: [], 
@@ -97,10 +96,10 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
         
         const data = await handleResponseWithDebug(res, url);
         
-        // results: [obj] の形から 0 番目を抽出
-        const product = (Array.isArray(data.results) && data.results.length > 0) 
-            ? data.results[0] 
-            : null;
+        // 通常の単体取得、または results 配列の 0 番目から抽出
+        const product = (data && !Array.isArray(data.results)) 
+            ? data 
+            : (Array.isArray(data.results) && data.results.length > 0 ? data.results[0] : null);
 
         return (product?.unique_id || product?.id) ? (product as PCProduct) : null;
     } catch (e) {
@@ -122,7 +121,7 @@ export async function fetchMakers(host: string = ''): Promise<MakerCount[]> {
         
         const data = await handleResponseWithDebug(res, url);
         
-        // results 配列を優先的に返却
+        // 配列直下、または results キーの中身を返却
         return Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
     } catch (e) {
         console.error("🚨 [fetchMakers Error]", e);

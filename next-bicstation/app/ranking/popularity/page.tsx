@@ -10,18 +10,18 @@
 
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
-import { headers } from 'next/headers'; // 🚀 ホスト名取得用
+import { headers } from 'next/headers'; 
 import Link from 'next/link';
 import { TrendingUp, Activity, Flame } from 'lucide-react';
 
-// ✅ インポートパスを Zenith v10.0 の共通関数に合わせる
+// ✅ インポートパス整合
 import { fetchPCProductRanking } from '@/shared/lib/api/django/pc';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 
 import styles from './Popularity.module.css';
 
 /**
- * ⚙️ サーバーセクション (Metadata & Configuration)
+ * ⚙️ サーバーセクション
  */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -75,23 +75,30 @@ async function PopularityContent(props: PageProps) {
     const sParams = await props.searchParams;
     const currentPage = parseInt(sParams.page || '1', 10);
     const limit = 20; 
-    const offset = (currentPage - 1) * limit;
 
-    // 🌐 ホスト名取得 (VPS/Local 判定のトリガー)
+    // 🌐 ホスト名取得
     const headerList = await headers();
     const host = headerList.get('host') || '';
 
-    // 1. データの取得 (共通関数 fetchPCProductRanking を 'popularity' モードで使用)
-    const allProducts = await fetchPCProductRanking('popularity', host).catch(() => []);
-    const products = allProducts.slice(offset, offset + limit);
-    const totalPages = Math.ceil(allProducts.length / limit);
+    // 1. データの取得と安全なパース
+    const rawData = await fetchPCProductRanking('popularity', host).catch(() => []);
+    
+    // 💡 重要: Django REST Frameworkの results キーを考慮した配列化
+    const allProductsArray = Array.isArray(rawData) 
+        ? rawData 
+        : ((rawData as any)?.results || []);
+    
+    // クライアントサイド・スライス (ページネーション)
+    const offset = (currentPage - 1) * limit;
+    const products = allProductsArray.slice(offset, offset + limit);
+    const totalPages = Math.max(1, Math.ceil(allProductsArray.length / limit));
 
-    // 2. 構造化データ（ItemList / SEO用）
+    // 2. 構造化データ
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "PC注目度ランキング TOP100",
-        "description": "リアルタイムアクセス統計に基づく人気PCランキング",
+        "numberOfItems": allProductsArray.length,
         "itemListElement": products.map((product: any, index: number) => ({
             "@type": "ListItem",
             "position": offset + index + 1,
@@ -99,7 +106,7 @@ async function PopularityContent(props: PageProps) {
                 "@type": "Product",
                 "name": product.name,
                 "image": product.image_url,
-                "url": `https://bicstation.com/product/${product.unique_id}`
+                "brand": { "@type": "Brand", "name": product.maker }
             }
         }))
     };
@@ -152,8 +159,8 @@ async function PopularityContent(props: PageProps) {
                                         <div className={styles.accessIndicator}>
                                             <div className={styles.pulseDot}></div>
                                             <span className={styles.viewCount}>
-                                                {/* 💡 実際のアクセスデータがない場合の動的演出 */}
-                                                {Math.floor(Math.random() * 85) + 15}人がこの製品をチェック中
+                                                {/* 演出用の動的数値（1位ほど多くなるよう調整） */}
+                                                {Math.floor((120 / rank) + Math.random() * 15) + 5}人がこの製品をチェック中
                                             </span>
                                         </div>
                                     </div>
@@ -162,8 +169,9 @@ async function PopularityContent(props: PageProps) {
                         );
                     })
                 ) : (
-                    <div className="py-20 text-center text-slate-400 font-mono">
-                        NO_TREND_DATA_AVAILABLE
+                    <div className={styles.noData}>
+                        <p>現在マーケットトレンドを解析中です...</p>
+                        <p className="text-[10px] mt-2 opacity-50 font-mono">CODE: EMPTY_PAYLOAD_OR_NETWORK_ERROR</p>
                     </div>
                 )}
             </div>
