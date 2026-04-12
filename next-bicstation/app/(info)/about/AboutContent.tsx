@@ -1,99 +1,107 @@
 "use client";
 
-// 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
-export const dynamic = "force-dynamic";
-
 import React, { Suspense } from 'react';
-// ✅ 修正ポイント: useSearchParams を明示的にインポート
 import { useSearchParams } from 'next/navigation';
 import StaticPageLayout from '@shared/components/templates/StaticPageLayout';
 
-// ❌ export const metadata = { ... } は削除しました。
-// "use client" のファイルには置けないため、ビルドエラーの原因になります。
-// 必要であれば layout.tsx か、別の非クライアントファイルで定義してください。
+// 💡 Next.jsの静的解析を強制バイパス
+export const dynamic = "force-dynamic";
 
 /**
- * 💡 ページのメインコンテンツ部分を分離
+ * 💡 ページのメインコンテンツ部分
  */
 function AboutPageContent() {
-  // ✅ 修正ポイント: ここで useSearchParams を呼び出すことで Suspense 境界を確定
   const searchParams = useSearchParams();
 
   const toc = [
     { id: 'mission', text: 'BICSTATIONのミッション' },
-    { id: 'origin', text: '設立の背景：ガジェット選びの課題' },
-    { id: 'editorial-policy', text: '編集・レビュー方針' },
-    { id: 'data-reliability', text: 'APIを活用したデータの正確性' },
-    { id: 'transparency', text: '収益と透明性について' },
-    { id: 'future', text: '今後の展望' },
+    { id: 'origin', text: '設立の背景：ガジェット選びの「迷路」' },
+    { id: 'how-we-work', text: 'AIとデータが導く、新しい評価基準' },
+    { id: 'editorial-policy', text: '編集・レビューの3原則' },
+    { id: 'transparency', text: '情報の透明性と信頼性' },
+    { id: 'future', text: '進化し続ける「技術の駅」として' },
   ];
 
   return (
     <StaticPageLayout 
       title="About BICSTATION"
-      description="私たちは「納得感のあるガジェット選び」を加速させるための、技術と情報のステーションです。"
-      lastUpdated="2026年3月24日"
+      description="私たちは、膨大なデータとAI技術を駆使し、あなたの「納得感のあるガジェット選び」を加速させるテックメディアです。"
+      lastUpdated="2026年4月12日"
       toc={toc}
     >
+      {/* ヒーローメッセージ的な強調 */}
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl text-white mb-12 shadow-xl">
+        <h2 className="text-white mt-0 text-2xl font-bold">技術の力で、情報の迷路に光を。</h2>
+        <p className="text-slate-300 text-base leading-relaxed mb-0">
+          「どれを選べば正解なのか？」<br />
+          複雑化し続けるPCパーツやデバイスのスペック、そして秒単位で動く市場価格。
+          BICSTATIONは、最新のAI解析とシステム連携により、その答えを最短距離で導き出します。
+        </p>
+      </div>
+
       <section id="mission">
         <h2>1. BICSTATIONのミッション</h2>
         <p>
-          「膨大なスペック表と、日々変動する価格。その迷路の中で、ユーザーに最短距離の正解を提示すること。」これがBICSTATIONのミッションです。
+          「膨大なスペック表の中から、ユーザーにとっての『真の価値』を可視化すること。」これが私たちの使命です。
         </p>
         <p>
-          現代のPCパーツや周辺機器の市場は、かつてないほど複雑化しています。同じ名前のグラフィックボードであっても、メーカーや冷却機構、オーバークロック設定によって性能は異なり、価格はAPIを通じて秒単位で動いています。私たちは、最新のWeb技術とデータ解析を駆使し、これら複雑な情報を整理・構造化して提供することで、全てのユーザーが後悔のない選択を行えるプラットフォームを目指しています。
+          現代のガジェット市場は、同じ製品名でも中身が異なる「マイナーチェンジ」や、地域限定モデルなど、情報の非対称性が強まっています。私たちは、これら複雑な情報を構造化し、誰もが後悔のない選択を行えるプラットフォームを提供し続けます。
         </p>
       </section>
 
       <section id="origin">
-        <h2>2. 設立の背景：ガジェット選びの課題</h2>
+        <h2>2. 設立の背景：ガジェット選びの「迷路」</h2>
         <p>
-          BICSTATIONが誕生した背景には、運営者自身の「失敗」があります。自作PCを組む際、多くのレビューサイトを巡り、何時間もかけて選んだパーツが、実は最新のファームウェア環境では最適ではなかったり、購入の数時間後に大幅なセールが始まったりといった経験は、誰しも一度はあるはずです。
+          BICSTATIONは、運営者自身の苦い経験から生まれました。何時間もかけて選んだパーツが、実は最新の環境では最適ではなかったり、購入直後に大幅なセールが始まったりといった経験です。
         </p>
         <p>
-          インターネット上には情報が溢れていますが、その多くは「断片的」であり、また「過去の情報」が放置されていることも少なくありません。特に価格とスペックのバランス（コスパ）は、常に流動的です。「今、この瞬間に最適な選択はどれか？」を解決するため、特定のメーカーに偏ることなく、公平かつ客観的なデータを中心に据えたメディアが必要だと確信し、本サイトを立ち上げました。
+          インターネットには情報が溢れていますが、その多くは断片的であり、過去の情報が放置されています。<strong>「今、この瞬間に最適な選択はどれか？」</strong>という問いに、リアルタイムなデータと公平な視点で答える場所が必要だと確信し、本サイトを立ち上げました。
         </p>
+      </section>
+
+      <section id="how-we-work">
+        <h2>3. AIとデータが導く、新しい評価基準</h2>
+        <p>
+          BICSTATION（技術の駅）という名には、技術によって情報を整理し、ユーザーを次の目的地へ送り出すという意味を込めています。
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+            <h4 className="font-bold text-slate-800 mt-0">📈 リアルタイムAPI連携</h4>
+            <p className="text-sm text-slate-600 mb-0">Amazon、楽天、Yahoo!等の各モールと連携し、価格や在庫状況を自動反映。情報の「鮮度」をシステムで担保しています。</p>
+          </div>
+          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+            <h4 className="font-bold text-slate-800 mt-0">🤖 高度なAIスペック解析</h4>
+            <p className="text-sm text-slate-600 mb-0">Gemini等の大規模言語モデルを活用し、製品スペックを多角的にスコアリング。主観に頼りすぎない、客観的な評価を実現しています。</p>
+          </div>
+        </div>
       </section>
 
       <section id="editorial-policy">
-        <h2>3. 編集・レビュー方針</h2>
-        <p>
-          BICSTATIONにおける情報の鮮度は、私たちの誇りです。記事の執筆にあたっては、以下の3つの厳格なガイドラインを設けています。
-        </p>
+        <h2>4. 編集・レビューの3原則</h2>
         <ul>
-          <li><strong>データファースト：</strong> 感情的な評価よりも、ベンチマークスコア、実測値、および公表スペックを優先します。</li>
-          <li><strong>フラットな比較：</strong> 高価な製品が必ずしも正義ではありません。用途（ライトユーザーからプロフェッショナルまで）に応じた、価格相応の価値（Value for Money）を徹底的に検証します。</li>
-          <li><strong>情報の更新性：</strong> 過去の記事であっても、市場環境が大きく変わった場合には、APIデータの更新と合わせて注釈を加え、常に「使える情報」であることを維持します。</li>
+          <li><strong>データ・ドリブン：</strong> ベンチマークや実測スペックを最優先し、数値に基づいた評価を行います。</li>
+          <li><strong>公平な比較：</strong> 高価なフラッグシップ機だけでなく、予算に応じた「価格相応の価値（Value for Money）」を徹底的に追求します。</li>
+          <li><strong>誠実な情報提供：</strong> 良い点だけでなく、欠点や注意すべき仕様についても隠さず明記します。</li>
         </ul>
       </section>
 
-      <section id="data-reliability">
-        <h2>4. APIを活用したデータの正確性</h2>
-        <p>
-          当サイトの最大の特徴は、Amazon、楽天市場、Yahoo!ショッピングといった主要ECプラットフォームのAPI（Application Programming Interface）との高度な連携です。
-        </p>
-        <p>
-          手動での更新には限界があります。BICSTATIONでは、システムが自動的に最新の価格情報や在庫ステータスを取得・反映するロジックを組んでいます。これにより、レビュー記事内で「現在最安値」と書かれていても、実際に見に行くと高くなっているといった、ユーザーの失望を最小限に抑える仕組みを構築しています。技術によって情報の正確性を担保すること。これが「BICSTATION（技術の駅）」という名に込めた思いでもあります。
-        </p>
-      </section>
-
       <section id="transparency">
-        <h2>5. 収益と透明性について</h2>
+        <h2>5. 情報の透明性と信頼性</h2>
         <p>
-          BICSTATIONは、アフィリエイトプログラムによる広告収益によって運営されています。これについて、私たちは隠すことなく公表します。収益は、更なるデータ解析サーバーの維持費、検証用機材の購入、および質の高いコンテンツ制作に還元されます。
+          BICSTATIONは、アフィリエイト広告による収益によって支えられています。しかし、<strong>紹介料の高さで評価や順位を操作することは、私たちの信念に反します。</strong>
         </p>
         <p>
-          「広告収益があるなら、高い商品を売ろうとするのではないか？」という懸念に対して、私たちは「信頼こそが最大の資産」であると回答します。不適切な製品を推奨し、ユーザーの信頼を失うことは、メディアとしての死を意味します。紹介料の有無にかかわらず、良いものは良い、欠点があるものは欠点として明記することが、長期的に当サイトを支持していただける唯一の道だと信じています。
+          一度でも不適切な推奨を行えば、ユーザーの信頼は失われ、メディアとしての価値は消滅します。長期的な信頼関係こそが最大の資産であると考え、常にフラットな視点での発信を徹底しています。
         </p>
       </section>
 
       <section id="future">
-        <h2>6. 今後の展望</h2>
+        <h2>6. 進化し続ける「技術の駅」として</h2>
         <p>
-          BICSTATIONは、単なるレビューサイトに留まりません。今後は、個々のユーザーのPC環境を診断し、最適なアップグレードパーツをAIが提案する機能や、ユーザー同士がリアルな使用感を共有できるコミュニティ機能の拡充を予定しています。
+          私たちは単なるレビューサイトに留まりません。今後は、個々のユーザーのPC環境をAIが診断し、最適なアップグレードパスを提案する機能など、よりパーソナライズされた体験の提供を目指しています。
         </p>
         <p>
-          PCやガジェットは、私たちの生活と仕事を拡張する強力なツールです。そのツール選びを、より楽しく、より確実に。BICSTATIONはこれからも、進化し続けるテクノロジーの最前線で、ユーザーをサポートし続けます。
+          ガジェットは生活を拡張するツールです。そのツール選びを、もっとワクワクする、確実な体験に。BICSTATIONは、進化し続けるテクノロジーの最前線で、あなたの選択をサポートし続けます。
         </p>
       </section>
     </StaticPageLayout>
@@ -102,13 +110,12 @@ function AboutPageContent() {
 
 /**
  * ✅ ページエントリポイント
- * Suspense境界を作成し、ビルドエラーを回避します。
  */
 export default function AboutPage() {
   return (
     <Suspense fallback={
-      <div style={{ padding: '100px', textAlign: 'center', color: '#888' }}>
-        Loading About Page...
+      <div className="min-h-screen flex items-center justify-center text-slate-400 font-mono">
+        <div className="animate-pulse text-sm">LOADING BICSTATION CORE...</div>
       </div>
     }>
       <AboutPageContent />

@@ -1,107 +1,44 @@
-"use client";
+'use client';
 
-// 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
-export const dynamic = "force-dynamic";
-
-import React, { Suspense } from 'react';
-// ✅ 修正ポイント: useSearchParams を明示的にインポート
-import { useSearchParams } from 'next/navigation';
+import React from 'react';
 import StaticPageLayout from '@shared/components/templates/StaticPageLayout';
+import styles from './Disclaimer.module.css';
 
-// ❌ 削除: export const metadata = { ... }; 
-// 💡 重要: "use client" を使用しているファイルから metadata は export できません。
-// タイトルやディスクリプションは StaticPageLayout の Props で渡す形式に統一します。
-
-/**
- * 💡 ページのメインコンテンツ部分
- */
-function DisclaimerPageContent() {
-  // ✅ 修正ポイント: 内部で直接使わなくとも、ビルド時の CSR bailout エラーを回避するために実行
-  const searchParams = useSearchParams();
-
-  const toc = [
-    { id: 'accuracy', text: '情報の正確性と最新性について' },
-    { id: 'compatibility', text: 'PC自作・パーツの互換性に関する免責' },
-    { id: 'external-links', text: '外部リンク先での取引について' },
-    { id: 'technical-issues', text: 'システム停止・保守に関する免責' },
-    { id: 'legal-action', text: '準拠法および管轄裁判所' },
-    { id: 'update-policy', text: '本規定の変更について' },
-  ];
-
+export default function DisclaimerContent() {
   return (
     <StaticPageLayout 
-      title="Disclaimer"
-      description="当サイトをご利用いただくにあたっての法的責任の範囲と、免責事項に関する重要なガイドラインです。"
-      lastUpdated="2026年1月26日"
-      toc={toc}
+      title="免責事項" 
+      subtitle="DISCLAIMER"
     >
-      <section id="accuracy">
-        <h2>1. 情報の正確性と最新性について</h2>
+      <section className={styles.section}>
+        <h2 className={styles.title}>1. 情報の正確性について</h2>
         <p>
-          BICSTATION（以下、「当サイト」）に掲載されている情報の作成にあたっては、細心の注意を払っております。しかしながら、テクノロジーの進化、製品のファームウェア更新、あるいは各ECサイトの価格改定により、情報が一時的に古くなったり、誤りを含んだりする可能性があります。
-        </p>
-        <p>
-          当サイトが提供するデータやレビューは、あくまで執筆時点の調査に基づくものであり、その完全性、正確性、有用性を永久に保証するものではありません。当サイトの情報を用いて行われた判断、行動によって生じた結果について、当サイトは一切の責任を負いかねます。
+          当サイト（BICSTATION）で提供される製品スペック、価格、スコア等のデータは、AIによる自動解析および外部APIからの取得に基づいています。情報の正確性には細心の注意を払っておりますが、データの遅延や技術的な誤りにより、最新の市場状況と異なる場合があります。
         </p>
       </section>
 
-      <section id="compatibility">
-        <h2>2. PC自作・パーツの互換性に関する免責</h2>
+      <section className={styles.section}>
+        <h2 className={styles.title}>2. 損害賠償の制限</h2>
         <p>
-          PCパーツ（CPU、マザーボード、メモリ、グラフィックボード等）の組み合わせや設定、オーバークロック、BIOS更新などの行為は、ハードウェアの故障やデータの消失を伴うリスクがあります。
-        </p>
-        <p>
-          当サイトで紹介している構成例や設定値は、特定の環境下での結果です。個々の環境、個体差、使用期間によって結果は異なります。これらの情報を参考に作業を行った結果、製品が故障したり保証対象外となった場合でも、当サイトは一切の修理費用や損害を補填することはありません。必ずメーカー公式サイトの指示に従ってください。
+          ユーザー様が当サイトの情報を用いて行う一切の行為について、当サイトおよび管理者は何ら責任を負うものではありません。当サイトの利用により発生した直接的・間接的な損害についても、理由の如何を問わず一切の賠償責任を負わないものとします。
         </p>
       </section>
 
-      <section id="external-links">
-        <h2>3. 外部リンク先での取引について</h2>
+      <section className={styles.section}>
+        <h2 className={styles.title}>3. 外部リンクについて</h2>
         <p>
-          当サイトからリンクやバナーなどによって他のサイト（Amazon、楽天市場、Yahoo!ショッピング、メーカー公式サイト等）に移動された場合、移動先サイトで提供される情報、サービス、商品等について、当サイトは一切の責任を負いません。
-        </p>
-        <p>
-          商品の購入、支払方法、配送、返品、返金等に関する全ての契約行為は、ユーザーと販売元との間で直接行われるものです。取引に関するトラブルは、当該販売元のカスタマーサポートへお問い合わせください。
+          当サイトからリンクやバナーなどによって他のサイトに移動された場合、移動先サイトで提供される情報、サービス等について一切の責任を負いません。
         </p>
       </section>
 
-      <section id="technical-issues">
-        <h2>4. システム停止・保守に関する免責</h2>
+      <section className={styles.section}>
+        <h2 className={styles.title}>4. 規定の変更</h2>
         <p>
-          サーバー攻撃、通信回線の障害、システムメンテナンス、その他不可抗力（天災地変等）により、当サイトのサービスが中断または停止することがあります。これによってユーザーに生じたいかなる損害についても、当サイトは責任を負わないものとします。
+          当サイトは、本規定の内容を予告なく変更することがあります。最新の内容は本ページに掲載された時点から効力を生じるものとし、ユーザー様は継続して利用することで、変更後の規定に同意したものとみなされます。
         </p>
       </section>
-
-      <section id="legal-action">
-        <h2>5. 準拠法および管轄裁判所</h2>
-        <p>
-          当サイトの利用および本規定の解釈・適用は、日本国法に準拠するものとします。当サイトの利用に関して紛争が生じた場合は、運営者の所在地を管轄する裁判所を第一審の専属的合意管轄裁判所とします。
-        </p>
-      </section>
-
-      <section id="update-policy">
-        <h2>6. 本規定の変更について</h2>
-        <p>
-          当サイトは、本免責事項の内容を適宜見直し、予告なく変更することがあります。修正された最新の免責事項は、本ページに掲載された時点から効力を生じるものとします。定期的に本ページを確認し、最新の規定を承諾いただいた上で当サイトをご利用ください。
-        </p>
-      </section>
+      
+      {/* ✅ 閉じタグを StaticPageLayout に合わせる */}
     </StaticPageLayout>
-  );
-}
-
-/**
- * ✅ ページエントリポイント
- * StaticPageLayout が内部で useSearchParams 等の CSR フックを使用していても
- * 安全にビルドできるよう Suspense でラップします。
- */
-export default function DisclaimerPage() {
-  return (
-    <Suspense fallback={
-      <div style={{ padding: '80px', textAlign: 'center', color: '#666', fontSize: '14px' }}>
-        <div className="animate-pulse">Loading Disclaimer...</div>
-      </div>
-    }>
-      <DisclaimerPageContent />
-    </Suspense>
   );
 }

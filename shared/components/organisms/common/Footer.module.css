@@ -3,9 +3,9 @@
  * ---------------------------------------------------------------------
  * 💡 特徴:
  * 1. CSS変数 (--accent-red) によるブランドカラー動的同期
- * 2. INFORMATIONセクションのレスポンシブ・グリッド最適化
- * 3. インタラクティブなホバーエフェクト (Translate + Color)
- * 4. デバッグ・ブランドリンクエリアの視認性向上
+ * 2. 編集者プロフィール (E-E-A-T) エリアの追加
+ * 3. アフィリエイト開示情報の誠実なスタイリング
+ * 4. INFORMATIONセクションのレスポンシブ・グリッド最適化
  * ===================================================================== */
 
 .footer {
@@ -31,7 +31,6 @@
   margin: 0 auto;
   padding: 80px 4% 60px;
   display: grid;
-  /* サイト説明、リンク、情報の3カラム構成を基本に */
   grid-template-columns: 1.5fr 1fr 1fr;
   gap: 60px;
 }
@@ -60,7 +59,6 @@
   padding-bottom: 10px;
 }
 
-/* アクセントライン：動的に色が変わる */
 .sectionTitle::after {
   content: "";
   position: absolute;
@@ -81,22 +79,64 @@
   line-height: 1.8;
   color: var(--footer-text);
   max-width: 400px;
+  margin-bottom: 30px;
+}
+
+/* 👤 編集者プロフィール (E-E-A-T) */
+.editorProfile {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--footer-border);
+}
+
+.editorFlex {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.editorIcon {
+  width: 40px;
+  height: 40px;
+  background: var(--accent-red);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+}
+
+.editorName {
+  color: var(--footer-text-bright);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.editorText {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #555;
+  margin: 0;
 }
 
 /* 🔗 ナビゲーションリスト */
-.linkList {
+.linkList, .networkList {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
 .linkItem {
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
+  margin-bottom: 14px;
 }
 
-.linkItem a {
+.linkItem a, .networkLink {
   color: var(--footer-text);
   text-decoration: none;
   font-size: 0.9rem;
@@ -107,20 +147,28 @@
   gap: 8px;
 }
 
-.linkItem a:hover {
+.linkItem a:hover, .networkLink:hover {
   color: #fff;
   transform: translateX(8px);
 }
 
-/* 🏷️ ブランドリンクエリア */
-.brandGrid {
-  display: flex;
-  flex-direction: column;
+/* ⚖️ アフィリエイト開示 */
+.affiliateDisclosure {
+  margin-top: auto;
+  padding-top: 25px;
+  border-top: 1px dashed var(--footer-border);
 }
 
+.affiliateDisclosure p {
+  font-size: 0.75rem;
+  color: #444;
+  font-style: italic;
+  margin: 0;
+}
+
+/* 🏷️ ネットワーク・ブランド設定 */
 .miniTitle {
   color: var(--accent-red);
-  margin-top: 30px;
   margin-bottom: 15px;
   font-size: 0.7rem;
   font-weight: 800;
@@ -128,78 +176,17 @@
   text-transform: uppercase;
 }
 
-.brandLinks {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 10px;
-  line-height: 2.2;
-}
-
-.brandLink {
-  color: #555;
-  text-decoration: none;
-  font-size: 0.8rem;
-  transition: all 0.2s;
-}
-
-.brandLink:hover {
-  color: var(--footer-text-bright);
-}
-
-.brandSeparator {
-  color: #222;
-  font-size: 0.7rem;
-  user-select: none;
-}
-
 /* ⚖️ 下部コピーライトエリア */
 .bottomBar {
+  border-top: 1px solid var(--footer-border);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.bottomContainer {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 4%;
-  border-top: 1px solid var(--footer-border);
+  padding: 30px 4%;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-}
-
-.copyright {
-  font-size: 0.75rem;
-  color: #444;
-  letter-spacing: 0.05em;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* 📱 モバイル対応 (レスポンシブ・ハック) */
-@media (max-width: 992px) {
-  .container {
-    grid-template-columns: 1fr 1fr; /* 2列にする */
-  }
-  .column:first-child {
-    grid-column: span 2; /* サイト説明を横いっぱいに */
-    margin-bottom: 20px;
-  }
-}
-
-@media (max-width: 640px) {
-  .container {
-    grid-template-columns: 1fr; /* 1列にスタック */
-    padding: 60px 8% 40px;
-    gap: 40px;
-  }
-  .column:first-child { grid-column: span 1; }
-  
-  .linkItem a:hover {
-    transform: none; /* スマホでは横移動させない（誤タップ防止） */
-    color: var(--accent-red);
-  }
-
-  /* スマホ版 INFORMATION を2列グリッドにして高さを抑える */
-  .linkList {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .linkItem { margin-bottom: 0; }
 }

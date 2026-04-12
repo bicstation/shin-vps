@@ -27,52 +27,43 @@ interface FooterProps {
 }
 
 /**
- * 🌐 内部コンポーネント: searchParams を安全に使用するため分離
+ * 🌐 内部コンポーネント
  */
 function FooterContent({ debugData }: FooterProps) {
     const [mounted, setMounted] = useState(false);
     const searchParams = useSearchParams();
     const currentYear = new Date().getFullYear();
 
-    // ✅ ハイドレーション・ミスマッチ防止
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    // 🛰️ サイト設定の動的取得 (SSR & Client 両対応)
     const site = useMemo(() => {
-        // 1. サーバーサイドなら環境変数、クライアントサイドなら hostname を優先
         const identifier = typeof window !== 'undefined' 
             ? window.location.hostname 
             : process.env.NEXT_PUBLIC_SITE_DOMAIN;
-
-        // 2. 識別子を元にメタデータを解決 (SSR時の undefined ログを根絶)
         return getSiteMetadata(identifier || "");
     }, []);
 
-    // 🚩 サイト情報が確定できない致命的な場合のみガード (SSR時は環境変数から確定済み)
     if (!site) {
         return <footer className={styles.footer} style={{ height: '300px', visibility: 'hidden' }} />;
     }
 
     const siteColor = getSiteColor(site.site_name);
     const isDebugMode = searchParams.get('debug') === 'true';
-    const isAdult = site.site_group === 'adult';
     
-    // hostname の判定も SSR 安全に
     const isLocal = typeof window !== 'undefined' 
         ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         : process.env.NODE_ENV === 'development';
 
     /**
-     * 🛰️ SHIN-VPS ネットワーク設定
+     * 🛰️ SHIN-VPS NETWORK (全4サイト網羅)
      */
     const networkSites = [
-        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff', external: false },
-        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900', external: false },
-        // { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012', external: false },
-        // { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37', external: false },
-        // { name: 'ビックAV動画', domain: 'bic-erog.com', port: 3004, color: '#bc00ff', external: true },
+        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff' },
+        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900' },
+        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012' },
+        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37' },
     ];
 
     const getNetworkUrl = (s: typeof networkSites[0]) => {
@@ -80,38 +71,33 @@ function FooterContent({ debugData }: FooterProps) {
     };
 
     /**
-     * 🛠️ サイト別ブランド・テキスト定義
+     * 🛠️ サイト別設定（編集者情報含む）
+     * 各サイトの特性に合わせて E-E-A-T を強化
      */
     const siteConfigs: Record<string, any> = {
-        'Tiper': {
-            desc: "大人のためのプレミアム・エンターテインメント・ガイド。AIソムリエがあなたの感性に響く最高の1本をエスコートします。",
-            brands: [{ name: 'FANZA', slug: 'fanza' }, { name: 'DUGA', slug: 'duga' }, { name: 'MGS', slug: 'mgs' }],
-            suffix: 'Tactical Archive Interface'
-        },
-        'AV Flash': {
-            desc: "圧倒的なアーカイブ量を誇る動画情報ポータル。メーカー・女優・ジャンル別の詳細解析で、見たい動画がすぐに見つかります。",
-            brands: [{ name: 'S1', slug: 's1' }, { name: 'MOODYZ', slug: 'moodyz' }, { name: 'SOD', slug: 'sod' }],
-            suffix: 'Ultimate Movie Registry'
+        'Bic Station': {
+            desc: "ハードウェア性能の真実を数値化。最新PCスペック診断とBTOメーカー比較で、最適な1台を提案します。",
+            suffix: 'Performance Registry',
+            editor: 'Maya / BICSTATION 編集長',
+            editorDesc: 'サーバーエンジニア。自作PCと自動化スクリプトをこよなく愛するテックマニア。'
         },
         'Bic Saving': {
-            desc: "「賢く買う」をAIが徹底サポート。主要ECサイトの価格推移とポイント還元率をリアルタイムに解析し、最安値をお届けします。",
-            brands: [{ name: 'Amazon', slug: 'amazon' }, { name: '楽天', slug: 'rakuten' }, { name: 'Yahoo!', slug: 'yahoo' }],
-            suffix: 'Smart Saving Index'
+            desc: "「賢く買う」をAIがサポート。主要ECサイトの価格推移とポイント還元率をリアルタイムに解析します。",
+            suffix: 'Smart Saving Index',
+            editor: 'Maya / BIC SAVING 管理人',
+            editorDesc: 'データ解析エンジニア。APIを駆使した価格監視とポイ活の自動化が専門。'
         },
-        'Bic Station': {
-            desc: "ハードウェア性能の真実を数値化。最新PCスペック診断とBTOメーカー比較で、あなたの用途に最適な1台を提案します。",
-            brands: [{ name: 'Lenovo', slug: 'lenovo' }, { name: 'DELL', slug: 'dell' }, { name: 'Apple', slug: 'apple' }],
-            suffix: 'Performance Registry'
+        'AV Flash': {
+            desc: "圧倒的なアーカイブ量を誇る情報ポータル。詳細なメタデータ解析で、最高の視聴体験をサポートします。",
+            suffix: 'Ultimate Movie Registry',
+            editor: 'Maya / AV FLASH 開発代表',
+            editorDesc: '大規模データベース構築を得意とするエンジニア。膨大なデータの構造化がライフワーク。'
         },
-        'Bic的AV動画': {
-            desc: "FANZA作品に特化した超速報レビューサイト。独自のAI解析スコアで、今最も熱いトレンド作品をダイレクトに抽出します。",
-            brands: [{ name: 'FANZA', slug: 'fanza' }, { name: 'PRESTIGE', slug: 'prestige' }],
-            suffix: 'Direct Stream Index'
-        },
-        'シークレットXYZ': {
-            desc: "秘匿性の高い検索体験を提供するアダルトサーチエンジン。あらゆるプラットフォームを横断し、あなたの理想を瞬時に形にします。",
-            brands: [{ name: 'Deep Search', slug: 'search' }, { name: 'Premium', slug: 'premium' }],
-            suffix: 'Private Search Node'
+        'Tiper': {
+            desc: "大人のためのプレミアム・ガイド。AIソムリエがあなたの感性に響く最高の1本をエスコートします。",
+            suffix: 'Tactical Archive Interface',
+            editor: 'Maya / TIPER コンシェルジュ',
+            editorDesc: 'AIレコメンドエンジンの開発者。感性を数値化するアルゴリズムを研究中。'
         }
     };
 
@@ -123,24 +109,24 @@ function FooterContent({ debugData }: FooterProps) {
             style={{ '--accent-red': siteColor } as React.CSSProperties}
         >
             <div className={styles.container}>
+                {/* 1. ブランド & 編集者プロフィール (信頼性の明示) */}
                 <div className={styles.column}>
                     <h3 className={styles.siteTitle}>{site.site_name.toUpperCase()}</h3>
                     <p className={styles.description}>{config.desc}</p>
-                    <div className={styles.brandGrid}>
-                        <h4 className={styles.miniTitle}>{isAdult ? 'MAIN PLATFORMS' : 'MAJOR BRANDS'}</h4>
-                        <div className={styles.brandLinks}>
-                            {config.brands.map((item: any, index: number) => (
-                                <React.Fragment key={item.slug}>
-                                    <Link href={`${site.site_prefix}/brand/${item.slug}`} className={styles.brandLink}>
-                                        {item.name}
-                                    </Link>
-                                    {index < config.brands.length - 1 && <span className={styles.brandSeparator}>|</span>}
-                                </React.Fragment>
-                            ))}
+                    
+                    <div className={styles.editorProfile}>
+                        <h4 className={styles.miniTitle}>PRODUCED BY</h4>
+                        <div className={styles.editorFlex}>
+                            <div className={styles.editorIcon}>M</div>
+                            <div>
+                                <p className={styles.editorName}>{config.editor}</p>
+                                <p className={styles.editorText}>{config.editorDesc}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                {/* 2. SHIN-VPS NETWORK */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>SHIN-VPS NETWORK</h3>
                     <ul className={styles.networkList}>
@@ -150,49 +136,44 @@ function FooterContent({ debugData }: FooterProps) {
                                     href={getNetworkUrl(s)}
                                     className={styles.networkLink}
                                     style={{ borderLeft: `3px solid ${s.color}`, paddingLeft: '8px' }}
-                                    target={s.external ? "_blank" : "_self"}
-                                    rel={s.external ? "noopener noreferrer" : ""}
                                 >
-                                    {s.name} {s.external && <small>(EXT)</small>} <small>{isLocal ? `(:${s.port})` : ''}</small>
+                                    {s.name} <small>{isLocal ? `(:${s.port})` : ''}</small>
                                 </a>
                             </li>
                         ))}
                     </ul>
                 </div>
 
+                {/* 3. INFORMATION (法的開示 & 連絡先) */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>INFORMATION</h3>
                     <ul className={styles.linkList}>
-                        <li className={styles.linkItem}>
-                            <Link href={`${site.site_prefix}/concierge`}>
-                                {isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ'}
-                            </Link>
-                        </li>
-                        <li className={styles.linkItem}>
-                            <Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link>
-                        </li>
-                        <li className={styles.linkItem}>
-                            <Link href={`${site.site_prefix}/about`}>ℹ️ 当サイトについて</Link>
-                        </li>
-                        <li className={styles.linkItem}>
-                            <Link href={`${site.site_prefix}/privacy-policy`}>🛡️ 規約とポリシー</Link>
-                        </li>
-                        <li className={styles.linkItem}>
-                            <Link href={`${site.site_prefix}/disclaimer`}>⚠️ 免責事項</Link>
-                        </li>
-                        <li className={styles.linkItem}>
-                            <Link href={`${site.site_prefix}/guideline`}>📝 ご利用ガイドライン</Link>
-                        </li>
+                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/about`}>ℹ️ 当サイトについて</Link></li>
+                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/guideline`}>📝 編集ガイドライン</Link></li>
+                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/privacy-policy`}>🛡️ プライバシーポリシー</Link></li>
+                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/disclaimer`}>⚠️ 免責事項</Link></li>
+                        {/* ✅ contact ディレクトリへのリンクを確実に追加 */}
+                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link></li>
                     </ul>
+                    
+                    <div className={styles.affiliateDisclosure}>
+                        <p>※当サイトはアフィリエイト広告を利用しています</p>
+                    </div>
                 </div>
             </div>
 
             <div className={styles.bottomBar}>
-                <p className={styles.copyright}>
-                    &copy; {currentYear} {site.site_name.toUpperCase()} - {config.suffix}
-                </p>
+                <div className={styles.bottomContainer}>
+                    <p className={styles.copyright}>
+                        &copy; {currentYear} {site.site_name.toUpperCase()} - {config.suffix}
+                    </p>
+                    <div className={styles.systemStatus}>
+                        STATUS: <span className={styles.statusOnline}>ONLINE</span> | NODE: {typeof window === 'undefined' ? 'SSR' : 'HYDRATED'}
+                    </div>
+                </div>
             </div>
 
+            {/* デバッグ用診断ツール */}
             {isDebugMode && debugData && (
                 <div className={styles.debugContainer}>
                     <SystemDiagnosticHero
@@ -213,8 +194,7 @@ function FooterContent({ debugData }: FooterProps) {
 }
 
 /**
- * 🏛️ Root Footer Component
- * Next.js 15: useSearchParams を内部で持つため Suspense でラップしてエクスポート
+ * 🏛️ Root Footer
  */
 export default function Footer(props: FooterProps) {
     return (

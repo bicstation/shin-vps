@@ -2,26 +2,27 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 💻 BICSTATION 製品詳細レポート
- * 🛡️ SHIN-VPS v5.5 [Universal Routing 対応版]
+ * 🛰️ BICSTATION PRODUCT_DETAIL_NODE_V10.0
+ * 🛡️ SEO COMPLETE EDITION: Structural Data & Semantic Optimization
  * =====================================================================
  */
 
 import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { headers } from 'next/headers'; // 🚀 追加: ホスト名取得用
+import { headers } from 'next/headers';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 
-// APIインポート (個別にインポートして host を渡せるように修正)
+// API & Utils
 import { fetchPCProductDetail } from '@/shared/lib/api/django/pc/products';
 import { fetchRelatedProducts, fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
 import styles from './ProductDetail.module.css';
 
-// コンポーネントインポート
+// Components
 import PriceHistoryChart from '@/shared/components/molecules/PriceHistoryChart';
 import SpecRadarChart from '@/shared/components/atoms/RadarChart';
 import ProductCTA from './ProductCTA';
@@ -33,24 +34,33 @@ interface PageProps {
 }
 
 /**
- * 🛰️ メタデータ生成
- * 修正: 内部通信を成功させるため host を取得して API に渡す
+ * 🛰️ メタデータ生成 (SEO最適化版)
  */
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const { unique_id } = await props.params;
-    const host = (await headers()).get('host') || '';
+    const host = (await headers()).get('host') || 'bicstation.com';
+    const siteConfig = getSiteMetadata(host);
     
     try {
         const product = await fetchPCProductDetail(unique_id, host);
-        if (!product) return { title: "製品が見つかりません | BICSTATION" };
-        const title = `${product.name} のスペック・価格・評判 | ${product.maker}最新比較`;
+        if (!product) return { title: "製品が見つかりません" };
+
+        const title = `${product.name} のスペック・価格推移・AIスコア | ${product.maker}製品アーカイブ`;
+        const description = `${product.maker}「${product.name}」の徹底解説。AIによる${product.score_total || '高'}スコア評価、価格推移グラフ、詳細スペックを掲載。購入前の比較・検証に。`;
+
         return {
             title,
-            description: `${product.maker}の「${product.name}」詳細レポート。AI解析データを掲載。`,
+            description,
+            alternates: { canonical: `https://${host}/product/${unique_id}` },
             openGraph: {
                 title,
-                images: [product.image_url || '/no-image.png'],
+                description,
+                url: `https://${host}/product/${unique_id}`,
+                siteName: siteConfig.site_name,
+                images: [{ url: product.image_url || '/no-image.png', width: 1200, height: 630 }],
+                type: 'article',
             },
+            twitter: { card: 'summary_large_image', title, description, images: [product.image_url || '/no-image.png'] }
         };
     } catch (e) {
         return { title: "製品詳細 | BICSTATION" };
@@ -59,105 +69,79 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
 export default async function ProductDetailPage(props: PageProps) {
     const { unique_id } = await props.params;
-    const sParams = await props.searchParams;
-    const attribute = sParams.attribute;
-    
-    // 🌐 現在のホスト名を取得 (これがないと VPS 内部で 8083 ポートを叩きに行ってしまう)
-    const host = (await headers()).get('host') || '';
+    const { attribute } = await props.searchParams;
+    const host = (await headers()).get('host') || 'bicstation.com';
+    const siteConfig = getSiteMetadata(host);
 
-    // 全ての API 呼び出しに host を伝播させる
+    // データの並列取得
     const [product, rankingData] = await Promise.all([
         fetchPCProductDetail(unique_id, host).catch(() => null),
         fetchPCProductRanking('score', host).catch(() => [])
     ]);
 
-    if (!product || !product.unique_id) {
-        notFound();
-    }
+    if (!product || !product.unique_id) notFound();
 
     const rawRelated = await fetchRelatedProducts(product.maker || '', unique_id, host).catch(() => []);
     const displayRelated = Array.isArray(rawRelated) ? rawRelated.slice(0, 8) : [];
     
-    const p = product as any;
-    const finalUrl = product.affiliate_url || product.url || "#";
-    const isPriceAvailable = typeof product.price === 'number' && product.price > 0;
-
-    // ランキング順位の算出
-    const currentRank = Array.isArray(rankingData)
-        ? rankingData.findIndex((item: any) => item.unique_id === unique_id) + 1
+    // ランキング順位
+    const currentRank = Array.isArray(rankingData) 
+        ? rankingData.findIndex((item: any) => item.unique_id === unique_id) + 1 
         : 0;
 
-    const isSoftware = ["トレンドマイクロ", "ソースネクスト", "ADOBE", "MICROSOFT", "EIZO", "ウイルスバスター"].some(keyword =>
-        (product.maker?.toUpperCase() || "").includes(keyword.toUpperCase()) ||
-        (product.name?.toUpperCase().includes(keyword.toUpperCase()))
-    );
+    const isSoftware = ["トレンドマイクロ", "ADOBE", "MICROSOFT"].some(k => product.maker?.includes(k));
 
-    /**
-     * 🛡️ 物理構造パースロジック v3.8
-     */
-    const parseAiSummary = (summaryStr: string) => {
-        if (!summaryStr) return null;
-        return {
-            p1: summaryStr.match(/POINT1:\s*(.*)/)?.[1] || "",
-            p2: summaryStr.match(/POINT2:\s*(.*)/)?.[1] || "",
-            p3: summaryStr.match(/POINT3:\s*(.*)/)?.[1] || "",
-            target: summaryStr.match(/TARGET:\s*(.*)/)?.[1] || "",
-        };
+    // 構造化データ生成
+    const jsonLd = {
+        "@context": "https://schema.org/",
+        "@graph": [
+            {
+                "@type": "Product",
+                "name": product.name,
+                "image": product.image_url,
+                "description": `${product.name}のスペック詳細レポート。`,
+                "brand": { "@type": "Brand", "name": product.maker },
+                "offers": {
+                    "@type": "Offer",
+                    "priceCurrency": "JPY",
+                    "price": product.price || 0,
+                    "availability": "https://schema.org/InStock",
+                    "url": product.affiliate_url || product.url
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "TOP", "item": `https://${host}/` },
+                    { "@type": "ListItem", "position": 2, "name": product.maker, "item": `https://${host}/catalog?q=${product.maker}` },
+                    { "@type": "ListItem", "position": 3, "name": product.name }
+                ]
+            }
+        ]
     };
-
-    const summary = parseAiSummary(product.ai_summary || "");
-    const cleanBody = product.ai_content || "";
-    
-    const today = new Date().toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
-    const priceHistory = Array.isArray(p.price_history) ? p.price_history : [];
 
     return (
         <div className={styles.wrapper}>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        "@context": "https://schema.org/",
-                        "@type": "Product",
-                        "name": product.name,
-                        "brand": { "@type": "Brand", "name": product.maker },
-                        "offers": {
-                            "@type": "Offer",
-                            "priceCurrency": "JPY",
-                            "price": product.price || 0,
-                            "url": finalUrl
-                        }
-                    })
-                }}
-            />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
             <main className={styles.mainContainer}>
-                {/* トレンドバナー */}
-                <div className={styles.trendBanner}>
-                    <div className={styles.trendInfo}>
-                        <span className={styles.updateBadge}>{today} UPDATE</span>
-                        <span className={styles.trendText}>
-                            <strong>{isSoftware ? "STATUS" : "MARKET_TREND"}:</strong>
-                            <span className={styles.trendAlert}> 
-                                {isSoftware ? "▲ ライセンス需要増加中" : (currentRank > 0 && currentRank < 30 ? "🔥 人気急上昇" : "✅ 供給安定")}
-                            </span>
-                        </span>
-                    </div>
-                    <div className={styles.viewerCount}>
-                        ⚡️ 現在 {Math.floor(Math.random() * 50) + 12} 人が検討中
-                    </div>
-                </div>
+                {/* 1. パンくずリスト (SEO/UX) */}
+                <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+                    <Link href="/">TOP</Link> ＞ 
+                    <Link href={`/catalog?q=${product.maker}`}>{product.maker}</Link> ＞ 
+                    <span>{product.name}</span>
+                </nav>
 
-                {/* 1. ヒーローセクション */}
+                {/* 2. ヒーローセクション */}
                 <section className={styles.heroSection}>
                     <div className={styles.imageWrapper}>
                         {currentRank > 0 && currentRank <= 100 && (
                             <div className={`${styles.detailRankBadge} ${styles[`rankColor_${Math.min(currentRank, 10)}`]}`}>
-                                <span className={styles.rankLabel}>RANK</span>
+                                <span className={styles.rankLabel}>AI_RANK</span>
                                 <span className={styles.rankNumber}>{currentRank}</span>
                             </div>
                         )}
-                        <img src={product.image_url || '/no-image.png'} alt={product.name} className={styles.productImage} />
+                        <img src={product.image_url || '/no-image.png'} alt={`${product.name} 外観画像`} className={styles.productImage} />
                     </div>
                     
                     <div className={styles.infoSide}>
@@ -165,105 +149,73 @@ export default async function ProductDetailPage(props: PageProps) {
                             <span className={styles.makerBadge}>{product.maker}</span>
                             {attribute && <span className={styles.attributeBadge}>{attribute}</span>}
                         </div>
-                        <h1 className={styles.productTitle}>{product.name}</h1>
+                        <h1 className={styles.productTitle}>
+                            {product.name} <span className={styles.titleSub}>スペック・価格詳細レポート</span>
+                        </h1>
                         
                         <div className={styles.priceContainer}>
-                            <span className={styles.priceLabel}>{isPriceAvailable ? "現在の市場価格 (税込)" : "最新価格・納期情報"}</span>
+                            <span className={styles.priceLabel}>現在の市場推定価格 (税込)</span>
                             <div className={styles.priceValue}>
-                                {isPriceAvailable ? `¥${product.price.toLocaleString()}` : <span className={styles.priceDraft}>公式サイトで確認</span>}
+                                {product.price ? `¥${product.price.toLocaleString()}` : <span className={styles.priceDraft}>価格情報を確認中</span>}
                             </div>
                         </div>
 
-                        <a href={finalUrl} target="_blank" rel="nofollow" className={styles.mainCtaButton}>
-                            {product.maker}公式で構成をカスタマイズ
-                            <span className={styles.ctaSub}>最新のキャンペーン価格を適用する</span>
+                        <a href={product.affiliate_url || product.url} target="_blank" rel="noopener noreferrer nofollow" className={styles.mainCtaButton}>
+                            {product.maker}公式サイトで詳細を見る
+                            <span className={styles.ctaSub}>最新のキャンペーン・納期を確認する</span>
                         </a>
                     </div>
                 </section>
 
+                {/* 3. 解析グリッド */}
                 <div className={styles.analysisGrid}>
-                    <div className={styles.analysisChartItem}>
-                        <h3 className={styles.chartTitle}>性能評価・AIスコアリング</h3>
-                        <SpecRadarChart
-                            data={[
-                                { subject: 'CPU', value: p.score_cpu || 0, fullMark: 100 },
-                                { subject: 'GPU', value: p.score_gpu || 0, fullMark: 100 },
-                                { subject: 'コスパ', value: p.score_cost || 0, fullMark: 100 },
-                                { subject: '携帯性', value: p.score_portable || 0, fullMark: 100 },
-                                { subject: 'AI性能', value: p.score_ai || 0, fullMark: 100 },
-                            ]}
-                            color="#3b82f6"
-                        />
-                    </div>
-                    <div className={styles.analysisChartItem}>
-                        <h3 className={styles.chartTitle}>価格推移・トレンド分析</h3>
-                        {priceHistory.length > 0 ? (
-                            <PriceHistoryChart history={priceHistory} />
+                    <section className={styles.analysisChartItem}>
+                        <h2 className={styles.chartTitle}>性能評価スコアリング</h2>
+                        <figure>
+                            <SpecRadarChart
+                                data={[
+                                    { subject: 'CPU', value: product.score_cpu || 0, fullMark: 100 },
+                                    { subject: 'GPU', value: product.score_gpu || 0, fullMark: 100 },
+                                    { subject: 'コスパ', value: product.score_cost || 0, fullMark: 100 },
+                                    { subject: '携帯性', value: product.score_portable || 0, fullMark: 100 },
+                                    { subject: 'AI性能', value: product.score_ai || 0, fullMark: 100 },
+                                ]}
+                                color="#3b82f6"
+                            />
+                        </figure>
+                    </section>
+                    <section className={styles.analysisChartItem}>
+                        <h2 className={styles.chartTitle}>価格推移グラフ</h2>
+                        {product.price_history?.length > 0 ? (
+                            <PriceHistoryChart history={product.price_history} />
                         ) : (
-                            <div className={styles.noDataPlaceholder}>マーケットデータを集計中...</div>
+                            <div className={styles.noDataPlaceholder}>価格データをトラッキング中...</div>
                         )}
-                    </div>
+                    </section>
                 </div>
 
-                {/* 4. AI要約ハイライト */}
-                {summary && (
-                    <section className={styles.highlightSection}>
-                        <h2 className={styles.minimalTitle}>AI Check Points</h2>
-                        <div className={styles.highlightGrid}>
-                            <div className={styles.highlightCard}><span className={styles.highlightIcon}>🚀</span><p>{summary.p1}</p></div>
-                            <div className={styles.highlightCard}><span className={styles.highlightIcon}>💎</span><p>{summary.p2}</p></div>
-                            <div className={styles.highlightCard}><span className={styles.highlightIcon}>🔋</span><p>{summary.p3}</p></div>
+                {/* 4. エキスパートレポート (メインコンテンツ) */}
+                {product.ai_content && (
+                    <section className={styles.aiContentSection}>
+                        <div className={styles.sectionHeader}>
+                            <h2 className={styles.specTitle}>製品エキスパートレポート</h2>
+                            <span className={styles.aiBadge}>AI ANALYSIS VERIFIED</span>
                         </div>
+                        <article className={styles.aiContentBody}>
+                            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                                {product.ai_content}
+                            </ReactMarkdown>
+                        </article>
                     </section>
                 )}
 
-                {/* 5. 主要スペック・エキスパートレポート */}
-                <section className={styles.specAndReportSection}>
-                    <div className={styles.aiSpecSummary}>
-                        <h2 className={styles.minimalTitle}>主要構成スペック</h2>
-                        <div className={styles.aiSpecGrid}>
-                            <div className={styles.aiSpecCard}>
-                                <span className={styles.aiSpecLabel}>{isSoftware ? "プラットフォーム" : "CPU / プロセッサー"}</span>
-                                <span className={styles.aiSpecValue}>{isSoftware ? (p.os_support || 'Windows/Mac') : (p.cpu_model || '-')}</span>
-                            </div>
-                            <div className={styles.aiSpecCard}>
-                                <span className={styles.aiSpecLabel}>メモリ</span>
-                                <span className={styles.aiSpecValue}>{p.memory_gb ? `${p.memory_gb}GB` : '-'}</span>
-                            </div>
-                            <div className={styles.aiSpecCard}>
-                                <span className={styles.aiSpecLabel}>ストレージ</span>
-                                <span className={styles.aiSpecValue}>{p.storage_gb ? `${p.storage_gb}GB SSD` : '-'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {cleanBody && (
-                        <div className={styles.aiContentSection}>
-                            <div className={styles.sectionHeader}>
-                                <h2 className={styles.specTitle}>エキスパートレポート</h2>
-                                <span className={styles.aiBadge}>AI ANALYSIS</span>
-                            </div>
-                            <div className={styles.aiContentBody}>
-                                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                                    {cleanBody}
-                                </ReactMarkdown>
-                            </div>
-                        </div>
-                    )}
-                </section>
-
                 <ProductCTA />
-                <FinalCta 
-                    product={product} 
-                    summary={summary} 
-                    finalUrl={finalUrl} 
-                    isSoftware={isSoftware} 
-                />
+                <FinalCta product={product} finalUrl={product.affiliate_url || product.url} isSoftware={isSoftware} />
 
-                {/* 7. 関連製品 */}
+                {/* 5. 関連製品 (内部リンク強化) */}
                 {displayRelated.length > 0 && (
                     <section className={styles.relatedSection}>
-                        <h2 className={styles.specTitle}>{product.maker} の注目ラインナップ</h2>
+                        <h2 className={styles.specTitle}>{product.maker} の関連製品アーカイブ</h2>
                         <div className={styles.relatedGrid}>
                             {displayRelated.map((item: any) => (
                                 <Link href={`/product/${item.unique_id}`} key={item.unique_id} className={styles.relatedCard}>

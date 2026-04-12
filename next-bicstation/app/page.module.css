@@ -1,10 +1,10 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-MAIN-LAYOUT] - TACTICAL OVERHAUL V10.0
+ * 🏗️ [BICSTATION-MAIN-LAYOUT] - TACTICAL OVERHAUL V10.3
  * ---------------------------------------------------------------------
  * 🚀 強化ポイント:
- * 1. 【背景】グリッド・パターンと微細なスキャンラインで情報密度を演出
- * 2. 【ランキング】ダブルパネル専用のサイバーパンク・レイアウト
- * 3. 【インタラクション】ネオン発光と変位アニメーションの高度化
+ * 1. 【画像統合】rankThumb スタイルの追加（アスペクト比固定・保護）
+ * 2. 【属性最適化】rankSpec による情報密度の視覚的整理
+ * 3. 【整合性】フォールバック・アイコン (noImageSlot) の実装
  * ===================================================================== */
 
 .mainWrapper {
@@ -63,6 +63,9 @@
     animation: statusPulse 2s infinite ease-in-out;
 }
 
+.verNum { color: rgba(0, 242, 255, 0.6); margin-left: 4px; }
+.countNum { color: #94a3b8; }
+
 /* --- 🚀 ヒーローセクション --- */
 .heroSection {
     padding: 120px 40px;
@@ -102,10 +105,9 @@
     max-width: 800px;
     margin: 0 auto;
     line-height: 1.8;
-    font-family: 'Inter', sans-serif;
 }
 
-/* --- 🏆 ランキングパネル (New Section) --- */
+/* --- 🏆 ランキングパネル --- */
 .rankingPanel {
     background: rgba(15, 23, 42, 0.6);
     border: 1px solid rgba(0, 242, 255, 0.15);
@@ -145,8 +147,9 @@
     background: rgba(255, 255, 255, 0.02);
     border-radius: 8px;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: 2px solid transparent;
+    margin-bottom: 8px;
 }
 
 .rankingRow:hover {
@@ -160,27 +163,71 @@
     font-weight: 900;
     font-family: 'JetBrains Mono', monospace;
     color: #334155;
-    min-width: 24px;
+    min-width: 28px;
+    text-align: center;
 }
 
-.trendColor { color: #f97316; } /* トレンド用オレンジ */
+.trendColor { color: #f97316; }
 
+/* 🖼️ 製品サムネイル */
+.rankThumb {
+    width: 48px;
+    height: 48px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s;
+}
+
+.rankingRow:hover .rankThumb {
+    border-color: rgba(0, 242, 255, 0.5);
+}
+
+.rankThumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.noImageSlot {
+    color: rgba(255, 255, 255, 0.1);
+}
+
+/* ⚙️ 属性スペックエリア */
 .rankInfo {
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .rankName {
     color: #f1f5f9;
     font-size: 0.95rem;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rankSpec {
+    display: flex;
+    gap: 10px;
+    color: rgba(148, 163, 184, 0.7);
+    font-size: 0.7rem;
+    font-family: 'JetBrains Mono', monospace;
 }
 
 .rankDetail {
     color: #64748b;
     font-size: 0.75rem;
     font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
 }
 
 /* --- 📰 コンテンツエリア --- */
@@ -191,15 +238,21 @@
     width: 100%;
 }
 
+.sectionTitleArea {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    border-bottom: 2px solid rgba(0, 242, 255, 0.2);
+    padding-bottom: 12px;
+}
+
 .sectionTitle {
     color: #00f2ff;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.3em;
-    padding-bottom: 12px;
-    border-bottom: 2px solid rgba(0, 242, 255, 0.2);
-    margin-bottom: 30px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -209,8 +262,8 @@
     font-size: 0.7rem;
     color: #64748b;
     text-decoration: none;
-    margin-left: auto;
     transition: color 0.2s;
+    font-family: 'JetBrains Mono', monospace;
 }
 
 .viewAll:hover { color: #00f2ff; }
@@ -241,6 +294,8 @@
 }
 
 /* --- 🛡️ ミッションセクション --- */
+.missionSection { margin-top: 100px; }
+
 .missionCard {
     background: linear-gradient(90deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -258,6 +313,26 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.6rem;
     color: rgba(233, 69, 96, 0.3);
+}
+
+.missionText {
+    color: #94a3b8;
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* --- 👣 フッター --- */
+.systemFooter {
+    margin-top: auto;
+    padding: 40px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+}
+
+.copyright {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #475569;
 }
 
 /* --- ✨ アニメーション --- */
@@ -280,5 +355,8 @@
     .heroSection { padding: 80px 20px; }
     .glitchTitle { font-size: 2.8rem; }
     .statusInner { font-size: 0.6rem; }
-    .nodeStats { display: none; } /* スマホでは統計を隠してスッキリさせる */
+    .nodeStats { display: none; }
+    .rankingRow { gap: 12px; }
+    .rankThumb { width: 40px; height: 40px; }
+    .rankSpec { display: none; } /* スマホではスペックを隠して1行にする */
 }
