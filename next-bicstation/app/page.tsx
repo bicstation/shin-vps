@@ -3,11 +3,11 @@
 /**
  * =====================================================================
  * 🛰️ BICSTATION TOP_NODE_V10.9 (AdSense Strategic Fusion)
- * 🛡️ Maya's Logic: 属性整合性 v7.5 / 指揮系統一本化 (wordpress.ts v7.9)
+ * 🛡️ Maya's Logic: 堅牢化 v10.9.1 / 指揮系統一本化 (wordpress.ts v7.9)
  * 💎 Update: 
- * 1. 統合サービス層 (@/shared/lib/api/django/wordpress) への完全移行
- * 2. 苦行ログ（WordPress/Django）からの最新6記事を並列フェッチ
- * 3. IS_ADSENSE_REVIEW フラグによる審査用レイアウト最適化
+ * 1. 404詳細エラーによるレンダリングクラッシュの完全防止
+ * 2. recentPosts の配列保証ロジックの実装
+ * 3. プロデュース表記を "SHIN CORE LINX" へ完全移行
  * =====================================================================
  */
 
@@ -78,15 +78,24 @@ export default async function HomePageMain() {
         safeFetch(fetchPCProductRanking('popularity', host), [])
     ]);
 
-    const recentPosts = newsRes?.results || [];
-    const aiTop3 = scoreRank.slice(0, 3);
-    const trendTop3 = popularityRank.slice(0, 3);
+    // 🛡️ 配列の存在を徹底保証
+    const recentPosts = Array.isArray(newsRes) ? newsRes : (newsRes?.results || []);
+    const rawAiTop3 = Array.isArray(scoreRank) ? scoreRank.slice(0, 3) : [];
+    const rawTrendTop3 = Array.isArray(popularityRank) ? popularityRank.slice(0, 3) : [];
     const totalCount = newsRes?.count || "1,800+";
 
-    const syncProduct = (item: any) => ({
-        ...item,
-        image_url: item.image_url || item.image || item.main_image || 'https://placehold.jp/300x200.png'
-    });
+    // 🛡️ プロダクトデータの同期と欠落ガード
+    const syncProduct = (item: any) => {
+        if (!item) return null;
+        return {
+            ...item,
+            name: item.name || item.title || 'UNKNOWN_NODE',
+            image_url: item.image_url || item.image || item.main_image || 'https://placehold.jp/300x200.png'
+        };
+    };
+
+    const aiTop3 = rawAiTop3.map(syncProduct).filter(Boolean);
+    const trendTop3 = rawTrendTop3.map(syncProduct).filter(Boolean);
 
     return (
         <div className={styles.mainWrapper}>
@@ -98,7 +107,7 @@ export default async function HomePageMain() {
                         <span className={styles.statusLabel}>CORE_CONNECTED</span>
                     </div>
                     <div className={styles.versionTag}>
-                        {siteConfig.site_name.toUpperCase()} <span className={styles.verNum}>DB_NODE_V10.9</span>
+                        {siteConfig.site_name.toUpperCase()} <span className={styles.verNum}>DB_NODE_V10.9.1</span>
                     </div>
                     <div className={styles.nodeStats}>
                         <Database className="inline w-3 h-3 mr-1" aria-hidden="true" />
@@ -129,16 +138,18 @@ export default async function HomePageMain() {
                         <span className={styles.viewAll}>SYSTEM_RANKING_SCORE</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {aiTop3.map((product, i) => (
+                        {aiTop3.length > 0 ? aiTop3.map((product: any, i) => (
                             <div key={product.unique_id || product.id || i} className="relative group">
                                 <ProductCard 
-                                    product={syncProduct(product)} 
+                                    product={product} 
                                     rank={i + 1}
                                     isReviewMode={IS_ADSENSE_REVIEW}
                                 />
                                 <Zap className="absolute top-4 right-4 w-5 h-5 text-yellow-500 z-10 animate-pulse" aria-hidden="true" />
                             </div>
-                        ))}
+                        )) : (
+                            <p className="text-slate-500 font-mono text-sm">LOADING_RANKING_DATA...</p>
+                        )}
                     </div>
                 </section>
 
@@ -152,24 +163,26 @@ export default async function HomePageMain() {
                         <Link href="/post" className={styles.viewAll}>READ_ALL_LOGS →</Link>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {recentPosts.map((post: any) => (
+                        {recentPosts.length > 0 ? recentPosts.map((post: any) => (
                             <Link 
                                 href={`/post/${post.slug || post.id}`} 
-                                key={post.id}
+                                key={post.id || Math.random()}
                                 className="group p-5 bg-white/5 border border-slate-800 rounded-xl hover:bg-white/10 transition-all"
                             >
                                 <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest block mb-2">
-                                    {new Date(post.date || post.created_at).toLocaleDateString()}
+                                    {new Date(post.date || post.created_at || Date.now()).toLocaleDateString()}
                                 </span>
                                 <h3 className="text-md font-bold text-slate-100 line-clamp-2 group-hover:text-emerald-400 transition-colors">
-                                    {post.title?.rendered || post.title}
+                                    {post.title?.rendered || post.title || 'UNTITLED_LOG'}
                                 </h3>
                                 <div className="mt-4 flex items-center text-xs text-slate-500 font-mono">
                                     <span>VIEW_REPORT</span>
                                     <ChevronRight className="w-3 h-3 ml-1" />
                                 </div>
                             </Link>
-                        ))}
+                        )) : (
+                            <p className="text-slate-500 font-mono text-sm">NO_LOGS_AVAILABLE</p>
+                        )}
                     </div>
                 </section>
 
@@ -183,16 +196,18 @@ export default async function HomePageMain() {
                         <span className={styles.viewAll}>REALTIME_LIQUIDITY</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {trendTop3.map((product, i) => (
+                        {trendTop3.length > 0 ? trendTop3.map((product: any, i) => (
                             <div key={product.unique_id || product.id || i} className="relative group">
                                 <ProductCard 
-                                    product={syncProduct(product)} 
+                                    product={product} 
                                     rank={i + 1}
                                     isReviewMode={IS_ADSENSE_REVIEW}
                                 />
                                 <Activity className="absolute top-4 right-4 w-5 h-5 text-orange-500 animate-pulse z-10" aria-hidden="true" />
                             </div>
-                        ))}
+                        )) : (
+                            <p className="text-slate-500 font-mono text-sm">ANALYZING_MARKET_TREND...</p>
+                        )}
                     </div>
                 </section>
 
@@ -229,7 +244,7 @@ export default async function HomePageMain() {
                 <p className={styles.copyright}>
                     &copy; 2026 {siteConfig.site_name.toUpperCase()} / Produced by SHIN CORE LINX
                 </p>
-                <p className={styles.protocolTag}>PROTOCOL_STABLE_V10.9_FUSION</p>
+                <p className={styles.protocolTag}>PROTOCOL_STABLE_V10.9.1_FUSION</p>
             </footer>
         </div>
     );
