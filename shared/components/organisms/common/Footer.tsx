@@ -26,9 +26,6 @@ interface FooterProps {
     };
 }
 
-/**
- * 🌐 内部コンポーネント
- */
 function FooterContent({ debugData }: FooterProps) {
     const [mounted, setMounted] = useState(false);
     const searchParams = useSearchParams();
@@ -57,46 +54,53 @@ function FooterContent({ debugData }: FooterProps) {
         : process.env.NODE_ENV === 'development';
 
     /**
-     * 🛰️ SHIN-VPS NETWORK (全4サイト網羅)
+     * 🛰️ SHIN CORE LINX - NETWORK 定義
+     * 組織名変更に伴い、セクション名も SHIN CORE LINX へ統合
      */
     const networkSites = [
-        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#0055ff' },
-        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900' },
-        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012' },
-        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37' },
+        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#00f2ff', isAdult: false },
+        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900', isAdult: false },
+        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012', isAdult: true },
+        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37', isAdult: true },
     ];
+
+    /**
+     * 🛡️ AdSense Safety Logic
+     */
+    const currentIsAdultSite = networkSites.find(s => s.name === site.site_name)?.isAdult || false;
+    
+    const visibleNetworkSites = networkSites.filter(targetSite => {
+        if (!currentIsAdultSite && targetSite.isAdult) return false;
+        return true;
+    });
 
     const getNetworkUrl = (s: typeof networkSites[0]) => {
         return isLocal ? `http://localhost:${s.port}` : `https://${s.domain}`;
     };
 
-    /**
-     * 🛠️ サイト別設定（編集者情報含む）
-     * 各サイトの特性に合わせて E-E-A-T を強化
-     */
     const siteConfigs: Record<string, any> = {
         'Bic Station': {
             desc: "ハードウェア性能の真実を数値化。最新PCスペック診断とBTOメーカー比較で、最適な1台を提案します。",
             suffix: 'Performance Registry',
-            editor: 'Maya / BICSTATION 編集長',
+            editor: 'Maya / SHIN CORE LINX 統括',
             editorDesc: 'サーバーエンジニア。自作PCと自動化スクリプトをこよなく愛するテックマニア。'
         },
         'Bic Saving': {
             desc: "「賢く買う」をAIがサポート。主要ECサイトの価格推移とポイント還元率をリアルタイムに解析します。",
             suffix: 'Smart Saving Index',
-            editor: 'Maya / BIC SAVING 管理人',
+            editor: 'Maya / SHIN CORE LINX 統括',
             editorDesc: 'データ解析エンジニア。APIを駆使した価格監視とポイ活の自動化が専門。'
         },
         'AV Flash': {
             desc: "圧倒的なアーカイブ量を誇る情報ポータル。詳細なメタデータ解析で、最高の視聴体験をサポートします。",
             suffix: 'Ultimate Movie Registry',
-            editor: 'Maya / AV FLASH 開発代表',
+            editor: 'Maya / SHIN CORE LINX 統括',
             editorDesc: '大規模データベース構築を得意とするエンジニア。膨大なデータの構造化がライフワーク。'
         },
         'Tiper': {
             desc: "大人のためのプレミアム・ガイド。AIソムリエがあなたの感性に響く最高の1本をエスコートします。",
             suffix: 'Tactical Archive Interface',
-            editor: 'Maya / TIPER コンシェルジュ',
+            editor: 'Maya / SHIN CORE LINX 統括',
             editorDesc: 'AIレコメンドエンジンの開発者。感性を数値化するアルゴリズムを研究中。'
         }
     };
@@ -109,7 +113,7 @@ function FooterContent({ debugData }: FooterProps) {
             style={{ '--accent-red': siteColor } as React.CSSProperties}
         >
             <div className={styles.container}>
-                {/* 1. ブランド & 編集者プロフィール (信頼性の明示) */}
+                {/* 1. ブランド & 編集者プロフィール */}
                 <div className={styles.column}>
                     <h3 className={styles.siteTitle}>{site.site_name.toUpperCase()}</h3>
                     <p className={styles.description}>{config.desc}</p>
@@ -126,11 +130,11 @@ function FooterContent({ debugData }: FooterProps) {
                     </div>
                 </div>
 
-                {/* 2. SHIN-VPS NETWORK */}
+                {/* 2. SHIN CORE LINX NETWORK */}
                 <div className={styles.column}>
-                    <h3 className={styles.sectionTitle}>SHIN-VPS NETWORK</h3>
+                    <h3 className={styles.sectionTitle}>SHIN CORE LINX NETWORK</h3>
                     <ul className={styles.networkList}>
-                        {networkSites.map((s) => (
+                        {visibleNetworkSites.map((s) => (
                             <li key={s.name} className={styles.linkItem}>
                                 <a
                                     href={getNetworkUrl(s)}
@@ -144,7 +148,7 @@ function FooterContent({ debugData }: FooterProps) {
                     </ul>
                 </div>
 
-                {/* 3. INFORMATION (法的開示 & 連絡先) */}
+                {/* 3. INFORMATION */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>INFORMATION</h3>
                     <ul className={styles.linkList}>
@@ -152,7 +156,6 @@ function FooterContent({ debugData }: FooterProps) {
                         <li className={styles.linkItem}><Link href={`${site.site_prefix}/guideline`}>📝 編集ガイドライン</Link></li>
                         <li className={styles.linkItem}><Link href={`${site.site_prefix}/privacy-policy`}>🛡️ プライバシーポリシー</Link></li>
                         <li className={styles.linkItem}><Link href={`${site.site_prefix}/disclaimer`}>⚠️ 免責事項</Link></li>
-                        {/* ✅ contact ディレクトリへのリンクを確実に追加 */}
                         <li className={styles.linkItem}><Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link></li>
                     </ul>
                     
@@ -165,15 +168,15 @@ function FooterContent({ debugData }: FooterProps) {
             <div className={styles.bottomBar}>
                 <div className={styles.bottomContainer}>
                     <p className={styles.copyright}>
-                        &copy; {currentYear} {site.site_name.toUpperCase()} - {config.suffix}
+                        &copy; {currentYear} {site.site_name.toUpperCase()} / Managed by SHIN CORE LINX
                     </p>
                     <div className={styles.systemStatus}>
-                        STATUS: <span className={styles.statusOnline}>ONLINE</span> | NODE: {typeof window === 'undefined' ? 'SSR' : 'HYDRATED'}
+                        STATUS: <span className={styles.statusOnline}>ONLINE</span> | ID: SHIN_CORE_PROT_V10.8
                     </div>
                 </div>
             </div>
 
-            {/* デバッグ用診断ツール */}
+            {/* Debug Section (Optional) */}
             {isDebugMode && debugData && (
                 <div className={styles.debugContainer}>
                     <SystemDiagnosticHero
@@ -193,9 +196,6 @@ function FooterContent({ debugData }: FooterProps) {
     );
 }
 
-/**
- * 🏛️ Root Footer
- */
 export default function Footer(props: FooterProps) {
     return (
         <Suspense fallback={<footer className={styles.footer} style={{ height: '300px' }} />}>

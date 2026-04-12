@@ -2,12 +2,12 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ BICSTATION TOP_NODE_V10.7 (Logic & Visual Final)
+ * 🛰️ BICSTATION TOP_NODE_V10.8 (Visual Enhanced Edition)
  * 🛡️ Maya's Logic: 属性整合性 v7.0 / Zenith v10.7 同期版
- * 💎 Fix: 
- * 1. ProductCard への Props 名を 'product' に統一
- * 2. カード内部ロジックに合わせ 'image' -> 'image_url' のマッピングを実施
- * 3. 'rank' prop を渡し、ProductCard の rankingMode を発動させる
+ * 💎 Update: 
+ * 1. ヒーローエリアにチーム写真背景レイヤー (team-office.jpg) を実装
+ * 2. フッターのコピーライトを将来の展望に合わせ微調整
+ * 3. 属性マッピングロジックの安定化
  * =====================================================================
  */
 
@@ -79,7 +79,6 @@ export default async function HomePageMain() {
      */
     const syncProduct = (item: any) => ({
         ...item,
-        // ProductCard.tsx の 57行目「product.image_url」に対応させる
         image_url: item.image_url || item.image || item.main_image || 'https://placehold.jp/300x200.png'
     });
 
@@ -93,7 +92,7 @@ export default async function HomePageMain() {
                         <span className={styles.statusLabel}>CORE_CONNECTED</span>
                     </div>
                     <div className={styles.versionTag}>
-                        {siteConfig.site_name.toUpperCase()} <span className={styles.verNum}>DB_NODE_V10.7</span>
+                        {siteConfig.site_name.toUpperCase()} <span className={styles.verNum}>DB_NODE_V10.8</span>
                     </div>
                     <div className={styles.nodeStats}>
                         <Database className="inline w-3 h-3 mr-1" aria-hidden="true" />
@@ -102,16 +101,23 @@ export default async function HomePageMain() {
                 </div>
             </header>
 
-            {/* 🚀 ヒーローセクション */}
+            {/* 🚀 ヒーローセクション: 画像背景レイヤーを追加 */}
             <section className={styles.heroSection}>
+                {/* 🖼️ 背景画像レイヤー (CSSで /images/team-office.jpg を制御) */}
+                <div className={styles.heroBackgroundImage} role="presentation"></div>
+                
+                {/* 🟦 グリッド・グロウ効果レイヤー */}
                 <div className={styles.heroGlow}></div>
-                <h1 className={styles.glitchTitle}>{siteConfig.site_name.toUpperCase()}</h1>
-                <p className={styles.subText}>AI解析スコアと市場流動性を統合した、次世代ハードウェア・データベース。</p>
+                
+                <div className={styles.heroContent}>
+                    <h1 className={styles.glitchTitle}>{siteConfig.site_name.toUpperCase()}</h1>
+                    <p className={styles.subText}>AI解析スコアと市場流動性を統合した、次世代ハードウェア・データベース。</p>
+                </div>
             </section>
 
             <div className={styles.contentContainer}>
                 
-                {/* 🏆 AI ANALYSIS RANKING (横3列 1行) */}
+                {/* 🏆 AI ANALYSIS RANKING */}
                 <section className="mb-24" aria-label="AIランキング">
                     <div className={styles.sectionTitleArea}>
                         <h2 className={styles.sectionTitle}>
@@ -123,7 +129,6 @@ export default async function HomePageMain() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {aiTop3.map((product, i) => (
                             <div key={product.unique_id || product.id || i} className="relative group">
-                                {/* ✅ rank={i + 1} を渡して ProductCard 側のバッジ表示ロジックを起動 */}
                                 <ProductCard 
                                     product={syncProduct(product)} 
                                     rank={i + 1} 
@@ -134,7 +139,7 @@ export default async function HomePageMain() {
                     </div>
                 </section>
 
-                {/* 🔥 MARKET TREND RANKING (横3列 1行) */}
+                {/* 🔥 MARKET TREND RANKING */}
                 <section className="mb-24" aria-label="トレンドランキング">
                     <div className={styles.sectionTitleArea}>
                         <h2 className={`${styles.sectionTitle} !border-orange-500/30`}>
@@ -146,7 +151,6 @@ export default async function HomePageMain() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {trendTop3.map((product, i) => (
                             <div key={product.unique_id || product.id || i} className="relative group">
-                                {/* ✅ 同じく rank={i + 1} を注入 */}
                                 <ProductCard 
                                     product={syncProduct(product)} 
                                     rank={i + 1} 
@@ -196,7 +200,10 @@ export default async function HomePageMain() {
             </div>
 
             <footer className={styles.systemFooter}>
-                <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name.toUpperCase()} | PROTOCOL_STABLE_V10.7</p>
+                <p className={styles.copyright}>
+                    &copy; 2026 {siteConfig.site_name.toUpperCase()} / Produced by CORE LINKS
+                </p>
+                <p className={styles.protocolTag}>PROTOCOL_STABLE_V10.8</p>
             </footer>
         </div>
     );

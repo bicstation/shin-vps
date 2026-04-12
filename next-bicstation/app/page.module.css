@@ -1,10 +1,11 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-MAIN-LAYOUT] - TACTICAL OVERHAUL V10.3
+ * 🏗️ [BICSTATION-MAIN-LAYOUT] - TACTICAL OVERHAUL V10.8
  * ---------------------------------------------------------------------
  * 🚀 強化ポイント:
- * 1. 【画像統合】rankThumb スタイルの追加（アスペクト比固定・保護）
- * 2. 【属性最適化】rankSpec による情報密度の視覚的整理
- * 3. 【整合性】フォールバック・アイコン (noImageSlot) の実装
+ * 1. 【CORE LINKS 統合】Produced by CORE LINKS 準拠のスタイル更新
+ * 2. 【Hero画像レイヤー】team-office.jpg を中央背景に安全にマッピング
+ * 3. 【視覚的階層】brightness(0.25) による可読性重視の黒透過処理
+ * 4. 【レスポンシブ】モバイル環境での画像位置最適化
  * ===================================================================== */
 
 .mainWrapper {
@@ -13,7 +14,7 @@
     width: 100%;
     min-height: 100vh;
     background-color: #0b0f19;
-    /* 🛰️ グリッド背景を追加してシステム感を強調 */
+    /* 🛰️ システム感のあるグリッド背景 */
     background-image: 
         linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
@@ -66,15 +67,38 @@
 .verNum { color: rgba(0, 242, 255, 0.6); margin-left: 4px; }
 .countNum { color: #94a3b8; }
 
-/* --- 🚀 ヒーローセクション --- */
+/* --- 🚀 ヒーローセクション (CORE LINKS Visual Update) --- */
 .heroSection {
     padding: 120px 40px;
     text-align: center;
     position: relative;
-    background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5) 0%, transparent 100%);
+    background: #00020a;
     border-bottom: 1px solid rgba(0, 242, 255, 0.1);
+    overflow: hidden;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
+/* 🖼️ 追加：背景画像レイヤー (チーム・オフィス) */
+.heroBackgroundImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/team-office.jpg');
+    background-size: cover;
+    background-position: center;
+    /* 🛡️ Maya's リクエスト：黒透過処理 */
+    filter: brightness(0.25) contrast(1.1) saturate(0.8);
+    opacity: 0.7;
+    z-index: 1; /* 最背面 */
+}
+
+/* 🟦 グロウ効果レイヤー */
 .heroGlow {
     position: absolute;
     top: 50%;
@@ -82,9 +106,15 @@
     transform: translate(-50%, -50%);
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(0, 242, 255, 0.05) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0, 242, 255, 0.08) 0%, transparent 70%);
     pointer-events: none;
-    z-index: 0;
+    z-index: 2; /* 画像の上 */
+}
+
+/* 文字コンテンツ */
+.heroContent {
+    position: relative;
+    z-index: 3; /* 最前面 */
 }
 
 .glitchTitle {
@@ -100,11 +130,12 @@
 }
 
 .subText {
-    color: #94a3b8;
-    font-size: 1.2rem;
+    color: #f1f5f9; /* 可読性のため少し明るく */
+    font-size: 1.1rem;
     max-width: 800px;
     margin: 0 auto;
     line-height: 1.8;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
 /* --- 🏆 ランキングパネル --- */
@@ -117,26 +148,6 @@
     overflow: hidden;
     backdrop-filter: blur(4px);
     transition: border-color 0.3s ease;
-}
-
-.rankingPanel:hover {
-    border-color: rgba(0, 242, 255, 0.4);
-}
-
-.panelHeader {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-}
-
-.panelTitle {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-    color: #f8fafc;
 }
 
 .rankingRow {
@@ -158,17 +169,6 @@
     border-left: 2px solid #00f2ff;
 }
 
-.rankNum {
-    font-size: 1.2rem;
-    font-weight: 900;
-    font-family: 'JetBrains Mono', monospace;
-    color: #334155;
-    min-width: 28px;
-    text-align: center;
-}
-
-.trendColor { color: #f97316; }
-
 /* 🖼️ 製品サムネイル */
 .rankThumb {
     width: 48px;
@@ -181,53 +181,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: border-color 0.2s;
-}
-
-.rankingRow:hover .rankThumb {
-    border-color: rgba(0, 242, 255, 0.5);
 }
 
 .rankThumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.noImageSlot {
-    color: rgba(255, 255, 255, 0.1);
-}
-
-/* ⚙️ 属性スペックエリア */
-.rankInfo {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.rankName {
-    color: #f1f5f9;
-    font-size: 0.95rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.rankSpec {
-    display: flex;
-    gap: 10px;
-    color: rgba(148, 163, 184, 0.7);
-    font-size: 0.7rem;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.rankDetail {
-    color: #64748b;
-    font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    margin-top: 2px;
 }
 
 /* --- 📰 コンテンツエリア --- */
@@ -258,41 +217,6 @@
     gap: 12px;
 }
 
-.viewAll {
-    font-size: 0.7rem;
-    color: #64748b;
-    text-decoration: none;
-    transition: color 0.2s;
-    font-family: 'JetBrains Mono', monospace;
-}
-
-.viewAll:hover { color: #00f2ff; }
-
-/* 📂 カテゴリカード */
-.categoryCard {
-    background: rgba(30, 41, 59, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 24px;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    color: #94a3b8;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
-    transition: all 0.3s ease;
-}
-
-.categoryCard:hover {
-    background: rgba(0, 242, 255, 0.05);
-    border-color: rgba(0, 242, 255, 0.3);
-    color: #00f2ff;
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
 /* --- 🛡️ ミッションセクション --- */
 .missionSection { margin-top: 100px; }
 
@@ -301,38 +225,32 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
     padding: 60px 40px;
     border-radius: 12px;
-    border-left: 4px solid #e94560;
+    border-left: 4px solid #00f2ff; /* 🛰️ コアカラーに変更 */
     position: relative;
 }
 
-.missionCard::after {
-    content: "SECURE_ARCHIVE";
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(233, 69, 96, 0.3);
-}
-
-.missionText {
-    color: #94a3b8;
-    line-height: 1.8;
-    font-size: 1rem;
-}
-
-/* --- 👣 フッター --- */
+/* --- 👣 フッター (Produced by CORE LINKS) --- */
 .systemFooter {
     margin-top: auto;
-    padding: 40px 24px;
+    padding: 60px 24px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     text-align: center;
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .copyright {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+}
+
+.protocolTag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
     color: #475569;
+    margin-top: 8px;
+    text-transform: uppercase;
 }
 
 /* --- ✨ アニメーション --- */
@@ -347,16 +265,9 @@
 }
 
 /* --- 📱 レスポンシブ --- */
-@media (max-width: 1024px) {
-    .contentContainer { padding: 40px 20px; }
-}
-
 @media (max-width: 768px) {
-    .heroSection { padding: 80px 20px; }
+    .heroSection { padding: 80px 20px; min-height: 300px; }
     .glitchTitle { font-size: 2.8rem; }
+    .heroBackgroundImage { background-position: 70% center; } /* スマホでは人物が見える位置に微調整 */
     .statusInner { font-size: 0.6rem; }
-    .nodeStats { display: none; }
-    .rankingRow { gap: 12px; }
-    .rankThumb { width: 40px; height: 40px; }
-    .rankSpec { display: none; } /* スマホではスペックを隠して1行にする */
 }
