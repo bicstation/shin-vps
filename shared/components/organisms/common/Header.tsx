@@ -123,9 +123,9 @@ export default function Header() {
                 { label: '新人女優', href: '/newface' }
             ] : site.site_name === 'Bic Station' ? [
                 { label: 'PC診断', href: '/pc-finder' }, 
-                { label: 'おすすめPC', href: '/recommend' }
+                { label: 'おすすめPC', href: '/ranking/popularity' }
             ] : [
-                { label: '新着記事', href: '/news' }, 
+                { label: '新着記事', href: '/post' }, 
                 { label: 'ランキング', href: '/ranking' }
             ]
         },
@@ -135,7 +135,7 @@ export default function Header() {
                 { label: '女優名鑑', href: '/ranking/style' }, 
                 { label: 'メーカー名', href: '/maker' }
             ] : [
-                { label: '性能比較', href: '/comparison' }, 
+                { label: 'AI性能比較', href: '/ranking' }, 
                 { label: 'カタログ', href: '/catalog' }
             ]
         },
