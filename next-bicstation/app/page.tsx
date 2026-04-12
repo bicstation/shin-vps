@@ -154,7 +154,7 @@ export default async function HomePageMain() {
                         <div className="space-y-4">
                             <h3 className="text-xs font-mono text-slate-500 border-b border-slate-800 pb-2 uppercase tracking-widest">Satellite_Tech_Logs</h3>
                             {satelliteLogs.length > 0 ? satelliteLogs.slice(0, 3).map((post: any) => (
-                                <Link href={`/post/${post.slug || post.id}`} key={post.id} className="flex items-center p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all group">
+                                <Link href={`/news/${post.slug || post.id}`} key={post.id} className="flex items-center p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all group">
                                     <div className="flex-1">
                                         <span className="text-[10px] text-emerald-500 font-mono block">{new Date(post.date).toLocaleDateString()}</span>
                                         <p className="text-sm font-bold text-slate-200 group-hover:text-emerald-400 line-clamp-1">{post.title}</p>
@@ -167,7 +167,7 @@ export default async function HomePageMain() {
                         <div className="space-y-4">
                             <h3 className="text-xs font-mono text-slate-500 border-b border-slate-800 pb-2 uppercase tracking-widest">Core_System_Logs</h3>
                             {corePosts.length > 0 ? corePosts.slice(0, 3).map((post: any) => (
-                                <Link href={`/news/${post.slug || post.id}`} key={post.id} className="flex items-center p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all group">
+                                <Link href={`/post/${post.slug || post.id}`} key={post.id} className="flex items-center p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all group">
                                     <div className="flex-1">
                                         <span className="text-[10px] text-blue-400 font-mono block">{new Date(post.created_at || Date.now()).toLocaleDateString()}</span>
                                         <p className="text-sm font-bold text-slate-200 group-hover:text-blue-400 line-clamp-1">{post.title}</p>
@@ -202,7 +202,7 @@ export default async function HomePageMain() {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {pcArchiveSample.length > 0 ? pcArchiveSample.map((pc: any) => (
-                            <Link href={`/pc/${pc.unique_id || pc.id}`} key={pc.id} className="p-4 bg-slate-900/50 border border-slate-800 rounded hover:border-purple-500 transition-all group">
+                            <Link href={`/product/${pc.unique_id || pc.id}`} key={pc.id} className="p-4 bg-slate-900/50 border border-slate-800 rounded hover:border-purple-500 transition-all group">
                                 <p className="text-xs font-bold text-slate-300 group-hover:text-purple-400 truncate">{pc.name || pc.title}</p>
                                 <span className="text-[10px] font-mono text-purple-600 opacity-70">SPEC_NODE: {pc.unique_id || pc.id}</span>
                             </Link>
