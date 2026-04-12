@@ -1,4 +1,4 @@
-// /home/maya/shin-vps/shared/lib/api/wordpress.ts
+// /home/maya/shin-vps/shared/lib/api/django/wordpress.ts
 
 export async function fetchWPTechInsights(limit = 6) {
   const WP_URL = "https://wp552476.wpx.jp/wp-json/wp/v2/posts";

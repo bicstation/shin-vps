@@ -3,10 +3,10 @@
 /**
  * =====================================================================
  * 🛰️ BICSTATION TOP_NODE_V10.9 (AdSense Strategic Fusion)
- * 🛡️ Maya's Logic: 属性整合性 v7.5 / Blog Satellite 実装版
+ * 🛡️ Maya's Logic: 属性整合性 v7.5 / 指揮系統一本化 (wordpress.ts v7.9)
  * 💎 Update: 
- * 1. 苦行ログ（WordPress/Django）からの最新6記事を並列フェッチ
- * 2. データベースとブログを共存させ、E-E-A-Tを最大化
+ * 1. 統合サービス層 (@/shared/lib/api/django/wordpress) への完全移行
+ * 2. 苦行ログ（WordPress/Django）からの最新6記事を並列フェッチ
  * 3. IS_ADSENSE_REVIEW フラグによる審査用レイアウト最適化
  * =====================================================================
  */
@@ -20,8 +20,8 @@ import { Activity, ShieldCheck, Zap, TrendingUp, BarChart3, Database, FileText, 
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 
-// ✅ API (Zenith v10.0 仕様)
-import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
+// ✅ API (Maya's Logic v7.9: 指揮系統一本化)
+import { fetchDjangoBridgeContent } from '@/shared/lib/api/django/wordpress';
 import { fetchPCProductRanking } from '@/shared/lib/api/django/pc';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
@@ -64,10 +64,16 @@ export default async function HomePageMain() {
     const host = headerList.get('host') || "bicstation.com";
     const siteConfig = getSiteMetadata(host); 
 
-    // --- 🎯 マルチ並列データフェッチ ---
-    // 最近のブログ記事（reports/posts）を6件取得するように拡張
+    // --- 🎯 マルチ並列データフェッチ (v7.9 司令塔経由) ---
     const [newsRes, scoreRank, popularityRank] = await Promise.all([
-        safeFetch(fetchDjangoBridgeContent('posts', 6), { results: [], count: 0 }),
+        safeFetch(
+            fetchDjangoBridgeContent({ 
+                content_type: 'post', 
+                limit: 6,
+                host: host 
+            }), 
+            { results: [], count: 0 }
+        ),
         safeFetch(fetchPCProductRanking('score', host), []),
         safeFetch(fetchPCProductRanking('popularity', host), [])
     ]);
@@ -146,7 +152,7 @@ export default async function HomePageMain() {
                         <Link href="/post" className={styles.viewAll}>READ_ALL_LOGS →</Link>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {recentPosts.map((post) => (
+                        {recentPosts.map((post: any) => (
                             <Link 
                                 href={`/post/${post.slug || post.id}`} 
                                 key={post.id}
@@ -221,7 +227,7 @@ export default async function HomePageMain() {
 
             <footer className={styles.systemFooter}>
                 <p className={styles.copyright}>
-                    &copy; 2026 {siteConfig.site_name.toUpperCase()} / Produced by CORE LINKS
+                    &copy; 2026 {siteConfig.site_name.toUpperCase()} / Produced by SHIN CORE LINX
                 </p>
                 <p className={styles.protocolTag}>PROTOCOL_STABLE_V10.9_FUSION</p>
             </footer>
