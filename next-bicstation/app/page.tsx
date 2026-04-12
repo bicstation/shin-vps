@@ -2,27 +2,33 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ BICSTATION TOP_NODE_V10.9 (AdSense Strategic Fusion)
- * 🛡️ Maya's Logic: 堅牢化 v10.9.1 / 指揮系統一本化 (wordpress.ts v7.9)
+ * 🛰️ BICSTATION TOP_NODE_V11.0.4 (Final System Integration)
+ * 🛡️ Maya's Logic: 堅牢化 v11.0.4 / Zenith v10.0 API サービス完全同期
  * 💎 Update: 
- * 1. 404詳細エラーによるレンダリングクラッシュの完全防止
- * 2. recentPosts の配列保証ロジックの実装
- * 3. プロデュース表記を "SHIN CORE LINX" へ完全移行
+ * 1. Ranking API (fetchPCProductRanking) の配列戻り値を直接処理
+ * 2. Posts API (fetchPostList) の siteTag フィルタ引数を最適化
+ * 3. PC Archive のフォールバック・カテゴリ表示の整合性
+ * 4. 44年エンジニアの矜持: 物理ログと解析データのハイブリッド表示
  * =====================================================================
  */
 
 import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
-import { Activity, ShieldCheck, Zap, TrendingUp, BarChart3, Database, FileText, ChevronRight } from 'lucide-react';
+import { 
+    Activity, ShieldCheck, Zap, TrendingUp, BarChart3, 
+    Database, FileText, ChevronRight, Cpu, Layout 
+} from 'lucide-react';
 
-// ✅ 指定のコンポーネント
+// ✅ 指定コンポーネント (共有 UI)
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
-import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 
-// ✅ API (Maya's Logic v7.9: 指揮系統一本化)
-import { fetchDjangoBridgeContent } from '@/shared/lib/api/django/wordpress';
-import { fetchPCProductRanking } from '@/shared/lib/api/django/pc';
+// ✅ API 統合 (Zenith v10.0 仕様に準拠)
+import { fetchWPTechInsights } from '@/shared/lib/api/django/wordpress'; // WordPress ログ
+import { fetchPostList } from '@/shared/lib/api/django/posts';           // Django Posts
+import { fetchPCProductRanking } from '@/shared/lib/api/django/pc';      // PC Ranking & Stats
+
+// 共通ユーティリティ
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
@@ -32,17 +38,23 @@ import styles from './page.module.css';
 export const dynamic = 'force-dynamic';
 export const revalidate = 600; 
 
-/**
- * 🚩 AdSense 審査コントロール
- */
+// Google AdSense 審査用フラグ (必要に応じて true)
 const IS_ADSENSE_REVIEW = true; 
 
-async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
+/**
+ * 🛡️ 高度なフェッチ・ガード
+ * 実行時エラーを封じ込め、fallback データを確実に返却する。
+ */
+async function safeFetch<T>(fetcher: any, args: any[], fallback: T): Promise<T> {
     try {
-        const data = await promise;
+        if (typeof fetcher !== 'function') {
+            console.warn(`⚠️ [API_NOT_FOUND]: 関数が正しくインポートされていません。`);
+            return fallback;
+        }
+        const data = await fetcher(...args);
         return data ?? fallback;
     } catch (e) {
-        console.error(`🚨 [SYSTEM_FETCH_ERROR]:`, e);
+        console.error(`🚨 [RUNTIME_FETCH_ERROR]:`, e);
         return fallback;
     }
 }
@@ -54,7 +66,7 @@ export async function generateMetadata() {
 
     return constructMetadata({
         title: `${siteConfig.site_name.toUpperCase()} | AI解析アーカイブ & 技術ログ`,
-        description: `44年のエンジニアリングキャリアが査定するハードウェア・データベース。最新の「苦行ログ」も公開中。`,
+        description: `44年のエンジニアリングキャリアに基づく、ハードウェア解析と開発ログの集積地。`,
         host: host 
     });
 }
@@ -63,188 +75,162 @@ export default async function HomePageMain() {
     const headerList = await headers();
     const host = headerList.get('host') || "bicstation.com";
     const siteConfig = getSiteMetadata(host); 
+    const siteTag = siteConfig.site_tag || 'bicstation'; // サイト識別用
 
-    // --- 🎯 マルチ並列データフェッチ (v7.9 司令塔経由) ---
-    const [newsRes, scoreRank, popularityRank] = await Promise.all([
-        safeFetch(
-            fetchDjangoBridgeContent({ 
-                content_type: 'post', 
-                limit: 6,
-                host: host 
-            }), 
-            { results: [], count: 0 }
-        ),
-        safeFetch(fetchPCProductRanking('score', host), []),
-        safeFetch(fetchPCProductRanking('popularity', host), [])
+    // --- 🎯 5つのデータストリームを同時並列取得 ---
+    const [wpLogs, djangoPosts, pcRankingData, scoreRank, popularityRank] = await Promise.all([
+        safeFetch(fetchWPTechInsights, [6], []),                                     // WordPress (配列)
+        safeFetch(fetchPostList, [6, 0, siteTag], { results: [], count: 0 }),        // Django Posts ({results: []})
+        safeFetch(fetchPCProductRanking, ['score', host], []),                       // PC Archive (配列)
+        safeFetch(fetchPCProductRanking, ['score', host], []),                       // AI Ranking (配列)
+        safeFetch(fetchPCProductRanking, ['popularity', host], [])                   // Trend Ranking (配列)
     ]);
 
-    // 🛡️ 配列の存在を徹底保証
-    const recentPosts = Array.isArray(newsRes) ? newsRes : (newsRes?.results || []);
-    const rawAiTop3 = Array.isArray(scoreRank) ? scoreRank.slice(0, 3) : [];
-    const rawTrendTop3 = Array.isArray(popularityRank) ? popularityRank.slice(0, 3) : [];
-    const totalCount = newsRes?.count || "1,800+";
-
-    // 🛡️ プロダクトデータの同期と欠落ガード
-    const syncProduct = (item: any) => {
-        if (!item) return null;
-        return {
-            ...item,
-            name: item.name || item.title || 'UNKNOWN_NODE',
-            image_url: item.image_url || item.image || item.main_image || 'https://placehold.jp/300x200.png'
-        };
-    };
-
-    const aiTop3 = rawAiTop3.map(syncProduct).filter(Boolean);
-    const trendTop3 = rawTrendTop3.map(syncProduct).filter(Boolean);
+    // 🛡️ データ正規化ロジック (API 戻り値の構造差を吸収)
+    const satelliteLogs = Array.isArray(wpLogs) ? wpLogs : [];
+    const corePosts = Array.isArray(djangoPosts?.results) ? djangoPosts.results : [];
+    
+    // PC Ranking は API 側で data.results が抽出済み（配列直下）
+    const aiTop3 = Array.isArray(scoreRank) ? scoreRank.slice(0, 3) : [];
+    const trendTop3 = Array.isArray(popularityRank) ? popularityRank.slice(0, 3) : [];
+    const pcArchiveSample = Array.isArray(pcRankingData) ? pcRankingData.slice(0, 4) : [];
 
     return (
         <div className={styles.mainWrapper}>
-            {/* 🛠️ システムステータスバー */}
+            {/* 🛠️ システムステータスバー: Node V11.0.4 */}
             <header className={styles.systemStatus} aria-label="System Node Status">
                 <div className={styles.statusInner}>
                     <div className={styles.pulseIndicator}>
                         <span className={styles.dot}></span>
-                        <span className={styles.statusLabel}>CORE_CONNECTED</span>
+                        <span className={styles.statusLabel}>HYBRID_CORE_ONLINE</span>
                     </div>
                     <div className={styles.versionTag}>
-                        {siteConfig.site_name.toUpperCase()} <span className={styles.verNum}>DB_NODE_V10.9.1</span>
+                        {siteConfig.site_name.toUpperCase()} <span className={styles.verNum}>NODE_V11.0.4_FINAL</span>
                     </div>
                     <div className={styles.nodeStats}>
-                        <Database className="inline w-3 h-3 mr-1" aria-hidden="true" />
-                        <span className={styles.countNum}>{totalCount.toLocaleString()} DATA_POINTS</span>
+                        <Database className="inline w-3 h-3 mr-1" />
+                        <span className={styles.countNum}>5_DATA_STREAMS_SYNCED</span>
                     </div>
                 </div>
             </header>
 
-            {/* 🚀 ヒーローセクション */}
+            {/* 🚀 ヒーローセクション: エンジニアの矜持 */}
             <section className={styles.heroSection}>
-                <div className={styles.heroBackgroundImage} role="presentation"></div>
-                <div className={styles.heroGlow}></div>
+                <div className={styles.heroBackgroundImage}></div>
                 <div className={styles.heroContent}>
                     <h1 className={styles.glitchTitle}>{siteConfig.site_name.toUpperCase()}</h1>
-                    <p className={styles.subText}>44年のエンジニアリング知見とAIが融合する、ハードウェア・インテリジェンス・アーカイブ。</p>
+                    <p className={styles.subText}>44年の経験則が、複雑なテクノロジーを解き明かす。</p>
                 </div>
             </section>
 
             <div className={styles.contentContainer}>
                 
-                {/* 🏆 AI ANALYSIS RANKING */}
-                <section className="mb-24" aria-label="AIランキング">
+                {/* 1. 🏆 AI ANALYSIS RANKING (Ranking API / score) */}
+                <section className="mb-24">
                     <div className={styles.sectionTitleArea}>
                         <h2 className={styles.sectionTitle}>
-                            <BarChart3 className="text-blue-400 w-5 h-5" aria-hidden="true" />
-                            AI_ANALYSIS_TOP_3
+                            <BarChart3 className="text-blue-400 w-5 h-5" /> AI_ANALYSIS_TOP_3
                         </h2>
-                        <span className={styles.viewAll}>SYSTEM_RANKING_SCORE</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {aiTop3.length > 0 ? aiTop3.map((product: any, i) => (
-                            <div key={product.unique_id || product.id || i} className="relative group">
-                                <ProductCard 
-                                    product={product} 
-                                    rank={i + 1}
-                                    isReviewMode={IS_ADSENSE_REVIEW}
-                                />
-                                <Zap className="absolute top-4 right-4 w-5 h-5 text-yellow-500 z-10 animate-pulse" aria-hidden="true" />
+                            <div key={`ai-${product.unique_id || product.id || i}`} className="relative group">
+                                <ProductCard product={product} rank={i + 1} isReviewMode={IS_ADSENSE_REVIEW} />
+                                <Zap className="absolute top-4 right-4 w-5 h-5 text-yellow-500 z-10 animate-pulse" />
                             </div>
-                        )) : (
-                            <p className="text-slate-500 font-mono text-sm">LOADING_RANKING_DATA...</p>
-                        )}
+                        )) : <p className="text-slate-500 font-mono text-xs">AWAITING_AI_DATA...</p>}
                     </div>
                 </section>
 
-                {/* 🛰️ 苦行ログセクション (AdSense審査・信頼性強化) */}
-                <section className="mb-24" aria-label="最新の開発ログ">
+                {/* 2 & 3. 🛰️ DOUBLE STREAM LOGS (WP サテライト & Django コア) */}
+                <section className="mb-24">
                     <div className={styles.sectionTitleArea}>
                         <h2 className={styles.sectionTitle}>
-                            <FileText className="text-emerald-400 w-5 h-5" aria-hidden="true" />
-                            LATEST_DEVELOPMENT_LOGS
+                            <FileText className="text-emerald-400 w-5 h-5" /> LATEST_TECH_REPORTS
                         </h2>
-                        <Link href="/post" className={styles.viewAll}>READ_ALL_LOGS →</Link>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {recentPosts.length > 0 ? recentPosts.map((post: any) => (
-                            <Link 
-                                href={`/post/${post.slug || post.id}`} 
-                                key={post.id || Math.random()}
-                                className="group p-5 bg-white/5 border border-slate-800 rounded-xl hover:bg-white/10 transition-all"
-                            >
-                                <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest block mb-2">
-                                    {new Date(post.date || post.created_at || Date.now()).toLocaleDateString()}
-                                </span>
-                                <h3 className="text-md font-bold text-slate-100 line-clamp-2 group-hover:text-emerald-400 transition-colors">
-                                    {post.title?.rendered || post.title || 'UNTITLED_LOG'}
-                                </h3>
-                                <div className="mt-4 flex items-center text-xs text-slate-500 font-mono">
-                                    <span>VIEW_REPORT</span>
-                                    <ChevronRight className="w-3 h-3 ml-1" />
-                                </div>
-                            </Link>
-                        )) : (
-                            <p className="text-slate-500 font-mono text-sm">NO_LOGS_AVAILABLE</p>
-                        )}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* 左：WordPress Satellite Logs */}
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-mono text-slate-500 border-b border-slate-800 pb-2 uppercase tracking-widest">Satellite_Tech_Logs</h3>
+                            {satelliteLogs.length > 0 ? satelliteLogs.slice(0, 3).map((post: any) => (
+                                <Link href={`/post/${post.slug || post.id}`} key={post.id} className="flex items-center p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all group">
+                                    <div className="flex-1">
+                                        <span className="text-[10px] text-emerald-500 font-mono block">{new Date(post.date).toLocaleDateString()}</span>
+                                        <p className="text-sm font-bold text-slate-200 group-hover:text-emerald-400 line-clamp-1">{post.title}</p>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-slate-600" />
+                                </Link>
+                            )) : <p className="text-xs text-slate-600 font-mono">NO_SATELLITE_STREAM</p>}
+                        </div>
+                        {/* 右：Django Core System Logs */}
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-mono text-slate-500 border-b border-slate-800 pb-2 uppercase tracking-widest">Core_System_Logs</h3>
+                            {corePosts.length > 0 ? corePosts.slice(0, 3).map((post: any) => (
+                                <Link href={`/news/${post.slug || post.id}`} key={post.id} className="flex items-center p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-all group">
+                                    <div className="flex-1">
+                                        <span className="text-[10px] text-blue-400 font-mono block">{new Date(post.created_at || Date.now()).toLocaleDateString()}</span>
+                                        <p className="text-sm font-bold text-slate-200 group-hover:text-blue-400 line-clamp-1">{post.title}</p>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-slate-600" />
+                                </Link>
+                            )) : <p className="text-xs text-slate-600 font-mono">NO_CORE_POSTS_STREAM</p>}
+                        </div>
                     </div>
                 </section>
 
-                {/* 🔥 MARKET TREND RANKING */}
-                <section className="mb-24" aria-label="トレンドランキング">
+                {/* 4. 🔥 MARKET TREND RANKING (Ranking API / popularity) */}
+                <section className="mb-24">
                     <div className={styles.sectionTitleArea}>
                         <h2 className={`${styles.sectionTitle} !border-orange-500/30`}>
-                            <TrendingUp className="text-orange-400 w-5 h-5" aria-hidden="true" />
-                            MARKET_TREND_TOP_3
+                            <TrendingUp className="text-orange-400 w-5 h-5" /> MARKET_TREND_TOP_3
                         </h2>
-                        <span className={styles.viewAll}>REALTIME_LIQUIDITY</span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {trendTop3.length > 0 ? trendTop3.map((product: any, i) => (
-                            <div key={product.unique_id || product.id || i} className="relative group">
-                                <ProductCard 
-                                    product={product} 
-                                    rank={i + 1}
-                                    isReviewMode={IS_ADSENSE_REVIEW}
-                                />
-                                <Activity className="absolute top-4 right-4 w-5 h-5 text-orange-500 animate-pulse z-10" aria-hidden="true" />
-                            </div>
-                        )) : (
-                            <p className="text-slate-500 font-mono text-sm">ANALYZING_MARKET_TREND...</p>
-                        )}
+                            <ProductCard key={`trend-${product.unique_id || product.id || i}`} product={product} rank={i + 1} isReviewMode={IS_ADSENSE_REVIEW} />
+                        )) : <p className="text-slate-500 font-mono text-xs">ANALYZING_MARKET_TREND...</p>}
                     </div>
                 </section>
 
-                {/* ⚙️ HARDWARE_CATEGORIES */}
+                {/* 5. ⚙️ PC ANALYSIS ARCHIVE (Hardware spec Database) */}
                 <section className="mb-24">
-                    <h2 className={styles.sectionTitle}>ANALYSIS_CATEGORIES</h2>
-                    <nav className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {['LAPTOP', 'GAMING', 'WORKSTATION', 'MOBILE'].map(cat => (
-                            <Link href={`/catalog?q=${cat}`} key={cat} className={styles.categoryCard}>
-                                <ShieldCheck className="w-4 h-4 mb-2 opacity-50" aria-hidden="true" />
-                                <span>{cat}</span>
+                    <div className={styles.sectionTitleArea}>
+                        <h2 className={styles.sectionTitle}>
+                            <Cpu className="text-purple-400 w-5 h-5" /> HARDWARE_SPEC_DATABASE
+                        </h2>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {pcArchiveSample.length > 0 ? pcArchiveSample.map((pc: any) => (
+                            <Link href={`/pc/${pc.unique_id || pc.id}`} key={pc.id} className="p-4 bg-slate-900/50 border border-slate-800 rounded hover:border-purple-500 transition-all group">
+                                <p className="text-xs font-bold text-slate-300 group-hover:text-purple-400 truncate">{pc.name || pc.title}</p>
+                                <span className="text-[10px] font-mono text-purple-600 opacity-70">SPEC_NODE: {pc.unique_id || pc.id}</span>
                             </Link>
-                        ))}
-                    </nav>
+                        )) : (
+                            ['LAPTOP', 'GAMING', 'WORKSTATION', 'MOBILE'].map(cat => (
+                                <Link href={`/catalog?q=${cat}`} key={cat} className={styles.categoryCard}>
+                                    <Layout className="w-4 h-4 mb-2 opacity-50" />
+                                    <span className="text-xs font-mono">{cat}_NODE</span>
+                                </Link>
+                            ))
+                        )}
+                    </div>
                 </section>
 
                 {/* 🛡️ MISSION_STATEMENT */}
                 <section className={styles.missionSection}>
                     <div className={styles.missionCard}>
                         <h3 className={styles.sectionTitle}>MISSION_STATEMENT</h3>
-                        <div className={styles.missionText}>
-                            <p className="mb-4">
-                                {siteConfig.site_name} は、技術情報の永続的な保存と、エンジニアの経験則に基づく客観的評価を目的としたインテリジェンス・アーカイブです。
-                            </p>
-                            <p>
-                                マイコン時代から培われた44年のキャリアをベースに、ノイズを排除した真の性能指標を抽出し、次世代へ繋ぐためのハブとして機能します。
-                            </p>
-                        </div>
+                        <p className={styles.missionText}>
+                            44年のキャリアに基づく技術アーカイブ。Djangoによる高度なデータ解析と、WordPressサテライトによる現場の「苦行ログ」を完全統合。
+                            情報が氾濫する現代において、真実のスペックとエンジニアの矜持を記録し続けます。
+                        </p>
                     </div>
                 </section>
             </div>
 
             <footer className={styles.systemFooter}>
-                <p className={styles.copyright}>
-                    &copy; 2026 {siteConfig.site_name.toUpperCase()} / Produced by SHIN CORE LINX
-                </p>
-                <p className={styles.protocolTag}>PROTOCOL_STABLE_V10.9.1_FUSION</p>
+                <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name.toUpperCase()} / Produced by SHIN CORE LINX</p>
             </footer>
         </div>
     );
