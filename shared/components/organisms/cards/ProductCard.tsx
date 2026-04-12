@@ -1,4 +1,3 @@
-// /shared/components/organisms/cards/ProductCard.tsx
 'use client';
 
 import React from 'react';
@@ -10,12 +9,19 @@ interface ProductCardProps {
   product: any;
   rank?: number;
   showActions?: boolean;
+  /** 🚩 AdSense審査モード: trueの場合、価格と販売リンクを物理的にDOMから除外する */
+  isReviewMode?: boolean;
 }
 
-export default function ProductCard({ product, rank, showActions = true }: ProductCardProps) {
+export default function ProductCard({ 
+  product, 
+  rank, 
+  showActions = true,
+  isReviewMode = false 
+}: ProductCardProps) {
   if (!product) return null;
 
-  // 🚩 データ正規化と「??」対策
+  // 🚩 データ正規化
   const buyLink = product.affiliate_url || product.url || '#';
   const displayMaker = product.maker || product.maker_name || 'Brand';
   const displayPrice = product.price ? Number(product.price) : 0;
@@ -29,6 +35,7 @@ export default function ProductCard({ product, rank, showActions = true }: Produ
     for (const key of keys) {
       if (product[key] !== undefined && product[key] !== null) {
         const s = Number(product[key]);
+        // 10点満点表記と100点満点表記を正規化
         return s <= 10 && s > 0 ? s * 10 : s; 
       }
     }
@@ -46,12 +53,14 @@ export default function ProductCard({ product, rank, showActions = true }: Produ
   const aiComment = product.ai_analysis || product.short_description || 
     `${displayMaker}の注目モデル。AI査定では、${product.cpu_model || '標準的なプロセッサ'}を搭載し、${scores.portable > 80 ? '優れた携帯性' : '安定した動作環境'}を実現していると評価されています。`;
 
+  // --- ヘルパー: プログレスバー描画 ---
   const renderProgressBar = (value: number, color: string) => (
     <div className={styles.barTrack}>
       <div className={styles.barFill} style={{ width: `${value}%`, backgroundColor: color }} />
     </div>
   );
 
+  // --- ヘルパー: 五角形チャート描画 ---
   const renderPentagonChart = () => {
     const radius = 40;
     const scoreArray = [scores.cpu, scores.gpu, scores.ai, scores.portable, scores.cost];
@@ -67,7 +76,7 @@ export default function ProductCard({ product, rank, showActions = true }: Produ
           <circle cx="50" cy="50" r="40" className={styles.chartBg} />
           {[0, 1, 2, 3, 4].map((i) => {
             const a = (i * 72 - 90) * (Math.PI / 180);
-            return <line key={i} x1="50" y1="50" x2={50 + 40 * Math.cos(a)} y2={50 + 40 * Math.sin(a)} className={styles.chartLine} key={i}/>;
+            return <line key={`line-${i}`} x1="50" y1="50" x2={50 + 40 * Math.cos(a)} y2={50 + 40 * Math.sin(a)} className={styles.chartLine} />;
           })}
           <polygon points={points} className={styles.chartPolygon} />
         </svg>
@@ -77,6 +86,7 @@ export default function ProductCard({ product, rank, showActions = true }: Produ
 
   return (
     <article className={`${styles.card} ${rank ? styles.rankingMode : ''}`}>
+      {/* スコアバッジ（独自解析の結果なので残すべき項目） */}
       <div className={styles.scoreBadge}>
         AI SCORE: <span>{totalScore}</span>
       </div>
@@ -95,6 +105,7 @@ export default function ProductCard({ product, rank, showActions = true }: Produ
           <Link href={`/product/${product.unique_id}`}>{decodedProductName}</Link>
         </h3>
 
+        {/* 解析セクション: サイトの独自性（E-E-A-T）をアピールする重要部分 */}
         <div className={styles.analysisSection}>
           {renderPentagonChart()}
           <div className={styles.scoreDetail}>
@@ -121,20 +132,29 @@ export default function ProductCard({ product, rank, showActions = true }: Produ
           </div>
         </div>
 
-        <div className={styles.aiCommentBox}><p className={styles.aiText}>{aiComment}</p></div>
-
-        <div className={styles.priceContainer}>
-          <p className={styles.price}>
-            {displayPrice > 0 ? (
-              <><span className={styles.currency}>¥</span><span className={styles.amount}>{displayPrice.toLocaleString()}</span></>
-            ) : <span className={styles.priceUnknown}>価格情報なし</span>}
-          </p>
+        <div className={styles.aiCommentBox}>
+          <p className={styles.aiText}>{aiComment}</p>
         </div>
+
+        {/* 🛡️ 審査モード時は価格表示を物理的に削除 */}
+        {!isReviewMode && (
+          <div className={styles.priceContainer}>
+            <p className={styles.price}>
+              {displayPrice > 0 ? (
+                <><span className={styles.currency}>¥</span><span className={styles.amount}>{displayPrice.toLocaleString()}</span></>
+              ) : <span className={styles.priceUnknown}>価格情報なし</span>}
+            </p>
+          </div>
+        )}
 
         {showActions && (
           <div className={styles.actions}>
             <Link href={`/product/${product.unique_id}`} className={styles.detailBtn}>分析詳細</Link>
-            <a href={buyLink} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>販売サイト</a>
+            
+            {/* 🛡️ 審査モード時は販売サイトへの直接リンク（アフィリエイト）を隠す */}
+            {!isReviewMode && (
+              <a href={buyLink} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>販売サイト</a>
+            )}
           </div>
         )}
       </div>

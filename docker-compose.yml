@@ -54,6 +54,10 @@ services:
       postgres-db-v3:
         condition: service_healthy
     env_file: .env
+    environment:
+      # 🚀 WP自動投稿用ブリッジ設定 (警告抑制と明示的引き渡し)
+      - WP_USER=${WP_USER}
+      - WP_APP_PASSWORD=${WP_APP_PASSWORD}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"

@@ -2,21 +2,21 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ BICSTATION TOP_NODE_V10.8 (Visual Enhanced Edition)
- * 🛡️ Maya's Logic: 属性整合性 v7.0 / Zenith v10.7 同期版
+ * 🛰️ BICSTATION TOP_NODE_V10.9 (AdSense Strategic Fusion)
+ * 🛡️ Maya's Logic: 属性整合性 v7.5 / Blog Satellite 実装版
  * 💎 Update: 
- * 1. ヒーローエリアにチーム写真背景レイヤー (team-office.jpg) を実装
- * 2. フッターのコピーライトを将来の展望に合わせ微調整
- * 3. 属性マッピングロジックの安定化
+ * 1. 苦行ログ（WordPress/Django）からの最新6記事を並列フェッチ
+ * 2. データベースとブログを共存させ、E-E-A-Tを最大化
+ * 3. IS_ADSENSE_REVIEW フラグによる審査用レイアウト最適化
  * =====================================================================
  */
 
 import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
-import { Activity, ShieldCheck, Zap, TrendingUp, BarChart3, Database } from 'lucide-react';
+import { Activity, ShieldCheck, Zap, TrendingUp, BarChart3, Database, FileText, ChevronRight } from 'lucide-react';
 
-// ✅ 指定のコンポーネントをインポート
+// ✅ 指定のコンポーネント
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 
@@ -33,8 +33,10 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 600; 
 
 /**
- * 🛠️ 高精度 safeFetch
+ * 🚩 AdSense 審査コントロール
  */
+const IS_ADSENSE_REVIEW = true; 
+
 async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
     try {
         const data = await promise;
@@ -51,8 +53,8 @@ export async function generateMetadata() {
     const siteConfig = getSiteMetadata(host);
 
     return constructMetadata({
-        title: `${siteConfig.site_name.toUpperCase()} | AI解析ハードウェア・アーカイブ`,
-        description: `${siteConfig.site_name}は、AI解析スコアと市場動向を統合した次世代ハードウェア・データベース。`,
+        title: `${siteConfig.site_name.toUpperCase()} | AI解析アーカイブ & 技術ログ`,
+        description: `44年のエンジニアリングキャリアが査定するハードウェア・データベース。最新の「苦行ログ」も公開中。`,
         host: host 
     });
 }
@@ -63,6 +65,7 @@ export default async function HomePageMain() {
     const siteConfig = getSiteMetadata(host); 
 
     // --- 🎯 マルチ並列データフェッチ ---
+    // 最近のブログ記事（reports/posts）を6件取得するように拡張
     const [newsRes, scoreRank, popularityRank] = await Promise.all([
         safeFetch(fetchDjangoBridgeContent('posts', 6), { results: [], count: 0 }),
         safeFetch(fetchPCProductRanking('score', host), []),
@@ -74,9 +77,6 @@ export default async function HomePageMain() {
     const trendTop3 = popularityRank.slice(0, 3);
     const totalCount = newsRes?.count || "1,800+";
 
-    /**
-     * 🚩 ProductCard の内部ロジック (image_url) に合わせるためのデータ整形
-     */
     const syncProduct = (item: any) => ({
         ...item,
         image_url: item.image_url || item.image || item.main_image || 'https://placehold.jp/300x200.png'
@@ -92,7 +92,7 @@ export default async function HomePageMain() {
                         <span className={styles.statusLabel}>CORE_CONNECTED</span>
                     </div>
                     <div className={styles.versionTag}>
-                        {siteConfig.site_name.toUpperCase()} <span className={styles.verNum}>DB_NODE_V10.8</span>
+                        {siteConfig.site_name.toUpperCase()} <span className={styles.verNum}>DB_NODE_V10.9</span>
                     </div>
                     <div className={styles.nodeStats}>
                         <Database className="inline w-3 h-3 mr-1" aria-hidden="true" />
@@ -101,17 +101,13 @@ export default async function HomePageMain() {
                 </div>
             </header>
 
-            {/* 🚀 ヒーローセクション: 画像背景レイヤーを追加 */}
+            {/* 🚀 ヒーローセクション */}
             <section className={styles.heroSection}>
-                {/* 🖼️ 背景画像レイヤー (CSSで /images/team-office.jpg を制御) */}
                 <div className={styles.heroBackgroundImage} role="presentation"></div>
-                
-                {/* 🟦 グリッド・グロウ効果レイヤー */}
                 <div className={styles.heroGlow}></div>
-                
                 <div className={styles.heroContent}>
                     <h1 className={styles.glitchTitle}>{siteConfig.site_name.toUpperCase()}</h1>
-                    <p className={styles.subText}>AI解析スコアと市場流動性を統合した、次世代ハードウェア・データベース。</p>
+                    <p className={styles.subText}>44年のエンジニアリング知見とAIが融合する、ハードウェア・インテリジェンス・アーカイブ。</p>
                 </div>
             </section>
 
@@ -131,10 +127,42 @@ export default async function HomePageMain() {
                             <div key={product.unique_id || product.id || i} className="relative group">
                                 <ProductCard 
                                     product={syncProduct(product)} 
-                                    rank={i + 1} 
+                                    rank={i + 1}
+                                    isReviewMode={IS_ADSENSE_REVIEW}
                                 />
                                 <Zap className="absolute top-4 right-4 w-5 h-5 text-yellow-500 z-10 animate-pulse" aria-hidden="true" />
                             </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* 🛰️ 苦行ログセクション (AdSense審査・信頼性強化) */}
+                <section className="mb-24" aria-label="最新の開発ログ">
+                    <div className={styles.sectionTitleArea}>
+                        <h2 className={styles.sectionTitle}>
+                            <FileText className="text-emerald-400 w-5 h-5" aria-hidden="true" />
+                            LATEST_DEVELOPMENT_LOGS
+                        </h2>
+                        <Link href="/post" className={styles.viewAll}>READ_ALL_LOGS →</Link>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {recentPosts.map((post) => (
+                            <Link 
+                                href={`/post/${post.slug || post.id}`} 
+                                key={post.id}
+                                className="group p-5 bg-white/5 border border-slate-800 rounded-xl hover:bg-white/10 transition-all"
+                            >
+                                <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest block mb-2">
+                                    {new Date(post.date || post.created_at).toLocaleDateString()}
+                                </span>
+                                <h3 className="text-md font-bold text-slate-100 line-clamp-2 group-hover:text-emerald-400 transition-colors">
+                                    {post.title?.rendered || post.title}
+                                </h3>
+                                <div className="mt-4 flex items-center text-xs text-slate-500 font-mono">
+                                    <span>VIEW_REPORT</span>
+                                    <ChevronRight className="w-3 h-3 ml-1" />
+                                </div>
+                            </Link>
                         ))}
                     </div>
                 </section>
@@ -153,23 +181,11 @@ export default async function HomePageMain() {
                             <div key={product.unique_id || product.id || i} className="relative group">
                                 <ProductCard 
                                     product={syncProduct(product)} 
-                                    rank={i + 1} 
+                                    rank={i + 1}
+                                    isReviewMode={IS_ADSENSE_REVIEW}
                                 />
                                 <Activity className="absolute top-4 right-4 w-5 h-5 text-orange-500 animate-pulse z-10" aria-hidden="true" />
                             </div>
-                        ))}
-                    </div>
-                </section>
-
-                {/* 📰 LATEST_REPORTS */}
-                <section className="mb-24">
-                    <div className={styles.sectionTitleArea}>
-                        <h2 className={styles.sectionTitle}>LATEST_REPORTS</h2>
-                        <Link href="/post" className={styles.viewAll}>VIEW_ALL_REPORTS →</Link>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {recentPosts.map((post) => (
-                            <UnifiedProductCard key={post.id} data={post} siteConfig={siteConfig} />
                         ))}
                     </div>
                 </section>
@@ -191,10 +207,14 @@ export default async function HomePageMain() {
                 <section className={styles.missionSection}>
                     <div className={styles.missionCard}>
                         <h3 className={styles.sectionTitle}>MISSION_STATEMENT</h3>
-                        <p className={styles.missionText}>
-                            {siteConfig.site_name} は、技術情報の永続的な保存とAIによる客観的評価を目的としたインテリジェンス・アーカイブです。
-                            膨大なスペックデータを多角的に解析し、ノイズを排除した性能指標を提供します。
-                        </p>
+                        <div className={styles.missionText}>
+                            <p className="mb-4">
+                                {siteConfig.site_name} は、技術情報の永続的な保存と、エンジニアの経験則に基づく客観的評価を目的としたインテリジェンス・アーカイブです。
+                            </p>
+                            <p>
+                                マイコン時代から培われた44年のキャリアをベースに、ノイズを排除した真の性能指標を抽出し、次世代へ繋ぐためのハブとして機能します。
+                            </p>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -203,7 +223,7 @@ export default async function HomePageMain() {
                 <p className={styles.copyright}>
                     &copy; 2026 {siteConfig.site_name.toUpperCase()} / Produced by CORE LINKS
                 </p>
-                <p className={styles.protocolTag}>PROTOCOL_STABLE_V10.8</p>
+                <p className={styles.protocolTag}>PROTOCOL_STABLE_V10.9_FUSION</p>
             </footer>
         </div>
     );

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 📦 SHIN-VPS & Local 統合運用ツール [ULTIMATE REBORN - v3.2 FULL SPEC]
+# 📦 SHIN-VPS & Local 統合運用ツール [ULTIMATE REBORN - v3.3 FULL SPEC]
 # ==============================================================================
 
 # スクリプトの場所からプロジェクトルートを特定
@@ -13,11 +13,9 @@ CURRENT_USER=$USER
 # --- 1. 環境判別 ---
 if [[ "$CURRENT_HOSTNAME" == *"x162-43"* ]] || [[ "$CURRENT_HOSTNAME" == "maya" && "$CURRENT_HOSTNAME" != "Marya" ]]; then
     IS_VPS=true; ENV_TYPE="PRODUCTION (VPS)"; COMPOSE_FILE="docker-compose.prod.yml"; COLOR="\e[32m"
-    # デフォルトのベース (VPS)
     DEFAULT_BASE="http://$(hostname -I | awk '{print $1}'):8083"
 else
     IS_VPS=false; ENV_TYPE="LOCAL (Development)"; COMPOSE_FILE="docker-compose.yml"; COLOR="\e[36m"
-    # デフォルトのベース (Local)
     DEFAULT_BASE="http://api-tiper-host:8083"
 fi
 
@@ -98,7 +96,7 @@ EOF
 while true; do
     clear
     echo -e "${CYAN}==================================================================${RESET}"
-    echo -e "🚀 ${BOLD}SHIN-VPS Automation Center v3.2${RESET} (Env: ${COLOR}${ENV_TYPE}${RESET})"
+    echo -e "🚀 ${BOLD}SHIN-VPS Automation Center v3.3${RESET} (Env: ${COLOR}${ENV_TYPE}${RESET})"
     echo -e "📂 Root: ${PROJECT_ROOT}"
     echo -e "${CYAN}==================================================================${RESET}"
 
@@ -108,13 +106,14 @@ while true; do
     echo -e "   14) 女優スペック同期 (5万件)  15) AI 黄金比スタイル解析 💎"
 
     echo -e "\n${YELLOW}${BOLD}[2. 🛒 PC & SHOPPING SYNC]${RESET}"
-    echo -e "   20) メーカー別個別同期        21) 価格履歴の一斉記録"
+    echo -e "   20) メーカー別個別同期         21) 価格履歴の一斉記録"
     echo -e "   23) 特定ショップDBデータ削除 🗑️"
 
     echo -e "\n${BLUE}${BOLD}[3. 🤖 AI WRITING & NEWS]${RESET}"
-    echo -e "   30) 商品AI記事生成 & 投稿     31) パーツニュース投稿"
-    echo -e "   32) AIスペック解析 (単発)     33) AIモデル一覧の確認"
-    echo -e "   34) SEOタイトル一括更新 🔥    ${GREEN}35) [全自動] PCデータ更新 🚀${RESET}"
+    echo -e "   30) 商品AI記事生成 & 投稿      31) パーツニュース投稿"
+    echo -e "   32) AIスペック解析 (単発)      33) AIモデル一覧の確認"
+    echo -e "   34) SEOタイトル一括更新 🔥     35) [全自動] PCデータ更新 🚀"
+    echo -e "   ${GREEN}${BOLD}36) [自動] 苦行日記をAI投稿 🌙${RESET}"
 
     echo -e "\n${CYAN}${BOLD}[4. 🛠️ SYSTEM & MASTER]${RESET}"
     echo -e "   40) マイグレーション (DB)     41) 属性マスタ同期/マッピング"
@@ -152,6 +151,10 @@ while true; do
         33) run_django ai_model_name ;;
         34) read -p "件数: " L; run_django analyze_pc_spec --limit "${L:-10}" --update-all ;;
         35) run_pc_auto_update ;;
+        36) 
+            echo -e "\n${GREEN}🌙 本日の苦行を一言で教えてください（空欄OK）${RESET}"
+            read -p ">> " KUGYO_COMMENT
+            run_django post_kugyo "$KUGYO_COMMENT" ;;
         40) run_django makemigrations api && run_django migrate ;;
         41) 
             docker cp "${PROJECT_ROOT}/django/master_data/attributes.tsv" "${DJANGO_CON}:/usr/src/app/master_data/attributes.tsv"
@@ -178,7 +181,7 @@ while true; do
             echo -e "\n${GREEN}🌐 URL一覧を表示中: $TARGET${RESET}"
             run_django show_urls | sed "s|^\/|${TARGET}/|g" ;;
         8|q) exit 0 ;;
-        h) echo "カテゴリ番号を選択して運用タスクを実行します。44番でドメイン別URL確認が可能です。" ;;
+        h) echo "カテゴリ番号を選択して運用タスクを実行します。36番でAI日記投稿が可能です。" ;;
     esac
     echo -e "\n${GREEN}完了。Enterで戻ります。${RESET}"; read
 done
