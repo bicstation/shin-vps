@@ -200,7 +200,7 @@ export default async function Page() {
                             <Link href="/privacy" className="hover:text-white transition-colors">PRIVACY POLICY</Link>
                         </nav>
                     </div>
-                    <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name} - Smart Life Network</p>
+                    <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name} - SHIN CORE LINX</p>
                 </div>
             </footer>
         </div>
