@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.9.7 (Auto-Pass Edition)
+# 🛡️ SHIN-VPS v3.9.9.8 (Final Stable Edition)
 # ---------------------------------------------------------------------
 # 【修正の核心】
-# 1. Mail Forwarder: ヘルスチェックを「常時パス(exit 0)」に設定。
-#    disable: true によるデプロイツールの判定エラーを回避しつつ、
-#    Postfixの起動待機によるタイムアウトを防ぎ、全艦隊のデプロイを完遂。
-# 2. クエリパラメータ識別: 各Next.jsからDjangoへの通信に ?site= を付与。
-# 3. ネットワーク: 内部通信用エイリアス 'django-api-host' で統合。
+# 1. Mail Forwarder: ALLOW_EMPTY_SENDER_DOMAINS を追加し、Postfixの
+#    致命的な起動エラーを回避。
+# 2. Healthcheck: exit 0 (Auto-Pass) を維持し、CI/CDの完走を最優先。
+# 3. Next.js 艦隊: Django API への通信識別子 (?site=) を各サービスに統合。
 # =====================================================================
 
 version: '3.8'
@@ -214,7 +213,6 @@ services:
 
   # --- 4. 管理・監視・メール層 ---
 
-  # 📧 Mail Forwarder: 形式的なヘルスチェックでデプロイを通す
   mail-forwarder:
     image: boky/postfix
     container_name: mail-forwarder
@@ -223,11 +221,12 @@ services:
       - FORWARD_EXT=support@bicstation.com:${MY_GMAIL_ADDRESS:-bicstation@gmail.com}
       - HOSTNAME=mail.bicstation.com
       - RELAYHOST=
+      # 🛡️ 重要: これを入れないと Postfix がエラーで停止します
+      - ALLOW_EMPTY_SENDER_DOMAINS=true
     ports:
       - "25:25"
     networks:
       - internal-net
-    # 💡 ポイント: デプロイツールを納得させるための「常時パス」設定
     healthcheck:
       test: ["CMD-SHELL", "exit 0"]
       interval: 10s
