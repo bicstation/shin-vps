@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
 // @ts-nocheck 
+// /home/maya/shin-dev/shin-vps/next-avflash/app/page.tsx
 
 import React from 'react';
 import Link from 'next/link';
@@ -34,8 +35,8 @@ export async function generateMetadata() {
     const siteConfig = getSiteMetadata(host);
 
     return constructMetadata({
-        title: `${siteConfig.site_name} | AI解析・最新アダルトアーカイブ`,
-        description: `${siteConfig.site_name}のAI解析に基づいた最新アーカイブ。`,
+        title: `${siteConfig.site_name} | AI解析による最新アダルトアーカイブ`,
+        description: `${siteConfig.site_name}は、独自のAIアルゴリズムを用いて最新トレンドを解析・蓄積する次世代アーカイブシステムです。`,
         host: host 
     });
 }
@@ -48,7 +49,6 @@ async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
         const data = await promise;
         return data ?? fallback;
     } catch (e) {
-        // 本番ではログのみに留め、UIを壊さない
         console.warn(`⚠️ [API_SKIP]:`, e.message);
         return fallback;
     }
@@ -86,12 +86,13 @@ export default async function Page() {
         <div className={styles.pageContainer}>
             <div className={styles.contentStream}>
                 
-                {/* --- 🛸 ヒーローヘッダー [PROD_DESIGN] --- */}
+                {/* --- 🛸 ヒーローヘッダー --- */}
                 <header className={styles.heroHeader}>
                     <div className={styles.heroBadge}>AI ANALYSIS & ARCHIVE SYSTEM</div>
                     <h1 className={styles.heroTitle}>{siteConfig.site_name}</h1>
                     <p className={styles.heroSubtitle}>
-                        AI技術によって抽出された <span style={{ color: '#ffc107', fontWeight: 'bold' }}>DUGA</span> の最新トレンドと、独自視点のアーカイブ。
+                        AIが導き出す <span style={{ color: '#ffc107', fontWeight: 'bold' }}>DUGA</span> の最新トレンド。
+                        膨大なデータを解析し、価値あるアーカイブを構築。
                     </p>
                     <div className={styles.statsInfo}>
                         <span className={styles.pulseDot}></span>
@@ -99,15 +100,16 @@ export default async function Page() {
                     </div>
                 </header>
 
-                {/* --- 📰 LATEST ANALYSIS (最新記事) --- */}
+                {/* --- 📰 LATEST ANALYSIS (最新レポート) --- */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <div className={styles.titleWrapper}>
                             <h2 className={styles.sectionTitle}>LATEST REPORTS</h2>
+                            <span className="text-[10px] ml-3 text-slate-500 font-mono italic">最新の分析ログ</span>
                             <div className={styles.titleLine} />
                         </div>
                         <Link href={ROUTE_BASE} className={styles.viewAllLink}>
-                            すべての記事を見る →
+                            レポート一覧を見る →
                         </Link>
                     </div>
 
@@ -122,21 +124,22 @@ export default async function Page() {
                             ))
                         ) : (
                             <div className="col-span-full py-16 text-center bg-slate-900/50 border border-slate-800 rounded-xl">
-                                <p className="text-slate-400">現在、最新の分析データを同期中です。</p>
+                                <p className="text-slate-400 font-mono text-sm">ARCHIVE_SYNCING_IN_PROGRESS...</p>
                             </div>
                         )}
                     </div>
                 </section>
 
-                {/* --- 💎 NEW RELEASES (商品リスト) --- */}
+                {/* --- 💎 NEW ARCHIVES (新着アーカイブ) --- */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
                         <div className={styles.titleWrapper}>
                             <h2 className={styles.sectionTitle}>NEW ARCHIVES</h2>
+                            <span className="text-[10px] ml-3 text-slate-500 font-mono italic">新着データの蓄積</span>
                             <div className={styles.titleLine} />
                         </div>
                         <Link href="/brand/duga" className={styles.viewAllLink}>
-                            アーカイブ一覧 →
+                            すべて表示 →
                         </Link>
                     </div>
                     
@@ -151,22 +154,25 @@ export default async function Page() {
                             ))
                         ) : (
                             <div className="col-span-full py-20 text-center bg-slate-900/30 border border-dashed border-slate-800 rounded-xl">
-                                <div className="text-3xl mb-4">🛰️</div>
+                                <div className="text-3xl mb-4 animate-bounce">🛰️</div>
                                 <h3 className="text-white font-medium">CONNECTING DATA STREAM</h3>
-                                <p className="text-sm text-slate-500 mt-2">データベースから最新情報を取得しています...</p>
+                                <p className="text-sm text-slate-500 mt-2">データベースから最新情報を同期しています...</p>
                             </div>
                         )}
                     </div>
                 </section>
 
-                {/* --- 🛡️ サイト・インフォメーション [CREDIBILITY] --- */}
+                {/* --- 🛡️ サイト・インフォメーション --- */}
                 <section className={styles.infoSection}>
                     <div className={styles.infoCard}>
-                        <h3 className="text-blue-500 font-bold mb-3">ABOUT AI ANALYSIS SYSTEM</h3>
+                        <h3 className="text-blue-500 font-bold mb-4 flex items-center">
+                            <span className="w-1.5 h-4 bg-blue-500 mr-2 rounded-full"></span>
+                            ABOUT AI ANALYSIS SYSTEM
+                        </h3>
                         <p className="text-slate-300 leading-relaxed text-sm">
-                            {siteConfig.site_name} は、日々更新される膨大なデジタルコンテンツをAIアルゴリズムによって解析。
-                            独自の基準に基づき、データの傾向分析とアーカイブ化を行っています。
-                            高度なフィルタリングにより、ユーザーに最適化されたインテリジェンスを提供することを目指しています。
+                            {siteConfig.site_name} は、日々更新される膨大なデジタルコンテンツをAIアルゴリズムによって自動解析。
+                            独自のフィルタリング基準に基づき、データの傾向分析と高精度なアーカイブ化を行っています。
+                            「情報のノイズを排除し、価値あるデータのみを蓄積する」ことをミッションとしたインテリジェンス・プラットフォームです。
                         </p>
                     </div>
                 </section>

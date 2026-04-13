@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
 // @ts-nocheck
+// /home/maya/shin-dev/shin-vps/next-tiper/app/page.tsx
 
 import React from 'react';
 import Link from 'next/link';
@@ -34,7 +35,7 @@ export async function generateMetadata() {
 
     return constructMetadata({
         title: `${siteConfig.site_name} | プレミアム・デジタルコンテンツアーカイブ`,
-        description: `${siteConfig.site_name}のAI解析に基づいた、最新のデジタルコンテンツ・アーカイブ。`,
+        description: `${siteConfig.site_name}は、AI解析によって厳選された最新のデジタルコンテンツを統合・蓄積するプレミアムアーカイブです。`,
         host: host 
     });
 }
@@ -77,23 +78,25 @@ export default async function Home() {
         <div className={styles.pageContainer}>
             {/* 🛸 ヒーローヘッダー [PREMIUM_STYLING] */}
             <header className={styles.heroHeader}>
-                <div className={styles.heroBadge}>PREMIUM ARCHIVE</div>
+                <div className={styles.heroBadge}>PREMIUM ARCHIVE SYSTEM</div>
                 <h1 className={styles.heroTitle}>{siteConfig.site_name}</h1>
                 <p className={styles.heroSubtitle}>
-                    AI解析による高精度なデータ集積と、最新のデジタルコンテンツ・ストリーム。
+                    AI解析による高精度なデータ集積と、次世代のデジタルコンテンツ・ストリーム。
+                    <br />情報の解像度を高め、最適なアーカイブを提供します。
                 </p>
                 <div className={styles.systemPulse}>
                     <span className={styles.pulseDot}></span>
-                    NETWORK_STATUS: <span className={styles.statusOnline}>ONLINE</span>
+                    ネットワーク状態: <span className={styles.statusOnline}>ONLINE</span>
                 </div>
             </header>
 
             <div className={styles.contentStream}>
-                {/* 📰 1. INTELLIGENCE_REPORTS (最新記事セクション) */}
+                {/* 📰 1. INTELLIGENCE_REPORTS (最新レポート) */}
                 <section className={styles.newsSection}>
                     <div className={styles.sectionHeader}>
                         <h2 className={styles.sectionHeading}>LATEST_REPORTS</h2>
-                        <Link href={ROUTE_BASE} className={styles.headerLink}>VIEW_ALL →</Link>
+                        <span className="text-[10px] ml-3 text-slate-500 font-mono italic">最新の分析ログ</span>
+                        <Link href={ROUTE_BASE} className={styles.headerLink}>全レポートを閲覧 →</Link>
                     </div>
 
                     {latestPosts.length > 0 ? (
@@ -108,15 +111,16 @@ export default async function Home() {
                         </div>
                     ) : (
                         <div className={styles.emptyCard}>
-                            <p>準備中のレポートを同期しています...</p>
+                            <p className="font-mono text-sm">ARCHIVE_SYNC: 最新データを同期中です...</p>
                         </div>
                     )}
                 </section>
 
-                {/* 📀 2. UNIFIED_DATA_STREAM (商品アーカイブ) */}
+                {/* 📀 2. UNIFIED_DATA_STREAM (統合データストリーム) */}
                 <div className={styles.archiveRegistry}>
                     <div className={styles.registryHeader}>
                         <h2 className={styles.registryTitle}>UNIFIED_DATA_STREAM</h2>
+                        <span className="text-[10px] ml-3 text-slate-500 font-mono italic">マルチプラットフォーム同期</span>
                         <div className={styles.titleLine}></div>
                     </div>
 
@@ -149,7 +153,7 @@ export default async function Home() {
                     ) : (
                         <div className={styles.loadingArea}>
                             <span className={styles.loader}></span>
-                            <p className={styles.loadingText}>SYNCHRONIZING_EXTERNAL_DATABASE...</p>
+                            <p className={styles.loadingText}>外部データベースとの同期を確立しています...</p>
                         </div>
                     )}
                 </div>
@@ -157,7 +161,7 @@ export default async function Home() {
                 {/* 🚀 フッターアクション */}
                 <div className={styles.footerAction}>
                     <Link href={ROUTE_BASE} className={styles.megaTerminalBtn}>
-                        ACCESS_FULL_INTELLIGENCE_STREAM
+                        インテリジェンス・ストリームへアクセス
                     </Link>
                 </div>
             </div>
@@ -165,7 +169,7 @@ export default async function Home() {
             {/* 🛡️ サイトフッター [PROD_IDENTITY] */}
             <footer className={styles.footerStatus}>
                 <div className={styles.footerInner}>
-                    <p>SYSTEM_CORE: V9.5 / ENCRYPTION: AES-256 / STATUS: SECURE</p>
+                    <p className="font-mono text-[10px] tracking-widest opacity-60">SYSTEM_CORE: V9.5 / ENCRYPTION: AES-256 / STATUS: SECURE</p>
                     <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name} | SMART_DATA_NETWORK</p>
                 </div>
             </footer>

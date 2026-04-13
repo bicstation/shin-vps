@@ -1,13 +1,12 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
+// /home/maya/shin-dev/shin-vps/next-bic-saving/app/page.tsx
 
 import React from 'react';
 import { headers } from "next/headers";
 import Link from 'next/link';
 import { 
-    BookOpen, 
-    Zap, 
     ShieldCheck, 
     ArrowRight, 
     CreditCard, 
@@ -15,7 +14,7 @@ import {
     Coffee,
     Flame,
     RefreshCw,
-    Layers, // ✅ 追加: SAVING_STACK 用のアイコン
+    Layers,
     TrendingUp
 } from 'lucide-react';
 
@@ -36,22 +35,25 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
- * 🛰️ メタデータ生成
+ * 🛰️ メタデータ生成（SEO強化パッチ）
  */
 export async function generateMetadata() {
     const headerList = await headers();
     const host = headerList.get('x-django-host') || headerList.get('host') || "bic-saving.com";
     const siteConfig = getSiteMetadata(host);
 
+    // 日本語のサイト名をベースに、検索需要の高いワードを付与
+    const seoTitle = `${siteConfig.site_name} | ポイ活・通信費・クレカを技術で最適化する`;
+
     return constructMetadata({
-        title: `${siteConfig.site_name} | 賢い選択、豊かな暮らし。`,
-        description: `${siteConfig.site_name}が提供する、独自の視点に基づいた最新の節約術とライフハック。`,
+        title: seoTitle,
+        description: `${siteConfig.site_name}は、元IT成功者がNext.jsとDockerで構築した「家計のデバッグ」メディア。dポイント、Vポイント、決済ルートの最適化など、一次情報に基づいた技術的節約術を公開中。`,
         host: host 
     });
 }
 
 /**
- * 🏠 ビック的節約生活 メインページ
+ * 🏠 メインコンテンツ
  */
 export default async function Page() {
     const headerList = await headers();
@@ -92,11 +94,11 @@ export default async function Page() {
 
             <main className={styles.contentArea}>
                 
-                {/* 🚀 ピックアップ：SERIES GRID (REBUILD & SAVING_STACK) */}
+                {/* 🚀 ピックアップ連載：Featured Series */}
                 <section className="mb-20">
                     <div className="flex items-center gap-3 mb-8 border-l-4 border-emerald-500 pl-4">
                         <Flame className="text-orange-500 w-6 h-6" />
-                        <h2 className="text-2xl font-bold text-white uppercase tracking-wider">Featured Series</h2>
+                        <h2 className="text-2xl font-bold text-white uppercase tracking-wider">注目の連載シリーズ</h2>
                     </div>
                     
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -104,12 +106,12 @@ export default async function Page() {
                         <Link href="/series/rebuild-logs" className="block group">
                             <div className="h-full relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 to-black border border-white/10 p-8 md:p-10 transition-all hover:border-emerald-500/50 shadow-2xl">
                                 <div className="relative z-10">
-                                    <span className="text-emerald-500 font-mono text-xs mb-3 block tracking-widest">SERIES_01 // COMPLETE</span>
+                                    <span className="text-emerald-500 font-mono text-xs mb-3 block tracking-widest">SERIES_01 // 完結</span>
                                     <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 group-hover:text-emerald-400 transition-colors">
-                                        REBUILD LOGS
+                                        REBUILD LOGS（再構築記録）
                                     </h3>
                                     <p className="text-slate-400 text-sm mb-8 leading-relaxed line-clamp-3">
-                                        絶頂、崩壊、そして10年の沈黙を経て。最新スタック「Next.js × Docker」を手に、かつての成功者が再起するまでのドキュメンタリー。
+                                        絶頂、崩壊、そして10年の沈黙を経て。最新スタック「Next.js × Docker」を武器に、かつての成功者が再起するまでのドキュメンタリー。
                                     </p>
                                     <div className="flex items-center gap-2 text-white text-sm font-bold">
                                         連載を読む <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
@@ -119,19 +121,19 @@ export default async function Page() {
                             </div>
                         </Link>
 
-                        {/* 2. SAVING_STACK (新設) */}
+                        {/* 2. SAVING_STACK */}
                         <Link href="/series/saving-stack" className="block group">
                             <div className="h-full relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/50 to-black border border-white/10 p-8 md:p-10 transition-all hover:border-blue-500/50 shadow-2xl">
                                 <div className="relative z-10">
-                                    <span className="text-blue-400 font-mono text-xs mb-3 block tracking-widest">SERIES_02 // NEW_RELEASE</span>
+                                    <span className="text-blue-400 font-mono text-xs mb-3 block tracking-widest">SERIES_02 // 新着</span>
                                     <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
-                                        SAVING_STACK
+                                        SAVING_STACK（節約スタック）
                                     </h3>
                                     <p className="text-slate-400 text-sm mb-8 leading-relaxed line-clamp-3">
                                         家計を「資産」へデプロイせよ。dポイント、Vポイント、決済ルートの最適化を「技術スタック」として定義する、エンジニアのための家計戦略。
                                     </p>
                                     <div className="flex items-center gap-2 text-white text-sm font-bold">
-                                        システム構成を見る <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                                        構成案を見る <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
                                     </div>
                                 </div>
                                 <Layers className="absolute -right-8 -bottom-8 w-40 h-40 text-blue-500 opacity-[0.03] group-hover:opacity-10 transition-all duration-700 group-hover:scale-110" />
@@ -140,38 +142,38 @@ export default async function Page() {
                     </div>
                 </section>
 
-                {/* 📊 シリーズ別アーカイブ (COMING SOON) */}
+                {/* 📊 カテゴリ別アーカイブ */}
                 <section className="mb-20 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="p-8 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
                         <CreditCard className="text-blue-500 w-10 h-10 mb-6" />
-                        <h4 className="text-xl font-bold text-white mb-3">Cashless Logic</h4>
+                        <h4 className="text-xl font-bold text-white mb-3">キャッシュレス・ロジック</h4>
                         <p className="text-sm text-slate-400 leading-relaxed mb-4">
-                            三井住友カード、Olive、ガソリン割引。複数の決済レイヤーを重ね合わせ、還元率を極限まで高めるアルゴリズム。
+                            三井住友カード、Olive、決済ルートの多層化。還元率を極限まで高める独自のアルゴリズム。
                         </p>
-                        <span className="text-xs font-mono text-blue-500">OPTIMIZING...</span>
+                        <span className="text-xs font-mono text-blue-500">最適化中...</span>
                     </div>
                     <div className="p-8 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
                         <Monitor className="text-emerald-500 w-10 h-10 mb-6" />
-                        <h4 className="text-xl font-bold text-white mb-3">Dev & Ops</h4>
+                        <h4 className="text-xl font-bold text-white mb-3">開発と運用 (DevOps)</h4>
                         <p className="text-sm text-slate-400 leading-relaxed mb-4">
-                            Django/Next.jsによる自炊システムの構築から、VPSサーバーの最適化まで。生活を自動化するエンジニアリング。
+                            Django/Next.jsによる自炊システムの構築、VPSサーバーの最適化。生活を自動化するエンジニアリング。
                         </p>
-                        <span className="text-xs font-mono text-emerald-500">BUILDING...</span>
+                        <span className="text-xs font-mono text-emerald-500">ビルド中...</span>
                     </div>
                     <div className="p-8 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
                         <Coffee className="text-purple-500 w-10 h-10 mb-6" />
-                        <h4 className="text-xl font-bold text-white mb-3">Life Hack</h4>
+                        <h4 className="text-xl font-bold text-white mb-3">ライフハック・思考法</h4>
                         <p className="text-sm text-slate-400 leading-relaxed mb-4">
-                            格差社会を生き抜くためのマインドセット。公務員から個人事業主へ、経験者が語る「負けない」暮らしの整え方。
+                            公務員から個人事業主へ。経験者が語る、格差社会を生き抜くための「負けない」暮らしの整え方。
                         </p>
-                        <span className="text-xs font-mono text-purple-500">THINKING...</span>
+                        <span className="text-xs font-mono text-purple-500">考案中...</span>
                     </div>
                 </section>
 
                 {/* 📰 最新の記事リスト */}
                 <section>
                     <div className={styles.sectionHeader}>
-                        <h2 className={styles.sectionTitle}>LATEST ARTICLES</h2>
+                        <h2 className={styles.sectionTitle}>最新記事アーカイブ</h2>
                         <div className={styles.titleUnderline}></div>
                     </div>
 
@@ -189,26 +191,31 @@ export default async function Page() {
                         <div className={styles.loadingArea}>
                             <div className={styles.statusBox}>
                                 <div className={styles.loadingIcon}>☕</div>
-                                <p>独自の視点で分析した最新情報を準備しています。しばらくお待ちください。</p>
+                                <p>最新の解析データを準備しています。しばらくお待ちください。</p>
                             </div>
                         </div>
                     )}
                 </section>
             </main>
 
-            {/* 🛡️ 信頼性セクション（E-E-A-T強化） */}
+            {/* 🛡️ 信頼性セクション（E-E-A-T） */}
             <section className={styles.aboutSection}>
                 <div className={styles.aboutCard}>
                     <div className="flex items-center gap-3 mb-6">
                         <ShieldCheck className="text-emerald-500 w-8 h-8" />
-                        <h3 className="m-0 text-2xl font-bold">OUR MISSION & VISION</h3>
+                        <h3 className="m-0 text-2xl font-bold">ミッション ＆ ビジョン</h3>
                     </div>
-                    <p className="leading-loose text-slate-300">
-                        {siteConfig.site_name} は、単なる節約情報のまとめサイトではありません。
-                        かつてIT業界の最前線で活動し、その後沈黙を貫いた運営者が、現代の「格差社会」と「AI時代」において、いかにして知恵と技術で家族を守り、豊かな生活を再構築するかを追求するメディアです。
-                        <br /><br />
-                        実体験に基づいた「一次情報」のみを発信し、読者の皆様が迷わず賢い選択ができるようサポートすること。それが私たちの使命です。
-                    </p>
+                    <div className="leading-loose text-slate-300">
+                        <p>
+                            <strong>{siteConfig.site_name}</strong> は、単なる節約情報のまとめサイトではありません。
+                        </p>
+                        <p className="mt-4">
+                            かつてIT業界の最前線で活動し、その後沈黙を貫いた運営者が、現代の「格差社会」と「AI時代」において、いかにして知恵と技術で家族を守り、豊かな生活を再構築するかを追求するメディアです。
+                        </p>
+                        <p className="mt-4">
+                            実体験に基づいた「一次情報」のみを発信し、読者の皆様が迷わず賢い選択ができるようサポートすること。それが私たちの使命です。
+                        </p>
+                    </div>
                 </div>
             </section>
 
@@ -218,9 +225,9 @@ export default async function Page() {
                     <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
                         <div className="text-white font-bold text-xl">{siteConfig.site_name}</div>
                         <nav className="flex gap-6 text-sm text-slate-400 font-mono">
-                            <Link href="/about" className="hover:text-white transition-colors">ABOUT</Link>
-                            <Link href="/guide/card" className="hover:text-white transition-colors">CARD GUIDE</Link>
-                            <Link href="/privacy" className="hover:text-white transition-colors">PRIVACY POLICY</Link>
+                            <Link href="/about" className="hover:text-white transition-colors">サイトについて</Link>
+                            <Link href="/guide/card" className="hover:text-white transition-colors">カードガイド</Link>
+                            <Link href="/privacy" className="hover:text-white transition-colors">プライバシーポリシー</Link>
                         </nav>
                     </div>
                     <p className={styles.copyright}>&copy; 2026 {siteConfig.site_name} - SHIN CORE LINX</p>
