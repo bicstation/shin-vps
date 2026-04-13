@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.9.6 (Final Stable Edition)
+# 🛡️ SHIN-VPS v3.9.9.6 (Ultra-Stable OCI Edition)
 # ---------------------------------------------------------------------
 # 【修正の核心】
-# 1. Mail Forwarder: 存在しないイメージを実在する 'catatnight/postfix' へ修正。
+# 1. Mail Forwarder: 古いDockerマニフェストエラーを回避するため、
+#    最新の containerd v2.1+ に対応した 'boky/postfix' へ変更。
 # 2. クエリパラメータ識別: 各Next.jsからDjangoへの通信に ?site= を強制付与。
 # 3. ネットワーク: 内部通信用エイリアス 'django-api-host' で全艦隊を統合。
 # =====================================================================
@@ -212,15 +213,17 @@ services:
 
   # --- 4. 管理・監視・メール層 ---
 
-  # 📧 Mail Forwarder: catatnight/postfix を採用（安定版）
+  # 📧 Mail Forwarder: 最新環境対応イメージ boky/postfix
   mail-forwarder:
-    image: catatnight/postfix
+    image: boky/postfix
     container_name: mail-forwarder
     restart: always
     environment:
-      - maildomain=bicstation.com
-      # 書式: "ユーザー名:転送先Gmailアドレス"
-      - smtp_user=support:${MY_GMAIL_ADDRESS:-bicstation@gmail.com}
+      # support@... 宛を Gmail に転送
+      - FORWARD_EXT=support@bicstation.com:${MY_GMAIL_ADDRESS:-bicstation@gmail.com}
+      - HOSTNAME=mail.bicstation.com
+      # リレー設定が必要な場合（任意）
+      - RELAYHOST=[smtp.gmail.com]:587
     ports:
       - "25:25"
     networks:
