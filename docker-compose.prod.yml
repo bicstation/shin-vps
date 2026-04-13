@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.9.6 (Ultra-Stable OCI Edition)
+# 🛡️ SHIN-VPS v3.9.9.6 (Final Deployment Edition)
 # ---------------------------------------------------------------------
 # 【修正の核心】
-# 1. Mail Forwarder: 古いDockerマニフェストエラーを回避するため、
-#    最新の containerd v2.1+ に対応した 'boky/postfix' へ変更。
+# 1. Mail Forwarder: containerd v2.1+ 対応の 'boky/postfix' を採用。
+#    ヘルスチェックの猶予時間(start_period)を設定し、不当な停止を回避。
 # 2. クエリパラメータ識別: 各Next.jsからDjangoへの通信に ?site= を強制付与。
 # 3. ネットワーク: 内部通信用エイリアス 'django-api-host' で全艦隊を統合。
 # =====================================================================
@@ -213,21 +213,29 @@ services:
 
   # --- 4. 管理・監視・メール層 ---
 
-  # 📧 Mail Forwarder: 最新環境対応イメージ boky/postfix
+  # 📧 Mail Forwarder: ヘルスチェック設定を強化
   mail-forwarder:
     image: boky/postfix
     container_name: mail-forwarder
     restart: always
     environment:
-      # support@... 宛を Gmail に転送
+      # 転送設定
       - FORWARD_EXT=support@bicstation.com:${MY_GMAIL_ADDRESS:-bicstation@gmail.com}
       - HOSTNAME=mail.bicstation.com
-      # リレー設定が必要な場合（任意）
-      - RELAYHOST=[smtp.gmail.com]:587
+      # リレーホストなし(直接配送試行)または環境変数で指定
+      - RELAYHOST=
     ports:
       - "25:25"
     networks:
       - internal-net
+    healthcheck:
+      # postfix statusコマンドで死活監視
+      test: ["CMD", "postfix", "status"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      # 🚀 重要: 起動直後の不安定な時期を無視する
+      start_period: 45s
 
   pgadmin-v3:
     image: dpage/pgadmin4
