@@ -36,7 +36,7 @@ export default function ContactPage() {
                     <ul style={{ listStyle: 'none', padding: '0', color: '#666', lineHeight: '2' }}>
                         <li><strong>運営組織:</strong> BICSTATION プロジェクトチーム</li>
                         <li><strong>対応時間:</strong> 平日 10:00 - 18:00 (土日祝除く)</li>
-                        <li><strong>プライバシーポリシー:</strong> <a href="/privacy" style={{ color: '#0070f3' }}>こちらをご確認ください</a></li>
+                        <li><strong>プライバシーポリシー:</strong> <a href="/privacy-policy" style={{ color: '#0070f3' }}>こちらをご確認ください</a></li>
                     </ul>
                 </section>
             </div>

@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.9.6 (Quad-Domain Query-Identified Edition)
+# 🛡️ SHIN-VPS v3.9.9.6 (Quad-Domain Query-Identified & Mail Edition)
 # ---------------------------------------------------------------------
-# 【修正の核心】
-# 1. サイト識別子の強制付与: 
-#    各Next.jsの INTERNAL_API_URL に ?site=識別子 を付与し、
-#    Django ViewSet の get_queryset 内の query_params 判定に確実にヒットさせる。
-# 2. ローカル/VPS共通エイリアス:
-#    'django-api-host' を共通の宛先とし、コードを書き換えずに環境を移行可能に。
-# 3. マルチテナント疎通の安定化:
-#    ホストヘッダーに依存せず、クエリパラメータでサイトを特定するため、
-#    Docker内部ネットワーク越しのSSR（Server Side Rendering）が確実に成功。
+# 【主な構成】
+# 1. Traefik: SSL終端 & 各ドメインへのルーティング
+# 2. Django v3: クエリパラメータ(?site=)によるマルチテナント対応
+# 3. Next.js 艦隊: 4サイト(BICSTATION, TIPER, BIC-SAVING, AVFLASH)
+# 4. Mail Forwarder: support@bicstation.com の Gmail 転送
+# 5. Monitoring: Netdata, Dozzle, pgAdmin
 # =====================================================================
 
 version: '3.8'
@@ -226,7 +223,23 @@ services:
       - internal-net
       - shared-proxy
 
-  # --- 4. 管理・監視ツール ---
+  # --- 4. 管理・監視・メール層 ---
+
+  # 📧 Mail Forwarder: support@bicstation.com 転送用
+  mail-forwarder:
+    image: juanluisbaptiste/postfix-forwarder
+    container_name: mail-forwarder
+    restart: always
+    environment:
+      # support@... 宛を、あなたの実在する Gmail 等に転送
+      - FORWARD_LIST=support@bicstation.com:${MY_GMAIL_ADDRESS:-bicstation@gmail.com}
+      - DOMAIN=bicstation.com
+      - ALLOWED_NETWORKS=172.16.0.0/12,192.168.0.0/16,127.0.0.0/8
+    ports:
+      - "25:25"
+    networks:
+      - internal-net
+
   pgadmin-v3:
     image: dpage/pgadmin4
     container_name: pgadmin-v3
