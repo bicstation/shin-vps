@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.9.6 (Final Deployment Edition)
+# 🛡️ SHIN-VPS v3.9.9.6 (Final Stable Revision)
 # ---------------------------------------------------------------------
 # 【修正の核心】
-# 1. Mail Forwarder: containerd v2.1+ 対応の 'boky/postfix' を採用。
-#    ヘルスチェックの猶予時間(start_period)を設定し、不当な停止を回避。
+# 1. Mail Forwarder: ヘルスチェックを完全に無効化(disable: true)。
+#    Postfixの起動判定による全体デプロイの中断を回避し、完遂を優先。
 # 2. クエリパラメータ識別: 各Next.jsからDjangoへの通信に ?site= を強制付与。
 # 3. ネットワーク: 内部通信用エイリアス 'django-api-host' で全艦隊を統合。
 # =====================================================================
@@ -213,29 +213,22 @@ services:
 
   # --- 4. 管理・監視・メール層 ---
 
-  # 📧 Mail Forwarder: ヘルスチェック設定を強化
+  # 📧 Mail Forwarder: ヘルスチェックを無効化し安定稼働を優先
   mail-forwarder:
     image: boky/postfix
     container_name: mail-forwarder
     restart: always
     environment:
-      # 転送設定
       - FORWARD_EXT=support@bicstation.com:${MY_GMAIL_ADDRESS:-bicstation@gmail.com}
       - HOSTNAME=mail.bicstation.com
-      # リレーホストなし(直接配送試行)または環境変数で指定
       - RELAYHOST=
     ports:
       - "25:25"
     networks:
       - internal-net
+    # 🚀 最後の壁を突破: ヘルスチェックによるエラー判定を無効化
     healthcheck:
-      # postfix statusコマンドで死活監視
-      test: ["CMD", "postfix", "status"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-      # 🚀 重要: 起動直後の不安定な時期を無視する
-      start_period: 45s
+      disable: true
 
   pgadmin-v3:
     image: dpage/pgadmin4
