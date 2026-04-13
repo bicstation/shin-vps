@@ -241,7 +241,7 @@ export default async function HomePageMain() {
                             <Lock className="w-4 h-4 mr-2" /> 法的告知
                         </h5>
                         <ul className="text-xs text-slate-400 space-y-2">
-                            <li><Link href="/privacy" className="hover:text-blue-400 transition-colors underline decoration-slate-700">プライバシーポリシー（広告配信について）</Link></li>
+                            <li><Link href="/privacy-policy" className="hover:text-blue-400 transition-colors underline decoration-slate-700">プライバシーポリシー（広告配信について）</Link></li>
                         </ul>
                     </div>
                     <div>
