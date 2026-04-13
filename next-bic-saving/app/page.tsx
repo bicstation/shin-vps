@@ -13,7 +13,8 @@ import {
     CreditCard, 
     Monitor, 
     Coffee,
-    Flame
+    Flame,
+    RefreshCw // ✅ 追加: これが抜けていたため ReferenceError が発生していました
 } from 'lucide-react';
 
 // ✅ 共通コンポーネント
@@ -116,7 +117,7 @@ export default async function Page() {
                     </Link>
                 </section>
 
-                {/* 📊 シリーズ別アーカイブ（ダミー/今後拡充用） */}
+                {/* 📊 シリーズ別アーカイブ */}
                 <section className="mb-20 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="p-8 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
                         <CreditCard className="text-blue-500 w-10 h-10 mb-6" />
