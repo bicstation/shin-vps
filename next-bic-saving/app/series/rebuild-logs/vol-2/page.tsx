@@ -20,7 +20,6 @@ import {
     FastForward,
     Database,
     FileJson,
-    Cpu,
     Loader2
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
@@ -155,7 +154,7 @@ export default function RebuildLogsVol2() {
                             <span className="text-[10px] text-blue-500 font-mono block mb-2 flex items-center gap-1">
                                 <ChevronLeft className="w-3 h-3" /> PREVIOUS EPISODE
                             </span>
-                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors">
+                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors text-sm">
                                 Vol.1 2008年、なべ塾開校とゆこゆこの500円
                             </span>
                         </Link>
@@ -165,7 +164,7 @@ export default function RebuildLogsVol2() {
                             className="group p-6 rounded-2xl border border-slate-800 bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all"
                         >
                             <span className="text-[10px] text-emerald-500 font-mono block mb-2">NEXT EPISODE</span>
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between text-sm">
                                 <span className="text-white font-bold group-hover:text-emerald-400 transition-colors">
                                     Vol.3 月200万の絶頂と「pbic.info」
                                 </span>

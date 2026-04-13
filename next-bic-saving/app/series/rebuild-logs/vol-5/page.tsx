@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ REBUILD_LOGS_VOL_5_V1.0
+ * 🛰️ REBUILD_LOGS_VOL_5_V1.1
  * 🛡️ Project: Bic-Saving / Rebuild Logs
  * 💎 Purpose: 10年間の沈黙と、ドメイン「nabejuku.com」の死守
  * =====================================================================
@@ -11,12 +11,12 @@ import React from 'react';
 import Link from 'next/link';
 import { 
     ChevronLeft,
+    ChevronRight,
     List, 
     Calendar, 
     Clock, 
     User, 
     Mail,
-    HardDrive,
     History,
     Key
 } from 'lucide-react';
@@ -83,7 +83,7 @@ export default function RebuildLogsVol5() {
                     <div className="my-10 p-6 bg-white/5 border border-white/10 rounded-2xl flex gap-4">
                         <Mail className="text-emerald-500 w-6 h-6 shrink-0" />
                         <div>
-                            <h4 className="text-emerald-500 font-bold m-0 uppercase text-sm">Survivor: nabejuku.com</h4>
+                            <h4 className="text-emerald-500 font-bold m-0 uppercase text-sm font-mono text-emerald-500">Survivor: nabejuku.com</h4>
                             <p className="text-sm mt-2 mb-0">
                                 サイトの更新は止まり、かつての記事はすべて消去した。それでも、このドメインの裏側で稼働するPostfixやDovecotの設定をメンテナンスし続けることだけが、私がエンジニアであることを繋ぎ止める唯一の細い糸でした。
                             </p>
@@ -105,12 +105,12 @@ export default function RebuildLogsVol5() {
                         <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
                             <History className="w-8 h-8 text-slate-500 mb-3" />
                             <div className="text-lg font-bold text-white">10 Years</div>
-                            <div className="text-xs text-slate-500">Duration of Silence</div>
+                            <div className="text-xs text-slate-500 font-mono">Duration of Silence</div>
                         </div>
                         <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
                             <Key className="w-8 h-8 text-emerald-500 mb-3" />
                             <div className="text-lg font-bold text-white">Alive</div>
-                            <div className="text-xs text-slate-500">Domain Ownership</div>
+                            <div className="text-xs text-slate-500 font-mono">Domain Ownership</div>
                         </div>
                     </div>
 
@@ -126,14 +126,22 @@ export default function RebuildLogsVol5() {
                             <span className="text-[10px] text-blue-500 font-mono block mb-2 flex items-center gap-1">
                                 <ChevronLeft className="w-3 h-3" /> PREVIOUS EPISODE
                             </span>
-                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors">
-                                Vol.4 2016年、暗転。
+                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors text-sm">
+                                Vol.4 帝国の崩壊：パンダとペンギン
                             </span>
                         </Link>
                         
-                        <div className="p-6 rounded-2xl border border-dashed border-slate-800 flex items-center justify-center text-slate-600 text-sm italic font-mono text-center">
-                            NEXT EPISODE:<br/>PARADIGM SHIFT WITH NEXT.JS
-                        </div>
+                        <Link 
+                            href="/series/rebuild-logs/vol-6" 
+                            className="group p-6 rounded-2xl border border-slate-800 bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-right"
+                        >
+                            <span className="text-[10px] text-emerald-500 font-mono block mb-2 flex items-center justify-end gap-1">
+                                NEXT EPISODE <ChevronRight className="w-3 h-3" />
+                            </span>
+                            <span className="text-white font-bold group-hover:text-emerald-400 transition-colors text-sm">
+                                Vol.6 覚醒：Next.jsとモダンスタックへの回帰
+                            </span>
+                        </Link>
                     </div>
 
                     <div className="mt-12 text-center">

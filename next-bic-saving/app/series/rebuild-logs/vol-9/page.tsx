@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ REBUILD_LOGS_VOL_9_V1.0
+ * 🛰️ REBUILD_LOGS_VOL_9_V1.1
  * 🛡️ Project: Bic-Saving / Rebuild Logs
  * 💎 Purpose: AI時代における「人間臭さ」という最強のSEO戦略
  * =====================================================================
@@ -11,15 +11,14 @@ import React from 'react';
 import Link from 'next/link';
 import { 
     ChevronLeft,
+    ChevronRight,
     List, 
     Calendar, 
     Clock, 
     User, 
-    MessageSquareQuote,
     Sparkles,
     BrainCircuit,
-    Fingerprint,
-    Search
+    Fingerprint
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
@@ -79,13 +78,13 @@ export default function RebuildLogsVol9() {
                         かつてGoogleに帝国を破壊された絶望や、10年間の沈黙。それらは一見「面白くない」過去かもしれません。
                         しかし、その「負の記憶」があるからこそ、Bic-Savingの「1円への拘り」には説得力が宿ります。
                         泥水をすすった経験がない人間に、本当の節約の痛みや喜びは語れません。
-                        「愚痴」を単なる文句で終わらせず、ロジカルな「改善策」へと昇華させること。それが私の提唱するAI時代の生存戦略です。
+                        「愚痴」を単なる文句で終わらせず、ロジカルな「改善策」へと昇華させること。それが私の提唱する AI時代の生存戦略です。
                     </p>
 
                     <div className="my-10 p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex gap-4">
                         <Fingerprint className="text-blue-500 w-6 h-6 shrink-0" />
                         <div>
-                            <h4 className="text-blue-500 font-bold m-0 uppercase text-sm">Human-Unique Signature</h4>
+                            <h4 className="text-blue-500 font-bold m-0 uppercase text-sm font-mono">Human-Unique Signature</h4>
                             <p className="text-sm mt-2 mb-0">
                                 誰にでも書ける正解はAIに任せればいい。私は、私にしか書けない「挫折と再起のプロセス」を、Next.jsのコードと共に刻んでいく。
                             </p>
@@ -103,13 +102,13 @@ export default function RebuildLogsVol9() {
                     <div className="my-10 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
                             <BrainCircuit className="w-8 h-8 text-slate-500 mb-3" />
-                            <div className="text-lg font-bold text-white">AI Content</div>
-                            <div className="text-xs text-slate-500">Logical, Generic, Cold.</div>
+                            <div className="text-lg font-bold text-white font-mono">AI Content</div>
+                            <div className="text-xs text-slate-500 font-mono">Logical, Generic, Cold.</div>
                         </div>
                         <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
                             <Sparkles className="w-8 h-8 text-emerald-500 mb-3" />
-                            <div className="text-lg font-bold text-white">Nabe's Experience</div>
-                            <div className="text-xs text-slate-500">Messy, Authentic, Irreplaceable.</div>
+                            <div className="text-lg font-bold text-white font-mono">Nabe's Experience</div>
+                            <div className="text-xs text-slate-500 font-mono">Messy, Authentic, Irreplaceable.</div>
                         </div>
                     </div>
 
@@ -125,14 +124,28 @@ export default function RebuildLogsVol9() {
                             <span className="text-[10px] text-blue-500 font-mono block mb-2 flex items-center gap-1">
                                 <ChevronLeft className="w-3 h-3" /> PREVIOUS EPISODE
                             </span>
-                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors">
+                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors text-sm">
                                 Vol.8 「リッター7円引き」の最適化
                             </span>
                         </Link>
                         
-                        <div className="p-6 rounded-2xl border border-dashed border-slate-800 flex items-center justify-center text-slate-600 text-sm italic font-mono text-center leading-relaxed">
-                            FINAL EPISODE:<br/>REBORN AS BIC-SAVING 2.0
-                        </div>
+                        <Link 
+                            href="/series/rebuild-logs/vol-10" 
+                            className="group p-6 rounded-2xl border border-slate-800 bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-right"
+                        >
+                            <span className="text-[10px] text-emerald-500 font-mono block mb-2 flex items-center justify-end gap-1">
+                                FINAL EPISODE <ChevronRight className="w-3 h-3" />
+                            </span>
+                            <span className="text-white font-bold group-hover:text-emerald-400 transition-colors text-sm">
+                                Vol.10 BIC-SAVING 2.0 へ
+                            </span>
+                        </Link>
+                    </div>
+
+                    <div className="mt-12 text-center">
+                        <Link href="/series/rebuild-logs" className="text-xs font-mono text-slate-500 hover:text-white transition-colors">
+                            BACK TO SERIES INDEX
+                        </Link>
                     </div>
                 </footer>
             </article>

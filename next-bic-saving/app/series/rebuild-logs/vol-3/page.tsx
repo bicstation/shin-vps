@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ REBUILD_LOGS_VOL_3_V1.2
+ * 🛰️ REBUILD_LOGS_VOL_3_V1.3
  * 🛡️ Project: Bic-Saving / Rebuild Logs
  * 💎 Purpose: 月200万の絶頂、pbic.info、そしてバックリンク軍団の編成
  * =====================================================================
@@ -11,7 +11,7 @@ import React from 'react';
 import Link from 'next/link';
 import { 
     ChevronLeft,
-    ChevronRight, 
+    ChevronRight, // 🚀 Fixed: Added missing import
     List, 
     Calendar, 
     Clock, 
@@ -78,18 +78,18 @@ export default function RebuildLogsVol3() {
                     <div className="my-10 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl text-center">
                             <Coins className="w-8 h-8 text-emerald-500 mx-auto mb-3" />
-                            <div className="text-2xl font-bold text-white">500 JPY</div>
-                            <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Unit Reward</div>
+                            <div className="text-2xl font-bold text-white font-mono">500 JPY</div>
+                            <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1 font-mono">Unit Reward</div>
                         </div>
                         <div className="p-6 bg-white/5 border border-white/10 rounded-2xl text-center">
                             <TrendingUp className="w-8 h-8 text-white mx-auto mb-3" />
-                            <div className="text-2xl font-bold text-white">4,000+</div>
-                            <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Monthly Sales</div>
+                            <div className="text-2xl font-bold text-white font-mono">4,000+</div>
+                            <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1 font-mono">Monthly Sales</div>
                         </div>
                         <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl text-center">
                             <Network className="w-8 h-8 text-emerald-500 mx-auto mb-3" />
-                            <div className="text-2xl font-bold text-white">2.0M JPY</div>
-                            <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Monthly Revenue</div>
+                            <div className="text-2xl font-bold text-white font-mono">2.0M JPY</div>
+                            <div className="text-[10px] text-slate-500 uppercase tracking-widest mt-1 font-mono">Monthly Revenue</div>
                         </div>
                     </div>
 
@@ -104,7 +104,7 @@ export default function RebuildLogsVol3() {
                     <div className="my-10 p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex gap-4">
                         <ShieldAlert className="text-blue-500 w-6 h-6 shrink-0" />
                         <div>
-                            <h4 className="text-blue-500 font-bold m-0 uppercase text-sm">Satellite Link Strategy</h4>
+                            <h4 className="text-blue-500 font-bold m-0 uppercase text-sm font-mono">Satellite Link Strategy</h4>
                             <p className="text-sm mt-2 mb-0">
                                 検索エンジンの評価を自らの手でコントロールする。複数のドメインからリンクを集約させ、検索順位の最上段を奪いに行く。エンジニアリングとSEOが融合した、狂乱の時代の戦法です。
                             </p>
@@ -140,7 +140,7 @@ export default function RebuildLogsVol3() {
 
                     <p>
                         しかし、光が強ければ影もまた濃い。
-                        この「リンクこそが正義」だった時代の終焉は、Googleの進化という形で、唐退に訪れることになります。
+                        この「リンクこそが正義」だった時代の終焉は、Googleの進化という形で、唐突に訪れることになります。
                     </p>
 
                 </div>
@@ -155,14 +155,23 @@ export default function RebuildLogsVol3() {
                             <span className="text-[10px] text-blue-500 font-mono block mb-2 flex items-center gap-1">
                                 <ChevronLeft className="w-3 h-3" /> PREVIOUS EPISODE
                             </span>
-                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors">
-                                Vol.2 再構築の限界とCSVTOHTML
+                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors text-sm">
+                                Vol.2 PHPとの出会いと「CSVTOHTML」の衝撃
                             </span>
                         </Link>
                         
-                        <div className="p-6 rounded-2xl border border-dashed border-slate-800 flex items-center justify-center text-slate-600 text-sm italic font-mono text-center leading-relaxed">
-                            NEXT EPISODE:<br/>THE COLLAPSE OF BACKLINK EMPIRE
-                        </div>
+                        <Link 
+                            href="/series/rebuild-logs/vol-4" 
+                            className="group p-6 rounded-2xl border border-slate-800 bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all"
+                        >
+                            <span className="text-[10px] text-emerald-500 font-mono block mb-2 text-right">NEXT EPISODE</span>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-white font-bold group-hover:text-emerald-400 transition-colors">
+                                    Vol.4 崩壊の序曲：Googleペンギン・パンダアップデート
+                                </span>
+                                <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-emerald-500 transition-all group-hover:translate-x-1" />
+                            </div>
+                        </Link>
                     </div>
 
                     <div className="mt-12 text-center">

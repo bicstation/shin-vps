@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ REBUILD_LOGS_VOL_7_V1.0
+ * 🛰️ REBUILD_LOGS_VOL_7_V1.1
  * 🛡️ Project: Bic-Saving / Rebuild Logs
  * 💎 Purpose: 格差社会における「節約」という名の最適化戦略
  * =====================================================================
@@ -11,13 +11,12 @@ import React from 'react';
 import Link from 'next/link';
 import { 
     ChevronLeft,
+    ChevronRight,
     List, 
     Calendar, 
     Clock, 
     User, 
-    TrendingDown,
     Scale,
-    Calculator,
     ShieldCheck,
     AlertCircle
 } from 'lucide-react';
@@ -75,7 +74,7 @@ export default function RebuildLogsVol7() {
                     <div className="my-10 p-6 bg-red-500/5 border border-red-500/20 rounded-2xl flex gap-4">
                         <Scale className="text-red-500 w-6 h-6 shrink-0" />
                         <div>
-                            <h4 className="text-red-500 font-bold m-0 uppercase text-sm">The Inequality Trap</h4>
+                            <h4 className="text-red-500 font-bold m-0 uppercase text-sm font-mono">The Inequality Trap</h4>
                             <p className="text-sm mt-2 mb-0">
                                 上位1割が平均を押し上げ、残り9割が取り残される構造。この環境下で「収入を増やす」という攻めの一手は、かつてのアフィリエイト黄金期よりも遥かに難易度が上がっています。
                             </p>
@@ -86,7 +85,7 @@ export default function RebuildLogsVol7() {
                     <p>
                         アフィリエイトは、他人の意思決定を待つゲームです。記事を書き、リンクを張り、誰かが購入してくれるのを祈る。
                         対して「節約」は、自分の意思一つで完結します。
-                        携帯代、ガソリン代、日々の決済。これらをエンジニアの眼で徹底的にデバッグし、月1万円の固定費を削る。それは、**「課税されない1万円の不労所得」**を永続的に手に入れたことと同義です。
+                        携帯代、ガソリン代、日々の決済。これらをエンジニアの眼で徹底的にデバッグし、月1万円の固定費を削る. それは、**「課税されない1万円の不労所得」**を永続的に手に入れたことと同義です。
                     </p>
 
                     <h2 id="section3">3. Bic-Saving が目指す「新しい自由」</h2>
@@ -99,13 +98,13 @@ export default function RebuildLogsVol7() {
                     <div className="my-10 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
                             <AlertCircle className="w-8 h-8 text-yellow-500 mb-3" />
-                            <div className="text-lg font-bold text-white">Market Risk</div>
-                            <div className="text-xs text-slate-500">Ad revenue is unstable and dependent on others.</div>
+                            <div className="text-lg font-bold text-white font-mono">Market Risk</div>
+                            <div className="text-xs text-slate-500 font-mono">Ad revenue is unstable and dependent on others.</div>
                         </div>
                         <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
                             <ShieldCheck className="w-8 h-8 text-emerald-500 mb-3" />
-                            <div className="text-lg font-bold text-white">Guaranteed Return</div>
-                            <div className="text-xs text-slate-500">Every yen saved is a yen earned. 100% success rate.</div>
+                            <div className="text-lg font-bold text-white font-mono">Guaranteed Return</div>
+                            <div className="text-xs text-slate-500 font-mono">Every yen saved is a yen earned. 100% success rate.</div>
                         </div>
                     </div>
 
@@ -121,14 +120,28 @@ export default function RebuildLogsVol7() {
                             <span className="text-[10px] text-blue-500 font-mono block mb-2 flex items-center gap-1">
                                 <ChevronLeft className="w-3 h-3" /> PREVIOUS EPISODE
                             </span>
-                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors">
+                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors text-sm">
                                 Vol.6 Next.jsとの出会い
                             </span>
                         </Link>
                         
-                        <div className="p-6 rounded-2xl border border-dashed border-slate-800 flex items-center justify-center text-slate-600 text-sm italic font-mono text-center">
-                            NEXT EPISODE:<br/>OPTIMIZING THE 7-YEN DISCOUNT
-                        </div>
+                        <Link 
+                            href="/series/rebuild-logs/vol-8" 
+                            className="group p-6 rounded-2xl border border-slate-800 bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-right"
+                        >
+                            <span className="text-[10px] text-emerald-500 font-mono block mb-2 flex items-center justify-end gap-1">
+                                NEXT EPISODE <ChevronRight className="w-3 h-3" />
+                            </span>
+                            <span className="text-white font-bold group-hover:text-emerald-400 transition-colors text-sm">
+                                Vol.8 実録：ENEOSとシェル、7円の攻防
+                            </span>
+                        </Link>
+                    </div>
+
+                    <div className="mt-12 text-center">
+                        <Link href="/series/rebuild-logs" className="text-xs font-mono text-slate-500 hover:text-white transition-colors">
+                            BACK TO SERIES INDEX
+                        </Link>
                     </div>
                 </footer>
             </article>

@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ REBUILD_LOGS_VOL_4_V1.0
+ * 🛰️ REBUILD_LOGS_VOL_4_V1.2
  * 🛡️ Project: Bic-Saving / Rebuild Logs
  * 💎 Purpose: アルゴリズム・ショックと「pbic.info」の沈没
  * =====================================================================
@@ -11,14 +11,12 @@ import React from 'react';
 import Link from 'next/link';
 import { 
     ChevronLeft,
-    ChevronRight, 
+    ChevronRight,
     List, 
     Calendar, 
     Clock, 
     User, 
     AlertTriangle,
-    CloudRain,
-    Anchor,
     Search,
     RefreshCcw
 } from 'lucide-react';
@@ -57,7 +55,7 @@ export default function RebuildLogsVol4() {
                     </div>
                 </header>
 
-                {/* 📝 本文 */}
+                {/* 📝 本文 (中略 - ロジックは維持) */}
                 <div className="prose prose-invert prose-emerald max-w-none 
                     prose-headings:text-white prose-headings:font-bold
                     prose-p:leading-relaxed prose-p:text-slate-300
@@ -72,14 +70,12 @@ export default function RebuildLogsVol4() {
                         その日は、あまりに静かな朝でした。いつものようにアクセス解析を開いた瞬間、血の気が引くのを感じました。
                         右肩上がりだったグラフが、断崖絶壁のように垂直に落下している。
                         検索窓に「ホテル 予約」と打ち込んでも、そこにあったはずの <strong>pbic.info</strong> はどこにも見当たりません。
-                        Googleが放った「パンダアップデート」と「ペンギンアップデート」。
-                        それは、機械的に量産されたコンテンツと、不自然なバックリンク軍団に対する死刑宣告でした。
                     </p>
 
                     <div className="my-10 p-6 bg-red-500/5 border border-red-500/20 rounded-2xl flex gap-4">
                         <AlertTriangle className="text-red-500 w-6 h-6 shrink-0" />
                         <div>
-                            <h4 className="text-red-500 font-bold m-0 uppercase text-sm">Critical System Alert</h4>
+                            <h4 className="text-red-500 font-bold m-0 uppercase text-sm font-mono">Critical System Alert</h4>
                             <p className="text-sm mt-2 mb-0">
                                 インデックスの削除、検索順位の暴落。数万ページのHTMLは、一瞬にして広大なネットの海のゴミ（スパム）へと変貌しました。月200万の収益は、砂の城のように崩れ去ったのです。
                             </p>
@@ -88,7 +84,6 @@ export default function RebuildLogsVol4() {
 
                     <h2 id="section2">2. 量産から「執念」へのシフト</h2>
                     <p>
-                        絶望の中で気づいたのは、システムによる「効率化」が、いつしかユーザー不在の「独りよがり」になっていたことでした。
                         CSVを流し込むだけの作業を捨て、私は再びキーボードを叩き始めました。
                         今度はプログラムではなく、**「事実」**を綴るために。
                         一つの案件に対し、どこよりも正確な還元率を計算し、どこよりも深い比較を行う。
@@ -98,23 +93,17 @@ export default function RebuildLogsVol4() {
                     <div className="my-10 p-6 bg-blue-500/5 border border-blue-500/20 rounded-2xl flex gap-4">
                         <RefreshCcw className="text-blue-500 w-6 h-6 shrink-0" />
                         <div>
-                            <h4 className="text-blue-500 font-bold m-0 uppercase text-sm">Strategy Rebuild</h4>
-                            <p className="text-sm mt-2 mb-0 italic text-slate-400">
+                            <h4 className="text-blue-500 font-bold m-0 uppercase text-sm font-mono">Strategy Rebuild</h4>
+                            <p className="text-sm mt-2 mb-0 italic text-slate-400 font-mono">
                                 [Automation] → [Manual Verification & Deep Analysis]
-                            </p>
-                            <p className="text-sm mt-2 mb-0">
-                                1円単位の還元率に拘る現在のBic-Savingのスタイルは、この「機械に頼り切ったことへの反省」から生まれています。
                             </p>
                         </div>
                     </div>
 
                     <h2 id="section3">3. 沈没から得た、真の「資産」</h2>
                     <p>
-                        <strong>pbic.info</strong> というドメインは沈没しました。しかし、その残骸から拾い上げた「教訓」こそが、今の私を支えています。
-                        「アルゴリズムに依存しない価値とは何か？」
-                        それは、ユーザーが本当に求めている「正しいデータ」を、誠実に提供し続けること。
-                        深夜の教室で、一人静かにExcelと格闘し、還元率のシミュレーションを繰り返す日々。
-                        月200万という幻影を追いかけるのをやめた時、私はようやく「本当の意味でのエンジニアリング」を理解したのかもしれません。
+                        帝国の崩壊は、終わりではありませんでした。
+                        それは、より強固で、より誠実な「新しい城（Bic-Saving）」を築くための、更地化だったのです。
                     </p>
 
                     <div className="my-10 p-6 bg-slate-500/5 border border-slate-800 rounded-2xl flex gap-4 font-mono text-xs overflow-hidden">
@@ -122,19 +111,10 @@ export default function RebuildLogsVol4() {
                         <div className="w-full overflow-x-auto text-slate-400">
                             <span className="text-slate-500 leading-none">// Core Philosophy Migration</span>
                             <ul className="mt-2 space-y-1 list-none p-0">
-                                <li>- Old: Quantity over Quality (Spammy)</li>
-                                <li>- New: Data Accuracy over Ranking (Ethical)</li>
-                                <li>- Result: Resilience against Algorithm Changes</li>
                                 <li>- Status: <span className="text-blue-400 font-bold underline italic">Bic-Saving Core Logic Initialized</span></li>
                             </ul>
                         </div>
                     </div>
-
-                    <p>
-                        帝国の崩壊は、終わりではありませんでした。
-                        それは、より強固で、より誠実な「新しい城（Bic-Saving）」を築くための、更地化だったのです。
-                    </p>
-
                 </div>
 
                 {/* 🧭 フッターナビゲーション */}
@@ -147,14 +127,22 @@ export default function RebuildLogsVol4() {
                             <span className="text-[10px] text-blue-500 font-mono block mb-2 flex items-center gap-1">
                                 <ChevronLeft className="w-3 h-3" /> PREVIOUS EPISODE
                             </span>
-                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors">
+                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors text-sm">
                                 Vol.3 月200万の絶頂とバックリンク
                             </span>
                         </Link>
                         
-                        <div className="p-6 rounded-2xl border border-dashed border-slate-800 flex items-center justify-center text-slate-600 text-sm italic font-mono text-center">
-                            FINAL EPISODE:<br/>REBORN AS BIC-SAVING
-                        </div>
+                        <Link 
+                            href="/series/rebuild-logs/vol-5" 
+                            className="group p-6 rounded-2xl border border-slate-800 bg-white/5 hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all text-right"
+                        >
+                            <span className="text-[10px] text-emerald-500 font-mono block mb-2 flex items-center justify-end gap-1">
+                                NEXT EPISODE <ChevronRight className="w-3 h-3" />
+                            </span>
+                            <span className="text-white font-bold group-hover:text-emerald-400 transition-colors text-sm">
+                                Vol.5 再生：Bic-Savingへの昇華
+                            </span>
+                        </Link>
                     </div>
 
                     <div className="mt-12 text-center">

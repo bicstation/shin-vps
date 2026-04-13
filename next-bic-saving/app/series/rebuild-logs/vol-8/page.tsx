@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🛰️ REBUILD_LOGS_VOL_8_V1.2 [FINAL_REVISION]
+ * 🛰️ REBUILD_LOGS_VOL_8_V1.3 [FINAL_REVISION]
  * 🛡️ Project: Bic-Saving / Rebuild Logs
  * 💎 Purpose: 「リッター7円引き」を実現する多層還元アルゴリズムの構築
  * =====================================================================
@@ -17,9 +17,7 @@ import {
     Clock, 
     User, 
     Fuel,
-    CreditCard,
     Zap,
-    Calculator,
     ArrowDownToLine,
     Layers
 } from 'lucide-react';
@@ -78,7 +76,7 @@ export default function RebuildLogsVol8() {
                     <div className="my-10 p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
                         <div className="flex items-center gap-4 mb-4">
                             <Fuel className="text-emerald-500 w-6 h-6" />
-                            <h4 className="text-emerald-500 font-bold m-0 uppercase text-sm">Gasoline Discount Stack</h4>
+                            <h4 className="text-emerald-500 font-bold m-0 uppercase text-sm font-mono">Gasoline Discount Stack</h4>
                         </div>
                         <ul className="text-sm space-y-3 m-0 p-0 list-none font-mono">
                             <li className="flex justify-between border-b border-white/5 pb-1">
@@ -93,7 +91,7 @@ export default function RebuildLogsVol8() {
                                 <span>3. SMBC V-Point / d-Point</span> 
                                 <span className="text-emerald-400">-2 JPY (eq)</span>
                             </li>
-                            <li className="font-bold flex justify-between pt-2 text-white">
+                            <li className="font-bold flex justify-between pt-2 text-white border-t border-emerald-500/30">
                                 <span>TOTAL OPTIMIZED</span> 
                                 <span className="text-emerald-400 underline decoration-double">-7 JPY / Liter</span>
                             </li>
@@ -111,7 +109,7 @@ export default function RebuildLogsVol8() {
                     <h2 id="section3">3. セルフバックという名の「開発資金」</h2>
                     <p>
                         これらのカードを揃える際も、アフィリエイターの知恵を忘れません。
-                        A8.netなどのASPを通じ、カード発行そのものを「セルフバック（自己アフィリエイト）」として報酬に変える。
+                        ASPを通じ、カード発行そのものを「セルフバック（自己アフィリエイト）」として報酬に変える。
                         クレジットカードを発行するだけで現金を獲得し、そのカードを使って日々の支出から数％をもぎ取り、証券取引で複利運用する。
                         これは「節約」を超えた、**「個人レベルの財務ハック」**に他なりません。
                     </p>
@@ -119,13 +117,13 @@ export default function RebuildLogsVol8() {
                     <div className="my-10 grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
                             <ArrowDownToLine className="w-8 h-8 text-blue-500 mb-3" />
-                            <div className="text-lg font-bold text-white">Self-Back</div>
-                            <div className="text-xs text-slate-500">Reward from ASP (Instant ROI)</div>
+                            <div className="text-lg font-bold text-white font-mono">Self-Back</div>
+                            <div className="text-xs text-slate-500 font-mono">Reward from ASP (Instant ROI)</div>
                         </div>
                         <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl">
                             <Layers className="w-8 h-8 text-yellow-500 mb-3" />
-                            <div className="text-lg font-bold text-white">Stacking Logic</div>
-                            <div className="text-xs text-slate-500">Maximum return by layering protocols.</div>
+                            <div className="text-lg font-bold text-white font-mono">Stacking Logic</div>
+                            <div className="text-xs text-slate-500 font-mono">Maximum return by layering protocols.</div>
                         </div>
                     </div>
 
@@ -141,7 +139,7 @@ export default function RebuildLogsVol8() {
                             <span className="text-[10px] text-blue-500 font-mono block mb-2 flex items-center gap-1">
                                 <ChevronLeft className="w-3 h-3" /> PREVIOUS EPISODE
                             </span>
-                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors">
+                            <span className="text-white font-bold group-hover:text-blue-400 transition-colors text-sm">
                                 Vol.7 節約は負けないアフィリエイト
                             </span>
                         </Link>
@@ -153,9 +151,15 @@ export default function RebuildLogsVol8() {
                             <span className="text-[10px] text-emerald-500 font-mono block mb-2 flex items-center justify-end gap-1">
                                 NEXT EPISODE <ChevronRight className="w-3 h-3" />
                             </span>
-                            <span className="text-white font-bold group-hover:text-emerald-400 transition-colors">
+                            <span className="text-white font-bold group-hover:text-emerald-400 transition-colors text-sm">
                                 Vol.9 E-E-A-T STRATEGY IN AI ERA
                             </span>
+                        </Link>
+                    </div>
+
+                    <div className="mt-12 text-center">
+                        <Link href="/series/rebuild-logs" className="text-xs font-mono text-slate-500 hover:text-white transition-colors">
+                            BACK TO SERIES INDEX
                         </Link>
                     </div>
                 </footer>
