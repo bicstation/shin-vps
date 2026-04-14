@@ -2,21 +2,22 @@
 /**
  * =====================================================================
  * 📋 BICSTATION PC製品一覧 (Product Listing)
- * 🛡️ Maya's Logic: 物理構造 v3.2 / Next.js 15 対応版
+ * 🛡️ Maya's Logic: 物理構造 v3.3 / Next.js 15 対応版 [Fixed: Sort Pipeline]
  * 物理パス: app/product/page.tsx
  * =====================================================================
  */
+// next-bicstation/app/product/page.tsx
 
 import React, { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { Metadata } from 'next';
 
-// ✅ 修正ポイント 1: インポートパスを物理構造に合わせる
+// ✅ インポートパスを物理構造に合わせる
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import Pagination from '@/shared/components/molecules/Pagination';
 import ProductSortSelector from '@/shared/components/molecules/ProductSortSelector';
 
-// ✅ 修正ポイント 2: API関数のパス修正 (catalog版と合わせる)
+// ✅ API関数のパス
 import { fetchPCProducts } from '@/shared/lib/api/django/pc';
 
 import styles from './ProductsPage.module.css';
@@ -71,24 +72,23 @@ async function ProductsPageContent({ searchParams }: PageProps) {
     const limit = 20;
     const offset = (currentPage - 1) * limit;
 
-    // 🌐 ホスト名を取得（resolveApiUrl の判定に使用）
+    // 🌐 ホスト名を取得
     const headerList = await headers();
     const host = headerList.get('host') || '';
 
-    // 2. 共通パイプラインを使って製品データを取得
-    // catalogページと同様に fetchPCProducts を使用
+    // 2. 【修正点】fetchPCProducts に currentSort を渡す
+    // ※ API側の定義に合わせて引数の順番を確認してください
     const { results, count } = await fetchPCProducts(
         searchQuery, 
         offset, 
         limit, 
-        currentMaker || '', // フィルタとしてメーカーを渡す
-        host
+        currentMaker || '', 
+        host,
+        currentSort // 🔥 ここが抜けていたためソートが反映されませんでした
     ).catch((e) => {
         console.error("[Product List API Error]:", e);
         return { results: [], count: 0 };
     });
-
-    const totalPages = Math.ceil(count / limit);
 
     return (
         <main className={styles.container}>
@@ -132,7 +132,7 @@ async function ProductsPageContent({ searchParams }: PageProps) {
             {/* 📑 フッター・ページネーション */}
             <footer className={styles.footer}>
                 <Pagination 
-                    currentOffset={offset} // catalog版に合わせて引数名を統一
+                    currentOffset={offset}
                     limit={limit}
                     totalCount={count}
                     baseUrl="/product"
