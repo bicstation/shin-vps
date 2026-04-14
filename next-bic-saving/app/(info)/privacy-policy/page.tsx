@@ -1,26 +1,23 @@
-export const dynamic = "force-dynamic"; // ✅ 追加
-
+// app/privacy-policy/page.tsx
 import { Metadata } from 'next';
-import { Suspense } from 'react'; // ✅ Suspenseをインポート
-import PrivacyContent from './PrivacyContent';
+import { Suspense } from 'react';
+import PrivacyPolicyContent from './PrivacyPolicyContent';
 
-// ✅ サーバーサイドでメタデータを定義（ここは変更なし）
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
-  title: 'Privacy & Disclosure | BICSTATION',
-  description: 'BICSTATIONの運営方針、個人情報保護、およびアフィリエイト広告利用に関する法的開示情報です。',
+  title: 'プライバシーポリシー | BIC-SAVING',
+  description: 'BIC-SAVING（ビック的節約生活）における個人情報の取り扱い、Cookieの使用、およびデータ保護方針について説明します。',
 };
 
 export default function PrivacyPolicyPage() {
   return (
-    // ✅ PrivacyContent の中で useSearchParams を使っているため、ここでラップが必要
     <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-slate-500 font-mono text-xs animate-pulse uppercase tracking-widest">
-          Loading Privacy Policy...
-        </div>
+      <div className="p-20 text-center text-emerald-500 min-h-screen flex items-center justify-center bg-black font-mono text-xs uppercase tracking-widest">
+        <span className="animate-pulse">Loading Privacy Protocol...</span>
       </div>
     }>
-      <PrivacyContent />
+      <PrivacyPolicyContent />
     </Suspense>
   );
 }

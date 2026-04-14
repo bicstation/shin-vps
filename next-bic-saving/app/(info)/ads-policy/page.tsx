@@ -1,19 +1,20 @@
-export const dynamic = "force-dynamic"; // ✅ これを追加
-
+// app/adspolicy/page.tsx
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import AdsPolicyPageContent from './AdsPolicyContent'; // 中身をインポート
+import AdsPolicyPageContent from './AdsPolicyContent';
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: 'Ads Policy & Disclaimer | BICSTATION',
-  description: 'BICSTATIONの運営を支える広告の仕組みと、免責事項に関する重要なガイドラインです。',
+  title: '広告ポリシーと免責事項 | BIC-SAVING',
+  description: 'BIC-SAVING（ビック的節約生活）の広告運用、アフィリエイトプログラムの利用、および免責事項に関する重要事項を掲載しています。',
 };
 
 export default function AdsPolicyPage() {
   return (
     <Suspense fallback={
-      <div className="p-20 text-center text-slate-400 min-h-screen flex items-center justify-center bg-slate-950 font-mono text-xs uppercase tracking-widest">
-        <span className="animate-pulse">Loading Policy...</span>
+      <div className="p-20 text-center text-emerald-500 min-h-screen flex items-center justify-center bg-black font-mono text-xs uppercase tracking-widest">
+        <span className="animate-pulse">Loading Compliance Data...</span>
       </div>
     }>
       <AdsPolicyPageContent />

@@ -1,99 +1,127 @@
 "use client";
 
-// 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
+/**
+ * 🛰️ BIC-SAVING: About Page (Client Component)
+ * 修正内容:
+ * - Next.js 15 の useSearchParams 警告を Suspense 境界で回避
+ * - ガジェット軸から「技術的節約・家計デバッグ」軸へ内容を全面刷新
+ * - E-E-A-T (経験・専門性・権威性・信頼性) を強化するライティング
+ */
+
 export const dynamic = "force-dynamic";
 
 import React, { Suspense } from 'react';
-// ✅ 修正ポイント: useSearchParams を明示的にインポート
 import { useSearchParams } from 'next/navigation';
+import { 
+    ShieldCheck, 
+    Code, 
+    TrendingUp, 
+    Zap, 
+    AlertCircle, 
+    HeartHandshake 
+} from 'lucide-react';
 import StaticPageLayout from '@shared/components/templates/StaticPageLayout';
 
-// ❌ export const metadata = { ... } は削除しました。
-// "use client" のファイルには置けないため、ビルドエラーの原因になります。
-// 必要であれば layout.tsx か、別の非クライアントファイルで定義してください。
-
 /**
- * 💡 ページのメインコンテンツ部分を分離
+ * 💡 ページのメインコンテンツ
  */
 function AboutPageContent() {
-  // ✅ 修正ポイント: ここで useSearchParams を呼び出すことで Suspense 境界を確定
+  // useSearchParamsを呼び出すことで、親のSuspense境界が機能します
   const searchParams = useSearchParams();
 
   const toc = [
-    { id: 'mission', text: 'BICSTATIONのミッション' },
-    { id: 'origin', text: '設立の背景：ガジェット選びの課題' },
-    { id: 'editorial-policy', text: '編集・レビュー方針' },
-    { id: 'data-reliability', text: 'APIを活用したデータの正確性' },
-    { id: 'transparency', text: '収益と透明性について' },
-    { id: 'future', text: '今後の展望' },
+    { id: 'mission', text: 'BIC-SAVINGのミッション' },
+    { id: 'debug', text: '家計を「デバッグ」するという考え方' },
+    { id: 'editorial-policy', text: '一次情報と検証方針' },
+    { id: 'tech-stack', text: '技術（API/VPS）による情報の正確性' },
+    { id: 'transparency', text: '運営の透明性と信頼について' },
+    { id: 'vision', text: '2026年、これからの展望' },
   ];
 
   return (
     <StaticPageLayout 
-      title="About BICSTATION"
-      description="私たちは「納得感のあるガジェット選び」を加速させるための、技術と情報のステーションです。"
-      lastUpdated="2026年1月26日"
+      title="About BIC-SAVING"
+      description="私たちは、技術とロジックを駆使して「家計の脆弱性」を克服する、エンジニアのための家計戦略ステーションです。"
+      lastUpdated="2026年4月14日"
       toc={toc}
     >
       <section id="mission">
-        <h2>1. BICSTATIONのミッション</h2>
+        <div className="flex items-center gap-2 mb-4">
+          <Zap className="text-emerald-500 w-6 h-6" />
+          <h2 className="m-0">1. BIC-SAVINGのミッション</h2>
+        </div>
         <p>
-          「膨大なスペック表と、日々変動する価格。その迷路の中で、ユーザーに最短距離の正解を提示すること。」これがBICSTATIONのミッションです。
+          「複雑化するポイント経済圏、不透明な通信費、乱立するキャッシュレス決済。その迷路にロジックを通し、最短距離の正解を提示すること。」これがBIC-SAVINGのミッションです。
         </p>
         <p>
-          現代のPCパーツや周辺機器の市場は、かつてないほど複雑化しています。同じ名前のグラフィックボードであっても、メーカーや冷却機構、オーバークロック設定によって性能は異なり、価格はAPIを通じて秒単位で動いています。私たちは、最新のWeb技術とデータ解析を駆使し、これら複雑な情報を整理・構造化して提供することで、全てのユーザーが後悔のない選択を行えるプラットフォームを目指しています。
+          現代の家計管理は、かつてないほど高度な「情報戦」となっています。同じ1万円の支出でも、経由するルートや決済カードの組み合わせ（スタック）によって、リターンは数％単位で異なります。私たちは、エンジニアリングの視点でこれら複雑な情報を構造化し、誰もが再現可能な「最適解」を提供することを目指しています。
         </p>
       </section>
 
-      <section id="origin">
-        <h2>2. 設立の背景：ガジェット選びの課題</h2>
+      <section id="debug">
+        <div className="flex items-center gap-2 mb-4">
+          <Code className="text-blue-500 w-6 h-6" />
+          <h2 className="m-0">2. 家計を「デバッグ」するという考え方</h2>
+        </div>
         <p>
-          BICSTATIONが誕生した背景には、運営者自身の「失敗」があります。自作PCを組む際、多くのレビューサイトを巡り、何時間もかけて選んだパーツが、実は最新のファームウェア環境では最適ではなかったり、購入の数時間後に大幅なセールが始まったりといった経験は、誰しも一度はあるはずです。
+          BIC-SAVINGが提唱するのは、家計を一つの「システム」として捉える手法です。
         </p>
         <p>
-          インターネット上には情報が溢れていますが、その多くは「断片的」であり、また「過去の情報」が放置されていることも少なくありません。特に価格とスペックのバランス（コスパ）は、常に流動的です。「今、この瞬間に最適な選択はどれか？」を解決するため、特定のメーカーに偏ることなく、公平かつ客観的なデータを中心に据えたメディアが必要だと確信し、本サイトを立ち上げました。
+          プログラムにバグ（脆弱性）があれば、処理効率は落ち、リソースは浪費されます。家計も同様です。不必要なサブスクリプション、最適化されていない決済ルート、還元率の低い固定費――これらはすべて「家計のバグ」です。私たちは、最新のWeb技術とデータ解析を用いてこれらのバグを特定し、修正（デバッグ）することで、生活の質を落とさずに余剰資金を最大化する戦略を構築しています。
         </p>
       </section>
 
       <section id="editorial-policy">
-        <h2>3. 編集・レビュー方針</h2>
+        <div className="flex items-center gap-2 mb-4">
+          <ShieldCheck className="text-emerald-500 w-6 h-6" />
+          <h2 className="m-0">3. 一次情報と検証方針</h2>
+        </div>
         <p>
-          BICSTATIONにおける情報の鮮度は、私たちの誇りです。記事の執筆にあたっては、以下の3つの厳格なガイドラインを設けています。
+          情報の信頼性は、私たちの生命線です。当サイトでは、以下の厳格なガイドラインを遵守しています。
         </p>
         <ul>
-          <li><strong>データファースト：</strong> 感情的な評価よりも、ベンチマークスコア、実測値、および公表スペックを優先します。</li>
-          <li><strong>フラットな比較：</strong> 高価な製品が必ずしも正義ではありません。用途（ライトユーザーからプロフェッショナルまで）に応じた、価格相応の価値（Value for Money）を徹底的に検証します。</li>
-          <li><strong>情報の更新性：</strong> 過去の記事であっても、市場環境が大きく変わった場合には、APIデータの更新と合わせて注釈を加え、常に「使える情報」であることを維持します。</li>
+          <li><strong>一次情報の徹底：</strong> 運営者自らが実際に契約・使用・検証した実体験に基づかない情報は掲載しません。</li>
+          <li><strong>ロジック優先：</strong> 感情的なお勧めではなく、還元率の計算、シミュレーション、規約の裏付けを優先します。</li>
+          <li><strong>適時更新：</strong> 経済圏のルール変更（改悪・改善）が発生した際は、迅速に記事をアップデートし、常に「今使える」情報を維持します。</li>
         </ul>
       </section>
 
-      <section id="data-reliability">
-        <h2>4. APIを活用したデータの正確性</h2>
+      <section id="tech-stack">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="text-purple-500 w-6 h-6" />
+          <h2 className="m-0">4. 技術による情報の正確性</h2>
+        </div>
         <p>
-          当サイトの最大の特徴は、Amazon、楽天市場、Yahoo!ショッピングといった主要ECプラットフォームのAPI（Application Programming Interface）との高度な連携です。
+          当サイト「BIC-SAVING（技術の駅）」は、その名の通りエンジニアリングによって支えられています。
         </p>
         <p>
-          手動での更新には限界があります。BICSTATIONでは、システムが自動的に最新の価格情報や在庫ステータスを取得・反映するロジックを組んでいます。これにより、レビュー記事内で「現在最安値」と書かれていても、実際に見に行くと高くなっているといった、ユーザーの失望を最小限に抑える仕組みを構築しています。技術によって情報の正確性を担保すること。これが「BICSTATION（技術の駅）」という名に込めた思いでもあります。
+          VPSサーバー（Docker/Next.js/Django）を活用した自社開発のシステムにより、日々変動するキャンペーン情報やポイント還元率を効率的に集計しています。手動更新の限界を技術でカバーし、ユーザーが「記事を読んだ時には既に終わっていた」という失望を最小限に抑える仕組みを追求し続けています。
         </p>
       </section>
 
       <section id="transparency">
-        <h2>5. 収益と透明性について</h2>
+        <div className="flex items-center gap-2 mb-4">
+          <AlertCircle className="text-orange-500 w-6 h-6" />
+          <h2 className="m-0">5. 運営の透明性と信頼について</h2>
+        </div>
         <p>
-          BICSTATIONは、アフィリエイトプログラムによる広告収益によって運営されています。これについて、私たちは隠すことなく公表します。収益は、更なるデータ解析サーバーの維持費、検証用機材の購入、および質の高いコンテンツ制作に還元されます。
+          BIC-SAVINGは、一部アフィリエイトプログラムによる収益によって運営されています。この収益は、検証用の機材購入、サーバー維持費、および情報の精度を高めるための取材・調査費用に還元されます。
         </p>
         <p>
-          「広告収益があるなら、高い商品を売ろうとするのではないか？」という懸念に対して、私たちは「信頼こそが最大の資産」であると回答します。不適切な製品を推奨し、ユーザーの信頼を失うことは、メディアとしての死を意味します。紹介料の有無にかかわらず、良いものは良い、欠点があるものは欠点として明記することが、長期的に当サイトを支持していただける唯一の道だと信じています。
+          私たちは「信頼こそが最大の資産」であると考えます。収益のために不適切な金融商品やサービスを推奨することは、メディアとしての死を意味します。メリットだけでなく、デメリットや隠れたコストも明記することが、長期的に読者の皆様に支持される唯一の道であると確信しています。
         </p>
       </section>
 
-      <section id="future">
-        <h2>6. 今後の展望</h2>
+      <section id="vision">
+        <div className="flex items-center gap-2 mb-4">
+          <HeartHandshake className="text-pink-500 w-6 h-6" />
+          <h2 className="m-0">6. 2026年、これからの展望</h2>
+        </div>
         <p>
-          BICSTATIONは、単なるレビューサイトに留まりません。今後は、個々のユーザーのPC環境を診断し、最適なアップグレードパーツをAIが提案する機能や、ユーザー同士がリアルな使用感を共有できるコミュニティ機能の拡充を予定しています。
+          私たちは単なるブログに留まりません。今後は、個々の支出状況を入力することで最適なカードスタックを提案する「家計診断AI」の実装や、エンジニア同士が独自の節約スクリプトを共有できるコミュニティ機能の拡充を予定しています。
         </p>
         <p>
-          PCやガジェットは、私たちの生活と仕事を拡張する強力なツールです。そのツール選びを、より楽しく、より確実に。BICSTATIONはこれからも、進化し続けるテクノロジーの最前線で、ユーザーをサポートし続けます。
+          技術は、私たちの生活を自由にするための道具です。BIC-SAVINGはこれからも、テクノロジーの最前線で、あなたの「守り」と「攻め」の家計戦略をサポートし続けます。
         </p>
       </section>
     </StaticPageLayout>
@@ -102,13 +130,15 @@ function AboutPageContent() {
 
 /**
  * ✅ ページエントリポイント
- * Suspense境界を作成し、ビルドエラーを回避します。
  */
 export default function AboutPage() {
   return (
     <Suspense fallback={
-      <div style={{ padding: '100px', textAlign: 'center', color: '#888' }}>
-        Loading About Page...
+      <div className="min-h-screen flex items-center justify-center bg-black text-emerald-500 font-mono text-xs uppercase tracking-widest">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          Loading System Identity...
+        </div>
       </div>
     }>
       <AboutPageContent />
