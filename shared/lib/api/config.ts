@@ -1,115 +1,76 @@
-// @ts-nocheck
 /**
  * =====================================================================
- * 🌐 サイト構成管理 (Zenith v23.0 - Multi-Domain Engine)
+ * 🌍 API 環境設定 (shared/lib/api/config.ts)
+ * 🛡️ SHIN-VPS v5.5 [Universal Routing: Local & VPS compatible]
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【ビルドエラー解消】getSiteColor を追加し、UIコンポーネントとの不整合を修正。
- * 2. 【定数エクスポート】siteConfig (デフォルト設定) を明示的に export。
- * 3. 【URL正規化】api_base_url の構築ロジックを最新の Docker 構成に完全同期。
+ * 1. 【ポート競合解消】内部通信を 8000 ポートに完全固定し、8083 への漏れを防止。
+ * 2. 【クエリ重複防止】baseUrl 側での ?site= 付与を廃止。client.ts 側に集約。
+ * 3. 【正規化】末尾スラッシュを徹底的に除去し、エンドポイント結合時のバグを排除。
  * =====================================================================
  */
 
-export interface SiteMetadata {
-  site_group: 'general' | 'adult';
-  origin_domain: string;
-  site_name: string;
-  site_tag: string;
-  site_prefix: string;
-  default_brand: string;
-  api_base_url: string;
-  django_host: string;
-  is_local_env: boolean;
-  is_external: boolean;
-  theme_color: string; // 🎨 追加
-}
+// /home/maya/shin-dev/shin-vps/shared/lib/api/config.ts
+
+import { getSiteMetadata } from '../utils/siteConfig';
+
+/** 🛠️ 実行環境フラグ */
+export const IS_SERVER = typeof window === 'undefined';
 
 /**
- * 🗺️ サイト別マスターマップ
+ * 💡 API 接続設定の解決
  */
-export const SITE_MAP = {
-  'saving': { name: 'ビック的節約生活', tag: 'saving', group: 'general', brand: 'DELL', prod: 'api.bic-saving.com', external: false, prefix: '', color: '#3b82f6' },
-  'avflash': { name: 'AV Flash', tag: 'avflash', group: 'adult', brand: 'DUGA', prod: 'api.avflash.xyz', external: false, prefix: '', color: '#ef4444' },
-  'tiper': { name: 'Tiper.Live', tag: 'tiper', group: 'adult', brand: 'FANZA', prod: 'api.tiper.live', external: false, prefix: '', color: '#f59e0b' },
-  'bicstation': { name: 'Bic Station', tag: 'bicstation', group: 'general', brand: 'DELL', prod: 'api.bicstation.com', external: false, prefix: '', color: '#10b981' },
-  'bic-erog': { name: 'ビックAV動画', tag: 'bic-erog', group: 'adult', brand: 'FANZA', prod: 'api.bic-erog.com', external: true, prefix: '', color: '#ec4899' },
-  'adult-search': { name: 'シークレットXYZ', tag: 'adult-search', group: 'adult', brand: 'FANZA', prod: 'api.adult-search.xyz', external: true, prefix: '', color: '#8b5cf6' },
+export const getWpConfig = (manualHost?: string) => {
+    // 1. 識別子 (ホスト名) の特定
+    const identifier = manualHost || (IS_SERVER ? process.env.NEXT_PUBLIC_SITE_DOMAIN : window.location.hostname);
+
+    // 🛰️ サイトメタデータを取得
+    const meta = getSiteMetadata(identifier || "");
+    const siteTag = meta.site_tag || 'bicstation';
+
+    /**
+     * 🚀 通信先 (baseUrl) の決定
+     * 修正: ここでは「純粋なURL」のみを返し、パラメータ付与は client.ts に任せる
+     */
+    let baseUrl = meta.api_base_url || ""; // デフォルト
+
+    if (IS_SERVER) {
+        /**
+         * 🛡️ サーバーサイド (SSR) 通信
+         * 環境変数 INTERNAL_API_URL が 8083 になっていないか注意。
+         * 指定がない場合は Docker ネットワーク内の django-api-host:8000 を強制。
+         */
+        const internalRoot = process.env.INTERNAL_API_URL 
+            ? process.env.INTERNAL_API_URL.replace(/\/+$/, '')
+            : 'http://django-api-host:8000/api';
+        
+        baseUrl = internalRoot;
+    }
+
+    // 🚨 二重スラッシュやクエリ重複を防ぐため、baseUrl をクリーンな状態に整える
+    // 1. クエリパラメータが含まれている場合は、それ以前の部分を抽出（client.tsとの重複防止）
+    const cleanBaseUrl = baseUrl.split('?')[0].replace(/\/+$/, '');
+
+    return {
+        /** * 🚀 物理的な通信先 (末尾スラッシュ・クエリなし)
+         * SSR時: http://django-api-host:8000/api
+         */
+        baseUrl: cleanBaseUrl, 
+
+        /** 🛡️ Django 識別用 Host 名 (ヘッダー用) */
+        host: meta.django_host || `${siteTag}.com`,
+
+        /** サイト識別用キー (bicstation, tiper 等) */
+        siteKey: siteTag
+    };
 };
 
-/**
- * 💡 サイトメタデータの取得
- */
-export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
-  const isServer = typeof window === "undefined";
-  
-  // 1. ホスト名の判定
-  let hostname = manualHostname;
-  if (!hostname) {
-    hostname = !isServer 
-      ? window.location.hostname 
-      : (process.env.NEXT_PUBLIC_SITE_DOMAIN || 'bicstation.com');
-  }
-  
-  const domain = String(hostname).split('/')[0].split(':')[0].toLowerCase();
+/** 🛠️ Django 直接参照用のベースURL取得 */
+export const getDjangoBaseUrl = () => getWpConfig().baseUrl;
 
-  // 2. サイトキーの決定
-  let siteKey = 'bicstation';
-  if (domain.includes('avflash')) siteKey = 'avflash';
-  else if (domain.includes('tiper')) siteKey = 'tiper';
-  else if (domain.includes('bic-erog')) siteKey = 'bic-erog';
-  else if (domain.includes('adult-search') || domain.includes('adult')) siteKey = 'adult-search';
-  else if (domain.includes('saving')) siteKey = 'saving';
-  else if (domain.includes('bicstation')) siteKey = 'bicstation';
-
-  const cfg = SITE_MAP[siteKey] || SITE_MAP['bicstation'];
-  
-  // 3. 環境判定
-  const isLocalEnv = domain.endsWith('-host') || domain === 'localhost' || domain.includes('192.168.');
-  
-  // Docker 内部通信用のホスト名 (django-v3 サービス名へ固定)
-  const django_host = (isLocalEnv && !cfg.external) ? `api-${siteKey}-host` : cfg.prod;
-
-  // 4. API Base URL の構築
-  let api_base_url = "";
-  if (cfg.external) {
-    api_base_url = `https://${cfg.prod}`;
-  } else if (isServer) {
-    // 🛡️ VPS内部通信ロジック: Docker サービス名 django-v3:8000 を優先
-    // コンテナ間通信は HTTP 経由で行う (SSL証明書エラー回避)
-    api_base_url = isLocalEnv ? `http://127.0.0.1:8083` : `http://django-v3:8000/api`;
-  } else {
-    // クライアントサイド通信
-    api_base_url = isLocalEnv ? `http://localhost:8083` : `https://${django_host}`;
-  }
-
-  return { 
-    site_group: cfg.group, 
-    origin_domain: domain, 
-    site_name: cfg.name, 
-    site_tag: cfg.tag,
-    site_prefix: cfg.prefix, 
-    default_brand: cfg.brand, 
-    api_base_url: api_base_url.replace(/\/api\/?$/, '').replace(/\/$/, ''),
-    django_host, 
-    is_local_env: isLocalEnv, 
-    is_external: cfg.external,
-    theme_color: cfg.color
-  };
+/** 🚀 API 全体設定オブジェクト */
+export const API_CONFIG = {
+    get djangoBase() { return getDjangoBaseUrl(); },
+    get wp() { return getWpConfig(); },
+    timeout: 10000,
 };
-
-/**
- * 🎨 UI用: サイトカラー取得
- * ビルドエラー "getSiteColor is not a function" を防ぐために追加
- */
-export const getSiteColor = (manualHostname?: string): string => {
-  return getSiteMetadata(manualHostname).theme_color;
-};
-
-/**
- * 📦 定数としてのデフォルト設定
- * rss.xml 等で "siteConfig" を import している箇所への対応
- */
-export const siteConfig = getSiteMetadata();
-
-// デフォルトエクスポートも提供
-export default getSiteMetadata;

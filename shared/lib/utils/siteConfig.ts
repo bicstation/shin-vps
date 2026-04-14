@@ -1,12 +1,13 @@
 // @ts-nocheck
 /**
  * =====================================================================
- * 🌐 サイト構成管理 (Zenith v23.0 - Multi-Domain Engine)
+ * 🌐 サイト構成管理 (Zenith v25.0 - Multi-Domain Engine)
  * =====================================================================
  * 🛡️ 修正ポイント:
  * 1. 【ビルドエラー解消】UIが要求する getSiteColor を追加。
  * 2. 【定数エクスポート】rss.xml 等が参照する siteConfig を export。
- * 3. 【SSR通信最適化】サーバーサイド通信時に django-v3 (8000番) を優先。
+ * 3. 【SSR通信最適化】サーバーサイド通信時に django-v3 (8000番) を優先し ECONNREFUSED を回避。
+ * 4. 【関数追加】fetch処理が要求する getDjangoBaseUrl を明示的に export。
  * =====================================================================
  */
 
@@ -21,7 +22,7 @@ export interface SiteMetadata {
   django_host: string;
   is_local_env: boolean;
   is_external: boolean;
-  theme_color: string; // 🎨 追加
+  theme_color: string;
 }
 
 /**
@@ -51,7 +52,6 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
 
   const domain = String(hostname).split('/')[0].split(':')[0].toLowerCase();
 
-  // --- 🎯 siteKey の判定 ---
   let siteKey = 'bicstation';
   if (domain.includes('avflash')) siteKey = 'avflash';
   else if (domain.includes('tiper')) siteKey = 'tiper';
@@ -61,10 +61,8 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
   else if (domain.includes('bicstation')) siteKey = 'bicstation';
 
   const cfg = SITE_MAP[siteKey] || SITE_MAP['bicstation'];
-
   const isLocalEnv = domain.endsWith('-host') || domain === 'localhost' || domain.includes('192.168.');
   
-  // django_host は物理的な通信先ホスト名
   const django_host = (isLocalEnv && !cfg.external) ? `api-${siteKey}-host` : cfg.prod;
 
   let api_base_url = "";
@@ -72,13 +70,12 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     api_base_url = `https://${cfg.prod}`;
   } else if (isServer) {
     /**
-     * 💡 サーバーサイド通信 (SSR/Build時)
-     * Docker 内部ネットワーク (http://django-v3:8000) を優先して高速化。
-     * ローカル環境の場合は 8083 ポートを試行。
+     * 🛡️ サーバーサイド通信 (SSR/Build時)
+     * Docker 内部ネットワーク (http://django-v3:8000) を使用。
+     * 192.168.65.254 (Host側) へのリダイレクトを防ぎ ECONNREFUSED を回避。
      */
-    api_base_url = isLocalEnv ? `http://localhost:8083` : `http://django-v3:8000/api`;
+    api_base_url = isLocalEnv ? `http://django-v3:8000/api` : `http://django-v3:8000/api`;
   } else {
-    // 💡 クライアントサイド通信
     api_base_url = isLocalEnv ? `http://localhost:8083` : `https://${django_host}`;
   }
 
@@ -93,19 +90,26 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
     django_host: django_host,
     is_local_env: isLocalEnv,
     is_external: cfg.external,
-    theme_color: cfg.color // 🎨 追加
+    theme_color: cfg.color
   };
 };
 
 /**
- * 🎨 サイトカラー取得用 (ビルドエラー回避)
+ * 🎨 サイトカラー取得用
  */
 export const getSiteColor = (manualHostname?: string): string => {
   return getSiteMetadata(manualHostname).theme_color;
 };
 
 /**
- * 🏷️ RSS/Metadata 用の定数エクスポート
+ * 🔌 APIフェッチ用 (重要: これがないと TypeError になります)
+ */
+export const getDjangoBaseUrl = (manualHostname?: string): string => {
+  return getSiteMetadata(manualHostname).api_base_url;
+};
+
+/**
+ * 🏷️ RSS/Metadata 用の定数
  */
 export const siteConfig = getSiteMetadata();
 
