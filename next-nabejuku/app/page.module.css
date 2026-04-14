@@ -1,0 +1,242 @@
+/* =====================================================================
+ * 🏗️ [BIC-SAVING-MODERN-CSS] - ZENITH v25.0 
+ * =====================================================================
+ */
+
+ .mainContainer {
+    /* 🎨 ライフスタイル・テック カラーパレット */
+    --background: #ffffff;
+    --foreground: #f8f9fa;
+    --text-primary: #121212;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --accent-emerald: #10b981;
+    --accent-blue: #3b82f6;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --card-bg: #ffffff;
+    --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--background);
+    color: var(--text-primary);
+    overflow-x: hidden;
+  }
+  
+  /* 🛸 ヒーローセクション: 没入感のあるヘッダー */
+  .heroSection {
+    padding: 120px 24px;
+    text-align: center;
+    background: radial-gradient(circle at 50% 50%, #fdfbfb 0%, #ebedee 100%);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .heroContent {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+  }
+  
+  .brandBadge {
+    display: inline-block;
+    padding: 6px 18px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent-emerald);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    border-radius: 2000px;
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+  }
+  
+  .mainTitle {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    margin-bottom: 24px;
+    background: linear-gradient(to bottom, #121212, #4a5568);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .subTitle {
+    font-size: clamp(1rem, 4vw, 1.25rem);
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin: 0 auto 40px;
+    max-width: 650px;
+    text-wrap: balance;
+  }
+  
+  .liveCounter {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: var(--background);
+    border: 1px solid var(--border-color);
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  }
+  
+  .pulseDot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-emerald);
+    border-radius: 50%;
+    position: relative;
+  }
+  
+  .pulseDot::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    border-radius: inherit;
+    animation: sonar 2s infinite;
+  }
+  
+  @keyframes sonar {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(3.5); opacity: 0; }
+  }
+  
+  /* 📰 コンテンツエリア */
+  .contentArea {
+    flex: 1;
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 100px 24px;
+  }
+  
+  /* 🏷️ セクションヘッダー */
+  .sectionHeader {
+    margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .sectionTitle {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  
+  .titleUnderline {
+    width: 40px;
+    height: 5px;
+    background: var(--accent-emerald);
+    border-radius: 10px;
+  }
+  
+  /* ☕ 待機・エラー状態 */
+  .loadingArea {
+    padding: 80px 40px;
+    text-align: center;
+    background: var(--foreground);
+    border-radius: 32px;
+    border: 1px dashed var(--border-color);
+  }
+  
+  .statusBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .loadingIcon {
+    font-size: 2.5rem;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+  }
+  
+  /* 🛡️ 信頼性セクション (About) */
+  .aboutSection {
+    background-color: var(--foreground);
+    padding: 120px 24px;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .aboutCard {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 60px 40px;
+    background: var(--card-bg);
+    border-radius: 40px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+  }
+  
+  /* 👣 フッター */
+  .footer {
+    padding: 80px 24px 40px;
+    background-color: #000000;
+    color: #ffffff;
+  }
+  
+  .footerInner {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+  
+  .copyright {
+    margin-top: 40px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-align: center;
+    opacity: 0.4;
+  }
+  
+  /* 📱 モバイル最適化 */
+  @media (max-width: 768px) {
+    .heroSection { padding: 80px 24px; }
+    .mainTitle { font-size: 2.75rem; }
+    .aboutCard { padding: 40px 24px; }
+    .contentArea { padding: 60px 20px; }
+  }
+  
+  /* 🌙 ダークモード (洗練された深い黒) */
+  @media (prefers-color-scheme: dark) {
+    .mainContainer {
+      --background: #000000;
+      --foreground: #0a0a0a;
+      --card-bg: #0f0f0f;
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --border-color: rgba(255, 255, 255, 0.08);
+    }
+  
+    .heroSection {
+      background: radial-gradient(circle at 50% 50%, #111111 0%, #000000 100%);
+    }
+  
+    .mainTitle {
+      background: linear-gradient(to bottom, #ffffff, #a1a1aa);
+      -webkit-background-clip: text;
+    }
+  
+    .aboutCard {
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+  
+    .liveCounter {
+      background: #0f0f0f;
+      border-color: #222;
+    }
+  }

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v3.9.9.8 (Final Stable Edition)
+# 🛡️ SHIN-VPS v5.4 [Production Complete Edition]
 # ---------------------------------------------------------------------
-# 【修正の核心】
-# 1. Mail Forwarder: ALLOW_EMPTY_SENDER_DOMAINS を追加し、Postfixの
-#    致命的な起動エラーを回避。
-# 2. Healthcheck: exit 0 (Auto-Pass) を維持し、CI/CDの完走を最優先。
-# 3. Next.js 艦隊: Django API への通信識別子 (?site=) を各サービスに統合。
+# 【更新内容】
+# 1. nabejuku.com を独立 Next.js コンテナとして統合。
+# 2. Django (django-v3) の Traefik ルールに api.nabejuku.com を追加。
+# 3. 全ドメインの SSL (websecure) / Traefik 優先順位を最適化。
 # =====================================================================
 
 version: '3.8'
@@ -84,7 +83,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
+      # 🚀 api.nabejuku.com を追加
+      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`, `api.nabejuku.com`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.routers.django-router.priority=2000"
@@ -100,6 +100,35 @@ services:
       shared-proxy:
 
   # --- 3. フロントエンド層 (Next.js 艦隊) ---
+
+  # 🎓 nabejuku.com (独立専用)
+  next-nabejuku-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-nabejuku
+        NEXT_PUBLIC_API_URL: "https://api.nabejuku.com/api"
+    container_name: next-nabejuku-v3
+    restart: always
+    env_file: .env
+    environment:
+      - PROJECT_NAME=next-nabejuku
+      - NEXT_PUBLIC_API_URL=https://api.nabejuku.com/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=nabejuku
+    volumes:
+      - "./next-nabejuku:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.nabejuku-router.rule=Host(`nabejuku.com`, `www.nabejuku.com`)"
+      - "traefik.http.routers.nabejuku-router.entrypoints=websecure"
+      - "traefik.http.routers.nabejuku-router.tls.certresolver=le"
+      - "traefik.http.routers.nabejuku-router.priority=3000"
+    networks:
+      - internal-net
+      - shared-proxy
 
   next-bicstation-v3:
     build:
@@ -221,7 +250,6 @@ services:
       - FORWARD_EXT=support@bicstation.com:${MY_GMAIL_ADDRESS:-bicstation@gmail.com}
       - HOSTNAME=mail.bicstation.com
       - RELAYHOST=
-      # 🛡️ 重要: これを入れないと Postfix がエラーで停止します
       - ALLOW_EMPTY_SENDER_DOMAINS=true
     ports:
       - "25:25"

@@ -1,0 +1,273 @@
+/* =====================================================================
+ * 🏗️ [BIC-SAVING-ARCHIVE-CSS] - SIDEBAR-INTEGRATED EDITION (v12.9.2)
+ * ---------------------------------------------------------------------
+ * 🚀 修正・統合内容:
+ * 1. 【SIDEBAR_SYNC】width: 100% を削除し、親の flex レイアウトに追従。
+ * 2. 【Z-INDEX_FIX】背景を擬似要素に分離し、サイドバーとの重なりを解消。
+ * 3. 【VIEWPORT_OPT】サイドバーの幅を考慮したレスポンシブ・パディング。
+ * ===================================================================== */
+
+.archiveContainer {
+    color: #cbd5e1;
+    min-height: 100vh;
+    /* 💡 width: 100% は削除。親の flex: 1 に任せるか、自動幅にする */
+    width: auto;
+    position: relative;
+    box-sizing: border-box;
+    /* サイドバーとの干渉を防ぐため、左側の余白を微調整 */
+    padding: 2rem 2rem 6rem;
+    font-family: 'JetBrains Mono', 'Inter', monospace;
+    overflow-x: hidden;
+}
+
+/* 🛰️ 背景レイヤー: Container直下の要素として描画せず、背面に配置 */
+.archiveContainer::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: #05070a; /* 深淵の紺黒 */
+    z-index: -1; /* コンテンツより後ろ */
+}
+
+/* --- 🛰️ ヘッダーセクション --- */
+.archiveHeader {
+    border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+    margin-bottom: 4rem;
+    padding-bottom: 2.5rem;
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.65rem;
+    color: #00f2ff;
+    background: rgba(0, 242, 255, 0.08);
+    padding: 5px 14px;
+    border: 1px solid rgba(0, 242, 255, 0.4);
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 8px rgba(0, 242, 255, 0.6);
+    letter-spacing: 2px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pulseDot {
+    width: 7px;
+    height: 7px;
+    background: #00f2ff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #00f2ff;
+    animation: statusPulse 1.5s infinite;
+}
+
+.mainTitle {
+    font-size: clamp(1.8rem, 4vw, 3rem); /* 💡 サイドバー環境に合わせて少しだけスケールダウン */
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    color: #ffffff;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    text-transform: uppercase;
+    font-style: italic;
+    line-height: 1.1;
+}
+
+.subTitle {
+    color: #475569;
+    font-size: 0.8rem;
+    margin-left: 1rem;
+    font-weight: 400;
+    font-style: normal;
+    letter-spacing: 3px;
+}
+
+.statusLine {
+    font-size: 0.7rem;
+    color: #475569;
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+}
+
+.countNum {
+    color: #00f2ff;
+    font-weight: 800;
+}
+
+/* --- 📰 アーカイブグリッド --- */
+.contentGrid {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
+/* --- 🃏 ノードカード --- */
+.nodeCard {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.nodeCard:hover {
+    transform: translateY(-8px);
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 242, 255, 0.1);
+}
+
+/* --- 🖼️ サムネイルエリア --- */
+.cardThumbWrap {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #000;
+}
+
+.cardThumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nodeCard:hover .cardThumb {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+/* 🧪 高速スキャンライン */
+.scanLine {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(to right, transparent, #00f2ff, transparent);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.nodeCard:hover .scanLine {
+    animation: scanAnimation 1.5s linear infinite;
+    opacity: 0.8;
+}
+
+/* --- 📝 カードボディ --- */
+.cardBody {
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cardTitle {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
+    color: #f8fafc;
+}
+
+.cardDescription {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- 🔢 ページネーション --- */
+.paginationWrapper {
+    margin-top: 5rem;
+    padding-top: 3rem;
+    border-top: 1px solid rgba(0, 242, 255, 0.1);
+    display: flex;
+    justify-content: center;
+}
+
+.pageControls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.pageBtn {
+    background: transparent;
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    color: #00f2ff;
+    padding: 10px 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    transition: 0.3s;
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.pageBtn:hover {
+    background: #00f2ff;
+    color: #05070a;
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+}
+
+.pageBtnDisabled {
+    opacity: 0.15;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    color: #475569;
+}
+
+/* --- 🏁 フッターエリア --- */
+.archiveFooter {
+    margin-top: 6rem;
+    text-align: center;
+    padding-bottom: 4rem;
+}
+
+.backBtn {
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    transition: 0.3s;
+    padding: 12px 30px;
+    border: 1px solid transparent;
+}
+
+.backBtn:hover {
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- 🎭 アニメーション --- */
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.2); }
+}
+
+@keyframes scanAnimation {
+    0% { top: -5%; }
+    100% { top: 105%; }
+}
+
+/* --- 📱 レスポンシブ --- */
+@media (max-width: 768px) {
+    .archiveContainer { padding: 2rem 1rem; }
+    .mainTitle { font-size: 1.6rem; }
+    .statusLine { flex-direction: column; gap: 8px; }
+}

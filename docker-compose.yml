@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v5.1 [Final Stability & Routing Edition - Complete]
+# 🛡️ SHIN-VPS v5.3 [Dedicated Domain Edition - Complete]
 # =====================================================================
 
 services:
@@ -55,13 +55,13 @@ services:
         condition: service_healthy
     env_file: .env
     environment:
-      # 🚀 WP自動投稿用ブリッジ設定 (警告抑制と明示的引き渡し)
       - WP_USER=${WP_USER}
       - WP_APP_PASSWORD=${WP_APP_PASSWORD}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.django-api.rule=(Host(`api-saving-host`, `api-bicstation-host`, `api-tiper-host`, `api-avflash-host`) || HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`))"
+      # 🚀 api.nabejuku.com をバックエンドに追加
+      - "traefik.http.routers.django-api.rule=(Host(`api-saving-host`, `api-bicstation-host`, `api-tiper-host`, `api-avflash-host`, `api.nabejuku.com`) || HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`))"
       - "traefik.http.routers.django-api.priority=6000"
       - "traefik.http.routers.django-api.service=django-svc"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
@@ -74,7 +74,35 @@ services:
 
   # --- 3. フロントエンド層 (Next.js 艦隊) ---
 
-  # 🏠 Bic Station (メイン)
+  # 🎓 nabejuku.com (独立専用コンテナ)
+  next-nabejuku-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-nabejuku
+    container_name: next-nabejuku-v3
+    restart: always
+    env_file: .env
+    environment:
+      - PROJECT_NAME=next-nabejuku
+      - NEXT_PUBLIC_SITE_DOMAIN=nabejuku
+      - INTERNAL_API_URL=http://django-v3:8000
+    volumes:
+      - ./next-nabejuku:/usr/src/app
+      - ./shared:/usr/src/app/shared
+      - /usr/src/app/node_modules
+    networks:
+      - shared-proxy
+      - internal-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+      - "traefik.http.routers.nabejuku-router.rule=Host(`nabejuku.com`, `www.nabejuku.com`)"
+      - "traefik.http.routers.nabejuku-router.priority=3000"
+      - "traefik.http.services.nabejuku-svc.loadbalancer.server.port=3000"
+
+  # 🏠 Bic Station
   next-bicstation-v3:
     build:
       context: .

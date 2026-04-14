@@ -1,0 +1,316 @@
+/* =====================================================================
+ * 🏗️ [BIC-SAVING-DETAIL-CSS] - NEON-CORE INTEGRATED EDITION (v12.7.5)
+ * ---------------------------------------------------------------------
+ * 🚀 修正・統合ポイント:
+ * 1. 【解析枠の完全制圧】内部の div/p を幅 100% に強制。
+ * 2. 【シネマティック画像】本文画像に深いシャドウとネオン・ホバーを追加。
+ * 3. 【関連表示統合】RELATED_NODES セクションのグリッド制御を追加。
+ * 4. 【深淵コントラスト】背景 #05070a に対する発光効率を最大化。
+ * ===================================================================== */
+
+.detailContainer {
+    max-width: 1000px; /* 少し余裕を持たせて視認性向上 */
+    margin: 0 auto;
+    padding: 6rem 2rem 10rem;
+    background: transparent;
+    color: #cbd5e1;
+    font-family: 'Inter', 'JetBrains Mono', -apple-system, sans-serif;
+    line-height: 2.2;
+    position: relative;
+    z-index: 10;
+}
+
+/* --- 📋 ヘッダーセクション --- */
+.headerArea {
+    margin-bottom: 6rem;
+    position: relative;
+}
+
+.title {
+    color: #ffffff;
+    font-size: clamp(2.2rem, 6vw, 4.2rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+    border-left: 10px solid #00f2ff;
+    padding-left: 2.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    text-shadow: 0 0 50px rgba(0, 0, 0, 0.6);
+}
+
+.metaInfo {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #475569;
+    margin-top: 3.5rem;
+    letter-spacing: 3px;
+}
+
+.siteBadge {
+    background: #00f2ff;
+    color: #05070a;
+    padding: 4px 16px;
+    font-weight: 900;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+}
+
+/* --- 🖼️ メインビジュアル --- */
+.heroImageWrap {
+    width: 100%;
+    margin: 5rem 0;
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.9);
+}
+
+.heroImage {
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0.75;
+    filter: grayscale(0.1);
+    transition: 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heroImageWrap:hover .heroImage {
+    opacity: 1;
+    filter: grayscale(0);
+    transform: scale(1.03);
+}
+
+/* --- 🧪 特殊ボックス (Summary/Analysis) --- */
+.analysisBox {
+    background: rgba(0, 242, 255, 0.03);
+    border: 1px solid rgba(0, 242, 255, 0.25);
+    padding: 4rem;
+    margin: 7rem 0;
+    position: relative;
+    border-radius: 0 4px 4px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.analysisBox::before {
+    content: "STRATEGIC_ANALYSIS_NODE";
+    position: absolute;
+    top: -14px;
+    left: 30px;
+    background: #05070a;
+    padding: 0 20px;
+    color: #00f2ff;
+    font-size: 0.75rem;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 5px;
+    z-index: 2;
+    text-shadow: 0 0 10px #00f2ff;
+}
+
+/* 🚨 解析枠内の全HTML要素を幅100%に強制上書き */
+.analysisBox div,
+.analysisBox p,
+.analysisBox section {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    color: #f1f5f9 !important;
+    line-height: 2.2 !important;
+}
+
+/* --- 🖋️ 本文コンテンツ (HTML Rendering) --- */
+.contentBody {
+    font-size: 1.2rem;
+    color: #cbd5e1;
+}
+
+.contentBody h2 {
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    font-weight: 900;
+    color: #ffffff;
+    margin: 8rem 0 3.5rem;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(90deg, rgba(0, 242, 255, 0.15), transparent);
+    border-left: 6px solid #00f2ff;
+    font-family: 'JetBrains Mono', monospace;
+    font-style: italic;
+    text-transform: uppercase;
+    box-shadow: -20px 0 40px -20px rgba(0, 242, 255, 0.6);
+}
+
+.contentBody h3 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #f8fafc;
+    margin: 5rem 0 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.contentBody h3::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: #00f2ff;
+    transform: rotate(45deg);
+    box-shadow: 0 0 15px #00f2ff;
+}
+
+.contentBody p {
+    margin-bottom: 3rem;
+    opacity: 0.95;
+    line-height: 2.3;
+}
+
+.contentBody strong {
+    color: #00f2ff;
+    font-weight: 900;
+    text-shadow: 0 0 15px rgba(0, 242, 255, 0.5);
+}
+
+.contentBody img {
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 6rem auto !important;
+    display: block !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9);
+    transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.contentBody img:hover {
+    border-color: #00f2ff;
+    transform: translateY(-5px);
+    box-shadow: 0 50px 100px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 242, 255, 0.1);
+}
+
+/* --- 🛰️ 関連ノードセクション (RELATED_NODES) --- */
+.relatedSection {
+    margin-top: 12rem;
+    padding-top: 6rem;
+    border-top: 1px solid rgba(0, 242, 255, 0.15);
+}
+
+.relatedTitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #00f2ff;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    margin-bottom: 4rem;
+    text-align: center;
+    opacity: 0.6;
+}
+
+.relatedGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 3rem;
+}
+
+/* --- 🛡️ アクションエリア (CTA) --- */
+.actionSection {
+    margin-top: 12rem;
+    padding: 8rem 3rem;
+    background: radial-gradient(circle at top, rgba(0, 242, 255, 0.1), transparent);
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.actionTitle {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    color: #ffffff;
+    margin-bottom: 5rem;
+    font-style: italic;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 5;
+}
+
+.primaryBtn {
+    background: #00f2ff;
+    color: #05070a;
+    padding: 1.6rem 5rem;
+    font-weight: 900;
+    text-decoration: none;
+    font-size: 1rem;
+    letter-spacing: 4px;
+    transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 50px rgba(0, 242, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.primaryBtn:hover {
+    background: #ffffff;
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0, 242, 255, 0.6);
+}
+
+.secondaryBtn {
+    border: 1px solid rgba(0, 242, 255, 0.3);
+    background: rgba(0, 242, 255, 0.05);
+    color: #00f2ff;
+    padding: 1.6rem 5rem;
+    font-weight: 900;
+    text-decoration: none;
+    font-size: 1rem;
+    letter-spacing: 4px;
+    transition: 0.4s;
+    text-transform: uppercase;
+}
+
+.secondaryBtn:hover {
+    background: rgba(0, 242, 255, 0.15);
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+/* --- 🏁 セッション情報 --- */
+.footerMeta {
+    margin-top: 8rem;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-style: italic;
+}
+
+/* --- 📱 レスポンシブ --- */
+@media (max-width: 768px) {
+    .detailContainer { padding: 4rem 1.5rem 8rem; }
+    .title { font-size: 2.5rem; padding-left: 1.5rem; border-left-width: 8px; }
+    .analysisBox { padding: 2.5rem 2rem; }
+    .contentBody h2 { margin-top: 6rem; padding: 1.2rem; }
+    .relatedGrid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .actionSection { padding: 6rem 1.5rem; }
+    .buttonGroup { flex-direction: column; width: 100%; }
+    .primaryBtn, .secondaryBtn { width: 100%; padding: 1.5rem; }
+}

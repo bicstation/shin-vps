@@ -1,0 +1,94 @@
+/**
+ * 🏗️ [BIC-SAVING-LAYOUT-CSS]
+ * ビック的節約生活 専用のレイアウト構造定義
+ * 清潔感のある白背景とゆったりした余白をベースにしています。
+ */
+
+/* 1. 全体を包むラッパー：フッターを最下部に固定 */
+/* [PORTAL] - Management Optimized */
+.bodyWrapper {
+  margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column;
+  padding-top: 70px;
+  background-color: #020617; /* 非常に深いネイビー */
+}
+.adDisclosure {
+  background-color: rgba(15, 23, 42, 0.95);
+  font-size: 10px; color: #38bdf8; text-align: center; padding: 10px 0;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.4); /* ブルー */
+  position: sticky; top: 70px; z-index: 900; backdrop-filter: blur(8px);
+}
+
+/* 3. レイアウトの外枠：中央寄せと最大幅 */
+.layoutContainer {
+  flex: 1; /* コンテンツが少なくてもフッターを下に押し出す */
+  width: 100%;
+  max-width: 1300px; /* 読みやすさを重視し、avflashより少し絞る */
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* 4. サイドバーとメインコンテンツを横並びにする */
+.layoutInner {
+  display: flex;
+  gap: 50px; /* 記事が読みやすいよう、サイドバーとの間に十分な距離をとる */
+  padding: 40px 0;
+}
+
+/* 5. メインコンテンツ領域（右側） */
+.mainContent {
+  flex: 1;
+  min-width: 0; /* 画像やテーブルのはみ出し防止 */
+  animation: fadeInSoft 0.8s ease-out;
+}
+
+/* 6. モバイル対応：レスポンシブ設定 */
+
+/* 1024px以下：タブレットなどではサイドバーを下に回す */
+@media (max-width: 1024px) {
+  .layoutInner {
+    flex-direction: column;
+    gap: 30px;
+    padding: 20px 0;
+  }
+  
+  .layoutContainer {
+    padding: 0 20px;
+  }
+}
+
+/* 768px以下：スマートフォン最適化 */
+@media (max-width: 768px) {
+  .adDisclosure {
+    font-size: 0.7rem;
+    padding: 8px;
+  }
+
+  .layoutContainer {
+    padding: 0 16px;
+  }
+}
+
+/* 7. 節約サイト用の柔らかいフェードイン */
+@keyframes fadeInSoft {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/**
+ * 💡 ユーティリティ: 記事内のカード風ボックス
+ * (page.tsxなどで共通して使う場合を想定)
+ */
+.contentCard {
+  background: #ffffff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
