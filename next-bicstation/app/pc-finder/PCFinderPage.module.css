@@ -1,142 +1,324 @@
-/* /app/pc-finder/PCFinderPage.module.css */
+/* =============================================================================
+   🔍 PC-FINDER BATTLESTATION THEME v3.0
+   ============================================================================= */
 
-.fullWidthContainer {
-  width: 100%;
+.finderLayout {
+  display: flex;
+  height: 100vh;
   background-color: #050505;
   color: #fff;
-  min-height: 100vh;
   font-family: 'Inter', -apple-system, sans-serif;
+  overflow: hidden;
 }
 
-/* 🚀 ヒーローセクション：文字を中央に寄せず、左から大胆に配置 */
-.heroHeader {
-  padding: 100px 5% 60px;
+/* 🛠️ 左サイドバー：高度な制御モジュール */
+.sidebar {
+  width: 360px;
   background: radial-gradient(circle at 0% 0%, #111 0%, #050505 100%);
-  border-bottom: 1px solid #222;
+  border-right: 1px solid #222;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.sidebarInner {
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 🚀 サイドバー上部：ブランドロゴエリア */
+.brandArea {
+  margin-bottom: 50px;
 }
 
 .neonBadge {
-  background: rgba(0, 242, 255, 0.1);
+  display: inline-block;
+  background: rgba(0, 242, 255, 0.05);
   color: #00f2ff;
   padding: 4px 12px;
   border-radius: 2px;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.2em;
-  border: 1px solid rgba(0, 242, 255, 0.3);
+  border: 1px solid rgba(0, 242, 255, 0.2);
+  margin-bottom: 12px;
+  text-transform: uppercase;
 }
 
-.heroTitle {
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
+.sidebarTitle {
+  font-size: 2.8rem;
   font-weight: 900;
-  margin: 20px 0 10px;
   line-height: 0.9;
-  letter-spacing: -0.04em;
-  background: linear-gradient(to bottom, #fff, #666);
+  letter-spacing: -0.05em;
+  background: linear-gradient(to bottom, #fff 40%, #444 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  margin: 0;
 }
 
-/* 🛠️ コントロールパネル：浮かび上がるガラス感 */
-.controlPanel {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(5, 5, 5, 0.8);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid #222;
-  padding: 20px 5%;
+/* ⚙️ フィルターセクション */
+.filterSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 35px;
 }
 
-.filterRow {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr; /* 配置を固定してプロっぽく */
-  gap: 30px;
-  align-items: end;
-}
-
-.inlineLabel {
+.controlGroup label {
   display: block;
   font-size: 0.7rem;
   color: #666;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.accentText {
+  color: #00f2ff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+}
+
+/* スライダー：極細サイバーライン */
+.cyberRange {
+  width: 100%;
+  height: 2px;
+  background: #222;
+  accent-color: #00f2ff;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+/* セレクトボックス：漆黒のミニマリズム */
+.selectWrapper select {
+  width: 100%;
+  background: #0a0a0a;
+  border: 1px solid #222;
+  color: #eee;
+  padding: 12px 15px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selectWrapper select:focus {
+  border-color: #00f2ff;
+  background: #111;
+  outline: none;
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+}
+
+/* トグルボタン：チップスタイル */
+.toggleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toggle, .toggleActive {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+}
+
+.toggle {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  color: #555;
+}
+
+.toggle:hover {
+  border-color: #444;
+  color: #888;
+}
+
+.toggleActive {
+  background: #00f2ff;
+  border: 1px solid #00f2ff;
+  color: #000;
+  box-shadow: 0 0 25px rgba(0, 242, 255, 0.3);
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* 📊 スタッツ＆リセット */
+.statsArea {
+  margin-top: auto;
+  padding-top: 30px;
+  border-top: 1px solid #222;
+}
+
+.statLine {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+.statValue {
+  color: #fff;
   font-weight: 700;
 }
 
-/* スライダーを細く、モダンに */
-.modernRange {
+.resetButton {
   width: 100%;
-  height: 2px;
-  background: #333;
-  accent-color: #00f2ff;
-  cursor: pointer;
-}
-
-.minimalSelect {
-  width: 100%;
-  background: #111;
-  border: 1px solid #333;
-  color: #fff;
   padding: 12px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  transition: border 0.2s;
-}
-
-.minimalSelect:focus {
-  border-color: #00f2ff;
-  outline: none;
-}
-
-/* チップ：余計な枠を消し、光らせる */
-.chipRow {
-  margin-top: 25px;
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.chip, .chipActive {
-  padding: 8px 20px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  background: transparent;
+  border: 1px solid #222;
+  color: #444;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.chip {
-  background: #111;
-  border: 1px solid #222;
-  color: #888;
-}
-
-.chipActive {
-  background: #00f2ff;
-  border: 1px solid #00f2ff;
+.resetButton:hover {
+  background: #fff;
   color: #000;
-  box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+  border-color: #fff;
 }
 
-.counterDisplay {
-  margin-left: auto;
+/* 📦 メインコンテンツエリア：広大なギャラリー */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #050505;
+  position: relative;
+}
+
+/* コンテンツヘッダー */
+.contentHeader {
+  padding: 40px 5% 20px;
+  background: linear-gradient(to bottom, #050505, transparent);
+  z-index: 10;
+}
+
+.breadcrumb {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.9rem;
+  font-size: 0.65rem;
+  color: #333;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* スクロール可能なグリッドエリア */
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 5% 100px;
+  scrollbar-width: thin;
+  scrollbar-color: #222 transparent;
+}
+
+.scrollArea::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollArea::-webkit-scrollbar-thumb {
+  background: #222;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 40px;
+}
+
+/* 💀 スケルトンローディング：鼓動するようなアニメーション */
+.skeletonCard {
+  height: 400px;
+  background: #0a0a0a;
+  border: 1px solid #111;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonCard::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: linear-gradient(90deg, transparent, #111, transparent);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* 🔍 データなしの状態 */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  opacity: 0.2;
+}
+
+.emptyState h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
   color: #444;
 }
 
-.counterDisplay strong {
-  color: #fff;
-}
-
-/* 📦 ギャラリー：余白をたっぷりと */
-.mainGallery {
-  padding: 60px 5%;
-}
-
-.productGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 40px;
+/* 📱 レスポンシブ対応：サイドバーを上部に（モバイル時） */
+@media (max-width: 1024px) {
+  .finderLayout {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #222;
+  }
+  .sidebarInner {
+    padding: 40px 5%;
+  }
+  .scrollArea {
+    overflow-y: visible;
+  }
 }
