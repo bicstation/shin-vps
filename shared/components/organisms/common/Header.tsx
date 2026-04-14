@@ -82,21 +82,21 @@ export default function Header() {
      * 🛠️ サイト別「ガイド」メニュー動的生成
      */
     const dynamicGuideLinks = useMemo(() => {
-        switch (site.site_name) {
-            case 'ビック的節約生活':
+        switch (site.site_tag) {
+            case 'saving':
                 return [
                     { label: '💳 クレジットカード', href: '/guide/card' },
                     { label: '📈 証券・FX口座', href: '/guide/broker' },
                     { label: '📱 格安SIM比較', href: '/guide/sim' },
                 ];
-            case 'Bic Station':
+            case 'bicstation':
                 return [
                     { label: '🔥 BTOセール比較', href: '/guide/bto' },
                     { label: '📊 パーツ別コスパ表', href: '/guide/parts' },
                     { label: '🛒 周辺機器・底値', href: '/guide/peripherals' }
                 ];
-            case 'Tiper':
-            case 'AV Flash':
+            case 'tiper':
+            case 'avflash':
                 return [
                     { label: '🎯 マッチング解析', href: '/guide/matching' },
                     { label: '📺 ライブチャット案内', href: '/guide/live-chat' },
@@ -123,10 +123,10 @@ export default function Header() {
     const menuConfig = {
         col1: {
             title: isAdult ? '🔥 注目' : '🔍 コンテンツ',
-            links: site.site_name === 'なべ塾' ? [
+            links: site.site_name === 'saving' ? [
                 { label: '技術ブログ', href: '/post' }, 
                 { label: 'ポートフォリオ', href: '/portfolio' }
-            ] : site.site_name === 'Bic Station' ? [
+            ] : site.site_name === 'bicstation' ? [
                 { label: 'PC性能診断', href: '/pc-finder' }, 
                 { label: 'おすすめPC', href: '/ranking/popularity' }
             ] : [
