@@ -46,7 +46,8 @@ function FooterContent({ debugData }: FooterProps) {
         return <footer className={styles.footer} style={{ height: '300px', visibility: 'hidden' }} />;
     }
 
-    const siteColor = getSiteColor(site.site_name);
+    // 修正: site_name ではなく origin_domain もしくは siteKey で取得
+    const siteColor = getSiteColor(site.origin_domain);
     const isDebugMode = searchParams.get('debug') === 'true';
     
     const isLocal = typeof window !== 'undefined' 
@@ -55,19 +56,21 @@ function FooterContent({ debugData }: FooterProps) {
 
     /**
      * 🛰️ SHIN CORE LINX - NETWORK 定義
-     * 組織名変更に伴い、セクション名も SHIN CORE LINX へ統合
+     * なべ塾 (Port 3005) を追加
      */
     const networkSites = [
-        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#00f2ff', isAdult: false },
-        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#ff9900', isAdult: false },
-        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#e60012', isAdult: true },
-        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#d4af37', isAdult: true },
+        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#10b981', isAdult: false },
+        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#3b82f6', isAdult: false },
+        { name: 'なべ塾', domain: 'nabejuku.com', port: 3005, color: '#6366f1', isAdult: false },
+        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#ef4444', isAdult: true },
+        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#f59e0b', isAdult: true },
     ];
 
     /**
      * 🛡️ AdSense Safety Logic
+     * 現在のサイトが一般（general）の場合、アダルトサイトへのリンクを表示しない
      */
-    const currentIsAdultSite = networkSites.find(s => s.name === site.site_name)?.isAdult || false;
+    const currentIsAdultSite = site.site_group === 'adult';
     
     const visibleNetworkSites = networkSites.filter(targetSite => {
         if (!currentIsAdultSite && targetSite.isAdult) return false;
@@ -78,33 +81,33 @@ function FooterContent({ debugData }: FooterProps) {
         return isLocal ? `http://localhost:${s.port}` : `https://${s.domain}`;
     };
 
+    /**
+     * 📝 各サイト固有のコンテンツ設定
+     */
     const siteConfigs: Record<string, any> = {
         'Bic Station': {
             desc: "ハードウェア性能の真実を数値化。最新PCスペック診断とBTOメーカー比較で、最適な1台を提案します。",
-            suffix: 'Performance Registry',
             editor: 'Maya / SHIN CORE LINX 統括',
             editorDesc: 'サーバーエンジニア。自作PCと自動化スクリプトをこよなく愛するテックマニア。'
         },
-        'Bic Saving': {
+        'ビック的節約生活': {
             desc: "「賢く買う」をAIがサポート。主要ECサイトの価格推移とポイント還元率をリアルタイムに解析します。",
-            suffix: 'Smart Saving Index',
             editor: 'Maya / SHIN CORE LINX 統括',
             editorDesc: 'データ解析エンジニア。APIを駆使した価格監視とポイ活の自動化が専門。'
         },
         'AV Flash': {
             desc: "圧倒的なアーカイブ量を誇る情報ポータル。詳細なメタデータ解析で、最高の視聴体験をサポートします。",
-            suffix: 'Ultimate Movie Registry',
             editor: 'Maya / SHIN CORE LINX 統括',
             editorDesc: '大規模データベース構築を得意とするエンジニア。膨大なデータの構造化がライフワーク。'
         },
-        'Tiper': {
+        'Tiper.Live': {
             desc: "大人のためのプレミアム・ガイド。AIソムリエがあなたの感性に響く最高の1本をエスコートします。",
-            suffix: 'Tactical Archive Interface',
             editor: 'Maya / SHIN CORE LINX 統括',
             editorDesc: 'AIレコメンドエンジンの開発者。感性を数値化するアルゴリズムを研究中。'
         }
     };
 
+    // サイト名で設定を取得。見つからなければ Bic Station をデフォルトに。
     const config = siteConfigs[site.site_name] || siteConfigs['Bic Station'];
 
     return (
@@ -121,7 +124,9 @@ function FooterContent({ debugData }: FooterProps) {
                     <div className={styles.editorProfile}>
                         <h4 className={styles.miniTitle}>PRODUCED BY</h4>
                         <div className={styles.editorFlex}>
-                            <div className={styles.editorIcon}>M</div>
+                            <div className={styles.editorIcon} style={{ backgroundColor: siteColor }}>
+                                {config.editor.charAt(0)}
+                            </div>
                             <div>
                                 <p className={styles.editorName}>{config.editor}</p>
                                 <p className={styles.editorText}>{config.editorDesc}</p>
@@ -176,7 +181,7 @@ function FooterContent({ debugData }: FooterProps) {
                 </div>
             </div>
 
-            {/* Debug Section (Optional) */}
+            {/* Debug Section */}
             {isDebugMode && debugData && (
                 <div className={styles.debugContainer}>
                     <SystemDiagnosticHero

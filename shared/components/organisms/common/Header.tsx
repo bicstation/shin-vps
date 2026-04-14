@@ -15,9 +15,9 @@ import styles from './Header.module.css';
  * 🛡️ Maya's Logic: ハイブリッド・アイデンティティ確定ヘッダー (完全版)
  * ---------------------------------------------------------------------
  * 🚀 更新内容:
- * 1. 各ドメインの guide/ リンクを動的に生成し、ドロップダウンへ統合。
- * 2. BIC STATION 用のガイド構成（BTO/周辺機器/パーツ）を追加。
- * 3. SSR 時のアイデンティティ解決を維持しつつ、ナビゲーションを強化。
+ * 1. 【nabejuku統合】なべ塾専用の技術ガイド・ポートフォリオリンクを追加。
+ * 2. 【AdSense審査対応】特商法、ポリシー、運営者情報をサポート列に拡充。
+ * 3. 【UI最適化】サイトごとのタグラインと動的メニューの整合性を強化。
  * =====================================================================
  */
 export default function Header() {
@@ -75,7 +75,7 @@ export default function Header() {
         return <header className={styles.header} style={{ height: '70px', visibility: 'hidden' }} />;
     }
 
-    const themeColor = getSiteColor(site.site_name);
+    const themeColor = site.theme_color;
     const isAdult = site.site_group === 'adult';
 
     /**
@@ -83,11 +83,17 @@ export default function Header() {
      */
     const dynamicGuideLinks = useMemo(() => {
         switch (site.site_name) {
-            case 'Bic Saving':
+            case 'ビック的節約生活':
                 return [
                     { label: '💳 クレジットカード', href: '/guide/card' },
                     { label: '📈 証券・FX口座', href: '/guide/broker' },
                     { label: '📱 格安SIM比較', href: '/guide/sim' },
+                ];
+            case 'Bic Station':
+                return [
+                    { label: '🔥 BTOセール比較', href: '/guide/bto' },
+                    { label: '📊 パーツ別コスパ表', href: '/guide/parts' },
+                    { label: '🛒 周辺機器・底値', href: '/guide/peripherals' }
                 ];
             case 'Tiper':
             case 'AV Flash':
@@ -96,51 +102,50 @@ export default function Header() {
                     { label: '📺 ライブチャット案内', href: '/guide/live-chat' },
                     { label: '💌 チャットレディ募集', href: '/guide/chat-lady' }
                 ];
-            case 'Bic Station':
-                return [
-                    { label: '🔥 BTOセール・裏技比較', href: '/guide/bto' },
-                    { label: '📊 パーツ別・コスパ分岐点', href: '/guide/parts' },
-                    { label: '🛒 周辺機器・底値リスト', href: '/guide/peripherals' }
-                ];
             default:
                 return [];
         }
     }, [site.site_name]);
 
+    /**
+     * 🛡️ AdSense & 信頼性向上のための共通リンク
+     */
     const supportLinks = [
         { label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge' },
         ...dynamicGuideLinks,
-        { label: 'お問い合わせ', href: '/contact' },
-        { label: '当サイトについて', href: '/about' },
-        { label: 'ご利用ガイド', href: '/guideline' }
+        { label: '---', href: '#' }, // セパレーター用
+        { label: 'ℹ️ 運営者情報', href: '/about' },
+        { label: '🛡️ プライバシーポリシー', href: '/privacy-policy' },
+        { label: '⚖️ 特定商取引法に基づく表記', href: '/legal' },
+        { label: '📧 お問い合わせ', href: '/contact' }
     ];
 
     const menuConfig = {
         col1: {
-            title: isAdult ? '🔥 注目' : '🔍 診断',
-            links: site.site_name === 'Tiper' ? [
-                { label: '艶華ランキング', href: '/ranking' }, 
-                { label: '新人女優', href: '/newface' }
+            title: isAdult ? '🔥 注目' : '🔍 コンテンツ',
+            links: site.site_name === 'なべ塾' ? [
+                { label: '技術ブログ', href: '/post' }, 
+                { label: 'ポートフォリオ', href: '/portfolio' }
             ] : site.site_name === 'Bic Station' ? [
-                { label: 'PC診断', href: '/pc-finder' }, 
+                { label: 'PC性能診断', href: '/pc-finder' }, 
                 { label: 'おすすめPC', href: '/ranking/popularity' }
             ] : [
                 { label: '新着記事', href: '/post' }, 
-                { label: 'ランキング', href: '/ranking' }
+                { label: '人気ランキング', href: '/ranking' }
             ]
         },
         col2: {
             title: isAdult ? '🎞️ カテゴリ' : '📦 ツール',
             links: isAdult ? [
                 { label: '女優名鑑', href: '/ranking/style' }, 
-                { label: 'メーカー名', href: '/maker' }
+                { label: 'メーカー検索', href: '/maker' }
             ] : [
                 { label: 'AI性能比較', href: '/ranking' }, 
-                { label: 'カタログ', href: '/catalog' }
+                { label: 'データベース', href: '/catalog' }
             ]
         },
         col3: {
-            title: '✨ ガイド & サポート',
+            title: '✨ ガイド & 法的表記',
             links: supportLinks
         }
     };
@@ -167,7 +172,7 @@ export default function Header() {
                                 {site.site_name === 'Tiper' && "PREMIUM ADULT SOMMELIER"}
                                 {site.site_name === 'Bic Station' && "TOTAL PC SUPPORT"}
                                 {site.site_name === 'AV Flash' && "NEWS & ARCHIVE"}
-                                {site.site_name === 'Saving' && "LIFE HACK & COST CUT"}
+                                {site.site_name === 'ビック的節約生活' && "LIFE HACK & COST CUT"}
                             </span>
                         </div>
                     </div>
@@ -187,9 +192,13 @@ export default function Header() {
                             {activeDropdown === key && (
                                 <div className={styles.dropdown} style={{ borderTop: `3px solid ${themeColor}` }}>
                                     {section.links.map((link, i) => (
-                                        <Link key={i} href={link.href} className={styles.dropdownItem}>
-                                            {link.label}
-                                        </Link>
+                                        link.label === '---' ? (
+                                            <hr key={i} className={styles.divider} />
+                                        ) : (
+                                            <Link key={i} href={link.href} className={styles.dropdownItem}>
+                                                {link.label}
+                                            </Link>
+                                        )
                                     ))}
                                 </div>
                             )}
@@ -235,20 +244,15 @@ export default function Header() {
                         </p>
                         <div className={styles.mobileLinkGrid}>
                             {section.links.map((link, i) => (
-                                <Link key={i} href={link.href} onClick={() => setIsOpen(false)} style={{ color: isAdult ? '#ccc' : '#444' }}>
-                                    {link.label}
-                                </Link>
+                                link.label !== '---' && (
+                                    <Link key={i} href={link.href} onClick={() => setIsOpen(false)} style={{ color: isAdult ? '#ccc' : '#444' }}>
+                                        {link.label}
+                                    </Link>
+                                )
                             ))}
                         </div>
                     </div>
                 ))}
-                
-                {!isLoggedIn && (
-                    <div className={styles.mobileAuthActions}>
-                        <Link href="/login" onClick={() => setIsOpen(false)} className={styles.mobileLoginBtn}>ログイン</Link>
-                        <Link href="/register" onClick={() => setIsOpen(false)} className={styles.mobileRegBtn} style={{ background: themeColor }}>新規登録</Link>
-                    </div>
-                )}
             </div>
         </header>
     );
