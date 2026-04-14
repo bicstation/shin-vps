@@ -1,14 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 /**
- * 🔍 PC Finder クライアントコンポーネント
- * 🛡️ 統合ドメイン: api.bicstation.com 
- * 🛠️ 正解パス: /api/general/pc-products/
+ * 🔍 PC Finder クライアントコンポーネント (Zenith v25.1 準拠版)
+ * 🛡️ 同期対象: fetchPCProducts / getSiteMetadata
  */
 
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig'; // パスは環境に合わせて調整してください
 import styles from './PCFinderPage.module.css';
 
 export default function PCFinderClient() {
@@ -18,74 +18,87 @@ export default function PCFinderClient() {
     const [isLoading, setIsLoading] = useState(true);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    // フィルタ条件 (Django API URL一覧とログに基づき最適化)
+    // フィルタ条件 (Django API Zenith v11.0 の命名規則に準拠)
     const [filters, setFilters] = useState({
         budget: 400000,
         type: 'all',
         brand: 'all',
         npuRequired: false,
         gpuRequired: false,
+        searchQuery: '', // q パラメータ用
     });
-    const [sortBy, setSortBy] = useState('-created_at');
+    const [sortBy, setSortBy] = useState('-created_at'); // attribute パラメータ用
 
     // スライダー即時反映用
     const [tempBudget, setTempBudget] = useState(filters.budget);
 
     /**
-     * API連携ロジック
-     * 接続先: api.bicstation.com
+     * 🌐 API連携ロジック (Zenith v11.0 サービス層のロジックを完全移植)
      */
     const fetchProducts = useCallback(async () => {
-        // 既存のリクエストがあればキャンセル
         if (abortControllerRef.current) abortControllerRef.current.abort();
         const controller = new AbortController();
         abortControllerRef.current = controller;
 
         setIsLoading(true);
         try {
-            // URL一覧の構成に基づいたクエリパラメータの構築
-            const params = new URLSearchParams({
-                site: 'bicstation',        // ログに基づき必須
-                limit: '36',               // 取得件数
+            // 1. サイト構成の取得 (Zenith v25.1 判定)
+            const meta = getSiteMetadata();
+            const siteTag = meta.site_tag || 'bicstation';
+
+            // 2. クエリパラメータの構築 (fetchPCProducts の仕様を再現)
+            const queryParams = new URLSearchParams({
                 offset: '0',
-                max_price: filters.budget.toString(), // 予算
-                attribute: sortBy,         // ログで確認されたソートキー
-                ordering: sortBy,          // 互換性のため両方送付
+                limit: '36',
+                site: siteTag, // 💡 必須: サイト別在庫のキー
             });
 
-            // メーカー・カテゴリの追加
-            if (filters.brand !== 'all') params.append('maker', filters.brand);
-            if (filters.type !== 'all') params.append('type', filters.type);
-            
-            // 特殊フラグ
-            if (filters.npuRequired) params.append('npu', 'true');
-            if (filters.gpuRequired) params.append('gpu', 'true');
+            // site_group の判定 (general 以外なら追加)
+            if (meta.site_group && meta.site_group !== 'general') {
+                queryParams.append('site_group', meta.site_group);
+            } else if (meta.site_tag === 'bicstation') {
+                // 明示的に general を送ることで 0件を回避
+                queryParams.append('site_group', 'general');
+            }
 
-            // 🛠️ 確定したドメインとエンドポイント
-            const API_BASE = 'https://api.bicstation.com';
-            const targetUrl = `${API_BASE}/api/general/pc-products/?${params.toString()}`;
+            // 検索・フィルタ (search, maker, attribute)
+            if (filters.searchQuery) queryParams.append('search', filters.searchQuery);
+            if (filters.brand !== 'all') queryParams.append('maker', filters.brand);
             
-            console.log("📡 [FETCHING]:", targetUrl);
+            // ソートと追加属性を attribute として送信
+            queryParams.append('attribute', sortBy);
 
-            const response = await fetch(targetUrl, {
+            // 予算フィルタ (Djangoが max_price をサポートしている前提)
+            if (filters.budget < 1000000) {
+                queryParams.append('max_price', filters.budget.toString());
+            }
+
+            // 3. API URL の解決 (resolveApiUrl の挙動を再現)
+            // api_base_url は https://api.bicstation.com (末尾/apiなし)
+            const requestUrl = `${meta.api_base_url}/api/general/pc-products/?${queryParams.toString()}`;
+            
+            console.log("📡 [ZENITH_SYNC_FETCH]:", requestUrl);
+
+            const response = await fetch(requestUrl, {
                 signal: controller.signal,
                 headers: { 
                     'Accept': 'application/json',
+                    // getDjangoHeaders 相当の処理が必要な場合はここに追加
                 },
                 cache: 'no-store'
             });
             
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             
-            // Django DRF形式 (results) か 配列直かを確認してセット
+            // 4. データ抽出 (replaceInternalUrls 相当は ProductCard 側で行われる想定)
             const results = data.results || (Array.isArray(data) ? data : []);
             setProducts(results);
             setTotalCount(data.count || results.length);
 
         } catch (e: any) {
             if (e.name !== 'AbortError') {
-                console.error("🚨 [PC Finder API Error]:", e);
+                console.error("🚨 [PC Finder Sync Error]:", e);
                 setProducts([]);
                 setTotalCount(0);
             }
@@ -94,7 +107,7 @@ export default function PCFinderClient() {
         }
     }, [filters, sortBy]);
 
-    // デバウンス処理 (400ms) - スライダー操作の負荷軽減
+    // デバウンス処理 (400ms)
     useEffect(() => {
         const timer = setTimeout(() => {
             setFilters(f => ({ ...f, budget: tempBudget }));
@@ -110,11 +123,11 @@ export default function PCFinderClient() {
 
     return (
         <div className={styles.finderLayout}>
-            {/* 🛠️ サイドバー・コントロールパネル */}
+            {/* サイドバー */}
             <aside className={styles.sidebar}>
                 <div className={styles.sidebarInner}>
                     <div className={styles.brandArea}>
-                        <span className={styles.neonBadge}>BIC_CORE v3.5</span>
+                        <span className={styles.neonBadge}>{getSiteMetadata().site_tag.toUpperCase()} CORE</span>
                         <h1 className={styles.sidebarTitle}>PC_FINDER</h1>
                     </div>
 
@@ -125,7 +138,7 @@ export default function PCFinderClient() {
                                 <span className={styles.accentText}>¥{tempBudget.toLocaleString()}</span>
                             </div>
                             <input 
-                                type="range" min="50000" max="1000000" step="10000" 
+                                type="range" min="80000" max="1000000" step="10000" 
                                 value={tempBudget} 
                                 onChange={e => setTempBudget(Number(e.target.value))}
                                 className={styles.cyberRange}
@@ -133,45 +146,27 @@ export default function PCFinderClient() {
                         </div>
 
                         <div className={styles.controlGroup}>
-                            <label>FORM FACTOR</label>
-                            <div className={styles.selectWrapper}>
-                                <select 
-                                    value={filters.type} 
-                                    onChange={e => setFilters({...filters, type: e.target.value})}
-                                >
-                                    <option value="all">ALL CATEGORIES</option>
-                                    <option value="laptop">LAPTOP</option>
-                                    <option value="desktop">DESKTOP</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className={styles.controlGroup}>
                             <label>MANUFACTURER</label>
                             <div className={styles.selectWrapper}>
-                                <select 
-                                    value={filters.brand} 
-                                    onChange={e => setFilters({...filters, brand: e.target.value})}
-                                >
+                                <select value={filters.brand} onChange={e => setFilters({...filters, brand: e.target.value})}>
                                     <option value="all">ALL BRANDS</option>
                                     <option value="apple">Apple</option>
                                     <option value="lenovo">Lenovo</option>
                                     <option value="dell">DELL</option>
                                     <option value="hp">HP</option>
                                     <option value="asus">ASUS</option>
-                                    <option value="msi">MSI</option>
                                 </select>
                             </div>
                         </div>
 
                         <div className={styles.controlGroup}>
-                            <label>SORT ORDER</label>
+                            <label>SORT / ATTRIBUTE</label>
                             <div className={styles.selectWrapper}>
                                 <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                                    <option value="-created_at">NEWEST_ARRIVALS</option>
-                                    <option value="price">PRICE: LOW_TO_HIGH</option>
-                                    <option value="-price">PRICE: HIGH_TO_LOW</option>
-                                    <option value="-score_ai">AI_SPEC_SCORE</option>
+                                    <option value="-created_at">NEWEST_DATA</option>
+                                    <option value="price">PRICE_ASC</option>
+                                    <option value="-price">PRICE_DESC</option>
+                                    <option value="-score_ai">AI_SCORE_RANK</option>
                                 </select>
                             </div>
                         </div>
@@ -181,60 +176,41 @@ export default function PCFinderClient() {
                                 onClick={() => setFilters({...filters, npuRequired: !filters.npuRequired})} 
                                 className={filters.npuRequired ? styles.toggleActive : styles.toggle}
                             >
-                                <span className={styles.dot} /> NPU (AI PC)
-                            </button>
-                            <button 
-                                onClick={() => setFilters({...filters, gpuRequired: !filters.gpuRequired})} 
-                                className={filters.gpuRequired ? styles.toggleActive : styles.toggle}
-                            >
-                                <span className={styles.dot} /> DISCRETE GPU
+                                <span className={styles.dot} /> NPU ENABLED
                             </button>
                         </div>
                     </div>
 
                     <div className={styles.statsArea}>
                         <div className={styles.statLine}>
-                            <span>LIVE_HITS</span>
+                            <span>DB_HITS</span>
                             <span className={styles.statValue}>{totalCount}</span>
                         </div>
-                        <button 
-                            className={styles.resetButton}
-                            onClick={() => {
-                                setTempBudget(400000);
-                                setFilters({ budget: 400000, type: 'all', brand: 'all', npuRequired: false, gpuRequired: false });
-                                setSortBy('-created_at');
-                            }}
-                        >
-                            RESET_FILTERS
-                        </button>
+                        <button className={styles.resetButton} onClick={() => window.location.reload()}>REBOOT_SYSTEM</button>
                     </div>
                 </div>
             </aside>
 
-            {/* 📦 メインコンテンツ・ギャラリー */}
+            {/* メインギャラリー */}
             <main className={styles.mainContent}>
                 <header className={styles.contentHeader}>
-                    <p className={styles.breadcrumb}>SYSTEM / PC_FINDER / CONNECTED: {totalCount} UNITS</p>
+                    <p className={styles.breadcrumb}>ZENITH / {getSiteMetadata().origin_domain.toUpperCase()} / PC_PRODUCTS</p>
                 </header>
 
                 <div className={styles.scrollArea}>
                     {isLoading ? (
                         <div className={styles.grid}>
-                            {[...Array(6)].map((_, i) => (
-                                <div key={i} className={styles.skeletonCard} />
-                            ))}
+                            {[...Array(6)].map((_, i) => <div key={i} className={styles.skeletonCard} />)}
                         </div>
                     ) : products.length > 0 ? (
                         <div className={styles.grid}>
-                            {products.map(p => (
-                                <ProductCard key={p.unique_id || p.id} product={p} />
-                            ))}
+                            {products.map(p => <ProductCard key={p.unique_id || p.id} product={p} />)}
                         </div>
                     ) : (
                         <div className={styles.emptyState}>
                             <span className={styles.emptyIcon}>∅</span>
-                            <h3>DATA_STREAM_EMPTY</h3>
-                            <p>サーバーとの接続は正常ですが、該当する製品が0件です。</p>
+                            <h3>NO_DATA_STREAM</h3>
+                            <p>リクエストは正常ですが、条件に合致する製品がDBに存在しません。</p>
                         </div>
                     )}
                 </div>
