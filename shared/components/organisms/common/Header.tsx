@@ -105,7 +105,7 @@ export default function Header() {
             default:
                 return [];
         }
-    }, [site.site_name]);
+    }, [site.site_tag]);
 
     /**
      * 🛡️ AdSense & 信頼性向上のための共通リンク
@@ -123,10 +123,10 @@ export default function Header() {
     const menuConfig = {
         col1: {
             title: isAdult ? '🔥 注目' : '🔍 コンテンツ',
-            links: site.site_name === 'saving' ? [
+            links: site.site_tag === 'saving' ? [
                 { label: '技術ブログ', href: '/post' }, 
                 { label: 'ポートフォリオ', href: '/portfolio' }
-            ] : site.site_name === 'bicstation' ? [
+            ] : site.site_tag === 'bicstation' ? [
                 { label: 'PC性能診断', href: '/pc-finder' }, 
                 { label: 'おすすめPC', href: '/ranking/popularity' }
             ] : [

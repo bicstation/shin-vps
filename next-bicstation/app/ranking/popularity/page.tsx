@@ -3,8 +3,8 @@
 /**
  * =====================================================================
  * 📈 BICSTATION 注目度・売れ筋ランキング
- * 🛡️ Maya's Logic: 物理構造 v3.2 / Zenith v10.0 同期版
- * 物理パス: app/popularity/page.tsx
+ * 🛡️ Maya's Logic: 物理構造 v11.1 / Zenith v25.1 同期版
+ * 修正内容: ホスト名正規化による site_name 判定の安定化
  * =====================================================================
  */
 
@@ -14,8 +14,8 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { TrendingUp, Activity, Flame } from 'lucide-react';
 
-// ✅ インポートパス整合
-import { fetchPCProductRanking } from '@/shared/lib/api/django/pc';
+// ✅ site_name パラメータ対応済みの fetchPCProductRanking を使用
+import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 
 import styles from './Popularity.module.css';
@@ -36,18 +36,12 @@ interface PageProps {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const sParams = await props.searchParams;
     const page = sParams.page || '1';
-    const title = `【2026年最新】注目度・売れ筋PCランキング 第${page}ページ | BICSTATION`;
-
+    
     return {
-        title,
-        description: '今、最もアクセスされているPCをリアルタイム集計。過去24時間の統計データに基づいた人気ランキング100選を公開中。',
+        title: `【2026年最新】注目度・売れ筋PCランキング 第${page}ページ | BICSTATION`,
+        description: '今、最もアクセスされているPCをリアルタイム集計。過去24時間の統計データに基づいた人気ランキングを公開中。',
         alternates: {
             canonical: `https://bicstation.com/popularity/${page !== '1' ? `?page=${page}` : ''}`,
-        },
-        openGraph: {
-            title,
-            description: '今、最もアクセスされているPCをリアルタイム集計。',
-            type: 'website',
         }
     };
 }
@@ -60,7 +54,7 @@ export default function PopularityRankingPage(props: PageProps) {
         <Suspense fallback={
             <div className="min-h-[80vh] flex flex-col items-center justify-center text-slate-500 font-mono text-xs uppercase tracking-[0.2em]">
                 <div className="w-8 h-8 border-y-2 border-orange-500 animate-spin mb-4 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.3)]"></div>
-                ANALYZING_MARKET_TRENDS...
+                ANALYZING_MARKET_TRENDS_V25.1...
             </div>
         }>
             <PopularityContent {...props} />
@@ -76,19 +70,30 @@ async function PopularityContent(props: PageProps) {
     const currentPage = parseInt(sParams.page || '1', 10);
     const limit = 20; 
 
-    // 🌐 ホスト名取得
+    // 🌐 ホスト名取得と正規化 (Djangoの site_name 判定用)
     const headerList = await headers();
-    const host = headerList.get('host') || '';
+    let host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
 
-    // 1. データの取得と安全なパース
-    const rawData = await fetchPCProductRanking('popularity', host).catch(() => []);
+    // 💡 内部ホスト名や localhost の場合、'bicstation' に強制正規化して API へ渡す
+    if (host.includes('bicstation') || host.includes('localhost') || host.includes('8083')) {
+        host = 'bicstation';
+    }
+
+    // 1. データの取得
+    // fetchPCProductRanking 内部で site_name=host として送信される
+    const rawData = await fetchPCProductRanking('popularity', host).catch((err) => {
+        console.error("🚨 Popularity Fetch Error:", err);
+        return [];
+    });
     
-    // 💡 重要: Django REST Frameworkの results キーを考慮した配列化
+    // 💡 レスポンス構造の正規化
     const allProductsArray = Array.isArray(rawData) 
         ? rawData 
-        : ((rawData as any)?.results || []);
+        : (rawData && typeof rawData === 'object' && 'results' in rawData)
+            ? (rawData as any).results
+            : [];
     
-    // クライアントサイド・スライス (ページネーション)
+    // 仮想ページネーション処理
     const offset = (currentPage - 1) * limit;
     const products = allProductsArray.slice(offset, offset + limit);
     const totalPages = Math.max(1, Math.ceil(allProductsArray.length / limit));
@@ -97,7 +102,7 @@ async function PopularityContent(props: PageProps) {
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": "PC注目度ランキング TOP100",
+        "name": "PC注目度ランキング",
         "numberOfItems": allProductsArray.length,
         "itemListElement": products.map((product: any, index: number) => ({
             "@type": "ListItem",
@@ -123,7 +128,7 @@ async function PopularityContent(props: PageProps) {
                 <div className={styles.headerContent}>
                     <div className={styles.badgeContainer}>
                         <Activity className="w-4 h-4 text-orange-500 animate-pulse" />
-                        <span>REALTIME_MARKET_FLOW</span>
+                        <span>MARKET_DATA_STREAM_v25.1</span>
                     </div>
                     <h1 className={styles.title}>
                         <TrendingUp className="inline-block mr-3 mb-1 text-orange-500" />
@@ -131,7 +136,7 @@ async function PopularityContent(props: PageProps) {
                     </h1>
                     <p className={styles.subtitle}>
                         過去24時間の膨大なアクセスログと市場の流動性を解析。<br />
-                        <strong>「今、この瞬間に売れている・選ばれている」</strong>真のトレンドを可視化。
+                        <strong>「今、この瞬間に選ばれている」</strong>真のトレンドを可視化。
                     </p>
                 </div>
             </header>
@@ -143,10 +148,11 @@ async function PopularityContent(props: PageProps) {
                         const rank = offset + index + 1;
                         
                         return (
-                            <div key={product.unique_id || product.id} className={styles.productCardWrapper}>
+                            <div key={product.unique_id || product.id || `pop-${rank}`} className={styles.productCardWrapper}>
                                 <ProductCard 
                                     product={product} 
                                     rank={rank}
+                                    isReviewMode={true}
                                 >
                                     <div className={styles.popularityOverlay}>
                                         {rank <= 3 && (
@@ -159,8 +165,8 @@ async function PopularityContent(props: PageProps) {
                                         <div className={styles.accessIndicator}>
                                             <div className={styles.pulseDot}></div>
                                             <span className={styles.viewCount}>
-                                                {/* 演出用の動的数値（1位ほど多くなるよう調整） */}
-                                                {Math.floor((120 / rank) + Math.random() * 15) + 5}人がこの製品をチェック中
+                                                {/* 演出用の動的数値（順位に応じた重み付け） */}
+                                                {Math.floor((200 / (rank + 0.5)) + (Math.random() * 15)) + 3}人が現在検討中
                                             </span>
                                         </div>
                                     </div>
@@ -170,8 +176,17 @@ async function PopularityContent(props: PageProps) {
                     })
                 ) : (
                     <div className={styles.noData}>
-                        <p>現在マーケットトレンドを解析中です...</p>
-                        <p className="text-[10px] mt-2 opacity-50 font-mono">CODE: EMPTY_PAYLOAD_OR_NETWORK_ERROR</p>
+                        <div className="text-5xl mb-6 opacity-20 text-orange-500">📉</div>
+                        <p className="text-xl font-bold text-slate-300">トレンドデータを解析できませんでした</p>
+                        <div className="text-[10px] mt-6 opacity-50 font-mono bg-black/40 p-4 rounded border border-slate-800 text-left max-w-xs mx-auto">
+                            SYSTEM_LOG:<br/>
+                            STATUS: STREAM_NOT_FOUND<br/>
+                            NODE: {host}<br/>
+                            CHECK: site_name_mapping
+                        </div>
+                        <Link href="/" className="mt-8 inline-block px-8 py-2 border border-orange-500/30 rounded-full text-orange-400 hover:bg-orange-500/10 transition-all">
+                            ホームに戻る
+                        </Link>
                     </div>
                 )}
             </div>
@@ -208,8 +223,8 @@ async function PopularityContent(props: PageProps) {
             {/* 📝 フッター注釈 */}
             <footer className={styles.disclaimer}>
                 <div className={styles.disclaimerContent}>
-                    <p>※本ランキングは過去24時間のアクセス統計、クリック率、および在庫流動性を独自のアルゴリズムで統合したものです。</p>
-                    <p>※データは1時間ごとに更新され、市場の最新トレンドを反映しています。</p>
+                    <p>※本ランキングは過去24時間のアクセス統計、および在庫流動性を独自のアルゴリズムで統合したものです。</p>
+                    <p>※Target Node: {host} | データは1時間ごとに更新され、市場の最新トレンドを反映しています。</p>
                 </div>
             </footer>
         </main>

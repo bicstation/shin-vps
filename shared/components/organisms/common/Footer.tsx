@@ -46,7 +46,6 @@ function FooterContent({ debugData }: FooterProps) {
         return <footer className={styles.footer} style={{ height: '300px', visibility: 'hidden' }} />;
     }
 
-    // 修正: site_name ではなく origin_domain もしくは siteKey で取得
     const siteColor = getSiteColor(site.origin_domain);
     const isDebugMode = searchParams.get('debug') === 'true';
     
@@ -56,7 +55,6 @@ function FooterContent({ debugData }: FooterProps) {
 
     /**
      * 🛰️ SHIN CORE LINX - NETWORK 定義
-     * なべ塾 (Port 3005) を追加
      */
     const networkSites = [
         { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#10b981', isAdult: false },
@@ -66,10 +64,6 @@ function FooterContent({ debugData }: FooterProps) {
         { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#f59e0b', isAdult: true },
     ];
 
-    /**
-     * 🛡️ AdSense Safety Logic
-     * 現在のサイトが一般（general）の場合、アダルトサイトへのリンクを表示しない
-     */
     const currentIsAdultSite = site.site_group === 'adult';
     
     const visibleNetworkSites = networkSites.filter(targetSite => {
@@ -107,7 +101,6 @@ function FooterContent({ debugData }: FooterProps) {
         }
     };
 
-    // サイト名で設定を取得。見つからなければ Bic Station をデフォルトに。
     const config = siteConfigs[site.site_name] || siteConfigs['Bic Station'];
 
     return (
@@ -115,6 +108,25 @@ function FooterContent({ debugData }: FooterProps) {
             className={styles.footer}
             style={{ '--accent-red': siteColor } as React.CSSProperties}
         >
+            {/* 🚀 導線可視化インジケーター (デバッグモードのみ表示) */}
+            {isDebugMode && (
+                <div className="bg-slate-900 border-b border-orange-500/30 px-4 py-2 font-mono text-[10px] flex items-center justify-between text-slate-400">
+                    <div className="flex gap-4">
+                        <span className="flex items-center gap-1">
+                            <span className={`w-2 h-2 rounded-full ${isLocal ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></span>
+                            MODE: {isLocal ? 'LOCAL_DEV' : 'PRODUCTION'}
+                        </span>
+                        <span className="text-orange-400">
+                            API_TARGET: {debugData?.targetUrl || (isLocal ? 'http://127.0.0.1:8083/api' : 'http://django-v3:8000/api')}
+                        </span>
+                        <span>SITE_TAG: <b className="text-white">{site.site_tag}</b></span>
+                    </div>
+                    <div className="text-[9px] opacity-70">
+                        {typeof window !== 'undefined' ? window.location.host : 'SSR_MODE'}
+                    </div>
+                </div>
+            )}
+
             <div className={styles.container}>
                 {/* 1. ブランド & 編集者プロフィール */}
                 <div className={styles.column}>
@@ -176,7 +188,7 @@ function FooterContent({ debugData }: FooterProps) {
                         &copy; {currentYear} {site.site_name.toUpperCase()} / Managed by SHIN CORE LINX
                     </p>
                     <div className={styles.systemStatus}>
-                        STATUS: <span className={styles.statusOnline}>ONLINE</span> | ID: SHIN_CORE_PROT_V10.8
+                        STATUS: <span className={styles.statusOnline}>ONLINE</span> | ID: SHIN_CORE_PROT_V11.1
                     </div>
                 </div>
             </div>

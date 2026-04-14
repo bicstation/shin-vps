@@ -1,17 +1,8 @@
+// /home/maya/shin-vps/shared/lib/api/django/pc/products.ts
 // @ts-nocheck
-/**
- * =====================================================================
- * 📦 PC 製品一覧・詳細取得サービス (Zenith v11.0 - Search Optimized)
- * =====================================================================
- * 🛡️ 修正ポイント:
- * 1. 【識別子同期】site_tag を client.ts へ正確に伝達。
- * 2. 【画像解決】replaceInternalUrls を適用し、製品画像のリンク切れを防止。
- * 3. 【正規化】Django REST Framework の SearchFilter (search=) に完全準拠。
- * =====================================================================
- */
 
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '../client';
-import { replaceInternalUrls } from '../posts'; // 💡 URL置換ロジックを再利用
+import { replaceInternalUrls } from '../../django-bridge';
 import { getSiteMetadata } from '../../../utils/siteConfig';
 import { PCProduct, MakerCount } from './types';
 
@@ -26,39 +17,58 @@ const getSafeMeta = (host?: string) => {
 
 /**
  * 💡 PC製品一覧取得
- * @param q 検索キーワード
- * @param offset 開始位置
- * @param limit 件数
- * @param maker メーカー (DELL, HP等)
- * @param host ホスト名 (識別用)
- * @param attribute 特殊属性フィルタ
+ * 🛡️ 修正: site_name パラメータの追加とソートキーの分離
  */
 export async function fetchPCProducts(
-    q: string = '', 
-    offset: number = 0, 
-    limit: number = 12, 
-    maker: string = '',
-    host: string = '',
-    attribute: string = ''
+    paramsOrQ: any = '', 
+    offsetArg: number = 0, 
+    limitArg: number = 12, 
+    makerArg: string = '',
+    hostArg: string = '',
+    attributeArg: string = ''
 ) {
-    const meta = getSafeMeta(host);
-    const siteTag = meta?.site_tag || 'bicstation';
+    // --- 📥 引数の正規化ロジック ---
+    const isObj = typeof paramsOrQ === 'object' && paramsOrQ !== null;
+    
+    const q         = isObj ? (paramsOrQ.q || paramsOrQ.search || '') : paramsOrQ;
+    const offset    = isObj ? (paramsOrQ.offset ?? 0) : offsetArg;
+    const limit     = isObj ? (paramsOrQ.limit ?? 12) : limitArg;
+    const maker     = isObj ? (paramsOrQ.maker || '') : makerArg;
+    const host      = isObj ? (paramsOrQ.host || '') : hostArg;
+    const attribute = isObj ? (paramsOrQ.attribute || '') : attributeArg;
 
+    const meta = getSafeMeta(host);
+    const siteTag = isObj ? (paramsOrQ.site || meta?.site_tag || 'bicstation') : (meta?.site_tag || 'bicstation');
+
+    // --- ⚙️ クエリパラメータ構築 ---
+    // 💡 site と site_name の両方を送ることで、Django側の新旧ロジック両方に対応
     const queryParams = new URLSearchParams({ 
         offset: offset.toString(),
         limit: limit.toString(),
-        site: siteTag // Django 側でサイト別在庫・価格を出し分けるためのキー
+        site: siteTag,
+        site_name: siteTag // 🔥 以前のロジック用に追加
     });
     
-    // 🚀 site_group による絞り込み (一般PC/中古PC等の棲み分け)
-    if (meta?.site_group && meta.site_group !== 'general') {
-        queryParams.append('site_group', meta.site_group);
-    }
+    // 🚀 site_group による絞り込み
+    const siteGroup = meta?.site_group || 'general';
+    queryParams.append('site_group', siteGroup);
     
     // 🚀 検索・フィルタパラメータ
-    if (q) queryParams.append('search', q); 
+    if (q && typeof q === 'string') queryParams.append('search', q); 
     if (maker) queryParams.append('maker', maker); 
-    if (attribute) queryParams.append('attribute', attribute); 
+
+    // 🚀 ソート条件の分離
+    // attribute 引数に '-created_at' 等のソート記号が含まれている場合、ordering として扱う
+    if (attribute) {
+        if (attribute.startsWith('-') || attribute.includes('created_at') || attribute.includes('price')) {
+            queryParams.append('ordering', attribute); // Django標準のソートキー
+        } else {
+            queryParams.append('attribute', attribute); // 本来の属性フィルタ
+        }
+    } else {
+        // デフォルトソート
+        queryParams.append('ordering', '-created_at');
+    }
 
     // 🔗 API URL の解決
     const url = resolveApiUrl(`general/pc-products/?${queryParams.toString()}`, siteTag);
@@ -71,13 +81,13 @@ export async function fetchPCProducts(
         
         const data = await handleResponseWithDebug(res, url);
         
-        // 🛡️ 製品画像のURLが内部ドメイン (django-api-host等) の場合があるため置換
+        // 🛡️ 内部ドメイン置換を適用
         const cleanedData = replaceInternalUrls(data);
         
         return { 
             results: (Array.isArray(cleanedData.results) ? cleanedData.results : []) as PCProduct[], 
             count: typeof cleanedData.count === 'number' ? cleanedData.count : 0, 
-            _debug: { url } 
+            _debug: { url, siteTag, site_name: siteTag, q } 
         };
     } catch (e: any) {
         console.error("🚨 [fetchPCProducts Error]", e);
@@ -92,7 +102,9 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
     const meta = getSafeMeta(host);
     const siteTag = meta?.site_tag || 'bicstation';
     
-    const url = resolveApiUrl(`general/pc-products/${unique_id}/?site=${siteTag}`, siteTag);
+    const cleanId = unique_id.toString().replace(/\/+$/, '');
+    // 詳細でも site_name を付与
+    const url = resolveApiUrl(`general/pc-products/${cleanId}/?site=${siteTag}&site_name=${siteTag}`, siteTag);
     
     try {
         const res = await fetch(url, { 
@@ -103,7 +115,6 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
         const data = await handleResponseWithDebug(res, url);
         const cleanedData = replaceInternalUrls(data);
         
-        // 単体レスポンスまたは results[0] から抽出
         const product = (cleanedData && !Array.isArray(cleanedData.results)) 
             ? cleanedData 
             : (Array.isArray(cleanedData.results) && cleanedData.results.length > 0 ? cleanedData.results[0] : null);
@@ -118,13 +129,14 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
 }
 
 /**
- * 💡 メーカー一覧取得 (サイドバー等のブランドリスト用)
+ * 💡 メーカー一覧取得 
  */
 export async function fetchMakers(host: string = ''): Promise<MakerCount[]> {
     const meta = getSafeMeta(host);
     const siteTag = meta?.site_tag || 'bicstation';
     
-    const url = resolveApiUrl(`general/pc-makers/?site=${siteTag}`, siteTag);
+    // メーカー一覧でも site_name を付与
+    const url = resolveApiUrl(`general/pc-makers/?site=${siteTag}&site_name=${siteTag}`, siteTag);
     
     try {
         const res = await fetch(url, { 

@@ -63,7 +63,7 @@ export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
   else if (domain.includes('bic-erog')) siteKey = 'bic-erog';
   else if (domain.includes('adult-search') || domain.includes('adult')) siteKey = 'adult-search';
   else if (domain.includes('saving')) siteKey = 'saving';
-  else if (domain.includes('nabejuku')) siteKey = 'nabejuku'; // ★追加
+  // else if (domain.includes('nabejuku')) siteKey = 'nabejuku'; // ★追加
   else if (domain.includes('bicstation')) siteKey = 'bicstation';
 
   const cfg = SITE_MAP[siteKey] || SITE_MAP['bicstation'];

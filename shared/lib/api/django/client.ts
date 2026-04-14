@@ -1,12 +1,12 @@
 // @ts-nocheck
 /**
  * =====================================================================
- * 🛰️ Django API 共通クライアント (Zenith v11.0 - Docker Network Native)
+ * 🛰️ Django API 共通クライアント (Zenith v11.1 - Network Logic Optimized)
  * =====================================================================
- * 🛡️ 運用ロジック:
- * 1. 【識別子同期】siteConfig (v22.0) の site_tag を最優先で使用。
- * 2. 【Docker最適化】サーバーサイド通信は `django-v3:8000` を強制。
- * 3. 【パラメータ正規化】siteパラメータの二重付与やスラッシュ重複を徹底排除。
+ * 🛡️ 修正ロジック:
+ * 1. 【ローカル強制】localhost/127.0.0.1 検出時は 127.0.0.1:8083 を強制。
+ * 2. 【環境変数優先】NEXT_PUBLIC_API_URL が設定されていれば最優先で解決。
+ * 3. 【パラメータ自動付与】site_name / site_group を URLSearchParams で確実に構築。
  * =====================================================================
  */
 
@@ -17,58 +17,67 @@ import { getSiteMetadata } from '../../utils/siteConfig';
  * 💡 接続先URLを動的に解決 (Network Path Resolver)
  */
 export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
-    // 1. メタデータの取得 (siteConfig v22.0 のロジックに完全委任)
+    // 1. メタデータの取得
     const host = manualHost || (typeof window !== 'undefined' ? window.location.host : '');
     const meta = getSiteMetadata(host);
-    
-    // 🎯 指揮系統の一本化: 独自加工せず site_tag をそのまま使う
     const siteTag = meta.site_tag || 'bicstation';
 
     // 2. 通信先 (apiBase) の決定
     let apiBase = '';
+
     if (IS_SERVER) {
         /**
          * 🛡️ サーバーサイド (SSR) 導線
-         * ローカル環境以外（VPS上）では Docker サービス名 django-v3 を使用
+         * ローカル環境変数をチェックし、次にホスト名による直接判定を行う
          */
-        if (meta.is_local_env && !host.includes('bicstation')) {
+        const envApiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.INTERNAL_API_URL;
+
+        if (envApiUrl && (envApiUrl.includes('localhost') || envApiUrl.includes('127.0.0.1'))) {
+            // 環境変数で明示的にローカルが指定されている場合
+            apiBase = envApiUrl.replace(/\/api\/?$/, '');
+        } else if (meta.is_local_env || host.includes('localhost') || host.includes('127.0.0.1') || host.includes('8083')) {
+            // ホスト名から物理的にローカルと判断される場合
             apiBase = 'http://127.0.0.1:8083';
         } else {
-            // VPS上のコンテナ間通信。ポートは 8000 に固定
+            // VPS上のコンテナ間通信 (デフォルト)
             apiBase = 'http://django-v3:8000';
         }
     } else {
-        // クライアントサイド（ブラウザ）からは、各サイトの API ドメインへ
+        // クライアントサイド（ブラウザ）
         apiBase = `https://${meta.django_host}`; 
     }
 
     const rootUrl = `${apiBase.replace(/\/+$/, '')}/api`;
 
-    // 3. エンドポイントの整形
+    // 3. エンドポイントの整形 (正規化)
     let cleanEndpoint = endpoint
         .replace(/^\/+/, '')               
         .replace(/^api\//, '')            
         .replace(/\/+$/, '');             
 
-    let finalUrl = "";
+    let baseUrl = "";
     if (cleanEndpoint.includes('?')) {
         const [path, query] = cleanEndpoint.split('?');
-        const sanitizedPath = path.replace(/\/+$/, '') + '/';
-        finalUrl = `${rootUrl}/${sanitizedPath}?${query}`;
+        baseUrl = `${rootUrl}/${path.replace(/\/+$/, '')}/?${query}`;
     } else {
-        finalUrl = `${rootUrl}/${cleanEndpoint}/`;
+        baseUrl = `${rootUrl}/${cleanEndpoint}/`;
     }
 
-    // 4. siteパラメータの付与 (site_tag を確実に使用)
-    if (!finalUrl.includes('site=')) {
-        const separator = finalUrl.includes('?') ? '&' : '?';
-        finalUrl += `${separator}site=${siteTag}`;
-    } else if (finalUrl.includes('site=api')) {
-        // 古い api-xxx-host 形式のパラメータが残っている場合は置換
-        finalUrl = finalUrl.replace(/site=[^&]+/, `site=${siteTag}`);
+    // 4. パラメータの統合管理 (URLSearchParams を使用して重複・漏れを防止)
+    const [purePath, queryString] = baseUrl.split('?');
+    const params = new URLSearchParams(queryString || '');
+
+    // 必須パラメータのインジェクト
+    if (!params.has('site')) params.set('site', siteTag);
+    if (!params.has('site_name')) params.set('site_name', siteTag);
+    if (!params.has('site_group')) params.set('site_group', meta.site_group || 'general');
+
+    // site=api.xxx のような不正な形式のクリーンアップ
+    if (params.get('site')?.startsWith('api.')) {
+        params.set('site', siteTag);
     }
 
-    return finalUrl;
+    return `${purePath}?${params.toString()}`;
 };
 
 /**
@@ -85,14 +94,16 @@ export const getDjangoHeaders = (manualHost?: string) => {
     };
 
     if (IS_SERVER) {
-        // Django 側の識別ミドルウェアに正しいタグを伝える
+        // 識別用カスタムヘッダー
         headers['x-django-host'] = siteTag;
         headers['x-project-id'] = siteTag;
         
-        // 物理的な Host ヘッダー (Nginx 等での振り分け用)
+        // 物理 Host ヘッダー (VPS/Nginx環境でのルーティング用)
         headers['Host'] = meta.django_host;
         
-        console.log(`📡 [API-IDENTITY] Site: ${siteTag} | Host-Header: ${meta.django_host} | SSR: true`);
+        // ローカル開発時に VPS へ飛ぶのを防ぐためのデバッグ出力を強化
+        const isLocal = meta.is_local_env || host.includes('localhost');
+        console.log(`📡 [API-IDENTITY] Site: ${siteTag} | Mode: ${isLocal ? 'LOCAL' : 'VPS'} | Host-Header: ${meta.django_host} | SSR: true`);
     }
 
     return headers;
@@ -120,7 +131,7 @@ export async function handleResponseWithDebug(res: Response, url: string) {
 
         const data = JSON.parse(text);
         
-        // ページネーション形式 (resultsあり)
+        // 1. DRF 標準形式 (results あり)
         if (data && typeof data === 'object' && 'results' in data) {
             return {
                 results: Array.isArray(data.results) ? data.results : [],
@@ -128,21 +139,17 @@ export async function handleResponseWithDebug(res: Response, url: string) {
             };
         }
         
-        // 配列形式
+        // 2. 配列直渡し形式
         if (Array.isArray(data)) {
             return { results: data, count: data.length };
         }
         
-        // 単体オブジェクト形式
-        if (data && typeof data === 'object') {
-            const payload = data.data || data;
-            return { 
-                results: Array.isArray(payload) ? payload : [payload], 
-                count: Array.isArray(payload) ? payload.length : 1 
-            };
-        }
-
-        return { results: [], count: 0 };
+        // 3. 単体オブジェクト形式
+        const payload = data.data || data;
+        return { 
+            results: Array.isArray(payload) ? payload : [payload], 
+            count: Array.isArray(payload) ? payload.length : 1 
+        };
 
     } catch (e) {
         console.error(`🚨 [JSON Parse Error] URL: ${url}`, e);

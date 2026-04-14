@@ -5,6 +5,7 @@
  * 🛡️ Maya's Logic: site_tag による指揮系統の完全同期
  * =====================================================================
  */
+// /home/maya/shin-vps/shared/lib/api/django-bridge.ts
 
 import { getSiteMetadata } from '../utils/siteConfig';
 import { getDjangoBaseUrl } from './config';

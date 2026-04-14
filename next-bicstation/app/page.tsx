@@ -17,7 +17,7 @@ import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 // ✅ API サービス
 import { fetchWPTechInsights } from '@/shared/lib/api/django/wordpress'; 
 import { fetchPostList } from '@/shared/lib/api/django/posts';           
-import { fetchPCProductRanking } from '@/shared/lib/api/django/pc';      
+import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats'; // 💡 最新の stats.ts を参照
 
 // 共通ユーティリティ
 import { constructMetadata } from '@/shared/lib/utils/metadata';
@@ -33,6 +33,7 @@ const IS_ADSENSE_REVIEW = true;
 
 /**
  * 🛡️ フェッチ・ガード
+ * APIが失敗してもUIをクラッシュさせないための防波堤
  */
 async function safeFetch<T>(fetcher: any, args: any[], fallback: T): Promise<T> {
     try {
@@ -50,7 +51,7 @@ async function safeFetch<T>(fetcher: any, args: any[], fallback: T): Promise<T> 
  */
 export async function generateMetadata() {
     const headerList = await headers();
-    const host = headerList.get('host') || "bicstation.com";
+    const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
     const siteConfig = getSiteMetadata(host);
 
     return constructMetadata({
@@ -62,16 +63,21 @@ export async function generateMetadata() {
 
 export default async function HomePageMain() {
     const headerList = await headers();
-    const host = headerList.get('host') || "bicstation.com";
+    // 💡 Nginx環境下でのホスト取得を安定化
+    const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
     const siteConfig = getSiteMetadata(host); 
     const siteTag = siteConfig.site_tag || 'bicstation';
 
-    // --- 🎯 データソース一括取得 ---
-    const [wpLogs, djangoPosts, scoreRank, popularityRank] = await Promise.all([
+    // --- 🎯 データソース一括取得 (v11.1 仕様同期) ---
+    const [wpLogs, djangoPosts, scoreRank] = await Promise.all([
+        // WordPress側の技術インサイト
         safeFetch(fetchWPTechInsights, [6], []),
+        
+        // Django側の投稿リスト (第3引数には site_tag を指定)
         safeFetch(fetchPostList, [6, 0, siteTag], { results: [], count: 0 }),
-        safeFetch(fetchPCProductRanking, ['score', host], []),
-        safeFetch(fetchPCProductRanking, ['popularity', host], [])
+        
+        // PC性能ランキング (stats.ts: type, host)
+        safeFetch(fetchPCProductRanking, ['score', host], [])
     ]);
 
     const satelliteLogs = Array.isArray(wpLogs) ? wpLogs : [];
@@ -165,7 +171,14 @@ export default async function HomePageMain() {
                                 <ProductCard product={product} rank={i + 1} isReviewMode={IS_ADSENSE_REVIEW} />
                                 <Zap className="absolute top-4 right-4 w-5 h-5 text-yellow-500 z-10 animate-pulse" />
                             </div>
-                        )) : <p className="text-slate-500 font-mono text-xs text-center py-12">解析ストリーム待機中...</p>}
+                        )) : (
+                            <div className="col-span-3 text-center py-20 bg-black/20 border border-dashed border-slate-800 rounded-xl">
+                                <p className="text-slate-500 font-mono text-xs">
+                                    解析ストリーム待機中... <br/>
+                                    <span className="opacity-50">[NODE: {siteTag} / ADDR: {host}]</span>
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </section>
 
@@ -187,7 +200,7 @@ export default async function HomePageMain() {
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-slate-600" />
                                 </Link>
-                            )) : <p className="text-xs text-slate-600 font-mono">データなし</p>}
+                            )) : <p className="text-xs text-slate-600 font-mono">衛星ログ受信待機中...</p>}
                         </div>
                         <div className="space-y-4">
                             <h3 className="text-xs font-bold text-blue-400 border-l-2 border-blue-400 pl-2 uppercase">コアシステム開発（Django Core）</h3>
@@ -199,7 +212,7 @@ export default async function HomePageMain() {
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-slate-600" />
                                 </Link>
-                            )) : <p className="text-xs text-slate-600 font-mono">データなし</p>}
+                            )) : <p className="text-xs text-slate-600 font-mono">コアプロトコル同期待機中...</p>}
                         </div>
                     </div>
                 </section>

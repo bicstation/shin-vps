@@ -3,8 +3,8 @@
 /**
  * =====================================================================
  * 🏆 BICSTATION PCスペック解析ランキング
- * 🛡️ Maya's Logic: 物理構造 v3.2 / Zenith v10.0 同期版
- * 物理パス: app/ranking/page.tsx
+ * 🛡️ Maya's Logic: 物理構造 v11.1 / Zenith v25.1 同期版
+ * 修正内容: site_name パラメータ整合性 & ホスト正規化
  * =====================================================================
  */
 
@@ -13,15 +13,15 @@ import { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 
-// インポートパスの物理構造整合
-import { fetchPCProductRanking } from '@/shared/lib/api/django/pc';
+// ✅ stats.ts (site_name対応版) を参照
+import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import RadarChart from '@/shared/components/atoms/RadarChart';
 
 import styles from './Ranking.module.css';
 
 /**
- * ⚙️ サーバーセクション (Metadata & Configuration)
+ * ⚙️ サーバーセクション
  */
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -37,34 +37,24 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const sParams = await props.searchParams;
     const page = sParams.page || '1';
     
-    const title = `【2026年最新】PCスペック解析ランキング 第${page}ページ | BICSTATION`;
-    const description = `AI解析スコアに基づいたPC製品の最新ランキング。CPU・GPU・コスパ・携帯性・AI性能を5軸スコアで徹底比較。真に「買い」のモデルを抽出。`;
-
     return {
-        title,
-        description,
+        title: `【2026年最新】PCスペック解析ランキング 第${page}ページ | BICSTATION`,
+        description: `AI解析スコアに基づいたPC製品の最新ランキング。CPU・GPU・コスパ・携帯性・AI性能を5軸スコアで徹底比較。`,
         alternates: {
             canonical: `https://bicstation.com/ranking/${page !== '1' ? `?page=${page}` : ''}`,
-        },
-        openGraph: {
-            title,
-            description,
-            type: 'website',
-            title: title,
-            description: description,
         }
     };
 }
 
 /**
- * 🏗️ ページエントリポイント (Suspense搭載)
+ * 🏗️ ページエントリポイント
  */
 export default function RankingPage(props: PageProps) {
     return (
         <Suspense fallback={
             <div className="min-h-[80vh] flex flex-col items-center justify-center text-slate-500 font-mono text-xs uppercase tracking-[0.2em]">
                 <div className="w-8 h-8 border-t-2 border-blue-500 animate-spin mb-4 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.3)]"></div>
-                CALCULATING_RANKINGS_V2.0...
+                CALCULATING_RANKINGS_V25.1...
             </div>
         }>
             <RankingContent {...props} />
@@ -80,26 +70,37 @@ async function RankingContent(props: PageProps) {
     const currentPage = parseInt(sParams.page || '1', 10);
     const limit = 20; 
 
-    // 🌐 現在のホスト名を取得 (API疎通の生命線)
+    // 🌐 ホスト名取得と正規化 (Djangoのsite判定用)
     const headerList = await headers();
-    const host = headerList.get('host') || '';
+    let host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
+    
+    // 💡 ホスト名にポート番号や内部タグが含まれる場合の正規化ガード
+    if (host.includes('bicstation') || host.includes('localhost')) {
+        host = 'bicstation';
+    }
 
     /**
-     * 🚀 修正ポイント: 
-     * Django側で既にTOP20等に絞り込まれている可能性があるため、
-     * フロントエンドでの slice 処理を安全に行う。
+     * 🚀 データフェッチ
+     * fetchPCProductRanking 内部で site_name=host が送られるように修正済み
      */
-    const rawData = await fetchPCProductRanking('score', host).catch(() => []);
+    const rawData = await fetchPCProductRanking('score', host).catch((err) => {
+        console.error("🚨 Ranking Fetch Error:", err);
+        return [];
+    });
     
-    // results キーがある場合と、配列直下の場合の両方をハンドリング
-    const productsArray = Array.isArray(rawData) ? rawData : ((rawData as any)?.results || []);
+    // 💡 レスポンス構造の正規化 (Array か { results: [] } か)
+    const productsArray = Array.isArray(rawData) 
+        ? rawData 
+        : (rawData && typeof rawData === 'object' && 'results' in rawData) 
+            ? (rawData as any).results 
+            : [];
     
-    // フロントエンドでの仮想ページネーション処理
+    // 仮想ページネーション処理
     const offset = (currentPage - 1) * limit;
     const products = productsArray.slice(offset, offset + limit);
     const totalPages = Math.max(1, Math.ceil(productsArray.length / limit));
 
-    // 2. 構造化データの生成
+    // JSON-LD (構造化データ)
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "ItemList",
@@ -117,10 +118,10 @@ async function RankingContent(props: PageProps) {
     };
 
     const getChartColor = (rank: number) => {
-        if (rank === 1) return '#FFD700'; 
-        if (rank === 2) return '#C0C0C0'; 
-        if (rank === 3) return '#CD7F32'; 
-        return '#3b82f6';
+        if (rank === 1) return '#FFD700'; // Gold
+        if (rank === 2) return '#C0C0C0'; // Silver
+        if (rank === 3) return '#CD7F32'; // Bronze
+        return '#3b82f6'; // Default Blue
     };
 
     return (
@@ -132,14 +133,13 @@ async function RankingContent(props: PageProps) {
 
             <header className={styles.header}>
                 <div className={styles.heroInner}>
-                    <div className={styles.badge}>PC_ANALYTICS_v2.0</div>
+                    <div className={styles.badge}>RANKING_ENGINE_v25.1</div>
                     <h1 className={styles.title}>
                         <span className={styles.titleIcon}>💻</span>
                         PCスペック解析ランキング
                     </h1>
                     <p className={styles.subtitle}>
-                        全アーカイブのスペックをAIが5軸で完全数値化。<br />
-                        広告やブランド力に惑わされない、<strong>真のコストパフォーマンス</strong>を可視化しました。
+                        全アーカイブのスペックをAIが5軸で完全数値化。ブランド力に惑わされない、<strong>真の性能とコストパフォーマンス</strong>を可視化。
                     </p>
                 </div>
             </header>
@@ -149,28 +149,29 @@ async function RankingContent(props: PageProps) {
                     products.map((product: any, index: number) => {
                         const rank = offset + index + 1;
                         
-                        // レーダーチャートデータの構築
+                        // スコアデータの抽出と正規化
                         const chartData = [
-                            { subject: 'CPU', value: product.score_cpu || 0, fullMark: 100 },
-                            { subject: 'GPU', value: product.score_gpu || 0, fullMark: 100 },
-                            { subject: 'コスパ', value: product.score_cost || 0, fullMark: 100 },
-                            { subject: '携帯性', value: product.score_portable || 0, fullMark: 100 },
-                            { subject: 'AI性能', value: product.score_ai || 0, fullMark: 100 },
+                            { subject: 'CPU', value: Number(product.score_cpu || 0), fullMark: 100 },
+                            { subject: 'GPU', value: Number(product.score_gpu || 0), fullMark: 100 },
+                            { subject: 'コスパ', value: Number(product.score_cost || 0), fullMark: 100 },
+                            { subject: '携帯性', value: Number(product.score_portable || 0), fullMark: 100 },
+                            { subject: 'AI性能', value: Number(product.score_ai || 0), fullMark: 100 },
                         ];
 
                         const totalScore = Math.round(chartData.reduce((acc, cur) => acc + cur.value, 0) / 5);
 
                         return (
-                            <div key={product.unique_id || product.id} className={styles.rankingCardWrapper}>
+                            <div key={product.unique_id || product.id || `rank-${rank}`} className={styles.rankingCardWrapper}>
                                 <ProductCard 
                                     product={product} 
                                     rank={rank}
+                                    isReviewMode={true}
                                 >
                                     <div className={styles.analysisOverlay}>
                                         <div className={styles.chartHeader}>
                                             <div className={styles.labelGroup}>
                                                 <span className={styles.analysisLabel}>AI_ANALYSIS_SCORE</span>
-                                                <span className={styles.scoreDetail}>Comprehensive evaluation</span>
+                                                <span className={styles.scoreDetail}>Target: {host}</span>
                                             </div>
                                             <div className={styles.totalScoreBox}>
                                                 <span className={styles.scoreValue}>{totalScore}</span>
@@ -191,14 +192,22 @@ async function RankingContent(props: PageProps) {
                     })
                 ) : (
                     <div className={styles.noData}>
-                        <p>現在ランキングデータを集計中です...</p>
-                        <p className="text-[10px] mt-2 opacity-50">NO_DATA_RECEIVED_FROM_BACKEND</p>
+                        <div className="text-5xl mb-6 opacity-20">📊</div>
+                        <p className="text-xl font-bold text-slate-300">ランキングデータを取得できません</p>
+                        <p className="text-sm mt-4 opacity-60 font-mono leading-relaxed">
+                            ERROR_CODE: EMPTY_DATA_STREAM<br/>
+                            RESOLVED_HOST: {host}<br/>
+                            ACTION: CHECK_BACKEND_SITE_CONFIG
+                        </p>
+                        <Link href="/" className="mt-8 px-6 py-2 border border-blue-500/30 rounded-full text-blue-400 hover:bg-blue-500/10 transition-all">
+                            トップページに戻る
+                        </Link>
                     </div>
                 )}
             </div>
 
             {totalPages > 1 && (
-                <nav className={styles.pagination} aria-label="Ranking pages">
+                <nav className={styles.pagination} aria-label="Ranking navigation">
                     <div className={styles.paginationInner}>
                         {currentPage > 1 ? (
                             <Link href={`?page=${currentPage - 1}`} className={styles.pageButton}>
@@ -209,7 +218,7 @@ async function RankingContent(props: PageProps) {
                         )}
 
                         <div className={styles.pageIndicator}>
-                            <span className={styles.current}>PAGE {currentPage}</span>
+                            <span className={styles.current}>{currentPage}</span>
                             <span className={styles.divider}>/</span>
                             <span className={styles.total}>{totalPages}</span>
                         </div>
@@ -227,8 +236,8 @@ async function RankingContent(props: PageProps) {
 
             <footer className={styles.rankingFooter}>
                 <div className={styles.footerNote}>
-                    <p>※本ランキングは24時間ごとにAM4:00に更新されます。</p>
-                    <p>※スコアは最新の市場価格とベンチマークデータの変動を元にAIが自動算出したものです。</p>
+                    <p>※本ランキングはシステムにより24時間ごとに再計算されます。</p>
+                    <p>※AIスコアはCPU/GPUベンチマーク、発売価格、重量、電力効率を元に独自のアルゴリズムで算出しています。</p>
                 </div>
             </footer>
         </main>
