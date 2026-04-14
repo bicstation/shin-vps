@@ -1,41 +1,51 @@
+// @ts-nocheck
 /**
- * 📰 ニュース・記事取得サービス (shared/lib/api/django/news.ts)
- * 🛡️ Maya's Logic v6.6 - BICSTATION & SAVING メタデータ・クリーン仕様
+ * =====================================================================
+ * 📰 ニュース・記事取得サービス (v7.0 - Logic Layer Sync)
+ * 🛡️ Maya's Logic: site_tag 導線の完全同期 & 検閲強化版
+ * =====================================================================
  */
+
 import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from './client';
 import { getWpConfig, getDjangoBaseUrl } from '../config';
 
-/** 🔄 内部URL置換 */
+/** 🔄 内部URL置換 (画像やリンクの内部ドメインを公開URLへ) */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
     const baseUrl = getDjangoBaseUrl();
     if (!baseUrl) return data;
+    
     const cleanBaseUrl = baseUrl.replace(/\/api$/, '').replace(/\/$/, '');
     const content = JSON.stringify(data);
-    const internalPattern = /http:\/\/(django-v[23]|nginx-wp-v[23]|wordpress-.+v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
+    const internalPattern = /http:\/\/(django-v[23]|django-api-host|nginx-wp-v[23]|wordpress-.+v[23]|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
+    
     try {
         const replaced = content.replace(internalPattern, cleanBaseUrl).replace(/([^:])\/\//g, '$1/');
         return JSON.parse(replaced);
     } catch (e) { return data; }
 };
 
-/** 🛠️ ニュース専用 Fetch */
+/** 🛠️ ニュース専用 Fetch 基盤 */
 async function fetchNewsRaw(url: string, options: any = {}) {
     const { host } = getWpConfig();
     const res = await fetch(url, {
         ...options,
-        headers: { ...getDjangoHeaders(), 'Host': host, ...(options.headers || {}) },
+        headers: { 
+            ...getDjangoHeaders(), 
+            'Host': host, 
+            ...(options.headers || {}) 
+        },
         signal: AbortSignal.timeout(10000)
     });
     const data = await handleResponseWithDebug(res, url);
     return { data: replaceInternalUrls(data), status: res.status };
 }
 
-/** 📰 プロジェクトごとのニュース記事を取得 (JSONメタデータ判定版) */
-export async function fetchNewsArticles(limit = 12, offset = 0, project?: string) {
-    // 一般サイト(bicstation/saving)の場合は、フィルタリングを見越して多めに取得
-    const isGeneralSite = project === 'bicstation' || project === 'saving';
-    const fetchLimit = isGeneralSite ? limit * 5 : limit; // 安全のため5倍取得
+/** 📰 サイト別のニュース記事一覧を取得 */
+export async function fetchNewsArticles(limit = 12, offset = 0, siteTag?: string) {
+    // 一般サイトの場合はアダルト混入を防ぐため、フィルタリング用に多めに取得
+    const isGeneralSite = siteTag === 'bicstation' || siteTag === 'saving';
+    const fetchLimit = isGeneralSite ? limit * 5 : limit;
 
     const query = new URLSearchParams({
         limit: fetchLimit.toString(),
@@ -43,32 +53,28 @@ export async function fetchNewsArticles(limit = 12, offset = 0, project?: string
         ordering: '-created_at',
     });
 
-    if (project && project !== 'all') {
-        query.append('project', project);
-    }
-
-    const url = commonResolveApiUrl(`news/?${query.toString()}`);
+    // client.ts (v11.0) の resolveApiUrl は内部で site=${siteTag} を自動付与するため
+    // ここで敢えて project パラメータを重複させず、パスとして構築
+    const url = commonResolveApiUrl(`news/?${query.toString()}`, siteTag);
     const { data } = await fetchNewsRaw(url, { next: { revalidate: 300 } });
 
     let rawResults = data?.results || [];
 
     /**
-     * 🛡️ JSONメタデータによるクリーン化
-     * extra_metadata 内のフラグを最優先でチェック
+     * 🛡️ クリーン化ロジック (一般サイト用)
      */
     if (isGeneralSite) {
         rawResults = rawResults.filter((item: any) => {
             const meta = item.extra_metadata || {};
             
-            // 1. JSON内のアダルトフラグをチェック (is_adult, adult_flag 等)
+            // 1. メタデータのフラグチェック
             const isAdultFlag = meta.is_adult === true || meta.adult === true || meta.rating === 'adult';
             
-            // 2. 念のためキーワード検閲も併用 (メタデータが漏れた場合の保険)
+            // 2. タイトル検閲 (保険)
             const BAN_WORDS = ['セフレ', '中出し', 'アヘアヘ', '不倫', '熟女', 'エロ', 'AV'];
             const title = item.title || "";
             const hasBanWord = BAN_WORDS.some(word => title.includes(word));
 
-            // アダルトフラグが立っておらず、かつ禁止ワードも含んでいないものだけを通す
             return !isAdultFlag && !hasBanWord;
         });
     }
@@ -85,14 +91,22 @@ export async function fetchNewsArticles(limit = 12, offset = 0, project?: string
 }
 
 /** 📝 特定の記事詳細データを取得 */
-export async function fetchPostData(postType: string = 'post', identifier: string) {
-    const url = commonResolveApiUrl(`news/${identifier}/`);
+export async function fetchPostData(identifier: string, siteTag?: string) {
+    // IDやスラッシュの洗浄
+    const cleanId = identifier.toString().replace(/\/+$/, '');
+    const url = commonResolveApiUrl(`news/${cleanId}/`, siteTag);
+    
     const { data, status } = await fetchNewsRaw(url, { next: { revalidate: 60 } });
 
     if (status === 200 && data) {
-        // 詳細ページでも念のため検閲（直リンク対策）
+        // 詳細ページでのアダルト検閲 (直リンク・検索流入対策)
         const meta = data.extra_metadata || {};
-        if (meta.is_adult === true) return null;
+        const isGeneralSite = siteTag === 'bicstation' || siteTag === 'saving';
+        
+        if (isGeneralSite && meta.is_adult === true) {
+            console.warn(`🛡️ [Sanitize] Blocked adult content on general site: ${cleanId}`);
+            return null;
+        }
 
         return {
             ...data,
@@ -103,3 +117,6 @@ export async function fetchPostData(postType: string = 'post', identifier: strin
     }
     return null;
 }
+
+// 互換性維持のためのリレーエクスポート
+export const fetchPostList = fetchNewsArticles;

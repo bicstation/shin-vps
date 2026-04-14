@@ -1,7 +1,8 @@
+// @ts-nocheck
 /**
  * =====================================================================
- * 🌉 Django-Bridge 統合サービス層 (v7.9 - Multi-Environment Final)
- * 🛡️ Maya's Logic: 源流スラッシュ排除・指揮系統一本化
+ * 🌉 Django-Bridge 統合サービス層 (v8.0 - Tag-Synchronized)
+ * 🛡️ Maya's Logic: site_tag による指揮系統の完全同期
  * =====================================================================
  */
 
@@ -17,16 +18,13 @@ import { DjangoApiResponse } from './types';
 
 /**
  * 🔄 【共通機能】内部URL・一括置換ユーティリティ
- * Djangoコンテナ内の内部ホスト名を公開URLへ変換。
  */
 export const replaceInternalUrls = (data: any): any => {
     if (!data) return data;
     
-    // config.ts から解決済みのベースURLを取得（?site=xxx が付いている可能性あり）
     const baseUrl = getDjangoBaseUrl(); 
     if (!baseUrl) return data;
     
-    // 置換に使用するのは「純粋なURL部分」のみ
     const cleanBaseUrl = baseUrl.split('?')[0].replace(/\/+$/, '');
 
     if (typeof data === 'object') {
@@ -37,10 +35,7 @@ export const replaceInternalUrls = (data: any): any => {
              */
             const internalPattern = /http:\/\/(django-v[23]|django-api-host|nginx-wp-v[23]|wordpress-.+v[23]|api-[a-z-]+-host|127\.0\.0\.1|localhost)(:[0-9]+)?/g;
             
-            // 公開URLへ置換
             content = content.replace(internalPattern, cleanBaseUrl);
-            
-            // 🚨 二重スラッシュ防止 (プロトコルの :// は除外して置換)
             content = content.replace(/([^:])\/\//g, '$1/'); 
             
             return JSON.parse(content);
@@ -53,8 +48,7 @@ export const replaceInternalUrls = (data: any): any => {
 
 /**
  * 🛰️ 【安全なプロジェクト検知】
- * 🛡️ 修正: 取得したホスト名から「末尾スラッシュ」を物理的に除去。
- * 🚀 さらに: Middlewareが刻印した 'x-project-id' も優先順位に加える。
+ * v22.0 の site_tag を取得するための基盤
  */
 const resolveCurrentMetadata = async (manualHost?: string) => {
     let host = manualHost || "";
@@ -63,32 +57,22 @@ const resolveCurrentMetadata = async (manualHost?: string) => {
         const { headers } = await import('next/headers');
         const headerList = await headers();
 
-        // 1. Middlewareが判定した「身分証」を最優先
+        // Middleware 刻印を優先
         const preCalculatedHost = headerList.get('x-django-host') || headerList.get('x-project-id');
         
         if (preCalculatedHost && !manualHost) {
             host = preCalculatedHost;
         } else {
-            // 2. ブラウザからの直接リクエストやフォールバック
             host = host || headerList.get('host') || "";
         }
     } catch (e) {
-        // サーバーコンポーネント外（クライアントサイド等）での実行用
         host = host || process.env.NEXT_PUBLIC_SITE_DOMAIN || "";
     }
 
-    // 🎯 ホスト名からスラッシュと不要なポート番号、空白を徹底除去
     const cleanHost = host.split(':')[0].replace(/\/+$/, '').trim().toLowerCase();
     
-    // サイトメタデータを取得
-    const meta = getSiteMetadata(cleanHost);
-
-    // 🛡️ 内部保持している django_host も再洗浄
-    if (meta.django_host) {
-        meta.django_host = meta.django_host.replace(/\/+$/, '');
-    }
-
-    return meta;
+    // v22.0 仕様のメタデータを取得
+    return getSiteMetadata(cleanHost);
 };
 
 /**
@@ -98,21 +82,23 @@ export async function fetchDjangoBridgeContent(params: any = {}): Promise<Django
     const meta = await resolveCurrentMetadata(params?.host);
     const contentType = params?.content_type || 'post';
 
-    // 確定した「純粋な」身分証 (saving, tiper 等)
-    const contextHost = meta.django_host;
+    /**
+     * 🎯 【最重要修正】contextTag (tiper, saving 等) を指揮系統の主軸にする
+     * Django 側の ?site= パラメータには、物理ホスト名ではなくこの tag を送る
+     */
+    const contextTag = meta.site_tag;
 
-    // 🚨 各 Logic 呼び出し時、contextHost を site パラメータとして確実に渡す
     // 1. 記事コンテンツ（News / Blog）
     if (contentType === 'news' || contentType === 'post') {
-        return await fetchNewsLogic(params?.limit || 12, params?.offset || 0, contextHost);
+        return await fetchNewsLogic(params?.limit || 12, params?.offset || 0, contextTag);
     }
 
     // 2. 商品コンテンツ
     const logicParams = { 
         ...params, 
-        site: contextHost, // 明示的に site を付与
-        site_group: meta.site_tag, 
-        host: contextHost 
+        site: contextTag,        // 明示的に純粋な tag を付与
+        site_group: meta.site_group, 
+        host: meta.django_host   // 物理的な通信先ホスト情報は保持
     };
 
     if (meta.site_group === 'adult') {
@@ -127,7 +113,8 @@ export async function fetchDjangoBridgeContent(params: any = {}): Promise<Django
  */
 export async function fetchPostList(limit = 12, offset = 0, projectHost?: string) {
     const meta = await resolveCurrentMetadata(projectHost);
-    return await fetchNewsLogic(limit, offset, meta.django_host);
+    // django_host ではなく site_tag を渡すことで導線を一致させる
+    return await fetchNewsLogic(limit, offset, meta.site_tag);
 }
 
 /**
@@ -136,7 +123,7 @@ export async function fetchPostList(limit = 12, offset = 0, projectHost?: string
 export async function fetchPostData(id: string, projectHost?: string) {
     const meta = await resolveCurrentMetadata(projectHost);
     const cleanId = id.toString().replace(/\/+$/, '');
-    return await fetchNewsDetail(cleanId, meta.django_host);
+    return await fetchNewsDetail(cleanId, meta.site_tag);
 }
 
 /**

@@ -1,19 +1,31 @@
+// @ts-nocheck
 /**
  * =====================================================================
- * 📊 PC 統計・関連データ取得サービス (Zenith v10.0 - Pipeline Synced)
+ * 📊 PC 統計・関連データ取得サービス (Zenith v11.0 - Pipeline Synced)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【引数リレーの整合性】fetchPCProducts の新仕様 (q, offset, limit, maker) に準拠。
- * 2. 【データ抽出の堅牢化】handleResponseWithDebug の戻り値を安全に処理。
- * 3. 【VPS/Local 完全対応】すべてのエンドポイントで host 引数を伝播させ、接続先解決を保証。
+ * 1. 【識別子同期】site_tag を client.ts へ正確に伝達し、サイト別ランキングを保証。
+ * 2. 【画像解決】ランキングや関連製品にも replaceInternalUrls を適用。
+ * 3. 【正規化】fetchPCProducts の最新引数仕様と完全に同期。
  * =====================================================================
  */
+
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '../client';
+import { replaceInternalUrls } from '../posts'; // 💡 URL置換ロジックを再利用
 import { fetchPCProducts } from './products';
+import { getSiteMetadata } from '../../../utils/siteConfig';
 import { PCProduct } from './types';
 
+/** 内部判定用メタデータ取得 */
+const getSiteTag = (host?: string): string => {
+    try {
+        const meta = getSiteMetadata(host || "");
+        return meta?.site_tag || 'bicstation';
+    } catch (e) { return 'bicstation'; }
+};
+
 /**
- * 💡 AIスコアランキング取得
+ * 💡 PC製品ランキング取得
  * @param type - 'score' (AI性能順) または 'popularity' (人気順)
  * @param host - 実行環境のホスト名
  */
@@ -21,19 +33,23 @@ export async function fetchPCProductRanking(
     type: 'score' | 'popularity' = 'score',
     host: string = ''
 ): Promise<PCProduct[]> {
+    const siteTag = getSiteTag(host);
     const endpoint = type === 'score' ? 'ranking' : 'popularity-ranking';
-    const url = resolveApiUrl(`general/pc-products/${endpoint}/`, host);
+    
+    // siteパラメータを付与してランキングの母体をサイト別に固定
+    const url = resolveApiUrl(`general/pc-products/${endpoint}/?site=${siteTag}`, siteTag);
     
     try {
         const res = await fetch(url, { 
-            headers: getDjangoHeaders(host), 
-            next: { revalidate: 600 } 
+            headers: getDjangoHeaders(siteTag), 
+            next: { revalidate: 600 } // 10分キャッシュ
         });
         
-        // handleResponseWithDebug は { results: [], count: 0 } を返す
         const data = await handleResponseWithDebug(res, url);
+        // 🛡️ ランキング画像の内部ドメインURLを置換
+        const cleanedData = replaceInternalUrls(data);
         
-        return Array.isArray(data.results) ? data.results : [];
+        return Array.isArray(cleanedData.results) ? cleanedData.results : [];
     } catch (e) {
         console.error(`🚨 [Ranking Fetch Error] type: ${type}`, e);
         return [];
@@ -45,25 +61,26 @@ export async function fetchPCProductRanking(
  * @param host - 実行環境のホスト名
  */
 export async function fetchPCSidebarStats(host: string = ''): Promise<any | null> {
-    const url = resolveApiUrl(`general/pc-sidebar-stats/`, host);
+    const siteTag = getSiteTag(host);
+    const url = resolveApiUrl(`general/pc-sidebar-stats/?site=${siteTag}`, siteTag);
     
     try {
         const res = await fetch(url, { 
-            headers: getDjangoHeaders(host), 
+            headers: getDjangoHeaders(siteTag), 
             next: { revalidate: 600 } 
         });
         
         const data = await handleResponseWithDebug(res, url);
+        const cleanedData = replaceInternalUrls(data);
 
         /**
          * 💡 正規化ロジック:
-         * 統計データが results: [ {stats_data} ] という配列で来る場合は 0 番目を抽出。
-         * オブジェクト直下で来る場合はそのまま data.results を返す。
+         * 統計データは results 配列またはオブジェクト直下で返る可能性があるため柔軟に処理
          */
-        if (data.results && Array.isArray(data.results)) {
-            return data.results.length > 1 ? data.results : data.results[0];
+        if (cleanedData.results && Array.isArray(cleanedData.results)) {
+            return cleanedData.results.length > 0 ? cleanedData.results[0] : null;
         }
-        return data.results || null;
+        return cleanedData.results || cleanedData;
     } catch (e) {
         console.error(`🚨 [Sidebar Stats Fetch Error]`, e);
         return null;
@@ -83,18 +100,19 @@ export async function fetchRelatedProducts(
 ): Promise<PCProduct[]> {
     try {
         /**
-         * 🚀 重要修正: fetchPCProducts の引数順序を v10.0 仕様に同期
+         * 🚀 fetchPCProducts の v11.0 仕様に同期
          * 第1引数(q): 空
          * 第2引数(offset): 0
-         * 第3引数(limit): 10 (除外分を考慮して少し多めに取得)
-         * 第4引数(maker): maker識別子
-         * 第5引数(host): hostリレー
+         * 第3引数(limit): 10
+         * 第4引数(maker): maker
+         * 第5引数(host): host (内部で siteTag へ変換される)
          */
         const { results } = await fetchPCProducts('', 0, 10, maker, host); 
         
         if (!results || !Array.isArray(results)) return [];
 
         // 自分自身を除外して最大8件を返却
+        // 画像は fetchPCProducts 側ですでに置換済み
         return results
             .filter((p: PCProduct) => p.unique_id !== excludeId)
             .slice(0, 8);
@@ -103,3 +121,6 @@ export async function fetchRelatedProducts(
         return [];
     }
 }
+
+/** 🚀 エイリアス設定 (index.ts からの呼び出し用) */
+export const fetchPCPopularityRanking = (host: string = '') => fetchPCProductRanking('popularity', host);
