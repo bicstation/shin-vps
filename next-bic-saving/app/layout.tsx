@@ -1,13 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
-// /home/maya/dev/shin-vps/next-bic-saving/app/layout.tsx
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import React, { Suspense } from "react";
 import { headers } from 'next/headers';
-import Script from "next/script";
 import styles from "./layout.module.css";
 
 /**
@@ -32,7 +30,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 /**
  * 💡 Next.js 15 用の動的レンダリング設定
- * キャッシュによる情報の古色化を防ぎ、常に最新の節約情報を届けます。
+ * キャッシュによる情報の古色化を防ぎ、常に最新の情報を届けます。
  */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -53,7 +51,6 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#ffcc00",
 };
 
 export default async function RootLayout({
@@ -73,23 +70,27 @@ export default async function RootLayout({
     siteName = site?.site_name || "bic-saving";
     themeColor = getSiteColor(siteName);
   } catch (error) {
-    // ビルド時はここを通るが、デフォルト値で継続
     console.log("[Layout] Using default theme context for build.");
   }
 
   return (
-    <html lang="ja" style={{ height: '100%' }}>
+    <html lang="ja" style={{ height: '100%' }} suppressHydrationWarning>
       <head>
-        {/* Google AdSense: 節約サイトの生命線 */}
-        <Script
+        {/* 🛡️ AdSense Critical Fix:
+          Next.js 15 の <Script /> コンポーネントを使用すると、
+          自動付与される 'data-nscript' 属性が原因で AdSense が拒絶反応を起こし、
+          "Server Components render error" を誘発します。
+          ここは標準の <script> タグを使い、ブラウザに直接読み込ませるのが鉄則です。
+        */}
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9068876333048216"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+        ></script>
       </head>
       <body 
         className={`${inter.className} ${styles.bodyWrapper}`}
+        suppressHydrationWarning
         style={{ 
           '--site-theme-color': themeColor,
           '--bg-primary': '#ffffff',
@@ -102,12 +103,12 @@ export default async function RootLayout({
           position: 'relative'
         } as React.CSSProperties}
       >
-        {/* ① ヘッダー: サイト共通の顔 */}
-        <Suspense fallback={<div style={{ height: '60px', backgroundColor: '#fff' }} />}>
+        {/* ① ヘッダー */}
+        <Suspense fallback={<div style={{ height: '60px', backgroundColor: '#fff', borderBottom: '1px solid #eee' }} />}>
           <Header />
         </Suspense>
 
-        {/* ② 告知バー: 法令遵守・透明性の確保 */}
+        {/* ② 告知バー */}
         <div style={{ 
           padding: "8px 15px", fontSize: "11px", textAlign: "center", 
           backgroundColor: "#fef9c3", color: "#854d0e", borderBottom: "1px solid #fde047",
@@ -124,20 +125,20 @@ export default async function RootLayout({
           maxWidth: '100vw',
           overflowX: 'hidden' 
         }}>
-          {/* 🛰️ 司令部直轄: サイドバーラッパー（PC表示時に有効） */}
+          {/* サイドバーラッパー */}
           <Suspense fallback={<div style={{ width: '280px', backgroundColor: '#f9fafb' }} />}>
             <SidebarWrapper />
           </Suspense>
 
-          {/* コンテンツ本体: 読みやすさを重視した背景設定 */}
+          {/* コンテンツ本体 */}
           <main style={{ 
             flexGrow: 1, 
             minWidth: 0, 
-            backgroundColor: '#f4f4f5', // 落ち着いたグレー
+            backgroundColor: '#f4f4f5', 
             padding: '20px'
           }}>
             <Suspense fallback={
-              <div style={{ padding: '50px', textAlign: 'center', color: '#a1a1aa', fontMono: 'true' }}>
+              <div style={{ padding: '50px', textAlign: 'center', color: '#a1a1aa' }}>
                 INITIALIZING_CONTENT_STREAM...
               </div>
             }>
@@ -147,11 +148,11 @@ export default async function RootLayout({
         </div>
 
         {/* ④ フッター */}
-        <Suspense fallback={<div className="h-40 bg-gray-50" />}>
+        <Suspense fallback={<div style={{ height: '200px', backgroundColor: '#111' }} />}>
           <Footer />
         </Suspense>
 
-        {/* ⑤ チャットボット: AI節約アドバイザー */}
+        {/* ⑤ チャットボット */}
         <Suspense fallback={null}>
           <ChatBot />
         </Suspense>

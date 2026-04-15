@@ -6,12 +6,11 @@ import { headers } from 'next/headers';
 
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
-// 🚀 共通クライアントから安全な関数をインポート
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '@/shared/lib/api/django/client';
 import styles from './PCSidebar.module.css';
 
 /**
- * 🛰️ PC/ガジェット特化サテライトネットワーク (全30サイト)
+ * 🛰️ PC/ガジェット特化サテライトネットワーク (固定リスト)
  */
 const PC_SATELLITES = [
   { name: "PCコンパス総合案内", url: "https://pc.compass.bicstation.com", icon: "🧭", isMain: true },
@@ -46,24 +45,17 @@ const PC_SATELLITES = [
   { name: "Fujitsu匠の技", url: "https://fujitsu.bicstation.com", icon: "🇯🇵" }
 ];
 
-/**
- * 🏢 メーカーリストの取得
- * 🛡️ 修正版: 共通ハンドラを使用し、SyntaxErrorを根絶
- */
 async function getRealMakers(host: string) {
-  // 🚀 URL解決を共通ライブラリに任せ、二重 /api/ を防止
   const url = resolveApiUrl('general/pc-makers/', host);
-  const headers = getDjangoHeaders(host);
+  const authHeaders = getDjangoHeaders(host);
 
   try {
     const res = await fetch(url, { 
-      headers,
+      headers: authHeaders,
       next: { revalidate: 3600 } 
     });
-    
-    // 🚀 HTMLが返ってきてもクラッシュしないように共通ハンドラで処理
     const data = await handleResponseWithDebug(res, url);
-    return data.results || [];
+    return data?.results || [];
   } catch (e) {
     console.error("🚨 [Sidebar Maker Fetch Critical Error]:", e);
     return [];
@@ -80,21 +72,24 @@ export default async function Sidebar() {
   /** 2. データ取得 (並列実行) */
   const [bridgeData, makers] = await Promise.all([
     fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }).catch(() => ({ results: [] })),
-    getRealMakers(host) // 🚀 修正後の関数を呼び出し
+    getRealMakers(host)
   ]);
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
 
-  /** 3. サテライトの選出ロジック */
+  /** 3. サテライトの選出ロジック (🛡️ Hydration Fixed) */
   const mainSatellite = PC_SATELLITES.find(s => s.isMain);
   const otherSatellites = PC_SATELLITES.filter(s => !s.isMain);
   
-  const shuffledOthers = [...otherSatellites]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 7);
+  // 💡 Math.random() はサーバー/クライアントで値がズレるため禁止。
+  // 代わりに「日付」をシードにして、日替わりで並び順が変わる決定論的ロジックを採用。
+  const daySeed = new Date().getDate(); 
+  const displaySatellites = [
+    mainSatellite,
+    ...otherSatellites.slice(daySeed % 5, (daySeed % 5) + 7) 
+  ].filter(Boolean);
 
-  const displaySatellites = [mainSatellite, ...shuffledOthers].filter(Boolean);
-  const siteUpperName = site ? site.site_name.toUpperCase() : 'BICSTATION';
+  const siteUpperName = (site?.site_name || 'BICSTATION').toUpperCase();
 
   return (
     <aside className={styles.sidebar}>
@@ -117,10 +112,10 @@ export default async function Sidebar() {
         <div className={styles.brandGroup}>
           <ul className={styles.list}>
             {makers && makers.length > 0 ? (
-              makers.map((m: any) => (
-                <li key={m.maker}>
+              makers.map((m: any, idx: number) => (
+                <li key={`${m.maker}-${idx}`}>
                   <Link href={`/product?maker=${m.maker}`} className={styles.link}>
-                    <span className={styles.brandLabel}>💻 {m.maker.toUpperCase()}</span>
+                    <span className={styles.brandLabel}>💻 {(m.maker || "").toUpperCase()}</span>
                     <span className={styles.badge}>{m.count}</span>
                   </Link>
                 </li>
@@ -143,7 +138,7 @@ export default async function Sidebar() {
         <div className={styles.satelliteGrid}>
           {displaySatellites.map((sat, idx) => (
             <a 
-              key={idx} 
+              key={`${sat.url}-${idx}`} 
               href={sat.url} 
               target="_blank" 
               rel="noopener noreferrer" 
@@ -162,8 +157,8 @@ export default async function Sidebar() {
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>LATEST UPDATES</h3>
         <ul className={styles.list}>
           {recentArticles.length > 0 ? (
-            recentArticles.map((item: any) => (
-              <li key={item.id} className={styles.newsItem}>
+            recentArticles.map((item: any, idx: number) => (
+              <li key={`${item.id}-${idx}`} className={styles.newsItem}>
                 <Link href={`/post/${item.id}`} className={styles.newsLink}>
                     <span className={styles.newsIcon}>📄</span>
                     <span className={styles.newsTitle}>{item.title}</span>

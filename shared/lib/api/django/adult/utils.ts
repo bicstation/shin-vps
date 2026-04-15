@@ -1,55 +1,62 @@
+// /home/maya/shin-vps/shared/lib/api/django/adult/utils.ts
 // @ts-nocheck
 /**
  * =====================================================================
- * 🛠️ Adult API 共通ユーティリティ (Zenith v6.0 - Global Pipeline)
+ * 🛠️ Adult API 共通ユーティリティ (Zenith v6.1 - Bulletproof)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【型ガードの強化】文字列が渡された際の api_source 変換をより堅牢に。
- * 2. 【正規化マップの拡充】site パラメータの保護と、共通キーの自動変換を最適化。
- * 3. 【抽出ロジックの完成】Django の paginated response とオブジェクト直列化の両方に対応。
+ * 1. 【墜落防止】toUpperCase / toLowerCase 呼び出し前の非破壊的ガード。
+ * 2. 【クエリ汚染防止】"null" や "undefined" という文字列がクエリに乗るのを阻止。
+ * 3. 【型安全】params がどのような型で渡されても、必ず Record<string, string> を返却。
  * =====================================================================
  */
 
 /** * 🔄 クエリパラメータ正規化
- * フロントエンドからの曖昧な入力を、Django API が解釈可能な形式に変換します。
- * (例: service → service_code への変換、大文字小文字の統一など)
  */
 export const normalizeParams = (params: any): Record<string, string> => {
-  // 1. 文字列単体で渡された場合は api_source (DMM/FANZA等) として扱う
-  if (typeof params === 'string') {
+  // 1. 文字列単体で渡された場合のガード
+  if (typeof params === 'string' && params) {
     return { api_source: params.toUpperCase() };
   }
   
   const clean: Record<string, string> = {};
-  if (!params || typeof params !== 'object' || Array.isArray(params)) return clean;
+  
+  // 2. null, undefined, 配列, オブジェクト以外を弾く
+  if (!params || typeof params !== 'object' || Array.isArray(params)) {
+    return clean;
+  }
 
   Object.keys(params).forEach(key => {
     const val = params[key];
     
-    // 無効な値 (undefined, null, 文字列の "undefined") を除外
-    if (val !== undefined && val !== null && val !== 'undefined' && val !== '') {
+    // 🛡️ 無効な値 (undefined, null, 文字列の "undefined", "null", 空文字) を徹底除外
+    // これをしないと APIに ?site=null と送られてエラーになる
+    if (
+      val !== undefined && 
+      val !== null && 
+      val !== 'undefined' && 
+      val !== 'null' && 
+      val !== ''
+    ) {
       let targetKey = key;
       
-      /**
-       * 💡 キーのエイリアス変換
-       * フロントエンドでの呼びやすさと API の厳密なキー名を橋渡しします。
-       */
+      // 💡 キーのエイリアス変換
       if (key === 'service') targetKey = 'service_code';
       if (key === 'floor')   targetKey = 'floor_code';
       
+      // 🛡️ 安全な文字列変換関数
+      const safeVal = String(val).trim();
+
       if (targetKey === 'api_source') {
-        // 供給元 (DMM, FANZA, MGS, DUO) は常に大文字
-        clean[targetKey] = String(val).toUpperCase();
+        clean[targetKey] = safeVal.toUpperCase();
       } else if (targetKey === 'site') {
-        // 識別子 (avflash, tiper) は常に小文字
-        clean[targetKey] = String(val).toLowerCase();
+        clean[targetKey] = safeVal.toLowerCase();
       } else {
-        // 特定のキーは小文字に強制、それ以外は文字列化して保持
-        const lowercaseKeys = ['service_code', 'floor_code', 'related_to_id', 'ordering'];
+        const lowercaseKeys = ['service_code', 'floor_code', 'related_to_id', 'ordering', 'site_group'];
         if (lowercaseKeys.includes(targetKey)) {
-          clean[targetKey] = String(val).toLowerCase();
+          clean[targetKey] = safeVal.toLowerCase();
         } else {
-          clean[targetKey] = String(val); 
+          clean[targetKey] = safeVal; 
         }
       }
     }
@@ -59,8 +66,6 @@ export const normalizeParams = (params: any): Record<string, string> => {
 };
 
 /** * 🛡️ 安全なデータ抽出
- * レスポンスが「ページネーション形式(results)」か「単純な配列」かを問わず、
- * 常にクリーンな配列を返却します。
  */
 export const safeExtract = (data: any): any[] => {
   if (!data) return [];
@@ -75,17 +80,17 @@ export const safeExtract = (data: any): any[] => {
     return data;
   }
   
-  // 3. 代替データキー (data プロパティ)
+  // 3. 代替データキー
   if (data.data && Array.isArray(data.data)) {
     return data.data;
   }
   
-  // 4. エラーレスポンスやオブジェクト単体の場合
+  // 4. エラーレスポンスやオブジェクト単体の場合（1件だけの詳細データなど）
+  // もしオブジェクト単体が配列として期待されている場所なら、ラップして返す
+  if (typeof data === 'object' && Object.keys(data).length > 0 && !data._error) {
+    // resultsプロパティがない単体オブジェクトなら、配列に入れて救済するパターン
+    return [data];
+  }
+  
   return [];
 };
-
-/**
- * 💡 開発者へのメモ:
- * このユーティリティは、products.ts, taxonomy.ts, navigation.ts のすべてで使用されます。
- * パラメータの仕様変更を行う際は、ここを起点に調整してください。
- */

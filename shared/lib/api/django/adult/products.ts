@@ -1,53 +1,66 @@
+// /home/maya/shin-vps/shared/lib/api/django/adult/products.ts
 // @ts-nocheck
 /**
  * =====================================================================
- * 🔞 アダルト製品取得サービス (Zenith v12.0 - Adult Domain Sync)
+ * 🔞 アダルト製品取得サービス (Zenith v12.1 - Hardened Sync)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【識別子同期】siteTag を client.ts へ伝え、適切な Django 接続先を確保。
- * 2. 【画像URL置換】内部ドメイン (django-api-host 等) を公開 URL へ自動置換。
- * 3. 【堅牢なパース】safeExtract と handleResponseWithDebug を組み合わせ、
- * SSR 時のパースエラーを完全に封殺。
+ * 1. 【プロパティ・ガード】results 内の各 product に対して toString() ガードを適用。
+ * 2. 【ID安全抽出】IDが数値や文字列が混在しても落ちないように正規化。
+ * 3. 【置換ロジック統合】replaceInternalUrls を適用し、画像やリンクを公開ドメインへ。
  * =====================================================================
  */
 
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '../client';
-import { replaceInternalUrls } from '../posts'; // 💡 内部ドメイン置換ロジックを再利用
+import { replaceInternalUrls } from '../../django-bridge'; // 💡 django-bridge 側の最新置換ロジックを使用
 import { normalizeParams, safeExtract } from './utils';
 import { AdultProduct } from '../../types';
 
 /**
  * 📦 統合製品リスト取得 (Unified API 経由)
- * FANZA, DMM, MGS 等の製品を横断的に取得します。
  */
 export async function getUnifiedProducts(params: any = {}, host: string = '') {
-  // 1. パラメータの正規化と siteTag の抽出
-  const cleanParams = normalizeParams(params);
-  const siteTag = cleanParams.site || 'avflash'; // avflash / tiper 等
+  // 1. パラメータの正規化
+  const cleanParams = normalizeParams(params || {});
+  const siteTag = cleanParams.site || 'avflash';
 
   const queryString = new URLSearchParams(cleanParams).toString();
-  
-  /**
-   * ✅ URL解決: client.ts (v11.0) のロジックを使用
-   * 末尾スラッシュを固定し、siteTag を伝達。
-   */
   const targetUrl = resolveApiUrl(`adult/unified-products/?${queryString}`, siteTag);
 
   try {
     const res = await fetch(targetUrl, { 
-      headers: getDjangoHeaders(siteTag), // 💡 siteTag ごとのヘッダーを付与
-      cache: 'no-store', // 🔄 復旧優先：最新の在庫・価格情報を直視
+      headers: getDjangoHeaders(siteTag),
+      cache: 'no-store',
     });
 
-    // 2. 共通ハンドリング
     const data = await handleResponseWithDebug(res, targetUrl);
     
-    // 3. 画像URLの洗浄 (内部ドメインが含まれる場合を考慮)
+    // 🛡️ [ガード] データが取れなかった場合
+    if (!data) return { results: [], count: 0 };
+
+    // 2. 画像URL・内部ドメインの洗浄
     const cleanedData = replaceInternalUrls(data);
     
+    // 3. データの抽出と「中身」の毒抜き
+    const rawResults = safeExtract(cleanedData);
+    
+    const hardenedResults = (Array.isArray(rawResults) ? rawResults : []).map((item: any) => {
+      // 🛡️ [重要] プロパティごとの null ガード
+      // ここで toString().toLowerCase() 等が後続（コンポーネント側）で呼ばれても死なないようにする
+      return {
+        ...item,
+        id: (item.id || item.product_id || "").toString(),
+        brand: (item.brand || "FANZA").toString(), // 大文字小文字化はコンポーネントに任せるか、ここでする
+        site_tag: (item.site_tag || siteTag).toString(),
+        title: item.title || "No Title",
+        // 画像URLが空の場合のフォールバック
+        image: item.image_url || item.main_image || "/images/common/no-image.jpg"
+      };
+    });
+    
     return { 
-      results: safeExtract(cleanedData) as AdultProduct[], 
-      count: cleanedData?.count || 0
+      results: hardenedResults as AdultProduct[], 
+      count: cleanedData?.count || hardenedResults.length
     };
   } catch (error) { 
     console.error(`🚨 [Adult-Products] FETCH_FAILED: ${targetUrl}`, error);
@@ -57,12 +70,11 @@ export async function getUnifiedProducts(params: any = {}, host: string = '') {
 
 /**
  * 🎯 製品詳細取得
- * 単一製品の詳細データを取得します。
  */
 export async function getAdultProductDetail(id: string | number, siteTag: string = 'avflash'): Promise<AdultProduct | null> {
-  if (!id || id === 'main') return null;
+  // 🛡️ id が undefined や 'main' (ルーティングミス) の場合は即終了
+  if (!id || id === 'main' || id === 'undefined') return null;
   
-  // 💡 site パラメータを付与して詳細取得を確実にする
   const targetUrl = resolveApiUrl(`adult/products/${id}/?site=${siteTag}`, siteTag);
   
   try {
@@ -71,25 +83,29 @@ export async function getAdultProductDetail(id: string | number, siteTag: string
       cache: 'no-store' 
     });
     
-    // handleResponseWithDebug は results 配列またはオブジェクト単体を正規化して返す
     const data = await handleResponseWithDebug(res, targetUrl);
+    if (!data) return null;
+
     const cleanedData = replaceInternalUrls(data);
 
-    /**
-     * Django の詳細エンドポイントは results[0] ではなく単体オブジェクトを返すことが多いが
-     * handleResponseWithDebug の仕様（resultsプロパティの有無）に合わせ、柔軟に抽出。
-     */
-    const product = (cleanedData.results && Array.isArray(cleanedData.results)) 
+    // 詳細データは results[0] か、オブジェクト単体か、柔軟に判定
+    let product = (cleanedData.results && Array.isArray(cleanedData.results)) 
       ? cleanedData.results[0] 
-      : (cleanedData.id ? cleanedData : null);
+      : (cleanedData.id || cleanedData.product_id ? cleanedData : null);
     
-    // 404 または Not Found のガード
+    // 🛡️ エラーレスポンスのガード
     if (!product || product.detail === "Not found." || cleanedData?._error) {
-      console.warn(`⚠️ [Adult-Detail] Product not found: ${id}`);
       return null;
     }
 
-    return product as AdultProduct;
+    // 🛡️ 詳細データもプロパティを安全化
+    return {
+      ...product,
+      id: product.id?.toString() || id.toString(),
+      brand: (product.brand || "FANZA").toString(),
+      title: product.title || "No Title"
+    } as AdultProduct;
+
   } catch (error) {
     console.error(`🚨 [Adult-Detail] FETCH_FAILED [${id}]:`, error);
     return null; 

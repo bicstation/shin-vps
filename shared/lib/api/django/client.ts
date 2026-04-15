@@ -1,4 +1,5 @@
 // @ts-nocheck
+// /home/maya/shin-vps/shared/lib/api/django/client.ts
 /**
  * =====================================================================
  * 🛰️ Django API 共通クライアント (Zenith v15.0 - Diamond Guard Edition)

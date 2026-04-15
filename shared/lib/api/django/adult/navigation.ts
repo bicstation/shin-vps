@@ -1,12 +1,13 @@
+// /home/maya/shin-vps/shared/lib/api/django/adult/navigation.ts
 // @ts-nocheck
 /**
  * =====================================================================
- * 🔞 アダルトナビゲーションサービス (Zenith v7.0 - Adult Domain Sync)
+ * 🔞 アダルトナビゲーションサービス (Zenith v7.1 - Hardened)
  * =====================================================================
  * 🛡️ 修正ポイント:
- * 1. 【識別子同期】siteTag (avflash等) を正確に client.ts へ伝え、正しい API 接続先を確保。
- * 2. 【フィルタ強化】api_source (DMM/FANZA等) によるフロアフィルタをより堅牢に。
- * 3. 【デバッグ統合】handleResponseWithDebug を使用し、SSR 時のログ出力を標準化。
+ * 1. 【安全な大文字変換】apiSource や key が undefined でも toUpperCase で落ちないようガード。
+ * 2. 【型チェックの厳格化】rawData が null の場合に Object.keys が爆発するのを防止。
+ * 3. 【パラメータ正規化】URLSearchParams 構築時の undefined 混入を抑制。
  * =====================================================================
  */
 
@@ -18,10 +19,10 @@ import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '../cli
  * サイト（DMM/FANZA/MGS等）ごとのジャンルやカテゴリの階層構造を取得します。
  */
 export async function getAdultNavigationFloors(params: any = {}, host: string = '') {
-  // 1. パラメータの正規化
-  const cleanParams = normalizeParams(params);
-  const siteTag = cleanParams.site || 'avflash'; // avflash / tiper 等
-  const apiSource = cleanParams.api_source || ''; // DMM / FANZA / MGS 等
+  // 1. パラメータの正規化 (undefined を空文字へ)
+  const cleanParams = normalizeParams(params || {});
+  const siteTag = cleanParams.site || 'avflash';
+  const apiSource = cleanParams.api_source || ''; 
 
   const query = new URLSearchParams(cleanParams).toString();
   
@@ -37,21 +38,28 @@ export async function getAdultNavigationFloors(params: any = {}, host: string = 
     // 3. 共通レスポンスハンドラ (results 抽出ロジックを含む)
     const dataObj = await handleResponseWithDebug(res, targetUrl);
     
+    // 🛡️ [ガード] レスポンス自体が null/undefined の場合を救済
+    if (!dataObj) return {};
+
     /**
-     * dataObj は { results: [...], count: ... } または 
-     * オブジェクト直下 { 'DVD': {...}, 'FANZA': {...} } で返る可能性があるため正規化
+     * dataObj は { results: [...] } またはオブジェクト直下で返る可能性があるため正規化
      */
     const rawData = (dataObj.results && !Array.isArray(dataObj.results)) 
         ? dataObj.results 
         : (dataObj.results?.length > 0 ? dataObj.results : dataObj);
 
-    // 4. APIソース（DMM/FANZA/MGS）によるフィルタリングロジック
-    if (apiSource && typeof rawData === 'object') {
+    // 4. APIソース（DMM/FANZA/MGS）によるフィルタリング
+    // 🛡️ [ガード] rawData が null の場合に Object.keys() が死ぬのを防ぐ
+    if (apiSource && rawData && typeof rawData === 'object') {
       const filteredData: any = {};
-      const sourceUpper = apiSource.toUpperCase();
+      
+      // 🛡️ [安全な変換] apiSource が万が一 null の場合でも toUpperCase() を呼べるようにする
+      const sourceUpper = (apiSource || "").toString().toUpperCase();
 
       Object.keys(rawData).forEach(key => {
-        const k = key.toUpperCase();
+        // 🛡️ [安全な変換] key 自体が不正な場合を考慮
+        if (!key) return;
+        const k = key.toString().toUpperCase();
         
         // 🛡️ DMM 特有の除外ロジック (DMMを指定した際は FANZA を含めない等の調整)
         let isMatch = false;
@@ -68,8 +76,9 @@ export async function getAdultNavigationFloors(params: any = {}, host: string = 
       return Object.keys(filteredData).length > 0 ? filteredData : rawData;
     }
 
-    return rawData;
+    return rawData || {};
   } catch (error) {
+    // 🚨 自宅PC環境などで通信に失敗した場合でも、UIを落とさないよう空オブジェクトを返却
     console.error(`🚨 [Adult-Nav Error] Target: ${targetUrl}`, error);
     return {};
   }

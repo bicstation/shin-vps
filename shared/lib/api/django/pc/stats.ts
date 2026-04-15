@@ -1,5 +1,15 @@
 // /home/maya/shin-vps/shared/lib/api/django/pc/stats.ts
 // @ts-nocheck
+/**
+ * =====================================================================
+ * 💻 PC製品統計・ランキングサービス (Zenith v12.1 - Hardened)
+ * =====================================================================
+ * 🛡️ 修正ポイント:
+ * 1. 【安全なメタデータ】getSafeMeta を強化し、ホスト解決失敗でも墜落を防止。
+ * 2. 【正規化の徹底】ランキング結果が配列でない場合の救済ロジックを追加。
+ * 3. 【ID比較の安定化】RelatedProducts 内での ID 比較を toString() で安全に。
+ * =====================================================================
+ */
 
 import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '../client';
 import { replaceInternalUrls } from '../../django-bridge';
@@ -7,17 +17,19 @@ import { fetchPCProducts } from './products';
 import { getSiteMetadata } from '../../../utils/siteConfig';
 import { PCProduct } from './types';
 
-/** 内部判定用メタデータ取得 */
+/** 内部判定用メタデータ取得 (安全版) */
 const getSafeMeta = (host?: string) => {
     try {
-        return getSiteMetadata(host || "");
-    } catch (e) { return null; }
+        const cleanHost = (host || "").toString().split(':')[0];
+        return getSiteMetadata(cleanHost) || { site_tag: 'bicstation', site_group: 'general' };
+    } catch (e) { 
+        return { site_tag: 'bicstation', site_group: 'general' }; 
+    }
 };
 
 /**
  * 💡 PC製品ランキング取得
  * @param type - 'score' (AI性能順) または 'popularity' (人気順)
- * @param host - 実行環境のホスト名
  */
 export async function fetchPCProductRanking(
     type: 'score' | 'popularity' = 'score',
@@ -27,12 +39,13 @@ export async function fetchPCProductRanking(
     const siteTag = meta?.site_tag || 'bicstation';
     const siteGroup = meta?.site_group || 'general';
     
-    // 💡 type によってエンドポイントを切り替え
-    const endpoint = type === 'score' ? 'ranking' : 'popularity-ranking';
+    // 安全なエンドポイント決定
+    const safeType = (type || 'score').toString();
+    const endpoint = safeType === 'score' ? 'ranking' : 'popularity-ranking';
     
     const query = new URLSearchParams({
         site: siteTag,
-        site_name: siteTag, // 🔥 以前のロジック用に追加
+        site_name: siteTag,
         site_group: siteGroup
     });
     
@@ -45,21 +58,26 @@ export async function fetchPCProductRanking(
         });
         
         const data = await handleResponseWithDebug(res, url);
+        if (!data) return [];
+
         const cleanedData = replaceInternalUrls(data);
         
-        /**
-         * 🛡️ 堅牢な結果抽出ロジック
-         */
+        // 🛡️ 堅牢な結果抽出ロジック
         let results = [];
         if (Array.isArray(cleanedData)) {
             results = cleanedData;
         } else if (cleanedData && typeof cleanedData === 'object') {
-            // results だけでなく data キーもチェック
-            results = cleanedData.results || cleanedData.data || (Array.isArray(cleanedData) ? cleanedData : []);
+            results = cleanedData.results || cleanedData.data || (cleanedData.id ? [cleanedData] : []);
         }
 
-        // オブジェクトが返ってきたが結果が配列でない場合の最終ガード
-        return (Array.isArray(results) ? results : []) as PCProduct[];
+        // 🛡️ マッピングによる各アイテムの毒抜き
+        return (Array.isArray(results) ? results : []).map((item: any) => ({
+            ...item,
+            id: (item.id || "").toString(),
+            unique_id: (item.unique_id || "").toString(),
+            name: item.name || "No Name"
+        })) as PCProduct[];
+
     } catch (e) {
         console.error(`🚨 [Ranking Fetch Error] type: ${type} | URL: ${url}`, e);
         return [];
@@ -73,7 +91,6 @@ export async function fetchPCSidebarStats(host: string = ''): Promise<any | null
     const meta = getSafeMeta(host);
     const siteTag = meta?.site_tag || 'bicstation';
     
-    // 🔥 site_name を追加してフィルタリングを確実に通す
     const url = resolveApiUrl(`general/pc-sidebar-stats/?site=${siteTag}&site_name=${siteTag}`, siteTag);
     
     try {
@@ -88,10 +105,22 @@ export async function fetchPCSidebarStats(host: string = ''): Promise<any | null
         if (!cleanedData) return null;
 
         // resultsが配列で返ってきた場合、最初の1件が統計本体
+        let stats = null;
         if (Array.isArray(cleanedData.results)) {
-            return cleanedData.results[0] || null;
+            stats = cleanedData.results[0] || null;
+        } else {
+            stats = cleanedData.results || cleanedData || null;
         }
-        return cleanedData.results || cleanedData || null;
+
+        // 🛡️ 統計データ内の undefined 参照を防止するための簡易ガード
+        if (stats && typeof stats === 'object') {
+            return {
+                ...stats,
+                total_count: stats.total_count || 0,
+                maker_counts: Array.isArray(stats.maker_counts) ? stats.maker_counts : []
+            };
+        }
+        return stats;
     } catch (e) {
         console.error(`🚨 [Sidebar Stats Fetch Error]`, e);
         return null;
@@ -107,19 +136,21 @@ export async function fetchRelatedProducts(
     host: string = ''
 ): Promise<PCProduct[]> {
     try {
-        // 💡 fetchPCProducts 自体が内部で site_name を付与するように修正されている前提
-        const response = await fetchPCProducts('', 0, 10, maker, host); 
+        const safeMaker = (maker || "").toString();
+        const safeExcludeId = (excludeId || "").toString();
+
+        const response = await fetchPCProducts('', 0, 10, safeMaker, host); 
         
-        // fetchPCProducts の戻り値構造 { results, count } を考慮
         const results = response?.results || (Array.isArray(response) ? response : []);
         
         if (!Array.isArray(results)) return [];
 
         return results
-            .filter((p: PCProduct) => {
-                const pid = (p.unique_id || p.id)?.toString();
-                const eid = excludeId?.toString();
-                return pid !== eid;
+            .filter((p: any) => {
+                if (!p) return false;
+                // 🛡️ ID比較を toString() で安全に行う (TypeError: toLowerCase of undefined を完全ガード)
+                const pid = (p.unique_id || p.id || "").toString();
+                return pid !== "" && pid !== safeExcludeId;
             })
             .slice(0, 8);
     } catch (e) {

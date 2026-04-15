@@ -1,7 +1,7 @@
 /**
  * =====================================================================
  * 📋 統合型定義 (shared/lib/api/types.ts)
- * 🛡️ Maya's Logic: マルチドメイン・循環参照防止・AI対応版
+ * 🛡️ Maya's Zenith v12.1: [TYPE_SAFE_HARDENING]
  * =====================================================================
  */
 
@@ -18,10 +18,10 @@ export interface RadarChartData {
  * 🏷️ 共通マスターデータ (Maker, Label, Genre, Actress等)
  */
 export interface MasterBase {
-  id: number;
+  id: string | number; // 🛡️ IDは数値・文字列どちらも許容
   name: string;
   slug?: string;
-  api_source?: string; // DMM, FANZA, DUGA, etc.
+  api_source?: string; 
 }
 
 /**
@@ -33,7 +33,7 @@ export interface MakerCount {
 }
 
 /**
- * 🏷️ 属性タグ (PCAttribute / AdultAttribute)
+ * 🏷️ 属性タグ
  */
 export interface ProductAttribute extends MasterBase {
   attr_type: string;
@@ -41,21 +41,30 @@ export interface ProductAttribute extends MasterBase {
 }
 
 /**
- * 📰 統合投稿型定義 (UnifiedPost) ✅ v7.6 追加
- * 🛡️ Djangoの /api/posts/ エンドポイントからのデータをフロントエンドで一律に扱うための型。
- * 💡 posts.ts の map 処理後の成果物を定義。
+ * 📰 統合投稿型定義 (UnifiedPost) ✅ v7.7 カテゴリ完全同期
  */
 export interface UnifiedPost {
-  id: string;               // 文字列化されたID (APIの id)
-  slug: string;             // スラッグ（なければID）
+  id: string;             // 文字列化されたID
+  slug: string;           
   title: string;
-  image: string;            // main_image_url 等から統合されたパス
-  content: string;          // body_main 等から統合された本文
-  site: string;             // 識別ドメイン (af_gal, bicstation等)
-  is_adult: boolean;        // アダルト判定フラグ
-  content_type: string;     // news, review, product 等
+  image: string;          
+  content: string;        
+  summary?: string;       // 💡 要約プロパティを明示
+  site: string;           
+  is_adult: boolean;      
+  content_type: string;   
   created_at: string;
   updated_at: string;
+  
+  // 🛡️ カテゴリ・ガード
+  category: {
+    id: string | number;
+    name: string;
+    slug: string;
+  };
+
+  // 🛡️ 著者情報
+  author: string;
   
   // --- 以下、APIの生データ保持用 ---
   main_image_url?: string;
@@ -68,12 +77,12 @@ export interface UnifiedPost {
 }
 
 /**
- * 💻 PC製品型定義 (BicStation等)
+ * 💻 PC製品型定義
  */
 export interface PCProduct {
-  id: number;
+  id: string | number;     // 🛡️
   unique_id: string;
-  site_prefix: string;
+  site_prefix?: string;    // optional化
   maker: MasterBase | string; 
   name: string;
   price: number | null;
@@ -81,13 +90,11 @@ export interface PCProduct {
   affiliate_url: string;
   description?: string;
   
-  // 🧠 AI生成・解析コンテンツ
   ai_content?: string;
   ai_summary?: string;
   target_segment?: string; 
-  spec_score: number;      // 0-100 の総合評価
+  spec_score: number;      
   
-  // 📈 スコア詳細 (5軸レーダーチャート用)
   score_cpu?: number;
   score_gpu?: number;
   score_ai?: number;
@@ -95,8 +102,7 @@ export interface PCProduct {
   score_portable?: number;
   radar_chart?: RadarChartData[]; 
 
-  // ⚙️ ハードウェアスペック
-  stock_status: 'instock' | 'outofstock' | 'preorder';
+  stock_status: 'instock' | 'outofstock' | 'preorder' | string; // 文字列許容
   unified_genre?: string;
   cpu_model?: string;
   gpu_model?: string;
@@ -110,10 +116,10 @@ export interface PCProduct {
 }
 
 /**
- * 🔞 アダルト製品型定義 (AVFLASH, TIPER等)
+ * 🔞 アダルト製品型定義
  */
 export interface AdultProduct {
-  id: number;
+  id: string | number;     // 🛡️ APIによって混在するため
   product_id_unique: string;
   api_source: string;
   title: string;
@@ -123,7 +129,6 @@ export interface AdultProduct {
   image_url_list: string[];
   sample_movie_url: string | null; 
 
-  // 🚩 v5.1 物理カラム対応
   is_adult: boolean;
   site: string;
 
@@ -136,13 +141,11 @@ export interface AdultProduct {
   genres: MasterBase[];
   attributes: ProductAttribute[];
 
-  // 🧠 AI解析・評価
   ai_summary?: string;
   ai_content?: string;
   target_segment?: string;
   spec_score: number; 
   
-  // 📊 5軸評価スコア
   score_visual: number;
   score_story: number;
   score_cost: number;
@@ -152,26 +155,6 @@ export interface AdultProduct {
   is_active: boolean;
   is_posted: boolean;
   updated_at: string;
-}
-
-/**
- * 📝 WordPress 投稿用型定義 (旧WP記事 / Bridge用 互換維持)
- */
-export interface WPPost {
-  id: number;
-  date: string;
-  slug: string;
-  status: string;
-  type: string;
-  link: string;
-  title: { rendered: string };
-  content: { rendered: string };
-  excerpt: { rendered: string };
-  featured_media: number;
-  _embedded?: {
-    'wp:featuredmedia'?: Array<{ source_url: string; alt_text: string }>;
-    'wp:term'?: any[][];
-  };
 }
 
 /**

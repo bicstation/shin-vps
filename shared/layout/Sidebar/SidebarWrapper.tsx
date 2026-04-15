@@ -9,7 +9,7 @@ import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 // 子コンポーネント
 import Sidebar from './AdultSidebar'; 
 import AdultSidebarAvFlash from './AdultSidebarAvFlash'; 
-import GeneralSidebar from './GeneralSidebar'; // 👈 追加
+import GeneralSidebar from './GeneralSidebar';
 
 // API関数
 import { 
@@ -19,38 +19,62 @@ import {
   getAdultNavigationFloors,
 } from '@/shared/lib/api/django/adult'; 
 
+/**
+ * =====================================================================
+ * 🛡️ Maya's Logic: サイドバー・インテリジェンス・ラッパー
+ * ---------------------------------------------------------------------
+ * 🚀 修正の要点:
+ * 1. 【安全なFetch】AbortSignal.timeout 依存を排除し、例外を完全ラップ。
+ * 2. 【条件付きリクエスト】一般サイト時はアダルト系 API への Fetch をスキップ。
+ * 3. 【URLガード】api_base_url が無い場合に不正な URL を叩かないよう保護。
+ * =====================================================================
+ */
 export default async function SidebarWrapper() {
   // --- 🛰️ STEP 1: 環境解析 ---
   const headerList = await headers();
   const host = headerList.get('host') || 'localhost';
 
   const metadata = getSiteMetadata(host);
-  const { site_name, site_group, default_brand, api_base_url, is_local_env } = metadata;
-  const brandQuery = default_brand.toLowerCase();
+  // undefined ガード
+  const { 
+    site_name = 'Bic Saving', 
+    site_group = 'general', 
+    default_brand = 'saving', 
+    api_base_url = '' 
+  } = metadata || {};
   
+  const brandQuery = default_brand.toLowerCase();
   const isAvFlash = site_name === 'AV Flash';
-  const isBicSaving = site_name === 'Bic Saving'; // 👈 判定用に追加
+  const isGeneral = site_group === 'general';
 
-  // --- 🛰️ STEP 2: データの並列取得 ---
-  const resultsTracker = {
-    navigation: { status: 'pending', count: 0 },
-    genres: { status: 'pending', count: 0 },
-    makers: { status: 'pending', count: 0 },
-    actresses: { status: 'pending', count: 0 },
-    stats: { status: 'pending', count: 0 }
-  };
+  // --- 🛰️ STEP 2: データの並列取得 (安全策を最大化) ---
+  
+  // 🛡️ API URL の検証と構築
+  const statsUrl = (api_base_url && !isGeneral) 
+    ? `${api_base_url}/api/adult/sidebar-stats/` 
+    : null;
 
-  // ※一般サイト（Bic Saving等）の場合は、アダルトAPIのフェッチをスキップして負荷を軽減する運用も可能ですが、
-  // 現状のロジックを維持しつつ安全に実行します。
   const [navigationData, genresData, makersData, actressesData, statsResponse] = await Promise.all([
     getAdultNavigationFloors({ site: brandQuery }).catch(() => ({})),
     fetchGenres({ limit: 40, api_source: brandQuery }).catch(() => ({ results: [] })),
     fetchMakers({ limit: 20, api_source: brandQuery }).catch(() => ({ results: [] })),
     fetchActresses({ limit: 20, api_source: brandQuery }).catch(() => ({ results: [] })),
-    fetch(`${api_base_url}/api/adult/sidebar-stats/`, { 
-      next: { revalidate: 3600 },
-      signal: AbortSignal.timeout(3000) 
-    }).then(res => res.ok ? res.json() : { attributes: [] }).catch(() => ({ attributes: [] }))
+    
+    // 自前で fetch のエラーハンドリングを完結させる (AbortSignal.timeout は使わない)
+    (async () => {
+      if (!statsUrl) return { attributes: [] };
+      try {
+        const res = await fetch(statsUrl, { 
+          next: { revalidate: 3600 }
+          // Note: タイムアウト制御が必要な場合はコントローラーを手動で作成するか、
+          // インフラ側のタイムアウトに任せるのが Server Components では安全。
+        });
+        return res.ok ? await res.json() : { attributes: [] };
+      } catch (e) {
+        console.error("🛰️ Sidebar stats fetch error:", e);
+        return { attributes: [] };
+      }
+    })()
   ]);
 
   // --- 🛰️ STEP 3: 整形 ---
@@ -62,18 +86,18 @@ export default async function SidebarWrapper() {
     aiAttributes: statsResponse?.attributes || [], 
     currentBrand: brandQuery,
     siteName: site_name,
-    isBicSaving: isBicSaving // 👈 Propとして渡す
+    isBicSaving: isGeneral // Bic Saving / Bic Station を包含
   };
 
   // --- 🛰️ STEP 4: レンダリング ---
   return (
     <>
-      {/* 🛠️ デバッグ注入ロジック */}
+      {/* 🛠️ デバッグ注入ロジック (安全な文字列埋め込み) */}
       <script
         dangerouslySetInnerHTML={{
           __html: `
-            console.group("%c🛰️ SIDEBAR SYSTEM v17.0", "background: #10b981; color: #fff; font-weight: bold; padding: 4px;");
-            console.log("🌐 Site:", "${site_name}");
+            console.group("%c🛰️ SIDEBAR SYSTEM", "background: #111; color: #fbbf24; font-weight: bold; padding: 4px;");
+            console.log("🌐 Site:", "${site_name.replace(/"/g, '\\"')}");
             console.log("🏗️ Mode:", "${site_group}");
             console.groupEnd();
           `,

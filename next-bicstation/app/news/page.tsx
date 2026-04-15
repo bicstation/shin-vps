@@ -1,12 +1,12 @@
 /**
  * =====================================================================
- * 🛰️ BIC-STATION Intelligence Archive System (v12.7.5)
- * 🛡️ Maya's Logic: Multi-Sector Information Aggregator
+ * 🛰️ BIC-STATION Intelligence Archive System (v13.5.0-WP_Fusion)
+ * 🛡️ Maya's Logic: Hybrid WordPress & Django Aggregator
  * ---------------------------------------------------------------------
  * 🚀 統合ポイント:
- * 1. 【NEON_CORE】最新のシアン発光制御 (news.module.css) を完全適用。
- * 2. 【BRIDGE_ACCESS】django-bridge 経由で全プロジェクトのノードを同期。
- * 3. 【DYNAMIC_ROUTING】ホスト名に基づいた自動サイト設定のデコード。
+ * 1. 【WP_PRIMARY】WordPress API を最優先ソースとして統合。
+ * 2. 【FALLBACK】WPが応答しない場合のみ Django Bridge から補完。
+ * 3. 【JP_UI】技術情報を扱うアーカイブとして日本語タイトルを最適化。
  * =====================================================================
  */
 
@@ -17,10 +17,12 @@ import React from 'react';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 
-// ✅ 共通コンポーネント (最新の UnifiedProductCard を使用)
+// ✅ 共通コンポーネント
 import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 
-// ✅ 成功実績のある Bridge 経由の取得関数
+// ✅ 統合済みAPI 取得関数
+// wordpress.ts に集約した fetchWPTechInsights を使用
+import { fetchWPTechInsights } from '@/shared/lib/api/django/wordpress'; 
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
@@ -40,18 +42,28 @@ export default async function ArchiveIndexPage({ searchParams }: { searchParams:
 
     // ページネーション・オフセット計算
     const currentPage = parseInt(searchParams.page || '1', 10);
-    const offset = (currentPage - 1) * POSTS_PER_PAGE;
 
-    // --- 🎯 STEP 2: データ・デコード (django-bridge 経由) ---
-    // 全アーカイブノードを高速スキャン
-    const response = await fetchDjangoBridgeContent('posts', POSTS_PER_PAGE, { 
-        offset: offset,
-        // 必要に応じて content_type: 'news' 等のフィルタリングも可能
-    });
+    // --- 🎯 STEP 2: データ・フェッチ (WP優先ハイブリッド戦略) ---
+    
+    /**
+     * 🛰️ STRATEGY:
+     * まず WordPress (legacy.nabejuku.com) のテックインサイトをスキャン。
+     * 応答がない、またはデータが空の場合のみ、ローカルの Django DB へフォールバックします。
+     */
+    let allPosts = await fetchWPTechInsights(POSTS_PER_PAGE);
+    let totalCount = allPosts.length;
+    let dataSource = 'WORDPRESS_PRIMARY';
 
-    const allPosts = response?.results || (Array.isArray(response) ? response : []);
-    const totalCount = response?.count || allPosts.length || 0;
-    const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE);
+    // 2. もし WordPress から取得できなかった場合、Django Bridge を起動
+    if (!allPosts || allPosts.length === 0) {
+        const offset = (currentPage - 1) * POSTS_PER_PAGE;
+        const djangoResponse = await fetchDjangoBridgeContent('posts', POSTS_PER_PAGE, { offset });
+        allPosts = djangoResponse?.results || (Array.isArray(djangoResponse) ? djangoResponse : []);
+        totalCount = djangoResponse?.count || allPosts.length;
+        dataSource = 'DJANGO_FALLBACK_NODE';
+    }
+
+    const totalPages = Math.ceil(totalCount / POSTS_PER_PAGE) || 1;
 
     return (
         <div className={styles.archiveContainer}>
@@ -68,14 +80,14 @@ export default async function ArchiveIndexPage({ searchParams }: { searchParams:
                 </div>
                 
                 <h1 className={styles.mainTitle}>
-                    INTELLIGENCE_ARCHIVE
-                    <span className={styles.subTitle}>// {siteConfig.site_name.toUpperCase()}</span>
+                    最新技術・ニュースアーカイブ
+                    <span className={styles.subTitle}>// {siteConfig.site_name.toUpperCase()} INTELLIGENCE</span>
                 </h1>
 
                 <div className={styles.statusLine}>
-                    <span>STATUS: <span className={styles.statusActive}>DECRYPTING...</span></span>
-                    <span>TOTAL_NODES: <span className={styles.countNum}>{totalCount.toLocaleString()}</span></span>
-                    <span>RELAY_STATION: {host.toUpperCase()}</span>
+                    <span>STATUS: <span className={styles.statusActive}>{dataSource}...</span></span>
+                    <span>記録数: <span className={styles.countNum}>{totalCount.toLocaleString()}</span></span>
+                    <span>中継局: {host.toUpperCase()}</span>
                 </div>
             </header>
 
@@ -94,33 +106,33 @@ export default async function ArchiveIndexPage({ searchParams }: { searchParams:
                 ) : (
                     <div className={styles.noDataArea}>
                         <div className="text-4xl mb-8 opacity-20">⚠️</div>
-                        <p className={styles.errorMessage}>[!] NO_SIGNAL_DETECTED_IN_CURRENT_SECTOR</p>
-                        <Link href="/post" className={styles.retryBtn + " mt-8 inline-block"}>
+                        <p className={styles.errorMessage}>[!] 信号を検知できません。同期サーバーを確認してください。</p>
+                        <Link href="/" className={styles.retryBtn + " mt-8 inline-block"}>
                             RE-INITIALIZE_CONNECTION
                         </Link>
                     </div>
                 )}
             </main>
 
-            {/* --- 🔢 ページネーション・コントロール --- */}
+            {/* --- 🔢 ページネーション --- */}
             {totalPages > 1 && (
                 <nav className={styles.paginationWrapper}>
                     <div className={styles.pageControls}>
                         {currentPage > 1 ? (
                             <Link href={`?page=${currentPage - 1}`} className={styles.pageBtn}>
-                                « PREVIOUS_SECTOR
+                                « 前のセクターへ
                             </Link>
                         ) : (
                             <span className={styles.pageBtnDisabled}>PREVIOUS_SECTOR</span>
                         )}
 
                         <div className={styles.pageInfo}>
-                            NODE_SECTOR: {currentPage} / {totalPages}
+                            SECTION: {currentPage} / {totalPages}
                         </div>
 
                         {currentPage < totalPages ? (
                             <Link href={`?page=${currentPage + 1}`} className={styles.pageBtn}>
-                                NEXT_SECTOR »
+                                次のセクターへ »
                             </Link>
                         ) : (
                             <span className={styles.pageBtnDisabled}>NEXT_SECTOR</span>
@@ -129,13 +141,13 @@ export default async function ArchiveIndexPage({ searchParams }: { searchParams:
                 </nav>
             )}
 
-            {/* --- 👣 ステーション・イグジット --- */}
+            {/* --- 👣 フッター --- */}
             <footer className={styles.archiveFooter}>
                 <Link href="/" className={styles.backBtn}>
-                    « RETURN_TO_COMMAND_CENTER
+                    « コマンドセンターへ戻る
                 </Link>
                 <div className="mt-12 opacity-20 font-mono text-[9px] tracking-[0.5em]">
-                    SECURE_ACCESS_LOG: {new Date().toISOString()}
+                    SOURCE_STREAMS: WORDPRESS_CORE & DJANGO_BRIDGE_STATION
                 </div>
             </footer>
         </div>

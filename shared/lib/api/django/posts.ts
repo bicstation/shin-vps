@@ -1,8 +1,9 @@
+// /home/maya/shin-vps/shared/lib/api/django/posts.ts
 // @ts-nocheck
 /**
  * =====================================================================
- * 📝 記事取得サービス (Zenith v10.4 - Hardened Logic Layer)
- * 🛡️ Maya's Logic: [UNIVERSAL_DOCKER_FINAL] 導線完全同期・型安全版
+ * 📝 記事取得サービス (Zenith v10.6 - Full Hardened Edition)
+ * 🛡️ Maya's Logic: [ULTIMATE_GUARD_V2] 
  * =====================================================================
  */
 
@@ -35,22 +36,29 @@ export const replaceInternalUrls = (data: any): any => {
     return data;
 };
 
-/** 🛠️ 記事リソース専用 Fetch (身分証ヘッダーを付与) */
+/** 🛠️ 記事リソース専用 Fetch */
 async function fetchPostRaw(url: string, options: any = {}, siteTag?: string) {
-    const djangoHeaders = getDjangoHeaders(siteTag);
-    const res = await fetch(url, {
-        ...options,
-        headers: { ...djangoHeaders, ...(options.headers || {}) },
-        signal: AbortSignal.timeout(10000)
-    });
-    const data = await handleResponseWithDebug(res, url);
-    return { data: replaceInternalUrls(data), status: res.status };
+    const djangoHeaders = getDjangoHeaders(siteTag || 'bicstation');
+    try {
+        const res = await fetch(url, {
+            ...options,
+            headers: { ...djangoHeaders, ...(options.headers || {}) },
+            signal: AbortSignal.timeout(8000)
+        });
+        const data = await handleResponseWithDebug(res, url);
+        return { data: replaceInternalUrls(data), status: res.status };
+    } catch (e) {
+        console.error(`🚨 [fetchPostRaw Error] URL: ${url}`, e);
+        return { data: null, status: 500 };
+    }
 }
 
 /** 📰 記事リストを取得 */
 export async function fetchPostList(limit = 12, offset = 0, siteTag?: string, options: any = {}): Promise<{ results: UnifiedPost[], count: number }> {
     
-    const finalSiteTag = siteTag || 'bicstation';
+    // 🛡️ siteTag を安全に正規化 (toLowerCase の爆発を防止)
+    const finalSiteTag = (siteTag && typeof siteTag === 'string' ? siteTag : 'bicstation').toLowerCase();
+    
     const isAdultSector = ['avflash', 'tiper', 'bic-erog'].includes(finalSiteTag);
     const isGeneralSite = ['bicstation', 'saving'].includes(finalSiteTag);
     
@@ -64,18 +72,20 @@ export async function fetchPostList(limit = 12, offset = 0, siteTag?: string, op
     const url = commonResolveApiUrl(`posts/?${queryParams.toString()}`, finalSiteTag); 
     const { data } = await fetchPostRaw(url, { ...options, next: { revalidate: 300 } }, finalSiteTag);
 
-    let rawResults = data?.results || [];
+    let rawResults = data?.results || (Array.isArray(data) ? data : []);
     
     if (!isAdultSector) {
         rawResults = rawResults.filter((item: any) => {
+            if (!item) return false;
             const BAN_WORDS = ['セフレ', '中出し', 'アヘアヘ', '不倫', '熟女', 'エロ', 'AV'];
-            const title = item.title || "";
+            const title = (item.title || "").toString();
             return item.show_on_main && !item.is_adult && !BAN_WORDS.some(word => title.includes(word));
         });
     }
 
-    // 🚀 統一形式へ整形 (ここで未定義エラーを封殺)
     const results: UnifiedPost[] = rawResults.slice(0, limit).map((item: any) => {
+        if (!item) return null;
+
         let mainImg = '/images/common/no-image.jpg';
         if (item.images_json && Array.isArray(item.images_json) && item.images_json.length > 0) {
             mainImg = item.images_json[0].url || item.main_image_url || mainImg;
@@ -85,48 +95,49 @@ export async function fetchPostList(limit = 12, offset = 0, siteTag?: string, op
 
         return {
             ...item,
-            id: item.id?.toString() || "", 
-            slug: item.slug || item.id?.toString() || "",
-            title: item.title || "NO TITLE",
+            id: (item.id || "").toString(), 
+            slug: (item.slug || item.id || "").toString(),
+            title: (item.title || "NO TITLE").toString(),
             image: mainImg,
             content: item.body_main || item.body_text || "",
             summary: item.body_satellite || "",
-            site: item.site || finalSiteTag,
+            site: (item.site || finalSiteTag).toString().toLowerCase(),
             
-            // 🛡️ カテゴリガード: Component側での toLowerCase() 爆発を防止
             category: item.category ? {
                 id: item.category.id || 0,
-                name: item.category.name || "未分類",
-                slug: item.category.slug || "uncategorized"
+                name: (item.category.name || "未分類").toString(),
+                slug: (item.category.slug || "uncategorized").toString().toLowerCase() // 🛡️ category.slug ガード
             } : { id: 0, name: "未分類", slug: "uncategorized" },
             
-            // 🛡️ 著者情報の正規化
-            author: item.author_name || item.author?.username || "Maya"
+            author: (item.author_name || item.author?.username || "Maya").toString()
         };
-    });
+    }).filter(Boolean);
 
-    return { results, count: data?.count || 0 };
+    return { results, count: data?.count || results.length };
 }
 
 /** 📝 特定の記事詳細データを取得 */
 export async function fetchPostData(id: string, siteTag?: string): Promise<UnifiedPost | null> {
-    if (!id) return null;
+    // 🛡️ IDが文字列の "undefined" や "null" になっているケースを完全に排除
+    if (!id || id === 'undefined' || id === 'null') return null;
+    
     const cleanId = id.toString().replace(/\/+$/, '');
-    const finalSiteTag = siteTag || 'bicstation';
+    const finalSiteTag = (siteTag && typeof siteTag === 'string' ? siteTag : 'bicstation').toLowerCase();
 
     const isAdultSector = ['avflash', 'tiper', 'bic-erog'].includes(finalSiteTag);
         
     const url = commonResolveApiUrl(`posts/${cleanId}/?site=${finalSiteTag}`, finalSiteTag);
     const { data, status } = await fetchPostRaw(url, { next: { revalidate: 60 } }, finalSiteTag);
 
+    if (!data) return null;
+
     let finalItem = data;
-    if (data && data.results && Array.isArray(data.results) && data.results.length > 0) {
+    if (data.results && Array.isArray(data.results) && data.results.length > 0) {
         finalItem = data.results[0];
     }
 
-    if (status === 200 && finalItem && finalItem.id !== undefined) {
-        if (!isAdultSector && !finalItem.show_on_main && finalItem.is_adult) {
-            console.warn(`⚠️ [API] Post ${cleanId} restricted on general site.`);
+    if ((status === 200 || status === 304) && finalItem && finalItem.id !== undefined) {
+        if (!isAdultSector && finalItem.is_adult) {
             return null;
         }
 
@@ -137,27 +148,25 @@ export async function fetchPostData(id: string, siteTag?: string): Promise<Unifi
             primaryImage = finalItem.main_image_url;
         }
 
-        // 🚀 詳細データの正規化
         return {
             ...finalItem,
-            id: finalItem.id.toString(),
-            title: finalItem.title || "NO TITLE",
+            id: (finalItem.id || "").toString(),
+            title: (finalItem.title || "NO TITLE").toString(),
             content: finalItem.body_main || finalItem.body_text || "",
             summary: finalItem.body_satellite || "",
             image: primaryImage,
             is_adult: !!finalItem.is_adult,
-            site: finalItem.site || finalSiteTag,
+            site: (finalItem.site || finalSiteTag).toString().toLowerCase(), // 🛡️ siteプロパティの文字列化を保証
             metadata: finalItem.extra_metadata || {},
-            images: finalItem.images_json || [],
+            images: Array.isArray(finalItem.images_json) ? finalItem.images_json : [],
             
-            // 🛡️ カテゴリガード
             category: finalItem.category ? {
                 id: finalItem.category.id || 0,
-                name: finalItem.category.name || "未分類",
-                slug: finalItem.category.slug || "uncategorized"
+                name: (finalItem.category.name || "未分類").toString(),
+                slug: (finalItem.category.slug || "uncategorized").toString().toLowerCase() // 🛡️ category.slug ガード
             } : { id: 0, name: "未分類", slug: "uncategorized" },
             
-            author: finalItem.author_name || finalItem.author?.username || "Maya"
+            author: (finalItem.author_name || finalItem.author?.username || "Maya").toString()
         };
     }
 

@@ -11,7 +11,6 @@ import Header from '@/shared/components/organisms/common/Header';
 import Footer from '@/shared/components/organisms/common/Footer';
 import ChatBot from '@/shared/components/organisms/common/ChatBot';
 import styles from "./layout.module.css";
-import Script from 'next/script';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,7 +18,7 @@ const inter = Inter({
 });
 
 /**
- * 🛰️ 基本メタデータ (各 page.tsx の generateMetadata で上書きされます)
+ * 🛰️ 基本メタデータ
  */
 export const metadata: Metadata = {
   title: "Integrated Fleet Portal",
@@ -40,19 +39,19 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   
-  /**
-   * 🛡️ レイアウト側では重い判定を行わず、
-   * 基本的な HTML 構造の維持に専念します。
-   */
   return (
     <html lang="ja" suppressHydrationWarning>
       <head>
-        {/* Adsense 等のグローバルスクリプトのみ維持 */}
-        <Script
+        {/* 🛡️ AdSense Critical Fix:
+          Next.js の <Script /> コンポーネントは 'data-nscript' 属性を付与するため
+          AdSense スクリプトが拒絶反応を起こし、レンダリングエラーを誘発します。
+          ここは標準の <script> タグを使用するのが正解です。
+        */}
+        <script
+          async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9068876333048216"
           crossOrigin="anonymous"
-          strategy="afterInteractive" 
-        />
+        ></script>
       </head>
       <body
         className={`${inter.className} ${styles.bodyWrapper}`}
@@ -78,7 +77,7 @@ export default async function RootLayout({
               </Suspense>
             </aside>
 
-            {/* メインコンテンツ: ここに各 page.tsx の内容が入ります */}
+            {/* メインコンテンツ */}
             <main className={styles.mainContent}>
               <Suspense fallback={
                 <div className="flex flex-col items-center justify-center p-20 text-gray-400">

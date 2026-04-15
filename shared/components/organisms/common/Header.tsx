@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -15,9 +15,9 @@ import styles from './Header.module.css';
  * 🛡️ Maya's Logic: ハイブリッド・アイデンティティ確定ヘッダー (Hardened Edition)
  * ---------------------------------------------------------------------
  * 🚀 修正の要点:
- * 1. 【安全な文字列操作】site_name の未定義エラー(toUpperCase)を完全封殺。
- * 2. 【ハイドレーション同期】mounted フラグによりSSRとの不整合を回避。
- * 3. 【フォールバック】データ欠落時もレイアウトを崩さないガードを実装。
+ * 1. 【404解消】(info) グループ配下のリンクから不要な '/general' を排除。
+ * 2. 【ハイドレーション同期】window参照をuseEffectに集約。
+ * 3. 【動的リンク生成】siteデータ確定後にパスを正しくマッピング。
  * =====================================================================
  */
 export default function Header() {
@@ -28,24 +28,24 @@ export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState<string | null>(null);
 
-    // 🛰️ アイデンティティの確定 (安全なデフォルト値を設定)
-    const site = useMemo(() => {
-        const identifier = typeof window !== 'undefined' 
-            ? window.location.hostname 
-            : '';
+    // 🛰️ アイデンティティの確定用ステート
+    const [site, setSite] = useState<any>(null);
 
-        // site が null の場合でも downstream で落ちないように空の構造を担保
+    /**
+     * 🏁 マウント時処理
+     */
+    useEffect(() => {
+        const identifier = typeof window !== 'undefined' ? window.location.hostname : '';
         const meta = getSiteMetadata(identifier);
-        return meta || {
-            site_name: 'Loading...',
-            site_tag: 'general',
+        
+        setSite(meta || {
+            site_name: 'BIC STATION',
+            site_tag: 'bicstation',
             site_group: 'general',
             theme_color: '#333',
             site_prefix: '/general'
-        };
-    }, []);
-
-    useEffect(() => {
+        });
+        
         setMounted(true);
     }, []);
 
@@ -66,10 +66,12 @@ export default function Header() {
     }, []);
 
     useEffect(() => {
-        checkAuthStatus();
-        setIsOpen(false);
-        setActiveDropdown(null);
-    }, [pathname, checkAuthStatus]);
+        if (mounted) {
+            checkAuthStatus();
+            setIsOpen(false);
+            setActiveDropdown(null);
+        }
+    }, [pathname, checkAuthStatus, mounted]);
 
     const handleLogout = () => {
         const isAdult = site?.site_group === 'adult';
@@ -79,65 +81,66 @@ export default function Header() {
         }
     };
 
-    // 🛡️ SSR/初期マウント時のクラッシュ防止
-    if (!mounted) {
-        return <header className={styles.header} style={{ height: '70px', background: '#000' }} />;
+    /**
+     * 🛡️ 初期レンダリング・ガード
+     */
+    if (!mounted || !site) {
+        return (
+            <header className={styles.header} style={{ height: '70px', background: '#000', borderBottom: '3px solid #333' }}>
+                <div className={styles.container}>
+                     <div className={styles.logoWrapper} style={{ opacity: 0.5 }}>
+                        <span style={{ background: '#333', color: '#fff', padding: '4px 10px', borderRadius: '6px' }}>B</span>
+                     </div>
+                </div>
+            </header>
+        );
     }
 
-    const themeColor = site?.theme_color || '#333';
-    const isAdult = site?.site_group === 'adult';
-    const siteNameRaw = site?.site_name || ""; // 安全な文字列として抽出
+    const themeColor = site.theme_color || '#333';
+    const isAdult = site.site_group === 'adult';
+    const siteNameRaw = (site.site_name || "").toString();
 
     /**
      * 🛠️ サイト別「ガイド」メニュー動的生成
      */
-    const dynamicGuideLinks = useMemo(() => {
-        if (!site?.site_tag) return [];
-        switch (site.site_tag) {
-            case 'saving':
-                return [
-                    { label: '💳 クレジットカード', href: '/guide/card' },
-                    { label: '📈 証券・FX口座', href: '/guide/broker' },
-                    { label: '📱 格安SIM比較', href: '/guide/sim' },
-                ];
-            case 'bicstation':
-                return [
-                    { label: '🔥 BTOセール比較', href: '/guide/bto' },
-                    { label: '📊 パーツ別コスパ表', href: '/guide/parts' },
-                    { label: '🛒 周辺機器・底値', href: '/guide/peripherals' }
-                ];
-            case 'tiper':
-            case 'avflash':
-                return [
-                    { label: '🎯 マッチング解析', href: '/guide/matching' },
-                    { label: '📺 ライブチャット案内', href: '/guide/live-chat' },
-                    { label: '💌 チャットレディ募集', href: '/guide/chat-lady' }
-                ];
-            default:
-                return [];
-        }
-    }, [site?.site_tag]);
+    const dynamicGuideLinks = site.site_tag === 'saving' ? [
+            { label: '💳 クレジットカード', href: '/guide/card' },
+            { label: '📈 証券・FX口座', href: '/guide/broker' },
+            { label: '📱 格安SIM比較', href: '/guide/sim' },
+        ] : site.site_tag === 'bicstation' ? [
+            { label: '🔥 BTOセール比較', href: '/guide/bto' },
+            { label: '📊 パーツ別コスパ表', href: '/guide/parts' },
+            { label: '🛒 周辺機器・底値', href: '/guide/peripherals' }
+        ] : (site.site_tag === 'tiper' || site.site_tag === 'avflash') ? [
+            { label: '🎯 マッチング解析', href: '/guide/matching' },
+            { label: '📺 ライブチャット案内', href: '/guide/live-chat' },
+            { label: '💌 チャットレディ募集', href: '/guide/chat-lady' }
+        ] : [];
 
     /**
-     * 🛡️ AdSense & 信頼性向上のための共通リンク
+     * 🛡️ 共通リンク構成 (404対策版)
+     * app/(info)/ 配下のディレクトリは、Route Groups により URL パスから (info) が消えます。
+     * そのため、リンク先は site_prefix を通さずルート相対パスで記述するのが正解です。
      */
     const supportLinks = [
         { label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge' },
         ...dynamicGuideLinks,
         { label: '---', href: '#' },
         { label: 'ℹ️ 運営者情報', href: '/about' },
+        { label: '📏 ガイドライン', href: '/guideline' },
         { label: '🛡️ プライバシーポリシー', href: '/privacy-policy' },
-        { label: '⚖️ 特定商取引法に基づく表記', href: '/legal' },
+        { label: '⚖️ 免責事項', href: '/disclaimer' },
+        { label: '📢 広告掲載について', href: '/ads-policy' },
         { label: '📧 お問い合わせ', href: '/contact' }
     ];
 
     const menuConfig = {
         col1: {
             title: isAdult ? '🔥 注目' : '🔍 コンテンツ',
-            links: site?.site_tag === 'saving' ? [
+            links: site.site_tag === 'saving' ? [
                 { label: '技術ブログ', href: '/post' }, 
                 { label: 'ポートフォリオ', href: '/portfolio' }
-            ] : site?.site_tag === 'bicstation' ? [
+            ] : site.site_tag === 'bicstation' ? [
                 { label: 'PC性能診断', href: '/pc-finder' }, 
                 { label: 'おすすめPC', href: '/ranking/popularity' }
             ] : [
@@ -173,12 +176,10 @@ export default function Header() {
                             background: themeColor, color: 'white', padding: '4px 10px', 
                             borderRadius: '6px', fontWeight: '900', fontSize: '1.2em'
                         }}>
-                            {/* 🛡️ 安全ガード: charAt */}
                             {siteNameRaw ? siteNameRaw.charAt(0) : 'B'}
                         </span>
                         <div className={styles.brandInfo}>
                             <div className={styles.siteName} style={{ color: isAdult ? 'white' : '#111' }}>
-                                {/* 🛡️ 安全ガード: toUpperCase */}
                                 {siteNameRaw ? siteNameRaw.toUpperCase() : ''}
                             </div>
                             <span className={styles.tagline} style={{ color: themeColor }}>
