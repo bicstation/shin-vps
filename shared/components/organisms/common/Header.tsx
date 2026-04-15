@@ -7,17 +7,17 @@ import { usePathname } from 'next/navigation';
 /**
  * ✅ 内部ライブラリのインポート
  */
-import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 import styles from './Header.module.css';
 
 /**
  * =====================================================================
- * 🛡️ Maya's Logic: ハイブリッド・アイデンティティ確定ヘッダー (完全版)
+ * 🛡️ Maya's Logic: ハイブリッド・アイデンティティ確定ヘッダー (Hardened Edition)
  * ---------------------------------------------------------------------
- * 🚀 更新内容:
- * 1. 【nabejuku統合】なべ塾専用の技術ガイド・ポートフォリオリンクを追加。
- * 2. 【AdSense審査対応】特商法、ポリシー、運営者情報をサポート列に拡充。
- * 3. 【UI最適化】サイトごとのタグラインと動的メニューの整合性を強化。
+ * 🚀 修正の要点:
+ * 1. 【安全な文字列操作】site_name の未定義エラー(toUpperCase)を完全封殺。
+ * 2. 【ハイドレーション同期】mounted フラグによりSSRとの不整合を回避。
+ * 3. 【フォールバック】データ欠落時もレイアウトを崩さないガードを実装。
  * =====================================================================
  */
 export default function Header() {
@@ -28,13 +28,21 @@ export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState<string | null>(null);
 
-    // 🛰️ アイデンティティの確定
+    // 🛰️ アイデンティティの確定 (安全なデフォルト値を設定)
     const site = useMemo(() => {
         const identifier = typeof window !== 'undefined' 
             ? window.location.hostname 
-            : process.env.NEXT_PUBLIC_SITE_DOMAIN;
+            : '';
 
-        return getSiteMetadata(identifier || "");
+        // site が null の場合でも downstream で落ちないように空の構造を担保
+        const meta = getSiteMetadata(identifier);
+        return meta || {
+            site_name: 'Loading...',
+            site_tag: 'general',
+            site_group: 'general',
+            theme_color: '#333',
+            site_prefix: '/general'
+        };
     }, []);
 
     useEffect(() => {
@@ -71,17 +79,20 @@ export default function Header() {
         }
     };
 
-    if (!site) {
-        return <header className={styles.header} style={{ height: '70px', visibility: 'hidden' }} />;
+    // 🛡️ SSR/初期マウント時のクラッシュ防止
+    if (!mounted) {
+        return <header className={styles.header} style={{ height: '70px', background: '#000' }} />;
     }
 
-    const themeColor = site.theme_color;
-    const isAdult = site.site_group === 'adult';
+    const themeColor = site?.theme_color || '#333';
+    const isAdult = site?.site_group === 'adult';
+    const siteNameRaw = site?.site_name || ""; // 安全な文字列として抽出
 
     /**
      * 🛠️ サイト別「ガイド」メニュー動的生成
      */
     const dynamicGuideLinks = useMemo(() => {
+        if (!site?.site_tag) return [];
         switch (site.site_tag) {
             case 'saving':
                 return [
@@ -105,7 +116,7 @@ export default function Header() {
             default:
                 return [];
         }
-    }, [site.site_tag]);
+    }, [site?.site_tag]);
 
     /**
      * 🛡️ AdSense & 信頼性向上のための共通リンク
@@ -113,7 +124,7 @@ export default function Header() {
     const supportLinks = [
         { label: isAdult ? '🍷 AIソムリエ相談' : '🤖 AIコンシェルジュ', href: '/concierge' },
         ...dynamicGuideLinks,
-        { label: '---', href: '#' }, // セパレーター用
+        { label: '---', href: '#' },
         { label: 'ℹ️ 運営者情報', href: '/about' },
         { label: '🛡️ プライバシーポリシー', href: '/privacy-policy' },
         { label: '⚖️ 特定商取引法に基づく表記', href: '/legal' },
@@ -123,10 +134,10 @@ export default function Header() {
     const menuConfig = {
         col1: {
             title: isAdult ? '🔥 注目' : '🔍 コンテンツ',
-            links: site.site_tag === 'saving' ? [
+            links: site?.site_tag === 'saving' ? [
                 { label: '技術ブログ', href: '/post' }, 
                 { label: 'ポートフォリオ', href: '/portfolio' }
-            ] : site.site_tag === 'bicstation' ? [
+            ] : site?.site_tag === 'bicstation' ? [
                 { label: 'PC性能診断', href: '/pc-finder' }, 
                 { label: 'おすすめPC', href: '/ranking/popularity' }
             ] : [
@@ -162,17 +173,19 @@ export default function Header() {
                             background: themeColor, color: 'white', padding: '4px 10px', 
                             borderRadius: '6px', fontWeight: '900', fontSize: '1.2em'
                         }}>
-                            {site.site_name.charAt(0)}
+                            {/* 🛡️ 安全ガード: charAt */}
+                            {siteNameRaw ? siteNameRaw.charAt(0) : 'B'}
                         </span>
                         <div className={styles.brandInfo}>
                             <div className={styles.siteName} style={{ color: isAdult ? 'white' : '#111' }}>
-                                {site.site_name.toUpperCase()}
+                                {/* 🛡️ 安全ガード: toUpperCase */}
+                                {siteNameRaw ? siteNameRaw.toUpperCase() : ''}
                             </div>
                             <span className={styles.tagline} style={{ color: themeColor }}>
-                                {site.site_name === 'Tiper' && "PREMIUM ADULT SOMMELIER"}
-                                {site.site_name === 'Bic Station' && "TOTAL PC SUPPORT"}
-                                {site.site_name === 'AV Flash' && "NEWS & ARCHIVE"}
-                                {site.site_name === 'ビック的節約生活' && "LIFE HACK & COST CUT"}
+                                {siteNameRaw === 'Tiper' && "PREMIUM ADULT SOMMELIER"}
+                                {siteNameRaw === 'Bic Station' && "TOTAL PC SUPPORT"}
+                                {siteNameRaw === 'AV Flash' && "NEWS & ARCHIVE"}
+                                {siteNameRaw === 'ビック的節約生活' && "LIFE HACK & COST CUT"}
                             </span>
                         </div>
                     </div>
@@ -217,7 +230,7 @@ export default function Header() {
                     ) : (
                         <div className={styles.loggedInWrapper}>
                             <span className={styles.userNameDisplay} style={{ color: isAdult ? '#fff' : '#333' }}>
-                                {site.site_name === 'Tiper' ? '貴賓：' : ''}{userName} <small>様</small>
+                                {siteNameRaw === 'Tiper' ? '貴賓：' : ''}{userName} <small>様</small>
                             </span>
                             <Link href="/mypage" className={styles.mypageLink} style={{ borderColor: themeColor, color: themeColor }}>My</Link>
                             <button onClick={handleLogout} className={styles.logoutBtn} title="ログアウト">🚪</button>

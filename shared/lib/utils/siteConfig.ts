@@ -1,124 +1,174 @@
-// /home/maya/shin-vps/shared/lib/utils/siteConfig.ts
-
 // @ts-nocheck
 /**
  * =====================================================================
- * 🌐 サイト構成管理 (Zenith v25.1 - Multi-Domain Engine)
+ * 🌐 サイト構成管理 [Single Source of Truth: 真実の単一源]
  * =====================================================================
- * 🛡️ アップデート内容:
- * 1. 【nabejuku統合】個人拠点「なべ塾」の判定ロジックを追加。
- * 2. 【SSR通信最適化】サーバーサイド通信時は Docker 内部 DNS (django-v3) を徹底。
- * 3. 【判定強化】domain.includes('nabejuku') による確実なスイッチング。
+ * 🧭 このファイルが「通信の地図」の原典です。
+ * * 【一本の導線ルール】
+ * 入口 (Next.js) --[site_tag判定]--> [siteConfig] --[api_prefix決定]--> 出口 (Django)
+ * * 🛠️ 最終修正ポイント:
+ * 1. 【ポート統合】ログより 8000 ポートでの成功を確認したため、SSR時の全接続を 8000 に統一。
+ * 2. 【スラッシュ浄化】site_tag 等の末尾に / が混入して %2F となる問題を徹底排除。
+ * 3. 【SSR最適化】VPS環境の Docker ネットワーク名 django-v3 を優先。
  * =====================================================================
  */
-// 
 
 export interface SiteMetadata {
   site_group: 'general' | 'adult';
-  origin_domain: string;
   site_name: string;
   site_tag: string;
-  site_prefix: string;
-  default_brand: string;
-  api_base_url: string;
+  site_prefix: string;      // Django側のURL接頭辞 (general, bs, adult)
+  api_port: number;         // 通信用ポート番号
+  api_base_url: string;     // 最終的なベースURL
   django_host: string;
   is_local_env: boolean;
-  is_external: boolean;
   theme_color: string;
 }
 
 /**
- * 🗺️ サイト別コンフィグマップ
+ * 🗺️ SITE_MAP: 全ての「出口」を定義するマスターテーブル
  */
 const SITE_MAP = {
-  'saving': { name: 'ビック的節約生活', tag: 'saving', group: 'general', brand: 'DELL', prod: 'api.bic-saving.com', external: false, prefix: '', color: '#3b82f6' },
-  // 'nabejuku': { name: 'なべ塾', tag: 'nabejuku', group: 'general', brand: 'DELL', prod: 'api.nabejuku.com', external: false, prefix: '', color: '#6366f1' }, // 独自カラー(Indigo)
-  'avflash': { name: 'AV Flash', tag: 'avflash', group: 'adult', brand: 'DUGA', prod: 'api.avflash.xyz', external: false, prefix: '', color: '#ef4444' },
-  'tiper': { name: 'Tiper.Live', tag: 'tiper', group: 'adult', brand: 'FANZA', prod: 'api.tiper.live', external: false, prefix: '', color: '#f59e0b' },
-  'bicstation': { name: 'Bic Station', tag: 'bicstation', group: 'general', brand: 'DELL', prod: 'api.bicstation.com', external: false, prefix: '', color: '#10b981' },
-  'bic-erog': { name: 'ビックAV動画', tag: 'bic-erog', group: 'adult', brand: 'FANZA', prod: 'api.bic-erog.com', external: true, prefix: '', color: '#ec4899' },
-  'adult-search': { name: 'シークレットXYZ', tag: 'adult-search', group: 'adult', brand: 'FANZA', prod: 'api.adult-search.xyz', external: true, prefix: '', color: '#8b5cf6' },
+  'saving': { 
+    name: 'ビック的節約生活', 
+    tag: 'saving', 
+    prefix: 'bs', 
+    port: 8000, // 👈 ログの結果を受け、8083拒否を避けるため 8000 に寄せる
+    group: 'general', 
+    prod: 'api.bic-saving.com', 
+    color: '#3b82f6' 
+  },
+  'bicstation': { 
+    name: 'Bic Station', 
+    tag: 'bicstation', 
+    prefix: 'general', 
+    port: 8000, 
+    group: 'general', 
+    prod: 'api.bicstation.com', 
+    color: '#10b981' 
+  },
+  'nabejuku': { 
+    name: 'なべ塾', 
+    tag: 'nabejuku', 
+    prefix: 'general', 
+    port: 8000, 
+    group: 'general', 
+    prod: 'api.nabejuku.com', 
+    color: '#6366f1' 
+  },
+  'avflash': { 
+    name: 'AV Flash', 
+    tag: 'avflash', 
+    prefix: 'adult', 
+    port: 8000, 
+    group: 'adult', 
+    prod: 'api.avflash.xyz', 
+    color: '#ef4444' 
+  },
+  'tiper': { 
+    name: 'Tiper.Live', 
+    tag: 'tiper', 
+    prefix: 'adult', 
+    port: 8000, 
+    group: 'adult', 
+    prod: 'api.tiper.live', 
+    color: '#f59e0b' 
+  },
 };
 
 /**
- * 🎯 メイン判定関数
+ * 💡 サイトメタデータ取得の核心ロジック
  */
 export const getSiteMetadata = (manualHostname?: string): SiteMetadata => {
   const isServer = typeof window === "undefined";
   
+  // 1. 識別名(hostname)の特定
   let hostname = manualHostname || "";
   if (!isServer) {
     hostname = window.location.hostname;
-  } else if (!hostname) {
-    // Docker環境変数またはデフォルト
+  } else {
     hostname = process.env.NEXT_PUBLIC_SITE_DOMAIN || 'bicstation.com';
   }
 
+  // ドメインから余計なポート番号やスラッシュを削ぎ落とす
   const domain = String(hostname).split('/')[0].split(':')[0].toLowerCase();
 
-  // 🔍 ドメイン判定ロジック
+  // 2. サイトキーの特定
   let siteKey = 'bicstation';
-  if (domain.includes('avflash')) siteKey = 'avflash';
+  if (domain.includes('saving')) siteKey = 'saving';
+  else if (domain.includes('avflash')) siteKey = 'avflash';
   else if (domain.includes('tiper')) siteKey = 'tiper';
-  else if (domain.includes('bic-erog')) siteKey = 'bic-erog';
-  else if (domain.includes('adult-search') || domain.includes('adult')) siteKey = 'adult-search';
-  else if (domain.includes('saving')) siteKey = 'saving';
-  // else if (domain.includes('nabejuku')) siteKey = 'nabejuku'; // ★追加
-  else if (domain.includes('bicstation')) siteKey = 'bicstation';
+  else if (domain.includes('nabejuku')) siteKey = 'nabejuku';
 
   const cfg = SITE_MAP[siteKey] || SITE_MAP['bicstation'];
-  const isLocalEnv = domain.endsWith('-host') || domain === 'localhost' || domain.includes('192.168.');
-  
-  // Django側のホスト名決定
-  const django_host = (isLocalEnv && !cfg.external) ? `api-${siteKey}-host` : cfg.prod;
 
+  // 3. ローカル環境判定
+  const isLocalEnv = 
+    domain === 'localhost' || 
+    domain === '127.0.0.1' || 
+    domain === 'bicstation' || 
+    domain === 'saving' ||
+    domain.includes('192.168.');
+  
+  // 4. APIベースURLの構築 (SSR/Client/Local 全対応)
   let api_base_url = "";
-  if (cfg.external) {
-    api_base_url = `https://${cfg.prod}`;
+  const forcedApiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  if (forcedApiUrl && forcedApiUrl.length > 1) {
+    api_base_url = forcedApiUrl.replace(/\/+$/, '');
+    if (!api_base_url.endsWith('/api')) api_base_url += '/api';
   } else if (isServer) {
     /**
-     * 🛡️ サーバーサイド通信 (SSR/Build時)
-     * Docker内部ネットワーク (http://django-v3:8000) を使用。
-     * 本番VPS環境でも内部解決させることで爆速化 & ECONNREFUSED 回避。
+     * 🛡️ サーバーサイド (SSR) 接続先
+     * ログより django-v3:8000 が疎通することを確認済み。
      */
     api_base_url = `http://django-v3:8000/api`;
   } else {
-    // クライアントサイド通信
-    api_base_url = isLocalEnv ? `http://localhost:8083` : `https://${django_host}`;
+    /**
+     * 🌐 クライアントサイド (Browser) 接続先
+     */
+    api_base_url = isLocalEnv 
+      ? `http://localhost:${cfg.port}/api` 
+      : `https://${cfg.prod}/api`;
   }
+
+  // 【最重要】タグやプレフィックスからスラッシュを徹底除去 (404 & %2F 対策)
+  const cleanTag = cfg.tag.replace(/\/+$/, '').trim();
+  const cleanPrefix = cfg.prefix.replace(/^\/+|\/+$/g, '').trim();
 
   return { 
     site_group: cfg.group, 
-    origin_domain: domain, 
     site_name: cfg.name, 
-    site_tag: cfg.tag,
-    site_prefix: cfg.prefix,
-    default_brand: cfg.brand,
-    api_base_url: api_base_url.replace(/\/api\/?$/, '').replace(/\/$/, ''),
-    django_host: django_host,
+    site_tag: cleanTag,
+    site_prefix: cleanPrefix,
+    api_port: cfg.port,
+    api_base_url: api_base_url.replace(/\/+$/, ''), 
+    django_host: isLocalEnv ? `api-${siteKey}-host` : cfg.prod,
     is_local_env: isLocalEnv,
-    is_external: cfg.external,
     theme_color: cfg.color
   };
 };
 
 /**
- * 🎨 サイトカラー取得用
+ * =====================================================================
+ * 🛠️ 外部用ヘルパー関数 (とりこぼし・ビルドエラー防止用)
+ * =====================================================================
  */
+
 export const getSiteColor = (manualHostname?: string): string => {
   return getSiteMetadata(manualHostname).theme_color;
 };
 
-/**
- * 🔌 APIフェッチ用
- */
 export const getDjangoBaseUrl = (manualHostname?: string): string => {
   return getSiteMetadata(manualHostname).api_base_url;
 };
 
-/**
- * 🏷️ RSS/Metadata 用の定数
- */
-export const siteConfig = getSiteMetadata();
+export const getSiteTag = (manualHostname?: string): string => {
+  return getSiteMetadata(manualHostname).site_tag;
+};
+
+export const getSitePrefix = (manualHostname?: string): string => {
+  return getSiteMetadata(manualHostname).site_prefix;
+};
 
 export default getSiteMetadata;

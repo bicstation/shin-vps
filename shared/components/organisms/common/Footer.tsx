@@ -108,21 +108,21 @@ function FooterContent({ debugData }: FooterProps) {
             className={styles.footer}
             style={{ '--accent-red': siteColor } as React.CSSProperties}
         >
-            {/* 🚀 導線可視化インジケーター (デバッグモードのみ表示) */}
+            {/* 🚀 導線可視化インジケーター (日本語・直感版) */}
             {isDebugMode && (
-                <div className="bg-slate-900 border-b border-orange-500/30 px-4 py-2 font-mono text-[10px] flex items-center justify-between text-slate-400">
-                    <div className="flex gap-4">
+                <div className="bg-slate-900 border-b border-orange-500/30 px-4 py-2 font-mono text-[11px] flex items-center justify-between text-slate-400">
+                    <div className="flex gap-4 items-center">
                         <span className="flex items-center gap-1">
-                            <span className={`w-2 h-2 rounded-full ${isLocal ? 'bg-green-500' : 'bg-blue-500 animate-pulse'}`}></span>
-                            MODE: {isLocal ? 'LOCAL_DEV' : 'PRODUCTION'}
+                            <span className={`w-2 h-2 rounded-full ${isLocal ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}></span>
+                            実行環境: <b className="text-white">{isLocal ? '🏠 ローカル開発' : '🌐 VPS本番モード'}</b>
                         </span>
                         <span className="text-orange-400">
-                            API_TARGET: {debugData?.targetUrl || (isLocal ? 'http://127.0.0.1:8083/api' : 'http://django-v3:8000/api')}
+                            接続先API: <b className="text-white">{debugData?.targetUrl || (isLocal ? 'http://127.0.0.1:8083/api' : 'http://django-v3:8000/api')}</b>
                         </span>
-                        <span>SITE_TAG: <b className="text-white">{site.site_tag}</b></span>
+                        <span>サイト識別: <b className="text-white">{site.site_tag}</b></span>
                     </div>
                     <div className="text-[9px] opacity-70">
-                        {typeof window !== 'undefined' ? window.location.host : 'SSR_MODE'}
+                        {typeof window !== 'undefined' ? `アクセス中: ${window.location.host}` : 'サーバーサイド(SSR)実行中'}
                     </div>
                 </div>
             )}
