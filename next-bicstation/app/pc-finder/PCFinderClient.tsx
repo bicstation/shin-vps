@@ -1,14 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 /**
- * 🔍 PC Finder クライアントコンポーネント (Zenith v25.1 準拠版)
- * 🛡️ 同期対象: fetchPCProducts / getSiteMetadata
+ * 🔍 PC Finder クライアントコンポーネント (Zenith v25.1.2 最終修正版)
+ * 🛡️ 修正内容: 
+ * 1. getSiteMetadata 未定義による toUpperCase() クラッシュ防止
+ * 2. api_base_url の /api 重複による 404 エラーを解消
  */
 
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
-import { getSiteMetadata } from '@/shared/lib/utils/siteConfig'; // パスは環境に合わせて調整してください
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig'; 
 import styles from './PCFinderPage.module.css';
 
 export default function PCFinderClient() {
@@ -18,22 +20,22 @@ export default function PCFinderClient() {
     const [isLoading, setIsLoading] = useState(true);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    // フィルタ条件 (Django API Zenith v11.0 の命名規則に準拠)
+    // フィルタ条件 (Django API Zenith v11.0 準拠)
     const [filters, setFilters] = useState({
         budget: 400000,
         type: 'all',
         brand: 'all',
         npuRequired: false,
         gpuRequired: false,
-        searchQuery: '', // q パラメータ用
+        searchQuery: '',
     });
-    const [sortBy, setSortBy] = useState('-created_at'); // attribute パラメータ用
+    const [sortBy, setSortBy] = useState('-created_at');
 
     // スライダー即時反映用
     const [tempBudget, setTempBudget] = useState(filters.budget);
 
     /**
-     * 🌐 API連携ロジック (Zenith v11.0 サービス層のロジックを完全移植)
+     * 🌐 API連携ロジック
      */
     const fetchProducts = useCallback(async () => {
         if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -42,56 +44,49 @@ export default function PCFinderClient() {
 
         setIsLoading(true);
         try {
-            // 1. サイト構成の取得 (Zenith v25.1 判定)
-            const meta = getSiteMetadata();
+            // 1. サイト構成の取得とガード
+            const meta = getSiteMetadata() || {};
             const siteTag = meta.site_tag || 'bicstation';
 
-            // 2. クエリパラメータの構築 (fetchPCProducts の仕様を再現)
+            // 2. クエリパラメータの構築
             const queryParams = new URLSearchParams({
                 offset: '0',
                 limit: '36',
-                site: siteTag, // 💡 必須: サイト別在庫のキー
+                site: siteTag,
             });
 
-            // site_group の判定 (general 以外なら追加)
             if (meta.site_group && meta.site_group !== 'general') {
                 queryParams.append('site_group', meta.site_group);
-            } else if (meta.site_tag === 'bicstation') {
-                // 明示的に general を送ることで 0件を回避
+            } else if (siteTag === 'bicstation') {
                 queryParams.append('site_group', 'general');
             }
 
-            // 検索・フィルタ (search, maker, attribute)
             if (filters.searchQuery) queryParams.append('search', filters.searchQuery);
             if (filters.brand !== 'all') queryParams.append('maker', filters.brand);
             
-            // ソートと追加属性を attribute として送信
             queryParams.append('attribute', sortBy);
 
-            // 予算フィルタ (Djangoが max_price をサポートしている前提)
             if (filters.budget < 1000000) {
                 queryParams.append('max_price', filters.budget.toString());
             }
 
-            // 3. API URL の解決 (resolveApiUrl の挙動を再現)
-            // api_base_url は https://api.bicstation.com (末尾/apiなし)
-            const requestUrl = `${meta.api_base_url}/api/general/pc-products/?${queryParams.toString()}`;
+            // 3. API URL の構築 (重複 /api の除去ロジック)
+            // meta.api_base_url が "https://.../api" の場合に備え、末尾の /api を削る
+            const cleanBaseUrl = (meta.api_base_url || '').replace(/\/api$/, '');
+            const requestUrl = `${cleanBaseUrl}/api/general/pc-products/?${queryParams.toString()}`;
             
             console.log("📡 [ZENITH_SYNC_FETCH]:", requestUrl);
 
             const response = await fetch(requestUrl, {
                 signal: controller.signal,
-                headers: { 
-                    'Accept': 'application/json',
-                    // getDjangoHeaders 相当の処理が必要な場合はここに追加
-                },
+                headers: { 'Accept': 'application/json' },
                 cache: 'no-store'
             });
             
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             
-            // 4. データ抽出 (replaceInternalUrls 相当は ProductCard 側で行われる想定)
+            // 4. データ抽出
             const results = data.results || (Array.isArray(data) ? data : []);
             setProducts(results);
             setTotalCount(data.count || results.length);
@@ -107,7 +102,7 @@ export default function PCFinderClient() {
         }
     }, [filters, sortBy]);
 
-    // デバウンス処理 (400ms)
+    // デバウンス処理
     useEffect(() => {
         const timer = setTimeout(() => {
             setFilters(f => ({ ...f, budget: tempBudget }));
@@ -121,13 +116,18 @@ export default function PCFinderClient() {
         return () => { if (abortControllerRef.current) abortControllerRef.current.abort(); };
     }, [fetchProducts]);
 
+    // 描画用の安全なメタデータ取得
+    const currentMeta = getSiteMetadata() || {};
+
     return (
         <div className={styles.finderLayout}>
             {/* サイドバー */}
             <aside className={styles.sidebar}>
                 <div className={styles.sidebarInner}>
                     <div className={styles.brandArea}>
-                        <span className={styles.neonBadge}>{getSiteMetadata().site_tag.toUpperCase()} CORE</span>
+                        <span className={styles.neonBadge}>
+                            {(currentMeta.site_tag || 'system').toUpperCase()} CORE
+                        </span>
                         <h1 className={styles.sidebarTitle}>PC_FINDER</h1>
                     </div>
 
@@ -194,7 +194,9 @@ export default function PCFinderClient() {
             {/* メインギャラリー */}
             <main className={styles.mainContent}>
                 <header className={styles.contentHeader}>
-                    <p className={styles.breadcrumb}>ZENITH / {getSiteMetadata().origin_domain.toUpperCase()} / PC_PRODUCTS</p>
+                    <p className={styles.breadcrumb}>
+                        ZENITH / {(currentMeta.origin_domain || 'localhost').toUpperCase()} / PC_PRODUCTS
+                    </p>
                 </header>
 
                 <div className={styles.scrollArea}>
@@ -204,7 +206,9 @@ export default function PCFinderClient() {
                         </div>
                     ) : products.length > 0 ? (
                         <div className={styles.grid}>
-                            {products.map(p => <ProductCard key={p.unique_id || p.id} product={p} />)}
+                            {products.map(p => (
+                                <ProductCard key={p.unique_id || p.id} product={p} />
+                            ))}
                         </div>
                     ) : (
                         <div className={styles.emptyState}>

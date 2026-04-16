@@ -307,3 +307,94 @@
     .buttonGroup { flex-direction: column; width: 100%; }
     .primaryBtn, .secondaryBtn { width: 100%; padding: 1.5rem; }
 }
+
+
+.detailContainer {
+    min-height: 100vh;
+    background-color: #06080f;
+    color: #d1d5db;
+    overflow-x: hidden;
+}
+
+/* 🛰️ ネットワークステータス・ナビ */
+.navBar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 50;
+    background-color: rgba(6, 8, 15, 0.9);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.navContent {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* 📖 記事本文（サイバーレンダリング） */
+.contentStream {
+    font-size: 1.15rem;
+    line-height: 2.3;
+    color: #d1d5db;
+}
+
+.contentStream h2 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #ffffff;
+    margin: 5rem 0 2rem;
+    padding: 0.8rem 1.5rem;
+    border-left: 5px solid var(--theme-color, #00f2ff);
+    background: linear-gradient(90deg, rgba(0, 242, 255, 0.1), transparent);
+    text-transform: uppercase;
+    font-style: italic;
+}
+
+.contentStream h3 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #f3f4f6;
+    margin: 3.5rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.contentStream h3::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: var(--theme-color, #00f2ff);
+    transform: rotate(45deg);
+}
+
+.contentStream strong {
+    color: var(--theme-color, #00f2ff);
+    font-weight: 900;
+    text-shadow: 0 0 12px rgba(0, 242, 255, 0.5);
+}
+
+.contentStream img {
+    width: 100%;
+    height: auto;
+    margin: 4.5rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.contentStream p {
+    margin-bottom: 2.8rem;
+}
+
+.contentStream a {
+    color: var(--theme-color, #00f2ff);
+    text-decoration: underline;
+}
