@@ -248,3 +248,49 @@
     padding: 20px;
   }
 }
+
+.statGroup {
+  margin-bottom: 1.2rem;
+}
+
+.groupLabel {
+  font-size: 0.7rem;
+  font-weight: bold;
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05rem;
+}
+
+.tagWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attrTag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.attrTag:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tagCount {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  font-family: monospace;
+}
+
+.highlightTag {
+  border: 1px solid rgba(0, 242, 255, 0.2);
+  background: rgba(0, 242, 255, 0.05);
+}

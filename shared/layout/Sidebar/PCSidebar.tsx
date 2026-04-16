@@ -45,8 +45,10 @@ const PC_SATELLITES = [
   { name: "Fujitsu匠の技", url: "https://fujitsu.bicstation.com", icon: "🇯🇵" }
 ];
 
+/**
+ * 🛰️ メーカー一覧取得
+ */
 async function getRealMakers(host: string) {
-  // ✅ APIエンドポイントを修正
   const url = resolveApiUrl('general/pc-makers/', host);
   const authHeaders = getDjangoHeaders(host);
 
@@ -56,13 +58,30 @@ async function getRealMakers(host: string) {
       next: { revalidate: 3600 } 
     });
     const data = await handleResponseWithDebug(res, url);
-    
-    // ✅ APIが直接配列 ["asus", "dell", ...] を返しているため、そのまま処理
     const list = Array.isArray(data) ? data : (data?.results || []);
     return list.map((m: any) => typeof m === 'string' ? m : (m.maker || m.name)).filter(Boolean);
   } catch (e) {
-    console.error("🚨 [Sidebar Maker Fetch Critical Error]:", e);
+    console.error("🚨 [Sidebar Maker Fetch Error]:", e);
     return [];
+  }
+}
+
+/**
+ * 📊 属性統計データ取得 (CPU/GPU/Features)
+ */
+async function getSidebarStats(host: string) {
+  const url = resolveApiUrl('general/pc-sidebar-stats/', host);
+  const authHeaders = getDjangoHeaders(host);
+
+  try {
+    const res = await fetch(url, { 
+      headers: authHeaders,
+      next: { revalidate: 1800 } 
+    });
+    return await handleResponseWithDebug(res, url);
+  } catch (e) {
+    console.error("🚨 [Sidebar Stats Fetch Error]:", e);
+    return null;
   }
 }
 
@@ -74,9 +93,10 @@ export default async function Sidebar() {
   const siteColor = site ? getSiteColor(site.site_name) : '#00f2ff';
   
   /** 2. データ取得 (並列実行) */
-  const [bridgeData, makers] = await Promise.all([
+  const [bridgeData, makers, stats] = await Promise.all([
     fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }).catch(() => ({ results: [] })),
-    getRealMakers(host)
+    getRealMakers(host),
+    getSidebarStats(host)
   ]);
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
@@ -84,7 +104,6 @@ export default async function Sidebar() {
   /** 3. サテライトの選出ロジック */
   const mainSatellite = PC_SATELLITES.find(s => s.isMain);
   const otherSatellites = PC_SATELLITES.filter(s => !s.isMain);
-  
   const daySeed = new Date().getDate(); 
   const displaySatellites = [
     mainSatellite,
@@ -108,7 +127,52 @@ export default async function Sidebar() {
         </Link>
       </section>
 
-      {/* 🏢 BRANDS (API連動修正済み) */}
+      {/* 📊 DYNAMIC ATTRIBUTES (属性表示セクション) */}
+      {stats && (
+        <section className={styles.section}>
+          <h3 className={styles.sectionTitle} style={{ color: siteColor }}>SPEC SEGMENTS</h3>
+          
+          {/* CPU / AI PC 属性 */}
+          {stats.CPU && (
+            <div className={styles.statGroup}>
+              <p className={styles.groupLabel}>PROCESSOR & AI</p>
+              <div className={styles.tagWrapper}>
+                {stats.CPU.slice(0, 10).map((item: any) => (
+                  <Link key={item.id} href={`/product?cpu=${item.slug}`} className={styles.attrTag}>
+                    <span className={styles.tagName}>{item.name}</span>
+                    <span className={styles.tagCount}>{item.count}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 特徴 & グラフィック属性 */}
+          {(stats.feature || stats["グラフィック"]) && (
+            <div className={styles.statGroup}>
+              <p className={styles.groupLabel}>FEATURES & GRAPHICS</p>
+              <div className={styles.tagWrapper}>
+                {/* 軽量・1kg未満などの特徴を表示 */}
+                {stats.feature?.map((item: any) => (
+                  <Link key={item.id} href={`/product?feature=${item.slug}`} className={`${styles.attrTag} ${styles.highlightTag}`}>
+                    <span className={styles.tagName}>✨ {item.name}</span>
+                    <span className={styles.tagCount}>{item.count}</span>
+                  </Link>
+                ))}
+                {/* GPUを表示 */}
+                {stats["グラフィック"]?.slice(0, 5).map((item: any) => (
+                  <Link key={item.id} href={`/product?gpu=${item.slug}`} className={styles.attrTag}>
+                    <span className={styles.tagName}>{item.name}</span>
+                    <span className={styles.tagCount}>{item.count}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 🏢 BRANDS */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>BRANDS</h3>
         <div className={styles.brandGroup}>
@@ -172,7 +236,7 @@ export default async function Sidebar() {
         </ul>
       </section>
 
-      {/* 🚀 SYSTEM FOOTER (修正: styles.statusText) */}
+      {/* 🚀 SYSTEM FOOTER */}
       <div className={styles.sidebarFooter}>
         <span className={styles.statusDot} style={{ backgroundColor: siteColor }}></span>
         <span className={styles.statusText}>{siteUpperName} PC_NODE ONLINE</span>
