@@ -6,7 +6,9 @@ import { headers } from 'next/headers';
 
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
-import { resolveApiUrl, getDjangoHeaders, handleResponseWithDebug } from '@/shared/lib/api/django/client';
+import { 
+  fetchPCSidebarStats 
+} from '@/shared/lib/api/django/pc/stats'; 
 import styles from './PCSidebar.module.css';
 
 /**
@@ -45,49 +47,6 @@ const PC_SATELLITES = [
   { name: "Fujitsu匠の技", url: "https://fujitsu.bicstation.com", icon: "🇯🇵" }
 ];
 
-/**
- * 🛰️ メーカー一覧取得
- */
-async function getRealMakers(host: string) {
-  const url = resolveApiUrl('general/pc-makers/', host);
-  const authHeaders = getDjangoHeaders(host);
-
-  try {
-    const res = await fetch(url, { 
-      headers: authHeaders,
-      next: { revalidate: 3600 } 
-    });
-    const data = await handleResponseWithDebug(res, url);
-    const list = Array.isArray(data) ? data : (data?.results || []);
-    return list.map((m: any) => {
-      if (typeof m === 'string') return m;
-      return m.maker || m.name || m.slug;
-    }).filter(Boolean);
-  } catch (e) {
-    console.error("🚨 [Sidebar Maker Fetch Error]:", e);
-    return [];
-  }
-}
-
-/**
- * 📊 属性統計データ取得 (CPU/GPU/Features)
- */
-async function getSidebarStats(host: string) {
-  const url = resolveApiUrl('general/pc-sidebar-stats/', host);
-  const authHeaders = getDjangoHeaders(host);
-
-  try {
-    const res = await fetch(url, { 
-      headers: authHeaders,
-      next: { revalidate: 1800 } 
-    });
-    return await handleResponseWithDebug(res, url);
-  } catch (e) {
-    console.error("🚨 [Sidebar Stats Fetch Error]:", e);
-    return null;
-  }
-}
-
 export default async function PCSidebar() {
   /** 1. アイデンティティ確定 */
   const headerList = await headers();
@@ -96,13 +55,18 @@ export default async function PCSidebar() {
   const siteColor = site ? getSiteColor(site.site_name) : '#00f2ff';
   
   /** 2. データ取得 (並列実行) */
-  const [bridgeData, makers, stats] = await Promise.all([
+  const [bridgeData, statsData] = await Promise.all([
     fetchDjangoBridgeContent('posts', 5, { content_type: 'news' }).catch(() => ({ results: [] })),
-    getRealMakers(host),
-    getSidebarStats(host)
+    fetchPCSidebarStats(host).catch(() => null)
   ]);
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
+
+  /** * 🛡️ stats.ts の戻り値構造への適合
+   * fetchPCSidebarStats は { maker_counts: [], CPU: [], "グラフィック": [], ... } を返します
+   */
+  const stats = statsData || {};
+  const makers = Array.isArray(stats.maker_counts) ? stats.maker_counts : [];
 
   /** 3. サテライトの選出ロジック */
   const mainSatellite = PC_SATELLITES.find(s => s.isMain);
@@ -131,86 +95,85 @@ export default async function PCSidebar() {
       </section>
 
       {/* 📊 DYNAMIC ATTRIBUTES (属性表示セクション) */}
-      {stats && (
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle} style={{ color: siteColor }}>SPEC SEGMENTS</h3>
-          
-          {/* CPU / AI PC 属性 */}
-          {stats.CPU && (
-            <div className={styles.statGroup}>
-              <p className={styles.groupLabel}>PROCESSOR & AI</p>
-              <div className={styles.tagWrapper}>
-                {stats.CPU.slice(0, 10).map((item: any) => (
-                  <Link key={item.id} href={`/product?cpu=${item.slug}`} className={styles.attrTag}>
-                    <span className={styles.tagName}>{item.name}</span>
-                    <span className={styles.tagCount}>{item.count}</span>
-                  </Link>
-                ))}
-              </div>
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle} style={{ color: siteColor }}>SPEC SEGMENTS</h3>
+        
+        {/* CPU / AI PC 属性 */}
+        {stats.CPU && Array.isArray(stats.CPU) && (
+          <div className={styles.statGroup}>
+            <p className={styles.groupLabel}>PROCESSOR & AI</p>
+            <div className={styles.tagWrapper}>
+              {stats.CPU.slice(0, 10).map((item: any, idx: number) => (
+                <Link key={idx} href={`/product?cpu=${item.slug}`} className={styles.attrTag}>
+                  <span className={styles.tagName}>{item.name}</span>
+                  <span className={styles.tagCount}>{item.count}</span>
+                </Link>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* 特徴 & グラフィック属性 (日本語キー対応) */}
-          {(stats.feature || stats["グラフィック"]) && (
-            <div className={styles.statGroup}>
-              <p className={styles.groupLabel}>FEATURES & GRAPHICS</p>
-              <div className={styles.tagWrapper}>
-                {/* 英語キーの feature */}
-                {stats.feature?.map((item: any) => (
-                  <Link key={item.id} href={`/product?feature=${item.slug}`} className={`${styles.attrTag} ${styles.highlightTag}`}>
-                    <span className={styles.tagName}>✨ {item.name}</span>
-                    <span className={styles.tagCount}>{item.count}</span>
-                  </Link>
-                ))}
-                {/* 日本語キーの グラフィック */}
-                {stats["グラフィック"]?.slice(0, 5).map((item: any) => (
-                  <Link key={item.id} href={`/product?gpu=${item.slug}`} className={styles.attrTag}>
-                    <span className={styles.tagName}>{item.name}</span>
-                    <span className={styles.tagCount}>{item.count}</span>
-                  </Link>
-                ))}
-              </div>
+        {/* 特徴 & グラフィック属性 (日本語キー対応) */}
+        {(stats.feature || stats["グラフィック"]) && (
+          <div className={styles.statGroup}>
+            <p className={styles.groupLabel}>FEATURES & GRAPHICS</p>
+            <div className={styles.tagWrapper}>
+              {/* 英語キーの feature */}
+              {Array.isArray(stats.feature) && stats.feature.map((item: any, idx: number) => (
+                <Link key={idx} href={`/product?feature=${item.slug}`} className={`${styles.attrTag} ${styles.highlightTag}`}>
+                  <span className={styles.tagName}>✨ {item.name}</span>
+                  <span className={styles.tagCount}>{item.count}</span>
+                </Link>
+              ))}
+              {/* 日本語キーの グラフィック */}
+              {Array.isArray(stats["グラフィック"]) && stats["グラフィック"].slice(0, 5).map((item: any, idx: number) => (
+                <Link key={idx} href={`/product?gpu=${item.slug}`} className={styles.attrTag}>
+                  <span className={styles.tagName}>{item.name}</span>
+                  <span className={styles.tagCount}>{item.count}</span>
+                </Link>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* メモリ & OS (日本語キー対応) */}
-          {(stats["メモリ"] || stats["OS"]) && (
-            <div className={styles.statGroup}>
-              <p className={styles.groupLabel}>MEMORY & OS</p>
-              <div className={styles.tagWrapper}>
-                {stats["メモリ"]?.map((item: any) => (
-                  <Link key={item.id} href={`/product?memory=${item.slug}`} className={styles.attrTag}>
-                    <span className={styles.tagName}>{item.name}</span>
-                    <span className={styles.tagCount}>{item.count}</span>
-                  </Link>
-                ))}
-                {stats["OS"]?.map((item: any) => (
-                  <Link key={item.id} href={`/product?os=${item.slug}`} className={styles.attrTag}>
-                    <span className={styles.tagName}>{item.name}</span>
-                    <span className={styles.tagCount}>{item.count}</span>
-                  </Link>
-                ))}
-              </div>
+        {/* メモリ & OS (日本語キー対応) */}
+        {(stats["メモリ"] || stats["OS"]) && (
+          <div className={styles.statGroup}>
+            <p className={styles.groupLabel}>MEMORY & OS</p>
+            <div className={styles.tagWrapper}>
+              {Array.isArray(stats["メモリ"]) && stats["メモリ"].map((item: any, idx: number) => (
+                <Link key={idx} href={`/product?memory=${item.slug}`} className={styles.attrTag}>
+                  <span className={styles.tagName}>{item.name}</span>
+                  <span className={styles.tagCount}>{item.count}</span>
+                </Link>
+              ))}
+              {Array.isArray(stats["OS"]) && stats["OS"].map((item: any, idx: number) => (
+                <Link key={idx} href={`/product?os=${item.slug}`} className={styles.attrTag}>
+                  <span className={styles.tagName}>{item.name}</span>
+                  <span className={styles.tagCount}>{item.count}</span>
+                </Link>
+              ))}
             </div>
-          )}
-        </section>
-      )}
+          </div>
+        )}
+      </section>
 
-      {/* 🏢 BRANDS */}
+      {/* 🏢 BRANDS (maker_counts に準拠) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>BRANDS</h3>
         <div className={styles.brandGroup}>
           <ul className={styles.list}>
-            {makers && makers.length > 0 ? (
-              makers.map((makerName: string, idx: number) => (
-                <li key={`${makerName}-${idx}`}>
-                  <Link href={`/product?maker=${encodeURIComponent(makerName)}`} className={styles.link}>
-                    <span className={styles.brandLabel}>💻 {String(makerName).toUpperCase()}</span>
+            {makers.length > 0 ? (
+              makers.map((m: any, idx: number) => (
+                <li key={idx}>
+                  <Link href={`/product?maker=${encodeURIComponent(m.maker || m.name)}`} className={styles.link}>
+                    <span className={styles.brandLabel}>💻 {String(m.maker || m.name).toUpperCase()}</span>
+                    {m.count !== undefined && <span className={styles.tagCount}>({m.count})</span>}
                   </Link>
                 </li>
               ))
             ) : (
-              <li className={styles.empty}>ブランド取得中...</li>
+              <li className={styles.empty}>NO DATA DETECTED</li>
             )}
             <li>
               <Link href="/product" className={`${styles.link} ${styles.allLink}`}>
@@ -227,7 +190,7 @@ export default async function PCSidebar() {
         <div className={styles.satelliteGrid}>
           {displaySatellites.map((sat, idx) => (
             <a 
-              key={`${sat.url}-${idx}`} 
+              key={idx} 
               href={sat.url} 
               target="_blank" 
               rel="noopener noreferrer" 
@@ -247,7 +210,7 @@ export default async function PCSidebar() {
         <ul className={styles.list}>
           {recentArticles.length > 0 ? (
             recentArticles.map((item: any, idx: number) => (
-              <li key={`${item.id}-${idx}`} className={styles.newsItem}>
+              <li key={idx} className={styles.newsItem}>
                 <Link href={`/post/${item.id}`} className={styles.newsLink}>
                     <span className={styles.newsIcon}>📄</span>
                     <span className={styles.newsTitle}>{item.title}</span>
