@@ -1,66 +1,106 @@
-/* =====================================================================
-   🛸 Bic Station PC_NODE - Tactical Sidebar Style (v17.7)
-   ---------------------------------------------------------------------
-   デザイン指針: 
-   1. 高彩度シアン (#00f2ff) をアクセントにした計器デザイン
-   2. サテライトネットワーク用のグリッドレイアウト追加
-   3. アコーディオン・ホバー時のタクティカル・フィードバック
-   ===================================================================== */
+/* /shared/components/organisms/sidebar/PCSidebar.module.css */
 
-/* --- サイドバー本体：システムパネルとしての定義 --- */
+/* --- サイドバー本体 --- */
 .sidebar {
   width: 280px;
-  background: rgba(15, 23, 42, 0.9); /* 透明度を微調整して可読性UP */
+  /* 🚩 ホワイトモードでも沈まないよう、背景を少し濃くしつつ透過 */
+  background: rgba(15, 23, 42, 0.95); 
   padding: 30px 20px;
-  border-right: 1px solid rgba(0, 242, 255, 0.15);
+  border-right: 2px solid rgba(0, 242, 255, 0.3);
   height: fit-content;
   position: sticky;
   top: 110px; 
   max-height: calc(100vh - 140px);
   overflow-y: auto;
-  backdrop-filter: blur(16px);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 242, 255, 0.3) transparent;
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+  box-shadow: 15px 0 40px rgba(0, 0, 0, 0.15);
+  border-radius: 0 16px 16px 0; /* 右側を少し丸めてモダンに */
 }
 
 /* --- セクションタイトル --- */
 .sectionTitle {
-  font-size: 0.75rem;
-  color: #00f2ff;
+  font-size: 0.7rem;
+  color: #00f2ff; /* シアン発光 */
   margin-top: 35px;
   margin-bottom: 15px;
   letter-spacing: 0.18em;
   font-weight: 800;
-  border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+  border-bottom: 1px solid rgba(0, 242, 255, 0.3);
   padding-bottom: 10px;
   text-transform: uppercase;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* --- 📊 スペック属性 (SPEC SEGMENTS) --- */
+.statGroup {
+  margin-bottom: 1.5rem;
+}
+
+.groupLabel {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #94a3b8;
+  margin-bottom: 0.8rem;
+  letter-spacing: 0.1rem;
+  text-transform: uppercase;
+}
+
+.tagWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attrTag {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: #e2e8f0;
 }
 
-.sectionTitle:first-of-type {
-  margin-top: 0;
+.attrTag:hover {
+  background: rgba(0, 242, 255, 0.1);
+  border-color: rgba(0, 242, 255, 0.5);
+  color: #ffffff;
+  transform: translateX(4px);
 }
 
-/* --- 🛰️ サテライトネットワーク（新設） --- */
+.tagCount {
+  font-size: 0.7rem;
+  color: #00f2ff; /* 数字を光らせる */
+  font-family: 'JetBrains Mono', monospace;
+  opacity: 0.8;
+}
+
+.highlightTag {
+  border: 1px solid rgba(0, 242, 255, 0.3);
+  background: rgba(0, 242, 255, 0.05);
+  box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.05);
+}
+
+/* --- 🛰️ サテライトネットワーク --- */
 .satelliteGrid {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 10px;
 }
 
 .satelliteLink {
   display: flex;
   align-items: center;
   padding: 10px 12px;
-  background: rgba(0, 242, 255, 0.03);
-  border: 1px solid rgba(0, 242, 255, 0.08);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
   text-decoration: none;
   transition: all 0.25s ease;
 }
@@ -69,228 +109,60 @@
   background: rgba(0, 242, 255, 0.08);
   border-color: rgba(0, 242, 255, 0.4);
   transform: translateX(5px);
-  box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
-}
-
-.satIcon {
-  font-size: 1rem;
-  margin-right: 12px;
-  filter: drop-shadow(0 0 5px rgba(0, 242, 255, 0.3));
 }
 
 .satName {
   font-size: 0.75rem;
-  font-weight: 700;
-  color: #e2e8f0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  color: #cbd5e1;
 }
 
-/* --- スペシャルバナー (PC-FINDER) --- */
+/* --- 🚀 PC-FINDER バナー --- */
 .specialBanner {
   display: flex;
   align-items: center;
-  padding: 15px;
-  background: linear-gradient(90deg, rgba(0, 242, 255, 0.1) 0%, transparent 100%);
+  padding: 18px;
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.15) 0%, transparent 100%);
+  border-left: 3px solid #00f2ff;
   text-decoration: none;
-  border-radius: 0 4px 4px 0;
-  margin-bottom: 10px;
-  transition: all 0.3s ease;
-}
-
-.specialBanner:hover {
-  background: linear-gradient(90deg, rgba(0, 242, 255, 0.2) 0%, transparent 100%);
-  filter: brightness(1.2);
-}
-
-.finderIcon {
-  font-size: 1.5rem;
-  margin-right: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
 }
 
 .finderMain {
-  display: block;
   font-weight: 900;
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   letter-spacing: 0.05em;
-}
-
-.finderSub {
-  font-size: 0.65rem;
-  color: #94a3b8;
-}
-
-/* --- 標準リスト・リンク --- */
-.list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.link {
-  text-decoration: none;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 10px 8px;
-  transition: all 0.2s ease;
-  color: #cbd5e1;
-  border-radius: 4px;
-}
-
-.link:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #00f2ff;
-  padding-left: 14px;
-}
-
-/* --- バッジ (計器風) --- */
-.badge {
-  font-size: 0.65rem;
-  color: #00f2ff;
-  background: rgba(0, 242, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 2px;
-  border: 1px solid rgba(0, 242, 255, 0.3);
-  min-width: 32px;
-  text-align: center;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-/* --- LATEST UPDATES (ニュースアイテム) --- */
-.newsItem {
-  margin-bottom: 8px;
-  border-left: 2px solid rgba(255, 255, 255, 0.05);
-  transition: border-color 0.3s ease;
-}
-
-.newsItem:hover {
-  border-left-color: #00f2ff;
-}
-
-.newsLink {
-  text-decoration: none;
-  display: flex;
-  gap: 10px;
-  padding: 8px;
-}
-
-.newsIcon {
-  font-size: 0.8rem;
-  opacity: 0.5;
-}
-
-.newsTitle {
-  font-size: 0.75rem;
-  line-height: 1.4;
-  color: #94a3b8;
-  transition: color 0.2s ease;
-}
-
-.newsLink:hover .newsTitle {
-  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
 }
 
 /* --- システムフッター --- */
 .sidebarFooter {
-  margin-top: 50px;
+  margin-top: 40px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .statusDot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  box-shadow: 0 0 8px currentColor;
   animation: pulse 2s infinite;
 }
 
 .statusText {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.6rem;
-  color: #475569;
-  letter-spacing: 0.1em;
+  color: #64748b;
+  text-transform: uppercase;
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.4; }
-  100% { opacity: 1; }
-}
-
-/* --- スクロールバー --- */
-.sidebar::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(0, 242, 255, 0.2);
-  border-radius: 10px;
-}
-
-/* --- レスポンシブ --- */
-@media (max-width: 1100px) {
-  .sidebar {
-    width: 100%;
-    position: static;
-    border-right: none;
-    border-bottom: 1px solid rgba(0, 242, 255, 0.1);
-    max-height: none;
-    background: #0b0f19;
-    padding: 20px;
-  }
-}
-
-.statGroup {
-  margin-bottom: 1.2rem;
-}
-
-.groupLabel {
-  font-size: 0.7rem;
-  font-weight: bold;
-  opacity: 0.6;
-  margin-bottom: 0.5rem;
-  letter-spacing: 0.05rem;
-}
-
-.tagWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.attrTag {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 4px;
-  font-size: 0.85rem;
-  transition: background 0.2s;
-  text-decoration: none;
-  color: inherit;
-}
-
-.attrTag:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.tagCount {
-  font-size: 0.75rem;
-  opacity: 0.5;
-  font-family: monospace;
-}
-
-.highlightTag {
-  border: 1px solid rgba(0, 242, 255, 0.2);
-  background: rgba(0, 242, 255, 0.05);
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
 }

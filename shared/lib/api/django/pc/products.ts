@@ -1,13 +1,14 @@
-// /home/maya/shin-vps/shared/lib/api/django/pc/products.ts
+// /shared/lib/api/django/pc/products.ts
 // @ts-nocheck
 /**
  * =====================================================================
  * 💻 PC製品取得サービス (Zenith v12.1 - Hardened)
  * =====================================================================
- * 🛡️ 修正ポイント:
- * 1. 【安全な引数解析】attribute や q が null/undefined の場合の墜落を防止。
- * 2. 【ID正規化】unique_id の toString() ガードを徹底。
- * 3. 【デバッグ情報の堅牢化】_debug 内のプロパティも安全な型で抽出。
+ * 🛡️ 修正・強化ポイント:
+ * 1. 【安全な引数解析】オブジェクト・文字列・nullが混在しても墜落させない正規化。
+ * 2. 【ID正規化】unique_id / id の toString() ガードを徹底。
+ * 3. 【サイトメタの堅牢化】ホスト名解決に失敗しても bicstation を維持。
+ * 4. 【レスポンス正規化】results が配列でない、またはページネーションなしの場合を救済。
  * =====================================================================
  */
 
@@ -23,7 +24,8 @@ import { PCProduct, MakerCount } from './types';
 const getSafeMeta = (host?: string) => {
     try {
         const cleanHost = (host || "").toString().split(':')[0];
-        return getSiteMetadata(cleanHost) || { site_tag: 'bicstation', site_group: 'general' };
+        const meta = getSiteMetadata(cleanHost);
+        return meta || { site_tag: 'bicstation', site_group: 'general' };
     } catch (e) { 
         return { site_tag: 'bicstation', site_group: 'general' }; 
     }
@@ -43,7 +45,6 @@ export async function fetchPCProducts(
     // --- 📥 引数の正規化ロジック (徹底ガード版) ---
     const isObj = typeof paramsOrQ === 'object' && paramsOrQ !== null;
     
-    // 文字列変換を挟むことで .trim() や .startsWith() の墜落を防ぐ
     const q         = (isObj ? (paramsOrQ.q || paramsOrQ.search || '') : paramsOrQ || '').toString();
     const offset    = isObj ? (paramsOrQ.offset ?? 0) : offsetArg;
     const limit     = isObj ? (paramsOrQ.limit ?? 12) : limitArg;
@@ -58,7 +59,7 @@ export async function fetchPCProducts(
     const queryParams = new URLSearchParams({ 
         offset: offset.toString(),
         limit: limit.toString(),
-        site: siteTag.toLowerCase(), // 🛡️ toString() 済みなので安全
+        site: siteTag.toLowerCase(),
         site_name: siteTag.toLowerCase()
     });
     
@@ -68,7 +69,7 @@ export async function fetchPCProducts(
     if (q) queryParams.append('search', q); 
     if (maker) queryParams.append('maker', maker); 
 
-    // 🚀 ソート条件の分離 (attribute の存在チェックを厳密化)
+    // 🚀 ソート・属性条件の分離
     if (attribute) {
         if (attribute.startsWith('-') || attribute.includes('created_at') || attribute.includes('price')) {
             queryParams.append('ordering', attribute);
@@ -92,8 +93,10 @@ export async function fetchPCProducts(
 
         const cleanedData = replaceInternalUrls(data);
         
-        // 🛡️ Results 内の各アイテムを安全化 (コンポーネント側での爆発を防ぐ)
-        const safeResults = (Array.isArray(cleanedData.results) ? cleanedData.results : []).map((item: any) => ({
+        // 🛡️ Results 内の各アイテムを安全化 (undefined参照を防ぐ)
+        const rawResults = Array.isArray(cleanedData.results) ? cleanedData.results : (Array.isArray(cleanedData) ? cleanedData : []);
+        
+        const safeResults = rawResults.map((item: any) => ({
             ...item,
             id: (item.id || "").toString(),
             unique_id: (item.unique_id || "").toString(),
@@ -134,17 +137,18 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
 
         const cleanedData = replaceInternalUrls(data);
         
+        // 階層の正規化 (results 配列の中身か、オブジェクト単体か)
         const product = (cleanedData && !Array.isArray(cleanedData.results)) 
             ? cleanedData 
             : (Array.isArray(cleanedData.results) && cleanedData.results.length > 0 ? cleanedData.results[0] : null);
 
         if (!product || (!product.unique_id && !product.id)) return null;
 
-        // 🛡️ 返却前に型を安全化
+        // 🛡️ IDを文字列化して返却
         return {
             ...product,
-            id: product.id?.toString(),
-            unique_id: product.unique_id?.toString()
+            id: product.id?.toString() || "",
+            unique_id: product.unique_id?.toString() || ""
         } as PCProduct;
     } catch (e) {
         console.error(`🚨 [fetchPCProductDetail Error] ID: ${unique_id}`, e);
@@ -154,6 +158,7 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
 
 /**
  * 💡 メーカー一覧取得 
+ * サイドバーの「BRANDS」セクションの生命線
  */
 export async function fetchMakers(host: string = ''): Promise<MakerCount[]> {
     const meta = getSafeMeta(host);
@@ -172,9 +177,18 @@ export async function fetchMakers(host: string = ''): Promise<MakerCount[]> {
 
         const cleanedData = replaceInternalUrls(data);
         
-        return Array.isArray(cleanedData.results) 
+        // 🛡️ APIが results を持つページネーション形式か、直接配列形式かを判定して正規化
+        const results = Array.isArray(cleanedData.results) 
             ? cleanedData.results 
             : (Array.isArray(cleanedData) ? cleanedData : []);
+
+        // 各要素が maker または name キーを持つことを保証
+        return results.map((m: any) => ({
+            ...m,
+            name: m.name || m.maker || "Unknown",
+            count: typeof m.count === 'number' ? m.count : (m.product_count || 0)
+        })) as MakerCount[];
+        
     } catch (e) {
         console.error("🚨 [fetchMakers Error]", e);
         return [];

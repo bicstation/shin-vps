@@ -6,9 +6,7 @@ import { headers } from 'next/headers';
 
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
-import { 
-  fetchPCSidebarStats 
-} from '@/shared/lib/api/django/pc/stats'; 
+import { fetchPCSidebarStats } from '@/shared/lib/api/django/pc/stats'; 
 import styles from './PCSidebar.module.css';
 
 /**
@@ -50,7 +48,7 @@ const PC_SATELLITES = [
 export default async function PCSidebar() {
   /** 1. アイデンティティ確定 */
   const headerList = await headers();
-  const host = headerList.get('x-forwarded-host') || headerList.get('host') || 'django-api-host';
+  const host = headerList.get('x-forwarded-host') || headerList.get('host') || 'localhost';
   const site = getSiteMetadata(host);
   const siteColor = site ? getSiteColor(site.site_name) : '#00f2ff';
   
@@ -62,8 +60,8 @@ export default async function PCSidebar() {
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
 
-  /** * 🛡️ stats.ts の戻り値構造への適合
-   * fetchPCSidebarStats は { maker_counts: [], CPU: [], "グラフィック": [], ... } を返します
+  /** 🛡️ stats.ts の戻り値構造に完全同期
+   * fetchPCSidebarStats で正規化された maker_counts を取得 
    */
   const stats = statsData || {};
   const makers = Array.isArray(stats.maker_counts) ? stats.maker_counts : [];
@@ -94,11 +92,11 @@ export default async function PCSidebar() {
         </Link>
       </section>
 
-      {/* 📊 DYNAMIC ATTRIBUTES (属性表示セクション) */}
+      {/* 📊 SPEC SEGMENTS (属性表示セクション) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>SPEC SEGMENTS</h3>
         
-        {/* CPU / AI PC 属性 */}
+        {/* CPU Segment */}
         {stats.CPU && Array.isArray(stats.CPU) && (
           <div className={styles.statGroup}>
             <p className={styles.groupLabel}>PROCESSOR & AI</p>
@@ -106,37 +104,37 @@ export default async function PCSidebar() {
               {stats.CPU.slice(0, 10).map((item: any, idx: number) => (
                 <Link key={idx} href={`/product?cpu=${item.slug}`} className={styles.attrTag}>
                   <span className={styles.tagName}>{item.name}</span>
-                  <span className={styles.tagCount}>{item.count}</span>
+                  <span className={styles.tagCount} style={{ color: siteColor }}>{item.count}</span>
                 </Link>
               ))}
             </div>
           </div>
         )}
 
-        {/* 特徴 & グラフィック属性 (日本語キー対応) */}
+        {/* Features & Graphics Segment (日本語キー対応) */}
         {(stats.feature || stats["グラフィック"]) && (
           <div className={styles.statGroup}>
             <p className={styles.groupLabel}>FEATURES & GRAPHICS</p>
             <div className={styles.tagWrapper}>
-              {/* 英語キーの feature */}
+              {/* Feature Tags */}
               {Array.isArray(stats.feature) && stats.feature.map((item: any, idx: number) => (
                 <Link key={idx} href={`/product?feature=${item.slug}`} className={`${styles.attrTag} ${styles.highlightTag}`}>
                   <span className={styles.tagName}>✨ {item.name}</span>
-                  <span className={styles.tagCount}>{item.count}</span>
+                  <span className={styles.tagCount} style={{ color: siteColor }}>{item.count}</span>
                 </Link>
               ))}
-              {/* 日本語キーの グラフィック */}
+              {/* Graphics Tags */}
               {Array.isArray(stats["グラフィック"]) && stats["グラフィック"].slice(0, 5).map((item: any, idx: number) => (
                 <Link key={idx} href={`/product?gpu=${item.slug}`} className={styles.attrTag}>
                   <span className={styles.tagName}>{item.name}</span>
-                  <span className={styles.tagCount}>{item.count}</span>
+                  <span className={styles.tagCount} style={{ color: siteColor }}>{item.count}</span>
                 </Link>
               ))}
             </div>
           </div>
         )}
 
-        {/* メモリ & OS (日本語キー対応) */}
+        {/* Memory & OS Segment */}
         {(stats["メモリ"] || stats["OS"]) && (
           <div className={styles.statGroup}>
             <p className={styles.groupLabel}>MEMORY & OS</p>
@@ -144,13 +142,13 @@ export default async function PCSidebar() {
               {Array.isArray(stats["メモリ"]) && stats["メモリ"].map((item: any, idx: number) => (
                 <Link key={idx} href={`/product?memory=${item.slug}`} className={styles.attrTag}>
                   <span className={styles.tagName}>{item.name}</span>
-                  <span className={styles.tagCount}>{item.count}</span>
+                  <span className={styles.tagCount} style={{ color: siteColor }}>{item.count}</span>
                 </Link>
               ))}
               {Array.isArray(stats["OS"]) && stats["OS"].map((item: any, idx: number) => (
                 <Link key={idx} href={`/product?os=${item.slug}`} className={styles.attrTag}>
                   <span className={styles.tagName}>{item.name}</span>
-                  <span className={styles.tagCount}>{item.count}</span>
+                  <span className={styles.tagCount} style={{ color: siteColor }}>{item.count}</span>
                 </Link>
               ))}
             </div>
@@ -158,25 +156,33 @@ export default async function PCSidebar() {
         )}
       </section>
 
-      {/* 🏢 BRANDS (maker_counts に準拠) */}
+      {/* 🏢 BRANDS (メーカー表示：完全同期版) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>BRANDS</h3>
         <div className={styles.brandGroup}>
           <ul className={styles.list}>
             {makers.length > 0 ? (
-              makers.map((m: any, idx: number) => (
-                <li key={idx}>
-                  <Link href={`/product?maker=${encodeURIComponent(m.maker || m.name)}`} className={styles.link}>
-                    <span className={styles.brandLabel}>💻 {String(m.maker || m.name).toUpperCase()}</span>
-                    {m.count !== undefined && <span className={styles.tagCount}>({m.count})</span>}
-                  </Link>
-                </li>
-              ))
+              makers.map((m: any, idx: number) => {
+                // stats.ts で正規化されたキー(name, maker, count)を安全に参照
+                const brandName = m.name || m.maker || "Unknown";
+                return (
+                  <li key={idx}>
+                    <Link href={`/product?maker=${encodeURIComponent(brandName)}`} className={styles.link}>
+                      <span className={styles.brandLabel}>💻 {String(brandName).toUpperCase()}</span>
+                      {m.count !== undefined && (
+                        <span className={styles.tagCount} style={{ color: siteColor }}>
+                          ({m.count})
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })
             ) : (
-              <li className={styles.empty}>NO DATA DETECTED</li>
+              <li className={styles.empty}>NO BRAND DATA DETECTED</li>
             )}
             <li>
-              <Link href="/product" className={`${styles.link} ${styles.allLink}`}>
+              <Link href="/product" className={`${styles.link} ${styles.allLink}`} style={{ color: siteColor }}>
                 <span>🚀 全ての製品を見る</span>
               </Link>
             </li>
@@ -198,13 +204,13 @@ export default async function PCSidebar() {
               style={sat.isMain ? { borderColor: siteColor } : {}}
             >
               <span className={sat.isMain ? `${styles.satIcon} ${styles.mainIcon}` : styles.satIcon}>{sat.icon}</span>
-              <span className={styles.satName}>{sat.name}</span>
+              <span className={sat.isMain ? styles.mainSatName : styles.satName}>{sat.name}</span>
             </a>
           ))}
         </div>
       </section>
 
-      {/* 📄 UPDATES (Real Data) */}
+      {/* 📄 UPDATES (Django News Data) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>LATEST UPDATES</h3>
         <ul className={styles.list}>

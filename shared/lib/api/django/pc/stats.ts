@@ -4,10 +4,11 @@
  * =====================================================================
  * 💻 PC製品統計・ランキングサービス (Zenith v12.1 - Hardened)
  * =====================================================================
- * 🛡️ 修正ポイント:
- * 1. 【安全なメタデータ】getSafeMeta を強化し、ホスト解決失敗でも墜落を防止。
- * 2. 【正規化の徹底】ランキング結果が配列でない場合の救済ロジックを追加。
- * 3. 【ID比較の安定化】RelatedProducts 内での ID 比較を toString() で安全に。
+ * 🛡️ 修正・強化ポイント:
+ * 1. 【安全なメタデータ】ホスト解析の失敗を考慮し、デフォルト値を保証。
+ * 2. 【階層正規化】results 配列の 0番目抽出ロジックを強化。
+ * 3. 【メーカー名の整合性】maker_counts 内のオブジェクトが name/maker/count を持つよう正規化。
+ * 4. 【ID安全比較】toString() による型不一致エラーの完全防止。
  * =====================================================================
  */
 
@@ -39,7 +40,6 @@ export async function fetchPCProductRanking(
     const siteTag = meta?.site_tag || 'bicstation';
     const siteGroup = meta?.site_group || 'general';
     
-    // 安全なエンドポイント決定
     const safeType = (type || 'score').toString();
     const endpoint = safeType === 'score' ? 'ranking' : 'popularity-ranking';
     
@@ -62,7 +62,7 @@ export async function fetchPCProductRanking(
 
         const cleanedData = replaceInternalUrls(data);
         
-        // 🛡️ 堅牢な結果抽出ロジック
+        // 🛡️ 堅牢な結果抽出ロジック (配列形式、results内包形式の両方に対応)
         let results = [];
         if (Array.isArray(cleanedData)) {
             results = cleanedData;
@@ -70,7 +70,6 @@ export async function fetchPCProductRanking(
             results = cleanedData.results || cleanedData.data || (cleanedData.id ? [cleanedData] : []);
         }
 
-        // 🛡️ マッピングによる各アイテムの毒抜き
         return (Array.isArray(results) ? results : []).map((item: any) => ({
             ...item,
             id: (item.id || "").toString(),
@@ -86,6 +85,7 @@ export async function fetchPCProductRanking(
 
 /**
  * 💡 PCサイドバー統計取得
+ * サイドバーのメーカー一覧、属性一覧の主要ソース
  */
 export async function fetchPCSidebarStats(host: string = ''): Promise<any | null> {
     const meta = getSafeMeta(host);
@@ -104,20 +104,27 @@ export async function fetchPCSidebarStats(host: string = ''): Promise<any | null
 
         if (!cleanedData) return null;
 
-        // resultsが配列で返ってきた場合、最初の1件が統計本体
+        // 🛡️ APIが results 配列で返す場合、最初の1件が統計の本体
         let stats = null;
         if (Array.isArray(cleanedData.results)) {
             stats = cleanedData.results[0] || null;
+        } else if (cleanedData.results && typeof cleanedData.results === 'object') {
+            stats = cleanedData.results;
         } else {
-            stats = cleanedData.results || cleanedData || null;
+            stats = cleanedData;
         }
 
-        // 🛡️ 統計データ内の undefined 参照を防止するための簡易ガード
+        // 🛡️ 統計データ内の undefined 参照を防止し、配列構造を正規化
         if (stats && typeof stats === 'object') {
             return {
                 ...stats,
                 total_count: stats.total_count || 0,
-                maker_counts: Array.isArray(stats.maker_counts) ? stats.maker_counts : []
+                // maker_counts をサイドバーが確実に回せるように補完
+                maker_counts: (Array.isArray(stats.maker_counts) ? stats.maker_counts : []).map((m: any) => ({
+                    ...m,
+                    name: m.name || m.maker || m.maker_name || "Unknown",
+                    count: typeof m.count === 'number' ? m.count : (m.product_count || 0)
+                }))
             };
         }
         return stats;
@@ -139,8 +146,8 @@ export async function fetchRelatedProducts(
         const safeMaker = (maker || "").toString();
         const safeExcludeId = (excludeId || "").toString();
 
+        // 共通の取得関数を利用
         const response = await fetchPCProducts('', 0, 10, safeMaker, host); 
-        
         const results = response?.results || (Array.isArray(response) ? response : []);
         
         if (!Array.isArray(results)) return [];
@@ -148,7 +155,7 @@ export async function fetchRelatedProducts(
         return results
             .filter((p: any) => {
                 if (!p) return false;
-                // 🛡️ ID比較を toString() で安全に行う (TypeError: toLowerCase of undefined を完全ガード)
+                // 🛡️ ID比較を toString() で安全に行う
                 const pid = (p.unique_id || p.id || "").toString();
                 return pid !== "" && pid !== safeExcludeId;
             })
