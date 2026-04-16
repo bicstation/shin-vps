@@ -59,7 +59,10 @@ async function getRealMakers(host: string) {
     });
     const data = await handleResponseWithDebug(res, url);
     const list = Array.isArray(data) ? data : (data?.results || []);
-    return list.map((m: any) => typeof m === 'string' ? m : (m.maker || m.name)).filter(Boolean);
+    return list.map((m: any) => {
+      if (typeof m === 'string') return m;
+      return m.maker || m.name || m.slug;
+    }).filter(Boolean);
   } catch (e) {
     console.error("🚨 [Sidebar Maker Fetch Error]:", e);
     return [];
@@ -85,7 +88,7 @@ async function getSidebarStats(host: string) {
   }
 }
 
-export default async function Sidebar() {
+export default async function PCSidebar() {
   /** 1. アイデンティティ確定 */
   const headerList = await headers();
   const host = headerList.get('x-forwarded-host') || headerList.get('host') || 'django-api-host';
@@ -147,21 +150,42 @@ export default async function Sidebar() {
             </div>
           )}
 
-          {/* 特徴 & グラフィック属性 */}
+          {/* 特徴 & グラフィック属性 (日本語キー対応) */}
           {(stats.feature || stats["グラフィック"]) && (
             <div className={styles.statGroup}>
               <p className={styles.groupLabel}>FEATURES & GRAPHICS</p>
               <div className={styles.tagWrapper}>
-                {/* 軽量・1kg未満などの特徴を表示 */}
+                {/* 英語キーの feature */}
                 {stats.feature?.map((item: any) => (
                   <Link key={item.id} href={`/product?feature=${item.slug}`} className={`${styles.attrTag} ${styles.highlightTag}`}>
                     <span className={styles.tagName}>✨ {item.name}</span>
                     <span className={styles.tagCount}>{item.count}</span>
                   </Link>
                 ))}
-                {/* GPUを表示 */}
+                {/* 日本語キーの グラフィック */}
                 {stats["グラフィック"]?.slice(0, 5).map((item: any) => (
                   <Link key={item.id} href={`/product?gpu=${item.slug}`} className={styles.attrTag}>
+                    <span className={styles.tagName}>{item.name}</span>
+                    <span className={styles.tagCount}>{item.count}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* メモリ & OS (日本語キー対応) */}
+          {(stats["メモリ"] || stats["OS"]) && (
+            <div className={styles.statGroup}>
+              <p className={styles.groupLabel}>MEMORY & OS</p>
+              <div className={styles.tagWrapper}>
+                {stats["メモリ"]?.map((item: any) => (
+                  <Link key={item.id} href={`/product?memory=${item.slug}`} className={styles.attrTag}>
+                    <span className={styles.tagName}>{item.name}</span>
+                    <span className={styles.tagCount}>{item.count}</span>
+                  </Link>
+                ))}
+                {stats["OS"]?.map((item: any) => (
+                  <Link key={item.id} href={`/product?os=${item.slug}`} className={styles.attrTag}>
                     <span className={styles.tagName}>{item.name}</span>
                     <span className={styles.tagCount}>{item.count}</span>
                   </Link>
