@@ -1,11 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 /**
- * 🔍 PC Finder クライアントコンポーネント (Zenith v25.1.8)
- * 🚀 アップデート内容:
- * 1. メーカー一覧の動的取得 (DBの最新状態を反映)
- * 2. フルスペック・ソート機能 (CPU/AI性能/コスパ/メモリ等)
- * 3. 状態管理の最適化 (ハイドレーション・デバウンス対応)
- * 4. エラーハンドリングとフォールバックの強化
+ * 🔍 PC Finder クライアントコンポーネント (Zenith v25.1.9)
+ * 🚀 修正内容:
+ * 1. メーカー取得エンドポイントを /api/general/pc-makers/ に修正
+ * 2. APIレスポンス (文字列の配列) に適合するようデータ処理を修正
+ * 3. サイドバーのリンクおよびセレクトボックスでの undefined 回避
  */
 
 "use client";
@@ -51,20 +50,23 @@ export default function PCFinderClient() {
             const meta = getSiteMetadata() || {};
             const cleanBaseUrl = (meta.api_base_url || '').replace(/\/api$/, '');
             
-            // 注: バックエンドにメーカー抽出用エンドポイントがある場合
-            const res = await fetch(`${cleanBaseUrl}/api/general/pc-products/makers/?site_prefix=${meta.site_tag || 'bicstation'}`);
+            // ✅ 正しいエンドポイントに修正
+            const requestUrl = `${cleanBaseUrl}/api/general/pc-makers/?site_prefix=${meta.site_tag || 'bicstation'}`;
+            const res = await fetch(requestUrl);
             
             if (res.ok) {
                 const data = await res.json();
-                // 配列形式 ['Apple', 'Lenovo', ...] を期待
-                setMakers(Array.isArray(data) ? data : data.results || []);
+                // ✅ APIが ["asus", "dell", ...] という配列を直接返しているため、そのまま処理
+                const rawList = Array.isArray(data) ? data : (data.results || []);
+                const cleanList = rawList.map((m: any) => String(m)).filter(Boolean);
+                setMakers(cleanList);
             } else {
-                // API未実装時のフォールバック
-                setMakers(['Apple', 'Lenovo', 'Dell', 'HP', 'ASUS', 'MSI', '富士通']);
+                // APIエラー時のフォールバック
+                setMakers(['asus', 'dell', 'dynabook', 'fmv', 'fujitsu', 'hp', 'apple', 'lenovo']);
             }
         } catch (e) {
-            console.warn("⚠️ [Maker Fetch skipped]: Using fallback list.");
-            setMakers(['Apple', 'Lenovo', 'Dell', 'HP', 'ASUS', 'MSI', '富士通']);
+            console.warn("⚠️ [Maker Fetch failed]: Using fallback list.");
+            setMakers(['asus', 'dell', 'dynabook', 'fmv', 'fujitsu', 'hp']);
         }
     }, []);
 
@@ -85,7 +87,7 @@ export default function PCFinderClient() {
                 offset: '0',
                 limit: '36',
                 site_prefix: siteTag,
-                ordering: sortBy, // ソートを適用
+                ordering: sortBy,
             });
 
             if (filters.searchQuery) queryParams.append('search', filters.searchQuery);
@@ -171,7 +173,7 @@ export default function PCFinderClient() {
                             />
                         </div>
 
-                        {/* 動的メーカー選択 */}
+                        {/* ✅ 動的メーカー選択（文字列配列に対応） */}
                         <div className={styles.controlGroup}>
                             <label>MANUFACTURER</label>
                             <div className={styles.selectWrapper}>
@@ -182,7 +184,8 @@ export default function PCFinderClient() {
                                     <option value="all">ALL BRANDS (全メーカー)</option>
                                     {makers.map(makerName => (
                                         <option key={makerName} value={makerName}>
-                                            {makerName.toUpperCase()}
+                                            {/* 文字列の小文字を大文字に変換して表示 */}
+                                            {String(makerName).toUpperCase()}
                                         </option>
                                     ))}
                                 </select>

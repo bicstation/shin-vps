@@ -46,6 +46,7 @@ const PC_SATELLITES = [
 ];
 
 async function getRealMakers(host: string) {
+  // ✅ APIエンドポイントを修正
   const url = resolveApiUrl('general/pc-makers/', host);
   const authHeaders = getDjangoHeaders(host);
 
@@ -55,7 +56,11 @@ async function getRealMakers(host: string) {
       next: { revalidate: 3600 } 
     });
     const data = await handleResponseWithDebug(res, url);
-    return data?.results || [];
+    
+    // ✅ 修正ポイント: data自体が配列 ["asus", "dell", ...] なので、そのまま返す
+    // 互換性のため、オブジェクト形式のデータが来ても動くようにガードを入れます
+    const list = Array.isArray(data) ? data : (data?.results || []);
+    return list.map((m: any) => typeof m === 'string' ? m : (m.maker || m.name));
   } catch (e) {
     console.error("🚨 [Sidebar Maker Fetch Critical Error]:", e);
     return [];
@@ -77,12 +82,10 @@ export default async function Sidebar() {
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
 
-  /** 3. サテライトの選出ロジック (🛡️ Hydration Fixed) */
+  /** 3. サテライトの選出ロジック */
   const mainSatellite = PC_SATELLITES.find(s => s.isMain);
   const otherSatellites = PC_SATELLITES.filter(s => !s.isMain);
   
-  // 💡 Math.random() はサーバー/クライアントで値がズレるため禁止。
-  // 代わりに「日付」をシードにして、日替わりで並び順が変わる決定論的ロジックを採用。
   const daySeed = new Date().getDate(); 
   const displaySatellites = [
     mainSatellite,
@@ -106,17 +109,18 @@ export default async function Sidebar() {
         </Link>
       </section>
 
-      {/* 🏢 BRANDS (API連動) */}
+      {/* 🏢 BRANDS (API連動修正済み) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>BRANDS</h3>
         <div className={styles.brandGroup}>
           <ul className={styles.list}>
             {makers && makers.length > 0 ? (
-              makers.map((m: any, idx: number) => (
-                <li key={`${m.maker}-${idx}`}>
-                  <Link href={`/product?maker=${m.maker}`} className={styles.link}>
-                    <span className={styles.brandLabel}>💻 {(m.maker || "").toUpperCase()}</span>
-                    <span className={styles.badge}>{m.count}</span>
+              makers.map((makerName: string, idx: number) => (
+                <li key={`${makerName}-${idx}`}>
+                  {/* ✅ m.maker ではなく makerName (文字列) を直接使用 */}
+                  <Link href={`/product?maker=${encodeURIComponent(makerName)}`} className={styles.link}>
+                    <span className={styles.brandLabel}>💻 {String(makerName).toUpperCase()}</span>
+                    {/* 数値（count）は今のAPIには含まれていないため、ラベルのみ表示 */}
                   </Link>
                 </li>
               ))
@@ -174,7 +178,7 @@ export default async function Sidebar() {
       {/* 🚀 SYSTEM FOOTER */}
       <div className={styles.sidebarFooter}>
         <span className={styles.statusDot} style={{ backgroundColor: siteColor }}></span>
-        <span className={styles.statusText}>{siteUpperName} PC_NODE ONLINE</span>
+        <span className={statusText}>{siteUpperName} PC_NODE ONLINE</span>
       </div>
     </aside>
   );
