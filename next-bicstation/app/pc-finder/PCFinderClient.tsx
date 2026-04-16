@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 /**
- * 🔍 PC Finder クライアントコンポーネント (Zenith v25.1.6)
- * 🛡️ 最終同期修正:
- * 1. ソートキーを 'attribute' から 'ordering' へ変更（バックエンドのFilter仕様に準拠）
- * 2. フィルタの型安全性を強化
- * 3. メーカー名の iexact 判定を考慮したクエリ構築
- * 4. API URLの整合性修正
+ * 🔍 PC Finder クライアントコンポーネント (Zenith v25.1.8)
+ * 🚀 アップデート内容:
+ * 1. メーカー一覧の動的取得 (DBの最新状態を反映)
+ * 2. フルスペック・ソート機能 (CPU/AI性能/コスパ/メモリ等)
+ * 3. 状態管理の最適化 (ハイドレーション・デバウンス対応)
+ * 4. エラーハンドリングとフォールバックの強化
  */
 
 "use client";
@@ -19,11 +19,12 @@ export default function PCFinderClient() {
     // --- 状態管理 ---
     const [isMounted, setIsMounted] = useState(false);
     const [products, setProducts] = useState<any[]>([]);
+    const [makers, setMakers] = useState<string[]>([]); // APIから取得するメーカー名リスト
     const [totalCount, setTotalCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    // フィルタ条件 (Django Backend の filterset_fields に完全準拠)
+    // フィルタ条件
     const [filters, setFilters] = useState({
         budget: 400000,
         brand: 'all',      // バックエンドの 'maker' パラメータに対応
@@ -31,22 +32,46 @@ export default function PCFinderClient() {
         searchQuery: '',
     });
     
-    // ソート順 (Django OrderingFilter は通常 'ordering' キーを期待)
+    // ソート順 (Django OrderingFilter 用の 'ordering' パラメータ)
     const [sortBy, setSortBy] = useState('-created_at');
 
-    // スライダーの即時表示用 (デバウンスの対象)
+    // スライダーの即時反映用
     const [tempBudget, setTempBudget] = useState(filters.budget);
 
-    // 1. ハイドレーションエラーを回避するため、クライアントサイドでのマウントを確認
+    // 1. マウント確認 (ハイドレーションエラー回避)
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
     /**
-     * 🌐 API連携ロジック (fetchProducts)
+     * 🏭 メーカー一覧をDBから動的に取得
+     */
+    const fetchMakers = useCallback(async () => {
+        try {
+            const meta = getSiteMetadata() || {};
+            const cleanBaseUrl = (meta.api_base_url || '').replace(/\/api$/, '');
+            
+            // 注: バックエンドにメーカー抽出用エンドポイントがある場合
+            const res = await fetch(`${cleanBaseUrl}/api/general/pc-products/makers/?site_prefix=${meta.site_tag || 'bicstation'}`);
+            
+            if (res.ok) {
+                const data = await res.json();
+                // 配列形式 ['Apple', 'Lenovo', ...] を期待
+                setMakers(Array.isArray(data) ? data : data.results || []);
+            } else {
+                // API未実装時のフォールバック
+                setMakers(['Apple', 'Lenovo', 'Dell', 'HP', 'ASUS', 'MSI', '富士通']);
+            }
+        } catch (e) {
+            console.warn("⚠️ [Maker Fetch skipped]: Using fallback list.");
+            setMakers(['Apple', 'Lenovo', 'Dell', 'HP', 'ASUS', 'MSI', '富士通']);
+        }
+    }, []);
+
+    /**
+     * 🌐 製品データ取得
      */
     const fetchProducts = useCallback(async () => {
-        // 既存の通信があれば中断
         if (abortControllerRef.current) abortControllerRef.current.abort();
         const controller = new AbortController();
         abortControllerRef.current = controller;
@@ -56,42 +81,21 @@ export default function PCFinderClient() {
             const meta = getSiteMetadata() || {};
             const siteTag = meta.site_tag || 'bicstation';
 
-            // クエリパラメータの構築
             const queryParams = new URLSearchParams({
                 offset: '0',
                 limit: '36',
-                site_prefix: siteTag, // 'site' ではなくモデルフィールド名の 'site_prefix' に合わせる
+                site_prefix: siteTag,
+                ordering: sortBy, // ソートを適用
             });
 
-            // フィルタの適用
             if (filters.searchQuery) queryParams.append('search', filters.searchQuery);
-            
-            // メーカー指定（バックエンドの get_queryset 内 maker__iexact に対応）
-            if (filters.brand !== 'all') {
-                queryParams.append('maker', filters.brand);
-            }
-            
-            // AI PC フィルタ
-            if (filters.isAiPc) {
-                queryParams.append('is_ai_pc', 'true');
-            }
-            
-            // 予算フィルタ (DjangoFilterBackend の max_price 等が未実装の場合は get_queryset での対応が必要)
-            // ここではフロントエンド側でも一旦パラメータとして付与
-            if (filters.budget < 1000000) {
-                queryParams.append('max_price', filters.budget.toString());
-            }
-            
-            // 【重要修正】ソートキーを 'ordering' に変更
-            // バックエンドの ordering_fields = ['price', 'updated_at', ...] に対応
-            queryParams.append('ordering', sortBy);
+            if (filters.brand !== 'all') queryParams.append('maker', filters.brand);
+            if (filters.isAiPc) queryParams.append('is_ai_pc', 'true');
+            if (filters.budget < 1000000) queryParams.append('max_price', filters.budget.toString());
 
-            // API URL の構築 (重複 /api の除去ロジック)
             const cleanBaseUrl = (meta.api_base_url || '').replace(/\/api$/, '');
             const requestUrl = `${cleanBaseUrl}/api/general/pc-products/?${queryParams.toString()}`;
             
-            console.log("📡 [ZENITH_SYNC_FETCH]:", requestUrl);
-
             const response = await fetch(requestUrl, {
                 signal: controller.signal,
                 headers: { 'Accept': 'application/json' },
@@ -101,14 +105,13 @@ export default function PCFinderClient() {
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             
-            // Django Rest Framework の標準レスポンス構造 (count, results) に対応
             const results = data.results || (Array.isArray(data) ? data : []);
             setProducts(results);
             setTotalCount(data.count || results.length);
 
         } catch (e: any) {
             if (e.name !== 'AbortError') {
-                console.error("🚨 [PC Finder Sync Error]:", e);
+                console.error("🚨 [PC Finder Fetch Error]:", e);
                 setProducts([]);
                 setTotalCount(0);
             }
@@ -117,7 +120,12 @@ export default function PCFinderClient() {
         }
     }, [filters, sortBy]);
 
-    // 2. デバウンス処理 (予算スライダー: 400ms待機して反映)
+    // 初期起動: メーカー取得
+    useEffect(() => {
+        if (isMounted) fetchMakers();
+    }, [isMounted, fetchMakers]);
+
+    // 予算スライダーのデバウンス反映
     useEffect(() => {
         if (!isMounted) return;
         const timer = setTimeout(() => {
@@ -126,23 +134,19 @@ export default function PCFinderClient() {
         return () => clearTimeout(timer);
     }, [tempBudget, isMounted]);
 
-    // 3. フィルタ・ソート変更時にフェッチ実行
+    // メインフェッチ
     useEffect(() => {
         if (!isMounted) return;
         fetchProducts();
         return () => { if (abortControllerRef.current) abortControllerRef.current.abort(); };
     }, [fetchProducts, isMounted]);
 
-    // 初期マウント前のレンダリングを防止
-    if (!isMounted) {
-        return null;
-    }
-
+    if (!isMounted) return null;
     const currentMeta = getSiteMetadata() || {};
 
     return (
         <div className={styles.finderLayout}>
-            {/* サイドバー：操作パネル */}
+            {/* --- サイドバー：検索・フィルタ・ソート --- */}
             <aside className={styles.sidebar}>
                 <div className={styles.sidebarInner}>
                     <div className={styles.brandArea}>
@@ -153,7 +157,7 @@ export default function PCFinderClient() {
                     </div>
 
                     <div className={styles.filterSection}>
-                        {/* 予算スライダー */}
+                        {/* 予算 */}
                         <div className={styles.controlGroup}>
                             <div className={styles.labelRow}>
                                 <label>MAX BUDGET</label>
@@ -167,7 +171,7 @@ export default function PCFinderClient() {
                             />
                         </div>
 
-                        {/* メーカー選択 */}
+                        {/* 動的メーカー選択 */}
                         <div className={styles.controlGroup}>
                             <label>MANUFACTURER</label>
                             <div className={styles.selectWrapper}>
@@ -175,39 +179,52 @@ export default function PCFinderClient() {
                                     value={filters.brand} 
                                     onChange={e => setFilters({...filters, brand: e.target.value})}
                                 >
-                                    <option value="all">ALL BRANDS</option>
-                                    <option value="富士通">富士通 FMV</option>
-                                    <option value="apple">Apple</option>
-                                    <option value="lenovo">Lenovo</option>
-                                    <option value="dell">DELL</option>
-                                    <option value="hp">HP</option>
-                                    <option value="asus">ASUS</option>
+                                    <option value="all">ALL BRANDS (全メーカー)</option>
+                                    {makers.map(makerName => (
+                                        <option key={makerName} value={makerName}>
+                                            {makerName.toUpperCase()}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
 
-                        {/* ソート設定 (orderingに適合) */}
+                        {/* 高度なソート設定 */}
                         <div className={styles.controlGroup}>
-                            <label>SORT_BY</label>
+                            <label>SORT_PROTOCOL</label>
                             <div className={styles.selectWrapper}>
                                 <select value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                                    <option value="-created_at">NEWEST_DATA</option>
-                                    <option value="price">PRICE_ASC</option>
-                                    <option value="-price">PRICE_DESC</option>
-                                    <option value="-score_ai">AI_SCORE_RANK</option>
-                                    <option value="-score_cpu">CPU_PERFORMANCE</option>
-                                    <option value="-score_cost">BEST_VALUE</option>
+                                    <optgroup label="🕒 TIME_LINE">
+                                        <option value="-created_at">NEWEST (新着順)</option>
+                                        <option value="-updated_at">UPDATED (更新順)</option>
+                                    </optgroup>
+                                    <optgroup label="💰 ECONOMY">
+                                        <option value="price">PRICE_ASC (価格の安い順)</option>
+                                        <option value="-price">PRICE_DESC (価格の高い順)</option>
+                                        <option value="-score_cost">BEST_VALUE (コスパ順)</option>
+                                    </optgroup>
+                                    <optgroup label="⚡ PERFORMANCE">
+                                        <option value="-spec_score">TOTAL_SCORE (総合性能順)</option>
+                                        <option value="-score_cpu">CPU_POWER (CPU性能順)</option>
+                                        <option value="-score_ai">AI_CAPABILITY (AIスコア順)</option>
+                                        <option value="-npu_tops">NPU_TOPS (NPU性能順)</option>
+                                    </optgroup>
+                                    <optgroup label="🔋 HARDWARE">
+                                        <option value="-memory_gb">RAM_CAPACITY (メモリ順)</option>
+                                        <option value="-storage_gb">STORAGE_SIZE (容量順)</option>
+                                        <option value="-score_portable">MOBILITY (持ち運びやすさ)</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </div>
 
-                        {/* AI PC 特化フィルタ */}
+                        {/* 特化トグル */}
                         <div className={styles.toggleGroup}>
                             <button 
                                 onClick={() => setFilters({...filters, isAiPc: !filters.isAiPc})} 
                                 className={filters.isAiPc ? styles.toggleActive : styles.toggle}
                             >
-                                <span className={styles.dot} /> CO-PILOT+ / AI PC
+                                <span className={styles.dot} /> CO-PILOT+ / AI PC ONLY
                             </button>
                         </div>
                     </div>
@@ -222,7 +239,7 @@ export default function PCFinderClient() {
                 </div>
             </aside>
 
-            {/* メインギャラリー */}
+            {/* --- メインコンテンツ --- */}
             <main className={styles.mainContent}>
                 <header className={styles.contentHeader}>
                     <p className={styles.breadcrumb}>
@@ -245,7 +262,7 @@ export default function PCFinderClient() {
                         <div className={styles.emptyState}>
                             <span className={styles.emptyIcon}>∅</span>
                             <h3>NO_DATA_STREAM</h3>
-                            <p>サーバー接続成功。ただし、条件に一致する製品がDBに見つかりません。</p>
+                            <p>サーバーとの通信は正常ですが、条件に合う商品が見つかりません。</p>
                         </div>
                     )}
                 </div>

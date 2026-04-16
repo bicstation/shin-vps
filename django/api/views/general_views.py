@@ -9,8 +9,10 @@ from rest_framework.permissions import AllowAny
 from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.http import Http404, StreamingHttpResponse
 from urllib.parse import unquote
+import json
+import requests
 
 # 💡 必要なモデルをインポート
 from api.models import (
@@ -19,14 +21,12 @@ from api.models import (
     FanzaFloorMaster
 )
 
-# 💡 インポート先の修正
-# 1. PC系および共通シリアライザー (general_serializers.py から)
+# 💡 シリアライザーのインポート
 from api.serializers.general_serializers import (
     PCProductSerializer, 
     LinkshareProductSerializer
 )
 
-# 2. アダルト系マスタ・階層シリアライザー (adult_serializers.py から)
 from api.serializers.adult_serializers import (
     ActressSerializer, GenreSerializer, MakerSerializer, 
     LabelSerializer, DirectorSerializer, SeriesSerializer, AuthorSerializer,
@@ -88,34 +88,22 @@ class AuthorListAPIView(MasterEntityListView):
 
 
 # --------------------------------------------------------------------------
-# 2. 🏆 PC製品ランキング View (完全版)
+# 2. 🏆 PC製品ランキング View
 # --------------------------------------------------------------------------
 
 class PCProductRankingView(generics.ListAPIView):
-    """
-    PC製品のランキング一覧を返す。
-    Next.jsからの /ranking/ および /popularity-ranking/ の両方に対応。
-    """
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        # 基本セット：有効かつスペックスコアがあるもの
         queryset = PCProduct.objects.filter(is_active=True, spec_score__gt=0)
-        
-        # 💡 [タクティカル修正] リクエストURLから「注目度」か「売上」かを判定
         path = self.request.path
         is_popularity = 'popularity-ranking' in path
-        
         site_type = getattr(self.request, 'site_type', 'station')
 
-        # A. 注目度ランキング (popularity-ranking) の場合
         if is_popularity:
-            # 現状は「更新が新しい＝注目」としてソート。必要に応じてクリック数等に変更可能
             return queryset.order_by('-updated_at', '-spec_score')[:20]
 
-        # B. 通常ランキング (ranking) の場合
-        # savingサイトならコスパ順、それ以外（station等）はスペック順
         if site_type == 'saving':
             return queryset.order_by('-score_cost', '-spec_score')[:20]
         
@@ -127,7 +115,7 @@ class PCProductRankingView(generics.ListAPIView):
 
 class PCProductListAPIView(generics.ListAPIView):
     """
-    PC製品の一覧取得・詳細フィルタリング・検索
+    💻 PC製品の一覧取得・詳細フィルタリング・動的ソート
     """
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
@@ -146,23 +134,43 @@ class PCProductListAPIView(generics.ListAPIView):
         'edition', 'description', 'ai_content'
     ]
     
+    # 🚨 フロントエンドの sortBy パラメータと完全に一致させる
     ordering_fields = [
-        'price', 'updated_at', 'created_at', 'memory_gb', 
+        'price', 'updated_at', 'created_at', 'memory_gb', 'storage_gb',
         'spec_score', 'score_cpu', 'score_gpu', 'score_cost', 
         'score_portable', 'score_ai', 'npu_tops', 'power_recommendation'
     ]
 
     def get_queryset(self):
+        # プリフェッチでN+1問題を回避
         queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
         
+        # 1. メーカー検索 (URLデコード対応)
         maker = self.request.query_params.get('maker')
-        attribute_slug = self.request.query_params.get('attribute')
-        
         if maker:
             queryset = queryset.filter(maker__iexact=unquote(maker))
+            
+        # 2. 属性検索 (slug)
+        attribute_slug = self.request.query_params.get('attribute')
         if attribute_slug:
             queryset = queryset.filter(attributes__slug=unquote(attribute_slug))
+
+        # 3. 予算上限フィルタ (PC Finder用)
+        max_price = self.request.query_params.get('max_price')
+        if max_price:
+            try:
+                queryset = queryset.filter(price__lte=int(max_price))
+            except ValueError:
+                pass
+
+        # 🚨 【重要】ソート競合の解決
+        # フロントエンドから 'ordering' 指定がある場合は、ここで order_by をせず return する。
+        # これにより、OrderingFilter バックエンドが正しく動作します。
+        ordering = self.request.query_params.get('ordering')
+        if ordering:
+            return queryset
         
+        # デフォルトソート順（パラメータがない場合のみ適用）
         site_type = getattr(self.request, 'site_type', 'station')
         if site_type == 'saving':
             return queryset.order_by('stock_status', '-score_cost', '-updated_at')
@@ -191,14 +199,27 @@ class PCProductDetailAPIView(generics.RetrieveAPIView):
 # --------------------------------------------------------------------------
 
 class PCProductMakerListView(APIView):
+    """
+    📊 動的メーカー一覧取得
+    DB内の既存製品から重複を除いたメーカーリストを生成
+    """
     permission_classes = [AllowAny]
+
     def get(self, request):
+        site_prefix = request.query_params.get('site_prefix')
         genre = request.query_params.get('genre')
+        
         qs = PCProduct.objects.filter(is_active=True).exclude(maker__isnull=True).exclude(maker='')
+        
+        if site_prefix:
+            qs = qs.filter(site_prefix=site_prefix)
         if genre:
             qs = qs.filter(unified_genre=genre)
-        maker_counts = qs.values('maker').annotate(count=Count('id')).order_by('maker')
-        return Response(list(maker_counts))
+            
+        # メーカー名のみを抽出して重複削除し、昇順ソート
+        makers = qs.values_list('maker', flat=True).distinct().order_by('maker')
+        
+        return Response(list(makers))
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -234,7 +255,67 @@ def pc_product_price_history(request, unique_id):
     })
 
 # --------------------------------------------------------------------------
-# 6. Linkshare商品 Views
+# 6. AIメイド接客 ストリーミングView
+# --------------------------------------------------------------------------
+
+class PCProductMaidStreamView(views.APIView):
+    """
+    指定された製品(unique_id)に対して、Ollama(Gemma 3)を使用して
+    リアルタイムにメイド接客文を生成・ストリーミングするView
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, unique_id):
+        product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
+        
+        prompt = f"""
+あなたはアキバのPCショップ「BIC STATION」の看板娘です。
+以下のPCの魅力を、メイドさんらしく情熱的に10行以内で語ってください。
+語尾は「〜だよ」「〜かな」。最後は必ず猫の鳴き声「ニャン！」で締めて。
+
+【商品名】: {product.name}
+【価格】: {product.price}円
+【CPUスコア】: {product.score_cpu}/100
+【特徴】: {"AI PC対応！最新のNPU搭載だよ" if product.is_ai_pc else "質実剛健で使いやすよ"}
+"""
+
+        def stream_generator():
+            yield "……あ、お客様！今おすすめのポイントをまとめますね！少々お待ちを……🐾\n\n"
+            url = "http://172.17.0.1:11434/api/generate"
+            payload = {
+                "model": "gemma3:4b",
+                "prompt": prompt.strip(),
+                "stream": True
+            }
+            try:
+                response = requests.post(
+                    url, 
+                    json=payload, 
+                    stream=True, 
+                    timeout=(5, 60)
+                )
+                if response.status_code != 200:
+                    yield f"【Ollama Error】ステータス: {response.status_code} ニャン…\n"
+                    return
+
+                for line in response.iter_lines():
+                    if line:
+                        chunk = json.loads(line.decode('utf-8'))
+                        token = chunk.get('response', '')
+                        if token:
+                            yield token
+                        if chunk.get('done'):
+                            break
+            except Exception as e:
+                yield f"\n\n【システムエラー】予期せぬエラーが発生したニャ… {str(e)}"
+
+        return StreamingHttpResponse(
+            stream_generator(), 
+            content_type='text/plain; charset=utf-8'
+        )
+
+# --------------------------------------------------------------------------
+# 7. その他共通 Views (Linkshare & Floor Navigation)
 # --------------------------------------------------------------------------
 
 class LinkshareProductListAPIView(generics.ListAPIView): 
@@ -250,114 +331,9 @@ class LinkshareProductDetailAPIView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = 'sku'
 
-# --------------------------------------------------------------------------
-# 7. 🗺️ 階層ナビゲーション (Floor Master)
-# --------------------------------------------------------------------------
-
 class FanzaFloorNavigationAPIView(views.APIView):
-    """
-    Next.jsのサイドメニューを動的に生成するためのエンドポイント。
-    FanzaFloorMasterSerializer を使用して正規化された階層データを返却。
-    """
     permission_classes = [AllowAny]
-
     def get(self, request, *args, **kwargs):
-        # サービス・フロア階層をすべて取得
         floors = FanzaFloorMaster.objects.filter(is_active=True).order_by('site_code', 'service_code', 'id')
-        
-        # アダルト用シリアライザーを使用
         serializer = FanzaFloorMasterSerializer(floors, many=True)
-        
-        return Response({
-            "officialHierarchy": serializer.data
-        }, status=status.HTTP_200)
-
-# --- ファイルの末尾に、行頭（スペースなし）から貼り付けてください ---
-
-# --- ファイルの末尾に、行頭（スペースなし）から貼り付けてください ---
-
-import json
-import requests
-from django.http import StreamingHttpResponse
-from django.shortcuts import get_object_or_404
-from urllib.parse import unquote
-from rest_framework import views
-from rest_framework.permissions import AllowAny
-
-# 💡 ヒント: PCProductが別ファイルにある場合はインポートが必要ですが、
-# 同ファイル内にある前提、または既存のviews.pyの末尾ならそのままでOKです。
-
-class PCProductMaidStreamView(views.APIView):
-    """
-    指定された製品(unique_id)に対して、Ollama(Gemma 3)を使用して
-    リアルタイムにメイド接客文を生成・ストリーミングするView
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request, unique_id):
-        # 1. データベースから製品情報を取得（URLデコード済み）
-        product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
-        
-        # 2. AIへの指示文（プロンプト）
-        prompt = f"""
-あなたはアキバのPCショップ「BIC STATION」の看板娘です。
-以下のPCの魅力を、メイドさんらしく情熱的に10行以内で語ってください。
-語尾は「〜だよ」「〜かな」。最後は必ず猫の鳴き声「ニャン！」で締めて。
-
-【商品名】: {product.name}
-【価格】: {product.price}円
-【CPUスコア】: {product.score_cpu}/100
-【特徴】: {"AI PC対応！最新のNPU搭載だよ" if product.is_ai_pc else "質実剛健で使いやすいよ"}
-"""
-
-        # 3. ストリーミング生成用の内部関数
-        def stream_generator():
-            # ブラウザへの初期レスポンス
-            yield "……あ、お客様！今おすすめのポイントをまとめますね！少々お待ちを……🐾\n\n"
-
-            # 💡 修正ポイント: 先ほど curl で成功した「確実なルート」を使用
-            url = "http://172.17.0.1:11434/api/generate"
-            
-            # 💡 修正ポイント: 余計な空白が入らないよう strip() を追加
-            payload = {
-                "model": "gemma3:4b",
-                "prompt": prompt.strip(),
-                "stream": True
-            }
-            
-            try:
-                # 💡 修正ポイント: requestsのタイムアウトを適切に設定
-                response = requests.post(
-                    url, 
-                    json=payload, 
-                    stream=True, 
-                    timeout=(5, 60) # (接続タイムアウト, 読み取りタイムアウト)
-                )
-                
-                if response.status_code != 200:
-                    yield f"【Ollama Error】ステータス: {response.status_code} ニャン…\n"
-                    yield f"詳細: {response.text[:100]}"
-                    return
-
-                # 逐次トークンを取得して返却
-                for line in response.iter_lines():
-                    if line:
-                        chunk = json.loads(line.decode('utf-8'))
-                        token = chunk.get('response', '')
-                        
-                        if token:
-                            yield token
-                        
-                        if chunk.get('done'):
-                            break
-                            
-            except requests.exceptions.ConnectionError:
-                yield "\n\n【通信エラー】Ollamaの門が閉まっているみたいニャ… sudo systemctl restart ollama を試してほしいニャ！"
-            except Exception as e:
-                yield f"\n\n【システムエラー】予期せぬエラーが発生したニャ… {str(e)}"
-
-        # 4. ストリーミングレスポンスを返却
-        return StreamingHttpResponse(
-            stream_generator(), 
-            content_type='text/plain; charset=utf-8'
-        )
+        return Response({"officialHierarchy": serializer.data}, status=status.HTTP_200)
