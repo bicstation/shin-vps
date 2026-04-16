@@ -57,10 +57,9 @@ async function getRealMakers(host: string) {
     });
     const data = await handleResponseWithDebug(res, url);
     
-    // ✅ 修正ポイント: data自体が配列 ["asus", "dell", ...] なので、そのまま返す
-    // 互換性のため、オブジェクト形式のデータが来ても動くようにガードを入れます
+    // ✅ APIが直接配列 ["asus", "dell", ...] を返しているため、そのまま処理
     const list = Array.isArray(data) ? data : (data?.results || []);
-    return list.map((m: any) => typeof m === 'string' ? m : (m.maker || m.name));
+    return list.map((m: any) => typeof m === 'string' ? m : (m.maker || m.name)).filter(Boolean);
   } catch (e) {
     console.error("🚨 [Sidebar Maker Fetch Critical Error]:", e);
     return [];
@@ -117,10 +116,8 @@ export default async function Sidebar() {
             {makers && makers.length > 0 ? (
               makers.map((makerName: string, idx: number) => (
                 <li key={`${makerName}-${idx}`}>
-                  {/* ✅ m.maker ではなく makerName (文字列) を直接使用 */}
                   <Link href={`/product?maker=${encodeURIComponent(makerName)}`} className={styles.link}>
                     <span className={styles.brandLabel}>💻 {String(makerName).toUpperCase()}</span>
-                    {/* 数値（count）は今のAPIには含まれていないため、ラベルのみ表示 */}
                   </Link>
                 </li>
               ))
@@ -175,10 +172,10 @@ export default async function Sidebar() {
         </ul>
       </section>
 
-      {/* 🚀 SYSTEM FOOTER */}
+      {/* 🚀 SYSTEM FOOTER (修正: styles.statusText) */}
       <div className={styles.sidebarFooter}>
         <span className={styles.statusDot} style={{ backgroundColor: siteColor }}></span>
-        <span className={statusText}>{siteUpperName} PC_NODE ONLINE</span>
+        <span className={styles.statusText}>{siteUpperName} PC_NODE ONLINE</span>
       </div>
     </aside>
   );
