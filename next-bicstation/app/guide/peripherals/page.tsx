@@ -1,12 +1,12 @@
 /**
  * =====================================================================
- * 🖱️ BICSTATION: PERIPHERALS_TRACKER_V1.0
- * 🛡️ Maya's Logic: 市場底値と連動した投資判断エンジンの実装
+ * 🖱️ BICSTATION: PERIPHERALS_TRACKER_V1.1
+ * 🛡️ Maya's Logic: 堅牢なヌルセーフ実装によるビルドエラーの完全回避
  * =====================================================================
  */
 
 import React from 'react';
-import { Monitor, MousePointer2, Link, TrendingDown, Clock, ChevronRight } from 'lucide-react';
+import { Monitor, MousePointer2, Link, TrendingDown, Clock } from 'lucide-react';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 
 // 周辺機器グループの型
@@ -25,21 +25,22 @@ interface PriceTrackItem {
     name: string;
     current_price: number;
     target_price: number;
-    status: 'HOT' | 'WAIT'; // 買い時か待ちか
+    status: 'HOT' | 'WAIT'; 
     last_updated: string;
 }
 
 /**
- * 🛠️ データを一括取得（実際はDjangoのエンドポイントから）
+ * 🛠️ データを一括取得（Django Bridge 経由）
  */
 async function getPeripheralsData() {
     try {
-        // 並列でデータを取得
         const [groups, tracker] = await Promise.all([
             fetchDjangoBridgeContent('peripheral-groups', 0),
             fetchDjangoBridgeContent('price-tracker', 0)
         ]);
+
         return { 
+            // 🚨 重要: results が無い場合に備えて空配列を保証
             groups: groups?.results || [], 
             tracker: tracker?.results || [] 
         };
@@ -72,8 +73,9 @@ export default async function PeripheralsGuidePage() {
 
             {/* 📋 カテゴリ別・投資戦略 */}
             <div className="grid md:grid-cols-3 gap-8 mb-24">
-                {groups.map((group: PeripheralGroup, idx: number) => (
-                    <div key={idx} className={`bg-[#fbfcfd] p-8 rounded-2xl border-t-4 ${group.theme_color} shadow-sm hover:shadow-xl transition-all group`}>
+                {/* 🚨 修正: groups?.map とすることで undefined エラーを防止 */}
+                {groups?.map((group: PeripheralGroup, idx: number) => (
+                    <div key={idx} className={`bg-[#fbfcfd] p-8 rounded-2xl border-t-4 ${group.theme_color || 'border-slate-200'} shadow-sm hover:shadow-xl transition-all group`}>
                         <div className="flex justify-between items-center mb-4">
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{group.category}</span>
                             {group.category === 'Monitor' && <Monitor size={18} className="text-slate-300" />}
@@ -84,12 +86,13 @@ export default async function PeripheralsGuidePage() {
                         <p className="text-sm text-slate-500 leading-relaxed mb-8 h-12 overflow-hidden">{group.description}</p>
                         
                         <div className="space-y-3 mb-8">
-                            {group.items.map((item, i) => (
+                            {/* 🚨 修正: 階層下の items も安全に map する */}
+                            {group.items?.map((item, i) => (
                                 <div key={i} className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
                                     <span className="text-[10px] text-blue-500 font-bold block mb-1 uppercase italic">{item.label}</span>
                                     <span className="text-sm font-bold text-slate-800">{item.name}</span>
                                 </div>
-                            ))}
+                            )) || <div className="text-xs text-slate-400">NO_ITEMS_LOADED</div>}
                         </div>
 
                         <div className="bg-slate-900 text-white p-5 rounded-xl text-[11px] leading-relaxed relative overflow-hidden">
@@ -105,7 +108,6 @@ export default async function PeripheralsGuidePage() {
 
             {/* 📉 リアルタイム底値トラッカー（DB直結） */}
             <section className="bg-slate-900 rounded-[2rem] p-8 md:p-16 text-white shadow-2xl relative overflow-hidden">
-                {/* 装飾 */}
                 <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent)] pointer-events-none"></div>
 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6 relative z-10">
@@ -134,25 +136,34 @@ export default async function PeripheralsGuidePage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                            {tracker.map((product: PriceTrackItem) => (
-                                <tr key={product.id} className="hover:bg-white/5 transition-colors group">
-                                    <td className="py-6 px-4">
-                                        <div className="font-bold text-white group-hover:text-blue-400 transition-colors">{product.name}</div>
-                                        <div className="text-[10px] text-slate-500">ID: {product.id}</div>
-                                    </td>
-                                    <td className="py-6 px-4 text-center text-slate-400 italic">¥{product.current_price.toLocaleString()}</td>
-                                    <td className="py-6 px-4 text-center font-bold text-blue-400">¥{product.target_price.toLocaleString()}</td>
-                                    <td className="py-6 px-4 text-right">
-                                        <span className={`px-4 py-1.5 rounded-sm text-[10px] font-black tracking-tighter ${
-                                            product.status === 'HOT' 
-                                            ? 'bg-blue-600 text-white animate-pulse' 
-                                            : 'bg-slate-800 text-slate-500'
-                                        }`}>
-                                            {product.status === 'HOT' ? 'BUY_NOW' : 'HOLD_WAIT'}
-                                        </span>
+                            {/* 🚨 修正: tracker?.map とすることで空の状態でも落ちないようにする */}
+                            {tracker?.length > 0 ? (
+                                tracker.map((product: PriceTrackItem) => (
+                                    <tr key={product.id} className="hover:bg-white/5 transition-colors group">
+                                        <td className="py-6 px-4">
+                                            <div className="font-bold text-white group-hover:text-blue-400 transition-colors">{product.name}</div>
+                                            <div className="text-[10px] text-slate-500">ID: {product.id}</div>
+                                        </td>
+                                        <td className="py-6 px-4 text-center text-slate-400 italic">¥{(product.current_price || 0).toLocaleString()}</td>
+                                        <td className="py-6 px-4 text-center font-bold text-blue-400">¥{(product.target_price || 0).toLocaleString()}</td>
+                                        <td className="py-6 px-4 text-right">
+                                            <span className={`px-4 py-1.5 rounded-sm text-[10px] font-black tracking-tighter ${
+                                                product.status === 'HOT' 
+                                                ? 'bg-blue-600 text-white animate-pulse' 
+                                                : 'bg-slate-800 text-slate-500'
+                                            }`}>
+                                                {product.status === 'HOT' ? 'BUY_NOW' : 'HOLD_WAIT'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={4} className="py-12 text-center text-slate-600 text-xs italic">
+                                        NO_TRACKING_DATA_AVAILABLE_IN_DB
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
