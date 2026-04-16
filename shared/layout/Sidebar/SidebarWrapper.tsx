@@ -7,7 +7,7 @@ import { headers } from 'next/headers';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
 // 各専門サイドバー（役割ごとに完全に分離）
-import PCSidebar from './organisms/sidebar/PCSidebar';      // 💻 PC・ガジェット専門
+import PCSidebar from './PCSidebar';      // 💻 PC・ガジェット専門
 import GeneralSidebar from './GeneralSidebar';             // 💰 節約・金融専門 (Bic Saving)
 import Sidebar from './AdultSidebar';                     // 🔞 アダルト共通
 import AdultSidebarAvFlash from './AdultSidebarAvFlash';   // 🔞 AV Flash 専門
