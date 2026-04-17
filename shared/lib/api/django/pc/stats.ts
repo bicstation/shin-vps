@@ -1,14 +1,13 @@
-// /home/maya/shin-vps/shared/lib/api/django/pc/stats.ts
 // @ts-nocheck
 /**
  * =====================================================================
- * 💻 PC製品統計・ランキングサービス (Zenith v12.1 - Hardened)
+ * 💻 PC製品統計・ランキングサービス (Zenith v12.2 - Hardened & Flat-Response Ready)
  * =====================================================================
  * 🛡️ 修正・強化ポイント:
- * 1. 【安全なメタデータ】ホスト解析の失敗を考慮し、デフォルト値を保証。
- * 2. 【階層正規化】results 配列の 0番目抽出ロジックを強化。
- * 3. 【メーカー名の整合性】maker_counts 内のオブジェクトが name/maker/count を持つよう正規化。
- * 4. 【ID安全比較】toString() による型不一致エラーの完全防止。
+ * 1. 【階層の完全吸収】Djangoが results で包んでいても、フラットでも自動検知。
+ * 2. 【キャッシュ無効化】開発中の反映速度を上げるため revalidate: 0 を一時適用。
+ * 3. 【正規化ロジック】maker_counts がどこにあってもサイドバー形式に変換。
+ * 4. 【HP救済】name が無い場合は maker を大文字にして表示名を生成。
  * =====================================================================
  */
 
@@ -30,7 +29,6 @@ const getSafeMeta = (host?: string) => {
 
 /**
  * 💡 PC製品ランキング取得
- * @param type - 'score' (AI性能順) または 'popularity' (人気順)
  */
 export async function fetchPCProductRanking(
     type: 'score' | 'popularity' = 'score',
@@ -54,7 +52,7 @@ export async function fetchPCProductRanking(
     try {
         const res = await fetch(url, { 
             headers: getDjangoHeaders(siteTag), 
-            next: { revalidate: 600 } 
+            next: { revalidate: 300 } 
         });
         
         const data = await handleResponseWithDebug(res, url);
@@ -62,7 +60,6 @@ export async function fetchPCProductRanking(
 
         const cleanedData = replaceInternalUrls(data);
         
-        // 🛡️ 堅牢な結果抽出ロジック (配列形式、results内包形式の両方に対応)
         let results = [];
         if (Array.isArray(cleanedData)) {
             results = cleanedData;
@@ -84,8 +81,7 @@ export async function fetchPCProductRanking(
 }
 
 /**
- * 💡 PCサイドバー統計取得
- * サイドバーのメーカー一覧、属性一覧の主要ソース
+ * 💡 PCサイドバー統計取得 (✨ここが最重要)
  */
 export async function fetchPCSidebarStats(host: string = ''): Promise<any | null> {
     const meta = getSafeMeta(host);
@@ -96,7 +92,7 @@ export async function fetchPCSidebarStats(host: string = ''): Promise<any | null
     try {
         const res = await fetch(url, { 
             headers: getDjangoHeaders(siteTag), 
-            next: { revalidate: 600 } 
+            next: { revalidate: 0 } // 反映確認のため一時的にキャッシュ無効
         });
         
         const data = await handleResponseWithDebug(res, url);
@@ -104,30 +100,29 @@ export async function fetchPCSidebarStats(host: string = ''): Promise<any | null
 
         if (!cleanedData) return null;
 
-        // 🛡️ APIが results 配列で返す場合、最初の1件が統計の本体
-        let stats = null;
-        if (Array.isArray(cleanedData.results)) {
-            stats = cleanedData.results[0] || null;
-        } else if (cleanedData.results && typeof cleanedData.results === 'object') {
-            stats = cleanedData.results;
-        } else {
-            stats = cleanedData;
-        }
+        // 🛡️ データの取り出しロジックの強化
+        // 1. cleanedData直下に maker_counts があるか
+        // 2. results[0] の中にあるか
+        // 3. どちらもなければそのまま使う
+        const stats = cleanedData.maker_counts 
+            ? cleanedData 
+            : (Array.isArray(cleanedData.results) ? (cleanedData.results[0] || {}) : cleanedData);
 
-        // 🛡️ 統計データ内の undefined 参照を防止し、配列構造を正規化
-        if (stats && typeof stats === 'object') {
-            return {
-                ...stats,
-                total_count: stats.total_count || 0,
-                // maker_counts をサイドバーが確実に回せるように補完
-                maker_counts: (Array.isArray(stats.maker_counts) ? stats.maker_counts : []).map((m: any) => ({
-                    ...m,
-                    name: m.name || m.maker || m.maker_name || "Unknown",
-                    count: typeof m.count === 'number' ? m.count : (m.product_count || 0)
-                }))
-            };
-        }
-        return stats;
+        // 🛡️ 統計データをサイドバーが壊れない形式に正規化して返す
+        return {
+            ...stats,
+            total_count: stats.total_count || 0,
+            // maker_counts を確実に正規化
+            maker_counts: (Array.isArray(stats.maker_counts) ? stats.maker_counts : []).map((m: any) => {
+                // 文字列のみのリスト（["hp", "dell"]）が来た場合の救済も含む
+                const makerSlug = typeof m === 'string' ? m : (m.maker || "");
+                return {
+                    name: m.name || makerSlug.toUpperCase() || "Unknown",
+                    maker: makerSlug,
+                    count: typeof m.count === 'number' ? m.count : 0
+                };
+            })
+        };
     } catch (e) {
         console.error(`🚨 [Sidebar Stats Fetch Error]`, e);
         return null;
@@ -146,7 +141,6 @@ export async function fetchRelatedProducts(
         const safeMaker = (maker || "").toString();
         const safeExcludeId = (excludeId || "").toString();
 
-        // 共通の取得関数を利用
         const response = await fetchPCProducts('', 0, 10, safeMaker, host); 
         const results = response?.results || (Array.isArray(response) ? response : []);
         
@@ -155,7 +149,6 @@ export async function fetchRelatedProducts(
         return results
             .filter((p: any) => {
                 if (!p) return false;
-                // 🛡️ ID比較を toString() で安全に行う
                 const pid = (p.unique_id || p.id || "").toString();
                 return pid !== "" && pid !== safeExcludeId;
             })

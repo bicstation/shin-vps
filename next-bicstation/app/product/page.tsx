@@ -1,33 +1,37 @@
 /* eslint-disable @next/next/no-img-element */
 /**
  * =====================================================================
- * 📋 BICSTATION PC製品一覧 (Product Listing)
- * 🛡️ Maya's Logic: 物理構造 v11.1 / Next.js 15 対応版
- * 物理パス: app/product/page.tsx
+ * 📋 BICSTATION PC製品一覧 (Product Listing - Optimized v11.2)
+ * 🛡️ Maya's Logic: フィルタ・属性・検索の完全同期
  * =====================================================================
  */
 
 import React, { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { Metadata } from 'next';
-import Link from 'next/link'; // ✅ 重要: インポート漏れを修正
+import Link from 'next/link';
 
-// ✅ インポートパスを最新の物理構造に同期
+// ✅ コンポーネント・APIインポート
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import Pagination from '@/shared/components/molecules/Pagination';
 import ProductSortSelector from '@/shared/components/molecules/ProductSortSelector';
-
-// ✅ 共通API定義から取得 (fetchPCProducts)
 import { fetchPCProducts } from '@/shared/lib/api/django/pc/products';
 
 import styles from './ProductsPage.module.css';
 
-export const metadata: Metadata = {
-    title: 'PC製品一覧 | BICSTATION',
-    description: 'メーカー別・ソート別で探す最新PC製品データベース。AIスコアに基づいた最適な製品比較が可能です。',
-};
+/** 🔍 メタデータの動的生成 */
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+    const sParams = await searchParams;
+    const maker = sParams.maker ? sParams.maker.toUpperCase() : '';
+    const query = sParams.q || '';
+    
+    return {
+        title: `${maker || query || '製品一覧'} | PC製品カタログ | BICSTATION`,
+        description: `${maker}の最新PC製品からAIスコア順で最適な一台を探せます。`,
+    };
+}
 
-// Next.js 15推奨の動的設定
+// Next.js 15推奨設定
 export const dynamic = "force-dynamic";
 
 interface PageProps {
@@ -37,18 +41,21 @@ interface PageProps {
         sort?: string;
         q?: string;
         offset?: string;
+        attribute?: string; // 💡 属性フィルタ対応
     }>;
 }
 
 /**
- * ✅ エントリポイント: Suspenseによる非同期レンダリング
+ * ✅ エントリポイント: スケルトンローディングによる Suspense
  */
 export default async function ProductsPage(props: PageProps) {
     return (
         <Suspense fallback={
-            <div className="min-h-[60vh] flex flex-col items-center justify-center font-mono text-xs uppercase tracking-widest text-slate-500">
-                <div className="w-8 h-8 border-t-2 border-blue-500 animate-spin mb-4 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.2)]"></div>
-                LOADING_PRODUCT_CATALOG_V11.1...
+            <div className="min-h-[70vh] flex flex-col items-center justify-center font-mono">
+                <div className={styles.loadingPulse}></div>
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-500/60 mt-6 animate-pulse">
+                    INITIALIZING_PRODUCT_DATABASE_CONNECT...
+                </p>
             </div>
         }>
             <ProductsPageContent {...props} />
@@ -57,103 +64,115 @@ export default async function ProductsPage(props: PageProps) {
 }
 
 /**
- * 💡 実際のコンテンツ（Server Component）
+ * 💡 実装本体
  */
 async function ProductsPageContent({ searchParams }: PageProps) {
-    // 1. Next.js 15 では searchParams は await が必須
     const sParams = await searchParams;
     
-    // 🌐 ホスト名取得の安定化（Nginx / Proxy環境対応）
+    // 🌐 ホスト・サイトコンテクスト解析
     const headerList = await headers();
     const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
 
-    // 2. パラメータの正規化
+    // 🛠️ パラメータの正規化
     const limit = 20;
-    const currentPage = sParams.page ? Math.max(1, parseInt(sParams.page)) : 1;
-    const currentOffset = sParams.offset 
-        ? parseInt(sParams.offset) 
-        : (currentPage - 1) * limit;
+    const currentPage = parseInt(sParams.page || '1');
+    const currentOffset = sParams.offset ? parseInt(sParams.offset) : (currentPage - 1) * limit;
 
     const currentMaker = sParams.maker || '';
-    const currentSort = sParams.sort || '-created_at';
+    const currentSort = sParams.sort || '-updated_at'; // 最新更新順をデフォルトに
     const searchQuery = sParams.q || '';
-    
-    // 3. APIフェッチ
-    // 引数順序: query, offset, limit, maker, host, sort
+    const currentAttr = sParams.attribute || '';
+
+    // 📡 APIフェッチ (属性フィルタ attribute を引数に追加)
+    // 注意: fetchPCProductsの引数定義に合わせて順序を確認してください
     const response = await fetchPCProducts(
         searchQuery, 
         currentOffset, 
         limit, 
         currentMaker, 
         host,
-        currentSort
+        currentSort,
+        currentAttr
     ).catch((e) => {
-        console.error("🚨 [Product List API Fatal Error]:", e);
+        console.error("🚨 [Product List API Error]:", e);
         return { results: [], count: 0 };
     });
 
-    // 🛡️ APIレスポンス構造の正規化ガード
     const results = response?.results || (Array.isArray(response) ? response : []);
     const count = response?.count || (Array.isArray(response) ? response.length : 0);
 
+    // 🏷️ タイトルの動的最適化ロジック
+    const getDynamicTitle = () => {
+        if (searchQuery) return `検索結果: "${searchQuery}"`;
+        if (currentMaker) return `${currentMaker.toUpperCase()} 製品一覧`;
+        if (currentAttr) return `${currentAttr.split('-').join(' ').toUpperCase()} 関連製品`;
+        return 'PC製品カタログ';
+    };
+
     return (
         <main className={styles.container}>
-            {/* 🏷️ 見出し・統計エリア */}
+            {/* 🛸 ヘッダーユニット: 統計とコントロール */}
             <header className={styles.header}>
                 <div className={styles.titleSection}>
-                    <h1 className={styles.title}>
-                        {currentMaker ? `${currentMaker.toUpperCase()} 製品一覧` : '全PC製品ラインナップ'}
-                    </h1>
-                    <p className={styles.countText}>
-                        全 <span className={styles.hitCount}>{count.toLocaleString()}</span> 件のAI査定済みデータ
-                    </p>
+                    <div className={styles.breadcrumb}>
+                        <Link href="/">HOME</Link> / <span>PRODUCT</span>
+                    </div>
+                    <h1 className={styles.title}>{getDynamicTitle()}</h1>
+                    <div className={styles.statsBadge}>
+                        <span className={styles.statusLight}></span>
+                        <span className={styles.hitCount}>{count.toLocaleString()}</span> 
+                        <span className={styles.unit}>PRODUCTS_DETECTED</span>
+                    </div>
                 </div>
 
-                {/* 🛠️ ソート切り替えツールバー */}
                 <div className={styles.toolbar}>
                     <ProductSortSelector currentSort={currentSort} />
                 </div>
             </header>
 
-            {/* 📋 商品カードグリッド */}
+            {/* 📋 メイングリッドエリア */}
             <section className={styles.gridArea}>
                 {results.length > 0 ? (
-                    <div className={styles.grid}>
-                        {results.map((product: any) => (
-                            <ProductCard 
-                                key={product.unique_id || product.id || `pc-${Math.random()}`} 
-                                product={product} 
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <div className={styles.grid}>
+                            {results.map((product: any, index: number) => (
+                                <ProductCard 
+                                    key={product.unique_id || product.id} 
+                                    product={product} 
+                                    priority={index < 4} // 最初の4枚はLCP最適化
+                                />
+                            ))}
+                        </div>
+
+                        {/* 📑 ページネーション: すべてのフィルタ条件を baseUrl に凝縮 */}
+                        {count > limit && (
+                            <footer className={styles.footer}>
+                                <Pagination 
+                                    currentOffset={currentOffset}
+                                    limit={limit}
+                                    totalCount={count}
+                                    baseUrl={`/product?sort=${currentSort}&maker=${currentMaker}&attribute=${currentAttr}&q=${encodeURIComponent(searchQuery)}`}
+                                />
+                            </footer>
+                        )}
+                    </>
                 ) : (
+                    /* 🔍 ゼロマッチ時のフォールバック */
                     <div className={styles.noData}>
-                        <div className="text-4xl mb-4 opacity-20">🔍</div>
-                        <p className="font-bold text-slate-300">該当する製品が見つかりませんでした。</p>
-                        <span className="text-sm text-slate-500 font-mono mt-2">
-                            QUERY: {searchQuery || 'NONE'} | NODE: {host}
-                        </span>
-                        <div className="mt-6">
-                            <Link href="/product" className="text-blue-400 hover:underline text-sm">
-                                全ての製品を表示し直す
-                            </Link>
+                        <div className={styles.noDataIcon}>NOT_FOUND</div>
+                        <h2 className="text-xl font-bold text-white mb-2">製品が見つかりませんでした</h2>
+                        <p className="text-slate-400 text-sm mb-6">
+                            条件を緩和するか、別のキーワードでお試しください。
+                        </p>
+                        <Link href="/product" className={styles.resetButton}>
+                            条件をクリアして全件表示
+                        </Link>
+                        <div className={styles.debugInfo}>
+                            NODE: {host} | SIG: {currentMaker || 'ALL'} / {currentAttr || 'ALL'}
                         </div>
                     </div>
                 )}
             </section>
-
-            {/* 📑 フッター・ページネーション */}
-            {count > limit && (
-                <footer className={styles.footer}>
-                    <Pagination 
-                        currentOffset={currentOffset}
-                        limit={limit}
-                        totalCount={count}
-                        // 💡 修正: ページ移動時も現在のソート、メーカー、検索クエリをすべてURLに引き継ぐ
-                        baseUrl={`/product?sort=${currentSort}&maker=${currentMaker}&q=${encodeURIComponent(searchQuery)}`}
-                    />
-                </footer>
-            )}
         </main>
     );
 }

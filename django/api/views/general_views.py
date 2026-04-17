@@ -14,7 +14,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-# 💡 モデルのインポート
+# 💡 必要なモデルをインポート
 from api.models import (
     PCProduct, PCAttribute, PriceHistory, LinkshareProduct,
     Actress, Genre, Maker, Label, Director, Series, Author,
@@ -105,7 +105,7 @@ class PCProductRankingView(generics.ListAPIView):
         return queryset.order_by('-spec_score', '-updated_at')[:20]
 
 # --------------------------------------------------------------------------
-# 3. 💻 PC・ソフトウェア製品一覧 (PCProduct)
+# 3. 💻 PC・ソフトウェア製品一覧
 # --------------------------------------------------------------------------
 
 class PCProductListAPIView(generics.ListAPIView):
@@ -118,25 +118,27 @@ class PCProductListAPIView(generics.ListAPIView):
     filterset_fields = [
         'site_prefix', 'unified_genre', 'stock_status', 
         'is_posted', 'is_ai_pc', 'is_download',
-        'cpu_socket', 'motherboard_chipset', 'ram_type'
+        'cpu_socket', 'motherboard_chipset', 'ram_type',
+        'license_term', 'edition'
     ]
-    search_fields = ['name', 'cpu_model', 'gpu_model', 'description']
-    ordering_fields = ['price', 'updated_at', 'spec_score', 'score_cost', 'score_ai']
+    search_fields = ['name', 'cpu_model', 'gpu_model', 'os_support', 'edition', 'description', 'ai_content']
+    ordering_fields = [
+        'price', 'updated_at', 'created_at', 'memory_gb', 'storage_gb',
+        'spec_score', 'score_cpu', 'score_gpu', 'score_cost', 
+        'score_portable', 'score_ai', 'npu_tops', 'power_recommendation'
+    ]
 
     def get_queryset(self):
         queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
         
-        # 1. メーカー検索 (URLデコード対応)
         maker = self.request.query_params.get('maker')
         if maker:
             queryset = queryset.filter(maker__iexact=unquote(maker))
             
-        # 2. 属性検索 (slug)
         attribute_slug = self.request.query_params.get('attribute')
         if attribute_slug:
             queryset = queryset.filter(attributes__slug=unquote(attribute_slug))
 
-        # 3. 予算フィルタ
         max_price = self.request.query_params.get('max_price')
         if max_price:
             try:
@@ -156,16 +158,14 @@ class PCProductDetailAPIView(generics.RetrieveAPIView):
     lookup_field = 'unique_id'
 
 # --------------------------------------------------------------------------
-# 5. 🛠️ PC統計・サイドバー集計 (⚠️ HP救済修正済み)
+# 5. 🛠️ PC統計・サイドバー集計 & メーカーリスト
 # --------------------------------------------------------------------------
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_sidebar_stats(request):
-    """
-    📊 サイドバーに必要な統計データを一括生成
-    """
-    # A. 属性マスタからの集計 (CPU, グラフィック, OS等)
+    """📊 サイドバー統計一括生成 (メーカー・属性)"""
+    # 属性集計
     attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
     ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
@@ -178,37 +178,47 @@ def pc_sidebar_stats(request):
         
         if type_display not in sidebar_data:
             sidebar_data[type_display] = []
-            
+        
         sidebar_data[type_display].append({
             'id': attr.id, 'name': attr.name, 'slug': attr.slug, 'count': attr.product_count
         })
 
-    # B. 🚀 メーカー集計 (救済ロジック)
-    # PCProductモデルの maker フィールドから直接ユニークな値を抽出して集計
-    maker_counts = PCProduct.objects.filter(is_active=True) \
+    # 🚀 メーカー集計 (救済措置: 大文字化)
+    maker_raw = PCProduct.objects.filter(is_active=True) \
         .exclude(maker__isnull=True).exclude(maker='') \
         .values('maker') \
         .annotate(count=Count('maker')) \
         .order_by('-count')
 
-    # フロントエンドの fetchPCSidebarStats が期待する 'maker_counts' キーに格納
     sidebar_data['maker_counts'] = [
         {
-            'name': m['maker'], 
+            'name': str(m['maker']).upper(),
             'maker': m['maker'], 
             'count': m['count']
-        } for m in maker_counts
+        } for m in maker_raw
     ]
 
     return Response(sidebar_data)
 
 class PCProductMakerListView(APIView):
-    """メーカー名のリストのみを取得"""
+    """📊 メーカー名の大文字整形・カウント付きリスト取得"""
     permission_classes = [AllowAny]
+
     def get(self, request):
-        qs = PCProduct.objects.filter(is_active=True).exclude(maker__isnull=True).exclude(maker='')
-        makers = qs.values_list('maker', flat=True).distinct().order_by('maker')
-        return Response(list(makers))
+        maker_raw = PCProduct.objects.filter(is_active=True) \
+            .exclude(maker__isnull=True).exclude(maker='') \
+            .values('maker') \
+            .annotate(count=Count('maker')) \
+            .order_by('-count')
+
+        formatted_makers = [
+            {
+                'name': str(m['maker']).upper(), # 表示用: HP
+                'maker': m['maker'],             # クエリ用: hp
+                'count': m['count']              # 件数: 146
+            } for m in maker_raw
+        ]
+        return Response(formatted_makers)
 
 @api_view(['GET'])
 def pc_product_price_history(request, unique_id):
@@ -228,7 +238,7 @@ class PCProductMaidStreamView(views.APIView):
     permission_classes = [AllowAny]
     def get(self, request, unique_id):
         product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
-        prompt = f"あなたは秋葉原の店員です。{product.name}の魅力を語って。最後はニャン！"
+        prompt = f"あなたは秋葉原のショップBIC STATIONの看板娘です。{product.name}の魅力を語って。最後はニャン！"
 
         def stream_generator():
             url = "http://172.17.0.1:11434/api/generate"
@@ -245,7 +255,7 @@ class PCProductMaidStreamView(views.APIView):
         return StreamingHttpResponse(stream_generator(), content_type='text/plain; charset=utf-8')
 
 # --------------------------------------------------------------------------
-# 7. その他 (Linkshare / Fanza)
+# 7. その他
 # --------------------------------------------------------------------------
 
 class LinkshareProductListAPIView(generics.ListAPIView): 

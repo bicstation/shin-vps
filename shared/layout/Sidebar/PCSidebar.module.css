@@ -3,166 +3,194 @@
 /* --- サイドバー本体 --- */
 .sidebar {
   width: 280px;
-  /* 🚩 ホワイトモードでも沈まないよう、背景を少し濃くしつつ透過 */
-  background: rgba(15, 23, 42, 0.95); 
+  /* 🚩 背景を少しだけ明るくし、透過度を調整して文字の浮き上がりを良くする */
+  background: rgba(10, 15, 28, 0.98); 
   padding: 30px 20px;
-  border-right: 2px solid rgba(0, 242, 255, 0.3);
+  border-right: 2px solid rgba(0, 242, 255, 0.5); /* 縁を少し強調 */
   height: fit-content;
   position: sticky;
   top: 110px; 
   max-height: calc(100vh - 140px);
   overflow-y: auto;
-  backdrop-filter: blur(20px);
-  box-shadow: 15px 0 40px rgba(0, 0, 0, 0.15);
-  border-radius: 0 16px 16px 0; /* 右側を少し丸めてモダンに */
+  backdrop-filter: blur(25px);
+  box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
+  border-radius: 0 16px 16px 0;
+  color: #ffffff; /* 基本文字色を白に固定 */
 }
 
-/* --- セクションタイトル --- */
+/* --- セクションタイトル (BRANDS / SPEC SEGMENTS 等) --- */
 .sectionTitle {
-  font-size: 0.7rem;
-  color: #00f2ff; /* シアン発光 */
+  font-size: 0.75rem;
+  color: #00f2ff; /* シアン発光を維持 */
   margin-top: 35px;
-  margin-bottom: 15px;
-  letter-spacing: 0.18em;
+  margin-bottom: 20px;
+  letter-spacing: 0.2em;
   font-weight: 800;
-  border-bottom: 1px solid rgba(0, 242, 255, 0.3);
-  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(0, 242, 255, 0.4); /* 線を太く */
+  padding-bottom: 12px;
   text-transform: uppercase;
   font-family: 'JetBrains Mono', monospace;
   display: flex;
   justify-content: space-between;
+  text-shadow: 0 0 8px rgba(0, 242, 255, 0.6); /* 文字自体を少し光らせて可読性アップ */
 }
 
-/* --- 📊 スペック属性 (SPEC SEGMENTS) --- */
+/* --- 📊 スペック属性グループラベル --- */
 .statGroup {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .groupLabel {
-  font-size: 0.65rem;
-  font-weight: bold;
-  color: #94a3b8;
-  margin-bottom: 0.8rem;
-  letter-spacing: 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #f8fafc; /* グレーから「ほぼ白」に変更して視認性確保 */
+  margin-bottom: 1rem;
+  letter-spacing: 0.12rem;
   text-transform: uppercase;
+  display: block;
+  border-left: 3px solid #64748b;
+  padding-left: 8px;
 }
 
+/* --- 🏷️ 属性・メーカータグ (ここが一番重要) --- */
 .tagWrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .attrTag {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  font-size: 0.8rem;
-  transition: all 0.2s ease;
+  padding: 10px 14px;
+  /* 🚩 背景を少し明るいグレーに設定し、文字とのコントラストを作る */
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
-  color: #e2e8f0;
+  color: #f1f5f9; /* 明るい白に近いグレー */
+  font-weight: 500;
 }
 
 .attrTag:hover {
-  background: rgba(0, 242, 255, 0.1);
-  border-color: rgba(0, 242, 255, 0.5);
+  background: rgba(0, 242, 255, 0.15);
+  border-color: #00f2ff;
   color: #ffffff;
-  transform: translateX(4px);
+  transform: translateX(6px);
+  box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
 }
 
 .tagCount {
-  font-size: 0.7rem;
-  color: #00f2ff; /* 数字を光らせる */
+  font-size: 0.75rem;
+  color: #00f2ff; /* 数字を鮮やかなシアンに */
   font-family: 'JetBrains Mono', monospace;
-  opacity: 0.8;
+  font-weight: bold;
+  background: rgba(0, 242, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 .highlightTag {
-  border: 1px solid rgba(0, 242, 255, 0.3);
-  background: rgba(0, 242, 255, 0.05);
-  box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.05);
+  border: 1px solid #00f2ff;
+  background: rgba(0, 242, 255, 0.08);
+  box-shadow: inset 0 0 15px rgba(0, 242, 255, 0.1);
 }
 
-/* --- 🛰️ サテライトネットワーク --- */
+/* --- 🛰️ サテライトネットワークリンク --- */
 .satelliteGrid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .satelliteLink {
   display: flex;
   align-items: center;
-  padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   text-decoration: none;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 
 .satelliteLink:hover {
-  background: rgba(0, 242, 255, 0.08);
-  border-color: rgba(0, 242, 255, 0.4);
-  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.02);
 }
 
 .satName {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f8fafc; /* 文字色を明るく */
 }
 
 /* --- 🚀 PC-FINDER バナー --- */
 .specialBanner {
   display: flex;
   align-items: center;
-  padding: 18px;
-  background: linear-gradient(90deg, rgba(0, 242, 255, 0.15) 0%, transparent 100%);
-  border-left: 3px solid #00f2ff;
+  padding: 20px;
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.2) 0%, rgba(0, 242, 255, 0.05) 100%);
+  border-left: 4px solid #00f2ff;
   text-decoration: none;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  border-radius: 6px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .finderMain {
   font-weight: 900;
   color: #ffffff;
-  font-size: 0.95rem;
-  letter-spacing: 0.05em;
-  text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 15px rgba(0, 242, 255, 0.8);
 }
 
 /* --- システムフッター --- */
 .sidebarFooter {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 50px;
+  padding-top: 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .statusDot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
+  background-color: #00f2ff;
   border-radius: 50%;
+  box-shadow: 0 0 10px #00f2ff;
   animation: pulse 2s infinite;
 }
 
 .statusText {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  color: #64748b;
+  font-size: 0.65rem;
+  color: #94a3b8; /* 少し明るめのグレー */
   text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: scale(1); opacity: 1; box-shadow: 0 0 5px #00f2ff; }
+  50% { transform: scale(1.3); opacity: 0.6; box-shadow: 0 0 15px #00f2ff; }
+  100% { transform: scale(1); opacity: 1; box-shadow: 0 0 5px #00f2ff; }
+}
+
+/* --- スクロールバーのカスタマイズ (読みやすさのため) --- */
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 242, 255, 0.3);
+  border-radius: 10px;
 }
