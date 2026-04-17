@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_8_V1.0
+ * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_8_V2.0
  * 🛡️ Maya's Logic: 「動かない」を未然に防ぐ。環境をコードで定義する。
  * 💎 Purpose: Docker ComposeによるNext.js/Django/DBの調和と安定稼働。
  * =====================================================================
@@ -9,6 +9,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ 追加
 import { 
     ChevronRight, 
     List, 
@@ -18,14 +19,18 @@ import {
     Box,
     Server,
     HardHat,
-    Terminal
+    Terminal,
+    Database,
+    Activity
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+// ✅ メタデータ：コンテナインフラを象徴するビジュアルを指定
 export async function generateMetadata() {
     return constructMetadata({
         title: "Vol.8 Docker による開発・本番環境の完全同期 | BICSTATION",
         description: "VPS上でNext.js、Django、PostgreSQLを安定稼働させるDockerコンポーズ構成の全貌を公開。",
+        image: "/images/series/docker-infrastructure-eyecatch.webp",
     });
 }
 
@@ -49,10 +54,27 @@ export default function NextGenVol8() {
                         Docker による開発・本番環境の<br className="hidden md:block" />完全同期ストラテジー
                     </h1>
 
-                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase mb-12">
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500" /> 2026.04.25</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 12 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
+                    </div>
+
+                    {/* ✅ アイキャッチ画像（Docker Container Infrastructure Visual） */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/docker-infrastructure-eyecatch.webp" 
+                            alt="BICSTATION Roadmap Vol.8: Docker Compose Architecture"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <Box className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">Containerized Ecosystem</span>
+                        </div>
                     </div>
                 </header>
 
@@ -73,6 +95,8 @@ export default function NextGenVol8() {
                         これにより、ローカルで書き上げたコードが、VPS上でも**寸分違わず同じ挙動**で動作することを保証しています。
                     </p>
 
+                    
+
                     <h2 id="compose-logic">2. Docker Compose：複数コンテナの指揮系統</h2>
                     <p>
                         365万件のデータを扱うBICSTATIONは、単一のアプリではありません。
@@ -81,7 +105,7 @@ export default function NextGenVol8() {
                     </p>
 
                     <div className="my-10 p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex gap-4 shadow-xl">
-                        <Box className="text-emerald-500 w-6 h-6 shrink-0" />
+                        <Server className="text-emerald-500 w-6 h-6 shrink-0" />
                         <div>
                             <h4 className="text-emerald-500 font-bold m-0 uppercase text-sm">Container Architecture</h4>
                             <p className="text-sm mt-2 mb-0">
@@ -97,7 +121,7 @@ export default function NextGenVol8() {
                         <strong>「安定とは、制限することである」</strong>という設計思想です。
                     </p>
 
-                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl">
+                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl shadow-inner">
                         <div className="flex items-center gap-2 mb-4 text-emerald-400">
                             <Terminal className="w-4 h-4" />
                             <span className="text-xs font-mono uppercase">Compose Snapshot</span>

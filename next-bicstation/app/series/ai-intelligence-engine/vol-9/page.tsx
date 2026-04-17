@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_9_V1.0
+ * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_9_V2.0
  * 🛡️ Maya's Logic: APIを直接晒さない。Nginxを鉄壁の守護神にする。
  * 💎 Purpose: 独自ドメイン運用、SSL化、セキュリティ対策のベストプラクティス。
  * =====================================================================
@@ -9,6 +9,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ 追加
 import { 
     ChevronRight, 
     List, 
@@ -18,14 +19,18 @@ import {
     ShieldCheck,
     Globe,
     Lock,
-    Link2
+    Link2,
+    ShieldAlert,
+    Network
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+// ✅ メタデータ：セキュリティとネットワークを象徴するビジュアル
 export async function generateMetadata() {
     return constructMetadata({
-        title: "Vol.9 Nginx逆プロキシとSSL・セキュリティ対策 | BICSTATION",
+        title: "Vol.9 Nginx 逆プロキシとSSL・セキュリティ対策 | BICSTATION",
         description: "独自ドメイン運用とAPIサーバーを隠蔽するネットワーク設計。HTTPS化とセキュリティの要諦。",
+        image: "/images/series/nginx-security-eyecatch.webp",
     });
 }
 
@@ -49,10 +54,27 @@ export default function NextGenVol9() {
                         Nginx 逆プロキシと<br className="hidden md:block" />SSL・セキュリティ対策
                     </h1>
 
-                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase mb-12">
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500" /> 2026.04.26</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 11 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
+                    </div>
+
+                    {/* ✅ アイキャッチ画像（Nginx Reverse Proxy & Security Architecture） */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/nginx-security-eyecatch.webp" 
+                            alt="BICSTATION Roadmap Vol.9: Nginx Reverse Proxy and Security"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">Network Hardening</span>
+                        </div>
                     </div>
                 </header>
 
@@ -72,6 +94,8 @@ export default function NextGenVol9() {
                         私たちはNginxを**「逆プロキシ（Reverse Proxy）」**として配置し、外部からのアクセスを一手に引き受ける窓口としました。
                         Nginxが交通整理を行い、フロントのリクエストはNext.jsへ、データの問い合わせはDjangoへと、安全にルーティングします。
                     </p>
+
+                    
 
                     <div className="my-10 p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex gap-4 shadow-xl">
                         <Lock className="text-emerald-500 w-6 h-6 shrink-0" />

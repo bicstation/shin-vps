@@ -9,6 +9,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ Next.jsのImageコンポーネントを追加
 import { 
     ChevronRight, 
     List, 
@@ -24,10 +25,13 @@ import {
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+
 export async function generateMetadata() {
     return constructMetadata({
         title: "Vol.10 運用とマネタイズ、そして信頼のツールたち | BICSTATION",
         description: "365万件の巨大サイトを維持するための運用戦略。VS Code、Gemini、シン・レンタルサーバーの紹介。",
+        // ✅ OGP画像もこのボリューム専用に設定
+        image: "/images/series/network-eyecatch.webp", 
     });
 }
 
@@ -56,6 +60,27 @@ export default function NextGenVol10() {
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 12 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
                     </div>
+
+                    {/* ✅ 1. アイキャッチ画像の挿入 */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/network-eyecatch.webp" // 👈 生成した画像を配置
+                            alt="BICSTATION Roadmap Vol.10 Eyecatch: An engineer working on a holographic roadmap"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority // ファーストビューなので優先読み込み
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        {/* グラデーションオーバーレイ（文字の可読性向上） */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        
+                        {/* 画像上のラベル */}
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <TrendingUp className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">FINAL EPISODE</span>
+                        </div>
+                    </div>
+
                 </header>
 
                 {/* 📝 本文 */}

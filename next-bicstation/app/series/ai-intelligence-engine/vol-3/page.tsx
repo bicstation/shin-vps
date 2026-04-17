@@ -1,14 +1,15 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_3_V1.0
+ * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_3_V2.0
  * 🛡️ Maya's Logic: 「ゴミを入れればゴミが出る」を回避するデータ洗浄術
- * 💎 Purpose: 大規模データを「演算・AI」可能な資産へ変えるプロセスを提示
+ * 💎 Purpose: アイキャッチ画像を追加し、データの精製プロセスの信頼性を強化
  * =====================================================================
  */
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ 追加
 import { 
     ChevronRight, 
     List, 
@@ -17,14 +18,17 @@ import {
     User, 
     Filter,
     Cpu,
-    RefreshCw
+    RefreshCw,
+    Code
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+// ✅ 修正：重複を排除し、画像パス（Engineer Roadmap）を設定
 export async function generateMetadata() {
     return constructMetadata({
         title: "Vol.3 365万件のデータ・クレンジングと正規化 | BICSTATION",
         description: "生データを「演算・描画・AI」といった独自指標へ変換するロジック。大規模インポートのバッチ処理ノウハウ。",
+        image: "/images/series/roadmap-vol10-eyecatch.webp", 
     });
 }
 
@@ -48,10 +52,27 @@ export default function NextGenVol3() {
                         365万件のデータ・クレンジングと<br className="hidden md:block" />正規化の戦略
                     </h1>
 
-                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase mb-12">
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500" /> 2026.04.20</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 9 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
+                    </div>
+
+                    {/* ✅ アイキャッチ画像（Engineer working on Roadmap） */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/roadmap-vol10-eyecatch.webp" 
+                            alt="BICSTATION Roadmap Vol.3: Engineer refining complex data systems"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <Code className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">Data Refining Process</span>
+                        </div>
                     </div>
                 </header>
 
@@ -71,7 +92,7 @@ export default function NextGenVol3() {
                         BICSTATIONでは、DjangoのカスタムManagement Commandを駆使し、インポート時に「全自動バリデーション＆クレンジング」を実行するパイプラインを構築しました。
                     </p>
 
-                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl flex gap-6 items-center">
+                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl flex gap-6 items-center shadow-xl">
                         <Filter className="text-emerald-500 w-12 h-12 shrink-0 opacity-50" />
                         <div>
                             <h4 className="text-white font-bold m-0 text-sm">Normalization Flow</h4>

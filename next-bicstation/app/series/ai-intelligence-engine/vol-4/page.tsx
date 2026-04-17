@@ -1,14 +1,15 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_4_V1.0
+ * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_4_V2.0
  * 🛡️ Maya's Logic: AIを単なるチャットではなく「解析エンジン」として定義
- * 💎 Purpose: スペックデータを資産化し、AdSenseも認める独自性を創出する
+ * 💎 Purpose: スペックデータを資産化し、表示速度と独自性を両立する
  * =====================================================================
  */
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ 追加
 import { 
     ChevronRight, 
     List, 
@@ -17,14 +18,18 @@ import {
     User, 
     Brain,
     MessageSquare,
-    Database
+    Database,
+    Cpu,
+    Zap
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+// ✅ メタデータの設定：AI Brainのビジュアルを指定
 export async function generateMetadata() {
     return constructMetadata({
         title: "Vol.4 LLM を解析エンジンとして統合する | BICSTATION",
         description: "スペック表を「読み物」に変えるプロンプトエンジニアリング。AI生成コンテンツを資産化するワークフロー。",
+        image: "/images/series/ai-brain-eyecatch.webp", 
     });
 }
 
@@ -48,10 +53,27 @@ export default function NextGenVol4() {
                         LLM を解析エンジンとして<br className="hidden md:block" />統合するプロトコル
                     </h1>
 
-                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase mb-12">
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500" /> 2026.04.21</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 11 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
+                    </div>
+
+                    {/* ✅ アイキャッチ画像（AI Brain / Neural Network） */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/ai-brain-eyecatch.webp" 
+                            alt="BICSTATION Roadmap Vol.4: LLM as an intelligence engine"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <Brain className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">AI Analysis Protocol</span>
+                        </div>
                     </div>
                 </header>
 
@@ -78,7 +100,7 @@ export default function NextGenVol4() {
                     </p>
 
                     <div className="my-10 p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex gap-4">
-                        <Brain className="text-emerald-500 w-6 h-6 shrink-0" />
+                        <Zap className="text-emerald-500 w-6 h-6 shrink-0" />
                         <div>
                             <h4 className="text-emerald-500 font-bold m-0 uppercase text-sm">AI Logic Asset</h4>
                             <p className="text-sm mt-2 mb-0">
@@ -93,7 +115,7 @@ export default function NextGenVol4() {
                         重要なフラッグシップモデルから順に、AIが深い洞察を書き加え、それをNext.jsが静的にレンダリングする。この一連のパイプラインこそが、次世代メディアの心臓部です。
                     </p>
 
-                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl">
+                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl shadow-xl">
                         <div className="flex items-center gap-2 mb-4 text-emerald-400">
                             <MessageSquare className="w-4 h-4" />
                             <span className="text-xs font-mono uppercase">Implementation Details</span>

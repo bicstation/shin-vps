@@ -1,14 +1,15 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_2_V1.0
+ * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_2_V2.0
  * 🛡️ Maya's Logic: 365万件を「秒」で捌くDB戦略を提示
- * 💎 Purpose: Python×DRFの優位性を技術具体例（Index/Serializer）で証明
+ * 💎 Purpose: アイキャッチ画像を追加し、バックエンドの技術的説得力を強化
  * =====================================================================
  */
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ 追加
 import { 
     ChevronRight, 
     List, 
@@ -17,14 +18,17 @@ import {
     User, 
     Database,
     Zap,
-    Code2
+    Code2,
+    TrendingUp
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+// ✅ 修正：重複を排除し、画像パス（AI CPU）を設定
 export async function generateMetadata() {
     return constructMetadata({
         title: "Vol.2 DRF による「高機動」API の構築 | BICSTATION",
         description: "数百万件のレコードを高速に捌くためのDBインデックス戦略。Djangoを選ぶべき決定的な理由を解説。",
+        image: "/images/series/ai-cpu-eyecatch.webp", 
     });
 }
 
@@ -48,10 +52,27 @@ export default function NextGenVol2() {
                         Django REST Framework による<br className="hidden md:block" />「高機動」API の構築
                     </h1>
 
-                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase mb-12">
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500" /> 2026.04.19</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 10 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
+                    </div>
+
+                    {/* ✅ アイキャッチ画像（AI CPU） */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/ai-cpu-eyecatch.webp" 
+                            alt="BICSTATION Roadmap Vol.2: AI CPU and Data Analytics"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <Database className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">Backend Infrastructure</span>
+                        </div>
                     </div>
                 </header>
 
@@ -78,7 +99,7 @@ export default function NextGenVol2() {
                     </p>
 
                     <div className="my-10 p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex gap-4">
-                        <Database className="text-emerald-500 w-6 h-6 shrink-0" />
+                        <Zap className="text-emerald-500 w-6 h-6 shrink-0" />
                         <div>
                             <h4 className="text-emerald-500 font-bold m-0 uppercase text-sm">Optimization Fact</h4>
                             <p className="text-sm mt-2 mb-0">

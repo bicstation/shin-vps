@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_6_V1.0
+ * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_6_V2.0
  * 🛡️ Maya's Logic: 365万ページを静的ファイルとして扱い、物理限界を超える
  * 💎 Purpose: ビルド時間の最適化と、ユーザー体験の最大化を両立させる
  * =====================================================================
@@ -9,6 +9,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ 追加
 import { 
     ChevronRight, 
     List, 
@@ -17,14 +18,17 @@ import {
     User, 
     Zap,
     Wind,
-    Layers
+    Layers,
+    Server
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+// ✅ メタデータ：SSG/ISRの高速性を象徴するビジュアル
 export async function generateMetadata() {
     return constructMetadata({
         title: "Vol.6 Next.js App Router による爆速SSG | BICSTATION",
         description: "大規模サイトにおける generateStaticParams の運用とビルド時間の最適化。ISRを活用した最新情報の同期。",
+        image: "/images/series/high-speed-ssg-eyecatch.webp", 
     });
 }
 
@@ -48,10 +52,27 @@ export default function NextGenVol6() {
                         Next.js App Router による<br className="hidden md:block" />爆速SSG（静的サイト生成）
                     </h1>
 
-                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase mb-12">
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500" /> 2026.04.23</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 10 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
+                    </div>
+
+                    {/* ✅ アイキャッチ画像（High Speed Network / SSG Visual） */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/high-speed-ssg-eyecatch.webp" 
+                            alt="BICSTATION Roadmap Vol.6: High-speed SSG and ISR infrastructure"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <Zap className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">Static Delivery Protocol</span>
+                        </div>
                     </div>
                 </header>
 
@@ -70,6 +91,8 @@ export default function NextGenVol6() {
                         Next.js 14の真骨頂は、ビルド時にデータをHTMLとして書き出しておくSSG（Static Site Generation）にあります。
                         365万件ものレコードがある場合、全ページを一度にビルドするのは現実的ではありません。私たちは、**「アクセスが多い主要1万ページを事前にビルド」**し、残りはオンデマンドで生成するハイブリッド戦略を採用しました。
                     </p>
+
+                    
 
                     <div className="my-10 p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex gap-4">
                         <Wind className="text-emerald-500 w-6 h-6 shrink-0" />
@@ -93,7 +116,7 @@ export default function NextGenVol6() {
                         私たちは、ビルドプロセスを並列化し、Django APIへのリクエストをキャッシュすることで、無駄なオーバーヘッドを排除。Next.jsのサーバーコンポーネントが、DRFから受け取った「精製済みデータ」を最短距離でHTMLに流し込むフローを完成させました。
                     </p>
 
-                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl">
+                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl shadow-xl">
                         <div className="flex items-center gap-2 mb-4 text-emerald-400">
                             <Layers className="w-4 h-4" />
                             <span className="text-xs font-mono uppercase">Key Technical Points</span>

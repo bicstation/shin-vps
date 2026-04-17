@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_7_V1.0
+ * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_7_V2.0
  * 🛡️ Maya's Logic: デザインを「コードの反映」と定義。美しさは機能に従う。
  * 💎 Purpose: Tailwind CSSによる高速開発と、エンジニアの誇りを込めたUI実装。
  * =====================================================================
@@ -9,6 +9,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ 追加
 import { 
     ChevronRight, 
     List, 
@@ -18,14 +19,17 @@ import {
     Monitor,
     Palette,
     Terminal,
-    Code2
+    Code2,
+    Sparkles
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+// ✅ メタデータ：システム美を体現するビジュアルを指定
 export async function generateMetadata() {
     return constructMetadata({
         title: "Vol.7 Lucide-React と Tailwind CSS による「システム美」の実装 | BICSTATION",
         description: "エンジニアリングの誇りを視覚化するダークモードとグリッチUI。Tailwind CSSによる一貫性のあるデザイン設計。",
+        image: "/images/series/system-aesthetic-eyecatch.webp",
     });
 }
 
@@ -49,10 +53,27 @@ export default function NextGenVol7() {
                         Lucide と Tailwind による<br className="hidden md:block" />「システム美」の実装術
                     </h1>
 
-                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase mb-12">
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500" /> 2026.04.24</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 9 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
+                    </div>
+
+                    {/* ✅ アイキャッチ画像（System Aesthetic / Cyberpunk UI Visual） */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/system-aesthetic-eyecatch.webp" 
+                            alt="BICSTATION Roadmap Vol.7: System Aesthetic with Tailwind and Lucide"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <Palette className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">Aesthetic Protocol</span>
+                        </div>
                     </div>
                 </header>
 

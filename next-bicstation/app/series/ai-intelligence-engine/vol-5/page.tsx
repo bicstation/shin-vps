@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
- * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_5_V1.0
+ * 🚀 NEXT_GEN_FULLSTACK_ROADMAP_VOL_5_V2.0
  * 🛡️ Maya's Logic: 非構造化テキストを構造化UIへ変換するフロントエンドの妙
  * 💎 Purpose: AIの出力をそのまま出さない。デザインの一部として制御する。
  * =====================================================================
@@ -9,6 +9,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image'; // ✅ 追加
 import { 
     ChevronRight, 
     List, 
@@ -17,14 +18,17 @@ import {
     User, 
     Scissors,
     Code2,
-    Sparkles
+    Sparkles,
+    Layout
 } from 'lucide-react';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 
+// ✅ メタデータ：UIパースのビジュアルを指定
 export async function generateMetadata() {
     return constructMetadata({
         title: "Vol.5 「AIコメント」の動的UIパース術 | BICSTATION",
         description: "AIが吐き出した長文を、Reactコンポーネントへ自動分配する技術。正規表現によるパースの極意。",
+        image: "/images/series/ui-parsing-eyecatch.webp", 
     });
 }
 
@@ -48,10 +52,27 @@ export default function NextGenVol5() {
                         正規表現による「AIコメント」の<br className="hidden md:block" />動的UIパース術
                     </h1>
 
-                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase">
+                    <div className="flex flex-wrap gap-6 text-[10px] font-mono text-slate-500 uppercase mb-12">
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-emerald-500" /> 2026.04.22</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> 9 MIN READ</div>
                         <div className="flex items-center gap-2"><User className="w-4 h-4 text-emerald-500" /> AUTHOR: MAYA</div>
+                    </div>
+
+                    {/* ✅ アイキャッチ画像（UI/UX Parsing Visual） */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-emerald-500/10 mb-16">
+                        <Image
+                            src="/images/series/ui-parsing-eyecatch.webp" 
+                            alt="BICSTATION Roadmap Vol.5: Parsing AI text into structured React UI"
+                            fill
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
+                            priority
+                            sizes="(max-w-768px) 100vw, 768px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0c] via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10">
+                            <Layout className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-mono text-white uppercase tracking-widest">UI Parsing Protocol</span>
+                        </div>
                     </div>
                 </header>
 
@@ -77,12 +98,12 @@ export default function NextGenVol5() {
                         例えば、`### POINT` というマークダウンの見出しをフックに、自動的にLucideアイコン付きのカード型UIへ流し込む。これにより、データ構造を変えることなく、表現の自由度だけを最大化できます。
                     </p>
 
-                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl">
+                    <div className="my-10 p-6 bg-white/[0.03] border border-slate-800 rounded-2xl shadow-lg">
                         <div className="flex items-center gap-2 mb-4 text-emerald-400 font-mono text-xs">
                             <Scissors className="w-4 h-4" />
                             <span>Parsing Logic Example</span>
                         </div>
-                        <pre className="text-[11px] leading-relaxed text-emerald-300/80 font-mono bg-black/40 p-4 rounded-lg overflow-x-auto">
+                        <pre className="text-[11px] leading-relaxed text-emerald-300/80 font-mono bg-black/40 p-4 rounded-lg overflow-x-auto border border-white/5">
 {`// 文字列から特定のセクションを抽出する
 const summary = rawText.match(/\\[SUMMARY\\]([\\s\\S]*?)\\[\\/SUMMARY\\]/)?.[1];
 const points = rawText.match(/POINT\\d:[^\\n]*/g);`}
@@ -112,7 +133,7 @@ const points = rawText.match(/POINT\\d:[^\\n]*/g);`}
                         第6回からは<strong>第3章：フロントエンド・高速化編</strong>がスタート。Next.js App Routerを使い倒し、365万ページを瞬きする間に表示させるSSGの極意を解説します。
                     </p>
 
-                </div> {/* 👈 本文の閉じ div (prose) */}
+                </div>
 
                 {/* 🧭 フッターナビゲーション */}
                 <footer className="mt-24 pt-12 border-t border-white/5">
