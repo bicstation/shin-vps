@@ -1,12 +1,17 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
  * 📈 BICSTATION 注目度・売れ筋ランキング
- * 🛡️ Maya's Logic: 物理構造 v11.1 / Zenith v25.1 同期版
- * 修正内容: ホスト名正規化による site_name 判定の安定化
+ * 🛡️ Maya's Logic: 物理構造 v11.1 / Zenith v25.1.1 同期版
+ * ---------------------------------------------------------------------
+ * 🚀 統合ポイント:
+ * 1. 【SHARED_PAGINATION】一貫したナビゲーション体験の適用。
+ * 2. 【ASYNC_PARAMS】Next.js 15+ searchParams (Promise) 完全準拠。
+ * 3. 【MARKET_DYNAMIC】リアルタイム性を演出するアクセスカウンター演出。
  * =====================================================================
  */
+
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
 
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
@@ -14,9 +19,10 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import { TrendingUp, Activity, Flame } from 'lucide-react';
 
-// ✅ site_name パラメータ対応済みの fetchPCProductRanking を使用
+// ✅ site_name パラメータ対応済みの共通 API 取得関数
 import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
+import Pagination from '@/shared/components/molecules/Pagination';
 
 import styles from './Popularity.module.css';
 
@@ -70,40 +76,40 @@ async function PopularityContent(props: PageProps) {
     const currentPage = parseInt(sParams.page || '1', 10);
     const limit = 20; 
 
-    // 🌐 ホスト名取得と正規化 (Djangoの site_name 判定用)
+    // 🌐 ホスト名取得と正規化
     const headerList = await headers();
     let host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
 
-    // 💡 内部ホスト名や localhost の場合、'bicstation' に強制正規化して API へ渡す
+    // 💡 内部ホスト名ガード
     if (host.includes('bicstation') || host.includes('localhost') || host.includes('8083')) {
         host = 'bicstation';
     }
 
-    // 1. データの取得
-    // fetchPCProductRanking 内部で site_name=host として送信される
+    /**
+     * 🚀 データフェッチ
+     */
     const rawData = await fetchPCProductRanking('popularity', host).catch((err) => {
         console.error("🚨 Popularity Fetch Error:", err);
-        return [];
+        return { results: [], count: 0 };
     });
     
-    // 💡 レスポンス構造の正規化
+    // レスポンス構造の正規化
     const allProductsArray = Array.isArray(rawData) 
         ? rawData 
-        : (rawData && typeof rawData === 'object' && 'results' in rawData)
-            ? (rawData as any).results
-            : [];
+        : (rawData?.results || []);
     
     // 仮想ページネーション処理
     const offset = (currentPage - 1) * limit;
     const products = allProductsArray.slice(offset, offset + limit);
-    const totalPages = Math.max(1, Math.ceil(allProductsArray.length / limit));
+    const totalCount = allProductsArray.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 
-    // 2. 構造化データ
+    // 構造化データ (JSON-LD)
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "PC注目度ランキング",
-        "numberOfItems": allProductsArray.length,
+        "numberOfItems": totalCount,
         "itemListElement": products.map((product: any, index: number) => ({
             "@type": "ListItem",
             "position": offset + index + 1,
@@ -123,12 +129,12 @@ async function PopularityContent(props: PageProps) {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
 
-            {/* 🌌 ヒーローヘッダー */}
+            {/* --- 🌌 ヒーローヘッダー --- */}
             <header className={styles.header}>
                 <div className={styles.headerContent}>
                     <div className={styles.badgeContainer}>
                         <Activity className="w-4 h-4 text-orange-500 animate-pulse" />
-                        <span>MARKET_DATA_STREAM_v25.1</span>
+                        <span>MARKET_DATA_STREAM_v25.1.1</span>
                     </div>
                     <h1 className={styles.title}>
                         <TrendingUp className="inline-block mr-3 mb-1 text-orange-500" />
@@ -141,7 +147,7 @@ async function PopularityContent(props: PageProps) {
                 </div>
             </header>
 
-            {/* 📈 ランキンググリッド */}
+            {/* --- 📈 ランキンググリッド --- */}
             <div className={styles.grid}>
                 {products.length > 0 ? (
                     products.map((product: any, index: number) => {
@@ -154,6 +160,7 @@ async function PopularityContent(props: PageProps) {
                                     rank={rank}
                                     isReviewMode={true}
                                 >
+                                    {/* --- 🧬 トレンド・オーバーレイ (カード内挿入) --- */}
                                     <div className={styles.popularityOverlay}>
                                         {rank <= 3 && (
                                             <div className={styles.trendingTag}>
@@ -165,8 +172,8 @@ async function PopularityContent(props: PageProps) {
                                         <div className={styles.accessIndicator}>
                                             <div className={styles.pulseDot}></div>
                                             <span className={styles.viewCount}>
-                                                {/* 演出用の動的数値（順位に応じた重み付け） */}
-                                                {Math.floor((200 / (rank + 0.5)) + (Math.random() * 15)) + 3}人が現在検討中
+                                                {/* 演出用の動的数値（サーバーサイドでシードを固定せず、活気を演出） */}
+                                                {Math.floor((250 / (rank + 0.3)) + (Math.random() * 10)) + 5}人が現在検討中
                                             </span>
                                         </div>
                                     </div>
@@ -177,12 +184,12 @@ async function PopularityContent(props: PageProps) {
                 ) : (
                     <div className={styles.noData}>
                         <div className="text-5xl mb-6 opacity-20 text-orange-500">📉</div>
-                        <p className="text-xl font-bold text-slate-300">トレンドデータを解析できませんでした</p>
+                        <p className="text-xl font-bold text-slate-300">STREAM_NOT_FOUND</p>
                         <div className="text-[10px] mt-6 opacity-50 font-mono bg-black/40 p-4 rounded border border-slate-800 text-left max-w-xs mx-auto">
                             SYSTEM_LOG:<br/>
-                            STATUS: STREAM_NOT_FOUND<br/>
-                            NODE: {host}<br/>
-                            CHECK: site_name_mapping
+                            STATUS: NO_TREND_DATA_AVAILABLE<br/>
+                            NODE: {host.toUpperCase()}<br/>
+                            ACTION: RE-INITIALIZE_STATS_ENGINE
                         </div>
                         <Link href="/" className="mt-8 inline-block px-8 py-2 border border-orange-500/30 rounded-full text-orange-400 hover:bg-orange-500/10 transition-all">
                             ホームに戻る
@@ -191,40 +198,22 @@ async function PopularityContent(props: PageProps) {
                 )}
             </div>
 
-            {/* 🧭 ページネーション */}
+            {/* --- 🧭 ページネーション (統合版コンポーネント) --- */}
             {totalPages > 1 && (
-                <nav className={styles.pagination} aria-label="Ranking navigation">
-                    <div className={styles.paginationInner}>
-                        {currentPage > 1 ? (
-                            <Link href={`?page=${currentPage - 1}`} className={styles.pageButton}>
-                                <span className={styles.arrow}>←</span> PREV
-                            </Link>
-                        ) : (
-                            <span className={`${styles.pageButton} ${styles.disabled}`}>← PREV</span>
-                        )}
-
-                        <div className={styles.pageInfo}>
-                            <span className={styles.currentPage}>{currentPage}</span>
-                            <span className={styles.separator}>/</span>
-                            <span className={styles.totalPage}>{totalPages}</span>
-                        </div>
-
-                        {currentPage < totalPages ? (
-                            <Link href={`?page=${currentPage + 1}`} className={styles.pageButton}>
-                                NEXT <span className={styles.arrow}>→</span>
-                            </Link>
-                        ) : (
-                            <span className={`${styles.pageButton} ${styles.disabled}`}>NEXT →</span>
-                        )}
-                    </div>
-                </nav>
+                <div className={styles.paginationSection}>
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        baseUrl="/popularity"
+                    />
+                </div>
             )}
 
-            {/* 📝 フッター注釈 */}
+            {/* --- 📝 フッター注釈 --- */}
             <footer className={styles.disclaimer}>
                 <div className={styles.disclaimerContent}>
                     <p>※本ランキングは過去24時間のアクセス統計、および在庫流動性を独自のアルゴリズムで統合したものです。</p>
-                    <p>※Target Node: {host} | データは1時間ごとに更新され、市場の最新トレンドを反映しています。</p>
+                    <p>※Target Node: {host.toUpperCase()} | データは1時間ごとに更新され、市場の最新トレンドを反映しています。</p>
                 </div>
             </footer>
         </main>

@@ -1,12 +1,17 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable react/no-unescaped-entities */
 /**
  * =====================================================================
  * 🏆 BICSTATION PCスペック解析ランキング
- * 🛡️ Maya's Logic: 物理構造 v11.1 / Zenith v25.1 同期版
- * 修正内容: site_name パラメータ整合性 & ホスト正規化
+ * 🛡️ Maya's Logic: 物理構造 v11.1 / Zenith v25.1.1 同期版
+ * ---------------------------------------------------------------------
+ * 🚀 統合ポイント:
+ * 1. 【SHARED_PAGINATION】一貫したナビゲーション体験の提供。
+ * 2. 【ASYNC_PARAMS】Next.js 15+ の Promise 形式 searchParams に完全対応。
+ * 3. 【AI_VISUALIZER】レーダーチャートによる多角的なスペック分析の可視化。
  * =====================================================================
  */
+
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
 
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
@@ -17,6 +22,7 @@ import Link from 'next/link';
 import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import RadarChart from '@/shared/components/atoms/RadarChart';
+import Pagination from '@/shared/components/molecules/Pagination';
 
 import styles from './Ranking.module.css';
 
@@ -70,42 +76,40 @@ async function RankingContent(props: PageProps) {
     const currentPage = parseInt(sParams.page || '1', 10);
     const limit = 20; 
 
-    // 🌐 ホスト名取得と正規化 (Djangoのsite判定用)
+    // 🌐 ホスト名取得と正規化
     const headerList = await headers();
     let host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
     
-    // 💡 ホスト名にポート番号や内部タグが含まれる場合の正規化ガード
+    // ホスト名の正規化
     if (host.includes('bicstation') || host.includes('localhost')) {
         host = 'bicstation';
     }
 
     /**
      * 🚀 データフェッチ
-     * fetchPCProductRanking 内部で site_name=host が送られるように修正済み
      */
     const rawData = await fetchPCProductRanking('score', host).catch((err) => {
         console.error("🚨 Ranking Fetch Error:", err);
-        return [];
+        return { results: [], count: 0 };
     });
     
-    // 💡 レスポンス構造の正規化 (Array か { results: [] } か)
+    // レスポンス構造の正規化
     const productsArray = Array.isArray(rawData) 
         ? rawData 
-        : (rawData && typeof rawData === 'object' && 'results' in rawData) 
-            ? (rawData as any).results 
-            : [];
+        : (rawData?.results || []);
     
-    // 仮想ページネーション処理
+    // 仮想ページネーション（サーバー側で全件取得される場合の切り出し処理）
     const offset = (currentPage - 1) * limit;
     const products = productsArray.slice(offset, offset + limit);
-    const totalPages = Math.max(1, Math.ceil(productsArray.length / limit));
+    const totalCount = productsArray.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 
     // JSON-LD (構造化データ)
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "PCスペック解析ランキング",
-        "numberOfItems": productsArray.length,
+        "numberOfItems": totalCount,
         "itemListElement": products.map((p: any, i: number) => ({
             "@type": "ListItem",
             "position": offset + i + 1,
@@ -131,9 +135,10 @@ async function RankingContent(props: PageProps) {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
 
+            {/* --- 🚀 ヒーロー・セクション --- */}
             <header className={styles.header}>
                 <div className={styles.heroInner}>
-                    <div className={styles.badge}>RANKING_ENGINE_v25.1</div>
+                    <div className={styles.badge}>RANKING_ENGINE_v25.1.1</div>
                     <h1 className={styles.title}>
                         <span className={styles.titleIcon}>💻</span>
                         PCスペック解析ランキング
@@ -144,6 +149,7 @@ async function RankingContent(props: PageProps) {
                 </div>
             </header>
             
+            {/* --- 📊 ランキング・グリッド --- */}
             <div className={styles.grid}>
                 {products.length > 0 ? (
                     products.map((product: any, index: number) => {
@@ -167,11 +173,12 @@ async function RankingContent(props: PageProps) {
                                     rank={rank}
                                     isReviewMode={true}
                                 >
+                                    {/* --- 🧬 AI解析オーバーレイ (カード内挿入) --- */}
                                     <div className={styles.analysisOverlay}>
                                         <div className={styles.chartHeader}>
                                             <div className={styles.labelGroup}>
                                                 <span className={styles.analysisLabel}>AI_ANALYSIS_SCORE</span>
-                                                <span className={styles.scoreDetail}>Target: {host}</span>
+                                                <span className={styles.scoreDetail}>Target: {host.toUpperCase()}</span>
                                             </div>
                                             <div className={styles.totalScoreBox}>
                                                 <span className={styles.scoreValue}>{totalScore}</span>
@@ -193,11 +200,11 @@ async function RankingContent(props: PageProps) {
                 ) : (
                     <div className={styles.noData}>
                         <div className="text-5xl mb-6 opacity-20">📊</div>
-                        <p className="text-xl font-bold text-slate-300">ランキングデータを取得できません</p>
-                        <p className="text-sm mt-4 opacity-60 font-mono leading-relaxed">
+                        <p className="text-xl font-bold text-slate-300">RANKING_STREAM_OFFLINE</p>
+                        <p className="text-sm mt-4 opacity-60 font-mono leading-relaxed text-center">
                             ERROR_CODE: EMPTY_DATA_STREAM<br/>
                             RESOLVED_HOST: {host}<br/>
-                            ACTION: CHECK_BACKEND_SITE_CONFIG
+                            ACTION: CHECK_BACKEND_SYNC_STATUS
                         </p>
                         <Link href="/" className="mt-8 px-6 py-2 border border-blue-500/30 rounded-full text-blue-400 hover:bg-blue-500/10 transition-all">
                             トップページに戻る
@@ -206,34 +213,18 @@ async function RankingContent(props: PageProps) {
                 )}
             </div>
 
+            {/* --- 🔢 ページネーション・コントロール (統合版) --- */}
             {totalPages > 1 && (
-                <nav className={styles.pagination} aria-label="Ranking navigation">
-                    <div className={styles.paginationInner}>
-                        {currentPage > 1 ? (
-                            <Link href={`?page=${currentPage - 1}`} className={styles.pageButton}>
-                                <span className={styles.btnArrow}>←</span> PREV
-                            </Link>
-                        ) : (
-                            <span className={`${styles.pageButton} ${styles.disabled}`}>← PREV</span>
-                        )}
-
-                        <div className={styles.pageIndicator}>
-                            <span className={styles.current}>{currentPage}</span>
-                            <span className={styles.divider}>/</span>
-                            <span className={styles.total}>{totalPages}</span>
-                        </div>
-
-                        {currentPage < totalPages ? (
-                            <Link href={`?page=${currentPage + 1}`} className={styles.pageButton}>
-                                NEXT <span className={styles.btnArrow}>→</span>
-                            </Link>
-                        ) : (
-                            <span className={`${styles.pageButton} ${styles.disabled}`}>NEXT →</span>
-                        )}
-                    </div>
-                </nav>
+                <div className={styles.paginationSection}>
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        baseUrl="/ranking"
+                    />
+                </div>
             )}
 
+            {/* --- 👣 フッター・ノート --- */}
             <footer className={styles.rankingFooter}>
                 <div className={styles.footerNote}>
                     <p>※本ランキングはシステムにより24時間ごとに再計算されます。</p>

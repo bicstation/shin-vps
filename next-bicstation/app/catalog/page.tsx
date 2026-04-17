@@ -2,7 +2,7 @@
 /**
  * =====================================================================
  * 💻 BICSTATION PC製品カタログ (Catalog Hub)
- * 🛡️ Maya's Logic: 物理構造 v11.1 完全同期版
+ * 🛡️ Maya's Logic: 物理構造 v11.2 ページネーション完全同期版
  * 物理パス: app/catalog/page.tsx
  * =====================================================================
  */
@@ -38,6 +38,7 @@ interface PageProps {
     }>;
 }
 
+/** ✅ ローディング境界 */
 export default async function CatalogPage(props: PageProps) {
     return (
         <Suspense fallback={
@@ -51,33 +52,34 @@ export default async function CatalogPage(props: PageProps) {
     );
 }
 
+/** 💡 カタログメインロジック */
 async function CatalogPageContent({ searchParams }: PageProps) {
     const sParams = await searchParams;
     
-    // 🌐 ホスト名取得 (API層との整合性)
+    // 🌐 ホスト名取得 (マルチドメイン/サイト固有フィルタリング用)
     const headerList = await headers();
     const host = headerList.get('x-forwarded-host') || headerList.get('host') || "";
 
-    // 1. パラメータの正規化 (limitは40で固定)
+    // 1. パラメータの正規化 (カタログ面は40件表示で固定)
     const limit = 40;
     const searchQuery = sParams.q || '';
     const maker = sParams.maker || '';
     const attribute = sParams.attribute || '';
     
-    // 🔢 ページネーションロジックの統一
-    // URLに page があればそれを優先、なければ offset から計算
-    const currentPage = sParams.page ? Math.max(1, parseInt(sParams.page)) : 1;
-    const currentOffset = sParams.offset 
-        ? parseInt(sParams.offset) 
-        : (currentPage - 1) * limit;
+    // 🔢 ページネーション変数の算出
+    // pageパラメータがある場合はそれを優先し、なければoffsetから計算（1-based）
+    const currentPage = sParams.page 
+        ? Math.max(1, parseInt(sParams.page)) 
+        : (sParams.offset ? Math.floor(parseInt(sParams.offset) / limit) + 1 : 1);
+    
+    const currentOffset = (currentPage - 1) * limit;
 
-    // 2. APIフェッチ
-    // 第5引数に host を渡すことで、サイト固有のフィルタリングを適用
+    // 2. APIフェッチ実行
     const pcData = await fetchPCProducts(
         searchQuery, 
         currentOffset, 
         limit, 
-        attribute || maker,
+        attribute || maker, // attributeがなければmakerをフォールバックとして使用
         host
     ).catch((e) => {
         console.error("[Catalog API Error]:", e);
@@ -86,6 +88,7 @@ async function CatalogPageContent({ searchParams }: PageProps) {
 
     const totalCount = pcData?.count || 0;
     const products = pcData?.results || [];
+    const totalPages = Math.ceil(totalCount / limit);
 
     return (
         <div className={styles.fullWidthWrapper}>
@@ -98,6 +101,7 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                     </p>
                 </header>
 
+                {/* 🔍 検索セクション */}
                 <section className={styles.searchSection}>
                     <form action="/catalog" method="GET" className={styles.searchForm}>
                         <div className={styles.inputGroup}>
@@ -108,7 +112,7 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                                 placeholder="モデル名、CPU、GPUなどを入力..." 
                                 className={styles.searchInput}
                             />
-                            {/* フィルタ状態を維持するための hidden */}
+                            {/* 現在のフィルタ状態を検索時も引き継ぐための隠しフィールド */}
                             {maker && <input type="hidden" name="maker" value={maker} />}
                             {attribute && <input type="hidden" name="attribute" value={attribute} />}
                             
@@ -119,6 +123,7 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                     </form>
                 </section>
 
+                {/* 🏷️ アクティブなフィルタ表示 */}
                 {(searchQuery || maker || attribute) && (
                     <div className={styles.activeFilters}>
                         <span className={styles.filterLabel}>現在の条件:</span>
@@ -129,6 +134,7 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                     </div>
                 )}
 
+                {/* 📦 製品グリッドセクション */}
                 <section className={styles.productSection}>
                     <div className={styles.gridHeader}>
                         <h2 className={styles.productGridTitle}>
@@ -152,15 +158,18 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                         </div>
                     )}
 
-                    {/* 🔢 ページネーション: propsの渡し方を修正 */}
+                    {/* 🔢 ページネーション: 強化版コンポーネントとの同期 */}
                     {totalCount > limit && (
                         <div className={styles.paginationWrapper}>
                             <Pagination 
-                                currentOffset={currentOffset}
-                                limit={limit}
-                                totalCount={totalCount}
-                                // baseUrlに現在の検索条件を付与することでページ移動時も検索が維持される
-                                baseUrl={`/catalog?q=${encodeURIComponent(searchQuery)}&maker=${encodeURIComponent(maker)}&attribute=${encodeURIComponent(attribute)}`}
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                baseUrl="/catalog"
+                                query={{
+                                    q: searchQuery || undefined,
+                                    maker: maker || undefined,
+                                    attribute: attribute || undefined
+                                }}
                             />
                         </div>
                     )}

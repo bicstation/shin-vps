@@ -1,12 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-/**
- * 🔍 PC Finder クライアントコンポーネント (Zenith v25.1.9)
- * 🚀 修正内容:
- * 1. メーカー取得エンドポイントを /api/general/pc-makers/ に修正
- * 2. APIレスポンス (文字列の配列) に適合するようデータ処理を修正
- * 3. サイドバーのリンクおよびセレクトボックスでの undefined 回避
- */
-
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -14,24 +5,35 @@ import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig'; 
 import styles from './PCFinderPage.module.css';
 
+/**
+ * =====================================================================
+ * 🛰️ PC Finder クライアントコンポーネント (Zenith v25.2.0)
+ * 🛡️ Maya's Logic: 動的フェッチ & ステート・ページネーション統合
+ * =====================================================================
+ */
+
 export default function PCFinderClient() {
     // --- 状態管理 ---
     const [isMounted, setIsMounted] = useState(false);
     const [products, setProducts] = useState<any[]>([]);
-    const [makers, setMakers] = useState<string[]>([]); // APIから取得するメーカー名リスト
+    const [makers, setMakers] = useState<string[]>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const abortControllerRef = useRef<AbortController | null>(null);
 
+    // 🔢 ページネーション用ステート
+    const LIMIT = 36;
+    const [currentOffset, setCurrentOffset] = useState(0);
+
     // フィルタ条件
     const [filters, setFilters] = useState({
         budget: 400000,
-        brand: 'all',      // バックエンドの 'maker' パラメータに対応
-        isAiPc: false,     // バックエンドの 'is_ai_pc' パラメータに対応
+        brand: 'all',      
+        isAiPc: false,     
         searchQuery: '',
     });
     
-    // ソート順 (Django OrderingFilter 用の 'ordering' パラメータ)
+    // ソート順
     const [sortBy, setSortBy] = useState('-created_at');
 
     // スライダーの即時反映用
@@ -43,35 +45,31 @@ export default function PCFinderClient() {
     }, []);
 
     /**
-     * 🏭 メーカー一覧をDBから動的に取得
+     * 🏭 メーカー一覧を動的に取得
      */
     const fetchMakers = useCallback(async () => {
         try {
             const meta = getSiteMetadata() || {};
             const cleanBaseUrl = (meta.api_base_url || '').replace(/\/api$/, '');
-            
-            // ✅ 正しいエンドポイントに修正
             const requestUrl = `${cleanBaseUrl}/api/general/pc-makers/?site_prefix=${meta.site_tag || 'bicstation'}`;
             const res = await fetch(requestUrl);
             
             if (res.ok) {
                 const data = await res.json();
-                // ✅ APIが ["asus", "dell", ...] という配列を直接返しているため、そのまま処理
                 const rawList = Array.isArray(data) ? data : (data.results || []);
                 const cleanList = rawList.map((m: any) => String(m)).filter(Boolean);
                 setMakers(cleanList);
             } else {
-                // APIエラー時のフォールバック
                 setMakers(['asus', 'dell', 'dynabook', 'fmv', 'fujitsu', 'hp', 'apple', 'lenovo']);
             }
         } catch (e) {
-            console.warn("⚠️ [Maker Fetch failed]: Using fallback list.");
+            console.warn("⚠️ [Maker Fetch failed]: Using fallback.");
             setMakers(['asus', 'dell', 'dynabook', 'fmv', 'fujitsu', 'hp']);
         }
     }, []);
 
     /**
-     * 🌐 製品データ取得
+     * 🌐 製品データ取得 (現在のオフセット、フィルタ、ソートに基づく)
      */
     const fetchProducts = useCallback(async () => {
         if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -84,8 +82,8 @@ export default function PCFinderClient() {
             const siteTag = meta.site_tag || 'bicstation';
 
             const queryParams = new URLSearchParams({
-                offset: '0',
-                limit: '36',
+                offset: currentOffset.toString(),
+                limit: LIMIT.toString(),
                 site_prefix: siteTag,
                 ordering: sortBy,
             });
@@ -111,21 +109,29 @@ export default function PCFinderClient() {
             setProducts(results);
             setTotalCount(data.count || results.length);
 
+            // ページ最上部へスクロール（UX向上）
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
         } catch (e: any) {
             if (e.name !== 'AbortError') {
-                console.error("🚨 [PC Finder Fetch Error]:", e);
+                console.error("🚨 [PC Finder Error]:", e);
                 setProducts([]);
                 setTotalCount(0);
             }
         } finally {
             if (abortControllerRef.current === controller) setIsLoading(false);
         }
-    }, [filters, sortBy]);
+    }, [filters, sortBy, currentOffset]);
 
     // 初期起動: メーカー取得
     useEffect(() => {
         if (isMounted) fetchMakers();
     }, [isMounted, fetchMakers]);
+
+    // フィルター変更時は offset を 0 にリセット
+    useEffect(() => {
+        setCurrentOffset(0);
+    }, [filters, sortBy]);
 
     // 予算スライダーのデバウンス反映
     useEffect(() => {
@@ -145,10 +151,12 @@ export default function PCFinderClient() {
 
     if (!isMounted) return null;
     const currentMeta = getSiteMetadata() || {};
+    const totalPages = Math.ceil(totalCount / LIMIT);
+    const currentPage = Math.floor(currentOffset / LIMIT) + 1;
 
     return (
         <div className={styles.finderLayout}>
-            {/* --- サイドバー：検索・フィルタ・ソート --- */}
+            {/* --- サイドバー --- */}
             <aside className={styles.sidebar}>
                 <div className={styles.sidebarInner}>
                     <div className={styles.brandArea}>
@@ -173,7 +181,7 @@ export default function PCFinderClient() {
                             />
                         </div>
 
-                        {/* ✅ 動的メーカー選択（文字列配列に対応） */}
+                        {/* メーカー選択 */}
                         <div className={styles.controlGroup}>
                             <label>MANUFACTURER</label>
                             <div className={styles.selectWrapper}>
@@ -184,7 +192,6 @@ export default function PCFinderClient() {
                                     <option value="all">ALL BRANDS (全メーカー)</option>
                                     {makers.map(makerName => (
                                         <option key={makerName} value={makerName}>
-                                            {/* 文字列の小文字を大文字に変換して表示 */}
                                             {String(makerName).toUpperCase()}
                                         </option>
                                     ))}
@@ -192,7 +199,7 @@ export default function PCFinderClient() {
                             </div>
                         </div>
 
-                        {/* 高度なソート設定 */}
+                        {/* ソート設定 */}
                         <div className={styles.controlGroup}>
                             <label>SORT_PROTOCOL</label>
                             <div className={styles.selectWrapper}>
@@ -202,26 +209,20 @@ export default function PCFinderClient() {
                                         <option value="-updated_at">UPDATED (更新順)</option>
                                     </optgroup>
                                     <optgroup label="💰 ECONOMY">
-                                        <option value="price">PRICE_ASC (価格の安い順)</option>
-                                        <option value="-price">PRICE_DESC (価格の高い順)</option>
+                                        <option value="price">PRICE_ASC (安い順)</option>
+                                        <option value="-price">PRICE_DESC (高い順)</option>
                                         <option value="-score_cost">BEST_VALUE (コスパ順)</option>
                                     </optgroup>
                                     <optgroup label="⚡ PERFORMANCE">
-                                        <option value="-spec_score">TOTAL_SCORE (総合性能順)</option>
-                                        <option value="-score_cpu">CPU_POWER (CPU性能順)</option>
-                                        <option value="-score_ai">AI_CAPABILITY (AIスコア順)</option>
-                                        <option value="-npu_tops">NPU_TOPS (NPU性能順)</option>
-                                    </optgroup>
-                                    <optgroup label="🔋 HARDWARE">
-                                        <option value="-memory_gb">RAM_CAPACITY (メモリ順)</option>
-                                        <option value="-storage_gb">STORAGE_SIZE (容量順)</option>
-                                        <option value="-score_portable">MOBILITY (持ち運びやすさ)</option>
+                                        <option value="-spec_score">TOTAL_SCORE (性能順)</option>
+                                        <option value="-score_cpu">CPU_POWER (CPU性能)</option>
+                                        <option value="-score_ai">AI_CAPABILITY (AIスコア)</option>
                                     </optgroup>
                                 </select>
                             </div>
                         </div>
 
-                        {/* 特化トグル */}
+                        {/* AI PC トグル */}
                         <div className={styles.toggleGroup}>
                             <button 
                                 onClick={() => setFilters({...filters, isAiPc: !filters.isAiPc})} 
@@ -256,11 +257,40 @@ export default function PCFinderClient() {
                             {[...Array(6)].map((_, i) => <div key={i} className={styles.skeletonCard} />)}
                         </div>
                     ) : products.length > 0 ? (
-                        <div className={styles.grid}>
-                            {products.map(p => (
-                                <ProductCard key={p.unique_id || p.id} product={p} />
-                            ))}
-                        </div>
+                        <>
+                            <div className={styles.grid}>
+                                {products.map(p => (
+                                    <ProductCard key={p.unique_id || p.id} product={p} />
+                                ))}
+                            </div>
+
+                            {/* 🔢 クライアントサイド・ページネーション */}
+                            {totalPages > 1 && (
+                                <div className={styles.paginationLayer}>
+                                    <button 
+                                        disabled={currentPage === 1}
+                                        onClick={() => setCurrentOffset(Math.max(0, currentOffset - LIMIT))}
+                                        className={styles.pageArrow}
+                                    >
+                                        PREV
+                                    </button>
+                                    
+                                    <div className={styles.pageInfo}>
+                                        <span className={styles.current}>{currentPage}</span>
+                                        <span className={styles.divider}>/</span>
+                                        <span className={styles.total}>{totalPages}</span>
+                                    </div>
+
+                                    <button 
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => setCurrentOffset(currentOffset + LIMIT)}
+                                        className={styles.pageArrow}
+                                    >
+                                        NEXT
+                                    </button>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <div className={styles.emptyState}>
                             <span className={styles.emptyIcon}>∅</span>

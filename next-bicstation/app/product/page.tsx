@@ -1,12 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 /**
  * =====================================================================
- * 📋 BICSTATION PC製品一覧 (Ultimate Full Version v13.0)
+ * 📋 BICSTATION PC製品一覧 (Ultimate Full Version v13.2)
  * 🛰️ Target API: /api/general/pc-products/
  * 🛡️ 役割: 
- * - 統合: gpu, cpu, os 等を 'attribute' キーに集約
- * - 監視: 実際に叩いている API URL を画面に表示 (デバッグ用)
- * - 継続: ページネーション・ソート時もフィルタを完全保持
+ * - 統合: ページネーション、メーカー、属性、ソートの全パラメータを同期
+ * - 修正: fetchPCProducts v12.2 の引数順序（sort独立化）に対応
+ * - 監視: 実際に叩いている API URL をデバッグレイヤーで正確に表示
  * =====================================================================
  */
 
@@ -23,17 +23,18 @@ import { fetchPCProducts } from '@/shared/lib/api/django/pc/products';
 
 import styles from './ProductsPage.module.css';
 
-/** 🔍 SEO: 全ての引数から最適なタイトルを生成 */
+/** 🔍 SEO: 全ての引数から最適なタイトルと説明を自動生成 */
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
     const sParams = await searchParams;
     const maker = sParams.maker ? sParams.maker.toUpperCase() : '';
+    // 全ての可能性のある属性キーをチェック
     const attrRaw = sParams.attribute || sParams.gpu || sParams.cpu || sParams.os || sParams.memory || sParams.feature || '';
     const attrLabel = attrRaw.replace(/-/g, ' ').toUpperCase();
     const query = sParams.q || '';
     
     return {
         title: `${maker || attrLabel || query || '製品一覧'} | PC製品カタログ | BICSTATION`,
-        description: `最新のPC製品をAIスコアや性能順で比較。`,
+        description: `${maker || attrLabel || '最新'}のPC製品をAIスコアや性能順でリアルタイム比較。スペック詳細と最適価格を確認できます。`,
     };
 }
 
@@ -55,7 +56,7 @@ interface PageProps {
     }>;
 }
 
-/** ✅ ローディング境界 */
+/** ✅ ローディング境界: ストリーミングレンダリングを有効化 */
 export default async function ProductsPage(props: PageProps) {
     return (
         <Suspense fallback={
@@ -78,7 +79,7 @@ async function ProductsPageContent({ searchParams }: PageProps) {
     // 1. パラメータの抽出と統合
     const limit = 20;
     const currentPage = parseInt(sParams.page || '1');
-    const currentOffset = sParams.offset ? parseInt(sParams.offset) : (currentPage - 1) * limit;
+    const currentOffset = (currentPage - 1) * limit;
 
     const currentMaker = sParams.maker || '';
     const currentSort = sParams.sort || '-created_at';
@@ -86,7 +87,7 @@ async function ProductsPageContent({ searchParams }: PageProps) {
 
     /**
      * 🚩 【引数統合ロジック】
-     * ブラウザのURLがどんな名前でも、`currentAttr` という一つの変数に「中身」を吸い出す。
+     * 複数の入口属性を currentAttr に集約
      */
     const currentAttr = 
         sParams.attribute || 
@@ -101,15 +102,17 @@ async function ProductsPageContent({ searchParams }: PageProps) {
     const headerList = await headers();
     const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
 
-    /** 📡 APIフェッチ実行 */
+    /** * 📡 APIフェッチ実行: v12.2 仕様
+     * 引数順序: (q, offset, limit, maker, host, sort, attribute)
+     */
     const response = await fetchPCProducts(
-        searchQuery, 
-        currentOffset, 
-        limit, 
-        currentMaker, 
-        host,
-        currentSort, 
-        currentAttr
+        searchQuery,      // 1: q
+        currentOffset,    // 2: offset
+        limit,            // 3: limit
+        currentMaker,     // 4: maker
+        host,             // 5: host
+        currentSort,      // 6: sort (独立引数として送信)
+        currentAttr       // 7: attribute
     ).catch((e) => {
         console.error("🚨 [API Error]:", e);
         return { results: [], count: 0 };
@@ -117,9 +120,10 @@ async function ProductsPageContent({ searchParams }: PageProps) {
 
     const results = response?.results || [];
     const count = response?.count || 0;
+    const totalPages = Math.ceil(count / limit);
 
-    // 3. デバッグ用URL生成 (fetchPCProducts内部での組み立てを再現)
-    const debugUrl = `http://api-bicstation-host:8083/api/general/pc-products/?attribute=${currentAttr}&maker=${currentMaker}&sort=${currentSort}&q=${searchQuery}&offset=${currentOffset}`;
+    // 3. デバッグ用URL生成 (API側の ordering パラメータ名を反映)
+    const debugUrl = `http://api-bicstation-host:8083/api/general/pc-products/?ordering=${currentSort}&attribute=${currentAttr}&maker=${currentMaker}&search=${searchQuery}&offset=${currentOffset}`;
 
     // 4. 表示タイトルの生成
     const getDynamicTitle = () => {
@@ -131,11 +135,11 @@ async function ProductsPageContent({ searchParams }: PageProps) {
 
     return (
         <main className={styles.container}>
-            {/* 🛠️ デバッグレイヤー: ここを見れば一発で原因が分かります */}
+            {/* 🛠️ デバッグレイヤー: 通信の「入口」と「出口」を監視 */}
             <div className="bg-black/90 text-[10px] p-2 font-mono text-cyan-400 border-b border-cyan-900/50">
-                <span className="text-yellow-500 font-bold">[DEBUG_MONITOR_v13]</span><br />
-                REQUEST_TO: <span className="text-white underline">{debugUrl}</span><br />
-                RAW_PARAMS: {JSON.stringify({gpu: sParams.gpu, cpu: sParams.cpu, attr: sParams.attribute})}
+                <span className="text-yellow-500 font-bold">[DEBUG_MONITOR_v13.2]</span><br />
+                API_ENDPOINT: <span className="text-white underline">{debugUrl}</span><br />
+                ACTIVE_FILTERS: {JSON.stringify({ maker: currentMaker, attr: currentAttr, sort: currentSort })}
             </div>
 
             <header className={styles.header}>
@@ -152,7 +156,10 @@ async function ProductsPageContent({ searchParams }: PageProps) {
                 </div>
 
                 <div className={styles.toolbar}>
-                    <ProductSortSelector currentSort={currentSort} />
+                    {/* ソート選択時も現在のフィルタ(maker, attribute)を維持 */}
+                    <ProductSortSelector 
+                        currentSort={currentSort} 
+                    />
                 </div>
             </header>
 
@@ -171,11 +178,15 @@ async function ProductsPageContent({ searchParams }: PageProps) {
 
                         <footer className={styles.footer}>
                             <Pagination 
-                                currentOffset={currentOffset}
-                                limit={limit}
-                                totalCount={count}
-                                // 🔗 URLを 'attribute' 形式に強制正規化して引き継ぐ
-                                baseUrl={`/product?sort=${currentSort}&maker=${currentMaker}&attribute=${currentAttr}&q=${encodeURIComponent(searchQuery)}`}
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                baseUrl="/product"
+                                query={{
+                                    sort: currentSort,
+                                    maker: currentMaker,
+                                    attribute: currentAttr,
+                                    q: searchQuery || undefined
+                                }}
                             />
                         </footer>
                     </>
@@ -184,7 +195,7 @@ async function ProductsPageContent({ searchParams }: PageProps) {
                         <div className={styles.noDataIcon}>∅</div>
                         <h2 className="text-xl font-bold text-white mb-2">NO_MATCHING_DATA</h2>
                         <p className="text-slate-400 text-sm mb-6">
-                            条件「{currentAttr || 'なし'}」に一致する製品は、現在DB内に存在しないか、API側で無視されています。
+                            条件「{currentAttr || 'なし'}」に一致する製品は、現在DB内に存在しないか、API側で非表示設定されています。
                         </p>
                         <Link href="/product" className={styles.resetButton}>RESET_ALL_FILTERS</Link>
                     </div>

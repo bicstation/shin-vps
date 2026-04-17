@@ -2,13 +2,13 @@
 // @ts-nocheck
 /**
  * =====================================================================
- * 💻 PC製品取得サービス (Zenith v12.1 - Hardened)
+ * 💻 PC製品取得サービス (Zenith v12.3 - Slash-Free & Hardened)
  * =====================================================================
  * 🛡️ 修正・強化ポイント:
- * 1. 【安全な引数解析】オブジェクト・文字列・nullが混在しても墜落させない正規化。
- * 2. 【ID正規化】unique_id / id の toString() ガードを徹底。
- * 3. 【サイトメタの堅牢化】ホスト名解決に失敗しても bicstation を維持。
- * 4. 【レスポンス正規化】results が配列でない、またはページネーションなしの場合を救済。
+ * 1. 【末尾スラッシュ排除】URL末尾の %2F (/) がクエリパラメータを壊す問題を修正。
+ * 2. 【属性値の正規化】attribute 引数の末尾にスラッシュがある場合、除去してDB照合率を向上。
+ * 3. 【ソート機能の独立】第6引数 sortArg による明示的なソート制御を維持。
+ * 4. 【URL構築の安全化】resolveApiUrl と queryParams の結合順序を最適化。
  * =====================================================================
  */
 
@@ -19,7 +19,6 @@ import { PCProduct, MakerCount } from './types';
 
 /**
  * 💡 サイトメタデータの取得 (内部判定用)
- * ホスト名が空でもデフォルト値を返すように安全化
  */
 const getSafeMeta = (host?: string) => {
     try {
@@ -37,20 +36,24 @@ const getSafeMeta = (host?: string) => {
 export async function fetchPCProducts(
     paramsOrQ: any = '', 
     offsetArg: number = 0, 
-    limitArg: number = 12, 
+    limitArg: number = 20, 
     makerArg: string = '',
     hostArg: string = '',
-    attributeArg: string = ''
+    sortArg: string = '',      
+    attributeArg: string = ''  
 ) {
-    // --- 📥 引数の正規化ロジック (徹底ガード版) ---
+    // --- 📥 引数の正規化ロジック ---
     const isObj = typeof paramsOrQ === 'object' && paramsOrQ !== null;
     
     const q         = (isObj ? (paramsOrQ.q || paramsOrQ.search || '') : paramsOrQ || '').toString();
     const offset    = isObj ? (paramsOrQ.offset ?? 0) : offsetArg;
-    const limit     = isObj ? (paramsOrQ.limit ?? 12) : limitArg;
+    const limit     = isObj ? (paramsOrQ.limit ?? 20) : limitArg;
     const maker     = (isObj ? (paramsOrQ.maker || '') : makerArg || '').toString();
     const host      = (isObj ? (paramsOrQ.host || '') : hostArg || '').toString();
-    const attribute = (isObj ? (paramsOrQ.attribute || '') : attributeArg || '').toString();
+    const sort      = (isObj ? (paramsOrQ.sort || paramsOrQ.ordering || '') : sortArg || '').toString();
+    
+    // ✅ 属性値の末尾スラッシュを事前に除去 (DBタグ名との不一致を防ぐ)
+    let attribute = (isObj ? (paramsOrQ.attribute || '') : attributeArg || '').toString().replace(/\/+$/, '');
 
     const meta = getSafeMeta(host);
     const siteTag = isObj ? (paramsOrQ.site || meta?.site_tag || 'bicstation') : (meta?.site_tag || 'bicstation');
@@ -69,18 +72,35 @@ export async function fetchPCProducts(
     if (q) queryParams.append('search', q); 
     if (maker) queryParams.append('maker', maker); 
 
-    // 🚀 ソート・属性条件の分離
-    if (attribute) {
-        if (attribute.startsWith('-') || attribute.includes('created_at') || attribute.includes('price')) {
-            queryParams.append('ordering', attribute);
-        } else {
-            queryParams.append('attribute', attribute);
-        }
-    } else {
-        queryParams.append('ordering', '-created_at');
+    /**
+     * 🚀 ソート(ordering)の適用
+     */
+    let finalOrdering = '-created_at';
+    
+    if (sort) {
+        finalOrdering = sort.replace(/\/+$/, ''); // ソート値からもスラッシュ除去
+    } else if (attribute && (
+        attribute.startsWith('-') || 
+        attribute.includes('created_at') || 
+        attribute.includes('price') || 
+        attribute.includes('score')
+    )) {
+        finalOrdering = attribute;
+    }
+    
+    queryParams.append('ordering', finalOrdering);
+
+    /**
+     * 🚀 属性(attribute)の適用
+     */
+    if (attribute && finalOrdering !== attribute) {
+        queryParams.append('attribute', attribute);
     }
 
-    const url = resolveApiUrl(`general/pc-products/?${queryParams.toString()}`, siteTag);
+    // --- 🔗 URL組み立て (重要: 末尾にスラッシュを絶対に入れない) ---
+    const basePath = `general/pc-products`;
+    const baseApiUrl = resolveApiUrl(basePath, siteTag).replace(/\/+$/, ''); // APIパス自体の末尾スラッシュを除去
+    const url = `${baseApiUrl}/?${queryParams.toString()}`; // クエリの後にスラッシュが来ないように結合
 
     try {
         const res = await fetch(url, { 
@@ -93,7 +113,6 @@ export async function fetchPCProducts(
 
         const cleanedData = replaceInternalUrls(data);
         
-        // 🛡️ Results 内の各アイテムを安全化 (undefined参照を防ぐ)
         const rawResults = Array.isArray(cleanedData.results) ? cleanedData.results : (Array.isArray(cleanedData) ? cleanedData : []);
         
         const safeResults = rawResults.map((item: any) => ({
@@ -106,7 +125,7 @@ export async function fetchPCProducts(
         return { 
             results: safeResults as PCProduct[], 
             count: typeof cleanedData.count === 'number' ? cleanedData.count : safeResults.length, 
-            _debug: { url, siteTag, q } 
+            _debug: { url, siteTag, q, ordering: finalOrdering } 
         };
     } catch (e: any) {
         console.error("🚨 [fetchPCProducts Error]", e);
@@ -123,8 +142,10 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
     const meta = getSafeMeta(host);
     const siteTag = meta?.site_tag || 'bicstation';
     
+    // ✅ IDの末尾スラッシュを確実に除去
     const cleanId = unique_id.toString().replace(/\/+$/, '');
-    const url = resolveApiUrl(`general/pc-products/${cleanId}/?site=${siteTag}&site_name=${siteTag}`, siteTag);
+    const baseApiUrl = resolveApiUrl(`general/pc-products/${cleanId}`, siteTag).replace(/\/+$/, '');
+    const url = `${baseApiUrl}/?site=${siteTag}&site_name=${siteTag}`;
     
     try {
         const res = await fetch(url, { 
@@ -137,14 +158,12 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
 
         const cleanedData = replaceInternalUrls(data);
         
-        // 階層の正規化 (results 配列の中身か、オブジェクト単体か)
         const product = (cleanedData && !Array.isArray(cleanedData.results)) 
             ? cleanedData 
             : (Array.isArray(cleanedData.results) && cleanedData.results.length > 0 ? cleanedData.results[0] : null);
 
         if (!product || (!product.unique_id && !product.id)) return null;
 
-        // 🛡️ IDを文字列化して返却
         return {
             ...product,
             id: product.id?.toString() || "",
@@ -158,13 +177,13 @@ export async function fetchPCProductDetail(unique_id: string, host: string = '')
 
 /**
  * 💡 メーカー一覧取得 
- * サイドバーの「BRANDS」セクションの生命線
  */
 export async function fetchMakers(host: string = ''): Promise<MakerCount[]> {
     const meta = getSafeMeta(host);
     const siteTag = meta?.site_tag || 'bicstation';
     
-    const url = resolveApiUrl(`general/pc-makers/?site=${siteTag}&site_name=${siteTag}`, siteTag);
+    const baseApiUrl = resolveApiUrl(`general/pc-makers`, siteTag).replace(/\/+$/, '');
+    const url = `${baseApiUrl}/?site=${siteTag}&site_name=${siteTag}`;
     
     try {
         const res = await fetch(url, { 
@@ -177,12 +196,10 @@ export async function fetchMakers(host: string = ''): Promise<MakerCount[]> {
 
         const cleanedData = replaceInternalUrls(data);
         
-        // 🛡️ APIが results を持つページネーション形式か、直接配列形式かを判定して正規化
         const results = Array.isArray(cleanedData.results) 
             ? cleanedData.results 
             : (Array.isArray(cleanedData) ? cleanedData : []);
 
-        // 各要素が maker または name キーを持つことを保証
         return results.map((m: any) => ({
             ...m,
             name: m.name || m.maker || "Unknown",
