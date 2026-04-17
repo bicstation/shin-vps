@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import styles from './ProductCard.module.css';
 import { decodeHtml } from '@/shared/lib/utils/decode';
@@ -50,8 +50,29 @@ export default function ProductCard({
     cost: getScore(['score_cost', 'cost_performance'])
   };
 
-  const aiComment = product.ai_analysis || product.short_description || 
-    `${displayMaker}の注目モデル。AI査定では、${product.cpu_model || '標準的なプロセッサ'}を搭載し、${scores.portable > 80 ? '優れた携帯性' : '安定した動作環境'}を実現していると評価されています。`;
+  // 🚩 AIコメント生成ロジック：ai_summary (POINT1-3) を優先的にパースする
+  const aiComment = useMemo(() => {
+    // 1. 個別詳細解析（ai_analysis）がある場合は最優先
+    if (product.ai_analysis) return product.ai_analysis;
+
+    // 2. ai_summary カラムから [SUMMARY_DATA] 形式のポイントを抽出
+    const summary = product.ai_summary || '';
+    if (summary.includes('[SUMMARY_DATA]')) {
+      const p1 = summary.match(/POINT1:\s*(.*?)(?=\n|POINT|$)/)?.[1];
+      const p2 = summary.match(/POINT2:\s*(.*?)(?=\n|POINT|$)/)?.[1];
+      const p3 = summary.match(/POINT3:\s*(.*?)(?=\n|TARGET|$)/)?.[1];
+      const target = summary.match(/TARGET:\s*(.*?)(?=\n|\[\/|$)/)?.[1];
+
+      if (p1 && p2 && p3) {
+        return `AI査定：${p1}。${p2}という構成で、${p3}が大きな魅力です。${target ? `${target}の方に特におすすめの一台です。` : ''}`;
+      }
+    }
+
+    // 3. 上記がない場合のフォールバック（従来ロジックを実用的に）
+    const cpu = product.cpu_model || '標準的なプロセッサ';
+    const character = scores.portable > 80 ? '優れた携帯性と機動力' : '長時間の作業でも疲れにくい安定した動作環境';
+    return `${displayMaker}の注目モデル。AI査定では、${cpu}のポテンシャルを活かし、${character}を実現していると評価しています。`;
+  }, [product, scores.portable, displayMaker]);
 
   // --- ヘルパー: プログレスバー描画 ---
   const renderProgressBar = (value: number, color: string) => (
@@ -86,13 +107,18 @@ export default function ProductCard({
 
   return (
     <article className={`${styles.card} ${rank ? styles.rankingMode : ''}`}>
-      {/* スコアバッジ（独自解析の結果なので残すべき項目） */}
+      {/* スコアバッジ */}
       <div className={styles.scoreBadge}>
         AI SCORE: <span>{totalScore}</span>
       </div>
 
       <div className={styles.imageArea}>
-        <img src={product.image_url || 'https://placehold.jp/300x200.png'} alt={decodedProductName} className={styles.image} loading="lazy" />
+        <img 
+          src={product.image_url || 'https://placehold.jp/300x200.png'} 
+          alt={decodedProductName} 
+          className={styles.image} 
+          loading="lazy" 
+        />
       </div>
 
       <div className={styles.cardBody}>
@@ -105,7 +131,7 @@ export default function ProductCard({
           <Link href={`/product/${product.unique_id}`}>{decodedProductName}</Link>
         </h3>
 
-        {/* 解析セクション: サイトの独自性（E-E-A-T）をアピールする重要部分 */}
+        {/* 解析セクション */}
         <div className={styles.analysisSection}>
           {renderPentagonChart()}
           <div className={styles.scoreDetail}>
@@ -141,19 +167,27 @@ export default function ProductCard({
           <div className={styles.priceContainer}>
             <p className={styles.price}>
               {displayPrice > 0 ? (
-                <><span className={styles.currency}>¥</span><span className={styles.amount}>{displayPrice.toLocaleString()}</span></>
-              ) : <span className={styles.priceUnknown}>価格情報なし</span>}
+                <>
+                  <span className={styles.currency}>¥</span>
+                  <span className={styles.amount}>{displayPrice.toLocaleString()}</span>
+                </>
+              ) : (
+                <span className={styles.priceUnknown}>価格情報なし</span>
+              )}
             </p>
           </div>
         )}
 
         {showActions && (
           <div className={styles.actions}>
-            <Link href={`/product/${product.unique_id}`} className={styles.detailBtn}>分析詳細</Link>
+            <Link href={`/product/${product.unique_id}`} className={styles.detailBtn}>
+              分析詳細
+            </Link>
             
-            {/* 🛡️ 審査モード時は販売サイトへの直接リンク（アフィリエイト）を隠す */}
             {!isReviewMode && (
-              <a href={buyLink} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>販売サイト</a>
+              <a href={buyLink} target="_blank" rel="noopener noreferrer" className={styles.buyBtn}>
+                販売サイト
+              </a>
             )}
           </div>
         )}
