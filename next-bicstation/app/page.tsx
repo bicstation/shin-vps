@@ -184,7 +184,7 @@ export default async function HomePageMain() {
                         </Link>
 
                         {/* シリーズ 03: 【ダミー/新規】 AIインフラ編 */}
-                        <Link href="/series/ai-infrastructure" className="group p-6 bg-slate-900/60 border border-slate-800 rounded-xl hover:border-purple-500/50 transition-all shadow-lg">
+                        <Link href="/series/ai-intelligence-engine" className="group p-6 bg-slate-900/60 border border-slate-800 rounded-xl hover:border-purple-500/50 transition-all shadow-lg">
                             <div className="flex items-center mb-3">
                                 <Activity className="text-purple-500 w-4 h-4 mr-2" />
                                 <span className="text-[10px] text-purple-500 font-mono">PHASE_03: INTELLIGENCE</span>
