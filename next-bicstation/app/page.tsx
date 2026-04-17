@@ -133,11 +133,11 @@ export default async function HomePageMain() {
                 <section className="mb-24 py-10 border-y border-slate-800/50">
                     <h3 className="text-[10px] text-slate-500 font-mono mb-6 text-center tracking-widest uppercase">Select by Attributes / 属性別絞り込み</h3>
                     <div className="flex flex-wrap justify-center gap-3">
-                        <Link href="/category/core-ultra" className="px-4 py-2 bg-slate-800/50 hover:bg-blue-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><CpuIcon className="w-3 h-3 mr-2 text-blue-400"/> Core Ultra</Link>
-                        <Link href="/category/geforce-rtx" className="px-4 py-2 bg-slate-800/50 hover:bg-red-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><Activity className="w-3 h-3 mr-2 text-red-400"/> RTX 50 Series</Link>
-                        <Link href="/category/thin-light" className="px-4 py-2 bg-slate-800/50 hover:bg-emerald-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><Smartphone className="w-3 h-3 mr-2 text-emerald-400"/> 1kg未満</Link>
-                        <Link href="/category/workstation" className="px-4 py-2 bg-slate-800/50 hover:bg-purple-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><Monitor className="w-3 h-3 mr-2 text-purple-400"/> Workstation</Link>
-                        <Link href="/category/memory-high" className="px-4 py-2 bg-slate-800/50 hover:bg-yellow-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><HardDrive className="w-3 h-3 mr-2 text-yellow-400"/> 64GB RAM+</Link>
+                        <Link href="/product?cpu=intel-core-ultra-7" className="px-4 py-2 bg-slate-800/50 hover:bg-blue-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><CpuIcon className="w-3 h-3 mr-2 text-blue-400"/> Core Ultra</Link>
+                        <Link href="/product?gpu=gpu-rtx-5090" className="px-4 py-2 bg-slate-800/50 hover:bg-red-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><Activity className="w-3 h-3 mr-2 text-red-400"/> RTX 50 Series</Link>
+                        <Link href="/product?feature=feat-lightweight" className="px-4 py-2 bg-slate-800/50 hover:bg-emerald-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><Smartphone className="w-3 h-3 mr-2 text-emerald-400"/> 1kg未満</Link>
+                        <Link href="/product?cpu=amd-ryzen-ai-300" className="px-4 py-2 bg-slate-800/50 hover:bg-purple-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><CpuIcon className="w-3 h-3 mr-2 text-purple-400"/> Ryzen</Link>
+                        <Link href="product?memory=mem-64gb-plus" className="px-4 py-2 bg-slate-800/50 hover:bg-yellow-600/30 border border-slate-700 rounded text-xs transition-all flex items-center"><HardDrive className="w-3 h-3 mr-2 text-yellow-400"/> 64GB RAM+</Link>
                     </div>
                 </section>
 
