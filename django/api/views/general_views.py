@@ -35,12 +35,12 @@ from api.serializers.adult_serializers import (
 logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------
-# 0. ページネーション & 基底クラス
+# 0. ページネーション
 # --------------------------------------------------------------------------
 
 class PCProductLimitOffsetPagination(pagination.LimitOffsetPagination):
-    """Next.jsの ?offset=x&limit=y に対応するためのページネーション"""
-    default_limit = 10
+    """Next.jsの ?offset=x&limit=y に完全対応"""
+    default_limit = 20
     max_limit = 100
 
 class MasterEntityListView(generics.ListAPIView):
@@ -52,7 +52,7 @@ class MasterEntityListView(generics.ListAPIView):
     ordering = ['name']
 
 # --------------------------------------------------------------------------
-# 1. 共通マスタデータ View 実装
+# 1. 共通マスタデータ View (成人向け・一般共通)
 # --------------------------------------------------------------------------
 
 class ActressListAPIView(MasterEntityListView):
@@ -105,11 +105,11 @@ class PCProductRankingView(generics.ListAPIView):
         return queryset.order_by('-spec_score', '-updated_at')[:20]
 
 # --------------------------------------------------------------------------
-# 3. 💻 PC・ソフトウェア製品一覧
+# 3. 💻 PC・ソフトウェア製品一覧 (v13.2 修正版)
 # --------------------------------------------------------------------------
 
 class PCProductListAPIView(generics.ListAPIView):
-    """💻 PC製品の一覧取得・詳細フィルタリング"""
+    """💻 フィルタ・検索・動的ソートを統合したPC製品API"""
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
     permission_classes = [AllowAny]
@@ -122,51 +122,52 @@ class PCProductListAPIView(generics.ListAPIView):
         'license_term', 'edition'
     ]
     search_fields = ['name', 'cpu_model', 'gpu_model', 'os_support', 'edition', 'description', 'ai_content']
+    
     ordering_fields = [
         'price', 'updated_at', 'created_at', 'memory_gb', 'storage_gb',
         'spec_score', 'score_cpu', 'score_gpu', 'score_cost', 
-        'score_portable', 'score_ai', 'npu_tops', 'power_recommendation'
+        'score_portable', 'score_ai', 'npu_tops', 'power_recommendation', 'name'
     ]
+    ordering = ['-created_at']
 
     def get_queryset(self):
-        queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
+        """動的クエリパラメータによる高度なフィルタリング"""
+        # distinct() を追加して、ManyToManyによる重複を防止
+        queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes').distinct()
         
+        # 1. メーカー絞り込み (?maker=hp)
         maker = self.request.query_params.get('maker')
-        if maker:
+        if maker and maker.lower() != 'all':
             queryset = queryset.filter(maker__iexact=unquote(maker))
             
-        attribute_slug = self.request.query_params.get('attribute')
-        if attribute_slug:
-            queryset = queryset.filter(attributes__slug=unquote(attribute_slug))
+        # 2. 🚩 属性統合フィルタ (修正: getlistにより複数選択に対応)
+        # ?attribute=slug1&attribute=slug2 形式に対応
+        attribute_slugs = self.request.query_params.getlist('attribute')
+        if attribute_slugs:
+            for slug in attribute_slugs:
+                if slug:
+                    # AND検索として1つずつ絞り込む
+                    queryset = queryset.filter(attributes__slug=unquote(slug))
 
+        # 3. 価格上限絞り込み
         max_price = self.request.query_params.get('max_price')
         if max_price:
             try:
                 queryset = queryset.filter(price__lte=int(max_price))
-            except ValueError: pass
+            except (ValueError, TypeError): pass
 
-        return queryset.order_by('-updated_at')
-
-# --------------------------------------------------------------------------
-# 4. 🔍 製品詳細
-# --------------------------------------------------------------------------
-
-class PCProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = PCProduct.objects.all().prefetch_related('attributes')
-    serializer_class = PCProductSerializer
-    permission_classes = [AllowAny]
-    lookup_field = 'unique_id'
+        return queryset
 
 # --------------------------------------------------------------------------
-# 5. 🛠️ PC統計・サイドバー集計 & メーカーリスト
+# 5. 🛠️ PC統計・サイドバー集計
 # --------------------------------------------------------------------------
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_sidebar_stats(request):
-    """📊 サイドバー統計一括生成 (メーカー・属性)"""
-    # 属性集計
-    attrs = PCAttribute.objects.annotate(
+    """📊 サイドバー統計一括生成 (PC専用: is_adult=Falseのみ)"""
+    # 属性集計 (is_adult=False でドメイン隔離)
+    attrs = PCAttribute.objects.filter(is_adult=False).annotate(
         product_count=Count('products')
     ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
     
@@ -183,7 +184,7 @@ def pc_sidebar_stats(request):
             'id': attr.id, 'name': attr.name, 'slug': attr.slug, 'count': attr.product_count
         })
 
-    # 🚀 メーカー集計 (救済措置: 大文字化)
+    # メーカー集計
     maker_raw = PCProduct.objects.filter(is_active=True) \
         .exclude(maker__isnull=True).exclude(maker='') \
         .values('maker') \
@@ -213,32 +214,22 @@ class PCProductMakerListView(APIView):
 
         formatted_makers = [
             {
-                'name': str(m['maker']).upper(), # 表示用: HP
-                'maker': m['maker'],             # クエリ用: hp
-                'count': m['count']              # 件数: 146
+                'name': str(m['maker']).upper(),
+                'maker': m['maker'], 
+                'count': m['count']
             } for m in maker_raw
         ]
         return Response(formatted_makers)
 
-@api_view(['GET'])
-def pc_product_price_history(request, unique_id):
-    product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
-    history = PriceHistory.objects.filter(product=product).order_by('recorded_at')[:30]
-    return Response({
-        "name": product.name,
-        "labels": [h.recorded_at.strftime('%Y/%m/%d') for h in history],
-        "prices": [h.price for h in history]
-    })
-
 # --------------------------------------------------------------------------
-# 6. AIメイド接客 ストリーミング
+# 6. AIメイド接客 ストリーミング (gemma3:4b 対応)
 # --------------------------------------------------------------------------
 
 class PCProductMaidStreamView(views.APIView):
     permission_classes = [AllowAny]
     def get(self, request, unique_id):
         product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
-        prompt = f"あなたは秋葉原のショップBIC STATIONの看板娘です。{product.name}の魅力を語って。最後はニャン！"
+        prompt = f"秋葉原BIC STATIONの看板娘として、{product.name}の魅力を紹介して。語尾は『ニャ！』。短く簡潔にニャ！"
 
         def stream_generator():
             url = "http://172.17.0.1:11434/api/generate"
@@ -255,18 +246,29 @@ class PCProductMaidStreamView(views.APIView):
         return StreamingHttpResponse(stream_generator(), content_type='text/plain; charset=utf-8')
 
 # --------------------------------------------------------------------------
-# 7. その他
+# 7. 詳細 & 履歴 & Fanza系
 # --------------------------------------------------------------------------
+
+class PCProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = PCProduct.objects.all().prefetch_related('attributes')
+    serializer_class = PCProductSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'unique_id'
+
+@api_view(['GET'])
+def pc_product_price_history(request, unique_id):
+    product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
+    history = PriceHistory.objects.filter(product=product).order_by('recorded_at')[:30]
+    return Response({
+        "name": product.name,
+        "labels": [h.recorded_at.strftime('%Y/%m/%d') for h in history],
+        "prices": [h.price for h in history]
+    })
 
 class LinkshareProductListAPIView(generics.ListAPIView): 
     queryset = LinkshareProduct.objects.all().order_by('-updated_at')
     serializer_class = LinkshareProductSerializer
     permission_classes = [AllowAny]
-
-class LinkshareProductDetailAPIView(generics.RetrieveAPIView): 
-    queryset = LinkshareProduct.objects.all()
-    serializer_class = LinkshareProductSerializer
-    lookup_field = 'sku'
 
 class FanzaFloorNavigationAPIView(views.APIView):
     permission_classes = [AllowAny]

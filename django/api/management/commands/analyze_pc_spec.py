@@ -9,7 +9,7 @@ import threading
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.core.management.base import BaseCommand
-from api.models.pc_products import PCProduct
+from api.models.pc_products import PCProduct, PCAttribute  # PCAttributeを追加
 from django.utils import timezone
 from django.db.models import Q
 
@@ -47,7 +47,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROMPT_BASE_DIR = os.path.join(BASE_DIR, "prompt")
 
 class Command(BaseCommand):
-    help = 'APIキーをローテーションし、AIによるスペック解析とクリーンなコンテンツ生成を行う'
+    help = 'APIキーをローテーションし、AIによる解析と属性の自動クリーンアップを行う'
 
     def add_arguments(self, parser):
         parser.add_argument('unique_id', type=str, nargs='?')
@@ -196,24 +196,16 @@ TARGET: おすすめ対象
             summary_match = re.search(r'\[SUMMARY_DATA\](.*?)\[/SUMMARY_DATA\]', full_text, re.DOTALL)
             summary_text = summary_match.group(0).strip() if summary_match else ""
 
-            # --- 2. コンテンツの徹底クリーニング (ai_content用) ---
+            # --- 2. コンテンツのクリーニング ---
             clean_body = re.sub(r'\[SPEC_JSON\].*?\[/SPEC_JSON\]', '', full_text, flags=re.DOTALL)
             clean_body = re.sub(r'\[SUMMARY_DATA\].*?\[/SUMMARY_DATA\]', '', clean_body, flags=re.DOTALL)
-            
             clean_body = clean_body.replace('<h2>', '## ').replace('</h2>', '\n')\
                                    .replace('<h3>', '### ').replace('</h3>', '\n')\
-                                   .replace('<p>', '').replace('</p>', '\n')
+                                   .replace('<p>', '').replace('</p>', '\n').strip()
 
-            lines = clean_body.strip().split('\n')
-            if len(lines) > 0 and (product.maker.lower() in lines[0].lower() or "】" in lines[0]):
-                clean_body = '\n'.join(lines[1:]).strip()
-            else:
-                clean_body = clean_body.strip()
-
-            # --- 3. DB保存処理 ---
-            new_title = spec_data.get('seo_title')
-            if new_title and len(new_title) > 10:
-                product.name = new_title
+            # --- 3. 属性マッピング (最重要: クリーニング) ---
+            # ★ 保存前に一度属性を全クリアしてゴミを一掃する
+            product.attributes.clear()
 
             def safe_int(val, default=0):
                 try:
@@ -222,12 +214,37 @@ TARGET: おすすめ対象
                     return int(num) if num else default
                 except: return default
 
+            # CPUマッピング
+            cpu_query = spec_data.get('cpu_model', '')
+            if cpu_query:
+                # マスター(is_adult=False)から最適なCPU属性を1つ探す
+                cpu_attr = PCAttribute.objects.filter(is_adult=False, attr_type='CPU').filter(
+                    Q(name__icontains=cpu_query) | Q(search_keywords__icontains=cpu_query)
+                ).first()
+                if cpu_attr:
+                    product.attributes.add(cpu_attr)
+
+            # メモリ・ストレージ等の数値ベースマッピング
+            mem_val = safe_int(spec_data.get('memory_gb'))
+            if mem_val:
+                mem_attr = PCAttribute.objects.filter(is_adult=False, attr_type='メモリ', name__contains=str(mem_val)).first()
+                if mem_attr: product.attributes.add(mem_attr)
+
+            # AI PC / NPU判定
+            if spec_data.get('is_ai_pc') or safe_int(spec_data.get('npu_tops')) >= 40:
+                ai_attr = PCAttribute.objects.filter(slug='feature-npu-ai').first()
+                if ai_attr: product.attributes.add(ai_attr)
+
+            # --- 4. DB保存 ---
+            new_title = spec_data.get('seo_title')
+            if new_title and len(new_title) > 10:
+                product.name = new_title
+
             product.cpu_model = spec_data.get('cpu_model', product.cpu_model)
             product.gpu_model = spec_data.get('gpu_model', product.gpu_model)
             product.memory_gb = safe_int(spec_data.get('memory_gb'), product.memory_gb)
             product.storage_gb = safe_int(spec_data.get('storage_gb'), product.storage_gb)
             
-            # 各個別スコアの更新
             product.score_cpu = safe_int(spec_data.get('score_cpu'), 0)
             product.score_gpu = safe_int(spec_data.get('score_gpu'), 0)
             product.score_cost = safe_int(spec_data.get('score_cost'), 0)
@@ -235,30 +252,20 @@ TARGET: おすすめ対象
             product.score_ai = safe_int(spec_data.get('score_ai'), 0)
             product.is_ai_pc = spec_data.get('is_ai_pc', False)
             
-            # ★ 自動化追加ロジック: ランキング表示を確実にするためのフラグとスコア計算
-            product.site_prefix = 'bicstation'  # BicStation用に固定
-            product.is_active = True           # 掲載中に設定
-            product.is_posted = True           # 投稿済みに設定
-            product.stock_status = "在庫あり"    # 在庫ありに強制（APIフィルター対策）
+            product.site_prefix = 'bicstation'
+            product.is_active = True
+            product.is_posted = True
+            product.stock_status = "在庫あり"
             
-            # 総合スコア (spec_score) の算出。AIが返してきた値があればそれを使い、なければ平均を出す。
             ai_spec_score = safe_int(spec_data.get('spec_score'), 0)
-            if ai_spec_score > 0:
-                product.spec_score = ai_spec_score
-            else:
-                scores = [product.score_cpu, product.score_gpu, product.score_cost, product.score_portable, product.score_ai]
-                product.spec_score = sum(scores) // len(scores) if any(scores) else 0
-
-            # ジャンルが未設定ならデフォルト値を埋める
-            if not product.unified_genre:
-                product.unified_genre = "PC"
+            product.spec_score = ai_spec_score if ai_spec_score > 0 else (product.score_cpu + product.score_ai) // 2
 
             product.ai_summary = summary_text
             product.ai_content = clean_body
             product.last_spec_parsed_at = timezone.now()
             
             product.save()
-            self.stdout.write(self.style.SUCCESS(f" ✅ 更新完了 ({count}/{total}): {product.unique_id}"))
+            self.stdout.write(self.style.SUCCESS(f" ✅ クリーン更新完了 ({count}/{total}): {product.unique_id}"))
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"❌ 解析失敗 ({product.unique_id}): {str(e)}"))
