@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 /**
  * =====================================================================
- * 📋 BICSTATION PC製品一覧 (Product Listing - Optimized v11.2)
- * 🛡️ Maya's Logic: フィルタ・属性・検索の完全同期
+ * 📋 BICSTATION PC製品一覧 (Product Listing - Full Integrated v11.8)
+ * 🛡️ 修正内容: サイドバー個別引数(gpu, cpu等)を attribute フィルタに統合
  * =====================================================================
  */
 
@@ -19,19 +19,20 @@ import { fetchPCProducts } from '@/shared/lib/api/django/pc/products';
 
 import styles from './ProductsPage.module.css';
 
-/** 🔍 メタデータの動的生成 */
+/** 🔍 SEO: 条件に基づいた動的メタデータ */
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
     const sParams = await searchParams;
     const maker = sParams.maker ? sParams.maker.toUpperCase() : '';
+    // 個別引数も含めた表示用ラベルの抽出
+    const attrLabel = (sParams.attribute || sParams.gpu || sParams.cpu || sParams.feature || '').toUpperCase();
     const query = sParams.q || '';
     
     return {
-        title: `${maker || query || '製品一覧'} | PC製品カタログ | BICSTATION`,
-        description: `${maker}の最新PC製品からAIスコア順で最適な一台を探せます。`,
+        title: `${maker || attrLabel || query || '製品一覧'} | PC製品カタログ | BICSTATION`,
+        description: `最新のPC製品をAIスコアや性能順で比較。最適な一台が見つかります。`,
     };
 }
 
-// Next.js 15推奨設定
 export const dynamic = "force-dynamic";
 
 interface PageProps {
@@ -41,20 +42,24 @@ interface PageProps {
         sort?: string;
         q?: string;
         offset?: string;
-        attribute?: string; // 💡 属性フィルタ対応
+        // 🚩 サイドバー(PCSidebar.tsx)の個別引数を受け取る定義
+        attribute?: string; 
+        gpu?: string;
+        cpu?: string;
+        os?: string;
+        memory?: string;
+        feature?: string;
     }>;
 }
 
-/**
- * ✅ エントリポイント: スケルトンローディングによる Suspense
- */
+/** ✅ ローディング境界 */
 export default async function ProductsPage(props: PageProps) {
     return (
         <Suspense fallback={
             <div className="min-h-[70vh] flex flex-col items-center justify-center font-mono">
                 <div className={styles.loadingPulse}></div>
                 <p className="text-xs uppercase tracking-[0.3em] text-cyan-500/60 mt-6 animate-pulse">
-                    INITIALIZING_PRODUCT_DATABASE_CONNECT...
+                    SYNCING_PC_DATABASE_V11.8...
                 </p>
             </div>
         }>
@@ -63,36 +68,46 @@ export default async function ProductsPage(props: PageProps) {
     );
 }
 
-/**
- * 💡 実装本体
- */
+/** 💡 メインロジック (Server Component) */
 async function ProductsPageContent({ searchParams }: PageProps) {
     const sParams = await searchParams;
     
-    // 🌐 ホスト・サイトコンテクスト解析
-    const headerList = await headers();
-    const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
-
-    // 🛠️ パラメータの正規化
+    // 1. 基本パラメータ解析
     const limit = 20;
     const currentPage = parseInt(sParams.page || '1');
     const currentOffset = sParams.offset ? parseInt(sParams.offset) : (currentPage - 1) * limit;
 
     const currentMaker = sParams.maker || '';
-    const currentSort = sParams.sort || '-updated_at'; // 最新更新順をデフォルトに
+    const currentSort = sParams.sort || '-created_at';
     const searchQuery = sParams.q || '';
-    const currentAttr = sParams.attribute || '';
 
-    // 📡 APIフェッチ (属性フィルタ attribute を引数に追加)
-    // 注意: fetchPCProductsの引数定義に合わせて順序を確認してください
+    /**
+     * 🚩 【最重要：引数統合ロジック】
+     * サイドバーが ?gpu=gpu-rtx-50-series のように送ってきても、
+     * Djangoの attribute フィルタに一本化して流し込みます。
+     */
+    const currentAttr = 
+        sParams.attribute || 
+        sParams.gpu || 
+        sParams.cpu || 
+        sParams.os || 
+        sParams.memory || 
+        sParams.feature || 
+        '';
+
+    // 2. ネットワーク環境の特定
+    const headerList = await headers();
+    const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
+
+    /** 📡 APIフェッチ */
     const response = await fetchPCProducts(
         searchQuery, 
         currentOffset, 
         limit, 
         currentMaker, 
         host,
-        currentSort,
-        currentAttr
+        currentSort, // Djangoの 'ordering' に紐付け
+        currentAttr  // 🚩 個別引数を統合した 'attribute' を渡す
     ).catch((e) => {
         console.error("🚨 [Product List API Error]:", e);
         return { results: [], count: 0 };
@@ -101,17 +116,17 @@ async function ProductsPageContent({ searchParams }: PageProps) {
     const results = response?.results || (Array.isArray(response) ? response : []);
     const count = response?.count || (Array.isArray(response) ? response.length : 0);
 
-    // 🏷️ タイトルの動的最適化ロジック
+    // 3. 表示タイトルの生成
     const getDynamicTitle = () => {
-        if (searchQuery) return `検索結果: "${searchQuery}"`;
-        if (currentMaker) return `${currentMaker.toUpperCase()} 製品一覧`;
-        if (currentAttr) return `${currentAttr.split('-').join(' ').toUpperCase()} 関連製品`;
-        return 'PC製品カタログ';
+        if (searchQuery) return `RESULT: "${searchQuery}"`;
+        if (currentMaker && currentMaker !== 'all') return `${currentMaker.toUpperCase()} LINEUP`;
+        if (currentAttr) return `${currentAttr.split('-').join(' ').toUpperCase()} SPEC`;
+        return 'ALL PRODUCTS';
     };
 
     return (
         <main className={styles.container}>
-            {/* 🛸 ヘッダーユニット: 統計とコントロール */}
+            {/* 🛸 ヘッダーエリア */}
             <header className={styles.header}>
                 <div className={styles.titleSection}>
                     <div className={styles.breadcrumb}>
@@ -121,7 +136,7 @@ async function ProductsPageContent({ searchParams }: PageProps) {
                     <div className={styles.statsBadge}>
                         <span className={styles.statusLight}></span>
                         <span className={styles.hitCount}>{count.toLocaleString()}</span> 
-                        <span className={styles.unit}>PRODUCTS_DETECTED</span>
+                        <span className={styles.unit}>UNITS_IN_DB</span>
                     </div>
                 </div>
 
@@ -130,21 +145,21 @@ async function ProductsPageContent({ searchParams }: PageProps) {
                 </div>
             </header>
 
-            {/* 📋 メイングリッドエリア */}
+            {/* 📋 商品一覧グリッド */}
             <section className={styles.gridArea}>
                 {results.length > 0 ? (
                     <>
                         <div className={styles.grid}>
                             {results.map((product: any, index: number) => (
                                 <ProductCard 
-                                    key={product.unique_id || product.id} 
+                                    key={product.unique_id || product.id || `pc-${index}`} 
                                     product={product} 
-                                    priority={index < 4} // 最初の4枚はLCP最適化
+                                    priority={index < 4}
                                 />
                             ))}
                         </div>
 
-                        {/* 📑 ページネーション: すべてのフィルタ条件を baseUrl に凝縮 */}
+                        {/* 📑 ページネーション (統合後の attribute パラメータを保持) */}
                         {count > limit && (
                             <footer className={styles.footer}>
                                 <Pagination 
@@ -157,18 +172,18 @@ async function ProductsPageContent({ searchParams }: PageProps) {
                         )}
                     </>
                 ) : (
-                    /* 🔍 ゼロマッチ時のフォールバック */
+                    /* 🔍 ゼロマッチ表示 */
                     <div className={styles.noData}>
-                        <div className={styles.noDataIcon}>NOT_FOUND</div>
-                        <h2 className="text-xl font-bold text-white mb-2">製品が見つかりませんでした</h2>
+                        <div className={styles.noDataIcon}>∅</div>
+                        <h2 className="text-xl font-bold text-white mb-2">NO_MATCHING_DATA</h2>
                         <p className="text-slate-400 text-sm mb-6">
-                            条件を緩和するか、別のキーワードでお試しください。
+                            指定されたスペック（{currentAttr || '条件なし'}）に合致する製品が見つかりませんでした。
                         </p>
                         <Link href="/product" className={styles.resetButton}>
-                            条件をクリアして全件表示
+                            SYSTEM_RESET (全件表示)
                         </Link>
                         <div className={styles.debugInfo}>
-                            NODE: {host} | SIG: {currentMaker || 'ALL'} / {currentAttr || 'ALL'}
+                            INTEGRATED_ATTR: {currentAttr || 'NONE'} | SORT: {currentSort} | HOST: {host}
                         </div>
                     </div>
                 )}

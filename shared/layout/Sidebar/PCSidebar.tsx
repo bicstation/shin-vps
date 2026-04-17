@@ -7,7 +7,7 @@ import { headers } from 'next/headers';
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import { fetchPCSidebarStats } from '@/shared/lib/api/django/pc/stats'; 
-import styles from './PCSidebar.module.css';
+import styles from './PCSidebar.module.css'; // ✅ 正しいCSSをインポート
 
 /**
  * 🛰️ PC/ガジェット特化サテライトネットワーク (固定リスト)
@@ -60,9 +60,7 @@ export default async function PCSidebar() {
 
   const recentArticles = Array.isArray(bridgeData) ? bridgeData : (bridgeData?.results || []);
 
-  /** 🛡️ stats.ts の戻り値構造に完全同期
-   * fetchPCSidebarStats で正規化された maker_counts を取得 
-   */
+  /** 🛡️ stats.ts の戻り値構造に完全同期 */
   const stats = statsData || {};
   const makers = Array.isArray(stats.maker_counts) ? stats.maker_counts : [];
 
@@ -111,7 +109,7 @@ export default async function PCSidebar() {
           </div>
         )}
 
-        {/* Features & Graphics Segment (日本語キー対応) */}
+        {/* Features & Graphics Segment */}
         {(stats.feature || stats["グラフィック"]) && (
           <div className={styles.statGroup}>
             <p className={styles.groupLabel}>FEATURES & GRAPHICS</p>
@@ -156,14 +154,13 @@ export default async function PCSidebar() {
         )}
       </section>
 
-      {/* 🏢 BRANDS (メーカー表示：完全同期版) */}
+      {/* 🏢 BRANDS (メーカー表示) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>BRANDS</h3>
         <div className={styles.brandGroup}>
           <ul className={styles.list}>
             {makers.length > 0 ? (
               makers.map((m: any, idx: number) => {
-                // stats.ts で正規化されたキー(name, maker, count)を安全に参照
                 const brandName = m.name || m.maker || "Unknown";
                 return (
                   <li key={idx}>
