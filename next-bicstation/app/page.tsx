@@ -9,7 +9,7 @@ import {
     Layers, ArrowUpRight, Globe, Gauge,
     History, Database, HardDrive, Binary,
     Monitor, BookOpen, Briefcase, GraduationCap,
-    Search, CpuChip, Bot
+    Search, Bot, Layout, CircuitBoard
 } from 'lucide-react';
 
 // ✅ 共通コンポーネント
@@ -17,7 +17,7 @@ import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 
 // ✅ API サービス
 import { fetchWPTechInsights } from '@/shared/lib/api/django/wordpress'; 
-import { fetchPostList } from '@/shared/lib/api/django/posts';            
+import { fetchPostList } from '@/shared/lib/api/django/posts';             
 import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats'; 
 
 // 共通ユーティリティ
@@ -29,8 +29,6 @@ import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 600; 
-
-const IS_ADSENSE_REVIEW = true; 
 
 async function safeFetch<T>(fetcher: any, args: any[], fallback: T): Promise<T> {
     try {
@@ -56,6 +54,7 @@ export async function generateMetadata() {
 }
 
 export default async function HomePageMain() {
+    const IS_ADSENSE_REVIEW = true; 
     const headerList = await headers();
     const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
     const siteConfig = getSiteMetadata(host); 
@@ -180,23 +179,26 @@ export default async function HomePageMain() {
                 <section className="mb-24">
                     <div className={styles.sectionTitleArea}>
                         <h2 className={styles.sectionTitle}>
-                            <Layers className="text-emerald-400 w-5 h-5" /> ナレッジ・レイヤー：技術の多層構造
+                            <Layers className="text-emerald-400 w-5 h-5" /> アーキテクチャ・インデックス
                         </h2>
-                        <p className="text-xs text-zinc-500 mt-2">ハードからソフト、人間成長まで。私の思考を構成する6つの領域。</p>
+                        <p className="text-xs text-zinc-500 mt-2">ハードウェアから人間成長まで。全180講におよぶ知覚の多層構造。</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                         {[
-                            { id: "01-hardware", title: "物理基盤", color: "blue", tag: "Hardware", desc: "自作PCからサーバー、10GbE高速ネットワーク構築まで。" },
-                            { id: "02-software", title: "環境構築", color: "indigo", tag: "Software", desc: "OS、Docker、WEBデプロイメントの最適解を追求。" },
-                            { id: "03-ai-logic", title: "人工知能", color: "purple", tag: "AI Logic", desc: "ローカルLLM活用、Pythonによるデータ解析、知的自動化。" },
-                            { id: "04-Life-Integration", title: "生活統合", color: "orange", tag: "Life", desc: "スマートホーム、EV連携、デジタルと空間の同期。" },
-                            { id: "05-home-page", title: "媒体構築", color: "yellow", tag: "Media", desc: "Next.jsとDjangoによる、この情報発信拠点の形成。" },
-                            { id: "06-human-growth", title: "人間成長", color: "emerald", tag: "Growth", desc: "継続的学習、エンジニアとしてのマインドセット、人材育成。" },
+                            { id: "01-hardware", title: "物理演算基盤", color: "blue", icon: <HardDrive size={24} />, desc: "自作PCからサーバー、10GbEネットワークまで。物理層の最適化。" },
+                            { id: "02-software", title: "論理環境構築", color: "indigo", icon: <Terminal size={24} />, desc: "OS、Docker、WEBデプロイ。演算を価値に変えるための土壌。" },
+                            { id: "03-ai-logic", title: "知能自動化", color: "purple", icon: <Binary size={24} />, desc: "ローカルLLM、Python解析。AIを「部下」として使いこなす技術。" },
+                            { id: "04-Life-Integration", title: "生活空間統合", color: "orange", icon: <Globe size={24} />, desc: "スマートホーム、EV連携。テクノロジーを肉体の一部にする。" },
+                            { id: "05-home-page", title: "自己媒体構築", color: "yellow", icon: <Layout size={24} />, desc: "Next.jsとDjangoの統合。思考を世界へ同期させる拠点形成。" },
+                            { id: "06-human-growth", title: "高次人間成長", color: "emerald", icon: <GraduationCap size={24} />, desc: "44年のマインドセット。エンジニアとして、また人間としての進化。" },
                         ].map((item) => (
                             <Link key={item.id} href={`/series/${item.id}`} className="p-8 bg-zinc-900/30 border border-zinc-800 rounded-2xl hover:border-zinc-500/50 transition-all flex flex-col group relative overflow-hidden">
+                                <div className={`mb-6 text-${item.color}-500 group-hover:scale-110 transition-transform`}>
+                                    {item.icon}
+                                </div>
                                 <span className={`text-${item.color}-500 font-mono text-[10px] mb-2 uppercase tracking-widest`}>LAYER_{item.id.split('-')[0]}</span>
                                 <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
-                                <p className="text-xs text-zinc-500 flex-grow">{item.desc}</p>
+                                <p className="text-xs text-zinc-500 flex-grow leading-relaxed">{item.desc}</p>
                                 <div className="mt-6 flex items-center text-[10px] text-zinc-400 font-bold uppercase tracking-widest group-hover:text-white transition-colors">
                                     アクセスする <ArrowUpRight className="ml-2 w-3 h-3" />
                                 </div>

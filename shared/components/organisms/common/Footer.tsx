@@ -103,12 +103,15 @@ function FooterContent({ debugData }: FooterProps) {
 
     const config = siteConfigs[site.site_name] || siteConfigs['Bic Station'];
 
+    // ✅ プレフィックスが / で始まっていない場合の安全策
+    const safePrefix = site.site_prefix?.startsWith('/') ? site.site_prefix : `/${site.site_prefix || ''}`;
+
     return (
         <footer
             className={styles.footer}
             style={{ '--accent-red': siteColor } as React.CSSProperties}
         >
-            {/* 🚀 導線可視化インジケーター (日本語・直感版) */}
+            {/* 🚀 導線可視化インジケーター */}
             {isDebugMode && (
                 <div className="bg-slate-900 border-b border-orange-500/30 px-4 py-2 font-mono text-[11px] flex items-center justify-between text-slate-400">
                     <div className="flex gap-4 items-center">
@@ -120,9 +123,6 @@ function FooterContent({ debugData }: FooterProps) {
                             接続先API: <b className="text-white">{debugData?.targetUrl || (isLocal ? 'http://127.0.0.1:8083/api' : 'http://django-v3:8000/api')}</b>
                         </span>
                         <span>サイト識別: <b className="text-white">{site.site_tag}</b></span>
-                    </div>
-                    <div className="text-[9px] opacity-70">
-                        {typeof window !== 'undefined' ? `アクセス中: ${window.location.host}` : 'サーバーサイド(SSR)実行中'}
                     </div>
                 </div>
             )}
@@ -147,7 +147,7 @@ function FooterContent({ debugData }: FooterProps) {
                     </div>
                 </div>
 
-                {/* 2. SHIN CORE LINX NETWORK */}
+                {/* 2. NETWORK */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>SHIN CORE LINX NETWORK</h3>
                     <ul className={styles.networkList}>
@@ -165,15 +165,15 @@ function FooterContent({ debugData }: FooterProps) {
                     </ul>
                 </div>
 
-                {/* 3. INFORMATION */}
+                {/* 3. INFORMATION (✅ 修正済み: 絶対パス化) */}
                 <div className={styles.column}>
                     <h3 className={styles.sectionTitle}>INFORMATION</h3>
                     <ul className={styles.linkList}>
-                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/about`}>ℹ️ 当サイトについて</Link></li>
-                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/guideline`}>📝 編集ガイドライン</Link></li>
-                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/privacy-policy`}>🛡️ プライバシーポリシー</Link></li>
-                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/disclaimer`}>⚠️ 免責事項</Link></li>
-                        <li className={styles.linkItem}><Link href={`${site.site_prefix}/contact`}>📧 お問い合わせ</Link></li>
+                        <li className={styles.linkItem}><Link href={`${safePrefix}/about`}>ℹ️ 当サイトについて</Link></li>
+                        <li className={styles.linkItem}><Link href={`${safePrefix}/guideline`}>📝 編集ガイドライン</Link></li>
+                        <li className={styles.linkItem}><Link href={`${safePrefix}/privacy-policy`}>🛡️ プライバシーポリシー</Link></li>
+                        <li className={styles.linkItem}><Link href={`${safePrefix}/disclaimer`}>⚠️ 免責事項</Link></li>
+                        <li className={styles.linkItem}><Link href={`${safePrefix}/contact`}>📧 お問い合わせ</Link></li>
                     </ul>
                     
                     <div className={styles.affiliateDisclosure}>
@@ -187,9 +187,6 @@ function FooterContent({ debugData }: FooterProps) {
                     <p className={styles.copyright}>
                         &copy; {currentYear} {site.site_name.toUpperCase()} / Managed by SHIN CORE LINX
                     </p>
-                    <div className={styles.systemStatus}>
-                        STATUS: <span className={styles.statusOnline}>ONLINE</span> | ID: SHIN_CORE_PROT_V11.1
-                    </div>
                 </div>
             </div>
 
