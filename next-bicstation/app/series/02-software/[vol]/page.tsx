@@ -1,3 +1,4 @@
+// /home/maya/shin-vps/next-bicstation/app/series/02-software/[vol]/page.tsx
 /* eslint-disable @next/next/no-img-element */
 import fs from 'fs';
 import path from 'path';
@@ -10,6 +11,7 @@ import { ChevronLeft, ChevronRight, LayoutGrid, AlertCircle, ShoppingCart } from
 
 // ✅ 分離したスタイルをインポート
 import './series-article.css';
+
 
 // ✅ データのインポート
 import { SOFTWARE_GUIDE_DATA } from '../data';
@@ -36,7 +38,7 @@ export default async function SeriesVolumePage({
   const volNum = parseInt(resolvedParams.vol, 10);
 
   // データソースの安全性確保
-  const safeSource = Array.isArray(BTO_GUIDE_DATA) ? BTO_GUIDE_DATA : [];
+  const safeSource = Array.isArray(SOFTWARE_GUIDE_DATA) ? SOFTWARE_GUIDE_DATA : [];
   
   const seriesInfo = safeSource.find((d) => {
     const dVol = typeof d.vol === 'string' ? parseInt(d.vol, 10) : d.vol;
@@ -49,7 +51,7 @@ export default async function SeriesVolumePage({
   const nextData = safeSource.find(d => (typeof d.vol === 'string' ? parseInt(d.vol, 10) : d.vol) === volNum + 1);
 
   // --- 🌌 物理パスの解決 ---
-  const filePath = path.join(process.cwd(), 'app/series/01-hardware', `vol${volNum}.md`);
+  const filePath = path.join(process.cwd(), 'app/series/02-software', `vol${volNum}.md`);
 
   // --- 📝 コンテンツの読み込み ---
   let markdownContent = "";
@@ -74,7 +76,7 @@ export default async function SeriesVolumePage({
               <code className="text-[10px] text-emerald-400/70 block mt-2 break-all bg-black/50 p-2 rounded">{filePath}</code>
             </p>
           </div>
-          <Link href="/series/01-hardware" className="inline-flex items-center gap-2 text-[10px] font-mono text-zinc-400 hover:text-emerald-400 transition-all uppercase tracking-widest border border-zinc-700 px-6 py-3 rounded-full">
+          <Link href="/series/02-software" className="inline-flex items-center gap-2 text-[10px] font-mono text-zinc-400 hover:text-emerald-400 transition-all uppercase tracking-widest border border-zinc-700 px-6 py-3 rounded-full">
             <ChevronLeft size={14} /> Back_to_Terminal
           </Link>
         </div>

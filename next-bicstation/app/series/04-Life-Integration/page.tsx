@@ -52,7 +52,7 @@ export default function LifestyleSeriesPage() {
                 .map((item) => (
                   <Link 
                     key={item.vol} 
-                    href={`/series/04-lifestyle/${item.vol}`} 
+                    href={`/series/04-Life-Integration/${item.vol}`} 
                     className="group relative overflow-hidden bg-stone-900/40 border border-stone-800 rounded-2xl hover:border-amber-500/50 transition-all duration-500 shadow-xl flex flex-col h-full"
                   >
                     <div className="relative h-32 w-full overflow-hidden bg-stone-900">

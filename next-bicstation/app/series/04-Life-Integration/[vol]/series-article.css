@@ -1,0 +1,172 @@
+/* ==========================================
+   Series Article - Standard CSS Version
+   ========================================== */
+
+/* コンテナ全体のベース */
+.series-article-container {
+  min-height: 100vh;
+  background-color: #000000;
+  color: #d4d4d8;
+  padding-bottom: 5rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* 選択範囲 */
+.series-article-container ::selection {
+  background-color: rgba(16, 185, 129, 0.3);
+  color: #ffffff;
+}
+
+/* --- 🖼️ ヒーローセクション --- */
+.series-hero {
+  position: relative;
+  height: 60vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: #09090b;
+}
+
+@media (min-width: 768px) {
+  .series-hero { height: 80vh; }
+}
+
+.series-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.4; /* 文字の読みやすさを優先 */
+  transform: scale(1.05);
+  filter: saturate(0.8) contrast(1.1);
+}
+
+.series-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+}
+
+/* --- 🖋️ Markdownコンテンツ（ここが重要） --- */
+.series-content-body {
+  font-size: 1.125rem;
+  line-height: 1.9;
+  color: #d1d1d6;
+}
+
+/* 見出しのスタイルを強制上書き */
+.series-content-body h1,
+.series-content-body h2,
+.series-content-body h3,
+.series-content-body h4 {
+  color: #ffffff;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-top: 4rem;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.series-content-body h1 { font-size: 3rem; border-bottom: 1px solid #27272a; padding-bottom: 1rem; }
+
+.series-content-body h2 {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Mayaアクセント：見出し横のバー */
+.series-content-body h2::before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 1.5rem;
+  background: linear-gradient(to bottom, #10b981, #3b82f6);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.series-content-body h3 { 
+  font-size: 1.5rem; 
+  color: #10b981; 
+}
+
+/* 本文テキスト */
+.series-content-body p {
+  margin-bottom: 1.8rem;
+}
+
+/* 強調表示 */
+.series-content-body strong {
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: inset 0 -4px 0 rgba(16, 185, 129, 0.3);
+}
+
+/* リスト */
+.series-content-body ul, 
+.series-content-body ol {
+  margin-bottom: 2rem;
+  padding-left: 1.2rem;
+  list-style: none;
+}
+
+.series-content-body li {
+  position: relative;
+  margin-bottom: 0.8rem;
+}
+
+.series-content-body ul li::before {
+  content: "▶";
+  position: absolute;
+  left: -1.2rem;
+  font-size: 0.7rem;
+  top: 0.1rem;
+  color: #10b981;
+}
+
+/* コード（バッククォート） */
+.series-content-body :not(pre) > code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  background-color: #18181b;
+  color: #34d399;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.4rem;
+  font-size: 0.9em;
+  border: 1px solid #27272a;
+}
+
+/* 引用 */
+.series-content-body blockquote {
+  border-left: 2px solid #10b981;
+  background: rgba(16, 185, 129, 0.03);
+  padding: 1.5rem 2rem;
+  margin: 2rem 0;
+  font-style: italic;
+  border-radius: 0 1rem 1rem 0;
+}
+
+/* --- 🧭 ナビゲーション --- */
+.series-nav-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.series-nav-label {
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  color: #52525b; /* zinc-600 */
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  display: flex;
+  align-items: center;
+}
+
+/* --- 🛒 アフィリエイトセクション --- */
+.series-affiliate-section {
+  margin-top: 6rem;
+}
