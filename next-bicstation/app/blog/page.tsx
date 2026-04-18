@@ -1,24 +1,25 @@
 /* eslint-disable @next/next/no-img-element */
 /**
  * 💻 Bicstation 記事一覧 (Hybrid Markdown Edition)
- * 🛡️ Maya's Logic: Django-Bridge v3 統合版
+ * 🛡️ Maya's Logic: Integration V12.1 (Final Fix)
  * 物理パス: app/blog/page.tsx
+ * 修正内容: インポートパスを実体に合わせて django/posts に修正
  */
 
 import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 
-// ✅ 修正ポイント 1: Django-Bridge から関数をインポート
-// パスが /shared/lib/api/django-bridge.ts なので、エイリアス設定に合わせて指定
-import { fetchPostList, getWpFeaturedImage } from '@/shared/lib/api/django-bridge';
+// ✅ 修正ポイント: grepの結果に基づき、正しい物理パスを指定
+import { getWpFeaturedImage } from '@/shared/lib/api';
+import { fetchPostList } from '@/shared/lib/api/django/posts'; 
 
-// ✅ 修正ポイント 2: その他のユーティリティとコンポーネント
+// ✅ その他のユーティリティとコンポーネント
 import { getPostsFromFolder } from '@/shared/lib/utils/markdown'; 
 import { decodeHtml } from '@/shared/lib/utils/decode';
 import Sidebar from '@/shared/layout/Sidebar/PCSidebar';
 import Pagination from '@/shared/components/molecules/Pagination';
-import { fetchMakers } from '@/shared/lib/api/django/pc'; // 必要に応じて
+import { fetchMakers } from '@/shared/lib/api/django/pc';
 
 // スタイルシート
 import styles from './Page.module.css';
@@ -40,7 +41,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     
     return {
         title: `PCトピックス・ニュース一覧${pageNum} - BICSTATION`,
-        description: `最新のPCスペック情報やテックニュース、詳細な解説記事の一覧です。`,
+        description: `最新のPCスペック情報やテックニュース、詳細な解説記事の一覧です。44年のエンジニアリング・ナレッジを集約。`,
     };
 }
 
@@ -54,17 +55,16 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
 
     /**
      * 🚀 データフェッチ並列実行
-     * django-bridge.ts の fetchPostList を使用
+     * エラーログにあった TypeError 回避のため、空レスポンスを保証
      */
     const [wpDataResponse, localPosts, makersData] = await Promise.all([
-        // postType はエンドポイント名。ここでは 'posts' または 'bicstation'
-        fetchPostList('posts', 100, 0), 
+        fetchPostList(100, 0, 'bicstation').catch(() => ({ results: [], count: 0 })), 
         getPostsFromFolder('content/bicstation').catch(() => []),
         fetchMakers().catch(() => [])
     ]);
 
     // 1. ローカル記事（Markdown）を共通フォーマットに変換
-    const formattedLocalPosts = localPosts.map(lp => ({
+    const formattedLocalPosts = (localPosts || []).map(lp => ({
         id: `local-${lp.slug}`,
         slug: lp.slug,
         title: { rendered: lp.title },
@@ -73,12 +73,14 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
         featured_media_src_url: lp.thumbnail || '/no-image.png'
     }));
 
-    // 2. API記事の抽出 (Django-Bridge は results と count を返す)
+    // 2. API記事の抽出 (wpDataResponse.results が undefined の場合を考慮)
     const apiPosts = wpDataResponse?.results || [];
     
     // 3. 全記事統合 & 日付順に降順ソート
     const combinedPosts = [...formattedLocalPosts, ...apiPosts].sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return (isNaN(dateB) ? 0 : dateB) - (isNaN(dateA) ? 0 : dateA);
     });
 
     // 4. 現在のページ分をスライス
@@ -90,10 +92,10 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
             <aside className={styles.sidebarSection}>
                 <Sidebar 
                     activeMenu="all" 
-                    makers={makersData} 
+                    makers={makersData || []} 
                     recentPosts={combinedPosts.slice(0, 5).map((p: any) => ({
                         id: p.id,
-                        title: decodeHtml(p.title.rendered),
+                        title: decodeHtml(p.title?.rendered || 'Untitled'),
                         slug: p.slug
                     }))}
                 />
@@ -116,7 +118,6 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
                         <>
                             <div className={styles.newsGrid}>
                                 {allPosts.map((post: any) => {
-                                    // 💡 django-bridge の getWpFeaturedImage を使用
                                     const imageUrl = post.isMarkdown 
                                         ? post.featured_media_src_url 
                                         : getWpFeaturedImage(post, 'large');
@@ -132,7 +133,7 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
                                                     <span className={styles.mdBadge}>LOCAL GUIDE</span>
                                                 )}
                                                 <img 
-                                                    src={imageUrl} 
+                                                    src={imageUrl || '/no-image.png'} 
                                                     alt="" 
                                                     className={styles.eyecatch}
                                                     loading="lazy"
@@ -145,14 +146,12 @@ export default async function BicstationListPage({ searchParams }: PageProps) {
                                                 <div className={styles.postMeta}>
                                                     <span className={styles.postDate}>
                                                         {new Date(post.date).toLocaleDateString('ja-JP', {
-                                                            year: 'numeric',
-                                                            month: '2-digit',
-                                                            day: '2-digit'
+                                                            year: 'numeric', month: '2-digit', day: '2-digit'
                                                         })}
                                                     </span>
                                                 </div>
                                                 <h2 className={styles.articleTitle}>
-                                                    {decodeHtml(post.title.rendered)}
+                                                    {decodeHtml(post.title?.rendered || 'Untitled')}
                                                 </h2>
                                             </div>
                                         </Link>

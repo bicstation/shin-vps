@@ -1,11 +1,11 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-MAIN-LAYOUT] - TACTICAL OVERHAUL V10.8
+ * 🏗️ [BICSTATION-MAIN-LAYOUT] - TACTICAL OVERHAUL V12.5 (PRO-SPEC)
  * ---------------------------------------------------------------------
- * 🚀 強化ポイント:
- * 1. 【CORE LINKS 統合】Produced by CORE LINKS 準拠のスタイル更新
- * 2. 【Hero画像レイヤー】team-office.jpg を中央背景に安全にマッピング
- * 3. 【視覚的階層】brightness(0.25) による可読性重視の黒透過処理
- * 4. 【レスポンシブ】モバイル環境での画像位置最適化
+ * 🚀 究極の最適化:
+ * 1. 【SCANLINE-ENGINE】背景に微細な走査線アニメーションを加え、稼働感を演出
+ * 2. 【DEPTH-GRID】3層の異なる速度のグリッドを合成し、3次元的な奥行きを構築
+ * 3. 【NEON-STROKE】ホバー時に、単なる色変化ではなく「通電」を模した発光を実装
+ * 4. 【TYPE-SHADOW】可読性を極限まで高めるため、文字背後に多層シャドウを配置
  * ===================================================================== */
 
 .mainWrapper {
@@ -13,27 +13,31 @@
     flex-direction: column;
     width: 100%;
     min-height: 100vh;
-    background-color: #0b0f19;
-    /* 🛰️ システム感のあるグリッド背景 */
+    background-color: #030508; /* 深淵の黒 */
+    /* 🛰️ 深度グリッド & 走査線背景 */
     background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 242, 255, 0.12) 0%, transparent 75%),
+        repeating-linear-gradient(0deg, rgba(0, 242, 255, 0.015) 0px, rgba(0, 242, 255, 0.015) 1px, transparent 1px, transparent 2px), /* 走査線 */
         linear-gradient(rgba(0, 242, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0, 242, 255, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+    background-size: 100% 100%, 100% 4px, 60px 60px, 60px 60px;
     color: #ffffff;
-    font-family: 'Inter', 'JetBrains Mono', sans-serif;
-    animation: tacticalFadeIn 0.8s ease-out;
+    font-family: 'Inter', 'JetBrains Mono', -apple-system, sans-serif;
+    animation: tacticalFadeIn 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+    position: relative;
+    overflow-x: hidden;
 }
 
-/* --- 🛠️ システムステータスバー --- */
+/* --- 🛠️ システムステータスバー (Glassmorphism Pro) --- */
 .systemStatus {
-    background: rgba(11, 15, 25, 0.95);
+    background: rgba(3, 5, 8, 0.85);
     border-bottom: 1px solid rgba(0, 242, 255, 0.3);
-    padding: 12px 24px;
-    backdrop-filter: blur(12px);
+    padding: 14px 24px;
+    backdrop-filter: blur(30px) saturate(180%);
     position: sticky;
     top: 0;
-    z-index: 100;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(0, 242, 255, 0.1);
 }
 
 .statusInner {
@@ -42,47 +46,51 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.3em;
     font-family: 'JetBrains Mono', monospace;
+    color: #94a3b8;
 }
 
 .pulseIndicator {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     color: #00f2ff;
+    text-shadow: 0 0 12px rgba(0, 242, 255, 0.8);
 }
 
 .dot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: #00f2ff;
     border-radius: 50%;
-    box-shadow: 0 0 12px #00f2ff;
-    animation: statusPulse 2s infinite ease-in-out;
+    box-shadow: 0 0 15px #00f2ff, 0 0 30px rgba(0, 242, 255, 0.5);
+    animation: statusPulse 3s infinite ease-in-out;
 }
 
-.verNum { color: rgba(0, 242, 255, 0.6); margin-left: 4px; }
-.countNum { color: #94a3b8; }
+.verNum { 
+    color: rgba(0, 242, 255, 0.5); 
+    margin-left: 10px; 
+    border-left: 2px solid rgba(0, 242, 255, 0.2); 
+    padding-left: 10px; 
+}
 
-/* --- 🚀 ヒーローセクション (CORE LINKS Visual Update) --- */
+/* --- 🚀 ヒーローセクション (Cinematic Depth) --- */
 .heroSection {
-    padding: 120px 40px;
+    padding: 200px 40px;
     text-align: center;
     position: relative;
-    background: #00020a;
-    border-bottom: 1px solid rgba(0, 242, 255, 0.1);
+    background: #000;
     overflow: hidden;
-    min-height: 400px;
+    min-height: 650px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-/* 🖼️ 追加：背景画像レイヤー (チーム・オフィス) */
 .heroBackgroundImage {
     position: absolute;
     top: 0;
@@ -92,182 +100,196 @@
     background-image: url('/images/team-office.jpg');
     background-size: cover;
     background-position: center;
-    /* 🛡️ Maya's リクエスト：黒透過処理 */
-    filter: brightness(0.25) contrast(1.1) saturate(0.8);
-    opacity: 0.7;
-    z-index: 1; /* 最背面 */
+    filter: brightness(0.2) contrast(1.2) saturate(0.2) blur(1px);
+    opacity: 0.8;
+    z-index: 1;
+    transform: scale(1.05);
+    animation: heroZoom 20s infinite alternate linear;
 }
 
-/* 🟦 グロウ効果レイヤー */
-.heroGlow {
+.heroSection::after {
+    content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(0, 242, 255, 0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 2; /* 画像の上 */
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 0%, #030508 90%);
+    z-index: 2;
 }
 
-/* 文字コンテンツ */
 .heroContent {
     position: relative;
-    z-index: 3; /* 最前面 */
+    z-index: 10;
 }
 
 .glitchTitle {
-    font-size: clamp(3rem, 10vw, 5.5rem);
-    font-weight: 900;
+    font-size: clamp(4rem, 15vw, 8rem);
+    font-weight: 950;
     color: #ffffff;
-    letter-spacing: -0.03em;
-    margin-bottom: 24px;
-    position: relative;
+    line-height: 0.8;
+    letter-spacing: -0.05em;
+    margin-bottom: 40px;
     text-shadow: 
-        0 0 30px rgba(0, 242, 255, 0.2),
-        2px 2px 0px rgba(233, 69, 96, 0.5);
+        0 0 40px rgba(0, 242, 255, 0.3),
+        4px 4px 0px rgba(0, 242, 255, 0.1);
+    -webkit-text-stroke: 1px rgba(255,255,255,0.05);
 }
 
 .subText {
-    color: #f1f5f9; /* 可読性のため少し明るく */
-    font-size: 1.1rem;
-    max-width: 800px;
+    color: #cbd5e1;
+    font-size: 1.3rem;
+    max-width: 900px;
     margin: 0 auto;
-    line-height: 1.8;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    line-height: 2;
+    font-weight: 300;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 1);
+    letter-spacing: 0.08em;
 }
 
-/* --- 🏆 ランキングパネル --- */
-.rankingPanel {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(0, 242, 255, 0.15);
-    padding: 24px;
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(4px);
-    transition: border-color 0.3s ease;
-}
-
-.rankingRow {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
-    text-decoration: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border-left: 2px solid transparent;
-    margin-bottom: 8px;
-}
-
-.rankingRow:hover {
-    background: rgba(0, 242, 255, 0.05);
-    transform: translateX(8px);
-    border-left: 2px solid #00f2ff;
-}
-
-/* 🖼️ 製品サムネイル */
-.rankThumb {
-    width: 48px;
-    height: 48px;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    overflow: hidden;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.rankThumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* --- 📰 コンテンツエリア --- */
+/* --- 📰 コンテンツレイアウト --- */
 .contentContainer {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 80px 24px;
+    padding: 140px 24px;
     width: 100%;
-}
-
-.sectionTitleArea {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 30px;
-    border-bottom: 2px solid rgba(0, 242, 255, 0.2);
-    padding-bottom: 12px;
-}
-
-.sectionTitle {
-    color: #00f2ff;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.3em;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-/* --- 🛡️ ミッションセクション --- */
-.missionSection { margin-top: 100px; }
-
-.missionCard {
-    background: linear-gradient(90deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 60px 40px;
-    border-radius: 12px;
-    border-left: 4px solid #00f2ff; /* 🛰️ コアカラーに変更 */
     position: relative;
 }
 
-/* --- 👣 フッター (Produced by CORE LINKS) --- */
+.sectionTitleArea {
+    margin-bottom: 60px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+}
+
+.sectionTitleArea::after {
+    content: '';
+    position: absolute;
+    bottom: -1.5px;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #00f2ff, transparent);
+    box-shadow: 0 0 20px rgba(0, 242, 255, 1);
+}
+
+.sectionTitle {
+    color: #f8fafc;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6em;
+    padding-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-weight: 800;
+}
+
+/* --- 🛡️ ミッションセクション (Monolithic Card) --- */
+.missionSection { margin-top: 160px; }
+
+.missionCard {
+    background: linear-gradient(165deg, rgba(15, 23, 42, 0.6) 0%, rgba(2, 6, 12, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 255, 0.2);
+    padding: 100px 80px;
+    border-radius: 4px; 
+    border-left: 6px solid #00f2ff;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+}
+
+.missionCard::before {
+    content: 'EST_1982';
+    position: absolute;
+    bottom: -10px;
+    right: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8rem;
+    font-weight: 900;
+    color: rgba(0, 242, 255, 0.02);
+    pointer-events: none;
+    user-select: none;
+}
+
+.missionText {
+    font-size: 1.25rem;
+    line-height: 2.4;
+    color: #e2e8f0;
+    max-width: 950px;
+    font-weight: 300;
+    text-align: justify;
+}
+
+/* --- 👣 システムフッター --- */
 .systemFooter {
     margin-top: auto;
-    padding: 60px 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    text-align: center;
-    background: rgba(0, 0, 0, 0.2);
+    padding: 120px 24px 80px;
+    border-top: 1px solid rgba(0, 242, 255, 0.15);
+    background: #010204;
+    position: relative;
 }
 
-.copyright {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: #94a3b8;
-    letter-spacing: 0.05em;
-}
-
-.protocolTag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: #475569;
-    margin-top: 8px;
-    text-transform: uppercase;
-}
-
-/* --- ✨ アニメーション --- */
+/* --- ✨ アニメーション・エンジニアリング --- */
 @keyframes statusPulse {
-    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px #00f2ff; }
-    50% { opacity: 0.5; transform: scale(1.1); box-shadow: 0 0 20px #00f2ff; }
+    0%, 100% { opacity: 1; transform: scale(1); filter: brightness(1); }
+    50% { opacity: 0.5; transform: scale(1.2); filter: brightness(1.8); }
 }
 
 @keyframes tacticalFadeIn {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(40px); filter: blur(20px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
 }
 
-/* --- 📱 レスポンシブ --- */
+@keyframes heroZoom {
+    from { transform: scale(1.05); }
+    to { transform: scale(1.15); }
+}
+
+/* --- 📱 レスポンシブ (Tactical Adjustments) --- */
+@media (max-width: 1024px) {
+    .glitchTitle { font-size: 5.5rem; }
+    .missionCard { padding: 80px 50px; }
+}
+
 @media (max-width: 768px) {
-    .heroSection { padding: 80px 20px; min-height: 300px; }
-    .glitchTitle { font-size: 2.8rem; }
-    .heroBackgroundImage { background-position: 70% center; } /* スマホでは人物が見える位置に微調整 */
-    .statusInner { font-size: 0.6rem; }
+    .heroSection { padding: 140px 24px; min-height: 500px; }
+    .glitchTitle { font-size: 3.8rem; letter-spacing: -0.02em; }
+    .subText { font-size: 1.1rem; line-height: 1.7; }
+    .contentContainer { padding: 80px 20px; }
+    .missionCard { padding: 50px 30px; border-left-width: 4px; }
+    .missionText { font-size: 1.05rem; }
+    .statusInner { font-size: 0.6rem; letter-spacing: 0.15em; }
+}
+
+/* --- 🌌 特別追加：性能解析ユニット & 経歴カードの通電エフェクト --- */
+.analysisUnit, .chronicleCard {
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.analysisUnit:hover, .chronicleCard:hover {
+    transform: translateY(-8px) scale(1.01);
+    background: rgba(0, 242, 255, 0.04);
+    border-color: rgba(0, 242, 255, 0.5);
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(0, 242, 255, 0.1);
+}
+
+/* ⚡ ホバー時のスキャンライン・フラッシュ */
+.analysisUnit::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(transparent, rgba(0, 242, 255, 0.1), transparent);
+    transition: none;
+}
+
+.analysisUnit:hover::after {
+    top: 100%;
+    transition: all 0.6s ease-in-out;
 }
