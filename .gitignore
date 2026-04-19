@@ -1,97 +1,88 @@
 # ====================================================================
-# 1. Docker 永続化ボリューム (最重要：生データを除外)
+# 1. 仮想環境・依存ライブラリ (最重要：今回混入した部分)
 # ====================================================================
-# ディレクトリごと完全に無視するため末尾に / を付与
+# プロジェクトルートおよびサブディレクトリ内の仮想環境を全て除外
+analysis-env/
+scraper_venv/
+env/
+venv/
+.venv/
+node_modules/
+**/node_modules/
+
+# ====================================================================
+# 2. Docker / データベース永続化領域
+# ====================================================================
+# ホスト側のマウントボリュームデータを除外
 /data/
 /data_bak/
 /mariadb_data/
 /strapi/
 mariadb_data/
 strapi/
+vps-data/
 
 # ====================================================================
-# 2. 環境変数・機密情報
+# 3. 機密情報・APIキー (公開厳禁)
 # ====================================================================
 .env
 .env.*
 !.env.example
+client_secrets.json
+token.json
+**/bs_json/*.json
+traefik/letsencrypt/*.json
 
 # ====================================================================
-# 3. Python / Django (api_django_v2)
+# 4. Python / Django 関連
 # ====================================================================
-# 仮想環境（WSL/Windows両方の可能性を考慮）
-/scraper_venv/
-scraper_venv/
-env/
-venv/
-.Python
-
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.so
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.cache
-nosetests.xml
-coverage.xml
-*.mo
-*.pot
-*.log
-local_settings.py
+.Python
+
+# ローカルDB・ログ・設定
 db.sqlite3
 db.sqlite3-journal
+local_settings.py
+*.log
+pip-log.txt
+
+# 開発中の一時コピーファイル (例: analyze_pc_spec copy.py 等を防ぐ)
+* copy.py
+* - コピー.py
 
 # ====================================================================
-# 4. Node.js / Next.js (各Nextプロジェクト)
+# 5. Next.js / Frontend 関連
 # ====================================================================
-**/node_modules/
+.next/
 **/.next/
+out/
 **/out/
+build/
 **/build/
-.next/cache
 .npm
 .eslintcache
 
 # ====================================================================
-# 5. システム / IDE (OS・エディタ設定)
+# 6. スクレイピング・デバッグ用・大容量ファイル
 # ====================================================================
-.vscode/
-.idea/
-*.swp
-*.swo
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# ====================================================================
-# 6. Docker 関連 / その他
-# ====================================================================
-.dockerignore
-*.log
-# デバッグ用の画像や一時的なHTMLも除外対象にする場合
+**/debug_screenshots/
 debug_*.png
 debug_*.html
-traefik/letsencrypt/*.json
 *.sql
-
-
-# スクレイピングのデバッグ画像フォルダを丸ごと除外
-**/debug_screenshots/
-
 *.tar.gz
 *.zip
 *.deb
 
-
-# 仮想環境
-.venv/
-
-# Google APIの鍵（絶対公開しちゃダメなやつ）
-client_secrets.json
-token.json
-**/bs_json/*.json
-
-vps-data/
+# ====================================================================
+# 7. システム / IDE (OS・エディタ)
+# ====================================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
