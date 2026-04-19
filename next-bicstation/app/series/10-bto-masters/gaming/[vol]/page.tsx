@@ -1,221 +1,388 @@
-/* eslint-disable @next/next/no-img-element */
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
+"use client";
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { ChevronLeft, ChevronRight, LayoutGrid, ShoppingCart, Terminal } from 'lucide-react';
-
-// ✅ 共通データのインポート
-import { BTO_SERIES_CONFIG } from '../../data';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  ShoppingCart, 
+  Terminal, 
+  Cpu,
+  AlertCircle,
+  RefreshCcw,
+  Database,
+  Activity,
+  Zap,
+  CheckCircle2
+} from 'lucide-react';
 
 /**
- * アフィリエイト表示用データ変換
+ * 構成設定
  */
-async function getAffiliateDisplayData(frontMatter: any) {
-  if (!frontMatter.amazonAsin && !frontMatter.rakutenId && !frontMatter.directUrl) return null;
-  return {
-    amazonUrl: frontMatter.amazonAsin ? `https://www.amazon.co.jp/dp/${frontMatter.amazonAsin}?tag=YOUR_TAG` : null,
-    rakutenUrl: frontMatter.rakutenId ? `https://hb.afl.rakuten.co.jp/hgc/g00...` : null,
-    directUrl: frontMatter.directUrl || null,
-    label: frontMatter.affiliateLabel || "詳細をチェックする"
-  };
+const SERIES_CONFIG = {
+  phases: [
+    { volRange: [1, 10], label: "ENTRY PHASE: 基礎構築" },
+    { volRange: [11, 20], label: "MIDDLE PHASE: 最適化" },
+    { volRange: [21, 30], label: "HIGH-END PHASE: 極限性能" },
+    { volRange: [31, 40], label: "ULTIMATE PHASE: 未来展望" }
+  ],
+  targetModels: [
+    "gemini-2.5-flash-preview-09-2025", 
+    "gemini-1.5-pro-latest", 
+    "gemini-1.5-flash"
+  ]
+};
+
+// --- Firebase Initialization (Safe for SSR/Client) ---
+const firebaseConfig = typeof __firebase_config !== 'undefined' 
+  ? JSON.parse(__firebase_config) 
+  : { apiKey: "fake-key", authDomain: "fake.firebaseapp.com", projectId: "fake-id" };
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'bto-masters-v2';
+
+/**
+ * APIキーのローテーション管理
+ */
+const KeyManager = {
+  keys: [],
+  lastIndex: -1,
+
+  init() {
+    this.keys = [];
+    if (typeof window !== 'undefined') {
+      const envKey = ""; 
+      this.keys.push(envKey);
+
+      for (let i = 0; i < 10; i++) {
+        const k = window[`GEMINI_API_KEY_${i}`];
+        if (k && !this.keys.includes(k)) this.keys.push(k);
+      }
+    }
+    if (this.keys.length === 0) this.keys.push("");
+  },
+
+  getNextKey() {
+    if (this.keys.length <= 1) return this.keys[0] || "";
+    let nextIndex;
+    do {
+      nextIndex = Math.floor(Math.random() * this.keys.length);
+    } while (nextIndex === this.lastIndex);
+    this.lastIndex = nextIndex;
+    return this.keys[nextIndex];
+  }
+};
+
+/**
+ * 指数バックオフ付きリクエスト
+ */
+async function fetchWithRetry(url, options, maxRetries = 5) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.status === 200) return response;
+      
+      if (response.status === 429 || response.status >= 500) {
+        const delay = Math.pow(2, i) * 1000 + (Math.random() * 500);
+        await new Promise(res => setTimeout(res, delay));
+        continue;
+      }
+      throw new Error(`HTTP_${response.status}`);
+    } catch (e) {
+      if (i === maxRetries - 1) throw e;
+      await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000));
+    }
+  }
+  throw new Error("RETRY_LIMIT_EXCEEDED");
 }
 
-export default async function BtoMastersArticlePage({ 
-  params 
-}: { 
-  params: Promise<{ vol: string }> 
-}) {
-  const { vol } = await params;
-  const volNum = parseInt(vol, 10);
-  
-  // 1. シリーズ設定とフェーズ判定
-  const config = BTO_SERIES_CONFIG.gaming;
-  const phaseInfo = config.phases.find(p => volNum >= p.volRange[0] && volNum <= p.volRange[1]);
-  if (!phaseInfo) return notFound();
+/**
+ * 記事生成エンジン (Gemini API)
+ */
+async function generateViaAI(volNum, phaseLabel) {
+  const systemPrompt = `あなたは自作PCスペシャリスト「Maya」です。
+「BTO Masters: Gaming Series」の第${volNum}巻（${phaseLabel}）を執筆してください。
+出力形式: JSON ({"title": "...", "description": "...", "content": "Markdown...", "amazonAsin": "...", "affiliateLabel": "..."})`;
 
-  // 2. 物理パスの解決
-  const contentDir = path.join(process.cwd(), 'app', 'series', '10-bto-masters', 'gaming');
-  const filePath = path.join(contentDir, `vol${volNum}.md`);
+  const payload = {
+    contents: [{ parts: [{ text: `Vol.${volNum} [${phaseLabel}] のコラムを執筆せよ。` }] }],
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    generationConfig: { 
+      responseMimeType: "application/json",
+      temperature: 0.8
+    }
+  };
 
-  let markdownContent = "";
-  let frontMatter: any = {};
-  let exists = false;
+  for (const model of SERIES_CONFIG.targetModels) {
+    const apiKey = KeyManager.getNextKey();
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  if (fs.existsSync(filePath)) {
-    const fileContent = fs.readFileSync(filePath, 'utf8');
-    const { content, data } = matter(fileContent);
-    markdownContent = content;
-    frontMatter = data;
-    exists = true;
+    try {
+      const response = await fetchWithRetry(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      const jsonStr = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (jsonStr) {
+        const cleanJson = jsonStr.replace(/```json\n?|```/g, '').trim();
+        return { ...JSON.parse(cleanJson), modelUsed: model };
+      }
+    } catch (err) {
+      continue;
+    }
   }
+  throw new Error("ALL_MODELS_FAILED");
+}
 
-  // 3. 物理ファイル欠落時のデバッグ画面
-  if (!exists) {
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [volNum, setVolNum] = useState(1);
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [statusMsg, setStatusMsg] = useState("System Offline...");
+  const [retryCount, setRetryCount] = useState(0);
+
+  // Auth Initialization
+  useEffect(() => {
+    KeyManager.init();
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) {
+        console.error("Auth Failure:", err);
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  const phaseInfo = SERIES_CONFIG.phases.find(p => volNum >= p.volRange[0] && volNum <= p.volRange[1]) || SERIES_CONFIG.phases[0];
+
+  // Main Data Pipeline
+  useEffect(() => {
+    if (!user) return;
+
+    let isMounted = true;
+    const syncData = async () => {
+      setLoading(true);
+      setError(null);
+      setStatusMsg("Accessing Encrypted Archives...");
+
+      try {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'articles', `vol_${volNum}`);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setStatusMsg("Archive Unlocked.");
+          if (isMounted) setArticle(docSnap.data());
+        } else {
+          setStatusMsg("Cache Miss. Requesting AI Reconstruction...");
+          const aiData = await generateViaAI(volNum, phaseInfo.label);
+          const finalData = { ...aiData, volNum, createdAt: new Date().toISOString() };
+          await setDoc(docRef, finalData);
+          if (isMounted) setArticle(finalData);
+        }
+        if (isMounted) window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {
+        if (isMounted) setError(e.message);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    syncData();
+    return () => { isMounted = false; };
+  }, [volNum, user, retryCount, phaseInfo.label]);
+
+  if (loading && !article) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black px-6">
-        <div className="max-w-md w-full text-center space-y-8 p-12 border border-blue-900/20 rounded-[2rem] bg-zinc-900/30 backdrop-blur-xl">
-          <Terminal className="w-16 h-16 text-blue-500/80 mx-auto animate-pulse" />
-          <div className="space-y-4">
-            <h1 className="text-sm font-mono text-blue-500 tracking-[0.4em] uppercase opacity-70">Analysis_In_Progress</h1>
-            <h2 className="text-2xl font-black text-white leading-tight">Vol.{volNum} : {phaseInfo.label}</h2>
-            <p className="text-zinc-500 font-mono text-[10px] leading-relaxed">
-              Mayaが論理演算を継続中です。ファイルが見つかりません:<br />
-              <code className="text-[9px] text-blue-400/70 block mt-2 break-all bg-black/50 p-2 rounded">{filePath}</code>
-            </p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505] gap-8">
+        <div className="relative">
+          <div className="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full animate-pulse"></div>
+          <Cpu className="w-20 h-20 text-blue-600 animate-[spin_5s_linear_infinite] relative z-10" />
+        </div>
+        <div className="flex flex-col items-center gap-4 font-mono">
+          <div className="text-blue-500 text-[10px] tracking-[0.8em] uppercase animate-pulse">{statusMsg}</div>
+          <div className="w-48 h-[1px] bg-zinc-900 relative overflow-hidden">
+            <div className="absolute inset-0 bg-blue-600 animate-[loading_2s_infinite]"></div>
           </div>
-          <Link href="/series/10-bto-masters" className="inline-flex items-center gap-2 text-[10px] font-mono text-zinc-400 hover:text-blue-400 transition-all uppercase tracking-widest border border-zinc-700 px-6 py-3 rounded-full">
-            <ChevronLeft size={14} /> Back_to_Nexus
-          </Link>
         </div>
       </div>
     );
   }
 
-  const affiliateData = await getAffiliateDisplayData(frontMatter);
-  const eyeCatchPhase = Math.ceil(volNum / 10);
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] p-10">
+        <div className="max-w-md w-full border border-red-900/30 p-16 rounded-[3rem] bg-red-950/5 text-center backdrop-blur-3xl">
+          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-6" />
+          <h2 className="text-white font-black uppercase italic text-2xl mb-4 tracking-tighter">Connection_Lost</h2>
+          <p className="text-zinc-600 font-mono text-[9px] uppercase tracking-widest leading-loose mb-10">{error}</p>
+          <button onClick={() => setRetryCount(c => c + 1)} className="w-full py-4 bg-red-600 text-white font-mono text-xs uppercase tracking-[0.3em] rounded-2xl hover:bg-red-500 transition-all flex items-center justify-center gap-3">
+            <RefreshCcw size={14} /> Re-Sync
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-black min-h-screen text-zinc-300 font-sans selection:bg-blue-500/30">
-      
-      {/* 🧭 右側フローティング目次（ロードマップ） */}
-      {/* custom-scrollbar の代わりに Tailwind の標準クラスを使用 */}
-      <aside className="hidden xl:block w-72 fixed right-8 top-32 max-h-[70vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-zinc-800 hover:scrollbar-thumb-blue-600">
-        <div className="sticky top-0 bg-black pb-4 z-10">
-          <h3 className="text-[10px] font-mono text-blue-500 tracking-[0.3em] uppercase border-b border-blue-900/30 pb-2 flex items-center gap-2">
-            <Terminal size={12} /> Operation_Roadmap
-          </h3>
+    <div className="bg-[#050505] min-h-screen text-zinc-400 font-sans selection:bg-blue-600 selection:text-white">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-white/5 px-8 py-4 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <div className="bg-blue-600 p-2 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)]">
+            <Terminal size={18} className="text-white" />
+          </div>
+          <div>
+            <div className="text-white font-black tracking-tighter text-sm uppercase italic leading-none">BTO Masters</div>
+            <div className="text-[8px] font-mono text-zinc-600 tracking-[0.3em] uppercase mt-1">Status: Online</div>
+          </div>
         </div>
-        <div className="space-y-8 mt-4">
-          {config.phases.map((phase, i) => (
-            <div key={i} className={volNum >= phase.volRange[0] && volNum <= phase.volRange[1] ? "opacity-100" : "opacity-40"}>
-              <h4 className="text-[9px] text-zinc-500 mb-3 font-bold tracking-widest uppercase italic border-l border-zinc-800 pl-2">
-                Phase_{i + 1}: {phase.label.split('（')[0]}
-              </h4>
-              <ul className="space-y-1.5 ml-1">
-                {Array.from({ length: 10 }, (_, j) => {
-                  const v = (i * 10) + j + 1;
-                  const isActive = v === volNum;
-                  return (
-                    <li key={v}>
-                      <Link 
-                        href={`/series/10-bto-masters/gaming/${v}`}
-                        className={`block pl-4 py-1 text-[10px] transition-all hover:text-blue-400 ${
-                          isActive ? "text-blue-500 font-bold border-l-2 border-blue-500 -ml-[1px]" : "text-zinc-600"
-                        }`}
-                      >
-                        Vol.{v} <span className="text-[8px] opacity-40 ml-1">Analysis...</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+        <div className="hidden md:flex gap-8 font-mono text-[9px] text-zinc-500 tracking-widest uppercase items-center">
+          <div className="flex items-center gap-2 px-3 py-1 bg-zinc-900/50 rounded-full border border-white/5">
+            <Database size={10} className="text-blue-500" /> {article?.modelUsed || "ARCHIVE"}
+          </div>
+          <div className="flex items-center gap-2">
+            <Activity size={10} className="text-green-500 animate-pulse" /> SYNC_STABLE
+          </div>
         </div>
-      </aside>
+      </nav>
 
-      {/* 🌌 メインコンテンツ */}
-      <article className="max-w-4xl mx-auto px-6 lg:px-0 lg:ml-32 xl:ml-auto xl:mr-[400px]">
+      <div className="max-w-[1700px] mx-auto px-8 pt-32 flex flex-col lg:flex-row gap-16">
         
-        {/* ヒーローセクション */}
-        <header className="pt-20 pb-16 border-b border-zinc-900 mb-16">
-          <div className="flex items-center gap-4 mb-8">
-            <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-black uppercase tracking-[0.3em] rounded-sm">
-              {phaseInfo.label}
-            </span>
-            <span className="text-zinc-600 font-mono text-[10px] tracking-[0.3em] uppercase">
-              System_Build / Vol_{String(volNum).padStart(2, '0')}
-            </span>
+        {/* Sidebar */}
+        <aside className="hidden lg:block lg:w-72 sticky top-32 h-[calc(100vh-10rem)] overflow-y-auto pr-6 scrollbar-hide pb-20 border-r border-white/5">
+          <div className="space-y-12">
+            {SERIES_CONFIG.phases.map((phase, i) => (
+              <div key={i} className={`transition-all duration-700 ${volNum >= phase.volRange[0] && volNum <= phase.volRange[1] ? "opacity-100" : "opacity-20"}`}>
+                <h4 className="text-[10px] text-blue-500 font-mono tracking-[0.4em] uppercase mb-6 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span> {phase.label.split(':')[0]}
+                </h4>
+                <div className="grid grid-cols-5 gap-2">
+                  {Array.from({ length: 10 }, (_, j) => {
+                    const v = (i * 10) + j + 1;
+                    const isActive = v === volNum;
+                    return (
+                      <button key={v} onClick={() => setVolNum(v)} className={`aspect-square text-[9px] font-mono flex items-center justify-center transition-all rounded-lg border ${isActive ? "bg-blue-600 border-blue-400 text-white shadow-lg scale-110 z-10" : "bg-[#0a0a0a] border-white/5 text-zinc-700 hover:text-zinc-400 hover:border-zinc-700"}`}>{v}</button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
-          
-          <h1 className="text-4xl md:text-7xl font-black text-white mb-10 tracking-tighter leading-[0.95]">
-            {frontMatter.title}
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-zinc-400 leading-relaxed font-light italic border-l-4 border-blue-600 pl-8 py-2">
-            {frontMatter.description}
-          </p>
+        </aside>
 
-          <div className="mt-12 relative aspect-video overflow-hidden rounded-sm border border-zinc-800 grayscale hover:grayscale-0 transition-all duration-1000 shadow-2xl">
-            <img 
-              src={`/images/series/bto/gaming-phase-${eyeCatchPhase}.jpg`} 
-              alt="Hardware Architecture" 
-              className="object-cover w-full h-full opacity-60"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-          </div>
-        </header>
-
-        {/* 🖋️ Markdownコンテンツ */}
-        <section className={`prose prose-invert prose-blue max-w-none 
-          prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tighter
-          prose-p:text-zinc-300 prose-p:leading-8 prose-p:mb-8
-          prose-code:text-blue-400 prose-code:bg-blue-950/30 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none
-          prose-strong:text-blue-500 prose-strong:font-bold
-          prose-blockquote:border-l-blue-600 prose-blockquote:bg-zinc-950/50 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl
-          prose-hr:border-zinc-800`}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {markdownContent}
-          </ReactMarkdown>
-        </section>
-
-        {/* 🛒 アフィリエイト（Maya's Selection） */}
-        {affiliateData && (
-          <section className="mt-32 p-10 border border-zinc-800 rounded-[2.5rem] bg-zinc-900/20 backdrop-blur-md">
-            <div className="flex items-center gap-3 mb-2">
-              <ShoppingCart className="text-blue-500 w-5 h-5" />
-              <h3 className="text-2xl font-black text-white tracking-tight">Maya's Logical Selection</h3>
+        {/* Content */}
+        <main className="flex-1 max-w-4xl mx-auto pb-48 w-full">
+          <header className="mb-24 relative">
+            <div className="flex items-center gap-6 mb-10">
+              <span className="px-4 py-1 bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[10px] font-mono uppercase tracking-[0.2em] rounded-full">
+                {phaseInfo.label}
+              </span>
+              <div className="h-px flex-grow bg-gradient-to-r from-blue-500/30 to-transparent"></div>
+              <div className="flex items-center gap-2">
+                <Zap size={14} className="text-yellow-500 fill-yellow-500/20" />
+                <span className="text-white font-mono text-xs font-bold uppercase tracking-tighter italic">Vol_{String(volNum).padStart(2, '0')}</span>
+              </div>
             </div>
-            <p className="text-zinc-600 text-[10px] mb-10 font-mono uppercase tracking-[0.4em] italic">Procurement_Analysis_Verified</p>
             
-            <div className="grid gap-4 sm:grid-cols-2">
-              {affiliateData.amazonUrl && (
-                <a href={affiliateData.amazonUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-black border border-zinc-800 hover:border-blue-500/40 rounded-2xl transition-all group/link">
-                  <span className="font-bold text-zinc-400 group-hover/link:text-blue-400 transition-colors">Amazon</span>
-                  <span className="text-[9px] font-mono text-zinc-600 border border-zinc-800 px-2 py-1 rounded">CHECK_DEAL</span>
-                </a>
-              )}
-              {affiliateData.directUrl && (
-                <a href={affiliateData.directUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-6 bg-black border border-zinc-800 hover:border-blue-500/40 rounded-2xl transition-all group/link">
-                  <span className="font-bold text-zinc-400 group-hover/link:text-blue-400 transition-colors">Official Store</span>
-                  <span className="text-[9px] font-mono text-zinc-600 border border-zinc-800 px-2 py-1 rounded">CHECK_DEAL</span>
-                </a>
-              )}
-            </div>
-          </section>
-        )}
+            <h1 className="text-7xl md:text-9xl font-black text-white mb-10 tracking-[-0.07em] leading-[0.85] uppercase italic group">
+              {article?.title}
+            </h1>
+            
+            <p className="text-2xl text-zinc-400 leading-relaxed font-light italic border-l-4 border-blue-600 pl-10 py-4 max-w-2xl bg-gradient-to-r from-blue-500/5 to-transparent">
+              {article?.description}
+            </p>
 
-        {/* 🧭 フッターナビゲーション */}
-        <footer className="mt-40 pb-20 pt-16 border-t border-zinc-900">
-          <div className="grid grid-cols-2 gap-8">
-            <div className="min-h-[60px]">
-              {volNum > 1 && (
-                <Link href={`/series/10-bto-masters/gaming/${volNum - 1}`} className="group block">
-                  <span className="text-[10px] font-mono text-zinc-600 flex items-center gap-1 group-hover:text-blue-500 transition-colors uppercase"><ChevronLeft size={12} /> Previous_Node</span>
-                  <span className="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors block mt-2 italic">Vol.{volNum - 1}へ</span>
-                </Link>
-              )}
+            <div className="mt-20 relative aspect-[21/9] rounded-[3rem] overflow-hidden border border-white/5 bg-zinc-950 group shadow-2xl">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(37,99,235,0.1),transparent)] group-hover:scale-150 transition-transform duration-2000"></div>
+              <div className="flex flex-col items-center justify-center h-full opacity-10 group-hover:opacity-30">
+                <Cpu size={140} strokeWidth={0.3} className="text-blue-500" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent"></div>
             </div>
-            <div className="min-h-[60px] text-right">
-              {volNum < 40 && (
-                <Link href={`/series/10-bto-masters/gaming/${volNum + 1}`} className="group block">
-                  <span className="text-[10px] font-mono text-zinc-600 flex items-center justify-end gap-1 group-hover:text-blue-500 transition-colors uppercase">Next_Node <ChevronRight size={12} /></span>
-                  <span className="text-sm font-bold text-zinc-400 group-hover:text-white transition-colors block mt-2 italic">Vol.{volNum + 1}へ</span>
-                </Link>
-              )}
+          </header>
+
+          <article className="prose prose-invert prose-blue max-w-none 
+            prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tighter
+            prose-h2:text-4xl prose-h2:mt-32 prose-h2:mb-10 prose-h2:italic prose-h2:text-white
+            prose-p:text-zinc-400 prose-p:text-xl prose-p:leading-[1.8] prose-p:mb-10
+            prose-strong:text-blue-500 prose-blockquote:border-l-4 prose-blockquote:border-blue-600 prose-blockquote:bg-blue-600/5 prose-blockquote:p-10 prose-blockquote:rounded-[2rem]
+            prose-li:text-zinc-400 prose-code:text-blue-400 prose-code:bg-zinc-900 prose-code:px-2 prose-code:rounded
+          ">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {article?.content || ""}
+            </ReactMarkdown>
+          </article>
+
+          {/* Affiliate */}
+          <div className="mt-48 relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[3rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+            <div className="relative p-12 bg-zinc-950 border border-white/10 rounded-[3rem] flex flex-col md:flex-row items-center justify-between gap-12">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-blue-500 font-mono text-[10px] tracking-[0.4em] uppercase font-bold">
+                  <ShoppingCart size={16} /> Gear_Verification
+                </div>
+                <h4 className="text-3xl font-black text-white uppercase italic tracking-tighter">Hardware_Core_Link</h4>
+                <p className="text-zinc-500 text-xs font-mono max-w-sm leading-relaxed">
+                  本巻で解析した構成の基盤となるASINアーキテクチャ。
+                </p>
+              </div>
+              <a href={`https://www.amazon.co.jp/dp/${article?.amazonAsin}`} target="_blank" rel="noopener noreferrer" className="px-12 py-6 bg-blue-600 text-white text-[10px] font-mono tracking-[0.5em] uppercase rounded-2xl hover:bg-blue-500 transition-all hover:scale-105 shadow-xl text-center min-w-[240px]">
+                {article?.affiliateLabel || "スペックを確認"}
+              </a>
             </div>
           </div>
-          <div className="flex justify-center mt-12">
-            <Link href="/series/10-bto-masters" className="p-4 bg-zinc-900 border border-zinc-800 rounded-full hover:border-blue-500/50 transition-all group">
-              <LayoutGrid className="w-5 h-5 text-zinc-600 group-hover:text-blue-500" />
-            </Link>
-          </div>
-        </footer>
-      </article>
+
+          {/* Pagination */}
+          <footer className="mt-64 pt-20 border-t border-white/5 flex justify-between items-center">
+            <button disabled={volNum <= 1} onClick={() => setVolNum(v => v - 1)} className="flex items-center gap-6 group disabled:opacity-0 transition-all">
+              <div className="w-16 h-16 flex items-center justify-center border border-white/5 rounded-2xl group-hover:border-blue-600 group-hover:bg-blue-600/10 transition-all">
+                <ChevronLeft className="text-zinc-600 group-hover:text-blue-500" />
+              </div>
+              <div className="text-left">
+                <span className="block text-[9px] font-mono text-zinc-700 uppercase tracking-widest mb-1 font-bold italic">Previous</span>
+                <span className="text-3xl font-black text-zinc-600 group-hover:text-white transition-colors uppercase italic tracking-tighter">Vol_{String(volNum - 1).padStart(2, '0')}</span>
+              </div>
+            </button>
+            <button disabled={volNum >= 40} onClick={() => setVolNum(v => v + 1)} className="flex items-center gap-6 group text-right disabled:opacity-0 transition-all">
+              <div className="text-right">
+                <span className="block text-[9px] font-mono text-zinc-700 uppercase tracking-widest mb-1 font-bold italic">Next</span>
+                <span className="text-3xl font-black text-zinc-600 group-hover:text-white transition-colors uppercase italic tracking-tighter">Vol_{String(volNum + 1).padStart(2, '0')}</span>
+              </div>
+              <div className="w-16 h-16 flex items-center justify-center border border-white/5 rounded-2xl group-hover:border-blue-600 group-hover:bg-blue-600/10 transition-all">
+                <ChevronRight className="text-zinc-600 group-hover:text-blue-500" />
+              </div>
+            </button>
+          </footer>
+        </main>
+      </div>
+
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes loading {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(250%); }
+        }
+      `}</style>
     </div>
   );
 }

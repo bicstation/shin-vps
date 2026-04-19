@@ -10,63 +10,75 @@ class AIProcessor:
 
     def generate_blog_content(self, data, b_type):
         """
-        AIモデルに対してRSS内容を「絶対的な主役」として認識させ、
-        かつAPIエラー（503/429）に対して強力なリトライ体制を敷く。
+        Gemma 4 エンジン: RSSニュースを核に、BIC-STATION独自の視点でコラムを生成。
+        APIクォータ制限を回避しつつ、最高品質の出力を維持する。
         """
         try:
-            # 補足情報の取得
+            # 執筆のスパイスとしてランダムに現行製品を1つピックアップ
             prod = PCProduct.objects.filter(is_active=True).order_by('?').first()
-            prod_name = prod.name if prod else "最新ガジェット"
-            prod_price = prod.price if prod else "最新価格を確認"
+            prod_info = {
+                "name": prod.name if prod else "最新デバイス",
+                "price": f"{prod.price:,}円" if prod and prod.price else "オープン価格",
+                "maker": prod.maker if prod else "主要ベンダー"
+            }
         except:
-            prod_name = "IT製品"
-            prod_price = "要確認"
+            prod_info = {"name": "IT機器", "price": "要確認", "maker": "メーカー"}
 
-        # テンプレート置換 (入力段階の置換)
-        prompt_content = self.template.replace("{{current_url}}", data['url']) \
-                                     .replace("{{description}}", data['body']) \
-                                     .replace("{{maker}}", "主要メーカー") \
-                                     .replace("{{name}}", prod_name) \
-                                     .replace("{{price}}", str(prod_price)) \
-                                     .replace("{{original_title}}", data['title'])
+        # テンプレート内の変数を、AIが理解しやすい「参考データ」として定義
+        # ※AIには「これらの変数タグを見つけたら、提供したデータに基づいて置換せよ」と命じる
+        target_context = (
+            f"【参考データ】\n"
+            f"ニュースURL: {data['url']}\n"
+            f"元記事タイトル: {data['title']}\n"
+            f"注目製品名: {prod_info['name']}\n"
+            f"参考価格: {prod_info['price']}\n"
+            f"メーカー: {prod_info['maker']}\n"
+        )
 
-        # 指示の強制力を最大化したプロンプト
+        # 指示の強制力を極大化した Gemma 4 専用プロンプト
         enforced_prompt = (
-            f"【最優先命令】以下の[ニュース内容]に基づき、指定された形式でブログ記事を書いてください。\n"
-            f"無関係なPC製品（HP製品やRyzen等）をメインテーマに据えることは厳禁です。\n\n"
-            f"[ニュース内容]:\nタイトル: {data['title']}\n本文: {data['body']}\n\n"
-            f"【構成指示】:\n{prompt_content}"
+            f"あなたは自作PCメディア『BIC-STATION』の編集長だ。以下の[ニュース内容]と[参考データ]を元に、"
+            f"読者の知的好奇心を刺激する鋭いコラムを執筆せよ。\n\n"
+            f"【絶対遵守ルール】\n"
+            f"1. ニュース内容（{data['title']}）を主役とし、PC製品紹介はあくまで関連トピックに留めること。\n"
+            f"2. 文体は「だ・である」調。カタログの丸写しは厳禁。独自の分析を加えろ。\n"
+            f"3. 出力形式に含まれる {{{{...}}}} などのタグは、すべて[参考データ]の内容で置換して出力せよ。\n"
+            f"4. 置換すべきデータがないタグは、不自然に残さず削除せよ。\n"
+            f"5. 「承知いたしました」等の挨拶は不要。タグ([TITLE_GENERAL]等)で囲った本文のみを出力せよ。\n\n"
+            f"[ニュース内容]:\n{data['body']}\n\n"
+            f"{target_context}\n\n"
+            f"【出力構成案】:\n{self.template}"
         )
 
         payload = {
             "contents": [{"parts": [{"text": enforced_prompt}]}],
             "generationConfig": {
-                "temperature": 0.2, 
-                "topP": 0.95,
+                "temperature": 0.6,  # 執筆のキレ（創造性）を出すために0.6へ調整
+                "topP": 0.9,
                 "maxOutputTokens": 8192,
                 "responseMimeType": "text/plain"
             }
         }
 
-        # API実行 (強力なキーローテーションとリトライ)
+        # API実行 (モデルの優先順位を Gemma 4 / Gemini 1.5 Pro 世代へ)
         shuffled_keys = self.api_keys[:]
         random.shuffle(shuffled_keys)
         
-        target_models = ["gemma-3-27b-it", "gemini-1.5-flash"]
+        target_models = ["gemini-1.5-pro-latest", "gemini-1.5-flash"]
         
         for attempt_model in target_models:
             wait_time = 5 
-
             for key in shuffled_keys:
                 try:
                     api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{attempt_model}:generateContent?key={key}"
                     res = requests.post(api_url, json=payload, timeout=120) 
                     
                     if res.status_code == 200:
-                        text = self._find_text_recursive(res.json())
+                        res_json = res.json()
+                        text = self._find_text_recursive(res_json)
                         if text:
-                            # 🧹 文頭の挨拶ゴミを削除
-                            text = re.sub(r'^(承知いたしました|はい、|提供された|ニュースに基づき).*?\n', '', text, flags=re.IGNORECASE)
+                            # 掃除開始
+                            text = re.sub(r'^(承知いたしました|はい、|提供された|ニュースに基づき).*?\n', '', text, flags=re.IGNORECASE | re.MULTILINE)
                             clean_text = re.sub(r'```[a-z]*\n|```', '', text).strip()
                             return self.extract_tags(clean_text, data['title'])
                     
@@ -74,13 +86,10 @@ class AIProcessor:
                         time.sleep(wait_time)
                         wait_time = min(wait_time * 2, 60)
                         continue
-                    elif res.status_code == 503:
+                    elif res.status_code in [500, 503, 504]:
                         time.sleep(10)
                         continue
-                    else:
-                        continue 
-                except Exception as e:
-                    time.sleep(2)
+                except Exception:
                     continue
 
         return None
@@ -98,6 +107,10 @@ class AIProcessor:
         return None
 
     def extract_tags(self, text, default_title):
+        """
+        出力されたテキストから指定のタグを抽出し、
+        中括弧ゴミの除去を含む最終クリーンアップを行う。
+        """
         def get_tag(tag):
             pattern = rf'\[{tag}\](.*?)\[/{tag}\]'
             m = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
@@ -112,20 +125,18 @@ class AIProcessor:
             'raw_text': text
         }
         
-        # タグ抽出失敗時のフォールバック処理
+        # フォールバック処理（タグが全く取れなかった場合）
         if not res['cont_g'] or len(res['cont_g']) < 50:
             clean_body = re.sub(r'\[/?.*?\]', '', text).strip()
             res['cont_g'] = res['cont_h'] = clean_body
             
-        # 🧹 --- ゴミ掃除ロジック追加セクション --- 🧹
-        # {{maker}} や {price} のような中括弧ゴミを根こそぎ削除
-        # 1. {{...}} の形式を削除
-        # 2. {...} の形式を削除
+        # 🧹 --- 最終クリーンアップ: テンプレートタグの物理的削除 --- 🧹
         for key in ['title_h', 'title_g', 'cont_h', 'cont_g', 'summary']:
             if res[key]:
-                # 中括弧とその中身を削除（例: {maker} や {{price}}）
+                # 1. {{...}} または {...} の形式を根こそぎ削除
                 res[key] = re.sub(r'\{{1,2}.*?\}{1,2}', '', res[key])
-                # 連続した空白や改行を整える
-                res[key] = res[key].replace('  ', ' ').strip()
+                # 2. 連続した空白、タブ、不自然な改行の補正
+                res[key] = re.sub(r'[ \t]+', ' ', res[key])
+                res[key] = res[key].replace('\n\n\n', '\n\n').strip()
         
         return res

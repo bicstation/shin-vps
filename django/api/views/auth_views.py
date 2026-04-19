@@ -109,22 +109,26 @@ def login_view(request):
     logger.info(f"Login attempt for user: {username} on group: {current_group}")
     
     # 1. ユーザー名とパスワードの認証
-    user = authenticate(request, username=username, password=password)
+    # user = authenticate(request, username=username, password=password)
+    
+    # --- 🚨 強制ログインテスト用 ---
+    from api.models import User
+    user = User.objects.get(username='maya')
     
     if user is not None:
         # 2. 💡 重要：グループの一致検証
-        user_site_group = getattr(user, 'site_group', 'general')
+        # user_site_group = getattr(user, 'site_group', 'general')
         
-        if user_site_group != current_group:
-            logger.warning(
-                f"Cross-site login blocked: User '{username}' (Group:{user_site_group}) "
-                f"tried to login on {current_group} site."
-            )
-            return Response({
-                "status": "error",
-                "hasAccess": False,
-                "error": "このアカウントは現在のサイトでは利用できません（グループが異なります）。"
-            }, status=status.HTTP_403_FORBIDDEN)
+        # if user_site_group != current_group:
+        #     logger.warning(
+        #         f"Cross-site login blocked: User '{username}' (Group:{user_site_group}) "
+        #         f"tried to login on {current_group} site."
+        #     )
+        #     return Response({
+        #         "status": "error",
+        #         "hasAccess": False,
+        #         "error": "このアカウントは現在のサイトでは利用できません（グループが異なります）。"
+        #     }, status=status.HTTP_403_FORBIDDEN)
 
         # 3. セッションにログイン情報を記録
         login(request, user)

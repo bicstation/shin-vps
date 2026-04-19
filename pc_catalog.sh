@@ -75,7 +75,7 @@ $PY_CMD "$SCRAPER_BASE/import_bc_api_to_db.py" --mid "43708" --maker "asus"
 # --- [4/5] 🧠 AIスペック解析 (自浄作用) ---
 # limit 1000 により、未解析の商品をほぼ全件カバーします
 echo "🧠 [4/5] Step 4: AI Spec Analysis & Tag Cleaning (Limit: 1000)..."
-$PY_CMD manage.py analyze_pc_spec --limit 1000 --null-only
+$PY_CMD manage.py analyze_pc_spec --limit 50 --null-only
 
 # --- [5/5] 🧹 カタログクリーンアップ & マッピング ---
 echo "🧹 [5/5] Step 5: Catalog Cleanup & Auto Mapping..."

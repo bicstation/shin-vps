@@ -1,18 +1,21 @@
 "use client";
 
-// 💡 【最強の回避策】Next.jsの静的解析を強制的にバイパスします
+/**
+ * =====================================================================
+ * ログインページ (app/login/page.tsx)
+ * 進行状況の可視化とキャッシュバイパス機能を備えたUI
+ * =====================================================================
+ */
+
+// 💡 Next.jsの静的解析を強制的にバイパス
 export const dynamic = "force-dynamic";
 
 import React, { useState, FormEvent } from 'react';
 import Link from 'next/link'; 
-// ✅ 共通ライブラリのパスをプロジェクトの設定に合わせて最適化
+// インポートパスはプロジェクトのエイリアス設定に合わせて調整してください
 import { loginUser } from '@shared/lib/utils/auth';
 import { getSiteMetadata } from '@shared/lib/utils/siteConfig';
 
-/**
- * ログインページ
- * 💡 開発効率を上げるデバッグステータス表示機能付き
- */
 export default function LoginPage() {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -37,7 +40,7 @@ export default function LoginPage() {
 
     } catch (err: any) {
       console.error("Login Error:", err);
-      // どこで失敗したかをユーザーにわかりやすく表示
+      // エラー時のメッセージをデバッグエリアに表示
       setDebugMsg(`❌ プロセス停止: ${err.message}`);
       setError(err.message || 'ログインに失敗しました。ユーザー名とパスワードを確認してください。');
       setLoading(false);
@@ -46,7 +49,9 @@ export default function LoginPage() {
 
   // サイトごとのプレフィックス（/bicstation 等）を取得してリンクを調整
   const { site_prefix } = getSiteMetadata();
-  const registerHref = site_prefix ? `${site_prefix}/register` : '/register';
+  const registerHref = site_prefix 
+    ? `${site_prefix.startsWith('/') ? '' : '/'}${site_prefix}/register`.replace(/\/+$/, '') 
+    : '/register';
 
   return (
     <div className="flex justify-center items-center min-h-[70vh] px-4 bg-gray-50/50">
@@ -56,19 +61,23 @@ export default function LoginPage() {
           <p className="text-gray-500 text-sm">BICSTATION アカウントにサインイン</p>
         </div>
         
-        {/* プロセスデバッグ表示（ローディング中のみ表示） */}
-        {loading && (
+        {/* プロセスデバッグ表示（ローディング中またはエラー時に表示） */}
+        {(loading || debugMsg.includes('❌')) && (
           <div className="mb-6 overflow-hidden rounded-lg bg-blue-50 border border-blue-100">
-            <div className="px-4 py-2 text-[10px] font-mono text-blue-600 flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-              </span>
+            <div className={`px-4 py-2 text-[10px] font-mono flex items-center gap-2 ${debugMsg.includes('❌') ? 'text-red-600' : 'text-blue-600'}`}>
+              {!debugMsg.includes('❌') && (
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+              )}
               {debugMsg}
             </div>
-            <div className="h-1 bg-blue-100 w-full">
-              <div className="h-1 bg-blue-500 animate-progress-indefinite"></div>
-            </div>
+            {!debugMsg.includes('❌') && (
+              <div className="h-1 bg-blue-100 w-full overflow-hidden">
+                <div className="h-1 bg-blue-500 animate-[progress_2s_ease-in-out_infinite]"></div>
+              </div>
+            )}
           </div>
         )}
 
@@ -76,7 +85,7 @@ export default function LoginPage() {
         {error && (
           <div 
             role="alert" 
-            className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg text-red-700 text-sm flex gap-3 items-start"
+            className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg text-red-700 text-sm flex gap-3 items-start animate-in fade-in slide-in-from-top-1"
           >
             <span className="font-bold">⚠️</span>
             <span>{error}</span>
@@ -113,8 +122,10 @@ export default function LoginPage() {
           <button 
             type="submit" 
             disabled={loading}
-            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg shadow-blue-200 transition-all active:scale-[0.98] ${
-              loading ? 'bg-gray-400 shadow-none' : 'bg-blue-600 hover:bg-blue-700'
+            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] ${
+              loading 
+                ? 'bg-gray-400 cursor-not-allowed shadow-none' 
+                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 hover:shadow-blue-300'
             }`}
           >
             {loading ? (
@@ -136,6 +147,14 @@ export default function LoginPage() {
           </Link>
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes progress {
+          0% { transform: translateX(-100%); }
+          50% { transform: translateX(0); }
+          100% { transform: translateX(100%); }
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,10 +1,10 @@
 /**
  * =====================================================================
- * 🔑 統合認証ライブラリ (shared/lib/api/auth.ts)
- * ユーザー登録・ログイン・ログアウトおよびトークン管理を担当
+ * 🔑 統合認証ライブラリ (shared/lib/auth.tsx)
+ * v3.9 物理構造最適化版: 
+ * URLから不要な site_prefix を完全に除去し、appディレクトリの構造に同期
  * =====================================================================
  */
-// /home/maya/shin-dev/shin-vps/shared/lib/auth.tsx
 
 import { getSiteMetadata } from './siteConfig';
 
@@ -25,35 +25,36 @@ export interface AuthTokenResponse {
 
 /**
  * 💡 APIのベースURLを動的に取得
- * 🔴 修正: config.ts のロジックと整合性を取り、環境変数を最優先にします
+ * SHIN-VPS v3.9 ではドメイン判別を行うため、パスに general 等を含めません
  */
 const getTargetApiBase = (): string => {
   if (typeof window !== 'undefined') {
-    // 1. 環境変数を優先 (例: http://api-tiper-host:8083/api)
     const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envApiUrl) {
-      return envApiUrl.endsWith('/') ? envApiUrl.slice(0, -1) : envApiUrl;
+    if (envApiUrl && envApiUrl.startsWith('http')) {
+      return envApiUrl.replace(/\/+$/, '');
     }
-
-    // 2. フォールバック: 現在のドメイン + site_prefix
-    const { site_prefix } = getSiteMetadata();
     const origin = window.location.origin;
-    return `${origin}${site_prefix}/api`.replace(/\/+$/, '');
+    return `${origin}/api`.replace(/\/+$/, '');
   }
   return '/api';
 };
 
 /**
- * 💡 サイトプレフィックスを考慮したリダイレクトパスを生成
+ * 💡 リダイレクトパスを生成 (重要修正)
+ * 物理構造が /app/console/... となっているため、URLに site_prefix (general) 
+ * を含めると404になります。ここでは prefix を完全に除去します。
  */
 const getAbsoluteRedirectPath = (path: string = '/') => {
   if (typeof window === 'undefined') return '/';
-  const { site_prefix } = getSiteMetadata();
+  
   const origin = window.location.origin;
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   
-  // キャッシュ回避のクエリパラメータを付与してリダイレクト
-  return `${origin}${site_prefix}${normalizedPath}`.replace(/\/+$/, '') + `?t=${Date.now()}`;
+  // ⚠️ 修正: site_prefix を使用せず、物理ディレクトリ構造に合わせる
+  const fullPath = `${origin}${normalizedPath}`.replace(/\/+$/, '');
+  
+  // キャッシュ対策のタイムスタンプのみ付与
+  return `${fullPath}?t=${Date.now()}`;
 };
 
 /**
@@ -82,7 +83,6 @@ export async function registerUser(username: string, email: string, password: st
 
   const data: AuthTokenResponse = await response.json();
   
-  // 登録完了後の処理
   if (data.access && typeof window !== 'undefined') {
     localStorage.setItem('access_token', data.access);
     if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
@@ -105,21 +105,23 @@ export async function loginUser(username: string, password: string): Promise<Aut
   const API_BASE = getTargetApiBase();
   const { site_group, origin_domain } = getSiteMetadata();
   
+  console.log('📡 API Request to:', `${API_BASE}/auth/login/`);
+
   const response = await fetch(`${API_BASE}/auth/login/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include', // 💡 Cookie(セッション)を許可
+    credentials: 'include',
     body: JSON.stringify({ username, password, site_group, origin_domain }),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || errorData.detail || '認証に失敗しました。');
+    const msg = response.status === 404 ? 'APIエンドポイントが見つかりません(404)' : '認証に失敗しました。';
+    throw new Error(errorData.error || errorData.detail || msg);
   }
 
   const data: AuthTokenResponse = await response.json();
   
-  // ログイン成功時のトークン保存とリダイレクト
   if ((data.status === "success" || data.access) && typeof window !== 'undefined') {
     if (data.access) localStorage.setItem('access_token', data.access);
     if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
@@ -130,7 +132,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
       }));
     }
     
-    // スタッフなら管理画面、一般ユーザーならマイページへ
+    // 物理パスに合わせて遷移 (/console/dashboard)
     const targetPath = data.user?.is_staff ? '/console/dashboard' : '/mypage';
     window.location.href = getAbsoluteRedirectPath(targetPath);
   }
@@ -148,7 +150,7 @@ export function logoutUser(): void {
 }
 
 /**
- * 👤 ログイン中のユーザー情報をローカルストレージから取得
+ * 👤 ログイン中のユーザー情報を取得
  */
 export function getAuthUser() {
   if (typeof window === 'undefined') return null;

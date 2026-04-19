@@ -11,13 +11,12 @@ import {
   LogOut, 
   Activity,
   Package,
-  Terminal
+  Terminal,
+  FileText
 } from 'lucide-react';
 
 /**
  * 💡 Next.js 15 のビルドエラー対策
- * このレイアウト配下を動的レンダリングとしてマークし、
- * useSearchParams 等の Bailout エラーを防止します。
  */
 export const dynamic = "force-dynamic";
 
@@ -34,6 +33,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
   const menuItems = [
     { href: "/console/dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { href: "/console/products", icon: <Package size={18} />, label: "Product Manager" },
+    { href: "/console/articles", icon: <FileText size={18} />, label: "Content AI" }, // 追加：記事管理
     { href: "/console/users", icon: <Users size={18} />, label: "User Management" },
     { href: "/console/metadata", icon: <BrainCircuit size={18} />, label: "AI Meta Sync" },
     { href: "/console/scrapers", icon: <Terminal size={18} />, label: "Scraper Logs" },
@@ -101,7 +101,6 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
         
         {/* コンテンツ描画 */}
         <div className="p-8 lg:p-12 relative z-10 max-w-[1600px] mx-auto">
-          {/* ✅ 重要：配下のページが useSearchParams を使っても大丈夫なように Suspense で囲む */}
           <Suspense fallback={
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
               <div className="animate-spin h-10 w-10 border-4 border-cyan-500 rounded-full border-t-transparent"></div>
@@ -129,9 +128,6 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
   );
 }
 
-/**
- * サイドバーリンク用サブコンポーネント
- */
 function SidebarLink({ href, icon, label, active }: { href: string, icon: any, label: string, active: boolean }) {
   return (
     <Link href={href} className={`
