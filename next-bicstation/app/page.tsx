@@ -9,7 +9,7 @@ import {
     Layers, ArrowUpRight, Globe, Gauge,
     History, Database, HardDrive, Binary,
     Monitor, BookOpen, Briefcase, GraduationCap,
-    Search, Bot, Layout, CircuitBoard
+    Search, Bot, Layout, CircuitBoard, Crown
 } from 'lucide-react';
 
 // ✅ 共通コンポーネント
@@ -24,7 +24,7 @@ import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
 import { constructMetadata } from '@/shared/lib/utils/metadata';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
-// 🎨 スタイルシート (V12.5 TACTICAL-OVERHAUL)
+// 🎨 スタイルシート
 import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -104,6 +104,46 @@ export default async function HomePageMain() {
             </section>
 
             <div className={styles.contentContainer}>
+
+                {/* 🏰 BTO MASTERS ゲートウェイ (追加セクション) */}
+                <section className="mb-24">
+                    <Link href="/series/10-bto-masters" className="group block relative p-1 bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 rounded-2xl overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]">
+                        <div className="relative bg-[#0a0a0c] rounded-xl p-8 md:p-12 overflow-hidden">
+                            {/* 装飾的な背景要素 */}
+                            <div className="absolute top-0 right-0 w-1/2 h-full bg-[radial-gradient(circle_at_70%_30%,rgba(16,185,129,0.05),transparent)] pointer-events-none" />
+                            <div className="absolute -bottom-8 -left-8 text-zinc-900 opacity-20 pointer-events-none">
+                                <Crown size={200} />
+                            </div>
+
+                            <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
+                                <div className="flex-1 text-center md:text-left">
+                                    <div className="flex items-center justify-center md:justify-start gap-3 mb-6 font-mono text-xs text-emerald-500 tracking-[0.3em]">
+                                        <div className="w-8 h-px bg-emerald-500" />
+                                        CORE_SYSTEM: BTO_MASTERS_PROJECT
+                                    </div>
+                                    <h2 className="text-4xl md:text-5xl font-black text-white italic uppercase tracking-tighter mb-4">
+                                        演算機構築の<span className="text-emerald-500">真理。</span>
+                                    </h2>
+                                    <p className="text-zinc-400 text-sm md:text-base leading-relaxed max-w-xl mb-8">
+                                        44年の演算履歴が生んだ「マシン・ファースト」構築論。
+                                        ゲーミング、トレーディング、AI開発。用途別の極致を定義する全7系統のアーカイブへ。
+                                    </p>
+                                    <div className="flex flex-wrap justify-center md:justify-start gap-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                                        <span className="flex items-center gap-2"><Zap size={12} className="text-amber-500" /> 低遅延</span>
+                                        <span className="flex items-center gap-2"><ShieldCheck size={12} className="text-blue-500" /> 高可用性</span>
+                                        <span className="flex items-center gap-2"><Cpu size={12} className="text-purple-500" /> 最大演算</span>
+                                    </div>
+                                </div>
+                                <div className="w-full md:w-auto">
+                                    <div className="px-10 py-6 border border-emerald-500/30 bg-emerald-500/5 rounded-full flex items-center gap-4 text-emerald-500 font-bold group-hover:bg-emerald-500 group-hover:text-black transition-all duration-500">
+                                        マスター・アーカイブを開く
+                                        <ChevronRight size={20} className="group-hover:translate-x-2 transition-transform" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+                </section>
 
                 {/* 🛡️ 性能解析ハブ */}
                 <section className="mb-24">

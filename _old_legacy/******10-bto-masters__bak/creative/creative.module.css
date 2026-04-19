@@ -1,0 +1,116 @@
+/* app/series/10-bto-masters/creative/creative.module.css */
+
+.container {
+  background-color: #050608;
+  min-height: 100vh;
+  color: #d4d4d8; /* zinc-300 */
+}
+
+.bgWrapper {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.heroImage {
+  position: absolute;
+  inset: 0;
+  background-image: url('/images/arc/arc-creative-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15;
+  filter: blur(8px) saturate(1.2);
+  transform: scale(1.1);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.08), transparent);
+}
+
+.scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(168, 85, 247, 0.3), transparent);
+}
+
+/* --- カード設計 --- */
+.card {
+  position: relative;
+  background: rgba(15, 10, 25, 0.8); /* ゲーミングより少し紫寄りの暗色 */
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  aspect-ratio: 1 / 1;
+}
+
+.card:hover {
+  border-color: rgba(168, 85, 247, 0.6);
+  background: rgba(25, 15, 45, 0.9);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px -10px rgba(168, 85, 247, 0.2);
+}
+
+.volNumber {
+  position: absolute;
+  right: -8px;
+  bottom: -15px;
+  font-size: 5.5rem;
+  font-weight: 900;
+  font-style: italic;
+  color: rgba(168, 85, 247, 0.04);
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+.card:hover .volNumber {
+  color: rgba(168, 85, 247, 0.1);
+}
+
+.title {
+  font-size: 0.95rem; /* 視認性重視 */
+  font-weight: 800;
+  color: #f4f4f5; /* zinc-100 */
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: #a1a1aa; /* zinc-400 */
+  font-style: italic;
+  border-left: 3px solid rgba(168, 85, 247, 0.4);
+  padding-left: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.accentBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #a855f7;
+  transform: scale-x(0);
+  transition: transform 0.3s ease;
+  transform-origin: left;
+}
+
+.card:hover .accentBar {
+  transform: scale-x(1);
+}

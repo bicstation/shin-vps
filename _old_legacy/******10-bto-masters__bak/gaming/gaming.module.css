@@ -1,0 +1,85 @@
+/* app/series/10-bto-masters/gaming/gaming.module.css */
+.container {
+  background-color: #050608;
+  min-height: 100vh;
+  color: #d4d4d8; /* zinc-300 */
+}
+
+.bgEffects {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.05), transparent);
+}
+
+.scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(37, 99, 235, 0.2), transparent);
+}
+
+.card {
+  position: relative;
+  background: rgba(18, 18, 21, 0.8); /* 少し濃くして文字を浮かせる */
+  border: 1px solid rgba(39, 39, 42, 1); /* zinc-800 */
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  aspect-ratio: 1 / 1;
+}
+
+.card:hover {
+  border-color: rgba(37, 99, 235, 0.6);
+  background: rgba(24, 24, 27, 0.9);
+  transform: translateY(-2px);
+}
+
+.volNumberBg {
+  position: absolute;
+  right: -5px;
+  bottom: -10px;
+  font-size: 5rem;
+  font-weight: 900;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+.card:hover .volNumberBg {
+  color: rgba(37, 99, 235, 0.08);
+}
+
+.episodeTitle {
+  font-size: 0.9375rem; /* 15px: 視認性大幅アップ */
+  font-weight: 700;
+  color: #e4e4e7; /* zinc-200 */
+  line-height: 1.5;
+  margin-top: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card:hover .episodeTitle {
+  color: #ffffff;
+  text-decoration: underline;
+  text-decoration-color: rgba(37, 99, 235, 0.4);
+}
+
+.techHint {
+  font-size: 0.75rem;
+  color: #71717a; /* zinc-500 */
+  font-style: italic;
+  border-left: 2px solid #27272a;
+  padding-left: 0.5rem;
+  margin-top: 0.75rem;
+}

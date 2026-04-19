@@ -183,6 +183,21 @@
     font-weight: 800;
 }
 
+/* --- 🏰 BTO MASTERS ゲートウェイ装飾 --- */
+.analysisUnit, .btoMastersLink {
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 特別にゲートウェイに強めの発光を付与 */
+.btoMastersLink:hover {
+    border-color: rgba(16, 185, 129, 0.6) !important;
+    box-shadow: 
+        0 0 50px rgba(16, 185, 129, 0.1),
+        inset 0 0 20px rgba(16, 185, 129, 0.05);
+}
+
 /* --- 🛡️ ミッションセクション (Monolithic Card) --- */
 .missionSection { margin-top: 160px; }
 
@@ -262,13 +277,13 @@
 }
 
 /* --- 🌌 特別追加：性能解析ユニット & 経歴カードの通電エフェクト --- */
-.analysisUnit, .chronicleCard {
+.analysisUnit {
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
 }
 
-.analysisUnit:hover, .chronicleCard:hover {
+.analysisUnit:hover {
     transform: translateY(-8px) scale(1.01);
     background: rgba(0, 242, 255, 0.04);
     border-color: rgba(0, 242, 255, 0.5);
@@ -278,7 +293,7 @@
 }
 
 /* ⚡ ホバー時のスキャンライン・フラッシュ */
-.analysisUnit::after {
+.analysisUnit::after, .btoMastersLink::after {
     content: '';
     position: absolute;
     top: -100%;
@@ -287,9 +302,10 @@
     height: 100%;
     background: linear-gradient(transparent, rgba(0, 242, 255, 0.1), transparent);
     transition: none;
+    pointer-events: none;
 }
 
-.analysisUnit:hover::after {
+.analysisUnit:hover::after, .btoMastersLink:hover::after {
     top: 100%;
     transition: all 0.6s ease-in-out;
 }

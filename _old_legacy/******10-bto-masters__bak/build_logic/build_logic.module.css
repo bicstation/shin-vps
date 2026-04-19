@@ -1,0 +1,151 @@
+.container {
+  background-color: #050505;
+  color: #e0e0e0;
+  min-height: 100vh;
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.header {
+  max-width: 1200px;
+  margin: 0 auto 60px;
+  border-left: 4px solid #00f2ff;
+  padding-left: 24px;
+}
+
+.seriesTag {
+  color: #00f2ff;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  font-size: 0.9rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin: 10px 0;
+  font-weight: 900;
+}
+
+.concept {
+  color: #888;
+  max-width: 800px;
+  line-height: 1.6;
+}
+
+.specGrid {
+  display: flex;
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.label {
+  display: block;
+  font-size: 0.7rem;
+  color: #555;
+  letter-spacing: 0.1em;
+}
+
+.value {
+  color: #00f2ff;
+  font-weight: 600;
+}
+
+/* Roadmap Section */
+.phaseRoadmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto 80px;
+}
+
+.phaseCard {
+  background: linear-gradient(145deg, #111, #080808);
+  border: 1px solid #222;
+  padding: 24px;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.phaseCard:hover {
+  transform: translateY(-5px);
+  border-color: #00f2ff;
+}
+
+.phaseBadge {
+  font-size: 0.7rem;
+  color: #00f2ff;
+  margin-bottom: 10px;
+}
+
+.phaseLabel {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.budget {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 15px;
+  font-family: 'Courier New', monospace;
+}
+
+.focus, .env {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin: 5px 0;
+}
+
+.focus span, .env span {
+  color: #555;
+  font-weight: 700;
+}
+
+/* Episode Section */
+.episodeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.episodeCard {
+  background: #111;
+  padding: 20px;
+  border-radius: 4px;
+  border-left: 2px solid #333;
+}
+
+.unlocked {
+  border-left-color: #ff0055; /* 家具解禁フェーズは色を変える */
+}
+
+.volNum {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.epTitle {
+  margin: 8px 0;
+  font-size: 1.1rem;
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: #777;
+  line-height: 1.4;
+}
+
+.hintIcon {
+  color: #00f2ff;
+}
+
+.unlockTag {
+  margin-top: 10px;
+  font-size: 0.6rem;
+  color: #ff0055;
+  font-weight: 800;
+  text-transform: uppercase;
+}
