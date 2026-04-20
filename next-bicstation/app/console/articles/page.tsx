@@ -1,8 +1,20 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, onSnapshot, addDoc, doc, serverTimestamp, query } from 'firebase/firestore';
+import { initializeApp, getApps } from 'firebase/app';
+import { 
+  getAuth, 
+  signInWithCustomToken, 
+  signInAnonymously, 
+  onAuthStateChanged 
+} from 'firebase/auth';
+import { 
+  getFirestore, 
+  collection, 
+  onSnapshot, 
+  addDoc, 
+  serverTimestamp, 
+  query 
+} from 'firebase/firestore';
 import { 
   Play, Pause, Database, Terminal, Layers, Zap, 
   RefreshCw, CheckCircle, AlertTriangle, BarChart3,
@@ -10,8 +22,28 @@ import {
 } from 'lucide-react';
 
 // --- Firebase Configuration ---
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
+// 環境変数から取得できない場合のフォールバック
+const getFirebaseConfig = () => {
+  try {
+    if (typeof __firebase_config !== 'undefined') {
+      return JSON.parse(__firebase_config);
+    }
+  } catch (e) {
+    console.error("Firebase config parse error", e);
+  }
+  // 開発環境またはエラー時のためのダミー/カスタム設定
+  return {
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: ""
+  };
+};
+
+const firebaseConfig = getFirebaseConfig();
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'next-bicstation';
@@ -344,13 +376,23 @@ export default function App() {
   const [stats, setStats] = useState({ total: 0, completed: 0, pending: 0 });
   const isRunningRef = useRef(false);
 
+  const addLog = (msg, type = 'info') => {
+    setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 100));
+  };
+
   // 1. Auth Lifecycle
   useEffect(() => {
     const initAuth = async () => {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
-      } else {
-        await signInAnonymously(auth);
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) {
+        console.error("Auth init error:", err);
+        addLog("Authentication failed, retrying anonymously...", "warning");
+        await signInAnonymously(auth).catch(e => addLog("Auth Critical Error: " + e.message, "error"));
       }
     };
     initAuth();
@@ -361,7 +403,8 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     const q = collection(db, 'artifacts', appId, 'public', 'data', 'articles');
-    return onSnapshot(q, (snapshot) => {
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       const existing = snapshot.docs.map(d => ({ 
         seriesId: d.data().seriesId, 
         vol: d.data().vol 
@@ -382,16 +425,14 @@ export default function App() {
         });
       });
       setStats({ total: totalCount, completed: doneCount, pending: totalCount - doneCount });
-    }, (err) => addLog(`Firestore Error: ${err.message}`, 'error'));
-  }, [user]);
+    }, (err) => addLog(`Firestore Sync Error: ${err.message}`, 'error'));
 
-  const addLog = (msg, type = 'info') => {
-    setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 100));
-  };
+    return () => unsubscribe();
+  }, [user]);
 
   // 3. AI Content Generation Engine
   const generateContent = async (job) => {
-    const apiKey = "";
+    const apiKey = ""; // API Key is provided by environment at runtime
     const model = "gemini-2.5-flash-preview-09-2025";
     
     const seriesName = MASTER_GUIDE_DATA[job.seriesId].name;
@@ -429,10 +470,14 @@ export default function App() {
             tools: [{ "google_search": {} }]
           })
         });
+        
+        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+        
         const data = await res.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text;
       } catch (e) {
         addLog(`APIリトライ (${i+1}/5): ${e.message}`, 'warning');
+        if (i === delays.length - 1) return null;
         await wait(delays[i]);
       }
     }
@@ -488,16 +533,16 @@ export default function App() {
           addLog(`[保存成功] Vol.${target.ep} のアーカイブ完了。`, 'success');
         } catch (err) {
           addLog(`[保存エラー] Firestoreへの書き込みに失敗: ${err.message}`, 'error');
-          setIsRunning(false); // エラー時は安全のため停止
+          setIsRunning(false); 
         }
       } else if (!result) {
         addLog(`[停止] APIエラーが解決しないため生産を中断しました。`, 'error');
         setIsRunning(false);
       }
 
-      // 次のループへ (Rate limit考慮のため7秒待機)
+      // 次のループへ (Rate limit考慮のため10秒待機)
       if (isRunningRef.current) {
-        setTimeout(engineLoop, 7000);
+        setTimeout(engineLoop, 10000);
       }
     };
 
@@ -525,7 +570,7 @@ export default function App() {
                 <span className="flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-bold border border-emerald-500/20">
                   <ShieldCheck size={10} /> {isRunning ? 'ENGINE_RUNNING' : 'SYSTEM_IDLE'}
                 </span>
-                <span className="text-slate-600 text-[10px] flex items-center gap-1"><HardDrive size={10}/> ID: {user?.uid.substring(0, 12)}</span>
+                <span className="text-slate-600 text-[10px] flex items-center gap-1"><HardDrive size={10}/> ID: {user?.uid?.substring(0, 12) || 'AUTH_PENDING'}</span>
               </div>
             </div>
           </div>
@@ -580,7 +625,7 @@ export default function App() {
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest ml-4">Kernel_Output_Stream</span>
               </div>
-              <div className="text-[10px] text-slate-600">RT_LINK_STABLE</div>
+              <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest animate-pulse">Link_Stable</div>
             </div>
             
             <div className="flex-1 p-6 overflow-y-auto font-mono text-[10px] space-y-2 bg-[#020408] scrollbar-hide">
@@ -612,7 +657,7 @@ export default function App() {
           </div>
 
           {/* STATUS LIST */}
-          <div className="lg:col-span-5 bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-8 overflow-y-auto h-[550px] shadow-2xl relative">
+          <div className="lg:col-span-5 bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-8 overflow-y-auto h-[550px] shadow-2xl relative scrollbar-hide">
             <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-5">
               <div className="flex items-center gap-3">
                 <Globe size={18} className="text-blue-500" />
@@ -642,7 +687,7 @@ export default function App() {
                     <div className="h-1.5 bg-black rounded-full overflow-hidden border border-white/5 p-[1px]">
                       <div 
                         className={`h-full rounded-full transition-all duration-[2000ms] ease-out ${
-                          pct === 100 ? 'bg-emerald-500' : 'bg-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.4)]'
+                          pct === 100 ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]' : 'bg-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.4)]'
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -653,10 +698,10 @@ export default function App() {
             </div>
             
             <div className="mt-12 p-6 bg-white/5 rounded-3xl border border-white/5">
-              <div className="text-[10px] text-slate-500 font-bold mb-3 uppercase tracking-widest">Quick_Status</div>
+              <div className="text-[10px] text-slate-500 font-bold mb-3 uppercase tracking-widest">Global_Status_Grid</div>
               <div className="flex flex-wrap gap-2">
                 {Object.keys(MASTER_GUIDE_DATA).map(key => (
-                  <div key={key} className={`w-3 h-3 rounded-sm ${articles.filter(a => a.seriesId === key).length === 30 ? 'bg-emerald-500' : 'bg-slate-800 animate-pulse'}`} />
+                  <div key={key} className={`w-3 h-3 rounded-sm transition-all duration-700 ${articles.filter(a => a.seriesId === key).length === 30 ? 'bg-emerald-500' : 'bg-slate-800 animate-pulse'}`} title={key} />
                 ))}
               </div>
             </div>
@@ -665,7 +710,7 @@ export default function App() {
 
         {/* OVERLAY WORKER CARD */}
         {isRunning && currentJob && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-emerald-500 p-6 rounded-[2rem] shadow-[0_40px_120px_rgba(0,0,0,0.8)] flex items-center justify-between z-50 transform border-4 border-[#05070a] group">
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-emerald-500 p-6 rounded-[2rem] shadow-[0_40px_120px_rgba(0,0,0,0.8)] flex items-center justify-between z-50 transform border-4 border-[#05070a] transition-all duration-500 hover:scale-[1.02]">
             <div className="flex items-center gap-6 overflow-hidden">
               <div className="w-16 h-16 bg-[#05070a] rounded-2xl flex items-center justify-center text-emerald-500 shrink-0">
                 <RefreshCw className="animate-spin" size={32} />
@@ -682,10 +727,10 @@ export default function App() {
             </div>
             <div className="hidden sm:flex flex-col gap-2 shrink-0">
               <div className="px-4 py-2 bg-black text-emerald-500 rounded-xl font-black text-[10px] border border-black/10 uppercase shadow-lg">
-                Phase: {currentJob.phaseLabel.substring(0, 10)}...
+                Phase: {currentJob.phaseLabel.split('：')[0]}
               </div>
               <div className="px-4 py-1 bg-black/10 text-black/60 rounded-lg font-bold text-[8px] text-center">
-                V5_PROD_READY
+                V5_PROD_ACTIVE
               </div>
             </div>
           </div>

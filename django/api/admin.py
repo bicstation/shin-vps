@@ -17,7 +17,8 @@ from .models import (
     AdultActressProfile,
     BSCarrier, BSDevice, BSDevicePrice, BSMobilePlan,
     BSDeviceColor,
-    Article
+    Article,
+    ContentHub
 )
 
 logger = logging.getLogger(__name__)
@@ -56,19 +57,75 @@ def get_thumbnail(url, width=80):
     return mark_safe(f'<div style="width:{width}px; height:40px; background:#eee; color:#999; text-align:center; line-height:40px; font-size:10px; border-radius:4px;">No Image</div>')
 
 # --------------------------------------------------------------------------
-# 📝 1. Article (統合配信記事管理 / v5.0 物理分離対応版)
+# 📝 1. ContentHub (ハブ・コンテンツ統合管理) - NEW
+# --------------------------------------------------------------------------
+
+@admin.register(ContentHub)
+class ContentHubAdmin(admin.ModelAdmin):
+    list_display = (
+        'display_thumb', 'type_badge', 'adult_badge', 
+        'title_short', 'is_active_tag', 'created_at'
+    )
+    list_display_links = ('display_thumb', 'title_short')
+    list_filter = ('content_type', 'is_adult', 'is_active', 'created_at')
+    search_fields = ('title', 'description', 'original_id')
+    ordering = ('-created_at',)
+    
+    fieldsets = (
+        ('基本情報', {
+            'fields': ('content_type', 'is_adult', 'title', 'description', 'is_active')
+        }),
+        ('紐付け・ソース', {
+            'fields': ('original_id', 'source_article', 'source_adult_product', 'source_pc_product')
+        }),
+        ('メディア・拡張データ (JSON)', {
+            'fields': ('images_json', 'videos_json', 'extra_metadata'),
+            'classes': ('collapse',),
+            'description': '配信に必要な全てのメタデータが統合されています。'
+        }),
+        ('システム', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ('created_at', 'updated_at')
+
+    def display_thumb(self, obj):
+        url = None
+        if obj.images_json and isinstance(obj.images_json, list) and len(obj.images_json) > 0:
+            url = obj.images_json[0].get('url')
+        return get_thumbnail(url, 90)
+    display_thumb.short_description = "サムネイル"
+
+    def type_badge(self, obj):
+        colors = {'article': '#6f42c1', 'adult_product': '#ff0055', 'pc_product': '#007bff'}
+        bg = colors.get(obj.content_type, '#6c757d')
+        return mark_safe(f'<span style="background:{bg}; color:white; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">{obj.content_type.upper()}</span>')
+    type_badge.short_description = "種別"
+
+    def adult_badge(self, obj):
+        color = "#ff0055" if obj.is_adult else "#28a745"
+        label = "🔞" if obj.is_adult else "🌐"
+        return mark_safe(f'<span style="color:{color}; font-weight:bold;">{label}</span>')
+    adult_badge.short_description = "属性"
+
+    def title_short(self, obj): return obj.title[:45] + '...' if len(obj.title) > 45 else obj.title
+    def is_active_tag(self, obj): return mark_safe("✅" if obj.is_active else "<span style='color:#bbb;'>❌</span>")
+    is_active_tag.short_description = "有効"
+
+
+# --------------------------------------------------------------------------
+# 📝 2. Article (統合配信記事管理 / v5.0 物理分離対応版)
 # --------------------------------------------------------------------------
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    # 一覧に表示する項目（物理カラムとJSONメディアの状態を即座に確認可能）
     list_display = (
         'display_main_thumb', 'site_badge', 'adult_status', 'delivery_badge', 
         'title_short', 'is_exported_tag', 'created_at'
     )
     list_display_links = ('display_main_thumb', 'title_short')
     
-    # 物理カラムによる強力なフィルタリング（VPSでの大量データ検索用）
     list_filter = (
         'site', 'is_adult', 'show_on_main', 'show_on_satellite', 
         'content_type', 'is_exported', 'created_at'
@@ -77,7 +134,6 @@ class ArticleAdmin(admin.ModelAdmin):
     search_fields = ('title', 'body_main', 'body_satellite', 'source_url')
     ordering = ('-created_at',)
     
-    # 詳細画面：新旧データの混同を防ぐためのフィールドセット分割
     fieldsets = (
         ('基本情報', {
             'fields': ('site', 'is_adult', 'content_type', 'title', 'source_url')
@@ -101,14 +157,11 @@ class ArticleAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_at', 'updated_at')
 
-    # --- 表示カスタマイズ ---
     def display_main_thumb(self, obj):
-        """images_json の 1 枚目、または旧 main_image_url を表示"""
         url = None
         if obj.images_json and isinstance(obj.images_json, list) and len(obj.images_json) > 0:
             url = obj.images_json[0].get('url')
         
-        # 移行期間中のフォールバック
         if not url and hasattr(obj, 'main_image_url'):
             url = obj.main_image_url
             
@@ -142,7 +195,7 @@ class ArticleAdmin(admin.ModelAdmin):
     def is_exported_tag(self, obj): return mark_safe("✅" if obj.is_exported else "<span style='color:#bbb;'>⏳</span>")
 
 # --------------------------------------------------------------------------
-# 💻 2. PCProduct (PC製品管理)
+# 💻 3. PCProduct (PC製品管理)
 # --------------------------------------------------------------------------
 @admin.register(PCProduct)
 class PCProductAdmin(admin.ModelAdmin):
@@ -163,7 +216,7 @@ class PCProductAdmin(admin.ModelAdmin):
     def is_ai_pc_tag(self, obj): return mark_safe('<span style="color:#007bff; font-weight:bold;">🤖 AI PC</span>') if obj.is_ai_pc else "---"
 
 # --------------------------------------------------------------------------
-# 🔞 3. AdultProduct (統合アダルト製品)
+# 🔞 4. AdultProduct (統合アダルト製品)
 # --------------------------------------------------------------------------
 @admin.register(AdultProduct)
 class AdultProductAdmin(admin.ModelAdmin):
@@ -191,7 +244,7 @@ class AdultProductAdmin(admin.ModelAdmin):
     def is_posted_tag(self, obj): return "✅" if obj.is_posted else "⏳"
 
 # --------------------------------------------------------------------------
-# 👥 4. User & Actress (画像付き)
+# 👥 5. User & Actress (画像付き)
 # --------------------------------------------------------------------------
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -213,7 +266,7 @@ class ActressAdmin(admin.ModelAdmin):
     def product_count_badge(self, obj): return mark_safe(f'<b style="color:#007bff;">{obj._count}</b>')
 
 # --------------------------------------------------------------------------
-# 📱 5. Bic-saving (スマホ系・画像強化)
+# 📱 6. Bic-saving (スマホ系・画像強化)
 # --------------------------------------------------------------------------
 class BSDeviceColorInline(admin.TabularInline):
     model = BSDeviceColor
@@ -232,7 +285,7 @@ class BSDeviceAdmin(admin.ModelAdmin):
         return get_score_bar(score, label=f"RAM {obj.ram_gb}GB")
 
 # --------------------------------------------------------------------------
-# ⚙️ 6. システム・マスター管理
+# ⚙️ 7. システム・マスター管理
 # --------------------------------------------------------------------------
 @admin.register(RawApiData)
 class RawApiDataAdmin(admin.ModelAdmin):

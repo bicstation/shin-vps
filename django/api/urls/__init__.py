@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-# /home/maya/dev/shin-vps/django/api/urls/__init__.py
+"""
+API Main Routing Configuration
+Path: /home/maya/dev/shin-vps/django/api/urls/__init__.py
+
+This file aggregates all domain-specific URL patterns into the central API routing.
+It also provides root navigation and system health check endpoints.
+"""
 
 from django.urls import path, include
 from django.http import HttpResponse
@@ -19,6 +25,10 @@ urlpatterns = [
     # 2. 📁 各ドメイン別エンドポイント (階層型ルーティング対応)
     # ==========================================================
     
+    # 🚀 ContentHub (AI Ingestion & Integrated Management)
+    # 先ほど作成した contenthub_urls.py (単数形) を紐付け
+    path('content-hub/', include('api.urls.contenthub_urls')),
+
     # 📰 記事系 (posts)
     # 🛡️ Next.js v3 の prefix (general/posts/ 等) をすべて article_urls へ誘導
     path('general/posts/', include('api.urls.article_urls')),

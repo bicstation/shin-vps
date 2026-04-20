@@ -13,10 +13,12 @@ from .general_views import *
 from .adult_views import *
 from .master_views import *
 from .bs_views import *
+
 # ==============================================================================
-# 🆕 統合コンテンツ管理（Article）の追加
+# 🆕 統合コンテンツ管理（Article / ContentHub）の追加
 # ==============================================================================
 from .article_view import ArticleViewSet
+from .contenthub_view import ContentHubViewSet  # 🆕 追加
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,7 @@ def api_root(request, format=None):
         'avflash': 'AVFLASH (Adult Entertainment)',
         'saving': 'BIC-SAVING (Mobile/Life)',
         'tiper': 'TIPER Official',
+        'contenthub': 'SHIN-VPS Integrated Content Hub', # 🆕 追加
     }
     project_name = project_display_names.get(project_id, 'Unknown Project')
 
@@ -48,7 +51,6 @@ def api_root(request, format=None):
             return None
 
     # 🛠️ プロジェクトに応じたエンドポイントの構築
-    # ※ 将来的にはここで project_id に応じて表示する項目を制限することも可能です。
     
     return Response({
         "message": "Welcome to Tiper API v1 (Multi-Domain Unified Version)",
@@ -72,6 +74,11 @@ def api_root(request, format=None):
                 "list_create": safe_reverse('api:article-list'),
                 "bulk_export_done": f"{safe_reverse('api:article-list')}bulk-export-done/" if safe_reverse('api:article-list') else None,
             },
+            # 🆕 統合ハブ (ContentHub) - SHIN-VPS v5.5 コア機能
+            "content_hub": {
+                "entries": safe_reverse('api:contenthub-list'),
+                "ai_ingest": f"{safe_reverse('api:contenthub-list')}ai-ingest/" if safe_reverse('api:contenthub-list') else None,
+            },
             "bic_saving": {
                 "devices": safe_reverse('api:bs:device-list'),
                 "plans": safe_reverse('api:bs:plan-list'),
@@ -84,8 +91,6 @@ def api_root(request, format=None):
                 "user_me": safe_reverse('api:auth:user_me'),
             },
             "products": {
-                # ⚠️ 注意: bicstationからアクセスしてもURL自体は見えますが、
-                # View側でガードをかければデータは空になります。
                 "unified_adult_products": safe_reverse('api:adult:unified_products'),
                 "pc_products_list": safe_reverse('api:pc_product_list'),
                 "pc_ranking": safe_reverse('api:pc_product_ranking'),
