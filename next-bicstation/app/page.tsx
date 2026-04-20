@@ -9,7 +9,7 @@ import {
     Layers, ArrowUpRight, Globe, Gauge,
     History, Database, HardDrive, Binary,
     Monitor, BookOpen, Briefcase, GraduationCap,
-    Search, Bot, Layout, CircuitBoard, Crown
+    Search, Bot, Layout, CircuitBoard, Crown, ShieldAlert
 } from 'lucide-react';
 
 // ✅ 共通コンポーネント
@@ -105,44 +105,75 @@ export default async function HomePageMain() {
 
             <div className={styles.contentContainer}>
 
-                {/* 🏰 BTO MASTERS ゲートウェイ (追加セクション) */}
+                {/* 🏰 演算構築ゲートウェイ：Series 10 & 20 デュアル・インデックス */}
                 <section className="mb-24">
-                    <Link href="/series/10-bto-masters" className="group block relative p-1 bg-gradient-to-r from-zinc-800 via-zinc-700 to-zinc-800 rounded-2xl overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]">
-                        <div className="relative bg-[#0a0a0c] rounded-xl p-8 md:p-12 overflow-hidden">
-                            {/* 装飾的な背景要素 */}
-                            <div className="absolute top-0 right-0 w-1/2 h-full bg-[radial-gradient(circle_at_70%_30%,rgba(16,185,129,0.05),transparent)] pointer-events-none" />
-                            <div className="absolute -bottom-8 -left-8 text-zinc-900 opacity-20 pointer-events-none">
-                                <Crown size={200} />
-                            </div>
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        
+                        {/* Series 10: BTO MASTERS (個人・クリエイティブ) */}
+                        <Link href="/series/10-bto-masters" className="group block relative p-1 bg-gradient-to-br from-zinc-800 via-zinc-700 to-zinc-800 rounded-2xl overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]">
+                            <div className="relative bg-[#0a0a0c] rounded-xl p-8 md:p-12 h-full overflow-hidden">
+                                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(16,185,129,0.05),transparent)] pointer-events-none" />
+                                <div className="absolute -bottom-8 -left-8 text-zinc-900 opacity-20 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                                    <Crown size={200} />
+                                </div>
 
-                            <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
-                                <div className="flex-1 text-center md:text-left">
-                                    <div className="flex items-center justify-center md:justify-start gap-3 mb-6 font-mono text-xs text-emerald-500 tracking-[0.3em]">
+                                <div className="flex flex-col h-full relative z-10">
+                                    <div className="flex items-center gap-3 mb-6 font-mono text-xs text-emerald-500 tracking-[0.3em]">
                                         <div className="w-8 h-px bg-emerald-500" />
-                                        CORE_SYSTEM: BTO_MASTERS_PROJECT
+                                        ARCHIVE_10: BTO_MASTERS
                                     </div>
-                                    <h2 className="text-4xl md:text-5xl font-black text-white italic uppercase tracking-tighter mb-4">
-                                        演算機構築の<span className="text-emerald-500">真理。</span>
+                                    <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-4">
+                                        演算構築の<span className="text-emerald-500">真理。</span>
                                     </h2>
-                                    <p className="text-zinc-400 text-sm md:text-base leading-relaxed max-w-xl mb-8">
-                                        44年の演算履歴が生んだ「マシン・ファースト」構築論。
-                                        ゲーミング、トレーディング、AI開発。用途別の極致を定義する全7系統のアーカイブへ。
+                                    <p className="text-zinc-400 text-sm leading-relaxed mb-8 flex-grow">
+                                        44年の演算履歴が生んだ「マシン・ファースト」構築論。<br />
+                                        ゲーミング、トレーディング、AI開発。用途別の極致を定義する全7系統。
                                     </p>
-                                    <div className="flex flex-wrap justify-center md:justify-start gap-6 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
-                                        <span className="flex items-center gap-2"><Zap size={12} className="text-amber-500" /> 低遅延</span>
-                                        <span className="flex items-center gap-2"><ShieldCheck size={12} className="text-blue-500" /> 高可用性</span>
-                                        <span className="flex items-center gap-2"><Cpu size={12} className="text-purple-500" /> 最大演算</span>
-                                    </div>
-                                </div>
-                                <div className="w-full md:w-auto">
-                                    <div className="px-10 py-6 border border-emerald-500/30 bg-emerald-500/5 rounded-full flex items-center gap-4 text-emerald-500 font-bold group-hover:bg-emerald-500 group-hover:text-black transition-all duration-500">
-                                        マスター・アーカイブを開く
-                                        <ChevronRight size={20} className="group-hover:translate-x-2 transition-transform" />
+                                    <div className="flex items-center justify-between pt-6 border-t border-zinc-800/50">
+                                        <div className="flex gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                                            <span className="flex items-center gap-1"><Zap size={12} className="text-amber-500" /> LOW_LATENCY</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm">
+                                            MASTER_LOG <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </Link>
+                        </Link>
+
+                        {/* Series 20: BTO FORTRESS (法人・インフラ・社会防衛) */}
+                        <Link href="/series/20-bto-fortress" className="group block relative p-1 bg-gradient-to-br from-blue-900/50 via-zinc-700 to-blue-900/50 rounded-2xl overflow-hidden transition-all hover:scale-[1.01] active:scale-[0.99]">
+                            <div className="relative bg-[#0a0a0c] rounded-xl p-8 md:p-12 h-full overflow-hidden">
+                                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(59,130,246,0.08),transparent)] pointer-events-none" />
+                                <div className="absolute -bottom-8 -left-8 text-blue-900/20 opacity-20 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                                    <ShieldCheck size={200} />
+                                </div>
+
+                                <div className="flex flex-col h-full relative z-10">
+                                    <div className="flex items-center gap-3 mb-6 font-mono text-xs text-blue-400 tracking-[0.3em]">
+                                        <div className="w-8 h-px bg-blue-500" />
+                                        ARCHIVE_20: BTO_FORTRESS
+                                    </div>
+                                    <h2 className="text-4xl font-black text-white italic uppercase tracking-tighter mb-4">
+                                        不沈の<span className="text-blue-500">演算要塞。</span>
+                                    </h2>
+                                    <p className="text-zinc-400 text-sm leading-relaxed mb-8 flex-grow">
+                                        日本を「ターゲット」にさせない防衛基盤。<br />
+                                        金融・医療・公共インフラ。一秒の停滞も許されない社会の心臓部を構築する全9要塞。
+                                    </p>
+                                    <div className="flex items-center justify-between pt-6 border-t border-zinc-800/50">
+                                        <div className="flex gap-4 text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                                            <span className="flex items-center gap-1"><ShieldAlert size={12} className="text-blue-500" /> HIGH_AVAILABILITY</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-blue-400 font-bold text-sm">
+                                            FORTRESS_LOG <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+
+                    </div>
                 </section>
 
                 {/* 🛡️ 性能解析ハブ */}
@@ -160,7 +191,7 @@ export default async function HomePageMain() {
                                 <span className="text-[10px] font-mono text-blue-500">演算処理能力</span>
                             </div>
                             <h4 className="text-sm font-bold text-white mb-2">CPU 演算効率の解析</h4>
-                            <p className="text-[11px] text-zinc-500 mb-6">マルチコアの並列処理耐性と、TDP（熱設計電力）による制限を緻密に計算。</p>
+                            <p className="text-[11px] text-zinc-500 mb-6">マルチコアの並列処理耐性と、TDPによる制限を緻密に計算。</p>
                             <div className="space-y-2">
                                 <div className="flex justify-between text-[9px] font-mono text-zinc-400"><span>マルチコア効率評価</span><span>94%</span></div>
                                 <div className="h-1 w-full bg-zinc-800 rounded-full"><div className="h-full bg-blue-500 w-[94%]" /></div>
@@ -172,7 +203,7 @@ export default async function HomePageMain() {
                                 <span className="text-[10px] font-mono text-red-400">描画帯域幅</span>
                             </div>
                             <h4 className="text-sm font-bold text-white mb-2">GPU 描画性能の評価</h4>
-                            <p className="text-[11px] text-zinc-500 mb-6">VRAMのデータ転送帯域とCUDAコアの実効スループットを解析します。</p>
+                            <p className="text-[11px] text-zinc-500 mb-6">VRAMのデータ転送帯域とCUDAコアの実効スループットを解析。</p>
                             <div className="space-y-2">
                                 <div className="flex justify-between text-[9px] font-mono text-zinc-400"><span>VRAM スループット</span><span>82%</span></div>
                                 <div className="h-1 w-full bg-zinc-800 rounded-full"><div className="h-full bg-red-500 w-[82%]" /></div>
@@ -215,7 +246,7 @@ export default async function HomePageMain() {
                     </div>
                 </section>
 
-                {/* 🏛️ 6つの技術レイヤー */}
+                {/* 🏛️ 6つの技術レイヤー (リンク先：/series/00-master-log/ 統合版) */}
                 <section className="mb-24">
                     <div className={styles.sectionTitleArea}>
                         <h2 className={styles.sectionTitle}>
@@ -225,23 +256,37 @@ export default async function HomePageMain() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                         {[
-                            { id: "01-hardware", title: "物理演算基盤", color: "blue", icon: <HardDrive size={24} />, desc: "自作PCからサーバー、10GbEネットワークまで。物理層の最適化。" },
-                            { id: "02-software", title: "論理環境構築", color: "indigo", icon: <Terminal size={24} />, desc: "OS、Docker、WEBデプロイ。演算を価値に変えるための土壌。" },
-                            { id: "03-ai-logic", title: "知能自動化", color: "purple", icon: <Binary size={24} />, desc: "ローカルLLM、Python解析。AIを「部下」として使いこなす技術。" },
-                            { id: "04-Life-Integration", title: "生活空間統合", color: "orange", icon: <Globe size={24} />, desc: "スマートホーム、EV連携。テクノロジーを肉体の一部にする。" },
-                            { id: "05-home-page", title: "自己媒体構築", color: "yellow", icon: <Layout size={24} />, desc: "Next.jsとDjangoの統合。思考を世界へ同期させる拠点形成。" },
-                            { id: "06-human-growth", title: "高次人間成長", color: "emerald", icon: <GraduationCap size={24} />, desc: "44年のマインドセット。エンジニアとして、また人間としての進化。" },
-                        ].map((item) => (
-                            <Link key={item.id} href={`/series/${item.id}`} className="p-8 bg-zinc-900/30 border border-zinc-800 rounded-2xl hover:border-zinc-500/50 transition-all flex flex-col group relative overflow-hidden">
-                                <div className={`mb-6 text-${item.color}-500 group-hover:scale-110 transition-transform`}>
+                            { id: "bto", title: "物理演算基盤", color: "orange", icon: <HardDrive size={24} />, desc: "自作PCからサーバー、10GbEネットワークまで." },
+                            { id: "software", title: "論理環境構築", color: "blue", icon: <Terminal size={24} />, desc: "OS、Docker、WEBデプロイ。演算を価値に変えるための土壌。" },
+                            { id: "ai", title: "知能自動化", color: "emerald", icon: <Binary size={24} />, desc: "ローカルLLM、Python解析。AIを「部下」として使いこなす技術。" },
+                            { id: "lifestyle", title: "生活空間統合", color: "rose", icon: <Globe size={24} />, desc: "スマートホーム、EV連携。テクノロジーを肉体の一部にする。" },
+                            { id: "dev", title: "自己媒体構築", color: "indigo", icon: <Layout size={24} />, desc: "Next.jsとDjangoの統合。思考を世界へ同期させる拠点形成。" },
+                            { id: "career", title: "高次人間成長", color: "amber", icon: <GraduationCap size={24} />, desc: "44年のマインドセット。エンジニアとしての進化。" },
+                        ].map((item, idx) => (
+                            <Link 
+                                key={item.id} 
+                                href={`/series/00-master-log/${item.id}`} // ✅ 統合ディレクトリへリンク
+                                className="p-8 bg-zinc-900/30 border border-zinc-800 rounded-2xl hover:border-zinc-500/50 transition-all flex flex-col group relative overflow-hidden"
+                            >
+                                <div className={`mb-6 text-zinc-400 group-hover:text-white transition-colors`}>
                                     {item.icon}
                                 </div>
-                                <span className={`text-${item.color}-500 font-mono text-[10px] mb-2 uppercase tracking-widest`}>LAYER_{item.id.split('-')[0]}</span>
+                                <span className={`text-zinc-500 font-mono text-[10px] mb-2 uppercase tracking-widest`}>LAYER_0{idx + 1}</span>
                                 <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
                                 <p className="text-xs text-zinc-500 flex-grow leading-relaxed">{item.desc}</p>
                                 <div className="mt-6 flex items-center text-[10px] text-zinc-400 font-bold uppercase tracking-widest group-hover:text-white transition-colors">
                                     アクセスする <ArrowUpRight className="ml-2 w-3 h-3" />
                                 </div>
+                                
+                                {/* カラーアクセント装飾 */}
+                                <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none
+                                    ${item.id === 'bto' ? 'from-orange-500' : ''}
+                                    ${item.id === 'software' ? 'from-blue-500' : ''}
+                                    ${item.id === 'ai' ? 'from-emerald-500' : ''}
+                                    ${item.id === 'lifestyle' ? 'from-rose-500' : ''}
+                                    ${item.id === 'dev' ? 'from-indigo-500' : ''}
+                                    ${item.id === 'career' ? 'from-amber-500' : ''}
+                                `} />
                             </Link>
                         ))}
                     </div>
@@ -275,7 +320,7 @@ export default async function HomePageMain() {
                     </div>
                 </section>
 
-                {/* 🛡️ Trust Chronicle (プロフィールセクション) */}
+                {/* 🛡️ Trust Chronicle */}
                 <section className="mb-24 py-16 px-8 bg-zinc-900/40 border border-zinc-800 rounded-3xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-[0.03]">
                         <History size={250} />
@@ -288,8 +333,8 @@ export default async function HomePageMain() {
                     
                     <div className="mb-12 max-w-3xl">
                         <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-                            情報の洪水の中で、誰の言葉を信じるか。その答えは「経験の厚み」にあると私は考えます。
-                            マシン語によるハード制御、UNIX研究室でのAI哲学、20年の現場経営。
+                            情報の洪水の中で、誰の言葉を信じるか。その答えは「経験の厚み」にあると私は考えます。<br />
+                            14歳のマシン語から始まり、UNIX研究室でのAI哲学、20年の現場経営。
                             点として存在していた44年の履歴を、いま、最新のフルスタック技術で一つに統合しました。
                         </p>
                     </div>
@@ -311,12 +356,11 @@ export default async function HomePageMain() {
                         ))}
                     </div>
 
-                    {/* アーカイブへのリンク */}
-                    <Link href="/series/99-archive" className="mt-12 block p-8 bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-2xl hover:border-emerald-500/50 transition-all group">
+                    <Link href="/series/00-master-log" className="mt-12 block p-8 bg-gradient-to-r from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-2xl hover:border-emerald-500/50 transition-all group">
                          <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-bold text-white mb-1">Layer_99: 全技術アーカイブを閲覧する</h3>
-                                <p className="text-xs text-zinc-500">1982年から続く全開発ログ・試行錯誤の全記録へ。</p>
+                                <h3 className="text-lg font-bold text-white mb-1">Layer_00: 全180講のマスターログを閲覧する</h3>
+                                <p className="text-xs text-zinc-500">44年の演算履歴。物理基盤からAI活用までを体系化したメイン・アーカイブへ。</p>
                             </div>
                             <ChevronRight className="w-6 h-6 text-emerald-500 group-hover:translate-x-2 transition-transform" />
                          </div>
@@ -353,12 +397,12 @@ export default async function HomePageMain() {
                     <div>
                         <h5 className="text-white text-[10px] font-mono mb-8 uppercase tracking-[0.4em] border-b border-zinc-800 pb-2">コンタクト</h5>
                         <ul className="space-y-4">
-                            <li><Link href="/contact" className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors uppercase font-mono">/ 通信ノードを開く（お問い合わせ）</Link></li>
+                            <li><Link href="/contact" className="text-xs text-zinc-500 hover:text-emerald-400 transition-colors uppercase font-mono">/ 通信ノードを開く</Link></li>
                         </ul>
                     </div>
                 </div>
                 <div className="border-t border-zinc-900 py-10 text-center bg-black/80">
-                    <p className="text-[10px] text-zinc-600 font-mono tracking-[0.5em] uppercase">&copy; 2026 {siteConfig.site_name} - 全システム正常稼働中</p>
+                    <p className="text-[10px] text-zinc-600 font-mono tracking-[0.5em] uppercase">&copy; {new Date().getFullYear()} {siteConfig.site_name} - 全システム正常稼働中</p>
                 </div>
             </footer>
         </div>
