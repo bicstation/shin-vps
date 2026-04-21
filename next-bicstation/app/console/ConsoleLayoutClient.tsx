@@ -33,7 +33,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
   const menuItems = [
     { href: "/console/dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { href: "/console/products", icon: <Package size={18} />, label: "Product Manager" },
-    { href: "/console/articles", icon: <FileText size={18} />, label: "Content AI" }, // 追加：記事管理
+    { href: "/console/contents", icon: <FileText size={18} />, label: "Content AI" }, // 追加：記事管理
     { href: "/console/users", icon: <Users size={18} />, label: "User Management" },
     { href: "/console/metadata", icon: <BrainCircuit size={18} />, label: "AI Meta Sync" },
     { href: "/console/scrapers", icon: <Terminal size={18} />, label: "Scraper Logs" },

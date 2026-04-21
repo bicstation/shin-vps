@@ -57,33 +57,44 @@ def get_thumbnail(url, width=80):
     return mark_safe(f'<div style="width:{width}px; height:40px; background:#eee; color:#999; text-align:center; line-height:40px; font-size:10px; border-radius:4px;">No Image</div>')
 
 # --------------------------------------------------------------------------
-# 📝 1. ContentHub (ハブ・コンテンツ統合管理) - NEW
+# 📝 1. ContentHub (ハブ・コンテンツ統合管理) - v5.5 修正版
 # --------------------------------------------------------------------------
 
 @admin.register(ContentHub)
 class ContentHubAdmin(admin.ModelAdmin):
+    """
+    統合コンテンツハブ管理 (v5.5 準拠)
+    旧フィールド(description, original_id 等)を削除し、最新のモデル定義に合わせました。
+    """
     list_display = (
         'display_thumb', 'type_badge', 'adult_badge', 
-        'title_short', 'is_active_tag', 'created_at'
+        'series_slug', 'episode_no', 'title_short', 'is_pub_tag', 'created_at'
     )
     list_display_links = ('display_thumb', 'title_short')
-    list_filter = ('content_type', 'is_adult', 'is_active', 'created_at')
-    search_fields = ('title', 'description', 'original_id')
+    list_filter = ('site', 'content_type', 'is_adult', 'is_pub', 'series_slug')
+    # search_fields から削除されたフィールド(description, original_id)を除外
+    search_fields = ('title', 'slug', 'series_slug', 'body_md')
     ordering = ('-created_at',)
     
+    # スラグの自動入力
+    prepopulated_fields = {'slug': ('title',)}
+
     fieldsets = (
         ('基本情報', {
-            'fields': ('content_type', 'is_adult', 'title', 'description', 'is_active')
+            'fields': ('site', 'content_type', 'is_adult', 'title', 'slug', 'is_pub')
         }),
-        ('紐付け・ソース', {
-            'fields': ('original_id', 'source_article', 'source_adult_product', 'source_pc_product')
+        ('連載・シリーズ情報', {
+            'fields': ('series_slug', 'phase_title', 'episode_no')
         }),
-        ('メディア・拡張データ (JSON)', {
-            'fields': ('images_json', 'videos_json', 'extra_metadata'),
+        ('コンテンツ内容', {
+            'fields': ('category', 'body_md')
+        }),
+        ('AI・拡張データ (JSON)', {
+            'fields': ('extra_data', 'ai_trace'),
             'classes': ('collapse',),
-            'description': '配信に必要な全てのメタデータが統合されています。'
+            'description': '生成プロセスやメタデータが格納されています。'
         }),
-        ('システム', {
+        ('システム管理', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
@@ -91,14 +102,17 @@ class ContentHubAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
 
     def display_thumb(self, obj):
+        # extra_data 内の画像情報を探す(v5.5対応)
         url = None
-        if obj.images_json and isinstance(obj.images_json, list) and len(obj.images_json) > 0:
-            url = obj.images_json[0].get('url')
+        if obj.extra_data and isinstance(obj.extra_data, dict):
+            images = obj.extra_data.get('images', [])
+            if images and isinstance(images, list):
+                url = images[0].get('url')
         return get_thumbnail(url, 90)
     display_thumb.short_description = "サムネイル"
 
     def type_badge(self, obj):
-        colors = {'article': '#6f42c1', 'adult_product': '#ff0055', 'pc_product': '#007bff'}
+        colors = {'article': '#6f42c1', 'adult_product': '#ff0055', 'pc_product': '#007bff', 'series': '#28a745'}
         bg = colors.get(obj.content_type, '#6c757d')
         return mark_safe(f'<span style="background:{bg}; color:white; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:bold;">{obj.content_type.upper()}</span>')
     type_badge.short_description = "種別"
@@ -109,13 +123,16 @@ class ContentHubAdmin(admin.ModelAdmin):
         return mark_safe(f'<span style="color:{color}; font-weight:bold;">{label}</span>')
     adult_badge.short_description = "属性"
 
-    def title_short(self, obj): return obj.title[:45] + '...' if len(obj.title) > 45 else obj.title
-    def is_active_tag(self, obj): return mark_safe("✅" if obj.is_active else "<span style='color:#bbb;'>❌</span>")
-    is_active_tag.short_description = "有効"
+    def title_short(self, obj): 
+        return obj.title[:45] + '...' if len(obj.title) > 45 else obj.title
+    
+    def is_pub_tag(self, obj): 
+        return mark_safe("✅" if obj.is_pub else "<span style='color:#bbb;'>❌</span>")
+    is_pub_tag.short_description = "公開"
 
 
 # --------------------------------------------------------------------------
-# 📝 2. Article (統合配信記事管理 / v5.0 物理分離対応版)
+# 📝 2. Article (統合配信記事管理)
 # --------------------------------------------------------------------------
 
 @admin.register(Article)
@@ -161,10 +178,8 @@ class ArticleAdmin(admin.ModelAdmin):
         url = None
         if obj.images_json and isinstance(obj.images_json, list) and len(obj.images_json) > 0:
             url = obj.images_json[0].get('url')
-        
         if not url and hasattr(obj, 'main_image_url'):
             url = obj.main_image_url
-            
         return get_thumbnail(url, 100)
     display_main_thumb.short_description = "画像"
 

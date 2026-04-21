@@ -1,3 +1,5 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/series/10-bto-masters/[id]/page.tsx
+
 "use client";
 
 import React from 'react';

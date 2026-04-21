@@ -12,37 +12,67 @@ import {
 // 共通設定のインポート
 import { GUIDE_STRUCTURE } from '../../data'; 
 
-// --- 🛠️ Firestoreから記事を直接取得する関数（サーバーサイド） ---
+/**
+ * 🛠️ Firestore REST API を使用して StructuredQuery で記事を1件取得する
+ */
 async function getArticleFromDB(seriesId: string, vol: number) {
-  // 注意: 本来は Firebase Admin SDK を使用するのが理想ですが、
-  // フロントエンドと共有のFirebase Configで動かすためのfetch擬似ロジック、
-  // または既存のDjango API経由での取得を想定します。
-  // ここではFirestoreのREST APIを使用して、クライアントSDKなしで高速取得します。
-  
-  const projectId = "YOUR_FIREBASE_PROJECT_ID"; // FirebaseのプロジェクトID
+  // 本来は環境変数から取得することを推奨
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "YOUR_FIREBASE_PROJECT_ID"; 
   const appId = "next-bicstation";
-  const path = `artifacts/${appId}/public/data/articles`;
+  const collectionPath = `artifacts/${appId}/public/data/articles`;
   
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
+
+  const queryBody = {
+    structuredQuery: {
+      from: [{ collectionId: 'articles' }],
+      where: {
+        compositeFilter: {
+          op: 'AND',
+          filters: [
+            {
+              fieldFilter: {
+                field: { fieldPath: 'seriesId' },
+                op: 'EQUAL',
+                value: { stringValue: seriesId }
+              }
+            },
+            {
+              fieldFilter: {
+                field: { fieldPath: 'vol' },
+                op: 'EQUAL',
+                value: { integerValue: vol }
+              }
+            }
+          ]
+        }
+      },
+      limit: 1
+    }
+  };
+
   try {
-    // Firestore REST APIを使用して、特定のseriesIdとvolに一致する文書を検索
-    const response = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}?mask.fieldPaths=content&mask.fieldPaths=title&mask.fieldPaths=seriesId&mask.fieldPaths=vol`,
-      { next: { revalidate: 60 } } // 60秒キャッシュ
-    );
-    
-    if (!response.ok) return null;
-    const data = await response.json();
-    
-    // クエリフィルタ（volとseriesIdが一致するものを探す）
-    // ※ 簡易化のため全取得してフィルタしていますが、本来はStructuredQueryが望ましい
-    const articleDoc = data.documents?.find((doc: any) => {
-      const fields = doc.fields;
-      return fields.seriesId?.stringValue === seriesId && parseInt(fields.vol?.integerValue) === vol;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(queryBody),
+      next: { revalidate: 300 } // 5分キャッシュ
     });
 
-    if (!articleDoc) return null;
+    if (!response.ok) {
+      console.error("Firestore API Error:", await response.text());
+      return null;
+    }
 
-    const fields = articleDoc.fields;
+    const results = await response.json();
+    
+    // runQueryは配列を返す（[0].document.fields）
+    if (!results || results.length === 0 || !results[0].document) {
+      return null;
+    }
+
+    const fields = results[0].document.fields;
+    
     return {
       title: fields.title?.stringValue || "UNTITLED_LOG",
       content: fields.content?.stringValue || "NO_DATA_ARCHIVED",
@@ -66,14 +96,16 @@ export default async function MasterLogArticlePage({
   const config = GUIDE_STRUCTURE[id];
   if (!config) notFound();
 
+  // config.phases 配列から全エピソードをフラットに取り出す
   const allEpisodes = config.phases?.flatMap((p: any) => p.episodes) || [];
-  const currentEpisode = allEpisodes.find((e: any) => e.ep === volNum);
-  if (!currentEpisode) notFound();
+  const currentEpisodeConfig = allEpisodes.find((e: any) => e.ep === volNum);
+  
+  if (!currentEpisodeConfig) notFound();
 
-  // ✅ DBから本物のデータを取得（なければ仮データを表示せず、適切に処理）
+  // ✅ DBから本物のデータを取得
   const article = await getArticleFromDB(id, volNum);
   
-  // 色の動的割り当て（TailwindのJIT対策としてオブジェクトで管理）
+  // デザインカラーの設定
   const colorMap: Record<string, string> = {
     blue: 'text-blue-500',
     emerald: 'text-emerald-500',
@@ -82,10 +114,12 @@ export default async function MasterLogArticlePage({
     cyan: 'text-cyan-500',
     purple: 'text-purple-500'
   };
+  
   const activeColorClass = colorMap[config.color] || 'text-cyan-500';
-  const activeBgClass = config.color === 'blue' ? 'bg-blue-950/20 border-blue-500/40' : 
-                        config.color === 'emerald' ? 'bg-emerald-950/20 border-emerald-500/40' :
-                        'bg-cyan-950/20 border-cyan-500/40';
+  const activeBgClass = 
+    config.color === 'blue' ? 'bg-blue-950/20 border-blue-500/40' : 
+    config.color === 'emerald' ? 'bg-emerald-950/20 border-emerald-500/40' :
+    'bg-cyan-950/20 border-cyan-500/40';
 
   return (
     <div className="bg-[#050505] min-h-screen text-zinc-400 selection:bg-blue-600 font-sans leading-relaxed">
@@ -138,7 +172,7 @@ export default async function MasterLogArticlePage({
                     {episode.ep.toString().padStart(2, '0')}
                   </span>
                   <div className="flex flex-col">
-                    <span className={`text-[11px] font-bold uppercase ${isActive ? "text-white" : "group-hover:text-zinc-200"}`}>
+                    <span className={`text-[11px] font-bold uppercase leading-tight ${isActive ? "text-white" : "group-hover:text-zinc-200"}`}>
                        {episode.title} 
                     </span>
                   </div>
@@ -155,14 +189,14 @@ export default async function MasterLogArticlePage({
               — Node_Sequence: VOL_{vol.padStart(2, '0')}
             </div>
 
-            <h1 className="text-4xl md:text-7xl font-black text-white mb-8 italic uppercase leading-[0.95] tracking-tighter">
-              {currentEpisode.title}
+            <h1 className="text-4xl md:text-6xl font-black text-white mb-8 italic uppercase leading-[1] tracking-tighter">
+              {article?.title || currentEpisodeConfig.title}
             </h1>
 
             <div className="flex flex-wrap items-center gap-6 py-4 border-y border-white/5 font-mono text-[9px] text-zinc-500 uppercase tracking-widest">
               <div className="flex items-center gap-2">
                 <ShieldCheck size={12} className="text-emerald-500" /> 
-                Integrity: <span className="text-zinc-300">{article?.integrity || 'PENDING'}</span>
+                Integrity: <span className="text-zinc-300">{article?.integrity || 'PASSED'}</span>
               </div>
               <div className="flex items-center gap-2 border-l border-white/10 pl-6">
                 <Zap size={12} className="text-yellow-500" /> 
