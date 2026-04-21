@@ -9,7 +9,7 @@ AIインジェスト、各サイトへの配信制御、および標準的なCRU
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from api.views.contenthub_viewset import ContentHubViewSet
+from api.views.contenthub_view import ContentHubViewSet
 
 # アプリケーションの名前空間
 # 他のURL設定から 'contenthub:list' のようにリバース参照するために使用します

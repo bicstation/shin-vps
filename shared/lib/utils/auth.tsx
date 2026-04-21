@@ -25,7 +25,8 @@ export interface AuthTokenResponse {
 
 /**
  * 💡 APIのベースURLを動的に取得
- * SHIN-VPS v3.9 ではドメイン判別を行うため、パスに general 等を含めません
+ * SHIN-VPS v3.9 ではドメイン判別を行うため、パスに site_prefix を含めません。
+ * 環境変数 NEXT_PUBLIC_API_URL が設定されている場合はそれを優先します。
  */
 const getTargetApiBase = (): string => {
   if (typeof window !== 'undefined') {
@@ -40,9 +41,9 @@ const getTargetApiBase = (): string => {
 };
 
 /**
- * 💡 リダイレクトパスを生成 (重要修正)
- * 物理構造が /app/console/... となっているため、URLに site_prefix (general) 
- * を含めると404になります。ここでは prefix を完全に除去します。
+ * 💡 リダイレクトパスを生成
+ * 物理構造が /app/console/... や /app/mypage/... となっているため、
+ * URLに仮想的な prefix (general等) を含めず、物理パスへ直接飛ばします。
  */
 const getAbsoluteRedirectPath = (path: string = '/') => {
   if (typeof window === 'undefined') return '/';
@@ -50,11 +51,11 @@ const getAbsoluteRedirectPath = (path: string = '/') => {
   const origin = window.location.origin;
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   
-  // ⚠️ 修正: site_prefix を使用せず、物理ディレクトリ構造に合わせる
+  // ⚠️ 物理ディレクトリ構造（/console, /mypage等）に合わせ、余計なパスを挟まない
   const fullPath = `${origin}${normalizedPath}`.replace(/\/+$/, '');
   
-  // キャッシュ対策のタイムスタンプのみ付与
-  return `${fullPath}?t=${Date.now()}`;
+  // ブラウザキャッシュによるリダイレクトループや古い情報の表示を防ぐためタイムスタンプを付与
+  return `${fullPath || origin}/?t=${Date.now()}`;
 };
 
 /**
@@ -92,6 +93,7 @@ export async function registerUser(username: string, email: string, password: st
         username: data.user.username || data.user.name 
       }));
     }
+    // 一般ユーザー登録後はマイページへ
     window.location.href = getAbsoluteRedirectPath('/mypage');
   }
   
@@ -105,7 +107,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
   const API_BASE = getTargetApiBase();
   const { site_group, origin_domain } = getSiteMetadata();
   
-  console.log('📡 API Request to:', `${API_BASE}/auth/login/`);
+  console.log('📡 Auth Attempt:', `${API_BASE}/auth/login/`);
 
   const response = await fetch(`${API_BASE}/auth/login/`, {
     method: 'POST',
@@ -116,7 +118,7 @@ export async function loginUser(username: string, password: string): Promise<Aut
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    const msg = response.status === 404 ? 'APIエンドポイントが見つかりません(404)' : '認証に失敗しました。';
+    const msg = response.status === 404 ? '認証エンドポイントが見つかりません。' : 'ログインに失敗しました。';
     throw new Error(errorData.error || errorData.detail || msg);
   }
 
@@ -132,7 +134,8 @@ export async function loginUser(username: string, password: string): Promise<Aut
       }));
     }
     
-    // 物理パスに合わせて遷移 (/console/dashboard)
+    // ユーザー権限に基づいて物理パスを決定
+    // 管理者(is_staff)は /console/dashboard、一般は /mypage
     const targetPath = data.user?.is_staff ? '/console/dashboard' : '/mypage';
     window.location.href = getAbsoluteRedirectPath(targetPath);
   }
@@ -141,16 +144,18 @@ export async function loginUser(username: string, password: string): Promise<Aut
 
 /**
  * 🚪 ログアウト処理
+ * 全ての認証情報をクリアし、物理ルートパスへリダイレクトします。
  */
 export function logoutUser(): void {
   if (typeof window !== 'undefined') {
     localStorage.clear();
+    // ログアウト後はトップページ (/) へ
     window.location.href = getAbsoluteRedirectPath('/');
   }
 }
 
 /**
- * 👤 ログイン中のユーザー情報を取得
+ * 👤 ローカルストレージからログイン中のユーザー情報を取得
  */
 export function getAuthUser() {
   if (typeof window === 'undefined') return null;
@@ -160,4 +165,12 @@ export function getAuthUser() {
   } catch { 
     return null; 
   }
+}
+
+/**
+ * 🛡️ アクセストークンの取得
+ */
+export function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('access_token');
 }

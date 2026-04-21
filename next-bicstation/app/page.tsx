@@ -62,7 +62,7 @@ export default async function HomePageMain() {
 
     const [wpLogs, djangoPosts, scoreRank] = await Promise.all([
         safeFetch(fetchWPTechInsights, [6], []),
-        safeFetch(fetchPostList, [6, 0, siteTag], { results: [], count: 0 }),
+        safeFetch(fetchPostList, [3, 0, siteTag], { results: [], count: 0 }),
         safeFetch(fetchPCProductRanking, ['score', host], [])
     ]);
 

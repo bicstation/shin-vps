@@ -7,9 +7,9 @@
  * =====================================================================
  */
 
-import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from './client';
-import { getDjangoBaseUrl } from '../config';
-import { UnifiedPost } from '../types';
+import { resolveApiUrl as commonResolveApiUrl, handleResponseWithDebug, getDjangoHeaders } from '@/shared/lib/api/django/client';
+import { getDjangoBaseUrl } from '@/shared/lib/api/config';
+import { UnifiedPost } from '@/shared/lib/api/types';
 
 /** 🔄 内部URL置換 (画像やリンクのURLを公開用/プロキシ用に修正) */
 export const replaceInternalUrls = (data: any): any => {
