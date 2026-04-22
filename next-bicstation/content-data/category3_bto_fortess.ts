@@ -8,6 +8,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
   // 1. 【FINANCE】金融・銀行・証券
   finance: {
     id: "finance",
+    order: 1,
     title: "金融要塞：1円の誤差も許さない不沈の演算",
     concept: "整合性と証跡管理の極致。ビット反転さえ許さない、止まらない金融システムの心臓部。",
     priorityDevice: "ECCメモリ・冗長化電源・ハードウェアRAID・証跡記録用WORMストレージ",
@@ -72,6 +73,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
 // 2. 【PUBLIC】公務・公共・自治体
   public: {
     id: "public",
+    order: 2,
     title: "公務要塞：住民を守り、有事に稼働する砦",
     concept: "情報の物理隔離（エアギャップ）と災害対策。日本の行政を「ターゲット」にさせない自衛力。",
     priorityDevice: "物理隔離用リムーバブルケース・防水耐衝撃筐体・長期供給パーツ",
@@ -136,6 +138,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
 // 3. 【EDUCATION】教育・GIGAスクール・校務DX
   education: {
     id: "education",
+    order: 3,
     title: "教育要塞：子供の未来を拓き、信頼の絆を固める堅牢基盤",
     concept: "最優先は子供たちの学び。次に保護者との信頼、教員の多忙解消、そして未来の知能へ。教育の全領域をBTOで要塞化する。",
     priorityDevice: "高耐久生徒端末・保護者連絡サーバー・プライバシーフィルター・GPU計算機",
@@ -218,6 +221,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
   // 4. 【INDUSTRY】工場・製造・生産ライン
   industry: {
     id: "industry",
+    order: 4,
     title: "工場要塞：AIとエッジ演算による『無人化・最適化』の聖域",
     concept: "熟練工の知能をAIで再現。300万円の投資で人1人以上の成果を24時間叩き出す自律型基盤。",
     priorityDevice: "NVIDIA RTX GPU・産業用NVMe SSD・ファンレスエッジPC・10GbE LAN",
@@ -300,6 +304,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
   // 5. 【LOGISTICS】物流・倉庫・エッジ・無人化
   logistics: {
     id: "logistics",
+    order: 5,
     title: "物流要塞：滞らない動線を支えるエッジ演算と無人化の極致",
     concept: "300万円の演算投資で、数万人分の荷捌きを無人化。リアルタイム動線支配と自律配送の聖域。",
     priorityDevice: "耐振動NVMe SSD・Wi-Fi 7メッシュ・GPUエッジ・AGV制御ゲートウェイ",
@@ -382,6 +387,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
   // 6. 【MEDICAL】医療・病院・クリニック
   medical: {
     id: "medical",
+    order: 6,
     title: "医療要塞：生命を繋ぎ、一秒の停滞も許さない演算の砦",
     concept: "電子カルテの絶対保護と、AI画像診断による見落としゼロの実現。命の現場を支える不沈のシステム。",
     priorityDevice: "医用画像モニター・静音ファンレス筐体・高信頼性ECCメモリ・UPS連携",
@@ -464,6 +470,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
   // 7. 【RESEARCH】研究開発・知財
   research: {
     id: "research",
+    order: 7,
     title: "研究要塞：日本の知財を守り、世界最速を出す",
     concept: "情報の持ち出しを物理的に封じる隔離環境と、圧倒的なシミュレーション力。アイデアを奪わせない演算防壁。",
     priorityDevice: "マルチGPU・物理ポートロック・ECCメモリ・秘匿計算用エンクレーブ",
@@ -547,6 +554,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
   // 8. 【COMMERCE】小売・商社・流通DX
   commerce: {
     id: "commerce",
+    order: 8,
     title: "流通商取引要塞：情報のハブとなり、需給の最適解を導き出す",
     concept: "店舗の無人化から商社のグローバル需給予測まで。300万円の演算投資で『欠品・過剰在庫・機会損失』をゼロにする。",
     priorityDevice: "AI推論サーバー・高耐久POSエッジ・グローバルVPN暗号化・RFID一括スキャナ",
@@ -629,6 +637,7 @@ export const BTO_FORTRESS_CONFIG: Record<string, BtoSeries> = {
 // 9. 【ENTERPRISE】一般企業・DX・標準化
   enterprise: {
     id: "enterprise",
+    order: 9,
     title: "企業要塞：資産を活かし、社員の生産性を統治する",
     concept: "決算とセキュリティの高度な融合。少額減価償却をフル活用し、ITコストを最強の武器へ変える。",
     priorityDevice: "管理用ダッシュボード（Intune等）・一括保守パッケージ・モダンスタンバイ・vPro",

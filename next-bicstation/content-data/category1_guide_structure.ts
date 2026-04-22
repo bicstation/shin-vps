@@ -3,6 +3,7 @@
 export const GUIDE_STRUCTURE = {
   bto: {
     id: "bto",
+    order: 1,
     title: "物理要塞：1円あたりの演算密度を最大化し、家全体をPCにする",
     concept: "カタログスペックの『嘘』を暴き、基盤からネットワーク、電力系統までを一つのエコシステムとして統合する。",
     priorityDevice: "国内BTOデスクトップ・10GbEインフラ・V2H・Matter対応デバイス",
@@ -11,7 +12,7 @@ export const GUIDE_STRUCTURE = {
         budget: "¥150,000〜¥299,999",
         label: "第1段階：基礎・国内BTOパソコンの最適選定（初級編）",
         focus: "失敗しないメーカー選びと、ボトルネックのない論理的パーツ構成の習得",
-        environment: "一般家庭・クリエイティブ入門環境。1G環境。",
+        environment: "一般家庭・クリエイティブ入門環境。10G環境。",
         episodes: [
           { ep: 1, title: "14歳から見続けたPCの本質：スペック表の『嘘』と『真実』" },
           { ep: 2, title: "演算密度の設計：CPU/GPU選定における論理的最適解" },
@@ -66,6 +67,7 @@ export const GUIDE_STRUCTURE = {
 
   software: {
     id: "software",
+    order: 2,
     title: "環境要塞：OSの最適化から、世界へ届ける発信インフラの構築",
     concept: "PCを「脳の延長」に設定し、執筆・デザイン・動画制作を一つのシームレスなワークフローとして統合する。",
     priorityDevice: "Windows 11 Pro・NAS・高速外付けSSD・DaVinci Resolve・OBS Studio",
@@ -129,6 +131,7 @@ export const GUIDE_STRUCTURE = {
 
   ai: {
     id: "ai",
+    order: 3,
     title: "知的要塞：AIを『脳の外部ユニット』として統合し、演算をアウトソースする",
     concept: "AIは検索ツールではない。OSレベルで統合されたCopilotから、GPUパワーを解放するローカルLLMまでを使いこなし、個人の知性を拡張する。",
     priorityDevice: "Microsoft Copilot・NVIDIA RTX GPU (16GB+ VRAM)・LM Studio・Dify",
@@ -192,6 +195,7 @@ export const GUIDE_STRUCTURE = {
 
   lifestyle: {
     id: "lifestyle",
+    order: 4,
     title: "移動要塞：デバイスと住居を身体の一部として統合し、自由を最大化する",
     concept: "スマホを消費の窓から『外部知能』へ、住居を『空間OS』へ、そして車を『移動する蓄電池』へと再定義。物理的な場所の制約をテクノロジーで抹消する。",
     priorityDevice: "iPhone/Android Proモデル・Apple Watch・Matter対応センサー・Home Assistant・EV/V2H",
@@ -255,6 +259,7 @@ export const GUIDE_STRUCTURE = {
 
   dev: {
     id: "dev",
+    order: 5,
     title: "開発要塞：Next.jsとPythonを武器に、自ら道具を創造する",
     concept: "コードを書くことは手段であり、目的ではない。AIの力を借りて最短距離でプロダクトをデプロイし、アイデアを現実化する演算力を手に入れる。",
     priorityDevice: "VSCode・Next.js・FastAPI・Vercel・GitHub・Supabase",
@@ -318,6 +323,7 @@ export const GUIDE_STRUCTURE = {
 
   career: {
     id: "career",
+    order: 6,
     title: "立身要塞：磨き抜いた技術を価値に変え、生涯の自由を確定させる",
     concept: "ハード、ソフト、AI、開発スキル。これら全ての演算能力を「自分という資産」の最大化へ転換し、変化の激しい時代を勝ち抜く戦略を策定する。",
     priorityDevice: "GitHub Portfolio・LinkedIn・自分専用AIエージェント・健康管理ウェアラブル",

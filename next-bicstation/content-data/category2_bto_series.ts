@@ -28,6 +28,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 1. 【BUILD】PCビルドの聖典
   build_logic: {
     id: "build_logic",
+    order: 1,
     title: "PCビルドの聖典：最強BTO構築のすべて",
     concept: "実際に買えるパーツで最高の一台を。パーツ選びからAmazonでの買い方、組み立てのコツまで完全網羅。",
     priorityDevice: "マザーボード・電源・冷却システム",
@@ -110,6 +111,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 2. 【OPERATION】機体運用マニュアル
   operation_mastery: {
     id: "operation_mastery",
+    order: 2,
     title: "機体運用マニュアル：個人データセンター構築への道",
     concept: "1台のPCの極限設定から、部屋ごとのインフラ化、そして法人級の演算拠点へ。Amazonで揃う機材で『個人の城』を築く。",
     priorityDevice: "OS・サーバーラック・法人用ネットワーク",
@@ -193,6 +195,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 3. 【GAMING】極限低遅延BTO
   gaming: {
     id: "gaming",
+    order: 3,
     title: "極限低遅延BTO構築論：1μsの壁を突破せよ",
     concept: "国内BTOから始まり、世界ブランド、そして自作の極地へ。入力遅延をハードウェアで殺すための戦術的ビルド。",
     priorityDevice: "高リフレッシュレートモニタ・超軽量マウス・光磁気スイッチ",
@@ -275,6 +278,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 4. 【TRADING】トレーディング要塞
   trading: {
     id: "trading",
+    order: 4,
     title: "不確実性への絶対回答：トレーディング要塞構築論",
     concept: "1ミリ秒の表示遅延とフリーズを『損失』と定義。24時間365日、1秒も止まらない不沈のシステムを築く。",
     priorityDevice: "マルチディスプレイ・UPS（無停電電源装置）・高品質電源・エルゴノミクスチェア",
@@ -357,6 +361,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 5. 【BUSINESS】エグゼクティブ・ビルド
   business: {
     id: "business",
+    order: 5,
     title: "意思決定要塞：エグゼクティブ・ビジネス・ビルド",
     concept: "思考を妨げる『待ち時間』をゼロへ。情報の視認性とデータ保護を極限まで高めた、経営者のための究極ツール。",
     priorityDevice: "超高速NVMe SSD・ウルトラワイドモニタ・静音キーボード・高機能チェア",
@@ -439,6 +444,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 6. 【CREATIVE】無限創造
   creative: {
     id: "creative",
+    order: 6,
     title: "無限創造：次世代クリエイティブ・ビルド",
     concept: "レンダリング待ちを過去のものに。大容量メモリと色彩の正確性を極め、クリエイターの閃きを即座に形にする。",
     priorityDevice: "VRAM 24GB以上GPU・カラーマネジメントモニタ・大容量メモリ・高速NVMe SSD",
@@ -520,6 +526,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 7. 【AI_DEV】知能創造（AIエンジニアリング）
   ai_dev: {
     id: "ai_dev",
+    order: 7,
     title: "知能創造：AI開発・推論ワークステーション構築論",
     concept: "VRAM容量こそが知能の境界線。クラウドに頼らず、ローカルでパラメータ数を力技で解決する最強の知能拠点を築く。",
     priorityDevice: "NVIDIA RTX 4090 (24GB VRAM)・マルチGPU・ECCメモリ・高出力電源",
@@ -602,6 +609,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 8. 【SCIENCE】真理演算
   science: {
     id: "science",
+    order: 8,
     title: "真理演算：学術解析・シミュレーション・ビルド",
     concept: "物理演算の『解』を、純粋な浮動小数点演算能力で導き出す。計算ミスを許さない、真理への最短ルート。",
     priorityDevice: "Threadripper / Xeon（多コアCPU）・ECCメモリ・AVX-512・NVMe RAID",
@@ -683,6 +691,7 @@ export const BTO_SERIES_CONFIG: Record<string, BtoSeries> = {
   // 9. 【STREAMING】共鳴要塞
   streaming: {
     id: "streaming",
+    order: 9,
     title: "共鳴要塞：次世代ライブストリーミング・ビルド",
     concept: "エンコード負荷を完封し、配信者の『感情のラグ』をゼロにする。視聴者を没入させる圧倒的な映像と音響を追求。",
     priorityDevice: "AV1対応GPU・オーディオインターフェース・スタジオマイク・配信専用照明",
