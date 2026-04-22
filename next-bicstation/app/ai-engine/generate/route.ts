@@ -16,10 +16,10 @@ const API_KEYS = [
   process.env.GEMINI_API_KEY_10,
 ].filter(Boolean) as string[];
 
-const PRIMARY_MODEL = "gemma-4-31b-it";
+// 司令官の指示に基づき gemma-3-27b-it をメインに据える
+const PRIMARY_MODEL = "gemma-3-27b-it"; 
 const FALLBACK_MODEL = "gemini-2.0-flash";
 
-// AIのメタ情報出力を徹底的に封じ込め、日本語本文のみを強制するシステム命令
 const PURE_JAPANESE_INSTRUCTION = `あなたは『物理要塞』の概念を提唱する超一流のPCアーキテクトです。
 【重要：出力ルール】
 1. 前置き、思考プロセス、要約、英語での補足説明（"Persona:", "Task:" など）は一切出力しないでください。
@@ -31,22 +31,14 @@ const PURE_JAPANESE_INSTRUCTION = `あなたは『物理要塞』の概念を提
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
-    if (!prompt) {
-      return new Response(JSON.stringify({ error: "No prompt" }), { status: 400 });
-    }
+    if (!prompt) return new Response(JSON.stringify({ error: "No prompt" }), { status: 400 });
+    if (API_KEYS.length === 0) return new Response(JSON.stringify({ error: "API KEYS MISSING" }), { status: 500 });
 
-    if (API_KEYS.length === 0) {
-      return new Response(JSON.stringify({ error: "API KEYS MISSING" }), { status: 500 });
-    }
-
-    // キーをシャッフルして特定キーへの負荷集中を回避
     const shuffledKeys = [...API_KEYS].sort(() => Math.random() - 0.5);
 
     for (const key of shuffledKeys) {
       try {
         const genAI = new GoogleGenerativeAI(key);
-        
-        // プライマリモデルの設定
         const model = genAI.getGenerativeModel({ 
           model: PRIMARY_MODEL,
           systemInstruction: PURE_JAPANESE_INSTRUCTION,
@@ -60,7 +52,6 @@ export async function POST(req: Request) {
         const text = result.response.text();
 
         if (text) {
-          // 万が一、冒頭に不要なメタ情報が混入した場合の最終フィルタリング（必要に応じて）
           return new Response(JSON.stringify({ text: text.trim() }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
@@ -68,26 +59,22 @@ export async function POST(req: Request) {
         }
       } catch (error: any) {
         console.warn(`Unit fail (${key.substring(0, 8)}...): ${error.message}`);
-        
-        // 特定のエラー時はFlashにフォールバック
-        if (error.message.includes("not found") || error.message.includes("404") || error.message.includes("403")) {
-           try {
-             const genAI = new GoogleGenerativeAI(key);
-             const fallback = genAI.getGenerativeModel({ 
-               model: FALLBACK_MODEL,
-               systemInstruction: PURE_JAPANESE_INSTRUCTION
-             });
-             const res = await fallback.generateContent(prompt);
-             return new Response(JSON.stringify({ text: res.response.text().trim() }), { status: 200 });
-           } catch { continue; }
+        if (error.message.includes("404") || error.message.includes("403")) {
+          try {
+            const genAI = new GoogleGenerativeAI(key);
+            const fallback = genAI.getGenerativeModel({ 
+              model: FALLBACK_MODEL,
+              systemInstruction: PURE_JAPANESE_INSTRUCTION
+            });
+            const res = await fallback.generateContent(prompt);
+            return new Response(JSON.stringify({ text: res.response.text().trim() }), { status: 200 });
+          } catch { continue; }
         }
         continue; 
       }
     }
-    
     return new Response(JSON.stringify({ error: "ALL UNITS OVERLOADED" }), { status: 500 });
   } catch (err) {
-    console.error("Critical Engine Error:", err);
     return new Response(JSON.stringify({ error: "CRITICAL SYSTEM ERROR" }), { status: 500 });
   }
 }
