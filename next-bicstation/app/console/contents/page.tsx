@@ -6,25 +6,24 @@ import {
   getFirestore, collection, doc, setDoc, onSnapshot, 
   serverTimestamp, writeBatch, query, orderBy, limit, where, getDocs
 } from "firebase/firestore";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import { 
-  getAuth, signInAnonymously, onAuthStateChanged 
-} from "firebase/auth";
-import { 
-  Database, UploadCloud, Loader2, Layers, Search, 
-  Edit3, ArrowLeft, Send, ChevronRight, BookOpen, ChevronDown, Terminal,
-  Cpu, Zap, Globe, Copy, Sparkles, ShoppingCart, Image as ImageIcon, Link as LinkIcon,
-  Target, DollarSign, Monitor, Wand2, Play, Activity, CheckCircle2, AlertTriangle, 
+  Database, UploadCloud, Loader2, Layers, Search, Edit3, ArrowLeft, Send, 
+  ChevronRight, BookOpen, ChevronDown, Terminal, Cpu, Zap, Globe, Copy, 
+  Sparkles, ShoppingCart, Image as ImageIcon, Link as LinkIcon, Target, 
+  DollarSign, Monitor, Wand2, Play, Activity, CheckCircle2, AlertTriangle, 
   Settings, Save, Eye, Hash, Clock, Palette, Flame, ShieldCheck, BarChart3, Binary,
   RefreshCw, Server, HardDrive, Shield, ZapOff, Code2, FileJson, Gauge
 } from 'lucide-react';
+
+import { runAutoPilot } from '@/lib/autopilot/runAutoPilot';
 
 // --- インフラ・データ構造定義 ---
 import { GUIDE_STRUCTURE } from '@/content-data/category1_guide_structure';  
 import { BTO_SERIES_CONFIG } from '@/content-data/category2_bto_series';
 import { BTO_FORTRESS_CONFIG } from '@/content-data/category3_bto_fortess';
 import { BTO_MAKERS_CONFIG } from '@/content-data/category4_bto_makers';
-import { OS_HISTORY_SERIES } from '@/content-data/category5_bto_oshistories'; // 追加
-
+import { OS_HISTORY_SERIES } from '@/content-data/category5_bto_oshistories';
 
 // --- Firebase Configuration ---
 const FIREBASE_CONFIG = {
@@ -43,7 +42,7 @@ const auth = getAuth(app);
 const currentAppId = 'bicstation-main';
 
 const ContentConsole = () => {
-  // --- Core Engine States ---
+  // --- States ---
   const [user, setUser] = useState(null);
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,27 +51,18 @@ const ContentConsole = () => {
   const [isImageGenerating, setIsImageGenerating] = useState(false);
   const [isAutoPiloting, setIsAutoPiloting] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0, label: '', status: 'idle' });
-
-  // --- UI Control States ---
-  const [view, setView] = useState<'list' | 'edit'>('list'); 
+  const [view, setView] = useState('list'); 
   const [selectedEp, setSelectedEp] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('cat1');
-  const [openSeries, setOpenSeries] = useState<string | null>(null);
-  const [showDebug, setShowDebug] = useState(false);
-
-  // --- Editor Field States ---
+  const [openSeries, setOpenSeries] = useState(null);
   const [editContent, setEditContent] = useState('');
   const [amazonUrl, setAmazonUrl] = useState('');
   const [rakutenUrl, setRakutenUrl] = useState('');
   const [originalUrl, setOriginalUrl] = useState('');
   const [imagePath, setImagePath] = useState('');
-  const [metaTitle, setMetaTitle] = useState('');
 
-  // --- Refs for Performance ---
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // --- 1. Auth Lifecycle ---
+  // --- Auth & Data Stream ---
   useEffect(() => {
     signInAnonymously(auth);
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -82,7 +72,6 @@ const ContentConsole = () => {
     return () => unsubscribe();
   }, []);
 
-  // --- 2. Real-time Data Stream (Nexus Sync) ---
   useEffect(() => {
     if (!user) return;
     const q = collection(db, 'artifacts', currentAppId, 'public', 'data', 'episodes');
@@ -94,7 +83,70 @@ const ContentConsole = () => {
     return () => unsubscribe();
   }, [user]);
 
-  // --- 3. Advanced Sorting & Logic Processing ---
+  // --- API連携ロジック (ここが重要) ---
+  const callAiEngine = async (prompt, priority = 1) => {
+    const res = await fetch('/ai-engine/generate', { // 指定されたパスに合わせました
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, priority })
+    });
+    if (!res.ok) throw new Error("AI_ENGINE_OFFLINE");
+    const data = await res.json();
+    return data.content;
+  };
+
+  const saveToFirestore = async (id, content) => {
+    const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', id);
+    await setDoc(docRef, {
+      content: content,
+      status: 'published',
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  };
+
+  const runAutoPilot = async () => {
+    if (isAutoPiloting) return;
+    const targets = episodes.filter(ep => !ep.content);
+    if (targets.length === 0) return;
+
+    setIsAutoPiloting(true);
+    setProgress({ current: 0, total: targets.length, label: 'Initializing...', status: 'active' });
+
+    for (let ep of targets) {
+      try {
+        setProgress(prev => ({ ...prev, label: `Generating: ${ep.title}`, current: prev.current + 1 }));
+        
+        const prompt = getFullPrompt(ep); // 第2部で定義するプロンプト生成
+        let article = await callAiEngine(prompt, 1);
+        
+        let check = validateContent(article);
+        let retry = 0;
+        while (!check.ok && retry < 2) {
+          article = await callAiEngine(`以下の問題を修正して再生成:\n${check.reason}\n${article}`, 1);
+          check = validateContent(article);
+          retry++;
+        }
+
+        if (check.ok) {
+          await saveToFirestore(ep.id, article);
+        }
+      } catch (e) {
+        console.error("AutoPilot Error:", e);
+        break; 
+      }
+      await new Promise(r => setTimeout(r, 3000));
+    }
+    setIsAutoPiloting(false);
+  };
+
+  // 以下、バリデーション等のヘルパー
+  function validateContent(text) {
+    if (!text || text.length < 500) return { ok: false, reason: "SHORT" };
+    if (text.includes("AIとして")) return { ok: false, reason: "AI_LEAK" };
+    return { ok: true };
+  }
+
+// --- Prompt Engineering (第1部からの続き) ---
   const allEpsFlatSorted = useMemo(() => {
     return [...episodes].sort((a, b) => {
       if (a.categoryId !== b.categoryId) return a.categoryId.localeCompare(b.categoryId);
@@ -103,250 +155,247 @@ const ContentConsole = () => {
     });
   }, [episodes]);
 
-  const seriesAnalysis = useMemo(() => {
-    const groups = {};
-    episodes.forEach(ep => {
-      const cat = ep.categoryId || 'unknown';
-      const ser = ep.seriesId || 'unknown';
-      if (!groups[cat]) groups[cat] = {};
-      if (!groups[cat][ser]) groups[cat][ser] = [];
-      
-      const isMatch = searchTerm === '' || 
-        ep.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        ep.seriesTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ep.phaseLabel.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      if (isMatch) groups[cat][ser].push(ep);
-    });
-
-    const currentCatGroups = groups[activeTab] || {};
-    return Object.keys(currentCatGroups)
-      .map(id => ({
-        id,
-        title: currentCatGroups[id][0]?.seriesTitle || 'Untitled Series',
-        eps: currentCatGroups[id].sort((a, b) => a.episodeNumber - b.episodeNumber),
-        order: currentCatGroups[id][0]?.seriesOrder || 999,
-        stats: {
-          total: currentCatGroups[id].length,
-          published: currentCatGroups[id].filter(e => e.status === 'published').length,
-          percent: Math.round((currentCatGroups[id].filter(e => e.status === 'published').length / currentCatGroups[id].length) * 100)
-        }
-      }))
-      .sort((a, b) => a.order - b.order);
-  }, [episodes, searchTerm, activeTab]);
-
-  // --- 4. Prompt Engineering Mastery ---
   const getFullPrompt = useCallback((ep = selectedEp) => {
     if (!ep) return "";
     const idx = allEpsFlatSorted.findIndex(e => e.id === ep.id);
-    const context = {
-      prev: idx > 0 ? allEpsFlatSorted[idx - 1] : null,
-      next: idx < allEpsFlatSorted.length - 1 ? allEpsFlatSorted[idx + 1] : null
-    };
+    const prev = idx > 0 ? allEpsFlatSorted[idx - 1] : null;
+    const next = idx < allEpsFlatSorted.length - 1 ? allEpsFlatSorted[idx + 1] : null;
 
-    const personas = {
-      cat1: { 
-        role: "PCアーキテクチャの伝道師", 
-        focus: "CPU内部構造、メモリバス、命令セットレベルの技術解説", 
-        style: "緻密かつ哲学的。14歳でZ80マシン語を叩いた原体験をベースにする。" 
-      },
-      cat2: { 
-        role: "BTO要塞構築スペシャリスト", 
-        focus: "省電力・高密度・排熱効率の最適化", 
-        style: "実用的だが、妥協を許さないプロスペック視点。計測データを重視する。" 
-      },
-      cat3: { 
-        role: "物理インフラ最高責任者", 
-        focus: "DC級サーバーラック、電源系統、ネットワークトポロジー", 
-        style: "壮大かつ重厚。家全体を一つの演算リソースと捉えるインフラの極致。" 
-      },
-      cat4: { 
-        role: "BTO要塞構築スペシャリスト（メーカー別徹底考察編）", 
-        focus: "44年の知見で解剖する、メーカー各社の設計思想と要塞基盤としての適正", 
-        style: "実用的だが、妥協を許さないプロスペック視点。計測データを重視する。" 
-      }
-    };
+    const persona = {
+      cat1: { role: "PCアーキテクチャの伝道師", style: "緻密かつ哲学的" },
+      cat2: { role: "BTO要塞構築スペシャリスト", style: "実用的・プロスペック" },
+      cat3: { role: "物理インフラ最高責任者", style: "壮大かつ重厚" },
+      cat4: { role: "メーカー設計思想アナリスト", style: "辛口・徹底解剖" },
+      cat5: { role: "OS史学者", style: "回顧的・アカデミック" }
+    }[activeTab] || { role: "エンジニア", style: "標準" };
 
-    const p = personas[activeTab] || personas.cat1;
-
-    return `
-# SYSTEM ARCHITECT PROMPT v7.0
-あなたは「${p.role}」です。以下の制約と文脈を完全に同期し、最高級の技術記事を執筆せよ。
-
-## MISSION DATA
-- TITLE: ${ep.title}
-- PHASE: ${ep.phaseLabel}
-- CORE FOCUS: ${ep.phaseFocus}
-- TARGET BUDGET: ${ep.phaseBudget}
-- ENVIRONMENT: ${ep.phaseEnv}
-
-## SEQUENCE CONTEXT
-${context.prev ? `[PREVIOUS_NODE]: ${context.prev.title} からの技術的連続性を維持。` : "[SEQUENCE_START]: これは連載の初動。導入として、本シリーズの哲学を提示せよ。"}
-${context.next ? `[NEXT_NODE]: 次回、${context.next.title} への伏線を組み込め。` : "[SEQUENCE_END]: シリーズの集大成。物理要塞の完成を宣言せよ。"}
-
-## CONSTRAINTS (厳守)
-1. 冒頭にインパクトのあるリード文を配置。
-2. Markdownの構造（H1, H2, H3）を使い、演算密度を感じさせる文章構成。
-3. 専門用語は逃げずに使いつつ、その「本質」を解説に含める。
-4. 「14歳の時に感じたマシンの鼓動」のような、個人的かつ熱量のあるエピソードを適宜ブレンド。
-5. 余計な挨拶や確認応答は全ビット排除し、本文のみを出力。`;
+    return `あなたは「${persona.role}」です。${persona.style}なトーンで執筆せよ。
+タイトル: ${ep.title}
+文脈: ${prev ? `前回(${prev.title})からの続き。` : "シリーズ初回。"}
+制約: Markdown(H2, H3)厳守。挨拶不要。本文のみ出力。`;
   }, [selectedEp, allEpsFlatSorted, activeTab]);
 
-  // --- 5. Eye-Catch Generative Logic ---
-  const handleGenerateVisual = async (ep = selectedEp) => {
-    if (!ep) return;
-    setIsImageGenerating(true);
-    
-    // カテゴリごとの視覚的テーマ設定
-    const visualLogic = {
-      cat1: "Hyper-realistic technical blueprint, indigo glowing wireframes, futuristic computer architecture concept art, 8k render",
-      cat2: "Close-up of a high-end PC motherboard, liquid cooling tubes with neon fluid, glowing RGB, cinematic macro photography",
-      cat3: "Massive industrial server farm, brutalist architecture, glowing status LEDs in dark atmosphere, foggy data center aesthetic",
-      cat4: "Collage of iconic BTO PC designs, exploded view of components, vintage and modern fusion, dynamic lighting to highlight design philosophies"
-    }[activeTab];
-
-    const prompt = `Digital Masterpiece: "${ep.title}". Aesthetic: ${visualLogic}. Cinematic lighting, ray-tracing, Unreal Engine 5 style, ultra-detailed, 16:9 aspect ratio.`;
-
-    try {
-      const response = await fetch('/ai-engine/image-generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, episodeId: ep.id }),
-      });
-      const data = await response.json();
-      if (data.imageUrl) {
-        setImagePath(data.imageUrl);
-        const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', ep.id);
-        await setDoc(docRef, { imagePath: data.imageUrl }, { merge: true });
-        triggerToast("VISUAL ASSET SYNCED");
-      }
-    } catch (err) {
-      console.error("Visual Engine Error", err);
-    } finally {
-      setIsImageGenerating(false);
-    }
-  };
-
-  // --- 6. DB Operations (Schema Sync & Commit) ---
-  const handleSyncSchema = async () => {
-    if (!confirm("TS定義からDB構造を再構築（デプロイ）しますか？")) return;
-    setSyncing(true);
-    const batch = writeBatch(db);
-    try {
-      const datasets = [
-        { data: GUIDE_STRUCTURE, id: 'cat1' },
-        { data: BTO_SERIES_CONFIG, id: 'cat2' },
-        { data: BTO_FORTRESS_CONFIG, id: 'cat3' },
-        { data: BTO_MAKERS_CONFIG, id: 'cat4' },
-        { data: { os_history: OS_HISTORY_SERIES }, id: 'cat5' } // 追加
-      ];
-
-      datasets.forEach(set => {
-        Object.entries(set.data).forEach(([sKey, sValue]: [string, any]) => {
-          sValue.phases.forEach((phase: any) => {
-            phase.episodes.forEach((ep: any) => {
-              const docId = `${set.id}_${sValue.id}_${String(ep.ep).padStart(2, '0')}`;
-              const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', docId);
-              batch.set(docRef, {
-                categoryId: set.id,
-                seriesId: sValue.id,
-                seriesTitle: sValue.title,
-                seriesOrder: sValue.order || 999,
-                phaseLabel: phase.label,
-                phaseBudget: phase.budget || "N/A",
-                phaseFocus: phase.focus || "",
-                phaseEnv: phase.environment || "",
-                episodeNumber: ep.ep,
-                title: ep.title,
-                updatedAt: serverTimestamp(),
-                status: 'planned'
-              }, { merge: true });
-            });
-          });
-        });
-      });
-      await batch.commit();
-      triggerToast("GLOBAL ARCHITECTURE DEPLOYED");
-    } catch (err) { alert("SYNC FAILED"); } finally { setSyncing(false); }
-  };
-
+  // --- UI Handlers ---
   const handleCommitMission = async () => {
     if (!selectedEp) return;
-    try {
-      const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', selectedEp.id);
-      await setDoc(docRef, {
-        content: editContent, amazonUrl, rakutenUrl, originalUrl, imagePath,
-        status: editContent.length > 50 ? 'published' : 'planned',
-        lastEdited: serverTimestamp()
-      }, { merge: true });
-      setView('list');
-      triggerToast("DATA COMMITTED TO CLOUD");
-    } catch (err) { alert("COMMIT FAILED"); }
+    const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', selectedEp.id);
+    await setDoc(docRef, {
+      content: editContent, amazonUrl, rakutenUrl, originalUrl, imagePath,
+      status: editContent.length > 50 ? 'published' : 'planned',
+      lastEdited: serverTimestamp()
+    }, { merge: true });
+    setView('list');
   };
 
-  // --- 7. Auto-Pilot Chain Reaction ---
-  const runAutoPilot = async () => {
-    const targets = episodes.filter(ep => 
-      ep.seriesId === selectedEp?.seriesId && (!ep.content || ep.content.length < 100)
-    ).sort((a, b) => a.episodeNumber - b.episodeNumber);
+  const copyToClipboard = (text, msg) => {
+    navigator.clipboard.writeText(text);
+    alert(msg);
+  };
 
-    if (targets.length === 0) return alert("未生成のミッションは存在しません。");
-    if (!confirm(`${targets.length}件の連鎖生成を開始します。よろしいですか？`)) return;
+  // --- Render logic (簡略版：実際にはアップロードされた長いJSXが入ります) ---
+  if (loading) return <div>Loading System...</div>;
 
-    setIsAutoPiloting(true);
-    for (let i = 0; i < targets.length; i++) {
-      const ep = targets[i];
-      setProgress({ 
-        current: i + 1, 
-        total: targets.length, 
-        label: `Active Generation: ${ep.title}`,
-        status: 'processing'
-      });
-
-      try {
-        const res = await fetch('/ai-engine/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: getFullPrompt(ep) }),
-        });
-        const data = await res.json();
-        if (data.text) {
-          const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', ep.id);
-          await setDoc(docRef, {
-            content: data.text, status: 'published', lastEdited: serverTimestamp(),
-            imagePath: `/images/articles/${ep.id}.webp`
-          }, { merge: true });
-        }
-      } catch (e) { console.error("Chain Error", e); }
+  return (
+    <div className="min-h-screen bg-[#020617] text-slate-300 font-sans">
+      {/* ナビゲーション、カテゴリーセレクター、リスト表示、エディター画面のJSX */}
+      {/* (アップロードされたコードの return 以降の構造を維持) */}
       
-      // Rate limit bypass delay
-      await new Promise(r => setTimeout(r, 2500));
+      {/* 修正ポイント: ボタンのonClickで runAutoPilot や handleCommitMission を呼び出し */}
+      <button onClick={runAutoPilot} disabled={isAutoPiloting}>
+        {isAutoPiloting ? "PILOT ACTIVE" : "AUTO-PILOT SERIES"}
+      </button>
+    </div>
+  );
+};
+
+export default ContentConsole;  
+
+
+
+
+// --- 1. AIエンジン呼び出し & 保存ロジック (関数の先頭に追加) ---
+const callAiEngine = async (prompt, priority = 1) => {
+  try {
+    const res = await fetch('/ai-engine/generate', { // あなたが作成したパス
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, priority })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.message);
+    return data.content;
+  } catch (err) {
+    console.error("AI API Error:", err);
+    throw err;
+  }
+};
+
+const saveToFirestore = async (id, content) => {
+  try {
+    const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', id);
+    await setDoc(docRef, {
+      content: content,
+      status: 'published',
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    console.log(`[Success] Saved: ${id}`);
+  } catch (err) {
+    console.error("Firestore Save Error:", err);
+  }
+};
+
+// --- 2. オートパイロット実行関数 (取りこぼし修正) ---
+const runAutoPilot = async () => {
+  if (isAutoPiloting) return;
+
+  const targets = episodes.filter(ep => !ep.content);
+  if (targets.length === 0) {
+    alert("未生成の記事はありません。");
+    return;
+  }
+
+  setIsAutoPiloting(true);
+  setProgress({ current: 0, total: targets.length, label: 'Initializing...', status: 'active' });
+
+  let current = 0;
+
+  for (const ep of targets) {
+    try {
+      current++;
+
+      setProgress(prev => ({
+        ...prev,
+        label: `生成中: ${ep.title}`,
+        current
+      }));
+
+      await processEpisode(ep); // ← ここに集約
+
+    } catch (e) {
+      console.error(`ERROR: ${ep.title}`, e);
+      continue; // ← breakを絶対に使わない
     }
-    setIsAutoPiloting(false);
-    triggerToast("SERIES COMPLETION SUCCESSFUL");
+  }
+
+  setIsAutoPiloting(false);
+  setProgress(prev => ({ ...prev, label: '完了', status: 'idle' }));
+};
+
+const processEpisode = async (ep) => {
+  const prompt = getFullPrompt(ep);
+
+  let article = await callAiEngine(prompt, 1);
+
+  let check = validateContent(article);
+  let retryCount = 0;
+
+  while (!check.ok && retryCount < 2) {
+    console.warn(`再生成中 (${retryCount + 1}): ${check.reason}`);
+
+    article = await callAiEngine(
+      `以下の指摘を修正して書き直してください:\n指摘: ${check.reason}\n\n元原稿:\n${article}`,
+      1
+    );
+
+    check = validateContent(article);
+    retryCount++;
+  }
+
+  if (!check.ok) {
+    console.error(`SKIP: ${ep.title}`);
+    return null;
+  }
+
+  await saveToFirestore(ep.id, article);
+
+  return article;
+};
+
+// --- 3. プロンプト構築ロジックの補完 ---
+const getFullPrompt = useCallback((ep = selectedEp) => {
+  if (!ep) return "";
+
+  // カテゴリごとの人格（パーソナリティ）定義
+  const personaMap = {
+    cat1: { role: "PCアーキテクチャの伝道師", tone: "緻密かつ哲学的" },
+    cat2: { role: "BTO要塞構築スペシャリスト", tone: "実用的・プロスペック" },
+    cat3: { role: "物理インフラ最高責任者", tone: "壮大かつ重厚" },
+    cat4: { role: "メーカー設計思想アナリスト", tone: "辛口・徹底解剖" },
+    cat5: { role: "OS史学者", tone: "回顧的・アカデミック" } // ここを追加
   };
 
-  // --- Helpers ---
-  const triggerToast = (msg: string) => {
-    const toast = document.createElement('div');
-    toast.className = "fixed bottom-10 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-10 py-4 rounded-full text-[11px] font-black z-[100] shadow-2xl border border-blue-400 animate-in fade-in slide-in-from-bottom-5";
-    toast.innerHTML = `<div class="flex items-center gap-3"><span class="animate-ping w-2 h-2 bg-white rounded-full"></span> ${msg}</div>`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.classList.add('animate-out', 'fade-out', 'slide-out-to-bottom-5');
-      setTimeout(() => toast.remove(), 500);
-    }, 3000);
-  };
+  const p = personaMap[activeTab] || { role: "エンジニア", tone: "標準" };
 
-  const openEditor = (ep) => {
-    setSelectedEp(ep);
-    setEditContent(ep.content || '');
-    setAmazonUrl(ep.amazonUrl || '');
-    setRakutenUrl(ep.rakutenUrl || '');
-    setOriginalUrl(ep.originalUrl || '');
-    setImagePath(ep.imagePath || '');
-    setView('edit');
-  };
+  return `
+あなたは「${p.role}」です。${p.tone}なトーンで執筆してください。
+タイトル: ${ep.title}
+シリーズ: ${ep.seriesTitle}
+
+【執筆ルール】
+1. Markdown形式（H2, H3）を徹底すること。
+2. 「こんにちは」「AIとして」などの挨拶は一切不要。
+3. 専門用語を多用し、読者の知的好奇心を刺激する内容にすること。
+4. 文字数は最低でも1200文字以上を目指すこと。
+  `.trim();
+}, [selectedEp, activeTab]);
+
+// --- 補完：マスターデータをFirestoreに一括同期するロジック ---
+const handleSyncMaster = async () => {
+  setSyncing(true);
+  try {
+    const batch = writeBatch(db);
+    
+    // 全カテゴリーのデータをフラットにまとめる
+    const allMasterData = [
+      ...GUIDE_STRUCTURE.map(item => ({ ...item, categoryId: 'cat1' })),
+      ...BTO_SERIES_CONFIG.map(item => ({ ...item, categoryId: 'cat2' })),
+      ...BTO_FORTRESS_CONFIG.map(item => ({ ...item, categoryId: 'cat3' })),
+      ...BTO_MAKERS_CONFIG.map(item => ({ ...item, categoryId: 'cat4' })),
+      ...OS_HISTORY_SERIES.map(item => ({ ...item, categoryId: 'cat5' })) // cat5追加
+    ];
+
+    for (const item of allMasterData) {
+      const docId = `${item.categoryId}_${item.id || item.episodeNumber}`;
+      const docRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', docId);
+      // 既存データがある場合は上書きせず、基本情報のみマージ
+      batch.set(docRef, {
+        ...item,
+        status: 'planned',
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+    
+    await batch.commit();
+    alert("マスターデータの同期が完了しました");
+  } catch (err) {
+    console.error("Sync Error:", err);
+  } finally {
+    setSyncing(false);
+  }
+};
+
+// フィルタリングロジックの修正
+const filteredEpisodes = useMemo(() => {
+  return episodes.filter(ep => {
+    const matchesSearch = ep.title?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesTab = ep.categoryId === activeTab;
+    return matchesSearch && matchesTab;
+  });
+}, [episodes, searchTerm, activeTab]);
+
+// エピソード選択時の処理を強化
+const handleSelectEpisode = (ep) => {
+  setSelectedEp(ep);
+  setEditContent(ep.content || ''); // 既存の内容をエディタにセット
+  setAmazonUrl(ep.amazonUrl || '');
+  setRakutenUrl(ep.rakutenUrl || '');
+  setOriginalUrl(ep.originalUrl || '');
+  setImagePath(ep.imagePath || '');
+  setView('edit');
+};
+
+
+
 
   // --- Initial Loading Screen ---
   if (loading) return (
@@ -585,6 +634,7 @@ ${context.next ? `[NEXT_NODE]: 次回、${context.next.title} への伏線を組
                 </div>
                 <div className="mt-12 w-full h-5 bg-black/50 rounded-full p-1 border border-white/5 shadow-inner">
                   <div className="h-full bg-gradient-to-r from-indigo-600 via-blue-500 to-indigo-400 rounded-full shadow-[0_0_40px_#6366f1] transition-all duration-1000 ease-out" style={{width:`${(progress.current/progress.total)*100}%`}} />
+                  <div className="h-full bg-gradient-to-r from-blue-600 to-cyan-500 transition-all duration-500" style={{ width: `${(progress.current / progress.total) * 100}%` }}/>
                 </div>
               </div>
             )}
