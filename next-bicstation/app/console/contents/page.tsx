@@ -22,6 +22,9 @@ import {
 import { GUIDE_STRUCTURE } from '@/content-data/category1_guide_structure';  
 import { BTO_SERIES_CONFIG } from '@/content-data/category2_bto_series';
 import { BTO_FORTRESS_CONFIG } from '@/content-data/category3_bto_fortess';
+import { BTO_MAKERS_CONFIG } from '@/content-data/category4_bto_makers';
+import { OS_HISTORY_SERIES } from '@/content-data/category5_bto_oshistories'; // 追加
+
 
 // --- Firebase Configuration ---
 const FIREBASE_CONFIG = {
@@ -156,6 +159,11 @@ const ContentConsole = () => {
         role: "物理インフラ最高責任者", 
         focus: "DC級サーバーラック、電源系統、ネットワークトポロジー", 
         style: "壮大かつ重厚。家全体を一つの演算リソースと捉えるインフラの極致。" 
+      },
+      cat4: { 
+        role: "BTO要塞構築スペシャリスト（メーカー別徹底考察編）", 
+        focus: "44年の知見で解剖する、メーカー各社の設計思想と要塞基盤としての適正", 
+        style: "実用的だが、妥協を許さないプロスペック視点。計測データを重視する。" 
       }
     };
 
@@ -193,13 +201,14 @@ ${context.next ? `[NEXT_NODE]: 次回、${context.next.title} への伏線を組
     const visualLogic = {
       cat1: "Hyper-realistic technical blueprint, indigo glowing wireframes, futuristic computer architecture concept art, 8k render",
       cat2: "Close-up of a high-end PC motherboard, liquid cooling tubes with neon fluid, glowing RGB, cinematic macro photography",
-      cat3: "Massive industrial server farm, brutalist architecture, glowing status LEDs in dark atmosphere, foggy data center aesthetic"
+      cat3: "Massive industrial server farm, brutalist architecture, glowing status LEDs in dark atmosphere, foggy data center aesthetic",
+      cat4: "Collage of iconic BTO PC designs, exploded view of components, vintage and modern fusion, dynamic lighting to highlight design philosophies"
     }[activeTab];
 
     const prompt = `Digital Masterpiece: "${ep.title}". Aesthetic: ${visualLogic}. Cinematic lighting, ray-tracing, Unreal Engine 5 style, ultra-detailed, 16:9 aspect ratio.`;
 
     try {
-      const response = await fetch('/api/ai/image-generate', {
+      const response = await fetch('/ai-engine/image-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, episodeId: ep.id }),
@@ -227,7 +236,9 @@ ${context.next ? `[NEXT_NODE]: 次回、${context.next.title} への伏線を組
       const datasets = [
         { data: GUIDE_STRUCTURE, id: 'cat1' },
         { data: BTO_SERIES_CONFIG, id: 'cat2' },
-        { data: BTO_FORTRESS_CONFIG, id: 'cat3' }
+        { data: BTO_FORTRESS_CONFIG, id: 'cat3' },
+        { data: BTO_MAKERS_CONFIG, id: 'cat4' },
+        { data: { os_history: OS_HISTORY_SERIES }, id: 'cat5' } // 追加
       ];
 
       datasets.forEach(set => {
@@ -293,7 +304,7 @@ ${context.next ? `[NEXT_NODE]: 次回、${context.next.title} への伏線を組
       });
 
       try {
-        const res = await fetch('/api/ai/generate', {
+        const res = await fetch('/ai-engine/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: getFullPrompt(ep) }),
@@ -412,7 +423,13 @@ ${context.next ? `[NEXT_NODE]: 次回、${context.next.title} への伏線を組
             {/* --- Category Selector (High-End Tabs) --- */}
             <div className="flex justify-center">
               <div className="inline-flex bg-[#0F172A] p-3 rounded-[3.5rem] border border-white/5 shadow-2xl relative">
-                {[{id:'cat1', l:'Tactical Guide', i:Terminal, c:'text-blue-500'}, {id:'cat2', l:'BTO Fortress', i:Layers, c:'text-indigo-500'}, {id:'cat3', l:'Physical Infra', i:Database, c:'text-emerald-500'}].map(t => (
+                {[
+                  {id:'cat1', l:'Tactical Guide', i:Terminal, c:'text-blue-500'}, 
+                  {id:'cat2', l:'BTO Fortress', i:Layers, c:'text-indigo-500'}, 
+                  {id:'cat3', l:'Physical Infra', i:Database, c:'text-emerald-500'},
+                  {id:'cat4', l:'Maker Analysis', i:ShieldCheck, c:'text-yellow-500'},
+                  {id:'cat5', l:'OS History', i:Server, c:'text-amber-500'}
+                ].map(t => (
                   <button key={t.id} onClick={() => {setActiveTab(t.id); setOpenSeries(null);}} className={`flex items-center gap-5 px-14 py-6 rounded-[3rem] text-[13px] font-black transition-all duration-500 relative z-10 ${activeTab === t.id ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/40 translate-y-[-2px]' : 'text-slate-500 hover:text-slate-300'}`}>
                     <t.i size={20} className={activeTab === t.id ? 'text-white' : t.c} /> {t.l}
                   </button>
