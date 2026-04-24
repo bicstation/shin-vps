@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 # /home/maya/dev/shin-vps/django/tiper_api/urls.py
 
+
 from django.contrib import admin
 from django.urls import path, include, re_path 
+from django.conf import settings
+from django.conf.urls.static import static
 from .views import home
 
 urlpatterns = [
@@ -30,3 +33,6 @@ urlpatterns = [
     # これにより、APIの打ち間違いで「謎のHTML」が返ってくるのを防ぎます。
     re_path(r'^(?!api/|admin/|static/|media/).*$', home, name='frontend'), 
 ]
+
+# 👇 これ追加
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,107 @@
+{
+  "2": {
+    "inputs": {
+      "seed": 1047553322145470,
+      "steps": 20,
+      "cfg": 8,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "6",
+        0
+      ],
+      "positive": [
+        "5",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Kサンプラー"
+    }
+  },
+  "3": {
+    "inputs": {
+      "samples": [
+        "2",
+        0
+      ],
+      "vae": [
+        "6",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAEデコード"
+    }
+  },
+  "5": {
+    "inputs": {
+      "text": "masterpiece, best quality, cyberpunk city, futuristic, ultra detailed",
+      "clip": [
+        "6",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIPテキストエンコード（プロンプト）"
+    }
+  },
+  "6": {
+    "inputs": {
+      "ckpt_name": "v1-5-pruned-emaonly.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "チェックポイントを読み込む"
+    }
+  },
+
+  "7": {
+    "inputs": {
+      "text": "low quality, blurry, text, watermark, bad anatomy",
+      "clip": ["6", 1]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIPテキストエンコード（ネガティブ）"
+    }
+  },
+
+  "11": {
+    "inputs": {
+      "width": 512,
+      "height": 512,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "空の潜在画像"
+    }
+  },
+  "18": {
+  "inputs": {
+    "filename_prefix": "ComfyUI",
+    "images": [
+      "3",
+      0
+    ]
+  },
+  "class_type": "SaveImage",
+  "is_output": true,
+  "_meta": {
+    "title": "画像を保存"
+  }
+}
+}

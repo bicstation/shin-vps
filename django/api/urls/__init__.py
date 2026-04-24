@@ -61,4 +61,9 @@ urlpatterns = [
     # ==========================================================
     path('events/stream', lambda r: HttpResponse(status=204)),
     path('releases', lambda r: HttpResponse(status=204)),
+    
+    # ==========================================================
+    # 🤖 AI系
+    # ==========================================================
+    path('ai/', include('api.urls.ai_urls')),
 ]

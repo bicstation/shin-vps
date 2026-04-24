@@ -1,3 +1,5 @@
+// /home/maya/shin-vps/next-bicstation/app/console/contents/page.tsx
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
@@ -213,7 +215,32 @@ const runAutoPilot = async () => {
 
       // --- ③ 保存 ---
       if (check.ok) {
-        await saveToFirestore(ep.id, content);
+
+        // --- 🔥 画像生成API呼び出し ---
+        const res = await fetch('/ai-engine/image-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            title: ep.title,
+            content: content
+          })
+        });
+
+        const data = await res.json();
+        const imagePath = data.url;
+
+        // --- 🔥 Firestore保存（画像付き） ---
+        await setDoc(
+          doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', ep.id),
+          {
+            content,
+            imagePath,
+            status: 'published',
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
+
       } else {
         console.warn(`⚠️ Skip: ${ep.title} (validation failed)`);
       }
@@ -251,7 +278,7 @@ const runAutoPilot = async () => {
     setAmazonUrl(ep.amazonUrl || '');
     setRakutenUrl(ep.rakutenUrl || '');
     setOriginalUrl(ep.originalUrl || '');
-    setImagePath(ep.imagePath || '');
+    setImagePath(ep.imagePath || 'http://localhost:8083/media/articles/cat1_bto_02.png');
     setView('edit');
   };
 
@@ -459,6 +486,12 @@ const getPhaseNumber = (label) => {
                 <div className="flex justify-between items-center px-4">
                   <span className="text-[10px] font-black text-slate-500 flex items-center gap-2"><Terminal size={12}/> DATA_CONTENT_STREAM</span>
                 </div>
+                 {imagePath && (
+                  <img
+                    src={imagePath}
+                    className="w-full h-64 object-cover rounded-xl"
+                  />
+                )}
                 <textarea 
                   value={editContent} 
                   onChange={e => setEditContent(e.target.value)} 

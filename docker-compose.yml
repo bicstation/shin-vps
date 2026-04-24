@@ -60,7 +60,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.django-api.rule=(Host(`api-saving-host`, `api-bicstation-host`, `api-tiper-host`, `api-avflash-host`) || HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`))"
+      - "traefik.http.routers.django-api.rule=(Host(`api-saving-host`, `api-bicstation-host`, `api-tiper-host`, `api-avflash-host`) || HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`, `/media`))"
       - "traefik.http.routers.django-api.priority=6000"
       - "traefik.http.routers.django-api.service=django-svc"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
