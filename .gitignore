@@ -86,3 +86,7 @@ debug_*.html
 Thumbs.db
 *.swp
 *.swo
+
+# 全Firebase系
+config/firebase/*.json
+**/firebase/*.json

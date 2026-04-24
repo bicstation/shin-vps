@@ -64,6 +64,11 @@ services:
       - "traefik.http.routers.django-api.priority=6000"
       - "traefik.http.routers.django-api.service=django-svc"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
+    extra_hosts:
+      - "ai-tiper-host:host-gateway"
+      - "ai-bicstation-host:host-gateway"
+      - "ai-saving-host:host-gateway"
+      - "ai-avflash-host:host-gateway"
     volumes:
       - ./django:/usr/src/app
       - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
@@ -90,6 +95,7 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     extra_hosts:
       - "api-bicstation-host:host-gateway"
+      - "ai-bicstation-host:host-gateway"
       - "host.docker.internal:host-gateway"
     volumes:
       - ./next-bicstation:/usr/src/app
@@ -122,6 +128,7 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     extra_hosts:
       - "api-saving-host:host-gateway"
+      - "ai-saving-host:host-gateway"
       - "host.docker.internal:host-gateway"
     volumes:
       - ./next-bic-saving:/usr/src/app
@@ -154,6 +161,7 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     extra_hosts:
       - "api-tiper-host:host-gateway"
+      - "ai-tiper-host:host-gateway"
       - "host.docker.internal:host-gateway"
     volumes:
       - ./next-tiper:/usr/src/app
@@ -186,6 +194,7 @@ services:
       - INTERNAL_API_URL=http://django-v3:8000
     extra_hosts:
       - "api-avflash-host:host-gateway"
+      - "ai-avflash-host:host-gateway"
       - "host.docker.internal:host-gateway"
     volumes:
       - ./next-avflash:/usr/src/app
