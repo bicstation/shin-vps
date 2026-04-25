@@ -64,6 +64,8 @@ services:
       - "traefik.http.routers.django-api.priority=6000"
       - "traefik.http.routers.django-api.service=django-svc"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
+      - "traefik.http.routers.django.rule=PathPrefix(`/api`) || PathPrefix(`/media`)"
+      - "traefik.http.services.django.loadbalancer.server.port=8000"
     extra_hosts:
       - "ai-tiper-host:host-gateway"
       - "ai-bicstation-host:host-gateway"
@@ -107,7 +109,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`, `bicstation.com`, `localhost`)"
+      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`, `bicstation.com`)"
       - "traefik.http.routers.bic-router.priority=2000"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
 
@@ -224,6 +226,20 @@ services:
       - "traefik.docker.network=shared-proxy"
       - "traefik.http.routers.dozzle-router.rule=Host(`log-host`)"
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
+  
+  # --- 5. AI画像生成 (ComfyUI) ---
+  comfyui:
+    build:
+      context: ./ai/ComfyUI
+    # container_name: comfyui-v3
+    restart: unless-stopped
+    ports:
+      - "8188:8188"
+    volumes:
+      # - ./ai/ComfyUI:/root/ComfyUI
+      - ./ai/ComfyUI/models:/root/ComfyUI/models
+    networks:
+      - internal-net
 
 networks:
   internal-net:

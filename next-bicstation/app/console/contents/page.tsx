@@ -226,6 +226,13 @@ const ContentConsole = () => {
   for (const ep of targets) {
     try {
       // --- ① 生成 ---
+      setProgress({
+        current: count,
+        total: targets.length,
+        label: `🧠 Generating text: ${ep.title}`,
+        status: 'active'
+      });
+
       let content = await callAiEngine(getFullPrompt(ep));
 
       // --- ② バリデーション & リトライ ---
@@ -256,6 +263,13 @@ const ContentConsole = () => {
 
         try {
           console.log("🚀 START IMAGE:", ep.title);
+
+          setProgress({
+            current: count,
+            total: targets.length,
+            label: `🎨 Generating image: ${ep.title}`,
+            status: 'active'
+          });
 
           res = await fetch('/ai-engine/image-generate/', {
             method: 'POST',
@@ -294,6 +308,13 @@ const ContentConsole = () => {
 
         console.log("🖼 Saving image:", imagePath);
 
+        setProgress({
+          current: count,
+          total: targets.length,
+          label: `💾 Saving: ${ep.title}`,
+          status: 'active'
+        });
+
         await setDoc(
           doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', ep.id),
           {
@@ -311,10 +332,11 @@ const ContentConsole = () => {
 
       // --- ④ 進捗更新 ---
       count++;
+
       setProgress({
         current: count,
         total: targets.length,
-        label: `Generating: ${ep.title}`,
+        label: `✅ Done: ${ep.title}`,
         status: 'active'
       });
 
@@ -323,6 +345,15 @@ const ContentConsole = () => {
 
     } catch (e) {
         console.error("🔥🔥🔥 FULL ERROR:", e);
+
+          count++;
+
+          setProgress({
+            current: count,
+            total: targets.length,
+            label: `❌ Failed: ${ep.title}`,
+            status: 'active'
+          });
 
         if (e instanceof Error) {
           console.error("MESSAGE:", e.message);
@@ -444,9 +475,29 @@ const getPhaseNumber = (label) => {
           
           <div className="flex items-center gap-4">
             {isAutoPiloting && (
-              <div className="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center gap-3">
-                <RefreshCw className="animate-spin text-blue-400" size={14} />
-                <span className="text-[10px] font-black text-blue-400 font-mono">{progress.current} / {progress.total}</span>
+              <div className="px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full flex flex-col gap-1">
+                
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="animate-spin text-blue-400" size={14} />
+                  <span className="text-[10px] font-black text-blue-400 font-mono">
+                    {progress.current} / {progress.total}
+                  </span>
+                </div>
+
+                <div className="text-[9px] text-slate-400 font-mono">
+                  {progress.label}
+                </div>
+
+                {/* 👇 ここに追加 */}
+                <div className="w-40 h-1 bg-white/10 rounded-full overflow-hidden mt-1">
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-500"
+                    style={{
+                      width: `${progress.total ? (progress.current / progress.total) * 100 : 0}%`
+                    }}
+                  />
+                </div>
+
               </div>
             )}
             <button onClick={handleSyncMaster} disabled={syncing} className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-[10px] font-black rounded-lg border border-white/10 transition-all uppercase tracking-widest flex items-center gap-2">

@@ -10,6 +10,5 @@ urlpatterns = [
     path('login/', auth_views.login_view, name='login'),
     path('logout/', auth_views.logout_view, name='logout'),
     path('register/', auth_views.register_view, name='register'),
-    path('me/', auth_views.get_user_view, name='user_me'),
-    path('user/', auth_views.get_user_view, name='user_detail'),
+    path('me/', auth_views.get_user_view, name='me'),
 ]

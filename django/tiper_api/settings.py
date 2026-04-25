@@ -1,164 +1,152 @@
 # -*- coding: utf-8 -*-
 """
-Django settings for tiper_api project.
-🚀 SHIN-VPS v3.9.2 完全復旧・マルチドメイン統合版
-修正内容: シリーズ構成用JSONパスの追加（management/commands配下）、CSRF信頼ドメインの厳格化
+Django settings for tiper_api project
+🚀 JWT認証統一版（セッション廃止設計）
 """
 
 import os
 from pathlib import Path
+from datetime import timedelta
 
-# --- 📁 ディレクトリ設定 ---
-# BASE_DIR は /home/maya/shin-dev/shin-vps/django/ を指す
+# ==========================================================
+# 📁 ディレクトリ設定
+# ==========================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --- 🔐 セキュリティ設定 ---
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-default-key-please-change-in-prod')
+# ==========================================================
+# 🔐 セキュリティ設定
+# ==========================================================
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-me')
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# --- 🌐 ホスト / ドメイン設定 ---
+# ==========================================================
+# 🌐 ホスト設定
+# ==========================================================
 ALLOWED_HOSTS = ['*']
 
-# --- 🔗 CORS / CSRF 設定 ---
+# ==========================================================
+# 🔗 CORS / CSRF（JWTではcookie使わないので簡略化）
+# ==========================================================
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = False  # ← JWTなのでFalseにする
 
 CSRF_TRUSTED_ORIGINS = [
-    # 本番ドメイン
-    'https://tiper.live', 'https://api.tiper.live',
-    'https://bicstation.com', 'https://api.bicstation.com',
-    'https://bic-saving.com', 'https://api.bic-saving.com',
-    'https://avflash.xyz', 'https://api.avflash.xyz',
-    
-    # ローカル・デバッグ環境
-    'http://localhost:3000', 'http://localhost:8083',
-    'http://127.0.0.1:3000', 'http://127.0.0.1:8083',
-
-    # 🛰️ 内部Dockerネットワーク通信
-    'http://tiper-host', 'http://tiper-host:8083',
-    'http://bicstation-host', 'http://bicstation-host:8083',
-    'http://saving-host', 'http://saving-host:8083',
-    'http://avflash-host', 'http://avflash-host:8083',
-    
-    # 🛰️ API用識別子
-    'http://api-tiper-host', 'http://api-tiper-host:8083',
-    'http://api-bicstation-host', 'http://api-bicstation-host:8083',
-    'http://api-saving-host', 'http://api-saving-host:8083',
-    'http://api-avflash-host', 'http://api-avflash-host:8083',
+    'http://localhost:3000',
+    'http://localhost:8083',
 ]
 
-# --- 🛡️ Proxy 設定 ---
+# ==========================================================
+# 🛡️ Proxy設定（Traefik対応）
+# ==========================================================
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# --- ⚙️ アプリケーション定義 ---
+# ==========================================================
+# ⚙️ アプリケーション
+# ==========================================================
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    # ❌ セッションはJWTでは不要だが管理画面用に残してOK
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'django_filters',
+
     'rest_framework',
+    'django_filters',
     'django_extensions',
+
     'scrapers',
     'api.apps.ApiConfig',
 ]
 
+# ==========================================================
+# 🔧 ミドルウェア
+# ==========================================================
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'tiper_api.middleware.MultiDomainProjectMiddleware',
+
+    # ❌ セッション依存しないが管理画面のため残す
     'django.contrib.sessions.middleware.SessionMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ==========================================================
+# 📡 URL / WSGI
+# ==========================================================
 ROOT_URLCONF = 'tiper_api.urls'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
 WSGI_APPLICATION = 'tiper_api.wsgi.application'
 
-# --- 🗄️ データベース設定 ---
+# ==========================================================
+# 🗄️ DB設定
+# ==========================================================
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'tiper_db'),
         'USER': os.environ.get('DB_USER', 'tiper_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', '1492nabe'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', 'postgres-db-v3'),
         'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
-# --- 👥 認証 / 国際化 ---
+# ==========================================================
+# 👤 ユーザー設定
+# ==========================================================
 AUTH_USER_MODEL = 'api.User'
+
+# ==========================================================
+# 🌍 言語 / 時間
+# ==========================================================
 LANGUAGE_CODE = 'ja'
 TIME_ZONE = 'Asia/Tokyo'
 USE_I18N = True
 USE_TZ = True
 
-# --- 📁 静的ファイル ---
+# ==========================================================
+# 📁 静的 / メディア
+# ==========================================================
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# --- 📁 メディアファイル（追加） ---
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
-}
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# --- 🛠️ Django REST Framework ---
+# ==========================================================
+# 🚀 DRF設定（JWT認証に統一）
+# ==========================================================
 REST_FRAMEWORK = {
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     'rest_framework.authentication.BasicAuthentication',
-    # ),
-    'DEFAULT_AUTHENTICATION_CLASSES': [],
-    
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
+    # 🔥 ここが最重要（JWTに統一）
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    # 'PAGE_SIZE': 12,
+
+    # 基本はログイン必須（API設計的に正しい）
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+# ==========================================================
+# 🔑 JWT設定（ここも重要）
+# ==========================================================
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
 
-# --- 🛰️ シリーズ記事生成エンジンのための追加設定 ---
-# 指定されたパス: /home/maya/shin-dev/shin-vps/django/api/management/commands/content_data/series_config.json
-SERIES_CONFIG_PATH = os.path.join(
-    BASE_DIR, 
-    'api', 
-    'management', 
-    'commands', 
-    'content_data', 
-    'series_config.json'
-)
+# ==========================================================
+# ⚙️ その他
+# ==========================================================
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000

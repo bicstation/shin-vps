@@ -1,3 +1,5 @@
+# /home/maya/shin-vps/django/api/management/commands/test_comfy.py
+
 from django.core.management.base import BaseCommand
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -40,7 +42,8 @@ class Command(BaseCommand):
         # -----------------------
         # ComfyUI 設定
         # -----------------------
-        comfy_url = "http://ai-tiper-host:8188"
+        # comfy_url = "http://ai-tiper-host:8188"
+        comfy_url = "http://comfyui:8188"
 
         # -----------------------
         # ワークフロー読み込み

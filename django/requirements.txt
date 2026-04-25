@@ -49,3 +49,5 @@ firebase-admin==7.4.0
 
 # 📝 コンテンツ処理
 markdown
+
+djangorestframework-simplejwt==5.3.1

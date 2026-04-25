@@ -2,10 +2,10 @@
   "2": {
     "inputs": {
       "seed": 1047553322145470,
-      "steps": 12,
-      "cfg": 8,
-      "sampler_name": "euler",
-      "scheduler": "simple",
+      "steps": 18,
+      "cfg": 6.5,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
       "denoise": 1,
       "model": [
         "6",
@@ -47,7 +47,7 @@
   },
   "5": {
     "inputs": {
-      "text": "clean modern workspace, laptop on desk, minimal setup, top-down view, centered composition, professional product photography, soft lighting, high detail, realistic, no text",
+      "text": "clean modern illustration, minimal, professional tech blog style,futuristic server infrastructure, glowing data flow, network connections,isometric view, centered composition,soft lighting, high detail, 4k, no text",
       "clip": [
         "6",
         1
@@ -70,7 +70,7 @@
 
   "7": {
     "inputs": {
-      "text": "blurry, low quality, distorted, messy, cluttered, deformed, bad perspective, warped desk, duplicate objects, extra objects, noise, grain, watermark, text, logo",
+      "text": "blurry, low quality, distorted, messy, cluttered, deformed,bad perspective, warped, duplicate objects, extra objects,noise, grain, watermark, text, logo,human, person, laptop",
       "clip": ["6", 1]
     },
     "class_type": "CLIPTextEncode",

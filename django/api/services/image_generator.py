@@ -10,21 +10,8 @@ def generate_image(title, content, comfy_url="http://ai-tiper-host:8188"):
     # -----------------------
     # プロンプト生成
     # -----------------------
-    prompt_text = f"""
-    A clean modern illustration representing: {title},
-
-    minimal composition,
-    conceptual tech visualization,
-    servers, network connections, data flow,
-    futuristic but simple design,
-
-    soft lighting,
-    high detail,
-    professional tech blog style,
-
-    no text, no watermark
-    """
-
+    prompt_text = build_prompt(title, "tech")
+    
     print("🧠 Prompt:", prompt_text.strip())
 
     # -----------------------
@@ -37,6 +24,8 @@ def generate_image(title, content, comfy_url="http://ai-tiper-host:8188"):
 
     with open(workflow_path, "r") as f:
         workflow = json.load(f)
+    
+    workflow["5"]["inputs"]["text"] = prompt_text
 
     # -----------------------
     # プロンプト差し替え（positiveのみ）
@@ -161,3 +150,22 @@ def generate_image(title, content, comfy_url="http://ai-tiper-host:8188"):
             raise Exception("No image found in outputs")
 
     raise Exception("❌ No image returned from ComfyUI")
+
+
+def build_prompt(title, category="tech"):
+
+    base = "clean modern illustration, minimal, professional, no text, no watermark"
+
+    category_map = {
+        "tech": "futuristic server infrastructure, glowing data flow, network connections",
+        "business": "financial growth chart, modern office, success concept",
+        "seo": "search interface, analytics dashboard, global network"
+    }
+
+    composition = "isometric view, centered composition"
+    quality = "high detail, cinematic lighting, 4k"
+
+    # タイトルを軽く加工（雑でOK）
+    keywords = title.replace("の", " ").replace("方法", "").strip()
+
+    return f"{base}, {category_map.get(category, '')}, {keywords}, {composition}, {quality}"
