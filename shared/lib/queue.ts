@@ -1,3 +1,5 @@
+// /home/maya/shin-dev/shin-vps/shared/lib/queue.ts
+
 type Task<T> = (signal: AbortSignal) => Promise<T>;
 
 type QueueItem<T> = {
@@ -70,4 +72,4 @@ export class AdvancedQueue {
   }
 }
 
-export const requestQueue = new AdvancedQueue(3);
+export const requestQueue = new AdvancedQueue(1);

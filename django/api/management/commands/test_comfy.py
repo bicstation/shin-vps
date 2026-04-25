@@ -6,7 +6,6 @@ import json
 import requests
 import time
 
-
 class Command(BaseCommand):
     help = "ComfyUI generate + Firestore save"
 
@@ -59,16 +58,36 @@ class Command(BaseCommand):
         # -----------------------
         # プロンプト
         # -----------------------
-        positive = "masterpiece, best quality, cyberpunk city, female android, standing on rooftop, neon lights, cinematic lighting, depth of field"
+        title = "AIでブログ収益化する方法"
+
+        positive = """
+        masterpiece, best quality,
+        blog header image,
+        AI blog monetization,
+        laptop workspace,
+        clean composition,
+        minimalist,
+        wide composition,
+        space for text,
+        soft lighting,
+        high contrast,
+        no text
+        """
+        
+        
         negative = "low quality, blurry, text, watermark, bad anatomy"
 
         workflow["5"]["inputs"]["text"] = positive
         workflow["7"]["inputs"]["text"] = negative
+        
+        model_name = os.getenv("COMFY_MODEL", "v1-5-pruned-emaonly.safetensors")
+        self.stdout.write(f"🧠 Using model: {model_name}")
+
 
         # CheckpointLoaderSimple のモデルを上書き
         for node_id, node in workflow.items():
             if node.get("class_type") == "CheckpointLoaderSimple":
-                node["inputs"]["ckpt_name"] = "v1-5-pruned-emaonly.safetensors"
+                node["inputs"]["ckpt_name"] = model_name
         
         
         # -----------------------
@@ -87,8 +106,11 @@ class Command(BaseCommand):
                     "outputs": ["18"]
                 }
             },
-            timeout=10
+            timeout=120
         )
+        
+        print("STATUS:", res.status_code)
+        print("RESPONSE:", res.text)
         
         res.raise_for_status()
 
@@ -135,29 +157,6 @@ class Command(BaseCommand):
             except requests.exceptions.RequestException as e:
                 self.stdout.write(f"⚠️ retry: {e}")
 
-        # -----------------------
-        # ③ 画像取得
-        # -----------------------
-        # if prompt_id not in history:
-        #     raise Exception("❌ historyにprompt_idが存在しない")
-
-        # outputs = history[prompt_id].get("outputs", {})
-        
-        # # outputs = history[prompt_id]["outputs"]
-
-        # image_urls = []
-
-        # for node_id in outputs:
-        #     node = outputs[node_id]
-
-        #     if "images" in node:
-        #         for img in node["images"]:
-        #             filename = img["filename"]
-        #             subfolder = img["subfolder"]
-
-        #             url = f"{comfy_url}/view?filename={filename}&subfolder={subfolder}&type=output"
-        #             image_urls.append(url)
-                    
         # -----------------------
         # ③ 画像取得
         # -----------------------

@@ -2,7 +2,7 @@
   "2": {
     "inputs": {
       "seed": 1047553322145470,
-      "steps": 20,
+      "steps": 12,
       "cfg": 8,
       "sampler_name": "euler",
       "scheduler": "simple",
@@ -47,7 +47,7 @@
   },
   "5": {
     "inputs": {
-      "text": "masterpiece, best quality, cyberpunk city, futuristic, ultra detailed",
+      "text": "clean modern workspace, laptop on desk, minimal setup, top-down view, centered composition, professional product photography, soft lighting, high detail, realistic, no text",
       "clip": [
         "6",
         1
@@ -70,7 +70,7 @@
 
   "7": {
     "inputs": {
-      "text": "low quality, blurry, text, watermark, bad anatomy",
+      "text": "blurry, low quality, distorted, messy, cluttered, deformed, bad perspective, warped desk, duplicate objects, extra objects, noise, grain, watermark, text, logo",
       "clip": ["6", 1]
     },
     "class_type": "CLIPTextEncode",
@@ -81,8 +81,8 @@
 
   "11": {
     "inputs": {
-      "width": 512,
-      "height": 512,
+      "width": 768,
+      "height": 768,
       "batch_size": 1
     },
     "class_type": "EmptyLatentImage",

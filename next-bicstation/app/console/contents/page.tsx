@@ -1,6 +1,6 @@
 // /home/maya/shin-vps/next-bicstation/app/console/contents/page.tsx
-
 "use client";
+console.log("🔥🔥🔥 THIS IS NEW CODE 🔥🔥🔥");
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { initializeApp, getApps, getApp } from "firebase/app";
@@ -88,14 +88,44 @@ const ContentConsole = () => {
   };
 
   const callAiEngine = async (prompt, priority = 1) => {
-    const res = await fetch('/ai-engine/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, priority })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.message);
-    return data.content;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 180000); // 180秒
+
+    try {
+      const res = await fetch('/ai-engine/generate/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, priority }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("🔥 API ERROR:", text);
+        throw new Error(`API Error: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (data.error) {
+        throw new Error(data.message || "AI Engine Error");
+      }
+
+      return data.content;
+
+    } catch (e) {
+      clearTimeout(timeoutId);
+
+      if (e.name === 'AbortError') {
+        console.error("⏰ TIMEOUT: AI generation took too long");
+        throw new Error("AI generation timeout");
+      }
+
+      console.error("🔥 FETCH ERROR:", e);
+      throw e;
+    }
   };
 
   const saveToFirestore = async (id, content) => {
@@ -180,7 +210,7 @@ const ContentConsole = () => {
 };
 
   // --- AutoPilot ---
-const runAutoPilot = async () => {
+  const runAutoPilot = async () => {
   if (isAutoPiloting) return;
 
   const targets = episodes
@@ -217,19 +247,53 @@ const runAutoPilot = async () => {
       if (check.ok) {
 
         // --- 🔥 画像生成API呼び出し ---
-        const res = await fetch('/ai-engine/image-generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            title: ep.title,
-            content: content
-          })
-        });
+        await new Promise(r => setTimeout(r, 5000));
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 180000);
+
+        let res;
+
+        try {
+          console.log("🚀 START IMAGE:", ep.title);
+
+          res = await fetch('/ai-engine/image-generate/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              title: ep.title,
+              content: content
+            }),
+            signal: controller.signal
+          });
+
+          console.log("✅ DONE IMAGE:", ep.title);
+
+        } catch (e) {
+          console.error("🔥 FETCH ERROR:", e);
+          continue;
+        } finally {
+          clearTimeout(timeoutId);
+        }
+
+        if (!res.ok) {
+          console.log("📡 STATUS:", res.status);
+          console.error("🔥 API ERROR:", await res.text());
+          continue;
+        }
 
         const data = await res.json();
-        const imagePath = data.url;
+        const imagePath = data.imagePath;
+
+        if (!imagePath) {
+          console.error("🔥 NO IMAGE PATH");
+          continue;
+        }
 
         // --- 🔥 Firestore保存（画像付き） ---
+
+        console.log("🖼 Saving image:", imagePath);
+
         await setDoc(
           doc(db, 'artifacts', currentAppId, 'public', 'data', 'episodes', ep.id),
           {
@@ -255,13 +319,18 @@ const runAutoPilot = async () => {
       });
 
       // --- ⑤ Rate Limit対策 ---
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 8000));
 
     } catch (e) {
-      console.error(`❌ Error in ${ep.title}`, e);
+        console.error("🔥🔥🔥 FULL ERROR:", e);
+
+        if (e instanceof Error) {
+          console.error("MESSAGE:", e.message);
+          console.error("STACK:", e.stack);
+          }
     }
   }
-
+  
   setIsAutoPiloting(false);
 
   setProgress({

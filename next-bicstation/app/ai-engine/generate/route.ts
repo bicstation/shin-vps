@@ -57,7 +57,7 @@ async function generate(
     model: modelName,
     ...(useSystem ? { systemInstruction: ARCHITECT_PERSONALITY } : {}),
     generationConfig: {
-      maxOutputTokens: 4096,
+      maxOutputTokens: 2048,
       temperature: 0.8,
     },
   });
@@ -70,11 +70,13 @@ async function generate(
     try {
       const res = await Promise.race([
         model.generateContent(input),
-        new Promise((_, rej) =>
-          signal.addEventListener("abort", () =>
-            rej(new Error("ABORTED"))
-          )
-        ),
+        new Promise((_, rej) => {
+          const onAbort = () => {
+            signal.removeEventListener("abort", onAbort);
+            rej(new Error("ABORTED"));
+          };
+          signal.addEventListener("abort", onAbort);
+        })
       ]);
 
       const text = (res as any).response.text();
@@ -85,7 +87,7 @@ async function generate(
       if (err.message === "ABORTED") throw err;
 
       if (err.message.includes("429")) {
-        await sleep(BASE_DELAY * 2 ** i);
+        await sleep(BASE_DELAY * 2 ** i + Math.random() * 500);
         continue;
       }
 
@@ -146,9 +148,10 @@ export async function POST(req: Request) {
     }
 
     throw new Error(lastErr?.message || "ALL_FAIL");
+
   }, {
     priority: priority ?? 0,
-    timeoutMs: 20000
+    timeoutMs: 300000 // ←ここ！！
   }).catch(err => {
     if (err.message === "ABORTED") {
       return new Response(JSON.stringify({ error: "TIMEOUT" }), { status: 408 });
