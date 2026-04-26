@@ -38,6 +38,8 @@ export default function LoginPage() {
       
       setDebugMsg('3. 認証成功。マイページへ移動します...');
 
+      setLoading(false); // ← 追加
+
     } catch (err: any) {
       console.error("Login Error:", err);
       // エラー時のメッセージをデバッグエリアに表示
@@ -48,10 +50,11 @@ export default function LoginPage() {
   };
 
   // サイトごとのプレフィックス（/bicstation 等）を取得してリンクを調整
-  const { site_prefix } = getSiteMetadata();
-  const registerHref = site_prefix 
-    ? `${site_prefix.startsWith('/') ? '' : '/'}${site_prefix}/register`.replace(/\/+$/, '') 
-    : '/register';
+  // const { site_prefix } = getSiteMetadata();
+  // const registerHref = site_prefix 
+  //   ? `${site_prefix.startsWith('/') ? '' : '/'}${site_prefix}/register`.replace(/\/+$/, '') 
+  //   : '/register';
+  const registerHref = '/register';
 
   return (
     <div className="flex justify-center items-center min-h-[70vh] px-4 bg-gray-50/50">

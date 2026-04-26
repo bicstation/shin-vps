@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.core.cache import cache
 
 # 🔥 JWT
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -85,11 +86,7 @@ def login_view(request):
     username = request.data.get('username')
     password = request.data.get('password')
 
-    current_group = get_current_site_group(request)
-
-    logger.info(f"Login attempt: {username} ({current_group})")
-
-    # ✅ 正しい認証（ここ超重要）
+    # 🔥 必ずここで定義する
     user = authenticate(request, username=username, password=password)
 
     if user is None:
@@ -98,17 +95,7 @@ def login_view(request):
             "error": "ユーザー名またはパスワードが正しくありません"
         }, status=401)
 
-    # 🔥 グループチェック（必要なら有効化）
-    # user_group = getattr(user, 'site_group', 'general')
-    # if user_group != current_group:
-    #     return Response({
-    #         "status": "error",
-    #         "error": "このサイトでは利用できません"
-    #     }, status=403)
-
-    # ==========================================================
-    # 🔥 JWT生成（ここが核心）
-    # ==========================================================
+    # JWT生成
     refresh = RefreshToken.for_user(user)
 
     serializer = UserSerializer(user, context={'request': request})
@@ -119,6 +106,12 @@ def login_view(request):
         "refresh": str(refresh),
         "user": serializer.data
     })
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0]
+    return request.META.get('REMOTE_ADDR', 'unknown')
 
 # ==========================================================
 # 🚪 ログアウト（JWTは削除不要）

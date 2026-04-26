@@ -68,10 +68,21 @@ export default function Header() {
     useEffect(() => {
         if (mounted) {
             checkAuthStatus();
-            setIsOpen(false);
-            setActiveDropdown(null);
         }
-    }, [pathname, checkAuthStatus, mounted]);
+    }, [mounted, checkAuthStatus]);
+
+    useEffect(() => {
+        const handler = () => {
+            checkAuthStatus();
+        };
+
+        window.addEventListener('authChanged', handler);
+
+        return () => {
+            window.removeEventListener('authChanged', handler);
+        };
+    }, [checkAuthStatus]);
+
 
     const handleLogout = () => {
         const isAdult = site?.site_group === 'adult';

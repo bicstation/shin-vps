@@ -28,17 +28,14 @@ export interface AuthTokenResponse {
  * SHIN-VPS v3.9 ではドメイン判別を行うため、パスに site_prefix を含めません。
  * 環境変数 NEXT_PUBLIC_API_URL が設定されている場合はそれを優先します。
  */
+
 const getTargetApiBase = (): string => {
   if (typeof window !== 'undefined') {
-    const envApiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envApiUrl && envApiUrl.startsWith('http')) {
-      return envApiUrl.replace(/\/+$/, '');
-    }
-    const origin = window.location.origin;
-    return `${origin}/api`.replace(/\/+$/, '');
+    return "http://localhost:8083/api"; // ← 強制でOK（まず動かす）
   }
   return '/api';
 };
+
 
 /**
  * 💡 リダイレクトパスを生成
@@ -104,17 +101,37 @@ export async function registerUser(username: string, email: string, password: st
  * 🔑 ログイン処理
  */
 export async function loginUser(username: string, password: string): Promise<AuthTokenResponse> {
+  console.log("🔥 loginUser START");
   const API_BASE = getTargetApiBase();
   const { site_group, origin_domain } = getSiteMetadata();
   
   console.log('📡 Auth Attempt:', `${API_BASE}/auth/login/`);
+  // console.log("🚀 BEFORE FETCH");
+  // const response = await fetch(`${API_BASE}/auth/login/`, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   // credentials: 'include',
+  //   body: JSON.stringify({ username, password, site_group, origin_domain }),
+  // });
 
-  const response = await fetch(`${API_BASE}/auth/login/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ username, password, site_group, origin_domain }),
-  });
+  // console.log("STATUS:", response.status);
+  // console.log("✅ AFTER FETCH");
+
+  try {
+    console.log("🚀 BEFORE FETCH");
+
+    const response = await fetch(`${API_BASE}/auth/login/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    console.log("✅ AFTER FETCH");
+
+  } catch (e) {
+    console.error("🔥 FETCH ERROR:", e);
+  }
+
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -123,6 +140,10 @@ export async function loginUser(username: string, password: string): Promise<Aut
   }
 
   const data: AuthTokenResponse = await response.json();
+
+  console.log("LOGIN RESPONSE:", data);
+  console.log("USER:", data.user);
+  console.log("IS_STAFF:", data.user?.is_staff);
   
   if ((data.status === "success" || data.access) && typeof window !== 'undefined') {
     if (data.access) localStorage.setItem('access_token', data.access);
@@ -133,6 +154,8 @@ export async function loginUser(username: string, password: string): Promise<Aut
         username: data.user.username || data.user.name 
       }));
     }
+     // 🔥 これ追加（超重要）
+    window.dispatchEvent(new Event('authChanged'));
     
     // ユーザー権限に基づいて物理パスを決定
     // 管理者(is_staff)は /console/dashboard、一般は /mypage

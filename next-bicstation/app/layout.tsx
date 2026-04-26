@@ -60,11 +60,12 @@ async function getPageContext() {
     fullPath.includes('/register');
 
   // - ポート 8083 (管理用) または サブドメイン等のホスト名判定
-  const isSpecificAdminHost = host.includes(":8083") || host.startsWith("admin.");
+  const isSpecificAdminHost =  false;
 
   // 最終的な「管理ページ（フルワイド表示）」判定
   // 「管理ルート」かつ「認証中ではない」、または「管理専用ホスト」の場合
-  const isAdminPage = isSpecificAdminHost || (isTargetRoot && !isAuthPage);
+  // const isAdminPage = isSpecificAdminHost || (isTargetRoot && !isAuthPage);
+  const isAdminPage = isTargetRoot && !isAuthPage;
 
   return {
     isAdminPage,

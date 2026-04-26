@@ -37,19 +37,16 @@ export default async function SidebarWrapper() {
 
   const metadata = getSiteMetadata(host);
   const { 
-    site_name = 'Bic Saving', 
-    site_group = 'general', 
-    default_brand = 'saving', 
-    api_base_url = '' 
+    site_name, 
+    site_group, 
+    site_tag,
+    api_base_url
   } = metadata || {};
   
-  const brandQuery = default_brand.toLowerCase();
+  const brandQuery = site_tag || 'bicstation';
   const isGeneral = site_group === 'general';
-  
-  // 🎯 詳細なサイト判別
-  const isPCStation = site_name.toLowerCase().includes('station');
-  const isBicSaving = site_name.toLowerCase().includes('saving');
-
+  const isBicSaving = site_tag === 'saving'; // ← 追加
+ 
   // --- 🛰️ STEP 2: データの並列取得（サイトグループに応じて最適化） ---
   let sidebarProps = {};
 
@@ -97,26 +94,24 @@ export default async function SidebarWrapper() {
   }
 
   // --- 🛰️ STEP 3: レンダリング分岐（コンテンツごとに完全分離） ---
+  switch (site_tag) {
+    case 'bicstation':
+      return <PCSidebar {...sidebarProps} />;
 
-  // 1. PC・ガジェット専門（Bic Station）
-  if (isPCStation) {
-    return <PCSidebar host={host} siteName={site_name} />;
-  }
+    case 'saving':
+      return <GeneralSidebar {...sidebarProps} />;
 
-  // 2. 節約・金融専門（Bic Saving / その他一般）
-  if (isGeneral) {
-    return <GeneralSidebar {...sidebarProps} />;
-  }
+    case 'avflash':
+      return <AdultSidebarAvFlash {...sidebarProps} />;
 
-  // 3. アダルト系（AV Flash）
-  if (site_name === 'AV Flash') {
-    return <AdultSidebarAvFlash {...sidebarProps} />;
-  }
+    case 'tiper':
+      return <Sidebar {...sidebarProps} />;
 
-  // 4. アダルト共通（Tiper / その他）
-  return (
-    <div className="sidebar-dynamic-container">
-       <Sidebar {...sidebarProps} />
-    </div>
-  );
+    default:
+      console.warn("⚠️ Unknown site_tag:", site_tag);
+      return isGeneral
+        ? <GeneralSidebar {...sidebarProps} />
+        : <Sidebar {...sidebarProps} />;
+      }
+
 }

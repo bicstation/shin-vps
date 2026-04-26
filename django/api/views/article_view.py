@@ -9,6 +9,7 @@ from django.db.models import Q
 
 from ..models.article import Article
 from ..serializers.article_serializer import ArticleSerializer, ArticleDetailSerializer
+from rest_framework.permissions import AllowAny
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     🛡️ 提督の対応表に基づき、ローカル/本番を問わずドメインを厳格に分離。
     🚀 内部通信(Docker)時は QueryParam を、外部通信時は Host を優先。
     """
+    permission_classes = [AllowAny]
     serializer_class = ArticleSerializer
     pagination_class = StandardPagination
     
@@ -143,3 +145,4 @@ class ArticleViewSet(viewsets.ModelViewSet):
             q_filter &= Q(site=site)
         exists = Article.objects.filter(q_filter).exists()
         return Response({"exists": exists, "source_url": url})
+    

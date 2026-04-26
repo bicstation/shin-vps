@@ -1,3 +1,8 @@
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 class UserSerializer(serializers.ModelSerializer):
     """
     JWT前提のユーザーシリアライザ（安全版）
@@ -16,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'password',
+            'is_staff',
 
             # 公開OKな情報だけ
             'site_group',
@@ -39,12 +45,12 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         password = validated_data.pop('password', None)
 
-        user = User.objects.create_user(**validated_data)
+        user = User(**validated_data)
 
         if password:
             user.set_password(password)
-            user.save()
 
+        user.save()
         return user
 
     # ==========================================================

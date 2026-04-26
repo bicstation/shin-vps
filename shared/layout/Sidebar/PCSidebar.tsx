@@ -90,6 +90,72 @@ export default async function PCSidebar() {
         </Link>
       </section>
 
+      {/* 🔥 人気ランキング */}
+      <section className={styles.section}>
+        <h3 className={styles.sectionTitle} style={{ color: siteColor }}>
+          🔥 人気ランキング
+        </h3>
+
+        <ul className={styles.rankingList}>
+          {(stats.popular_products?.length > 0) ? (
+            stats.popular_products.slice(0, 5).map((item: any, idx: number) => (
+              <li key={idx} className={styles.rankingItem}>
+                <Link href={`/product/${item.id}`} className={styles.rankingLink}>
+                  
+                  {/* 画像 */}
+                  <img 
+                    src={item.image} 
+                    alt={item.name}
+                    className={styles.rankImage}
+                  />
+
+                  {/* テキストブロック */}
+                  <div className={styles.rankContent}>
+                    <div className={styles.rankTop}>
+                      <span className={styles.rankBadge}>{idx + 1}</span>
+                      <span className={styles.rankName}>{item.name}</span>
+                    </div>
+
+                    <span className={styles.rankReason}>
+                      軽量＆コスパ最強
+                    </span>
+                  </div>
+
+                </Link>
+              </li>
+            ))
+          ) : (
+            // 🔥 fallback改善（超重要）
+            <>
+              <li className={styles.rankingItem}>
+                <span className={styles.rankBadge}>1</span> MacBook Air
+              </li>
+              <li className={styles.rankingItem}>
+                <span className={styles.rankBadge}>2</span> Dell XPS
+              </li>
+              <li className={styles.rankingItem}>
+                <span className={styles.rankBadge}>3</span> ThinkPad
+              </li>
+            </>
+          )}
+        </ul>
+      </section>
+
+      {/* 🚀 CTA */}
+      <section className={styles.section}>
+        <p className={styles.ctaLead}>
+          あなたに合う1台をすぐ見つける
+        </p>
+
+        <Link href="/ranking" className={styles.ctaButton}>
+          🔥 人気No.1をチェック
+        </Link>
+
+        <Link href="/pc-finder" className={styles.ctaSub}>
+          🤖 30秒で最適PCを診断
+        </Link>
+      </section>
+
       {/* 📊 SPEC SEGMENTS (属性表示セクション) */}
       <section className={styles.section}>
         <h3 className={styles.sectionTitle} style={{ color: siteColor }}>SPEC SEGMENTS</h3>

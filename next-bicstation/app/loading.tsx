@@ -1,3 +1,5 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/loading.tsx
+
 export default function Loading() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] bg-black/20 backdrop-blur-sm rounded-3xl border border-white/5">

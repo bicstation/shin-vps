@@ -16,6 +16,8 @@ import {
   ChevronRight, LayoutDashboard, User, Settings, LogOut, ShieldCheck,
   TrendingUp, Clock, Shield
 } from 'lucide-react';
+import { requireAuth } from '@shared/lib/utils/authGuard';
+
 
 /**
  * ✅ 修正ポイント 1: インポートパスの物理構造合わせ
@@ -53,52 +55,20 @@ function DashboardContent() {
   const router = useRouter();
 
   useEffect(() => {
-    // クライアントサイドでのベースパス判定
-    const currentPath = window.location.pathname;
-    const prefix = currentPath.startsWith('/bicstation') ? '/bicstation' : '';
-    setBasePath(prefix);
+    const check = async () => {
+      const userData = await requireAuth();
 
-    const checkAuth = async () => {
-      const token = localStorage.getItem('access_token');
-      const storedUser = localStorage.getItem('user');
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tiper.live';
-
-      if (!token) {
-        // トークンがない場合は即座にログインへリダイレクト
-        router.push(`${prefix}/login`);
+      if (!userData) {
+        setLoading(false);
         return;
       }
 
-      try {
-        const res = await fetch(`${API_BASE}/auth/me/`, {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include'
-        });
-
-        if (!res.ok) throw new Error("Unauthorized");
-
-        const data = await res.json();
-        // Django側のレスポンス構造 (userキーの有無) に柔軟に対応
-        const userData = data.user || data;
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-      } catch (err) {
-        console.error("Auth check failed:", err);
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        } else {
-          router.push(`${prefix}/login`);
-        }
-      } finally {
-        setLoading(false);
-      }
+      setUser(userData);
+      setLoading(false); // ← これ追加
     };
 
-    checkAuth();
-  }, [router]);
+    check();
+  }, []);
 
   if (loading) return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-cyan-500 font-mono gap-4">

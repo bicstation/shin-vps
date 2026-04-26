@@ -228,18 +228,18 @@ services:
       - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
   
   # --- 5. AI画像生成 (ComfyUI) ---
-  comfyui:
-    build:
-      context: ./ai/ComfyUI
-    # container_name: comfyui-v3
-    restart: unless-stopped
-    ports:
-      - "8188:8188"
-    volumes:
-      # - ./ai/ComfyUI:/root/ComfyUI
-      - ./ai/ComfyUI/models:/root/ComfyUI/models
-    networks:
-      - internal-net
+  # comfyui:
+  #   build:
+  #     context: ./ai/ComfyUI
+  #   # container_name: comfyui-v3
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8188:8188"
+  #   volumes:
+  #     # - ./ai/ComfyUI:/root/ComfyUI
+  #     - ./ai/ComfyUI/models:/root/ComfyUI/models
+  #   networks:
+  #     - internal-net
 
 networks:
   internal-net:

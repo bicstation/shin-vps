@@ -17,20 +17,20 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends libc6 libstdc++6 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. 物理構造の先行配置
-COPY shared/ ./shared/
-COPY django/ ./django/
-
 # 3. プロジェクト設定のコピー
 COPY ${PROJECT_NAME}/package*.json ./
 COPY ${PROJECT_NAME}/tsconfig*.json ./
 
-# 4. インストール (ビルド前に firebase を含めて実行)
-RUN npm install --legacy-peer-deps || npm install
-RUN npm install firebase @google/generative-ai lucide-react clsx tailwind-merge \
-    gray-matter remark remark-html --save
+# 4. インストール（安定版）
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retry-maxtimeout 600000 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm install --legacy-peer-deps --no-audit --progress=false
 
 # 5. ソースコードの展開
+# 2. 物理構造の先行配置
+COPY shared/ ./shared/
+COPY django/ ./django/
 COPY ${PROJECT_NAME}/ ./
 
 # 6. 環境変数の注入
@@ -57,6 +57,9 @@ ENV NODE_ENV=production \
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
+
+COPY --from=builder /app/node_modules ./node_modules
+
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
@@ -65,6 +68,8 @@ RUN if [ -n "${PROJECT_NAME}" ] && [ -d "./${PROJECT_NAME}" ]; then \
       cp -r ./${PROJECT_NAME}/. . && \
       rm -rf ./${PROJECT_NAME}; \
     fi
+
+RUN rm -rf node_modules/.cache
 
 USER nextjs
 EXPOSE 3000

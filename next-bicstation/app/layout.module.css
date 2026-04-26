@@ -38,6 +38,8 @@
 .layoutContainer {
   flex: 1;
   width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
   padding: 0 4%; 
   box-sizing: border-box;
   display: flex;
@@ -47,7 +49,7 @@
 /* 4. レイアウトインナー */
 .layoutInner {
   display: flex;
-  gap: 40px; 
+  gap: 20px; 
   padding: 20px 0 80px 0; 
   width: 100%;
 }
@@ -58,11 +60,16 @@
   flex-shrink: 0;
   position: sticky;
   top: 110px;
-  height: calc(100vh - 140px);
+  max-height: calc(100vh - 140px);
+  height: auto;
   overflow-y: auto;
   z-index: 800;
   scrollbar-width: none;
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
 }
+
 .sidebarSection::-webkit-scrollbar { display: none; }
 
 /* 6. メインコンテンツ領域 */
@@ -70,6 +77,14 @@
   flex: 1;
   min-width: 0;
   position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.mainContent,
+.sidebarSection {
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
 /* 7. サイドバー内の文字色・背景の補正（修正ポイント） */
@@ -103,5 +118,11 @@
     border-radius: 12px;
     margin-bottom: 20px;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@media (max-width: 640px) {
+  .layoutContainer {
+    padding: 0 12px;
   }
 }

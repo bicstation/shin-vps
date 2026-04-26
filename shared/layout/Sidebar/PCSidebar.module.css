@@ -2,7 +2,7 @@
 
 /* --- サイドバー本体 --- */
 .sidebar {
-  width: 280px;
+  width: 320px;
   /* 🚩 背景を少しだけ明るくし、透過度を調整して文字の浮き上がりを良くする */
   background: rgba(10, 15, 28, 0.98); 
   padding: 30px 20px;
@@ -193,4 +193,71 @@
 .sidebar::-webkit-scrollbar-thumb {
   background: rgba(0, 242, 255, 0.3);
   border-radius: 10px;
+}
+
+
+.rankingList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rankingItem {
+  margin-bottom: 10px;
+}
+
+.rankingLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.2s;
+}
+
+.rankingLink:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.rankBadge {
+  font-weight: bold;
+  font-size: 12px;
+  background: #0ea5e9;
+  color: white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rankName {
+  font-size: 13px;
+}
+
+/* CTA */
+.ctaButton {
+  display: block;
+  text-align: center;
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(14,165,233,0.3);
+}
+
+.ctaLead {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 10px;
 }

@@ -92,16 +92,51 @@ export default async function HomePageMain() {
             <section className={styles.heroSection}>
                 <div className={styles.heroBackgroundImage}></div>
                 <div className={styles.heroContent}>
-                    <div className="mb-4 inline-flex items-center px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
-                        <span className="text-emerald-500 text-[10px] font-mono tracking-[0.2em] uppercase">伝統と革新の融合</span>
-                    </div>
-                    <h1 className={styles.glitchTitle}>{siteConfig.site_name}</h1>
-                    <p className={styles.subText}>
-                        マシン語からAIまで。44年のエンジニアリングが紡ぐ「論理の要塞」へようこそ。<br />
-                        スペックの数値が持つ真の意味を、プロの視点で解き明かします。
+                    <h1 className={styles.heroTitle}>
+                        あなたに最適なPCを、論理で選ぶ
+                    </h1>
+                    <p className={styles.heroSub}>
+                    44年のエンジニア知見 × AI解析で、最適な1台を導き出します
                     </p>
+                    <div className="flex gap-4 mt-6 flex-wrap">
+                        <Link href="/ranking" className={styles.ctaPrimary}>
+                            🔥 人気ランキングを見る
+                        </Link>
+                        <Link href="/pc-finder" className={styles.ctaSecondary}>
+                            🤖 AIで最適PCを診断
+                        </Link>
+                    </div>
                 </div>
             </section>
+
+                {/* 🏆 AI解析：おすすめPCランキング */}
+            <section className="mb-24">
+                   <div className={styles.sectionTitleArea}>
+                       <h2 className={styles.sectionTitle}>
+                           <BarChart3 className="text-blue-400 w-5 h-5" /> 独自スコア：厳選PCランキング
+                       </h2>
+                       <p className="text-xs text-zinc-500 mt-2">AIが数多のスペックデータを解析し、真に価値のある3台を抽出。</p>
+                   </div>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+                       {aiTop3.length > 0 ? aiTop3.map((product: any, i) => (
+                           <div key={`ai-${product.unique_id || product.id || i}`} className="relative group">
+                               <ProductCard product={product} rank={i + 1} isReviewMode={IS_ADSENSE_REVIEW} />
+                               <Zap className="absolute top-4 right-4 w-5 h-5 text-yellow-500 z-10 animate-pulse" />
+                           </div>
+                       )) : (
+                           <div className="col-span-3 text-center py-12 bg-zinc-900/30 border border-dashed border-zinc-800 rounded-2xl">
+                               <p className="text-zinc-600 font-mono text-xs uppercase tracking-[0.2em]">最新の解析データをロード中...</p>
+                           </div>
+                       )}
+                 </div>
+            </section>
+            
+            <section>
+                <p className="text-xs text-zinc-500 mb-4">
+                    用途別にPCを選ぶ
+                </p>
+            </section>
+
 
             <div className={styles.contentContainer}>
 
@@ -224,27 +259,7 @@ export default async function HomePageMain() {
                     </div>
                 </section>
 
-                {/* 🏆 AI解析：おすすめPCランキング */}
-                <section className="mb-24">
-                    <div className={styles.sectionTitleArea}>
-                        <h2 className={styles.sectionTitle}>
-                            <BarChart3 className="text-blue-400 w-5 h-5" /> 独自スコア：厳選PCランキング
-                        </h2>
-                        <p className="text-xs text-zinc-500 mt-2">AIが数多のスペックデータを解析し、真に価値のある3台を抽出。</p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
-                        {aiTop3.length > 0 ? aiTop3.map((product: any, i) => (
-                            <div key={`ai-${product.unique_id || product.id || i}`} className="relative group">
-                                <ProductCard product={product} rank={i + 1} isReviewMode={IS_ADSENSE_REVIEW} />
-                                <Zap className="absolute top-4 right-4 w-5 h-5 text-yellow-500 z-10 animate-pulse" />
-                            </div>
-                        )) : (
-                            <div className="col-span-3 text-center py-12 bg-zinc-900/30 border border-dashed border-zinc-800 rounded-2xl">
-                                <p className="text-zinc-600 font-mono text-xs uppercase tracking-[0.2em]">最新の解析データをロード中...</p>
-                            </div>
-                        )}
-                    </div>
-                </section>
+
 
                 {/* 🏛️ 6つの技術レイヤー (リンク先：/series/00-master-log/ 統合版) */}
                 <section className="mb-24">
