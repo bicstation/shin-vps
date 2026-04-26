@@ -90,3 +90,5 @@ Thumbs.db
 # 全Firebase系
 config/firebase/*.json
 **/firebase/*.json
+
+ai/ComfyUI/
