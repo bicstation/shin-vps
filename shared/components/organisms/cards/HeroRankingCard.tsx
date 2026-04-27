@@ -13,7 +13,6 @@ export default function HeroRankingCard({ product }: any) {
       border: '2px solid #22c55e',
       position: 'relative'
     }}>
-      
       {/* 👑 バッジ */}
       <div style={{
         position: 'absolute',
@@ -23,59 +22,99 @@ export default function HeroRankingCard({ product }: any) {
         color: '#000',
         padding: '6px 14px',
         borderRadius: '999px',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        fontSize: '12px'
       }}>
-        👑 迷ったらこれ一択
+        👑 迷ったらこれ一択(残りわずか・人気モデル)
       </div>
 
-      <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
         
         {/* 画像 */}
-        <img 
-          src={product.image_url}
-          style={{ width: '260px', borderRadius: '12px' }}
-        />
+        <div style={{ textAlign: 'center' }}>
+          <img 
+            src={product.image_url}
+            alt={product.name}
+            style={{ width: '260px', borderRadius: '12px' }}
+          />
 
-        <div style={{ flex: 1 }}>
+          <p style={{
+            marginTop: '8px',
+            fontSize: '12px',
+            color: '#94a3b8'
+          }}>
+            ※公式ショップ取り扱い（安心して購入できます）
+          </p>
+        </div>
+
+        <div style={{ flex: 1, minWidth: '260px' }}>
           
           {/* タイトル */}
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 'bold', lineHeight: 1.4 }}>
             {product.name}
           </h2>
 
-          {/* キャッチ */}
-          <p style={{ color: '#22c55e', marginTop: '8px' }}>
-            初心者OK・コスパ最強・失敗しない
+          {/* キャッチ（強化） */}
+          <p style={{ color: '#22c55e', marginTop: '8px', fontWeight: 'bold' }}>
+            初心者でも失敗しない・コスパ最強の1台
           </p>
 
-          {/* スコア */}
-          <p style={{ marginTop: '8px' }}>
-            AI SCORE: {product.score_ai}（上位モデル）
+          {/* スコア（意味付け） */}
+          <p style={{ marginTop: '8px', fontSize: '14px' }}>
+            🔥 AIスコア {product.score_ai}（独自検証） → 上位10%（迷わず選べるレベル）
           </p>
 
-          {/* 短い理由 */}
-          <ul style={{ marginTop: '12px', lineHeight: '1.8' }}>
-            <li>✔ 高性能CPUでサクサク</li>
-            <li>✔ 動画編集・AI作業OK</li>
-            <li>✔ 長く使える安定モデル</li>
+          {/* 安心訴求 */}
+          <ul style={{ marginTop: '12px', lineHeight: '1.8', fontSize: '14px' }}>
+            <li>✔ 初心者が選んでも後悔しない性能</li>
+            <li>✔ 動画編集・AI作業も余裕</li>
+            <li>✔ 3年以上しっかり使える安定モデル</li>
+            <li>✔ ※迷う必要がないレベルです</li>
           </ul>
 
-          {/* CTA（最重要） */}
-          <a 
-            href={product.affiliate_url}
-            target="_blank"
-            style={{
-              display: 'inline-block',
-              marginTop: '16px',
-              background: '#22c55e',
-              color: '#000',
-              padding: '12px 20px',
-              borderRadius: '10px',
-              fontWeight: 'bold'
-            }}
-          >
-            👉 今すぐチェック（失敗しない）
-          </a>
+          <p style={{
+            fontSize: '12px',
+            color: '#94a3b8',
+            marginBottom: '8px'
+          }}>
+            ✔ 今一番選ばれているモデル
+          </p>
+
+          {/* CTAエリア（最重要） */}
+          <div style={{ marginTop: '10px' }}>
+
+            {/* メインCTA */}
+            <a 
+              href={product.affiliate_url}
+              target="_blank"
+              style={{
+                display: 'inline-block',
+                background: '#22c55e',
+                color: '#000',
+                padding: '14px 22px',
+                borderRadius: '12px',
+                fontWeight: 'bold',
+                fontSize: '16px'
+              }}
+            >
+              👉 これで決まり（在庫あるうちにチェック）
+            </a>
+
+            {/* サブCTA */}
+            <div style={{ marginTop: '10px' }}>
+              <Link 
+                href={`/product/${product.id}`}
+                style={{
+                  fontSize: '13px',
+                  color: '#94a3b8',
+                  textDecoration: 'underline'
+                }}
+              >
+                ※迷う人は詳細を確認する
+              </Link>
+            </div>
+
+          </div>
 
         </div>
       </div>

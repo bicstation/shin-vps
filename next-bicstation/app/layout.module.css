@@ -1,134 +1,151 @@
 /* =====================================================================
- * 🏗️ [BICSTATION-LAYOUT-CSS] - White Mode Transformation
- * --------------------------------------------------------------------- */
+ * 🏗️ FINAL CLEAN LAYOUT SYSTEM（安定＆安全版）
+ * ===================================================================== */
 
-/* 1. 全体を包むラッパー */
+/* =============================
+   全体
+============================= */
 .bodyWrapper {
   margin: 0;
   padding: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  -webkit-font-smoothing: antialiased;
-  /* 🚩 背景を白（または極めて薄いグレー）に変更 */
-  background-color: #f8fafc; 
-  color: #1e293b; /* 文字色は濃いネイビーグレーに */
+  background-color: #f8fafc;
+  color: #1e293b;
   overflow-x: hidden;
-  padding-top: 0px;
 }
 
-/* 2. 広告告知（PR表記） */
+/* =============================
+   📢 PRバー
+============================= */
 .adDisclosure {
   width: 100%;
-  /* 🚩 背景を白の透過に変更 */
   background-color: rgba(255, 255, 255, 0.9);
   font-size: 11px;
   color: #94a3b8;
   text-align: center;
-  padding: 8px 0;
-  /* 🚩 境界線を薄いグレーに */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05); 
+  padding: 6px 0;
+
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
   position: sticky;
-  top: 70px;
+  top: var(--header-height);
+
   z-index: 900;
   backdrop-filter: blur(10px);
 }
 
-/* 3. レイアウトの外枠 */
+/* =============================
+   外枠
+============================= */
 .layoutContainer {
   flex: 1;
   width: 100%;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 0 4%; 
-  box-sizing: border-box;
+  padding: 0 4%;
   display: flex;
   flex-direction: column;
 }
 
-/* 4. レイアウトインナー */
+/* =============================
+   内部レイアウト（←ここ重要）
+============================= */
 .layoutInner {
   display: flex;
-  gap: 20px; 
-  padding: 20px 0 80px 0; 
+  gap: 16px;
+  padding: 0; /* ← 完全に削る */
   width: 100%;
 }
 
-/* 5. サイドバー領域 */
+/* =============================
+   📚 サイドバー
+============================= */
 .sidebarSection {
   width: 280px;
   flex-shrink: 0;
+  margin-top: 0;
+
   position: sticky;
-  top: 110px;
-  max-height: calc(100vh - 140px);
-  height: auto;
+  top: var(--sticky-offset);
+
+  max-height: calc(100vh - var(--sticky-offset) - 16px);
   overflow-y: auto;
+
   z-index: 800;
-  scrollbar-width: none;
   background: #ffffff;
-  padding: 16px;
+
+  padding: 0 12px 12px; /* ← 上だけ0 */
   border-radius: 12px;
+  /* margin-top: 15px; */
 }
 
-.sidebarSection::-webkit-scrollbar { display: none; }
+/* 👇 ここだけピンポイント修正 */
+.sidebarSection > *:first-child {
+  margin-top: 0 !important;
+}
 
-/* 6. メインコンテンツ領域 */
+/* =============================
+   🖥 メイン
+============================= */
 .mainContent {
   flex: 1;
   min-width: 0;
-  position: relative;
+
   background: #ffffff;
   border-radius: 12px;
-  padding: 24px;
+
+  padding: 0px 16px;
 }
 
+/* =============================
+   共通シャドウ
+============================= */
 .mainContent,
 .sidebarSection {
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.05);
 }
 
-/* 7. サイドバー内の文字色・背景の補正（修正ポイント） */
-/* * 🚩 重要：aタグへの !important 指定を削除しました。
- * スタイルは PCSidebar.module.css 側に任せます。
- */
+/* =============================
+   サイドバー見出し
+============================= */
 .sidebarSection h3 {
-  /* 🚩 ラベル色を少し薄く */
   color: #64748b;
   font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  /* 🚩 境界線を薄く */
+  letter-spacing: 0.1em;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  padding-bottom: 8px;
-  margin-bottom: 16px;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
   font-weight: 700;
 }
 
-/* 8. レスポンシブ */
+/* =============================
+   📱 レスポンシブ
+============================= */
 @media (max-width: 1100px) {
   .layoutInner {
     flex-direction: column;
-    padding-top: 20px;
+    padding-top: 10px;
   }
+
   .sidebarSection {
     width: 100%;
     position: static;
-    height: auto;
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  }
-}
-
-@media (max-width: 640px) {
-  .layoutContainer {
-    padding: 0 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    max-height: none;
   }
 }
 
 @media (max-width: 768px) {
   .sidebarSection {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .layoutContainer {
+    padding: 0 12px;
   }
 }
