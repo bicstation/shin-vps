@@ -23,6 +23,7 @@ import styles from './Header.module.css';
 export default function Header() {
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userName, setUserName] = useState<string | null>(null);
@@ -180,7 +181,6 @@ export default function Header() {
             style={{ borderBottom: `3px solid ${themeColor}` }}
         >
             <div className={styles.container}>
-                <MobileSidebarWrapper />
                 <Link href="/" onClick={() => setIsOpen(false)} style={{ textDecoration: 'none' }}>
                     <div className={styles.logoWrapper}>
                         <span style={{ 
@@ -260,7 +260,25 @@ export default function Header() {
                 </div>
             </div>
 
-
+            {/* モバイルメニュー */}
+            <div className={`${styles.mobileMenu} ${isOpen ? styles.open : ''}`} style={{ background: isAdult ? '#111' : '#fff' }}>
+                {Object.entries(menuConfig).map(([key, section]) => (
+                    <div key={key} className={styles.menuSection}>
+                        <p className={styles.sectionTitle} style={{ color: themeColor, borderLeft: `4px solid ${themeColor}`, paddingLeft: '10px' }}>
+                            {section.title}
+                        </p>
+                        <div className={styles.mobileLinkGrid}>
+                            {section.links.map((link, i) => (
+                                link.label !== '---' && (
+                                    <Link key={i} href={link.href} onClick={() => setIsOpen(false)} style={{ color: isAdult ? '#ccc' : '#444' }}>
+                                        {link.label}
+                                    </Link>
+                                )
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
         </header>
     );
 }

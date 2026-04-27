@@ -1,31 +1,17 @@
-/**
- * =====================================================================
- * 🛰️ BIC-STATION Intelligence Archive System (v12.8.0-FullSync)
- * 🛡️ Maya's Logic: Multi-Sector Information Aggregator
- * ---------------------------------------------------------------------
- * 🚀 統合ポイント:
- * 1. 【SHARED_PAGINATION】共通コンポーネントによる正規化ページネーション。
- * 2. 【BRIDGE_SYNC】django-bridge 経由で全ノードを安定取得。
- * 3. 【SEO_OPTIMIZED】pageパラメータの型安全な処理とURL整合。
- * =====================================================================
- */
-
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck 
 
 import React, { Suspense } from 'react';
 import Link from 'next/link';
-import { headers } from 'next/headers';
 
-// ✅ 共通コンポーネント (最新の UnifiedProductCard / Pagination)
+// ❌ headers削除
+
 import UnifiedProductCard from '@/shared/components/organisms/cards/UnifiedProductCard';
 import Pagination from '@/shared/components/molecules/Pagination';
 
-// ✅ 成功実績のある Bridge 経由の取得関数
 import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 
-// 🎨 ネオン・シアン基調のアーカイブ専用スタイル
 import styles from './news.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +23,6 @@ interface PageProps {
     searchParams: Promise<{ page?: string }>;
 }
 
-/** ✅ ローディング境界: 知識データのストリーミング */
 export default async function ArchiveIndexPage(props: PageProps) {
     return (
         <Suspense fallback={
@@ -51,21 +36,16 @@ export default async function ArchiveIndexPage(props: PageProps) {
     );
 }
 
-/** 💡 知識アーカイブ・メインロジック */
 async function ArchiveIndexContent({ searchParams }: PageProps) {
     const sParams = await searchParams;
     
-    // --- 🎯 STEP 1: ネットワーク・コンテキストの特定 ---
-    const headerList = await headers();
-    const host = headerList.get('x-forwarded-host') || headerList.get('host') || "bicstation.com";
+    // ✅ 固定に変更
+    const host = "bicstation.com";
     const siteConfig = getSiteMetadata(host);
 
-    // 🔢 ページネーション・オフセット計算 (1-based page to 0-based offset)
     const currentPage = parseInt(sParams.page || '1', 10);
     const offset = (currentPage - 1) * POSTS_PER_PAGE;
 
-    // --- 🎯 STEP 2: データ・デコード (django-bridge 経由) ---
-    // 全アーカイブノードを高速スキャン
     const response = await fetchDjangoBridgeContent('posts', POSTS_PER_PAGE, { 
         offset: offset,
     }).catch((e) => {
@@ -79,12 +59,11 @@ async function ArchiveIndexContent({ searchParams }: PageProps) {
 
     return (
         <div className={styles.archiveContainer}>
-            {/* --- 🛰️ 背景レイヤー (Deep Abyss) --- */}
+
             <div className="fixed inset-0 pointer-events-none z-0 opacity-10">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,#00f2ff,transparent)]"></div>
             </div>
 
-            {/* --- 📡 アーカイブ・コントロール・ヘッダー --- */}
             <header className={styles.archiveHeader}>
                 <div className={styles.statusBadge}>
                     <span className={styles.pulseDot}></span>
@@ -103,7 +82,6 @@ async function ArchiveIndexContent({ searchParams }: PageProps) {
                 </div>
             </header>
 
-            {/* --- 📰 インテリジェンス・グリッド --- */}
             <main className={styles.contentGrid}>
                 {allPosts.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
@@ -126,18 +104,16 @@ async function ArchiveIndexContent({ searchParams }: PageProps) {
                 )}
             </main>
 
-            {/* --- 🔢 ページネーション (強化版共通コンポーネント) --- */}
             {totalPages > 1 && (
                 <div className={styles.paginationWrapper}>
                     <Pagination 
                         currentPage={currentPage}
                         totalPages={totalPages}
-                        baseUrl="/post" // フォルダ構成に合わせて /news 等に調整可能
+                        baseUrl="/post"
                     />
                 </div>
             )}
 
-            {/* --- 👣 ステーション・イグジット --- */}
             <footer className={styles.archiveFooter}>
                 <Link href="/" className={styles.backBtn}>
                     « RETURN_TO_COMMAND_CENTER

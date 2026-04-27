@@ -27,7 +27,8 @@ export function constructMetadata({
 }: MetadataProps = {}): Metadata {
   
   // 1. 全ての真実（判定済みデータ）を siteConfig から取得
-  const meta = getSiteMetadata(manualHost);
+  // const meta = getSiteMetadata(manualHost);
+  const meta = getSiteMetadata(manualHost || 'bicstation.com');
   const { site_name, django_host, is_local_env, site_group } = meta;
 
   // 2. 本番用公開ドメインの確定

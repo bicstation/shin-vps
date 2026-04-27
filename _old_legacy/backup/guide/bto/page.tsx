@@ -1,18 +1,16 @@
 /**
  * =====================================================================
  * 🖥️ BICSTATION: BTO_DYNAMIC_GUIDE_V1.0
- * 🛡️ Maya's Logic: 物理構造 v3.2 完全同期版
  * =====================================================================
  */
 
 import React from 'react';
-import { headers } from 'next/headers';
-import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge'; // 既存のブリッジを利用
+import { fetchDjangoBridgeContent } from '@/shared/lib/api/django-bridge';
 
 // 型定義
 interface BtoModel {
     id: string;
-    rank_label: string; // "コスパ最強" など
+    rank_label: string;
     title: string;
     target_usage: string;
     cpu_spec: string;
@@ -20,32 +18,26 @@ interface BtoModel {
     price_start: string;
     analysis_point: string;
     recommend_vendor: string;
-    theme_color: string; // border-blue-500 等のクラス名
+    theme_color: string;
 }
 
-/**
- * 🛠️ サーバーサイドデータ取得
- */
+// ✅ データ取得
 async function getBtoGuideData(host: string): Promise<BtoModel[]> {
     try {
-        // Django側の 'bto-models' エンドポイントから取得
-        // 実際には fetchDjangoBridgeContent('bto-models') のような形で呼び出し
         const response = await fetchDjangoBridgeContent('bto-guide', 0, { host });
         return response?.results || [];
     } catch (e) {
         console.error("🚨 BTO_GUIDE_FETCH_ERROR:", e);
-        return []; // フォールバック
+        return [];
     }
 }
 
 export default async function BtoGuidePage() {
-    const headerList = await headers();
-    const host = headerList.get('host') || "bicstation.com";
-    
-    // DBからデータを抽出
+    // ✅ headers削除 → 固定
+    const host = "bicstation.com";
+
     const btoModels = await getBtoGuideData(host);
 
-    // 日付生成 (2026年4月度などの表示用)
     const now = new Date();
     const dateString = `${now.getFullYear()}年${now.getMonth() + 1}月度`;
 
@@ -64,7 +56,6 @@ export default async function BtoGuidePage() {
                 </p>
             </header>
 
-            {/* メインカード・グリッド */}
             <div className="grid lg:grid-cols-3 gap-8">
                 {btoModels.length > 0 ? (
                     btoModels.map((model) => (
@@ -112,14 +103,12 @@ export default async function BtoGuidePage() {
                         </div>
                     ))
                 ) : (
-                    // ローディングまたはデータなしのプレースホルダー
                     <div className="col-span-3 py-20 text-center font-mono text-slate-400 animate-pulse">
                         RETRIEVING_BTO_RECORDS...
                     </div>
                 )}
             </div>
 
-            {/* フッター */}
             <footer className="mt-20 text-center border-t border-slate-100 pt-12">
                 <p className="text-slate-400 font-mono text-[10px] mb-8 uppercase tracking-widest">
                     Data integrity confirmed // Price fluctuations updated hourly

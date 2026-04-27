@@ -1,95 +1,65 @@
-/**
- * =====================================================================
- * 🏛️ RootLayout (Maya's Universe v6.0) - Tiper.live Edition
- * 🛡️ Next.js 15 Async APIs & Unified Theme Control
- * 🚀 Fixed: Metadata Host-Aware Detection
- * =====================================================================
- */
 /* eslint-disable @next/next/no-img-element */
 
-import React from "react";
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Suspense } from "react";
-import { headers } from "next/headers";
 import styles from "./layout.module.css";
 
 /**
- * ✅ 1. スタイルのインポート
+ * 共通スタイル
  */
 import '@/shared/styles/globals.css';
 
 /**
- * ✅ 2. 共通設定とコンポーネント
+ * 設定
  */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 
-// 🚀 共通コンポーネント
+/**
+ * コンポーネント
+ */
 import Header from '@/shared/components/organisms/common/Header';
 import Footer from '@/shared/components/organisms/common/Footer';
-
-/**
- * ✅ 3. サイドバーラッパー
- */
 import SidebarWrapper from '@/shared/layout/Sidebar/SidebarWrapper';
-
-/**
- * ✅ 4. SEO設定 (constructMetadata は内部でホスト判定を行う)
- */
-import { constructMetadata } from '@/shared/lib/utils/metadata';
-
-/**
- * ✅ 5. ページ遷移プログレスバー
- */
 import RouteProgressBar from '@/shared/components/atoms/RouteProgressBar';
+
+import { constructMetadata } from '@/shared/lib/utils/metadata';
 
 const inter = Inter({ subsets: ["latin"] });
 
 /**
- * 🛰️ [FIXED] generateMetadata
- * 実行時のホスト名を明示的にキャッチし、Tiperとしてのアイデンティティを確定させます。
+ * ✅ metadata（修正済み）
  */
 export async function generateMetadata(): Promise<Metadata> {
-  const headerList = await headers();
-  const host = headerList.get('host') || "tiper.live"; 
-  
-  // constructMetadataに現在のホスト名を注入し、正しいサイト名(Tiper等)を取得
-  return constructMetadata({ host });
+  const host = "tiper.live"; // ← 固定
+
+  return constructMetadata({
+    manualHost: host // ← ここ重要
+  });
 }
 
-/**
- * 💡 Next.js 15 レンダリングポリシー
- * 常に最新の動的コンテンツを配信するため、キャッシュを無効化。
- */
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  /**
-   * ✅ 1. コンテキスト取得
-   * headers() を await して実行環境（ホスト）を特定します。
-   */
-  const headerList = await headers();
-  const host = headerList.get('host') || "tiper.live";
-  const site = getSiteMetadata(host);
-  
-  /**
-   * 🚩 フォールバック設定
-   * tiper.live は基幹システムのため、デフォルト値を "Tiper" に固定。
-   */
-  const siteName = site?.site_name || "Tiper"; 
-  const themeColor = getSiteColor(siteName);
+}) {
 
-  // Tiperの象徴的な「深淵」の黒
+  // ✅ headers完全削除
+  const host = "tiper.live";
+
+  const site = getSiteMetadata(host);
+
+  const siteName = site?.site_name || "Tiper";
+  const themeColor = getSiteColor(host); // ← 修正（siteNameじゃなくhost）
+
   const BG_COLOR = "#06060a";
 
   return (
     <html lang="ja" style={{ height: '100%', backgroundColor: BG_COLOR }}>
-      <body 
+      <body
         className={`${inter.className} ${styles.bodyWrapper}`}
         style={{
           backgroundColor: BG_COLOR,
@@ -104,51 +74,47 @@ export default async function RootLayout({
           // @ts-ignore
           "--site-theme-color": themeColor,
           "--bg-deep": BG_COLOR,
-        } as React.CSSProperties}
+        }}
       >
-        {/* 🚀 クライアントサイド・プログレスバー */}
+        {/* Progress */}
         <Suspense fallback={null}>
-          {RouteProgressBar && <RouteProgressBar />}
+          <RouteProgressBar />
         </Suspense>
 
-        {/* 背景のシステムグリッド演出 */}
         <div className={styles.systemGrid} />
 
-        {/* ① 共通ヘッダー */}
+        {/* Header */}
         <Header />
 
-        {/* ② 告知バー（広告情報の透明性確保） */}
+        {/* Ad */}
         <div className={styles.adDisclosure}>
           <div className={styles.adDisclosureInner}>
-            <span className={styles.prLabel}>【PR】</span>本サイトはアフィリエイト広告を利用して運営されています。
+            <span className={styles.prLabel}>【PR】</span>
+            本サイトはアフィリエイト広告を利用しています。
             {site?.site_group === 'adult' && (
               <span className={styles.ageLimit}>
-                ※18歳未満の閲覧は固く禁止されています。
+                ※18歳未満の閲覧は禁止されています。
               </span>
             )}
           </div>
         </div>
 
-        {/* ③ メインレイアウト構造 (Sidebar + Main Content) */}
+        {/* Layout */}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutWrapper}>
-            
-            {/* 🛰️ 左翼：システムサイドバー */}
+
+            {/* Sidebar */}
             <aside className={styles.sidebarArea}>
               <div className={styles.sidebarSticky}>
-                <Suspense fallback={<div className={styles.sidebarLoading} />}>
-                  {SidebarWrapper ? <SidebarWrapper /> : <div style={{width: '280px'}} />}
+                <Suspense fallback={<div />}>
+                  <SidebarWrapper />
                 </Suspense>
               </div>
             </aside>
 
-            {/* 🖥️ 中央：メインデータストリーム */}
+            {/* Main */}
             <main className={styles.mainContent}>
-              <Suspense fallback={
-                <div className={styles.loadingWrapper}>
-                  <div className={styles.loadingPulse}>SYNCING_DATA_STREAM...</div>
-                </div>
-              }>
+              <Suspense fallback={<div>Loading...</div>}>
                 {children}
               </Suspense>
             </main>
@@ -156,7 +122,7 @@ export default async function RootLayout({
           </div>
         </div>
 
-        {/* ④ 共通フッター */}
+        {/* Footer */}
         <Footer />
       </body>
     </html>

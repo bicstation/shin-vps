@@ -79,7 +79,7 @@
 
 /* --- 🚀 ヒーローセクション (Cinematic Depth) --- */
 .heroSection {
-    padding: 80px 40px 40px;
+    padding: 200px 40px;
     text-align: center;
     position: relative;
     background: #000;
@@ -311,18 +311,16 @@
 }
 
 .ctaPrimary {
-  background: linear-gradient(135deg, #10b981, #22c55e);
-  color: #000;
-  padding: 16px 24px;
-  border-radius: 12px;
-  font-weight: 900;
-  box-shadow: 0 0 20px rgba(16,185,129,0.5);
-  transition: all 0.25s ease;
+  background: #10b981;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: all 0.2s;
 }
-
 .ctaPrimary:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 40px rgba(16,185,129,0.8);
+  background: #059669;
+  transform: translateY(-1px);
 }
 
 .ctaSecondary {
@@ -335,71 +333,4 @@
 }
 .ctaSecondary:hover {
   background: rgba(16,185,129,0.1);
-}
-
-.heroTitleStrong {
-  font-size: clamp(2.8rem, 6vw, 4.5rem);
-  font-weight: 900;
-  line-height: 1.2;
-  color: #fff;
-  text-shadow: 0 0 30px rgba(16,185,129,0.4);
-}
-
-.heroCatch {
-  margin-top: 16px;
-  font-size: 1.2rem;
-  color: #10b981;
-  font-weight: 700;
-}
-
-
-.heroCardWrapper {
-  margin-top: -80px;
-  margin-bottom: 80px;
-  position: relative;
-  z-index: 20;
-}
-
-.heroCardWrapper::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  background: linear-gradient(90deg, #10b981, transparent);
-  filter: blur(20px);
-  opacity: 0.4;
-}
-
-
-.trustBlock {
-  margin-top: 40px;
-  padding: 24px;
-  background: rgba(15,23,42,0.8);
-  border: 1px solid rgba(16,185,129,0.3);
-  border-radius: 12px;
-}
-
-.trustTitle {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
-
-.trustList {
-  font-size: 14px;
-  line-height: 1.8;
-  color: #cbd5f5;
-}
-
-.subLinkCard {
-  display: block;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: #020617;
-  border: 1px solid #1e293b;
-  transition: all 0.2s;
-}
-
-.subLinkCard:hover {
-  border-color: #22c55e;
-  transform: translateY(-2px);
 }

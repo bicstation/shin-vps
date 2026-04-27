@@ -2,20 +2,16 @@
 /**
  * =====================================================================
  * 💻 BICSTATION PC製品カタログ (Catalog Hub)
- * 🛡️ Maya's Logic: 物理構造 v11.2 ページネーション完全同期版
- * 物理パス: app/catalog/page.tsx
  * =====================================================================
  */
 
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
-import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import Pagination from '@/shared/components/molecules/Pagination';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 
-// ✅ 最新の stats.ts / products.ts 統合系を参照
 import { fetchPCProducts } from '@/shared/lib/api/django/pc/products';
 
 import styles from './CatalogPage.module.css';
@@ -38,7 +34,6 @@ interface PageProps {
     }>;
 }
 
-/** ✅ ローディング境界 */
 export default async function CatalogPage(props: PageProps) {
     return (
         <Suspense fallback={
@@ -52,34 +47,28 @@ export default async function CatalogPage(props: PageProps) {
     );
 }
 
-/** 💡 カタログメインロジック */
 async function CatalogPageContent({ searchParams }: PageProps) {
     const sParams = await searchParams;
-    
-    // 🌐 ホスト名取得 (マルチドメイン/サイト固有フィルタリング用)
-    const headerList = await headers();
-    const host = headerList.get('x-forwarded-host') || headerList.get('host') || "";
 
-    // 1. パラメータの正規化 (カタログ面は40件表示で固定)
+    // ✅ headers削除 → 固定
+    const host = "bicstation.com";
+
     const limit = 40;
     const searchQuery = sParams.q || '';
     const maker = sParams.maker || '';
     const attribute = sParams.attribute || '';
     
-    // 🔢 ページネーション変数の算出
-    // pageパラメータがある場合はそれを優先し、なければoffsetから計算（1-based）
     const currentPage = sParams.page 
         ? Math.max(1, parseInt(sParams.page)) 
         : (sParams.offset ? Math.floor(parseInt(sParams.offset) / limit) + 1 : 1);
     
     const currentOffset = (currentPage - 1) * limit;
 
-    // 2. APIフェッチ実行
     const pcData = await fetchPCProducts(
         searchQuery, 
         currentOffset, 
         limit, 
-        attribute || maker, // attributeがなければmakerをフォールバックとして使用
+        attribute || maker,
         host
     ).catch((e) => {
         console.error("[Catalog API Error]:", e);
@@ -101,7 +90,6 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                     </p>
                 </header>
 
-                {/* 🔍 検索セクション */}
                 <section className={styles.searchSection}>
                     <form action="/catalog" method="GET" className={styles.searchForm}>
                         <div className={styles.inputGroup}>
@@ -112,7 +100,7 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                                 placeholder="モデル名、CPU、GPUなどを入力..." 
                                 className={styles.searchInput}
                             />
-                            {/* 現在のフィルタ状態を検索時も引き継ぐための隠しフィールド */}
+
                             {maker && <input type="hidden" name="maker" value={maker} />}
                             {attribute && <input type="hidden" name="attribute" value={attribute} />}
                             
@@ -123,7 +111,6 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                     </form>
                 </section>
 
-                {/* 🏷️ アクティブなフィルタ表示 */}
                 {(searchQuery || maker || attribute) && (
                     <div className={styles.activeFilters}>
                         <span className={styles.filterLabel}>現在の条件:</span>
@@ -134,7 +121,6 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                     </div>
                 )}
 
-                {/* 📦 製品グリッドセクション */}
                 <section className={styles.productSection}>
                     <div className={styles.gridHeader}>
                         <h2 className={styles.productGridTitle}>
@@ -158,7 +144,6 @@ async function CatalogPageContent({ searchParams }: PageProps) {
                         </div>
                     )}
 
-                    {/* 🔢 ページネーション: 強化版コンポーネントとの同期 */}
                     {totalCount > limit && (
                         <div className={styles.paginationWrapper}>
                             <Pagination 
