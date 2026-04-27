@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 // ✅ 追加：1位専用
 import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard';
+import { transformProduct } from '@/shared/lib/transformProduct';
 
 // 既存
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
@@ -77,7 +78,8 @@ export default async function HomePageMain() {
                             marginLeft: 'auto',
                             marginRight: 'auto'
                         }}>
-                            <HeroRankingCard product={top1} />
+                            {/* <HeroRankingCard product={top1} /> */}
+                            <HeroRankingCard product={transformProduct(top1)} />
                         </div>
                     )}
 
@@ -151,7 +153,9 @@ export default async function HomePageMain() {
                     {others.map((product: any, i: number) => (
                         <ProductCard 
                             key={product.id || i}
-                            product={product}
+                            // product={product}
+                            // product={transformProduct(p)}   // ← これ
+                            product={transformProduct(product)}  // ← ✅ここ
                             rank={i + 2}
                             isReviewMode={IS_ADSENSE_REVIEW}
                         />

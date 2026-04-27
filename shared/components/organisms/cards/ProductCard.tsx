@@ -2,13 +2,8 @@
 
 import Link from 'next/link';
 import styles from './ProductCard.module.css';
-import { transformProduct } from '@/shared/lib/transformProduct';
 
-{products.map((p) => (
-  <ProductCard key={p.id} product={transformProduct(p)} />
-))}
-
-/* ✅ 型定義（ここかなり重要） */
+/* ✅ 型定義 */
 type Product = {
   display_name?: string;
   short_tag?: string;
@@ -45,12 +40,29 @@ export default function ProductCard({ product }: { product: Product }) {
 
       {/* 🔥 スコア */}
       {score_ai !== undefined && (
-        <div className={styles.scoreBadge}>
+        <div
+          className={styles.scoreBadge}
+          style={{
+            background:
+              score_ai >= 90
+                ? '#16a34a'
+                : score_ai >= 80
+                ? '#2563eb'
+                : '#64748b'
+          }}
+        >
           AI {score_ai}
+          <span style={{ marginLeft: '6px', fontSize: '11px' }}>
+            {score_ai >= 90
+              ? '最上位'
+              : score_ai >= 80
+              ? '上位'
+              : '標準'}
+          </span>
         </div>
       )}
 
-      {/* 🎯 タグ（誰向け） */}
+      {/* 🎯 タグ */}
       {short_tag && (
         <div className={styles.recommendTag}>
           {short_tag}
@@ -75,7 +87,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </Link>
         </h3>
 
-        {/* 💥 強み（最大3つに制限） */}
+        {/* 💥 強み（最大3つ） */}
         {selling_points.length > 0 && (
           <ul className={styles.pointList}>
             {selling_points.slice(0, 3).map((p, i) => (
@@ -101,7 +113,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* 🚀 CTA */}
         <div className={styles.actions}>
 
-          {/* メインCTA（最重要） */}
+          {/* メインCTA（改善済み） */}
           {affiliate_url && (
             <a
               href={affiliate_url}
@@ -109,16 +121,14 @@ export default function ProductCard({ product }: { product: Product }) {
               rel="noopener noreferrer"
               className={styles.buyBtn}
             >
-              👉 {cta_text || '今すぐチェック'}
+              👉 {cta_text || '最安価格をチェック（在庫あり）'}
             </a>
           )}
 
           {/* サブCTA（信頼＋緊急性） */}
-          {cta_sub && (
-            <div className={styles.ctaSub}>
-              {cta_sub}
-            </div>
-          )}
+          <div className={styles.ctaSub}>
+            {cta_sub || '※価格・在庫は変動します'}
+          </div>
 
           {/* 詳細（逃げ道） */}
           {unique_id && (

@@ -34,7 +34,7 @@ export default function HeroRankingCard({ product }: any) {
         <div style={{ textAlign: 'center' }}>
           <img 
             src={product.image_url}
-            alt={product.name}
+            alt={product.name || 'おすすめPC'}
             style={{ width: '260px', borderRadius: '12px' }}
           />
 
@@ -61,7 +61,7 @@ export default function HeroRankingCard({ product }: any) {
 
           {/* スコア（意味付け） */}
           <p style={{ marginTop: '8px', fontSize: '14px' }}>
-            🔥 AIスコア {product.score_ai}（独自検証） → 上位10%（迷わず選べるレベル）
+            🔥 AIスコア {product.score_ai}（独自検証） → 上位10%（今選ばれているモデル）
           </p>
 
           {/* 安心訴求 */}
@@ -97,7 +97,7 @@ export default function HeroRankingCard({ product }: any) {
                 fontSize: '16px'
               }}
             >
-              👉 これで決まり（在庫あるうちにチェック）
+              👉 最安価格をチェック（在庫あり）
             </a>
 
             {/* サブCTA */}

@@ -22,7 +22,7 @@ export function transformProduct(raw: any) {
     unique_id: raw.id,
     image_url: raw.image_url,
 
-    cta_text: "👉 今すぐチェック",
-    cta_sub: "在庫あるうちに確認"
+    // cta_text: "👉 今すぐチェック",
+    // cta_sub: "在庫あるうちに確認"
   };
 }

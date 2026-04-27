@@ -84,7 +84,7 @@ class AuthorListAPIView(MasterEntityListView):
     serializer_class = AuthorSerializer
 
 # --------------------------------------------------------------------------
-# 2. 🏆 PC製品ランキング View
+# 2. 🏆 PC製品ランキング View（修正版）
 # --------------------------------------------------------------------------
 
 class PCProductRankingView(generics.ListAPIView):
@@ -92,13 +92,20 @@ class PCProductRankingView(generics.ListAPIView):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        queryset = PCProduct.objects.filter(is_active=True, spec_score__gt=0)
+        # 🔥 PCのみ抽出（モニター除外）
+        queryset = PCProduct.objects.filter(
+            is_active=True,
+            spec_score__gt=0,
+            cpu_model__isnull=False
+        ).exclude(cpu_model='')
+
         path = self.request.path
         is_popularity = 'popularity-ranking' in path
         site_type = getattr(self.request, 'site_type', 'station')
 
         if is_popularity:
             return queryset.order_by('-updated_at', '-spec_score')[:20]
+
         if site_type == 'saving':
             return queryset.order_by('-score_cost', '-spec_score')[:20]
         
@@ -129,11 +136,14 @@ class PCProductListAPIView(generics.ListAPIView):
         'score_portable', 'score_ai', 'npu_tops', 'power_recommendation', 'name'
     ]
     ordering = ['-created_at']
-
+    
     def get_queryset(self):
-        """動的クエリパラメータによる高度なフィルタリング"""
-        # distinct() を追加して、ManyToManyによる重複を防止
-        queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes').distinct()
+        queryset = PCProduct.objects.filter(
+            is_active=True,
+            cpu_model__isnull=False   # 👈 追加
+        ).exclude(cpu_model='') \
+        .prefetch_related('attributes') \
+        .distinct()
         
         # 1. メーカー絞り込み (?maker=hp)
         maker = self.request.query_params.get('maker')
