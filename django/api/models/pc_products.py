@@ -72,7 +72,7 @@ class PCProduct(models.Model):
     attributes = models.ManyToManyField(
         PCAttribute, 
         blank=True, 
-        related_name='products',
+        related_name='pc_products',
         verbose_name="スペック属性タグ"
     )
 

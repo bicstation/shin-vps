@@ -22,48 +22,43 @@ urlpatterns = [
     path('status/', status_check, name='status_check'),
 
     # ==========================================================
-    # 2. 📁 各ドメイン別エンドポイント (階層型ルーティング対応)
+    # 2. 📁 コンテンツ系
     # ==========================================================
-    
-    # 🚀 ContentHub (AI Ingestion & Integrated Management)
-    # 先ほど作成した contenthub_urls.py (単数形) を紐付け
     path('content-hub/', include('api.urls.contenthub_urls')),
 
-    # 📰 記事系 (posts)
-    # 🛡️ Next.js v3 の prefix (general/posts/ 等) をすべて article_urls へ誘導
+    # 📰 記事系（Next.js互換含む）
     path('general/posts/', include('api.urls.article_urls')),
     path('adult/posts/',   include('api.urls.article_urls')),
     path('bs/posts/',      include('api.urls.article_urls')),
-    
-    # 互換性維持: prefixなしの /api/posts/ も引き続き受け付ける
-    path('posts/', include('api.urls.article_urls')),
+    path('posts/',         include('api.urls.article_urls')),
 
-    # 👤 認証・ユーザー系
-    path('auth/', include('api.urls.auth_urls')),
-    
-    # 💻 一般・PC製品・共通系 (api/general/...)
-    path('general/', include('api.urls.general_urls')),
-    
-    # 🔞 アダルト統合系 (api/adult/...)
-    path('adult/', include('api.urls.adult_urls')),
-    
-    # 🏷️ マスターデータ系 (api/master/...)
-    path('master/', include('api.urls.master_urls')),
-    
-    # 📦 物販・Linkshare系 (api/linkshare/...)
-    path('linkshare/', include('api.urls.linkshare_urls')),
-    
-    # 📱 Bic-saving 系 (api/bs/...)
-    path('bs/', include('api.urls.bs_urls')),
-    
     # ==========================================================
-    # 🛡️ 3. 504 Timeout 防止用: 不要なリクエストを黙らせる
+    # 3. 👤 認証
+    # ==========================================================
+    path('auth/', include('api.urls.auth_urls')),
+
+    # ==========================================================
+    # 4. 🛍️ 統合プロダクト（★最重要）
+    # ==========================================================
+    path('products/', include('api.urls.product_urls')),
+
+    # ==========================================================
+    # 5. 📊 データソース系（裏側）
+    # ==========================================================
+    path('general/', include('api.urls.general_urls')),
+    path('adult/',   include('api.urls.adult_urls')),
+    path('master/',  include('api.urls.master_urls')),
+    path('linkshare/', include('api.urls.linkshare_urls')),
+    path('bs/',      include('api.urls.bs_urls')),
+
+    # ==========================================================
+    # 6. 🤖 AI系
+    # ==========================================================
+    path('ai/', include('api.urls.ai_urls')),
+
+    # ==========================================================
+    # 7. 🛡️ 不要リクエスト抑制
     # ==========================================================
     path('events/stream', lambda r: HttpResponse(status=204)),
     path('releases', lambda r: HttpResponse(status=204)),
-    
-    # ==========================================================
-    # 🤖 AI系
-    # ==========================================================
-    path('ai/', include('api.urls.ai_urls')),
 ]

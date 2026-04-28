@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ======================================================
-# bicstation 全自動データ更新スクリプト (Universal v6.1)
-# ✨ 特徴: 属性自浄 ＋ 在庫生存確認 ＋ FTP安定化 ＋ ASUS修正
+# bicstation 全自動データ更新スクリプト (Universal v7.0)
+# ✨ 属性完全リビルド対応版（精度保証）
 # ======================================================
 
 # 1. パス解決
@@ -39,14 +39,19 @@ echo "======================================================"
 echo "🚀 Start Modern Catalog Process: $(date)"
 echo "======================================================"
 
-# --- [1/5] 🏷️ 属性マスタ同期 ---
-echo "🏷️ [1/5] Step 1: Syncing Master Attributes..."
+# ------------------------------------------------------
+# [1/6] 🏷️ 属性マスタ同期
+# ------------------------------------------------------
+echo "🏷️ [1/6] Step 1: Syncing Master Attributes..."
 $PY_CMD manage.py sync_master_attributes
 
-# --- [2/5] 📡 データ取得 (LinkShare) ---
-# FTP接続は特に不安定になりやすいため、各MIDの間に十分な待機時間を設けます
-echo "📡 [2/5] Step 2: Fetching Raw Data..."
+# ------------------------------------------------------
+# [2/6] 📡 データ取得 (LinkShare)
+# ------------------------------------------------------
+echo "📡 [2/6] Step 2: Fetching Raw Data..."
+
 FTP_MIDS=("35909" "2557" "2543" "36508")
+
 for mid in "${FTP_MIDS[@]}"; do
     echo "🔄 Processing MID: $mid ..."
     $PY_CMD manage.py import_linkshare_data --mid "$mid"
@@ -56,11 +61,21 @@ done
 
 echo "💤 Break before API Parser (5s)..."
 sleep 5
+
 $PY_CMD manage.py linkshare_bc_api_parser --mid "43708" --save-db
 
-# --- [3/5] 🔄 DB同期 (PCProductテーブル反映) ---
-echo "🔄 [3/5] Step 3: Mapping to PCProduct Table..."
-declare -A ftp_configs=( ["35909"]="hp:HP" ["2557"]="dell:DELL" ["2543"]="fujitsu:FUJITSU" ["36508"]="dynabook:DYNABOOK" )
+# ------------------------------------------------------
+# [3/6] 🔄 DB同期（PCProduct作成）
+# ------------------------------------------------------
+echo "🔄 [3/6] Step 3: Mapping to PCProduct Table..."
+
+declare -A ftp_configs=(
+    ["35909"]="hp:HP"
+    ["2557"]="dell:DELL"
+    ["2543"]="fujitsu:FUJITSU"
+    ["36508"]="dynabook:DYNABOOK"
+)
+
 for mid in "${!ftp_configs[@]}"; do
     IFS=":" read -r maker prefix <<< "${ftp_configs[$mid]}"
     echo "📂 Processing $prefix ($mid)..."
@@ -68,22 +83,40 @@ for mid in "${!ftp_configs[@]}"; do
     sleep 2
 done
 
-# ASUSは引数エラー回避のため --prefix を除外
 echo "📂 Processing ASUS (43708)..."
 $PY_CMD "$SCRAPER_BASE/import_bc_api_to_db.py" --mid "43708" --maker "asus"
 
-# --- [4/5] 🧠 AIスペック解析 (自浄作用) ---
-# limit 1000 により、未解析の商品をほぼ全件カバーします
-echo "🧠 [4/5] Step 4: AI Spec Analysis & Tag Cleaning (Limit: 1000)..."
+# ------------------------------------------------------
+# [4/6] 🧠 AIスペック解析
+# ------------------------------------------------------
+echo "🧠 [4/6] Step 4: AI Spec Analysis..."
 $PY_CMD manage.py analyze_pc_spec --limit 50 --null-only
 
-# --- [5/5] 🧹 カタログクリーンアップ & マッピング ---
-echo "🧹 [5/5] Step 5: Catalog Cleanup & Auto Mapping..."
-$PY_CMD manage.py cleanup_pc_catalog
+# ------------------------------------------------------
+# [5/6] 🧹 属性リセット（超重要）
+# ------------------------------------------------------
+echo "🧹 [5/6] Step 5: Reset Attributes..."
+
+$PY_CMD manage.py shell <<EOF
+from api.models import PCProduct
+
+count = 0
+for p in PCProduct.objects.all():
+    p.attributes.clear()
+    count += 1
+
+print(f"✅ Cleared attributes for {count} products")
+EOF
+
+# ------------------------------------------------------
+# [6/6] 🧠 自動マッピング + Product同期
+# ------------------------------------------------------
+echo "🧠 [6/6] Step 6: Auto Mapping & Product Sync..."
+
 $PY_CMD manage.py auto_map_attributes
+$PY_CMD manage.py migrate_pc_products
 
 echo "======================================================"
 echo "✅ Finished at: $(date)"
-echo "🚀 完了！マスタ同期、データ取得、AI解析、クリーンアップの全工程が正常に終了しました。"
+echo "🚀 完了！属性リビルド含め全工程が正常終了"
 echo "======================================================"
-

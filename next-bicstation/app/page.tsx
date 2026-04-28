@@ -153,8 +153,6 @@ export default async function HomePageMain() {
                     {others.map((product: any, i: number) => (
                         <ProductCard 
                             key={product.id || i}
-                            // product={product}
-                            // product={transformProduct(p)}   // ← これ
                             product={transformProduct(product)}  // ← ✅ここ
                             rank={i + 2}
                             isReviewMode={IS_ADSENSE_REVIEW}

@@ -7,6 +7,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.safestring import mark_safe
 from django.db.models import Count
+from api.models.product import Product
 
 # モデルのインポート
 from .models import (
@@ -323,3 +324,80 @@ admin.site.register([
     AdultAttribute, AdultActressProfile, FanzaFloorMaster,
     BSCarrier, BSMobilePlan
 ])
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+
+    list_display = (
+        'display_image',
+        'title_short',
+        'price_display',
+        'ranking_score_bar',
+        'source_tag',
+        'status_flags',
+        'created_at',
+    )
+
+    list_display_links = ('display_image', 'title_short')
+
+    list_filter = (
+        'source',
+        'is_active',
+        'is_adult',
+        'is_visible',
+    )
+
+    search_fields = (
+        'title',
+        'external_id',
+    )
+
+    ordering = ('-ranking_score',)
+
+    filter_horizontal = ('genres', 'actresses')
+
+    # -----------------
+    # 表示カスタム
+    # -----------------
+
+    def display_image(self, obj):
+        return get_thumbnail(obj.thumbnail_url, 70)
+    display_image.short_description = "画像"
+
+    def title_short(self, obj):
+        return obj.title[:40] + '...' if len(obj.title) > 40 else obj.title
+    title_short.short_description = "タイトル"
+
+    def price_display(self, obj):
+        if not obj.price:
+            return "---"
+        return f"¥{obj.price:,}"
+    price_display.short_description = "価格"
+
+    def ranking_score_bar(self, obj):
+        return get_score_bar(obj.ranking_score, "Score", "80px")
+    ranking_score_bar.short_description = "スコア"
+
+    def source_tag(self, obj):
+        colors = {
+            'fanza': '#ff3860',
+            'duga': '#ff9f00',
+            'sokmil': '#6f42c1',
+            'linkshare': '#007bff'
+        }
+        color = colors.get(obj.source, '#6c757d')
+        return mark_safe(
+            f'<span style="background:{color}; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">{obj.source.upper()}</span>'
+        )
+    source_tag.short_description = "ソース"
+
+    def status_flags(self, obj):
+        flags = []
+        if obj.is_active:
+            flags.append("✅")
+        if obj.is_adult:
+            flags.append("🔞")
+        if obj.is_visible:
+            flags.append("👁")
+        return " ".join(flags)
+    status_flags.short_description = "状態"

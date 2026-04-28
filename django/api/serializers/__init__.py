@@ -7,7 +7,6 @@ Bic-v2 API Serializers Definition
 from .auth_serializers import UserSerializer
 
 # 💻 2. 一般・PC・アフィリエイト・マスタ系
-# 💡 明示的インポートでエラーが出たため、ワイルドカードで安全に読み込みます
 from .general_serializers import *
 
 # 🔞 3. アダルト・統合ゲートウェイ系
@@ -16,13 +15,11 @@ from .adult_serializers import *
 # 📱 4. Bic-saving（通信・スマホ節約）系
 from .bs_device_serializers import *
 
-# 📝 5. 【NEW】統合配信コンテンツ管理（Article / ContentHub）
+# 📝 5. 統合配信コンテンツ管理（Article / ContentHub）
 from .article_serializer import ArticleSerializer
 from .contenthub_serializer import ContentHubSerializer, ContentHubListSerializer
 
 # ==============================================================================
-# 💡 メモ: 
-# ImportError (cannot import name 'MakerSerializer' 等) が発生した場合は、
-# general_serializers.py 内のクラス名が正しいか、または定義されているか確認してください。
-# 現状は '*' を使うことで、存在するクラスのみを安全に公開しています。
-# ===========================================
+# 6. 統合プロダクト（表示用・ランキング基盤）
+# ==============================================================================
+from .product_serializer import ProductSerializer
