@@ -116,6 +116,16 @@ echo "🧠 [6/6] Step 6: Auto Mapping & Product Sync..."
 $PY_CMD manage.py auto_map_attributes
 $PY_CMD manage.py migrate_pc_products
 
+
+# ------------------------------
+# 🏆 Ranking Score 更新（超重要）
+# ------------------------------
+echo "📊 Updating Ranking Scores..."
+$PY_CMD manage.py update_product_scores
+
+echo "📈 Top Ranking Preview"
+curl -s http://localhost:8083/api/products/ranking/ | head -n 5
+
 echo "======================================================"
 echo "✅ Finished at: $(date)"
 echo "🚀 完了！属性リビルド含め全工程が正常終了"

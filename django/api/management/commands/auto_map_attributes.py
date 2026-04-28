@@ -285,9 +285,9 @@ class Command(BaseCommand):
                         # -------------------------
                         # デバッグ
                         # -------------------------
-                        title = getattr(product, "title", None) or getattr(product, "name", "")
-                        if "4070" in title:
-                            # print(f"🔥 {match_type} MATCH | attr={attr.name} | title={title}")
+                        # title = getattr(product, "title", None) or getattr(product, "name", "")
+                        # if "4070" in title:
+                        #     print(f"🔥 {match_type} MATCH | attr={attr.name} | title={title}")
                     
                     # -------------------------
                     # 登録
