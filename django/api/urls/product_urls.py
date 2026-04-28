@@ -1,8 +1,8 @@
 # api/urls/product_urls.py
 
 from django.urls import path
-from api.views.product_view import RankingView
+from api.views.product_view import ProductRankingView
 
 urlpatterns = [
-    path('ranking/', RankingView.as_view(), name='product-ranking'),
+    path('ranking/', ProductRankingView.as_view()),
 ]

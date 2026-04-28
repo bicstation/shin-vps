@@ -8,7 +8,7 @@ class Command(BaseCommand):
     help = 'Migrate PCProduct to Product'
 
     def handle(self, *args, **kwargs):
-        items = PCProduct.objects.all()[:100]
+        items = PCProduct.objects.all()
 
         for item in items:
             product_obj, created = Product.objects.update_or_create(

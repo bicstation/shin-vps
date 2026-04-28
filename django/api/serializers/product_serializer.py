@@ -45,31 +45,90 @@ class ProductSerializer(serializers.ModelSerializer):
     # -----------------
     # label（強化版）
     # -----------------
+    
     def get_label(self, obj):
         score = obj.ranking_score or 0
         price = obj.price or 0
 
-        # 🔥 最上位
         if score >= 95:
             return "🔥 人気No.1"
 
-        # ⭐ 高評価
         if score >= 90:
             return "⭐ 高評価"
 
-        # 💰 コスパ
         if price > 0 and price < 300000:
             return "💰 コスパ良"
 
-        # 🆕 新着（7日以内）
         if obj.created_at:
             if (timezone.now() - obj.created_at).days <= 7:
                 return "🆕 新着"
 
         return ""
     
+    
     def get_tags(self, obj):
-        return [
-            attr.name
-            for attr in obj.attributes.all().order_by('order')[:5]
-        ]
+        attrs = list(obj.attributes.all())
+
+        grouped = {}
+
+        for a in attrs:
+            grouped.setdefault(a.attr_type, []).append(a)
+
+        result = []
+
+        for t, items in grouped.items():
+
+            # -----------------
+            # CPU
+            # -----------------
+            if t == "cpu":
+                items = sorted(items, key=lambda x: x.order or 0, reverse=True)
+                result.append(items[0].name)
+
+            # -----------------
+            # GPU（専用ロジック）
+            # -----------------
+            elif t == "gpu":
+
+                def gpu_score(x):
+                    name = x.name.lower()
+
+                    if "5090" in name: return 110
+                    if "5080" in name: return 105
+                    if "5070 ti" in name: return 100
+                    if "5070" in name: return 95
+
+                    if "4090" in name: return 92
+                    if "4080" in name: return 88
+                    if "4070 ti" in name: return 85
+                    if "4070" in name: return 82
+                    if "4060 ti" in name: return 78
+                    if "4060" in name: return 75
+                    if "4050" in name: return 70
+
+                    if "radeon" in name: return 60
+                    if "arc" in name: return 50
+
+                    # 内蔵GPUは最弱
+                    if "intel" in name: return 1
+
+                    return 0
+
+                items = sorted(items, key=gpu_score, reverse=True)
+                result.append(items[0].name)
+
+            # -----------------
+            # メモリ / VRAM
+            # -----------------
+            elif t in ["memory", "vram"]:
+                items = sorted(items, key=lambda x: x.order or 0, reverse=True)
+                result.append(items[0].name)
+
+            # -----------------
+            # その他（MULTI）
+            # -----------------
+            else:
+                for i in items:
+                    result.append(i.name)
+
+        return result   

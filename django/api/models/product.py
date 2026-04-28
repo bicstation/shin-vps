@@ -8,9 +8,9 @@ class Product(models.Model):
     # -----------------
     # 基本情報
     # -----------------
-    title = models.CharField(max_length=255, default="")
-    thumbnail_url = models.URLField(max_length=500, blank=True, null=True)
-    affiliate_url = models.URLField(max_length=500, blank=True, null=True)
+    title = models.TextField(default="")  # ← 修正
+    thumbnail_url = models.URLField(max_length=1000, blank=True, null=True)  # 少し拡張
+    affiliate_url = models.TextField(blank=True, null=True)  # ← 修正
 
     # -----------------
     # 数値系
@@ -24,24 +24,25 @@ class Product(models.Model):
     source = models.CharField(max_length=50, db_index=True)
     external_id = models.CharField(max_length=255, db_index=True)
 
-    # 👇 追加
     maker = models.CharField(max_length=255, blank=True)
     label_name = models.CharField(max_length=255, blank=True)
 
-    # 👇 追加
     release_date = models.DateField(null=True, blank=True)
 
+    # -----------------
+    # 属性
+    # -----------------
     attributes = models.ManyToManyField(
-        'PCAttribute',  # ← とりあえずPCだけでOK
+        'PCAttribute',
         blank=True,
         related_name='products_items'
     )
-    
+
     # -----------------
     # リレーション
     # -----------------
-    genres = models.ManyToManyField('Genre',blank=True,related_name='unified_products')
-    actresses = models.ManyToManyField('Actress',blank=True,related_name='unified_products')
+    genres = models.ManyToManyField('Genre', blank=True, related_name='unified_products')
+    actresses = models.ManyToManyField('Actress', blank=True, related_name='unified_products')
 
     # -----------------
     # フラグ
@@ -55,7 +56,6 @@ class Product(models.Model):
     # -----------------
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
 
     # -----------------
     # インデックス
@@ -66,7 +66,6 @@ class Product(models.Model):
             models.Index(fields=['source']),
             models.Index(fields=['is_adult']),
             models.Index(fields=['is_visible']),
-
             models.Index(
                 fields=['is_active', 'is_visible', 'is_adult', '-ranking_score'],
                 name='idx_product_ranking'
