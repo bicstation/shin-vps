@@ -3,12 +3,10 @@
 
 import React, { Suspense } from 'react';
 import { Metadata } from 'next';
-// ❌ headers削除
-import Link from 'next/link';
 
 import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
-import RadarChart from '@/shared/components/atoms/RadarChart';
+import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard';
 import Pagination from '@/shared/components/molecules/Pagination';
 
 import styles from './Ranking.module.css';
@@ -17,81 +15,79 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface PageProps {
-    searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
-/** metadata */
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
-    const sParams = await props.searchParams;
-    const page = sParams.page || '1';
-    
-    return {
-        title: `【2026年最新】PCランキング 第${page}ページ | BICSTATION`,
-        description: `AIスコアによるPCランキング`,
-    };
+  const sParams = await props.searchParams;
+  const page = sParams.page || '1';
+
+  return {
+    title: `【2026年最新】PCランキング 第${page}ページ | BICSTATION`,
+    description: `AIスコアによるPCランキング`,
+  };
 }
 
 export default function RankingPage(props: PageProps) {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <RankingContent {...props} />
-        </Suspense>
-    );
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RankingContent {...props} />
+    </Suspense>
+  );
 }
 
 async function RankingContent(props: PageProps) {
-    const sParams = await props.searchParams;
-    const currentPage = parseInt(sParams.page || '1', 10);
-    const limit = 20;
+  const sParams = await props.searchParams;
+  const currentPage = parseInt(sParams.page || '1', 10);
+  const limit = 20;
 
-    // ✅ 固定
-    const host = "bicstation.com";
+  const host = "bicstation.com";
 
-    const rawData = await fetchPCProductRanking('score', host).catch(() => []);
+  const rawData = await fetchPCProductRanking('score', host).catch(() => []);
 
-    const productsArray = Array.isArray(rawData)
-        ? rawData
-        : (rawData?.results || []);
+  const productsArray = Array.isArray(rawData)
+    ? rawData
+    : (rawData?.results || []);
 
-    const offset = (currentPage - 1) * limit;
-    const products = productsArray.slice(offset, offset + limit);
-    const totalPages = Math.ceil(productsArray.length / limit);
+  const offset = (currentPage - 1) * limit;
+  const products = productsArray.slice(offset, offset + limit);
+  const totalPages = Math.ceil(productsArray.length / limit);
 
-    return (
-        <main className={styles.container}>
+  // 👇 ここが重要
+  const hero = products[0];
+  const list = products.slice(1);
 
-            <header>
-                <h1>PCランキング</h1>
-            </header>
+  return (
+    <main className={styles.container}>
 
-            <div className={styles.grid}>
-                {products.map((product: any, index: number) => {
-                    const rank = offset + index + 1;
+      {/* 🏆 HERO（1位だけ別格） */}
+      {hero && (
+        <div style={{ marginBottom: '24px' }}>
+          <HeroRankingCard product={hero} />
+        </div>
+      )}
 
-                    const chartData = [
-                        { subject: 'CPU', value: product.score_cpu || 0, fullMark: 100 },
-                        { subject: 'GPU', value: product.score_gpu || 0, fullMark: 100 },
-                        { subject: 'コスパ', value: product.score_cost || 0, fullMark: 100 },
-                        { subject: '携帯性', value: product.score_portable || 0, fullMark: 100 },
-                        { subject: 'AI性能', value: product.score_ai || 0, fullMark: 100 },
-                    ];
+      {/* 📊 ランキング（2位以降） */}
+      <div className={styles.grid}>
+        {list.map((product: any, index: number) => {
+          const rank = offset + index + 2;
 
-                    return (
-                        <div key={product.unique_id || index}>
-                            <ProductCard product={product} rank={rank}>
-                                <RadarChart data={chartData} color="#3b82f6" />
-                            </ProductCard>
-                        </div>
-                    );
-                })}
+          return (
+            <div key={product.id || index}>
+              <ProductCard product={product} rank={rank} />
             </div>
+          );
+        })}
+      </div>
 
-            <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                baseUrl="/ranking"
-            />
+      {/* ページネーション */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        baseUrl="/ranking"
+      />
 
-        </main>
-    );
+    </main>
+  );
 }
+
