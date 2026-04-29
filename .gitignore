@@ -91,4 +91,4 @@ Thumbs.db
 config/firebase/*.json
 **/firebase/*.json
 
-ai/ComfyUI/
+ai/ComfyUI/django/media/
