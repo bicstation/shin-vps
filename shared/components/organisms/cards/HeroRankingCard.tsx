@@ -1,119 +1,178 @@
 'use client';
 
-import Link from 'next/link';
+type Product = {
+  id: number;
+  title?: string;
+  image?: string | null;
+  price?: number;
+  url?: string | null;
+  label?: string;
+  tags?: string[];
+};
 
-export default function HeroRankingCard({ product }: any) {
+export default function HeroRankingCard({ product }: { product?: Product }) {
   if (!product) return null;
 
+  // 🔒 安全処理
+  const title = product.title || 'おすすめ商品';
+  const image = product.image || '/no-image.png';
+  const price = product.price ?? 0;
+  const url = product.url || '';
+  const label = product.label || 'おすすめ';
+  const tags = Array.isArray(product.tags) ? product.tags.slice(0, 3) : [];
+
+  console.log(product);
+  
   return (
-    <section style={{
-      background: 'linear-gradient(135deg, #0f172a, #020617)',
-      padding: '32px',
-      borderRadius: '20px',
-      border: '2px solid #22c55e',
-      position: 'relative'
-    }}>
-      {/* 👑 バッジ */}
-      <div style={{
-        position: 'absolute',
-        top: '-12px',
-        left: '20px',
-        background: '#22c55e',
-        color: '#000',
-        padding: '6px 14px',
-        borderRadius: '999px',
-        fontWeight: 'bold',
-        fontSize: '12px'
-      }}>
-        👑 迷ったらこれ一択(残りわずか・人気モデル)
+    <section
+      style={{
+        background: 'linear-gradient(135deg, #020617, #0f172a)',
+        padding: '36px',
+        borderRadius: '24px',
+        border: '2px solid #f97316',
+        position: 'relative',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+      }}
+    >
+      {/* 👑 ラベル */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '-14px',
+          left: '24px',
+          background: '#f97316',
+          color: '#fff',
+          padding: '6px 16px',
+          borderRadius: '999px',
+          fontWeight: 'bold',
+          fontSize: '12px',
+        }}
+      >
+        {label}
       </div>
 
-      <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
-        
-        {/* 画像 */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '28px',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
+        {/* 🖼 画像 */}
         <div style={{ textAlign: 'center' }}>
-          <img 
-            src={product.image_url}
-            alt={product.name || 'おすすめPC'}
-            style={{ width: '260px', borderRadius: '12px' }}
+          <img
+            src={image}
+            alt={title}
+            onError={(e) => {
+              e.currentTarget.src = '/no-image.png';
+            }}
+            style={{
+              width: '280px',
+              borderRadius: '14px',
+            }}
           />
 
-          <p style={{
-            marginTop: '8px',
-            fontSize: '12px',
-            color: '#94a3b8'
-          }}>
-            ※公式ショップ取り扱い（安心して購入できます）
+          <p
+            style={{
+              marginTop: '8px',
+              fontSize: '12px',
+              color: '#94a3b8',
+            }}
+          >
+            ※公式ショップで安心購入
           </p>
         </div>
 
+        {/* 🧠 コンテンツ */}
         <div style={{ flex: 1, minWidth: '260px' }}>
           
           {/* タイトル */}
-          <h2 style={{ fontSize: '24px', fontWeight: 'bold', lineHeight: 1.4 }}>
-            {product.name}
+          <h2
+            style={{
+              fontSize: '24px',
+              fontWeight: 'bold',
+              lineHeight: 1.5,
+            }}
+          >
+            {title}
           </h2>
 
-          {/* キャッチ（強化） */}
-          <p style={{ color: '#22c55e', marginTop: '8px', fontWeight: 'bold' }}>
-            初心者でも失敗しない・コスパ最強の1台
-          </p>
-
-          {/* スコア（意味付け） */}
-          <p style={{ marginTop: '8px', fontSize: '14px' }}>
-            🔥 AIスコア {product.score_ai}（独自検証） → 上位10%（今選ばれているモデル）
-          </p>
-
-          {/* 安心訴求 */}
-          <ul style={{ marginTop: '12px', lineHeight: '1.8', fontSize: '14px' }}>
-            <li>✔ 初心者が選んでも後悔しない性能</li>
-            <li>✔ 動画編集・AI作業も余裕</li>
-            <li>✔ 3年以上しっかり使える安定モデル</li>
-            <li>✔ ※迷う必要がないレベルです</li>
-          </ul>
-
-          <p style={{
-            fontSize: '12px',
-            color: '#94a3b8',
-            marginBottom: '8px'
-          }}>
-            ✔ 今一番選ばれているモデル
-          </p>
-
-          {/* CTAエリア（最重要） */}
-          <div style={{ marginTop: '10px' }}>
-
-            {/* メインCTA */}
-            <a 
-              href={product.affiliate_url}
-              target="_blank"
+          {/* タグ */}
+          {tags.length > 0 && (
+            <div
               style={{
-                display: 'inline-block',
-                background: '#22c55e',
-                color: '#000',
-                padding: '14px 22px',
-                borderRadius: '12px',
-                fontWeight: 'bold',
-                fontSize: '16px'
+                marginTop: '10px',
+                fontSize: '14px',
+                color: '#94a3b8',
               }}
             >
-              👉 最安価格をチェック（在庫あり）
-            </a>
+              {tags.join(' / ')}
+            </div>
+          )}
 
-            {/* サブCTA */}
-            <div style={{ marginTop: '10px' }}>
-              <Link 
-                href={`/product/${product.id}`}
+          {/* 🔥 信頼ブロック */}
+          <div
+            style={{
+              marginTop: '14px',
+              fontSize: '14px',
+              lineHeight: 1.8,
+            }}
+          >
+            ✔ 今一番選ばれているモデル<br />
+            ✔ 初心者でも失敗しない構成<br />
+            ✔ 長く使える安定スペック
+          </div>
+
+          {/* 💰 価格 */}
+          <div
+            style={{
+              fontSize: '26px',
+              fontWeight: 'bold',
+              marginTop: '18px',
+            }}
+          >
+            ¥{price.toLocaleString()}
+          </div>
+
+          {/* 🚀 CTA */}
+          <div style={{ marginTop: '18px' }}>
+            {url ? (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
-                  fontSize: '13px',
-                  color: '#94a3b8',
-                  textDecoration: 'underline'
+                  display: 'block',
+                  background: '#f97316',
+                  color: '#fff',
+                  padding: '16px',
+                  borderRadius: '14px',
+                  fontWeight: 'bold',
+                  fontSize: '17px',
+                  textAlign: 'center',
+                  boxShadow: '0 6px 16px rgba(249,115,22,0.4)',
                 }}
               >
-                ※迷う人は詳細を確認する
-              </Link>
-            </div>
+                👉 今すぐチェック（在庫残りわずか）
+              </a>
+            ) : (
+              <div style={{ color: '#94a3b8' }}>
+                現在リンク準備中
+              </div>
+            )}
 
+            {/* ▼スクロール誘導（重要） */}
+            <div
+              style={{
+                marginTop: '10px',
+                fontSize: '12px',
+                color: '#94a3b8',
+                textAlign: 'center',
+              }}
+            >
+              ▼ 他の人気モデルも見る
+            </div>
           </div>
 
         </div>

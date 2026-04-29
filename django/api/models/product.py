@@ -11,6 +11,13 @@ class Product(models.Model):
     title = models.TextField(default="")  # ← 修正
     thumbnail_url = models.URLField(max_length=1000, blank=True, null=True)  # 少し拡張
     affiliate_url = models.TextField(blank=True, null=True)  # ← 修正
+    
+    # -----------------
+    # 画像キャッシュ（追加）
+    # -----------------
+    image_local = models.ImageField(upload_to='products/', null=True, blank=True)
+    image_source = models.URLField(max_length=1000, null=True, blank=True)
+    image_fetched = models.BooleanField(default=False)
 
     # -----------------
     # 数値系

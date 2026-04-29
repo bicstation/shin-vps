@@ -27,13 +27,19 @@ echo "======================================"
 docker exec -it django-v3 python manage.py migrate_pc_products
 
 echo "======================================"
-echo "📊 STEP4: スコア更新（←追加）"
+echo "📊 STEP4: スコア更新"
 echo "======================================"
 
 docker exec -it django-v3 python manage.py update_product_scores
 
 echo "======================================"
-echo "📦 STEP5: 件数確認"
+echo "🖼️ STEP5: 画像キャッシュ（追加）"
+echo "======================================"
+
+docker exec -it django-v3 python manage.py fetch_product_images --limit 30
+
+echo "======================================"
+echo "📦 STEP6: 件数確認"
 echo "======================================"
 
 docker exec -i django-v3 python manage.py shell <<EOF
@@ -42,7 +48,7 @@ print(f"📦 Product count: {Product.objects.count()}")
 EOF
 
 echo "======================================"
-echo "🧪 STEP6: 上位確認"
+echo "🧪 STEP7: 上位確認"
 echo "======================================"
 
 curl http://localhost:8083/api/products/ranking/ | head -n 20

@@ -1,148 +1,88 @@
 'use client';
 
-import Link from 'next/link';
 import styles from './ProductCard.module.css';
 
-/* ✅ 型定義 */
 type Product = {
-  display_name?: string;
-  short_tag?: string;
-  selling_points?: string[];
-  short_comment?: string;
+  id: number;
+  title?: string;
+  image?: string | null;
   price?: number;
-  affiliate_url?: string;
-  unique_id?: string;
-  image_url?: string;
-  score_ai?: number;
-  cta_text?: string;
-  cta_sub?: string;
+  url?: string | null;
+  label?: string;
+  tags?: string[];
 };
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product }: { product?: Product }) {
   if (!product) return null;
 
-  const {
-    display_name = '商品名未設定',
-    short_tag,
-    selling_points = [],
-    short_comment,
-    price,
-    affiliate_url,
-    unique_id,
-    image_url,
-    score_ai,
-    cta_text,
-    cta_sub
-  } = product;
+  // 🔒 安全処理
+  const title = product.title || 'おすすめ商品';
+  const image = product.image || '/no-image.png';
+  const price = product.price ?? 0;
+  const url = product.url || '';
+  const label = product.label || '';
+  const tags = Array.isArray(product.tags) ? product.tags.slice(0, 3) : [];
 
   return (
     <article className={styles.card}>
-
-      {/* 🔥 スコア */}
-      {score_ai !== undefined && (
-        <div
-          className={styles.scoreBadge}
-          style={{
-            background:
-              score_ai >= 90
-                ? '#16a34a'
-                : score_ai >= 80
-                ? '#2563eb'
-                : '#64748b'
-          }}
-        >
-          AI {score_ai}
-          <span style={{ marginLeft: '6px', fontSize: '11px' }}>
-            {score_ai >= 90
-              ? '最上位'
-              : score_ai >= 80
-              ? '上位'
-              : '標準'}
-          </span>
+      
+      {/* 🔥 ラベル（目立たせる） */}
+      {label && (
+        <div className={styles.label}>
+          {label}
         </div>
       )}
 
-      {/* 🎯 タグ */}
-      {short_tag && (
-        <div className={styles.recommendTag}>
-          {short_tag}
-        </div>
-      )}
-
-      {/* 🖼 画像 */}
-      <div className={styles.imageArea}>
+      <div className={styles.inner}>
+        
+        {/* 🖼 画像 */}
         <img
-          src={image_url || '/no-image.png'}
-          alt={display_name}
-          loading="lazy"
+          src={image}
+          alt={title}
+          className={styles.image}
         />
-      </div>
 
-      <div className={styles.cardBody}>
+        <div className={styles.body}>
+          
+          {/* タイトル */}
+          <h3 className={styles.title}>
+            {title}
+          </h3>
 
-        {/* 🏷 タイトル */}
-        <h3 className={styles.productName}>
-          <Link href={`/product/${unique_id || ''}`}>
-            {display_name}
-          </Link>
-        </h3>
-
-        {/* 💥 強み（最大3つ） */}
-        {selling_points.length > 0 && (
-          <ul className={styles.pointList}>
-            {selling_points.slice(0, 3).map((p, i) => (
-              <li key={i}>✔ {p}</li>
-            ))}
-          </ul>
-        )}
-
-        {/* 🧠 コメント */}
-        {short_comment && (
-          <p className={styles.shortComment}>
-            {short_comment}
-          </p>
-        )}
-
-        {/* 💰 価格 */}
-        {price !== undefined && (
-          <p className={styles.price}>
-            ¥{Number(price).toLocaleString()}
-          </p>
-        )}
-
-        {/* 🚀 CTA */}
-        <div className={styles.actions}>
-
-          {/* メインCTA（改善済み） */}
-          {affiliate_url && (
-            <a
-              href={affiliate_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.buyBtn}
-            >
-              👉 {cta_text || '最安価格をチェック（在庫あり）'}
-            </a>
+          {/* タグ */}
+          {tags.length > 0 && (
+            <div className={styles.tags}>
+              {tags.join(' / ')}
+            </div>
           )}
 
-          {/* サブCTA（信頼＋緊急性） */}
-          <div className={styles.ctaSub}>
-            {cta_sub || '※価格・在庫は変動します'}
+          {/* 価格 */}
+          <div className={styles.price}>
+            ¥{price.toLocaleString()}
           </div>
 
-          {/* 詳細（逃げ道） */}
-          {unique_id && (
-            <Link
-              href={`/product/${unique_id}`}
-              className={styles.detailBtn}
+          {/* CTA（強化版） */}
+          {url ? (
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.cta}
             >
-              詳細を見る
-            </Link>
+              👉 今すぐチェック
+              <span className={styles.ctaSub}>
+                在庫あるうちに確認
+              </span>
+            </a>
+          ) : (
+            <div className={styles.ctaDisabled}>
+              現在リンク準備中
+            </div>
           )}
 
         </div>
-
       </div>
     </article>
   );
 }
+

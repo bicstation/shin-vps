@@ -3,10 +3,11 @@
 from rest_framework import serializers
 from django.utils import timezone
 from api.models.product import Product
+from django.conf import settings
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    image = serializers.CharField(source='thumbnail_url', default="")
+    image = serializers.SerializerMethodField()
     url = serializers.CharField(source='affiliate_url', default="")
     genre = serializers.SerializerMethodField()
     actress = serializers.SerializerMethodField()
@@ -45,32 +46,52 @@ class ProductSerializer(serializers.ModelSerializer):
     # -----------------
     # label（強化版）
     # -----------------
-    
     def get_label(self, obj):
-        score = obj.ranking_score or 0
+
+        # 1位は絶対固定
+        if getattr(obj, "rank", None) == 1:
+            return "🔥 迷ったらこれ"
+
+        tags = self.get_tags(obj)
         price = obj.price or 0
 
-        if score >= 95:
-            return "🔥 人気No.1"
+        # GPU強い
+        if any("5090" in t or "5080" in t for t in tags):
+            return "👑 最強スペック"
 
-        if score >= 90:
-            return "⭐ 高評価"
+        if any("5070" in t or "4070" in t for t in tags):
+            return "🎮 ゲーミング最適"
 
-        if price > 0 and price < 300000:
+        # CPU強い
+        if any("core i9" in t.lower() or "ryzen 9" in t.lower() for t in tags):
+            return "⚡ ハイエンド"
+
+        # コスパ
+        if price < 250000:
             return "💰 コスパ良"
 
-        if obj.created_at:
-            if (timezone.now() - obj.created_at).days <= 7:
-                return "🆕 新着"
-
         return ""
+       
+    
+    def get_image(self, obj):
+        request = self.context.get("request")
+
+        if obj.image_local:
+            url = obj.image_local.url
+
+            if request:
+                return request.build_absolute_uri(url)
+
+            base = getattr(settings, "SITE_URL", "")
+            return f"{base}{url}" if base else url
+
+        return obj.image_source or obj.thumbnail_url or "/no-image.jpg"
     
     
     def get_tags(self, obj):
         attrs = list(obj.attributes.all())
 
         grouped = {}
-
         for a in attrs:
             grouped.setdefault(a.attr_type, []).append(a)
 
@@ -78,57 +99,64 @@ class ProductSerializer(serializers.ModelSerializer):
 
         for t, items in grouped.items():
 
-            # -----------------
-            # CPU
-            # -----------------
             if t == "cpu":
                 items = sorted(items, key=lambda x: x.order or 0, reverse=True)
                 result.append(items[0].name)
 
-            # -----------------
-            # GPU（専用ロジック）
-            # -----------------
             elif t == "gpu":
-
                 def gpu_score(x):
                     name = x.name.lower()
 
                     if "5090" in name: return 110
                     if "5080" in name: return 105
-                    if "5070 ti" in name: return 100
                     if "5070" in name: return 95
-
                     if "4090" in name: return 92
                     if "4080" in name: return 88
-                    if "4070 ti" in name: return 85
                     if "4070" in name: return 82
-                    if "4060 ti" in name: return 78
                     if "4060" in name: return 75
-                    if "4050" in name: return 70
-
-                    if "radeon" in name: return 60
-                    if "arc" in name: return 50
-
-                    # 内蔵GPUは最弱
-                    if "intel" in name: return 1
-
                     return 0
 
+
+
                 items = sorted(items, key=gpu_score, reverse=True)
-                result.append(items[0].name)
-
-            # -----------------
-            # メモリ / VRAM
-            # -----------------
+                
+                gpu_name = items[0].name.replace("GeForce ", "").replace("NVIDIA ", "")              
+                result.append(gpu_name)
+               
             elif t in ["memory", "vram"]:
+
+                # ❌ 8GBを先に除外
+                items = [i for i in items if "8gb" not in i.name.lower()]
+
+                if not items:
+                    continue
+
                 items = sorted(items, key=lambda x: x.order or 0, reverse=True)
-                result.append(items[0].name)
 
-            # -----------------
-            # その他（MULTI）
-            # -----------------
+                raw_name = items[0].name
+
+                # 表示用に整形
+                clean_name = raw_name.replace("（標準）", "").replace("（大容量）", "")
+
+                result.append(clean_name)
+
             else:
-                for i in items:
-                    result.append(i.name)
+                continue
+            
+        # 🔥 優先順位（超重要）
+        priority = ["rtx", "core i9", "core i7", "32gb", "16gb"]
 
-        return result   
+        result = sorted(
+            result,
+            key=lambda t: next((i for i, p in enumerate(priority) if p in t.lower()), 99)
+        )
+        
+        NG_WORDS = ["8gb", "4gb", "最低限", "以下"]
+        
+        result = [
+            t for t in result
+            if not any(x in t.lower() for x in NG_WORDS)
+        ]       
+        
+        return result[:3]
+ 

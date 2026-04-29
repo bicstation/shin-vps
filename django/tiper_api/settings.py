@@ -138,6 +138,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# 👇ここに追加
+SITE_URL = os.environ.get(
+    "SITE_URL",
+    "http://api-bicstation-host:8083"
+)
+
 # ==========================================================
 # 🚀 DRF設定（JWT認証に統一）
 # ==========================================================

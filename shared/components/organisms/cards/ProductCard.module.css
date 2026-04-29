@@ -1,5 +1,5 @@
 /* =====================================================================
- * 🏗️ CLEAN PRODUCT CARD (最適化版)
+ * 🏗️ PRODUCT CARD（CTR最適化版）
  * ===================================================================== */
 
 /* 🧱 カード本体 */
@@ -12,88 +12,55 @@
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.25s ease;
+  cursor: pointer;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 20px rgba(0,0,0,0.08);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 28px rgba(0,0,0,0.12);
 }
 
-/* 🔥 スコア */
-.scoreBadge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #0f172a;
-  color: #22c55e;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
-/* 🎯 タグ */
-.recommendTag {
+/* 🔥 ラベル（視線誘導強化） */
+.label {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: #22c55e;
-  color: #000;
+  background: #f97316;
+  color: #fff;
   font-size: 11px;
-  font-weight: bold;
-  padding: 4px 10px;
+  font-weight: 800;
+  padding: 5px 12px;
   border-radius: 999px;
+  z-index: 2;
 }
 
 /* 🖼 画像 */
-.imageArea {
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: #fff;
-}
-
-.imageArea img {
-  max-width: 100%;
-  max-height: 100%;
+.image {
+  width: 100%;
+  height: 180px;
   object-fit: contain;
+  background: #fff;
+  padding: 14px;
 }
 
 /* 📦 本文 */
-.cardBody {
+.body {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* 🏷 タイトル */
-.productName {
+.title {
   font-size: 15px;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.4;
 }
 
-.productName a {
-  text-decoration: none;
-  color: inherit;
-}
-
-/* 💥 強み */
-.pointList {
-  padding-left: 0;
-  margin: 0;
-  list-style: none;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #334155;
-}
-
-/* 🧠 コメント */
-.shortComment {
+/* 🎯 タグ */
+.tags {
   font-size: 12px;
   color: #64748b;
 }
@@ -103,49 +70,57 @@
   font-size: 18px;
   font-weight: 800;
   color: #0f172a;
+  margin-top: 4px;
 }
 
-/* 🚀 CTA */
-.actions {
-  margin-top: auto;
+/* 🚀 CTA（ここが命） */
+.cta {
+  margin-top: 10px;
+  background: #f97316;
+  color: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 800;
+  text-decoration: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
+  transition: all 0.2s ease;
 }
 
-/* メインCTA */
-.buyBtn {
-  background: #22c55e;
-  color: #000;
-  padding: 10px;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: bold;
-  text-decoration: none;
+/* CTA hover（押したくなる動き） */
+.cta:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 14px rgba(249,115,22,0.4);
 }
 
-/* サブテキスト */
+/* CTAサブ（心理トリガー） */
 .ctaSub {
   font-size: 11px;
-  text-align: center;
-  color: #94a3b8;
+  font-weight: 400;
+  color: #ffe4d6;
 }
 
-/* 詳細 */
-.detailBtn {
-  font-size: 12px;
+/* CTA無効 */
+.ctaDisabled {
+  margin-top: 10px;
   text-align: center;
-  color: #64748b;
-  text-decoration: underline;
+  font-size: 13px;
+  color: #94a3b8;
 }
 
 /* 📱 モバイル */
 @media (max-width: 640px) {
-  .imageArea {
-    height: 160px;
+  .image {
+    height: 140px;
   }
 
-  .productName {
+  .title {
     font-size: 14px;
+  }
+
+  .price {
+    font-size: 16px;
   }
 }

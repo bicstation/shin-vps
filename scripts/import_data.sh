@@ -61,9 +61,35 @@ run_pc_auto_update() {
 
     echo -e "${CYAN}🏷️ [4/4] 属性マスタ同期 & マッピング...${RESET}"
     docker cp "${PROJECT_ROOT}/django/master_data/attributes.tsv" "${DJANGO_CON}:/usr/src/app/master_data/attributes.tsv"
+
     run_django sync_master_attributes
     run_django auto_map_attributes
+
+    # ★追加
+    echo -e "${CYAN}🔄 Product同期...${RESET}"
+    run_django migrate_pc_products
+
     echo -e "${GREEN}${BOLD}✅ 全工程完了しました！${RESET}"
+
+    echo -e "${CYAN}📊 Ranking Score 更新...${RESET}"
+    run_django update_product_scores
+
+    echo -e "${CYAN}🖼️ 画像キャッシュ...${RESET}"
+
+    FLAG_FILE="$PROJECT_ROOT/.image_cache_done.flag"
+
+    if [ ! -f "$FLAG_FILE" ]; then
+        echo "🚀 First run: Full image caching (100)"
+        run_django fetch_product_images --limit 100 --force
+        touch "$FLAG_FILE"
+    else
+        echo "⚡ Incremental caching (30)"
+        run_django fetch_product_images --limit 30
+    fi
+
+    echo -e "${GREEN}📈 Ranking Preview${RESET}"
+    curl -s http://localhost:8083/api/products/ranking/ | head -n 5
+
 }
 
 show_maker_menu() {
@@ -150,7 +176,7 @@ while true; do
         32) read -p "件数: " L; run_django analyze_pc_spec --limit "${L:-50}" ;;
         33) run_django ai_model_name ;;
         34) read -p "件数: " L; run_django analyze_pc_spec --limit "${L:-10}" --update-all ;;
-        35) run_pc_auto_update ;;
+        35) run_pc_auto_update;; 
         36) 
             echo -e "\n${GREEN}🌙 本日の苦行を一言で教えてください（空欄OK）${RESET}"
             read -p ">> " KUGYO_COMMENT

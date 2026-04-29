@@ -72,7 +72,14 @@ services:
       dockerfile: ./django/Dockerfile
     container_name: django-v3
     restart: always
-    command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000 --workers 5 --threads 2 --worker-class gthread
+    command: >
+      gunicorn tiper_api.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 5
+      --threads 2
+      --worker-class gthread
+      --timeout 120
+      --max-requests 1000
     depends_on:
       postgres-db-v3:
         condition: service_healthy
@@ -80,17 +87,24 @@ services:
       - .env
     environment:
       - DB_HOST=db-host
+
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # 🚀 api.nabejuku.com を削除
-      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
+
+      # ✅ 完全版ルーティング
+      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/media`))"
+
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.routers.django-router.priority=2000"
+
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
+
     volumes:
       - static_volume_prod:/usr/src/app/staticfiles
+      - media_volume_prod:/usr/src/app/media   # 🔥 追加（必須）
+
     networks:
       internal-net:
         aliases:
@@ -306,6 +320,7 @@ networks:
 
 volumes:
   static_volume_prod:
+  media_volume_prod: # 🔥 これ追加
   sitemap_data:
   traefik_ssl_data:
   postgres-data-v3:
