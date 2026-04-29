@@ -1,219 +1,62 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+export default function Footer() {
+  return (
+    <footer
+      style={{
+        marginTop: '40px',
+        padding: '28px 16px',
+        background: '#020617',
+        color: '#94a3b8',
+        textAlign: 'center',
+        fontSize: '12px',
+        lineHeight: 1.8,
+      }}
+    >
 
-/**
- * ✅ 物理パスに基づいた正しいインポート
- */
-import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
-import styles from './Footer.module.css';
-import SystemDiagnosticHero from '@/shared/components/molecules/SystemDiagnosticHero';
+      {/* 🛡 信頼ブロック */}
+      <div style={{ marginBottom: '18px' }}>
+        <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: '6px' }}>
+          安心してご利用いただけます
+        </div>
 
-interface FooterProps {
-    debugData?: {
-        id?: string;
-        source?: string;
-        targetUrl?: string;
-        data?: any;
-        sidebarData?: any;
-        fetchError?: string | null;
-        errorMsg?: string | null;
-        relatedError?: any;
-        params?: any;
-        apiInternalUrl?: string;
-    };
-}
+        <div>✔ 掲載商品はすべて公式ショップ</div>
+        <div>✔ 安全な購入リンクのみ使用</div>
+        <div>✔ 無理な販売は行いません</div>
+      </div>
 
-function FooterContent({ debugData }: FooterProps) {
-    const [mounted, setMounted] = useState(false);
-    const searchParams = useSearchParams();
-    const currentYear = new Date().getFullYear();
+      {/* ⚠ 補足 */}
+      <div style={{ fontSize: '11px', marginBottom: '14px' }}>
+        ※在庫状況や価格は変動する場合があります
+      </div>
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+      {/* 🧠 ブランド（ここに入れる） */}
+      <div
+        style={{
+          fontSize: '11px',
+          marginBottom: '14px',
+          color: '#64748b',
+          letterSpacing: '0.05em',
+        }}
+      >
+        Powered by <span style={{ color: '#94a3b8' }}>SHIN CORE LINX</span>
+      </div>
 
-    const site = useMemo(() => {
-        const identifier = typeof window !== 'undefined' 
-            ? window.location.hostname 
-            : process.env.NEXT_PUBLIC_SITE_DOMAIN;
-        return getSiteMetadata(identifier || "");
-    }, []);
+      {/* 🔗 最小リンク */}
+      <div style={{ marginBottom: '16px' }}>
+        <a href="/privacy" style={{ marginRight: '12px', textDecoration: 'underline' }}>
+          プライバシーポリシー
+        </a>
+        <a href="/terms" style={{ textDecoration: 'underline' }}>
+          利用規約
+        </a>
+      </div>
 
-    if (!site) {
-        return <footer className={styles.footer} style={{ height: '300px', visibility: 'hidden' }} />;
-    }
+      {/* 🏁 コピーライト */}
+      <div style={{ fontSize: '11px', color: '#64748b' }}>
+        © {new Date().getFullYear()} SHIN CORE LINX
+      </div>
 
-    const siteColor = getSiteColor(site.origin_domain);
-    const isDebugMode = searchParams.get('debug') === 'true';
-    
-    const isLocal = typeof window !== 'undefined' 
-        ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        : process.env.NODE_ENV === 'development';
-
-    /**
-     * 🛰️ SHIN CORE LINX - NETWORK 定義
-     */
-    const networkSites = [
-        { name: 'Bic Station', domain: 'bicstation.com', port: 3000, color: '#10b981', isAdult: false },
-        { name: 'Bic Saving', domain: 'bic-saving.com', port: 3001, color: '#3b82f6', isAdult: false },
-        { name: 'なべ塾', domain: 'nabejuku.com', port: 3005, color: '#6366f1', isAdult: false },
-        { name: 'AV Flash', domain: 'avflash.xyz', port: 3002, color: '#ef4444', isAdult: true },
-        { name: 'Tiper', domain: 'tiper.live', port: 3003, color: '#f59e0b', isAdult: true },
-    ];
-
-    const currentIsAdultSite = site.site_group === 'adult';
-    
-    const visibleNetworkSites = networkSites.filter(targetSite => {
-        if (!currentIsAdultSite && targetSite.isAdult) return false;
-        return true;
-    });
-
-    const getNetworkUrl = (s: typeof networkSites[0]) => {
-        return isLocal ? `http://localhost:${s.port}` : `https://${s.domain}`;
-    };
-
-    /**
-     * 📝 各サイト固有のコンテンツ設定
-     */
-    const siteConfigs: Record<string, any> = {
-        'Bic Station': {
-            desc: "ハードウェア性能の真実を数値化。最新PCスペック診断とBTOメーカー比較で、最適な1台を提案します。",
-            editor: 'Maya / SHIN CORE LINX 統括',
-            editorDesc: 'サーバーエンジニア。自作PCと自動化スクリプトをこよなく愛するテックマニア。'
-        },
-        'ビック的節約生活': {
-            desc: "「賢く買う」をAIがサポート。主要ECサイトの価格推移とポイント還元率をリアルタイムに解析します。",
-            editor: 'Maya / SHIN CORE LINX 統括',
-            editorDesc: 'データ解析エンジニア。APIを駆使した価格監視とポイ活の自動化が専門。'
-        },
-        'AV Flash': {
-            desc: "圧倒的なアーカイブ量を誇る情報ポータル。詳細なメタデータ解析で、最高の視聴体験をサポートします。",
-            editor: 'Maya / SHIN CORE LINX 統括',
-            editorDesc: '大規模データベース構築を得意とするエンジニア。膨大なデータの構造化がライフワーク。'
-        },
-        'Tiper.Live': {
-            desc: "大人のためのプレミアム・ガイド。AIソムリエがあなたの感性に響く最高の1本をエスコートします。",
-            editor: 'Maya / SHIN CORE LINX 統括',
-            editorDesc: 'AIレコメンドエンジンの開発者。感性を数値化するアルゴリズムを研究中。'
-        }
-    };
-
-    const config = siteConfigs[site.site_name] || siteConfigs['Bic Station'];
-
-    // ✅ プレフィックスが / で始まっていない場合の安全策
-    const safePrefix = site.site_prefix?.startsWith('/') ? site.site_prefix : `/${site.site_prefix || ''}`;
-
-    return (
-        <footer
-            className={styles.footer}
-            style={{ '--accent-red': siteColor } as React.CSSProperties}
-        >
-            {/* 🚀 導線可視化インジケーター */}
-            {isDebugMode && (
-                <div className="bg-slate-900 border-b border-orange-500/30 px-4 py-2 font-mono text-[11px] flex items-center justify-between text-slate-400">
-                    <div className="flex gap-4 items-center">
-                        <span className="flex items-center gap-1">
-                            <span className={`w-2 h-2 rounded-full ${isLocal ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`}></span>
-                            実行環境: <b className="text-white">{isLocal ? '🏠 ローカル開発' : '🌐 VPS本番モード'}</b>
-                        </span>
-                        <span className="text-orange-400">
-                            接続先API: <b className="text-white">{debugData?.targetUrl || (isLocal ? 'http://127.0.0.1:8083/api' : 'http://django-v3:8000/api')}</b>
-                        </span>
-                        <span>サイト識別: <b className="text-white">{site.site_tag}</b></span>
-                    </div>
-                </div>
-            )}
-
-            <div className={styles.container}>
-                {/* 1. ブランド & 編集者プロフィール */}
-                <div className={styles.column}>
-                    <h3 className={styles.siteTitle}>{site.site_name.toUpperCase()}</h3>
-                    <p className={styles.description}>{config.desc}</p>
-                    
-                    <div className={styles.editorProfile}>
-                        <h4 className={styles.miniTitle}>PRODUCED BY</h4>
-                        <div className={styles.editorFlex}>
-                            <div className={styles.editorIcon} style={{ backgroundColor: siteColor }}>
-                                {config.editor.charAt(0)}
-                            </div>
-                            <div>
-                                <p className={styles.editorName}>{config.editor}</p>
-                                <p className={styles.editorText}>{config.editorDesc}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 2. NETWORK */}
-                <div className={styles.column}>
-                    <h3 className={styles.sectionTitle}>SHIN CORE LINX NETWORK</h3>
-                    <ul className={styles.networkList}>
-                        {visibleNetworkSites.map((s) => (
-                            <li key={s.name} className={styles.linkItem}>
-                                <a
-                                    href={getNetworkUrl(s)}
-                                    className={styles.networkLink}
-                                    style={{ borderLeft: `3px solid ${s.color}`, paddingLeft: '8px' }}
-                                >
-                                    {s.name} <small>{isLocal ? `(:${s.port})` : ''}</small>
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                {/* 3. INFORMATION (✅ 修正済み: 絶対パス化) */}
-                <div className={styles.column}>
-                    <h3 className={styles.sectionTitle}>INFORMATION</h3>
-                    <ul className={styles.linkList}>
-                        <li className={styles.linkItem}><Link href={`${safePrefix}/about`}>ℹ️ 当サイトについて</Link></li>
-                        <li className={styles.linkItem}><Link href={`${safePrefix}/guideline`}>📝 編集ガイドライン</Link></li>
-                        <li className={styles.linkItem}><Link href={`${safePrefix}/privacy-policy`}>🛡️ プライバシーポリシー</Link></li>
-                        <li className={styles.linkItem}><Link href={`${safePrefix}/disclaimer`}>⚠️ 免責事項</Link></li>
-                        <li className={styles.linkItem}><Link href={`${safePrefix}/contact`}>📧 お問い合わせ</Link></li>
-                    </ul>
-                    
-                    <div className={styles.affiliateDisclosure}>
-                        <p>※当サイトはアフィリエイト広告を利用しています</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className={styles.bottomBar}>
-                <div className={styles.bottomContainer}>
-                    <p className={styles.copyright}>
-                        &copy; {currentYear} {site.site_name.toUpperCase()} / Managed by SHIN CORE LINX
-                    </p>
-                </div>
-            </div>
-
-            {/* Debug Section */}
-            {isDebugMode && debugData && (
-                <div className={styles.debugContainer}>
-                    <SystemDiagnosticHero
-                        id={debugData.id}
-                        source={debugData.source}
-                        data={debugData.data}
-                        rawJson={debugData.data}
-                        sidebarData={debugData.sidebarData}
-                        fetchError={debugData.fetchError || debugData.errorMsg}
-                        relatedError={debugData.relatedError}
-                        params={debugData.params}
-                        componentPath={debugData.apiInternalUrl}
-                    />
-                </div>
-            )}
-        </footer>
-    );
-}
-
-export default function Footer(props: FooterProps) {
-    return (
-        <Suspense fallback={<footer className={styles.footer} style={{ height: '300px' }} />}>
-            <FooterContent {...props} />
-        </Suspense>
-    );
+    </footer>
+  );
 }

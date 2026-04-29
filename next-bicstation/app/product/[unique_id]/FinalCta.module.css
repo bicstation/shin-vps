@@ -1,5 +1,5 @@
 /* ==========================================================
-   FinalCta.module.css - 視認性・黄金バランス最適化版
+   FinalCta.module.css - CVR最適化版（行動誘導強化）
    ========================================================== */
 
 .finalCtaSection {
@@ -8,192 +8,149 @@
 }
 
 .ctaGlassCard {
-    /* 背景を少し深めの色にして文字とのコントラストを確保 */
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 32px;
-    padding: 3.5rem 3rem;
+    padding: 3rem;
     max-width: 1000px;
     margin: 0 auto;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
-    position: relative;
-    overflow: hidden;
 }
 
-/* --- 1行目：ヘッダーエリア --- */
+/* ===== ヘッダー ===== */
+
 .ctaHeader {
-    margin-bottom: 2.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 1.5rem;
-    width: 100%;
+    margin-bottom: 2rem;
+    text-align: center;
 }
 
 .ctaBrandTag {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #94a3b8;
     margin-bottom: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 4px 12px;
-    border-radius: 100px;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
 }
 
 .ctaTitle {
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: #ffffff !important; /* 文字をはっきり白に */
-    line-height: 1.3;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #ffffff;
     margin-bottom: 0.5rem;
 }
 
-/* 追加：製品名のスタイル */
 .ctaProductName {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: #fbbf24; /* 高級感のあるゴールドイエロー */
-    letter-spacing: 0.02em;
+    color: #fbbf24;
 }
 
-/* --- 2行目：カラムレイアウト --- */
+/* ===== レイアウト ===== */
+
 .ctaBodyRow {
     display: flex;
-    gap: 3rem;
-    align-items: stretch;
+    gap: 2rem;
+    align-items: center;
 }
 
-/* 左側：ポイントリスト */
+/* ===== 特徴 ===== */
+
 .ctaPointsColumn {
-    flex: 1.2;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex: 1;
 }
 
 .ctaFeatureList {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .ctaFeatureItem {
-    font-size: 1.1rem;
-    color: #f1f5f9; /* 視認性の高い薄グレー */
-    background: rgba(255, 255, 255, 0.07);
-    padding: 1.2rem 1.5rem;
-    border-radius: 16px;
-    border-left: 4px solid #48bb78;
-    transition: all 0.2s ease;
+    font-size: 1rem;
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    border-left: 4px solid #f97316;
 }
 
-.ctaFeatureItem:hover {
-    transform: translateX(5px);
-    background: rgba(255, 255, 255, 0.1);
-}
+/* ===== 画像 ===== */
 
-/* 右側：画像とボタン */
 .ctaVisualColumn {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
+    text-align: center;
 }
 
 .ctaImageWrapper {
-    width: 100%;
-    aspect-ratio: 4/3;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 24px;
-    padding: 20px;
+    margin-bottom: 1rem;
 }
 
 .ctaFloatingImage {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 260px;
     object-fit: contain;
-    /* mix-blend-modeは文字に影響するため使用せず、影で馴染ませる */
-    filter: drop-shadow(0 15px 30px rgba(0,0,0,0.5));
-    animation: float 5s ease-in-out infinite;
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
+/* ===== CTA（最重要） ===== */
 
 .ctaActionWrapper {
-    width: 100%;
+    margin-top: 1rem;
 }
 
 .ctaNeonButton {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: block;
     width: 100%;
     padding: 1.2rem;
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    color: #ffffff !important;
-    text-decoration: none !important;
-    border-radius: 16px;
-    font-weight: 800;
-    font-size: 1.15rem;
-    box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
-    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: #fff;
+    text-align: center;
+    border-radius: 14px;
+    font-weight: 900;
+    font-size: 1.1rem;
+    text-decoration: none;
+    box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
+    transition: all 0.2s ease;
 }
 
 .ctaNeonButton:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 30px rgba(72, 187, 120, 0.5);
-    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(249, 115, 22, 0.6);
 }
 
+/* サブテキスト */
 .ctaButtonSub {
     font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 0.2rem;
-    font-weight: 500;
+    opacity: 0.85;
+    margin-top: 4px;
 }
 
-/* --- スマホ対応 --- */
+/* 🔥 緊急性追加 */
+.ctaUrgency {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: #fca5a5;
+    text-align: center;
+}
+
+/* 🔐 安心 */
+.ctaTrust {
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* ===== モバイル ===== */
+
 @media (max-width: 768px) {
     .ctaBodyRow {
         flex-direction: column;
-        gap: 2rem;
     }
-    .ctaGlassCard {
-        padding: 2.5rem 1.5rem;
-    }
+
     .ctaTitle {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
     }
-    .ctaProductName {
-        font-size: 1.1rem;
-    }
-    .ctaPointsColumn {
-        order: 2;
-    }
-    .ctaVisualColumn {
-        order: 1;
-        padding: 0;
-    }
-    .ctaImageWrapper {
-        aspect-ratio: auto;
-        padding: 10px;
-    }
+
     .ctaFloatingImage {
         max-width: 200px;
     }

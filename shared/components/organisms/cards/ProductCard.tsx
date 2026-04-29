@@ -1,98 +1,69 @@
 'use client';
 
+import Link from 'next/link';
 import styles from './ProductCard.module.css';
 
 type Product = {
   id: number;
-  title?: string;
-  image?: string | null;
+  unique_id: string; // ← これ重要
+  shortTitle?: string;
+  image?: string;
   price?: number;
-  url?: string | null;
-  label?: string;
-  tags?: string[];
-};
-
-const shorten = (text: string, max = 36) =>
-  text.length > max ? text.slice(0, max) + '...' : text;
-
-const mapLabel = (label?: string) => {
-  if (!label) return '';
-  if (label.includes('ハイエンド')) return '🚀 ハイスペック';
-  if (label.includes('ゲーミング')) return '🎮 ゲーム最強';
-  if (label.includes('コスパ')) return '💰 コスパ良';
-  return label;
+  displayLabel?: string;
+  mainTag?: string;
 };
 
 export default function ProductCard({ product }: { product?: Product }) {
   if (!product) return null;
 
-  const title = shorten(product.title || 'おすすめ商品');
-  const image = product.image || '/no-image.png';
-  const price = product.price ?? 0;
-  const url = product.url || '';
-  const label = mapLabel(product.label);
-  const mainTag = product.tags?.[0]; // 👈 1つだけ
-
   return (
-    <article className={styles.card}>
+    <Link
+      href={`/product/${product.unique_id}`}
+      className={styles.card}
+    >
 
-      {/* 🔥 ラベル（役割化） */}
-      {label && (
+      {/* 🔥 ラベル */}
+      {product.displayLabel && (
         <div className={styles.label}>
-          {label}
+          {product.displayLabel}
         </div>
       )}
 
-      <div className={styles.inner}>
-        
-        {/* 🖼 画像 */}
-        <img
-          src={image}
-          alt={title}
-          className={styles.image}
-          onError={(e) => (e.currentTarget.src = '/no-image.png')}
-        />
+      {/* 🖼 画像 */}
+      <img
+        src={product.image || '/no-image.png'}
+        alt={product.shortTitle || 'product'}
+        className={styles.image}
+      />
 
-        <div className={styles.body}>
-          
-          {/* 🏷 タイトル（短縮） */}
-          <h3 className={styles.title}>
-            {title}
-          </h3>
+      <div className={styles.body}>
 
-          {/* 🏷 タグ（1つだけ） */}
-          {mainTag && (
-            <div className={styles.tags}>
-              {mainTag}
-            </div>
-          )}
+        {/* 🏷 タイトル */}
+        <h3 className={styles.title}>
+          {product.shortTitle}
+        </h3>
 
-          {/* 💰 価格 */}
-          <div className={styles.price}>
-            ¥{price.toLocaleString()}
+        {/* 🏷 タグ */}
+        {product.mainTag && (
+          <div className={styles.tags}>
+            {product.mainTag}
           </div>
+        )}
 
-          {/* 🚀 CTA（強化） */}
-          {url ? (
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.cta}
-            >
-              👉 今すぐ確認
-              <span className={styles.ctaSub}>
-                在庫あるうちにチェック
-              </span>
-            </a>
-          ) : (
-            <div className={styles.ctaDisabled}>
-              現在リンク準備中
-            </div>
-          )}
-
+        {/* 💰 価格 */}
+        <div className={styles.price}>
+          ¥{product.price?.toLocaleString()}
         </div>
+
+        {/* 🔍 CTA（補助） */}
+        <div className={styles.cta}>
+          詳細を見る
+          <span className={styles.ctaSub}>
+            スペック確認
+          </span>
+        </div>
+
       </div>
-    </article>
+    </Link>
   );
 }

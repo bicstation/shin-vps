@@ -1,66 +1,85 @@
+/* ==========================================================
+   ProductCTA.module.css - CVR最適化版
+   ========================================================== */
+
 .ctaWrapper {
-  margin: 4rem 0;
+  margin: 3rem 0;
   padding: 0 1rem;
 }
 
 .ctaCard {
   max-width: 900px;
   margin: 0 auto;
-  padding: 3rem;
-  background: linear-gradient(145deg, #ffffff, #f0f4f8);
-  border-radius: 24px;
+  padding: 2.5rem;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ===== テキスト ===== */
+
 .title {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 800;
-  color: #1a202c;
+  color: #ffffff;
   margin-bottom: 0.5rem;
 }
 
 .description {
-  color: #718096;
-  font-size: 1rem;
+  color: #94a3b8;
+  font-size: 0.95rem;
 }
+
+/* ===== CTA（最重要） ===== */
 
 .consultButton {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  color: white !important;
-  padding: 1rem 2rem;
+  justify-content: center;
+  gap: 0.5rem;
+
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff !important;
+
+  padding: 1rem 1.6rem;
   border-radius: 12px;
-  font-weight: 700;
+  font-weight: 800;
   text-decoration: none;
   white-space: nowrap;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  box-shadow: 0 10px 25px rgba(249, 115, 22, 0.4);
+
+  transition: all 0.2s ease;
 }
 
 .consultButton:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
-  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 35px rgba(249, 115, 22, 0.6);
 }
 
-.arrow {
-  transition: transform 0.3s ease;
+/* 🔥 緊急性 */
+.urgency {
+  font-size: 0.7rem;
+  color: #fca5a5;
+  margin-top: 6px;
+  text-align: center;
 }
 
-.consultButton:hover .arrow {
-  transform: translateX(5px);
-}
+/* ===== モバイル ===== */
 
-/* スマホ対応 */
 @media (max-width: 768px) {
   .ctaCard {
     flex-direction: column;
     text-align: center;
     padding: 2rem;
+  }
+
+  .consultButton {
+    width: 100%;
   }
 }

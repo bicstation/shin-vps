@@ -8,90 +8,118 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 
-// ❌ headers削除
-
-import { fetchPCProductDetail } from '@/shared/lib/api/django/pc/products';
-import { fetchRelatedProducts, fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
-import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
-
 import styles from './ProductDetail.module.css';
 
-import PriceHistoryChart from '@/shared/components/molecules/PriceHistoryChart';
-import SpecRadarChart from '@/shared/components/atoms/RadarChart';
 import ProductCTA from './ProductCTA';
 import FinalCta from './FinalCta';
 
 interface PageProps {
-    params: Promise<{ unique_id: string }>;
-    searchParams: Promise<{ attribute?: string }>;
+  params: { unique_id: string };
 }
 
-/** ✅ metadata修正 */
-export async function generateMetadata(props: PageProps): Promise<Metadata> {
-    const { unique_id } = await props.params;
+/** metadata */
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const host = "bicstation.com";
 
-    const host = "bicstation.com"; // ← 固定
-    const siteConfig = getSiteMetadata(host);
-    
-    try {
-        const product = await fetchPCProductDetail(unique_id, host);
-        if (!product) return { title: "製品が見つかりません" };
-
-        const title = `${product.name} | ${product.maker}製品`;
-        const description = `${product.name}の詳細レビュー・価格・スペック。`;
-
-        return {
-            title,
-            description,
-            alternates: { canonical: `https://${host}/product/${unique_id}` },
-        };
-    } catch {
-        return { title: "製品詳細 | BICSTATION" };
-    }
-}
-
-/** ✅ 本体 */
-export default async function ProductDetailPage(props: PageProps) {
-    const { unique_id } = await props.params;
-    const { attribute } = await props.searchParams;
-
-    const host = "bicstation.com"; // ← 固定
-    const siteConfig = getSiteMetadata(host);
-
-    const [product, rankingData] = await Promise.all([
-        fetchPCProductDetail(unique_id, host).catch(() => null),
-        fetchPCProductRanking('score', host).catch(() => [])
-    ]);
-
-    if (!product) notFound();
-
-    const related = await fetchRelatedProducts(product.maker || '', unique_id, host).catch(() => []);
-
-    return (
-        <div className={styles.wrapper}>
-            <main className={styles.mainContainer}>
-
-                <h1>{product.name}</h1>
-
-                <img src={product.image_url} alt={product.name} />
-
-                <p>{product.price}</p>
-
-                {product.ai_content && (
-                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                        {product.ai_content}
-                    </ReactMarkdown>
-                )}
-
-                <div>
-                    {related.map((item: any) => (
-                        <Link key={item.unique_id} href={`/product/${item.unique_id}`}>
-                            {item.name}
-                        </Link>
-                    ))}
-                </div>
-
-            </main>
-        </div>
+  try {
+    const res = await fetch(
+      `http://localhost:8083/api/products/${params.unique_id}/`,
+      { cache: "no-store" }
     );
+
+    if (!res.ok) {
+      return { title: "製品が見つかりません" };
+    }
+
+    const product = await res.json();
+
+    return {
+      title: `${product.title}`,
+      description: `${product.title}の詳細・価格・スペック`,
+      alternates: { canonical: `https://${host}/product/${params.unique_id}` },
+    };
+  } catch {
+    return { title: "製品詳細 | BICSTATION" };
+  }
+}
+
+/** 本体 */
+export default async function ProductDetailPage({ params }: PageProps) {
+
+  const API = process.env.API_INTERNAL_URL;
+
+   const res = await fetch(
+    `${API}/api/products/${params.unique_id}/`,
+    { cache: "no-store" }
+    );
+ 
+  if (!res.ok) {
+    notFound();
+  }
+
+  const product = await res.json();
+
+  return (
+    <div className={styles.wrapper}>
+      <main className={styles.mainContainer}>
+
+        {/* 🔥 HERO */}
+        <section className={styles.hero}>
+          <h1 className={styles.title}>
+            迷ったらこれでOK
+          </h1>
+
+          <p className={styles.sub}>
+            長く使える安定構成
+          </p>
+
+          {/* 🚀 CTA */}
+          <ProductCTA url={product.url} />
+
+          <img
+            src={product.image}
+            alt={product.title}
+            className={styles.image}
+          />
+
+          <div className={styles.price}>
+            ¥{Number(product.price).toLocaleString()}
+          </div>
+        </section>
+
+        {/* 🔥 メリット（AI） */}
+        {product.ai_content && (
+          <section className={styles.content}>
+            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+              {product.ai_content}
+            </ReactMarkdown>
+          </section>
+        )}
+
+        {/* 🔗 関連（簡易） */}
+        {product.tags?.length > 0 && (
+          <section className={styles.related}>
+            <h3>特徴</h3>
+            <div className={styles.relatedList}>
+              {product.tags.map((tag: string) => (
+                <span key={tag}>{tag}</span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 🔥 最終CTA */}
+        <FinalCta
+          product={{
+            maker: product.maker || '',
+            name: product.title,
+            image_url: product.image
+          }}
+          finalUrl={product.url}
+          isSoftware={false}
+        />
+
+      </main>
+    </div>
+  );
 }

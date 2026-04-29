@@ -1,32 +1,40 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import { COLORS } from '@/shared/styles/constants';
 import styles from './ProductCTA.module.css';
 
-export default function ProductCTA() {
-  const primaryColor = COLORS?.SITE_COLOR || '#007bff';
+interface Props {
+  url: string;
+}
+
+export default function ProductCTA({ url }: Props) {
 
   return (
     <section className={styles.ctaWrapper}>
       <div className={styles.ctaCard}>
+
+        {/* 🔥 コピー */}
         <div className={styles.content}>
-          <h3 className={styles.title}>お探しのスペックが見つかりませんか？</h3>
+          <h3 className={styles.title}>
+            迷っているならこれでOK
+          </h3>
           <p className={styles.description}>
-            PC選びのプロが、あなたの用途と予算に合わせた最適な1台をご提案します。
+            初心者でも失敗しない構成です
           </p>
         </div>
+
+        {/* 🚀 CTA */}
         <div className={styles.action}>
-          <Link 
-            href="/contact" 
+          <a 
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
             className={styles.consultButton}
-            style={{ backgroundColor: primaryColor }}
           >
-            コンシェルジュに無料相談する
-            <span className={styles.arrow}>→</span>
-          </Link>
+            👉 今すぐ確認（在庫あり）
+          </a>
         </div>
+
       </div>
     </section>
   );

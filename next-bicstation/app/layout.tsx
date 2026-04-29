@@ -3,10 +3,11 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
+import { headers } from "next/headers";
+
 import '@/shared/styles/globals.css';
 
 import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
-import LazySidebar from '@/shared/layout/Sidebar/LazySidebar';
 import Header from '@/shared/components/organisms/common/HeaderLite';
 import Footer from '@/shared/components/organisms/common/Footer';
 import ChatBotLoader from '@/shared/components/organisms/common/ChatBotLoader';
@@ -31,34 +32,36 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 /**
- * ✅ 安全なコンテキスト取得（完全固定）
+ * ✅ siteConfigを“必ず通す”コンテキスト取得
  */
-function getPageContext() {
-  const host = "bicstation.com"; // ← 固定（重要）
+async function getPageContext() {
+  let host = "bicstation.com";
+
+  try {
+    const h = await headers();
+    host = h.get("host") || host;
+  } catch {}
 
   const siteMeta = getSiteMetadata(host) || { site_group: 'general' };
 
-  // 🚫 URL判定は一旦無効（安全優先）
-  const isAdminPage = false;
-
   return {
-    isAdminPage,
+    isAdminPage: false,
     isAdult: siteMeta.site_group === 'adult',
     siteTag: siteMeta.site_tag || 'default'
   };
 }
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
 
-  const { isAdminPage, isAdult } = getPageContext();
+  const { isAdminPage, isAdult } = await getPageContext();
 
   return (
     <html lang="ja" suppressHydrationWarning>
@@ -72,57 +75,57 @@ export default function RootLayout({
 
       <body
         className={`${inter.className} ${styles.bodyWrapper} ${isAdult ? 'is-adult-theme' : 'is-general-theme'}`}
-        suppressHydrationWarning={true}
+        suppressHydrationWarning
       >
 
-        {/* ヘッダー */}
+        {/* 🔹 最小ヘッダー（弱くする） */}
         <Header />
 
-        {/* 広告表記 */}
+        {/* 🔹 メイン（集中領域） */}
+        <main
+          style={{
+            maxWidth: '720px',
+            margin: '0 auto',
+            padding: '16px',
+          }}
+        >
+          <Suspense
+            fallback={
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-400">
+                <div className="w-8 h-8 border-4 border-gray-300 border-t-orange-500 rounded-full animate-spin mb-3" />
+                <p className="text-xs tracking-widest uppercase animate-pulse">
+                  Loading...
+                </p>
+              </div>
+            }
+          >
+            {children}
+          </Suspense>
+        </main>
+
+        {/* 🔹 PR表記（下に移動） */}
         {!isAdminPage && (
-          <aside className={styles.adDisclosure}>
-            本サイトはアフィリエイト広告を利用しています
-          </aside>
-        )}
-
-        {/* レイアウト */}
-        <div className={styles.layoutContainer}>
-          <div className={`${styles.layoutInner} ${isAdminPage ? styles.adminLayout : ''}`}>
-
-            {/* サイドバー */}
-            {!isAdminPage && (
-              <aside className={`${styles.sidebarSection} hidden md:block`}>
-                <LazySidebar />
-              </aside>
-            )}
-
-            {/* メイン */}
-            <main className={`${styles.mainContent} ${isAdminPage ? styles.fullWidth : ''}`}>
-              <Suspense fallback={
-                <div className="flex flex-col items-center justify-center min-h-[60vh] p-20 text-gray-400">
-                  <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-600 rounded-full animate-spin mb-4" />
-                  <p className="font-mono text-xs tracking-widest uppercase animate-pulse">
-                    Initializing Interface...
-                  </p>
-                </div>
-              }>
-                {children}
-              </Suspense>
-            </main>
-
+          <div
+            style={{
+              fontSize: '11px',
+              textAlign: 'center',
+              color: '#888',
+              marginTop: '24px',
+            }}
+          >
+            ※本サイトはアフィリエイト広告を利用しています
           </div>
-        </div>
-
-        {/* フッター + チャットボット */}
-        {!isAdminPage && (
-          <>
-            <Suspense fallback={<div className="h-64 bg-gray-900 w-full" />}>
-              <Footer />
-            </Suspense>
-
-            <ChatBotLoader />
-          </>
         )}
+
+        {/* 🔹 フッター */}
+        {!isAdminPage && (
+          <Suspense fallback={<div className="h-32 bg-gray-900 w-full" />}>
+            <Footer />
+          </Suspense>
+        )}
+
+        {/* 🔹 チャット（軽量維持） */}
+        {!isAdminPage && <ChatBotLoader />}
 
       </body>
     </html>

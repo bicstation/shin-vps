@@ -1,6 +1,8 @@
 # api/models/product.py
 
 from django.db import models
+from django.utils.text import slugify
+import uuid
 
 
 class Product(models.Model):
@@ -9,6 +11,14 @@ class Product(models.Model):
     # 基本情報
     # -----------------
     title = models.TextField(default="")  # ← 修正
+ 
+    unique_id = models.SlugField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        null=True,   # ← 追加
+        blank=True
+    )
     thumbnail_url = models.URLField(max_length=1000, blank=True, null=True)  # 少し拡張
     affiliate_url = models.TextField(blank=True, null=True)  # ← 修正
     
@@ -43,6 +53,16 @@ class Product(models.Model):
         'PCAttribute',
         blank=True,
         related_name='products_items'
+    )
+    # -----------------
+    # PC紐付け（追加）
+    # -----------------
+    pc_product = models.ForeignKey(
+        'PCProduct',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='products'
     )
 
     # -----------------
@@ -88,3 +108,18 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
+    
+    # -----------------
+    # save override（ここが今回追加）
+    # -----------------   
+    def save(self, *args, **kwargs):
+        if not self.unique_id:
+            base = slugify(self.title)[:50] or "product"
+
+            while True:
+                unique = f"{base}-{uuid.uuid4().hex[:8]}"
+                if not Product.objects.filter(unique_id=unique).exists():
+                    self.unique_id = unique
+                    break
+
+        super().save(*args, **kwargs)

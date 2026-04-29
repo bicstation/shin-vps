@@ -1,352 +1,133 @@
 /* ==========================================================
-   💻 ProductDetail.module.css - 最終決定・最適化フルバージョン
-   🛡️ Maya's Logic: Markdown & Responsive 完全同期版
+   ProductDetail.module.css - CVR最適化版
    ========================================================== */
 
-/* 1. 共通レイアウト設定 */
+/* ===== 全体 ===== */
 .wrapper {
   min-height: 100vh;
-  padding-bottom: 80px;
+  padding-bottom: 60px;
   background-color: #f8fafc;
 }
 
 .mainContainer {
-  max-width: 1100px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 30px 16px;
 }
 
-/* 2. 📈 トレンドバナー */
-.trendBanner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  padding: 12px 24px;
-  border-radius: 100px;
-  margin-bottom: 24px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-}
-
-.trendInfo {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.updateBadge {
-  background: #f1f5f9;
-  color: #64748b;
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 4px;
-}
-
-.trendText {
-  font-size: 0.9rem;
-  color: #1e293b;
-}
-
-.trendAlert {
-  color: #ef4444;
-  font-weight: 700;
-}
-
-.viewerCount {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #475569;
-}
-
-/* 3. ヒーローセクション */
+/* ===== HERO（最重要） ===== */
 .heroSection {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 40px;
+  grid-template-columns: 1fr;
+  gap: 24px;
   background: #ffffff;
-  padding: 40px;
-  border-radius: 24px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-  margin-bottom: 40px;
-  align-items: center;
+  padding: 28px;
+  border-radius: 20px;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
 }
 
+.productTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+/* 画像 */
 .imageWrapper {
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: #fbfbfb;
-  border-radius: 20px;
-  padding: 40px;
-  position: relative;
-  transition: transform 0.3s ease;
 }
 
 .productImage {
-  width: 100%;
-  max-width: 400px;
-  height: auto;
-  object-fit: contain;
+  max-width: 280px;
 }
 
-.detailRankBadge {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 70px;
-  height: 70px;
-  color: #ffffff;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-  border: 2px solid #ffffff;
+/* ===== 価格（強調） ===== */
+.priceContainer {
+  padding: 18px;
+  background: #fff7ed;
+  border-radius: 12px;
+  border: 1px solid #fed7aa;
 }
 
-.rankLabel { font-size: 0.6rem; font-weight: 800; opacity: 0.8; margin-bottom: -2px; }
-.rankNumber { font-size: 1.6rem; font-weight: 900; }
-.rankColor_1 { background: linear-gradient(135deg, #ffd700, #ff8c00); }
-.rankColor_2 { background: linear-gradient(135deg, #c0c0c0, #708090); }
-.rankColor_3 { background: linear-gradient(135deg, #cd7f32, #8b4513); }
-.rankColor_default { background: linear-gradient(135deg, #1e293b, #475569); }
+.priceValue {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #ea580c;
+}
 
-.infoSide { display: flex; flex-direction: column; }
-.badgeContainer { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-.makerBadge { background: #1e293b; color: #ffffff; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
-.attributeBadge { background: #3b82f6; color: #ffffff; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
-.productTitle { font-size: 2.2rem; color: #0f172a; margin-bottom: 20px; font-weight: 800; line-height: 1.2; }
-
-.priceContainer { margin-bottom: 30px; padding: 25px; background: #fffafa; border-radius: 16px; border: 1px solid #fee2e2; }
-.priceLabel { display: block; font-size: 0.85rem; color: #b91c1c; font-weight: 700; margin-bottom: 5px; }
-.priceValue { font-size: 3rem; font-weight: 900; color: #ef4444; }
-.priceDraft { font-size: 1.5rem; color: #94a3b8; font-weight: 700; }
-
+/* ===== CTA（ここが命） ===== */
 .mainCtaButton {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  display: block;
+  width: 100%;
+  padding: 18px;
+  text-align: center;
+
+  background: linear-gradient(135deg, #f97316, #ea580c);
   color: white !important;
-  padding: 20px;
-  border-radius: 12px;
-  text-decoration: none;
-  font-weight: 700;
-  font-size: 1.2rem;
-  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
-  transition: all 0.3s ease;
-}
-.mainCtaButton:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(239, 68, 68, 0.4); }
-.ctaSub { font-size: 0.75rem; opacity: 0.9; margin-top: 4px; font-weight: 500; }
 
-/* 4. 📊 分析・履歴セクション */
-.analysisGrid {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 25px;
-  margin-bottom: 40px;
-}
-
-.analysisChartItem {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 24px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-}
-
-.chartTitle {
+  border-radius: 14px;
+  font-weight: 900;
   font-size: 1.1rem;
-  font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 20px;
-  padding-left: 12px;
-  border-left: 4px solid #3b82f6;
+
+  box-shadow: 0 10px 30px rgba(249,115,22,0.4);
+  transition: all 0.2s ease;
 }
 
-.noDataPlaceholder {
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #94a3b8;
-  font-weight: 600;
-  background: #f8fafc;
-  border-radius: 12px;
+.mainCtaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(249,115,22,0.6);
 }
 
-/* 5. クイックハイライト・スペック */
-.highlightSection { margin-bottom: 40px; }
-.minimalTitle { text-align: center; font-size: 1.4rem; color: #334155; margin-bottom: 25px; font-weight: 700; }
-.highlightGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.highlightCard { background: #ffffff; padding: 25px 20px; border-radius: 16px; text-align: center; border: 1px solid #e2e8f0; transition: 0.3s; }
-.highlightCard:hover { transform: translateY(-5px); border-color: #3b82f6; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-.highlightIcon { font-size: 1.5rem; display: block; margin-bottom: 12px; }
-
-.aiSpecSummary { margin-bottom: 60px; } /* 名前をpage.tsxと統一 */
-.aiSpecGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
-.aiSpecCard { background: #ffffff; padding: 20px 15px; border-radius: 16px; text-align: center; border: 1px solid #e2e8f0; }
-.aiSpecLabel { font-size: 0.75rem; color: #64748b; font-weight: 800; margin-bottom: 8px; display: block; text-transform: uppercase; }
-.aiSpecValue { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
-
-/* 6. エキスパート解説 (Markdown対応版) */
+/* ===== AIコンテンツ（軽くする） ===== */
 .aiContentSection {
   background: #ffffff;
-  padding: 50px 40px;
-  border-radius: 24px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-  margin-bottom: 40px;
-  border: 1px solid #e2e8f0;
-}
-
-.sectionHeader { display: flex; align-items: center; gap: 15px; margin-bottom: 35px; border-left: 6px solid #3b82f6; padding-left: 20px; }
-.specTitle { font-size: 1.6rem; color: #0f172a; font-weight: 800; }
-.aiBadge { background: #00f2ff; color: #0f172a; font-size: 0.7rem; font-weight: 900; padding: 3px 10px; border-radius: 4px; }
-
-/* Markdownレンダリングされる内包タグへのスタイル */
-.aiContentBody {
-  line-height: 1.8;
-  color: #334155;
-  font-size: 1.05rem;
-}
-
-.aiContentBody h2, .aiContentBody h3 {
-  color: #0f172a;
-  margin: 1.5em 0 0.8em;
-  font-weight: 800;
-}
-
-.aiContentBody p {
-  margin-bottom: 1.2em;
-}
-
-.aiContentBody strong {
-  color: #1e293b;
-  background: linear-gradient(transparent 70%, #dbeafe 70%);
-}
-
-.aiContentBody ul {
-  margin-bottom: 1.5em;
-  padding-left: 1.2em;
-}
-
-.aiContentBody li {
-  margin-bottom: 0.5em;
-  list-style-type: disc;
-}
-
-/* 🌌 7. 最終CTAセクション */
-.finalCtaSection {
-  margin: 100px 0;
-  padding: 0 1.5rem;
-}
-
-.ctaGlassCard {
-  position: relative;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 3.5rem 3rem;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  border-radius: 32px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-}
-
-.ctaHeader {
-  width: 100%;
-  margin-bottom: 2.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 1.5rem;
-}
-
-.ctaBrandTag {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 100px;
-  color: #94a3b8;
-  font-size: 0.8rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.dot { width: 8px; height: 8px; border-radius: 50%; background-color: #48bb78; box-shadow: 0 0 10px #48bb78; }
-.ctaTitle { font-size: 2.2rem; font-weight: 800; color: #ffffff; line-height: 1.3; }
-
-.ctaBodyRow { display: flex; align-items: stretch; gap: 3rem; }
-.ctaPointsColumn { flex: 1.2; }
-.ctaFeatureList { display: flex; flex-direction: column; gap: 15px; }
-.ctaFeatureItem { color: #e2e8f0; font-size: 1.05rem; display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.05); padding: 1rem 1.2rem; border-radius: 12px; border-left: 4px solid #48bb78; }
-
-.ctaVisualColumn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 2rem; }
-.ctaImageWrapper { flex: 1; display: flex; justify-content: center; align-items: center; }
-.ctaFloatingImage {
-  max-width: 280px;
-  height: auto;
-  mix-blend-mode: lighten; 
-  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.4));
-  animation: float 5s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
-}
-
-.ctaActionWrapper { width: 100%; }
-.ctaNeonButton {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 1.5rem 1rem;
-  background: #ffffff;
-  color: #0f172a !important;
+  padding: 28px 22px;
   border-radius: 16px;
-  text-decoration: none;
-  font-weight: 800;
-  font-size: 1.1rem;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  margin-bottom: 32px;
 }
-.ctaNeonButton:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(255, 255, 255, 0.2); background: #f8fafc; }
-.ctaButtonSub { display: block; font-size: 0.7rem; font-weight: 600; color: #64748b; margin-top: 5px; }
 
-/* 9. 関連商品 */
-.relatedSection { margin-bottom: 60px; }
-.relatedGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-.relatedCard { background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; text-decoration: none; overflow: hidden; transition: all 0.3s; }
-.relatedCard:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.06); border-color: #3b82f6; }
-.relatedImageWrapper { background: #fbfbfb; padding: 20px; display: flex; justify-content: center; }
-.relatedImageWrapper img { height: 120px; width: 100%; object-fit: contain; }
-.relatedInfo { padding: 15px; }
-.relatedName { font-size: 0.9rem; font-weight: 700; color: #1e293b; height: 2.8em; overflow: hidden; line-height: 1.4; }
-.relatedPrice { color: #ef4444; font-weight: 800; margin-top: 8px; font-size: 1.1rem; }
+/* ===== 見出し ===== */
+.specTitle {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
 
-/* 📱 モバイル対応 */
-@media (max-width: 968px) {
-  .mainContainer { padding: 20px 15px; }
-  .heroSection { grid-template-columns: 1fr; padding: 30px 20px; gap: 30px; }
-  .analysisGrid { grid-template-columns: 1fr; }
-  .highlightGrid { grid-template-columns: 1fr; }
-  .aiSpecGrid { grid-template-columns: repeat(2, 1fr); }
-  
-  .ctaBodyRow { flex-direction: column; gap: 2rem; }
-  .ctaTitle { font-size: 1.6rem; }
-  .ctaVisualColumn { order: -1; }
-  .ctaFloatingImage { max-width: 220px; }
-  .ctaPointsColumn { width: 100%; }
-  
-  .relatedGrid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .aiContentSection { padding: 30px 20px; }
-  .productTitle { font-size: 1.6rem; }
-  .priceValue { font-size: 2.2rem; }
+/* ===== Markdown ===== */
+.aiContentBody {
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* ===== RELATED（弱くする） ===== */
+.relatedSection {
+  margin-bottom: 40px;
+}
+
+.relatedGrid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* ===== FINAL CTA（さらに強く） ===== */
+.finalCtaSection {
+  margin: 60px 0;
+}
+
+.ctaNeonButton {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #fff;
+}
+
+/* ===== モバイル ===== */
+@media (max-width: 768px) {
+  .productTitle {
+    font-size: 1.4rem;
+  }
+
+  .priceValue {
+    font-size: 1.8rem;
+  }
 }

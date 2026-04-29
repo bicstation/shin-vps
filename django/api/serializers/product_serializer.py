@@ -18,6 +18,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id',
+            'unique_id',  # ← これ追加
             'title',
             'image',
             'price',

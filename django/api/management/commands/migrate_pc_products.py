@@ -10,12 +10,18 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         items = PCProduct.objects.all()
 
+        total = 0
+
         for item in items:
             product_obj, created = Product.objects.update_or_create(
                 source='pc',
+
+                # 🔥 正解
                 external_id=item.unique_id,
+
                 defaults={
                     'title': item.name or '',
+                    'pc_product': item,
                     'thumbnail_url': item.image_url,
                     'affiliate_url': item.url,
                     'price': int(item.price) if item.price else 0,
@@ -28,7 +34,10 @@ class Command(BaseCommand):
                 }
             )
 
-            # ★ここが今回の核心
             product_obj.attributes.set(item.attributes.all())
 
-        self.stdout.write(self.style.SUCCESS('Migration completed'))
+            total += 1
+
+        self.stdout.write(self.style.SUCCESS(
+            f'✅ Migration completed: total={total}'
+        ))
