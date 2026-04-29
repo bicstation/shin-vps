@@ -141,7 +141,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # 👇ここに追加
 SITE_URL = os.environ.get(
     "SITE_URL",
-    "http://api-bicstation-host:8083"
+    "http://localhost:8083"
 )
 
 # ==========================================================

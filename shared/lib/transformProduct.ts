@@ -1,8 +1,16 @@
-// /shared/lib/transformProduct.ts
-
 export function transformProduct(raw: any) {
   return {
-    display_name: raw.name, // ← ここで吸収
+    id: raw.id,
+
+    // 👇 Heroが使う名前に合わせる
+    title: raw.title || raw.name || '',
+    image: raw.image || raw.image_url || '',
+    price: raw.price ?? 0,
+    url: raw.url || raw.affiliate_url || '',
+    label: raw.label || (raw.score_ai >= 90 ? "🔥 迷ったらこれ" : ''),
+    tags: raw.tags || [],
+
+    // 👇 追加情報（必要なら）
     short_tag: raw.score_ai >= 90 ? "🔥 迷ったらこれ" : "",
 
     selling_points: [
@@ -15,14 +23,5 @@ export function transformProduct(raw: any) {
       raw.score_ai >= 90
         ? "初心者でも失敗しない構成"
         : "用途に応じてしっかり使える一台",
-
-    score_ai: raw.score_ai,
-    price: raw.price,
-    affiliate_url: raw.affiliate_url,
-    unique_id: raw.id,
-    image_url: raw.image_url,
-
-    // cta_text: "👉 今すぐチェック",
-    // cta_sub: "在庫あるうちに確認"
   };
 }

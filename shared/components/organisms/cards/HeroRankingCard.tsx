@@ -10,173 +10,84 @@ type Product = {
   tags?: string[];
 };
 
+const shorten = (text: string, max = 38) =>
+  text.length > max ? text.slice(0, max) + '...' : text;
+
 export default function HeroRankingCard({ product }: { product?: Product }) {
   if (!product) return null;
 
-  // 🔒 安全処理
-  const title = product.title || 'おすすめ商品';
+  const title = shorten(product.title || 'おすすめ商品');
   const image = product.image || '/no-image.png';
   const price = product.price ?? 0;
   const url = product.url || '';
-  const label = product.label || 'おすすめ';
-  const tags = Array.isArray(product.tags) ? product.tags.slice(0, 3) : [];
+  const mainTag = product.tags?.[0];
 
-  console.log(product);
-  
   return (
-    <section
-      style={{
-        background: 'linear-gradient(135deg, #020617, #0f172a)',
-        padding: '36px',
-        borderRadius: '24px',
-        border: '2px solid #f97316',
-        position: 'relative',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-      }}
-    >
-      {/* 👑 ラベル */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-14px',
-          left: '24px',
-          background: '#f97316',
-          color: '#fff',
-          padding: '6px 16px',
-          borderRadius: '999px',
-          fontWeight: 'bold',
-          fontSize: '12px',
-        }}
-      >
-        {label}
-      </div>
+    <section className="bg-slate-950 p-4 md:p-6 rounded-2xl border-2 border-orange-500 shadow-xl">
 
-      <div
-        style={{
-          display: 'flex',
-          gap: '28px',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-        }}
-      >
-        {/* 🖼 画像 */}
-        <div style={{ textAlign: 'center' }}>
-          <img
-            src={image}
-            alt={title}
-            onError={(e) => {
-              e.currentTarget.src = '/no-image.png';
-            }}
-            style={{
-              width: '280px',
-              borderRadius: '14px',
-            }}
-          />
+      {/* 🔥 コピー（最上部・圧縮） */}
+      <div className="mb-3 text-center">
+        <h2 className="text-base md:text-lg font-bold leading-tight">
+          迷ってる時間が一番ムダ
+        </h2>
 
-          <p
-            style={{
-              marginTop: '8px',
-              fontSize: '12px',
-              color: '#94a3b8',
-            }}
-          >
-            ※公式ショップで安心購入
-          </p>
-        </div>
-
-        {/* 🧠 コンテンツ */}
-        <div style={{ flex: 1, minWidth: '260px' }}>
-          
-          {/* タイトル */}
-          <h2
-            style={{
-              fontSize: '24px',
-              fontWeight: 'bold',
-              lineHeight: 1.5,
-            }}
-          >
-            {title}
-          </h2>
-
-          {/* タグ */}
-          {tags.length > 0 && (
-            <div
-              style={{
-                marginTop: '10px',
-                fontSize: '14px',
-                color: '#94a3b8',
-              }}
-            >
-              {tags.join(' / ')}
-            </div>
-          )}
-
-          {/* 🔥 信頼ブロック */}
-          <div
-            style={{
-              marginTop: '14px',
-              fontSize: '14px',
-              lineHeight: 1.8,
-            }}
-          >
-            ✔ 今一番選ばれているモデル<br />
-            ✔ 初心者でも失敗しない構成<br />
-            ✔ 長く使える安定スペック
+        <div className="mt-1 text-xs md:text-sm">
+          <div className="font-bold text-orange-400">
+            これ選べば失敗しない
           </div>
-
-          {/* 💰 価格 */}
-          <div
-            style={{
-              fontSize: '26px',
-              fontWeight: 'bold',
-              marginTop: '18px',
-            }}
-          >
-            ¥{price.toLocaleString()}
+          <div className="text-gray-400">
+            初心者が一番後悔するパターンを回避
           </div>
-
-          {/* 🚀 CTA */}
-          <div style={{ marginTop: '18px' }}>
-            {url ? (
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  background: '#f97316',
-                  color: '#fff',
-                  padding: '16px',
-                  borderRadius: '14px',
-                  fontWeight: 'bold',
-                  fontSize: '17px',
-                  textAlign: 'center',
-                  boxShadow: '0 6px 16px rgba(249,115,22,0.4)',
-                }}
-              >
-                👉 今すぐチェック（在庫残りわずか）
-              </a>
-            ) : (
-              <div style={{ color: '#94a3b8' }}>
-                現在リンク準備中
-              </div>
-            )}
-
-            {/* ▼スクロール誘導（重要） */}
-            <div
-              style={{
-                marginTop: '10px',
-                fontSize: '12px',
-                color: '#94a3b8',
-                textAlign: 'center',
-              }}
-            >
-              ▼ 他の人気モデルも見る
-            </div>
-          </div>
-
         </div>
       </div>
+
+      {/* 🚀 CTA（最重要・常時表示） */}
+      {url && (
+        <div className="sticky top-3 z-10">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full bg-orange-500 text-white text-center py-3 rounded-xl font-bold text-sm md:text-base shadow-lg"
+          >
+            👉 今すぐ確認（在庫あり）
+          </a>
+        </div>
+      )}
+
+      {/* ⚠ 不安トリガー（小さく・即下） */}
+      <div className="mt-1 text-[11px] text-red-400 text-center font-semibold">
+        安いだけで選ぶと後悔します
+      </div>
+
+      {/* 🖼 画像（さらに縮小） */}
+      <div className="mt-3 flex justify-center">
+        <img
+          src={image}
+          alt={title}
+          className="w-full max-w-[240px] md:max-w-[320px] rounded-xl"
+          onError={(e) => (e.currentTarget.src = '/no-image.png')}
+        />
+      </div>
+
+      {/* 🏷 タグ */}
+      {mainTag && (
+        <div className="text-center text-xs text-gray-400 mt-2">
+          {mainTag}
+        </div>
+      )}
+
+      {/* 💰 価格 */}
+      <div className="text-center text-lg md:text-xl font-bold mt-1">
+        ¥{price.toLocaleString()}
+      </div>
+
+      {/* ✅ 信頼（圧縮） */}
+      <div className="mt-2 text-[11px] text-gray-400 text-center leading-tight">
+        <div>今一番売れている構成</div>
+        <div>在庫切れになることがあります</div>
+      </div>
+
     </section>
   );
 }
