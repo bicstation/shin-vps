@@ -41,6 +41,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "traefik_ssl_data:/letsencrypt"
+      - "media_volume_prod:/app/media"
     networks:
       - shared-proxy
 
