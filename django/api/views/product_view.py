@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Case, When, Value, IntegerField, Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -255,7 +255,7 @@ def diagnose_pc(request):
     # 価格フィルタ
     # -------------------------
     tmp_qs = qs
-    print("BEFORE PRICE:", tmp_qs.count(
+    print("BEFORE PRICE:", tmp_qs.count())
     
     if budget == "low":
         qs = qs.filter(price__lte=150000)

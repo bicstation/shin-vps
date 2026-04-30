@@ -1,0 +1,146 @@
+# 🛰️ PC FINDER API｜curl保存版
+
+---
+
+## ■ ベースURL
+
+```
+http://localhost:8083/api/products/
+```
+
+---
+
+# =========================
+
+# 🎯 診断API（最重要）
+
+# =========================
+
+## ■ ゲーミング（中価格）
+
+```
+curl -X POST http://localhost:8083/api/products/diagnose/ \
+  -H "Content-Type: application/json" \
+  -d '{"purpose":"gaming","budget":"mid"}'
+```
+
+## ■ ビジネス（低価格）
+
+```
+curl -X POST http://localhost:8083/api/products/diagnose/ \
+  -H "Content-Type: application/json" \
+  -d '{"purpose":"business","budget":"low"}'
+```
+
+## ■ クリエイティブ（高価格）
+
+```
+curl -X POST http://localhost:8083/api/products/diagnose/ \
+  -H "Content-Type: application/json" \
+  -d '{"purpose":"creative","budget":"high"}'
+```
+
+---
+
+# =========================
+
+# 🏆 ランキングAPI
+
+# =========================
+
+```
+curl http://localhost:8083/api/products/ranking/
+```
+
+---
+
+# =========================
+
+# 📦 商品詳細API
+
+# =========================
+
+```
+curl http://localhost:8083/api/products/<unique_id>/
+```
+
+## ■ 例
+
+```
+curl http://localhost:8083/api/products/omen-16lv2-57ca6796/
+```
+
+---
+
+# =========================
+
+# 🔁 関連商品API
+
+# =========================
+
+```
+curl http://localhost:8083/api/products/related/<unique_id>/
+```
+
+## ■ 例
+
+```
+curl http://localhost:8083/api/products/related/omen-16lv2-57ca6796/
+```
+
+---
+
+# =========================
+
+# 🧰 デバッグ用（JSON整形）
+
+# =========================
+
+```
+| jq
+```
+
+## ■ 例
+
+```
+curl -X POST http://localhost:8083/api/products/diagnose/ \
+  -H "Content-Type: application/json" \
+  -d '{"purpose":"gaming","budget":"mid"}' | jq
+```
+
+---
+
+# =========================
+
+# ⚠️ 注意
+
+# =========================
+
+・POSTには必ず `-H "Content-Type: application/json"`
+・URL末尾の `/` を忘れない
+・unique_id は正確に指定
+
+---
+
+# =========================
+
+# 🔥 使いどころ
+
+# =========================
+
+・フロント接続前の検証
+・cron後の動作確認
+・APIデバッグ
+・ログチェック
+
+---
+
+# =========================
+
+# 🧠 メモ
+
+# =========================
+
+curlで通る = フロント100%動く
+
+---

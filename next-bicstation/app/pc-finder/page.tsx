@@ -5,18 +5,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { trackEvent } from '@/shared/lib/track';
 
 export default function PCFinderClient() {
 
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
-  const [isDiagnosing, setIsDiagnosing] = useState(false);
   const [result, setResult] = useState(null);
   const [alternatives, setAlternatives] = useState([]);
   const [error, setError] = useState(false);
 
-  /** 🔥 API（フォールバック付き） */
   const API =
     process.env.NEXT_PUBLIC_API_URL ||
     'http://localhost:8083';
@@ -27,9 +26,9 @@ export default function PCFinderClient() {
       key: 'purpose',
       text: 'PCの用途は？',
       options: [
-        { label: 'ゲーム', value: 'gaming' },
-        { label: '仕事', value: 'business' },
-        { label: '動画編集・重い作業', value: 'creative' },
+        { label: '🎮 ゲーム', value: 'gaming' },
+        { label: '💼 仕事', value: 'business' },
+        { label: '🎬 動画編集', value: 'creative' },
       ],
     },
     {
@@ -43,33 +42,29 @@ export default function PCFinderClient() {
     },
   ];
 
-  /** 🔥 回答処理 */
+  /** 🔥 回答 */
   const handleAnswer = (key: string, value: string) => {
+
+    trackEvent('finder_answer', { key, value });
+
     const next = { ...answers, [key]: value };
     setAnswers(next);
 
-    setStep((prev) => {
-      const nextStep = prev + 1;
+    const nextStep = step + 1;
 
-      if (nextStep < questions.length) {
-        return nextStep;
-      } else {
-        runDiagnosis(next);
-        return prev;
-      }
-    });
+    if (nextStep < questions.length) {
+      setStep(nextStep);
+    } else {
+      trackEvent('finder_start');
+      runDiagnosis(next);
+    }
   };
 
-  /**
-   * 🔥 診断
-   *
-   * ✔ APIがある場合 → API使用
-   * ✔ APIが死んでる場合 → ダミーで動作
-   *
-   * 👉 開発止まらない設計
-   */
+  /** 🔥 診断 */
   const runDiagnosis = async (answers: any) => {
-    setIsDiagnosing(true);
+
+    trackEvent('finder_diagnose', answers);
+
     setLoading(true);
     setError(false);
 
@@ -82,45 +77,41 @@ export default function PCFinderClient() {
 
       const data = await res.json();
 
-      if (!data || !data.best) {
-        throw new Error('no result');
-      }
+      trackEvent('finder_result', {
+        product_id: data.best?.unique_id,
+        price: data.best?.price,
+      });
 
       setResult(data.best);
       setAlternatives(data.alternatives || []);
-    } catch (e) {
-      console.warn('⚠️ API失敗 → ダミーで動作');
 
-      /**
-       * 🔥 フォールバック（超重要）
-       *
-       * 👉 APIがなくてもUI確認できる
-       * 👉 本番でも「真っ黒」にならない
-       */
+    } catch {
+      trackEvent('finder_error');
+
+      // 🔥 ダミー
       setResult({
-        unique_id: "sample-pc",
+        unique_id: "sample",
         title: "OMEN 16 ハイパフォーマンスモデル",
         image: "https://jp.ext.hp.com/content/dam/jp-ext-hp-com/jp/ja/ec/lib/products/personal/omen/omen16/omen16_2023.png",
         price: 219800,
         url: "#",
+        reason: "・RTX搭載で最新ゲームも快適・この価格帯で最も性能が高い"
       });
 
       setAlternatives([
         {
           unique_id: "alt1",
-          title: "dynabook 高性能モデル",
-          shortTitle: "dynabook",
-          price: 159800,
+          shortTitle: "ASUS ゲーミングPC",
+          price: 179800,
         },
         {
           unique_id: "alt2",
-          title: "ASUS ゲーミングPC",
-          shortTitle: "ASUS",
-          price: 249800,
+          shortTitle: "HP Pavilion",
+          price: 149800,
         }
       ]);
 
-      setError(true); // ← デバッグ用
+      setError(true);
     }
 
     setLoading(false);
@@ -133,14 +124,13 @@ export default function PCFinderClient() {
     setResult(null);
     setAlternatives([]);
     setLoading(false);
-    setIsDiagnosing(false);
     setError(false);
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-white px-4 py-10">
 
-      {/* 🔥 HERO */}
+      {/* 🔥 タイトル */}
       <div className="text-center mb-6">
         <h1 className="text-xl font-bold">
           もう比較しなくていい
@@ -151,7 +141,7 @@ export default function PCFinderClient() {
       </div>
 
       {/* 🔥 質問 */}
-      {!result && !loading && !isDiagnosing && questions[step] && (
+      {!result && !loading && questions[step] && (
         <div className="max-w-md mx-auto">
 
           <p className="mb-4 text-center font-bold">
@@ -163,7 +153,7 @@ export default function PCFinderClient() {
               <button
                 key={opt.value}
                 onClick={() => handleAnswer(questions[step].key, opt.value)}
-                className="bg-cyan-500 text-black py-3 rounded-xl font-bold"
+                className="bg-cyan-500 text-black py-3 rounded-xl font-bold hover:bg-cyan-400 transition"
               >
                 {opt.label}
               </button>
@@ -173,17 +163,17 @@ export default function PCFinderClient() {
         </div>
       )}
 
-      {/* 🔄 ローディング（真っ黒防止） */}
-      {(loading || isDiagnosing) && !result && (
+      {/* 🔄 ローディング */}
+      {loading && !result && (
         <div className="text-center mt-6 text-cyan-400 animate-pulse">
           最適な構成を選定中...
         </div>
       )}
 
-      {/* ⚠️ デバッグ表示 */}
+      {/* ⚠️ エラー */}
       {error && (
         <div className="text-center text-yellow-400 text-xs mt-2">
-          ※API未接続のためダミー表示
+          ※現在デモ表示です
         </div>
       )}
 
@@ -191,46 +181,50 @@ export default function PCFinderClient() {
       {result && (
         <div className="mt-8 max-w-md mx-auto">
 
-          <p className="text-center text-xs text-gray-400">
-            この条件ならこれ一択です
-          </p>
+          <div className="bg-slate-900 rounded-2xl p-5 border border-cyan-500">
 
-          <h2 className="text-center text-lg font-bold mb-3">
-            このPCで問題ありません
-          </h2>
+            <p className="text-xs text-cyan-400 text-center font-bold">
+              🔥 あなたに最適なPC
+            </p>
 
-          <div className="bg-slate-900 rounded-2xl p-4 border border-cyan-500">
+            <h2 className="text-center text-lg font-bold mt-1">
+              {result.title}
+            </h2>
 
             <img
-              src={result?.image}
-              alt={result?.title || ''}
-              className="w-full max-w-[300px] mx-auto rounded-xl"
+              src={result.image}
+              className="w-full max-w-[300px] mx-auto mt-3 rounded-xl"
             />
 
-            <h3 className="mt-3 text-center font-bold">
-              {result?.title}
-            </h3>
-
-            <div className="text-center text-xl font-bold mt-2">
-              ¥{result?.price?.toLocaleString?.() || '---'}
+            <div className="text-center text-2xl font-bold mt-3">
+              ¥{result.price?.toLocaleString?.()}
             </div>
 
-            {/* 🔥 CTA */}
+            {/* 理由 */}
+            <div className="mt-3 text-sm text-gray-300 text-center">
+              {(result.reason || '').split('・').map((line, i) => (
+                line && <div key={i}>✔ {line}</div>
+              ))}
+            </div>
+
+            <p className="text-center text-xs text-gray-500 mt-3">
+              この条件ならこれ以外を選ぶ理由はありません
+            </p>
+
             <a
-              href={result?.url || '#'}
+              href={result.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block mt-4 bg-cyan-500 text-black text-center py-3 rounded-xl font-bold"
+              onClick={() =>
+                trackEvent('finder_cta_click', {
+                  product_id: result.unique_id,
+                  price: result.price,
+                })
+              }
+              className="block mt-4 bg-cyan-500 text-black text-center py-3 rounded-xl font-bold hover:bg-cyan-400"
             >
-              👉 今すぐ最安価格を見る
+              👉 今すぐ在庫と価格を確認する
             </a>
-
-            <Link
-              href={`/product/${result?.unique_id}`}
-              className="block text-center text-xs text-gray-400 mt-2"
-            >
-              スペック詳細を見る
-            </Link>
 
           </div>
 
@@ -239,7 +233,7 @@ export default function PCFinderClient() {
             <div className="mt-6">
 
               <h3 className="text-sm text-gray-400 mb-2 text-center">
-                他の候補も見る
+                最後に比較されているモデル
               </h3>
 
               <div className="grid gap-3">
@@ -247,11 +241,17 @@ export default function PCFinderClient() {
                   <Link
                     key={p.unique_id}
                     href={`/product/${p.unique_id}`}
-                    className="block bg-slate-800 p-3 rounded-lg"
+                    onClick={() =>
+                      trackEvent('finder_alt_click', {
+                        product_id: p.unique_id,
+                      })
+                    }
+                    className="block bg-slate-800 p-3 rounded-lg hover:bg-slate-700"
                   >
-                    <div className="text-sm">
-                      {p.shortTitle || p.title}
+                    <div className="text-sm font-semibold">
+                      {p.shortTitle}
                     </div>
+
                     <div className="text-xs text-gray-400">
                       ¥{p.price?.toLocaleString?.()}
                     </div>
