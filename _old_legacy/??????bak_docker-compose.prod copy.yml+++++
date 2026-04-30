@@ -1,0 +1,330 @@
+# -*- coding: utf-8 -*-
+# =====================================================================
+# 🛡️ SHIN-VPS v5.4 [Production Stable Edition]
+# ---------------------------------------------------------------------
+# 【更新内容】
+# 1. nabejuku.com 関連の設定を完全に除外（DNS競合回避）。
+# 2. Django (django-v3) の Traefik ルールを運用中の4ドメインに最適化。
+# 3. 既存の SSL (websecure) / Traefik 優先順位を維持。
+# =====================================================================
+
+version: '3.8'
+
+services:
+
+  # --- 0. Traefik (管制塔 / SSL終端) ---
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik-proxy
+    restart: always
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.email=${TRAEFIK_ACME_EMAIL:-bicstation@gmail.com}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.traefik-dash.rule=Host(`dashboard.tiper.live`)"
+      - "traefik.http.routers.traefik-dash.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dash.tls.certresolver=le"
+      - "traefik.http.routers.traefik-dash.service=api@internal"
+      - "traefik.http.routers.traefik-dash.priority=4000"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "traefik_ssl_data:/letsencrypt"
+      - "media_volume_prod:/app/media"
+    networks:
+      - shared-proxy
+
+  # --- 1. データベース層 ---
+  postgres-db-v3:
+    image: postgres:15-alpine
+    container_name: postgres-db-v3
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres-data-v3:/var/lib/postgresql/data
+    networks:
+      internal-net:
+        aliases:
+          - db-host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # --- 2. バックエンド層 (Django API) ---
+  django-v3:
+    build:
+      context: .
+      dockerfile: ./django/Dockerfile
+    container_name: django-v3
+    restart: always
+    command: >
+      gunicorn tiper_api.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 5
+      --threads 2
+      --worker-class gthread
+      --timeout 120
+      --max-requests 1000
+    depends_on:
+      postgres-db-v3:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db-host
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+
+      # ✅ 完全版ルーティング
+      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`) || PathPrefix(`/media`))"
+
+      - "traefik.http.routers.django-router.entrypoints=websecure"
+      - "traefik.http.routers.django-router.tls.certresolver=le"
+      - "traefik.http.routers.django-router.priority=2000"
+
+      - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
+
+    volumes:
+      - static_volume_prod:/usr/src/app/staticfiles
+      - media_volume_prod:/usr/src/app/media   # 🔥 追加（必須）
+
+    networks:
+      internal-net:
+        aliases:
+          - django-api-host
+          - api-bicstation-host
+          - django-v3
+      shared-proxy:
+
+  # --- 3. フロントエンド層 (Next.js 艦隊) ---
+
+  next-bicstation-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-bicstation
+        NEXT_PUBLIC_API_URL: "https://api.bicstation.com/api"
+    container_name: next-bicstation-v3
+    restart: always
+    env_file: .env
+    environment:
+      - PROJECT_NAME=next-bicstation
+      - NEXT_PUBLIC_API_URL=https://api.bicstation.com/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=bicstation
+    volumes:
+      - "./next-bicstation:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
+      - "sitemap_data:/app/public/sitemap_gen"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.bicstation-router.rule=Host(`bicstation.com`)"
+      - "traefik.http.routers.bicstation-router.entrypoints=websecure"
+      - "traefik.http.routers.bicstation-router.tls.certresolver=le"
+      - "traefik.http.routers.bicstation-router.priority=100"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  next-tiper-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-tiper
+        NEXT_PUBLIC_API_URL: "https://api.tiper.live/api"
+    container_name: next-tiper-v3
+    restart: always
+    env_file: .env
+    environment:
+      - PROJECT_NAME=next-tiper
+      - NEXT_PUBLIC_API_URL=https://api.tiper.live/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=tiper
+    volumes:
+      - "./next-tiper:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.tiper-router.rule=Host(`tiper.live`)"
+      - "traefik.http.routers.tiper-router.entrypoints=websecure"
+      - "traefik.http.routers.tiper-router.tls.certresolver=le"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  next-bic-saving-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-bic-saving
+        NEXT_PUBLIC_API_URL: "https://api.bic-saving.com/api"
+    container_name: next-bic-saving-v3
+    restart: always
+    env_file: .env
+    environment:
+      - PROJECT_NAME=next-bic-saving
+      - NEXT_PUBLIC_API_URL=https://api.bic-saving.com/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=saving
+    volumes:
+      - "./next-bic-saving:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.saving-router.rule=Host(`bic-saving.com`)"
+      - "traefik.http.routers.saving-router.entrypoints=websecure"
+      - "traefik.http.routers.saving-router.tls.certresolver=le"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  next-avflash-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+      args:
+        PROJECT_NAME: next-avflash
+        NEXT_PUBLIC_API_URL: "https://api.avflash.xyz/api"
+    container_name: next-avflash-v3
+    restart: always
+    env_file: .env
+    environment:
+      - PROJECT_NAME=next-avflash
+      - NEXT_PUBLIC_API_URL=https://api.avflash.xyz/api
+      - INTERNAL_API_URL=http://django-api-host:8000/api?site=avflash
+    volumes:
+      - "./next-avflash:/usr/src/app"
+      - "./shared:/usr/src/app/shared"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.avflash-router.rule=Host(`avflash.xyz`)"
+      - "traefik.http.routers.avflash-router.entrypoints=websecure"
+      - "traefik.http.routers.avflash-router.tls.certresolver=le"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  # --- 4. 管理・監視・メール層 ---
+
+  mail-forwarder:
+    image: boky/postfix
+    container_name: mail-forwarder
+    restart: always
+    environment:
+      - FORWARD_EXT=support@bicstation.com:${MY_GMAIL_ADDRESS:-bicstation@gmail.com}
+      - HOSTNAME=mail.bicstation.com
+      - RELAYHOST=
+      - ALLOW_EMPTY_SENDER_DOMAINS=true
+    ports:
+      - "25:25"
+    networks:
+      - internal-net
+    healthcheck:
+      test: ["CMD-SHELL", "exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  pgadmin-v3:
+    image: dpage/pgadmin4
+    container_name: pgadmin-v3
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_LISTEN_PORT: 80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.pgadmin-router.rule=Host(`pgadmin.tiper.live`)"
+      - "traefik.http.routers.pgadmin-router.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin-router.tls.certresolver=le"
+    networks:
+      - internal-net
+      - shared-proxy
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    restart: always
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.dozzle-router.rule=Host(`logs.tiper.live`)"
+      - "traefik.http.routers.dozzle-router.entrypoints=websecure"
+      - "traefik.http.routers.dozzle-router.tls.certresolver=le"
+    networks:
+      - shared-proxy
+
+  netdata:
+    image: netdata/netdata:stable
+    container_name: netdata-v3
+    restart: always
+    cap_add: [SYS_PTRACE, SYS_ADMIN]
+    security_opt: [apparmor:unconfined]
+    volumes:
+      - netdataconfig:/etc/netdata
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shin-vps_shared-proxy"
+      - "traefik.http.routers.netdata-router.rule=Host(`monitor.tiper.live`)"
+      - "traefik.http.routers.netdata-router.entrypoints=websecure"
+      - "traefik.http.routers.netdata-router.tls.certresolver=le"
+      - "traefik.http.routers.netdata-router.middlewares=netdata-auth"
+      - "traefik.http.middlewares.netdata-auth.basicauth.users=maya:$$apr1$$pE8V7VzF$$H9Z2W6E.9Y6L2W3Y6L2W3."
+    networks:
+      - shared-proxy
+      - internal-net
+
+# --- Networks & Volumes ---
+networks:
+  internal-net:
+    name: "shin-vps_internal-net"
+    driver: bridge
+
+  shared-proxy:
+    name: "shin-vps_shared-proxy"
+    external: true
+
+volumes:
+  static_volume_prod:
+  media_volume_prod: # 🔥 これ追加
+  sitemap_data:
+  traefik_ssl_data:
+  postgres-data-v3:
+  netdataconfig:
+  netdatalib:
+  netdatacache:

@@ -63,9 +63,25 @@ jobs:
             docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v3 python manage.py collectstatic --noinput
 
             echo "🧹 徹底的なクリーンアップを開始します..."
+            # docker image prune -af
+            # docker builder prune -f
+            # docker volume prune -f
+            # docker system prune -f
+
             docker image prune -af
             docker builder prune -f
-            docker volume prune -f
-            docker system prune -f
+
+            # ❌ volume prune は削除
+            # docker volume prune -f
+
+            # system prune は軽めに
+            # docker system prune -f
+
+            # docker compose ps
+            echo "📊 状態確認"
+            docker compose -p shin-vps -f docker-compose.prod.yml ps
+            # docker logs nginx-media    
+            echo "📄 nginxログ確認"
+            docker logs --tail 50 nginx-media        
 
             echo "✅ デプロイ成功！全ての処理と掃除が完了しました。"
