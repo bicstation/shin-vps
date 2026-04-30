@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
+import Link from 'next/link';
+
 import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
@@ -10,9 +12,6 @@ import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * 🛡 安全fetch
- */
 async function safeFetch(fetcher: any, args: any[], fallback: any) {
   try {
     const data = await fetcher(...args);
@@ -26,12 +25,9 @@ export default async function HomePageMain() {
 
   const host = "bicstation.com";
 
-  // 🔥 API取得
   const data = await safeFetch(fetchPCProductRanking, ['score', host], []);
-
   const rawProducts = Array.isArray(data) ? data : (data?.results || []);
 
-  // 🔥 ここが最重要（全てここを通す）
   const products = transformProducts(rawProducts);
 
   if (!products.length) return null;
@@ -42,96 +38,84 @@ export default async function HomePageMain() {
   return (
     <div className={styles.mainWrapper}>
 
-      {/* 🔥 HERO（即決ゾーン） */}
-      <section style={{ textAlign: 'center', marginBottom: '24px' }}>
+      {/* 🔥① 最強導線 */}
+      <section className={styles.topNav}>
+        <Link href="/ranking/score">🏆 総合</Link>
+        <Link href="/ranking/gaming">🎮 ゲーミング</Link>
+        <Link href="/ranking/price-low">💰 コスパ</Link>
+        <Link href="/ranking/gpu-rtx-4060">⚡ RTX4060</Link>
+      </section>
 
-        <h1 style={{
-          fontSize: '20px',
-          fontWeight: 'bold',
-          marginBottom: '8px'
-        }}>
-          迷ってる時間が一番ムダ
+      {/* 🔥② 診断導線（超重要） */}
+      <section className={styles.finderSection}>
+        <div className={styles.finderBox}>
+          <h2>迷ってるなら診断で決める</h2>
+          <p>質問に答えるだけで最適な1台がわかる</p>
+
+          <Link href="/pc-finder" className={styles.finderBtn}>
+            👉 無料で診断する
+          </Link>
+        </div>
+      </section>
+
+      {/* 🔥③ HERO */}
+      <section className={styles.hero}>
+
+        <h1>
+          迷ったらこれ。今一番バランスがいい構成
         </h1>
 
-        <p style={{
-          fontSize: '14px',
-          color: '#94a3b8'
-        }}>
-          これ選べば失敗しない
+        <p>
+          性能・価格・用途のバランスで選ぶならこれ1台
         </p>
 
-        <div style={{ marginTop: '16px' }}>
-          <HeroRankingCard product={top1} />
-        </div>
+        <HeroRankingCard product={top1} />
 
       </section>
 
-      {/* 🔥 CTA（最重要） */}
+      {/* 🔥④ CTA */}
       {top1.url && (
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <a
-            href={top1.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-block',
-              background: '#f97316',
-              color: '#fff',
-              padding: '16px 24px',
-              borderRadius: '12px',
-              fontWeight: 'bold',
-              fontSize: '16px',
-            }}
-          >
-            👉 今すぐ確認（在庫あり）
+        <div className={styles.ctaPrimary}>
+          <a href={top1.url} target="_blank" rel="noopener noreferrer">
+            🔥 最安価格をチェック（在庫あり）
           </a>
-
-          <div style={{
-            fontSize: '12px',
-            color: '#94a3b8',
-            marginTop: '6px'
-          }}>
-            今一番売れている構成
-          </div>
+          <span>在庫切れになることがあります</span>
         </div>
       )}
 
-      {/* 📊 比較（最小） */}
-      <section style={{ marginBottom: '32px' }}>
-        <h3 style={{
-          fontSize: '13px',
-          color: '#94a3b8',
-          marginBottom: '12px'
-        }}>
-          他の候補も見る
-        </h3>
+      {/* 🔥⑤ 比較 */}
+      <section className={styles.compareSection}>
+        <h3>この価格帯でよく比較されるモデル</h3>
 
-        <div style={{
-          display: 'grid',
-          gap: '16px'
-        }}>
-          {others.map((p: any, i: number) => (
-            <ProductCard key={p.id || i} product={p} />
+        <div className={styles.grid}>
+          {others.map((p: any) => (
+            <ProductCard key={p.unique_id} product={p} />
           ))}
         </div>
       </section>
 
-      {/* 🔥 CTA再提示（効く） */}
+      {/* 🔥⑥ 中間導線 */}
+      <section className={styles.midNav}>
+        <h3>目的別に比較する</h3>
+
+        <div>
+          <Link href="/ranking/gaming">ゲーム用途</Link>
+          <Link href="/ranking/business">仕事用途</Link>
+          <Link href="/ranking/gpu-rtx-4070">高性能GPU</Link>
+        </div>
+      </section>
+
+      {/* 🔥⑦ 下部導線 */}
+      <section className={styles.bottomNav}>
+        <Link href="/ranking">
+          → すべてのランキングを見る
+        </Link>
+      </section>
+
+      {/* 🔥⑧ CTA再提示 */}
       {top1.url && (
-        <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <a
-            href={top1.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-block',
-              background: '#f97316',
-              color: '#fff',
-              padding: '14px 20px',
-              borderRadius: '10px',
-              fontWeight: 'bold',
-            }}
-          >
+        <div className={styles.ctaSecondary}>
+          <a href={top1.url} target="_blank" rel="noopener noreferrer">
             👉 迷ったらこれでOK
           </a>
         </div>

@@ -13,6 +13,11 @@ const shorten = (text: string = '', max = 40) => {
 const normalizeImage = (image?: string | null) => {
   if (!image) return '/images/no-image.png';
 
+    // 🔥 docker内部URLを強制変換
+  if (image.includes('django-v3')) {
+    return image.replace('http://django-v3:8000', API_BASE);
+  }
+
   if (image.startsWith('http')) return image;
 
   if (image.startsWith('/media')) {

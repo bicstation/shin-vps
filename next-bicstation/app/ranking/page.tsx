@@ -1,93 +1,133 @@
 /* eslint-disable @next/next/no-img-element */
-/* eslint-disable react/no-unescaped-entities */
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import { Metadata } from 'next';
-
-import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
-import ProductCard from '@/shared/components/organisms/cards/ProductCard';
-import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard';
-import Pagination from '@/shared/components/molecules/Pagination';
-
+import Link from 'next/link';
 import styles from './Ranking.module.css';
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+/** 🔥 SEO */
+export const metadata: Metadata = {
+  title: "PCランキング一覧｜用途・GPU・メーカー別",
+  description: "目的・GPU・メーカー別にPCランキングを比較。失敗しない選び方ができます。",
+};
 
-interface PageProps {
-  searchParams: Promise<{ page?: string }>;
-}
+/** 🔥 カテゴリ */
+const CATEGORY_GROUPS = [
+  {
+    title: "🏆 まずはここから",
+    items: [
+      {
+        title: "総合ランキング",
+        desc: "迷ったらこれ。失敗しないPC",
+        href: "/ranking/score",
+      },
+      {
+        title: "ゲーミングPC",
+        desc: "ゲームするならこの構成",
+        href: "/ranking/gaming",
+      },
+      {
+        title: "コスパ重視",
+        desc: "安くても後悔しない",
+        href: "/ranking/price-low",
+      },
+      {
+        title: "ビジネスPC",
+        desc: "仕事効率を上げる",
+        href: "/ranking/business",
+      },
+    ],
+  },
 
-export async function generateMetadata(props: PageProps): Promise<Metadata> {
-  const sParams = await props.searchParams;
-  const page = sParams.page || '1';
+  {
+    title: "⚡ GPUで選ぶ",
+    items: [
+      {
+        title: "RTX 4060",
+        desc: "一番バランスがいいGPU",
+        href: "/ranking/gpu-rtx-4060",
+      },
+      {
+        title: "RTX 4070",
+        desc: "ワンランク上の性能",
+        href: "/ranking/gpu-rtx-4070",
+      },
+      {
+        title: "RTX 4080以上",
+        desc: "ハイエンド構成",
+        href: "/ranking/gpu-high",
+      },
+    ],
+  },
 
-  return {
-    title: `【2026年最新】PCランキング 第${page}ページ | BICSTATION`,
-    description: `AIスコアによるPCランキング`,
-  };
-}
+  {
+    title: "🏢 メーカーで選ぶ",
+    items: [
+      {
+        title: "ASUS",
+        desc: "人気No.1メーカー",
+        href: "/ranking/maker-asus",
+      },
+      {
+        title: "Dell",
+        desc: "安定・コスパ",
+        href: "/ranking/maker-dell",
+      },
+      {
+        title: "HP",
+        desc: "ビジネスに強い",
+        href: "/ranking/maker-hp",
+      },
+      {
+        title: "Lenovo",
+        desc: "コスパ最強",
+        href: "/ranking/maker-lenovo",
+      },
+    ],
+  },
+];
 
-export default function RankingPage(props: PageProps) {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <RankingContent {...props} />
-    </Suspense>
-  );
-}
-
-async function RankingContent(props: PageProps) {
-  const sParams = await props.searchParams;
-  const currentPage = parseInt(sParams.page || '1', 10);
-  const limit = 20;
-
-  const host = "bicstation.com";
-
-  const rawData = await fetchPCProductRanking('score', host).catch(() => []);
-
-  const productsArray = Array.isArray(rawData)
-    ? rawData
-    : (rawData?.results || []);
-
-  const offset = (currentPage - 1) * limit;
-  const products = productsArray.slice(offset, offset + limit);
-  const totalPages = Math.ceil(productsArray.length / limit);
-
-  // 👇 ここが重要
-  const hero = products[0];
-  const list = products.slice(1);
-
+export default function RankingIndexPage() {
   return (
     <main className={styles.container}>
 
-      {/* 🏆 HERO（1位だけ別格） */}
-      {hero && (
-        <div style={{ marginBottom: '24px' }}>
-          <HeroRankingCard product={hero} />
-        </div>
-      )}
+      {/* 🔥 HERO */}
+      <section className={styles.heroText}>
+        <h1>目的別にPCを選ぶ</h1>
+        <p>用途・GPU・メーカーから選ぶのが最短ルートです</p>
+      </section>
 
-      {/* 📊 ランキング（2位以降） */}
-      <div className={styles.grid}>
-        {list.map((product: any, index: number) => {
-          const rank = offset + index + 2;
+      {/* 🔥 セクションごとに表示 */}
+      {CATEGORY_GROUPS.map((group) => (
+        <section key={group.title} className={styles.section}>
+          
+          <h2 className={styles.sectionTitle}>
+            {group.title}
+          </h2>
 
-          return (
-            <div key={product.id || index}>
-              <ProductCard product={product} rank={rank} />
-            </div>
-          );
-        })}
-      </div>
+          <div className={styles.grid}>
+            {group.items.map((cat) => (
+              <Link
+                key={cat.href}
+                href={cat.href}
+                className={styles.categoryCard}
+              >
+                <h3>{cat.title}</h3>
+                <p>{cat.desc}</p>
+              </Link>
+            ))}
+          </div>
 
-      {/* ページネーション */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        baseUrl="/ranking"
-      />
+        </section>
+      ))}
+
+      {/* 🔥 回遊CTA */}
+      <section className={styles.bottomCta}>
+        <Link href="/ranking/score">
+          → 迷ったら総合ランキングを見る
+        </Link>
+      </section>
 
     </main>
   );
 }
-

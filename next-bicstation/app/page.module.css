@@ -1,145 +1,151 @@
-/* =====================================================================
- * 🏗️ BICSTATION MAIN CLEAN CSS（現構成最適版）
- * ===================================================================== */
-
-/* 全体 */
-.mainWrapper {
+.topNav {
   display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #030508;
-  color: #ffffff;
-  font-family: 'Inter', sans-serif;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-/* =============================
-   🔥 ヒーロー（最重要）
-============================= */
-.heroSection {
-  padding: 24px 16px 20px; /* ← 詰める */
+.topNav a {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #334155;
+}
+
+.topNav a:hover {
+  background: #0f172a;
+  color: white;
+}
+
+.hero {
   text-align: center;
-  background: #000;
+  margin-bottom: 24px;
 }
 
-.heroContent {
-  max-width: 900px;
-  margin: 0 auto;
+.hero h1 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 6px;
 }
 
-/* タイトル */
-.heroTitleStrong {
-  font-size: clamp(2.4rem, 5vw, 3.5rem);
-  font-weight: 900;
-  line-height: 1.2;
+.hero p {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.ctaPrimary {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.ctaPrimary a {
+  display: inline-block;
+  background: #f97316;
+  color: #fff;
+  padding: 16px 26px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.ctaPrimary span {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+.compareSection {
+  margin-bottom: 32px;
+}
+
+.compareSection h3 {
+  font-size: 13px;
+  color: #94a3b8;
   margin-bottom: 12px;
 }
 
-/* キャッチ */
-.heroCatch {
-  font-size: 1rem;
-  color: #10b981;
-  font-weight: 700;
-  margin-bottom: 16px;
-}
-
-/* CTA */
-.ctaPrimary {
-  background: linear-gradient(135deg, #10b981, #22c55e);
-  color: #000;
-  padding: 12px 18px;
-  border-radius: 10px;
-  font-weight: 900;
-  display: inline-block;
-  margin-top: 12px;
-}
-
-/* =============================
-   📦 共通セクション
-============================= */
-.section {
-  margin-top: 24px; /* ← 余白はこれで統一 */
-}
-
-/* =============================
-   🧠 理由ブロック
-============================= */
-.reasonBlock {
-  margin-top: 24px;
-  padding: 16px;
-  background: #0f172a;
-  border-radius: 12px;
-  border: 1px solid #1e293b;
-}
-
-/* =============================
-   🏆 ランキング（2位・3位）
-============================= */
-.rankingSection {
-  margin-top: 32px;
-}
-
-.rankingGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
-
-@media (min-width: 768px) {
-  .rankingGrid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-/* =============================
-   🔗 CTA（ランキング下）
-============================= */
-.secondaryCTA {
+.midNav {
   text-align: center;
-  margin-top: 20px;
+  margin-bottom: 24px;
 }
 
-/* =============================
-   📚 ガイド誘導
-============================= */
-.guideSection {
-  margin-top: 32px;
+.midNav div {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.guideCard {
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid #1e293b;
-  background: #020617;
+.midNav a {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2563eb;
+  text-decoration: none;
 }
 
-.subLinkCard {
-  display: block;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: #020617;
-  border: 1px solid #1e293b;
-  transition: all 0.2s;
+.bottomNav {
+  text-align: center;
+  margin-bottom: 24px;
 }
 
-.subLinkCard:hover {
-  border-color: #22c55e;
-  transform: translateY(-2px);
+.bottomNav a {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2563eb;
 }
 
-/* =============================
-   📱 レスポンシブ
-============================= */
-@media (max-width: 768px) {
-  .heroSection {
-    padding: 20px 12px;
-  }
+.ctaSecondary {
+  text-align: center;
+}
 
-  .heroTitleStrong {
-    font-size: 2rem;
-  }
+.ctaSecondary a {
+  display: inline-block;
+  background: #f97316;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-weight: bold;
+}
 
-  .heroCatch {
-    font-size: 0.95rem;
-  }
+
+.finderSection {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.finderBox {
+  background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  color: white;
+  max-width: 400px;
+  width: 100%;
+}
+
+.finderBox h2 {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.finderBox p {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 12px;
+}
+
+.finderBtn {
+  display: inline-block;
+  background: white;
+  color: #0ea5e9;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  text-decoration: none;
 }
