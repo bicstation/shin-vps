@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
@@ -153,68 +154,183 @@ def diagnose_pc(request):
     purpose = (request.data.get("purpose") or "").lower()
     budget = (request.data.get("budget") or "").lower()
 
+    # -------------------------
+    # ベースクエリ（最適化）
+    # -------------------------
     base_qs = Product.objects.filter(
         is_active=True,
         is_visible=True,
         price__isnull=False
-    ).order_by("-ranking_score")
+    ).prefetch_related("attributes")
 
-    products = list(base_qs)
+    # -------------------------
+    # 用途フィルタ（強化版）
+    # -------------------------
+    qs = base_qs
+    
+    print("BASE:", base_qs.count())
+    print("AFTER PURPOSE:", qs.count())
+    
+    
+    if purpose == "gaming":
 
-    filtered = []
+        qs = qs.annotate(
+            purpose_score=Case(
+                # 🔥 最強GPU
+                When(attributes__name__icontains="4090", then=Value(100)),
+                When(attributes__name__icontains="4080", then=Value(90)),
+                When(attributes__name__icontains="4070", then=Value(80)),
 
-    for p in products:
-        tags = get_tags(p, request)
+                # GPUあり
+                When(attributes__name__icontains="RTX", then=Value(70)),
+                When(attributes__name__icontains="GeForce", then=Value(60)),
 
-        if purpose == "gaming":
-            if any("RTX" in t for t in tags):
-                filtered.append(p)
+                # ゲーミングキーワード
+                When(title__icontains="ゲーミング", then=Value(50)),
+                
+                # 💡 ノートは減点（ここが今回のポイント）
+                When(title__icontains="ノート", then=Value(30)),
 
-        elif purpose == "business":
-            if any("Core" in t or "Ryzen" in t for t in tags):
-                filtered.append(p)
+                default=Value(0),
+                output_field=IntegerField()
+            )
+        )
 
-        elif purpose == "creative":
-            if any("RTX" in t for t in tags) or any("32GB" in t for t in tags):
-                filtered.append(p)
 
-    if not filtered:
-        filtered = products
+    elif purpose == "business":
 
-    def match_price(p):
-        price = p.price or 0
+        qs = qs.annotate(
+            purpose_score=Case(
+                When(attributes__name__icontains="Core i7", then=Value(80)),
+                When(attributes__name__icontains="Core i5", then=Value(70)),
+                When(attributes__name__icontains="Ryzen 7", then=Value(80)),
+                When(attributes__name__icontains="Ryzen 5", then=Value(70)),
 
-        if budget == "low":
-            return price <= 150000
-        elif budget == "mid":
-            return 150000 < price <= 300000
-        elif budget == "high":
-            return price > 300000
-        return True
+                When(title__icontains="ビジネス", then=Value(60)),
 
-    filtered_price = [p for p in filtered if match_price(p)]
+                default=Value(0),
+                output_field=IntegerField()
+            )
+        )
+          
 
-    if not filtered_price:
-        filtered_price = filtered
 
-    filtered_price = sorted(
-        filtered_price,
-        key=lambda x: x.ranking_score or 0,
-        reverse=True
-    )
 
-    best = filtered_price[0]
-    alternatives = filtered_price[1:4]
+    elif purpose == "creative":
+
+        qs = qs.annotate(
+            purpose_score=Case(
+                When(attributes__name__icontains="4090", then=Value(100)),
+                When(attributes__name__icontains="4080", then=Value(90)),
+                When(attributes__name__icontains="32GB", then=Value(80)),
+
+                When(title__icontains="クリエイター", then=Value(70)),
+
+                default=Value(0),
+                output_field=IntegerField()
+            )
+        )
+
+
+    # -------------------------
+    # fallback（重要）
+    # -------------------------
+    if not qs.exists():
+        qs = base_qs.annotate(
+            purpose_score=Value(1, output_field=IntegerField())
+        )
+
+    # -------------------------
+    # 重複除去
+    # -------------------------
+    qs = qs.distinct()
+
+    # -------------------------
+    # fallback（重要）
+    # -------------------------
+    if not qs.exists():
+        qs = base_qs
+
+    # -------------------------
+    # 価格フィルタ
+    # -------------------------
+    tmp_qs = qs
+    print("BEFORE PRICE:", tmp_qs.count(
+    
+    if budget == "low":
+        qs = qs.filter(price__lte=150000)
+
+    elif budget == "mid":
+        qs = qs.filter(price__gt=150000, price__lte=300000)
+
+    elif budget == "high":
+        qs = qs.filter(price__gt=300000)
+        
+    # 価格フィルタ後
+    if budget == "low":
+        tmp_qs = tmp_qs.filter(price__lte=150000)
+    elif budget == "mid":
+        tmp_qs = tmp_qs.filter(price__gt=150000, price__lte=300000)
+    elif budget == "high":
+        tmp_qs = tmp_qs.filter(price__gt=300000)
+
+    print("AFTER PRICE:", tmp_qs.count())
+    
+
+    # fallback（価格）
+    if not qs.exists():
+        qs = base_qs
+
+    # -------------------------
+    # ソート
+    # -------------------------
+    qs = qs.order_by("-purpose_score", "-ranking_score")
+
+    best = qs.first()
+
+    if not best:
+        return Response({
+            "best": None,
+            "alternatives": []
+        })
+
+    alternatives = qs.exclude(id=best.id)[:3]
 
     context = {"request": request}
 
+    # -------------------------
+    # reason生成
+    # -------------------------
+    def build_reason(tags, price):
+        reasons = []
+
+        if any("RTX" in t for t in tags):
+            reasons.append("高性能GPU搭載でゲームに最適")
+
+        if any("32GB" in t for t in tags):
+            reasons.append("大容量メモリで作業も快適")
+
+        if price and price < 250000:
+            reasons.append("この性能でコスパが高い")
+
+        return "・".join(reasons) or "バランスの良いおすすめモデル"
+
+    # -------------------------
+    # レスポンス生成
+    # -------------------------
     best_data = ProductSerializer(best, context=context).data
-    best_data["reason"] = build_reason(best_data.get("tags", []), best_data.get("price"))
+    best_data["reason"] = build_reason(
+        best_data.get("tags", []),
+        best_data.get("price")
+    )
 
     alt_data = []
     for p in alternatives:
         data = ProductSerializer(p, context=context).data
-        data["reason"] = build_reason(data.get("tags", []), data.get("price"))
+        data["reason"] = build_reason(
+            data.get("tags", []),
+            data.get("price")
+        )
         alt_data.append(data)
 
     return Response({
