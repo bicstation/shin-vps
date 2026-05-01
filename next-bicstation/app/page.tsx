@@ -28,7 +28,8 @@ export default async function HomePageMain() {
   const data = await safeFetch(fetchPCProductRanking, ['score', host], []);
   const rawProducts = Array.isArray(data) ? data : (data?.results || []);
 
-  const products = transformProducts(rawProducts);
+  // const products = transformProducts(rawProducts);
+  const products = rawProducts;
 
   if (!products.length) return null;
 

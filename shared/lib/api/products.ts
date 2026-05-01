@@ -1,10 +1,8 @@
-// /shared/lib/api/django/pc/stats.ts
+// /shared/lib/api/products.ts
 
-import { API_ENDPOINTS } from '@/shared/lib/config/api';
+import { API_ENDPOINTS } from '../config/api';
 
-export async function fetchPCProductRanking(
-  sort: string = 'score'
-) {
+export async function fetchRanking(sort: string = 'score') {
   try {
     const url = `${API_ENDPOINTS.ranking}?sort=${sort}`;
 
@@ -15,19 +13,18 @@ export async function fetchPCProductRanking(
     });
 
     if (!res.ok) {
-      console.error('[API ERROR]', res.status, url);
+      console.error('[API ERROR]', res.status);
       return [];
     }
 
     const data = await res.json();
 
-    // 🔒 安全ガード
     if (Array.isArray(data)) return data;
     if (data?.results) return data.results;
 
     return [];
-  } catch (error) {
-    console.error('[fetchPCProductRanking ERROR]', error);
+  } catch (e) {
+    console.error('[fetchRanking ERROR]', e);
     return [];
   }
 }

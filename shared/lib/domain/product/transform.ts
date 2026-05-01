@@ -1,64 +1,10 @@
 // /shared/lib/domain/product/transform.ts
 // @ts-nocheck
 
-// # API用（データ取得専用）
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ||
-  'http://localhost:8083';
-
-// # 現在ドメイン取得（マルチドメイン対応）
-const getMediaBase = () => {
-  // # ブラウザ側
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
-  }
-
-  // # SSR側（fallback）
-  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
-    'http://localhost:3000';
-};
-
 // # テキスト短縮
 const shorten = (text: string = '', max = 40) => {
   if (!text) return 'おすすめ商品';
   return text.length > max ? text.slice(0, max) + '...' : text;
-};
-
-// # 画像URL正規化（最終版）
-const normalizeImage = (image?: string | null) => {
-  const MEDIA_BASE = getMediaBase();
-
-  if (!image) return '/images/no-image.png';
-
-  // # 既にhttpsならそのまま
-  if (image.startsWith('https://')) return image;
-
-  // # httpはhttpsへ強制変換
-  if (image.startsWith('http://')) {
-    image = image.replace('http://', 'https://');
-  }
-
-  // # docker内部URL対策
-  if (
-    image.includes('django-v3') ||
-    image.includes('django-api-host')
-  ) {
-    const path = image.replace(/^.*\/media/, '/media');
-    return `${MEDIA_BASE}${path}`;
-  }
-
-  // # /mediaパス
-  if (image.startsWith('/media')) {
-    return `${MEDIA_BASE}${image}`;
-  }
-
-  // # ルート相対
-  if (image.startsWith('/')) {
-    return `${MEDIA_BASE}${image}`;
-  }
-
-  // # 相対パス（保険）
-  return `${MEDIA_BASE}/${image}`;
 };
 
 // # ラベル変換
@@ -109,8 +55,8 @@ export const transformProduct = (p: any) => {
     title: p.title || 'おすすめ商品',
     shortTitle: shorten(p.title),
 
-    // # 画像（最重要）
-    image: normalizeImage(p.image),
+    // 🔥 画像（そのまま使う）
+    image: p.image || '/no-image.png',
 
     // # 価格
     price: normalizePrice(p.price),

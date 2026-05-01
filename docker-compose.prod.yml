@@ -93,7 +93,7 @@ services:
         condition: service_healthy
 
     env_file:
-      - .env
+      - .env.production
 
     environment:
       - DB_HOST=db-host
@@ -160,7 +160,7 @@ services:
     restart: always
 
     env_file:
-      - .env
+      - .env.production
 
     environment:
       - PROJECT_NAME=next-bicstation
@@ -201,7 +201,7 @@ services:
     restart: always
 
     env_file:
-      - .env
+      - .env.production
 
     environment:
       - PROJECT_NAME=next-tiper
@@ -240,7 +240,7 @@ services:
     restart: always
 
     env_file:
-      - .env
+      - .env.production
 
     environment:
       - PROJECT_NAME=next-bic-saving
@@ -279,7 +279,7 @@ services:
     restart: always
 
     env_file:
-      - .env
+      - .env.production
 
     environment:
       - PROJECT_NAME=next-avflash

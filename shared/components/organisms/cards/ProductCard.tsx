@@ -5,64 +5,50 @@ import styles from './ProductCard.module.css';
 
 type Product = {
   id: number;
-  unique_id: string; // ← これ重要
+  unique_id: string;
   shortTitle?: string;
+  title?: string;
   image?: string;
   price?: number;
-  displayLabel?: string;
-  mainTag?: string;
 };
 
 export default function ProductCard({ product }: { product?: Product }) {
   if (!product) return null;
+
+  const title =
+    product.shortTitle ||
+    product.title ||
+    'おすすめ商品';
+
+  const price = product.price
+    ? `¥${product.price.toLocaleString()}`
+    : '';
+
+  const image = product.image || '/no-image.png';
 
   return (
     <Link
       href={`/product/${product.unique_id}`}
       className={styles.card}
     >
-
-      {/* 🔥 ラベル */}
-      {product.displayLabel && (
-        <div className={styles.label}>
-          {product.displayLabel}
-        </div>
-      )}
-
       {/* 🖼 画像 */}
       <img
-        src={product.image || '/no-image.png'}
-        alt={product.shortTitle || 'product'}
+        src={image}
+        alt={title}
         className={styles.image}
+        onError={(e) => {
+          e.currentTarget.src = '/no-image.png';
+        }}
       />
 
-      <div className={styles.body}>
+      {/* 🏷 タイトル */}
+      <h3 className={styles.title}>
+        {title}
+      </h3>
 
-        {/* 🏷 タイトル */}
-        <h3 className={styles.title}>
-          {product.shortTitle}
-        </h3>
-
-        {/* 🏷 タグ */}
-        {product.mainTag && (
-          <div className={styles.tags}>
-            {product.mainTag}
-          </div>
-        )}
-
-        {/* 💰 価格 */}
-        <div className={styles.price}>
-          ¥{product.price?.toLocaleString()}
-        </div>
-
-        {/* 🔍 CTA（補助） */}
-        <div className={styles.cta}>
-          詳細を見る
-          <span className={styles.ctaSub}>
-            スペック確認
-          </span>
-        </div>
-
+      {/* 💰 価格 */}
+      <div className={styles.price}>
+        {price}
       </div>
     </Link>
   );

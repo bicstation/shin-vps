@@ -1,0 +1,55 @@
+/* HeroRankingCard.module.css */
+
+.card {
+  background: #020617;
+  padding: 20px;
+  border-radius: 16px;
+  border: 2px solid #f97316;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.label {
+  display: inline-block;
+  background: #f97316;
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.image {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.price {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fb923c;
+}
+
+.cta {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 18px;
+  background: #f97316;
+  color: #fff;
+  text-align: center;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: transform 0.15s ease;
+}
+
+.cta:active {
+  transform: scale(0.96);
+}
+
+.subText {
+  font-size: 11px;
+  text-align: center;
+  color: #9ca3af;
+}

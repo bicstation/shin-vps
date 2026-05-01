@@ -54,7 +54,8 @@ jobs:
 
             echo "🚀 本番環境(prod)をビルド・起動します..."
             # 💡 Playwright 等の重いビルドが含まれるため、ビルド成功をしっかり待ちます
-            docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans --wait
+            # docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans --wait
+            docker compose -p shin-vps --env-file .env.production -f docker-compose.prod.yml up -d --build --remove-orphans --wait
             
             echo "📦 データベースを更新します..."
             docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v3 python manage.py migrate --noinput
