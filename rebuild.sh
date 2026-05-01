@@ -1,130 +1,166 @@
 #!/bin/bash
 # ==============================================================================
-# 🚀 SHIN-VPS v3.7: サービス名省略形・単独ビルド・完全クリーン対応
+# 🚀 SHIN-VPS v4.0: 自動環境判別 + 強制切替 + 安全ネットワーク + 本番対応
 # ==============================================================================
+
+set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOSTNAME=$(hostname)
 
-# --- ヘルプ表示 ---
+PROJECT_NAME="shin-vps"
+PROD_FILE="$SCRIPT_DIR/docker-compose.prod.yml"
+LOCAL_FILE="$SCRIPT_DIR/docker-compose.yml"
+NETWORK_NAME="${PROJECT_NAME}_shared-proxy"
+SUFFIX="-v3"
+
+# --- ヘルプ ---
 show_help() {
-    echo "Usage: ./deploy.sh [SERVICE_SHORT_NAME] [OPTIONS]"
-    echo ""
-    echo "Arguments:"
-    echo "  SERVICE_SHORT_NAME  サービス名の省略形 (例: bic-saving, tiper, django, station)"
-    echo "                      ※ 'next-' や '-v3' は自動補完されます"
+    echo "Usage: ./deploy.sh [SERVICE] [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --no-cache      Dockerキャッシュを無視してビルド"
-    echo "  --prune         ビルド前に未使用イメージ・キャッシュを完全削除"
-    echo "  --logs          起動後にログを表示して待機"
-    echo "  --help          ヘルプを表示"
+    echo "  --prod        強制的に本番構成を使用"
+    echo "  --local       強制的にローカル構成を使用"
+    echo "  --no-cache    キャッシュ無しビルド"
+    echo "  --prune       完全クリーン"
+    echo "  --logs        ログ監視"
     echo ""
     echo "Examples:"
-    echo "  ./deploy.sh bic-saving --no-cache   # next-bic-saving-v3 をビルド"
-    echo "  ./deploy.sh django --logs           # django-v3 をビルドしてログ監視"
-    echo "  ./deploy.sh --prune                 # 全体をフルクリーンビルド"
+    echo "  ./rebuild.sh --prod"
+    echo "  ./rebuild.sh tiper --prod"
+    echo "  ./rebuild.sh django --logs"
     exit 0
 }
-
-# --- 環境判別 ---
-if [[ "$HOSTNAME" == *"x162-43-73-204"* ]]; then
-    ENV_TYPE="PROD"; COMPOSE_FILE="$SCRIPT_DIR/docker-compose.prod.yml"; SUFFIX="-v3"
-else
-    ENV_TYPE="LOCAL"; COMPOSE_FILE="$SCRIPT_DIR/docker-compose.yml"; SUFFIX="-v3"
-fi
 
 # --- 引数解析 ---
 INPUT_SERVICE=""
 BUILD_ARGS=""
-PRUNE_MODE=false
+PRUNE=false
 SHOW_LOGS=false
+FORCE_ENV=""
 
 for arg in "$@"; do
     case "$arg" in
+        --prod) FORCE_ENV="PROD" ;;
+        --local) FORCE_ENV="LOCAL" ;;
         --no-cache) BUILD_ARGS="--no-cache" ;;
-        --prune)    PRUNE_MODE=true ;;
-        --logs)     SHOW_LOGS=true ;;
-        --help)     show_help ;;
-        -*)         echo "❓ Unknown option: $arg"; show_help ;;
-        *)          INPUT_SERVICE="$arg" ;; 
+        --prune) PRUNE=true ;;
+        --logs) SHOW_LOGS=true ;;
+        --help) show_help ;;
+        -*) echo "❌ Unknown option: $arg"; exit 1 ;;
+        *) INPUT_SERVICE="$arg" ;;
     esac
 done
 
-# --- サービス名の補完ロジック ---
-TARGET_SERVICE=""
-if [ -n "$INPUT_SERVICE" ]; then
-    # すでにフルネームで入力されているか、接頭辞・接尾辞が必要か判定
-    if [[ "$INPUT_SERVICE" == *"django"* ]]; then
-        TARGET_SERVICE="django$SUFFIX"
-    elif [[ "$INPUT_SERVICE" == "postgres" || "$INPUT_SERVICE" == "db" ]]; then
-        TARGET_SERVICE="postgres-db$SUFFIX"
-    elif [[ "$INPUT_SERVICE" == "proxy" || "$INPUT_SERVICE" == "traefik" ]]; then
-        TARGET_SERVICE="traefik"
-    elif [[ "$INPUT_SERVICE" == "dozzle" ]]; then
-        TARGET_SERVICE="dozzle$SUFFIX"
-    elif [[ "$INPUT_SERVICE" == "bicstation" || "$INPUT_SERVICE" == "station" ]]; then
-         TARGET_SERVICE="next-bicstation$SUFFIX"
-    else
-        # その他 (bic-saving, tiper, avflash 等)
-        # すでに next- がついていればそのまま、なければ付与
-        [[ "$INPUT_SERVICE" =~ ^next- ]] && TMP="$INPUT_SERVICE" || TMP="next-$INPUT_SERVICE"
-        # すでに -v3 がついていればそのまま、なければ付与
-        [[ "$TMP" =~ $SUFFIX$ ]] && TARGET_SERVICE="$TMP" || TARGET_SERVICE="$TMP$SUFFIX"
+# --- 環境自動判別（ここがコア） ---
+detect_env() {
+    # 強制指定優先
+    if [ "$FORCE_ENV" = "PROD" ]; then
+        echo "PROD"; return
+    elif [ "$FORCE_ENV" = "LOCAL" ]; then
+        echo "LOCAL"; return
     fi
-    echo "🎯 [TARGET] Resolved service name: $TARGET_SERVICE"
+
+    # VPS判定（安全版）
+    if curl -s --connect-timeout 1 http://169.254.169.254 >/dev/null 2>&1; then
+        echo "PROD"; return
+    fi
+
+    # Docker内 or WSLでもLOCAL扱い
+    echo "LOCAL"
+}
+
+ENV_TYPE=$(detect_env)
+
+if [ "$ENV_TYPE" = "PROD" ]; then
+    COMPOSE_FILE="$PROD_FILE"
+else
+    COMPOSE_FILE="$LOCAL_FILE"
 fi
 
-# --- 0. Prune処理 ---
-if [ "$PRUNE_MODE" = true ]; then
-    echo "🚨 [0/5] Pruning Docker system..."
+echo "🌍 ENV: $ENV_TYPE"
+echo "📄 COMPOSE: $COMPOSE_FILE"
+
+# --- サービス補完 ---
+resolve_service() {
+    local s="$1"
+
+    if [ -z "$s" ]; then
+        echo ""
+        return
+    fi
+
+    if [[ "$s" == *"django"* ]]; then
+        echo "django$SUFFIX"
+    elif [[ "$s" == "db" || "$s" == "postgres" ]]; then
+        echo "postgres-db$SUFFIX"
+    elif [[ "$s" == "proxy" || "$s" == "traefik" ]]; then
+        echo "traefik"
+    elif [[ "$s" == "station" || "$s" == "bicstation" ]]; then
+        echo "next-bicstation$SUFFIX"
+    else
+        [[ "$s" =~ ^next- ]] && TMP="$s" || TMP="next-$s"
+        [[ "$TMP" =~ $SUFFIX$ ]] && echo "$TMP" || echo "$TMP$SUFFIX"
+    fi
+}
+
+TARGET_SERVICE=$(resolve_service "$INPUT_SERVICE")
+
+[ -n "$TARGET_SERVICE" ] && echo "🎯 TARGET: $TARGET_SERVICE"
+
+# --- 0. prune ---
+if [ "$PRUNE" = true ]; then
+    echo "🚨 FULL CLEAN"
     docker system prune -af --volumes
 fi
 
-# --- 1. 停止 & ネットワーククリーン ---
+# --- 1. ネットワーク保証（重要） ---
+if ! docker network inspect "$NETWORK_NAME" >/dev/null 2>&1; then
+    echo "🌐 Creating network: $NETWORK_NAME"
+    docker network create "$NETWORK_NAME"
+fi
+
+# --- 2. stop ---
 if [ -z "$TARGET_SERVICE" ]; then
-    echo "🧹 [1/5] Cleaning up all containers..."
-    docker compose -f "$COMPOSE_FILE" down --remove-orphans
-    docker network rm $(docker network ls -q -f name=internal-net) 2>/dev/null || true
+    echo "🧹 DOWN ALL"
+    docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" down --remove-orphans
 else
-    echo "♻️ [1/5] Stopping: $TARGET_SERVICE"
-    docker compose -f "$COMPOSE_FILE" stop "$TARGET_SERVICE"
+    echo "♻️ STOP $TARGET_SERVICE"
+    docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" stop "$TARGET_SERVICE"
 fi
 
-# --- 2. ビルド ---
-echo "📍 [2/5] Building..."
-docker compose -f "$COMPOSE_FILE" build $BUILD_ARGS $TARGET_SERVICE
+# --- 3. build ---
+echo "🔨 BUILD"
+docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" build $BUILD_ARGS $TARGET_SERVICE
 
-# --- 3. 起動 ---
-echo "📍 [3/5] Starting..."
+# --- 4. up ---
+echo "🚀 UP"
 if [ -z "$TARGET_SERVICE" ]; then
-    docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+    docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" up -d --remove-orphans
 else
-    docker compose -f "$COMPOSE_FILE" up -d --no-deps "$TARGET_SERVICE"
+    docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" up -d --no-deps "$TARGET_SERVICE"
 fi
 
-# --- 4. 起動待ち ---
-if [ "$SHOW_LOGS" = false ]; then
-    echo "⏳ Waiting 15 seconds for stabilization..."
-    sleep 15
+# --- 5. wait ---
+sleep 10
+
+# --- 6. Django処理 ---
+DJANGO_NAME="django$SUFFIX"
+if docker ps | grep -q "$DJANGO_NAME"; then
+    echo "📦 Django migrate"
+    docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" exec -T $DJANGO_NAME python manage.py migrate --noinput || true
+
+    echo "🧹 cache clear"
+    docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" exec -T $DJANGO_NAME python manage.py shell -c "from django.core.cache import cache; cache.clear()" || true
 fi
 
-# --- 5. Django後処理 ---
-if [ -z "$TARGET_SERVICE" ] || [[ "$TARGET_SERVICE" == *"django"* ]]; then
-    DJANGO_NAME="django$SUFFIX"
-    if [ "$(docker ps -q -f name=$DJANGO_NAME)" ]; then
-        echo "📦 [5/5] Running migrations & clearing cache..."
-        docker compose -f "$COMPOSE_FILE" exec -T $DJANGO_NAME python manage.py migrate --noinput
-        docker compose -f "$COMPOSE_FILE" exec -T $DJANGO_NAME python manage.py shell -c "from django.core.cache import cache; cache.clear()"
-    fi
-fi
+echo "--------------------------------------------------"
+echo "✅ DONE [$ENV_TYPE]"
+echo "--------------------------------------------------"
 
-echo "---------------------------------------------------"
-echo "🎉 SHIN-VPS v3.7 [$ENV_TYPE] COMPLETED!"
-echo "---------------------------------------------------"
-
+# --- logs or ps ---
 if [ "$SHOW_LOGS" = true ] && [ -n "$TARGET_SERVICE" ]; then
-    docker compose -f "$COMPOSE_FILE" logs -f "$TARGET_SERVICE"
+    docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" logs -f "$TARGET_SERVICE"
 else
-    docker compose -f "$COMPOSE_FILE" ps
+    docker compose -p $PROJECT_NAME -f "$COMPOSE_FILE" ps
 fi
