@@ -60,7 +60,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.django-api.rule=(Host(`api-saving-host`, `api-bicstation-host`, `api-tiper-host`, `api-avflash-host`) || HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`, `/media`))"
+      - "traefik.http.routers.django-api.rule=(Host(`api-saving-host`, `api-bicstation-host`, `api-tiper-host`, `api-avflash-host`) || HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`))"
+
       - "traefik.http.routers.django-api.priority=6000"
       - "traefik.http.routers.django-api.service=django-svc"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
@@ -90,11 +91,11 @@ services:
       - "traefik.docker.network=shared-proxy"
 
       # 🔥 ローカル用（超重要）
-      - "traefik.http.routers.media-router.rule=Host(`tiper.live`) && PathPrefix(`/media/`)"
+      - "traefik.http.routers.media-router.rule=HostRegexp(`{host:.+}`) && PathPrefix(`/media/`)"
       
       - "traefik.http.routers.media-router.entrypoints=web"
-      - "traefik.http.routers.media-router.priority=10000"
-
+      - "traefik.http.routers.media-router.priority=30000"
+      - "traefik.http.routers.media-router.service=media-svc"
       - "traefik.http.services.media-svc.loadbalancer.server.port=80"
     networks:
       - shared-proxy
@@ -130,7 +131,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`, `bicstation.com`)"
+      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`, `bicstation.com`) && !PathPrefix(`/media/`)"
       - "traefik.http.routers.bic-router.priority=2000"
       - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
 
@@ -163,7 +164,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.saving-router.rule=Host(`saving-host`, `bic-saving.com`)"
+      - "traefik.http.routers.saving-router.rule=Host(`saving-host`, `bic-saving.com`) && !PathPrefix(`/media/`)"
       - "traefik.http.routers.saving-router.priority=2000"
       - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
 
@@ -196,7 +197,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.tiper-router.rule=Host(`tiper-host`, `tiper.live`)"
+      - "traefik.http.routers.tiper-router.rule=Host(`tiper-host`, `tiper.live`) && !PathPrefix(`/media/`)"
       - "traefik.http.routers.tiper-router.priority=2000"
       - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
 
@@ -229,7 +230,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.avflash-router.rule=Host(`avflash-host`, `avflash.xyz`)"
+      - "traefik.http.routers.avflash-router.rule=Host(`avflash-host`, `avflash.xyz`) && !PathPrefix(`/media/`)"
       - "traefik.http.routers.avflash-router.priority=2000"
       - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
 

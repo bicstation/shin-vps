@@ -6,10 +6,17 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ||
   'http://localhost:8083';
 
-// # 画像用（最重要：必ずフロントドメイン）
-const MEDIA_BASE =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
-  'http://localhost:3000';
+// # 現在ドメイン取得（マルチドメイン対応）
+const getMediaBase = () => {
+  // # ブラウザ側
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+
+  // # SSR側（fallback）
+  return process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+    'http://localhost:3000';
+};
 
 // # テキスト短縮
 const shorten = (text: string = '', max = 40) => {
@@ -17,35 +24,40 @@ const shorten = (text: string = '', max = 40) => {
   return text.length > max ? text.slice(0, max) + '...' : text;
 };
 
-// # 画像URL正規化（完全修正版）
+// # 画像URL正規化（最終版）
 const normalizeImage = (image?: string | null) => {
+  const MEDIA_BASE = getMediaBase();
+
   if (!image) return '/images/no-image.png';
 
-  // # 既に完全URLならそのまま
+  // # 既にhttpsならそのまま
   if (image.startsWith('https://')) return image;
 
-  // # httpは強制的にhttpsへ変換（Mixed Content対策）
+  // # httpはhttpsへ強制変換
   if (image.startsWith('http://')) {
-    return image.replace('http://', 'https://');
+    image = image.replace('http://', 'https://');
   }
 
-  // # docker内部URLは完全排除してフロントへ
-  if (image.includes('django-v3')) {
+  // # docker内部URL対策
+  if (
+    image.includes('django-v3') ||
+    image.includes('django-api-host')
+  ) {
     const path = image.replace(/^.*\/media/, '/media');
     return `${MEDIA_BASE}${path}`;
   }
 
-  // # /mediaパスならフロントドメインへ
+  // # /mediaパス
   if (image.startsWith('/media')) {
     return `${MEDIA_BASE}${image}`;
   }
 
-  // # 相対パス対策
+  // # ルート相対
   if (image.startsWith('/')) {
     return `${MEDIA_BASE}${image}`;
   }
 
-  // # その他（最終保険）
+  // # 相対パス（保険）
   return `${MEDIA_BASE}/${image}`;
 };
 
@@ -97,7 +109,7 @@ export const transformProduct = (p: any) => {
     title: p.title || 'おすすめ商品',
     shortTitle: shorten(p.title),
 
-    // # 画像（ここが最重要）
+    // # 画像（最重要）
     image: normalizeImage(p.image),
 
     // # 価格
