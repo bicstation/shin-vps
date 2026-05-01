@@ -64,7 +64,7 @@ services:
       - "traefik.http.routers.django-api.priority=6000"
       - "traefik.http.routers.django-api.service=django-svc"
       - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
-      - "traefik.http.routers.django.rule=PathPrefix(`/api`) || PathPrefix(`/media`)"
+      - "traefik.http.routers.django.rule=PathPrefix(`/api`)"
       - "traefik.http.services.django.loadbalancer.server.port=8000"
     extra_hosts:
       - "ai-tiper-host:host-gateway"
@@ -76,6 +76,27 @@ services:
       - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
     networks:
       - internal-net
+      - shared-proxy
+
+  nginx-media:
+    image: nginx:alpine
+    container_name: nginx-media-local
+    restart: always
+    volumes:
+      - ./django/media:/usr/src/app/media
+      - ./nginx/media.conf:/etc/nginx/conf.d/default.conf
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      # 🔥 ローカル用（超重要）
+      - "traefik.http.routers.media-router.rule=Host(`tiper.live`) && PathPrefix(`/media/`)"
+      
+      - "traefik.http.routers.media-router.entrypoints=web"
+      - "traefik.http.routers.media-router.priority=10000"
+
+      - "traefik.http.services.media-svc.loadbalancer.server.port=80"
+    networks:
       - shared-proxy
 
   # --- 3. フロントエンド層 (Next.js 艦隊) ---

@@ -83,8 +83,8 @@ services:
       - "traefik.docker.network=shin-vps_shared-proxy"
 
       # 🔥 media削除済み
-      # - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
-      - "traefik.http.routers.django-router.rule=Host(`tiper.live`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
+      - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
+      # - "traefik.http.routers.django-router.rule=Host(`tiper.live`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.routers.django-router.priority=2000"
@@ -113,8 +113,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-      # - "traefik.http.routers.media-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && PathPrefix(`/media/`)"
-      - "traefik.http.routers.media-router.rule=Host(`tiper.live`) && PathPrefix(`/media/`)"
+      - "traefik.http.routers.media-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && PathPrefix(`/media/`)"
+      # - "traefik.http.routers.media-router.rule=Host(`tiper.live`) && PathPrefix(`/media/`)"
       - "traefik.http.routers.media-router.entrypoints=websecure"
       - "traefik.http.routers.media-router.tls.certresolver=le"
       # - "traefik.http.routers.media-router.priority=3000"
