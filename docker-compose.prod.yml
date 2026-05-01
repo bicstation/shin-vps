@@ -11,6 +11,7 @@ services:
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=shin-vps_shared-proxy"   # ← ★追加（重要）
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.websecure.address=:443"
@@ -81,10 +82,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
-
-      # 🔥 media削除済み
       - "traefik.http.routers.django-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
-      # - "traefik.http.routers.django-router.rule=Host(`tiper.live`) && (PathPrefix(`/admin`) || PathPrefix(`/api`) || PathPrefix(`/static`))"
       - "traefik.http.routers.django-router.entrypoints=websecure"
       - "traefik.http.routers.django-router.tls.certresolver=le"
       - "traefik.http.routers.django-router.priority=2000"
@@ -102,7 +100,7 @@ services:
           - django-v3
       shared-proxy:
 
-  # --- 🔥 追加：media専用 ---
+  # --- 🔥 media専用 ---
   nginx-media:
     image: nginx:alpine
     container_name: nginx-media
@@ -113,17 +111,19 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shin-vps_shared-proxy"
+
+      # ★優先度MAXでmediaを奪う
       - "traefik.http.routers.media-router.rule=Host(`tiper.live`, `api.tiper.live`, `bicstation.com`, `api.bicstation.com`, `bic-saving.com`, `api.bic-saving.com`, `avflash.xyz`, `api.avflash.xyz`) && PathPrefix(`/media/`)"
-      # - "traefik.http.routers.media-router.rule=Host(`tiper.live`) && PathPrefix(`/media/`)"
       - "traefik.http.routers.media-router.entrypoints=websecure"
       - "traefik.http.routers.media-router.tls.certresolver=le"
-      # - "traefik.http.routers.media-router.priority=3000"
       - "traefik.http.routers.media-router.priority=10000"
-      - "traefik.http.services.media-svc.loadbalancer.server.port=80"
-    networks:
-      - shared-proxy
 
-  # --- 3. Next群（完全維持） ---
+      - "traefik.http.services.media-svc.loadbalancer.server.port=80"
+
+    networks:
+      - shared-proxy   # ← ★今回の核心（絶対必要）
+
+  # --- 3. Next群 ---
   next-bicstation-v3:
     build:
       context: .
@@ -234,7 +234,7 @@ services:
       - internal-net
       - shared-proxy
 
-  # --- 4. 管理系（完全維持） ---
+  # --- 管理 ---
   mail-forwarder:
     image: boky/postfix
     container_name: mail-forwarder
