@@ -1,231 +1,166 @@
 /* eslint-disable @next/next/no-img-element */
+// @ts-nocheck
 
-import React from 'react';
-import { Metadata } from 'next';
-import Link from 'next/link';
+import Link from 'next/link'
 
-import styles from './Ranking.module.css';
+import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard'
+import ProductCard from '@/shared/components/organisms/cards/ProductCard'
+import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats'
 
-import { transformProducts } from '@/shared/lib/domain/product/transform';
-import ProductCard from '@/shared/components/organisms/cards/ProductCard';
-import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard';
+export const dynamic = 'force-dynamic'
 
-/** 🔥 API */
-const API =
-  process.env.API_INTERNAL_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  'http://django-v3:8000';
-
-/** 🔥 設定 */
-const RANKING_CONFIG: Record<string, any> = {
-  score: {
-    title: "PC総合ランキング",
-    description: "迷ったらこれ。失敗しないPCランキング",
-    heroTitle: "迷ったらこれを選べばOK",
-    heroSub: "性能・価格・用途のバランス最強"
-  },
-
-  gaming: {
-    title: "ゲーミングPCおすすめ",
-    description: "FPS・高負荷ゲームも快適",
-    heroTitle: "ゲームするならこの構成",
-    heroSub: "フレームレート重視"
-  },
-
-  "price-low": {
-    title: "安いPCランキング",
-    description: "コスパ重視で選ぶならこれ",
-    heroTitle: "安くても後悔しない構成",
-    heroSub: "最低限＋快適ライン"
-  },
-
-  business: {
-    title: "ビジネスPCランキング",
-    description: "仕事効率が上がるPC",
-    heroTitle: "仕事でストレスを減らす",
-    heroSub: "軽さ・安定性重視"
-  },
-
-  // 🔥 GPU
-  "gpu-rtx-4060": {
-    title: "RTX4060搭載PCランキング",
-    description: "コスパ最強GPUで選ぶならこれ",
-    heroTitle: "迷ったらRTX4060",
-    heroSub: "性能と価格のバランス最強"
-  },
-
-  "gpu-rtx-4070": {
-    title: "RTX4070搭載PCランキング",
-    description: "高性能ゲーミングPC",
-    heroTitle: "ワンランク上ならRTX4070",
-    heroSub: "重いゲームも快適"
-  },
-
-  "gpu-high": {
-    title: "ハイエンドPCランキング",
-    description: "RTX4080以上の最強構成",
-    heroTitle: "妥協しない最強スペック",
-    heroSub: "価格より性能重視"
-  },
-
-  // 🔥 メーカー（追加）
-  "maker-asus": {
-    title: "ASUS PCランキング",
-    description: "ASUS製PCのおすすめランキング",
-    heroTitle: "ASUSで選ぶならこれ",
-    heroSub: "品質と性能のバランスが強い"
-  },
-
-  "maker-dell": {
-    title: "Dell PCランキング",
-    description: "Dell製PCのおすすめランキング",
-    heroTitle: "DellならこれでOK",
-    heroSub: "安定性とコスパ重視"
-  },
-
-  "maker-hp": {
-    title: "HP PCランキング",
-    description: "HP製PCのおすすめランキング",
-    heroTitle: "HPの鉄板構成",
-    heroSub: "ビジネスからゲーミングまで対応"
-  },
-
-  "maker-lenovo": {
-    title: "Lenovo PCランキング",
-    description: "Lenovo製PCのおすすめランキング",
-    heroTitle: "Lenovoで選ぶならこれ",
-    heroSub: "コスパと信頼性が強い"
-  },
-};
-
-interface PageProps {
-  params: { type: string };
-}
-
-/** 🔥 metadata */
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const config = RANKING_CONFIG[params.type] || RANKING_CONFIG.score;
-
-  return {
-    title: config.title,
-    description: config.description,
-  };
-}
-
-/** 🔥 本体 */
-export default async function RankingPage({ params }: PageProps) {
-
-  const type = params.type || "score";
-  const config = RANKING_CONFIG[type] || RANKING_CONFIG.score;
-
-  let products: any[] = [];
-
+// -------------------------
+// 安全fetch
+// -------------------------
+async function safeFetch(fetcher: any, args: any[], fallback: any) {
   try {
-    const res = await fetch(
-      `${API}/api/products/ranking/?type=${type}`,
-      { cache: "no-store" }
-    );
-
-    if (res.ok) {
-      const raw = await res.json();
-      products = transformProducts(raw);
-    }
+    const data = await fetcher(...args)
+    return data ?? fallback
   } catch {
-    // noop
+    return fallback
   }
+}
+
+// -------------------------
+// タイトル変換
+// -------------------------
+function getTitle(type: string) {
+  if (type === 'light') return '普段使い向けランキング'
+  if (type === 'work') return '仕事・クリエイティブ向けランキング'
+  if (type === 'gaming') return 'ゲーミングPCランキング'
+  if (type === 'score') return '総合ランキング'
+  return 'PCランキング'
+}
+
+// -------------------------
+// ページ本体
+// -------------------------
+export default async function RankingPage({ params }: any) {
+  const type = params.type
+  const host = "bicstation.com"
+
+  const data = await safeFetch(fetchPCProductRanking, [type, host], [])
+
+  const products =
+    Array.isArray(data)
+      ? data
+      : Array.isArray(data?.results)
+      ? data.results
+      : []
 
   if (!products.length) {
     return (
-      <main className={styles.container}>
-        <div className={styles.noData}>
-          データが見つかりませんでした
-        </div>
-
-        {/* 🔗 フォールバック導線 */}
-        <section className={styles.links}>
-          <h3>他のランキングを見る</h3>
-          <div className={styles.linkGrid}>
-            <Link href="/ranking/score">総合</Link>
-            <Link href="/ranking/gaming">ゲーミング</Link>
-          </div>
-        </section>
-      </main>
-    );
+      <div className="p-10 text-center text-gray-400">
+        ⚠️ データ取得中 or 商品がありません
+      </div>
+    )
   }
 
-  const hero = products[0];
-  const list = products.slice(1);
+  const top1 = products[0]
+  const others = products.slice(1, 6)
 
   return (
-    <main className={styles.container}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-800 text-white px-4 py-8">
 
-      {/* 🔥 HERO */}
-      <section className={styles.heroText}>
-        <h1>{config.heroTitle}</h1>
-        <p>{config.heroSub}</p>
+      <div className="max-w-3xl mx-auto">
 
-        {/* 🔥 件数表示（地味に効く） */}
-        <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '6px' }}>
-          {products.length}件から厳選
-        </div>
-      </section>
+        {/* =========================
+          🔥 ナビ
+        ========================= */}
+        <section className="flex gap-3 mb-6 overflow-x-auto text-sm">
+          <Link href="/ranking/score" className="px-3 py-1 bg-white/10 rounded">🏆 総合</Link>
+          <Link href="/ranking/gaming" className="px-3 py-1 bg-white/10 rounded">🎮 ゲーミング</Link>
+          <Link href="/ranking/price-low" className="px-3 py-1 bg-white/10 rounded">💰 コスパ</Link>
+          <Link href="/ranking/gpu-rtx-4060" className="px-3 py-1 bg-white/10 rounded">⚡ RTX4060</Link>
+        </section>
 
-      {/* 🏆 1位 */}
-      {hero && (
-        <div className={styles.heroCardWrapper}>
-          <HeroRankingCard product={hero} />
-        </div>
-      )}
+        {/* =========================
+          🔥 タイトル
+        ========================= */}
+        <section className="mb-6 text-center">
+          <h1 className="text-2xl font-bold mb-2">
+            {getTitle(type)}
+          </h1>
+          <p className="text-gray-400 text-sm">
+            今選ばれている最適な構成をランキング形式で紹介
+          </p>
+        </section>
 
-      {/* 📊 一覧 */}
-      <div className={styles.grid}>
-        {list.map((product: any) => (
-          <ProductCard
-            key={product.unique_id}
-            product={product}
-          />
-        ))}
+        {/* =========================
+          🥇 1位（ヒーロー）
+        ========================= */}
+        <section className="mb-8">
+          <HeroRankingCard product={top1} />
+        </section>
+
+        {/* =========================
+          🔥 CTA（超重要）
+        ========================= */}
+        {top1?.url && (
+          <div className="mb-10 text-center">
+            <a
+              href={top1.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-4 rounded-xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 hover:opacity-90 transition"
+            >
+              👉 このPCでOKか確認する
+            </a>
+            <div className="text-xs text-gray-500 mt-2">
+              在庫切れになることがあります
+            </div>
+          </div>
+        )}
+
+        {/* =========================
+          🥈 2位以下
+        ========================= */}
+        <section className="mb-10">
+          <h3 className="mb-4 font-semibold text-lg">
+            他の人気モデル
+          </h3>
+
+          <div className="grid gap-4">
+            {others.map((p: any) => (
+              <ProductCard key={p.unique_id || p.id} product={p} />
+            ))}
+          </div>
+        </section>
+
+        {/* =========================
+          🔥 診断導線
+        ========================= */}
+        <section className="mb-10">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+
+            <h2 className="font-bold mb-2">
+              迷っているなら診断で決める
+            </h2>
+
+            <p className="text-sm text-gray-400 mb-4">
+              質問に答えるだけで最適な1台がわかる
+            </p>
+
+            <Link
+              href="/pc-finder"
+              className="inline-block bg-green-500 text-black font-bold px-6 py-3 rounded-lg hover:opacity-90"
+            >
+              👉 無料で診断する
+            </Link>
+
+          </div>
+        </section>
+
+        {/* =========================
+          🔥 下部ナビ
+        ========================= */}
+        <section className="text-center">
+          <Link href="/ranking" className="text-green-400 underline">
+            → すべてのランキングを見る
+          </Link>
+        </section>
+
       </div>
-
-      {/* 🔥 GPU導線 */}
-      {type.includes("gpu") && (
-        <section className={styles.links}>
-          <h3>他のGPUも比較する</h3>
-
-          <div className={styles.linkGrid}>
-            <Link href="/ranking/gpu-rtx-4060">RTX4060</Link>
-            <Link href="/ranking/gpu-rtx-4070">RTX4070</Link>
-            <Link href="/ranking/gpu-high">ハイエンド</Link>
-          </div>
-        </section>
-      )}
-
-      {/* 🔥 メーカー導線 */}
-      {type.includes("maker") && (
-        <section className={styles.links}>
-          <h3>他のメーカーも比較</h3>
-
-          <div className={styles.linkGrid}>
-            <Link href="/ranking/maker-asus">ASUS</Link>
-            <Link href="/ranking/maker-dell">Dell</Link>
-            <Link href="/ranking/maker-hp">HP</Link>
-            <Link href="/ranking/maker-lenovo">Lenovo</Link>
-          </div>
-        </section>
-      )}
-
-      {/* 🔗 基本カテゴリ */}
-      <section className={styles.links}>
-        <h3>カテゴリ別ランキング</h3>
-
-        <div className={styles.linkGrid}>
-          <Link href="/ranking/score">総合</Link>
-          <Link href="/ranking/gaming">ゲーミング</Link>
-          <Link href="/ranking/price-low">コスパ</Link>
-          <Link href="/ranking/business">ビジネス</Link>
-        </div>
-      </section>
-
-    </main>
-  );
+    </div>
+  )
 }

@@ -1,17 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 
-import React from 'react';
-import { Metadata } from 'next';
-import Link from 'next/link';
-import styles from './Ranking.module.css';
+import React from 'react'
+import { Metadata } from 'next'
+import Link from 'next/link'
 
-/** 🔥 SEO */
 export const metadata: Metadata = {
   title: "PCランキング一覧｜用途・GPU・メーカー別",
   description: "目的・GPU・メーカー別にPCランキングを比較。失敗しない選び方ができます。",
-};
+}
 
-/** 🔥 カテゴリ */
 const CATEGORY_GROUPS = [
   {
     title: "🏆 まずはここから",
@@ -38,7 +35,6 @@ const CATEGORY_GROUPS = [
       },
     ],
   },
-
   {
     title: "⚡ GPUで選ぶ",
     items: [
@@ -59,7 +55,6 @@ const CATEGORY_GROUPS = [
       },
     ],
   },
-
   {
     title: "🏢 メーカーで選ぶ",
     items: [
@@ -85,49 +80,93 @@ const CATEGORY_GROUPS = [
       },
     ],
   },
-];
+]
 
 export default function RankingIndexPage() {
   return (
-    <main className={styles.container}>
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-800 text-white px-6 py-10">
 
-      {/* 🔥 HERO */}
-      <section className={styles.heroText}>
-        <h1>目的別にPCを選ぶ</h1>
-        <p>用途・GPU・メーカーから選ぶのが最短ルートです</p>
-      </section>
+      <div className="max-w-3xl mx-auto">
 
-      {/* 🔥 セクションごとに表示 */}
-      {CATEGORY_GROUPS.map((group) => (
-        <section key={group.title} className={styles.section}>
-          
-          <h2 className={styles.sectionTitle}>
-            {group.title}
-          </h2>
+        {/* =========================
+          HERO
+        ========================= */}
+        <section className="text-center mb-10">
+          <h1 className="text-3xl font-bold mb-3">
+            PCランキング一覧
+          </h1>
+          <p className="text-gray-400">
+            用途・性能・メーカーから最適な1台を選べます
+          </p>
+        </section>
 
-          <div className={styles.grid}>
-            {group.items.map((cat) => (
-              <Link
-                key={cat.href}
-                href={cat.href}
-                className={styles.categoryCard}
-              >
-                <h3>{cat.title}</h3>
-                <p>{cat.desc}</p>
-              </Link>
-            ))}
+        {/* =========================
+          🔥 最強導線（重要）
+        ========================= */}
+        <section className="mb-10">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6 text-center">
+
+            <div className="text-lg font-semibold mb-2">
+              👉 迷っているなら
+            </div>
+
+            <Link
+              href="/pc-finder"
+              className="block bg-green-500 text-black font-bold py-3 rounded-lg mt-3 hover:opacity-90 transition"
+            >
+              3問で最適なPCを診断する
+            </Link>
+
           </div>
+        </section>
+
+        {/* =========================
+          カテゴリ
+        ========================= */}
+        {CATEGORY_GROUPS.map((group) => (
+          <section key={group.title} className="mb-10">
+
+            <h2 className="text-xl font-bold mb-4">
+              {group.title}
+            </h2>
+
+            <div className="grid gap-4">
+
+              {group.items.map((cat) => (
+                <Link
+                  key={cat.href}
+                  href={cat.href}
+                  className="block p-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:scale-[1.02] transition"
+                >
+                  <div className="font-semibold mb-1">
+                    {cat.title}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {cat.desc}
+                  </div>
+                </Link>
+              ))}
+
+            </div>
+
+          </section>
+        ))}
+
+        {/* =========================
+          CTA
+        ========================= */}
+        <section className="text-center mt-10">
+
+          <Link
+            href="/ranking/score"
+            className="text-green-400 underline"
+          >
+            → 迷ったら総合ランキングを見る
+          </Link>
 
         </section>
-      ))}
 
-      {/* 🔥 回遊CTA */}
-      <section className={styles.bottomCta}>
-        <Link href="/ranking/score">
-          → 迷ったら総合ランキングを見る
-        </Link>
-      </section>
-
+      </div>
     </main>
-  );
+  )
 }
