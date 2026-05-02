@@ -17,7 +17,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # 🔐 セキュリティ設定
 # ==========================================================
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-change-me')
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+# DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = True
 
 # ==========================================================
 # 🌐 ホスト設定

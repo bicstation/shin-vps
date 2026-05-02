@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v5（ENV安全強化版）
+# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v6（完全安定版）
 # ==============================================================================
 
 set -e
@@ -36,55 +36,82 @@ DEPLOY=false
 
 show_help() {
 echo ""
-echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v5"
+echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v6"
 echo "------------------------------------------------------"
-echo "Usage:"
-echo "  ./rebuild.sh [SERVICE] [OPTIONS]"
+
 echo ""
-echo "Services:"
-echo "  django, db, traefik, bicstation, tiper, saving, avflash"
-echo ""
-echo "Environment:"
-echo "  --local       ローカル環境"
-echo "  --prod        本番環境"
-echo ""
-echo "Build:"
-echo "  --no-cache    キャッシュ無し"
-echo "  --clean       フルクリーン（⚠️危険）"
-echo ""
-echo "Execution:"
-echo "  --down        停止"
-echo "  --build-only  ビルドのみ"
-echo "  --up-only     起動のみ"
-echo "  --restart     再起動"
-echo ""
-echo "Utility:"
-echo "  --status      ヘルスチェック"
-echo "  --reset-db    DB初期化（⚠️全削除）"
-echo "  --deploy      本番デプロイ（CI用）"
-echo ""
-echo "Debug:"
-echo "  --logs        ログ表示"
-echo "  --shell       Djangoシェル"
-echo ""
-echo "⚠️ ENV CHANGE RULE（超重要）"
-echo "  .env.local / .env.production を変更した場合："
-echo "  必ず再ビルドが必要"
-echo ""
-echo "  Example:"
-echo "    ./rebuild.sh --local"
-echo "    ./rebuild.sh --prod"
-echo ""
-echo "  理由:"
-echo "    Next.jsはビルド時にenvを固定するため"
-echo ""
-echo "Examples:"
+echo "📌 基本操作（まずこれ）"
+echo "------------------------------------------------------"
+echo "起動（ローカル）:"
 echo "  ./rebuild.sh --local"
-echo "  ./rebuild.sh bicstation --local"
+echo ""
+echo "起動（本番）:"
+echo "  ./rebuild.sh --prod"
+echo ""
+echo "状態確認:"
 echo "  ./rebuild.sh --status"
+echo ""
+
+echo ""
+echo "🔄 DBリセット（トラブル時）"
+echo "------------------------------------------------------"
+echo "完全リセット（⚠️全削除）:"
 echo "  ./rebuild.sh --reset-db --local"
+echo ""
+echo "→ 実行後に必ず:"
+echo "  ./rebuild.sh --local"
+echo ""
+
+echo ""
+echo "🚀 デプロイ（本番）"
+echo "------------------------------------------------------"
 echo "  ./rebuild.sh --deploy --prod"
 echo ""
+
+echo ""
+echo "🔧 開発用操作"
+echo "------------------------------------------------------"
+echo "ビルドのみ:"
+echo "  ./rebuild.sh --build-only --local"
+echo ""
+echo "再起動:"
+echo "  ./rebuild.sh --restart"
+echo ""
+echo "ログ確認:"
+echo "  ./rebuild.sh --logs"
+echo ""
+
+echo ""
+echo "⚠️ ENV変更ルール（超重要）"
+echo "------------------------------------------------------"
+echo ".env.local / .env.production を変更した場合:"
+echo "  必ず再ビルドしてください"
+echo ""
+echo "理由:"
+echo "  Next.jsはビルド時にENVを固定するため"
+echo ""
+
+echo ""
+echo "🚨 よくあるトラブルと対処"
+echo "------------------------------------------------------"
+echo "① APIが空（データ0件）"
+echo "  → DBリセット後に再インポート"
+echo ""
+echo "② migrateエラー"
+echo "  → --reset-db 実行"
+echo ""
+echo "③ 画面が更新されない"
+echo "  → --no-cache でビルド"
+echo ""
+
+echo ""
+echo "💡 Tips"
+echo "------------------------------------------------------"
+echo "・迷ったらまず --local で再起動"
+echo "・エラーは無視せず必ず確認"
+echo "・DB系は基本リセットが最速"
+echo ""
+
 exit 0
 }
 
@@ -137,7 +164,7 @@ echo "🌍 ENV: $ENV_TYPE"
 echo "📄 COMPOSE: $COMPOSE_FILE"
 
 # ------------------------------------------------------------------------------
-# ■ ENVチェック（追加）
+# ■ ENVチェック
 # ------------------------------------------------------------------------------
 
 echo "🔍 ENV CHECK"
@@ -151,20 +178,16 @@ fi
 # ------------------------------------------------------------------------------
 
 if [ "$STATUS" = true ]; then
-echo "📊 SERVICE STATUS"
 docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
-echo ""
-echo "🌐 NETWORK"
-docker network ls | grep $NETWORK_NAME || echo "❌ network not found"
 exit 0
 fi
 
 # ------------------------------------------------------------------------------
-# ■ RESET DB
+# ■ RESET DB（安全版）
 # ------------------------------------------------------------------------------
 
 if [ "$RESET_DB" = true ]; then
-echo "⚠️ WARNING: 全DB削除されます"
+echo "⚠️ WARNING: DB完全削除されます"
 read -p "Type 'YES' to continue: " confirm
 if [ "$confirm" != "YES" ]; then
 echo "❌ Canceled"
@@ -173,7 +196,6 @@ fi
 
 echo "🔥 Resetting DB..."
 docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" down -v
-docker volume prune -f
 echo "✅ DB RESET COMPLETE"
 exit 0
 fi
@@ -184,9 +206,14 @@ fi
 
 if [ "$DEPLOY" = true ]; then
 echo "🚀 DEPLOY MODE"
+
 docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --build --remove-orphans
+
 sleep 5
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T django$SUFFIX python manage.py migrate --noinput || true
+
+echo "📦 Running migrations..."
+docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T django$SUFFIX python manage.py migrate --noinput
+
 echo "✅ DEPLOY COMPLETE"
 exit 0
 fi
@@ -197,7 +224,7 @@ fi
 
 if [ "$PRUNE" = true ]; then
 echo "🚨 CLEAN BUILD"
-docker system prune -af --volumes
+docker system prune -af
 fi
 
 # ------------------------------------------------------------------------------
@@ -232,11 +259,12 @@ docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d 
 sleep 5
 
 # ------------------------------------------------------------------------------
-# ■ Django migrate
+# ■ MIGRATE（安全版）
 # ------------------------------------------------------------------------------
 
 if docker ps | grep -q "django$SUFFIX"; then
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T django$SUFFIX python manage.py migrate --noinput || true
+echo "📦 Running migrations..."
+docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T django$SUFFIX python manage.py migrate --noinput
 fi
 
 # ------------------------------------------------------------------------------
