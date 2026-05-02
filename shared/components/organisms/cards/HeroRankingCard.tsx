@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import styles from './HeroRankingCard.module.css';
+import { getMediaUrl } from '@/shared/lib/utils/media';
 
 type Product = {
   id: number;
@@ -16,12 +17,13 @@ export default function HeroRankingCard({ product }: { product?: Product }) {
   if (!product) return null;
 
   const title = product.shortTitle || product.title || 'おすすめ商品';
+
   const price =
     typeof product.price === 'number'
       ? product.price.toLocaleString()
       : '---';
 
-  const image = product?.image || '/no-image.png';
+  const image = getMediaUrl(product.image);
 
   return (
     <section className={styles.card}>

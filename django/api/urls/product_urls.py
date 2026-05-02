@@ -6,6 +6,7 @@ from api.views.product_view import (
     get_product_detail,
     get_related_products,
     diagnose_pc,
+    ProductByUIDView,  # ← これ追加
 )
 
 urlpatterns = [
@@ -14,6 +15,9 @@ urlpatterns = [
     path('related/<str:unique_id>/', get_related_products),
     path('diagnose/', diagnose_pc),
 
-    # 🔥 最後にキャッチオール
-    path('<str:unique_id>/', get_product_detail),
+    # 👇 これを先に
+    path("by-uid/<str:unique_id>/", ProductByUIDView.as_view()),
+
+    # 👇 一番最後（キャッチオール）
+    path('detail/<str:unique_id>/', get_product_detail),    
 ]

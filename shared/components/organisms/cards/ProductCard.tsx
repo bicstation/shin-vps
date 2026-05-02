@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import styles from './ProductCard.module.css';
+import { getMediaUrl } from '@/shared/lib/utils/media';
 
 type Product = {
   id: number;
@@ -24,7 +25,8 @@ export default function ProductCard({ product }: { product?: Product }) {
     ? `¥${product.price.toLocaleString()}`
     : '';
 
-  const image = product.image || '/no-image.png';
+  // 🔥 共通ロジックに統一
+  const image = getMediaUrl(product.image);
 
   return (
     <Link

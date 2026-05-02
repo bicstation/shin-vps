@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 API Main Routing Configuration
-Path: /home/maya/dev/shin-vps/django/api/urls/__init__.py
-
-This file aggregates all domain-specific URL patterns into the central API routing.
-It also provides root navigation and system health check endpoints.
 """
 
 from django.urls import path, include
 from django.http import HttpResponse
+
 from api.views import api_root, status_check
 
-# 💡 ネームスペースのルートを 'api' に設定
-app_name = 'api'
+# ✅ モジュールを直接import（ここ重要）
+from api.urls import product_urls
 
 urlpatterns = [
     # ==========================================================
@@ -40,7 +37,8 @@ urlpatterns = [
     # ==========================================================
     # 4. 🛍️ 統合プロダクト（★最重要）
     # ==========================================================
-    path('products/', include('api.urls.product_urls')),
+    # ❗ 文字列ではなくモジュール直接指定
+    path('products/', include(product_urls)),
 
     # ==========================================================
     # 5. 📊 データソース系（裏側）

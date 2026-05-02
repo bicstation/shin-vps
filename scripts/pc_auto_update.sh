@@ -1,4 +1,6 @@
 #!/bin/bash
+# /home/maya/shin-dev/shin-vps/scripts/pc_auto_update.sh
+
 set -e  # ❗どこかで失敗したら即停止
 
 # ===============================

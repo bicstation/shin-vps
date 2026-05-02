@@ -31,7 +31,16 @@ export default async function HomePageMain() {
   // const products = transformProducts(rawProducts);
   const products = rawProducts;
 
-  if (!products.length) return null;
+  console.log('RAW:', rawProducts);
+  console.log('PRODUCTS:', products);
+
+  if (!products.length) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        ⚠️ データ取得中 or 商品がありません
+      </div>
+    );
+  }
 
   const top1 = products[0];
   const others = products.slice(1, 3);

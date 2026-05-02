@@ -75,28 +75,22 @@ class ProductSerializer(serializers.ModelSerializer):
     # image（完全安定版）
     # -----------------
     def get_image(self, obj):
-        request = self.context.get("request")
-
         image = None
 
+        # ローカル画像
         if obj.image_local:
             try:
-                image = obj.image_local.url
+                image = obj.image_local.url  # ← 相対パス
             except Exception:
                 image = None
 
+        # フォールバック
         if not image:
             image = obj.image_source or obj.thumbnail_url or "/no-image.jpg"
 
-        # 🔥 絶対URL化（超重要）
-        if image.startswith("/"):
-            if request:
-                return request.build_absolute_uri(image)
-
-            base = getattr(settings, "SITE_URL", "")
-            return f"{base}{image}" if base else image
-
+        # 絶対URL化しない（重要）
         return image
+
 
     # -----------------
     # tags（安定版）
@@ -163,5 +157,4 @@ class ProductSerializer(serializers.ModelSerializer):
             t for t in result
             if not any(x in t.lower() for x in NG_WORDS)
         ]
-
         return result[:3]

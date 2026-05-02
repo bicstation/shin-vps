@@ -1,272 +1,177 @@
-# -*- coding: utf-8 -*-
 # =====================================================================
-# 🛡️ SHIN-VPS v5.4 [Local Development Optimized Edition]
+# 🛡️ SHIN-VPS v8 [Local Stable - FINAL FIXED]
+# =====================================================================
+# ■ ローカル基準（完全版）
+# ・/api → Django
+# ・それ以外 → Next
+# ・envは build + runtime 両方に適用（最重要）
 # =====================================================================
 
 services:
-  # --- 0. Traefik (管制塔) ---
+
+  # -------------------------
+  # 0. Traefik
+  # -------------------------
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy-v3
     restart: always
+
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
-      - "--accesslog=true"
+
     ports:
-      - "8083:80"        # API / Frontend 内部ゲートウェイ
-      - "8085:8080"      # Traefik ダッシュボード
+      - "8083:80"
+      - "8085:8080"
+
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
     networks:
       - shared-proxy
 
-  # --- 1. データベース層 ---
+  # -------------------------
+  # 1. PostgreSQL
+  # -------------------------
   postgres-db-v3:
     image: postgres:15-alpine
     container_name: postgres-db-v3
     restart: always
+
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+
     volumes:
-      - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+
     networks:
       - internal-net
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # --- 2. バックエンド層 (Django) ---
+    shm_size: 256mb
+
+  # -------------------------
+  # 2. Django（API）
+  # -------------------------
   django-v3:
     build:
       context: .
       dockerfile: ./django/Dockerfile
     container_name: django-v3
     restart: always
-    command: gunicorn tiper_api.wsgi:application --bind 0.0.0.0:8000 --workers 5 --threads 2 --worker-class gthread --timeout 120 --max-requests 1000
+
     depends_on:
       postgres-db-v3:
         condition: service_healthy
-    env_file: .env.local
-    environment:
-      - WP_USER=${WP_USER}
-      - WP_APP_PASSWORD=${WP_APP_PASSWORD}
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.django-api.rule=(Host(`api-saving-host`, `api-bicstation-host`, `api-tiper-host`, `api-avflash-host`) || HostRegexp(`{subdomain:api-.*}`, `api.tiper.live`, `api.bicstation.com`, `api.avflash.xyz`, `api.bic-saving.com`) || PathPrefix(`/api`, `/admin`, `/static`))"
 
-      - "traefik.http.routers.django-api.priority=6000"
-      - "traefik.http.routers.django-api.service=django-svc"
-      - "traefik.http.services.django-svc.loadbalancer.server.port=8000"
-      - "traefik.http.routers.django.rule=PathPrefix(`/api`)"
-      - "traefik.http.services.django.loadbalancer.server.port=8000"
-    extra_hosts:
-      - "ai-tiper-host:host-gateway"
-      - "ai-bicstation-host:host-gateway"
-      - "ai-saving-host:host-gateway"
-      - "ai-avflash-host:host-gateway"
+    env_file:
+      - .env.local
+
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      gunicorn tiper_api.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 3
+      "
+
     volumes:
       - ./django:/usr/src/app
-      - ${DATA_ROOT}/django_static:/usr/src/app/staticfiles
+      - ./django/media:/usr/src/app/media
+
     networks:
       - internal-net
       - shared-proxy
 
-  nginx-media:
-    image: nginx:alpine
-    container_name: nginx-media-local
-    restart: always
-    volumes:
-      - ./django/media:/usr/src/app/media
-      - ./nginx/media.conf:/etc/nginx/conf.d/default.conf
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
+      - "traefik.http.routers.django.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.django.priority=100"
+      - "traefik.http.services.django.loadbalancer.server.port=8000"
 
-      # 🔥 ローカル用（超重要）
-      - "traefik.http.routers.media-router.rule=HostRegexp(`{host:.+}`) && PathPrefix(`/media/`)"
-      
-      - "traefik.http.routers.media-router.entrypoints=web"
-      - "traefik.http.routers.media-router.priority=30000"
-      - "traefik.http.routers.media-router.service=media-svc"
-      - "traefik.http.services.media-svc.loadbalancer.server.port=80"
+  # -------------------------
+  # 3. Media
+  # -------------------------
+  nginx-media:
+    image: nginx:alpine
+    container_name: nginx-media
+    restart: always
+
+    volumes:
+      - ./django/media:/usr/src/app/media
+      - ./nginx/media.conf:/etc/nginx/conf.d/default.conf
+
     networks:
       - shared-proxy
 
-  # --- 3. フロントエンド層 (Next.js 艦隊) ---
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.media.rule=PathPrefix(`/media/`)"
+      - "traefik.http.services.media.loadbalancer.server.port=80"
 
-  # 🏠 Bic Station
+  # -------------------------
+  # 4. Front（Next.js）
+  # -------------------------
   next-bicstation-v3:
     build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
       args:
         PROJECT_NAME: next-bicstation
+
+        # 🔥 最重要（これがないとCSR壊れる）
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        INTERNAL_API_URL: ${INTERNAL_API_URL}
+
     container_name: next-bicstation-v3
     restart: always
-    env_file: .env.local
+
+    # runtime env（SSR用）
+    env_file:
+      - .env.local
+
     environment:
-      - PROJECT_NAME=next-bicstation
       - NEXT_PUBLIC_SITE_DOMAIN=bicstation
-      - NEXT_PUBLIC_API_URL=http://localhost:8083/api
-      - INTERNAL_API_URL=http://django-v3:8000
-    extra_hosts:
-      - "api-bicstation-host:host-gateway"
-      - "ai-bicstation-host:host-gateway"
-      - "host.docker.internal:host-gateway"
+
     volumes:
       - ./next-bicstation:/usr/src/app
       - ./shared:/usr/src/app/shared
       - /usr/src/app/node_modules
+
     networks:
-      - shared-proxy
       - internal-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.bic-router.rule=Host(`bicstation-host`, `bicstation.com`) && !PathPrefix(`/media/`)"
-      - "traefik.http.routers.bic-router.priority=2000"
-      - "traefik.http.services.bic-svc.loadbalancer.server.port=3000"
-
-  # 🏠 Bic Saving (節約)
-  next-bic-saving-v3:
-    build:
-      context: .
-      dockerfile: ./shared/docker/NextJS.Dockerfile
-      args:
-        PROJECT_NAME: next-bic-saving
-    container_name: next-bic-saving-v3
-    restart: always
-    env_file: .env.local
-    environment:
-      - PROJECT_NAME=next-bic-saving
-      - NEXT_PUBLIC_SITE_DOMAIN=saving
-      - NEXT_PUBLIC_API_URL=http://localhost:8083/api
-      - INTERNAL_API_URL=http://django-v3:8000
-    extra_hosts:
-      - "api-saving-host:host-gateway"
-      - "ai-saving-host:host-gateway"
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./next-bic-saving:/usr/src/app
-      - ./shared:/usr/src/app/shared
-      - /usr/src/app/node_modules
-    networks:
       - shared-proxy
-      - internal-net
+
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.saving-router.rule=Host(`saving-host`, `bic-saving.com`) && !PathPrefix(`/media/`)"
-      - "traefik.http.routers.saving-router.priority=2000"
-      - "traefik.http.services.saving-svc.loadbalancer.server.port=3000"
+      - "traefik.http.routers.front.rule=!PathPrefix(`/api`)"
+      - "traefik.http.routers.front.priority=1"
+      - "traefik.http.services.front.loadbalancer.server.port=3000"
 
-  # 🏠 Tiper (ポータル)
-  next-tiper-v3:
-    build:
-      context: .
-      dockerfile: ./shared/docker/NextJS.Dockerfile
-      args:
-        PROJECT_NAME: next-tiper
-    container_name: next-tiper-v3
-    restart: always
-    env_file: .env.local
-    environment:
-      - PROJECT_NAME=next-tiper
-      - NEXT_PUBLIC_SITE_DOMAIN=tiper
-      - NEXT_PUBLIC_API_URL=http://localhost:8083/api
-      - INTERNAL_API_URL=http://django-v3:8000
-    extra_hosts:
-      - "api-tiper-host:host-gateway"
-      - "ai-tiper-host:host-gateway"
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./next-tiper:/usr/src/app
-      - ./shared:/usr/src/app/shared
-      - /usr/src/app/node_modules
-    networks:
-      - shared-proxy
-      - internal-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.tiper-router.rule=Host(`tiper-host`, `tiper.live`) && !PathPrefix(`/media/`)"
-      - "traefik.http.routers.tiper-router.priority=2000"
-      - "traefik.http.services.tiper-svc.loadbalancer.server.port=3000"
+# -------------------------
+# volumes
+# -------------------------
+volumes:
+  postgres_data:
 
-  # 🏠 AV Flash (アダルト)
-  next-avflash-v3:
-    build:
-      context: .
-      dockerfile: ./shared/docker/NextJS.Dockerfile
-      args:
-        PROJECT_NAME: next-avflash
-    container_name: next-avflash-v3
-    restart: always
-    env_file: .env.local
-    environment:
-      - PROJECT_NAME=next-avflash
-      - NEXT_PUBLIC_SITE_DOMAIN=avflash
-      - NEXT_PUBLIC_API_URL=http://localhost:8083/api
-      - INTERNAL_API_URL=http://django-v3:8000
-    extra_hosts:
-      - "api-avflash-host:host-gateway"
-      - "ai-avflash-host:host-gateway"
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ./next-avflash:/usr/src/app
-      - ./shared:/usr/src/app/shared
-      - /usr/src/app/node_modules
-    networks:
-      - shared-proxy
-      - internal-net
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.avflash-router.rule=Host(`avflash-host`, `avflash.xyz`) && !PathPrefix(`/media/`)"
-      - "traefik.http.routers.avflash-router.priority=2000"
-      - "traefik.http.services.avflash-svc.loadbalancer.server.port=3000"
-
-  # --- 4. 管理・監視ツール ---
-  dozzle-v3:
-    image: amir20/dozzle:latest
-    container_name: dozzle-v3
-    restart: always
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    networks:
-      - shared-proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.dozzle-router.rule=Host(`log-host`)"
-      - "traefik.http.services.dozzle-svc.loadbalancer.server.port=8080"
-  
-  # --- 5. AI画像生成 (ComfyUI) ---
-  # comfyui:
-  #   build:
-  #     context: ./ai/ComfyUI
-  #   # container_name: comfyui-v3
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8188:8188"
-  #   volumes:
-  #     # - ./ai/ComfyUI:/root/ComfyUI
-  #     - ./ai/ComfyUI/models:/root/ComfyUI/models
-  #   networks:
-  #     - internal-net
-
+# -------------------------
+# networks
+# -------------------------
 networks:
   internal-net:
-    name: "shin-vps_internal-net"
     driver: bridge
+
   shared-proxy:
     external: true
-    name: "shared-proxy"

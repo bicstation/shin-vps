@@ -1,280 +1,222 @@
-/* eslint-disable @next/next/no-img-element */
-// @ts-nocheck
+'use client'
 
-'use client';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { trackEvent } from '@/shared/lib/track';
+// ==============================
+// ■ 型
+// ==============================
+type Product = {
+  id: number
+  unique_id: string
+  title: string
+  price: number
+  tags: string[]
+  ranking_score: number
+}
 
-export default function PCFinderClient() {
+// ==============================
+// ■ 質問
+// ==============================
+const QUESTIONS = [
+  {
+    id: 'use',
+    title: '何に使いますか？',
+    options: [
+      { label: '普段使い', value: 'light' },
+      { label: '仕事', value: 'work' },
+      { label: '動画編集・ゲーム', value: 'heavy' },
+    ],
+  },
+  {
+    id: 'level',
+    title: 'どのくらい使いますか？',
+    options: [
+      { label: '軽い（ネット・動画）', value: 'low' },
+      { label: '普通（仕事・複数作業）', value: 'mid' },
+      { label: '重い（編集・ゲーム）', value: 'high' },
+    ],
+  },
+  {
+    id: 'priority',
+    title: '何を重視しますか？',
+    options: [
+      { label: '価格重視', value: 'price' },
+      { label: 'バランス', value: 'balance' },
+      { label: '性能重視', value: 'performance' },
+    ],
+  },
+]
 
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [alternatives, setAlternatives] = useState([]);
-  const [error, setError] = useState(false);
+// ==============================
+// ■ スコア
+// ==============================
+function scoreProduct(product: Product, answers: any) {
+  let score = 0
 
-  const API =
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:8083';
+  if (answers.use === 'light' && product.tags.includes('普段使い快適')) score += 3
+  if (answers.use === 'work' && product.tags.includes('複数作業OK')) score += 3
+  if (answers.use === 'heavy' && product.tags.includes('高性能')) score += 3
 
-  /** 🔥 質問 */
-  const questions = [
-    {
-      key: 'purpose',
-      text: 'PCの用途は？',
-      options: [
-        { label: '🎮 ゲーム', value: 'gaming' },
-        { label: '💼 仕事', value: 'business' },
-        { label: '🎬 動画編集', value: 'creative' },
-      ],
-    },
-    {
-      key: 'budget',
-      text: '予算は？',
-      options: [
-        { label: '〜15万円', value: 'low' },
-        { label: '〜30万円', value: 'mid' },
-        { label: '30万円以上', value: 'high' },
-      ],
-    },
-  ];
+  if (answers.level === 'mid' && product.tags.includes('16GB')) score += 2
+  if (answers.level === 'high') score += product.ranking_score * 0.1
 
-  /** 🔥 回答 */
-  const handleAnswer = (key: string, value: string) => {
+  if (answers.priority === 'price' && product.price < 100000) score += 2
+  if (answers.priority === 'performance') score += product.ranking_score * 0.2
 
-    trackEvent('finder_answer', { key, value });
+  return score
+}
 
-    const next = { ...answers, [key]: value };
-    setAnswers(next);
+function getBestProduct(products: Product[], answers: any) {
+  return products
+    .map(p => ({ ...p, score: scoreProduct(p, answers) }))
+    .sort((a, b) => b.score - a.score)[0]
+}
 
-    const nextStep = step + 1;
+// ==============================
+// ■ メイン
+// ==============================
+export default function PCFinderPage() {
+  const router = useRouter()
 
-    if (nextStep < questions.length) {
-      setStep(nextStep);
-    } else {
-      trackEvent('finder_start');
-      runDiagnosis(next);
+  const [step, setStep] = useState(0)
+  const [answers, setAnswers] = useState<any>({})
+  const [result, setResult] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleAnswer = async (value: string) => {
+    if (loading) return
+
+    const key = QUESTIONS[step].id
+    const newAnswers = { ...answers, [key]: value }
+
+    console.log('回答:', newAnswers)
+
+    setAnswers(newAnswers)
+
+    // 次へ
+    if (step < QUESTIONS.length - 1) {
+      setStep(prev => prev + 1)
+      return
     }
-  };
 
-  /** 🔥 診断 */
-  const runDiagnosis = async (answers: any) => {
-
-    trackEvent('finder_diagnose', answers);
-
-    setLoading(true);
-    setError(false);
-
+    // ======================
+    // ■ 最終：結果取得
+    // ======================
     try {
-      const res = await fetch(`${API}/api/products/diagnose/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(answers),
-      });
+      setLoading(true)
 
-      const data = await res.json();
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/ranking/`
+      )
 
-      trackEvent('finder_result', {
-        product_id: data.best?.unique_id,
-        price: data.best?.price,
-      });
+      const products: Product[] = await res.json()
 
-      setResult(data.best);
-      setAlternatives(data.alternatives || []);
+      console.log('products:', products)
 
-    } catch {
-      trackEvent('finder_error');
+      const best = getBestProduct(products, newAnswers)
 
-      // 🔥 ダミー
-      setResult({
-        unique_id: "sample",
-        title: "OMEN 16 ハイパフォーマンスモデル",
-        image: "https://jp.ext.hp.com/content/dam/jp-ext-hp-com/jp/ja/ec/lib/products/personal/omen/omen16/omen16_2023.png",
-        price: 219800,
-        url: "#",
-        reason: "・RTX搭載で最新ゲームも快適・この価格帯で最も性能が高い"
-      });
+      console.log('best:', best)
 
-      setAlternatives([
-        {
-          unique_id: "alt1",
-          shortTitle: "ASUS ゲーミングPC",
-          price: 179800,
-        },
-        {
-          unique_id: "alt2",
-          shortTitle: "HP Pavilion",
-          price: 149800,
-        }
-      ]);
-
-      setError(true);
+      setResult(best)
+    } catch (e) {
+      console.error('ERROR:', e)
+      alert('データ取得に失敗しました')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    setLoading(false);
-  };
+  // ==========================
+  // ■ 結果画面
+  // ==========================
+  if (result) {
+    return (
+      <div style={{ padding: 24, maxWidth: 600, margin: '0 auto' }}>
+        <h2 style={{ fontSize: 22, fontWeight: 'bold' }}>
+          あなたに最適な1台
+        </h2>
 
-  /** 🔁 リセット */
-  const reset = () => {
-    setStep(0);
-    setAnswers({});
-    setResult(null);
-    setAlternatives([]);
-    setLoading(false);
-    setError(false);
-  };
+        <div style={{ marginTop: 12 }}>
+          {result.tags?.slice(0, 3).map((tag, i) => (
+            <span
+              key={i}
+              style={{
+                display: 'inline-block',
+                marginRight: 6,
+                padding: '4px 8px',
+                fontSize: 12,
+                background: '#f3f4f6',
+                borderRadius: 6,
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <h3 style={{ marginTop: 16 }}>{result.title}</h3>
+
+        <p style={{ fontSize: 20, fontWeight: 'bold' }}>
+          ¥{result.price.toLocaleString()}
+        </p>
+
+        <button
+          onClick={() => router.push(`/product/${result.unique_id}`)}
+          style={{
+            marginTop: 16,
+            width: '100%',
+            padding: 14,
+            background: '#2563eb',
+            color: '#fff',
+            borderRadius: 8,
+            fontWeight: 'bold',
+            fontSize: 16,
+          }}
+        >
+          👉 在庫・最安値を見る
+        </button>
+      </div>
+    )
+  }
+
+  // ==========================
+  // ■ 質問画面
+  // ==========================
+  const current = QUESTIONS[step]
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white px-4 py-10">
+    <div style={{ padding: 24, maxWidth: 600, margin: '0 auto' }}>
+      <h2 style={{ fontSize: 20, marginBottom: 20 }}>
+        {current.title}
+      </h2>
 
-      {/* 🔥 タイトル */}
-      <div className="text-center mb-6">
-        <h1 className="text-xl font-bold">
-          もう比較しなくていい
-        </h1>
-        <p className="text-sm text-gray-400">
-          2つの質問で最適な1台が決まります
+      {current.options.map(opt => (
+        <button
+          key={opt.value}
+          onClick={() => handleAnswer(opt.value)}
+          disabled={loading}
+          style={{
+            display: 'block',
+            width: '100%',
+            marginBottom: 12,
+            padding: 14,
+            background: '#f9fafb',
+            borderRadius: 10,
+            textAlign: 'left',
+            cursor: 'pointer',
+            border: '1px solid #e5e7eb',
+          }}
+        >
+          {opt.label}
+        </button>
+      ))}
+
+      {loading && (
+        <p style={{ marginTop: 12, fontSize: 12 }}>
+          診断中...
         </p>
-      </div>
-
-      {/* 🔥 質問 */}
-      {!result && !loading && questions[step] && (
-        <div className="max-w-md mx-auto">
-
-          <p className="mb-4 text-center font-bold">
-            {questions[step].text}
-          </p>
-
-          <div className="grid gap-3">
-            {questions[step].options.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => handleAnswer(questions[step].key, opt.value)}
-                className="bg-cyan-500 text-black py-3 rounded-xl font-bold hover:bg-cyan-400 transition"
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-
-        </div>
       )}
-
-      {/* 🔄 ローディング */}
-      {loading && !result && (
-        <div className="text-center mt-6 text-cyan-400 animate-pulse">
-          最適な構成を選定中...
-        </div>
-      )}
-
-      {/* ⚠️ エラー */}
-      {error && (
-        <div className="text-center text-yellow-400 text-xs mt-2">
-          ※現在デモ表示です
-        </div>
-      )}
-
-      {/* 🔥 結果 */}
-      {result && (
-        <div className="mt-8 max-w-md mx-auto">
-
-          <div className="bg-slate-900 rounded-2xl p-5 border border-cyan-500">
-
-            <p className="text-xs text-cyan-400 text-center font-bold">
-              🔥 あなたに最適なPC
-            </p>
-
-            <h2 className="text-center text-lg font-bold mt-1">
-              {result.title}
-            </h2>
-
-            <img
-              src={result.image}
-              className="w-full max-w-[300px] mx-auto mt-3 rounded-xl"
-            />
-
-            <div className="text-center text-2xl font-bold mt-3">
-              ¥{result.price?.toLocaleString?.()}
-            </div>
-
-            {/* 理由 */}
-            <div className="mt-3 text-sm text-gray-300 text-center">
-              {(result.reason || '').split('・').map((line, i) => (
-                line && <div key={i}>✔ {line}</div>
-              ))}
-            </div>
-
-            <p className="text-center text-xs text-gray-500 mt-3">
-              この条件ならこれ以外を選ぶ理由はありません
-            </p>
-
-            <a
-              href={result.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() =>
-                trackEvent('finder_cta_click', {
-                  product_id: result.unique_id,
-                  price: result.price,
-                })
-              }
-              className="block mt-4 bg-cyan-500 text-black text-center py-3 rounded-xl font-bold hover:bg-cyan-400"
-            >
-              👉 今すぐ在庫と価格を確認する
-            </a>
-
-          </div>
-
-          {/* 🔍 比較 */}
-          {alternatives.length > 0 && (
-            <div className="mt-6">
-
-              <h3 className="text-sm text-gray-400 mb-2 text-center">
-                最後に比較されているモデル
-              </h3>
-
-              <div className="grid gap-3">
-                {alternatives.map((p) => (
-                  <Link
-                    key={p.unique_id}
-                    href={`/product/${p.unique_id}`}
-                    onClick={() =>
-                      trackEvent('finder_alt_click', {
-                        product_id: p.unique_id,
-                      })
-                    }
-                    className="block bg-slate-800 p-3 rounded-lg hover:bg-slate-700"
-                  >
-                    <div className="text-sm font-semibold">
-                      {p.shortTitle}
-                    </div>
-
-                    <div className="text-xs text-gray-400">
-                      ¥{p.price?.toLocaleString?.()}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-
-            </div>
-          )}
-
-          {/* 🔁 再診断 */}
-          <div className="text-center mt-6">
-            <button
-              onClick={reset}
-              className="text-xs text-gray-500"
-            >
-              条件を変えてやり直す
-            </button>
-          </div>
-
-        </div>
-      )}
-
     </div>
-  );
+  )
 }

@@ -1,7 +1,9 @@
+# /home/maya/shin-dev/shin-vps/django/api/views/product_view.py
 from django.db.models import Case, When, Value, IntegerField, Q
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny
 
 from api.models.product import Product
@@ -70,50 +72,66 @@ def get_product_detail(request, unique_id):
 @permission_classes([AllowAny])
 def get_related_products(request, unique_id):
 
-    product = Product.objects.filter(
-        unique_id=unique_id,
-        is_active=True,
-        is_visible=True
-    ).select_related('pc_product').first()
-
-    if not product:
-        return Response([], status=200)
-
-    base = product.pc_product or PCProduct.objects.filter(unique_id=product.external_id).first()
-
-    if not base:
-        return Response([], status=200)
+    limit = min(int(request.GET.get("limit", 4)), 12)
 
     try:
-        price = int(base.price or 0)
-    except Exception:
-        price = 0
+        base = Product.objects.get(
+            unique_id=unique_id,
+            is_active=True,
+            is_visible=True
+        )
+    except Product.DoesNotExist:
+        return Response([])
 
-    if price <= 0:
-        price_min, price_max = 0, 10**12
-    else:
-        price_min, price_max = int(price * 0.7), int(price * 1.3)
+    qs = Product.objects.none()
 
-    qs = PCProduct.objects.filter(
-        price__gte=price_min,
-        price__lte=price_max
-    ).exclude(unique_id=base.unique_id)[:6]
+    # -------------------------
+    # ① genre一致
+    # -------------------------
+    genre = base.genres.first()
+    if genre:
+        qs = Product.objects.filter(
+            is_active=True,
+            is_visible=True,
+            genres=genre
+        ).exclude(unique_id=unique_id)
 
-    data = []
+    # -------------------------
+    # ② price近似
+    # -------------------------
+    if qs.count() < limit:
+        price = base.price or 0
+        if price > 0:
+            qs = Product.objects.filter(
+                is_active=True,
+                is_visible=True,
+                price__gte=int(price * 0.7),
+                price__lte=int(price * 1.3),
+            ).exclude(unique_id=unique_id)
 
-    for p in qs:
-        image = p.image_url or "/static/no-image.png"
+    # -------------------------
+    # ③ fallback（重要）
+    # -------------------------
+    if qs.count() < limit:
+        qs = Product.objects.filter(
+            is_active=True,
+            is_visible=True
+        ).exclude(unique_id=unique_id)
 
-        if image.startswith("/"):
-            image = request.build_absolute_uri(image)
+    qs = qs.order_by("-ranking_score")[:limit]
 
-        data.append({
+    # -------------------------
+    # 軽量レスポンス
+    # -------------------------
+    data = [
+        {
             "unique_id": p.unique_id,
-            "title": p.name or "",
-            "image": image,
+            "title": p.title,
+            "image": p.image_local.url if p.image_local else "/no-image.jpg",
             "price": p.price or 0,
-            "url": p.url or "",
-        })
+        }
+        for p in qs
+    ]
 
     return Response(data)
 
@@ -337,3 +355,16 @@ def diagnose_pc(request):
         "best": best_data,
         "alternatives": alt_data
     })
+
+
+class ProductByUIDView(RetrieveAPIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    queryset = Product.objects.filter(
+        is_active=True,
+        is_visible=True
+    ).select_related('pc_product')
+
+    serializer_class = ProductSerializer
+    lookup_field = "unique_id"

@@ -1,35 +1,50 @@
-// /home/maya/shin-vps/shared/components/organisms/ProductDetail.tsx
-
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import styles from './ProductDetail.module.css';
+import { getMediaUrl } from '@/shared/lib/utils/media';
+import { getApiBase } from '@/shared/lib/config/api';
 
 type Product = {
-  id: number;
   unique_id?: string;
   title?: string;
   image?: string;
   price?: number;
   url?: string;
+  tags?: string[]; // 🔥 修正：文字列配列
 };
 
 export default function ProductDetail({ product }: { product?: Product }) {
+  const [related, setRelated] = useState<Product[]>([]);
 
-  // 🔍 デバッグ（重要）
+  /**
+   * 🔥 関連商品取得
+   */
   useEffect(() => {
-    console.log('=== PRODUCT DETAIL ===');
-    console.log(product);
-    console.log('======================');
-  }, [product]);
+    if (!product?.unique_id) return;
 
-  // ❗ データなし対策
+    const fetchRelated = async () => {
+      try {
+        const base = getApiBase();
+        const res = await fetch(
+          `${base}/products/related/${product.unique_id}/?limit=4`
+        );
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        setRelated(Array.isArray(data) ? data : data?.results || []);
+      } catch {
+        // 無視
+      }
+    };
+
+    fetchRelated();
+  }, [product?.unique_id]);
+
   if (!product) {
-    return (
-      <div className="p-4 text-red-500">
-        ❌ 商品データが取得できていません
-      </div>
-    );
+    return <div className={styles.wrapper}>Loading...</div>;
   }
 
   const title = product.title || 'おすすめ商品';
@@ -39,107 +54,98 @@ export default function ProductDetail({ product }: { product?: Product }) {
       ? `¥${product.price.toLocaleString()}`
       : '---';
 
-  const image = product.image || '/no-image.png';
+  const image = getMediaUrl(product.image);
 
   return (
-    <div className="max-w-[720px] mx-auto p-4">
+    <div className={styles.wrapper}>
 
-      {/* =====================
-       * 🔍 デバッグ表示（あとで消す）
-       * ===================== */}
-      <div className="text-[10px] text-gray-500 mb-2 break-all">
-        <div>ID: {product.id}</div>
-        <div>UID: {product.unique_id}</div>
-        <div>URL: {product.url}</div>
-        <div>IMAGE: {product.image}</div>
+      {/* 🖼 画像 */}
+      <img
+        src={image}
+        alt={title}
+        className={styles.image}
+        onError={(e) => {
+          e.currentTarget.src = '/no-image.png';
+        }}
+      />
+
+      {/* 💬 キャッチ */}
+      <div className={styles.catch}>
+        迷ったらこれ
       </div>
 
-      {/* =====================
-       * ① ファーストビュー
-       * ===================== */}
-      <section>
+      {/* 🏷 タイトル */}
+      <h1 className={styles.title}>
+        {title}
+      </h1>
 
-        {/* 🖼 画像 */}
-        <img
-          src={image}
-          alt={title}
-          className="w-full h-[260px] object-cover rounded-xl"
-          onError={(e) => {
-            e.currentTarget.src = '/no-image.png';
-          }}
-        />
+      {/* 💰 価格 */}
+      <div className={styles.price}>
+        {price}
+      </div>
 
-        {/* 🏷 タイトル */}
-        <h1 className="mt-3 text-lg font-bold leading-tight">
-          {title}
-        </h1>
-
-        {/* 💰 価格 */}
-        <div className="text-2xl font-extrabold text-orange-500 mt-1">
-          {price}
+      {/* 🏷 タグ（最重要：CTA直前） */}
+      {product?.tags?.length > 0 && (
+        <div className={styles.tagWrapper}>
+          {product.tags.slice(0, 4).map((tag, i) => (
+            <span key={i} className={styles.tag}>
+              {tag}
+            </span>
+          ))}
         </div>
+      )}
 
-        {/* 💡 価値 */}
-        <div className="text-xs text-orange-400 mt-1">
-          この価格でこの性能はかなり優秀
+      {/* 🚀 CTA */}
+      <Link
+        href={product.url || '#'}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.cta}
+      >
+        👉 最安値を見る
+      </Link>
+
+      {/* 🔥 後押し */}
+      <div className={styles.sub}>
+        在庫切れになる前にチェック
+      </div>
+
+      {/* 🔽 関連商品 */}
+      {related.length > 0 && (
+        <div className={styles.relatedSection}>
+
+          <h2 className={styles.relatedTitle}>
+            他の候補も見る
+          </h2>
+
+          <div className={styles.relatedGrid}>
+            {related.map((item) => (
+              <Link
+                key={item.unique_id}
+                href={`/product/${item.unique_id}`}
+                className={styles.relatedCard}
+              >
+                <img
+                  src={getMediaUrl(item.image)}
+                  alt={item.title}
+                  className={styles.relatedImage}
+                />
+
+                <div className={styles.relatedName}>
+                  {item.title}
+                </div>
+
+                <div className={styles.relatedPrice}>
+                  {item.price
+                    ? `¥${item.price.toLocaleString()}`
+                    : ''}
+                </div>
+              </Link>
+            ))}
+          </div>
+
         </div>
-
-        {/* 🚀 CTA（最優先） */}
-        <Link
-          href={product.url || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full mt-4 bg-orange-500 text-white text-center py-4 rounded-xl font-bold text-base shadow-lg"
-        >
-          👉 今すぐチェック（在庫あり）
-        </Link>
-
-        {/* 🛡 安心 */}
-        <div className="text-[11px] text-gray-400 text-center mt-2">
-          送料無料・返品OKで安心
-        </div>
-
-      </section>
-
-      {/* =====================
-       * ② 即決
-       * ===================== */}
-      <section className="mt-6 text-center">
-        <p className="text-base font-semibold">
-          これ選べば失敗しない
-        </p>
-      </section>
-
-      {/* =====================
-       * ③ 強み（3つ）
-       * ===================== */}
-      <section className="mt-5 space-y-2">
-        <div className="text-sm">✔ 高性能でサクサク動く</div>
-        <div className="text-sm">✔ コスパがかなり良い</div>
-        <div className="text-sm">✔ 初心者でも安心して使える</div>
-      </section>
-
-      {/* =====================
-       * ④ 不安排除
-       * ===================== */}
-      <section className="mt-5 text-sm text-gray-500 space-y-1">
-        <div>在庫切れになることがあります</div>
-        <div>公式サイトで最新情報を確認できます</div>
-      </section>
-
-      {/* =====================
-       * ⑤ CTA再配置
-       * ===================== */}
-      <section className="mt-6">
-        <Link
-          href={product.url || '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full bg-orange-500 text-white text-center py-4 rounded-xl font-bold text-base shadow-lg"
-        >
-          👉 これでOK（失敗回避）
-        </Link>
-      </section>
+      )}
 
     </div>
   );
