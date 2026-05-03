@@ -87,29 +87,100 @@ class AuthorListAPIView(MasterEntityListView):
 # 2. 🏆 PC製品ランキング View（修正版）
 # --------------------------------------------------------------------------
 
+# class PCProductRankingView(generics.ListAPIView):
+#     serializer_class = PCProductSerializer
+#     permission_classes = [AllowAny]
+
+#     def get_queryset(self):
+#         # 🔥 PCのみ抽出（モニター除外）
+#         queryset = PCProduct.objects.filter(
+#             is_active=True,
+#             spec_score__gt=0,
+#             cpu_model__isnull=False
+#         ).exclude(cpu_model='')
+
+#         path = self.request.path
+#         is_popularity = 'popularity-ranking' in path
+#         site_type = getattr(self.request, 'site_type', 'station')
+
+#         if is_popularity:
+#             return queryset.order_by('-updated_at', '-spec_score')[:20]
+
+#         if site_type == 'saving':
+#             return queryset.order_by('-score_cost', '-spec_score')[:20]
+        
+#         return queryset.order_by('-spec_score', '-updated_at')[:20]
+
+# --------------------------------------------------------------------------
+# 2. 🏆 PC製品ランキング View（完全版：属性対応）
+# --------------------------------------------------------------------------
+
 class PCProductRankingView(generics.ListAPIView):
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
 
+    # -------------------------
+    # 🔥 スコア計算
+    # -------------------------
+    def calculate_score(self, product, use: str):
+        cpu = product.score_cpu or 0
+        gpu = product.score_gpu or 0
+        cost = product.score_cost or 0
+        mem = product.memory_gb or 0
+        ai = product.score_ai or 0
+
+        if use == "gaming":
+            return gpu * 0.6 + cpu * 0.3 + cost * 0.1
+
+        if use == "price-low":
+            return cost * 0.7 + cpu * 0.2 + gpu * 0.1
+
+        if use == "work":
+            return cpu * 0.5 + (mem * 2) * 0.3 + cost * 0.2
+
+        if use == "ai":
+            return ai * 0.6 + cpu * 0.3 + cost * 0.1
+
+        return product.spec_score or 0
+
+    # -------------------------
+    # 🔥 クエリ生成（完全版）
+    # -------------------------
     def get_queryset(self):
-        # 🔥 PCのみ抽出（モニター除外）
-        queryset = PCProduct.objects.filter(
-            is_active=True,
-            spec_score__gt=0,
-            cpu_model__isnull=False
-        ).exclude(cpu_model='')
 
-        path = self.request.path
-        is_popularity = 'popularity-ranking' in path
-        site_type = getattr(self.request, 'site_type', 'station')
+        # 🔥 最低限の安全条件
+        queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
 
-        if is_popularity:
-            return queryset.order_by('-updated_at', '-spec_score')[:20]
+        use = self.request.GET.get("use", "score")
 
-        if site_type == 'saving':
-            return queryset.order_by('-score_cost', '-spec_score')[:20]
-        
-        return queryset.order_by('-spec_score', '-updated_at')[:20]
+        # -------------------------
+        # 🔥 属性ランキング対応
+        # -------------------------
+        # URL例:
+        # /api/general/pc-products/ranking/gpu-rtx-4060/
+        path = self.request.path.rstrip('/')
+        last_part = path.split('/')[-1]
+
+        reserved = ["ranking", "score", "gaming", "price-low", "work", "ai"]
+
+        if last_part not in reserved:
+            queryset = queryset.filter(attributes__slug=last_part).distinct()
+
+        # -------------------------
+        # 🔥 Pythonスコアリング
+        # -------------------------
+        products = list(queryset)
+
+        if not products:
+            return []
+
+        for p in products:
+            p.dynamic_score = self.calculate_score(p, use)
+
+        products.sort(key=lambda x: x.dynamic_score, reverse=True)
+
+        return products[:20]
+
 
 # --------------------------------------------------------------------------
 # 3. 💻 PC・ソフトウェア製品一覧 (v13.2 修正版)

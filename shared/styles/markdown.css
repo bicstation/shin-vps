@@ -1,0 +1,140 @@
+/* =========================
+   🧠 Markdown Base
+========================= */
+.markdown {
+  font-size: 15px;
+  line-height: 1.9;
+  color: #1e293b;
+}
+
+/* =========================
+   見出し（アイコン対応）
+========================= */
+.markdown h2 {
+  font-size: 20px;
+  margin-top: 28px;
+  margin-bottom: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.markdown h2::before {
+  content: "⚡";
+  font-size: 18px;
+}
+
+/* =========================
+   段落
+========================= */
+.markdown p {
+  margin-bottom: 14px;
+}
+
+/* =========================
+   重要文ハイライト
+========================= */
+.markdown .highlight {
+  background: #fff7ed;
+  border-left: 4px solid #f97316;
+  padding: 8px 12px;
+  margin: 14px 0;
+  font-weight: 600;
+  color: #7c2d12;
+  border-radius: 6px;
+}
+
+/* =========================
+   リスト
+========================= */
+.markdown ul {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.markdown li {
+  margin-bottom: 6px;
+}
+
+/* =========================
+   CTA前ボックス
+========================= */
+.markdown .ctaBox {
+  background: linear-gradient(135deg, #111827, #1f2937);
+  color: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.markdown .ctaBox strong {
+  color: #f97316;
+  font-size: 16px;
+}
+
+/* =========================
+   引用
+========================= */
+.markdown blockquote {
+  border-left: 4px solid #f97316;
+  background: #fff7ed;
+  padding: 10px 14px;
+  margin: 16px 0;
+  font-size: 14px;
+  color: #7c2d12;
+}
+
+
+
+/* =========================
+   比較テーブル
+========================= */
+.markdown .compareTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 13px;
+}
+
+.markdown .compareTable th {
+  background: #111827;
+  color: #fff;
+  padding: 10px;
+}
+
+.markdown .compareTable td {
+  border: 1px solid #e5e7eb;
+  padding: 10px;
+  text-align: center;
+}
+
+/* =========================
+   ランキングリンク
+========================= */
+.markdown .rankingLinkBox {
+  background: #f1f5f9;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 16px 0;
+  text-align: center;
+}
+
+.markdown .rankingLinkBox a {
+  color: #f97316;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* =========================
+   価格帯おすすめ
+========================= */
+.markdown .priceRecommend {
+  background: linear-gradient(135deg, #1f2937, #111827);
+  color: #fff;
+  padding: 14px;
+  border-radius: 12px;
+  margin: 20px 0;
+  text-align: center;
+}

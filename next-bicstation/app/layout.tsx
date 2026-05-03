@@ -10,6 +10,7 @@ import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
 import Header from '@/shared/components/organisms/common/HeaderLite';
 import Footer from '@/shared/components/organisms/common/Footer';
 import ChatBotLoader from '@/shared/components/organisms/common/ChatBotLoader';
+import '@/shared/styles/markdown.css';
 
 import styles from "./layout.module.css";
 

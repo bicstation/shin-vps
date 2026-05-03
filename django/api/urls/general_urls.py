@@ -13,6 +13,8 @@ urlpatterns = [
     # 🏆 ランキング（売上・総合）
     path('pc-products/ranking/', general_views.PCProductRankingView.as_view(), name='pc_product_ranking'),
     
+    path("pc-products/ranking/<str:slug>/", general_views.PCProductRankingView.as_view(), name="pc_product_ranking_slug" ),
+    
     # 🔥 注目度ランキング（これがないため404になっていました）
     path('pc-products/popularity-ranking/', general_views.PCProductRankingView.as_view(), name='pc_product_popularity_ranking'),
     
