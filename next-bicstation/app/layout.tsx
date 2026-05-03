@@ -110,7 +110,8 @@ export default async function RootLayout({
         {!isAdminPage && <Footer />}
 
         {/* 🔹 チャット */}
-        {!isAdminPage && <ChatBotLoader />}
+        {/*!isAdminPage && <ChatBotLoader />*/}
+        {/* <ChatBotLoader /> */}
 
       </body>
     </html>

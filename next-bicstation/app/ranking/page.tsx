@@ -1,24 +1,48 @@
 /* eslint-disable @next/next/no-img-element */
 
 import React from 'react'
-import Link from 'next/link'
+import { getApiBase } from '@/shared/lib/config/api'
 
+// -------------------------
+// API取得
+// -------------------------
 async function fetchSidebar() {
-  const res = await fetch('http://localhost:8083/api/general/pc-sidebar-stats/', {
-    cache: 'no-store',
-  })
+  try {
+    const base = getApiBase()
 
-  if (!res.ok) return null
+    const res = await fetch(`${base}/general/pc-sidebar-stats/`, {
+      cache: 'no-store',
+    })
 
-  return res.json()
+    if (!res.ok) {
+      console.error('API ERROR:', res.status)
+      return {}
+    }
+
+    return await res.json()
+  } catch (e) {
+    console.error('FETCH ERROR:', e)
+    return {}
+  }
 }
 
+// -------------------------
+// ページ本体
+// -------------------------
 export default async function RankingIndexPage() {
 
-  const data = await fetchSidebar()
+  const data = await fetchSidebar() || {}
 
-  const gpuList = data?.グラフィック || []
-  const makerList = data?.maker_counts || []
+  const gpuList =
+    data?.グラフィック ||
+    data?.gpu ||
+    data?.gpu_counts ||
+    []
+
+  const makerList =
+    data?.maker_counts ||
+    data?.maker ||
+    []
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-800 text-white px-6 py-10">
@@ -42,78 +66,84 @@ export default async function RankingIndexPage() {
               👉 迷っているなら
             </div>
 
-            <Link
-              href="/pc-finder"
-              className="block bg-green-500 text-black font-bold py-3 rounded-lg mt-3"
-            >
-              3問で最適なPCを診断する
-            </Link>
+            <a href="/pc-finder">
+              <div className="block bg-green-500 text-black font-bold py-3 rounded-lg mt-3 text-center cursor-pointer">
+                3問で最適なPCを診断する
+              </div>
+            </a>
           </div>
         </section>
 
-        {/* =========================
-          🏆 固定（重要）
-        ========================= */}
+        {/* 固定ランキング */}
         <section className="mb-10">
           <h2 className="text-xl font-bold mb-4">🏆 まずはここから</h2>
 
           <div className="grid gap-4">
-            <Link href="/ranking/score" className="card">総合ランキング</Link>
-            <Link href="/ranking/gaming" className="card">ゲーミングPC</Link>
-            <Link href="/ranking/price-low" className="card">コスパ最強</Link>
-            <Link href="/ranking/work" className="card">ビジネスPC</Link>
+
+            <a href="/ranking/score" className="card cursor-pointer">
+              総合ランキング
+            </a>
+
+            <a href="/ranking/gaming" className="card cursor-pointer">
+              ゲーミングPC
+            </a>
+
+            <a href="/ranking/price-low" className="card cursor-pointer">
+              コスパ最強
+            </a>
+
+            <a href="/ranking/work" className="card cursor-pointer">
+              ビジネスPC
+            </a>
+
           </div>
         </section>
 
-        {/* =========================
-          ⚡ GPU（DB）
-        ========================= */}
+        {/* GPU */}
         <section className="mb-10">
           <h2 className="text-xl font-bold mb-4">⚡ GPUで選ぶ</h2>
 
           <div className="grid gap-4">
-            {gpuList.slice(0, 8).map((g: any) => (
-              <Link
+            {gpuList?.slice(0, 8)?.map((g: any) => (
+              <a
                 key={g.slug}
                 href={`/ranking/${g.slug}`}
-                className="card"
+                className="card cursor-pointer"
               >
                 {g.name}
                 <span className="text-xs text-gray-400 ml-2">
                   ({g.count})
                 </span>
-              </Link>
+              </a>
             ))}
           </div>
         </section>
 
-        {/* =========================
-          🏢 メーカー（DB）
-        ========================= */}
+        {/* メーカー */}
         <section className="mb-10">
           <h2 className="text-xl font-bold mb-4">🏢 メーカーで選ぶ</h2>
 
           <div className="grid gap-4">
-            {makerList.slice(0, 8).map((m: any) => (
-              <Link
+            {makerList?.slice(0, 8)?.map((m: any) => (
+              <a
                 key={m.maker}
                 href={`/ranking/maker-${m.maker}`}
-                className="card"
+                className="card cursor-pointer"
               >
                 {m.name}
                 <span className="text-xs text-gray-400 ml-2">
                   ({m.count})
                 </span>
-              </Link>
+              </a>
             ))}
           </div>
         </section>
 
         {/* CTA */}
         <section className="text-center mt-10">
-          <Link href="/ranking/score" className="text-green-400 underline">
+          <a href="/ranking/score" className="text-green-400 underline cursor-pointer">
             → 迷ったら総合ランキングを見る
-          </Link>
+          </a>
         </section>
 
       </div>
