@@ -1,4 +1,6 @@
 'use client';
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/ProductCTA.tsx
+
 
 import React from 'react';
 import styles from './ProductCTA.module.css';

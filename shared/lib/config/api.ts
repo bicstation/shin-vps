@@ -2,41 +2,58 @@
 
 /**
  * =========================================
- * 🔥 API BASE（SSR / CSR 安定版）
+ * 🔥 API BASE（SSR / CSR 完全安定版）
  * =========================================
  */
 export function getApiBase() {
   const isServer = typeof window === 'undefined';
 
-  const base = isServer
+  let base = isServer
     ? process.env.INTERNAL_API_URL
     : process.env.NEXT_PUBLIC_API_URL;
 
+  // 🔥 フォールバック（超重要）
   if (!base) {
-    console.error('[API BASE ERROR] env is undefined', {
-      isServer,
-      INTERNAL_API_URL: process.env.INTERNAL_API_URL,
-      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-    });
+    base = isServer
+      ? 'http://django-v3:8000/api'
+      : 'http://localhost:8083/api';
 
-    throw new Error('API BASE URL is not defined');
+    console.warn('[API BASE FALLBACK]', {
+      isServer,
+      base,
+    });
   }
 
-  // 末尾スラッシュ除去（安全処理）
+  // 🔥 最終ログ（デバッグ用）
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[API BASE]', {
+      isServer,
+      base,
+    });
+  }
+
   return base.replace(/\/+$/, '');
 }
 
 /**
  * =========================================
- * 🔥 APIエンドポイント（動的生成）
+ * 🔥 APIエンドポイント（完全版）
  * =========================================
  */
 export const getApiEndpoints = () => {
   const base = getApiBase();
 
-  return {
-    ranking: `${base}/products/ranking/`,
+  const endpoints = {
+    ranking: `${base}/general/pc-products/ranking/`,
+
     detailByUid: (uid: string) =>
       `${base}/products/by-uid/${uid}/`,
   };
+
+  // 🔥 デバッグログ（重要）
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[API ENDPOINTS]', endpoints);
+  }
+
+  return endpoints;
 };

@@ -5,36 +5,72 @@ from api.models import Product, PCProduct
 
 
 class Command(BaseCommand):
-    help = 'Migrate PCProduct to Product'
+    help = 'Migrate PCProduct to Product（完全版）'
 
     def handle(self, *args, **kwargs):
-        items = PCProduct.objects.all()
+
+        items = PCProduct.objects.all().prefetch_related("attributes")
 
         total = 0
 
         for item in items:
+
+            # -------------------------
+            # Product作成 or 更新
+            # -------------------------
             product_obj, created = Product.objects.update_or_create(
                 source='pc',
 
-                # 🔥 正解
+                # 🔥 一意キー（重要）
                 external_id=item.unique_id,
 
                 defaults={
+                    # -----------------
+                    # 基本情報
+                    # -----------------
                     'title': item.name or '',
                     'pc_product': item,
+
+                    # -----------------
+                    # 画像・リンク
+                    # -----------------
                     'thumbnail_url': item.image_url,
                     'affiliate_url': item.url,
+
+                    # -----------------
+                    # 数値
+                    # -----------------
                     'price': int(item.price) if item.price else 0,
+
+                    # 🔥 ranking_scoreはここでは使わない
+                    # → 後でupdate_product_scoresで上書きする
+                    'ranking_score': 0,
+
+                    # -----------------
+                    # メタ
+                    # -----------------
                     'maker': item.maker or '',
                     'release_date': item.created_at,
-                    'ranking_score': item.spec_score or 0,
+
+                    # -----------------
+                    # フラグ
+                    # -----------------
                     'is_adult': False,
                     'is_active': True,
                     'is_visible': True,
                 }
             )
 
-            product_obj.attributes.set(item.attributes.all())
+            # -------------------------
+            # 🔥 属性コピー（最重要）
+            # -------------------------
+            attrs = list(item.attributes.all())
+
+            if attrs:
+                product_obj.attributes.set(attrs)
+            else:
+                # 空ならクリア（ズレ防止）
+                product_obj.attributes.clear()
 
             total += 1
 

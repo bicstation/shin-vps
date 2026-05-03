@@ -2,7 +2,6 @@
 
 from rest_framework import serializers
 from api.models.product import Product
-from django.conf import settings
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -12,6 +11,10 @@ class ProductSerializer(serializers.ModelSerializer):
     actress = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+
+    # 🔥 追加（重要）
+    attributes = serializers.SerializerMethodField()
+    pc_product = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -27,6 +30,10 @@ class ProductSerializer(serializers.ModelSerializer):
             'ranking_score',
             'label',
             'tags',
+
+            # 🔥 追加
+            'attributes',
+            'pc_product',
         ]
 
     # -----------------
@@ -44,56 +51,83 @@ class ProductSerializer(serializers.ModelSerializer):
         return a.name if a else ""
 
     # -----------------
-    # label（強化）
+    # label
     # -----------------
     def get_label(self, obj):
-
         if getattr(obj, "rank", None) == 1:
             return "🔥 迷ったらこれ"
 
         tags = self.get_tags(obj)
         price = obj.price or 0
 
-        # GPU
         if any("5090" in t or "5080" in t for t in tags):
             return "👑 最強スペック"
 
         if any("5070" in t or "4070" in t for t in tags):
             return "🎮 ゲーミング最適"
 
-        # CPU
         if any("core i9" in t.lower() or "ryzen 9" in t.lower() for t in tags):
             return "⚡ ハイエンド"
 
-        # コスパ
         if price < 250000:
             return "💰 コスパ良"
 
         return ""
 
     # -----------------
-    # image（完全安定版）
+    # image
     # -----------------
     def get_image(self, obj):
         image = None
 
-        # ローカル画像
         if obj.image_local:
             try:
-                image = obj.image_local.url  # ← 相対パス
+                image = obj.image_local.url
             except Exception:
                 image = None
 
-        # フォールバック
         if not image:
             image = obj.image_source or obj.thumbnail_url or "/no-image.jpg"
 
-        # 絶対URL化しない（重要）
         return image
 
+    # -----------------
+    # 🔥 attributes（slug返す）
+    # -----------------
+    def get_attributes(self, obj):
+        return [
+            {
+                "slug": a.slug,
+                "name": a.name,
+                "type": a.attr_type,
+            }
+            for a in obj.attributes.all()
+        ]
 
     # -----------------
-    # tags（安定版）
+    # 🔥 pc_product（最重要）
+    # -----------------
+    def get_pc_product(self, obj):
+        pc = obj.pc_product
+
+        if not pc:
+            return None
+
+        return {
+            "gpu_model": pc.gpu_model,
+            "maker": pc.maker,
+            "memory_gb": pc.memory_gb,
+
+            "spec_score": pc.spec_score,
+            "score_cpu": pc.score_cpu,
+            "score_gpu": pc.score_gpu,
+            "score_memory": pc.score_memory,
+            "score_storage": pc.score_storage,
+            "score_cost": pc.score_cost,
+        }
+
+    # -----------------
+    # tags（既存）
     # -----------------
     def get_tags(self, obj):
         attrs = list(obj.attributes.all())
@@ -106,12 +140,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
         for t, items in grouped.items():
 
-            # CPU
             if t == "cpu":
                 items = sorted(items, key=lambda x: x.order or 0, reverse=True)
                 result.append(items[0].name)
 
-            # GPU
             elif t == "gpu":
                 def gpu_score(x):
                     name = x.name.lower()
@@ -129,7 +161,6 @@ class ProductSerializer(serializers.ModelSerializer):
                 gpu_name = items[0].name.replace("GeForce ", "").replace("NVIDIA ", "")
                 result.append(gpu_name)
 
-            # メモリ
             elif t in ["memory", "vram"]:
                 items = [i for i in items if "8gb" not in i.name.lower()]
 
@@ -142,7 +173,6 @@ class ProductSerializer(serializers.ModelSerializer):
                 clean_name = raw_name.replace("（標準）", "").replace("（大容量）", "")
                 result.append(clean_name)
 
-        # 優先順位
         priority = ["rtx", "core i9", "core i7", "32gb", "16gb"]
 
         result = sorted(
@@ -150,11 +180,11 @@ class ProductSerializer(serializers.ModelSerializer):
             key=lambda t: next((i for i, p in enumerate(priority) if p in t.lower()), 99)
         )
 
-        # NG除外
         NG_WORDS = ["8gb", "4gb", "最低限", "以下"]
 
         result = [
             t for t in result
             if not any(x in t.lower() for x in NG_WORDS)
         ]
+
         return result[:3]

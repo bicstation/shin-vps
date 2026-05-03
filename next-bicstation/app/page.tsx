@@ -6,33 +6,41 @@ import Link from 'next/link';
 import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard';
 import ProductCard from '@/shared/components/organisms/cards/ProductCard';
 import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
-import { transformProducts } from '@/shared/lib/domain/product/transform';
 
 import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
+// -------------------------
+// 安全fetch
+// -------------------------
 async function safeFetch(fetcher: any, args: any[], fallback: any) {
   try {
     const data = await fetcher(...args);
     return data ?? fallback;
-  } catch {
+  } catch (e) {
+    console.error('[SAFE FETCH ERROR]', e);
     return fallback;
   }
 }
 
+// -------------------------
+// ページ本体
+// -------------------------
 export default async function HomePageMain() {
 
-  const host = "bicstation.com";
+  // 🔥 完全固定（ズレ防止）
+  const data = await safeFetch(fetchPCProductRanking, ['score', 'score'], []);
 
-  const data = await safeFetch(fetchPCProductRanking, ['score', host], []);
-  const rawProducts = Array.isArray(data) ? data : (data?.results || []);
+  const rawProducts = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.results)
+    ? data.results
+    : [];
 
-  // const products = transformProducts(rawProducts);
+  console.log('[TOP RAW COUNT]', rawProducts.length);
+
   const products = rawProducts;
-
-  console.log('RAW:', rawProducts);
-  console.log('PRODUCTS:', products);
 
   if (!products.length) {
     return (
@@ -48,15 +56,16 @@ export default async function HomePageMain() {
   return (
     <div className={styles.mainWrapper}>
 
-      {/* 🔥① 最強導線 */}
+      {/* 🔥① ナビ */}
       <section className={styles.topNav}>
         <Link href="/ranking/score">🏆 総合</Link>
         <Link href="/ranking/gaming">🎮 ゲーミング</Link>
+        <Link href="/ranking/work">💼 仕事</Link>
         <Link href="/ranking/price-low">💰 コスパ</Link>
         <Link href="/ranking/gpu-rtx-4060">⚡ RTX4060</Link>
       </section>
 
-      {/* 🔥② 診断導線（超重要） */}
+      {/* 🔥② 診断導線 */}
       <section className={styles.finderSection}>
         <div className={styles.finderBox}>
           <h2>迷ってるなら診断で決める</h2>
@@ -70,21 +79,14 @@ export default async function HomePageMain() {
 
       {/* 🔥③ HERO */}
       <section className={styles.hero}>
-
-        <h1>
-          迷ったらこれ。今一番バランスがいい構成
-        </h1>
-
-        <p>
-          性能・価格・用途のバランスで選ぶならこれ1台
-        </p>
+        <h1>迷ったらこれ。今一番バランスがいい構成</h1>
+        <p>性能・価格・用途のバランスで選ぶならこれ1台</p>
 
         <HeroRankingCard product={top1} />
-
       </section>
 
       {/* 🔥④ CTA */}
-      {top1.url && (
+      {top1?.url && (
         <div className={styles.ctaPrimary}>
           <a href={top1.url} target="_blank" rel="noopener noreferrer">
             🔥 最安価格をチェック（在庫あり）
@@ -99,7 +101,7 @@ export default async function HomePageMain() {
 
         <div className={styles.grid}>
           {others.map((p: any) => (
-            <ProductCard key={p.unique_id} product={p} />
+            <ProductCard key={p.id} product={p} />
           ))}
         </div>
       </section>
@@ -110,7 +112,7 @@ export default async function HomePageMain() {
 
         <div>
           <Link href="/ranking/gaming">ゲーム用途</Link>
-          <Link href="/ranking/business">仕事用途</Link>
+          <Link href="/ranking/work">仕事用途</Link>
           <Link href="/ranking/gpu-rtx-4070">高性能GPU</Link>
         </div>
       </section>
@@ -123,7 +125,7 @@ export default async function HomePageMain() {
       </section>
 
       {/* 🔥⑧ CTA再提示 */}
-      {top1.url && (
+      {top1?.url && (
         <div className={styles.ctaSecondary}>
           <a href={top1.url} target="_blank" rel="noopener noreferrer">
             👉 迷ったらこれでOK

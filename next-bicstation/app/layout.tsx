@@ -2,7 +2,6 @@
 
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { Suspense } from "react";
 import { headers } from "next/headers";
 
 import '@/shared/styles/globals.css';
@@ -78,10 +77,10 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
 
-        {/* 🔹 最小ヘッダー（弱くする） */}
+        {/* 🔹 最小ヘッダー */}
         <Header />
 
-        {/* 🔹 メイン（集中領域） */}
+        {/* 🔹 メイン */}
         <main
           style={{
             maxWidth: '720px',
@@ -89,21 +88,10 @@ export default async function RootLayout({
             padding: '16px',
           }}
         >
-          <Suspense
-            fallback={
-              <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-400">
-                <div className="w-8 h-8 border-4 border-gray-300 border-t-orange-500 rounded-full animate-spin mb-3" />
-                <p className="text-xs tracking-widest uppercase animate-pulse">
-                  Loading...
-                </p>
-              </div>
-            }
-          >
-            {children}
-          </Suspense>
+          {children}
         </main>
 
-        {/* 🔹 PR表記（下に移動） */}
+        {/* 🔹 PR表記 */}
         {!isAdminPage && (
           <div
             style={{
@@ -118,13 +106,9 @@ export default async function RootLayout({
         )}
 
         {/* 🔹 フッター */}
-        {!isAdminPage && (
-          <Suspense fallback={<div className="h-32 bg-gray-900 w-full" />}>
-            <Footer />
-          </Suspense>
-        )}
+        {!isAdminPage && <Footer />}
 
-        {/* 🔹 チャット（軽量維持） */}
+        {/* 🔹 チャット */}
         {!isAdminPage && <ChatBotLoader />}
 
       </body>

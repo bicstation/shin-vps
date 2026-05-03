@@ -2,31 +2,42 @@
 
 import Link from 'next/link';
 import styles from './ProductCard.module.css';
-import { getMediaUrl } from '@/shared/lib/utils/media';
 
+// -------------------------
+// 型（PCProductベース）
+// -------------------------
 type Product = {
   id: number;
   unique_id: string;
+
+  name?: string;
   shortTitle?: string;
-  title?: string;
-  image?: string;
+
+  image_url?: string;
   price?: number;
+
+  gpu_model?: string;
+  cpu_model?: string;
 };
 
+// -------------------------
+// コンポーネント
+// -------------------------
 export default function ProductCard({ product }: { product?: Product }) {
   if (!product) return null;
 
   const title =
     product.shortTitle ||
-    product.title ||
+    product.name ||
     'おすすめ商品';
 
-  const price = product.price
-    ? `¥${product.price.toLocaleString()}`
-    : '';
+  const price =
+    typeof product.price === 'number'
+      ? `¥${product.price.toLocaleString()}`
+      : '';
 
-  // 🔥 共通ロジックに統一
-  const image = getMediaUrl(product.image);
+  const image =
+    product.image_url || '/no-image.png';
 
   return (
     <Link
@@ -48,9 +59,28 @@ export default function ProductCard({ product }: { product?: Product }) {
         {title}
       </h3>
 
-      {/* 💰 価格 */}
+      {/* 💰 価格（主役） */}
       <div className={styles.price}>
         {price}
+      </div>
+
+      {/* 💡 スペックバッジ */}
+      <div className={styles.spec}>
+        {product.gpu_model && (
+          <span className={styles.badge}>
+            {product.gpu_model.replace('NVIDIA GeForce ', '')}
+          </span>
+        )}
+        {product.cpu_model && (
+          <span className={styles.badgeSub}>
+            {product.cpu_model}
+          </span>
+        )}
+      </div>
+
+      {/* 👉 軽いCTA */}
+      <div className={styles.cta}>
+        詳細を見る →
       </div>
     </Link>
   );

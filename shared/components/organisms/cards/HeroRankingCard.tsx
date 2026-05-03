@@ -2,28 +2,65 @@
 
 import Link from 'next/link';
 import styles from './HeroRankingCard.module.css';
-import { getMediaUrl } from '@/shared/lib/utils/media';
 
+// -------------------------
+// 型（PCProductベース）
+// -------------------------
 type Product = {
   id: number;
   unique_id: string;
-  title?: string;
+
+  name?: string;
   shortTitle?: string;
-  image?: string;
+
+  image_url?: string;
   price?: number;
+
+  gpu_model?: string;
+  cpu_model?: string;
+  spec_score?: number;
 };
 
+// -------------------------
+// コンポーネント
+// -------------------------
 export default function HeroRankingCard({ product }: { product?: Product }) {
   if (!product) return null;
 
-  const title = product.shortTitle || product.title || 'おすすめ商品';
+  // -------------------------
+  // タイトル（長さ制御）
+  // -------------------------
+  const rawTitle =
+    product.shortTitle ||
+    product.name ||
+    'おすすめ商品';
 
+  const title =
+    rawTitle.length > 60
+      ? rawTitle.slice(0, 60) + '...'
+      : rawTitle;
+
+  // -------------------------
+  // 価格
+  // -------------------------
   const price =
     typeof product.price === 'number'
       ? product.price.toLocaleString()
       : '---';
 
-  const image = getMediaUrl(product.image);
+  // -------------------------
+  // 画像
+  // -------------------------
+  const image =
+    product.image_url || '/no-image.png';
+
+  // -------------------------
+  // GPU簡略表示
+  // -------------------------
+  const gpu =
+    product.gpu_model?.replace('NVIDIA GeForce ', '') || '';
+
+  const cpu = product.cpu_model || '';
 
   return (
     <section className={styles.card}>
@@ -55,27 +92,40 @@ export default function HeroRankingCard({ product }: { product?: Product }) {
         {title}
       </h3>
 
-      {/* 💰 価格 */}
+      {/* 💰 価格（主役） */}
       <div className={styles.price}>
         ¥{price}
       </div>
 
-      {/* 💡 価値 */}
-      <div className={styles.value}>
-        この価格でこの性能
+      {/* 💡 理由（重要） */}
+      <div className={styles.reason}>
+        高性能GPU＋バランス最強構成
       </div>
+
+      {/* 💡 スペック（バッジ化） */}
+      <div className={styles.spec}>
+        {gpu && <span className={styles.badge}>{gpu}</span>}
+        {cpu && <span className={styles.badgeSub}>{cpu}</span>}
+      </div>
+
+      {/* ⭐ スコア */}
+      {product.spec_score && (
+        <div className={styles.score}>
+          総合スコア：{product.spec_score}
+        </div>
+      )}
 
       {/* 🔥 CTA前 */}
       <div className={styles.preCta}>
         迷ったらこれでOK
       </div>
 
-      {/* 🚀 CTA */}
+      {/* 🚀 CTA（強化） */}
       <Link
         href={`/product/${product.unique_id}`}
         className={styles.cta}
       >
-        👉 今すぐチェック（これでOK）
+        👉 今すぐ最安価格を見る
       </Link>
 
       {/* 🛡 安心 */}

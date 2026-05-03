@@ -1,4 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/FinalCta.tsx
+
 import React from 'react';
 import styles from './FinalCta.module.css';
 

@@ -1,102 +1,85 @@
-# /home/maya/shin-vps/django/api/services/ranking_service.py
+# /api/services/ranking_service.py
 
 def calculate_ranking_score(product):
 
-    score = 50
+    # -------------------------
+    # 基本
+    # -------------------------
+    base = 50
 
-    tags = get_tags_from_attributes(product)
-    price = product.price or 0
+    # -------------------------
+    # 属性取得
+    # -------------------------
+    gpu = get_main_attr(product, "gpu")
+    cpu = get_main_attr(product, "cpu")
+    mem = get_main_attr(product, "memory")
 
-    # -----------------
-    # GPU（最重要）
-    # -----------------
-    if has_tag(tags, "rtx 5090"):
-        score += 50
-    elif has_tag(tags, "rtx 5080"):
-        score += 45
-    elif has_tag(tags, "rtx 5070"):
-        score += 40
-    elif has_tag(tags, "rtx 4090"):
-        score += 38
-    elif has_tag(tags, "rtx 4080"):
-        score += 35
-    elif has_tag(tags, "rtx 4070"):
-        score += 30
-    elif has_tag(tags, "rtx 4060"):
-        score += 20
-    elif has_tag(tags, "rtx"):
-        score += 15
+    gpu_score = gpu.order if gpu else 0
+    cpu_score = cpu.order if cpu else 0
+    mem_score = mem.order if mem else 0
 
-    # GPU補正（かなり効く）
-    if has_tag(tags, "rtx"):
-        score += 10
+    # -------------------------
+    # PCProduct
+    # -------------------------
+    pc = product.pc_product
 
-    # -----------------
-    # CPU
-    # -----------------
-    if has_tag(tags, "core i9") or has_tag(tags, "ryzen 9"):
-        score += 25
-    elif has_tag(tags, "core i7"):
-        score += 20
-    elif has_tag(tags, "core i5"):
-        score += 10
+    spec_score = getattr(pc, "spec_score", 0)
+    cost_score = getattr(pc, "score_cost", 0)
+    price = getattr(product, "price", 0)
 
-    # -----------------
-    # メモリ
-    # -----------------
-    if has_tag(tags, "32gb"):
-        score += 15
-    elif has_tag(tags, "16gb"):
-        score += 10
+    # -------------------------
+    # 🎯 スコア計算（改良）
+    # -------------------------
+    score = (
+        spec_score * 0.4 +      # 下げた
+        gpu_score * 0.25 +
+        cpu_score * 0.1 +
+        mem_score * 0.05 +
+        cost_score * 0.2        # 強化（重要）
+    )
 
-    # -----------------
-    # 用途（ここ修正）
-    # -----------------
-    if has_tag(tags, "ゲーミング"):
-        score += 20   # 少し強めにする
-    if has_tag(tags, "クリエイター"):
-        score += 15
-    if has_tag(tags, "ビジネス"):
-        score += 8
-    if has_tag(tags, "モバイル"):
-        score += 10
-    if not has_tag(tags, "rtx"):
-        score -= 10
-
-    title = (product.title or "").lower()   
-    if (
-        "モニター" in title
-        or "monitor" in title
-        or "server" in title
-        or "poweredge" in title
-    ):
-        return 0
-    
-    # -----------------
-    # 価格
-    # -----------------
+    # -------------------------
+    # 💰 価格補正（超重要）
+    # -------------------------
     if price > 0:
-        if price < 150000:
-            score += 25
+        if price < 180000:
+            score += 25   # 強化
         elif price < 250000:
-            score += 10
+            score += 15
         elif price > 500000:
-            score -= 10
-    
-    if score >= 140:
-        score += 20
+            score -= 15   # ペナルティ
 
-    return score
+    # -------------------------
+    # 🎮 GPUボーナス
+    # -------------------------
+    if gpu_score >= 90:
+        score += 10
 
-def has_tag(tags, keyword):
-    return any(keyword in t for t in tags)
+    # -------------------------
+    # 🧠 用途ブースト
+    # -------------------------
+    title = (product.title or "").lower()
 
-def get_tags_from_attributes(product):
-    attrs = list(product.attributes.all())
+    if "gaming" in title or "ゲーミング" in title:
+        score += 10
 
-    tags = []
+    if "creator" in title:
+        score += 5
 
-    for a in attrs:
-        tags.append(a.name.lower())
+    # -------------------------
+    # ❌ 不要除外
+    # -------------------------
+    if any(x in title for x in ["monitor", "モニター", "server", "poweredge"]):
+        return 0
 
-    return tags
+    return round(score, 2)
+
+
+# -------------------------
+# 補助
+# -------------------------
+def get_main_attr(product, attr_type):
+    attrs = [a for a in product.attributes.all() if a.attr_type == attr_type]
+    if not attrs:
+        return None
+    return sorted(attrs, key=lambda x: x.order or 0, reverse=True)[0]

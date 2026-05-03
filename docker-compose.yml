@@ -1,10 +1,5 @@
 # =====================================================================
-# 🛡️ SHIN-VPS v8 [Local Stable - FINAL FIXED]
-# =====================================================================
-# ■ ローカル基準（完全版）
-# ・/api → Django
-# ・それ以外 → Next
-# ・envは build + runtime 両方に適用（最重要）
+# 🛡️ SHIN-VPS v8 [Local Stable - FINAL FIXED + SAFE ENV]
 # =====================================================================
 
 services:
@@ -42,9 +37,9 @@ services:
     restart: always
 
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-postgres}
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -67,6 +62,7 @@ services:
     build:
       context: .
       dockerfile: ./django/Dockerfile
+
     container_name: django-v3
     restart: always
 
@@ -130,24 +126,30 @@ services:
       args:
         PROJECT_NAME: next-bicstation
 
-        # 🔥 最重要（これがないとCSR壊れる）
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        INTERNAL_API_URL: ${INTERNAL_API_URL}
+        # 🔥 build時にも安全に入れる
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8083/api}
+        INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
 
     container_name: next-bicstation-v3
     restart: always
 
-    # runtime env（SSR用）
     env_file:
       - .env.local
 
     environment:
-      - NEXT_PUBLIC_SITE_DOMAIN=bicstation
+      NEXT_PUBLIC_SITE_DOMAIN: bicstation
+
+      # 🔥 runtime fallback（保険）
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8083/api}
+      INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
 
     volumes:
       - ./next-bicstation:/usr/src/app
       - ./shared:/usr/src/app/shared
       - /usr/src/app/node_modules
+
+    ports:
+      - "3000:3000"
 
     networks:
       - internal-net
@@ -156,8 +158,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
+
+      # フロント（/api以外）
       - "traefik.http.routers.front.rule=!PathPrefix(`/api`)"
       - "traefik.http.routers.front.priority=1"
+
       - "traefik.http.services.front.loadbalancer.server.port=3000"
 
 # -------------------------
