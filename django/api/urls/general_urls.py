@@ -27,4 +27,3 @@ urlpatterns = [
     path('pc-makers/', general_views.PCProductMakerListView.as_view(), name='pc_maker_list'),
     path("pc-sidebar-stats/", pc_sidebar_stats, name="pc_sidebar_stats"),
 ]
-]

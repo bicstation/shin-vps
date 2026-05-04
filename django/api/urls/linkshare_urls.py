@@ -7,6 +7,6 @@ from api.views import general_views # または専用のview
 app_name = 'linkshare'
 
 urlpatterns = [
-    path('', general_views.LinkshareProductListAPIView.as_view(), name='list'),
+    # path('', general_views.LinkshareProductListAPIView.as_view(), name='list'),
     path('<str:sku>/', general_views.LinkshareProductListAPIView.as_view(), name='detail'),
 ]

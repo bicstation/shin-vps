@@ -32,5 +32,5 @@ class PCProductSerializer(serializers.ModelSerializer):
             "ai_content",
 
             # レーダー
-            "radar_chart",
+            # "radar_chart",
         ]

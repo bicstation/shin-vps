@@ -13,6 +13,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+# from api.models import PCProduct
+# from api.serializers.linkshare_product_serializer import LinkshareProductSerializer
 
 # 💡 必要なモデルをインポート
 from api.models import (
@@ -20,17 +22,13 @@ from api.models import (
     Actress, Genre, Maker, Label, Director, Series, Author,
     FanzaFloorMaster
 )
-
-# 💡 シリアライザーのインポート
-from api.serializers.general_serializers import (
-    PCProductSerializer, 
-    LinkshareProductSerializer
-)
 from api.serializers.adult_serializers import (
     ActressSerializer, GenreSerializer, MakerSerializer, 
     LabelSerializer, DirectorSerializer, SeriesSerializer, AuthorSerializer,
     FanzaFloorMasterSerializer
 )
+
+from api.serializers.pc_product_serializer import PCProductSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -84,35 +82,7 @@ class AuthorListAPIView(MasterEntityListView):
     serializer_class = AuthorSerializer
 
 # --------------------------------------------------------------------------
-# 2. 🏆 PC製品ランキング View（修正版）
-# --------------------------------------------------------------------------
-
-# class PCProductRankingView(generics.ListAPIView):
-#     serializer_class = PCProductSerializer
-#     permission_classes = [AllowAny]
-
-#     def get_queryset(self):
-#         # 🔥 PCのみ抽出（モニター除外）
-#         queryset = PCProduct.objects.filter(
-#             is_active=True,
-#             spec_score__gt=0,
-#             cpu_model__isnull=False
-#         ).exclude(cpu_model='')
-
-#         path = self.request.path
-#         is_popularity = 'popularity-ranking' in path
-#         site_type = getattr(self.request, 'site_type', 'station')
-
-#         if is_popularity:
-#             return queryset.order_by('-updated_at', '-spec_score')[:20]
-
-#         if site_type == 'saving':
-#             return queryset.order_by('-score_cost', '-spec_score')[:20]
-        
-#         return queryset.order_by('-spec_score', '-updated_at')[:20]
-
-# --------------------------------------------------------------------------
-# 2. 🏆 PC製品ランキング View（完全版：属性対応）
+# 2. 🏆 PC製品ランキング View（完全版）
 # --------------------------------------------------------------------------
 
 class PCProductRankingView(generics.ListAPIView):
@@ -144,35 +114,36 @@ class PCProductRankingView(generics.ListAPIView):
         return product.spec_score or 0
 
     # -------------------------
-    # 🔥 クエリ生成（完全版）
-    # -------------------------
+    # 🔥 クエリ生成
+    # -------------------------   
     def get_queryset(self):
 
-        # 🔥 最低限の安全条件
-        queryset = PCProduct.objects.filter(is_active=True).prefetch_related('attributes')
+        queryset = PCProduct.objects.filter(
+            is_active=True,
+            unified_genre="PC"
+        ).prefetch_related('attributes')
 
         use = self.request.GET.get("use", "score")
+        slug = self.kwargs.get("slug")
 
-        # -------------------------
-        # 🔥 属性ランキング対応
-        # -------------------------
-        # URL例:
-        # /api/general/pc-products/ranking/gpu-rtx-4060/
-        path = self.request.path.rstrip('/')
-        last_part = path.split('/')[-1]
+        if slug:
+            if slug.startswith("gpu-"):
+                gpu = slug.replace("gpu-", "")
+                queryset = queryset.filter(normalized_gpu=gpu)
 
-        reserved = ["ranking", "score", "gaming", "price-low", "work", "ai"]
+            elif slug.startswith("maker-"):
+                maker = slug.replace("maker-", "")
+                queryset = queryset.filter(maker__iexact=maker)
 
-        if last_part not in reserved:
-            queryset = queryset.filter(attributes__slug=last_part).distinct()
+            else:
+                queryset = queryset.filter(attributes__slug=slug)
 
-        # -------------------------
-        # 🔥 Pythonスコアリング
-        # -------------------------
+            queryset = queryset.distinct()
+
         products = list(queryset)
 
         if not products:
-            return []
+            return PCProduct.objects.none()
 
         for p in products:
             p.dynamic_score = self.calculate_score(p, use)
@@ -180,7 +151,6 @@ class PCProductRankingView(generics.ListAPIView):
         products.sort(key=lambda x: x.dynamic_score, reverse=True)
 
         return products[:20]
-
 
 # --------------------------------------------------------------------------
 # 3. 💻 PC・ソフトウェア製品一覧 (v13.2 修正版)
@@ -211,7 +181,8 @@ class PCProductListAPIView(generics.ListAPIView):
     def get_queryset(self):
         queryset = PCProduct.objects.filter(
             is_active=True,
-            cpu_model__isnull=False   # 👈 追加
+            cpu_model__isnull=False,   # 👈 追加
+            unified_genre="PC"  # 🔥 これ追加
         ).exclude(cpu_model='') \
         .prefetch_related('attributes') \
         .distinct()
@@ -238,6 +209,8 @@ class PCProductListAPIView(generics.ListAPIView):
             except (ValueError, TypeError): pass
 
         return queryset
+    
+    
 
 # --------------------------------------------------------------------------
 # 5. 🛠️ PC統計・サイドバー集計
@@ -346,10 +319,10 @@ def pc_product_price_history(request, unique_id):
         "prices": [h.price for h in history]
     })
 
-class LinkshareProductListAPIView(generics.ListAPIView): 
-    queryset = LinkshareProduct.objects.all().order_by('-updated_at')
-    serializer_class = LinkshareProductSerializer
-    permission_classes = [AllowAny]
+# class LinkshareProductListAPIView(generics.ListAPIView): 
+#     queryset = LinkshareProduct.objects.all().order_by('-updated_at')
+#     serializer_class = LinkshareProductSerializer
+#     permission_classes = [AllowAny]
 
 class FanzaFloorNavigationAPIView(views.APIView):
     permission_classes = [AllowAny]

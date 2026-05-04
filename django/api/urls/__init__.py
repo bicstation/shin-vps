@@ -48,7 +48,7 @@ urlpatterns = [
     path('general/', include('api.urls.general_urls')),
     path('adult/',   include('api.urls.adult_urls')),
     path('master/',  include('api.urls.master_urls')),
-    path('linkshare/', include('api.urls.linkshare_urls')),
+    # path('linkshare/', include('api.urls.linkshare_urls')),
     path('bs/',      include('api.urls.bs_urls')),
 
     # ==========================================================

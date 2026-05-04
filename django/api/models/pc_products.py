@@ -95,6 +95,15 @@ class PCProduct(models.Model):
     
     cpu_model = models.CharField(max_length=255, null=True, blank=True, verbose_name="CPUモデル詳細")
     gpu_model = models.CharField(max_length=255, null=True, blank=True, verbose_name="GPUモデル詳細")
+    
+    normalized_gpu = models.CharField(
+        max_length=100,
+        db_index=True,
+        blank=True,
+        default="",
+        verbose_name="GPU正規化キー"
+    )
+    
     display_info = models.CharField(max_length=255, null=True, blank=True, verbose_name="ディスプレイ情報")
 
     # 自作PC提案・互換性カラム

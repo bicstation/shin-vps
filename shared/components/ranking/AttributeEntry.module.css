@@ -1,0 +1,81 @@
+/* =========================
+   セクション
+========================= */
+.section {
+  margin-top: 32px;
+}
+
+/* =========================
+   見出し
+========================= */
+.heading {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* =========================
+   グリッド
+========================= */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* =========================
+   カード（クリック領域）
+========================= */
+.card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px 14px;
+  background: #f9fafb;
+
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+
+  text-decoration: none;
+  color: #111;
+
+  transition: all 0.2s ease;
+}
+
+/* =========================
+   ホバー（重要）
+========================= */
+.card:hover {
+  background: #eef2ff;
+  border-color: #6366f1;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   名前
+========================= */
+.name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* =========================
+   件数
+========================= */
+.count {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* =========================
+   レスポンシブ
+========================= */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

@@ -3,6 +3,9 @@
 from django.core.management.base import BaseCommand
 from api.models import Product, PCProduct
 
+# 🔥 追加
+from api.utils.genre_classifier import classify_genre
+
 
 class Command(BaseCommand):
     help = 'Migrate PCProduct to Product（完全版）'
@@ -16,12 +19,15 @@ class Command(BaseCommand):
         for item in items:
 
             # -------------------------
+            # 🔥 ジャンル判定（ここが今回の核心）
+            # -------------------------
+            unified_genre = classify_genre(item.name)
+
+            # -------------------------
             # Product作成 or 更新
             # -------------------------
             product_obj, created = Product.objects.update_or_create(
                 source='pc',
-
-                # 🔥 一意キー（重要）
                 external_id=item.unique_id,
 
                 defaults={
@@ -30,6 +36,11 @@ class Command(BaseCommand):
                     # -----------------
                     'title': item.name or '',
                     'pc_product': item,
+
+                    # -----------------
+                    # 🔥 ジャンル（追加）
+                    # -----------------
+                    'unified_genre': unified_genre,
 
                     # -----------------
                     # 画像・リンク
@@ -41,9 +52,6 @@ class Command(BaseCommand):
                     # 数値
                     # -----------------
                     'price': int(item.price) if item.price else 0,
-
-                    # 🔥 ranking_scoreはここでは使わない
-                    # → 後でupdate_product_scoresで上書きする
                     'ranking_score': 0,
 
                     # -----------------
@@ -62,14 +70,13 @@ class Command(BaseCommand):
             )
 
             # -------------------------
-            # 🔥 属性コピー（最重要）
+            # 🔥 属性コピー
             # -------------------------
             attrs = list(item.attributes.all())
 
             if attrs:
                 product_obj.attributes.set(attrs)
             else:
-                # 空ならクリア（ズレ防止）
                 product_obj.attributes.clear()
 
             total += 1

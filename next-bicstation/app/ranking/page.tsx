@@ -1,28 +1,47 @@
 /* eslint-disable @next/next/no-img-element */
 
 import React from 'react'
+import Link from 'next/link'
 import { getApiBase } from '@/shared/lib/config/api'
 
 // -------------------------
-// API取得
+// API取得（完全防御）
 // -------------------------
 async function fetchSidebar() {
   try {
     const base = getApiBase()
+
+    console.log('[API BASE]', base)
+
+    // ❗ base未定義防止
+    if (!base) {
+      console.error('[ERROR] API BASE MISSING')
+      return { gpu: [], maker_counts: [] }
+    }
 
     const res = await fetch(`${base}/general/pc-sidebar-stats/`, {
       cache: 'no-store',
     })
 
     if (!res.ok) {
-      console.error('API ERROR:', res.status)
-      return {}
+      console.error('[API ERROR]', res.status)
+      return { gpu: [], maker_counts: [] }
     }
 
-    return await res.json()
+    const data = await res.json()
+
+    console.log('[SIDEBAR DATA]', data)
+
+    return {
+      gpu: Array.isArray(data?.gpu) ? data.gpu : [],
+      maker_counts: Array.isArray(data?.maker_counts)
+        ? data.maker_counts
+        : [],
+    }
+
   } catch (e) {
-    console.error('FETCH ERROR:', e)
-    return {}
+    console.error('[FETCH ERROR]', e)
+    return { gpu: [], maker_counts: [] }
   }
 }
 
@@ -31,18 +50,7 @@ async function fetchSidebar() {
 // -------------------------
 export default async function RankingIndexPage() {
 
-  const data = await fetchSidebar() || {}
-
-  const gpuList =
-    data?.グラフィック ||
-    data?.gpu ||
-    data?.gpu_counts ||
-    []
-
-  const makerList =
-    data?.maker_counts ||
-    data?.maker ||
-    []
+  const { gpu, maker_counts } = await fetchSidebar()
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-800 text-white px-6 py-10">
@@ -59,91 +67,95 @@ export default async function RankingIndexPage() {
           </p>
         </section>
 
-        {/* 診断 */}
-        <section className="mb-10">
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6 text-center">
-            <div className="text-lg font-semibold mb-2">
-              👉 迷っているなら
-            </div>
-
-            <a href="/pc-finder">
-              <div className="block bg-green-500 text-black font-bold py-3 rounded-lg mt-3 text-center cursor-pointer">
-                3問で最適なPCを診断する
-              </div>
-            </a>
-          </div>
-        </section>
-
         {/* 固定ランキング */}
         <section className="mb-10">
           <h2 className="text-xl font-bold mb-4">🏆 まずはここから</h2>
 
           <div className="grid gap-4">
 
-            <a href="/ranking/score" className="card cursor-pointer">
+            <Link href="/ranking/score" className="card hover:opacity-90">
               総合ランキング
-            </a>
+            </Link>
 
-            <a href="/ranking/gaming" className="card cursor-pointer">
+            <Link href="/ranking/gaming" className="card hover:opacity-90">
               ゲーミングPC
-            </a>
+            </Link>
 
-            <a href="/ranking/price-low" className="card cursor-pointer">
+            <Link href="/ranking/price-low" className="card hover:opacity-90">
               コスパ最強
-            </a>
+            </Link>
 
-            <a href="/ranking/work" className="card cursor-pointer">
+            <Link href="/ranking/work" className="card hover:opacity-90">
               ビジネスPC
-            </a>
+            </Link>
 
           </div>
         </section>
 
         {/* GPU */}
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">⚡ GPUで選ぶ</h2>
+        {gpu.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold mb-4">⚡ GPUで選ぶ</h2>
 
-          <div className="grid gap-4">
-            {gpuList?.slice(0, 8)?.map((g: any) => (
-              <a
-                key={g.slug}
-                href={`/ranking/${g.slug}`}
-                className="card cursor-pointer"
-              >
-                {g.name}
-                <span className="text-xs text-gray-400 ml-2">
-                  ({g.count})
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
+            <div className="grid grid-cols-2 gap-3">
+
+              {gpu.slice(0, 8).map((g: any, i: number) => {
+                const slug = g?.slug || `gpu-${g?.name}`
+
+                return (
+                  <Link
+                    key={slug || i}
+                    href={`/ranking/${slug}`}
+                    className="flex justify-between items-center bg-white/5 border border-white/10 rounded-lg px-4 py-3 hover:bg-white/10 transition"
+                  >
+                    <span>{g?.name || 'Unknown'}</span>
+                    <span className="text-xs text-gray-400">
+                      ({g?.count || 0})
+                    </span>
+                  </Link>
+                )
+              })}
+
+            </div>
+          </section>
+        )}
 
         {/* メーカー */}
-        <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">🏢 メーカーで選ぶ</h2>
+        {maker_counts.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-xl font-bold mb-4">🏢 メーカーで選ぶ</h2>
 
-          <div className="grid gap-4">
-            {makerList?.slice(0, 8)?.map((m: any) => (
-              <a
-                key={m.maker}
-                href={`/ranking/maker-${m.maker}`}
-                className="card cursor-pointer"
-              >
-                {m.name}
-                <span className="text-xs text-gray-400 ml-2">
-                  ({m.count})
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
+            <div className="grid grid-cols-2 gap-3">
+
+              {maker_counts.slice(0, 8).map((m: any, i: number) => {
+                const slug = m?.slug || `maker-${m?.name}`
+
+                return (
+                  <Link
+                    key={slug || i}
+                    href={`/ranking/${slug}`}
+                    className="flex justify-between items-center bg-white/5 border border-white/10 rounded-lg px-4 py-3 hover:bg-white/10 transition"
+                  >
+                    <span>{m?.name || 'Unknown'}</span>
+                    <span className="text-xs text-gray-400">
+                      ({m?.count || 0})
+                    </span>
+                  </Link>
+                )
+              })}
+
+            </div>
+          </section>
+        )}
 
         {/* CTA */}
         <section className="text-center mt-10">
-          <a href="/ranking/score" className="text-green-400 underline cursor-pointer">
+          <Link
+            href="/ranking/score"
+            className="text-green-400 underline hover:opacity-80"
+          >
             → 迷ったら総合ランキングを見る
-          </a>
+          </Link>
         </section>
 
       </div>

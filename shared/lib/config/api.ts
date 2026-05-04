@@ -13,15 +13,19 @@ export function getApiBase() {
     : process.env.NEXT_PUBLIC_API_URL;
 
   // 🔥 フォールバック（超重要）
-  if (!base) {
-    base = isServer
-      ? 'http://django-v3:8000/api'
-      : 'http://localhost:8083/api';
+  // if (!base) {
+  //   base = isServer
+  //     ? 'http://django-v3:8000/api'
+  //     : 'http://localhost:8083/api';
 
-    console.warn('[API BASE FALLBACK]', {
-      isServer,
-      base,
-    });
+  //   console.warn('[API BASE FALLBACK]', {
+  //     isServer,
+  //     base,
+  //   });
+  // }
+  if (!base) {
+    console.error('[ERROR] API BASE NOT FOUND')
+    return ''
   }
 
   // 🔥 最終ログ（デバッグ用）
