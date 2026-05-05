@@ -4,7 +4,7 @@ import { getApiBase } from '@/shared/lib/config/api'
 
 /**
  * =========================================
- * 🔥 共通レスポンスチェック（強化版）
+ * 🔥 共通レスポンスチェック
  * =========================================
  */
 async function safeJson(res: Response, url: string) {
@@ -26,13 +26,11 @@ async function safeJson(res: Response, url: string) {
 
 /**
  * =========================================
- * 🔥 ランキング取得（最終安定版）
+ * 🔥 ランキング取得（パスベース完全版）
  * =========================================
  */
 export async function fetchPCProductRanking(
-  slug: string = 'score',
-  use: string = 'score',
-  sort: string = 'score'
+  slug: string = 'score'
 ) {
   try {
     const API_BASE = getApiBase()
@@ -43,28 +41,15 @@ export async function fetchPCProductRanking(
     }
 
     // -------------------------
-    // 🔥 パラメータ安全化
+    // 🔥 URL構築（完全パス方式）
     // -------------------------
-    const safeSlug = slug || 'score'
-    const safeUse = use || 'score'
-    const safeSort = ['score', 'price_asc', 'price_desc'].includes(sort)
-      ? sort
-      : 'score'
-
-    // -------------------------
-    // 🔥 URL構築（分岐対応）
-    // -------------------------
-    const basePath =
-      safeSlug === 'score'
+    const url =
+      slug === 'score'
         ? `${API_BASE}/general/pc-products/ranking/`
-        : `${API_BASE}/general/pc-products/ranking/${safeSlug}/`
-
-    const url = `${basePath}?use=${safeUse}&sort=${safeSort}`
+        : `${API_BASE}/general/pc-products/ranking/${slug}/`
 
     console.log('[FETCH RANKING]', {
-      slug: safeSlug,
-      use: safeUse,
-      sort: safeSort,
+      slug,
       url,
     })
 
@@ -98,6 +83,7 @@ export async function fetchPCProductRanking(
     console.log('[FETCH RESULT]', result.length)
 
     return result
+
   } catch (error) {
     console.error('[fetchPCProductRanking ERROR]', error)
     return []
@@ -106,7 +92,7 @@ export async function fetchPCProductRanking(
 
 /**
  * =========================================
- * 🔥 商品詳細（完全安定版）
+ * 🔥 商品詳細（安定版）
  * =========================================
  */
 export async function fetchPCProductDetail(unique_id: string) {
@@ -140,6 +126,7 @@ export async function fetchPCProductDetail(unique_id: string) {
     }
 
     return await safeJson(res, url)
+
   } catch (error) {
     console.error('[fetchPCProductDetail ERROR]', error)
     return null

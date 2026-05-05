@@ -60,6 +60,7 @@ function CardLink({
     <Link
       href={href}
       className="block bg-white/5 border border-white/10 rounded-xl px-5 py-4 hover:bg-white/10 transition-all hover:scale-[1.02]"
+      prefetch={false}
     >
       {children}
     </Link>
@@ -140,6 +141,7 @@ export default async function RankingIndexPage() {
                     key={g.slug}
                     href={`/ranking/${g.slug}`}
                     className="flex justify-between items-center bg-white/5 border border-white/10 rounded-lg px-4 py-3 hover:bg-white/10 transition"
+                    prefetch={false}
                   >
                     <span className="text-sm">{g.name}</span>
                     <span className="text-xs text-gray-400">
@@ -168,6 +170,7 @@ export default async function RankingIndexPage() {
                     key={m.slug}
                     href={`/ranking/${m.slug}`}
                     className="flex justify-between items-center bg-white/5 border border-white/10 rounded-lg px-4 py-3 hover:bg-white/10 transition"
+                    prefetch={false}
                   >
                     <span className="text-sm">{m.name}</span>
                     <span className="text-xs text-gray-400">
@@ -186,6 +189,7 @@ export default async function RankingIndexPage() {
           <Link
             href="/ranking/score"
             className="inline-block text-green-400 underline hover:opacity-80"
+            prefetch={false}
           >
             → まずは総合ランキングを見る
           </Link>

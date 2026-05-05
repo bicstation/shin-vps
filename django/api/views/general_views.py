@@ -38,37 +38,9 @@ class PCProductRankingView(generics.ListAPIView):
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
 
-    # -------------------------
-    # 🔥 スコア計算（将来用）
-    # -------------------------
-    def calculate_score(self, product, use: str):
-        cpu = float(product.score_cpu or 0)
-        gpu = float(product.score_gpu or 0)
-        cost = float(product.score_cost or 0)
-        mem = float(product.memory_gb or 0)
-        ai = float(product.score_ai or 0)
-
-        if use == "gaming":
-            return gpu * 0.6 + cpu * 0.3 + cost * 0.1
-
-        if use == "price-low":
-            return cost * 0.7 + cpu * 0.2 + gpu * 0.1
-
-        if use == "work":
-            return cpu * 0.5 + (mem * 2) * 0.3 + cost * 0.2
-
-        if use == "ai":
-            return ai * 0.6 + cpu * 0.3 + cost * 0.1
-
-        return float(product.spec_score or 0)
-
-    # -------------------------
-    # 🔥 クエリ生成
-    # -------------------------
     def get_queryset(self):
         slug = self.kwargs.get("slug")
-        print("SLUG DEBUG:", slug)  # ←これ追加
-        
+        print("SLUG DEBUG:", slug)
 
         queryset = PCProduct.objects.filter(
             is_active=True,
@@ -76,16 +48,9 @@ class PCProductRankingView(generics.ListAPIView):
         ).prefetch_related("attributes")
 
         use = self.request.GET.get("use", "score")
-        slug = self.kwargs.get("slug")
 
-        # -------------------------
-        # 🔥 フィルタ処理（scoreは除外）
-        # -------------------------
         if slug:
-            
-            slug = self.kwargs.get("slug")
-
-            if slug and slug != "score":
+            if slug != "score":
 
                 if slug.startswith("gpu-"):
                     queryset = queryset.filter(
@@ -104,11 +69,8 @@ class PCProductRankingView(generics.ListAPIView):
 
                 queryset = queryset.distinct()
 
-        # -------------------------
-        # 🔥 並び替え（安定版）
-        # -------------------------
-        # 👉 今はDBソート（高速・安定）
         return queryset.order_by("-spec_score")[:20]
+
 
 # --------------------------------------------------------------------------
 # 2. 📦 PC製品一覧
@@ -180,9 +142,10 @@ def pc_sidebar_stats(request):
 
     return Response(sidebar)
 
-# -------------------------
-# 📄 PC製品詳細
-# -------------------------
+
+# --------------------------------------------------------------------------
+# 4. 📄 PC製品詳細
+# --------------------------------------------------------------------------
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def pc_product_detail(request, unique_id):
@@ -197,3 +160,158 @@ def pc_product_detail(request, unique_id):
 
     except PCProduct.DoesNotExist:
         return Response({"error": "not found"}, status=404)
+
+# --------------------------------------------------------------------------
+# 5. 🔗 関連商品API（最終完成版：段階ロジック対応）
+# --------------------------------------------------------------------------
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_related_pc_products(request, unique_id):
+
+    limit = 8
+
+    try:
+        base = PCProduct.objects.get(
+            unique_id=unique_id,
+            is_active=True
+        )
+    except PCProduct.DoesNotExist:
+        return Response([])
+
+    base_gpu = base.attributes.filter(attr_type="gpu").first()
+    base_usage = base.attributes.filter(attr_type="usage").first()
+
+    # -------------------------
+    # デバイス判定
+    # -------------------------
+    def is_laptop(p):
+        name = (p.name or "").lower()
+        return (
+            "ノート" in name
+            or "laptop" in name
+            or "book" in name
+            or "zenbook" in name
+            or "proart" in name
+        )
+
+    base_is_laptop = is_laptop(base)
+
+    # -------------------------
+    # GPU近似
+    # -------------------------
+    def get_neighbor_gpu_slugs(slug):
+        mapping = {
+            "gpu-rtx-4060": ["gpu-rtx-4050", "gpu-rtx-4060", "gpu-rtx-4070"],
+            "gpu-rtx-4070": ["gpu-rtx-4060", "gpu-rtx-4070", "gpu-rtx-4080"],
+            "gpu-rtx-4080": ["gpu-rtx-4070", "gpu-rtx-4080", "gpu-rtx-4090"],
+            "gpu-rtx-4090": ["gpu-rtx-4080", "gpu-rtx-4090"],
+        }
+        return mapping.get(slug, [slug])
+
+    # -------------------------
+    # ベースQS
+    # -------------------------
+    base_qs = PCProduct.objects.filter(
+        is_active=True,
+        unified_genre="PC"
+    ).exclude(id=base.id).prefetch_related("attributes")
+
+    candidates = base_qs.order_by("-spec_score")[:50]
+
+    # -------------------------
+    # スコア
+    # -------------------------
+    def calc_score(p):
+        score = 0
+
+        if base.price and p.price:
+            diff = abs(p.price - base.price) / base.price
+            if diff <= 0.1:
+                score += 0.4
+            elif diff <= 0.2:
+                score += 0.2
+
+        if base_gpu and p.attributes.filter(slug=base_gpu.slug).exists():
+            score += 0.3
+        elif base_gpu and p.attributes.filter(
+            slug__in=get_neighbor_gpu_slugs(base_gpu.slug)
+        ).exists():
+            score += 0.2
+
+        if base_usage and p.attributes.filter(slug=base_usage.slug).exists():
+            score += 0.2
+
+        if base.spec_score and p.spec_score:
+            diff = abs(p.spec_score - base.spec_score) / base.spec_score
+            if diff <= 0.1:
+                score += 0.1
+
+        return round(score, 2)
+
+    # -------------------------
+    # reason
+    # -------------------------
+    def build_reason(p):
+        reasons = []
+
+        if base.price and p.price:
+            diff = abs(p.price - base.price) / base.price
+            if diff <= 0.2:
+                reasons.append("価格帯が近い")
+
+        if base_gpu and p.attributes.filter(slug=base_gpu.slug).exists():
+            reasons.append("同クラスGPU")
+
+        if base_usage and p.attributes.filter(slug=base_usage.slug).exists():
+            reasons.append("用途一致")
+
+        return "・".join(reasons) if reasons else "構成が近いモデル"
+
+    # -------------------------
+    # 段階抽出
+    # -------------------------
+    strict = []
+    loose = []
+
+    for p in candidates:
+
+        # デバイス一致
+        if is_laptop(p) != base_is_laptop:
+            continue
+
+        if not p.price or not base.price:
+            continue
+
+        diff = abs(p.price - base.price) / base.price
+        score = calc_score(p)
+
+        item = {
+            "id": p.id,
+            "unique_id": p.unique_id,
+            "name": p.name,
+            "price": p.price,
+            "image_url": p.image_url,
+            "url": p.url,
+            "match_score": score,
+            "match_reason": build_reason(p)
+        }
+
+        # -------------------------
+        # 厳密
+        # -------------------------
+        if diff <= 0.2 and score >= 0.5:
+            strict.append(item)
+
+        # -------------------------
+        # 緩和
+        # -------------------------
+        elif diff <= 0.3 and score >= 0.4:
+            loose.append(item)
+
+    # -------------------------
+    # 合成
+    # -------------------------
+    results = strict + loose
+    results = sorted(results, key=lambda x: x["match_score"], reverse=True)[:limit]
+
+    return Response(results)

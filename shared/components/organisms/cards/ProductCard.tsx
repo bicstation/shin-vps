@@ -14,7 +14,24 @@ type Product = {
   cpu_model?: string;
 };
 
-export default function ProductCard({ product }: { product?: Product }) {
+type Props = {
+  product?: Product;
+  rank?: number;
+};
+
+function getRankLabel(rank?: number) {
+  if (!rank) return null;
+
+  if (rank === 1) return '👑 人気No.1';
+  if (rank === 2) return '人気No.2';
+  if (rank === 3) return 'バランス良';
+  if (rank === 4) return 'コスパ良';
+
+  if (rank <= 10) return `TOP${rank}`;
+  return null;
+}
+
+export default function ProductCard({ product, rank }: Props) {
   if (!product) return null;
 
   const rawTitle =
@@ -40,6 +57,8 @@ export default function ProductCard({ product }: { product?: Product }) {
 
   const cpu = product.cpu_model || '';
 
+  const label = getRankLabel(rank);
+
   return (
     <Link
       href={`/product/${product.unique_id}`}
@@ -51,19 +70,18 @@ export default function ProductCard({ product }: { product?: Product }) {
           src={image}
           alt={title}
           className={styles.image}
-          onError={(e) => {
-            e.currentTarget.src = '/no-image.png';
-          }}
         />
         <div className={styles.imageGrad} />
 
-        {/* 🏷 ラベル */}
-        <div className={styles.label}>
-          人気No.2
-        </div>
+        {/* 🏷 ラベル（動的） */}
+        {label && (
+          <div className={styles.label}>
+            {label}
+          </div>
+        )}
       </div>
 
-      {/* 💰 価格（最優先） */}
+      {/* 💰 価格 */}
       <div className={styles.price}>
         {price}
       </div>
@@ -79,11 +97,10 @@ export default function ProductCard({ product }: { product?: Product }) {
         {cpu && <span className={styles.badgeSub}>{cpu}</span>}
       </div>
 
-      {/* 🚀 CTA（ボタン化） */}
+      {/* 🚀 CTA */}
       <div className={styles.cta}>
         👉 今この価格で購入する →
       </div>
-
     </Link>
   );
 }

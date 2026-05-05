@@ -1,0 +1,56 @@
+/* =========================
+   Wrapper
+========================= */
+.wrapper {
+  margin-top: 32px;
+  padding: 0 16px;
+}
+
+/* =========================
+   本文
+========================= */
+.aiContent {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #e5e7eb;
+}
+
+/* 見出し */
+.aiContent h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+}
+
+.aiContent h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 12px 0 6px;
+}
+
+/* 段落 */
+.aiContent p {
+  margin-bottom: 10px;
+}
+
+/* リスト */
+.aiContent ul {
+  padding-left: 18px;
+  margin-bottom: 10px;
+}
+
+.aiContent li {
+  margin-bottom: 6px;
+}
+
+/* 強調 */
+.aiContent strong {
+  color: #ffffff;
+}
+
+/* モバイル */
+@media (max-width: 640px) {
+  .aiContent {
+    font-size: 13px;
+  }
+}

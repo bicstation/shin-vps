@@ -16,9 +16,6 @@ export const dynamic = 'force-dynamic'
 // -------------------------
 export default async function HomePageMain() {
 
-  // -------------------------
-  // 🔥 データ取得（シンプルに）
-  // -------------------------
   let products: any[] = []
 
   try {
@@ -38,9 +35,6 @@ export default async function HomePageMain() {
     console.error('[TOP FETCH ERROR]', e)
   }
 
-  // -------------------------
-  // 🔥 フォールバック
-  // -------------------------
   if (!products.length) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -53,9 +47,6 @@ export default async function HomePageMain() {
   const top1 = products[0] || null
   const others = products.slice(1, 3)
 
-  // -------------------------
-  // 🔥 UI
-  // -------------------------
   return (
     <div className={styles.mainWrapper}>
 
@@ -68,54 +59,74 @@ export default async function HomePageMain() {
         <Link href="/ranking/gpu-rtx-4060">⚡ RTX4060</Link>
       </section>
 
-      {/* 🔥③ HERO */}
+      {/* 🔥② HERO（決断ゾーン） */}
       {top1 && (
         <section className={styles.hero}>
-          <h1>迷ったらこれ。今一番バランスがいい構成</h1>
-          <p>性能・価格・用途のバランスで選ぶならこれ1台</p>
 
+          {/* 結論コピー */}
+          <h1 className={styles.heroTitle}>
+            迷ったらこれでOK
+          </h1>
+
+          {/* サブコピー */}
+          <p className={styles.heroSub}>
+            この価格帯で一番バランスがいい構成
+          </p>
+
+          {/* HEROカード */}
           <HeroRankingCard product={top1} />
+
+          {/* CTA（1本化） */}
+          {top1?.url && (
+            <a
+              href={top1.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.heroCTA}
+            >
+              👉 今すぐこの価格で購入する
+            </a>
+          )}
+
+          <span className={styles.heroNotice}>
+            ※在庫切れになることがあります
+          </span>
+
         </section>
       )}
 
-      {/* 🔥④ CTA */}
-      {top1?.url && (
-        <div className={styles.ctaPrimary}>
-          <a href={top1.url} target="_blank" rel="noopener noreferrer">
-            🔥 最安価格をチェック（在庫あり）
-          </a>
-          <span>在庫切れになることがあります</span>
-        </div>
-      )}
-
-      {/* 🔥② 診断導線 */}
+      {/* 🔥③ 診断導線（弱め） */}
       <section className={styles.finderSection}>
         <div className={styles.finderBox}>
-          <h2>迷ってるなら診断で決める</h2>
+          <h2>迷っているなら診断で決める</h2>
           <p>質問に答えるだけで最適な1台がわかる</p>
 
           <Link href="/pc-finder" className={styles.finderBtn}>
-            👉 無料で診断する
+            👉 無料診断はこちら
           </Link>
         </div>
       </section>
 
-      {/* 🔥⑤ 比較 */}
+      {/* 🔥④ 比較（補助） */}
       {others.length > 0 && (
         <section className={styles.compareSection}>
-          <h3>この価格帯でよく比較されるモデル</h3>
+          <h3>他にも選択肢あり</h3>
 
           <div className={styles.grid}>
-            {others.map((p: any) => (
-              <ProductCard key={p.unique_id} product={p} />
+            {others.map((p: any, i: number) => (
+              <ProductCard
+                key={p.unique_id}
+                product={p}
+                rank={i + 2} // ← 重要
+              />
             ))}
           </div>
         </section>
       )}
 
-      {/* 🔥⑥ 中間導線 */}
+      {/* 🔥⑤ 中間導線 */}
       <section className={styles.midNav}>
-        <h3>目的別に比較する</h3>
+        <h3>目的別で探す</h3>
 
         <div>
           <Link href="/ranking/gaming">ゲーム用途</Link>
@@ -124,21 +135,12 @@ export default async function HomePageMain() {
         </div>
       </section>
 
-      {/* 🔥⑦ 下部導線 */}
+      {/* 🔥⑥ 下部導線 */}
       <section className={styles.bottomNav}>
         <Link href="/ranking">
           → すべてのランキングを見る
         </Link>
       </section>
-
-      {/* 🔥⑧ CTA再提示 */}
-      {top1?.url && (
-        <div className={styles.ctaSecondary}>
-          <a href={top1.url} target="_blank" rel="noopener noreferrer">
-            👉 迷ったらこれでOK
-          </a>
-        </div>
-      )}
 
     </div>
   )

@@ -1,0 +1,160 @@
+/* =========================
+   ページ全体
+========================= */
+.wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* =========================
+   HERO（最重要）
+========================= */
+.hero {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.heroPrice {
+  font-size: 42px;
+  font-weight: 900;
+  color: #fb923c;
+  letter-spacing: 1px;
+}
+
+/* HEROの軽い強調（主役化） */
+.heroBox {
+  background: rgba(249, 115, 22, 0.05);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+/* CTA（最重要） */
+.heroCTA {
+  margin-top: 16px;
+  display: inline-block;
+  padding: 16px 22px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: #fff;
+  font-weight: 800;
+  transition: all 0.15s ease;
+}
+
+.heroCTA:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(249, 115, 22, 0.4);
+}
+
+.heroCTA:active {
+  transform: scale(0.96);
+}
+
+/* =========================
+   メインレイアウト
+========================= */
+.mainGrid {
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .mainGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* =========================
+   画像
+========================= */
+.imageBox {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* =========================
+   レーダー（補助）
+========================= */
+.radarWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+/* =========================
+   AIコメント（重要）
+========================= */
+.aiSummary {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.aiSummaryItem {
+  font-size: 13px;
+  color: #e5e7eb;
+  margin-bottom: 2px;
+}
+
+.aiTarget {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #fb923c;
+  font-weight: 600;
+}
+
+/* =========================
+   CTA再提示（Final）
+========================= */
+.ctaSection {
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* =========================
+   関連
+========================= */
+.related {
+  margin-top: 30px;
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .relatedGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* =========================
+   セクション間余白（流れ）
+========================= */
+.sectionSpacing {
+  margin-top: 24px;
+}
+
+/* =========================
+   モバイル最適化
+========================= */
+@media (max-width: 640px) {
+
+  .heroPrice {
+    font-size: 32px;
+  }
+
+  .heroCTA {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .aiSummaryItem {
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,155 @@
+/* /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/ProductHero.module.css */
+
+/* =========================
+   HEROセクション（主役）
+========================= */
+.heroSection {
+  padding: 24px 16px;
+  text-align: center;
+}
+
+/* =========================
+   コピー（結論）
+========================= */
+.heroCatch {
+  font-size: 18px;
+  font-weight: 700;
+  color: #facc15;
+  margin-bottom: 8px;
+}
+
+/* =========================
+   価格（最重要）
+========================= */
+.heroPrice {
+  font-size: 44px;
+  font-weight: 900;
+  color: #fb923c;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+/* =========================
+   CTA（主ボタン）
+========================= */
+.heroCtaWrapper {
+  margin-top: 16px;
+}
+
+.heroCta {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+
+  padding: 18px;
+
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: #fff;
+
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 16px;
+
+  text-align: center;
+
+  transition: all 0.15s ease;
+}
+
+.heroCta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(249, 115, 22, 0.45);
+}
+
+.heroCta:active {
+  transform: scale(0.96);
+}
+
+/* CTA補助 */
+.heroSub {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+/* =========================
+   画像（補助）
+========================= */
+.heroImageWrap {
+  margin-top: 20px;
+}
+
+.heroImageLabel {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.heroImage {
+  width: 100%;
+  max-width: 320px;
+  height: 200px;
+  object-fit: contain;
+  margin: 0 auto;
+  opacity: 0.95;
+}
+
+/* =========================
+   スペック（補助）
+========================= */
+.heroSpec {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.heroBadge {
+  background: #111827;
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.heroBadgeSub {
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+/* =========================
+   HERO全体軽強調
+========================= */
+.heroBox {
+  background: rgba(249, 115, 22, 0.05);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+/* =========================
+   モバイル最適化
+========================= */
+@media (max-width: 640px) {
+
+  .heroPrice {
+    font-size: 34px;
+  }
+
+  .heroCatch {
+    font-size: 16px;
+  }
+
+  .heroCta {
+    font-size: 14px;
+    padding: 16px;
+  }
+
+  .heroImage {
+    height: 180px;
+  }
+}

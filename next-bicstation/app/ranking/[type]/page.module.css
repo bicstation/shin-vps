@@ -1,0 +1,204 @@
+/* =====================================================================
+   🔥 TOP PAGE LAYOUT（決断UI最適化）
+===================================================================== */
+
+.mainWrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* -------------------------
+   ナビ
+------------------------- */
+.topNav {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+}
+
+.topNav a {
+  font-size: 12px;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.topNav a:hover {
+  color: #fff;
+}
+
+/* -------------------------
+   🔥 HERO（最重要）
+------------------------- */
+.hero {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.heroTitle {
+  font-size: 22px;
+  font-weight: 900;
+  color: #facc15;
+  margin-bottom: 6px;
+}
+
+.heroSub {
+  font-size: 13px;
+  color: #cbd5f5;
+  margin-bottom: 16px;
+}
+
+/* CTA（最重要） */
+.heroCTA {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  margin: 16px auto 6px;
+  padding: 16px;
+
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: #fff;
+
+  text-align: center;
+  font-weight: 800;
+  font-size: 16px;
+
+  border-radius: 12px;
+
+  transition: all 0.15s ease;
+}
+
+.heroCTA:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.45);
+}
+
+.heroCTA:active {
+  transform: scale(0.96);
+}
+
+.heroNotice {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* -------------------------
+   診断（弱める）
+------------------------- */
+.finderSection {
+  margin: 30px 0;
+}
+
+.finderBox {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.finderBox h2 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.finderBox p {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.finderBtn {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #38bdf8;
+}
+
+/* -------------------------
+   比較（補助）
+------------------------- */
+.compareSection {
+  margin-top: 30px;
+}
+
+.compareSection h3 {
+  font-size: 14px;
+  text-align: center;
+  color: #9ca3af;
+  margin-bottom: 12px;
+}
+
+/* グリッド統一 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+/* -------------------------
+   中間導線
+------------------------- */
+.midNav {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.midNav h3 {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-bottom: 8px;
+}
+
+.midNav div {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.midNav a {
+  font-size: 12px;
+  color: #cbd5f5;
+}
+
+.midNav a:hover {
+  color: #fff;
+}
+
+/* -------------------------
+   下部導線
+------------------------- */
+.bottomNav {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.bottomNav a {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.bottomNav a:hover {
+  color: #fff;
+}
+
+/* -------------------------
+   レスポンシブ
+------------------------- */
+@media (min-width: 768px) {
+
+  .heroTitle {
+    font-size: 26px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .heroCTA {
+    font-size: 18px;
+  }
+}

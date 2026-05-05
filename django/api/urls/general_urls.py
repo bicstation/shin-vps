@@ -3,7 +3,12 @@
 from django.urls import path
 from api.views import general_views
 from api.views.pc_stats_view import pc_sidebar_stats
-from api.views.general_views import pc_product_detail
+from api.views.general_views import (
+    PCProductRankingView,
+    PCProductListAPIView,
+    pc_product_detail,
+    get_related_pc_products  # ←これ追加
+)
 
 app_name = 'general'
 
@@ -28,6 +33,11 @@ urlpatterns = [
         general_views.PCProductListAPIView.as_view()
     ),
 
+
+    path(
+        "pc-products/<str:unique_id>/related/",
+        get_related_pc_products
+    ),
     # -------------------------
     # 📄 詳細（最後に置く）
     # -------------------------
