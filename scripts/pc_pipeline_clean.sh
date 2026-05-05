@@ -44,7 +44,7 @@ run_django migrate_linkshare_to_pc
 
 # ③ AI解析
 log "🧠 Analyze"
-run_django analyze_pc_spec --limit 50 --null-only
+run_django analyze_pc_spec --limit 1000 --null-only
 
 # ④ 属性同期
 log "🏷️ Attributes"
@@ -62,7 +62,7 @@ run_django update_product_scores
 
 # ⑥ 画像
 log "🖼️ Image Cache"
-run_django fetch_product_images --limit 30
+run_django fetch_product_images --limit 500
 
 # ⑦ APIチェック（🔥内部確認に変更）
 log "📈 API Check (internal)"
