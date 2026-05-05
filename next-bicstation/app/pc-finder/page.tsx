@@ -37,7 +37,7 @@ export default function PCFinderPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/finder/recommend/`,
+        `${process.env.NEXT_PUBLIC_API_URL}/finder/recommend/`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

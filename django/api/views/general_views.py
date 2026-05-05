@@ -4,29 +4,19 @@ import requests
 import logging
 from urllib.parse import unquote
 
-from django.db.models import Count
-from django.http import Http404, StreamingHttpResponse
+from django.db.models import Count, Q
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, filters, pagination, views, status
+from rest_framework import generics, filters, pagination, views
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-# from api.models import PCProduct
-# from api.serializers.linkshare_product_serializer import LinkshareProductSerializer
 
-# 💡 必要なモデルをインポート
-from api.models import (
-    PCProduct, PCAttribute, PriceHistory, LinkshareProduct,
-    Actress, Genre, Maker, Label, Director, Series, Author,
-    FanzaFloorMaster
-)
-from api.serializers.adult_serializers import (
-    ActressSerializer, GenreSerializer, MakerSerializer, 
-    LabelSerializer, DirectorSerializer, SeriesSerializer, AuthorSerializer,
-    FanzaFloorMasterSerializer
-)
+from api.models.pc_products import PCProduct
+from api.models import PCAttribute, PriceHistory
 
 from api.serializers.pc_product_serializer import PCProductSerializer
 
@@ -37,67 +27,26 @@ logger = logging.getLogger(__name__)
 # --------------------------------------------------------------------------
 
 class PCProductLimitOffsetPagination(pagination.LimitOffsetPagination):
-    """Next.jsの ?offset=x&limit=y に完全対応"""
     default_limit = 20
     max_limit = 100
 
-class MasterEntityListView(generics.ListAPIView):
-    """マスタデータ取得の共通ベースクラス"""
-    permission_classes = [AllowAny]
-    pagination_class = None
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['name', 'slug', 'ruby']
-    ordering = ['name']
 
 # --------------------------------------------------------------------------
-# 1. 共通マスタデータ View (成人向け・一般共通)
+# 1. 🏆 PC製品ランキング
 # --------------------------------------------------------------------------
-
-class ActressListAPIView(MasterEntityListView):
-    queryset = Actress.objects.all().order_by('-product_count', 'name')
-    serializer_class = ActressSerializer
-
-class GenreListAPIView(MasterEntityListView):
-    queryset = Genre.objects.all().order_by('-product_count', 'name')
-    serializer_class = GenreSerializer
-
-class MakerListAPIView(MasterEntityListView):
-    queryset = Maker.objects.all().order_by('-product_count', 'name')
-    serializer_class = MakerSerializer
-
-class LabelListAPIView(MasterEntityListView):
-    queryset = Label.objects.all().order_by('-product_count', 'name')
-    serializer_class = LabelSerializer
-
-class DirectorListAPIView(MasterEntityListView):
-    queryset = Director.objects.all().order_by('-product_count', 'name')
-    serializer_class = DirectorSerializer
-
-class SeriesListAPIView(MasterEntityListView):
-    queryset = Series.objects.all().order_by('-product_count', 'name')
-    serializer_class = SeriesSerializer
-
-class AuthorListAPIView(MasterEntityListView):
-    queryset = Author.objects.all().order_by('-product_count', 'name')
-    serializer_class = AuthorSerializer
-
-# --------------------------------------------------------------------------
-# 2. 🏆 PC製品ランキング View（完全版）
-# --------------------------------------------------------------------------
-
 class PCProductRankingView(generics.ListAPIView):
     serializer_class = PCProductSerializer
     permission_classes = [AllowAny]
 
     # -------------------------
-    # 🔥 スコア計算
+    # 🔥 スコア計算（将来用）
     # -------------------------
     def calculate_score(self, product, use: str):
-        cpu = product.score_cpu or 0
-        gpu = product.score_gpu or 0
-        cost = product.score_cost or 0
-        mem = product.memory_gb or 0
-        ai = product.score_ai or 0
+        cpu = float(product.score_cpu or 0)
+        gpu = float(product.score_gpu or 0)
+        cost = float(product.score_cost or 0)
+        mem = float(product.memory_gb or 0)
+        ai = float(product.score_ai or 0)
 
         if use == "gaming":
             return gpu * 0.6 + cpu * 0.3 + cost * 0.1
@@ -111,222 +60,140 @@ class PCProductRankingView(generics.ListAPIView):
         if use == "ai":
             return ai * 0.6 + cpu * 0.3 + cost * 0.1
 
-        return product.spec_score or 0
+        return float(product.spec_score or 0)
 
     # -------------------------
     # 🔥 クエリ生成
-    # -------------------------   
+    # -------------------------
     def get_queryset(self):
+        slug = self.kwargs.get("slug")
+        print("SLUG DEBUG:", slug)  # ←これ追加
+        
 
         queryset = PCProduct.objects.filter(
             is_active=True,
             unified_genre="PC"
-        ).prefetch_related('attributes')
+        ).prefetch_related("attributes")
 
         use = self.request.GET.get("use", "score")
         slug = self.kwargs.get("slug")
 
+        # -------------------------
+        # 🔥 フィルタ処理（scoreは除外）
+        # -------------------------
         if slug:
-            if slug.startswith("gpu-"):
-                gpu = slug.replace("gpu-", "")
-                queryset = queryset.filter(normalized_gpu=gpu)
+            
+            slug = self.kwargs.get("slug")
 
-            elif slug.startswith("maker-"):
-                maker = slug.replace("maker-", "")
-                queryset = queryset.filter(maker__iexact=maker)
+            if slug and slug != "score":
 
-            else:
-                queryset = queryset.filter(attributes__slug=slug)
+                if slug.startswith("gpu-"):
+                    queryset = queryset.filter(
+                        attributes__attr_type="gpu",
+                        attributes__slug=slug
+                    )
 
-            queryset = queryset.distinct()
+                elif slug.startswith("maker-"):
+                    maker = slug.replace("maker-", "")
+                    queryset = queryset.filter(maker__iexact=maker)
 
-        products = list(queryset)
+                else:
+                    queryset = queryset.filter(
+                        attributes__slug=slug
+                    )
 
-        if not products:
-            return PCProduct.objects.none()
+                queryset = queryset.distinct()
 
-        for p in products:
-            p.dynamic_score = self.calculate_score(p, use)
-
-        products.sort(key=lambda x: x.dynamic_score, reverse=True)
-
-        return products[:20]
+        # -------------------------
+        # 🔥 並び替え（安定版）
+        # -------------------------
+        # 👉 今はDBソート（高速・安定）
+        return queryset.order_by("-spec_score")[:20]
 
 # --------------------------------------------------------------------------
-# 3. 💻 PC・ソフトウェア製品一覧 (v13.2 修正版)
+# 2. 📦 PC製品一覧
 # --------------------------------------------------------------------------
 
 class PCProductListAPIView(generics.ListAPIView):
-    """💻 フィルタ・検索・動的ソートを統合したPC製品API"""
     serializer_class = PCProductSerializer
     pagination_class = PCProductLimitOffsetPagination
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    
-    filterset_fields = [
-        'site_prefix', 'unified_genre', 'stock_status', 
-        'is_posted', 'is_ai_pc', 'is_download',
-        'cpu_socket', 'motherboard_chipset', 'ram_type',
-        'license_term', 'edition'
-    ]
-    search_fields = ['name', 'cpu_model', 'gpu_model', 'os_support', 'edition', 'description', 'ai_content']
-    
-    ordering_fields = [
-        'price', 'updated_at', 'created_at', 'memory_gb', 'storage_gb',
-        'spec_score', 'score_cpu', 'score_gpu', 'score_cost', 
-        'score_portable', 'score_ai', 'npu_tops', 'power_recommendation', 'name'
-    ]
-    ordering = ['-created_at']
-    
+
+    search_fields = ['name', 'cpu_model', 'gpu_model', 'description']
+    ordering_fields = ['price', 'created_at', 'spec_score']
+
     def get_queryset(self):
         queryset = PCProduct.objects.filter(
             is_active=True,
-            cpu_model__isnull=False,   # 👈 追加
-            unified_genre="PC"  # 🔥 これ追加
-        ).exclude(cpu_model='') \
-        .prefetch_related('attributes') \
-        .distinct()
-        
-        # 1. メーカー絞り込み (?maker=hp)
-        maker = self.request.query_params.get('maker')
-        if maker and maker.lower() != 'all':
-            queryset = queryset.filter(maker__iexact=unquote(maker))
-            
-        # 2. 🚩 属性統合フィルタ (修正: getlistにより複数選択に対応)
-        # ?attribute=slug1&attribute=slug2 形式に対応
-        attribute_slugs = self.request.query_params.getlist('attribute')
-        if attribute_slugs:
-            for slug in attribute_slugs:
-                if slug:
-                    # AND検索として1つずつ絞り込む
-                    queryset = queryset.filter(attributes__slug=unquote(slug))
+            unified_genre="PC"
+        ).exclude(cpu_model__isnull=True).exclude(cpu_model='') \
+         .prefetch_related('attributes') \
+         .distinct()
 
-        # 3. 価格上限絞り込み
+        maker = self.request.query_params.get('maker')
+        if maker:
+            queryset = queryset.filter(maker__iexact=unquote(maker))
+
+        attribute_slugs = self.request.query_params.getlist('attribute')
+        for slug in attribute_slugs:
+            queryset = queryset.filter(attributes__slug=unquote(slug))
+
         max_price = self.request.query_params.get('max_price')
         if max_price:
             try:
                 queryset = queryset.filter(price__lte=int(max_price))
-            except (ValueError, TypeError): pass
+            except:
+                pass
 
         return queryset
-    
-    
+
 
 # --------------------------------------------------------------------------
-# 5. 🛠️ PC統計・サイドバー集計
+# 3. 📊 サイドバー統計
 # --------------------------------------------------------------------------
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def pc_sidebar_stats(request):
-    """📊 サイドバー統計一括生成 (PC専用: is_adult=Falseのみ)"""
-    # 属性集計 (is_adult=False でドメイン隔離)
-    attrs = PCAttribute.objects.filter(is_adult=False).annotate(
+
+    attrs = PCAttribute.objects.annotate(
         product_count=Count('products')
-    ).filter(product_count__gt=0).order_by('attr_type', 'order', 'name')
-    
-    sidebar_data = {}
+    ).filter(product_count__gt=0)
+
+    sidebar = {}
+
     for attr in attrs:
-        type_display = attr.get_attr_type_display()
-        if type_display and ". " in type_display:
-            type_display = type_display.split(". ", 1)[1]
-        
-        if type_display not in sidebar_data:
-            sidebar_data[type_display] = []
-        
-        sidebar_data[type_display].append({
-            'id': attr.id, 'name': attr.name, 'slug': attr.slug, 'count': attr.product_count
+        key = attr.attr_type
+        sidebar.setdefault(key, []).append({
+            "name": attr.name,
+            "slug": attr.slug,
+            "count": attr.product_count
         })
 
-    # メーカー集計
-    maker_raw = PCProduct.objects.filter(is_active=True) \
-        .exclude(maker__isnull=True).exclude(maker='') \
+    makers = PCProduct.objects.filter(is_active=True) \
         .values('maker') \
         .annotate(count=Count('maker')) \
         .order_by('-count')
 
-    sidebar_data['maker_counts'] = [
-        {
-            'name': str(m['maker']).upper(),
-            'maker': m['maker'], 
-            'count': m['count']
-        } for m in maker_raw
-    ]
+    sidebar["makers"] = makers
 
-    return Response(sidebar_data)
+    return Response(sidebar)
 
-class PCProductMakerListView(APIView):
-    """📊 メーカー名の大文字整形・カウント付きリスト取得"""
-    permission_classes = [AllowAny]
+# -------------------------
+# 📄 PC製品詳細
+# -------------------------
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def pc_product_detail(request, unique_id):
 
-    def get(self, request):
-        maker_raw = PCProduct.objects.filter(is_active=True) \
-            .exclude(maker__isnull=True).exclude(maker='') \
-            .values('maker') \
-            .annotate(count=Count('maker')) \
-            .order_by('-count')
+    print("DETAIL HIT:", unique_id)
 
-        formatted_makers = [
-            {
-                'name': str(m['maker']).upper(),
-                'maker': m['maker'], 
-                'count': m['count']
-            } for m in maker_raw
-        ]
-        return Response(formatted_makers)
+    try:
+        product = PCProduct.objects.get(unique_id=unique_id)
 
-# --------------------------------------------------------------------------
-# 6. AIメイド接客 ストリーミング (gemma3:4b 対応)
-# --------------------------------------------------------------------------
+        serializer = PCProductSerializer(product)
+        return Response(serializer.data)
 
-class PCProductMaidStreamView(views.APIView):
-    permission_classes = [AllowAny]
-    def get(self, request, unique_id):
-        product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
-        prompt = f"秋葉原BIC STATIONの看板娘として、{product.name}の魅力を紹介して。語尾は『ニャ！』。短く簡潔にニャ！"
-
-        def stream_generator():
-            url = "http://172.17.0.1:11434/api/generate"
-            payload = {"model": "gemma3:4b", "prompt": prompt, "stream": True}
-            try:
-                response = requests.post(url, json=payload, stream=True, timeout=(5, 60))
-                for line in response.iter_lines():
-                    if line:
-                        token = json.loads(line.decode('utf-8')).get('response', '')
-                        yield token
-            except Exception as e:
-                yield f"エラーだニャ: {str(e)}"
-
-        return StreamingHttpResponse(stream_generator(), content_type='text/plain; charset=utf-8')
-
-# --------------------------------------------------------------------------
-# 7. 詳細 & 履歴 & Fanza系
-# --------------------------------------------------------------------------
-
-class PCProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = PCProduct.objects.all().prefetch_related('attributes')
-    serializer_class = PCProductSerializer
-    permission_classes = [AllowAny]
-    lookup_field = 'unique_id'
-
-@api_view(['GET'])
-def pc_product_price_history(request, unique_id):
-    product = get_object_or_404(PCProduct, unique_id=unquote(unique_id))
-    history = PriceHistory.objects.filter(product=product).order_by('recorded_at')[:30]
-    return Response({
-        "name": product.name,
-        "labels": [h.recorded_at.strftime('%Y/%m/%d') for h in history],
-        "prices": [h.price for h in history]
-    })
-
-# class LinkshareProductListAPIView(generics.ListAPIView): 
-#     queryset = LinkshareProduct.objects.all().order_by('-updated_at')
-#     serializer_class = LinkshareProductSerializer
-#     permission_classes = [AllowAny]
-
-class FanzaFloorNavigationAPIView(views.APIView):
-    permission_classes = [AllowAny]
-    def get(self, request, *args, **kwargs):
-        floors = FanzaFloorMaster.objects.filter(is_active=True).order_by('site_code', 'id')
-        serializer = FanzaFloorMasterSerializer(floors, many=True)
-        return Response({"officialHierarchy": serializer.data})
+    except PCProduct.DoesNotExist:
+        return Response({"error": "not found"}, status=404)

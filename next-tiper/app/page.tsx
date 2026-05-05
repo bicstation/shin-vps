@@ -54,6 +54,7 @@ async function safeFetch<T>(promise: Promise<T>, fallback: T): Promise<T> {
 }
 
 export default async function Home() {
+    console.log("🔥 ROOT PAGE ACTIVE");
     // --- 🎯 STEP 1: ドメイン特定 ---
     const headerList = await headers();
     const host = headerList.get('x-django-host') || headerList.get('host') || "tiper.live";

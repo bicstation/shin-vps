@@ -36,13 +36,34 @@ def pc_product_ranking(request):
 # -------------------------
 @api_view(["GET"])
 @permission_classes([AllowAny])
+
 def pc_product_detail(request, unique_id):
+
+    # print("DETAIL HIT:", unique_id)
 
     try:
         product = PCProduct.objects.get(unique_id=unique_id)
 
-        serializer = PCProductSerializer(product)
-        return Response(serializer.data)
+        # 👇 これに変更
+        return Response({
+            "id": product.id,
+            "unique_id": product.unique_id,
+            "name": product.name,
+        })
 
-    except PCProduct.DoesNotExist:
-        return Response({"error": "not found"}, status=404)
+    except Exception as e:
+        print("ERROR:", e)
+        return Response({"error": str(e)}, status=500)
+    
+# def pc_product_detail(request, unique_id):
+    
+#     print("DETAIL HIT:", unique_id)  # ←追加
+
+#     try:
+#         product = PCProduct.objects.get(unique_id=unique_id)
+
+#         serializer = PCProductSerializer(product)
+#         return Response(serializer.data)
+
+#     except PCProduct.DoesNotExist:
+#         return Response({"error": "not found"}, status=404)

@@ -1,58 +1,61 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
-import Link from 'next/link';
+import Link from 'next/link'
 
-import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard';
-import ProductCard from '@/shared/components/organisms/cards/ProductCard';
-import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats';
+import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard'
+import ProductCard from '@/shared/components/organisms/cards/ProductCard'
+import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats'
 
-import styles from './page.module.css';
+import styles from './page.module.css'
 
-export const dynamic = 'force-dynamic';
-
-// -------------------------
-// 安全fetch
-// -------------------------
-async function safeFetch(fetcher: any, args: any[], fallback: any) {
-  try {
-    const data = await fetcher(...args);
-    return data ?? fallback;
-  } catch (e) {
-    console.error('[SAFE FETCH ERROR]', e);
-    return fallback;
-  }
-}
+export const dynamic = 'force-dynamic'
 
 // -------------------------
 // ページ本体
 // -------------------------
 export default async function HomePageMain() {
 
-  // 🔥 完全固定（ズレ防止）
-  const data = await safeFetch(fetchPCProductRanking, ['score', 'score'], []);
+  // -------------------------
+  // 🔥 データ取得（シンプルに）
+  // -------------------------
+  let products: any[] = []
 
-  const rawProducts = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.results)
-    ? data.results
-    : [];
+  try {
+    const data = await fetchPCProductRanking('score')
 
-  console.log('[TOP RAW COUNT]', rawProducts.length);
+    const rawProducts = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.results)
+      ? data.results
+      : []
 
-  const products = rawProducts;
+    console.log('[TOP RAW COUNT]', rawProducts.length)
 
+    products = rawProducts
+
+  } catch (e) {
+    console.error('[TOP FETCH ERROR]', e)
+  }
+
+  // -------------------------
+  // 🔥 フォールバック
+  // -------------------------
   if (!products.length) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
-        ⚠️ データ取得中 or 商品がありません
+        <h2>⚠️ データが取得できません</h2>
+        <p>APIまたはデータ状態を確認してください</p>
       </div>
-    );
+    )
   }
 
-  const top1 = products[0];
-  const others = products.slice(1, 3);
+  const top1 = products[0] || null
+  const others = products.slice(1, 3)
 
+  // -------------------------
+  // 🔥 UI
+  // -------------------------
   return (
     <div className={styles.mainWrapper}>
 
@@ -64,6 +67,26 @@ export default async function HomePageMain() {
         <Link href="/ranking/price-low">💰 コスパ</Link>
         <Link href="/ranking/gpu-rtx-4060">⚡ RTX4060</Link>
       </section>
+
+      {/* 🔥③ HERO */}
+      {top1 && (
+        <section className={styles.hero}>
+          <h1>迷ったらこれ。今一番バランスがいい構成</h1>
+          <p>性能・価格・用途のバランスで選ぶならこれ1台</p>
+
+          <HeroRankingCard product={top1} />
+        </section>
+      )}
+
+      {/* 🔥④ CTA */}
+      {top1?.url && (
+        <div className={styles.ctaPrimary}>
+          <a href={top1.url} target="_blank" rel="noopener noreferrer">
+            🔥 最安価格をチェック（在庫あり）
+          </a>
+          <span>在庫切れになることがあります</span>
+        </div>
+      )}
 
       {/* 🔥② 診断導線 */}
       <section className={styles.finderSection}>
@@ -77,34 +100,18 @@ export default async function HomePageMain() {
         </div>
       </section>
 
-      {/* 🔥③ HERO */}
-      <section className={styles.hero}>
-        <h1>迷ったらこれ。今一番バランスがいい構成</h1>
-        <p>性能・価格・用途のバランスで選ぶならこれ1台</p>
-
-        <HeroRankingCard product={top1} />
-      </section>
-
-      {/* 🔥④ CTA */}
-      {top1?.url && (
-        <div className={styles.ctaPrimary}>
-          <a href={top1.url} target="_blank" rel="noopener noreferrer">
-            🔥 最安価格をチェック（在庫あり）
-          </a>
-          <span>在庫切れになることがあります</span>
-        </div>
-      )}
-
       {/* 🔥⑤ 比較 */}
-      <section className={styles.compareSection}>
-        <h3>この価格帯でよく比較されるモデル</h3>
+      {others.length > 0 && (
+        <section className={styles.compareSection}>
+          <h3>この価格帯でよく比較されるモデル</h3>
 
-        <div className={styles.grid}>
-          {others.map((p: any) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      </section>
+          <div className={styles.grid}>
+            {others.map((p: any) => (
+              <ProductCard key={p.unique_id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 🔥⑥ 中間導線 */}
       <section className={styles.midNav}>
@@ -134,5 +141,5 @@ export default async function HomePageMain() {
       )}
 
     </div>
-  );
+  )
 }

@@ -6,23 +6,48 @@ from django.db import transaction
 from api.models import PCProduct, PCAttribute
 
 
+# -------------------------
+# GPU 正規化（完全版）
+# -------------------------
+def normalize_gpu(name: str) -> str:
+    if not name:
+        return ""
+    
+    if "/" in text:
+        return ""
+
+    text = name.lower()
+
+    # RTX（Ti / SUPER含む）
+    match = re.search(r'rtx[\s\-]*(\d{3,4})(?:[\s\-]*(ti|super))?', text)
+    if match:
+        number = match.group(1)
+        suffix = match.group(2)
+        return f"gpu-rtx-{number}-{suffix}" if suffix else f"gpu-rtx-{number}"
+
+    # RTX Aシリーズ
+    match = re.search(r'rtx[\s\-]*a(\d{3,4})', text)
+    if match:
+        return f"gpu-rtx-a{match.group(1)}"
+
+    # GTX
+    match = re.search(r'gtx[\s\-]*(\d{3,4})', text)
+    if match:
+        return f"gpu-gtx-{match.group(1)}"
+
+    # Intel Arc
+    if "arc" in text:
+        return "gpu-intel-arc"
+
+    # Intel内蔵
+    if "intel" in text or "iris" in text:
+        return "gpu-intel-graphics"
+
+    return ""
+
+
 class Command(BaseCommand):
     help = "PC属性 自動マッピング V2（完全版）"
-
-    # -------------------------
-    # GPU正規表現
-    # -------------------------
-    GPU_PATTERNS = [
-        (r"5090", "gpu-rtx-5090"),
-        (r"5080", "gpu-rtx-5080"),
-        (r"5070\s?ti", "gpu-rtx-5070"),
-        (r"5070", "gpu-rtx-5070"),
-        (r"4070\s?ti", "gpu-rtx-4070"),
-        (r"4070", "gpu-rtx-4070"),
-        (r"4060", "gpu-rtx-4060"),
-        (r"arc", "gpu-intel-arc"),
-        (r"intel.*graphics", "gpu-intel-graphics"),
-    ]
 
     # -------------------------
     # CPU正規表現
@@ -56,27 +81,12 @@ class Command(BaseCommand):
                 new_attrs = []
 
                 # =========================
-                # GPU
-                # =========================               
-                gpu_text = (p.gpu_model or "").lower()
+                # GPU（完全統一）
+                # =========================
+                gpu_slug = normalize_gpu(p.gpu_model)
 
-                # 🔥 ノイズ除去（超重要）
-                gpu_text = gpu_text.replace("nvidia", "").replace("geforce", "").strip()
+                gpu_attr = get(gpu_slug)
 
-                gpu_attr = None
-
-                for pattern, slug in self.GPU_PATTERNS:
-                    if re.search(pattern, gpu_text):
-                        gpu_attr = get(slug)
-                        break
-
-                # 🔥 fallback強化
-                if not gpu_attr:
-                    if "rtx" in gpu_text:
-                        gpu_attr = get("gpu-rtx-4060")  # 最低RTX扱い
-                    else:
-                        gpu_attr = get("gpu-intel-graphics")
-                
                 if gpu_attr:
                     new_attrs.append(gpu_attr)
 
@@ -124,13 +134,10 @@ class Command(BaseCommand):
 
                 if gpu_score >= 80:
                     new_attrs.append(get("usage-gaming"))
-
                 elif spec_score >= 85:
                     new_attrs.append(get("usage-creator"))
-
                 elif mem <= 8:
                     new_attrs.append(get("usage-budget"))
-
                 else:
                     new_attrs.append(get("usage-business"))
 
@@ -139,7 +146,6 @@ class Command(BaseCommand):
                 # =========================
                 clean = list({a for a in new_attrs if a})
 
-                # 上書き
                 p.attributes.set(clean)
 
                 total += len(clean)

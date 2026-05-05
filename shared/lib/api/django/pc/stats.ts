@@ -26,30 +26,43 @@ async function safeJson(res: Response, url: string) {
 
 /**
  * =========================================
- * 🔥 ランキング取得（完全版）
+ * 🔥 ランキング取得（最終安定版）
  * =========================================
  */
 export async function fetchPCProductRanking(
+  slug: string = 'score',
   use: string = 'score',
   sort: string = 'score'
 ) {
   try {
     const API_BASE = getApiBase()
 
+    if (!API_BASE) {
+      console.error('[ERROR] API BASE MISSING')
+      return []
+    }
+
     // -------------------------
     // 🔥 パラメータ安全化
     // -------------------------
+    const safeSlug = slug || 'score'
     const safeUse = use || 'score'
     const safeSort = ['score', 'price_asc', 'price_desc'].includes(sort)
       ? sort
       : 'score'
 
     // -------------------------
-    // 🔥 URL構築
+    // 🔥 URL構築（分岐対応）
     // -------------------------
-    const url = `${API_BASE}/general/pc-products/ranking/?use=${safeUse}&sort=${safeSort}`
+    const basePath =
+      safeSlug === 'score'
+        ? `${API_BASE}/general/pc-products/ranking/`
+        : `${API_BASE}/general/pc-products/ranking/${safeSlug}/`
+
+    const url = `${basePath}?use=${safeUse}&sort=${safeSort}`
 
     console.log('[FETCH RANKING]', {
+      slug: safeSlug,
       use: safeUse,
       sort: safeSort,
       url,
@@ -71,7 +84,6 @@ export async function fetchPCProductRanking(
     // 🔥 JSON安全取得
     // -------------------------
     const data = await safeJson(res, url)
-
     if (!data) return []
 
     // -------------------------
@@ -94,17 +106,29 @@ export async function fetchPCProductRanking(
 
 /**
  * =========================================
- * 🔥 商品詳細（PCProduct統一版）
+ * 🔥 商品詳細（完全安定版）
  * =========================================
  */
 export async function fetchPCProductDetail(unique_id: string) {
   try {
     const API_BASE = getApiBase()
 
-    // 🔥 正しいURL（ここが今回の本質修正）
+    if (!API_BASE) {
+      console.error('[ERROR] API BASE MISSING')
+      return null
+    }
+
+    if (!unique_id) {
+      console.error('[ERROR] INVALID UNIQUE_ID')
+      return null
+    }
+
     const url = `${API_BASE}/general/pc-products/${unique_id}/`
 
-    console.log('[FETCH DETAIL]', url)
+    console.log('[FETCH DETAIL]', {
+      unique_id,
+      url,
+    })
 
     const res = await fetch(url, {
       cache: 'no-store',

@@ -6,32 +6,32 @@ def normalize_gpu(name: str) -> str:
 
     text = name.lower()
 
-    # RTX（3000 / 4000 / 5000系対応 + Ti / SUPER）
-    match = re.search(r'rtx\s*(\d{3,4})(?:\s*(ti|super))?', text)
+    # RTX（Ti / SUPER含む）
+    match = re.search(r'rtx[\s\-]*(\d{3,4})(?:[\s\-]*(ti|super))?', text)
     if match:
         number = match.group(1)
         suffix = match.group(2)
 
         if suffix:
-            return f"rtx-{number}-{suffix}"
-        return f"rtx-{number}"
+            return f"gpu-rtx-{number}-{suffix}"
+        return f"gpu-rtx-{number}"
 
-    # RTXシリーズ（型番不明）
-    match = re.search(r'rtx\s*(\d{2})', text)
+    # RTX Aシリーズ（ワークステーション）
+    match = re.search(r'rtx[\s\-]*a(\d{3,4})', text)
     if match:
-        return f"rtx-{match.group(1)}-series"
+        return f"gpu-rtx-a{match.group(1)}"
 
     # GTX
-    match = re.search(r'gtx\s*(\d{3,4})', text)
+    match = re.search(r'gtx[\s\-]*(\d{3,4})', text)
     if match:
-        return f"gtx-{match.group(1)}"
+        return f"gpu-gtx-{match.group(1)}"
 
     # Intel Arc
     if "arc" in text:
-        return "intel-arc"
+        return "gpu-intel-arc"
 
-    # 内蔵GPU
+    # Intel 内蔵
     if "intel" in text or "iris" in text:
-        return "intel-integrated"
+        return "gpu-intel-graphics"
 
-    return "other"
+    return "gpu-other"

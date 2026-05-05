@@ -5,19 +5,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import styles from "./layout.module.css";
 
-/**
- * 共通スタイル
- */
 import '@/shared/styles/globals.css';
 
-/**
- * 設定
- */
 import { getSiteMetadata, getSiteColor } from '@/shared/lib/utils/siteConfig';
 
-/**
- * コンポーネント
- */
 import Header from '@/shared/components/organisms/common/Header';
 import Footer from '@/shared/components/organisms/common/Footer';
 import SidebarWrapper from '@/shared/layout/Sidebar/SidebarWrapper';
@@ -27,14 +18,13 @@ import { constructMetadata } from '@/shared/lib/utils/metadata';
 
 const inter = Inter({ subsets: ["latin"] });
 
-/**
- * ✅ metadata（修正済み）
- */
 export async function generateMetadata(): Promise<Metadata> {
-  const host = "tiper.live"; // ← 固定
+  console.log("🔥 [LAYOUT] generateMetadata");
+
+  const host = "tiper.live";
 
   return constructMetadata({
-    manualHost: host // ← ここ重要
+    manualHost: host
   });
 }
 
@@ -47,15 +37,24 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
 
-  // ✅ headers完全削除
+  console.log("🔥 [LAYOUT] RootLayout START");
+
   const host = "tiper.live";
 
   const site = getSiteMetadata(host);
 
   const siteName = site?.site_name || "Tiper";
-  const themeColor = getSiteColor(host); // ← 修正（siteNameじゃなくhost）
+  const themeColor = getSiteColor(host);
+
+  console.log("🔥 [LAYOUT] SITE:", {
+    host,
+    siteName,
+    themeColor,
+  });
 
   const BG_COLOR = "#06060a";
+
+  console.log("🔥 [LAYOUT] BEFORE RENDER");
 
   return (
     <html lang="ja" style={{ height: '100%', backgroundColor: BG_COLOR }}>
@@ -76,17 +75,24 @@ export default async function RootLayout({
           "--bg-deep": BG_COLOR,
         }}
       >
+
+        {console.log("🔥 [LAYOUT] BODY RENDER")}
+
         {/* Progress */}
+        {console.log("🔥 [LAYOUT] RouteProgressBar")}
         <Suspense fallback={null}>
           <RouteProgressBar />
         </Suspense>
 
+        {console.log("🔥 [LAYOUT] SYSTEM GRID")}
         <div className={styles.systemGrid} />
 
         {/* Header */}
+        {console.log("🔥 [LAYOUT] HEADER")}
         <Header />
 
         {/* Ad */}
+        {console.log("🔥 [LAYOUT] AD BLOCK")}
         <div className={styles.adDisclosure}>
           <div className={styles.adDisclosureInner}>
             <span className={styles.prLabel}>【PR】</span>
@@ -100,21 +106,26 @@ export default async function RootLayout({
         </div>
 
         {/* Layout */}
+        {console.log("🔥 [LAYOUT] MAIN LAYOUT START")}
         <div className={styles.layoutContainer}>
           <div className={styles.layoutWrapper}>
 
             {/* Sidebar */}
+            {console.log("🔥 [LAYOUT] SIDEBAR START")}
             <aside className={styles.sidebarArea}>
               <div className={styles.sidebarSticky}>
                 <Suspense fallback={<div />}>
+                  {console.log("🔥 [LAYOUT] SidebarWrapper RENDER")}
                   <SidebarWrapper />
                 </Suspense>
               </div>
             </aside>
 
             {/* Main */}
+            {console.log("🔥 [LAYOUT] MAIN CONTENT START")}
             <main className={styles.mainContent}>
               <Suspense fallback={<div>Loading...</div>}>
+                {console.log("🔥 [LAYOUT] CHILDREN RENDER", children)}
                 {children}
               </Suspense>
             </main>
@@ -123,7 +134,9 @@ export default async function RootLayout({
         </div>
 
         {/* Footer */}
+        {console.log("🔥 [LAYOUT] FOOTER")}
         <Footer />
+
       </body>
     </html>
   );
