@@ -15,11 +15,11 @@ export const dynamic = 'force-dynamic'
 // ページ本体
 // -------------------------
 export default async function HomePageMain() {
-
   let products: any[] = []
 
   try {
     const data = await fetchPCProductRanking('score')
+    // console.log('[FETCH RESULT RAW]', data)
 
     const rawProducts = Array.isArray(data)
       ? data
@@ -30,12 +30,12 @@ export default async function HomePageMain() {
     console.log('[TOP RAW COUNT]', rawProducts.length)
 
     products = rawProducts
-
   } catch (e) {
     console.error('[TOP FETCH ERROR]', e)
   }
 
   if (!products.length) {
+    console.warn('[TOP PAGE WARNING] products array is empty')
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
         <h2>⚠️ データが取得できません</h2>
@@ -44,8 +44,11 @@ export default async function HomePageMain() {
     )
   }
 
-  const top1 = products[0] || null
-  const others = products.slice(1, 3)
+  const top1 = products[0] ?? null
+  const others = products.slice(1, 3) ?? []
+
+  console.log('[TOP1 PRODUCT]', top1)
+  console.log('[OTHERS PRODUCTS]', others)
 
   return (
     <div className={styles.mainWrapper}>
@@ -62,36 +65,39 @@ export default async function HomePageMain() {
       {/* 🔥② HERO（決断ゾーン） */}
       {top1 && (
         <section className={styles.hero}>
-
-          {/* 結論コピー */}
           <h1 className={styles.heroTitle}>
             迷ったらこれでOK
           </h1>
-
-          {/* サブコピー */}
           <p className={styles.heroSub}>
             この価格帯で一番バランスがいい構成
           </p>
 
           {/* HEROカード */}
-          <HeroRankingCard product={top1} />
+          {top1 && (
+            <>
+              {console.log('[HERO CARD]', top1)}
+              <HeroRankingCard
+                product={top1 ?? {}}
+                className={styles.heroCard ?? ''}
+              />
+            </>
+          )}
 
           {/* CTA（1本化） */}
           {top1?.url && (
             <a
-              href={top1.url}
+              href={top1.url ?? '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className={styles.heroCTA}
+              className={styles.heroCTA ?? ''}
             >
               👉 今すぐこの価格で購入する
             </a>
           )}
 
-          <span className={styles.heroNotice}>
+          <span className={styles.heroNotice ?? ''}>
             ※在庫切れになることがあります
           </span>
-
         </section>
       )}
 
@@ -101,7 +107,7 @@ export default async function HomePageMain() {
           <h2>迷っているなら診断で決める</h2>
           <p>質問に答えるだけで最適な1台がわかる</p>
 
-          <Link href="/pc-finder" className={styles.finderBtn}>
+          <Link href="/pc-finder" className={styles.finderBtn ?? ''}>
             👉 無料診断はこちら
           </Link>
         </div>
@@ -113,13 +119,23 @@ export default async function HomePageMain() {
           <h3>他にも選択肢あり</h3>
 
           <div className={styles.grid}>
-            {others.map((p: any, i: number) => (
-              <ProductCard
-                key={p.unique_id}
-                product={p}
-                rank={i + 2} // ← 重要
-              />
-            ))}
+            {others.map((p: any, i: number) => {
+              console.log('[PRODUCT MAP]', { index: i, product: p })
+
+              if (!p) {
+                console.warn('[MAP WARNING] undefined element at index', i)
+                return null
+              }
+
+              return (
+                <ProductCard
+                  key={p.unique_id ?? i}
+                  product={p ?? {}}
+                  rank={i + 2 ?? 0}
+                  className={styles.productCard ?? ''}
+                />
+              )
+            })}
           </div>
         </section>
       )}
@@ -127,7 +143,6 @@ export default async function HomePageMain() {
       {/* 🔥⑤ 中間導線 */}
       <section className={styles.midNav}>
         <h3>目的別で探す</h3>
-
         <div>
           <Link href="/ranking/gaming">ゲーム用途</Link>
           <Link href="/ranking/work">仕事用途</Link>
@@ -141,7 +156,6 @@ export default async function HomePageMain() {
           → すべてのランキングを見る
         </Link>
       </section>
-
     </div>
   )
 }

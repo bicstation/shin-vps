@@ -1,76 +1,30 @@
-// /home/maya/shin-dev/shin-vps/shared/components/semantic/SemanticRenderer.tsx
+'use client'
 
-import SemanticBadge
-  from './SemanticBadge'
+import SemanticBadge from './SemanticBadge'
+import { SemanticAttribute } from '@/shared/types/semantic'
 
-import { SemanticAttribute }
-  from '@/shared/types/semantic'
-
-// -------------------------
-// Props
-// -------------------------
 type Props = {
-  attribute: SemanticAttribute
+  attribute?: SemanticAttribute | null
 }
 
-// -------------------------
-// Semantic Renderer
-// -------------------------
-export default function SemanticRenderer({
-  attribute
-}: Props) {
+export default function SemanticRenderer({ attribute }: Props) {
+  if (!attribute) {
+    console.warn('[SemanticRenderer WARNING] attribute is null or undefined')
+    return null
+  }
 
   // -------------------------
-  // type based rendering
+  // type-based rendering
   // -------------------------
   switch (attribute.type) {
-
-    // GPU
     case 'gpu':
-      return (
-        <SemanticBadge
-          attribute={attribute}
-        />
-      )
-
-    // usage
     case 'usage':
-      return (
-        <SemanticBadge
-          attribute={attribute}
-        />
-      )
-
-    // maker
     case 'maker':
-      return (
-        <SemanticBadge
-          attribute={attribute}
-        />
-      )
-
-    // memory
     case 'memory':
-      return (
-        <SemanticBadge
-          attribute={attribute}
-        />
-      )
-
-    // storage
     case 'storage':
-      return (
-        <SemanticBadge
-          attribute={attribute}
-        />
-      )
+      return <SemanticBadge attribute={attribute ?? { slug: '', name: '', type: '' }} />
 
-    // default
     default:
-      return (
-        <SemanticBadge
-          attribute={attribute}
-        />
-      )
+      return <SemanticBadge attribute={attribute ?? { slug: '', name: '', type: '' }} />
   }
 }

@@ -22,6 +22,84 @@ from api.serializers.pc_product_serializer import PCProductSerializer
 
 logger = logging.getLogger(__name__)
 
+# ===========================================
+# 共通 payload builder（完全版）
+# ===========================================
+def build_safe_payload(pc_product):
+    """
+    PCProduct インスタンスからフロント向け安全化 payload を生成
+    attributes と grouped_attributes を必ず返す
+    """
+
+    # ----------------------------
+    # attributes 正規化
+    # ----------------------------
+    safe_attributes = []
+    for attr in getattr(pc_product, "attributes", []).all():
+        if attr is None:
+            continue
+        safe_attributes.append({
+            "id": getattr(attr, "id", 0),
+            "slug": getattr(attr, "slug", "unknown") or "unknown",
+            "name": getattr(attr, "name", "") or "",
+            "attr_type": getattr(attr, "attr_type", "unknown") or "unknown",
+            "semantic_role": getattr(attr, "semantic_role", "default") or "default",
+            "semantic_weight": getattr(attr, "semantic_weight", 0) or 0,
+            "icon": getattr(attr, "icon", "") or "",
+            "color": getattr(attr, "color", "") or "",
+            "keywords": getattr(attr, "keywords", []) or []
+        })
+
+    # ----------------------------
+    # grouped_attributes 正規化
+    # ----------------------------
+    grouped = {t: [] for t in ["usage", "gpu", "cpu", "maker", "memory", "storage", "feature"]}
+    for attr in safe_attributes:
+        grouped_type = attr.get("attr_type", "unknown")
+        if grouped_type not in grouped:
+            grouped[grouped_type] = []
+        grouped[grouped_type].append(attr)
+
+    # ----------------------------
+    # payload 本体
+    # ----------------------------
+    payload = {
+        "id": getattr(pc_product, "id", 0) or 0,
+        "name": getattr(pc_product, "name", "") or "おすすめ商品",
+        "unique_id": getattr(pc_product, "unique_id", "") or "unknown",
+        "image_url": getattr(pc_product, "image_url", "") or "/no-image.png",
+        "price": getattr(pc_product, "price", 0) or 0,
+        "gpu_model": getattr(pc_product, "gpu_model", "") or "",
+        "cpu_model": getattr(pc_product, "cpu_model", "") or "",
+        "url": getattr(pc_product, "url", "") or "",
+        "attributes": safe_attributes,
+        "grouped_attributes": grouped
+    }
+
+    return payload
+
+# ===========================================
+# PCProduct 詳細 API（完全版）
+# ===========================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def pc_product_detail(request, unique_id):
+    """
+    PCProduct 詳細 API
+    フロントで安全に map/className が使えるよう完全安全化 payload を返す
+    """
+    try:
+        product = PCProduct.objects.prefetch_related("attributes").get(unique_id=unique_id)
+
+        # payload を安全化して返却
+        payload = build_safe_payload(product)
+        return Response(payload)
+
+    except PCProduct.DoesNotExist:
+        return Response({"error": "not found"}, status=404)
+
+
+
 # --------------------------------------------------------------------------
 # 0. ページネーション
 # --------------------------------------------------------------------------
