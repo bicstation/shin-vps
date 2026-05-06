@@ -32,13 +32,38 @@ class PCAttribute(models.Model):
     )
     order = models.PositiveIntegerField('並び順', default=0, help_text="数字が小さいほど上に表示されます")
 
-    # 💡 勝利の鍵：ドメイン隔離フラグ
-    is_adult = models.BooleanField(
-        'アダルト属性フラグ', 
-        default=False, 
-        db_index=True, 
-        help_text="Trueの場合、Bic Station（PCサイト）の解析・表示から除外されます"
+    # =========================
+    # Semantic Metadata
+    # =========================
+    semantic_role = models.CharField(
+        'セマンティック役割',
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="primary / secondary / highlight など"
     )
+
+    semantic_weight = models.FloatField(
+        'セマンティック重要度',
+        default=0,
+        help_text="0.0 - 1.0"
+    )
+
+    icon = models.CharField(
+        '表示アイコン',
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="frontend icon key"
+    )
+
+    color = models.CharField(
+        '表示カラー',
+        max_length=50,
+        blank=True,
+        default="",
+        help_text="frontend semantic color"
+    )    
 
     class Meta:
         verbose_name = 'スペック属性'

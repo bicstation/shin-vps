@@ -1,11 +1,63 @@
 from rest_framework import serializers
-from api.models import PCProduct
+
+from api.models import (
+    PCProduct,
+    PCAttribute,
+)
 
 
-class PCProductSerializer(serializers.ModelSerializer):
+# =========================================
+# Semantic Attribute Serializer
+# =========================================
+class PCAttributeSerializer(
+    serializers.ModelSerializer
+):
+
     class Meta:
-        model = PCProduct
+
+        model = PCAttribute
+
         fields = [
+
+            # Base
+            "id",
+            "slug",
+            "name",
+            "attr_type",
+
+            # Semantic Metadata
+            "semantic_role",
+            "semantic_weight",
+
+            "icon",
+            "color",
+        ]
+
+
+# =========================================
+# PC Product Serializer
+# =========================================
+class PCProductSerializer(
+    serializers.ModelSerializer
+):
+
+    # =====================================
+    # Semantic Attributes
+    # =====================================
+    attributes = PCAttributeSerializer(
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+
+        model = PCProduct
+
+        fields = [
+
+            # =================================
+            # Base
+            # =================================
             "id",
             "unique_id",
             "name",
@@ -13,13 +65,17 @@ class PCProductSerializer(serializers.ModelSerializer):
             "url",
             "image_url",
 
-            # スペック
+            # =================================
+            # Specs
+            # =================================
             "cpu_model",
             "gpu_model",
             "memory_gb",
             "storage_gb",
 
-            # スコア
+            # =================================
+            # Scores
+            # =================================
             "score_cpu",
             "score_gpu",
             "score_cost",
@@ -27,10 +83,19 @@ class PCProductSerializer(serializers.ModelSerializer):
             "score_ai",
             "spec_score",
 
+            # =================================
             # AI
+            # =================================
             "ai_summary",
             "ai_content",
 
-            # レーダー
+            # =================================
+            # Semantic Attributes
+            # =================================
+            "attributes",
+
+            # =================================
+            # Radar
+            # =================================
             # "radar_chart",
         ]
