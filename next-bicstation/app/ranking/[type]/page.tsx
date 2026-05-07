@@ -1,163 +1,533 @@
 /* eslint-disable @next/next/no-img-element */
-// @ts-nocheck
 
 import Link from 'next/link'
 
-import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard'
-import ProductCard from '@/shared/components/organisms/cards/ProductCard'
-import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats'
+import HeroRankingCard
+  from '@/shared/components/organisms/cards/HeroRankingCard'
+
+import ProductCard
+  from '@/shared/components/organisms/cards/ProductCard'
+
+import SemanticSection
+  from '@/shared/components/semantic/SemanticSection'
+
+import {
+  fetchPCProductRanking,
+} from '@/shared/lib/api/django/pc/stats'
 
 import styles from './page.module.css'
 
-export const dynamic = 'force-dynamic'
+/* =========================================
+🔥 ISR
+========================================= */
 
-// -------------------------
-// ページ本体
-// -------------------------
-export default async function HomePageMain() {
+export const revalidate = 60
 
-  let products: any[] = []
+/* =========================================
+🔥 Types
+========================================= */
 
-  try {
-    const data = await fetchPCProductRanking('score')
+type Props = {
+  params: Promise<{
+    slug: string
+  }>
+}
 
-    const rawProducts = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.results)
-      ? data.results
-      : []
+/* =========================================
+🔥 Semantic Hero Copy
+========================================= */
 
-    console.log('[TOP RAW COUNT]', rawProducts.length)
+const semanticLandingCopy:
+  Record<
+    string,
+    {
+      title: string
+      description: string
+    }
+  > = {
 
-    products = rawProducts
+  gaming: {
+    title:
+      'ゲーム向けおすすめPC',
 
-  } catch (e) {
-    console.error('[TOP FETCH ERROR]', e)
+    description:
+      '高FPS・高性能GPU構成を中心に、ゲーム用途に最適なPCを比較できます。',
+  },
+
+  work: {
+    title:
+      '仕事向けおすすめPC',
+
+    description:
+      'ビジネス・事務・作業効率を重視したおすすめ構成。',
+  },
+
+  creator: {
+    title:
+      '動画編集向けおすすめPC',
+
+    description:
+      '動画編集・配信・クリエイティブ作業向けの高性能構成。',
+  },
+}
+
+/* =========================================
+🔥 Utils
+========================================= */
+
+function buildSemanticTitle(
+  slug: string
+) {
+
+  // GPU
+  if (
+    slug.startsWith('gpu-')
+  ) {
+
+    const gpu =
+      slug
+        .replace('gpu-', '')
+        .replaceAll('-', ' ')
+        .toUpperCase()
+
+    return {
+      title:
+        `${gpu}搭載おすすめPC`,
+
+      description:
+        `${gpu}を搭載した高性能PCを比較できます。ゲーム・動画編集・AI用途にも対応。`,
+    }
   }
 
-  // -------------------------
-  // フォールバック
-  // -------------------------
-  if (!products.length) {
+  // Usage
+  if (
+    slug.startsWith(
+      'usage-'
+    )
+  ) {
+
+    const usage =
+      slug.replace(
+        'usage-',
+        ''
+      )
+
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>⚠️ データが取得できません</h2>
-        <p>APIまたはデータ状態を確認してください</p>
-      </div>
+      semanticLandingCopy[
+        usage
+      ] || {
+        title:
+          'おすすめPCランキング',
+
+        description:
+          '用途別に最適なPCを比較できます。',
+      }
     )
   }
 
-  const top1 = products[0] || null
-  const others = products.slice(1, 3)
+  // Maker
+  if (
+    slug.startsWith(
+      'maker-'
+    )
+  ) {
+
+    const maker =
+      slug
+        .replace(
+          'maker-',
+          ''
+        )
+        .toUpperCase()
+
+    return {
+      title:
+        `${maker}おすすめPC`,
+
+      description:
+        `${maker}ブランドの人気PCを比較できます。`,
+    }
+  }
+
+  // Default
+  return {
+    title:
+      'おすすめPCランキング',
+
+    description:
+      'semantic recommendation に基づくおすすめPC一覧。',
+  }
+}
+
+/* =========================================
+🔥 Empty
+========================================= */
+
+function EmptyState() {
 
   return (
-    <div className={styles.mainWrapper}>
+    <div className={styles.empty}>
 
-      {/* =========================
-         ナビ
-      ========================= */}
-      <section className={styles.topNav}>
-        <Link href="/ranking/score">🏆 総合</Link>
-        <Link href="/ranking/gaming">🎮 ゲーミング</Link>
-        <Link href="/ranking/work">💼 仕事</Link>
-        <Link href="/ranking/price-low">💰 コスパ</Link>
-        <Link href="/ranking/gpu-rtx-4060">⚡ RTX4060</Link>
-      </section>
+      <h2>
+        ⚠️ データがありません
+      </h2>
 
-      {/* =========================
-         🔥 HERO（決断ゾーン）
-      ========================= */}
-      {top1 && (
-        <section className={styles.hero}>
+      <p>
+        semantic ranking が取得できませんでした
+      </p>
 
-          {/* 結論 */}
-          <h1 className={styles.heroTitle}>
-            迷ったらこれでOK
-          </h1>
-
-          {/* 補足 */}
-          <p className={styles.heroSub}>
-            この価格帯で一番バランスがいい構成
-          </p>
-
-          {/* HEROカード */}
-          <HeroRankingCard product={top1} />
-
-          {/* CTA（1本化） */}
-          {top1?.url && (
-            <a
-              href={top1.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.heroCTA}
-            >
-              👉 今すぐこの価格で購入する
-            </a>
-          )}
-
-          {/* 注意 */}
-          <span className={styles.heroNotice}>
-            ※在庫切れになることがあります
-          </span>
-
-        </section>
-      )}
-
-      {/* =========================
-         診断（サブ導線）
-      ========================= */}
-      <section className={styles.finderSection}>
-        <div className={styles.finderBox}>
-          <h2>迷っているなら診断で決める</h2>
-          <p>質問に答えるだけで最適な1台がわかる</p>
-
-          <Link href="/pc-finder" className={styles.finderBtn}>
-            👉 無料診断はこちら
-          </Link>
-        </div>
-      </section>
-
-      {/* =========================
-         比較（補助）
-      ========================= */}
-      {others.length > 0 && (
-        <section className={styles.compareSection}>
-          <h3>他にも選択肢あり</h3>
-
-          <div className={styles.grid}>
-            {others.map((p: any, i: number) => (
-              <ProductCard
-                key={p.unique_id}
-                product={p}
-                rank={i + 2} // ← 重要
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* =========================
-         中間導線
-      ========================= */}
-      <section className={styles.midNav}>
-        <h3>目的別で探す</h3>
-
-        <div>
-          <Link href="/ranking/gaming">ゲーム用途</Link>
-          <Link href="/ranking/work">仕事用途</Link>
-          <Link href="/ranking/gpu-rtx-4070">高性能GPU</Link>
-        </div>
-      </section>
-
-      {/* =========================
-         下部導線
-      ========================= */}
-      <section className={styles.bottomNav}>
-        <Link href="/ranking">
-          → すべてのランキングを見る
-        </Link>
-      </section>
+      <Link href="/">
+        →
+        TOPへ戻る
+      </Link>
 
     </div>
+  )
+}
+
+/* =========================================
+🔥 Semantic Hero
+========================================= */
+
+function SemanticHero({
+  slug,
+  topProduct,
+}: {
+  slug: string
+  topProduct: any
+}) {
+
+  const copy =
+    buildSemanticTitle(
+      slug
+    )
+
+  return (
+    <section className={styles.hero}>
+
+      {/* label */}
+      <div className={styles.heroLabel}>
+        SEMANTIC RANKING
+      </div>
+
+      {/* title */}
+      <h1 className={styles.heroTitle}>
+        {copy.title}
+      </h1>
+
+      {/* description */}
+      <p className={styles.heroDescription}>
+        {copy.description}
+      </p>
+
+      {/* hero card */}
+      {topProduct && (
+        <HeroRankingCard
+          product={topProduct}
+        />
+      )}
+
+    </section>
+  )
+}
+
+/* =========================================
+🔥 Semantic Explanation
+========================================= */
+
+function SemanticExplanation({
+  products,
+}: {
+  products: any[]
+}) {
+
+  if (!products?.length) {
+    return null
+  }
+
+  // collect grouped
+  const groupedMap:
+    Record<
+      string,
+      any[]
+    > = {}
+
+  products.forEach(
+    (product) => {
+
+      const grouped =
+        product
+          ?.grouped_attributes
+          || {}
+
+      Object.entries(
+        grouped
+      ).forEach(
+        ([group, attrs]) => {
+
+          if (
+            !groupedMap[group]
+          ) {
+            groupedMap[group] = []
+          }
+
+          groupedMap[group]
+            .push(...attrs)
+        }
+      )
+    }
+  )
+
+  return (
+    <section
+      className={
+        styles.explanation
+      }
+    >
+
+      <div
+        className={
+          styles.sectionHeader
+        }
+      >
+
+        <span
+          className={
+            styles.sectionLabel
+          }
+        >
+          SEMANTIC ANALYSIS
+        </span>
+
+        <h2>
+          このランキングの特徴
+        </h2>
+
+      </div>
+
+      <div
+        className={
+          styles.explanationGrid
+        }
+      >
+
+        {Object.entries(
+          groupedMap
+        )
+          .slice(0, 4)
+          .map(
+            (
+              [
+                group,
+                attrs,
+              ]
+            ) => (
+
+              <SemanticSection
+                key={group}
+                title={group}
+                groupType={group}
+                attributes={attrs}
+              />
+
+            )
+          )}
+
+      </div>
+
+    </section>
+  )
+}
+
+/* =========================================
+🔥 Product Grid
+========================================= */
+
+function ProductGrid({
+  products,
+}: {
+  products: any[]
+}) {
+
+  if (!products?.length) {
+    return null
+  }
+
+  return (
+    <section
+      className={
+        styles.productSection
+      }
+    >
+
+      <div
+        className={
+          styles.sectionHeader
+        }
+      >
+
+        <span
+          className={
+            styles.sectionLabel
+          }
+        >
+          SEMANTIC PRODUCTS
+        </span>
+
+        <h2>
+          おすすめ構成一覧
+        </h2>
+
+      </div>
+
+      <div className={styles.grid}>
+
+        {products.map(
+          (
+            product,
+            index
+          ) => {
+
+            if (
+              !product
+                ?.unique_id
+            ) {
+              return null
+            }
+
+            return (
+              <ProductCard
+                key={
+                  product.unique_id
+                }
+                product={
+                  product
+                }
+                rank={
+                  index + 1
+                }
+              />
+            )
+          }
+        )}
+
+      </div>
+
+    </section>
+  )
+}
+
+/* =========================================
+🔥 Navigation
+========================================= */
+
+function BottomNavigation() {
+
+  return (
+    <section
+      className={
+        styles.bottomNav
+      }
+    >
+
+      <Link href="/">
+        →
+        TOPへ戻る
+      </Link>
+
+      <Link href="/ranking">
+        →
+        他ランキングを見る
+      </Link>
+
+    </section>
+  )
+}
+
+/* =========================================
+🔥 Page
+========================================= */
+
+export default async function RankingPage({
+  params,
+}: Props) {
+
+  // --------------------------------
+  // Params
+  // --------------------------------
+  const {
+    slug,
+  } = await params
+
+  // --------------------------------
+  // Fetch
+  // --------------------------------
+  const products =
+    await fetchPCProductRanking(
+      slug
+    )
+
+  // --------------------------------
+  // Empty
+  // --------------------------------
+  if (
+    !products?.length
+  ) {
+    return <EmptyState />
+  }
+
+  // --------------------------------
+  // Split
+  // --------------------------------
+  const topProduct =
+    products?.[0]
+    || null
+
+  const otherProducts =
+    products.slice(1)
+
+  return (
+    <main
+      className={
+        styles.mainWrapper
+      }
+    >
+
+      {/* ======================== */}
+      {/* HERO */}
+      {/* ======================== */}
+
+      <SemanticHero
+        slug={slug}
+        topProduct={
+          topProduct
+        }
+      />
+
+      {/* ======================== */}
+      {/* SEMANTIC EXPLANATION */}
+      {/* ======================== */}
+
+      <SemanticExplanation
+        products={products}
+      />
+
+      {/* ======================== */}
+      {/* GRID */}
+      {/* ======================== */}
+
+      <ProductGrid
+        products={
+          otherProducts
+        }
+      />
+
+      {/* ======================== */}
+      {/* NAV */}
+      {/* ======================== */}
+
+      <BottomNavigation />
+
+    </main>
   )
 }

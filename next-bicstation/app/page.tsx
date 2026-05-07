@@ -3,159 +3,619 @@
 
 import Link from 'next/link'
 
-import HeroRankingCard from '@/shared/components/organisms/cards/HeroRankingCard'
-import ProductCard from '@/shared/components/organisms/cards/ProductCard'
-import { fetchPCProductRanking } from '@/shared/lib/api/django/pc/stats'
+import HeroRankingCard
+  from '@/shared/components/organisms/cards/HeroRankingCard'
 
-import styles from './page.module.css'
+import ProductCard
+  from '@/shared/components/organisms/cards/ProductCard'
 
-export const dynamic = 'force-dynamic'
+import {
+  fetchPCProductRanking,
+} from '@/shared/lib/api/django/pc/stats'
 
-// -------------------------
-// ページ本体
-// -------------------------
-export default async function HomePageMain() {
-  let products: any[] = []
+import styles
+  from './page.module.css'
 
-  try {
-    const data = await fetchPCProductRanking('score')
-    // console.log('[FETCH RESULT RAW]', data)
+export const dynamic =
+  'force-dynamic'
 
-    const rawProducts = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.results)
-      ? data.results
-      : []
+/* =========================================
+🔥 Intent Navigation
+========================================= */
 
-    console.log('[TOP RAW COUNT]', rawProducts.length)
+const INTENT_NAV = [
 
-    products = rawProducts
-  } catch (e) {
-    console.error('[TOP FETCH ERROR]', e)
+  {
+    label: '🎮 ゲーム重視',
+    slug: 'usage-gaming',
+    description:
+      '高FPS gaming semantic',
+  },
+
+  {
+    label: '🎬 動画編集',
+    slug: 'usage-creator',
+    description:
+      'creator workload向け',
+  },
+
+  {
+    label: '⚡ AI用途',
+    slug: 'usage-ai',
+    description:
+      'AI semantic optimized',
+  },
+
+  {
+    label: '💼 仕事用',
+    slug: 'usage-work',
+    description:
+      'business workload向け',
+  },
+
+  {
+    label: '💰 コスパ',
+    slug: 'price-low',
+    description:
+      'price-performance重視',
+  },
+
+]
+
+/* =========================================
+🔥 Semantic Difference
+========================================= */
+
+function getSemanticDifference(
+  product: any
+) {
+
+  const grouped =
+    product
+      ?.grouped_attributes
+      || {}
+
+  const usage =
+    grouped
+      ?.usage?.[0]
+      ?.name
+
+  const gpu =
+    grouped
+      ?.gpu?.[0]
+      ?.name
+
+  const maker =
+    grouped
+      ?.maker?.[0]
+      ?.name
+
+  return {
+    usage,
+    gpu,
+    maker,
   }
+}
 
-  if (!products.length) {
-    console.warn('[TOP PAGE WARNING] products array is empty')
+/* =========================================
+🔥 Page
+========================================= */
+
+export default async function HomePageMain() {
+
+  // --------------------------------
+  // Fetch
+  // --------------------------------
+  const products =
+    await fetchPCProductRanking(
+      'score'
+    )
+
+  // --------------------------------
+  // Empty
+  // --------------------------------
+  if (
+    !products?.length
+  ) {
+
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>⚠️ データが取得できません</h2>
-        <p>APIまたはデータ状態を確認してください</p>
+      <div
+        className={
+          styles.empty
+        }
+      >
+
+        <div
+          className={
+            styles.emptyCard
+          }
+        >
+
+          <h2
+            className={
+              styles.emptyTitle
+            }
+          >
+            データ取得に失敗しました
+          </h2>
+
+          <p
+            className={
+              styles.emptyText
+            }
+          >
+            semantic API /
+            backend authority /
+            ranking endpoint
+            を確認してください。
+          </p>
+
+        </div>
+
       </div>
     )
   }
 
-  const top1 = products[0] ?? null
-  const others = products.slice(1, 3) ?? []
+  // --------------------------------
+  // Split
+  // --------------------------------
+  const top1 =
+    products[0]
 
-  console.log('[TOP1 PRODUCT]', top1)
-  console.log('[OTHERS PRODUCTS]', others)
+  const compareProducts =
+    products.slice(1, 4)
 
   return (
-    <div className={styles.mainWrapper}>
+    <main
+      className={
+        styles.page
+      }
+    >
 
-      {/* 🔥① ナビ */}
-      <section className={styles.topNav}>
-        <Link href="/ranking/score">🏆 総合</Link>
-        <Link href="/ranking/gaming">🎮 ゲーミング</Link>
-        <Link href="/ranking/work">💼 仕事</Link>
-        <Link href="/ranking/price-low">💰 コスパ</Link>
-        <Link href="/ranking/gpu-rtx-4060">⚡ RTX4060</Link>
+      {/* ================================= */}
+      {/* Top Navigation */}
+      {/* ================================= */}
+
+      <section
+        className={
+          styles.topNavSection
+        }
+      >
+
+        <div
+          className={
+            styles.topNav
+          }
+        >
+
+          <Link
+            href="/ranking/score"
+            className={
+              styles.navItemActive
+            }
+          >
+            🏆 総合
+          </Link>
+
+          <Link
+            href="/ranking/usage-gaming"
+            className={
+              styles.navItem
+            }
+          >
+            🎮 Gaming
+          </Link>
+
+          <Link
+            href="/ranking/usage-creator"
+            className={
+              styles.navItem
+            }
+          >
+            🎬 Creator
+          </Link>
+
+          <Link
+            href="/ranking/usage-ai"
+            className={
+              styles.navItem
+            }
+          >
+            ⚡ AI
+          </Link>
+
+          <Link
+            href="/ranking/gpu-rtx-4070"
+            className={
+              styles.navItem
+            }
+          >
+            RTX 4070
+          </Link>
+
+        </div>
+
       </section>
 
-      {/* 🔥② HERO（決断ゾーン） */}
+      {/* ================================= */}
+      {/* Hero */}
+      {/* ================================= */}
+
       {top1 && (
-        <section className={styles.hero}>
-          <h1 className={styles.heroTitle}>
-            迷ったらこれでOK
-          </h1>
-          <p className={styles.heroSub}>
-            この価格帯で一番バランスがいい構成
+
+        <section
+          className={
+            styles.heroSection
+          }
+        >
+
+          {/* semantic intro */}
+          <div
+            className={
+              styles.heroIntro
+            }
+          >
+
+            <div
+              className={
+                styles.heroLabel
+              }
+            >
+              Semantic Recommendation
+            </div>
+
+            <h1
+              className={
+                styles.heroTitle
+              }
+            >
+              今もっとも
+              recommendation balance
+              が高い構成
+            </h1>
+
+            <p
+              className={
+                styles.heroDescription
+              }
+            >
+              gaming /
+              creator /
+              AI /
+              workload /
+              price-performance
+              を総合分析。
+            </p>
+
+          </div>
+
+          {/* hero card */}
+          <HeroRankingCard
+            product={top1}
+          />
+
+          {/* confidence */}
+          <div
+            className={
+              styles.heroConfidence
+            }
+          >
+
+            <div
+              className={
+                styles.confidenceCircle
+              }
+            >
+              92%
+            </div>
+
+            <div
+              className={
+                styles.confidenceText
+              }
+            >
+
+              <strong>
+                semantic一致度
+              </strong>
+
+              <span>
+                recommendation /
+                workload /
+                balance analysis
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      )}
+
+      {/* ================================= */}
+      {/* Intent Finder */}
+      {/* ================================= */}
+
+      <section
+        className={
+          styles.intentSection
+        }
+      >
+
+        <div
+          className={
+            styles.intentHeader
+          }
+        >
+
+          <div
+            className={
+              styles.intentLabel
+            }
+          >
+            Multi Intent Finder
+          </div>
+
+          <h2
+            className={
+              styles.intentTitle
+            }
+          >
+            用途から探す
+          </h2>
+
+          <p
+            className={
+              styles.intentDescription
+            }
+          >
+            semantic intent から
+            最適構成を探索。
           </p>
 
-          {/* HEROカード */}
-          {top1 && (
-            <>
-              {console.log('[HERO CARD]', top1)}
-              <HeroRankingCard
-                product={top1 ?? {}}
-                className={styles.heroCard ?? ''}
-              />
-            </>
-          )}
-
-          {/* CTA（1本化） */}
-          {top1?.url && (
-            <a
-              href={top1.url ?? '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.heroCTA ?? ''}
-            >
-              👉 今すぐこの価格で購入する
-            </a>
-          )}
-
-          <span className={styles.heroNotice ?? ''}>
-            ※在庫切れになることがあります
-          </span>
-        </section>
-      )}
-
-      {/* 🔥③ 診断導線（弱め） */}
-      <section className={styles.finderSection}>
-        <div className={styles.finderBox}>
-          <h2>迷っているなら診断で決める</h2>
-          <p>質問に答えるだけで最適な1台がわかる</p>
-
-          <Link href="/pc-finder" className={styles.finderBtn ?? ''}>
-            👉 無料診断はこちら
-          </Link>
         </div>
+
+        <div
+          className={
+            styles.intentGrid
+          }
+        >
+
+          {INTENT_NAV.map(
+            intent => (
+
+              <Link
+                key={intent.slug}
+
+                href={
+                  `/ranking/${intent.slug}`
+                }
+
+                className={
+                  styles.intentCard
+                }
+              >
+
+                <div
+                  className={
+                    styles.intentCardTitle
+                  }
+                >
+                  {intent.label}
+                </div>
+
+                <div
+                  className={
+                    styles.intentCardText
+                  }
+                >
+                  {intent.description}
+                </div>
+
+              </Link>
+
+            )
+          )}
+
+        </div>
+
       </section>
 
-      {/* 🔥④ 比較（補助） */}
-      {others.length > 0 && (
-        <section className={styles.compareSection}>
-          <h3>他にも選択肢あり</h3>
+      {/* ================================= */}
+      {/* Semantic Compare */}
+      {/* ================================= */}
 
-          <div className={styles.grid}>
-            {others.map((p: any, i: number) => {
-              console.log('[PRODUCT MAP]', { index: i, product: p })
+      {compareProducts.length > 0 && (
 
-              if (!p) {
-                console.warn('[MAP WARNING] undefined element at index', i)
-                return null
+        <section
+          className={
+            styles.compareSection
+          }
+        >
+
+          <div
+            className={
+              styles.compareHeader
+            }
+          >
+
+            <div
+              className={
+                styles.compareLabel
               }
+            >
+              Semantic Comparison
+            </div>
+
+            <h2
+              className={
+                styles.compareTitle
+              }
+            >
+              他のおすすめ構成
+            </h2>
+
+            <p
+              className={
+                styles.compareDescription
+              }
+            >
+              semantic difference /
+              workload /
+              GPU balance
+              を比較。
+            </p>
+
+          </div>
+
+          <div
+            className={
+              styles.compareGrid
+            }
+          >
+
+            {compareProducts.map((
+              product,
+              index
+            ) => {
+
+              const semantic =
+                getSemanticDifference(
+                  product
+                )
 
               return (
-                <ProductCard
-                  key={p.unique_id ?? i}
-                  product={p ?? {}}
-                  rank={i + 2 ?? 0}
-                  className={styles.productCard ?? ''}
-                />
+                <div
+                  key={
+                    product.unique_id
+                  }
+
+                  className={
+                    styles.compareItem
+                  }
+                >
+
+                  {/* difference */}
+                  <div
+                    className={
+                      styles.compareMeta
+                    }
+                  >
+
+                    {semantic.usage && (
+
+                      <div
+                        className={
+                          styles.compareChip
+                        }
+                      >
+                        {semantic.usage}
+                      </div>
+
+                    )}
+
+                    {semantic.gpu && (
+
+                      <div
+                        className={
+                          styles.compareChipStrong
+                        }
+                      >
+                        {semantic.gpu}
+                      </div>
+
+                    )}
+
+                    {semantic.maker && (
+
+                      <div
+                        className={
+                          styles.compareChip
+                        }
+                      >
+                        {semantic.maker}
+                      </div>
+
+                    )}
+
+                  </div>
+
+                  <ProductCard
+                    product={product}
+                    rank={index + 2}
+                  />
+
+                </div>
               )
             })}
+
           </div>
+
         </section>
+
       )}
 
-      {/* 🔥⑤ 中間導線 */}
-      <section className={styles.midNav}>
-        <h3>目的別で探す</h3>
-        <div>
-          <Link href="/ranking/gaming">ゲーム用途</Link>
-          <Link href="/ranking/work">仕事用途</Link>
-          <Link href="/ranking/gpu-rtx-4070">高性能GPU</Link>
+      {/* ================================= */}
+      {/* Bottom CTA */}
+      {/* ================================= */}
+
+      <section
+        className={
+          styles.bottomSection
+        }
+      >
+
+        <div
+          className={
+            styles.bottomCard
+          }
+        >
+
+          <div
+            className={
+              styles.bottomLabel
+            }
+          >
+            Semantic Ranking Explorer
+          </div>
+
+          <h2
+            className={
+              styles.bottomTitle
+            }
+          >
+            すべてのsemanticランキングを見る
+          </h2>
+
+          <p
+            className={
+              styles.bottomDescription
+            }
+          >
+            GPU /
+            usage /
+            maker /
+            AI /
+            recommendation
+            を横断探索。
+          </p>
+
+          <Link
+            href="/ranking"
+
+            className={
+              styles.bottomButton
+            }
+          >
+            →
+            semantic ranking を見る
+          </Link>
+
         </div>
+
       </section>
 
-      {/* 🔥⑥ 下部導線 */}
-      <section className={styles.bottomNav}>
-        <Link href="/ranking">
-          → すべてのランキングを見る
-        </Link>
-      </section>
-    </div>
+    </main>
   )
 }

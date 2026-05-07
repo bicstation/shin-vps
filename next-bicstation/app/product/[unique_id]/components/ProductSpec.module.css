@@ -1,0 +1,465 @@
+/* =========================================
+🔥 Semantic Specification Surface
+========================================= */
+
+.section {
+  display: flex;
+  flex-direction: column;
+
+  gap: 34px;
+}
+
+/* =========================================
+🔥 header
+========================================= */
+
+.header {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  min-height: 32px;
+
+  padding:
+    4px
+    14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(168,85,247,0.08);
+
+  border:
+    1px solid rgba(168,85,247,0.18);
+
+  color: #e9d5ff;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.title {
+  font-size:
+    clamp(30px, 5vw, 54px);
+
+  font-weight: 900;
+
+  line-height: 1.04;
+
+  letter-spacing: -0.05em;
+
+  color: #fff;
+
+  margin: 0;
+}
+
+.description {
+  max-width: 760px;
+
+  font-size: 15px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 layout
+========================================= */
+
+.grid {
+  display: grid;
+
+  gap: 34px;
+
+  align-items: start;
+}
+
+/* =========================================
+🔥 image area
+========================================= */
+
+.imageArea {
+  position: relative;
+}
+
+.imageWrap {
+  position: relative;
+
+  overflow: hidden;
+
+  border-radius: 30px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.96),
+      rgba(2,6,23,1)
+    );
+}
+
+.imageWrap::before {
+  content: '';
+
+  position: absolute;
+
+  inset:
+    -100px
+    -100px
+    auto;
+
+  height: 260px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(168,85,247,0.14),
+      transparent 72%
+    );
+
+  pointer-events: none;
+
+  z-index: 0;
+}
+
+.image {
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+
+  aspect-ratio: 4 / 3;
+
+  object-fit: contain;
+
+  display: block;
+
+  padding: 24px;
+
+  transition:
+    transform 0.28s ease;
+}
+
+.imageWrap:hover .image {
+  transform: scale(1.02);
+}
+
+.imageOverlay {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      transparent,
+      rgba(2,6,23,0.16)
+    );
+
+  pointer-events: none;
+}
+
+/* =========================================
+🔥 content
+========================================= */
+
+.content {
+  display: flex;
+  flex-direction: column;
+
+  gap: 28px;
+}
+
+/* =========================================
+🔥 product title
+========================================= */
+
+.productTitle {
+  font-size:
+    clamp(22px, 4vw, 40px);
+
+  font-weight: 900;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.04em;
+
+  color: #fff;
+}
+
+/* =========================================
+🔥 spec grid
+========================================= */
+
+.specGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(180px, 1fr)
+    );
+
+  gap: 16px;
+}
+
+/* =========================================
+🔥 spec item
+========================================= */
+
+.specItem {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  min-height: 96px;
+
+  padding: 18px;
+
+  border-radius: 22px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.specItem:hover {
+  transform: translateY(-1px);
+
+  border-color:
+    rgba(168,85,247,0.18);
+}
+
+/* =========================================
+🔥 emphasized spec
+========================================= */
+
+.specItemStrong {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  min-height: 96px;
+
+  padding: 18px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(168,85,247,0.1),
+      rgba(255,255,255,0.03)
+    );
+
+  border:
+    1px solid rgba(168,85,247,0.2);
+
+  box-shadow:
+    0 0 28px rgba(168,85,247,0.12);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.specItemStrong:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 0 34px rgba(168,85,247,0.18);
+}
+
+/* =========================================
+🔥 labels
+========================================= */
+
+.specLabel {
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  color: #94a3b8;
+}
+
+.specValue {
+  font-size: 15px;
+
+  font-weight: 800;
+
+  line-height: 1.6;
+
+  color: #fff;
+}
+
+/* =========================================
+🔥 semantic groups
+========================================= */
+
+.semanticGroups {
+  display: grid;
+
+  gap: 18px;
+}
+
+/* =========================================
+🔥 semantic notes
+========================================= */
+
+.notes {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+
+  gap: 18px;
+}
+
+.noteCard {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  padding: 20px;
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.96),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+}
+
+.noteTitle {
+  font-size: 14px;
+  font-weight: 900;
+
+  color: #fff;
+}
+
+.noteText {
+  font-size: 13px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 desktop
+========================================= */
+
+@media (min-width: 1024px) {
+
+  .grid {
+    grid-template-columns:
+      minmax(0, 0.9fr)
+      minmax(0, 1.1fr);
+  }
+
+}
+
+/* =========================================
+🔥 tablet
+========================================= */
+
+@media (max-width: 1024px) {
+
+  .grid {
+    gap: 28px;
+  }
+
+}
+
+/* =========================================
+🔥 mobile
+========================================= */
+
+@media (max-width: 768px) {
+
+  .section {
+    gap: 28px;
+  }
+
+  .title {
+    font-size: 38px;
+  }
+
+  .description {
+    font-size: 14px;
+  }
+
+  .specGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .notes {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+/* =========================================
+🔥 ultra small
+========================================= */
+
+@media (max-width: 480px) {
+
+  .title {
+    font-size: 32px;
+  }
+
+  .productTitle {
+    font-size: 24px;
+  }
+
+  .specGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .specItem,
+  .specItemStrong {
+    min-height: auto;
+  }
+
+}

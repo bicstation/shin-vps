@@ -1,0 +1,397 @@
+/* =========================================
+🔥 AI Recommendation Summary
+========================================= */
+
+.section {
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+
+  margin-top: 42px;
+}
+
+/* =========================================
+🔥 Header
+========================================= */
+
+.header {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  min-height: 30px;
+
+  padding:
+    0
+    14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(249,115,22,0.10);
+
+  border:
+    1px solid rgba(249,115,22,0.18);
+
+  color: #fdba74;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.title {
+  font-size:
+    clamp(28px, 5vw, 48px);
+
+  font-weight: 900;
+
+  line-height: 1.05;
+
+  letter-spacing: -0.04em;
+
+  color: #fff;
+
+  margin: 0;
+}
+
+.description {
+  max-width: 720px;
+
+  font-size: 14px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 Content
+========================================= */
+
+.content {
+  display: flex;
+  flex-direction: column;
+
+  gap: 22px;
+}
+
+/* =========================================
+🔥 Summary Grid
+========================================= */
+
+.summaryGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(220px, 1fr)
+    );
+
+  gap: 16px;
+}
+
+/* =========================================
+🔥 Summary Card
+========================================= */
+
+.summaryCard {
+  position: relative;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+
+  overflow: hidden;
+
+  padding:
+    18px
+    18px;
+
+  border-radius: 24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.92),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.summaryCard:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(249,115,22,0.24);
+
+  box-shadow:
+    0 14px 34px rgba(0,0,0,0.22);
+}
+
+/* glow */
+.summaryCard::before {
+  content: '';
+
+  position: absolute;
+
+  inset:
+    -80px
+    -80px
+    auto;
+
+  height: 180px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(249,115,22,0.12),
+      transparent 72%
+    );
+
+  pointer-events: none;
+}
+
+/* =========================================
+🔥 Icon
+========================================= */
+
+.summaryIcon {
+  position: relative;
+  z-index: 1;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+
+  border-radius: 14px;
+
+  background:
+    rgba(249,115,22,0.12);
+
+  border:
+    1px solid rgba(249,115,22,0.18);
+
+  color: #fdba74;
+
+  font-size: 14px;
+  font-weight: 900;
+}
+
+/* =========================================
+🔥 Text
+========================================= */
+
+.summaryText {
+  position: relative;
+  z-index: 1;
+
+  font-size: 14px;
+
+  line-height: 1.9;
+
+  color: #e2e8f0;
+}
+
+/* =========================================
+🔥 Target Card
+========================================= */
+
+.targetCard {
+  position: relative;
+
+  overflow: hidden;
+
+  padding:
+    22px
+    22px;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(249,115,22,0.12),
+      rgba(15,23,42,1)
+    );
+
+  border:
+    1px solid rgba(249,115,22,0.18);
+}
+
+/* glow */
+.targetCard::before {
+  content: '';
+
+  position: absolute;
+
+  inset:
+    -120px
+    -120px
+    auto;
+
+  height: 240px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(249,115,22,0.16),
+      transparent 72%
+    );
+
+  pointer-events: none;
+}
+
+.targetLabel {
+  position: relative;
+  z-index: 1;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  color: #fdba74;
+
+  margin-bottom: 10px;
+}
+
+.targetText {
+  position: relative;
+  z-index: 1;
+
+  font-size:
+    clamp(18px, 3vw, 28px);
+
+  font-weight: 900;
+
+  line-height: 1.35;
+
+  letter-spacing: -0.03em;
+
+  color: #fff;
+}
+
+/* =========================================
+🔥 Semantic Explanation
+========================================= */
+
+.explanation {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+
+  padding:
+    20px
+    22px;
+
+  border-radius: 24px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+}
+
+.explanationTitle {
+  font-size: 13px;
+  font-weight: 900;
+
+  color: #fff;
+
+  letter-spacing: 0.04em;
+}
+
+.explanationText {
+  font-size: 13px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 Responsive
+========================================= */
+
+@media (max-width: 768px) {
+
+  .section {
+    margin-top: 34px;
+
+    gap: 20px;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .targetText {
+    font-size: 22px;
+  }
+
+  .summaryText {
+    font-size: 13px;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .summaryCard {
+    padding:
+      16px
+      16px;
+
+    border-radius: 20px;
+  }
+
+  .targetCard {
+    padding:
+      18px
+      18px;
+
+    border-radius: 22px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+
+}

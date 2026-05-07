@@ -4,7 +4,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-# 💡 モデルの分割構造に合わせてインポート
+# 💡 モデル
 from api.models.pc_products import (
     PCProduct,
     PriceHistory,
@@ -12,6 +12,11 @@ from api.models.pc_products import (
 )
 
 from api.models import LinkshareProduct
+
+# 💡 Semantic Payload Layer
+from api.utils.semantic_payload import (
+    build_semantic_payload
+)
 
 import logging
 
@@ -60,11 +65,13 @@ class PCAttributeSerializer(
         )
 
 
+# --------------------------------------------------------------------------
+# 価格履歴
+# --------------------------------------------------------------------------
 class PriceHistorySerializer(
     serializers.ModelSerializer
 ):
 
-    # 💡 グラフ描画用に日付フォーマットを固定
     date = serializers.DateTimeField(
         source='recorded_at',
         format="%Y/%m/%d"
@@ -81,7 +88,7 @@ class PriceHistorySerializer(
 
 
 # --------------------------------------------------------------------------
-# 2. 📦 物販・アフィリエイト (Linkshare)
+# 2. 📦 Linkshare
 # --------------------------------------------------------------------------
 class LinkshareProductSerializer(
     serializers.ModelSerializer
@@ -109,21 +116,11 @@ class LinkshareProductSerializer(
 
 
 # --------------------------------------------------------------------------
-# 3. 🏆 PC製品メイン (BicStation)
+# 3. 🏆 PCProduct Main Serializer
 # --------------------------------------------------------------------------
 class PCProductSerializer(
     serializers.ModelSerializer
 ):
-
-    # ======================================================
-    # Semantic Attributes
-    # ======================================================
-    attributes = PCAttributeSerializer(
-        many=True,
-        read_only=True
-    )
-
-    grouped_attributes = serializers.SerializerMethodField()
 
     # ======================================================
     # Extra Fields
@@ -219,13 +216,6 @@ class PCProductSerializer(
             'ai_content',
 
             # ==================================================
-            # Semantic Attributes
-            # ==================================================
-            'attributes',
-
-            'grouped_attributes',
-
-            # ==================================================
             # Extra
             # ==================================================
             'price_history',
@@ -259,7 +249,6 @@ class PCProductSerializer(
     # ======================================================
     def get_price_history(self, obj):
 
-        # 💡 直近30件を昇順（古い順）に並べ替えてチャートへ渡す
         histories = (
             PriceHistory.objects
             .filter(product=obj)
@@ -276,7 +265,6 @@ class PCProductSerializer(
     # ======================================================
     def get_radar_chart(self, obj):
 
-        # 💡 Next.js の Recharts 等でそのまま使える配列形式
         return [
 
             {
@@ -311,44 +299,31 @@ class PCProductSerializer(
         ]
 
     # ======================================================
-    # Semantic Grouping
+    # Semantic Payload Integration
     # ======================================================
-    def get_grouped_attributes(self, obj):
+    def to_representation(self, instance):
 
-        grouped = {}
+        # -----------------------------------------
+        # Base Serializer
+        # -----------------------------------------
+        data = super().to_representation(
+            instance
+        )
 
-        # semantic priority order
-        ordered_types = [
-
-            "usage",
-
-            "gpu",
-            "cpu",
-
-            "maker",
-
-            "memory",
-            "storage",
-
-            "feature",
-        ]
-
-        attrs = obj.attributes.all()
-
-        for attr_type in ordered_types:
-
-            filtered = attrs.filter(
-                attr_type=attr_type
+        # -----------------------------------------
+        # Semantic Payload
+        # -----------------------------------------
+        semantic_payload = (
+            build_semantic_payload(
+                instance
             )
+        )
 
-            if not filtered.exists():
-                continue
+        # -----------------------------------------
+        # Inject Semantic Layer
+        # -----------------------------------------
+        data.update(
+            semantic_payload
+        )
 
-            grouped[attr_type] = (
-                PCAttributeSerializer(
-                    filtered,
-                    many=True
-                ).data
-            )
-
-        return grouped
+        return data

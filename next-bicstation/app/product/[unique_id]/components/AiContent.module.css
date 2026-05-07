@@ -1,56 +1,579 @@
-/* =========================
-   Wrapper
-========================= */
-.wrapper {
-  margin-top: 32px;
-  padding: 0 16px;
+/* =========================================
+🔥 AI Semantic Analysis Surface
+========================================= */
+
+.section {
+  display: flex;
+  flex-direction: column;
+
+  gap: 28px;
+
+  margin-top: 56px;
 }
 
-/* =========================
-   本文
-========================= */
+/* =========================================
+🔥 header
+========================================= */
+
+.header {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  min-height: 32px;
+
+  padding:
+    4px
+    14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(59,130,246,0.08);
+
+  border:
+    1px solid rgba(59,130,246,0.18);
+
+  color: #bfdbfe;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.title {
+  font-size:
+    clamp(32px, 5vw, 58px);
+
+  font-weight: 900;
+
+  line-height: 1.02;
+
+  letter-spacing: -0.05em;
+
+  color: #fff;
+
+  margin: 0;
+}
+
+.description {
+  max-width: 760px;
+
+  font-size: 15px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 content surface
+========================================= */
+
+.surface {
+  position: relative;
+
+  overflow: hidden;
+
+  border-radius: 34px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.96),
+      rgba(2,6,23,1)
+    );
+
+  padding:
+    34px
+    28px;
+
+  isolation: isolate;
+}
+
+/* =========================================
+🔥 glow
+========================================= */
+
+.glow {
+  position: absolute;
+
+  inset:
+    -160px
+    -160px
+    auto;
+
+  height: 420px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(59,130,246,0.12),
+      transparent 72%
+    );
+
+  pointer-events: none;
+
+  z-index: 0;
+}
+
+/* =========================================
+🔥 markdown base
+========================================= */
+
 .aiContent {
-  font-size: 14px;
-  line-height: 1.7;
-  color: #e5e7eb;
+  position: relative;
+  z-index: 1;
+
+  color: #e2e8f0;
+
+  font-size: 15px;
+
+  line-height: 2;
+
+  word-break: break-word;
 }
 
-/* 見出し */
+/* =========================================
+🔥 headings
+========================================= */
+
+.aiContent h1,
+.aiContent h2,
+.aiContent h3,
+.aiContent h4 {
+  position: relative;
+
+  font-weight: 900;
+
+  letter-spacing: -0.03em;
+
+  color: #fff;
+
+  margin-top: 2.8em;
+  margin-bottom: 1em;
+
+  line-height: 1.25;
+}
+
+/* h1 */
+.aiContent h1 {
+  font-size:
+    clamp(34px, 5vw, 54px);
+}
+
+/* h2 */
 .aiContent h2 {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 16px 0 8px;
+  font-size:
+    clamp(26px, 4vw, 40px);
+
+  padding-bottom: 12px;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.08);
 }
 
+/* h3 */
 .aiContent h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 12px 0 6px;
+  font-size:
+    clamp(20px, 3vw, 28px);
+
+  color: #f8fafc;
 }
 
-/* 段落 */
+/* h4 */
+.aiContent h4 {
+  font-size: 18px;
+
+  color: #cbd5e1;
+}
+
+/* =========================================
+🔥 paragraphs
+========================================= */
+
 .aiContent p {
-  margin-bottom: 10px;
+  margin-bottom: 1.4em;
+
+  color: #cbd5e1;
 }
 
-/* リスト */
-.aiContent ul {
-  padding-left: 18px;
-  margin-bottom: 10px;
+/* =========================================
+🔥 strong emphasis
+========================================= */
+
+.aiContent strong {
+  color: #fff;
+
+  font-weight: 900;
+
+  background:
+    linear-gradient(
+      180deg,
+      transparent 60%,
+      rgba(59,130,246,0.18) 60%
+    );
+
+  padding:
+    0
+    2px;
+}
+
+/* =========================================
+🔥 links
+========================================= */
+
+.aiContent a {
+  color: #60a5fa;
+
+  text-decoration: none;
+
+  border-bottom:
+    1px solid rgba(96,165,250,0.28);
+
+  transition:
+    opacity 0.18s ease;
+}
+
+.aiContent a:hover {
+  opacity: 0.82;
+}
+
+/* =========================================
+🔥 lists
+========================================= */
+
+.aiContent ul,
+.aiContent ol {
+  margin:
+    1.6em
+    0;
+
+  padding-left: 1.5em;
+
+  display: grid;
+
+  gap: 12px;
 }
 
 .aiContent li {
-  margin-bottom: 6px;
+  color: #cbd5e1;
+
+  line-height: 1.9;
 }
 
-/* 強調 */
-.aiContent strong {
-  color: #ffffff;
+/* =========================================
+🔥 blockquote
+========================================= */
+
+.aiContent blockquote {
+  position: relative;
+
+  margin:
+    2em
+    0;
+
+  padding:
+    20px
+    22px;
+
+  border-radius: 24px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+
+  color: #e2e8f0;
 }
 
-/* モバイル */
-@media (max-width: 640px) {
+.aiContent blockquote::before {
+  content: 'AI Insight';
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 28px;
+
+  padding:
+    0
+    10px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(59,130,246,0.12);
+
+  border:
+    1px solid rgba(59,130,246,0.2);
+
+  color: #bfdbfe;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  margin-bottom: 14px;
+}
+
+/* =========================================
+🔥 inline code
+========================================= */
+
+.aiContent code {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+
+  font-size: 13px;
+
+  background:
+    rgba(255,255,255,0.06);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  border-radius: 8px;
+
+  padding:
+    2px
+    6px;
+
+  color: #f8fafc;
+}
+
+/* =========================================
+🔥 code block
+========================================= */
+
+.aiContent pre {
+  overflow-x: auto;
+
+  margin:
+    2em
+    0;
+
+  padding: 20px;
+
+  border-radius: 24px;
+
+  background:
+    rgba(2,6,23,0.92);
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+}
+
+.aiContent pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+
+  line-height: 1.8;
+}
+
+/* =========================================
+🔥 horizontal rule
+========================================= */
+
+.aiContent hr {
+  margin:
+    3em
+    0;
+
+  border: none;
+
+  border-top:
+    1px solid rgba(255,255,255,0.08);
+}
+
+/* =========================================
+🔥 tables
+========================================= */
+
+.aiContent table {
+  width: 100%;
+
+  overflow: hidden;
+
+  border-collapse: collapse;
+
+  margin:
+    2em
+    0;
+
+  border-radius: 18px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+}
+
+.aiContent thead {
+  background:
+    rgba(255,255,255,0.04);
+}
+
+.aiContent th,
+.aiContent td {
+  padding:
+    14px
+    16px;
+
+  text-align: left;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.05);
+}
+
+.aiContent th {
+  color: #fff;
+
+  font-weight: 800;
+}
+
+.aiContent td {
+  color: #cbd5e1;
+}
+
+/* =========================================
+🔥 images
+========================================= */
+
+.aiContent img {
+  width: 100%;
+
+  border-radius: 24px;
+
+  margin:
+    2em
+    0;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+}
+
+/* =========================================
+🔥 footer
+========================================= */
+
+.footer {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+
+  padding:
+    22px
+    24px;
+
+  border-radius: 24px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+}
+
+.footerTitle {
+  font-size: 14px;
+  font-weight: 900;
+
+  color: #fff;
+}
+
+.footerText {
+  font-size: 13px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 mobile
+========================================= */
+
+@media (max-width: 768px) {
+
+  .section {
+    margin-top: 42px;
+
+    gap: 24px;
+  }
+
+  .title {
+    font-size: 40px;
+  }
+
+  .description {
+    font-size: 14px;
+  }
+
+  .surface {
+    border-radius: 28px;
+
+    padding:
+      24px
+      18px;
+  }
+
+  .aiContent {
+    font-size: 14px;
+
+    line-height: 1.9;
+  }
+
+  .aiContent h2 {
+    font-size: 28px;
+  }
+
+  .aiContent h3 {
+    font-size: 22px;
+  }
+
+}
+
+/* =========================================
+🔥 ultra small
+========================================= */
+
+@media (max-width: 480px) {
+
+  .title {
+    font-size: 34px;
+  }
+
+  .surface {
+    padding:
+      20px
+      14px;
+  }
+
   .aiContent {
     font-size: 13px;
   }
+
 }

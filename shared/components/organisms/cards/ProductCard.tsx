@@ -1,99 +1,359 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import SemanticBadge from '@/shared/components/semantic/SemanticBadge';
-import styles from './ProductCard.module.css';
+import Link from 'next/link'
 
-type Product = {
-  id: number;
-  unique_id: string;
-  name?: string;
-  shortTitle?: string;
-  image_url?: string;
-  price?: number;
-  gpu_model?: string;
-  cpu_model?: string;
-  attributes?: any[];
-};
+import SemanticBadge from '@/shared/components/semantic/SemanticBadge'
 
-type Props = {
-  product?: Product;
-  rank?: number;
-};
+import styles from './ProductCard.module.css'
 
-function getRankLabel(rank?: number) {
-  if (!rank) return null;
-  if (rank === 1) return '👑 人気No.1';
-  if (rank === 2) return '人気No.2';
-  if (rank === 3) return 'バランス良';
-  if (rank === 4) return 'コスパ良';
-  if (rank <= 10) return `TOP${rank}`;
-  return null;
+/**
+ * =========================================
+ * 🔥 Types
+ * =========================================
+ */
+
+type SemanticAttribute = {
+  slug: string
+  name: string
+  type: string
+
+  semantic_role?: string
+  semantic_weight?: number
 }
 
-export default function ProductCard({ product, rank }: Props) {
-  if (!product) return null;
+type Product = {
+  id: number
 
-  const rawTitle = product.shortTitle || product.name || 'おすすめ商品';
-  const title = rawTitle.length > 42 ? rawTitle.slice(0, 42) + '...' : rawTitle;
+  unique_id: string
 
-  const price = typeof product.price === 'number'
-    ? `¥${product.price.toLocaleString()}（税込・送料無料）`
-    : '';
+  name?: string
+  shortTitle?: string
 
-  const image = product.image_url || '/no-image.png';
-  const gpu = product.gpu_model?.replace('NVIDIA GeForce ', '') || '';
-  const cpu = product.cpu_model || '';
-  const label = getRankLabel(rank);
+  image_url?: string
+
+  price?: number
+
+  gpu_model?: string
+  cpu_model?: string
+
+  semantic_confidence?: number
+
+  semantic_reason?: string[]
+
+  attributes?: SemanticAttribute[]
+
+  grouped_attributes?: Record<
+    string,
+    SemanticAttribute[]
+  >
+}
+
+type Props = {
+  product?: Product
+  rank?: number
+}
+
+/**
+ * =========================================
+ * 🔥 Rank Label
+ * =========================================
+ */
+
+function getRankLabel(rank?: number) {
+  if (!rank) return null
+
+  if (rank === 1) {
+    return '👑 人気No.1'
+  }
+
+  if (rank === 2) {
+    return '🔥 人気急上昇'
+  }
+
+  if (rank === 3) {
+    return '⚖️ バランス良'
+  }
+
+  if (rank <= 10) {
+    return `TOP ${rank}`
+  }
+
+  return null
+}
+
+/**
+ * =========================================
+ * 🔥 Utils
+ * =========================================
+ */
+
+function truncate(
+  text?: string,
+  length: number = 46
+) {
+  if (!text) {
+    return 'おすすめ商品'
+  }
+
+  return text.length > length
+    ? `${text.slice(0, length)}...`
+    : text
+}
+
+function formatPrice(price?: number) {
+  if (typeof price !== 'number') {
+    return null
+  }
+
+  return `¥${price.toLocaleString()}`
+}
+
+/**
+ * =========================================
+ * 🔥 Component
+ * =========================================
+ */
+
+export default function ProductCard({
+  product,
+  rank,
+}: Props) {
+
+  // --------------------------------
+  // Empty
+  // --------------------------------
+  if (!product) return null
+
+  // --------------------------------
+  // Basic
+  // --------------------------------
+  const title = truncate(
+    product.shortTitle || product.name
+  )
+
+  const image =
+    product.image_url || '/no-image.png'
+
+  const price = formatPrice(product.price)
+
+  const label = getRankLabel(rank)
+
+  // --------------------------------
+  // Semantic
+  // --------------------------------
+  const attributes =
+    product.attributes ?? []
+
+  const groupedAttributes =
+    product.grouped_attributes ?? {}
+
+  const semanticReasons =
+    product.semantic_reason ?? []
+
+  const confidence =
+    product.semantic_confidence ?? 88
+
+  // --------------------------------
+  // emphasis
+  // --------------------------------
+  const emphasisAttributes =
+    attributes
+      .filter(
+        (attr) =>
+          attr.semantic_role ===
+            'highlight' ||
+          (attr.semantic_weight ?? 0) >= 80
+      )
+      .slice(0, 3)
 
   return (
     <Link
-      href={`/product/${product.unique_id ?? '#'}`}
-      className={styles.card ?? ''}
+      href={`/product/${product.unique_id}`}
+      className={styles.card}
     >
-      {/* =========================
-          画像
-      ========================= */}
-      <div className={styles.imageWrap ?? ''}>
-        <img src={image} alt={title} className={styles.image ?? ''} />
-        <div className={styles.imageGrad ?? ''} />
-        {label && <div className={styles.label ?? ''}>{label}</div>}
-      </div>
 
-      {/* =========================
-          価格
-      ========================= */}
-      <div className={styles.price ?? ''}>{price}</div>
+      {/* ============================== */}
+      {/* image */}
+      {/* ============================== */}
 
-      {/* =========================
-          タイトル
-      ========================= */}
-      <h3 className={styles.title ?? ''}>{title}</h3>
+      <div className={styles.imageWrap}>
 
-      {/* =========================
-          Semantic section
-      ========================= */}
-      <div className={styles.spec ?? ''}>
-        {gpu && (
-          <SemanticBadge
-            attribute={{
-              slug: gpu.toLowerCase(),
-              name: gpu,
-              type: 'gpu',
-              semantic_role: 'highlight',
-              semantic_weight: 90,
-            }}
-          />
+        <img
+          src={image}
+          alt={title}
+          className={styles.image}
+          loading="lazy"
+        />
+
+        <div className={styles.imageGrad} />
+
+        {/* ranking */}
+        {label && (
+          <div className={styles.label}>
+            {label}
+          </div>
         )}
-        {cpu && <span className={styles.badgeSub ?? ''}>{cpu}</span>}
+
+        {/* confidence */}
+        <div className={styles.confidence}>
+          {confidence}%
+        </div>
+
       </div>
 
-      {/* =========================
-          CTA
-      ========================= */}
-      <div className={styles.cta ?? ''}>
-        👉 今この価格で購入する →
+      {/* ============================== */}
+      {/* semantic emphasis */}
+      {/* ============================== */}
+
+      {emphasisAttributes.length >
+        0 && (
+        <div className={styles.semanticTop}>
+
+          {emphasisAttributes.map(
+            (attr) => (
+              <SemanticBadge
+                key={`${attr.type}-${attr.slug}`}
+                attribute={attr}
+              />
+            )
+          )}
+
+        </div>
+      )}
+
+      {/* ============================== */}
+      {/* price */}
+      {/* ============================== */}
+
+      {price && (
+        <div className={styles.price}>
+          {price}
+          <span className={styles.tax}>
+            税込
+          </span>
+        </div>
+      )}
+
+      {/* ============================== */}
+      {/* title */}
+      {/* ============================== */}
+
+      <h3 className={styles.title}>
+        {title}
+      </h3>
+
+      {/* ============================== */}
+      {/* semantic reasons */}
+      {/* ============================== */}
+
+      {semanticReasons.length > 0 && (
+        <div className={styles.reasonBox}>
+
+          {semanticReasons
+            .slice(0, 3)
+            .map((reason, index) => (
+              <div
+                key={index}
+                className={styles.reason}
+              >
+                ✓ {reason}
+              </div>
+            ))}
+
+        </div>
+      )}
+
+      {/* ============================== */}
+      {/* grouped semantic */}
+      {/* ============================== */}
+
+      {Object.keys(groupedAttributes)
+        .length > 0 && (
+        <div className={styles.groupedArea}>
+
+          {Object.entries(
+            groupedAttributes
+          )
+            .slice(0, 2)
+            .map(
+              ([group, attrs]) => (
+                <div
+                  key={group}
+                  className={
+                    styles.groupBlock
+                  }
+                >
+
+                  <span
+                    className={
+                      styles.groupTitle
+                    }
+                  >
+                    {group}
+                  </span>
+
+                  <div
+                    className={
+                      styles.groupValues
+                    }
+                  >
+
+                    {attrs
+                      ?.slice(0, 2)
+                      ?.map((attr) => (
+                        <SemanticBadge
+                          key={
+                            attr.slug
+                          }
+                          attribute={
+                            attr
+                          }
+                        />
+                      ))}
+
+                  </div>
+
+                </div>
+              )
+            )}
+
+        </div>
+      )}
+
+      {/* ============================== */}
+      {/* fallback */}
+      {/* ============================== */}
+
+      {Object.keys(groupedAttributes)
+        .length === 0 &&
+        attributes.length > 0 && (
+          <div className={styles.spec}>
+
+            {attributes
+              .slice(0, 3)
+              .map((attr) => (
+                <SemanticBadge
+                  key={attr.slug}
+                  attribute={attr}
+                />
+              ))}
+
+          </div>
+        )}
+
+      {/* ============================== */}
+      {/* CTA */}
+      {/* ============================== */}
+
+      <div className={styles.cta}>
+
+        <span>
+          →
+          詳細を見る
+        </span>
+
       </div>
+
     </Link>
-  );
+  )
 }

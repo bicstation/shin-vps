@@ -1,204 +1,518 @@
-/* =====================================================================
-   🔥 TOP PAGE LAYOUT（決断UI最適化）
-===================================================================== */
+/* =========================================
+🔥 Semantic Ranking Surface
+========================================= */
 
 .mainWrapper {
-  max-width: 1100px;
+  width: 100%;
+
+  max-width: 1440px;
+
   margin: 0 auto;
-  padding: 16px;
-}
 
-/* -------------------------
-   ナビ
-------------------------- */
-.topNav {
+  padding:
+    24px
+    18px
+    100px;
+
   display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 20px;
+  flex-direction: column;
+
+  gap: 72px;
 }
 
-.topNav a {
-  font-size: 12px;
-  color: #9ca3af;
-  white-space: nowrap;
+/* =========================================
+🔥 common section
+========================================= */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.topNav a:hover {
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.sectionLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  min-height: 30px;
+
+  padding: 4px 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(249,115,22,0.1);
+
+  border:
+    1px solid rgba(249,115,22,0.22);
+
+  color: #fdba74;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.sectionHeader h2 {
+  font-size:
+    clamp(26px, 4vw, 44px);
+
+  font-weight: 900;
+
+  line-height: 1.08;
+
+  letter-spacing: -0.04em;
+
   color: #fff;
+
+  margin: 0;
 }
 
-/* -------------------------
-   🔥 HERO（最重要）
-------------------------- */
+.sectionHeader p {
+  max-width: 780px;
+
+  font-size: 15px;
+
+  line-height: 1.8;
+
+  color: #94a3b8;
+
+  margin: 0;
+}
+
+/* =========================================
+🔥 semantic hero
+========================================= */
+
 .hero {
-  text-align: center;
-  margin-bottom: 28px;
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 34px;
+}
+
+.hero::before {
+  content: '';
+
+  position: absolute;
+
+  inset: -120px -80px auto;
+
+  height: 420px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(249,115,22,0.12),
+      transparent 72%
+    );
+
+  pointer-events: none;
+
+  z-index: 0;
+}
+
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.heroLabel {
+  display: inline-flex;
+  align-items: center;
+
+  width: fit-content;
+
+  min-height: 30px;
+
+  padding: 4px 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(250,204,21,0.1);
+
+  border:
+    1px solid rgba(250,204,21,0.22);
+
+  color: #fde68a;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
 }
 
 .heroTitle {
-  font-size: 22px;
+  max-width: 920px;
+
+  font-size:
+    clamp(40px, 7vw, 72px);
+
   font-weight: 900;
-  color: #facc15;
-  margin-bottom: 6px;
-}
 
-.heroSub {
-  font-size: 13px;
-  color: #cbd5f5;
-  margin-bottom: 16px;
-}
+  line-height: 0.98;
 
-/* CTA（最重要） */
-.heroCTA {
-  display: block;
-  width: 100%;
-  max-width: 420px;
-  margin: 16px auto 6px;
-  padding: 16px;
+  letter-spacing: -0.06em;
 
-  background: linear-gradient(135deg, #f97316, #fb923c);
   color: #fff;
 
-  text-align: center;
-  font-weight: 800;
-  font-size: 16px;
-
-  border-radius: 12px;
-
-  transition: all 0.15s ease;
+  margin: 0;
 }
 
-.heroCTA:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.45);
+.heroDescription {
+  max-width: 760px;
+
+  font-size: 17px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+
+  margin: 0;
 }
 
-.heroCTA:active {
-  transform: scale(0.96);
+/* =========================================
+🔥 semantic explanation
+========================================= */
+
+.explanation {
+  display: flex;
+  flex-direction: column;
+
+  gap: 28px;
 }
 
-.heroNotice {
-  font-size: 11px;
-  color: #9ca3af;
+.explanationGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(280px, 1fr)
+    );
+
+  gap: 20px;
 }
 
-/* -------------------------
-   診断（弱める）
-------------------------- */
-.finderSection {
-  margin: 30px 0;
+/* =========================================
+🔥 semantic reasoning
+========================================= */
+
+.reasonGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+
+  gap: 18px;
 }
 
-.finderBox {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
+.reasonCard {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+
+  padding: 20px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.88),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(148,163,184,0.1);
+
+  backdrop-filter: blur(10px);
 }
 
-.finderBox h2 {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.finderBox p {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.finderBtn {
-  display: inline-block;
-  margin-top: 10px;
-  font-size: 13px;
-  color: #38bdf8;
-}
-
-/* -------------------------
-   比較（補助）
-------------------------- */
-.compareSection {
-  margin-top: 30px;
-}
-
-.compareSection h3 {
+.reasonCardTitle {
   font-size: 14px;
-  text-align: center;
-  color: #9ca3af;
-  margin-bottom: 12px;
+  font-weight: 800;
+
+  color: #fff;
 }
 
-/* グリッド統一 */
+.reasonCardText {
+  font-size: 13px;
+
+  line-height: 1.8;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 semantic compare grid
+========================================= */
+
+.productSection {
+  display: flex;
+  flex-direction: column;
+
+  gap: 30px;
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(320px, 1fr)
+    );
+
+  gap: 24px;
 }
 
-/* -------------------------
-   中間導線
-------------------------- */
-.midNav {
-  margin-top: 32px;
-  text-align: center;
-}
+/* =========================================
+🔥 semantic navigation
+========================================= */
 
-.midNav h3 {
-  font-size: 14px;
-  color: #9ca3af;
-  margin-bottom: 8px;
-}
-
-.midNav div {
+.semanticNav {
   display: flex;
-  justify-content: center;
-  gap: 14px;
   flex-wrap: wrap;
+
+  gap: 14px;
 }
 
-.midNav a {
-  font-size: 12px;
-  color: #cbd5f5;
+.semanticNav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 48px;
+
+  padding: 0 18px;
+
+  border-radius: 16px;
+
+  background:
+    rgba(15,23,42,0.76);
+
+  border:
+    1px solid rgba(148,163,184,0.1);
+
+  color: #e2e8f0;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  transition:
+    all 0.2s ease;
 }
 
-.midNav a:hover {
+.semanticNav a:hover {
+  transform: translateY(-1px);
+
+  background:
+    rgba(249,115,22,0.08);
+
+  border-color:
+    rgba(249,115,22,0.24);
+
   color: #fff;
 }
 
-/* -------------------------
-   下部導線
-------------------------- */
+/* =========================================
+🔥 bottom navigation
+========================================= */
+
 .bottomNav {
-  margin-top: 28px;
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 14px;
 }
 
 .bottomNav a {
-  font-size: 12px;
-  color: #9ca3af;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 50px;
+
+  padding: 0 18px;
+
+  border-radius: 16px;
+
+  background:
+    rgba(15,23,42,0.76);
+
+  border:
+    1px solid rgba(148,163,184,0.12);
+
+  color: #cbd5e1;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  transition:
+    all 0.2s ease;
 }
 
 .bottomNav a:hover {
+  border-color:
+    rgba(249,115,22,0.24);
+
   color: #fff;
 }
 
-/* -------------------------
-   レスポンシブ
-------------------------- */
-@media (min-width: 768px) {
+/* =========================================
+🔥 empty state
+========================================= */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 16px;
+
+  padding:
+    120px
+    20px;
+
+  text-align: center;
+}
+
+.empty h2 {
+  font-size: 32px;
+
+  color: #fff;
+
+  margin: 0;
+}
+
+.empty p {
+  font-size: 15px;
+
+  color: #94a3b8;
+
+  margin: 0;
+}
+
+.empty a {
+  color: #38bdf8;
+}
+
+/* =========================================
+🔥 semantic divider
+========================================= */
+
+.divider {
+  width: 100%;
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(148,163,184,0.16),
+      transparent
+    );
+}
+
+/* =========================================
+🔥 tablet
+========================================= */
+
+@media (max-width: 1024px) {
+
+  .mainWrapper {
+    gap: 56px;
+  }
 
   .heroTitle {
-    font-size: 26px;
+    font-size: 54px;
+  }
+
+}
+
+/* =========================================
+🔥 mobile
+========================================= */
+
+@media (max-width: 768px) {
+
+  .mainWrapper {
+    gap: 46px;
+
+    padding:
+      18px
+      14px
+      80px;
+  }
+
+  .hero {
+    gap: 26px;
+  }
+
+  .heroTitle {
+    font-size: 40px;
+  }
+
+  .heroDescription {
+    font-size: 15px;
   }
 
   .grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
   }
 
-  .heroCTA {
-    font-size: 18px;
+  .explanationGrid {
+    grid-template-columns: 1fr;
   }
+
+  .reasonGrid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+/* =========================================
+🔥 ultra small
+========================================= */
+
+@media (max-width: 480px) {
+
+  .heroTitle {
+    font-size: 34px;
+  }
+
+  .sectionHeader h2 {
+    font-size: 28px;
+  }
+
+  .sectionHeader p {
+    font-size: 14px;
+  }
+
 }

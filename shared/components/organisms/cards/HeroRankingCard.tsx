@@ -1,120 +1,364 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import SemanticSection from '@/shared/components/semantic/SemanticSection';
-import { semanticHeroCopy } from '@/shared/lib/semantic/semanticHeroCopy';
-import styles from './HeroRankingCard.module.css';
+import Link from 'next/link'
+
+import SemanticSection from '@/shared/components/semantic/SemanticSection'
+
+import {
+  semanticHeroCopy,
+} from '@/shared/lib/semantic/semanticHeroCopy'
+
+import styles from './HeroRankingCard.module.css'
+
+/**
+ * =========================================
+ * 🔥 Types
+ * =========================================
+ */
 
 type SemanticAttribute = {
-  slug: string;
-  name: string;
-  type: string;
-  semantic_role?: string;
-  semantic_weight?: number;
-};
+  slug: string
+  name: string
+  type: string
+
+  semantic_role?: string
+  semantic_weight?: number
+}
 
 type Product = {
-  id: number;
-  unique_id: string;
-  name?: string;
-  shortTitle?: string;
-  image_url?: string;
-  price?: number;
-  gpu_model?: string;
-  cpu_model?: string;
-  attributes?: SemanticAttribute[];
-};
+  id: number
 
-export default function HeroRankingCard({ product }: { product?: Product }) {
-  if (!product) return null;
+  unique_id: string
 
-  // -------------------------
-  // タイトル
-  // -------------------------
-  const rawTitle = product.shortTitle || product.name || 'おすすめ商品';
-  const title = rawTitle.length > 50 ? rawTitle.slice(0, 50) + '...' : rawTitle;
+  name?: string
+  shortTitle?: string
 
-  // -------------------------
-  // 価格
-  // -------------------------
-  const price = typeof product.price === 'number' ? product.price.toLocaleString() : null;
+  image_url?: string
 
-  // -------------------------
-  // 画像
-  // -------------------------
-  const image = product.image_url || '/no-image.png';
+  price?: number
 
-  // -------------------------
-  // Semantic Attributes
-  // -------------------------
-  const gpu = product.gpu_model?.replace('NVIDIA GeForce ', '') || '';
-  const cpu = product.cpu_model || '';
-  const usageAttribute = product.attributes?.find((attr) => attr.type === 'usage');
-  const usage = usageAttribute?.slug || 'default';
+  gpu_model?: string
+  cpu_model?: string
 
-  // -------------------------
-  // Hero copy
-  // -------------------------
-  const heroCopy = semanticHeroCopy[usage as keyof typeof semanticHeroCopy] || semanticHeroCopy.default;
+  semantic_confidence?: number
 
-  // -------------------------
-  // Semantic section attributes
-  // -------------------------
-  const semanticAttributes = [
-    gpu && {
-      slug: gpu.toLowerCase(),
-      name: gpu,
-      type: 'gpu',
-      semantic_role: 'highlight',
-      semantic_weight: 90,
-    },
-    cpu && {
-      slug: cpu.toLowerCase(),
-      name: cpu,
-      type: 'cpu',
-      semantic_weight: 70,
-    },
-    usageAttribute && {
-      slug: usageAttribute.slug,
-      name: usageAttribute.name,
-      type: usageAttribute.type,
-      semantic_role: 'highlight',
-      semantic_weight: 100,
-    },
-  ].filter(Boolean);
+  semantic_reason?: string[]
+
+  attributes?: SemanticAttribute[]
+
+  grouped_attributes?: Record<
+    string,
+    SemanticAttribute[]
+  >
+}
+
+/**
+ * =========================================
+ * 🔥 Utils
+ * =========================================
+ */
+
+function truncate(
+  text?: string,
+  length: number = 50
+) {
+  if (!text) return 'おすすめ商品'
+
+  return text.length > length
+    ? `${text.slice(0, length)}...`
+    : text
+}
+
+function formatPrice(price?: number) {
+  if (typeof price !== 'number') {
+    return null
+  }
+
+  return price.toLocaleString()
+}
+
+/**
+ * =========================================
+ * 🔥 Component
+ * =========================================
+ */
+
+export default function HeroRankingCard({
+  product,
+}: {
+  product?: Product
+}) {
+
+  // --------------------------------
+  // Empty
+  // --------------------------------
+  if (!product) return null
+
+  // --------------------------------
+  // Basic
+  // --------------------------------
+  const title = truncate(
+    product.shortTitle || product.name
+  )
+
+  const image =
+    product.image_url || '/no-image.png'
+
+  const price = formatPrice(product.price)
+
+  // --------------------------------
+  // Semantic
+  // --------------------------------
+  const attributes =
+    product.attributes ?? []
+
+  const groupedAttributes =
+    product.grouped_attributes ?? {}
+
+  const usageAttribute =
+    attributes.find(
+      (attr) => attr.type === 'usage'
+    )
+
+  const usage =
+    usageAttribute?.slug || 'default'
+
+  // --------------------------------
+  // Hero Copy
+  // --------------------------------
+  const heroCopy =
+    semanticHeroCopy[
+      usage as keyof typeof semanticHeroCopy
+    ] || semanticHeroCopy.default
+
+  // --------------------------------
+  // Semantic Emphasis
+  // --------------------------------
+  const emphasisAttributes =
+    attributes
+      .filter(
+        (attr) =>
+          attr.semantic_role ===
+            'highlight' ||
+          (attr.semantic_weight ?? 0) >= 80
+      )
+      .slice(0, 4)
+
+  // --------------------------------
+  // Semantic Confidence
+  // --------------------------------
+  const confidence =
+    product.semantic_confidence ?? 92
 
   return (
     <section className={styles.card}>
-      {/* 価格 */}
-      {price && <div className={styles.price}>¥{price}（税込・送料無料）</div>}
 
-      {/* Heroコピー */}
-      <h2 className={styles.catch}>{heroCopy.catch}</h2>
-      <p className={styles.notice}>{heroCopy.sub}</p>
+      {/* ============================== */}
+      {/* semantic emphasis */}
+      {/* ============================== */}
 
-      {/* CTA */}
-      <Link href={`/product/${product.unique_id}`} className={styles.cta}>
-        👉 今すぐこの価格で購入する
-      </Link>
+      {emphasisAttributes.length > 0 && (
+        <div className={styles.semanticTop}>
 
-      {/* 補助通知 */}
-      <p className={styles.notice}>※在庫切れになることがあります</p>
+          {emphasisAttributes.map(
+            (attr) => (
+              <span
+                key={`${attr.type}-${attr.slug}`}
+                className={
+                  styles.semanticBadge
+                }
+              >
+                {attr.name}
+              </span>
+            )
+          )}
 
-      {/* 画像ラベル */}
-      <div className={styles.imageLabel}>実際の外観</div>
+        </div>
+      )}
 
-      {/* 商品画像 */}
-      <img src={image} alt={title} className={styles.image} />
+      {/* ============================== */}
+      {/* semantic confidence */}
+      {/* ============================== */}
 
-      {/* 商品タイトル */}
-      <h3 className={styles.title}>{title}</h3>
+      <div className={styles.confidenceBox}>
 
-      {/* Semantic attributes */}
-      <div className={styles.spec}>
-        {semanticAttributes.length > 0 && (
-          <SemanticSection attributes={semanticAttributes} />
-        )}
+        <span className={styles.confidenceLabel}>
+          おすすめ一致度
+        </span>
+
+        <strong
+          className={styles.confidenceValue}
+        >
+          {confidence}%
+        </strong>
+
       </div>
+
+      {/* ============================== */}
+      {/* price */}
+      {/* ============================== */}
+
+      {price && (
+        <div className={styles.price}>
+          ¥{price}
+          （税込・送料無料）
+        </div>
+      )}
+
+      {/* ============================== */}
+      {/* hero copy */}
+      {/* ============================== */}
+
+      <h2 className={styles.catch}>
+        {heroCopy.catch}
+      </h2>
+
+      <p className={styles.notice}>
+        {heroCopy.sub}
+      </p>
+
+      {/* ============================== */}
+      {/* semantic reason */}
+      {/* ============================== */}
+
+      {product.semantic_reason &&
+        product.semantic_reason.length >
+          0 && (
+          <div className={styles.reasonBox}>
+
+            {product.semantic_reason.map(
+              (
+                reason,
+                index
+              ) => (
+                <div
+                  key={index}
+                  className={
+                    styles.reasonItem
+                  }
+                >
+                  ✓ {reason}
+                </div>
+              )
+            )}
+
+          </div>
+        )}
+
+      {/* ============================== */}
+      {/* CTA */}
+      {/* ============================== */}
+
+      <div className={styles.ctaArea}>
+
+        <Link
+          href={`/product/${product.unique_id}`}
+          className={styles.cta}
+        >
+          👉 詳細を見る
+        </Link>
+
+        {product?.unique_id && (
+          <Link
+            href={`/ranking/${usage}`}
+            className={styles.subCta}
+          >
+            →
+            同じ用途のPCを見る
+          </Link>
+        )}
+
+      </div>
+
+      {/* ============================== */}
+      {/* notice */}
+      {/* ============================== */}
+
+      <p className={styles.noticeSub}>
+        ※価格・在庫は変動する場合があります
+      </p>
+
+      {/* ============================== */}
+      {/* image */}
+      {/* ============================== */}
+
+      <div className={styles.imageWrapper}>
+
+        <div className={styles.imageLabel}>
+          実際の外観
+        </div>
+
+        <img
+          src={image}
+          alt={title}
+          className={styles.image}
+          loading="eager"
+        />
+
+      </div>
+
+      {/* ============================== */}
+      {/* title */}
+      {/* ============================== */}
+
+      <h3 className={styles.title}>
+        {title}
+      </h3>
+
+      {/* ============================== */}
+      {/* grouped semantic */}
+      {/* ============================== */}
+
+      {Object.keys(groupedAttributes)
+        .length > 0 && (
+        <div className={styles.groupedArea}>
+
+          {Object.entries(
+            groupedAttributes
+          ).map(
+            ([group, attrs]) => (
+              <div
+                key={group}
+                className={
+                  styles.groupBlock
+                }
+              >
+
+                <div
+                  className={
+                    styles.groupTitle
+                  }
+                >
+                  {group}
+                </div>
+
+                <SemanticSection
+                  attributes={attrs}
+                />
+
+              </div>
+            )
+          )}
+
+        </div>
+      )}
+
+      {/* ============================== */}
+      {/* fallback semantic */}
+      {/* ============================== */}
+
+      {Object.keys(groupedAttributes)
+        .length === 0 &&
+        attributes.length > 0 && (
+          <div className={styles.spec}>
+
+            <SemanticSection
+              attributes={attributes}
+            />
+
+          </div>
+        )}
+
     </section>
-  );
+  )
 }

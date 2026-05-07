@@ -1,155 +1,510 @@
-/* /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/ProductHero.module.css */
+/* =========================================
+🔥 Semantic Product Hero
+========================================= */
 
-/* =========================
-   HEROセクション（主役）
-========================= */
 .heroSection {
-  padding: 24px 16px;
-  text-align: center;
+  position: relative;
+
+  overflow: hidden;
+
+  border-radius: 32px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.98),
+      rgba(2,6,23,1)
+    );
+
+  padding:
+    28px
+    20px
+    32px;
+
+  isolation: isolate;
 }
 
-/* =========================
-   コピー（結論）
-========================= */
-.heroCatch {
-  font-size: 18px;
-  font-weight: 700;
-  color: #facc15;
-  margin-bottom: 8px;
+/* =========================================
+🔥 background glow
+========================================= */
+
+.heroSection::before {
+  content: '';
+
+  position: absolute;
+
+  inset:
+    -120px
+    -120px
+    auto;
+
+  height: 420px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(249,115,22,0.16),
+      transparent 72%
+    );
+
+  pointer-events: none;
+
+  z-index: -1;
 }
 
-/* =========================
-   価格（最重要）
-========================= */
-.heroPrice {
-  font-size: 44px;
+/* =========================================
+🔥 semantic label
+========================================= */
+
+.heroSemanticLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 32px;
+
+  padding:
+    4px
+    14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(250,204,21,0.08);
+
+  border:
+    1px solid rgba(250,204,21,0.18);
+
+  color: #fde68a;
+
+  font-size: 11px;
   font-weight: 900;
-  color: #fb923c;
-  letter-spacing: 1px;
-  line-height: 1.2;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
 }
 
-/* =========================
-   CTA（主ボタン）
-========================= */
+/* =========================================
+🔥 hero layout
+========================================= */
+
+.heroGrid {
+  display: grid;
+
+  gap: 40px;
+
+  align-items: center;
+}
+
+/* =========================================
+🔥 left content
+========================================= */
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+}
+
+/* =========================================
+🔥 catch copy
+========================================= */
+
+.heroCatch {
+  max-width: 860px;
+
+  font-size:
+    clamp(34px, 6vw, 72px);
+
+  font-weight: 900;
+
+  line-height: 0.98;
+
+  letter-spacing: -0.06em;
+
+  color: #fff;
+
+  margin: 0;
+}
+
+/* =========================================
+🔥 description
+========================================= */
+
+.heroDescription {
+  max-width: 720px;
+
+  font-size: 15px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 confidence
+========================================= */
+
+.heroConfidence {
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+}
+
+.heroConfidenceCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 88px;
+  height: 88px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(249,115,22,0.1);
+
+  border:
+    1px solid rgba(249,115,22,0.24);
+
+  color: #fdba74;
+
+  font-size: 28px;
+  font-weight: 900;
+
+  box-shadow:
+    0 0 28px rgba(249,115,22,0.18);
+}
+
+.heroConfidenceText {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.heroConfidenceText strong {
+  font-size: 15px;
+  color: #fff;
+}
+
+.heroConfidenceText span {
+  font-size: 12px;
+
+  line-height: 1.7;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 semantic reasons
+========================================= */
+
+.heroReasons {
+  display: grid;
+
+  gap: 12px;
+}
+
+.heroReasonCard {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 12px;
+
+  padding: 14px;
+
+  border-radius: 18px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.05);
+}
+
+.heroReasonIcon {
+  color: #fb923c;
+
+  font-size: 14px;
+  font-weight: 900;
+
+  margin-top: 2px;
+}
+
+.heroReasonText {
+  font-size: 13px;
+
+  line-height: 1.8;
+
+  color: #cbd5e1;
+}
+
+/* =========================================
+🔥 semantic groups
+========================================= */
+
+.heroSemanticGroups {
+  display: grid;
+
+  gap: 16px;
+}
+
+/* =========================================
+🔥 price
+========================================= */
+
+.heroPriceWrap {
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.heroPriceLabel {
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.06em;
+
+  color: #94a3b8;
+
+  text-transform: uppercase;
+}
+
+.heroPrice {
+  font-size:
+    clamp(42px, 8vw, 76px);
+
+  font-weight: 900;
+
+  line-height: 1;
+
+  letter-spacing: -0.05em;
+
+  color: #fb923c;
+
+  text-shadow:
+    0 0 22px rgba(249,115,22,0.24);
+}
+
+/* =========================================
+🔥 CTA
+========================================= */
+
 .heroCtaWrapper {
-  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
 }
 
 .heroCta {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 68px;
+
   width: 100%;
-  max-width: 360px;
-  margin: 0 auto;
 
-  padding: 18px;
+  max-width: 520px;
 
-  background: linear-gradient(135deg, #f97316, #fb923c);
+  padding:
+    0
+    24px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
   color: #fff;
 
-  border-radius: 14px;
-  font-weight: 800;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 900;
 
   text-align: center;
 
-  transition: all 0.15s ease;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease,
+    box-shadow 0.18s ease;
+
+  box-shadow:
+    0 12px 34px rgba(249,115,22,0.32);
 }
 
 .heroCta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(249, 115, 22, 0.45);
+
+  opacity: 0.98;
+
+  box-shadow:
+    0 18px 42px rgba(249,115,22,0.42);
 }
 
 .heroCta:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
 }
 
-/* CTA補助 */
 .heroSub {
   font-size: 11px;
-  color: #9ca3af;
-  margin-top: 6px;
+
+  color: #64748b;
 }
 
-/* =========================
-   画像（補助）
-========================= */
+/* =========================================
+🔥 image area
+========================================= */
+
+.heroImageArea {
+  position: relative;
+}
+
 .heroImageWrap {
-  margin-top: 20px;
-}
+  overflow: hidden;
 
-.heroImageLabel {
-  font-size: 11px;
-  color: #9ca3af;
-  margin-bottom: 6px;
+  border-radius: 28px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  background:
+    rgba(15,23,42,0.88);
 }
 
 .heroImage {
   width: 100%;
-  max-width: 320px;
-  height: 200px;
-  object-fit: contain;
-  margin: 0 auto;
-  opacity: 0.95;
+
+  aspect-ratio: 4 / 3;
+
+  object-fit: cover;
+
+  display: block;
 }
 
-/* =========================
-   スペック（補助）
-========================= */
-.heroSpec {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
+.heroImageOverlay {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      transparent,
+      rgba(2,6,23,0.16)
+    );
+
+  pointer-events: none;
 }
 
-.heroBadge {
-  background: #111827;
-  color: #fff;
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 8px;
+/* =========================================
+🔥 desktop
+========================================= */
+
+@media (min-width: 1024px) {
+
+  .heroGrid {
+    grid-template-columns:
+      minmax(0, 1.15fr)
+      minmax(0, 0.85fr);
+  }
+
 }
 
-.heroBadgeSub {
-  background: #f1f5f9;
-  color: #334155;
-  font-size: 10px;
-  padding: 3px 8px;
-  border-radius: 8px;
+/* =========================================
+🔥 tablet
+========================================= */
+
+@media (max-width: 1024px) {
+
+  .heroSection {
+    padding:
+      24px
+      18px
+      28px;
+  }
+
+  .heroGrid {
+    gap: 32px;
+  }
+
 }
 
-/* =========================
-   HERO全体軽強調
-========================= */
-.heroBox {
-  background: rgba(249, 115, 22, 0.05);
-  border: 1px solid rgba(249, 115, 22, 0.2);
-  border-radius: 16px;
-  padding: 18px;
-}
+/* =========================================
+🔥 mobile
+========================================= */
 
-/* =========================
-   モバイル最適化
-========================= */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
 
-  .heroPrice {
-    font-size: 34px;
+  .heroSection {
+    border-radius: 24px;
+  }
+
+  .heroGrid {
+    gap: 28px;
   }
 
   .heroCatch {
-    font-size: 16px;
+    font-size: 40px;
+  }
+
+  .heroPrice {
+    font-size: 54px;
   }
 
   .heroCta {
-    font-size: 14px;
-    padding: 16px;
+    min-height: 60px;
+
+    font-size: 16px;
+
+    border-radius: 18px;
   }
 
-  .heroImage {
-    height: 180px;
+  .heroConfidenceCircle {
+    width: 72px;
+    height: 72px;
+
+    font-size: 22px;
   }
+
+}
+
+/* =========================================
+🔥 ultra small
+========================================= */
+
+@media (max-width: 480px) {
+
+  .heroSection {
+    padding:
+      20px
+      14px
+      24px;
+  }
+
+  .heroCatch {
+    font-size: 34px;
+  }
+
+  .heroDescription {
+    font-size: 14px;
+  }
+
+  .heroPrice {
+    font-size: 44px;
+  }
+
 }

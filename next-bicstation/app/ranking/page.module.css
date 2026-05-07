@@ -1,0 +1,813 @@
+/* =========================================
+🔥 Semantic Ranking Explorer
+========================================= */
+
+.page {
+  min-height: 100vh;
+
+  background:
+    linear-gradient(
+      180deg,
+      #020617 0%,
+      #071124 100%
+    );
+
+  color: #fff;
+}
+
+/* =========================================
+🔥 Container
+========================================= */
+
+.container {
+  width: 100%;
+  max-width: 1320px;
+
+  margin: 0 auto;
+
+  padding:
+    42px
+    20px
+    120px;
+}
+
+/* =========================================
+🔥 Empty State
+========================================= */
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 100vh;
+
+  padding: 24px;
+}
+
+.emptyCard {
+  width: 100%;
+  max-width: 540px;
+
+  padding:
+    42px
+    36px;
+
+  border-radius: 32px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 28px;
+  font-weight: 900;
+
+  color: #fff;
+
+  margin-bottom: 12px;
+}
+
+.emptyText {
+  font-size: 14px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 HERO
+========================================= */
+
+.hero {
+  position: relative;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  padding:
+    52px
+    42px;
+
+  border-radius: 40px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.96),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  margin-bottom: 52px;
+}
+
+/* glow */
+.hero::before {
+  content: '';
+
+  position: absolute;
+
+  inset:
+    -200px
+    -200px
+    auto;
+
+  height: 420px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(59,130,246,0.12),
+      transparent 72%
+    );
+
+  pointer-events: none;
+}
+
+.heroLabel {
+  position: relative;
+  z-index: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  min-height: 34px;
+
+  padding:
+    0
+    16px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(59,130,246,0.08);
+
+  border:
+    1px solid rgba(59,130,246,0.18);
+
+  color: #bfdbfe;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  position: relative;
+  z-index: 1;
+
+  max-width: 920px;
+
+  font-size:
+    clamp(42px, 7vw, 84px);
+
+  font-weight: 900;
+
+  line-height: 0.98;
+
+  letter-spacing: -0.06em;
+
+  color: #fff;
+
+  margin: 0;
+}
+
+.heroDescription {
+  position: relative;
+  z-index: 1;
+
+  max-width: 760px;
+
+  font-size: 16px;
+
+  line-height: 2;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 Section
+========================================= */
+
+.section {
+  margin-top: 64px;
+}
+
+/* =========================================
+🔥 Section Header
+========================================= */
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+
+  margin-bottom: 28px;
+}
+
+.sectionLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  min-height: 30px;
+
+  padding:
+    0
+    14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.04);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  color: #cbd5e1;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  font-size:
+    clamp(30px, 5vw, 56px);
+
+  font-weight: 900;
+
+  line-height: 1.05;
+
+  letter-spacing: -0.05em;
+
+  color: #fff;
+
+  margin: 0;
+}
+
+.sectionDescription {
+  max-width: 720px;
+
+  font-size: 15px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 Grid
+========================================= */
+
+.quickGrid,
+.semanticGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(260px, 1fr)
+    );
+
+  gap: 22px;
+}
+
+/* =========================================
+🔥 Semantic Card
+========================================= */
+
+.semanticCard,
+.semanticCardStrong {
+  position: relative;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  min-height: 240px;
+
+  padding:
+    26px
+    24px;
+
+  border-radius: 30px;
+
+  text-decoration: none;
+
+  isolation: isolate;
+
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+/* default */
+.semanticCard {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.92),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+}
+
+/* strong */
+.semanticCardStrong {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(59,130,246,0.14),
+      rgba(15,23,42,1)
+    );
+
+  border:
+    1px solid rgba(59,130,246,0.24);
+
+  box-shadow:
+    0 0 42px rgba(59,130,246,0.14);
+}
+
+/* glow */
+.semanticCard::before,
+.semanticCardStrong::before {
+  content: '';
+
+  position: absolute;
+
+  inset:
+    -120px
+    -120px
+    auto;
+
+  height: 260px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(59,130,246,0.14),
+      transparent 72%
+    );
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  transition:
+    opacity 0.22s ease;
+}
+
+.semanticCard:hover,
+.semanticCardStrong:hover {
+  transform:
+    translateY(-4px);
+
+  border-color:
+    rgba(59,130,246,0.28);
+
+  box-shadow:
+    0 28px 56px rgba(0,0,0,0.26);
+}
+
+.semanticCard:hover::before,
+.semanticCardStrong:hover::before {
+  opacity: 1;
+}
+
+/* =========================================
+🔥 Card Top
+========================================= */
+
+.cardTop {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* icon */
+.cardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 60px;
+  height: 60px;
+
+  border-radius: 20px;
+
+  background:
+    rgba(59,130,246,0.10);
+
+  border:
+    1px solid rgba(59,130,246,0.16);
+
+  font-size: 26px;
+}
+
+/* count */
+.cardCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 50px;
+  height: 32px;
+
+  padding:
+    0
+    12px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.04);
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  color: #cbd5e1;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* =========================================
+🔥 Card Body
+========================================= */
+
+.cardBody {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  flex: 1;
+}
+
+.cardTitle {
+  font-size:
+    clamp(22px, 3vw, 34px);
+
+  font-weight: 900;
+
+  line-height: 1.15;
+
+  letter-spacing: -0.04em;
+
+  color: #fff;
+}
+
+.cardDescription {
+  font-size: 14px;
+
+  line-height: 1.9;
+
+  color: #94a3b8;
+}
+
+/* =========================================
+🔥 Arrow
+========================================= */
+
+.cardArrow {
+  position: relative;
+  z-index: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 46px;
+  height: 46px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.04);
+
+  border:
+    1px solid rgba(255,255,255,0.06);
+
+  color: #fff;
+
+  font-size: 18px;
+  font-weight: 900;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
+}
+
+.semanticCard:hover .cardArrow,
+.semanticCardStrong:hover .cardArrow {
+  transform:
+    translateX(2px);
+
+  background:
+    rgba(59,130,246,0.18);
+}
+
+/* =========================================
+🔥 Finder
+========================================= */
+
+.finderSection {
+  margin-top: 84px;
+}
+
+.finderCard {
+  position: relative;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  padding:
+    42px
+    36px;
+
+  border-radius: 40px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(249,115,22,0.14),
+      rgba(15,23,42,1)
+    );
+
+  border:
+    1px solid rgba(249,115,22,0.18);
+}
+
+/* glow */
+.finderCard::before {
+  content: '';
+
+  position: absolute;
+
+  inset:
+    -180px
+    -180px
+    auto;
+
+  height: 360px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(249,115,22,0.16),
+      transparent 72%
+    );
+
+  pointer-events: none;
+}
+
+.finderLabel {
+  position: relative;
+  z-index: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  min-height: 30px;
+
+  padding:
+    0
+    14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(249,115,22,0.12);
+
+  border:
+    1px solid rgba(249,115,22,0.20);
+
+  color: #fdba74;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+.finderTitle {
+  position: relative;
+  z-index: 1;
+
+  max-width: 820px;
+
+  font-size:
+    clamp(32px, 5vw, 62px);
+
+  font-weight: 900;
+
+  line-height: 1.05;
+
+  letter-spacing: -0.05em;
+
+  color: #fff;
+}
+
+.finderDescription {
+  position: relative;
+  z-index: 1;
+
+  max-width: 720px;
+
+  font-size: 15px;
+
+  line-height: 1.9;
+
+  color: #cbd5e1;
+}
+
+.finderButton {
+  position: relative;
+  z-index: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: fit-content;
+
+  min-height: 58px;
+
+  padding:
+    0
+    28px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color: #fff;
+
+  font-size: 15px;
+  font-weight: 900;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.finderButton:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 16px 34px rgba(249,115,22,0.28);
+}
+
+/* =========================================
+🔥 Responsive
+========================================= */
+
+@media (max-width: 768px) {
+
+  .container {
+    padding:
+      28px
+      16px
+      100px;
+  }
+
+  .hero {
+    padding:
+      34px
+      24px;
+
+    border-radius: 30px;
+
+    margin-bottom: 42px;
+  }
+
+  .heroTitle {
+    font-size: 48px;
+  }
+
+  .heroDescription {
+    font-size: 14px;
+  }
+
+  .section {
+    margin-top: 48px;
+  }
+
+  .sectionTitle {
+    font-size: 38px;
+  }
+
+  .semanticCard,
+  .semanticCardStrong {
+    min-height: 220px;
+
+    padding:
+      22px
+      20px;
+
+    border-radius: 24px;
+  }
+
+  .cardTitle {
+    font-size: 28px;
+  }
+
+  .finderCard {
+    padding:
+      30px
+      22px;
+
+    border-radius: 30px;
+  }
+
+  .finderTitle {
+    font-size: 40px;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .heroTitle {
+    font-size: 40px;
+  }
+
+  .sectionTitle {
+    font-size: 32px;
+  }
+
+  .semanticCard,
+  .semanticCardStrong {
+    min-height: 200px;
+
+    padding:
+      18px
+      16px;
+
+    border-radius: 22px;
+  }
+
+  .cardTitle {
+    font-size: 24px;
+  }
+
+  .finderTitle {
+    font-size: 34px;
+  }
+
+}

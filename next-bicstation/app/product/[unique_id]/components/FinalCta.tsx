@@ -1,132 +1,461 @@
 /* eslint-disable @next/next/no-img-element */
-'use client';
+'use client'
 
-import React, { useMemo } from 'react';
-import styles from './FinalCta.module.css';
+import React, {
+  useMemo,
+} from 'react'
+
+import SemanticSection
+  from '@/shared/components/semantic/SemanticSection'
+
+import styles
+  from './FinalCta.module.css'
+
+/* =========================================
+🔥 Types
+========================================= */
 
 interface FinalCtaProps {
+
   product: {
-    maker: string;
-    name: string;
-    image_url?: string;
-  };
+    maker?: string
+    name?: string
+    image_url?: string
+
+    grouped_attributes?: Record<
+      string,
+      any[]
+    >
+
+    semantic_confidence?: number
+  }
+
   summary?: {
-    p1?: string;
-    p2?: string;
-    p3?: string;
-  } | null;
-  finalUrl: string;
-  isSoftware?: boolean;
+    p1?: string
+    p2?: string
+    p3?: string
+  } | null
+
+  finalUrl?: string
+
+  isSoftware?: boolean
 }
 
-const FinalCta: React.FC<FinalCtaProps> = ({
+/* =========================================
+🔥 Component
+========================================= */
+
+const FinalCta:
+React.FC<FinalCtaProps> = ({
+
   product,
+
   summary,
+
   finalUrl,
-  isSoftware = false
+
+  isSoftware = false,
+
 }) => {
 
-  // -------------------------
-  // 特徴（軽量＆安全）
-  // -------------------------
-  const features = useMemo(() => {
-    if (summary && (summary.p1 || summary.p2 || summary.p3)) {
-      return [
-        summary.p1 && `✓ ${summary.p1}`,
-        summary.p2 && `✓ ${summary.p2}`,
-        summary.p3 && `✓ ${summary.p3}`,
-      ].filter(Boolean) as string[];
-    }
+  // --------------------------------
+  // Features
+  // --------------------------------
+  const features =
+    useMemo(() => {
 
-    return isSoftware
-      ? [
-          "✓ すぐに使えるシンプル設計",
-          "✓ 初心者でも迷わない操作性",
-          "✓ 導入後すぐに利用可能"
+      if (
+        summary
+        &&
+        (
+          summary.p1
+          || summary.p2
+          || summary.p3
+        )
+      ) {
+
+        return [
+
+          summary.p1,
+
+          summary.p2,
+
+          summary.p3,
+
+        ].filter(Boolean)
+      }
+
+      return isSoftware
+
+        ? [
+
+          'すぐに導入できるシンプル構成',
+
+          '初心者でも迷わない操作性',
+
+          '導入直後から利用可能',
+
         ]
-      : [
-          "✓ 迷わず使える安心構成",
-          "✓ 長く使える性能バランス",
-          "✓ 初心者でもすぐ使える"
-        ];
-  }, [summary, isSoftware]);
+
+        : [
+
+          'gaming / creator 両対応の高バランス構成',
+
+          '長期利用を前提にしたsemantic構成',
+
+          '初心者でも扱いやすいrecommendation設計',
+
+        ]
+
+    }, [
+      summary,
+      isSoftware,
+    ])
+
+  // --------------------------------
+  // Semantic
+  // --------------------------------
+  const grouped =
+    product
+      ?.grouped_attributes
+      || {}
+
+  const confidence =
+    product
+      ?.semantic_confidence
+      || 92
 
   return (
-    <section className={styles.finalCtaSection}>
-      <div className={styles.ctaGlassCard}>
+    <section
+      className={
+        styles.section
+      }
+    >
 
-        {/* ===== ヘッダー ===== */}
-        <div className={styles.ctaHeader}>
+      <div
+        className={
+          styles.card
+        }
+      >
 
-          <div className={styles.ctaBrandTag}>
-            <span className={styles.dot}></span>
-            {product.maker} 正規ストア
+        {/* ========================= */}
+        {/* glow */}
+        {/* ========================= */}
+
+        <div
+          className={
+            styles.glow
+          }
+        />
+
+        {/* ========================= */}
+        {/* Header */}
+        {/* ========================= */}
+
+        <div
+          className={
+            styles.header
+          }
+        >
+
+          <div
+            className={
+              styles.label
+            }
+          >
+            Semantic Recommendation
           </div>
 
-          <h2 className={styles.ctaTitle}>
-            最終チェックはこちら
+          <h2
+            className={
+              styles.title
+            }
+          >
+            最終おすすめ分析
           </h2>
 
-          <div className={styles.ctaProductName}>
-            {product.name}
-          </div>
+          <p
+            className={
+              styles.description
+            }
+          >
+            semantic recommendation /
+            workload analysis /
+            price balance
+            を総合評価。
+          </p>
+
         </div>
 
-        {/* ===== コンテンツ ===== */}
-        <div className={styles.ctaBodyRow}>
+        {/* ========================= */}
+        {/* Main */}
+        {/* ========================= */}
 
-          {/* メリット */}
-          <div className={styles.ctaPointsColumn}>
-            <div className={styles.ctaFeatureList}>
-              {features.map((feature, index) => (
-                <div key={index} className={styles.ctaFeatureItem}>
-                  {feature}
-                </div>
-              ))}
-            </div>
-          </div>
+        <div
+          className={
+            styles.grid
+          }
+        >
 
-          {/* ビジュアル＋CTA */}
-          <div className={styles.ctaVisualColumn}>
+          {/* ================================= */}
+          {/* LEFT */}
+          {/* ================================= */}
 
-            <div className={styles.ctaImageWrapper}>
-              <img
-                src={product.image_url || '/no-image.png'}
-                alt={product.name}
-                className={styles.ctaFloatingImage}
+          <div
+            className={
+              styles.left
+            }
+          >
+
+            {/* maker */}
+            <div
+              className={
+                styles.brand
+              }
+            >
+
+              <span
+                className={
+                  styles.brandDot
+                }
               />
+
+              {product.maker}
+              正規ストア
+
             </div>
 
-            <div className={styles.ctaActionWrapper}>
+            {/* product name */}
+            <div
+              className={
+                styles.productName
+              }
+            >
+              {product.name}
+            </div>
 
-              <a
-                id="buy"
-                href={finalUrl}
-                target="_blank"
-                rel="nofollow noopener noreferrer"
-                className={styles.ctaNeonButton}
+            {/* confidence */}
+            <div
+              className={
+                styles.confidenceRow
+              }
+            >
+
+              <div
+                className={
+                  styles.confidenceCircle
+                }
               >
-                <span className={styles.ctaButtonMain}>
-                  👉 在庫があるうちに最安を確認する
+                {confidence}%
+              </div>
+
+              <div
+                className={
+                  styles.confidenceText
+                }
+              >
+
+                <strong>
+                  おすすめ一致度
+                </strong>
+
+                <span>
+                  semantic similarity /
+                  recommendation balance /
+                  workload analysis
                 </span>
 
-                <span className={styles.ctaButtonSub}>
-                  公式サイトで詳細を見る
-                </span>
-              </a>
-
-              {/* 安心 */}
-              <div className={styles.ctaTrust}>
-                正規ストア・メーカー保証あり
               </div>
 
             </div>
+
+            {/* features */}
+            <div
+              className={
+                styles.featureList
+              }
+            >
+
+              {features.map((
+                feature,
+                index
+              ) => (
+
+                <div
+                  key={index}
+
+                  className={
+                    styles.featureItem
+                  }
+                >
+
+                  <div
+                    className={
+                      styles.featureIcon
+                    }
+                  >
+                    ✓
+                  </div>
+
+                  <div
+                    className={
+                      styles.featureText
+                    }
+                  >
+                    {feature}
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+            {/* semantic groups */}
+            <div
+              className={
+                styles.semanticGroups
+              }
+            >
+
+              {Object.entries(
+                grouped
+              )
+                .slice(0, 3)
+                .map((
+                  [
+                    group,
+                    attrs,
+                  ]
+                ) => (
+
+                  <SemanticSection
+                    key={group}
+
+                    title={group}
+
+                    groupType={group}
+
+                    attributes={
+                      attrs as any[]
+                    }
+                  />
+
+                ))}
+
+            </div>
+
+          </div>
+
+          {/* ================================= */}
+          {/* RIGHT */}
+          {/* ================================= */}
+
+          <div
+            className={
+              styles.right
+            }
+          >
+
+            {/* image */}
+            <div
+              className={
+                styles.imageWrap
+              }
+            >
+
+              <img
+                src={
+                  product.image_url
+                  || '/no-image.png'
+                }
+
+                alt={
+                  product.name
+                }
+
+                className={
+                  styles.image
+                }
+              />
+
+            </div>
+
+            {/* CTA */}
+            <div
+              className={
+                styles.ctaArea
+              }
+            >
+
+              <a
+                id="buy"
+
+                href={
+                  finalUrl
+                  || '#'
+                }
+
+                target="_blank"
+
+                rel="
+                  nofollow
+                  noopener
+                  noreferrer
+                "
+
+                className={
+                  styles.ctaButton
+                }
+              >
+
+                <span
+                  className={
+                    styles.ctaMain
+                  }
+                >
+                  👉
+                  在庫があるうちに確認する
+                </span>
+
+                <span
+                  className={
+                    styles.ctaSub
+                  }
+                >
+                  公式ストアで詳細を見る
+                </span>
+
+              </a>
+
+              {/* trust */}
+              <div
+                className={
+                  styles.trust
+                }
+              >
+                正規ストア・メーカー保証対応
+              </div>
+
+              {/* urgency */}
+              <div
+                className={
+                  styles.urgency
+                }
+              >
+                ※価格・在庫は変動する場合があります
+              </div>
+
+            </div>
+
           </div>
 
         </div>
-      </div>
-    </section>
-  );
-};
 
-export default FinalCta;
+      </div>
+
+    </section>
+  )
+}
+
+export default FinalCta
