@@ -1,46 +1,70 @@
-'use server'
+
+/* =========================================
+🔥 Imports
+========================================= */
+
+import { cache } from 'react'
+
+import {
+  getApiBase,
+} from '@/shared/lib/config/api'
 
 /* =========================================
 🔥 Types
 ========================================= */
 
-export type PcSidebarStatItem = {
-  id?: number | string
+import type {
+  SemanticPayload,
+} from '@/shared/types/semantic'
 
-  name: string
+/* =========================================
+🔥 Product
+========================================= */
 
-  slug?: string
+export type SemanticProduct =
+  SemanticPayload & {
 
-  count?: number
+    id?: number
 
-  value?: string | number
+    unique_id?: string
 
-  icon?: string
+    name?: string
 
-  semantic_role?: string
+    maker?: string
 
-  semantic_weight?: number
+    price?: number
 
-  attr_type?: string
+    image_url?: string
 
-  type?: string
-}
+    url?: string
 
-export type PcSidebarStatsResponse = {
-  gpu: PcSidebarStatItem[]
-  cpu: PcSidebarStatItem[]
-  memory: PcSidebarStatItem[]
-  storage: PcSidebarStatItem[]
-  maker: PcSidebarStatItem[]
+    summary?: any
+
+    ai_content?: string
+
+    score_cpu?: number
+    score_gpu?: number
+    score_cost?: number
+    score_ai?: number
+    score_portable?: number
+  }
+
+/* =========================================
+🔥 Fetch Result
+========================================= */
+
+type FetchResult<T> = {
+
+  ok: boolean
+
+  data: T | null
+
+  error?: unknown
 }
 
 /* =========================================
 🔥 Config
 ========================================= */
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL
-  || 'http://localhost:8000/api'
 
 const IS_DEV =
   process.env.NODE_ENV ===
@@ -53,7 +77,7 @@ const IS_DEV =
 function logInfo(
   label: string,
   payload?: unknown
-): void {
+) {
 
   if (!IS_DEV) {
     return
@@ -65,25 +89,10 @@ function logInfo(
   )
 }
 
-function logWarn(
-  label: string,
-  payload?: unknown
-): void {
-
-  if (!IS_DEV) {
-    return
-  }
-
-  console.warn(
-    `[${label}]`,
-    payload ?? ''
-  )
-}
-
 function logError(
   label: string,
   payload?: unknown
-): void {
+) {
 
   console.error(
     `[${label}]`,
@@ -92,22 +101,53 @@ function logError(
 }
 
 /* =========================================
-🔥 Safe JSON Parser
+🔥 Safe JSON
 ========================================= */
 
-async function parseJsonSafe(
-  response: Response
-): Promise<any | null> {
+async function safeJson(
+  res: Response,
+  url?: string
+) {
 
   try {
 
-    return await response.json()
+    const text =
+      await res.text()
+
+    if (!text) {
+      return null
+    }
+
+    if (
+      !text.trim()
+        .startsWith('{')
+      &&
+      !text.trim()
+        .startsWith('[')
+    ) {
+
+      logError(
+        'INVALID_JSON_RESPONSE',
+        {
+          url,
+          preview:
+            text.slice(0, 120),
+        }
+      )
+
+      return null
+    }
+
+    return JSON.parse(text)
 
   } catch (error) {
 
     logError(
-      'PC_STATS_JSON_PARSE_ERROR',
-      error
+      'JSON_PARSE_ERROR',
+      {
+        url,
+        error,
+      }
     )
 
     return null
@@ -115,213 +155,412 @@ async function parseJsonSafe(
 }
 
 /* =========================================
-🔥 Normalize Array
+🔥 Normalize Semantic Payload
 ========================================= */
 
-function normalizeArray(
-  value: unknown
-): PcSidebarStatItem[] {
-
-  if (!Array.isArray(value)) {
-
-    logWarn(
-      'PC_STATS_INVALID_ARRAY',
-      value
-    )
-
-    return []
-  }
-
-  return value
-    .filter(Boolean)
-    .map((item) => ({
-
-      id:
-        item?.id,
-
-      name:
-        item?.name || '',
-
-      slug:
-        item?.slug,
-
-      count:
-        typeof item?.count ===
-        'number'
-          ? item.count
-          : 0,
-
-      value:
-        item?.value,
-
-      icon:
-        item?.icon,
-
-      semantic_role:
-        item?.semantic_role
-        || 'supportive',
-
-      semantic_weight:
-        typeof item?.semantic_weight ===
-        'number'
-          ? item.semantic_weight
-          : 0,
-
-      attr_type:
-        item?.attr_type
-        || item?.type
-        || 'default',
-
-      type:
-        item?.type
-        || item?.attr_type
-        || 'default',
-    }))
-}
-
-/* =========================================
-🔥 Empty Response
-========================================= */
-
-function createEmptyResponse():
-PcSidebarStatsResponse {
+function normalizeSemanticPayload(
+  payload: any
+): SemanticPayload {
 
   return {
 
-    gpu: [],
+    semantic_schema_version:
+      payload
+        ?.semantic_schema_version
+      || 1,
 
-    cpu: [],
+    attributes:
+      Array.isArray(
+        payload?.attributes
+      )
+        ? payload.attributes
+        : [],
 
-    memory: [],
-
-    storage: [],
-
-    maker: [],
+    grouped_attributes:
+      (
+        payload?.grouped_attributes
+        &&
+        typeof payload.grouped_attributes
+          === 'object'
+      )
+        ? payload.grouped_attributes
+        : {},
   }
 }
 
 /* =========================================
-🔥 Fetch PC Sidebar Stats
+🔥 Normalize Product
 ========================================= */
 
-export async function fetchPcSidebarStats():
-Promise<PcSidebarStatsResponse> {
+function normalizeProduct(
+  product: any
+): SemanticProduct {
+
+  const semantic =
+    normalizeSemanticPayload(
+      product
+    )
+
+  return {
+
+    ...product,
+
+    ...semantic,
+
+    unique_id:
+      product?.unique_id || '',
+
+    name:
+      product?.name || '',
+
+    maker:
+      product?.maker || '',
+
+    image_url:
+      product?.image_url || '',
+
+    url:
+      product?.url || '',
+  }
+}
+
+/* =========================================
+🔥 Normalize Results
+========================================= */
+
+function normalizeResults<T>(
+  data: any
+): T[] {
+
+  if (
+    Array.isArray(data)
+  ) {
+    return data
+  }
+
+  if (
+    Array.isArray(
+      data?.results
+    )
+  ) {
+    return data.results
+  }
+
+  return []
+}
+
+/* =========================================
+🔥 Django Fetch
+========================================= */
+
+async function fetchFromDjango<T>(
+  path: string,
+  options?: {
+    revalidate?: number
+  }
+): Promise<
+  FetchResult<T>
+> {
 
   try {
 
-    const endpoint =
-      `${API_BASE}/general/pc-sidebar-stats/`
+    const API_BASE =
+      getApiBase()
+
+    if (!API_BASE) {
+
+      logError(
+        'API_BASE_MISSING'
+      )
+
+      return {
+        ok: false,
+        data: null,
+      }
+    }
+
+    const url =
+      `${API_BASE}${path}`
 
     logInfo(
-      'PC_STATS_FETCH_START',
-      endpoint
+      'FETCH_START',
+      { url }
     )
 
-    const response =
-      await fetch(endpoint, {
-
-        method: 'GET',
-
-        headers: {
-
-          Accept:
-            'application/json',
-
-          'Content-Type':
-            'application/json',
-        },
-
-        cache: 'no-store',
-
+    const res =
+      await fetch(url, {
         next: {
-          revalidate: 0,
+          revalidate:
+            options?.revalidate
+            || 60,
         },
       })
 
-    if (!response.ok) {
+    if (!res.ok) {
 
       logError(
-        'PC_STATS_BAD_RESPONSE',
+        'FETCH_FAILED',
         {
-
+          url,
           status:
-            response.status,
-
-          statusText:
-            response.statusText,
+            res.status,
         }
       )
 
-      return createEmptyResponse()
+      return {
+        ok: false,
+        data: null,
+      }
     }
 
-    const raw =
-      await parseJsonSafe(response)
-
-    if (!raw) {
-
-      logWarn(
-        'PC_STATS_EMPTY_PAYLOAD'
+    const data =
+      await safeJson(
+        res,
+        url
       )
 
-      return createEmptyResponse()
-    }
+    if (!data) {
 
-    const normalized:
-      PcSidebarStatsResponse = {
-
-      gpu:
-        normalizeArray(raw?.gpu),
-
-      cpu:
-        normalizeArray(raw?.cpu),
-
-      memory:
-        normalizeArray(raw?.memory),
-
-      storage:
-        normalizeArray(raw?.storage),
-
-      maker:
-        normalizeArray(raw?.maker),
-    }
-
-    logInfo(
-      'PC_STATS_FETCH_SUCCESS',
-      {
-
-        gpu:
-          normalized.gpu.length,
-
-        cpu:
-          normalized.cpu.length,
-
-        memory:
-          normalized.memory.length,
-
-        storage:
-          normalized.storage.length,
-
-        maker:
-          normalized.maker.length,
+      return {
+        ok: false,
+        data: null,
       }
-    )
+    }
 
-    return normalized
+    return {
+      ok: true,
+      data,
+    }
 
   } catch (error) {
 
     logError(
-      'PC_STATS_FATAL_ERROR',
+      'FETCH_FATAL',
       error
     )
 
-    return createEmptyResponse()
+    return {
+      ok: false,
+      data: null,
+      error,
+    }
   }
 }
 
 /* =========================================
-🔥 Default Export
+🔥 Ranking API
 ========================================= */
 
-export default fetchPcSidebarStats
+export const fetchPCProductRanking =
+  cache(async function (
+    slug: string = 'score'
+  ): Promise<
+    SemanticProduct[]
+  > {
+
+    const path =
+      slug === 'score'
+        ? '/general/pc-products/ranking/'
+        : `/general/pc-products/ranking/${slug}/`
+
+    const result =
+      await fetchFromDjango<any>(
+        path,
+        {
+          revalidate: 60,
+        }
+      )
+
+    if (!result.ok) {
+      return []
+    }
+
+    const normalized =
+      normalizeResults<any>(
+        result.data
+      )
+
+    return normalized.map(
+      normalizeProduct
+    )
+  })
+
+/* =========================================
+🔥 Product Detail
+========================================= */
+
+export const fetchPCProductDetail =
+  cache(async function (
+    unique_id: string
+  ): Promise<
+    SemanticProduct | null
+  > {
+
+    if (!unique_id) {
+      return null
+    }
+
+    const result =
+      await fetchFromDjango<any>(
+        `/general/pc-products/${unique_id}/`,
+        {
+          revalidate: 300,
+        }
+      )
+
+    if (!result.ok) {
+      return null
+    }
+
+    return normalizeProduct(
+      result.data
+    )
+  })
+
+/* =========================================
+🔥 Related Products
+========================================= */
+
+export const fetchRelatedProducts =
+  cache(async function (
+    unique_id: string
+  ): Promise<
+    SemanticProduct[]
+  > {
+
+    if (!unique_id) {
+      return []
+    }
+
+    const result =
+      await fetchFromDjango<any>(
+        `/general/pc-products/${unique_id}/related/`,
+        {
+          revalidate: 300,
+        }
+      )
+
+    if (!result.ok) {
+      return []
+    }
+
+    return normalizeResults<any>(
+      result.data
+    ).map(
+      normalizeProduct
+    )
+  })
+
+/* =========================================
+🔥 Sidebar Stats
+========================================= */
+
+export const fetchSidebarStats =
+  cache(async function () {
+
+    const result =
+      await fetchFromDjango<any>(
+        '/general/pc-sidebar-stats/',
+        {
+          revalidate: 300,
+        }
+      )
+
+    if (!result.ok) {
+
+      return {
+        gpu: [],
+        makers: [],
+      }
+    }
+
+    const data =
+      result.data || {}
+
+    return {
+
+      gpu:
+        Array.isArray(
+          data?.gpu
+        )
+          ? data.gpu
+          : [],
+
+      makers:
+        Array.isArray(
+          data?.maker_counts
+        )
+          ? data.maker_counts
+          : [],
+    }
+  })
+
+/* =========================================
+🔥 Semantic Finder
+========================================= */
+
+/**
+ * TODO:
+ * backend semantic finder contract
+ * will migrate to GET query API
+ */
+
+export async function fetchFinderResult(
+  body: Record<
+    string,
+    unknown
+  >
+) {
+
+  try {
+
+    const API_BASE =
+      getApiBase()
+
+    if (!API_BASE) {
+      return []
+    }
+
+    const url =
+      `${API_BASE}/general/finder/`
+
+    const res =
+      await fetch(url, {
+
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json',
+        },
+
+        body:
+          JSON.stringify(body),
+
+        cache: 'no-store',
+      })
+
+    if (!res.ok) {
+      return []
+    }
+
+    const data =
+      await safeJson(
+        res,
+        url
+      )
+
+    return normalizeResults(
+      data
+    )
+
+  } catch (error) {
+
+    logError(
+      'FINDER_ERROR',
+      error
+    )
+
+    return []
+  }
+}
