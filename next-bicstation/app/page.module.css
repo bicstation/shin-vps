@@ -1,224 +1,471 @@
-/* page.module.css */
+/* =========================================================
+🔥 SHIN CORE LINX
+Semantic Landing Architecture
+========================================================= */
 
-/* =========================
-   全体ラッパー
-========================= */
-.mainWrapper {
+/* =========================================================
+🔥 PAGE
+========================================================= */
+
+.page {
   max-width: 720px;
   margin: 0 auto;
   padding: 16px;
-  font-family: 'Inter', sans-serif;
-  color: #1f2937;
+
+  color: #e5e7eb;
 }
 
-/* =========================
-   トップナビ
-========================= */
-.topNav {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
+/* =========================================================
+🔥 HERO
+========================================================= */
+
+.heroSection {
+  margin-bottom: 42px;
+}
+
+.heroIntro {
+  text-align: center;
   margin-bottom: 24px;
 }
 
-.topNav a {
-  padding: 6px 12px;
+.heroLabel {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 6px 14px;
+
   border-radius: 999px;
-  background: #f1f5f9;
-  font-size: 12px;
-  font-weight: 700;
-  text-decoration: none;
-  color: #334155;
-  transition: all 0.2s ease;
-}
 
-.topNav a:hover {
-  background: #0f172a;
-  color: #fff;
-}
+  background:
+    rgba(249, 115, 22, 0.12);
 
-/* =========================
-   HERO（決断ゾーン）
-========================= */
-.hero {
-  text-align: center;
-  margin-bottom: 28px;
+  border:
+    1px solid
+    rgba(249, 115, 22, 0.22);
+
+  color: #fdba74;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  margin-bottom: 14px;
 }
 
 .heroTitle {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 6px;
-}
+  font-size: 30px;
+  line-height: 1.25;
+  font-weight: 900;
 
-.heroSub {
-  font-size: 13px;
-  color: #94a3b8;
-  margin-bottom: 12px;
-}
+  margin-bottom: 14px;
 
-.heroCTA {
-  display: inline-block;
-  background: #f97316;
   color: #fff;
-  padding: 14px 26px;
-  border-radius: 12px;
-  font-weight: bold;
-  text-decoration: none;
-  margin: 12px 0;
-  transition: all 0.2s ease;
 }
 
-.heroCTA:hover {
-  background: #ea580c;
-}
+.heroDescription {
+  font-size: 14px;
+  line-height: 1.8;
 
-.heroNotice {
-  display: block;
-  font-size: 11px;
   color: #94a3b8;
+
+  max-width: 560px;
+  margin: 0 auto;
 }
 
-/* HEROカード */
-.heroCard {
-  margin: 12px auto;
-}
+.heroConfidence {
+  margin-top: 20px;
 
-/* =========================
-   診断導線
-========================= */
-.finderSection {
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-bottom: 24px;
-}
-
-.finderBox {
-  background: linear-gradient(135deg, #06b6d4, #0ea5e9);
-  padding: 20px;
-  border-radius: 16px;
-  text-align: center;
-  color: #fff;
-  max-width: 400px;
-  width: 100%;
-}
-
-.finderBox h2 {
-  font-size: 16px;
-  font-weight: 800;
-  margin-bottom: 6px;
-}
-
-.finderBox p {
-  font-size: 12px;
-  opacity: 0.9;
-  margin-bottom: 12px;
-}
-
-.finderBtn {
-  display: inline-block;
-  background: #fff;
-  color: #0ea5e9;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.finderBtn:hover {
-  background: #e0f2fe;
-}
-
-/* =========================
-   比較（2〜3位カード）
-========================= */
-.compareSection {
-  margin-bottom: 32px;
-}
-
-.compareSection h3 {
-  font-size: 13px;
-  color: #94a3b8;
-  margin-bottom: 12px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
   gap: 16px;
 }
 
-@media (min-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+.confidenceCircle {
+  width: 64px;
+  height: 64px;
 
-/* =========================
-   中間導線
-========================= */
-.midNav {
-  text-align: center;
-  margin-bottom: 24px;
-}
+  border-radius: 999px;
 
-.midNav div {
   display: flex;
-  gap: 10px;
+  align-items: center;
   justify-content: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(249,115,22,0.16),
+      rgba(249,115,22,0.06)
+    );
+
+  border:
+    1px solid
+    rgba(249,115,22,0.28);
+
+  color: #fb923c;
+
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.confidenceText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.confidenceText strong {
+  color: #fff;
+  font-size: 14px;
+}
+
+.confidenceText span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* =========================================================
+🔥 INTENT NAV
+========================================================= */
+
+.intentSection {
+  margin-bottom: 42px;
+}
+
+.intentHeader {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.intentLabel {
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  color: #38bdf8;
+
+  margin-bottom: 10px;
+}
+
+.intentTitle {
+  font-size: 24px;
+  font-weight: 900;
+
+  color: #fff;
+
+  margin-bottom: 10px;
+}
+
+.intentDescription {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.intentGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 14px;
+}
+
+.intentCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 18px;
+
+  border-radius: 18px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.06);
+
+  text-decoration: none;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.intentCard:hover {
+  transform: translateY(-2px);
+
+  border-color:
+    rgba(56,189,248,0.26);
+
+  background:
+    rgba(56,189,248,0.05);
+}
+
+.intentCardTitle {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.intentCardText {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* =========================================================
+🔥 COMPARE
+========================================================= */
+
+.compareSection {
+  margin-bottom: 42px;
+}
+
+.compareHeader {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.compareLabel {
+  color: #c084fc;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  margin-bottom: 10px;
+}
+
+.compareTitle {
+  color: #fff;
+
+  font-size: 24px;
+  font-weight: 900;
+
+  margin-bottom: 10px;
+}
+
+.compareDescription {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.compareGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+
+  gap: 22px;
+}
+
+.compareItem {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.compareMeta {
+  display: flex;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.midNav a {
-  font-size: 13px;
+.compareChip {
+  padding: 7px 12px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.04);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.08);
+
+  color: #cbd5e1;
+
+  font-size: 11px;
   font-weight: 700;
-  color: #2563eb;
-  text-decoration: none;
 }
 
-.midNav a:hover {
-  text-decoration: underline;
+.compareChipStrong {
+  padding: 7px 12px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(249,115,22,0.12);
+
+  border:
+    1px solid
+    rgba(249,115,22,0.24);
+
+  color: #fdba74;
+
+  font-size: 11px;
+  font-weight: 800;
 }
 
-/* =========================
-   下部導線
-========================= */
-.bottomNav {
+/* =========================================================
+🔥 BOTTOM CTA
+========================================================= */
+
+.bottomSection {
+  margin-bottom: 60px;
+}
+
+.bottomCard {
+  padding: 30px 24px;
+
+  border-radius: 28px;
+
   text-align: center;
-  margin-bottom: 24px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(15,23,42,0.92),
+      rgba(30,41,59,0.92)
+    );
+
+  border:
+    1px solid
+    rgba(255,255,255,0.06);
 }
 
-.bottomNav a {
-  font-size: 14px;
-  font-weight: 700;
-  color: #2563eb;
-  text-decoration: none;
+.bottomLabel {
+  color: #38bdf8;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  margin-bottom: 12px;
 }
 
-.bottomNav a:hover {
-  text-decoration: underline;
-}
-
-/* =========================
-   CTA（セカンダリ）
-========================= */
-.ctaSecondary {
-  text-align: center;
-}
-
-.ctaSecondary a {
-  display: inline-block;
-  background: #f97316;
+.bottomTitle {
   color: #fff;
-  padding: 14px 20px;
-  border-radius: 10px;
-  font-weight: bold;
-  text-decoration: none;
-  transition: all 0.2s ease;
+
+  font-size: 26px;
+  line-height: 1.4;
+  font-weight: 900;
+
+  margin-bottom: 12px;
 }
 
-.ctaSecondary a:hover {
-  background: #ea580c;
+.bottomDescription {
+  color: #94a3b8;
+
+  font-size: 14px;
+  line-height: 1.8;
+
+  margin-bottom: 20px;
+}
+
+.bottomButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 14px 24px;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.bottomButton:hover {
+  transform: translateY(-2px);
+  opacity: 0.92;
+}
+
+/* =========================================================
+🔥 EMPTY
+========================================================= */
+
+.empty {
+  min-height: 60vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyCard {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 30px;
+
+  border-radius: 24px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.06);
+
+  text-align: center;
+}
+
+.emptyTitle {
+  color: #fff;
+
+  font-size: 22px;
+  font-weight: 900;
+
+  margin-bottom: 12px;
+}
+
+.emptyText {
+  color: #94a3b8;
+
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* =========================================================
+🔥 RESPONSIVE
+========================================================= */
+
+@media (max-width: 640px) {
+
+  .heroTitle {
+    font-size: 24px;
+  }
+
+  .intentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bottomTitle {
+    font-size: 22px;
+  }
+
 }
