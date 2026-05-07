@@ -579,16 +579,42 @@ Semantic Conversion Landing
   font-weight: 700;
 }
 
+
+
 /* =========================================================
-🔥 POPULAR
+🔥 POPULAR SECTION
 ========================================================= */
 
 .popularSection {
-  margin-bottom: 42px;
+  margin-bottom: 56px;
+}
+
+/* =========================================================
+🔥 HEADER
+========================================================= */
+
+.popularHeader {
+  text-align: center;
+
+  margin-bottom: 28px;
 }
 
 .popularLabel {
-  color: #22c55e;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(34,197,94,0.12);
+
+  border:
+    1px solid rgba(34,197,94,0.22);
+
+  color: #86efac;
 
   font-size: 11px;
   font-weight: 800;
@@ -596,41 +622,189 @@ Semantic Conversion Landing
   letter-spacing: 0.12em;
   text-transform: uppercase;
 
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .popularTitle {
-  color: #fff;
+  color: #ffffff;
 
-  font-size: 28px;
+  font-size: 34px;
+  line-height: 1.2;
   font-weight: 900;
 
-  margin-bottom: 18px;
+  letter-spacing: -0.03em;
+
+  margin-bottom: 14px;
 }
+
+.popularDescription {
+  max-width: 560px;
+
+  margin: 0 auto;
+
+  color: #94a3b8;
+
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+/* =========================================================
+🔥 GRID
+========================================================= */
 
 .popularGrid {
   display: grid;
 
-  grid-template-columns: 1fr;
+  grid-template-columns:
+    repeat(2, 1fr);
 
-  gap: 12px;
+  gap: 18px;
 }
 
-.popularItem {
-  padding: 16px 18px;
+/* =========================================================
+🔥 CARD
+========================================================= */
 
-  border-radius: 16px;
+.popularCard {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  min-height: 220px;
+
+  padding: 24px;
+
+  overflow: hidden;
+
+  border-radius: 28px;
 
   background:
-    rgba(255,255,255,0.03);
+    linear-gradient(
+      135deg,
+      rgba(15,23,42,0.96),
+      rgba(30,41,59,0.92)
+    );
 
   border:
     1px solid rgba(255,255,255,0.06);
 
-  color: #e2e8f0;
+  text-decoration: none;
+
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+/* =========================================================
+🔥 HOVER
+========================================================= */
+
+.popularCard:hover {
+  transform:
+    translateY(-6px);
+
+  border-color:
+    rgba(249,115,22,0.28);
+
+  box-shadow:
+    0 20px 50px rgba(249,115,22,0.10);
+}
+
+/* =========================================================
+🔥 GLOW
+========================================================= */
+
+.popularCard::before {
+  content: '';
+
+  position: absolute;
+
+  top: -80px;
+  right: -80px;
+
+  width: 180px;
+  height: 180px;
+
+  border-radius: 999px;
+
+  background:
+    radial-gradient(
+      rgba(249,115,22,0.14),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+/* =========================================================
+🔥 TITLE
+========================================================= */
+
+.popularCardTitle {
+  position: relative;
+  z-index: 2;
+
+  color: #ffffff;
+
+  font-size: 22px;
+  line-height: 1.4;
+  font-weight: 900;
+
+  margin-bottom: 14px;
+}
+
+/* =========================================================
+🔥 DESCRIPTION
+========================================================= */
+
+.popularCardDescription {
+  position: relative;
+  z-index: 2;
+
+  flex: 1;
+
+  color: #94a3b8;
 
   font-size: 14px;
-  font-weight: 700;
+  line-height: 1.9;
+}
+
+/* =========================================================
+🔥 ACTION
+========================================================= */
+
+.popularCardAction {
+  position: relative;
+  z-index: 2;
+
+  margin-top: 22px;
+
+  color: #fb923c;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* =========================================================
+🔥 MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .popularGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .popularTitle {
+    font-size: 28px;
+  }
+
+  .popularCard {
+    min-height: 190px;
+  }
+
 }
 
 /* =========================================================
@@ -723,35 +897,46 @@ Semantic Conversion Landing
   opacity: 0.92;
 }
 
-/* =========================================================
+
+/* =========================================
 🔥 STICKY CTA
-========================================================= */
+========================================= */
 
 .stickyCTA {
   position: fixed;
 
-  bottom: 16px;
   left: 50%;
+  bottom: 14px;
 
   transform: translateX(-50%);
 
-  width: calc(100% - 24px);
+  width:
+    calc(100% - 24px);
+
   max-width: 720px;
 
   display: flex;
-  gap: 10px;
+  gap: 12px;
 
   z-index: 999;
 }
 
+/* =========================================
+🔥 PRIMARY
+========================================= */
+
 .stickyPrimary {
   flex: 1;
 
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-  padding: 14px;
+  min-height: 56px;
 
-  border-radius: 16px;
+  padding: 14px 18px;
+
+  border-radius: 18px;
 
   background:
     linear-gradient(
@@ -760,27 +945,117 @@ Semantic Conversion Landing
       #fb923c
     );
 
-  color: #fff;
+  color: #ffffff;
 
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 900;
+
+  text-decoration: none;
+
+  box-shadow:
+    0 12px 32px rgba(249,115,22,0.24);
+
+  backdrop-filter:
+    blur(10px);
+
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
 }
+
+.stickyPrimary:hover {
+  transform: translateY(-2px);
+
+  opacity: 0.92;
+}
+
+/* =========================================
+🔥 SECONDARY
+========================================= */
 
 .stickySecondary {
   flex: 1;
 
-  border:
-    1px solid rgba(255,255,255,0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 56px;
+
+  padding: 14px 18px;
+
+  border-radius: 18px;
 
   background:
     rgba(15,23,42,0.92);
 
-  color: #fff;
+  border:
+    1px solid rgba(255,255,255,0.08);
 
-  border-radius: 16px;
+  color: #e2e8f0;
 
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
+
+  text-decoration: none;
+
+  backdrop-filter:
+    blur(10px);
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.stickySecondary:hover {
+  transform: translateY(-2px);
+
+  border-color:
+    rgba(249,115,22,0.22);
+
+  background:
+    rgba(30,41,59,0.92);
+}
+
+/* =========================================
+🔥 MOBILE SAFE AREA
+========================================= */
+
+@supports (
+  padding-bottom:
+  env(safe-area-inset-bottom)
+) {
+
+  .stickyCTA {
+    bottom:
+      calc(
+        14px +
+        env(safe-area-inset-bottom)
+      );
+  }
+
+}
+
+/* =========================================
+🔥 MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+
+  .stickyCTA {
+    gap: 10px;
+  }
+
+  .stickyPrimary,
+  .stickySecondary {
+    min-height: 52px;
+
+    font-size: 13px;
+
+    border-radius: 16px;
+  }
+
 }
 
 /* =========================================================
