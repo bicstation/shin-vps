@@ -1,9 +1,12 @@
+// /home/maya/shin-vps/next-bicstation/app/components/home/common/HomeEmpty.tsx
+
 import styles
-  from '../page.module.css'
+  from '../styles/common.module.css'
 
 export default function HomeEmpty() {
 
   return (
+
     <div
       className={
         styles.empty
@@ -38,5 +41,6 @@ export default function HomeEmpty() {
       </div>
 
     </div>
+
   )
 }

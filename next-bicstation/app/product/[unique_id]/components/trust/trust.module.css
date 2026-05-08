@@ -1,0 +1,696 @@
+/* =========================================
+🔥 PRODUCT TRUST
+decision confidence layer
+========================================= */
+
+/* =========================================
+🔥 COMMON SECTION
+========================================= */
+
+.trustSection,
+.decisionSection,
+.forWhoSection,
+.notForWhoSection {
+  display: flex;
+  flex-direction: column;
+
+  gap: 28px;
+
+  padding:
+    30px;
+
+  border-radius:
+    30px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.94),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(148,163,184,.08);
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.22);
+}
+
+/* =========================================
+🔥 COMMON HEADER
+========================================= */
+
+.trustHeader,
+.decisionHeader,
+.forWhoHeader,
+.notForWhoHeader {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+/* =========================================
+🔥 LABELS
+========================================= */
+
+.trustLabel,
+.decisionLabel,
+.forWhoLabel,
+.notForWhoLabel {
+  display: inline-flex;
+
+  width: fit-content;
+
+  min-height:
+    30px;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    0 14px;
+
+  border-radius:
+    999px;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  text-transform:
+    uppercase;
+}
+
+.trustLabel {
+  background:
+    rgba(56,189,248,.08);
+
+  border:
+    1px solid rgba(56,189,248,.18);
+
+  color:
+    #7dd3fc;
+}
+
+.decisionLabel {
+  background:
+    rgba(34,197,94,.08);
+
+  border:
+    1px solid rgba(34,197,94,.18);
+
+  color:
+    #86efac;
+}
+
+.forWhoLabel {
+  background:
+    rgba(249,115,22,.08);
+
+  border:
+    1px solid rgba(249,115,22,.18);
+
+  color:
+    #fdba74;
+}
+
+.notForWhoLabel {
+  background:
+    rgba(239,68,68,.08);
+
+  border:
+    1px solid rgba(239,68,68,.18);
+
+  color:
+    #fca5a5;
+}
+
+/* =========================================
+🔥 TITLES
+========================================= */
+
+.trustTitle,
+.decisionTitle,
+.forWhoTitle,
+.notForWhoTitle {
+  margin: 0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(28px, 4vw, 44px);
+
+  font-weight:
+    900;
+
+  line-height:
+    1.12;
+
+  letter-spacing:
+    -.04em;
+}
+
+/* =========================================
+🔥 DESCRIPTIONS
+========================================= */
+
+.trustDescription,
+.decisionDescription,
+.forWhoDescription,
+.notForWhoDescription {
+  max-width:
+    760px;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+}
+
+/* =========================================
+🔥 TRUST GRID
+========================================= */
+
+.trustGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+
+  gap: 18px;
+}
+
+/* =========================================
+🔥 TRUST CARD
+========================================= */
+
+.trustCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+
+  min-height:
+    160px;
+
+  padding:
+    24px;
+
+  border-radius:
+    24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(56,189,248,.06),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(56,189,248,.10);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease;
+}
+
+.trustCard:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(56,189,248,.24);
+}
+
+/* =========================================
+🔥 TRUST CONTENT
+========================================= */
+
+.trustIcon {
+  font-size:
+    28px;
+
+  line-height:
+    1;
+}
+
+.trustContent {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.trustCardTitle {
+  color:
+    #ffffff;
+
+  font-size:
+    18px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.4;
+}
+
+.trustCardDescription {
+  margin: 0;
+
+  color:
+    #cbd5e1;
+
+  font-size:
+    14px;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 DECISION GRID
+========================================= */
+
+.decisionGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+
+  gap: 18px;
+}
+
+/* =========================================
+🔥 DECISION CARD
+========================================= */
+
+.decisionCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+
+  min-height:
+    160px;
+
+  padding:
+    24px;
+
+  border-radius:
+    24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(34,197,94,.06),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(34,197,94,.10);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease;
+}
+
+.decisionCard:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(34,197,94,.24);
+}
+
+/* =========================================
+🔥 DECISION CONTENT
+========================================= */
+
+.decisionIcon {
+  font-size:
+    28px;
+
+  line-height:
+    1;
+}
+
+.decisionContent {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.decisionCardTitle {
+  color:
+    #ffffff;
+
+  font-size:
+    18px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.4;
+}
+
+.decisionCardDescription {
+  margin: 0;
+
+  color:
+    #cbd5e1;
+
+  font-size:
+    14px;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 FOR WHO GRID
+========================================= */
+
+.forWhoGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(260px, 1fr)
+    );
+
+  gap: 18px;
+}
+
+/* =========================================
+🔥 FOR WHO CARD
+========================================= */
+
+.forWhoCard {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  min-height:
+    84px;
+
+  padding:
+    22px;
+
+  border-radius:
+    22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(249,115,22,.06),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(249,115,22,.12);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease;
+}
+
+.forWhoCard:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(249,115,22,.24);
+}
+
+/* =========================================
+🔥 FOR WHO CONTENT
+========================================= */
+
+.forWhoCheck {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width:
+    34px;
+
+  height:
+    34px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(249,115,22,.12);
+
+  color:
+    #fdba74;
+
+  font-size:
+    14px;
+
+  font-weight:
+    900;
+}
+
+.forWhoText {
+  color:
+    #ffffff;
+
+  font-size:
+    15px;
+
+  font-weight:
+    700;
+
+  line-height:
+    1.7;
+}
+
+/* =========================================
+🔥 NOT FOR WHO GRID
+========================================= */
+
+.notForWhoGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(260px, 1fr)
+    );
+
+  gap: 18px;
+}
+
+/* =========================================
+🔥 NOT FOR WHO CARD
+========================================= */
+
+.notForWhoCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 14px;
+
+  min-height:
+    120px;
+
+  padding:
+    22px;
+
+  border-radius:
+    22px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(239,68,68,.06),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(239,68,68,.10);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease;
+}
+
+.notForWhoCard:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(239,68,68,.22);
+}
+
+/* =========================================
+🔥 NOT FOR WHO CONTENT
+========================================= */
+
+.notForWhoIcon {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width:
+    34px;
+
+  height:
+    34px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(239,68,68,.10);
+
+  color:
+    #fca5a5;
+
+  font-size:
+    14px;
+
+  font-weight:
+    900;
+}
+
+.notForWhoText {
+  color:
+    #ffffff;
+
+  font-size:
+    14px;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 FOOTERS
+========================================= */
+
+.trustFooter,
+.decisionFooter,
+.forWhoFooter,
+.notForWhoFooter {
+  display: flex;
+
+  align-items: center;
+}
+
+.trustFooterText,
+.decisionFooterText,
+.forWhoFooterText,
+.notForWhoFooterText {
+  color:
+    #94a3b8;
+
+  font-size:
+    14px;
+
+  font-weight:
+    700;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+
+  .trustSection,
+  .decisionSection,
+  .forWhoSection,
+  .notForWhoSection {
+
+    padding:
+      22px;
+
+    border-radius:
+      24px;
+
+    gap:
+      24px;
+
+  }
+
+  .trustGrid,
+  .decisionGrid,
+  .forWhoGrid,
+  .notForWhoGrid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+  .trustCard,
+  .decisionCard,
+  .forWhoCard,
+  .notForWhoCard {
+
+    min-height:
+      auto;
+
+    padding:
+      20px;
+
+  }
+
+  .trustTitle,
+  .decisionTitle,
+  .forWhoTitle,
+  .notForWhoTitle {
+
+    font-size:
+      clamp(26px, 8vw, 38px);
+
+  }
+
+  .trustDescription,
+  .decisionDescription,
+  .forWhoDescription,
+  .notForWhoDescription {
+
+    font-size:
+      14px;
+
+    line-height:
+      1.8;
+
+  }
+
+}

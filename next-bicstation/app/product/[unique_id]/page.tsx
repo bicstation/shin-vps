@@ -6,7 +6,7 @@ import {
 
 import {
   fetchPCProductDetail,
-} from '@/shared/lib/api/django/pc/products'
+} from '@/shared/lib/api/django/pc/stats'
 
 import styles
   from './page.module.css'

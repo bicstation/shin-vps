@@ -1,0 +1,319 @@
+/* empty.module.css */
+
+/* =========================================
+🔥 PRODUCT EMPTY
+fallback / empty state
+========================================= */
+
+/* =========================================
+🔥 wrapper
+========================================= */
+
+.emptyWrapper {
+  width: 100%;
+
+  min-height:
+    80vh;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    24px;
+}
+
+/* =========================================
+🔥 card
+========================================= */
+
+.emptyCard {
+  width: 100%;
+
+  max-width:
+    720px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+
+  padding:
+    38px;
+
+  border-radius:
+    32px;
+
+  overflow: hidden;
+
+  position: relative;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.96),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    0 24px 72px rgba(0,0,0,.32);
+}
+
+.emptyCard::before {
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(239,68,68,.10),
+      transparent 42%
+    );
+
+  pointer-events: none;
+}
+
+/* =========================================
+🔥 label
+========================================= */
+
+.emptyLabel {
+  position: relative;
+
+  display: inline-flex;
+
+  align-self: center;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    32px;
+
+  padding:
+    0 14px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(239,68,68,.08);
+
+  border:
+    1px solid rgba(239,68,68,.18);
+
+  color:
+    #fca5a5;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  text-transform:
+    uppercase;
+}
+
+/* =========================================
+🔥 title
+========================================= */
+
+.emptyTitle {
+  position: relative;
+
+  margin: 0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(30px, 5vw, 52px);
+
+  font-weight:
+    900;
+
+  line-height:
+    1.12;
+
+  letter-spacing:
+    -.04em;
+}
+
+/* =========================================
+🔥 description
+========================================= */
+
+.emptyDescription {
+  position: relative;
+
+  margin: 0 auto;
+
+  max-width:
+    620px;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+}
+
+/* =========================================
+🔥 actions
+========================================= */
+
+.emptyActions {
+  position: relative;
+
+  display: flex;
+
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 14px;
+}
+
+/* =========================================
+🔥 buttons
+========================================= */
+
+.emptyPrimary,
+.emptySecondary {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    56px;
+
+  padding:
+    0 22px;
+
+  border-radius:
+    18px;
+
+  text-decoration:
+    none;
+
+  font-size:
+    14px;
+
+  font-weight:
+    800;
+
+  transition:
+    transform .2s ease,
+    opacity .2s ease,
+    border-color .2s ease,
+    background .2s ease;
+}
+
+.emptyPrimary {
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color:
+    #ffffff;
+
+  box-shadow:
+    0 14px 34px rgba(249,115,22,.24);
+}
+
+.emptySecondary {
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  color:
+    #e2e8f0;
+}
+
+.emptyPrimary:hover,
+.emptySecondary:hover {
+  transform:
+    translateY(-2px);
+}
+
+/* =========================================
+🔥 mobile
+========================================= */
+
+@media (max-width: 640px) {
+
+  .emptyWrapper {
+
+    padding:
+      18px;
+
+  }
+
+  .emptyCard {
+
+    padding:
+      24px;
+
+    border-radius:
+      24px;
+
+    gap:
+      20px;
+
+  }
+
+  .emptyTitle {
+
+    font-size:
+      clamp(28px, 8vw, 40px);
+
+  }
+
+  .emptyDescription {
+
+    font-size:
+      14px;
+
+    line-height:
+      1.8;
+
+  }
+
+  .emptyActions {
+
+    flex-direction:
+      column;
+
+  }
+
+  .emptyPrimary,
+  .emptySecondary {
+
+    width:
+      100%;
+
+  }
+
+}

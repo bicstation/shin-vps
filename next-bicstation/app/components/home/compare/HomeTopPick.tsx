@@ -1,25 +1,36 @@
+// /home/maya/shin-vps/next-bicstation/app/components/home/compare/HomeTopPick.tsx
+
 import ProductCard
   from '@/shared/components/organisms/cards/ProductCard'
 
 import styles
-  from '../page.module.css'
+  from '../styles/compare.module.css'
 
 type Props = {
   product: any
 }
 
+const TOP_PICK_POINTS = [
+  '初心者にも人気',
+  'FPS gaming対応',
+  '動画編集も快適',
+  'AI画像生成向け',
+]
+
 export default function HomeTopPick({
   product,
 }: Props) {
 
-  // --------------------------------
-  // Empty
-  // --------------------------------
+  // ====================================
+  // EMPTY
+  // ====================================
+
   if (!product) {
     return null
   }
 
   return (
+
     <section
       className={
         styles.topPickSection
@@ -41,7 +52,7 @@ export default function HomeTopPick({
             styles.topPickLabel
           }
         >
-          🔥 TOP PICK
+          TOP RECOMMENDATION
         </div>
 
         <h2
@@ -49,7 +60,9 @@ export default function HomeTopPick({
             styles.topPickTitle
           }
         >
-          迷ったらまずこれ
+          迷ったら
+          まず比較したい
+          人気構成
         </h2>
 
         <p
@@ -57,15 +70,20 @@ export default function HomeTopPick({
             styles.topPickDescription
           }
         >
-          ゲーム・動画編集・AI用途まで
-          幅広く使いやすい、
-          人気の高性能PCです。
+          FPS gaming・動画編集・
+          AI画像生成まで。
+
+          幅広い用途で
+          バランスが良く、
+          初心者でも比較しやすい
+          high performance PC を
+          recommendation。
         </p>
 
       </div>
 
       {/* =====================================
-      HERO PRODUCT CARD
+      PRODUCT CARD
       ===================================== */}
 
       <div
@@ -85,7 +103,7 @@ export default function HomeTopPick({
       </div>
 
       {/* =====================================
-      SUB INFO
+      SEMANTIC FOOTER
       ===================================== */}
 
       <div
@@ -94,32 +112,23 @@ export default function HomeTopPick({
         }
       >
 
-        <div
-          className={
-            styles.topPickFooterItem
-          }
-        >
-          ✔ 初心者にも人気
-        </div>
+        {TOP_PICK_POINTS.map((point) => (
 
-        <div
-          className={
-            styles.topPickFooterItem
-          }
-        >
-          ✔ 高fpsゲーム対応
-        </div>
+          <div
+            key={point}
 
-        <div
-          className={
-            styles.topPickFooterItem
-          }
-        >
-          ✔ 動画編集も快適
-        </div>
+            className={
+              styles.topPickFooterItem
+            }
+          >
+            ✔ {point}
+          </div>
+
+        ))}
 
       </div>
 
     </section>
+
   )
 }

@@ -1,4 +1,4 @@
-// /home/maya/shin-vps/next-bicstation/app/components/HomeStickyCTA.tsx
+// /home/maya/shin-vps/next-bicstation/app/components/home/cta/HomeStickyCTA.tsx
 
 'use client'
 
@@ -6,7 +6,7 @@ import Link
   from 'next/link'
 
 import styles
-  from '../page.module.css'
+  from '../styles/cta.module.css'
 
 export default function HomeStickyCTA() {
 
@@ -18,9 +18,9 @@ export default function HomeStickyCTA() {
       }
     >
 
-      {/* ================================
+      {/* ====================================
       PRIMARY CTA
-      ================================ */}
+      ==================================== */}
 
       <Link
         href="/ranking/score"
@@ -29,12 +29,12 @@ export default function HomeStickyCTA() {
           styles.stickyPrimary
         }
       >
-        🔥 おすすめランキングを見る
+        🔥 人気ランキングを見る
       </Link>
 
-      {/* ================================
+      {/* ====================================
       SECONDARY CTA
-      ================================ */}
+      ==================================== */}
 
       <Link
         href="/pc-finder"
@@ -43,7 +43,7 @@ export default function HomeStickyCTA() {
           styles.stickySecondary
         }
       >
-        🎯 自分に合うPCを探す
+        🎯 用途からPCを探す
       </Link>
 
     </div>

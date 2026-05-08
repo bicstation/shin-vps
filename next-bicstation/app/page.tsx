@@ -9,69 +9,126 @@ import styles
   from './page.module.css'
 
 /* =========================================
-🔥 Components
+🔥 HERO
 ========================================= */
 
 import HomeHero
-  from './components/HomeHero'
+  from './components/home/hero/HomeHero'
 
-import HomeTopPick
-  from './components/HomeTopPick'
+import HomeHeroCapability
+  from './components/home/hero/HomeHeroCapability'
 
-import HomeCompareGrid
-  from './components/HomeCompareGrid'
-
-import HomeIntentNav
-  from './components/HomeIntentNav'
-
-import HomeGuideSection
-  from './components/HomeGuideSection'
-
-import HomePopularSection
-  from './components/HomePopularSection'
-
-import HomeBottomCTA
-  from './components/HomeBottomCTA'
-
-import HomeStickyCTA
-  from './components/HomeStickyCTA'
-
-import HomeEmpty
-  from './components/HomeEmpty'
+import HomeHeroTrust
+  from './components/home/hero/HomeHeroTrust'
 
 /* =========================================
-🔥 Dynamic
+🔥 TRUST
+========================================= */
+
+import HomeTrustSection
+  from './components/home/trust/HomeTrustSection'
+
+/* =========================================
+🔥 CAPABILITY
+========================================= */
+
+import HomeCapabilitySection
+  from './components/home/capability/HomeCapabilitySection'
+
+/* =========================================
+🔥 RECOMMENDATION
+========================================= */
+
+import HomeRecommendedPaths
+  from './components/home/recommendation/HomeRecommendedPaths'
+
+import HomeIntentNav
+  from './components/home/recommendation/HomeIntentNav'
+
+/* =========================================
+🔥 COMPARE
+========================================= */
+
+import HomeTopPick
+  from './components/home/compare/HomeTopPick'
+
+import HomeCompareGrid
+  from './components/home/compare/HomeCompareGrid'
+
+import HomeQuickCompare
+  from './components/home/compare/HomeQuickCompare'
+
+/* =========================================
+🔥 GUIDE
+========================================= */
+
+import HomeGuideSection
+  from './components/home/guide/HomeGuideSection'
+
+/* =========================================
+🔥 POPULAR
+========================================= */
+
+import HomePopularSection
+  from './components/home/recommendation/HomePopularSection'
+
+/* =========================================
+🔥 CTA
+========================================= */
+
+import HomeBottomCTA
+  from './components/home/cta/HomeBottomCTA'
+
+import HomeStickyCTA
+  from './components/home/cta/HomeStickyCTA'
+
+/* =========================================
+🔥 EMPTY
+========================================= */
+
+import HomeEmpty
+  from './components/home/common/HomeEmpty'
+
+/* =========================================
+🔥 DYNAMIC
 ========================================= */
 
 export const dynamic =
   'force-dynamic'
 
 /* =========================================
-🔥 Page
+🔥 PAGE
 ========================================= */
 
 export default async function HomePage() {
 
-  // --------------------------------
-  // Fetch
-  // --------------------------------
+  /* ======================================
+  FETCH
+  ====================================== */
+
   const products =
     await fetchPCProductRanking(
       'score'
     )
 
-  // --------------------------------
-  // Empty
-  // --------------------------------
+  /* ======================================
+  EMPTY
+  ====================================== */
+
   if (
     !products?.length
   ) {
-    return <HomeEmpty />
+
+    return (
+      <HomeEmpty />
+    )
+
   }
 
-  // --------------------------------
-  // Split
-  // --------------------------------
+  /* ======================================
+  SPLIT
+  ====================================== */
+
   const topProduct =
     products?.[0]
     || null
@@ -80,37 +137,88 @@ export default async function HomePage() {
     products.slice(1, 4)
 
   const popularProducts =
-    products.slice(0, 6)
+    products.slice(0, 8)
+
+  /* ======================================
+  RENDER
+  ====================================== */
 
   return (
+
     <main
       className={
         styles.page
       }
     >
 
-      {/* =====================================
+      {/* ===================================
       HERO
-      「今おすすめ」を断定
-      ===================================== */}
+      recommendation gateway
+      =================================== */}
 
       <HomeHero
-        product={topProduct}
+        product={
+          topProduct
+        }
       />
 
-      {/* =====================================
+      {/* ===================================
+      HERO CAPABILITY
+      what you can do
+      =================================== */}
+
+      <HomeHeroCapability />
+
+      {/* ===================================
+      HERO TRUST
+      confidence entry
+      =================================== */}
+
+      <HomeHeroTrust />
+
+      {/* ===================================
+      TRUST SECTION
+      anxiety reduction
+      =================================== */}
+
+      <HomeTrustSection />
+
+      {/* ===================================
+      CAPABILITY SECTION
+      semantic capability
+      =================================== */}
+
+      <HomeCapabilitySection />
+
+      {/* ===================================
       TOP PICK
-      最有力1台
-      ===================================== */}
+      strongest recommendation
+      =================================== */}
 
       <HomeTopPick
-        product={topProduct}
+        product={
+          topProduct
+        }
       />
 
-      {/* =====================================
-      COMPARE
-      比較判断支援
-      ===================================== */}
+      {/* ===================================
+      RECOMMENDED PATHS
+      recommendation gateway
+      =================================== */}
+
+      <HomeRecommendedPaths />
+
+      {/* ===================================
+      QUICK COMPARE
+      compare cognition
+      =================================== */}
+
+      <HomeQuickCompare />
+
+      {/* ===================================
+      COMPARE GRID
+      semantic compare
+      =================================== */}
 
       <HomeCompareGrid
         products={
@@ -118,24 +226,24 @@ export default async function HomePage() {
         }
       />
 
-      {/* =====================================
+      {/* ===================================
       INTENT NAV
-      目的検索
-      ===================================== */}
+      recommendation intent
+      =================================== */}
 
       <HomeIntentNav />
 
-      {/* =====================================
+      {/* ===================================
       GUIDE
-      不安除去 / SEO
-      ===================================== */}
+      decision support
+      =================================== */}
 
       <HomeGuideSection />
 
-      {/* =====================================
+      {/* ===================================
       POPULAR
-      人気構成
-      ===================================== */}
+      semantic popularity
+      =================================== */}
 
       <HomePopularSection
         products={
@@ -143,20 +251,22 @@ export default async function HomePage() {
         }
       />
 
-      {/* =====================================
-      FOOTER CTA
-      semantic ranking 導線
-      ===================================== */}
+      {/* ===================================
+      CTA
+      continuation
+      =================================== */}
 
       <HomeBottomCTA />
 
-      {/* =====================================
+      {/* ===================================
       STICKY CTA
-      mobile conversion
-      ===================================== */}
+      mobile continuation
+      =================================== */}
 
       <HomeStickyCTA />
 
     </main>
+
   )
+
 }

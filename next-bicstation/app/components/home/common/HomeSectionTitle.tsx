@@ -1,5 +1,7 @@
+// /home/maya/shin-vps/next-bicstation/app/components/home/common/HomeSectionTitle.tsx
+
 import styles
-  from '../page.module.css'
+  from '../styles/common.module.css'
 
 type Props = {
   label: string
@@ -14,6 +16,7 @@ export default function HomeSectionTitle({
 }: Props) {
 
   return (
+
     <div
       className={
         styles.sectionHeader
@@ -37,6 +40,7 @@ export default function HomeSectionTitle({
       </h2>
 
       {description && (
+
         <p
           className={
             styles.sectionDescription
@@ -44,8 +48,10 @@ export default function HomeSectionTitle({
         >
           {description}
         </p>
+
       )}
 
     </div>
+
   )
 }

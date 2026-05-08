@@ -1,12 +1,15 @@
+// /home/maya/shin-vps/next-bicstation/app/components/home/hero/HomeHero.tsx
+
 import Link
   from 'next/link'
 
 import styles
-  from '../page.module.css'
+  from '../styles/hero.module.css'
 
 export default function HomeHero() {
 
   return (
+
     <section
       className={
         styles.hero
@@ -22,7 +25,7 @@ export default function HomeHero() {
           styles.heroLabel
         }
       >
-        🎮 今おすすめのゲーミングPC
+        AI対応・ゲーミングPC比較
       </div>
 
       {/* =====================================
@@ -34,8 +37,9 @@ export default function HomeHero() {
           styles.heroTitle
         }
       >
-        ゲームも動画編集も快適な
-        高性能PCを比較
+        あなたに合う
+        高性能PCを
+        わかりやすく比較
       </h1>
 
       {/* =====================================
@@ -47,14 +51,16 @@ export default function HomeHero() {
           styles.heroDescription
         }
       >
-        FPSゲーム・配信・動画編集・
-        AI画像生成まで、
-        用途別におすすめPCを
-        わかりやすく紹介しています。
+        FPSゲーム・動画編集・
+        AI画像生成・普段使いまで。
+
+        用途別 recommendation により、
+        初心者でも比較しやすい
+        PC選びをサポートします。
       </p>
 
       {/* =====================================
-      FEATURE POINTS
+      SEMANTIC POINTS
       ===================================== */}
 
       <div
@@ -68,7 +74,15 @@ export default function HomeHero() {
             styles.heroPoint
           }
         >
-          🎮 FPSゲーム向け
+          🎮 FPS gaming向け
+        </div>
+
+        <div
+          className={
+            styles.heroPoint
+          }
+        >
+          🤖 AI画像生成対応
         </div>
 
         <div
@@ -84,7 +98,7 @@ export default function HomeHero() {
             styles.heroPoint
           }
         >
-          🤖 AI画像生成対応
+          🛡 初心者でも選びやすい
         </div>
 
       </div>
@@ -116,7 +130,7 @@ export default function HomeHero() {
             styles.heroSecondaryButton
           }
         >
-          自分に合うPCを探す
+          用途からPCを探す
         </Link>
 
       </div>
@@ -130,9 +144,11 @@ export default function HomeHero() {
           styles.heroNotice
         }
       >
-        初心者向けの選び方も掲載しています
+        スペック知識がなくても、
+        用途ベースで比較できます。
       </div>
 
     </section>
+
   )
 }

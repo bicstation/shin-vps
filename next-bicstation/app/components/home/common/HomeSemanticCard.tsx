@@ -1,7 +1,10 @@
-import Link from 'next/link'
+// /home/maya/shin-vps/next-bicstation/app/components/home/common/HomeSemanticCard.tsx
+
+import Link
+  from 'next/link'
 
 import styles
-  from '../page.module.css'
+  from '../styles/common.module.css'
 
 type Props = {
   href: string
@@ -22,6 +25,7 @@ export default function HomeSemanticCard({
 }: Props) {
 
   return (
+
     <Link
       href={href}
 
@@ -33,6 +37,10 @@ export default function HomeSemanticCard({
           : styles.semanticCard
       }
     >
+
+      {/* =====================================
+      TOP
+      ===================================== */}
 
       <div
         className={
@@ -48,8 +56,8 @@ export default function HomeSemanticCard({
           {icon}
         </div>
 
-        {typeof count ===
-          'number' && (
+        {typeof count === 'number' && (
+
           <div
             className={
               styles.cardCount
@@ -57,9 +65,14 @@ export default function HomeSemanticCard({
           >
             {count}
           </div>
+
         )}
 
       </div>
+
+      {/* =====================================
+      BODY
+      ===================================== */}
 
       <div
         className={
@@ -76,6 +89,7 @@ export default function HomeSemanticCard({
         </div>
 
         {description && (
+
           <div
             className={
               styles.cardDescription
@@ -83,9 +97,14 @@ export default function HomeSemanticCard({
           >
             {description}
           </div>
+
         )}
 
       </div>
+
+      {/* =====================================
+      ARROW
+      ===================================== */}
 
       <div
         className={
@@ -96,5 +115,6 @@ export default function HomeSemanticCard({
       </div>
 
     </Link>
+
   )
 }

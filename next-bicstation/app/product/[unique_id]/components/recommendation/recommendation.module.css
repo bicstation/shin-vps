@@ -1,0 +1,420 @@
+/* /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/recommendation/recommendation.module.css *//* =========================================
+🔥 PRODUCT RECOMMENDATION
+recommendation continuation layer
+========================================= */
+
+/* =========================================
+🔥 COMMON SECTION
+========================================= */
+
+.similarUsageSection,
+.nextIntentSection {
+  display: flex;
+  flex-direction: column;
+
+  gap: 28px;
+
+  padding:
+    30px;
+
+  border-radius:
+    30px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.94),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(148,163,184,.08);
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.22);
+}
+
+/* =========================================
+🔥 COMMON HEADER
+========================================= */
+
+.similarUsageHeader,
+.nextIntentHeader {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+/* =========================================
+🔥 LABELS
+========================================= */
+
+.similarUsageLabel,
+.nextIntentLabel {
+  display: inline-flex;
+
+  width: fit-content;
+
+  min-height:
+    30px;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    0 14px;
+
+  border-radius:
+    999px;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  text-transform:
+    uppercase;
+}
+
+.similarUsageLabel {
+  background:
+    rgba(249,115,22,.08);
+
+  border:
+    1px solid rgba(249,115,22,.18);
+
+  color:
+    #fdba74;
+}
+
+.nextIntentLabel {
+  background:
+    rgba(56,189,248,.08);
+
+  border:
+    1px solid rgba(56,189,248,.18);
+
+  color:
+    #7dd3fc;
+}
+
+/* =========================================
+🔥 TITLES
+========================================= */
+
+.similarUsageTitle,
+.nextIntentTitle {
+  margin: 0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(28px, 4vw, 44px);
+
+  font-weight:
+    900;
+
+  line-height:
+    1.14;
+
+  letter-spacing:
+    -.04em;
+}
+
+/* =========================================
+🔥 DESCRIPTION
+========================================= */
+
+.similarUsageDescription,
+.nextIntentDescription {
+  max-width:
+    760px;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+}
+
+/* =========================================
+🔥 GRID
+========================================= */
+
+.similarUsageGrid,
+.nextIntentGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+
+  gap: 18px;
+}
+
+/* =========================================
+🔥 SIMILAR USAGE CARD
+========================================= */
+
+.similarUsageCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+
+  min-height:
+    180px;
+
+  padding:
+    24px;
+
+  border-radius:
+    24px;
+
+  text-decoration:
+    none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(249,115,22,.06),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(249,115,22,.10);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+.similarUsageCard:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(249,115,22,.24);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(249,115,22,.10),
+      rgba(15,23,42,.98)
+    );
+}
+
+/* =========================================
+🔥 NEXT INTENT CARD
+========================================= */
+
+.nextIntentCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+
+  min-height:
+    180px;
+
+  padding:
+    24px;
+
+  border-radius:
+    24px;
+
+  text-decoration:
+    none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(56,189,248,.05),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(56,189,248,.10);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+.nextIntentCard:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(56,189,248,.24);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(56,189,248,.10),
+      rgba(15,23,42,.98)
+    );
+}
+
+/* =========================================
+🔥 COMMON CONTENT
+========================================= */
+
+.similarUsageContent,
+.nextIntentContent {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+/* =========================================
+🔥 ICONS
+========================================= */
+
+.similarUsageIcon,
+.nextIntentIcon {
+  font-size:
+    28px;
+
+  line-height:
+    1;
+}
+
+/* =========================================
+🔥 CARD TITLES
+========================================= */
+
+.similarUsageCardTitle,
+.nextIntentCardTitle {
+  color:
+    #ffffff;
+
+  font-size:
+    18px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.4;
+}
+
+/* =========================================
+🔥 CARD DESCRIPTION
+========================================= */
+
+.similarUsageCardDescription,
+.nextIntentCardDescription {
+  margin: 0;
+
+  color:
+    #cbd5e1;
+
+  font-size:
+    14px;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 FOOTERS
+========================================= */
+
+.similarUsageFooter,
+.nextIntentFooter {
+  display: flex;
+
+  align-items: center;
+}
+
+.similarUsageFooterText,
+.nextIntentFooterText {
+  color:
+    #94a3b8;
+
+  font-size:
+    14px;
+
+  font-weight:
+    700;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+
+  .similarUsageSection,
+  .nextIntentSection {
+
+    padding:
+      22px;
+
+    border-radius:
+      24px;
+
+    gap:
+      24px;
+
+  }
+
+  .similarUsageGrid,
+  .nextIntentGrid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+  .similarUsageCard,
+  .nextIntentCard {
+
+    min-height:
+      auto;
+
+    padding:
+      20px;
+
+  }
+
+  .similarUsageTitle,
+  .nextIntentTitle {
+
+    font-size:
+      clamp(26px, 8vw, 38px);
+
+  }
+
+  .similarUsageDescription,
+  .nextIntentDescription {
+
+    font-size:
+      14px;
+
+    line-height:
+      1.8;
+
+  }
+
+}

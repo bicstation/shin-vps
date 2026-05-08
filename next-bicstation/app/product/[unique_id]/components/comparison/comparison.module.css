@@ -1,0 +1,491 @@
+/* =========================================
+🔥 PRODUCT COMPARISON
+comparison continuation layer
+========================================= */
+
+/* =========================================
+🔥 COMMON SECTION
+========================================= */
+
+.alternativeSection,
+.choiceGuideSection,
+.comparisonLinksSection {
+  display: flex;
+  flex-direction: column;
+
+  gap: 28px;
+
+  padding:
+    30px;
+
+  border-radius:
+    30px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.94),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(148,163,184,.08);
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.22);
+}
+
+/* =========================================
+🔥 COMMON HEADER
+========================================= */
+
+.alternativeHeader,
+.choiceGuideHeader,
+.comparisonLinksHeader {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+/* =========================================
+🔥 LABELS
+========================================= */
+
+.alternativeLabel,
+.choiceGuideLabel,
+.comparisonLinksLabel {
+  display: inline-flex;
+
+  width: fit-content;
+
+  min-height:
+    30px;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    0 14px;
+
+  border-radius:
+    999px;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  text-transform:
+    uppercase;
+}
+
+.alternativeLabel {
+  background:
+    rgba(249,115,22,.08);
+
+  border:
+    1px solid rgba(249,115,22,.18);
+
+  color:
+    #fdba74;
+}
+
+.choiceGuideLabel {
+  background:
+    rgba(56,189,248,.08);
+
+  border:
+    1px solid rgba(56,189,248,.18);
+
+  color:
+    #7dd3fc;
+}
+
+.comparisonLinksLabel {
+  background:
+    rgba(168,85,247,.08);
+
+  border:
+    1px solid rgba(168,85,247,.18);
+
+  color:
+    #d8b4fe;
+}
+
+/* =========================================
+🔥 TITLES
+========================================= */
+
+.alternativeTitle,
+.choiceGuideTitle,
+.comparisonLinksTitle {
+  margin: 0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(28px, 4vw, 44px);
+
+  font-weight:
+    900;
+
+  line-height:
+    1.14;
+
+  letter-spacing:
+    -.04em;
+}
+
+/* =========================================
+🔥 DESCRIPTION
+========================================= */
+
+.alternativeDescription,
+.choiceGuideDescription,
+.comparisonLinksDescription {
+  max-width:
+    760px;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+}
+
+/* =========================================
+🔥 GRID
+========================================= */
+
+.alternativeGrid,
+.choiceGuideGrid,
+.comparisonLinksGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+
+  gap: 18px;
+}
+
+/* =========================================
+🔥 ALTERNATIVE CARD
+========================================= */
+
+.alternativeCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+
+  min-height:
+    180px;
+
+  padding:
+    24px;
+
+  border-radius:
+    24px;
+
+  text-decoration:
+    none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(249,115,22,.06),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(249,115,22,.10);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+.alternativeCard:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(249,115,22,.24);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(249,115,22,.10),
+      rgba(15,23,42,.98)
+    );
+}
+
+/* =========================================
+🔥 CHOICE GUIDE CARD
+========================================= */
+
+.choiceGuideCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+
+  min-height:
+    180px;
+
+  padding:
+    24px;
+
+  border-radius:
+    24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(56,189,248,.05),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(56,189,248,.10);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease;
+}
+
+.choiceGuideCard:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(56,189,248,.22);
+}
+
+/* =========================================
+🔥 COMPARISON LINKS CARD
+========================================= */
+
+.comparisonLinksCard {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+
+  min-height:
+    180px;
+
+  padding:
+    24px;
+
+  border-radius:
+    24px;
+
+  text-decoration:
+    none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(168,85,247,.06),
+      rgba(15,23,42,.96)
+    );
+
+  border:
+    1px solid rgba(168,85,247,.10);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+.comparisonLinksCard:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(168,85,247,.24);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(168,85,247,.10),
+      rgba(15,23,42,.98)
+    );
+}
+
+/* =========================================
+🔥 COMMON CONTENT
+========================================= */
+
+.alternativeContent,
+.choiceGuideContent,
+.comparisonLinksContent {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+/* =========================================
+🔥 ICONS
+========================================= */
+
+.alternativeIcon,
+.choiceGuideIcon,
+.comparisonLinksIcon {
+  font-size:
+    28px;
+
+  line-height:
+    1;
+}
+
+/* =========================================
+🔥 CARD TITLES
+========================================= */
+
+.alternativeCardTitle,
+.choiceGuideCardTitle,
+.comparisonLinksCardTitle {
+  color:
+    #ffffff;
+
+  font-size:
+    18px;
+
+  font-weight:
+    800;
+
+  line-height:
+    1.4;
+}
+
+/* =========================================
+🔥 CARD DESCRIPTION
+========================================= */
+
+.alternativeCardDescription,
+.choiceGuideCardDescription,
+.comparisonLinksCardDescription {
+  margin: 0;
+
+  color:
+    #cbd5e1;
+
+  font-size:
+    14px;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 FOOTERS
+========================================= */
+
+.alternativeFooter,
+.choiceGuideFooter,
+.comparisonLinksFooter {
+  display: flex;
+
+  align-items: center;
+}
+
+.alternativeFooterText,
+.choiceGuideFooterText,
+.comparisonLinksFooterText {
+  color:
+    #94a3b8;
+
+  font-size:
+    14px;
+
+  font-weight:
+    700;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+
+  .alternativeSection,
+  .choiceGuideSection,
+  .comparisonLinksSection {
+
+    padding:
+      22px;
+
+    border-radius:
+      24px;
+
+    gap:
+      24px;
+
+  }
+
+  .alternativeGrid,
+  .choiceGuideGrid,
+  .comparisonLinksGrid {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+  .alternativeCard,
+  .choiceGuideCard,
+  .comparisonLinksCard {
+
+    min-height:
+      auto;
+
+    padding:
+      20px;
+
+  }
+
+  .alternativeTitle,
+  .choiceGuideTitle,
+  .comparisonLinksTitle {
+
+    font-size:
+      clamp(26px, 8vw, 38px);
+
+  }
+
+  .alternativeDescription,
+  .choiceGuideDescription,
+  .comparisonLinksDescription {
+
+    font-size:
+      14px;
+
+    line-height:
+      1.8;
+
+  }
+
+}

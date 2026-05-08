@@ -1,160 +1,197 @@
-/* =========================
-   ページ全体
-========================= */
+/* =========================================
+🔥 PRODUCT DETAIL PAGE
+layout only
+========================================= */
+
+/* =========================================
+🔥 wrapper
+========================================= */
+
 .wrapper {
-  max-width: 1100px;
+  width: 100%;
+
+  max-width: 1280px;
+
   margin: 0 auto;
-  padding: 16px;
-}
 
-/* =========================
-   HERO（最重要）
-========================= */
-.hero {
-  text-align: center;
-  margin-bottom: 28px;
-}
+  padding:
+    28px 20px 140px;
 
-.heroPrice {
-  font-size: 42px;
-  font-weight: 900;
-  color: #fb923c;
-  letter-spacing: 1px;
-}
-
-/* HEROの軽い強調（主役化） */
-.heroBox {
-  background: rgba(249, 115, 22, 0.05);
-  border: 1px solid rgba(249, 115, 22, 0.2);
-  border-radius: 16px;
-  padding: 18px;
-}
-
-/* CTA（最重要） */
-.heroCTA {
-  margin-top: 16px;
-  display: inline-block;
-  padding: 16px 22px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #f97316, #fb923c);
-  color: #fff;
-  font-weight: 800;
-  transition: all 0.15s ease;
-}
-
-.heroCTA:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(249, 115, 22, 0.4);
-}
-
-.heroCTA:active {
-  transform: scale(0.96);
-}
-
-/* =========================
-   メインレイアウト
-========================= */
-.mainGrid {
-  display: grid;
-  gap: 20px;
-}
-
-@media (min-width: 768px) {
-  .mainGrid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-/* =========================
-   画像
-========================= */
-.imageBox {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-/* =========================
-   レーダー（補助）
-========================= */
-.radarWrap {
   display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  margin-bottom: 8px;
-  opacity: 0.9;
+  flex-direction: column;
+
+  gap: 42px;
 }
 
-/* =========================
-   AIコメント（重要）
-========================= */
-.aiSummary {
-  text-align: center;
-  margin-bottom: 8px;
-}
+/* =========================================
+🔥 generic section spacing
+========================================= */
 
-.aiSummaryItem {
-  font-size: 13px;
-  color: #e5e7eb;
-  margin-bottom: 2px;
-}
-
-.aiTarget {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #fb923c;
-  font-weight: 600;
-}
-
-/* =========================
-   CTA再提示（Final）
-========================= */
-.ctaSection {
-  text-align: center;
+.sectionSpacing {
   margin-top: 12px;
 }
 
-/* =========================
-   関連
-========================= */
-.related {
-  margin-top: 30px;
-}
+/* =========================================
+🔥 main grid layout
+========================================= */
 
-.relatedGrid {
+.mainGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+
+  gap: 24px;
+
+  grid-template-columns:
+    minmax(0, 1fr);
 }
 
-@media (min-width: 768px) {
-  .relatedGrid {
-    grid-template-columns: repeat(4, 1fr);
-  }
+/* =========================================
+🔥 common content width
+========================================= */
+
+.contentWidth {
+  width: 100%;
 }
 
-/* =========================
-   セクション間余白（流れ）
-========================= */
-.sectionSpacing {
-  margin-top: 24px;
+/* =========================================
+🔥 common card grid
+========================================= */
+
+.cardGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(240px, 1fr)
+    );
+
+  gap: 18px;
 }
 
-/* =========================
-   モバイル最適化
-========================= */
+/* =========================================
+🔥 common section layout
+========================================= */
+
+.section {
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+}
+
+/* =========================================
+🔥 common section header
+========================================= */
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.sectionLabel {
+  display: inline-flex;
+
+  width: fit-content;
+
+  min-height: 30px;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(249,115,22,.08);
+
+  border:
+    1px solid rgba(249,115,22,.18);
+
+  color:
+    #fdba74;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: .08em;
+
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  margin: 0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(28px, 5vw, 48px);
+
+  font-weight: 900;
+
+  line-height: 1.12;
+
+  letter-spacing: -.04em;
+}
+
+.sectionDescription {
+  max-width: 760px;
+
+  color:
+    #94a3b8;
+
+  font-size: 15px;
+
+  line-height: 1.9;
+}
+
+/* =========================================
+🔥 common info card
+========================================= */
+
+.infoCard {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
+  padding:
+    22px;
+
+  border-radius:
+    24px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,.92),
+      rgba(2,6,23,1)
+    );
+
+  border:
+    1px solid rgba(148,163,184,.08);
+
+  color:
+    #ffffff;
+}
+
+/* =========================================
+🔥 responsive
+========================================= */
+
 @media (max-width: 640px) {
 
-  .heroPrice {
-    font-size: 32px;
+  .wrapper {
+
+    padding:
+      18px 14px 140px;
+
+    gap:
+      32px;
+
   }
 
-  .heroCTA {
-    width: 100%;
-    font-size: 14px;
-  }
-
-  .aiSummaryItem {
-    font-size: 12px;
-  }
 }

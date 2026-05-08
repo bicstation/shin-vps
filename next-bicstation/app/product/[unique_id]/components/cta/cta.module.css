@@ -1,0 +1,572 @@
+/* /home/maya/shin-vps/next-bicstation/app/product/[unique_id]/components/cta/cta.module.css */
+
+
+/* =========================================
+🔥 PRODUCT CTA
+decision completion layer
+========================================= */
+
+/* =========================================
+🔥 COMMON SECTION
+========================================= */
+
+.priceCTASection,
+.finalCTASection {
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================
+🔥 COMMON CARD
+========================================= */
+
+.priceCTACard,
+.finalCTACard {
+  position: relative;
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+
+  padding:
+    36px 30px;
+
+  border-radius:
+    32px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(15,23,42,.96),
+      rgba(30,41,59,.98)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.28);
+
+  text-align:
+    center;
+}
+
+.priceCTACard::before,
+.finalCTACard::before {
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(249,115,22,.12),
+      transparent 42%
+    );
+
+  pointer-events: none;
+}
+
+/* =========================================
+🔥 LABELS
+========================================= */
+
+.priceCTALabel,
+.finalCTALabel {
+  position: relative;
+
+  display: inline-flex;
+
+  align-self: center;
+
+  width: fit-content;
+
+  min-height:
+    30px;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    0 14px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(249,115,22,.08);
+
+  border:
+    1px solid rgba(249,115,22,.18);
+
+  color:
+    #fdba74;
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    .08em;
+
+  text-transform:
+    uppercase;
+}
+
+/* =========================================
+🔥 TITLES
+========================================= */
+
+.priceCTATitle,
+.finalCTATitle {
+  position: relative;
+
+  margin: 0;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(32px, 5vw, 52px);
+
+  font-weight:
+    900;
+
+  line-height:
+    1.1;
+
+  letter-spacing:
+    -.05em;
+}
+
+/* =========================================
+🔥 DESCRIPTION
+========================================= */
+
+.priceCTADescription,
+.finalCTADescription {
+  position: relative;
+
+  max-width:
+    760px;
+
+  margin:
+    0 auto;
+
+  color:
+    #94a3b8;
+
+  font-size:
+    15px;
+
+  line-height:
+    1.9;
+}
+
+/* =========================================
+🔥 PRICE
+========================================= */
+
+.priceCTAPrice,
+.finalCTAPrice {
+  position: relative;
+
+  color:
+    #ffffff;
+
+  font-size:
+    clamp(40px, 6vw, 68px);
+
+  font-weight:
+    900;
+
+  line-height:
+    1;
+
+  letter-spacing:
+    -.05em;
+}
+
+/* =========================================
+🔥 ACTIONS
+========================================= */
+
+.priceCTAActions,
+.finalCTAActions {
+  position: relative;
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 16px;
+
+  flex-wrap: wrap;
+}
+
+/* =========================================
+🔥 PRIMARY BUTTON
+========================================= */
+
+.priceCTAPrimary,
+.finalCTAPrimary {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    58px;
+
+  padding:
+    0 28px;
+
+  border-radius:
+    18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color:
+    #ffffff;
+
+  text-decoration:
+    none;
+
+  font-size:
+    15px;
+
+  font-weight:
+    800;
+
+  box-shadow:
+    0 14px 36px rgba(249,115,22,.24);
+
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease;
+}
+
+.priceCTAPrimary:hover,
+.finalCTAPrimary:hover {
+  transform:
+    translateY(-3px);
+
+  box-shadow:
+    0 18px 42px rgba(249,115,22,.34);
+}
+
+/* =========================================
+🔥 SECONDARY BUTTON
+========================================= */
+
+.priceCTASecondary,
+.finalCTASecondary {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    58px;
+
+  padding:
+    0 28px;
+
+  border-radius:
+    18px;
+
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  color:
+    #e2e8f0;
+
+  text-decoration:
+    none;
+
+  font-size:
+    15px;
+
+  font-weight:
+    800;
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+.priceCTASecondary:hover,
+.finalCTASecondary:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(249,115,22,.22);
+
+  background:
+    rgba(249,115,22,.08);
+}
+
+/* =========================================
+🔥 FOOTER
+========================================= */
+
+.priceCTAFooter,
+.finalCTAFooter {
+  position: relative;
+
+  display: flex;
+
+  justify-content: center;
+}
+
+.priceCTAFooterText,
+.finalCTAFooterText {
+  color:
+    #94a3b8;
+
+  font-size:
+    14px;
+
+  font-weight:
+    700;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 STICKY CTA
+========================================= */
+
+.stickyCTA {
+  position: fixed;
+
+  left: 50%;
+  bottom: 14px;
+
+  transform:
+    translateX(-50%);
+
+  width:
+    calc(100% - 24px);
+
+  max-width:
+    760px;
+
+  display: flex;
+
+  gap: 12px;
+
+  z-index: 999;
+
+  padding:
+    10px;
+
+  border-radius:
+    24px;
+
+  background:
+    rgba(15,23,42,.58);
+
+  border:
+    1px solid rgba(255,255,255,.06);
+
+  backdrop-filter:
+    blur(18px);
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.34);
+}
+
+/* =========================================
+🔥 STICKY BUTTONS
+========================================= */
+
+.stickyPrimary,
+.stickySecondary {
+  flex: 1;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height:
+    58px;
+
+  border-radius:
+    18px;
+
+  text-decoration:
+    none;
+
+  font-size:
+    14px;
+
+  font-weight:
+    800;
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease;
+}
+
+/* =========================================
+🔥 STICKY PRIMARY
+========================================= */
+
+.stickyPrimary {
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color:
+    #ffffff;
+
+  box-shadow:
+    0 12px 28px rgba(249,115,22,.22);
+}
+
+.stickyPrimary:hover {
+  transform:
+    translateY(-2px);
+}
+
+/* =========================================
+🔥 STICKY SECONDARY
+========================================= */
+
+.stickySecondary {
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  color:
+    #e2e8f0;
+}
+
+.stickySecondary:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(249,115,22,.22);
+
+  background:
+    rgba(249,115,22,.08);
+}
+
+/* =========================================
+🔥 MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+
+  .priceCTACard,
+  .finalCTACard {
+
+    padding:
+      28px 22px;
+
+    border-radius:
+      26px;
+
+    gap:
+      22px;
+
+  }
+
+  .priceCTATitle,
+  .finalCTATitle {
+
+    font-size:
+      clamp(28px, 9vw, 42px);
+
+  }
+
+  .priceCTADescription,
+  .finalCTADescription {
+
+    font-size:
+      14px;
+
+    line-height:
+      1.8;
+
+  }
+
+  .priceCTAPrice,
+  .finalCTAPrice {
+
+    font-size:
+      clamp(34px, 11vw, 54px);
+
+  }
+
+  .priceCTAActions,
+  .finalCTAActions {
+
+    flex-direction:
+      column;
+
+  }
+
+  .priceCTAPrimary,
+  .priceCTASecondary,
+  .finalCTAPrimary,
+  .finalCTASecondary {
+
+    width: 100%;
+  }
+
+  .stickyCTA {
+
+    bottom:
+      10px;
+
+    padding:
+      8px;
+
+    border-radius:
+      20px;
+
+    gap:
+      8px;
+
+  }
+
+  .stickyPrimary,
+  .stickySecondary {
+
+    min-height:
+      52px;
+
+    font-size:
+      13px;
+
+  }
+
+}
