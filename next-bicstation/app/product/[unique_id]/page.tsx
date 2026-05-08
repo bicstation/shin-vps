@@ -1,458 +1,357 @@
 /* eslint-disable @next/next/no-img-element */
 
-import Link from 'next/link'
+import {
+  notFound,
+} from 'next/navigation'
 
 import {
   fetchPCProductDetail,
-  fetchRelatedProducts,
-} from '@/shared/lib/api/django/pc/stats'
+} from '@/shared/lib/api/django/pc/products'
+
+import styles
+  from './page.module.css'
+
+/* =========================================
+🔥 HERO
+========================================= */
 
 import ProductHero
-  from './components/ProductHero'
+  from './components/hero/ProductHero'
+
+import ProductHeroTrust
+  from './components/hero/ProductHeroTrust'
+
+import ProductHeroCapability
+  from './components/hero/ProductHeroCapability'
+
+/* =========================================
+🔥 CAPABILITY
+========================================= */
+
+import ProductCapability
+  from './components/capability/ProductCapability'
+
+import ProductUsageExamples
+  from './components/capability/ProductUsageExamples'
+
+import ProductPerformanceHighlights
+  from './components/capability/ProductPerformanceHighlights'
+
+/* =========================================
+🔥 TRUST
+========================================= */
+
+import ProductTrustSection
+  from './components/trust/ProductTrustSection'
+
+import ProductForWho
+  from './components/trust/ProductForWho'
+
+import ProductNotForWho
+  from './components/trust/ProductNotForWho'
+
+import ProductDecisionSupport
+  from './components/trust/ProductDecisionSupport'
+
+/* =========================================
+🔥 SEMANTIC
+========================================= */
+
+import ProductSemanticReasons
+  from './components/semantic/ProductSemanticReasons'
+
+import ProductSemanticSummary
+  from './components/semantic/ProductSemanticSummary'
+
+import ProductSemanticAccordion
+  from './components/semantic/ProductSemanticAccordion'
+
+/* =========================================
+🔥 SPEC
+========================================= */
 
 import ProductSpec
-  from './components/ProductSpec'
+  from './components/spec/ProductSpec'
+
+import ProductCompactSpec
+  from './components/spec/ProductCompactSpec'
 
 import ProductRadar
-  from './components/ProductRadar'
+  from './components/spec/ProductRadar'
 
-import AiSummary
-  from './components/AiSummary'
+/* =========================================
+🔥 COMPARISON
+========================================= */
 
-import FinalCta
-  from './components/FinalCta'
+import ProductComparisonLinks
+  from './components/comparison/ProductComparisonLinks'
 
-import RelatedProducts
-  from './components/RelatedProducts'
+import ProductAlternativeList
+  from './components/comparison/ProductAlternativeList'
 
-import AiContent
-  from './components/AiContent'
+import ProductBetterChoiceGuide
+  from './components/comparison/ProductBetterChoiceGuide'
 
-import SemanticSection
-  from '@/shared/components/semantic/SemanticSection'
+/* =========================================
+🔥 FAQ
+========================================= */
 
-import styles from './page.module.css'
+import ProductFaq
+  from './components/faq/ProductFaq'
+
+/* =========================================
+🔥 RECOMMENDATION
+========================================= */
+
+import ProductRelated
+  from './components/recommendation/ProductRelated'
+
+import ProductSimilarUsage
+  from './components/recommendation/ProductSimilarUsage'
+
+import ProductNextIntent
+  from './components/recommendation/ProductNextIntent'
+
+/* =========================================
+🔥 CTA
+========================================= */
+
+import ProductStickyCTA
+  from './components/cta/ProductStickyCTA'
+
+import ProductFinalCTA
+  from './components/cta/ProductFinalCTA'
+
+import ProductPriceCTA
+  from './components/cta/ProductPriceCTA'
+
+/* =========================================
+🔥 EMPTY
+========================================= */
+
+import ProductEmpty
+  from './components/ProductEmpty'
 
 /* =========================================
 🔥 ISR
 ========================================= */
 
-export const revalidate = 300
+export const revalidate = 60
 
 /* =========================================
-🔥 Types
+🔥 TYPES
 ========================================= */
 
 type Props = {
-  params: Promise<{
+  params: {
     unique_id: string
-  }>
-}
-
-/* =========================================
-🔥 Empty
-========================================= */
-
-function EmptyState() {
-
-  return (
-    <div className={styles.empty}>
-
-      <h2>
-        ⚠️ 商品データがありません
-      </h2>
-
-      <p>
-        semantic product data を取得できませんでした
-      </p>
-
-      <Link href="/">
-        →
-        TOPへ戻る
-      </Link>
-
-    </div>
-  )
-}
-
-/* =========================================
-🔥 Semantic Reason
-========================================= */
-
-function SemanticReasonSection({
-  reasons,
-}: {
-  reasons?: string[]
-}) {
-
-  if (!reasons?.length) {
-    return null
   }
-
-  return (
-    <section className={styles.reasonSection}>
-
-      <div className={styles.sectionHeader}>
-
-        <span className={styles.sectionLabel}>
-          SEMANTIC RECOMMENDATION
-        </span>
-
-        <h2>
-          なぜおすすめなのか
-        </h2>
-
-      </div>
-
-      <div className={styles.reasonGrid}>
-
-        {reasons.map(
-          (reason, index) => (
-
-            <div
-              key={index}
-              className={styles.reasonCard}
-            >
-
-              <div
-                className={
-                  styles.reasonIcon
-                }
-              >
-                ✓
-              </div>
-
-              <div
-                className={
-                  styles.reasonText
-                }
-              >
-                {reason}
-              </div>
-
-            </div>
-
-          )
-        )}
-
-      </div>
-
-    </section>
-  )
 }
 
 /* =========================================
-🔥 Semantic Attributes
+🔥 PAGE
 ========================================= */
 
-function SemanticAttributeSections({
-  groupedAttributes,
-}: {
-  groupedAttributes?: Record<
-    string,
-    any[]
-  >
-}) {
-
-  if (
-    !groupedAttributes
-  ) {
-    return null
-  }
-
-  const entries =
-    Object.entries(
-      groupedAttributes
-    )
-
-  if (!entries.length) {
-    return null
-  }
-
-  return (
-    <section className={styles.semanticSection}>
-
-      <div className={styles.sectionHeader}>
-
-        <span className={styles.sectionLabel}>
-          SEMANTIC ANALYSIS
-        </span>
-
-        <h2>
-          semantic構成分析
-        </h2>
-
-      </div>
-
-      <div className={styles.semanticGrid}>
-
-        {entries.map(
-          ([
-            group,
-            attributes,
-          ]) => (
-
-            <SemanticSection
-              key={group}
-              title={group}
-              groupType={group}
-              attributes={attributes}
-            />
-
-          )
-        )}
-
-      </div>
-
-    </section>
-  )
-}
-
-/* =========================================
-🔥 Confidence
-========================================= */
-
-function ConfidenceSection({
-  confidence,
-}: {
-  confidence?: number
-}) {
-
-  if (!confidence) {
-    return null
-  }
-
-  return (
-    <section className={styles.confidenceSection}>
-
-      <div className={styles.confidenceCard}>
-
-        <div
-          className={
-            styles.confidenceCircle
-          }
-        >
-          {confidence}%
-        </div>
-
-        <div
-          className={
-            styles.confidenceContent
-          }
-        >
-
-          <h3>
-            おすすめ一致度
-          </h3>
-
-          <p>
-            semantic similarity と
-            recommendation analysis
-            に基づく一致度
-          </p>
-
-        </div>
-
-      </div>
-
-    </section>
-  )
-}
-
-/* =========================================
-🔥 Related Section
-========================================= */
-
-function RelatedSection({
-  products,
-}: {
-  products: any[]
-}) {
-
-  if (!products?.length) {
-    return null
-  }
-
-  return (
-    <section className={styles.relatedSection}>
-
-      <div className={styles.sectionHeader}>
-
-        <span className={styles.sectionLabel}>
-          SEMANTIC SIMILARITY
-        </span>
-
-        <h2>
-          似たおすすめ構成
-        </h2>
-
-        <p>
-          同じ semantic intent を持つ
-          おすすめ構成
-        </p>
-
-      </div>
-
-      <RelatedProducts
-        products={products}
-      />
-
-    </section>
-  )
-}
-
-/* =========================================
-🔥 Page
-========================================= */
-
-export default async function Page({
+export default async function ProductPage({
   params,
 }: Props) {
 
-  // --------------------------------
-  // Params
-  // --------------------------------
+  // ======================================
+  // PARAMS
+  // ======================================
+
   const {
     unique_id,
-  } = await params
+  } = params
 
-  // --------------------------------
-  // Fetch
-  // --------------------------------
+  // ======================================
+  // FETCH
+  // ======================================
+
   const product =
     await fetchPCProductDetail(
       unique_id
     )
 
-  // --------------------------------
-  // Empty
-  // --------------------------------
-  if (!product) {
-    return <EmptyState />
-  }
+  // ======================================
+  // EMPTY
+  // ======================================
 
-  // --------------------------------
-  // Related
-  // --------------------------------
-  const relatedProducts =
-    await fetchRelatedProducts(
-      unique_id
+  if (!product) {
+
+    return (
+      <ProductEmpty />
     )
 
-  return (
-    <main className={styles.mainWrapper}>
+  }
 
-      {/* ========================= */}
-      {/* HERO */}
-      {/* ========================= */}
+  // ======================================
+  // PAGE
+  // ======================================
+
+  return (
+
+    <main
+      className={
+        styles.mainWrapper
+      }
+    >
+
+      {/* ==================================
+      HERO
+      first impression
+      ================================== */}
 
       <ProductHero
         product={product}
       />
 
-      {/* ========================= */}
-      {/* CONFIDENCE */}
-      {/* ========================= */}
-
-      <ConfidenceSection
-        confidence={
-          product.semantic_confidence
-        }
+      <ProductHeroTrust
+        product={product}
       />
 
-      {/* ========================= */}
-      {/* SEMANTIC REASON */}
-      {/* ========================= */}
-
-      <SemanticReasonSection
-        reasons={
-          product.semantic_reason
-        }
+      <ProductHeroCapability
+        product={product}
       />
 
-      {/* ========================= */}
-      {/* SEMANTIC GROUPS */}
-      {/* ========================= */}
+      {/* ==================================
+      CAPABILITY
+      real-world usage
+      ================================== */}
 
-      <SemanticAttributeSections
-        groupedAttributes={
-          product.grouped_attributes
-        }
+      <ProductCapability
+        product={product}
       />
 
-      {/* ========================= */}
-      {/* SPEC */}
-      {/* ========================= */}
+      <ProductUsageExamples
+        product={product}
+      />
+
+      <ProductPerformanceHighlights
+        product={product}
+      />
+
+      {/* ==================================
+      TRUST
+      decision confidence
+      ================================== */}
+
+      <ProductTrustSection
+        product={product}
+      />
+
+      <ProductForWho
+        product={product}
+      />
+
+      <ProductNotForWho
+        product={product}
+      />
+
+      <ProductDecisionSupport
+        product={product}
+      />
+
+      {/* ==================================
+      SEMANTIC
+      recommendation reasoning
+      ================================== */}
+
+      <ProductSemanticReasons
+        product={product}
+      />
+
+      <ProductSemanticSummary
+        product={product}
+      />
+
+      <ProductSemanticAccordion
+        product={product}
+      />
+
+      {/* ==================================
+      SPEC
+      secondary information layer
+      ================================== */}
+
+      <ProductCompactSpec
+        product={product}
+      />
 
       <ProductSpec
         product={product}
       />
 
-      {/* ========================= */}
-      {/* RADAR */}
-      {/* ========================= */}
-
       <ProductRadar
         product={product}
       />
 
-      {/* ========================= */}
-      {/* AI SUMMARY */}
-      {/* ========================= */}
+      {/* ==================================
+      COMPARISON
+      continuation flow
+      ================================== */}
 
-      <AiSummary
-        summary={
-          product.summary
-        }
+      <ProductComparisonLinks
+        product={product}
       />
 
-      {/* ========================= */}
-      {/* FINAL CTA */}
-      {/* ========================= */}
-
-      <FinalCta
-        product={{
-          maker:
-            product.maker,
-
-          name:
-            product.name,
-
-          image_url:
-            product.image_url,
-        }}
-
-        summary={
-          product.summary
-        }
-
-        finalUrl={
-          product.url
-        }
-
-        isSoftware={false}
+      <ProductAlternativeList
+        product={product}
       />
 
-      {/* ========================= */}
-      {/* AI CONTENT */}
-      {/* ========================= */}
-
-      <AiContent
-        content={
-          product.ai_content
-        }
+      <ProductBetterChoiceGuide
+        product={product}
       />
 
-      {/* ========================= */}
-      {/* RELATED */}
-      {/* ========================= */}
+      {/* ==================================
+      RELATED
+      semantic continuation
+      ================================== */}
 
-      <RelatedSection
-        products={
-          relatedProducts
-        }
+      <ProductRelated
+        product={product}
+      />
+
+      <ProductSimilarUsage
+        product={product}
+      />
+
+      <ProductNextIntent
+        product={product}
+      />
+
+      {/* ==================================
+      FAQ
+      anxiety reduction
+      ================================== */}
+
+      <ProductFaq
+        product={product}
+      />
+
+      {/* ==================================
+      FINAL CTA
+      conversion support
+      ================================== */}
+
+      <ProductPriceCTA
+        product={product}
+      />
+
+      <ProductFinalCTA
+        product={product}
+      />
+
+      {/* ==================================
+      STICKY CTA
+      mobile conversion
+      ================================== */}
+
+      <ProductStickyCTA
+        product={product}
       />
 
     </main>
+
   )
 }

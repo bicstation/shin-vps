@@ -11,15 +11,16 @@ import styles
 export default function HomeStickyCTA() {
 
   return (
+
     <div
       className={
         styles.stickyCTA
       }
     >
 
-      {/* =====================================
+      {/* ================================
       PRIMARY CTA
-      ===================================== */}
+      ================================ */}
 
       <Link
         href="/ranking/score"
@@ -28,12 +29,12 @@ export default function HomeStickyCTA() {
           styles.stickyPrimary
         }
       >
-        🔥 人気ランキング
+        🔥 おすすめランキングを見る
       </Link>
 
-      {/* =====================================
+      {/* ================================
       SECONDARY CTA
-      ===================================== */}
+      ================================ */}
 
       <Link
         href="/pc-finder"
@@ -42,9 +43,10 @@ export default function HomeStickyCTA() {
           styles.stickySecondary
         }
       >
-        🎯 PC診断
+        🎯 自分に合うPCを探す
       </Link>
 
     </div>
+
   )
 }

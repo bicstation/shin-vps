@@ -1,0 +1,75 @@
+.card {
+.primaryButton {
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color: #fff;
+}
+
+.secondaryButton {
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  color: #e2e8f0;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform:
+    translateY(-2px);
+}
+
+@media (max-width: 980px) {
+
+  .heroArea {
+    grid-template-columns:
+      1fr;
+  }
+
+  .imageWrap {
+    max-width: 360px;
+
+    margin: 0 auto;
+  }
+
+}
+
+@media (max-width: 640px) {
+
+  .card {
+    padding: 18px;
+
+    border-radius: 22px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .bottom {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .ctaRow {
+    width: 100%;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    flex: 1;
+  }
+
+  .price {
+    font-size: 24px;
+  }
+
+}

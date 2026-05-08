@@ -1,364 +1,339 @@
-'use client'
+/* eslint-disable @next/next/no-img-element */
 
-import Link from 'next/link'
+import Link
+  from 'next/link'
 
-import SemanticSection from '@/shared/components/semantic/SemanticSection'
+import styles
+  from './HeroRankingCard.module.css'
 
 import {
-  semanticHeroCopy,
-} from '@/shared/lib/semantic/semanticHeroCopy'
+  formatPrice,
+} from '@/shared/lib/utils/formatPrice'
 
-import styles from './HeroRankingCard.module.css'
-
-/**
- * =========================================
- * 🔥 Types
- * =========================================
- */
-
-type SemanticAttribute = {
-  slug: string
-  name: string
-  type: string
-
-  semantic_role?: string
-  semantic_weight?: number
+type Props = {
+  product: any
 }
-
-type Product = {
-  id: number
-
-  unique_id: string
-
-  name?: string
-  shortTitle?: string
-
-  image_url?: string
-
-  price?: number
-
-  gpu_model?: string
-  cpu_model?: string
-
-  semantic_confidence?: number
-
-  semantic_reason?: string[]
-
-  attributes?: SemanticAttribute[]
-
-  grouped_attributes?: Record<
-    string,
-    SemanticAttribute[]
-  >
-}
-
-/**
- * =========================================
- * 🔥 Utils
- * =========================================
- */
-
-function truncate(
-  text?: string,
-  length: number = 50
-) {
-  if (!text) return 'おすすめ商品'
-
-  return text.length > length
-    ? `${text.slice(0, length)}...`
-    : text
-}
-
-function formatPrice(price?: number) {
-  if (typeof price !== 'number') {
-    return null
-  }
-
-  return price.toLocaleString()
-}
-
-/**
- * =========================================
- * 🔥 Component
- * =========================================
- */
 
 export default function HeroRankingCard({
   product,
-}: {
-  product?: Product
-}) {
+}: Props) {
 
-  // --------------------------------
-  // Empty
-  // --------------------------------
-  if (!product) return null
+  // =====================================
+  // Compact Semantic Specs
+  // =====================================
 
-  // --------------------------------
-  // Basic
-  // --------------------------------
-  const title = truncate(
-    product.shortTitle || product.name
-  )
+  const compactSpecs = [
 
-  const image =
-    product.image_url || '/no-image.png'
+    product?.gpu_name,
 
-  const price = formatPrice(product.price)
+    product?.cpu_name,
 
-  // --------------------------------
-  // Semantic
-  // --------------------------------
-  const attributes =
-    product.attributes ?? []
+    product?.memory,
 
-  const groupedAttributes =
-    product.grouped_attributes ?? {}
+    product?.storage,
 
-  const usageAttribute =
-    attributes.find(
-      (attr) => attr.type === 'usage'
-    )
+  ].filter(Boolean)
 
-  const usage =
-    usageAttribute?.slug || 'default'
+  // =====================================
+  // Intent Tags
+  // =====================================
 
-  // --------------------------------
-  // Hero Copy
-  // --------------------------------
-  const heroCopy =
-    semanticHeroCopy[
-      usage as keyof typeof semanticHeroCopy
-    ] || semanticHeroCopy.default
+  const intentTags = [
 
-  // --------------------------------
-  // Semantic Emphasis
-  // --------------------------------
-  const emphasisAttributes =
-    attributes
-      .filter(
-        (attr) =>
-          attr.semantic_role ===
-            'highlight' ||
-          (attr.semantic_weight ?? 0) >= 80
-      )
-      .slice(0, 4)
+    '🎮 FPS特化',
 
-  // --------------------------------
-  // Semantic Confidence
-  // --------------------------------
-  const confidence =
-    product.semantic_confidence ?? 92
+    '⚡ AI生成向け',
+
+    '🎬 動画編集対応',
+
+  ]
+
+  // =====================================
+  // Top Reason
+  // =====================================
+
+  const topReason =
+
+    product?.semantic_reasons?.[0]
+    || 'FPS性能が非常に高い'
 
   return (
-    <section className={styles.card}>
 
-      {/* ============================== */}
-      {/* semantic emphasis */}
-      {/* ============================== */}
+    <article
+      className={
+        styles.card
+      }
+    >
 
-      {emphasisAttributes.length > 0 && (
-        <div className={styles.semanticTop}>
+      {/* ================================
+      TOP BAR
+      ================================ */}
 
-          {emphasisAttributes.map(
-            (attr) => (
-              <span
-                key={`${attr.type}-${attr.slug}`}
-                className={
-                  styles.semanticBadge
-                }
-              >
-                {attr.name}
-              </span>
-            )
-          )}
+      <div
+        className={
+          styles.topBar
+        }
+      >
 
-        </div>
-      )}
-
-      {/* ============================== */}
-      {/* semantic confidence */}
-      {/* ============================== */}
-
-      <div className={styles.confidenceBox}>
-
-        <span className={styles.confidenceLabel}>
-          おすすめ一致度
-        </span>
-
-        <strong
-          className={styles.confidenceValue}
+        <div
+          className={
+            styles.rankBadge
+          }
         >
-          {confidence}%
-        </strong>
+          #{product?.ranking || 1}
+        </div>
+
+        <div
+          className={
+            styles.scoreBadge
+          }
+        >
+          ★★★★★ 92%
+        </div>
 
       </div>
 
-      {/* ============================== */}
-      {/* price */}
-      {/* ============================== */}
+      {/* ================================
+      INTENT TAGS
+      ================================ */}
 
-      {price && (
-        <div className={styles.price}>
-          ¥{price}
-          （税込・送料無料）
-        </div>
-      )}
+      <div
+        className={
+          styles.intentRow
+        }
+      >
 
-      {/* ============================== */}
-      {/* hero copy */}
-      {/* ============================== */}
+        {intentTags.map((tag) => (
 
-      <h2 className={styles.catch}>
-        {heroCopy.catch}
-      </h2>
+          <div
+            key={tag}
 
-      <p className={styles.notice}>
-        {heroCopy.sub}
-      </p>
-
-      {/* ============================== */}
-      {/* semantic reason */}
-      {/* ============================== */}
-
-      {product.semantic_reason &&
-        product.semantic_reason.length >
-          0 && (
-          <div className={styles.reasonBox}>
-
-            {product.semantic_reason.map(
-              (
-                reason,
-                index
-              ) => (
-                <div
-                  key={index}
-                  className={
-                    styles.reasonItem
-                  }
-                >
-                  ✓ {reason}
-                </div>
-              )
-            )}
-
-          </div>
-        )}
-
-      {/* ============================== */}
-      {/* CTA */}
-      {/* ============================== */}
-
-      <div className={styles.ctaArea}>
-
-        <Link
-          href={`/product/${product.unique_id}`}
-          className={styles.cta}
-        >
-          👉 詳細を見る
-        </Link>
-
-        {product?.unique_id && (
-          <Link
-            href={`/ranking/${usage}`}
-            className={styles.subCta}
+            className={
+              styles.intentTag
+            }
           >
-            →
-            同じ用途のPCを見る
-          </Link>
-        )}
+            {tag}
+          </div>
+
+        ))}
 
       </div>
 
-      {/* ============================== */}
-      {/* notice */}
-      {/* ============================== */}
+      {/* ================================
+      HERO AREA
+      ================================ */}
 
-      <p className={styles.noticeSub}>
-        ※価格・在庫は変動する場合があります
-      </p>
+      <div
+        className={
+          styles.heroArea
+        }
+      >
 
-      {/* ============================== */}
-      {/* image */}
-      {/* ============================== */}
+        {/* ==============================
+        IMAGE
+        ============================== */}
 
-      <div className={styles.imageWrapper}>
+        <div
+          className={
+            styles.imageWrap
+          }
+        >
 
-        <div className={styles.imageLabel}>
-          実際の外観
+          <img
+            src={
+              product?.image_url
+            }
+
+            alt={
+              product?.name
+            }
+
+            className={
+              styles.image
+            }
+          />
+
         </div>
 
-        <img
-          src={image}
-          alt={title}
-          className={styles.image}
-          loading="eager"
-        />
+        {/* ==============================
+        CONTENT
+        ============================== */}
 
-      </div>
+        <div
+          className={
+            styles.content
+          }
+        >
 
-      {/* ============================== */}
-      {/* title */}
-      {/* ============================== */}
+          {/* ============================
+          MAKER
+          ============================ */}
 
-      <h3 className={styles.title}>
-        {title}
-      </h3>
+          <div
+            className={
+              styles.maker
+            }
+          >
+            {product?.maker || 'GALLERIA'}
+          </div>
 
-      {/* ============================== */}
-      {/* grouped semantic */}
-      {/* ============================== */}
+          {/* ============================
+          TITLE
+          ============================ */}
 
-      {Object.keys(groupedAttributes)
-        .length > 0 && (
-        <div className={styles.groupedArea}>
+          <h3
+            className={
+              styles.title
+            }
+          >
+            {product?.name}
+          </h3>
 
-          {Object.entries(
-            groupedAttributes
-          ).map(
-            ([group, attrs]) => (
+          {/* ============================
+          TOP REASON
+          ============================ */}
+
+          <div
+            className={
+              styles.reason
+            }
+          >
+            ✓ {topReason}
+          </div>
+
+          {/* ============================
+          COMPACT SPEC ROW
+          ============================ */}
+
+          <div
+            className={
+              styles.specRow
+            }
+          >
+
+            {compactSpecs.map((spec) => (
+
               <div
-                key={group}
+                key={spec}
+
                 className={
-                  styles.groupBlock
+                  styles.specChip
                 }
               >
-
-                <div
-                  className={
-                    styles.groupTitle
-                  }
-                >
-                  {group}
-                </div>
-
-                <SemanticSection
-                  attributes={attrs}
-                />
-
+                {spec}
               </div>
-            )
-          )}
 
-        </div>
-      )}
-
-      {/* ============================== */}
-      {/* fallback semantic */}
-      {/* ============================== */}
-
-      {Object.keys(groupedAttributes)
-        .length === 0 &&
-        attributes.length > 0 && (
-          <div className={styles.spec}>
-
-            <SemanticSection
-              attributes={attributes}
-            />
+            ))}
 
           </div>
-        )}
 
-    </section>
+          {/* ============================
+          TRUST ROW
+          ============================ */}
+
+          <div
+            className={
+              styles.trustRow
+            }
+          >
+
+            <div
+              className={
+                styles.trustItem
+              }
+            >
+              初心者人気
+            </div>
+
+            <div
+              className={
+                styles.trustItem
+              }
+            >
+              AI用途対応
+            </div>
+
+          </div>
+
+          {/* ============================
+          BOTTOM
+          ============================ */}
+
+          <div
+            className={
+              styles.bottom
+            }
+          >
+
+            {/* ==========================
+            PRICE
+            ========================== */}
+
+            <div
+              className={
+                styles.priceArea
+              }
+            >
+
+              <div
+                className={
+                  styles.priceLabel
+                }
+              >
+                最安価格
+              </div>
+
+              <div
+                className={
+                  styles.price
+                }
+              >
+                ¥{formatPrice(
+                  product?.price
+                )}
+              </div>
+
+            </div>
+
+            {/* ==========================
+            CTA
+            ========================== */}
+
+            <div
+              className={
+                styles.ctaRow
+              }
+            >
+
+              <Link
+                href={
+                  `/products/${product?.unique_id}`
+                }
+
+                className={
+                  styles.primaryButton
+                }
+              >
+                価格を見る
+              </Link>
+
+              <button
+                className={
+                  styles.secondaryButton
+                }
+              >
+                比較する
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+
   )
 }

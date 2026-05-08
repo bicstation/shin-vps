@@ -1,4 +1,5 @@
-import Link from 'next/link'
+import Link
+  from 'next/link'
 
 import styles
   from '../page.module.css'
@@ -6,6 +7,7 @@ import styles
 export default function HomeBottomCTA() {
 
   return (
+
     <section
       className={
         styles.bottomSection
@@ -18,34 +20,85 @@ export default function HomeBottomCTA() {
         }
       >
 
+        {/* ============================
+        LABEL
+        ============================ */}
+
         <div
           className={
             styles.bottomLabel
           }
         >
-          Semantic Ranking Explorer
+          🚀 SEMANTIC PC FINDER
         </div>
+
+        {/* ============================
+        TITLE
+        ============================ */}
 
         <h2
           className={
             styles.bottomTitle
           }
         >
-          すべてのsemanticランキングを見る
+          あなたに合うPCを、
+          用途から比較して探す
         </h2>
+
+        {/* ============================
+        DESCRIPTION
+        ============================ */}
 
         <p
           className={
             styles.bottomDescription
           }
         >
-          GPU /
-          usage /
-          maker /
-          AI /
-          recommendation
-          を横断探索。
+          ゲーミング・AI・動画編集・
+          コスパ重視など、
+          用途別におすすめ構成を
+          わかりやすく比較できます。
         </p>
+
+        {/* ============================
+        FEATURES
+        ============================ */}
+
+        <div
+          className={
+            styles.bottomFeatures
+          }
+        >
+
+          <div
+            className={
+              styles.bottomFeature
+            }
+          >
+            ✔ 初心者向け比較
+          </div>
+
+          <div
+            className={
+              styles.bottomFeature
+            }
+          >
+            ✔ RTX 50シリーズ対応
+          </div>
+
+          <div
+            className={
+              styles.bottomFeature
+            }
+          >
+            ✔ AI用途にも対応
+          </div>
+
+        </div>
+
+        {/* ============================
+        CTA
+        ============================ */}
 
         <Link
           href="/ranking"
@@ -54,12 +107,12 @@ export default function HomeBottomCTA() {
             styles.bottomButton
           }
         >
-          →
-          semantic ranking を見る
+          おすすめランキングを見る →
         </Link>
 
       </div>
 
     </section>
+
   )
 }

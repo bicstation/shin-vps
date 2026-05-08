@@ -4,7 +4,12 @@ import {
   fetchPCProductRanking,
 } from '@/shared/lib/api/django/pc/stats'
 
-import styles from './page.module.css'
+import styles
+  from './page.module.css'
+
+/* =========================================
+🔥 EXISTING COMPONENTS
+========================================= */
 
 import RankingHero
   from './components/RankingHero'
@@ -22,13 +27,32 @@ import RankingEmpty
   from './components/RankingEmpty'
 
 /* =========================================
+🔥 NEW CONVERSION LAYERS
+========================================= */
+
+import RankingTrustSection
+  from './components/RankingTrustSection'
+
+import RankingQuickCompare
+  from './components/RankingQuickCompare'
+
+import RecommendedForYou
+  from './components/RecommendedForYou'
+
+import RankingBottomCTA
+  from './components/RankingBottomCTA'
+
+import RankingStickyCTA
+  from './components/RankingStickyCTA'
+
+/* =========================================
 🔥 ISR
 ========================================= */
 
 export const revalidate = 60
 
 /* =========================================
-🔥 Types
+🔥 TYPES
 ========================================= */
 
 type Props = {
@@ -38,40 +62,44 @@ type Props = {
 }
 
 /* =========================================
-🔥 Page
+🔥 PAGE
 ========================================= */
 
 export default async function RankingPage({
   params,
 }: Props) {
 
-  // --------------------------------
-  // Params
-  // --------------------------------
+  // ======================================
+  // PARAMS
+  // ======================================
+
   const {
     type,
   } = params
 
-  // --------------------------------
-  // Fetch
-  // --------------------------------
+  // ======================================
+  // FETCH
+  // ======================================
+
   const products =
     await fetchPCProductRanking(
       type
     )
 
-  // --------------------------------
-  // Empty
-  // --------------------------------
+  // ======================================
+  // EMPTY
+  // ======================================
+
   if (
     !products?.length
   ) {
     return <RankingEmpty />
   }
 
-  // --------------------------------
-  // Split
-  // --------------------------------
+  // ======================================
+  // SPLIT
+  // ======================================
+
   const topProduct =
     products?.[0]
     || null
@@ -79,12 +107,22 @@ export default async function RankingPage({
   const otherProducts =
     products.slice(1)
 
+  // ======================================
+  // PAGE
+  // ======================================
+
   return (
+
     <main
       className={
         styles.mainWrapper
       }
     >
+
+      {/* ==================================
+      HERO
+      comparison start hero
+      ================================== */}
 
       <RankingHero
         type={type}
@@ -93,9 +131,37 @@ export default async function RankingPage({
         }
       />
 
+      {/* ==================================
+      TRUST
+      beginner reassurance layer
+      ================================== */}
+
+      <RankingTrustSection
+        type={type}
+      />
+
+      {/* ==================================
+      WHY THIS RANKING
+      semantic explanation
+      ================================== */}
+
       <RankingExplanation
         products={products}
       />
+
+      {/* ==================================
+      QUICK COMPARE
+      comparison acceleration
+      ================================== */}
+
+      <RankingQuickCompare
+        products={products}
+      />
+
+      {/* ==================================
+      MAIN GRID
+      semantic comparison grid
+      ================================== */}
 
       <RankingGrid
         products={
@@ -103,8 +169,41 @@ export default async function RankingPage({
         }
       />
 
+      {/* ==================================
+      RECOMMENDATION
+      semantic continuation
+      ================================== */}
+
+      <RecommendedForYou
+        type={type}
+      />
+
+      {/* ==================================
+      NAVIGATION
+      semantic routing
+      ================================== */}
+
       <RankingNavigation />
 
+      {/* ==================================
+      BOTTOM CTA
+      comparison conversion
+      ================================== */}
+
+      <RankingBottomCTA
+        type={type}
+      />
+
+      {/* ==================================
+      MOBILE STICKY CTA
+      mobile conversion layer
+      ================================== */}
+
+      <RankingStickyCTA
+        type={type}
+      />
+
     </main>
+
   )
 }

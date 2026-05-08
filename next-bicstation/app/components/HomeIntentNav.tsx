@@ -1,3 +1,4 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/components/HomeIntentNav.tsx
 import Link from 'next/link'
 
 import styles
@@ -10,6 +11,7 @@ import {
 export default function HomeIntentNav() {
 
   return (
+
     <section
       className={
         styles.intentSection
@@ -35,7 +37,7 @@ export default function HomeIntentNav() {
             styles.intentTitle
           }
         >
-          用途から探す
+          やりたいことから探す
         </h2>
 
         <p
@@ -43,8 +45,8 @@ export default function HomeIntentNav() {
             styles.intentDescription
           }
         >
-          semantic intent から
-          最適構成を探索。
+          用途・予算・性能から、
+          あなたに合う構成を比較できます。
         </p>
 
       </div>
@@ -72,18 +74,46 @@ export default function HomeIntentNav() {
 
               <div
                 className={
-                  styles.intentCardTitle
+                  styles.intentCardTop
                 }
               >
-                {intent.label}
+
+                <div
+                  className={
+                    styles.intentIcon
+                  }
+                >
+                  {intent.icon}
+                </div>
+
+                <div>
+
+                  <div
+                    className={
+                      styles.intentCardTitle
+                    }
+                  >
+                    {intent.label}
+                  </div>
+
+                  <div
+                    className={
+                      styles.intentCardText
+                    }
+                  >
+                    {intent.description}
+                  </div>
+
+                </div>
+
               </div>
 
               <div
                 className={
-                  styles.intentCardText
+                  styles.intentCardFooter
                 }
               >
-                {intent.description}
+                おすすめを見る →
               </div>
 
             </Link>

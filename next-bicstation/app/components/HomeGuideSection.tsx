@@ -1,4 +1,5 @@
 // /home/maya/shin-vps/next-bicstation/app/components/HomeGuideSection.tsx
+
 import Link
   from 'next/link'
 
@@ -7,45 +8,58 @@ import styles
 
 export default function HomeGuideSection() {
 
-  // --------------------------------
-  // Guide Items
-  // --------------------------------
+  // ====================================
+  // GUIDE ITEMS
+  // ====================================
+
   const guideItems = [
 
     {
+      badge:
+        '初心者向け',
+
       title:
         '🎮 ゲーミングPCの選び方',
 
       description:
-        'fps・GPU・メモリなど、ゲーム向けPC選びで失敗しないポイントを解説。',
+        '高FPSで快適に遊ぶためのGPU・CPU選びを初心者向けに解説。',
 
       href:
         '/guide/gaming-pc',
     },
 
     {
+      badge:
+        'クリエイター向け',
+
       title:
         '🎬 動画編集PCの選び方',
 
       description:
-        'Premiere ProやDaVinci Resolve向けのおすすめ構成を紹介。',
+        'Premiere Pro・DaVinci Resolve向けのおすすめ構成を比較。',
 
       href:
         '/guide/video-editing',
     },
 
     {
+      badge:
+        'AI対応',
+
       title:
         '🤖 AI用PCの選び方',
 
       description:
-        'Stable DiffusionやローカルAI向けGPU構成を初心者向けに解説。',
+        'Stable Diffusion・ローカルAI向けGPU構成をわかりやすく解説。',
 
       href:
         '/guide/ai-pc',
     },
 
     {
+      badge:
+        'コスパ重視',
+
       title:
         '💰 コスパ重視PCの選び方',
 
@@ -59,15 +73,16 @@ export default function HomeGuideSection() {
   ]
 
   return (
+
     <section
       className={
         styles.guideSection
       }
     >
 
-      {/* =====================================
+      {/* ====================================
       HEADER
-      ===================================== */}
+      ==================================== */}
 
       <div
         className={
@@ -104,9 +119,9 @@ export default function HomeGuideSection() {
 
       </div>
 
-      {/* =====================================
+      {/* ====================================
       GRID
-      ===================================== */}
+      ==================================== */}
 
       <div
         className={
@@ -115,8 +130,10 @@ export default function HomeGuideSection() {
       >
 
         {guideItems.map((
+
           item,
           index
+
         ) => (
 
           <Link
@@ -129,33 +146,57 @@ export default function HomeGuideSection() {
             }
           >
 
-            {/* =============================
-            TITLE
-            ============================= */}
+            {/* ====================================
+            TOP
+            ==================================== */}
 
             <div
               className={
-                styles.guideCardTitle
+                styles.guideCardTop
               }
             >
-              {item.title}
+
+              {/* ===============================
+              BADGE
+              =============================== */}
+
+              <div
+                className={
+                  styles.guideCardBadge
+                }
+              >
+                {item.badge}
+              </div>
+
+              {/* ===============================
+              TITLE
+              =============================== */}
+
+              <div
+                className={
+                  styles.guideCardTitle
+                }
+              >
+                {item.title}
+              </div>
+
+              {/* ===============================
+              DESCRIPTION
+              =============================== */}
+
+              <div
+                className={
+                  styles.guideCardDescription
+                }
+              >
+                {item.description}
+              </div>
+
             </div>
 
-            {/* =============================
-            DESCRIPTION
-            ============================= */}
-
-            <div
-              className={
-                styles.guideCardDescription
-              }
-            >
-              {item.description}
-            </div>
-
-            {/* =============================
+            {/* ====================================
             ACTION
-            ============================= */}
+            ==================================== */}
 
             <div
               className={
@@ -172,5 +213,6 @@ export default function HomeGuideSection() {
       </div>
 
     </section>
+
   )
 }

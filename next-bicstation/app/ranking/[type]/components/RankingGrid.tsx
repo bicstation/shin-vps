@@ -12,16 +12,33 @@ export default function RankingGrid({
   products,
 }: Props) {
 
+  // =====================================
+  // Empty
+  // =====================================
+
   if (!products?.length) {
     return null
   }
 
+  // =====================================
+  // Compare Products
+  // =====================================
+
+  const compareProducts =
+    products.slice(0, 12)
+
   return (
+
     <section
       className={
         styles.productSection
       }
     >
+
+      {/* =================================
+      HEADER
+      comparison continuation layer
+      ================================= */}
 
       <div
         className={
@@ -34,48 +51,80 @@ export default function RankingGrid({
             styles.sectionLabel
           }
         >
-          SEMANTIC PRODUCTS
+          COMPARE PRODUCTS
         </span>
 
-        <h2>
-          おすすめ構成一覧
+        <h2
+          className={
+            styles.sectionTitle
+          }
+        >
+          あなたに合う構成を比較
         </h2>
+
+        <p
+          className={
+            styles.sectionDescription
+          }
+        >
+          FPS・AI・動画編集・コスパなど、
+          用途ごとの違いを見比べながら
+          自分に合う構成を探せます。
+        </p>
 
       </div>
 
-      <div className={styles.grid}>
+      {/* =================================
+      GRID
+      comparison continuation grid
+      ================================= */}
 
-        {products.map(
-          (
-            product,
-            index
-          ) => {
+      <div
+        className={
+          styles.grid
+        }
+      >
 
-            if (
-              !product
-                ?.unique_id
-            ) {
-              return null
-            }
+        {compareProducts.map((
 
-            return (
-              <ProductCard
-                key={
-                  product.unique_id
-                }
-                product={
-                  product
-                }
-                rank={
-                  index + 1
-                }
-              />
-            )
+          product,
+          index
+
+        ) => {
+
+          // -------------------------------
+          // Guard
+          // -------------------------------
+
+          if (
+            !product?.unique_id
+          ) {
+            return null
           }
-        )}
+
+          return (
+
+            <ProductCard
+              key={
+                product.unique_id
+              }
+
+              product={
+                product
+              }
+
+              rank={
+                index + 1
+              }
+            />
+
+          )
+
+        })}
 
       </div>
 
     </section>
+
   )
 }
