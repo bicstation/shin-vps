@@ -1,5 +1,10 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/page.tsx
+
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
+
+import Link
+  from 'next/link'
 
 import styles
   from './page.module.css'
@@ -9,32 +14,18 @@ import styles
 ========================================= */
 
 import {
-   fetchRankingByType,
+  fetchRankingByType,
 } from '@/shared/lib/api/django/pc'
 
-
 /* =========================================
-🔥 ORCHESTRATION
+🔥 Dynamic
 ========================================= */
 
-import RankingLayout
-  from './orchestration/RankingLayout'
-
-import RankingSemanticFlow
-  from './orchestration/RankingSemanticFlow'
-
-import RankingConversionFlow
-  from './orchestration/RankingConversionFlow'
+export const dynamic =
+  'force-dynamic'
 
 /* =========================================
-🔥 EMPTY
-========================================= */
-
-import RankingEmpty
-  from './components/RankingEmpty'
-
-/* =========================================
-🔥 TYPES
+🔥 Props
 ========================================= */
 
 type Props = {
@@ -45,76 +36,254 @@ type Props = {
 }
 
 /* =========================================
-🔥 ISR
-========================================= */
-
-export const revalidate = 60
-
-/* =========================================
 🔥 PAGE
 ========================================= */
 
 export default async function
-RankingPage({
+RankingTypePage({
   params,
 }: Props) {
 
   // ======================================
-  // PARAMS
+  // Type
   // ======================================
 
   const type =
+
     params?.type
-    || 'score'
+    || ''
 
   // ======================================
-  // FETCH
+  // Fetch
   // ======================================
 
-  const products =
+  const response =
+
     await fetchRankingByType(
       type
     )
 
   // ======================================
-  // EMPTY
+  // Products
   // ======================================
 
-  if (
-    !products?.length
-  ) {
-    return <RankingEmpty />
-  }
+  const products =
+
+    Array.isArray(
+      response?.results
+    )
+
+      ? response.results
+
+      : []
 
   // ======================================
-  // PAGE
+  // Debug
+  // ======================================
+
+  console.log(
+    '\n🔥 ====================================='
+  )
+
+  console.log(
+    '🔥 RANKING TYPE:',
+    type
+  )
+
+  console.log(
+    JSON.stringify(
+      response,
+      null,
+      2
+    )
+  )
+
+  console.log(
+    '🔥 =====================================\n'
+  )
+
+  // ======================================
+  // Render
   // ======================================
 
   return (
 
-    <RankingLayout>
+    <main
+      className={
+        styles.page
+      }
+    >
 
-      {/* ==================================
-      SEMANTIC FLOW
-      semantic cognition layer
-      ================================== */}
+      <div
+        className={
+          styles.container
+        }
+      >
 
-      <RankingSemanticFlow
-        type={type}
-        products={products}
-      />
+        {/* ================================= */}
+        {/* TITLE */}
+        {/* ================================= */}
 
-      {/* ==================================
-      CONVERSION FLOW
-      commerce conversion layer
-      ================================== */}
+        <h1>
+          {type}
+          ランキング
+        </h1>
 
-      <RankingConversionFlow
-        type={type}
-        products={products}
-      />
+        {/* ================================= */}
+        {/* EMPTY */}
+        {/* ================================= */}
 
-    </RankingLayout>
+        {!products.length && (
 
+          <div>
+
+            データがありません
+
+          </div>
+
+        )}
+
+        {/* ================================= */}
+        {/* PRODUCTS */}
+        {/* ================================= */}
+
+        <ul
+          style={{
+            display: 'grid',
+            gap: '20px',
+            padding: 0,
+            listStyle: 'none',
+            marginTop: '32px',
+          }}
+        >
+
+          {products.map(product => (
+
+            <li
+              key={
+                product.unique_id
+              }
+
+              style={{
+                border:
+                  '1px solid rgba(255,255,255,0.08)',
+                borderRadius:
+                  '16px',
+                padding:
+                  '18px',
+                background:
+                  'rgba(255,255,255,0.03)',
+              }}
+            >
+
+              {/* ========================= */}
+              {/* IMAGE */}
+              {/* ========================= */}
+
+              {product.image_url && (
+
+                <img
+                  src={
+                    product.image_url
+                  }
+
+                  alt={
+                    product.name
+                  }
+
+                  style={{
+                    width: '100%',
+                    maxWidth: '280px',
+                    borderRadius: '12px',
+                  }}
+                />
+
+              )}
+
+              {/* ========================= */}
+              {/* NAME */}
+              {/* ========================= */}
+
+              <h2
+                style={{
+                  marginTop: '16px',
+                  fontSize: '18px',
+                  lineHeight: 1.5,
+                }}
+              >
+                {product.name}
+              </h2>
+
+              {/* ========================= */}
+              {/* PRICE */}
+              {/* ========================= */}
+
+              {product.price && (
+
+                <p
+                  style={{
+                    marginTop: '12px',
+                    fontSize: '18px',
+                    fontWeight: 700,
+                  }}
+                >
+                  ¥
+                  {Number(
+                    product.price
+                  ).toLocaleString()}
+                </p>
+
+              )}
+
+              {/* ========================= */}
+              {/* MAKER */}
+              {/* ========================= */}
+
+              {product.maker && (
+
+                <p
+                  style={{
+                    marginTop: '8px',
+                    opacity: 0.8,
+                  }}
+                >
+                  メーカー:
+                  {' '}
+                  {product.maker}
+                </p>
+
+              )}
+
+              {/* ========================= */}
+              {/* DETAIL */}
+              {/* ========================= */}
+
+              <Link
+                href={
+                  `/products/${
+                    product.unique_id
+                  }`
+                }
+
+                style={{
+                  display: 'inline-block',
+                  marginTop: '14px',
+                  textDecoration:
+                    'none',
+                  fontWeight: 700,
+                }}
+              >
+                詳細を見る →
+              </Link>
+
+            </li>
+
+          ))}
+
+        </ul>
+
+      </div>
+
+    </main>
   )
 }

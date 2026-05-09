@@ -3,7 +3,11 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
-import styles from './page.module.css'
+import Link
+  from 'next/link'
+
+import styles
+  from './page.module.css'
 
 /* =========================================
 🔥 API
@@ -31,31 +35,7 @@ RankingIndexPage() {
     await fetchSidebarStats()
 
   // ======================================
-  // DEBUG LOG
-  // ======================================
-
-  console.log(
-    '\n🔥 ====================================='
-  )
-
-  console.log(
-    '🔥 SIDEBAR STATS RAW PAYLOAD'
-  )
-
-  console.log(
-    JSON.stringify(
-      stats,
-      null,
-      2
-    )
-  )
-
-  console.log(
-    '🔥 =====================================\n'
-  )
-
-  // ======================================
-  // ALL KEYS
+  // All Keys
   // ======================================
 
   const keys =
@@ -94,7 +74,7 @@ RankingIndexPage() {
         </h1>
 
         {/* ================================= */}
-        {/* DEBUG KEYS */}
+        {/* API KEYS */}
         {/* ================================= */}
 
         <section>
@@ -134,7 +114,7 @@ RankingIndexPage() {
               : []
 
           // ------------------------------
-          // skip empty
+          // Empty
           // ------------------------------
 
           if (!items.length) {
@@ -143,38 +123,84 @@ RankingIndexPage() {
 
           return (
 
-            <section key={key}>
+            <section
+              key={key}
+              style={{
+                marginTop: '40px',
+              }}
+            >
+
+              {/* ========================= */}
+              {/* Group Title */}
+              {/* ========================= */}
 
               <h2>
                 {key}
               </h2>
 
-              <ul>
+              {/* ========================= */}
+              {/* Item List */}
+              {/* ========================= */}
 
-                {items.map(item => (
+              <ul
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  padding: 0,
+                  listStyle: 'none',
+                }}
+              >
 
-                  <li
-                    key={
-                      item.slug
-                      || item.name
-                    }
-                  >
+                {items.map(item => {
 
-                    <a
-                      href={
-                        `/ranking/${
-                          item.slug
-                        }`
+                  const slug =
+                    item?.slug || ''
+
+                  const name =
+                    item?.name || ''
+
+                  return (
+
+                    <li
+                      key={
+                        slug || name
                       }
                     >
 
-                      {item.name}
+                      <Link
+                        href={
+                          `/ranking/${slug}`
+                        }
 
-                    </a>
+                        style={{
+                          display: 'inline-block',
+                          padding:
+                            '8px 14px',
+                          borderRadius:
+                            '999px',
+                          background:
+                            'rgba(255,255,255,0.06)',
+                          border:
+                            '1px solid rgba(255,255,255,0.08)',
+                          textDecoration:
+                            'none',
+                          color:
+                            '#fff',
+                          fontSize:
+                            '13px',
+                          fontWeight:
+                            600,
+                        }}
+                      >
 
-                  </li>
+                        {name}
 
-                ))}
+                      </Link>
+
+                    </li>
+                  )
+                })}
 
               </ul>
 
