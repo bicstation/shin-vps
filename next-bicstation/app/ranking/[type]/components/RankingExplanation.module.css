@@ -1,0 +1,174 @@
+/* RankingExplanation.module.css */
+
+/* =========================================
+🔥 GRID
+========================================= */
+
+.grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(260px, 1fr)
+    );
+
+  gap: 20px;
+}
+
+/* =========================================
+🔥 CARD
+========================================= */
+
+.card {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 18px;
+
+  padding:
+    24px
+    22px;
+
+  border-radius: 26px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.92),
+      rgba(15,23,42,0.82)
+    );
+
+  border:
+    1px solid rgba(148,163,184,0.10);
+
+  box-shadow:
+    0 16px 42px rgba(0,0,0,0.24);
+
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.card:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(59,130,246,0.22);
+
+  box-shadow:
+    0 22px 56px rgba(0,0,0,0.32);
+}
+
+/* =========================================
+🔥 ICON
+========================================= */
+
+.icon {
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 56px;
+  height: 56px;
+
+  border-radius: 18px;
+
+  background:
+    rgba(59,130,246,0.10);
+
+  border:
+    1px solid rgba(59,130,246,0.16);
+
+  font-size: 26px;
+}
+
+/* =========================================
+🔥 BODY
+========================================= */
+
+.body {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+/* =========================================
+🔥 TITLE
+========================================= */
+
+.title {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  line-height: 1.4;
+
+  letter-spacing: -0.03em;
+}
+
+/* =========================================
+🔥 DESCRIPTION
+========================================= */
+
+.description {
+  margin: 0;
+
+  color: #94a3b8;
+
+  font-size: 14px;
+
+  line-height: 1.8;
+}
+
+/* =========================================
+🔥 RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .grid {
+    gap: 16px;
+  }
+
+  .card {
+    gap: 16px;
+
+    padding:
+      20px
+      18px;
+
+    border-radius: 22px;
+  }
+
+  .icon {
+    width: 50px;
+    height: 50px;
+
+    border-radius: 16px;
+
+    font-size: 22px;
+  }
+
+  .body {
+    gap: 8px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .description {
+    font-size: 13px;
+
+    line-height: 1.75;
+  }
+}

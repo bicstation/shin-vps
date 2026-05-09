@@ -1,10 +1,11 @@
-# /home/maya/shin-dev/shin-vps/next-bicstation/app/api/utils/semantic_payload.py
+# /home/maya/shin-dev/shin-vps/django/api/utils/semantic_payload.py
 
 from collections import defaultdict
 
-# =========================================
+
+# =========================================================
 # normalize attribute
-# =========================================
+# =========================================================
 def normalize_semantic_attribute(attr):
 
     if not attr:
@@ -12,34 +13,55 @@ def normalize_semantic_attribute(attr):
 
     return {
 
+        # =================================================
+        # Identity
+        # =================================================
         "id":
             getattr(attr, "id", 0),
 
+        # =================================================
+        # Semantic Structure
+        # =================================================
         "type":
             getattr(attr, "attr_type", None)
             or "unknown",
-
-        "name":
-            getattr(attr, "name", None)
-            or "",
 
         "slug":
             getattr(attr, "slug", None)
             or "unknown",
 
+        # =================================================
+        # Display
+        # =================================================
+        "name":
+            getattr(attr, "name", None)
+            or "",
+
+        # =================================================
+        # Semantic Metadata
+        # =================================================
         "semantic_role":
-            getattr(attr, "semantic_role", None)
+            getattr(
+                attr,
+                "semantic_role",
+                None
+            )
             or "secondary",
 
         "semantic_weight":
             float(
+
                 getattr(
                     attr,
                     "semantic_weight",
                     0
                 ) or 0
+
             ),
 
+        # =================================================
+        # UI Metadata
+        # =================================================
         "icon":
             getattr(attr, "icon", None)
             or "",
@@ -50,9 +72,9 @@ def normalize_semantic_attribute(attr):
     }
 
 
-# =========================================
+# =========================================================
 # grouped attributes
-# =========================================
+# =========================================================
 def build_grouped_attributes(attributes):
 
     grouped = defaultdict(list)
@@ -60,26 +82,36 @@ def build_grouped_attributes(attributes):
     for attr in attributes:
 
         attr_type = (
+
             attr.get("type")
             or "unknown"
+
         )
 
-        grouped[attr_type].append(attr)
+        grouped[attr_type].append(
+            attr
+        )
 
     return dict(grouped)
 
 
-# =========================================
+# =========================================================
 # semantic payload
-# =========================================
+# =========================================================
 def build_semantic_payload(product):
 
+    # =====================================================
+    # Raw Attributes
+    # =====================================================
     raw_attributes = (
         product.attributes.all()
     )
 
     normalized_attributes = []
 
+    # =====================================================
+    # Normalize All Attributes
+    # =====================================================
     for attr in raw_attributes:
 
         normalized = (
@@ -89,23 +121,39 @@ def build_semantic_payload(product):
         )
 
         if normalized:
+
             normalized_attributes.append(
                 normalized
             )
 
+    # =====================================================
+    # Grouped Attributes
+    # =====================================================
     grouped_attributes = (
         build_grouped_attributes(
             normalized_attributes
         )
     )
 
+    # =====================================================
+    # Final Payload
+    # =====================================================
     return {
 
+        # -------------------------------------------------
+        # Semantic Version
+        # -------------------------------------------------
         "semantic_schema_version": 1,
 
+        # -------------------------------------------------
+        # Flat Attributes
+        # -------------------------------------------------
         "attributes":
             normalized_attributes,
 
+        # -------------------------------------------------
+        # Grouped Attributes
+        # -------------------------------------------------
         "grouped_attributes":
             grouped_attributes,
     }

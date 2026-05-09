@@ -1,0 +1,92 @@
+/* /home/maya/shin-dev/shin-vps/shared/components/semantic/SemanticGroupedSection.module.css */
+
+/* =========================================
+🔥 WRAPPER
+========================================= */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+}
+
+/* =========================================
+🔥 TITLE
+========================================= */
+
+.title {
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 800;
+
+  line-height: 1.4;
+
+  letter-spacing: -0.02em;
+}
+
+/* =========================================
+🔥 GROUP
+========================================= */
+
+.group {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+/* =========================================
+🔥 GROUP TITLE
+========================================= */
+
+.groupTitle {
+  color: rgba(255,255,255,0.72);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.08em;
+}
+
+/* =========================================
+🔥 BADGES
+========================================= */
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+/* =========================================
+🔥 RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .wrapper {
+    gap: 20px;
+  }
+
+  .title {
+    font-size: 15px;
+  }
+
+  .group {
+    gap: 10px;
+  }
+
+  .groupTitle {
+    font-size: 11px;
+  }
+
+  .badges {
+    gap: 8px;
+  }
+}
+

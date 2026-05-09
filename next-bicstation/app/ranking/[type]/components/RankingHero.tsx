@@ -1,49 +1,111 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/components/RankingHero.tsx
+
+/* eslint-disable @next/next/no-img-element */
+// @ts-nocheck
+
 import HeroRankingCard
   from '@/shared/components/organisms/cards/HeroRankingCard'
 
 import styles
-  from '../page.module.css'
+  from './RankingHero.module.css'
 
-import {
-  buildSemanticTitle,
-} from '../semantic/rankingSemantic'
+/* =========================================
+🔥 Types
+========================================= */
 
 type Props = {
-  type: string
-  topProduct: any
+
+  title: string
+
+  description: string
+
+  label?: string
+
+  topProduct?: any
 }
 
-export default function RankingHero({
-  type,
+/* =========================================
+🔥 Component
+========================================= */
+
+export default function
+RankingHero({
+
+  title,
+
+  description,
+
+  label =
+    'SEMANTIC RANKING',
+
   topProduct,
 }: Props) {
 
-  const copy =
-    buildSemanticTitle(
-      type
-    )
-
   return (
-    <section className={styles.hero}>
 
-      <div className={styles.heroLabel}>
-        SEMANTIC RANKING
+    <div
+      className={
+        styles.hero
+      }
+    >
+
+      {/* ==================================
+      LABEL
+      ================================== */}
+
+      <div
+        className={
+          styles.label
+        }
+      >
+        {label}
       </div>
 
-      <h1 className={styles.heroTitle}>
-        {copy.title}
+      {/* ==================================
+      TITLE
+      ================================== */}
+
+      <h1
+        className={
+          styles.title
+        }
+      >
+        {title}
       </h1>
 
-      <p className={styles.heroDescription}>
-        {copy.description}
+      {/* ==================================
+      DESCRIPTION
+      ================================== */}
+
+      <p
+        className={
+          styles.description
+        }
+      >
+        {description}
       </p>
 
-      {topProduct && (
-        <HeroRankingCard
-          product={topProduct}
-        />
+      {/* ==================================
+      HERO CARD
+      ================================== */}
+
+      {!!topProduct && (
+
+        <div
+          className={
+            styles.cardWrap
+          }
+        >
+
+          <HeroRankingCard
+            product={topProduct}
+          />
+
+        </div>
+
       )}
 
-    </section>
+    </div>
+
   )
 }

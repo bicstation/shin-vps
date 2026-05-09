@@ -1,551 +1,407 @@
-■ semantic API inventory（初版）
-（backend semantic structure definition）
+# SHIN CORE LINX｜PC Semantic Commerce API v1
 
-■ 目的
+Version: `semantic_schema_version = 1`
+Base URL:
 
-frontend semantic rendering layer に対し：
+```txt
+/api/general/
+```
 
-semantic API contract
+---
 
-を正式定義する
+# 1. Ranking API
 
-■ 現在の semantic API 構造
+## Endpoint
 
-backend は現在：
+```txt
+GET /api/general/pc-products/ranking/
+```
 
-semantic authority
-semantic metadata provider
-semantic grouping provider
+---
 
-として動作
+# Query Parameters
 
-■ 共通 semantic payload schema
-attribute object
+| Parameter | Type   | Description |
+| --------- | ------ | ----------- |
+| use       | string | ranking用途   |
+
+---
+
+# use Values
+
+| Value    | Description |
+| -------- | ----------- |
+| score    | 総合ランキング     |
+| gaming   | ゲーミング重視     |
+| creator  | クリエイター向け    |
+| business | 法人・事務向け     |
+| ai       | AI/NPU重視    |
+
+---
+
+# Example
+
+```txt
+GET /api/general/pc-products/ranking/?use=gaming
+```
+
+---
+
+# Response
+
+```json
+[
+  {
+    "unique_id": "2557_xxxxx",
+    "name": "Gaming PC",
+    "price": 198000,
+    "spec_score": 92
+  }
+]
+```
+
+---
+
+# 2. Product Detail API
+
+## Endpoint
+
+```txt
+GET /api/general/pc-products/<unique_id>/
+```
+
+---
+
+# Example
+
+```txt
+GET /api/general/pc-products/2557_per26020a/
+```
+
+---
+
+# Response Fields
+
+| Field                   | Description             |
+| ----------------------- | ----------------------- |
+| unique_id               | 商品ユニークID                |
+| name                    | 商品名                     |
+| maker                   | メーカー                    |
+| price                   | 価格                      |
+| image_url               | 商品画像                    |
+| description             | 商品説明                    |
+| cpu_model               | CPU                     |
+| gpu_model               | GPU                     |
+| memory_gb               | メモリ                     |
+| storage_gb              | ストレージ                   |
+| spec_score              | 総合性能                    |
+| radar_chart             | レーダーチャート                |
+| ai_summary              | AI要約                    |
+| attributes              | semantic属性一覧            |
+| grouped_attributes      | semantic分類済み属性          |
+| semantic_schema_version | semantic schema version |
+
+---
+
+# grouped_attributes
+
+## Example
+
+```json
 {
-  "id": 51,
-
-  "attr_type": "usage",
-  "attr_type_display": "usage",
-
-  "name": "クリエイター向け",
-  "slug": "usage-creator",
-
-  "order": 712,
-
-  "semantic_role": "highlight",
-  "semantic_weight": 0.92,
-
-  "icon": "pen-tool",
-  "color": "purple"
-}
-■ semantic fields 定義
-field	role
-semantic_role	rendering importance
-semantic_weight	semantic strength
-icon	semantic icon hint
-color	semantic color hint
-■ semantic_role enum
-highlight
-primary
-secondary
-supportive
-■ semantic grouping structure
-"grouped_attributes": {
-  "usage": [...],
-  "gpu": [...],
-  "cpu": [...],
-  "maker": [...],
-  "memory": [...],
-  "storage": [...]
-}
-■ grouping order authority
-
-backend 側で固定：
-
-usage
-gpu
-cpu
-maker
-memory
-storage
-feature
-■ API Inventory
-① PCProduct Detail API
-URL
-/api/pc-products/<unique_id>/
-Method
-GET
-Params
-param	type	required
-unique_id	string	yes
-semantic payload
-field
-attributes
-grouped_attributes
-grouped_attributes
-
-✅ supported
-
-frontend usage
-usage
-Product Hero
-Semantic Sections
-Spec Rendering
-AI Summary UI
-Related Candidate Base
-■ response example
-{
-  "id": 1,
-  "name": "Example PC",
-
-  "attributes": [...],
-
   "grouped_attributes": {
-    "usage": [...],
-    "gpu": [...],
-    "cpu": [...]
+    "device": [],
+    "usage": [],
+    "maker": [],
+    "gpu": [],
+    "cpu": [],
+    "memory": []
   }
 }
-② Ranking API
-URL
-/api/pc-products/ranking/
-Method
-GET
-Params（想定）
-param	role
-usage	semantic filtering
-maker	semantic filtering
-gpu	semantic filtering
-semantic payload
-field
-attributes
-grouped_attributes
-grouped_attributes
+```
 
-✅ supported
+---
 
-frontend usage
-usage
-Ranking Cards
-Semantic Badge Rendering
-Ranking Filters
-Usage Ranking
-③ Related API
-URL
-/api/pc-products/<unique_id>/related/
-Method
-GET
-semantic payload
-field
-attributes
-grouped_attributes
-grouped_attributes
+# Semantic Attribute Structure
 
-✅ supported
-
-frontend usage
-usage
-Related Cards
-Similar Semantic Blocks
-Recommendation Zones
-④ Finder API（planned）
-URL（planned）
-/api/finder/
-Method
-GET
-semantic request params（planned）
-param	role
-usage	semantic intent
-gpu	semantic filter
-cpu	semantic filter
-maker	semantic filter
-memory	semantic filter
-storage	semantic filter
-semantic payload
-field
-attributes
-grouped_attributes
-semantic_score（planned）
-confidence（planned）
-grouped_attributes
-
-✅ planned
-
-frontend usage
-usage
-Finder UI
-Semantic Search
-AI Recommendation
-Dynamic Filtering
-■ frontend semantic rendering 方針
-
-frontend は：
-
-semantic rendering layer
-
-として動作
-
-■ frontend が保持しないもの
-meaning definition
-group ordering
-semantic priority
-semantic grouping logic
-■ backend authority
-
-backend は：
-
-semantic definition
-semantic grouping
-semantic ordering
-semantic metadata
-
-を保持
-
-■ semantic engine current architecture
-TSV
-↓
-semantic metadata
-↓
-Loader
-↓
-DB sync
-↓
-semantic entities
-↓
-Serializer
-↓
-semantic grouping
-↓
-semantic payload
-↓
-frontend semantic rendering
-■ 現段階で未実施
-confidence
-multi-usage
-semantic graph
-semantic relation
-embedding
-■ 現在到達点
-
-semantic API は：
-
-implementation detail
-
-ではなく：
-
-semantic structure contract
-
-として定義開始
-
-以上
-
-■ semantic API structure（現段階まとめ）
-
-========================================
-① PCProduct Detail API
-========================================
-
-■ URL
-
-/api/pc-products/<unique_id>/
-
-■ 実例
-
-/api/pc-products/2557_sdc1625555401mpnojp/
-
-■ Method
-
-GET
-
-■ 役割
-
-単一PC商品の semantic detail を取得
-
-■ 主なresponse
-
+```json
 {
-  "id": 1,
-  "name": "Example PC",
-
-  "attributes": [...],
-
-  "grouped_attributes": {
-    "usage": [...],
-    "gpu": [...],
-    "cpu": [...],
-    "maker": [...],
-    "memory": [...],
-    "storage": [...]
-  }
-}
-
-■ frontend用途
-
-・Product Hero
-・Semantic Sections
-・Spec UI
-・Badge Rendering
-・AI Summary
-
-
-========================================
-② Ranking API
-========================================
-
-■ URL
-
-/api/pc-products/ranking/
-
-■ Method
-
-GET
-
-■ query例
-
-/api/pc-products/ranking/?usage=usage-gaming
-
-/api/pc-products/ranking/?gpu=gpu-rtx-5070
-
-■ 役割
-
-semantic条件ベースのランキング取得
-
-■ semantic payload
-
-attributes
-grouped_attributes
-
-■ frontend用途
-
-・Ranking Cards
-・Semantic Ranking
-・Usage Ranking
-・Filter UI
-
-
-========================================
-③ Related API
-========================================
-
-■ URL
-
-/api/pc-products/<unique_id>/related/
-
-■ 実例
-
-/api/pc-products/2557_sdc1625555401mpnojp/related/
-
-■ Method
-
-GET
-
-■ 役割
-
-semantic類似商品取得
-
-■ semantic payload
-
-attributes
-grouped_attributes
-
-■ frontend用途
-
-・Related Cards
-・Recommendation Zone
-・Semantic Similar Products
-
-
-========================================
-④ Finder API（予定）
-========================================
-
-■ URL
-
-/api/finder/
-
-■ Method
-
-GET
-
-■ query例
-
-/api/finder/?usage=usage-gaming
-
-/api/finder/?usage=usage-creator&memory=mem-32gb
-
-/api/finder/?gpu=gpu-rtx-5070&storage=ssd-1tb
-
-■ 役割
-
-semantic attribute ベース検索
-
-■ semantic request構造
-
-usage
-gpu
-cpu
-maker
-memory
-storage
-
-■ semantic payload
-
-attributes
-grouped_attributes
-
-■ 将来追加予定
-
-semantic_score
-confidence
-
-■ frontend用途
-
-・Finder UI
-・Semantic Search
-・AI Recommendation
-・Dynamic Filters
-
-
-========================================
-■ semantic attribute schema
-========================================
-
-{
-  "id": 51,
-
-  "attr_type": "usage",
-  "attr_type_display": "usage",
-
-  "name": "クリエイター向け",
-  "slug": "usage-creator",
-
-  "order": 712,
-
+  "id": 121,
+  "type": "device",
+  "slug": "device-server",
+  "name": "サーバー",
   "semantic_role": "highlight",
-  "semantic_weight": 0.92,
-
-  "icon": "pen-tool",
-  "color": "purple"
+  "semantic_weight": 0.98,
+  "icon": "server",
+  "color": "darkred"
 }
+```
 
+---
 
-========================================
-■ semantic fields
-========================================
+# 3. Related Products API
 
-semantic_role
-→ semantic importance
+## Endpoint
 
-semantic_weight
-→ semantic strength
+```txt
+GET /api/general/pc-products/<unique_id>/related/
+```
 
-icon
-→ rendering hint
+---
 
-color
-→ rendering hint
+# Example
 
+```txt
+GET /api/general/pc-products/2557_per26020a/related/
+```
 
-========================================
-■ grouped_attributes structure
-========================================
+---
 
-"grouped_attributes": {
+# Features
 
-  "usage": [...],
+* semantic recommendation
+* device-aware recommendation
+* explainable recommendation
+* soft semantic fallback
+* similarity scoring
 
-  "gpu": [...],
+---
 
-  "cpu": [...],
+# Response Additional Fields
 
-  "maker": [...],
+| Field              | Description    |
+| ------------------ | -------------- |
+| similarity_score   | semantic類似度    |
+| matched_attributes | 一致したsemantic属性 |
 
-  "memory": [...],
+---
 
-  "storage": [...],
+# Example
 
-  "feature": [...]
+```json
+{
+  "similarity_score": 0.75,
+  "matched_attributes": [
+    "device-server",
+    "usage-business",
+    "maker-dell"
+  ]
 }
+```
 
+---
 
-========================================
-■ semantic grouping order
-========================================
+# Recommendation Logic
 
-usage
-gpu
-cpu
-maker
-memory
-storage
-feature
+## Main Semantic Factors
 
+| Semantic         | Weight |
+| ---------------- | ------ |
+| device           | 0.25   |
+| usage            | 0.20   |
+| gpu              | 0.20   |
+| price similarity | 0.20   |
+| maker            | 0.10   |
+| spec similarity  | 0.10   |
 
-========================================
-■ backend responsibility
-========================================
+---
 
-backend は：
+# 4. Sidebar Stats API
 
-・semantic meaning
-・semantic metadata
-・semantic grouping
-・semantic ordering
-・semantic authority
+## Endpoint
 
-を保持する
+```txt
+GET /api/general/pc-sidebar-stats/
+```
 
+---
 
-========================================
-■ frontend responsibility
-========================================
+# Response
 
-frontend は：
+```json
+{
+  "gpu": [],
+  "maker_counts": []
+}
+```
 
-semantic payload
-↓
-renderer
-↓
-layout
-↓
-UI rendering
+---
 
-のみ担当
+# GPU Structure
 
+```json
+{
+  "name": "RTX 4070",
+  "slug": "gpu-rtx-4070",
+  "count": 8
+}
+```
 
-========================================
-■ 現在の semantic engine architecture
-========================================
+---
 
-TSV
-↓
-semantic metadata
-↓
-Loader
-↓
-DB sync
-↓
-semantic entities
-↓
-Serializer
-↓
-semantic grouping
-↓
-semantic payload
-↓
-frontend semantic rendering
+# Maker Structure
 
+```json
+{
+  "name": "DELL",
+  "maker": "DELL",
+  "slug": "maker-dell",
+  "count": 290
+}
+```
 
-========================================
-■ 現在到達点
-========================================
+---
 
-backend semantic engine は：
+# 5. Semantic Attribute System
 
-「タグAPI」
+## Semantic Types
 
-ではなく：
+| Type         | Description |
+| ------------ | ----------- |
+| device       | 物理カテゴリ      |
+| product_type | 商品カテゴリ      |
+| usage        | 利用用途        |
+| maker        | メーカー        |
+| gpu          | GPU         |
+| cpu          | CPU         |
+| memory       | メモリ         |
+| storage      | ストレージ       |
+| pc_feature   | 特徴          |
 
-「semantic structure platform」
+---
 
-として動作開始
+# device Examples
+
+| Slug               | Meaning   |
+| ------------------ | --------- |
+| device-laptop      | ノートPC     |
+| device-desktop     | デスクトップ    |
+| device-server      | サーバー      |
+| device-workstation | ワークステーション |
+| device-mini-pc     | ミニPC      |
+
+---
+
+# usage Examples
+
+| Slug           | Meaning |
+| -------------- | ------- |
+| usage-gaming   | ゲーミング   |
+| usage-business | 法人向け    |
+| usage-creator  | クリエイター  |
+| usage-ai       | AI用途    |
+
+---
+
+# 6. Semantic Metadata
+
+## semantic_role
+
+| Value     | Meaning |
+| --------- | ------- |
+| primary   | 主要属性    |
+| secondary | 補助属性    |
+| highlight | 強調属性    |
+
+---
+
+# semantic_weight
+
+```txt
+0.0 - 1.0
+```
+
+semantic importance score.
+
+---
+
+# icon
+
+Frontend semantic icon identifier.
+
+---
+
+# color
+
+Frontend semantic color identifier.
+
+---
+
+# 7. Semantic Architecture Contract
+
+## Backend Responsibilities
+
+Backend is the semantic authority.
+
+Responsible for:
+
+* semantic extraction
+* grouping
+* ordering
+* metadata
+* recommendation scoring
+* semantic similarity
+* semantic filtering
+
+---
+
+# Frontend Responsibilities
+
+Frontend is the semantic rendering layer.
+
+Responsible for:
+
+* UI rendering
+* layout
+* cards
+* filters
+* badges
+* semantic visualization
+
+---
+
+# 8. Planned APIs
+
+## Finder API
+
+```txt
+GET /api/general/finder/
+```
+
+Example:
+
+```txt
+?usage=usage-gaming
+&gpu=gpu-rtx-4070
+&maker=maker-dell
+```
+
+---
+
+# Compare API
+
+```txt
+POST /api/general/pc-products/compare/
+```
+
+---
+
+# Attribute List API
+
+```txt
+GET /api/general/pc-attributes/
+```
+
+---
+
+# 9. Semantic Schema Versioning
+
+All semantic APIs include:
+
+```json
+{
+  "semantic_schema_version": 1
+}
+```
+
+Used for frontend compatibility management.

@@ -1,3 +1,5 @@
+// /home/maya/shin-dev/shin-vps/shared/components/semantic/SemanticSection.tsx
+
 'use client'
 
 import SemanticRenderer

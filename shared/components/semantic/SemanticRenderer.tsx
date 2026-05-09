@@ -1,7 +1,15 @@
+// /home/maya/shin-dev/shin-vps/shared/components/semantic/SemanticRenderer.tsx
+
 'use client'
 
 import SemanticBadge
   from './SemanticBadge'
+
+import {
+
+  semanticRenderRegistry,
+
+} from '@/shared/lib/semantic'
 
 import {
   SemanticAttribute,
@@ -20,7 +28,10 @@ const IS_DEV =
 ========================================= */
 
 type Props = {
-  attribute?: SemanticAttribute | null
+
+  attribute?:
+    SemanticAttribute
+    | null
 }
 
 /* =========================================
@@ -47,7 +58,9 @@ function logWarn(
 ========================================= */
 
 function normalizeAttribute(
-  attribute?: SemanticAttribute | null
+  attribute?:
+    SemanticAttribute
+    | null
 ): SemanticAttribute | null {
 
   if (!attribute) {
@@ -66,8 +79,11 @@ function normalizeAttribute(
     // attr_type
     // --------------------------------
     type:
+
       attribute.attr_type
+
       || attribute.type
+
       || 'default',
 
     // --------------------------------
@@ -83,25 +99,29 @@ function normalizeAttribute(
     // role
     // --------------------------------
     semantic_role:
+
       attribute.semantic_role
+
       || 'supportive',
 
     // --------------------------------
     // weight
-    // backend:
-    // 0.0 ~ 1.0
     // --------------------------------
     semantic_weight:
-      typeof attribute.semantic_weight
-        === 'number'
-          ? Math.max(
-              0,
-              Math.min(
-                1,
-                attribute.semantic_weight
-              )
+
+      typeof
+      attribute.semantic_weight
+      === 'number'
+
+        ? Math.max(
+            0,
+            Math.min(
+              1,
+              attribute.semantic_weight
             )
-          : 0,
+          )
+
+        : 0,
   }
 }
 
@@ -109,13 +129,17 @@ function normalizeAttribute(
 🔥 Component
 ========================================= */
 
-export default function SemanticRenderer({
+export default function
+SemanticRenderer({
+
   attribute,
+
 }: Props) {
 
-  // --------------------------------
+  // ======================================
   // Empty
-  // --------------------------------
+  // ======================================
+
   if (!attribute) {
 
     logWarn(
@@ -125,9 +149,10 @@ export default function SemanticRenderer({
     return null
   }
 
-  // --------------------------------
+  // ======================================
   // Normalize
-  // --------------------------------
+  // ======================================
+
   const normalized =
     normalizeAttribute(
       attribute
@@ -143,107 +168,71 @@ export default function SemanticRenderer({
     return null
   }
 
-  // --------------------------------
-  // type authority
-  // --------------------------------
+  // ======================================
+  // Type
+  // ======================================
+
   const type =
     normalized.type
 
-  // --------------------------------
-  // semantic rendering authority
+  // ======================================
+  // Render Config
+  // ======================================
+
+  const renderConfig =
+
+    semanticRenderRegistry[
+      type
+    ]
+
+    || semanticRenderRegistry
+      .default
+
+  // ======================================
+  // Future Semantic Rendering
+  // ======================================
   // future:
-  // - adaptive rendering
-  // - graph rendering
-  // - AI semantic rendering
-  // --------------------------------
-  switch (type) {
+  // - adaptive renderer
+  // - graph renderer
+  // - AI semantic renderer
+  // - grouped semantic renderer
+  // ======================================
 
-    // =================================
-    // GPU
-    // =================================
-    case 'gpu':
+  switch (
+    renderConfig.variant
+  ) {
 
-      return (
-        <SemanticBadge
-          attribute={normalized}
-        />
-      )
+    // ====================================
+    // Badge Renderer
+    // ====================================
 
-    // =================================
-    // Usage
-    // =================================
-    case 'usage':
+    case 'badge':
 
       return (
+
         <SemanticBadge
-          attribute={normalized}
+          slug={
+            normalized.slug
+          }
         />
+
       )
 
-    // =================================
-    // CPU
-    // =================================
-    case 'cpu':
-
-      return (
-        <SemanticBadge
-          attribute={normalized}
-        />
-      )
-
-    // =================================
-    // Maker
-    // =================================
-    case 'maker':
-
-      return (
-        <SemanticBadge
-          attribute={normalized}
-        />
-      )
-
-    // =================================
-    // Memory
-    // =================================
-    case 'memory':
-
-      return (
-        <SemanticBadge
-          attribute={normalized}
-        />
-      )
-
-    // =================================
-    // Storage
-    // =================================
-    case 'storage':
-
-      return (
-        <SemanticBadge
-          attribute={normalized}
-        />
-      )
-
-    // =================================
-    // Feature
-    // =================================
-    case 'feature':
-
-      return (
-        <SemanticBadge
-          attribute={normalized}
-        />
-      )
-
-    // =================================
+    // ====================================
     // Default
-    // =================================
+    // ====================================
+
     default:
 
       return (
+
         <SemanticBadge
-          attribute={normalized}
+          slug={
+            normalized.slug
+          }
         />
+
       )
   }
 }
+

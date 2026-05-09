@@ -1,49 +1,47 @@
 /* eslint-disable @next/next/no-img-element */
-
-import {
-  fetchPCProductRanking,
-} from '@/shared/lib/api/django/pc/stats'
+// @ts-nocheck
 
 import styles
   from './page.module.css'
 
 /* =========================================
-🔥 EXISTING COMPONENTS
+🔥 API
 ========================================= */
 
-import RankingHero
-  from './components/RankingHero'
+import {
+  fetchPCProductRanking,
+} from '@/shared/lib/api/django/pc/stats'
 
-import RankingExplanation
-  from './components/RankingExplanation'
+/* =========================================
+🔥 ORCHESTRATION
+========================================= */
 
-import RankingGrid
-  from './components/RankingGrid'
+import RankingLayout
+  from './orchestration/RankingLayout'
 
-import RankingNavigation
-  from './components/RankingNavigation'
+import RankingSemanticFlow
+  from './orchestration/RankingSemanticFlow'
+
+import RankingConversionFlow
+  from './orchestration/RankingConversionFlow'
+
+/* =========================================
+🔥 EMPTY
+========================================= */
 
 import RankingEmpty
   from './components/RankingEmpty'
 
 /* =========================================
-🔥 NEW CONVERSION LAYERS
+🔥 TYPES
 ========================================= */
 
-import RankingTrustSection
-  from './components/RankingTrustSection'
+type Props = {
 
-import RankingQuickCompare
-  from './components/RankingQuickCompare'
-
-import RecommendedForYou
-  from './components/RecommendedForYou'
-
-import RankingBottomCTA
-  from './components/RankingBottomCTA'
-
-import RankingStickyCTA
-  from './components/RankingStickyCTA'
+  params: {
+    type: string
+  }
+}
 
 /* =========================================
 🔥 ISR
@@ -52,20 +50,11 @@ import RankingStickyCTA
 export const revalidate = 60
 
 /* =========================================
-🔥 TYPES
-========================================= */
-
-type Props = {
-  params: {
-    type: string
-  }
-}
-
-/* =========================================
 🔥 PAGE
 ========================================= */
 
-export default async function RankingPage({
+export default async function
+RankingPage({
   params,
 }: Props) {
 
@@ -73,9 +62,9 @@ export default async function RankingPage({
   // PARAMS
   // ======================================
 
-  const {
-    type,
-  } = params
+  const type =
+    params?.type
+    || 'score'
 
   // ======================================
   // FETCH
@@ -97,113 +86,34 @@ export default async function RankingPage({
   }
 
   // ======================================
-  // SPLIT
-  // ======================================
-
-  const topProduct =
-    products?.[0]
-    || null
-
-  const otherProducts =
-    products.slice(1)
-
-  // ======================================
   // PAGE
   // ======================================
 
   return (
 
-    <main
-      className={
-        styles.mainWrapper
-      }
-    >
+    <RankingLayout>
 
       {/* ==================================
-      HERO
-      comparison start hero
+      SEMANTIC FLOW
+      semantic cognition layer
       ================================== */}
 
-      <RankingHero
+      <RankingSemanticFlow
         type={type}
-        topProduct={
-          topProduct
-        }
-      />
-
-      {/* ==================================
-      TRUST
-      beginner reassurance layer
-      ================================== */}
-
-      <RankingTrustSection
-        type={type}
-      />
-
-      {/* ==================================
-      WHY THIS RANKING
-      semantic explanation
-      ================================== */}
-
-      <RankingExplanation
         products={products}
       />
 
       {/* ==================================
-      QUICK COMPARE
-      comparison acceleration
+      CONVERSION FLOW
+      commerce conversion layer
       ================================== */}
 
-      <RankingQuickCompare
+      <RankingConversionFlow
+        type={type}
         products={products}
       />
 
-      {/* ==================================
-      MAIN GRID
-      semantic comparison grid
-      ================================== */}
-
-      <RankingGrid
-        products={
-          otherProducts
-        }
-      />
-
-      {/* ==================================
-      RECOMMENDATION
-      semantic continuation
-      ================================== */}
-
-      <RecommendedForYou
-        type={type}
-      />
-
-      {/* ==================================
-      NAVIGATION
-      semantic routing
-      ================================== */}
-
-      <RankingNavigation />
-
-      {/* ==================================
-      BOTTOM CTA
-      comparison conversion
-      ================================== */}
-
-      <RankingBottomCTA
-        type={type}
-      />
-
-      {/* ==================================
-      MOBILE STICKY CTA
-      mobile conversion layer
-      ================================== */}
-
-      <RankingStickyCTA
-        type={type}
-      />
-
-    </main>
+    </RankingLayout>
 
   )
 }

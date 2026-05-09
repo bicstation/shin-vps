@@ -1,9 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
+/* =========================================
+🔥 API
+========================================= */
 import {
-  fetchPCProductRanking,
-} from '@/shared/lib/api/django/pc/stats'
+   fetchRankingByType,
+} from '@/shared/lib/api/django/pc'
+
+/* =========================================
+🔥 Styles
+========================================= */
 
 import styles
   from './page.module.css'
@@ -106,10 +113,16 @@ export default async function HomePage() {
   FETCH
   ====================================== */
 
-  const products =
-    await fetchPCProductRanking(
+  const ranking =
+    await fetchRankingByType(
       'score'
     )
+
+  /* =====================================
+  PRODUCTS
+  ===================================== */
+  const products =
+    ranking?.products || [] 
 
   /* ======================================
   EMPTY

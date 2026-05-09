@@ -1,4 +1,16 @@
 type	name	slug	keywords	order	is_adult	semantic_role	semantic_weight	icon	color
+product_type	モニター	product-monitor	monitor,モニター,display,qd-oled	10	0	primary	0.95	monitor	cyan
+product_type	デスクトップPC	product-desktop	desktop,デスクトップ,tower	10	0	primary	0.95	pc	blue
+product_type	ノートPC	product-notebook	notebook,laptop,ノート	10	0	primary	0.95	laptop	green
+product_type	ミニPC	product-mini-pc	mini pc,nuc,ミニpc	10	0	secondary	0.70	box	gray
+product_type	サーバー	product-server	server,poweredge,proliant	10	0	highlight	0.98	server	darkred
+product_type	ワークステーション	product-workstation	workstation,precision,zbook	10	0	highlight	0.92	cpu	purple
+device	ノートPC	device-laptop	notebook,laptop,zenbook,thinkpad,latitude,vivobook,ideapad,pavilion,envy,gram,swift,inspiron,legion slim,macbook	90	0	primary	0.80	laptop	blue
+device	デスクトップPC	device-desktop	desktop,tower,inspiron,vostro,optiplex,elitedesk,prodesk,thinkcentre,rog,strix,omen,predator,desktop pc	80	0	secondary	0.70	pc	gray
+device	サーバー	device-server	server,poweredge,proliant,primergy,rack server,tower server,enterprise server	100	0	highlight	0.98	server	darkred
+device	ワークステーション	device-workstation	workstation,precision,zbook,thinkstation,pro max,creatorpro,mobile workstation,cad workstation	95	0	highlight	0.92	cpu	purple
+device	ミニPC	device-mini-pc	mini pc,nuc,minisforum,beelink,small form factor,sff,tiny pc,micro pc	75	0	secondary	0.65	box	green
+device	モバイルPC	device-mobile-pc	mobile,lightweight,ultrabook,thin and light,portable,travel laptop,compact laptop	85	0	primary	0.78	smartphone	cyan
 cpu	Core Ultra 9	intel-core-ultra-9	core ultra 9,ultra 9,ultra9,285k,275k,185h,288v,ultra 9 285k,ultra 9 185h	110	0	primary	0.98	cpu	red
 cpu	Core Ultra 7	intel-core-ultra-7	core ultra 7,ultra 7,ultra7,265k,255h,165h,155h,ultra 7 265k	105	0	primary	0.92	cpu	orange
 cpu	Core Ultra 5	intel-core-ultra-5	core ultra 5,ultra 5,ultra5,245k,235h,135h,125h,ultra 5 245k	100	0	primary	0.88	cpu	yellow
@@ -57,14 +69,21 @@ usage	コスパ重視	usage-budget	安い,コスパ,格安,エントリー,低�
 pc_feature	1kg未満（超軽量）	feat-weight-1kg	900g,800g,700g,1kg未満,超軽量	100	0	highlight	0.88	feather	cyan
 pc_feature	1.0〜1.5kg（軽量）	feat-weight-1-5kg	1.1kg,1.2kg,1.3kg,1.4kg,1.5kg	90	0	primary	0.72	feather	blue
 pc_feature	1.5〜2.0kg（標準）	feat-weight-2kg	1.6kg,1.7kg,1.8kg,1.9kg,2kg	80	0	secondary	0.55	scale	gray
-maker	ASUS	maker-asus	asus	50	0	secondary	0.45	laptop	blue
-maker	DELL	maker-dell	dell,alienware	50	0	secondary	0.45	monitor	blue
-maker	HP	maker-hp	hp,omen	50	0	secondary	0.45	laptop	blue
-maker	Lenovo	maker-lenovo	lenovo,thinkpad	50	0	secondary	0.45	briefcase	blue
-maker	MSI	maker-msi	msi	50	0	secondary	0.50	cpu	red
+maker	ASUS	maker-asus	asus,rog,tuf,zenbook,vivobook,proart	50	0	secondary	0.45	laptop	blue
+maker	DELL	maker-dell	dell,alienware,inspiron,xps,g-series,latitude,precision,vostro,optiplex	50	0	secondary	0.45	monitor	blue
+maker	HP	maker-hp	hp,omen,victus,pavilion,envy,elitebook,probook,zbook,spectre	50	0	secondary	0.45	laptop	blue
+maker	Lenovo	maker-lenovo	lenovo,thinkpad,ideapad,legion,loq,yoga,thinkcentre,thinkstation	50	0	secondary	0.45	briefcase	blue
+maker	MSI	maker-msi	msi,stealth,raider,titan,vector,prestige,creator,crosshair,katana	50	0	secondary	0.50	cpu	red
 maker	NEC	maker-nec	nec,lavie	50	0	secondary	0.40	building	gray
-maker	FUJITSU	maker-fujitsu	fujitsu,lifebook	50	0	secondary	0.40	building	gray
-maker	Dynabook	maker-dynabook	dynabook,toshiba	50	0	secondary	0.40	laptop	gray
+maker	FUJITSU	maker-fujitsu	fujitsu,lifebook,esprimo	50	0	secondary	0.40	building	gray
+maker	Dynabook	maker-dynabook	dynabook,toshiba,satellite	50	0	secondary	0.40	laptop	gray
+maker	MouseComputer	maker-mouse	mousecomputer,mouse,g-tune,gtune,daiv,nextgear,mousepro	50	0	secondary	0.50	mouse	red
+maker	Dospara	maker-dospara	dospara,galleria,raytrek	50	0	secondary	0.50	monitor	purple
+maker	Acer	maker-acer	acer,predator,nitro	50	0	secondary	0.45	laptop	green
+maker	Razer	maker-razer	razer,blade	50	0	highlight	0.70	sparkles	green
+maker	VAIO	maker-vaio	vaio	50	0	secondary	0.40	laptop	black
+maker	MINISFORUM	maker-minisforum	minisforum	50	0	secondary	0.45	cpu	gray
+maker	Beelink	maker-beelink	beelink	50	0	secondary	0.45	box	gray
 monitor_size	24インチ前後（標準）	monitor-24inch	23.8型,24型,24インチ,24.5型	80	0	secondary	0.72	monitor	blue
 monitor_size	27インチ（大画面）	monitor-27inch	27型,27インチ,27-inch,27inch	90	0	primary	0.84	monitor	green
 monitor_size	32インチ以上（特大）	monitor-32inch	31.5型,32型,34型,40型,43型,49型	100	0	highlight	0.96	monitor	purple

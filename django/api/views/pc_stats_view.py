@@ -1,133 +1,249 @@
 # /home/maya/shin-dev/shin-vps/django/api/views/pc_stats_view.py
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from django.db.models import Count, Q
-
-from api.models import PCProduct, PCAttribute
+from collections import defaultdict
 import re
 
+from django.db.models import Count
 
-# -------------------------
-# slug正規化（統一仕様）
-# -------------------------
+from rest_framework.decorators import (
+    api_view,
+    permission_classes
+)
+
+from rest_framework.permissions import (
+    AllowAny
+)
+
+from rest_framework.response import (
+    Response
+)
+
+from api.models import (
+    PCProduct,
+    PCAttribute
+)
+
+
+# =========================================================
+# slug normalize
+# =========================================================
 def normalize_slug(text: str) -> str:
+
     if not text:
         return ""
 
     text = text.lower()
-    text = re.sub(r'[^a-z0-9]+', '-', text)
-    text = re.sub(r'-+', '-', text)
+
+    text = re.sub(
+        r'[^a-z0-9]+',
+        '-',
+        text
+    )
+
+    text = re.sub(
+        r'-+',
+        '-',
+        text
+    )
+
     return text.strip('-')
 
 
-# -------------------------
-# GPU表示名の整形（強化版）
-# -------------------------
+# =========================================================
+# GPU display normalize
+# =========================================================
 def clean_gpu_name(raw: str) -> str:
+
     if not raw:
         return ""
 
     n = raw.strip()
 
-    # NVIDIA系
-    n = n.replace("GeForce ", "").replace("NVIDIA ", "")
+    # -----------------------------------------------------
+    # NVIDIA
+    # -----------------------------------------------------
+    n = (
+        n
+        .replace("GeForce ", "")
+        .replace("NVIDIA ", "")
+    )
 
-    # Intel系（CPU混入対策）
+    # -----------------------------------------------------
+    # Intel
+    # -----------------------------------------------------
     low = n.lower()
+
     if "intel" in low:
+
         if "arc" in low:
             return "Intel Arc"
-        # CPU系っぽいものは除外
-        if "core" in low or "processor" in low:
+
+        # CPU contamination
+        if (
+            "core" in low
+            or "processor" in low
+        ):
             return ""
+
         return "Intel"
 
-    # AMD系（簡易整形）
-    n = n.replace("Radeon ", "")
+    # -----------------------------------------------------
+    # AMD
+    # -----------------------------------------------------
+    n = n.replace(
+        "Radeon ",
+        ""
+    )
 
-    # Graphics削除
-    n = n.replace(" Graphics", "")
+    # -----------------------------------------------------
+    # Graphics suffix
+    # -----------------------------------------------------
+    n = n.replace(
+        " Graphics",
+        ""
+    )
 
-    # 空白整理
-    n = re.sub(r'\s+', ' ', n).strip()
+    # -----------------------------------------------------
+    # whitespace
+    # -----------------------------------------------------
+    n = re.sub(
+        r'\s+',
+        ' ',
+        n
+    ).strip()
 
     return n
 
 
-# -------------------------
-# API
-# -------------------------
+# =========================================================
+# Sidebar Stats API
+# =========================================================
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def pc_sidebar_stats(request):
 
-    base_qs = PCProduct.objects.filter(
-        is_active=True,
-        unified_genre="PC"
+    # =====================================================
+    # semantic attributes
+    # =====================================================
+    attrs = (
+
+        PCAttribute.objects
+
+        .filter(
+            pc_products__is_active=True,
+            pc_products__unified_genre="PC"
+        )
+
+        .annotate(
+            product_count=Count(
+                "pc_products",
+                distinct=True
+            )
+        )
+
+        .filter(
+            product_count__gt=0
+        )
+
+        .order_by(
+            "attr_type",
+            "-product_count"
+        )
     )
 
-    # -------------------------
-    # GPU（属性ベース）
-    # -------------------------
-    gpu_qs = PCAttribute.objects.filter(
-        attr_type="gpu",
-        pc_products__is_active=True,
-        pc_products__unified_genre="PC"
-    ).values("name").annotate(
-        count=Count("pc_products", distinct=True)
-    ).order_by("-count")
+    # =====================================================
+    # grouped sidebar
+    # =====================================================
+    sidebar = defaultdict(list)
 
-    gpu = []
-    seen = set()
+    seen_gpu = set()
 
-    for g in gpu_qs:
-        if g["count"] <= 0:
+    for attr in attrs:
+
+        key = attr.attr_type
+
+        # -------------------------------------------------
+        # GPU normalize
+        # -------------------------------------------------
+        if key == "gpu":
+
+            clean_name = clean_gpu_name(
+                attr.name
+            )
+
+            if not clean_name:
+                continue
+
+            slug = (
+                f"gpu-{normalize_slug(clean_name)}"
+            )
+
+            # duplicate prevention
+            if slug in seen_gpu:
+                continue
+
+            seen_gpu.add(slug)
+
+            sidebar[key].append({
+
+                "name":
+                    clean_name,
+
+                "slug":
+                    slug,
+
+                "count":
+                    attr.product_count,
+
+                "icon":
+                    attr.icon,
+
+                "color":
+                    attr.color,
+
+                "semantic_role":
+                    attr.semantic_role,
+
+                "semantic_weight":
+                    attr.semantic_weight,
+            })
+
             continue
 
-        clean_name = clean_gpu_name(g["name"])
+        # -------------------------------------------------
+        # generic semantic attributes
+        # -------------------------------------------------
+        sidebar[key].append({
 
-        # ❌ 空 or ノイズ除外
-        if not clean_name:
-            continue
+            "name":
+                attr.name,
 
-        slug = f'gpu-{normalize_slug(clean_name)}'
+            "slug":
+                attr.slug,
 
-        # 重複防止（RTX 4060 と RTX4060 等）
-        if slug in seen:
-            continue
+            "count":
+                attr.product_count,
 
-        seen.add(slug)
+            "icon":
+                attr.icon,
 
-        gpu.append({
-            "name": clean_name,
-            "slug": slug,
-            "count": g["count"]
+            "color":
+                attr.color,
+
+            "semantic_role":
+                attr.semantic_role,
+
+            "semantic_weight":
+                attr.semantic_weight,
         })
 
-    # -------------------------
-    # maker
-    # -------------------------
-    maker_qs = base_qs.values("maker").annotate(
-        count=Count("id")
-    ).order_by("-count")
+    # =====================================================
+    # limit
+    # =====================================================
+    result = {}
 
-    maker_counts = []
-    for m in maker_qs:
-        name = (m.get("maker") or "").strip()
+    for key, values in sidebar.items():
 
-        if not name:
-            continue
+        result[key] = values[:10]
 
-        maker_counts.append({
-            "name": name.upper(),
-            "maker": name,
-            "slug": f'maker-{normalize_slug(name)}',
-            "count": m["count"]
-        })
-
-    return Response({
-        "gpu": gpu[:10],
-        "maker_counts": maker_counts[:10],
-    })
+    return Response(result)

@@ -1,26 +1,81 @@
-import Link from 'next/link'
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/components/RankingEmpty.tsx
+
+/* eslint-disable @next/next/no-img-element */
+// @ts-nocheck
+
+import Link
+  from 'next/link'
 
 import styles
-  from '../page.module.css'
+  from './RankingEmpty.module.css'
 
-export default function RankingEmpty() {
+/* =========================================
+🔥 Component
+========================================= */
+
+export default function
+RankingEmpty() {
 
   return (
-    <div className={styles.empty}>
 
-      <h2>
-        ⚠️ データがありません
+    <section
+      className={
+        styles.empty
+      }
+    >
+
+      {/* ==================================
+      ICON
+      ================================== */}
+
+      <div
+        className={
+          styles.icon
+        }
+      >
+        ⚠️
+      </div>
+
+      {/* ==================================
+      TITLE
+      ================================== */}
+
+      <h2
+        className={
+          styles.title
+        }
+      >
+        データが見つかりません
       </h2>
 
-      <p>
-        semantic ranking が取得できませんでした
+      {/* ==================================
+      DESCRIPTION
+      ================================== */}
+
+      <p
+        className={
+          styles.description
+        }
+      >
+        semantic ranking data を取得できませんでした。
+        別カテゴリやランキングをお試しください。
       </p>
 
-      <Link href="/">
-        →
-        TOPへ戻る
+      {/* ==================================
+      ACTION
+      ================================== */}
+
+      <Link
+        href="/ranking"
+
+        className={
+          styles.button
+        }
+      >
+        ランキング一覧へ戻る
       </Link>
 
-    </div>
+    </section>
+
   )
 }

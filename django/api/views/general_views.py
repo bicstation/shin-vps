@@ -306,37 +306,33 @@ def pc_sidebar_stats(request):
     for attr in attrs:
 
         key = attr.attr_type
-
+        
         sidebar.setdefault(
             key,
             []
         ).append({
 
-            "name": attr.name,
+            "name":
+                attr.name,
 
-            "slug": attr.slug,
+            "slug":
+                attr.slug,
 
-            "count": attr.product_count
+            "count":
+                attr.product_count,
+
+            "icon":
+                attr.icon,
+
+            "color":
+                attr.color,
+
+            "semantic_role":
+                attr.semantic_role,
+
+            "semantic_weight":
+                attr.semantic_weight,
         })
-
-    makers = (
-
-        PCProduct.objects
-
-        .filter(
-            is_active=True
-        )
-
-        .values('maker')
-
-        .annotate(
-            count=Count('maker')
-        )
-
-        .order_by('-count')
-    )
-
-    sidebar["makers"] = makers
 
     return Response(
         sidebar
@@ -442,26 +438,18 @@ def get_related_pc_products(
         ).first()
     )
 
-    # ------------------------------------------------------
-    # Device Detection
-    # ------------------------------------------------------
-    def is_laptop(product):
+    base_device = (
 
-        name = (
-            product.name or ""
-        ).lower()
+        base.attributes.filter(
+            attr_type="device"
+        ).first()
+    )
 
-        return (
+    base_maker = (
 
-            "ノート" in name
-            or "laptop" in name
-            or "book" in name
-            or "zenbook" in name
-            or "proart" in name
-        )
-
-    base_is_laptop = (
-        is_laptop(base)
+        base.attributes.filter(
+            attr_type="maker"
+        ).first()
     )
 
     # ------------------------------------------------------
@@ -470,6 +458,11 @@ def get_related_pc_products(
     def get_neighbor_gpu_slugs(slug):
 
         mapping = {
+
+            "gpu-rtx-4050": [
+                "gpu-rtx-4050",
+                "gpu-rtx-4060",
+            ],
 
             "gpu-rtx-4060": [
                 "gpu-rtx-4050",
@@ -522,7 +515,7 @@ def get_related_pc_products(
 
         .order_by(
             "-spec_score"
-        )[:50]
+        )[:150]
     )
 
     # ------------------------------------------------------
@@ -532,20 +525,50 @@ def get_related_pc_products(
 
         score = 0
 
-        # Price
+        matched_attributes = []
+
+        # ==================================================
+        # Device Semantic
+        # ==================================================
+        if base_device:
+
+            if product.attributes.filter(
+                slug=base_device.slug
+            ).exists():
+
+                score += 0.25
+
+                matched_attributes.append(
+                    base_device.slug
+                )
+
+            else:
+
+                # ------------------------------------------
+                # Soft semantic fallback
+                # ------------------------------------------
+                score -= 0.15
+
+        # ==================================================
+        # Price Similarity
+        # ==================================================
         if base.price and product.price:
 
             diff = abs(
                 product.price - base.price
             ) / base.price
 
-            if diff <= 0.1:
-                score += 0.4
+            if diff <= 0.10:
 
-            elif diff <= 0.2:
-                score += 0.2
+                score += 0.20
 
-        # GPU
+            elif diff <= 0.20:
+
+                score += 0.10
+
+        # ==================================================
+        # GPU Exact Match
+        # ==================================================
         if (
 
             base_gpu
@@ -555,8 +578,15 @@ def get_related_pc_products(
             ).exists()
         ):
 
-            score += 0.3
+            score += 0.20
 
+            matched_attributes.append(
+                base_gpu.slug
+            )
+
+        # ==================================================
+        # GPU Neighbor Match
+        # ==================================================
         elif (
 
             base_gpu
@@ -568,9 +598,11 @@ def get_related_pc_products(
             ).exists()
         ):
 
-            score += 0.2
+            score += 0.12
 
-        # Usage
+        # ==================================================
+        # Usage Semantic
+        # ==================================================
         if (
 
             base_usage
@@ -580,13 +612,36 @@ def get_related_pc_products(
             ).exists()
         ):
 
-            score += 0.2
+            score += 0.20
 
-        # Spec Score
+            matched_attributes.append(
+                base_usage.slug
+            )
+
+        # ==================================================
+        # Maker Semantic
+        # ==================================================
+        if (
+
+            base_maker
+
+            and product.attributes.filter(
+                slug=base_maker.slug
+            ).exists()
+        ):
+
+            score += 0.10
+
+            matched_attributes.append(
+                base_maker.slug
+            )
+
+        # ==================================================
+        # Spec Score Similarity
+        # ==================================================
         if (
 
             base.spec_score
-
             and product.spec_score
         ):
 
@@ -595,81 +650,80 @@ def get_related_pc_products(
                 - base.spec_score
             ) / base.spec_score
 
-            if diff <= 0.1:
-                score += 0.1
+            if diff <= 0.10:
+
+                score += 0.10
 
         return round(
             score,
             2
-        )
+        ), matched_attributes
 
     # ------------------------------------------------------
     # Candidate Selection
     # ------------------------------------------------------
-    strict = []
-
-    loose = []
+    scored = []
 
     for product in candidates:
 
-        # Device Match
-        if (
-            is_laptop(product)
-            != base_is_laptop
-        ):
-            continue
-
+        # ==================================================
+        # Skip invalid price
+        # ==================================================
         if (
             not product.price
             or not base.price
         ):
             continue
 
+        # ==================================================
+        # Price Range Filter
+        # ==================================================
         diff = abs(
             product.price - base.price
         ) / base.price
 
-        score = calc_score(
-            product
+        if diff > 0.35:
+            continue
+
+        # ==================================================
+        # Calculate Semantic Score
+        # ==================================================
+        score, matched_attributes = (
+            calc_score(product)
         )
 
-        # --------------------------------------------------
-        # Strict
-        # --------------------------------------------------
-        if (
-            diff <= 0.2
-            and score >= 0.5
-        ):
+        # ==================================================
+        # Soft Semantic Threshold
+        # ==================================================
+        if score < 0.20:
+            continue
 
-            strict.append(
-                product
-            )
+        product._semantic_score = score
 
-        # --------------------------------------------------
-        # Loose
-        # --------------------------------------------------
-        elif (
-            diff <= 0.3
-            and score >= 0.4
-        ):
+        product._matched_attributes = (
+            matched_attributes
+        )
 
-            loose.append(
-                product
-            )
+        scored.append(product)
 
     # ------------------------------------------------------
-    # Merge
+    # Sort Results
     # ------------------------------------------------------
-    results = strict + loose
-
     results = sorted(
-        results,
-        key=lambda x: calc_score(x),
+
+        scored,
+
+        key=lambda x: (
+            x._semantic_score,
+            x.spec_score or 0
+        ),
+
         reverse=True
+
     )[:limit]
 
     # ------------------------------------------------------
-    # Serializer
+    # Serialize
     # ------------------------------------------------------
     serializer = (
         PCProductSerializer(
@@ -678,6 +732,19 @@ def get_related_pc_products(
         )
     )
 
-    return Response(
-        serializer.data
-    )
+    data = serializer.data
+
+    # ------------------------------------------------------
+    # Semantic Recommendation Metadata
+    # ------------------------------------------------------
+    for i, item in enumerate(data):
+
+        item["similarity_score"] = (
+            results[i]._semantic_score
+        )
+
+        item["matched_attributes"] = (
+            results[i]._matched_attributes
+        )
+
+    return Response(data)

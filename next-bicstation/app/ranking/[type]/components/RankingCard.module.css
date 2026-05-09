@@ -1,0 +1,300 @@
+/* RankingCard.module.css */
+
+/* =========================================
+🔥 CARD
+========================================= */
+
+.card {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  height: 100%;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(15,23,42,0.92),
+      rgba(15,23,42,0.82)
+    );
+
+  border:
+    1px solid rgba(148,163,184,0.10);
+
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+
+  box-shadow:
+    0 18px 48px rgba(0,0,0,0.24);
+}
+
+.card:hover {
+  transform:
+    translateY(-4px);
+
+  border-color:
+    rgba(59,130,246,0.26);
+
+  box-shadow:
+    0 24px 64px rgba(0,0,0,0.34);
+}
+
+/* =========================================
+🔥 IMAGE
+========================================= */
+
+.imageLink {
+  display: block;
+
+  text-decoration: none;
+}
+
+.imageWrap {
+  position: relative;
+
+  overflow: hidden;
+
+  aspect-ratio: 16 / 10;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(30,41,59,0.95),
+      rgba(15,23,42,1)
+    );
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition:
+    transform 0.28s ease,
+    opacity 0.28s ease;
+}
+
+.card:hover .image {
+  transform:
+    scale(1.04);
+
+  opacity: 0.96;
+}
+
+/* =========================================
+🔥 RANK BADGE
+========================================= */
+
+.rankBadge {
+  position: absolute;
+
+  top: 16px;
+  left: 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 48px;
+  min-height: 36px;
+
+  padding:
+    0
+    12px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(15,23,42,0.88);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  backdrop-filter:
+    blur(10px);
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 900;
+
+  letter-spacing: -0.02em;
+}
+
+/* =========================================
+🔥 BODY
+========================================= */
+
+.body {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  padding:
+    24px
+    22px
+    24px;
+}
+
+/* =========================================
+🔥 TITLE
+========================================= */
+
+.titleLink {
+  text-decoration: none;
+}
+
+.title {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 800;
+
+  line-height: 1.45;
+
+  letter-spacing: -0.03em;
+
+  color: #ffffff;
+
+  transition:
+    opacity 0.2s ease;
+}
+
+.titleLink:hover .title {
+  opacity: 0.9;
+}
+
+/* =========================================
+🔥 MAKER
+========================================= */
+
+.maker {
+  color: #94a3b8;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  letter-spacing: 0.01em;
+}
+
+/* =========================================
+🔥 META
+========================================= */
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  margin-top: auto;
+}
+
+/* =========================================
+🔥 PRICE
+========================================= */
+
+.price {
+  color: #ffffff;
+
+  font-size: 22px;
+  font-weight: 900;
+
+  letter-spacing: -0.03em;
+}
+
+/* =========================================
+🔥 SCORE
+========================================= */
+
+.score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 34px;
+
+  padding:
+    0
+    14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(59,130,246,0.10);
+
+  border:
+    1px solid rgba(59,130,246,0.16);
+
+  color: #bfdbfe;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  letter-spacing: 0.02em;
+}
+
+/* =========================================
+🔥 RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .card {
+    border-radius: 22px;
+  }
+
+  .rankBadge {
+    top: 12px;
+    left: 12px;
+
+    min-width: 42px;
+    min-height: 32px;
+
+    font-size: 12px;
+  }
+
+  .body {
+    gap: 14px;
+
+    padding:
+      20px
+      18px
+      20px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .maker {
+    font-size: 12px;
+  }
+
+  .meta {
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 12px;
+  }
+
+  .price {
+    font-size: 20px;
+  }
+
+  .score {
+    min-height: 32px;
+
+    font-size: 11px;
+  }
+}

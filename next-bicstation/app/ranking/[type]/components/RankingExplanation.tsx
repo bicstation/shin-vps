@@ -1,71 +1,123 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/components/RankingExplanation.tsx
+
+/* eslint-disable @next/next/no-img-element */
+// @ts-nocheck
+
 import styles
-  from '../page.module.css'
+  from './RankingExplanation.module.css'
+
+/* =========================================
+🔥 Types
+========================================= */
 
 type Props = {
+
   products: any[]
 }
 
-export default function RankingExplanation({
+/* =========================================
+🔥 Component
+========================================= */
+
+export default function
+RankingExplanation({
   products,
 }: Props) {
 
-  // =====================================
+  // ======================================
   // Empty
-  // =====================================
+  // ======================================
 
   if (!products?.length) {
     return null
   }
 
-  // =====================================
-  // Helpers
-  // =====================================
+  // ======================================
+  // Semantic Scan
+  // ======================================
 
-  const joinedText = JSON.stringify(
-    products
-  ).toLowerCase()
+  const joinedText =
+    JSON.stringify(
+      products
+    ).toLowerCase()
 
-  // =====================================
-  // Semantic Detection
-  // =====================================
+  // ======================================
+  // Detection
+  // ======================================
 
   const has4090 =
-    joinedText.includes('4090')
+    joinedText.includes(
+      '4090'
+    )
 
   const has4080 =
-    joinedText.includes('4080')
+    joinedText.includes(
+      '4080'
+    )
 
   const has4070 =
-    joinedText.includes('4070')
+    joinedText.includes(
+      '4070'
+    )
 
   const hasAi =
-    joinedText.includes('ai')
-    || joinedText.includes('stable diffusion')
+
+    joinedText.includes(
+      'ai'
+    )
+
+    || joinedText.includes(
+      'stable diffusion'
+    )
 
   const hasCreator =
-    joinedText.includes('creator')
-    || joinedText.includes('davinci')
-    || joinedText.includes('premiere')
+
+    joinedText.includes(
+      'creator'
+    )
+
+    || joinedText.includes(
+      'davinci'
+    )
+
+    || joinedText.includes(
+      'premiere'
+    )
 
   const hasGaming =
-    joinedText.includes('gaming')
-    || joinedText.includes('fps')
+
+    joinedText.includes(
+      'gaming'
+    )
+
+    || joinedText.includes(
+      'fps'
+    )
 
   const highMemory =
-    joinedText.includes('64gb')
-    || joinedText.includes('32gb')
 
-  // =====================================
-  // Insight Cards
-  // =====================================
+    joinedText.includes(
+      '64gb'
+    )
+
+    || joinedText.includes(
+      '32gb'
+    )
+
+  // ======================================
+  // Insights
+  // ======================================
 
   const insights = []
 
-  // -------------------------------------
-  // GPU Insight
-  // -------------------------------------
+  // --------------------------------------
+  // GPU
+  // --------------------------------------
 
-  if (has4090 || has4080) {
+  if (
+    has4090
+    || has4080
+  ) {
 
     insights.push({
 
@@ -73,14 +125,15 @@ export default function RankingExplanation({
         '🎮',
 
       title:
-        '高性能GPUモデルが中心',
+        '高性能GPUモデル中心',
 
       description:
-        'RTX4080以上の構成が多く、高FPS gamingや重量級ゲームに強いランキングです。',
-
+        'RTX4080以上の構成が多く、高FPS gaming や重量級ゲーム用途に強い構成が集まっています。',
     })
 
-  } else if (has4070) {
+  } else if (
+    has4070
+  ) {
 
     insights.push({
 
@@ -92,14 +145,12 @@ export default function RankingExplanation({
 
       description:
         'RTX4070クラスが中心で、gaming・動画編集・AI用途をバランス良く対応します。',
-
     })
-
   }
 
-  // -------------------------------------
-  // AI Insight
-  // -------------------------------------
+  // --------------------------------------
+  // AI
+  // --------------------------------------
 
   if (
     hasAi
@@ -113,18 +164,16 @@ export default function RankingExplanation({
         '🤖',
 
       title:
-        'AI画像生成にも強い',
+        'AI用途にも強い',
 
       description:
-        'VRAM容量が大きいGPUが多く、Stable DiffusionやローカルAI用途にも適しています。',
-
+        'VRAM容量の大きいGPU構成が多く、Stable Diffusion やローカルAI用途にも適しています。',
     })
-
   }
 
-  // -------------------------------------
-  // Creator Insight
-  // -------------------------------------
+  // --------------------------------------
+  // Creator
+  // --------------------------------------
 
   if (
     hasCreator
@@ -137,20 +186,20 @@ export default function RankingExplanation({
         '🎬',
 
       title:
-        '動画編集向け構成が多い',
+        '動画編集向け構成',
 
       description:
-        '32GB以上メモリ搭載モデルが多く、4K編集や配信用途にも向いています。',
-
+        '32GB以上メモリ搭載モデルが多く、4K編集や配信ワークロードにも向いています。',
     })
-
   }
 
-  // -------------------------------------
-  // Gaming Insight
-  // -------------------------------------
+  // --------------------------------------
+  // Gaming
+  // --------------------------------------
 
-  if (hasGaming) {
+  if (
+    hasGaming
+  ) {
 
     insights.push({
 
@@ -161,17 +210,17 @@ export default function RankingExplanation({
         '高FPS gaming向け',
 
       description:
-        '144fps〜240fpsクラスのgaming用途を想定した高性能モデルが中心です。',
-
+        '144fps〜240fpsクラスの gaming を想定した高性能モデルが中心です。',
     })
-
   }
 
-  // -------------------------------------
+  // --------------------------------------
   // Fallback
-  // -------------------------------------
+  // --------------------------------------
 
-  if (!insights.length) {
+  if (
+    !insights.length
+  ) {
 
     insights.push({
 
@@ -179,120 +228,78 @@ export default function RankingExplanation({
         '💡',
 
       title:
-        '性能重視の人気構成',
+        '人気構成を中心に選定',
 
       description:
         '用途別に人気の高いおすすめ構成を中心にランキング化しています。',
-
     })
-
   }
 
   return (
 
-    <section
+    <div
       className={
-        styles.explanation
+        styles.grid
       }
     >
 
-      {/* =================================
-      HEADER
-      ================================= */}
+      {insights.map(
+        (item) => (
 
-      <div
-        className={
-          styles.sectionHeader
-        }
-      >
-
-        <span
-          className={
-            styles.sectionLabel
-          }
-        >
-          WHY THIS RANKING
-        </span>
-
-        <h2>
-          なぜこのランキングが人気？
-        </h2>
-
-        <p
-          className={
-            styles.sectionDescription
-          }
-        >
-          このランキングで人気な理由や、
-          他ランキングとの違いを
-          わかりやすく整理しています。
-        </p>
-
-      </div>
-
-      {/* =================================
-      INSIGHT GRID
-      ================================= */}
-
-      <div
-        className={
-          styles.explanationGrid
-        }
-      >
-
-        {insights.map((item) => (
-
-          <div
+          <article
             key={item.title}
 
             className={
-              styles.insightCard
+              styles.card
             }
           >
 
-            {/* ===========================
+            {/* ============================
             ICON
-            =========================== */}
+            ============================ */}
 
             <div
               className={
-                styles.insightIcon
+                styles.icon
               }
             >
               {item.icon}
             </div>
 
-            {/* ===========================
-            TITLE
-            =========================== */}
+            {/* ============================
+            BODY
+            ============================ */}
 
             <div
               className={
-                styles.insightTitle
+                styles.body
               }
             >
-              {item.title}
+
+              <h3
+                className={
+                  styles.title
+                }
+              >
+                {item.title}
+              </h3>
+
+              <p
+                className={
+                  styles.description
+                }
+              >
+                {item.description}
+              </p>
+
             </div>
 
-            {/* ===========================
-            DESCRIPTION
-            =========================== */}
+          </article>
 
-            <div
-              className={
-                styles.insightDescription
-              }
-            >
-              {item.description}
-            </div>
+        )
+      )}
 
-          </div>
-
-        ))}
-
-      </div>
-
-    </section>
+    </div>
 
   )
 }

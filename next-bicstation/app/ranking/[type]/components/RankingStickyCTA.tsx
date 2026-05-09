@@ -1,114 +1,84 @@
-// /app/ranking/[type]/components/RankingStickyCTA.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/components/RankingStickyCTA.tsx
 
-'use client'
+/* eslint-disable @next/next/no-img-element */
+// @ts-nocheck
 
 import Link
   from 'next/link'
 
 import styles
-  from '../page.module.css'
+  from './RankingStickyCTA.module.css'
+
+/* =========================================
+🔥 Types
+========================================= */
 
 type Props = {
-  type: string
+
+  primaryHref?: string
+
+  primaryLabel?: string
+
+  secondaryHref?: string
+
+  secondaryLabel?: string
 }
 
-export default function RankingStickyCTA({
-  type,
+/* =========================================
+🔥 Component
+========================================= */
+
+export default function
+RankingStickyCTA({
+
+  primaryHref =
+    '/pc-finder',
+
+  primaryLabel =
+    'PC診断を試す',
+
+  secondaryHref =
+    '/ranking',
+
+  secondaryLabel =
+    'ランキング一覧',
+
 }: Props) {
-
-  // =====================================
-  // Context CTA
-  // =====================================
-
-  const contextualCopy: Record<
-    string,
-    {
-      primary: string
-      secondary: string
-    }
-  > = {
-
-    'usage-gaming': {
-
-      primary:
-        '🎮 gaming構成を比較',
-
-      secondary:
-        '🎯 FPS向けPC診断',
-
-    },
-
-    'usage-ai': {
-
-      primary:
-        '⚡ AI向け構成を比較',
-
-      secondary:
-        '🧠 AI用途PC診断',
-
-    },
-
-    'usage-creator': {
-
-      primary:
-        '🎬 編集向け構成を比較',
-
-      secondary:
-        '🎯 creator向け診断',
-
-    },
-
-  }
-
-  const copy =
-
-    contextualCopy[type]
-    || {
-
-      primary:
-        '🔥 他のランキングも比較',
-
-      secondary:
-        '🎯 自分に合うPCを探す',
-
-    }
 
   return (
 
     <div
       className={
-        styles.stickyCTA
+        styles.sticky
       }
     >
 
-      {/* ================================
+      {/* ==================================
       PRIMARY
-      semantic continuation
-      ================================ */}
+      ================================== */}
 
       <Link
-        href="/ranking"
+        href={primaryHref}
 
         className={
-          styles.stickyPrimary
+          styles.primary
         }
       >
-        {copy.primary}
+        {primaryLabel}
       </Link>
 
-      {/* ================================
+      {/* ==================================
       SECONDARY
-      decision support
-      ================================ */}
+      ================================== */}
 
       <Link
-        href="/pc-finder"
+        href={secondaryHref}
 
         className={
-          styles.stickySecondary
+          styles.secondary
         }
       >
-        {copy.secondary}
+        {secondaryLabel}
       </Link>
 
     </div>

@@ -1,0 +1,135 @@
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/components/RankingStickyCTA.module.css */
+
+
+/* =========================================
+🔥 STICKY
+========================================= */
+
+.sticky {
+  position: fixed;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 120;
+
+  display: none;
+  align-items: center;
+
+  gap: 12px;
+
+  padding:
+    14px
+    16px;
+
+  background:
+    rgba(15,23,42,0.92);
+
+  border-top:
+    1px solid rgba(255,255,255,0.08);
+
+  backdrop-filter:
+    blur(18px);
+
+  box-shadow:
+    0 -12px 42px rgba(0,0,0,0.32);
+}
+
+/* =========================================
+🔥 PRIMARY
+========================================= */
+
+.primary {
+  flex: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 54px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3b82f6,
+      #2563eb
+    );
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 900;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.primary:hover {
+  transform:
+    translateY(-1px);
+
+  opacity: 0.96;
+}
+
+/* =========================================
+🔥 SECONDARY
+========================================= */
+
+.secondary {
+  flex: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 54px;
+
+  border-radius: 18px;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  border:
+    1px solid rgba(255,255,255,0.10);
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.secondary:hover {
+  transform:
+    translateY(-1px);
+
+  background:
+    rgba(255,255,255,0.08);
+
+  border-color:
+    rgba(255,255,255,0.18);
+}
+
+/* =========================================
+🔥 MOBILE ONLY
+========================================= */
+
+@media (max-width: 768px) {
+
+  .sticky {
+    display: flex;
+  }
+}
+

@@ -1,82 +1,113 @@
-// /shared/lib/domain/product/transform.ts
-// @ts-nocheck
 
-// # テキスト短縮
-const shorten = (text: string = '', max = 40) => {
-  if (!text) return 'おすすめ商品';
-  return text.length > max ? text.slice(0, max) + '...' : text;
-};
+import {
 
-// # ラベル変換
-const convertLabel = (label?: string) => {
-  if (!label) return '';
+  resolveSemanticPresentations,
 
-  if (label.includes('迷ったら')) return '👑 人気No.1';
-  if (label.includes('ハイエンド')) return '🚀 ハイスペック';
-  if (label.includes('ゲーミング')) return '🎮 ゲーム最強';
-  if (label.includes('コスパ')) return '💰 コスパ最強';
+} from '@/shared/lib/semantic'
 
-  return label;
-};
+/* =========================================
+🔥 Main Transform
+========================================= */
 
-// # タグ正規化
-const normalizeTags = (tags?: any) => {
-  if (!Array.isArray(tags)) return [];
-  return tags.filter(Boolean);
-};
+export const transformProduct = (
+  p: any
+) => {
 
-// # 価格
-const normalizePrice = (price?: any) => {
-  if (!price || isNaN(price)) return 0;
-  return Number(price);
-};
+  if (!p) {
+    return null
+  }
 
-// # URL
-const normalizeUrl = (url?: string) => {
-  if (!url) return '';
-  return url;
-};
+  // ======================================
+  // tags
+  // ======================================
 
-/**
- * # メイン変換
- */
-export const transformProduct = (p: any) => {
-  if (!p) return null;
+  const tags =
+    normalizeTags(
+      p.tags
+    )
 
-  const tags = normalizeTags(p.tags);
+  // ======================================
+  // matched semantics
+  // ======================================
+
+  const matched_attributes =
+
+    Array.isArray(
+      p.matched_attributes
+    )
+
+      ? p.matched_attributes
+
+      : []
+
+  // ======================================
+  // semantic presentations
+  // ======================================
+
+  const recommendation_reasons =
+
+    resolveSemanticPresentations(
+      matched_attributes
+    )
+
+  // ======================================
+  // return
+  // ======================================
 
   return {
+
     id: p.id,
 
-    // # 一意ID
-    unique_id: p.unique_id || String(p.id),
+    unique_id:
+      p.unique_id
+      || String(p.id),
 
-    // # タイトル
-    title: p.title || 'おすすめ商品',
-    shortTitle: shorten(p.title),
+    title:
+      p.title
+      || 'おすすめ商品',
 
-    // 🔥 画像（そのまま使う）
-    image: p.image || '/no-image.png',
+    shortTitle:
+      shorten(
+        p.title
+      ),
 
-    // # 価格
-    price: normalizePrice(p.price),
+    image:
+      p.image
+      || '/no-image.png',
 
-    // # URL
-    url: normalizeUrl(p.url),
+    price:
+      normalizePrice(
+        p.price
+      ),
 
-    // # ラベル
-    label: p.label || '',
-    displayLabel: convertLabel(p.label),
+    url:
+      normalizeUrl(
+        p.url
+      ),
 
-    // # タグ
+    label:
+      p.label || '',
+
+    displayLabel:
+      convertLabel(
+        p.label
+      ),
+
     tags,
-    mainTag: tags[0] || '',
 
-    // # スコア
-    rankingScore: p.ranking_score ?? 0,
-  };
-};
+    mainTag:
+      tags[0] || '',
 
-export const transformProducts = (list: any[] = []) => {
-  return list.map(transformProduct).filter(Boolean);
-};
+    rankingScore:
+      p.ranking_score ?? 0,
+
+    // ====================================
+    // semantic
+    // ====================================
+
+    matched_attributes,
+
+    recommendation_reasons,
+  }
+}
+

@@ -1,65 +1,116 @@
-// /app/ranking/[type]/components/RankingTrustSection.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/components/RankingTrustSection.tsx
+
+/* eslint-disable @next/next/no-img-element */
+// @ts-nocheck
 
 import styles
-  from '../page.module.css'
+  from './RankingTrustSection.module.css'
 
-type Props = {
-  type: string
+/* =========================================
+🔥 Types
+========================================= */
+
+type TrustItem = {
+
+  title: string
+
+  description: string
+
+  icon?: string
 }
 
-export default function RankingTrustSection({
-  type,
+type Props = {
+
+  items: TrustItem[]
+}
+
+/* =========================================
+🔥 Component
+========================================= */
+
+export default function
+RankingTrustSection({
+  items,
 }: Props) {
+
+  // ======================================
+  // Empty
+  // ======================================
+
+  if (!items?.length) {
+    return null
+  }
 
   return (
 
-    <section
+    <div
       className={
-        styles.trustSection
+        styles.grid
       }
     >
 
-      <div
-        className={
-          styles.trustGrid
-        }
-      >
+      {items.map(
+        (item) => (
 
-        <div
-          className={
-            styles.trustCard
-          }
-        >
-          ✔ 初心者でも比較しやすい
-        </div>
+          <article
+            key={item.title}
 
-        <div
-          className={
-            styles.trustCard
-          }
-        >
-          ✔ 用途別におすすめを整理
-        </div>
+            className={
+              styles.card
+            }
+          >
 
-        <div
-          className={
-            styles.trustCard
-          }
-        >
-          ✔ GPU性能も考慮済み
-        </div>
+            {/* =============================
+            ICON
+            ============================= */}
 
-        <div
-          className={
-            styles.trustCard
-          }
-        >
-          ✔ コスパも比較可能
-        </div>
+            {!!item.icon && (
 
-      </div>
+              <div
+                className={
+                  styles.icon
+                }
+              >
+                {item.icon}
+              </div>
 
-    </section>
+            )}
+
+            {/* =============================
+            BODY
+            ============================= */}
+
+            <div
+              className={
+                styles.body
+              }
+            >
+
+              <h3
+                className={
+                  styles.title
+                }
+              >
+                {item.title}
+              </h3>
+
+              <p
+                className={
+                  styles.description
+                }
+              >
+                {item.description}
+              </p>
+
+            </div>
+
+          </article>
+
+        )
+      )}
+
+    </div>
 
   )
 }
+

@@ -1,109 +1,61 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/components/RankingNavigation.tsx
+
+/* eslint-disable @next/next/no-img-element */
+// @ts-nocheck
+
 import Link
   from 'next/link'
 
 import styles
-  from '../page.module.css'
+  from './RankingNavigation.module.css'
 
-export default function RankingNavigation() {
+/* =========================================
+🔥 Types
+========================================= */
 
-  // =====================================
-  // Navigation Items
-  // =====================================
+type NavigationItem = {
 
-  const navigationItems = [
+  title: string
 
-    {
-      title:
-        '🏠 TOPページへ戻る',
+  description?: string
 
-      description:
-        '用途別比較や人気ランキング一覧へ戻ります。',
+  href: string
 
-      href:
-        '/',
-    },
+  actionLabel?: string
+}
 
-    {
-      title:
-        '📊 他のランキングを見る',
+type Props = {
 
-      description:
-        'AI・gaming・動画編集・コスパなどを比較。',
+  items: NavigationItem[]
+}
 
-      href:
-        '/ranking',
-    },
+/* =========================================
+🔥 Component
+========================================= */
 
-    {
-      title:
-        '🎯 PC診断を試す',
+export default function
+RankingNavigation({
+  items,
+}: Props) {
 
-      description:
-        '用途に合うおすすめ構成をAIベースで探索。',
+  // ======================================
+  // Empty
+  // ======================================
 
-      href:
-        '/pc-finder',
-    },
-
-  ]
+  if (!items?.length) {
+    return null
+  }
 
   return (
 
-    <section
+    <div
       className={
-        styles.bottomNav
+        styles.grid
       }
     >
 
-      {/* =================================
-      HEADER
-      ================================= */}
-
-      <div
-        className={
-          styles.bottomNavHeader
-        }
-      >
-
-        <div
-          className={
-            styles.bottomNavLabel
-          }
-        >
-          CONTINUE EXPLORING
-        </div>
-
-        <h2
-          className={
-            styles.bottomNavTitle
-          }
-        >
-          他の比較も見てみる
-        </h2>
-
-        <p
-          className={
-            styles.bottomNavDescription
-          }
-        >
-          ranking・finder・semantic recommendation
-          を横断しながら、
-          自分に合う構成を比較できます。
-        </p>
-
-      </div>
-
-      {/* =================================
-      GRID
-      ================================= */}
-
-      <div
-        className={
-          styles.bottomNavGrid
-        }
-      >
-
-        {navigationItems.map((item) => (
+      {items.map(
+        (item) => (
 
           <Link
             key={item.href}
@@ -111,53 +63,60 @@ export default function RankingNavigation() {
             href={item.href}
 
             className={
-              styles.bottomNavCard
+              styles.card
             }
           >
 
-            {/* ===========================
+            {/* =============================
             TITLE
-            =========================== */}
+            ============================= */}
 
             <div
               className={
-                styles.bottomNavCardTitle
+                styles.title
               }
             >
               {item.title}
             </div>
 
-            {/* ===========================
+            {/* =============================
             DESCRIPTION
-            =========================== */}
+            ============================= */}
 
-            <div
-              className={
-                styles.bottomNavCardDescription
-              }
-            >
-              {item.description}
-            </div>
+            {!!item.description && (
 
-            {/* ===========================
+              <div
+                className={
+                  styles.description
+                }
+              >
+                {item.description}
+              </div>
+
+            )}
+
+            {/* =============================
             ACTION
-            =========================== */}
+            ============================= */}
 
             <div
               className={
-                styles.bottomNavCardAction
+                styles.action
               }
             >
-              比較を続ける →
+              {
+                item.actionLabel
+                || '比較を続ける →'
+              }
             </div>
 
           </Link>
 
-        ))}
+        )
+      )}
 
-      </div>
-
-    </section>
+    </div>
 
   )
 }
+

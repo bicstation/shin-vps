@@ -3,44 +3,101 @@ from django.db import models
 from django.utils.timezone import now
 
 class PCAttribute(models.Model):
-    """
-    CPU、メモリ、NPUなどのスペック情報、およびソフトのライセンス形態、
-    さらにはアダルト属性までを一元管理するマスターモデル。
-    is_adult フラグによってドメイン間の汚染を物理的に防ぐ。
-    """
-    TYPE_CHOICES = [
-        ('cpu', 'CPU'),
-        ('memory', 'メモリ'),
-        ('storage', 'ストレージ'),
-        ('gpu', 'グラフィック'),
-        ('npu', 'AIプロセッサ(NPU)'),
-        ('os', 'OS'),
-        ('software', 'ソフトウェア種別'),  # セキュリティ, 会計, 編集など
-        ('license', 'ライセンス形態'),    # サブスク, 買い切りなど
-        ('actor_type', '出演者タイプ'),    # アダルト用拡張
-        ('genre', '作品ジャンル'),        # アダルト用拡張
-    ]
-    
-    attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES)
-    name = models.CharField('表示名', max_length=100)
-    slug = models.SlugField('スラッグ', max_length=100, unique=True)
-    
-    search_keywords = models.TextField(
-        '検索キーワード', 
-        blank=True, 
-        help_text="検索時に使用する別名です。複数の場合はカンマ(,)で区切ってください。"
-    )
-    order = models.PositiveIntegerField('並び順', default=0, help_text="数字が小さいほど上に表示されます")
 
-    # =========================
+    """
+    CPU、GPU、メモリ、用途などの
+    semantic attribute を管理する
+    PC専用マスターモデル
+    """
+
+    TYPE_CHOICES = [
+
+        ('cpu', 'CPU'),
+
+        ('memory', 'メモリ'),
+
+        ('storage', 'ストレージ'),
+
+        ('gpu', 'GPU'),
+
+        ('maker', 'メーカー'),
+
+        ('usage', '用途'),
+
+        ('pc_feature', 'PC特徴'),
+
+        ('display', 'ディスプレイ'),
+
+        ('resolution', '解像度'),
+
+        ('refresh_rate', 'リフレッシュレート'),
+
+        ('panel_type', 'パネル種別'),
+
+        ('npu', 'AIプロセッサ(NPU)'),
+
+        ('os', 'OS'),
+
+        ('software', 'ソフトウェア種別'),
+
+        ('license', 'ライセンス形態'),
+    ]
+
+    attr_type = models.CharField(
+        '属性タイプ',
+        max_length=20,
+        choices=TYPE_CHOICES
+    )
+
+    name = models.CharField(
+        '表示名',
+        max_length=100
+    )
+
+    slug = models.SlugField(
+        'スラッグ',
+        max_length=100,
+        unique=True
+    )
+
+    search_keywords = models.TextField(
+        '検索キーワード',
+        blank=True,
+        help_text=(
+            "検索時に使用する別名です。"
+            "複数の場合はカンマ区切り。"
+        )
+    )
+
+    is_adult = models.BooleanField(
+        'アダルト属性フラグ',
+        default=False,
+        db_index=True,
+        help_text=(
+            "共通 semantic TSV 用。"
+            "通常のPC属性は False。"
+        )
+    )
+
+
+    order = models.PositiveIntegerField(
+        '並び順',
+        default=0,
+        help_text="数字が小さいほど上"
+    )
+
+    # =====================================================
     # Semantic Metadata
-    # =========================
+    # =====================================================
     semantic_role = models.CharField(
         'セマンティック役割',
         max_length=50,
         blank=True,
         default="",
-        help_text="primary / secondary / highlight など"
+        help_text=(
+            "primary / secondary / "
+            "highlight / brand"
+        )
     )
 
     semantic_weight = models.FloatField(
@@ -63,16 +120,29 @@ class PCAttribute(models.Model):
         blank=True,
         default="",
         help_text="frontend semantic color"
-    )    
+    )
 
     class Meta:
-        verbose_name = 'スペック属性'
-        verbose_name_plural = 'スペック属性一覧'
-        ordering = ['attr_type', 'order', 'name']
 
+        verbose_name = 'スペック属性'
+
+        verbose_name_plural = 'スペック属性一覧'
+
+        ordering = [
+            'attr_type',
+            'order',
+            'name'
+        ]
+
+    # =====================================================
+    # SAFE STRING
+    # =====================================================
     def __str__(self):
-        domain = "🔞" if self.is_adult else "💻"
-        return f"{domain} [{self.get_attr_type_display()}] {self.name}"
+
+        return (
+            f"[{self.attr_type}] "
+            f"{self.name}"
+        )
 
 
 class PCProduct(models.Model):
@@ -113,14 +183,53 @@ class PCProduct(models.Model):
     created_at = models.DateTimeField(default=now, verbose_name="登録日時")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新日時")
 
+    # =========================================================
     # === 2. PCスペック用解析カラム ===
-    memory_gb = models.IntegerField(null=True, blank=True, verbose_name="メモリ(GB数値)")
-    storage_gb = models.IntegerField(null=True, blank=True, verbose_name="ストレージ(GB数値)")
-    npu_tops = models.FloatField(null=True, blank=True, verbose_name="NPU性能(TOPS)")
-    
-    cpu_model = models.CharField(max_length=255, null=True, blank=True, verbose_name="CPUモデル詳細")
-    gpu_model = models.CharField(max_length=255, null=True, blank=True, verbose_name="GPUモデル詳細")
-    
+    # =========================================================
+
+    memory_gb = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="メモリ(GB数値)"
+    )
+
+    storage_gb = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="ストレージ(GB数値)"
+    )
+
+    # =========================================================
+    # NEW: 重量(kg)
+    # semantic pc_feature 用
+    # =========================================================
+    weight_kg = models.FloatField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="重量(kg)"
+    )
+
+    npu_tops = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="NPU性能(TOPS)"
+    )
+
+    cpu_model = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="CPUモデル詳細"
+    )
+
+    gpu_model = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="GPUモデル詳細"
+    )
+       
     normalized_gpu = models.CharField(
         max_length=100,
         db_index=True,

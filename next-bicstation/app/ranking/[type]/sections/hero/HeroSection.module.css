@@ -1,0 +1,25 @@
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[type]/sections/hero/HeroSection.module.css */
+
+/* =========================================
+🔥 SECTION
+========================================= */
+
+.section {
+  position: relative;
+
+  margin-top: 0;
+
+  margin-bottom: 56px;
+}
+
+/* =========================================
+🔥 RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .section {
+    margin-bottom: 42px;
+  }
+}
+

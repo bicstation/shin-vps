@@ -1,0 +1,58 @@
+/* shared/components/semantic/SemanticExplanationList.module.css */
+
+/* =========================================
+🔥 WRAPPER
+========================================= */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+/* =========================================
+🔥 TITLE
+========================================= */
+
+.title {
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  letter-spacing: -0.02em;
+
+  line-height: 1.4;
+}
+
+/* =========================================
+🔥 LIST
+========================================= */
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+/* =========================================
+🔥 RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .wrapper {
+    gap: 12px;
+  }
+
+  .title {
+    font-size: 13px;
+  }
+
+  .list {
+    gap: 8px;
+  }
+}
+

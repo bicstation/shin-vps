@@ -1,3 +1,5 @@
+// /home/maya/shin-dev/shin-vps/shared/components/semantic/SemanticBadge.tsx
+
 'use client'
 
 import clsx from 'clsx'
