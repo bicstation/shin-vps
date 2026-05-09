@@ -9,8 +9,9 @@ import styles
 ========================================= */
 
 import {
-  fetchPCProductRanking,
-} from '@/shared/lib/api/django/pc/stats'
+   fetchRankingByType,
+} from '@/shared/lib/api/django/pc'
+
 
 /* =========================================
 🔥 ORCHESTRATION
@@ -71,7 +72,7 @@ RankingPage({
   // ======================================
 
   const products =
-    await fetchPCProductRanking(
+    await fetchRankingByType(
       type
     )
 

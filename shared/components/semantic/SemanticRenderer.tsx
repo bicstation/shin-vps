@@ -96,32 +96,13 @@ function normalizeAttribute(
       attribute.slug || '',
 
     // --------------------------------
-    // role
+    // visual safety
     // --------------------------------
-    semantic_role:
+    icon:
+      attribute.icon || '',
 
-      attribute.semantic_role
-
-      || 'supportive',
-
-    // --------------------------------
-    // weight
-    // --------------------------------
-    semantic_weight:
-
-      typeof
-      attribute.semantic_weight
-      === 'number'
-
-        ? Math.max(
-            0,
-            Math.min(
-              1,
-              attribute.semantic_weight
-            )
-          )
-
-        : 0,
+    color:
+      attribute.color || '',
   }
 }
 
@@ -211,8 +192,8 @@ SemanticRenderer({
       return (
 
         <SemanticBadge
-          slug={
-            normalized.slug
+          attribute={
+            normalized
           }
         />
 
@@ -227,12 +208,11 @@ SemanticRenderer({
       return (
 
         <SemanticBadge
-          slug={
-            normalized.slug
+          attribute={
+            normalized
           }
         />
 
       )
   }
 }
-

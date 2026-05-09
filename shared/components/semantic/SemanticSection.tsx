@@ -1,59 +1,18 @@
-// /home/maya/shin-dev/shin-vps/shared/components/semantic/SemanticSection.tsx
+// /home/maya/shin-vps/shared/components/semantic/SemanticSection.tsx
 
 'use client'
 
-import SemanticRenderer
-  from './SemanticRenderer'
+import Link
+  from 'next/link'
 
-import {
-  SemanticAttribute,
-} from '@/shared/types/semantic'
+import styles
+  from './SemanticSection.module.css'
 
-/* =========================================
-🔥 Backend Semantic Authority
-========================================= */
+import type {
 
-const GROUP_ORDER = [
-  'usage',
-  'gpu',
-  'cpu',
-  'maker',
-  'memory',
-  'storage',
-  'feature',
-] as const
+  SemanticNavigationGroup,
 
-/* =========================================
-🔥 Group Labels
-========================================= */
-
-const GROUP_LABELS: Record<
-  string,
-  string
-> = {
-
-  usage: '用途',
-
-  gpu: 'GPU',
-
-  cpu: 'CPU',
-
-  maker: 'メーカー',
-
-  memory: 'メモリ',
-
-  storage: 'ストレージ',
-
-  feature: '特徴',
-}
-
-/* =========================================
-🔥 Config
-========================================= */
-
-const IS_DEV =
-  process.env.NODE_ENV ===
-  'development'
+} from '@/shared/lib/navigation/navigationTypes'
 
 /* =========================================
 🔥 Props
@@ -61,370 +20,165 @@ const IS_DEV =
 
 type Props = {
 
-  title?: string
-
-  attributes?: (
-    SemanticAttribute
-    | null
-    | undefined
-  )[]
-
-  grouped?: Record<
-    string,
-    (
-      SemanticAttribute
-      | null
-      | undefined
-    )[]
-  >
+  group:
+    SemanticNavigationGroup
 }
 
 /* =========================================
-🔥 Logger
+🔥 Group Labels
 ========================================= */
 
-function logWarn(
-  label: string,
-  payload?: unknown
-) {
+const GROUP_LABELS:
+  Record<string, string> = {
 
-  if (!IS_DEV) {
-    return
-  }
+  gpu:
+    'GPU性能から選ぶ',
 
-  console.warn(
-    `[${label}]`,
-    payload ?? ''
-  )
-}
+  maker:
+    'メーカーから選ぶ',
 
-/* =========================================
-🔥 Normalize Attribute
-========================================= */
+  usage:
+    '用途から選ぶ',
 
-function normalizeAttribute(
-  attribute?: (
-    SemanticAttribute
-    | null
-    | undefined
-  )
-): SemanticAttribute | null {
-
-  if (!attribute) {
-    return null
-  }
-
-  return {
-
-    ...attribute,
-
-    type:
-      attribute.attr_type
-      || attribute.type
-      || 'default',
-
-    name:
-      attribute.name || '',
-
-    slug:
-      attribute.slug || '',
-
-    semantic_role:
-      attribute.semantic_role
-      || 'supportive',
-
-    semantic_weight:
-      typeof attribute.semantic_weight
-        === 'number'
-          ? Math.max(
-              0,
-              Math.min(
-                1,
-                attribute.semantic_weight
-              )
-            )
-          : 0,
-  }
-}
-
-/* =========================================
-🔥 Sort Attributes
-========================================= */
-
-function sortAttributes(
-  attributes: SemanticAttribute[]
-) {
-
-  return [...attributes].sort(
-    (a, b) => {
-
-      const aWeight =
-        a.semantic_weight || 0
-
-      const bWeight =
-        b.semantic_weight || 0
-
-      return bWeight - aWeight
-    }
-  )
+  device:
+    'タイプから選ぶ',
 }
 
 /* =========================================
 🔥 Component
 ========================================= */
 
-export default function SemanticSection({
+export default function
+SemanticSection({
 
-  title,
-
-  attributes = [],
-
-  grouped,
+  group,
 
 }: Props) {
 
-  // =====================================
-  // grouped mode
-  // =====================================
-  if (
-    grouped &&
-    typeof grouped === 'object'
-  ) {
-
-    return (
-
-      <section className="space-y-5">
-
-        {/* title */}
-        {title && (
-
-          <h2
-            className="
-              text-sm
-              font-black
-              tracking-wide
-              text-white
-            "
-          >
-            {title}
-          </h2>
-
-        )}
-
-        {/* grouped rendering */}
-        {GROUP_ORDER.map(groupKey => {
-
-          const rawAttributes =
-            grouped[groupKey]
-
-          if (
-            !Array.isArray(
-              rawAttributes
-            )
-          ) {
-            return null
-          }
-
-          // -------------------------
-          // normalize
-          // -------------------------
-          const normalized = (
-            rawAttributes
-              .map(normalizeAttribute)
-              .filter(Boolean)
-          ) as SemanticAttribute[]
-
-          if (
-            normalized.length <= 0
-          ) {
-            return null
-          }
-
-          // -------------------------
-          // semantic sort
-          // -------------------------
-          const sorted =
-            sortAttributes(
-              normalized
-            )
-
-          return (
-
-            <div
-              key={groupKey}
-              className="
-                space-y-2
-              "
-            >
-
-              {/* group title */}
-              <div
-                className="
-                  flex
-                  items-center
-                  gap-2
-                "
-              >
-
-                <div
-                  className="
-                    h-[1px]
-                    flex-1
-                    bg-white/5
-                  "
-                />
-
-                <h3
-                  className="
-                    text-[11px]
-                    font-black
-                    uppercase
-                    tracking-[0.12em]
-                    text-slate-400
-                  "
-                >
-                  {
-                    GROUP_LABELS[groupKey]
-                    || groupKey
-                  }
-                </h3>
-
-                <div
-                  className="
-                    h-[1px]
-                    flex-1
-                    bg-white/5
-                  "
-                />
-
-              </div>
-
-              {/* attributes */}
-              <div
-                className="
-                  flex
-                  flex-wrap
-                  gap-2
-                "
-              >
-
-                {sorted.map(
-                  (
-                    attribute,
-                    index
-                  ) => {
-
-                    const key =
-                      attribute.slug
-                      && attribute.type
-                        ? `${attribute.type}-${attribute.slug}`
-                        : `${groupKey}-${index}`
-
-                    return (
-
-                      <SemanticRenderer
-                        key={key}
-                        attribute={attribute}
-                      />
-
-                    )
-                  }
-                )}
-
-              </div>
-
-            </div>
-          )
-        })}
-
-      </section>
-    )
-  }
-
-  // =====================================
-  // flat mode
-  // =====================================
-
-  const normalized = (
-      attributes
-        .map(normalizeAttribute)
-        .filter(Boolean)
-    ) as SemanticAttribute[]
+  // ======================================
+  // Empty
+  // ======================================
 
   if (
-    normalized.length <= 0
+    !group?.items?.length
   ) {
-
-    logWarn(
-      'SemanticSection empty attributes'
-    )
 
     return null
   }
 
-  // -------------------------------------
-  // semantic sort
-  // -------------------------------------
-  const sorted =
-    sortAttributes(
-      normalized
-    )
+  // ======================================
+  // Label
+  // ======================================
+
+  const label =
+
+    GROUP_LABELS[
+      group.key
+    ]
+
+    || group.title
+
+  // ======================================
+  // Render
+  // ======================================
 
   return (
 
     <section
-      className="
-        space-y-3
-      "
+      className={
+        styles.section
+      }
     >
 
-      {/* title */}
-      {title && (
+      {/* ==================================
+      HEADER
+      ================================== */}
 
-        <h2
-          className="
-            text-sm
-            font-black
-            tracking-wide
-            text-white
-          "
-        >
-          {title}
-        </h2>
-
-      )}
-
-      {/* semantic rendering */}
       <div
-        className="
-          flex
-          flex-wrap
-          gap-2
-        "
+        className={
+          styles.header
+        }
       >
 
-        {sorted.map(
-          (
-            attribute,
-            index
-          ) => {
-
-            const key =
-              attribute.slug
-              && attribute.type
-                ? `${attribute.type}-${attribute.slug}`
-                : `attr-${index}`
-
-            return (
-
-              <SemanticRenderer
-                key={key}
-                attribute={attribute}
-              />
-
-            )
+        <h2
+          className={
+            styles.title
           }
+        >
+          {label}
+        </h2>
+
+        {group.description && (
+
+          <p
+            className={
+              styles.description
+            }
+          >
+            {group.description}
+          </p>
+
         )}
+
+      </div>
+
+      {/* ==================================
+      ITEMS
+      ================================== */}
+
+      <div
+        className={
+          styles.items
+        }
+      >
+
+        {group.items.map(item => (
+
+          <Link
+            key={
+              item.slug
+            }
+            href={
+              item.href
+            }
+            className={
+              styles.item
+            }
+          >
+
+            {/* ============================
+            LABEL
+            ============================ */}
+
+            <span
+              className={
+                styles.label
+              }
+            >
+              {item.label}
+            </span>
+
+            {/* ============================
+            COUNT
+            ============================ */}
+
+            {typeof item.count ===
+              'number'
+              && item.count > 0 && (
+
+              <span
+                className={
+                  styles.count
+                }
+              >
+                {item.count}
+              </span>
+
+            )}
+
+          </Link>
+
+        ))}
 
       </div>
 

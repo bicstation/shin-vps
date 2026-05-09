@@ -4,7 +4,7 @@ import Link
   from 'next/link'
 
 import styles
-  from '../../styles/recommendation.module.css'
+  from '../styles/recommendation.module.css'
 
 export default function HomeFinderCTA() {
 

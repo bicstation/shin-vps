@@ -1,10 +1,12 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/page.tsx
+
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
 import styles from './page.module.css'
 
 /* =========================================
-🔥 Existing API
+🔥 API
 ========================================= */
 
 import {
@@ -12,72 +14,62 @@ import {
 } from '@/shared/lib/api/django/pc/stats'
 
 /* =========================================
-🔥 Temporary Navigation Adapter
-========================================= */
-
-import {
-  transformSidebarStats,
-} from '@/shared/lib/navigation/transformSidebarStats'
-
-/* =========================================
-🔥 Components
-========================================= */
-
-import {
-  RankingHero,
-} from './components/RankingHero'
-
-import {
-  SemanticSection,
-} from './components/SemanticSection'
-
-import {
-  FinderCTA,
-} from './components/FinderCTA'
-
-import {
-  EmptyState,
-} from './components/EmptyState'
-
-/* =========================================
-🔥 Dynamic
+🔥 PAGE
 ========================================= */
 
 export const dynamic =
   'force-dynamic'
 
-/* =========================================
-🔥 PAGE
-========================================= */
-
 export default async function
 RankingIndexPage() {
 
-  // --------------------------------
-  // Existing Sidebar API
-  // --------------------------------
+  // ======================================
+  // Fetch
+  // ======================================
 
   const stats =
     await fetchSidebarStats()
 
-  // --------------------------------
-  // Temporary Semantic Adapter
-  // --------------------------------
+  // ======================================
+  // DEBUG LOG
+  // ======================================
 
-  const navigation =
-    transformSidebarStats(
-      stats
+  console.log(
+    '\n🔥 ====================================='
+  )
+
+  console.log(
+    '🔥 SIDEBAR STATS RAW PAYLOAD'
+  )
+
+  console.log(
+    JSON.stringify(
+      stats,
+      null,
+      2
     )
+  )
 
-  // --------------------------------
-  // Empty
-  // --------------------------------
+  console.log(
+    '🔥 =====================================\n'
+  )
 
-  if (
-    !navigation?.groups?.length
-  ) {
-    return <EmptyState />
-  }
+  // ======================================
+  // ALL KEYS
+  // ======================================
+
+  const keys =
+
+    stats &&
+    typeof stats === 'object'
+
+      ? Object.keys(stats)
+
+      : []
+
+  // ======================================
+  // Render
+  // ======================================
 
   return (
 
@@ -94,31 +86,101 @@ RankingIndexPage() {
       >
 
         {/* ================================= */}
-        {/* HERO */}
+        {/* TITLE */}
         {/* ================================= */}
 
-        <RankingHero />
+        <h1>
+          ランキングジャンル一覧
+        </h1>
 
         {/* ================================= */}
-        {/* SEMANTIC GROUPS */}
+        {/* DEBUG KEYS */}
         {/* ================================= */}
 
-        {navigation.groups.map(
-          group => (
+        <section>
 
-            <SemanticSection
-              key={group.key}
-              group={group}
-            />
+          <h2>
+            APIキー一覧
+          </h2>
 
+          <ul>
+
+            {keys.map(key => (
+
+              <li key={key}>
+                {key}
+              </li>
+
+            ))}
+
+          </ul>
+
+        </section>
+
+        {/* ================================= */}
+        {/* DYNAMIC GROUPS */}
+        {/* ================================= */}
+
+        {keys.map(key => {
+
+          const items =
+
+            Array.isArray(
+              stats?.[key]
+            )
+
+              ? stats[key]
+
+              : []
+
+          // ------------------------------
+          // skip empty
+          // ------------------------------
+
+          if (!items.length) {
+            return null
+          }
+
+          return (
+
+            <section key={key}>
+
+              <h2>
+                {key}
+              </h2>
+
+              <ul>
+
+                {items.map(item => (
+
+                  <li
+                    key={
+                      item.slug
+                      || item.name
+                    }
+                  >
+
+                    <a
+                      href={
+                        `/ranking/${
+                          item.slug
+                        }`
+                      }
+                    >
+
+                      {item.name}
+
+                    </a>
+
+                  </li>
+
+                ))}
+
+              </ul>
+
+            </section>
           )
-        )}
-
-        {/* ================================= */}
-        {/* FINDER CTA */}
-        {/* ================================= */}
-
-        <FinderCTA />
+        })}
 
       </div>
 

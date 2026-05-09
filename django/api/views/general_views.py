@@ -158,6 +158,14 @@ class PCProductRankingView(
             "-spec_score"
         )[:20]
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "count": len(serializer.data),
+            "products": serializer.data
+        })
 
 # --------------------------------------------------------------------------
 # 2. 📦 PC製品一覧

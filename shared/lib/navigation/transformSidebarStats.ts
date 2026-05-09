@@ -1,17 +1,4 @@
-
 // /home/maya/shin-dev/shin-vps/shared/lib/navigation/transformSidebarStats.ts
-
-/* =========================================
-🔥 Semantic
-========================================= */
-
-import {
-
-  normalizeSemanticPayload,
-
-  resolveSemanticPresentation,
-
-} from '@/shared/lib/semantic'
 
 /* =========================================
 🔥 Navigation
@@ -34,101 +21,213 @@ import type {
 } from './navigationTypes'
 
 /* =========================================
+🔥 Sidebar Payload
+========================================= */
+
+type SidebarAttribute = {
+
+  name?: string
+
+  slug?: string
+
+  count?: number
+}
+
+type SidebarStatsPayload = {
+
+  gpu?: SidebarAttribute[]
+
+  maker_counts?: SidebarAttribute[]
+}
+
+/* =========================================
+🔥 Group Description
+========================================= */
+
+function resolveGroupDescription(
+  key: string
+) {
+
+  switch (key) {
+
+    case 'gpu':
+
+      return (
+        'グラフィック性能から探す'
+      )
+
+    case 'maker':
+
+      return (
+        '人気メーカーから探す'
+      )
+
+    default:
+
+      return (
+        'おすすめカテゴリ'
+      )
+  }
+}
+
+/* =========================================
+🔥 Safe Array
+========================================= */
+
+function safeArray<T>(
+  value?: T[]
+): T[] {
+
+  return Array.isArray(
+    value
+  )
+
+    ? value
+
+    : []
+}
+
+/* =========================================
 🔥 Transform Sidebar Stats
 ========================================= */
 
 export function
 transformSidebarStats(
-  payload?: unknown
+  payload?: SidebarStatsPayload
 ): SemanticNavigation {
 
   // ======================================
-  // normalize semantic payload
+  // Safe Payload
   // ======================================
 
-  const normalized =
-    normalizeSemanticPayload(
-      payload
-    )
+  const gpu = safeArray(
+    payload?.gpu
+  )
+
+  const makerCounts = safeArray(
+    payload?.maker_counts
+  )
 
   // ======================================
-  // navigation groups
+  // Navigation Groups
   // ======================================
 
-  const groups =
+  const groups = [
 
-    normalized
-      .navigation_groups
-      .map(group => (
+    // ====================================
+    // GPU GROUP
+    // ====================================
 
-        createNavigationGroup({
+    createNavigationGroup({
 
-          key:
-            group.key,
+      key:
+        'gpu',
 
-          type:
-            group.key,
+      type:
+        'gpu',
 
-          title:
-            group.title,
+      title:
+        'GPU性能から選ぶ',
 
-          description:
-            `${group.title} semantic group`,
+      description:
+        resolveGroupDescription(
+          'gpu'
+        ),
 
-          items:
+      items:
 
-            group.attributes
-              .map(attribute => {
+        gpu.map(attribute => {
 
-                const presentation =
+          const slug =
+            attribute?.slug || ''
 
-                  resolveSemanticPresentation(
-                    attribute
-                  )
+          const label =
+            attribute?.name || ''
 
-                return (
-                  createNavigationItem({
+          return (
 
-                    label:
-                      presentation.label,
+            createNavigationItem({
 
-                    slug:
-                      presentation.slug,
+              label,
 
-                    href:
-                      `/ranking/${presentation.slug}`,
+              description:
+                'ゲーム性能や映像処理性能から探す',
 
-                    count:
-                      attribute?.count || 0,
+              slug,
 
-                    icon:
-                      presentation.icon,
+              href:
+                `/ranking/${slug}`,
 
-                    semantic_role:
+              icon:
+                '',
 
-                      attribute
-                        ?.semantic_role
+              count:
+                attribute?.count || 0,
+            })
+          )
+        }),
+    }),
 
-                        || 'supportive',
+    // ====================================
+    // MAKER GROUP
+    // ====================================
 
-                    semantic_weight:
+    createNavigationGroup({
 
-                      attribute
-                        ?.semantic_weight
+      key:
+        'maker',
 
-                        || 0,
-                  })
-                )
-              }),
-        })
-      ))
+      type:
+        'maker',
+
+      title:
+        'メーカーから選ぶ',
+
+      description:
+        resolveGroupDescription(
+          'maker'
+        ),
+
+      items:
+
+        makerCounts.map(attribute => {
+
+          const slug =
+            attribute?.slug || ''
+
+          const label =
+            attribute?.name || ''
+
+          return (
+
+            createNavigationItem({
+
+              label,
+
+              description:
+                '人気メーカーから探す',
+
+              slug,
+
+              href:
+                `/ranking/${slug}`,
+
+              icon:
+                '',
+
+              count:
+                attribute?.count || 0,
+            })
+          )
+        }),
+    }),
+  ]
 
   // ======================================
-  // semantic navigation
+  // Semantic Navigation
   // ======================================
 
   return createSemanticNavigation(
     groups
   )
 }
-

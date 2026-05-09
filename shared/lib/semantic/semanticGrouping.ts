@@ -19,11 +19,8 @@ export type SemanticGroupType =
   | 'unknown'
 
 export type ParsedSemantic = {
-
   slug: string
-
   group: SemanticGroupType
-
   value: string
 }
 
@@ -43,11 +40,8 @@ parseSemanticSlug(
   if (!slug) {
 
     return {
-
       slug: '',
-
       group: 'unknown',
-
       value: '',
     }
   }
@@ -70,7 +64,6 @@ parseSemanticSlug(
 
   const allowedGroups:
     SemanticGroupType[] = [
-
       'device',
       'product_type',
       'usage',
@@ -101,10 +94,7 @@ parseSemanticSlug(
       'unknown'
 
   if (isAllowedGroup) {
-
-    group =
-      rawGroup
-      as SemanticGroupType
+    group = rawGroup as SemanticGroupType
   }
 
   // ======================================
@@ -112,11 +102,8 @@ parseSemanticSlug(
   // ======================================
 
   return {
-
     slug,
-
     group,
-
     value,
   }
 }
@@ -141,7 +128,6 @@ groupSemanticSlugs(
     SemanticGroupType,
     ParsedSemantic[]
   > = {
-
     device: [],
     product_type: [],
     usage: [],
@@ -168,15 +154,11 @@ groupSemanticSlugs(
 
   slugs.forEach(
     (slug) => {
-
       const parsed =
         parseSemanticSlug(
           slug
         )
-
-      grouped[
-        parsed.group
-      ].push(parsed)
+      grouped[parsed.group].push(parsed)
     }
   )
 

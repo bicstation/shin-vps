@@ -15,45 +15,6 @@ export type SemanticCardItem = {
   name: string
 
   description?: string
-
-  icon?: string
-
-  count?: number
-
-  semantic_role?:
-    | 'highlight'
-    | 'primary'
-    | 'secondary'
-    | 'supportive'
-
-  color?: string
-}
-
-/* =========================================
-🔥 Semantic Role Class
-========================================= */
-
-function getCardClass(
-  semanticRole?: string
-) {
-
-  switch (semanticRole) {
-
-    case 'highlight':
-      return styles.semanticCardHighlight
-
-    case 'primary':
-      return styles.semanticCardPrimary
-
-    case 'secondary':
-      return styles.semanticCardSecondary
-
-    case 'supportive':
-      return styles.semanticCardSupportive
-
-    default:
-      return styles.semanticCard
-  }
 }
 
 /* =========================================
@@ -66,60 +27,31 @@ export function SemanticCard({
   item: SemanticCardItem
 }) {
 
+  // ======================================
+  // Safe
+  // ======================================
+
+  const href =
+
+    item.slug
+      ? `/ranking/${item.slug}`
+      : '#'
+
+  // ======================================
+  // Render
+  // ======================================
+
   return (
 
     <Link
-      href={`/ranking/${item.slug}`}
+      href={href}
 
       prefetch={false}
 
       className={
-        getCardClass(
-          item.semantic_role
-        )
+        styles.semanticCard
       }
     >
-
-      {/* ================================= */}
-      {/* Top */}
-      {/* ================================= */}
-
-      <div
-        className={
-          styles.cardTop
-        }
-      >
-
-        {/* ================================= */}
-        {/* Icon */}
-        {/* ================================= */}
-
-        <div
-          className={
-            styles.cardIcon
-          }
-        >
-          {item.icon || '⚡'}
-        </div>
-
-        {/* ================================= */}
-        {/* Count */}
-        {/* ================================= */}
-
-        {typeof item.count ===
-          'number' && (
-
-          <div
-            className={
-              styles.cardCount
-            }
-          >
-            {item.count}
-          </div>
-
-        )}
-
-      </div>
 
       {/* ================================= */}
       {/* Body */}
@@ -158,46 +90,6 @@ export function SemanticCard({
           </div>
 
         )}
-
-      </div>
-
-      {/* ================================= */}
-      {/* Footer */}
-      {/* ================================= */}
-
-      <div
-        className={
-          styles.cardFooter
-        }
-      >
-
-        {/* ================================= */}
-        {/* Semantic Role */}
-        {/* ================================= */}
-
-        {item.semantic_role && (
-
-          <div
-            className={
-              styles.cardRole
-            }
-          >
-            {item.semantic_role}
-          </div>
-
-        )}
-
-        {/* ================================= */}
-        {/* Arrow */}
-        {/* ================================= */}
-
-        <div
-          className={
-            styles.cardArrow
-          }
-        >
-          →
-        </div>
 
       </div>
 

@@ -113,10 +113,51 @@ export default async function HomePage() {
   FETCH
   ====================================== */
 
-  const ranking =
-    await fetchRankingByType(
-      'score'
-    )
+  // const ranking =
+  //   await fetchRankingByType(
+  //     'score'
+  //   )
+
+
+/* ======================================
+DEBUG
+====================================== */
+
+console.log(
+  '🔥 NODE_ENV:',
+  process.env.NODE_ENV
+)
+
+console.log(
+  '🔥 INTERNAL_API_URL:',
+  process.env.INTERNAL_API_URL
+)
+
+console.log(
+  '🔥 NEXT_PUBLIC_API_URL:',
+  process.env.NEXT_PUBLIC_API_URL
+)
+
+/* ======================================
+FETCH
+====================================== */
+
+console.log(
+  '🚀 FETCH START:',
+  `${process.env.INTERNAL_API_URL}/general/pc-products/ranking/score/`
+)
+
+const ranking =
+  await fetchRankingByType(
+    'score'
+  )
+
+console.log(
+  '✅ FETCH RESULT:',
+  ranking
+)
+
+
 
   /* =====================================
   PRODUCTS
