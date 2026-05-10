@@ -1,9 +1,24 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/page.tsx
 
+/* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
-import Link
-  from 'next/link'
+/* =========================================
+🔥 Shared Cards
+========================================= */
+
+import HeroRankingCard
+  from '@/shared/components/organisms/cards/HeroRankingCard'
+
+import ProductCard
+  from '@/shared/components/organisms/cards/ProductCard'
+
+/* =========================================
+🔥 Styles
+========================================= */
+
+import styles
+  from './page.module.css'
 
 /* =========================================
 🔥 Dynamic
@@ -17,10 +32,8 @@ export const dynamic =
 ========================================= */
 
 export default async function
-RankingPage({
-
+RankingDetailPage({
   params,
-
 }: {
   params: Promise<{
     slug: string
@@ -47,11 +60,9 @@ RankingPage({
   // Fetch
   // ======================================
 
-  let status = 0
+  let rankingJson = null
 
-  let json = null
-
-  let errorMessage = ''
+  let status = 500
 
   try {
 
@@ -68,56 +79,40 @@ RankingPage({
     status =
       response.status
 
-    json =
+    rankingJson =
       await response.json()
 
   } catch (error) {
 
-    errorMessage =
-      String(error)
+    console.error(error)
+
   }
 
   // ======================================
-  // Results Normalize
+  // Products
   // ======================================
 
-  const results =
+  const rankingProducts =
 
     Array.isArray(
-      json?.results
+      rankingJson?.products
     )
 
-      ? json.results
+      ? rankingJson.products
 
-      : Array.isArray(
-          json?.products
-        )
-
-          ? json.products
-
-          : Array.isArray(
-              json?.items
-            )
-
-              ? json.items
-
-              : []
+      : []
 
   // ======================================
-  // Count
+  // Split
   // ======================================
 
-  const count =
+  const heroProduct =
 
-    json?.count
+    rankingProducts[0]
 
-    ||
+  const subProducts =
 
-    results.length
-
-    ||
-
-    0
+    rankingProducts.slice(1)
 
   // ======================================
   // Render
@@ -126,495 +121,229 @@ RankingPage({
   return (
 
     <main
-      style={{
-        padding:
-          '40px',
-
-        color:
-          '#fff',
-
-        maxWidth:
-          '1200px',
-
-        margin:
-          '0 auto',
-      }}
+      className={
+        styles.page
+      }
     >
 
       {/* ================================= */}
-      {/* Title */}
-      {/* ================================= */}
-
-      <h1
-        style={{
-          fontSize:
-            '42px',
-
-          fontWeight:
-            900,
-        }}
-      >
-
-        Semantic Ranking Debug
-
-      </h1>
-
-      {/* ================================= */}
-      {/* Info */}
+      {/* Debug Header */}
       {/* ================================= */}
 
       <section
-        style={{
-          marginTop:
-            '40px',
-
-          display:
-            'grid',
-
-          gap:
-            '20px',
-
-          gridTemplateColumns:
-            'repeat(auto-fit,minmax(260px,1fr))',
-        }}
+        className={
+          styles.debugHero
+        }
       >
 
-        {/* ============================= */}
-        {/* Slug */}
-        {/* ============================= */}
-
-        <div style={cardStyle}>
-
-          <div style={labelStyle}>
-            SLUG
-          </div>
-
-          <div style={valueStyle}>
-            {slug}
-          </div>
-
-        </div>
-
-        {/* ============================= */}
-        {/* Status */}
-        {/* ============================= */}
-
-        <div style={cardStyle}>
-
-          <div style={labelStyle}>
-            STATUS
-          </div>
-
-          <div style={valueStyle}>
-            {status}
-          </div>
-
-        </div>
-
-        {/* ============================= */}
-        {/* Count */}
-        {/* ============================= */}
-
-        <div style={cardStyle}>
-
-          <div style={labelStyle}>
-            RESULT COUNT
-          </div>
-
-          <div style={valueStyle}>
-            {count}
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* ================================= */}
-      {/* Endpoint */}
-      {/* ================================= */}
-
-      <section
-        style={{
-          marginTop:
-            '40px',
-        }}
-      >
-
-        <h2>
-          Request URL
-        </h2>
-
-        <pre style={preStyle}>
-
-          {endpoint}
-
-        </pre>
-
-      </section>
-
-      {/* ================================= */}
-      {/* Error */}
-      {/* ================================= */}
-
-      {!!errorMessage && (
-
-        <section
-          style={{
-            marginTop:
-              '40px',
-          }}
+        <h1
+          className={
+            styles.debugTitle
+          }
         >
 
-          <h2>
-            Error
-          </h2>
+          Semantic Ranking Debug
 
-          <pre style={preStyle}>
+        </h1>
 
-            {errorMessage}
+        {/* ============================= */}
+        {/* Debug Grid */}
+        {/* ============================= */}
 
-          </pre>
+        <div
+          className={
+            styles.debugGrid
+          }
+        >
+
+          <div
+            className={
+              styles.debugCard
+            }
+          >
+
+            <div
+              className={
+                styles.debugLabel
+              }
+            >
+
+              SLUG
+
+            </div>
+
+            <div
+              className={
+                styles.debugValue
+              }
+            >
+
+              {slug}
+
+            </div>
+
+          </div>
+
+          <div
+            className={
+              styles.debugCard
+            }
+          >
+
+            <div
+              className={
+                styles.debugLabel
+              }
+            >
+
+              STATUS
+
+            </div>
+
+            <div
+              className={
+                styles.debugValue
+              }
+            >
+
+              {status}
+
+            </div>
+
+          </div>
+
+          <div
+            className={
+              styles.debugCard
+            }
+          >
+
+            <div
+              className={
+                styles.debugLabel
+              }
+            >
+
+              RESULT COUNT
+
+            </div>
+
+            <div
+              className={
+                styles.debugValue
+              }
+            >
+
+              {rankingProducts.length}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ============================= */}
+        {/* URL */}
+        {/* ============================= */}
+
+        <div
+          className={
+            styles.requestBlock
+          }
+        >
+
+          <div
+            className={
+              styles.requestLabel
+            }
+          >
+
+            Request URL
+
+          </div>
+
+          <div
+            className={
+              styles.requestUrl
+            }
+          >
+
+            {endpoint}
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* ================================= */}
+      {/* Hero Product */}
+      {/* ================================= */}
+
+      {heroProduct && (
+
+        <section
+          className={
+            styles.heroSection
+          }
+        >
+
+          <HeroRankingCard
+            product={
+              heroProduct
+            }
+          />
 
         </section>
 
       )}
 
       {/* ================================= */}
-      {/* Product Links */}
+      {/* Product Grid */}
       {/* ================================= */}
 
-      <section
-        style={{
-          marginTop:
-            '60px',
-        }}
-      >
+      {!!subProducts.length && (
 
-        <h2>
-          Products
-        </h2>
-
-        {!results.length && (
+        <section
+          className={
+            styles.productSection
+          }
+        >
 
           <div
-            style={{
-              marginTop:
-                '20px',
-
-              opacity:
-                0.7,
-            }}
+            className={
+              styles.productGrid
+            }
           >
 
-            データがありません
+            {subProducts.map(
+              (
+                product,
+                index
+              ) => (
+
+                <ProductCard
+
+                  key={
+                    product?.unique_id
+                    || index
+                  }
+
+                  product={
+                    product
+                  }
+
+                />
+
+              )
+            )}
 
           </div>
 
-        )}
+        </section>
 
-        <ul
-          style={{
-            marginTop:
-              '24px',
-
-            display:
-              'grid',
-
-            gap:
-              '16px',
-
-            padding:
-              0,
-
-            listStyle:
-              'none',
-          }}
-        >
-
-          {results.map(
-            (
-              product,
-              index
-            ) => {
-
-              // =========================
-              // Normalize
-              // =========================
-
-              const uniqueId =
-
-                product?.unique_id
-
-                ||
-
-                `unknown-${index}`
-
-              const name =
-
-                product?.name
-
-                ||
-
-                product?.title
-
-                ||
-
-                'No Name'
-
-              const maker =
-
-                product?.maker
-
-                ||
-
-                ''
-
-              const price =
-
-                product?.price
-                || 0
-
-              // =========================
-              // Render
-              // =========================
-
-              return (
-
-                <li
-                  key={uniqueId}
-                >
-
-                  <Link
-                    href={
-                      `/product/${uniqueId}`
-                    }
-
-                    style={{
-                      display:
-                        'block',
-
-                      padding:
-                        '20px',
-
-                      borderRadius:
-                        '18px',
-
-                      background:
-                        'rgba(255,255,255,0.04)',
-
-                      border:
-                        '1px solid rgba(255,255,255,0.08)',
-
-                      color:
-                        '#fff',
-
-                      textDecoration:
-                        'none',
-                    }}
-                  >
-
-                    {/* ================= */}
-                    {/* Name */}
-                    {/* ================= */}
-
-                    <div
-                      style={{
-                        fontSize:
-                          '18px',
-
-                        fontWeight:
-                          800,
-
-                        lineHeight:
-                          1.6,
-                      }}
-                    >
-
-                      {name}
-
-                    </div>
-
-                    {/* ================= */}
-                    {/* Meta */}
-                    {/* ================= */}
-
-                    <div
-                      style={{
-                        marginTop:
-                          '10px',
-
-                        opacity:
-                          0.7,
-
-                        fontSize:
-                          '14px',
-                      }}
-                    >
-
-                      {maker}
-
-                    </div>
-
-                    {/* ================= */}
-                    {/* Price */}
-                    {/* ================= */}
-
-                    <div
-                      style={{
-                        marginTop:
-                          '12px',
-
-                        fontSize:
-                          '20px',
-
-                        fontWeight:
-                          800,
-                      }}
-                    >
-
-                      ¥{
-                        Number(
-                          price
-                        ).toLocaleString()
-                      }
-
-                    </div>
-
-                    {/* ================= */}
-                    {/* Unique ID */}
-                    {/* ================= */}
-
-                    <div
-                      style={{
-                        marginTop:
-                          '12px',
-
-                        opacity:
-                          0.5,
-
-                        fontSize:
-                          '12px',
-                      }}
-                    >
-
-                      {uniqueId}
-
-                    </div>
-
-                  </Link>
-
-                </li>
-              )
-            }
-          )}
-
-        </ul>
-
-      </section>
-
-      {/* ================================= */}
-      {/* Raw JSON */}
-      {/* ================================= */}
-
-      <section
-        style={{
-          marginTop:
-            '80px',
-
-          paddingBottom:
-            '120px',
-        }}
-      >
-
-        <h2>
-          Raw JSON
-        </h2>
-
-        <pre style={preStyle}>
-
-          {JSON.stringify(
-            json,
-            null,
-            2
-          )}
-
-        </pre>
-
-      </section>
+      )}
 
     </main>
   )
-}
-
-/* =========================================
-🔥 Styles
-========================================= */
-
-const cardStyle = {
-
-  padding:
-    '24px',
-
-  borderRadius:
-    '20px',
-
-  background:
-    'rgba(255,255,255,0.04)',
-
-  border:
-    '1px solid rgba(255,255,255,0.08)',
-}
-
-const labelStyle = {
-
-  fontSize:
-    '12px',
-
-  opacity:
-    0.6,
-
-  fontWeight:
-    700,
-}
-
-const valueStyle = {
-
-  marginTop:
-    '12px',
-
-  fontSize:
-    '20px',
-
-  fontWeight:
-    800,
-
-  lineHeight:
-    1.5,
-}
-
-const preStyle = {
-
-  marginTop:
-    '20px',
-
-  padding:
-    '24px',
-
-  borderRadius:
-    '20px',
-
-  background:
-    '#111',
-
-  overflowX:
-    'auto',
-
-  whiteSpace:
-    'pre-wrap',
-
-  fontSize:
-    '12px',
-
-  lineHeight:
-    1.7,
 }

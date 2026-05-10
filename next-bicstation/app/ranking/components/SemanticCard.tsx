@@ -12,9 +12,11 @@ import styles
 
 export type SemanticCardItem = {
 
+  name: string
+
   slug: string
 
-  name: string
+  href?: string
 
   count?: number
 
@@ -27,8 +29,6 @@ export type SemanticCardItem = {
   semantic_weight?: number
 
   description?: string
-
-  href?: string
 }
 
 /* =========================================
@@ -87,6 +87,33 @@ const ICON_MAP: Record<
 }
 
 /* =========================================
+🔥 Semantic Role Label
+========================================= */
+
+function getSemanticRoleLabel(
+  role?: string
+) {
+
+  switch (role) {
+
+    case 'highlight':
+      return '注目'
+
+    case 'primary':
+      return '人気'
+
+    case 'secondary':
+      return 'おすすめ'
+
+    case 'supportive':
+      return '関連'
+
+    default:
+      return 'ranking'
+  }
+}
+
+/* =========================================
 🔥 Semantic Card
 ========================================= */
 
@@ -97,20 +124,27 @@ export default function SemanticCard({
 }) {
 
   // ======================================
+  // Safe
+  // ======================================
+
+  if (
+    !item?.name
+    ||
+    !item?.slug
+  ) {
+
+    return null
+
+  }
+
+  // ======================================
   // Href
   // ======================================
 
   const href =
 
     item.href
-
-    || (
-
-      item.slug
-        ? `/ranking/${item.slug}`
-        : '#'
-
-    )
+    || `/ranking/${item.slug}`
 
   // ======================================
   // Icon
@@ -140,8 +174,11 @@ export default function SemanticCard({
 
   const countText =
 
-    item.count
+    typeof item.count
+      === 'number'
+
       ? `${item.count}件`
+
       : null
 
   // ======================================
@@ -150,13 +187,12 @@ export default function SemanticCard({
 
   const semanticRole =
 
-    item.semantic_role
-
-      ? item.semantic_role
-      : 'ranking'
+    getSemanticRoleLabel(
+      item.semantic_role
+    )
 
   // ======================================
-  // Weight
+  // Semantic Weight
   // ======================================
 
   const weight =
@@ -274,7 +310,7 @@ export default function SemanticCard({
 
         </span>
 
-        {weight && (
+        {weight !== null && (
 
           <span>
 

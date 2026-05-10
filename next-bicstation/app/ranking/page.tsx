@@ -19,6 +19,22 @@ import EmptyState
   from './components/EmptyState'
 
 /* =========================================
+🔥 Types
+========================================= */
+
+import type {
+  SemanticAttribute,
+} from './types/semantic'
+
+/* =========================================
+🔥 Utils
+========================================= */
+
+import {
+  prepareSemanticNavigation,
+} from './utils/semantic-role'
+
+/* =========================================
 🔥 Styles
 ========================================= */
 
@@ -31,6 +47,100 @@ import styles
 
 export const dynamic =
   'force-dynamic'
+
+/* =========================================
+🔥 Group Title
+========================================= */
+
+function getGroupTitle(
+  key: string
+) {
+
+  const map = {
+
+    usage:
+      '用途別ランキング',
+
+    gpu:
+      'GPUランキング',
+
+    cpu:
+      'CPUランキング',
+
+    maker:
+      'メーカー別ランキング',
+
+    memory:
+      'メモリ別ランキング',
+
+    storage:
+      'ストレージ別ランキング',
+
+    resolution:
+      '解像度別ランキング',
+
+    panel:
+      'ディスプレイ別ランキング',
+
+    workload:
+      '作業用途ランキング',
+
+    ai:
+      'AI用途ランキング',
+  }
+
+  return (
+    map[key]
+    || `${key} ランキング`
+  )
+}
+
+/* =========================================
+🔥 Group Description
+========================================= */
+
+function getGroupDescription(
+  key: string
+) {
+
+  const map = {
+
+    usage:
+      'ゲーム・動画編集・AI画像生成など、用途から最適なPCを探せます。',
+
+    gpu:
+      'RTX 4060・RTX 4070・RTX 4080など、GPU性能から比較できます。',
+
+    cpu:
+      'CPU性能からPCを比較できます。',
+
+    maker:
+      '人気メーカー別に比較できます。',
+
+    memory:
+      '16GB・32GB・64GBなど、メモリ容量から比較できます。',
+
+    storage:
+      'SSD容量やストレージ性能から比較できます。',
+
+    resolution:
+      'フルHD・WQHD・4Kなど解像度から比較できます。',
+
+    panel:
+      '液晶タイプやディスプレイ性能から比較できます。',
+
+    workload:
+      '作業内容から最適なPCを探せます。',
+
+    ai:
+      'AI画像生成やLLM用途に適したPCを探せます。',
+  }
+
+  return (
+    map[key]
+    || `${key} semantic ranking`
+  )
+}
 
 /* =========================================
 🔥 Ranking Page
@@ -75,7 +185,7 @@ RankingPage() {
   }
 
   // ======================================
-  // Normalize
+  // Semantic Groups
   // ======================================
 
   const semanticGroups =
@@ -101,114 +211,30 @@ RankingPage() {
     semanticGroups.length === 0
 
   // ======================================
-  // Hero Labels
+  // Hero Semantic Labels
   // ======================================
 
-  const heroLabels =
+  const heroSemanticLabels =
 
     semanticGroups.flatMap(
       ([, items]) => (
 
-        items.map(
-          item => item.name
+        prepareSemanticNavigation(
+          items as SemanticAttribute[]
+        ).map(
+          item => ({
+
+            name:
+              item.name,
+
+            slug:
+              item.slug,
+
+          })
         )
 
       )
     )
-
-  // ======================================
-  // Group Title
-  // ======================================
-
-  function getGroupTitle(
-    key: string
-  ) {
-
-    const map = {
-
-      usage:
-        '用途別ランキング',
-
-      gpu:
-        'GPUランキング',
-
-      maker:
-        'メーカー別ランキング',
-
-      memory:
-        'メモリ別ランキング',
-
-      storage:
-        'ストレージ別ランキング',
-
-      cpu:
-        'CPU別ランキング',
-
-      ai:
-        'AI用途ランキング',
-
-      workload:
-        '作業用途ランキング',
-
-      panel:
-        'ディスプレイ別ランキング',
-
-      resolution:
-        '解像度別ランキング',
-    }
-
-    return (
-      map[key]
-      || `${key} ランキング`
-    )
-  }
-
-  // ======================================
-  // Group Description
-  // ======================================
-
-  function getGroupDescription(
-    key: string
-  ) {
-
-    const map = {
-
-      usage:
-        'ゲーム・AI・動画編集など、用途からPCを探せます。',
-
-      gpu:
-        'RTX 4060・RTX 4070など、GPU性能から比較できます。',
-
-      maker:
-        '人気メーカー別に比較できます。',
-
-      memory:
-        '16GB・32GB・64GBなど、メモリ容量から探せます。',
-
-      storage:
-        'SSD容量から比較できます。',
-
-      cpu:
-        'CPU性能から比較できます。',
-
-      ai:
-        'AI画像生成やLLM向けPCを探せます。',
-
-      workload:
-        '作業内容から最適な構成を探せます。',
-
-      panel:
-        '液晶タイプから比較できます。',
-
-      resolution:
-        '4K・WQHDなど解像度から比較できます。',
-    }
-
-    return (
-      map[key]
-      || `${key} semantic navigation`
-    )
-  }
 
   // ======================================
   // Render
@@ -229,7 +255,7 @@ RankingPage() {
       <RankingHero
 
         semanticLabels={
-          heroLabels
+          heroSemanticLabels
         }
 
       />
@@ -259,41 +285,54 @@ RankingPage() {
           {semanticGroups.map(
             (
               [key, items]
-            ) => (
+            ) => {
 
-              <SemanticSection
+              const normalizedItems =
 
-                key={key}
+                prepareSemanticNavigation(
+                  items as SemanticAttribute[]
+                )
 
-                group={{
+              return (
 
-                  key,
+                <SemanticSection
 
-                  label:
-                    key.toUpperCase(),
+                  key={key}
 
-                  title:
-                    getGroupTitle(key),
+                  group={{
 
-                  description:
-                    getGroupDescription(key),
+                    key,
 
-                  items:
-                    items.map(
-                      item => ({
+                    label:
+                      key.toUpperCase(),
 
-                        ...item,
+                    title:
+                      getGroupTitle(key),
 
-                        href:
-                          `/ranking/${item.slug}`,
-                      })
-                    ),
+                    description:
+                      getGroupDescription(key),
 
-                }}
+                    href:
+                      `/ranking/${key}`,
 
-              />
+                    items:
 
-            )
+                      normalizedItems.map(
+                        item => ({
+
+                          ...item,
+
+                          href:
+                            `/ranking/${item.slug}`,
+                        })
+                      ),
+
+                  }}
+
+                />
+
+              )
+            }
           )}
 
         </div>
@@ -307,6 +346,5 @@ RankingPage() {
       <FinderCTA />
 
     </main>
-
   )
 }

@@ -24,6 +24,8 @@ export type SemanticGroup = {
 
   description?: string
 
+  href?: string
+
   items: SemanticCardItem[]
 }
 
@@ -35,12 +37,12 @@ function SectionTitle({
   label,
   title,
   description,
-  groupKey,
+  href,
 }: {
   label: string
   title: string
   description?: string
-  groupKey: string
+  href: string
 }) {
 
   return (
@@ -114,9 +116,7 @@ function SectionTitle({
       {/* ================================= */}
 
       <Link
-        href={
-          `/ranking/${groupKey}`
-        }
+        href={href}
 
         className={
           styles.semanticViewAll
@@ -142,16 +142,59 @@ export default function SemanticSection({
 }) {
 
   // ======================================
-  // Empty Guard
+  // Safe
   // ======================================
 
   if (
-    !group?.items?.length
+    !group
+    ||
+    !Array.isArray(
+      group.items
+    )
+    ||
+    !group.items.length
   ) {
 
     return null
 
   }
+
+  // ======================================
+  // Normalize
+  // ======================================
+
+  const normalizedItems =
+
+    group.items.filter(
+      item => (
+
+        !!item?.name
+        &&
+        !!item?.slug
+
+      )
+    )
+
+  // ======================================
+  // Empty
+  // ======================================
+
+  if (
+    !normalizedItems.length
+  ) {
+
+    return null
+
+  }
+
+  // ======================================
+  // Group Href
+  // ======================================
+
+  const groupHref =
+
+    group.href
+    || `/ranking/${group.key}`
 
   // ======================================
   // Render
@@ -183,8 +226,8 @@ export default function SemanticSection({
           group.description
         }
 
-        groupKey={
-          group.key
+        href={
+          groupHref
         }
 
       />
@@ -199,7 +242,7 @@ export default function SemanticSection({
         }
       >
 
-        {group.items.map(
+        {normalizedItems.map(
           (
             item,
             index

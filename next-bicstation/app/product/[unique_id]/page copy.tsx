@@ -15,82 +15,43 @@ import styles
 🔥 HERO
 ========================================= */
 
-import ProductHero
-  from './components/hero/ProductHero'
-
-import ProductHeroTrust
-  from './components/hero/ProductHeroTrust'
-
-import ProductHeroCapability
-  from './components/hero/ProductHeroCapability'
+import ProductHeroSection
+  from './section/ProductHeroSection'
 
 /* =========================================
 🔥 CAPABILITY
 ========================================= */
 
-import ProductCapability
-  from './components/capability/ProductCapability'
-
-import ProductUsageExamples
-  from './components/capability/ProductUsageExamples'
-
-import ProductPerformanceHighlights
-  from './components/capability/ProductPerformanceHighlights'
+import ProductCapabilitySection
+  from './section/ProductCapabilitySection'
 
 /* =========================================
 🔥 TRUST
 ========================================= */
 
-import ProductTrustSection
-  from './components/trust/ProductTrustSection'
-
-import ProductForWho
-  from './components/trust/ProductForWho'
-
-import ProductNotForWho
-  from './components/trust/ProductNotForWho'
-
-import ProductDecisionSupport
-  from './components/trust/ProductDecisionSupport'
+import ProductTrustLayer
+  from './section/ProductTrustSection'
 
 /* =========================================
 🔥 SEMANTIC
 ========================================= */
 
-import ProductSemanticReasons
-  from './components/semantic/ProductSemanticReasons'
+import ProductSemanticSection
+  from './section/ProductSemanticSection'
 
-import ProductSemanticSummary
-  from './components/semantic/ProductSemanticSummary'
-
-import ProductSemanticAccordion
-  from './components/semantic/ProductSemanticAccordion'
-
-/* =========================================
+  /* =========================================
 🔥 SPEC
 ========================================= */
 
-import ProductSpec
-  from './components/spec/ProductSpec'
-
-import ProductCompactSpec
-  from './components/spec/ProductCompactSpec'
-
-import ProductRadar
-  from './components/spec/ProductRadar'
+import ProductSpecSection
+  from './section/ProductSpecSection'
 
 /* =========================================
 🔥 COMPARISON
 ========================================= */
 
-import ProductComparisonLinks
-  from './components/comparison/ProductComparisonLinks'
-
-import ProductAlternativeList
-  from './components/comparison/ProductAlternativeList'
-
-import ProductBetterChoiceGuide
-  from './components/comparison/ProductBetterChoiceGuide'
+import ProductComparisonSection
+  from './section/ProductComparisonSection'
 
 /* =========================================
 🔥 FAQ
@@ -103,27 +64,15 @@ import ProductFaq
 🔥 RECOMMENDATION
 ========================================= */
 
-import ProductRelated
-  from './components/recommendation/ProductRelated'
-
-import ProductSimilarUsage
-  from './components/recommendation/ProductSimilarUsage'
-
-import ProductNextIntent
-  from './components/recommendation/ProductNextIntent'
+import ProductRelatedSection
+  from './section/ProductRelatedSection'
 
 /* =========================================
 🔥 CTA
 ========================================= */
 
-import ProductStickyCTA
-  from './components/cta/ProductStickyCTA'
-
-import ProductFinalCTA
-  from './components/cta/ProductFinalCTA'
-
-import ProductPriceCTA
-  from './components/cta/ProductPriceCTA'
+import ProductCTASection
+  from './section/ProductCTASection'
 
 /* =========================================
 🔥 EMPTY
@@ -131,6 +80,11 @@ import ProductPriceCTA
 
 import ProductEmpty
   from './components/ProductEmpty'
+
+
+import {
+  normalizeProduct,
+} from './utils/normalize-product'
 
 /* =========================================
 🔥 ISR
@@ -168,11 +122,17 @@ export default async function ProductPage({
   // FETCH
   // ======================================
 
-  const product =
-    await fetchPCProductDetail(
-      unique_id
-    )
+  const rawProduct =
+    json?.product
+    || json?.result
+    || json
+    || null
 
+  const product =
+
+    normalizeProduct(
+      rawProduct
+    )
   // ======================================
   // EMPTY
   // ======================================
@@ -202,15 +162,7 @@ export default async function ProductPage({
       first impression
       ================================== */}
 
-      <ProductHero
-        product={product}
-      />
-
-      <ProductHeroTrust
-        product={product}
-      />
-
-      <ProductHeroCapability
+      <ProductHeroSection
         product={product}
       />
 
@@ -219,15 +171,7 @@ export default async function ProductPage({
       real-world usage
       ================================== */}
 
-      <ProductCapability
-        product={product}
-      />
-
-      <ProductUsageExamples
-        product={product}
-      />
-
-      <ProductPerformanceHighlights
+      <ProductCapabilitySection
         product={product}
       />
 
@@ -236,19 +180,7 @@ export default async function ProductPage({
       decision confidence
       ================================== */}
 
-      <ProductTrustSection
-        product={product}
-      />
-
-      <ProductForWho
-        product={product}
-      />
-
-      <ProductNotForWho
-        product={product}
-      />
-
-      <ProductDecisionSupport
+      <ProductTrustLayer
         product={product}
       />
 
@@ -257,15 +189,7 @@ export default async function ProductPage({
       recommendation reasoning
       ================================== */}
 
-      <ProductSemanticReasons
-        product={product}
-      />
-
-      <ProductSemanticSummary
-        product={product}
-      />
-
-      <ProductSemanticAccordion
+      <ProductSemanticSection
         product={product}
       />
 
@@ -274,15 +198,7 @@ export default async function ProductPage({
       secondary information layer
       ================================== */}
 
-      <ProductCompactSpec
-        product={product}
-      />
-
-      <ProductSpec
-        product={product}
-      />
-
-      <ProductRadar
+      <ProductSpecSection
         product={product}
       />
 
@@ -291,15 +207,7 @@ export default async function ProductPage({
       continuation flow
       ================================== */}
 
-      <ProductComparisonLinks
-        product={product}
-      />
-
-      <ProductAlternativeList
-        product={product}
-      />
-
-      <ProductBetterChoiceGuide
+      <ProductComparisonSection
         product={product}
       />
 
@@ -308,15 +216,7 @@ export default async function ProductPage({
       semantic continuation
       ================================== */}
 
-      <ProductRelated
-        product={product}
-      />
-
-      <ProductSimilarUsage
-        product={product}
-      />
-
-      <ProductNextIntent
+      <ProductRelatedSection
         product={product}
       />
 
@@ -334,23 +234,10 @@ export default async function ProductPage({
       conversion support
       ================================== */}
 
-      <ProductPriceCTA
+      <ProductCTASection
         product={product}
       />
-
-      <ProductFinalCTA
-        product={product}
-      />
-
-      {/* ==================================
-      STICKY CTA
-      mobile conversion
-      ================================== */}
-
-      <ProductStickyCTA
-        product={product}
-      />
-
+      
     </main>
 
   )

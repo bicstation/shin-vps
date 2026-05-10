@@ -7,6 +7,17 @@ import styles
   from '../page.module.css'
 
 /* =========================================
+🔥 Semantic Label
+========================================= */
+
+export type SemanticLabel = {
+
+  name: string
+
+  slug: string
+}
+
+/* =========================================
 🔥 Props
 ========================================= */
 
@@ -16,24 +27,8 @@ type RankingHeroProps = {
 
   description?: string
 
-  semanticLabels?: string[]
+  semanticLabels?: SemanticLabel[]
 }
-
-/* =========================================
-🔥 Default Labels
-========================================= */
-
-const DEFAULT_LABELS = [
-
-  'ゲーミングPC',
-  'AI画像生成',
-  '動画編集',
-  'RTX 4070',
-  'RTX 4080',
-  'コスパ重視',
-  '初心者向け',
-  'クリエイター向け',
-]
 
 /* =========================================
 🔥 Ranking Hero
@@ -44,11 +39,57 @@ export default function RankingHero({
     '用途から最適なPCを探す',
 
   description =
-    'ゲーム・AI・動画編集など、やりたいことから最適なPCを比較できます。',
+    'ゲーム・AI画像生成・動画編集など、やりたいことから最適なPCを比較できます。',
 
-  semanticLabels =
-    DEFAULT_LABELS,
+  semanticLabels = [],
 }: RankingHeroProps) {
+
+  // ======================================
+  // Normalize
+  // ======================================
+
+  const normalizedLabels =
+
+    Array.isArray(
+      semanticLabels
+    )
+
+      ? semanticLabels.filter(
+          item => (
+
+            !!item?.name
+            &&
+            !!item?.slug
+
+          )
+        )
+
+      : []
+
+  // ======================================
+  // Unique
+  // ======================================
+
+  const uniqueLabels =
+
+    Array.from(
+
+      new Map(
+
+        normalizedLabels.map(
+          item => ([
+            item.slug,
+            item,
+          ])
+        )
+
+      ).values()
+
+    )
+
+  // ======================================
+  // Render
+  // ======================================
 
   return (
 
@@ -124,42 +165,46 @@ export default function RankingHero({
         {/* Semantic Chips */}
         {/* =============================== */}
 
-        <div
-          className={
-            styles.heroSemanticRow
-          }
-        >
+        {!!uniqueLabels.length && (
 
-          {semanticLabels.map(
-            (
-              label,
-              index
-            ) => (
+          <div
+            className={
+              styles.heroSemanticRow
+            }
+          >
 
-              <Link
+            {uniqueLabels.map(
+              (
+                item,
+                index
+              ) => (
 
-                key={
-                  label
-                  || index
-                }
+                <a
 
-                href={
-                  `/ranking/${encodeURIComponent(label)}`
-                }
+                  key={
+                    item.slug
+                    || index
+                  }
 
-                className={
-                  styles.heroSemanticChip
-                }
-              >
+                  href={
+                    `/ranking/${item.slug}`
+                  }
 
-                {label}
+                  className={
+                    styles.heroSemanticChip
+                  }
+                >
 
-              </Link>
+                  {item.name}
 
-            )
-          )}
+                </a>
 
-        </div>
+              )
+            )}
+
+          </div>
+
+        )}
 
       </div>
 

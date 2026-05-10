@@ -130,6 +130,10 @@ class PCProductSerializer(
     # image_url = serializers.SerializerMethodField()
 
     radar_chart = serializers.SerializerMethodField()
+    
+    semantic_schema_version = serializers.SerializerMethodField()
+    
+    recommendation_reason = serializers.SerializerMethodField()
 
     rank = serializers.IntegerField(
         required=False,
@@ -216,6 +220,7 @@ class PCProductSerializer(
             # ==================================================
             'ai_summary',
             'ai_content',
+            'recommendation_reason',
 
             # ==================================================
             # Extra
@@ -223,6 +228,8 @@ class PCProductSerializer(
             'price_history',
 
             'rank',
+            
+            'semantic_schema_version',
 
             # ==================================================
             # Affiliate
@@ -330,7 +337,76 @@ class PCProductSerializer(
 
         return data
     
+    # ======================================================
+    # Semantic Schema Version
+    # ======================================================
+    def get_semantic_schema_version(
+        self,
+        obj
+    ):
+
+        return "v1"
     
+    # ======================================================
+    # Recommendation Reason
+    # ======================================================
+    def get_recommendation_reason(
+        self,
+        obj
+    ):
+
+        reasons = []
+
+        # --------------------------------------------------
+        # GPU
+        # --------------------------------------------------
+        if obj.score_gpu and obj.score_gpu >= 90:
+
+            reasons.append(
+                "高性能GPU搭載"
+            )
+
+        # --------------------------------------------------
+        # AI
+        # --------------------------------------------------
+        if obj.score_ai and obj.score_ai >= 80:
+
+            reasons.append(
+                "AI用途に最適"
+            )
+
+        # --------------------------------------------------
+        # Portable
+        # --------------------------------------------------
+        if (
+            obj.score_portable
+            and obj.score_portable >= 80
+        ):
+
+            reasons.append(
+                "持ち運びしやすい"
+            )
+
+        # --------------------------------------------------
+        # Cost Performance
+        # --------------------------------------------------
+        if (
+            obj.score_cost
+            and obj.score_cost >= 80
+        ):
+
+            reasons.append(
+                "コスパが高い"
+            )
+
+        # --------------------------------------------------
+        # Fallback
+        # --------------------------------------------------
+        if not reasons:
+
+            return "バランスの良い構成"
+
+        return "・".join(reasons)
     # ======================================================
     # Cached Image
     # ======================================================

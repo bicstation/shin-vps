@@ -186,7 +186,8 @@ class PCProductRankingView(
             queryset = queryset.order_by(
                 "-created_at"
             )
-        return queryset[:20]        
+        return queryset[:20]
+      
     def list(self, request, *args, **kwargs):
 
         queryset = self.get_queryset()
@@ -438,6 +439,38 @@ class PCProductListAPIView(
             )
 
         return queryset[:20]
+    
+    def list(self, request, *args, **kwargs):
+
+        queryset = self.filter_queryset(
+            self.get_queryset()
+        )
+
+        page = self.paginate_queryset(
+            queryset
+        )
+
+        serializer = self.get_serializer(
+            page,
+            many=True
+        )
+
+        return Response({
+
+            "success": True,
+
+            "count":
+                self.paginator.count,
+
+            "next":
+                self.paginator.get_next_link(),
+
+            "previous":
+                self.paginator.get_previous_link(),
+
+            "products":
+                serializer.data
+        })
 
 # --------------------------------------------------------------------------
 # 3. 📊 Sidebar Stats
@@ -492,9 +525,13 @@ def pc_sidebar_stats(request):
                 attr.semantic_weight,
         })
 
-    return Response(
-        sidebar
-    )
+    return Response({
+
+        "success": True,
+
+        "sidebar":
+            sidebar
+    })
 
 
 # --------------------------------------------------------------------------
@@ -533,10 +570,13 @@ def pc_product_detail(
             )
         )
 
-        return Response(
-            serializer.data
-        )
+        return Response({
 
+            "success": True,
+
+            "product":
+                serializer.data
+        })
     except PCProduct.DoesNotExist:
 
         return Response(
@@ -905,4 +945,11 @@ def get_related_pc_products(
             results[i]._matched_attributes
         )
 
-    return Response(data)
+
+    return Response({
+
+        "success": True,
+
+        "products":
+            data
+    })
