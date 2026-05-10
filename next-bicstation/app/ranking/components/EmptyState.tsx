@@ -1,8 +1,10 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/EmptyState.tsx
 
-import Link from 'next/link'
+import Link
+  from 'next/link'
 
-import styles from '../page.module.css'
+import styles
+  from '../page.module.css'
 
 /* =========================================
 🔥 Props
@@ -21,19 +23,19 @@ type EmptyStateProps = {
 🔥 Empty State
 ========================================= */
 
-export function EmptyState({
+export default function EmptyState({
   title =
-    'semantic data unavailable',
+    'ランキングデータを読み込めませんでした',
 
   description =
-    'semantic authority / ranking API / backend semantic engine を確認してください。',
+    '現在ランキングデータが取得できません。API接続または semantic backend を確認してください。',
 
   showReload = true,
 }: EmptyStateProps) {
 
   return (
 
-    <div
+    <section
       className={
         styles.empty
       }
@@ -54,7 +56,9 @@ export function EmptyState({
             styles.emptyLabel
           }
         >
-          Semantic Platform Status
+
+          RANKING STATUS
+
         </div>
 
         {/* ================================= */}
@@ -66,7 +70,9 @@ export function EmptyState({
             styles.emptyTitle
           }
         >
+
           {title}
+
         </h2>
 
         {/* ================================= */}
@@ -78,7 +84,9 @@ export function EmptyState({
             styles.emptyText
           }
         >
+
           {description}
+
         </p>
 
         {/* ================================= */}
@@ -100,7 +108,21 @@ export function EmptyState({
                 styles.emptyButton
               }
             >
-              → reload semantic navigation
+
+              ランキングを再読み込み
+
+            </Link>
+
+            <Link
+              href="/"
+
+              className={
+                styles.emptySubButton
+              }
+            >
+
+              トップページへ戻る
+
             </Link>
 
           </div>
@@ -109,6 +131,6 @@ export function EmptyState({
 
       </div>
 
-    </div>
+    </section>
   )
 }

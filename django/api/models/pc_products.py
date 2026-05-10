@@ -98,12 +98,21 @@ class PCAttribute(models.Model):
             "primary / secondary / "
             "highlight / brand"
         )
-    )
+    )   
 
     semantic_weight = models.FloatField(
         'セマンティック重要度',
         default=0,
         help_text="0.0 - 1.0"
+    )
+    
+    is_ranking_enabled = models.BooleanField(
+        'ランキング対象',
+        default=False,
+        help_text=(
+            "semantic ranking endpoint "
+            "対象属性"
+        )
     )
 
     icon = models.CharField(

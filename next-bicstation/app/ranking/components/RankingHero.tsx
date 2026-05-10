@@ -1,6 +1,10 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/RankingHero.tsx
 
-import styles from '../page.module.css'
+import Link
+  from 'next/link'
+
+import styles
+  from '../page.module.css'
 
 /* =========================================
 🔥 Props
@@ -16,29 +20,31 @@ type RankingHeroProps = {
 }
 
 /* =========================================
-🔥 Default Semantic Labels
+🔥 Default Labels
 ========================================= */
 
 const DEFAULT_LABELS = [
 
-  'usage',
-  'GPU',
-  'maker',
-  'AI',
-  'workload',
-  'recommendation',
+  'ゲーミングPC',
+  'AI画像生成',
+  '動画編集',
+  'RTX 4070',
+  'RTX 4080',
+  'コスパ重視',
+  '初心者向け',
+  'クリエイター向け',
 ]
 
 /* =========================================
 🔥 Ranking Hero
 ========================================= */
 
-export function RankingHero({
+export default function RankingHero({
   title =
-    'semantic recommendation platform',
+    '用途から最適なPCを探す',
 
   description =
-    '用途・性能・semanticから最適な1台を探索',
+    'ゲーム・AI・動画編集など、やりたいことから最適なPCを比較できます。',
 
   semanticLabels =
     DEFAULT_LABELS,
@@ -53,66 +59,107 @@ export function RankingHero({
     >
 
       {/* ================================= */}
-      {/* Label */}
+      {/* Background Glow */}
       {/* ================================= */}
 
       <div
         className={
-          styles.heroLabel
+          styles.heroGlow
         }
-      >
-        Semantic Ranking Explorer
-      </div>
+      />
 
       {/* ================================= */}
-      {/* Title */}
-      {/* ================================= */}
-
-      <h1
-        className={
-          styles.heroTitle
-        }
-      >
-        {title}
-      </h1>
-
-      {/* ================================= */}
-      {/* Description */}
-      {/* ================================= */}
-
-      <p
-        className={
-          styles.heroDescription
-        }
-      >
-        {description}
-      </p>
-
-      {/* ================================= */}
-      {/* Semantic Chips */}
+      {/* Inner */}
       {/* ================================= */}
 
       <div
         className={
-          styles.heroSemanticRow
+          styles.heroInner
         }
       >
 
-        {semanticLabels.map(
-          label => (
+        {/* =============================== */}
+        {/* Label */}
+        {/* =============================== */}
 
-            <div
-              key={label}
+        <div
+          className={
+            styles.heroLabel
+          }
+        >
 
-              className={
-                styles.heroSemanticChip
-              }
-            >
-              {label}
-            </div>
+          AI PC RANKING
 
-          )
-        )}
+        </div>
+
+        {/* =============================== */}
+        {/* Title */}
+        {/* =============================== */}
+
+        <h1
+          className={
+            styles.heroTitle
+          }
+        >
+
+          {title}
+
+        </h1>
+
+        {/* =============================== */}
+        {/* Description */}
+        {/* =============================== */}
+
+        <p
+          className={
+            styles.heroDescription
+          }
+        >
+
+          {description}
+
+        </p>
+
+        {/* =============================== */}
+        {/* Semantic Chips */}
+        {/* =============================== */}
+
+        <div
+          className={
+            styles.heroSemanticRow
+          }
+        >
+
+          {semanticLabels.map(
+            (
+              label,
+              index
+            ) => (
+
+              <Link
+
+                key={
+                  label
+                  || index
+                }
+
+                href={
+                  `/ranking/${encodeURIComponent(label)}`
+                }
+
+                className={
+                  styles.heroSemanticChip
+                }
+              >
+
+                {label}
+
+              </Link>
+
+            )
+          )}
+
+        </div>
 
       </div>
 

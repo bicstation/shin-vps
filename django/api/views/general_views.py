@@ -98,10 +98,12 @@ class PCProductRankingView(
     ]
 
     def get_queryset(self):
-
+        
         slug = self.kwargs.get(
             "slug"
         )
+        print("SLUG:", slug)
+        print(self.request.query_params)
 
         queryset = (
             PCProduct.objects
@@ -117,7 +119,24 @@ class PCProductRankingView(
         # --------------------------------------------------
         # Semantic Filtering
         # --------------------------------------------------
+        attribute = None
+        ranking_mode = "listing"
+        
         if slug:
+
+            attribute = (
+                PCAttribute.objects.filter(
+                    slug=slug
+                ).first()
+             )
+
+            if (
+                attribute
+                and
+                attribute.is_ranking_enabled
+            ):
+
+                ranking_mode = "semantic"
 
             if slug != "score":
 
@@ -154,19 +173,74 @@ class PCProductRankingView(
 
                 queryset = queryset.distinct()
 
-        return queryset.order_by(
-            "-spec_score"
-        )[:20]
-
+        print("COUNT:", queryset.count())
+        # return queryset.order_by(
+        #     "-spec_score"
+        # )[:20]
+        
+        if ranking_mode == "semantic":
+            queryset = queryset.order_by(
+                "-spec_score"
+            )
+        else:
+            queryset = queryset.order_by(
+                "-created_at"
+            )
+        return queryset[:20]        
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({
-            "success": True,
-            "count": len(serializer.data),
-            "products": serializer.data
-        })
 
+        queryset = self.get_queryset()
+
+        serializer = self.get_serializer(
+            queryset,
+            many=True
+        )
+
+        # ==========================================
+        # Recalculate Ranking Mode
+        # ==========================================
+        slug = self.kwargs.get("slug")
+
+        ranking_mode = "listing"
+
+        if slug:
+
+            attribute = (
+                PCAttribute.objects.filter(
+                    slug=slug
+                ).first()
+            )
+
+            if (
+                attribute
+                and
+                attribute.is_ranking_enabled
+            ):
+
+                ranking_mode = "semantic"
+
+        print(
+            "LIST RANKING MODE:",
+            ranking_mode
+        )
+
+        return Response({
+
+            "success": True,
+
+            "ranking_mode":
+                ranking_mode,
+
+            "semantic_slug":
+                slug,
+
+            "count":
+                len(serializer.data),
+
+            "products":
+                serializer.data
+        })
+        
 # --------------------------------------------------------------------------
 # 2. 📦 PC製品一覧
 # --------------------------------------------------------------------------
@@ -211,6 +285,59 @@ class PCProductListAPIView(
     ]
 
     def get_queryset(self):
+
+        print("==========")
+        print("KWARGS:", self.kwargs)
+
+        slug = self.kwargs.get("slug")
+
+        print("SLUG:", slug)
+
+        # ==========================================
+        # Semantic Ranking Detection
+        # ==========================================
+        attribute = None
+
+        ranking_mode = "listing"
+
+        if slug:
+
+            attribute = (
+                PCAttribute.objects.filter(
+                    slug=slug
+                ).first()
+            )
+
+            if (
+                attribute
+                and
+                attribute.is_ranking_enabled
+            ):
+
+                ranking_mode = "semantic"
+
+        print("ATTRIBUTE:", attribute)
+
+        if attribute:
+
+            print(
+                "RANKING ENABLED:",
+                attribute.is_ranking_enabled
+            )
+
+        print(
+            "RANKING MODE:",
+            ranking_mode
+        )
+
+        print("==========")
+
+        # ==========================================
+        # Save ranking mode
+        # ==========================================
+        self._ranking_mode = (
+            ranking_mode
+        )
 
         queryset = (
 
@@ -260,10 +387,19 @@ class PCProductListAPIView(
             )
         )
 
-        for slug in attribute_slugs:
+        for attr_slug in attribute_slugs:
 
             queryset = queryset.filter(
-                attributes__slug=unquote(slug)
+                attributes__slug=unquote(attr_slug)
+            )
+
+        # --------------------------------------------------
+        # Ranking Slug Filter
+        # --------------------------------------------------
+        if slug:
+
+            queryset = queryset.filter(
+                attributes__slug=slug
             )
 
         # --------------------------------------------------
@@ -286,8 +422,22 @@ class PCProductListAPIView(
             except:
                 pass
 
-        return queryset
+        # ==========================================
+        # Semantic Ranking Branch
+        # ==========================================
+        if ranking_mode == "semantic":
 
+            queryset = queryset.order_by(
+                "-spec_score"
+            )
+
+        else:
+
+            queryset = queryset.order_by(
+                "-created_at"
+            )
+
+        return queryset[:20]
 
 # --------------------------------------------------------------------------
 # 3. 📊 Sidebar Stats

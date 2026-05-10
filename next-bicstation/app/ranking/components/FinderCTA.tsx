@@ -1,8 +1,10 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/FinderCTA.tsx
 
-import Link from 'next/link'
+import Link
+  from 'next/link'
 
-import styles from '../page.module.css'
+import styles
+  from '../page.module.css'
 
 /* =========================================
 🔥 Props
@@ -20,29 +22,31 @@ type FinderCTAProps = {
 }
 
 /* =========================================
-🔥 Default Semantic Keywords
+🔥 Default Keywords
 ========================================= */
 
 const DEFAULT_KEYWORDS = [
 
-  'gaming',
-  'creator',
-  'AI',
-  'budget',
-  'workload',
-  'recommendation',
+  'ゲーミングPC',
+  'AI画像生成',
+  '動画編集',
+  'RTX 4070',
+  'RTX 4080',
+  'コスパ重視',
+  '初心者向け',
+  'クリエイター向け',
 ]
 
 /* =========================================
 🔥 Finder CTA
 ========================================= */
 
-export function FinderCTA({
+export default function FinderCTA({
   title =
-    'semantic recommendation engine',
+    '用途から最適なPCを探す',
 
   description =
-    '用途・性能・semantic preference から最適構成を探索。',
+    'ゲーム・AI画像生成・動画編集など、やりたいことから最適なPCを探せます。',
 
   href =
     '/pc-finder',
@@ -55,7 +59,7 @@ export function FinderCTA({
 
     <section
       className={
-        styles.finderSection
+        styles.finder
       }
     >
 
@@ -74,7 +78,9 @@ export function FinderCTA({
             styles.finderLabel
           }
         >
-          AI Semantic Finder
+
+          AI PC FINDER
+
         </div>
 
         {/* ================================= */}
@@ -86,7 +92,9 @@ export function FinderCTA({
             styles.finderTitle
           }
         >
+
           {title}
+
         </h2>
 
         {/* ================================= */}
@@ -98,31 +106,46 @@ export function FinderCTA({
             styles.finderDescription
           }
         >
+
           {description}
+
         </p>
 
         {/* ================================= */}
-        {/* Semantic Keywords */}
+        {/* Keywords */}
         {/* ================================= */}
 
         <div
           className={
-            styles.finderKeywordRow
+            styles.finderTags
           }
         >
 
           {semanticKeywords.map(
-            keyword => (
+            (
+              keyword,
+              index
+            ) => (
 
-              <div
-                key={keyword}
+              <Link
+
+                key={
+                  keyword
+                  || index
+                }
+
+                href={
+                  `/ranking/${encodeURIComponent(keyword)}`
+                }
 
                 className={
-                  styles.finderKeyword
+                  styles.finderTag
                 }
               >
+
                 {keyword}
-              </div>
+
+              </Link>
 
             )
           )}
@@ -130,18 +153,40 @@ export function FinderCTA({
         </div>
 
         {/* ================================= */}
-        {/* CTA */}
+        {/* Actions */}
         {/* ================================= */}
 
-        <Link
-          href={href}
-
+        <div
           className={
-            styles.finderButton
+            styles.finderAction
           }
         >
-          → semantic finder を使う
-        </Link>
+
+          <Link
+            href={href}
+
+            className={
+              styles.finderButton
+            }
+          >
+
+            PC Finder を使う
+
+          </Link>
+
+          <Link
+            href="/ranking"
+
+            className={
+              styles.finderSubButton
+            }
+          >
+
+            ランキング一覧を見る
+
+          </Link>
+
+        </div>
 
       </div>
 

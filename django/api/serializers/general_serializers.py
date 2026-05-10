@@ -126,6 +126,8 @@ class PCProductSerializer(
     # Extra Fields
     # ======================================================
     price_history = serializers.SerializerMethodField()
+    
+    # image_url = serializers.SerializerMethodField()
 
     radar_chart = serializers.SerializerMethodField()
 
@@ -327,3 +329,36 @@ class PCProductSerializer(
         )
 
         return data
+    
+    
+    # ======================================================
+    # Cached Image
+    # ======================================================
+    # def get_image_url(self, obj):
+
+    #     # -----------------------------------------
+    #     # Cached Local Image
+    #     # -----------------------------------------
+    #     if obj.image_local:
+
+    #         try:
+
+    #             request = self.context.get(
+    #                 "request"
+    #             )
+
+    #             if request:
+
+    #                 return request.build_absolute_uri(
+    #                     obj.image_local.url
+    #                 )
+
+    #             return obj.image_local.url
+
+    #         except Exception:
+    #             pass
+
+    #     # -----------------------------------------
+    #     # Fallback External URL
+    #     # -----------------------------------------
+    #     return obj.image_url

@@ -1,3 +1,5 @@
+// /home/maya/shin-dev/shin-vps/shared/components/organisms/cards/HeroRankingCard.tsx
+
 /* eslint-disable @next/next/no-img-element */
 
 import Link
@@ -5,10 +7,6 @@ import Link
 
 import styles
   from './HeroRankingCard.module.css'
-
-import {
-  formatPrice,
-} from '@/shared/lib/utils/formatPrice'
 
 type Props = {
   product: any
@@ -19,43 +17,51 @@ export default function HeroRankingCard({
 }: Props) {
 
   // =====================================
-  // Compact Semantic Specs
+  // Semantic Tags
   // =====================================
 
-  const compactSpecs = [
+  const tags = [
 
-    product?.gpu_name,
+    product?.gpu_model,
 
-    product?.cpu_name,
+    product?.cpu_model,
 
-    product?.memory,
+    product?.memory_gb
+      ? `${product.memory_gb}GB`
+      : null,
 
-    product?.storage,
+    product?.storage_gb
+      ? `${product.storage_gb}GB SSD`
+      : null,
 
   ].filter(Boolean)
 
   // =====================================
-  // Intent Tags
+  // Price
   // =====================================
 
-  const intentTags = [
+  const price =
 
-    '🎮 FPS特化',
+    product?.price
 
-    '⚡ AI生成向け',
+      ? `¥${Number(
+          product.price
+        ).toLocaleString()}`
 
-    '🎬 動画編集対応',
-
-  ]
+      : '価格未設定'
 
   // =====================================
-  // Top Reason
+  // AI Summary
   // =====================================
 
-  const topReason =
+  const summary =
 
-    product?.semantic_reasons?.[0]
-    || 'FPS性能が非常に高い'
+    product?.ai_summary
+      || 'FPSゲーム・AI画像生成・動画編集まで快適に対応できる高性能モデルです。'
+
+  // =====================================
+  // Render
+  // =====================================
 
   return (
 
@@ -65,83 +71,181 @@ export default function HeroRankingCard({
       }
     >
 
-      {/* ================================
-      TOP BAR
-      ================================ */}
+      {/* ============================== */}
+      {/* Left */}
+      {/* ============================== */}
 
       <div
         className={
-          styles.topBar
+          styles.left
         }
       >
 
-        <div
-          className={
-            styles.rankBadge
-          }
-        >
-          #{product?.ranking || 1}
-        </div>
+        {/* ============================ */}
+        {/* Top Label */}
+        {/* ============================ */}
 
         <div
           className={
-            styles.scoreBadge
+            styles.topRow
           }
         >
-          ★★★★★ 92%
-        </div>
-
-      </div>
-
-      {/* ================================
-      INTENT TAGS
-      ================================ */}
-
-      <div
-        className={
-          styles.intentRow
-        }
-      >
-
-        {intentTags.map((tag) => (
 
           <div
-            key={tag}
-
             className={
-              styles.intentTag
+              styles.rankBadge
             }
           >
-            {tag}
+            RANK #1
           </div>
 
-        ))}
+          <div
+            className={
+              styles.recommendBadge
+            }
+          >
+            AIおすすめ
+          </div>
 
-      </div>
+        </div>
 
-      {/* ================================
-      HERO AREA
-      ================================ */}
+        {/* ============================ */}
+        {/* Title */}
+        {/* ============================ */}
 
-      <div
-        className={
-          styles.heroArea
-        }
-      >
+        <h2
+          className={
+            styles.title
+          }
+        >
 
-        {/* ==============================
-        IMAGE
-        ============================== */}
+          {product?.name}
+
+        </h2>
+
+        {/* ============================ */}
+        {/* Maker */}
+        {/* ============================ */}
 
         <div
           className={
-            styles.imageWrap
+            styles.maker
           }
         >
+
+          {product?.maker}
+
+        </div>
+
+        {/* ============================ */}
+        {/* Description */}
+        {/* ============================ */}
+
+        <div
+          className={
+            styles.description
+          }
+        >
+
+          {summary}
+
+        </div>
+
+        {/* ============================ */}
+        {/* Tags */}
+        {/* ============================ */}
+
+        <div
+          className={
+            styles.tags
+          }
+        >
+
+          {tags.map((tag) => (
+
+            <div
+              key={tag}
+
+              className={
+                styles.tag
+              }
+            >
+
+              {tag}
+
+            </div>
+
+          ))}
+
+        </div>
+
+        {/* ============================ */}
+        {/* Price */}
+        {/* ============================ */}
+
+        <div
+          className={
+            styles.price
+          }
+        >
+
+          {price}
+
+        </div>
+
+        {/* ============================ */}
+        {/* CTA */}
+        {/* ============================ */}
+
+        <div
+          className={
+            styles.actions
+          }
+        >
+
+          <Link
+            href={
+              `/product/${product?.unique_id}`
+            }
+
+            className={
+              styles.primaryButton
+            }
+          >
+
+            詳細を見る
+
+          </Link>
+
+          <button
+            className={
+              styles.secondaryButton
+            }
+          >
+
+            比較する
+
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* ============================== */}
+      {/* Right */}
+      {/* ============================== */}
+
+      <div
+        className={
+          styles.right
+        }
+      >
+
+        {product?.image_url && (
 
           <img
             src={
-              product?.image_url
+              product.image_url
             }
 
             alt={
@@ -153,183 +257,7 @@ export default function HeroRankingCard({
             }
           />
 
-        </div>
-
-        {/* ==============================
-        CONTENT
-        ============================== */}
-
-        <div
-          className={
-            styles.content
-          }
-        >
-
-          {/* ============================
-          MAKER
-          ============================ */}
-
-          <div
-            className={
-              styles.maker
-            }
-          >
-            {product?.maker || 'GALLERIA'}
-          </div>
-
-          {/* ============================
-          TITLE
-          ============================ */}
-
-          <h3
-            className={
-              styles.title
-            }
-          >
-            {product?.name}
-          </h3>
-
-          {/* ============================
-          TOP REASON
-          ============================ */}
-
-          <div
-            className={
-              styles.reason
-            }
-          >
-            ✓ {topReason}
-          </div>
-
-          {/* ============================
-          COMPACT SPEC ROW
-          ============================ */}
-
-          <div
-            className={
-              styles.specRow
-            }
-          >
-
-            {compactSpecs.map((spec) => (
-
-              <div
-                key={spec}
-
-                className={
-                  styles.specChip
-                }
-              >
-                {spec}
-              </div>
-
-            ))}
-
-          </div>
-
-          {/* ============================
-          TRUST ROW
-          ============================ */}
-
-          <div
-            className={
-              styles.trustRow
-            }
-          >
-
-            <div
-              className={
-                styles.trustItem
-              }
-            >
-              初心者人気
-            </div>
-
-            <div
-              className={
-                styles.trustItem
-              }
-            >
-              AI用途対応
-            </div>
-
-          </div>
-
-          {/* ============================
-          BOTTOM
-          ============================ */}
-
-          <div
-            className={
-              styles.bottom
-            }
-          >
-
-            {/* ==========================
-            PRICE
-            ========================== */}
-
-            <div
-              className={
-                styles.priceArea
-              }
-            >
-
-              <div
-                className={
-                  styles.priceLabel
-                }
-              >
-                最安価格
-              </div>
-
-              <div
-                className={
-                  styles.price
-                }
-              >
-                ¥{formatPrice(
-                  product?.price
-                )}
-              </div>
-
-            </div>
-
-            {/* ==========================
-            CTA
-            ========================== */}
-
-            <div
-              className={
-                styles.ctaRow
-              }
-            >
-
-              <Link
-                href={
-                  `/products/${product?.unique_id}`
-                }
-
-                className={
-                  styles.primaryButton
-                }
-              >
-                価格を見る
-              </Link>
-
-              <button
-                className={
-                  styles.secondaryButton
-                }
-              >
-                比較する
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
+        )}
 
       </div>
 

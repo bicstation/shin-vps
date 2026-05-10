@@ -1,98 +1,32 @@
-// /shared/lib/api/django/pc/utils/buildEndpoint.ts
+// /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/utils/buildEndpoint.ts
+// Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
-🔥 Server Detection
+🔥 API Base URL
 ========================================= */
 
-const IS_SERVER =
+const API_BASE_URL =
+
   typeof window ===
   'undefined'
 
-/* =========================================
-🔥 API Base
-========================================= */
-
-const API_BASE =
-
-  IS_SERVER
-
     ? (
-        process.env.INTERNAL_API_URL
-        || 'http://django-v3:8000/api'
+
+        process.env
+          .INTERNAL_API_URL
+
+        || ''
+
       )
 
     : (
-        process.env.NEXT_PUBLIC_API_URL
-        || 'http://localhost:8083/api'
+
+        process.env
+          .NEXT_PUBLIC_API_URL
+
+        || ''
+
       )
-
-/* =========================================
-🔥 Build Query
-========================================= */
-
-function buildQuery(
-  query?: Record<
-    string,
-    unknown
-  >
-) {
-
-  if (!query) {
-    return ''
-  }
-
-  const params =
-    new URLSearchParams()
-
-  Object.entries(
-    query
-  ).forEach(([
-
-    key,
-    value,
-
-  ]) => {
-
-    if (
-
-      value === undefined
-      || value === null
-      || value === ''
-
-    ) {
-      return
-    }
-
-    if (
-      Array.isArray(value)
-    ) {
-
-      value.forEach(
-        item => {
-
-          params.append(
-            key,
-            String(item)
-          )
-        }
-      )
-
-      return
-    }
-
-    params.append(
-      key,
-      String(value)
-    )
-  })
-
-  const queryString =
-    params.toString()
-
-  return queryString
-    ? `?${queryString}`
-    : ''
-}
 
 /* =========================================
 🔥 Build Endpoint
@@ -101,13 +35,21 @@ function buildQuery(
 export function
 buildEndpoint(
 
-  path: string,
+  path: string
+): string {
 
-  query?: Record<
-    string,
-    unknown
-  >
-) {
+  // ======================================
+  // Base URL
+  // ======================================
+
+  const baseUrl =
+
+    API_BASE_URL
+      .replace(/\/$/, '')
+
+  // ======================================
+  // Normalize Path
+  // ======================================
 
   const normalizedPath =
 
@@ -117,8 +59,26 @@ buildEndpoint(
 
       : `/${path}`
 
-  return (
-    `${API_BASE}${normalizedPath}`
-    + buildQuery(query)
+  // ======================================
+  // Build
+  // ======================================
+
+  const endpoint =
+
+    `${baseUrl}${normalizedPath}`
+
+  // ======================================
+  // Debug
+  // ======================================
+
+  console.log(
+    '🔥 BUILD ENDPOINT:',
+    endpoint
   )
+
+  // ======================================
+  // Return
+  // ======================================
+
+  return endpoint
 }

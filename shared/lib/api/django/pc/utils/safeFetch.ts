@@ -1,25 +1,5 @@
 // /home/maya/shin-dev/shin-vps/shared/lib/api/django/pc/utils/safeFetch.ts
-
-/* =========================================
-🔥 Logger
-========================================= */
-
-import {
-
-  logRequest,
-
-  logResponse,
-
-  logError,
-
-} from './apiLogger'
-
-/* =========================================
-🔥 Config
-========================================= */
-
-const DEFAULT_TIMEOUT =
-  10000
+// Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
 🔥 Safe Fetch
@@ -30,58 +10,32 @@ safeFetch<T = any>(
 
   endpoint: string,
 
-  options?: RequestInit,
+  options?: RequestInit
 
-  timeout =
-    DEFAULT_TIMEOUT
-): Promise<T> {
-
-  // ======================================
-  // Abort Controller
-  // ======================================
-
-  const controller =
-    new AbortController()
-
-  const timer =
-    setTimeout(() => {
-
-      controller.abort()
-
-    }, timeout)
+): Promise<T | null> {
 
   try {
-
-    // ====================================
-    // Request Log
-    // ====================================
-
-    logRequest(
-      endpoint,
-      options
-    )
 
     // ====================================
     // Fetch
     // ====================================
 
     const response =
+
       await fetch(
         endpoint,
         {
-
           ...options,
 
-          signal:
-            controller.signal,
-
           headers: {
-
             'Content-Type':
               'application/json',
 
             ...(options?.headers || {}),
           },
+
+          cache:
+            'no-store',
         }
       )
 
@@ -91,25 +45,19 @@ safeFetch<T = any>(
 
     if (!response.ok) {
 
-      const errorPayload = {
+      console.error(
 
-        status:
-          response.status,
+        '🔥 API RESPONSE ERROR',
 
-        statusText:
-          response.statusText,
+        {
+          status:
+            response.status,
 
-        endpoint,
-      }
-
-      logError(
-        'API RESPONSE ERROR',
-        errorPayload
+          endpoint,
+        }
       )
 
-      throw new Error(
-        `API Error: ${response.status}`
-      )
+      return null
     }
 
     // ====================================
@@ -120,59 +68,27 @@ safeFetch<T = any>(
       await response.json()
 
     // ====================================
-    // Response Log
+    // Success
     // ====================================
-
-    logResponse(
-      endpoint,
-      data
-    )
 
     return data
 
   } catch (error) {
 
     // ====================================
-    // Abort
+    // Network Error
     // ====================================
 
-    if (
-      error instanceof DOMException
-      && error.name === 'AbortError'
-    ) {
+    console.error(
 
-      logError(
-        'API TIMEOUT',
-        {
-          endpoint,
-          timeout,
-        }
-      )
+      '🔥 SAFE FETCH ERROR',
 
-      throw new Error(
-        'API Timeout'
-      )
-    }
-
-    // ====================================
-    // Generic Error
-    // ====================================
-
-    logError(
-      'SAFE FETCH ERROR',
       {
         endpoint,
         error,
       }
     )
 
-    throw error
-
-  } finally {
-
-    clearTimeout(
-      timer
-    )
+    return null
   }
 }
-

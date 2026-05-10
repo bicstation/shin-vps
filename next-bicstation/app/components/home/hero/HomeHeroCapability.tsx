@@ -5,19 +5,19 @@ import styles
 
 const TRUST_POINTS = [
   {
-    title: '初心者でも比較しやすい',
+    title: '初心者でも選びやすい',
     description:
-      '用途ベース recommendation により、スペック知識がなくても探しやすい。',
+      'ゲーム・動画編集・普段使いなど、目的に合わせてPCを探せます。',
   },
   {
-    title: 'AI用途もわかりやすい',
+    title: 'AI向けPCもわかりやすい',
     description:
-      '画像生成・動画編集・LLM用途などを semantic に比較可能。',
+      'AI画像生成や動画編集に向いているPCを比較しやすくしています。',
   },
   {
-    title: '失敗しにくい構成を案内',
+    title: '長く使いやすいPCを比較',
     description:
-      '価格だけでなく、長く使いやすいバランスも重視。',
+      '価格だけでなく、使いやすさや性能バランスも重視しています。',
   },
 ]
 
@@ -54,7 +54,8 @@ export default function HomeHeroTrust() {
             styles.heroTrustTitle
           }
         >
-          比較に迷いにくい
+          はじめてでも
+          比較しやすい
           PC選びへ
         </h2>
 
@@ -64,13 +65,16 @@ export default function HomeHeroTrust() {
           }
         >
           SHIN CORE LINX は、
-          価格だけではなく、
+          スペックだけではなく、
 
-          「何ができるか」
+          「どんなことに向いているか」
 
-          を semantic に整理し、
-          安心して比較を始められる
-          recommendation platform を目指しています。
+          をわかりやすく整理し、
+
+          ゲーム・動画編集・AI画像生成など、
+          目的に合ったPCを
+          比較しやすくする
+          PC比較サービスです。
         </p>
 
       </div>

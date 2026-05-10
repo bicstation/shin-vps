@@ -1,508 +1,186 @@
-/* =========================================
-🔥 Hero Ranking Card v2
-comparison acceleration card
-========================================= */
+/* /home/maya/shin-dev/shin-vps/shared/components/organisms/cards/HeroRankingCard.module.css */
 
 .card {
-position: relative;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 32px;
 
-display: flex;
-flex-direction: column;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.06),
+      rgba(255,255,255,0.02)
+    );
 
-gap: 18px;
+  border:
+    1px solid rgba(255,255,255,0.08);
 
-padding: 24px;
+  border-radius: 32px;
 
-border-radius: 28px;
+  overflow: hidden;
 
-overflow: hidden;
+  color: #fff;
 
-background:
-linear-gradient(
-180deg,
-rgba(15,23,42,.96),
-rgba(2,6,23,1)
-);
-
-border:
-1px solid rgba(255,255,255,.08);
-
-box-shadow:
-0 20px 50px rgba(0,0,0,.32);
-
-transition:
-transform .22s ease,
-border-color .22s ease,
-box-shadow .22s ease;
+  padding: 36px;
 }
 
-.card:hover {
-transform:
-translateY(-4px);
-
-border-color:
-rgba(249,115,22,.22);
-
-box-shadow:
-0 28px 60px rgba(0,0,0,.42);
+.left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-/* =========================================
-🔥 top bar
-========================================= */
-
-.topBar {
-display: flex;
-
-align-items: center;
-justify-content: space-between;
-
-gap: 12px;
+.topRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
 
 .rankBadge {
-display: inline-flex;
+  background: #fff;
+  color: #000;
 
-align-items: center;
-justify-content: center;
+  padding: 8px 14px;
 
-min-height: 34px;
+  border-radius: 999px;
 
-padding: 0 14px;
-
-border-radius: 999px;
-
-background:
-rgba(249,115,22,.12);
-
-border:
-1px solid rgba(249,115,22,.22);
-
-color:
-#fdba74;
-
-font-size: 12px;
-font-weight: 800;
+  font-size: 12px;
+  font-weight: 800;
 }
 
-.scoreBadge {
-color:
-#ffffff;
+.recommendBadge {
+  background:
+    rgba(255,255,255,0.08);
 
-font-size: 13px;
-font-weight: 800;
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 700;
 }
-
-/* =========================================
-🔥 semantic intent
-========================================= */
-
-.intentRow {
-display: flex;
-
-flex-wrap: wrap;
-
-gap: 8px;
-}
-
-.intentTag {
-display: inline-flex;
-
-align-items: center;
-justify-content: center;
-
-min-height: 34px;
-
-padding: 0 12px;
-
-border-radius: 999px;
-
-background:
-rgba(56,189,248,.08);
-
-border:
-1px solid rgba(56,189,248,.18);
-
-color:
-#7dd3fc;
-
-font-size: 12px;
-font-weight: 700;
-}
-
-/* =========================================
-🔥 hero area
-========================================= */
-
-.heroArea {
-display: grid;
-
-grid-template-columns:
-260px 1fr;
-
-gap: 26px;
-}
-
-/* =========================================
-🔥 image
-========================================= */
-
-.imageWrap {
-display: flex;
-
-align-items: center;
-justify-content: center;
-
-padding: 18px;
-
-border-radius: 24px;
-
-background:
-rgba(255,255,255,.03);
-
-border:
-1px solid rgba(255,255,255,.06);
-}
-
-.image {
-width: 100%;
-
-height: auto;
-
-object-fit: contain;
-}
-
-/* =========================================
-🔥 content
-========================================= */
-
-.content {
-display: flex;
-flex-direction: column;
-
-gap: 16px;
-}
-
-/* =========================================
-🔥 maker
-========================================= */
-
-.maker {
-color:
-#94a3b8;
-
-font-size: 12px;
-font-weight: 700;
-
-letter-spacing: .04em;
-
-text-transform: uppercase;
-}
-
-/* =========================================
-🔥 title
-========================================= */
 
 .title {
-margin: 0;
+  margin-top: 24px;
 
-color:
-#ffffff;
-
-font-size:
-clamp(22px, 3vw, 34px);
-
-font-weight: 900;
-
-line-height: 1.28;
-
-letter-spacing: -.03em;
+  font-size: 38px;
+  line-height: 1.3;
+  font-weight: 900;
 }
 
-/* =========================================
-🔥 top reason
-========================================= */
+.maker {
+  margin-top: 14px;
 
-.reason {
-display: inline-flex;
+  font-size: 15px;
 
-align-items: center;
-
-width: fit-content;
-
-min-height: 38px;
-
-padding: 0 14px;
-
-border-radius: 14px;
-
-background:
-rgba(34,197,94,.10);
-
-border:
-1px solid rgba(34,197,94,.18);
-
-color:
-#86efac;
-
-font-size: 13px;
-font-weight: 700;
+  opacity: 0.68;
 }
 
-/* =========================================
-🔥 compact compare row
-========================================= */
+.description {
+  margin-top: 24px;
 
-.specRow {
-display: flex;
+  font-size: 16px;
+  line-height: 1.9;
 
-flex-wrap: wrap;
+  opacity: 0.88;
 
-gap: 10px;
+  white-space: pre-wrap;
 }
 
-.specChip {
-display: inline-flex;
+.tags {
+  display: flex;
+  flex-wrap: wrap;
 
-align-items: center;
-justify-content: center;
+  gap: 10px;
 
-min-height: 40px;
-
-padding: 0 14px;
-
-border-radius: 999px;
-
-background:
-rgba(255,255,255,.05);
-
-border:
-1px solid rgba(255,255,255,.08);
-
-color:
-#ffffff;
-
-font-size: 13px;
-font-weight: 700;
+  margin-top: 28px;
 }
 
-/* =========================================
-🔥 trust row
-========================================= */
+.tag {
+  padding: 8px 14px;
 
-.trustRow {
-display: flex;
+  border-radius: 999px;
 
-flex-wrap: wrap;
+  background:
+    rgba(255,255,255,0.08);
 
-gap: 8px;
-}
-
-.trustItem {
-display: inline-flex;
-
-align-items: center;
-justify-content: center;
-
-min-height: 34px;
-
-padding: 0 12px;
-
-border-radius: 999px;
-
-background:
-rgba(255,255,255,.04);
-
-color:
-#cbd5e1;
-
-font-size: 12px;
-font-weight: 700;
-}
-
-/* =========================================
-🔥 bottom area
-========================================= */
-
-.bottom {
-display: flex;
-
-align-items: center;
-justify-content: space-between;
-
-gap: 20px;
-
-margin-top: 6px;
-
-padding-top: 18px;
-
-border-top:
-1px solid rgba(255,255,255,.08);
-}
-
-/* =========================================
-🔥 price
-========================================= */
-
-.priceArea {
-display: flex;
-flex-direction: column;
-
-gap: 6px;
-}
-
-.priceLabel {
-color:
-#94a3b8;
-
-font-size: 12px;
-font-weight: 700;
+  font-size: 13px;
 }
 
 .price {
-color:
-#ffffff;
+  margin-top: 36px;
 
-font-size: 28px;
-font-weight: 900;
-
-line-height: 1;
+  font-size: 42px;
+  font-weight: 900;
 }
 
-/* =========================================
-🔥 CTA
-========================================= */
+.actions {
+  display: flex;
 
-.ctaRow {
-display: flex;
+  gap: 14px;
 
-gap: 10px;
-}
-
-.primaryButton,
-.secondaryButton {
-display: inline-flex;
-
-align-items: center;
-justify-content: center;
-
-min-height: 50px;
-
-padding: 0 18px;
-
-border-radius: 16px;
-
-font-size: 14px;
-font-weight: 800;
-
-text-decoration: none;
-
-transition:
-transform .18s ease,
-opacity .18s ease,
-border-color .18s ease;
+  margin-top: 28px;
 }
 
 .primaryButton {
-background:
-linear-gradient(
-135deg,
-#f97316,
-#fb923c
-);
+  padding: 16px 24px;
 
-color:
-#ffffff;
+  border-radius: 16px;
 
-box-shadow:
-0 10px 28px rgba(249,115,22,.24);
+  background: #fff;
+
+  color: #000;
+
+  font-weight: 800;
+
+  text-decoration: none;
 }
 
 .secondaryButton {
-background:
-rgba(255,255,255,.05);
+  padding: 16px 24px;
 
-border:
-1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
 
-color:
-#e2e8f0;
+  border:
+    1px solid rgba(255,255,255,0.14);
+
+  background: transparent;
+
+  color: #fff;
+
+  cursor: pointer;
 }
 
-.primaryButton:hover,
-.secondaryButton:hover {
-transform:
-translateY(-2px);
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* =========================================
-🔥 tablet
-========================================= */
+.image {
+  width: 100%;
+  height: auto;
+
+  object-fit: contain;
+
+  border-radius: 24px;
+}
 
 @media (max-width: 980px) {
 
-.heroArea {
+  .card {
+    grid-template-columns: 1fr;
+  }
 
-grid-template-columns:
-  1fr;
+  .title {
+    font-size: 30px;
+  }
 
-}
-
-.imageWrap {
-
-max-width: 360px;
-
-margin: 0 auto;
-
-}
-
-}
-
-/* =========================================
-🔥 mobile
-========================================= */
-
-@media (max-width: 640px) {
-
-.card {
-
-padding: 18px;
-
-border-radius: 22px;
-
-}
-
-.title {
-
-font-size: 24px;
-
-}
-
-.bottom {
-
-flex-direction: column;
-
-align-items: stretch;
-
-}
-
-.ctaRow {
-
-width: 100%;
-
-}
-
-.primaryButton,
-.secondaryButton {
-
-flex: 1;
-
-}
-
-.price {
-
-font-size: 24px;
-
-}
+  .price {
+    font-size: 32px;
+  }
 
 }

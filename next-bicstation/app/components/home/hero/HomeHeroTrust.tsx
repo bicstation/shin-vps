@@ -67,13 +67,16 @@ export default function HomeHeroTrust() {
           }
         >
           SHIN CORE LINX は、
-          スペック比較だけではなく、
+          スペックだけではなく、
 
-          「何ができるか」
+          「どんなことに向いているか」
 
-          を semantic に整理し、
-          初心者でも比較しやすい
-          recommendation experience を提供します。
+          をわかりやすく整理し、
+
+          ゲーム・動画編集・AI画像生成など、
+          目的に合ったPCを
+          初心者でも比較しやすくする
+          PC比較サービスです。
         </p>
 
       </div>

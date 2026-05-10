@@ -1,11 +1,14 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/SemanticSection.tsx
 
-import styles from '../page.module.css'
+import Link
+  from 'next/link'
 
-import {
-  SemanticCard,
+import SemanticCard, {
   type SemanticCardItem,
 } from './SemanticCard'
+
+import styles
+  from '../page.module.css'
 
 /* =========================================
 🔥 Types
@@ -32,59 +35,97 @@ function SectionTitle({
   label,
   title,
   description,
+  groupKey,
 }: {
   label: string
   title: string
   description?: string
+  groupKey: string
 }) {
 
   return (
 
     <div
       className={
-        styles.sectionHeader
+        styles.semanticHeader
       }
     >
 
       {/* ================================= */}
-      {/* Label */}
+      {/* Left */}
       {/* ================================= */}
 
       <div
         className={
-          styles.sectionLabel
+          styles.semanticHeaderContent
         }
       >
-        {label}
+
+        {/* =============================== */}
+        {/* Label */}
+        {/* =============================== */}
+
+        <div
+          className={
+            styles.semanticLabel
+          }
+        >
+
+          {label}
+
+        </div>
+
+        {/* =============================== */}
+        {/* Title */}
+        {/* =============================== */}
+
+        <h2
+          className={
+            styles.semanticTitle
+          }
+        >
+
+          {title}
+
+        </h2>
+
+        {/* =============================== */}
+        {/* Description */}
+        {/* =============================== */}
+
+        {description && (
+
+          <p
+            className={
+              styles.semanticDescription
+            }
+          >
+
+            {description}
+
+          </p>
+
+        )}
+
       </div>
 
       {/* ================================= */}
-      {/* Title */}
+      {/* Right */}
       {/* ================================= */}
 
-      <h2
+      <Link
+        href={
+          `/ranking/${groupKey}`
+        }
+
         className={
-          styles.sectionTitle
+          styles.semanticViewAll
         }
       >
-        {title}
-      </h2>
 
-      {/* ================================= */}
-      {/* Description */}
-      {/* ================================= */}
+        すべて見る →
 
-      {description && (
-
-        <p
-          className={
-            styles.sectionDescription
-          }
-        >
-          {description}
-        </p>
-
-      )}
+      </Link>
 
     </div>
   )
@@ -94,38 +135,58 @@ function SectionTitle({
 🔥 Semantic Section
 ========================================= */
 
-export function SemanticSection({
+export default function SemanticSection({
   group,
 }: {
   group: SemanticGroup
 }) {
 
-  // --------------------------------
+  // ======================================
   // Empty Guard
-  // --------------------------------
+  // ======================================
 
   if (
     !group?.items?.length
   ) {
+
     return null
+
   }
+
+  // ======================================
+  // Render
+  // ======================================
 
   return (
 
     <section
       className={
-        styles.section
+        styles.semanticSection
       }
     >
 
       {/* ================================= */}
-      {/* Section Header */}
+      {/* Header */}
       {/* ================================= */}
 
       <SectionTitle
-        label={group.label}
-        title={group.title}
-        description={group.description}
+
+        label={
+          group.label
+        }
+
+        title={
+          group.title
+        }
+
+        description={
+          group.description
+        }
+
+        groupKey={
+          group.key
+        }
+
       />
 
       {/* ================================= */}
@@ -139,11 +200,26 @@ export function SemanticSection({
       >
 
         {group.items.map(
-          item => (
+          (
+            item,
+            index
+          ) => (
 
             <SemanticCard
-              key={item.slug}
-              item={item}
+
+              key={
+                item.slug
+                || index
+              }
+
+              item={{
+                ...item,
+
+                href:
+                  item.href
+                  || `/ranking/${item.slug}`,
+              }}
+
             />
 
           )

@@ -25,7 +25,7 @@ import styles
 
 import {
   fetchFinderResult,
-} from '@/shared/lib/api/django/pc/stats'
+} from '@/shared/lib/api/django/pc/'
 
 export default function PCFinderPage() {
 

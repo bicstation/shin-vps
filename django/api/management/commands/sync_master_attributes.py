@@ -269,6 +269,21 @@ class Command(BaseCommand):
                             ''
                         )
                     )
+                    
+                    # =====================================
+                    # Ranking Metadata
+                    # =====================================
+                    is_ranking_enabled = (
+
+                        normalized_row.get(
+                            'is_ranking_enabled',
+                            'false'
+                        )
+                        .strip()
+                        .lower()
+
+                        in ['1', 'true', 'yes']
+                    )
 
                     # -------------------------------------
                     # Safe Numeric
@@ -342,6 +357,13 @@ class Command(BaseCommand):
 
                                 'color':
                                     color,
+                                    
+                                # =====================
+                                # Ranking Metadata
+                                # =====================
+                                    
+                                'is_ranking_enabled':
+                                    is_ranking_enabled,    
                             }
                         )
                     )

@@ -1,357 +1,493 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/page.tsx
+
+// @ts-nocheck
+
 /* eslint-disable @next/next/no-img-element */
 
-import {
-  notFound,
-} from 'next/navigation'
-
-import {
-  fetchPCProductDetail,
-} from '@/shared/lib/api/django/pc/stats'
-
-import styles
-  from './page.module.css'
+import Link
+  from 'next/link'
 
 /* =========================================
-🔥 HERO
+🔥 Dynamic
 ========================================= */
 
-import ProductHero
-  from './components/hero/ProductHero'
-
-import ProductHeroTrust
-  from './components/hero/ProductHeroTrust'
-
-import ProductHeroCapability
-  from './components/hero/ProductHeroCapability'
+export const dynamic =
+  'force-dynamic'
 
 /* =========================================
-🔥 CAPABILITY
+🔥 Page
 ========================================= */
 
-import ProductCapability
-  from './components/capability/ProductCapability'
+export default async function
+ProductDetailPage({
 
-import ProductUsageExamples
-  from './components/capability/ProductUsageExamples'
-
-import ProductPerformanceHighlights
-  from './components/capability/ProductPerformanceHighlights'
-
-/* =========================================
-🔥 TRUST
-========================================= */
-
-import ProductTrustSection
-  from './components/trust/ProductTrustSection'
-
-import ProductForWho
-  from './components/trust/ProductForWho'
-
-import ProductNotForWho
-  from './components/trust/ProductNotForWho'
-
-import ProductDecisionSupport
-  from './components/trust/ProductDecisionSupport'
-
-/* =========================================
-🔥 SEMANTIC
-========================================= */
-
-import ProductSemanticReasons
-  from './components/semantic/ProductSemanticReasons'
-
-import ProductSemanticSummary
-  from './components/semantic/ProductSemanticSummary'
-
-import ProductSemanticAccordion
-  from './components/semantic/ProductSemanticAccordion'
-
-/* =========================================
-🔥 SPEC
-========================================= */
-
-import ProductSpec
-  from './components/spec/ProductSpec'
-
-import ProductCompactSpec
-  from './components/spec/ProductCompactSpec'
-
-import ProductRadar
-  from './components/spec/ProductRadar'
-
-/* =========================================
-🔥 COMPARISON
-========================================= */
-
-import ProductComparisonLinks
-  from './components/comparison/ProductComparisonLinks'
-
-import ProductAlternativeList
-  from './components/comparison/ProductAlternativeList'
-
-import ProductBetterChoiceGuide
-  from './components/comparison/ProductBetterChoiceGuide'
-
-/* =========================================
-🔥 FAQ
-========================================= */
-
-import ProductFaq
-  from './components/faq/ProductFaq'
-
-/* =========================================
-🔥 RECOMMENDATION
-========================================= */
-
-import ProductRelated
-  from './components/recommendation/ProductRelated'
-
-import ProductSimilarUsage
-  from './components/recommendation/ProductSimilarUsage'
-
-import ProductNextIntent
-  from './components/recommendation/ProductNextIntent'
-
-/* =========================================
-🔥 CTA
-========================================= */
-
-import ProductStickyCTA
-  from './components/cta/ProductStickyCTA'
-
-import ProductFinalCTA
-  from './components/cta/ProductFinalCTA'
-
-import ProductPriceCTA
-  from './components/cta/ProductPriceCTA'
-
-/* =========================================
-🔥 EMPTY
-========================================= */
-
-import ProductEmpty
-  from './components/ProductEmpty'
-
-/* =========================================
-🔥 ISR
-========================================= */
-
-export const revalidate = 60
-
-/* =========================================
-🔥 TYPES
-========================================= */
-
-type Props = {
-  params: {
-    unique_id: string
-  }
-}
-
-/* =========================================
-🔥 PAGE
-========================================= */
-
-export default async function ProductPage({
   params,
-}: Props) {
+
+}: {
+  params: Promise<{
+    unique_id: string
+  }>
+}) {
 
   // ======================================
-  // PARAMS
+  // Params
   // ======================================
 
   const {
     unique_id,
-  } = params
+  } = await params
 
   // ======================================
-  // FETCH
+  // Endpoint
   // ======================================
 
-  const product =
-    await fetchPCProductDetail(
-      unique_id
-    )
+  const endpoint =
+
+    `${process.env.INTERNAL_API_URL}/general/pc-products/${unique_id}/`
 
   // ======================================
-  // EMPTY
+  // Fetch
   // ======================================
 
-  if (!product) {
+  let status = 0
 
-    return (
-      <ProductEmpty />
-    )
+  let json = null
 
+  let errorMessage = ''
+
+  try {
+
+    const response =
+
+      await fetch(
+        endpoint,
+        {
+          cache:
+            'no-store',
+        }
+      )
+
+    status =
+      response.status
+
+    json =
+      await response.json()
+
+  } catch (error) {
+
+    errorMessage =
+      String(error)
   }
 
   // ======================================
-  // PAGE
+  // Normalize
+  // ======================================
+
+  const product =
+
+    json?.product
+
+    ||
+
+    json?.result
+
+    ||
+
+    json
+
+    ||
+
+    {}
+
+  // ======================================
+  // Basic Fields
+  // ======================================
+
+  const name =
+
+    product?.name
+
+    ||
+
+    product?.title
+
+    ||
+
+    'No Name'
+
+  const maker =
+
+    product?.maker
+    || ''
+
+  const price =
+
+    product?.price
+    || 0
+
+  // ======================================
+  // Render
   // ======================================
 
   return (
 
     <main
-      className={
-        styles.mainWrapper
-      }
+      style={{
+        padding:
+          '40px',
+
+        color:
+          '#fff',
+
+        maxWidth:
+          '1200px',
+
+        margin:
+          '0 auto',
+      }}
     >
 
-      {/* ==================================
-      HERO
-      first impression
-      ================================== */}
+      {/* ================================= */}
+      {/* Back */}
+      {/* ================================= */}
 
-      <ProductHero
-        product={product}
-      />
+      <div
+        style={{
+          marginBottom:
+            '30px',
+        }}
+      >
 
-      <ProductHeroTrust
-        product={product}
-      />
+        <Link
+          href="/ranking"
 
-      <ProductHeroCapability
-        product={product}
-      />
+          style={{
+            color:
+              '#aaa',
 
-      {/* ==================================
-      CAPABILITY
-      real-world usage
-      ================================== */}
+            textDecoration:
+              'none',
+          }}
+        >
 
-      <ProductCapability
-        product={product}
-      />
+          ← Ranking
 
-      <ProductUsageExamples
-        product={product}
-      />
+        </Link>
 
-      <ProductPerformanceHighlights
-        product={product}
-      />
+      </div>
 
-      {/* ==================================
-      TRUST
-      decision confidence
-      ================================== */}
+      {/* ================================= */}
+      {/* Title */}
+      {/* ================================= */}
 
-      <ProductTrustSection
-        product={product}
-      />
+      <h1
+        style={{
+          fontSize:
+            '42px',
 
-      <ProductForWho
-        product={product}
-      />
+          fontWeight:
+            900,
 
-      <ProductNotForWho
-        product={product}
-      />
+          lineHeight:
+            1.4,
+        }}
+      >
 
-      <ProductDecisionSupport
-        product={product}
-      />
+        Product Detail Debug
 
-      {/* ==================================
-      SEMANTIC
-      recommendation reasoning
-      ================================== */}
+      </h1>
 
-      <ProductSemanticReasons
-        product={product}
-      />
+      {/* ================================= */}
+      {/* Summary */}
+      {/* ================================= */}
 
-      <ProductSemanticSummary
-        product={product}
-      />
+      <section
+        style={{
+          marginTop:
+            '40px',
 
-      <ProductSemanticAccordion
-        product={product}
-      />
+          display:
+            'grid',
 
-      {/* ==================================
-      SPEC
-      secondary information layer
-      ================================== */}
+          gap:
+            '20px',
 
-      <ProductCompactSpec
-        product={product}
-      />
+          gridTemplateColumns:
+            'repeat(auto-fit,minmax(260px,1fr))',
+        }}
+      >
 
-      <ProductSpec
-        product={product}
-      />
+        {/* ============================= */}
+        {/* Unique ID */}
+        {/* ============================= */}
 
-      <ProductRadar
-        product={product}
-      />
+        <div style={cardStyle}>
 
-      {/* ==================================
-      COMPARISON
-      continuation flow
-      ================================== */}
+          <div style={labelStyle}>
+            UNIQUE ID
+          </div>
 
-      <ProductComparisonLinks
-        product={product}
-      />
+          <div style={valueStyle}>
+            {unique_id}
+          </div>
 
-      <ProductAlternativeList
-        product={product}
-      />
+        </div>
 
-      <ProductBetterChoiceGuide
-        product={product}
-      />
+        {/* ============================= */}
+        {/* Status */}
+        {/* ============================= */}
 
-      {/* ==================================
-      RELATED
-      semantic continuation
-      ================================== */}
+        <div style={cardStyle}>
 
-      <ProductRelated
-        product={product}
-      />
+          <div style={labelStyle}>
+            STATUS
+          </div>
 
-      <ProductSimilarUsage
-        product={product}
-      />
+          <div style={valueStyle}>
+            {status}
+          </div>
 
-      <ProductNextIntent
-        product={product}
-      />
+        </div>
 
-      {/* ==================================
-      FAQ
-      anxiety reduction
-      ================================== */}
+      </section>
 
-      <ProductFaq
-        product={product}
-      />
+      {/* ================================= */}
+      {/* Request URL */}
+      {/* ================================= */}
 
-      {/* ==================================
-      FINAL CTA
-      conversion support
-      ================================== */}
+      <section
+        style={{
+          marginTop:
+            '40px',
+        }}
+      >
 
-      <ProductPriceCTA
-        product={product}
-      />
+        <h2>
+          Request URL
+        </h2>
 
-      <ProductFinalCTA
-        product={product}
-      />
+        <pre style={preStyle}>
 
-      {/* ==================================
-      STICKY CTA
-      mobile conversion
-      ================================== */}
+          {endpoint}
 
-      <ProductStickyCTA
-        product={product}
-      />
+        </pre>
+
+      </section>
+
+      {/* ================================= */}
+      {/* Error */}
+      {/* ================================= */}
+
+      {!!errorMessage && (
+
+        <section
+          style={{
+            marginTop:
+              '40px',
+          }}
+        >
+
+          <h2>
+            Error
+          </h2>
+
+          <pre style={preStyle}>
+
+            {errorMessage}
+
+          </pre>
+
+        </section>
+
+      )}
+
+      {/* ================================= */}
+      {/* Product Info */}
+      {/* ================================= */}
+
+      <section
+        style={{
+          marginTop:
+            '60px',
+        }}
+      >
+
+        <h2>
+          Product Info
+        </h2>
+
+        <div
+          style={{
+            marginTop:
+              '24px',
+
+            display:
+              'grid',
+
+            gap:
+              '20px',
+          }}
+        >
+
+          {/* =========================== */}
+          {/* Name */}
+          {/* =========================== */}
+
+          <div style={cardStyle}>
+
+            <div style={labelStyle}>
+              NAME
+            </div>
+
+            <div style={valueStyle}>
+              {name}
+            </div>
+
+          </div>
+
+          {/* =========================== */}
+          {/* Maker */}
+          {/* =========================== */}
+
+          <div style={cardStyle}>
+
+            <div style={labelStyle}>
+              MAKER
+            </div>
+
+            <div style={valueStyle}>
+              {maker}
+            </div>
+
+          </div>
+
+          {/* =========================== */}
+          {/* Price */}
+          {/* =========================== */}
+
+          <div style={cardStyle}>
+
+            <div style={labelStyle}>
+              PRICE
+            </div>
+
+            <div style={valueStyle}>
+              ¥{
+                Number(
+                  price
+                ).toLocaleString()
+              }
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* ================================= */}
+      {/* Raw JSON */}
+      {/* ================================= */}
+
+      <section
+        style={{
+          marginTop:
+            '80px',
+
+          paddingBottom:
+            '120px',
+        }}
+      >
+
+        <h2>
+          Raw JSON
+        </h2>
+
+        <pre style={preStyle}>
+
+          {JSON.stringify(
+            json,
+            null,
+            2
+          )}
+
+        </pre>
+
+      </section>
 
     </main>
-
   )
+}
+
+/* =========================================
+🔥 Styles
+========================================= */
+
+const cardStyle = {
+
+  padding:
+    '24px',
+
+  borderRadius:
+    '20px',
+
+  background:
+    'rgba(255,255,255,0.04)',
+
+  border:
+    '1px solid rgba(255,255,255,0.08)',
+}
+
+const labelStyle = {
+
+  fontSize:
+    '12px',
+
+  opacity:
+    0.6,
+
+  fontWeight:
+    700,
+}
+
+const valueStyle = {
+
+  marginTop:
+    '12px',
+
+  fontSize:
+    '20px',
+
+  fontWeight:
+    800,
+
+  lineHeight:
+    1.5,
+}
+
+const preStyle = {
+
+  marginTop:
+    '20px',
+
+  padding:
+    '24px',
+
+  borderRadius:
+    '20px',
+
+  background:
+    '#111',
+
+  overflowX:
+    'auto',
+
+  whiteSpace:
+    'pre-wrap',
+
+  fontSize:
+    '12px',
+
+  lineHeight:
+    1.7,
 }

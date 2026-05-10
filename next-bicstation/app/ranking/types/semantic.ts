@@ -1,4 +1,5 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/types/semantic.ts
+
 /* =========================================
 🔥 Semantic Role
 ========================================= */
@@ -16,15 +17,29 @@ export type SemanticRole =
 
 export type SemanticAttribute = {
 
+  /* =====================================
+  Identity
+  ===================================== */
+
   id?: number
+
+  name: string
+
+  slug: string
+
+  href?: string
+
+  /* =====================================
+  Type
+  ===================================== */
 
   attr_type?: string
 
   attr_type_display?: string
 
-  name: string
-
-  slug: string
+  /* =====================================
+  UI
+  ===================================== */
 
   description?: string
 
@@ -32,9 +47,17 @@ export type SemanticAttribute = {
 
   color?: string
 
+  /* =====================================
+  Stats
+  ===================================== */
+
   count?: number
 
   order?: number
+
+  /* =====================================
+  Semantic
+  ===================================== */
 
   semantic_role?: SemanticRole
 
@@ -54,6 +77,8 @@ export type SemanticGroup = {
   title: string
 
   description?: string
+
+  href?: string
 
   items: SemanticAttribute[]
 }
@@ -100,6 +125,14 @@ export type SemanticFinderQuery = {
   memory?: string
 
   storage?: string
+
+  resolution?: string
+
+  panel?: string
+
+  workload?: string
+
+  ai?: string
 }
 
 /* =========================================
@@ -113,4 +146,50 @@ export type SemanticRecommendation = {
   confidence?: number
 
   reasoning?: string
+}
+
+/* =========================================
+🔥 Semantic Card Props
+========================================= */
+
+export type SemanticCardProps = {
+
+  item: SemanticAttribute
+}
+
+/* =========================================
+🔥 Semantic Section Props
+========================================= */
+
+export type SemanticSectionProps = {
+
+  group: SemanticGroup
+}
+
+/* =========================================
+🔥 Ranking Hero Props
+========================================= */
+
+export type RankingHeroProps = {
+
+  title?: string
+
+  description?: string
+
+  semanticLabels?: string[]
+}
+
+/* =========================================
+🔥 Finder CTA Props
+========================================= */
+
+export type FinderCTAProps = {
+
+  title?: string
+
+  description?: string
+
+  href?: string
+
+  semanticKeywords?: string[]
 }

@@ -1,12 +1,42 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/page.tsx
+
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
 /* =========================================
-🔥 API
+🔥 Home Components
 ========================================= */
-import {
-   fetchRankingByType,
-} from '@/shared/lib/api/django/pc'
+
+import HomeHero
+  from './components/home/hero/HomeHero'
+
+import HomeCapabilitySection
+  from './components/home/capability/HomeCapabilitySection'
+
+import HomeGuideSection
+  from './components/home/guide/HomeGuideSection'
+
+import HomeTrustSection
+  from './components/home/trust/HomeTrustSection'
+
+import HomeFinderCTA
+  from './components/home/recommendation/HomeFinderCTA'
+
+import HomeBottomCTA
+  from './components/home/cta/HomeBottomCTA'
+
+import HomeStickyCTA
+  from './components/home/cta/HomeStickyCTA'
+
+/* =========================================
+🔥 Shared Cards
+========================================= */
+
+import HeroRankingCard
+  from '@/shared/components/organisms/cards/HeroRankingCard'
+
+import ProductCard
+  from '@/shared/components/organisms/cards/ProductCard'
 
 /* =========================================
 🔥 Styles
@@ -16,186 +46,81 @@ import styles
   from './page.module.css'
 
 /* =========================================
-🔥 HERO
-========================================= */
-
-import HomeHero
-  from './components/home/hero/HomeHero'
-
-import HomeHeroCapability
-  from './components/home/hero/HomeHeroCapability'
-
-import HomeHeroTrust
-  from './components/home/hero/HomeHeroTrust'
-
-/* =========================================
-🔥 TRUST
-========================================= */
-
-import HomeTrustSection
-  from './components/home/trust/HomeTrustSection'
-
-/* =========================================
-🔥 CAPABILITY
-========================================= */
-
-import HomeCapabilitySection
-  from './components/home/capability/HomeCapabilitySection'
-
-/* =========================================
-🔥 RECOMMENDATION
-========================================= */
-
-import HomeRecommendedPaths
-  from './components/home/recommendation/HomeRecommendedPaths'
-
-import HomeIntentNav
-  from './components/home/recommendation/HomeIntentNav'
-
-/* =========================================
-🔥 COMPARE
-========================================= */
-
-import HomeTopPick
-  from './components/home/compare/HomeTopPick'
-
-import HomeCompareGrid
-  from './components/home/compare/HomeCompareGrid'
-
-import HomeQuickCompare
-  from './components/home/compare/HomeQuickCompare'
-
-/* =========================================
-🔥 GUIDE
-========================================= */
-
-import HomeGuideSection
-  from './components/home/guide/HomeGuideSection'
-
-/* =========================================
-🔥 POPULAR
-========================================= */
-
-import HomePopularSection
-  from './components/home/recommendation/HomePopularSection'
-
-/* =========================================
-🔥 CTA
-========================================= */
-
-import HomeBottomCTA
-  from './components/home/cta/HomeBottomCTA'
-
-import HomeStickyCTA
-  from './components/home/cta/HomeStickyCTA'
-
-/* =========================================
-🔥 EMPTY
-========================================= */
-
-import HomeEmpty
-  from './components/home/common/HomeEmpty'
-
-/* =========================================
-🔥 DYNAMIC
+🔥 Dynamic
 ========================================= */
 
 export const dynamic =
   'force-dynamic'
 
 /* =========================================
-🔥 PAGE
+🔥 Home Page
 ========================================= */
 
-export default async function HomePage() {
+export default async function
+HomePage() {
 
-  /* ======================================
-  FETCH
-  ====================================== */
+  // ======================================
+  // Ranking API
+  // ======================================
 
-  // const ranking =
-  //   await fetchRankingByType(
-  //     'score'
-  //   )
+  const endpoint =
 
+    `${process.env.INTERNAL_API_URL}/general/pc-products/ranking/score/`
 
-/* ======================================
-DEBUG
-====================================== */
+  let rankingJson = null
 
-console.log(
-  '🔥 NODE_ENV:',
-  process.env.NODE_ENV
-)
+  try {
 
-console.log(
-  '🔥 INTERNAL_API_URL:',
-  process.env.INTERNAL_API_URL
-)
+    const response =
 
-console.log(
-  '🔥 NEXT_PUBLIC_API_URL:',
-  process.env.NEXT_PUBLIC_API_URL
-)
+      await fetch(
+        endpoint,
+        {
+          cache:
+            'no-store',
+        }
+      )
 
-/* ======================================
-FETCH
-====================================== */
+    rankingJson =
+      await response.json()
 
-console.log(
-  '🚀 FETCH START:',
-  `${process.env.INTERNAL_API_URL}/general/pc-products/ranking/score/`
-)
+  } catch (error) {
 
-const ranking =
-  await fetchRankingByType(
-    'score'
-  )
-
-console.log(
-  '✅ FETCH RESULT:',
-  ranking
-)
-
-
-
-  /* =====================================
-  PRODUCTS
-  ===================================== */
-  const products =
-    ranking?.products || [] 
-
-  /* ======================================
-  EMPTY
-  ====================================== */
-
-  if (
-    !products?.length
-  ) {
-
-    return (
-      <HomeEmpty />
-    )
-
+    console.error(error)
   }
 
-  /* ======================================
-  SPLIT
-  ====================================== */
+  // ======================================
+  // Ranking Products
+  // ======================================
 
-  const topProduct =
-    products?.[0]
-    || null
+  const rankingProducts =
 
-  const compareProducts =
-    products.slice(1, 4)
+    Array.isArray(
+      rankingJson?.products
+    )
 
-  const popularProducts =
-    products.slice(0, 8)
+      ? rankingJson.products
 
-  /* ======================================
-  RENDER
-  ====================================== */
+      : []
+
+  // ======================================
+  // Split
+  // ======================================
+
+  const heroRanking =
+
+    rankingProducts[0]
+
+  const subRankings =
+
+    rankingProducts.slice(
+      1,
+      3
+    )
+
+  // ======================================
+  // Render
+  // ======================================
 
   return (
 
@@ -205,122 +130,162 @@ console.log(
       }
     >
 
-      {/* ===================================
-      HERO
-      recommendation gateway
-      =================================== */}
+      {/* ================================= */}
+      {/* Hero */}
+      {/* ================================= */}
 
-      <HomeHero
-        product={
-          topProduct
-        }
-      />
+      <HomeHero />
 
-      {/* ===================================
-      HERO CAPABILITY
-      what you can do
-      =================================== */}
-
-      <HomeHeroCapability />
-
-      {/* ===================================
-      HERO TRUST
-      confidence entry
-      =================================== */}
-
-      <HomeHeroTrust />
-
-      {/* ===================================
-      TRUST SECTION
-      anxiety reduction
-      =================================== */}
-
-      <HomeTrustSection />
-
-      {/* ===================================
-      CAPABILITY SECTION
-      semantic capability
-      =================================== */}
+      {/* ================================= */}
+      {/* Capability */}
+      {/* ================================= */}
 
       <HomeCapabilitySection />
 
-      {/* ===================================
-      TOP PICK
-      strongest recommendation
-      =================================== */}
+      {/* ================================= */}
+      {/* Popular Ranking */}
+      {/* ================================= */}
 
-      <HomeTopPick
-        product={
-          topProduct
+      <section
+        className={
+          styles.rankingSection
         }
-      />
+      >
 
-      {/* ===================================
-      RECOMMENDED PATHS
-      recommendation gateway
-      =================================== */}
+        {/* ============================= */}
+        {/* Header */}
+        {/* ============================= */}
 
-      <HomeRecommendedPaths />
+        <div
+          className={
+            styles.sectionHeader
+          }
+        >
 
-      {/* ===================================
-      QUICK COMPARE
-      compare cognition
-      =================================== */}
+          <div
+            className={
+              styles.sectionLabel
+            }
+          >
 
-      <HomeQuickCompare />
+            POPULAR RANKING
 
-      {/* ===================================
-      COMPARE GRID
-      semantic compare
-      =================================== */}
+          </div>
 
-      <HomeCompareGrid
-        products={
-          compareProducts
-        }
-      />
+          <h2
+            className={
+              styles.sectionTitle
+            }
+          >
 
-      {/* ===================================
-      INTENT NAV
-      recommendation intent
-      =================================== */}
+            人気ゲーミングPC
 
-      <HomeIntentNav />
+          </h2>
 
-      {/* ===================================
-      GUIDE
-      decision support
-      =================================== */}
+          <p
+            className={
+              styles.sectionDescription
+            }
+          >
+
+            FPSゲーム・AI画像生成・
+            動画編集など、
+            高性能用途で人気の
+            ゲーミングPCを表示しています。
+
+          </p>
+
+        </div>
+
+        {/* ============================= */}
+        {/* Hero Ranking */}
+        {/* ============================= */}
+
+        {heroRanking && (
+
+          <div
+            className={
+              styles.heroWrap
+            }
+          >
+
+            <HeroRankingCard
+              product={
+                heroRanking
+              }
+            />
+
+          </div>
+
+        )}
+
+        {/* ============================= */}
+        {/* Product Cards */}
+        {/* ============================= */}
+
+        <div
+          className={
+            styles.productGrid
+          }
+        >
+
+          {subRankings.map(
+            (
+              product,
+              index
+            ) => (
+
+              <ProductCard
+
+                key={
+                  product?.unique_id
+                  || index
+                }
+
+                product={
+                  product
+                }
+
+              />
+
+            )
+          )}
+
+        </div>
+
+      </section>
+
+      {/* ================================= */}
+      {/* Guide */}
+      {/* ================================= */}
 
       <HomeGuideSection />
 
-      {/* ===================================
-      POPULAR
-      semantic popularity
-      =================================== */}
+      {/* ================================= */}
+      {/* Trust */}
+      {/* ================================= */}
 
-      <HomePopularSection
-        products={
-          popularProducts
-        }
-      />
+      <HomeTrustSection />
 
-      {/* ===================================
-      CTA
-      continuation
-      =================================== */}
+      {/* ================================= */}
+      {/* Finder CTA */}
+      {/* ================================= */}
+
+      <HomeFinderCTA />
+
+      {/* ================================= */}
+      {/* Bottom CTA */}
+      {/* ================================= */}
 
       <HomeBottomCTA />
 
-      {/* ===================================
-      STICKY CTA
-      mobile continuation
-      =================================== */}
+      {/* ================================= */}
+      {/* Sticky CTA */}
+      {/* ================================= */}
 
       <HomeStickyCTA />
 
     </main>
 
   )
-
 }

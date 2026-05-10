@@ -1,8 +1,10 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/SemanticCard.tsx
 
-import Link from 'next/link'
+import Link
+  from 'next/link'
 
-import styles from '../page.module.css'
+import styles
+  from '../page.module.css'
 
 /* =========================================
 🔥 Types
@@ -14,28 +16,159 @@ export type SemanticCardItem = {
 
   name: string
 
+  count?: number
+
+  icon?: string
+
+  color?: string
+
+  semantic_role?: string
+
+  semantic_weight?: number
+
   description?: string
+
+  href?: string
+}
+
+/* =========================================
+🔥 Icon Map
+========================================= */
+
+const ICON_MAP: Record<
+  string,
+  string
+> = {
+
+  gamepad:
+    '🎮',
+
+  cpu:
+    '🧠',
+
+  monitor:
+    '🖥',
+
+  briefcase:
+    '💼',
+
+  pen:
+    '✏️',
+
+  penTool:
+    '✏️',
+
+  sparkles:
+    '✨',
+
+  hardDrive:
+    '💾',
+
+  memoryStick:
+    '⚡',
+
+  badgeDollarSign:
+    '💴',
+
+  workflow:
+    '🚀',
+
+  ai:
+    '🤖',
+
+  server:
+    '🖥️',
+
+  shield:
+    '🛡️',
+
+  laptop:
+    '💻',
 }
 
 /* =========================================
 🔥 Semantic Card
 ========================================= */
 
-export function SemanticCard({
+export default function SemanticCard({
   item,
 }: {
   item: SemanticCardItem
 }) {
 
   // ======================================
-  // Safe
+  // Href
   // ======================================
 
   const href =
 
-    item.slug
-      ? `/ranking/${item.slug}`
-      : '#'
+    item.href
+
+    || (
+
+      item.slug
+        ? `/ranking/${item.slug}`
+        : '#'
+
+    )
+
+  // ======================================
+  // Icon
+  // ======================================
+
+  const icon =
+
+    ICON_MAP[
+      item.icon || ''
+    ]
+
+      || '✨'
+
+  // ======================================
+  // Description
+  // ======================================
+
+  const description =
+
+    item.description
+
+    || `${item.name} の人気ランキングを表示します。`
+
+  // ======================================
+  // Count
+  // ======================================
+
+  const countText =
+
+    item.count
+      ? `${item.count}件`
+      : null
+
+  // ======================================
+  // Semantic Role
+  // ======================================
+
+  const semanticRole =
+
+    item.semantic_role
+
+      ? item.semantic_role
+      : 'ranking'
+
+  // ======================================
+  // Weight
+  // ======================================
+
+  const weight =
+
+    typeof item.semantic_weight
+      === 'number'
+
+      ? Math.round(
+          item.semantic_weight * 100
+        )
+
+      : null
 
   // ======================================
   // Render
@@ -54,45 +187,120 @@ export function SemanticCard({
     >
 
       {/* ================================= */}
-      {/* Body */}
+      {/* Top */}
       {/* ================================= */}
 
       <div
         className={
-          styles.cardBody
+          styles.semanticCardTop
         }
       >
 
-        {/* ================================= */}
-        {/* Title */}
-        {/* ================================= */}
+        {/* ============================= */}
+        {/* Icon */}
+        {/* ============================= */}
 
         <div
           className={
-            styles.cardTitle
+            styles.semanticIcon
           }
         >
-          {item.name}
+
+          {icon}
+
         </div>
 
-        {/* ================================= */}
-        {/* Description */}
-        {/* ================================= */}
+        {/* ============================= */}
+        {/* Count */}
+        {/* ============================= */}
 
-        {item.description && (
+        {countText && (
 
           <div
             className={
-              styles.cardDescription
+              styles.semanticCount
             }
           >
-            {item.description}
+
+            {countText}
+
           </div>
 
         )}
 
       </div>
 
+      {/* ================================= */}
+      {/* Title */}
+      {/* ================================= */}
+
+      <h3
+        className={
+          styles.semanticCardTitle
+        }
+      >
+
+        {item.name}
+
+      </h3>
+
+      {/* ================================= */}
+      {/* Description */}
+      {/* ================================= */}
+
+      <p
+        className={
+          styles.semanticDescription
+        }
+      >
+
+        {description}
+
+      </p>
+
+      {/* ================================= */}
+      {/* Meta */}
+      {/* ================================= */}
+
+      <div
+        className={
+          styles.semanticMeta
+        }
+      >
+
+        <span>
+
+          {semanticRole}
+
+        </span>
+
+        {weight && (
+
+          <span>
+
+            • {weight}%
+
+          </span>
+
+        )}
+
+      </div>
+
+      {/* ================================= */}
+      {/* Bottom */}
+      {/* ================================= */}
+
+      <div
+        className={
+          styles.semanticArrow
+        }
+      >
+
+        ランキングを見る →
+
+      </div>
+
     </Link>
+
   )
 }

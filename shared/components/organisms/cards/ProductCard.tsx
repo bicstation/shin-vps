@@ -1,3 +1,5 @@
+// /home/maya/shin-dev/shin-vps/shared/components/organisms/cards/ProductCard.tsx
+
 /* eslint-disable @next/next/no-img-element */
 
 import Link
@@ -6,128 +8,47 @@ import Link
 import styles
   from './ProductCard.module.css'
 
-import {
-  formatPrice,
-} from '@/shared/lib/utils/formatPrice'
-
 type Props = {
   product: any
-  rank?: number
 }
 
 export default function ProductCard({
   product,
-  rank,
 }: Props) {
 
   // =====================================
-  // Helpers
+  // Semantic Tags
   // =====================================
 
-  const rawText =
-    JSON.stringify(
-      product
-    ).toLowerCase()
+  const tags = [
+
+    product?.gpu_model,
+
+    product?.cpu_model,
+
+    product?.memory_gb
+      ? `${product.memory_gb}GB`
+      : null,
+
+  ].filter(Boolean)
 
   // =====================================
-  // Intent Tags
+  // Price
   // =====================================
 
-  const intentTags = []
+  const price =
 
-  if (
-    rawText.includes('gaming')
-    || rawText.includes('fps')
-  ) {
+    product?.price
 
-    intentTags.push(
-      '🎮 FPS重視'
-    )
+      ? `¥${Number(
+          product.price
+        ).toLocaleString()}`
 
-  }
-
-  if (
-    rawText.includes('ai')
-    || rawText.includes('stable diffusion')
-  ) {
-
-    intentTags.push(
-      '🤖 AI生成向け'
-    )
-
-  }
-
-  if (
-    rawText.includes('creator')
-    || rawText.includes('premiere')
-    || rawText.includes('davinci')
-  ) {
-
-    intentTags.push(
-      '🎬 動画編集向け'
-    )
-
-  }
-
-  if (
-    rawText.includes('cost')
-    || rawText.includes('budget')
-  ) {
-
-    intentTags.push(
-      '💰 コスパ重視'
-    )
-
-  }
-
-  // fallback
-
-  if (!intentTags.length) {
-
-    intentTags.push(
-      '⚡ 高性能モデル'
-    )
-
-  }
+      : '価格未設定'
 
   // =====================================
-  // Compact Compare Row
+  // Render
   // =====================================
-
-  const compareSpecs = [
-
-    product?.gpu_name,
-
-    product?.cpu_name,
-
-    product?.memory,
-
-    product?.storage,
-
-  ]
-    .filter(Boolean)
-    .slice(0, 4)
-
-  // =====================================
-  // Recommendation Reason
-  // =====================================
-
-  const topReason =
-
-    product?.semantic_reasons?.[0]
-    || '高FPS gaming に強い人気構成'
-
-  // =====================================
-  // Trust
-  // =====================================
-
-  const trustItems = [
-
-    '初心者人気',
-
-    'AI対応',
-
-  ]
 
   return (
 
@@ -137,85 +58,21 @@ export default function ProductCard({
       }
     >
 
-      {/* ================================
-      TOP
-      ================================ */}
+      {/* ============================== */}
+      {/* Image */}
+      {/* ============================== */}
 
       <div
         className={
-          styles.top
+          styles.imageWrap
         }
       >
 
-        {/* ==============================
-        RANK
-        ============================== */}
-
-        {rank && (
-
-          <div
-            className={
-              styles.rank
-            }
-          >
-            #{rank}
-          </div>
-
-        )}
-
-        {/* ==============================
-        INTENT
-        ============================== */}
-
-        <div
-          className={
-            styles.intentRow
-          }
-        >
-
-          {intentTags
-            .slice(0, 2)
-            .map((tag) => (
-
-              <div
-                key={tag}
-
-                className={
-                  styles.intentTag
-                }
-              >
-                {tag}
-              </div>
-
-            ))}
-
-        </div>
-
-      </div>
-
-      {/* ================================
-      HERO AREA
-      ================================ */}
-
-      <div
-        className={
-          styles.heroArea
-        }
-      >
-
-        {/* ==============================
-        IMAGE
-        ============================== */}
-
-        <div
-          className={
-            styles.imageWrap
-          }
-        >
+        {product?.image_url && (
 
           <img
             src={
-              product?.image_url
+              product.image_url
             }
 
             alt={
@@ -227,166 +84,130 @@ export default function ProductCard({
             }
           />
 
-        </div>
+        )}
 
-        {/* ==============================
-        CONTENT
-        ============================== */}
+      </div>
+
+      {/* ============================== */}
+      {/* Content */}
+      {/* ============================== */}
+
+      <div
+        className={
+          styles.content
+        }
+      >
+
+        {/* ============================ */}
+        {/* Label */}
+        {/* ============================ */}
 
         <div
           className={
-            styles.content
+            styles.label
           }
         >
 
-          {/* ============================
-          MAKER
-          ============================ */}
-
-          <div
-            className={
-              styles.maker
-            }
-          >
-            {product?.maker || 'GALLERIA'}
-          </div>
-
-          {/* ============================
-          TITLE
-          ============================ */}
-
-          <h3
-            className={
-              styles.title
-            }
-          >
-            {product?.name}
-          </h3>
+          SEMANTIC RECOMMENDATION
 
         </div>
 
-      </div>
+        {/* ============================ */}
+        {/* Title */}
+        {/* ============================ */}
 
-      {/* ================================
-      COMPACT COMPARE ROW
-      ================================ */}
-
-      <div
-        className={
-          styles.compareRow
-        }
-      >
-
-        {compareSpecs.map((spec) => (
-
-          <div
-            key={spec}
-
-            className={
-              styles.compareChip
-            }
-          >
-            {spec}
-          </div>
-
-        ))}
-
-      </div>
-
-      {/* ================================
-      TOP REASON
-      ================================ */}
-
-      <div
-        className={
-          styles.reason
-        }
-      >
-        ✓ {topReason}
-      </div>
-
-      {/* ================================
-      TRUST LAYER
-      ================================ */}
-
-      <div
-        className={
-          styles.trustRow
-        }
-      >
-
-        {trustItems.map((item) => (
-
-          <div
-            key={item}
-
-            className={
-              styles.trustItem
-            }
-          >
-            {item}
-          </div>
-
-        ))}
-
-      </div>
-   
-
-    {/* ================================
-      BOTTOM
-      ================================ */}
-
-      <div
-        className={
-          styles.bottom
-        }
-      >
-
-        {/* ==============================
-        PRICE
-        ============================== */}
-
-        <div
+        <h3
           className={
-            styles.priceArea
+            styles.title
           }
         >
 
-          <div
-            className={
-              styles.priceLabel
-            }
-          >
-            最安価格
-          </div>
+          {product?.name}
 
-          <div
-            className={
-              styles.price
-            }
-          >
-            ¥{formatPrice(
-              product?.price
-            )}
-          </div>
+        </h3>
+
+        {/* ============================ */}
+        {/* Maker */}
+        {/* ============================ */}
+
+        <div
+          className={
+            styles.maker
+          }
+        >
+
+          {product?.maker}
 
         </div>
 
-        {/* ==============================
-        CTA
-        comparison continuation layer
-        ============================== */}
+        {/* ============================ */}
+        {/* Tags */}
+        {/* ============================ */}
 
         <div
           className={
-            styles.ctaRow
+            styles.tags
           }
         >
 
-          {/* ============================
-          DETAIL
-          decision reinforcement
-          ============================ */}
+          {tags.map((tag) => (
+
+            <div
+              key={tag}
+
+              className={
+                styles.tag
+              }
+            >
+
+              {tag}
+
+            </div>
+
+          ))}
+
+        </div>
+
+        {/* ============================ */}
+        {/* Description */}
+        {/* ============================ */}
+
+        <div
+          className={
+            styles.description
+          }
+        >
+
+          AI画像生成・FPSゲーム・
+          動画編集など、
+          高性能用途にも対応できる
+          バランス構成です。
+
+        </div>
+
+        {/* ============================ */}
+        {/* Price */}
+        {/* ============================ */}
+
+        <div
+          className={
+            styles.price
+          }
+        >
+
+          {price}
+
+        </div>
+
+        {/* ============================ */}
+        {/* CTA */}
+        {/* ============================ */}
+
+        <div
+          className={
+            styles.actions
+          }
+        >
 
           <Link
             href={
@@ -397,32 +218,24 @@ export default function ProductCard({
               styles.primaryButton
             }
           >
+
             詳細を見る
+
           </Link>
 
-          {/* ============================
-          PRICE
-          affiliate continuation
-          ============================ */}
-
-          <Link
-            href={
-              product?.affiliate_url
-              || `/products/${product?.unique_id}`
-            }
-
+          <button
             className={
               styles.secondaryButton
             }
           >
-            価格を見る
-          </Link>
+
+            比較
+
+          </button>
 
         </div>
 
       </div>
-
-
 
     </article>
 

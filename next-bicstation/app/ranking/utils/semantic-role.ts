@@ -1,4 +1,5 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/utils/semantic-role.ts
+
 import type {
   SemanticRole,
 } from '../types/semantic'
@@ -50,7 +51,7 @@ export function getSemanticRoleClass(
 }
 
 /* =========================================
-🔥 Semantic Role Emphasis
+🔥 Highlight Check
 ========================================= */
 
 export function isHighlightedRole(
@@ -59,6 +60,60 @@ export function isHighlightedRole(
 
   return role ===
     'highlight'
+}
+
+/* =========================================
+🔥 Role Label
+========================================= */
+
+export function getSemanticRoleLabel(
+  role?: SemanticRole
+) {
+
+  switch (role) {
+
+    case 'highlight':
+      return '注目'
+
+    case 'primary':
+      return '人気'
+
+    case 'secondary':
+      return 'おすすめ'
+
+    case 'supportive':
+      return '関連'
+
+    default:
+      return '一般'
+  }
+}
+
+/* =========================================
+🔥 Role Color
+========================================= */
+
+export function getSemanticRoleColor(
+  role?: SemanticRole
+) {
+
+  switch (role) {
+
+    case 'highlight':
+      return '#ff4d6d'
+
+    case 'primary':
+      return '#4dabf7'
+
+    case 'secondary':
+      return '#82c91e'
+
+    case 'supportive':
+      return '#868e96'
+
+    default:
+      return '#ced4da'
+  }
 }
 
 /* =========================================
@@ -78,18 +133,19 @@ export function sortBySemanticRole<
 
       const priorityA =
         SEMANTIC_ROLE_PRIORITY[
-          a.semantic_role ||
-          'supportive'
+          a.semantic_role
+          || 'supportive'
         ]
 
       const priorityB =
         SEMANTIC_ROLE_PRIORITY[
-          b.semantic_role ||
-          'supportive'
+          b.semantic_role
+          || 'supportive'
         ]
 
       return (
-        priorityB -
+        priorityB
+        -
         priorityA
       )
     }
@@ -136,9 +192,9 @@ export function sortSemanticNavigation<
   return [...items].sort(
     (a, b) => {
 
-      // --------------------------------
+      // =================================
       // 1. Explicit Order
-      // --------------------------------
+      // =================================
 
       const orderA =
         a.order || 0
@@ -146,39 +202,108 @@ export function sortSemanticNavigation<
       const orderB =
         b.order || 0
 
-      if (orderA !== orderB) {
-        return orderB - orderA
+      if (
+        orderA !== orderB
+      ) {
+
+        return (
+          orderB
+          -
+          orderA
+        )
+
       }
 
-      // --------------------------------
+      // =================================
       // 2. Semantic Role
-      // --------------------------------
+      // =================================
 
       const roleA =
         SEMANTIC_ROLE_PRIORITY[
-          a.semantic_role ||
-          'supportive'
+          a.semantic_role
+          || 'supportive'
         ]
 
       const roleB =
         SEMANTIC_ROLE_PRIORITY[
-          b.semantic_role ||
-          'supportive'
+          b.semantic_role
+          || 'supportive'
         ]
 
-      if (roleA !== roleB) {
-        return roleB - roleA
+      if (
+        roleA !== roleB
+      ) {
+
+        return (
+          roleB
+          -
+          roleA
+        )
+
       }
 
-      // --------------------------------
+      // =================================
       // 3. Semantic Weight
-      // --------------------------------
+      // =================================
 
       return (
+
         (b.semantic_weight || 0)
+
         -
+
         (a.semantic_weight || 0)
+
       )
     }
+  )
+}
+
+/* =========================================
+🔥 Semantic Navigation Normalize
+========================================= */
+
+export function normalizeSemanticItems<
+  T extends {
+    name?: string
+    slug?: string
+  }
+>(
+  items: T[]
+) {
+
+  return items.filter(
+    item => (
+
+      !!item?.name
+      &&
+      !!item?.slug
+
+    )
+  )
+}
+
+/* =========================================
+🔥 Semantic Navigation Prepare
+========================================= */
+
+export function prepareSemanticNavigation<
+  T extends {
+    order?: number
+    semantic_role?: SemanticRole
+    semantic_weight?: number
+    name?: string
+    slug?: string
+  }
+>(
+  items: T[]
+) {
+
+  return sortSemanticNavigation(
+
+    normalizeSemanticItems(
+      items
+    )
+
   )
 }
