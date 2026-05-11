@@ -6,11 +6,11 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 Safe Array

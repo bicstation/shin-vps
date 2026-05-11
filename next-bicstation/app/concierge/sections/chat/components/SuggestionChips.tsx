@@ -8,7 +8,7 @@
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 STYLES

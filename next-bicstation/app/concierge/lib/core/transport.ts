@@ -6,11 +6,11 @@
 
 import type {
   TransportRequest,
-} from '@/app/concierge/contracts/transport/TransportRequest'
+} from '../../contracts/transport/TransportRequest'
 
 import type {
   TransportResponse,
-} from '@/app/concierge/contracts/transport/TransportResponse'
+} from '../../contracts/transport/TransportResponse'
 
 /* =========================================
 🔥 HELPERS

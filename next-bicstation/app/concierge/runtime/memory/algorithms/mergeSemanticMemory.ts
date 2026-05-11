@@ -6,14 +6,15 @@
 
 import type {
   SemanticMemoryState,
-} from '@/app/concierge/contracts/semantic/SemanticMemoryState'
+} from '../../../contracts/semantic/SemanticMemoryState'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
-import SemanticMemoryDomain
-  from '@/app/concierge/domain/memory/semanticMemoryDomain'
+import type {
+  SemanticMemoryDomain,
+}  from '../../../domain/memory/SemanticMemoryDomain'
 
 /* =========================================
 🔥 Merge Semantic Memory

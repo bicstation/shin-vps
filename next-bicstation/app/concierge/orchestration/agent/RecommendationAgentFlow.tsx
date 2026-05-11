@@ -13,7 +13,7 @@ import {
 
 import type {
   RecommendationPayload,
-} from '../contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 AGENTS

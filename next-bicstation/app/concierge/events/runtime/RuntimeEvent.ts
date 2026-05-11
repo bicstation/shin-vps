@@ -6,7 +6,7 @@
 
 import type {
   RuntimeContext,
-} from '@/app/concierge/contracts/runtime/RuntimeContext'
+} from '../../contracts/runtime/RuntimeContext'
 
 /* =========================================
 🔥 Runtime Event Type

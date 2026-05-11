@@ -6,7 +6,7 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../../../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 Conversation Context

@@ -6,15 +6,15 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../../../contracts/conversation/ConversationMessage'
 
 import type {
   ConversationState,
-} from '@/app/concierge/contracts/conversation/ConversationState'
+} from '../../../contracts/conversation/ConversationState'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN

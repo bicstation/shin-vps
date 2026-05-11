@@ -6,14 +6,15 @@
 
 import type {
   SessionMemoryState,
-} from '@/app/concierge/contracts/memory/SessionMemoryState'
+} from '../../../contracts/memory/SessionMemoryState'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
-import SessionMemoryDomain
-  from '@/app/concierge/domain/memory/sessionMemoryDomain'
+import {
+  SessionMemoryDomain,
+} from '../../../domain/memory/sessionMemoryDomain'
 
 /* =========================================
 🔥 Session Memory

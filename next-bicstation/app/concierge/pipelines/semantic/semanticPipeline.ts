@@ -6,18 +6,18 @@
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 import type {
   SemanticPayload,
-} from '@/app/concierge/contracts/semantic/SemanticPayload'
+} from '../../contracts/semantic/SemanticPayload'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import SemanticDomain
-  from '@/app/concierge/domain/semantic/semanticDomain'
+  from '../../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 PIPELINE RESULT

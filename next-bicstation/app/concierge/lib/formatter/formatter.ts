@@ -6,11 +6,11 @@
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 Format Price

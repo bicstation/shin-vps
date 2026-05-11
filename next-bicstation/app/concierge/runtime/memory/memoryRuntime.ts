@@ -6,15 +6,15 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 import type {
   SemanticMemoryState,
-} from '@/app/concierge/contracts/semantic/SemanticMemoryState'
+} from '../../contracts/semantic/SemanticMemoryState'
 
 /* =========================================
 🔥 CORE

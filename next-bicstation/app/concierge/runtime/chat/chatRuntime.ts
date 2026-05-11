@@ -6,32 +6,32 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   ConversationState,
-} from '@/app/concierge/contracts/conversation/ConversationState'
+} from '../../contracts/conversation/ConversationState'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import ConversationDomain
-  from '@/app/concierge/domain/chat/conversationDomain'
+  from '../../domain/chat/conversationDomain'
 
 import SemanticDomain
-  from '@/app/concierge/domain/semantic/semanticDomain'
+  from '../../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 KERNEL
 ========================================= */
 
 import RuntimeKernel
-  from '@/app/concierge/kernel/runtime/RuntimeKernel'
+  from '../../kernel/runtime/RuntimeKernel'
 
 /* =========================================
 🔥 TYPES

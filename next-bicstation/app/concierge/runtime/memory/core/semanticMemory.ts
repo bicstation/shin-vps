@@ -6,18 +6,19 @@
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../../contracts/semantic/SemanticIntent'
 
 import type {
   SemanticMemoryState,
-} from '@/app/concierge/contracts/semantic/SemanticMemoryState'
+} from '../../../contracts/semantic/SemanticMemoryState'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
-import SemanticMemoryDomain
-  from '@/app/concierge/domain/memory/semanticMemoryDomain'
+import {
+  SemanticMemoryDomain,
+} from '../../../domain/memory/SemanticMemoryDomain'
 
 /* =========================================
 🔥 Create Semantic Memory

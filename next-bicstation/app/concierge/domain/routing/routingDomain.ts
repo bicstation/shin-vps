@@ -1,5 +1,4 @@
 // /app/concierge/domain/routing/routingDomain.ts
-// /app/concierge/domain/routing/routingDomain.ts
 
 /* =========================================
 🔥 CONTRACTS
@@ -7,7 +6,7 @@
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 Types

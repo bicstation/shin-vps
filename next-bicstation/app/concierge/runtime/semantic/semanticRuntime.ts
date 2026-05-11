@@ -6,18 +6,18 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import SemanticDomain
-  from '@/app/concierge/domain/semantic/semanticDomain'
+  from '../../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 TYPES

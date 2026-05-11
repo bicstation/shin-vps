@@ -6,18 +6,18 @@
 
 import type {
   SemanticFinderQuery,
-} from '@/app/concierge/contracts/semantic/SemanticFinderQuery'
+} from '../../../contracts/semantic/SemanticFinderQuery'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import SemanticDomain
-  from '@/app/concierge/domain/semantic/semanticDomain'
+  from '../../../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 TYPES
@@ -47,7 +47,6 @@ executeSemanticQueryRuntime({
 }): SemanticQueryRuntimeResult {
 
   const semanticIntent =
-
     SemanticDomain
       .resolveSemanticIntentFromQuery(
         query

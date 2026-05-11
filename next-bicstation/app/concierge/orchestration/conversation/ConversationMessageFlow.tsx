@@ -12,7 +12,7 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 SECTIONS

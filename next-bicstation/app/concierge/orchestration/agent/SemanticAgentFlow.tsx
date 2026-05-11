@@ -1,5 +1,4 @@
 // /app/concierge/orchestration/agent/SemanticAgentFlow.tsx
-// /app/concierge/orchestration/agent/SemanticAgentFlow.tsx
 
 'use client'
 
@@ -13,7 +12,7 @@ import {
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 AGENTS

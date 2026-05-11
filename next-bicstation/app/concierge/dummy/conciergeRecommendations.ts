@@ -6,7 +6,7 @@
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 Dummy Concierge Recommendations

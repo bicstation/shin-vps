@@ -7,11 +7,11 @@
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 import type {
   SemanticPayload,
-} from '@/app/concierge/contracts/semantic/SemanticPayload'
+} from '../../contracts/semantic/SemanticPayload'
 
 /* =========================================
 🔥 Semantic Event Type

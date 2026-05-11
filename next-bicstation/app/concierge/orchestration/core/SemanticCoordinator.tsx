@@ -12,28 +12,28 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 KERNELS
 ========================================= */
 
 import SemanticKernel
-  from '../kernel/semantic/SemanticKernel'
+  from '../../kernel/semantic/SemanticKernel'
 
 /* =========================================
 🔥 FLOWS
 ========================================= */
 
 import ConciergeSemanticFlow
-  from '../orchestration/semantic/ConciergeSemanticFlow'
+  from '../../orchestration/semantic/ConciergeSemanticFlow'
 
 /* =========================================
 🔥 GRAPH
 ========================================= */
 
 import SemanticGraph
-  from '../graph/SemanticGraph'
+  from '../../graph/SemanticGraph'
 
 /* =========================================
 🔥 Props

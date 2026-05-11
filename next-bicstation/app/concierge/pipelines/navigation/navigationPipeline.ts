@@ -6,18 +6,18 @@
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 import type {
   NavigationState,
-} from '@/app/concierge/contracts/routing/NavigationState'
+} from '../../contracts/routing/NavigationState'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import RoutingDomain
-  from '@/app/concierge/domain/routing/routingDomain'
+  from '../../domain/routing/routingDomain'
 
 /* =========================================
 🔥 PIPELINE RESULT

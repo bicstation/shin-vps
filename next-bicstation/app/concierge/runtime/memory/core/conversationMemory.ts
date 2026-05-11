@@ -6,18 +6,18 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../../../contracts/conversation/ConversationMessage'
 
 import type {
   ConversationState,
-} from '@/app/concierge/contracts/conversation/ConversationState'
+} from '../../../contracts/conversation/ConversationState'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import ConversationDomain
-  from '@/app/concierge/domain/chat/conversationDomain'
+  from '../../../domain/chat/conversationDomain'
 
 /* =========================================
 🔥 Conversation Memory

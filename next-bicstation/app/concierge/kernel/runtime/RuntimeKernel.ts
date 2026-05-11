@@ -6,15 +6,15 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   ConversationState,
-} from '@/app/concierge/contracts/conversation/ConversationState'
+} from '../../contracts/conversation/ConversationState'
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 DOMAIN

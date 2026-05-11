@@ -6,7 +6,7 @@
 
 import type {
   UserPreference,
-} from '@/app/concierge/contracts/user/UserPreference'
+} from '../../../contracts/user/UserPreference'
 
 /* =========================================
 🔥 User Preference Context
