@@ -2,6 +2,16 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Contracts
+========================================= */
+
+import type {
+
+  PCProductItem,
+
+} from './contracts'
+
+/* =========================================
 🔥 Normalize Products
 ========================================= */
 
@@ -9,116 +19,179 @@ export function
 normalizeProducts(
 
   payload?: any
-) {
+
+): PCProductItem[] {
 
   // ======================================
-  // Safe Results
+  // Safe Products
   // ======================================
 
   const results =
 
     Array.isArray(
-      payload?.results
+      payload?.products
     )
 
-      ? payload.results
+      ? payload.products
 
       : Array.isArray(
-          payload
+          payload?.results
         )
 
-          ? payload
+          ? payload.results
 
-          : []
+          : Array.isArray(
+              payload
+            )
+
+              ? payload
+
+              : []
 
   // ======================================
   // Normalize
   // ======================================
 
-  return results.map(item => ({
+  return results.map(
+    (
+      item
+    ): PCProductItem => ({
 
-    // ====================================
-    // Base
-    // ====================================
+      /* ====================================
+      Identity
+      ==================================== */
 
-    id:
-      item?.id,
+      id:
+        item?.id,
 
-    unique_id:
-      item?.unique_id || '',
+      unique_id:
+        item?.unique_id || '',
 
-    name:
-      item?.name || '',
+      /* ====================================
+      Basic
+      ==================================== */
 
-    maker:
-      item?.maker || '',
+      name:
+        item?.name || '',
 
-    description:
-      item?.description || '',
+      maker:
+        item?.maker || '',
 
-    // ====================================
-    // URL
-    // ====================================
+      description:
+        item?.description || '',
 
-    url:
-      item?.url || '',
+      /* ====================================
+      URL
+      ==================================== */
 
-    affiliate_url:
-      item?.affiliate_url || '',
+      url:
+        item?.url || '',
 
-    image_url:
-      item?.image_url || '',
+      affiliate_url:
+        item?.affiliate_url || '',
 
-    // ====================================
-    // Price
-    // ====================================
+      image_url:
+        item?.image_url || '',
 
-    price:
-      item?.price || 0,
+      /* ====================================
+      Price
+      ==================================== */
 
-    // ====================================
-    // Score
-    // ====================================
+      price:
+        item?.price || 0,
 
-    spec_score:
-      item?.spec_score || 0,
+      /* ====================================
+      Specs
+      ==================================== */
 
-    score_cpu:
-      item?.score_cpu || 0,
+      cpu_model:
+        item?.cpu_model || '',
 
-    score_gpu:
-      item?.score_gpu || 0,
+      gpu_model:
+        item?.gpu_model || '',
 
-    score_ai:
-      item?.score_ai || 0,
+      memory_gb:
+        item?.memory_gb || 0,
 
-    score_cost:
-      item?.score_cost || 0,
+      storage_gb:
+        item?.storage_gb || 0,
 
-    score_portable:
-      item?.score_portable || 0,
+      /* ====================================
+      Scores
+      ==================================== */
 
-    // ====================================
-    // Semantic
-    // ====================================
+      spec_score:
+        item?.spec_score || 0,
 
-    attributes:
+      score_cpu:
+        item?.score_cpu || 0,
 
-      Array.isArray(
-        item?.attributes
-      )
+      score_gpu:
+        item?.score_gpu || 0,
 
-        ? item.attributes
+      score_ai:
+        item?.score_ai || 0,
 
-        : [],
+      score_cost:
+        item?.score_cost || 0,
 
-    grouped_attributes:
-      item?.grouped_attributes
-      || {},
+      score_portable:
+        item?.score_portable || 0,
 
-    semantic_schema_version:
+      semantic_score:
+        item?.semantic_score || 0,
 
-      item?.semantic_schema_version
-      || 1,
-  }))
+      /* ====================================
+      Semantic
+      ==================================== */
+
+      semantic_role:
+        item?.semantic_role || 'primary',
+
+      semantic_weight:
+        item?.semantic_weight || 0,
+
+      recommendation_reason:
+        item?.recommendation_reason || '',
+
+      confidence:
+        item?.confidence || 0,
+
+      icon:
+        item?.icon || '',
+
+      color:
+        item?.color || '',
+
+      /* ====================================
+      Attributes
+      ==================================== */
+
+      attributes:
+
+        Array.isArray(
+          item?.attributes
+        )
+
+          ? item.attributes
+
+          : [],
+
+      grouped_attributes:
+        item?.grouped_attributes
+        || {},
+
+      semantic_schema_version:
+
+        item?.semantic_schema_version
+        || 1,
+
+      /* ====================================
+      Raw Backup
+      ==================================== */
+
+      raw:
+        item,
+    })
+  )
 }

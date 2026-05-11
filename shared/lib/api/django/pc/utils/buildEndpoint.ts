@@ -2,31 +2,81 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
-🔥 API Base URL
+🔥 Resolve Base URL
 ========================================= */
 
-const API_BASE_URL =
+function resolveBaseUrl() {
 
-  typeof window ===
-  'undefined'
+  // ======================================
+  // Server
+  // ======================================
 
-    ? (
+  if (
+    typeof window ===
+    'undefined'
+  ) {
 
-        process.env
-          .INTERNAL_API_URL
+    return (
 
-        || ''
+      process.env
+        .INTERNAL_API_URL
 
-      )
+      ||
 
-    : (
+      process.env
+        .NEXT_PUBLIC_API_URL
 
-        process.env
-          .NEXT_PUBLIC_API_URL
+      ||
 
-        || ''
+      ''
+    )
+  }
 
-      )
+  // ======================================
+  // Client
+  // ======================================
+
+  return (
+
+    process.env
+      .NEXT_PUBLIC_API_URL
+
+    ||
+
+    ''
+  )
+}
+
+/* =========================================
+🔥 Normalize Base URL
+========================================= */
+
+function normalizeBaseUrl(
+  url: string
+) {
+
+  return url.replace(
+    /\/$/,
+    ''
+  )
+}
+
+/* =========================================
+🔥 Normalize Path
+========================================= */
+
+function normalizePath(
+  path: string
+) {
+
+  return path.startsWith(
+    '/'
+  )
+
+    ? path
+
+    : `/${path}`
+}
 
 /* =========================================
 🔥 Build Endpoint
@@ -36,6 +86,7 @@ export function
 buildEndpoint(
 
   path: string
+
 ): string {
 
   // ======================================
@@ -44,20 +95,20 @@ buildEndpoint(
 
   const baseUrl =
 
-    API_BASE_URL
-      .replace(/\/$/, '')
+    normalizeBaseUrl(
+
+      resolveBaseUrl()
+    )
 
   // ======================================
-  // Normalize Path
+  // Path
   // ======================================
 
   const normalizedPath =
 
-    path.startsWith('/')
-
-      ? path
-
-      : `/${path}`
+    normalizePath(
+      path
+    )
 
   // ======================================
   // Build
@@ -68,13 +119,21 @@ buildEndpoint(
     `${baseUrl}${normalizedPath}`
 
   // ======================================
-  // Debug
+  // Development Debug
   // ======================================
 
-  console.log(
-    '🔥 BUILD ENDPOINT:',
-    endpoint
-  )
+  if (
+    process.env.NODE_ENV ===
+    'development'
+  ) {
+
+    console.log(
+
+      '🔥 BUILD ENDPOINT:',
+
+      endpoint
+    )
+  }
 
   // ======================================
   // Return

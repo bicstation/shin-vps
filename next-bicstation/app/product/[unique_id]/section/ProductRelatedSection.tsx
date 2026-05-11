@@ -14,7 +14,7 @@ import ProductNextIntent
   from '../components/recommendation/ProductNextIntent'
 
 import RelatedProducts
-  from '../components/RelatedProducts'
+  from '../components/recommendation/RelatedProducts'
 
 /* =========================================
 🔥 Props

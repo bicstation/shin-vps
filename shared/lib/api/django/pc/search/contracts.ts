@@ -7,9 +7,9 @@
 
 export type SemanticSearchQuery = {
 
-  // ======================================
-  // Semantic Attributes
-  // ======================================
+  /* ======================================
+  Semantic Attributes
+  ====================================== */
 
   gpu?: string
 
@@ -25,15 +25,15 @@ export type SemanticSearchQuery = {
 
   device?: string
 
-  // ======================================
-  // Search
-  // ======================================
+  /* ======================================
+  Search
+  ====================================== */
 
   keyword?: string
 
-  // ======================================
-  // Pagination
-  // ======================================
+  /* ======================================
+  Pagination
+  ====================================== */
 
   page?: number
 
@@ -73,9 +73,17 @@ export type SemanticAttribute = {
 
 export type SemanticProduct = {
 
+  /* =====================================
+  Identity
+  ===================================== */
+
   id?: number
 
   unique_id?: string
+
+  /* =====================================
+  Basic
+  ===================================== */
 
   name?: string
 
@@ -91,9 +99,9 @@ export type SemanticProduct = {
 
   affiliate_url?: string
 
-  // ======================================
-  // Spec
-  // ======================================
+  /* =====================================
+  Specs
+  ===================================== */
 
   cpu_model?: string
 
@@ -103,9 +111,9 @@ export type SemanticProduct = {
 
   storage_gb?: number
 
-  // ======================================
-  // Score
-  // ======================================
+  /* =====================================
+  Scores
+  ===================================== */
 
   spec_score?: number
 
@@ -119,9 +127,31 @@ export type SemanticProduct = {
 
   score_portable?: number
 
-  // ======================================
-  // Semantic
-  // ======================================
+  semantic_score?: number
+
+  /* =====================================
+  Semantic
+  ===================================== */
+
+  semantic_role?:
+    | 'highlight'
+    | 'primary'
+    | 'secondary'
+    | 'supportive'
+
+  semantic_weight?: number
+
+  recommendation_reason?: string
+
+  confidence?: number
+
+  icon?: string
+
+  color?: string
+
+  /* =====================================
+  Attributes
+  ===================================== */
 
   attributes?:
     SemanticAttribute[]
@@ -134,6 +164,12 @@ export type SemanticProduct = {
 
   semantic_schema_version?:
     number
+
+  /* =====================================
+  Raw
+  ===================================== */
+
+  raw?: any
 }
 
 /* =========================================
@@ -141,6 +177,8 @@ export type SemanticProduct = {
 ========================================= */
 
 export type SemanticSearchResponse<T> = {
+
+  success?: boolean
 
   results: T[]
 

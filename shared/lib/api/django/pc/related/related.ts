@@ -2,6 +2,18 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Contracts
+========================================= */
+
+import type {
+
+  RelatedResponse,
+
+  RelatedProduct,
+
+} from './contracts'
+
+/* =========================================
 🔥 Utils
 ========================================= */
 
@@ -42,10 +54,11 @@ export async function
 fetchRelatedPC(
 
   uniqueId: string
-) {
+
+): Promise<RelatedProduct[]> {
 
   // ======================================
-  // Empty
+  // Empty Guard
   // ======================================
 
   if (!uniqueId) {
@@ -70,9 +83,22 @@ fetchRelatedPC(
 
   const response =
 
-    await safeFetch(
+    await safeFetch<RelatedResponse>(
       endpoint
     )
+
+  // ======================================
+  // Invalid Response
+  // ======================================
+
+  if (
+    !response
+    ||
+    !response.success
+  ) {
+
+    return []
+  }
 
   // ======================================
   // Normalize

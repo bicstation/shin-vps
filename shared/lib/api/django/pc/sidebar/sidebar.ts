@@ -2,6 +2,18 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Contracts
+========================================= */
+
+import type {
+
+  SidebarPayload,
+
+  SidebarResponse,
+
+} from './contracts'
+
+/* =========================================
 🔥 Utils
 ========================================= */
 
@@ -39,7 +51,9 @@ const SIDEBAR_ENDPOINT =
 ========================================= */
 
 export async function
-fetchSidebar() {
+fetchSidebar()
+
+: Promise<SidebarPayload> {
 
   // ======================================
   // Endpoint
@@ -57,48 +71,45 @@ fetchSidebar() {
 
   const response =
 
-    await safeFetch(
+    await safeFetch<
+      SidebarResponse
+    >(
       endpoint
     )
 
   // ======================================
-  // Debug
+  // Invalid Response
   // ======================================
 
-  console.log(
-    '\n🔥 ====================================='
-  )
+  if (
+    !response
+    ||
+    !response.success
+  ) {
 
-  console.log(
-    '🔥 SIDEBAR API RAW RESPONSE'
-  )
+    return {
 
-  console.log(
+      cpu: [],
 
-    JSON.stringify(
-      response,
-      null,
-      2
-    )
-  )
+      device: [],
 
-  console.log(
-    '🔥 =====================================\n'
-  )
+      gpu: [],
 
-  // ======================================
-  // Temporary Raw Return
-  // ======================================
-  // IMPORTANT:
-  // bypass normalize for payload inspection
-  // ======================================
+      maker: [],
 
-  return response
+      memory: [],
+
+      storage: [],
+
+      usage: [],
+    }
+  }
 
   // ======================================
   // Normalize
   // ======================================
-  // return normalizeSidebar(
-  //   response
-  // )
+
+  return normalizeSidebar(
+    response
+  )
 }

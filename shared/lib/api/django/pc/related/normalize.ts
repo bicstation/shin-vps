@@ -2,6 +2,16 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Contracts
+========================================= */
+
+import type {
+
+  RelatedProduct,
+
+} from './contracts'
+
+/* =========================================
 🔥 Normalize Related
 ========================================= */
 
@@ -9,17 +19,20 @@ export function
 normalizeRelated(
 
   payload?: any
-) {
+
+): RelatedProduct[] {
 
   // ======================================
-  // Safe Array
+  // Safe Products
   // ======================================
 
   const results =
 
-    Array.isArray(payload)
+    Array.isArray(
+      payload?.products
+    )
 
-      ? payload
+      ? payload.products
 
       : Array.isArray(
           payload?.results
@@ -27,94 +40,160 @@ normalizeRelated(
 
           ? payload.results
 
-          : []
+          : Array.isArray(
+              payload
+            )
+
+              ? payload
+
+              : []
 
   // ======================================
   // Normalize
   // ======================================
 
-  return results.map(item => ({
+  return results.map(
+    (
+      item
+    ): RelatedProduct => ({
 
-    // ====================================
-    // Base
-    // ====================================
+      /* ====================================
+      Identity
+      ==================================== */
 
-    id:
-      item?.id,
+      id:
+        item?.id,
 
-    unique_id:
-      item?.unique_id || '',
+      unique_id:
+        item?.unique_id || '',
 
-    name:
-      item?.name || '',
+      /* ====================================
+      Basic
+      ==================================== */
 
-    maker:
-      item?.maker || '',
+      name:
+        item?.name || '',
 
-    description:
-      item?.description || '',
+      maker:
+        item?.maker || '',
 
-    // ====================================
-    // URL
-    // ====================================
+      description:
+        item?.description || '',
 
-    url:
-      item?.url || '',
+      /* ====================================
+      URL
+      ==================================== */
 
-    affiliate_url:
-      item?.affiliate_url || '',
+      url:
+        item?.url || '',
 
-    image_url:
-      item?.image_url || '',
+      affiliate_url:
+        item?.affiliate_url || '',
 
-    // ====================================
-    // Price
-    // ====================================
+      image_url:
+        item?.image_url || '',
 
-    price:
-      item?.price || 0,
+      /* ====================================
+      Price
+      ==================================== */
 
-    // ====================================
-    // Score
-    // ====================================
+      price:
+        item?.price || 0,
 
-    spec_score:
-      item?.spec_score || 0,
+      /* ====================================
+      Specs
+      ==================================== */
 
-    similarity_score:
-      item?.similarity_score || 0,
+      cpu_model:
+        item?.cpu_model || '',
 
-    // ====================================
-    // Semantic
-    // ====================================
+      gpu_model:
+        item?.gpu_model || '',
 
-    matched_attributes:
+      memory_gb:
+        item?.memory_gb || 0,
 
-      Array.isArray(
-        item?.matched_attributes
-      )
+      storage_gb:
+        item?.storage_gb || 0,
 
-        ? item.matched_attributes
+      /* ====================================
+      Scores
+      ==================================== */
 
-        : [],
+      spec_score:
+        item?.spec_score || 0,
 
-    attributes:
+      similarity_score:
+        item?.similarity_score || 0,
 
-      Array.isArray(
-        item?.attributes
-      )
+      semantic_score:
+        item?.semantic_score || 0,
 
-        ? item.attributes
+      /* ====================================
+      Semantic
+      ==================================== */
 
-        : [],
+      semantic_role:
+        item?.semantic_role || 'primary',
 
-    grouped_attributes:
-      item?.grouped_attributes
-      || {},
+      semantic_weight:
+        item?.semantic_weight || 0,
 
-    semantic_schema_version:
+      recommendation_reason:
+        item?.recommendation_reason || '',
 
-      item?.semantic_schema_version
-      || 1,
-  }))
+      confidence:
+        item?.confidence || 0,
+
+      icon:
+        item?.icon || '',
+
+      color:
+        item?.color || '',
+
+      /* ====================================
+      Related Semantic
+      ==================================== */
+
+      matched_attributes:
+
+        Array.isArray(
+          item?.matched_attributes
+        )
+
+          ? item.matched_attributes
+
+          : [],
+
+      /* ====================================
+      Attributes
+      ==================================== */
+
+      attributes:
+
+        Array.isArray(
+          item?.attributes
+        )
+
+          ? item.attributes
+
+          : [],
+
+      grouped_attributes:
+        item?.grouped_attributes
+        || {},
+
+      semantic_schema_version:
+
+        item?.semantic_schema_version
+        || 1,
+
+      /* ====================================
+      Raw Backup
+      ==================================== */
+
+      raw:
+        item,
+    })
+  )
 }

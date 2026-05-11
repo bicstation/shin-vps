@@ -1,5 +1,3 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/FinderCTA.tsx
-
 import Link
   from 'next/link'
 
@@ -7,8 +5,15 @@ import styles
   from '../page.module.css'
 
 /* =========================================
-🔥 Props
+🔥 Types
 ========================================= */
+
+type SemanticKeyword = {
+
+  label: string
+
+  slug: string
+}
 
 type FinderCTAProps = {
 
@@ -18,7 +23,7 @@ type FinderCTAProps = {
 
   href?: string
 
-  semanticKeywords?: string[]
+  semanticKeywords?: SemanticKeyword[]
 }
 
 /* =========================================
@@ -27,14 +32,46 @@ type FinderCTAProps = {
 
 const DEFAULT_KEYWORDS = [
 
-  'ゲーミングPC',
-  'AI画像生成',
-  '動画編集',
-  'RTX 4070',
-  'RTX 4080',
-  'コスパ重視',
-  '初心者向け',
-  'クリエイター向け',
+  {
+    label: 'ゲーミングPC',
+    slug: 'usage-gaming',
+  },
+
+  {
+    label: 'AI画像生成',
+    slug: 'usage-ai',
+  },
+
+  {
+    label: '動画編集',
+    slug: 'usage-creator',
+  },
+
+  {
+    label: 'RTX 4070',
+    slug: 'gpu-rtx-4070',
+  },
+
+  {
+    label: 'RTX 4080',
+    slug: 'gpu-rtx-4080',
+  },
+
+  {
+    label: 'コスパ重視',
+    slug: 'usage-budget',
+  },
+
+  {
+    label: '初心者向け',
+    slug: 'usage-beginner',
+  },
+
+  {
+    label: 'クリエイター向け',
+    slug: 'usage-creator',
+  },
+
 ]
 
 /* =========================================
@@ -42,6 +79,7 @@ const DEFAULT_KEYWORDS = [
 ========================================= */
 
 export default function FinderCTA({
+
   title =
     '用途から最適なPCを探す',
 
@@ -53,6 +91,7 @@ export default function FinderCTA({
 
   semanticKeywords =
     DEFAULT_KEYWORDS,
+
 }: FinderCTAProps) {
 
   return (
@@ -130,12 +169,12 @@ export default function FinderCTA({
               <Link
 
                 key={
-                  keyword
+                  keyword.slug
                   || index
                 }
 
                 href={
-                  `/ranking/${encodeURIComponent(keyword)}`
+                  `/ranking/${keyword.slug}`
                 }
 
                 className={
@@ -143,7 +182,7 @@ export default function FinderCTA({
                 }
               >
 
-                {keyword}
+                {keyword.label}
 
               </Link>
 

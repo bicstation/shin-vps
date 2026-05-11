@@ -1,0 +1,188 @@
+/* FinderLayout.module.css */
+/* =========================================
+🔥 Page
+========================================= */
+
+.layout {
+
+  width: 100%;
+
+  min-height: 100vh;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+/* =========================================
+🔥 Background
+========================================= */
+
+.backgroundGlow {
+
+  position: fixed;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  z-index: 0;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(0, 140, 255, 0.12),
+      transparent 35%
+    ),
+
+    radial-gradient(
+      circle at top right,
+      rgba(140, 0, 255, 0.12),
+      transparent 35%
+    ),
+
+    radial-gradient(
+      circle at bottom center,
+      rgba(0, 255, 180, 0.08),
+      transparent 40%
+    );
+}
+
+/* =========================================
+🔥 Inner
+========================================= */
+
+.inner {
+
+  width: 100%;
+
+  max-width: 1480px;
+
+  margin: 0 auto;
+
+  padding:
+
+    40px
+    24px
+    120px;
+
+  position: relative;
+
+  z-index: 1;
+}
+
+/* =========================================
+🔥 Section Spacing
+========================================= */
+
+.sectionSpacing {
+
+  margin-top: 56px;
+}
+
+/* =========================================
+🔥 Grid
+========================================= */
+
+.grid {
+
+  display: grid;
+
+  grid-template-columns:
+    320px
+    minmax(0, 1fr);
+
+  gap: 32px;
+
+  align-items: start;
+}
+
+/* =========================================
+🔥 Sidebar
+========================================= */
+
+.sidebar {
+
+  position: sticky;
+
+  top: 100px;
+}
+
+/* =========================================
+🔥 Main
+========================================= */
+
+.main {
+
+  min-width: 0;
+}
+
+/* =========================================
+🔥 Glass
+========================================= */
+
+.glass {
+
+  background:
+    rgba(255, 255, 255, 0.04);
+
+  backdrop-filter:
+    blur(18px);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
+  border-radius: 28px;
+
+  box-shadow:
+    0 12px 40px
+    rgba(0, 0, 0, 0.24);
+}
+
+/* =========================================
+🔥 Mobile
+========================================= */
+
+@media (
+  max-width: 1024px
+) {
+
+  .grid {
+
+    grid-template-columns:
+      1fr;
+
+    gap: 24px;
+  }
+
+  .sidebar {
+
+    position: relative;
+
+    top: 0;
+  }
+}
+
+/* =========================================
+🔥 Small Mobile
+========================================= */
+
+@media (
+  max-width: 640px
+) {
+
+  .inner {
+
+    padding:
+
+      20px
+      14px
+      100px;
+  }
+
+  .sectionSpacing {
+
+    margin-top: 40px;
+  }
+}

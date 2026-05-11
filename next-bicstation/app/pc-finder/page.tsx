@@ -1,18 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+/* =========================================
+🔥 React
+========================================= */
 
-import FinderHero
-  from './components/FinderHero'
+import {
+  useMemo,
+  useState,
+} from 'react'
 
-import IntentSelector
-  from './components/IntentSelector'
+/* =========================================
+🔥 API
+========================================= */
 
-import BudgetSelector
-  from './components/BudgetSelector'
+import {
+  fetchFinderResult,
+} from '@/shared/lib/api/django/pc'
 
-import FinderResults
-  from './components/FinderResults'
+/* =========================================
+🔥 ORCHESTRATION
+========================================= */
+
+import FinderLayout
+  from './orchestration/FinderLayout'
+
+import FinderSemanticFlow
+  from './orchestration/FinderSemanticFlow'
+
+import FinderConversionFlow
+  from './orchestration/FinderConversionFlow'
+
+/* =========================================
+🔥 STATES
+========================================= */
 
 import EmptyFinder
   from './components/EmptyFinder'
@@ -20,111 +40,445 @@ import EmptyFinder
 import FinderLoading
   from './components/FinderLoading'
 
+/* =========================================
+🔥 Styles
+========================================= */
+
 import styles
-  from './styles/pcFinder.module.css'
+  from './PCFinderPage.module.css'
 
-import {
-  fetchFinderResult,
-} from '@/shared/lib/api/django/pc/'
+/* =========================================
+🔥 Semantic Mapping
+========================================= */
 
-export default function PCFinderPage() {
+const PURPOSE_TO_SEMANTIC = {
 
-  const [purpose, setPurpose] =
-    useState('gaming')
+  gaming:
+    'usage-gaming',
 
-  const [budget, setBudget] =
-    useState(250000)
+  creator:
+    'usage-creator',
 
-  const [loading, setLoading] =
-    useState(false)
+  business:
+    'usage-business',
 
-  const [results, setResults] =
-    useState<any[]>([])
+  ai:
+    'usage-ai',
+}
 
-  async function handleSearch() {
+/* =========================================
+🔥 Dummy Fallback
+========================================= */
+
+const DUMMY_RESULTS = [
+
+  {
+    unique_id:
+      'dummy-gaming-001',
+
+    name:
+      'RTX 4070 搭載 Gaming PC',
+
+    maker:
+      'GALLERIA',
+
+    price:
+      249800,
+
+    image_url:
+      '/dummy/gaming.jpg',
+
+    recommendation_reason:
+      'gaming semantic に最適化された高バランス構成。',
+
+    grouped_attributes: {
+
+      usage: [
+        {
+          name:
+            'ゲーミング',
+          slug:
+            'usage-gaming',
+        },
+      ],
+
+      gpu: [
+        {
+          name:
+            'RTX 4070',
+          slug:
+            'gpu-rtx-4070',
+        },
+      ],
+
+    },
+
+  },
+
+]
+
+/* =========================================
+🔥 PAGE
+========================================= */
+
+export default function
+PCFinderPage() {
+
+  // ======================================
+  // STATE
+  // ======================================
+
+  const [
+
+    purpose,
+
+    setPurpose,
+
+  ] = useState(
+    'gaming'
+  )
+
+  const [
+
+    budget,
+
+    setBudget,
+
+  ] = useState(
+    250000
+  )
+
+  const [
+
+    loading,
+
+    setLoading,
+
+  ] = useState(
+    false
+  )
+
+  const [
+
+    searched,
+
+    setSearched,
+
+  ] = useState(
+    false
+  )
+
+  const [
+
+    results,
+
+    setResults,
+
+  ] = useState<any[]>([])
+
+  // ======================================
+  // SEMANTIC
+  // ======================================
+
+  const semanticUsage =
+
+    PURPOSE_TO_SEMANTIC[
+      purpose
+    ]
+
+    || 'usage-gaming'
+
+  // ======================================
+  // DESCRIPTION
+  // ======================================
+
+  const semanticDescription =
+
+    useMemo(() => {
+
+      switch (
+        purpose
+      ) {
+
+        case 'gaming':
+          return 'FPS・MMORPG・重量級ゲーム向け'
+
+        case 'creator':
+          return '動画編集・配信・制作向け'
+
+        case 'business':
+          return '業務・法人利用向け'
+
+        case 'ai':
+          return 'AI画像生成・LLM用途向け'
+
+        default:
+          return 'semantic recommendation'
+
+      }
+
+    }, [
+      purpose,
+    ])
+
+  // ======================================
+  // SEARCH
+  // ======================================
+
+  async function
+  handleSearch() {
 
     try {
 
+      // --------------------------------
+      // Loading
+      // --------------------------------
+
       setLoading(true)
 
-      const data =
+      setSearched(true)
+
+      // --------------------------------
+      // Fetch
+      // --------------------------------
+
+      const response =
+
         await fetchFinderResult({
-          purpose,
-          max_price: budget,
+
+          usage:
+            semanticUsage,
+
+          max_price:
+            budget,
+
         })
 
+      // --------------------------------
+      // Normalize
+      // --------------------------------
+
       const normalized =
-        Array.isArray(data)
-          ? data
-          : Array.isArray(data?.results)
-          ? data.results
+
+        Array.isArray(
+          response
+        )
+
+          ? response
+
+          : Array.isArray(
+              response?.products
+            )
+
+          ? response.products
+
+          : Array.isArray(
+              response?.results
+            )
+
+          ? response.results
+
           : []
 
-      setResults(normalized)
+      // --------------------------------
+      // Apply
+      // --------------------------------
 
-    } catch (e) {
+      setResults(
+        normalized
+      )
 
-      console.error(e)
+      // --------------------------------
+      // Debug
+      // --------------------------------
+
+      console.log(
+        '\n🔥 ====================================='
+      )
+
+      console.log(
+        '🔥 PC FINDER'
+      )
+
+      console.log({
+
+        purpose,
+
+        semanticUsage,
+
+        budget,
+
+        resultCount:
+          normalized?.length
+          || 0,
+
+        firstResult:
+
+          normalized?.[0]
+          ? {
+
+              unique_id:
+                normalized[0]
+                  ?.unique_id,
+
+              name:
+                normalized[0]
+                  ?.name,
+
+              maker:
+                normalized[0]
+                  ?.maker,
+
+            }
+
+          : null,
+
+      })
+
+      console.log(
+        '🔥 =====================================\n'
+      )
+
+    } catch (error) {
+
+      console.error(
+        '🔥 Finder Fetch Error'
+      )
+
+      console.error(
+        error
+      )
+
+      // --------------------------------
+      // Dummy Fallback
+      // --------------------------------
+
+      setResults(
+        DUMMY_RESULTS
+      )
 
     } finally {
 
       setLoading(false)
+
     }
   }
 
+  // ======================================
+  // RESULT STATE
+  // ======================================
+
+  const hasResults =
+
+    results.length > 0
+
+  // ======================================
+  // RENDER
+  // ======================================
+
   return (
-    <main className={styles.page}>
 
-      <div className={styles.container}>
+    <main
+      className={
+        styles.page
+      }
+    >
 
-        <FinderHero />
+      <FinderLayout>
 
-        <div className={styles.layout}>
+        {/* ==================================
+        SEMANTIC FLOW
+        semantic cognition layer
+        ================================== */}
 
-          {/* LEFT */}
-          <aside className={styles.sidebar}>
+        <FinderSemanticFlow
 
-            <IntentSelector
-              value={purpose}
-              onChange={setPurpose}
-            />
+          purpose={
+            purpose
+          }
 
-            <BudgetSelector
-              value={budget}
-              onChange={setBudget}
-            />
+          budget={
+            budget
+          }
 
-            <button
-              onClick={handleSearch}
-              className={styles.searchButton}
-            >
-              👉 semantic診断を開始
-            </button>
+          semanticUsage={
+            semanticUsage
+          }
 
-          </aside>
+          semanticDescription={
+            semanticDescription
+          }
 
-          {/* RIGHT */}
-          <section className={styles.resultsArea}>
+          onPurposeChange={
+            setPurpose
+          }
 
-            {loading && (
-              <FinderLoading />
-            )}
+          onBudgetChange={
+            setBudget
+          }
 
-            {!loading && results.length <= 0 && (
-              <EmptyFinder />
-            )}
+          onSearch={
+            handleSearch
+          }
 
-            {!loading && results.length > 0 && (
-              <FinderResults
-                results={results}
-              />
-            )}
+          loading={
+            loading
+          }
 
-          </section>
+        />
 
-        </div>
+        {/* ==================================
+        EMPTY
+        ================================== */}
 
-      </div>
+        {!loading
+          &&
+          searched
+          &&
+          !hasResults && (
+
+          <EmptyFinder />
+
+        )}
+
+        {/* ==================================
+        LOADING
+        ================================== */}
+
+        {loading && (
+
+          <FinderLoading />
+
+        )}
+
+        {/* ==================================
+        CONVERSION FLOW
+        commerce recommendation layer
+        ================================== */}
+
+        {!loading
+          &&
+          hasResults && (
+
+          <FinderConversionFlow
+
+            purpose={
+              purpose
+            }
+
+            semanticUsage={
+              semanticUsage
+            }
+
+            results={
+              results
+            }
+
+          />
+
+        )}
+
+      </FinderLayout>
 
     </main>
   )

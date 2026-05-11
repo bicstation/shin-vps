@@ -2,6 +2,18 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Contracts
+========================================= */
+
+import type {
+
+  SidebarAttribute,
+
+  SidebarPayload,
+
+} from './contracts'
+
+/* =========================================
 🔥 Safe Array
 ========================================= */
 
@@ -19,6 +31,48 @@ function safeArray<T>(
 }
 
 /* =========================================
+🔥 Normalize Attributes
+========================================= */
+
+function normalizeAttributes(
+
+  items?: any[]
+
+): SidebarAttribute[] {
+
+  return safeArray(
+    items
+  ).map(item => ({
+
+    id:
+      item?.id,
+
+    name:
+      item?.name || '',
+
+    slug:
+      item?.slug || '',
+
+    count:
+      item?.count || 0,
+
+    icon:
+      item?.icon || '',
+
+    color:
+      item?.color || '',
+
+    semantic_role:
+      item?.semantic_role
+      || 'primary',
+
+    semantic_weight:
+      item?.semantic_weight
+      || 0,
+  }))
+}
+
+/* =========================================
 🔥 Normalize Sidebar
 ========================================= */
 
@@ -26,21 +80,39 @@ export function
 normalizeSidebar(
 
   payload?: any
-) {
+
+): SidebarPayload {
+
+  // ======================================
+  // Safe Sidebar
+  // ======================================
+
+  const sidebar =
+
+    payload?.sidebar
+    || payload
+    || {}
 
   // ======================================
   // Empty
   // ======================================
 
-  if (!payload) {
+  if (!sidebar) {
 
     return {
+
       cpu: [],
+
       device: [],
+
       gpu: [],
+
       maker: [],
+
       memory: [],
+
       storage: [],
+
       usage: [],
     }
   }
@@ -52,41 +124,47 @@ normalizeSidebar(
   return {
 
     cpu:
-      safeArray(
-        payload?.cpu
+
+      normalizeAttributes(
+        sidebar?.cpu
       ),
 
     device:
-      safeArray(
-        payload?.device
+
+      normalizeAttributes(
+        sidebar?.device
       ),
 
     gpu:
-      safeArray(
-        payload?.gpu
+
+      normalizeAttributes(
+        sidebar?.gpu
       ),
 
     maker:
 
-      safeArray(
+      normalizeAttributes(
 
-        payload?.maker
-        || payload?.maker_counts
+        sidebar?.maker
+        || sidebar?.maker_counts
       ),
 
     memory:
-      safeArray(
-        payload?.memory
+
+      normalizeAttributes(
+        sidebar?.memory
       ),
 
     storage:
-      safeArray(
-        payload?.storage
+
+      normalizeAttributes(
+        sidebar?.storage
       ),
 
     usage:
-      safeArray(
-        payload?.usage
+
+      normalizeAttributes(
+        sidebar?.usage
       ),
   }
 }

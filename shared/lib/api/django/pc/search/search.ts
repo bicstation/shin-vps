@@ -11,6 +11,8 @@ import type {
 
   SemanticSearchResponse,
 
+  SemanticProduct,
+
 } from './contracts'
 
 /* =========================================
@@ -67,7 +69,9 @@ searchPC(
     SemanticSearchQuery
 
 ): Promise<
-  SemanticSearchResponse<any>
+  SemanticSearchResponse<
+    SemanticProduct
+  >
 > {
 
   // ======================================
@@ -87,6 +91,7 @@ searchPC(
   const endpoint =
 
     buildEndpoint(
+
       `${SEARCH_ENDPOINT}${queryString}`
     )
 
@@ -96,9 +101,32 @@ searchPC(
 
   const response =
 
-    await safeFetch(
+    await safeFetch<
+      SemanticSearchResponse<
+        SemanticProduct
+      >
+    >(
       endpoint
     )
+
+  // ======================================
+  // Invalid Response
+  // ======================================
+
+  if (!response) {
+
+    return {
+
+      success: false,
+
+      results: [],
+
+      total: 0,
+
+      semantic_schema_version:
+        1,
+    }
+  }
 
   // ======================================
   // Normalize

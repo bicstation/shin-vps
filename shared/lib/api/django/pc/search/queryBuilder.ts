@@ -12,6 +12,34 @@ import type {
 } from './contracts'
 
 /* =========================================
+🔥 Helper
+========================================= */
+
+function appendIfExists(
+
+  params: URLSearchParams,
+
+  key: string,
+
+  value?: string | number
+) {
+
+  if (
+    value !== undefined
+    &&
+    value !== null
+    &&
+    value !== ''
+  ) {
+
+    params.set(
+      key,
+      String(value)
+    )
+  }
+}
+
+/* =========================================
 🔥 Query Builder
 ========================================= */
 
@@ -20,6 +48,7 @@ buildSemanticQuery(
 
   query?:
     SemanticSearchQuery
+
 ): string {
 
   // ======================================
@@ -27,6 +56,7 @@ buildSemanticQuery(
   // ======================================
 
   if (!query) {
+
     return ''
   }
 
@@ -41,99 +71,73 @@ buildSemanticQuery(
   // Semantic Attributes
   // ======================================
 
-  if (query.gpu) {
+  appendIfExists(
+    params,
+    'gpu',
+    query.gpu
+  )
 
-    params.set(
-      'gpu',
-      query.gpu
-    )
-  }
+  appendIfExists(
+    params,
+    'cpu',
+    query.cpu
+  )
 
-  if (query.cpu) {
+  appendIfExists(
+    params,
+    'usage',
+    query.usage
+  )
 
-    params.set(
-      'cpu',
-      query.cpu
-    )
-  }
+  appendIfExists(
+    params,
+    'maker',
+    query.maker
+  )
 
-  if (query.usage) {
+  appendIfExists(
+    params,
+    'memory',
+    query.memory
+  )
 
-    params.set(
-      'usage',
-      query.usage
-    )
-  }
+  appendIfExists(
+    params,
+    'storage',
+    query.storage
+  )
 
-  if (query.maker) {
-
-    params.set(
-      'maker',
-      query.maker
-    )
-  }
-
-  if (query.memory) {
-
-    params.set(
-      'memory',
-      query.memory
-    )
-  }
-
-  if (query.storage) {
-
-    params.set(
-      'storage',
-      query.storage
-    )
-  }
-
-  if (query.device) {
-
-    params.set(
-      'device',
-      query.device
-    )
-  }
+  appendIfExists(
+    params,
+    'device',
+    query.device
+  )
 
   // ======================================
   // Keyword
   // ======================================
 
-  if (query.keyword) {
-
-    params.set(
-      'keyword',
-      query.keyword
-    )
-  }
+  appendIfExists(
+    params,
+    'keyword',
+    query.keyword
+  )
 
   // ======================================
   // Pagination
   // ======================================
 
-  if (
-    typeof query.page ===
-    'number'
-  ) {
+  appendIfExists(
+    params,
+    'page',
+    query.page
+  )
 
-    params.set(
-      'page',
-      String(query.page)
-    )
-  }
-
-  if (
-    typeof query.limit ===
-    'number'
-  ) {
-
-    params.set(
-      'limit',
-      String(query.limit)
-    )
-  }
+  appendIfExists(
+    params,
+    'limit',
+    query.limit
+  )
 
   // ======================================
   // Return

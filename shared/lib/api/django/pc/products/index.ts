@@ -2,7 +2,7 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
-🔥 Products
+🔥 Products Fetch
 ========================================= */
 
 export * from './products'
@@ -12,3 +12,9 @@ export * from './products'
 ========================================= */
 
 export * from './normalize'
+
+/* =========================================
+🔥 Contracts
+========================================= */
+
+export * from './contracts'

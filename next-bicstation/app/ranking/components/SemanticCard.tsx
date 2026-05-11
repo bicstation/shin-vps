@@ -1,5 +1,3 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/SemanticCard.tsx
-
 import Link
   from 'next/link'
 
@@ -138,7 +136,7 @@ export default function SemanticCard({
   }
 
   // ======================================
-  // Href
+  // Semantic Route
   // ======================================
 
   const href =
@@ -337,6 +335,5 @@ export default function SemanticCard({
       </div>
 
     </Link>
-
   )
 }

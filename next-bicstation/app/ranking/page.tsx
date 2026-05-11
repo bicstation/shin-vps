@@ -1,6 +1,12 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/page.tsx
-
 // @ts-nocheck
+
+/* =========================================
+🔥 API
+========================================= */
+
+import {
+  fetchSidebar,
+} from '@/shared/lib/api/django/pc'
 
 /* =========================================
 🔥 Components
@@ -149,44 +155,57 @@ function getGroupDescription(
 export default async function
 RankingPage() {
 
-  // ======================================
-  // Endpoint
-  // ======================================
+  /* ======================================
+  FETCH SIDEBAR
+  ====================================== */
 
-  const endpoint =
+  const sidebar =
 
-    `${process.env.INTERNAL_API_URL}/general/pc-sidebar-stats/`
+    await fetchSidebar()
 
-  // ======================================
-  // Fetch
-  // ======================================
+  /* ======================================
+  DEBUG
+  ====================================== */
 
-  let sidebar = null
+  console.log(
+    '\n🔥 ====================================='
+  )
 
-  try {
+  console.log(
+    '🔥 RANKING PAGE COMPONENTS'
+  )
 
-    const response =
+  console.log({
 
-      await fetch(
-        endpoint,
-        {
-          cache:
-            'no-store',
-        },
-      )
+    RankingHero,
 
-    sidebar =
-      await response.json()
+    SemanticSection,
 
-  } catch (error) {
+    FinderCTA,
 
-    console.error(error)
+    EmptyState,
 
-  }
+  })
 
-  // ======================================
-  // Semantic Groups
-  // ======================================
+  console.log(
+    '🔥 SIDEBAR'
+  )
+
+  console.log(
+    JSON.stringify(
+      sidebar,
+      null,
+      2
+    )
+  )
+
+  console.log(
+    '🔥 =====================================\n'
+  )
+
+  /* ======================================
+  SEMANTIC GROUPS
+  ====================================== */
 
   const semanticGroups =
 
@@ -202,17 +221,17 @@ RankingPage() {
       )
     )
 
-  // ======================================
-  // Empty
-  // ======================================
+  /* ======================================
+  EMPTY
+  ====================================== */
 
   const isEmpty =
 
     semanticGroups.length === 0
 
-  // ======================================
-  // Hero Semantic Labels
-  // ======================================
+  /* ======================================
+  HERO SEMANTIC LABELS
+  ====================================== */
 
   const heroSemanticLabels =
 
@@ -236,9 +255,9 @@ RankingPage() {
       )
     )
 
-  // ======================================
-  // Render
-  // ======================================
+  /* ======================================
+  RENDER
+  ====================================== */
 
   return (
 
@@ -248,9 +267,10 @@ RankingPage() {
       }
     >
 
-      {/* ================================= */}
-      {/* Hero */}
-      {/* ================================= */}
+      {/* =================================
+      HERO
+      semantic discovery
+      ================================= */}
 
       <RankingHero
 
@@ -260,9 +280,9 @@ RankingPage() {
 
       />
 
-      {/* ================================= */}
-      {/* Empty */}
-      {/* ================================= */}
+      {/* =================================
+      EMPTY
+      ================================= */}
 
       {isEmpty && (
 
@@ -270,9 +290,9 @@ RankingPage() {
 
       )}
 
-      {/* ================================= */}
-      {/* Semantic Sections */}
-      {/* ================================= */}
+      {/* =================================
+      SEMANTIC SECTIONS
+      ================================= */}
 
       {!isEmpty && (
 
@@ -312,9 +332,6 @@ RankingPage() {
                     description:
                       getGroupDescription(key),
 
-                    href:
-                      `/ranking/${key}`,
-
                     items:
 
                       normalizedItems.map(
@@ -324,6 +341,7 @@ RankingPage() {
 
                           href:
                             `/ranking/${item.slug}`,
+
                         })
                       ),
 
@@ -339,12 +357,13 @@ RankingPage() {
 
       )}
 
-      {/* ================================= */}
-      {/* Finder CTA */}
-      {/* ================================= */}
+      {/* =================================
+      FINDER CTA
+      ================================= */}
 
       <FinderCTA />
 
     </main>
+
   )
 }

@@ -1,33 +1,129 @@
 // /home/maya/shin-dev/shin-vps/next-bicstation/app/product/[unique_id]/page.tsx
 
-// @ts-nocheck
-
 /* eslint-disable @next/next/no-img-element */
 
-import Link
-  from 'next/link'
+import styles
+  from './page.module.css'
 
 /* =========================================
-🔥 Dynamic
+🔥 Navigation
 ========================================= */
 
-export const dynamic =
-  'force-dynamic'
+import {
+  notFound,
+} from 'next/navigation'
 
 /* =========================================
-🔥 Page
+🔥 API
+========================================= */
+
+import {
+
+  fetchPCDetail,
+
+  fetchRelatedPC,
+
+  fetchSidebar,
+
+} from '@/shared/lib/api/django/pc'
+
+/* =========================================
+🔥 HERO
+========================================= */
+
+import ProductHeroSection
+  from './section/ProductHeroSection'
+
+/* =========================================
+🔥 CAPABILITY
+========================================= */
+
+import ProductCapabilitySection
+  from './section/ProductCapabilitySection'
+
+/* =========================================
+🔥 TRUST
+========================================= */
+
+import ProductTrustLayer
+  from './section/ProductTrustSection'
+
+/* =========================================
+🔥 SEMANTIC
+========================================= */
+
+import ProductSemanticSection
+  from './section/ProductSemanticSection'
+
+/* =========================================
+🔥 SPEC
+========================================= */
+
+import ProductSpecSection
+  from './section/ProductSpecSection'
+
+/* =========================================
+🔥 COMPARISON
+========================================= */
+
+import ProductComparisonSection
+  from './section/ProductComparisonSection'
+
+/* =========================================
+🔥 FAQ
+========================================= */
+
+import ProductFaq
+  from './components/faq/ProductFaq'
+
+/* =========================================
+🔥 RECOMMENDATION
+========================================= */
+
+import ProductRelatedSection
+  from './section/ProductRelatedSection'
+
+/* =========================================
+🔥 CTA
+========================================= */
+
+import ProductCTASection
+  from './section/ProductCTASection'
+
+/* =========================================
+🔥 EMPTY
+========================================= */
+
+import ProductEmpty
+  from './states/ProductEmptyState'
+
+/* =========================================
+🔥 ISR
+========================================= */
+
+export const revalidate = 60
+
+/* =========================================
+🔥 TYPES
+========================================= */
+
+type Props = {
+
+  params: {
+    unique_id: string
+  }
+}
+
+/* =========================================
+🔥 PAGE
 ========================================= */
 
 export default async function
-ProductDetailPage({
+ProductPage({
 
   params,
 
-}: {
-  params: Promise<{
-    unique_id: string
-  }>
-}) {
+}: Props) {
 
   // ======================================
   // Params
@@ -35,459 +131,161 @@ ProductDetailPage({
 
   const {
     unique_id,
-  } = await params
-
-  // ======================================
-  // Endpoint
-  // ======================================
-
-  const endpoint =
-
-    `${process.env.INTERNAL_API_URL}/general/pc-products/${unique_id}/`
+  } = params
 
   // ======================================
   // Fetch
   // ======================================
 
-  let status = 0
+  const [
 
-  let json = null
+    product,
 
-  let errorMessage = ''
+    relatedProducts,
 
-  try {
+    sidebar,
 
-    const response =
+  ] = await Promise.all([
 
-      await fetch(
-        endpoint,
-        {
-          cache:
-            'no-store',
-        }
-      )
+    fetchPCDetail(
+      unique_id
+    ),
 
-    status =
-      response.status
+    fetchRelatedPC(
+      unique_id
+    ),
 
-    json =
-      await response.json()
+    fetchSidebar(),
+  ])
 
-  } catch (error) {
+  // ======================================
+  // Empty
+  // ======================================
 
-    errorMessage =
-      String(error)
+  if (!product) {
+
+    return (
+      <ProductEmpty />
+    )
   }
 
-  // ======================================
-  // Normalize
-  // ======================================
+console.log({
 
-  const product =
+  ProductHeroSection,
 
-    json?.product
+  ProductCapabilitySection,
 
-    ||
+  ProductTrustLayer,
 
-    json?.result
+  ProductSemanticSection,
 
-    ||
+  ProductSpecSection,
 
-    json
+  ProductComparisonSection,
 
-    ||
+  ProductRelatedSection,
 
-    {}
+  ProductFaq,
 
-  // ======================================
-  // Basic Fields
-  // ======================================
+  ProductCTASection,
 
-  const name =
+})
 
-    product?.name
 
-    ||
 
-    product?.title
-
-    ||
-
-    'No Name'
-
-  const maker =
-
-    product?.maker
-    || ''
-
-  const price =
-
-    product?.price
-    || 0
 
   // ======================================
-  // Render
+  // Page
   // ======================================
 
   return (
 
     <main
-      style={{
-        padding:
-          '40px',
-
-        color:
-          '#fff',
-
-        maxWidth:
-          '1200px',
-
-        margin:
-          '0 auto',
-      }}
+      className={
+        styles.mainWrapper
+      }
     >
 
-      {/* ================================= */}
-      {/* Back */}
-      {/* ================================= */}
+      {/* ==================================
+      HERO
+      ================================== */}
 
-      <div
-        style={{
-          marginBottom:
-            '30px',
-        }}
-      >
+      <ProductHeroSection
+        product={product}
+      />
 
-        <Link
-          href="/ranking"
+      {/* ==================================
+      CAPABILITY
+      ================================== */}
 
-          style={{
-            color:
-              '#aaa',
+      <ProductCapabilitySection
+        product={product}
+      />
 
-            textDecoration:
-              'none',
-          }}
-        >
+      {/* ==================================
+      TRUST
+      ================================== */}
 
-          ← Ranking
+      <ProductTrustLayer
+        product={product}
+      />
 
-        </Link>
+      {/* ==================================
+      SEMANTIC
+      ================================== */}
 
-      </div>
+      <ProductSemanticSection
+        product={product}
+      />
 
-      {/* ================================= */}
-      {/* Title */}
-      {/* ================================= */}
+      {/* ==================================
+      SPEC
+      ================================== */}
 
-      <h1
-        style={{
-          fontSize:
-            '42px',
+      <ProductSpecSection
+        product={product}
+      />
 
-          fontWeight:
-            900,
+      {/* ==================================
+      COMPARISON
+      ================================== */}
 
-          lineHeight:
-            1.4,
-        }}
-      >
+      <ProductComparisonSection
+        product={product}
 
-        Product Detail Debug
+        sidebar={sidebar}
+      />
 
-      </h1>
+      {/* ==================================
+      RELATED
+      ================================== */}
 
-      {/* ================================= */}
-      {/* Summary */}
-      {/* ================================= */}
+      <ProductRelatedSection
 
-      <section
-        style={{
-          marginTop:
-            '40px',
+        product={product}
 
-          display:
-            'grid',
+        products={
+          relatedProducts
+        }
+      />
 
-          gap:
-            '20px',
+      {/* ==================================
+      FAQ
+      ================================== */}
 
-          gridTemplateColumns:
-            'repeat(auto-fit,minmax(260px,1fr))',
-        }}
-      >
+      <ProductFaq
+        product={product}
+      />
 
-        {/* ============================= */}
-        {/* Unique ID */}
-        {/* ============================= */}
+      {/* ==================================
+      CTA
+      ================================== */}
 
-        <div style={cardStyle}>
-
-          <div style={labelStyle}>
-            UNIQUE ID
-          </div>
-
-          <div style={valueStyle}>
-            {unique_id}
-          </div>
-
-        </div>
-
-        {/* ============================= */}
-        {/* Status */}
-        {/* ============================= */}
-
-        <div style={cardStyle}>
-
-          <div style={labelStyle}>
-            STATUS
-          </div>
-
-          <div style={valueStyle}>
-            {status}
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* ================================= */}
-      {/* Request URL */}
-      {/* ================================= */}
-
-      <section
-        style={{
-          marginTop:
-            '40px',
-        }}
-      >
-
-        <h2>
-          Request URL
-        </h2>
-
-        <pre style={preStyle}>
-
-          {endpoint}
-
-        </pre>
-
-      </section>
-
-      {/* ================================= */}
-      {/* Error */}
-      {/* ================================= */}
-
-      {!!errorMessage && (
-
-        <section
-          style={{
-            marginTop:
-              '40px',
-          }}
-        >
-
-          <h2>
-            Error
-          </h2>
-
-          <pre style={preStyle}>
-
-            {errorMessage}
-
-          </pre>
-
-        </section>
-
-      )}
-
-      {/* ================================= */}
-      {/* Product Info */}
-      {/* ================================= */}
-
-      <section
-        style={{
-          marginTop:
-            '60px',
-        }}
-      >
-
-        <h2>
-          Product Info
-        </h2>
-
-        <div
-          style={{
-            marginTop:
-              '24px',
-
-            display:
-              'grid',
-
-            gap:
-              '20px',
-          }}
-        >
-
-          {/* =========================== */}
-          {/* Name */}
-          {/* =========================== */}
-
-          <div style={cardStyle}>
-
-            <div style={labelStyle}>
-              NAME
-            </div>
-
-            <div style={valueStyle}>
-              {name}
-            </div>
-
-          </div>
-
-          {/* =========================== */}
-          {/* Maker */}
-          {/* =========================== */}
-
-          <div style={cardStyle}>
-
-            <div style={labelStyle}>
-              MAKER
-            </div>
-
-            <div style={valueStyle}>
-              {maker}
-            </div>
-
-          </div>
-
-          {/* =========================== */}
-          {/* Price */}
-          {/* =========================== */}
-
-          <div style={cardStyle}>
-
-            <div style={labelStyle}>
-              PRICE
-            </div>
-
-            <div style={valueStyle}>
-              ¥{
-                Number(
-                  price
-                ).toLocaleString()
-              }
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* ================================= */}
-      {/* Raw JSON */}
-      {/* ================================= */}
-
-      <section
-        style={{
-          marginTop:
-            '80px',
-
-          paddingBottom:
-            '120px',
-        }}
-      >
-
-        <h2>
-          Raw JSON
-        </h2>
-
-        <pre style={preStyle}>
-
-          {JSON.stringify(
-            json,
-            null,
-            2
-          )}
-
-        </pre>
-
-      </section>
+      <ProductCTASection
+        product={product}
+      />
 
     </main>
+
   )
-}
-
-/* =========================================
-🔥 Styles
-========================================= */
-
-const cardStyle = {
-
-  padding:
-    '24px',
-
-  borderRadius:
-    '20px',
-
-  background:
-    'rgba(255,255,255,0.04)',
-
-  border:
-    '1px solid rgba(255,255,255,0.08)',
-}
-
-const labelStyle = {
-
-  fontSize:
-    '12px',
-
-  opacity:
-    0.6,
-
-  fontWeight:
-    700,
-}
-
-const valueStyle = {
-
-  marginTop:
-    '12px',
-
-  fontSize:
-    '20px',
-
-  fontWeight:
-    800,
-
-  lineHeight:
-    1.5,
-}
-
-const preStyle = {
-
-  marginTop:
-    '20px',
-
-  padding:
-    '24px',
-
-  borderRadius:
-    '20px',
-
-  background:
-    '#111',
-
-  overflowX:
-    'auto',
-
-  whiteSpace:
-    'pre-wrap',
-
-  fontSize:
-    '12px',
-
-  lineHeight:
-    1.7,
 }

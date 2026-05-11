@@ -1,8 +1,3 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/SemanticSection.tsx
-
-import Link
-  from 'next/link'
-
 import SemanticCard, {
   type SemanticCardItem,
 } from './SemanticCard'
@@ -24,8 +19,6 @@ export type SemanticGroup = {
 
   description?: string
 
-  href?: string
-
   items: SemanticCardItem[]
 }
 
@@ -34,15 +27,17 @@ export type SemanticGroup = {
 ========================================= */
 
 function SectionTitle({
+
   label,
+
   title,
+
   description,
-  href,
+
 }: {
   label: string
   title: string
   description?: string
-  href: string
 }) {
 
   return (
@@ -111,22 +106,6 @@ function SectionTitle({
 
       </div>
 
-      {/* ================================= */}
-      {/* Right */}
-      {/* ================================= */}
-
-      <Link
-        href={href}
-
-        className={
-          styles.semanticViewAll
-        }
-      >
-
-        すべて見る →
-
-      </Link>
-
     </div>
   )
 }
@@ -188,15 +167,6 @@ export default function SemanticSection({
   }
 
   // ======================================
-  // Group Href
-  // ======================================
-
-  const groupHref =
-
-    group.href
-    || `/ranking/${group.key}`
-
-  // ======================================
   // Render
   // ======================================
 
@@ -224,10 +194,6 @@ export default function SemanticSection({
 
         description={
           group.description
-        }
-
-        href={
-          groupHref
         }
 
       />

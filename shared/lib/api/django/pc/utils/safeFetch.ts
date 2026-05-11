@@ -2,6 +2,17 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Types
+========================================= */
+
+type SafeFetchOptions =
+
+  RequestInit & {
+
+    timeout?: number
+  }
+
+/* =========================================
 🔥 Safe Fetch
 ========================================= */
 
@@ -10,9 +21,45 @@ safeFetch<T = any>(
 
   endpoint: string,
 
-  options?: RequestInit
+  options?: SafeFetchOptions
 
 ): Promise<T | null> {
+
+  // ======================================
+  // Timeout
+  // ======================================
+
+  const timeout =
+
+    typeof options?.timeout
+      === 'number'
+
+      ? options.timeout
+
+      : 15000
+
+  // ======================================
+  // Abort Controller
+  // ======================================
+
+  const controller =
+
+    new AbortController()
+
+  // ======================================
+  // Timeout Timer
+  // ======================================
+
+  const timeoutId =
+
+    setTimeout(
+      () => {
+
+        controller.abort()
+
+      },
+      timeout
+    )
 
   try {
 
@@ -27,7 +74,11 @@ safeFetch<T = any>(
         {
           ...options,
 
+          signal:
+            controller.signal,
+
           headers: {
+
             'Content-Type':
               'application/json',
 
@@ -40,6 +91,14 @@ safeFetch<T = any>(
       )
 
     // ====================================
+    // Clear Timeout
+    // ====================================
+
+    clearTimeout(
+      timeoutId
+    )
+
+    // ====================================
     // Response Error
     // ====================================
 
@@ -50,10 +109,13 @@ safeFetch<T = any>(
         '🔥 API RESPONSE ERROR',
 
         {
+          endpoint,
+
           status:
             response.status,
 
-          endpoint,
+          statusText:
+            response.statusText,
         }
       )
 
@@ -61,11 +123,30 @@ safeFetch<T = any>(
     }
 
     // ====================================
-    // JSON
+    // JSON Parse
     // ====================================
 
-    const data =
-      await response.json()
+    let data: T
+
+    try {
+
+      data =
+        await response.json()
+
+    } catch (jsonError) {
+
+      console.error(
+
+        '🔥 JSON PARSE ERROR',
+
+        {
+          endpoint,
+          jsonError,
+        }
+      )
+
+      return null
+    }
 
     // ====================================
     // Success
@@ -73,7 +154,37 @@ safeFetch<T = any>(
 
     return data
 
-  } catch (error) {
+  } catch (error: any) {
+
+    // ====================================
+    // Clear Timeout
+    // ====================================
+
+    clearTimeout(
+      timeoutId
+    )
+
+    // ====================================
+    // Abort Error
+    // ====================================
+
+    if (
+      error?.name ===
+      'AbortError'
+    ) {
+
+      console.error(
+
+        '🔥 FETCH TIMEOUT',
+
+        {
+          endpoint,
+          timeout,
+        }
+      )
+
+      return null
+    }
 
     // ====================================
     // Network Error

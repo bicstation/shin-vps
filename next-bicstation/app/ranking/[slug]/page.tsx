@@ -1,121 +1,180 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/page.tsx
-
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
-
-/* =========================================
-🔥 Shared Cards
-========================================= */
-
-import HeroRankingCard
-  from '@/shared/components/organisms/cards/HeroRankingCard'
-
-import ProductCard
-  from '@/shared/components/organisms/cards/ProductCard'
-
-/* =========================================
-🔥 Styles
-========================================= */
 
 import styles
   from './page.module.css'
 
 /* =========================================
-🔥 Dynamic
+🔥 API
 ========================================= */
 
-export const dynamic =
-  'force-dynamic'
+import {
+  fetchRankingProducts,
+} from '@/shared/lib/api/django/pc'
 
 /* =========================================
-🔥 Page
+🔥 ORCHESTRATION
+========================================= */
+
+import RankingLayout
+  from './orchestration/RankingLayout'
+
+import RankingSemanticFlow
+  from './orchestration/RankingSemanticFlow'
+
+import RankingConversionFlow
+  from './orchestration/RankingConversionFlow'
+
+/* =========================================
+🔥 EMPTY
+========================================= */
+
+import RankingEmpty
+  from './components/RankingEmpty'
+
+/* =========================================
+🔥 TYPES
+========================================= */
+
+type Props = {
+
+  params: {
+    slug: string
+  }
+}
+
+/* =========================================
+🔥 ISR
+========================================= */
+
+export const revalidate = 60
+
+/* =========================================
+🔥 PAGE
 ========================================= */
 
 export default async function
-RankingDetailPage({
+RankingPage({
   params,
-}: {
-  params: Promise<{
-    slug: string
-  }>
-}) {
+}: Props) {
 
   // ======================================
-  // Params
+  // PARAMS
   // ======================================
 
-  const {
-    slug,
-  } = await params
+  const slug =
+
+    params?.slug
+    || 'score'
 
   // ======================================
-  // Endpoint
+  // FETCH
   // ======================================
 
-  const endpoint =
-
-    `${process.env.INTERNAL_API_URL}/general/pc-products/ranking/${slug}/`
-
-  // ======================================
-  // Fetch
-  // ======================================
-
-  let rankingJson = null
-
-  let status = 500
+  let products = []
 
   try {
 
-    const response =
+    const result =
 
-      await fetch(
-        endpoint,
-        {
-          cache:
-            'no-store',
-        }
+      await fetchRankingProducts(
+        slug
       )
 
-    status =
-      response.status
+    products =
 
-    rankingJson =
-      await response.json()
+      result?.products
+      || []
 
   } catch (error) {
 
-    console.error(error)
+    console.error(
+      '🔥 Ranking Fetch Error'
+    )
 
+    console.error(
+      error
+    )
   }
 
   // ======================================
-  // Products
+  // DEBUG
   // ======================================
 
-  const rankingProducts =
+  console.log(
+    '\n🔥 ====================================='
+  )
 
-    Array.isArray(
-      rankingJson?.products
+  console.log(
+    '🔥 RANKING DETAIL PAGE'
+  )
+
+  console.log({
+
+    slug,
+
+    productCount:
+      products?.length
+      || 0,
+
+    firstProduct:
+
+      products?.[0]
+      ? {
+
+          unique_id:
+            products[0]
+              ?.unique_id,
+
+          name:
+            products[0]
+              ?.name,
+
+          maker:
+            products[0]
+              ?.maker,
+
+        }
+
+      : null,
+
+  })
+
+  console.log(
+    '🔥 COMPONENTS'
+  )
+
+  console.log({
+
+    RankingLayout,
+
+    RankingSemanticFlow,
+
+    RankingConversionFlow,
+
+    RankingEmpty,
+
+  })
+
+  console.log(
+    '🔥 =====================================\n'
+  )
+
+  // ======================================
+  // EMPTY
+  // ======================================
+
+  if (
+    !products?.length
+  ) {
+
+    return (
+      <RankingEmpty />
     )
-
-      ? rankingJson.products
-
-      : []
+  }
 
   // ======================================
-  // Split
-  // ======================================
-
-  const heroProduct =
-
-    rankingProducts[0]
-
-  const subProducts =
-
-    rankingProducts.slice(1)
-
-  // ======================================
-  // Render
+  // PAGE
   // ======================================
 
   return (
@@ -126,224 +185,37 @@ RankingDetailPage({
       }
     >
 
-      {/* ================================= */}
-      {/* Debug Header */}
-      {/* ================================= */}
+      <RankingLayout>
 
-      <section
-        className={
-          styles.debugHero
-        }
-      >
+        {/* ==================================
+        SEMANTIC FLOW
+        semantic discovery layer
+        ================================== */}
 
-        <h1
-          className={
-            styles.debugTitle
-          }
-        >
+        <RankingSemanticFlow
 
-          Semantic Ranking Debug
+          slug={slug}
 
-        </h1>
+          products={products}
 
-        {/* ============================= */}
-        {/* Debug Grid */}
-        {/* ============================= */}
+        />
 
-        <div
-          className={
-            styles.debugGrid
-          }
-        >
+        {/* ==================================
+        CONVERSION FLOW
+        recommendation / commerce layer
+        ================================== */}
 
-          <div
-            className={
-              styles.debugCard
-            }
-          >
+        <RankingConversionFlow
 
-            <div
-              className={
-                styles.debugLabel
-              }
-            >
+          slug={slug}
 
-              SLUG
+          products={products}
 
-            </div>
+        />
 
-            <div
-              className={
-                styles.debugValue
-              }
-            >
-
-              {slug}
-
-            </div>
-
-          </div>
-
-          <div
-            className={
-              styles.debugCard
-            }
-          >
-
-            <div
-              className={
-                styles.debugLabel
-              }
-            >
-
-              STATUS
-
-            </div>
-
-            <div
-              className={
-                styles.debugValue
-              }
-            >
-
-              {status}
-
-            </div>
-
-          </div>
-
-          <div
-            className={
-              styles.debugCard
-            }
-          >
-
-            <div
-              className={
-                styles.debugLabel
-              }
-            >
-
-              RESULT COUNT
-
-            </div>
-
-            <div
-              className={
-                styles.debugValue
-              }
-            >
-
-              {rankingProducts.length}
-
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* ============================= */}
-        {/* URL */}
-        {/* ============================= */}
-
-        <div
-          className={
-            styles.requestBlock
-          }
-        >
-
-          <div
-            className={
-              styles.requestLabel
-            }
-          >
-
-            Request URL
-
-          </div>
-
-          <div
-            className={
-              styles.requestUrl
-            }
-          >
-
-            {endpoint}
-
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* ================================= */}
-      {/* Hero Product */}
-      {/* ================================= */}
-
-      {heroProduct && (
-
-        <section
-          className={
-            styles.heroSection
-          }
-        >
-
-          <HeroRankingCard
-            product={
-              heroProduct
-            }
-          />
-
-        </section>
-
-      )}
-
-      {/* ================================= */}
-      {/* Product Grid */}
-      {/* ================================= */}
-
-      {!!subProducts.length && (
-
-        <section
-          className={
-            styles.productSection
-          }
-        >
-
-          <div
-            className={
-              styles.productGrid
-            }
-          >
-
-            {subProducts.map(
-              (
-                product,
-                index
-              ) => (
-
-                <ProductCard
-
-                  key={
-                    product?.unique_id
-                    || index
-                  }
-
-                  product={
-                    product
-                  }
-
-                />
-
-              )
-            )}
-
-          </div>
-
-        </section>
-
-      )}
+      </RankingLayout>
 
     </main>
+
   )
 }

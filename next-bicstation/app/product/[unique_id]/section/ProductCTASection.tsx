@@ -14,8 +14,7 @@ import ProductStickyCTA
   from '../components/cta/ProductStickyCTA'
 
 import FinalCta
-  from '../components/FinalCta'
-
+  from '../components/cta/FinalCta'
 /* =========================================
 🔥 Props
 ========================================= */

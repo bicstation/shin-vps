@@ -1,11 +1,11 @@
-import Link from 'next/link'
+// /app/product/[unique_id]/components/recommendation/RelatedProducts.tsx
 
-import {
-  fetchRelatedProducts,
-} from '@/shared/lib/api/django/pc/stats'
+import Link
+  from 'next/link'
 
-import SemanticSection
-  from '@/shared/components/semantic/SemanticSection'
+/* =========================================
+🔥 Styles
+========================================= */
 
 import styles
   from './RelatedProducts.module.css'
@@ -15,7 +15,10 @@ import styles
 ========================================= */
 
 type Props = {
+
   product: any
+
+  products: any[]
 }
 
 /* =========================================
@@ -26,10 +29,11 @@ function formatMatchReason(
   reasons: any
 ): string[] {
 
-  // --------------------------------
-  // normalize
-  // --------------------------------
   let list: string[] = []
+
+  // ======================================
+  // Normalize
+  // ======================================
 
   if (
     Array.isArray(reasons)
@@ -48,9 +52,10 @@ function formatMatchReason(
         .map(v => v.trim())
   }
 
-  // --------------------------------
-  // semantic map
-  // --------------------------------
+  // ======================================
+  // Semantic Map
+  // ======================================
+
   const map:
     Record<
       string,
@@ -61,25 +66,24 @@ function formatMatchReason(
       '同価格帯で比較しやすい',
 
     gpu:
-      '同等GPU semantic',
+      '近いGPU性能構成',
 
     usage:
-      '同じ用途 semantic',
+      '似た用途に向いている',
 
     creator:
-      'creator workload一致',
+      '制作向け構成が近い',
 
     gaming:
-      'gaming semantic一致',
+      'ゲーム用途が近い',
 
     balance:
-      '構成バランスが近い',
+      '全体バランスが近い',
   }
 
   return list
     .map(
-      key =>
-        map[key]
+      key => map[key]
     )
     .filter(Boolean)
 }
@@ -94,28 +98,35 @@ function SimilarityBadge({
   index: number
 }) {
 
-  // Top
   if (index === 0) {
 
     return (
+
       <div
         className={
           styles.topBadge
         }
       >
-        TOP SIMILAR
+
+        TOP MATCH
+
       </div>
+
     )
   }
 
   return (
+
     <div
       className={
         styles.badge
       }
     >
+
       SIMILAR
+
     </div>
+
   )
 }
 
@@ -126,6 +137,7 @@ function SimilarityBadge({
 function EmptyState() {
 
   return (
+
     <div
       className={
         styles.empty
@@ -137,10 +149,123 @@ function EmptyState() {
           styles.emptyText
         }
       >
-        関連semantic構成はありません
+
+        関連するおすすめ構成はまだありません
+
       </p>
 
     </div>
+
+  )
+}
+
+/* =========================================
+🔥 Semantic Groups
+========================================= */
+
+function SemanticGroups({
+  grouped,
+}: {
+  grouped?: Record<
+    string,
+    any[]
+  >
+}) {
+
+  if (!grouped) {
+
+    return null
+  }
+
+  const entries =
+
+    Object.entries(
+      grouped
+    )
+
+  if (!entries.length) {
+
+    return null
+  }
+
+  return (
+
+    <div
+      className={
+        styles.semanticGroups
+      }
+    >
+
+      {entries
+        .slice(0, 2)
+        .map(([
+
+          group,
+
+          attrs,
+
+        ]) => (
+
+          <div
+            key={group}
+
+            className={
+              styles.semanticGroup
+            }
+          >
+
+            {/* ===================== */}
+            {/* Group */}
+            {/* ===================== */}
+
+            <div
+              className={
+                styles.semanticGroupTitle
+              }
+            >
+
+              {group}
+
+            </div>
+
+            {/* ===================== */}
+            {/* Chips */}
+            {/* ===================== */}
+
+            <div
+              className={
+                styles.semanticChipList
+              }
+            >
+
+              {(attrs || [])
+                .slice(0, 3)
+                .map(attr => (
+
+                  <div
+                    key={
+                      attr.slug
+                    }
+
+                    className={
+                      styles.semanticChip
+                    }
+                  >
+
+                    {attr.name}
+
+                  </div>
+
+                ))}
+
+            </div>
+
+          </div>
+
+        ))}
+
+    </div>
+
   )
 }
 
@@ -148,46 +273,54 @@ function EmptyState() {
 🔥 Component
 ========================================= */
 
-export default async function RelatedProducts({
+export default function
+RelatedProducts({
+
   product,
+
+  products,
+
 }: Props) {
 
-  // --------------------------------
+  // ======================================
   // Safety
-  // --------------------------------
+  // ======================================
+
   if (
-    !product?.unique_id
+    !product
   ) {
+
     return null
   }
 
-  // --------------------------------
-  // Fetch
-  // --------------------------------
-  const related =
-    await fetchRelatedProducts(
-      product.unique_id
-    )
-
-  // --------------------------------
+  // ======================================
   // Empty
-  // --------------------------------
+  // ======================================
+
   if (
-    !related?.length
+    !products?.length
   ) {
-    return <EmptyState />
+
+    return (
+      <EmptyState />
+    )
   }
 
+  // ======================================
+  // Render
+  // ======================================
+
   return (
+
     <section
       className={
         styles.section
       }
     >
 
-      {/* ========================= */}
-      {/* Header */}
-      {/* ========================= */}
+      {/* ==================================
+      Header
+      ================================== */}
 
       <div
         className={
@@ -200,7 +333,9 @@ export default async function RelatedProducts({
             styles.label
           }
         >
-          Semantic Similarity
+
+          Semantic Recommendation
+
         </div>
 
         <h2
@@ -208,7 +343,9 @@ export default async function RelatedProducts({
             styles.title
           }
         >
-          似たおすすめ構成
+
+          似た用途でおすすめの構成
+
         </h2>
 
         <p
@@ -216,17 +353,18 @@ export default async function RelatedProducts({
             styles.description
           }
         >
-          同じ semantic intent /
-          workload /
-          recommendation balance
-          を持つ関連構成。
+
+          用途・性能バランス・
+          semantic intent が近い
+          おすすめ構成を表示しています。
+
         </p>
 
       </div>
 
-      {/* ========================= */}
-      {/* Grid */}
-      {/* ========================= */}
+      {/* ==================================
+      Grid
+      ================================== */}
 
       <div
         className={
@@ -234,39 +372,49 @@ export default async function RelatedProducts({
         }
       >
 
-        {related
+        {products
           .slice(0, 8)
           .map((
+
             p: any,
+
             index: number
+
           ) => {
 
             const title =
+
               p.shortTitle
               || p.name
               || 'おすすめPC'
 
             const image =
+
               p.image_url
               || '/no-image.png'
 
             const price =
+
               typeof p.price ===
               'number'
+
                 ? `¥${p.price.toLocaleString()}`
+
                 : null
 
             const reasons =
+
               formatMatchReason(
                 p.match_reason
               )
 
             const grouped =
-              p
-                ?.grouped_attributes
-                || {}
+
+              p.grouped_attributes
+              || {}
 
             return (
+
               <Link
                 key={
                   p.unique_id
@@ -282,7 +430,7 @@ export default async function RelatedProducts({
               >
 
                 {/* ================= */}
-                {/* image */}
+                {/* Image */}
                 {/* ================= */}
 
                 <div
@@ -293,6 +441,7 @@ export default async function RelatedProducts({
 
                   <img
                     src={image}
+
                     alt={title}
 
                     className={
@@ -321,7 +470,7 @@ export default async function RelatedProducts({
                 </div>
 
                 {/* ================= */}
-                {/* content */}
+                {/* Content */}
                 {/* ================= */}
 
                 <div
@@ -330,7 +479,6 @@ export default async function RelatedProducts({
                   }
                 >
 
-                  {/* price */}
                   {price && (
 
                     <div
@@ -338,21 +486,23 @@ export default async function RelatedProducts({
                         styles.price
                       }
                     >
+
                       {price}
+
                     </div>
 
                   )}
 
-                  {/* title */}
                   <h3
                     className={
                       styles.cardTitle
                     }
                   >
+
                     {title}
+
                   </h3>
 
-                  {/* reasons */}
                   {reasons.length > 0 && (
 
                     <div
@@ -361,81 +511,46 @@ export default async function RelatedProducts({
                       }
                     >
 
-                      {reasons.map(
-                        (
-                          reason,
-                          idx
-                        ) => (
+                      {reasons.map((
 
-                          <div
-                            key={idx}
+                        reason,
 
-                            className={
-                              styles.reasonChip
-                            }
-                          >
-                            {reason}
-                          </div>
+                        idx
 
-                        )
-                      )}
+                      ) => (
+
+                        <div
+                          key={idx}
+
+                          className={
+                            styles.reasonChip
+                          }
+                        >
+
+                          {reason}
+
+                        </div>
+
+                      ))}
 
                     </div>
 
                   )}
 
-                  {/* semantic groups */}
-                  <div
-                    className={
-                      styles.semanticGroups
-                    }
-                  >
-
-                    {Object.entries(
-                      grouped
-                    )
-                      .slice(0, 2)
-                      .map((
-                        [
-                          group,
-                          attrs,
-                        ]
-                      ) => (
-
-                        <SemanticSection
-                          key={group}
-
-                          title={group}
-
-                          groupType={group}
-
-                          attributes={
-                            attrs as any[]
-                          }
-                        />
-
-                      ))}
-
-                  </div>
-
-                  {/* CTA */}
-                  <div
-                    className={
-                      styles.cta
-                    }
-                  >
-                    →
-                    詳細を見る
-                  </div>
+                  <SemanticGroups
+                    grouped={grouped}
+                  />
 
                 </div>
 
               </Link>
+
             )
           })}
 
       </div>
 
     </section>
+
   )
 }

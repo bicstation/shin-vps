@@ -2,6 +2,18 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Contracts
+========================================= */
+
+import type {
+
+  PCDetailResponse,
+
+  PCProduct,
+
+} from './contracts'
+
+/* =========================================
 🔥 Utils
 ========================================= */
 
@@ -42,10 +54,11 @@ export async function
 fetchPCDetail(
 
   uniqueId: string
-) {
+
+): Promise<PCProduct | null> {
 
   // ======================================
-  // Empty
+  // Empty Guard
   // ======================================
 
   if (!uniqueId) {
@@ -70,15 +83,31 @@ fetchPCDetail(
 
   const response =
 
-    await safeFetch(
+    await safeFetch<PCDetailResponse>(
       endpoint
     )
+
+  // ======================================
+  // Invalid Response
+  // ======================================
+
+  if (
+    !response
+    ||
+    !response.success
+    ||
+    !response.product
+  ) {
+
+    return null
+  }
 
   // ======================================
   // Normalize
   // ======================================
 
   return normalizeDetail(
-    response
+
+    response.product
   )
 }

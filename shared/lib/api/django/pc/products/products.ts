@@ -2,6 +2,18 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Contracts
+========================================= */
+
+import type {
+
+  PCProductsResponse,
+
+  PCProductItem,
+
+} from './contracts'
+
+/* =========================================
 🔥 Utils
 ========================================= */
 
@@ -44,7 +56,8 @@ fetchProducts(
   page: number = 1,
 
   limit: number = 20
-) {
+
+): Promise<PCProductItem[]> {
 
   // ======================================
   // Endpoint
@@ -63,9 +76,22 @@ fetchProducts(
 
   const response =
 
-    await safeFetch(
+    await safeFetch<PCProductsResponse>(
       endpoint
     )
+
+  // ======================================
+  // Invalid Response
+  // ======================================
+
+  if (
+    !response
+    ||
+    !response.success
+  ) {
+
+    return []
+  }
 
   // ======================================
   // Normalize
@@ -77,11 +103,13 @@ fetchProducts(
 }
 
 /* =========================================
-🔥 Preset Collections
+🔥 Latest Products
 ========================================= */
 
 export async function
-fetchLatestProducts() {
+fetchLatestProducts()
+
+: Promise<PCProductItem[]> {
 
   return fetchProducts(
     1,
@@ -89,8 +117,14 @@ fetchLatestProducts() {
   )
 }
 
+/* =========================================
+🔥 Popular Products
+========================================= */
+
 export async function
-fetchPopularProducts() {
+fetchPopularProducts()
+
+: Promise<PCProductItem[]> {
 
   return fetchProducts(
     1,

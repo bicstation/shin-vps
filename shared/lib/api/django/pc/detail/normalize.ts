@@ -2,6 +2,16 @@
 // Copyright (c) 2024 Shin Corporation. All rights reserved.
 
 /* =========================================
+🔥 Contracts
+========================================= */
+
+import type {
+
+  PCProduct,
+
+} from './contracts'
+
+/* =========================================
 🔥 Normalize Detail
 ========================================= */
 
@@ -9,10 +19,11 @@ export function
 normalizeDetail(
 
   payload?: any
-) {
+
+): PCProduct | null {
 
   // ======================================
-  // Empty
+  // Empty Guard
   // ======================================
 
   if (!payload) {
@@ -26,15 +37,19 @@ normalizeDetail(
 
   return {
 
-    // ====================================
-    // Base
-    // ====================================
+    /* ====================================
+    Identity
+    ==================================== */
 
     id:
       payload?.id,
 
     unique_id:
       payload?.unique_id || '',
+
+    /* ====================================
+    Basic
+    ==================================== */
 
     name:
       payload?.name || '',
@@ -45,9 +60,9 @@ normalizeDetail(
     description:
       payload?.description || '',
 
-    // ====================================
-    // URL
-    // ====================================
+    /* ====================================
+    URL
+    ==================================== */
 
     url:
       payload?.url || '',
@@ -58,16 +73,16 @@ normalizeDetail(
     image_url:
       payload?.image_url || '',
 
-    // ====================================
-    // Price
-    // ====================================
+    /* ====================================
+    Price
+    ==================================== */
 
     price:
       payload?.price || 0,
 
-    // ====================================
-    // Spec
-    // ====================================
+    /* ====================================
+    Specs
+    ==================================== */
 
     cpu_model:
       payload?.cpu_model || '',
@@ -81,9 +96,9 @@ normalizeDetail(
     storage_gb:
       payload?.storage_gb || 0,
 
-    // ====================================
-    // Score
-    // ====================================
+    /* ====================================
+    Scores
+    ==================================== */
 
     spec_score:
       payload?.spec_score || 0,
@@ -103,9 +118,34 @@ normalizeDetail(
     score_portable:
       payload?.score_portable || 0,
 
-    // ====================================
-    // Semantic
-    // ====================================
+    /* ====================================
+    Semantic
+    ==================================== */
+
+    semantic_role:
+      payload?.semantic_role || 'primary',
+
+    semantic_weight:
+      payload?.semantic_weight || 0,
+
+    semantic_score:
+      payload?.semantic_score || 0,
+
+    recommendation_reason:
+      payload?.recommendation_reason || '',
+
+    confidence:
+      payload?.confidence || 0,
+
+    icon:
+      payload?.icon || '',
+
+    color:
+      payload?.color || '',
+
+    /* ====================================
+    Attributes
+    ==================================== */
 
     attributes:
 
@@ -126,9 +166,9 @@ normalizeDetail(
       payload?.semantic_schema_version
       || 1,
 
-    // ====================================
-    // AI
-    // ====================================
+    /* ====================================
+    AI
+    ==================================== */
 
     ai_summary:
       payload?.ai_summary || '',
@@ -136,9 +176,9 @@ normalizeDetail(
     ai_content:
       payload?.ai_content || '',
 
-    // ====================================
-    // Radar
-    // ====================================
+    /* ====================================
+    Radar
+    ==================================== */
 
     radar_chart:
 
@@ -149,5 +189,12 @@ normalizeDetail(
         ? payload.radar_chart
 
         : [],
+
+    /* ====================================
+    Raw Backup
+    ==================================== */
+
+    raw:
+      payload,
   }
 }

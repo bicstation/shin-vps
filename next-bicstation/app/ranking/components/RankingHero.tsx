@@ -1,5 +1,3 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/components/RankingHero.tsx
-
 import Link
   from 'next/link'
 
@@ -35,6 +33,7 @@ type RankingHeroProps = {
 ========================================= */
 
 export default function RankingHero({
+
   title =
     '用途から最適なPCを探す',
 
@@ -42,6 +41,7 @@ export default function RankingHero({
     'ゲーム・AI画像生成・動画編集など、やりたいことから最適なPCを比較できます。',
 
   semanticLabels = [],
+
 }: RankingHeroProps) {
 
   // ======================================
@@ -179,7 +179,7 @@ export default function RankingHero({
                 index
               ) => (
 
-                <a
+                <Link
 
                   key={
                     item.slug
@@ -197,7 +197,7 @@ export default function RankingHero({
 
                   {item.name}
 
-                </a>
+                </Link>
 
               )
             )}

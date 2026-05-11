@@ -1,7 +1,27 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/page.tsx
-
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
+
+/* =========================================
+🔥 API
+========================================= */
+
+import {
+
+  fetchSidebar,
+
+  fetchRankingProducts,
+
+} from '@/shared/lib/api/django/pc'
+
+/* =========================================
+🔥 Semantic
+========================================= */
+
+import {
+
+  resolveSemanticPresentation,
+
+} from '@/shared/lib/semantic/semanticPresentation'
 
 /* =========================================
 🔥 Home Components
@@ -29,7 +49,17 @@ import HomeStickyCTA
   from './components/home/cta/HomeStickyCTA'
 
 /* =========================================
-🔥 Shared Cards
+🔥 Semantic Navigation
+========================================= */
+
+import HomeIntentNav
+  from './components/home/recommendation/HomeIntentNav'
+
+import HomeRecommendedPaths
+  from './components/home/recommendation/HomeRecommendedPaths'
+
+/* =========================================
+🔥 Ranking
 ========================================= */
 
 import HeroRankingCard
@@ -37,6 +67,13 @@ import HeroRankingCard
 
 import ProductCard
   from '@/shared/components/organisms/cards/ProductCard'
+
+/* =========================================
+🔥 Empty
+========================================= */
+
+import HomeEmpty
+  from './components/home/common/HomeEmpty'
 
 /* =========================================
 🔥 Styles
@@ -59,39 +96,117 @@ export const dynamic =
 export default async function
 HomePage() {
 
-  // ======================================
-  // Ranking API
-  // ======================================
+  /* ======================================
+  FETCH
+  ====================================== */
 
-  const endpoint =
+  const [
 
-    `${process.env.INTERNAL_API_URL}/general/pc-products/ranking/score/`
+    sidebar,
 
-  let rankingJson = null
+    rankingJson,
 
-  try {
+  ] = await Promise.all([
 
-    const response =
+    fetchSidebar(),
 
-      await fetch(
-        endpoint,
-        {
-          cache:
-            'no-store',
-        }
-      )
+    fetchRankingProducts(
+      'score'
+    ),
 
-    rankingJson =
-      await response.json()
+  ])
 
-  } catch (error) {
+  /* ======================================
+  SIDEBAR SEMANTIC
+  ====================================== */
 
-    console.error(error)
-  }
+  const usageItems =
 
-  // ======================================
-  // Ranking Products
-  // ======================================
+    Array.isArray(
+      sidebar?.usage
+    )
+
+      ? sidebar.usage
+
+      : []
+
+  const gpuItems =
+
+    Array.isArray(
+      sidebar?.gpu
+    )
+
+      ? sidebar.gpu
+
+      : []
+
+  const cpuItems =
+
+    Array.isArray(
+      sidebar?.cpu
+    )
+
+      ? sidebar.cpu
+
+      : []
+
+  const makerItems =
+
+    Array.isArray(
+      sidebar?.maker
+    )
+
+      ? sidebar.maker
+
+      : []
+
+  /* ======================================
+  SEMANTIC PRESENTATIONS
+  ====================================== */
+
+  const usagePresentations =
+
+    usageItems.map(
+      item =>
+
+        resolveSemanticPresentation(
+          item
+        )
+    )
+
+  const gpuPresentations =
+
+    gpuItems.map(
+      item =>
+
+        resolveSemanticPresentation(
+          item
+        )
+    )
+
+  const cpuPresentations =
+
+    cpuItems.map(
+      item =>
+
+        resolveSemanticPresentation(
+          item
+        )
+    )
+
+  const makerPresentations =
+
+    makerItems.map(
+      item =>
+
+        resolveSemanticPresentation(
+          item
+        )
+    )
+
+  /* ======================================
+  RANKING PRODUCTS
+  ====================================== */
 
   const rankingProducts =
 
@@ -103,24 +218,76 @@ HomePage() {
 
       : []
 
-  // ======================================
-  // Split
-  // ======================================
+  /* ======================================
+  EMPTY
+  ====================================== */
+
+  if (
+
+    !usagePresentations.length
+
+    &&
+
+    !rankingProducts.length
+
+  ) {
+
+    return (
+      <HomeEmpty />
+    )
+  }
+
+  /* ======================================
+  SPLIT
+  ====================================== */
 
   const heroRanking =
 
-    rankingProducts[0]
+    rankingProducts?.[0]
+    || null
 
   const subRankings =
 
     rankingProducts.slice(
       1,
-      3
+      5
     )
 
-  // ======================================
-  // Render
-  // ======================================
+
+console.log({
+
+  HomeHero,
+
+  HomeCapabilitySection,
+
+  HomeGuideSection,
+
+  HomeTrustSection,
+
+  HomeFinderCTA,
+
+  HomeBottomCTA,
+
+  HomeStickyCTA,
+
+  HomeIntentNav,
+
+  HomeRecommendedPaths,
+
+  HeroRankingCard,
+
+  ProductCard,
+
+  HomeEmpty,
+
+})
+
+
+
+
+  /* ======================================
+  RENDER
+  ====================================== */
 
   return (
 
@@ -130,21 +297,38 @@ HomePage() {
       }
     >
 
-      {/* ================================= */}
-      {/* Hero */}
-      {/* ================================= */}
+      {/* ===================================
+      HERO
+      semantic onboarding
+      =================================== */}
 
-      <HomeHero />
+      <HomeHero
+        product={
+          heroRanking
+        }
+      />
 
-      {/* ================================= */}
-      {/* Capability */}
-      {/* ================================= */}
+      {/* ===================================
+      CAPABILITY
+      =================================== */}
 
       <HomeCapabilitySection />
 
-      {/* ================================= */}
-      {/* Popular Ranking */}
-      {/* ================================= */}
+      {/* ===================================
+      INTENT NAVIGATION
+      semantic discovery
+      =================================== */}
+
+      <HomeIntentNav
+        items={
+          usagePresentations
+        }
+      />
+
+      {/* ===================================
+      POPULAR RANKING
+      semantic recommendation
+      =================================== */}
 
       <section
         className={
@@ -168,7 +352,7 @@ HomePage() {
             }
           >
 
-            POPULAR RANKING
+            SEMANTIC RANKING
 
           </div>
 
@@ -178,7 +362,7 @@ HomePage() {
             }
           >
 
-            人気ゲーミングPC
+            人気のおすすめ構成
 
           </h2>
 
@@ -188,10 +372,10 @@ HomePage() {
             }
           >
 
-            FPSゲーム・AI画像生成・
-            動画編集など、
-            高性能用途で人気の
-            ゲーミングPCを表示しています。
+            ゲーム・動画編集・
+            AI画像生成など、
+            用途別で人気の高い
+            おすすめ構成を表示しています。
 
           </p>
 
@@ -220,7 +404,7 @@ HomePage() {
         )}
 
         {/* ============================= */}
-        {/* Product Cards */}
+        {/* Product Grid */}
         {/* ============================= */}
 
         <div
@@ -255,33 +439,81 @@ HomePage() {
 
       </section>
 
-      {/* ================================= */}
-      {/* Guide */}
-      {/* ================================= */}
+      {/* ===================================
+      RECOMMENDED PATHS
+      semantic recommendation
+      =================================== */}
+
+      <HomeRecommendedPaths
+        items={
+          usagePresentations
+        }
+      />
+
+      {/* ===================================
+      GPU POPULAR
+      =================================== */}
+
+      <HomeRecommendedPaths
+        title='人気GPU構成'
+
+        items={
+          gpuPresentations
+        }
+      />
+
+      {/* ===================================
+      CPU POPULAR
+      =================================== */}
+
+      <HomeRecommendedPaths
+        title='人気CPU構成'
+
+        items={
+          cpuPresentations
+        }
+      />
+
+      {/* ===================================
+      MAKER POPULAR
+      =================================== */}
+
+      <HomeRecommendedPaths
+        title='人気メーカー'
+
+        items={
+          makerPresentations
+        }
+      />
+
+      {/* ===================================
+      GUIDE
+      =================================== */}
 
       <HomeGuideSection />
 
-      {/* ================================= */}
-      {/* Trust */}
-      {/* ================================= */}
+      {/* ===================================
+      TRUST
+      =================================== */}
 
       <HomeTrustSection />
 
-      {/* ================================= */}
-      {/* Finder CTA */}
-      {/* ================================= */}
+      {/* ===================================
+      FINDER CTA
+      recommendation entry
+      =================================== */}
 
       <HomeFinderCTA />
 
-      {/* ================================= */}
-      {/* Bottom CTA */}
-      {/* ================================= */}
+      {/* ===================================
+      BOTTOM CTA
+      =================================== */}
 
       <HomeBottomCTA />
 
-      {/* ================================= */}
-      {/* Sticky CTA */}
-      {/* ================================= */}
+      {/* ===================================
+      STICKY CTA
+      =================================== */}
 
       <HomeStickyCTA />
 

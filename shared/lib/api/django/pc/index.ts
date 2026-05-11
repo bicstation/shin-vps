@@ -1,8 +1,11 @@
+// Copyright (c) 2024 Shin Corporation.
+// All rights reserved.
+
 /* =========================================
-🔥 Search
+🔥 Products
 ========================================= */
 
-export * from './search'
+export * from './products'
 
 /* =========================================
 🔥 Detail
@@ -17,13 +20,19 @@ export * from './detail'
 export * from './related'
 
 /* =========================================
+🔥 Search
+========================================= */
+
+export * from './search'
+
+/* =========================================
 🔥 Sidebar
 ========================================= */
 
 export * from './sidebar'
 
 /* =========================================
-🔥 Products
+🔥 Ranking
 ========================================= */
 
-export * from './products'
+export * from './ranking'

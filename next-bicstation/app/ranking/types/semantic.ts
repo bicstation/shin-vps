@@ -1,5 +1,3 @@
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/types/semantic.ts
-
 /* =========================================
 🔥 Semantic Role
 ========================================= */
@@ -10,6 +8,17 @@ export type SemanticRole =
   | 'primary'
   | 'secondary'
   | 'supportive'
+
+/* =========================================
+🔥 Semantic Label
+========================================= */
+
+export type SemanticLabel = {
+
+  label: string
+
+  slug: string
+}
 
 /* =========================================
 🔥 Semantic Attribute
@@ -77,8 +86,6 @@ export type SemanticGroup = {
   title: string
 
   description?: string
-
-  href?: string
 
   items: SemanticAttribute[]
 }
@@ -176,7 +183,7 @@ export type RankingHeroProps = {
 
   description?: string
 
-  semanticLabels?: string[]
+  semanticLabels?: SemanticLabel[]
 }
 
 /* =========================================
@@ -191,5 +198,5 @@ export type FinderCTAProps = {
 
   href?: string
 
-  semanticKeywords?: string[]
+  semanticKeywords?: SemanticLabel[]
 }
