@@ -9,7 +9,7 @@
 import type {
   SemanticAttribute,
   SemanticGroup,
-} from '@/app/concierge/contracts/semantic/SemanticPayload'
+} from '../contracts/semantic/SemanticPayload'
 
 /* =========================================
 🔥 COMPONENTS

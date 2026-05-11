@@ -12,34 +12,34 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 KERNEL
 ========================================= */
 
 import RuntimeKernel
-  from '@/app/concierge/kernel/runtime/RuntimeKernel'
+  from '../kernel/runtime/RuntimeKernel'
 
 /* =========================================
 🔥 FLOWS
 ========================================= */
 
 import RuntimeCoordinator
-  from '@/app/concierge/orchestration/core/RuntimeCoordinator'
+  from '../orchestration/core/RuntimeCoordinator'
 
 import RoutingRuntimeFlow
-  from '@/app/concierge/orchestration/routing/RoutingRuntimeFlow'
+  from '../orchestration/routing/RoutingRuntimeFlow'
 
 import RecommendationRuntimeFlow
-  from '@/app/concierge/orchestration/recommendation/RecommendationRuntimeFlow'
+  from '../orchestration/recommendation/RecommendationRuntimeFlow'
 
 import MemoryRuntimeFlow
-  from '@/app/concierge/orchestration/memory/MemoryRuntimeFlow'
+  from '../orchestration/memory/MemoryRuntimeFlow'
 
 /* =========================================
 🔥 Props

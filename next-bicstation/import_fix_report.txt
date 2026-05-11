@@ -1,0 +1,171 @@
+=== Absolute Import Fix Report ===
+対象ディレクトリ: ./app/concierge
+
+修正対象: ./app/concierge/orchestration/runtime/RuntimeFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/runtime/SemanticRuntimeFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/agent/SemanticAgentFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/agent/RecommendationAgentFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/memory/ConciergeMemoryFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/memory/MemoryRuntimeFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/memory/SemanticMemoryFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/memory/ConversationMemoryFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/memory/SessionMemoryFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/debug/ConversationDebugFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/debug/SemanticDebugFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/debug/ConciergeDebugFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/recommendation/RecommendationRankingFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/recommendation/ProductRecommendationFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/recommendation/SemanticRecommendationFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/recommendation/RecommendationRuntimeFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/recommendation/ConciergeRecommendationFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/core/ConciergeOrchestrator.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/core/RecommendationCoordinator.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/core/SemanticCoordinator.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/core/RuntimeCoordinator.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/conversation/ConversationIntentFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/conversation/ConversationRuntimeFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/conversation/ConversationMessageFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/conversation/ConversationStateFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/conversation/ConciergeConversationFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/routing/ConciergeRoutingFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/routing/FinderRoutingFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/routing/ProductRoutingFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/routing/RoutingRuntimeFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/routing/RankingRoutingFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/semantic/SemanticRoutingFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/semantic/SemanticReasoningFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/semantic/SemanticExtractionFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/semantic/SemanticRuntimeFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/semantic/ConciergeSemanticFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/conversion/RecommendationConversionFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/conversion/CommerceConversionFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/conversion/ConciergeConversionFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/llm/PromptGenerationFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/llm/ConciergeLLMFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/llm/LLMResponseFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/llm/IntentInferenceFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/navigation/FinderNavigationFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/orchestration/navigation/NavigationFlow.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/providers/ConciergeProvider.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/providers/SemanticProvider.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/chat/components/ChatMessageList.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/chat/components/ChatMessage.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/chat/components/SuggestionChips.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/chat/ChatSection.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/history/HistorySection.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/recommendation/RecommendationSection.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/recommendation/components/RecommendationCard.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/recommendation/components/RecommendationList.tsx
+  - 置換済み
+
+修正対象: ./app/concierge/sections/semantic/SemanticSection.tsx
+  - 置換済み
+

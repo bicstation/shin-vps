@@ -13,18 +13,18 @@ import {
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 SECTIONS
 ========================================= */
 
 import RecommendationSection
-  from '@/app/concierge/sections/recommendation/RecommendationSection'
+  from '../sections/recommendation/RecommendationSection'
 
 /* =========================================
 🔥 Props

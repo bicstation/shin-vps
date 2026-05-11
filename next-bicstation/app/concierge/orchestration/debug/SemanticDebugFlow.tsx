@@ -12,28 +12,28 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 KERNEL
 ========================================= */
 
 import SemanticKernel
-  from '@/app/concierge/kernel/semantic/SemanticKernel'
+  from '../kernel/semantic/SemanticKernel'
 
 /* =========================================
 🔥 GRAPH
 ========================================= */
 
 import SemanticGraph
-  from '@/app/concierge/graph/SemanticGraph'
+  from '../graph/SemanticGraph'
 
 /* =========================================
 🔥 STYLES
 ========================================= */
 
 import styles
-  from '@/app/concierge/styles/debug.module.css'
+  from '../styles/debug.module.css'
 
 /* =========================================
 🔥 Props

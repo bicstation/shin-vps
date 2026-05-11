@@ -12,18 +12,18 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 KERNEL
 ========================================= */
 
 import SemanticKernel
-  from '@/app/concierge/kernel/semantic/SemanticKernel'
+  from '../kernel/semantic/SemanticKernel'
 
 /* =========================================
 🔥 FLOWS
@@ -46,7 +46,7 @@ import SemanticRoutingFlow
 ========================================= */
 
 import SemanticMemoryFlow
-  from '@/app/concierge/orchestration/memory/SemanticMemoryFlow'
+  from '../orchestration/memory/SemanticMemoryFlow'
 
 /* =========================================
 🔥 Props

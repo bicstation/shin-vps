@@ -12,34 +12,34 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 KERNELS
 ========================================= */
 
 import RuntimeKernel
-  from '@/app/concierge/kernel/runtime/RuntimeKernel'
+  from '../kernel/runtime/RuntimeKernel'
 
 /* =========================================
 🔥 FLOWS
 ========================================= */
 
 import ConciergeConversationFlow
-  from '@/app/concierge/orchestration/conversation/ConciergeConversationFlow'
+  from '../orchestration/conversation/ConciergeConversationFlow'
 
 import ConciergeSemanticFlow
-  from '@/app/concierge/orchestration/semantic/ConciergeSemanticFlow'
+  from '../orchestration/semantic/ConciergeSemanticFlow'
 
 import ConciergeRecommendationFlow
-  from '@/app/concierge/orchestration/recommendation/ConciergeRecommendationFlow'
+  from '../orchestration/recommendation/ConciergeRecommendationFlow'
 
 import ConciergeConversionFlow
-  from '@/app/concierge/orchestration/conversion/ConciergeConversionFlow'
+  from '../orchestration/conversion/ConciergeConversionFlow'
 
 /* =========================================
 🔥 Props

@@ -13,27 +13,27 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 AGENT FLOW
 ========================================= */
 
 import SemanticAgentFlow
-  from '@/app/concierge/orchestration/agent/SemanticAgentFlow'
+  from '../orchestration/agent/SemanticAgentFlow'
 
 import RecommendationAgentFlow
-  from '@/app/concierge/orchestration/agent/RecommendationAgentFlow'
+  from '../orchestration/agent/RecommendationAgentFlow'
 
 /* =========================================
 🔥 SECTIONS
 ========================================= */
 
 import ChatSection
-  from '@/app/concierge/sections/chat/ChatSection'
+  from '../sections/chat/ChatSection'
 
 import InputSection
-  from '@/app/concierge/sections/input/InputSection'
+  from '../sections/input/InputSection'
 
 /* =========================================
 🔥 Props

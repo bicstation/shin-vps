@@ -17,21 +17,21 @@ import {
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import RoutingDomain
-  from '@/app/concierge/domain/routing/routingDomain'
+  from '../domain/routing/routingDomain'
 
 /* =========================================
 🔥 GRAPH
 ========================================= */
 
 import SemanticGraph
-  from '@/app/concierge/graph/SemanticGraph'
+  from '../graph/SemanticGraph'
 
 /* =========================================
 🔥 Props

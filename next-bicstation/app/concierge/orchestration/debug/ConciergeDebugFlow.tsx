@@ -12,25 +12,25 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 KERNEL
 ========================================= */
 
 import RuntimeKernel
-  from '@/app/concierge/kernel/runtime/RuntimeKernel'
+  from '../kernel/runtime/RuntimeKernel'
 
 /* =========================================
 🔥 STYLES
 ========================================= */
 
 import styles
-  from '@/app/concierge/styles/debug.module.css'
+  from '../styles/debug.module.css'
 
 /* =========================================
 🔥 Props

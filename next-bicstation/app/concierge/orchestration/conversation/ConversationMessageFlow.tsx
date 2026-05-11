@@ -12,14 +12,14 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 SECTIONS
 ========================================= */
 
 import ChatSection
-  from '@/app/concierge/sections/chat/ChatSection'
+  from '../sections/chat/ChatSection'
 
 /* =========================================
 🔥 Props

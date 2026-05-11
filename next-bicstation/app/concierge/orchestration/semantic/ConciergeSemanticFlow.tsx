@@ -12,28 +12,28 @@ import {
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import SemanticDomain
-  from '@/app/concierge/domain/semantic/semanticDomain'
+  from '../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 GRAPH
 ========================================= */
 
 import SemanticGraph
-  from '@/app/concierge/graph/SemanticGraph'
+  from '../graph/SemanticGraph'
 
 /* =========================================
 🔥 COMPONENTS
 ========================================= */
 
 import SemanticBadge
-  from '@/app/concierge/components/SemanticBadge'
+  from '../components/SemanticBadge'
 
 /* =========================================
 🔥 Props

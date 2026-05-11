@@ -14,11 +14,11 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 FLOWS
@@ -36,7 +36,7 @@ import SemanticMemoryFlow
 
 import {
   randomId,
-} from '@/app/concierge/lib/core/helpers'
+} from '../lib/core/helpers'
 
 /* =========================================
 🔥 Props

@@ -14,14 +14,14 @@ import {
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import MemoryDomain
-  from '@/app/concierge/domain/memory/memoryDomain'
+  from '../domain/memory/memoryDomain'
 
 /* =========================================
 🔥 HELPERS
@@ -29,7 +29,7 @@ import MemoryDomain
 
 import {
   randomId,
-} from '@/app/concierge/lib/core/helpers'
+} from '../lib/core/helpers'
 
 /* =========================================
 🔥 FORMATTER
@@ -37,7 +37,7 @@ import {
 
 import {
   formatSemanticSummary,
-} from '@/app/concierge/lib/formatter/formatter'
+} from '../lib/formatter/formatter'
 
 /* =========================================
 🔥 Props

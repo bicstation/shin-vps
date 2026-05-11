@@ -13,26 +13,26 @@ import {
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 AGENTS
 ========================================= */
 
 import RecommendationAgent
-  from '@/app/concierge/agents/recommendation/RecommendationAgent'
+  from '../agents/recommendation/RecommendationAgent'
 
 import GamingAgent
-  from '@/app/concierge/agents/specialists/GamingAgent'
+  from '../agents/specialists/GamingAgent'
 
 import CreatorAgent
-  from '@/app/concierge/agents/specialists/CreatorAgent'
+  from '../agents/specialists/CreatorAgent'
 
 import BusinessAgent
-  from '@/app/concierge/agents/specialists/BusinessAgent'
+  from '../agents/specialists/BusinessAgent'
 
 import AIAgent
-  from '@/app/concierge/agents/specialists/AIAgent'
+  from '../agents/specialists/AIAgent'
 
 /* =========================================
 🔥 SEMANTIC
@@ -40,14 +40,14 @@ import AIAgent
 
 import {
   resolveSemanticIntent,
-} from '@/app/concierge/semantic/intent/resolveSemanticIntent'
+} from '../semantic/intent/resolveSemanticIntent'
 
 /* =========================================
 🔥 SECTION
 ========================================= */
 
 import RecommendationSection
-  from '@/app/concierge/sections/recommendation/RecommendationSection'
+  from '../sections/recommendation/RecommendationSection'
 
 /* =========================================
 🔥 Props

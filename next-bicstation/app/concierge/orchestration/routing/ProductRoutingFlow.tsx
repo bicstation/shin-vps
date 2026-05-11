@@ -17,14 +17,14 @@ import {
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import RoutingDomain
-  from '@/app/concierge/domain/routing/routingDomain'
+  from '../domain/routing/routingDomain'
 
 /* =========================================
 🔥 Props

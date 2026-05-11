@@ -12,11 +12,11 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 SEMANTIC
@@ -24,7 +24,7 @@ import type {
 
 import {
   resolveConversationIntent,
-} from '@/app/concierge/semantic/intent/resolveConversationIntent'
+} from '../semantic/intent/resolveConversationIntent'
 
 /* =========================================
 🔥 Props

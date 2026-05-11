@@ -8,21 +8,21 @@
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import ConversationDomain
-  from '@/app/concierge/domain/chat/conversationDomain'
+  from '../domain/chat/conversationDomain'
 
 /* =========================================
 🔥 STYLES
 ========================================= */
 
 import styles
-  from '@/app/concierge/styles/debug.module.css'
+  from '../styles/debug.module.css'
 
 /* =========================================
 🔥 Props

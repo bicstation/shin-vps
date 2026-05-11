@@ -12,24 +12,24 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 PROMPTS
 ========================================= */
 
 import systemPrompt
-  from '@/app/concierge/prompts/systemPrompt'
+  from '../prompts/systemPrompt'
 
 import semanticPrompt
-  from '@/app/concierge/prompts/semanticPrompt'
+  from '../prompts/semanticPrompt'
 
 import recommendationPrompt
-  from '@/app/concierge/prompts/recommendationPrompt'
+  from '../prompts/recommendationPrompt'
 
 /* =========================================
 🔥 FORMATTER
@@ -37,7 +37,7 @@ import recommendationPrompt
 
 import {
   formatSemanticSummary,
-} from '@/app/concierge/lib/formatter/formatter'
+} from '../lib/formatter/formatter'
 
 /* =========================================
 🔥 Props

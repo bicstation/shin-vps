@@ -12,7 +12,7 @@ import {
 
 import type {
   ConversationState,
-} from '@/app/concierge/contracts/conversation/ConversationState'
+} from '../contracts/conversation/ConversationState'
 
 /* =========================================
 🔥 Props

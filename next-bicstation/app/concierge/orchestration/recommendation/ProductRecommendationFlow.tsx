@@ -12,25 +12,25 @@ import {
 
 import type {
   RecommendationPayload,
-} from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+} from '../contracts/recommendation/RecommendationPayload'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import RecommendationDomain
-  from '@/app/concierge/domain/recommendation/recommendationDomain'
+  from '../domain/recommendation/recommendationDomain'
 
 /* =========================================
 🔥 COMPONENTS
 ========================================= */
 
 import RecommendationCard
-  from '@/app/concierge/components/RecommendationCard'
+  from '../components/RecommendationCard'
 
 import ConciergeEmpty
   from '../sections/system/ConciergeEmpty'

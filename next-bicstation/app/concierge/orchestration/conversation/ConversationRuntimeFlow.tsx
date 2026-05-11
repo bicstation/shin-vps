@@ -13,11 +13,11 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   ConversationState,
-} from '@/app/concierge/contracts/conversation/ConversationState'
+} from '../contracts/conversation/ConversationState'
 
 /* =========================================
 🔥 FLOWS
@@ -34,7 +34,7 @@ import ConversationIntentFlow
 ========================================= */
 
 import InputSection
-  from '@/app/concierge/sections/input/InputSection'
+  from '../sections/input/InputSection'
 
 /* =========================================
 🔥 Props

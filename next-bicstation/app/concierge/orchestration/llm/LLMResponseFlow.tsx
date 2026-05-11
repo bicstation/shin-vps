@@ -14,31 +14,31 @@ import {
 
 import type {
   ConversationMessage,
-} from '@/app/concierge/contracts/conversation/ConversationMessage'
+} from '../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 ADAPTER
 ========================================= */
 
 import OpenAIAdapter
-  from '@/app/concierge/adapters/openaiAdapter'
+  from '../adapters/openaiAdapter'
 
 /* =========================================
 🔥 COMPONENTS
 ========================================= */
 
 import TypingIndicator
-  from '@/app/concierge/components/TypingIndicator'
+  from '../components/TypingIndicator'
 
 import ConciergeError
-  from '@/app/concierge/components/ConciergeError'
+  from '../components/ConciergeError'
 
 import ChatMessage
-  from '@/app/concierge/components/ChatMessage'
+  from '../components/ChatMessage'
 
 /* =========================================
 🔥 Props

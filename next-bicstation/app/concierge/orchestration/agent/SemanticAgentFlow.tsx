@@ -13,23 +13,23 @@ import {
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 AGENTS
 ========================================= */
 
 import GamingAgent
-  from '@/app/concierge/agents/specialists/GamingAgent'
+  from '../agents/specialists/GamingAgent'
 
 import CreatorAgent
-  from '@/app/concierge/agents/specialists/CreatorAgent'
+  from '../agents/specialists/CreatorAgent'
 
 import BusinessAgent
-  from '@/app/concierge/agents/specialists/BusinessAgent'
+  from '../agents/specialists/BusinessAgent'
 
 import AIAgent
-  from '@/app/concierge/agents/specialists/AIAgent'
+  from '../agents/specialists/AIAgent'
 
 /* =========================================
 🔥 SEMANTIC
@@ -37,14 +37,14 @@ import AIAgent
 
 import {
   resolveSemanticIntent,
-} from '@/app/concierge/semantic/intent/resolveSemanticIntent'
+} from '../semantic/intent/resolveSemanticIntent'
 
 /* =========================================
 🔥 SECTION
 ========================================= */
 
 import SemanticSection
-  from '@/app/concierge/sections/semantic/SemanticSection'
+  from '../sections/semantic/SemanticSection'
 
 /* =========================================
 🔥 Props

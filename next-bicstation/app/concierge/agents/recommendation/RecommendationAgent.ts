@@ -4,8 +4,8 @@
 🔥 RECOMMENDATION AGENT
 ========================================= */
 
-import type { RecommendationPayload } from '@/app/concierge/types/recommendation/product'
-import type { SemanticAttribute } from '@/app/concierge/types/semantic/attribute'
+import type { RecommendationPayload } from '../../types/recommendation/product'
+import type { SemanticAttribute } from '../../types/semantic/attribute'
 
 /* =========================================
 🔥 Recommendation Agent Interface
