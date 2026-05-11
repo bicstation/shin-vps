@@ -1,0 +1,40 @@
+/* /app/concierge/styles/recommendation.module.css */
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: #1c1c1c;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: #ffffff;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  font-size: 0.875rem;
+  color: #cfcfcf;
+  margin-bottom: 0.5rem;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.meta {
+  font-size: 0.75rem;
+  color: #82c91e;
+}

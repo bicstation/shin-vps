@@ -1,0 +1,41 @@
+/* /app/concierge/sections/sidebar/SidebarSection.module.css */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  width: 280px;
+  background-color: #181818;
+  border-radius: 0.5rem;
+  overflow-y: auto;
+}
+
+.collapsed {
+  width: 60px;
+}
+
+.sidebarHeader {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sidebarItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sidebarItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebarLabel {
+  font-size: 0.875rem;
+  color: #cfcfcf;
+}

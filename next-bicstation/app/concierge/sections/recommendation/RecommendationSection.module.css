@@ -1,0 +1,33 @@
+/* /app/concierge/sections/recommendation/RecommendationSection.module.css */
+
+.recommendationSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #121212;
+  border-radius: 0.5rem;
+}
+
+.recommendationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recommendationTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.recommendationDescription {
+  font-size: 0.875rem;
+  color: #cfcfcf;
+}
+
+.recommendationList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}

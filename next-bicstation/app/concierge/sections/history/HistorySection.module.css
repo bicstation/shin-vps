@@ -1,0 +1,187 @@
+/* /app/concierge/sections/history/HistorySection.module.css */
+
+.historySection {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+
+  padding: 20px;
+
+  border-radius: 16px;
+
+  background:
+    rgba(255,255,255,0.03);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.08);
+
+  backdrop-filter:
+    blur(10px);
+}
+
+/* =========================================
+🔥 Header
+========================================= */
+
+.historyHeader {
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.historyTitle {
+
+  font-size: 1.1rem;
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+.historyCount {
+
+  font-size: 0.82rem;
+
+  color:
+    rgba(255,255,255,0.5);
+}
+
+/* =========================================
+🔥 List
+========================================= */
+
+.historyList {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+/* =========================================
+🔥 Item
+========================================= */
+
+.historyItem {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  background:
+    rgba(255,255,255,0.025);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.05);
+
+  transition:
+    all 0.2s ease;
+}
+
+.historyItem:hover {
+
+  transform:
+    translateY(-1px);
+
+  background:
+    rgba(255,255,255,0.045);
+
+  border-color:
+    rgba(255,255,255,0.08);
+}
+
+/* =========================================
+🔥 Meta
+========================================= */
+
+.historyMeta {
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+.historyRole {
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  color: #7dd3fc;
+}
+
+.historyTime {
+
+  font-size: 0.72rem;
+
+  color:
+    rgba(255,255,255,0.4);
+}
+
+/* =========================================
+🔥 Content
+========================================= */
+
+.historyContent {
+
+  font-size: 0.92rem;
+  line-height: 1.6;
+
+  color:
+    rgba(255,255,255,0.88);
+
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* =========================================
+🔥 Empty
+========================================= */
+
+.historyEmpty {
+
+  padding: 20px;
+
+  text-align: center;
+
+  border-radius: 12px;
+
+  background:
+    rgba(255,255,255,0.02);
+
+  color:
+    rgba(255,255,255,0.45);
+}
+
+/* =========================================
+🔥 Responsive
+========================================= */
+
+@media (
+  max-width: 768px
+) {
+
+  .historySection {
+
+    padding: 16px;
+  }
+
+  .historyItem {
+
+    padding: 12px;
+  }
+}
