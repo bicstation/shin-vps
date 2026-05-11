@@ -33,7 +33,7 @@ import RecommendationCard
   from '@/app/concierge/components/RecommendationCard'
 
 import ConciergeEmpty
-  from '@/app/concierge/components/ConciergeEmpty'
+  from '../sections/system/ConciergeEmpty'
 
 /* =========================================
 🔥 Props

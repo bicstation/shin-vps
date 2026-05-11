@@ -30,10 +30,10 @@ import RecommendationDomain
 ========================================= */
 
 import RecommendationList
-  from '@/app/concierge/components/RecommendationList'
+  from '../sections/recommendation/RecommendationList'
 
 import ConciergeEmpty
-  from '@/app/concierge/components/ConciergeEmpty'
+  from '../sections/system/ConciergeEmpty'
 
 /* =========================================
 🔥 Props
