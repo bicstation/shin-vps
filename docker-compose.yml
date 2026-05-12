@@ -1,12 +1,14 @@
+# /home/maya/shin-vps/docker-compose.yml
 # =====================================================================
-# 🛡️ SHIN-VPS v8 [FINAL STABLE - CLEAN ROUTING]
+# 🚀 SHIN-VPS v8 FINAL STABLE
+# 🚀 4 DOMAIN + MONOREPO + SHARED SEMANTIC LAYER
 # =====================================================================
 
 services:
 
-  # -------------------------
+  # -------------------------------------------------------------------
   # 0. Traefik
-  # -------------------------
+  # -------------------------------------------------------------------
   traefik:
     image: traefik:v2.11
     container_name: traefik-proxy-v3
@@ -32,9 +34,9 @@ services:
     networks:
       - shared-proxy
 
-  # -------------------------
+  # -------------------------------------------------------------------
   # 1. PostgreSQL
-  # -------------------------
+  # -------------------------------------------------------------------
   postgres-db-v3:
     image: postgres:15-alpine
     container_name: postgres-db-v3
@@ -59,9 +61,9 @@ services:
 
     shm_size: 256mb
 
-  # -------------------------
-  # 2. Django（API）
-  # -------------------------
+  # -------------------------------------------------------------------
+  # 2. Django API
+  # -------------------------------------------------------------------
   django-v3:
     build:
       context: .
@@ -97,16 +99,14 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
 
-      # ルーティング（そのまま渡す）
       - "traefik.http.routers.django.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.django.entrypoints=web"
-      - "traefik.http.routers.django.priority=100"
 
       - "traefik.http.services.django.loadbalancer.server.port=8000"
 
-  # -------------------------
+  # -------------------------------------------------------------------
   # 3. Media
-  # -------------------------
+  # -------------------------------------------------------------------
   nginx-media:
     image: nginx:alpine
     container_name: nginx-media
@@ -121,20 +121,29 @@ services:
 
     labels:
       - "traefik.enable=true"
+
       - "traefik.http.routers.media.rule=PathPrefix(`/media/`)"
       - "traefik.http.routers.media.entrypoints=web"
+
       - "traefik.http.services.media.loadbalancer.server.port=80"
 
-  # -------------------------
-  # 4. Front（Next.js）
-  # -------------------------
+  # -------------------------------------------------------------------
+  # 4. Frontend Layer
+  # -------------------------------------------------------------------
+
+  # =========================================================
+  # bicstation
+  # =========================================================
   next-bicstation-v3:
     build:
       context: .
       dockerfile: ./shared/docker/NextJS.Dockerfile
+
       args:
         PROJECT_NAME: next-bicstation
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8083/api}
+
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://bicstation-host:8083/api}
+
         INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
 
     container_name: next-bicstation-v3
@@ -144,17 +153,11 @@ services:
       - .env.local
 
     environment:
-      NEXT_PUBLIC_SITE_DOMAIN: bicstation
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8083/api}
+      NEXT_PUBLIC_SITE_DOMAIN: bicstation-host
+
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://bicstation-host:8083/api}
+
       INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
-
-    volumes:
-      - ./next-bicstation:/usr/src/app
-      - ./shared:/usr/src/app/shared
-      - /usr/src/app/node_modules
-
-    ports:
-      - "3000:3000"
 
     networks:
       - internal-net
@@ -163,20 +166,144 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.front.rule=!PathPrefix(`/api`)"
-      - "traefik.http.routers.front.entrypoints=web"
-      - "traefik.http.routers.front.priority=1"
-      - "traefik.http.services.front.loadbalancer.server.port=3000"
 
-# -------------------------
+      - "traefik.http.routers.bicstation.rule=Host(`bicstation-host`)"
+      - "traefik.http.routers.bicstation.entrypoints=web"
+
+      - "traefik.http.services.bicstation.loadbalancer.server.port=3000"
+
+  # =========================================================
+  # saving
+  # =========================================================
+  next-bic-saving-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+
+      args:
+        PROJECT_NAME: next-bic-saving
+
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://saving-host:8083/api}
+
+        INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
+
+    container_name: next-bic-saving-v3
+    restart: always
+
+    env_file:
+      - .env.local
+
+    environment:
+      NEXT_PUBLIC_SITE_DOMAIN: saving-host
+
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://saving-host:8083/api}
+
+      INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
+
+    networks:
+      - internal-net
+      - shared-proxy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      - "traefik.http.routers.saving.rule=Host(`saving-host`)"
+      - "traefik.http.routers.saving.entrypoints=web"
+
+      - "traefik.http.services.saving.loadbalancer.server.port=3000"
+
+  # =========================================================
+  # tiper
+  # =========================================================
+  next-tiper-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+
+      args:
+        PROJECT_NAME: next-tiper
+
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://tiper-host:8083/api}
+
+        INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
+
+    container_name: next-tiper-v3
+    restart: always
+
+    env_file:
+      - .env.local
+
+    environment:
+      NEXT_PUBLIC_SITE_DOMAIN: tiper-host
+
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://tiper-host:8083/api}
+
+      INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
+
+    networks:
+      - internal-net
+      - shared-proxy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      - "traefik.http.routers.tiper.rule=Host(`tiper-host`)"
+      - "traefik.http.routers.tiper.entrypoints=web"
+
+      - "traefik.http.services.tiper.loadbalancer.server.port=3000"
+
+  # =========================================================
+  # avflash
+  # =========================================================
+  next-avflash-v3:
+    build:
+      context: .
+      dockerfile: ./shared/docker/NextJS.Dockerfile
+
+      args:
+        PROJECT_NAME: next-avflash
+
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://avflash-host:8083/api}
+
+        INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
+
+    container_name: next-avflash-v3
+    restart: always
+
+    env_file:
+      - .env.local
+
+    environment:
+      NEXT_PUBLIC_SITE_DOMAIN: avflash-host
+
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://avflash-host:8083/api}
+
+      INTERNAL_API_URL: ${INTERNAL_API_URL:-http://django-v3:8000/api}
+
+    networks:
+      - internal-net
+      - shared-proxy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      - "traefik.http.routers.avflash.rule=Host(`avflash-host`)"
+      - "traefik.http.routers.avflash.entrypoints=web"
+
+      - "traefik.http.services.avflash.loadbalancer.server.port=3000"
+
+# -------------------------------------------------------------------
 # volumes
-# -------------------------
+# -------------------------------------------------------------------
 volumes:
   postgres_data:
 
-# -------------------------
+# -------------------------------------------------------------------
 # networks
-# -------------------------
+# -------------------------------------------------------------------
 networks:
   internal-net:
     driver: bridge

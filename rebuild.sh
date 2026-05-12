@@ -1,7 +1,15 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v6（完全安定版）
+# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v8 FINAL STABLE
+# ==============================================================================
+#
+# ■ Multi Domain Infrastructure
+# ■ LOCAL / SIM / PROD
+# ■ WSL2 + Docker Desktop Stable Edition
+# ■ Serial Build Stabilization
+# ■ Next.js Multi-App Safe Build
+#
 # ==============================================================================
 
 set -e
@@ -9,280 +17,464 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 PROJECT_NAME="shin-vps"
-PROD_FILE="$SCRIPT_DIR/docker-compose.prod.yml"
-LOCAL_FILE="$SCRIPT_DIR/docker-compose.yml"
-
-ENV_FILE_LOCAL="$SCRIPT_DIR/.env.local"
-ENV_FILE_PROD="$SCRIPT_DIR/.env.production"
-
-NETWORK_NAME="shin-vps_shared-proxy"
-SUFFIX="-v3"
-
-INPUT_SERVICE=""
-BUILD_ARGS=""
-FORCE_ENV=""
-MODE="up"
-SHOW_LOGS=false
-PRUNE=false
-RESTART=false
-SHELL=false
-STATUS=false
-RESET_DB=false
-DEPLOY=false
 
 # ------------------------------------------------------------------------------
-# ■ ヘルプ
+# ■ Compose Files
+# ------------------------------------------------------------------------------
+
+LOCAL_FILE="$SCRIPT_DIR/docker-compose.yml"
+
+SIM_FILE="$SCRIPT_DIR/docker-compose.sim.yml"
+
+PROD_FILE="$SCRIPT_DIR/docker-compose.prod.yml"
+
+# ------------------------------------------------------------------------------
+# ■ ENV Files
+# ------------------------------------------------------------------------------
+
+ENV_FILE_LOCAL="$SCRIPT_DIR/.env.local"
+
+ENV_FILE_SIM="$SCRIPT_DIR/.env.production"
+
+ENV_FILE_PROD="$SCRIPT_DIR/.env.production"
+
+ENV_FILE_ROOT="$SCRIPT_DIR/.env"
+
+# ------------------------------------------------------------------------------
+# ■ Docker
+# ------------------------------------------------------------------------------
+
+NETWORK_NAME="shin-vps_shared-proxy"
+
+SUFFIX="-v3"
+
+# ------------------------------------------------------------------------------
+# ■ Runtime
+# ------------------------------------------------------------------------------
+
+INPUT_SERVICE=""
+
+BUILD_ARGS=""
+
+FORCE_ENV=""
+
+MODE="up"
+
+SHOW_LOGS=false
+
+PRUNE=false
+
+RESTART=false
+
+SHELL=false
+
+STATUS=false
+
+RESET_DB=false
+
+DEPLOY=false
+
+SERIAL_BUILD=true
+
+# ------------------------------------------------------------------------------
+# ■ BuildKit OFF（WSL安定化）
+# ------------------------------------------------------------------------------
+
+export DOCKER_BUILDKIT=0
+
+# ------------------------------------------------------------------------------
+# ■ Help
 # ------------------------------------------------------------------------------
 
 show_help() {
-echo ""
-echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v6"
-echo "------------------------------------------------------"
 
 echo ""
-echo "📌 基本操作（まずこれ）"
-echo "------------------------------------------------------"
-echo "起動（ローカル）:"
-echo "  ./rebuild.sh --local"
+echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v8"
+echo "======================================================"
+
 echo ""
-echo "起動（本番）:"
+echo "📌 起動"
+echo "------------------------------------------------------"
+
+echo "■ Local Development"
+echo "  ./rebuild.sh --local"
+
+echo ""
+echo "■ Production Simulation"
+echo "  ./rebuild.sh --sim"
+
+echo ""
+echo "■ Production"
 echo "  ./rebuild.sh --prod"
-echo ""
-echo "状態確認:"
-echo "  ./rebuild.sh --status"
-echo ""
 
 echo ""
-echo "🔄 DBリセット（トラブル時）"
+echo "📌 Build"
 echo "------------------------------------------------------"
-echo "完全リセット（⚠️全削除）:"
-echo "  ./rebuild.sh --reset-db --local"
-echo ""
-echo "→ 実行後に必ず:"
-echo "  ./rebuild.sh --local"
-echo ""
 
-echo ""
-echo "🚀 デプロイ（本番）"
-echo "------------------------------------------------------"
-echo "  ./rebuild.sh --deploy --prod"
-echo ""
-
-echo ""
-echo "🔧 開発用操作"
-echo "------------------------------------------------------"
-echo "ビルドのみ:"
 echo "  ./rebuild.sh --build-only --local"
+echo "  ./rebuild.sh --build-only --sim"
+echo "  ./rebuild.sh --build-only --prod"
+
 echo ""
-echo "再起動:"
-echo "  ./rebuild.sh --restart"
-echo ""
-echo "ログ確認:"
+echo "📌 Logs"
+echo "------------------------------------------------------"
+
 echo "  ./rebuild.sh --logs"
-echo ""
 
 echo ""
-echo "⚠️ ENV変更ルール（超重要）"
+echo "📌 Status"
 echo "------------------------------------------------------"
-echo ".env.local / .env.production を変更した場合:"
-echo "  必ず再ビルドしてください"
-echo ""
-echo "理由:"
-echo "  Next.jsはビルド時にENVを固定するため"
-echo ""
+
+echo "  ./rebuild.sh --status"
 
 echo ""
-echo "🚨 よくあるトラブルと対処"
+echo "📌 Reset DB"
 echo "------------------------------------------------------"
-echo "① APIが空（データ0件）"
-echo "  → DBリセット後に再インポート"
-echo ""
-echo "② migrateエラー"
-echo "  → --reset-db 実行"
-echo ""
-echo "③ 画面が更新されない"
-echo "  → --no-cache でビルド"
-echo ""
+
+echo "  ./rebuild.sh --reset-db --sim"
 
 echo ""
-echo "💡 Tips"
+echo "📌 Clean Build"
 echo "------------------------------------------------------"
-echo "・迷ったらまず --local で再起動"
-echo "・エラーは無視せず必ず確認"
-echo "・DB系は基本リセットが最速"
-echo ""
 
+echo "  ./rebuild.sh --clean"
+
+echo ""
+echo "📌 ENV"
+echo "------------------------------------------------------"
+
+echo "LOCAL : .env.local"
+echo "SIM   : .env.production"
+echo "PROD  : .env.production"
+
+echo ""
 exit 0
 }
 
 # ------------------------------------------------------------------------------
-# ■ 引数解析
+# ■ Args
 # ------------------------------------------------------------------------------
 
 for arg in "$@"; do
 case "$arg" in
+
 --help) show_help ;;
---prod) FORCE_ENV="PROD" ;;
+
 --local) FORCE_ENV="LOCAL" ;;
+
+--sim) FORCE_ENV="SIM" ;;
+
+--prod) FORCE_ENV="PROD" ;;
+
 --no-cache) BUILD_ARGS="--no-cache" ;;
+
 --clean) PRUNE=true ;;
+
 --logs) SHOW_LOGS=true ;;
+
 --restart) RESTART=true ;;
+
 --shell) SHELL=true ;;
+
 --down) MODE="down" ;;
+
 --build-only) MODE="build" ;;
+
 --up-only) MODE="up_only" ;;
+
 --status) STATUS=true ;;
+
 --reset-db) RESET_DB=true ;;
+
 --deploy) DEPLOY=true ;;
--*) echo "❌ Unknown option: $arg"; exit 1 ;;
-*) INPUT_SERVICE="$arg" ;;
+
+-*)
+echo "❌ Unknown option: $arg"
+exit 1
+;;
+
+*)
+INPUT_SERVICE="$arg"
+;;
+
 esac
 done
 
 # ------------------------------------------------------------------------------
-# ■ 環境判定
+# ■ Environment Detect
 # ------------------------------------------------------------------------------
 
 detect_env() {
-if [ "$FORCE_ENV" = "PROD" ]; then echo "PROD"; return; fi
-if [ "$FORCE_ENV" = "LOCAL" ]; then echo "LOCAL"; return; fi
+
+if [ "$FORCE_ENV" = "PROD" ]; then
+echo "PROD"
+return
+fi
+
+if [ "$FORCE_ENV" = "SIM" ]; then
+echo "SIM"
+return
+fi
+
+if [ "$FORCE_ENV" = "LOCAL" ]; then
+echo "LOCAL"
+return
+fi
+
 echo "LOCAL"
 }
 
 ENV_TYPE=$(detect_env)
 
+# ------------------------------------------------------------------------------
+# ■ Compose / ENV Select
+# ------------------------------------------------------------------------------
+
 if [ "$ENV_TYPE" = "PROD" ]; then
+
 COMPOSE_FILE="$PROD_FILE"
+
 ENV_FILE="$ENV_FILE_PROD"
+
+elif [ "$ENV_TYPE" = "SIM" ]; then
+
+COMPOSE_FILE="$SIM_FILE"
+
+ENV_FILE="$ENV_FILE_SIM"
+
 else
+
 COMPOSE_FILE="$LOCAL_FILE"
+
 ENV_FILE="$ENV_FILE_LOCAL"
+
 fi
 
+# ------------------------------------------------------------------------------
+# ■ Info
+# ------------------------------------------------------------------------------
+
+echo ""
 echo "🌍 ENV: $ENV_TYPE"
+
 echo "📄 COMPOSE: $COMPOSE_FILE"
 
+echo "📦 ENV FILE: $ENV_FILE"
+
+echo ""
+
 # ------------------------------------------------------------------------------
-# ■ ENVチェック
+# ■ ENV Check
 # ------------------------------------------------------------------------------
 
-echo "🔍 ENV CHECK"
 if [ ! -f "$ENV_FILE" ]; then
-echo "❌ ENV FILE NOT FOUND: $ENV_FILE"
+
+echo "❌ ENV FILE NOT FOUND"
+
+echo "$ENV_FILE"
+
 exit 1
+
 fi
 
-
 # ------------------------------------------------------------------------------
-# ■ ENVコピー（安全装置）
+# ■ ENV Sync
 # ------------------------------------------------------------------------------
 
-ENV_FILE_ROOT="$SCRIPT_DIR/.env"
+echo "📦 Sync ENV → .env"
 
-echo "📦 Sync .env.local → .env"
 cp "$ENV_FILE" "$ENV_FILE_ROOT"
 
 # ------------------------------------------------------------------------------
-# ■ STATUS
+# ■ Status
 # ------------------------------------------------------------------------------
 
 if [ "$STATUS" = true ]; then
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
+
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+ps
+
 exit 0
+
 fi
 
 # ------------------------------------------------------------------------------
-# ■ RESET DB（安全版）
+# ■ Reset DB
 # ------------------------------------------------------------------------------
 
 if [ "$RESET_DB" = true ]; then
-echo "⚠️ WARNING: DB完全削除されます"
+
+echo "⚠️ WARNING: DB完全削除"
+
 read -p "Type 'YES' to continue: " confirm
+
 if [ "$confirm" != "YES" ]; then
+
 echo "❌ Canceled"
+
 exit 1
+
 fi
 
-echo "🔥 Resetting DB..."
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" down -v
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+down -v
+
+docker volume prune -f
+
 echo "✅ DB RESET COMPLETE"
+
 exit 0
+
 fi
 
 # ------------------------------------------------------------------------------
-# ■ DEPLOY
-# ------------------------------------------------------------------------------
-
-if [ "$DEPLOY" = true ]; then
-echo "🚀 DEPLOY MODE"
-
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --build --remove-orphans
-
-sleep 5
-
-echo "📦 Running migrations..."
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T django$SUFFIX python manage.py migrate --noinput
-
-echo "✅ DEPLOY COMPLETE"
-exit 0
-fi
-
-# ------------------------------------------------------------------------------
-# ■ CLEAN
+# ■ Clean
 # ------------------------------------------------------------------------------
 
 if [ "$PRUNE" = true ]; then
+
 echo "🚨 CLEAN BUILD"
+
 docker system prune -af
+
+docker builder prune -af
+
+rm -rf ~/.npm
+
 fi
 
 # ------------------------------------------------------------------------------
-# ■ ネットワーク
+# ■ Network
 # ------------------------------------------------------------------------------
 
-docker network inspect "$NETWORK_NAME" >/dev/null 2>&1 || docker network create "$NETWORK_NAME"
+docker network inspect "$NETWORK_NAME" >/dev/null 2>&1 || \
+docker network create "$NETWORK_NAME"
 
 # ------------------------------------------------------------------------------
-# ■ DOWN
+# ■ Down
 # ------------------------------------------------------------------------------
 
 if [ "$MODE" = "down" ]; then
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" down
+
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+down
+
 exit 0
+
 fi
 
 # ------------------------------------------------------------------------------
-# ■ BUILD
+# ■ Serial Build（超重要）
 # ------------------------------------------------------------------------------
 
-echo "🔨 BUILD"
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" build $BUILD_ARGS
+echo "🔨 SERIAL BUILD MODE"
+
+build_service() {
+
+SERVICE_NAME=$1
+
+echo ""
+echo "======================================================"
+echo "🚀 BUILD: $SERVICE_NAME"
+echo "======================================================"
+
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+build $BUILD_ARGS $SERVICE_NAME
+}
 
 # ------------------------------------------------------------------------------
-# ■ UP
+# ■ Core Build
 # ------------------------------------------------------------------------------
 
-echo "🚀 UP"
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --remove-orphans
+build_service django-v3
+
+build_service next-bicstation-v3
+
+build_service next-bic-saving-v3
+
+build_service next-tiper-v3
+
+build_service next-avflash-v3
+
+# ------------------------------------------------------------------------------
+# ■ Up
+# ------------------------------------------------------------------------------
+
+echo ""
+echo "🚀 START CONTAINERS"
+
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+up -d --remove-orphans
 
 sleep 5
 
 # ------------------------------------------------------------------------------
-# ■ MIGRATE（安全版）
+# ■ Migration
 # ------------------------------------------------------------------------------
 
 if docker ps | grep -q "django$SUFFIX"; then
+
+echo ""
 echo "📦 Running migrations..."
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec -T django$SUFFIX python manage.py migrate --noinput
+
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+exec -T django$SUFFIX \
+python manage.py migrate --noinput
+
 fi
 
 # ------------------------------------------------------------------------------
-# ■ LOGS
+# ■ Status
+# ------------------------------------------------------------------------------
+
+echo ""
+echo "📊 CONTAINER STATUS"
+
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+ps
+
+# ------------------------------------------------------------------------------
+# ■ Logs
 # ------------------------------------------------------------------------------
 
 if [ "$SHOW_LOGS" = true ]; then
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" logs -f
-else
-docker compose -p $PROJECT_NAME --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
+
+echo ""
+echo "📜 STREAM LOGS"
+
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+logs -f
+
 fi
+
+# ------------------------------------------------------------------------------
+# ■ Done
+# ------------------------------------------------------------------------------
+
+echo ""
+echo "✅ SHIN CORE LINX DEPLOY COMPLETE"
+echo ""
