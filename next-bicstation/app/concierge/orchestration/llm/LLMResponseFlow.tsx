@@ -14,31 +14,31 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 ADAPTER
 ========================================= */
 
 import OpenAIAdapter
-  from '../adapters/openaiAdapter'
+  from '../../transport/adapters/openaiAdapter'
 
 /* =========================================
 🔥 COMPONENTS
 ========================================= */
 
 import TypingIndicator
-  from '../components/TypingIndicator'
+  from '../../components/TypingIndicator'
 
 import ConciergeError
-  from '../components/ConciergeError'
+  from '../../components/ConciergeError'
 
 import ChatMessage
-  from '../components/ChatMessage'
+  from '../../components/ChatMessage'
 
 /* =========================================
 🔥 Props

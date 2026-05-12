@@ -13,18 +13,18 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import SemanticDomain
-  from '../domain/semantic/semanticDomain'
+  from '../../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 FORMATTER
@@ -32,7 +32,7 @@ import SemanticDomain
 
 import {
   formatSemanticSummary,
-} from '../lib/formatter/formatter'
+} from '../../lib/formatter/formatter'
 
 /* =========================================
 🔥 Props

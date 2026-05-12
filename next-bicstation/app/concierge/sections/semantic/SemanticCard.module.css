@@ -1,0 +1,44 @@
+/* /app/concierge/sections/semantic/SemanticCard.module.css */
+
+.card {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.9rem;
+
+  width: 100%;
+
+  padding: 1rem 1.1rem;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+
+  background: rgba(255, 255, 255, 0.04);
+
+  backdrop-filter: blur(10px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.value {
+  color: #ffffff;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  line-height: 1.5;
+}
+
+.description {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.72);
+
+  font-size: 0.88rem;
+
+  line-height: 1.7;
+}

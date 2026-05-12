@@ -14,18 +14,18 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import MemoryDomain
-  from '../domain/memory/memoryDomain'
+  from '../../domain/memory/memoryDomain'
 
 /* =========================================
 🔥 HELPERS
@@ -33,7 +33,7 @@ import MemoryDomain
 
 import {
   randomId,
-} from '../lib/core/helpers'
+} from '../../lib/core/helpers'
 
 /* =========================================
 🔥 Props

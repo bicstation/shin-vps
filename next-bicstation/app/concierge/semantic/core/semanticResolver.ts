@@ -7,7 +7,7 @@
 import type {
   SemanticAttribute,
   SemanticPayload,
-} from '@/app/concierge/contracts/semantic/SemanticPayload'
+} from '../../contracts/semantic/SemanticPayload'
 
 /* =========================================
 🔥 Semantic Resolver

@@ -18,17 +18,21 @@ import type {
 🔥 AGENTS
 ========================================= */
 
-import GamingAgent
-  from '../agents/specialists/GamingAgent'
+import type {
+  GamingAgent,
+} from '../../agents/specialists/GamingAgent'
 
-import CreatorAgent
-  from '../agents/specialists/CreatorAgent'
+import type {
+  CreatorAgent,
+} from '../../agents/specialists/CreatorAgent'
 
-import BusinessAgent
-  from '../agents/specialists/BusinessAgent'
+import type {
+  BusinessAgent,
+} from '../../agents/specialists/BusinessAgent'
 
-import AIAgent
-  from '../agents/specialists/AIAgent'
+import type {
+  AIAgent,
+} from '../../agents/specialists/AIAgent'
 
 /* =========================================
 🔥 SEMANTIC
@@ -36,14 +40,14 @@ import AIAgent
 
 import {
   resolveSemanticIntent,
-} from '../semantic/intent/resolveSemanticIntent'
+} from '../../semantic/intent/resolveSemanticIntent'
 
 /* =========================================
 🔥 SECTION
 ========================================= */
 
 import SemanticSection
-  from '../sections/semantic/SemanticSection'
+  from '../../sections/semantic/SemanticSection'
 
 /* =========================================
 🔥 Props
@@ -88,20 +92,20 @@ SemanticAgentFlow({
     useMemo(() => {
 
       switch (
-        semanticIntent?.usage
+        semanticIntent?.value
       ) {
 
         case 'gaming':
-          return GamingAgent
+          return 'gaming'
 
         case 'creator':
-          return CreatorAgent
+          return 'creator'
 
         case 'business':
-          return BusinessAgent
+          return 'business'
 
         case 'ai':
-          return AIAgent
+          return 'ai'
 
         default:
           return null
@@ -110,59 +114,16 @@ SemanticAgentFlow({
     }, [semanticIntent])
 
   // ======================================
-  // Semantic Runtime
+  // Runtime Semantic
   // ======================================
 
   const runtimeSemantic =
 
     useMemo(() => {
 
-      if (
-        !specialistAgent
-      ) {
+      return semanticIntent
 
-        return semanticIntent
-      }
-
-      try {
-
-        if (
-          typeof specialistAgent
-            ?.resolveSemantic
-          !== 'function'
-        ) {
-
-          return semanticIntent
-        }
-
-        return specialistAgent
-          .resolveSemantic({
-
-            intent:
-              semanticIntent,
-
-            messages,
-
-          })
-
-      } catch (error) {
-
-        console.error(
-          '🔥 Semantic Agent Error'
-        )
-
-        console.error(error)
-
-        return semanticIntent
-      }
-
-    }, [
-
-      specialistAgent,
-      semanticIntent,
-      messages,
-
-    ])
+    }, [semanticIntent])
 
   // ======================================
   // Debug
@@ -174,18 +135,14 @@ SemanticAgentFlow({
 
   console.log({
 
-    usage:
-      runtimeSemantic?.usage,
+    type:
+      runtimeSemantic?.type,
 
-    gpu:
-      runtimeSemantic?.gpu,
-
-    budget:
-      runtimeSemantic?.budget,
+    value:
+      runtimeSemantic?.value,
 
     specialist:
-
-      specialistAgent?.name
+      specialistAgent
       || 'none',
 
   })

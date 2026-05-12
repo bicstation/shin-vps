@@ -12,28 +12,28 @@ import {
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import SemanticDomain
-  from '../domain/semantic/semanticDomain'
+  from '../../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 GRAPH
 ========================================= */
 
 import SemanticGraph
-  from '../graph/SemanticGraph'
+  from '../../graph/SemanticGraph'
 
 /* =========================================
 🔥 COMPONENTS
 ========================================= */
 
 import SemanticBadge
-  from '../components/SemanticBadge'
+  from '../../components/SemanticBadge.tsx'
 
 /* =========================================
 🔥 Props

@@ -1,4 +1,3 @@
-// Recommendation Agent Flow
 // /app/concierge/orchestration/agent/RecommendationAgentFlow.tsx
 
 'use client'
@@ -20,19 +19,19 @@ import type {
 ========================================= */
 
 import RecommendationAgent
-  from '../agents/recommendation/RecommendationAgent'
+  from '../../agents/recommendation/RecommendationAgent'
 
 import GamingAgent
-  from '../agents/specialists/GamingAgent'
+  from '../../agents/specialists/GamingAgent'
 
 import CreatorAgent
-  from '../agents/specialists/CreatorAgent'
+  from '../../agents/specialists/CreatorAgent'
 
 import BusinessAgent
-  from '../agents/specialists/BusinessAgent'
+  from '../../agents/specialists/BusinessAgent'
 
 import AIAgent
-  from '../agents/specialists/AIAgent'
+  from '../../agents/specialists/AIAgent'
 
 /* =========================================
 🔥 SEMANTIC
@@ -40,14 +39,14 @@ import AIAgent
 
 import {
   resolveSemanticIntent,
-} from '../semantic/intent/resolveSemanticIntent'
+} from '../../semantic/intent/resolveSemanticIntent'
 
 /* =========================================
 🔥 SECTION
 ========================================= */
 
 import RecommendationSection
-  from '../sections/recommendation/RecommendationSection'
+  from '../../sections/recommendation/RecommendationSection'
 
 /* =========================================
 🔥 Props

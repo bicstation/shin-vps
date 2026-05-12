@@ -30,49 +30,102 @@ type Props = {
 🔥 History Section
 ========================================= */
 
-export default function HistorySection({
+export default function
+HistorySection({
+
   messages = [],
+
 }: Props) {
 
-  if (!messages.length) {
+  // ======================================
+  // Safe Messages
+  // ======================================
+
+  const safeMessages =
+
+    Array.isArray(messages)
+      ? messages
+      : []
+
+  // ======================================
+  // Empty
+  // ======================================
+
+  if (!safeMessages.length) {
 
     return (
-      <div className={styles.historyEmpty}>
+
+      <div
+        className={
+          styles.historyEmpty
+        }
+      >
         No conversation history.
       </div>
+
     )
   }
+
+  // ======================================
+  // Render
+  // ======================================
 
   return (
 
     <section
-      className={styles.historySection}
+      className={
+        styles.historySection
+      }
     >
 
-      <div className={styles.historyList}>
+      <div
+        className={
+          styles.historyList
+        }
+      >
 
-        {messages.map(
+        {safeMessages.map(
           (msg, idx) => (
 
             <div
-              key={idx}
-              className={styles.historyItem}
+              key={
+                msg?.id
+                || idx
+              }
+
+              className={
+                styles.historyItem
+              }
             >
 
+              {/* ===========================
+              META
+              =========================== */}
+
               <div
-                className={styles.historyMeta}
+                className={
+                  styles.historyMeta
+                }
               >
 
                 <span
-                  className={styles.historyRole}
+                  className={
+                    styles.historyRole
+                  }
                 >
-                  {msg.role.toUpperCase()}
+                  {msg?.role
+                    ?.toUpperCase?.()
+                    || 'UNKNOWN'}
                 </span>
 
-                {msg.created_at && (
+                {msg?.created_at && (
+
                   <span
-                    className={styles.historyTime}
+                    className={
+                      styles.historyTime
+                    }
                   >
+
                     {new Date(
                       msg.created_at
                     ).toLocaleTimeString(
@@ -82,15 +135,24 @@ export default function HistorySection({
                         minute: '2-digit',
                       }
                     )}
+
                   </span>
+
                 )}
 
               </div>
 
+              {/* ===========================
+              CONTENT
+              =========================== */}
+
               <div
-                className={styles.historyContent}
+                className={
+                  styles.historyContent
+                }
               >
-                {msg.content}
+                {msg?.content
+                  || ''}
               </div>
 
             </div>
@@ -101,5 +163,6 @@ export default function HistorySection({
       </div>
 
     </section>
+
   )
 }

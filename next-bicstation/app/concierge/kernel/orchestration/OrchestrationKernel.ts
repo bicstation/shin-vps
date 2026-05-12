@@ -21,20 +21,20 @@ import type {
 ========================================= */
 
 import SemanticDomain
-  from '@/app/concierge/domain/semantic/semanticDomain'
+  from '../../domain/semantic/semanticDomain'
 
 import RecommendationDomain
-  from '@/app/concierge/domain/recommendation/recommendationDomain'
+  from '../../domain/recommendation/recommendationDomain'
 
 import RoutingDomain
-  from '@/app/concierge/domain/routing/routingDomain'
+  from '../../domain/routing/routingDomain'
 
 /* =========================================
 🔥 GRAPH
 ========================================= */
 
 import SemanticGraph
-  from '@/app/concierge/graph/SemanticGraph'
+  from '../../graph/SemanticGraph'
 
 /* =========================================
 🔥 KERNEL

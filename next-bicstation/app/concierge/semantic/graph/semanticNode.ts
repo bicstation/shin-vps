@@ -6,7 +6,7 @@
 
 import type {
   SemanticAttribute,
-} from '@/app/concierge/contracts/semantic/SemanticPayload'
+} from '../../contracts/semantic/SemanticPayload'
 
 /* =========================================
 🔥 Semantic Node

@@ -6,11 +6,11 @@
 
 import type {
   SemanticFinderQuery,
-} from '@/app/concierge/contracts/semantic/SemanticFinderQuery'
+} from '../../contracts/semantic/SemanticFinderQuery'
 
 import type {
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 Resolve Semantic Intent

@@ -25,7 +25,7 @@ import GraphRuntime, {
 ========================================= */
 
 import SemanticGraphDomain
-  from '@/app/concierge/domain/semantic/semanticGraphDomain'
+  from '../domain/semantic/semanticGraphDomain'
 
 /* =========================================
 🔥 Semantic Graph

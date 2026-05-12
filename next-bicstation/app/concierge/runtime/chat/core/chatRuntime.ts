@@ -21,17 +21,17 @@ import type {
 ========================================= */
 
 import ConversationDomain
-  from '@/app/concierge/domain/chat/conversationDomain'
+  from '../../../domain/chat/conversationDomain'
 
 import SemanticDomain
-  from '@/app/concierge/domain/semantic/semanticDomain'
+  from '../../../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 KERNEL
 ========================================= */
 
 import RuntimeKernel
-  from '@/app/concierge/kernel/runtime/RuntimeKernel'
+  from '../../../kernel/runtime/RuntimeKernel'
 
 /* =========================================
 🔥 TYPES

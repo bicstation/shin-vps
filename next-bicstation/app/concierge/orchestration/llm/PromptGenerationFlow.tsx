@@ -12,24 +12,24 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 PROMPTS
 ========================================= */
 
 import systemPrompt
-  from '../prompts/systemPrompt'
+  from '../../prompts/systemPrompt'
 
 import semanticPrompt
-  from '../prompts/semanticPrompt'
+  from '../../prompts/semanticPrompt'
 
 import recommendationPrompt
-  from '../prompts/recommendationPrompt'
+  from '../../prompts/recommendationPrompt'
 
 /* =========================================
 🔥 FORMATTER
@@ -37,7 +37,7 @@ import recommendationPrompt
 
 import {
   formatSemanticSummary,
-} from '../lib/formatter/formatter'
+} from '../../lib/formatter/formatter'
 
 /* =========================================
 🔥 Props

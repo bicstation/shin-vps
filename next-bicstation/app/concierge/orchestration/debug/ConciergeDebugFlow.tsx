@@ -12,18 +12,18 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   RecommendationPayload,
-} from '../contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 KERNEL
 ========================================= */
 
 import RuntimeKernel
-  from '../kernel/runtime/RuntimeKernel'
+  from '../../kernel/runtime/RuntimeKernel'
 
 /* =========================================
 🔥 STYLES

@@ -14,34 +14,34 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 ADAPTERS
 ========================================= */
 
 import OpenAIAdapter
-  from '../adapters/openaiAdapter'
+  from '../../transport/adapters/openaiAdapter'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import SemanticDomain
-  from '../domain/semantic/semanticDomain'
+  from '../../domain/semantic/semanticDomain'
 
 /* =========================================
 🔥 COMPONENTS
 ========================================= */
 
 import ConciergeLoading
-  from '../components/ConciergeLoading'
+  from '../../components/ConciergeLoading'
 
 import ConciergeError
-  from '../components/ConciergeError'
+  from '../../components/ConciergeError'
 
 import ChatMessageList
-  from '../components/ChatMessageList'
+  from '../../components/ChatMessageList'
 
 /* =========================================
 🔥 Props

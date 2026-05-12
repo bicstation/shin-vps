@@ -4,7 +4,7 @@
 🔥 CONTRACTS
 ========================================= */
 
-import type { ConversationMessage } from '@/app/concierge/contracts/conversation/ConversationMessage'
+import type { ConversationMessage } from '../../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 STORE

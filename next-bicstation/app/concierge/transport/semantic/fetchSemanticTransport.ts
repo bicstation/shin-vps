@@ -4,7 +4,7 @@
 🔥 FETCH SEMANTIC TRANSPORT
 ========================================= */
 
-import type { SemanticFinderQuery } from '@/app/concierge/contracts/semantic/SemanticFinderQuery'
+import type { SemanticFinderQuery } from '../../contracts/semantic/SemanticFinderQuery'
 
 import { semanticTransport } from '../internal/semanticTransport'
 

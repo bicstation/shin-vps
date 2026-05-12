@@ -12,34 +12,34 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   RecommendationPayload,
-} from '../contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 KERNEL
 ========================================= */
 
 import RuntimeKernel
-  from '../kernel/runtime/RuntimeKernel'
+  from '../../kernel/runtime/RuntimeKernel'
 
 /* =========================================
 🔥 FLOWS
 ========================================= */
 
 import RuntimeCoordinator
-  from '../orchestration/core/RuntimeCoordinator'
+  from '../../orchestration/core/RuntimeCoordinator'
 
 import RoutingRuntimeFlow
-  from '../orchestration/routing/RoutingRuntimeFlow'
+  from '../../orchestration/routing/RoutingRuntimeFlow'
 
 import RecommendationRuntimeFlow
-  from '../orchestration/recommendation/RecommendationRuntimeFlow'
+  from '../../orchestration/recommendation/RecommendationRuntimeFlow'
 
 import MemoryRuntimeFlow
-  from '../orchestration/memory/MemoryRuntimeFlow'
+  from '../../orchestration/memory/MemoryRuntimeFlow'
 
 /* =========================================
 🔥 Props

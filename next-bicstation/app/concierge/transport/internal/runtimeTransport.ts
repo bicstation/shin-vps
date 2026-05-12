@@ -4,7 +4,7 @@
 🔥 RUNTIME TRANSPORT
 ========================================= */
 
-import type { SemanticIntent } from '@/app/concierge/contracts/semantic/SemanticIntent'
+import type { SemanticIntent } from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 Runtime Transport

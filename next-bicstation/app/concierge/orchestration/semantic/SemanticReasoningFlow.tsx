@@ -12,28 +12,28 @@ import {
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 import type {
   RecommendationPayload,
-} from '../contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import SemanticDomain
-  from '../domain/semantic/semanticDomain'
+  from '../../domain/semantic/semanticDomain'
 
 import RecommendationDomain
-  from '../domain/recommendation/recommendationDomain'
+  from '../../domain/recommendation/recommendationDomain'
 
 /* =========================================
 🔥 GRAPH
 ========================================= */
 
 import SemanticGraph
-  from '../graph/SemanticGraph'
+  from '../../graph/SemanticGraph'
 
 /* =========================================
 🔥 FORMATTER
@@ -41,14 +41,14 @@ import SemanticGraph
 
 import {
   buildRecommendationReasoning,
-} from '../lib/core/conversion'
+} from '../../lib/core/conversion'
 
 /* =========================================
 🔥 COMPONENTS
 ========================================= */
 
 import SemanticBadge
-  from '../components/SemanticBadge'
+  from '../../components/SemanticBadge'
 
 /* =========================================
 🔥 Props

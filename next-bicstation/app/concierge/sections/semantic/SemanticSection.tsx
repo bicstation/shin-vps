@@ -9,7 +9,7 @@
 import type {
   SemanticAttribute,
   SemanticGroup,
-} from '../contracts/semantic/SemanticPayload'
+} from '../../contracts/semantic/SemanticPayload'
 
 /* =========================================
 🔥 COMPONENTS

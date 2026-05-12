@@ -14,14 +14,14 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import MemoryDomain
-  from '../domain/memory/memoryDomain'
+  from '../../domain/memory/memoryDomain'
 
 /* =========================================
 🔥 HELPERS
@@ -29,7 +29,7 @@ import MemoryDomain
 
 import {
   randomId,
-} from '../lib/core/helpers'
+} from '../../lib/core/helpers'
 
 /* =========================================
 🔥 Props

@@ -4,8 +4,8 @@
 🔥 FETCH FINDER TRANSPORT
 ========================================= */
 
-import type { SemanticFinderQuery } from '@/app/concierge/contracts/semantic/SemanticFinderQuery'
-import type { RecommendationPayload } from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+import type { SemanticFinderQuery } from '../../contracts/semantic/SemanticFinderQuery'
+import type { RecommendationPayload } from '../../contracts/recommendation/RecommendationPayload'
 
 import { fetchFinderResult } from '../adapters/finderAdapter'
 

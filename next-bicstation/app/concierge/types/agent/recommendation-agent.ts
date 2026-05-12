@@ -4,8 +4,8 @@
 🔥 RECOMMENDATION AGENT TYPES
 ========================================= */
 
-import type { SemanticIntent } from '@/app/concierge/contracts/semantic/SemanticIntent'
-import type { RecommendationPayload } from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+import type { SemanticIntent } from '../../contracts/semantic/SemanticIntent'
+import type { RecommendationPayload } from '../../contracts/recommendation/RecommendationPayload'
 
 export type RecommendationAgent = {
   id: string

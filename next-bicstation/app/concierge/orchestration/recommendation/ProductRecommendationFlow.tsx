@@ -12,28 +12,28 @@ import {
 
 import type {
   RecommendationPayload,
-} from '../contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import RecommendationDomain
-  from '../domain/recommendation/recommendationDomain'
+  from '../../domain/recommendation/recommendationDomain'
 
 /* =========================================
 🔥 COMPONENTS
 ========================================= */
 
 import RecommendationCard
-  from '../components/RecommendationCard'
+  from '../../components/RecommendationCard'
 
 import ConciergeEmpty
-  from '../sections/system/ConciergeEmpty'
+  from '../../sections/system/ConciergeEmpty'
 
 /* =========================================
 🔥 Props

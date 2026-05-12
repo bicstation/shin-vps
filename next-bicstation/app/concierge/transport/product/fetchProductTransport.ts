@@ -4,7 +4,7 @@
 🔥 FETCH PRODUCT TRANSPORT
 ========================================= */
 
-import type { RecommendationPayload } from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+import type { RecommendationPayload } from '../../contracts/recommendation/RecommendationPayload'
 
 import { fetchProductDetail } from '../adapters/productAdapter'
 

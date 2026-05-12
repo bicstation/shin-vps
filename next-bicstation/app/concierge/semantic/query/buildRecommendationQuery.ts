@@ -7,7 +7,7 @@
 import type {
   SemanticIntent,
   SemanticFinderQuery,
-} from '@/app/concierge/contracts/semantic/SemanticFinderQuery'
+} from '../../contracts/semantic/SemanticFinderQuery'
 
 /* =========================================
 🔥 Build Recommendation Query

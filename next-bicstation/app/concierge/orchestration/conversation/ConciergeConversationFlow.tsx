@@ -1,5 +1,4 @@
 // /app/concierge/orchestration/conversation/ConciergeConversationFlow.tsx
-// /app/concierge/orchestration/conversation/ConciergeConversationFlow.tsx
 
 'use client'
 
@@ -20,20 +19,20 @@ import type {
 ========================================= */
 
 import SemanticAgentFlow
-  from '../orchestration/agent/SemanticAgentFlow'
+  from '../agent/SemanticAgentFlow'
 
 import RecommendationAgentFlow
-  from '../orchestration/agent/RecommendationAgentFlow'
+  from '../agent/RecommendationAgentFlow'
 
 /* =========================================
 🔥 SECTIONS
 ========================================= */
 
 import ChatSection
-  from '../sections/chat/ChatSection'
+  from '../../sections/chat/ChatSection'
 
 import InputSection
-  from '../sections/input/InputSection'
+  from '../../sections/input/InputSection'
 
 /* =========================================
 🔥 Props

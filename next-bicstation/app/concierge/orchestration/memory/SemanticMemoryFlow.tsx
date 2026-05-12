@@ -14,14 +14,14 @@ import {
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import MemoryDomain
-  from '../domain/memory/memoryDomain'
+  from '../../domain/memory/memoryDomain'
 
 /* =========================================
 🔥 HELPERS
@@ -29,7 +29,7 @@ import MemoryDomain
 
 import {
   randomId,
-} from '../lib/core/helpers'
+} from '../../lib/core/helpers'
 
 /* =========================================
 🔥 FORMATTER
@@ -37,7 +37,7 @@ import {
 
 import {
   formatSemanticSummary,
-} from '../lib/formatter/formatter'
+} from '../../lib/formatter/formatter'
 
 /* =========================================
 🔥 Props

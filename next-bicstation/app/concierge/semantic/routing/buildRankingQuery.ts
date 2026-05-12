@@ -6,7 +6,7 @@
 
 import type {
   SemanticFinderQuery,
-} from '@/app/concierge/contracts/semantic/SemanticFinderQuery'
+} from '../../contracts/semantic/SemanticFinderQuery'
 
 /* =========================================
 🔥 Build Ranking Query

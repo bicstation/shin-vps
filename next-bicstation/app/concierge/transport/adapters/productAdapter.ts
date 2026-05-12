@@ -4,7 +4,7 @@
 🔥 PRODUCT ADAPTER
 ========================================= */
 
-import type { RecommendationPayload } from '@/app/concierge/contracts/recommendation/RecommendationPayload'
+import type { RecommendationPayload } from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 Fetch Product Detail

@@ -21,7 +21,7 @@ import type {
 ========================================= */
 
 import ConversationDomain
-  from '@/app/concierge/domain/chat/conversationDomain'
+  from '../../domain/chat/conversationDomain'
 
 /* =========================================
 🔥 KERNEL

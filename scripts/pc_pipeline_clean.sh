@@ -44,7 +44,7 @@ run_django migrate_linkshare_to_pc
 
 # ③ AI解析
 log "🧠 Analyze"
-run_django analyze_pc_spec --limit 10 --null-only
+run_django analyze_pc_spec --limit 2000 --null-only
 
 # ④ 属性同期
 log "🏷️ Attributes"

@@ -7,7 +7,7 @@
 import type {
   SemanticFinderQuery,
   SemanticIntent,
-} from '@/app/concierge/contracts/semantic/SemanticFinderQuery'
+} from '../../contracts/semantic/SemanticFinderQuery'
 
 /* =========================================
 🔥 Extract GPU Intent

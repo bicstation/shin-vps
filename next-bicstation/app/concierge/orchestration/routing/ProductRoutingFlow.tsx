@@ -17,14 +17,14 @@ import {
 
 import type {
   RecommendationPayload,
-} from '../contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import RoutingDomain
-  from '../domain/routing/routingDomain'
+  from '../../domain/routing/routingDomain'
 
 /* =========================================
 🔥 Props

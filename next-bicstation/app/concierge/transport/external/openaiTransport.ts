@@ -4,7 +4,7 @@
 🔥 EXTERNAL OPENAI TRANSPORT
 ========================================= */
 
-import type { SemanticIntent } from '@/app/concierge/contracts/semantic/SemanticIntent'
+import type { SemanticIntent } from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 Call OpenAI External

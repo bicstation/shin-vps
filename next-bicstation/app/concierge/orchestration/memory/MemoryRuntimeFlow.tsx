@@ -14,11 +14,11 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 FLOWS
@@ -35,7 +35,7 @@ import ConversationMemoryFlow
 ========================================= */
 
 import MemoryDomain
-  from '../domain/memory/memoryDomain'
+  from '../../domain/memory/memoryDomain'
 
 /* =========================================
 🔥 Props

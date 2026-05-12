@@ -39,7 +39,7 @@ export default function HomeHero() {
       >
         あなたに合う
         高性能PCを
-        わかりやすく比較
+        わかりやすく提案
       </h1>
 
       {/* =====================================
@@ -131,6 +131,16 @@ export default function HomeHero() {
           }
         >
           用途からPCを探す
+        </Link>
+
+        <Link
+          href="/concierge"
+
+          className={
+            styles.heroConciergeButton
+          }
+        >
+          AIコンシェルジュに相談する
         </Link>
 
       </div>

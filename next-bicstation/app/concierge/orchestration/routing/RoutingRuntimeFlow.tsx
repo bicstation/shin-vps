@@ -12,18 +12,18 @@ import {
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 import type {
   RecommendationPayload,
-} from '../contracts/recommendation/RecommendationPayload'
+} from '../../contracts/recommendation/RecommendationPayload'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import RoutingDomain
-  from '../domain/routing/routingDomain'
+  from '../../domain/routing/routingDomain'
 
 /* =========================================
 🔥 FLOWS

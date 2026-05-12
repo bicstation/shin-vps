@@ -17,14 +17,14 @@ import {
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 DOMAIN
 ========================================= */
 
 import RoutingDomain
-  from '../domain/routing/routingDomain'
+  from '../../domain/routing/routingDomain'
 
 /* =========================================
 🔥 Props

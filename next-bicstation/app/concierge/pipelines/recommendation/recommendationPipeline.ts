@@ -21,7 +21,7 @@ import type {
 ========================================= */
 
 import RecommendationDomain
-  from '@/app/concierge/domain/recommendation/recommendationDomain'
+  from '../../domain/recommendation/recommendationDomain'
 
 /* =========================================
 🔥 PIPELINE RESULT

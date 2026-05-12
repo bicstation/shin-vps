@@ -8,7 +8,7 @@ import type {
   SemanticAttribute,
   SemanticGroup,
   SemanticPayload,
-} from '@/app/concierge/contracts/semantic/SemanticPayload'
+} from '../../contracts/semantic/SemanticPayload'
 
 /* =========================================
 🔥 Semantic Navigation

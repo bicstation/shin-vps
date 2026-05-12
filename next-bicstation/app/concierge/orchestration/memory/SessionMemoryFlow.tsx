@@ -14,11 +14,11 @@ import {
 
 import type {
   ConversationMessage,
-} from '../contracts/conversation/ConversationMessage'
+} from '../../contracts/conversation/ConversationMessage'
 
 import type {
   SemanticIntent,
-} from '../contracts/semantic/SemanticIntent'
+} from '../../contracts/semantic/SemanticIntent'
 
 /* =========================================
 🔥 FLOWS
@@ -36,7 +36,7 @@ import SemanticMemoryFlow
 
 import {
   randomId,
-} from '../lib/core/helpers'
+} from '../../lib/core/helpers'
 
 /* =========================================
 🔥 Props

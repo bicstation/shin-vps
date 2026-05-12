@@ -27,7 +27,7 @@ import RoutingDomain
 ========================================= */
 
 import SemanticGraph
-  from '@/app/concierge/graph/SemanticGraph'
+  from '../../graph/SemanticGraph'
 
 /* =========================================
 🔥 KERNEL RESULT
