@@ -1,11 +1,15 @@
-# 現行安定版のbookwormを明示的に使用
+# ==================================================================
+# 🚀 SHIN-VPS Django Dockerfile (Python 3.11 / Slim Bookworm)
+# ==================================================================
+
+# 1. ベースイメージ
 FROM python:3.11-slim-bookworm
 
-# 1. 環境変数の設定 (Pythonの動作を最適化)
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# 2. Python 環境最適化
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# 2. OSの依存関係をインストール
+# 3. OS依存パッケージのインストール
 RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
     libpq-dev \
     gcc \
@@ -30,29 +34,27 @@ RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
     fonts-wqy-zenhei \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. 作業ディレクトリの設定
+# 4. 作業ディレクトリ
 WORKDIR /usr/src/app
 
-# 4. requirements.txtをコピーし、パッケージをインストール
-# 🔹 修正：build.context = ./django なので、COPY は context 内で完結
+# 5. requirements.txt をコピーしてパッケージをインストール
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# 5. Playwright本体とChromiumブラウザのインストール
+# 6. Playwright と Chromium のインストール
 RUN pip install --no-cache-dir playwright && \
     playwright install chromium && \
     playwright install-deps chromium
 
-# 6. Djangoプロジェクトのコード全体をコピー
-# 🔹 修正：context 内なので django/ プレフィックス不要
+# 7. Django プロジェクト全体をコピー
 COPY . .
 
-# 7. entrypoint.sh に実行権限を付与
+# 8. entrypoint.sh に実行権限を付与
 RUN chmod +x /usr/src/app/entrypoint.sh
 
-# 8. Djangoのデフォルトポート
+# 9. Django デフォルトポート
 EXPOSE 8000
 
-# 9. 実行コマンド
+# 10. 実行コマンド
 CMD ["gunicorn", "tiper_api.wsgi:application", "--bind", "0.0.0.0:8000"]
