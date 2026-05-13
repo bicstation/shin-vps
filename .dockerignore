@@ -183,3 +183,7 @@ debug_*.html
 *.tar.gz
 *.zip
 *.deb
+
+
+# 除外リストの最後に
+!shared/

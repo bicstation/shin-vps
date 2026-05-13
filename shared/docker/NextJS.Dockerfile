@@ -1,6 +1,6 @@
 # =====================================================================
 # 🚀 SHIN-VPS NEXT.JS 共通 Dockerfile
-# 🚀 v5.0 FINAL STABLE MONOREPO EDITION
+# 🚀 FINAL STABLE MONOREPO EDITION
 # =====================================================================
 
 # ---------------------------------------------------------------------
@@ -31,16 +31,20 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libc6 \
-    libstdc++6 && \
+    libstdc++6 \
+    fonts-ipafont-gothic && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------
-# 2. Project Package Files
-# monorepo root context 前提
+# 2. Package Files
+# monorepo root context architecture
 # ---------------------------------------------------------------------
-COPY ${PROJECT_NAME}/package*.json ./
-COPY ${PROJECT_NAME}/tsconfig*.json ./
+COPY ${PROJECT_NAME}/package.json ./
+COPY ${PROJECT_NAME}/package-lock.json ./
+
+# optional tsconfig
+COPY ${PROJECT_NAME}/tsconfig.json ./tsconfig.json
 
 # ---------------------------------------------------------------------
 # 3. Install Dependencies
@@ -48,18 +52,23 @@ COPY ${PROJECT_NAME}/tsconfig*.json ./
 RUN npm config set registry https://registry.npmjs.org/ && \
     npm config set fetch-retry-maxtimeout 600000 && \
     npm config set fetch-retry-mintimeout 20000 && \
-    npm install --legacy-peer-deps --no-audit --progress=false
+    npm cache clean --force
+
+RUN npm install \
+    --legacy-peer-deps \
+    --no-audit \
+    --progress=false \
+    --unsafe-perm=true
 
 # ---------------------------------------------------------------------
 # 4. Shared Semantic Layer
-# SHIN CORE LINX shared infrastructure
 # ---------------------------------------------------------------------
 COPY shared/ ./shared/
 
 # ---------------------------------------------------------------------
 # 5. Project Source
 # IMPORTANT:
-# root context build architecture
+# docker-compose build.context: ./
 # ---------------------------------------------------------------------
 COPY ${PROJECT_NAME}/ ./
 
@@ -73,15 +82,15 @@ ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE \
     NEXT_PRIVATE_STANDALONE=true
 
 # ---------------------------------------------------------------------
-# 7. Cleanup Old Cache
+# 7. Cleanup Cache
 # ---------------------------------------------------------------------
-RUN rm -rf .next .cache
+RUN rm -rf .next .cache node_modules/.cache
 
 # ---------------------------------------------------------------------
 # 8. Next.js Build
+# permission denied 回避版
 # ---------------------------------------------------------------------
-RUN chmod +x ./node_modules/.bin/next && \
-    ./node_modules/.bin/next build
+RUN node node_modules/next/dist/bin/next build
 
 # ---------------------------------------------------------------------
 # Stage 2: Runner
@@ -103,16 +112,23 @@ ENV NODE_ENV=production \
     PORT=3000
 
 # ---------------------------------------------------------------------
-# 1. nextjs User
+# Runtime Packages
+# ---------------------------------------------------------------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libc6 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------------------
+# nextjs User
 # ---------------------------------------------------------------------
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 # ---------------------------------------------------------------------
-# 2. Runtime Assets
+# Runtime Assets
+# standalone mode
 # ---------------------------------------------------------------------
-COPY --from=builder /app/node_modules ./node_modules
-
 COPY --from=builder /app/public ./public
 
 COPY --from=builder \
@@ -124,21 +140,34 @@ COPY --from=builder \
     /app/.next/static ./.next/static
 
 # ---------------------------------------------------------------------
-# 3. Cleanup
+# Flatten Standalone Directory
 # ---------------------------------------------------------------------
-RUN rm -rf node_modules/.cache
+RUN for dir in \
+    next-avflash \
+    next-tiper \
+    next-bic-saving \
+    next-bicstation; do \
+      if [ -d "./$dir" ]; then \
+        cp -r ./$dir/. . && rm -rf ./$dir; \
+      fi; \
+    done
 
 # ---------------------------------------------------------------------
-# 4. Runtime User
+# Cleanup
+# ---------------------------------------------------------------------
+RUN rm -rf .next/cache
+
+# ---------------------------------------------------------------------
+# Runtime User
 # ---------------------------------------------------------------------
 USER nextjs
 
 # ---------------------------------------------------------------------
-# 5. Port
+# Port
 # ---------------------------------------------------------------------
 EXPOSE 3000
 
 # ---------------------------------------------------------------------
-# 6. Start
+# Start
 # ---------------------------------------------------------------------
 CMD ["node", "server.js"]

@@ -1,68 +1,117 @@
 # =====================================================================
-# 🚀 SHIN-VPS NEXT.JS Dockerfile (Node 20 / Shared Library 同期版)
+# 🚀 SHIN-VPS NEXT.JS Dockerfile (Node 20 / Shared Library 安定版)
 # =====================================================================
 
-# --- ステージ 1: ビルドステージ ---
-FROM node:20-slim AS builder 
+# ---------------------------------------------------------------------
+# Stage 1: Builder
+# ---------------------------------------------------------------------
+FROM node:20-slim AS builder
 
-# ビルド引数
+# =====================================================================
+# Build Arguments
+# =====================================================================
+ARG PROJECT_NAME
 ARG NEXT_PUBLIC_APP_TITLE
 ARG NEXT_PUBLIC_BASE_PATH
 ARG NEXT_PUBLIC_API_URL
 
+# =====================================================================
+# Environment
+# =====================================================================
 ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
 ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 WORKDIR /app
 
-# OS パッケージ最小限
+# =====================================================================
+# OS Packages
+# =====================================================================
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libc6 libstdc++6 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+    libc6 \
+    libstdc++6 \
+    fonts-ipafont-gothic && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# 1. shared フォルダの先行コピー
+# =====================================================================
+# Shared Library Copy
+# ---------------------------------------------------------------------
 COPY shared/ ./shared/
 
-# 2. アプリ本体のコピー (build.context 内全体)
-COPY . .
+# =====================================================================
+# Project Source Copy
+# ---------------------------------------------------------------------
+COPY ${PROJECT_NAME}/ ./  # root context 前提
 
-# 3. npm 依存関係インストール
+# =====================================================================
+# Cleanup Old Cache
+# ---------------------------------------------------------------------
+RUN rm -rf .next .cache node_modules/.cache
+
+# =====================================================================
+# NPM Install
+# ---------------------------------------------------------------------
 RUN npm cache clean --force
 RUN npm install --include=optional --unsafe-perm=true
 
-# 4. クリーンビルド
-RUN rm -rf .next .cache node_modules/.cache
-RUN npx next build
+# =====================================================================
+# Next.js Build
+# ---------------------------------------------------------------------
+RUN node node_modules/next/dist/bin/next build
 
-# --- ステージ 2: プロダクション ---
-FROM node:20-slim AS runner 
+# ---------------------------------------------------------------------
+# Stage 2: Runner
+# ---------------------------------------------------------------------
+FROM node:20-slim AS runner
 
 WORKDIR /app
 
-# 実行ユーザー
+# =====================================================================
+# Runtime Packages
+# ---------------------------------------------------------------------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libc6 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# =====================================================================
+# Runtime User
+# ---------------------------------------------------------------------
 RUN addgroup --gid 1001 nodejs || true && \
     adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
 
-# 環境変数
+# =====================================================================
+# Runtime Environment
+# ---------------------------------------------------------------------
 ENV NODE_ENV=production
-ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
 
-# 成果物コピー
+# =====================================================================
+# Standalone Output Copy
+# ---------------------------------------------------------------------
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# standalone 配下のプロジェクト名ディレクトリをルートに展開
+# =====================================================================
+# Flatten Standalone Project Directories
+# ---------------------------------------------------------------------
 RUN for dir in next-avflash next-tiper next-bicstation next-bic-saving; do \
       if [ -d "./$dir" ]; then \
         cp -r ./$dir/. . && rm -rf ./$dir; \
       fi; \
     done
 
+# =====================================================================
+# Runtime User & Port
+# ---------------------------------------------------------------------
 USER nextjs
 EXPOSE 3000
 
-# 起動
+# =====================================================================
+# Start Command
+# ---------------------------------------------------------------------
 CMD ["node", "server.js"]
