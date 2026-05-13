@@ -1,142 +1,52 @@
 # ==============================================================================
-# 🚀 SHIN CORE LINX｜docker-compose.prod.yml
+# 🚀 SHIN CORE LINX｜Production Docker Compose
 # ==============================================================================
-#
-# ■ Production Semantic Platform
-# ■ 4 Domain Multi Frontend Fleet
-# ■ Shared Semantic Backend
-# ■ Traefik SSL Routing
-# ■ HTTP → HTTPS Redirect
-# ■ Production Stable Architecture
-#
-# PURPOSE:
-#   VPS 本番運用専用
-#
-# DOMAINS:
-#   bicstation.com
-#   bic-saving.com
-#   tiper.live
-#   avflash.xyz
-#
-# ==============================================================================
+
+version: "3.9"
 
 services:
 
-  # ============================================================================
-  # 0. Traefik Reverse Proxy
-  # ============================================================================
-  traefik:
-
-    image: traefik:v2.11
-
-    container_name: traefik-proxy
-
-    restart: always
-
-    command:
-
-      # Dashboard
-      - "--api.dashboard=true"
-
-      # Docker Provider
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-
-      # Shared Network
-      - "--providers.docker.network=shared-proxy"
-
-      # =========================================================================
-      # ENTRYPOINTS
-      # =========================================================================
-
-      # HTTP
-      - "--entrypoints.web.address=:80"
-
-      # HTTPS
-      - "--entrypoints.websecure.address=:443"
-
-      # =========================================================================
-      # HTTP → HTTPS REDIRECT
-      # =========================================================================
-
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-
-      # =========================================================================
-      # SSL / LETSENCRYPT
-      # =========================================================================
-
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.myresolver.acme.email=${TRAEFIK_ACME_EMAIL}"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-
-    ports:
-      - "80:80"
-      - "443:443"
-
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt"
-
-    networks:
-      - shared-proxy
-
-  # ============================================================================
-  # 1. PostgreSQL
-  # ============================================================================
+  # ===========================================================================
+  # 1. PostgreSQL (Persistent, Production)
+  # ===========================================================================
   postgres-db-v3:
-
     image: postgres:15-alpine
-
     container_name: postgres-db-v3
-
     restart: always
-
+    env_file:
+      - .env.production
     environment:
       POSTGRES_USER: ${DB_USER}
-
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-
       POSTGRES_DB: ${DB_NAME}
-
     volumes:
-      - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
-
+      - /home/maya/docker_volumes/postgres:/var/lib/postgresql/data
     shm_size: 256mb
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
-
+      retries: 5
       timeout: 5s
 
-      retries: 5
-
-    networks:
-      - internal-net
-
-  # ============================================================================
-  # 2. Django Semantic Backend
-  # ============================================================================
+  # ===========================================================================
+  # 2. Django API
+  # ===========================================================================
   django-v3:
-
     build:
-      context: .
-
-      dockerfile: ./django/Dockerfile
-
+      context: ./django
+      dockerfile: Dockerfile
     container_name: django-v3
-
     restart: always
-
+    env_file:
+      - .env.production
     depends_on:
       postgres-db-v3:
         condition: service_healthy
-
-    env_file:
-      - .env.production
-
+    networks:
+      - shared-proxy
+    volumes:
+      - ./django:/usr/src/app
+      - ./django/media:/usr/src/app/media
     command: >
       sh -c "
       python manage.py migrate &&
@@ -146,260 +56,113 @@ services:
       --workers 3
       "
 
-    volumes:
-      - ./django:/usr/src/app
-
-      - ./django/media:/usr/src/app/media
-
-    networks:
-      - internal-net
-      - shared-proxy
-
-    labels:
-      - "traefik.enable=true"
-
-      - "traefik.docker.network=shared-proxy"
-
-      # =========================================================================
-      # API ROUTING
-      # =========================================================================
-
-      - "traefik.http.routers.api.rule=Host(`api.bicstation.com`,`api.bic-saving.com`,`api.tiper.live`,`api.avflash.xyz`)"
-      - "traefik.http.routers.api.entrypoints=web,websecure"
-      - "traefik.http.routers.api.tls=true"
-      - "traefik.http.routers.api.tls.certresolver=myresolver"
-      - "traefik.http.routers.api.priority=3000"
-      - "traefik.http.services.api.loadbalancer.server.port=8000"
-
-  # ============================================================================
-  # 3. Media CDN Layer
-  # ============================================================================
-  nginx-media:
-
-    image: nginx:alpine
-
-    container_name: nginx-media
-
-    restart: always
-
-    volumes:
-      - ./django/media:/usr/src/app/media
-      - ./nginx/media.conf:/etc/nginx/conf.d/default.conf
-
-    networks:
-      - shared-proxy
-
-    labels:
-      - "traefik.enable=true"
-
-      - "traefik.docker.network=shared-proxy"
-
-      # =========================================================================
-      # MEDIA ROUTING
-      # =========================================================================
-
-      - "traefik.http.routers.media.rule=Host(`media.bicstation.com`,`media.bic-saving.com`,`media.tiper.live`,`media.avflash.xyz`)"
-      - "traefik.http.routers.media.entrypoints=web,websecure"
-      - "traefik.http.routers.media.tls=true"
-      - "traefik.http.routers.media.tls.certresolver=myresolver"
-      - "traefik.http.routers.media.priority=2500"
-      - "traefik.http.services.media.loadbalancer.server.port=80"
-
-  # ============================================================================
-  # 4. Bicstation Frontend
-  # ============================================================================
+  # ===========================================================================
+  # 3. Next.js Frontends
+  # ===========================================================================
   next-bicstation-v3:
-
     build:
-      context: .
-
-      dockerfile: ./shared/docker/NextJS.Dockerfile
-
-      args:
-        PROJECT_NAME: next-bicstation
-        NEXT_PUBLIC_SITE_URL: https://bicstation.com
-        NEXT_PUBLIC_API_URL: https://api.bicstation.com/api
-        NEXT_PUBLIC_MEDIA_URL: https://media.bicstation.com
-        INTERNAL_API_URL: http://django-v3:8000/api
-
+      context: ./next-bicstation
+      dockerfile: Dockerfile
     container_name: next-bicstation-v3
-
     restart: always
-
     env_file:
       - .env.production
-
-    environment:
-      NEXT_PUBLIC_SITE_DOMAIN: bicstation.com
-      NEXT_PUBLIC_SITE_URL: https://bicstation.com
-      NEXT_PUBLIC_API_URL: https://api.bicstation.com/api
-      NEXT_PUBLIC_MEDIA_URL: https://media.bicstation.com
-      INTERNAL_API_URL: http://django-v3:8000/api
-
+    depends_on:
+      - django-v3
     networks:
-      - internal-net
       - shared-proxy
+    ports:
+      - "3000:3000"
 
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.bicstation.rule=Host(`bicstation.com`)"
-      - "traefik.http.routers.bicstation.entrypoints=web,websecure"
-      - "traefik.http.routers.bicstation.tls=true"
-      - "traefik.http.routers.bicstation.tls.certresolver=myresolver"
-      - "traefik.http.routers.bicstation.priority=100"
-      - "traefik.http.services.bicstation.loadbalancer.server.port=3000"
-
-  # ============================================================================
-  # 5. Saving Frontend
-  # ============================================================================
   next-bic-saving-v3:
-
     build:
-      context: .
-
-      dockerfile: ./shared/docker/NextJS.Dockerfile
-
-      args:
-        PROJECT_NAME: next-bic-saving
-        NEXT_PUBLIC_SITE_URL: https://bic-saving.com
-        NEXT_PUBLIC_API_URL: https://api.bic-saving.com/api
-        NEXT_PUBLIC_MEDIA_URL: https://media.bic-saving.com
-        INTERNAL_API_URL: http://django-v3:8000/api
-
+      context: ./next-bic-saving
+      dockerfile: Dockerfile
     container_name: next-bic-saving-v3
-
     restart: always
-
     env_file:
       - .env.production
-
-    environment:
-      NEXT_PUBLIC_SITE_DOMAIN: bic-saving.com
-      NEXT_PUBLIC_SITE_URL: https://bic-saving.com
-      NEXT_PUBLIC_API_URL: https://api.bic-saving.com/api
-      NEXT_PUBLIC_MEDIA_URL: https://media.bic-saving.com
-      INTERNAL_API_URL: http://django-v3:8000/api
-
+    depends_on:
+      - django-v3
     networks:
-      - internal-net
       - shared-proxy
+    ports:
+      - "3001:3000"
 
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.saving.rule=Host(`bic-saving.com`)"
-      - "traefik.http.routers.saving.entrypoints=web,websecure"
-      - "traefik.http.routers.saving.tls=true"
-      - "traefik.http.routers.saving.tls.certresolver=myresolver"
-      - "traefik.http.routers.saving.priority=100"
-      - "traefik.http.services.saving.loadbalancer.server.port=3000"
-
-  # ============================================================================
-  # 6. Tiper Frontend
-  # ============================================================================
   next-tiper-v3:
-
     build:
-      context: .
-
-      dockerfile: ./shared/docker/NextJS.Dockerfile
-
-      args:
-        PROJECT_NAME: next-tiper
-        NEXT_PUBLIC_SITE_URL: https://tiper.live
-        NEXT_PUBLIC_API_URL: https://api.tiper.live/api
-        NEXT_PUBLIC_MEDIA_URL: https://media.tiper.live
-        INTERNAL_API_URL: http://django-v3:8000/api
-
+      context: ./next-tiper
+      dockerfile: Dockerfile
     container_name: next-tiper-v3
-
     restart: always
-
     env_file:
       - .env.production
-
-    environment:
-      NEXT_PUBLIC_SITE_DOMAIN: tiper.live
-      NEXT_PUBLIC_SITE_URL: https://tiper.live
-      NEXT_PUBLIC_API_URL: https://api.tiper.live/api
-      NEXT_PUBLIC_MEDIA_URL: https://media.tiper.live
-      INTERNAL_API_URL: http://django-v3:8000/api
-
+    depends_on:
+      - django-v3
     networks:
-      - internal-net
       - shared-proxy
+    ports:
+      - "3002:3000"
 
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.tiper.rule=Host(`tiper.live`)"
-      - "traefik.http.routers.tiper.entrypoints=web,websecure"
-      - "traefik.http.routers.tiper.tls=true"
-      - "traefik.http.routers.tiper.tls.certresolver=myresolver"
-      - "traefik.http.routers.tiper.priority=100"
-      - "traefik.http.services.tiper.loadbalancer.server.port=3000"
-
-  # ============================================================================
-  # 7. Avflash Frontend
-  # ============================================================================
   next-avflash-v3:
-
     build:
-      context: .
-
-      dockerfile: ./shared/docker/NextJS.Dockerfile
-
-      args:
-        PROJECT_NAME: next-avflash
-        NEXT_PUBLIC_SITE_URL: https://avflash.xyz
-        NEXT_PUBLIC_API_URL: https://api.avflash.xyz/api
-        NEXT_PUBLIC_MEDIA_URL: https://media.avflash.xyz
-        INTERNAL_API_URL: http://django-v3:8000/api
-
+      context: ./next-avflash
+      dockerfile: Dockerfile
     container_name: next-avflash-v3
-
     restart: always
-
     env_file:
       - .env.production
-
-    environment:
-      NEXT_PUBLIC_SITE_DOMAIN: avflash.xyz
-      NEXT_PUBLIC_SITE_URL: https://avflash.xyz
-      NEXT_PUBLIC_API_URL: https://api.avflash.xyz/api
-      NEXT_PUBLIC_MEDIA_URL: https://media.avflash.xyz
-      INTERNAL_API_URL: http://django-v3:8000/api
-
+    depends_on:
+      - django-v3
     networks:
-      - internal-net
+      - shared-proxy
+    ports:
+      - "3003:3000"
+
+  # ===========================================================================
+  # 4. Media / Static Files Proxy
+  # ===========================================================================
+  nginx-media:
+    image: nginx:alpine
+    container_name: nginx-media
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./django/media:/usr/src/app/media
+    networks:
       - shared-proxy
 
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=shared-proxy"
-      - "traefik.http.routers.avflash.rule=Host(`avflash.xyz`)"
-      - "traefik.http.routers.avflash.entrypoints=web,websecure"
-      - "traefik.http.routers.avflash.tls=true"
-      - "traefik.http.routers.avflash.tls.certresolver=myresolver"
-      - "traefik.http.routers.avflash.priority=100"
-      - "traefik.http.services.avflash.loadbalancer.server.port=3000"
+  # ===========================================================================
+  # 5. Traefik Reverse Proxy
+  # ===========================================================================
+  traefik-proxy:
+    image: traefik:v2.11
+    container_name: traefik-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - shared-proxy
 
-# ==============================================================================
-# VOLUMES
-# ==============================================================================
-# volumes:
+# ===========================================================================
+# 6. Volumes
+# ===========================================================================
+volumes:
+  postgres_data_prod:
 
-#   ${POSTGRES_DATA_PATH}:
-
-# ==============================================================================
-# NETWORKS
-# ==============================================================================
+# ===========================================================================
+# 7. Networks
+# ===========================================================================
 networks:
-
-  internal-net:
-    driver: bridge
-
   shared-proxy:
-    name: shin-vps_shared-proxy
     external: true
