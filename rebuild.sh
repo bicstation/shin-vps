@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v9 PARALLEL STABLE
+# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v10 FINAL STABLE
 # ==============================================================================
 #
 # ■ Multi Domain Infrastructure
@@ -9,6 +9,7 @@
 # ■ WSL2 + Docker Desktop Stable Edition
 # ■ Parallel Next.js Build Support
 # ■ Django Core First Architecture
+# ■ Compose Managed Network Edition
 #
 # ==============================================================================
 
@@ -41,14 +42,6 @@ ENV_FILE_PROD="$SCRIPT_DIR/.env.production"
 ENV_FILE_ROOT="$SCRIPT_DIR/.env"
 
 # ------------------------------------------------------------------------------
-# ■ Docker
-# ------------------------------------------------------------------------------
-
-NETWORK_NAME="shin-vps_shared-proxy"
-
-SUFFIX="-v3"
-
-# ------------------------------------------------------------------------------
 # ■ Runtime
 # ------------------------------------------------------------------------------
 
@@ -76,6 +69,8 @@ DEPLOY=false
 
 PARALLEL_BUILD=false
 
+SUFFIX="-v3"
+
 # ------------------------------------------------------------------------------
 # ■ BuildKit
 # ------------------------------------------------------------------------------
@@ -89,7 +84,7 @@ export DOCKER_BUILDKIT=1
 show_help() {
 
 echo ""
-echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v9"
+echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v10"
 echo "======================================================"
 
 echo ""
@@ -382,13 +377,6 @@ rm -rf ~/.npm
 fi
 
 # ------------------------------------------------------------------------------
-# ■ Network
-# ------------------------------------------------------------------------------
-
-docker network inspect "$NETWORK_NAME" >/dev/null 2>&1 || \
-docker network create "$NETWORK_NAME"
-
-# ------------------------------------------------------------------------------
 # ■ Down
 # ------------------------------------------------------------------------------
 
@@ -398,7 +386,7 @@ docker compose \
 -p $PROJECT_NAME \
 --env-file "$ENV_FILE" \
 -f "$COMPOSE_FILE" \
-down
+down --remove-orphans
 
 exit 0
 
@@ -425,7 +413,7 @@ build $BUILD_ARGS $SERVICE_NAME
 }
 
 # ------------------------------------------------------------------------------
-# ■ Django Build（単独）
+# ■ Django Build
 # ------------------------------------------------------------------------------
 
 echo ""
@@ -460,11 +448,8 @@ echo ""
 echo "🔨 SERIAL NEXT BUILD MODE"
 
 build_service next-bicstation-v3
-
 build_service next-bic-saving-v3
-
 build_service next-tiper-v3
-
 build_service next-avflash-v3
 
 fi
