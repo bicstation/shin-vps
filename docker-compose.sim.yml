@@ -204,7 +204,7 @@ services:
 
         NEXT_PUBLIC_SITE_URL: http://bicstation.com:8083
 
-        NEXT_PUBLIC_API_URL: http://api.bicstation.com:8083
+        NEXT_PUBLIC_API_URL: http://api.bicstation.com:8083/api
 
         NEXT_PUBLIC_MEDIA_URL: http://media.bicstation.com:8083
 
@@ -222,7 +222,7 @@ services:
 
       NEXT_PUBLIC_SITE_URL: http://bicstation.com:8083
 
-      NEXT_PUBLIC_API_URL: http://api.bicstation.com:8083
+      NEXT_PUBLIC_API_URL: http://api.bicstation.com:8083/api
 
       NEXT_PUBLIC_MEDIA_URL: http://media.bicstation.com:8083
 
@@ -260,7 +260,7 @@ services:
 
         NEXT_PUBLIC_SITE_URL: http://bic-saving.com:8083
 
-        NEXT_PUBLIC_API_URL: http://api.bic-saving.com:8083
+        NEXT_PUBLIC_API_URL: http://api.bic-saving.com:8083/api
 
         NEXT_PUBLIC_MEDIA_URL: http://media.bic-saving.com:8083
 
@@ -278,7 +278,7 @@ services:
 
       NEXT_PUBLIC_SITE_URL: http://bic-saving.com:8083
 
-      NEXT_PUBLIC_API_URL: http://api.bic-saving.com:8083
+      NEXT_PUBLIC_API_URL: http://api.bic-saving.com:8083/api
 
       NEXT_PUBLIC_MEDIA_URL: http://media.bic-saving.com:8083
 
@@ -316,7 +316,7 @@ services:
 
         NEXT_PUBLIC_SITE_URL: http://tiper.live:8083
 
-        NEXT_PUBLIC_API_URL: http://api.tiper.live:8083
+        NEXT_PUBLIC_API_URL: http://api.tiper.live:8083/api
 
         NEXT_PUBLIC_MEDIA_URL: http://media.tiper.live:8083
 
@@ -334,7 +334,7 @@ services:
 
       NEXT_PUBLIC_SITE_URL: http://tiper.live:8083
 
-      NEXT_PUBLIC_API_URL: http://api.tiper.live:8083
+      NEXT_PUBLIC_API_URL: http://api.tiper.live:8083/api
 
       NEXT_PUBLIC_MEDIA_URL: http://media.tiper.live:8083
 
@@ -372,7 +372,7 @@ services:
 
         NEXT_PUBLIC_SITE_URL: http://avflash.xyz:8083
 
-        NEXT_PUBLIC_API_URL: http://api.avflash.xyz:8083
+        NEXT_PUBLIC_API_URL: http://api.avflash.xyz:8083/api
 
         NEXT_PUBLIC_MEDIA_URL: http://media.avflash.xyz:8083
 
@@ -390,7 +390,7 @@ services:
 
       NEXT_PUBLIC_SITE_URL: http://avflash.xyz:8083
 
-      NEXT_PUBLIC_API_URL: http://api.avflash.xyz:8083
+      NEXT_PUBLIC_API_URL: http://api.avflash.xyz:8083/api
 
       NEXT_PUBLIC_MEDIA_URL: http://media.avflash.xyz:8083
 

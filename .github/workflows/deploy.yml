@@ -2,87 +2,229 @@ name: Production Deployment
 
 on:
   push:
-    # v1.0.0 などのタグがプッシュされた時だけ動作
+    # v1.0.0 などのタグ push 時のみ deploy
     tags:
       - 'v*'
 
 jobs:
+
   deploy:
+
     runs-on: ubuntu-latest
-    
+
+    timeout-minutes: 60
+
+    env:
+      PROJECT_NAME: shin-vps
+      DEPLOY_PATH: /home/maya/shin-vps
+      COMPOSE_FILE: docker-compose.prod.yml
+      ENV_FILE: .env.production
+
     steps:
-      - name: Checkout code
+
+      # ==========================================================================
+      # 📦 Checkout
+      # ==========================================================================
+
+      - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      # 💡 修正: 転送前に不要なファイルを削除 (scp-action に exclude がないため)
-      - name: Cleanup unnecessary files before sync
-        run: |
-          rm -rf .git .github .venv __pycache__ node_modules
-          echo "🧹 不要なファイルを削除しました。"
+      # ==========================================================================
+      # 🧹 Cleanup
+      # ==========================================================================
 
-      # 1. ファイルを VPS のディレクトリへ同期
-      - name: Sync Files to VPS
+      - name: 🧹 Cleanup Unnecessary Files
+        run: |
+          rm -rf \
+            .git \
+            .github \
+            .venv \
+            __pycache__ \
+            node_modules \
+            .next \
+            */node_modules \
+            */.next
+
+          echo "✅ Cleanup Complete"
+
+      # ==========================================================================
+      # 🚀 Sync Files
+      # ==========================================================================
+
+      - name: 🚀 Sync Files to VPS
         uses: appleboy/scp-action@v0.1.7
+
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
+
           port: 2222
-          source: "." 
+
+          source: "."
           target: "/home/maya/shin-vps"
+
           strip_components: 0
           overwrite: true
-          # 💡 exclude 引数は削除しました (エラー回避)
 
-      # 2. SSH経由でネットワーク構築・Docker起動・DBマイグレーション・掃除を実行
-      - name: Deploy to Production via SSH
+      # ==========================================================================
+      # 🚀 Deploy
+      # ==========================================================================
+
+      - name: 🚀 Deploy to Production
         uses: appleboy/ssh-action@v1.0.3
+
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
+
           port: 2222
-          command_timeout: 30m # 💡 修正: ビルド中のタイムアウト（Playwright対策）を防ぐために延長
+
+          command_timeout: 60m
+
           script: |
+
             set -e
+
             cd /home/maya/shin-vps
-            
-            echo "🔧 ネットワーク環境を整備します..."
-            docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || docker network create shin-vps_shared-proxy
 
-            echo "🚀 本番環境(prod)をビルド・起動します..."
-            # 💡 Playwright 等の重いビルドが含まれるため、ビルド成功をしっかり待ちます
-            # docker compose -p shin-vps -f docker-compose.prod.yml up -d --build --remove-orphans --wait
-            docker compose -p shin-vps --env-file .env.production -f docker-compose.prod.yml up -d --build --remove-orphans --wait
-            
-            echo "📦 データベースを更新します..."
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v3 python manage.py migrate --noinput
+            echo ""
+            echo "======================================================"
+            echo "🚀 SHIN CORE LINX｜PRODUCTION DEPLOY"
+            echo "======================================================"
 
-            echo "🎨 静的ファイルを収集します..."
-            docker compose -p shin-vps -f docker-compose.prod.yml exec -T django-v3 python manage.py collectstatic --noinput
+            # ==============================================================
+            # 🌐 Shared Network
+            # ==============================================================
 
-            echo "🧹 徹底的なクリーンアップを開始します..."
-            # docker image prune -af
-            # docker builder prune -f
-            # docker volume prune -f
-            # docker system prune -f
+            echo ""
+            echo "🌐 Checking shared docker network..."
 
-            docker image prune -af
-            docker builder prune -f
+            docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || \
+            docker network create shin-vps_shared-proxy
 
-            # ❌ volume prune は削除
-            # docker volume prune -f
+            echo "✅ Network Ready"
 
-            # system prune は軽めに
-            # docker system prune -f
+            # ==============================================================
+            # 📦 Docker Build
+            # ==============================================================
 
-            # docker compose ps
-            echo "📊 状態確認"
-            docker compose -p shin-vps -f docker-compose.prod.yml ps
-            # docker logs nginx-media    
-            echo "📄 nginxログ確認"
-            docker logs --tail 50 nginx-media        
+            echo ""
+            echo "📦 Building Containers..."
 
-            echo "✅ デプロイ成功！全ての処理と掃除が完了しました。"
+            docker compose \
+              -p shin-vps \
+              --env-file .env.production \
+              -f docker-compose.prod.yml \
+              build \
+              --parallel
+
+            echo "✅ Parallel Build Complete"
+
+            # ==============================================================
+            # 🚀 Container Startup
+            # ==============================================================
+
+            echo ""
+            echo "🚀 Starting Containers..."
+
+            docker compose \
+              -p shin-vps \
+              --env-file .env.production \
+              -f docker-compose.prod.yml \
+              up -d \
+              --remove-orphans \
+              --wait
+
+            echo "✅ Containers Started"
+
+            # ==============================================================
+            # 📦 Django Migration
+            # ==============================================================
+
+            echo ""
+            echo "📦 Running Migrations..."
+
+            docker compose \
+              -p shin-vps \
+              --env-file .env.production \
+              -f docker-compose.prod.yml \
+              exec -T django-v3 \
+              python manage.py migrate --noinput
+
+            echo "✅ Migration Complete"
+
+            # ==============================================================
+            # 🎨 Collect Static
+            # ==============================================================
+
+            echo ""
+            echo "🎨 Collecting Static Files..."
+
+            docker compose \
+              -p shin-vps \
+              --env-file .env.production \
+              -f docker-compose.prod.yml \
+              exec -T django-v3 \
+              python manage.py collectstatic --noinput
+
+            echo "✅ Static Collection Complete"
+
+            # ==============================================================
+            # 🩺 Health Check
+            # ==============================================================
+
+            echo ""
+            echo "🩺 Running Health Checks..."
+
+            curl -f http://localhost:8083/api/status/ || exit 1
+
+            echo "✅ API Health Check Passed"
+
+            # ==============================================================
+            # 📊 Container Status
+            # ==============================================================
+
+            echo ""
+            echo "📊 Container Status"
+
+            docker compose \
+              -p shin-vps \
+              --env-file .env.production \
+              -f docker-compose.prod.yml \
+              ps
+
+            # ==============================================================
+            # 📄 Nginx Logs
+            # ==============================================================
+
+            echo ""
+            echo "📄 nginx-media Logs"
+
+            docker logs --tail 50 nginx-media || true
+
+            # ==============================================================
+            # 🧹 Cleanup
+            # ==============================================================
+
+            echo ""
+            echo "🧹 Docker Cleanup"
+
+            docker image prune -af || true
+
+            docker builder prune -af || true
+
+            echo "✅ Cleanup Complete"
+
+            # ==============================================================
+            # 🎉 Done
+            # ==============================================================
+
+            echo ""
+            echo "======================================================"
+            echo "✅ PRODUCTION DEPLOY SUCCESS"
+            echo "======================================================"
+            echo ""

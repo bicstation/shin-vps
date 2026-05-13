@@ -1,16 +1,69 @@
 # -*- coding: utf-8 -*-
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from api.views.bs_views import BSDeviceViewSet, BSMobilePlanViewSet, BSCarrierViewSet
+# /home/maya/dev/shin-vps/django/api/urls/bs_urls.py
 
-# 💡 app_name を設定することで、reverse('api:bs:device-list') のように呼べるようになります
-app_name = 'bs'
+from django.urls import path, include
+
+from rest_framework.routers import DefaultRouter
+
+from api.views.bs_views import (
+
+    BSDeviceViewSet,
+
+    BSMobilePlanViewSet,
+
+    BSCarrierViewSet,
+)
+
+# ==============================================================================
+# 🚀 Namespace
+# ==============================================================================
+
+app_name = "bs"
+
+# ==============================================================================
+# 🚀 DRF Router
+# ==============================================================================
 
 router = DefaultRouter()
-router.register(r'devices', BSDeviceViewSet, basename='device')
-router.register(r'plans', BSMobilePlanViewSet, basename='plan')
-router.register(r'carriers', BSCarrierViewSet, basename='carrier')
+
+# ------------------------------------------------------------------------------
+# 📱 Devices
+# ------------------------------------------------------------------------------
+
+router.register(
+    r'devices',
+    BSDeviceViewSet,
+    basename='device'
+)
+
+# ------------------------------------------------------------------------------
+# 📦 Mobile Plans
+# ------------------------------------------------------------------------------
+
+router.register(
+    r'plans',
+    BSMobilePlanViewSet,
+    basename='plan'
+)
+
+# ------------------------------------------------------------------------------
+# 📡 Carriers
+# ------------------------------------------------------------------------------
+
+router.register(
+    r'carriers',
+    BSCarrierViewSet,
+    basename='carrier'
+)
+
+# ==============================================================================
+# 🚀 URL Patterns
+# ==============================================================================
 
 urlpatterns = [
-    path('', include(router.urls)),
+
+    path(
+        '',
+        include(router.urls)
+    ),
 ]

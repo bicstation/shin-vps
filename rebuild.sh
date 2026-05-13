@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # ==============================================================================
-# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v8 FINAL STABLE
+# 🚀 SHIN CORE LINX｜ADVANCED DEPLOY SCRIPT v9 PARALLEL STABLE
 # ==============================================================================
 #
 # ■ Multi Domain Infrastructure
 # ■ LOCAL / SIM / PROD
 # ■ WSL2 + Docker Desktop Stable Edition
-# ■ Serial Build Stabilization
-# ■ Next.js Multi-App Safe Build
+# ■ Parallel Next.js Build Support
+# ■ Django Core First Architecture
 #
 # ==============================================================================
 
@@ -74,13 +74,13 @@ RESET_DB=false
 
 DEPLOY=false
 
-SERIAL_BUILD=true
+PARALLEL_BUILD=false
 
 # ------------------------------------------------------------------------------
-# ■ BuildKit OFF（WSL安定化）
+# ■ BuildKit
 # ------------------------------------------------------------------------------
 
-export DOCKER_BUILDKIT=0
+export DOCKER_BUILDKIT=1
 
 # ------------------------------------------------------------------------------
 # ■ Help
@@ -89,7 +89,7 @@ export DOCKER_BUILDKIT=0
 show_help() {
 
 echo ""
-echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v8"
+echo "🚀 SHIN CORE LINX DEPLOY SCRIPT v9"
 echo "======================================================"
 
 echo ""
@@ -108,12 +108,16 @@ echo "■ Production"
 echo "  ./rebuild.sh --prod"
 
 echo ""
-echo "📌 Build"
+echo "📌 Parallel Build"
 echo "------------------------------------------------------"
 
-echo "  ./rebuild.sh --build-only --local"
+echo "  ./rebuild.sh --sim --parallel"
+
+echo ""
+echo "📌 Build Only"
+echo "------------------------------------------------------"
+
 echo "  ./rebuild.sh --build-only --sim"
-echo "  ./rebuild.sh --build-only --prod"
 
 echo ""
 echo "📌 Logs"
@@ -140,14 +144,6 @@ echo "------------------------------------------------------"
 echo "  ./rebuild.sh --clean"
 
 echo ""
-echo "📌 ENV"
-echo "------------------------------------------------------"
-
-echo "LOCAL : .env.local"
-echo "SIM   : .env.production"
-echo "PROD  : .env.production"
-
-echo ""
 exit 0
 }
 
@@ -156,37 +152,72 @@ exit 0
 # ------------------------------------------------------------------------------
 
 for arg in "$@"; do
+
 case "$arg" in
 
---help) show_help ;;
+--help)
+show_help
+;;
 
---local) FORCE_ENV="LOCAL" ;;
+--local)
+FORCE_ENV="LOCAL"
+;;
 
---sim) FORCE_ENV="SIM" ;;
+--sim)
+FORCE_ENV="SIM"
+;;
 
---prod) FORCE_ENV="PROD" ;;
+--prod)
+FORCE_ENV="PROD"
+;;
 
---no-cache) BUILD_ARGS="--no-cache" ;;
+--parallel)
+PARALLEL_BUILD=true
+;;
 
---clean) PRUNE=true ;;
+--no-cache)
+BUILD_ARGS="--no-cache"
+;;
 
---logs) SHOW_LOGS=true ;;
+--clean)
+PRUNE=true
+;;
 
---restart) RESTART=true ;;
+--logs)
+SHOW_LOGS=true
+;;
 
---shell) SHELL=true ;;
+--restart)
+RESTART=true
+;;
 
---down) MODE="down" ;;
+--shell)
+SHELL=true
+;;
 
---build-only) MODE="build" ;;
+--down)
+MODE="down"
+;;
 
---up-only) MODE="up_only" ;;
+--build-only)
+MODE="build"
+;;
 
---status) STATUS=true ;;
+--up-only)
+MODE="up_only"
+;;
 
---reset-db) RESET_DB=true ;;
+--status)
+STATUS=true
+;;
 
---deploy) DEPLOY=true ;;
+--reset-db)
+RESET_DB=true
+;;
+
+--deploy)
+DEPLOY=true
+;;
 
 -*)
 echo "❌ Unknown option: $arg"
@@ -198,6 +229,7 @@ INPUT_SERVICE="$arg"
 ;;
 
 esac
+
 done
 
 # ------------------------------------------------------------------------------
@@ -373,10 +405,8 @@ exit 0
 fi
 
 # ------------------------------------------------------------------------------
-# ■ Serial Build（超重要）
+# ■ Build Service
 # ------------------------------------------------------------------------------
-
-echo "🔨 SERIAL BUILD MODE"
 
 build_service() {
 
@@ -395,10 +425,39 @@ build $BUILD_ARGS $SERVICE_NAME
 }
 
 # ------------------------------------------------------------------------------
-# ■ Core Build
+# ■ Django Build（単独）
 # ------------------------------------------------------------------------------
 
+echo ""
+echo "🧠 BUILD DJANGO CORE"
+
 build_service django-v3
+
+# ------------------------------------------------------------------------------
+# ■ Next.js Build
+# ------------------------------------------------------------------------------
+
+if [ "$PARALLEL_BUILD" = true ]; then
+
+echo ""
+echo "⚡ PARALLEL NEXT BUILD MODE"
+
+docker compose \
+-p $PROJECT_NAME \
+--env-file "$ENV_FILE" \
+-f "$COMPOSE_FILE" \
+build \
+$BUILD_ARGS \
+--parallel \
+next-bicstation-v3 \
+next-bic-saving-v3 \
+next-tiper-v3 \
+next-avflash-v3
+
+else
+
+echo ""
+echo "🔨 SERIAL NEXT BUILD MODE"
 
 build_service next-bicstation-v3
 
@@ -407,6 +466,21 @@ build_service next-bic-saving-v3
 build_service next-tiper-v3
 
 build_service next-avflash-v3
+
+fi
+
+# ------------------------------------------------------------------------------
+# ■ Build Only
+# ------------------------------------------------------------------------------
+
+if [ "$MODE" = "build" ]; then
+
+echo ""
+echo "✅ BUILD COMPLETE"
+
+exit 0
+
+fi
 
 # ------------------------------------------------------------------------------
 # ■ Up
