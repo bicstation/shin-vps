@@ -1,143 +1,398 @@
+// /shared/lib/api/django/client.ts
 // @ts-nocheck
-// /home/maya/shin-vps/shared/lib/api/django/client.ts
+
 /**
  * =====================================================================
- * 🛰️ Django API 共通クライアント (Zenith v15.0 - Diamond Guard Edition)
+ * 🛰️ SHIN CORE LINX｜Unified Django API Client
  * =====================================================================
- * 🛡️ 修正の核心:
- * 1. 【階層型ガード】category.name 等の深いプロパティまで空文字を保証。
- * 2. 【200時クラッシュ完全封殺】データの中身が不完全でもフロントを絶対に壊さない。
- * 3. 【正規化パス】prefix 重複排除と site_tag のクリーン化を維持。
+ *
+ * PURPOSE:
+ *   - SSR / Server Component internal routing
+ *   - Browser public routing
+ *   - Runtime-aware API transport layer
+ *   - Unified endpoint construction
+ *
+ * DESIGN:
+ *   Browser:
+ *     https://api.domain.com/api
+ *
+ *   SSR:
+ *     http://django-v3:8000/api
+ *
  * =====================================================================
  */
 
-import { IS_SERVER } from '../config';
-import { getSiteMetadata } from '../../utils/siteConfig';
+import API_CONFIG from '../../config/api';
+import { IS_SERVER } from '../../config/api';
+
+import {
+  getSiteMetadata,
+} from '../../utils/siteConfig';
 
 /**
- * 💡 接続先URLを動的に解決
+ * =====================================================================
+ * 🌍 Build API Root
+ * =====================================================================
  */
-export const resolveApiUrl = (endpoint: string, manualHost?: string) => {
-    const identifier = manualHost || (typeof window !== 'undefined' ? window.location.hostname : '');
-    const meta = getSiteMetadata(identifier);
-    
-    const apiRoot = meta.api_base_url.replace(/\/+$/, ''); 
-    const prefix = meta.site_prefix.replace(/^\/+|\/+$/g, '').trim();
 
-    const cleanEndpoint = endpoint
-        .replace(/^api\//, '')
-        .replace(new RegExp(`^${prefix}/`), '') 
-        .replace(/^\/+|\/+$/g, ''); 
+export const buildApiRoot = (
+  manualHost?: string
+): string => {
 
-    const combinedPath = `${apiRoot}/${prefix}/${cleanEndpoint}/`.replace(/([^:]\/)\/+/g, "$1");
+  /**
+   * ===============================================================
+   * Runtime-aware transport authority
+   * ===============================================================
+   */
 
-    const [baseUrlPart, existingQuery] = combinedPath.split('?');
-    const params = new URLSearchParams(existingQuery || '');
-    const safeTag = meta.site_tag.replace(/\/+$/, '').trim();
-
-    params.set('site', safeTag);
-    params.set('site_name', safeTag);
-    params.set('site_group', meta.site_group || 'general');
-
-    return `${baseUrlPart.replace(/\/+$/, '')}/?${params.toString()}`;
+  return API_CONFIG.baseUrl
+    .replace(/\/+$/, '');
 };
 
 /**
- * 💡 Django リクエスト用ヘッダー生成
+ * =====================================================================
+ * 🔗 Build Endpoint URL
+ * =====================================================================
  */
-export const getDjangoHeaders = (manualHost?: string) => {
-    const identifier = manualHost || (typeof window !== 'undefined' ? window.location.hostname : '');
-    const meta = getSiteMetadata(identifier);
-    const siteTag = meta.site_tag.replace(/\/+$/, '').trim();
-    
-    const headers: Record<string, string> = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    };
 
-    if (IS_SERVER) {
-        headers['x-site-tag'] = siteTag;
-        headers['x-project-id'] = siteTag;
-        headers['x-site-prefix'] = meta.site_prefix;
-        headers['x-django-host'] = meta.django_host;
-        headers['Host'] = meta.django_host;
-        
-        console.log(`📡 [API-IDENTITY] Tag: ${siteTag} | Prefix: ${meta.site_prefix} | Host: ${meta.django_host}`);
-    }
+export const buildApiUrl = (
+  endpoint: string,
+  manualHost?: string
+): string => {
 
-    return headers;
+  const apiRoot =
+    buildApiRoot(manualHost);
+
+  /**
+   * Normalize endpoint
+   */
+
+  const cleanEndpoint =
+    endpoint
+      .replace(/^\/+/, '')
+      .replace(/\/+$/, '');
+
+  /**
+   * Build
+   */
+
+  return `${apiRoot}/${cleanEndpoint}`;
 };
 
 /**
- * 💡 フェッチレスポンス・セーフハンドラ
+ * =====================================================================
+ * 🧠 Build Query String
+ * =====================================================================
  */
-export async function handleResponseWithDebug(res: Response, url: string) {
-    if (IS_SERVER) {
-        const statusIcon = res.ok ? '✅' : '❌';
-        console.log(`${statusIcon} [API-FETCH] STATUS: ${res.status} | URL: ${url}`);
+
+export const buildQueryString = (
+  params: Record<string, any>
+): string => {
+
+  const searchParams =
+    new URLSearchParams();
+
+  Object.entries(params).forEach(
+    ([key, value]) => {
+
+      if (
+
+        value !== undefined &&
+
+        value !== null &&
+
+        value !== ''
+
+      ) {
+
+        searchParams.append(
+          key,
+          String(value)
+        );
+      }
     }
+  );
 
-    if (!res.ok) {
-        console.error(`🚨 [Django API Error] ${res.status} | URL: ${url}`);
-        return { results: [], count: 0, _error: res.status, is_empty: true };
-    }
+  return searchParams.toString();
+};
 
-    try {
-        const text = await res.text();
-        if (!text || text.trim().startsWith('<')) {
-            return { results: [], count: 0, _error: 'HTML_RECEIVED' };
-        }
+/**
+ * =====================================================================
+ * 🌍 Current Site Metadata
+ * =====================================================================
+ */
 
-        const data = JSON.parse(text);
-        
-        let rawResults = [];
-        if (data && typeof data === 'object' && 'results' in data) {
-            rawResults = Array.isArray(data.results) ? data.results : [];
-        } else if (Array.isArray(data)) {
-            rawResults = data;
-        } else {
-            const payload = data.data || data;
-            rawResults = Array.isArray(payload) ? payload : (payload ? [payload] : []);
-        }
+export const getCurrentSiteMetadata = (
+  manualHost?: string
+) => {
 
-        /**
-         * 🛡️ 【最重要】ダイヤモンド・サニタイズ
-         * データの深い階層で null があっても、空の構造を「強制注入」します。
-         */
-        const safeResults = rawResults.map(item => {
-            if (!item || typeof item !== 'object') return {};
+  return getSiteMetadata(manualHost);
+};
 
-            // カテゴリ・タグ・著者の深い階層まで空文字を埋める
-            const safeCategory = {
-                name: "",
-                slug: "",
-                ...(item.category && typeof item.category === 'object' ? item.category : {})
-            };
+/**
+ * =====================================================================
+ * 📡 Django Headers
+ * =====================================================================
+ */
 
-            const safeAuthor = {
-                name: "",
-                ...(item.author && typeof item.author === 'object' ? item.author : {})
-            };
+export const getDjangoHeaders = (
+  manualHost?: string
+): Record<string, string> => {
 
-            return {
-                ...item,
-                title: item.title || "",
-                content: item.content || "",
-                category: safeCategory,
-                author: safeAuthor,
-                tags: Array.isArray(item.tags) ? item.tags : [],
-                site: item.site || "",
-                created_at: item.created_at || new Date().toISOString()
-            };
-        });
+  const meta =
+    getCurrentSiteMetadata(manualHost);
 
-        return {
-            results: safeResults,
-            count: data.count || safeResults.length
-        };
+  const siteTag =
+    meta.site_tag
+      .replace(/\/+$/, '')
+      .trim();
 
-    } catch (e) {
-        console.error(`🚨 [JSON Parse Error] URL: ${url}`, e);
-        return { results: [], count: 0, _error: 'PARSE_FAILED' };
-    }
+  const headers: Record<string, string> = {
+
+    Accept: 'application/json',
+
+    'Content-Type': 'application/json',
+  };
+
+  /**
+   * ===============================================================
+   * SSR Identity Headers
+   * ===============================================================
+   */
+
+  if (IS_SERVER) {
+
+    headers['x-site-tag'] =
+      siteTag;
+
+    headers['x-project-id'] =
+      siteTag;
+
+    headers['x-site-prefix'] =
+      meta.site_prefix;
+
+    headers['x-django-host'] =
+      meta.django_host;
+
+    headers['Host'] =
+      meta.django_host;
+
+    console.log(
+
+      `📡 [API-IDENTITY] ` +
+
+      `Tag: ${siteTag} | ` +
+
+      `Prefix: ${meta.site_prefix} | ` +
+
+      `Host: ${meta.django_host}`
+
+    );
+  }
+
+  return headers;
+};
+
+/**
+ * =====================================================================
+ * 🛡️ Safe Response Handler
+ * =====================================================================
+ */
+
+export async function handleDjangoResponse<T = any>(
+
+  response: Response,
+
+  url: string
+
+): Promise<T> {
+
+  /**
+   * ===============================================================
+   * Debug Logging
+   * ===============================================================
+   */
+
+  if (IS_SERVER) {
+
+    const icon =
+      response.ok
+        ? '✅'
+        : '❌';
+
+    console.log(
+
+      `${icon} [DJANGO-API]`,
+
+      response.status,
+
+      url
+
+    );
+  }
+
+  /**
+   * ===============================================================
+   * Error Handling
+   * ===============================================================
+   */
+
+  if (!response.ok) {
+
+    const errorText =
+      await response.text();
+
+    console.error(
+
+      '❌ Django API Error:',
+
+      {
+        status: response.status,
+        url,
+        error: errorText,
+      }
+    );
+
+    throw new Error(
+      `Django API Error (${response.status})`
+    );
+  }
+
+  /**
+   * ===============================================================
+   * Safe JSON Parse
+   * ===============================================================
+   */
+
+  try {
+
+    return await response.json();
+
+  } catch (error) {
+
+    console.error(
+
+      '❌ JSON Parse Failed:',
+
+      {
+        url,
+      }
+    );
+
+    throw error;
+  }
 }
+
+/**
+ * =====================================================================
+ * 🚀 Unified Django Fetch
+ * =====================================================================
+ */
+
+export async function djangoFetch<T = any>(
+
+  endpoint: string,
+
+  options: RequestInit = {},
+
+  manualHost?: string
+
+): Promise<T> {
+
+  /**
+   * ===============================================================
+   * URL
+   * ===============================================================
+   */
+
+  const url =
+    buildApiUrl(
+      endpoint,
+      manualHost
+    );
+
+  /**
+   * ===============================================================
+   * Headers
+   * ===============================================================
+   */
+
+  const headers = {
+
+    ...getDjangoHeaders(
+      manualHost
+    ),
+
+    ...(options.headers || {}),
+  };
+
+  try {
+
+    /**
+     * ===========================================================
+     * Fetch
+     * ===========================================================
+     */
+
+    const response =
+      await fetch(url, {
+
+        ...options,
+
+        headers,
+
+        cache: 'no-store',
+      });
+
+    /**
+     * ===========================================================
+     * Handle Response
+     * ===========================================================
+     */
+
+    return await handleDjangoResponse<T>(
+      response,
+      url
+    );
+
+  } catch (error: any) {
+
+    console.error(
+
+      '❌ djangoFetch Failed:',
+
+      {
+        endpoint,
+        url,
+        message: error?.message,
+      }
+    );
+
+    throw error;
+  }
+}
+
+/**
+ * =====================================================================
+ * 📦 Unified Export
+ * =====================================================================
+ */
+
+const djangoClient = {
+
+  buildApiRoot,
+
+  buildApiUrl,
+
+  buildQueryString,
+
+  getCurrentSiteMetadata,
+
+  getDjangoHeaders,
+
+  handleDjangoResponse,
+
+  djangoFetch,
+};
+
+export default djangoClient;

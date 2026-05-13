@@ -1,16 +1,15 @@
 #!/bin/bash
 # /home/maya/dev/shin-vps/scripts/git-commit.sh
-# ==============================================================================
-# 🚀 SHIN-VPS v3 Git 統合デプロイスクリプト (WSL2 & Actions 完全対応版)
-# ==============================================================================
+# ===================================================================
+# 🚀 SHIN-VPS v3 Git 統合デプロイスクリプト（完全版）
+# ===================================================================
 
-# --- [設定] 実行ディレクトリの取得 ---
+# --- [設定] 実行環境 ---
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CURRENT_HOST=$(hostname)
 CURRENT_USER=$USER
 
-# プロジェクトルートの動的決定 (v3パスを最優先)
-# 優先順位：1. 現在のディレクトリに.gitがあるか 2. 指定の固定パス
+# プロジェクトルートの動的決定
 if [ -d "./.git" ]; then
     PROJECT_ROOT="$(pwd)"
 elif [[ -d "/home/$CURRENT_USER/dev/shin-vps" ]]; then
@@ -22,46 +21,46 @@ else
     exit 1
 fi
 
-# --- [関数] ヘルプ・注意事項の表示 ---
+# --- [関数] ヘルプ表示 ---
 show_help() {
-    echo -e "\n\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
+    echo -e "\n\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
     echo -e "📖 \e[1mSHIN-VPS v3 デプロイ管理ツール\e[0m"
-    echo -e "\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
-    echo -e "\n\e[33m【🚨 運用ルール】\e[0m"
-    echo "1. 修正は WSL2 (ローカル) で行い、本スクリプトでプッシュします。"
-    echo "2. タグ(v*)を打つことで GitHub Actions が本番 VPS へデプロイします。"
-    echo "3. 共有ディレクトリ (shared/) の変更も一括で管理します。"
-    
+    echo -e "\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
+    echo -e "\n\e[33m【運用ルール】\e[0m"
+    echo "1. 修正はローカル（WSL2等）で行い、このスクリプトで push します。"
+    echo "2. タグ(v*)を打つことで GitHub Actions が VPS へデプロイします。"
+    echo "3. shared/ 等の変更も一括で管理可能です。"
     echo -e "\n\e[32m【使用方法】\e[0m"
-    echo "  ./deploy.sh           : コミット・タグ打ちを開始"
-    echo "  ./deploy.sh -h        : ヘルプを表示"
-    echo -e "\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m\n"
+    echo "  ./git-commit.sh            : コミット・タグ打ち開始"
+    echo "  ./git-commit.sh -h         : ヘルプ表示"
+    echo "  ./git-commit.sh rollback   : 過去タグでロールバック"
+    echo "  ./git-commit.sh -t v1.0.123 : 指定タグでデプロイ"
+    echo -e "\e[36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m\n"
 }
 
 if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
     show_help; exit 0
 fi
 
-# --- [ガードレール] VPS上での実行を禁止 ---
+# --- VPS上での誤実行防止 ---
 if [[ "$CURRENT_HOST" == *"x162-43"* ]]; then
-    echo "❌ 警告: VPS (本番環境) です。デプロイはローカルから行ってください。"
+    echo "❌ 警告: VPS (本番環境) です。ローカルから実行してください。"
     exit 1
 fi
 
 cd "$PROJECT_ROOT" || { echo "❌ ディレクトリ $PROJECT_ROOT が見つかりません。"; exit 1; }
 
-# 1. SSHエージェントの確認
+# --- SSHエージェント起動 ---
 if ! ssh-add -l > /dev/null 2>&1; then
     eval "$(ssh-agent -s)" > /dev/null 2>&1
     [ -f "$HOME/.ssh/id_ed25519" ] && ssh-add "$HOME/.ssh/id_ed25519"
 fi
 
-# 2. 最新タグの取得とパッチバージョンの自動計算
+# --- タグ管理 ---
 refresh_tag() {
     git fetch --tags -f > /dev/null 2>&1
     LATEST_TAG=$(git tag -l "v*" | sort -V | tail -n1)
-    [ -z "$LATEST_TAG" ] && LATEST_TAG="v3.0.0" # v3系からスタート
-    
+    [ -z "$LATEST_TAG" ] && LATEST_TAG="v3.0.0"
     MAJOR_MINOR=$(echo "$LATEST_TAG" | cut -d. -f1-2)
     PATCH=$(echo "$LATEST_TAG" | cut -d. -f3)
     SUGGESTED_TAG="${MAJOR_MINOR}.$((PATCH + 1))"
@@ -74,18 +73,38 @@ echo "---------------------------------------"
 echo "💻 実行環境: $CURRENT_HOST"
 echo "📂 プロジェクト: $PROJECT_ROOT"
 echo "🌿 ブランチ: $BRANCH | 現在: $LATEST_TAG"
-echo "🚀 次回予定: $SUGGESTED_TAG"
+echo "🚀 推奨次回タグ: $SUGGESTED_TAG"
 echo "---------------------------------------"
 
-# 3. 変更のコミット処理
+# --- ロールバック処理 ---
+if [[ "$1" == "rollback" ]]; then
+    echo "🔄 過去タグでロールバックする場合はタグ名を指定:"
+    git tag -l "v*" | sort -V
+    read -p "タグ名: " R_TAG
+    if [[ -z "$R_TAG" ]]; then
+        echo "❌ タグが指定されませんでした。終了します。"
+        exit 1
+    fi
+    echo "⚡ ロールバック: $R_TAG"
+    git checkout "$R_TAG"
+    echo "✅ チェックアウト完了: $R_TAG"
+    exit 0
+fi
+
+# --- タグ指定オプション ---
+if [[ "$1" == "-t" ]] && [[ -n "$2" ]]; then
+    SUGGESTED_TAG="$2"
+fi
+
+# --- 変更コミット ---
 if [ -z "$(git status --porcelain)" ]; then
-    echo "✨ 差分はありません。タグ打ち確認へ進みます。"
+    echo "✨ 差分なし。タグ確認へ進みます。"
 else
     echo "📝 変更種別を選択:"
-    echo "1) feat : 新機能 (AIハンドラー追加など)"
-    echo "2) fix  : 修正 (パス調整、バグ修正)"
-    echo "3) infra: 基盤 (Docker, rebuild.sh更新)"
-    echo "4) chore: 雑用 (コメント、整理)"
+    echo "1) feat : 新機能"
+    echo "2) fix  : 修正"
+    echo "3) infra: 基盤"
+    echo "4) chore: 雑用"
     read -p "番号 (1-4): " TYPE_NUM
 
     case $TYPE_NUM in
@@ -104,7 +123,7 @@ else
     case $MSG_CHOICE in
         1) USER_MSG="SHIN-VPS v3 環境構築とスクリプトの強化" ;;
         2) USER_MSG="Shared Library のパス調整と疎通確認" ;;
-        *) read -p "メッセージを入力: " USER_MSG ;;
+        *) read -p "メッセージ入力: " USER_MSG ;;
     esac
 
     refresh_tag
@@ -116,9 +135,8 @@ else
     git push origin "$BRANCH"
 fi
 
-# 4. デプロイ（タグ打ち）セクション
-if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
-    refresh_tag
+# --- デプロイ ---
+if [[ "$BRANCH" == "main" || "$BRANCH" == "master" ]]; then
     echo -e "\n🚀 デプロイ実行確認: $SUGGESTED_TAG"
     read -p "GitHub Actions を起動して VPS へデプロイしますか？ (y/N): " DEPLOY_CONFIRM
     
@@ -136,10 +154,11 @@ if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
                 echo "💡 GitHub Actions でデプロイが開始されました。"
             fi
         else
-            echo "❌ タグの送信に失敗しました。"
+            echo "❌ タグ送信に失敗しました。"
         fi
     else
         echo "☕ 終了します（コミットのみ完了）。"
     fi  
 fi
-# saveコマンドの修正
+
+echo -e "\n✅ スクリプト終了"

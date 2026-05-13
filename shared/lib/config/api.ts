@@ -1,63 +1,205 @@
-// /shared/lib/config/api.ts
+// /home/maya/shin-vps/shared/lib/config/api.ts
+// @ts-nocheck
 
 /**
- * =========================================
- * 🔥 API BASE（SSR / CSR 完全安定版）
- * =========================================
+ * =====================================================================
+ * 🌍 SHIN CORE LINX｜Unified Runtime API Resolver
+ * =====================================================================
+ *
+ * PURPOSE:
+ *   - SSR → Docker Internal API
+ *   - Browser → Public API
+ *   - Runtime-aware transport layer
+ *
+ * DESIGN:
+ *
+ *   Browser:
+ *     https://api.domain.com/api
+ *
+ *   SSR / Server Components:
+ *     http://django-v3:8000/api
+ *
+ * =====================================================================
  */
-export function getApiBase() {
-  const isServer = typeof window === 'undefined';
-
-  let base = isServer
-    ? process.env.INTERNAL_API_URL
-    : process.env.NEXT_PUBLIC_API_URL;
-
-  // 🔥 フォールバック（超重要）
-  // if (!base) {
-  //   base = isServer
-  //     ? 'http://django-v3:8000/api'
-  //     : 'http://localhost:8083/api';
-
-  //   console.warn('[API BASE FALLBACK]', {
-  //     isServer,
-  //     base,
-  //   });
-  // }
-  if (!base) {
-    console.error('[ERROR] API BASE NOT FOUND')
-    return ''
-  }
-
-  // 🔥 最終ログ（デバッグ用）
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[API BASE]', {
-      isServer,
-      base,
-    });
-  }
-
-  return base.replace(/\/+$/, '');
-}
 
 /**
- * =========================================
- * 🔥 APIエンドポイント（完全版）
- * =========================================
+ * =====================================================================
+ * 🌍 Runtime Detection
+ * =====================================================================
  */
-export const getApiEndpoints = () => {
-  const base = getApiBase();
 
-  const endpoints = {
-    ranking: `${base}/general/pc-products/ranking/`,
+export const IS_SERVER =
+  typeof window === 'undefined';
 
-    detailByUid: (uid: string) =>
-      `${base}/products/by-uid/${uid}/`,
-  };
+export const IS_BROWSER =
+  typeof window !== 'undefined';
 
-  // 🔥 デバッグログ（重要）
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[API ENDPOINTS]', endpoints);
+/**
+ * =====================================================================
+ * 🖥️ Internal API (SSR)
+ * =====================================================================
+ */
+
+const INTERNAL_API = (
+
+  process.env.INTERNAL_API_URL ||
+
+  'http://django-v3:8000/api'
+
+).replace(/\/+$/, '');
+
+/**
+ * =====================================================================
+ * 🌐 Public API (Browser)
+ * =====================================================================
+ */
+
+const PUBLIC_API = (
+
+  process.env.NEXT_PUBLIC_API_URL ||
+
+  'http://localhost:8083/api'
+
+).replace(/\/+$/, '');
+
+/**
+ * =====================================================================
+ * 🔥 Runtime-Aware API Resolver
+ * =====================================================================
+ */
+
+export const getApiBase = (): string => {
+
+  /**
+   * ===============================================================
+   * 🖥️ SSR / Server Components
+   * ===============================================================
+   */
+
+  if (IS_SERVER) {
+
+    return INTERNAL_API;
   }
 
-  return endpoints;
+  /**
+   * ===============================================================
+   * 🌐 Browser / CSR
+   * ===============================================================
+   */
+
+  return PUBLIC_API;
 };
+
+/**
+ * =====================================================================
+ * 🔧 Normalize API URL
+ * =====================================================================
+ */
+
+export const normalizeApiUrl = (
+  url: string
+): string => {
+
+  return String(url || '')
+    .trim()
+    .replace(/\/+$/, '');
+};
+
+/**
+ * =====================================================================
+ * 🔗 Build API URL
+ * =====================================================================
+ */
+
+export const buildApiUrl = (
+  endpoint: string
+): string => {
+
+  const baseUrl =
+    normalizeApiUrl(
+      getApiBase()
+    );
+
+  const normalizedEndpoint =
+    String(endpoint || '')
+      .replace(/^\/+/, '');
+
+  return `${baseUrl}/${normalizedEndpoint}`;
+};
+
+/**
+ * =====================================================================
+ * ⚙️ Unified API Config
+ * =====================================================================
+ */
+
+export const API_CONFIG = {
+
+  /**
+   * Runtime-aware API Base
+   */
+  get baseUrl(): string {
+
+    return getApiBase();
+  },
+
+  /**
+   * Internal SSR API
+   */
+  internal: INTERNAL_API,
+
+  /**
+   * Browser Public API
+   */
+  public: PUBLIC_API,
+
+  /**
+   * Runtime Flags
+   */
+  isServer: IS_SERVER,
+
+  isBrowser: IS_BROWSER,
+
+  /**
+   * URL Builder
+   */
+  buildUrl: buildApiUrl,
+
+  /**
+   * Default Timeout
+   */
+  timeout: 10000,
+};
+
+/**
+ * =====================================================================
+ * 🔥 API Endpoints
+ * =====================================================================
+ */
+
+export const getApiEndpoints = () => {
+
+  return {
+
+    ranking:
+      buildApiUrl(
+        'general/pc-products/ranking/'
+      ),
+
+    detailByUid: (
+      uid: string
+    ) =>
+
+      buildApiUrl(
+        `products/by-uid/${uid}/`
+      ),
+  };
+};
+
+/**
+ * =====================================================================
+ * 📦 Default Export
+ * =====================================================================
+ */
+
+export default API_CONFIG;

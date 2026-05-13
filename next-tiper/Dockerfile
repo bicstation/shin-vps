@@ -2,64 +2,96 @@
 # 🚀 SHIN-VPS NEXT.JS Dockerfile (Node 20 / next-tiper 安定版)
 # =====================================================================
 
-FROM node:20-slim AS builder 
+# ---------------------------------------------------------------------
+# Stage 1: Builder
+# ---------------------------------------------------------------------
+FROM node:20-slim AS builder
 
+# Build Args
+ARG NEXT_PUBLIC_APP_TITLE
 ARG NEXT_PUBLIC_BASE_PATH
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_BASE_PATH=""
+ARG PROJECT_NAME=next-tiper
+
+ENV NEXT_PUBLIC_APP_TITLE=$NEXT_PUBLIC_APP_TITLE
+ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 WORKDIR /app
 
-# ✅ OSパッケージのセットアップ (日本ミラーへ変更して高速化)
+# ---------------------------------------------------------------------
+# OS Packages
+# ---------------------------------------------------------------------
 RUN sed -i 's|http://deb.debian.org/debian|http://ftp.jp.debian.org/debian|g' /etc/apt/sources.list || true
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends libc6 libstdc++6 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends libc6 libstdc++6 fonts-ipafont-gothic && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ✅ 1. 物理コピー（Shared 実体化方式）
-COPY next-tiper/ ./
-RUN rm -rf ./shared .next node_modules
+# ---------------------------------------------------------------------
+# Shared Library
+# ---------------------------------------------------------------------
 COPY shared/ ./shared/
 
-# ✅ 2. 依存関係のインストール（ネットワーク耐性強化）
-# npmのリトライ回数を増やし、タイムアウトを延長します
-RUN npm config set fetch-retries 5 && \
-    npm config set fetch-retry-mintimeout 20000 && \
-    npm config set fetch-retry-maxtimeout 120000 && \
-    npm cache clean --force
+# ---------------------------------------------------------------------
+# Project Source
+# ---------------------------------------------------------------------
+COPY next-tiper/ ./  
 
-# 不足ライブラリを明示的に追加しつつインストール
-RUN npm install @google/generative-ai lucide-react clsx tailwind-merge --save && \
-    npm install --include=optional
+# ---------------------------------------------------------------------
+# Cleanup previous cache
+# ---------------------------------------------------------------------
+RUN rm -rf .next .cache node_modules/.cache
 
-# ✅ 3. ビルド実行
-RUN npx next build
+# ---------------------------------------------------------------------
+# NPM Install
+# ---------------------------------------------------------------------
+RUN npm cache clean --force
+RUN npm install --include=optional --unsafe-perm=true
+RUN npm install @google/generative-ai lucide-react clsx tailwind-merge --save
 
-# --- ステージ 2: runner ---
+# ---------------------------------------------------------------------
+# Next.js Build
+# ---------------------------------------------------------------------
+RUN node node_modules/next/dist/bin/next build
+
+# ---------------------------------------------------------------------
+# Stage 2: Runner
+# ---------------------------------------------------------------------
 FROM node:20-slim AS runner
 WORKDIR /app
-ENV NODE_ENV=production
-ENV HOSTNAME "0.0.0.0"
-ENV PORT 3000
 
+ENV NODE_ENV=production
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
+
+# Runtime OS packages
 RUN apt-get update && apt-get install -y --no-install-recommends libc6 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Runtime User
 RUN addgroup --gid 1001 nodejs || true && \
     adduser --disabled-password --gecos "" --uid 1001 --gid 1001 nextjs || true
 
-# ✅ 4. 成果物の配置 (standalone モード)
+# ---------------------------------------------------------------------
+# Copy Standalone Output
+# ---------------------------------------------------------------------
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-
-# standalone配下の展開
-RUN if [ -d "./next-tiper" ]; then cp -r ./next-tiper/. . && rm -rf ./next-tiper; fi
-RUN rm -rf ./next-bicstation ./next-bic-saving ./next-avflash
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./ 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# ---------------------------------------------------------------------
+# Flatten Standalone Directory
+# ---------------------------------------------------------------------
+RUN if [ -d "./next-tiper" ]; then cp -r ./next-tiper/. . && rm -rf ./next-tiper; fi
+RUN rm -rf ./next-bicstation ./next-bic-saving ./next-avflash
+
+# ---------------------------------------------------------------------
+# Runtime User & Port
+# ---------------------------------------------------------------------
 USER nextjs
 EXPOSE 3000
 
+# ---------------------------------------------------------------------
+# Start
+# ---------------------------------------------------------------------
 CMD ["node", "server.js"]
