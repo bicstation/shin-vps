@@ -34,8 +34,8 @@ RUN apt-get update --allow-releaseinfo-change && apt-get install -y \
 WORKDIR /usr/src/app
 
 # 4. requirements.txtをコピーし、パッケージをインストール
-# 💡 修正ポイント：ルートコンテキストから django フォルダ内を指定
-COPY django/requirements.txt .
+# 🔹 修正：build.context = ./django なので、COPY は context 内で完結
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -44,9 +44,9 @@ RUN pip install --no-cache-dir playwright && \
     playwright install chromium && \
     playwright install-deps chromium
 
-# 6. Djangoプロジェクトのコード全体をコンテナにコピー
-# 💡 修正ポイント：ルートコンテキストから django フォルダの中身をコピー
-COPY django/ .
+# 6. Djangoプロジェクトのコード全体をコピー
+# 🔹 修正：context 内なので django/ プレフィックス不要
+COPY . .
 
 # 7. entrypoint.sh に実行権限を付与
 RUN chmod +x /usr/src/app/entrypoint.sh
