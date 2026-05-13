@@ -1,65 +1,62 @@
-// /shared/lib/config.ts
+// /home/maya/shin-vps/shared/lib/api/config.ts
 // @ts-nocheck
 
-import { getSiteMetadata } from '../utils/siteConfig';
+/**
+ * =====================================================================
+ * 🛰️ SHIN CORE LINX｜Legacy API Config Wrapper
+ * =====================================================================
+ *
+ * PURPOSE:
+ *   Compatibility layer only.
+ *
+ *   Runtime authority is centralized in:
+ *
+ *     /shared/lib/config/api.ts
+ *
+ * =====================================================================
+ */
 
-/** 実行環境判定 */
-export const IS_SERVER = typeof window === 'undefined';
+import API_CONFIG, {
+
+  API_CONFIG as NAMED_API_CONFIG,
+
+  IS_SERVER,
+
+  IS_BROWSER,
+
+  getApiBase,
+
+  buildApiUrl,
+
+  normalizeApiUrl,
+
+} from '../config/api';
 
 /**
- * =========================================================
- * 🌍 API 接続設定（シンプル安定版）
- * =========================================================
- * ・SSR / Client で同一URLを使う
- * ・内部URL（docker）は使わない
- * ・URL加工はしない
- * =========================================================
+ * =====================================================================
+ * 📦 Runtime Re-Exports
+ * =====================================================================
  */
-export const getWpConfig = (manualHost?: string) => {
-  // ① ホスト判定
-  const identifier =
-    manualHost ||
-    (IS_SERVER
-      ? process.env.NEXT_PUBLIC_SITE_DOMAIN
-      : window.location.hostname);
 
-  // ② メタ取得
-  const meta = getSiteMetadata(identifier || '');
+export {
 
-  // ③ baseUrl決定（最優先：siteConfig → env → fallback）
-  let baseUrl =
-    meta.api_base_url ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://localhost:8000/api';
+  IS_SERVER,
 
-  // ④ 末尾スラッシュだけ除去（これ以上いじらない）
-  baseUrl = baseUrl.replace(/\/+$/, '');
+  IS_BROWSER,
 
-  return {
-    /** APIベースURL（そのまま使う） */
-    baseUrl,
+  getApiBase,
 
-    /** Django識別用 */
-    host: meta.django_host || 'bicstation.com',
+  buildApiUrl,
 
-    /** サイト識別 */
-    siteKey: meta.site_tag || 'bicstation',
+  normalizeApiUrl,
 
-    /** prefix（既存維持） */
-    sitePrefix: meta.site_prefix,
-  };
+  NAMED_API_CONFIG as API_CONFIG,
 };
 
-/** Django base URL */
-export const getDjangoBaseUrl = () => getWpConfig().baseUrl;
+/**
+ * =====================================================================
+ * 📦 Default Export
+ * =====================================================================
+ */
 
-/** API共通設定 */
-export const API_CONFIG = {
-  get djangoBase() {
-    return getDjangoBaseUrl();
-  },
-  get wp() {
-    return getWpConfig();
-  },
-  timeout: 10000,
-};
+export default API_CONFIG;

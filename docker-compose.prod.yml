@@ -100,7 +100,7 @@ services:
       POSTGRES_DB: ${DB_NAME}
 
     volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
 
     shm_size: 256mb
 
@@ -388,9 +388,9 @@ services:
 # ==============================================================================
 # VOLUMES
 # ==============================================================================
-volumes:
+# volumes:
 
-  postgres_data_prod:
+#   ${POSTGRES_DATA_PATH}:
 
 # ==============================================================================
 # NETWORKS
@@ -401,4 +401,5 @@ networks:
     driver: bridge
 
   shared-proxy:
+    name: shin-vps_shared-proxy
     external: true
