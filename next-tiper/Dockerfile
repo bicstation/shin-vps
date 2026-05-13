@@ -19,7 +19,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # ✅ 1. 物理コピー（Shared 実体化方式）
-COPY next-tiper/ ./
+COPY . .
 RUN rm -rf ./shared .next node_modules
 COPY shared/ ./shared/
 

@@ -1,3 +1,5 @@
+# /home/maya/shin-vps/next-bic-saving/Dockerfile
+
 # =====================================================================
 # 🚀 SHIN-VPS NEXT.JS Dockerfile (Node 20 / next-bic-saving 専用)
 # =====================================================================
@@ -32,7 +34,7 @@ RUN apt-get update && \
 # ✅ 1. ファイルの物理コピー
 # 💡 注意: shared の取り扱い
 # アプリ本体をコピーする際、もし古いリンク形式のsharedが含まれていれば削除
-COPY next-bic-saving/ ./
+COPY . .
 RUN rm -rf ./shared
 
 # ルートの shared フォルダを「実体」として /app/shared にコピー

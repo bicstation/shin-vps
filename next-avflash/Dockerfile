@@ -1,3 +1,5 @@
+# /home/maya/shin-vps/next-avflash/Dockerfile
+
 # =====================================================================
 # 🚀 SHIN-VPS NEXT.JS 共通 Dockerfile (Node 20 / Shared Library 物理同期版)
 # =====================================================================
@@ -28,7 +30,7 @@ COPY shared/ ./shared/
 
 # 💡 2. アプリ本体のコピー (プロジェクト名を変数で受ける)
 # ※ docker-compose の context: . を前提
-COPY ${PROJECT_NAME}/ ./
+COPY . .
 
 # 💡 3. 依存関係のインストール
 # shared フォルダが既に ./shared にあるため、依存解決がスムーズに進みます

@@ -26,7 +26,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # ✅ 1. ファイルのコピーと Shared の実体化
-COPY next-bicstation/ ./
+COPY . .
 RUN rm -rf ./shared
 COPY shared/ ./shared/
 
