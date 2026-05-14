@@ -51,7 +51,8 @@ RUN pip install --no-cache-dir playwright && \
 COPY . .
 
 # 8. entrypoint.sh に実行権限を付与
-RUN chmod +x /usr/src/app/entrypoint.sh
+# RUN chmod +x /usr/src/app/entrypoint.sh
+RUN chmod +x /usr/src/app/django/entrypoint.sh
 
 # 9. Django デフォルトポート
 EXPOSE 8000

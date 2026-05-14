@@ -25,7 +25,7 @@ import NavigationSection
 
 type Props = {
 
-  type: string
+  slug: string
 
   products: any[]
 }

@@ -1,3 +1,4 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/pc-finder/page.tsx
 'use client'
 
 /* =========================================

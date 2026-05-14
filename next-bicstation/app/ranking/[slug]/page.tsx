@@ -1,6 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
+import type {
+  Metadata,
+} from 'next'
+
 import styles
   from './page.module.css'
 
@@ -48,6 +52,84 @@ type Props = {
 ========================================= */
 
 export const revalidate = 60
+
+/* =========================================
+🔥 SEO METADATA
+========================================= */
+
+export async function
+generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+
+  const slug =
+    params?.slug
+    || 'score'
+
+  // ======================================
+  // TITLE
+  // ======================================
+
+  const title =
+
+    `${slug}向けおすすめPCランキング | BIC STATION`
+
+  // ======================================
+  // DESCRIPTION
+  // ======================================
+
+  const description =
+
+    `${slug}用途におすすめのPCを比較。初心者でも選びやすい人気モデルを紹介します。`
+
+  // ======================================
+  // CANONICAL
+  // ======================================
+
+  const canonical =
+
+    `https://bicstation.com/ranking/${slug}`
+
+  return {
+
+    title,
+
+    description,
+
+    alternates: {
+      canonical,
+    },
+
+    openGraph: {
+
+      title,
+
+      description,
+
+      url:
+        canonical,
+
+      siteName:
+        'BIC STATION',
+
+      locale:
+        'ja_JP',
+
+      type:
+        'website',
+    },
+
+    twitter: {
+
+      card:
+        'summary_large_image',
+
+      title,
+
+      description,
+    },
+  }
+}
 
 /* =========================================
 🔥 PAGE

@@ -1,6 +1,6 @@
 # ======================================================================
 # 🚀 SHIN CORE LINX｜Production Docker Compose
-# 🚀 FINAL STABLE MONOREPO EDITION
+# 🚀 FINAL STABLE DOMAIN ROUTING EDITION
 # ======================================================================
 
 services:
@@ -10,22 +10,30 @@ services:
   # ===================================================================
   postgres-db-v3:
     image: postgres:15-alpine
+
     container_name: postgres-db-v3
+
     restart: always
+
     env_file:
       - .env.production
+
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+
     volumes:
       - /home/maya/docker_volumes/postgres:/var/lib/postgresql/data
+
     shm_size: 256mb
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       retries: 5
       timeout: 5s
+
     networks:
       - shared-proxy
 
@@ -34,20 +42,27 @@ services:
   # ===================================================================
   django-v3:
     container_name: django-v3
+
     build:
       context: ./django
       dockerfile: Dockerfile
+
     restart: always
+
     env_file:
       - .env.production
+
     depends_on:
       postgres-db-v3:
         condition: service_healthy
+
     networks:
       - shared-proxy
+
     volumes:
       - ./django:/usr/src/app
       - ./django/media:/usr/src/app/media
+
     command: >
       sh -c "
       python manage.py migrate &&
@@ -57,135 +72,229 @@ services:
       --workers 3
       "
 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      # ===============================================================
+      # API ROUTING
+      # ===============================================================
+      - 'traefik.http.routers.api.rule=Host(`api.bicstation.com`) || Host(`api.bic-saving.com`) || Host(`api.tiper.live`) || Host(`api.avflash.xyz`)'
+
+      - "traefik.http.routers.api.entrypoints=web"
+
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+
   # ===================================================================
   # 3. NEXT｜BICSTATION
   # ===================================================================
   next-bicstation-v3:
     container_name: next-bicstation-v3
+
     build:
       context: ./
       dockerfile: shared/docker/NextJS.Dockerfile
+
       args:
         PROJECT_NAME: next-bicstation
         NEXT_PUBLIC_APP_TITLE: "BICSTATION"
         NEXT_PUBLIC_BASE_PATH: ""
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        INTERNAL_API_URL: http://django-v3:8000
+        NEXT_PUBLIC_API_URL: https://api.bicstation.com/api
+        INTERNAL_API_URL: http://django-v3:8000/api
+
     restart: always
+
     env_file:
       - .env.production
+
     depends_on:
       - django-v3
+
     networks:
       - shared-proxy
-    ports:
-      - "3000:3000"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      # ===============================================================
+      # DOMAIN ROUTING
+      # ===============================================================
+      - 'traefik.http.routers.bicstation.rule=Host(`bicstation.com`) || Host(`www.bicstation.com`)'
+
+      - "traefik.http.routers.bicstation.entrypoints=web"
+
+      - "traefik.http.services.bicstation.loadbalancer.server.port=3000"
 
   # ===================================================================
   # 4. NEXT｜BIC SAVING
   # ===================================================================
   next-bic-saving-v3:
     container_name: next-bic-saving-v3
+
     build:
       context: ./
       dockerfile: shared/docker/NextJS.Dockerfile
+
       args:
         PROJECT_NAME: next-bic-saving
         NEXT_PUBLIC_APP_TITLE: "BIC SAVING"
         NEXT_PUBLIC_BASE_PATH: ""
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        INTERNAL_API_URL: http://django-v3:8000
+        NEXT_PUBLIC_API_URL: https://api.bic-saving.com/api
+        INTERNAL_API_URL: http://django-v3:8000/api
+
     restart: always
+
     env_file:
       - .env.production
+
     depends_on:
       - django-v3
+
     networks:
       - shared-proxy
-    ports:
-      - "3001:3000"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      - 'traefik.http.routers.bicsaving.rule=Host(`bic-saving.com`) || Host(`www.bic-saving.com`)'
+
+      - "traefik.http.routers.bicsaving.entrypoints=web"
+
+      - "traefik.http.services.bicsaving.loadbalancer.server.port=3000"
 
   # ===================================================================
   # 5. NEXT｜TIPER
   # ===================================================================
   next-tiper-v3:
     container_name: next-tiper-v3
+
     build:
       context: ./
       dockerfile: shared/docker/NextJS.Dockerfile
+
       args:
         PROJECT_NAME: next-tiper
         NEXT_PUBLIC_APP_TITLE: "TIPER"
         NEXT_PUBLIC_BASE_PATH: ""
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        INTERNAL_API_URL: http://django-v3:8000
+        NEXT_PUBLIC_API_URL: https://api.tiper.live/api
+        INTERNAL_API_URL: http://django-v3:8000/api
+
     restart: always
+
     env_file:
       - .env.production
+
     depends_on:
       - django-v3
+
     networks:
       - shared-proxy
-    ports:
-      - "3002:3000"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      - 'traefik.http.routers.tiper.rule=Host(`tiper.live`) || Host(`www.tiper.live`)'
+
+      - "traefik.http.routers.tiper.entrypoints=web"
+
+      - "traefik.http.services.tiper.loadbalancer.server.port=3000"
 
   # ===================================================================
   # 6. NEXT｜AVFLASH
   # ===================================================================
   next-avflash-v3:
     container_name: next-avflash-v3
+
     build:
       context: ./
       dockerfile: shared/docker/NextJS.Dockerfile
+
       args:
         PROJECT_NAME: next-avflash
         NEXT_PUBLIC_APP_TITLE: "AVFLASH"
         NEXT_PUBLIC_BASE_PATH: ""
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        INTERNAL_API_URL: http://django-v3:8000
+        NEXT_PUBLIC_API_URL: https://api.avflash.xyz/api
+        INTERNAL_API_URL: http://django-v3:8000/api
+
     restart: always
+
     env_file:
       - .env.production
+
     depends_on:
       - django-v3
+
     networks:
       - shared-proxy
-    ports:
-      - "3003:3000"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      - 'traefik.http.routers.avflash.rule=Host(`avflash.xyz`) || Host(`www.avflash.xyz`)'
+
+      - "traefik.http.routers.avflash.entrypoints=web"
+
+      - "traefik.http.services.avflash.loadbalancer.server.port=3000"
 
   # ===================================================================
   # 7. Media / Static Proxy
   # ===================================================================
   nginx-media:
     image: nginx:alpine
+
     container_name: nginx-media
+
     restart: always
-    ports:
-      - "8080:80"
+
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./django/media:/usr/src/app/media
+
     networks:
       - shared-proxy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=shared-proxy"
+
+      - 'traefik.http.routers.media.rule=Host(`media.bicstation.com`) || Host(`media.bic-saving.com`) || Host(`media.tiper.live`) || Host(`media.avflash.xyz`)'
+
+      - "traefik.http.routers.media.entrypoints=web"
+
+      - "traefik.http.services.media.loadbalancer.server.port=80"
 
   # ===================================================================
   # 8. Traefik Reverse Proxy
   # ===================================================================
   traefik-proxy:
     image: traefik:v2.11
+
     container_name: traefik-proxy
+
     restart: always
+
     command:
-      - "--api.insecure=true"
+      - "--api.dashboard=true"
+
       - "--providers.docker=true"
+
       - "--providers.docker.exposedbydefault=false"
+
       - "--entrypoints.web.address=:80"
+
       - "--entrypoints.websecure.address=:443"
+
     ports:
       - "80:80"
       - "443:443"
+
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+
     networks:
       - shared-proxy
 
@@ -196,7 +305,7 @@ volumes:
   postgres_data_prod:
 
 # ===================================================================
-# Networks (自動作成)
+# Networks
 # ===================================================================
 networks:
   shared-proxy:

@@ -19,7 +19,7 @@ import RankingHero
 
 type Props = {
 
-  type: string
+  slug: string
 
   topProduct: any
 }
