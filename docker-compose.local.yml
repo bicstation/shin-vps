@@ -1,0 +1,183 @@
+# ==============================================================================
+# 🚀 SHIN CORE LINX｜LOCAL OVERRIDE COMPOSE
+# Local Development Runtime
+# ==============================================================================
+
+services:
+
+  # ============================================================================
+  # Traefik Local Proxy
+  # ============================================================================
+  traefik:
+    image: traefik:v2.11
+
+    container_name: traefik-proxy-v3
+
+    restart: unless-stopped
+
+    command:
+      - "--api.dashboard=true"
+
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=shared-proxy"
+
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.dashboard.address=:8080"
+
+    ports:
+      - "8083:80"
+      - "8085:8080"
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+    networks:
+      - shared-proxy
+
+  # ============================================================================
+  # Django Local Override
+  # ============================================================================
+  django-v3:
+
+    env_file:
+      - .env.local
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      DEBUG: "True"
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.docker.network=shared-proxy"
+
+      - "traefik.http.routers.django.rule=PathPrefix(`/api`)"
+
+      - "traefik.http.routers.django.entrypoints=web"
+
+      - "traefik.http.services.django.loadbalancer.server.port=8000"
+
+  # ============================================================================
+  # Media Server
+  # ============================================================================
+  nginx-media:
+    image: nginx:alpine
+
+    container_name: nginx-media
+
+    restart: unless-stopped
+
+    volumes:
+      - ./django/media:/usr/src/app/media
+      - ./nginx/media.conf:/etc/nginx/conf.d/default.conf
+
+    networks:
+      - shared-proxy
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.http.routers.media.rule=PathPrefix(`/media/`)"
+
+      - "traefik.http.routers.media.entrypoints=web"
+
+      - "traefik.http.services.media.loadbalancer.server.port=80"
+
+  # ============================================================================
+  # Bicstation Local
+  # ============================================================================
+  next-bicstation-v3:
+
+    env_file:
+      - .env.local
+
+    ports:
+      - "3001:3000"
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.docker.network=shared-proxy"
+
+      - "traefik.http.routers.bicstation.rule=Host(`bicstation-host`)"
+
+      - "traefik.http.routers.bicstation.entrypoints=web"
+
+      - "traefik.http.services.bicstation.loadbalancer.server.port=3000"
+
+  # ============================================================================
+  # Bic Saving Local
+  # ============================================================================
+  next-bic-saving-v3:
+
+    env_file:
+      - .env.local
+
+    ports:
+      - "3002:3000"
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.docker.network=shared-proxy"
+
+      - "traefik.http.routers.saving.rule=Host(`saving-host`)"
+
+      - "traefik.http.routers.saving.entrypoints=web"
+
+      - "traefik.http.services.saving.loadbalancer.server.port=3000"
+
+  # ============================================================================
+  # Tiper Local
+  # ============================================================================
+  next-tiper-v3:
+
+    env_file:
+      - .env.local
+
+    ports:
+      - "3003:3000"
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.docker.network=shared-proxy"
+
+      - "traefik.http.routers.tiper.rule=Host(`tiper-host`)"
+
+      - "traefik.http.routers.tiper.entrypoints=web"
+
+      - "traefik.http.services.tiper.loadbalancer.server.port=3000"
+
+  # ============================================================================
+  # AVFlash Local
+  # ============================================================================
+  next-avflash-v3:
+
+    env_file:
+      - .env.local
+
+    ports:
+      - "3004:3000"
+
+    labels:
+      - "traefik.enable=true"
+
+      - "traefik.docker.network=shared-proxy"
+
+      - "traefik.http.routers.avflash.rule=Host(`avflash-host`)"
+
+      - "traefik.http.routers.avflash.entrypoints=web"
+
+      - "traefik.http.services.avflash.loadbalancer.server.port=3000"
+
+# ==============================================================================
+# Networks
+# ==============================================================================
+networks:
+
+  shared-proxy:
+    external: true
