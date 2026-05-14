@@ -1,21 +1,41 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* 1. レイアウトとモバイル最適化 (全サイト共通) */
-/* Tailwind v4では @layer base の代わりに @theme 内や標準的なCSSとして記述します */
-@theme {
-  /* サイトごとのテーマカラー変数のデフォルト値を定義 */
+/* =====================================================================
+   🌐 SHIN CORE LINX｜Global Styles
+   TailwindCSS v3 Stable Edition
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Theme Variables
+   --------------------------------------------------------------------- */
+:root {
   --site-theme-color: #3b82f6;
 }
 
-/* 基本スタイルのリセットと設定 */
+
+/* =====================================================================
+   1. Base Layout / Reset
+   ===================================================================== */
 @layer base {
-  html, body {
+
+  html,
+  body {
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
+
     width: 100%;
-    -webkit-text-size-adjust: 100%; /* iOSの勝手なフォントサイズ変更を防止 */
     min-height: 100vh;
+
+    overflow-x: hidden;
+
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: #0f172a;
+    color: #f8fafc;
   }
 
   main {
@@ -24,10 +44,9 @@
     overflow-x: hidden;
   }
 
-  /* タップ時の青い枠線を消す */
   * {
-    -webkit-tap-highlight-color: transparent;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
   }
 
   a {
@@ -35,47 +54,77 @@
     text-decoration: none;
     transition: opacity 0.2s ease;
   }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
 }
 
-/* 2. 共通アニメーション */
+
+/* =====================================================================
+   2. Common Animation
+   ===================================================================== */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-in {
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
-/* 3. 記事・リッチテキスト表示用 (wp-content) */
+
+/* =====================================================================
+   3. Rich Text / WordPress Content
+   ===================================================================== */
 .wp-content {
+
+  line-height: 1.8;
+
   word-break: break-word;
   overflow-wrap: break-word;
-  line-height: 1.8;
 }
 
 .wp-content a {
-  /* Tailwind v4の変数参照形式 */
   color: var(--site-theme-color);
   text-decoration: underline;
 }
 
 .wp-content img {
-  max-width: 100%;
-  height: auto;
   border-radius: 8px;
 }
 
-/* 4. スマホ対応 (メディアクエリ) */
-/* Tailwind v4 では @media の代わりに @variant などの指定も可能ですが、
-   既存のメディアクエリの書き方も標準 CSS として有効です。 */
+.wp-content table {
+
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+
+/* =====================================================================
+   4. Mobile Responsive
+   ===================================================================== */
 @media (max-width: 768px) {
+
   .wp-content {
     font-size: 1rem;
   }
-  
+
   .wp-content h2 {
+
     font-size: 1.4rem !important;
+
     margin: 1.5em 0 0.8em !important;
   }
 
@@ -83,36 +132,46 @@
     font-size: 1.25rem !important;
   }
 
-  /* スマホでテーブルがはみ出さないように横スクロールを許可 */
   .wp-content table {
+
     display: block;
+
     overflow-x: auto;
+
     white-space: nowrap;
+
     -webkit-overflow-scrolling: touch;
-    border-collapse: collapse;
-    width: 100%;
   }
 }
 
 
-/* 記事本文内の装飾ルール */
+/* =====================================================================
+   5. Article Content Decoration
+   ===================================================================== */
 .post-content-container {
+
   line-height: 1.8;
-  color: #f3f4f6; /* ダークモード用テキスト色 */
+
+  color: #f3f4f6;
 }
 
-/* 変数を使用した動的な装飾 */
 .post-content-container h2 {
-  border-left: 5px solid var(--site-theme-color);
-  padding-left: 15px;
+
   margin-top: 2.5rem;
+
+  padding-left: 15px;
+
+  border-left: 5px solid var(--site-theme-color);
+
   font-weight: 800;
 }
 
 .post-content-container a {
+
   color: var(--site-theme-color);
-  text-decoration: none;
+
   border-bottom: 1px solid transparent;
+
   transition: border-color 0.2s;
 }
 

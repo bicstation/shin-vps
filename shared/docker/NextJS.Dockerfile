@@ -7,7 +7,7 @@
 # Stage 1: Builder
 # =====================================================================
 FROM node:20-slim AS builder
-
+ENV NODE_ENV=development
 # ---------------------------------------------------------------------
 # Build Arguments
 # ---------------------------------------------------------------------
@@ -36,7 +36,7 @@ ENV NEXT_PUBLIC_DEBUG_MODE=${NEXT_PUBLIC_DEBUG_MODE}
 
 ENV INTERNAL_API_URL=${INTERNAL_API_URL}
 
-ENV NODE_ENV=production
+# ENV NODE_ENV=production
 ENV NEXT_PRIVATE_STANDALONE=true
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -86,6 +86,8 @@ RUN npm install \
     --progress=false \
     --unsafe-perm=true
 
+RUN cat package.json
+RUN echo $NODE_ENV
 # =====================================================================
 # Shared Semantic Layer
 # =====================================================================
