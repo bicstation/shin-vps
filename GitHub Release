@@ -1,0 +1,174 @@
+<!-- /home/maya/shin-dev/shin-vps/GitHub Release -->
+
+# 🚀 SHIN CORE LINX v1.1.0
+Production Runtime Stabilization Release
+
+Release Date: 2026-05-15
+
+---
+
+# 🎉 Overview
+
+SHIN CORE LINX has officially transitioned from an experimental local runtime into a production-ready semantic multi-domain platform.
+
+This release establishes the first stable production deployment pipeline and operational shared runtime architecture.
+
+---
+
+# ✅ Major Milestones
+
+## Production Deployment Pipeline Completed
+
+Successfully implemented:
+
+- GitHub Actions CI/CD
+- VPS automated deployment
+- SCP secure upload workflow
+- Docker rebuild orchestration
+- Automated migrations
+- Static file deployment
+- Runtime health checks
+
+---
+
+## Multi-Domain Runtime Operational
+
+Production runtime stabilized across:
+
+- bicstation.com
+- bic-saving.com
+- tiper.live
+- avflash.xyz
+
+---
+
+## Next.js 15 Runtime Stabilization
+
+Resolved critical App Router runtime issues:
+
+- SSR hydration failures
+- Dynamic import instability
+- Shared runtime crashes
+- Client/server boundary issues
+- Standalone Docker runtime issues
+
+---
+
+## Shared Runtime Architecture
+
+Shared infrastructure introduced:
+
+```text
+shared/
+├── components/
+├── layout/
+├── lib/
+├── styles/
+```
+
+This enables reusable semantic rendering across all frontend domains.
+
+---
+
+# 📚 Guide System Introduced
+
+New semantic guide platform added.
+
+Implemented guides:
+
+- AI PC Guide
+- Gaming PC Guide
+- CPU Beginner Guide
+- Laptop vs Desktop Guide
+- Cost Performance Guide
+- Video Editing Guide
+- Beginner PC Selection Guide
+
+---
+
+# 🌐 Infrastructure Status
+
+Operational:
+
+- Django backend
+- PostgreSQL database
+- Next.js frontend runtime
+- Traefik reverse proxy
+- SSL routing
+- Shared Docker network
+
+---
+
+# 🔧 Important Fixes
+
+## Frontend Runtime
+
+- Fixed `useContext` prerender crashes
+- Fixed `useState` runtime failures
+- Fixed App Router runtime instability
+- Fixed shared alias resolution issues
+- Fixed dynamic sidebar rendering crashes
+
+---
+
+## Deployment
+
+- Fixed Docker compose layering issues
+- Fixed runtime cleanup failures
+- Fixed production health check routing
+- Fixed standalone packaging failures
+
+---
+
+# 🎯 Strategic Direction
+
+SHIN CORE LINX is evolving into:
+
+```text
+AI-native semantic discovery platform
+```
+
+Core concepts:
+
+- Semantic backend authority
+- Human-readable frontend rendering
+- Ranking-driven navigation
+- AI-assisted discovery workflows
+- Shared multi-domain runtime
+
+---
+
+# 🔮 Next Focus
+
+## SEO Expansion
+
+- Guide scaling
+- Internal linking
+- Search Console optimization
+- OGP optimization
+- Structured data support
+
+---
+
+## AI Platform Expansion
+
+- Shared concierge runtime
+- Semantic finder expansion
+- AI-assisted navigation
+- Automated guide generation
+
+---
+
+# 🏁 Conclusion
+
+v1.1.0 represents the first stable operational release of SHIN CORE LINX.
+
+The platform now possesses:
+
+- Stable production deployment
+- Automated CI/CD workflow
+- Shared semantic runtime
+- Multi-domain infrastructure
+- Production-grade operational pipeline
+
+This release establishes the foundation for future semantic AI platform expansion.
