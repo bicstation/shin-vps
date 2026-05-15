@@ -214,11 +214,11 @@ jobs:
             echo ""
             echo "🩺 Running Health Checks..."
 
-            curl -f http://localhost/api/status/ || exit 1
+            curl -k -f https://api.bicstation.com/admin/ || exit 1
 
-            echo "✅ Django API OK"
+            echo "✅ Django Admin OK"
 
-            curl -f http://localhost/ || exit 1
+            curl -k -f https://bicstation.com/ || exit 1
 
             echo "✅ Frontend OK"
 
