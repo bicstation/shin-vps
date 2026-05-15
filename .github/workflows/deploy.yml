@@ -17,7 +17,9 @@ jobs:
       PROJECT_NAME: shin-vps
       DEPLOY_PATH: /home/maya/shin-vps
 
-      COMPOSE_FILE: docker-compose.prod.yml
+      BASE_COMPOSE: docker-compose.yml
+      PROD_COMPOSE: docker-compose.prod.yml
+
       ENV_FILE: .env.production
 
     steps:
@@ -57,6 +59,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.7
 
         with:
+
           host: ${{ secrets.SSH_HOST }}
 
           username: ${{ secrets.SSH_USER }}
@@ -144,6 +147,7 @@ jobs:
             docker compose \
               -p shin-vps \
               --env-file .env.production \
+              -f docker-compose.yml \
               -f docker-compose.prod.yml \
               build \
               --parallel \
@@ -161,6 +165,7 @@ jobs:
             docker compose \
               -p shin-vps \
               --env-file .env.production \
+              -f docker-compose.yml \
               -f docker-compose.prod.yml \
               up -d \
               --remove-orphans \
@@ -178,6 +183,7 @@ jobs:
             docker compose \
               -p shin-vps \
               --env-file .env.production \
+              -f docker-compose.yml \
               -f docker-compose.prod.yml \
               exec -T django-v3 \
               python manage.py migrate --noinput
@@ -194,6 +200,7 @@ jobs:
             docker compose \
               -p shin-vps \
               --env-file .env.production \
+              -f docker-compose.yml \
               -f docker-compose.prod.yml \
               exec -T django-v3 \
               python manage.py collectstatic --noinput
@@ -216,7 +223,7 @@ jobs:
             echo "✅ Frontend OK"
 
             # ==================================================
-            # 📊 Status
+            # 📊 Container Status
             # ==================================================
 
             echo ""
@@ -225,11 +232,12 @@ jobs:
             docker compose \
               -p shin-vps \
               --env-file .env.production \
+              -f docker-compose.yml \
               -f docker-compose.prod.yml \
               ps
 
             # ==================================================
-            # 📄 Logs
+            # 📄 Runtime Logs
             # ==================================================
 
             echo ""
