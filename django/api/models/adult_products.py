@@ -37,9 +37,13 @@ class FanzaFloorMaster(models.Model):
         return f"[{self.site_code}:{status}] {self.service_name} > {self.floor_name}"
 
 # ==========================================================================
-# 1. 作品属性（ドメイン隔離対応版）
+# 1. 作品属性（Semantic Runtime Unified Version）
 # ==========================================================================
 class AdultAttribute(models.Model):
+
+    # ----------------------------------------------------------------------
+    # Legacy Classification Types
+    # ----------------------------------------------------------------------
     TYPE_CHOICES = [
         ('body', '身体的特徴'),
         ('style', '作品スタイル'),
@@ -48,27 +52,141 @@ class AdultAttribute(models.Model):
         ('event', '販売形態・催事'),
         ('actor_type', '出演者タイプ'),
     ]
-    attr_type = models.CharField('属性タイプ', max_length=20, choices=TYPE_CHOICES, db_index=True)
-    name = models.CharField('表示名', max_length=100)
-    slug = models.CharField('スラッグ', max_length=100, unique=True, db_index=True)
-    search_keywords = models.TextField('抽出キーワード', blank=True)
-    order = models.PositiveIntegerField('表示順', default=0)
 
-    # 💡 勝利の鍵：PCサイトとの混同を防ぐための明示的フラグ
-    is_adult = models.BooleanField(
-        'アダルト属性フラグ', 
-        default=True, 
+    # ----------------------------------------------------------------------
+    # Legacy Classification Layer
+    # ----------------------------------------------------------------------
+    attr_type = models.CharField(
+        '属性タイプ',
+        max_length=20,
+        choices=TYPE_CHOICES,
         db_index=True,
-        help_text="Trueに固定。Bic Station側の属性マスタ同期から除外するための識別子です。"
     )
 
+    name = models.CharField(
+        '表示名',
+        max_length=100,
+    )
+
+    slug = models.CharField(
+        'スラッグ',
+        max_length=100,
+        unique=True,
+        db_index=True,
+    )
+
+    search_keywords = models.TextField(
+        '抽出キーワード',
+        blank=True,
+    )
+
+    order = models.PositiveIntegerField(
+        '表示順',
+        default=0,
+    )
+
+    # ----------------------------------------------------------------------
+    # 🚀 Semantic Metadata Layer
+    # SHIN CORE LINX Unified Semantic Authority
+    # ----------------------------------------------------------------------
+
+    semantic_role = models.CharField(
+        'Semantic Role',
+        max_length=100,
+        blank=True,
+        default='',
+        db_index=True,
+        help_text=(
+            'semantic runtime role '
+            '(ranking / finder / seo / related / concierge)'
+        ),
+    )
+
+    semantic_weight = models.FloatField(
+        'Semantic Weight',
+        default=1.0,
+        help_text='semantic ranking/discovery weight',
+    )
+
+    icon = models.CharField(
+        'Icon',
+        max_length=100,
+        blank=True,
+        default='',
+        help_text='frontend semantic icon key',
+    )
+
+    color = models.CharField(
+        'Color',
+        max_length=50,
+        blank=True,
+        default='',
+        help_text='frontend semantic color token',
+    )
+
+    is_ranking_enabled = models.BooleanField(
+        'ランキング有効',
+        default=False,
+        db_index=True,
+        help_text='ranking runtime eligibility',
+    )
+
+    # ----------------------------------------------------------------------
+    # Domain Isolation Flag
+    # ----------------------------------------------------------------------
+    is_adult = models.BooleanField(
+        'アダルト属性フラグ',
+        default=True,
+        db_index=True,
+        help_text=(
+            'True固定。'
+            'PC semantic authority と混在しないためのドメイン識別'
+        ),
+    )
+
+    # ----------------------------------------------------------------------
+    # Metadata
+    # ----------------------------------------------------------------------
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    # ----------------------------------------------------------------------
+    # Meta
+    # ----------------------------------------------------------------------
     class Meta:
+        db_table = 'adult_attribute'
+
         verbose_name = '作品属性'
         verbose_name_plural = '作品属性一覧'
-        ordering = ['attr_type', 'order', 'name']
 
+        ordering = [
+            'attr_type',
+            'order',
+            'name',
+        ]
+
+        indexes = [
+            models.Index(fields=['attr_type', 'order']),
+            models.Index(fields=['semantic_role']),
+            models.Index(fields=['is_ranking_enabled']),
+            models.Index(fields=['slug']),
+        ]
+
+    # ----------------------------------------------------------------------
+    # Display
+    # ----------------------------------------------------------------------
     def __str__(self):
-        return f"🔞 [{self.get_attr_type_display()}] {self.name}"
+        return (
+            f"🔞 "
+            f"[{self.get_attr_type_display()}] "
+            f"{self.name}"
+        )
+
 
 # ==========================================================================
 # 2. 統合アダルト商品モデル（複合インデックス高速化版）

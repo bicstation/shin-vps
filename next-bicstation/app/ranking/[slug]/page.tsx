@@ -180,6 +180,138 @@ RankingPage({
   }
 
   // ======================================
+  // ITEM LIST SCHEMA
+  // ======================================
+
+  const itemListSchema = {
+
+    '@context':
+      'https://schema.org',
+
+    '@type':
+      'ItemList',
+
+    name:
+      `${slug}向けおすすめPCランキング`,
+
+    itemListElement:
+
+      products.map(
+        (
+          product,
+          index
+        ) => ({
+
+          '@type':
+            'ListItem',
+
+          position:
+            index + 1,
+
+          url:
+            `https://bicstation.com/pc/${product.unique_id}`,
+        })
+      ),
+  }
+
+  const breadcrumbSchema = {
+
+    '@context':
+      'https://schema.org',
+
+    '@type':
+      'BreadcrumbList',
+
+    itemListElement: [
+
+      {
+        '@type':
+          'ListItem',
+
+        position: 1,
+
+        name:
+          'ホーム',
+
+        item:
+          'https://bicstation.com',
+      },
+
+      {
+        '@type':
+          'ListItem',
+
+        position: 2,
+
+        name:
+          'ランキング',
+
+        item:
+          'https://bicstation.com/ranking/score',
+      },
+
+      {
+        '@type':
+          'ListItem',
+
+        position: 3,
+
+        name:
+          `${slug}向けPC`,
+
+        item:
+          `https://bicstation.com/ranking/${slug}`,
+      },
+    ],
+  }
+
+  const faqSchema = {
+
+    '@context':
+      'https://schema.org',
+
+    '@type':
+      'FAQPage',
+
+    mainEntity: [
+
+      {
+        '@type':
+          'Question',
+
+        name:
+          `${slug}向けPCは初心者でも使えますか？`,
+
+        acceptedAnswer: {
+
+          '@type':
+            'Answer',
+
+          text:
+            '用途別におすすめ構成を比較しているため、初心者でも選びやすくなっています。',
+        },
+      },
+
+      {
+        '@type':
+          'Question',
+
+        name:
+          `${slug}用途ではGPU性能が重要ですか？`,
+
+        acceptedAnswer: {
+
+          '@type':
+            'Answer',
+
+          text:
+            'AI画像生成・ゲーム・動画編集などではGPU性能が快適性へ大きく影響します。',
+        },
+      },
+    ],
+  }
+
+  // ======================================
   // DEBUG
   // ======================================
 
@@ -261,43 +393,75 @@ RankingPage({
 
   return (
 
-    <main
-      className={
-        styles.page
-      }
-    >
+    <>
 
-      <RankingLayout>
+      {/* ==================================
+      STRUCTURED DATA
+      ================================== */}
 
-        {/* ==================================
-        SEMANTIC FLOW
-        semantic discovery layer
-        ================================== */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            JSON.stringify(
+              itemListSchema
+            ),
+        }}
+      />
 
-        <RankingSemanticFlow
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            JSON.stringify(
+              breadcrumbSchema
+            ),
+        }}
+      />
 
-          slug={slug}
+       <script
+        t
+        
 
-          products={products}
+      <main
+        className={
+          styles.page
+        }
+      >
 
-        />
+        <RankingLayout>
 
-        {/* ==================================
-        CONVERSION FLOW
-        recommendation / commerce layer
-        ================================== */}
+          {/* ==================================
+          SEMANTIC FLOW
+          semantic discovery layer
+          ================================== */}
 
-        <RankingConversionFlow
+          <RankingSemanticFlow
 
-          slug={slug}
+            slug={slug}
 
-          products={products}
+            products={products}
 
-        />
+          />
 
-      </RankingLayout>
+          {/* ==================================
+          CONVERSION FLOW
+          recommendation / commerce layer
+          ================================== */}
 
-    </main>
+          <RankingConversionFlow
+
+            slug={slug}
+
+            products={products}
+
+          />
+
+        </RankingLayout>
+
+      </main>
+
+    </>
 
   )
 }
