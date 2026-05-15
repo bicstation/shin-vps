@@ -18,15 +18,10 @@ MetadataRoute.Sitemap {
     '',
 
     '/ranking/score',
-
     '/ranking/gaming',
-
     '/ranking/ai',
-
     '/ranking/creator',
-
     '/ranking/business',
-
     '/ranking/mobile',
   ]
 
