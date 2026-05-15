@@ -1,0 +1,84 @@
+.container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 0 20px;
+    font-family: sans-serif;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.title {
+    font-size: 2rem;
+    color: #333;
+    font-weight: bold;
+}
+
+.description {
+    color: #666;
+    margin-top: 10px;
+}
+
+.card {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+.sectionTitle {
+    font-size: 1.2rem;
+    color: #444;
+    margin-bottom: 15px;
+    border-left: 4px solid #0070f3;
+    padding-left: 10px;
+}
+
+.text {
+    color: #555;
+    line-height: 1.6;
+}
+
+.mailBox {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #0070f3;
+    font-size: 1.1rem;
+}
+
+.mailNote {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+.divider {
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 30px 0;
+}
+
+.infoList {
+    list-style: none;
+    padding: 0;
+    color: #666;
+    line-height: 2;
+}
+
+.link {
+    color: #0070f3;
+}
+
+.footer {
+    margin-top: 40px;
+    text-align: center;
+    color: #bbb;
+    font-size: 0.8rem;
+}

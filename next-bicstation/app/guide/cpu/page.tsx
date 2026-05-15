@@ -1,4 +1,4 @@
-// /home/maya/shin-vps/next-bicstation/app/guide/cou/page.tsx
+// /home/maya/shin-vps/next-bicstation/app/guide/cpu/page.tsx
 
 export default function GuideCpu() {
   return (

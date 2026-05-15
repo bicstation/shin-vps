@@ -76,9 +76,7 @@ services:
 
       args:
         PROJECT_NAME: next-bicstation
-
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-
         INTERNAL_API_URL: ${INTERNAL_API_URL}
 
     container_name: next-bicstation-v3
@@ -87,9 +85,7 @@ services:
 
     environment:
       NEXT_PUBLIC_SITE_DOMAIN: bicstation.com
-
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-
       INTERNAL_API_URL: ${INTERNAL_API_URL}
 
     networks:
@@ -106,9 +102,7 @@ services:
 
       args:
         PROJECT_NAME: next-bic-saving
-
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-
         INTERNAL_API_URL: ${INTERNAL_API_URL}
 
     container_name: next-bic-saving-v3
@@ -136,9 +130,7 @@ services:
 
       args:
         PROJECT_NAME: next-tiper
-
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-
         INTERNAL_API_URL: ${INTERNAL_API_URL}
 
     container_name: next-tiper-v3
@@ -166,9 +158,7 @@ services:
 
       args:
         PROJECT_NAME: next-avflash
-
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-
         INTERNAL_API_URL: ${INTERNAL_API_URL}
 
     container_name: next-avflash-v3
@@ -177,9 +167,7 @@ services:
 
     environment:
       NEXT_PUBLIC_SITE_DOMAIN: avflash.xyz
-
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-
       INTERNAL_API_URL: ${INTERNAL_API_URL}
 
     networks:

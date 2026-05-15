@@ -1,8 +1,7 @@
-name: Production Deployment
+name: SHIN CORE LINX｜Production Deploy
 
 on:
   push:
-    # v1.0.0 などのタグ push 時のみ deploy
     tags:
       - 'v*'
 
@@ -12,29 +11,30 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     env:
       PROJECT_NAME: shin-vps
       DEPLOY_PATH: /home/maya/shin-vps
+
       COMPOSE_FILE: docker-compose.prod.yml
       ENV_FILE: .env.production
 
     steps:
 
-      # ==========================================================================
-      # 📦 Checkout
-      # ==========================================================================
-
+      # ==========================================================
+      # 📥 Checkout
+      # ==========================================================
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      # ==========================================================================
-      # 🧹 Cleanup
-      # ==========================================================================
-
+      # ==========================================================
+      # 🧹 Cleanup Local Artifacts
+      # ==========================================================
       - name: 🧹 Cleanup Unnecessary Files
+
         run: |
+
           rm -rf \
             .git \
             .github \
@@ -43,47 +43,58 @@ jobs:
             node_modules \
             .next \
             */node_modules \
-            */.next
+            */.next \
+            */dist \
+            */build
 
           echo "✅ Cleanup Complete"
 
-      # ==========================================================================
-      # 🚀 Sync Files
-      # ==========================================================================
+      # ==========================================================
+      # 🚀 Upload Source
+      # ==========================================================
+      - name: 🚀 Upload Files to VPS
 
-      - name: 🚀 Sync Files to VPS
         uses: appleboy/scp-action@v0.1.7
 
         with:
           host: ${{ secrets.SSH_HOST }}
+
           username: ${{ secrets.SSH_USER }}
+
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
 
           port: 2222
 
           source: "."
+
           target: "/home/maya/shin-vps"
 
           strip_components: 0
+
           overwrite: true
 
-      # ==========================================================================
-      # 🚀 Deploy
-      # ==========================================================================
-
+      # ==========================================================
+      # 🚀 Production Deploy
+      # ==========================================================
       - name: 🚀 Deploy to Production
+
         uses: appleboy/ssh-action@v1.0.3
 
         with:
+
           host: ${{ secrets.SSH_HOST }}
+
           username: ${{ secrets.SSH_USER }}
+
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
 
           port: 2222
 
-          command_timeout: 60m
+          command_timeout: 90m
 
           script: |
 
@@ -92,25 +103,36 @@ jobs:
             cd /home/maya/shin-vps
 
             echo ""
-            echo "======================================================"
+            echo "=================================================="
             echo "🚀 SHIN CORE LINX｜PRODUCTION DEPLOY"
-            echo "======================================================"
+            echo "=================================================="
 
-            # ==============================================================
-            # 🌐 Shared Network
-            # ==============================================================
+            # ==================================================
+            # 🌐 Shared Docker Network
+            # ==================================================
 
             echo ""
-            echo "🌐 Checking shared docker network..."
+            echo "🌐 Preparing Shared Network..."
 
-            docker network inspect shin-vps_shared-proxy >/dev/null 2>&1 || \
-            docker network create shin-vps_shared-proxy
+            docker network inspect shared-proxy >/dev/null 2>&1 || \
+            docker network create shared-proxy
 
-            echo "✅ Network Ready"
+            echo "✅ Shared Network Ready"
 
-            # ==============================================================
+            # ==================================================
+            # 🧹 Runtime Cache Cleanup
+            # ==================================================
+
+            echo ""
+            echo "🧹 Cleaning Runtime Cache..."
+
+            find . -name ".next" -type d -prune -exec rm -rf {} +
+
+            echo "✅ Runtime Cache Cleaned"
+
+            # ==================================================
             # 📦 Docker Build
-            # ==============================================================
+            # ==================================================
 
             echo ""
             echo "📦 Building Containers..."
@@ -120,13 +142,14 @@ jobs:
               --env-file .env.production \
               -f docker-compose.prod.yml \
               build \
-              --parallel
+              --parallel \
+              --no-cache
 
-            echo "✅ Parallel Build Complete"
+            echo "✅ Container Build Complete"
 
-            # ==============================================================
-            # 🚀 Container Startup
-            # ==============================================================
+            # ==================================================
+            # 🚀 Startup
+            # ==================================================
 
             echo ""
             echo "🚀 Starting Containers..."
@@ -141,9 +164,9 @@ jobs:
 
             echo "✅ Containers Started"
 
-            # ==============================================================
+            # ==================================================
             # 📦 Django Migration
-            # ==============================================================
+            # ==================================================
 
             echo ""
             echo "📦 Running Migrations..."
@@ -157,12 +180,12 @@ jobs:
 
             echo "✅ Migration Complete"
 
-            # ==============================================================
-            # 🎨 Collect Static
-            # ==============================================================
+            # ==================================================
+            # 🎨 Static Files
+            # ==================================================
 
             echo ""
-            echo "🎨 Collecting Static Files..."
+            echo "🎨 Collecting Static..."
 
             docker compose \
               -p shin-vps \
@@ -171,22 +194,26 @@ jobs:
               exec -T django-v3 \
               python manage.py collectstatic --noinput
 
-            echo "✅ Static Collection Complete"
+            echo "✅ Static Complete"
 
-            # ==============================================================
+            # ==================================================
             # 🩺 Health Check
-            # ==============================================================
+            # ==================================================
 
             echo ""
             echo "🩺 Running Health Checks..."
 
             curl -f http://localhost:8083/api/status/ || exit 1
 
-            echo "✅ API Health Check Passed"
+            echo "✅ Django API OK"
 
-            # ==============================================================
-            # 📊 Container Status
-            # ==============================================================
+            curl -f http://localhost:8083/ || exit 1
+
+            echo "✅ Frontend OK"
+
+            # ==================================================
+            # 📊 Status
+            # ==================================================
 
             echo ""
             echo "📊 Container Status"
@@ -197,18 +224,20 @@ jobs:
               -f docker-compose.prod.yml \
               ps
 
-            # ==============================================================
-            # 📄 Nginx Logs
-            # ==============================================================
+            # ==================================================
+            # 📄 Logs
+            # ==================================================
 
             echo ""
-            echo "📄 nginx-media Logs"
+            echo "📄 Last Runtime Logs"
 
-            docker logs --tail 50 nginx-media || true
+            docker logs --tail 30 django-v3 || true
 
-            # ==============================================================
-            # 🧹 Cleanup
-            # ==============================================================
+            docker logs --tail 30 next-bicstation-v3 || true
+
+            # ==================================================
+            # 🧹 Docker Cleanup
+            # ==================================================
 
             echo ""
             echo "🧹 Docker Cleanup"
@@ -217,14 +246,16 @@ jobs:
 
             docker builder prune -af || true
 
+            docker container prune -f || true
+
             echo "✅ Cleanup Complete"
 
-            # ==============================================================
+            # ==================================================
             # 🎉 Done
-            # ==============================================================
+            # ==================================================
 
             echo ""
-            echo "======================================================"
-            echo "✅ PRODUCTION DEPLOY SUCCESS"
-            echo "======================================================"
+            echo "=================================================="
+            echo "✅ SHIN CORE LINX DEPLOY SUCCESS"
+            echo "=================================================="
             echo ""

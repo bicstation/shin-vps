@@ -1,59 +1,96 @@
 'use client';
 
-export default function Footer() {
-  return (
-    <footer
-      style={{
-        marginTop: '40px',
-        padding: '28px 16px',
-        background: '#020617',
-        color: '#94a3b8',
-        textAlign: 'center',
-        fontSize: '12px',
-        lineHeight: 1.8,
-      }}
-    >
+import styles from './Footer.module.css';
 
-      {/* 🛡 信頼ブロック */}
-      <div style={{ marginBottom: '18px' }}>
-        <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: '6px' }}>
+export default function Footer() {
+
+  return (
+
+    <footer className={styles.footer}>
+
+      {/* =================================================
+      🛡 Trust
+      ================================================= */}
+      <div className={styles.trustBlock}>
+
+        <div className={styles.trustTitle}>
           安心してご利用いただけます
         </div>
 
-        <div>✔ 掲載商品はすべて公式ショップ</div>
-        <div>✔ 安全な購入リンクのみ使用</div>
-        <div>✔ 無理な販売は行いません</div>
+        <div className={styles.trustItem}>
+          ✔ 掲載商品はすべて公式ショップ
+        </div>
+
+        <div className={styles.trustItem}>
+          ✔ 安全な購入リンクのみ使用
+        </div>
+
+        <div className={styles.trustItem}>
+          ✔ 無理な販売は行いません
+        </div>
+
       </div>
 
-      {/* ⚠ 補足 */}
-      <div style={{ fontSize: '11px', marginBottom: '14px' }}>
+      {/* =================================================
+      ⚠ Notice
+      ================================================= */}
+      <div className={styles.notice}>
         ※在庫状況や価格は変動する場合があります
       </div>
 
-      {/* 🧠 ブランド（ここに入れる） */}
-      <div
-        style={{
-          fontSize: '11px',
-          marginBottom: '14px',
-          color: '#64748b',
-          letterSpacing: '0.05em',
-        }}
-      >
-        Powered by <span style={{ color: '#94a3b8' }}>SHIN CORE LINX</span>
+      {/* =================================================
+      🧠 Brand
+      ================================================= */}
+      <div className={styles.brand}>
+        Powered by{' '}
+        <span className={styles.brandStrong}>
+          SHIN CORE LINX
+        </span>
       </div>
 
-      {/* 🔗 最小リンク */}
-      <div style={{ marginBottom: '16px' }}>
-        <a href="/privacy" style={{ marginRight: '12px', textDecoration: 'underline' }}>
+      {/* =================================================
+      📢 Rectangle Ad
+      ================================================= */}
+      <div className={styles.adSection}>
+
+        <div className={styles.adLabel}>
+          SPONSORED
+        </div>
+
+        <div className={styles.rectangleAd}>
+
+          {/* Adsense差込位置 */}
+          RECTANGLE AD AREA
+
+        </div>
+
+      </div>
+
+      {/* =================================================
+      🔗 Links
+      ================================================= */}
+      <div className={styles.links}>
+
+        <a
+          href="/privacy"
+          className={styles.link}
+        >
           プライバシーポリシー
         </a>
-        <a href="/terms" style={{ textDecoration: 'underline' }}>
+
+        <a
+          href="/terms"
+          className={styles.link}
+        >
           利用規約
         </a>
+
       </div>
 
-      {/* 🏁 コピーライト */}
-      <div style={{ fontSize: '11px', color: '#64748b' }}>
+      {/* =================================================
+      🏁 Copyright
+      ================================================= */}
+      <div className={styles.copy}>
         © {new Date().getFullYear()} SHIN CORE LINX
       </div>
 

@@ -2,77 +2,164 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
-
-// ✅ 動的importで安全化
 import dynamic from 'next/dynamic';
 
+import { getSiteMetadata } from '@/shared/lib/utils/siteConfig';
+
+import styles from './HeaderLite.module.css';
+
+/**
+ * =========================================================
+ * ✅ Safe Dynamic Sidebar Import
+ * =========================================================
+ */
 const MobileSidebarWrapper = dynamic(
   () => import('@/shared/layout/Sidebar/MobileSidebarWrapper'),
-  { ssr: false }
+  {
+    ssr: false,
+
+    loading: () => (
+      <div
+        style={{
+          width: '36px',
+          height: '36px',
+        }}
+      />
+    ),
+  }
 );
 
 export default function HeaderLite() {
+
   const [site, setSite] = useState<any>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
 
-    const host = window.location.hostname;
-    const meta = getSiteMetadata(host);
+    if (typeof window === 'undefined') {
+      return;
+    }
 
-    setSite(meta || {
-      site_name: 'SITE',
-      theme_color: '#333'
-    });
+    try {
+
+      const host =
+        window.location.hostname;
+
+      const meta =
+        getSiteMetadata(host);
+
+      setSite(
+        meta || {
+          site_name: 'SITE',
+          theme_color: '#333',
+        }
+      );
+
+    } catch (error) {
+
+      console.error(
+        '❌ HeaderLite SiteMetadata Error:',
+        error
+      );
+
+      setSite({
+        site_name: 'SITE',
+        theme_color: '#333',
+      });
+    }
+
   }, []);
 
+  /**
+   * =======================================================
+   * ✅ Initial Skeleton
+   * =======================================================
+   */
   if (!site) {
     return (
-      <header style={{ height: '60px', background: '#000' }} />
+      <header className={styles.skeleton} />
     );
   }
 
-  const themeColor = site.theme_color || '#333';
-  const siteName = site.site_name || 'SITE';
+  const themeColor =
+    site.theme_color || '#333';
+
+  const siteName =
+    site.site_name || 'SITE';
 
   return (
-    <header style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '10px 16px',
-      borderBottom: `2px solid ${themeColor}`,
-      background: '#020617'
-    }}>
-      
-      {/* ☰（安全版） */}
-      <div>
+
+    <header
+      className={styles.header}
+      style={{
+        borderBottom: `2px solid ${themeColor}`,
+      }}
+    >
+
+      {/* ===================================================
+          ☰ Mobile Sidebar
+      ==================================================== */}
+      <div className={styles.sidebarArea}>
         <MobileSidebarWrapper />
       </div>
 
-      {/* ロゴ */}
-      <Link href="/" style={{ textDecoration: 'none' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{
-            background: themeColor,
-            color: '#fff',
-            padding: '4px 10px',
-            borderRadius: '6px',
-            fontWeight: 'bold'
-          }}>
+      {/* ===================================================
+          🛰️ Logo
+      ==================================================== */}
+      <Link
+        href="/"
+        className={styles.logoLink}
+      >
+        <div className={styles.logoWrapper}>
+
+          <span
+            className={styles.logoBadge}
+            style={{
+              background: themeColor,
+            }}
+          >
             {siteName.charAt(0)}
           </span>
 
-          <span style={{ color: '#fff', fontSize: '14px' }}>
+          <span className={styles.logoText}>
             {siteName}
           </span>
+
         </div>
       </Link>
 
-      {/* 右側 */}
-      <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-        {/* 必要ならログイン */}
+      {/* ===================================================
+          🖥 Desktop Navigation
+      ==================================================== */}
+      <nav className={styles.desktopNav}>
+
+        <Link
+          href="/ranking"
+          className={styles.navLink}
+        >
+          ランキング
+        </Link>
+
+        <Link
+          href="/guide"
+          className={styles.navLink}
+        >
+          ガイド
+        </Link>
+
+        <Link
+          href="/contact"
+          className={styles.navLink}
+        >
+          お問い合わせ
+        </Link>
+
+      </nav>
+
+      {/* ===================================================
+          🔍 Right Area
+      ==================================================== */}
+      <div className={styles.rightArea}>
+        {/* future auth / search */}
       </div>
 
     </header>

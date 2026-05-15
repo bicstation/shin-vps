@@ -86,6 +86,7 @@ RUN npm install \
     --progress=false \
     --unsafe-perm=true
 
+ENV NODE_ENV=production
 RUN cat package.json
 RUN echo $NODE_ENV
 # =====================================================================

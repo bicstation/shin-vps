@@ -40,11 +40,16 @@ const nextConfig = {
       };
     }
 
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      // @shared を物理的な ./shared フォルダに固定
-      '@shared': path.resolve(__dirname, 'shared'),
-    };
+    // config.resolve.alias = {
+    //   ...config.resolve.alias,
+    //   // @shared を物理的な ./shared フォルダに固定
+    //   '@shared': path.resolve(__dirname, 'shared'),
+    // };
+    config.resolve.alias['@'] =
+      __dirname;
+
+    config.resolve.alias['@shared'] =
+      path.resolve(__dirname, 'shared');
 
     return config;
   },

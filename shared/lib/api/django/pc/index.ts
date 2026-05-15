@@ -36,3 +36,36 @@ export * from './sidebar'
 ========================================= */
 
 export * from './ranking'
+
+/**
+ * =====================================================================
+ * 🛡️ Legacy Compatibility Imports
+ * =====================================================================
+ */
+
+import {
+  fetchProducts,
+} from './products'
+
+import {
+  searchPC,
+} from './search'
+
+import {
+  fetchSidebar,
+} from './sidebar'
+
+/**
+ * =====================================================================
+ * 🛡️ Legacy Compatibility Exports
+ * =====================================================================
+ */
+
+export const fetchPCProducts =
+  fetchProducts
+
+export const fetchFinderResult =
+  searchPC
+
+export const fetchMakers =
+  fetchSidebar
