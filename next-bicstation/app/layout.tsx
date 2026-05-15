@@ -30,14 +30,19 @@ const inter = Inter({
  */
 
 export const metadata: Metadata = {
-  title: "Integrated Fleet Portal",
-  description: "Multi-Tenant Intelligence Network",
-
+  metadataBase:
+    new URL(
+      'https://bicstation.com'
+    ),
+  title:
+    '用途別にわかるおすすめPC比較 | BIC STATION',
+  description:
+    'AI画像生成・ゲーム・動画編集・普段使いまで。用途別におすすめPCをわかりやすく比較できるPC選びサポートサイト。',
   other: {
-    "google-adsense-account": "ca-pub-9068876333048216",
+    'google-adsense-account':
+      'ca-pub-9068876333048216',
   },
-};
-
+}
 /**
  * =====================================================================
  * 📱 Viewport
