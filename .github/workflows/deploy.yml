@@ -126,9 +126,10 @@ jobs:
             echo ""
             echo "🧹 Cleaning Runtime Cache..."
 
-            find . \
-              \\( -path "./postgres_data" -o -path "./vps-data" \\) -prune -o \
-              -name ".next" -type d -exec rm -rf {} + \
+            find . -type d -name ".next" \
+              ! -path "./postgres_data/*" \
+              ! -path "./vps-data/*" \
+              -exec rm -rf {} + \
               2>/dev/null || true
 
             echo "✅ Runtime Cache Cleaned"
