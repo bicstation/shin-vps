@@ -1,3 +1,5 @@
+// /home/maya/shin-vps/next-bicstation/app/ranking/[slug]/page.tsx
+
 /* eslint-disable @next/next/no-img-element */
 // @ts-nocheck
 
@@ -66,28 +68,13 @@ generateMetadata({
     params?.slug
     || 'score'
 
-  // ======================================
-  // TITLE
-  // ======================================
-
   const title =
-
     `${slug}向けおすすめPCランキング | BIC STATION`
 
-  // ======================================
-  // DESCRIPTION
-  // ======================================
-
   const description =
-
     `${slug}用途におすすめのPCを比較。初心者でも選びやすい人気モデルを紹介します。`
 
-  // ======================================
-  // CANONICAL
-  // ======================================
-
   const canonical =
-
     `https://bicstation.com/ranking/${slug}`
 
   return {
@@ -140,31 +127,20 @@ RankingPage({
   params,
 }: Props) {
 
-  // ======================================
-  // PARAMS
-  // ======================================
-
   const slug =
-
     params?.slug
     || 'score'
-
-  // ======================================
-  // FETCH
-  // ======================================
 
   let products = []
 
   try {
 
     const result =
-
       await fetchRankingProducts(
         slug
       )
 
     products =
-
       result?.products
       || []
 
@@ -179,9 +155,9 @@ RankingPage({
     )
   }
 
-  // ======================================
-  // ITEM LIST SCHEMA
-  // ======================================
+  /* ======================================
+  🔥 SCHEMA
+  ====================================== */
 
   const itemListSchema = {
 
@@ -311,72 +287,9 @@ RankingPage({
     ],
   }
 
-  // ======================================
-  // DEBUG
-  // ======================================
-
-  console.log(
-    '\n🔥 ====================================='
-  )
-
-  console.log(
-    '🔥 RANKING DETAIL PAGE'
-  )
-
-  console.log({
-
-    slug,
-
-    productCount:
-      products?.length
-      || 0,
-
-    firstProduct:
-
-      products?.[0]
-      ? {
-
-          unique_id:
-            products[0]
-              ?.unique_id,
-
-          name:
-            products[0]
-              ?.name,
-
-          maker:
-            products[0]
-              ?.maker,
-
-        }
-
-      : null,
-
-  })
-
-  console.log(
-    '🔥 COMPONENTS'
-  )
-
-  console.log({
-
-    RankingLayout,
-
-    RankingSemanticFlow,
-
-    RankingConversionFlow,
-
-    RankingEmpty,
-
-  })
-
-  console.log(
-    '🔥 =====================================\n'
-  )
-
-  // ======================================
-  // EMPTY
-  // ======================================
+  /* ======================================
+  🔥 EMPTY
+  ====================================== */
 
   if (
     !products?.length
@@ -387,9 +300,9 @@ RankingPage({
     )
   }
 
-  // ======================================
-  // PAGE
-  // ======================================
+  /* ======================================
+  🔥 PAGE
+  ====================================== */
 
   return (
 
@@ -419,9 +332,15 @@ RankingPage({
         }}
       />
 
-       <script
-        t
-        
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html:
+            JSON.stringify(
+              faqSchema
+            ),
+        }}
+      />
 
       <main
         className={
@@ -433,7 +352,6 @@ RankingPage({
 
           {/* ==================================
           SEMANTIC FLOW
-          semantic discovery layer
           ================================== */}
 
           <RankingSemanticFlow
@@ -446,7 +364,6 @@ RankingPage({
 
           {/* ==================================
           CONVERSION FLOW
-          recommendation / commerce layer
           ================================== */}
 
           <RankingConversionFlow
