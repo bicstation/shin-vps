@@ -2,7 +2,7 @@
 
 export const HOME_TRUST_POINTS = [
   {
-    id: 'beginner',
+    id: 'usage-mobile',
 
     icon: '🛡',
 
@@ -13,7 +13,7 @@ export const HOME_TRUST_POINTS = [
   },
 
   {
-    id: 'ai-support',
+    id: 'usage-ai',
 
     icon: '🤖',
 
@@ -24,7 +24,7 @@ export const HOME_TRUST_POINTS = [
   },
 
   {
-    id: 'balanced',
+    id: 'usage-budget',
 
     icon: '⚖',
 
@@ -35,7 +35,7 @@ export const HOME_TRUST_POINTS = [
   },
 
   {
-    id: 'gaming',
+    id: 'usage-gaming',
 
     icon: '🎮',
 

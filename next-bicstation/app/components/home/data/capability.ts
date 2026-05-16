@@ -2,7 +2,7 @@
 
 export const HOME_CAPABILITIES = [
   {
-    id: 'gaming',
+    id: 'usage-gaming',
 
     icon: '🎮',
 
@@ -13,7 +13,7 @@ export const HOME_CAPABILITIES = [
   },
 
   {
-    id: 'ai',
+    id: 'usage-ai',
 
     icon: '🤖',
 
@@ -24,7 +24,7 @@ export const HOME_CAPABILITIES = [
   },
 
   {
-    id: 'creator',
+    id: 'usage-creator',
 
     icon: '🎬',
 
@@ -35,7 +35,7 @@ export const HOME_CAPABILITIES = [
   },
 
   {
-    id: 'streaming',
+    id: 'usage-business',
 
     icon: '📡',
 
@@ -46,7 +46,7 @@ export const HOME_CAPABILITIES = [
   },
 
   {
-    id: 'balanced',
+    id: 'usage-budget',
 
     icon: '⚖',
 
@@ -57,7 +57,7 @@ export const HOME_CAPABILITIES = [
   },
 
   {
-    id: 'beginner',
+    id: 'usage-mobile',
 
     icon: '💡',
 

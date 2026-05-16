@@ -2,7 +2,7 @@
 
 export const HOME_QUICK_COMPARE = [
   {
-    id: 'gaming',
+    id: 'usage-gaming',
 
     icon: '🎮',
 
@@ -17,11 +17,11 @@ export const HOME_QUICK_COMPARE = [
       '高冷却',
     ],
 
-    href: '/ranking/gaming',
+    href: '/ranking/usage-gaming',
   },
 
   {
-    id: 'ai',
+    id: 'usage-ai',
 
     icon: '🤖',
 
@@ -36,11 +36,11 @@ export const HOME_QUICK_COMPARE = [
       '生成速度向上',
     ],
 
-    href: '/ranking/ai',
+    href: '/ranking/usage-ai',
   },
 
   {
-    id: 'creator',
+    id: 'usage-creator',
 
     icon: '🎬',
 
@@ -55,7 +55,7 @@ export const HOME_QUICK_COMPARE = [
       'マルチタスク',
     ],
 
-    href: '/ranking/creator',
+    href: '/ranking/usage-creator',
   },
 ] as const
 

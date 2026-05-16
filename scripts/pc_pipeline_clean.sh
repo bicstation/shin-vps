@@ -96,7 +96,7 @@ run_django migrate_linkshare_to_pc
 log "🧠 Analyze"
 
 run_django analyze_pc_spec \
-  --limit 10 \
+  --limit 100 \
   --null-only
 
 # ==========================================================

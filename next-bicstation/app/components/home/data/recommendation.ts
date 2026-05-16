@@ -2,7 +2,7 @@
 
 export const HOME_RECOMMENDATION_PATHS = [
   {
-    id: 'gaming',
+    id: 'usage-gaming',
 
     icon: '🎮',
 
@@ -11,11 +11,11 @@ export const HOME_RECOMMENDATION_PATHS = [
     description:
       '高fps・高リフレッシュレート向け gaming PC を比較。',
 
-    href: '/ranking/gaming',
+    href: '/ranking/usage-gaming',
   },
 
   {
-    id: 'ai',
+    id: 'usage-ai',
 
     icon: '🤖',
 
@@ -24,11 +24,11 @@ export const HOME_RECOMMENDATION_PATHS = [
     description:
       'Stable Diffusion・生成AI用途向け GPU構成。',
 
-    href: '/ranking/ai',
+    href: '/ranking/usage-ai',
   },
 
   {
-    id: 'creator',
+    id: 'usage-creator',
 
     icon: '🎬',
 
@@ -37,11 +37,11 @@ export const HOME_RECOMMENDATION_PATHS = [
     description:
       'Premiere Pro や streaming 向け creator PC。',
 
-    href: '/ranking/creator',
+    href: '/ranking/usage-creator',
   },
 
   {
-    id: 'cost',
+    id: 'usage-budget',
 
     icon: '💴',
 
@@ -50,11 +50,11 @@ export const HOME_RECOMMENDATION_PATHS = [
     description:
       '価格と性能のバランスが良い recommendation。',
 
-    href: '/ranking/cost-performance',
+    href: '/ranking/usage-budget',
   },
 
   {
-    id: 'beginner',
+    id: 'usage-mobile',
 
     icon: '💡',
 
@@ -63,11 +63,11 @@ export const HOME_RECOMMENDATION_PATHS = [
     description:
       '初めてでも比較しやすい semantic guide。',
 
-    href: '/ranking/beginner',
+    href: '/ranking/usage-mobile',
   },
 
   {
-    id: 'longuse',
+    id: 'usage-business',
 
     icon: '🧠',
 
@@ -76,7 +76,7 @@ export const HOME_RECOMMENDATION_PATHS = [
     description:
       '将来性や拡張性も考慮した balanced PC。',
 
-    href: '/ranking/balanced',
+    href: '/ranking/usage-business',
   },
 ] as const
 
@@ -86,7 +86,7 @@ export const HOME_RECOMMENDATION_PATHS = [
 
 export const INTENT_NAV = [
   {
-    slug: 'gaming',
+    slug: 'usage-gaming',
 
     icon: '🎮',
 
@@ -97,7 +97,7 @@ export const INTENT_NAV = [
   },
 
   {
-    slug: 'ai',
+    slug: 'usage-ai',
 
     icon: '🤖',
 
@@ -108,7 +108,7 @@ export const INTENT_NAV = [
   },
 
   {
-    slug: 'creator',
+    slug: 'usage-creator',
 
     icon: '🎬',
 
@@ -119,7 +119,7 @@ export const INTENT_NAV = [
   },
 
   {
-    slug: 'cost-performance',
+    slug: 'usage-budget',
 
     icon: '💴',
 
@@ -130,7 +130,7 @@ export const INTENT_NAV = [
   },
 
   {
-    slug: 'beginner',
+    slug: 'usage-mobile',
 
     icon: '💡',
 
@@ -141,7 +141,7 @@ export const INTENT_NAV = [
   },
 
   {
-    slug: 'balanced',
+    slug: 'usage-business',
 
     icon: '🧠',
 
