@@ -1,0 +1,385 @@
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/styles/ontology.module.css */
+
+/* =========================================
+🔥 ROOT
+========================================= */
+
+.page {
+  min-height: 100vh;
+
+  background:
+    #020617;
+
+  color:
+    #ffffff;
+}
+
+/* =========================================
+🔥 CONTAINER
+========================================= */
+
+.container {
+  width: 100%;
+
+  max-width: 1440px;
+
+  margin: 0 auto;
+
+  padding:
+    0 24px 120px;
+}
+
+/* =========================================
+🔥 HERO
+========================================= */
+
+.hero {
+  position: relative;
+
+  overflow: hidden;
+
+  padding:
+    120px 24px 88px;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.06);
+}
+
+.heroBackground {
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(59,130,246,0.18),
+      transparent 34%
+    ),
+
+    radial-gradient(
+      circle at top right,
+      rgba(168,85,247,0.14),
+      transparent 28%
+    );
+
+  pointer-events: none;
+}
+
+.heroInner {
+  position: relative;
+
+  z-index: 1;
+
+  max-width: 1440px;
+
+  margin: 0 auto;
+}
+
+/* =========================================
+🔥 LABEL
+========================================= */
+
+.label {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  min-height: 40px;
+
+  padding:
+    0 16px;
+
+  border-radius:
+    999px;
+
+  background:
+    rgba(59,130,246,0.12);
+
+  border:
+    1px solid rgba(59,130,246,0.18);
+
+  font-size:
+    12px;
+
+  font-weight:
+    800;
+
+  letter-spacing:
+    0.08em;
+
+  text-transform:
+    uppercase;
+
+  color:
+    #dbeafe;
+}
+
+/* =========================================
+🔥 TITLE
+========================================= */
+
+.title {
+  font-size:
+    clamp(52px, 8vw, 104px);
+
+  line-height:
+    0.94;
+
+  font-weight:
+    900;
+
+  letter-spacing:
+    -0.05em;
+
+  margin:
+    28px 0 32px;
+}
+
+/* =========================================
+🔥 DESCRIPTION
+========================================= */
+
+.description {
+  max-width: 920px;
+
+  font-size:
+    clamp(16px, 2vw, 22px);
+
+  line-height:
+    1.9;
+
+  color:
+    rgba(255,255,255,0.72);
+}
+
+/* =========================================
+🔥 SECTION
+========================================= */
+
+.section {
+  display: grid;
+
+  gap: 28px;
+}
+
+/* =========================================
+🔥 GRID
+========================================= */
+
+.grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(280px,1fr)
+    );
+
+  gap: 20px;
+}
+
+/* =========================================
+🔥 CARD
+========================================= */
+
+.card {
+  position: relative;
+
+  overflow: hidden;
+
+  display: block;
+
+  padding:
+    24px;
+
+  border-radius:
+    28px;
+
+  background:
+    rgba(255,255,255,0.04);
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  text-decoration:
+    none;
+
+  color:
+    #ffffff;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.card:hover {
+  transform:
+    translateY(-4px);
+
+  border-color:
+    rgba(59,130,246,0.28);
+
+  background:
+    rgba(255,255,255,0.06);
+}
+
+/* =========================================
+🔥 META
+========================================= */
+
+.metaRow {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+.badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  min-height: 34px;
+
+  padding:
+    0 12px;
+
+  border-radius:
+    999px;
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+
+  background:
+    rgba(255,255,255,0.08);
+}
+
+.badgePrimary {
+  background:
+    rgba(59,130,246,0.16);
+}
+
+.badgeHighlight {
+  background:
+    rgba(168,85,247,0.18);
+}
+
+/* =========================================
+🔥 SLUG
+========================================= */
+
+.slug {
+  font-size:
+    13px;
+
+  opacity:
+    0.5;
+
+  word-break:
+    break-all;
+}
+
+/* =========================================
+🔥 GROUP
+========================================= */
+
+.group {
+  display: grid;
+
+  gap: 28px;
+}
+
+.groupHeader {
+  display: grid;
+
+  gap: 12px;
+}
+
+/* =========================================
+🔥 RUNTIME DEBUG
+========================================= */
+
+.debug {
+  padding:
+    24px;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.06);
+
+  background:
+    rgba(255,255,255,0.02);
+}
+
+.debugTitle {
+  font-size:
+    14px;
+
+  font-weight:
+    700;
+
+  margin-bottom:
+    16px;
+}
+
+.debugPre {
+  margin: 0;
+
+  padding:
+    20px;
+
+  overflow: auto;
+
+  border-radius:
+    18px;
+
+  background:
+    rgba(0,0,0,0.32);
+
+  color:
+    #dbeafe;
+
+  font-size:
+    12px;
+
+  line-height:
+    1.8;
+}
+
+/* =========================================
+🔥 RESPONSIVE
+========================================= */
+
+@media (
+  max-width: 768px
+) {
+
+  .hero {
+    padding:
+      96px 20px 72px;
+  }
+
+  .container {
+    padding:
+      0 20px 96px;
+  }
+
+  .grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .title {
+    line-height:
+      1;
+  }
+}

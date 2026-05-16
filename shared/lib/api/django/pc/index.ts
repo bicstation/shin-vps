@@ -69,3 +69,9 @@ export const fetchFinderResult =
 
 export const fetchMakers =
   fetchSidebar
+
+/* =========================================
+🔥 Semantic
+========================================= */
+
+export * from './semantic'

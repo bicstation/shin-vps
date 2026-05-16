@@ -115,6 +115,33 @@ docker cp \
 
 run_django sync_master_attributes
 
+
+log "🧠 Semantic Master Sync"
+
+SEMANTIC_FILES=(
+  "semantic_aliases.tsv"
+  "semantic_negative_aliases.tsv"
+  "semantic_normalization_rules.tsv"
+  "semantic_groups.tsv"
+  "semantic_group_mappings.tsv"
+)
+
+for FILE in "${SEMANTIC_FILES[@]}"
+do
+
+  log "📄 Copy $FILE"
+
+  docker cp \
+    "$PROJECT_ROOT/django/master_data/$FILE" \
+    "$DJANGO_CON:/usr/src/app/master_data/$FILE" \
+    || {
+      echo "❌ $FILE copy failed"
+      exit 1
+    }
+
+done
+
+
 run_django auto_map_attributes_v2
 
 # ==========================================================

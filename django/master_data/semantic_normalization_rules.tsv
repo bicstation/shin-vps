@@ -1,1 +1,63 @@
-pattern	normalized	rule_type
+raw_token	normalized_token	rule_type	is_adult
+RTX5090	rtx 5090	spacing	0
+RTX 5090	rtx 5090	case_normalize	0
+rtx5090	rtx 5090	spacing	0
+GeForce RTX5090	rtx 5090	brand_cleanup	0
+GeForce RTX 5090	rtx 5090	brand_cleanup	0
+R5090	rtx 5090	shorthand_expand	0
+RTX5080	rtx 5080	spacing	0
+rtx5080	rtx 5080	spacing	0
+R5080	rtx 5080	shorthand_expand	0
+RTX5070Ti	rtx 5070 ti	spacing	0
+RTX 5070Ti	rtx 5070 ti	spacing	0
+5070Ti	rtx 5070 ti	shorthand_expand	0
+RTX4070	rtx 4070	spacing	0
+RTX4060	rtx 4060	spacing	0
+RTX4050	rtx 4050	spacing	0
+Ultra9	core ultra 9	shorthand_expand	0
+Ultra 9	core ultra 9	semantic_expand	0
+Ultra9 285K	core ultra 9	model_expand	0
+Ultra7	core ultra 7	shorthand_expand	0
+Ultra 7	core ultra 7	semantic_expand	0
+i9-14900K	core i9	model_expand	0
+i7-14700K	core i7	model_expand	0
+i5-14400F	core i5	model_expand	0
+RyzenAI	ryzen ai	spacing	0
+Ryzen AI9	ryzen ai 9	spacing	0
+AI HX370	ai hx 370	spacing	0
+Snapdragon X Elite	snapdragon x elite	case_normalize	0
+SnapdragonXElite	snapdragon x elite	spacing	0
+FullHD	full hd	spacing	0
+FULL HD	full hd	case_normalize	0
+fullhd	full hd	spacing	0
+FHD	full hd	abbreviation_expand	0
+W-QHD	wqhd	format_cleanup	0
+WQHD	wqhd	case_normalize	0
+QHD	wqhd	abbreviation_expand	0
+4 K	4k	spacing	0
+UHD	4k	semantic_expand	0
+OLED	panel-oled	category_expand	0
+QD-OLED	panel-oled	category_expand	0
+NVMe	nvme	case_normalize	0
+M.2 NVMe	nvme	interface_cleanup	0
+PCIe SSD	nvme	interface_expand	0
+1TB SSD	ssd-1tb	spec_expand	0
+32GB RAM	mem-32gb	spec_expand	0
+Copilot+ PC	ai pc	category_expand	0
+AI PC	ai pc	category_expand	0
+Local LLM	local llm	semantic_expand	0
+ThinkPad	thinkpad	case_normalize	0
+EliteBook	elitebook	case_normalize	0
+MacBook	macbook	case_normalize	0
+ROG	rog	case_normalize	0
+TUF	tuf	case_normalize	0
+現役JD	jd	slang	1
+女子大生	jd	slang	1
+JD	jd	case_normalize	1
+デカパイ	巨乳	slang	1
+爆乳	巨乳	category_expand	1
+生ハメ	中出し	slang	1
+緊縛	sm	category_expand	1
+潮吹き	squirting	english_expand	1
+VR作品	vr-content	category_expand	1
+4K動画	ultra-hd-4k	category_expand	1

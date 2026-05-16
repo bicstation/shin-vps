@@ -4,6 +4,10 @@
 import json
 import requests
 import logging
+from api.utils.semantic.seo.metadata import ( generate_semantic_metadata )
+from api.utils.semantic.seo.faq import ( generate_semantic_faq)
+from api.utils.semantic.seo.breadcrumbs import ( generate_semantic_breadcrumbs )
+from api.utils.semantic.seo.schema import ( generate_semantic_schemas )
 
 from urllib.parse import unquote
 
@@ -204,6 +208,13 @@ class PCProductRankingView(
 
         ranking_mode = "listing"
 
+        attribute = None
+
+        seo = {}        
+        faq = []
+        breadcrumbs = []
+        schemas = {}
+
         if slug:
 
             attribute = (
@@ -212,6 +223,9 @@ class PCProductRankingView(
                 ).first()
             )
 
+            # ======================================
+            # Semantic Ranking Detection
+            # ======================================
             if (
                 attribute
                 and
@@ -220,28 +234,64 @@ class PCProductRankingView(
 
                 ranking_mode = "semantic"
 
+            # ======================================
+            # Semantic SEO Runtime
+            # ======================================
+            if attribute:
+
+                seo = generate_semantic_metadata(
+                    attribute
+                )
+                
+                faq = generate_semantic_faq(
+                    attribute
+                )
+                
+                breadcrumbs = (
+                    generate_semantic_breadcrumbs(
+                        attribute
+                    )
+                )
+                schemas = (
+                    generate_semantic_schemas(
+                        attribute=attribute,
+                        seo=seo,
+                        faq=faq,
+                        breadcrumbs=breadcrumbs,
+                    )
+                )
+
         print(
             "LIST RANKING MODE:",
             ranking_mode
         )
 
+        print(
+            "SEO:",
+            seo
+        )
+
         return Response({
 
             "success": True,
-
             "ranking_mode":
                 ranking_mode,
-
             "semantic_slug":
                 slug,
-
+            "seo":
+                seo,               
+            "faq":
+                faq,
+            "breadcrumbs":
+                breadcrumbs,
+            "schemas":
+                schemas,
             "count":
                 len(serializer.data),
-
             "products":
                 serializer.data
         })
-        
+            
 # --------------------------------------------------------------------------
 # 2. 📦 PC製品一覧
 # --------------------------------------------------------------------------

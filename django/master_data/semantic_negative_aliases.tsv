@@ -1,1 +1,67 @@
-slug	alias	reason
+slug	negative_alias	negative_type	is_adult	penalty
+usage-business	rog	gaming_series	0	0.92
+usage-business	tuf	gaming_series	0	0.88
+usage-business	predator	gaming_series	0	0.94
+usage-business	alienware	gaming_series	0	0.94
+usage-business	razer	gaming_brand	0	0.90
+usage-business	raider	gaming_series	0	0.86
+usage-business	titan	gaming_series	0	0.90
+usage-business	fps	gaming_keyword	0	0.84
+usage-business	esports	gaming_keyword	0	0.86
+usage-business	rgb	gaming_feature	0	0.72
+usage-business	overclock	enthusiast_feature	0	0.74
+usage-business	rtx 5090	ultra_high_end_gpu	0	0.66
+usage-mobile	17.3型	large_display	0	0.82
+usage-mobile	18型	large_display	0	0.88
+usage-mobile	4090	high_power_gpu	0	0.84
+usage-mobile	5090	high_power_gpu	0	0.92
+usage-mobile	desktop replacement	category	0	0.94
+usage-mobile	tower	form_factor	0	0.96
+usage-mobile	full tower	form_factor	0	0.98
+usage-mobile	water cooling	cooling	0	0.82
+usage-mobile	4kg	spec	0	0.94
+usage-mobile	5kg	spec	0	0.98
+usage-budget	rtx 5090	ultra_high_end_gpu	0	0.98
+usage-budget	rtx 5080	ultra_high_end_gpu	0	0.92
+usage-budget	threadripper	hedt_cpu	0	0.96
+usage-budget	4090	high_end_gpu	0	0.92
+usage-budget	4tb ssd	high_capacity_storage	0	0.82
+usage-budget	128gb ram	high_capacity_memory	0	0.88
+usage-budget	workstation	category	0	0.86
+usage-budget	proart	premium_series	0	0.72
+usage-budget	zbook	premium_series	0	0.74
+usage-ai	intel uhd	weak_gpu	0	0.84
+usage-ai	iris xe	weak_gpu	0	0.80
+usage-ai	4gb vram	low_vram	0	0.92
+usage-ai	2gb vram	low_vram	0	0.98
+usage-ai	celeron	low_end_cpu	0	0.90
+usage-ai	pentium	low_end_cpu	0	0.88
+usage-ai	8gb ram	low_memory	0	0.86
+usage-ai	sata hdd	slow_storage	0	0.72
+usage-gaming	office搭載	business_feature	0	0.60
+usage-gaming	excel	business_software	0	0.58
+usage-gaming	accounting	business_keyword	0	0.72
+usage-gaming	fanless	low_power	0	0.80
+usage-gaming	passive cooling	low_power	0	0.82
+usage-creator	celeron	low_end_cpu	0	0.88
+usage-creator	intel uhd	weak_gpu	0	0.84
+usage-creator	4gb ram	low_memory	0	0.94
+usage-creator	256gb ssd	low_storage	0	0.72
+usage-creator	chromebook	lightweight_os	0	0.82
+usage-workstation	rgb	gaming_feature	0	0.70
+usage-workstation	rainbow lighting	gaming_feature	0	0.76
+usage-workstation	esports	gaming_keyword	0	0.84
+usage-workstation	streaming	gaming_keyword	0	0.72
+usage-server	rgb	gaming_feature	0	0.84
+usage-server	glass panel	gaming_feature	0	0.88
+usage-server	gaming chair	joke_noise	0	1.00
+usage-server	fps	gaming_keyword	0	0.82
+usage-mobile	水冷	cooling	0	0.74
+usage-mobile	240mm radiator	cooling	0	0.88
+usage-mobile	360mm radiator	cooling	0	0.94
+usage-mobile	heavy gaming	high_power_usage	0	0.80
+usage-business	g-sync	gaming_feature	0	0.72
+usage-business	freesync	gaming_feature	0	0.68
+usage-business	240hz	gaming_monitor	0	0.82
+usage-business	360hz	gaming_monitor	0	0.92
+

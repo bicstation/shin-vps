@@ -1,202 +1,108 @@
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/types/semantic.ts
+
 /* =========================================
 🔥 Semantic Role
 ========================================= */
 
 export type SemanticRole =
 
-  | 'highlight'
   | 'primary'
   | 'secondary'
-  | 'supportive'
+  | 'highlight'
+  | 'related'
+  | 'ranking'
+  | string
 
 /* =========================================
-🔥 Semantic Label
+🔥 Semantic Runtime
 ========================================= */
 
-export type SemanticLabel = {
+export type SemanticRuntime = {
 
-  label: string
+  /* ======================================
+  🔥 Identity
+  ====================================== */
 
-  slug: string
-}
+  slug?: string
 
-/* =========================================
-🔥 Semantic Attribute
-========================================= */
+  name?: string
 
-export type SemanticAttribute = {
-
-  /* =====================================
-  Identity
-  ===================================== */
-
-  id?: number
-
-  name: string
-
-  slug: string
-
-  href?: string
-
-  /* =====================================
-  Type
-  ===================================== */
-
-  attr_type?: string
-
-  attr_type_display?: string
-
-  /* =====================================
-  UI
-  ===================================== */
+  title?: string
 
   description?: string
+
+  /* ======================================
+  🔥 Semantic
+  ====================================== */
+
+  semantic_role?: SemanticRole
+
+  semantic_weight?: number
+
+  /* ======================================
+  🔥 Visual
+  ====================================== */
 
   icon?: string
 
   color?: string
 
-  /* =====================================
-  Stats
-  ===================================== */
+  /* ======================================
+  🔥 Metrics
+  ====================================== */
 
   count?: number
-
-  order?: number
-
-  /* =====================================
-  Semantic
-  ===================================== */
-
-  semantic_role?: SemanticRole
-
-  semantic_weight?: number
 }
 
 /* =========================================
-🔥 Semantic Group
+🔥 Semantic Group Runtime
 ========================================= */
 
-export type SemanticGroup = {
+export type SemanticGroupRuntime = {
 
   key: string
 
   label: string
 
-  title: string
+  totalAttributes: number
 
-  description?: string
+  totalProducts: number
 
-  items: SemanticAttribute[]
+  attributes: SemanticRuntime[]
 }
 
 /* =========================================
-🔥 Semantic Navigation
+🔥 Semantic Insight
 ========================================= */
 
-export type SemanticNavigation = {
-
-  groups: SemanticGroup[]
-}
-
-/* =========================================
-🔥 Semantic Payload
-========================================= */
-
-export type SemanticPayload = {
-
-  semantic_schema_version?: number
-
-  attributes?: SemanticAttribute[]
-
-  grouped_attributes?: Record<
-    string,
-    SemanticAttribute[]
-  >
-}
-
-/* =========================================
-🔥 Semantic Finder Query
-========================================= */
-
-export type SemanticFinderQuery = {
-
-  usage?: string
-
-  gpu?: string
-
-  cpu?: string
-
-  maker?: string
-
-  memory?: string
-
-  storage?: string
-
-  resolution?: string
-
-  panel?: string
-
-  workload?: string
-
-  ai?: string
-}
-
-/* =========================================
-🔥 Semantic Recommendation
-========================================= */
-
-export type SemanticRecommendation = {
-
-  semantic_score?: number
-
-  confidence?: number
-
-  reasoning?: string
-}
-
-/* =========================================
-🔥 Semantic Card Props
-========================================= */
-
-export type SemanticCardProps = {
-
-  item: SemanticAttribute
-}
-
-/* =========================================
-🔥 Semantic Section Props
-========================================= */
-
-export type SemanticSectionProps = {
-
-  group: SemanticGroup
-}
-
-/* =========================================
-🔥 Ranking Hero Props
-========================================= */
-
-export type RankingHeroProps = {
+export type SemanticInsight = {
 
   title?: string
 
   description?: string
 
-  semanticLabels?: SemanticLabel[]
+  icon?: string
 }
 
 /* =========================================
-🔥 Finder CTA Props
+🔥 Semantic Metadata
 ========================================= */
 
-export type FinderCTAProps = {
+export type SemanticMetadata = {
+
+  slug?: string
 
   title?: string
 
   description?: string
 
-  href?: string
+  semanticRole?: SemanticRole
 
-  semanticKeywords?: SemanticLabel[]
+  semanticWeight?: number
+
+  icon?: string
+
+  color?: string
+
+  count?: number
 }

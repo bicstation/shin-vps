@@ -1,77 +1,50 @@
 type	name	slug	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
-
 product_type	モニター	product-monitor	10	0	primary	0.95	monitor	cyan	true
 product_type	デスクトップPC	product-desktop	10	0	primary	0.95	pc	blue	true
 product_type	ノートPC	product-notebook	10	0	primary	0.95	laptop	green	true
 product_type	ミニPC	product-mini-pc	10	0	secondary	0.70	box	gray	false
 product_type	サーバー	product-server	10	0	highlight	0.98	server	darkred	true
 product_type	ワークステーション	product-workstation	10	0	highlight	0.92	cpu	purple	true
-
 device	ノートPC	device-laptop	90	0	primary	0.80	laptop	blue	true
 device	デスクトップPC	device-desktop	80	0	secondary	0.70	pc	gray	true
 device	サーバー	device-server	100	0	highlight	0.98	server	darkred	true
 device	ワークステーション	device-workstation	95	0	highlight	0.92	cpu	purple	true
 device	ミニPC	device-mini-pc	75	0	secondary	0.65	box	green	true
 device	モバイルPC	device-mobile-pc	85	0	primary	0.78	smartphone	cyan	true
-
 type	name	slug	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
-
 cpu	Core Ultra 9	intel-core-ultra-9	110	0	primary	0.98	cpu	red	true
 cpu	Core Ultra 7	intel-core-ultra-7	105	0	primary	0.92	cpu	orange	true
 cpu	Core Ultra 5	intel-core-ultra-5	100	0	primary	0.88	cpu	yellow	true
-
 cpu	Core i9	intel-core-i9	90	0	primary	0.95	cpu	red	true
 cpu	Core i7	intel-core-i7	85	0	primary	0.88	cpu	orange	true
 cpu	Core i5	intel-core-i5	80	0	secondary	0.75	cpu	yellow	true
 cpu	Core i3	intel-core-i3	70	0	secondary	0.60	cpu	blue	true
-
 cpu	Ryzen AI	amd-ryzen-ai	95	0	highlight	0.97	cpu	purple	true
 cpu	Ryzen Threadripper	amd-threadripper	95	0	highlight	0.99	cpu	darkred	true
-
 cpu	Snapdragon X Elite / Plus	arm-snapdragon-x	92	0	highlight	0.93	cpu	cyan	true
-
 cpu	Ryzen 9	amd-ryzen-9	85	0	primary	0.90	cpu	red	true
 cpu	Ryzen 7	amd-ryzen-7	80	0	primary	0.84	cpu	orange	true
 cpu	Ryzen 5	amd-ryzen-5	75	0	secondary	0.72	cpu	yellow	true
 cpu	Ryzen 3	amd-ryzen-3	70	0	secondary	0.58	cpu	blue	true
-
 cpu	Intel Xeon	intel-xeon	95	0	highlight	0.96	cpu	darkred	true
-
 cpu	Celeron / Pentium	intel-low-end	10	0	supportive	0.20	cpu	gray	true
-
 cpu_feature	NPU搭載	cpu-npu	10	0	highlight	0.85	sparkles	purple	true
-
-
-type	name	slug	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
-
 gpu	GeForce RTX 5090	gpu-rtx-5090	110	0	highlight	1.00	gpu	red	true
 gpu	GeForce RTX 5080	gpu-rtx-5080	105	0	highlight	0.98	gpu	red	true
-
 gpu	GeForce RTX 5070 Ti	gpu-rtx-5070-ti	100	0	highlight	0.95	gpu	orange	true
 gpu	GeForce RTX 5070	gpu-rtx-5070	95	0	primary	0.92	gpu	orange	true
-
 gpu	GeForce RTX 4090	gpu-rtx-4090	92	0	highlight	0.97	gpu	red	true
 gpu	GeForce RTX 4080	gpu-rtx-4080	88	0	primary	0.90	gpu	orange	true
-
 gpu	GeForce RTX 4070 Ti	gpu-rtx-4070-ti	85	0	primary	0.87	gpu	yellow	true
 gpu	GeForce RTX 4070	gpu-rtx-4070	82	0	primary	0.84	gpu	yellow	true
-
 gpu	GeForce RTX 4060 Ti	gpu-rtx-4060-ti	78	0	secondary	0.78	gpu	green	true
 gpu	GeForce RTX 4060	gpu-rtx-4060	75	0	secondary	0.74	gpu	green	true
-
 gpu	GeForce RTX 4050	gpu-rtx-4050	70	0	secondary	0.68	gpu	blue	true
-
 gpu	Radeon AI PRO	gpu-radeon-ai-pro	65	0	highlight	0.80	gpu	purple	true
-
 gpu	Intel Arc Graphics	gpu-intel-arc	50	0	supportive	0.55	gpu	cyan	true
-
 gpu	Intel Graphics (内蔵)	gpu-intel-graphics	5	0	supportive	0.15	gpu	gray	true
-
 gpu	AMD Radeon Graphics (内蔵)	gpu-amd-graphics	5	0	supportive	0.18	gpu	gray	true
-
 gpu_type	プロ向け	gpu-professional	45	0	highlight	0.72	briefcase	darkblue	true
-
-
 vram	24GB以上	vram-24gb-plus	24gb,24gb gddr6,24gb gddr6x,24gb vram	100	0	highlight	0.98	memory	red	true
 vram	16GB	vram-16gb	16gb gddr6,16gb gddr6x	90	0	primary	0.90	memory	orange	true
 vram	12GB	vram-12gb	12gb gddr6,12gb gddr6x	80	0	primary	0.82	memory	yellow	true
@@ -88,21 +61,15 @@ storage	512GB（標準）	ssd-512gb	512gb ssd,512 gb ssd	80	0	secondary	0.68	har
 storage	256GB（最低限）	ssd-256gb	256gb ssd,256 gb ssd	70	0	supportive	0.40	hard-drive	blue	false
 storage_type	NVMe SSD	storage-nvme	nvme,m.2 nvme,pci express ssd	50	0	highlight	0.78	cpu	purple	true
 storage_type	SATA SSD	storage-sata	sata ssd,2.5インチ ssd	40	0	secondary	0.50	hard-drive	gray	true
-
-
-type	name	slug	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
-
 usage	ゲーミングPC	usage-gaming	711	0	highlight	0.98	gamepad	red	true
 usage	クリエイター向け	usage-creator	712	0	highlight	0.92	pen-tool	purple	true
 usage	ビジネス・法人向け	usage-business	713	0	primary	0.75	briefcase	blue	true
 usage	AI・ローカルAI用途	usage-ai	714	0	highlight	1.00	sparkles	purple	true
 usage	モバイル・軽量	usage-mobile	715	0	primary	0.82	smartphone	cyan	true
 usage	コスパ重視	usage-budget	716	0	secondary	0.65	badge-dollar-sign	green	true
-
 pc_feature	1kg未満（超軽量）	feat-weight-1kg	100	0	highlight	0.88	feather	cyan	true
 pc_feature	1.0〜1.5kg（軽量）	feat-weight-1-5kg	90	0	primary	0.72	feather	blue	true
 pc_feature	1.5〜2.0kg（標準）	feat-weight-2kg	80	0	secondary	0.55	scale	gray	true
-
 maker	ASUS	maker-asus	50	0	secondary	0.45	laptop	blue	false
 maker	DELL	maker-dell	50	0	secondary	0.45	monitor	blue	false
 maker	HP	maker-hp	50	0	secondary	0.45	laptop	blue	false
@@ -118,53 +85,39 @@ maker	Razer	maker-razer	50	0	highlight	0.70	sparkles	green	false
 maker	VAIO	maker-vaio	50	0	secondary	0.40	laptop	black	false
 maker	MINISFORUM	maker-minisforum	50	0	secondary	0.45	cpu	gray	false
 maker	Beelink	maker-beelink	50	0	secondary	0.45	box	gray	false
-
-type	name	slug	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
-
 monitor_size	24インチ前後（標準）	monitor-24inch	80	0	secondary	0.72	monitor	blue	false
 monitor_size	27インチ（大画面）	monitor-27inch	90	0	primary	0.84	monitor	green	true
 monitor_size	32インチ以上（特大）	monitor-32inch	100	0	highlight	0.96	monitor	purple	true
 monitor_size	22インチ以下（小型）	monitor-small	70	0	supportive	0.48	monitor	gray	false
-
 resolution	FHD	fhd	80	0	secondary	0.65	screen-share	blue	false
 resolution	WQHD	wqhd	90	0	primary	0.84	screen-share	green	true
 resolution	4K	4k	100	0	highlight	0.96	screen-share	purple	true
 resolution	8K（超高精細）	res-8k	110	0	highlight	1.00	screen-share	red	true
-
 refresh_rate	60Hz（標準）	hz-60hz	80	0	supportive	0.50	gauge	gray	false
 refresh_rate	120Hz以上（高リフレッシュ）	hz-120hz	90	0	primary	0.84	gauge	green	true
 refresh_rate	240Hz以上（ゲーミング）	hz-240hz	100	0	highlight	0.96	gauge	red	true
 refresh_rate	500Hz	refresh-500hz	90	0	highlight	0.98	zap	purple	true
-
 panel_type	IPS	panel-ips	90	0	primary	0.82	layers	blue	true
 panel_type	VA	panel-va	80	0	secondary	0.68	layers	green	false
 panel_type	OLED	panel-oled	100	0	highlight	0.98	sparkles	purple	true
-
 aspect_ratio	スーパーウルトラワイド（32:9）	aspect-32-9	100	0	highlight	0.95	stretch-horizontal	purple	true
 aspect_ratio	ウルトラワイド（21:9）	aspect-21-9	90	0	primary	0.84	stretch-horizontal	blue	true
-
-type	name	slug	order	is_adult	semantic_role	semantic_weight	icon	color	is_ranking_enabled
-
 actor_type	単体女優	solo-actress	1001	1	highlight	0.92	user	pink	true
 actor_type	素人・ナンパ	amateur	1002	1	primary	0.82	users	orange	true
 actor_type	熟女・人妻	mature	1003	1	primary	0.84	heart	red	true
 actor_type	女子大生	college-girl	1004	1	secondary	0.72	book-open	purple	false
-
 body	巨乳	big-breasts	1010	1	highlight	0.90	sparkles	pink	true
 body	美少女	beautiful-girl	1011	1	primary	0.78	star	yellow	true
 body	スレンダー	slender	1012	1	secondary	0.70	wand	blue	false
 body	ぽっちゃり	chubby	1013	1	secondary	0.62	circle	orange	false
-
 av_feature	4K / 高画質	ultra-hd-4k	1020	1	highlight	0.88	monitor	purple	true
 av_feature	VR / 3D	vr-content	1021	1	highlight	0.94	glasses	cyan	true
 av_feature	個人撮影	self-shot	1022	1	secondary	0.68	smartphone	green	false
 av_feature	AI解析済 / 高圧縮	ai-analyzed	1023	1	highlight	0.86	cpu	purple	true
-
 scene	制服・コスプレ	cosplay	1030	1	highlight	0.84	shirt	pink	true
 scene	巨乳・フェチ	fetish	1031	1	primary	0.80	eye	red	true
 scene	痴漢・露出	public-exposure	1032	1	secondary	0.72	map	purple	false
 scene	白衣・奉仕	nursing	1033	1	secondary	0.66	heart-handshake	blue	false
-
 style	中出し	creampie	1040	1	highlight	0.90	droplets	red	true
 style	拘束・SM	sm-bondage	1041	1	highlight	0.88	lock	purple	true
 style	潮吹き	squirting	1042	1	primary	0.82	waves	cyan	true

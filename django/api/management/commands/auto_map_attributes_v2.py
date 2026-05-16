@@ -9,11 +9,12 @@ from api.models import PCProduct, PCAttribute
 from api.utils.attribute_loader import (
     sync_attributes_from_tsv
 )
-
 from api.utils.attribute_matcher import (
     match_attribute
 )
-
+from api.utils.semantic.runtime import (
+    run_semantic_runtime
+)
 
 # =========================================================
 # Memory 判定
@@ -449,6 +450,74 @@ class Command(BaseCommand):
 
                     type_counts["device"] += 1
 
+                # =========================================================
+                # Semantic Runtime
+                # =========================================================
+
+                semantic_text = " ".join([
+
+                    p.name or "",
+                    p.description or "",
+                    p.cpu_model or "",
+                    p.gpu_model or "",
+                    p.maker or "",
+
+                ]).lower()
+
+
+                # =========================================================
+                # Run Semantic Runtime
+                # =========================================================
+
+                semantic_result = run_semantic_runtime(
+                    semantic_text
+                )
+
+
+                # =========================================================
+                # Debug
+                # =========================================================
+
+                self.stdout.write(
+                    f"\n🧠 SEMANTIC: {p.id}"
+                )
+                self.stdout.write(
+                    str(
+                        semantic_result["sorted_scores"]
+                    )
+                )
+
+                # =========================================================
+                # Semantic Threshold
+                # =========================================================
+
+                SEMANTIC_THRESHOLD = 0.70
+
+
+                # =========================================================
+                # Apply Semantic Attributes
+                # =========================================================
+
+                for slug, score in (
+
+                    semantic_result["sorted_scores"]
+
+                ):
+
+                    if score < SEMANTIC_THRESHOLD:
+                        continue
+
+                    attr = get(slug)
+
+                    if not attr:
+                        continue
+
+                    new_attrs.append(attr)
+
+                    type_counts[
+                        attr.attr_type
+                    ] += 1
+
 
                 # =========================================================
                 # Duplicate Safe
@@ -467,7 +536,7 @@ class Command(BaseCommand):
 
                     seen.add(a.id)
 
-                    unique_attrs.append(a)
+                    unique_attrs.append(a)                
 
                 # =========================================================
                 # Save
