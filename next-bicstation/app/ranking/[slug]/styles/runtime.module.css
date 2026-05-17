@@ -113,6 +113,7 @@ Runtime Core Experience
 .runtimeContinuationSection {
 
   position: relative;
+  margin-top: 40px;
 
   width: 100%;
 }
@@ -427,7 +428,7 @@ Runtime Core Experience
 
   isolation: isolate;
 
-  padding: 96px 64px;
+  padding: 96px 64px 140px;
 
   border-radius: 44px;
 
@@ -516,7 +517,8 @@ Runtime Core Experience
   color: white;
 
   font-size:
-    clamp(58px, 8vw, 120px);
+    /* clamp(58px, 8vw, 120px); */
+    clamp(48px, 6vw, 92px);
 
   line-height: .9;
 
@@ -537,4 +539,307 @@ Runtime Core Experience
   font-size: 18px;
 
   line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* HERO */
+/* ========================================================================= */
+
+.runtimeHero {
+
+  position: relative;
+
+  overflow: hidden;
+
+  isolation: isolate;
+
+  padding: 96px 64px;
+
+  border-radius: 44px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.06),
+      rgba(255,255,255,.02)
+    );
+
+  backdrop-filter: blur(30px);
+
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.40);
+}
+
+.runtimeHeroInner {
+
+  position: relative;
+
+  z-index: 2;
+
+  max-width: 1080px;
+}
+
+/* ========================================================================= */
+/* HERO TOP */
+/* ========================================================================= */
+
+.runtimeHeroTop {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 18px;
+
+  margin-bottom: 28px;
+}
+
+.runtimeHeroRuntime {
+
+  color:
+    rgba(255,255,255,.72);
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  letter-spacing: .12em;
+
+  text-transform: uppercase;
+}
+
+/* ========================================================================= */
+/* TITLE */
+/* ========================================================================= */
+
+.runtimeHeroTitle {
+
+  margin-bottom: 28px;
+
+  color: white;
+
+  font-size:
+    clamp(58px, 8vw, 120px);
+
+  line-height: .9;
+
+  font-weight: 900;
+
+  letter-spacing: -.08em;
+
+  text-wrap: balance;
+}
+
+/* ========================================================================= */
+/* DESCRIPTION */
+/* ========================================================================= */
+
+.runtimeHeroDescription {
+
+  max-width: 760px;
+
+  color:
+    #dbe4f0;
+
+  font-size: 18px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* METRICS */
+/* ========================================================================= */
+
+.runtimeHeroMetrics {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0,1fr));
+
+  gap: 18px;
+
+  margin-top: 42px;
+
+  margin-bottom: 34px;
+}
+
+.runtimeHeroMetric {
+
+  padding: 24px;
+
+  border-radius: 24px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    rgba(255,255,255,.04);
+
+  backdrop-filter: blur(14px);
+}
+
+.runtimeHeroMetricLabel {
+
+  margin-bottom: 10px;
+
+  color:
+    rgba(255,255,255,.48);
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: .12em;
+
+  text-transform: uppercase;
+}
+
+.runtimeHeroMetricValue {
+
+  color: white;
+
+  font-size: 28px;
+
+  font-weight: 900;
+
+  letter-spacing: -.04em;
+}
+
+/* ========================================================================= */
+/* CHIPS */
+/* ========================================================================= */
+
+.runtimeHeroChips {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 14px;
+}
+
+.runtimeHeroChip {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 42px;
+
+  padding:
+    0 18px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  color: white;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  letter-spacing: .02em;
+
+  backdrop-filter: blur(12px);
+
+  transition:
+    transform .3s ease,
+    border-color .3s ease,
+    background .3s ease;
+}
+
+.runtimeHeroChip:hover {
+
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(255,255,255,.16);
+
+  background:
+    rgba(255,255,255,.08);
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+
+  .runtimeHero {
+
+    padding: 42px 24px;
+
+    border-radius: 30px;
+  }
+
+  .runtimeHeroTop {
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 12px;
+  }
+
+  .runtimeHeroTitle {
+
+    font-size:
+      clamp(40px, 12vw, 64px);
+
+    margin-bottom: 22px;
+  }
+
+  .runtimeHeroDescription {
+
+    font-size: 15px;
+
+    line-height: 1.8;
+  }
+
+  .runtimeHeroMetrics {
+
+    grid-template-columns:
+      1fr;
+
+    gap: 14px;
+
+    margin-top: 32px;
+  }
+
+  .runtimeHeroMetric {
+
+    padding: 20px;
+  }
+
+  .runtimeHeroMetricValue {
+
+    font-size: 24px;
+  }
+
+  .runtimeHeroChips {
+
+    gap: 10px;
+  }
+
+  .runtimeHeroChip {
+
+    min-height: 38px;
+
+    padding:
+      0 14px;
+
+    font-size: 12px;
+  }
 }

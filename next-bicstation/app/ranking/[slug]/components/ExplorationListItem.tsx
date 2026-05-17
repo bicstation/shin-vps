@@ -37,6 +37,9 @@ export default function ExplorationListItem({
   const recommendationReason =
     product?.recommendation_reason
 
+  const productSlug =
+    product?.slug
+
   /* ==========================================================================
   🔥 Render
   ========================================================================== */
@@ -46,95 +49,190 @@ export default function ExplorationListItem({
     <article className={styles.explorationItem}>
 
       {/* ================================================================
-      Rank
+      Glow
       ================================================================ */}
 
-      <div className={styles.explorationRank}>
-
-        #{rank}
-
-      </div>
+      <div
+        className={
+          styles.explorationGlow
+        }
+      />
 
       {/* ================================================================
-      Image
+      Header
       ================================================================ */}
 
-      <div className={styles.explorationImageArea}>
+      <header
+        className={
+          styles.explorationHeaderArea
+        }
+      >
 
-        {product?.image_url ? (
+        {/* Rank */}
 
-          <img
-            src={product.image_url}
-            alt={product?.name}
-            className={styles.explorationImage}
-          />
-
-        ) : (
-
-          <div className={styles.explorationImagePlaceholder}>
-
-            NO IMAGE
-
-          </div>
-
-        )}
-
-      </div>
-
-      {/* ================================================================
-      Content
-      ================================================================ */}
-
-      <div className={styles.explorationContent}>
-
-        {/* Product Name */}
-        <h3 className={styles.explorationProductTitle}>
-
-          {product?.name}
-
-        </h3>
-
-        {/* Maker */}
-        {product?.maker && (
-
-          <div className={styles.explorationMaker}>
-
-            {product.maker}
-
-          </div>
-
-        )}
-
-        {/* Recommendation */}
-        {recommendationReason && (
-
-          <p className={styles.explorationReason}>
-
-            {recommendationReason}
-
-          </p>
-
-        )}
-
-        {/* Semantic Chips */}
-        <ProductSemanticChips
-          groupedAttributes={
-            groupedAttributes
+        <div
+          className={
+            styles.explorationRank
           }
-        />
+        >
+
+          #{rank}
+
+        </div>
+
+        {/* Title Area */}
+
+        <div
+          className={
+            styles.explorationTitleArea
+          }
+        >
+
+          {/* Product Name */}
+
+          <h3
+            className={
+              styles.explorationProductTitle
+            }
+          >
+
+            {product?.name}
+
+          </h3>
+
+          {/* Maker */}
+
+          {product?.maker && (
+
+            <div
+              className={
+                styles.explorationMaker
+              }
+            >
+
+              {product.maker}
+
+            </div>
+
+          )}
+
+        </div>
+
+      </header>
+
+      {/* ================================================================
+      Body
+      ================================================================ */}
+
+      <div
+        className={
+          styles.explorationBody
+        }
+      >
+
+        {/* ============================================================
+        Image
+        ============================================================ */}
+
+        <div
+          className={
+            styles.explorationImageArea
+          }
+        >
+
+          {product?.image_url ? (
+
+            <img
+              src={product.image_url}
+              alt={product?.name}
+              className={
+                styles.explorationImage
+              }
+            />
+
+          ) : (
+
+            <div
+              className={
+                styles.explorationImagePlaceholder
+              }
+            >
+
+              NO IMAGE
+
+            </div>
+
+          )}
+
+        </div>
+
+        {/* ============================================================
+        Content
+        ============================================================ */}
+
+        <div
+          className={
+            styles.explorationContent
+          }
+        >
+
+          {/* Recommendation */}
+
+          {recommendationReason && (
+
+            <p
+              className={
+                styles.explorationReason
+              }
+            >
+
+              {recommendationReason}
+
+            </p>
+
+          )}
+
+          {/* Semantic Chips */}
+
+          <div
+            className={
+              styles.explorationChips
+            }
+          >
+
+            <ProductSemanticChips
+              groupedAttributes={
+                groupedAttributes
+              }
+            />
+
+          </div>
+
+        </div>
 
       </div>
 
       {/* ================================================================
-      Price Area
+      Footer
       ================================================================ */}
 
-      <div className={styles.explorationSide}>
+      <footer
+        className={
+          styles.explorationFooter
+        }
+      >
 
-        {/* Price */}
+        {/* ============================================================
+        Price
+        ============================================================ */}
+
         {product?.price && (
 
-          <div className={styles.explorationPrice}>
+          <div
+            className={
+              styles.explorationPrice
+            }
+          >
 
             ¥
             {Number(
@@ -145,18 +243,52 @@ export default function ExplorationListItem({
 
         )}
 
-        {/* CTA */}
-        <Link
-          href={product?.affiliate_url || '#'}
-          target="_blank"
-          className={styles.explorationCTA}
+        {/* ============================================================
+        Actions
+        ============================================================ */}
+
+        <div
+          className={
+            styles.explorationActions
+          }
         >
 
-          詳細を見る
+          {/* Internal */}
 
-        </Link>
+          <Link
+            href={
+              productSlug
+                ? `/products/${productSlug}`
+                : '#'
+            }
+            className={
+              styles.explorationSecondaryCTA
+            }
+          >
 
-      </div>
+            詳細を見る
+
+          </Link>
+
+          {/* Affiliate */}
+
+          <Link
+            href={
+              product?.affiliate_url || '#'
+            }
+            target="_blank"
+            className={
+              styles.explorationCTA
+            }
+          >
+
+            ショップへ
+
+          </Link>
+
+        </div>
+
+      </footer>
 
     </article>
 

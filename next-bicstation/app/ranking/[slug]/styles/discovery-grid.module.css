@@ -637,3 +637,134 @@ Discovery Runtime Experience
     font-size: 13px;
   }
 }
+
+/* ========================================================================= */
+/* HEADER */
+/* ========================================================================= */
+
+.discoverySectionHeader {
+
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 32px;
+
+  margin-bottom: 42px;
+}
+
+/* ========================================================================= */
+/* INTRO */
+/* ========================================================================= */
+
+.discoveryIntro {
+
+  margin-bottom: 18px;
+}
+
+.discoveryKicker {
+
+  margin-bottom: 8px;
+
+  color:
+    #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  letter-spacing: .04em;
+}
+
+.discoveryDescription {
+
+  max-width: 720px;
+
+  color:
+    #dbe4f0;
+
+  font-size: 16px;
+
+  line-height: 1.8;
+}
+
+/* ========================================================================= */
+/* EYEBROW */
+/* ========================================================================= */
+
+.discoveryEyebrow {
+
+  margin-bottom: 18px;
+
+  color:
+    #94a3b8;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: .24em;
+
+  text-transform: uppercase;
+}
+
+/* ========================================================================= */
+/* HEADING */
+/* ========================================================================= */
+
+.discoveryHeading {
+
+  color: white;
+
+  font-size:
+    clamp(38px, 5vw, 72px);
+
+  line-height: .96;
+
+  font-weight: 900;
+
+  letter-spacing: -.08em;
+
+  text-wrap: balance;
+}
+
+/* ========================================================================= */
+/* META */
+/* ========================================================================= */
+
+.discoveryMeta {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 52px;
+
+  padding:
+    0 22px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    rgba(255,255,255,.04);
+
+  backdrop-filter: blur(16px);
+
+  color:
+    rgba(255,255,255,.72);
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  letter-spacing: .08em;
+
+  text-transform: uppercase;
+}
