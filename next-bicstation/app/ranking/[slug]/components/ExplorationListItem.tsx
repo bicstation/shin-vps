@@ -1,6 +1,6 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/ExplorationListItem.tsx
+// /home/maya/shin-vps/next-bicstation/app/ranking/[slug]/components/ExplorationListItem.tsx
 // ============================================================================
 
 'use client'
@@ -37,8 +37,8 @@ export default function ExplorationListItem({
   const recommendationReason =
     product?.recommendation_reason
 
-  const productSlug =
-    product?.slug
+  const productUniqueId =
+    product?.unique_id
 
   /* ==========================================================================
   🔥 Render
@@ -46,79 +46,69 @@ export default function ExplorationListItem({
 
   return (
 
-    <article className={styles.explorationItem}>
+    <article
+      className={
+        styles.explorationItem
+      }
+    >
 
       {/* ================================================================
-      Glow
+      Rank
       ================================================================ */}
 
       <div
         className={
-          styles.explorationGlow
+          styles.explorationRank
         }
-      />
+      >
+
+        #{rank}
+
+      </div>
 
       {/* ================================================================
       Header
       ================================================================ */}
 
-      <header
+      <div
         className={
-          styles.explorationHeaderArea
+          styles.explorationHeader
         }
       >
 
-        {/* Rank */}
+        {/* ============================================================
+        Product Title
+        ============================================================ */}
 
-        <div
+        <h3
           className={
-            styles.explorationRank
+            styles.explorationProductTitle
           }
         >
 
-          #{rank}
+          {product?.name}
 
-        </div>
+        </h3>
 
-        {/* Title Area */}
+        {/* ============================================================
+        Maker
+        ============================================================ */}
 
-        <div
-          className={
-            styles.explorationTitleArea
-          }
-        >
+        {product?.maker && (
 
-          {/* Product Name */}
-
-          <h3
+          <div
             className={
-              styles.explorationProductTitle
+              styles.explorationMaker
             }
           >
 
-            {product?.name}
+            {product.maker}
 
-          </h3>
+          </div>
 
-          {/* Maker */}
+        )}
 
-          {product?.maker && (
-
-            <div
-              className={
-                styles.explorationMaker
-              }
-            >
-
-              {product.maker}
-
-            </div>
-
-          )}
-
-        </div>
-
-      </header>
+      </div>
 
       {/* ================================================================
       Body
@@ -131,7 +121,7 @@ export default function ExplorationListItem({
       >
 
         {/* ============================================================
-        Image
+        Image Area
         ============================================================ */}
 
         <div
@@ -167,16 +157,18 @@ export default function ExplorationListItem({
         </div>
 
         {/* ============================================================
-        Content
+        Semantic Area
         ============================================================ */}
 
         <div
           className={
-            styles.explorationContent
+            styles.explorationSemantic
           }
         >
 
-          {/* Recommendation */}
+          {/* ========================================================
+          Recommendation
+          ======================================================== */}
 
           {recommendationReason && (
 
@@ -192,21 +184,15 @@ export default function ExplorationListItem({
 
           )}
 
-          {/* Semantic Chips */}
+          {/* ========================================================
+          Semantic Chips
+          ======================================================== */}
 
-          <div
-            className={
-              styles.explorationChips
+          <ProductSemanticChips
+            groupedAttributes={
+              groupedAttributes
             }
-          >
-
-            <ProductSemanticChips
-              groupedAttributes={
-                groupedAttributes
-              }
-            />
-
-          </div>
+          />
 
         </div>
 
@@ -216,7 +202,7 @@ export default function ExplorationListItem({
       Footer
       ================================================================ */}
 
-      <footer
+      <div
         className={
           styles.explorationFooter
         }
@@ -253,12 +239,14 @@ export default function ExplorationListItem({
           }
         >
 
-          {/* Internal */}
+          {/* ========================================================
+          Internal Runtime
+          ======================================================== */}
 
           <Link
             href={
-              productSlug
-                ? `/products/${productSlug}`
+              productUniqueId
+                ? `/product/${productUniqueId}`
                 : '#'
             }
             className={
@@ -270,7 +258,9 @@ export default function ExplorationListItem({
 
           </Link>
 
-          {/* Affiliate */}
+          {/* ========================================================
+          External Shop
+          ======================================================== */}
 
           <Link
             href={
@@ -288,7 +278,7 @@ export default function ExplorationListItem({
 
         </div>
 
-      </footer>
+      </div>
 
     </article>
 

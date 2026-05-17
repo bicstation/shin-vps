@@ -31,9 +31,17 @@ export default function DiscoveryCardGrid({
 
     return (
 
-      <section className={styles.discoverySection}>
+      <section
+        className={
+          styles.discoverySection
+        }
+      >
 
-        <div className={styles.discoveryEmpty}>
+        <div
+          className={
+            styles.discoveryEmpty
+          }
+        >
 
           discovery runtime data not found
 
@@ -50,29 +58,69 @@ export default function DiscoveryCardGrid({
 
   return (
 
-    <section className={styles.discoverySection}>
+    <section
+      className={
+        styles.discoverySection
+      }
+    >
 
       {/* ================================================================
       Header
       ================================================================ */}
 
-      <div className={styles.discoveryHeader}>
+      <div
+        className={
+          styles.discoverySectionHeader
+        }
+      >
 
-        <div>
+        {/* ============================================================
+        Header Main
+        ============================================================ */}
 
-          <div className={styles.discoveryEyebrow}>
+        <div
+          className={
+            styles.discoveryHeaderMain
+          }
+        >
+
+          {/* ========================================================
+          Eyebrow
+          ======================================================== */}
+
+          <div
+            className={
+              styles.discoveryEyebrow
+            }
+          >
 
             HIGH RELEVANCE DISCOVERY
 
           </div>
 
-          <h2 className={styles.discoveryTitle}>
+          {/* ========================================================
+          Title
+          ======================================================== */}
+
+          <h2
+            className={
+              styles.discoveryHeading
+            }
+          >
 
             注目のランキングモデル
 
           </h2>
 
-          <p className={styles.discoveryDescription}>
+          {/* ========================================================
+          Description
+          ======================================================== */}
+
+          <p
+            className={
+              styles.discoveryDescription
+            }
+          >
 
             semantic runtime が高い関連性を検出した
             discovery nodes。
@@ -81,7 +129,15 @@ export default function DiscoveryCardGrid({
 
         </div>
 
-        <div className={styles.discoveryCount}>
+        {/* ============================================================
+        Meta
+        ============================================================ */}
+
+        <div
+          className={
+            styles.discoveryMeta
+          }
+        >
 
           {products.length}
           {' '}
@@ -95,7 +151,11 @@ export default function DiscoveryCardGrid({
       Grid
       ================================================================ */}
 
-      <div className={styles.discoveryGrid}>
+      <div
+        className={
+          styles.discoveryGrid
+        }
+      >
 
         {products.map(
           (
@@ -108,6 +168,8 @@ export default function DiscoveryCardGrid({
                 product?.id
                 ||
                 product?.slug
+                ||
+                product?.unique_id
                 ||
                 index
               }

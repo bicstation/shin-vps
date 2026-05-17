@@ -1,18 +1,20 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/DiscoveryCard.tsx
+// /home/maya/shin-vps/next-bicstation/app/ranking/[slug]/components/DiscoveryCard.tsx
 // ============================================================================
 
 'use client'
 
 import Link from 'next/link'
 
-import ProductSemanticChips from './ProductSemanticChips'
-
 import styles from '../styles/discovery-grid.module.css'
 
+import {
+  ProductSemanticChips,
+} from './'
+
 type Props = {
-  product: any
+  product?: any
   rank?: number
 }
 
@@ -26,80 +28,26 @@ export default function DiscoveryCard({
 }: Props) {
 
   /* ==========================================================================
+  🔥 Empty
+  ========================================================================== */
+
+  if (!product) {
+
+    return null
+  }
+
+  /* ==========================================================================
   🔥 Runtime
   ========================================================================== */
 
-  const price =
+  const groupedAttributes =
+    product?.grouped_attributes || {}
 
-    typeof product?.price === 'number'
+  const recommendationReason =
+    product?.recommendation_reason
 
-      ? `¥${product.price.toLocaleString()}`
-
-      : null
-
-  const maker =
-
-    product?.maker
-    ||
-    product?.site_prefix
-    ||
-    'SHIN CORE LINX'
-
-  const description =
-
-    product?.description
-    ||
-    'semantic runtime が高い関連性を検出した discovery model。'
-
-  const semanticRole =
-
-    product?.semantic_role
-    ||
-    'あなたに近いおすすめ構成'
-
-  /* ==========================================================================
-  🔥 CTA
-  ========================================================================== */
-
-  const ctaLabel = (() => {
-
-    const usage =
-
-      JSON.stringify(
-        product?.grouped_attributes || {}
-      )
-
-    if (
-      usage.includes('gaming')
-    ) {
-
-      return 'ゲーム性能を見る'
-    }
-
-    if (
-      usage.includes('creator')
-    ) {
-
-      return '制作性能を見る'
-    }
-
-    if (
-      usage.includes('business')
-    ) {
-
-      return '仕事性能を見る'
-    }
-
-    if (
-      usage.includes('ai')
-    ) {
-
-      return 'AI性能を見る'
-    }
-
-    return 'この構成を詳しく見る'
-
-  })()
+  const productUniqueId =
+    product?.unique_id
 
   /* ==========================================================================
   🔥 Render
@@ -108,7 +56,9 @@ export default function DiscoveryCard({
   return (
 
     <article
-      className={styles.discoveryCard}
+      className={
+        styles.discoveryCard
+      }
     >
 
       {/* ================================================================
@@ -116,7 +66,9 @@ export default function DiscoveryCard({
       ================================================================ */}
 
       <div
-        className={styles.discoveryGlow}
+        className={
+          styles.discoveryGlow
+        }
       />
 
       {/* ================================================================
@@ -124,34 +76,48 @@ export default function DiscoveryCard({
       ================================================================ */}
 
       <div
-        className={styles.discoveryRank}
+        className={
+          styles.discoveryRank
+        }
       >
 
-        {rank}
+        #{rank}
 
       </div>
 
       {/* ================================================================
-      Image
+      Visual
       ================================================================ */}
 
       <div
         className={
-          styles.discoveryImageWrap
+          styles.discoveryVisual
         }
       >
 
-        <img
-          src={
-            product?.image_url
-          }
-          alt={
-            product?.name
-          }
-          className={
-            styles.discoveryImage
-          }
-        />
+        {product?.image_url ? (
+
+          <img
+            src={product.image_url}
+            alt={product?.name}
+            className={
+              styles.discoveryImage
+            }
+          />
+
+        ) : (
+
+          <div
+            className={
+              styles.discoveryImagePlaceholder
+            }
+          >
+
+            NO IMAGE
+
+          </div>
+
+        )}
 
       </div>
 
@@ -169,18 +135,22 @@ export default function DiscoveryCard({
         Semantic Role
         ============================================================ */}
 
-        <div
-          className={
-            styles.discoveryRole
-          }
-        >
+        {product?.semantic_role && (
 
-          {semanticRole}
+          <div
+            className={
+              styles.discoveryRole
+            }
+          >
 
-        </div>
+            {product.semantic_role}
+
+          </div>
+
+        )}
 
         {/* ============================================================
-        Title
+        Product Name
         ============================================================ */}
 
         <h3
@@ -194,84 +164,138 @@ export default function DiscoveryCard({
         </h3>
 
         {/* ============================================================
-        Price
+        Maker
         ============================================================ */}
 
-        {price && (
+        {product?.maker && (
 
           <div
             className={
-              styles.discoveryPrice
+              styles.discoveryMaker
             }
           >
 
-            {price}
+            {product.maker}
 
           </div>
 
         )}
 
         {/* ============================================================
-        Maker
-        ============================================================ */}
-
-        <div
-          className={
-            styles.discoveryMaker
-          }
-        >
-
-          {maker}
-
-        </div>
-
-        {/* ============================================================
         Description
         ============================================================ */}
 
-        <p
-          className={
-            styles.discoveryDescription
-          }
-        >
+        {recommendationReason && (
 
-          {description}
+          <p
+            className={
+              styles.discoveryDescription
+            }
+          >
 
-        </p>
+            {recommendationReason}
+
+          </p>
+
+        )}
 
         {/* ============================================================
         Semantic Chips
         ============================================================ */}
 
-        <ProductSemanticChips
-          groupedAttributes={
-            product?.grouped_attributes
+        <div
+          className={
+            styles.discoveryChips
           }
-        />
+        >
+
+          <ProductSemanticChips
+            groupedAttributes={
+              groupedAttributes
+            }
+          />
+
+        </div>
 
         {/* ============================================================
-        CTA
+        Bottom
         ============================================================ */}
 
         <div
           className={
-            styles.discoveryFooter
+            styles.discoveryBottom
           }
         >
 
-          <Link
-            href={
-              product?.url || '#'
-            }
-            target="_blank"
+          {/* ========================================================
+          Price
+          ======================================================== */}
+
+          {product?.price && (
+
+            <div
+              className={
+                styles.discoveryPrice
+              }
+            >
+
+              ¥
+              {Number(
+                product.price
+              ).toLocaleString()}
+
+            </div>
+
+          )}
+
+          {/* ========================================================
+          Actions
+          ======================================================== */}
+
+          <div
             className={
-              styles.discoveryButton
+              styles.discoveryActions
             }
           >
 
-            {ctaLabel}
+            {/* ====================================================
+            Internal Runtime
+            ==================================================== */}
 
-          </Link>
+            <Link
+              href={
+                productUniqueId
+                  ? `/product/${productUniqueId}`
+                  : '#'
+              }
+              className={
+                styles.discoverySecondaryCTA
+              }
+            >
+
+              詳細を見る
+
+            </Link>
+
+            {/* ====================================================
+            External Shop
+            ==================================================== */}
+
+            <Link
+              href={
+                product?.affiliate_url || '#'
+              }
+              target="_blank"
+              className={
+                styles.discoveryCTA
+              }
+            >
+
+              ショップへ
+
+            </Link>
+
+          </div>
 
         </div>
 

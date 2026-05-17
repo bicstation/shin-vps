@@ -7,6 +7,21 @@ import type {
   Metadata,
 } from 'next'
 
+/* ============================================================================
+🔥 JSON-LD Runtime Schema
+============================================================================ */
+
+type JsonLdSchema =
+
+  Record<
+    string,
+    unknown
+  >
+
+/* ============================================================================
+🔥 Runtime SEO
+============================================================================ */
+
 type RuntimeSEO = {
 
   title?: string
@@ -23,9 +38,9 @@ type RuntimeSEO = {
 
     description?: string
 
-    images?: {
+    images?: Array<{
       url: string
-    }[]
+    }>
   }
 
   twitter?: {
@@ -38,16 +53,24 @@ type RuntimeSEO = {
   }
 }
 
+/* ============================================================================
+🔥 Runtime Schemas
+============================================================================ */
+
 type RuntimeSchemas = {
 
-  itemSchema?: any
+  breadcrumbSchema?: JsonLdSchema
 
-  breadcrumbSchema?: any
+  collectionSchema?: JsonLdSchema
 
-  faqSchema?: any
+  itemSchema?: JsonLdSchema
 
-  collectionSchema?: any
+  faqSchema?: JsonLdSchema
 }
+
+/* ============================================================================
+🔥 Props
+============================================================================ */
 
 type Props = {
 
@@ -65,7 +88,7 @@ export function buildRuntimeMetadata({
 }: Props): Metadata {
 
   /* ==========================================================================
-  🔥 Runtime SEO
+  🔥 Runtime Values
   ========================================================================== */
 
   const title =
@@ -88,12 +111,46 @@ export function buildRuntimeMetadata({
   const openGraph =
     seo?.openGraph || {}
 
+  const openGraphImages =
+
+    Array.isArray(
+      openGraph?.images
+    )
+
+      ? openGraph.images
+
+      : []
+
   /* ==========================================================================
   🔥 Twitter
   ========================================================================== */
 
   const twitter =
     seo?.twitter || {}
+
+  const twitterImages =
+
+    Array.isArray(
+      twitter?.images
+    )
+
+      ? twitter.images
+
+      : []
+
+  /* ==========================================================================
+  🔥 Keywords
+  ========================================================================== */
+
+  const keywords =
+
+    Array.isArray(
+      seo?.keywords
+    )
+
+      ? seo.keywords
+
+      : []
 
   /* ==========================================================================
   🔥 Metadata
@@ -105,15 +162,7 @@ export function buildRuntimeMetadata({
 
     description,
 
-    keywords:
-
-      Array.isArray(
-        seo?.keywords
-      )
-
-        ? seo?.keywords
-
-        : [],
+    keywords,
 
     alternates:
 
@@ -139,14 +188,7 @@ export function buildRuntimeMetadata({
         canonical,
 
       images:
-
-        Array.isArray(
-          openGraph?.images
-        )
-
-          ? openGraph.images
-
-          : [],
+        openGraphImages,
 
       type:
         'website',
@@ -172,16 +214,8 @@ export function buildRuntimeMetadata({
         || description,
 
       images:
-
-        Array.isArray(
-          twitter?.images
-        )
-
-          ? twitter.images
-
-          : [],
+        twitterImages,
     },
-
   }
 }
 
@@ -196,20 +230,32 @@ export function RuntimeSchema({
 }) {
 
   /* ==========================================================================
-  🔥 Schema List
+  🔥 Schema Runtime List
   ========================================================================== */
 
   const schemaList = [
 
-    schemas?.breadcrumbSchema,
+    /* ================================================================
+    Structure
+    ================================================================ */
 
-    schemas?.faqSchema,
+    schemas?.breadcrumbSchema,
 
     schemas?.collectionSchema,
 
+    /* ================================================================
+    Entity
+    ================================================================ */
+
     schemas?.itemSchema,
 
-  ].filter(Boolean)
+    /* ================================================================
+    Supplemental
+    ================================================================ */
+
+    schemas?.faqSchema,
+
+  ].filter(Boolean) as JsonLdSchema[]
 
   /* ==========================================================================
   🔥 Empty
@@ -237,11 +283,15 @@ export function RuntimeSchema({
         ) => (
 
           <script
-            key={index}
+            key={
+              `runtime-schema-${index}`
+            }
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html:
-                JSON.stringify(schema),
+                JSON.stringify(
+                  schema
+                ),
             }}
           />
 

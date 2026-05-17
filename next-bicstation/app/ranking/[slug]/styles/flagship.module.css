@@ -1,31 +1,20 @@
 /* ============================================================================ */
 /* FILE: */
-/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/flagship.module.css */
+/* /home/maya/shin-vps/next-bicstation/app/ranking/[slug]/styles/flagship.module.css */
 /* ============================================================================ */
 
 /*
 ===============================================================================
 🔥 SHIN CORE LINX
-Flagship Runtime Experience
+Semantic Flagship Runtime
 ===============================================================================
 */
 
 /* ========================================================================= */
-/* FLAGSHIP SECTION */
+/* ROOT */
 /* ========================================================================= */
 
-.flagshipSection {
-
-  position: relative;
-
-  margin-bottom: 120px;
-}
-
-/* ========================================================================= */
-/* FLAGSHIP CARD */
-/* ========================================================================= */
-
-.flagshipCard {
+.flagship {
 
   position: relative;
 
@@ -33,7 +22,7 @@ Flagship Runtime Experience
 
   isolation: isolate;
 
-  border-radius: 44px;
+  border-radius: 48px;
 
   border:
     1px solid rgba(255,255,255,.08);
@@ -41,252 +30,45 @@ Flagship Runtime Experience
   background:
     linear-gradient(
       180deg,
-      rgba(255,255,255,.06),
+      rgba(255,255,255,.05),
       rgba(255,255,255,.02)
     );
 
-  backdrop-filter: blur(34px);
+  backdrop-filter: blur(30px);
 
   box-shadow:
-    0 40px 120px rgba(0,0,0,.40);
-
-  transition:
-    transform .45s ease,
-    border-color .35s ease,
-    box-shadow .45s ease,
-    background .35s ease;
-}
-
-.flagshipCard::before {
-
-  content: '';
-
-  position: absolute;
-
-  inset: 0;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,.05),
-      transparent 42%
-    );
-
-  pointer-events: none;
-}
-
-.flagshipCard:hover {
-
-  transform:
-    translateY(-8px);
-
-  border-color:
-    rgba(255,255,255,.16);
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.08),
-      rgba(255,255,255,.03)
-    );
-
-  box-shadow:
-    0 0 100px rgba(99,102,241,.12),
-    0 50px 140px rgba(0,0,0,.46);
+    0 60px 160px rgba(0,0,0,.42);
 }
 
 /* ========================================================================= */
-/* GLOW */
+/* BACKGROUND */
 /* ========================================================================= */
 
-.flagshipGlow {
+.flagshipBackground {
 
   position: absolute;
 
-  inset: -180px;
+  inset: -220px;
 
   background:
     radial-gradient(
       circle at top right,
       rgba(99,102,241,.18),
-      transparent 68%
+      transparent 58%
     );
 
-  filter: blur(70px);
+  filter: blur(90px);
 
-  opacity: .9;
+  opacity: .95;
 
   pointer-events: none;
 }
 
 /* ========================================================================= */
-/* GRID */
+/* INNER */
 /* ========================================================================= */
 
-.flagshipGrid {
-
-  position: relative;
-
-  z-index: 2;
-
-  display: grid;
-
-  grid-template-columns:
-    minmax(0, 1.1fr)
-    minmax(0, .9fr);
-
-  gap: 48px;
-
-  align-items: center;
-
-  padding: 54px;
-}
-
-/* ========================================================================= */
-/* MEDIA */
-/* ========================================================================= */
-
-.flagshipMedia {
-
-  position: relative;
-}
-
-.flagshipImageWrap {
-
-  position: relative;
-
-  overflow: hidden;
-
-  border-radius: 34px;
-
-  aspect-ratio: 1.16 / 1;
-
-  background:
-    rgba(255,255,255,.03);
-
-  border:
-    1px solid rgba(255,255,255,.06);
-}
-
-.flagshipImage {
-
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  transition:
-    transform 1s ease,
-    filter .45s ease;
-}
-
-.flagshipCard:hover
-.flagshipImage {
-
-  transform:
-    scale(1.05);
-
-  filter:
-    saturate(1.08);
-}
-
-/* ========================================================================= */
-/* BADGES */
-/* ========================================================================= */
-
-.flagshipBadgeRow {
-
-  position: absolute;
-
-  top: 24px;
-  left: 24px;
-
-  z-index: 5;
-
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 12px;
-}
-
-.flagshipRank {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  min-width: 72px;
-
-  height: 72px;
-
-  padding:
-    0 24px;
-
-  border-radius: 999px;
-
-  background:
-    rgba(15,23,42,.82);
-
-  border:
-    1px solid rgba(255,255,255,.12);
-
-  backdrop-filter: blur(20px);
-
-  color: white;
-
-  font-size: 28px;
-
-  font-weight: 900;
-
-  letter-spacing: -.06em;
-
-  box-shadow:
-    0 14px 40px rgba(0,0,0,.34);
-}
-
-.flagshipLabel {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  min-height: 42px;
-
-  padding:
-    0 18px;
-
-  border-radius: 999px;
-
-  background:
-    rgba(255,255,255,.06);
-
-  border:
-    1px solid rgba(255,255,255,.10);
-
-  backdrop-filter: blur(14px);
-
-  color:
-    #dbeafe;
-
-  font-size: 11px;
-
-  font-weight: 800;
-
-  letter-spacing: .18em;
-
-  text-transform: uppercase;
-}
-
-/* ========================================================================= */
-/* CONTENT */
-/* ========================================================================= */
-
-.flagshipContent {
+.flagshipInner {
 
   position: relative;
 
@@ -296,7 +78,22 @@ Flagship Runtime Experience
 
   flex-direction: column;
 
-  gap: 24px;
+  gap: 54px;
+
+  padding: 72px;
+}
+
+/* ========================================================================= */
+/* HEADER */
+/* ========================================================================= */
+
+.flagshipHeader {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
 }
 
 /* ========================================================================= */
@@ -323,17 +120,192 @@ Flagship Runtime Experience
 
 .flagshipTitle {
 
+  width: 100%;
+
   color: white;
 
-  font-size: clamp(42px, 6vw, 82px);
+  font-size:
+    clamp(52px, 7vw, 110px);
 
-  line-height: .94;
+  line-height: .92;
 
   font-weight: 900;
 
   letter-spacing: -.08em;
 
   text-wrap: balance;
+
+  word-break: break-word;
+}
+
+/* ========================================================================= */
+/* MAKER */
+/* ========================================================================= */
+
+.flagshipMaker {
+
+  color:
+    rgba(255,255,255,.58);
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: .18em;
+
+  text-transform: uppercase;
+}
+
+/* ========================================================================= */
+/* BODY */
+/* ========================================================================= */
+
+.flagshipBody {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 42px;
+}
+
+/* ========================================================================= */
+/* VISUAL */
+/* ========================================================================= */
+
+.flagshipVisual {
+
+  width: 100%;
+
+  max-width: 480px;
+
+  margin: 0 auto;
+}
+
+.flagshipImage {
+
+  width: 100%;
+
+  aspect-ratio: 1 / 1;
+
+  object-fit: contain;
+
+  border-radius: 40px;
+
+  background:
+    rgba(255,255,255,.04);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  padding: 42px;
+
+  transition:
+    transform .5s ease;
+}
+
+.flagship:hover
+.flagshipImage {
+
+  transform:
+    scale(1.03);
+}
+
+.flagshipImagePlaceholder {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 100%;
+
+  aspect-ratio: 1 / 1;
+
+  border-radius: 40px;
+
+  border:
+    1px dashed rgba(255,255,255,.12);
+
+  color:
+    rgba(255,255,255,.38);
+
+  font-size: 12px;
+
+  letter-spacing: .12em;
+
+  text-transform: uppercase;
+}
+
+/* ========================================================================= */
+/* SEMANTIC */
+/* ========================================================================= */
+
+.flagshipSemantic {
+
+  width: 100%;
+
+  max-width: 860px;
+
+  margin: 0 auto;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 34px;
+
+  text-align: center;
+}
+
+/* ========================================================================= */
+/* DESCRIPTION */
+/* ========================================================================= */
+
+.flagshipDescription {
+
+  max-width: 58ch;
+
+  color:
+    #dbe4f0;
+
+  font-size: 18px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* CHIPS */
+/* ========================================================================= */
+
+.flagshipChips {
+
+  width: 100%;
+}
+
+/* ========================================================================= */
+/* FOOTER */
+/* ========================================================================= */
+
+.flagshipFooter {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 32px;
+
+  padding-top: 34px;
+
+  border-top:
+    1px solid rgba(255,255,255,.08);
+
+  flex-wrap: wrap;
 }
 
 /* ========================================================================= */
@@ -344,130 +316,36 @@ Flagship Runtime Experience
 
   color: white;
 
-  font-size: clamp(40px, 5vw, 64px);
+  font-size:
+    clamp(42px, 5vw, 82px);
 
   line-height: 1;
 
   font-weight: 900;
 
-  letter-spacing: -.08em;
+  letter-spacing: -.06em;
 }
 
 /* ========================================================================= */
-/* MAKER */
-/* ========================================================================= */
-
-.flagshipMaker {
-
-  color:
-    #94a3b8;
-
-  font-size: 14px;
-
-  font-weight: 700;
-
-  letter-spacing: .14em;
-
-  text-transform: uppercase;
-}
-
-/* ========================================================================= */
-/* DESCRIPTION */
-/* ========================================================================= */
-
-.flagshipDescription {
-
-  max-width: 720px;
-
-  color:
-    #dbe4f0;
-
-  font-size: 16px;
-
-  line-height: 2;
-}
-
-/* ========================================================================= */
-/* STATS */
-/* ========================================================================= */
-
-.flagshipStats {
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(
-      3,
-      minmax(0,1fr)
-    );
-
-  gap: 18px;
-}
-
-.flagshipStat {
-
-  padding: 20px;
-
-  border-radius: 24px;
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  background:
-    rgba(255,255,255,.04);
-
-  backdrop-filter: blur(14px);
-}
-
-.flagshipStatLabel {
-
-  margin-bottom: 10px;
-
-  color:
-    rgba(255,255,255,.48);
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  letter-spacing: .12em;
-
-  text-transform: uppercase;
-}
-
-.flagshipStatValue {
-
-  color: white;
-
-  font-size: 28px;
-
-  font-weight: 900;
-
-  letter-spacing: -.04em;
-}
-
-/* ========================================================================= */
-/* CTA */
+/* ACTIONS */
 /* ========================================================================= */
 
 .flagshipActions {
 
   display: flex;
 
+  align-items: center;
+
+  gap: 16px;
+
   flex-wrap: wrap;
-
-  gap: 18px;
-
-  margin-top: 10px;
 }
 
-.flagshipPrimaryCTA {
+/* ========================================================================= */
+/* PRIMARY CTA */
+/* ========================================================================= */
 
-  position: relative;
-
-  overflow: hidden;
-
-  isolation: isolate;
+.flagshipCTA {
 
   display: inline-flex;
 
@@ -475,69 +353,50 @@ Flagship Runtime Experience
 
   justify-content: center;
 
-  min-width: 240px;
-
-  min-height: 62px;
+  min-height: 72px;
 
   padding:
-    0 34px;
+    0 38px;
 
-  border-radius: 24px;
+  border-radius: 999px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
 
   background:
     linear-gradient(
-      135deg,
-      white,
-      #dbeafe
+      180deg,
+      rgba(255,255,255,.96),
+      rgba(230,235,245,.92)
     );
 
-  color: black;
-
-  text-decoration: none;
+  color:
+    #050816;
 
   font-size: 15px;
 
-  font-weight: 900;
+  font-weight: 800;
 
   letter-spacing: .04em;
 
-  box-shadow:
-    0 20px 50px rgba(255,255,255,.14);
-
   transition:
-    transform .35s ease,
-    opacity .35s ease,
-    box-shadow .35s ease;
+    transform .3s ease,
+    box-shadow .3s ease,
+    background .3s ease;
 }
 
-.flagshipPrimaryCTA::before {
-
-  content: '';
-
-  position: absolute;
-
-  inset: 0;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,.4),
-      transparent
-    );
-
-  opacity: .55;
-}
-
-.flagshipPrimaryCTA:hover {
+.flagshipCTA:hover {
 
   transform:
     translateY(-2px);
 
-  opacity: .98;
-
   box-shadow:
-    0 26px 60px rgba(255,255,255,.18);
+    0 20px 40px rgba(255,255,255,.16);
 }
+
+/* ========================================================================= */
+/* SECONDARY CTA */
+/* ========================================================================= */
 
 .flagshipSecondaryCTA {
 
@@ -547,37 +406,34 @@ Flagship Runtime Experience
 
   justify-content: center;
 
-  min-width: 200px;
-
-  min-height: 62px;
+  min-height: 72px;
 
   padding:
-    0 30px;
+    0 42px;
 
-  border-radius: 24px;
+  border-radius: 999px;
 
   border:
-    1px solid rgba(255,255,255,.10);
+    1px solid rgba(255,255,255,.12);
 
   background:
-    rgba(255,255,255,.04);
+    rgba(255,255,255,.06);
 
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
 
   color: white;
 
-  text-decoration: none;
-
-  font-size: 14px;
+  font-size: 15px;
 
   font-weight: 800;
 
   letter-spacing: .04em;
 
   transition:
-    transform .35s ease,
-    border-color .35s ease,
-    background .35s ease;
+    transform .3s ease,
+    border-color .3s ease,
+    background .3s ease,
+    box-shadow .3s ease;
 }
 
 .flagshipSecondaryCTA:hover {
@@ -586,10 +442,13 @@ Flagship Runtime Experience
     translateY(-2px);
 
   border-color:
-    rgba(255,255,255,.18);
+    rgba(255,255,255,.20);
 
   background:
-    rgba(255,255,255,.07);
+    rgba(255,255,255,.10);
+
+  box-shadow:
+    0 20px 40px rgba(255,255,255,.08);
 }
 
 /* ========================================================================= */
@@ -598,83 +457,84 @@ Flagship Runtime Experience
 
 @media (max-width: 1200px) {
 
-  .flagshipGrid {
+  .flagshipInner {
 
-    grid-template-columns:
-      1fr;
+    padding: 54px;
+  }
 
-    gap: 40px;
+  .flagshipTitle {
+
+    font-size:
+      clamp(44px, 7vw, 82px);
   }
 }
 
 @media (max-width: 768px) {
 
-  .flagshipSection {
+  .flagship {
 
-    margin-bottom: 80px;
+    border-radius: 32px;
   }
 
-  .flagshipCard {
+  .flagshipInner {
 
-    border-radius: 30px;
+    gap: 36px;
+
+    padding: 28px;
   }
 
-  .flagshipGrid {
+  .flagshipVisual {
 
-    gap: 30px;
+    max-width: 320px;
+  }
+
+  .flagshipImage {
 
     padding: 24px;
-  }
 
-  .flagshipImageWrap {
-
-    border-radius: 24px;
-  }
-
-  .flagshipBadgeRow {
-
-    top: 18px;
-    left: 18px;
-  }
-
-  .flagshipRank {
-
-    min-width: 58px;
-
-    height: 58px;
-
-    font-size: 22px;
+    border-radius: 28px;
   }
 
   .flagshipTitle {
 
-    font-size: 42px;
-  }
+    font-size:
+      clamp(38px, 12vw, 58px);
 
-  .flagshipPrice {
-
-    font-size: 36px;
+    line-height: .94;
   }
 
   .flagshipDescription {
 
-    font-size: 14px;
+    max-width: 100%;
+
+    font-size: 16px;
+
+    line-height: 1.8;
   }
 
-  .flagshipStats {
+  .flagshipFooter {
 
-    grid-template-columns:
-      1fr;
+    flex-direction: column;
+
+    align-items: stretch;
   }
 
   .flagshipActions {
 
+    width: 100%;
+
     flex-direction: column;
   }
 
-  .flagshipPrimaryCTA,
+  .flagshipCTA,
   .flagshipSecondaryCTA {
 
     width: 100%;
+  }
+
+  .flagshipPrice {
+
+    font-size:
+      clamp(34px, 10vw, 56px);
   }
 }

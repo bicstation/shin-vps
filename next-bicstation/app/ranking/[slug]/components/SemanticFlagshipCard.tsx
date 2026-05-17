@@ -1,18 +1,20 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/components/SemanticFlagshipCard.tsx
+// /home/maya/shin-vps/next-bicstation/app/ranking/[slug]/components/SemanticFlagshipCard.tsx
 // ============================================================================
 
 'use client'
 
 import Link from 'next/link'
 
-import ProductSemanticChips from './ProductSemanticChips'
-
 import styles from '../styles/flagship.module.css'
 
+import {
+  ProductSemanticChips,
+} from './'
+
 type Props = {
-  product: any
+  product?: any
 }
 
 /* ============================================================================
@@ -24,34 +26,26 @@ export default function SemanticFlagshipCard({
 }: Props) {
 
   /* ==========================================================================
+  🔥 Empty
+  ========================================================================== */
+
+  if (!product) {
+
+    return null
+  }
+
+  /* ==========================================================================
   🔥 Runtime
   ========================================================================== */
 
-  const semanticWeight =
+  const groupedAttributes =
+    product?.grouped_attributes || {}
 
-    Number(
-      product?.semantic_weight || 0
-    )
-
-  const semanticRole =
-    product?.semantic_role
-
-  const recommendation =
+  const recommendationReason =
     product?.recommendation_reason
 
-  /* ==========================================================================
-  🔥 Presentation
-  ========================================================================== */
-
-  const emphasisLevel =
-
-    semanticWeight >= 0.95
-      ? 'legendary'
-
-      : semanticWeight >= 0.85
-        ? 'high'
-
-        : 'normal'
+  const productUniqueId =
+    product?.unique_id
 
   /* ==========================================================================
   🔥 Render
@@ -59,56 +53,53 @@ export default function SemanticFlagshipCard({
 
   return (
 
-    <article
-      className={`
-        ${styles.flagshipCard}
-        ${styles[`flagship-${emphasisLevel}`]}
-      `}
+    <section
+      className={
+        styles.flagship
+      }
     >
 
       {/* ================================================================
       Background
       ================================================================ */}
 
-      <div className={styles.flagshipGlow} />
-
-      <div className={styles.flagshipNoise} />
+      <div
+        className={
+          styles.flagshipBackground
+        }
+      />
 
       {/* ================================================================
-      Main
+      Inner
       ================================================================ */}
 
-      <div className={styles.flagshipInner}>
+      <div
+        className={
+          styles.flagshipInner
+        }
+      >
 
         {/* ============================================================
-        Left
+        Header
         ============================================================ */}
 
-        <div className={styles.flagshipContent}>
+        <header
+          className={
+            styles.flagshipHeader
+          }
+        >
 
           {/* ========================================================
-          Semantic Header
+          Eyebrow
           ======================================================== */}
 
-          <div className={styles.flagshipTop}>
+          <div
+            className={
+              styles.flagshipEyebrow
+            }
+          >
 
-            <div
-              className={styles.flagshipBadge}
-            >
-              SEMANTIC FLAGSHIP
-            </div>
-
-            {semanticRole && (
-
-              <div
-                className={
-                  styles.flagshipRole
-                }
-              >
-                {semanticRole}
-              </div>
-
-            )}
+            SEMANTIC ENTRY NODE
 
           </div>
 
@@ -116,89 +107,75 @@ export default function SemanticFlagshipCard({
           Title
           ======================================================== */}
 
-          <h2 className={styles.flagshipTitle}>
+          <h2
+            className={
+              styles.flagshipTitle
+            }
+          >
 
             {product?.name}
 
           </h2>
 
           {/* ========================================================
-          Description
+          Maker
           ======================================================== */}
 
-          <p className={styles.flagshipDescription}>
+          {product?.maker && (
 
-            {recommendation
-              ||
-              product?.description}
+            <div
+              className={
+                styles.flagshipMaker
+              }
+            >
 
-          </p>
+              {product.maker}
+
+            </div>
+
+          )}
+
+        </header>
+
+        {/* ============================================================
+        Body
+        ============================================================ */}
+
+        <div
+          className={
+            styles.flagshipBody
+          }
+        >
 
           {/* ========================================================
-          Semantic Chips
+          Visual
           ======================================================== */}
 
-          <ProductSemanticChips
-            groupedAttributes={
-              product?.grouped_attributes
+          <div
+            className={
+              styles.flagshipVisual
             }
-          />
+          >
 
-          {/* ========================================================
-          Specs
-          ======================================================== */}
+            {product?.image_url ? (
 
-          <div className={styles.flagshipSpecs}>
+              <img
+                src={product.image_url}
+                alt={product?.name}
+                className={
+                  styles.flagshipImage
+                }
+              />
 
-            {product?.cpu_model && (
+            ) : (
 
               <div
                 className={
-                  styles.flagshipSpec
+                  styles.flagshipImagePlaceholder
                 }
               >
 
-                <span>CPU</span>
-
-                <strong>
-                  {product.cpu_model}
-                </strong>
-
-              </div>
-
-            )}
-
-            {product?.gpu_model && (
-
-              <div
-                className={
-                  styles.flagshipSpec
-                }
-              >
-
-                <span>GPU</span>
-
-                <strong>
-                  {product.gpu_model}
-                </strong>
-
-              </div>
-
-            )}
-
-            {product?.memory_gb && (
-
-              <div
-                className={
-                  styles.flagshipSpec
-                }
-              >
-
-                <span>Memory</span>
-
-                <strong>
-                  {product.memory_gb}GB
-                </strong>
+                NO IMAGE
 
               </div>
 
@@ -207,12 +184,70 @@ export default function SemanticFlagshipCard({
           </div>
 
           {/* ========================================================
-          Footer
+          Semantic Area
           ======================================================== */}
 
-          <div className={styles.flagshipFooter}>
+          <div
+            className={
+              styles.flagshipSemantic
+            }
+          >
 
-            {/* Price */}
+            {/* ====================================================
+            Description
+            ==================================================== */}
+
+            {recommendationReason && (
+
+              <p
+                className={
+                  styles.flagshipDescription
+                }
+              >
+
+                {recommendationReason}
+
+              </p>
+
+            )}
+
+            {/* ====================================================
+            Chips
+            ==================================================== */}
+
+            <div
+              className={
+                styles.flagshipChips
+              }
+            >
+
+              <ProductSemanticChips
+                groupedAttributes={
+                  groupedAttributes
+                }
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ============================================================
+        Footer
+        ============================================================ */}
+
+        <footer
+          className={
+            styles.flagshipFooter
+          }
+        >
+
+          {/* ========================================================
+          Price
+          ======================================================== */}
+
+          {product?.price && (
 
             <div
               className={
@@ -222,20 +257,35 @@ export default function SemanticFlagshipCard({
 
               ¥
               {Number(
-                product?.price || 0
+                product.price
               ).toLocaleString()}
 
             </div>
 
-            {/* CTA */}
+          )}
+
+          {/* ========================================================
+          Actions
+          ======================================================== */}
+
+          <div
+            className={
+              styles.flagshipActions
+            }
+          >
+
+            {/* ====================================================
+            Internal Runtime
+            ==================================================== */}
 
             <Link
               href={
-                product?.url || '#'
+                productUniqueId
+                  ? `/product/${productUniqueId}`
+                  : '#'
               }
-              target="_blank"
               className={
-                styles.flagshipButton
+                styles.flagshipSecondaryCTA
               }
             >
 
@@ -243,71 +293,31 @@ export default function SemanticFlagshipCard({
 
             </Link>
 
-          </div>
+            {/* ====================================================
+            External Shop
+            ==================================================== */}
 
-        </div>
-
-        {/* ============================================================
-        Right
-        ============================================================ */}
-
-        <div className={styles.flagshipVisual}>
-
-          {/* ========================================================
-          Image
-          ======================================================== */}
-
-          {product?.image_url && (
-
-            <img
-              src={product.image_url}
-              alt={product?.name}
-              className={
-                styles.flagshipImage
+            <Link
+              href={
+                product?.affiliate_url || '#'
               }
-            />
-
-          )}
-
-          {/* ========================================================
-          Floating Score
-          ======================================================== */}
-
-          <div
-            className={
-              styles.flagshipScore
-            }
-          >
-
-            <div
+              target="_blank"
               className={
-                styles.flagshipScoreLabel
+                styles.flagshipCTA
               }
             >
 
-              Semantic Score
+              ショップへ
 
-            </div>
-
-            <div
-              className={
-                styles.flagshipScoreValue
-              }
-            >
-
-              {Math.round(
-                semanticWeight * 100
-              )}
-
-            </div>
+            </Link>
 
           </div>
 
-        </div>
+        </footer>
 
       </div>
 
-    </article>
+    </section>
 
   )
 }

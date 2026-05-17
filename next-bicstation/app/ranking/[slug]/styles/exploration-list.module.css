@@ -1,12 +1,12 @@
 /* ============================================================================ */
 /* FILE: */
-/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/exploration-list.module.css */
+/* /home/maya/shin-vps/next-bicstation/app/ranking/[slug]/styles/exploration-list.module.css */
 /* ============================================================================ */
 
 /*
 ===============================================================================
 🔥 SHIN CORE LINX
-Semantic Exploration Runtime
+Discovery Archive Runtime
 ===============================================================================
 */
 
@@ -25,7 +25,7 @@ Semantic Exploration Runtime
 /* HEADER */
 /* ========================================================================= */
 
-.explorationHeader {
+.explorationHeaderArea {
 
   display: flex;
 
@@ -54,7 +54,7 @@ Semantic Exploration Runtime
   text-transform: uppercase;
 }
 
-.explorationTitle {
+.explorationHeading {
 
   color: white;
 
@@ -70,7 +70,7 @@ Semantic Exploration Runtime
   text-wrap: balance;
 }
 
-.explorationCount {
+.explorationMeta {
 
   display: inline-flex;
 
@@ -115,7 +115,7 @@ Semantic Exploration Runtime
 
   flex-direction: column;
 
-  gap: 42px;
+  gap: 28px;
 }
 
 /* ========================================================================= */
@@ -130,15 +130,15 @@ Semantic Exploration Runtime
 
   isolation: isolate;
 
-  width: 100%;
+  display: flex;
 
-  max-width: 1480px;
+  flex-direction: column;
 
-  margin: 0 auto;
+  gap: 42px;
 
-  padding: 46px;
+  padding: 42px;
 
-  border-radius: 42px;
+  border-radius: 40px;
 
   border:
     1px solid rgba(255,255,255,.08);
@@ -153,111 +153,7 @@ Semantic Exploration Runtime
   backdrop-filter: blur(24px);
 
   box-shadow:
-    0 40px 120px rgba(0,0,0,.32);
-
-  transition:
-    transform .4s ease,
-    border-color .4s ease,
-    box-shadow .4s ease;
-}
-
-.explorationItem:hover {
-
-  transform:
-    translateY(-4px);
-
-  border-color:
-    rgba(255,255,255,.14);
-
-  box-shadow:
-    0 60px 140px rgba(0,0,0,.42);
-}
-
-.explorationItem::before {
-
-  content: '';
-
-  position: absolute;
-
-  inset: 0;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,.04),
-      transparent 42%
-    );
-
-  pointer-events: none;
-}
-
-.explorationItem::after {
-
-  content: '';
-
-  position: absolute;
-
-  inset: -160px;
-
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(99,102,241,.14),
-      transparent 70%
-    );
-
-  filter: blur(70px);
-
-  opacity: .9;
-
-  pointer-events: none;
-}
-
-/* ========================================================================= */
-/* GLOW */
-/* ========================================================================= */
-
-.explorationGlow {
-
-  position: absolute;
-
-  top: -120px;
-  right: -120px;
-
-  width: 320px;
-  height: 320px;
-
-  border-radius: 999px;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(99,102,241,.18),
-      transparent 72%
-    );
-
-  filter: blur(40px);
-
-  pointer-events: none;
-}
-
-/* ========================================================================= */
-/* HEADER AREA */
-/* ========================================================================= */
-
-.explorationHeaderArea {
-
-  position: relative;
-
-  z-index: 2;
-
-  display: flex;
-
-  align-items: flex-start;
-
-  gap: 28px;
-
-  margin-bottom: 42px;
+    0 40px 120px rgba(0,0,0,.28);
 }
 
 /* ========================================================================= */
@@ -266,61 +162,76 @@ Semantic Exploration Runtime
 
 .explorationRank {
 
-  flex-shrink: 0;
+  position: absolute;
 
-  display: flex;
+  top: 28px;
+  left: 28px;
+
+  z-index: 4;
+
+  display: inline-flex;
 
   align-items: center;
 
   justify-content: center;
 
-  width: 78px;
-  height: 78px;
+  min-width: 62px;
+  height: 62px;
+
+  padding:
+    0 18px;
 
   border-radius: 999px;
 
   border:
-    1px solid rgba(255,255,255,.10);
+    1px solid rgba(255,255,255,.12);
 
   background:
-    rgba(255,255,255,.04);
+    rgba(10,10,18,.72);
 
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(16px);
 
   color: white;
 
-  font-size: 30px;
+  font-size: 24px;
 
   font-weight: 900;
 
   letter-spacing: -.04em;
+
+  box-shadow:
+    0 12px 32px rgba(0,0,0,.28);
 }
 
 /* ========================================================================= */
-/* TITLE AREA */
+/* HEADER */
 /* ========================================================================= */
 
-.explorationTitleArea {
+.explorationHeader {
 
-  min-width: 0;
+  display: flex;
 
-  flex: 1;
+  flex-direction: column;
+
+  gap: 16px;
+
+  padding-left: 88px;
 }
 
 /* ========================================================================= */
-/* PRODUCT TITLE */
+/* TITLE */
 /* ========================================================================= */
 
 .explorationProductTitle {
 
-  margin-bottom: 18px;
+  max-width: 18ch;
 
   color: white;
 
   font-size:
-    clamp(46px, 6vw, 92px);
+    clamp(38px, 4vw, 72px);
 
-  line-height: .92;
+  line-height: .94;
 
   font-weight: 900;
 
@@ -355,19 +266,15 @@ Semantic Exploration Runtime
 
 .explorationBody {
 
-  position: relative;
-
-  z-index: 2;
-
   display: grid;
 
   grid-template-columns:
-    minmax(260px, 420px)
+    minmax(240px, 420px)
     minmax(0, 1fr);
 
-  gap: 52px;
+  gap: 48px;
 
-  align-items: start;
+  align-items: center;
 }
 
 /* ========================================================================= */
@@ -376,7 +283,7 @@ Semantic Exploration Runtime
 
 .explorationImageArea {
 
-  position: relative;
+  width: 100%;
 }
 
 .explorationImage {
@@ -387,7 +294,7 @@ Semantic Exploration Runtime
 
   object-fit: contain;
 
-  border-radius: 36px;
+  border-radius: 32px;
 
   background:
     rgba(255,255,255,.04);
@@ -396,16 +303,6 @@ Semantic Exploration Runtime
     1px solid rgba(255,255,255,.08);
 
   padding: 28px;
-
-  transition:
-    transform .5s ease;
-}
-
-.explorationItem:hover
-.explorationImage {
-
-  transform:
-    scale(1.03);
 }
 
 .explorationImagePlaceholder {
@@ -420,7 +317,7 @@ Semantic Exploration Runtime
 
   aspect-ratio: 1 / 1;
 
-  border-radius: 36px;
+  border-radius: 32px;
 
   border:
     1px dashed rgba(255,255,255,.12);
@@ -436,10 +333,16 @@ Semantic Exploration Runtime
 }
 
 /* ========================================================================= */
-/* CONTENT */
+/* SEMANTIC */
 /* ========================================================================= */
 
-.explorationContent {
+.explorationSemantic {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 32px;
 
   min-width: 0;
 }
@@ -450,27 +353,14 @@ Semantic Exploration Runtime
 
 .explorationReason {
 
-  max-width: 720px;
-
-  margin-bottom: 32px;
+  max-width: 56ch;
 
   color:
     #dbe4f0;
 
-  font-size: 18px;
+  font-size: 17px;
 
   line-height: 1.9;
-}
-
-/* ========================================================================= */
-/* CHIPS */
-/* ========================================================================= */
-
-.explorationChips {
-
-  width: 100%;
-
-  max-width: 760px;
 }
 
 /* ========================================================================= */
@@ -479,21 +369,15 @@ Semantic Exploration Runtime
 
 .explorationFooter {
 
-  position: relative;
-
-  z-index: 2;
-
   display: flex;
 
   align-items: center;
 
   justify-content: space-between;
 
-  gap: 28px;
+  gap: 32px;
 
-  margin-top: 46px;
-
-  padding-top: 34px;
+  padding-top: 32px;
 
   border-top:
     1px solid rgba(255,255,255,.08);
@@ -510,7 +394,7 @@ Semantic Exploration Runtime
   color: white;
 
   font-size:
-    clamp(38px, 4vw, 68px);
+    clamp(36px, 4vw, 68px);
 
   line-height: 1;
 
@@ -549,7 +433,7 @@ Semantic Exploration Runtime
   min-height: 68px;
 
   padding:
-    0 36px;
+    0 34px;
 
   border-radius: 999px;
 
@@ -574,8 +458,7 @@ Semantic Exploration Runtime
 
   transition:
     transform .3s ease,
-    box-shadow .3s ease,
-    background .3s ease;
+    box-shadow .3s ease;
 }
 
 .explorationCTA:hover {
@@ -602,23 +485,23 @@ Semantic Exploration Runtime
   min-height: 68px;
 
   padding:
-    0 34px;
+    0 36px;
 
   border-radius: 999px;
 
   border:
-    1px solid rgba(255,255,255,.10);
+    1px solid rgba(255,255,255,.12);
 
   background:
-    rgba(255,255,255,.04);
+    rgba(255,255,255,.06);
 
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(16px);
 
   color: white;
 
   font-size: 15px;
 
-  font-weight: 700;
+  font-weight: 800;
 
   letter-spacing: .04em;
 
@@ -634,27 +517,60 @@ Semantic Exploration Runtime
     translateY(-2px);
 
   border-color:
-    rgba(255,255,255,.18);
+    rgba(255,255,255,.20);
 
   background:
-    rgba(255,255,255,.08);
+    rgba(255,255,255,.10);
+}
+
+/* ========================================================================= */
+/* EMPTY */
+/* ========================================================================= */
+
+.explorationEmpty {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 240px;
+
+  border-radius: 36px;
+
+  border:
+    1px dashed rgba(255,255,255,.12);
+
+  color:
+    rgba(255,255,255,.42);
+
+  font-size: 14px;
+
+  letter-spacing: .12em;
+
+  text-transform: uppercase;
 }
 
 /* ========================================================================= */
 /* RESPONSIVE */
 /* ========================================================================= */
 
-@media (max-width: 1200px) {
-
-  .explorationProductTitle {
-
-    font-size:
-      clamp(42px, 7vw, 72px);
-  }
+@media (max-width: 1024px) {
 
   .explorationBody {
 
+    grid-template-columns:
+      1fr;
+
     gap: 36px;
+  }
+
+  .explorationImageArea {
+
+    max-width: 420px;
+
+    margin: 0 auto;
   }
 }
 
@@ -665,7 +581,7 @@ Semantic Exploration Runtime
     margin-top: 90px;
   }
 
-  .explorationHeader {
+  .explorationHeaderArea {
 
     flex-direction: column;
 
@@ -674,7 +590,7 @@ Semantic Exploration Runtime
     gap: 24px;
   }
 
-  .explorationTitle {
+  .explorationHeading {
 
     font-size:
       clamp(36px, 12vw, 54px);
@@ -682,51 +598,35 @@ Semantic Exploration Runtime
 
   .explorationItem {
 
-    padding: 28px;
+    gap: 32px;
 
-    border-radius: 32px;
-  }
+    padding: 24px;
 
-  .explorationHeaderArea {
-
-    flex-direction: column;
-
-    gap: 22px;
-
-    margin-bottom: 32px;
+    border-radius: 28px;
   }
 
   .explorationRank {
 
-    width: 62px;
-    height: 62px;
+    top: 18px;
+    left: 18px;
 
-    font-size: 24px;
+    min-width: 52px;
+    height: 52px;
+
+    font-size: 20px;
+  }
+
+  .explorationHeader {
+
+    padding-left: 68px;
   }
 
   .explorationProductTitle {
 
+    max-width: 100%;
+
     font-size:
-      clamp(34px, 11vw, 54px);
-
-    line-height: .94;
-  }
-
-  .explorationBody {
-
-    grid-template-columns:
-      1fr;
-
-    gap: 28px;
-  }
-
-  .explorationImageArea {
-
-    width: 100%;
-
-    max-width: 320px;
-
-    margin: 0 auto;
+      clamp(32px, 10vw, 48px);
   }
 
   .explorationReason {
@@ -734,6 +634,8 @@ Semantic Exploration Runtime
     max-width: 100%;
 
     font-size: 16px;
+
+    line-height: 1.8;
   }
 
   .explorationFooter {
@@ -750,15 +652,15 @@ Semantic Exploration Runtime
     flex-direction: column;
   }
 
-  .explorationPrice {
-
-    font-size:
-      clamp(34px, 10vw, 52px);
-  }
-
   .explorationCTA,
   .explorationSecondaryCTA {
 
     width: 100%;
+  }
+
+  .explorationPrice {
+
+    font-size:
+      clamp(32px, 10vw, 54px);
   }
 }

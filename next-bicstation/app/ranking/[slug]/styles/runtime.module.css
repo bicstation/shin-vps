@@ -1,3 +1,4 @@
+
 /* ============================================================================ */
 /* FILE: */
 /* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/runtime.module.css */
@@ -11,10 +12,10 @@ Runtime Core Experience
 */
 
 /* ========================================================================= */
-/* PAGE */
+/* ROOT */
 /* ========================================================================= */
 
-.page {
+.runtime {
 
   position: relative;
 
@@ -23,398 +24,114 @@ Runtime Core Experience
   overflow: hidden;
 
   background:
-    radial-gradient(
-      circle at top,
-      rgba(99,102,241,.12),
-      transparent 34%
-    ),
-    radial-gradient(
-      circle at bottom right,
-      rgba(139,92,246,.10),
-      transparent 36%
-    ),
-    var(--runtime-background);
-}
-
-/* ========================================================================= */
-/* GLOBAL BACKGROUND */
-/* ========================================================================= */
-
-.page::before {
-
-  content: '';
-
-  position: fixed;
-
-  inset: 0;
-
-  background:
-    linear-gradient(
-      rgba(255,255,255,.015) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255,255,255,.015) 1px,
-      transparent 1px
-    );
-
-  background-size:
-    44px 44px;
-
-  mask-image:
-    radial-gradient(
-      circle at center,
-      black,
-      transparent 82%
-    );
-
-  pointer-events: none;
-
-  opacity: .32;
-}
-
-/* ========================================================================= */
-/* RUNTIME PAGE */
-/* ========================================================================= */
-
-.runtimePage {
-
-  position: relative;
-
-  z-index: 2;
-
-  width: 100%;
-
-  max-width: 1680px;
-
-  margin:
-    0 auto;
-
-  padding:
-    72px 42px 140px;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 120px;
-}
-
-/* ========================================================================= */
-/* SECTION WRAPPERS */
-/* ========================================================================= */
-
-.runtimeHeroSection,
-.runtimeFlagshipSection,
-.runtimeDiscoverySection,
-.runtimeExplorationSection,
-.runtimeFAQSection,
-.runtimeContinuationSection {
-
-  position: relative;
-  margin-top: 40px;
-
-  width: 100%;
-}
-
-/* ========================================================================= */
-/* HERO */
-/* ========================================================================= */
-
-.runtimeHeroSection {
-
-  margin-top: 8px;
-}
-
-/* ========================================================================= */
-/* FLAGSHIP */
-/* ========================================================================= */
-
-.runtimeFlagshipSection {
-
-  z-index: 5;
-}
-
-/* ========================================================================= */
-/* DISCOVERY */
-/* ========================================================================= */
-
-.runtimeDiscoverySection {
-
-  z-index: 4;
-}
-
-/* ========================================================================= */
-/* EXPLORATION */
-/* ========================================================================= */
-
-.runtimeExplorationSection {
-
-  z-index: 3;
-}
-
-/* ========================================================================= */
-/* FAQ */
-/* ========================================================================= */
-
-.runtimeFAQSection {
-
-  z-index: 2;
-}
-
-/* ========================================================================= */
-/* CONTINUATION */
-/* ========================================================================= */
-
-.runtimeContinuationSection {
-
-  z-index: 1;
-}
-
-/* ========================================================================= */
-/* BREADCRUMBS */
-/* ========================================================================= */
-
-.runtimeBreadcrumbs {
-
-  display: flex;
-
-  flex-wrap: wrap;
-
-  align-items: center;
-
-  gap: 10px;
-
-  margin-top: -24px;
-
-  margin-bottom: 12px;
-}
-
-.runtimeBreadcrumbItem {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 10px;
-}
-
-.runtimeBreadcrumbLink {
-
-  color:
-    rgba(255,255,255,.56);
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  letter-spacing: .04em;
-
-  text-decoration: none;
-
-  transition:
-    color var(--runtime-transition);
-}
-
-.runtimeBreadcrumbLink:hover {
+    #050816;
 
   color: white;
 }
 
-.runtimeBreadcrumbCurrent {
-
-  color: white;
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  letter-spacing: .04em;
-}
-
-.runtimeBreadcrumbSeparator {
-
-  color:
-    rgba(255,255,255,.24);
-
-  font-size: 12px;
-}
-
 /* ========================================================================= */
-/* DEBUG */
+/* BACKGROUND */
 /* ========================================================================= */
 
-.runtimeDebugSection {
-
-  position: relative;
-
-  overflow: hidden;
-
-  isolation: isolate;
-
-  border-radius: 34px;
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  background:
-    rgba(255,255,255,.04);
-
-  backdrop-filter: blur(24px);
-
-  box-shadow:
-    0 24px 80px rgba(0,0,0,.30);
-
-  padding: 34px;
-}
-
-.runtimeDebugSection::before {
-
-  content: '';
+.runtimeBackground {
 
   position: absolute;
 
   inset: 0;
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,.03),
-      transparent 42%
-    );
+  overflow: hidden;
 
   pointer-events: none;
 }
 
-.runtimeDebugHeader {
+.runtimeGlowTop {
 
-  position: relative;
+  position: absolute;
 
-  z-index: 2;
+  top: -400px;
+  left: -200px;
 
-  margin-bottom: 28px;
-}
+  width: 1000px;
+  height: 1000px;
 
-.runtimeDebugEyebrow {
-
-  margin-bottom: 12px;
-
-  color:
-    #94a3b8;
-
-  font-size: 11px;
-
-  font-weight: 800;
-
-  letter-spacing: .18em;
-
-  text-transform: uppercase;
-}
-
-.runtimeDebugTitle {
-
-  color: white;
-
-  font-size: 32px;
-
-  line-height: 1;
-
-  font-weight: 900;
-
-  letter-spacing: -.05em;
-}
-
-.runtimeDebugJson {
-
-  position: relative;
-
-  z-index: 2;
-
-  overflow-x: auto;
-
-  padding: 24px;
-
-  border-radius: 24px;
+  border-radius: 999px;
 
   background:
-    rgba(0,0,0,.34);
+    radial-gradient(
+      circle,
+      rgba(99,102,241,.18),
+      transparent 70%
+    );
 
-  border:
-    1px solid rgba(255,255,255,.06);
+  filter: blur(90px);
+}
 
-  color:
-    #dbeafe;
+.runtimeGlowBottom {
 
-  font-size: 13px;
+  position: absolute;
 
-  line-height: 1.8;
+  right: -260px;
+  bottom: -420px;
 
-  font-family:
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    monospace;
+  width: 1200px;
+  height: 1200px;
+
+  border-radius: 999px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(168,85,247,.14),
+      transparent 70%
+    );
+
+  filter: blur(120px);
+}
+
+.runtimeGrid {
+
+  position: absolute;
+
+  inset: 0;
+
+  background-image:
+
+    linear-gradient(
+      rgba(255,255,255,.03) 1px,
+      transparent 1px
+    ),
+
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,.03) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    72px 72px;
+
+  opacity: .4;
 }
 
 /* ========================================================================= */
-/* RESPONSIVE */
+/* CONTAINER */
 /* ========================================================================= */
 
-@media (max-width: 1200px) {
+.runtimeContainer {
 
-  .runtimePage {
+  position: relative;
 
-    padding:
-      56px 28px 120px;
+  z-index: 2;
 
-    gap: 96px;
-  }
+  width: 100%;
+
+  max-width: 1640px;
+
+  margin: 0 auto;
+
+  padding:
+    0 42px 140px;
 }
-
-@media (max-width: 768px) {
-
-  .runtimePage {
-
-    padding:
-      32px 18px 100px;
-
-    gap: 72px;
-  }
-
-  .runtimeBreadcrumbs {
-
-    margin-top: -8px;
-
-    gap: 8px;
-  }
-
-  .runtimeBreadcrumbLink,
-  .runtimeBreadcrumbCurrent {
-
-    font-size: 12px;
-  }
-
-  .runtimeDebugSection {
-
-    border-radius: 28px;
-
-    padding: 24px;
-  }
-
-  .runtimeDebugTitle {
-
-    font-size: 26px;
-  }
-
-  .runtimeDebugJson {
-
-    padding: 18px;
-
-    font-size: 12px;
-  }
-}
-
 
 /* ========================================================================= */
 /* HERO */
@@ -428,24 +145,97 @@ Runtime Core Experience
 
   isolation: isolate;
 
-  padding: 96px 64px 140px;
+  padding:
+    180px 0 120px;
+}
 
-  border-radius: 44px;
+.runtimeHeroNoise {
 
-  border:
-    1px solid rgba(255,255,255,.08);
+  position: absolute;
+
+  inset: 0;
+
+  opacity: .04;
+
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(
+      rgba(255,255,255,.5) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    18px 18px;
+}
+
+.runtimeHeroGlow {
+
+  position: absolute;
+
+  top: -320px;
+  right: -220px;
+
+  width: 920px;
+  height: 920px;
+
+  border-radius: 999px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(99,102,241,.18),
+      transparent 70%
+    );
+
+  filter: blur(80px);
+
+  pointer-events: none;
+}
+
+.runtimeHeroGrid {
+
+  position: absolute;
+
+  inset: 0;
+
+  opacity: .05;
+
+  pointer-events: none;
+
+  background-image:
+
+    linear-gradient(
+      rgba(255,255,255,.08) 1px,
+      transparent 1px
+    ),
+
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,.08) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    72px 72px;
+}
+
+.runtimeHeroGradient {
+
+  position: absolute;
+
+  inset: 0;
 
   background:
     linear-gradient(
       180deg,
-      rgba(255,255,255,.06),
+      rgba(255,255,255,.02),
+      transparent 20%,
+      transparent 80%,
       rgba(255,255,255,.02)
     );
 
-  backdrop-filter: blur(30px);
-
-  box-shadow:
-    0 40px 120px rgba(0,0,0,.40);
+  pointer-events: none;
 }
 
 .runtimeHeroInner {
@@ -454,7 +244,33 @@ Runtime Core Experience
 
   z-index: 2;
 
-  max-width: 1080px;
+  width: 100%;
+
+  max-width: 1480px;
+
+  margin: 0 auto;
+
+  padding:
+    0 48px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 48px;
+}
+
+.runtimeHeroTop {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 24px;
+
+  flex-wrap: wrap;
 }
 
 .runtimeHeroBadge {
@@ -465,43 +281,73 @@ Runtime Core Experience
 
   justify-content: center;
 
-  min-height: 38px;
+  min-height: 48px;
 
   padding:
-    0 18px;
+    0 22px;
 
   border-radius: 999px;
-
-  background:
-    rgba(255,255,255,.06);
 
   border:
     1px solid rgba(255,255,255,.10);
 
-  color:
-    #dbeafe;
+  background:
+    rgba(255,255,255,.04);
 
-  font-size: 11px;
+  backdrop-filter: blur(16px);
+
+  color: white;
+
+  font-size: 12px;
 
   font-weight: 800;
 
-  letter-spacing: .16em;
+  letter-spacing: .22em;
 
   text-transform: uppercase;
+}
 
-  backdrop-filter: blur(14px);
+.runtimeHeroRuntime {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 48px;
+
+  padding:
+    0 22px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid rgba(99,102,241,.22);
+
+  background:
+    rgba(99,102,241,.08);
+
+  backdrop-filter: blur(16px);
+
+  color:
+    #c7d2fe;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: .18em;
+
+  text-transform: uppercase;
 }
 
 .runtimeHeroEyebrow {
 
-  margin-top: 28px;
-
-  margin-bottom: 20px;
-
   color:
     #94a3b8;
 
-  font-size: 13px;
+  font-size: 12px;
 
   font-weight: 800;
 
@@ -510,168 +356,74 @@ Runtime Core Experience
   text-transform: uppercase;
 }
 
-.runtimeHeroTitle {
-
-  margin-bottom: 28px;
-
-  color: white;
-
-  font-size:
-    /* clamp(58px, 8vw, 120px); */
-    clamp(48px, 6vw, 92px);
-
-  line-height: .9;
-
-  font-weight: 900;
-
-  letter-spacing: -.08em;
-
-  text-wrap: balance;
-}
-
-.runtimeHeroDescription {
-
-  max-width: 760px;
-
-  color:
-    #dbe4f0;
-
-  font-size: 18px;
-
-  line-height: 1.9;
-}
-
-/* ========================================================================= */
-/* HERO */
-/* ========================================================================= */
-
-.runtimeHero {
-
-  position: relative;
-
-  overflow: hidden;
-
-  isolation: isolate;
-
-  padding: 96px 64px;
-
-  border-radius: 44px;
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.06),
-      rgba(255,255,255,.02)
-    );
-
-  backdrop-filter: blur(30px);
-
-  box-shadow:
-    0 40px 120px rgba(0,0,0,.40);
-}
-
-.runtimeHeroInner {
-
-  position: relative;
-
-  z-index: 2;
-
-  max-width: 1080px;
-}
-
-/* ========================================================================= */
-/* HERO TOP */
-/* ========================================================================= */
-
-.runtimeHeroTop {
+.runtimeHeroMain {
 
   display: flex;
 
-  align-items: center;
+  align-items: flex-end;
 
-  gap: 18px;
+  justify-content: space-between;
 
-  margin-bottom: 28px;
+  gap: 72px;
 }
 
-.runtimeHeroRuntime {
+.runtimeHeroContent {
 
-  color:
-    rgba(255,255,255,.72);
+  width: 100%;
 
-  font-size: 13px;
-
-  font-weight: 700;
-
-  letter-spacing: .12em;
-
-  text-transform: uppercase;
+  max-width: 980px;
 }
-
-/* ========================================================================= */
-/* TITLE */
-/* ========================================================================= */
 
 .runtimeHeroTitle {
 
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 
   color: white;
 
   font-size:
-    clamp(58px, 8vw, 120px);
+    clamp(64px, 8vw, 140px);
 
-  line-height: .9;
+  line-height: .88;
 
   font-weight: 900;
 
   letter-spacing: -.08em;
 
   text-wrap: balance;
-}
 
-/* ========================================================================= */
-/* DESCRIPTION */
-/* ========================================================================= */
+  word-break: break-word;
+}
 
 .runtimeHeroDescription {
 
-  max-width: 760px;
+  max-width: 58ch;
 
   color:
-    #dbe4f0;
+    rgba(255,255,255,.76);
 
-  font-size: 18px;
+  font-size: 20px;
 
   line-height: 1.9;
 }
 
-/* ========================================================================= */
-/* METRICS */
-/* ========================================================================= */
-
 .runtimeHeroMetrics {
 
-  display: grid;
+  display: flex;
 
-  grid-template-columns:
-    repeat(3, minmax(0,1fr));
+  align-items: stretch;
 
   gap: 18px;
 
-  margin-top: 42px;
-
-  margin-bottom: 34px;
+  flex-wrap: wrap;
 }
 
 .runtimeHeroMetric {
 
-  padding: 24px;
+  min-width: 220px;
 
-  border-radius: 24px;
+  padding: 28px;
+
+  border-radius: 28px;
 
   border:
     1px solid rgba(255,255,255,.08);
@@ -679,21 +431,24 @@ Runtime Core Experience
   background:
     rgba(255,255,255,.04);
 
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.18);
 }
 
 .runtimeHeroMetricLabel {
 
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 
   color:
-    rgba(255,255,255,.48);
+    rgba(255,255,255,.54);
 
   font-size: 11px;
 
-  font-weight: 700;
+  font-weight: 800;
 
-  letter-spacing: .12em;
+  letter-spacing: .18em;
 
   text-transform: uppercase;
 }
@@ -702,86 +457,263 @@ Runtime Core Experience
 
   color: white;
 
-  font-size: 28px;
+  font-size:
+    clamp(28px, 4vw, 52px);
+
+  line-height: 1;
 
   font-weight: 900;
 
-  letter-spacing: -.04em;
+  letter-spacing: -.06em;
 }
 
 /* ========================================================================= */
-/* CHIPS */
+/* BREADCRUMBS */
 /* ========================================================================= */
 
-.runtimeHeroChips {
+.runtimeBreadcrumbs {
 
   display: flex;
 
-  flex-wrap: wrap;
-
-  gap: 14px;
-}
-
-.runtimeHeroChip {
-
-  display: inline-flex;
-
   align-items: center;
 
-  justify-content: center;
+  gap: 12px;
 
-  min-height: 42px;
+  margin-bottom: 42px;
 
-  padding:
-    0 18px;
+  flex-wrap: wrap;
+}
 
-  border-radius: 999px;
+.runtimeBreadcrumbItem {
 
-  background:
-    rgba(255,255,255,.05);
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  color: white;
+  color:
+    rgba(255,255,255,.52);
 
   font-size: 13px;
 
   font-weight: 700;
 
-  letter-spacing: .02em;
-
-  backdrop-filter: blur(12px);
-
-  transition:
-    transform .3s ease,
-    border-color .3s ease,
-    background .3s ease;
+  letter-spacing: .04em;
 }
 
-.runtimeHeroChip:hover {
+.runtimeBreadcrumbDivider {
 
-  transform:
-    translateY(-2px);
+  color:
+    rgba(255,255,255,.24);
+}
 
-  border-color:
-    rgba(255,255,255,.16);
+/* ========================================================================= */
+/* SECTION */
+/* ========================================================================= */
+
+.runtimeSection {
+
+  position: relative;
+
+  margin-top: 140px;
+}
+
+.runtimeSectionHeader {
+
+  margin-bottom: 52px;
+}
+
+.runtimeSectionEyebrow {
+
+  margin-bottom: 18px;
+
+  color:
+    #94a3b8;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: .24em;
+
+  text-transform: uppercase;
+}
+
+.runtimeSectionTitle {
+
+  margin-bottom: 24px;
+
+  color: white;
+
+  font-size:
+    clamp(42px, 6vw, 88px);
+
+  line-height: .94;
+
+  font-weight: 900;
+
+  letter-spacing: -.08em;
+
+  text-wrap: balance;
+}
+
+.runtimeSectionDescription {
+
+  max-width: 56ch;
+
+  color:
+    rgba(255,255,255,.72);
+
+  font-size: 18px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* DIVIDER */
+/* ========================================================================= */
+
+.runtimeDivider {
+
+  width: 100%;
+
+  height: 1px;
+
+  margin:
+    120px 0;
 
   background:
-    rgba(255,255,255,.08);
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.12),
+      transparent
+    );
+}
+
+/* ========================================================================= */
+/* FAQ */
+/* ========================================================================= */
+
+.runtimeFAQ {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 24px;
+}
+
+.runtimeFAQItem {
+
+  padding: 32px;
+
+  border-radius: 28px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    rgba(255,255,255,.03);
+}
+
+.runtimeFAQQuestion {
+
+  margin-bottom: 18px;
+
+  color: white;
+
+  font-size: 22px;
+
+  font-weight: 800;
+
+  line-height: 1.4;
+}
+
+.runtimeFAQAnswer {
+
+  color:
+    rgba(255,255,255,.72);
+
+  font-size: 16px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* DEBUG */
+/* ========================================================================= */
+
+.runtimeDebug {
+
+  margin-top: 120px;
+
+  padding: 28px;
+
+  border-radius: 24px;
+
+  border:
+    1px dashed rgba(255,255,255,.12);
+
+  background:
+    rgba(255,255,255,.02);
 }
 
 /* ========================================================================= */
 /* RESPONSIVE */
 /* ========================================================================= */
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+
+  .runtimeContainer {
+
+    padding:
+      0 36px 120px;
+  }
 
   .runtimeHero {
 
-    padding: 42px 24px;
+    padding:
+      160px 0 100px;
+  }
 
-    border-radius: 30px;
+  .runtimeHeroInner {
+
+    padding:
+      0 36px;
+  }
+
+  .runtimeHeroMain {
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 42px;
+  }
+
+  .runtimeHeroTitle {
+
+    font-size:
+      clamp(54px, 8vw, 100px);
+  }
+}
+
+@media (max-width: 768px) {
+
+  .runtimeContainer {
+
+    padding:
+      0 20px 100px;
+  }
+
+  .runtimeHero {
+
+    padding:
+      140px 0 80px;
+  }
+
+  .runtimeHeroInner {
+
+    gap: 36px;
+
+    padding:
+      0 20px;
   }
 
   .runtimeHeroTop {
@@ -789,57 +721,81 @@ Runtime Core Experience
     flex-direction: column;
 
     align-items: flex-start;
+  }
 
-    gap: 12px;
+  .runtimeHeroMain {
+
+    gap: 32px;
   }
 
   .runtimeHeroTitle {
 
-    font-size:
-      clamp(40px, 12vw, 64px);
+    margin-bottom: 24px;
 
-    margin-bottom: 22px;
+    font-size:
+      clamp(42px, 13vw, 64px);
+
+    line-height: .92;
   }
 
   .runtimeHeroDescription {
 
-    font-size: 15px;
+    max-width: 100%;
+
+    font-size: 16px;
 
     line-height: 1.8;
   }
 
   .runtimeHeroMetrics {
 
-    grid-template-columns:
-      1fr;
+    width: 100%;
 
-    gap: 14px;
-
-    margin-top: 32px;
+    flex-direction: column;
   }
 
   .runtimeHeroMetric {
 
-    padding: 20px;
+    width: 100%;
+
+    min-width: 0;
+
+    padding: 24px;
   }
 
   .runtimeHeroMetricValue {
 
-    font-size: 24px;
+    font-size:
+      clamp(26px, 10vw, 42px);
   }
 
-  .runtimeHeroChips {
+  .runtimeSection {
 
-    gap: 10px;
+    margin-top: 90px;
   }
 
-  .runtimeHeroChip {
+  .runtimeSectionTitle {
 
-    min-height: 38px;
+    font-size:
+      clamp(36px, 12vw, 54px);
+  }
 
-    padding:
-      0 14px;
+  .runtimeSectionDescription {
 
-    font-size: 12px;
+    max-width: 100%;
+
+    font-size: 16px;
+
+    line-height: 1.8;
+  }
+
+  .runtimeFAQItem {
+
+    padding: 24px;
+  }
+
+  .runtimeFAQQuestion {
+
+    font-size: 18px;
   }
 }
