@@ -1,0 +1,485 @@
+/* ============================================================================ */
+/* FILE: */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/exploration-list.css */
+/* ============================================================================ */
+
+/*
+===============================================================================
+🔥 SHIN CORE LINX
+Semantic Exploration Runtime
+===============================================================================
+*/
+
+/* ========================================================================= */
+/* SECTION */
+/* ========================================================================= */
+
+.explorationSection {
+
+  position: relative;
+
+  margin-top: 120px;
+
+  padding:
+    0 32px 120px;
+}
+
+/* ========================================================================= */
+/* HEADER */
+/* ========================================================================= */
+
+.explorationHeader {
+
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 24px;
+
+  margin-bottom: 40px;
+}
+
+.explorationEyebrow {
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: .18em;
+
+  text-transform: uppercase;
+
+  color: var(--runtime-accent);
+
+  margin-bottom: 14px;
+}
+
+.explorationTitle {
+
+  font-size: 40px;
+
+  line-height: 1.05;
+
+  font-weight: 900;
+
+  letter-spacing: -.05em;
+
+  color: white;
+}
+
+.explorationCount {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  padding:
+    10px 16px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid var(--runtime-border);
+
+  background:
+    rgba(255,255,255,.04);
+
+  backdrop-filter: blur(16px);
+
+  color: #94a3b8;
+
+  font-size: 14px;
+}
+
+/* ========================================================================= */
+/* LIST */
+/* ========================================================================= */
+
+.explorationList {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+/* ========================================================================= */
+/* ITEM */
+/* ========================================================================= */
+
+.explorationItem {
+
+  position: relative;
+
+  overflow: hidden;
+
+  display: grid;
+
+  grid-template-columns:
+    90px
+    180px
+    1fr
+    220px;
+
+  gap: 28px;
+
+  align-items: center;
+
+  min-height: 180px;
+
+  padding: 24px;
+
+  border-radius: 32px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.04),
+      rgba(255,255,255,.02)
+    );
+
+  backdrop-filter: blur(20px);
+
+  transition:
+    transform .35s ease,
+    border-color .35s ease,
+    box-shadow .35s ease;
+}
+
+.explorationItem:hover {
+
+  transform:
+    translateY(-4px);
+
+  border-color:
+    var(--runtime-border);
+
+  box-shadow:
+    0 0 60px var(--runtime-glow);
+}
+
+/* ========================================================================= */
+/* RANK */
+/* ========================================================================= */
+
+.explorationRank {
+
+  font-size: 52px;
+
+  line-height: .9;
+
+  font-weight: 900;
+
+  letter-spacing: -.06em;
+
+  color:
+    rgba(255,255,255,.10);
+
+  text-align: center;
+}
+
+/* ========================================================================= */
+/* IMAGE */
+/* ========================================================================= */
+
+.explorationImageArea {
+
+  position: relative;
+
+  overflow: hidden;
+
+  width: 100%;
+  height: 120px;
+
+  border-radius: 22px;
+
+  background:
+    rgba(255,255,255,.03);
+}
+
+.explorationImage {
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition:
+    transform .45s ease;
+}
+
+.explorationItem:hover
+.explorationImage {
+
+  transform:
+    scale(1.03);
+}
+
+.explorationImagePlaceholder {
+
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #64748b;
+
+  font-size: 11px;
+
+  letter-spacing: .16em;
+}
+
+/* ========================================================================= */
+/* CONTENT */
+/* ========================================================================= */
+
+.explorationContent {
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  min-width: 0;
+}
+
+/* ========================================================================= */
+/* TITLE */
+/* ========================================================================= */
+
+.explorationProductTitle {
+
+  font-size: 28px;
+
+  line-height: 1.1;
+
+  font-weight: 800;
+
+  letter-spacing: -.04em;
+
+  color: white;
+
+  margin-bottom: 10px;
+}
+
+/* ========================================================================= */
+/* MAKER */
+/* ========================================================================= */
+
+.explorationMaker {
+
+  font-size: 14px;
+
+  color: #94a3b8;
+
+  margin-bottom: 16px;
+}
+
+/* ========================================================================= */
+/* REASON */
+/* ========================================================================= */
+
+.explorationReason {
+
+  font-size: 14px;
+
+  line-height: 1.8;
+
+  color: #cbd5e1;
+
+  margin-bottom: 18px;
+
+  max-width: 720px;
+}
+
+/* ========================================================================= */
+/* SIDE */
+/* ========================================================================= */
+
+.explorationSide {
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-end;
+
+  justify-content: center;
+
+  gap: 18px;
+}
+
+/* ========================================================================= */
+/* PRICE */
+/* ========================================================================= */
+
+.explorationPrice {
+
+  font-size: 32px;
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  letter-spacing: -.05em;
+
+  color: white;
+
+  text-align: right;
+}
+
+/* ========================================================================= */
+/* CTA */
+/* ========================================================================= */
+
+.explorationCTA {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 160px;
+
+  min-height: 52px;
+
+  padding:
+    0 22px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      white,
+      #e2e8f0
+    );
+
+  color: black;
+
+  text-decoration: none;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  transition:
+    transform .3s ease,
+    opacity .3s ease;
+}
+
+.explorationCTA:hover {
+
+  transform:
+    translateY(-2px);
+
+  opacity: .92;
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 1200px) {
+
+  .explorationItem {
+
+    grid-template-columns:
+      80px
+      160px
+      1fr;
+
+    gap: 22px;
+  }
+
+  .explorationSide {
+
+    grid-column:
+      2 / -1;
+
+    flex-direction: row;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .explorationSection {
+
+    padding:
+      0 20px 80px;
+  }
+
+  .explorationHeader {
+
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  .explorationTitle {
+
+    font-size: 30px;
+  }
+
+  .explorationItem {
+
+    grid-template-columns:
+      1fr;
+
+    gap: 20px;
+
+    padding: 20px;
+  }
+
+  .explorationRank {
+
+    text-align: left;
+
+    font-size: 42px;
+  }
+
+  .explorationImageArea {
+
+    height: 220px;
+  }
+
+  .explorationProductTitle {
+
+    font-size: 24px;
+  }
+
+  .explorationSide {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .explorationPrice {
+
+    font-size: 28px;
+  }
+
+  .explorationCTA {
+
+    width: 100%;
+  }
+}

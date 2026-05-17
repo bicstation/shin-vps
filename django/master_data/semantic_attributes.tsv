@@ -64,7 +64,7 @@ storage_type	SATA SSD	storage-sata	sata ssd,2.5インチ ssd	40	0	secondary	0.50
 usage	ゲーミングPC	usage-gaming	711	0	highlight	0.98	gamepad	red	true
 usage	クリエイター向け	usage-creator	712	0	highlight	0.92	pen-tool	purple	true
 usage	ビジネス・法人向け	usage-business	713	0	primary	0.75	briefcase	blue	true
-usage	AI・ローカルAI用途	usage-ai	714	0	highlight	1.00	sparkles	purple	true
+usage	AI・ローカルAI用途	usage-ai	714	0	highlight	0.99	sparkles	purple	true
 usage	モバイル・軽量	usage-mobile	715	0	primary	0.82	smartphone	cyan	true
 usage	コスパ重視	usage-budget	716	0	secondary	0.65	badge-dollar-sign	green	true
 pc_feature	1kg未満（超軽量）	feat-weight-1kg	100	0	highlight	0.88	feather	cyan	true

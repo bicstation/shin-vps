@@ -45,13 +45,13 @@ export type SemanticRankingRuntime = {
 
   schemas?: {
 
-    itemList?: any
+    itemSchema?: any
 
-    breadcrumbList?: any
+    breadcrumbSchema?: any
 
-    faqPage?: any
+    faqSchema?: any
 
-    collectionPage?: any
+    collectionSchema?: any
   }
 
   ui?: any
@@ -91,14 +91,40 @@ fetchSemanticRankingRuntime(
     )
 
   /* ======================================
+  🔥 Runtime Debug
+  ====================================== */
+
+  console.log(
+    '[Ranking Runtime URL]',
+    endpoint
+  )
+
+  console.log(
+    '🔥 RAW JSON',
+    JSON.stringify(
+      json,
+      null,
+      2
+    )
+  )
+
+  /* ======================================
   🔥 Normalize
   ====================================== */
 
   return {
 
+    /* ====================================
+    🔥 Success
+    ==================================== */
+
     success:
       json?.success
       || false,
+
+    /* ====================================
+    🔥 Products
+    ==================================== */
 
     products:
 
@@ -110,9 +136,17 @@ fetchSemanticRankingRuntime(
 
         : [],
 
+    /* ====================================
+    🔥 Semantic
+    ==================================== */
+
     semantic:
       json?.semantic
       || {},
+
+    /* ====================================
+    🔥 SEO
+    ==================================== */
 
     seo: {
 
@@ -136,13 +170,22 @@ fetchSemanticRankingRuntime(
           : [],
 
       openGraph:
+
+        json?.seo?.openGraph
+        ||
         json?.seo?.open_graph
-        || {},
+        ||
+        {},
 
       twitter:
+
         json?.seo?.twitter
         || {},
     },
+
+    /* ====================================
+    🔥 FAQ
+    ==================================== */
 
     faq:
 
@@ -154,6 +197,10 @@ fetchSemanticRankingRuntime(
 
         : [],
 
+    /* ====================================
+    🔥 Breadcrumbs
+    ==================================== */
+
     breadcrumbs:
 
       Array.isArray(
@@ -164,24 +211,64 @@ fetchSemanticRankingRuntime(
 
         : [],
 
+    /* ====================================
+    🔥 Schemas
+    ==================================== */
+
     schemas: {
 
-      itemList:
+      itemSchema:
+
+        json?.schemas?.itemSchema
+        ||
+        json?.schemas?.item_schema
+        ||
+        json?.schemas?.itemList
+        ||
         json?.schemas?.item_list
-        || null,
+        ||
+        null,
 
-      breadcrumbList:
+      breadcrumbSchema:
+
+        json?.schemas?.breadcrumbSchema
+        ||
+        json?.schemas?.breadcrumb_schema
+        ||
+        json?.schemas?.breadcrumbList
+        ||
         json?.schemas?.breadcrumb_list
-        || null,
+        ||
+        null,
 
-      faqPage:
+      faqSchema:
+
+        json?.schemas?.faqSchema
+        ||
+        json?.schemas?.faq_schema
+        ||
+        json?.schemas?.faqPage
+        ||
         json?.schemas?.faq_page
-        || null,
+        ||
+        null,
 
-      collectionPage:
+      collectionSchema:
+
+        json?.schemas?.collectionSchema
+        ||
+        json?.schemas?.collection_schema
+        ||
+        json?.schemas?.collectionPage
+        ||
         json?.schemas?.collection_page
-        || null,
+        ||
+        null,
     },
+
+    /* ====================================
+    🔥 UI
+    ==================================== */
 
     ui:
       json?.ui

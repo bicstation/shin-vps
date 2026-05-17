@@ -547,11 +547,48 @@ def pc_sidebar_stats(request):
     for attr in attrs:
 
         key = attr.attr_type
-        
-        sidebar.setdefault(
-            key,
-            []
-        ).append({
+
+        # ==========================================
+        # Initialize Semantic Group
+        # ==========================================
+        if key not in sidebar:
+
+            sidebar[key] = {
+
+                "meta": {
+
+                    "name":
+                        key.replace(
+                            "_",
+                            " "
+                        ).title(),
+
+                    "short_name":
+                        key.upper(),
+
+                    "description":
+                        f"{key.replace('_', ' ').title()}別",
+
+                    "icon":
+                        attr.icon,
+
+                    "color":
+                        attr.color,
+
+                    "semantic_role":
+                        attr.semantic_role,
+
+                    "semantic_weight":
+                        attr.semantic_weight,
+                },
+
+                "items": []
+            }
+
+        # ==========================================
+        # Append Semantic Attribute
+        # ==========================================
+        sidebar[key]["items"].append({
 
             "name":
                 attr.name,
@@ -574,14 +611,6 @@ def pc_sidebar_stats(request):
             "semantic_weight":
                 attr.semantic_weight,
         })
-
-    return Response({
-
-        "success": True,
-
-        "sidebar":
-            sidebar
-    })
 
 
 # --------------------------------------------------------------------------

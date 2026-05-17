@@ -1,0 +1,919 @@
+/* ============================================================================ */
+/* FILE: */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/RankingPage.module.css */
+/* ============================================================================ */
+
+/*
+===============================================================================
+🔥 SHIN CORE LINX
+Semantic Discovery Runtime UI
+===============================================================================
+*/
+
+/* ========================================================================= */
+/* ROOT */
+/* ========================================================================= */
+
+.page {
+
+  --runtime-glow:
+    rgba(59,130,246,0.18);
+
+  --runtime-accent:
+    #60a5fa;
+
+  --runtime-surface:
+    rgba(30,41,59,0.22);
+
+  --runtime-border:
+    rgba(96,165,250,0.35);
+
+  min-height: 100vh;
+
+  color: white;
+
+  overflow-x: hidden;
+
+  transition:
+    background .5s ease,
+    border-color .35s ease,
+    box-shadow .35s ease;
+
+  background:
+    radial-gradient(
+      circle at top,
+      var(--runtime-glow),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #020617 0%,
+      #030712 100%
+    );
+}
+
+/* ========================================================================= */
+/* HERO */
+/* ========================================================================= */
+
+.hero {
+
+  position: relative;
+
+  overflow: hidden;
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.08);
+}
+
+.heroNoise {
+
+  position: absolute;
+
+  inset: 0;
+
+  opacity: .08;
+
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(
+      rgba(255,255,255,0.2) 1px,
+      transparent 1px
+    );
+
+  background-size: 20px 20px;
+}
+
+.heroGlow {
+
+  position: absolute;
+
+  width: 900px;
+  height: 900px;
+
+  border-radius: 999px;
+
+  background:
+    radial-gradient(
+      var(--runtime-glow),
+      transparent 70%
+    );
+
+  top: -400px;
+  right: -200px;
+
+  pointer-events: none;
+
+  transition:
+    background .4s ease;
+}
+
+.heroInner {
+
+  position: relative;
+
+  z-index: 2;
+
+  max-width: 1400px;
+
+  margin: 0 auto;
+
+  padding:
+    120px 32px 100px;
+}
+
+.heroBadge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding:
+    10px 18px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.05);
+
+  border:
+    1px solid var(--runtime-border);
+
+  margin-bottom: 40px;
+
+  color: var(--runtime-accent);
+
+  font-size: 14px;
+
+  backdrop-filter: blur(16px);
+}
+
+.heroEyebrow {
+
+  color: var(--runtime-accent);
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: .18em;
+
+  margin-bottom: 18px;
+}
+
+/* ========================================================================= */
+/* TAB SECTION */
+/* ========================================================================= */
+
+.tabSection {
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 50;
+
+  backdrop-filter: blur(20px);
+
+  background:
+    rgba(2,6,23,0.72);
+
+  border-bottom:
+    1px solid rgba(255,255,255,0.08);
+}
+
+.tabWrapper {
+
+  max-width: 1400px;
+
+  margin: 0 auto;
+
+  padding:
+    40px 32px 24px;
+}
+
+/* ========================================================================= */
+/* HERO TAB GRID */
+/* ========================================================================= */
+
+.heroTabGrid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0,1fr));
+
+  gap: 24px;
+
+  margin-bottom: 28px;
+}
+
+/* ========================================================================= */
+/* HERO TAB */
+/* ========================================================================= */
+
+.heroTab {
+
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 240px;
+
+  border-radius: 36px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--runtime-surface),
+      rgba(255,255,255,.03)
+    );
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition:
+    transform .35s ease,
+    border-color .35s ease,
+    box-shadow .35s ease,
+    background .35s ease;
+}
+
+.heroTab:hover {
+
+  transform:
+    translateY(-6px);
+
+  border-color:
+    var(--runtime-border);
+
+  box-shadow:
+    0 0 60px var(--runtime-glow);
+}
+
+.heroTabActive {
+
+  border-color:
+    var(--runtime-border);
+
+  box-shadow:
+    0 0 80px var(--runtime-glow);
+}
+
+.heroTabGlow {
+
+  position: absolute;
+
+  inset: -120px;
+
+  background:
+    radial-gradient(
+      var(--runtime-glow),
+      transparent 70%
+    );
+
+  opacity: 0;
+
+  transition:
+    opacity .35s ease;
+}
+
+.heroTab:hover .heroTabGlow,
+.heroTabActive .heroTabGlow {
+
+  opacity: 1;
+}
+
+.heroTabInner {
+
+  position: relative;
+
+  z-index: 2;
+
+  padding: 32px;
+}
+
+.heroTabLabel {
+
+  display: inline-flex;
+
+  padding:
+    8px 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,.06);
+
+  color: var(--runtime-accent);
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  margin-bottom: 24px;
+
+  border:
+    1px solid var(--runtime-border);
+}
+
+.heroTabTitle {
+
+  font-size: 42px;
+
+  line-height: 1.05;
+
+  font-weight: 900;
+
+  letter-spacing: -.05em;
+
+  margin-bottom: 18px;
+}
+
+.heroTabDescription {
+
+  font-size: 15px;
+
+  line-height: 1.8;
+
+  color: #94a3b8;
+}
+
+/* ========================================================================= */
+/* NORMAL TABS */
+/* ========================================================================= */
+
+.tabContainer {
+
+  display: flex;
+
+  gap: 16px;
+
+  overflow-x: auto;
+
+  scrollbar-width: none;
+}
+
+.tabContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.tabButton {
+
+  min-width: 220px;
+
+  padding:
+    18px 20px;
+
+  border-radius: 28px;
+
+  border:
+    1px solid rgba(255,255,255,0.08);
+
+  background:
+    rgba(255,255,255,0.04);
+
+  cursor: pointer;
+
+  transition:
+    all .3s ease;
+
+  text-align: left;
+
+  color: white;
+}
+
+.tabButton:hover {
+
+  transform:
+    translateY(-2px);
+
+  border-color:
+    var(--runtime-border);
+
+  background:
+    var(--runtime-surface);
+}
+
+.tabButtonActive {
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--runtime-surface),
+      rgba(30,41,59,.7)
+    );
+
+  border-color:
+    var(--runtime-border);
+
+  box-shadow:
+    0 0 40px var(--runtime-glow);
+}
+
+.tabName {
+
+  font-size: 22px;
+
+  font-weight: 800;
+
+  margin-bottom: 6px;
+}
+
+/* ========================================================================= */
+/* ACTIVE HEADER */
+/* ========================================================================= */
+
+.metaBadge {
+
+  padding:
+    8px 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.06);
+
+  color: var(--runtime-accent);
+
+  font-size: 13px;
+
+  border:
+    1px solid var(--runtime-border);
+
+  backdrop-filter: blur(16px);
+}
+
+.activeTitle {
+
+  font-size: 64px;
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  letter-spacing: -.05em;
+
+  margin-bottom: 18px;
+
+  color: white;
+}
+
+/* ========================================================================= */
+/* CARD */
+/* ========================================================================= */
+
+.card {
+
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 420px;
+
+  border-radius: 40px;
+
+  padding: 34px;
+
+  text-decoration: none;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--runtime-surface),
+      rgba(255,255,255,.03)
+    );
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  transition:
+    transform .45s ease,
+    border-color .35s ease,
+    background .35s ease,
+    box-shadow .45s ease,
+    filter .45s ease;
+
+  backdrop-filter: blur(24px);
+}
+
+.card:hover {
+
+  transform:
+    translateY(-10px)
+    scale(1.015);
+
+  border-color:
+    var(--runtime-border);
+
+  box-shadow:
+    0 0 80px var(--runtime-glow);
+
+  filter:
+    brightness(1.05);
+}
+
+/* ========================================================================= */
+/* CARD GLOW */
+/* ========================================================================= */
+
+.cardGlow {
+
+  position: absolute;
+
+  inset: -120px;
+
+  background:
+    radial-gradient(
+      var(--runtime-glow),
+      transparent 70%
+    );
+
+  opacity: 0;
+
+  transition:
+    opacity .45s ease,
+    transform .45s ease;
+}
+
+.card:hover .cardGlow {
+
+  opacity: 1;
+
+  transform:
+    scale(1.05);
+}
+
+/* ========================================================================= */
+/* COUNT */
+/* ========================================================================= */
+
+.cardCountBox {
+
+  position: absolute;
+
+  top: 30px;
+  right: 30px;
+
+  text-align: right;
+
+  z-index: 3;
+}
+
+.cardCount {
+
+  font-size: 58px;
+
+  line-height: .9;
+
+  font-weight: 900;
+
+  letter-spacing: -.06em;
+}
+
+.cardCountLabel {
+
+  margin-top: 6px;
+
+  font-size: 12px;
+
+  color: #94a3b8;
+
+  text-transform: uppercase;
+
+  letter-spacing: .12em;
+}
+
+/* ========================================================================= */
+/* CONTENT */
+/* ========================================================================= */
+
+.cardContent {
+
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  flex-direction: column;
+
+  height: 100%;
+}
+
+/* ========================================================================= */
+/* TOP LINE */
+/* ========================================================================= */
+
+.cardTopLine {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  width: fit-content;
+
+  padding:
+    8px 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,.06);
+
+  color: var(--runtime-accent);
+
+  border:
+    1px solid var(--runtime-border);
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: .04em;
+
+  margin-bottom: 28px;
+
+  backdrop-filter: blur(20px);
+}
+
+/* ========================================================================= */
+/* EYEBROW */
+/* ========================================================================= */
+
+.cardEyebrow {
+
+  font-size: 14px;
+
+  line-height: 1.7;
+
+  color: var(--runtime-accent);
+
+  font-weight: 700;
+
+  margin-bottom: 18px;
+
+  letter-spacing: .02em;
+}
+
+/* ========================================================================= */
+/* TITLE */
+/* ========================================================================= */
+
+.cardTitle {
+
+  font-size: 52px;
+
+  line-height: .96;
+
+  font-weight: 900;
+
+  letter-spacing: -.06em;
+
+  margin-bottom: 24px;
+
+  max-width: 70%;
+}
+
+/* ========================================================================= */
+/* DESCRIPTION */
+/* ========================================================================= */
+
+.cardDescription {
+
+  font-size: 16px;
+
+  line-height: 1.9;
+
+  color: #cbd5e1;
+
+  max-width: 80%;
+
+  margin-bottom: 24px;
+}
+
+/* ========================================================================= */
+/* SLUG */
+/* ========================================================================= */
+
+.cardSlug {
+
+  margin-top: auto;
+
+  font-size: 12px;
+
+  color: #64748b;
+
+  letter-spacing: .06em;
+
+  word-break: break-word;
+}
+
+/* ========================================================================= */
+/* FOOTER */
+/* ========================================================================= */
+
+.cardFooter {
+
+  position: absolute;
+
+  left: 34px;
+  bottom: 30px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  z-index: 3;
+}
+
+.cardBadge {
+
+  padding:
+    9px 14px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,.06);
+
+  color: var(--runtime-accent);
+
+  border:
+    1px solid var(--runtime-border);
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  backdrop-filter: blur(16px);
+
+  transition:
+    transform .3s ease,
+    background .3s ease;
+}
+
+.card:hover .cardBadge {
+
+  transform:
+    translateY(-2px);
+
+  background:
+    rgba(255,255,255,.09);
+}
+
+/* ========================================================================= */
+/* CTA */
+/* ========================================================================= */
+
+.cardArrow {
+
+  position: absolute;
+
+  right: 30px;
+  bottom: 28px;
+
+  font-size: 28px;
+
+  color: var(--runtime-accent);
+
+  transition:
+    transform .35s ease,
+    opacity .35s ease;
+
+  opacity: .7;
+}
+
+.card:hover .cardArrow {
+
+  transform:
+    translateX(6px);
+
+  opacity: 1;
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+
+  .card {
+
+    min-height: 360px;
+
+    padding: 26px;
+  }
+
+  .cardTitle {
+
+    font-size: 38px;
+
+    max-width: 100%;
+  }
+
+  .cardDescription {
+
+    max-width: 100%;
+  }
+
+  .cardCount {
+
+    font-size: 42px;
+  }
+
+  .cardFooter {
+
+    left: 26px;
+    bottom: 24px;
+  }
+
+  .cardArrow {
+
+    right: 24px;
+    bottom: 22px;
+  }
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 1024px) {
+
+  .heroTabGrid {
+
+    grid-template-columns:
+      1fr;
+  }
+
+  .heroTitle {
+
+    font-size: 64px;
+  }
+
+  .activeTitle {
+
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .heroInner {
+
+    padding:
+      80px 20px 70px;
+  }
+
+  .heroTitle {
+
+    font-size: 48px;
+  }
+
+  .tabWrapper {
+
+    padding:
+      24px 20px 20px;
+  }
+
+  .heroTab {
+
+    min-height: 200px;
+  }
+
+  .heroTabTitle {
+
+    font-size: 32px;
+  }
+
+  .activeTitle {
+
+    font-size: 40px;
+  }
+
+  .card {
+
+    min-height: 280px;
+
+    padding: 24px;
+  }
+
+  .cardTitle {
+
+    font-size: 28px;
+  }
+}
