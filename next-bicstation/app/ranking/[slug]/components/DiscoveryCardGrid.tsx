@@ -5,7 +5,7 @@
 
 'use client'
 
-import styles from '../RankingSlugPage.module.css'
+import styles from '../styles/discovery-grid.module.css'
 
 import {
   DiscoveryCard,

@@ -7,15 +7,12 @@
 
 import Link from 'next/link'
 
-import styles from '../RankingSlugPage.module.css'
+import ProductSemanticChips from './ProductSemanticChips'
 
-import {
-  ProductSemanticChips,
-} from './'
+import styles from '../styles/flagship.module.css'
 
 type Props = {
   product: any
-  rank?: number
 }
 
 /* ============================================================================
@@ -24,24 +21,37 @@ type Props = {
 
 export default function SemanticFlagshipCard({
   product,
-  rank = 1,
 }: Props) {
 
   /* ==========================================================================
   🔥 Runtime
   ========================================================================== */
 
-  const groupedAttributes =
-    product?.grouped_attributes || {}
-
-  const recommendationReason =
-    product?.recommendation_reason
-
   const semanticWeight =
-    product?.semantic_weight
+
+    Number(
+      product?.semantic_weight || 0
+    )
 
   const semanticRole =
     product?.semantic_role
+
+  const recommendation =
+    product?.recommendation_reason
+
+  /* ==========================================================================
+  🔥 Presentation
+  ========================================================================== */
+
+  const emphasisLevel =
+
+    semanticWeight >= 0.95
+      ? 'legendary'
+
+      : semanticWeight >= 0.85
+        ? 'high'
+
+        : 'normal'
 
   /* ==========================================================================
   🔥 Render
@@ -49,171 +59,183 @@ export default function SemanticFlagshipCard({
 
   return (
 
-    <section className={styles.flagshipSection}>
+    <article
+      className={`
+        ${styles.flagshipCard}
+        ${styles[`flagship-${emphasisLevel}`]}
+      `}
+    >
 
-      <article className={styles.flagshipCard}>
+      {/* ================================================================
+      Background
+      ================================================================ */}
 
-        {/* ================================================================
-        Background Effects
-        ================================================================ */}
+      <div className={styles.flagshipGlow} />
 
-        <div className={styles.flagshipGlow} />
+      <div className={styles.flagshipNoise} />
 
-        <div className={styles.flagshipNoise} />
+      {/* ================================================================
+      Main
+      ================================================================ */}
 
-        {/* ================================================================
-        Rank Area
-        ================================================================ */}
+      <div className={styles.flagshipInner}>
 
-        <div className={styles.flagshipRankArea}>
-
-          <div className={styles.flagshipRankLabel}>
-
-            FLAGSHIP RUNTIME
-
-          </div>
-
-          <div className={styles.flagshipRank}>
-
-            #{rank}
-
-          </div>
-
-        </div>
-
-        {/* ================================================================
-        Content
-        ================================================================ */}
+        {/* ============================================================
+        Left
+        ============================================================ */}
 
         <div className={styles.flagshipContent}>
 
-          {/* ============================================================
-          Left
-          ============================================================ */}
+          {/* ========================================================
+          Semantic Header
+          ======================================================== */}
 
-          <div className={styles.flagshipLeft}>
+          <div className={styles.flagshipTop}>
 
-            {/* Semantic */}
-            <div className={styles.flagshipSemanticTop}>
-
-              {semanticRole && (
-
-                <div className={styles.flagshipRole}>
-
-                  {semanticRole}
-
-                </div>
-
-              )}
-
-              {semanticWeight && (
-
-                <div className={styles.flagshipWeight}>
-
-                  score {semanticWeight}
-
-                </div>
-
-              )}
-
+            <div
+              className={styles.flagshipBadge}
+            >
+              SEMANTIC FLAGSHIP
             </div>
 
-            {/* Title */}
-            <h2 className={styles.flagshipTitle}>
+            {semanticRole && (
 
-              {product?.name}
-
-            </h2>
-
-            {/* Maker */}
-            {product?.maker && (
-
-              <div className={styles.flagshipMaker}>
-
-                {product.maker}
-
+              <div
+                className={
+                  styles.flagshipRole
+                }
+              >
+                {semanticRole}
               </div>
 
             )}
-
-            {/* Recommendation */}
-            {recommendationReason && (
-
-              <p className={styles.flagshipReason}>
-
-                {recommendationReason}
-
-              </p>
-
-            )}
-
-            {/* Semantic Chips */}
-            <ProductSemanticChips
-              groupedAttributes={
-                groupedAttributes
-              }
-            />
 
           </div>
 
-          {/* ============================================================
-          Right
-          ============================================================ */}
+          {/* ========================================================
+          Title
+          ======================================================== */}
 
-          <div className={styles.flagshipRight}>
+          <h2 className={styles.flagshipTitle}>
 
-            {/* Image */}
-            <div className={styles.flagshipImageArea}>
+            {product?.name}
 
-              {product?.image_url ? (
+          </h2>
 
-                <img
-                  src={product.image_url}
-                  alt={product?.name}
-                  className={
-                    styles.flagshipImage
-                  }
-                />
+          {/* ========================================================
+          Description
+          ======================================================== */}
 
-              ) : (
+          <p className={styles.flagshipDescription}>
 
-                <div
-                  className={
-                    styles.flagshipImagePlaceholder
-                  }
-                >
+            {recommendation
+              ||
+              product?.description}
 
-                  NO IMAGE
+          </p>
 
-                </div>
+          {/* ========================================================
+          Semantic Chips
+          ======================================================== */}
 
-              )}
+          <ProductSemanticChips
+            groupedAttributes={
+              product?.grouped_attributes
+            }
+          />
 
-            </div>
+          {/* ========================================================
+          Specs
+          ======================================================== */}
 
-            {/* Price */}
-            {product?.price && (
+          <div className={styles.flagshipSpecs}>
 
-              <div className={styles.flagshipPrice}>
+            {product?.cpu_model && (
 
-                ¥
-                {Number(
-                  product.price
-                ).toLocaleString()}
+              <div
+                className={
+                  styles.flagshipSpec
+                }
+              >
+
+                <span>CPU</span>
+
+                <strong>
+                  {product.cpu_model}
+                </strong>
 
               </div>
 
             )}
 
+            {product?.gpu_model && (
+
+              <div
+                className={
+                  styles.flagshipSpec
+                }
+              >
+
+                <span>GPU</span>
+
+                <strong>
+                  {product.gpu_model}
+                </strong>
+
+              </div>
+
+            )}
+
+            {product?.memory_gb && (
+
+              <div
+                className={
+                  styles.flagshipSpec
+                }
+              >
+
+                <span>Memory</span>
+
+                <strong>
+                  {product.memory_gb}GB
+                </strong>
+
+              </div>
+
+            )}
+
+          </div>
+
+          {/* ========================================================
+          Footer
+          ======================================================== */}
+
+          <div className={styles.flagshipFooter}>
+
+            {/* Price */}
+
+            <div
+              className={
+                styles.flagshipPrice
+              }
+            >
+
+              ¥
+              {Number(
+                product?.price || 0
+              ).toLocaleString()}
+
+            </div>
+
             {/* CTA */}
+
             <Link
               href={
-                product?.affiliate_url
-                || '#'
+                product?.url || '#'
               }
               target="_blank"
               className={
-                styles.flagshipCTA
+                styles.flagshipButton
               }
             >
 
@@ -225,9 +247,67 @@ export default function SemanticFlagshipCard({
 
         </div>
 
-      </article>
+        {/* ============================================================
+        Right
+        ============================================================ */}
 
-    </section>
+        <div className={styles.flagshipVisual}>
+
+          {/* ========================================================
+          Image
+          ======================================================== */}
+
+          {product?.image_url && (
+
+            <img
+              src={product.image_url}
+              alt={product?.name}
+              className={
+                styles.flagshipImage
+              }
+            />
+
+          )}
+
+          {/* ========================================================
+          Floating Score
+          ======================================================== */}
+
+          <div
+            className={
+              styles.flagshipScore
+            }
+          >
+
+            <div
+              className={
+                styles.flagshipScoreLabel
+              }
+            >
+
+              Semantic Score
+
+            </div>
+
+            <div
+              className={
+                styles.flagshipScoreValue
+              }
+            >
+
+              {Math.round(
+                semanticWeight * 100
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
 
   )
 }

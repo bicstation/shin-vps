@@ -1,0 +1,314 @@
+/* ============================================================================ */
+/* FILE: */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/semantic-chips.module.css */
+/* ============================================================================ */
+
+/*
+===============================================================================
+🔥 SHIN CORE LINX
+Semantic Chips Runtime
+===============================================================================
+*/
+
+/* ========================================================================= */
+/* CHIP CONTAINER */
+/* ========================================================================= */
+
+.semanticChips {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+}
+
+/* ========================================================================= */
+/* CHIP */
+/* ========================================================================= */
+
+.semanticChip {
+
+  position: relative;
+
+  overflow: hidden;
+
+  isolation: isolate;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-height: 54px;
+
+  padding:
+    0 18px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.06),
+      rgba(255,255,255,.03)
+    );
+
+  backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.18);
+
+  transition:
+    transform .35s ease,
+    border-color .35s ease,
+    background .35s ease,
+    box-shadow .35s ease;
+}
+
+.semanticChip::before {
+
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.06),
+      transparent 42%
+    );
+
+  pointer-events: none;
+}
+
+.semanticChip:hover {
+
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(255,255,255,.18);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.04)
+    );
+
+  box-shadow:
+    0 0 40px rgba(99,102,241,.12),
+    0 16px 40px rgba(0,0,0,.26);
+}
+
+/* ========================================================================= */
+/* TONE */
+/* ========================================================================= */
+
+.semantic-usage {
+
+  border-color:
+    rgba(56,189,248,.18);
+}
+
+.semantic-gpu {
+
+  border-color:
+    rgba(168,85,247,.18);
+}
+
+.semantic-cpu {
+
+  border-color:
+    rgba(99,102,241,.18);
+}
+
+.semantic-maker {
+
+  border-color:
+    rgba(16,185,129,.18);
+}
+
+/* ========================================================================= */
+/* GLOW */
+/* ========================================================================= */
+
+.semanticChipGlow {
+
+  position: absolute;
+
+  inset: -40px;
+
+  opacity: .75;
+
+  filter: blur(30px);
+
+  pointer-events: none;
+}
+
+.semantic-usage
+.semanticChipGlow {
+
+  background:
+    radial-gradient(
+      rgba(56,189,248,.22),
+      transparent 70%
+    );
+}
+
+.semantic-gpu
+.semanticChipGlow {
+
+  background:
+    radial-gradient(
+      rgba(168,85,247,.22),
+      transparent 70%
+    );
+}
+
+.semantic-cpu
+.semanticChipGlow {
+
+  background:
+    radial-gradient(
+      rgba(99,102,241,.22),
+      transparent 70%
+    );
+}
+
+.semantic-maker
+.semanticChipGlow {
+
+  background:
+    radial-gradient(
+      rgba(16,185,129,.22),
+      transparent 70%
+    );
+}
+
+/* ========================================================================= */
+/* ICON */
+/* ========================================================================= */
+
+.semanticChipIcon {
+
+  position: relative;
+
+  z-index: 2;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,.08);
+
+  color: white;
+
+  font-size: 13px;
+
+  line-height: 1;
+
+  backdrop-filter: blur(12px);
+}
+
+/* ========================================================================= */
+/* CONTENT */
+/* ========================================================================= */
+
+.semanticChipContent {
+
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+/* ========================================================================= */
+/* GROUP */
+/* ========================================================================= */
+
+.semanticChipGroup {
+
+  color:
+    #94a3b8;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  letter-spacing: .18em;
+
+  text-transform: uppercase;
+}
+
+/* ========================================================================= */
+/* LABEL */
+/* ========================================================================= */
+
+.semanticChipLabel {
+
+  color: white;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  letter-spacing: .02em;
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+
+  .semanticChips {
+
+    gap: 10px;
+  }
+
+  .semanticChip {
+
+    min-height: 48px;
+
+    padding:
+      0 16px;
+  }
+
+  .semanticChipIcon {
+
+    width: 24px;
+    height: 24px;
+
+    font-size: 11px;
+  }
+
+  .semanticChipLabel {
+
+    font-size: 12px;
+  }
+}

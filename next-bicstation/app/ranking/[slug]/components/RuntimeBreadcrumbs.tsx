@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 
-import styles from '../RankingSlugPage.module.css'
+import styles from '../styles/runtime.module.css'
 
 type Props = {
   breadcrumbs?: Array<{
@@ -39,84 +39,101 @@ export default function RuntimeBreadcrumbs({
 
   return (
 
-    <nav
-      className={styles.runtimeBreadcrumbs}
-      aria-label="Breadcrumb"
+    <section
+      className={
+        styles.runtimeBreadcrumbSection
+      }
     >
 
-      {breadcrumbs.map(
-        (
-          item,
-          index
-        ) => {
-
-          const isLast =
-            index ===
-            breadcrumbs.length - 1
-
-          return (
-
-            <div
-              key={
-                `${item?.url}-${index}`
-              }
-              className={
-                styles.runtimeBreadcrumbItem
-              }
-            >
-
-              {/* Link */}
-              {isLast ? (
-
-                <span
-                  className={
-                    styles.runtimeBreadcrumbCurrent
-                  }
-                >
-
-                  {item?.name}
-
-                </span>
-
-              ) : (
-
-                <Link
-                  href={
-                    item?.url || '#'
-                  }
-                  className={
-                    styles.runtimeBreadcrumbLink
-                  }
-                >
-
-                  {item?.name}
-
-                </Link>
-
-              )}
-
-              {/* Separator */}
-              {!isLast && (
-
-                <span
-                  className={
-                    styles.runtimeBreadcrumbSeparator
-                  }
-                >
-
-                  /
-
-                </span>
-
-              )}
-
-            </div>
-
-          )
+      <nav
+        className={
+          styles.runtimeBreadcrumbs
         }
-      )}
+        aria-label="Breadcrumb"
+      >
 
-    </nav>
+        {breadcrumbs.map(
+          (
+            item,
+            index
+          ) => {
+
+            const isLast =
+
+              index ===
+              breadcrumbs.length - 1
+
+            return (
+
+              <div
+                key={
+                  `${item?.url}-${index}`
+                }
+                className={
+                  styles.runtimeBreadcrumbItem
+                }
+              >
+
+                {/* ====================================================
+                Link
+                ==================================================== */}
+
+                {isLast ? (
+
+                  <span
+                    className={
+                      styles.runtimeBreadcrumbCurrent
+                    }
+                  >
+
+                    {item?.name}
+
+                  </span>
+
+                ) : (
+
+                  <Link
+                    href={
+                      item?.url || '#'
+                    }
+                    className={
+                      styles.runtimeBreadcrumbLink
+                    }
+                  >
+
+                    {item?.name}
+
+                  </Link>
+
+                )}
+
+                {/* ====================================================
+                Separator
+                ==================================================== */}
+
+                {!isLast && (
+
+                  <span
+                    className={
+                      styles.runtimeBreadcrumbSeparator
+                    }
+                  >
+
+                    →
+
+                  </span>
+
+                )}
+
+              </div>
+
+            )
+          }
+        )}
+
+      </nav>
+
+    </section>
 
   )
 }

@@ -5,13 +5,93 @@
 
 'use client'
 
-import styles from '../RankingSlugPage.module.css'
+import Link from 'next/link'
+
+import styles from '../styles/semantic-chips.module.css'
 
 type Props = {
   groupedAttributes?: Record<
     string,
     any[]
   >
+}
+
+/* ============================================================================
+🔥 Semantic Presentation
+============================================================================ */
+
+function getSemanticPresentation(
+  groupKey?: string
+) {
+
+  switch (groupKey) {
+
+    case 'usage':
+
+      return {
+
+        tone: 'usage',
+
+        label: '用途',
+      }
+
+    case 'gpu':
+
+      return {
+
+        tone: 'gpu',
+
+        label: 'Graphics',
+      }
+
+    case 'cpu':
+
+      return {
+
+        tone: 'cpu',
+
+        label: 'CPU',
+      }
+
+    case 'maker':
+
+      return {
+
+        tone: 'maker',
+
+        label: 'Brand',
+      }
+
+    default:
+
+      return {
+
+        tone: 'default',
+
+        label: 'Semantic',
+      }
+  }
+}
+
+/* ============================================================================
+🔥 Semantic Route
+============================================================================ */
+
+function buildSemanticRoute(
+  groupKey?: string,
+  slug?: string
+) {
+
+  if (
+    !groupKey
+    ||
+    !slug
+  ) {
+
+    return '#'
+  }
+
+  return `/ranking/${groupKey}-${slug}/`
 }
 
 /* ============================================================================
@@ -30,6 +110,7 @@ export default function ProductSemanticChips({
     Object.entries(
       groupedAttributes
     ).flatMap(
+
       ([groupKey, attrs]) =>
 
         (attrs || []).map(
@@ -74,48 +155,104 @@ export default function ProductSemanticChips({
         (
           chip,
           index
-        ) => (
+        ) => {
 
-          <div
-            key={
+          const presentation =
+
+            getSemanticPresentation(
+              chip.groupKey
+            )
+
+          const href =
+
+            buildSemanticRoute(
+              chip.groupKey,
               chip.slug
-              ||
-              `${chip.groupKey}-${index}`
-            }
-            className={
-              styles.semanticChip
-            }
-          >
+            )
 
-            {/* Icon */}
-            {chip.icon && (
+          return (
 
-              <span
+            <Link
+              key={
+                chip.slug
+                ||
+                `${chip.groupKey}-${index}`
+              }
+              href={href}
+              className={`
+                ${styles.semanticChip}
+                ${styles[`semantic-${presentation.tone}`]}
+              `}
+            >
+
+              {/* ========================================================
+              Glow
+              ======================================================== */}
+
+              <div
                 className={
-                  styles.semanticChipIcon
+                  styles.semanticChipGlow
+                }
+              />
+
+              {/* ========================================================
+              Icon
+              ======================================================== */}
+
+              {chip.icon && (
+
+                <span
+                  className={
+                    styles.semanticChipIcon
+                  }
+                >
+
+                  {chip.icon}
+
+                </span>
+
+              )}
+
+              {/* ========================================================
+              Content
+              ======================================================== */}
+
+              <div
+                className={
+                  styles.semanticChipContent
                 }
               >
 
-                {chip.icon}
+                {/* Group */}
 
-              </span>
+                <span
+                  className={
+                    styles.semanticChipGroup
+                  }
+                >
 
-            )}
+                  {presentation.label}
 
-            {/* Name */}
-            <span
-              className={
-                styles.semanticChipLabel
-              }
-            >
+                </span>
 
-              {chip.name}
+                {/* Label */}
 
-            </span>
+                <span
+                  className={
+                    styles.semanticChipLabel
+                  }
+                >
 
-          </div>
+                  {chip.name}
 
-        )
+                </span>
+
+              </div>
+
+            </Link>
+
+          )
+        }
       )}
 
     </div>

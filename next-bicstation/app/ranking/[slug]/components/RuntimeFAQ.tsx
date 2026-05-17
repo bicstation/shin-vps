@@ -5,7 +5,7 @@
 
 'use client'
 
-import styles from '../RankingSlugPage.module.css'
+import styles from '../styles/runtime-faq.module.css'
 
 type Props = {
   faq?: Array<{
@@ -37,23 +37,29 @@ export default function RuntimeFAQ({
 
   return (
 
-    <section className={styles.runtimeFAQSection}>
+    <section className={styles.runtimeFaq}>
+
+      {/* ================================================================
+      Glow
+      ================================================================ */}
+
+      <div className={styles.runtimeFaqGlow} />
 
       {/* ================================================================
       Header
       ================================================================ */}
 
-      <div className={styles.runtimeFAQHeader}>
+      <div className={styles.runtimeFaqHeader}>
 
         <div>
 
-          <div className={styles.runtimeFAQEyebrow}>
+          <div className={styles.runtimeFaqEyebrow}>
 
             RUNTIME FAQ
 
           </div>
 
-          <h2 className={styles.runtimeFAQTitle}>
+          <h2 className={styles.runtimeFaqTitle}>
 
             よくある質問
 
@@ -67,7 +73,7 @@ export default function RuntimeFAQ({
       FAQ List
       ================================================================ */}
 
-      <div className={styles.runtimeFAQList}>
+      <div className={styles.runtimeFaqList}>
 
         {faq.map(
           (
@@ -78,25 +84,45 @@ export default function RuntimeFAQ({
             <article
               key={index}
               className={
-                styles.runtimeFAQItem
+                styles.runtimeFaqItem
               }
             >
 
-              {/* Question */}
+              {/* ========================================================
+              Question
+              ======================================================== */}
+
               <h3
                 className={
-                  styles.runtimeFAQQuestion
+                  styles.runtimeFaqQuestion
                 }
               >
 
-                {item?.question}
+                <span
+                  className={
+                    styles.runtimeFaqQuestionBadge
+                  }
+                >
+
+                  Q
+
+                </span>
+
+                <span>
+
+                  {item?.question}
+
+                </span>
 
               </h3>
 
-              {/* Answer */}
+              {/* ========================================================
+              Answer
+              ======================================================== */}
+
               <p
                 className={
-                  styles.runtimeFAQAnswer
+                  styles.runtimeFaqAnswer
                 }
               >
 

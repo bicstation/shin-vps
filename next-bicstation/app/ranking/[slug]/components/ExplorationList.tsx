@@ -5,7 +5,7 @@
 
 'use client'
 
-import styles from '../RankingSlugPage.module.css'
+import styles from '../styles/exploration-list.module.css'
 
 import {
   ExplorationListItem,

@@ -5,15 +5,24 @@
 
 'use client'
 
+import { useMemo } from 'react'
+
 import styles from '../RankingSlugPage.module.css'
 
 import {
+
   RuntimeHero,
+
   RuntimeBreadcrumbs,
+
   SemanticFlagshipCard,
+
   DiscoveryCardGrid,
+
   ExplorationList,
+
   RuntimeFAQ,
+
 } from './'
 
 type Props = {
@@ -33,29 +42,84 @@ export default function RankingRuntime({
   ========================================================================== */
 
   const products =
-    runtime?.products || []
+
+    Array.isArray(
+      runtime?.products
+    )
+
+      ? runtime.products
+
+      : []
 
   const breadcrumbs =
-    runtime?.breadcrumbs || []
+
+    Array.isArray(
+      runtime?.breadcrumbs
+    )
+
+      ? runtime.breadcrumbs
+
+      : []
 
   const faq =
-    runtime?.faq || []
+
+    Array.isArray(
+      runtime?.faq
+    )
+
+      ? runtime.faq
+
+      : []
 
   const seo =
     runtime?.seo || {}
+
+  /* ==========================================================================
+  🔥 Semantic Sorting
+  ========================================================================== */
+
+  const sortedProducts =
+    useMemo(
+
+      () =>
+
+        [...products].sort(
+
+          (a, b) =>
+
+            Number(
+              b?.semantic_weight || 0
+            )
+
+            -
+
+            Number(
+              a?.semantic_weight || 0
+            )
+        ),
+
+      [products]
+    )
 
   /* ==========================================================================
   🔥 Semantic Hierarchy
   ========================================================================== */
 
   const flagship =
-    products?.[0]
+    sortedProducts?.[0]
 
   const discoveryProducts =
-    products.slice(1, 4)
+    sortedProducts.slice(1, 4)
 
   const explorationProducts =
-    products.slice(4)
+    sortedProducts.slice(4)
+
+  /* ==========================================================================
+  🔥 Runtime Metrics
+  ========================================================================== */
+
+  const totalProducts =
+    sortedProducts.length
 
   /* ==========================================================================
   🔥 Render
@@ -71,6 +135,9 @@ export default function RankingRuntime({
 
       <RuntimeHero
         seo={seo}
+        totalProducts={
+          totalProducts
+        }
       />
 
       {/* ================================================================
@@ -89,41 +156,166 @@ export default function RankingRuntime({
 
       {flagship && (
 
-        <SemanticFlagshipCard
-          product={flagship}
-          rank={1}
-        />
+        <section
+          className={
+            styles.runtimeFlagshipSection
+          }
+        >
+
+          <SemanticFlagshipCard
+            product={flagship}
+            rank={1}
+          />
+
+        </section>
 
       )}
 
       {/* ================================================================
-      DISCOVERY GRID
+      DISCOVERY
       ================================================================ */}
 
-      <DiscoveryCardGrid
-        products={
-          discoveryProducts
-        }
-      />
+      {discoveryProducts.length > 0 && (
+
+        <section
+          className={
+            styles.runtimeDiscoverySection
+          }
+        >
+
+          <div
+            className={
+              styles.runtimeSectionHeader
+            }
+          >
+
+            <div
+              className={
+                styles.runtimeSectionEyebrow
+              }
+            >
+
+              HIGH RELEVANCE
+
+            </div>
+
+            <h2
+              className={
+                styles.runtimeSectionTitle
+              }
+            >
+
+              あなたに近い
+              おすすめ候補
+
+            </h2>
+
+            <p
+              className={
+                styles.runtimeSectionDescription
+              }
+            >
+
+              semantic runtime が
+              高い関連性を検出した
+              discovery nodes。
+
+            </p>
+
+          </div>
+
+          <DiscoveryCardGrid
+            products={
+              discoveryProducts
+            }
+          />
+
+        </section>
+
+      )}
 
       {/* ================================================================
-      EXPLORATION LIST
+      EXPLORATION
       ================================================================ */}
 
-      <ExplorationList
-        products={
-          explorationProducts
-        }
-        startRank={5}
-      />
+      {explorationProducts.length > 0 && (
+
+        <section
+          className={
+            styles.runtimeExplorationSection
+          }
+        >
+
+          <div
+            className={
+              styles.runtimeSectionHeader
+            }
+          >
+
+            <div
+              className={
+                styles.runtimeSectionEyebrow
+              }
+            >
+
+              SEMANTIC EXPLORATION
+
+            </div>
+
+            <h2
+              className={
+                styles.runtimeSectionTitle
+              }
+            >
+
+              さらに探索する
+
+            </h2>
+
+            <p
+              className={
+                styles.runtimeSectionDescription
+              }
+            >
+
+              用途・性能・価格帯など、
+              semantic runtime をもとに
+              探索を継続できます。
+
+            </p>
+
+          </div>
+
+          <ExplorationList
+            products={
+              explorationProducts
+            }
+            startRank={5}
+          />
+
+        </section>
+
+      )}
 
       {/* ================================================================
       FAQ
       ================================================================ */}
 
-      <RuntimeFAQ
-        faq={faq}
-      />
+      {faq.length > 0 && (
+
+        <section
+          className={
+            styles.runtimeFaqSection
+          }
+        >
+
+          <RuntimeFAQ
+            faq={faq}
+          />
+
+        </section>
+
+      )}
 
     </div>
 
