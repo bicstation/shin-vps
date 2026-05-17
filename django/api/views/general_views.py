@@ -399,13 +399,13 @@ class PCProductListAPIView(
                 unified_genre="PC"
             )
 
-            .exclude(
-                cpu_model__isnull=True
-            )
+            # .exclude(
+            #     cpu_model__isnull=True
+            # )
 
-            .exclude(
-                cpu_model=''
-            )
+            # .exclude(
+            #     cpu_model=''
+            # )
 
             .prefetch_related(
                 'attributes'
@@ -612,7 +612,6 @@ def pc_sidebar_stats(request):
                 attr.semantic_weight,
         })
 
-
 # --------------------------------------------------------------------------
 # 4. 📄 PC製品詳細
 # --------------------------------------------------------------------------
@@ -649,13 +648,214 @@ def pc_product_detail(
             )
         )
 
+        # ======================================================
+        # Semantic SEO Runtime
+        # ======================================================
+        seo = {
+
+            "title":
+                f"{product.name} | SHIN CORE LINX",
+
+            "description":
+                (
+                    f"{product.name} の性能・特徴・"
+                    f"おすすめ用途を比較できる"
+                    f"製品詳細ページです。"
+                ),
+
+            "canonical":
+                f"/product/{product.unique_id}/",
+        }
+
+        # ======================================================
+        # Semantic FAQ Runtime
+        # ======================================================
+        faq = [
+
+            {
+
+                "question":
+                    f"{product.name} はどんな用途におすすめですか？",
+
+                "answer":
+                    (
+                        f"{product.name} は "
+                        f"高性能用途や日常用途など、"
+                        f"幅広い利用に対応できるPCです。"
+                    ),
+            },
+
+            {
+
+                "question":
+                    f"{product.name} の特徴は？",
+
+                "answer":
+                    (
+                        f"CPU・GPU・メモリ構成など、"
+                        f"バランスの良い構成が特徴です。"
+                    ),
+            },
+        ]
+
+        # ======================================================
+        # Semantic Breadcrumb Runtime
+        # ======================================================
+        breadcrumbs = [
+
+            {
+                "name": "Home",
+                "url": "/",
+            },
+
+            {
+                "name": "ランキング",
+                "url": "/ranking/",
+            },
+
+            {
+                "name":
+                    product.name,
+
+                "url":
+                    f"/product/{product.unique_id}/",
+            },
+        ]
+
+        # ======================================================
+        # Semantic Schema Runtime
+        # ======================================================
+        schemas = {
+
+            "product_schema": {
+
+                "@context":
+                    "https://schema.org",
+
+                "@type":
+                    "Product",
+
+                "name":
+                    product.name,
+
+                "image":
+                    product.image_url,
+
+                "description":
+                    seo["description"],
+
+                "sku":
+                    product.unique_id,
+            },
+
+            "breadcrumb_schema": {
+
+                "@context":
+                    "https://schema.org",
+
+                "@type":
+                    "BreadcrumbList",
+
+                "itemListElement": [
+
+                    {
+
+                        "@type":
+                            "ListItem",
+
+                        "position":
+                            1,
+
+                        "name":
+                            "Home",
+
+                        "item":
+                            "/",
+                    },
+
+                    {
+
+                        "@type":
+                            "ListItem",
+
+                        "position":
+                            2,
+
+                        "name":
+                            "ランキング",
+
+                        "item":
+                            "/ranking/",
+                    },
+
+                    {
+
+                        "@type":
+                            "ListItem",
+
+                        "position":
+                            3,
+
+                        "name":
+                            product.name,
+
+                        "item":
+                            f"/product/{product.unique_id}/",
+                    },
+                ]
+            }
+        }
+
+        # ======================================================
+        # Response
+        # ======================================================
         return Response({
 
             "success": True,
 
+            # ==============================================
+            # Product Runtime
+            # ==============================================
             "product":
-                serializer.data
+                serializer.data,
+
+            # ==============================================
+            # Semantic Runtime
+            # ==============================================
+            "semantic": {
+
+                "page_type":
+                    "product",
+
+                "semantic":
+                    True,
+            },
+
+            # ==============================================
+            # SEO Authority
+            # ==============================================
+            "seo":
+                seo,
+
+            # ==============================================
+            # FAQ Authority
+            # ==============================================
+            "faq":
+                faq,
+
+            # ==============================================
+            # Breadcrumb Authority
+            # ==============================================
+            "breadcrumbs":
+                breadcrumbs,
+
+            # ==============================================
+            # Schema Authority
+            # ==============================================
+            "schemas":
+                schemas,
         })
+
     except PCProduct.DoesNotExist:
 
         return Response(
@@ -664,7 +864,6 @@ def pc_product_detail(
             },
             status=404
         )
-
 
 # --------------------------------------------------------------------------
 # 5. 🔗 関連商品API

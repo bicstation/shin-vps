@@ -1,123 +1,370 @@
-/* eslint-disable @next/next/no-img-element */
+// ============================================================================
+// FILE:
+// /home/maya/shin-vps/next-bicstation/app/product/page.tsx
+// ============================================================================
 
-import React, { Suspense } from 'react';
-import { Metadata } from 'next';
-import Link from 'next/link';
+import Link from 'next/link'
 
-// ❌ headers削除
+import styles from './styles/product-runtime.module.css'
 
-import ProductCard from '@/shared/components/organisms/cards/ProductCard';
-import Pagination from '@/shared/components/molecules/Pagination';
-import ProductSortSelector from '@/shared/components/molecules/ProductSortSelector';
-import { fetchPCProducts } from '@/shared/lib/api/django/pc/products';
+/* ============================================================================
+🔥 Types
+============================================================================ */
 
-import styles from './ProductsPage.module.css';
+type Product = {
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
-    const sParams = await searchParams;
-    const maker = sParams.maker ? sParams.maker.toUpperCase() : '';
-    const attrRaw = sParams.attribute || sParams.gpu || sParams.cpu || sParams.os || sParams.memory || sParams.feature || '';
-    const attrLabel = attrRaw.replace(/-/g, ' ').toUpperCase();
-    const query = sParams.q || '';
-    
-    return {
-        title: `${maker || attrLabel || query || '製品一覧'} | PC製品カタログ | BICSTATION`,
-        description: `${maker || attrLabel || '最新'}のPC製品をAIスコアや性能順でリアルタイム比較。`,
-    };
+  unique_id?: string
+
+  name?: string
+
+  image_url?: string
+
+  recommendation_reason?: string
+
+  grouped_attributes?: Record<
+    string,
+    any[]
+  >
 }
 
-export const dynamic = "force-dynamic";
+/* ============================================================================
+🔥 Runtime Fetch
+============================================================================ */
 
-interface PageProps {
-    searchParams: Promise<{ 
-        page?: string; 
-        maker?: string; 
-        sort?: string;
-        q?: string;
-        offset?: string;
-        attribute?: string; 
-        gpu?: string;
-        cpu?: string;
-        os?: string;
-        memory?: string;
-        feature?: string;
-    }>;
+async function getProducts(): Promise<Product[]> {
+
+  try {
+
+    const response =
+      await fetch(
+
+        'http://bicstation-host:8083/api/general/pc-products/',
+
+        {
+          cache:
+            'no-store',
+        }
+      )
+
+    if (!response.ok) {
+
+      throw new Error(
+        'Failed to fetch products'
+      )
+    }
+
+    const data =
+      await response.json()
+
+    /*
+    ========================================================================
+    🔥 Runtime Shape
+    ========================================================================
+    */
+
+    if (
+      Array.isArray(
+        data?.products
+      )
+    ) {
+
+      return data.products
+    }
+
+    /*
+    ========================================================================
+    🔥 Fallback
+    ========================================================================
+    */
+
+    return []
+
+  } catch (error) {
+
+    console.error(
+      'Product Runtime Error:',
+      error
+    )
+
+    return []
+  }
 }
 
-export default async function ProductsPage(props: PageProps) {
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <ProductsPageContent {...props} />
-        </Suspense>
-    );
-}
+/* ============================================================================
+🔥 Product Runtime Listing
+============================================================================ */
 
-async function ProductsPageContent({ searchParams }: PageProps) {
-    const sParams = await searchParams;
-    
-    const limit = 20;
-    const currentPage = parseInt(sParams.page || '1');
-    const currentOffset = (currentPage - 1) * limit;
+export default async function ProductPage() {
 
-    const currentMaker = sParams.maker || '';
-    const currentSort = sParams.sort || '-created_at';
-    const searchQuery = sParams.q || '';
+  /* ==========================================================================
+  🔥 Runtime
+  ========================================================================== */
 
-    const currentAttr = 
-        sParams.attribute || 
-        sParams.gpu || 
-        sParams.cpu || 
-        sParams.os || 
-        sParams.memory || 
-        sParams.feature || 
-        '';
+  const products =
+    await getProducts()
 
-    // ✅ 固定に変更
-    const host = "bicstation.com";
+  /* ==========================================================================
+  🔥 Render
+  ========================================================================== */
 
-    const response = await fetchPCProducts(
-        searchQuery,
-        currentOffset,
-        limit,
-        currentMaker,
-        host,
-        currentSort,
-        currentAttr
-    ).catch(() => ({ results: [], count: 0 }));
+  return (
 
-    const results = response?.results || [];
-    const count = response?.count || 0;
-    const totalPages = Math.ceil(count / limit);
+    <main className={styles.runtime}>
 
-    return (
-        <main className={styles.container}>
+      {/* ================================================================
+      Hero
+      ================================================================ */}
 
-            <header className={styles.header}>
-                <h1>{count} ITEMS</h1>
-            </header>
+      <section className={styles.hero}>
 
-            <section className={styles.gridArea}>
-                {results.length > 0 ? (
-                    <>
-                        <div className={styles.grid}>
-                            {results.map((product: any, index: number) => (
-                                <ProductCard 
-                                    key={product.id || index} 
-                                    product={product} 
-                                />
-                            ))}
+        <div className={styles.heroInner}>
+
+          <div className={styles.heroEyebrow}>
+
+            SEMANTIC PRODUCT RUNTIME
+
+          </div>
+
+          <h1 className={styles.heroTitle}>
+
+            workflow から
+            runtime を探す
+
+          </h1>
+
+          <p className={styles.heroDescription}>
+
+            SHIN CORE LINX は、
+            スペック比較ではなく、
+            semantic workflow discovery を提供します。
+
+          </p>
+
+        </div>
+
+      </section>
+
+      {/* ================================================================
+      Runtime Shelf
+      ================================================================ */}
+
+      <div className={styles.runtimeShelves}>
+
+        <section className={styles.shelf}>
+
+          {/* ============================================================
+          Shelf Header
+          ============================================================ */}
+
+          <div className={styles.shelfHeader}>
+
+            <div>
+
+              <div className={styles.shelfEyebrow}>
+
+                SEMANTIC RUNTIME
+
+              </div>
+
+              <h2 className={styles.shelfTitle}>
+
+                Discovery Runtime
+
+              </h2>
+
+              <p className={styles.shelfDescription}>
+
+                backend semantic runtime が
+                検出した discovery nodes。
+
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* ============================================================
+          Shelf Grid
+          ============================================================ */}
+
+          <div className={styles.shelfGrid}>
+
+            {products.map(
+              (
+                product,
+                index
+              ) => {
+
+                /*
+                ==========================================================
+                🔥 Runtime
+                ==========================================================
+                */
+
+                const groupedAttributes =
+                  product?.grouped_attributes
+                  || {}
+
+                const semanticLabels = [
+
+                  ...(
+                    groupedAttributes?.usage
+                    || []
+                  ),
+
+                  ...(
+                    groupedAttributes?.semantic
+                    || []
+                  ),
+
+                ]
+                  .slice(0, 3)
+
+                /*
+                ==========================================================
+                🔥 Render
+                ==========================================================
+                */
+
+                return (
+
+                  <Link
+                    key={
+                      product?.unique_id
+                      || index
+                    }
+                    href={
+                      `/product/${product?.unique_id}`
+                    }
+                    className={styles.card}
+                  >
+
+                    {/* ================================================
+                    Image
+                    ================================================ */}
+
+                    <div className={styles.cardImageArea}>
+
+                      {product?.image_url ? (
+
+                        <img
+                          src={
+                            product.image_url
+                          }
+                          alt={
+                            product?.name
+                          }
+                          className={
+                            styles.cardImage
+                          }
+                        />
+
+                      ) : (
+
+                        <div
+                          className={
+                            styles.cardPlaceholder
+                          }
+                        >
+
+                          NO IMAGE
+
                         </div>
 
-                        <Pagination 
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            baseUrl="/product"
-                        />
-                    </>
-                ) : (
-                    <div>NO DATA</div>
-                )}
-            </section>
-        </main>
-    );
+                      )}
+
+                    </div>
+
+                    {/* ================================================
+                    Content
+                    ================================================ */}
+
+                    <div className={styles.cardContent}>
+
+                      <h3 className={styles.cardTitle}>
+
+                        {product?.name}
+
+                      </h3>
+
+                      {product?.recommendation_reason && (
+
+                        <p
+                          className={
+                            styles.cardReason
+                          }
+                        >
+
+                          {
+                            product.recommendation_reason
+                          }
+
+                        </p>
+
+                      )}
+
+                      {/* ============================================
+                      Semantic Chips
+                      ============================================ */}
+
+                      {!!semanticLabels.length && (
+
+                        <div
+                          className={
+                            styles.cardChips
+                          }
+                        >
+
+                          {semanticLabels.map(
+                            (
+                              label,
+                              chipIndex
+                            ) => (
+
+                              <div
+                                key={chipIndex}
+                                className={
+                                  styles.cardChip
+                                }
+                              >
+
+                                {
+                                  typeof label === 'string'
+
+                                    ? label
+
+                                    : (
+                                      label?.label
+                                      || label?.name
+                                      || 'semantic'
+                                    )
+                                }
+
+                              </div>
+
+                            )
+                          )}
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                  </Link>
+
+                )
+
+              }
+            )}
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  )
 }
