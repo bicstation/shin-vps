@@ -1,31 +1,28 @@
 /* ============================================================================ */
 /* FILE: */
-/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/flagship.css */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/flagship.module.css */
 /* ============================================================================ */
 
 /*
 ===============================================================================
 🔥 SHIN CORE LINX
-Semantic Flagship Runtime
+Flagship Runtime Experience
 ===============================================================================
 */
 
 /* ========================================================================= */
-/* SECTION */
+/* FLAGSHIP SECTION */
 /* ========================================================================= */
 
 .flagshipSection {
 
   position: relative;
 
-  padding:
-    0 32px;
-
-  margin-top: 72px;
+  margin-bottom: 120px;
 }
 
 /* ========================================================================= */
-/* CARD */
+/* FLAGSHIP CARD */
 /* ========================================================================= */
 
 .flagshipCard {
@@ -36,7 +33,7 @@ Semantic Flagship Runtime
 
   isolation: isolate;
 
-  border-radius: 48px;
+  border-radius: 44px;
 
   border:
     1px solid rgba(255,255,255,.08);
@@ -44,21 +41,20 @@ Semantic Flagship Runtime
   background:
     linear-gradient(
       180deg,
-      rgba(255,255,255,.08),
+      rgba(255,255,255,.06),
       rgba(255,255,255,.02)
     );
 
-  backdrop-filter: blur(40px);
+  backdrop-filter: blur(34px);
 
   box-shadow:
-    0 30px 120px rgba(0,0,0,.45);
-
-  padding: 56px;
+    0 40px 120px rgba(0,0,0,.40);
 
   transition:
     transform .45s ease,
     border-color .35s ease,
-    box-shadow .45s ease;
+    box-shadow .45s ease,
+    background .35s ease;
 }
 
 .flagshipCard::before {
@@ -72,8 +68,8 @@ Semantic Flagship Runtime
   background:
     linear-gradient(
       135deg,
-      rgba(255,255,255,.06),
-      transparent 45%
+      rgba(255,255,255,.05),
+      transparent 42%
     );
 
   pointer-events: none;
@@ -85,31 +81,22 @@ Semantic Flagship Runtime
     translateY(-8px);
 
   border-color:
-    var(--runtime-border);
+    rgba(255,255,255,.16);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.03)
+    );
 
   box-shadow:
-    0 0 140px var(--runtime-glow),
-    0 40px 120px rgba(0,0,0,.55);
+    0 0 100px rgba(99,102,241,.12),
+    0 50px 140px rgba(0,0,0,.46);
 }
 
 /* ========================================================================= */
-/* EMPHASIS */
-/* ========================================================================= */
-
-.flagship-legendary {
-
-  border-color:
-    rgba(255,255,255,.16);
-}
-
-.flagship-high {
-
-  border-color:
-    rgba(255,255,255,.12);
-}
-
-/* ========================================================================= */
-/* EFFECTS */
+/* GLOW */
 /* ========================================================================= */
 
 .flagshipGlow {
@@ -121,42 +108,22 @@ Semantic Flagship Runtime
   background:
     radial-gradient(
       circle at top right,
-      var(--runtime-glow),
-      transparent 70%
+      rgba(99,102,241,.18),
+      transparent 68%
     );
 
-  opacity: .75;
+  filter: blur(70px);
 
-  filter: blur(40px);
-
-  pointer-events: none;
-}
-
-.flagshipNoise {
-
-  position: absolute;
-
-  inset: 0;
-
-  opacity: .04;
-
-  background-image:
-    radial-gradient(
-      rgba(255,255,255,.4) 1px,
-      transparent 1px
-    );
-
-  background-size:
-    18px 18px;
+  opacity: .9;
 
   pointer-events: none;
 }
 
 /* ========================================================================= */
-/* INNER */
+/* GRID */
 /* ========================================================================= */
 
-.flagshipInner {
+.flagshipGrid {
 
   position: relative;
 
@@ -165,12 +132,154 @@ Semantic Flagship Runtime
   display: grid;
 
   grid-template-columns:
-    minmax(0,1.15fr)
-    420px;
+    minmax(0, 1.1fr)
+    minmax(0, .9fr);
 
-  gap: 56px;
+  gap: 48px;
 
   align-items: center;
+
+  padding: 54px;
+}
+
+/* ========================================================================= */
+/* MEDIA */
+/* ========================================================================= */
+
+.flagshipMedia {
+
+  position: relative;
+}
+
+.flagshipImageWrap {
+
+  position: relative;
+
+  overflow: hidden;
+
+  border-radius: 34px;
+
+  aspect-ratio: 1.16 / 1;
+
+  background:
+    rgba(255,255,255,.03);
+
+  border:
+    1px solid rgba(255,255,255,.06);
+}
+
+.flagshipImage {
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition:
+    transform 1s ease,
+    filter .45s ease;
+}
+
+.flagshipCard:hover
+.flagshipImage {
+
+  transform:
+    scale(1.05);
+
+  filter:
+    saturate(1.08);
+}
+
+/* ========================================================================= */
+/* BADGES */
+/* ========================================================================= */
+
+.flagshipBadgeRow {
+
+  position: absolute;
+
+  top: 24px;
+  left: 24px;
+
+  z-index: 5;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+}
+
+.flagshipRank {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 72px;
+
+  height: 72px;
+
+  padding:
+    0 24px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(15,23,42,.82);
+
+  border:
+    1px solid rgba(255,255,255,.12);
+
+  backdrop-filter: blur(20px);
+
+  color: white;
+
+  font-size: 28px;
+
+  font-weight: 900;
+
+  letter-spacing: -.06em;
+
+  box-shadow:
+    0 14px 40px rgba(0,0,0,.34);
+}
+
+.flagshipLabel {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 42px;
+
+  padding:
+    0 18px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,.06);
+
+  border:
+    1px solid rgba(255,255,255,.10);
+
+  backdrop-filter: blur(14px);
+
+  color:
+    #dbeafe;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: .18em;
+
+  text-transform: uppercase;
 }
 
 /* ========================================================================= */
@@ -183,101 +292,29 @@ Semantic Flagship Runtime
 
   z-index: 2;
 
-  min-width: 0;
-}
-
-/* ========================================================================= */
-/* TOP */
-/* ========================================================================= */
-
-.flagshipTop {
-
   display: flex;
 
-  align-items: center;
+  flex-direction: column;
 
-  flex-wrap: wrap;
-
-  gap: 14px;
-
-  margin-bottom: 28px;
+  gap: 24px;
 }
 
 /* ========================================================================= */
-/* BADGE */
+/* EYEBROW */
 /* ========================================================================= */
 
-.flagshipBadge {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  min-height: 38px;
-
-  padding:
-    0 18px;
-
-  border-radius: 999px;
-
-  background:
-    rgba(255,255,255,.08);
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  color: white;
-
-  font-size: 11px;
-
-  font-weight: 800;
-
-  letter-spacing: .18em;
-
-  text-transform: uppercase;
-
-  backdrop-filter: blur(16px);
-}
-
-/* ========================================================================= */
-/* ROLE */
-/* ========================================================================= */
-
-.flagshipRole {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  min-height: 38px;
-
-  padding:
-    0 18px;
-
-  border-radius: 999px;
-
-  background:
-    rgba(255,255,255,.05);
-
-  border:
-    1px solid var(--runtime-border);
+.flagshipEyebrow {
 
   color:
-    var(--runtime-accent);
+    #94a3b8;
 
-  font-size: 11px;
+  font-size: 12px;
 
   font-weight: 800;
 
-  letter-spacing: .14em;
+  letter-spacing: .24em;
 
   text-transform: uppercase;
-
-  backdrop-filter: blur(16px);
 }
 
 /* ========================================================================= */
@@ -286,21 +323,52 @@ Semantic Flagship Runtime
 
 .flagshipTitle {
 
-  font-size: 72px;
+  color: white;
 
-  line-height: .92;
+  font-size: clamp(42px, 6vw, 82px);
+
+  line-height: .94;
 
   font-weight: 900;
 
   letter-spacing: -.08em;
 
+  text-wrap: balance;
+}
+
+/* ========================================================================= */
+/* PRICE */
+/* ========================================================================= */
+
+.flagshipPrice {
+
   color: white;
 
-  margin-bottom: 24px;
+  font-size: clamp(40px, 5vw, 64px);
 
-  max-width: 920px;
+  line-height: 1;
 
-  text-wrap: balance;
+  font-weight: 900;
+
+  letter-spacing: -.08em;
+}
+
+/* ========================================================================= */
+/* MAKER */
+/* ========================================================================= */
+
+.flagshipMaker {
+
+  color:
+    #94a3b8;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  letter-spacing: .14em;
+
+  text-transform: uppercase;
 }
 
 /* ========================================================================= */
@@ -309,46 +377,36 @@ Semantic Flagship Runtime
 
 .flagshipDescription {
 
-  font-size: 18px;
+  max-width: 720px;
+
+  color:
+    #dbe4f0;
+
+  font-size: 16px;
 
   line-height: 2;
-
-  color: #e2e8f0;
-
-  max-width: 780px;
-
-  margin-bottom: 34px;
 }
 
 /* ========================================================================= */
-/* SPECS */
+/* STATS */
 /* ========================================================================= */
 
-.flagshipSpecs {
+.flagshipStats {
 
-  display: flex;
+  display: grid;
 
-  flex-wrap: wrap;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0,1fr)
+    );
 
-  gap: 14px;
-
-  margin-top: 28px;
-
-  margin-bottom: 40px;
+  gap: 18px;
 }
 
-.flagshipSpec {
+.flagshipStat {
 
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 8px;
-
-  min-width: 180px;
-
-  padding:
-    18px 20px;
+  padding: 20px;
 
   border-radius: 24px;
 
@@ -358,66 +416,58 @@ Semantic Flagship Runtime
   background:
     rgba(255,255,255,.04);
 
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(14px);
 }
 
-.flagshipSpec span {
+.flagshipStatLabel {
+
+  margin-bottom: 10px;
+
+  color:
+    rgba(255,255,255,.48);
 
   font-size: 11px;
 
-  letter-spacing: .18em;
+  font-weight: 700;
+
+  letter-spacing: .12em;
 
   text-transform: uppercase;
-
-  color: #94a3b8;
 }
 
-.flagshipSpec strong {
-
-  font-size: 15px;
-
-  line-height: 1.6;
+.flagshipStatValue {
 
   color: white;
-}
 
-/* ========================================================================= */
-/* FOOTER */
-/* ========================================================================= */
-
-.flagshipFooter {
-
-  display: flex;
-
-  align-items: center;
-
-  flex-wrap: wrap;
-
-  gap: 24px;
-}
-
-/* ========================================================================= */
-/* PRICE */
-/* ========================================================================= */
-
-.flagshipPrice {
-
-  font-size: 58px;
-
-  line-height: 1;
+  font-size: 28px;
 
   font-weight: 900;
 
-  letter-spacing: -.06em;
-
-  color: white;
+  letter-spacing: -.04em;
 }
 
 /* ========================================================================= */
-/* BUTTON */
+/* CTA */
 /* ========================================================================= */
 
-.flagshipButton {
+.flagshipActions {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 18px;
+
+  margin-top: 10px;
+}
+
+.flagshipPrimaryCTA {
+
+  position: relative;
+
+  overflow: hidden;
+
+  isolation: isolate;
 
   display: inline-flex;
 
@@ -427,10 +477,10 @@ Semantic Flagship Runtime
 
   min-width: 240px;
 
-  min-height: 66px;
+  min-height: 62px;
 
   padding:
-    0 32px;
+    0 34px;
 
   border-radius: 24px;
 
@@ -447,12 +497,12 @@ Semantic Flagship Runtime
 
   font-size: 15px;
 
-  font-weight: 800;
+  font-weight: 900;
 
   letter-spacing: .04em;
 
   box-shadow:
-    0 20px 40px rgba(255,255,255,.12);
+    0 20px 50px rgba(255,255,255,.14);
 
   transition:
     transform .35s ease,
@@ -460,126 +510,86 @@ Semantic Flagship Runtime
     box-shadow .35s ease;
 }
 
-.flagshipButton:hover {
+.flagshipPrimaryCTA::before {
 
-  transform:
-    translateY(-3px);
-
-  opacity: .96;
-
-  box-shadow:
-    0 24px 50px rgba(255,255,255,.22);
-}
-
-/* ========================================================================= */
-/* VISUAL */
-/* ========================================================================= */
-
-.flagshipVisual {
-
-  position: relative;
-
-  z-index: 2;
-}
-
-/* ========================================================================= */
-/* IMAGE */
-/* ========================================================================= */
-
-.flagshipImage {
-
-  width: 100%;
-
-  aspect-ratio: 1 / 1;
-
-  object-fit: cover;
-
-  border-radius: 36px;
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  background:
-    rgba(255,255,255,.04);
-
-  box-shadow:
-    0 30px 80px rgba(0,0,0,.45);
-
-  transition:
-    transform .7s ease,
-    box-shadow .45s ease;
-}
-
-.flagshipCard:hover
-.flagshipImage {
-
-  transform:
-    scale(1.04);
-
-  box-shadow:
-    0 40px 100px rgba(0,0,0,.6);
-}
-
-/* ========================================================================= */
-/* SCORE */
-/* ========================================================================= */
-
-.flagshipScore {
+  content: '';
 
   position: absolute;
 
-  bottom: -20px;
-  right: -20px;
-
-  width: 150px;
-  height: 150px;
-
-  border-radius: 999px;
-
-  border:
-    1px solid rgba(255,255,255,.12);
+  inset: 0;
 
   background:
-    rgba(15,23,42,.84);
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.4),
+      transparent
+    );
 
-  backdrop-filter: blur(24px);
+  opacity: .55;
+}
 
-  display: flex;
+.flagshipPrimaryCTA:hover {
 
-  flex-direction: column;
+  transform:
+    translateY(-2px);
+
+  opacity: .98;
+
+  box-shadow:
+    0 26px 60px rgba(255,255,255,.18);
+}
+
+.flagshipSecondaryCTA {
+
+  display: inline-flex;
 
   align-items: center;
 
   justify-content: center;
 
-  box-shadow:
-    0 20px 50px rgba(0,0,0,.45);
-}
+  min-width: 200px;
 
-.flagshipScoreLabel {
+  min-height: 62px;
 
-  font-size: 10px;
+  padding:
+    0 30px;
 
-  letter-spacing: .18em;
+  border-radius: 24px;
 
-  text-transform: uppercase;
+  border:
+    1px solid rgba(255,255,255,.10);
 
-  color: #94a3b8;
+  background:
+    rgba(255,255,255,.04);
 
-  margin-bottom: 10px;
-}
-
-.flagshipScoreValue {
-
-  font-size: 48px;
-
-  line-height: 1;
-
-  font-weight: 900;
-
-  letter-spacing: -.08em;
+  backdrop-filter: blur(14px);
 
   color: white;
+
+  text-decoration: none;
+
+  font-size: 14px;
+
+  font-weight: 800;
+
+  letter-spacing: .04em;
+
+  transition:
+    transform .35s ease,
+    border-color .35s ease,
+    background .35s ease;
+}
+
+.flagshipSecondaryCTA:hover {
+
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(255,255,255,.18);
+
+  background:
+    rgba(255,255,255,.07);
 }
 
 /* ========================================================================= */
@@ -588,19 +598,12 @@ Semantic Flagship Runtime
 
 @media (max-width: 1200px) {
 
-  .flagshipInner {
+  .flagshipGrid {
 
     grid-template-columns:
       1fr;
-  }
 
-  .flagshipVisual {
-
-    max-width: 520px;
-
-    width: 100%;
-
-    margin: 0 auto;
+    gap: 40px;
   }
 }
 
@@ -608,70 +611,70 @@ Semantic Flagship Runtime
 
   .flagshipSection {
 
-    padding:
-      0 20px;
+    margin-bottom: 80px;
   }
 
   .flagshipCard {
 
-    padding: 32px;
+    border-radius: 30px;
   }
 
-  .flagshipInner {
+  .flagshipGrid {
 
-    gap: 42px;
+    gap: 30px;
+
+    padding: 24px;
+  }
+
+  .flagshipImageWrap {
+
+    border-radius: 24px;
+  }
+
+  .flagshipBadgeRow {
+
+    top: 18px;
+    left: 18px;
+  }
+
+  .flagshipRank {
+
+    min-width: 58px;
+
+    height: 58px;
+
+    font-size: 22px;
   }
 
   .flagshipTitle {
 
-    font-size: 44px;
-  }
-
-  .flagshipDescription {
-
-    font-size: 15px;
-
-    line-height: 1.9;
-  }
-
-  .flagshipSpecs {
-
-    flex-direction: column;
-  }
-
-  .flagshipSpec {
-
-    width: 100%;
-  }
-
-  .flagshipFooter {
-
-    flex-direction: column;
-
-    align-items: stretch;
+    font-size: 42px;
   }
 
   .flagshipPrice {
 
-    font-size: 42px;
+    font-size: 36px;
   }
 
-  .flagshipButton {
+  .flagshipDescription {
+
+    font-size: 14px;
+  }
+
+  .flagshipStats {
+
+    grid-template-columns:
+      1fr;
+  }
+
+  .flagshipActions {
+
+    flex-direction: column;
+  }
+
+  .flagshipPrimaryCTA,
+  .flagshipSecondaryCTA {
 
     width: 100%;
-  }
-
-  .flagshipScore {
-
-    width: 110px;
-    height: 110px;
-
-    right: 12px;
-    bottom: 12px;
-  }
-
-  .flagshipScoreValue {
-
-    font-size: 34px;
   }
 }

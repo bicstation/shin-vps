@@ -9,20 +9,15 @@ import { useMemo } from 'react'
 
 import styles from '../RankingSlugPage.module.css'
 
+
 import {
-
   RuntimeHero,
-
   RuntimeBreadcrumbs,
-
   SemanticFlagshipCard,
-
   DiscoveryCardGrid,
-
   ExplorationList,
-
   RuntimeFAQ,
-
+  RuntimeContinuation,
 } from './'
 
 type Props = {
@@ -314,8 +309,20 @@ export default function RankingRuntime({
           />
 
         </section>
-
       )}
+
+      {/* ================================================================
+        CONTINUATION
+        ================================================================ */}
+
+        <section
+          className={
+            styles.runtimeContinuationSection
+          }
+        >
+          <RuntimeContinuation />
+
+        </section>
 
     </div>
 

@@ -1,13 +1,193 @@
-/* app/globals.css の冒頭に追加 */
-html, body {
+/* ============================================================================ */
+/* FILE: */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/globals.css */
+/* ============================================================================ */
+
+/*
+===============================================================================
+🔥 GLOBAL RESET
+===============================================================================
+*/
+
+html,
+body {
+
   margin: 0 !important;
+
   padding: 0 !important;
-  background-color: #0a0a0a;
+
+  min-height: 100%;
+
+  background-color:
+    #050816;
+
+  color:
+    #ffffff;
+
   overflow-x: hidden;
+
+  scroll-behavior: smooth;
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+
+  text-rendering:
+    optimizeLegibility;
+
+  -webkit-font-smoothing:
+    antialiased;
+
+  -moz-osx-font-smoothing:
+    grayscale;
 }
 
+/* ========================================================================= */
+/* ROOT TOKENS */
+/* ========================================================================= */
+
 :root {
-  --header-height: 54px;
-  --ad-height: 32px;
-  --sticky-offset: calc(var(--header-height) + var(--ad-height));
+
+  /* ================================================================
+  Layout
+  ================================================================ */
+
+  --header-height:
+    54px;
+
+  --ad-height:
+    32px;
+
+  --sticky-offset:
+    calc(
+      var(--header-height)
+      + var(--ad-height)
+    );
+
+  /* ================================================================
+  Runtime Theme
+  ================================================================ */
+
+  --runtime-background:
+    #050816;
+
+  --runtime-surface:
+    rgba(255,255,255,.04);
+
+  --runtime-surface-strong:
+    rgba(255,255,255,.08);
+
+  --runtime-border:
+    rgba(255,255,255,.08);
+
+  --runtime-border-strong:
+    rgba(255,255,255,.16);
+
+  --runtime-text:
+    #ffffff;
+
+  --runtime-text-soft:
+    #dbe4f0;
+
+  --runtime-text-muted:
+    #94a3b8;
+
+  --runtime-accent:
+    #8b5cf6;
+
+  --runtime-accent-soft:
+    rgba(139,92,246,.18);
+
+  --runtime-glow:
+    rgba(99,102,241,.14);
+
+  --runtime-shadow:
+    0 40px 120px rgba(0,0,0,.42);
+
+  --runtime-radius:
+    36px;
+
+  --runtime-transition:
+    .38s ease;
+}
+
+/* ========================================================================= */
+/* GLOBAL ELEMENT RESET */
+/* ========================================================================= */
+
+*,
+*::before,
+*::after {
+
+  box-sizing: border-box;
+}
+
+img {
+
+  display: block;
+
+  max-width: 100%;
+}
+
+a {
+
+  color: inherit;
+
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+
+  font: inherit;
+}
+
+/* ========================================================================= */
+/* SELECTION */
+/* ========================================================================= */
+
+::selection {
+
+  background:
+    rgba(139,92,246,.32);
+
+  color:
+    white;
+}
+
+/* ========================================================================= */
+/* SCROLLBAR */
+/* ========================================================================= */
+
+::-webkit-scrollbar {
+
+  width: 10px;
+
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+
+  background:
+    rgba(255,255,255,.03);
+}
+
+::-webkit-scrollbar-thumb {
+
+  background:
+    rgba(255,255,255,.12);
+
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+
+  background:
+    rgba(255,255,255,.22);
 }

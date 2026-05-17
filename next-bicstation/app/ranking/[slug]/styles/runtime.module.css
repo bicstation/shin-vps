@@ -1,12 +1,12 @@
 /* ============================================================================ */
 /* FILE: */
-/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/runtime.css */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/ranking/[slug]/styles/runtime.module.css */
 /* ============================================================================ */
 
 /*
 ===============================================================================
 🔥 SHIN CORE LINX
-Runtime Experience Layer
+Runtime Core Experience
 ===============================================================================
 */
 
@@ -14,137 +14,48 @@ Runtime Experience Layer
 /* PAGE */
 /* ========================================================================= */
 
-.runtimePage {
+.page {
 
   position: relative;
-
-  overflow: hidden;
 
   min-height: 100vh;
 
-  padding-bottom: 160px;
-}
-
-/* ========================================================================= */
-/* HERO */
-/* ========================================================================= */
-
-.runtimeHero {
-
-  position: relative;
-
   overflow: hidden;
 
-  isolation: isolate;
-
-  padding:
-    140px 32px 120px;
-
-  min-height: 86vh;
-
-  display: flex;
-
-  align-items: center;
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(99,102,241,.12),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(139,92,246,.10),
+      transparent 36%
+    ),
+    var(--runtime-background);
 }
 
 /* ========================================================================= */
-/* BACKGROUND */
+/* GLOBAL BACKGROUND */
 /* ========================================================================= */
 
-.runtimeHero::before {
+.page::before {
 
   content: '';
 
-  position: absolute;
-
-  inset: 0;
-
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(99,102,241,.22),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at left center,
-      rgba(56,189,248,.12),
-      transparent 34%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(15,23,42,.94),
-      rgba(2,6,23,1)
-    );
-
-  z-index: -3;
-}
-
-/* ========================================================================= */
-/* GLOW */
-/* ========================================================================= */
-
-.runtimeHeroGlow {
-
-  position: absolute;
-
-  inset: -240px;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(99,102,241,.22),
-      transparent 60%
-    );
-
-  filter: blur(90px);
-
-  opacity: .9;
-
-  z-index: -2;
-
-  pointer-events: none;
-}
-
-/* ========================================================================= */
-/* GRADIENT */
-/* ========================================================================= */
-
-.runtimeHeroGradient {
-
-  position: absolute;
+  position: fixed;
 
   inset: 0;
 
   background:
     linear-gradient(
-      135deg,
-      rgba(255,255,255,.04),
-      transparent 40%
-    );
-
-  z-index: -1;
-
-  pointer-events: none;
-}
-
-/* ========================================================================= */
-/* GRID */
-/* ========================================================================= */
-
-.runtimeHeroGrid {
-
-  position: absolute;
-
-  inset: 0;
-
-  background-image:
-    linear-gradient(
-      rgba(255,255,255,.04) 1px,
+      rgba(255,255,255,.015) 1px,
       transparent 1px
     ),
     linear-gradient(
       90deg,
-      rgba(255,255,255,.04) 1px,
+      rgba(255,255,255,.015) 1px,
       transparent 1px
     );
 
@@ -155,43 +66,19 @@ Runtime Experience Layer
     radial-gradient(
       circle at center,
       black,
-      transparent 85%
+      transparent 82%
     );
 
-  opacity: .22;
-
   pointer-events: none;
+
+  opacity: .32;
 }
 
 /* ========================================================================= */
-/* NOISE */
+/* RUNTIME PAGE */
 /* ========================================================================= */
 
-.runtimeHeroNoise {
-
-  position: absolute;
-
-  inset: 0;
-
-  opacity: .03;
-
-  background-image:
-    radial-gradient(
-      rgba(255,255,255,.6) 1px,
-      transparent 1px
-    );
-
-  background-size:
-    18px 18px;
-
-  pointer-events: none;
-}
-
-/* ========================================================================= */
-/* INNER */
-/* ========================================================================= */
-
-.runtimeHeroInner {
+.runtimePage {
 
   position: relative;
 
@@ -199,189 +86,173 @@ Runtime Experience Layer
 
   width: 100%;
 
-  max-width: 1320px;
+  max-width: 1680px;
 
-  margin: 0 auto;
-}
+  margin:
+    0 auto;
 
-/* ========================================================================= */
-/* TOP */
-/* ========================================================================= */
-
-.runtimeHeroTop {
+  padding:
+    72px 42px 140px;
 
   display: flex;
 
-  align-items: center;
+  flex-direction: column;
+
+  gap: 120px;
+}
+
+/* ========================================================================= */
+/* SECTION WRAPPERS */
+/* ========================================================================= */
+
+.runtimeHeroSection,
+.runtimeFlagshipSection,
+.runtimeDiscoverySection,
+.runtimeExplorationSection,
+.runtimeFAQSection,
+.runtimeContinuationSection {
+
+  position: relative;
+
+  width: 100%;
+}
+
+/* ========================================================================= */
+/* HERO */
+/* ========================================================================= */
+
+.runtimeHeroSection {
+
+  margin-top: 8px;
+}
+
+/* ========================================================================= */
+/* FLAGSHIP */
+/* ========================================================================= */
+
+.runtimeFlagshipSection {
+
+  z-index: 5;
+}
+
+/* ========================================================================= */
+/* DISCOVERY */
+/* ========================================================================= */
+
+.runtimeDiscoverySection {
+
+  z-index: 4;
+}
+
+/* ========================================================================= */
+/* EXPLORATION */
+/* ========================================================================= */
+
+.runtimeExplorationSection {
+
+  z-index: 3;
+}
+
+/* ========================================================================= */
+/* FAQ */
+/* ========================================================================= */
+
+.runtimeFAQSection {
+
+  z-index: 2;
+}
+
+/* ========================================================================= */
+/* CONTINUATION */
+/* ========================================================================= */
+
+.runtimeContinuationSection {
+
+  z-index: 1;
+}
+
+/* ========================================================================= */
+/* BREADCRUMBS */
+/* ========================================================================= */
+
+.runtimeBreadcrumbs {
+
+  display: flex;
 
   flex-wrap: wrap;
 
-  gap: 14px;
+  align-items: center;
 
-  margin-bottom: 28px;
+  gap: 10px;
+
+  margin-top: -24px;
+
+  margin-bottom: 12px;
 }
 
-/* ========================================================================= */
-/* BADGE */
-/* ========================================================================= */
-
-.runtimeHeroBadge {
+.runtimeBreadcrumbItem {
 
   display: inline-flex;
 
   align-items: center;
 
-  justify-content: center;
+  gap: 10px;
+}
 
-  min-height: 42px;
+.runtimeBreadcrumbLink {
 
-  padding:
-    0 20px;
+  color:
+    rgba(255,255,255,.56);
 
-  border-radius: 999px;
+  font-size: 13px;
 
-  border:
-    1px solid rgba(255,255,255,.08);
+  font-weight: 700;
 
-  background:
-    rgba(255,255,255,.06);
+  letter-spacing: .04em;
 
-  backdrop-filter: blur(18px);
+  text-decoration: none;
+
+  transition:
+    color var(--runtime-transition);
+}
+
+.runtimeBreadcrumbLink:hover {
+
+  color: white;
+}
+
+.runtimeBreadcrumbCurrent {
 
   color: white;
 
-  font-size: 11px;
+  font-size: 13px;
 
-  font-weight: 800;
+  font-weight: 700;
 
-  letter-spacing: .18em;
-
-  text-transform: uppercase;
+  letter-spacing: .04em;
 }
 
-/* ========================================================================= */
-/* STATUS */
-/* ========================================================================= */
-
-.runtimeHeroRuntime {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  min-height: 42px;
-
-  padding:
-    0 20px;
-
-  border-radius: 999px;
-
-  background:
-    rgba(56,189,248,.12);
-
-  border:
-    1px solid rgba(56,189,248,.22);
+.runtimeBreadcrumbSeparator {
 
   color:
-    #7dd3fc;
-
-  font-size: 11px;
-
-  font-weight: 800;
-
-  letter-spacing: .18em;
-
-  text-transform: uppercase;
-
-  backdrop-filter: blur(18px);
-}
-
-/* ========================================================================= */
-/* EYEBROW */
-/* ========================================================================= */
-
-.runtimeHeroEyebrow {
-
-  margin-bottom: 24px;
-
-  color:
-    #94a3b8;
+    rgba(255,255,255,.24);
 
   font-size: 12px;
-
-  font-weight: 800;
-
-  letter-spacing: .28em;
-
-  text-transform: uppercase;
 }
 
 /* ========================================================================= */
-/* TITLE */
+/* DEBUG */
 /* ========================================================================= */
 
-.runtimeHeroTitle {
+.runtimeDebugSection {
 
-  max-width: 1100px;
+  position: relative;
 
-  margin-bottom: 34px;
+  overflow: hidden;
 
-  color: white;
+  isolation: isolate;
 
-  font-size: clamp(58px, 8vw, 124px);
-
-  line-height: .9;
-
-  font-weight: 900;
-
-  letter-spacing: -.08em;
-
-  text-wrap: balance;
-}
-
-/* ========================================================================= */
-/* DESCRIPTION */
-/* ========================================================================= */
-
-.runtimeHeroDescription {
-
-  max-width: 860px;
-
-  margin-bottom: 44px;
-
-  color:
-    #dbe4f0;
-
-  font-size: 20px;
-
-  line-height: 2;
-}
-
-/* ========================================================================= */
-/* METRICS */
-/* ========================================================================= */
-
-.runtimeHeroMetrics {
-
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 18px;
-
-  margin-bottom: 44px;
-}
-
-.runtimeHeroMetric {
-
-  min-width: 220px;
-
-  padding:
-    24px 26px;
-
-  border-radius: 28px;
+  border-radius: 34px;
 
   border:
     1px solid rgba(255,255,255,.08);
@@ -392,10 +263,39 @@ Runtime Experience Layer
   backdrop-filter: blur(24px);
 
   box-shadow:
-    0 20px 40px rgba(0,0,0,.24);
+    0 24px 80px rgba(0,0,0,.30);
+
+  padding: 34px;
 }
 
-.runtimeHeroMetricLabel {
+.runtimeDebugSection::before {
+
+  content: '';
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.03),
+      transparent 42%
+    );
+
+  pointer-events: none;
+}
+
+.runtimeDebugHeader {
+
+  position: relative;
+
+  z-index: 2;
+
+  margin-bottom: 28px;
+}
+
+.runtimeDebugEyebrow {
 
   margin-bottom: 12px;
 
@@ -411,33 +311,152 @@ Runtime Experience Layer
   text-transform: uppercase;
 }
 
-.runtimeHeroMetricValue {
+.runtimeDebugTitle {
 
   color: white;
 
-  font-size: 42px;
+  font-size: 32px;
 
   line-height: 1;
 
   font-weight: 900;
 
-  letter-spacing: -.06em;
+  letter-spacing: -.05em;
+}
+
+.runtimeDebugJson {
+
+  position: relative;
+
+  z-index: 2;
+
+  overflow-x: auto;
+
+  padding: 24px;
+
+  border-radius: 24px;
+
+  background:
+    rgba(0,0,0,.34);
+
+  border:
+    1px solid rgba(255,255,255,.06);
+
+  color:
+    #dbeafe;
+
+  font-size: 13px;
+
+  line-height: 1.8;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
 }
 
 /* ========================================================================= */
-/* CHIPS */
+/* RESPONSIVE */
 /* ========================================================================= */
 
-.runtimeHeroChips {
+@media (max-width: 1200px) {
 
-  display: flex;
+  .runtimePage {
 
-  flex-wrap: wrap;
+    padding:
+      56px 28px 120px;
 
-  gap: 14px;
+    gap: 96px;
+  }
 }
 
-.runtimeHeroChip {
+@media (max-width: 768px) {
+
+  .runtimePage {
+
+    padding:
+      32px 18px 100px;
+
+    gap: 72px;
+  }
+
+  .runtimeBreadcrumbs {
+
+    margin-top: -8px;
+
+    gap: 8px;
+  }
+
+  .runtimeBreadcrumbLink,
+  .runtimeBreadcrumbCurrent {
+
+    font-size: 12px;
+  }
+
+  .runtimeDebugSection {
+
+    border-radius: 28px;
+
+    padding: 24px;
+  }
+
+  .runtimeDebugTitle {
+
+    font-size: 26px;
+  }
+
+  .runtimeDebugJson {
+
+    padding: 18px;
+
+    font-size: 12px;
+  }
+}
+
+
+/* ========================================================================= */
+/* HERO */
+/* ========================================================================= */
+
+.runtimeHero {
+
+  position: relative;
+
+  overflow: hidden;
+
+  isolation: isolate;
+
+  padding: 96px 64px;
+
+  border-radius: 44px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.06),
+      rgba(255,255,255,.02)
+    );
+
+  backdrop-filter: blur(30px);
+
+  box-shadow:
+    0 40px 120px rgba(0,0,0,.40);
+}
+
+.runtimeHeroInner {
+
+  position: relative;
+
+  z-index: 2;
+
+  max-width: 1080px;
+}
+
+.runtimeHeroBadge {
 
   display: inline-flex;
 
@@ -445,85 +464,43 @@ Runtime Experience Layer
 
   justify-content: center;
 
-  min-height: 46px;
+  min-height: 38px;
 
   padding:
-    0 22px;
+    0 18px;
 
   border-radius: 999px;
 
+  background:
+    rgba(255,255,255,.06);
+
   border:
-    1px solid rgba(255,255,255,.08);
+    1px solid rgba(255,255,255,.10);
 
-  background:
-    rgba(255,255,255,.05);
+  color:
+    #dbeafe;
 
-  backdrop-filter: blur(16px);
+  font-size: 11px;
 
-  color: white;
+  font-weight: 800;
 
-  font-size: 13px;
+  letter-spacing: .16em;
 
-  font-weight: 700;
+  text-transform: uppercase;
 
-  letter-spacing: .04em;
-
-  transition:
-    transform .35s ease,
-    background .35s ease,
-    border-color .35s ease;
+  backdrop-filter: blur(14px);
 }
 
-.runtimeHeroChip:hover {
+.runtimeHeroEyebrow {
 
-  transform:
-    translateY(-2px);
+  margin-top: 28px;
 
-  background:
-    rgba(255,255,255,.08);
-
-  border-color:
-    rgba(255,255,255,.14);
-}
-
-/* ========================================================================= */
-/* SECTION */
-/* ========================================================================= */
-
-.runtimeDiscoverySection,
-.runtimeExplorationSection,
-.runtimeFaqSection {
-
-  position: relative;
-
-  z-index: 2;
-
-  max-width: 1440px;
-
-  margin:
-    0 auto 120px;
-
-  padding:
-    0 32px;
-}
-
-/* ========================================================================= */
-/* SECTION HEADER */
-/* ========================================================================= */
-
-.runtimeSectionHeader {
-
-  margin-bottom: 42px;
-}
-
-.runtimeSectionEyebrow {
-
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 
   color:
     #94a3b8;
 
-  font-size: 12px;
+  font-size: 13px;
 
   font-weight: 800;
 
@@ -532,292 +509,32 @@ Runtime Experience Layer
   text-transform: uppercase;
 }
 
-.runtimeSectionTitle {
+.runtimeHeroTitle {
 
-  margin-bottom: 18px;
+  margin-bottom: 28px;
 
   color: white;
 
-  font-size: clamp(32px, 5vw, 64px);
+  font-size:
+    clamp(58px, 8vw, 120px);
 
-  line-height: .96;
+  line-height: .9;
 
   font-weight: 900;
 
-  letter-spacing: -.06em;
+  letter-spacing: -.08em;
+
+  text-wrap: balance;
 }
 
-.runtimeSectionDescription {
+.runtimeHeroDescription {
 
   max-width: 760px;
 
   color:
-    #cbd5e1;
+    #dbe4f0;
 
-  font-size: 17px;
+  font-size: 18px;
 
   line-height: 1.9;
-}
-
-/* ========================================================================= */
-/* RESPONSIVE */
-/* ========================================================================= */
-
-@media (max-width: 768px) {
-
-  .runtimeHero {
-
-    min-height: auto;
-
-    padding:
-      120px 20px 90px;
-  }
-
-  .runtimeHeroTitle {
-
-    font-size: 52px;
-  }
-
-  .runtimeHeroDescription {
-
-    font-size: 16px;
-
-    line-height: 1.9;
-  }
-
-  .runtimeHeroMetrics {
-
-    flex-direction: column;
-  }
-
-  .runtimeHeroMetric {
-
-    width: 100%;
-  }
-
-  .runtimeDiscoverySection,
-  .runtimeExplorationSection,
-  .runtimeFaqSection {
-
-    padding:
-      0 20px;
-  }
-
-  .runtimeSectionTitle {
-
-    font-size: 40px;
-  }
-
-  .runtimeSectionDescription {
-
-    font-size: 15px;
-  }
-}
-
-/* ========================================================================= */
-/* BREADCRUMB SECTION */
-/* ========================================================================= */
-
-.runtimeBreadcrumbSection {
-
-  position: relative;
-
-  z-index: 5;
-
-  max-width: 1440px;
-
-  margin:
-    -42px auto 72px;
-
-  padding:
-    0 32px;
-}
-
-/* ========================================================================= */
-/* BREADCRUMB GLOW */
-/* ========================================================================= */
-
-.runtimeBreadcrumbGlow {
-
-  position: absolute;
-
-  inset: -40px;
-
-  background:
-    radial-gradient(
-      circle at left center,
-      rgba(99,102,241,.12),
-      transparent 72%
-    );
-
-  filter: blur(40px);
-
-  pointer-events: none;
-
-  opacity: .85;
-}
-
-/* ========================================================================= */
-/* BREADCRUMBS */
-/* ========================================================================= */
-
-.runtimeBreadcrumbs {
-
-  position: relative;
-
-  z-index: 2;
-
-  display: flex;
-
-  align-items: center;
-
-  flex-wrap: wrap;
-
-  gap: 12px;
-
-  padding:
-    18px 24px;
-
-  border-radius: 24px;
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  background:
-    rgba(255,255,255,.05);
-
-  backdrop-filter: blur(24px);
-
-  box-shadow:
-    0 20px 50px rgba(0,0,0,.24);
-}
-
-/* ========================================================================= */
-/* ITEM */
-/* ========================================================================= */
-
-.runtimeBreadcrumbItem {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  gap: 12px;
-}
-
-/* ========================================================================= */
-/* LINK */
-/* ========================================================================= */
-
-.runtimeBreadcrumbLink {
-
-  position: relative;
-
-  color:
-    #cbd5e1;
-
-  text-decoration: none;
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  letter-spacing: .02em;
-
-  transition:
-    color .3s ease,
-    opacity .3s ease,
-    transform .3s ease;
-}
-
-.runtimeBreadcrumbLink:hover {
-
-  color: white;
-
-  transform:
-    translateY(-1px);
-}
-
-/* ========================================================================= */
-/* CURRENT */
-/* ========================================================================= */
-
-.runtimeBreadcrumbCurrent {
-
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  min-height: 34px;
-
-  padding:
-    0 14px;
-
-  border-radius: 999px;
-
-  background:
-    rgba(255,255,255,.08);
-
-  border:
-    1px solid rgba(255,255,255,.12);
-
-  color: white;
-
-  font-size: 12px;
-
-  font-weight: 800;
-
-  letter-spacing: .04em;
-
-  backdrop-filter: blur(14px);
-}
-
-/* ========================================================================= */
-/* SEPARATOR */
-/* ========================================================================= */
-
-.runtimeBreadcrumbSeparator {
-
-  color:
-    rgba(255,255,255,.28);
-
-  font-size: 12px;
-
-  font-weight: 700;
-}
-
-/* ========================================================================= */
-/* RESPONSIVE */
-/* ========================================================================= */
-
-@media (max-width: 768px) {
-
-  .runtimeBreadcrumbSection {
-
-    margin:
-      -24px auto 52px;
-
-    padding:
-      0 20px;
-  }
-
-  .runtimeBreadcrumbs {
-
-    gap: 10px;
-
-    padding:
-      16px 18px;
-  }
-
-  .runtimeBreadcrumbLink {
-
-    font-size: 12px;
-  }
-
-  .runtimeBreadcrumbCurrent {
-
-    font-size: 11px;
-  }
 }

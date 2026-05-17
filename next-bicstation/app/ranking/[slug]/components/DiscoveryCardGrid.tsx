@@ -56,7 +56,7 @@ export default function DiscoveryCardGrid({
       Header
       ================================================================ */}
 
-      <div className={styles.discoverySectionHeader}>
+      <div className={styles.discoveryHeader}>
 
         <div>
 
@@ -66,15 +66,22 @@ export default function DiscoveryCardGrid({
 
           </div>
 
-          <h2 className={styles.discoveryHeading}>
+          <h2 className={styles.discoveryTitle}>
 
             注目のランキングモデル
 
           </h2>
 
+          <p className={styles.discoveryDescription}>
+
+            semantic runtime が高い関連性を検出した
+            discovery nodes。
+
+          </p>
+
         </div>
 
-        <div className={styles.discoveryMeta}>
+        <div className={styles.discoveryCount}>
 
           {products.length}
           {' '}

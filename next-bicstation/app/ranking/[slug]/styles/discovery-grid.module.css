@@ -6,9 +6,133 @@
 /*
 ===============================================================================
 🔥 SHIN CORE LINX
-Discovery Runtime Layer
+Discovery Runtime Experience
 ===============================================================================
 */
+
+/* ========================================================================= */
+/* DISCOVERY SECTION */
+/* ========================================================================= */
+
+.discoverySection {
+
+  position: relative;
+
+  margin-bottom: 120px;
+}
+
+/* ========================================================================= */
+/* HEADER */
+/* ========================================================================= */
+
+.discoveryHeader {
+
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 32px;
+
+  margin-bottom: 42px;
+}
+
+/* ========================================================================= */
+/* EYEBROW */
+/* ========================================================================= */
+
+.discoveryEyebrow {
+
+  margin-bottom: 18px;
+
+  color:
+    #94a3b8;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: .24em;
+
+  text-transform: uppercase;
+}
+
+/* ========================================================================= */
+/* TITLE */
+/* ========================================================================= */
+
+.discoveryTitle {
+
+  margin-bottom: 18px;
+
+  color: white;
+
+  font-size: clamp(28px, 4vw, 52px);
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  letter-spacing: -.06em;
+
+  text-wrap: balance;
+}
+
+/* ========================================================================= */
+/* DESCRIPTION */
+/* ========================================================================= */
+
+.discoveryDescription {
+
+  max-width: 720px;
+
+  color:
+    #dbe4f0;
+
+  font-size: 16px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* COUNT */
+/* ========================================================================= */
+
+.discoveryCount {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-height: 52px;
+
+  padding:
+    0 22px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  background:
+    rgba(255,255,255,.04);
+
+  backdrop-filter: blur(16px);
+
+  color:
+    rgba(255,255,255,.72);
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  letter-spacing: .08em;
+
+  text-transform: uppercase;
+}
 
 /* ========================================================================= */
 /* GRID */
@@ -45,7 +169,7 @@ Discovery Runtime Layer
 
   min-height: 100%;
 
-  border-radius: 38px;
+  border-radius: 36px;
 
   border:
     1px solid rgba(255,255,255,.08);
@@ -232,7 +356,7 @@ Discovery Runtime Layer
 
   gap: 18px;
 
-  padding: 32px;
+  padding: 30px;
 }
 
 /* ========================================================================= */
@@ -249,10 +373,10 @@ Discovery Runtime Layer
 
   align-self: flex-start;
 
-  min-height: 38px;
+  min-height: 36px;
 
   padding:
-    0 18px;
+    0 16px;
 
   border-radius: 999px;
 
@@ -277,16 +401,16 @@ Discovery Runtime Layer
 }
 
 /* ========================================================================= */
-/* TITLE */
+/* CARD TITLE */
 /* ========================================================================= */
 
-.discoveryTitle {
+.discoveryCardTitle {
 
   color: white;
 
-  font-size: 32px;
+  font-size: 28px;
 
-  line-height: 1.14;
+  line-height: 1.12;
 
   font-weight: 900;
 
@@ -305,7 +429,7 @@ Discovery Runtime Layer
 
   font-size: 42px;
 
-  line-height: .95;
+  line-height: 1;
 
   font-weight: 900;
 
@@ -334,7 +458,7 @@ Discovery Runtime Layer
 /* DESCRIPTION */
 /* ========================================================================= */
 
-.discoveryDescription {
+.discoveryDescriptionText {
 
   color:
     #dbe4f0;
@@ -453,6 +577,20 @@ Discovery Runtime Layer
 
 @media (max-width: 768px) {
 
+  .discoverySection {
+
+    margin-bottom: 80px;
+  }
+
+  .discoveryHeader {
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 20px;
+  }
+
   .discoveryGrid {
 
     grid-template-columns:
@@ -461,14 +599,24 @@ Discovery Runtime Layer
     gap: 24px;
   }
 
+  .discoveryCard {
+
+    border-radius: 28px;
+  }
+
   .discoveryContent {
 
-    padding: 26px;
+    padding: 24px;
   }
 
   .discoveryTitle {
 
-    font-size: 26px;
+    font-size: 38px;
+  }
+
+  .discoveryCardTitle {
+
+    font-size: 24px;
   }
 
   .discoveryPrice {
@@ -476,7 +624,8 @@ Discovery Runtime Layer
     font-size: 34px;
   }
 
-  .discoveryDescription {
+  .discoveryDescription,
+  .discoveryDescriptionText {
 
     font-size: 14px;
   }

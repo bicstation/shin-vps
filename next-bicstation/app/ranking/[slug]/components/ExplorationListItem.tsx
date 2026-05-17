@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 
-import styles from '../RankingSlugPage.module.css'
+import styles from '../styles/exploration-list.module.css'
 
 import {
   ProductSemanticChips,

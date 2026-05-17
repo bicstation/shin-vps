@@ -91,7 +91,7 @@ function buildSemanticRoute(
     return '#'
   }
 
-  return `/ranking/${groupKey}-${slug}/`
+  return `/ranking/${slug}/`
 }
 
 /* ============================================================================
