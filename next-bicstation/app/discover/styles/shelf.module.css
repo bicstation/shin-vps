@@ -1,0 +1,240 @@
+/* ============================================================================ */
+/* FILE: */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/product/styles/shelf.module.css */
+/* ============================================================================ */
+
+/*
+===============================================================================
+🔥 SHIN CORE LINX
+Semantic Shelf Runtime
+===============================================================================
+*/
+
+/* ========================================================================= */
+/* SHELF */
+/* ========================================================================= */
+
+.shelf {
+
+  position: relative;
+
+  width: 100%;
+}
+
+/* ========================================================================= */
+/* SHELF HEADER */
+/* ========================================================================= */
+
+.shelfHeader {
+
+  width: 100%;
+
+  max-width: 1600px;
+
+  margin:
+    0 auto 36px;
+
+  padding:
+    0 48px;
+}
+
+.shelfEyebrow {
+
+  margin-bottom: 18px;
+
+  color:
+    #818cf8;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: .22em;
+
+  text-transform: uppercase;
+}
+
+.shelfTitle {
+
+  margin-bottom: 22px;
+
+  color:
+    white;
+
+  font-size:
+    clamp(38px, 5vw, 72px);
+
+  line-height: .92;
+
+  font-weight: 900;
+
+  letter-spacing: -.06em;
+}
+
+.shelfDescription {
+
+  max-width: 52ch;
+
+  color:
+    rgba(255,255,255,.70);
+
+  font-size: 17px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* SHELF RUNTIME */
+/* ========================================================================= */
+
+.shelfRuntime {
+
+  position: relative;
+}
+
+/* ========================================================================= */
+/* SHELF CONTROLS */
+/* ========================================================================= */
+
+.shelfControls {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  width: 100%;
+
+  max-width: 1600px;
+
+  margin:
+    0 auto 24px;
+
+  padding:
+    0 48px;
+}
+
+.shelfButton {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 52px;
+  height: 52px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,.04);
+
+  color:
+    white;
+
+  font-size: 20px;
+
+  cursor: pointer;
+
+  transition:
+    background .25s ease,
+    border-color .25s ease,
+    transform .25s ease;
+}
+
+.shelfButton:hover {
+
+  background:
+    rgba(255,255,255,.08);
+
+  border-color:
+    rgba(255,255,255,.18);
+
+  transform:
+    translateY(-2px);
+}
+
+/* ========================================================================= */
+/* HORIZONTAL SHELF */
+/* ========================================================================= */
+
+.horizontalShelf {
+
+  display: flex;
+
+  gap: 28px;
+
+  overflow-x: auto;
+
+  overflow-y: hidden;
+
+  scroll-snap-type:
+    x mandatory;
+
+  scroll-behavior: smooth;
+
+  padding:
+    0 48px 12px;
+
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: none;
+}
+
+.horizontalShelf::-webkit-scrollbar {
+
+  display: none;
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+
+  .shelfHeader {
+
+    padding:
+      0 20px;
+  }
+
+  .shelfTitle {
+
+    font-size:
+      clamp(32px, 10vw, 52px);
+  }
+
+  .shelfDescription {
+
+    max-width: 100%;
+
+    font-size: 16px;
+
+    line-height: 1.8;
+  }
+
+  .shelfControls {
+
+    padding:
+      0 20px;
+  }
+
+  .shelfButton {
+
+    width: 48px;
+    height: 48px;
+  }
+
+  .horizontalShelf {
+
+    gap: 18px;
+
+    padding:
+      0 20px 8px;
+  }
+}

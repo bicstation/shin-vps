@@ -1,0 +1,156 @@
+/* ============================================================================ */
+/* FILE: */
+/* /home/maya/shin-dev/shin-vps/next-bicstation/app/product/styles/debug.module.css */
+/* ============================================================================ */
+
+/*
+===============================================================================
+🔥 SHIN CORE LINX
+Runtime Debug Inspector
+===============================================================================
+*/
+
+/* ========================================================================= */
+/* ROOT */
+/* ========================================================================= */
+
+.debug {
+
+  width: 100%;
+
+  max-width: 1600px;
+
+  margin: 0 auto;
+
+  padding:
+    120px 48px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 40px;
+}
+
+/* ========================================================================= */
+/* HEADER */
+/* ========================================================================= */
+
+.debugHeader {
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+.debugEyebrow {
+
+  color:
+    #818cf8;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: .22em;
+
+  text-transform: uppercase;
+}
+
+.debugTitle {
+
+  color:
+    white;
+
+  font-size:
+    clamp(38px, 5vw, 72px);
+
+  line-height: .92;
+
+  font-weight: 900;
+
+  letter-spacing: -.06em;
+}
+
+.debugDescription {
+
+  max-width: 60ch;
+
+  color:
+    rgba(255,255,255,.72);
+
+  font-size: 16px;
+
+  line-height: 1.9;
+}
+
+/* ========================================================================= */
+/* JSON */
+/* ========================================================================= */
+
+.debugPre {
+
+  overflow-x: auto;
+
+  padding: 32px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  border-radius: 28px;
+
+  background:
+    rgba(255,255,255,.03);
+
+  color:
+    rgba(255,255,255,.82);
+
+  font-size: 13px;
+
+  line-height: 1.8;
+
+  white-space: pre-wrap;
+
+  word-break: break-word;
+
+  backdrop-filter: blur(18px);
+}
+
+/* ========================================================================= */
+/* RESPONSIVE */
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+
+  .debug {
+
+    padding:
+      80px 20px;
+  }
+
+  .debugTitle {
+
+    font-size:
+      clamp(32px, 10vw, 52px);
+  }
+
+  .debugDescription {
+
+    font-size: 15px;
+
+    line-height: 1.8;
+  }
+
+  .debugPre {
+
+    padding: 20px;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+
+    line-height: 1.7;
+  }
+}

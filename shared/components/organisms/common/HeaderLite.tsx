@@ -133,6 +133,13 @@ export default function HeaderLite() {
       <nav className={styles.desktopNav}>
 
         <Link
+          href="/discover"
+          className={styles.navLink}
+        >
+          Discover
+        </Link>
+
+        <Link
           href="/ranking"
           className={styles.navLink}
         >
@@ -159,7 +166,14 @@ export default function HeaderLite() {
           🔍 Right Area
       ==================================================== */}
       <div className={styles.rightArea}>
-        {/* future auth / search */}
+
+        <Link
+          href="/discover"
+          className={styles.discoverButton}
+        >
+          Semantic Discover
+        </Link>
+
       </div>
 
     </header>

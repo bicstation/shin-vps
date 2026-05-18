@@ -1,9 +1,9 @@
 // ============================================================================
 // FILE:
-// /home/maya/shin-dev/shin-vps/next-bicstation/app/product/page.tsx
+// /home/maya/shin-dev/shin-vps/next-bicstation/app/discover/[semantic-slug]/page.tsx
 // ============================================================================
 
-export default function ProductPage() {
+export default function SemanticDiscoverPage() {
 
   return null
 }
