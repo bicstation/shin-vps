@@ -13,6 +13,9 @@ import {
   notFound,
 } from 'next/navigation'
 
+import type {
+  Metadata,
+} from 'next'
 /* =========================================
 🔥 API
 ========================================= */
@@ -102,6 +105,56 @@ import ProductEmpty
 ========================================= */
 
 export const revalidate = 60
+
+
+export async function generateMetadata(
+
+  { params }: Props
+
+): Promise<Metadata> {
+
+  const product =
+    await fetchPCDetail(
+      params.unique_id
+    )
+
+  // ====================================
+  // 商品なし
+  // ====================================
+
+  if (!product) {
+
+    return {
+
+      title:
+        '商品が見つかりません',
+
+      description:
+        '商品情報が見つかりませんでした。',
+    }
+  }
+
+  // ====================================
+  // backend SEO authority
+  // ====================================
+
+  return {
+
+    title:
+      product?.seo?.title
+      || product?.name,
+
+    description:
+      product?.seo?.description
+      || '',
+
+    alternates: {
+
+      canonical:
+        product?.seo?.canonical,
+    },
+  }
+}
 
 /* =========================================
 🔥 TYPES
